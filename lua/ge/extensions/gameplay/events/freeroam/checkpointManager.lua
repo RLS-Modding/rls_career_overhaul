@@ -21,13 +21,13 @@ local function createCheckpoint(index, isAlt)
         return
     end
 
-    if not checkpoint.width then
+    if not checkpoint.node.width then
         print("No width for checkpoint " .. index)
-        checkpoint.width = 30
+        checkpoint.node.width = 30
     end
 
-    local position = vec3(checkpoint.pos.x, checkpoint.pos.y, checkpoint.pos.z)
-    local radius = checkpoint.width
+    local position = vec3(checkpoint.node.x, checkpoint.node.y, checkpoint.node.z)
+    local radius = checkpoint.node.width
 
     local triggerRadius = radius
 
@@ -64,9 +64,9 @@ local function createCheckpointMarker(index, alt)
     local marker = createObject('TSStatic')
     marker.shapeName = "art/shapes/interface/checkpoint_marker.dae"
 
-    marker:setPosRot(checkpoint.pos.x, checkpoint.pos.y, checkpoint.pos.z, 0, 0, 0, 0)
+    marker:setPosRot(checkpoint.node.x, checkpoint.node.y, checkpoint.node.z, 0, 0, 0, 0)
 
-    marker.scale = vec3(checkpoint.width, checkpoint.width, checkpoint.width)
+    marker.scale = vec3(checkpoint.node.width, checkpoint.node.width, checkpoint.node.width)
     marker.useInstanceRenderData = true
     marker.instanceColor = ColorF(1, 0, 0, 0.5):asLinear4F() -- Default to red
 
@@ -280,11 +280,11 @@ local function setRace(inputRace, inputRaceName)
     raceName = inputRaceName
 end
 
-local function onInit()
+local function onExtensionLoaded()
     print("Initializing Checkpoint Manager")
 end
 
-M.onInit = onInit
+M.onExtensionLoaded = onExtensionLoaded
 M.createCheckpoints = createCheckpoints
 M.enableCheckpoint = enableCheckpoint
 M.removeCheckpoints = removeCheckpoints

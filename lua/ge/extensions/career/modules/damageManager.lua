@@ -52,8 +52,8 @@ function M.saveDamageState(inventoryId, saveFile, removeVehicle)
     local vehicle = career_modules_inventory.getVehicles()[inventoryId]
     local spawnedVehicles = career_modules_inventory.getMapInventoryIdToVehId()
     if vehicle and spawnedVehicles[inventoryId] then
-        local damage = career_modules_valueCalculator.getNumberOfBrokenParts(vehicle.partConditions)
-        if damage > 0 then
+        local numberOfBrokenParts = career_modules_valueCalculator.getNumberOfBrokenParts(career_modules_inventory.getVehicles()[inventoryId].partConditions)
+        if numberOfBrokenParts > 0 and numberOfBrokenParts < career_modules_valueCalculator.getBrokenPartsThreshold() then
             print("Saving damage state for vehicle " .. inventoryId .. " to " .. saveFile)
             local vehId = career_modules_inventory.getVehicleIdFromInventoryId(inventoryId)
             local object = be:getObjectByID(vehId)

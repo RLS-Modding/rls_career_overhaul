@@ -6,7 +6,7 @@ local function loadExtensions()
 
     setExtensionUnloadMode("core_gameContext", "manual")
 
-    setExtensionUnloadMode("gameplay_events_freeroam_init", "manual")
+    setExtensionUnloadMode("gameplay_events_freeroamEvents", "manual")
 
     setExtensionUnloadMode("career_career", "manual")
     extensions.unload("career_career")
@@ -23,7 +23,6 @@ local function loadExtensions()
 end
 
 setExtensionUnloadMode("careerMaps", "manual")
-
 
 if not core_gamestate.state or core_gamestate.state.state ~= "career" then
     loadExtensions()

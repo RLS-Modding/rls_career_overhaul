@@ -131,7 +131,7 @@ local function processRoadNodes(mainNodes, altNodes)
             -- Function to check if position already exists in checkpoints
             local function isDuplicatePosition(newPos)
                 for _, checkpoint in ipairs(checkpoints) do
-                    if checkpoint.pos.x == newPos.x and checkpoint.pos.y == newPos.y and checkpoint.pos.z == newPos.z then
+                    if checkpoint.node.x == newPos.x and checkpoint.node.y == newPos.y and checkpoint.node.z == newPos.z then
                         --print("Duplicate checkpoint position found, skipping...")
                         return true
                     end
@@ -149,11 +149,10 @@ local function processRoadNodes(mainNodes, altNodes)
                             -- Check if new position is duplicate before updating
                             if not isDuplicatePosition(nodes[apexIndex]) then
                                 checkpoints[#checkpoints] = {
-                                    pos = nodes[apexIndex],
+                                    node = nodes[apexIndex],
                                     type = type,
                                     index = apexIndex,
-                                    direction = direction,
-                                    width = nodes[apexIndex].width and nodes[apexIndex].width * 1.25 or roadWidth
+                                    direction = direction
                                 }
                             end
                         end
@@ -165,11 +164,10 @@ local function processRoadNodes(mainNodes, altNodes)
             -- Check if new position is duplicate before inserting
             if not isDuplicatePosition(nodes[apexIndex]) then
                 table.insert(checkpoints, {
-                    pos = nodes[apexIndex],
+                    node = nodes[apexIndex],
                     type = type,
                     index = apexIndex,
-                    direction = direction,
-                    width = nodes[apexIndex].width and nodes[apexIndex].width * 1.25 or roadWidth
+                    direction = direction
                 })
                 --print((isAlt and "Alt " or "") .. "Checkpoint added: Type: " .. type .. ", Index: " .. apexIndex ..
                 --          ", Direction: " .. direction .. ", Width: " .. roadWidth)
@@ -184,7 +182,7 @@ local function processRoadNodes(mainNodes, altNodes)
             -- Function to insert checkpoint between two existing ones
             local function insertMiddleCheckpoint(cp1, cp2)
                 -- Calculate the distance between checkpoints
-                local distance = calculateDistance(cp1.pos, cp2.pos)
+                local distance = calculateDistance(cp1.node, cp2.node)
                 
                 if distance > 450 then
                     -- Find the middle node index
@@ -192,11 +190,10 @@ local function processRoadNodes(mainNodes, altNodes)
                     
                     -- Create new checkpoint at middle position
                     table.insert(newCheckpoints, {
-                        pos = nodes[middleIndex],
+                        node = nodes[middleIndex],
                         type = "straight",
                         index = middleIndex,
                         direction = "straight",
-                        width = nodes[middleIndex].width and nodes[middleIndex].width * 1.25 or 20
                     })
                 end
             end
@@ -302,19 +299,19 @@ local function processRoadNodes(mainNodes, altNodes)
         if #checkpoints >= 2 then
             local firstCheckpoint = checkpoints[1]
             local lastCheckpoint = checkpoints[#checkpoints]
-            local distance = calculateDistance(firstCheckpoint.pos, lastCheckpoint.pos)
+            local distance = calculateDistance(firstCheckpoint.node, lastCheckpoint.node)
 
             if distance < MIN_CHECKPOINT_DISTANCE then
                 --print("Adjusting last checkpoint: too close to first checkpoint")
 
                 local newLastIndex = lastCheckpoint.index
-                while newLastIndex > 1 and calculateDistance(nodes[newLastIndex], firstCheckpoint.pos) <
+                while newLastIndex > 1 and calculateDistance(nodes[newLastIndex], firstCheckpoint.node) <
                     MIN_CHECKPOINT_DISTANCE do
                     newLastIndex = newLastIndex - 1
                 end
 
                 if newLastIndex > 1 and newLastIndex ~= lastCheckpoint.index then
-                    lastCheckpoint.pos = nodes[newLastIndex]
+                    lastCheckpoint.node = nodes[newLastIndex]
                     lastCheckpoint.index = newLastIndex
                     --print("Last checkpoint moved to index: " .. newLastIndex)
                 else
@@ -410,10 +407,8 @@ local function findClosestEndPoints(nodes1, nodes2)
     return connections
 end
 
-local function mergeRoads(road1, road2)
-    local nodes1 = getRoadNodes(road1)
-    local nodes2 = getRoadNodes(road2)
-
+-- Modify the mergeTwoRoads function to preserve first road direction
+local function mergeTwoRoads(nodes1, nodes2)
     local connections = findClosestEndPoints(nodes1, nodes2)
 
     if #connections == 0 then
@@ -429,6 +424,7 @@ local function mergeRoads(road1, road2)
             x = (node1.x + node2.x) / 2,
             y = (node1.y + node2.y) / 2,
             z = (node1.z + node2.z) / 2,
+            width = (node1.width + node2.width) / 2,
             isJunction = true
         }
     end
@@ -438,54 +434,124 @@ local function mergeRoads(road1, road2)
         table.insert(mergedNodes, junction)
     end
 
-    local conn1, conn2 = connections[1], connections[2]
-
-    -- Determine if we need to reverse one of the roads
-    local reverseRoad1 = false
-    local reverseRoad2 = false
-    if conn1.isStart1 == conn1.isStart2 then
-        if #nodes1 < #nodes2 then
-            reverseRoad1 = true
+    -- Always preserve the first road's direction by starting with its nodes
+    -- Copy all nodes from the first road to maintain ordering
+    for i = 1, #nodes1 do
+        table.insert(mergedNodes, nodes1[i])
+    end
+    
+    -- Handle single connection point case (for loops)
+    if #connections == 1 then
+        local conn = connections[1]
+        local connectionIndex = conn.index1
+        local isEnd1 = not conn.isStart1 -- Is the connection at the end of the first road?
+        local isStart2 = conn.isStart2   -- Is the connection at the start of the second road?
+        
+        -- Add junction at the connection point
+        -- Replace the original node with a junction
+        mergedNodes[connectionIndex] = createJunction(nodes1[connectionIndex], nodes2[conn.index2])
+        
+        -- Now add nodes from second road (all except the connection node)
+        -- Direction depends on whether we connected to start or end of road2
+        if isStart2 then
+            -- Start with second node (skip the junction), go to end
+            for i = 2, #nodes2 do
+                table.insert(mergedNodes, nodes2[i])
+            end
         else
-            reverseRoad2 = true
+            -- Start with second-to-last node, go to beginning
+            for i = #nodes2-1, 1, -1 do
+                table.insert(mergedNodes, nodes2[i])
+            end
         end
+        
+        return mergedNodes
     end
 
-    -- Determine the range for each road
-    local start1 = math.min(conn1.index1, conn2.index1)
-    local end1 = math.max(conn1.index1, conn2.index1)
-    local start2 = math.min(conn1.index2, conn2.index2)
-    local end2 = math.max(conn1.index2, conn2.index2)
-
-    -- Add first junction
-    addJunction(createJunction(nodes1[conn1.index1], nodes2[conn1.index2]))
-
-    -- Add nodes from road1
-    if reverseRoad1 then
-        for i = end1, start1, -1 do
-            table.insert(mergedNodes, nodes1[i])
-        end
-    else
-        for i = start1, end1 do
-            table.insert(mergedNodes, nodes1[i])
-        end
+    -- Dual connection point case
+    -- We've already added all nodes from the first road to mergedNodes
+    -- Clear it and rebuild with proper ordering
+    mergedNodes = {}
+    
+    local conn1, conn2 = connections[1], connections[2]
+    
+    -- We always want to preserve the first road's direction
+    -- So we need to determine if we need to reverse the second road
+    local reverseRoad2 = false
+    
+    -- If the connection points are at the same end of both roads (both start or both end)
+    -- then we need to reverse one of them - always reverse the second road
+    if conn1.isStart1 == conn1.isStart2 then
+        reverseRoad2 = true
     end
-
-    -- Add second junction
-    addJunction(createJunction(nodes1[conn2.index1], nodes2[conn2.index2]))
-
-    -- Add nodes from road2
+    
+    -- Add nodes from the first road normally
+    for i = 1, #nodes1 do
+        table.insert(mergedNodes, nodes1[i])
+    end
+    
+    -- Add junction at the connection point
+    -- The junction replaces the connection node from road1
+    local junctionIndex = conn1.isStart1 and 1 or #mergedNodes
+    mergedNodes[junctionIndex] = createJunction(nodes1[conn1.index1], nodes2[conn1.index2])
+    
+    -- Add nodes from road2 based on needed direction
+    -- Skip the connection node that's now a junction
     if reverseRoad2 then
-        for i = end2, start2, -1 do
-            table.insert(mergedNodes, nodes2[i])
+        for i = #nodes2, 1, -1 do
+            if i ~= conn1.index2 then -- Skip the junction node
+                table.insert(mergedNodes, nodes2[i])
+            end
         end
     else
-        for i = start2, end2 do
-            table.insert(mergedNodes, nodes2[i])
+        for i = 1, #nodes2 do
+            if i ~= conn1.index2 then -- Skip the junction node
+                table.insert(mergedNodes, nodes2[i])
+            end
         end
     end
     
     return mergedNodes
+end
+
+-- New wrapper function that handles multiple roads
+local function mergeRoads(roads)
+    if type(roads) ~= "table" or #roads < 1 then
+        return nil
+    end
+    
+    -- If only one road provided, just return its nodes
+    if #roads == 1 then
+        return getRoadNodes(roads[1])
+    end
+
+    -- Start with the first road's nodes
+    local result = getRoadNodes(roads[1])
+    if not result then
+        print("First road not found or invalid: " .. roads[1])
+        return nil
+    end
+    
+    -- Iteratively merge each additional road
+    for i = 2, #roads do
+        local nextRoadNodes = getRoadNodes(roads[i])
+        if not nextRoadNodes then
+            print("Road not found or invalid: " .. roads[i])
+            goto continue
+        end
+        
+        -- Merge the accumulated result with the next road
+        local mergedResult = mergeTwoRoads(result, nextRoadNodes)
+        if mergedResult then
+            result = mergedResult
+        else
+            print("Failed to merge road " .. roads[i])
+        end
+        
+        ::continue::
+    end
+    
+    return result
 end
 
 local function vec3FromTable(t)
@@ -685,14 +751,39 @@ local function flipCheckpoints(originalCheckpoints)
         end
         
         table.insert(flipped, {
-            pos = cp.pos,
+            node = cp.node,
             type = cp.type,
             index = cp.index,
             direction = newDirection,
-            width = cp.width
         })
     end
     return flipped
+end
+
+local function getNodeIndexCheckpoints(indexs, roadNodes)
+    local checkpoints = {}
+    for i = 1, #indexs do
+        local angle = calculateAngle(roadNodes[indexs[i] - 1], roadNodes[indexs[i]], roadNodes[indexs[i] + 1])
+        table.insert(checkpoints, {
+            node = roadNodes[indexs[i]],
+            type = "manual",
+            index = indexs[i],
+            direction = angle > 0 and "left" or "right"
+        })
+    end
+    return checkpoints
+end
+
+local function getRoadNodesFromRace(race)
+    if type(race.checkpointRoad) == "table" then
+        if not race.checkpointRoad[2] then
+            return getRoadNodes(race.checkpointRoad[1])
+        else
+            return mergeRoads(race.checkpointRoad)
+        end
+    else
+        return getRoadNodes(race.checkpointRoad)
+    end
 end
 
 local function getCheckpoints(race)
@@ -705,18 +796,23 @@ local function getCheckpoints(race)
         altCheckpoints = nil
         activeRace = race
         -- Load main route nodes
-        if type(race.checkpointRoad) == "table" then
-            roadNodes = mergeRoads(race.checkpointRoad[1], race.checkpointRoad[2])
-        else
-            roadNodes = getRoadNodes(race.checkpointRoad)
-        end
+        roadNodes = getRoadNodesFromRace(race)
 
         -- Check for alternative route
         if race.altRoute and race.altRoute.checkpointRoad then
-            altRoadNodes = getRoadNodes(race.altRoute.checkpointRoad)
-            checkpoints, altCheckpoints = processRoadNodes(roadNodes, altRoadNodes)
+            altRoadNodes = getRoadNodesFromRace(race.altRoute)
+            if race.altRoute.checkpointIndexs then
+                checkpoints = getNodeIndexCheckpoints(race.checkpointIndexs, roadNodes)
+                altCheckpoints = getNodeIndexCheckpoints(race.altRoute.checkpointIndexs, altRoadNodes)
+            else
+                checkpoints, altCheckpoints = processRoadNodes(roadNodes, altRoadNodes)
+            end
         else
-            checkpoints = processRoadNodes(roadNodes)
+            if race.checkpointIndexs then
+                checkpoints = getNodeIndexCheckpoints(race.checkpointIndexs, roadNodes)
+            else
+                checkpoints = processRoadNodes(roadNodes)
+            end
             altCheckpoints = nil
         end
 
@@ -742,14 +838,15 @@ local function reset()
     activeRace = nil
 end
 
-local function onInit()
+local function onExtensionLoaded()
     print("Initializing Road Processing")
 end
 
 M.getCheckpoints = getCheckpoints
+M.getRoadNodesFromRace = getRoadNodesFromRace
 M.isLoop = isLoop
 M.reset = reset
 M.checkPlayerOnRoad = checkPlayerOnRoad
-M.onInit = onInit
+M.onExtensionLoaded = onExtensionLoaded
 
 return M

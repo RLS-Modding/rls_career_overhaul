@@ -87,12 +87,12 @@ function ActiveAssets:displayAssets(data)
     end
 end
 
-local function onInit()
+local function onExtensionLoaded()
     print("Initializing Active Assets")
 end
 
 
-M.onInit = onInit
+M.onExtensionLoaded = onExtensionLoaded
 M.ActiveAssets = ActiveAssets
 
 return M

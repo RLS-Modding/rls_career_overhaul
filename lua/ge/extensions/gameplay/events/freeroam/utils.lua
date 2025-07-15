@@ -200,13 +200,16 @@ local function raceReward(goal, reward, time)
     end
 end
 
-local function driftReward(raceName, time, driftScore)
-    local race = races[raceName]
+local function driftReward(race, time, driftScore)
     local goalTime = race.bestTime
     local goalDrift = race.driftGoal
     local timeFactor = (goalTime / time) ^ 1.2
     local driftFactor = (driftScore / goalDrift) ^ 1.2
     return race.reward * timeFactor * driftFactor
+end
+
+local function hotlapMultiplier(lapCount)
+    return (10 / (1 + math.exp(-0.07*(lapCount - 17)))) - 1.35
 end
 
 local motivationalMessages = { -- Enthusiastic
@@ -409,7 +412,7 @@ local function loadRaceData()
     return {}
 end
 
-local function onInit()
+local function onExtensionLoaded()
     if getCurrentLevelIdentifier() then
         loadRaceData()
     end
@@ -424,13 +427,14 @@ M.displayMessage = displayMessage
 M.formatTime = formatTime
 M.raceReward = raceReward
 M.driftReward = driftReward
+M.hotlapMultiplier = hotlapMultiplier
 M.saveAndSetTrafficAmount = saveAndSetTrafficAmount
 M.restoreTrafficAmount = restoreTrafficAmount
 M.tableContains = tableContains
 M.hasFinishTrigger = hasFinishTrigger
 M.setActiveLight = setActiveLight
 M.loadRaceData = loadRaceData
-M.onInit = onInit
+M.onExtensionLoaded = onExtensionLoaded
 
 M.isPlayerInPursuit = function() return playerInPursuit end
 

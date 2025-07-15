@@ -599,7 +599,13 @@ local function spawnVehicle(inventoryId, replaceOption, callback)
       M.setMileage(inventoryId)
 
       vehObj:queueLuaCommand(string.format(
-        'local cert = extensions.vehicleCertifications.getCertifications() obj:queueGameEngineLua("career_modules_inventory.setCertifications(%s, " .. serialize(cert) .. ")")',
+        [[
+          local cert = {}
+          cert.power = powertrain.getDevicesByCategory("engine")[1].maxPower
+          cert.torque = powertrain.getDevicesByCategory("engine")[1].maxTorque
+          cert.weight = obj:calcBeamStats().total_weight
+          obj:queueGameEngineLua("career_modules_inventory.setCertifications(%s, " .. serialize(cert) .. ")")
+        ]],
         vehObj:getID()))
     end
 
