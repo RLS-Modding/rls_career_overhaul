@@ -69,7 +69,7 @@ onMounted(async () => {
     isRSVP.value = false
     meetTime.value = meetData.time
     meetLocation.value = meetData.location
-    meetType.value = meetData.type
+    meetType.value = meetData.typeName || meetData.type // Use typeName for display, fallback to type
     meetImage.value = meetData.preview
   }
   lua.career_modules_carmeets.requestRSVPData()
@@ -86,7 +86,7 @@ onMounted(async () => {
       selectedAttendance.value = attendanceLevelString;
       meetTime.value = data.time
       meetLocation.value = data.location
-      meetType.value = data.type
+      meetType.value = data.typeName || data.type // Use typeName for display, fallback to type
       meetImage.value = data.preview
     }
   })

@@ -28,7 +28,7 @@ local function goToTarget(speedMode)
     ai.setPath(path)
     ai.driveUsingPathWithTraffic({
         wpTargetList = path,
-        routeSpeedMode = 'legal'
+        routeSpeedMode = speedMode or 'legal'
     })
     ai.setParameters({
         trafficWaitTime = 0.005,
@@ -60,13 +60,13 @@ local function raceToTarget()
     })
 end
 
-local function returnTargetPosition(target, race)
+local function returnTargetPosition(target, race, speedMode)
     print("returnTargetPosition: " .. tostring(target))
     destination = target
     if race then
         raceToTarget()
     else
-        goToTarget()
+        goToTarget(speedMode)
     end
 end
 
