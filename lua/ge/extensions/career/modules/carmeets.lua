@@ -98,7 +98,7 @@ local meetTypes = {
         name = "Street Cruise",
         description = "High-performance cruising meet",
         baseReputationMultiplier = 1.5,
-        showcaseDuration = 20,
+        showcaseDuration = 10,
         preferredTimes = {0.875, 0.917, 0.958},
         timeWindow = 0.025,
         vehicleFilters = {
@@ -109,8 +109,8 @@ local meetTypes = {
         },
         actions = {
             onArrival = function(reputation)
-                saveAndReduceTraffic(0.5)
-                return "Ready to cruise!\nCruisers respect your ride!\nVehicle performance reputation increased by " .. reputation .. "%"
+                saveAndReduceTraffic(1)
+                return "Ready to cruise!\nCruisers respect your ride!\nCommunity reputation increased by " .. reputation .. "%"
             end,
             onShowcaseEnd = function(state)
                 state.phase = "cruise"
@@ -127,57 +127,107 @@ local meetTypes = {
             end
         },
         onUpdate = function(state, currentTime)
-            local function getCruiseDestination(meetLocation)
-                if not meetLocation then return nil end
-                
-                local meetCenter = meetLocation.position
-                local minDistance = 2000
-                local maxDistance = 10000
-                
-                local otherMeets = M.getCarMeetLocations()
-                local validDestinations = {}
-                
-                for name, location in pairs(otherMeets) do
-                    if name ~= meetLocation.zone.name then
-                        local distance = (location.position - meetCenter):length()
-                        if distance >= minDistance and distance <= maxDistance then
-                            table.insert(validDestinations, location.position)
-                        end
-                    end
-                end
-                
-                if #validDestinations > 0 then
-                    return validDestinations[math.random(#validDestinations)]
-                end
-                
-                local mapData = map.getMap()
-                if mapData and mapData.nodes then
-                    local validNodes = {}
-                    
-                    for nodeId, node in pairs(mapData.nodes) do
-                        if node.pos then
-                            local distance = (node.pos - meetCenter):length()
-                            if distance >= minDistance and distance <= maxDistance then
-                                table.insert(validNodes, node.pos)
+            local function getAiPath(path, vehIndex)
+                local aiPath = {}
+                local veh = be:getObject(vehIndex)
+                if not veh then return nil end
+                local firstWpAdded = false
+                local vehPos = veh:getPosition()
+                local vehFwd = veh:getDirectionVector()
+                local bestWp = nil
+                local bestDist = math.huge
+                local prevDot = nil
+                local prevWp = nil
+                local startDist = path[1] and path[1].distToTarget or 0
+                local firstValidWp = nil
+                -- find the first valid waypoint
+                for _, marker in ipairs(path) do
+                    if marker.wp then
+                        firstValidWp = marker.wp
+                        if not firstWpAdded then
+                            local toWp = (marker.pos - vehPos):normalized()
+                            local dot = toWp:dot(vehFwd)
+                            -- If we have a previous dot product and this one is lower, we found our local maximum
+                            if prevDot and dot < prevDot and prevDot > 0 then
+                                table.insert(aiPath, prevWp)
+                                firstWpAdded = true
                             end
+                            prevDot = dot
+                            prevWp = marker.wp
+                        else
+                            table.insert(aiPath, marker.wp)
                         end
                     end
-                    
-                    if #validNodes > 0 then
-                        return validNodes[math.random(#validNodes)]
+                end
+                -- If we haven't found a local maximum but have a positive dot product, use the last one
+                if not firstWpAdded and prevDot and prevDot > 0 then
+                    table.insert(aiPath, prevWp)
+                    firstWpAdded = true
+                end
+                -- fallback: if no waypoint is in front of vehicle, use the first waypoint that's 25m away and all other waypoints
+                if not firstWpAdded then
+                    for _, marker in ipairs(path) do
+                        if marker.wp and startDist - marker.distToTarget > 25 then
+                            table.insert(aiPath, marker.wp)
+                        end
                     end
                 end
-                
-                return nil
+                return aiPath
             end
             
             if state.phase == "cruise" then
                 if not state.flags.cruiseStarted then
+                    -- Find a cruise destination first
+                    local function getCruiseDestination(meetLocation)
+                        if not meetLocation then return nil end
+                        
+                        local meetCenter = meetLocation.position
+                        local minDistance = 2000
+                        local maxDistance = 20000
+                        
+                        local otherMeets = M.getCarMeetLocations()
+                        local validDestinations = {}
+                        
+                        for name, location in pairs(otherMeets) do
+                            if name ~= meetLocation.zone.name then
+                                local distance = (location.position - meetCenter):length()
+                                if distance >= minDistance and distance <= maxDistance then
+                                    table.insert(validDestinations, location.position)
+                                end
+                            end
+                        end
+                        
+                        if #validDestinations > 0 then
+                            return validDestinations[math.random(#validDestinations)]
+                        end
+                        
+                        local mapData = map.getMap()
+                        if mapData and mapData.nodes then
+                            local validNodes = {}
+                            
+                            for nodeId, node in pairs(mapData.nodes) do
+                                if node.pos then
+                                    local distance = (node.pos - meetCenter):length()
+                                    if distance >= minDistance and distance <= maxDistance then
+                                        table.insert(validNodes, node.pos)
+                                    end
+                                end
+                            end
+                            
+                            if #validNodes > 0 then
+                                return validNodes[math.random(#validNodes)]
+                            end
+                        end
+                        
+                        return nil
+                    end
+                    
                     state.flags.cruiseDestination = getCruiseDestination(state.location)
                     if state.flags.cruiseDestination then
-                        local message = "Follow the group to the cruise destination!"
+                        local message = "Follow the cruise route with the group!"
                         ui_message(message, 10, "info", "info")
                         
+                        -- Set ground markers to show the cruise route
                         local options = {
                             color = {0, 1, 0.4},
                             step = 4,
@@ -185,25 +235,77 @@ local meetTypes = {
                         }
                         core_groundMarkers.setPath(state.flags.cruiseDestination, options)
                         
-                        for _, vehID in ipairs(spawnedMeetVehicles) do
-                            local veh = getObjectByID(vehID)
-                            if veh then
-                                veh:queueLuaCommand('extensions.load("driver")')
-                                core_jobsystem.create(function(job)
-                                    job.sleep(0.5)
-                                    veh:queueLuaCommand('driver.returnTargetPosition(' .. serialize(state.flags.cruiseDestination) .. ', nil, "off")')
+                        -- Wait a moment for the route to be set up, then use it for AI
+                        core_jobsystem.create(function(job)
+                            job.sleep(1.0) -- Wait for route planner to process
+                            
+                            local rp = core_groundMarkers.routePlanner
+                            if rp and rp.path and #rp.path > 0 then
+                                -- Get route start position for distance calculations
+                                local routeStartPos = rp.path[1] and rp.path[1].pos or state.flags.cruiseDestination
+                                
+                                -- Create a table of vehicles with their distances to route start
+                                local vehicleDistances = {}
+                                for _, vehID in ipairs(spawnedMeetVehicles) do
+                                    local veh = getObjectByID(vehID)
+                                    if veh then
+                                        local vehPos = veh:getPosition()
+                                        local distance = (vehPos - routeStartPos):length()
+                                        table.insert(vehicleDistances, {
+                                            id = vehID,
+                                            vehicle = veh,
+                                            distance = distance
+                                        })
+                                    end
+                                end
+                                
+                                -- Sort vehicles by distance (closest first)
+                                table.sort(vehicleDistances, function(a, b)
+                                    return a.distance < b.distance
                                 end)
+                                
+                                -- Set up the cruise route for AI vehicles, starting with closest ones
+                                for i, vehData in ipairs(vehicleDistances) do
+                                    job.sleep(1.5)
+                                    
+                                    local veh = vehData.vehicle
+                                    if veh then
+                                        local vehIndex = -1
+                                        for j = 0, be:getObjectCount()-1 do
+                                            if be:getObject(j) and be:getObject(j):getID() == vehData.id then
+                                                vehIndex = j
+                                                break
+                                            end
+                                        end
+                                        
+                                        if vehIndex >= 0 then
+                                            local aiPath = getAiPath(rp.path, vehIndex)
+                                            if aiPath and #aiPath > 0 then
+                                                local pathStr = '{wpTargetList = '..serialize(aiPath)
+                                                pathStr = pathStr..', noOfLaps = 1, aggression = 0.5, avoidCars = "on"}'
+                                                veh:queueLuaCommand('ai.driveUsingPath('..pathStr..')')
+                                                veh:queueLuaCommand('ai.setRacing(true)')
+                                                veh:queueLuaCommand('ai.driveInLane("on")')
+                                                
+                                                print("Sending vehicle " .. vehData.id .. " (distance: " .. string.format("%.1f", vehData.distance) .. "m) on cruise route")
+                                            end
+                                        end
+                                    end
+                                end
                             end
-                        end
+                        end)
+                        
                         state.flags.cruiseStarted = true
+                        state.flags.routeEndCheckRadius = 50
+                        state.flags.routeEndPosition = state.flags.cruiseDestination
                     else
                         state.phase = "ending"
                     end
                 elseif not state.flags.playerReachedDestination then
                     local playerVeh = be:getPlayerVehicle(0)
-                    if playerVeh and state.flags.cruiseDestination then
-                        local distance = (playerVeh:getPosition() - state.flags.cruiseDestination):length()
-                        if distance < state.flags.cruiseDestinationRadius then
+                    if playerVeh and state.flags.routeEndPosition then
+                        local distance = (playerVeh:getPosition() - state.flags.routeEndPosition):length()
+                        if distance < state.flags.routeEndCheckRadius then
                             state.flags.playerReachedDestination = true
                             
                             local cruiseReputation = math.floor(math.random() * 50) / 10
@@ -213,7 +315,7 @@ local meetTypes = {
                             cruiseReputation = cruiseReputation * 1.2
                             cruiseReputation = math.max(cruiseReputation, 0.5)
                             
-                            local message = "Great cruise!\nYou kept up with the group!\nBonus reputation: " .. cruiseReputation .. "%"
+                            local message = "Great cruise!\nYou completed the route with the group!\nBonus reputation: " .. cruiseReputation .. "%"
                             ui_message(message, 10, "info", "info")
                             
                             local inventoryId = career_modules_inventory.getInventoryIdFromVehicleId(be:getPlayerVehicleID(0))
@@ -351,7 +453,6 @@ local function spawnVehicleOptimized(spot, meetType, forceVisible)
         
         if not forceVisible then
             vehicle:setHidden(true)
-            vehicle:queueLuaCommand('obj:setCollisionEnabled(false)')
         end
         
         table.insert(spawnedMeetVehicles, vehId)
@@ -373,13 +474,9 @@ local function checkVehicleVisible(playerPos, vehiclePos)
     local direction = endPos - startPos
     local distance = direction:length()
     
-    if distance > VEHICLE_VISIBLE_DISTANCE then
-        return false
-    end
-    
     direction:normalize()
     local hitDistance = castRayStatic(startPos, direction, distance)
-    return hitDistance >= distance * 0.95
+    return hitDistance >= distance * 0.90
 end
 
 local function updateVehicleVisibility()
@@ -399,10 +496,8 @@ local function updateVehicleVisibility()
             
             if shouldBeVisible and veh:isHidden() then
                 veh:setHidden(false)
-                veh:queueLuaCommand('obj:setCollisionEnabled(true)')
             elseif not shouldBeVisible and not veh:isHidden() then
                 veh:setHidden(true)
-                veh:queueLuaCommand('obj:setCollisionEnabled(false)')
             end
         else
             table.remove(spawnedMeetVehicles, i)
