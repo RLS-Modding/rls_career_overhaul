@@ -4,50 +4,43 @@ local luxuryPassenger = {
     name = "Luxury",
     description = "High-paying passengers who value comfort over speed",
     baseMultiplier = 0.7,
-    speedWeight = 0.3, -- Less concerned about speed
+    speedWeight = 0.3,
     distanceWeight = 1.2,
     selectionWeight = 2,
     fareWeights = {
-        {min = 0.5, max = 0.8, weight = 2}, -- 20% chance - standard luxury
-        {min = 0.8, max = 1.2, weight = 5}, -- 50% chance - premium luxury
-        {min = 1.5, max = 2.0, weight = 3}  -- 30% chance - ultra luxury
+        {min = 0.5, max = 0.8, weight = 2},
+        {min = 0.8, max = 1.2, weight = 5},
+        {min = 1.5, max = 2.0, weight = 3}
     },
     speedTolerance = 1.0,
     calculateReward = function(fare, elapsedTime, speedFactor, passengerType)
         local basePayment = fare.baseFare * (fare.totalDistance / 1000)
         
-        -- Luxury passengers prefer comfort over speed - custom speed calculation
         local actualSpeed = (fare.totalDistance / 1000) / elapsedTime
-        local suggestedSpeed = 18 -- m/s suggested speed
-        local minSpeed = 2 -- Minimum speed to qualify for bonuses
+        local suggestedSpeed = 18
+        local minSpeed = 2
         
         local speedModifier = 0
         if actualSpeed >= minSpeed then
-            -- Reward slower speeds, penalize faster speeds
             if actualSpeed <= suggestedSpeed then
-                -- Bonus for driving at or below suggested speed (comfort driving)
                 speedModifier = (suggestedSpeed - actualSpeed) / suggestedSpeed * 0.4
             else
-                -- Penalty for driving too fast (uncomfortable for luxury passengers)
                 speedModifier = -(actualSpeed - suggestedSpeed) / suggestedSpeed * 0.6
             end
         end
         
-        -- Add luxury-specific ride quality bonus/penalty
         local qualityBonus = 0
         if fare.rideQuality then
-            qualityBonus = fare.rideQuality.smoothness * 0.8 -- Heavy smoothness weight
+            qualityBonus = fare.rideQuality.smoothness * 0.8
             if fare.rideQuality.aggressiveEvents > 2 then
-                qualityBonus = qualityBonus - (fare.rideQuality.aggressiveEvents * 0.3) -- Heavy penalty
+                qualityBonus = qualityBonus - (fare.rideQuality.aggressiveEvents * 0.3)
             end
         end
         
-        -- Ensure final multiplier is never below 0.1 (minimum 10% payment)
         local finalMultiplier = math.max(0.1, 1 + speedModifier + qualityBonus)
         return basePayment * finalMultiplier
     end,
     onUpdate = function(fare, rideData, passengerType)
-        -- Luxury passengers are VERY sensitive to driving quality
         if not rideData.smoothnessScore then
             rideData.smoothnessScore = 100
             rideData.aggressiveEvents = 0
@@ -58,25 +51,23 @@ local luxuryPassenger = {
             local gx, gy, gz = rideData.currentSensorData.gx, rideData.currentSensorData.gy, rideData.currentSensorData.gz
             local totalGForce = math.sqrt(gx*gx + gy*gy + gz*gz)
             
-            -- Very strict thresholds for luxury passengers
-            if gy > 0.55 then -- Hard braking
+            if gy > 0.55 then
                 rideData.aggressiveEvents = rideData.aggressiveEvents + 1
                 ui_message("Luxury Passenger: Hard braking Detected", 2, "info", "info")
                 rideData.smoothnessScore = math.max(0, rideData.smoothnessScore - 10)
                 rideData.luxuryComfort = math.max(0, rideData.luxuryComfort - 15)
-            elseif gy < 0.5 then -- Hard acceleration
+            elseif gy < 0.5 then
                 rideData.aggressiveEvents = rideData.aggressiveEvents + 1
                 ui_message("Luxury Passenger: Hard acceleration Detected", 2, "info", "info")
                 rideData.smoothnessScore = math.max(0, rideData.smoothnessScore - 8)
                 rideData.luxuryComfort = math.max(0, rideData.luxuryComfort - 12)
-            elseif math.abs(gx) > 0.7 then -- Sharp turns
+            elseif math.abs(gx) > 0.7 then
                 rideData.aggressiveEvents = rideData.aggressiveEvents + 1
                 ui_message("Luxury Passenger: Sharp turn Detected", 2, "info", "info")
                 rideData.smoothnessScore = math.max(0, rideData.smoothnessScore - 8)
                 rideData.luxuryComfort = math.max(0, rideData.luxuryComfort - 10)
             end
             
-            -- Bonus for ultra-smooth driving
             if totalGForce < 0.3 then
                 rideData.luxuryComfort = math.min(100, rideData.luxuryComfort + 1)
             end
@@ -119,10 +110,7 @@ local luxuryPassenger = {
 }
 
 local function onExtensionLoaded()
-    print("Loading Luxury Passenger Type...")
-
     gameplay_taxi.registerPassengerType("LUXURY", luxuryPassenger)
-    print("Luxury passenger type registered successfully")
 end
 
 M.onExtensionLoaded = onExtensionLoaded
