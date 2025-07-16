@@ -1,33 +1,211 @@
 local M = {}
 M.dependencies = {'gameplay_sites_sitesManager', 'freeroam_facilities'}
 
-local dataToSend = {}
-
+-- ================================
+-- MODULE DEPENDENCIES
+-- ================================
 local core_groundMarkers = require('core/groundMarkers')
 
+-- ================================
+-- STATE VARIABLES
+-- ================================
+local dataToSend = {}
 local cumulativeReward = 0
 local fareStreak = 0
+local currentFare = nil
+local availableSeats = nil
+local state = "start"
+local timer = 0
+local updateTimer = 1
+local jobOfferTimer = 0
+local jobOfferInterval = math.random(5, 45)
 
-local distanceMultiplier = 4.5
-local suggestedSpeed = 18
+local currentVehiclePartsTree = nil
+local vehicleMultiplier = 0.1
 
 local parkingSpots = nil
 local validPickupSpots = nil
 
-local passengers = {}
-local currentPassengerRating = 0
-local currentPassengerType = "Standard"
-local vehicleMultiplier = 0.1
-local currentFare = nil
-local availableSeats = nil
-local updateTimer = 1
-local timer = 0
-local jobOfferTimer = 0
-local state = "start"
-local jobOfferInterval = math.random(5, 45)
+local distanceMultiplier = 4.5
+local suggestedSpeed = 18
 
-local currentVehiclePartsTree = nil
+M.rideData = {}
 
+-- ================================
+-- FORWARD DECLARATIONS
+-- ================================
+local requestTaxiState
+local startRide
+
+-- ================================
+-- PASSENGER TYPE SYSTEM
+-- ================================
+local passengerTypes = {
+    STANDARD = {
+        name = "Standard",
+        description = "Regular passengers who value speed and efficiency",
+        baseMultiplier = 1.0,
+        speedWeight = 1.0,
+        distanceWeight = 1.0,
+        selectionWeight = 5,
+        fareWeights = {
+            {min = 0.5, max = 0.8, weight = 3},
+            {min = 0.8, max = 1.2, weight = 5},
+            {min = 1.2, max = 1.5, weight = 2}
+        },
+        speedTolerance = 0.5,
+        calculateReward = function(fare, elapsedTime, speedFactor, passengerType)
+            local basePayment = fare.baseFare * (fare.totalDistance / 1000)
+            return basePayment * (1 + speedFactor * passengerType.speedWeight)
+        end,
+        onUpdate = nop,
+        getDescription = function(fare, passengerType)
+            return string.format("%s (%d passengers)", passengerType.name, fare.passengers)
+        end,
+        getPaymentLabel = function(fare, speedFactor, passengerType)
+            return speedFactor > 0 and "Speed Bonus" or "Time Penalty"
+        end
+    }
+}
+
+local function getPassengerType(typeKey)
+    return passengerTypes[typeKey]
+end
+
+local function selectRandomPassengerType()
+    local totalWeight = 0
+    for _, passengerType in pairs(passengerTypes) do
+        totalWeight = totalWeight + passengerType.selectionWeight
+    end
+    
+    local random = math.random() * totalWeight
+    local currentWeight = 0
+    
+    for typeKey, passengerType in pairs(passengerTypes) do
+        currentWeight = currentWeight + passengerType.selectionWeight
+        if random <= currentWeight then
+            return typeKey
+        end
+    end
+    
+    return "STANDARD"
+end
+
+local function registerPassengerType(key, passengerTypeData)
+    -- Set default values if not provided
+    passengerTypeData.baseMultiplier = passengerTypeData.baseMultiplier or 1.0
+    passengerTypeData.speedWeight = passengerTypeData.speedWeight or 1.0
+    passengerTypeData.distanceWeight = passengerTypeData.distanceWeight or 1.0
+    passengerTypeData.selectionWeight = passengerTypeData.selectionWeight or 1
+    passengerTypeData.speedTolerance = passengerTypeData.speedTolerance or 0.5
+    
+    -- Set default fare system
+    if not passengerTypeData.fareWeights and not passengerTypeData.fareRange then
+        passengerTypeData.fareWeights = {
+            {min = 0.5, max = 0.8, weight = 3},
+            {min = 0.8, max = 1.2, weight = 5},
+            {min = 1.2, max = 1.5, weight = 2}
+        }
+    end
+    
+    -- Set default functions if not provided
+    if not passengerTypeData.calculateReward then
+        passengerTypeData.calculateReward = function(fare, elapsedTime, speedFactor, passengerType)
+            local basePayment = fare.baseFare * (fare.totalDistance / 1000)
+            return basePayment * (1 + speedFactor * passengerType.speedWeight)
+        end
+    end
+    
+    if not passengerTypeData.getDescription then
+        passengerTypeData.getDescription = function(fare, passengerType)
+            return string.format("%s (%d passengers)", passengerType.name, fare.passengers)
+        end
+    end
+    
+    if not passengerTypeData.getPaymentLabel then
+        passengerTypeData.getPaymentLabel = function(fare, speedFactor, passengerType)
+            return speedFactor > 0 and "Speed Bonus" or "Time Penalty"
+        end
+    end
+    
+    if not passengerTypeData.onUpdate then
+        passengerTypeData.onUpdate = function(fare, rideData, passengerType)
+            -- Default: no special ride tracking
+        end
+    end
+
+    print("Adding passenger type: " .. passengerTypeData.name)
+    
+    table.insert(passengerTypes, passengerTypeData)
+    print("Registered new passenger type: " .. passengerTypeData.name)
+end
+
+local function getPassengerTypes()
+    local types = {}
+    for typeKey, passengerType in pairs(passengerTypes) do
+        table.insert(types, {
+            key = typeKey,
+            name = passengerType.name,
+            description = passengerType.description,
+            baseMultiplier = passengerType.baseMultiplier,
+            speedWeight = passengerType.speedWeight,
+            selectionWeight = passengerType.selectionWeight,
+            fareWeights = passengerType.fareWeights,
+            fareRange = passengerType.fareRange
+        })
+    end
+    return types
+end
+
+local function getCurrentPassengerType()
+    if currentFare and currentFare.passengerType then
+        return getPassengerType(currentFare.passengerType)
+    end
+    return nil
+end
+
+-- ================================
+-- SENSOR DATA HANDLING
+-- ================================
+local function updateSensorData()
+    if not currentFare or state ~= "dropoff" then
+        return
+    end
+    
+    local vehicle = be:getPlayerVehicle(0)
+    if not vehicle then return end
+    
+    vehicle:queueLuaCommand([[
+        local sensors = require('sensors')
+        if sensors then
+            local gx, gy, gz = sensors.gx or 0, sensors.gy or 0, sensors.gz or 0
+            local gx2, gy2, gz2 = sensors.gx2 or 0, sensors.gy2 or 0, sensors.gz2 or 0
+            obj:queueGameEngineLua('gameplay_taxi.receiveSensorData('..gx..','..gy..','..gz..','..gx2..','..gy2..','..gz2..')')
+        end
+    ]])
+end
+
+local function processSensorData(gx, gy, gz, gx2, gy2, gz2)
+    local grav = 9.81 -- Convert to G-force
+    M.rideData.currentSensorData = {
+        gx = gx / grav, gy = gy / grav, gz = gz / grav,
+        gx2 = gx2 / grav, gy2 = gy2 / grav, gz2 = gz2 / grav,
+        timestamp = os.time()
+    }
+
+    dump(M.rideData.currentSensorData)
+    
+    if currentFare and currentFare.passengerType then
+        local passengerType = getPassengerType(currentFare.passengerType)
+        if passengerType and passengerType.onUpdate then
+            passengerType.onUpdate(currentFare, M.rideData, passengerType)
+        end
+    end
+end
+
+-- ================================
+-- LOCATION AND SITE MANAGEMENT
+-- ================================
 local function findParkingSpots()
     local sitePath = gameplay_sites_sitesManager.getCurrentLevelSitesFileByName('city')
     if sitePath then
@@ -36,6 +214,25 @@ local function findParkingSpots()
     end
 end
 
+local function findValidPickupSpots()
+    local validPickupSpots = {}
+    if not be:getPlayerVehicle(0) then return end
+    local playerPos = be:getPlayerVehicle(0):getPosition()
+
+    if not parkingSpots then
+        findParkingSpots()
+    end
+    for _, spot in pairs(parkingSpots.objects) do
+        if spot.pos and (spot.pos - playerPos):length() < 500 then
+            table.insert(validPickupSpots, spot)
+        end
+    end
+    return validPickupSpots
+end
+
+-- ================================
+-- VEHICLE CAPACITY CALCULATIONS
+-- ================================
 local function retrievePartsTree()
     currentVehiclePartsTree = nil
     local vehicle = be:getPlayerVehicle(0)
@@ -67,7 +264,7 @@ local function specificCapcityCases(partName)
       return 10
     end
     return nil
-  end
+end
   
 local function cyclePartsTree(partData, seatingCapacity)
     for first, part in pairs(partData) do
@@ -107,7 +304,6 @@ local function calculateSeatingCapacity()
     return cyclePartsTree({currentVehiclePartsTree}, 0)
 end
 
--- New function to calculate seating capacity
 local function calculateCapacity(vehicleId)
     if not vehicleId then
         vehicleId = be:getPlayerVehicle(0):getID()
@@ -119,53 +315,23 @@ local function calculateCapacity(vehicleId)
         end
     end
     local seatingCapacity = calculateSeatingCapacity()
-    availableSeats = seatingCapacity - 1 -- Subtract the driver seat
+    availableSeats = seatingCapacity - 1
     dataToSend = {
         state = state,
         currentFare = currentFare,
         availableSeats = availableSeats,
         vehicleMultiplier = vehicleMultiplier,
         cumulativeReward = cumulativeReward,
-        fareStreak = fareStreak
+        fareStreak = fareStreak,
+        currentPassengerType = currentFare and currentFare.passengerTypeName or nil
     }
     guihooks.trigger('updateTaxiState', dataToSend)
     return availableSeats
 end
 
-local function findValidPickupSpots()
-    local validPickupSpots = {}
-    if not be:getPlayerVehicle(0) then return end
-    local playerPos = be:getPlayerVehicle(0):getPosition()
-
-    if not parkingSpots then
-        findParkingSpots()
-    end
-    for _, spot in pairs(parkingSpots.objects) do
-        if spot.pos and (spot.pos - playerPos):length() < 500 then
-            table.insert(validPickupSpots, spot)
-        end
-    end
-    return validPickupSpots
-end
-
-local function onEnterVehicleFinished()
-    validPickupSpots = findParkingSpots()
-end
-
-local function startRide(fare)
-    -- Calculate pickup path distance
-    if not fare and not currentFare then
-        print("No fare provided and no current fare")
-        return
-    end
-    if not currentFare then
-        currentFare = fare
-    end
-
-    currentFare.startTime = os.time()
-    state = "pickup"
-end
-
+-- ================================
+-- FARE GENERATION AND CALCULATION
+-- ================================
 local function calculatePassengerCount()
     if availableSeats <= 0 then
         return 0
@@ -173,7 +339,6 @@ local function calculatePassengerCount()
     local weights = {}
     local total = 0
 
-    -- Create weighted distribution (inverse relationship)
     for i = 1, availableSeats do
         weights[i] = (availableSeats - i + 1)
         total = total + weights[i]
@@ -188,49 +353,42 @@ local function calculatePassengerCount()
             return i
         end
     end
-    return 1 -- fallback
+    return 1
 end
 
-local function generateFareMultiplier()
-    -- Create weighted fare tiers
-    local fareWeights = {{
-        min = 0.5,
-        max = 0.8,
-        weight = 3
-    }, -- 30% chance
-    {
-        min = 0.8,
-        max = 1.2,
-        weight = 5
-    }, -- 50% chance (average)
-    {
-        min = 1.2,
-        max = 1.5,
-        weight = 2
-    } -- 20% chance
-    }
-
-    -- Calculate total weight
-    local totalWeight = 0
-    for _, tier in ipairs(fareWeights) do
-        totalWeight = totalWeight + tier.weight
+local function generateFareMultiplier(passengerTypeKey)
+    local passengerType = getPassengerType(passengerTypeKey)
+    if not passengerType then
+        passengerType = getPassengerType("STANDARD")
     end
-
-    -- Select random tier
-    local random = math.random(totalWeight)
-    local currentWeight = 0
-    local selectedTier
-
-    for _, tier in ipairs(fareWeights) do
-        currentWeight = currentWeight + tier.weight
-        if random <= currentWeight then
-            selectedTier = tier
-            break
+    
+    if passengerType.fareWeights then
+        local fareWeights = passengerType.fareWeights
+        
+        local totalWeight = 0
+        for _, tier in ipairs(fareWeights) do
+            totalWeight = totalWeight + tier.weight
         end
+        
+        local random = math.random(totalWeight)
+        local currentWeight = 0
+        local selectedTier
+        
+        for _, tier in ipairs(fareWeights) do
+            currentWeight = currentWeight + tier.weight
+            if random <= currentWeight then
+                selectedTier = tier
+                break
+            end
+        end
+        
+        return math.random(selectedTier.min * 100, selectedTier.max * 100) / 100
+    else
+        local fareRange = passengerType.fareRange or {0.8, 1.2}
+        local min = fareRange[1]
+        local max = fareRange[2]
+        return math.random(min * 100, max * 100) / 100
     end
-
-    -- Generate random multiplier within selected tier
-    return math.random(selectedTier.min * 100, selectedTier.max * 100) / 100
 end
 
 local function generateValueMultiplier()
@@ -247,17 +405,14 @@ local function generateValueMultiplier()
 end
 
 local function generateJob()
-    -- Find nearby pickup spots (within 300m)
     validPickupSpots = findValidPickupSpots()
     if not validPickupSpots or #validPickupSpots == 0 then
         print("No nearby pickup locations found!")
         return false
     end
 
-    -- Select random pickup spot
     local pickupSpot = validPickupSpots[math.random(#validPickupSpots)]
 
-    -- Find valid dropoff spots (min 600m from pickup)
     local dropoffSpots = {}
     local minDistance = 600
     for _, spot in pairs(parkingSpots.objects) do
@@ -266,7 +421,6 @@ local function generateJob()
         end
     end
 
-    -- Fallback if no valid dropoff spots found
     if #dropoffSpots == 0 then
         local randomDir = vec3(math.random() - 0.5, math.random() - 0.5, 0):normalized()
         local destPos = pickupSpot.pos + randomDir * math.random(600, 2000)
@@ -276,27 +430,37 @@ local function generateJob()
         }}
     end
 
-    -- Select random dropoff spot
     local dropoffSpot = dropoffSpots[math.random(#dropoffSpots)]
 
-    -- Calculate passenger count
     if not availableSeats or availableSeats == 0 then
         calculateCapacity(be:getPlayerVehicle(0):getID())
     end
 
     local valueMultiplier = generateValueMultiplier()
-
     local passengerCount = calculatePassengerCount()
+    local selectedPassengerTypeKey = selectRandomPassengerType()
+    local selectedPassengerType = getPassengerType(selectedPassengerTypeKey)
+    local fareMultiplier = generateFareMultiplier(selectedPassengerTypeKey)
 
-    local fareMultiplier = generateFareMultiplier()
-
-    local baseFare = fareMultiplier * 100 * (passengerCount ^ 0.5) * valueMultiplier * distanceMultiplier * ((fareStreak + 1) ^ 0.5)
+    local baseFare = fareMultiplier * 100 * (passengerCount ^ 0.5) * valueMultiplier * distanceMultiplier * ((fareStreak + 1) ^ 0.5) * selectedPassengerType.baseMultiplier
 
     if career_career and career_career.isActive() and career_modules_hardcore.isHardcoreMode() then
         baseFare = baseFare * 0.66
     end
 
-    -- Create fare details
+    if selectedPassengerType.fareWeights then
+        local minFare = selectedPassengerType.fareWeights[1].min
+        local maxFare = selectedPassengerType.fareWeights[1].max
+        
+        for _, tier in ipairs(selectedPassengerType.fareWeights) do
+            minFare = math.min(minFare, tier.min)
+            maxFare = math.max(maxFare, tier.max)
+        end
+        
+        local normalized = (fareMultiplier - minFare) / (maxFare - minFare)
+        passengerRating = 1 + (normalized * 4)
+    end
+
     local fare = {
         pickup = {
             pos = pickupSpot.pos
@@ -306,7 +470,10 @@ local function generateJob()
         },
         baseFare = baseFare,
         passengers = passengerCount,
-        passengerRating = string.format("%.1f", (fareMultiplier / 1.5) * 5)
+        passengerRating = string.format("%.1f", passengerRating),
+        passengerType = selectedPassengerTypeKey,
+        passengerTypeName = selectedPassengerType.name,
+        passengerDescription = selectedPassengerType.description
     }
     currentFare = fare
     return fare
@@ -322,6 +489,23 @@ local function calculateSpeedFactor()
     return (actualSpeed - suggestedSpeed) / suggestedSpeed
 end
 
+-- ================================
+-- JOB LIFECYCLE MANAGEMENT
+-- ================================
+startRide = function(fare)
+    if not fare and not currentFare then
+        print("No fare provided and no current fare")
+        return
+    end
+    if not currentFare then
+        currentFare = fare
+    end
+
+    currentFare.startTime = os.time()
+    state = "pickup"
+    M.rideData = {}
+end
+
 local function completeRide()
     if not currentFare then
         return
@@ -329,13 +513,15 @@ local function completeRide()
 
     local elapsedTime = os.difftime(os.time(), currentFare.startTime)
     local speedFactor = calculateSpeedFactor()
+    
+    local passengerType = getPassengerType(currentFare.passengerType)
+    if not passengerType then
+        passengerType = getPassengerType("STANDARD")
+    end
 
     fareStreak = fareStreak + 1
 
-    -- Base payment calculation using actual path distance
-    local basePayment = currentFare.baseFare * (currentFare.totalDistance / 1000)
-
-    local finalPayment = basePayment * (1 + speedFactor)
+    local finalPayment = passengerType.calculateReward(currentFare, elapsedTime, speedFactor, passengerType)
 
     cumulativeReward = cumulativeReward + finalPayment
 
@@ -355,14 +541,16 @@ local function completeRide()
         availableSeats = availableSeats,
         vehicleMultiplier = vehicleMultiplier,
         cumulativeReward = cumulativeReward,
-        fareStreak = fareStreak
+        fareStreak = fareStreak,
+        currentPassengerType = currentFare and currentFare.passengerTypeName or nil
     }
     guihooks.trigger('updateTaxiState', dataToSend)
-    --dump(dataToSend)
 
-    local label = string.format("Taxi fare (%d passengers): $%d\nDistance: %.2fkm | %s: x %.2f", currentFare.passengers,
-        currentFare.totalFare, currentFare.totalDistance, speedFactor > 0 and "Speed Bonus" or "Time Penalty",
-        currentFare.timeMultiplier)
+    local fareDescription = passengerType.getDescription(currentFare, passengerType)
+    local paymentLabel = passengerType.getPaymentLabel(currentFare, speedFactor, passengerType)
+    
+    local label = string.format("Taxi fare: %s: $%s\nDistance: %.2fkm | %s: x %.2f", 
+        fareDescription, currentFare.totalFare, currentFare.totalDistance, paymentLabel, currentFare.timeMultiplier)
     
     if not career_career or not career_career.isActive() then
         return
@@ -383,7 +571,7 @@ local function completeRide()
         label = label,
         tags = {"transport", "taxi"}
     }, true)
-
+    core_groundMarkers.resetAll()
     career_modules_inventory.addTaxiDropoff(career_modules_inventory.getInventoryIdFromVehicleId(be:getPlayerVehicleID(0)), currentFare.passengers)
     core_groundMarkers.resetAll()
 end
@@ -409,6 +597,50 @@ local function stopTaxiJob()
     dataToSend = {}
 end
 
+local function setAvailable()
+    state = "ready"
+    jobOfferTimer = 0
+    jobOfferInterval = math.random(5, 45)
+    dataToSend = {}
+    requestTaxiState()
+end
+
+-- ================================
+-- UI AND DATA MANAGEMENT
+-- ================================
+local function prepareTaxiJob()
+    calculateCapacity(be:getPlayerVehicle(0):getID())
+    local multiplier = generateValueMultiplier()
+    return {
+        seats = availableSeats,
+        multiplier = string.format("%.1f", multiplier)
+    }
+end
+
+requestTaxiState = function()
+    prepareTaxiJob()
+    dataToSend = {
+        state = state,
+        currentFare = currentFare,
+        availableSeats = availableSeats,
+        vehicleMultiplier = vehicleMultiplier,
+        cumulativeReward = cumulativeReward,
+        fareStreak = fareStreak,
+        currentPassengerType = currentFare and currentFare.passengerTypeName or nil
+    }
+    guihooks.trigger('updateTaxiState', dataToSend)
+end
+
+local function getTaxiJob()
+    prepareTaxiJob()
+    if not currentFare then
+        startRide(generateJob())
+    end
+end
+
+-- ================================
+-- UPDATE LOOP
+-- ================================
 local function update(_, dt)
     timer = timer + dt
     if timer < updateTimer then
@@ -430,21 +662,25 @@ local function update(_, dt)
             state = "dropoff"
             core_groundMarkers.setPath(currentFare.destination.pos)
             local dropoffDistance = core_groundMarkers.getPathLength()
-            currentFare.startTime = os.time() -- Reset timer for trip
+            currentFare.startTime = os.time()
             currentFare.totalDistance = currentFare.totalDistance + dropoffDistance
+            M.rideData = {}
             dataToSend = {
                 state = state,
                 currentFare = currentFare,
                 availableSeats = availableSeats,
                 vehicleMultiplier = vehicleMultiplier,
                 cumulativeReward = cumulativeReward,
-                fareStreak = fareStreak
+                fareStreak = fareStreak,
+                currentPassengerType = currentFare and currentFare.passengerTypeName or nil
             }
             guihooks.trigger('updateTaxiState', dataToSend)
         end
     end
 
     if currentFare and state == "dropoff" then
+        updateSensorData()
+        
         local vehicle = be:getPlayerVehicle(0)
         local vehiclePos = vehicle:getPosition()
         local destDist = (vehiclePos - currentFare.destination.pos):length()
@@ -469,7 +705,8 @@ local function update(_, dt)
                 availableSeats = availableSeats,
                 vehicleMultiplier = vehicleMultiplier,
                 cumulativeReward = cumulativeReward,
-                fareStreak = fareStreak
+                fareStreak = fareStreak,
+                currentPassengerType = newFare and newFare.passengerTypeName or nil
             }
             guihooks.trigger('updateTaxiState', dataToSend)
 
@@ -479,49 +716,14 @@ local function update(_, dt)
     end
 end
 
-local function prepareTaxiJob()
-    calculateCapacity(be:getPlayerVehicle(0):getID())
-    local multiplier = generateValueMultiplier()
-    return {
-        seats = availableSeats,
-        multiplier = string.format("%.1f", multiplier)
-    }
+-- ================================
+-- EVENT HANDLERS
+-- ================================
+local function onEnterVehicleFinished()
+    validPickupSpots = findParkingSpots()
 end
 
-local function getTaxiJob()
-    prepareTaxiJob()
-    if not currentFare then
-        startRide(generateJob())
-    end
-end
-
-local function requestTaxiState()
-    prepareTaxiJob()
-    dataToSend = {
-        state = state,
-        currentFare = currentFare,
-        availableSeats = availableSeats,
-        vehicleMultiplier = vehicleMultiplier,
-        cumulativeReward = cumulativeReward,
-        fareStreak = fareStreak
-    }
-    guihooks.trigger('updateTaxiState', dataToSend)
-end
-
-local function setAvailable()
-    state = "ready"
-    jobOfferTimer = 0
-    jobOfferInterval = math.random(5, 45)
-    dataToSend = {}
-    requestTaxiState()
-end
-
-function M.returnPartsTree(partsTree)
-    currentVehiclePartsTree = partsTree
-    calculateCapacity()
-end
-
-function M.onVehicleSwitched()
+local function onVehicleSwitched()
     currentVehiclePartsTree = nil
     if gameplay_walk.isWalking() then
         state = "start"
@@ -537,27 +739,81 @@ function M.onVehicleSwitched()
             availableSeats = availableSeats,
             vehicleMultiplier = vehicleMultiplier,
             cumulativeReward = cumulativeReward,
-            fareStreak = fareStreak
+            fareStreak = fareStreak,
+            currentPassengerType = currentFare and currentFare.passengerTypeName or nil
         }
         guihooks.trigger('updateTaxiState', dataToSend)
     end
 end
 
+local function returnPartsTree(partsTree)
+    currentVehiclePartsTree = partsTree
+    calculateCapacity()
+end
+
+local function receiveSensorData(gx, gy, gz, gx2, gy2, gz2)
+    processSensorData(gx, gy, gz, gx2, gy2, gz2)
+end
+
+-- ================================
+-- MODULE LOADING SYSTEM
+-- ================================
+local function loadPassengerModules()
+    print("Initializing Taxi Passenger Modules")
+    
+    local passengersPath = "/lua/ge/extensions/gameplay/taxiPassengers/"
+    local files = FS:findFiles(passengersPath, "*.lua", -1, true, false)
+    
+    if files then
+        for _, filePath in ipairs(files) do
+            local filename = string.match(filePath, "([^/]+)%.lua$")
+            
+            if filename then
+                local extensionName = "gameplay_taxiPassengers_" .. filename
+                extensions.unload(extensionName)
+                setExtensionUnloadMode(extensionName, "manual")
+                print("Loaded taxi passenger module: " .. extensionName)
+            end
+        end
+    end
+    loadManualUnloadExtensions()
+end
+
+local function onExtensionLoaded()
+    print("Taxi module loaded, initializing passenger types...")
+    loadPassengerModules()
+end
+
+local function isTaxiJobActive()
+    return state ~= "start"
+end
+
+-- ================================
+-- MODULE EXPORTS
+-- ================================
+M.onExtensionLoaded = onExtensionLoaded
 M.onEnterVehicleFinished = onEnterVehicleFinished
 M.onUpdate = update
+M.onVehicleSwitched = onVehicleSwitched
 
 M.acceptJob = startRide
 M.rejectJob = rejectJob
 M.setAvailable = setAvailable
 M.stopTaxiJob = stopTaxiJob
-
-M.requestTaxiState = requestTaxiState
 M.generateJob = generateJob
 M.getTaxiJob = getTaxiJob
 M.prepareTaxiJob = prepareTaxiJob
+M.requestTaxiState = requestTaxiState
+M.isTaxiJobActive = isTaxiJobActive
 
-M.isTaxiJobActive = function()
-    return state ~= "start"
-end
+M.registerPassengerType = registerPassengerType
+M.getPassengerTypes = getPassengerTypes
+M.getCurrentPassengerType = getCurrentPassengerType
+M.selectRandomPassengerType = selectRandomPassengerType
+M.getPassengerType = getPassengerType
+
+M.updateSensorData = updateSensorData
+M.returnPartsTree = returnPartsTree
+M.receiveSensorData = receiveSensorData
 
 return M

@@ -53,7 +53,7 @@
             <!-- Pickup/Dropoff State -->
             <div class="bottom-panel" v-if="currentState === 'pickup' || currentState === 'dropoff'">
                 <div class="rider-details">
-                    <span class="rider-type">Standard</span> <span class="rider-info">★ {{ riderRating }}</span>
+                    <span class="rider-type">{{ riderType }}</span> <span class="rider-info">★ {{ riderRating }}</span>
                 </div>
                 <div class="ride-status">
                     {{ currentState === 'pickup' ? 'Picking up' : 'Dropping off' }} {{ riderCount }} passengers
@@ -78,7 +78,7 @@
             <!-- Accept Rider State -->
             <div class="bottom-panel rider" v-if="currentState === 'accept'">
                 <div class="rider-header">
-                    <span class="rider-type">Standard</span>
+                    <span class="rider-type">{{ riderType }}</span>
                     <button class="close-button" @click.stop="setState('reject')">
                         <BngIcon class="x-icon" :type="icons.xmark" />
                     </button>
@@ -219,6 +219,7 @@ const handleFare = () => {
     totalFare.value = Number(currentFare.value.totalFare ?? 0)
     distanceTraveled.value = Number(currentFare.value.totalDistance ?? 0)
     timeMultiplier.value = Number(currentFare.value.timeMultiplier ?? 1)
+    riderType.value = currentFare.value.passengerTypeName ?? 'Standard'
 }
 
 onMounted(() => {
@@ -229,6 +230,12 @@ onMounted(() => {
         vehicleMultiplier.value = state.vehicleMultiplier
         totalReward.value = state.cumulativeReward,
             fareStreak.value = state.fareStreak
+        
+        // Update passenger type if available from state
+        if (state.currentPassengerType) {
+            riderType.value = state.currentPassengerType
+        }
+        
         handleFare()
     })
     store.init()
