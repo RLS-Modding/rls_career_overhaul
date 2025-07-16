@@ -9,6 +9,8 @@ Welcome to the **RLS Career Overhaul** mod for BeamNG.drive! This mod enhances v
 - [RLS Career Overhaul v2.4.1 (0.36.4)](#rls-career-overhaul-v241-0364)
   - [Table of Contents](#table-of-contents)
   - [Installation](#installation)
+  - [Settings Manager](#settings-manager)
+    - [Available Settings](#available-settings)
   - [Overview](#overview)
   - [Features](#features)
     - [Freeroam Events](#freeroam-events)
@@ -86,6 +88,33 @@ Welcome to the **RLS Career Overhaul** mod for BeamNG.drive! This mod enhances v
    - Launch **BeamNG.drive**.
    - Go to **Mods Manager** in the game's settings.
    - Enable the **RLS Career Overhaul** mod.
+
+---
+
+## Settings Manager
+
+The **RLS Career Overhaul** includes a convenient settings manager accessible from the main menu:
+
+- **Access**: Look for the "Overhaul Manager" button in the main menu
+- **Interface**: Clean, modern UI with toggle switches for easy configuration
+
+### Available Settings
+
+- **Map Dev Mode**:
+  - **Purpose**: Enable developer mode for map editing and testing
+  - **Important**: When disabled, this setting clears the levels folder for all associated maps unless it's enabled
+  - **Use Case**: For modders and advanced users working with map modifications
+
+- **No Police Mode**:
+  - **Purpose**: Disable police enforcement in career mode
+  - **Effect**: Prevents police from spawning and pursuing players
+  - **Note**: Useful for peaceful gameplay sessions
+
+- **No Parked Mode**:
+  - **Purpose**: Remove parked vehicles from the world
+  - **Effect**: Clears static parked cars from maps for better performance or cleaner environments
+
+All settings are automatically saved and persist between game sessions. The settings are stored in `settings/RLS/careerOverhaul.json`.
 
 ---
 

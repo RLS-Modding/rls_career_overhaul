@@ -17,7 +17,7 @@ local validPickupSpots = nil
 local passengers = {}
 local currentPassengerRating = 0
 local currentPassengerType = "Standard"
-local vehicleMultiplier = 0
+local vehicleMultiplier = 0.1
 local currentFare = nil
 local availableSeats = nil
 local updateTimer = 1
@@ -243,7 +243,7 @@ local function generateValueMultiplier()
     end
     vehicleMultiplier = (career_modules_valueCalculator.getInventoryVehicleValue(inventoryId) / 30000) ^ 0.5
     vehicleMultiplier = string.format("%.1f", vehicleMultiplier)
-    return vehicleMultiplier
+    return math.max(vehicleMultiplier, 0.1)
 end
 
 local function generateJob()
@@ -409,7 +409,7 @@ local function stopTaxiJob()
     dataToSend = {}
 end
 
-local function update(dt)
+local function update(_, dt)
     timer = timer + dt
     if timer < updateTimer then
         return
