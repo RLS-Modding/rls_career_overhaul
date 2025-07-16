@@ -1,0 +1,50 @@
+<link rel="stylesheet" type="text/css" href="/ui/modModules/overhaulManager/overhaulManager.css" />
+
+<div class="overhaul-container">
+    <div class="overhaul-header">
+        <h2>{{message}}</h2>
+    </div>
+    
+    <div class="overhaul-content">
+        <p>Configure your career overhaul settings below:</p>
+        
+        <div class="toggle-section">
+            <div class="toggle-item">
+                <label class="toggle-label">
+                    <span class="toggle-text">Map Dev Mode</span>
+                    <div class="toggle-switch" ng-click="toggleMapDevMode()">
+                        <input type="checkbox" ng-model="toggles.mapDevMode" />
+                        <span class="toggle-slider" ng-class="{'active': toggles.mapDevMode}"></span>
+                    </div>
+                </label>
+                <p class="toggle-description">Enable developer mode for map editing and testing</p>
+            </div>
+            
+            <div class="toggle-item">
+                <label class="toggle-label">
+                    <span class="toggle-text">No Police Mode</span>
+                    <div class="toggle-switch" ng-click="toggleNoPoliceMode()">
+                        <input type="checkbox" ng-model="toggles.noPoliceMode" />
+                        <span class="toggle-slider" ng-class="{'active': toggles.noPoliceMode}"></span>
+                    </div>
+                </label>
+                <p class="toggle-description">Disable police enforcement in career mode</p>
+            </div>
+            
+            <div class="toggle-item">
+                <label class="toggle-label">
+                    <span class="toggle-text">No Parked Mode</span>
+                    <div class="toggle-switch" ng-click="toggleNoParkedMode()">
+                        <input type="checkbox" ng-model="toggles.noParkedMode" />
+                        <span class="toggle-slider" ng-class="{'active': toggles.noParkedMode}"></span>
+                    </div>
+                </label>
+                <p class="toggle-description">Remove parked vehicles from the world</p>
+            </div>
+        </div>
+        
+        <div class="back-button-container">
+            <button ng-click="goBack()" class="btn-back">Back to Menu</button>
+        </div>
+    </div>
+</div>

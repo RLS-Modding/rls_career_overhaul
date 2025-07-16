@@ -223,10 +223,10 @@ local function updateVehicleList(fromScratch)
       end
       randomVehicleInfos = util_configListGenerator.getRandomVehicleInfos(seller, 3, eligibleVehicles, "adjustedPopulation")
     else
-      -- Count how many vehicles this seller already has in the shop
+      -- Count how many vehicles this seller already has in the shop (excluding sold ones)
       local currentVehicleCount = 0
       for _, vehicleInfo in ipairs(vehiclesInShop) do
-        if vehicleInfo.sellerId == seller.id then
+        if vehicleInfo.sellerId == seller.id and not vehicleInfo.soldViewCounter then
           currentVehicleCount = currentVehicleCount + 1
         end
       end

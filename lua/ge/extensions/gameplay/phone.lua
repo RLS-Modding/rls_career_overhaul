@@ -50,6 +50,11 @@ local function onUpdate(dt)
     end
 end
 
+M.onUIPlayStateChanged = function(changed)
+    if changed then
+        isPhoneOpen = false
+    end
+end
 
 M.onUpdate = onUpdate
 M.onExtensionLoaded = onExtensionLoaded

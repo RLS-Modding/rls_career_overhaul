@@ -22,7 +22,20 @@ local function loadExtensions()
     setExtensionUnloadMode("gameplay_cab", "manual")
 end
 
+local function deactivateBeamMP()
+    local beammp = core_modmanager.getMods()["multiplayerbeammp"]
+    if beammp then
+        core_modmanager.deactivateMod("multiplayerbeammp")
+    end
+end
+
+deactivateBeamMP()
+
+setExtensionUnloadMode("rlsSettings", "manual")
+
 setExtensionUnloadMode("careerMaps", "manual")
+
+setExtensionUnloadMode("clearLevels", "manual")
 
 if not core_gamestate.state or core_gamestate.state.state ~= "career" then
     loadExtensions()
