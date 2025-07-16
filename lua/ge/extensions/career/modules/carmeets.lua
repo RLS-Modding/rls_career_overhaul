@@ -109,7 +109,7 @@ local meetTypes = {
         },
         actions = {
             onArrival = function(reputation)
-                saveAndReduceTraffic(1)
+                saveAndReduceTraffic(0.7)
                 return "Ready to cruise!\nCruisers respect your ride!\nCommunity reputation increased by " .. reputation .. "%"
             end,
             onShowcaseEnd = function(state)
