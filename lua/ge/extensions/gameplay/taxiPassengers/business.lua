@@ -8,6 +8,8 @@ local function onExtensionLoaded()
         speedWeight = 1.5,
         distanceWeight = 1.0,
         selectionWeight = 3,
+        seatRange = {nil, 10},
+        valueRange = {0.5, 2},
         fareWeights = {
             {min = 0.8, max = 1.2, weight = 2},
             {min = 1.2, max = 1.6, weight = 6},

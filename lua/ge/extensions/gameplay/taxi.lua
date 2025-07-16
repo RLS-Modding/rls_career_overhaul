@@ -48,6 +48,8 @@ local passengerTypes = {
         speedWeight = 1.0,
         distanceWeight = 1.0,
         selectionWeight = 5,
+        seatRange = {nil, nil},
+        valueRange = {nil, nil},
         fareWeights = {
             {min = 0.5, max = 0.8, weight = 3},
             {min = 0.8, max = 1.2, weight = 5},
@@ -58,7 +60,7 @@ local passengerTypes = {
             local basePayment = fare.baseFare * (fare.totalDistance / 1000)
             return basePayment * (1 + speedFactor * passengerType.speedWeight)
         end,
-        onUpdate = nop,
+        onUpdate = function() end,
         getDescription = function(fare, passengerType)
             return string.format("%s (%d passengers)", passengerType.name, fare.passengers)
         end,
@@ -72,16 +74,35 @@ local function getPassengerType(typeKey)
     return passengerTypes[typeKey]
 end
 
-local function selectRandomPassengerType()
+local function selectRandomPassengerType(valueMultiplier, availableSeats)
+    -- Filter passenger types based on seat and value multiplier requirements
+    local eligibleTypes = {}
     local totalWeight = 0
-    for _, passengerType in pairs(passengerTypes) do
-        totalWeight = totalWeight + passengerType.selectionWeight
+    
+    for typeKey, passengerType in pairs(passengerTypes) do
+        local seatsValid = (not availableSeats) or 
+                          (availableSeats >= (passengerType.seatRange[1] or 1) and 
+                           availableSeats <= (passengerType.seatRange[2] or 999))
+        
+        local valueValid = (not valueMultiplier) or 
+                          (valueMultiplier >= (passengerType.valueRange[1] or 0.0) and 
+                           valueMultiplier <= (passengerType.valueRange[2] or 999.0))
+        
+        if seatsValid and valueValid then
+            eligibleTypes[typeKey] = passengerType
+            totalWeight = totalWeight + passengerType.selectionWeight
+        end
+    end
+    
+    -- If no types are eligible, fall back to STANDARD
+    if totalWeight == 0 then
+        return "STANDARD"
     end
     
     local random = math.random() * totalWeight
     local currentWeight = 0
     
-    for typeKey, passengerType in pairs(passengerTypes) do
+    for typeKey, passengerType in pairs(eligibleTypes) do
         currentWeight = currentWeight + passengerType.selectionWeight
         if random <= currentWeight then
             return typeKey
@@ -98,6 +119,10 @@ local function registerPassengerType(key, passengerTypeData)
     passengerTypeData.distanceWeight = passengerTypeData.distanceWeight or 1.0
     passengerTypeData.selectionWeight = passengerTypeData.selectionWeight or 1
     passengerTypeData.speedTolerance = passengerTypeData.speedTolerance or 0.5
+    
+    -- Set default seat and value multiplier ranges as arrays
+    passengerTypeData.seatRange = passengerTypeData.seatRange or {nil, nil}
+    passengerTypeData.valueRange = passengerTypeData.valueRange or {nil, nil}
     
     -- Set default fare system
     if not passengerTypeData.fareWeights and not passengerTypeData.fareRange then
@@ -136,7 +161,7 @@ local function registerPassengerType(key, passengerTypeData)
 
     print("Adding passenger type: " .. passengerTypeData.name)
     
-    table.insert(passengerTypes, passengerTypeData)
+    passengerTypes[key] = passengerTypeData
     print("Registered new passenger type: " .. passengerTypeData.name)
 end
 
@@ -150,6 +175,8 @@ local function getPassengerTypes()
             baseMultiplier = passengerType.baseMultiplier,
             speedWeight = passengerType.speedWeight,
             selectionWeight = passengerType.selectionWeight,
+            seatRange = passengerType.seatRange,
+            valueRange = passengerType.valueRange,
             fareWeights = passengerType.fareWeights,
             fareRange = passengerType.fareRange
         })
@@ -438,7 +465,7 @@ local function generateJob()
 
     local valueMultiplier = generateValueMultiplier()
     local passengerCount = calculatePassengerCount()
-    local selectedPassengerTypeKey = selectRandomPassengerType()
+    local selectedPassengerTypeKey = selectRandomPassengerType(valueMultiplier, availableSeats)
     local selectedPassengerType = getPassengerType(selectedPassengerTypeKey)
     local fareMultiplier = generateFareMultiplier(selectedPassengerTypeKey)
 

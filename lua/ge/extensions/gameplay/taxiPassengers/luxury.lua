@@ -7,6 +7,8 @@ local luxuryPassenger = {
     speedWeight = 0.3,
     distanceWeight = 1.2,
     selectionWeight = 2,
+    seatRange = {nil, 5},
+    valueRange = {1, nil},
     fareWeights = {
         {min = 0.5, max = 0.8, weight = 2},
         {min = 0.8, max = 1.2, weight = 5},
