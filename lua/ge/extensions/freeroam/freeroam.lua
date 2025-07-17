@@ -94,6 +94,7 @@ M.setForceTrafficLoading = function(value)
 end
 
 local function onPlayerCameraReady()
+  if core_gamestate.state.state == "career" then return end
   local loadTraffic = gameplay_traffic.getState() == 'off' and settings.getValue('trafficLoadForFreeroam')
   local loadParkedVehicles = settings.getValue('trafficParkedVehicles')
 

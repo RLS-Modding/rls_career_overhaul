@@ -14,7 +14,7 @@ local imgui = ui_imgui
 local vehicleShopDirtyDate
 
 local vehicleDeliveryDelay = 60
-local vehicleOfferTimeToLive = 10 * 60
+local vehicleOfferTimeToLive = 15 * 60
 local dealershipTimeBetweenOffers = 1 * 60
 local vehiclesPerDealership = vehicleOfferTimeToLive / dealershipTimeBetweenOffers
 local salesTax = 0.07
@@ -31,6 +31,15 @@ local purchaseData
 
 local tether
 local tetherRange = 4 --meter
+
+-- Vehicle cache system for performance optimization
+local vehicleCache = {
+  starterVehicles = {},
+  regularVehicles = {},
+  dealershipCache = {},
+  lastCacheTime = 0,
+  cacheValid = false
+}
 
 local function convertKeysToStrings(t)
   local newTable = {}
@@ -147,9 +156,215 @@ local function getVehiclePartsValue(modelName, configKey)
   return totalValue
 end
 
+local function doesVehiclePassFiltersList(vehicleInfo, filters)
+  for filterName, parameters in pairs(filters) do
+    if filterName == "Years" then
+      -- years, which have a min and max
+      local vehicleYears = vehicleInfo.Years or vehicleInfo.aggregates.Years
+      if not vehicleYears then return false end
+      if parameters.min and (vehicleYears.min < parameters.min) or parameters.max and (vehicleYears.min > parameters.max) then
+        return false
+      end
+    elseif filterName ~= "Mileage" then
+      if parameters.min or parameters.max then
+        -- generic number attribute
+        local value = vehicleInfo[filterName] or (vehicleInfo.aggregates[filterName] and vehicleInfo.aggregates[filterName].min)
+        if not value or type(value) ~= "number" then return false end
+        if parameters.min and (value < parameters.min) or parameters.max and (value > parameters.max) then
+          return false
+        end
+      else
+        -- any other attribute that has a single value
+        local passed = false
+        for _, value in ipairs(parameters) do
+          if vehicleInfo[filterName] == value or (vehicleInfo.aggregates[filterName] and vehicleInfo.aggregates[filterName][value]) then
+            passed = true
+          end
+        end
+        if not passed then return false end
+      end
+    end
+  end
+  return true
+end
+
+local function doesVehiclePassFilter(vehicleInfo, filter)
+  if filter.whiteList and not doesVehiclePassFiltersList(vehicleInfo, filter.whiteList) then
+    return false
+  end
+  if filter.blackList and doesVehiclePassFiltersList(vehicleInfo, filter.blackList) then
+    return false
+  end
+  return true
+end
+
+local function cacheDealers()
+  log("I", "Career", "Caching vehicle configurations for dealerships...")
+  
+  local startTime = os.clock()
+  vehicleCache.cacheValid = false
+  vehicleCache.dealershipCache = {}
+  local totalPartsCalculated = 0
+  
+  -- Get base eligible vehicles (starter and regular)
+  local starterEligibleVehicles = util_configListGenerator.getEligibleVehicles(true) -- allowAuxiliaryVehicles = true for starters
+  local regularEligibleVehicles = util_configListGenerator.getEligibleVehicles()
+  
+  -- Normalize populations for both sets
+  normalizePopulations(starterEligibleVehicles, 0.4)
+  normalizePopulations(regularEligibleVehicles, 0.4)
+  
+  -- Cache the base vehicle sets
+  vehicleCache.starterVehicles = starterEligibleVehicles
+  vehicleCache.regularVehicles = regularEligibleVehicles
+  
+  -- Get all facilities and pre-cache filtered vehicles for each dealership type
+  local facilities = freeroam_facilities.getFacilities(getCurrentLevelIdentifier())
+  
+  if facilities and facilities.dealerships then
+    for _, dealership in ipairs(facilities.dealerships) do
+      local dealershipId = dealership.id
+      
+      -- Cache starter vehicles for this dealership if it supports them
+      if dealership.containsStarterVehicles then
+        local starterFilter = {whiteList = {careerStarterVehicle = {true}}}
+        local filteredStarters = {}
+        
+        for _, vehicleInfo in ipairs(starterEligibleVehicles) do
+          if doesVehiclePassFilter(vehicleInfo, starterFilter) then
+            -- Pre-calculate parts value during caching
+            local cachedVehicle = deepcopy(vehicleInfo)
+            cachedVehicle.cachedPartsValue = getVehiclePartsValue(vehicleInfo.model_key, vehicleInfo.key)
+            totalPartsCalculated = totalPartsCalculated + 1
+            table.insert(filteredStarters, cachedVehicle)
+          end
+        end
+        
+        vehicleCache.dealershipCache[dealershipId] = vehicleCache.dealershipCache[dealershipId] or {}
+        vehicleCache.dealershipCache[dealershipId].starterVehicles = filteredStarters
+        
+        log("D", "Career", string.format("Cached %d starter vehicles for dealership %s", #filteredStarters, dealershipId))
+      end
+      
+      -- Cache regular vehicles for this dealership
+      if dealership.filter or dealership.subFilters then
+        local filteredRegular = {}
+        local filters = {}
+        
+        -- Create aggregated filters like the original system
+        if dealership.subFilters and not tableIsEmpty(dealership.subFilters) then
+          for _, subFilter in ipairs(dealership.subFilters) do
+            local aggregateFilter = deepcopy(dealership.filter or {})
+            tableMergeRecursive(aggregateFilter, subFilter)
+            table.insert(filters, aggregateFilter)
+          end
+        else
+          table.insert(filters, dealership.filter or {})
+        end
+        
+        -- Pre-filter vehicles for each filter combination
+        for _, filter in ipairs(filters) do
+          for _, vehicleInfo in ipairs(regularEligibleVehicles) do
+            if doesVehiclePassFilter(vehicleInfo, filter) then
+              -- Add the filter info to the vehicle for later use and pre-calculate parts value
+              local cachedVehicle = deepcopy(vehicleInfo)
+              cachedVehicle.precomputedFilter = filter
+              cachedVehicle.cachedPartsValue = getVehiclePartsValue(vehicleInfo.model_key, vehicleInfo.key)
+              totalPartsCalculated = totalPartsCalculated + 1
+              table.insert(filteredRegular, cachedVehicle)
+            end
+          end
+        end
+        
+        vehicleCache.dealershipCache[dealershipId] = vehicleCache.dealershipCache[dealershipId] or {}
+        vehicleCache.dealershipCache[dealershipId].regularVehicles = filteredRegular
+        vehicleCache.dealershipCache[dealershipId].filters = filters
+        
+        log("D", "Career", string.format("Cached %d regular vehicles for dealership %s", #filteredRegular, dealershipId))
+      end
+    end
+  end
+  
+  -- Cache private seller vehicles (no specific filters, just use all regular vehicles)
+  local privateVehicles = deepcopy(regularEligibleVehicles)
+  for _, vehicleInfo in ipairs(privateVehicles) do
+    vehicleInfo.cachedPartsValue = getVehiclePartsValue(vehicleInfo.model_key, vehicleInfo.key)
+    totalPartsCalculated = totalPartsCalculated + 1
+  end
+  
+  vehicleCache.dealershipCache["private"] = {
+    regularVehicles = privateVehicles,
+    filters = {{}} -- empty filter
+  }
+  
+  vehicleCache.lastCacheTime = os.time()
+  vehicleCache.cacheValid = true
+  
+  local endTime = os.clock()
+  log("I", "Career", string.format("Vehicle cache completed in %.3f seconds. Cached %d dealership types with %d pre-calculated parts values.", 
+    endTime - startTime, tableSize(vehicleCache.dealershipCache), totalPartsCalculated))
+end
+
+local function getRandomVehicleFromCache(sellerId, count, isStarterVehicle)
+  if not vehicleCache.cacheValid then
+    log("W", "Career", "Vehicle cache invalid, rebuilding...")
+    cacheDealers()
+  end
+  
+  local dealershipData = vehicleCache.dealershipCache[sellerId]
+  if not dealershipData then
+    log("W", "Career", "No cached data for seller: " .. tostring(sellerId))
+    return {}
+  end
+  
+  local sourceVehicles
+  if isStarterVehicle and dealershipData.starterVehicles then
+    sourceVehicles = dealershipData.starterVehicles
+  else
+    sourceVehicles = dealershipData.regularVehicles or {}
+  end
+  
+  if tableIsEmpty(sourceVehicles) then
+    log("W", "Career", "No cached vehicles available for seller: " .. tostring(sellerId))
+    return {}
+  end
+  
+  local selectedVehicles = {}
+  local availableVehicles = deepcopy(sourceVehicles)
+  
+  for i = 1, math.min(count, #availableVehicles) do
+    -- Use weighted selection based on adjustedPopulation
+    local totalWeight = 0
+    for _, vehicle in ipairs(availableVehicles) do
+      totalWeight = totalWeight + (vehicle.adjustedPopulation or 1)
+    end
+    
+    if totalWeight <= 0 then
+      -- Fallback to random selection
+      local randomIndex = math.random(#availableVehicles)
+      table.insert(selectedVehicles, availableVehicles[randomIndex])
+      table.remove(availableVehicles, randomIndex)
+    else
+      -- Weighted random selection
+      local randomWeight = math.random() * totalWeight
+      local currentWeight = 0
+      
+      for j, vehicle in ipairs(availableVehicles) do
+        currentWeight = currentWeight + (vehicle.adjustedPopulation or 1)
+        if currentWeight >= randomWeight then
+          table.insert(selectedVehicles, vehicle)
+          table.remove(availableVehicles, j)
+          break
+        end
+      end
+    end
+  end
+  
+  return selectedVehicles
+end
+
 local function updateVehicleList(fromScratch)
   vehicleShopDirtyDate = os.date("!%Y-%m-%dT%XZ")
-  local eligibleVehicles
   local sellers = {}
   local onlyStarterVehicles = not career_career.hasBoughtStarterVehicle()
 
@@ -161,18 +376,20 @@ local function updateVehicleList(fromScratch)
   if onlyStarterVehicles and not tableIsEmpty(vehiclesInShop) then
     return
   end
+  
+  -- Ensure cache is valid
+  if not vehicleCache.cacheValid then
+    cacheDealers()
+  end
 
   -- get the dealerships from the level
   local facilities = deepcopy(freeroam_facilities.getFacilities(getCurrentLevelIdentifier()))
   for _, dealership in ipairs(facilities.dealerships) do
     if onlyStarterVehicles then
       if dealership.containsStarterVehicles then
-        dealership.filter = {whiteList = {careerStarterVehicle = {true}}}
-        dealership.subFilters = nil
         table.insert(sellers, dealership)
       end
     else
-      dealership.filter = dealership.filter or {}
       table.insert(sellers, dealership)
     end
   end
@@ -216,12 +433,8 @@ local function updateVehicleList(fromScratch)
 
     local randomVehicleInfos = {}
     if onlyStarterVehicles then
-      -- generate the starter vehicles
-      if not eligibleVehicles then
-        eligibleVehicles = util_configListGenerator.getEligibleVehicles(onlyStarterVehicles)
-        normalizePopulations(eligibleVehicles, 0.4)
-      end
-      randomVehicleInfos = util_configListGenerator.getRandomVehicleInfos(seller, 3, eligibleVehicles, "adjustedPopulation")
+      -- Use cached starter vehicles
+      randomVehicleInfos = getRandomVehicleFromCache(seller.id, 3, true)
     else
       -- Count how many vehicles this seller already has in the shop (excluding sold ones)
       local currentVehicleCount = 0
@@ -235,22 +448,31 @@ local function updateVehicleList(fromScratch)
       local maxStock = seller.stock or 10 -- fallback to 10 if no stock limit defined
       local availableSlots = math.max(0, maxStock - currentVehicleCount)
       
-      -- Scale restock speed based on dealership size (larger dealerships restock faster)
-      local stockScalingFactor = math.max(1, maxStock / 10) -- Larger dealerships get faster restock
-      local scaledTimeBetweenOffers = dealershipTimeBetweenOffers / stockScalingFactor
+      local numberOfVehiclesToGenerate = 0
       
-      local timeBasedGeneration = math.floor((currentTime - sellersInfos[seller.id].lastGenerationTime) / scaledTimeBetweenOffers)
-      local numberOfVehiclesToGenerate = math.min(timeBasedGeneration, availableSlots)
-  
+      if fromScratch or sellersInfos[seller.id].lastGenerationTime == 0 then
+        -- Fill stock completely on first generation or from scratch
+        numberOfVehiclesToGenerate = availableSlots
+        log("D", "Career", string.format("Initial stock fill for %s: generating %d vehicles", seller.id, numberOfVehiclesToGenerate))
+      else
+        -- Scale restock speed based on dealership size (larger dealerships restock faster)
+        local stockScalingFactor = math.max(1, maxStock / 10) -- Larger dealerships get faster restock
+        local scaledTimeBetweenOffers = dealershipTimeBetweenOffers / stockScalingFactor
         
-        -- generate the vehicles
-      for i = 1, numberOfVehiclesToGenerate do
-        if not eligibleVehicles then
-          eligibleVehicles = util_configListGenerator.getEligibleVehicles()
-          normalizePopulations(eligibleVehicles, 0.4)
+        local timeBasedGeneration = math.floor((currentTime - sellersInfos[seller.id].lastGenerationTime) / scaledTimeBetweenOffers)
+        
+        -- Ensure dealerships maintain at least 50% stock, generate more aggressively when stock is low
+        local stockPercentage = currentVehicleCount / maxStock
+        local minGenerationRate = 1
+        if stockPercentage < 0.5 then
+          minGenerationRate = math.ceil(maxStock * 0.1) -- Generate at least 10% of max stock when low
         end
-        arrayConcat(randomVehicleInfos, util_configListGenerator.getRandomVehicleInfos(seller, 1, eligibleVehicles, "adjustedPopulation"))
+        
+        numberOfVehiclesToGenerate = math.min(math.max(timeBasedGeneration, minGenerationRate), availableSlots)
       end
+  
+      -- Use cached regular vehicles
+      randomVehicleInfos = getRandomVehicleFromCache(seller.id, numberOfVehiclesToGenerate, false)
     end
 
     for i, randomVehicleInfo in ipairs(randomVehicleInfos) do
@@ -260,7 +482,11 @@ local function updateVehicleList(fromScratch)
 
       randomVehicleInfo.sellerId = seller.id
       randomVehicleInfo.sellerName = seller.name
-      local filter = randomVehicleInfo.filter
+      
+      -- Use precomputed filter if available, otherwise use seller filter
+      local filter = randomVehicleInfo.precomputedFilter or seller.filter or {}
+      randomVehicleInfo.filter = filter
+      
       local years = randomVehicleInfo.Years or randomVehicleInfo.aggregates.Years
 
       if not onlyStarterVehicles then
@@ -276,7 +502,8 @@ local function updateVehicleList(fromScratch)
         randomVehicleInfo.Mileage = starterVehicleMileages[randomVehicleInfo.model_key]
       end
 
-      local totalPartsValue = getVehiclePartsValue(randomVehicleInfo.model_key, randomVehicleInfo.key)
+      -- Use pre-calculated parts value from cache instead of recalculating
+      local totalPartsValue = randomVehicleInfo.cachedPartsValue or (getVehiclePartsValue(randomVehicleInfo.model_key, randomVehicleInfo.key) or 0)
       totalPartsValue = career_modules_valueCalculator.getDepreciatedPartValue(totalPartsValue, randomVehicleInfo.Mileage) * 1.081
       local baseValue = math.max(career_modules_valueCalculator.getAdjustedVehicleBaseValue(randomVehicleInfo.Value, {mileage = randomVehicleInfo.Mileage, age = 2025 - randomVehicleInfo.year}), totalPartsValue)
 
@@ -765,6 +992,9 @@ end
 local function onExtensionLoaded()
   if not career_career.isActive() then return false end
 
+  -- Initialize vehicle cache
+  cacheDealers()
+
   -- load from saveslot
   local saveSlot, savePath = career_saveSystem.getCurrentSaveSlot()
   if not saveSlot or not savePath then return end
@@ -821,6 +1051,16 @@ local function onComputerAddFunctions(menuData, computerFunctions)
   computerFunctions.general[computerFunctionData.id] = computerFunctionData
 end
 
+local function onModActivated()
+  cacheDealers()
+end
+
+local function onWorldReadyState(state)
+  if state == 2 then
+    cacheDealers()
+  end
+end
+
 M.openShop = openShop
 M.showVehicle = showVehicle
 M.navigateToPos = navigateToPos
@@ -843,6 +1083,8 @@ M.cancelPurchase = cancelPurchase
 
 M.getVehiclesInShop = getVehiclesInShop
 
+M.onWorldReadyState = onWorldReadyState
+M.onModActivated = onModActivated
 M.onClientStartMission = onClientStartMission
 M.onVehicleSpawnFinished = onVehicleSpawnFinished
 M.onAddedVehiclePartsToInventory = onAddedVehiclePartsToInventory
@@ -851,5 +1093,34 @@ M.onExtensionLoaded = onExtensionLoaded
 M.onSaveCurrentSaveSlot = onSaveCurrentSaveSlot
 M.onShoppingMenuClosed = onShoppingMenuClosed
 M.onComputerAddFunctions = onComputerAddFunctions
+
+local function getCacheStats()
+  if not vehicleCache.cacheValid then
+    return {valid = false, message = "Cache not initialized"}
+  end
+  
+  local stats = {
+    valid = true,
+    cacheTime = vehicleCache.lastCacheTime,
+    dealerships = {},
+    totalVehicles = 0
+  }
+  
+  for dealershipId, data in pairs(vehicleCache.dealershipCache) do
+    local dealershipStats = {
+      starterVehicles = data.starterVehicles and #data.starterVehicles or 0,
+      regularVehicles = data.regularVehicles and #data.regularVehicles or 0
+    }
+    dealershipStats.total = dealershipStats.starterVehicles + dealershipStats.regularVehicles
+    stats.dealerships[dealershipId] = dealershipStats
+    stats.totalVehicles = stats.totalVehicles + dealershipStats.total
+  end
+  
+  return stats
+end
+
+M.cacheDealers = cacheDealers
+M.getRandomVehicleFromCache = getRandomVehicleFromCache
+M.getCacheStats = getCacheStats
 
 return M

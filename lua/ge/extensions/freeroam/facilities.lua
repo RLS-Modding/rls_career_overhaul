@@ -77,6 +77,10 @@ local function parseFacilitiyFile(file, facilities, levelDir)
 end
 
 local function getFacilities(levelName)
+  if not levelName or levelName == '' then
+    log("E","","Tried to get facilities without level!")
+    return
+  end
   if not facilitiesByLevel[levelName] then
 
     -- init facility table
