@@ -468,6 +468,29 @@ local function addTaxiButtons()
       path = "taxi/",
       noUniqueID = true,
     }
+    buttonOptions.callTaxi = {
+      type = "walk",
+      label = function(options)
+        return "Call a taxi"
+      end,
+      order = 100,
+      menuTag = "taxi",
+      atFadeFunction = function()
+        gameplay_cab.callCab()
+        if career_career.isActive() then
+          career_modules_payment.pay({money = {amount = 50}}, {label = string.format("Called a taxi")})
+        end
+      end,
+      active = true,
+      enabled = true,
+      fadeStartSound = "event:>UI>Missions>Vehicle_Recover",
+      icon = "car",
+      fadeActive = false,
+      price = {money = {amount = 50}},
+      confirmationText = "Do you want to call a taxi?",
+      path = "taxi/",
+      noUniqueID = true,
+    }
 end
 
 local function onCareerModulesActivated(alreadyInLevel)

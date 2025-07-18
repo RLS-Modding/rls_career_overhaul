@@ -461,37 +461,8 @@ local function onUpdate(dtReal, dtSim, dtRaw)
   end
 end
 
-local function onExtensionLoaded()
-  local btn =     {
-    id = "callTaxi",
-    type = "walk",
-    label = function(options)
-      return "Call a taxi"
-    end,
-    menuTag = "taxi",
-    atFadeFunction = function()
-      callCab()
-      if career_career.isActive() then
-        career_modules_payment.pay({money = {amount = 50}}, {label = string.format("Called a taxi")})
-      end
-    end,
-    order = 25,
-    active = true,
-    enabled = true,
-    fadeStartSound = "event:>UI>Missions>Vehicle_Recover",
-    icon = "car",
-    fadeActive = false,
-    price = {money = {amount = 50}},
-    confirmationText = "Do you want to call a taxi?",
-    path = "taxi/",
-    noUniqueID = true,
-  }
-  core_recoveryPrompt.addButton(btn)
-end
-
 -- Public API
 M.callCab = callCab
-M.onExtensionLoaded = onExtensionLoaded
 M.onVehicleSwitched = onVehicleSwitched
 M.inCab = function() return cabState == "driving" end
 M.cabState = function() return cabState end
