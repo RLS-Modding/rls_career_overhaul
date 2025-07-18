@@ -367,10 +367,30 @@ local function updateVehicleList(fromScratch)
   vehicleShopDirtyDate = os.date("!%Y-%m-%dT%XZ")
   local sellers = {}
   local onlyStarterVehicles = not career_career.hasBoughtStarterVehicle()
+  local currentMap = getCurrentLevelIdentifier()
 
   if fromScratch then
     vehiclesInShop = {}
+    sellersInfos = {}
   end
+
+  -- Filter out vehicles and sellers from other maps
+  local filteredVehiclesInShop = {}
+  for i, vehicleInfo in ipairs(vehiclesInShop) do
+    if vehicleInfo.mapId == currentMap then
+      vehicleInfo.shopId = #filteredVehiclesInShop + 1
+      table.insert(filteredVehiclesInShop, vehicleInfo)
+    end
+  end
+  vehiclesInShop = filteredVehiclesInShop
+
+  local filteredSellersInfos = {}
+  for sellerId, sellerInfo in pairs(sellersInfos) do
+    if sellerInfo.mapId == currentMap then
+      filteredSellersInfos[sellerId] = sellerInfo
+    end
+  end
+  sellersInfos = filteredSellersInfos
 
   -- if there are already vehicles in the shop, don't generate starter vehicles
   if onlyStarterVehicles and not tableIsEmpty(vehiclesInShop) then
@@ -425,6 +445,7 @@ local function updateVehicleList(fromScratch)
     if not sellersInfos[seller.id] then
       sellersInfos[seller.id] = {
         lastGenerationTime = 0,
+        mapId = currentMap,
       }
     end
     if fromScratch then
@@ -546,6 +567,10 @@ local function updateVehicleList(fromScratch)
       if requiredInsurance then
         randomVehicleInfo.requiredInsurance = requiredInsurance
       end
+      
+      -- Add map ID to track which map this vehicle belongs to
+      randomVehicleInfo.mapId = currentMap
+      
       vehiclesInShop[randomVehicleInfo.shopId] = randomVehicleInfo
     end
     if not tableIsEmpty(randomVehicleInfos) then
@@ -1004,13 +1029,40 @@ local function onExtensionLoaded()
 
   local data = not outdated and jsonReadFile(savePath .. "/career/vehicleShop.json")
   if data then
+    local currentMap = getCurrentLevelIdentifier()
     vehiclesInShop = data.vehiclesInShop or {}
     sellersInfos = data.sellersInfos or {}
     vehicleShopDirtyDate = data.dirtyDate
 
+    -- Filter vehicles to only current map and fix missing mapId
+    local filteredVehicles = {}
     for _, vehicleInfo in ipairs(vehiclesInShop) do
       vehicleInfo.pos = vec3(vehicleInfo.pos)
+      -- If mapId is missing (old save), assume it belongs to current map
+      if not vehicleInfo.mapId then
+        vehicleInfo.mapId = currentMap
+      end
+      -- Only keep vehicles from current map
+      if vehicleInfo.mapId == currentMap then
+        vehicleInfo.shopId = #filteredVehicles + 1
+        table.insert(filteredVehicles, vehicleInfo)
+      end
     end
+    vehiclesInShop = filteredVehicles
+
+    -- Filter sellers to only current map and fix missing mapId  
+    local filteredSellers = {}
+    for sellerId, sellerInfo in pairs(sellersInfos) do
+      -- If mapId is missing (old save), assume it belongs to current map
+      if not sellerInfo.mapId then
+        sellerInfo.mapId = currentMap
+      end
+      -- Only keep sellers from current map
+      if sellerInfo.mapId == currentMap then
+        filteredSellers[sellerId] = sellerInfo
+      end
+    end
+    sellersInfos = filteredSellers
   end
 end
 
@@ -1057,6 +1109,38 @@ end
 
 local function onWorldReadyState(state)
   if state == 2 then
+    local currentMap = getCurrentLevelIdentifier()
+    local initialVehicleCount = #vehiclesInShop
+    local initialSellerCount = tableSize(sellersInfos)
+    
+    -- Filter out vehicles and sellers from other maps when changing maps
+    local filteredVehicles = {}
+    for _, vehicleInfo in ipairs(vehiclesInShop) do
+      if vehicleInfo.mapId == currentMap then
+        vehicleInfo.shopId = #filteredVehicles + 1
+        table.insert(filteredVehicles, vehicleInfo)
+      end
+    end
+    vehiclesInShop = filteredVehicles
+
+    local filteredSellers = {}
+    for sellerId, sellerInfo in pairs(sellersInfos) do
+      if sellerInfo.mapId == currentMap then
+        filteredSellers[sellerId] = sellerInfo
+      end
+    end
+    sellersInfos = filteredSellers
+    
+    local filteredVehicleCount = #vehiclesInShop
+    local filteredSellerCount = tableSize(sellersInfos)
+    
+    if initialVehicleCount > filteredVehicleCount or initialSellerCount > filteredSellerCount then
+      log("I", "Career", string.format("Map changed to %s: filtered %d vehicles (%d->%d) and %d sellers (%d->%d)", 
+        currentMap, 
+        initialVehicleCount - filteredVehicleCount, initialVehicleCount, filteredVehicleCount,
+        initialSellerCount - filteredSellerCount, initialSellerCount, filteredSellerCount))
+    end
+    
     cacheDealers()
   end
 end
@@ -1119,8 +1203,65 @@ local function getCacheStats()
   return stats
 end
 
+local function getMapStats()
+  local stats = {
+    currentMap = getCurrentLevelIdentifier(),
+    vehiclesByMap = {},
+    sellersByMap = {},
+    totalVehicles = #vehiclesInShop,
+    totalSellers = tableSize(sellersInfos)
+  }
+  
+  -- Count vehicles by map
+  for _, vehicleInfo in ipairs(vehiclesInShop) do
+    local mapId = vehicleInfo.mapId or "unknown"
+    stats.vehiclesByMap[mapId] = (stats.vehiclesByMap[mapId] or 0) + 1
+  end
+  
+  -- Count sellers by map
+  for sellerId, sellerInfo in pairs(sellersInfos) do
+    local mapId = sellerInfo.mapId or "unknown"
+    stats.sellersByMap[mapId] = (stats.sellersByMap[mapId] or 0) + 1
+  end
+  
+  return stats
+end
+
+local function clearDataFromOtherMaps(targetMap)
+  targetMap = targetMap or getCurrentLevelIdentifier()
+  
+  -- Filter vehicles
+  local filteredVehicles = {}
+  for _, vehicleInfo in ipairs(vehiclesInShop) do
+    if vehicleInfo.mapId == targetMap then
+      vehicleInfo.shopId = #filteredVehicles + 1
+      table.insert(filteredVehicles, vehicleInfo)
+    end
+  end
+  local removedVehicles = #vehiclesInShop - #filteredVehicles
+  vehiclesInShop = filteredVehicles
+
+  -- Filter sellers
+  local filteredSellers = {}
+  local removedSellers = 0
+  for sellerId, sellerInfo in pairs(sellersInfos) do
+    if sellerInfo.mapId == targetMap then
+      filteredSellers[sellerId] = sellerInfo
+    else
+      removedSellers = removedSellers + 1
+    end
+  end
+  sellersInfos = filteredSellers
+  
+  log("I", "Career", string.format("Cleared %d vehicles and %d sellers from other maps. Current map: %s", removedVehicles, removedSellers, targetMap))
+  
+  return {vehiclesRemoved = removedVehicles, sellersRemoved = removedSellers}
+end
+
 M.cacheDealers = cacheDealers
 M.getRandomVehicleFromCache = getRandomVehicleFromCache
 M.getCacheStats = getCacheStats
+M.getMapStats = getMapStats
+M.clearDataFromOtherMaps = clearDataFromOtherMaps
 
 return M

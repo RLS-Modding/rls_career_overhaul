@@ -377,8 +377,7 @@ local function formatSaveSlotForUi(saveSlot)
 
   -- Add preview image based on level
   local levelPreviewMap = {
-    west_coast_usa = "/ui/modules/career/profilePreview_WCUSA.jpg",
-    italy = "/ui/modules/career/profilePreview_Italy.jpg",
+    west_coast_usa = "/ui/modules/career/profilePreview_WCUSA.jpg"
   }
 
   -- Get level from save data
@@ -392,7 +391,16 @@ local function formatSaveSlotForUi(saveSlot)
   end
   
   if careerData and careerData.level then
-    data.preview = levelPreviewMap[careerData.level] or levelPreviewMap.west_coast_usa
+    if levelPreviewMap[careerData.level] then
+      data.preview = levelPreviewMap[careerData.level]
+    else
+      local preview = "/ui/modules/career/profilePreview_" .. careerData.level .. ".jpg"
+      if FS:fileExists(preview) then
+        data.preview = preview
+      else
+        data.preview = levelPreviewMap.west_coast_usa
+      end
+    end
   end
 
   local currentSaveSlot, _ = career_saveSystem.getCurrentSaveSlot()

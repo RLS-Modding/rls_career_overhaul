@@ -2,7 +2,6 @@ local function loadExtensions()
     print("Starting extension loading sequence")
     extensions.unload("freeroam_freeroam")
     
-    setExtensionUnloadMode("core_recoveryPrompt", "manual")
     extensions.unload("core_recoveryPrompt")
 
     setExtensionUnloadMode("core_gameContext", "manual")
