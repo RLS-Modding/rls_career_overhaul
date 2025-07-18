@@ -3,8 +3,6 @@ local M = {}
 
 M.dependencies = {'career_career'}
 
-local maps = {}
-
 local function switchMap(levelName)
     local currentLevel = getCurrentLevelIdentifier()
     if currentLevel == levelName then return end
@@ -43,28 +41,7 @@ local function onBeamNGTrigger(data)
     end
 end
 
-local function loadMapData()
-    if getCurrentLevelIdentifier() then
-        local level = "levels/" .. getCurrentLevelIdentifier() .. "/map_data.json"
-        local mapData = jsonReadFile(level)
-        if mapData then
-            maps = mapData.maps or {}
-        end
-        return deepcopy(maps)  
-    end
-    return {}
-end
-
-local function onWorldReadyState(state)
-    if state == 2 then
-        maps = loadMapData()
-    end
-end
-
 local function onExtensionLoaded()
-    if getCurrentLevelIdentifier() then
-        maps = loadMapData()
-    end
     print("Switch Map Extension Loaded")
 end
 
@@ -75,7 +52,7 @@ function M.onGetRawPoiListForLevel(levelIdentifier, elements)
     -- Look for any switchTo_ object from the available maps
     switchToObj = scenetree.findObject("switchMaps")
     if not switchToObj then
-        for level, levelName in pairs(maps) do
+        for level, levelName in pairs(careerMaps.getOtherAvailableMaps()) do
             local obj = scenetree.findObject("switchTo_" .. level)
             if obj then
                 switchToObj = obj
@@ -92,18 +69,13 @@ function M.onGetRawPoiListForLevel(levelIdentifier, elements)
     -- Create description listing all available maps
     local description = "Available maps to switch to:\n"
     local mapCount = 0
-    for level, levelName in pairs(maps) do
-        if not careerMaps then break end
-        local compatibleMaps = careerMaps.getOtherAvailableMaps()
-        if compatibleMaps[level] then
-            description = description .. "• " .. levelName .. "\n"
-            mapCount = mapCount + 1
-        end
+    for level, levelName in pairs(careerMaps.getOtherAvailableMaps(levelIdentifier)) do
+        description = description .. "• " .. levelName .. "\n"
+        mapCount = mapCount + 1
     end
     
-    -- Only create POI if there are maps available
     if mapCount > 0 then
-        local preview = "/levels/" .. levelIdentifier .. "/facilities/switchMap/west_coast_usa.jpg"
+        local preview = "/levels/" .. levelIdentifier .. "/facilities/switchMap.jpg"
         
         local poi = {
             id = "map_switcher",
@@ -122,6 +94,8 @@ function M.onGetRawPoiListForLevel(levelIdentifier, elements)
                 }
             }
         }
+
+        dump(poi)
         
         table.insert(elements, poi)
     end
