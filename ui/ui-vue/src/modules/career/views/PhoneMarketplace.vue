@@ -75,14 +75,18 @@
                     </div>
                     <div v-if="showOffers === vehicle.id" class="offers-container">
                         <template v-if="vehicleOffers(vehicle.id).length">
-                            <div v-for="(offer, index) in vehicleOffers(vehicle.id)" :key="`offer-${vehicle.id}-${index}`" class="offer-row">
+                            <div v-for="(offer, index) in vehicleOffers(vehicle.id)" :key="`offer-${vehicle.id}-${index}`" class="offer-row"
+                                 :style="{ opacity: offer.expiredViewCounter ? '0.6' : '1' }">
                                 <div class="offer-info">
                                     <span class="dealer-name">{{ offer.customer }}</span>
-                                    <span class="offer-amount">${{ formatValue(offer.value) }}</span>
+                                    <span class="offer-amount">${{ formatValue(offer.value) }}
+                                        <span v-if="offer.expiredViewCounter" class="expired-label">EXPIRED</span>
+                                    </span>
                                 </div>
                                 <div class="offer-actions">
                                     <button class="accept-btn"
-                                        @click="acceptOffer(vehicle.id, index)" :disabled="vehicle.vehicleData?.needsRepair">Accept</button>
+                                        @click="acceptOffer(vehicle.id, index)" 
+                                        :disabled="vehicle.vehicleData?.needsRepair || offer.expiredViewCounter">Accept</button>
                                     <button class="decline-btn"
                                         @click="declineOffer(vehicle.id, index)">Decline</button>
                                 </div>
@@ -645,6 +649,13 @@ const removeVehicleListing = (inventoryId) => {
     color: #4caf50;
     font-weight: 600;
     font-size: 14px;
+}
+
+.expired-label {
+    color: #ff4444;
+    font-size: 12px;
+    font-weight: 700;
+    margin-left: 8px;
 }
 
 .offer-actions {

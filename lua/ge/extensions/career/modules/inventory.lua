@@ -1429,6 +1429,13 @@ local function sellVehicle(inventoryId, price)
   local vehicle = vehicles[inventoryId]
   if not vehicle then return end
 
+  -- Prevent selling vehicles that are currently being rented or otherwise delayed
+  if vehicle.timeToAccess then
+    local reasonText = vehicle.delayReason == "rented" and "the vehicle is currently rented to the movie studio" or "the vehicle is not currently accessible"
+    log("W", "inventory", string.format("Cannot sell vehicle %d because %s", inventoryId, reasonText))
+    return false
+  end
+
   local value = price or career_modules_valueCalculator.getInventoryVehicleValue(inventoryId)
   career_modules_playerAttributes.addAttributes({money=value}, {tags={"vehicleSold","selling"},label="Sold a vehicle: "..(vehicle.niceName or "(Unnamed Vehicle)")}, true)
   removeVehicle(inventoryId)
