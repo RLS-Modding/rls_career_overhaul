@@ -531,28 +531,64 @@ local function highestOrderPlusOne()
   return highest + 1
 end
 
-local function addButton(id, label, atFadeFunction, order, message, active, enabled, fadeActive, icon)
+local function addButton(id, label, atFadeFunction, order, message, active, enabled, fadeActive, icon, additionalOptions)
+  local options = {}
+  
+  if type(id) == "table" then
+    options = id
+    id = options.id
+  else
+    options.id = id
+    options.label = label
+    options.atFadeFunction = atFadeFunction
+    options.order = order
+    options.message = message
+    options.active = active
+    options.enabled = enabled
+    options.fadeActive = fadeActive
+    options.icon = icon
+  end
+  
   if not id then log("E","","Tried creating button without ID!" ) return end
   if buttonOptions[id] and not buttonOptions[id].customButton then log("E","Tried to add a button, but it already exists and it's not a custom button, so it's not allowed! " .. dumps(id)) return end
+  
   -- fill some defaults for the button if it doesnt have them
-  if active == nil then active = true end
-  if fadeActive == nil then fadeActive = true end
+  local activeValue = options.active
+  local fadeActiveValue = options.fadeActive
+  if activeValue == nil then activeValue = true end
+  if fadeActiveValue == nil then fadeActiveValue = true end
+  
   local btn = {
-    label = label or "No Label!",
-    atFadeFunction = atFadeFunction or function() log("E","","No Function set for " .. dumps(id) ) end,
-    order = order or highestOrderPlusOne(),
-    message = message,
-    active = active,
-    enabled = enabled,
+    label = options.label or "No Label!",
+    type = options.type or "vehicle",
+    includeConditions = options.includeConditions or {},
+    enableConditions = options.enableConditions or {},
+    atFadeFunction = options.atFadeFunction or function() log("E","","No Function set for " .. dumps(id) ) end,
+    order = options.order or highestOrderPlusOne(),
+    startSlot = options.startSlot,
+    active = activeValue,
+    enabled = options.enabled,
+    fadeActive = fadeActiveValue,
+    fadeStartSound = options.fadeStartSound,
+    icon = options.icon,
+    confirmationText = options.confirmationText,
+    price = options.price,
+    message = options.message,
+    menuTag = options.menuTag,
+    path = options.path,
+    noUniqueID = options.noUniqueID,
+    keepMenuOpen = options.keepMenuOpen,
+    limit = options.limit,
+    count = options.count or 0,
     customButton = true,
-    fadeActive = fadeActive,
-    icon = icon,
-    uniqueID = id,
+    uniqueID = options.uniqueID or id,
   }
+  
   if buttonOptions[id] then
-    log("E","","Button for Id already exists and will be overwritten: " .. dumps(id) .. ": " .. dumps(buttonOptions[btn.id]))
+    log("E","","Button for Id already exists and will be overwritten: " .. dumps(id) .. ": " .. dumps(buttonOptions[id]))
   end
   buttonOptions[id] = btn
+  
   -- check if there's any collision for the orders
   local orders = {}
   for _, o in pairs(buttonOptions) do
