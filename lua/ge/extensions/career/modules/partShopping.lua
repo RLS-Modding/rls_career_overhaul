@@ -696,7 +696,7 @@ local function updateInstalledParts(addedParts, removedParts)
   core_vehicleBridge.executeAction(getCurrentVehicleObj(), 'initPartConditions', previewVehicle.partConditions, nil, nil, nil, career_modules_painting.getPrimerColor())
 
   getCurrentVehicleObj():queueLuaCommand("extensions.load('individualRepair')")
-  --career_modules_damageManager.repairPartsAndReloadState(currentVehicle, partPaths, partsToRemove)
+  career_modules_damageManager.repairPartsAndReloadState(currentVehicle, partPaths, partsToRemove)
 
   -- Doing the callback immediately will result in wrong values for some parts, so we do it one frame later
   core_vehicleBridge.requestValue(getCurrentVehicleObj(),
@@ -873,8 +873,8 @@ local function onComputerAddFunctions(menuData, computerFunctions)
     }
     -- vehicle broken
     if vehicleData.needsRepair then
-      computerFunctionData.label = "Part Customization"
-      computerFunctionData.disabled = true
+      computerFunctionData.label = "Part Customization (Experimental)"
+      computerFunctionData.disabled = false
     end
     -- tutorial active
     if menuData.tutorialTuningActive then
