@@ -165,8 +165,20 @@
     "generationChance":0.4,
     "duplicationChance":[0,0,0,0,0,0,0,1,0,0,0,0.75,0,0,0,0.5],
     "offerDuration":360,
-    "weight":[200,300,500,700,800],
+    "weight":[200,300,500],
     "modChance":{"timed":0.2}
   },
-
+  "hugeIndustrialGoods": {
+    "names":["Heavy Industrial Goods","Heavy Industrial Wares","Heavy Industrial Pallet","Heavy Industrial Box"],
+    "logisticTypes":["industrial"],
+    "slots":128,
+    "cargoType":"parcel",
+    "rarity":1,
+    "worth":0.8,
+    "generationChance":0.4,
+    "duplicationChance":[1,0,0,0.25,0,0,0,0.1],
+    "offerDuration":360,
+    "weight":[600,700,800],
+    "modChance":{"timed":0.2}
+  },
 }
