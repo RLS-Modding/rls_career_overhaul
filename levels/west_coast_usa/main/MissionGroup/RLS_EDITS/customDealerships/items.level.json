@@ -1,3 +1,5 @@
+{"name":"raceTab_icon_82","class":"BeamNGPointOfInterest","__parent":"customDealerships","position":[35.0738869,651.955933,76.8195343]}
+{"name":"raceTab_area_1","class":"BeamNGGameplayArea","__parent":"customDealerships","position":[35.0738869,651.955933,74.7200317],"scale":[2.27698231,2.27698231,3.37102032]}
 {"name":"trailershop_area","class":"BeamNGGameplayArea","__parent":"customDealerships","position":[-175.463333,-21.0524082,122.3871],"rotationMatrix":[-0.792249918,-0.609955966,-0.0171282589,-0.00530129671,-0.0211886168,0.999761283,-0.610173345,0.792151749,0.013553381],"scale":[1.71204567,1.5470742,1.54481983]}
 {"name":"trailershop_icon","class":"BeamNGPointOfInterest","__parent":"customDealerships","position":[-174.059036,-20.1474838,121.523972],"rotationMatrix":[-0.792249918,-0.609955966,-0.0171282589,-0.00530129671,-0.0211886168,0.999761283,-0.610173345,0.792151749,0.013553381]}
 {"name":"serviceDealer_icon","class":"BeamNGPointOfInterest","persistentId":"042402ad-f68f-4f39-b464-8f9e79c0405d","__parent":"customDealerships","position":[-1149.87781,-471.023224,106.541885],"rotationMatrix":[0.937472641,-0.348058879,0,0.348058879,0.937472641,0,0,0,1]}
