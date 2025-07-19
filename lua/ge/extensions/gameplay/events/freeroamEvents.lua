@@ -378,7 +378,10 @@ local function exitRace()
         Assets:hideAllAssets()
         checkpointManager.removeCheckpoints()
         utils.displayMessage("You exited the race zone, Race cancelled", 3)
-        utils.restoreTrafficAmount()
+        core_jobsystem.create(function(job)
+            job.sleep(10)
+            utils.restoreTrafficAmount()
+        end)
         pits.clearSpeedLimit()
         newBestSession = false
         if gameplay_drift_general.getContext() == "inChallenge" then
@@ -668,7 +671,10 @@ local function onBeamNGTrigger(data)
             mSplitTimes = {}
             mActiveRace = nil
             utils.setActiveLight(raceName, "red")
+            core_jobsystem.create(function(job)
+                job.sleep(10)
             utils.restoreTrafficAmount()
+            end)
             if career_career.isActive() then
                 career_modules_pauseTime.enablePauseCounter()
             end
