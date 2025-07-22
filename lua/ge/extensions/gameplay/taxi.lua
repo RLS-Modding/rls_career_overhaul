@@ -275,14 +275,16 @@ end
 
 local function specificCapcityCases(partName)
     if partName:find("capsule") and partName:find("seats") then
-      if partName:find("sd12m") then return 58
-      elseif partName:find("sd18m") then return 44
-      elseif partName:find("sd105") then return 25
+      if partName:find("sd12m") then return 25
+      elseif partName:find("sd18m") then return 41
+      elseif partName:find("sd105") then return 21
       elseif partName:find("sd_seats") then return 33
-      elseif partName:find("dd105") then return 58
-      elseif partName:find("sd195") then return 42
-      elseif partName:find("lh_seats") then return 70
-      elseif partName:find("artic") then return 107 end
+      elseif partName:find("dd105") then return 29
+      elseif partName:find("sd195") then return 43
+      elseif partName:find("lh_seats_upper") then return 53        
+      elseif partName:find("lh_seats") then return 17
+      elseif partName:find("capsule_rhd_artic_seats_upper") then return 77
+      elseif partName:find("capsule_rhd_artic_seats") then return 30 end
     end
     if partName:find("schoolbus_seats_R_c")  then
       return 10
