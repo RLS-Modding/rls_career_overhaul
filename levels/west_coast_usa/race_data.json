@@ -41,17 +41,17 @@
       "checkpoints":2,
       "displaySpeed":true,
       "label":"Drag Strip",
-      "reward":1000,
+      "reward":1650,
       "type":[
         "drag"
       ]
     },
     "dragHighway":{
-      "bestTime":17,
+      "bestTime":18,
       "checkpointRoad":"dragHighway",
       "displaySpeed":true,
       "label":"No Prep Highway Drag",
-      "reward":1700,
+      "reward":1900,
       "type":[
         "drag"
       ]
