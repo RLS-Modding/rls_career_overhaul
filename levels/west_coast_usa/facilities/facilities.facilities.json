@@ -126,6 +126,7 @@
         "painting":true,
         "partInventory":true,
         "partShop":true,
+        "sleep":true,
         "tuning":true,
         "vehicleInventory":true,
         "vehicleShop":true
@@ -159,6 +160,7 @@
         "painting":true,
         "partInventory":true,
         "partShop":true,
+        "sleep":true,
         "tuning":true,
         "vehicleInventory":true,
         "vehicleShop":true
