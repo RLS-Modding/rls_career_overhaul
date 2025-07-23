@@ -50,9 +50,4 @@
 {"name":"RLS_EDITS","class":"SimGroup","__parent":"MissionGroup"}
 {"name":"night_light","class":"SimGroup","__parent":"MissionGroup"}
 {"name":"night_light_shadow","class":"SimGroup","__parent":"MissionGroup"}
-{"name":"dragTuningPits_area","class":"BeamNGGameplayArea","__parent":"MissionGroup","position":[-221.585754,-228.857178,118.778564],"rotationMatrix":[0.863144636,0.504956901,0,-0.504956901,0.863144636,0,0,0,1],"scale":[9.5064106,30.0105782,1]}
-{"name":"dragTuningPits_icon","class":"BeamNGPointOfInterest","__parent":"MissionGroup","position":[-220.823288,-230.146515,120.16037]}
-{"name":"cabinGarage_area","class":"BeamNGGameplayArea","__parent":"MissionGroup","position":[-817.135071,-916.470581,157.567383],"rotationMatrix":[0.993330538,-0.115301408,0,0.115301408,0.993330538,0,0,0,1],"scale":[1,1.40194821,3.09606433]}
-{"name":"cabinGarage_icon","class":"BeamNGPointOfInterest","__parent":"MissionGroup","position":[-817.172546,-916.470032,158.059662]}
-{"name":"horizonEstate_area","class":"BeamNGGameplayArea","__parent":"MissionGroup","position":[-523.339905,-449.963318,117.595299],"rotationMatrix":[0.672391891,0.740195394,0,-0.740195394,0.672391891,0,0,0,1],"scale":[2.28113627,1.41772461,2.80672598]}
-{"name":"horizonEstate_icon","class":"BeamNGPointOfInterest","__parent":"MissionGroup","position":[-523.322205,-450.308899,118.948425]}
+{"class":"TSStatic","__parent":"MissionGroup","position":[523.755981,-720.659973,201.136002],"isRenderEnabled":false,"rotationMatrix":[-0.478354603,0.878166616,0,-0.878166616,-0.478354603,0,0,0,0.999999881],"shapeName":"/levels/west_coast_usa/art/hilltopvilla/hilltopvilla.dae","useInstanceRenderData":true}

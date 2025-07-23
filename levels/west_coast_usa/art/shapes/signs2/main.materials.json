@@ -1,0 +1,39 @@
+{
+  "rlstunnelsign2": {
+    "name": "rlstunnelsign2",
+    "mapTo": "rlstunnelsign2",
+    "class": "Material",
+    "Stages": [
+      {
+        "baseColorMap": "/levels/west_coast_usa/art/shapes/signs2/sign2d.color.png",
+        "detailBaseColorMapStrength": 0.340000004,
+        "detailMap": "/levels/west_coast_usa/art/shapes/signs2/sign2d_base_detail.color.png",
+        "detailScale": [
+          1,
+          1
+        ],
+        "metallicFactor": 0.342999995,
+        "metallicMap": "/levels/west_coast_usa/art/shapes/signs2/sign2d_m.data.png",
+        "opacityMap": "/levels/west_coast_usa/art/shapes/signs2/sign2d_opacity.data.png",
+        "roughnessMap": "/levels/west_coast_usa/art/shapes/signs2/sign2d_r.data.png"
+      },
+      {
+        "detailBaseColorMapStrength": null,
+        "detailScale": null,
+        "metallicFactor": null
+      },
+      {
+        "detailBaseColorMapStrength": null,
+        "detailScale": null,
+        "metallicFactor": null
+      },
+      {
+        "detailBaseColorMapStrength": null,
+        "detailScale": null,
+        "metallicFactor": null
+      }
+    ],
+    "translucentBlendOp": "None",
+    "version": 1.5
+  }
+}

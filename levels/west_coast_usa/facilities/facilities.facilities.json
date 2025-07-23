@@ -441,6 +441,38 @@
       "name":"52 Horizon Estate Dr",
       "preview":"servicestationgaragecomputer.jpg",
       "screens":{}
+    },
+    {
+      "activityAcceptProps":[
+        {
+          "keyLabel":"Vehicle & Parts Management"
+        }
+      ],
+      "description":"ui.career.computer.bigmapLabel.garage",
+      "doors":[
+        [
+          "hilltopGarage_area",
+          "hilltopGarage_icon"
+        ]
+      ],
+      "functions":{
+        "insurancePolicies":true,
+        "painting":true,
+        "partInventory":true,
+        "partShop":true,
+        "sleep":true,
+        "tuning":true,
+        "vehicleInventory":true,
+        "vehicleShop":true
+      },
+      "garageId":"hill_top_villa",
+      "icon":"poi_laptop_round",
+      "iconLift":0.2,
+      "iconOffsetHeight":0.15,
+      "id":"hilltopGarage",
+      "name":"Hill Top Villa",
+      "preview":"servicestationgaragecomputer.jpg",
+      "screens":{}
     }
   ],
   "garages":[
@@ -657,6 +689,30 @@
       "preview":"garage_servicestation.jpg",
       "zoneNames":[
         "horizonEstate_1"
+      ]
+    },
+    {
+      "capacity":9,
+      "defaultPrice":756000,
+      "description":"A new garage",
+      "icon":"poi_garage_2_round",
+      "id":"hill_top_villa",
+      "name":"Hill Top Villa",
+      "parkingSpotNames":[
+        "hill_top_parking",
+        "hill_top_parking01",
+        "hill_top_parking02",
+        "hill_top_parking03",
+        "spot_hill_top_villa_5",
+        "spot_hill_top_villa_6",
+        "spot_hill_top_villa_7",
+        "spot_hill_top_villa_8",
+        "spot_hill_top_villa_9"
+      ],
+      "preview":"hilltopvilla.png",
+      "tags":{},
+      "zoneNames":[
+        "hill_top_villa_1"
       ]
     }
   ],
