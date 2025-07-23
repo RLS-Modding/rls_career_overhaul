@@ -144,6 +144,15 @@
           }
         }
       ],
+      "subFilterNames": [
+        "Sub-Filter 1",
+        "Sub-Filter 2",
+        "Sub-Filter 3",
+        "Sub-Filter 4",
+        "Sub-Filter 5",
+        "Sub-Filter 6",
+        "Sub-Filter 7"
+      ],
       "fees": 2000,
       "containsStarterVehicles": false,
       "testDrive": {
@@ -153,7 +162,8 @@
       },
       "iconOffsetHeight": 1,
       "iconLift": 0.25,
-      "playModeIconName": "poi_entrance_round"
+      "playModeIconName": "poi_entrance_round",
+      "salesTax": 0.07
     },
     {
       "id": "jeffersonmotors",
@@ -231,13 +241,23 @@
               "Italy",
               "France",
               "Germany",
-              "Japan"
+              "Japan",
+              "Sweden",
+              "Soviet Union/Russia",
+              "United Kingdom",
+              "Great Britain",
+              "Canada"
             ]
           }
         },
         {
           "probability": 1,
-          "whiteList": {}
+          "whiteList": {
+            "Type": [
+              "Car",
+              "Truck"
+            ]
+          }
         }
       ],
       "subFilterNames": [
@@ -321,7 +341,12 @@
               "Italy",
               "France",
               "Germany",
-              "Japan"
+              "Japan",
+              "Canada",
+              "Sweden",
+              "United Kingdom",
+              "Great Britain",
+              "Soviet Union/Russia"
             ]
           }
         },
@@ -329,6 +354,11 @@
           "probability": 1,
           "whiteList": {}
         }
+      ],
+      "subFilterNames": [
+        "Sub-Filter 1",
+        "Sub-Filter 2",
+        "Sub-Filter 3"
       ],
       "fees": 0,
       "containsStarterVehicles": false,
@@ -380,18 +410,20 @@
           "Config Type": [
             "Factory"
           ],
-          "Value": {
-            "max": 80000
-          }
+          "Value": {}
         },
         "blackList": {
           "Type": [
             "Trailer"
           ],
+          "Config Type": [
+            "Police"
+          ],
           "Body Style": [
             "ATV",
             "Buggy"
-          ]
+          ],
+          "Configuration": {}
         }
       },
       "subFilters": [
@@ -411,7 +443,12 @@
               "Italy",
               "France",
               "Germany",
-              "Japan"
+              "Canada",
+              "Sweden",
+              "United Kingdom",
+              "Great Britain",
+              "Japan",
+              "Soviet Union/Russia"
             ]
           }
         },
@@ -528,7 +565,12 @@
               "Italy",
               "France",
               "Germany",
-              "Japan"
+              "Japan",
+              "Soviet Union/Russia",
+              "United Kingdom",
+              "Sweden",
+              "Canada",
+              "Great Britain"
             ]
           }
         },
@@ -537,9 +579,8 @@
           "whiteList": {}
         }
       ],
-      "subFilterNames": {
-        "3": "Sub-Filter 3"
-      },
+      "subFilterNames": [
+      ],
       "fees": 1250,
       "containsStarterVehicles": false,
       "testDrive": {
@@ -633,7 +674,12 @@
               "Italy",
               "France",
               "Germany",
-              "Japan"
+              "Japan",
+              "Canada",
+              "Sweden",
+              "United Kingdom",
+              "Soviet Union/Russia",
+              "Great Britain"
             ]
           }
         },
@@ -641,6 +687,8 @@
           "probability": 1,
           "whiteList": {}
         }
+      ],
+      "subFilterNames": [
       ],
       "fees": 249,
       "containsStarterVehicles": true,
@@ -705,6 +753,9 @@
             }
           }
         }
+      ],
+      "subFilterNames": [
+        "Sub-Filter 1"
       ],
       "fees": 750,
       "containsStarterVehicles": false,
@@ -781,7 +832,12 @@
               "Italy",
               "France",
               "Germany",
-              "Japan"
+              "Japan",
+              "Canada",
+              "Great Britain",
+              "Soviet Union/Russia",
+              "United Kingdom",
+              "Sweden"
             ]
           }
         },
@@ -789,6 +845,8 @@
           "probability": 1,
           "whiteList": {}
         }
+      ],
+      "subFilterNames": [
       ],
       "fees": 0,
       "containsStarterVehicles": false,
@@ -854,6 +912,9 @@
             ]
           }
         }
+      ],
+      "subFilterNames": [
+        "Sub-Filter 1"
       ],
       "fees": 0,
       "containsStarterVehicles": false,
@@ -929,7 +990,12 @@
               "Italy",
               "France",
               "Germany",
-              "Japan"
+              "Japan",
+              "Canada",
+              "Great Britain",
+              "Soviet Union/Russia",
+              "Sweden",
+              "United Kingdom"
             ]
           }
         },
@@ -937,6 +1003,8 @@
           "probability": 1,
           "whiteList": {}
         }
+      ],
+      "subFilterNames": [
       ],
       "fees": 500,
       "containsStarterVehicles": false,
@@ -995,7 +1063,6 @@
           ],
           "Body Style": [
             "Semi Truck",
-            "Bus",
             "Tanker Truck",
             "Flatbed Truck",
             "Truck",
@@ -1021,7 +1088,12 @@
               "Italy",
               "France",
               "Germany",
-              "Japan"
+              "Japan",
+              "Canada",
+              "Sweden",
+              "United Kingdom",
+              "Soviet Union/Russia",
+              "Great Britain"
             ]
           }
         },
@@ -1029,6 +1101,8 @@
           "probability": 1,
           "whiteList": {}
         }
+      ],
+      "subFilterNames": [
       ],
       "fees": 500,
       "containsStarterVehicles": false,
@@ -1039,7 +1113,13 @@
       },
       "iconOffsetHeight": 1,
       "iconLift": 0.25,
-      "playModeIconName": "poi_entrance_round"
+      "playModeIconName": "poi_entrance_round",
+      "ui": {
+        "showMatchingConfigs": {
+          "3": true
+        },
+        "configSearchText": {}
+      }
     },
     {
       "id": "trailerShop",
@@ -1090,6 +1170,9 @@
             }
           }
         }
+      ],
+      "subFilterNames": [
+        "Sub-Filter 1"
       ],
       "fees": 449,
       "containsStarterVehicles": false,
@@ -1157,6 +1240,9 @@
             ]
           }
         }
+      ],
+      "subFilterNames": [
+        "Sub-Filter 1"
       ],
       "fees": 2500,
       "containsStarterVehicles": false,
@@ -1227,6 +1313,9 @@
             ]
           }
         }
+      ],
+      "subFilterNames": [
+        "Sub-Filter 1"
       ],
       "fees": 2500,
       "containsStarterVehicles": false,
@@ -1439,15 +1528,15 @@
           "Type": [
             "Trailer"
           ],
+          "Tags": [
+            "Ambulance"
+          ],
           "Body Style": [
             "Ambulance",
             "Pickup"
           ],
           "hasLoad": [
             true
-          ],
-          "Tags": [
-            "Ambulance"
           ]
         }
       },
@@ -1470,10 +1559,15 @@
           "probability": 1,
           "whiteList": {
             "Body Style": [
-              "Bus"
+              "Fifth Wheel Truck",
+              "Fifth Wheel Truck "
             ]
           }
         }
+      ],
+      "subFilterNames": [
+        "Sub-Filter 1",
+        "Sub-Filter 2"
       ],
       "fees": 1449,
       "containsStarterVehicles": false,
@@ -1487,7 +1581,12 @@
       "playModeIconName": "poi_entrance_round",
       "screens": [
         "commercialOfficeComputer_screen_1"
-      ]
+      ],
+      "ui": {
+        "showMatchingConfigs": [
+        ],
+        "configSearchText": {}
+      }
     },
     {
       "id": "importDealer",
@@ -1533,10 +1632,18 @@
               "Italy",
               "France",
               "Germany",
-              "Japan"
+              "Japan",
+              "Canada",
+              "Sweden",
+              "United Kingdom",
+              "Soviet Union/Russia",
+              "Great Britain"
             ]
           }
         }
+      ],
+      "subFilterNames": [
+        "Sub-Filter 1"
       ],
       "fees": 1500,
       "containsStarterVehicles": false,
@@ -1659,11 +1766,12 @@
         },
         {
           "probability": 1,
-          "whiteList": {          "Years": {
-            "min": 1900,
-            "max": 2025
+          "whiteList": {
+            "Years": {
+              "min": 1900,
+              "max": 2025
+            }
           }
-}
         }
       ]
     }
