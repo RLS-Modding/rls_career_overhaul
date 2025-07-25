@@ -42,7 +42,7 @@
 {"name":"CustomTriggers","class":"SimGroup","__parent":"RLS_EDITS"}
 {"name":"DinnerMeetRoads","class":"SimGroup","__parent":"RLS_EDITS"}
 {"name":"MapSwitcher","class":"SimGroup","__parent":"RLS_EDITS"}
-{"name":"Level Gate","class":"SpawnSphere","__parent":"RLS_EDITS","position":[466.529846,1876.70093,74.8965836],"dataBlock":"SpawnSphereMarker","radius":1,"rotationMatrix":[-0.0795379877,0.996832371,-9.96515155e-08,-0.996360064,-0.0795001984,-0.0307813678,-0.0306838565,-0.00244817324,0.999526143],"spawnClass":"Player","sphereWeight0":"1"}
+{"name":"Level Gate","class":"SpawnSphere","__parent":"RLS_EDITS","position":[494.269867,1870.35413,74.8965836],"dataBlock":"SpawnSphereMarker","radius":1,"rotationMatrix":[1,-5.19854875e-05,-1.15437444e-07,5.19573005e-05,0.999526143,-0.0307813622,1.71556712e-06,0.0307813622,0.999526143],"spawnClass":"Player","sphereWeight0":"1"}
 {"name":"lenflaircurb","class":"MeshRoad","__parent":"RLS_EDITS","position":[-888.7771,-676.593567,106.120529],"hidden":true,"nodes":[[-889.643311,-677.393494,105.098717,3,1,0,0,1],[-881.419983,-668.06073,105.295616,3,1,0,0,1]]}
 {"name":"ParkingGarageRoads","class":"SimGroup","__parent":"RLS_EDITS"}
 {"name":"freakAdditions","class":"SimGroup","__parent":"RLS_EDITS"}
