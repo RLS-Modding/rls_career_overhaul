@@ -58,7 +58,7 @@ local luxuryPassenger = {
                 ui_message("Luxury Passenger: Hard braking Detected", 2, "info", "info")
                 rideData.smoothnessScore = math.max(0, rideData.smoothnessScore - 10)
                 rideData.luxuryComfort = math.max(0, rideData.luxuryComfort - 15)
-            elseif gy < 0.5 then
+            elseif gy < -0.5 then
                 rideData.aggressiveEvents = rideData.aggressiveEvents + 1
                 ui_message("Luxury Passenger: Hard acceleration Detected", 2, "info", "info")
                 rideData.smoothnessScore = math.max(0, rideData.smoothnessScore - 8)
