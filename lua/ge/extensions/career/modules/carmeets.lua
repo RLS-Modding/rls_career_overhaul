@@ -305,6 +305,9 @@ local meetTypes = {
                     local playerVeh = be:getPlayerVehicle(0)
                     if playerVeh and state.flags.routeEndPosition then
                         local distance = (playerVeh:getPosition() - state.flags.routeEndPosition):length()
+                        if state.phase ~= "ending" and distance < state.flags.routeEndCheckRadius + 100 then
+                            state.phase = "ending"
+                        end
                         if distance < state.flags.routeEndCheckRadius then
                             state.flags.playerReachedDestination = true
                             
