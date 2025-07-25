@@ -194,6 +194,9 @@ local function resetPursuit()
 end
 
 local function onPursuitAction(vehId, action, data)
+  if gameplay_cab and gameplay_cab.inCab() then
+    return
+  end
   local playerIsCop = getPlayerIsCop()
   if vehId ~= be:getPlayerVehicleID(0) and not playerIsCop then
     return
