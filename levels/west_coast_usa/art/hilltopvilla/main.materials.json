@@ -28,282 +28,6 @@
     "translucentBlendOp": "None",
     "version": 1.5
   },
-  "pcblack": {
-    "name": "pcblack",
-    "mapTo": "pcblack",
-    "class": "Material",
-    "Stages": [
-      {
-        "baseColorFactor": [
-          0.684979975,
-          0.684979975,
-          0.684979975,
-          1
-        ],
-        "baseColorMap": "/levels/west_coast_usa/art/hilltopvilla/brpblack_b.color.png",
-        "normalMap": "/levels/west_coast_usa/art/hilltopvilla/brpblack_nm.normal.png",
-        "roughnessMap": "/levels/west_coast_usa/art/hilltopvilla/brpblack__r.data.png"
-      },
-      {
-        "baseColorFactor": null
-      },
-      {
-        "baseColorFactor": null
-      },
-      {
-        "baseColorFactor": null
-      }
-    ],
-    "translucentBlendOp": "None",
-    "version": 1.5
-  },
-  "pcwhite": {
-    "name": "pcwhite",
-    "mapTo": "pcwhite",
-    "class": "Material",
-    "Stages": [
-      {
-        "baseColorFactor": [
-          0.684979975,
-          0.684979975,
-          0.684979975,
-          1
-        ],
-        "baseColorMap": "/levels/west_coast_usa/art/hilltopvilla/pcwhite_b.color.png",
-        "normalMap": "/levels/west_coast_usa/art/hilltopvilla/pcwhite_nm.normal.png",
-        "roughnessMap": "/levels/west_coast_usa/art/hilltopvilla/pcwhite_r.data.png"
-      },
-      {
-        "baseColorFactor": null
-      },
-      {
-        "baseColorFactor": null
-      },
-      {
-        "baseColorFactor": null
-      }
-    ],
-    "translucentBlendOp": "None",
-    "version": 1.5
-  },
-  "pcmouse": {
-    "name": "pcmouse",
-    "mapTo": "pcmouse",
-    "class": "Material",
-    "Stages": [
-      {
-        "baseColorFactor": [
-          0.800000012,
-          0.800000012,
-          0.800000012,
-          1
-        ],
-        "baseColorMap": "/levels/west_coast_usa/art/hilltopvilla/pcmouse_b.color",
-        "clearCoatFactor": 1,
-        "clearCoatRoughnessFactor": 0.713999987,
-        "diffuseMapUseUV": 1,
-        "emissiveFactor": [
-          1,
-          1,
-          1
-        ],
-        "emissiveMap": "",
-        "emissiveMapUseUV": 1,
-        "metallicMap": "/levels/west_coast_usa/art/hilltopvilla/pcmouse_m.data.png",
-        "metallicMapUseUV": 1,
-        "normalMap": "/levels/west_coast_usa/art/hilltopvilla/kb_nm.normal.png",
-        "normalMapUseUV": 1,
-        "roughnessMap": "/levels/west_coast_usa/art/hilltopvilla/pcmouse_r.data.png",
-        "roughnessMapUseUV": 1
-      },
-      {
-        "baseColorFactor": null,
-        "clearCoatFactor": null,
-        "clearCoatRoughnessFactor": null,
-        "diffuseMapUseUV": null,
-        "emissiveFactor": null,
-        "emissiveMapUseUV": null,
-        "metallicMapUseUV": null,
-        "normalMapUseUV": null,
-        "roughnessMapUseUV": null
-      },
-      {
-        "baseColorFactor": null,
-        "clearCoatFactor": null,
-        "clearCoatRoughnessFactor": null,
-        "diffuseMapUseUV": null,
-        "emissiveFactor": null,
-        "emissiveMapUseUV": null,
-        "metallicMapUseUV": null,
-        "normalMapUseUV": null,
-        "roughnessMapUseUV": null
-      },
-      {
-        "baseColorFactor": null,
-        "clearCoatFactor": null,
-        "clearCoatRoughnessFactor": null,
-        "diffuseMapUseUV": null,
-        "emissiveFactor": null,
-        "emissiveMapUseUV": null,
-        "metallicMapUseUV": null,
-        "normalMapUseUV": null,
-        "roughnessMapUseUV": null
-      }
-    ],
-    "translucentBlendOp": "None",
-    "translucentRecvShadows": true,
-    "version": 1.5
-  },
-  "pcmarble": {
-    "name": "pcmarble",
-    "mapTo": "pcmarble",
-    "class": "Material",
-    "persistentId": "",
-    "Stages": [
-      {
-        "baseColorFactor": [
-          0.999989986,
-          1,
-          0.999989986,
-          1
-        ],
-        "metallicFactor": 1,
-        "normalMap": "/levels/west_coast_usa/art/hilltopvilla/pcmarble_nm.normal"
-      },
-      {
-        "ambientOcclusionMap": "",
-        "baseColorFactor": [
-          0.407676995,
-          0,
-          0,
-          1
-        ],
-        "metallicFactor": 0.268000007,
-        "metallicMapUseUV": 1,
-        "opacityMap": "",
-        "roughnessFactor": 0.637000024,
-        "roughnessMap": "/levels/west_coast_usa/art/hilltopvilla/pcmarble_r.data.png"
-      },
-      {},
-      {}
-    ],
-    "activeLayers": 1,
-    "doubleSided": true,
-    "dynamicCubemap": true,
-    "materialTag0": "beamng",
-    "materialTag1": "vehicle",
-    "version": 1.5
-  },
-  "whiteGlow": {
-    "name": "whiteGlow",
-    "mapTo": "whiteGlow",
-    "class": "Material",
-    "persistentId": "3445ecb7-195f-41dd-b6d6-ffc50994973d",
-    "Stages": [
-      {
-        "clearCoatFactor": null,
-        "colorMap": "",
-        "colorPaletteMapUseUV": null,
-        "diffuseColor": [
-          1,
-          0.999989986,
-          0.999989986,
-          1
-        ],
-        "emissive": true,
-        "emissiveFactor": [
-          1,
-          0.999989986,
-          0.999989986
-        ],
-        "glow": true,
-        "glowFactor": [
-          1,
-          0.999989986,
-          0.999989986
-        ],
-        "instanceEmissive": true,
-        "normalMap": "",
-        "specular": [
-          1,
-          0.999989986,
-          0.999989986,
-          1
-        ],
-        "vertColor": false
-      },
-      {
-        "clearCoatFactor": 1,
-        "clearCoatMap": "",
-        "colorPaletteMapUseUV": 1,
-        "diffuseColor": null,
-        "emissive": true,
-        "emissiveFactor": [
-          1,
-          1,
-          1
-        ],
-        "glow": true,
-        "glowFactor": [
-          0.647000015,
-          0.647000015,
-          0.647000015
-        ],
-        "instanceEmissive": true,
-        "opacityMap": "",
-        "specular": [
-          1,
-          0.999989986,
-          0.999989986,
-          1
-        ],
-        "vertColor": null
-      },
-      {
-        "clearCoatFactor": null,
-        "colorPaletteMapUseUV": null,
-        "diffuseColor": null,
-        "emissive": true,
-        "emissiveFactor": [
-          9.99999997e-07,
-          9.99999997e-07,
-          9.99999997e-07
-        ],
-        "glow": true,
-        "glowFactor": [
-          1,
-          0.999989986,
-          0.999989986
-        ],
-        "instanceEmissive": null,
-        "specular": [
-          1,
-          0.999989986,
-          0.999989986,
-          1
-        ],
-        "vertColor": null
-      },
-      {
-        "clearCoatFactor": null,
-        "colorPaletteMapUseUV": null,
-        "diffuseColor": null,
-        "emissive": null,
-        "emissiveFactor": null,
-        "glow": null,
-        "glowFactor": null,
-        "instanceEmissive": null,
-        "specular": null,
-        "vertColor": null
-      }
-    ],
-    "activeLayers": 2,
-    "doubleSided": true,
-    "dynamicCubemap": true,
-    "materialTag0": "beamng",
-    "materialTag1": "vehicle",
-    "subSurfacaae0": "0"
-  },
   "blenderkeyboard": {
     "name": "blenderkeyboard",
     "mapTo": "blenderkeyboard",
@@ -433,17 +157,25 @@
     "Stages": [
       {
         "baseColorMap": "/levels/west_coast_usa/art/hilltopvilla/elcomino_d.color.png",
+        "clearCoatFactor": 0.514999986,
+        "clearCoatRoughnessFactor": 0,
         "metallicMap": "/levels/west_coast_usa/art/hilltopvilla/elcomino_m.data.png",
         "roughnessFactor": 0.749000013,
         "roughnessMap": "/levels/west_coast_usa/art/hilltopvilla/elcomino_r.data.png"
       },
       {
+        "clearCoatFactor": null,
+        "clearCoatRoughnessFactor": null,
         "roughnessFactor": null
       },
       {
+        "clearCoatFactor": null,
+        "clearCoatRoughnessFactor": null,
         "roughnessFactor": null
       },
       {
+        "clearCoatFactor": null,
+        "clearCoatRoughnessFactor": null,
         "roughnessFactor": null
       }
     ],
@@ -737,6 +469,128 @@
     ],
     "translucentBlendOp": "None"
   },
+  "pcblack": {
+    "name": "pcblack",
+    "mapTo": "pcblack",
+    "class": "Material",
+    "Stages": [
+      {
+        "baseColorFactor": [
+          0.684979975,
+          0.684979975,
+          0.684979975,
+          1
+        ],
+        "baseColorMap": "/levels/west_coast_usa/art/hilltopvilla/brpblack_b.color.png",
+        "normalMap": "/levels/west_coast_usa/art/hilltopvilla/brpblack_nm.normal.png",
+        "roughnessMap": "/levels/west_coast_usa/art/hilltopvilla/brpblack__r.data.png"
+      },
+      {
+        "baseColorFactor": null
+      },
+      {
+        "baseColorFactor": null
+      },
+      {
+        "baseColorFactor": null
+      }
+    ],
+    "translucentBlendOp": "None",
+    "version": 1.5
+  },
+  "pcmarble": {
+    "name": "pcmarble",
+    "mapTo": "pcmarble",
+    "class": "Material",
+    "Stages": [
+      {
+        "baseColorFactor": [
+          0.999989986,
+          1,
+          0.999989986,
+          1
+        ],
+        "baseColorMap": "/levels/west_coast_usa/art/hilltopvilla/pcmarble_b.color.dds",
+        "metallicFactor": null,
+        "metallicMapUseUV": null,
+        "normalMap": "/levels/west_coast_usa/art/hilltopvilla/pcmarble_nm.normal",
+        "roughnessFactor": null,
+        "roughnessMap": "/levels/west_coast_usa/art/hilltopvilla/pcmarble_r.data.dds"
+      },
+      {
+        "baseColorFactor": [
+          0.407676995,
+          0,
+          0,
+          1
+        ],
+        "metallicFactor": 0.268000007,
+        "metallicMapUseUV": 1,
+        "roughnessFactor": 0.637000024,
+        "roughnessMap": "/levels/west_coast_usa/art/hilltopvilla/pcmarble_r.data.png"
+      },
+      {
+        "baseColorFactor": null,
+        "metallicFactor": null,
+        "metallicMapUseUV": null,
+        "roughnessFactor": null
+      },
+      {
+        "baseColorFactor": null,
+        "metallicFactor": null,
+        "metallicMapUseUV": null,
+        "roughnessFactor": null
+      }
+    ],
+    "doubleSided": true,
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "version": 1.5
+  },
+  "pcmouse": {
+    "name": "pcmouse",
+    "mapTo": "pcmouse",
+    "class": "Material",
+    "Stages": [
+      {
+        "baseColorFactor": [
+          0.800000012,
+          0.800000012,
+          0.800000012,
+          1
+        ],
+        "baseColorMap": "/levels/west_coast_usa/art/hilltopvilla/pcmouse_b.color",
+        "clearCoatFactor": 0.959999979,
+        "clearCoatRoughnessFactor": 0.713999987,
+        "emissiveMapUseUV": 1,
+        "metallicMap": "/levels/west_coast_usa/art/hilltopvilla/pcmouse_m.data.png",
+        "normalMap": "/levels/west_coast_usa/art/hilltopvilla/kb_nm.normal.png",
+        "roughnessMap": "/levels/west_coast_usa/art/hilltopvilla/pcmouse_r.data.png"
+      },
+      {
+        "baseColorFactor": null,
+        "clearCoatFactor": null,
+        "clearCoatRoughnessFactor": null,
+        "emissiveMapUseUV": null
+      },
+      {
+        "baseColorFactor": null,
+        "clearCoatFactor": null,
+        "clearCoatRoughnessFactor": null,
+        "emissiveMapUseUV": null
+      },
+      {
+        "baseColorFactor": null,
+        "clearCoatFactor": null,
+        "clearCoatRoughnessFactor": null,
+        "emissiveMapUseUV": null
+      }
+    ],
+    "translucentBlendOp": "None",
+    "translucentRecvShadows": true,
+    "version": 1.5
+  },
   "pcscreen": {
     "name": "pcscreen",
     "mapTo": "pcscreen",
@@ -757,6 +611,38 @@
       }
     ],
     "translucentBlendOp": "None"
+  },
+  "pcwhite": {
+    "name": "pcwhite",
+    "mapTo": "pcwhite",
+    "class": "Material",
+    "Stages": [
+      {
+        "baseColorFactor": [
+          0.684979975,
+          0.684979975,
+          0.684979975,
+          1
+        ],
+        "baseColorMap": "/levels/west_coast_usa/art/hilltopvilla/pcwhite_b.color.png",
+        "metallicFactor": 0.509000003,
+        "roughnessMap": "/levels/west_coast_usa/art/hilltopvilla/pcwhite_r.data.png"
+      },
+      {
+        "baseColorFactor": null,
+        "metallicFactor": null
+      },
+      {
+        "baseColorFactor": null,
+        "metallicFactor": null
+      },
+      {
+        "baseColorFactor": null,
+        "metallicFactor": null
+      }
+    ],
+    "translucentBlendOp": "None",
+    "version": 1.5
   },
   "rollcage_black": {
     "name": "rollcage_black",
@@ -833,6 +719,189 @@
     "alphaRef": 0,
     "materialTag0": "beamng",
     "materialTag1": "building",
+    "translucentBlendOp": "None",
+    "version": 1.5
+  },
+  "whiteGlow": {
+    "name": "whiteGlow",
+    "mapTo": "whiteGlow",
+    "class": "Material",
+    "persistentId": "3445ecb7-195f-41dd-b6d6-ffc50994973d",
+    "Stages": [
+      {
+        "clearCoatFactor": null,
+        "colorPaletteMapUseUV": null,
+        "diffuseColor": [
+          1,
+          0.999989986,
+          0.999989986,
+          1
+        ],
+        "emissive": true,
+        "emissiveFactor": [
+          1,
+          0.999989986,
+          0.999989986
+        ],
+        "glow": true,
+        "glowFactor": [
+          1,
+          0.999989986,
+          0.999989986
+        ],
+        "instanceEmissive": true,
+        "specular": [
+          1,
+          0.999989986,
+          0.999989986,
+          1
+        ]
+      },
+      {
+        "clearCoatFactor": 1,
+        "colorPaletteMapUseUV": 1,
+        "diffuseColor": null,
+        "emissive": true,
+        "emissiveFactor": [
+          1,
+          1,
+          1
+        ],
+        "glow": true,
+        "glowFactor": [
+          0.647000015,
+          0.647000015,
+          0.647000015
+        ],
+        "instanceEmissive": true,
+        "specular": [
+          1,
+          0.999989986,
+          0.999989986,
+          1
+        ]
+      },
+      {
+        "clearCoatFactor": null,
+        "colorPaletteMapUseUV": null,
+        "diffuseColor": null,
+        "emissive": true,
+        "emissiveFactor": [
+          9.99999997e-7,
+          9.99999997e-7,
+          9.99999997e-7
+        ],
+        "glow": true,
+        "glowFactor": [
+          1,
+          0.999989986,
+          0.999989986
+        ],
+        "instanceEmissive": null,
+        "specular": [
+          1,
+          0.999989986,
+          0.999989986,
+          1
+        ]
+      },
+      {
+        "clearCoatFactor": null,
+        "colorPaletteMapUseUV": null,
+        "diffuseColor": null,
+        "emissive": null,
+        "emissiveFactor": null,
+        "glow": null,
+        "glowFactor": null,
+        "instanceEmissive": null,
+        "specular": null
+      }
+    ],
+    "activeLayers": 2,
+    "doubleSided": true,
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "subSurfacaae0": "0"
+  },
+  "yoruuu": {
+    "name": "yoruuu",
+    "mapTo": "yoruuu",
+    "class": "Material",
+    "Stages": [
+      {
+        "baseColorFactor": [
+          0.684979975,
+          0.684979975,
+          0.684979975,
+          1
+        ],
+        "baseColorMap": "/levels/west_coast_usa/art/hilltopvilla/yoru3_b.color.png",
+      },
+      {
+        "baseColorFactor": null
+      },
+      {
+        "baseColorFactor": null
+      },
+      {
+        "baseColorFactor": null
+      }
+    ],
+    "translucentBlendOp": "None",
+    "version": 1.5
+  },
+  "sunburstnova_pic": {
+    "name": "sunburstnova_pic",
+    "mapTo": "sunburstnova_pic",
+    "class": "Material",
+    "Stages": [
+      {
+        "baseColorFactor": [
+          0.684979975,
+          0.684979975,
+          0.684979975,
+          1
+        ],
+        "baseColorMap": "/levels/west_coast_usa/art/hilltopvilla/sunburst_Nova2_b.color.png",
+      },
+      {
+        "baseColorFactor": null
+      },
+      {
+        "baseColorFactor": null
+      },
+      {
+        "baseColorFactor": null
+      }
+    ],
+    "translucentBlendOp": "None",
+    "version": 1.5
+  },
+  "dalerip": {
+    "name": "dalerip",
+    "mapTo": "dalerip",
+    "class": "Material",
+    "Stages": [
+      {
+        "baseColorFactor": [
+          0.684979975,
+          0.684979975,
+          0.684979975,
+          1
+        ],
+        "baseColorMap": "/levels/west_coast_usa/art/hilltopvilla/daletruck_b.color.png",
+      },
+      {
+        "baseColorFactor": null
+      },
+      {
+        "baseColorFactor": null
+      },
+      {
+        "baseColorFactor": null
+      }
+    ],
     "translucentBlendOp": "None",
     "version": 1.5
   }
