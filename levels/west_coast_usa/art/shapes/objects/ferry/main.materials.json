@@ -1,0 +1,185 @@
+{
+  "ferry_black": {
+    "name": "ferry_black",
+    "mapTo": "ferry_black",
+    "class": "Material",
+    "persistentId": "1b373f80-e3a7-4065-b959-7d6ddf2f9141",
+    "Stages": [
+      {
+        "colorMap": "levels/west_coast_usa/art/shapes/objects/ferry/ferry_black.dds",
+        "normalMap": "levels/west_coast_usa/art/shapes/objects/ferry/ferry_n.dds",
+        "pixelSpecular": true,
+        "specularMap": "levels/west_coast_usa/art/shapes/objects/ferry/ferry_s.dds",
+        "specularPower": 4,
+        "useAnisotropic": true
+      },
+      {},
+      {},
+      {}
+    ],
+    "materialTag0": "beamng",
+    "materialTag1": "Industrial"
+  },
+  "ferry_blue": {
+    "name": "ferry_blue",
+    "mapTo": "ferry_blue",
+    "class": "Material",
+    "persistentId": "c3084283-b6a4-40e5-8089-7b482b7c14e1",
+    "Stages": [
+      {
+        "colorMap": "levels/west_coast_usa/art/shapes/objects/ferry/ferry_blue.dds",
+        "normalMap": "levels/west_coast_usa/art/shapes/objects/ferry/ferry_n.dds",
+        "pixelSpecular": true,
+        "specularMap": "levels/west_coast_usa/art/shapes/objects/ferry/ferry_s.dds",
+        "specularPower": 4,
+        "useAnisotropic": true
+      },
+      {},
+      {},
+      {}
+    ],
+    "materialTag0": "beamng",
+    "materialTag1": "Industrial"
+  },
+  "ferry_hazard": {
+    "name": "ferry_hazard",
+    "mapTo": "ferry_hazard",
+    "class": "Material",
+    "persistentId": "3bf70c71-4254-4d5c-b627-063092905b7c",
+    "Stages": [
+      {
+        "colorMap": "levels/west_coast_usa/art/shapes/objects/ferry/ferry_hazard.dds",
+        "normalMap": "levels/west_coast_usa/art/shapes/objects/ferry/ferry_n.dds",
+        "pixelSpecular": true,
+        "specularMap": "levels/west_coast_usa/art/shapes/objects/ferry/ferry_s.dds",
+        "specularPower": 4,
+        "useAnisotropic": true
+      },
+      {},
+      {},
+      {}
+    ],
+    "materialTag0": "beamng",
+    "materialTag1": "Industrial"
+  },
+  "ferry_railing": {
+    "name": "ferry_railing",
+    "mapTo": "ferry_railing",
+    "class": "Material",
+    "persistentId": "2219cfdd-a300-4858-9d86-8068e9cb3c70",
+    "Stages": [
+      {
+        "colorMap": "levels/west_coast_usa/art/shapes/objects/ferry/ferry_railing_d.dds",
+        "normalMap": "levels/west_coast_usa/art/shapes/objects/ferry/ferry_railing_n.dds",
+        "pixelSpecular": true,
+        "specularMap": "levels/west_coast_usa/art/shapes/objects/ferry/ferry_s.dds",
+        "specularPower": 4,
+        "useAnisotropic": true
+      },
+      {},
+      {},
+      {}
+    ],
+    "alphaRef": 50,
+    "alphaTest": true,
+    "doubleSided": true,
+    "materialTag0": "beamng",
+    "materialTag1": "Industrial"
+  },
+  "ferry_red": {
+    "name": "ferry_red",
+    "mapTo": "ferry_red",
+    "class": "Material",
+    "persistentId": "d708ad1d-180d-4bc4-aee3-7baadc21f8c8",
+    "Stages": [
+      {
+        "colorMap": "levels/west_coast_usa/art/shapes/objects/ferry/ferry_red.dds",
+        "normalMap": "levels/west_coast_usa/art/shapes/objects/ferry/ferry_n.dds",
+        "pixelSpecular": true,
+        "specularMap": "levels/west_coast_usa/art/shapes/objects/ferry/ferry_s.dds",
+        "specularPower": 4,
+        "useAnisotropic": true
+      },
+      {},
+      {},
+      {}
+    ],
+    "materialTag0": "beamng",
+    "materialTag1": "Industrial"
+  },
+  "ferry_white": {
+    "name": "ferry_white",
+    "mapTo": "ferry_white",
+    "class": "Material",
+    "persistentId": "e6a37ac0-1d2f-42d6-8146-98edb077804d",
+    "Stages": [
+      {
+        "colorMap": "levels/west_coast_usa/art/shapes/objects/ferry/ferry_white.dds",
+        "normalMap": "levels/west_coast_usa/art/shapes/objects/ferry/ferry_n.dds",
+        "pixelSpecular": true,
+        "specularMap": "levels/west_coast_usa/art/shapes/objects/ferry/ferry_s.dds",
+        "specularPower": 4,
+        "useAnisotropic": true
+      },
+      {},
+      {},
+      {}
+    ],
+    "materialTag0": "beamng",
+    "materialTag1": "Industrial"
+  },
+  "ferry_white_paint": {
+    "name": "ferry_white_paint",
+    "mapTo": "ferry_white_paint",
+    "class": "Material",
+    "persistentId": "86be54b6-6149-4492-ad2a-e99d01e8e2d0",
+    "Stages": [
+      {
+        "colorMap": "levels/west_coast_usa/art/shapes/objects/ferry/ferry_white_paint.dds",
+        "normalMap": "levels/west_coast_usa/art/shapes/objects/ferry/ferry_n.dds",
+        "specular": [
+          0.5,
+          0.5,
+          0.5,
+          1
+        ],
+        "specularMap": "levels/west_coast_usa/art/shapes/objects/ferry/ferry_s.dds",
+        "specularPower": 50
+      },
+      {},
+      {},
+      {}
+    ],
+    "materialTag0": "beamng",
+    "materialTag1": "Industrial",
+    "translucentBlendOp": "None"
+  },
+  "ferry_window": {
+    "name": "ferry_window",
+    "mapTo": "ferry_window",
+    "class": "Material",
+    "persistentId": "a63f3a73-7b55-46f7-b9fc-a7fefc7ae942",
+    "Stages": [
+      {
+        "colorMap": "levels/west_coast_usa/art/shapes/objects/ferry/ferry_white_paint.dds",
+        "diffuseColor": [
+          0,
+          0.580392003,
+          1,
+          0.00800000038
+        ],
+        "normalMap": "levels/west_coast_usa/art/shapes/objects/ferry/ferry_n.dds",
+        "pixelSpecular": true,
+        "specularMap": "levels/west_coast_usa/art/shapes/objects/ferry/ferry_s.dds",
+        "specularPower": 4,
+        "useAnisotropic": true
+      },
+      {},
+      {},
+      {}
+    ],
+    "cubemap": "BNG_Sky_02_cubemap",
+    "materialTag0": "beamng",
+    "materialTag1": "Industrial"
+  }
+}
