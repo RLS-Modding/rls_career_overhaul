@@ -26,6 +26,7 @@ local progressTemplate = {
     trailer = 0,
     fluid = 0,
     dryBulk = 0,
+    cement = 0,
   }
 }
 

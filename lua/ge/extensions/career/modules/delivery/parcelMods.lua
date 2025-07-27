@@ -121,6 +121,19 @@ local modifiers = {
     label = "Dry Bulk",
     shortDescription = "Requires a drybulk-capable container to transport."
   },
+  cement = {
+    unlockFlag = "hazardousMaterialsDelivery",
+    makeTemplate = function(g,p,distance)
+      return {
+        type = "cement",
+      }
+    end,
+    unlockLabel = "Cement",
+    priority = 6,
+    icon = "rocks",
+    label = "Cement",
+    shortDescription = "Requires a cement-capable container to transport."
+  },
   parcel = {
     unlockFlag = "smallPackagesDelivery",
     makeTemplate = function(g,p,distance)
