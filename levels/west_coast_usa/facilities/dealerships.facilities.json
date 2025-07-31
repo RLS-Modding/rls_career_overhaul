@@ -579,8 +579,7 @@
           "whiteList": {}
         }
       ],
-      "subFilterNames": [
-      ],
+      "subFilterNames": [],
       "fees": 1250,
       "containsStarterVehicles": false,
       "testDrive": {
@@ -688,8 +687,7 @@
           "whiteList": {}
         }
       ],
-      "subFilterNames": [
-      ],
+      "subFilterNames": [],
       "fees": 249,
       "containsStarterVehicles": true,
       "testDrive": {
@@ -846,8 +844,7 @@
           "whiteList": {}
         }
       ],
-      "subFilterNames": [
-      ],
+      "subFilterNames": [],
       "fees": 0,
       "containsStarterVehicles": false,
       "testDrive": {
@@ -1004,8 +1001,7 @@
           "whiteList": {}
         }
       ],
-      "subFilterNames": [
-      ],
+      "subFilterNames": [],
       "fees": 500,
       "containsStarterVehicles": false,
       "testDrive": {
@@ -1102,8 +1098,7 @@
           "whiteList": {}
         }
       ],
-      "subFilterNames": [
-      ],
+      "subFilterNames": [],
       "fees": 500,
       "containsStarterVehicles": false,
       "testDrive": {
@@ -1551,7 +1546,9 @@
               "Fifth Wheel Truck",
               "Chassis Cab",
               "Truck",
-              "Forklift"
+              "Forklift",
+              "Dump Truck",
+              "Mixer Truck"
             ]
           }
         },
@@ -1583,8 +1580,7 @@
         "commercialOfficeComputer_screen_1"
       ],
       "ui": {
-        "showMatchingConfigs": [
-        ],
+        "showMatchingConfigs": [],
         "configSearchText": {}
       }
     },
@@ -1766,7 +1762,6 @@
               "United Kingdom",
               "Great Britain",
               "Soviet Union/Russia"
-
             ]
           }
         },

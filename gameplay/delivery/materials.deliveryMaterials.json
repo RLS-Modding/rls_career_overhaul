@@ -31,28 +31,49 @@
     "name": "Sand",
     "density": 1.6,
     "type": "dryBulk",
-    "money": 0.40,
+    "money": 0.39,
     "icon": "rocks"
   },
   "gravel": {
     "name": "Gravel",
     "density": 1.8,
     "type": "dryBulk",
-    "money": 0.425,
+    "money": 0.42,
     "icon": "rocks"
   },
   "soil": {
     "name": "Soil",
     "density": 1.3,
     "type": "dryBulk",
-    "money": 0.325,
+    "money": 0.63,
     "icon": "rocks"
   },
   "cement": {
     "name": "Cement",
-    "density": 1.44,
+    "density": 2.5,
     "type": "cement",
-    "money": 0.475,
+    "money": 0.5,
+    "icon": "rocks"
+  },
+  "fertilizer": {
+    "name": "Fertilizer",
+    "density": 0.9,
+    "type": "dryBulk",
+    "money": 0.69,
+    "icon": "rocks"
+  },
+  "lime": {
+    "name": "Lime",
+    "density": 0.64,
+    "type": "dryBulk",
+    "money": 0.55,
+    "icon": "rocks"
+  },
+  "ash": {
+    "name": "Ash",
+    "density": 0.9,
+    "type": "dryBulk",
+    "money": 0.37,
     "icon": "rocks"
   }
 }

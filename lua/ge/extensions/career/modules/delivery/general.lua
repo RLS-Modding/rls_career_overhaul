@@ -347,7 +347,7 @@ local function updateContainerWeights(delayCallback)
       -- add up volume
       updatePerVehicle[cargo.location.vehId][cargo.location.containerId].volume = updatePerVehicle[cargo.location.vehId][cargo.location.containerId].volume + (cargo.slots or 0)
       -- only keep one density, since all cargo in one container have the same density
-      updatePerVehicle[cargo.location.vehId][cargo.location.containerId].density = (cargo.density or 1)
+      updatePerVehicle[cargo.location.vehId][cargo.location.containerId].density = (cargo.weight/cargo.slots or 1)
     end
 
   end

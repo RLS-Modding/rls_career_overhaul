@@ -117,9 +117,7 @@
         {
           "psName": "construction_city",
           "isInspectSpot": true,
-          "logisticTypesProvided": [
-            "soil"
-          ],
+          "logisticTypesProvided": [],
           "logisticTypesReceived": [
             "industrial",
             "parcel"
@@ -137,7 +135,6 @@
             "vehLargeTruck",
             "sand",
             "cement",
-            "gravel",
             "water"
           ],
         },
@@ -147,7 +144,6 @@
         "trailerDeliveryConstructionMaterials",
         "vehLargeTruck",
         "vehLargeTruckNeedsRepair",
-        "soil"
       ],
       "logisticTypesReceived": [
         "industrial",
@@ -156,7 +152,6 @@
         "vehLargeTruck",
         "sand",
         "cement",
-        "gravel",
         "water"
       ],
       "logisticGenerators": [
@@ -255,11 +250,11 @@
             "sand"
           ],
           "materialType": "sand",
-          "capacity": 30000,
-          "target": 15000,
-          "variance": 1000,
-          "interval": 270,
-          "rate": 200,
+          "capacity": 78000,
+          "target": 0,
+          "variance": 9000,
+          "interval": 300,
+          "rate": 5750
         },
         {
           "type": "materialReceiver",
@@ -267,23 +262,11 @@
             "cement"
           ],
           "materialType": "cement",
-          "capacity": 30000,
-          "target": 15000,
-          "variance": 1000,
-          "interval": 270,
-          "rate": 200,
-        },
-        {
-          "type": "materialReceiver",
-          "logisticTypes": [
-            "gravel"
-          ],
-          "materialType": "gravel",
-          "capacity": 12000,
-          "target": 3000,
-          "variance": 500,
-          "interval": 360,
-          "rate": 200,
+          "capacity": 31200,
+          "target": 0,
+          "variance": 3600,
+          "interval": 300,
+          "rate": 4600
         },
         {
           "type": "materialReceiver",
@@ -292,22 +275,10 @@
           ],
           "materialType": "water",
           "capacity": 16000,
-          "target": 11000,
+          "target": 0,
           "variance": 2000,
           "interval": 360,
-          "rate": 300,
-        },
-        {
-          "type": "materialProvider",
-          "logisticTypes": [
-            "soil"
-          ],
-          "materialType": "soil",
-          "capacity": 20000,
-          "target": 17500,
-          "variance": 2000,
-          "interval": 180,
-          "rate": 700,
+          "rate": 1000,
         },
       ],
     },
@@ -355,26 +326,14 @@
         {
           "type": "materialReceiver",
           "logisticTypes": [
-            "sand"
-          ],
-          "materialType": "sand",
-          "capacity": 30000,
-          "target": 15000,
-          "variance": 1000,
-          "interval": 270,
-          "rate": 200,
-        },
-        {
-          "type": "materialReceiver",
-          "logisticTypes": [
             "cement"
           ],
           "materialType": "cement",
-          "capacity": 30000,
-          "target": 15000,
-          "variance": 1000,
-          "interval": 270,
-          "rate": 200,
+          "capacity": 31200,
+          "target": 0,
+          "variance": 3600,
+          "interval": 300,
+          "rate": 4600
         },
         {
           "type": "materialReceiver",
@@ -382,11 +341,23 @@
             "gravel"
           ],
           "materialType": "gravel",
-          "capacity": 12000,
-          "target": 11000,
-          "variance": 500,
-          "interval": 360,
-          "rate": 200,
+          "capacity": 15600,
+          "target": 0,
+          "variance": 1800,
+          "interval": 300,
+          "rate": 4600
+        },
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "sand"
+          ],
+          "materialType": "sand",
+          "capacity": 15600,
+          "target": 0,
+          "variance": 1800,
+          "interval": 300,
+          "rate": 4600
         },
         {
           "type": "materialReceiver",
@@ -395,10 +366,10 @@
           ],
           "materialType": "water",
           "capacity": 16000,
-          "target": 11000,
+          "target": 0,
           "variance": 2000,
           "interval": 360,
-          "rate": 300,
+          "rate": 1000,
         },
       ],
     },
@@ -446,26 +417,14 @@
         {
           "type": "materialReceiver",
           "logisticTypes": [
-            "sand"
-          ],
-          "materialType": "sand",
-          "capacity": 30000,
-          "target": 15000,
-          "variance": 1000,
-          "interval": 270,
-          "rate": 200,
-        },
-        {
-          "type": "materialReceiver",
-          "logisticTypes": [
             "cement"
           ],
           "materialType": "cement",
-          "capacity": 30000,
-          "target": 15000,
-          "variance": 1000,
-          "interval": 270,
-          "rate": 200,
+          "capacity": 15600,
+          "target": 0,
+          "variance": 1800,
+          "interval": 300,
+          "rate": 2300
         },
         {
           "type": "materialReceiver",
@@ -473,11 +432,23 @@
             "gravel"
           ],
           "materialType": "gravel",
-          "capacity": 2000,
-          "target": 1300,
-          "variance": 500,
-          "interval": 360,
-          "rate": 200,
+          "capacity": 15600,
+          "target": 0,
+          "variance": 1800,
+          "interval": 300,
+          "rate": 4600
+        },
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "sand"
+          ],
+          "materialType": "sand",
+          "capacity": 15600,
+          "target": 0,
+          "variance": 1800,
+          "interval": 300,
+          "rate": 4600
         },
         {
           "type": "materialReceiver",
@@ -486,10 +457,10 @@
           ],
           "materialType": "water",
           "capacity": 6000,
-          "target": 5000,
+          "target": 0,
           "variance": 2000,
           "interval": 360,
-          "rate": 300,
+          "rate": 1000,
         },
       ],
     },
@@ -503,9 +474,7 @@
         {
           "psName": "hotrolled_parking",
           "isInspectSpot": true,
-          "logisticTypesProvided": [
-            "industrial"
-          ],
+          "logisticTypesProvided": [],
           "logisticTypesReceived": [
             "parcel"
           ]
@@ -525,9 +494,12 @@
         {
           "psName": "hotrolled_fluids",
           "logisticTypesProvided": [
-            "hazardousFluid"
+            "hazardousFluid",
+            "ash"
           ],
-          "logisticTypesReceived": []
+          "logisticTypesReceived": [
+            "sand"
+          ]
         },
         {
           "psName": "hotrolled_yard1",
@@ -552,7 +524,7 @@
             "industrial",
             "trailerDeliveryConstructionMaterials"
           ]
-        },
+        }
       ],
       //"pickUpSpotNames":["hotrolled_parking"],
       //"dropOffSpotNames":["hotrolled_parking"],
@@ -563,13 +535,15 @@
         "trailerDeliveryConstructionMaterials",
         "vehLargeTruck",
         "vehLargeTruckNeedsRepair",
-        "hazardousFluid"
+        "hazardousFluid",
+        "ash"
       ],
       "logisticTypesReceived": [
         "industrial",
         "parcel",
         "trailerDeliveryConstructionMaterials",
-        "vehLargeTruck"
+        "vehLargeTruck",
+        "sand"
       ],
       "logisticGenerators": [
         {
@@ -578,7 +552,7 @@
             "industrial"
           ],
           "min": -0.5,
-          "max": 1,
+          "max": 2,
           "interval": 90
         },
         {
@@ -671,6 +645,30 @@
           ],
         },
         {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "sand"
+          ],
+          "materialType": "sand",
+          "capacity": 130000,
+          "target": 0,
+          "variance": 15000,
+          "interval": 300,
+          "rate": 19167
+        },
+        {
+          "type": "materialProvider",
+          "logisticTypes": [
+            "ash"
+          ],
+          "materialType": "ash",
+          "capacity": 15600,
+          "target": 13800,
+          "variance": 1800,
+          "interval": 300,
+          "rate": 13800
+        },
+        {
           "type": "materialProvider",
           "logisticTypes": [
             "hazardousFluid"
@@ -680,9 +678,9 @@
           "target": 7500,
           "variance": 2500,
           "interval": 360,
-          "rate": 750,
-        },
-      ],
+          "rate": 1700,
+        }
+      ]
     },
     {
       "id": "quarry",
@@ -720,18 +718,20 @@
             "hazardousFluid"
           ],
           "logisticTypesReceived": [
-            "water"
+            "cement"
           ]
         },
         {
           "psName": "quarry_loadMaterial",
           "logisticTypesProvided": [
+            "water",
             "sand",
-            "cement",
-            "gravel"
+            "gravel",
+            "lime",
+            "soil"
           ],
           "logisticTypesReceived": []
-        },
+        }
       ],
       //"pickUpSpotNames":["quarry_parking"],
       //"dropOffSpotNames":["quarry_parking"],
@@ -742,17 +742,21 @@
         "trailerDeliveryConstructionMaterials",
         "vehLargeTruck",
         "vehLargeTruckNeedsRepair",
-        "sand",
-        "cement",
         "hazardousFluid",
-        "gravel"
+        "water",
+        "sand",
+        "gravel",
+        "lime",
+        "soil"
       ],
       "logisticTypesReceived": [
         "industrial",
         "parcel",
+        "cement",
         "trailerDeliveryConstructionMaterials",
         "vehLargeTruck",
-        "water"
+        "water",
+        "cement"
       ],
       "logisticGenerators": [
         {
@@ -859,23 +863,11 @@
             "sand"
           ],
           "materialType": "sand",
-          "capacity": 15000,
-          "target": 7500,
-          "variance": 2000,
-          "interval": 270,
-          "rate": 750,
-        },
-        {
-          "type": "materialProvider",
-          "logisticTypes": [
-            "cement"
-          ],
-          "materialType": "cement",
-          "capacity": 15000,
-          "target": 7500,
-          "variance": 2000,
-          "interval": 270,
-          "rate": 750,
+          "capacity": 195000,
+          "target": 172500,
+          "variance": 22500,
+          "interval": 300,
+          "rate": 28750
         },
         {
           "type": "materialProvider",
@@ -883,11 +875,47 @@
             "gravel"
           ],
           "materialType": "gravel",
-          "capacity": 15000,
-          "target": 9000,
-          "variance": 2000,
-          "interval": 180,
-          "rate": 900,
+          "capacity": 156000,
+          "target": 138000,
+          "variance": 18000,
+          "interval": 300,
+          "rate": 23000
+        },
+        {
+          "type": "materialProvider",
+          "logisticTypes": [
+            "lime"
+          ],
+          "materialType": "lime",
+          "capacity": 39000,
+          "target": 34500,
+          "variance": 4500,
+          "interval": 300,
+          "rate": 5750
+        },
+        {
+          "type": "materialProvider",
+          "logisticTypes": [
+            "soil"
+          ],
+          "materialType": "soil",
+          "capacity": 12480,
+          "target": 11040,
+          "variance": 1440,
+          "interval": 300,
+          "rate": 3680
+        },
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "cement"
+          ],
+          "materialType": "cement",
+          "capacity": 7800,
+          "target": 0,
+          "variance": 900.000000000001,
+          "interval": 300,
+          "rate": 3450
         },
         {
           "type": "materialReceiver",
@@ -896,10 +924,10 @@
           ],
           "materialType": "water",
           "capacity": 15000,
-          "target": 12500,
+          "target": 0,
           "variance": 2500,
           "interval": 360,
-          "rate": 750,
+          "rate": 1700,
         },
         {
           "type": "materialProvider",
@@ -911,9 +939,9 @@
           "target": 7500,
           "variance": 2500,
           "interval": 360,
-          "rate": 750,
-        },
-      ],
+          "rate": 1700,
+        }
+      ]
     },
     {
       "id": "sealbrik",
@@ -993,7 +1021,6 @@
         "vehLargeTruck",
         "vehLargeTruckNeedsRepair",
         "hazardousFluid",
-        "sand",
         "cement"
       ],
       "logisticTypesReceived": [
@@ -1003,7 +1030,9 @@
         "vehLargeTruck",
         "water",
         "gravel",
-        "soil"
+        "sand",
+        "lime",
+        "ash"
       ],
       "logisticGenerators": [
         {
@@ -1105,16 +1134,28 @@
           ],
         },
         {
+          "type": "materialProvider",
+          "logisticTypes": [
+            "cement"
+          ],
+          "materialType": "cement",
+          "capacity": 130000,
+          "target": 115000,
+          "variance": 15000,
+          "interval": 300,
+          "rate": 9583
+        },
+        {
           "type": "materialReceiver",
           "logisticTypes": [
-            "soil"
+            "sand"
           ],
-          "materialType": "soil",
-          "capacity": 15000,
-          "target": 11000,
-          "variance": 1000,
-          "interval": 180,
-          "rate": 1000,
+          "materialType": "sand",
+          "capacity": 130000,
+          "target": 0,
+          "variance": 15000,
+          "interval": 300,
+          "rate": 12778
         },
         {
           "type": "materialReceiver",
@@ -1122,11 +1163,35 @@
             "gravel"
           ],
           "materialType": "gravel",
-          "capacity": 5000,
-          "target": 4000,
-          "variance": 1000,
-          "interval": 360,
-          "rate": 400,
+          "capacity": 97500,
+          "target": 0,
+          "variance": 11250,
+          "interval": 300,
+          "rate": 9583
+        },
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "lime"
+          ],
+          "materialType": "lime",
+          "capacity": 15600,
+          "target": 0,
+          "variance": 1800,
+          "interval": 300,
+          "rate": 2300
+        },
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "ash"
+          ],
+          "materialType": "ash",
+          "capacity": 6240,
+          "target": 0,
+          "variance": 720,
+          "interval": 300,
+          "rate": 2760
         },
         {
           "type": "materialReceiver",
@@ -1135,34 +1200,10 @@
           ],
           "materialType": "water",
           "capacity": 15000,
-          "target": 12500,
+          "target": 0,
           "variance": 2500,
           "interval": 360,
-          "rate": 750,
-        },
-        {
-          "type": "materialProvider",
-          "logisticTypes": [
-            "sand"
-          ],
-          "materialType": "sand",
-          "capacity": 1500000,
-          "target": 37500,
-          "variance": 2000,
-          "interval": 270,
-          "rate": 750,
-        },
-        {
-          "type": "materialProvider",
-          "logisticTypes": [
-            "cement"
-          ],
-          "materialType": "cement",
-          "capacity": 150000,
-          "target": 37500,
-          "variance": 2000,
-          "interval": 270,
-          "rate": 750,
+          "rate": 1700,
         },
         {
           "type": "materialProvider",
@@ -1174,7 +1215,19 @@
           "target": 7500,
           "variance": 2500,
           "interval": 360,
-          "rate": 750,
+          "rate": 1700,
+        },
+        {
+          "type": "materialProvider",
+          "logisticTypes": [
+            "cement"
+          ],
+          "materialType": "cement",
+          "capacity": 31200,
+          "target": 27600,
+          "variance": 3600,
+          "interval": 300,
+          "rate": 9583
         },
       ],
     },
@@ -1770,10 +1823,10 @@
           ],
           "materialType": "hazardousFluid",
           "capacity": 50000,
-          "target": 15000,
+          "target": 0,
           "variance": 2000,
           "interval": 100,
-          "rate": 900,
+          "rate": 1900,
         }
       ],
     },
@@ -1791,33 +1844,20 @@
       "sitesFile": "mixed.sites.json",
       "logisticTypesProvided": [],
       "logisticTypesReceived": [
-        "sand",
         "gravel"
       ],
       "logisticGenerators": [
         {
           "type": "materialReceiver",
           "logisticTypes": [
-            "sand"
-          ],
-          "materialType": "sand",
-          "capacity": 30000,
-          "target": 15000,
-          "variance": 1000,
-          "interval": 270,
-          "rate": 200,
-        },
-        {
-          "type": "materialReceiver",
-          "logisticTypes": [
             "gravel"
           ],
           "materialType": "gravel",
-          "capacity": 11000,
-          "target": 9000,
-          "variance": 400,
-          "interval": 360,
-          "rate": 100,
+          "capacity": 15600,
+          "target": 0,
+          "variance": 1800,
+          "interval": 300,
+          "rate": 2300
         },
       ],
     },
@@ -1834,33 +1874,20 @@
       //"dropOffSpotNames":["dirt_tracks_round_parking"],
       "sitesFile": "mixed.sites.json",
       "logisticTypesReceived": [
-        "sand",
         "gravel"
       ],
       "logisticGenerators": [
         {
           "type": "materialReceiver",
           "logisticTypes": [
-            "sand"
-          ],
-          "materialType": "sand",
-          "capacity": 30000,
-          "target": 15000,
-          "variance": 1000,
-          "interval": 270,
-          "rate": 200,
-        },
-        {
-          "type": "materialReceiver",
-          "logisticTypes": [
             "gravel"
           ],
           "materialType": "gravel",
-          "capacity": 11000,
-          "target": 9000,
-          "variance": 400,
-          "interval": 360,
-          "rate": 100,
+          "capacity": 15600,
+          "target": 0,
+          "variance": 1800,
+          "interval": 300,
+          "rate": 2300
         },
       ],
     },
@@ -1877,7 +1904,9 @@
       ],
       "sitesFile": "mixed.sites.json",
       "logisticTypesReceived": [
-        "soil"
+        "fertilizer",
+        "soil",
+        "lime"
       ],
       "logisticGenerators": [
         {
@@ -1888,7 +1917,43 @@
           "min": -1,
           "max": 1,
           "interval": 120
-        }
+        },
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "fertilizer"
+          ],
+          "materialType": "fertilizer",
+          "capacity": 6240,
+          "target": 0,
+          "variance": 720,
+          "interval": 300,
+          "rate": 920
+        },
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "soil"
+          ],
+          "materialType": "soil",
+          "capacity": 6240,
+          "target": 0,
+          "variance": 720,
+          "interval": 300,
+          "rate": 920
+        },
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "lime"
+          ],
+          "materialType": "lime",
+          "capacity": 6240,
+          "target": 0,
+          "variance": 720,
+          "interval": 300,
+          "rate": 920
+        },
       ],
     },
     {
@@ -1904,18 +1969,47 @@
       //"dropOffSpotNames":["office_garden"],
       "sitesFile": "mixed.sites.json",
       "logisticTypesReceived": [
-        "soil"
+        "soil",
+        "fertilizer",
+        "lime"
       ],
       "logisticGenerators": [
         {
-          "type": "parcelReceiver",
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "fertilizer"
+          ],
+          "materialType": "fertilizer",
+          "capacity": 6240,
+          "target": 0,
+          "variance": 720,
+          "interval": 300,
+          "rate": 920
+        },
+        {
+          "type": "materialReceiver",
           "logisticTypes": [
             "soil"
           ],
-          "min": -1,
-          "max": 1,
-          "interval": 120
-        }
+          "materialType": "soil",
+          "capacity": 6240,
+          "target": 0,
+          "variance": 720,
+          "interval": 300,
+          "rate": 920
+        },
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "lime"
+          ],
+          "materialType": "lime",
+          "capacity": 6240,
+          "target": 0,
+          "variance": 720,
+          "interval": 300,
+          "rate": 920
+        },
       ],
     },
     {
@@ -1931,18 +2025,34 @@
       ],
       "sitesFile": "mixed.sites.json",
       "logisticTypesReceived": [
-        "soil"
+        "soil",
+        "fertilizer"
       ],
       "logisticGenerators": [
         {
-          "type": "parcelReceiver",
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "fertilizer"
+          ],
+          "materialType": "fertilizer",
+          "capacity": 3120,
+          "target": 0,
+          "variance": 360,
+          "interval": 300,
+          "rate": 460
+        },
+        {
+          "type": "materialReceiver",
           "logisticTypes": [
             "soil"
           ],
-          "min": -1,
-          "max": 1,
-          "interval": 120
-        }
+          "materialType": "soil",
+          "capacity": 3120,
+          "target": 0,
+          "variance": 360,
+          "interval": 300,
+          "rate": 460
+        },
       ],
     },
     {
@@ -1958,18 +2068,34 @@
       ],
       "sitesFile": "mixed.sites.json",
       "logisticTypesReceived": [
-        "soil"
+        "soil",
+        "fertilizer"
       ],
       "logisticGenerators": [
         {
-          "type": "parcelReceiver",
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "fertilizer"
+          ],
+          "materialType": "fertilizer",
+          "capacity": 3120,
+          "target": 0,
+          "variance": 360,
+          "interval": 300,
+          "rate": 460
+        },
+        {
+          "type": "materialReceiver",
           "logisticTypes": [
             "soil"
           ],
-          "min": -1,
-          "max": 1,
-          "interval": 120
-        }
+          "materialType": "soil",
+          "capacity": 3120,
+          "target": 0,
+          "variance": 360,
+          "interval": 300,
+          "rate": 460
+        },
       ],
     },
   ]
