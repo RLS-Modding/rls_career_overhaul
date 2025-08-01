@@ -197,7 +197,11 @@
         "whiteList": {
           "Config Type": [
             "Custom"
-          ]
+          ],
+          "Mileage": {
+            "min": 0,
+            "max": 160934400
+          }
         },
         "blackList": {
           "Type": [
@@ -521,6 +525,10 @@
           "Value": {
             "min": 80000,
             "max": 5500000
+          },
+          "Mileage": {
+            "min": 0,
+            "max": 160934400
           }
         },
         "blackList": {
@@ -1607,7 +1615,12 @@
         "importDealerParking1"
       ],
       "filter": {
-        "whiteList": {},
+        "whiteList": {
+          "Mileage": {
+            "min": 0,
+            "max": 760934400
+          }
+        },
         "blackList": {
           "Configuration": [
             "Drag",
