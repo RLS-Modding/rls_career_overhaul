@@ -103,7 +103,6 @@ end
 
 M.switchMap = switchMap
 M.onBeamNGTrigger = onBeamNGTrigger
-M.onWorldReadyState = onWorldReadyState
 M.onExtensionLoaded = onExtensionLoaded
 
 return M

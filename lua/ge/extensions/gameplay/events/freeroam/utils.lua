@@ -208,6 +208,28 @@ local function driftReward(race, time, driftScore)
     return race.reward * timeFactor * driftFactor
 end
 
+local function hybridRaceReward(goalTime, baseReward, actualTime, damageFactor, damagePercentage)
+    if damageFactor == 0 then
+        return raceReward(goalTime, baseReward, actualTime)
+    end
+    
+    if damageFactor == 1 then
+        local damageReward = baseReward * (1 - damagePercentage)
+        return math.max(0, damageReward)
+    end
+    
+    local timeReward = raceReward(goalTime, baseReward, actualTime)
+    local timeRewardNormalized = timeReward / baseReward
+    
+    local damageRewardNormalized = 1 - damagePercentage
+    
+    local weightedScore = (1 - damageFactor) * timeRewardNormalized + damageFactor * damageRewardNormalized
+    
+    local finalReward = baseReward * weightedScore
+    
+    return math.max(0, finalReward)
+end
+
 local function hotlapMultiplier(lapCount)
     return (10 / (1 + math.exp(-0.07*(lapCount - 17)))) - 1.35
 end
@@ -297,6 +319,39 @@ local function displayStagedMessage(vehId, raceName, getMessage)
         end
     end
 
+    local function addHybridRaceInfo(leaderboardEntry, targetTime, reward, label, damageFactor)
+        local bestTime = leaderboardEntry and leaderboardEntry.time or nil
+        local bestDamagePercentage = leaderboardEntry and leaderboardEntry.damagePercentage or nil
+        
+        if not bestTime then
+            if careerMode then
+                if damageFactor == 1 then
+                    return string.format("%sTarget Time: %s | Target: No Damage\n(Achieve both to earn a reward of $%.2f and 1 Bonus Star)",
+                        label, formatTime(targetTime), reward)
+                else
+                    return string.format("%sTarget Time: %s | Damage Factor: %.0f%%\n(Speed and damage both matter - achieve target time with minimal damage to earn up to $%.2f and 1 Bonus Star)",
+                        label, formatTime(targetTime), damageFactor * 100, reward)
+                end
+            else
+                return string.format("%sTarget Time: %s | Damage Factor: %.0f%%", label, formatTime(targetTime), damageFactor * 100)
+            end
+        else
+            local damageText = bestDamagePercentage and string.format(" | Best Damage: %.1f%%", bestDamagePercentage * 100) or ""
+            if careerMode then
+                if damageFactor == 1 then
+                    return string.format("%sYour Best Time: %s%s | Target: No Damage\n(Improve time or reduce damage to earn more rewards)",
+                        label, formatTime(bestTime), damageText)
+                else
+                    return string.format("%sYour Best Time: %s%s | Damage Factor: %.0f%%\n(Speed and damage both matter - improve either to earn more rewards)",
+                        label, formatTime(bestTime), damageText, damageFactor * 100)
+                end
+            else
+                return string.format("%sYour Best Time: %s%s | Damage Factor: %.0f%%", 
+                    label, formatTime(bestTime), damageText, damageFactor * 100)
+            end
+        end
+    end
+
     if race.driftGoal then
         -- Handle drift event staging message
         local bestScore = leaderboardEntry.driftScore
@@ -329,6 +384,9 @@ local function displayStagedMessage(vehId, raceName, getMessage)
                         formatTime(targetTime))
             end
         end
+    elseif race.damageFactor and race.damageFactor > 0 then
+        -- Handle damage-based race staging message
+        message = message .. addHybridRaceInfo(leaderboardEntry, race.bestTime, race.reward, "", race.damageFactor)
     else
         message = message .. addTimeInfo(leaderboardEntry and leaderboardEntry.time or nil, race.bestTime, race.reward, "")
     end
@@ -336,29 +394,40 @@ local function displayStagedMessage(vehId, raceName, getMessage)
     -- Handle hotlap if it exists
     if race.hotlap then
         leaderboardEntry = leaderboardManager.getLeaderboardEntry(vehId, getRaceLabel(raceName, nil, true))
-        message = message .. "\n\n" ..
-                      addTimeInfo(leaderboardEntry and leaderboardEntry.time or nil, race.hotlap, race.reward, "Hotlap: ")
+        if race.damageFactor and race.damageFactor > 0 then
+            message = message .. "\n\n" .. addHybridRaceInfo(leaderboardEntry, race.hotlap, race.reward, "Hotlap: ", race.damageFactor)
+        else
+            message = message .. "\n\n" .. addTimeInfo(leaderboardEntry and leaderboardEntry.time or nil, race.hotlap, race.reward, "Hotlap: ")
+        end
     end
 
     -- Handle alternative route if it exists
     if race.altRoute then
         leaderboardEntry = leaderboardManager.getLeaderboardEntry(vehId, getRaceLabel(raceName, true))
         message = message .. "\n\nAlternative Route:\n"
-        message = message ..
-                      addTimeInfo(leaderboardEntry and leaderboardEntry.time or nil, race.altRoute.bestTime,
-                race.altRoute.reward, "")
+        if race.altRoute.damageFactor and race.altRoute.damageFactor > 0 then
+            message = message .. addHybridRaceInfo(leaderboardEntry, race.altRoute.bestTime, race.altRoute.reward, "", race.altRoute.damageFactor)
+        else
+            message = message .. addTimeInfo(leaderboardEntry and leaderboardEntry.time or nil, race.altRoute.bestTime, race.altRoute.reward, "")
+        end
 
         if race.altRoute.hotlap then
             leaderboardEntry = leaderboardManager.getLeaderboardEntry(vehId, getRaceLabel(raceName, true, true))
-            message = message .. "\n\n" ..
-                          addTimeInfo(leaderboardEntry and leaderboardEntry.time or nil, race.altRoute.hotlap,
-                    race.altRoute.reward, "Alt Route Hotlap: ")
+            if race.altRoute.damageFactor and race.altRoute.damageFactor > 0 then
+                message = message .. "\n\n" .. addHybridRaceInfo(leaderboardEntry, race.altRoute.hotlap, race.altRoute.reward, "Alt Route Hotlap: ", race.altRoute.damageFactor)
+            else
+                message = message .. "\n\n" .. addTimeInfo(leaderboardEntry and leaderboardEntry.time or nil, race.altRoute.hotlap, race.altRoute.reward, "Alt Route Hotlap: ")
+            end
         end
     end
 
     -- Add note for time-based events in career mode
     if careerMode and not race.driftGoal then
-        message = message .. "\n\n**Note: All rewards are cut by 50% if they are below your best time.**"
+        if race.damageFactor and race.damageFactor > 0 then
+            message = message .. "\n\n**Note: All rewards are cut by 50% if they are below your best score. Score is calculated based on both time and damage.**"
+        else
+            message = message .. "\n\n**Note: All rewards are cut by 50% if they are below your best time.**"
+        end
     end
 
     if not getMessage then
@@ -382,6 +451,11 @@ local function setActiveLight(event, color)
         green:setHidden(color ~= "green")
     end
 
+end
+
+local function getVehicleDamage()
+    local playerVehicleId = be:getPlayerVehicleID(0)
+    return map.objects[playerVehicleId] and map.objects[playerVehicleId].damage or 0
 end
 
 local playerInPursuit = false
@@ -427,6 +501,7 @@ M.displayMessage = displayMessage
 M.formatTime = formatTime
 M.raceReward = raceReward
 M.driftReward = driftReward
+M.hybridRaceReward = hybridRaceReward
 M.hotlapMultiplier = hotlapMultiplier
 M.saveAndSetTrafficAmount = saveAndSetTrafficAmount
 M.restoreTrafficAmount = restoreTrafficAmount
@@ -435,7 +510,7 @@ M.hasFinishTrigger = hasFinishTrigger
 M.setActiveLight = setActiveLight
 M.loadRaceData = loadRaceData
 M.onExtensionLoaded = onExtensionLoaded
-
+M.getVehicleDamage = getVehicleDamage
 M.isPlayerInPursuit = function() return playerInPursuit end
 
 return M

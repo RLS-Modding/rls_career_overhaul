@@ -48,6 +48,45 @@ local function isBestTime(entry)
         return entry.driftScore > leaderboardEntry.driftScore
     end
 
+    -- Handle damage-based races
+    if entry.damageFactor and entry.damageFactor > 0 then
+        -- If this is a damage-based race, compare based on the hybrid system
+        local utils = require('gameplay/events/freeroam/utils')
+        
+        -- Get the race data to know the goal time and reward
+        local races = utils.loadRaceData()
+        local race = races[entry.raceName]
+        if not race then
+            return true
+        end
+        
+        local goalTime = race.bestTime
+        local baseReward = race.reward
+        
+        -- Handle alt route and hotlap variations
+        if entry.isAltRoute and race.altRoute then
+            goalTime = race.altRoute.bestTime
+            baseReward = race.altRoute.reward
+        end
+        if entry.isHotlap and race.hotlap then
+            goalTime = race.hotlap
+        end
+        
+        -- Calculate current entry's hybrid score
+        local currentScore = utils.hybridRaceReward(goalTime, baseReward, entry.time, entry.damageFactor, entry.damagePercentage)
+        
+        -- Calculate existing leaderboard entry's hybrid score if it exists
+        if not leaderboardEntry.time then
+            return true
+        end
+        
+        local existingDamagePercentage = leaderboardEntry.damagePercentage or 0
+        local existingScore = utils.hybridRaceReward(goalTime, baseReward, leaderboardEntry.time, entry.damageFactor, existingDamagePercentage)
+        
+        return currentScore > existingScore
+    end
+
+    -- Default time-based comparison
     if not leaderboardEntry.time then
         return true
     end
@@ -77,6 +116,8 @@ local function addLeaderboardEntry(entry)
         leaderboardEntry[raceLabel].time = entry.time
         leaderboardEntry[raceLabel].splitTimes = entry.splitTimes
         leaderboardEntry[raceLabel].driftScore = entry.driftScore
+        leaderboardEntry[raceLabel].damagePercentage = entry.damagePercentage
+        leaderboardEntry[raceLabel].damageFactor = entry.damageFactor
         return true
     end
     return false
