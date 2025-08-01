@@ -1,0 +1,55 @@
+{
+  "rls_leather": {
+    "name": "rls_leather",
+    "mapTo": "rls_leather",
+    "class": "Material",
+    "Stages": [
+      {
+        "baseColorFactor": [
+          0.180948004,
+          0.180948004,
+          0.180948004,
+          1
+        ],
+        "clearCoatFactor": 1,
+        "metallicFactor": 0.579999983,
+        "normalMap": "/vehicles/frameless_dump/RaceTab_leather_N.png",
+        "normalMapStrength": 2,
+        "opacityMapUseUV": 1,
+        "roughnessFactor": 0.600000024,
+        "roughnessMap": "/vehicles/frameless_dump/RaceTab_leather_R.png"
+      },
+      {
+        "baseColorFactor": null,
+        "clearCoatFactor": null,
+        "metallicFactor": null,
+        "normalMapStrength": null,
+        "opacityMapUseUV": null,
+        "roughnessFactor": null
+      },
+      {
+        "baseColorFactor": null,
+        "clearCoatFactor": null,
+        "metallicFactor": null,
+        "normalMapStrength": null,
+        "opacityMapUseUV": null,
+        "roughnessFactor": null
+      },
+      {
+        "baseColorFactor": null,
+        "clearCoatFactor": null,
+        "metallicFactor": null,
+        "normalMapStrength": null,
+        "opacityMapUseUV": null,
+        "roughnessFactor": null
+      }
+    ],
+    "alphaTest": true,
+    "doubleSided": true,
+    "dynamicCubemap": true,
+    "invertBackFaceNormals": true,
+    "materialTag0": "beamng",
+    "translucentBlendOp": "None",
+    "version": 1.5
+  }
+}
