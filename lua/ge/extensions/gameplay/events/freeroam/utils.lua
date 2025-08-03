@@ -219,13 +219,8 @@ local function hybridRaceReward(goalTime, baseReward, actualTime, damageFactor, 
     end
     
     local timeReward = raceReward(goalTime, baseReward, actualTime)
-    local timeRewardNormalized = timeReward / baseReward
     
-    local damageRewardNormalized = 1 - damagePercentage
-    
-    local weightedScore = (1 - damageFactor) * timeRewardNormalized + damageFactor * damageRewardNormalized
-    
-    local finalReward = baseReward * weightedScore
+    local finalReward = (baseReward * (1 - damagePercentage)) + (damageFactor * timeReward)
     
     return math.max(0, finalReward)
 end

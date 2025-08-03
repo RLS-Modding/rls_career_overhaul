@@ -30,6 +30,7 @@
       "checkpointRoad":"dirtOval",
       "hotlap":25,
       "label":"Dirt Oval",
+      "damageFactor":1,
       "reward":350,
       "type":[
         "oval",
