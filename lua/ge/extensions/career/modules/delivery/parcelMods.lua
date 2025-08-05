@@ -167,7 +167,7 @@ local modifiers = {
     makeTemplate = function(g,p,distance)
       return {
         type = "post",
-        moneyMultipler = 20.0,
+        moneyMultipler = 40.0,
       }
     end,
     unlockLabel = "Air Express Parcels",
