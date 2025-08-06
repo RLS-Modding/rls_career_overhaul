@@ -58,7 +58,9 @@
                 <div class="ride-status">
                     {{ currentState === 'pickup' ? 'Picking up' : 'Dropping off' }} {{ riderCount }} passengers
                 </div>
-                <div class="fare-display small">${{ formatCurrency(farePerKm) }}/km</div>
+                <div class="fare-display small">
+                    ${{ formatCurrency(farePerKm) }} <span class="tip-note">without tip</span>
+                </div>
                 <div class="rider-details center">
                     <span class="rider-info">
                         <BngIcon class="app-icon" :type="icons.person" />
@@ -83,7 +85,9 @@
                         <BngIcon class="x-icon" :type="icons.xmark" />
                     </button>
                 </div>
-                <div class="fare-display">${{ formatCurrency(farePerKm) }}/km</div>
+                <div class="fare-display">
+                    ${{ formatCurrency(farePerKm) }} <span class="tip-note">without tip</span>
+                </div>
                 <div class="rider-details">
                     <span class="rider-info">
                         <BngIcon class="app-icon" :type="icons.person" />
@@ -104,31 +108,33 @@
             <div class="complete-overlay" v-if="currentState === 'complete'">
                 <div class="complete-modal">
                     <div class="fare-display center">${{ formatCurrency(totalFare) }}</div>
-                    <div class="rider-details center">
-                        <span class="rider-info">{{ riderType }}</span>
-                        <span class="rider-info">
-                            <BngIcon class="app-icon" :type="icons.person" />
-                            {{ riderCount }}
-                        </span>
-                        <span class="rider-info">★ {{ riderRating }}</span>
-                        <span class="rider-info">
-                            <BngIcon class="app-icon" :type="icons.sync" />
-                            {{ fareStreak }}
-                        </span>
+                    <div class="fare-breakdown">
+                        <div class="breakdown-section">
+                            <div class="breakdown-label">Base Fare</div>
+                            <div class="breakdown-amount">${{ formatCurrency(baseFareAmount) }}</div>
+                        </div>
+                        <div class="breakdown-section" v-if="totalTipsAmount !== 0">
+                            <div class="breakdown-label">Tips</div>
+                            <div class="breakdown-amount" :class="{ 'positive': totalTipsAmount > 0, 'negative': totalTipsAmount < 0 }">
+                                {{ totalTipsAmount > 0 ? '+' : '' }}${{ formatCurrency(Math.abs(totalTipsAmount)) }}
+                            </div>
+                        </div>
+                        <div class="tip-breakdown-toggle" v-if="Object.keys(tipBreakdownData).length > 0" @click.stop="toggleTipBreakdown" @mousedown.stop>
+                            <span>Tip Breakdown ({{ Object.keys(tipBreakdownData).length }} items)</span>
+                            <span class="dropdown-icon">{{ showTipBreakdown ? '▼' : '▶' }}</span>
+                        </div>
+                        <div class="tip-breakdown" v-if="Object.keys(tipBreakdownData).length > 0 && showTipBreakdown">
+                            <div class="tip-item" v-for="(amount, name) in tipBreakdownData" :key="name">
+                                <span class="tip-name">{{ name }}</span>
+                                <span class="tip-amount" :class="{ 'positive': amount >= 0, 'negative': amount < 0 }">
+                                    {{ amount >= 0 ? '+' : '' }}${{ formatCurrency(Math.abs(amount)) }}
+                                </span>
+                            </div>
+                        </div>
                     </div>
                     <div class="rider-details center">
-                        <span class="rider-info">
-                            <BngIcon class="app-icon" :type="icons.road" />
-                            {{ distanceTraveled }}km
-                        </span>
-                        <span class="rider-info">
-                            <BngIcon class="app-icon" :type="icons.carUp" />
-                            x{{ vehicleMultiplier }}
-                        </span>
-                        <span class="rider-info">
-                            <BngIcon class="app-icon" :type="icons.timer" />
-                            x{{ timeMultiplier }}
-                        </span>
+                        <span class="rider-info">{{ riderType }}</span>
+                        <span class="rider-info">★ {{ riderRating }}</span>
                     </div>
                     <button class="state-button complete" @click.stop="setState('ready')">Complete</button>
                 </div>
@@ -161,6 +167,10 @@ const farePerKm = ref(0)
 const distanceTraveled = ref(0)
 const totalFare = ref(0)
 const timeMultiplier = ref(0)
+const baseFareAmount = ref(0)
+const totalTipsAmount = ref(0)
+const tipBreakdownData = ref({})
+const showTipBreakdown = ref(false)
 
 // Vehicle Specific
 const vehicleMultiplier = ref(0)
@@ -220,10 +230,28 @@ const handleFare = () => {
     distanceTraveled.value = Number(currentFare.value.totalDistance ?? 0)
     timeMultiplier.value = Number(currentFare.value.timeMultiplier ?? 1)
     riderType.value = currentFare.value.passengerTypeName ?? 'Standard'
+    
+    // Handle new tip breakdown data
+    baseFareAmount.value = Number(currentFare.value.baseFare ?? 0)
+    totalTipsAmount.value = Number(currentFare.value.totalTips ?? 0)
+    tipBreakdownData.value = currentFare.value.tipBreakdown ?? {}
+    showTipBreakdown.value = false
+    
+    // Debug logging
+    console.log('Tip breakdown data:', tipBreakdownData.value)
+    console.log('Total tips amount:', totalTipsAmount.value)
+    console.log('Object keys length:', Object.keys(tipBreakdownData.value).length)
+}
+
+const toggleTipBreakdown = () => {
+    console.log('Toggle tip breakdown clicked!')
+    showTipBreakdown.value = !showTipBreakdown.value
+    console.log('showTipBreakdown is now:', showTipBreakdown.value)
 }
 
 onMounted(() => {
     events.on('updateTaxiState', (state) => {
+        console.log('Received taxi state update:', state)
         currentState.value = state.state
         currentFare.value = state.currentFare
         currentCapacity.value = state.availableSeats
@@ -368,6 +396,12 @@ onMounted(() => {
     }
 }
 
+.tip-note {
+    font-size: 0.6em;
+    color: #666666;
+    font-weight: 400;
+}
+
 .rider-details {
     display: flex;
     margin-bottom: 0.5rem;
@@ -432,6 +466,102 @@ onMounted(() => {
     border-radius: 20px;
     width: 90%;
     column-gap: 5rem;
+    max-height: 80vh;
+    overflow-y: auto;
+    color: rgb(0, 0, 0);
+}
+
+.fare-breakdown {
+    margin: 1rem 0;
+    padding: 0.5rem;
+    background: rgba(196, 205, 230, 0.5);
+    border-radius: 10px;
+}
+
+.breakdown-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.25rem 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.breakdown-section:last-child {
+    border-bottom: none;
+}
+
+.breakdown-label {
+    font-size: 1.1em;
+    font-weight: 600;
+    color: rgb(0, 0, 0);
+}
+
+.breakdown-amount {
+    font-size: 1.1em;
+    font-weight: 700;
+    color: rgb(0, 0, 0);
+}
+
+.tip-breakdown-toggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    margin-top: 0.5rem;
+    cursor: pointer;
+    font-weight: 600;
+    color: rgb(0, 0, 0);
+    border-top: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    transition: background-color 0.2s ease;
+    user-select: none;
+}
+
+.tip-breakdown-toggle:hover {
+    background: rgba(196, 205, 230, 0.5);
+}
+
+.tip-breakdown-toggle:active {
+    background: rgba(196, 205, 230, 0.7);
+}
+
+.dropdown-icon {
+    font-size: 1.2em;
+    color: rgb(0, 0, 0);
+    font-weight: bold;
+    transition: transform 0.2s ease;
+}
+
+.tip-breakdown {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.tip-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.2rem 0;
+    font-size: 0.9em;
+}
+
+.tip-name {
+    font-weight: 500;
+    color: rgb(0, 0, 0);
+}
+
+.tip-amount {
+    font-weight: 600;
+    color: rgb(0, 0, 0);
+    
+    &.positive {
+        color: #0f7b0f;
+    }
+    
+    &.negative {
+        color: #ff1744;
+    }
 }
 
 .app-icon {

@@ -23,34 +23,38 @@ local function onExtensionLoaded()
             {min = 0.9, max = 1.2, weight = 2}
         },
         
-        -- Custom reward calculation that penalizes high speeds and rewards smooth driving
-        calculateReward = function(fare, elapsedTime, speedFactor, passengerType)
-            local basePayment = fare.baseFare * (fare.totalDistance / 1000)
+        -- Custom tip breakdown that penalizes high speeds and rewards smooth driving
+        calculateTipBreakdown = function(fare, elapsedTime, speedFactor, passengerType)
+            local tipBreakdown = {}
+            local baseFare = tonumber(fare.baseFare) or 0
             
             -- Party passengers prefer safe, slow driving
-            local safetyBonus = 1.0
-            if speedFactor > 0.2 then
-                -- Penalty for driving too fast
-                safetyBonus = 0.7
-            elseif speedFactor < -0.1 then
-                -- Bonus for driving carefully
-                safetyBonus = 1.3
+            if speedFactor < -0.1 then
+                tipBreakdown["Safety Bonus"] = 0.3 * baseFare
             end
             
             -- Additional tip for very smooth ride (if sensor data available)
-            local smoothnessBonus = 1.0
             if gameplay_taxi.rideData and gameplay_taxi.rideData.currentSensorData then
                 local sensorData = gameplay_taxi.rideData.currentSensorData
                 local totalG = math.abs(sensorData.gx or 0) + math.abs(sensorData.gy or 0)
                 
                 if totalG < 0.3 then
-                    smoothnessBonus = 1.2 -- Smooth ride bonus
-                elseif totalG > 0.8 then
-                    smoothnessBonus = 0.8 -- Rough ride penalty
+                    tipBreakdown["Smooth Ride"] = 0.2 * baseFare
                 end
             end
             
-            return basePayment * safetyBonus * smoothnessBonus * passengerType.baseMultiplier
+            -- Check party data for additional bonuses
+            if fare.rideQuality and fare.rideQuality.partyData then
+                local partyData = fare.rideQuality.partyData
+                if partyData.avgGForce and partyData.avgGForce < 0.25 then
+                    tipBreakdown["Gentle Driving"] = 0.15 * baseFare
+                end
+                if partyData.maxGForce and partyData.maxGForce < 0.5 then
+                    tipBreakdown["No Sudden Movements"] = 0.1 * baseFare
+                end
+            end
+            
+            return tipBreakdown
         end,
         
         -- Custom description for party groups
@@ -94,6 +98,10 @@ local function onExtensionLoaded()
                     sum = sum + reading
                 end
                 rideData.partyData.avgGForce = sum / #rideData.partyData.gForceReadings
+                
+                -- Store in fare for tip calculation
+                fare.rideQuality = fare.rideQuality or {}
+                fare.rideQuality.partyData = rideData.partyData
             end
         end
     })

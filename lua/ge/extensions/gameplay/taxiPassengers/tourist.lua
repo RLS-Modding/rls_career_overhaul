@@ -16,37 +16,39 @@ local function onExtensionLoaded()
             {min = 1.0, max = 1.4, weight = 1}
         },
         speedTolerance = 1.5,
-        calculateReward = function(fare, elapsedTime, speedFactor, passengerType)
-            local basePayment = fare.baseFare * (fare.totalDistance / 1000)
+        calculateTipBreakdown = function(fare, elapsedTime, speedFactor, passengerType)
+            local tipBreakdown = {}
+            local baseFare = tonumber(fare.baseFare) or 0
             
-            local actualSpeed = (fare.totalDistance / 1000) / elapsedTime
+            local actualSpeed = (tonumber(fare.totalDistance) or 0) / elapsedTime * 1000
             local suggestedSpeed = 18
             local minSpeed = 1.5
             
-            local speedModifier = 0
+            -- Speed preference (tourists enjoy slower, scenic drives)
             if actualSpeed >= minSpeed then
-                if actualSpeed <= suggestedSpeed * 0.8 then
-                    speedModifier = (suggestedSpeed * 0.8 - actualSpeed) / (suggestedSpeed * 0.8) * 0.6
+                if actualSpeed <= suggestedSpeed * 0.6 then
+                    tipBreakdown["Scenic Bonus"] = (suggestedSpeed * 0.6 - actualSpeed) / (suggestedSpeed * 0.6) * 0.6 * baseFare
+                elseif actualSpeed <= suggestedSpeed * 0.8 then
+                    tipBreakdown["Perfect Pace"] = (suggestedSpeed * 0.8 - actualSpeed) / (suggestedSpeed * 0.8) * 0.4 * baseFare
                 elseif actualSpeed <= suggestedSpeed then
-                    speedModifier = (suggestedSpeed - actualSpeed) / suggestedSpeed * 0.2
-                else
-                    speedModifier = -(actualSpeed - suggestedSpeed) / suggestedSpeed * 0.3
+                    tipBreakdown["Good Pace"] = (suggestedSpeed - actualSpeed) / suggestedSpeed * 0.2 * baseFare
                 end
             end
             
-            local experienceBonus = 0
+            -- Experience bonuses only
             if fare.rideQuality then
-                experienceBonus = fare.rideQuality.smoothness * 0.6
-                if fare.rideQuality.aggressiveEvents > 3 then
-                    experienceBonus = experienceBonus - (fare.rideQuality.aggressiveEvents * 0.2)
+                if fare.rideQuality.smoothness and fare.rideQuality.smoothness > 0.8 then
+                    tipBreakdown["Comfortable Tour"] = fare.rideQuality.smoothness * 0.6 * baseFare
+                elseif fare.rideQuality.smoothness and fare.rideQuality.smoothness > 0.6 then
+                    tipBreakdown["Smooth Experience"] = fare.rideQuality.smoothness * 0.3 * baseFare
                 end
+                
                 if fare.rideQuality.scenic then
-                    experienceBonus = experienceBonus + 0.3
+                    tipBreakdown["Wonderful Tour"] = 0.3 * baseFare
                 end
             end
             
-            local finalMultiplier = math.max(0.2, 1 + speedModifier + experienceBonus)
-            return basePayment * finalMultiplier
+            return tipBreakdown
         end,
         onUpdate = function(fare, rideData, passengerType)
             if not rideData.smoothnessScore then

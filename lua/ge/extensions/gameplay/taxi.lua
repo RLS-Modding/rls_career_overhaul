@@ -56,9 +56,15 @@ local passengerTypes = {
             {min = 1.2, max = 1.5, weight = 2}
         },
         speedTolerance = 0.5,
-        calculateReward = function(fare, elapsedTime, speedFactor, passengerType)
-            local basePayment = fare.baseFare * (fare.totalDistance / 1000)
-            return basePayment * (1 + speedFactor * passengerType.speedWeight)
+        calculateTipBreakdown = function(fare, elapsedTime, speedFactor, passengerType)
+            local tipBreakdown = {}
+            local baseFare = tonumber(fare.baseFare) or 0
+            
+            if speedFactor > 0 then
+                tipBreakdown["Speed Bonus"] = speedFactor * baseFare * passengerType.speedWeight * 0.5
+            end
+            
+            return tipBreakdown
         end,
         onUpdate = function() end,
         getDescription = function(fare, passengerType)
@@ -134,10 +140,16 @@ local function registerPassengerType(key, passengerTypeData)
     end
     
     -- Set default functions if not provided
-    if not passengerTypeData.calculateReward then
-        passengerTypeData.calculateReward = function(fare, elapsedTime, speedFactor, passengerType)
-            local basePayment = fare.baseFare * (fare.totalDistance / 1000)
-            return basePayment * (1 + speedFactor * passengerType.speedWeight)
+    if not passengerTypeData.calculateTipBreakdown then
+        passengerTypeData.calculateTipBreakdown = function(fare, elapsedTime, speedFactor, passengerType)
+            local tipBreakdown = {}
+            local baseFare = tonumber(fare.baseFare) or 0
+            
+            if speedFactor > 0 then
+                tipBreakdown["Speed Bonus"] = speedFactor * baseFare * passengerType.speedWeight * 0.5
+            end
+            
+            return tipBreakdown
         end
     end
     
@@ -420,6 +432,49 @@ local function generateFareMultiplier(passengerTypeKey)
     end
 end
 
+local function calculateDrivingDistance(startPos, endPos)
+    if not map or not map.getPointToPointPath then
+        -- Fallback to straight-line distance if pathfinding is not available
+        return startPos:distance(endPos)
+    end
+    
+    -- Use the same method as the cab system to calculate actual driving distance
+    local path = map.getPointToPointPath(startPos, endPos, 0, 1000, 200, 10000, 1)
+    
+    if not path or #path == 0 then
+        -- Fallback to straight-line distance if no path found
+        return startPos:distance(endPos)
+    end
+    
+    -- Calculate total driving distance from path
+    local totalDistance = 0
+    local prevNodePos = startPos
+    
+    for i = 1, #path do
+        local nodePos = map.getMap().nodes[path[i]].pos
+        if nodePos then
+            totalDistance = totalDistance + prevNodePos:distance(nodePos)
+            prevNodePos = nodePos
+        end
+    end
+    
+    -- Add distance from last path node to destination
+    totalDistance = totalDistance + prevNodePos:distance(endPos)
+    
+    return totalDistance
+end
+
+local function calculateBaseFare(passengerCount, totalDistance, valueMultiplier, selectedPassengerType)
+    local baseFare = 100 * (passengerCount ^ 0.5) * valueMultiplier * distanceMultiplier * selectedPassengerType.baseMultiplier
+    baseFare = baseFare * (totalDistance / 1000)
+    
+    if career_career and career_career.isActive() and career_modules_hardcore.isHardcoreMode() then
+        baseFare = baseFare * 0.66
+    end
+    
+    return baseFare
+end
+
 local function generateValueMultiplier()
     if not career_career or not career_career.isActive() then
         return 1
@@ -471,11 +526,9 @@ local function generateJob()
     local selectedPassengerType = getPassengerType(selectedPassengerTypeKey)
     local fareMultiplier = generateFareMultiplier(selectedPassengerTypeKey)
 
-    local baseFare = fareMultiplier * 100 * (passengerCount ^ 0.5) * valueMultiplier * distanceMultiplier * ((fareStreak + 1) ^ 0.5) * selectedPassengerType.baseMultiplier
-
-    if career_career and career_career.isActive() and career_modules_hardcore.isHardcoreMode() then
-        baseFare = baseFare * 0.66
-    end
+    -- Calculate actual driving distance between pickup and dropoff for accurate initial fare
+    local actualDistance = calculateDrivingDistance(pickupSpot.pos, dropoffSpot.pos)
+    local baseFare = fareMultiplier * calculateBaseFare(passengerCount, actualDistance, valueMultiplier, selectedPassengerType) * ((fareStreak + 1) ^ 0.5)
 
     if selectedPassengerType.fareWeights then
         local minFare = selectedPassengerType.fareWeights[1].min
@@ -498,6 +551,7 @@ local function generateJob()
             pos = dropoffSpot.pos
         },
         baseFare = baseFare,
+        initialBaseFare = baseFare, -- Save the initial base fare for final payment
         passengers = passengerCount,
         passengerRating = string.format("%.1f", passengerRating),
         passengerType = selectedPassengerTypeKey,
@@ -550,11 +604,45 @@ local function completeRide()
 
     fareStreak = fareStreak + 1
 
-    local finalPayment = passengerType.calculateReward(currentFare, elapsedTime, speedFactor, passengerType)
+    -- Use the initial base fare that was calculated at job generation
+    local baseFare = currentFare.initialBaseFare or calculateBaseFare(currentFare.passengers, currentFare.totalDistance, valueMultiplier, passengerType)
+    
+    -- Store base fare in currentFare for tip calculations
+    currentFare.baseFare = string.format("%.2f", baseFare)
+    
+    -- Get tip breakdown from passenger type
+    local tipBreakdown = {}
+    if passengerType.calculateTipBreakdown then
+        tipBreakdown = passengerType.calculateTipBreakdown(currentFare, elapsedTime, speedFactor, passengerType)
+    else
+        -- Fallback for STANDARD type
+        local speedTip = speedFactor > 0 and (speedFactor * baseFare * 0.5) or 0
+        tipBreakdown = speedFactor > 0 and {["Speed Bonus"] = speedTip} or {}
+    end
+    
+    -- Calculate total tips
+    local totalTips = 0
+    for _, tipAmount in pairs(tipBreakdown) do
+        totalTips = totalTips + tipAmount
+    end
+    
+    local finalPayment = baseFare + totalTips
 
     cumulativeReward = cumulativeReward + finalPayment
 
+    currentFare.totalTips = string.format("%.2f", totalTips)
+    currentFare.tipBreakdown = tipBreakdown
     currentFare.totalFare = string.format("%.2f", finalPayment)
+    
+    -- Debug: Print tip breakdown for debugging
+    print("Tip breakdown:", tipBreakdown)
+    print("Total tips:", totalTips)
+    local keyCount = 0
+    for key, value in pairs(tipBreakdown) do
+        keyCount = keyCount + 1
+        print("  ", key, "=", value)
+    end
+    print("Tip breakdown keys count:", keyCount)
     currentFare.timeMultiplier = string.format("%.1f", 1 + speedFactor)
     currentFare.totalDistance = string.format("%.2f", currentFare.totalDistance / 1000)
 

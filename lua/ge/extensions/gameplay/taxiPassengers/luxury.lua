@@ -15,32 +15,33 @@ local luxuryPassenger = {
         {min = 1.5, max = 2.0, weight = 3}
     },
     speedTolerance = 1.0,
-    calculateReward = function(fare, elapsedTime, speedFactor, passengerType)
-        local basePayment = fare.baseFare * (fare.totalDistance / 1000)
+    calculateTipBreakdown = function(fare, elapsedTime, speedFactor, passengerType)
+        local tipBreakdown = {}
+        local baseFare = tonumber(fare.baseFare) or 0
         
-        local actualSpeed = (fare.totalDistance / 1000) / elapsedTime
+        local actualSpeed = (tonumber(fare.totalDistance) or 0) / elapsedTime * 1000
         local suggestedSpeed = 18
         local minSpeed = 2
         
-        local speedModifier = 0
+        -- Speed preference (luxury passengers prefer slower, comfortable driving)
         if actualSpeed >= minSpeed then
-            if actualSpeed <= suggestedSpeed then
-                speedModifier = (suggestedSpeed - actualSpeed) / suggestedSpeed * 0.4
-            else
-                speedModifier = -(actualSpeed - suggestedSpeed) / suggestedSpeed * 0.6
+            if actualSpeed <= suggestedSpeed * 0.7 then
+                tipBreakdown["Comfort Bonus"] = (suggestedSpeed * 0.7 - actualSpeed) / (suggestedSpeed * 0.7) * 0.4 * baseFare
+            elseif actualSpeed <= suggestedSpeed then
+                tipBreakdown["Premium Service"] = (suggestedSpeed - actualSpeed) / suggestedSpeed * 0.2 * baseFare
             end
         end
         
-        local qualityBonus = 0
+        -- Ride quality bonuses only
         if fare.rideQuality then
-            qualityBonus = fare.rideQuality.smoothness * 0.8
-            if fare.rideQuality.aggressiveEvents > 2 then
-                qualityBonus = qualityBonus - (fare.rideQuality.aggressiveEvents * 0.3)
+            if fare.rideQuality.smoothness and fare.rideQuality.smoothness > 0.8 then
+                tipBreakdown["Premium Comfort"] = fare.rideQuality.smoothness * 0.8 * baseFare
+            elseif fare.rideQuality.smoothness and fare.rideQuality.smoothness > 0.6 then
+                tipBreakdown["Smooth Ride"] = fare.rideQuality.smoothness * 0.4 * baseFare
             end
         end
         
-        local finalMultiplier = math.max(0.1, 1 + speedModifier + qualityBonus)
-        return basePayment * finalMultiplier
+        return tipBreakdown
     end,
     onUpdate = function(fare, rideData, passengerType)
         if not rideData.smoothnessScore then

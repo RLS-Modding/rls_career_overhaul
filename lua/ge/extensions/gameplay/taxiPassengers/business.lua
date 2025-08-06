@@ -16,23 +16,23 @@ local function onExtensionLoaded()
             {min = 1.6, max = 2.0, weight = 2}
         },
         speedTolerance = 0.2,
-        calculateReward = function(fare, elapsedTime, speedFactor, passengerType)
-            local basePayment = fare.baseFare * (fare.totalDistance / 1000)
-            local speedBonus = math.max(-0.5, speedFactor * passengerType.speedWeight) -- Cap negative bonus
-            local timePenalty = 0
+        calculateTipBreakdown = function(fare, elapsedTime, speedFactor, passengerType)
+            local tipBreakdown = {}
+            local baseFare = tonumber(fare.baseFare) or 0
             
-            local efficiencyBonus = 0
+            -- Speed bonus only (no penalties)
+            if speedFactor > 0.1 then
+                tipBreakdown["Efficiency Bonus"] = math.min(speedFactor * baseFare * passengerType.speedWeight * 0.5, baseFare * 0.5)
+            end
+            
+            -- Ride quality bonuses only
             if fare.rideQuality then
-                if fare.rideQuality.aggressiveEvents > 8 then
-                    efficiencyBonus = efficiencyBonus - math.min(0.4, (fare.rideQuality.aggressiveEvents - 8) * 0.05) -- Cap aggressive penalty
-                end
                 if speedFactor > 0.2 and fare.rideQuality.assertive then
-                    efficiencyBonus = efficiencyBonus + 0.15
+                    tipBreakdown["Assertive Driving"] = 0.15 * baseFare
                 end
             end
             
-            local finalMultiplier = math.max(0.1, 1 + speedBonus + timePenalty + efficiencyBonus) -- Ensure minimum 10% payout
-            return basePayment * finalMultiplier
+            return tipBreakdown
         end,
         onUpdate = function(fare, rideData, passengerType)
             if not rideData.aggressiveEvents then
