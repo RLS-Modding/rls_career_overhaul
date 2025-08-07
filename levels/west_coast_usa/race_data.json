@@ -28,9 +28,9 @@
     "dirtOval":{
       "bestTime":30,
       "checkpointRoad":"dirtOval",
+      "damageFactor":1,
       "hotlap":25,
       "label":"Dirt Oval",
-      "damageFactor":1,
       "reward":350,
       "type":[
         "oval",
@@ -224,8 +224,9 @@
     "rockClimbL":{
       "bestTime":12,
       "checkpointRoad":"rockClimbL",
+      "damageFactor":1,
       "label":"Rock Crawl Long",
-      "reward":1500,
+      "reward":3500,
       "type":[
         "crawl"
       ]
@@ -233,8 +234,9 @@
     "rockClimbS":{
       "bestTime":5,
       "checkpointRoad":"rockClimbS",
+      "damageFactor":1,
       "label":"Rock Crawl Short",
-      "reward":1200,
+      "reward":1500,
       "type":[
         "crawl"
       ]
