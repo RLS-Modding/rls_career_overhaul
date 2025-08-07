@@ -1881,10 +1881,18 @@ M.deliverVehicle = function(id, money)
 end
 
 M.storeVehicle = function(id)
-  local garage = getClosestOwnedGarage()
-  if vehicles[id] then
-    vehicles[id].location = garage.id
-    vehicles[id].niceLocation = career_modules_garageManager.garageIdToName(garage.id)
+  local closestOwned = getClosestOwnedGarage()
+  local targetGarageId
+
+  if closestOwned and career_modules_garageManager.isGarageSpace(closestOwned.id)[1] then
+    targetGarageId = closestOwned.id
+  else
+    targetGarageId = career_modules_garageManager.getNextAvailableSpace()
+  end
+
+  if vehicles[id] and targetGarageId then
+    vehicles[id].location = targetGarageId
+    vehicles[id].niceLocation = career_modules_garageManager.garageIdToName(targetGarageId)
   end
 end
 
