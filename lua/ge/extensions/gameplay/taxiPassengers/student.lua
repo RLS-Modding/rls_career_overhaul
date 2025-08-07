@@ -27,6 +27,16 @@ local function onExtensionLoaded()
         onUpdate = function(fare, rideData, passengerType)
             -- minimal tracking
         end,
+        calculateDriverRating = function(fare, rideData, elapsedTime, speedFactor, passengerType)
+            local spd = tonumber(speedFactor) or 0
+            local rating = 5.0
+            if spd < 0 then rating = rating - math.min(1.0, -spd) * 1.2 end
+            if spd > 0 then rating = rating + math.min(0.6, spd) * 0.8 end
+            if elapsedTime and elapsedTime > 0 and spd >= 0 then rating = rating + 0.1 end
+            if rating > 5 then rating = 5 end
+            if rating < 1 then rating = 1 end
+            return rating
+        end,
         getDescription = function(fare, passengerType)
             return string.format("%s (%d passengers) - Budget trip", passengerType.name, fare.passengers)
         end,

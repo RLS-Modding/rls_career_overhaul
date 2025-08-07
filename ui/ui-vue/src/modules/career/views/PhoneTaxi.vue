@@ -7,9 +7,11 @@
                 <svg class="minimap-layer vehicle-layer"></svg>
             </div>
 
-            <!-- Reward Bubble -->
+            <!-- Reward + Driver Rating Top Bar -->
             <div class="reward-bubble" v-if="currentState !== 'start'">
-                ${{ formatCurrency(totalReward) }}
+                <span class="total">${{ formatCurrency(totalReward) }}</span>
+                <span class="divider">|</span>
+                <span class="driver">★ {{ driverRatingDisplay }}</span>
             </div>
 
             <!-- Start State -->
@@ -53,13 +55,15 @@
             <!-- Pickup/Dropoff State -->
             <div class="bottom-panel" v-if="currentState === 'pickup' || currentState === 'dropoff'">
                 <div class="rider-details">
-                    <span class="rider-type">{{ riderType }}</span> <span class="rider-info">★ {{ riderRating }}</span>
+                    <span class="rider-type">{{ riderType }}</span>
+                    <button class="info-button" @click.stop="toggleInfo">?</button>
+                    <span class="rider-info">{{ riderValueDisplay }}</span>
                 </div>
                 <div class="ride-status">
                     {{ currentState === 'pickup' ? 'Picking up' : 'Dropping off' }} {{ riderCount }} passengers
                 </div>
                 <div class="fare-display small">
-                    ${{ formatCurrency(farePerKm) }} <span class="tip-note">without tip</span>
+                    ${{ formatCurrency(farePerKm) }} <span class="tip-note">excluding tip</span>
                 </div>
                 <div class="rider-details center">
                     <span class="rider-info">
@@ -80,20 +84,23 @@
             <!-- Accept Rider State -->
             <div class="bottom-panel rider" v-if="currentState === 'accept'">
                 <div class="rider-header">
-                    <span class="rider-type">{{ riderType }}</span>
+                    <div class="rider-title">
+                        <span class="rider-type">{{ riderType }}</span>
+                        <button class="info-button" @click.stop="toggleInfo">?</button>
+                    </div>
                     <button class="close-button" @click.stop="setState('reject')">
                         <BngIcon class="x-icon" :type="icons.xmark" />
                     </button>
                 </div>
                 <div class="fare-display">
-                    ${{ formatCurrency(farePerKm) }} <span class="tip-note">without tip</span>
+                    ${{ formatCurrency(farePerKm) }} <span class="tip-note">excluding tip</span>
                 </div>
                 <div class="rider-details">
                     <span class="rider-info">
                         <BngIcon class="app-icon" :type="icons.person" />
                         {{ riderCount }}
                     </span>
-                    <span class="rider-info">★ {{ riderRating }}</span>
+                    <span class="rider-info">{{ riderValueDisplay }}</span>
                     <span class="rider-info">
                         <BngIcon class="app-icon" :type="icons.sync" />
                         {{ fareStreak }}
@@ -107,44 +114,55 @@
             <!-- Complete State -->
             <div class="complete-overlay" v-if="currentState === 'complete'">
                 <div class="complete-modal">
-                    <div class="fare-display center">${{ formatCurrency(totalFare) }}</div>
+                    <div class="fare-header">
+                        <div class="fare-display center">${{ formatCurrency(totalFare) }}</div>
+                        <div class="fare-rating"> ★ {{ passengerRatingDisplay }}</div>
+                    </div>
                     <div class="fare-breakdown">
                         <div class="breakdown-section">
                             <div class="breakdown-label">Base Fare</div>
                             <div class="breakdown-amount">${{ formatCurrency(baseFareAmount) }}</div>
                         </div>
-                        <div class="breakdown-section" v-if="totalTipsAmount !== 0">
+                        <div class="breakdown-section clickable" @click.stop="toggleTipBreakdown" :aria-expanded="showTipBreakdown">
                             <div class="breakdown-label">Tips</div>
                             <div class="breakdown-amount" :class="{ 'positive': totalTipsAmount > 0, 'negative': totalTipsAmount < 0 }">
                                 {{ totalTipsAmount > 0 ? '+' : '' }}${{ formatCurrency(Math.abs(totalTipsAmount)) }}
+                                <span class="count-badge" v-if="Object.keys(tipBreakdownData).length > 0">{{ Object.keys(tipBreakdownData).length }}</span>
+                                <span class="dropdown-icon" :class="{ open: showTipBreakdown }">▼</span>
                             </div>
                         </div>
-                        <div class="tip-breakdown-toggle" v-if="Object.keys(tipBreakdownData).length > 0" @click.stop="toggleTipBreakdown" @mousedown.stop>
-                            <span>Tip Breakdown ({{ Object.keys(tipBreakdownData).length }} items)</span>
-                            <span class="dropdown-icon">{{ showTipBreakdown ? '▼' : '▶' }}</span>
-                        </div>
-                        <div class="tip-breakdown" v-if="Object.keys(tipBreakdownData).length > 0 && showTipBreakdown">
-                            <div class="tip-item" v-for="(amount, name) in tipBreakdownData" :key="name">
-                                <span class="tip-name">{{ name }}</span>
-                                <span class="tip-amount" :class="{ 'positive': amount >= 0, 'negative': amount < 0 }">
-                                    {{ amount >= 0 ? '+' : '' }}${{ formatCurrency(Math.abs(amount)) }}
-                                </span>
+                        <transition name="collapse">
+                            <div class="tip-breakdown" v-if="Object.keys(tipBreakdownData).length > 0 && showTipBreakdown">
+                                <div class="tip-item" v-for="(amount, name) in tipBreakdownData" :key="name">
+                                    <span class="tip-name">{{ name }}</span>
+                                    <span class="tip-amount" :class="{ 'positive': amount >= 0, 'negative': amount < 0 }">
+                                        {{ amount >= 0 ? '+' : '' }}${{ formatCurrency(Math.abs(amount)) }}
+                                    </span>
+                                </div>
                             </div>
-                        </div>
+                        </transition>
                     </div>
                     <div class="rider-details center">
                         <span class="rider-info">{{ riderType }}</span>
-                        <span class="rider-info">★ {{ riderRating }}</span>
+                        <button class="info-button" @click.stop="toggleInfo">?</button>
+                        <span class="rider-info">{{ riderValueDisplay }}</span>
                     </div>
                     <button class="state-button complete" @click.stop="setState('ready')">Complete</button>
                 </div>
+            </div>
+
+            <!-- Passenger Info Popover -->
+            <div class="info-popover" v-if="showInfo" @click.stop>
+                <div class="info-title">{{ riderType }}</div>
+                <div class="info-body">{{ riderDescription }}</div>
+                <button class="info-close" @click.stop="toggleInfo">Close</button>
             </div>
         </div>
     </PhoneWrapper>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useMinimapStore } from '../stores/minimapStore'
 import PhoneWrapper from './PhoneWrapper.vue'
 import { BngIcon, icons } from "@/common/components/base"
@@ -180,6 +198,23 @@ const currentCapacity = ref(0)
 const riderType = ref('Standard')
 const riderCount = ref(0)
 const riderRating = ref(0)
+const driverRating = ref(5)
+const lastPassengerRating = ref(null)
+const driverRatingDisplay = computed(() => Number(driverRating.value ?? 5).toFixed(1))
+const riderValueDisplay = computed(() => {
+    const rating = Number(riderRating.value || 0)
+    // Map 1-5 rating to $-$$$$$ for display of how "high paying"
+    const count = Math.max(1, Math.min(5, Math.round(rating)))
+    return '$'.repeat(count)
+})
+const showInfo = ref(false)
+const riderDescription = ref('')
+const toggleInfo = () => { showInfo.value = !showInfo.value }
+const passengerRatingDisplay = computed(() => {
+    const v = lastPassengerRating.value
+    if (v === null || typeof v === 'undefined' || isNaN(v)) return '5.0'
+    return Number(v).toFixed(1)
+})
 
 const formatCurrency = (value) => {
     if (value >= 1e6) {
@@ -230,6 +265,7 @@ const handleFare = () => {
     distanceTraveled.value = Number(currentFare.value.totalDistance ?? 0)
     timeMultiplier.value = Number(currentFare.value.timeMultiplier ?? 1)
     riderType.value = currentFare.value.passengerTypeName ?? 'Standard'
+    riderDescription.value = currentFare.value.passengerDescription ?? ''
     
     // Handle new tip breakdown data
     baseFareAmount.value = Number(currentFare.value.baseFare ?? 0)
@@ -262,6 +298,12 @@ onMounted(() => {
         // Update passenger type if available from state
         if (state.currentPassengerType) {
             riderType.value = state.currentPassengerType
+        }
+        if (typeof state.playerRating !== 'undefined') {
+            driverRating.value = Number(state.playerRating)
+        }
+        if (typeof state.lastPassengerRating !== 'undefined') {
+            lastPassengerRating.value = Number(state.lastPassengerRating)
         }
         
         handleFare()
@@ -340,19 +382,43 @@ onMounted(() => {
     left: 50%;
     transform: translateX(-50%);
     background: rgba(0, 0, 0, 0.9);
-    padding: 0.5rem 1.5rem;
+    padding: 0.5rem 1.0rem;
     border-radius: 25px;
     color: white;
     font-weight: bold;
-    font-size: 1.2em;
+    font-size: 1.1em;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: inline-flex;
+    gap: 0.5rem;
+    align-items: center;
 }
+
+.reward-bubble .divider { opacity: 0.5; }
+.reward-bubble .driver { opacity: 0.9; }
 
 .rider-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-family: 'Overpass', sans-serif;
+}
+
+.rider-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.info-button {
+    margin-left: 0.2rem;
+    height: 1.4em;
+    min-width: 1.4em;
+    border: none;
+    border-radius: 0.4rem;
+    background: rgb(196, 205, 230);
+    color: rgb(0,0,0);
+    font-weight: 800;
+    cursor: pointer;
 }
 
 .rider-type {
@@ -457,6 +523,36 @@ onMounted(() => {
     display: flex;
     justify-content: center;
     align-items: center;
+    backdrop-filter: blur(2px);
+}
+
+.info-popover {
+    position: absolute;
+    bottom: 8.5rem;
+    left: 0.75rem;
+    right: 0.75rem;
+    background: rgba(216, 224, 246, 0.98);
+    color: rgb(0, 0, 0);
+    border-radius: 12px;
+    padding: 0.75rem;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+    border: 1px solid rgba(0,0,0,0.1);
+}
+.info-title {
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+.info-body {
+    font-weight: 500;
+}
+.info-close {
+    margin-top: 0.5rem;
+    width: 100%;
+    padding: 0.5rem 0;
+    background: #2f2bff;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
 }
 
 .complete-modal {
@@ -469,12 +565,28 @@ onMounted(() => {
     max-height: 80vh;
     overflow-y: auto;
     color: rgb(0, 0, 0);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.fare-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.75rem;
+}
+.fare-rating {
+    font-size: 1em;
+    font-weight: 700;
+    background: rgba(196, 205, 230, 0.75);
+    padding: 0.2rem 0.5rem;
+    border-radius: 8px;
 }
 
 .fare-breakdown {
     margin: 1rem 0;
     padding: 0.5rem;
-    background: rgba(196, 205, 230, 0.5);
+    background: rgba(196, 205, 230, 0.35);
     border-radius: 10px;
 }
 
@@ -483,8 +595,9 @@ onMounted(() => {
     justify-content: space-between;
     align-items: center;
     padding: 0.25rem 0;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom: none;
 }
+.breakdown-section.clickable { cursor: pointer; }
 
 .breakdown-section:last-child {
     border-bottom: none;
@@ -511,18 +624,25 @@ onMounted(() => {
     cursor: pointer;
     font-weight: 600;
     color: rgb(0, 0, 0);
-    border-top: 1px solid rgba(0, 0, 0, 0.2);
-    border-radius: 5px;
+    border-top: none;
+    border-radius: 8px;
     transition: background-color 0.2s ease;
     user-select: none;
+    gap: 0.5rem;
 }
 
 .tip-breakdown-toggle:hover {
-    background: rgba(196, 205, 230, 0.5);
+    background: rgba(196, 205, 230, 0.45);
 }
 
 .tip-breakdown-toggle:active {
-    background: rgba(196, 205, 230, 0.7);
+    background: rgba(196, 205, 230, 0.6);
+}
+
+.toggle-right-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
 }
 
 .dropdown-icon {
@@ -530,6 +650,34 @@ onMounted(() => {
     color: rgb(0, 0, 0);
     font-weight: bold;
     transition: transform 0.2s ease;
+}
+
+.dropdown-icon.open {
+    transform: rotate(180deg);
+}
+
+.count-badge {
+    background: #2f2bff;
+    color: #ffffff;
+    border-radius: 999px;
+    padding: 0.05rem 0.45rem 0.1rem 0.45rem;
+    font-size: 0.85em;
+    line-height: 1.2;
+}
+
+.collapse-enter-active,
+.collapse-leave-active {
+    transition: max-height 0.25s ease, opacity 0.25s ease;
+}
+.collapse-enter-from,
+.collapse-leave-to {
+    max-height: 0;
+    opacity: 0;
+}
+.collapse-enter-to,
+.collapse-leave-from {
+    max-height: 260px;
+    opacity: 1;
 }
 
 .tip-breakdown {

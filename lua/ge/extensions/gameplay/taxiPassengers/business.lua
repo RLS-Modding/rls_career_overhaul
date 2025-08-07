@@ -32,6 +32,18 @@ local function onExtensionLoaded()
             
             return tipBreakdown
         end,
+        calculateDriverRating = function(fare, rideData, elapsedTime, speedFactor, passengerType)
+            local rq = fare.rideQuality or {}
+            local spd = tonumber(speedFactor) or 0
+            local rating = 5.0
+            if spd < -0.05 then rating = rating - math.min(1.0, -spd) * 1.5 end
+            if spd > 0.05 then rating = rating + math.min(1.0, spd) * 0.8 end
+            if rq.assertive and spd > 0.15 then rating = rating + 0.3 end
+            if rq.aggressiveEvents and rq.aggressiveEvents > 8 then rating = rating - 1.0 end
+            if rating > 5 then rating = 5 end
+            if rating < 1 then rating = 1 end
+            return rating
+        end,
         onUpdate = function(fare, rideData, passengerType)
             if not rideData.aggressiveEvents then
                 rideData.aggressiveEvents = 0

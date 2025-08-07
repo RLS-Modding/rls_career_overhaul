@@ -40,6 +40,17 @@ local function onExtensionLoaded()
                 fare.rideQuality.smoothness = rideData.smoothnessScore / 100
             end
         end,
+        calculateDriverRating = function(fare, rideData, elapsedTime, speedFactor, passengerType)
+            local smooth = (fare.rideQuality and fare.rideQuality.smoothness) or 1.0
+            local spd = tonumber(speedFactor) or 0
+            local rating = 5.0
+            rating = rating - (1 - smooth) * 2.0
+            if spd > 0 then rating = rating - math.min(1.0, spd) * 0.8 end
+            if spd < -0.1 and smooth > 0.85 then rating = rating + 0.2 end
+            if rating > 5 then rating = 5 end
+            if rating < 1 then rating = 1 end
+            return rating
+        end,
         getDescription = function(fare, passengerType)
             return string.format("%s (%d passengers) - Keep it safe", passengerType.name, fare.passengers)
         end,

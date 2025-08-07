@@ -23,6 +23,13 @@ local jobOfferInterval = math.random(5, 45)
 local currentVehiclePartsTree = nil
 local vehicleMultiplier = 0.1
 
+-- Driver rating state
+local ratingSaveFile = "taxiRating.json"
+local playerRating = 2.5
+local ratingSum = 0
+local ratingCount = 0
+local lastPassengerRating = nil
+
 local parkingSpots = nil
 local validPickupSpots = nil
 
@@ -80,6 +87,45 @@ local function getPassengerType(typeKey)
     return passengerTypes[typeKey]
 end
 
+-- ================================
+-- DRIVER RATING SAVE/LOAD
+-- ================================
+local function savePlayerRating(currentSavePath)
+    if not career_career or not career_career.isActive() then return end
+    if not currentSavePath then
+        local slot, path = career_saveSystem.getCurrentSaveSlot()
+        currentSavePath = path
+        if not currentSavePath then return end
+    end
+
+    local dirPath = currentSavePath .. "/career/rls_career"
+    if not FS:directoryExists(dirPath) then
+        FS:directoryCreate(dirPath)
+    end
+
+    local data = {
+        sum = ratingSum,
+        count = ratingCount,
+        average = playerRating
+    }
+    career_saveSystem.jsonWriteFileSafe(dirPath .. "/" .. ratingSaveFile, data, true)
+end
+
+local function loadPlayerRating()
+    if not career_career or not career_career.isActive() then return end
+    local slot, path = career_saveSystem.getCurrentSaveSlot()
+    if not path then return end
+    local filePath = path .. "/career/rls_career/" .. ratingSaveFile
+    local data = jsonReadFile(filePath) or {}
+    ratingSum = tonumber(data.sum or 0) or 0
+    ratingCount = tonumber(data.count or 0) or 0
+    if ratingCount > 0 then
+        playerRating = math.max(1.0, math.min(5.0, (ratingSum / ratingCount)))
+    else
+        playerRating = 2.5
+    end
+end
+
 local function selectRandomPassengerType(valueMultiplier, availableSeats)
     -- Filter passenger types based on seat and value multiplier requirements
     local eligibleTypes = {}
@@ -93,8 +139,15 @@ local function selectRandomPassengerType(valueMultiplier, availableSeats)
         local valueValid = (not valueMultiplier) or 
                           (valueMultiplier >= (passengerType.valueRange[1] or 0.0) and 
                            valueMultiplier <= (passengerType.valueRange[2] or 999.0))
-        
-        if seatsValid and valueValid then
+
+        local ratingValid = true
+        if passengerType.driverRatingRange then
+            local minR = passengerType.driverRatingRange[1]
+            local maxR = passengerType.driverRatingRange[2]
+            ratingValid = (not minR or playerRating >= minR) and (not maxR or playerRating <= maxR)
+        end
+
+        if seatsValid and valueValid and ratingValid then
             eligibleTypes[typeKey] = passengerType
             totalWeight = totalWeight + passengerType.selectionWeight
         end
@@ -116,6 +169,45 @@ local function selectRandomPassengerType(valueMultiplier, availableSeats)
     end
     
     return "STANDARD"
+end
+
+-- ================================
+-- DRIVER RATING SAVE/LOAD
+-- ================================
+local function savePlayerRating(currentSavePath)
+    if not career_career or not career_career.isActive() then return end
+    if not currentSavePath then
+        local slot, path = career_saveSystem.getCurrentSaveSlot()
+        currentSavePath = path
+        if not currentSavePath then return end
+    end
+
+    local dirPath = currentSavePath .. "/career/rls_career"
+    if not FS:directoryExists(dirPath) then
+        FS:directoryCreate(dirPath)
+    end
+
+    local data = {
+        sum = ratingSum,
+        count = ratingCount,
+        average = playerRating
+    }
+    career_saveSystem.jsonWriteFileSafe(dirPath .. "/" .. ratingSaveFile, data, true)
+end
+
+local function loadPlayerRating()
+    if not career_career or not career_career.isActive() then return end
+    local slot, path = career_saveSystem.getCurrentSaveSlot()
+    if not path then return end
+    local filePath = path .. "/career/rls_career/" .. ratingSaveFile
+    local data = jsonReadFile(filePath) or {}
+    ratingSum = tonumber(data.sum or 0) or 0
+    ratingCount = tonumber(data.count or 0) or 0
+    if ratingCount > 0 then
+        playerRating = math.max(1.0, math.min(5.0, (ratingSum / ratingCount)))
+    else
+        playerRating = 5.0
+    end
 end
 
 local function registerPassengerType(key, passengerTypeData)
@@ -167,7 +259,28 @@ local function registerPassengerType(key, passengerTypeData)
     
     if not passengerTypeData.onUpdate then
         passengerTypeData.onUpdate = function(fare, rideData, passengerType)
-            -- Default: no special ride tracking
+            rideData.roughEvents = rideData.roughEvents or 0
+            local s = rideData.currentSensorData
+            if s then
+                local peak = math.max(math.abs(s.gx2 or 0), math.abs(s.gy2 or 0), math.abs(s.gz2 or 0))
+                if peak > 0.6 then
+                    rideData.roughEvents = rideData.roughEvents + 1
+                end
+            end
+        end
+    end
+
+    passengerTypeData.driverRatingRange = passengerTypeData.driverRatingRange or {nil, nil}
+    if not passengerTypeData.calculateDriverRating then
+        passengerTypeData.calculateDriverRating = function(fare, rideData, elapsedTime, speedFactor, passengerType)
+            local rough = (rideData and rideData.roughEvents) or 0
+            local base = 5.0 - (rough * 0.3)
+            local spdAdj = math.max(-1.0, math.min(1.0, speedFactor or 0)) * 0.5
+            local rating = base + spdAdj
+            if fare and fare.passengers and fare.passengers > 3 then
+                rating = rating + 0.2
+            end
+            return math.max(1.0, math.min(5.0, rating))
         end
     end
 
@@ -190,7 +303,8 @@ local function getPassengerTypes()
             seatRange = passengerType.seatRange,
             valueRange = passengerType.valueRange,
             fareWeights = passengerType.fareWeights,
-            fareRange = passengerType.fareRange
+            fareRange = passengerType.fareRange,
+            driverRatingRange = passengerType.driverRatingRange
         })
     end
     return types
@@ -231,8 +345,6 @@ local function processSensorData(gx, gy, gz, gx2, gy2, gz2)
         gx2 = gx2 / grav, gy2 = gy2 / grav, gz2 = gz2 / grav,
         timestamp = os.time()
     }
-
-    dump(M.rideData.currentSensorData)
     
     if currentFare and currentFare.passengerType then
         local passengerType = getPassengerType(currentFare.passengerType)
@@ -366,7 +478,9 @@ local function calculateCapacity(vehicleId)
         vehicleMultiplier = vehicleMultiplier,
         cumulativeReward = cumulativeReward,
         fareStreak = fareStreak,
-        currentPassengerType = currentFare and currentFare.passengerTypeName or nil
+        currentPassengerType = currentFare and currentFare.passengerTypeName or nil,
+        playerRating = playerRating,
+        lastPassengerRating = lastPassengerRating
     }
     guihooks.trigger('updateTaxiState', dataToSend)
     return availableSeats
@@ -668,17 +782,27 @@ local function completeRide()
     currentFare.tipBreakdown = tipBreakdown
     currentFare.totalFare = string.format("%.2f", finalPayment)
     
-    -- Debug: Print tip breakdown for debugging
-    print("Tip breakdown:", tipBreakdown)
-    print("Total tips:", totalTips)
+
     local keyCount = 0
     for key, value in pairs(tipBreakdown) do
         keyCount = keyCount + 1
         print("  ", key, "=", value)
     end
-    print("Tip breakdown keys count:", keyCount)
     currentFare.timeMultiplier = string.format("%.1f", 1 + speedFactor)
     currentFare.totalDistance = string.format("%.2f", currentFare.totalDistance / 1000)
+
+    -- Update driver rating from this passenger using passenger type formula
+    local passengerGivenRating
+    if passengerType and passengerType.calculateDriverRating then
+        passengerGivenRating = tonumber(passengerType.calculateDriverRating(currentFare, M.rideData, elapsedTime, speedFactor, passengerType)) or 5.0
+    else
+        passengerGivenRating = 5.0
+    end
+    lastPassengerRating = passengerGivenRating
+    ratingSum = ratingSum + passengerGivenRating
+    ratingCount = ratingCount + 1
+    playerRating = math.max(1.0, math.min(5.0, ratingSum / math.max(1, ratingCount)))
+    savePlayerRating()
 
     state = "complete"
     if not gameplay_phone.isPhoneOpen() then
@@ -693,7 +817,9 @@ local function completeRide()
         vehicleMultiplier = vehicleMultiplier,
         cumulativeReward = cumulativeReward,
         fareStreak = fareStreak,
-        currentPassengerType = currentFare and currentFare.passengerTypeName or nil
+        currentPassengerType = currentFare and currentFare.passengerTypeName or nil,
+        playerRating = playerRating,
+        lastPassengerRating = lastPassengerRating
     }
     guihooks.trigger('updateTaxiState', dataToSend)
 
@@ -777,7 +903,9 @@ requestTaxiState = function()
         vehicleMultiplier = vehicleMultiplier,
         cumulativeReward = cumulativeReward,
         fareStreak = fareStreak,
-        currentPassengerType = currentFare and currentFare.passengerTypeName or nil
+        currentPassengerType = currentFare and currentFare.passengerTypeName or nil,
+        playerRating = playerRating,
+        lastPassengerRating = lastPassengerRating
     }
     guihooks.trigger('updateTaxiState', dataToSend)
 end
@@ -822,8 +950,10 @@ local function update(_, dt)
                 availableSeats = availableSeats,
                 vehicleMultiplier = vehicleMultiplier,
                 cumulativeReward = cumulativeReward,
-                fareStreak = fareStreak,
-                currentPassengerType = currentFare and currentFare.passengerTypeName or nil
+            fareStreak = fareStreak,
+            currentPassengerType = currentFare and currentFare.passengerTypeName or nil,
+            playerRating = playerRating,
+            lastPassengerRating = lastPassengerRating
             }
             guihooks.trigger('updateTaxiState', dataToSend)
         end
@@ -857,7 +987,9 @@ local function update(_, dt)
                 vehicleMultiplier = vehicleMultiplier,
                 cumulativeReward = cumulativeReward,
                 fareStreak = fareStreak,
-                currentPassengerType = newFare and newFare.passengerTypeName or nil
+                currentPassengerType = newFare and newFare.passengerTypeName or nil,
+                playerRating = playerRating,
+                lastPassengerRating = lastPassengerRating
             }
             guihooks.trigger('updateTaxiState', dataToSend)
 
@@ -872,6 +1004,7 @@ end
 -- ================================
 local function onEnterVehicleFinished()
     validPickupSpots = findParkingSpots()
+    loadPlayerRating()
 end
 
 local function onVehicleSwitched()
@@ -901,7 +1034,9 @@ local function onVehicleSwitched()
         availableSeats = availableSeats,
         vehicleMultiplier = vehicleMultiplier,
         cumulativeReward = cumulativeReward,
-        fareStreak = fareStreak
+        fareStreak = fareStreak,
+        playerRating = playerRating,
+        lastPassengerRating = lastPassengerRating
     }
     guihooks.trigger('updateTaxiState', dataToSend)
 end
@@ -942,10 +1077,15 @@ end
 local function onExtensionLoaded()
     print("Taxi module loaded, initializing passenger types...")
     loadPassengerModules()
+    loadPlayerRating()
 end
 
 local function isTaxiJobActive()
     return state ~= "start"
+end
+
+local function onSaveCurrentSaveSlot(currentSavePath)
+    savePlayerRating(currentSavePath)
 end
 
 -- ================================
@@ -955,6 +1095,7 @@ M.onExtensionLoaded = onExtensionLoaded
 M.onEnterVehicleFinished = onEnterVehicleFinished
 M.onUpdate = update
 M.onVehicleSwitched = onVehicleSwitched
+M.onSaveCurrentSaveSlot = onSaveCurrentSaveSlot
 
 M.acceptJob = startRide
 M.rejectJob = rejectJob

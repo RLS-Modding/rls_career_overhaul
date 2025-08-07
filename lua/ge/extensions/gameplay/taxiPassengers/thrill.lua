@@ -8,7 +8,7 @@ local function onExtensionLoaded()
         speedWeight = 2.0,
         distanceWeight = 1.0,
         selectionWeight = 2,
-        seatRange = {1, 3},
+        seatRange = {nil, 5},
         valueRange = {0.0, 1.6},
         fareWeights = {
             {min = 0.9, max = 1.2, weight = 3},
@@ -52,6 +52,21 @@ local function onExtensionLoaded()
                 fare.rideQuality = fare.rideQuality or {}
                 fare.rideQuality.thrillData = { avgG = rideData.thrillData.avgG, maxG = rideData.thrillData.maxG }
             end
+        end,
+        calculateDriverRating = function(fare, rideData, elapsedTime, speedFactor, passengerType)
+            local td = fare.rideQuality and fare.rideQuality.thrillData or {}
+            local avgG = td.avgG or 0
+            local maxG = td.maxG or 0
+            local spd = tonumber(speedFactor) or 0
+            local rating = 5.0
+            if avgG < 0.4 then rating = rating - (0.4 - avgG) * 2.0 end
+            if maxG < 0.8 then rating = rating - (0.8 - maxG) * 1.5 end
+            if spd <= 0 then rating = rating - math.min(1.0, -spd) * 0.6 end
+            if spd > 0.15 then rating = rating + math.min(1.0, spd) * 0.6 end
+            if avgG > 1.2 then rating = rating - (avgG - 1.2) * 1.0 end
+            if rating > 5 then rating = 5 end
+            if rating < 1 then rating = 1 end
+            return rating
         end,
         getDescription = function(fare, passengerType)
             return string.format("%s (%d passengers) - Fast and wild", passengerType.name, fare.passengers)

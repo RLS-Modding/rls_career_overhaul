@@ -27,6 +27,19 @@ local function onExtensionLoaded()
             end
             return tipBreakdown
         end,
+        calculateDriverRating = function(fare, rideData, elapsedTime, speedFactor, passengerType)
+            local comfort = (fare.rideQuality and fare.rideQuality.comfort) or 1.0
+            local spd = tonumber(speedFactor) or 0
+            local rating = 5.0
+            rating = rating - (1 - comfort) * 2.5
+            if spd < 0 then rating = rating - math.min(1.0, -spd) * 1.0 end
+            if spd > 0 then rating = rating + math.min(0.5, spd) * 0.5 end
+            if elapsedTime and elapsedTime > 0 and comfort > 0.95 and spd >= 0 then rating = rating + 0.1 end
+            if fare.passengers and fare.passengers <= 2 and comfort > 0.97 then rating = rating + 0.1 end
+            if rating > 5 then rating = 5 end
+            if rating < 1 then rating = 1 end
+            return rating
+        end,
         onUpdate = function(fare, rideData, passengerType)
             if not rideData.comfortScore then rideData.comfortScore = 100 end
             if rideData.currentSensorData then

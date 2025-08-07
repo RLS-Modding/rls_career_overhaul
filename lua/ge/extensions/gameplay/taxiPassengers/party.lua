@@ -55,6 +55,20 @@ local function onExtensionLoaded()
             
             return tipBreakdown
         end,
+        calculateDriverRating = function(fare, rideData, elapsedTime, speedFactor, passengerType)
+            local pd = fare.rideQuality and fare.rideQuality.partyData or {}
+            local avgG = pd.avgGForce or 0
+            local maxG = pd.maxGForce or 0
+            local spd = tonumber(speedFactor) or 0
+            local rating = 5.0
+            if avgG > 0.35 then rating = rating - (avgG - 0.35) * 4.0 end
+            if maxG > 0.7 then rating = rating - (maxG - 0.7) * 2.0 end
+            if spd > 0.15 then rating = rating - math.min(1.0, spd) * 0.8 end
+            if avgG < 0.25 and spd <= 0 then rating = rating + 0.3 end
+            if rating > 5 then rating = 5 end
+            if rating < 1 then rating = 1 end
+            return rating
+        end,
         
         -- Custom description for party groups
         getDescription = function(fare, passengerType)
