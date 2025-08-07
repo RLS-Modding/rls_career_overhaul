@@ -8,19 +8,19 @@ local function onExtensionLoaded()
     gameplay_taxi.registerPassengerType("PARTY", {
         name = "Party Group",
         description = "Large groups heading to parties who value safety and comfort over speed",
-        baseMultiplier = 0.5,
-        speedWeight = -0.5, -- Negative weight means they prefer slower, safer driving
-        distanceWeight = 1.2,
+        baseMultiplier = 0.55,
+        speedWeight = -0.4,
+        distanceWeight = 1.15,
         selectionWeight = 3,
-        seatRange = {15, nil}, -- Minimum 15 seats, no maximum limit
-        valueRange = {1.5, nil}, -- Any vehicle value is acceptable
-        speedTolerance = 0.3, -- More sensitive to speed variations
+        seatRange = {12, nil},
+        valueRange = {1.2, nil},
+        speedTolerance = 0.35,
         
         -- Party groups prefer lower fares but tip well for safe driving
         fareWeights = {
-            {min = 0.4, max = 0.6, weight = 4},
-            {min = 0.6, max = 0.9, weight = 3},
-            {min = 0.9, max = 1.2, weight = 2}
+            {min = 0.45, max = 0.65, weight = 4},
+            {min = 0.65, max = 0.95, weight = 3},
+            {min = 0.95, max = 1.25, weight = 2}
         },
         
         -- Custom tip breakdown that penalizes high speeds and rewards smooth driving
@@ -28,9 +28,8 @@ local function onExtensionLoaded()
             local tipBreakdown = {}
             local baseFare = tonumber(fare.baseFare) or 0
             
-            -- Party passengers prefer safe, slow driving
-            if speedFactor < -0.1 then
-                tipBreakdown["Safety Bonus"] = 0.3 * baseFare
+            if speedFactor < -0.08 then
+                tipBreakdown["Safety Bonus"] = 0.25 * baseFare
             end
             
             -- Additional tip for very smooth ride (if sensor data available)
@@ -38,19 +37,19 @@ local function onExtensionLoaded()
                 local sensorData = gameplay_taxi.rideData.currentSensorData
                 local totalG = math.abs(sensorData.gx or 0) + math.abs(sensorData.gy or 0)
                 
-                if totalG < 0.3 then
-                    tipBreakdown["Smooth Ride"] = 0.2 * baseFare
+                if totalG < 0.28 then
+                    tipBreakdown["Smooth Ride"] = 0.18 * baseFare
                 end
             end
             
             -- Check party data for additional bonuses
             if fare.rideQuality and fare.rideQuality.partyData then
                 local partyData = fare.rideQuality.partyData
-                if partyData.avgGForce and partyData.avgGForce < 0.25 then
-                    tipBreakdown["Gentle Driving"] = 0.15 * baseFare
+                if partyData.avgGForce and partyData.avgGForce < 0.24 then
+                    tipBreakdown["Gentle Driving"] = 0.12 * baseFare
                 end
                 if partyData.maxGForce and partyData.maxGForce < 0.5 then
-                    tipBreakdown["No Sudden Movements"] = 0.1 * baseFare
+                    tipBreakdown["No Sudden Movements"] = 0.08 * baseFare
                 end
             end
             

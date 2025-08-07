@@ -48,7 +48,7 @@ local passengerTypes = {
         speedWeight = 1.0,
         distanceWeight = 1.0,
         selectionWeight = 5,
-        seatRange = {nil, nil},
+        seatRange = {nil, 10},
         valueRange = {nil, nil},
         fareWeights = {
             {min = 0.5, max = 0.8, weight = 3},
@@ -399,6 +399,38 @@ local function calculatePassengerCount()
     return 1
 end
 
+local function calculatePassengerCountForType(passengerType)
+    if not passengerType then
+        return calculatePassengerCount()
+    end
+    if not availableSeats or availableSeats <= 0 then
+        return 0
+    end
+    local minSeats = passengerType.seatRange and passengerType.seatRange[1] or 1
+    local maxSeats = passengerType.seatRange and passengerType.seatRange[2] or availableSeats
+    minSeats = math.max(1, minSeats or 1)
+    maxSeats = math.min(availableSeats, maxSeats or availableSeats)
+    if minSeats > maxSeats then
+        minSeats = maxSeats
+    end
+    local weights = {}
+    local total = 0
+    for i = minSeats, maxSeats do
+        local w = (i - minSeats + 1)
+        weights[i] = w
+        total = total + w
+    end
+    local r = math.random(total)
+    local cumulative = 0
+    for i = minSeats, maxSeats do
+        cumulative = cumulative + weights[i]
+        if r <= cumulative then
+            return i
+        end
+    end
+    return minSeats
+end
+
 local function generateFareMultiplier(passengerTypeKey)
     local passengerType = getPassengerType(passengerTypeKey)
     if not passengerType then
@@ -523,9 +555,9 @@ local function generateJob()
     end
 
     local valueMultiplier = generateValueMultiplier()
-    local passengerCount = calculatePassengerCount()
     local selectedPassengerTypeKey = selectRandomPassengerType(valueMultiplier, availableSeats)
     local selectedPassengerType = getPassengerType(selectedPassengerTypeKey)
+    local passengerCount = calculatePassengerCountForType(selectedPassengerType)
     local fareMultiplier = generateFareMultiplier(selectedPassengerTypeKey)
 
     -- Calculate actual driving distance between pickup and dropoff for accurate initial fare
