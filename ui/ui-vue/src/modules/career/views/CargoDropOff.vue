@@ -658,7 +658,7 @@ const setDropOffCargoSelection = dd => {
       let remainingFreeAmount = info.storage.capacity - info.storage.storedVolume
       info.items.sort((a,b) => a.slots-b.slots)
       info.items.forEach(item => {
-          item.amountSelectorPerSlot = item.type === "fluid" || item.type === "dryBulk" || item.type === "cement"
+          item.amountSelectorPerSlot = item.type === "fluid" || item.type === "dryBulk" || item.type === "cement" || item.type === "cash"
           item.maxCount = item.ids.length
           if (item.amountSelectorPerSlot) item.maxCount = item.slots
           item.amountSelector = ref(Math.max(0,Math.min(item.maxCount, remainingFreeAmount)))

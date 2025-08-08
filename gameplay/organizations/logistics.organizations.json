@@ -351,13 +351,238 @@
     "description": "A local delivery association that owns a bunch of stores in italy.",
     "icon": "cardboardBox",
     "reputationLevels": [
-    {},
-    {},
-    {},
-    {},
-    {}
-  ]
-}
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "moneyGrabLogistics": {
+    "name": "MoneyGrab Bank",
+    "description": "Complete deliveries for MoneyGrab Bank and they may help you out on some quick loans",
+    "icon": "beamCurrency",
+    "loanableVehicles": [
+      {
+        "model": "md_series",
+        "config": "small_money_transport_career",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 8000000000,
+          "0": 3000000000,
+          "1": 300000000,
+          "2": 3000000,
+          "3": 10000
+        }
+      },
+      {
+        "model": "md_series",
+        "config": "large_money_transport_career",
+        "reputationLvl": 2,
+        "deliveryLvl": 2,
+        "mileages": {
+          "-1": 8000000000,
+          "0": 800000000,
+          "1": 800000000,
+          "2": 8000000,
+          "3": 10000
+        }
+      }
+    ],
+    "reputationLevels": [
+      {
+        // Level -1
+        "unlocks": [
+          {
+            "icon": "boxPickUp03",
+            "label": "Jank"
+          },
+        ],
+        "loanerCut": {
+          "value": 0.75,
+          "icon": "boxPickUp03"
+        }
+      },
+      {
+        // Level 0
+        "unlocks": [
+          {
+            "icon": "smallTrailer",
+            "label": "Old",
+          }
+        ],
+        "loanerCut": {
+          "value": 0.5,
+          "icon": "boxPickUp03"
+        }
+      },
+      {
+        // Level 1
+        "unlocks": [
+          {
+            "icon": "smallTrailer",
+            "label": "Good",
+          }
+        ],
+      },
+      {
+        // Level 2
+        "unlocks": [
+          {
+            "icon": "smallTrailer",
+            "label": "Better",
+          }
+        ],
+      },
+      {
+        // Level 3
+        "unlocks": [
+          {
+            "icon": "smallTrailer",
+            "label": "Best",
+          }
+        ],
+      }
+    ]
+  },
+  "policeLoaner": {
+    "name": "police Loaner",
+    "description": "Complete deliveries for MoneyGrab Bank and they may help you out on some quick loans",
+    "icon": "beamCurrency",
+    "loanableVehicles": [
+      {
+        "model": "fullsize",
+        "config": "police",
+        "reputationLvl": -1,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 300000000,
+          "0": 150000000,
+          "1": 75000000,
+          "2": 37500000,
+          "3": 10000
+        }
+      },
+      {
+        "model": "fullsize",
+        "config": "unmarked",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 300000000,
+          "0": 150000000,
+          "1": 75000000,
+          "2": 37500000,
+          "3": 10000
+        }
+      },
+      {
+        "model": "bastion",
+        "config": "police_v8_awd_A",
+        "reputationLvl": 1,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 300000000,
+          "0": 150000000,
+          "1": 75000000,
+          "2": 37500000,
+          "3": 10000
+        }
+      },
+      {
+        "model": "bastion",
+        "config": "police_unmarked_v8_awd_A",
+        "reputationLvl": 2,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 300000000,
+          "0": 150000000,
+          "1": 75000000,
+          "2": 37500000,
+          "3": 10000
+        }
+      },
+      {
+        "model": "bastion",
+        "config": "police_redtail",
+        "reputationLvl": 3,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 300000000,
+          "0": 150000000,
+          "1": 75000000,
+          "2": 37500000,
+          "3": 10000
+        }
+      },
+      {
+        "model": "bastion",
+        "config": "undercover_redtail",
+        "reputationLvl": 3,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 300000000,
+          "0": 150000000,
+          "1": 75000000,
+          "2": 37500000,
+          "3": 10000
+        }
+      }
+    ],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {
+        // Level -1
+        "label": "Probation"
+      },
+      {
+        // Level 0
+        "label": "Rookie"
+      },
+      {
+        // Level 1
+        "deliveryBonus": {
+          "value": 1.20
+        },
+        "label": "Sergeant"
+      },
+      {
+        // Level 2
+        "deliveryBonus": {
+          "value": 1.45
+        },
+        "label": "Captain"
+      },
+      {
+        // Level 3
+        "deliveryBonus": {
+          "value": 1.75
+        },
+        "label": "Chief"
+      },
+      {
+        // Level 4
+        "deliveryBonus": {
+          "value": 3
+        },
+        "requiredValue": 1000,
+        "levelLabel": "Reputation: Level 4",
+        "label": "GSP"
+      },
+      {
+        // Level 5
+        "deliveryBonus": {
+          "value": 10
+        },
+        "requiredValue": 5000,
+        "levelLabel": "Reputation: Level 5",
+        "label": "FBI"
+      }
+    ]
+  },
   /**
   "belascoCityHospital": {
     "name":"Belasco City Hospital",

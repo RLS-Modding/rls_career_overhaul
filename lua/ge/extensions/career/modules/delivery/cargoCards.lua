@@ -82,6 +82,7 @@ local function getCardGroupSetsByKey(cardsById, usePlayerCards, playerCargoConta
     type_fluid = {label="Fluid"},
     type_dryBulk = {label="Dry Bulk"},
     type_cement = {label="Cement"},
+    type_cash = {label="Stacks ofCash"},
     type_vehicle = {label="Vehicle"},
     type_trailer = {label="Trailer"},
     type_loaner = {label="Loaner"},
@@ -95,6 +96,7 @@ local function getCardGroupSetsByKey(cardsById, usePlayerCards, playerCargoConta
     type_totalStorage_fluid = {meta={type="totalStorage", usedCargoSlots = 0, totalCargoSlots = 0, icon="droplet"}},
     type_totalStorage_dryBulk = {meta={type="totalStorage", usedCargoSlots = 0, totalCargoSlots = 0, icon="rocks"}},
     type_totalStorage_cement = {meta={type="totalStorage", usedCargoSlots = 0, totalCargoSlots = 0, icon="rocks"}},
+    type_totalStorage_cash = {meta={type="totalStorage", usedCargoSlots = 0, totalCargoSlots = 0, icon="beamCurrency"}},
   }
 
   if usePlayerCards and playerCargoContainers then
@@ -107,6 +109,9 @@ local function getCardGroupSetsByKey(cardsById, usePlayerCards, playerCargoConta
       elseif con.cargoTypesLookup.dryBulk then
         icon = "rocks"
         totalGroupMeta = groupsByKey['type_totalStorage_dryBulk'].meta
+      elseif con.cargoTypesLookup.cash then
+        icon = "beamCurrency"
+        totalGroupMeta = groupsByKey['type_totalStorage_cash'].meta
       elseif con.cargoTypesLookup.cement then
         icon = "rocks"
         totalGroupMeta = groupsByKey['type_totalStorage_cement'].meta
@@ -271,6 +276,7 @@ local function getCardGroupSetsByKey(cardsById, usePlayerCards, playerCargoConta
       groupsByKey.type_fluid,
       groupsByKey.type_dryBulk,
       groupsByKey.type_cement,
+      groupsByKey.type_cash,
       groupsByKey.type_vehicle,
       groupsByKey.type_trailer,
     },
@@ -351,6 +357,7 @@ local function getCardGroupSetsByKey(cardsById, usePlayerCards, playerCargoConta
       groupsByKey.type_totalStorage_fluid,
       groupsByKey.type_totalStorage_dryBulk,
       groupsByKey.type_totalStorage_cement,
+      groupsByKey.type_totalStorage_cash,
     }
   }
 
@@ -528,7 +535,7 @@ end
 
 local function addFilterPlayerData(filterSets, playerGroupSets, playerCargoContainers)
   -- figure out if the player has storage for this thing.
-  local storageAmount =  {parcel = 0, fluid = 0, dryBulk = 0, cement = 0}
+  local storageAmount =  {parcel = 0, fluid = 0, dryBulk = 0, cement = 0, cash = 0}
   for _, con in ipairs(playerCargoContainers) do
     if con.cargoTypesLookup.parcel then
       storageAmount.parcel = 1
@@ -538,15 +545,17 @@ local function addFilterPlayerData(filterSets, playerGroupSets, playerCargoConta
       storageAmount.dryBulk = 1
     elseif con.cargoTypesLookup.cement then
       storageAmount.cement = 1
+    elseif con.cargoTypesLookup.cash then
+      storageAmount.cash = 1
     end
   end
   for _, filter in ipairs(filterSets) do
     filter.noContainers = nil
     if filter.value == "parcel" and storageAmount.parcel == 0 then
       filter.noContainers = true
-    elseif filter.value == "material" and (storageAmount.fluid == 0 and storageAmount.dryBulk == 0 and storageAmount.cement == 0) then
+    elseif filter.value == "material" and (storageAmount.fluid == 0 and storageAmount.dryBulk == 0 and storageAmount.cement == 0 and storageAmount.cash == 0) then
       filter.noContainers = true
-    elseif filter.value == "all" and (storageAmount.parcel == 0 and storageAmount.fluid == 0 and storageAmount.dryBulk == 0 and storageAmount.cement == 0) then
+    elseif filter.value == "all" and (storageAmount.parcel == 0 and storageAmount.fluid == 0 and storageAmount.dryBulk == 0 and storageAmount.cement == 0 and storageAmount.cash == 0) then
       filter.noContainers = true
     end
   end

@@ -150,6 +150,8 @@ const TAB_HEADINGS = {
   largeDryBulk: "Dry Bulk Custom",
   smallCement: "Cement Orders",
   largeCement: "Cement Custom",
+  smallCash: "Cash Orders",
+  largeCash: "Cash Custom",
   vehicles: "Vehicles",
   trailers: "Trailers",
   loaners: "Loaners",
