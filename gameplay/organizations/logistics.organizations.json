@@ -536,48 +536,50 @@
     "reputationLevels": [
       {
         // Level -1
-        "unlocks": [
-          {
-            "icon": "boxPickUp03",
-            "label": "Jank"
-          },
-        ],
+        "label": "Probation"
       },
       {
         // Level 0
-        "unlocks": [
-          {
-            "icon": "smallTrailer",
-            "label": "Old",
-          }
-        ],
+        "label": "Rookie"
       },
       {
         // Level 1
-        "unlocks": [
-          {
-            "icon": "smallTrailer",
-            "label": "Good",
-          }
-        ],
+        "deliveryBonus": {
+          "value": 1.20
+        },
+        "label": "Sergeant"
       },
       {
         // Level 2
-        "unlocks": [
-          {
-            "icon": "smallTrailer",
-            "label": "Better",
-          }
-        ],
+        "deliveryBonus": {
+          "value": 1.45
+        },
+        "label": "Captain"
       },
       {
         // Level 3
-        "unlocks": [
-          {
-            "icon": "smallTrailer",
-            "label": "Best",
-          }
-        ],
+        "deliveryBonus": {
+          "value": 1.75
+        },
+        "label": "Chief"
+      },
+      {
+        // Level 4
+        "deliveryBonus": {
+          "value": 3
+        },
+        "requiredValue": 1000,
+        "levelLabel": "Reputation: Level 4",
+        "label": "GSP"
+      },
+      {
+        // Level 5
+        "deliveryBonus": {
+          "value": 10
+        },
+        "requiredValue": 5000,
+        "levelLabel": "Reputation: Level 5",
+        "label": "FBI"
       }
     ]
   },
