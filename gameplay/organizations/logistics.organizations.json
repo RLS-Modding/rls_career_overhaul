@@ -351,13 +351,93 @@
     "description": "A local delivery association that owns a bunch of stores in italy.",
     "icon": "cardboardBox",
     "reputationLevels": [
-    {},
-    {},
-    {},
-    {},
-    {}
-  ]
-}
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "moneyGrabLogistics": {
+    "name": "MoneyGrab Bank",
+    "description": "Complete deliveries for MoneyGrab Bank and they may help you out on some quick loans",
+    "icon": "beamCurrency",
+    "loanableVehicles": [
+      {
+        "model": "md_series",
+        "config": "small_money_transport_career",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 8000000000,
+          "0": 3000000000,
+          "1": 300000000,
+          "2": 3000000,
+          "3": 10000
+        }
+      },
+      {
+        "model": "md_series",
+        "config": "large_money_transport_career",
+        "reputationLvl": 2,
+        "deliveryLvl": 2,
+        "mileages": {
+          "-1": 8000000000,
+          "0": 800000000,
+          "1": 800000000,
+          "2": 8000000,
+          "3": 10000
+        }
+      }
+    ],
+    "reputationLevels": [
+      {
+        // Level -1
+        "unlocks": [
+          {
+            "icon": "boxPickUp03",
+            "label": "Jank"
+          },
+        ],
+      },
+      {
+        // Level 0
+        "unlocks": [
+          {
+            "icon": "smallTrailer",
+            "label": "Old",
+          }
+        ],
+      },
+      {
+        // Level 1
+        "unlocks": [
+          {
+            "icon": "smallTrailer",
+            "label": "Good",
+          }
+        ],
+      },
+      {
+        // Level 2
+        "unlocks": [
+          {
+            "icon": "smallTrailer",
+            "label": "Better",
+          }
+        ],
+      },
+      {
+        // Level 3
+        "unlocks": [
+          {
+            "icon": "smallTrailer",
+            "label": "Best",
+          }
+        ],
+      }
+    ]
+  },
   /**
   "belascoCityHospital": {
     "name":"Belasco City Hospital",
