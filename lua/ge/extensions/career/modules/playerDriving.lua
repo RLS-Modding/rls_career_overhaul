@@ -203,6 +203,9 @@ local function onPursuitAction(vehId, action, data)
   end
 
   local inventoryId = career_modules_inventory.getInventoryIdFromVehicleId(vehId)
+  if not inventoryId then
+    inventoryId = career_modules_inventory.getInventoryIdFromVehicleId(be:getPlayerVehicleID(0))
+  end
   if action == "start" then -- pursuit started
     gameplay_parking.disableTracking(vehId)
     if inventoryId and hasLicensePlate(inventoryId) then
@@ -285,11 +288,7 @@ local function onPursuitAction(vehId, action, data)
       local bonus = math.floor(240 * data.score) / 100
 
       local loanerCut = 1
-
       local vehicle = career_modules_inventory.getVehicle(inventoryId)
-      if not vehicle then
-        vehicle = career_modules_inventory.getVehicle(career_modules_inventory.getInventoryIdFromVehicleId(be:getPlayerVehicleID(0)))
-      end
       if vehicle.owningOrganization then
         local org = career_modules_organizations.getOrganization(vehicle.owningOrganization)
         local level = org.reputationLevels[org.level]
