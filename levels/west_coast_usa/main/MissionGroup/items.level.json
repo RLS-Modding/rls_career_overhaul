@@ -50,4 +50,3 @@
 {"name":"RLS_EDITS","class":"SimGroup","__parent":"MissionGroup"}
 {"name":"night_light","class":"SimGroup","__parent":"MissionGroup"}
 {"name":"night_light_shadow","class":"SimGroup","__parent":"MissionGroup"}
-{"class":"TSStatic","__parent":"MissionGroup","position":[523.755981,-720.659973,201.136002],"isRenderEnabled":false,"rotationMatrix":[-0.478354603,0.878166616,0,-0.878166616,-0.478354603,0,0,0,0.999999881],"shapeName":"/levels/west_coast_usa/art/hilltopvilla/hilltopvilla.dae","useInstanceRenderData":true}

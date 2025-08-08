@@ -401,8 +401,8 @@
       "filter": {
         "whiteList": {
           "Mileage": {
-            "min": 9000,
-            "max": 70000000
+            "min": 1000,
+            "max": 1604400
           },
           "Years": {
             "min": 2000,
@@ -414,7 +414,10 @@
           "Config Type": [
             "Factory"
           ],
-          "Value": {}
+          "Value": {
+            "min": 10000,
+            "max": 60000
+          }
         },
         "blackList": {
           "Type": [
@@ -426,8 +429,7 @@
           "Body Style": [
             "ATV",
             "Buggy"
-          ],
-          "Configuration": {}
+          ]
         }
       },
       "subFilters": [
@@ -455,16 +457,11 @@
               "Soviet Union/Russia"
             ]
           }
-        },
-        {
-          "probability": 1,
-          "whiteList": {}
         }
       ],
       "subFilterNames": [
         "Sub-Filter 1",
-        "Sub-Filter 2",
-        "Sub-Filter 3"
+        "Sub-Filter 2"
       ],
       "fees": 749,
       "containsStarterVehicles": false,
@@ -1606,8 +1603,8 @@
       ],
       "doors": [
         [
-          "importDealer_area_1",
-          "importDealer_icon_95",
+          "importDealer_area",
+          "importDealer_icon",
           30
         ]
       ],
