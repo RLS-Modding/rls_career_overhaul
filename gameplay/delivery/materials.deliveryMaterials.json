@@ -75,5 +75,12 @@
     "type": "dryBulk",
     "money": 0.37,
     "icon": "rocks"
+  },
+  "cash": {
+    "name": "Stacks of Cash",
+    "density": 0.1,
+    "type": "cash",
+    "money": 5,
+    "icon": "beamCurrency"
   }
 }

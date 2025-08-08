@@ -1,0 +1,76 @@
+{
+  "deliveryProviders": [
+    {
+      "id": "moneyGrabBank",
+      "name": "MoneyGrab Bank",
+      "description": "Receives various cargo.",
+      "associatedOrganization": "belascoCityHospital",
+      "preview": "previews/hospital.jpg",
+      "manualAccessPoints": [
+        {
+          "psName": "moneyGrabBankParking",
+          "isInspectSpot": true,
+          "logisticTypesProvided": [],
+          "logisticTypesReceived": [
+            "cash"
+          ]
+        }
+      ],
+      "sitesFile": "rls.sites.json",
+      "logisticTypesProvided": [],
+      "logisticTypesReceived": [
+        "cash"
+      ],
+      "logisticGenerators": [
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "cash"
+          ],
+          "materialType": "cash",
+          "capacity": 100000,
+          "target": 0,
+          "variance": 5000,
+          "interval": 300,
+          "rate": 20000
+        }
+      ]
+    },
+    {
+      "id": "beachShops",
+      "name": "Beach Shops",
+      "description": "Receives various cargo.",
+      "associatedOrganization": "belascoCityHospital",
+      "preview": "previews/hospital.jpg",
+      "manualAccessPoints": [
+        {
+          "psName": "beachShopsParking",
+          "isInspectSpot": true,
+          "logisticTypesProvided": [
+            "cash"
+          ],
+          "logisticTypesReceived": []
+        }
+      ],
+      "sitesFile": "rls.sites.json",
+      "logisticTypesProvided": [
+        "cash"
+      ],
+      "logisticTypesReceived": [],
+      "logisticGenerators": [
+        {
+          "type": "materialProvider",
+          "logisticTypes": [
+            "cash"
+          ],
+          "materialType": "cash",
+          "capacity": 350,
+          "target": 300,
+          "variance": 50,
+          "interval": 300,
+          "rate": 100
+        }
+      ]
+    }
+  ]
+}
