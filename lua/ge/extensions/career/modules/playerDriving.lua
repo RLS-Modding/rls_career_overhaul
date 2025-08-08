@@ -287,7 +287,7 @@ local function onPursuitAction(vehId, action, data)
     if playerIsCop == true then
       local bonus = math.floor(240 * data.score) / 100
 
-      local loanerCut = 1
+      local loanerCut = 0
       local vehicle = career_modules_inventory.getVehicle(inventoryId)
       if vehicle.owningOrganization then
         local org = freeroam_organizations.getOrganization(vehicle.owningOrganization)
@@ -297,7 +297,7 @@ local function onPursuitAction(vehId, action, data)
 
       career_modules_payment.reward({
         money = {
-          amount = bonus * loanerCut
+          amount = bonus * (1 - loanerCut)
         },
         beamXP = {
           amount = math.floor(bonus / 20)
@@ -317,7 +317,7 @@ local function onPursuitAction(vehId, action, data)
       }, true)
 
       local message = "Arrest Bonus: $" .. bonus
-      if loanerCut ~= 1 then
+      if loanerCut ~= 0 then
         message = message .. " (Loaner Cut: " .. loanerCut*100 .. "%)"
       end
       ui_message(message, 5, "Police", "info")
