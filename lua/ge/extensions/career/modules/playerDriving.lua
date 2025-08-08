@@ -294,10 +294,11 @@ local function onPursuitAction(vehId, action, data)
         local level = org.reputationLevels[org.reputation.level + 2]
         loanerCut = level.loanerCut.value
       end
+      bonus = bonus * (1 - loanerCut)
 
       career_modules_payment.reward({
         money = {
-          amount = bonus * (1 - loanerCut)
+          amount = bonus 
         },
         beamXP = {
           amount = math.floor(bonus / 20)
