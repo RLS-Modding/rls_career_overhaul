@@ -140,7 +140,21 @@ local function addReputationToOrg(organization)
       if levelInfo[attributeKey] then
         if type(levelInfo[attributeKey]) == "table" then
           for key, value in pairs(attributeValue) do
-            levelInfo[attributeKey][key] = levelInfo[attributeKey][key] or value
+            if attributeKey == "loanerCut" then
+              if key == "value" then
+                if isHardcore then
+                  if levelInfo[attributeKey]["hardcoreValue"] then
+                    levelInfo[attributeKey][key] = levelInfo[attributeKey]["hardcoreValue"]
+                  else
+                    levelInfo[attributeKey][key] = value
+                  end
+                else
+                  levelInfo[attributeKey][key] = levelInfo[attributeKey][key] or value
+                end
+              end
+            else
+              levelInfo[attributeKey][key] = value
+            end
           end
         end
       else
