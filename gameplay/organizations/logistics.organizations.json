@@ -399,6 +399,149 @@
             "label": "Jank"
           },
         ],
+        "loanerCut": {
+          "value": 0.75,
+          "icon": "boxPickUp03"
+        }
+      },
+      {
+        // Level 0
+        "unlocks": [
+          {
+            "icon": "smallTrailer",
+            "label": "Old",
+          }
+        ],
+        "loanerCut": {
+          "value": 0.5,
+          "icon": "boxPickUp03"
+        }
+      },
+      {
+        // Level 1
+        "unlocks": [
+          {
+            "icon": "smallTrailer",
+            "label": "Good",
+          }
+        ],
+      },
+      {
+        // Level 2
+        "unlocks": [
+          {
+            "icon": "smallTrailer",
+            "label": "Better",
+          }
+        ],
+      },
+      {
+        // Level 3
+        "unlocks": [
+          {
+            "icon": "smallTrailer",
+            "label": "Best",
+          }
+        ],
+      }
+    ]
+  },
+  "policeLoaner": {
+    "name": "police Loaner",
+    "description": "Complete deliveries for MoneyGrab Bank and they may help you out on some quick loans",
+    "icon": "beamCurrency",
+    "loanableVehicles": [
+      {
+        "model": "fullsize",
+        "config": "police",
+        "reputationLvl": -1,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 300000000,
+          "0": 150000000,
+          "1": 75000000,
+          "2": 37500000,
+          "3": 10000
+        }
+      },
+      {
+        "model": "fullsize",
+        "config": "unmarked",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 300000000,
+          "0": 150000000,
+          "1": 75000000,
+          "2": 37500000,
+          "3": 10000
+        }
+      },
+      {
+        "model": "bastion",
+        "config": "police_v8_awd_A",
+        "reputationLvl": 1,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 300000000,
+          "0": 150000000,
+          "1": 75000000,
+          "2": 37500000,
+          "3": 10000
+        }
+      },
+      {
+        "model": "bastion",
+        "config": "police_unmarked_v8_awd_A",
+        "reputationLvl": 2,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 300000000,
+          "0": 150000000,
+          "1": 75000000,
+          "2": 37500000,
+          "3": 10000
+        }
+      },
+      {
+        "model": "bastion",
+        "config": "police_redtail",
+        "reputationLvl": 3,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 300000000,
+          "0": 150000000,
+          "1": 75000000,
+          "2": 37500000,
+          "3": 10000
+        }
+      },
+      {
+        "model": "bastion",
+        "config": "undercover_redtail",
+        "reputationLvl": 3,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 300000000,
+          "0": 150000000,
+          "1": 75000000,
+          "2": 37500000,
+          "3": 10000
+        }
+      }
+    ],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {
+        // Level -1
+        "unlocks": [
+          {
+            "icon": "boxPickUp03",
+            "label": "Jank"
+          },
+        ],
       },
       {
         // Level 0

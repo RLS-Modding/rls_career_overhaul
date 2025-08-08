@@ -79,6 +79,33 @@
           "rate": 100
         }
       ]
+    },
+    {
+      "id": "policeLoaner",
+      "name": "Police Station Loaners",
+      "description": "Receives various cargo.",
+      "associatedOrganization": "policeLoaner",
+      "preview": "previews/hospital.jpg",
+      "manualAccessPoints": [
+        {
+          "psName": "policeLoanerParking",
+          "isInspectSpot": true,
+          "logisticTypesProvided": [],
+          "logisticTypesReceived": []
+        },
+        {
+          "psName": "policeLoanerLoaner",
+          "isInspectSpot": false,
+          "logisticTypesProvided": [],
+          "logisticTypesReceived": [],
+          "loanerTrailerPriority": 1,
+          "loanerNonTrailerPriority": 1
+        }
+      ],
+      "sitesFile": "rls.sites.json",
+      "logisticTypesProvided": [],
+      "logisticTypesReceived": [],
+      "logisticGenerators": []
     }
   ]
 }
