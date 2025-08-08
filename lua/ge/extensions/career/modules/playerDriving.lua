@@ -288,7 +288,7 @@ local function onPursuitAction(vehId, action, data)
 
       local vehicle = career_modules_inventory.getVehicle(inventoryId)
       if vehicle.owningOrganization then
-        local org = career_modules_reputation.getOrganization(vehicle.owningOrganization)
+        local org = career_modules_organizations.getOrganization(vehicle.owningOrganization)
         local level = org.reputationLevels[org.level]
         loanerCut = level.loanerCut.value
       end
