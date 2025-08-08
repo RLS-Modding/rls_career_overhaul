@@ -284,9 +284,18 @@ local function onPursuitAction(vehId, action, data)
     if playerIsCop == true then
       local bonus = math.floor(240 * data.score) / 100
 
+      local loanerCut = 1
+
+      local vehicle = career_modules_inventory.getVehicle(inventoryId)
+      if vehicle.owningOrganization then
+        local org = career_modules_reputation.getOrganization(vehicle.owningOrganization)
+        local level = org.reputationLevels[org.level]
+        loanerCut = level.loanerCut.value
+      end
+
       career_modules_payment.reward({
         money = {
-          amount = bonus
+          amount = bonus * loanerCut
         },
         beamXP = {
           amount = math.floor(bonus / 20)
@@ -296,12 +305,20 @@ local function onPursuitAction(vehId, action, data)
         },
         specialized = {
           amount = math.floor(bonus / 20)
+        },
+        policeLoanerReputation = {
+          amount = 10
         }
       }, {
         label = "Arrest Bonus",
         tags = {"gameplay", "reward", "police"}
       }, true)
-      ui_message("Arrest Bonus: $" .. bonus, 5, "Police", "info")
+
+      local message = "Arrest Bonus: $" .. bonus
+      if loanerCut ~= 1 then
+        message = message .. " (Loaner Cut: " .. loanerCut*100 .. "%)"
+      end
+      ui_message(message, 5, "Police", "info")
       career_modules_inventory.addSuspectCaught(inventoryId)
     end
     career_saveSystem.saveCurrent()

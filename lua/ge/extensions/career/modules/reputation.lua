@@ -133,6 +133,12 @@ local function addReputationToOrg(organization)
     nextThreshold = nextThreshold
   }
 
+  if organization.reputationValues then
+    for i, value in pairs(organization.reputationValues) do
+        reputationValues[i] = value
+    end
+  end
+
   updateLevelDefaults()
 
   for i, levelInfo in ipairs(organization.reputationLevels) do
