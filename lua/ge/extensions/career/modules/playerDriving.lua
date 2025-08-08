@@ -287,6 +287,9 @@ local function onPursuitAction(vehId, action, data)
       local loanerCut = 1
 
       local vehicle = career_modules_inventory.getVehicle(inventoryId)
+      if not vehicle then
+        vehicle = career_modules_inventory.getVehicle(career_modules_inventory.getInventoryIdFromVehicleId(be:getPlayerVehicleID(0)))
+      end
       if vehicle.owningOrganization then
         local org = career_modules_organizations.getOrganization(vehicle.owningOrganization)
         local level = org.reputationLevels[org.level]
