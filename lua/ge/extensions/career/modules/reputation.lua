@@ -85,7 +85,11 @@ local function getloanerCutValue(level)
     [2] = isHardcore and 0.6 or 0.15,
     [3] = isHardcore and 0.5 or 0,
   }
-  return loanerCutValues[level]
+  local value = loanerCutValues[level]
+  if value == nil then
+    value = loanerCutValues[3] or 0
+  end
+  return value
 end
 
 local function updateLevelDefaults()
@@ -142,7 +146,9 @@ local function addReputationToOrg(organization)
   updateLevelDefaults()
 
   for i, levelInfo in ipairs(organization.reputationLevels) do
-    for attributeKey, attributeValue in pairs(levelDefaults[i-2]) do
+    local defaultAttributes = levelDefaults[i-2] or levelDefaults[3]
+    if defaultAttributes then
+      for attributeKey, attributeValue in pairs(defaultAttributes) do
       if levelInfo[attributeKey] then
         if type(levelInfo[attributeKey]) == "table" then
           for key, value in pairs(attributeValue) do
@@ -166,6 +172,7 @@ local function addReputationToOrg(organization)
       else
         levelInfo[attributeKey] = attributeValue
       end
+      end
     end
   end
   organization.reputation = data
@@ -173,7 +180,8 @@ end
 
 local function getLabel(lvl)
   updateLevelDefaults()
-  return levelDefaults[lvl].label
+  local d = levelDefaults[lvl] or levelDefaults[3] or levelDefaults[0] or levelDefaults[-1]
+  return d and d.label or ""
 end
 
 local function getMinimumValue()
