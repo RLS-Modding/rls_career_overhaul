@@ -88,6 +88,7 @@ end
 local function getPartDifference(originalParts, newParts, changedSlots)
   local addedParts = {}
   local removedParts = {}
+  if not originalParts then return addedParts, removedParts end
   for slotName, oldPart in pairs(originalParts) do
     if newParts then
       local newPart = newParts[slotName]
@@ -295,6 +296,7 @@ local function getInventoryVehicleValue(inventoryId, ignoreDamage)
 end
 
 local function getNumberOfBrokenParts(partConditions)
+  if not partConditions then return 0 end
   local counter = 0
   for partPath, info in pairs(partConditions) do
     if info.integrityValue and info.integrityValue == 0 then
