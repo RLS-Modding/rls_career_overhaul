@@ -393,56 +393,51 @@
     "reputationLevels": [
       {
         // Level -1
-        "unlocks": [
-          {
-            "icon": "boxPickUp03",
-            "label": "Jank"
-          },
-        ],
         "loanerCut": {
           "value": 0.75,
           "icon": "boxPickUp03"
-        }
+        },
+        "loans": {
+          "max": 50000,
+          "rate": 0.50
+        },
+        "requiredValue": -200
       },
       {
         // Level 0
-        "unlocks": [
-          {
-            "icon": "smallTrailer",
-            "label": "Old",
-          }
-        ],
         "loanerCut": {
           "value": 0.5,
           "icon": "boxPickUp03"
-        }
+        },
+        "loans": {
+          "max": 50000,
+          "rate": 0.25
+        },
+        "requiredValue": -25
       },
       {
         // Level 1
-        "unlocks": [
-          {
-            "icon": "smallTrailer",
-            "label": "Good",
-          }
-        ],
+        "loans": {
+          "max": 100000,
+          "rate": 0.20
+        },
+        "requiredValue": 100
       },
       {
         // Level 2
-        "unlocks": [
-          {
-            "icon": "smallTrailer",
-            "label": "Better",
-          }
-        ],
+        "loans": {
+          "max": 250000,
+          "rate": 0.15
+        },
+        "requiredValue": 250
       },
       {
         // Level 3
-        "unlocks": [
-          {
-            "icon": "smallTrailer",
-            "label": "Best",
-          }
-        ],
+        "loans": {
+          "max": 500000,
+          "rate": 0.10
+        },
+        "requiredValue": 750
       }
     ]
   },
