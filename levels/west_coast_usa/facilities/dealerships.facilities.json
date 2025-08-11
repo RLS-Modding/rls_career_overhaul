@@ -420,7 +420,10 @@
           "Config Type": [
             "Factory"
           ],
-          "Value": {}
+          "Value": {
+            "min": 10000,
+            "max": 60000
+          }
         },
         "blackList": {
           "Type": [
@@ -537,8 +540,7 @@
             "max": 160934400
           },
           "Value": {
-            "min": 80000,
-            "max": 5500000
+            "min": 80000
           }
         },
         "blackList": {
