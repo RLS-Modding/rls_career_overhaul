@@ -19,17 +19,17 @@
       },
       "isMultiSpot":false,
       "name":"moneyGrabBankParking",
-      "oldId":7248,
+      "oldId":2243,
       "pos":[
         -553.1967163,
         417.2329407,
-        107.6469498
+        107.6469421
       ],
       "rot":[
-        0,
-        0,
-        0.3813530519,
-        0.9244293408
+        0.03978569433,
+        -0.01641271077,
+        0.3809996545,
+        0.9235728979
       ],
       "scl":[
         2.5,
@@ -55,7 +55,7 @@
       },
       "isMultiSpot":false,
       "name":"beachShopsParking",
-      "oldId":7249,
+      "oldId":2244,
       "pos":[
         -415.3212891,
         726.1347046,
@@ -66,6 +66,114 @@
         0,
         0.9235746264,
         -0.3834185302
+      ],
+      "scl":[
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount":1,
+      "spotDirection":"Left",
+      "spotOffset":0,
+      "spotRotation":0
+    },
+    {
+      "color":[
+        1,
+        1,
+        1
+      ],
+      "customFields":{
+        "names":{},
+        "tags":{},
+        "types":{},
+        "values":{}
+      },
+      "isMultiSpot":false,
+      "name":"moneyGrabBankLoaner",
+      "oldId":2245,
+      "pos":[
+        -545.4387817,
+        425.1578979,
+        106.5122147
+      ],
+      "rot":[
+        0.05128355324,
+        -0.0180032365,
+        0.3898793459,
+        0.9192606211
+      ],
+      "scl":[
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount":1,
+      "spotDirection":"Left",
+      "spotOffset":0,
+      "spotRotation":0
+    },
+    {
+      "color":[
+        1,
+        1,
+        1
+      ],
+      "customFields":{
+        "names":{},
+        "tags":{},
+        "types":{},
+        "values":{}
+      },
+      "isMultiSpot":false,
+      "name":"policeLoanerParking",
+      "oldId":2246,
+      "pos":[
+        -744.2387695,
+        748.9724731,
+        81.82940674
+      ],
+      "rot":[
+        0,
+        0,
+        -0.7144756882,
+        0.6996600687
+      ],
+      "scl":[
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount":1,
+      "spotDirection":"Left",
+      "spotOffset":0,
+      "spotRotation":0
+    },
+    {
+      "color":[
+        1,
+        1,
+        1
+      ],
+      "customFields":{
+        "names":{},
+        "tags":{},
+        "types":{},
+        "values":{}
+      },
+      "isMultiSpot":false,
+      "name":"policeLoanerLoaner",
+      "oldId":2247,
+      "pos":[
+        -756.5949097,
+        749.008728,
+        81.82203674
+      ],
+      "rot":[
+        0,
+        0,
+        0.7076459527,
+        0.7065671682
       ],
       "scl":[
         2.5,
