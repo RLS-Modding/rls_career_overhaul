@@ -1,56 +1,43 @@
 {
-  "0-100 km/h":4.7,
-  "0-100 mph":8.2,
-  "0-200 km/h":11.6,
-  "0-200 mph":44.6,
-  "0-300 km/h":29.4,
-  "0-60 mph":4.6,
-  "100-0 km/h":33,
-  "100-200 km/h":6.8,
-  "60-0 mph":100.8,
-  "60-100 mph":3.6,
+  "100-0 km/h":40,
+  "60-0 mph":122.1,
   "Body Style":"Sedan",
   "BoundingBox":[
     [
       -0.865,
-      -2.178,
+      -2.298,
       -0.223
     ],
     [
       1.265,
-      2.972,
-      1.252
+      2.937,
+      1.437
     ]
   ],
-  "Braking G":1.191,
+  "Braking G":0.983,
   "Config Type":"Police",
-  "Configuration":"undercover_redtail",
-  "Drivetrain":"RWD",
+  "Configuration":"police_v6_awd_A",
+  "Drivetrain":"AWD",
   "Fuel Type":"Gasoline",
-  "Induction Type":"SC",
-  "Name":"Bastion Undercover Redtail",
-  "Off-Road Score":27,
-  "Population":100,
-  "Power":819,
-  "PowerPeakRPM":"5250 - 5900",
+  "Induction Type":"NA",
+  "Name":"Bastion police_v6_awd_A",
+  "Off-Road Score":34,
+  "Power":284,
+  "PowerPeakRPM":5850,
   "Propulsion":"ICE",
   "Source":"Custom",
-  "Top Speed":93.21533326,
-  "Torque":1155,
-  "TorquePeakRPM":"3700 - 4850",
+  "Torque":365,
+  "TorquePeakRPM":"3400 - 4550",
   "Transmission":"Automatic",
-  "Value":80000,
-  "Weight":2130,
-  "Weight/Power":2.600732601,
+  "Value":40000,
+  "Weight":2035,
+  "Weight/Power":7.165492958,
   "aggregates":{
     "Body Style":{
       "Sedan":true
     },
     "Brand":{
       "Bruckell":true
-    },
-    "Config Type":{
-      "Police":true
     },
     "Country":{
       "United States":true
@@ -59,17 +46,17 @@
       "Full-Size Car":true
     },
     "Drivetrain":{
-      "RWD":true
+      "AWD":true
     },
     "Fuel Type":{
       "Gasoline":true
     },
     "Induction Type":{
-      "SC":true
+      "NA":true
     },
     "Off-Road Score":{
-      "max":27,
-      "min":27
+      "max":34,
+      "min":34
     },
     "Propulsion":{
       "ICE":true
@@ -84,17 +71,13 @@
     "Type":{
       "Car":true
     },
-    "Value":{
-      "max":80000,
-      "min":80000
-    },
     "Weight":{
-      "max":2130,
-      "min":2130
+      "max":2035,
+      "min":2035
     },
     "Weight/Power":{
-      "max":2.600732601,
-      "min":2.600732601
+      "max":7.165492958,
+      "min":7.165492958
     },
     "Years":{
       "max":2022,
@@ -102,5 +85,5 @@
     }
   },
   "is_default_config":false,
-  "preview":"/vehicles/bastion/undercover_redtail.jpg"
+  "preview":"/vehicles/bastion/police_v6_awd_A.jpg"
 }

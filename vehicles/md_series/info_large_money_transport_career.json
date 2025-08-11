@@ -1,5 +1,77 @@
 {
-    "Configuration": "Bank Truck Large Capacity"
+  "0-100 km/h":29.6,
+  "0-60 mph":28,
+  "BoundingBox":[
+    [
+      -1.068,
+      -1.99,
+      -0.62
+    ],
+    [
+      1.936,
+      3.676,
+      1.855
+    ]
+  ],
+  "Configuration":"Bank Truck Large Capacity",
+  "Drivetrain":"RWD",
+  "Fuel Type":"Diesel",
+  "Induction Type":"Turbo",
+  "Name":"MD-Series Bank Truck Large Capacity",
+  "Off-Road Score":39,
+  "Population":100,
+  "Power":254,
+  "PowerPeakRPM":2400,
+  "Propulsion":"ICE",
+  "Source":"Custom",
+  "Top Speed":30.56089211,
+  "Torque":815,
+  "TorquePeakRPM":"1350 - 1900",
+  "Transmission":"Automatic",
+  "Value":200000,
+  "Weight":8520,
+  "Weight/Power":33.54330709,
+  "aggregates":{
+    "Brand":{
+      "Gavril":true
+    },
+    "Country":{
+      "United States":true
+    },
+    "Derby Class":{
+      "Medium Truck":true
+    },
+    "Drivetrain":{
+      "RWD":true
+    },
+    "Fuel Type":{
+      "Diesel":true
+    },
+    "Induction Type":{
+      "Turbo":true
+    },
+    "Propulsion":{
+      "ICE":true
+    },
+    "Source":{
+      "BeamNG - Official":true,
+      "Custom":true
+    },
+    "Transmission":{
+      "Automatic":true
+    },
+    "Type":{
+      "Truck":true
+    },
+    "Weight":{
+      "max":8520,
+      "min":8520
+    },
+    "Weight/Power":{
+      "max":33.54330709,
+      "min":33.54330709
+    }
+  },
+  "is_default_config":false,
+  "preview":"/vehicles/md_series/large_money_transport_career.jpg"
 }
-
-

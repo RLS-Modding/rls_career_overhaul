@@ -1,0 +1,82 @@
+{
+  "Body Style":"Sedan",
+  "BoundingBox":[
+    [
+      -0.865,
+      -2.138,
+      -0.233
+    ],
+    [
+      1.265,
+      2.937,
+      1.252
+    ]
+  ],
+  "Config Type":"Police",
+  "Configuration":"police_unmarked_v8_awd_A_Red",
+  "Drivetrain":"AWD",
+  "Fuel Type":"Gasoline",
+  "Induction Type":"NA",
+  "Name":"Bastion police_unmarked_v8_awd_A_Red",
+  "Population":2000,
+  "Power":369,
+  "PowerPeakRPM":"4950 - 5600",
+  "Propulsion":"ICE",
+  "Source":"Custom",
+  "Torque":545,
+  "TorquePeakRPM":"3750 - 4750",
+  "Transmission":"Automatic",
+  "Value":50000,
+  "Weight":2075,
+  "Weight/Power":5.623306233,
+  "aggregates":{
+    "Body Style":{
+      "Sedan":true
+    },
+    "Brand":{
+      "Bruckell":true
+    },
+    "Country":{
+      "United States":true
+    },
+    "Derby Class":{
+      "Full-Size Car":true
+    },
+    "Drivetrain":{
+      "AWD":true
+    },
+    "Fuel Type":{
+      "Gasoline":true
+    },
+    "Induction Type":{
+      "NA":true
+    },
+    "Propulsion":{
+      "ICE":true
+    },
+    "Source":{
+      "BeamNG - Official":true,
+      "Custom":true
+    },
+    "Transmission":{
+      "Automatic":true
+    },
+    "Type":{
+      "Car":true
+    },
+    "Weight":{
+      "max":2075,
+      "min":2075
+    },
+    "Weight/Power":{
+      "max":5.623306233,
+      "min":5.623306233
+    },
+    "Years":{
+      "max":2022,
+      "min":2016
+    }
+  },
+  "is_default_config":false,
+  "preview":"/vehicles/bastion/police_unmarked_v8_awd_A_Red.jpg"
+}
