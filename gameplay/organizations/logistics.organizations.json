@@ -587,7 +587,7 @@
       },
       {
         "model": "bastion",
-        "config": "police_unmarked_v8_awd_A_blue",
+        "config": "police_unmarked_v8_awd_A_Blue",
         "reputationLvl": 3,
         "deliveryLvl": 0,
         "mileages": {

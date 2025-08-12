@@ -13,11 +13,11 @@
     ]
   ],
   "Config Type":"Police",
-  "Configuration":"police_unmarked_v8_awd_A_Red",
+  "Configuration":"Police (Unmarked Red) 5.7 AWD (A)",
   "Drivetrain":"AWD",
   "Fuel Type":"Gasoline",
   "Induction Type":"NA",
-  "Name":"Bastion police_unmarked_v8_awd_A_Red",
+  "Name":"Police (Unmarked Red) 5.7 AWD (A)",
   "Population":2000,
   "Power":369,
   "PowerPeakRPM":"4950 - 5600",
