@@ -172,9 +172,12 @@ local function onCareerModulesActivated()
   for orgId, organization in pairs(freeroam_organizations.getOrganizations()) do
     if not attributes[orgId .. "Reputation"] then
       local attribute = deepcopy(baseAttribute)
-      attribute.min = career_modules_reputation.getMinimumValue()
-      attribute.max = career_modules_reputation.getMaximumValue()
+      attribute.min = career_modules_reputation.getMinimumValue(organization)
+      attribute.max = career_modules_reputation.getMaximumValue(organization)
       attributes[orgId .. "Reputation"] = attribute
+    else
+      attributes[orgId .. "Reputation"].min = career_modules_reputation.getMinimumValue(organization)
+      attributes[orgId .. "Reputation"].max = career_modules_reputation.getMaximumValue(organization)
     end
   end
 end

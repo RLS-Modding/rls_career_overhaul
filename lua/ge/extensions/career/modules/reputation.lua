@@ -184,12 +184,12 @@ local function getLabel(lvl)
   return d and d.label or ""
 end
 
-local function getMinimumValue()
-  return minimumValue
+local function getMinimumValue(organization)
+  return organization.reputationLevels[1].min or minimumValue
 end
 
-local function getMaximumValue()
-  return maximumValue
+local function getMaximumValue(organization)
+  return organization.reputationLevels[#organization.reputationLevels].max or maximumValue
 end
 
 M.onHardcoreModeChanged = function(hardcoreMode)

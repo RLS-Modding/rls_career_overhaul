@@ -289,7 +289,8 @@ local function onPursuitAction(vehId, action, data)
       
       local org = freeroam_organizations.getOrganization("policeLoaner")
       local level = org.reputationLevels[org.reputation.level + 2]
-      bonus = bonus * level.deliveryBonus.value
+      local reputationBonus = level.deliveryBonus.value
+      bonus = bonus * reputationBonus
 
       local loanerCut = 0
       local vehicle = career_modules_inventory.getVehicle(inventoryId)
@@ -322,6 +323,9 @@ local function onPursuitAction(vehId, action, data)
       local message = "Arrest Bonus: $" .. bonus
       if loanerCut ~= 0 then
         message = message .. " (Loaner Cut: " .. loanerCut*100 .. "%)"
+      end
+      if reputationBonus ~= 1 then
+        message = message .. " (Reputation Bonus: " .. (1 - reputationBonus)*100 .. "%)"
       end
       ui_message(message, 5, "Police", "info")
       career_modules_inventory.addSuspectCaught(inventoryId)

@@ -405,7 +405,8 @@
           "max": 50000,
           "rate": 0.50
         },
-        "requiredValue": -200
+        "requiredValue": -75,
+        "min": -200
       },
       {
         // Level 0
@@ -441,7 +442,8 @@
           "max": 500000,
           "rate": 0.10
         },
-        "requiredValue": 750
+        "requiredValue": 750,
+        "max": 1000
       }
     ]
   },
@@ -667,7 +669,8 @@
     "reputationLevels": [
       {
         // Level -1
-        "label": "Probation"
+        "label": "Probation",
+        "min": -200
       },
       {
         // Level 0
@@ -709,6 +712,7 @@
           "value": 10
         },
         "requiredValue": 5000,
+        "max": 7500,
         "levelLabel": "Reputation: Level 5",
         "label": "FBI"
       }
