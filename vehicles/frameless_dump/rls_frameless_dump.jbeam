@@ -1,9 +1,9 @@
 {
 
-"rls_frameless_dump_cargo_load": {
+"rls_frameless_dump_cargoload": {
     "information":{
         "authors":"BeamNG",
-        "name":"RaceTab Frameless Dump Trailer",
+        "name":"Working Frameless Dump Storage Trailer",
         "value":8000,
     },
     "slotType" : "frameless_dump",
