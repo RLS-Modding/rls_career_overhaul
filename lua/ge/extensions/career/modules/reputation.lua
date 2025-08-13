@@ -165,7 +165,9 @@ local function addReputationToOrg(organization)
                 end
               end
             else
-              levelInfo[attributeKey][key] = value
+              if levelInfo[attributeKey][key] == nil then
+                levelInfo[attributeKey][key] = value
+              end
             end
           end
         end

@@ -325,7 +325,7 @@ local function onPursuitAction(vehId, action, data)
         message = message .. " (Loaner Cut: " .. loanerCut*100 .. "%)"
       end
       if reputationBonus ~= 1 then
-        message = message .. " (Reputation Bonus: " .. (1 - reputationBonus)*100 .. "%)"
+        message = message .. " (Reputation Bonus: " .. (reputationBonus - 1)*100 .. "%)"
       end
       ui_message(message, 5, "Police", "info")
       career_modules_inventory.addSuspectCaught(inventoryId)
