@@ -27,19 +27,31 @@ local function onExtensionLoaded()
             end
             return tipBreakdown
         end,
-        onUpdate = function(fare, rideData, passengerType)
-            if not rideData.smoothnessScore then rideData.smoothnessScore = 100 end
-            if rideData.currentSensorData then
-                local gx, gy = rideData.currentSensorData.gx, rideData.currentSensorData.gy
-                if math.abs(gx) > 0.7 or math.abs(gy) > 0.6 then
-                    rideData.smoothnessScore = math.max(0, rideData.smoothnessScore - 2)
-                else
-                    rideData.smoothnessScore = math.min(100, rideData.smoothnessScore + 0.5)
-                end
-                fare.rideQuality = fare.rideQuality or {}
-                fare.rideQuality.smoothness = rideData.smoothnessScore / 100
-            end
-        end,
+		onUpdate = function(fare, rideData, passengerType)
+			if not rideData.smoothnessScore then
+				rideData.smoothnessScore = 100
+				rideData.peakG = 0
+			end
+			if rideData.currentSensorData then
+				local gx = rideData.currentSensorData.gx
+				local gy = rideData.currentSensorData.gy
+				local gz = rideData.currentSensorData.gz or 0
+				local totalGForce = math.sqrt(gx*gx + gy*gy + gz*gz)
+				if totalGForce > (rideData.peakG or 0) then
+					rideData.peakG = totalGForce
+				end
+				if totalGForce > 2.0 then
+					rideData.smoothnessScore = math.max(0, rideData.smoothnessScore - 20)
+				elseif math.abs(gx) > 0.7 or math.abs(gy) > 0.6 then
+					rideData.smoothnessScore = math.max(0, rideData.smoothnessScore - 2)
+				else
+					rideData.smoothnessScore = math.min(100, rideData.smoothnessScore + 0.5)
+				end
+				fare.rideQuality = fare.rideQuality or {}
+				fare.rideQuality.smoothness = rideData.smoothnessScore / 100
+				fare.rideQuality.peakG = rideData.peakG
+			end
+		end,
         calculateDriverRating = function(fare, rideData, elapsedTime, speedFactor, passengerType)
             local smooth = (fare.rideQuality and fare.rideQuality.smoothness) or 1.0
             local spd = tonumber(speedFactor) or 0
