@@ -447,6 +447,63 @@
       }
     ]
   },
+  "salmonBank": {
+    "name": "Salmon's Private Bank",
+    "description": "Sell your vehicles to the notorious Salmon the Negotiator to earn reputation. He's rolling in cash so you can get some crazy loans.",
+    "icon": "beamCurrency",
+    "reputationLevels": [
+      {
+        // Level -1
+        "requiredValue": -75,
+        "min": -200
+      },
+      {
+        // Level 0
+        "requiredValue": -25
+      },
+      {
+        // Level 1
+        "levelLabel": "Reputation: Level 1",
+        "label": "Desperate, but cool",
+        "loans": {
+          "max": 500000,
+          "rate": 0.20
+        },
+        "requiredValue": 25
+      },
+      {
+        // Level 2
+        "levelLabel": "Reputation: Level 2",
+        "label": "Respectable",
+        "loans": {
+          "max": 750000,
+          "rate": 0.175
+        },
+        "requiredValue": 175
+      },
+      {
+        // Level 3
+        "levelLabel": "Reputation: Level 3",
+        "label": "My Man",
+        "loans": {
+          "max": 1000000,
+          "rate": 0.125
+        },
+        "requiredValue": 500,
+      },
+      {
+        // Level 4
+        "levelLabel": "Reputation: Level 4",
+        "label": "Obsessed",
+        "loans": {
+          "max": 1000000,
+          "rate": 0.10
+        },
+        "requiredValue": 1000,
+        "max": 2000
+      }
+    ]
+  },
   "policeLoaner": {
     "name": "police Loaner",
     "description": "Complete deliveries for MoneyGrab Bank and they may help you out on some quick loans",
