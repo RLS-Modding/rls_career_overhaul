@@ -243,21 +243,39 @@ local function cacheDealers()
         
         log("D", "Career", string.format("Cached %d starter vehicles for dealership %s", #filteredStarters, dealershipId))
       end
+
+      local filter = dealership.filter or {}
+      if dealership.associateOrganization then
+        local org = freeroam_organizations.getOrganization(dealership.associateOrganization)
+        if org then
+          local level = org.reputationLevels[org.reputation.level + 2]
+          filter = level.filter or filter
+        end
+      end
+
+      local subFilters = dealership.subFilters or {}
+      if dealership.associateOrganization then
+        local org = freeroam_organizations.getOrganization(dealership.associateOrganization)
+        if org then
+          local level = org.reputationLevels[org.reputation.level + 2]
+          subFilters = level.subFilters or subFilters
+        end
+      end
       
       -- Cache regular vehicles for this dealership
-      if dealership.filter or dealership.subFilters then
+      if filter or subFilters then
         local filteredRegular = {}
         local filters = {}
         
         -- Create aggregated filters like the original system
-        if dealership.subFilters and not tableIsEmpty(dealership.subFilters) then
-          for _, subFilter in ipairs(dealership.subFilters) do
-            local aggregateFilter = deepcopy(dealership.filter or {})
+        if subFilters and not tableIsEmpty(subFilters) then
+          for _, subFilter in ipairs(subFilters) do
+            local aggregateFilter = deepcopy(filter or {})
             tableMergeRecursive(aggregateFilter, subFilter)
             table.insert(filters, aggregateFilter)
           end
         else
-          table.insert(filters, dealership.filter or {})
+          table.insert(filters, filter or {})
         end
         
         -- Pre-filter vehicles for each filter combination
@@ -465,6 +483,13 @@ local function updateVehicleList(fromScratch)
       
       -- Calculate how many vehicles can be generated based on stock limit and time
       local maxStock = seller.stock or 10 -- fallback to 10 if no stock limit defined
+      if seller.associateOrganization then
+        local org = freeroam_organizations.getOrganization(seller.associateOrganization)
+        if org then
+          local level = org.reputationLevels[org.reputation.level + 2]
+          maxStock = level.stock or maxStock
+        end
+      end
       local availableSlots = math.max(0, maxStock - currentVehicleCount)
       
       local numberOfVehiclesToGenerate = 0
@@ -504,6 +529,13 @@ local function updateVehicleList(fromScratch)
       
       -- Use precomputed filter if available, otherwise use seller filter
       local filter = randomVehicleInfo.precomputedFilter or seller.filter or {}
+      if seller.associateOrganization then
+        local org = freeroam_organizations.getOrganization(seller.associateOrganization)
+        if org then
+          local level = org.reputationLevels[org.reputation.level + 2]
+          filter = level.filter or filter
+        end
+      end
       randomVehicleInfo.filter = filter
       
       local years = randomVehicleInfo.Years or randomVehicleInfo.aggregates.Years
@@ -526,13 +558,38 @@ local function updateVehicleList(fromScratch)
       totalPartsValue = career_modules_valueCalculator.getDepreciatedPartValue(totalPartsValue, randomVehicleInfo.Mileage) * 1.081
       local baseValue = math.max(career_modules_valueCalculator.getAdjustedVehicleBaseValue(randomVehicleInfo.Value, {mileage = randomVehicleInfo.Mileage, age = 2025 - randomVehicleInfo.year}), totalPartsValue)
 
-      randomVehicleInfo.Value = getRandomizedPrice(baseValue, seller.range)
+
+      local range = seller.range
+      if seller.associateOrganization then
+        local org = freeroam_organizations.getOrganization(seller.associateOrganization)
+        if org then
+          local level = org.reputationLevels[org.reputation.level + 2]
+          range = level.range or range
+        end
+      end
+      randomVehicleInfo.Value = getRandomizedPrice(baseValue, range)
       randomVehicleInfo.shopId = tableSize(vehiclesInShop) + 1
 
       -- compute taxes and fees
-      randomVehicleInfo.fees = seller.fees or 0
-      randomVehicleInfo.tax = seller.salesTax or salesTax
-      
+      local fees = seller.fees or 0
+      if seller.associateOrganization then
+        local org = freeroam_organizations.getOrganization(seller.associateOrganization)
+        if org then
+          local level = org.reputationLevels[org.reputation.level + 2]
+          fees = level.fees or fees
+        end
+      end
+      randomVehicleInfo.fees = fees
+
+      local tax = seller.salesTax or salesTax
+      if seller.associateOrganization then
+        local org = freeroam_organizations.getOrganization(seller.associateOrganization)
+        if org then
+          local level = org.reputationLevels[org.reputation.level + 2]
+          tax = level.tax or tax
+        end
+      end
+      randomVehicleInfo.tax = tax
       if seller.id == "private" then
         local parkingSpots = gameplay_parking.getParkingSpots().byName
         local parkingSpotNames = tableKeys(parkingSpots)
