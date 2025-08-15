@@ -46,8 +46,8 @@ Welcome to the **RLS Career Overhaul** mod for BeamNG.drive! This mod enhances v
       - [Police Dealership](#police-dealership)
     - [Car Meets](#car-meets)
       - [Meet Locations](#meet-locations)
+      - [Meet Types](#meet-types)
       - [Features](#features-1)
-      - [New Updates](#new-updates)
     - [Time Management](#time-management)
       - [Preset Times](#preset-times)
       - [Time Control](#time-control)
@@ -616,6 +616,7 @@ All online dealerships feature:
 
 #### Joe's Junk
 
+- **Requires Joe's Junk Mod Off Repo**
 - **Description**: "You think you hate it now, wait till you drive it"
 - **Stock**: 7 vehicles
 - **Specialization**: Junk configurations
@@ -641,7 +642,7 @@ All online dealerships feature:
 
 ### Car Meets
 
-Experience dynamic car meets across various locations in the game:
+Experience scheduled car meets across multiple locations, with RSVP and dynamic activities:
 
 #### Meet Locations
 
@@ -652,26 +653,18 @@ Experience dynamic car meets across various locations in the game:
 - Parking Garage
 - Mountain Top
 
+#### Meet Types
+
+- **Showcase**: Park, show off, earn reputation that boosts vehicle value.
+- **Street Cruise**: Short showcase then a group cruise along a routed path; traffic is reduced during the cruise, and AI vehicles follow the route.
+
 #### Features
 
-- **Showcase Events**: Display your vehicles at organized meets
-- **Community Reputation**: Earn a 3.5% vehicle value increase for participating
-- **Dynamic Attendance**: Three levels of attendance (Low, Medium, High)
-- **Vehicle Display**: View community-created vehicle configurations
-- **Static Events**: Vehicles remain parked during meets
-
-#### New Updates
-
-- Additional times for meets (4 total)
-- More parking added to the Mountain Meet
-- Added images to the Car Meet screen
-- RSVP screen shows your attendance status:
-  - Change Attendance
-  - Set Route (arrive early)
-  - Cancel RSVP
-- Declining/Canceling lowers the cooldown (meet interval \~2 mins). This can change the meet location sooner.
-
----
+- **Scheduling & RSVP**: Receive meet offers at set times; RSVP and set attendance via the Car Meets app. Route guidance leads you to your spot.
+- **Attendance Levels**: Low, Medium, High control how many vehicles spawn.
+- **Reputation Rewards**: Dynamic reputation percentage (hardcore reduces it) increases vehicle value; saved per vehicle.
+- **Performance Optimizations**: Vehicles spawn on-demand and toggle visibility based on line-of-sight.
+- **Lifecycle & Cleanup**: Meets end with vehicles dispersing; distant vehicles are cleaned up automatically.
 
 ### Time Management
 
@@ -737,14 +730,22 @@ A brand-new **Phone UI** has been added:
 
 ### Taxi Work
 
-Offers a new way to earn money:
+Offers a new way to earn money with a deeper, modular taxi system:
 
-- Pick up and drop off passengers at various map locations.
-- **Fare Prices** scale based on:
-  - Vehicle value
-  - Number of passengers
-  - Consecutive taxi fares completed
-  - Time taken to reach the destination
+- Pick up and drop off passengers using on-screen markers.
+- Set yourself Available to receive periodic job offers (every 5–45s) via the Phone; Accept/Reject from the Phone.
+- Passenger Types: dynamic pool with unique preferences and payouts. Types are modular and auto-loaded from `lua/ge/extensions/gameplay/taxiPassengers`.
+- Capacity-aware: seat count is detected from your current vehicle configuration (supports buses and multi-seat setups).
+- Fares use actual driving distance and scale with:
+  - Vehicle value multiplier
+  - Passenger count
+  - Passenger-type fare tier/multiplier
+  - Consecutive fare streak
+  - Hardcore Mode (reduced rewards)
+- Tips: type-specific tip breakdown (baseline speed bonus); shown after each fare.
+- Driver Rating (1–5★): persists per save, influenced by smoothness and pace; affects which passenger types you can get.
+- Phone prompts appear for new offers and upon completion to review earnings.
+- Rewards grant money and BeamXP; dropped-off passenger counts are tracked.
 
 ---
 
@@ -813,4 +814,3 @@ Enjoy the new features and improvements, and happy driving!
 ---
 
 **Disclaimer**: This mod is not affiliated with or endorsed by BeamNG GmbH. Use at your own risk.
-
