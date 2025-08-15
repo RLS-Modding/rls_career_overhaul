@@ -286,6 +286,7 @@ local function onPursuitAction(vehId, action, data)
   elseif action == "arrest" then -- pursuit arrest, make the player pay a fine
     if playerIsCop == true then
       local bonus = math.floor(360 * data.score) / 100
+      bonus = math.max(5000 - bonus, 1000)
       
       local org = freeroam_organizations.getOrganization("policeLoaner")
       local level = org.reputationLevels[org.reputation.level + 2]
