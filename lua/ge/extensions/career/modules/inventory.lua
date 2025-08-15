@@ -1420,7 +1420,7 @@ local function onEnterVehicleFinished(inventoryId)
 end
 
 local function getVehicles()
-  updatePartConditionsOfSpawnedVehicles()
+  --updatePartConditionsOfSpawnedVehicles()
   return vehicles
 end
 
@@ -1645,7 +1645,7 @@ local function renameVehicle(inventoryId, name)
 end
 
 local function getVehicle(inventoryId)
-  updatePartConditionsOfSpawnedVehicles()
+  --updatePartConditionsOfSpawnedVehicles()
   return vehicles[inventoryId]
 end
 
