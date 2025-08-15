@@ -7,7 +7,7 @@
 {"class":"TSStatic","persistentId":"76f74ac0-e2f1-4485-8f6d-446cfd702235","__parent":"steel_factory","collisionType":"Visible Mesh Final","decalType":"Visible Mesh Final","isRenderEnabled":false,"shapeName":"/levels/west_coast_usa/art/shapes/buildings/steel_factory/s_backdrop_modified.dae","useInstanceRenderData":true}
 {"name":"interiors","class":"SimGroup","persistentId":"00e47365-4da7-4a6a-89ae-5bae1806f994","__parent":"steel_factory"}
 {"name":"exteriors","class":"SimGroup","persistentId":"a18b9d93-70fe-446a-9d60-ee8b6e9a4487","__parent":"steel_factory"}
-{"name":"lights","mapTo":"lights","class":"SimGroup","persistentId":"7543df28-c706-49fa-9a80-5a173496ed01","__parent":"steel_factory","translucentBlendOp":"None"}
+{"name":"lights","mapTo":"lights","class":"SimGroup","persistentId":"08a01964-bc0f-4168-9d71-844679a2124e","__parent":"steel_factory","translucentBlendOp":"None"}
 {"name":"Steel_factory_decalroads","class":"SimGroup","persistentId":"cba1622b-8243-4650-8510-fe096fb34bdb","__parent":"steel_factory"}
 {"name":"zones","class":"SimGroup","persistentId":"cb49990b-b400-43b9-8270-4a91e636ac42","__parent":"steel_factory"}
 {"name":"fences","class":"SimGroup","persistentId":"60ee3d6e-eb32-4435-8614-489578a2bcf7","__parent":"steel_factory"}

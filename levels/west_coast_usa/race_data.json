@@ -28,6 +28,7 @@
     "dirtOval":{
       "bestTime":30,
       "checkpointRoad":"dirtOval",
+      "damageFactor":1,
       "hotlap":25,
       "label":"Dirt Oval",
       "reward":350,
@@ -41,17 +42,17 @@
       "checkpoints":2,
       "displaySpeed":true,
       "label":"Drag Strip",
-      "reward":1000,
+      "reward":1650,
       "type":[
         "drag"
       ]
     },
     "dragHighway":{
-      "bestTime":17,
+      "bestTime":18,
       "checkpointRoad":"dragHighway",
       "displaySpeed":true,
       "label":"No Prep Highway Drag",
-      "reward":1700,
+      "reward":1900,
       "type":[
         "drag"
       ]
@@ -223,8 +224,9 @@
     "rockClimbL":{
       "bestTime":12,
       "checkpointRoad":"rockClimbL",
+      "damageFactor":1,
       "label":"Rock Crawl Long",
-      "reward":1500,
+      "reward":3500,
       "type":[
         "crawl"
       ]
@@ -232,8 +234,9 @@
     "rockClimbS":{
       "bestTime":5,
       "checkpointRoad":"rockClimbS",
+      "damageFactor":1,
       "label":"Rock Crawl Short",
-      "reward":1200,
+      "reward":1500,
       "type":[
         "crawl"
       ]

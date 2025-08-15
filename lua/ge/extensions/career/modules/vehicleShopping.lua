@@ -147,8 +147,6 @@ local function getVehiclePartsValue(modelName, configKey)
           local partData = jbeamIO.getPart(ioCtx, partName)
           if partData and partData.information and partData.information.value then
               totalValue = totalValue + partData.information.value
-          else
-            log('I', 'vehicles', 'Unable to read part data or no value data: ' .. partName)
           end
       end
   end

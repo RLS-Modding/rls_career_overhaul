@@ -5,7 +5,7 @@
       "name": "Fast Automotive",
       "description": "Fast Automotive - Fastest race cars available",
       "preview": "fast.jpg",
-      "stock": 20,
+      "stock": 15,
       "range": [
         0.8,
         0.9,
@@ -28,6 +28,7 @@
         }
       ],
       "filter": {
+        "whiteList": {},
         "blackList": {
           "Type": [
             "Trailer"
@@ -57,12 +58,12 @@
               "min": 11000,
               "max": 17600056
             },
-            "Body Style": [
-              "ATV"
-            ],
             "Config Type": [
               "Factory",
               "Race"
+            ],
+            "Body Style": [
+              "ATV"
             ]
           }
         },
@@ -89,12 +90,12 @@
               "min": 11000,
               "max": 17600056
             },
-            "Body Style": [
-              "Buggy"
-            ],
             "Config Type": [
               "Factory",
               "Race"
+            ],
+            "Body Style": [
+              "Buggy"
             ]
           }
         },
@@ -143,6 +144,15 @@
           }
         }
       ],
+      "subFilterNames": [
+        "Sub-Filter 1",
+        "Sub-Filter 2",
+        "Sub-Filter 3",
+        "Sub-Filter 4",
+        "Sub-Filter 5",
+        "Sub-Filter 6",
+        "Sub-Filter 7"
+      ],
       "fees": 2000,
       "containsStarterVehicles": false,
       "testDrive": {
@@ -150,23 +160,24 @@
         "timeLimit": 120,
         "licencePlate": "Fast"
       },
-      "iconOffsetHeight": 1.0,
+      "iconOffsetHeight": 1,
       "iconLift": 0.25,
-      "playModeIconName": "poi_entrance_round"
+      "playModeIconName": "poi_entrance_round",
+      "salesTax": 0.07
     },
     {
       "id": "jeffersonmotors",
       "name": "Jefferson Motors",
       "description": "Jefferson Motors - Custom American cars",
-      "stock": 16,
+      "preview": "jefferson_dealership.jpg",
+      "stock": 10,
       "range": [
         0.5,
-        0.80,
+        0.8,
         1.25,
         1.5
       ],
       "associatedOrganization": "jeffersonMotors",
-      "preview": "jefferson_dealership.jpg",
       "doors": [
         [
           "jeffersonmotors_area",
@@ -183,6 +194,15 @@
         }
       ],
       "filter": {
+        "whiteList": {
+          "Config Type": [
+            "Custom"
+          ],
+          "Mileage": {
+            "min": 0,
+            "max": 160934400
+          }
+        },
         "blackList": {
           "Type": [
             "Trailer"
@@ -210,206 +230,44 @@
       },
       "subFilters": [
         {
-          "probability": 4,
+          "probability": 6,
           "whiteList": {
-            "Mileage": {
-              "min": 8800028,
-              "max": 264000845
-            },
-            "Config Type": [
-              "Custom"
-            ],
-            "Brand": [
-              "Bruckell"
+            "Country": [
+              "United States"
             ]
           }
         },
         {
-          "probability": 4,
+          "probability": 2,
           "whiteList": {
-            "Mileage": {
-              "min": 8800028,
-              "max": 264000845
-            },
-            "Config Type": [
-              "Custom"
-            ],
-            "Brand": [
-              "Burnside"
+            "Country": [
+              "Poland",
+              "Italy",
+              "France",
+              "Germany",
+              "Japan",
+              "Sweden",
+              "Soviet Union/Russia",
+              "United Kingdom",
+              "Great Britain",
+              "Canada"
             ]
           }
         },
         {
-          "probability": 4,
+          "probability": 1,
           "whiteList": {
-            "Mileage": {
-              "min": 8800028,
-              "max": 264000845
-            },
-            "Config Type": [
-              "Custom"
-            ],
-            "Brand": [
-              "Gavril"
-            ],
-            "Body Style": [
-              "Pickup"
-            ]
-          }
-        },
-        {
-          "probability": 4,
-          "whiteList": {
-            "Mileage": {
-              "min": 8800028,
-              "max": 264000845
-            },
-            "Config Type": [
-              "Custom"
-            ],
-            "Brand": [
-              "Gavril"
-            ],
             "Type": [
-              "Car"
-            ]
-          }
-        },
-        {
-          "probability": 4,
-          "whiteList": {
-            "Mileage": {
-              "min": 8800028,
-              "max": 264000845
-            },
-            "Config Type": [
-              "Custom"
-            ],
-            "Brand": [
-              "Soliad"
-            ]
-          }
-        },
-        {
-          "probability": 1,
-          "whiteList": {
-            "Mileage": {
-              "min": 8800028,
-              "max": 264000845
-            },
-            "Config Type": [
-              "Custom"
-            ],
-            "Brand": [
-              "Civetta"
-            ]
-          }
-        },
-        {
-          "probability": 2,
-          "whiteList": {
-            "Mileage": {
-              "min": 8800028,
-              "max": 264000845
-            },
-            "Config Type": [
-              "Custom"
-            ],
-            "Brand": [
-              "ETK"
-            ]
-          }
-        },
-        {
-          "probability": 2,
-          "whiteList": {
-            "Mileage": {
-              "min": 8800028,
-              "max": 264000845
-            },
-            "Config Type": [
-              "Custom"
-            ],
-            "Brand": [
-              "Cherrier"
-            ]
-          }
-        },
-        {
-          "probability": 1,
-          "whiteList": {
-            "Mileage": {
-              "min": 8800028,
-              "max": 264000845
-            },
-            "Config Type": [
-              "Custom"
-            ],
-            "Brand": [
-              "Autobello"
-            ]
-          }
-        },
-        {
-          "probability": 1,
-          "whiteList": {
-            "Mileage": {
-              "min": 8800028,
-              "max": 264000845
-            },
-            "Config Type": [
-              "Custom"
-            ],
-            "Brand": [
-              "FPU"
-            ]
-          }
-        },
-        {
-          "probability": 2,
-          "whiteList": {
-            "Mileage": {
-              "min": 8800028,
-              "max": 264000845
-            },
-            "Config Type": [
-              "Custom"
-            ],
-            "Brand": [
-              "Ibishu"
-            ]
-          }
-        },
-        {
-          "probability": 2,
-          "whiteList": {
-            "Mileage": {
-              "min": 8800028,
-              "max": 264000845
-            },
-            "Config Type": [
-              "Custom"
-            ],
-            "Brand": [
-              "Hirochi"
-            ]
-          }
-        },
-        {
-          "probability": 1,
-          "whiteList": {
-            "Mileage": {
-              "min": 8800028,
-              "max": 264000845
-            },
-            "Config Type": [
-              "Custom"
-            ],
-            "Brand": [
-              "Arima"
+              "Car",
+              "Truck"
             ]
           }
         }
+      ],
+      "subFilterNames": [
+        "Domestic",
+        "International",
+        "none"
       ],
       "fees": 649,
       "containsStarterVehicles": false,
@@ -418,22 +276,27 @@
         "timeLimit": 120,
         "licencePlate": "jmotors"
       },
-      "iconOffsetHeight": 1.0,
+      "iconOffsetHeight": 1,
       "iconLift": 0.25,
-      "playModeIconName": "poi_entrance_round"
+      "playModeIconName": "poi_entrance_round",
+      "salesTax": 0.07,
+      "ui": {
+        "showMatchingConfigs": {},
+        "configSearchText": {}
+      }
     },
     {
       "id": "frameDealership",
       "name": "Smash Rollers",
       "description": "Smash Rollers - The perfect start to your build",
+      "preview": "smash.jpg",
       "stock": 7,
       "range": [
         0.2,
-        0.70,
+        0.7,
         1.35,
         1.9
       ],
-      "preview": "smash.jpg",
       "doors": [
         [
           "frameDealership_area",
@@ -450,6 +313,15 @@
         }
       ],
       "filter": {
+        "whiteList": {
+          "Mileage": {
+            "min": 10,
+            "max": 100000
+          },
+          "Config Type": [
+            "Frame"
+          ]
+        },
         "blackList": {
           "Type": [
             "Trailer"
@@ -458,17 +330,39 @@
       },
       "subFilters": [
         {
-          "probability": 1,
+          "probability": 6,
           "whiteList": {
-            "Mileage": {
-              "min": 10,
-              "max": 100000
-            },
-            "Config Type": [
-              "Frame"
+            "Country": [
+              "United States"
             ]
           }
+        },
+        {
+          "probability": 2,
+          "whiteList": {
+            "Country": [
+              "Poland",
+              "Italy",
+              "France",
+              "Germany",
+              "Japan",
+              "Canada",
+              "Sweden",
+              "United Kingdom",
+              "Great Britain",
+              "Soviet Union/Russia"
+            ]
+          }
+        },
+        {
+          "probability": 1,
+          "whiteList": {}
         }
+      ],
+      "subFilterNames": [
+        "Sub-Filter 1",
+        "Sub-Filter 2",
+        "Sub-Filter 3"
       ],
       "fees": 0,
       "containsStarterVehicles": false,
@@ -477,7 +371,7 @@
         "timeLimit": 120,
         "licencePlate": ""
       },
-      "iconOffsetHeight": 1.0,
+      "iconOffsetHeight": 1,
       "iconLift": 0.25,
       "playModeIconName": "poi_entrance_round"
     },
@@ -485,9 +379,9 @@
       "id": "belascoAuto",
       "name": "Belasco Auto",
       "description": "Belasco Auto - New & quality used vehicle sales.",
-      "stock": 20,
-      "associatedOrganization": "belascoAuto",
       "preview": "belasco_auto_dealership.jpg",
+      "stock": 15,
+      "associatedOrganization": "belascoAuto",
       "doors": [
         [
           "belascoAuto_area_1",
@@ -506,27 +400,31 @@
       ],
       "filter": {
         "whiteList": {
+          "Mileage": {
+            "min": 1000,
+            "max": 1604400
+          },
+          "Years": {
+            "min": 2000,
+            "max": 2025
+          },
           "Type": [
             "Car"
           ],
-          "Years": {
-            "min": 2002,
-            "max": 2025
-          },
-          "Mileage": {
-            "min": 9000,
-            "max": 70000000
-          },
           "Config Type": [
             "Factory"
           ],
           "Value": {
-            "max": 65000
+            "min": 10000,
+            "max": 60000
           }
         },
         "blackList": {
           "Type": [
             "Trailer"
+          ],
+          "Config Type": [
+            "Police"
           ],
           "Body Style": [
             "ATV",
@@ -536,50 +434,34 @@
       },
       "subFilters": [
         {
-          "probability": 5,
+          "probability": 6,
           "whiteList": {
-            "Brand": [
-              "Bruckell"
+            "Country": [
+              "United States"
             ]
           }
         },
         {
-          "probability": 5,
+          "probability": 2,
           "whiteList": {
-            "Brand": [
-              "Burnside"
-            ]
-          }
-        },
-        {
-          "probability": 5,
-          "whiteList": {
-            "Brand": [
-              "Gavril"
-            ]
-          }
-        },
-        {
-          "probability": 5,
-          "whiteList": {
-            "Brand": [
-              "Soliad"
-            ]
-          }
-        },
-        {
-          "probability": 1,
-          "whiteList": {
-            "Brand": [
-              "ETK",
-              "Cherrier",
-              "Autobello",
-              "Ibishu",
-              "Hirochi",
-              "Arima"
+            "Country": [
+              "Poland",
+              "Italy",
+              "France",
+              "Germany",
+              "Canada",
+              "Sweden",
+              "United Kingdom",
+              "Great Britain",
+              "Japan",
+              "Soviet Union/Russia"
             ]
           }
         }
+      ],
+      "subFilterNames": [
+        "Sub-Filter 1",
+        "Sub-Filter 2"
       ],
       "fees": 749,
       "containsStarterVehicles": false,
@@ -588,14 +470,21 @@
         "timeLimit": 120,
         "licencePlate": "belasco"
       },
-      "iconOffsetHeight": 1.0,
+      "iconOffsetHeight": 1,
       "iconLift": 0.25,
-      "playModeIconName": "poi_entrance_round"
+      "playModeIconName": "poi_entrance_round",
+      "ui": {
+        "showMatchingConfigs": [
+          true
+        ],
+        "configSearchText": {}
+      }
     },
     {
       "id": "richsmotorcompany",
       "name": "Rich's Motor Company",
       "description": "Rich's Motor Company - Prestige auto sales, only the finest quality vehicles are sold here!",
+      "preview": "richsmotorcompany_dealership.jpg",
       "stock": 15,
       "range": [
         0.75,
@@ -604,7 +493,6 @@
         1.3
       ],
       "associatedOrganization": "richsMotorCompany",
-      "preview": "richsmotorcompany_dealership.jpg",
       "doors": [
         [
           "richsmotorcompany_area_1",
@@ -627,7 +515,18 @@
         "whiteList": {
           "Type": [
             "Car"
-          ]
+          ],
+          "Config Type": [
+            "Factory"
+          ],
+          "Value": {
+            "min": 80000,
+            "max": 5500000
+          },
+          "Mileage": {
+            "min": 0,
+            "max": 160934400
+          }
         },
         "blackList": {
           "Type": [
@@ -656,68 +555,36 @@
       },
       "subFilters": [
         {
-          "probability": 1,
+          "probability": 6,
           "whiteList": {
-            "Years": {
-              "min": 1950,
-              "max": 1973
-            },
-            "Mileage": {
-              "min": 2500000,
-              "max": 132000422
-            },
-            "Value": {
-              "min": 120000
-            }
+            "Country": [
+              "United States"
+            ]
           }
         },
         {
           "probability": 2,
           "whiteList": {
-            "Years": {
-              "min": 1973,
-              "max": 2010
-            },
-            "Mileage": {
-              "min": 2500000,
-              "max": 132000422
-            },
-            "Value": {
-              "min": 120000
-            }
+            "Country": [
+              "Poland",
+              "Italy",
+              "France",
+              "Germany",
+              "Japan",
+              "Soviet Union/Russia",
+              "United Kingdom",
+              "Sweden",
+              "Canada",
+              "Great Britain"
+            ]
           }
         },
         {
-          "probability": 3,
-          "whiteList": {
-            "Years": {
-              "min": 2010
-            },
-            "Mileage": {
-              "min": 250000,
-              "max": 18000000
-            },
-            "Value": {
-              "min": 120000
-            }
-          }
-        },
-        {
-          "probability": 4,
-          "whiteList": {
-            "Years": {
-              "min": 2017
-            },
-            "Mileage": {
-              "min": 10000,
-              "max": 50000
-            },
-            "Value": {
-              "min": 120000
-            }
-          }
+          "probability": 1,
+          "whiteList": {}
         }
       ],
+      "subFilterNames": [],
       "fees": 1250,
       "containsStarterVehicles": false,
       "testDrive": {
@@ -725,23 +592,29 @@
         "timeLimit": 120,
         "licencePlate": "prestige"
       },
-      "iconOffsetHeight": 1.0,
+      "iconOffsetHeight": 1,
       "iconLift": 0.25,
-      "playModeIconName": "poi_entrance_round"
+      "playModeIconName": "poi_entrance_round",
+      "ui": {
+        "showMatchingConfigs": {
+          "3": true
+        },
+        "configSearchText": {}
+      }
     },
     {
       "id": "quarrysideAutoSales",
       "name": "Quarryside Auto Sales",
       "description": "Quarryside Auto Sales - Used trucks and vans.",
-      "stock": 20,
+      "preview": "quarryside_dealership.jpg",
+      "stock": 15,
       "range": [
         0.75,
-        0.80,
-        1.10,
+        0.8,
+        1.1,
         1.2
       ],
       "associatedOrganization": "quarrysideAutoSales",
-      "preview": "quarryside_dealership.jpg",
       "doors": [
         [
           "garageDealership_area_1",
@@ -767,13 +640,13 @@
             "min": 8800028,
             "max": 264000845
           },
+          "Config Type": [
+            "Factory"
+          ],
           "Body Style": [
             "Pickup",
             "Van",
             "Chassis Cab"
-          ],
-          "Config Type": [
-            "Factory"
           ]
         },
         "blackList": {
@@ -790,86 +663,36 @@
       },
       "subFilters": [
         {
-          "probability": 3,
+          "probability": 6,
           "whiteList": {
-            "Brand": [
-              "Bruckell"
-            ]
-          }
-        },
-        {
-          "probability": 3,
-          "whiteList": {
-            "Brand": [
-              "Burnside"
-            ]
-          }
-        },
-        {
-          "probability": 3,
-          "whiteList": {
-            "Brand": [
-              "Gavril"
-            ]
-          }
-        },
-        {
-          "probability": 3,
-          "whiteList": {
-            "Brand": [
-              "Soliad"
-            ]
-          }
-        },
-        {
-          "probability": 1,
-          "whiteList": {
-            "Brand": [
-              "ETK"
+            "Country": [
+              "United States"
             ]
           }
         },
         {
           "probability": 2,
           "whiteList": {
-            "Brand": [
-              "Cherrier"
+            "Country": [
+              "Poland",
+              "Italy",
+              "France",
+              "Germany",
+              "Japan",
+              "Canada",
+              "Sweden",
+              "United Kingdom",
+              "Soviet Union/Russia",
+              "Great Britain"
             ]
           }
         },
         {
           "probability": 1,
-          "whiteList": {
-            "Brand": [
-              "Autobello"
-            ]
-          }
-        },
-        {
-          "probability": 2,
-          "whiteList": {
-            "Brand": [
-              "Ibishu"
-            ]
-          }
-        },
-        {
-          "probability": 1,
-          "whiteList": {
-            "Brand": [
-              "Hirochi"
-            ]
-          }
-        },
-        {
-          "probability": 1,
-          "whiteList": {
-            "Brand": [
-              "Arima"
-            ]
-          }
+          "whiteList": {}
         }
       ],
+      "subFilterNames": [],
       "fees": 249,
       "containsStarterVehicles": true,
       "testDrive": {
@@ -877,9 +700,9 @@
         "timeLimit": 120,
         "licencePlate": "qarySide"
       },
-      "playModeIconName": "poi_entrance_round",
-      "iconOffsetHeight": 1.0,
-      "iconLift": 0.25
+      "iconOffsetHeight": 1,
+      "iconLift": 0.25,
+      "playModeIconName": "poi_entrance_round"
     },
     {
       "id": "gizamnDealership",
@@ -889,7 +712,7 @@
       "stock": 5,
       "range": [
         0.8,
-        0.90,
+        0.9,
         1.35,
         1.8
       ],
@@ -909,6 +732,11 @@
         }
       ],
       "filter": {
+        "whiteList": {
+          "Config Type": [
+            "Gizamn"
+          ]
+        },
         "blackList": {
           "Type": [
             "Trailer"
@@ -925,12 +753,12 @@
             "Mileage": {
               "min": 11000,
               "max": 17600056
-            },
-            "Config Type": [
-              "Gizamn"
-            ]
+            }
           }
         }
+      ],
+      "subFilterNames": [
+        "Sub-Filter 1"
       ],
       "fees": 750,
       "containsStarterVehicles": false,
@@ -939,7 +767,7 @@
         "timeLimit": 120,
         "licencePlate": ""
       },
-      "iconOffsetHeight": 1.0,
+      "iconOffsetHeight": 1,
       "iconLift": 0.25,
       "playModeIconName": "poi_entrance_round"
     },
@@ -951,7 +779,7 @@
       "stock": 25,
       "range": [
         0.5,
-        0.70,
+        0.7,
         1.15,
         1.4
       ],
@@ -992,94 +820,36 @@
       },
       "subFilters": [
         {
-          "probability": 3,
+          "probability": 6,
           "whiteList": {
-            "Brand": [
-              "Bruckell"
-            ]
-          }
-        },
-        {
-          "probability": 3,
-          "whiteList": {
-            "Brand": [
-              "Burnside"
-            ]
-          }
-        },
-        {
-          "probability": 3,
-          "whiteList": {
-            "Brand": [
-              "Gavril"
-            ]
-          }
-        },
-        {
-          "probability": 3,
-          "whiteList": {
-            "Brand": [
-              "Soliad"
-            ]
-          }
-        },
-        {
-          "probability": 1,
-          "whiteList": {
-            "Brand": [
-              "ETK"
+            "Country": [
+              "United States"
             ]
           }
         },
         {
           "probability": 2,
           "whiteList": {
-            "Brand": [
-              "Cherrier"
+            "Country": [
+              "Poland",
+              "Italy",
+              "France",
+              "Germany",
+              "Japan",
+              "Canada",
+              "Great Britain",
+              "Soviet Union/Russia",
+              "United Kingdom",
+              "Sweden"
             ]
           }
         },
         {
           "probability": 1,
-          "whiteList": {
-            "Brand": [
-              "Autobello"
-            ]
-          }
-        },
-        {
-          "probability": 2,
-          "whiteList": {
-            "Brand": [
-              "Ibishu"
-            ]
-          }
-        },
-        {
-          "probability": 1,
-          "whiteList": {
-            "Brand": [
-              "Hirochi"
-            ]
-          }
-        },
-        {
-          "probability": 1,
-          "whiteList": {
-            "Brand": [
-              "Arima"
-            ]
-          }
-        },
-        {
-          "probability": 1,
-          "whiteList": {
-            "Value": {
-              "max": 300000
-            }
-          }
+          "whiteList": {}
         }
       ],
+      "subFilterNames": [],
       "fees": 0,
       "containsStarterVehicles": false,
       "testDrive": {
@@ -1087,7 +857,7 @@
         "timeLimit": 120,
         "licencePlate": ""
       },
-      "iconOffsetHeight": 1.0,
+      "iconOffsetHeight": 1,
       "iconLift": 0.25,
       "playModeIconName": "poi_entrance_round"
     },
@@ -1099,7 +869,7 @@
       "stock": 7,
       "range": [
         0.6,
-        0.80,
+        0.8,
         1.1,
         1.3
       ],
@@ -1120,6 +890,7 @@
         }
       ],
       "filter": {
+        "whiteList": {},
         "blackList": {
           "Body Style": [
             "ATV",
@@ -1144,6 +915,9 @@
           }
         }
       ],
+      "subFilterNames": [
+        "Sub-Filter 1"
+      ],
       "fees": 0,
       "containsStarterVehicles": false,
       "testDrive": {
@@ -1151,7 +925,7 @@
         "timeLimit": 120,
         "licencePlate": "Joe Junk"
       },
-      "iconOffsetHeight": 1.0,
+      "iconOffsetHeight": 1,
       "iconLift": 0.25,
       "playModeIconName": "poi_entrance_round"
     },
@@ -1159,14 +933,14 @@
       "id": "policeDealership",
       "name": "Police Dealership",
       "description": "Police Dealership - Purchase police Vehicles here",
-      "stock": 8,
+      "preview": "police.jpg",
+      "stock": 7,
       "range": [
         0.6,
         0.8,
         1.1,
         1.3
       ],
-      "preview": "police.jpg",
       "doors": [
         [
           "policeDealer_area",
@@ -1203,38 +977,36 @@
       },
       "subFilters": [
         {
-          "probability": 3,
+          "probability": 6,
           "whiteList": {
-            "Brand": [
-              "Bruckell"
+            "Country": [
+              "United States"
             ]
           }
         },
         {
-          "probability": 3,
+          "probability": 2,
           "whiteList": {
-            "Brand": [
-              "Burnside"
+            "Country": [
+              "Poland",
+              "Italy",
+              "France",
+              "Germany",
+              "Japan",
+              "Canada",
+              "Great Britain",
+              "Soviet Union/Russia",
+              "Sweden",
+              "United Kingdom"
             ]
           }
         },
         {
-          "probability": 3,
-          "whiteList": {
-            "Brand": [
-              "Gavril"
-            ]
-          }
-        },
-        {
-          "probability": 3,
-          "whiteList": {
-            "Brand": [
-              "Soliad"
-            ]
-          }
+          "probability": 1,
+          "whiteList": {}
         }
       ],
+      "subFilterNames": [],
       "fees": 500,
       "containsStarterVehicles": false,
       "testDrive": {
@@ -1242,7 +1014,7 @@
         "timeLimit": 120,
         "licencePlate": "Police"
       },
-      "iconOffsetHeight": 1.0,
+      "iconOffsetHeight": 1,
       "iconLift": 0.25,
       "playModeIconName": "poi_entrance_round"
     },
@@ -1292,7 +1064,6 @@
           ],
           "Body Style": [
             "Semi Truck",
-            "Bus",
             "Tanker Truck",
             "Flatbed Truck",
             "Truck",
@@ -1303,86 +1074,36 @@
       },
       "subFilters": [
         {
-          "probability": 3,
+          "probability": 6,
           "whiteList": {
-            "Brand": [
-              "Bruckell"
-            ]
-          }
-        },
-        {
-          "probability": 3,
-          "whiteList": {
-            "Brand": [
-              "Burnside"
-            ]
-          }
-        },
-        {
-          "probability": 3,
-          "whiteList": {
-            "Brand": [
-              "Gavril"
-            ]
-          }
-        },
-        {
-          "probability": 3,
-          "whiteList": {
-            "Brand": [
-              "Soliad"
-            ]
-          }
-        },
-        {
-          "probability": 1,
-          "whiteList": {
-            "Brand": [
-              "ETK"
+            "Country": [
+              "United States"
             ]
           }
         },
         {
           "probability": 2,
           "whiteList": {
-            "Brand": [
-              "Cherrier"
+            "Country": [
+              "Poland",
+              "Italy",
+              "France",
+              "Germany",
+              "Japan",
+              "Canada",
+              "Sweden",
+              "United Kingdom",
+              "Soviet Union/Russia",
+              "Great Britain"
             ]
           }
         },
         {
           "probability": 1,
-          "whiteList": {
-            "Brand": [
-              "Autobello"
-            ]
-          }
-        },
-        {
-          "probability": 2,
-          "whiteList": {
-            "Brand": [
-              "Ibishu"
-            ]
-          }
-        },
-        {
-          "probability": 1,
-          "whiteList": {
-            "Brand": [
-              "Hirochi"
-            ]
-          }
-        },
-        {
-          "probability": 1,
-          "whiteList": {
-            "Brand": [
-              "Arima"
-            ]
-          }
+          "whiteList": {}
         }
       ],
+      "subFilterNames": [],
       "fees": 500,
       "containsStarterVehicles": false,
       "testDrive": {
@@ -1390,16 +1111,22 @@
         "timeLimit": 120,
         "licencePlate": "Police"
       },
-      "iconOffsetHeight": 1.0,
+      "iconOffsetHeight": 1,
       "iconLift": 0.25,
-      "playModeIconName": "poi_entrance_round"
+      "playModeIconName": "poi_entrance_round",
+      "ui": {
+        "showMatchingConfigs": {
+          "3": true
+        },
+        "configSearchText": {}
+      }
     },
     {
       "id": "trailerShop",
       "name": "Trailer Dealer",
       "description": "Trailer Sales",
       "preview": "trailerDealership.jpg",
-      "stock": 10,
+      "stock": 20,
       "doors": [
         [
           "trailershop_area",
@@ -1423,10 +1150,16 @@
           "Type": [
             "Trailer"
           ]
+        },
+        "blackList": {
+          "Config Type": [
+            "Frame"
+          ]
         }
       },
       "subFilters": [
         {
+          "probability": 3,
           "whiteList": {
             "Type": [
               "Trailer"
@@ -1435,9 +1168,11 @@
               "min": 1613,
               "max": 161290323
             }
-          },
-          "probability": 3
+          }
         }
+      ],
+      "subFilterNames": [
+        "Sub-Filter 1"
       ],
       "fees": 449,
       "containsStarterVehicles": false,
@@ -1446,7 +1181,7 @@
         "timeLimit": 120,
         "licencePlate": "belasco"
       },
-      "iconOffsetHeight": 1.0,
+      "iconOffsetHeight": 1,
       "iconLift": 0.25,
       "playModeIconName": "poi_entrance_round"
     },
@@ -1479,6 +1214,7 @@
         }
       ],
       "filter": {
+        "whiteList": {},
         "blackList": {
           "Type": [
             "Trailer"
@@ -1505,6 +1241,9 @@
           }
         }
       ],
+      "subFilterNames": [
+        "Sub-Filter 1"
+      ],
       "fees": 2500,
       "containsStarterVehicles": false,
       "testDrive": {
@@ -1512,7 +1251,7 @@
         "timeLimit": 120,
         "licencePlate": ""
       },
-      "iconOffsetHeight": 1.0,
+      "iconOffsetHeight": 1,
       "iconLift": 0.25,
       "playModeIconName": "poi_entrance_round"
     },
@@ -1520,6 +1259,7 @@
       "id": "GavrilcarDealership",
       "name": "Gavril-Car Online Dealership",
       "description": "Gavril-Car Online Dealership",
+      "preview": "USDM_Dealer_TB.png",
       "stock": 10,
       "range": [
         0.8,
@@ -1527,7 +1267,6 @@
         1.15,
         1.3
       ],
-      "preview": "USDM_Dealer_TB.png",
       "doors": [
         [
           "GavrilcarDealership_area",
@@ -1545,6 +1284,7 @@
         }
       ],
       "filter": {
+        "whiteList": {},
         "blackList": {
           "Type": [
             "Trailer"
@@ -1574,6 +1314,9 @@
           }
         }
       ],
+      "subFilterNames": [
+        "Sub-Filter 1"
+      ],
       "fees": 2500,
       "containsStarterVehicles": false,
       "testDrive": {
@@ -1581,7 +1324,7 @@
         "timeLimit": 120,
         "licencePlate": ""
       },
-      "iconOffsetHeight": 1.0,
+      "iconOffsetHeight": 1,
       "iconLift": 0.25,
       "playModeIconName": "poi_entrance_round"
     },
@@ -1589,6 +1332,7 @@
       "id": "GavriltruckDealership",
       "name": "Gavril-Truck Online Dealership",
       "description": "Gavril-Truck Online Dealership",
+      "preview": "USDM_Dealer_TB.png",
       "stock": 10,
       "range": [
         0.8,
@@ -1596,7 +1340,6 @@
         1.15,
         1.3
       ],
-      "preview": "USDM_Dealer_TB.png",
       "doors": [
         [
           "GavriltruckDealership_area",
@@ -1614,6 +1357,7 @@
         }
       ],
       "filter": {
+        "whiteList": {},
         "blackList": {
           "Type": [
             "Trailer"
@@ -1668,7 +1412,7 @@
         "timeLimit": 120,
         "licencePlate": ""
       },
-      "iconOffsetHeight": 1.0,
+      "iconOffsetHeight": 1,
       "iconLift": 0.25,
       "playModeIconName": "poi_entrance_round"
     },
@@ -1676,6 +1420,7 @@
       "id": "SoliadDealership",
       "name": "Soliad Online Dealership",
       "description": "Soliad Online Dealership",
+      "preview": "USDM_Dealer_TB.png",
       "stock": 10,
       "range": [
         0.8,
@@ -1683,7 +1428,6 @@
         1.15,
         1.3
       ],
-      "preview": "USDM_Dealer_TB.png",
       "doors": [
         [
           "SoliadDealership_area",
@@ -1701,6 +1445,7 @@
         }
       ],
       "filter": {
+        "whiteList": {},
         "blackList": {
           "Type": [
             "Trailer"
@@ -1734,7 +1479,7 @@
         "timeLimit": 120,
         "licencePlate": ""
       },
-      "iconOffsetHeight": 1.0,
+      "iconOffsetHeight": 1,
       "iconLift": 0.25,
       "playModeIconName": "poi_entrance_round"
     },
@@ -1742,7 +1487,6 @@
       "id": "truckShop",
       "name": "Commercial Vehicle Sales",
       "description": "Tractors and Trailers",
-      "associatedOrganization": "commercialVehicleSales",
       "preview": "commercialGarage_dealership.jpg",
       "stock": 20,
       "range": [
@@ -1751,15 +1495,13 @@
         1.15,
         1.3
       ],
+      "associatedOrganization": "commercialVehicleSales",
       "doors": [
         [
           "truckshop_area_1",
           "truckshop_icon_1",
           30
         ]
-      ],
-      "screens": [
-        "commercialOfficeComputer_screen_1"
       ],
       "parkingSpotNames": [
         "truckShop1"
@@ -1780,9 +1522,6 @@
           }
         },
         "blackList": {
-          "hasLoad": [
-            true
-          ],
           "Config Type": [
             "Frame"
           ],
@@ -1795,11 +1534,15 @@
           "Body Style": [
             "Ambulance",
             "Pickup"
+          ],
+          "hasLoad": [
+            true
           ]
         }
       },
       "subFilters": [
         {
+          "probability": 5,
           "whiteList": {
             "Body Style": [
               "Semi Truck",
@@ -1808,19 +1551,25 @@
               "Fifth Wheel Truck",
               "Chassis Cab",
               "Truck",
-              "Forklift"
+              "Forklift",
+              "Dump Truck",
+              "Mixer Truck"
             ]
-          },
-          "probability": 5
+          }
         },
         {
+          "probability": 1,
           "whiteList": {
             "Body Style": [
-              "Bus"
+              "Fifth Wheel Truck",
+              "Fifth Wheel Truck "
             ]
-          },
-          "probability": 1
+          }
         }
+      ],
+      "subFilterNames": [
+        "Sub-Filter 1",
+        "Sub-Filter 2"
       ],
       "fees": 1449,
       "containsStarterVehicles": false,
@@ -1831,7 +1580,154 @@
       },
       "iconOffsetHeight": 0.24,
       "iconLift": 0.24,
-      "playModeIconName": "poi_entrance_round"
+      "playModeIconName": "poi_entrance_round",
+      "screens": [
+        "commercialOfficeComputer_screen_1"
+      ],
+      "ui": {
+        "showMatchingConfigs": [],
+        "configSearchText": {}
+      }
+    },
+    {
+      "id": "importDealer",
+      "name": "Import Dealership",
+      "description": "All thing Imported",
+      "preview": "JDM_Port_Dealer_TB.png",
+      "stock": 25,
+      "range": [
+        0.8,
+        0.9,
+        1.2000000476837,
+        1.3
+      ],
+      "doors": [
+        [
+          "importDealer_area",
+          "importDealer_icon",
+          30
+        ]
+      ],
+      "parkingSpotNames": [
+        "importDealerParking1"
+      ],
+      "filter": {
+        "whiteList": {
+          "Mileage": {
+            "min": 0,
+            "max": 760934400
+          }
+        },
+        "blackList": {
+          "Configuration": [
+            "Drag",
+            "Race",
+            "Rally"
+          ],
+          "Type": [
+            "Trailer"
+          ]
+        }
+      },
+      "subFilters": [
+        {
+          "probability": 6,
+          "whiteList": {
+            "Country": [
+              "Poland",
+              "Italy",
+              "France",
+              "Germany",
+              "Japan",
+              "Canada",
+              "Sweden",
+              "United Kingdom",
+              "Soviet Union/Russia",
+              "Great Britain"
+            ]
+          }
+        }
+      ],
+      "subFilterNames": [
+        "Sub-Filter 1"
+      ],
+      "fees": 1500,
+      "containsStarterVehicles": false,
+      "testDrive": {
+        "abandonFees": 250,
+        "timeLimit": 120,
+        "licencePlate": ""
+      },
+      "ui": {
+        "showMatchingConfigs": [
+          false,
+          true
+        ],
+        "configSearchText": {}
+      },
+      "salesTax": 0.15
+    },
+    {
+      "id": "raceTab",
+      "name": "RaceTab",
+      "description": "All things RaceTab And Raceless",
+      "stock": 7,
+      "range": [
+        0.8,
+        0.9,
+        1.15,
+        1.3
+      ],
+      "doors": [
+        [
+          "raceTab_area_1",
+          "raceTab_icon_82",
+          30
+        ]
+      ],
+      "parkingSpotNames": [
+        "raceTabParking1"
+      ],
+      "filter": {
+        "whiteList": {
+          "Config Type": [
+            "RaceTab"
+          ]
+        },
+        "blackList": {
+          "Type": [
+            "Trailer"
+          ]
+        }
+      },
+      "subFilters": [
+        {
+          "probability": 1,
+          "whiteList": {
+            "Mileage": {
+              "min": 0,
+              "max": 16093440
+            }
+          }
+        }
+      ],
+      "subFilterNames": [
+        "Sub-Filter 1"
+      ],
+      "fees": 500,
+      "containsStarterVehicles": false,
+      "testDrive": {
+        "abandonFees": 250,
+        "timeLimit": 120,
+        "licencePlate": ""
+      },
+      "ui": {
+        "showMatchingConfigs": [
+          true
+        ],
+        "configSearchText": {}
+      },
+      "salesTax": 0.07
     }
   ],
   "privateSellers": [
@@ -1844,9 +1740,6 @@
           "Mileage": {
             "min": 25000000,
             "max": 380000000
-          },
-          "Value": {
-            "min": 950
           }
         },
         "blackList": {
@@ -1858,98 +1751,35 @@
       },
       "subFilters": [
         {
-          "probability": 3,
+          "probability": 6,
           "whiteList": {
-            "Brand": [
-              "Bruckell"
-            ]
-          }
-        },
-        {
-          "probability": 3,
-          "whiteList": {
-            "Brand": [
-              "Burnside"
-            ]
-          }
-        },
-        {
-          "probability": 3,
-          "whiteList": {
-            "Brand": [
-              "Gavril"
-            ]
-          }
-        },
-        {
-          "probability": 3,
-          "whiteList": {
-            "Brand": [
-              "Soliad"
-            ]
-          }
-        },
-        {
-          "probability": 1,
-          "whiteList": {
-            "Brand": [
-              "ETK"
+            "Country": [
+              "United States"
             ]
           }
         },
         {
           "probability": 2,
           "whiteList": {
-            "Brand": [
-              "Cherrier"
+            "Country": [
+              "Poland",
+              "Italy",
+              "France",
+              "Germany",
+              "Japan",
+              "Canada",
+              "Sweden",
+              "United Kingdom",
+              "Great Britain",
+              "Soviet Union/Russia"
             ]
           }
         },
         {
           "probability": 1,
-          "whiteList": {
-            "Brand": [
-              "Civetta"
-            ]
-          }
-        },
-        {
-          "probability": 1,
-          "whiteList": {
-            "Brand": [
-              "Autobello"
-            ]
-          }
-        },
-        {
-          "probability": 2,
-          "whiteList": {
-            "Brand": [
-              "Ibishu"
-            ]
-          }
-        },
-        {
-          "probability": 1,
-          "whiteList": {
-            "Brand": [
-              "Hirochi"
-            ]
-          }
-        },
-        {
-          "probability": 1,
-          "whiteList": {
-            "Brand": [
-              "Arima"
-            ]
-          }
-        },
-        {
-          "probability": 4,
           "whiteList": {
             "Years": {
-              "min": 1901,
+              "min": 1900,
               "max": 2025
             }
           }

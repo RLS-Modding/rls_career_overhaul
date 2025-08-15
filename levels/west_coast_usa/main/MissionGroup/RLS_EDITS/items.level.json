@@ -1,3 +1,12 @@
+{"class":"TSStatic","__parent":"RLS_EDITS","position":[523.755981,-720.659973,201.136002],"isRenderEnabled":false,"rotationMatrix":[-0.478354603,0.878166616,0,-0.878166616,-0.478354603,0,0,0,0.999999881],"shapeName":"/levels/west_coast_usa/art/hilltopvilla/hilltopvilla.dae","useInstanceRenderData":true}
+{"class":"TSStatic","__parent":"RLS_EDITS","position":[927.941284,625.32312,135.960403],"isRenderEnabled":false,"shapeName":"/levels/west_coast_usa/art/shapes/objects/standing_signs/rlsstandingsign1.dae","useInstanceRenderData":true}
+{"class":"PointLight","__parent":"RLS_EDITS","position":[931.184631,617.806885,139.646423],"brightness":0.800000012,"color":[0.707625508,0.402496785,0.00629794179,0.00800000038],"radius":10,"rotationMatrix":[1,0,0,0,0.999999762,-0.000690533896,0,0.000690533896,0.999999762]}
+{"class":"PointLight","__parent":"RLS_EDITS","position":[930.445923,620.316528,139.673172],"brightness":0.800000012,"color":[0.707625508,0.402496785,0.00629794179,0.00800000038],"radius":10,"rotationMatrix":[1,0,0,0,0.999999762,-0.000690533896,0,0.000690533896,0.999999762]}
+{"class":"TSStatic","__parent":"RLS_EDITS","position":[529.189209,1840.59265,72.4922409],"isRenderEnabled":false,"rotationMatrix":[-8.74227695e-08,0.999999881,0,-0.999999881,-8.74227695e-08,0,0,0,0.999999881],"scale":[1.20000005,1.20000005,1.20000005],"shapeName":"/levels/west_coast_usa/art/shapes/objects/ferry/ferry.dae","useInstanceRenderData":true}
+{"class":"TSStatic","__parent":"RLS_EDITS","position":[-498.617767,-230.447678,100.586105],"isRenderEnabled":false,"rotationMatrix":[0.389910638,0.920852542,0,-0.920852542,0.389910638,0,0,0,1],"shapeName":"/levels/west_coast_usa/art/shapes/objects/standing_signs/rlsstandingsign1.dae","useInstanceRenderData":true}
+{"class":"TSStatic","__parent":"RLS_EDITS","position":[1056.48206,899.343018,124.801003],"isRenderEnabled":false,"rotationMatrix":[-0.996871889,0.079033263,0,-0.079033263,-0.996871889,0,0,0,0.999999881],"shapeName":"/levels/west_coast_usa/art/shapes/objects/rls_hwy_signs/rlssign1.dae","useInstanceRenderData":true}
+{"class":"TSStatic","__parent":"RLS_EDITS","position":[930.567017,618.96698,138.992996],"isRenderEnabled":false,"rotationMatrix":[0.97279197,0.231679976,0,-0.231679976,0.97279197,0,0,0,0.999999881],"shapeName":"/levels/west_coast_usa/art/shapes/objects/rls_hwy_signs/rlssign1.dae","useInstanceRenderData":true}
+{"class":"TSStatic","__parent":"RLS_EDITS","position":[-343.90506,-389.294189,104.792419],"isRenderEnabled":false,"rotationMatrix":[-0.285550952,-0.958363533,0,0.958363533,-0.285550952,0,0,0,1],"shapeName":"/levels/west_coast_usa/art/shapes/objects/standing_signs/rlsstandingsign1.dae","useInstanceRenderData":true}
 {"name":"freRaceTrack","class":"SimGroup","__parent":"RLS_EDITS"}
 {"name":"Beach_Circuit","class":"SimGroup","__parent":"RLS_EDITS"}
 {"name":"Quarry_Circuit","class":"SimGroup","__parent":"RLS_EDITS"}
@@ -33,7 +42,10 @@
 {"name":"rally_stage_1","class":"SimGroup","__parent":"RLS_EDITS"}
 {"name":"CustomTriggers","class":"SimGroup","__parent":"RLS_EDITS"}
 {"name":"DinnerMeetRoads","class":"SimGroup","__parent":"RLS_EDITS"}
-{"name":"Map Switcher","class":"SimGroup","__parent":"RLS_EDITS"}
+{"name":"MapSwitcher","class":"SimGroup","__parent":"RLS_EDITS"}
+{"name":"Level Gate","class":"SpawnSphere","__parent":"RLS_EDITS","position":[494.269867,1870.35413,74.8965836],"dataBlock":"SpawnSphereMarker","radius":1,"rotationMatrix":[1,-5.19854875e-05,-1.15437444e-07,5.19573005e-05,0.999526143,-0.0307813622,1.71556712e-06,0.0307813622,0.999526143],"spawnClass":"Player","sphereWeight0":"1"}
 {"name":"lenflaircurb","class":"MeshRoad","__parent":"RLS_EDITS","position":[-888.7771,-676.593567,106.120529],"hidden":true,"nodes":[[-889.643311,-677.393494,105.098717,3,1,0,0,1],[-881.419983,-668.06073,105.295616,3,1,0,0,1]]}
 {"name":"ParkingGarageRoads","class":"SimGroup","__parent":"RLS_EDITS"}
+{"name":"freakAdditions","class":"SimGroup","__parent":"RLS_EDITS"}
 {"name":"customDealerships","class":"SimGroup","__parent":"RLS_EDITS"}
+{"name":"other garages","class":"SimGroup","__parent":"RLS_EDITS"}

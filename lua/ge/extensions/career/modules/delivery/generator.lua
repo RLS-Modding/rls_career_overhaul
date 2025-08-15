@@ -989,7 +989,8 @@ end
 local mixable = {
   parcel = true,
   fluid = false,
-  dryBulk = false
+  dryBulk = false,
+  cement = false
 }
 M.isMixable = function(type) return mixable[type] end
 
@@ -1013,6 +1014,9 @@ local function logisticTypeToSystem(type, fac)
     end
     if materialData.type == "dryBulk" then
       return {smallDryBulkDelivery = true, largeDryBulkDelivery = fac and (fac.materialStorages[type] ~= nil)}
+    end
+    if materialData.type == "cement" then
+      return {smallCementDelivery = true, largeCementDelivery = fac and (fac.materialStorages[type] ~= nil)}
     end
   end
   return {}

@@ -510,7 +510,7 @@ end
 local function getPartConditionsCallback(partConditions, inventoryId)
   vehicles[inventoryId].partConditions = partConditions
   onPartConditionsUpdateFinished()
-  career_modules_partInventory.updatePartConditionsInInventory()
+  career_modules_partInventory.updatePartConditionsInInventory(inventoryId)
 end
 
 local function updatePartConditions(vehId, inventoryId, callback)
@@ -1067,6 +1067,7 @@ local function getVehicleUiData(inventoryId, inventoryIdsInGarage)
 
   vehicleData.thumbnail = getVehicleThumbnail(inventoryId)
 
+  vehicleData.junkVehicle = career_modules_permissions.getStatusForTag("junkVehicle", {inventoryId = inventoryId})
   vehicleData.repairPermission = career_modules_permissions.getStatusForTag("vehicleRepair", {inventoryId = inventoryId})
   vehicleData.sellPermission = career_modules_permissions.getStatusForTag("vehicleSelling", {inventoryId = inventoryId})
   vehicleData.favoritePermission = career_modules_permissions.getStatusForTag("vehicleFavorite", {inventoryId = inventoryId})
@@ -1147,6 +1148,7 @@ local function sendDataToUi()
 
     vehicle.thumbnail = getVehicleThumbnail(inventoryId)
 
+    vehicle.junkVehicle = career_modules_permissions.getStatusForTag("junkVehicle", {inventoryId = inventoryId})
     vehicle.repairPermission = career_modules_permissions.getStatusForTag("vehicleRepair", {inventoryId = inventoryId})
     vehicle.sellPermission = career_modules_permissions.getStatusForTag("vehicleSelling", {inventoryId = inventoryId})
     vehicle.favoritePermission = career_modules_permissions.getStatusForTag("vehicleFavorite", {inventoryId = inventoryId})
@@ -1418,6 +1420,7 @@ local function onEnterVehicleFinished(inventoryId)
 end
 
 local function getVehicles()
+  updatePartConditionsOfSpawnedVehicles()
   return vehicles
 end
 
@@ -1541,7 +1544,8 @@ local permissionTags = {
     partSwapping = "forbidden",
     recoveryTowToGarage = "forbidden",
     returnLoanedVehicle = "allowed",
-    vehicleFavorite = "forbidden"
+    vehicleFavorite = "forbidden",
+    junkVehicle = "hidden"
   }
 }
 
@@ -1558,7 +1562,9 @@ local function onCheckPermission(tags, permissions, additionalData)
     elseif tag == "returnLoanedVehicle" then
       table.insert(permissions, {permission = "hidden"})
     end
-
+    if tag == "junkVehicle" and not vehData.missingFile then
+      table.insert(permissions, {permission = "allowed"})
+    end
     if tag == "vehicleRepair" and (vehData.timeToAccess or vehData.missingFile) then
       table.insert(permissions, {permission = "forbidden"})
     end
@@ -1639,6 +1645,7 @@ local function renameVehicle(inventoryId, name)
 end
 
 local function getVehicle(inventoryId)
+  updatePartConditionsOfSpawnedVehicles()
   return vehicles[inventoryId]
 end
 
@@ -1881,10 +1888,18 @@ M.deliverVehicle = function(id, money)
 end
 
 M.storeVehicle = function(id)
-  local garage = getClosestOwnedGarage()
-  if vehicles[id] then
-    vehicles[id].location = garage.id
-    vehicles[id].niceLocation = career_modules_garageManager.garageIdToName(garage.id)
+  local closestOwned = getClosestOwnedGarage()
+  local targetGarageId
+
+  if closestOwned and career_modules_garageManager.isGarageSpace(closestOwned.id)[1] then
+    targetGarageId = closestOwned.id
+  else
+    targetGarageId = career_modules_garageManager.getNextAvailableSpace()
+  end
+
+  if vehicles[id] and targetGarageId then
+    vehicles[id].location = targetGarageId
+    vehicles[id].niceLocation = career_modules_garageManager.garageIdToName(targetGarageId)
   end
 end
 

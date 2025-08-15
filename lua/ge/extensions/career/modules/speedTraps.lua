@@ -35,6 +35,9 @@ local function hasLicensePlate(inventoryId)
 end
 
 local function onSpeedTrapTriggered(speedTrapData, playerSpeed, overSpeed)
+  if gameplay_cab and gameplay_cab.inCab() then
+    return
+  end
   if not speedTrapData.speedLimit then return end
   local vehId = speedTrapData.subjectID
   if not vehId then
@@ -111,6 +114,9 @@ local function onSpeedTrapTriggered(speedTrapData, playerSpeed, overSpeed)
 end
 
 local function onRedLightCamTriggered(speedTrapData, playerSpeed)
+  if gameplay_cab and gameplay_cab.inCab() then
+    return
+  end
   local vehId = speedTrapData.subjectID
   if not vehId then
     return

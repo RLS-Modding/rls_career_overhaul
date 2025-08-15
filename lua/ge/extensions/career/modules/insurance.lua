@@ -1105,6 +1105,9 @@ local offenseNames = {
 }
 
 local function onPursuitAction(vehId, action, data)
+    if gameplay_cab and gameplay_cab.inCab() then
+        return
+    end
     if not gameplay_missions_missionManager.getForegroundMissionId() and vehId == be:getPlayerVehicleID(0) then
         if action == "arrest" then
             local fine = math.floor(data.score * 130) / 100

@@ -1366,7 +1366,7 @@ local customers = {{
     criteria = {
         performance = {
             drift = {
-                min = 0.5
+                min = 0.75
             }
         },
         completions = {
@@ -1393,7 +1393,7 @@ local customers = {{
     criteria = {
         performance = {
             drift = {
-                min = 0.55
+                min = 0.8
             }
         },
         completions = {
@@ -1417,7 +1417,7 @@ local customers = {{
     criteria = {
         performance = {
             drift = {
-                min = 0.6
+                min = 0.85
             }
         },
         completions = {
@@ -1444,7 +1444,7 @@ local customers = {{
     criteria = {
         performance = {
             drift = {
-                min = 0.65
+                min = 0.9
             }
         },
         completions = {
@@ -1468,7 +1468,7 @@ local customers = {{
     criteria = {
         performance = {
             drift = {
-                min = 0.7
+                min = 0.95
             }
         },
         completions = {
@@ -1495,7 +1495,7 @@ local customers = {{
     criteria = {
         performance = {
             drift = {
-                min = 0.75
+                min = 1.0
             }
         },
         completions = {
@@ -1519,7 +1519,7 @@ local customers = {{
     criteria = {
         performance = {
             drift = {
-                min = 0.8
+                min = 1.05
             }
         },
         completions = {
@@ -1546,7 +1546,7 @@ local customers = {{
     criteria = {
         performance = {
             drift = {
-                min = 0.85
+                min = 1.1
             }
         },
         completions = {
@@ -1570,7 +1570,7 @@ local customers = {{
     criteria = {
         performance = {
             drift = {
-                min = 0.9
+                min = 1.15
             }
         },
         completions = {
@@ -1597,7 +1597,7 @@ local customers = {{
     criteria = {
         performance = {
             drift = {
-                min = 0.95
+                min = 1.2
             }
         },
         completions = {
@@ -1613,6 +1613,378 @@ local customers = {{
     offerRange = {
         min = 0.65,
         max = 1.4
+    }
+}, -- Elite Drift Legends (High Completion Requirements)
+{
+    id = "DRIFT_LEGEND_AKIRA",
+    name = "Akira 'Endless Slide' Yamamoto",
+    specialties = {"drift"},
+    criteria = {
+        performance = {
+            drift = {
+                min = 1.25
+            }
+        },
+        completions = {
+            drift = { minTotal = 15, minConsecutive = 5 }
+        },
+        power = {
+            min = 400
+        },
+        torque = {
+            min = 480
+        },
+        numAddedParts = {
+            min = 6
+        }
+    },
+    offerRange = {
+        min = 0.75,
+        max = 1.4
+    }
+}, {
+    id = "DRIFT_LEGEND_MAYA",
+    name = "Maya 'Storm Drift' Chen",
+    specialties = {"drift"},
+    criteria = {
+        performance = {
+            drift = {
+                min = 1.3
+            }
+        },
+        completions = {
+            drift = { minTotal = 18, minConsecutive = 6 }
+        },
+        power = {
+            min = 420
+        },
+        torque = {
+            min = 500
+        },
+        powerPerWeight = {
+            min = 0.25
+        }
+    },
+    offerRange = {
+        min = 0.7,
+        max = 1.45
+    }
+}, {
+    id = "DRIFT_MASTER_RAVEN",
+    name = "Raven 'Smoke Trail' Rodriguez",
+    specialties = {"drift"},
+    criteria = {
+        performance = {
+            drift = {
+                min = 1.4
+            }
+        },
+        completions = {
+            drift = { minTotal = 22, minConsecutive = 7 }
+        },
+        power = {
+            min = 450
+        },
+        torque = {
+            min = 520
+        },
+        numAddedParts = {
+            min = 8
+        },
+        value = {
+            min = 35000
+        }
+    },
+    offerRange = {
+        min = 0.75,
+        max = 1.5
+    }
+}, {
+    id = "DRIFT_MASTER_PHOENIX",
+    name = "Phoenix 'Tire Shredder' Black",
+    specialties = {"drift"},
+    criteria = {
+        performance = {
+            drift = {
+                min = 1.5
+            }
+        },
+        completions = {
+            drift = { minTotal = 25, minConsecutive = 8 }
+        },
+        power = {
+            min = 480
+        },
+        torque = {
+            min = 550
+        },
+        powerPerWeight = {
+            min = 0.28
+        },
+        numAddedParts = {
+            min = 10
+        }
+    },
+    offerRange = {
+        min = 0.9,
+        max = 1.6
+    }
+}, {
+    id = "DRIFT_GOD_SHADOW",
+    name = "Shadow 'Apex Phantom' Kurosawa",
+    specialties = {"drift"},
+    criteria = {
+        performance = {
+            drift = {
+                min = 1.6
+            }
+        },
+        completions = {
+            drift = { minTotal = 30, minConsecutive = 10 }
+        },
+        power = {
+            min = 500
+        },
+        torque = {
+            min = 580
+        },
+        powerPerWeight = {
+            min = 0.3
+        },
+        numAddedParts = {
+            min = 12
+        },
+        value = {
+            min = 50000
+        }
+    },
+    offerRange = {
+        min = 1.0,
+        max = 1.6
+    }
+}, {
+    id = "DRIFT_GOD_ULTIMATE",
+    name = "Zephyr 'The Drift God' Nakamura",
+    specialties = {"drift"},
+    criteria = {
+        performance = {
+            drift = {
+                min = 1.75
+            }
+        },
+        completions = {
+            drift = { minTotal = 40, minConsecutive = 12 }
+        },
+        power = {
+            min = 550
+        },
+        torque = {
+            min = 620
+        },
+        powerPerWeight = {
+            min = 0.35
+        },
+        numAddedParts = {
+            min = 15
+        },
+        value = {
+            min = 75000
+        },
+        rep = {
+            min = 8.0
+        }
+    },
+    offerRange = {
+        min = 1.1,
+        max = 1.8
+    }
+}, -- Drift Veterans (High Experience, Lower Performance)
+{
+    id = "DRIFT_VETERAN_KENJI",
+    name = "Kenji 'Old School' Watanabe",
+    specialties = {"drift"},
+    criteria = {
+        performance = {
+            drift = {
+                min = 0.8
+            }
+        },
+        completions = {
+            drift = { minTotal = 20, minConsecutive = 5 }
+        },
+        power = {
+            min = 250,
+            max = 400
+        },
+        torque = {
+            min = 300,
+            max = 450
+        },
+        value = {
+            max = 35000
+        }
+    },
+    offerRange = {
+        min = 0.9,
+        max = 1.6
+    }
+}, {
+    id = "DRIFT_VETERAN_LUNA",
+    name = "Luna 'Style Over Speed' Martinez",
+    specialties = {"drift"},
+    criteria = {
+        performance = {
+            drift = {
+                min = 0.85
+            }
+        },
+        completions = {
+            drift = { minTotal = 18, minConsecutive = 4 }
+        },
+        power = {
+            min = 200,
+            max = 350
+        },
+        weight = {
+            max = 1800
+        },
+        mileage = {
+            max = 150000
+        }
+    },
+    offerRange = {
+        min = 0.8,
+        max = 1.5
+    }
+}, {
+    id = "DRIFT_PURIST_HIRO",
+    name = "Hiro 'Grassroots Guru' Takeshi",
+    specialties = {"drift"},
+    criteria = {
+        performance = {
+            drift = {
+                min = 0.9
+            }
+        },
+        completions = {
+            drift = { minTotal = 25, minConsecutive = 6 }
+        },
+        power = {
+            min = 180,
+            max = 320
+        },
+        torque = {
+            min = 250,
+            max = 380
+        },
+        value = {
+            max = 25000
+        },
+        numAddedParts = {
+            max = 8
+        }
+    },
+    offerRange = {
+        min = 0.85,
+        max = 1.55
+    }
+}, {
+    id = "DRIFT_PURIST_YUKI",
+    name = "Yuki 'Minimal Mod' Sato",
+    specialties = {"drift"},
+    criteria = {
+        performance = {
+            drift = {
+                min = 1.0
+            }
+        },
+        completions = {
+            drift = { minTotal = 30, minConsecutive = 8 }
+        },
+        power = {
+            min = 220,
+            max = 380
+        },
+        weight = {
+            max = 1600
+        },
+        value = {
+            max = 30000
+        },
+        numAddedParts = {
+            max = 5
+        }
+    },
+    offerRange = {
+        min = 0.95,
+        max = 1.7
+    }
+}, {
+    id = "DRIFT_SENSEI_MASTER",
+    name = "Master 'Zen Drift' Tanaka",
+    specialties = {"drift"},
+    criteria = {
+        performance = {
+            drift = {
+                min = 1.1
+            }
+        },
+        completions = {
+            drift = { minTotal = 35, minConsecutive = 10 }
+        },
+        power = {
+            min = 200,
+            max = 350
+        },
+        torque = {
+            min = 280,
+            max = 420
+        },
+        value = {
+            max = 40000
+        },
+        accidents = {
+            max = 2
+        },
+        rep = {
+            min = 7.0
+        }
+    },
+    offerRange = {
+        min = 1.1,
+        max = 1.8
+    }
+}, {
+    id = "DRIFT_COLLECTOR_VINTAGE",
+    name = "Vintage 'Classic Slide' Thompson",
+    specialties = {"drift"},
+    criteria = {
+        performance = {
+            drift = {
+                min = 0.95
+            }
+        },
+        completions = {
+            drift = { minTotal = 22, minConsecutive = 5 }
+        },
+        year = {
+            min = 1980,
+            max = 2005
+        },
+        power = {
+            min = 150,
+            max = 300
+        },
+        value = {
+            max = 50000
+        },
+        accidents = {
+            max = 1
+        }
+    },
+    offerRange = {
+        min = 0.9,
+        max = 1.65
     }
 }, -- Motorsport Enthusiasts (10)
 {

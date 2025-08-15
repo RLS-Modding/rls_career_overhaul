@@ -1,0 +1,104 @@
+{
+  "metal_galvanized1": {
+    "name": "metal_galvanized1",
+    "mapTo": "metal_galvanized1",
+    "class": "Material",
+    "Stages": [
+      {
+        "baseColorMap": "/levels/west_coast_usa/art/shapes/rls_signs/t_metal_galvanized_01_b.color.dds",
+        "metallicFactor": 0.36500001,
+        "metallicMap": "/levels/west_coast_usa/art/shapes/rls_signs/t_metal_galvanized_02_m.data.dds",
+        "pixelSpecular": true,
+        "roughnessFactor": 0.70599997,
+        "roughnessMap": "/levels/west_coast_usa/art/shapes/rls_signs/t_metal_galvanized_01_r.data.dds"
+      },
+      {
+        "metallicFactor": null,
+        "pixelSpecular": null,
+        "roughnessFactor": null
+      },
+      {
+        "metallicFactor": null,
+        "pixelSpecular": null,
+        "roughnessFactor": null
+      },
+      {
+        "metallicFactor": null,
+        "pixelSpecular": null,
+        "roughnessFactor": null
+      }
+    ],
+    "alphaRef": 0,
+    "annotation": "BUILDINGS",
+    "groundType": "METAL",
+    "materialTag1": "building",
+    "translucentBlendOp": "None",
+    "version": 1.5
+  },
+  "rlstunnelsign": {
+    "name": "rlstunnelsign",
+    "mapTo": "rlstunnelsign",
+    "class": "Material",
+    "Stages": [
+      {
+        "baseColorMap": "/levels/west_coast_usa/art/shapes/rls_signs/sign1.color.png",
+        "emissiveFactor": [
+          1,
+          0.988545001,
+          0.988545001
+        ],
+        "emissiveMap": "/levels/west_coast_usa/art/shapes/rls_signs/sign1_em.color.png",
+        "opacityMap": "/levels/west_coast_usa/art/shapes/rls_signs/sign1_o.data.png"
+      },
+      {
+        "emissiveFactor": null
+      },
+      {
+        "emissiveFactor": null
+      },
+      {
+        "emissiveFactor": null
+      }
+    ],
+    "dynamicCubemap": true,
+    "translucentBlendOp": "None",
+    "version": 1.5
+  },
+  "rlstunnelsign2": {
+    "name": "rlstunnelsign2",
+    "mapTo": "rlstunnelsign2",
+    "class": "Material",
+    "Stages": [
+      {
+        "baseColorMap": "/levels/west_coast_usa/art/shapes/rls_signs/sign2d.color.png",
+        "detailBaseColorMapStrength": 0.340000004,
+        "detailMap": "/levels/west_coast_usa/art/shapes/rls_signs/sign2d_base_detail.color.png",
+        "detailScale": [
+          1,
+          1
+        ],
+        "metallicFactor": 0.342999995,
+        "metallicMap": "/levels/west_coast_usa/art/shapes/rls_signs/sign2d_m.data.png",
+        "opacityMap": "/levels/west_coast_usa/art/shapes/rls_signs/sign2d_opacity.data.png",
+        "roughnessMap": "/levels/west_coast_usa/art/shapes/rls_signs/sign2d_r.data.png"
+      },
+      {
+        "detailBaseColorMapStrength": null,
+        "detailScale": null,
+        "metallicFactor": null
+      },
+      {
+        "detailBaseColorMapStrength": null,
+        "detailScale": null,
+        "metallicFactor": null
+      },
+      {
+        "detailBaseColorMapStrength": null,
+        "detailScale": null,
+        "metallicFactor": null
+      }
+    ],
+    "translucentBlendOp": "None",
+    "version": 1.5
+  }
+}

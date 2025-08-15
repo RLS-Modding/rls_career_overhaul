@@ -4,39 +4,368 @@ M.dependencies = {'career_career', 'gameplay_sites_sitesManager', 'util_configLi
 
 local carmeetLocations = {}
 local carMeetVehicles = {}
-local spawnedMeetVehicles = {} -- Track currently spawned vehicles
-local usedConfigs = {} -- Track configs used in current meet
+local spawnedMeetVehicles = {}
+local pendingVehicles = {}
+local usedConfigs = {}
 
 local meetData = nil
 local attendanceLevel = 1
--- Add new variables for time management
 local saveFile = "carmeets.json"
 local lastGenerationTime = 0
-local generationInterval = 1800 -- 30 minutes in seconds
+local generationInterval = 1800
 local rsvpData = nil
-local meetStartTime = 0.417 -- 10 PM
+local meetStartTime = 0.417
 local meetTimes = {0.417, 0.771, 0.188, 0.243}
-local meetTimeWindow = 0.01 -- Time window to trigger meet
+local meetTimeWindow = 0.01
 local lastUpdateCheck = 0
-local updateInterval = 5 -- Check every 5 seconds
+local updateInterval = 5
 
--- Add new variables for tracking active meet and player arrival
-local activeMeet = nil
-local playerHasArrived = false
-local playerSpot = nil
-local MEET_CLEANUP_DISTANCE = 100
-local MEET_LEAVE_TIMER = 60
-local MEET_LEAVE_INTERVAL = 5
-local meetArrivalTime = nil
-local vehicleDispersed = false
-local lastVehicleLeaveTime = 0
-local vehiclesToLeave = {}
+local careerActive = false
+local previousTrafficAmount = nil
+
+local meetState = {
+    active = false,
+    type = nil,
+    location = nil,
+    playerSpot = nil,
+    startTime = 0,
+    arrivalTime = 0,
+    flags = {},
+    phase = "waiting"
+}
 
 local attendanceLevels = {
     LOW = 1,
     MEDIUM = 2,
     HIGH = 3
 }
+
+local MEET_CLEANUP_DISTANCE = 100
+local MEET_LEAVE_INTERVAL = 5
+local VEHICLE_SPAWN_DISTANCE = 150
+local VEHICLE_VISIBLE_DISTANCE = 100
+local VEHICLE_UPDATE_INTERVAL = 0.25
+
+local function saveAndReduceTraffic(reductionPercent)
+    if gameplay_traffic then
+        previousTrafficAmount = gameplay_traffic.getNumOfTraffic()
+        local newAmount = math.floor(previousTrafficAmount * (1 - reductionPercent))
+        gameplay_traffic.setActiveAmount(newAmount)
+    end
+end
+
+local function restoreTrafficAmount()
+    if gameplay_traffic and previousTrafficAmount then
+        local settingsAmount = settings.getValue('trafficAmount') == 0 and getMaxVehicleAmount() or
+                               settings.getValue('trafficAmount')
+        local trafficAmount = settingsAmount or previousTrafficAmount
+        local pooledAmount = settings.getValue('trafficExtraAmount') or 0
+        gameplay_traffic.setActiveAmount(trafficAmount + pooledAmount, trafficAmount)
+        previousTrafficAmount = nil
+    end
+end
+
+local meetTypes = {
+    SHOWCASE = {
+        name = "Showcase",
+        description = "Show off your ride and admire others",
+        baseReputationMultiplier = 1.0,
+        showcaseDuration = 60,
+        preferredTimes = {0.417, 0.458, 0.500},
+        timeWindow = 0.02,
+        vehicleFilters = {
+            whiteList = {
+                ["Config Type"] = {"CarmeetRLS", "Custom"},
+                ["Body Style"] = {"Sedan", "Hatchbook", "SUV", "Coupe"}
+            }
+        },
+        actions = {
+            onArrival = function(reputation)
+                return "Welcome to the car meet!\nCommunity liked your car!\nVehicle value increased by " .. reputation .. "%"
+            end,
+            onShowcaseEnd = function(state)
+                state.phase = "ending"
+                state.flags.dispersalStarted = false
+                ui_message("Car meet is over, vehicles starting to leave!", 10, "info", "info")
+            end,
+            onLeave = function()
+                return "Car meet is over, Thanks for coming!"
+            end
+        },
+        onUpdate = nil
+    },
+    STREET_CRUISE = {
+        name = "Street Cruise",
+        description = "High-performance cruising meet",
+        baseReputationMultiplier = 1.5,
+        showcaseDuration = 10,
+        preferredTimes = {0.875, 0.917, 0.958},
+        timeWindow = 0.025,
+        vehicleFilters = {
+            whiteList = {
+                ["Config Type"] = {"Sport", "Race", "CarmeetRLS"},
+                ["Body Style"] = {"Coupe", "Sedan", "Hatchback"}
+            }
+        },
+        actions = {
+            onArrival = function(reputation)
+                saveAndReduceTraffic(0.7)
+                return "Ready to cruise!\nCruisers respect your ride!\nCommunity reputation increased by " .. reputation .. "%"
+            end,
+            onShowcaseEnd = function(state)
+                state.phase = "cruise"
+                state.flags.cruiseStarted = false
+                state.flags.playerReachedDestination = false
+                state.flags.cruiseDestinationRadius = 15
+            end,
+            onLeave = function()
+                core_jobsystem.create(function(job)
+                    job.sleep(10)
+                    restoreTrafficAmount()
+                end)
+                return "Cruise complete! Drive safe out there!"
+            end
+        },
+        onUpdate = function(state, currentTime)
+            local function getAiPath(path, vehIndex)
+                local aiPath = {}
+                local veh = be:getObject(vehIndex)
+                if not veh then return nil end
+                local firstWpAdded = false
+                local vehPos = veh:getPosition()
+                local vehFwd = veh:getDirectionVector()
+                local bestWp = nil
+                local bestDist = math.huge
+                local prevDot = nil
+                local prevWp = nil
+                local startDist = path[1] and path[1].distToTarget or 0
+                local firstValidWp = nil
+                -- find the first valid waypoint
+                for _, marker in ipairs(path) do
+                    if marker.wp then
+                        firstValidWp = marker.wp
+                        if not firstWpAdded then
+                            local toWp = (marker.pos - vehPos):normalized()
+                            local dot = toWp:dot(vehFwd)
+                            -- If we have a previous dot product and this one is lower, we found our local maximum
+                            if prevDot and dot < prevDot and prevDot > 0 then
+                                table.insert(aiPath, prevWp)
+                                firstWpAdded = true
+                            end
+                            prevDot = dot
+                            prevWp = marker.wp
+                        else
+                            table.insert(aiPath, marker.wp)
+                        end
+                    end
+                end
+                -- If we haven't found a local maximum but have a positive dot product, use the last one
+                if not firstWpAdded and prevDot and prevDot > 0 then
+                    table.insert(aiPath, prevWp)
+                    firstWpAdded = true
+                end
+                -- fallback: if no waypoint is in front of vehicle, use the first waypoint that's 25m away and all other waypoints
+                if not firstWpAdded then
+                    for _, marker in ipairs(path) do
+                        if marker.wp and startDist - marker.distToTarget > 25 then
+                            table.insert(aiPath, marker.wp)
+                        end
+                    end
+                end
+                return aiPath
+            end
+            
+            if state.phase == "cruise" then
+                if not state.flags.cruiseStarted then
+                    -- Find a cruise destination first
+                    local function getCruiseDestination(meetLocation)
+                        if not meetLocation then return nil end
+                        
+                        local meetCenter = meetLocation.position
+                        local minDistance = 2000
+                        local maxDistance = 20000
+                        
+                        local otherMeets = M.getCarMeetLocations()
+                        local validDestinations = {}
+                        
+                        for name, location in pairs(otherMeets) do
+                            if name ~= meetLocation.zone.name then
+                                local distance = (location.position - meetCenter):length()
+                                if distance >= minDistance and distance <= maxDistance then
+                                    table.insert(validDestinations, location.position)
+                                end
+                            end
+                        end
+                        
+                        if #validDestinations > 0 then
+                            return validDestinations[math.random(#validDestinations)]
+                        end
+                        
+                        local mapData = map.getMap()
+                        if mapData and mapData.nodes then
+                            local validNodes = {}
+                            
+                            for nodeId, node in pairs(mapData.nodes) do
+                                if node.pos then
+                                    local distance = (node.pos - meetCenter):length()
+                                    if distance >= minDistance and distance <= maxDistance then
+                                        table.insert(validNodes, node.pos)
+                                    end
+                                end
+                            end
+                            
+                            if #validNodes > 0 then
+                                return validNodes[math.random(#validNodes)]
+                            end
+                        end
+                        
+                        return nil
+                    end
+                    
+                    state.flags.cruiseDestination = getCruiseDestination(state.location)
+                    if state.flags.cruiseDestination then
+                        local message = "Follow the cruise route with the group!"
+                        ui_message(message, 10, "info", "info")
+                        
+                        -- Set ground markers to show the cruise route
+                        local options = {
+                            color = {0, 1, 0.4},
+                            step = 4,
+                            renderDecals = true
+                        }
+                        core_groundMarkers.setPath(state.flags.cruiseDestination, options)
+                        
+                        -- Wait a moment for the route to be set up, then use it for AI
+                        core_jobsystem.create(function(job)
+                            job.sleep(1.0) -- Wait for route planner to process
+                            
+                            local rp = core_groundMarkers.routePlanner
+                            if rp and rp.path and #rp.path > 0 then
+                                -- Get route start position for distance calculations
+                                local routeStartPos = rp.path[1] and rp.path[1].pos or state.flags.cruiseDestination
+                                
+                                -- Create a table of vehicles with their distances to route start
+                                local vehicleDistances = {}
+                                for _, vehID in ipairs(spawnedMeetVehicles) do
+                                    local veh = getObjectByID(vehID)
+                                    if veh then
+                                        local vehPos = veh:getPosition()
+                                        local distance = (vehPos - routeStartPos):length()
+                                        table.insert(vehicleDistances, {
+                                            id = vehID,
+                                            vehicle = veh,
+                                            distance = distance
+                                        })
+                                    end
+                                end
+                                
+                                -- Sort vehicles by distance (closest first)
+                                table.sort(vehicleDistances, function(a, b)
+                                    return a.distance < b.distance
+                                end)
+                                
+                                -- Set up the cruise route for AI vehicles, starting with closest ones
+                                for i, vehData in ipairs(vehicleDistances) do
+                                    job.sleep(1.5)
+                                    
+                                    local veh = vehData.vehicle
+                                    if veh then
+                                        local vehIndex = -1
+                                        for j = 0, be:getObjectCount()-1 do
+                                            if be:getObject(j) and be:getObject(j):getID() == vehData.id then
+                                                vehIndex = j
+                                                break
+                                            end
+                                        end
+                                        
+                                        if vehIndex >= 0 then
+                                            local aiPath = getAiPath(rp.path, vehIndex)
+                                            if aiPath and #aiPath > 0 then
+                                                local pathStr = '{wpTargetList = '..serialize(aiPath)
+                                                pathStr = pathStr..', noOfLaps = 1, aggression = 0.5, avoidCars = "on"}'
+                                                veh:queueLuaCommand('ai.driveUsingPath('..pathStr..')')
+                                                veh:queueLuaCommand('ai.setRacing(true)')
+                                                veh:queueLuaCommand('ai.driveInLane("on")')
+                                                
+                                                print("Sending vehicle " .. vehData.id .. " (distance: " .. string.format("%.1f", vehData.distance) .. "m) on cruise route")
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end)
+                        
+                        state.flags.cruiseStarted = true
+                        state.flags.routeEndCheckRadius = 50
+                        state.flags.routeEndPosition = state.flags.cruiseDestination
+                    else
+                        state.phase = "ending"
+                    end
+                elseif not state.flags.playerReachedDestination then
+                    local playerVeh = be:getPlayerVehicle(0)
+                    if playerVeh and state.flags.routeEndPosition then
+                        local distance = (playerVeh:getPosition() - state.flags.routeEndPosition):length()
+                        if state.phase ~= "ending" and distance < state.flags.routeEndCheckRadius + 100 then
+                            state.phase = "ending"
+                        end
+                        if distance < state.flags.routeEndCheckRadius then
+                            state.flags.playerReachedDestination = true
+                            
+                            local cruiseReputation = math.floor(math.random() * 50) / 10
+                            if career_modules_hardcore.isHardcoreMode() then
+                                cruiseReputation = cruiseReputation / 2
+                            end
+                            cruiseReputation = cruiseReputation * 1.2
+                            cruiseReputation = math.max(cruiseReputation, 0.5)
+                            
+                            local message = "Great cruise!\nYou completed the route with the group!\nBonus reputation: " .. cruiseReputation .. "%"
+                            ui_message(message, 10, "info", "info")
+                            
+                            local inventoryId = career_modules_inventory.getInventoryIdFromVehicleId(be:getPlayerVehicleID(0))
+                            if inventoryId then
+                                career_modules_inventory.addMeetReputation(inventoryId, cruiseReputation)
+                            end
+                            
+                            core_groundMarkers.resetAll()
+                            career_saveSystem.saveCurrent()
+                            
+                            state.phase = "ending"
+                            state.flags.dispersalStarted = false
+                        end
+                    end
+                end
+            end
+        end
+    }
+}
+
+local function getMeetType(typeKey)
+    return meetTypes[typeKey]
+end
+
+local function cleanupPreviousMeet()
+    for _, vehId in ipairs(spawnedMeetVehicles) do
+        gameplay_traffic.removeTraffic(vehId)
+        local veh = getObjectByID(vehId)
+        if veh then
+            veh:delete()
+        end
+    end
+    spawnedMeetVehicles = {}
+    pendingVehicles = {}
+    core_groundMarkers.resetAll()
+    
+    restoreTrafficAmount()
+    
+    meetState.active = false
+    meetState.type = nil
+    meetState.location = nil
+    meetState.playerSpot = nil
+    meetState.startTime = 0
+    meetState.arrivalTime = 0
+    meetState.flags = {}
+    meetState.phase = "waiting"
+end
 
 local function loadCarMeetData()
     if not career_career.isActive() then return end
@@ -52,86 +381,39 @@ local function loadCarMeetData()
     end
 end
 
--- Function to cleanup previous meet vehicles
-local function cleanupPreviousMeet()
-    for _, vehId in ipairs(spawnedMeetVehicles) do
-        gameplay_traffic.removeTraffic(vehId)
-        local veh = getObjectByID(vehId)
-        if veh then
-            veh:delete()
-        end
-    end
-    spawnedMeetVehicles = {}
-    core_groundMarkers.resetAll()
-    activeMeet = nil  -- Clear active meet
-    playerHasArrived = false  -- Reset arrival flag
-    playerSpot = nil
-    meetArrivalTime = nil
-    lastVehicleLeaveTime = 0
-end
-
--- Function to get all carmeet configurations
-local function getCarMeetVehicles()
+local function getCarMeetVehicles(meetType)
     local vehicles = {}
     local eligibleVehicles = util_configListGenerator.getEligibleVehicles(false, false)
     
-    -- First get CarmeetRLS configs
-    local carmeetFilter = {
-        whiteList = {
-            ["Config Type"] = {"CarmeetRLS"}
-        }
-    }
+    local filters = meetType and meetType.vehicleFilters or meetTypes.SHOWCASE.vehicleFilters
     
-    local carmeetVehicleInfos = util_configListGenerator.getRandomVehicleInfos(
-        {filter = carmeetFilter},
+    local vehicleInfos = util_configListGenerator.getRandomVehicleInfos(
+        {filter = filters},
         100,
         eligibleVehicles,
         "Population"
     )
 
-    -- Then get additional custom configs
-    local customFilter = {
-        whiteList = {
-            ["Config Type"] = {"Custom"},
-            ["Body Style"] = {"Sedan", "Hatchback", "SUV", "Coupe"}
-        }
-    }
-    
-    local customVehicleInfos = util_configListGenerator.getRandomVehicleInfos(
-        {filter = customFilter},
-        100,
-        eligibleVehicles,
-        "Population"
-    )
-
-    -- Combine both sets of vehicle infos
-    local function addVehicleInfos(vehicleInfos)
-        for _, vehicleInfo in ipairs(vehicleInfos) do
-            local pcPath = '/vehicles/' .. vehicleInfo.model_key .. '/configurations/' .. vehicleInfo.key .. '.pc'
-            table.insert(vehicles, {
-                model = vehicleInfo.model_key,
-                config = pcPath
-            })
-        end
+    for _, vehicleInfo in ipairs(vehicleInfos) do
+        local pcPath = '/vehicles/' .. vehicleInfo.model_key .. '/configurations/' .. vehicleInfo.key .. '.pc'
+        table.insert(vehicles, {
+            model = vehicleInfo.model_key,
+            config = pcPath
+        })
     end
-
-    addVehicleInfos(carmeetVehicleInfos)
-    addVehicleInfos(customVehicleInfos)
     
     return vehicles
 end
 
--- Function to get a random vehicle config
-local function getRandomVehicle()
+local function getRandomVehicle(meetType)
     if #carMeetVehicles == 0 then 
-        carMeetVehicles = getCarMeetVehicles()
+        carMeetVehicles = getCarMeetVehicles(meetType)
         if #carMeetVehicles == 0 then
-            print("No carmeet vehicles found")
+            print("No carmeet vehicles found for type: " .. (meetType and meetType.name or "unknown"))
             return nil
         end
     end
     
-    -- Create a list of available (unused) vehicles
     local availableVehicles = {}
     for _, vehicle in ipairs(carMeetVehicles) do
         if not usedConfigs[vehicle.config] then
@@ -139,24 +421,20 @@ local function getRandomVehicle()
         end
     end
     
-    -- Check if we have any available vehicles left
     if #availableVehicles == 0 then
         print("No unused vehicle configs available")
         return nil
     end
     
-    -- Select random vehicle config from available vehicles
     local vehicle = availableVehicles[math.random(#availableVehicles)]
-    -- Mark this config as used
     usedConfigs[vehicle.config] = true
     
     print("Selected vehicle: " .. vehicle.model .. " with config: " .. vehicle.config)
     return vehicle.model, vehicle.config
 end
 
--- Update the spawn function to use the specific config
-local function spawnVehicleAtSpot(spot)
-    local vehicleName, configPath = getRandomVehicle()
+local function spawnVehicleOptimized(spot, meetType, forceVisible)
+    local vehicleName, configPath = getRandomVehicle(meetType)
     if not vehicleName then return nil end
     
     local options = {
@@ -167,33 +445,85 @@ local function spawnVehicleAtSpot(spot)
         rot = quat(spot.rot)
     }
     
-    print("Spawning vehicle: " .. vehicleName .. " with config: " .. configPath)
     local vehicle = core_vehicles.spawnNewVehicle(vehicleName, options)
     
     if vehicle then
-        -- Add vehicle to traffic system but mark it as non-AI
-        gameplay_traffic.insertTraffic(vehicle:getID(), true)
-        -- Set vehicle as non-player-usable
+        local vehId = vehicle:getID()
+        gameplay_traffic.insertTraffic(vehId, true)
         vehicle.playerUsable = false
-        -- Turn on headlights directly through electrics
         vehicle:queueLuaCommand('electrics.setLightsState(1)')
-        -- Turn off engine
         vehicle:queueLuaCommand('electrics.setIgnitionLevel(1)')
-        -- Add to tracked vehicles
-        table.insert(spawnedMeetVehicles, vehicle:getID())
+        
+        if not forceVisible then
+            vehicle:setHidden(true)
+        end
+        
+        table.insert(spawnedMeetVehicles, vehId)
+        
+        return {
+            id = vehId,
+            pos = vec3(spot.pos),
+            visible = forceVisible or false,
+            hasCollision = forceVisible or false
+        }
     end
     
-    return vehicle
+    return nil
 end
 
-local function onInit()
+local function checkVehicleVisible(playerPos, vehiclePos)
+    local startPos = playerPos + vec3(0, 0, 1.5)
+    local endPos = vehiclePos + vec3(0, 0, 1)
+    local direction = endPos - startPos
+    local distance = direction:length()
+    
+    direction:normalize()
+    local hitDistance = castRayStatic(startPos, direction, distance)
+    return hitDistance >= distance * 0.90
+end
+
+local function updateVehicleVisibility()
+    if not meetState.active then return end
+    
+    local playerVeh = be:getPlayerVehicle(0)
+    if not playerVeh then return end
+    local playerPos = playerVeh:getPosition()
+    
+    for i = #spawnedMeetVehicles, 1, -1 do
+        local vehId = spawnedMeetVehicles[i]
+        local veh = getObjectByID(vehId)
+        
+        if veh then
+            local vehiclePos = veh:getPosition()
+            local shouldBeVisible = checkVehicleVisible(playerPos, vehiclePos)
+            
+            if shouldBeVisible and veh:isHidden() then
+                veh:setHidden(false)
+            elseif not shouldBeVisible and not veh:isHidden() then
+                veh:setHidden(true)
+            end
+        else
+            table.remove(spawnedMeetVehicles, i)
+        end
+    end
+    
+    for spotData in pairs(pendingVehicles) do
+        local distance = (spotData.pos - playerPos):length()
+        if distance <= VEHICLE_SPAWN_DISTANCE then
+            local shouldBeVisible = checkVehicleVisible(playerPos, spotData.pos)
+            local vehicleData = spawnVehicleOptimized(spotData, spotData.meetType, shouldBeVisible)
+            pendingVehicles[spotData] = nil
+        end
+    end
+end
+
+local function onExtensionLoaded()
     print("Carmeets module initialized")
 end
 
 local function getCarMeetLocations()
     local locations = {}
     
-    -- Get the carmeet sites file
     local sitePath = gameplay_sites_sitesManager.getCurrentLevelSitesFileByName('carmeet')
     if not sitePath then 
         print("No carmeet sites file found")
@@ -206,10 +536,8 @@ local function getCarMeetLocations()
         return locations 
     end
 
-    -- First, process all zones (meet locations)
     for _, zone in ipairs(siteData.zones.sorted) do
         local meetName = zone.name
-        -- Store using the zone name as key, not the tag
         locations[meetName] = {
             zone = zone,
             parkingSpots = {},
@@ -217,7 +545,6 @@ local function getCarMeetLocations()
             tags = zone.customFields.sortedTags
         }
 
-        -- Find parking spots that have this zone's tag
         for _, spot in ipairs(siteData.parkingSpots.sorted) do
             for _, tag in ipairs(spot.customFields.sortedTags) do
                 if tag == meetName then
@@ -239,78 +566,96 @@ local function onWorldReadyState(state)
     end
 end
 
-local function startCarMeet(meetName)
-    -- Clear used configs at the start of each meet
+local function startCarMeet(meetName, meetTypeKey, attendanceLevel)
     usedConfigs = {}
     
-    -- Cleanup any previous meet vehicles
     cleanupPreviousMeet()
     
-    -- Rest of the existing startCarMeet function
     local meets = (not carmeetLocations or next(carmeetLocations) == nil) and getCarMeetLocations() or carmeetLocations
-    
     local meet = meets[meetName]
     if not meet then
         print("Car meet location not found: " .. meetName)
         return
     end
     
-    -- Set the active meet and reset player arrival flag
-    activeMeet = meet
-    playerHasArrived = false
-    -- Calculate spots based on stored attendance level
-    local maxSpots = #meet.parkingSpots - 1  -- Reserve one spot for player
+    local meetType = getMeetType(meetTypeKey)
+    if not meetType then
+        print("Meet type not found: " .. meetTypeKey)
+        return
+    end
+    
+    meetState.active = true
+    meetState.type = meetTypeKey
+    meetState.location = meet
+    meetState.startTime = os.time()
+    meetState.arrivalTime = 0
+    meetState.phase = "waiting"
+    meetState.flags = {}
+    
+    local maxSpots = #meet.parkingSpots - 1
     local spotCount
-    if rsvpData.attendance == 1 then -- LOW
+    if attendanceLevel == 1 then
         spotCount = 2
-    elseif rsvpData.attendance == 2 then -- MEDIUM
+    elseif attendanceLevel == 2 then
         spotCount = math.ceil(maxSpots / 2)
-    elseif rsvpData.attendance == 3 then -- HIGH (3)
+    elseif attendanceLevel == 3 then
         spotCount = maxSpots
     end
     
+    spotCount = math.min(spotCount, maxSpots)
+    
+    carMeetVehicles = getCarMeetVehicles(meetType)
+    
     local spawnedVehicles = {}
     
-    -- Create a copy of parking spots array to randomly select from
     local availableSpots = deepcopy(meet.parkingSpots)
 
-    playerSpot = gameplay_sites_sitesManager.getBestParkingSpotForVehicleFromList(be:getPlayerVehicleID(0), availableSpots)
-    -- Remove the player's spot from available spots
+    meetState.playerSpot = gameplay_sites_sitesManager.getBestParkingSpotForVehicleFromList(be:getPlayerVehicleID(0), availableSpots)
     for i, spot in ipairs(availableSpots) do
-        if spot == playerSpot then
+        if spot == meetState.playerSpot then
             table.remove(availableSpots, i)
             break
         end
     end
 
-    -- Set navigation to the player's parking spot
     local options = {
-        color = {1, 0.4, 0}, -- Orange color for car meet markers
-        step = 4,            -- Marker spacing
+        color = {1, 0.4, 0},
+        step = 4,
         renderDecals = true
     }
-    core_groundMarkers.setPath(playerSpot.pos, options)
+    core_groundMarkers.setPath(meetState.playerSpot.pos, options)
     
-    -- Spawn vehicles in random spots
-    for i = 1, spotCount do
-        -- Select a random spot from remaining spots
-        local randomIndex = math.random(#availableSpots)
-        local spot = availableSpots[randomIndex]
-        
-        -- Remove the used spot from available spots
-        table.remove(availableSpots, randomIndex)
-        
-        -- Spawn the vehicle
-        local vehicle = spawnVehicleAtSpot(spot)
-        if vehicle then
-            table.insert(spawnedVehicles, vehicle)
+    local playerPos = be:getPlayerVehicle(0):getPosition()
+    
+    core_jobsystem.create(function(job)
+        for i = 1, spotCount do
+            local randomIndex = math.random(#availableSpots)
+            local spot = availableSpots[randomIndex]
+            table.remove(availableSpots, randomIndex)
+            
+            local distance = (vec3(spot.pos) - playerPos):length()
+            
+            if distance <= VEHICLE_SPAWN_DISTANCE then
+                local forceVisible = checkVehicleVisible(playerPos, vec3(spot.pos))
+                local vehicleData = spawnVehicleOptimized(spot, meetType, forceVisible)
+                if vehicleData then
+                    table.insert(spawnedVehicles, vehicleData)
+                end
+            else
+                local spotData = {
+                    pos = vec3(spot.pos),
+                    rot = quat(spot.rot),
+                    meetType = meetType
+                }
+                pendingVehicles[spotData] = true
+            end
+            job.sleep(0.1)
         end
-    end
+    end)
     
-    return spawnedVehicles
+    return
 end
 
--- Add new functions for meet generation and RSVP
 local function shouldGenerateNewMeet()
     local currentTime = os.time()
     return (currentTime - lastGenerationTime) >= generationInterval
@@ -321,56 +666,60 @@ local function checkAvailableMeets()
         return meetData
     end
 
-    -- Get all meet locations
     local meets = (not carmeetLocations or next(carmeetLocations) == nil) and getCarMeetLocations() or carmeetLocations
     if not meets or tableSize(meets) == 0 then
         return nil
     end
 
-    -- Convert meets table to array for random selection
     local meetArray = {}
     for name, data in pairs(meets) do
         table.insert(meetArray, {name = name, data = data})
     end
 
-    -- Select random meet
     local selectedMeet = meetArray[math.random(#meetArray)]
     
-    -- Update generation time
+    local typeKeys = {}
+    for typeKey, _ in pairs(meetTypes) do
+        table.insert(typeKeys, typeKey)
+    end
+    local selectedTypeKey = typeKeys[math.random(#typeKeys)]
+    local selectedType = meetTypes[selectedTypeKey]
+    
+    local selectedTime = selectedType.preferredTimes[math.random(#selectedType.preferredTimes)]
+    
     lastGenerationTime = os.time()
 
     local levelIdentifier = getCurrentLevelIdentifier()
     local preview = "/levels/" .. levelIdentifier .. "/facilities/carmeets/" .. selectedMeet.name .. ".jpg"
 
-    -- Return meet data
     meetData = {
-        time = meetTimes[math.random(#meetTimes)],
+        time = selectedTime,
         location = selectedMeet.name,
-        type = "Showcase",
-        preview = preview
+        type = selectedTypeKey,
+        typeName = selectedType.name,
+        description = selectedType.description,
+        preview = preview,
+        timeWindow = selectedType.timeWindow
     }
     generationInterval = 1800
     return meetData
 end
 
 local function rsvpToMeet(level)
-    -- Convert string level to number
     rsvpData = meetData
     rsvpData.attendance = attendanceLevels[level] or 2
     meetData = nil
 end
 
 local function updateAttendance(level)
-    -- Convert string level to number
-    rsvpData.attendance = attendanceLevels[level] or 2  -- default to MEDIUM (2) if invalid
+    rsvpData.attendance = attendanceLevels[level] or 2
 end
 
 local function decline()
     rsvpData = nil
     meetData = nil
     core_groundMarkers.resetAll()
-    activeMeet = nil
-    playerHasArrived = false
+    cleanupPreviousMeet()
     generationInterval = 120
     lastGenerationTime = os.time()
 end
@@ -379,8 +728,7 @@ local function cancelRSVP()
     rsvpData = nil
     meetData = nil
     core_groundMarkers.resetAll()
-    activeMeet = nil
-    playerHasArrived = false
+    cleanupPreviousMeet()
     generationInterval = 120
     lastGenerationTime = os.time()
 end
@@ -395,38 +743,33 @@ local function setRoute()
 
     local availableSpots = deepcopy(meet.parkingSpots)
 
-    playerSpot = gameplay_sites_sitesManager.getBestParkingSpotForVehicleFromList(be:getPlayerVehicleID(0), availableSpots)
+    local playerSpot = gameplay_sites_sitesManager.getBestParkingSpotForVehicleFromList(be:getPlayerVehicleID(0), availableSpots)
 
-    -- Set the route to the player's parking spot
     local options = {
-        color = {1, 0.4, 0}, -- Orange color for car meet markers
-        step = 4,            -- Marker spacing
+        color = {1, 0.4, 0},
+        step = 4,
         renderDecals = true
     }
     core_groundMarkers.setPath(playerSpot.pos, options)
 end
 
--- Function to check if it's time to start the meet
 local function checkMeetStart()
     if not rsvpData then return end
 
     local currentTime = scenetree.tod and scenetree.tod.time or 0
     local timeUntilMeet = math.abs(currentTime - rsvpData.time)
+    local timeWindow = rsvpData.timeWindow or 0.01
 
-    if timeUntilMeet <= meetTimeWindow then
-        -- Get the meet location data
+    if timeUntilMeet <= timeWindow then
         local meet = carmeetLocations[rsvpData.location]
         if meet then
-            -- Start the meet
             ui_message("Car meet starting at " .. rsvpData.location, 10, "info", "info")
-            startCarMeet(rsvpData.location)
+            startCarMeet(rsvpData.location, rsvpData.type, rsvpData.attendance)
         end
-        -- Clear RSVP data after starting
         rsvpData = nil
     end
 end
 
--- Throttled update function
 local function onUpdate(dtReal, dtSim, dtRaw)
     if not career_career.isActive() then return end
     
@@ -435,83 +778,106 @@ local function onUpdate(dtReal, dtSim, dtRaw)
         lastUpdateCheck = currentTime
         checkMeetStart()
         
-        -- Check if player has arrived at active meet
-        if activeMeet and not playerHasArrived then
+        if meetState.active and currentTime % VEHICLE_UPDATE_INTERVAL == 0 then
+            updateVehicleVisibility()
+        end
+        
+        if meetState.active and meetState.phase == "waiting" then
             local playerVeh = be:getPlayerVehicle(0)
-            if playerVeh and (playerVeh:getPosition() - playerSpot.pos):length() < 10 then
+            if playerVeh and meetState.playerSpot and (playerVeh:getPosition() - meetState.playerSpot.pos):length() < 10 then
+                local meetType = meetTypes[meetState.type]
+                if not meetType then return end
+                
                 local reputation = math.floor(math.random() * 100) / 10
                 if career_modules_hardcore.isHardcoreMode() then
                     reputation = reputation / 2
                 end
+                
+                reputation = reputation * meetType.baseReputationMultiplier
                 reputation = math.max(reputation, 1)
 
-                ui_message("Welcome to the car meet!\nCommunity liked your car!\nVehicle value increased by " .. reputation .. "%", 10, "info", "info")
+                local message = meetType.actions.onArrival(reputation)
+                ui_message(message, 10, "info", "info")
+                
                 local inventoryId = career_modules_inventory.getInventoryIdFromVehicleId(be:getPlayerVehicleID(0))
                 if inventoryId then
                     career_modules_inventory.addMeetReputation(inventoryId, reputation)
                 end
                 core_groundMarkers.resetAll()
-                playerHasArrived = true
+                
+                meetState.phase = "showcase"
+                meetState.arrivalTime = currentTime
                 career_saveSystem.saveCurrent()
             end
-        elseif activeMeet and playerHasArrived then
-            if not meetArrivalTime then
-                meetArrivalTime = os.time()
+        end
+        
+        if meetState.active and meetState.phase == "showcase" then
+            local meetType = meetTypes[meetState.type]
+            if meetType and currentTime - meetState.arrivalTime > meetType.showcaseDuration then
+                if meetType.actions and meetType.actions.onShowcaseEnd then
+                    meetType.actions.onShowcaseEnd(meetState)
+                end
+            end
+        end
+        
+        if meetState.active and meetState.type then
+            local meetType = meetTypes[meetState.type]
+            if meetType and meetType.onUpdate then
+                meetType.onUpdate(meetState, currentTime)
+            end
+        end
+        
+        if meetState.active and meetState.phase == "ending" then
+            local meetType = meetTypes[meetState.type]
+            
+            if not meetState.flags.dispersalStarted then
+                meetState.flags.vehiclesToLeave = {}
+                for _, vehID in ipairs(spawnedMeetVehicles) do
+                    table.insert(meetState.flags.vehiclesToLeave, vehID)
+                end
+                meetState.flags.lastVehicleLeaveTime = currentTime
+                meetState.flags.dispersalStarted = true
             end
             
-            if os.time() - meetArrivalTime > MEET_LEAVE_TIMER and not gameplay_walk.isWalking() then
-                -- Initialize vehicle departure if not started
-                if #vehiclesToLeave == 0 and not vehicleDispersed then
-                    ui_message("Car meet is over, vehicles starting to leave!", 10, "info", "info")
-                    vehiclesToLeave = {}
-                    for _, vehID in ipairs(spawnedMeetVehicles) do
-                        table.insert(vehiclesToLeave, vehID)
-                    end
-                    for _, vehID in ipairs(vehiclesToLeave) do
-                        local veh = getObjectByID(vehID)
-                        veh:queueLuaCommand('for k, v in pairs(controller.getControllersByType("advancedCouplerControl")) do v.tryAttachGroupImpulse() end')
-                    end
-                    lastVehicleLeaveTime = currentTime
-                end
-                
-                -- Check if it's time for next vehicle to leave
-                if #vehiclesToLeave > 0 and currentTime - lastVehicleLeaveTime >= MEET_LEAVE_INTERVAL then
-                    local vehID = table.remove(vehiclesToLeave, 1)
-                    local veh = getObjectByID(vehID)
-                    if veh then
-                        -- Close all latches before leaving
-                        veh:queueLuaCommand('ai.setMode("traffic")')
-                        veh:queueLuaCommand('ai.setSpeedMode("off")')
-                    end
-                    lastVehicleLeaveTime = currentTime
-                end
-                
-                -- When all vehicles have left
-                if #vehiclesToLeave == 0 and not vehicleDispersed then
-                    ui_message("Car meet is over, Thanks for coming!", 10, "info", "info")
-                    activeMeet = nil
-                    playerHasArrived = false
-                    playerSpot = nil
-                    vehicleDispersed = true
-                end
-            end
-        elseif vehicleDispersed then
-            local playerVeh = be:getPlayerVehicle(0)
-            for i, vehID in ipairs(spawnedMeetVehicles) do
+            if #meetState.flags.vehiclesToLeave > 0 and currentTime - meetState.flags.lastVehicleLeaveTime >= MEET_LEAVE_INTERVAL then
+                local vehID = table.remove(meetState.flags.vehiclesToLeave, 1)
                 local veh = getObjectByID(vehID)
                 if veh then
-                    local distance = (playerVeh:getPosition() - veh:getPosition()):length()
-                    if distance > MEET_CLEANUP_DISTANCE then
+                    veh:queueLuaCommand('ai.setMode("traffic")')
+                    veh:queueLuaCommand('ai.setSpeedMode("legal")')
+                end
+                meetState.flags.lastVehicleLeaveTime = currentTime
+            end
+            
+            if #meetState.flags.vehiclesToLeave == 0 then
+                if meetType and meetType.actions and meetType.actions.onLeave then
+                    local message = meetType.actions.onLeave()
+                    ui_message(message, 10, "info", "info")
+                end
+                meetState.phase = "cleanup"
+            end
+        end
+        
+        if meetState.phase == "cleanup" then
+            local playerVeh = be:getPlayerVehicle(0)
+            if playerVeh then
+                for i = #spawnedMeetVehicles, 1, -1 do
+                    local vehID = spawnedMeetVehicles[i]
+                    local veh = getObjectByID(vehID)
+                    if veh then
+                        local distance = (playerVeh:getPosition() - veh:getPosition()):length()
+                        if distance > MEET_CLEANUP_DISTANCE then
+                            table.remove(spawnedMeetVehicles, i)
+                            gameplay_traffic.removeTraffic(vehID)
+                            veh:delete()
+                        end
+                    else
                         table.remove(spawnedMeetVehicles, i)
-                        gameplay_traffic.removeTraffic(vehID)
-                        veh:delete()
                     end
-                else
-                    table.remove(spawnedMeetVehicles, i)
                 end
             end
+            
             if #spawnedMeetVehicles == 0 then
-                vehicleDispersed = false
                 cleanupPreviousMeet()
             end
         end
@@ -523,7 +889,56 @@ M.requestRSVPData = function()
     guihooks.trigger('onRSVPData', rsvpData)
 end
 
--- Save/Load functions using career save system
+local function getMeetTypes()
+    local types = {}
+    for typeKey, meetType in pairs(meetTypes) do
+        table.insert(types, {
+            key = typeKey,
+            name = meetType.name,
+            description = meetType.description,
+            reputationMultiplier = meetType.baseReputationMultiplier,
+            showcaseDuration = meetType.showcaseDuration,
+            preferredTimes = meetType.preferredTimes,
+            timeWindow = meetType.timeWindow
+        })
+    end
+    return types
+end
+
+local function getCurrentMeetType()
+    if meetState.active and meetState.type then
+        return getMeetType(meetState.type)
+    elseif rsvpData and rsvpData.type then
+        return getMeetType(rsvpData.type)
+    end
+    return nil
+end
+
+local function getMeetState()
+    return meetState
+end
+
+M.registerMeetType = function(key, meetTypeData)
+    meetTypeData.showcaseDuration = meetTypeData.showcaseDuration or 60
+    
+    meetTypeData.preferredTimes = meetTypeData.preferredTimes or {0.417, 0.458, 0.500}
+    meetTypeData.timeWindow = meetTypeData.timeWindow or 0.02
+    
+    if not meetTypeData.actions then
+        meetTypeData.actions = {}
+    end
+    if not meetTypeData.actions.onShowcaseEnd then
+        meetTypeData.actions.onShowcaseEnd = function(state)
+            state.phase = "ending"
+            state.flags.dispersalStarted = false
+            ui_message("Meet is over, vehicles starting to leave!", 10, "info", "info")
+        end
+    end
+    
+    meetTypes[key] = meetTypeData
+    print("Registered new meet type: " .. meetTypeData.name)
+end
+
 local function onSaveCurrentSaveSlot(currentSavePath)
     if not currentSavePath then return end
 
@@ -539,6 +954,10 @@ local function onSaveCurrentSaveSlot(currentSavePath)
     career_saveSystem.jsonWriteFileSafe(dirPath .. "/" .. saveFile, data, true)
 end
 
+local function onCareerActive(active)
+    careerActive = active
+end
+
 local function openMenu()
     guihooks.trigger('ChangeState', {state = 'carMeets'})
 end
@@ -547,20 +966,25 @@ local function closeMenu()
     guihooks.trigger('ChangeState', {state = 'play'})
 end
 
-M.onInit = onInit
+M.onExtensionLoaded = onExtensionLoaded
 M.getCarMeetLocations = getCarMeetLocations
 M.onWorldReadyState = onWorldReadyState
-M.startCarMeet = startCarMeet
-M.cleanupPreviousMeet = cleanupPreviousMeet
-M.checkAvailableMeets = checkAvailableMeets
-M.rsvpToMeet = rsvpToMeet
 M.onUpdate = onUpdate
 M.onSaveCurrentSaveSlot = onSaveCurrentSaveSlot
-M.openMenu = openMenu
+M.onCareerActive = onCareerActive
+
+M.checkAvailableMeets = checkAvailableMeets
+M.rsvpToMeet = rsvpToMeet
 M.decline = decline
-M.closeMenu = closeMenu
+M.cancelRSVP = cancelRSVP
 M.updateAttendance = updateAttendance
 M.setRoute = setRoute
-M.cancelRSVP = cancelRSVP
+M.cleanupPreviousMeet = cleanupPreviousMeet
+
+M.requestRSVPData = M.requestRSVPData
+M.openMenu = openMenu
+M.closeMenu = closeMenu
+
+M.startCarMeet = startCarMeet
 
 return M

@@ -1,0 +1,77 @@
+{
+  "metal_galvanized1": {
+    "name": "metal_galvanized1",
+    "mapTo": "metal_galvanized1",
+    "class": "Material",
+    "Stages": [
+      {
+        "baseColorMap": "/levels/west_coast_usa/art/shapes/objects/rls_hwy_signs/t_metal_galvanized_01_b.color.dds",
+        "metallicFactor": 0.36500001,
+        "metallicMap": "/levels/west_coast_usa/art/shapes/objects/rls_hwy_signs/t_metal_galvanized_02_m.data.dds",
+        "pixelSpecular": true,
+        "roughnessFactor": 0.70599997,
+        "roughnessMap": "/levels/west_coast_usa/art/shapes/objects/rls_hwy_signs/t_metal_galvanized_01_r.data.dds"
+      },
+      {
+        "metallicFactor": null,
+        "pixelSpecular": null,
+        "roughnessFactor": null
+      },
+      {
+        "metallicFactor": null,
+        "pixelSpecular": null,
+        "roughnessFactor": null
+      },
+      {
+        "metallicFactor": null,
+        "pixelSpecular": null,
+        "roughnessFactor": null
+      }
+    ],
+    "alphaRef": 0,
+    "annotation": "BUILDINGS",
+    "groundType": "METAL",
+    "materialTag1": "building",
+    "translucentBlendOp": "None",
+    "version": 1.5
+  },
+  "rlstunnelsign1": {
+    "name": "rlstunnelsign1",
+    "mapTo": "rlstunnelsign1",
+    "class": "Material",
+    "Stages": [
+      {
+        "baseColorMap": "//levels/west_coast_usa/art/shapes/objects/rls_hwy_signs/basesignV2_b.color.png",
+        "metallicFactor": 0.135000005,
+        "roughnessMap": "//levels/west_coast_usa/art/shapes/objects/rls_hwy_signs/sign2d_r.data.png"
+      },
+      {
+        "metallicFactor": null
+      },
+      {
+        "metallicFactor": null
+      },
+      {
+        "metallicFactor": null
+      }
+    ],
+    "translucentBlendOp": "None",
+    "version": 1.5
+  },
+  "rlstunnelsign2": {
+    "name": "rlstunnelsign2",
+    "mapTo": "rlstunnelsign2",
+    "class": "Material",
+    "Stages": [
+      {
+        "baseColorMap": "/levels/west_coast_usa/art/shapes/objects/rls_hwy_signs/rls_sign2_b.color.png",
+        "roughnessMap": "/levels/west_coast_usa/art/shapes/objects/rls_hwy_signs/sign2d_r.data.png"
+      },
+      {},
+      {},
+      {}
+    ],
+    "translucentBlendOp": "None",
+    "version": 1.5
+  }
+}

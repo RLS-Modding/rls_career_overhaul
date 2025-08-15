@@ -26,11 +26,29 @@ local progressTemplate = {
     trailer = 0,
     fluid = 0,
     dryBulk = 0,
+    cement = 0,
   }
 }
 
+local function mergeDefaults(defaults, saved)
+  if type(defaults) ~= "table" then
+    if saved == nil then return deepcopy(defaults) end
+    return saved
+  end
+  local result = {}
+  for k, v in pairs(defaults) do
+    result[k] = mergeDefaults(v, saved and saved[k])
+  end
+  if type(saved) == "table" then
+    for k, v in pairs(saved) do
+      if result[k] == nil then result[k] = v end
+    end
+  end
+  return result
+end
+
 M.setProgress = function(data)
-  progress = data or deepcopy(progressTemplate)
+  progress = mergeDefaults(progressTemplate, data or {})
 end
 
 M.getProgress = function()

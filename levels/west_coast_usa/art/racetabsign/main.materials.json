@@ -1,0 +1,29 @@
+{
+  "rtbsign": {
+    "name": "rtbsign",
+    "mapTo": "rtbsign",
+    "class": "Material",
+    "Stages": [
+      {
+        "baseColorMap": "/levels/west_coast_usa/art/racetabsign/racetabautov1.color.png",
+        "emissiveFactor": [
+          1,
+          1,
+          1
+        ],
+        "emissiveMap": "/levels/west_coast_usa/art/racetabsign/racetabautov1_e.color.png"
+      },
+      {
+        "emissiveFactor": null
+      },
+      {
+        "emissiveFactor": null
+      },
+      {
+        "emissiveFactor": null
+      }
+    ],
+    "translucentBlendOp": "None",
+    "version": 1.5
+  }
+}
