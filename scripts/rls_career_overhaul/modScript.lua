@@ -1,3 +1,16 @@
+local function checkVersion()
+    local fileData = jsonReadFile("integrity.json")
+    if fileData.version then
+        local version = fileData.version
+        local versionParts = string.split(version, ".")
+        if versionParts[4] ~= "6" then
+            guihooks.trigger("toastrMsg", {type="error", title="Update required", msg="RLS Career Overhaul is outdated. Please update to the latest version either from Patreon or Github."})
+            return false
+        end
+    end
+    return true
+end
+
 local function loadExtensions()
     print("Starting extension loading sequence")
     extensions.unload("freeroam_freeroam")
@@ -43,5 +56,13 @@ end
 
 setExtensionUnloadMode("UIloader", "manual")
 extensions.unload("UIloader")
+
+core_jobsystem.create(function(job)
+    job.sleep(5)
+    if not checkVersion() then
+        print("Deactivating RLS Career Overhaul")
+        core_modmanager.deactivateModId("RLSCO24")
+    end
+end)
 
 loadManualUnloadExtensions()

@@ -53,16 +53,18 @@ function M.saveDamageState(inventoryId, saveFile, removeVehicle)
     local spawnedVehicles = career_modules_inventory.getMapInventoryIdToVehId()
     if vehicle and spawnedVehicles[inventoryId] then
         local numberOfBrokenParts = career_modules_valueCalculator.getNumberOfBrokenParts(career_modules_inventory.getVehicles()[inventoryId].partConditions)
-        if numberOfBrokenParts > 0 and numberOfBrokenParts < career_modules_valueCalculator.getBrokenPartsThreshold() then
+        if numberOfBrokenParts > 0 then
             print("Saving damage state for vehicle " .. inventoryId .. " to " .. saveFile)
             local vehId = career_modules_inventory.getVehicleIdFromInventoryId(inventoryId)
             local object = be:getObjectByID(vehId)
+            local dir, _, _ = path.split(saveFile)
+            if dir and not FS:directoryExists(dir) then
+                FS:directoryCreate(dir)
+            end
             if removeVehicle then
-                --object:queueLuaCommand("beamstate.save(\"" .. saveFile .. "\"); obj:queueGameEngineLua('career_modules_damageManager.deleteVehicleDelayed(" .. vehId .. ")');")
-                object:queueLuaCommand("individualRepair.saveDamageData(\"" .. saveFile .. "\"); obj:queueGameEngineLua('career_modules_damageManager.deleteVehicleDelayed(" .. vehId .. ")');")
+                object:queueLuaCommand("extensions.load('individualRepair'); individualRepair.saveDamageData(\"" .. saveFile .. "\"); obj:queueGameEngineLua('career_modules_damageManager.deleteVehicleDelayed(" .. vehId .. ")');")
             else
-                object:queueLuaCommand("individualRepair.saveDamageData(\"" .. saveFile .. "\");")
-                --object:queueLuaCommand("beamstate.save(\"" .. saveFile .. "\");")
+                object:queueLuaCommand("extensions.load('individualRepair'); individualRepair.saveDamageData(\"" .. saveFile .. "\");")
             end
         else
             if removeVehicle then
@@ -72,8 +74,7 @@ function M.saveDamageState(inventoryId, saveFile, removeVehicle)
             end
             print("No damage state to save for vehicle " .. inventoryId)
             FS:removeFile(saveFile)
-            
-            -- Also clear the vehicle's internal damage tracking state since there's no damage to save
+
             local vehId = career_modules_inventory.getVehicleIdFromInventoryId(inventoryId)
             if vehId then
                 local object = be:getObjectByID(vehId)
@@ -89,8 +90,9 @@ function M.loadDamageState(inventoryId)
     print("Loading damage state for vehicle " .. inventoryId)
     local saveFile = GetVehicleSaveFile(inventoryId)
     local object = be:getObjectByID(career_modules_inventory.getVehicleIdFromInventoryId(inventoryId))
-    --object:queueLuaCommand("beamstate.load(\"" .. saveFile .. "\");")
-    object:queueLuaCommand("individualRepair.loadDamageData(\"" .. saveFile .. "\");")
+    if object and FS:fileExists(saveFile) then
+        object:queueLuaCommand("extensions.load('individualRepair'); individualRepair.loadDamageData(\"" .. saveFile .. "\");")
+    end
 end
 
 function M.clearDamageState(inventoryId)
@@ -140,6 +142,11 @@ function M.repairPartsAndReloadState(inventoryId, partsToRepair, partsToRemove)
     local serializedPartsToRemove = serialize(partsToRemove)
     if not serializedPartsToRemove then
         log('E', 'damageManager.repairParts', 'Failed to serialize partsToRemove table.')
+        return
+    end
+
+    if not FS:fileExists(saveFile) then
+        log('I', 'damageManager.repairParts', 'No damage save file found for vehicle ' .. inventoryId .. ' at ' .. saveFile .. '. Skipping reload.')
         return
     end
 

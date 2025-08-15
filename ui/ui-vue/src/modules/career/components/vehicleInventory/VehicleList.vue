@@ -30,6 +30,13 @@
         Return loaned vehicle
       </BngButton>
       <BngButton
+        v-if="vehSelected.junkVehicle && vehSelected.junkVehicle.allow"
+        :accent="ACCENTS.menu"
+        v-bng-on-ui-nav:ok.focusRequired.asMouse
+        @click="confirmJunkVehicle()">
+        Junk vehicle
+      </BngButton>
+      <BngButton
         v-if="vehSelected.delayReason === 'repair'"
         :accent="ACCENTS.menu"
         :disabled="vehSelected.expediteRepairCost > vehicleInventoryStore.vehicleInventoryData.playerMoney"
@@ -250,6 +257,19 @@ const confirmReturnVehicle = async () => {
     { label: $translate.instant("ui.common.no"), value: false, extras: { accent: ACCENTS.secondary } },
   ])
   if (res) lua.career_modules_inventory.returnLoanedVehicleFromInventory(vehicle.id)
+}
+
+const confirmJunkVehicle = async () => {
+  const vehicle = vehSelected.value
+  popHide()
+  const res = await openConfirmation("", `Do you want to junk this vehicle?`, [
+    { label: $translate.instant("ui.common.yes"), value: true, extras: { default: true } },
+    { label: $translate.instant("ui.common.no"), value: false, extras: { accent: ACCENTS.secondary } },
+  ])
+  if (res) {
+    lua.career_modules_inventory.removeVehicle(vehicle.id)
+    lua.career_modules_inventory.sendDataToUi()
+  }
 }
 
 const personalizeLicensePlate = async () => {

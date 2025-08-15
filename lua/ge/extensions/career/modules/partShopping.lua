@@ -124,7 +124,8 @@ local function generatePartFromTree(treeNode, slotName, slotInfo, currentVehicle
   local partInfo = availableParts[treeNode.chosenPartName]
   previewVehicleSlotData[treeNode.path] = slotInfo
 
-  treeNode.chosenPartNiceName = partInfo and partInfo.description
+  local chosenDesc = partInfo and partInfo.description
+  treeNode.chosenPartNiceName = type(chosenDesc) == "table" and chosenDesc.description or chosenDesc
   treeNode.slotNiceName = slotsNiceName[slotName]
   treeNode.slotName = slotName
 
@@ -160,12 +161,16 @@ local function generatePartFromTree(treeNode, slotName, slotInfo, currentVehicle
     local emptyPart = {}
     emptyPart.name = "empty"
     emptyPart.description = {}
-    emptyPart.description.description = "Remove " .. partsNiceName[initialVehicle.partList[treeNode.path]]
+    do
+      local baseName = partsNiceName[initialVehicle.partList[treeNode.path]]
+      if type(baseName) == "table" then baseName = baseName.description end
+      emptyPart.description.description = "Remove " .. (baseName or "part")
+    end
     emptyPart.emptyPlaceholder = true
     emptyPart.containingSlot = treeNode.path
     emptyPart.partPath = treeNode.path .. "empty"
     emptyPart.slot = slotName
-    emptyPart.slotNiceName = slotsNiceName[slotName]
+    emptyPart.slotNiceName = (type(slotsNiceName[slotName]) == "table" and slotsNiceName[slotName].description) or slotsNiceName[slotName]
     emptyPart.partShopId = partShopId
     emptyPart.finalValue = 0
     partShopId = partShopId + 1
@@ -189,7 +194,7 @@ local function generatePartShop()
   for partName, partInfo in pairs(availableParts) do
     if partInfo.slotInfoUi then
       for slotName, slotInfo in pairs(partInfo.slotInfoUi) do
-        slotsNiceName[slotName] = slotInfo.description
+        slotsNiceName[slotName] = type(slotInfo.description) == "table" and slotInfo.description.description or slotInfo.description
       end
     end
   end
@@ -215,13 +220,15 @@ local function buildSearchSlotList(partTree)
 
       -- Split path into segments and process each one
       for segment in currentPath:gmatch("([^/]+)/") do
-        table.insert(pathSegments, slotsNiceName[segment] or segment)
+        local nice = slotsNiceName[segment]
+        if type(nice) == "table" then nice = nice.description end
+        table.insert(pathSegments, nice or segment)
       end
 
       -- Add slot data for current node
       local slotData = {
         slotName = slotName,
-        slotNiceName = slotsNiceName[slotName],
+        slotNiceName = (type(slotsNiceName[slotName]) == "table" and slotsNiceName[slotName].description) or slotsNiceName[slotName],
         path = node.path,
         nicePath = table.concat(pathSegments, " > "),
         partNiceName = partsNiceName[node.chosenPartName]
@@ -360,7 +367,8 @@ local function startShoppingActual(_originComputerId)
     if partName and partName ~= "" then
       local partInfo = availableParts[partName]
       if partInfo then
-        partsNiceName[partName] = partInfo.description
+        local desc = partInfo.description
+        partsNiceName[partName] = type(desc) == "table" and desc.description or desc
       end
     end
   end
@@ -413,6 +421,7 @@ local function startShopping(inventoryId, _originComputerId)
   elseif numberOfBrokenParts > 0 then
     core_jobsystem.create(function(job)
       career_modules_damageManager.saveDamageState(currentVehicle)
+      job.sleep(0.1)
       startShoppingActual(_originComputerId)
     end, 2)
   else
@@ -874,7 +883,7 @@ local function onComputerAddFunctions(menuData, computerFunctions)
     -- vehicle broken
     if vehicleData.needsRepair then
       computerFunctionData.label = "Part Customization (Experimental)"
-      computerFunctionData.disabled = false
+      computerFunctionData.disabled = true
     end
     -- tutorial active
     if menuData.tutorialTuningActive then

@@ -204,6 +204,7 @@ export default {
     renameVehicle: (inventoryId, name) => [Number, String],
     getVehiclesForSale: () => {},
     removeVehicleFromSale: id => Number,
+    removeVehicle: id => Number,
     deliverVehicle: (id, money) => [Number, Number],
     storeVehicle: id => Number,
   },
