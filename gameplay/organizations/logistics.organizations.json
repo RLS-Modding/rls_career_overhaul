@@ -505,7 +505,7 @@
     ]
   },
   "policeLoaner": {
-    "name": "police Loaner",
+    "name": "Police Loaner",
     "description": "Complete deliveries for MoneyGrab Bank and they may help you out on some quick loans",
     "icon": "beamCurrency",
     "loanableVehicles": [
@@ -775,6 +775,566 @@
       }
     ]
   },
+  "trustedAutos": {
+    "name": "Trusted Auto Sales",
+    "description": "Trusted Auto Sales - Discounted cars",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "joesJunkDealership": {
+    "name": "Joe's Junk",
+    "description": "Joe's Junk - You think you hate it now , wait till you drive it",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "serviceDealership": {
+    "name": "Service Dealership",
+    "description": "Service Dealership - Purchase Service Vehicles here",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "trailerShop": {
+    "name": "Trailer Dealer",
+    "description": "Trailer Sales",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "BruckellDealership": {
+    "name": "Bruckell Online Dealership",
+    "description": "Bruckell Online Dealership",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "GavrilcarDealership": {
+    "name": "Gavril-Car Online Dealership",
+    "description": "Gavril-Car Online Dealership",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "GavriltruckDealership": {
+    "name": "Gavril-Truck Online Dealership",
+    "description": "Gavril-Truck Online Dealership",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "SoliadDealership": {
+    "name": "Soliad Online Dealership",
+    "description": "Soliad Online Dealership",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "importDealer": {
+    "name": "Import Dealership",
+    "description": "All thing Imported",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "raceTab": {
+    "name": "RaceTab",
+    "description": "All things RaceTab And Raceless",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "claudioAuto": {
+    "name": "Claudio New and Used",
+    "description": "New and used vehicles for a fair price.",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "garantitoAuto": {
+    "name": "Garantito Utility Sales",
+    "description": "Used larger vehicles for everyday needs",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "temerariaAuto": {
+    "name": "Temeraria",
+    "description": "The Finest new and used vehicles in Italy",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "FBXAuto": {
+    "name": "FBX Scraps",
+    "description": "One mans junk...",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "portinoAuto": {
+    "name": "Portino's Imports",
+    "description": "Imported from who knows where",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "biancoAuto": {
+    "name": "Bianco's Customs",
+    "description": "Custom vehicles!",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "carlinoAuto": {
+    "name": "Carlino Customer Deals",
+    "description": "Customer states...",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "portoAuto": {
+    "name": "Commerciale Auto Sales",
+    "description": "Commercial vehicles for sale",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "poliziaAuto": {
+    "name": "Polizia Auto Sales",
+    "description": "Registered police cars",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "ArimaDealership": {
+    "name": "Arima Online Dealership",
+    "description": "Arima Online Dealership",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "AutobelloDealership": {
+    "name": "Autobello Online Dealership",
+    "description": "Autobello Online Dealership",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "CherrierDealership": {
+    "name": "Cherrier Online Dealership",
+    "description": "Cherrier Online Dealership",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "CivettaDealership": {
+    "name": "Civetta Online Dealership",
+    "description": "Civetta Online Dealership",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "ETKDealership": {
+    "name": "ETK Online Dealership",
+    "description": "ETK Online Dealership",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "HirochiDealership": {
+    "name": "Hirochi Online Dealership",
+    "description": "Hirochi Online Dealership",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "IbishuDealership": {
+    "name": "Ibishu Online Dealership",
+    "description": "Ibishu Online Dealership",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "seaLand": {
+    "name": "Swimming Goose",
+    "description": "Everything between air and sea",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "WestRockMotors": {
+    "name": "West Rock Motors",
+    "description": "Like a Rock... Sort of",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "canyonAuto": {
+    "name": "Canyon Auto",
+    "description": "Get you in and out of any canyon",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "topRockGarage": {
+    "name": "Top Rock Garage",
+    "description": "Top of the line custom builds",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "acceleritGarage": {
+    "name": "Acceler It Auto Sales",
+    "description": "Best car money can buy",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "rangerStation": {
+    "name": "Ranger Station",
+    "description": "",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "tbd": {
+    "name": "tbd",
+    "description": "",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "spOnline": {
+    "name": "SP Online Dealership",
+    "preview": "spawn_cargoYard.png",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "cargoYardDealership": {
+    "name": "Cargo Yard Dealership",
+    "description": "All things Commerical!",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  }
   /**
   "belascoCityHospital": {
     "name":"Belasco City Hospital",
