@@ -1003,6 +1003,15 @@ local function buyFromPurchaseMenu(purchaseType, options)
     career_modules_inventory.removeVehicle(purchaseData.tradeInVehicleInfo.id)
   end
 
+  local dealership = freeroam_facilities.getFacility("dealership", options.dealershipId)
+  if dealership and dealership.associatedOrganization then
+    local orgId = dealership.associatedOrganization
+    local org = freeroam_organizations.getOrganization(orgId)
+    if org then
+      career_modules_playerAttributes.addAttributes({[orgId .. "Reputation"] = 10}, {tags={"buying"}, label=string.format("Bought vehicle from %s", orgId)})
+    end
+  end
+
   local buyVehicleOptions = {licensePlateText = options.licensePlateText, dealershipId = options.dealershipId}
   if purchaseType == "inspect" then
     if options.makeDelivery then
