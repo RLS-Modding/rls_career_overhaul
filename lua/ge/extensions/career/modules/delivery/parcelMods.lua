@@ -144,7 +144,7 @@ local modifiers = {
     unlockLabel = "Cash",
     priority = 6,
     icon = "beamCurrency",
-    label = "Stacks of Cash",
+    label = "Bank Deliveries",
     shortDescription = "Requires a cash-capable container to transport."
   },
   parcel = {

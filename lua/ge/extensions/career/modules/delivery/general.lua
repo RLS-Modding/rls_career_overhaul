@@ -863,7 +863,7 @@ local function onActivityAcceptGatherData(elemData, activityData)
         if availableCargoCountByCargoType.cash > 0 then
           table.insert(poiTemplate.props, {
             icon = "checkmark",
-            keyLabel = string.format("%d stacks of cash available", availableCargoCountByCargoType.cash)
+            keyLabel = string.format("%d Bank Deliveries available", availableCargoCountByCargoType.cash)
           })
         end
         -- veh and trailer props

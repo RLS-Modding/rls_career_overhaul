@@ -505,7 +505,7 @@
     ]
   },
   "policeLoaner": {
-    "name": "Police Loaner",
+    "name": "Belasco City Police Department",
     "description": "Complete deliveries for MoneyGrab Bank and they may help you out on some quick loans",
     "icon": "beamCurrency",
     "loanableVehicles": [
@@ -800,11 +800,56 @@
       "returnLoanerDamaged": 20
     },
     "reputationLevels": [
-      {},
-      {},
-      {},
-      {},
-      {}
+      {
+        // Level -1
+        "requiredValue": -75,
+        "min": -200
+      },
+      {
+        // Level 0
+        "requiredValue": -25
+      },
+      {
+        // Level 1
+        "levelLabel": "Reputation: Level 1",
+        "label": "Lets Make a deal...",
+        "loans": {
+          "max": 500000,
+          "rate": 0.20
+        },
+        "requiredValue": 25
+      },
+      {
+        // Level 2
+        "levelLabel": "Reputation: Level 2",
+        "label": "Junk Junkie",
+        "loans": {
+          "max": 750000,
+          "rate": 0.175
+        },
+        "requiredValue": 175
+      },
+      {
+        // Level 3
+        "levelLabel": "Reputation: Level 3",
+        "label": "Junk Whisperer",
+        "loans": {
+          "max": 1000000,
+          "rate": 0.125
+        },
+        "requiredValue": 500
+      },
+      {
+        // Level 4
+        "levelLabel": "Reputation: Level 4",
+        "label": "Junk Juggler",
+        "loans": {
+          "max": 1000000,
+          "rate": 0.10
+        },
+        "requiredValue": 1000,
+        "max": 2000
+      }
     ]
   },
   "serviceDealership": {

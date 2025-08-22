@@ -82,7 +82,7 @@ local function getCardGroupSetsByKey(cardsById, usePlayerCards, playerCargoConta
     type_fluid = {label="Fluid"},
     type_dryBulk = {label="Dry Bulk"},
     type_cement = {label="Cement"},
-    type_cash = {label="Stacks ofCash"},
+    type_cash = {label="Bank Deliveries"},
     type_vehicle = {label="Vehicle"},
     type_trailer = {label="Trailer"},
     type_loaner = {label="Loaner"},

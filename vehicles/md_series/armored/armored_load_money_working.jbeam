@@ -13,11 +13,11 @@
     ],
         "cargoStorage":[
         ["groupId","name","cargoTypes", "capacity"],
-        ["moneyStorage","Money Storage",["cash"], 3600],
+        ["moneyStorage","Money Storage",["cash"], 600],
     ],
     "variables": [
         ["name", "type", "unit", "category", "default", "min", "max", "title", "description"],
-        ["$box_B_loadVolume", "range", "Kg", "Cargo", 0.000, 0.000, 360.000, "Cargo Mass", "Adjust the weight of the cargo",{"stepDis":1}],
+        ["$box_B_loadVolume", "range", "Kg", "Cargo", 0.000, 0.000, 12000.000, "Cargo Mass", "Adjust the weight of the cargo",{"stepDis":1}],
     ],
     "nodes": [
         ["id", "posX", "posY", "posZ"],
@@ -485,11 +485,11 @@
     ],
             "cargoStorage":[
         ["groupId","name","cargoTypes", "capacity"],
-        ["moneyStorage","Money Storage",["cash"], 600],
+        ["moneyStorage","Money Storage",["cash"], 300],
     ],
     "variables": [
         ["name", "type", "unit", "category", "default", "min", "max", "title", "description"],
-        ["$box_B_loadVolume", "range", "Kg", "Cargo", 0.000, 0.000, 60.000, "Cargo Mass", "Adjust the weight of the cargo",{"stepDis":1}],
+        ["$box_B_loadVolume", "range", "Kg", "Cargo", 0.000, 0.000, 6000.000, "Cargo Mass", "Adjust the weight of the cargo",{"stepDis":1}],
     ],
     "nodes": [
         ["id", "posX", "posY", "posZ"],
