@@ -172,7 +172,7 @@ local gestures = {
 
 -- helper
 local function getPlPerkValue(policyId, perkName)
-    if policyId > -1 then -- -1 means not insured
+    if policyId and policyId > -1 then -- -1 means not insured
         return availablePolicies[policyId].perks[perkName].changeability.changeParams.choices[plPoliciesData[policyId]
                  .perks[perkName]]
     end
@@ -1672,8 +1672,8 @@ end
 -- For UI
 M.getVehPolicyInfo = function(vehInvId)
     return {
-        policyOwned = insuredInvVehs[tostring(vehInvId)] > 0,
-        policyInfo = availablePolicies[math.abs(insuredInvVehs[tostring(vehInvId)])]
+        policyOwned = insuredInvVehs[tostring(vehInvId)] and insuredInvVehs[tostring(vehInvId)] > 0,
+        policyInfo = insuredInvVehs[tostring(vehInvId)] and availablePolicies[insuredInvVehs[tostring(vehInvId)] and math.abs(insuredInvVehs[tostring(vehInvId)])]
     }
 end
 M.getTestDriveClaimPrice = function()
