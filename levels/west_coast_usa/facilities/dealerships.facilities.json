@@ -790,7 +790,6 @@
       "id": "discountedDealership",
       "name": "Trusted Auto Sales",
       "description": "Trusted Auto Sales - Discounted cars",
-      "associatedOrganization": "trustedAutos",
       "preview": "trusted.jpg",
       "stock": 25,
       "range": [
@@ -1544,15 +1543,15 @@
           "Type": [
             "Trailer"
           ],
+          "Tags": [
+            "Ambulance"
+          ],
           "Body Style": [
             "Ambulance",
             "Pickup"
           ],
           "hasLoad": [
             true
-          ],
-          "Tags": [
-            "Ambulance"
           ]
         }
       },
