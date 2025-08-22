@@ -72,6 +72,31 @@ local function getShoppingData()
     data.disableShoppingReason = reason.label or "not allowed (TODO)"
   end
 
+  -- Add facilities-derived, serializable dealership metadata and organizations
+  local facilities = freeroam_facilities.getFacilities(getCurrentLevelIdentifier())
+  data.dealerships = {}
+  data.organizations = {}
+  if facilities and facilities.dealerships then
+    for _, d in ipairs(facilities.dealerships) do
+      local orgId = d.associateOrganization or d.associatedOrganization
+      table.insert(data.dealerships, {
+        id = d.id,
+        name = d.name,
+        description = d.description,
+        preview = d.preview,
+        hiddenFromDealerList = d.hiddenFromDealerList,
+        associatedOrganization = d.associatedOrganization,
+      })
+
+      if orgId and not data.organizations[orgId] then
+        local org = freeroam_organizations.getOrganization(orgId)
+        if org then
+          data.organizations[orgId] = org
+        end
+      end
+    end
+  end
+
   return data
 end
 
