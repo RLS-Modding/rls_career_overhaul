@@ -1129,7 +1129,7 @@ local function requestCargoDataForUi(facId, psPath, updateMaxTimeTimestamp)
           uiData.availableSystems.smallCement = true
         end
         if cargo.type == "cash" then
-          uiData.availableSystems.largeCashDelivery = true
+          uiData.availableSystems.smallCash = true
         end
 
         -- add money and weight to sums

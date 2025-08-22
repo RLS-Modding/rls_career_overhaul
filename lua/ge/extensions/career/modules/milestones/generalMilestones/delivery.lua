@@ -56,7 +56,7 @@ local deliveryCounterConfigs = {
     progressKey = "cash",
     icon = "beamCurrency",
     label = "Cash Delivery",
-    description = "Deliver %d Bank Deliveries.",
+    description = "Deliver %d cash.",
     progressLabel = "%d / %d",
     targets = {100,1000,10000,100000}
   }

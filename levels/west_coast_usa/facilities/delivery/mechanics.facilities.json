@@ -1192,14 +1192,14 @@
           "isInspectSpot": true,
           "logisticTypesProvided": [
             "mechanicalParts",
-            "rareMechanicalParts",
-            "cash"
+            "rareMechanicalParts"
           ],
           "logisticTypesReceived": [
             "mechanicalParts",
             "rareMechanicalParts",
             "parcel",
-            "food"
+            "food",
+            "cash"
           ]
         },
         {
@@ -1220,15 +1220,15 @@
         "rareMechanicalParts",
         "vehNeedsRepair",
         "vehForPrivate",
-        "vehRepairFinished",
-        "cash"
+        "vehRepairFinished"
       ],
       "logisticTypesReceived": [
         "mechanicalParts",
         "rareMechanicalParts",
         "parcel",
         "food",
-        "vehRepairFinished"
+        "vehRepairFinished",
+        "cash"
       ],
       "logisticMaxItems": 2,
       "logisticGenerators": [
@@ -1308,7 +1308,7 @@
           ],
           "materialType": "cash",
           "capacity": 50,
-          "target": 50,
+          "target": 0,
           "variance": 10,
           "interval": 900,
           "rate": 30
@@ -1327,14 +1327,14 @@
           "isInspectSpot": true,
           "logisticTypesProvided": [
             "mechanicalParts",
-            "rareMechanicalParts",
-            "cash"
+            "rareMechanicalParts"
           ],
           "logisticTypesReceived": [
             "mechanicalParts",
             "rareMechanicalParts",
             "parcel",
-            "food"
+            "food",
+            "cash"
           ]
         },
         {
@@ -1353,15 +1353,15 @@
         "mechanicalParts",
         "rareMechanicalParts",
         "vehNeedsRepair",
-        "vehForPrivate",
-        "cash"
+        "vehForPrivate"
       ],
       "logisticTypesReceived": [
         "mechanicalParts",
         "rareMechanicalParts",
         "parcel",
         "food",
-        "vehRepairFinished"
+        "vehRepairFinished",
+        "cash"
       ],
       "logisticMaxItems": 2,
       "logisticGenerators": [
@@ -1440,7 +1440,7 @@
           ],
           "materialType": "cash",
           "capacity": 70,
-          "target": 70,
+          "target": 0,
           "variance": 10,
           "interval": 900,
           "rate": 40
@@ -1459,14 +1459,14 @@
           "isInspectSpot": true,
           "logisticTypesProvided": [
             "mechanicalParts",
-            "rareMechanicalParts",
-            "cash"
+            "rareMechanicalParts"
           ],
           "logisticTypesReceived": [
             "mechanicalParts",
             "rareMechanicalParts",
             "parcel",
-            "food"
+            "food",
+            "cash"
           ]
         },
         {
@@ -1487,15 +1487,15 @@
         "rareMechanicalParts",
         "vehNeedsRepair",
         "vehForPrivate",
-        "vehDeliveryPolice",
-        "cash"
+        "vehDeliveryPolice"
       ],
       "logisticTypesReceived": [
         "mechanicalParts",
         "rareMechanicalParts",
         "parcel",
         "food",
-        "vehRepairFinished"
+        "vehRepairFinished",
+        "cash"
       ],
       "logisticMaxItems": 2,
       "logisticGenerators": [
@@ -1588,7 +1588,7 @@
           ],
           "materialType": "cash",
           "capacity": 100,
-          "target": 100,
+          "target": 0,
           "variance": 10,
           "interval": 900,
           "rate": 60
@@ -1607,15 +1607,14 @@
           "isInspectSpot": true,
           "logisticTypesProvided": [
             "mechanicalParts",
-            "rareMechanicalParts",
-            "cash",
-            "gold"
+            "rareMechanicalParts"
           ],
           "logisticTypesReceived": [
             "mechanicalParts",
             "rareMechanicalParts",
             "parcel",
-            "food"
+            "food",
+            "cash"
           ]
         },
         {
@@ -1634,16 +1633,15 @@
         "mechanicalParts",
         "rareMechanicalParts",
         "vehNeedsRepair",
-        "vehForPrivate",
-        "cash",
-        "gold"
+        "vehForPrivate"
       ],
       "logisticTypesReceived": [
         "mechanicalParts",
         "rareMechanicalParts",
         "parcel",
         "food",
-        "vehRepairFinished"
+        "vehRepairFinished",
+        "cash"
       ],
       "logisticMaxItems": 2,
       "logisticGenerators": [
@@ -1722,22 +1720,10 @@
           ],
           "materialType": "cash",
           "capacity": 150,
-          "target": 150,
+          "target": 0,
           "variance": 10,
           "interval": 900,
           "rate": 90
-        },
-        {
-          "type": "materialProvider",
-          "logisticTypes": [
-            "gold"
-          ],
-          "materialType": "gold",
-          "capacity": 30,
-          "target": 20,
-          "variance": 1,
-          "interval": 1500,
-          "rate": 20
         }
       ]
     }

@@ -5,8 +5,6 @@
       "name": "Turbo Burger",
       "description": "Ships food and receives shop and food supplies.",
       "preview": "previews/turboBurger.jpg",
-      
-      
       "manualAccessPoints": [
         {
           "psName": "turboBurger_driveIn",
@@ -18,27 +16,26 @@
         },
         {
           "psName": "turboBurger_parking",
-          "logisticTypesProvided": [
-            "cash",
-            "coin"
-          ],
+          "logisticTypesProvided": [],
           "logisticTypesReceived": [
             "parcel",
             "shopSupplies",
-            "foodSupplies"
+            "foodSupplies",
+            "cash",
+            "coin"
           ]
         }
       ],
       "sitesFile": "restaurants.sites.json",
       "logisticTypesProvided": [
-        "food",
-        "cash",
-        "coin"
+        "food"
       ],
       "logisticTypesReceived": [
         "parcel",
         "shopSupplies",
-        "foodSupplies"
+        "foodSupplies",
+        "cash",
+        "coin"
       ],
       "logisticMaxItems": 8,
       "logisticGenerators": [
@@ -62,30 +59,29 @@
           "interval": 120
         },
         {
-          "type": "materialProvider",
+          "type": "materialReceiver",
           "logisticTypes": [
             "cash"
           ],
           "materialType": "cash",
           "capacity": 50,
-          "target": 50,
+          "target": 0,
           "variance": 10,
           "interval": 300,
           "rate": 10
         },
         {
-          "type": "materialProvider",
+          "type": "materialReceiver",
           "logisticTypes": [
             "coin"
           ],
           "materialType": "coin",
           "capacity": 25,
-          "target": 25,
+          "target": 0,
           "variance": 5,
           "interval": 300,
           "rate": 5
         }
-
       ]
     },
     {
@@ -93,34 +89,32 @@
       "name": "Diner",
       "description": "Ships food and receives shop and food supplies.",
       "preview": "previews/diner.jpg",
-      
-      
       "manualAccessPoints": [
         {
           "psName": "diner_parking",
           "isInspectSpot": true,
           "logisticTypesProvided": [
-            "food",
-            "cash",
-            "coin"
+            "food"
           ],
           "logisticTypesReceived": [
             "parcel",
             "shopSupplies",
-            "foodSupplies"
+            "foodSupplies",
+            "cash",
+            "coin"
           ]
         }
       ],
       "sitesFile": "restaurants.sites.json",
       "logisticTypesProvided": [
-        "food",
-        "cash",
-        "coin"
+        "food"
       ],
       "logisticTypesReceived": [
         "parcel",
         "shopSupplies",
-        "foodSupplies"
+        "foodSupplies",
+        "cash",
+        "coin"
       ],
       "logisticMaxItems": 8,
       "logisticGenerators": [
@@ -144,25 +138,25 @@
           "interval": 120
         },
         {
-          "type": "materialProvider",
+          "type": "materialReceiver",
           "logisticTypes": [
             "cash"
           ],
           "materialType": "cash",
           "capacity": 50,
-          "target": 50,
+          "target": 0,
           "variance": 10,
           "interval": 300,
           "rate": 10
         },
         {
-          "type": "materialProvider",
+          "type": "materialReceiver",
           "logisticTypes": [
             "coin"
           ],
           "materialType": "coin",
           "capacity": 25,
-          "target": 25,
+          "target": 0,
           "variance": 5,
           "interval": 300,
           "rate": 5
@@ -174,34 +168,32 @@
       "name": "Chinatown Restaurant",
       "description": "Ships food and receives shop and food supplies.",
       "preview": "previews/chinatownRestaurant.jpg",
-      
-      
       "manualAccessPoints": [
         {
           "psName": "chinatownRestaurant_parking",
           "isInspectSpot": true,
           "logisticTypesProvided": [
-            "food",
-            "cash",
-            "coin"
+            "food"
           ],
           "logisticTypesReceived": [
             "parcel",
             "shopSupplies",
-            "foodSupplies"
+            "foodSupplies",
+            "cash",
+            "coin"
           ]
         }
       ],
       "sitesFile": "restaurants.sites.json",
       "logisticTypesProvided": [
-        "food",
-        "cash",
-        "coin"
+        "food"
       ],
       "logisticTypesReceived": [
         "parcel",
         "shopSupplies",
-        "foodSupplies"
+        "foodSupplies",
+        "cash",
+        "coin"
       ],
       "logisticMaxItems": 8,
       "logisticGenerators": [
@@ -225,25 +217,25 @@
           "interval": 120
         },
         {
-          "type": "materialProvider",
+          "type": "materialReceiver",
           "logisticTypes": [
             "cash"
           ],
           "materialType": "cash",
           "capacity": 50,
-          "target": 50,
+          "target": 0,
           "variance": 10,
           "interval": 300,
           "rate": 10
         },
         {
-          "type": "materialProvider",
+          "type": "materialReceiver",
           "logisticTypes": [
             "coin"
           ],
           "materialType": "coin",
           "capacity": 25,
-          "target": 25,
+          "target": 0,
           "variance": 5,
           "interval": 300,
           "rate": 5
@@ -255,34 +247,32 @@
       "name": "Green Pier Restaurant",
       "description": "Ships food and receives shop and food supplies.",
       "preview": "previews/greenPier.jpg",
-      
-      
       "manualAccessPoints": [
         {
           "psName": "greenPier_parking",
           "isInspectSpot": true,
           "logisticTypesProvided": [
-            "food",
-            "cash",
-            "coin"
+            "food"
           ],
           "logisticTypesReceived": [
             "parcel",
             "shopSupplies",
-            "foodSupplies"
+            "foodSupplies",
+            "cash",
+            "coin"
           ]
         }
       ],
       "sitesFile": "restaurants.sites.json",
       "logisticTypesProvided": [
-        "food",
-        "cash",
-        "coin"
+        "food"
       ],
       "logisticTypesReceived": [
         "parcel",
         "shopSupplies",
-        "foodSupplies"
+        "foodSupplies",
+        "cash",
+        "coin"
       ],
       "logisticMaxItems": 8,
       "logisticGenerators": [
@@ -306,25 +296,25 @@
           "interval": 120
         },
         {
-          "type": "materialProvider",
+          "type": "materialReceiver",
           "logisticTypes": [
             "cash"
           ],
           "materialType": "cash",
           "capacity": 50,
-          "target": 50,
+          "target": 0,
           "variance": 10,
           "interval": 300,
           "rate": 10
         },
         {
-          "type": "materialProvider",
+          "type": "materialReceiver",
           "logisticTypes": [
             "coin"
           ],
           "materialType": "coin",
           "capacity": 25,
-          "target": 25,
+          "target": 0,
           "variance": 5,
           "interval": 300,
           "rate": 5
