@@ -87,7 +87,7 @@
     "name": "Brick of Cash",
     "density": 12,
     "type": "cash",
-    "money": 10,
+    "money": 5,
     "units": "Brick",
     "icon": "beamCurrency"
   },
@@ -95,7 +95,7 @@
     "name": "Box of coins",
     "density": 24,
     "type": "cash",
-    "money": 12,
+    "money": 6,
     "units": "Box",
     "icon": "beamCurrency"
   },
@@ -103,7 +103,7 @@
     "name": "Bundle of 20 Gold Bars",
     "density": 19.5,
     "type": "cash",
-    "money": 20,
+    "money": 8,
     "units": "Bundle",
     "icon": "beamCurrency"
   }
