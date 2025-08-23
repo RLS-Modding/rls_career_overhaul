@@ -10,6 +10,7 @@
       v-bng-popover:right-start.click="popId" @click="select(vehicle, $event)" />
 
     <BngPopoverMenu :name="popId" focus @hide="selectedVehId = null">
+      <template v-if="vehSelected">
       <template v-for="(buttonData, index) in vehicleInventoryStore.vehicleInventoryData.chooseButtonsData">
         <BngButton v-if="!vehSelected.onSite"
           :accent="ACCENTS.menu" disabled>
@@ -68,12 +69,10 @@
         Deliver to garage
       </BngButton>
       <BngButton
-        v-if="!vehSelected.ownsRequiredInsurance"
-        :disabled="vehSelected.policyInfo.initialBuyPrice > vehicleInventoryStore.vehicleInventoryData.playerMoney"
+        :accent="ACCENTS.menu"
         v-bng-on-ui-nav:ok.focusRequired.asMouse
-        @click="buyInsurance(vehSelected.policyInfo.id)">
-        Purchase insurance
-        <BngUnit :money="vehSelected.policyInfo.initialBuyPrice" />
+        @click="openInsurance()">
+        Change insurance
       </BngButton>
       <BngButton
         v-if="vehicleInventoryStore.vehicleInventoryData.buttonsActive.favoriteEnabled"
@@ -112,6 +111,7 @@
         @click="lookAtVehicleListing()">
         Go to vehicle listing
       </BngButton>
+      </template>
     </BngPopoverMenu>
   </BngList>
 </template>
@@ -119,6 +119,7 @@
 <script setup>
 import { ref, computed, nextTick } from "vue"
 import { lua, useBridge } from "@/bridge"
+import router from "@/router"
 import { BngList, BngButton, BngPopoverMenu, BngUnit, ACCENTS, LIST_LAYOUTS } from "@/common/components/base"
 import { vBngDisabled, vBngPopover, vBngOnUiNav } from "@/common/directives"
 import VehicleTile from "./VehicleTile.vue"
@@ -195,33 +196,32 @@ function select(vehicle, evt) {
     vehicleInventoryStore && vehicleInventoryStore.vehicleInventoryData
     && (Object.values(vehicleInventoryStore.vehicleInventoryData.buttonsActive).includes(true) || vehicleInventoryStore.vehicleInventoryData.chooseButtonsData.length > 0)
     && vehicle && (!vehSelected.value || vehSelected.value.id !== vehicle.id)
-  let popover
+  // find anchor-bound popover from clicked element
+  let anchorPopover
   if (evt && evt.target) {
     let cur = evt.target
-    while (true) {
-      popover = cur.__popover
-      if (popover) break
+    while (cur && cur !== document.body) {
+      if (cur.__popover) { anchorPopover = cur.__popover; break }
       cur = cur.parentNode
-      if (cur === document.body) break
     }
   }
   // evaluate the single function available, if any
   if (vehicle && singleFunction.value) {
     // next two lines are popover error avoidance for this mode (note: errors are console-only and not affecting anything)
     selectedVehId.value = null
-    popover && popover.hide()
+    anchorPopover && anchorPopover.hide()
     // call the function
     vehicleInventoryStore.chooseVehicle(vehicle.id, 0)
     return
   }
   // hide and nextTick is to make it properly work with uiNav
-  show && popover && popover.hide()
+  if (show && anchorPopover) anchorPopover.hide()
   nextTick(() => {
     if (show) {
       selectedVehId.value = vehicle.id
-      popover && popover.show()
+      anchorPopover ? anchorPopover.show() : popover.show(popId)
     } else {
-      popover && popover.hide()
+      anchorPopover ? anchorPopover.hide() : popover.hide(popId)
       selectedVehId.value = null
     }
     // console.log(show ? "SHOW" : "HIDE", popover.isShown() === show ? "success" : "fail", evt.target)
@@ -348,11 +348,12 @@ const deliverVehicle = async () => {
   }
 }
 
-const buyInsurance = () => {
+const openInsurance = () => {
   const vehicle = vehSelected.value
   popHide()
-  lua.career_modules_insurance.purchasePolicy(vehicle.id)
-  lua.career_modules_inventory.sendDataToUi()
+  // open insurance policies screen via router
+  popover && popHide()
+  router.push({ name: 'insurancePolicies' })
 }
 
 const renameVehicle = async () => {

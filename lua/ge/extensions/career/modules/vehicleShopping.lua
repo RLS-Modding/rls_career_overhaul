@@ -720,6 +720,12 @@ local function onVehicleSpawnFinished(vehId)
     if spawnFollowUpActions.dealershipId and (spawnFollowUpActions.dealershipId == "policeDealership" or spawnFollowUpActions.dealershipId == "poliziaAuto") then
       career_modules_inventory.setVehicleRole(inventoryId, "police")
     end
+    if spawnFollowUpActions.policyId ~= nil then
+      local policyId = tonumber(spawnFollowUpActions.policyId) or 0
+      if career_modules_insurance and career_modules_insurance.changeVehPolicy then
+        career_modules_insurance.changeVehPolicy(inventoryId, policyId)
+      end
+    end
     career_modules_inventory.storeVehicle(inventoryId)
     spawnFollowUpActions = nil
   end
@@ -745,7 +751,7 @@ local function buyVehicleAndSendToGarage(options)
   local closestGarage = career_modules_inventory.getClosestGarage()
   local garagePos, _ = freeroam_facilities.getGaragePosRot(closestGarage)
   local delay = getDeliveryDelay(purchaseData.vehicleInfo.pos:distance(garagePos))
-  spawnFollowUpActions = {delayAccess = delay, licensePlateText = options.licensePlateText, dealershipId = options.dealershipId}
+  spawnFollowUpActions = {delayAccess = delay, licensePlateText = options.licensePlateText, dealershipId = options.dealershipId, policyId = options.policyId}
   spawnVehicle(purchaseData.vehicleInfo)
   deleteAddedVehicle = true
 end
@@ -756,7 +762,7 @@ local function buyVehicleAndSpawnInParkingSpot(options)
     return
   end
   payForVehicle()
-  spawnFollowUpActions = {licensePlateText = options.licensePlateText, dealershipId = options.dealershipId}
+  spawnFollowUpActions = {licensePlateText = options.licensePlateText, dealershipId = options.dealershipId, policyId = options.policyId}
   local newVehObj = spawnVehicle(purchaseData.vehicleInfo, purchaseData.vehicleInfo.sellerId)
   if gameplay_walk.isWalking() then
     gameplay_walk.setRot(newVehObj:getPosition() - getPlayerVehicle(0):getPosition())
@@ -1037,7 +1043,7 @@ local function buyFromPurchaseMenu(purchaseType, options)
     end
   end
 
-  local buyVehicleOptions = {licensePlateText = options.licensePlateText, dealershipId = options.dealershipId}
+  local buyVehicleOptions = {licensePlateText = options.licensePlateText, dealershipId = options.dealershipId, policyId = options.policyId}
   if purchaseType == "inspect" then
     if options.makeDelivery then
       deleteAddedVehicle = true

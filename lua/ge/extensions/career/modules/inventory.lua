@@ -1445,6 +1445,7 @@ local function sellVehicle(inventoryId, price)
   Engine.Audio.playOnce('AudioGui','event:>UI>Career>Buy_01')
 
   career_modules_log.addLog(string.format("Sold vehicle %d for %f", inventoryId, value), "inventory")
+  career_saveSystem.saveCurrent()
   return true
 end
 
