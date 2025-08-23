@@ -304,7 +304,8 @@ local function acceptOffer(inventoryId, offerIndex)
       local sellSuccess = career_modules_inventory.sellVehicle(inventoryId, offer.value)
       if sellSuccess then
         if offer.customer == "Salmon The Negotiator" then
-          local reputation = math.floor((career_modules_valueCalculator.getInventoryVehicleValue(inventoryId) - offer.value) / 1500)
+          local value = career_modules_valueCalculator.getInventoryVehicleValue(inventoryId) or 10000
+          local reputation = math.floor((value - (offer.value or 0)) / 1500)
           career_modules_payment.reward({ salmonBankReputation = {amount = reputation}})
         end
         table.remove(listing.offers, offerIndex)
