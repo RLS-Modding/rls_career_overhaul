@@ -74,6 +74,17 @@
                             <BngButton class="take-loan" :disabled="!canTakeLoan" @click="takeLoan">Take Loan
                             </BngButton>
                         </div>
+
+                        <!-- Notification Settings -->
+                        <div class="field">
+                            <div class="notification-toggle">
+                                <label class="toggle-label">
+                                    <input type="checkbox" v-model="notificationsEnabled" @change="toggleNotifications" />
+                                    <span class="toggle-slider"></span>
+                                    <span class="toggle-text">Enable Loan Notifications</span>
+                                </label>
+                            </div>
+                        </div>
                     </div>
                 </BngCard>
             </div>
@@ -161,6 +172,7 @@ const activeLoans = ref([])
 const prepayAmounts = ref({})
 const pauseTicks = ref(false)
 const availableFunds = ref(0)
+const notificationsEnabled = ref(true)
 
 const canTakeLoan = computed(() => selectedOffer.value && amount.value > 0 && term.value)
 
@@ -268,6 +280,7 @@ onMounted(async () => {
     await refreshOffers()
     await computePayment()
     await refreshActiveLoans()
+    await loadNotificationSetting()
     // subscribe to live loan events
     events.on('loans:activeUpdated', async () => { await refreshActiveLoans(); await refreshOffers() })
     events.on('loans:tick', (data) => {
@@ -277,6 +290,7 @@ onMounted(async () => {
     })
     events.on('loans:funds', (money) => { if (typeof money === 'number') availableFunds.value = money })
     events.on('loans:completed', async () => { await refreshActiveLoans(); await refreshOffers() })
+    events.on('loans:notificationsUpdated', (enabled) => { notificationsEnabled.value = enabled })
     // fetch funds initially
     try { availableFunds.value = await lua.career_modules_loans.getAvailableFunds() } catch { }
 })
@@ -320,6 +334,24 @@ const setPayMax = (loan) => {
     const roundedUp = Math.ceil(rawMax + 1e-6)
     const amount = Math.min(availableFunds.value, roundedUp)
     prepayAmounts.value[loan.id] = amount
+}
+
+const toggleNotifications = async () => {
+    try {
+        await lua.career_modules_loans.setNotificationsEnabled(notificationsEnabled.value)
+    } catch (e) {
+        console.error('Failed to toggle notifications:', e)
+    }
+}
+
+const loadNotificationSetting = async () => {
+    try {
+        const enabled = await lua.career_modules_loans.getNotificationsEnabled()
+        notificationsEnabled.value = enabled
+    } catch (e) {
+        console.error('Failed to load notification setting:', e)
+        notificationsEnabled.value = true // Default to enabled
+    }
 }
 
 // gray for unselected custom-accent buttons
@@ -435,6 +467,7 @@ const termBtnCustomStyle = {
 
 .amount-number[type=number] {
     -moz-appearance: textfield;
+    appearance: textfield;
 }
 
 .amount {
@@ -587,5 +620,59 @@ const termBtnCustomStyle = {
 
 .max-btn {
     background: rgba(255, 255, 255, 0.12);
+}
+
+/* Notification Toggle Styles */
+.notification-toggle {
+    margin-top: 16px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+}
+
+.toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    font-size: 0.95em;
+}
+
+.toggle-label input[type="checkbox"] {
+    display: none;
+}
+
+.toggle-slider {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    transition: background-color 0.3s ease;
+}
+
+.toggle-slider::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+}
+
+.toggle-label input[type="checkbox"]:checked + .toggle-slider {
+    background: #cc4c00;
+}
+
+.toggle-label input[type="checkbox"]:checked + .toggle-slider::before {
+    transform: translateX(20px);
+}
+
+.toggle-text {
+    color: white;
+    opacity: 0.9;
 }
 </style>

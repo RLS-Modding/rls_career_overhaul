@@ -2,6 +2,19 @@
     <PhoneWrapper app-name="Loans" status-font-color="#FFFFFF" status-blend-mode="">
         <div class="phone-loans">
             <div class="section">
+                <div class="section-title">Settings</div>
+                <div class="section-card">
+                    <div class="notification-toggle">
+                        <label class="toggle-label">
+                            <input type="checkbox" v-model="notificationsEnabled" @change="toggleNotifications" />
+                            <span class="toggle-slider"></span>
+                            <span class="toggle-text">Enable Loan Notifications</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
                 <div class="section-title">My Loans</div>
                 <div class="section-card">
                     <div v-if="activeLoans.length === 0" class="none">No active loans</div>
@@ -75,6 +88,7 @@ const activeLoans = ref([])
 const prepayAmounts = ref({})
 const pauseTicks = ref(false)
 const availableFunds = ref(0)
+const notificationsEnabled = ref(true)
 
 const canTakeLoan = computed(() => selectedOffer.value && amount.value > 0 && term.value)
 
@@ -119,20 +133,20 @@ const takeLoan = async () => { }
 const refreshActiveLoans = async () => {
     try {
         const loans = await lua.career_modules_loans.getActiveLoans()
-        activeLoans.value = Array.isArray(loans) ? loans : []
-        const map = {}
-        for (const l of activeLoans.value) map[l.id] = prepayAmounts.value[l.id] || 0
-        prepayAmounts.value = map
+    activeLoans.value = Array.isArray(loans) ? loans : []
+    const map = {}
+    for (const l of activeLoans.value) map[l.id] = prepayAmounts.value[l.id] || 0
+    prepayAmounts.value = map
     } catch { activeLoans.value = [] }
 }
 
 const refreshOffers = async () => {
     try {
         const res = await lua.career_modules_loans.getLoanOffers()
-        const prev = selectedOrgId.value
-        offers.value = Array.isArray(res) ? res : []
-        if (!offers.value.find(o => o.id === prev)) selectedOrgId.value = offers.value[0]?.id || null
-        onOrgChange()
+    const prev = selectedOrgId.value
+    offers.value = Array.isArray(res) ? res : []
+    if (!offers.value.find(o => o.id === prev)) selectedOrgId.value = offers.value[0]?.id || null
+    onOrgChange()
     } catch { }
 }
 
@@ -143,6 +157,9 @@ onMounted(async () => {
     events.on('loans:tick', (data) => { if (!pauseTicks.value && Array.isArray(data)) activeLoans.value = data })
     events.on('loans:funds', (money) => { if (typeof money === 'number') availableFunds.value = money })
     events.on('loans:completed', async () => { await refreshActiveLoans(); await refreshOffers() })
+    events.on('loans:notificationsUpdated', (enabled) => {
+        notificationsEnabled.value = enabled
+    })
     try { availableFunds.value = await lua.career_modules_loans.getAvailableFunds() } catch { }
 })
 
@@ -160,7 +177,7 @@ const prepay = async (loanId) => {
     if (!amount) return
     try {
         await lua.career_modules_loans.prepayLoan(loanId, amount)
-        prepayAmounts.value[loanId] = 0
+    prepayAmounts.value[loanId] = 0
         await refreshActiveLoans()
         await refreshOffers()
     } catch { }
@@ -172,6 +189,15 @@ const setPayMax = (loan) => {
     const roundedUp = Math.ceil(rawMax + 1e-6)
     const amount = Math.min(availableFunds.value, roundedUp)
     prepayAmounts.value[loan.id] = amount
+}
+
+const toggleNotifications = () => {
+    lua.career_modules_loans.setNotificationsEnabled(notificationsEnabled.value)
+}
+
+const loadNotificationSetting = () => {
+    const enabled = lua.career_modules_loans.getNotificationsEnabled()
+    notificationsEnabled.value = enabled
 }
 
 const termBtnCustomStyle = {
@@ -356,5 +382,56 @@ const getColorForOrg = (id) => orgColors[Math.abs(String(id).split('').reduce((a
 
 .none {
     color: #475569;
+}
+
+/* Notification Toggle Styles */
+.notification-toggle {
+    padding: 8px 0;
+}
+
+.toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    font-size: 0.95em;
+}
+
+.toggle-label input[type="checkbox"] {
+    display: none;
+}
+
+.toggle-slider {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    transition: background-color 0.3s ease;
+}
+
+.toggle-slider::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+}
+
+.toggle-label input[type="checkbox"]:checked + .toggle-slider {
+    background: #cc4c00;
+}
+
+.toggle-label input[type="checkbox"]:checked + .toggle-slider::before {
+    transform: translateX(20px);
+}
+
+.toggle-text {
+    color: #0f172a;
+    font-weight: 600;
 }
 </style>

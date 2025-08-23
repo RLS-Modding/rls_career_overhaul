@@ -977,6 +977,8 @@ export default {
     calculatePayment: (amount, rate, payments) => [Number, Number],
     takeLoan: (orgId, amount, payments) => [String, Number, Number],
     prepayLoan: (loanId, amount) => [String, Number],
+    getNotificationsEnabled: () => Boolean,
+    setNotificationsEnabled: enabled => Boolean,
   },
 
   career_modules_assignRole: {

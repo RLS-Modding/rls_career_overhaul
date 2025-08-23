@@ -307,6 +307,7 @@ local function acceptOffer(inventoryId, offerIndex)
           local value = career_modules_valueCalculator.getInventoryVehicleValue(inventoryId) or 10000
           local reputation = math.floor((value - (offer.value or 0)) / 1500)
           career_modules_payment.reward({ salmonBankReputation = {amount = reputation}})
+          freeroam_organizations.getOrganization("salmonBank")
         end
         table.remove(listing.offers, offerIndex)
         Engine.Audio.playOnce('AudioGui','event:>UI>Career>Buy_01')

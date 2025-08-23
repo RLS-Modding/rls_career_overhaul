@@ -10,6 +10,7 @@ local updateInterval = 5
 local updateTimer = 0
 
 local activeLoans = {}
+local notificationsEnabled = true -- Default to enabled
 
 local function r2(n)
   if not n then return 0 end
@@ -35,6 +36,8 @@ local function loadLoans()
   if not currentSavePath then return end
   local data = jsonReadFile(currentSavePath .. saveFile) or {}
   activeLoans = data.activeLoans or {}
+  notificationsEnabled = data.notificationsEnabled
+  if notificationsEnabled == nil then notificationsEnabled = true end -- Default to enabled if not set
 end
 
 local function saveLoans(currentSavePath)
@@ -44,7 +47,10 @@ local function saveLoans(currentSavePath)
     if not currentSavePath then return end
   end
   ensureSaveDir(currentSavePath)
-  local data = { activeLoans = activeLoans }
+  local data = {
+    activeLoans = activeLoans,
+    notificationsEnabled = notificationsEnabled
+  }
   career_saveSystem.jsonWriteFileSafe(currentSavePath .. saveFile, data, true)
 end
 
@@ -191,11 +197,28 @@ local function processDuePayments(elapsedSimSeconds)
           loan.nextPrincipalPaid = 0
           loan.secondsUntilNextPayment = loan.secondsUntilNextPayment + PAYMENT_INTERVAL_S
           awardOrgReputation(loan.orgId, 1, loan.orgName)
+          -- Show payment success message
+          if notificationsEnabled and guihooks and guihooks.trigger then
+            guihooks.trigger("toastrMsg", {type="success", title="Loan Payment Made", msg="Successfully paid $" .. string.format("%.2f", needed) .. " to " .. (loan.orgName or loan.orgId)})
+          end
         else
-          loan.rate = (loan.rate or 0) + 0.025
+          -- Capitalize the missed interest by adding it to principal outstanding
+          local currentPrincipal = loan.principalOutstanding or 0
+          loan.principalOutstanding = r2(currentPrincipal + interestDue)
+
+          local rateIncrease = (loan.rate or 0.25) * 0.1
+          loan.rate = (loan.rate or 0) + rateIncrease
           loan.missed = (loan.missed or 0) + 1
           loan.secondsUntilNextPayment = loan.secondsUntilNextPayment + PAYMENT_INTERVAL_S
           awardOrgReputation(loan.orgId, -5, loan.orgName)
+          -- Show payment missed message
+          if notificationsEnabled and guihooks and guihooks.trigger then
+            local capitalizedMsg = ""
+            if interestDue > 0 then
+              capitalizedMsg = " $" .. string.format("%.2f", interestDue) .. " interest added to principal."
+            end
+            guihooks.trigger("toastrMsg", {type="error", title="Loan Payment Missed", msg="Failed to pay $" .. string.format("%.2f", needed) .. " to " .. (loan.orgName or loan.orgId) .. "." .. capitalizedMsg .. " Interest rate increased by " .. string.format("%.1f", rateIncrease * 100) .. "%."})
+          end
         end
       end
     end
@@ -207,6 +230,9 @@ local function processDuePayments(elapsedSimSeconds)
       table.remove(activeLoans, i)
       if guihooks and guihooks.trigger then
         guihooks.trigger('loans:completed', { id = completedId, orgName = completedOrg })
+        if notificationsEnabled then
+          guihooks.trigger("toastrMsg", {type="success", title="Loan Paid Off", msg="Congratulations! Your loan with " .. completedOrg .. " has been fully paid off."})
+        end
       end
     end
   end
@@ -269,7 +295,11 @@ local function takeLoan(orgId, amount, payments, rate)
     career_modules_playerAttributes.addAttributes({money = amount}, {label = string.format("Loan received (%s)", loan.orgName)})
   end
   saveLoans()
+  -- Show loan taken message
   if guihooks and guihooks.trigger then
+    if notificationsEnabled then
+      guihooks.trigger("toastrMsg", {type="info", title="Loan Approved", msg="Received $" .. string.format("%.2f", amount) .. " loan from " .. (loan.orgName or loan.orgId) .. " at " .. string.format("%.1f", (loan.rate or 0) * 100) .. "% interest over " .. payments .. " payments."})
+    end
     guihooks.trigger('loans:activeUpdated')
     if career_modules_playerAttributes then
       guihooks.trigger('loans:funds', career_modules_playerAttributes.getAttributeValue('money'))
@@ -314,6 +344,11 @@ local function prepayLoan(loanId, amount)
       -- track money spent now
       loan.amountPaid = r2((loan.amountPaid or 0) + amount)
 
+      -- Show prepayment success message (if not fully paid off)
+      if notificationsEnabled and guihooks and guihooks.trigger then
+        guihooks.trigger("toastrMsg", {type="success", title="Prepayment Applied", msg="Applied $" .. string.format("%.2f", amount) .. " prepayment to loan with " .. (loan.orgName or loan.orgId)})
+      end
+
       -- if fully paid off, close out immediately
       if (loan.principalOutstanding or 0) <= 1e-6 then
         loan.completedAt = os.time()
@@ -323,6 +358,9 @@ local function prepayLoan(loanId, amount)
         saveLoans()
         if guihooks and guihooks.trigger then
           guihooks.trigger('loans:completed', { id = completedId, orgName = completedOrg })
+          if notificationsEnabled then
+            guihooks.trigger("toastrMsg", {type="success", title="Loan Paid Off", msg="Congratulations! Your loan with " .. completedOrg .. " has been fully paid off."})
+          end
           guihooks.trigger('loans:activeUpdated')
           if career_modules_playerAttributes then
             guihooks.trigger('loans:funds', career_modules_playerAttributes.getAttributeValue('money'))
@@ -377,6 +415,19 @@ local function getAvailableFunds()
   return 0
 end
 
+local function getNotificationsEnabled()
+  return notificationsEnabled
+end
+
+local function setNotificationsEnabled(enabled)
+  notificationsEnabled = enabled
+  saveLoans()
+  if guihooks and guihooks.trigger then
+    guihooks.trigger('loans:notificationsUpdated', enabled)
+  end
+  return notificationsEnabled
+end
+
 local function onComputerAddFunctions(menuData, computerFunctions)
   local data = {
     id = "loans",
@@ -409,5 +460,7 @@ M.openMenuFromComputer = openMenuFromComputer
 M.closeMenu = closeMenu
 M.closeAllMenus = closeAllMenus
 M.getAvailableFunds = getAvailableFunds
+M.getNotificationsEnabled = getNotificationsEnabled
+M.setNotificationsEnabled = setNotificationsEnabled
 
 return M
