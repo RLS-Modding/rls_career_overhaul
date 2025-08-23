@@ -4,7 +4,7 @@
 
 local M = {}
 
-M.dependencies = {'career_career', 'career_modules_inspectVehicle', 'util_configListGenerator'}
+M.dependencies = {'career_career', 'career_modules_inspectVehicle', 'util_configListGenerator', 'freeroam_organizations'}
 
 local moduleVersion = 42
 
