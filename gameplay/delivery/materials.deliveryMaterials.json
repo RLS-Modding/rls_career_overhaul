@@ -75,5 +75,36 @@
     "type": "dryBulk",
     "money": 0.37,
     "icon": "rocks"
+  },
+  "mysteriousWaste": {
+    "name": "Mysterious Waste",
+    "density": 6,
+    "type": "dryBulk",
+    "money": 2,
+    "icon": "rocks"
+  },
+  "cash": {
+    "name": "Brick of Cash",
+    "density": 3,
+    "type": "cash",
+    "money": 10,
+    "units": "Brick",
+    "icon": "beamCurrency"
+  },
+  "coin": {
+    "name": "Box of coins",
+    "density": 5,
+    "type": "cash",
+    "money": 12,
+    "units": "Box",
+    "icon": "beamCurrency"
+  },
+  "gold": {
+    "name": "Bundle of 20 Gold Bars",
+    "density": 8,
+    "type": "cash",
+    "money": 20,
+    "units": "Bundle",
+    "icon": "beamCurrency"
   }
 }

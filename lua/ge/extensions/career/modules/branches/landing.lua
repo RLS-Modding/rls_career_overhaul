@@ -131,6 +131,10 @@ local deliverySystemIcon = {
   smallCementDelivery = "terrain",
   largeDryBulkDelivery = "terrain",
   largeCementDelivery = "terrain",
+  smallCashDelivery = "terrain",
+  largeCashDelivery = "terrain",
+
+
 }
 
 local function getFacilityProgress(fac)
@@ -187,6 +191,9 @@ local deliverySystemToSkill = {
   largeCementDelivery = "logistics-delivery",
   smallFluidDelivery = "logistics-delivery",
   largeFluidDelivery = "logistics-delivery",
+  smallCashDelivery = "logistics-delivery",
+  largeCashDelivery = "logistics-delivery",
+  
 }
 local function getSkillsForFacility(facility)
   local ret = {}

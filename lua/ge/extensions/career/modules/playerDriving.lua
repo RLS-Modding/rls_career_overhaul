@@ -203,6 +203,9 @@ local function onPursuitAction(vehId, action, data)
   end
 
   local inventoryId = career_modules_inventory.getInventoryIdFromVehicleId(vehId)
+  if not inventoryId then
+    inventoryId = career_modules_inventory.getInventoryIdFromVehicleId(be:getPlayerVehicleID(0))
+  end
   if action == "start" then -- pursuit started
     gameplay_parking.disableTracking(vehId)
     if inventoryId and hasLicensePlate(inventoryId) then
@@ -282,11 +285,24 @@ local function onPursuitAction(vehId, action, data)
     resetPursuit()
   elseif action == "arrest" then -- pursuit arrest, make the player pay a fine
     if playerIsCop == true then
-      local bonus = math.floor(240 * data.score) / 100
+      local bonus = math.floor(180 * data.score) / 100
+      bonus = math.max(5000 - bonus, 1000)
+      
+      local org = freeroam_organizations.getOrganization("policeLoaner")
+      local level = org.reputationLevels[org.reputation.level + 2]
+      local reputationBonus = level.deliveryBonus.value
+      bonus = bonus * reputationBonus
+
+      local loanerCut = 0
+      local vehicle = career_modules_inventory.getVehicle(inventoryId)
+      if vehicle.owningOrganization then
+        loanerCut = level.loanerCut.value
+      end
+      bonus = bonus * (1 - loanerCut)
 
       career_modules_payment.reward({
         money = {
-          amount = bonus
+          amount = bonus 
         },
         beamXP = {
           amount = math.floor(bonus / 20)
@@ -296,12 +312,23 @@ local function onPursuitAction(vehId, action, data)
         },
         specialized = {
           amount = math.floor(bonus / 20)
+        },
+        policeLoanerReputation = {
+          amount = 10
         }
       }, {
         label = "Arrest Bonus",
         tags = {"gameplay", "reward", "police"}
       }, true)
-      ui_message("Arrest Bonus: $" .. bonus, 5, "Police", "info")
+
+      local message = "Arrest Bonus: $" .. bonus
+      if loanerCut ~= 0 then
+        message = message .. " (Loaner Cut: " .. loanerCut*100 .. "%)"
+      end
+      if reputationBonus ~= 1 then
+        message = message .. " (Reputation Bonus: " .. (reputationBonus - 1)*100 .. "%)"
+      end
+      ui_message(message, 5, "Police", "info")
       career_modules_inventory.addSuspectCaught(inventoryId)
     end
     career_saveSystem.saveCurrent()

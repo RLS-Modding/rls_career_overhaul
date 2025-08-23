@@ -351,13 +351,635 @@
     "description": "A local delivery association that owns a bunch of stores in italy.",
     "icon": "cardboardBox",
     "reputationLevels": [
-    {},
-    {},
-    {},
-    {},
-    {}
-  ]
-}
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "moneyGrabLogistics": {
+    "name": "MoneyGrab Bank",
+    "description": "Complete deliveries for MoneyGrab Bank and they may help you out on some quick loans",
+    "icon": "beamCurrency",
+    "loanableVehicles": [
+      {
+        "model": "md_series",
+        "config": "small_money_transport_career",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "md_series",
+        "config": "large_money_transport_career",
+        "reputationLvl": 2,
+        "deliveryLvl": 2,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      }
+    ],
+    "reputationLevels": [
+      {
+        // Level -1
+        "loanerCut": {
+          "value": 0.75,
+          "icon": "boxPickUp03"
+        },
+        "loans": {
+          "max": 50000,
+          "rate": 0.50
+        },
+        "requiredValue": -75,
+        "min": -200
+      },
+      {
+        // Level 0
+        "loanerCut": {
+          "value": 0.5,
+          "icon": "boxPickUp03"
+        },
+        "loans": {
+          "max": 50000,
+          "rate": 0.25
+        },
+        "requiredValue": -25
+      },
+      {
+        // Level 1
+        "loans": {
+          "max": 100000,
+          "rate": 0.20
+        },
+        "requiredValue": 100
+      },
+      {
+        // Level 2
+        "loans": {
+          "max": 250000,
+          "rate": 0.15
+        },
+        "requiredValue": 250
+      },
+      {
+        // Level 3
+        "loans": {
+          "max": 500000,
+          "rate": 0.10
+        },
+        "requiredValue": 750,
+        "max": 1000
+      }
+    ]
+  },
+  "salmonBank": {
+    "name": "Salmon's Private Bank",
+    "description": "Sell your vehicles to the notorious Salmon the Negotiator to earn reputation. He's rolling in cash so you can get some crazy loans.",
+    "icon": "beamCurrency",
+    "reputationLevels": [
+      {
+        // Level -1
+        "requiredValue": -75,
+        "min": -200
+      },
+      {
+        // Level 0
+        "requiredValue": -25
+      },
+      {
+        // Level 1
+        "levelLabel": "Reputation: Level 1",
+        "label": "Desperate, but cool",
+        "loans": {
+          "max": 500000,
+          "rate": 0.20
+        },
+        "requiredValue": 25
+      },
+      {
+        // Level 2
+        "levelLabel": "Reputation: Level 2",
+        "label": "Respectable",
+        "loans": {
+          "max": 750000,
+          "rate": 0.175
+        },
+        "requiredValue": 175
+      },
+      {
+        // Level 3
+        "levelLabel": "Reputation: Level 3",
+        "label": "My Man",
+        "loans": {
+          "max": 1000000,
+          "rate": 0.125
+        },
+        "requiredValue": 500,
+      },
+      {
+        // Level 4
+        "levelLabel": "Reputation: Level 4",
+        "label": "Obsessed",
+        "loans": {
+          "max": 1000000,
+          "rate": 0.10
+        },
+        "requiredValue": 1000,
+        "max": 2000
+      }
+    ]
+  },
+  "policeLoaner": {
+    "name": "Belasco City Police Department",
+    "description": "",
+    "icon": "beamCurrency",
+    "loanableVehicles": [
+      {
+        "model": "fullsize",
+        "config": "police",
+        "reputationLvl": -1,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 804672000,
+          "0": 321868800,
+          "1": 160934400,
+          "2": 160934400,
+          "3": 80467200,
+          "4": 80467200,
+          "5": 40233600
+        }
+      },
+      {
+        "model": "fullsize",
+        "config": "unmarked",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "fullsize",
+        "config": "bcpd",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "fullsize",
+        "config": "interceptor",
+        "reputationLvl": 1,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "roamer",
+        "config": "police",
+        "reputationLvl": 1,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 860999040,
+          "0": 258299712,
+          "1": 258299712,
+          "2": 86099904,
+          "3": 86099904,
+          "4": 86099904,
+          "5": 17219980.8
+        }
+      },
+      {
+        "model": "bastion",
+        "config": "police_v6_awd_A",
+        "reputationLvl": 1,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 17220
+        }
+      },
+      {
+        "model": "bastion",
+        "config": "police_v8_awd_A",
+        "reputationLvl": 2,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 764438400,
+          "0": 265541760,
+          "1": 177027840,
+          "2": 88513920,
+          "3": 88513920,
+          "4": 17219981,
+          "5": 17220
+        }
+      },
+      {
+        "model": "bastion",
+        "config": "police_unmarked_v8_awd_A",
+        "reputationLvl": 3,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 17220
+        }
+      },
+      {
+        "model": "md_series",
+        "config": "md_60_armored_police",
+        "reputationLvl": 3,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 44256960,
+          "3": 17702784,
+          "4": 8851392,
+          "5": 17220
+        }
+      },
+      {
+        "model": "bastion",
+        "config": "police_unmarked_v8_awd_A_Blue",
+        "reputationLvl": 3,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 41038272,
+          "4": 8207654,
+          "5": 17220
+        }
+      },
+      {
+        "model": "bastion",
+        "config": "police_unmarked_v8_awd_A_Red",
+        "reputationLvl": 3,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 41038272,
+          "4": 8207654,
+          "5": 17220
+        }
+      },
+      {
+        "model": "bastion",
+        "config": "police_unmarked_v8_awd_A_Silver",
+        "reputationLvl": 3,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 41038272,
+          "4": 8207654,
+          "5": 17220
+        }
+      },
+      {
+        "model": "bastion",
+        "config": "police_redtail",
+        "reputationLvl": 4,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 72420480,
+          "3": 36210240,
+          "4": 14484096,
+          "5": 17220
+        }
+      },
+      {
+        "model": "bastion",
+        "config": "undercover_redtail",
+        "reputationLvl": 4,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 72420480,
+          "3": 36210240,
+          "4": 14484096,
+          "5": 17220
+        }
+      }
+    ],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {
+        // Level -1
+        "label": "Probation",
+        "min": -200
+      },
+      {
+        // Level 0
+        "label": "Rookie"
+      },
+      {
+        // Level 1
+        "deliveryBonus": {
+          "value": 1.20
+        },
+        "label": "Sergeant"
+      },
+      {
+        // Level 2
+        "deliveryBonus": {
+          "value": 1.45
+        },
+        "label": "Captain"
+      },
+      {
+        // Level 3
+        "deliveryBonus": {
+          "value": 1.75
+        },
+        "label": "Chief"
+      },
+      {
+        // Level 4
+        "deliveryBonus": {
+          "value": 3
+        },
+        "requiredValue": 1000,
+        "levelLabel": "Reputation: Level 4",
+        "label": "GSP"
+      },
+      {
+        // Level 5
+        "deliveryBonus": {
+          "value": 10
+        },
+        "requiredValue": 5000,
+        "max": 7500,
+        "levelLabel": "Reputation: Level 5",
+        "label": "FBI"
+      }
+    ]
+  },
+  "trustedAutos": {
+    "name": "Trusted Auto Sales",
+    "description": "Trusted Auto Sales - Discounted cars",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "joesJunkDealership": {
+    "name": "Joe's Junk",
+    "description": "Joe's Junk - You think you hate it now , wait till you drive it",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {
+        // Level -1
+        "requiredValue": -75,
+        "min": -200
+      },
+      {
+        // Level 0
+        "requiredValue": -25
+      },
+      {
+        // Level 1
+        "levelLabel": "Reputation: Level 1",
+        "label": "Lets Make a deal...",
+        "loans": {
+          "max": 10000,
+          "rate": 0.30
+        },
+        "requiredValue": 25
+      },
+      {
+        // Level 2
+        "levelLabel": "Reputation: Level 2",
+        "label": "Junk Junkie",
+        "loans": {
+          "max": 25000,
+          "rate": 0.25
+        },
+        "requiredValue": 175
+      },
+      {
+        // Level 3
+        "levelLabel": "Reputation: Level 3",
+        "label": "Junk Whisperer",
+        "loans": {
+          "max": 100000,
+          "rate": 0.10
+        },
+        "requiredValue": 500
+      },
+      {
+        // Level 4
+        "levelLabel": "Reputation: Level 4",
+        "label": "Junk Juggler",
+        "loans": {
+          "max": 250000,
+          "rate": 0.05
+        },
+        "requiredValue": 1000,
+        "max": 2000
+      }
+    ]
+  },
+  "serviceDealership": {
+    "name": "Service Dealership",
+    "description": "Service Dealership - Purchase Service Vehicles here",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "trailerShop": {
+    "name": "Trailer Dealer",
+    "description": "Trailer Sales",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "BruckellDealership": {
+    "name": "Bruckell Online Dealership",
+    "description": "Bruckell Online Dealership",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "GavrilcarDealership": {
+    "name": "Gavril-Car Online Dealership",
+    "description": "Gavril-Car Online Dealership",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "GavriltruckDealership": {
+    "name": "Gavril-Truck Online Dealership",
+    "description": "Gavril-Truck Online Dealership",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "SoliadDealership": {
+    "name": "Soliad Online Dealership",
+    "description": "Soliad Online Dealership",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "importDealer": {
+    "name": "Import Dealership",
+    "description": "All thing Imported",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "raceTab": {
+    "name": "RaceTab",
+    "description": "All things RaceTab And Raceless",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  }
   /**
   "belascoCityHospital": {
     "name":"Belasco City Hospital",

@@ -964,6 +964,17 @@ export default {
     getDayNightCycle: () => {}
   },
 
+  career_modules_loans: {
+    openMenuFromComputer: computerId => String,
+    closeMenu: () => {},
+    closeAllMenus: () => {},
+    getLoanOffers: () => {},
+    getActiveLoans: () => {},
+    calculatePayment: (amount, rate, payments) => [Number, Number],
+    takeLoan: (orgId, amount, payments) => [String, Number, Number],
+    prepayLoan: (loanId, amount) => [String, Number],
+  },
+
   career_modules_assignRole: {
     canPay: () => {},
     startCertification: () => {},

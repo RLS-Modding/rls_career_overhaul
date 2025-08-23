@@ -800,7 +800,8 @@ local function formatMaterialStorage(fac, facPsLocation, playerCargoContainers)
         locations = formatFluidDestinations(materialType, facPsLocation),
         targetLocations = formatLoadTargets(storage, playerCargoContainers),
         modifiers = {},
-        rewardMoneyPerLiter = material.money,
+        rewardMoneyPerUnit = material.money,
+        units = material.units or material.money and "L" or nil,
         enabled = true,
         _transientMaterialMoveAmount = 0,
         unlockInfo  = flagDefinition and flagDefinition.unlockInfo,
@@ -1029,6 +1030,7 @@ local function requestCargoDataForUi(facId, psPath, updateMaxTimeTimestamp)
       uiData.availableSystems.largeFluidDelivery = uiData.availableSystems.largeFluidDelivery or fac.receivedSystemsLookup.largeFluidDelivery
       uiData.availableSystems.largeDryBulkDelivery = uiData.availableSystems.largeDryBulkDelivery or fac.receivedSystemsLookup.largeDryBulkDelivery
       uiData.availableSystems.largeCementDelivery = uiData.availableSystems.largeCementDelivery or fac.receivedSystemsLookup.largeCementDelivery
+      uiData.availableSystems.largeCashDelivery = uiData.availableSystems.largeCashDelivery or fac.receivedSystemsLookup.largeCashDelivery
       -- small fluid delivery disabled atm
       uiData.availableSystems.smallFluidDelivery = nil
 
@@ -1125,6 +1127,9 @@ local function requestCargoDataForUi(facId, psPath, updateMaxTimeTimestamp)
         end    
         if cargo.type == "cement" then
           uiData.availableSystems.smallCement = true
+        end
+        if cargo.type == "cash" then
+          uiData.availableSystems.smallCash = true
         end
 
         -- add money and weight to sums
@@ -1730,7 +1735,7 @@ end
 
 --by default, all cargo locations are active as bigMap markers. this function sets it so, that only the relevant markers are actually visible.
 -- relevant markers include: destination of loaded and available cargo, vehicle offers
-local tabNameToType = { vehicles = "vehicle", trailers = "trailer", parcels = "parcel", smallFluids="fluid", smallDryBulk="dryBulk", largeFluids="fluid", largeDryBulk="dryBulk" ,smallCement="cement", largeCement="cement"}
+local tabNameToType = { vehicles = "vehicle", trailers = "trailer", parcels = "parcel", smallFluids="fluid", smallDryBulk="dryBulk", largeFluids="fluid", largeDryBulk="dryBulk" ,smallCement="cement", largeCement="cement", smallCash="cash", largeCash="cash"}
 local function setVisibleIdsForBigMap()
   visibleBigMapIdsToCardIds = {}
   for cardId, card in pairs(cardsById) do

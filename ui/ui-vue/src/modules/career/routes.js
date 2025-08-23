@@ -24,6 +24,7 @@ import VehiclePurchase from "./views/VehiclePurchaseMain.vue"
 import VehicleShopping from "./views/VehicleShoppingMain.vue"
 import VehiclePerformance from "./views/VehiclePerformanceMain.vue"
 import Sleep from "./views/SleepMenu.vue"
+import Loans from "./views/LoanMenu.vue"
 import RoleAssignment from "./views/RoleAssignment.vue"
 import CarMeets from "./views/CarMeetsMenu.vue"
 import PurchaseGarage from "./views/PurchaseGarage.vue"
@@ -33,6 +34,9 @@ import PhoneMarketplace from "./views/PhoneMarketplace.vue"
 import PhoneTaxi from "./views/PhoneTaxi.vue"
 import CarMeetsPhone from "./views/CarMeetsPhone.vue"
 import PhoneRepo from "./views/PhoneRepo.vue"
+import PhoneLoans from "./views/PhoneLoans.vue"
+import PhoneLoanDetails from "./views/PhoneLoanDetails.vue"
+import PhoneOfferDetails from "./views/PhoneOfferDetails.vue"
 import LevelSwitch from "./views/LevelSwitch.vue"
 
 export default [
@@ -307,6 +311,13 @@ export default [
         component: Sleep
       },
 
+      // Loans Menu
+      {
+        path: "loans-menu",
+        name: "loans-menu",
+        component: Loans
+      },
+
       // Police Assignment
       {
         path: "roleAssignment",
@@ -360,6 +371,24 @@ export default [
         path: "phone-repo",
         name: "phone-repo",
         component: PhoneRepo
+      },
+
+      {
+        path: "phone-loans",
+        name: "phone-loans",
+        component: PhoneLoans
+      },
+      {
+        path: "phone-loan/:loanId",
+        name: "phone-loan-details",
+        component: PhoneLoanDetails,
+        props: true
+      },
+      {
+        path: "phone-loan-offer/:orgId",
+        name: "phone-offer-details",
+        component: PhoneOfferDetails,
+        props: true
       },
 
       {

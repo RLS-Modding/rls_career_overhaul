@@ -195,13 +195,13 @@
       ],
       "filter": {
         "whiteList": {
-          "Config Type": [
-            "Custom"
-          ],
           "Mileage": {
             "min": 0,
             "max": 160934400
-          }
+          },
+          "Config Type": [
+            "Custom"
+          ]
         },
         "blackList": {
           "Type": [
@@ -381,6 +381,12 @@
       "description": "Belasco Auto - New & quality used vehicle sales.",
       "preview": "belasco_auto_dealership.jpg",
       "stock": 15,
+      "range": [
+        0.8,
+        0.9,
+        1.25,
+        1.5
+      ],
       "associatedOrganization": "belascoAuto",
       "doors": [
         [
@@ -401,8 +407,8 @@
       "filter": {
         "whiteList": {
           "Mileage": {
-            "min": 1000,
-            "max": 1604400
+            "min": 9000,
+            "max": 70000000
           },
           "Years": {
             "min": 2000,
@@ -457,11 +463,20 @@
               "Soviet Union/Russia"
             ]
           }
+        },
+        {
+          "probability": 1,
+          "whiteList": {
+            "Config Type": [
+              "Factory"
+            ]
+          }
         }
       ],
       "subFilterNames": [
         "Sub-Filter 1",
-        "Sub-Filter 2"
+        "Sub-Filter 2",
+        "Sub-Filter 3"
       ],
       "fees": 749,
       "containsStarterVehicles": false,
@@ -473,6 +488,7 @@
       "iconOffsetHeight": 1,
       "iconLift": 0.25,
       "playModeIconName": "poi_entrance_round",
+      "salesTax": 0.07,
       "ui": {
         "showMatchingConfigs": [
           true
@@ -519,13 +535,12 @@
           "Config Type": [
             "Factory"
           ],
-          "Value": {
-            "min": 80000,
-            "max": 5500000
-          },
           "Mileage": {
             "min": 0,
             "max": 160934400
+          },
+          "Value": {
+            "min": 80000
           }
         },
         "blackList": {
@@ -584,7 +599,7 @@
           "whiteList": {}
         }
       ],
-      "subFilterNames": [],
+      "subFilterNames": {},
       "fees": 1250,
       "containsStarterVehicles": false,
       "testDrive": {
@@ -692,7 +707,7 @@
           "whiteList": {}
         }
       ],
-      "subFilterNames": [],
+      "subFilterNames": {},
       "fees": 249,
       "containsStarterVehicles": true,
       "testDrive": {
@@ -849,7 +864,7 @@
           "whiteList": {}
         }
       ],
-      "subFilterNames": [],
+      "subFilterNames": {},
       "fees": 0,
       "containsStarterVehicles": false,
       "testDrive": {
@@ -1006,7 +1021,7 @@
           "whiteList": {}
         }
       ],
-      "subFilterNames": [],
+      "subFilterNames": {},
       "fees": 500,
       "containsStarterVehicles": false,
       "testDrive": {
@@ -1103,7 +1118,7 @@
           "whiteList": {}
         }
       ],
-      "subFilterNames": [],
+      "subFilterNames": {},
       "fees": 500,
       "containsStarterVehicles": false,
       "testDrive": {
@@ -1585,7 +1600,7 @@
         "commercialOfficeComputer_screen_1"
       ],
       "ui": {
-        "showMatchingConfigs": [],
+        "showMatchingConfigs": {},
         "configSearchText": {}
       }
     },
@@ -1603,8 +1618,8 @@
       ],
       "doors": [
         [
-          "importDealer_area",
-          "importDealer_icon",
+          "importDealer_area_1",
+          "importDealer_icon_95",
           30
         ]
       ],

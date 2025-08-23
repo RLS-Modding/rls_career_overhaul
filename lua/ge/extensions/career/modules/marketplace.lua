@@ -303,6 +303,10 @@ local function acceptOffer(inventoryId, offerIndex)
       -- Try to sell the vehicle and check if it was successful
       local sellSuccess = career_modules_inventory.sellVehicle(inventoryId, offer.value)
       if sellSuccess then
+        if offer.customer == "Salmon The Negotiator" then
+          local reputation = math.floor((career_modules_valueCalculator.getInventoryVehicleValue(inventoryId) - offer.value) / 1500)
+          career_modules_payment.reward({ salmonBankReputation = {amount = reputation}})
+        end
         table.remove(listing.offers, offerIndex)
         Engine.Audio.playOnce('AudioGui','event:>UI>Career>Buy_01')
       else

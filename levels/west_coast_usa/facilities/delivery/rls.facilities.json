@@ -1,0 +1,675 @@
+{
+  "deliveryProviders": [
+    {
+      "id": "policeLoaner",
+      "name": "Belasco City Police Department",
+      "description": "Use Police Vehicles to earn money. Try to return with no damage for bonus xp.",
+      "associatedOrganization": "policeLoaner",
+      "preview": "",
+      "manualAccessPoints": [
+        {
+          "psName": "policeLoanerParking",
+          "isInspectSpot": true,
+          "logisticTypesProvided": [],
+          "logisticTypesReceived": []
+        },
+        {
+          "psName": "policeLoanerLoaner",
+          "isInspectSpot": false,
+          "logisticTypesProvided": [],
+          "logisticTypesReceived": [],
+          "loanerTrailerPriority": 1,
+          "loanerNonTrailerPriority": 1
+        }
+      ],
+      "sitesFile": "rls.sites.json",
+      "logisticTypesProvided": [],
+      "logisticTypesReceived": [],
+      "logisticGenerators": []
+    },
+    {
+      "id": "moneyGrabBank",
+      "name": "MoneyGrab Bank",
+      "description": "Imagine if you could 'Own The Banks' ",
+      "associatedOrganization": "moneyGrabLogistics",
+      "preview": "previews/hospital.jpg",
+      "manualAccessPoints": [
+        {
+          "psName": "moneyGrabBankParking",
+          "isInspectSpot": true,
+          "logisticTypesProvided": [
+            "cash",
+            "coin"
+          ],
+          "logisticTypesReceived": []
+        },
+        {
+          "psName": "moneyGrabBankLoaner",
+          "isInspectSpot": false,
+          "logisticTypesProvided": [],
+          "logisticTypesReceived": [],
+          "loanerTrailerPriority": 1,
+          "loanerNonTrailerPriority": 1
+        }
+      ],
+      "sitesFile": "rls.sites.json",
+      "logisticTypesProvided": [
+        "cash",
+        "coin"
+      ],
+      "logisticTypesReceived": [],
+      "logisticGenerators": [
+        {
+          "type": "materialProvider",
+          "logisticTypes": [
+            "cash"
+          ],
+          "materialType": "cash",
+          "capacity": 50000,
+          "target": 50000,
+          "variance": 100,
+          "interval": 300,
+          "rate": 10000
+        },
+        {
+          "type": "materialProvider",
+          "logisticTypes": [
+            "coin"
+          ],
+          "materialType": "coin",
+          "capacity": 50000,
+          "target": 50000,
+          "variance": 100,
+          "interval": 300,
+          "rate": 10000
+        }
+      ]
+    },
+    {
+      "id": "beachShops",
+      "name": "Beach Shops",
+      "description": "Wish I could shop here",
+      "associatedOrganization": "moneyGrabLogistics",
+      "preview": "previews/hospital.jpg",
+      "manualAccessPoints": [
+        {
+          "psName": "beachShopsParking",
+          "isInspectSpot": true,
+          "logisticTypesProvided": [],
+          "logisticTypesReceived": [
+            "cash",
+            "coin"
+          ]
+        }
+      ],
+      "sitesFile": "rls.sites.json",
+      "logisticTypesProvided": [],
+      "logisticTypesReceived": [
+        "cash",
+        "coin"
+      ],
+      "logisticGenerators": [
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "cash"
+          ],
+          "materialType": "cash",
+          "capacity": 75,
+          "target": 0,
+          "variance": 25,
+          "interval": 300,
+          "rate": 15
+        },
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "coin"
+          ],
+          "materialType": "coin",
+          "capacity": 75,
+          "target": 0,
+          "variance": 10,
+          "interval": 300,
+          "rate": 10
+        }
+      ]
+    },
+    {
+      "id": "joeShop",
+      "name": "Joe's Junk",
+      "description": "Some say he actually makes a lot of money of his junk",
+      "associatedOrganization": "moneyGrabLogistics",
+      "preview": "",
+      "manualAccessPoints": [
+        {
+          "psName": "joesJunkCar",
+          "isInspectSpot": true,
+          "logisticTypesProvided": [],
+          "logisticTypesReceived": [
+            "cash",
+            "coin"
+          ]
+        }
+      ],
+      "sitesFile": "facilities.sites.json",
+      "logisticTypesProvided": [],
+      "logisticTypesReceived": [
+        "cash",
+        "coin"
+      ],
+      "logisticGenerators": [
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "cash"
+          ],
+          "materialType": "cash",
+          "capacity": 150,
+          "target": 0,
+          "variance": 25,
+          "interval": 300,
+          "rate": 50
+        },
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "coin"
+          ],
+          "materialType": "coin",
+          "capacity": 50,
+          "target": 0,
+          "variance": 10,
+          "interval": 300,
+          "rate": 5
+        }
+      ]
+    },
+    {
+      "id": "mallBank",
+      "name": "Mall Pickup",
+      "description": "Mall must still be thriving",
+      "associatedOrganization": "moneyGrabLogistics",
+      "preview": "",
+      "manualAccessPoints": [
+        {
+          "psName": "mallBank",
+          "isInspectSpot": true,
+          "logisticTypesProvided": [],
+          "logisticTypesReceived": [
+            "cash",
+            "coin"
+          ]
+        }
+      ],
+      "sitesFile": "rls.sites.json",
+      "logisticTypesProvided": [],
+      "logisticTypesReceived": [
+        "cash",
+        "coin"
+      ],
+      "logisticGenerators": [
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "cash"
+          ],
+          "materialType": "cash",
+          "capacity": 300,
+          "target": 0,
+          "variance": 25,
+          "interval": 300,
+          "rate": 50
+        },
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "coin"
+          ],
+          "materialType": "coin",
+          "capacity": 100,
+          "target": 0,
+          "variance": 10,
+          "interval": 300,
+          "rate": 5
+        }
+      ]
+    },
+    {
+      "id": "tennisPickup",
+      "name": "Tennis Courts Pickup",
+      "description": "Apparently there is a cash fee for hitting the balls over the fence...",
+      "associatedOrganization": "moneyGrabLogistics",
+      "preview": "",
+      "manualAccessPoints": [
+        {
+          "psName": "tennisPickup",
+          "isInspectSpot": true,
+          "logisticTypesProvided": [],
+          "logisticTypesReceived": [
+            "cash",
+            "coin"
+          ]
+        }
+      ],
+      "sitesFile": "rls.sites.json",
+      "logisticTypesProvided": [],
+      "logisticTypesReceived": [
+        "cash",
+        "coin"
+      ],
+      "logisticGenerators": [
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "cash"
+          ],
+          "materialType": "cash",
+          "capacity": 100,
+          "target": 0,
+          "variance": 25,
+          "interval": 300,
+          "rate": 50
+        },
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "coin"
+          ],
+          "materialType": "coin",
+          "capacity": 50,
+          "target": 0,
+          "variance": 5,
+          "interval": 300,
+          "rate": 3
+        }
+      ]
+    },
+    {
+      "id": "stadiumPickup",
+      "name": "Stadium Pickup",
+      "description": "When was there even an event here last?",
+      "associatedOrganization": "moneyGrabLogistics",
+      "preview": "",
+      "manualAccessPoints": [
+        {
+          "psName": "stadiumPickup",
+          "isInspectSpot": true,
+          "logisticTypesProvided": [],
+          "logisticTypesReceived": [
+            "cash",
+            "coin"
+          ]
+        }
+      ],
+      "sitesFile": "rls.sites.json",
+      "logisticTypesProvided": [],
+      "logisticTypesReceived": [
+        "cash",
+        "coin"
+      ],
+      "logisticGenerators": [
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "cash"
+          ],
+          "materialType": "cash",
+          "capacity": 300,
+          "target": 0,
+          "variance": 25,
+          "interval": 300,
+          "rate": 40
+        },
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "coin"
+          ],
+          "materialType": "coin",
+          "capacity": 150,
+          "target": 0,
+          "variance": 5,
+          "interval": 300,
+          "rate": 5
+        }
+      ]
+    },
+    {
+      "id": "skyscraper1",
+      "name": "Skyscraper Vending Machines",
+      "description": "Must be a lot snack breaks",
+      "associatedOrganization": "moneyGrabLogistics",
+      "preview": "",
+      "manualAccessPoints": [
+        {
+          "psName": "skyscraper1",
+          "isInspectSpot": true,
+          "logisticTypesProvided": [],
+          "logisticTypesReceived": [
+            "cash",
+            "coin"
+          ]
+        }
+      ],
+      "sitesFile": "rls.sites.json",
+      "logisticTypesProvided": [],
+      "logisticTypesReceived": [
+        "cash",
+        "coin"
+      ],
+      "logisticGenerators": [
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "cash"
+          ],
+          "materialType": "cash",
+          "capacity": 100,
+          "target": 0,
+          "variance": 15,
+          "interval": 300,
+          "rate": 15
+        },
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "coin"
+          ],
+          "materialType": "coin",
+          "capacity": 100,
+          "target": 0,
+          "variance": 10,
+          "interval": 300,
+          "rate": 15
+        }
+      ]
+    },
+    {
+      "id": "cityBuildingPickup1",
+      "name": "City Bank Pickup 1",
+      "description": "Nobody really questions why there is money to pick up here",
+      "associatedOrganization": "moneyGrabLogistics",
+      "preview": "",
+      "manualAccessPoints": [
+        {
+          "psName": "cityBuildingPickup1",
+          "isInspectSpot": true,
+          "logisticTypesProvided": [],
+          "logisticTypesReceived": [
+            "cash",
+            "coin"
+          ]
+        }
+      ],
+      "sitesFile": "rls.sites.json",
+      "logisticTypesProvided": [],
+      "logisticTypesReceived": [
+        "cash",
+        "coin"
+      ],
+      "logisticGenerators": [
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "cash"
+          ],
+          "materialType": "cash",
+          "capacity": 75,
+          "target": 0,
+          "variance": 10,
+          "interval": 300,
+          "rate": 15
+        },
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "coin"
+          ],
+          "materialType": "coin",
+          "capacity": 20,
+          "target": 0,
+          "variance": 5,
+          "interval": 300,
+          "rate": 5
+        }
+      ]
+    },
+    {
+      "id": "cityBuildingPickup2",
+      "name": "City Bank Pickup 2",
+      "description": "Nobody really questions why there is money to pick up here",
+      "associatedOrganization": "moneyGrabLogistics",
+      "preview": "",
+      "manualAccessPoints": [
+        {
+          "psName": "cityBuildingPickup2",
+          "isInspectSpot": true,
+          "logisticTypesProvided": [],
+          "logisticTypesReceived": [
+            "cash",
+            "coin"
+          ]
+        }
+      ],
+      "sitesFile": "rls.sites.json",
+      "logisticTypesProvided": [],
+      "logisticTypesReceived": [
+        "cash",
+        "coin"
+      ],
+      "logisticGenerators": [
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "cash"
+          ],
+          "materialType": "cash",
+          "capacity": 75,
+          "target": 0,
+          "variance": 10,
+          "interval": 300,
+          "rate": 15
+        },
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "coin"
+          ],
+          "materialType": "coin",
+          "capacity": 20,
+          "target": 0,
+          "variance": 5,
+          "interval": 300,
+          "rate": 5
+        }
+      ]
+    },
+    {
+      "id": "cityBuildingPickup3",
+      "name": "City Bank Pickup 3",
+      "description": "Nobody really questions why there is money to pick up here",
+      "associatedOrganization": "moneyGrabLogistics",
+      "preview": "",
+      "manualAccessPoints": [
+        {
+          "psName": "cityBuildingPickup3",
+          "isInspectSpot": true,
+          "logisticTypesProvided": [],
+          "logisticTypesReceived": [
+            "cash",
+            "coin"
+          ]
+        }
+      ],
+      "sitesFile": "rls.sites.json",
+      "logisticTypesProvided": [],
+      "logisticTypesReceived": [
+        "cash",
+        "coin"
+      ],
+      "logisticGenerators": [
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "cash"
+          ],
+          "materialType": "cash",
+          "capacity": 75,
+          "target": 0,
+          "variance": 10,
+          "interval": 300,
+          "rate": 15
+        },
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "coin"
+          ],
+          "materialType": "coin",
+          "capacity": 20,
+          "target": 0,
+          "variance": 5,
+          "interval": 300,
+          "rate": 5
+        }
+      ]
+    },
+    {
+      "id": "raceTrackPickup",
+      "name": "Race Track Pickup",
+      "description": "Track must sell a lot of hot dogs",
+      "associatedOrganization": "moneyGrabLogistics",
+      "preview": "",
+      "manualAccessPoints": [
+        {
+          "psName": "raceTrackPickup",
+          "isInspectSpot": true,
+          "logisticTypesProvided": [],
+          "logisticTypesReceived": [
+            "cash",
+            "coin"
+          ]
+        }
+      ],
+      "sitesFile": "rls.sites.json",
+      "logisticTypesProvided": [],
+      "logisticTypesReceived": [
+        "cash",
+        "coin"
+      ],
+      "logisticGenerators": [
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "cash"
+          ],
+          "materialType": "cash",
+          "capacity": 300,
+          "target": 0,
+          "variance": 50,
+          "interval": 300,
+          "rate": 50
+        },
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "coin"
+          ],
+          "materialType": "coin",
+          "capacity": 200,
+          "target": 0,
+          "variance": 5,
+          "interval": 300,
+          "rate": 25
+        }
+      ]
+    },
+    {
+      "id": "sketchyPickup",
+      "name": "Sketchy Pickup",
+      "description": "You were told not to ask any questions",
+      "associatedOrganization": "moneyGrabLogistics",
+      "preview": "",
+      "manualAccessPoints": [
+        {
+          "psName": "sketchyPickup",
+          "isInspectSpot": true,
+          "logisticTypesProvided": [
+            "gold",
+            "mysteriousWaste"
+          ],
+          "logisticTypesReceived": []
+        }
+      ],
+      "sitesFile": "rls.sites.json",
+      "logisticTypesProvided": [
+        "gold",
+        "mysteriousWaste"
+      ],
+      "logisticTypesReceived": [],
+      "logisticGenerators": [
+        {
+          "type": "materialProvider",
+          "logisticTypes": [
+            "gold"
+          ],
+          "materialType": "gold",
+          "capacity": 750,
+          "target": 1000,
+          "variance": 5,
+          "interval": 300,
+          "rate": 5
+        },
+        {
+          "type": "materialProvider",
+          "logisticTypes": [
+            "mysteriousWaste"
+          ],
+          "materialType": "mysteriousWaste",
+          "capacity": 20000,
+          "target": 20000,
+          "variance": 1250,
+          "interval": 300,
+          "rate": 4000
+        }
+      ]
+    },
+    {
+      "id": "illegalDumping",
+      "name": "Illegal Dumping",
+      "description": "Don't Get Caught",
+      "associatedOrganization": "moneyGrabLogistics",
+      "preview": "",
+      "manualAccessPoints": [
+        {
+          "psName": "illegalDumping",
+          "isInspectSpot": true,
+          "logisticTypesProvided": [],
+          "logisticTypesReceived": [
+            "mysteriousWaste"
+          ]
+        }
+      ],
+      "sitesFile": "rls.sites.json",
+      "logisticTypesProvided": [],
+      "logisticTypesReceived": [
+        "mysteriousWaste"
+      ],
+      "logisticGenerators": [
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "mysteriousWaste"
+          ],
+          "materialType": "mysteriousWaste",
+          "capacity": 200000,
+          "target": 0,
+          "variance": 1250,
+          "interval": 300,
+          "rate": 40000
+        }
+      ]
+    }
+  ]
+}

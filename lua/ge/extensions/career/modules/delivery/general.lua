@@ -343,7 +343,7 @@ local function updateContainerWeights(delayCallback)
       updatePerVehicle[cargo.location.vehId][cargo.location.containerId].volume = updatePerVehicle[cargo.location.vehId][cargo.location.containerId].volume + (cargo.weight or 0)
     end
 
-    if cargo.type == "fluid" or cargo.type == "dryBulk" or cargo.type == "cement" then
+    if cargo.type == "fluid" or cargo.type == "dryBulk" or cargo.type == "cement" or cargo.type == "cash" then
       -- add up volume
       updatePerVehicle[cargo.location.vehId][cargo.location.containerId].volume = updatePerVehicle[cargo.location.vehId][cargo.location.containerId].volume + (cargo.slots or 0)
       -- only keep one density, since all cargo in one container have the same density
@@ -661,7 +661,8 @@ local function onActivityAcceptGatherData(elemData, activityData)
         parcel = 0,
         fluid = 0,
         dryBulk = 0,
-        cement = 0
+        cement = 0,
+        cash = 0
       }
       for _, container in ipairs(mostRecentCargoContainerData) do
         for _, cargo in ipairs(container.rawCargo) do
@@ -677,6 +678,9 @@ local function onActivityAcceptGatherData(elemData, activityData)
           if cargo.type == "cement" then
             add = cargo.slots
           end
+          if cargo.type == "cash" then
+            add = cargo.slots
+          end
           if cargo.destination.type == "facilityParkingspot" then
             dropOffableCargoByCargoType[cargo.type]  = dropOffableCargoByCargoType[type] + ((cargo.destination.psPath == elem.psPath and (container.position - psPos):squaredLength() < 25*25) and add or 0)
           elseif cargo.destination.type == "multi" then
@@ -687,7 +691,7 @@ local function onActivityAcceptGatherData(elemData, activityData)
         end
       end
       local vehsClose, trailersClose = dVehicleTasks.canDropOffCargoAtPsPath(elem.psPath)
-      local anyCargoDropOffable = (dropOffableCargoByCargoType.parcel > 0 or dropOffableCargoByCargoType.fluid > 0 or dropOffableCargoByCargoType.dryBulk > 0 or dropOffableCargoByCargoType.cement > 0) or vehsClose > 0 or trailersClose > 0
+      local anyCargoDropOffable = (dropOffableCargoByCargoType.parcel > 0 or dropOffableCargoByCargoType.fluid > 0 or dropOffableCargoByCargoType.dryBulk > 0 or dropOffableCargoByCargoType.cement > 0 or dropOffableCargoByCargoType.cash > 0) or vehsClose > 0 or trailersClose > 0
       -- dropoff props
       if dropOffableCargoByCargoType.parcel > 0 then
         table.insert(poiTemplate.props, {
@@ -713,6 +717,12 @@ local function onActivityAcceptGatherData(elemData, activityData)
           keyLabel = string.format("%dL cement dropoff", dropOffableCargoByCargoType.cement)
         })
       end
+      if dropOffableCargoByCargoType.cash > 0 then
+        table.insert(poiTemplate.props, {
+          icon = "checkmark",
+          keyLabel = string.format("%d cash dropoff", dropOffableCargoByCargoType.cash)
+        })
+      end
       if vehsClose > 0 then
         table.insert(poiTemplate.props, {
           icon = "checkmark",
@@ -732,7 +742,8 @@ local function onActivityAcceptGatherData(elemData, activityData)
         parcel = 0,
         fluid = 0,
         dryBulk = 0,
-        cement = 0
+        cement = 0,
+        cash = 0
       }
       for _, container in ipairs(mostRecentCargoContainerData) do
         for _, cargo in ipairs(container.transientCargo) do
@@ -748,12 +759,15 @@ local function onActivityAcceptGatherData(elemData, activityData)
           if cargo.type == "cement" then
             add = cargo.slots
           end
+          if cargo.type == "cash" then
+            add = cargo.slots
+          end
           if cargo.location.type == "facilityParkingspot" then
             pickUpAbleCargoByCargoType[cargo.type]  = pickUpAbleCargoByCargoType[type] + ((cargo.location.psPath == elem.psPath and (container.position - psPos):squaredLength() < 25*25) and add or 0)
           end
         end
       end
-      local anyCargoPickUpAble = (pickUpAbleCargoByCargoType.parcel > 0 or pickUpAbleCargoByCargoType.fluid > 0 or pickUpAbleCargoByCargoType.dryBulk > 0 or pickUpAbleCargoByCargoType.cement > 0)
+      local anyCargoPickUpAble = (pickUpAbleCargoByCargoType.parcel > 0 or pickUpAbleCargoByCargoType.fluid > 0 or pickUpAbleCargoByCargoType.dryBulk > 0 or pickUpAbleCargoByCargoType.cement > 0 or pickUpAbleCargoByCargoType.cash > 0)
       if pickUpAbleCargoByCargoType.parcel > 0 then
         table.insert(poiTemplate.props, {
           icon = "checkmark",
@@ -778,6 +792,12 @@ local function onActivityAcceptGatherData(elemData, activityData)
           keyLabel = string.format("%dL cement pickup", pickUpAbleCargoByCargoType.cement)
         })
       end
+      if pickUpAbleCargoByCargoType.cash > 0 then
+        table.insert(poiTemplate.props, {
+          icon = "checkmark",
+          keyLabel = string.format("%d cash pickup", pickUpAbleCargoByCargoType.cash)
+        })
+      end
 
 
       if elem.canInspectCargo then
@@ -787,6 +807,7 @@ local function onActivityAcceptGatherData(elemData, activityData)
           fluid = 0,
           dryBulk = 0,
           cement = 0,
+          cash = 0,
         }
         for _, cargo in ipairs(dParcelManager.getAllCargoForFacilityUnexpiredUndelivered(elem.facId)) do
           local add = 1
@@ -799,6 +820,9 @@ local function onActivityAcceptGatherData(elemData, activityData)
             add = cargo.slots
           end
           if cargo.type == "cement" then
+            add = cargo.slots
+          end
+          if cargo.type == "cash" then
             add = cargo.slots
           end
           availableCargoCountByCargoType[type] = availableCargoCountByCargoType[type] + add
@@ -834,6 +858,12 @@ local function onActivityAcceptGatherData(elemData, activityData)
           table.insert(poiTemplate.props, {
             icon = "checkmark",
             keyLabel = string.format("%dL of cement available", availableCargoCountByCargoType.cement)
+          })
+        end
+        if availableCargoCountByCargoType.cash > 0 then
+          table.insert(poiTemplate.props, {
+            icon = "checkmark",
+            keyLabel = string.format("%d cash available", availableCargoCountByCargoType.cash)
           })
         end
         -- veh and trailer props

@@ -134,6 +134,19 @@ local modifiers = {
     label = "Cement",
     shortDescription = "Requires a cement-capable container to transport."
   },
+  cash = {
+    unlockFlag = "smallPackagesDelivery",
+    makeTemplate = function(g,p,distance)
+      return {
+        type = "cash",
+      }
+    end,
+    unlockLabel = "Cash",
+    priority = 6,
+    icon = "beamCurrency",
+    label = "Cash",
+    shortDescription = "Requires a cash-capable container to transport."
+  },
   parcel = {
     unlockFlag = "smallPackagesDelivery",
     makeTemplate = function(g,p,distance)

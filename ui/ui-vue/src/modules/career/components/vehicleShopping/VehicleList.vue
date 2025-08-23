@@ -4,13 +4,8 @@
     <div class="address-bar">
       <div class="spacer"></div>
       <div class="field">
-        <BngInput 
-          v-model="localSearchQuery"
-          placeholder="Search for a vehicle"
-          @focus="inputFocused = true"
-          @blur="triggerSearch"
-          @keydown.enter="triggerSearch"
-        />
+        <BngInput v-model="localSearchQuery" placeholder="Search for a vehicle" @focus="inputFocused = true"
+          @blur="triggerSearch" @keydown.enter="triggerSearch" />
       </div>
       <div class="spacer"></div>
     </div>
@@ -23,43 +18,28 @@
         <span v-for="(layout, key) of layouts" :key="key" @click="switchLayout(key)" :class="{'layout-selected': layout.selected}">{{ layout.name }}</span>
       </div> disabled temporarily -->
       <div class="price-notice"><span>*&nbsp;</span><span>Additional taxes and fees are applicable</span></div>
-      
+
       <!-- Show regular list if at a specific dealer -->
       <div v-if="vehicleShoppingStore?.vehicleShoppingData?.currentSeller" class="vehicle-list">
-        <VehicleCard
-          v-for="(vehicle, key) in vehicleShoppingStore.filteredVehicles"
-          :key="key"
-          :vehicleShoppingData="vehicleShoppingStore.vehicleShoppingData"
-          :vehicle="vehicle" />
+        <VehicleCard v-for="(vehicle, key) in vehicleShoppingStore.filteredVehicles" :key="key"
+          :vehicleShoppingData="vehicleShoppingStore.vehicleShoppingData" :vehicle="vehicle" />
       </div>
-      
+
       <!-- Show all vehicles in a flat list when searching -->
       <div v-else-if="hasActiveSearch" class="vehicle-list">
-        <VehicleCard
-          v-for="(vehicle, key) in allFilteredVehicles"
-          :key="vehicle.shopId"
-          :vehicleShoppingData="vehicleShoppingStore.vehicleShoppingData"
-          :vehicle="vehicle" />
+        <VehicleCard v-for="(vehicle, key) in allFilteredVehicles" :key="vehicle.shopId"
+          :vehicleShoppingData="vehicleShoppingStore.vehicleShoppingData" :vehicle="vehicle" />
       </div>
-      
+
       <!-- Show dealer sections if browsing all dealers without search -->
       <div v-else>
         <Accordion class="dealer-groups" singular>
-          <AccordionItem
-            v-for="dealer in sortedDealers"
-            :key="dealer.id"
-            :data-dealerid="dealer.id"
-            navigable
-            :expanded="dealer.expanded"
-            @expanded="(state) => onDealerExpanded(dealer, state)"
-          >
+          <AccordionItem v-for="dealer in sortedDealers" :key="dealer.id" :data-dealerid="dealer.id" navigable
+            :expanded="dealer.expanded" @expanded="(state) => onDealerExpanded(dealer, state)">
             <template #caption>
               <div class="dealer-caption">
-                <div 
-                  v-if="dealerMetadata[dealer.id]?.preview" 
-                  class="dealer-preview"
-                  :style="{ backgroundImage: `url('${dealerMetadata[dealer.id].preview}')` }"
-                ></div>
+                <div v-if="dealerMetadata[dealer.id]?.preview" class="dealer-preview"
+                  :style="{ backgroundImage: `url('${dealerMetadata[dealer.id].preview}')` }"></div>
                 <div class="dealer-info">
                   <div class="dealer-name">{{ dealerMetadata[dealer.id]?.name || dealer.name }}</div>
                   <div class="dealer-description">{{ dealerMetadata[dealer.id]?.description }}</div>
@@ -71,11 +51,8 @@
             </template>
 
             <div class="vehicle-list">
-              <VehicleCard
-                v-for="(vehicle, key) in dealer.vehicles"
-                :key="key"
-                :vehicleShoppingData="vehicleShoppingStore.vehicleShoppingData"
-                :vehicle="vehicle" />
+              <VehicleCard v-for="(vehicle, key) in dealer.vehicles" :key="key"
+                :vehicleShoppingData="vehicleShoppingStore.vehicleShoppingData" :vehicle="vehicle" />
             </div>
           </AccordionItem>
         </Accordion>
@@ -115,52 +92,49 @@ const hasActiveSearch = computed(() => activeSearchQuery.value.length > 0)
 // Collect all vehicles across all dealers when searching
 const allFilteredVehicles = computed(() => {
   if (!hasActiveSearch.value) return []
-  
+
   const query = activeSearchQuery.value.toLowerCase()
   let allVehicles = []
-  
+
   // If we're at a specific dealer, use filteredVehicles
   if (vehicleShoppingStore?.vehicleShoppingData?.currentSeller) {
     return vehicleShoppingStore.filteredVehicles
   }
-  
+
   // Otherwise collect vehicles from all dealers
   vehicleShoppingStore.vehiclesByDealer.forEach(dealer => {
     dealer.vehicles.forEach(vehicle => {
       const searchFields = [
         vehicle.Name,
-        vehicle.Brand, 
+        vehicle.Brand,
         vehicle.niceName,
         vehicle.model_key,
         vehicle.config_name,
       ]
-      
-      const matchesSearch = searchFields.some(field => 
+
+      const matchesSearch = searchFields.some(field =>
         field && field.toString().toLowerCase().includes(query)
       )
-      
+
       if (matchesSearch) {
         allVehicles.push(vehicle)
       }
     })
   })
-  
+
   // Sort by price
   return allVehicles.sort((a, b) => a.Value - b.Value)
 })
 
 // Fetch dealership data on component mount
-onMounted(async () => {  
-  const facilities = await lua.career_modules_vehicleShopping.getShoppingData()
-  console.log("Facilities:", facilities)
-  
-  if (facilities?.dealerships) {
-    // Create a lookup object by dealer ID
-    dealerMetadata.value = facilities.dealerships.reduce((acc, dealer) => {
-      acc[dealer.id] = dealer
+onMounted(async () => {
+  const shoppingData = await lua.career_modules_vehicleShopping.getShoppingData()
+
+  if (shoppingData?.dealerships && Array.isArray(shoppingData.dealerships)) {
+    dealerMetadata.value = shoppingData.dealerships.reduce((acc, dealer) => {
+      if (dealer && dealer.id) acc[dealer.id] = dealer
       return acc
     }, {})
-    console.log("Dealer Metadata:", dealerMetadata.value)
   }
 })
 
@@ -191,7 +165,32 @@ const onDealerExpanded = (dealer, state) => {
 }
 
 const sortedDealers = computed(() => {
-  return vehicleShoppingStore.vehiclesByDealer.slice().sort((a, b) => {
+  let dealers = vehicleShoppingStore.vehiclesByDealer.slice();
+
+  // Only filter out hidden dealers when we're viewing all dealers (not at a specific dealer)
+  dealers = dealers.filter(dealer => {
+    const dealerMeta = dealerMetadata.value[dealer.id]
+    if (!dealerMeta) return true
+
+    // Check organization's hiddenFromDealerList based on current reputation level
+    let orgHidden = !!dealerMeta.hiddenFromDealerList
+    if (dealerMeta.associatedOrganization) {
+      console.log(dealerMeta.associatedOrganization)
+      const orgData = vehicleShoppingStore.vehicleShoppingData?.organizations?.[dealerMeta.associatedOrganization]
+      if (orgData && orgData.reputationLevels && orgData.reputation && orgData.reputation.level !== undefined && orgData.reputation.level !== null) {
+        const currentLevel = orgData.reputation.level + 2
+        const levelData = orgData.reputationLevels[currentLevel]
+        orgHidden = !!(levelData && levelData.hiddenFromDealerList)
+        console.log("Hidden from dealer list:")
+        console.log(orgHidden)
+      }
+    }
+    
+    // Show dealer if neither the dealer nor the organization level wants it hidden
+    return !orgHidden;
+  });
+
+  return dealers.sort((a, b) => {
     const nameA = dealerMetadata.value[a.id]?.name || a.name;
     const nameB = dealerMetadata.value[b.id]?.name || b.name;
     return nameA.localeCompare(nameB);
@@ -205,6 +204,7 @@ const sortedDealers = computed(() => {
   min-height: 0;
   max-width: 80rem;
   height: 100%;
+
   .address-bar {
     flex: 0 0 auto;
     display: flex;
@@ -213,10 +213,11 @@ const sortedDealers = computed(() => {
     background-color: var(--bng-cool-gray-700);
     padding: 0.5rem;
 
-    & > .spacer {
+    &>.spacer {
       flex: 1;
     }
-    & > .field {
+
+    &>.field {
       border-radius: var(--bng-corners-1);
       background-color: var(--bng-cool-gray-900);
       // border: 0.0625rem solid var(--bng-cool-gray-600);
@@ -226,14 +227,16 @@ const sortedDealers = computed(() => {
       text-overflow: ellipsis;
       color: white;
       text-align: center;
+
       // text-transform: lowercase;
-      & > span {
+      &>span {
         &::before {
           content: " ";
           display: inline-block;
           height: auto;
           color: var(--bng-cool-gray-400);
         }
+
         &::after {
           content: " ";
           display: inline-block;
@@ -249,6 +252,7 @@ const sortedDealers = computed(() => {
     overflow: auto;
     color: white;
   }
+
   .layo-ut {
     position: sticky;
     top: 0px;
@@ -259,6 +263,7 @@ const sortedDealers = computed(() => {
     padding: 0.5rem;
     background: var(--bng-cool-gray-800);
   }
+
   .price-notice {
     display: inline-flex;
     padding: 0.25rem 1rem;
@@ -266,12 +271,14 @@ const sortedDealers = computed(() => {
     width: 100%;
     color: var(--bng-cool-gray-200);
   }
+
   .heading {
     display: flex;
     flex-flow: row wrap;
     align-items: flex-start;
     padding: 0.5rem;
   }
+
   .vehicle-list {
     display: flex;
     flex-flow: row wrap;

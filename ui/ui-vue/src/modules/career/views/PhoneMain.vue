@@ -31,10 +31,11 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 
 const apps = [
-  { name: 'Taxi', icon: icons.taxiCar3, route: '/career/phone-taxi', color: '#ffd700', iconColor: '#000000' },
-  { name: 'Repo', icon: icons.tow, route: '/career/phone-repo', color: '#1E90FF', iconColor: '#ffffff' },
+  { name: 'Loans', icon: icons.beamCurrency, route: '/career/phone-loans', color: '#5a8dee', iconColor: '#ffffff' },
+  { name: 'Marketplace', icon: icons.shoppingCart, route: '/career/phone-marketplace', color: '#228B22', iconColor: '#ffffff' },
   { name: 'Car Meet', icon: icons.cars, route: '/career/car-meets-phone', color: '#696969', iconColor: '#ffffff' },
-  { name: 'Marketplace', icon: icons.shoppingCart, route: '/career/phone-marketplace', color: '#228B22', iconColor: '#ffffff' }
+  { name: 'Repo', icon: icons.tow, route: '/career/phone-repo', color: '#1E90FF', iconColor: '#ffffff' },
+  { name: 'Taxi', icon: icons.taxiCar3, route: '/career/phone-taxi', color: '#ffd700', iconColor: '#000000' }
   // Add more apps using icons from the existing icon system
 ]
 
@@ -45,13 +46,17 @@ const navigateTo = (route) => {
 
 <style scoped lang="scss">
 .home-screen {
-  padding: 20px;
-  padding-top: 500px;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 20px;
-  max-width: 500px;
-  margin: 0 auto;
+  padding: 15px;
+  padding-top: 400px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap-reverse;
+  gap: 10px;
+  max-width: 100%;
+  height: 100%;
+  align-content: flex-end;
+  justify-content: flex-start;
+  box-sizing: border-box;
 }
 
 .app-item {

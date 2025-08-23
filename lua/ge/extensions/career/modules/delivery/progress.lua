@@ -27,6 +27,7 @@ local progressTemplate = {
     fluid = 0,
     dryBulk = 0,
     cement = 0,
+    cash = 0
   }
 }
 
