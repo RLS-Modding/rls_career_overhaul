@@ -1,71 +1,153 @@
 <template>
-  <!--div class="vehicle-shop-wrapper"-->
   <BngCard class="vehicle-shop-wrapper" v-bng-blur bng-ui-scope="vehicleList">
-    <div class="address-bar">
-      <div class="spacer"></div>
-      <div class="field">
-        <BngInput v-model="localSearchQuery" placeholder="Search for a vehicle" @focus="inputFocused = true"
-          @blur="triggerSearch" @keydown.enter="triggerSearch" />
-      </div>
-      <div class="spacer"></div>
+    <!-- Header Section -->
+    <div class="header-section">
+        <!-- Search and Filter Bar -->
+        <div class="search-filter-bar">
+          <div class="search-section">
+            <BngIcon :type="icons.search" class="search-icon" />
+            <BngInput 
+              v-model="localSearchQuery" 
+              placeholder="Search for a vehicle..." 
+              @focus="inputFocused = true"
+              @blur="triggerSearch" 
+              @keydown.enter="triggerSearch" 
+              class="search-input"
+            />
+          </div>
+          
+          <FilterDropdown 
+            :filters="vehicleShoppingStore.filters"
+            @add-filter="handleAddFilter"
+            @remove-filter="removeFilter"
+            @clear-filters="vehicleShoppingStore.clearAllFilters()"
+          />
+
+          <SortDropdown />
+        </div>
     </div>
-    <div class="site-body" bng-nav-scroll bng-nav-scroll-force>
-      <!-- <div class="heading">
-        Place for customizing the shop's appearance, planning to add some image here
-        <h1 style="width:100%; text-align:center;">{{ getHeaderText() }}</h1>
-      </div> -->
-      <!-- <div class="layo-ut">
-        <span v-for="(layout, key) of layouts" :key="key" @click="switchLayout(key)" :class="{'layout-selected': layout.selected}">{{ layout.name }}</span>
-      </div> disabled temporarily -->
-      <div class="price-notice"><span>*&nbsp;</span><span>Additional taxes and fees are applicable</span></div>
 
-      <!-- Show regular list if at a specific dealer -->
-      <div v-if="vehicleShoppingStore?.vehicleShoppingData?.currentSeller" class="vehicle-list">
-        <VehicleCard v-for="(vehicle, key) in vehicleShoppingStore.filteredVehicles" :key="key"
-          :vehicleShoppingData="vehicleShoppingStore.vehicleShoppingData" :vehicle="vehicle" />
+    <!-- Main Content -->
+    <div class="main-content" bng-nav-scroll bng-nav-scroll-force>
+      <div class="price-notice">
+        <span>*&nbsp;</span>
+        <span>Additional taxes and fees are applicable</span>
       </div>
 
-      <!-- Show all vehicles in a flat list when searching -->
-      <div v-else-if="hasActiveSearch" class="vehicle-list">
-        <VehicleCard v-for="(vehicle, key) in allFilteredVehicles" :key="vehicle.shopId"
-          :vehicleShoppingData="vehicleShoppingStore.vehicleShoppingData" :vehicle="vehicle" />
+      <!-- Show current seller vehicles when at specific dealer -->
+      <div v-if="vehicleShoppingStore?.vehicleShoppingData?.currentSeller">
+        <div class="content-header">
+          <h3 class="content-title">{{ vehicleShoppingStore?.vehicleShoppingData?.currentSellerNiceName || 'Dealership' }} - Vehicles</h3>
+          <p class="vehicle-count">{{ vehicleShoppingStore.filteredVehicles.length }} vehicle{{ vehicleShoppingStore.filteredVehicles.length !== 1 ? 's' : '' }} found</p>
+        </div>
+        <div class="vehicle-listings">
+          <VehicleCard v-for="(vehicle, key) in vehicleShoppingStore.filteredVehicles" :key="key"
+            :vehicleShoppingData="vehicleShoppingStore.vehicleShoppingData" :vehicle="vehicle" />
+        </div>
       </div>
 
-      <!-- Show dealer sections if browsing all dealers without search -->
+      <!-- Show search results when searching -->
+      <div v-else-if="hasActiveSearch">
+        <div class="content-header">
+          <h3 class="content-title">Search Results</h3>
+          <p class="vehicle-count">{{ allFilteredVehicles.length }} vehicle{{ allFilteredVehicles.length !== 1 ? 's' : '' }} found</p>
+        </div>
+        <div class="vehicle-listings">
+          <VehicleCard v-for="(vehicle, key) in allFilteredVehicles" :key="vehicle.shopId"
+            :vehicleShoppingData="vehicleShoppingStore.vehicleShoppingData" :vehicle="vehicle" />
+        </div>
+      </div>
+
+      <!-- Show dealership selection and grouped vehicles -->
       <div v-else>
-        <Accordion class="dealer-groups" singular>
-          <AccordionItem v-for="dealer in sortedDealers" :key="dealer.id" :data-dealerid="dealer.id" navigable
-            :expanded="dealer.expanded" @expanded="(state) => onDealerExpanded(dealer, state)">
-            <template #caption>
-              <div class="dealer-caption">
-                <div v-if="dealerMetadata[dealer.id]?.preview" class="dealer-preview"
-                  :style="{ backgroundImage: `url('${dealerMetadata[dealer.id].preview}')` }"></div>
-                <div class="dealer-info">
-                  <div class="dealer-name">{{ dealerMetadata[dealer.id]?.name || dealer.name }}</div>
-                  <div class="dealer-description">{{ dealerMetadata[dealer.id]?.description }}</div>
-                </div>
-                <div class="dealer-count">
-                  {{ dealer.vehicles.length }} Vehicles
-                </div>
+        <!-- Dealership Selection -->
+        <div class="dealership-section">
+          <div class="section-header">
+            <h3 class="section-title">Available Dealerships</h3>
+            <BngButton v-if="selectedDealership" :accent="ACCENTS.menu" @click="selectedDealership = null" class="show-all-btn">
+              Show All Dealerships
+            </BngButton>
+          </div>
+          <div class="dealership-grid">
+            <div 
+              v-for="dealer in sortedDealers" 
+              :key="dealer.id" 
+              class="dealership-card" 
+              :class="{ selected: selectedDealership === dealer.id }"
+              @click="handleDealershipSelect(dealer.id)"
+            >
+              <div class="dealership-icon">
+                <BngIcon :type="icons.locationSource" />
               </div>
-            </template>
-
-            <div class="vehicle-list">
-              <VehicleCard v-for="(vehicle, key) in dealer.vehicles" :key="key"
-                :vehicleShoppingData="vehicleShoppingStore.vehicleShoppingData" :vehicle="vehicle" />
+              <h4 class="dealership-name">{{ dealerMetadata[dealer.id]?.name || dealer.name }}</h4>
+              <p class="dealership-description">{{ dealerMetadata[dealer.id]?.description || 'Vehicle dealership' }}</p>
+              <div class="dealership-stats">
+                <span class="vehicle-count-badge">
+                  {{ dealer.vehicles.length > 0 ? `${dealer.vehicles.length} Available` : 'No vehicles available' }}
+                </span>
+                <div v-if="selectedDealership === dealer.id" class="selected-badge">Selected</div>
+              </div>
+              <div v-if="dealerMetadata[dealer.id]?.preview" class="dealership-preview"
+                :style="{ backgroundImage: `url('${dealerMetadata[dealer.id].preview}')` }"></div>
             </div>
-          </AccordionItem>
-        </Accordion>
+          </div>
+        </div>
+
+        <!-- Vehicle Listings -->
+        <div class="vehicles-section">
+          <div class="content-header">
+            <h3 class="content-title">
+              {{ selectedDealership ? `${(dealerMetadata[selectedDealership]?.name || selectedDealership)} - Vehicles` : 'All Vehicles' }}
+            </h3>
+            <p class="vehicle-count">
+              {{ selectedDealership ? filteredVehicleCount : vehicleShoppingStore.filteredVehicles.length }} vehicle{{ (selectedDealership ? filteredVehicleCount : vehicleShoppingStore.filteredVehicles.length) !== 1 ? 's' : '' }} found
+            </p>
+          </div>
+          <div v-if="selectedDealership" class="content-subtitle">
+            Showing vehicles from {{ dealerMetadata[selectedDealership]?.name || selectedDealership }}
+          </div>
+
+          <div v-if="filteredVehicleCount === 0" class="empty-state">
+            <BngIcon :type="icons.cars" class="empty-icon" />
+            <h4 class="empty-title">No vehicles available</h4>
+            <p class="empty-description">
+              {{ selectedDealership 
+                ? `${dealerMetadata[selectedDealership]?.name || selectedDealership} currently has no vehicles in stock.`
+                : 'No vehicles match your current filters.' 
+              }}
+            </p>
+          </div>
+
+          <div v-else class="vehicle-listings">
+            <template v-if="selectedDealership">
+              <VehicleCard 
+                v-for="(vehicle, key) in getSelectedDealerVehicles()" 
+                :key="key"
+                :vehicleShoppingData="vehicleShoppingStore.vehicleShoppingData" 
+                :vehicle="vehicle" 
+              />
+            </template>
+            <template v-else>
+              <VehicleCard 
+                v-for="(vehicle, key) in vehicleShoppingStore.filteredVehicles" 
+                :key="key"
+                :vehicleShoppingData="vehicleShoppingStore.vehicleShoppingData" 
+                :vehicle="vehicle" 
+              />
+            </template>
+          </div>
+        </div>
       </div>
     </div>
   </BngCard>
-  <!--/div-->
 </template>
 
 <script setup>
 import { reactive, onMounted, ref, computed } from "vue"
 import VehicleCard from "./VehicleCard.vue"
-import { BngCard, BngButton, ACCENTS, BngBinding, BngInput } from "@/common/components/base"
+import FilterDropdown from "./FilterDropdown.vue"
+import SortDropdown from "./SortDropdown.vue"
+import { BngCard, BngButton, ACCENTS, BngBinding, BngInput, BngSelect, BngDropdownContainer, BngIcon, icons } from "@/common/components/base"
 import { vBngBlur, vBngOnUiNav } from "@/common/directives"
 import { lua } from "@/bridge"
 import { useVehicleShoppingStore } from "../../stores/vehicleShoppingStore"
@@ -79,11 +161,16 @@ const dealerMetadata = ref({})
 const inputFocused = ref(false)
 const localSearchQuery = ref('')
 const activeSearchQuery = ref('')
+const sortOpen = ref(false)
+const sortFieldLocal = ref('Value')
+const sortDirectionLocal = ref('Ascending')
+const selectedDealership = ref(null)
 
 // Trigger search only on explicit action (Enter key or blur)
 const triggerSearch = () => {
   activeSearchQuery.value = localSearchQuery.value.trim()
   inputFocused.value = false // Reset focus state
+  vehicleShoppingStore.setSearchQuery(activeSearchQuery.value)
 }
 
 // Use a separate variable to track if we have an active search
@@ -123,7 +210,7 @@ const allFilteredVehicles = computed(() => {
   })
 
   // Sort by price
-  return allVehicles.sort((a, b) => a.Value - b.Value)
+  return vehicleShoppingStore.processVehicleList(allVehicles)
 })
 
 // Fetch dealership data on component mount
@@ -185,7 +272,7 @@ const sortedDealers = computed(() => {
         console.log(orgHidden)
       }
     }
-    
+
     // Show dealer if neither the dealer nor the organization level wants it hidden
     return !orgHidden;
   });
@@ -196,6 +283,53 @@ const sortedDealers = computed(() => {
     return nameA.localeCompare(nameB);
   });
 });
+
+// Filter handling functions
+const handleAddFilter = (filter) => {
+  if (filter.type === 'range') {
+    vehicleShoppingStore.setFilterRange(filter.category, filter.value[0], filter.value[1])
+  } else if (filter.type === 'select') {
+    vehicleShoppingStore.toggleFilterValue(filter.category, filter.value)
+  }
+}
+
+function removeFilter(key) {
+  vehicleShoppingStore.setFilterRange(key)
+}
+function applySort() {
+  const dir = sortDirectionLocal.value === 'Descending' ? 'desc' : 'asc'
+  vehicleShoppingStore.setSort(sortFieldLocal.value || 'Value', dir)
+}
+
+function formatFieldLabel(key) {
+  if (!key) return ''
+  return key
+    .replace(/_/g, ' ')
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/^./, s => s.toUpperCase())
+}
+
+// Keep only the functions we still need
+
+// Handle dealership selection
+const handleDealershipSelect = (dealershipId) => {
+  selectedDealership.value = selectedDealership.value === dealershipId ? null : dealershipId
+}
+
+// Get vehicles for selected dealership
+const getSelectedDealerVehicles = () => {
+  if (!selectedDealership.value) return []
+  const dealer = sortedDealers.value.find(d => d.id === selectedDealership.value)
+  return dealer ? dealer.vehicles : []
+}
+
+// Count filtered vehicles
+const filteredVehicleCount = computed(() => {
+  if (selectedDealership.value) {
+    return getSelectedDealerVehicles().length
+  }
+  return sortedDealers.value.reduce((total, dealer) => total + dealer.vehicles.length, 0)
+})
 </script>
 
 <style scoped lang="scss">
@@ -204,146 +338,624 @@ const sortedDealers = computed(() => {
   min-height: 0;
   max-width: 80rem;
   height: 100%;
+  display: flex;
+  flex-direction: column;
+}
 
-  .address-bar {
-    flex: 0 0 auto;
-    display: flex;
-    flex-flow: row;
-    align-items: center;
-    background-color: var(--bng-cool-gray-700);
-    padding: 0.5rem;
+// Header Section
+.header-section {
+  flex: 0 0 auto;
+  background: linear-gradient(135deg, var(--bng-cool-gray-900) 0%, var(--bng-cool-gray-875) 100%);
+  border-bottom: 1px solid var(--bng-cool-gray-700);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(8px);
 
-    &>.spacer {
-      flex: 1;
-    }
+  .header-content {
+    max-width: 80rem;
+    margin: 0 auto;
+    padding: 1.5rem 1rem;
+  }
 
-    &>.field {
-      border-radius: var(--bng-corners-1);
-      background-color: var(--bng-cool-gray-900);
-      // border: 0.0625rem solid var(--bng-cool-gray-600);
-      padding: 0.5rem 0.75rem;
-      flex: 0 0 auto;
-      width: 64rem;
-      text-overflow: ellipsis;
-      color: white;
-      text-align: center;
+  .title-section {
+    margin-bottom: 1rem;
 
-      // text-transform: lowercase;
-      &>span {
-        &::before {
-          content: " ";
-          display: inline-block;
-          height: auto;
-          color: var(--bng-cool-gray-400);
+    .icon-section {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      .garage-icon {
+        width: 2rem;
+        height: 3rem;
+        background: var(--bng-orange);
+        border-radius: var(--bng-corners-1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--bng-off-black);
+        font-weight: bold;
+        font-size: 1.25rem;
+      }
+
+      .title-info {
+        .garage-name {
+          color: var(--bng-off-white);
+          font-weight: 500;
+          margin: 0;
+          font-size: 1rem;
         }
 
-        &::after {
-          content: " ";
-          display: inline-block;
-          height: auto;
-          color: var(--bng-cool-gray-400);
+        .page-title {
+          color: var(--bng-off-white);
+          font-size: 1.25rem;
+          font-weight: normal;
+          margin: 0;
         }
       }
     }
   }
 
-  .site-body {
-    min-height: 0;
-    overflow: auto;
-    color: white;
+  .nav-buttons {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+
+    .nav-btn {
+      color: var(--bng-orange);
+      
+      &:hover {
+        background: var(--bng-orange-alpha-20);
+      }
+    }
+
+    .view-tabs {
+      display: flex;
+      gap: 0.5rem;
+
+      .tab-btn {
+        &.active {
+          background: var(--bng-orange);
+          color: var(--bng-off-black);
+
+          &:hover {
+            background: var(--bng-orange-dark);
+          }
+        }
+      }
+    }
   }
 
-  .layo-ut {
-    position: sticky;
-    top: 0px;
-    left: 1rem;
-    z-index: 9999;
+  .search-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: var(--bng-cool-gray-900);
     border-radius: var(--bng-corners-2);
-    width: 16rem;
-    padding: 0.5rem;
-    background: var(--bng-cool-gray-800);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+    .search-section {
+      position: relative;
+      flex: 1;
+      background: transparent;
+      border-radius: var(--bng-corners-1);
+      border: none;
+      transition: all 0.2s ease;
+
+      &:focus-within {
+        border-color: transparent;
+        box-shadow: none;
+      }
+
+      .search-icon {
+        position: absolute;
+        left: 0.875rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--bng-orange);
+        width: 1.125rem;
+        height: 1.125rem;
+        z-index: 2;
+      }
+
+      .search-input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 2.75rem;
+        height: 2.75rem;
+        background: transparent;
+        border: none;
+        border-bottom: none !important;
+        box-shadow: none !important;
+        color: var(--bng-off-white);
+        font-size: 0.875rem;
+        border-radius: var(--bng-corners-1);
+
+        &::placeholder {
+          color: var(--bng-cool-gray-400);
+          font-weight: 400;
+        }
+
+        &:focus {
+          outline: none;
+        }
+
+        &:focus::placeholder {
+          color: var(--bng-cool-gray-500);
+        }
+      }
+
+      /* Ensure inner BngInput elements have no background/underline */
+      :deep(input),
+      :deep(.input),
+      :deep(.bng-input),
+      :deep(.bng-input input) {
+        background: transparent !important;
+        border: none !important;
+        border-bottom: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+      }
+
+      /* Hide underline effects implemented with pseudo-elements */
+      :deep(.bng-input)::before,
+      :deep(.bng-input)::after,
+      :deep(.bng-input input)::before,
+      :deep(.bng-input input)::after {
+        display: none !important;
+        content: none !important;
+      }
+
+      /* Kill hover/focus styles and any underline variants */
+      :deep(.bng-input:hover),
+      :deep(.bng-input input:hover),
+      :deep(input:hover) {
+        background: transparent !important;
+        box-shadow: none !important;
+      }
+
+      :deep(.bng-input:focus-within),
+      :deep(input:focus) {
+        background: transparent !important;
+        border: none !important;
+        border-bottom: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+      }
+
+      :deep(.bng-input *::before),
+      :deep(.bng-input *::after) {
+        display: none !important;
+        content: none !important;
+        box-shadow: none !important;
+        border: none !important;
+        background: transparent !important;
+      }
+    }
+
+    .sort-control {
+      /* strip outer dropdown chrome */
+      :deep(.bng-dropdown),
+      :deep(.bng-dropdown__container),
+      :deep(.dropdown-container) {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+      }
+
+      .sort-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        background: var(--bng-cool-gray-800);
+        border: 1px solid var(--bng-cool-gray-600);
+        border-radius: var(--bng-corners-1);
+        color: var(--bng-off-white);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.875rem;
+        font-weight: 500;
+        height: 2.75rem;
+
+        &:hover {
+          background: var(--bng-orange-alpha-10);
+          border-color: var(--bng-orange-alpha-50);
+        }
+
+        &.active {
+          border-color: var(--bng-orange);
+          background: var(--bng-orange-alpha-10);
+        }
+      }
+
+      .sort-panel {
+        width: 24rem;
+        background: var(--bng-cool-gray-900);
+        border: 1px solid var(--bng-cool-gray-600);
+        border-radius: var(--bng-corners-2);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        padding: 1rem;
+      }
+
+      .sort-content {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .sort-fields {
+        .section-title {
+          font-size: 0.95rem;
+          color: var(--bng-cool-gray-100);
+          font-weight: 700;
+          margin-bottom: 0.5rem;
+        }
+
+        .field-options {
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+          max-height: 12rem;
+          overflow-y: auto;
+        }
+
+        .field-option {
+          padding: 0.5rem 0.75rem;
+          border-radius: var(--bng-corners-1);
+          cursor: pointer;
+          transition: background 120ms ease;
+          background: var(--bng-cool-gray-800);
+          border: 1px solid var(--bng-cool-gray-700);
+          font-size: 0.875rem;
+
+          &:hover {
+            background: var(--bng-cool-gray-775);
+          }
+
+          &.selected {
+            background: var(--bng-orange-alpha-20);
+            border-color: var(--bng-orange);
+            color: var(--bng-orange);
+          }
+        }
+      }
+
+      .sort-direction {
+        .section-title {
+          font-size: 0.95rem;
+          color: var(--bng-cool-gray-100);
+          font-weight: 700;
+          margin-bottom: 0.5rem;
+        }
+
+        .direction-options {
+          display: flex;
+          gap: 0.5rem;
+          margin-bottom: 1rem;
+
+          .direction-btn {
+            flex: 1;
+          }
+        }
+
+        .apply-sort-btn {
+          width: 100%;
+          background: var(--bng-orange);
+          color: var(--bng-off-black);
+
+          &:hover {
+            background: var(--bng-orange-dark);
+          }
+        }
+      }
+
+      /* Hide default opener button rendered by dropdown container (left small caret) */
+      :deep(.bng-dropdown-opener),
+      :deep(.bng-dropdown__opener),
+      :deep(.dropdown-opener) {
+        display: none !important;
+      }
+    }
   }
+}
+
+// Main Content
+.main-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  color: var(--bng-off-white);
+  padding: 1rem;
+  max-width: 80rem;
+  margin: 0 auto;
+  width: 100%;
 
   .price-notice {
-    display: inline-flex;
-    padding: 0.25rem 1rem;
+    display: flex;
     justify-content: flex-end;
-    width: 100%;
-    color: var(--bng-cool-gray-200);
+    padding: 0.25rem 0 1rem 0;
+    color: var(--bng-cool-gray-300);
+    font-size: 0.875rem;
   }
 
-  .heading {
+  .content-header {
     display: flex;
-    flex-flow: row wrap;
-    align-items: flex-start;
-    padding: 0.5rem;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+
+    .content-title {
+      font-size: 1.25rem;
+      font-weight: 500;
+      color: var(--bng-off-white);
+      margin: 0;
+    }
+
+    .vehicle-count {
+      font-size: 0.875rem;
+      color: var(--bng-cool-gray-300);
+      margin: 0;
+    }
   }
 
-  .vehicle-list {
-    display: flex;
-    flex-flow: row wrap;
-    width: 100%;
-    overflow-y: auto;
-    padding: 0.5rem 0.5rem 1rem 0.5rem;
-    // height: 90%;
-    min-height: 0;
-    // background: #bdc8d1;
+  .content-subtitle {
+    font-size: 0.875rem;
+    color: var(--bng-cool-gray-300);
+    margin-bottom: 1rem;
   }
 }
 
-.layout-selected {
-  color: pink;
+// Dealership Section
+.dealership-section {
+  margin-bottom: 2rem;
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+
+    .section-title {
+      font-size: 1.125rem;
+      font-weight: 500;
+      color: var(--bng-off-white);
+      margin: 0;
+    }
+
+    .show-all-btn {
+      color: var(--bng-orange);
+      border: 1px solid var(--bng-orange-alpha-50);
+
+      &:hover {
+        background: var(--bng-orange-alpha-20);
+      }
+    }
+  }
+
+  .dealership-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+
+  .dealership-card {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-rows: auto auto 1fr;
+    grid-template-areas:
+      "icon name preview"
+      "icon desc preview"
+      "icon stats preview";
+    column-gap: 1rem;
+    row-gap: 0.25rem;
+    padding: 1rem;
+    background: var(--bng-cool-gray-900);
+    border: 1px solid var(--bng-cool-gray-700);
+    border-radius: var(--bng-corners-2);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    align-items: center;
+    position: relative;
+
+    &:hover {
+      border-color: var(--bng-orange-alpha-50);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    &.selected {
+      background: var(--bng-orange-alpha-5);
+      border-color: var(--bng-orange);
+      box-shadow: 0 0 0 1px var(--bng-orange-alpha-50);
+    }
+
+    .dealership-icon {
+      grid-area: icon;
+      width: 3.25rem;
+      height: 3.25rem;
+      border-radius: var(--bng-corners-1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bng-cool-gray-800);
+      color: var(--bng-orange);
+      flex-shrink: 0;
+    }
+
+    &.selected .dealership-icon {
+      background: var(--bng-orange);
+      color: var(--bng-off-black);
+    }
+
+    .dealership-name {
+      grid-area: name;
+      align-self: center;
+      font-weight: 500;
+      margin: 0;
+      color: var(--bng-off-white);
+    }
+
+    .dealership-description {
+      grid-area: desc;
+      font-size: 0.875rem;
+      color: var(--bng-cool-gray-300);
+      margin: 0;
+    }
+
+    .dealership-stats {
+      grid-area: stats;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      .vehicle-count-badge {
+        color: var(--bng-orange);
+        font-weight: 600;
+        font-size: 0.875rem;
+      }
+
+      .selected-badge {
+        position: absolute;
+        right: 0.75rem;
+        bottom: 0.75rem;
+        padding: 0.375rem 0.75rem;
+        background: var(--bng-orange);
+        color: var(--bng-off-black);
+        border-radius: var(--bng-corners-1);
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        z-index: 2;
+      }
+    }
+
+    .dealership-preview {
+      grid-area: preview;
+      width: 10rem;
+      height: 6.5rem;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      border-radius: var(--bng-corners-1);
+      flex-shrink: 0;
+      border: 1px solid var(--bng-cool-gray-700);
+    }
+  }
 }
 
-.dealer-groups {
-  min-height: 0;
-  max-height: 80vh;
+// Vehicle Listings
+.vehicle-listings {
   display: flex;
   flex-direction: column;
+  gap: 0.75rem;
 }
 
-.dealer-caption {
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: stretch;
-  align-items: center;
-  overflow: hidden;
-  width: 100%;
-  height: 4em;
-  padding: 0.5rem;
+// Dealer Sections (when showing all)
+.dealer-section {
+  margin-bottom: 2rem;
 
-  .dealer-preview {
-    width: 8em;
-    height: 100%;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    border-radius: var(--bng-corners-1);
-  }
+  .dealer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: var(--bng-cool-gray-900);
+    border-radius: var(--bng-corners-2);
+    border: 1px solid var(--bng-cool-gray-700);
 
-  .dealer-info {
-    flex: 1 1 auto;
-    padding: 0 1rem;
-    overflow: hidden;
+    .dealer-title-section {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
 
-    .dealer-name {
-      font-size: 1.2em;
-      font-weight: 600;
+      .dealer-preview-small {
+        width: 3rem;
+        height: 2.25rem;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        border-radius: var(--bng-corners-1);
+      }
+
+      .dealer-section-name {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--bng-off-white);
+        margin: 0;
+      }
+
+      .dealer-section-description {
+        font-size: 0.875rem;
+        color: var(--bng-cool-gray-300);
+        margin: 0;
+      }
     }
 
-    .dealer-description {
-      font-size: 0.9em;
+    .dealer-vehicle-count {
       color: var(--bng-cool-gray-300);
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      overflow: hidden;
+      font-weight: 300;
     }
   }
 
-  .dealer-count {
-    flex: 0 0 auto;
-    padding: 0.5rem;
-    font-weight: 300;
+  .dealer-vehicles {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding-left: 0;
   }
+}
+
+// Empty State
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  background: var(--bng-cool-gray-900);
+  border-radius: var(--bng-corners-2);
+  border: 1px solid var(--bng-cool-gray-700);
+
+  .empty-icon {
+    width: 4rem;
+    height: 4rem;
+    color: var(--bng-cool-gray-500);
+    margin-bottom: 1rem;
+  }
+
+  .empty-title {
+    font-weight: 500;
+    margin: 0 0 0.5rem 0;
+    color: var(--bng-off-white);
+  }
+
+  .empty-description {
+    font-size: 0.875rem;
+    color: var(--bng-cool-gray-300);
+    margin: 0;
+    max-width: 400px;
+  }
+}
+</style>
+
+<style lang="scss">
+/* Global overrides for teleported dropdown panels to prevent scrollbars */
+.bng-dropdown,
+.bng-dropdown__container,
+.dropdown-container,
+.bng-dropdown-content,
+.bng-dropdown__content,
+.dropdown-content,
+.bng-dropdown-panel,
+.bng-dropdown__panel,
+.dropdown-panel {
+  max-height: none !important;
+  overflow: visible !important;
 }
 </style>
