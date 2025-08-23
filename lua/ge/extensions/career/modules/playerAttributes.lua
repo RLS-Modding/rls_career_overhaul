@@ -108,6 +108,9 @@ local function getAttribute(attributeName)
   return attributes[attributeName]
 end
 local function getAttributeValue(attributeName)
+  if not attributes then
+    return 0
+  end
   return (attributes[attributeName] or baseAttribute).value
 end
 
