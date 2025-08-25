@@ -445,7 +445,9 @@ local function loadPoliciesData(resetSomeData)
                 totalMetersDriven = 0,
                 bonus = 1,
                 hasFreeRepair = false,
-                owned = false
+                owned = false,
+                policeStops = 0, -- counter for police stops
+                policeFreeRepairAvailable = false -- flag for free police repair
             }
 
             plHistory.policyHistory[policyInfo.id] = {
@@ -462,6 +464,13 @@ local function loadPoliciesData(resetSomeData)
             }
         end
         plPoliciesData[policyInfo.id].perks = updatedPerksData
+        -- Backward compatibility for new police fields
+        if not plPoliciesData[policyInfo.id].policeStops then
+            plPoliciesData[policyInfo.id].policeStops = 0
+        end
+        if plPoliciesData[policyInfo.id].policeFreeRepairAvailable == nil then
+            plPoliciesData[policyInfo.id].policeFreeRepairAvailable = false
+        end
         if policyInfo.id == 0 then
             plPoliciesData[policyInfo.id].owned = true -- No Insurance is always available
         end
@@ -674,7 +683,12 @@ local function makeRepairClaim(invVehId, price, rateIncrease)
     local policyId = insuredInvVehs[tostring(invVehId)]
     local hasUsedFreeRepair = false
 
-    if plPoliciesData[policyId].hasFreeRepair then
+    -- Check for police free repair first (policy ID 4)
+    if policyId == 4 and plPoliciesData[policyId].policeFreeRepairAvailable then
+        plPoliciesData[policyId].policeFreeRepairAvailable = false
+        hasUsedFreeRepair = true
+        ui_message("Police insurance: Free repair used", 5, "Insurance", "info")
+    elseif plPoliciesData[policyId].hasFreeRepair then
         plPoliciesData[policyId].hasFreeRepair = false
         hasUsedFreeRepair = true
     else
@@ -1203,6 +1217,7 @@ local function getRepairData()
     if not policyId then policyId = 0 end
     local policyInfo = {
         hasFreeRepair = plPoliciesData[policyId] and plPoliciesData[policyId].hasFreeRepair or false,
+        policeFreeRepairAvailable = plPoliciesData[policyId] and plPoliciesData[policyId].policeFreeRepairAvailable or false,
         name = (availablePolicies[policyId] and availablePolicies[policyId].name) or "No Insurance"
     }
 
@@ -1600,6 +1615,9 @@ local function onPursuitAction(vehId, action, data)
             if not invId or not hasLicensePlate(invId) then
                 fine = fine * 2.5
             end
+            if M.hasNoInsurance(invId) then
+                fine = fine * 3
+            end
             if career_modules_hardcore.isHardcoreMode() then
                 fine = fine * 3
             end
@@ -1613,9 +1631,15 @@ local function onPursuitAction(vehId, action, data)
             }}
 
             local offenseNameList = {}
-            for offenseKey, offenseData in pairs(data.offenses) do
-                local offenseName = offenseNames[offenseKey] or offenseKey
-                table.insert(offenseNameList, offenseName)
+            if data.offenses and type(data.offenses) == "table" then
+                for offenseKey, offenseData in pairs(data.offenses) do
+                    local offenseName = offenseNames[offenseKey] or offenseKey
+                    table.insert(offenseNameList, offenseName)
+                end
+            end
+            -- If no specific offenses, use a default message
+            if #offenseNameList == 0 then
+                table.insert(offenseNameList, "Traffic Violations")
             end
             local arrested = false
             if data.mode ~= 1 then
@@ -1624,17 +1648,6 @@ local function onPursuitAction(vehId, action, data)
 
             if arrested then
                 career_modules_inventory.addArrest(invId)
-                -- Police insurance: grant accident forgiveness every 2 arrests; flag cannot stack
-                local assigned = invId and insuredInvVehs[tostring(invId)]
-                if assigned and assigned > 0 and math.abs(assigned) == 4 then
-                    if not plPoliciesData[4].hasFreeRepair then
-                        local arrestsCount = career_modules_inventory.getArrests(invId) or 0
-                        if arrestsCount % 2 == 0 then
-                            plPoliciesData[4].hasFreeRepair = true
-                            ui_message("Police insurance: Accident forgiveness granted", 5, "Insurance", "info")
-                        end
-                    end
-                end
             else
                 career_modules_inventory.addTicket(invId)
                 fine = fine * 0.5
@@ -1647,6 +1660,10 @@ local function onPursuitAction(vehId, action, data)
             else
                 if not career_modules_inventory.getLicensePlateText(vehId) then
                     eventDescription = eventDescription .. " (No License Plate)"
+                end
+
+                if M.hasNoInsurance(invId) then
+                    eventDescription = eventDescription .. "\nNo Insurance: Fine tripled."
                 end
 
                 if career_modules_hardcore.isHardcoreMode() then
@@ -1671,8 +1688,8 @@ local function onPursuitAction(vehId, action, data)
                 tags = {"fine", "criminal"}
             })
             local combinedMessage = string.format(
-              "%s\nYou have been fined: $%.2f\nYour insurance policy score is now: %.2f", eventDescription, fine,
-              plPoliciesData[policyId].bonus)
+              "%s\nYou have been fined: $%.2f\nYour insurance policy score is now: %.2f",
+              eventDescription, fine, plPoliciesData[policyId].bonus)
             ui_message(combinedMessage, 8, "Insurance", "info")
             career_saveSystem.saveCurrent()
             vehId = be:getPlayerVehicleID(0)
@@ -1954,7 +1971,9 @@ local function sendUIData()
             -- ownership derived from having at least one vehicle assigned to this policy
             owned = (assignedCounts[policyInfo.id] or 0) > 0 or policyInfo.id == 0,
             bonus = plPolicyData.bonus,
-            nextPolicyEditTimer = plPolicyData.nextPolicyEditTimer
+            nextPolicyEditTimer = plPolicyData.nextPolicyEditTimer,
+            policeStops = plPolicyData.policeStops or 0,
+            policeFreeRepairAvailable = plPolicyData.policeFreeRepairAvailable or false
         }
 
         for plPerkName, plPerkValue in pairs(plPolicyData.perks) do
@@ -2284,6 +2303,46 @@ M.getPlayerPolicyData = getPlayerPolicyData
 M.payBonusReset = payBonusReset
 M.getQuickRepairExtraPrice = getQuickRepairExtraPrice
 M.expediteRepair = expediteRepair
+
+-- Police-specific functions
+local function getPoliceStops()
+    return plPoliciesData[4] and plPoliciesData[4].policeStops or 0
+end
+
+local function hasPoliceFreeRepairAvailable()
+    return plPoliciesData[4] and plPoliciesData[4].policeFreeRepairAvailable or false
+end
+
+local function incrementPoliceStop(invVehId)
+    local policyId = insuredInvVehs[tostring(invVehId)]
+    if policyId == 4 then -- Police insurance
+        if not plPoliciesData[4] then
+            plPoliciesData[4] = {
+                policeStops = 0,
+                policeFreeRepairAvailable = false
+            }
+        end
+
+        plPoliciesData[4].policeStops = (plPoliciesData[4].policeStops or 0) + 1
+
+        -- Grant free repair every 3 stops, but only if not already available
+        if plPoliciesData[4].policeStops >= 3 and not (plPoliciesData[4].policeFreeRepairAvailable or false) then
+            plPoliciesData[4].policeFreeRepairAvailable = true
+            plPoliciesData[4].policeStops = 0 -- reset counter
+            ui_message("Police insurance: Free repair earned after 3 stops", 5, "Insurance", "info")
+        end
+    end
+end
+
+local function hasNoInsurance(invVehId)
+    local policyId = insuredInvVehs[tostring(invVehId)]
+    return policyId == 0 or policyId == nil
+end
+
+M.getPoliceStops = getPoliceStops
+M.hasPoliceFreeRepairAvailable = hasPoliceFreeRepairAvailable
+M.incrementPoliceStop = incrementPoliceStop
+M.hasNoInsurance = hasNoInsurance
 
 M.calculatePremiumDetails = calculatePremiumDetails
 M.calculatePolicyPremium = calculatePolicyPremium
