@@ -406,28 +406,34 @@
       ],
       "filter": {
         "whiteList": {
-          "Mileage": {
-            "min": 9000,
-            "max": 70000000
-          },
-          "Years": {
-            "min": 2000,
-            "max": 2025
-          },
           "Type": [
-            "Car"
+            "Car",
+            "Truck"
           ],
           "Config Type": [
             "Factory"
           ],
-          "Value": {
-            "min": 10000,
-            "max": 60000
-          }
+          "Body Style": [
+            "LWB Sedan",
+            "Convertible",
+            "Compact SUV",
+            "Coupe",
+            "Estate",
+            "Hardtop Sedan",
+            "Hatchback",
+            "Liftback",
+            "Minivan",
+            "Sedan",
+            "SUV",
+            "Ute",
+            "coupe",
+            "Wagon",
+            "Pickup"
+          ]
         },
         "blackList": {
-          "Type": [
-            "Trailer"
+          "Configuration": [
+            "Police"
           ],
           "Config Type": [
             "Police"
@@ -435,21 +441,64 @@
           "Body Style": [
             "ATV",
             "Buggy"
+          ],
+          "Type": [
+            "Trailer"
           ]
         }
       },
       "subFilters": [
         {
-          "probability": 6,
+          "probability": 10,
           "whiteList": {
+            "Mileage": {
+              "min": 16093.44,
+              "max": 32186880
+            },
+            "Years": {
+              "min": 2018,
+              "max": 2026
+            },
             "Country": [
               "United States"
-            ]
+            ],
+            "Value": {
+              "min": 5000,
+              "max": 96000
+            }
           }
         },
         {
-          "probability": 2,
+          "probability": 10,
           "whiteList": {
+            "Mileage": {
+              "min": 3712113.0275625,
+              "max": 80467200
+            },
+            "Years": {
+              "min": 2005,
+              "max": 2020
+            },
+            "Country": [
+              "United States"
+            ],
+            "Value": {
+              "min": 5000,
+              "max": 100000
+            }
+          }
+        },
+        {
+          "probability": 1,
+          "whiteList": {
+            "Mileage": {
+              "min": 6048719.424,
+              "max": 80467200
+            },
+            "Years": {
+              "min": 1997,
+              "max": 2023
+            },
             "Country": [
               "Poland",
               "Italy",
@@ -460,23 +509,20 @@
               "United Kingdom",
               "Great Britain",
               "Japan",
-              "Soviet Union/Russia"
-            ]
-          }
-        },
-        {
-          "probability": 1,
-          "whiteList": {
-            "Config Type": [
-              "Factory"
-            ]
+              "Soviet Union/Russia",
+              "The Netherlands"
+            ],
+            "Value": {
+              "min": 10000,
+              "max": 120000
+            }
           }
         }
       ],
       "subFilterNames": [
-        "Sub-Filter 1",
-        "Sub-Filter 2",
-        "Sub-Filter 3"
+        "USA New",
+        "USA Trades",
+        "Import Trades"
       ],
       "fees": 749,
       "containsStarterVehicles": false,
@@ -491,6 +537,8 @@
       "salesTax": 0.07,
       "ui": {
         "showMatchingConfigs": [
+          true,
+          true,
           true
         ],
         "configSearchText": {}
@@ -539,9 +587,7 @@
             "min": 0,
             "max": 160934400
           },
-          "Value": {
-            "min": 80000
-          }
+          "Value": {}
         },
         "blackList": {
           "Type": [
@@ -1543,15 +1589,15 @@
           "Type": [
             "Trailer"
           ],
+          "hasLoad": [
+            true
+          ],
           "Tags": [
             "Ambulance"
           ],
           "Body Style": [
             "Ambulance",
             "Pickup"
-          ],
-          "hasLoad": [
-            true
           ]
         }
       },
