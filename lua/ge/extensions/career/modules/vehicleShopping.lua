@@ -78,7 +78,7 @@ local function getShoppingData()
   data.organizations = {}
   if facilities and facilities.dealerships then
     for _, d in ipairs(facilities.dealerships) do
-      local orgId = d.associateOrganization or d.associatedOrganization
+      local orgId = d.associatedOrganization or d.associatedOrganization
       table.insert(data.dealerships, {
         id = d.id,
         name = d.name,
@@ -270,8 +270,8 @@ local function cacheDealers()
       end
 
       local filter = dealership.filter or {}
-      if dealership.associateOrganization then
-        local org = freeroam_organizations.getOrganization(dealership.associateOrganization)
+      if dealership.associatedOrganization then
+        local org = freeroam_organizations.getOrganization(dealership.associatedOrganization)
         if org then
           local level = org.reputationLevels[org.reputation.level + 2]
           filter = level.filter or filter
@@ -279,8 +279,8 @@ local function cacheDealers()
       end
 
       local subFilters = dealership.subFilters or {}
-      if dealership.associateOrganization then
-        local org = freeroam_organizations.getOrganization(dealership.associateOrganization)
+      if dealership.associatedOrganization then
+        local org = freeroam_organizations.getOrganization(dealership.associatedOrganization)
         if org then
           local level = org.reputationLevels[org.reputation.level + 2]
           subFilters = level.subFilters or subFilters
@@ -508,8 +508,8 @@ local function updateVehicleList(fromScratch)
       
       -- Calculate how many vehicles can be generated based on stock limit and time
       local maxStock = seller.stock or 10 -- fallback to 10 if no stock limit defined
-      if seller.associateOrganization then
-        local org = freeroam_organizations.getOrganization(seller.associateOrganization)
+      if seller.associatedOrganization then
+        local org = freeroam_organizations.getOrganization(seller.associatedOrganization)
         if org then
           local level = org.reputationLevels[org.reputation.level + 2]
           maxStock = level.stock or maxStock
@@ -554,8 +554,8 @@ local function updateVehicleList(fromScratch)
       
       -- Use precomputed filter if available, otherwise use seller filter
       local filter = randomVehicleInfo.precomputedFilter or seller.filter or {}
-      if seller.associateOrganization then
-        local org = freeroam_organizations.getOrganization(seller.associateOrganization)
+      if seller.associatedOrganization then
+        local org = freeroam_organizations.getOrganization(seller.associatedOrganization)
         if org then
           local level = org.reputationLevels[org.reputation.level + 2]
           filter = level.filter or filter
@@ -585,8 +585,8 @@ local function updateVehicleList(fromScratch)
 
 
       local range = seller.range
-      if seller.associateOrganization then
-        local org = freeroam_organizations.getOrganization(seller.associateOrganization)
+      if seller.associatedOrganization then
+        local org = freeroam_organizations.getOrganization(seller.associatedOrganization)
         if org then
           local level = org.reputationLevels[org.reputation.level + 2]
           range = level.range or range
@@ -597,8 +597,8 @@ local function updateVehicleList(fromScratch)
 
       -- compute taxes and fees
       local fees = seller.fees or 0
-      if seller.associateOrganization then
-        local org = freeroam_organizations.getOrganization(seller.associateOrganization)
+      if seller.associatedOrganization then
+        local org = freeroam_organizations.getOrganization(seller.associatedOrganization)
         if org then
           local level = org.reputationLevels[org.reputation.level + 2]
           fees = level.fees or fees
@@ -607,8 +607,8 @@ local function updateVehicleList(fromScratch)
       randomVehicleInfo.fees = fees
 
       local tax = seller.salesTax or salesTax
-      if seller.associateOrganization then
-        local org = freeroam_organizations.getOrganization(seller.associateOrganization)
+      if seller.associatedOrganization then
+        local org = freeroam_organizations.getOrganization(seller.associatedOrganization)
         if org then
           local level = org.reputationLevels[org.reputation.level + 2]
           tax = level.tax or tax
