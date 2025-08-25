@@ -183,8 +183,18 @@ local gestures = {
         local everyGestures = plHistory.policyHistory[plPolicyData.id].policyScoreDecreases
         local lastGesture = everyGestures[#everyGestures]
         local renewalSeconds = M.getPlPerkValue(plPolicyData.id, "renewal") or 0
-        if plPolicyData.totalMetersDriven - math.max(data.distRef, lastGesture and lastGesture.happenedAt or 0) >
-          (renewalSeconds / 2) then
+
+        -- Get the last claim time instead of distance
+        local lastClaim = plHistory.policyHistory[plPolicyData.id].claims[#plHistory.policyHistory[plPolicyData.id].claims]
+        local lastClaimTime = lastClaim and lastClaim.time or 0
+        local lastGestureTime = lastGesture and lastGesture.time or 0
+        local referenceTime = math.max(lastClaimTime, lastGestureTime)
+
+        -- Use current time to calculate elapsed time since last claim or bonus decrease
+        local currentTime = os.time()
+        local timeSinceLastEvent = currentTime - referenceTime
+
+        if timeSinceLastEvent > renewalSeconds then
             plPolicyData.bonus = math.floor(plPolicyData.bonus * (1 - bonusDecrease) * 100) / 100
             if plPolicyData.bonus < minimumPolicyScore then
                 plPolicyData.bonus = minimumPolicyScore
