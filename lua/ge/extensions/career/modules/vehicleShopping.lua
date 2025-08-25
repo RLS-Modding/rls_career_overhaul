@@ -292,24 +292,30 @@ local function cacheDealers()
         local filteredRegular = {}
         local filters = {}
         
-        -- Create aggregated filters like the original system
+        -- Create aggregated filters and carry over probability for weighting
         if subFilters and not tableIsEmpty(subFilters) then
           for _, subFilter in ipairs(subFilters) do
             local aggregateFilter = deepcopy(filter or {})
             tableMergeRecursive(aggregateFilter, subFilter)
+            -- Preserve explicit probability on the aggregated filter for later weighting
+            aggregateFilter._probability = (type(subFilter.probability) == "number" and subFilter.probability) or 1
             table.insert(filters, aggregateFilter)
           end
         else
-          table.insert(filters, filter or {})
+          local aggregateFilter = deepcopy(filter or {})
+          aggregateFilter._probability = 1
+          table.insert(filters, aggregateFilter)
         end
         
         -- Pre-filter vehicles for each filter combination
         for _, filter in ipairs(filters) do
+          local subProb = filter._probability or filter.probability or 1
           for _, vehicleInfo in ipairs(regularEligibleVehicles) do
             if doesVehiclePassFilter(vehicleInfo, filter) then
               -- Add the filter info to the vehicle for later use and pre-calculate parts value
               local cachedVehicle = deepcopy(vehicleInfo)
               cachedVehicle.precomputedFilter = filter
+              cachedVehicle.subFilterProbability = subProb
               cachedVehicle.cachedPartsValue = getVehiclePartsValue(vehicleInfo.model_key, vehicleInfo.key)
               totalPartsCalculated = totalPartsCalculated + 1
               table.insert(filteredRegular, cachedVehicle)
@@ -374,10 +380,12 @@ local function getRandomVehicleFromCache(sellerId, count, isStarterVehicle)
   local availableVehicles = deepcopy(sourceVehicles)
   
   for i = 1, math.min(count, #availableVehicles) do
-    -- Use weighted selection based on adjustedPopulation
+    -- Use weighted selection based on adjustedPopulation and subFilterProbability
     local totalWeight = 0
     for _, vehicle in ipairs(availableVehicles) do
-      totalWeight = totalWeight + (vehicle.adjustedPopulation or 1)
+      local pop = vehicle.adjustedPopulation or 1
+      local prob = vehicle.subFilterProbability or 1
+      totalWeight = totalWeight + (pop * prob)
     end
     
     if totalWeight <= 0 then
@@ -391,7 +399,9 @@ local function getRandomVehicleFromCache(sellerId, count, isStarterVehicle)
       local currentWeight = 0
       
       for j, vehicle in ipairs(availableVehicles) do
-        currentWeight = currentWeight + (vehicle.adjustedPopulation or 1)
+        local pop = vehicle.adjustedPopulation or 1
+        local prob = vehicle.subFilterProbability or 1
+        currentWeight = currentWeight + (pop * prob)
         if currentWeight >= randomWeight then
           table.insert(selectedVehicles, vehicle)
           table.remove(availableVehicles, j)
