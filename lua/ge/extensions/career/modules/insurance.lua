@@ -2017,6 +2017,11 @@ end
 
 -- apply the minimum applicable insurance to the vehicle, and save it to the json file
 local function onVehicleAddedToInventory(data)
+    -- Don't override if vehicle already has insurance assigned (from user selection)
+    if insuredInvVehs[tostring(data.inventoryId)] then
+        return
+    end
+
     local conditionData = {
         vehValue = career_modules_valueCalculator.getInventoryVehicleValue(data.inventoryId, true) or (data.vehicleInfo and data.vehicleInfo.Value) or 0,
         population = data.vehicleInfo and data.vehicleInfo.Population or nil,
