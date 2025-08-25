@@ -38,7 +38,8 @@ end
 
 
 local function getDepreciation(year, power)
-  local powerFactor = power / 300
+  -- Use linear scaling to make power have bigger impact on higher end
+  local powerFactor = 1.0 + (power - 300) * (4.04 - 1.0) / (808 - 300)  -- 50% higher than original linear
   local depreciation = 1
   local isSlowCar = power < 275
 
