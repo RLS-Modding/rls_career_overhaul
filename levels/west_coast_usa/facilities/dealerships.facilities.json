@@ -584,19 +584,6 @@
             "Frame",
             "Race",
             "Service"
-          ],
-          "Configuration": [
-            "Drag",
-            "Drag (A)",
-            "Drag (M)",
-            "Drag (DCT)",
-            "Drag (Sequential",
-            "Drift (Sequential",
-            "Drift (DCT)",
-            "Drift (M)",
-            "Drift (A)",
-            "Drift",
-            "Rally"
           ]
         }
       },
@@ -626,8 +613,7 @@
               "Coupe",
               "Convertible",
               "Sedan"
-            ],
-            "Value": {}
+            ]
           }
         },
         {
@@ -642,31 +628,12 @@
               "max": 1955
             }
           }
-        },
-        {
-          "probability": 2,
-          "whiteList": {
-            "Country": [
-              "Poland",
-              "Italy",
-              "France",
-              "Germany",
-              "Japan",
-              "Soviet Union/Russia",
-              "United Kingdom",
-              "Sweden",
-              "Canada",
-              "Great Britain"
-            ]
-          }
         }
       ],
       "subFilterNames": [
         "Expensive",
         "80s",
-        "classic",
-        "Sub-Filter 2",
-        "Sub-Filter 3"
+        "classic"
       ],
       "fees": 1250,
       "containsStarterVehicles": false,
@@ -681,8 +648,6 @@
       "salesTax": 0.07,
       "ui": {
         "showMatchingConfigs": [
-          true,
-          true,
           true
         ],
         "configSearchText": {}
