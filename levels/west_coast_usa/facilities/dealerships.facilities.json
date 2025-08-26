@@ -4,7 +4,7 @@
       "id": "fastAutomotiveDealership",
       "name": "Fast Automotive",
       "description": "Fast Automotive - Fastest race cars available",
-      "preview": "Fast Automotive.jpg",
+      "preview": "Fast_Automotive.jpg",
       "stock": 15,
       "range": [
         0.8,
@@ -165,7 +165,7 @@
       "id": "jeffersonmotors",
       "name": "Jefferson Motors",
       "description": "Jefferson Motors - Custom American cars",
-      "preview": "Jefferson Motors.jpg",
+      "preview": "Jefferson_Motors.jpg",
       "stock": 10,
       "range": [
         0.5,
@@ -274,7 +274,7 @@
       "id": "frameDealership",
       "name": "Smash Rollers",
       "description": "Smash Rollers - The perfect start to your build",
-      "preview": "Smash Rollers.jpg",
+      "preview": "Smash_Rollers.jpg",
       "stock": 7,
       "range": [
         0.2,
@@ -372,7 +372,7 @@
       "id": "belascoAuto",
       "name": "Belasco Auto",
       "description": "Belasco Auto - New & quality used vehicle sales.",
-      "preview": "Belasco Auto.jpg",
+      "preview": "Belasco_Auto.jpg",
       "stock": 15,
       "range": [
         0.8,
@@ -657,7 +657,7 @@
       "id": "quarrysideAutoSales",
       "name": "Quarryside Auto Sales",
       "description": "Quarryside Auto Sales - Used trucks and vans.",
-      "preview": "Quarryside Auto Sales.jpg",
+      "preview": "Quarryside_Auto_Sales.jpg",
       "stock": 15,
       "range": [
         0.75,
@@ -882,7 +882,7 @@
       "id": "discountedDealership",
       "name": "Trusted Auto Sales",
       "description": "Trusted Auto Sales - Discounted cars",
-      "preview": "Trusted Auto.jpg",
+      "preview": "Trusted_Auto.jpg",
       "stock": 25,
       "range": [
         0.5,
@@ -1042,7 +1042,7 @@
       "id": "policeDealership",
       "name": "Police Dealership",
       "description": "Police Dealership - Purchase police Vehicles here",
-      "preview": "Police Dealership.jpg",
+      "preview": "Police_Dealership.jpg",
       "stock": 7,
       "range": [
         0.6,
@@ -1302,7 +1302,7 @@
       "id": "BruckellDealership",
       "name": "Bruckell Online Dealership",
       "description": "Bruckell Online Dealership",
-      "preview": "Brukell Online Dealership.jpg",
+      "preview": "Brukell_Online_Dealership.jpg",
       "stock": 10,
       "range": [
         0.8,
@@ -1462,7 +1462,7 @@
       "id": "GavrilcarDealership",
       "name": "Gavril-Car Online Dealership",
       "description": "Gavril-Car Online Dealership",
-      "preview": "Gavril Car Online Dealership.jpg",
+      "preview": "Gavril_Car_Online_Dealership.jpg",
       "stock": 10,
       "range": [
         0.8,
@@ -1624,7 +1624,7 @@
       "id": "GavriltruckDealership",
       "name": "Gavril-Truck Online Dealership",
       "description": "Gavril-Truck Online Dealership",
-      "preview": "Gavril Truck Online Dealership.jpg",
+      "preview": "Gavril_Truck_Online_Dealership.jpg",
       "stock": 10,
       "range": [
         0.8,
@@ -1952,7 +1952,7 @@
       "id": "truckShop",
       "name": "Commercial Vehicle Sales",
       "description": "Tractors and Trailers",
-      "preview": "Commercial Vehicles.jpg",
+      "preview": "Commercial_Vehicles.jpg",
       "stock": 20,
       "range": [
         0.8,

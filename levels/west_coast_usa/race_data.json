@@ -211,16 +211,6 @@
         "drift"
       ]
     },
-    "roadOval":{
-      "bestTime":30,
-      "checkpointRoad":"roadOval",
-      "hotlap":25,
-      "label":"Paved Oval",
-      "reward":350,
-      "type":[
-        "oval"
-      ]
-    },
     "rockClimbL":{
       "bestTime":12,
       "checkpointRoad":"rockClimbL",
