@@ -41,7 +41,9 @@
             "cash",
             "coin"
           ],
-          "logisticTypesReceived": []
+          "logisticTypesReceived": [
+            "gold"
+          ]
         },
         {
           "psName": "moneyGrabBankLoaner",
@@ -57,7 +59,9 @@
         "cash",
         "coin"
       ],
-      "logisticTypesReceived": [],
+      "logisticTypesReceived": [
+        "gold"
+      ],
       "logisticGenerators": [
         {
           "type": "materialProvider",
@@ -82,6 +86,18 @@
           "variance": 100,
           "interval": 300,
           "rate": 10000
+        },
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "gold"
+          ],
+          "materialType": "gold",
+          "capacity": 7500,
+          "target": 0,
+          "variance": 5,
+          "interval": 300,
+          "rate": 5
         }
       ]
     },
@@ -115,11 +131,11 @@
             "cash"
           ],
           "materialType": "cash",
-          "capacity": 75,
+          "capacity": 175,
           "target": 0,
           "variance": 25,
           "interval": 300,
-          "rate": 15
+          "rate": 150
         },
         {
           "type": "materialReceiver",
@@ -127,11 +143,11 @@
             "coin"
           ],
           "materialType": "coin",
-          "capacity": 75,
+          "capacity": 175,
           "target": 0,
           "variance": 10,
           "interval": 300,
-          "rate": 10
+          "rate": 100
         }
       ]
     },
@@ -165,11 +181,11 @@
             "cash"
           ],
           "materialType": "cash",
-          "capacity": 150,
+          "capacity": 1500,
           "target": 0,
           "variance": 25,
           "interval": 300,
-          "rate": 50
+          "rate": 150
         },
         {
           "type": "materialReceiver",
@@ -177,11 +193,11 @@
             "coin"
           ],
           "materialType": "coin",
-          "capacity": 50,
+          "capacity": 150,
           "target": 0,
           "variance": 10,
           "interval": 300,
-          "rate": 5
+          "rate": 50
         }
       ]
     },
@@ -215,7 +231,7 @@
             "cash"
           ],
           "materialType": "cash",
-          "capacity": 300,
+          "capacity": 1300,
           "target": 0,
           "variance": 25,
           "interval": 300,
@@ -227,11 +243,11 @@
             "coin"
           ],
           "materialType": "coin",
-          "capacity": 100,
+          "capacity": 1000,
           "target": 0,
           "variance": 10,
           "interval": 300,
-          "rate": 5
+          "rate": 50
         }
       ]
     },
@@ -265,7 +281,7 @@
             "cash"
           ],
           "materialType": "cash",
-          "capacity": 100,
+          "capacity": 300,
           "target": 0,
           "variance": 25,
           "interval": 300,
@@ -277,11 +293,11 @@
             "coin"
           ],
           "materialType": "coin",
-          "capacity": 50,
+          "capacity": 150,
           "target": 0,
           "variance": 5,
           "interval": 300,
-          "rate": 3
+          "rate": 30
         }
       ]
     },
@@ -315,7 +331,7 @@
             "cash"
           ],
           "materialType": "cash",
-          "capacity": 300,
+          "capacity": 600,
           "target": 0,
           "variance": 25,
           "interval": 300,
@@ -327,11 +343,11 @@
             "coin"
           ],
           "materialType": "coin",
-          "capacity": 150,
+          "capacity": 250,
           "target": 0,
           "variance": 5,
           "interval": 300,
-          "rate": 5
+          "rate": 50
         }
       ]
     },
@@ -427,11 +443,11 @@
             "coin"
           ],
           "materialType": "coin",
-          "capacity": 20,
+          "capacity": 120,
           "target": 0,
           "variance": 5,
           "interval": 300,
-          "rate": 5
+          "rate": 15
         }
       ]
     },
@@ -477,11 +493,11 @@
             "coin"
           ],
           "materialType": "coin",
-          "capacity": 20,
+          "capacity": 120,
           "target": 0,
           "variance": 5,
           "interval": 300,
-          "rate": 5
+          "rate": 15
         }
       ]
     },
@@ -527,11 +543,11 @@
             "coin"
           ],
           "materialType": "coin",
-          "capacity": 20,
+          "capacity": 120,
           "target": 0,
           "variance": 5,
           "interval": 300,
-          "rate": 5
+          "rate": 15
         }
       ]
     },
@@ -565,7 +581,7 @@
             "cash"
           ],
           "materialType": "cash",
-          "capacity": 300,
+          "capacity": 1300,
           "target": 0,
           "variance": 50,
           "interval": 300,
@@ -577,11 +593,11 @@
             "coin"
           ],
           "materialType": "coin",
-          "capacity": 200,
+          "capacity": 1200,
           "target": 0,
           "variance": 5,
           "interval": 300,
-          "rate": 25
+          "rate": 75
         }
       ]
     },
@@ -616,7 +632,7 @@
           ],
           "materialType": "gold",
           "capacity": 750,
-          "target": 1000,
+          "target": 750,
           "variance": 5,
           "interval": 300,
           "rate": 5

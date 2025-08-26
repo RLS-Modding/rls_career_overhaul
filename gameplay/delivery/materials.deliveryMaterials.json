@@ -80,7 +80,7 @@
     "name": "Mysterious Waste",
     "density": 6,
     "type": "dryBulk",
-    "money": 2,
+    "money": 4,
     "icon": "rocks"
   },
   "cash": {
@@ -103,7 +103,7 @@
     "name": "Bundle of 20 Gold Bars",
     "density": 8,
     "type": "cash",
-    "money": 20,
+    "money": 40,
     "units": "Bundle",
     "icon": "beamCurrency"
   }

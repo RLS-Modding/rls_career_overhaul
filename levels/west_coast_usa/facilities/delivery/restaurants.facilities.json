@@ -64,11 +64,11 @@
             "cash"
           ],
           "materialType": "cash",
-          "capacity": 50,
+          "capacity": 150,
           "target": 0,
           "variance": 10,
           "interval": 300,
-          "rate": 10
+          "rate": 100
         },
         {
           "type": "materialReceiver",
@@ -76,11 +76,11 @@
             "coin"
           ],
           "materialType": "coin",
-          "capacity": 25,
+          "capacity": 125,
           "target": 0,
           "variance": 5,
           "interval": 300,
-          "rate": 5
+          "rate": 50
         }
       ]
     },
@@ -143,11 +143,11 @@
             "cash"
           ],
           "materialType": "cash",
-          "capacity": 50,
+          "capacity": 150,
           "target": 0,
           "variance": 10,
           "interval": 300,
-          "rate": 10
+          "rate": 100
         },
         {
           "type": "materialReceiver",
@@ -155,11 +155,11 @@
             "coin"
           ],
           "materialType": "coin",
-          "capacity": 25,
+          "capacity": 125,
           "target": 0,
           "variance": 5,
           "interval": 300,
-          "rate": 5
+          "rate": 50
         }
       ]
     },
@@ -222,11 +222,11 @@
             "cash"
           ],
           "materialType": "cash",
-          "capacity": 50,
+          "capacity": 150,
           "target": 0,
           "variance": 10,
           "interval": 300,
-          "rate": 10
+          "rate": 100
         },
         {
           "type": "materialReceiver",
@@ -234,11 +234,11 @@
             "coin"
           ],
           "materialType": "coin",
-          "capacity": 25,
+          "capacity": 125,
           "target": 0,
           "variance": 5,
           "interval": 300,
-          "rate": 5
+          "rate": 50
         }
       ]
     },
@@ -301,11 +301,11 @@
             "cash"
           ],
           "materialType": "cash",
-          "capacity": 50,
+          "capacity": 150,
           "target": 0,
           "variance": 10,
           "interval": 300,
-          "rate": 10
+          "rate": 100
         },
         {
           "type": "materialReceiver",
@@ -313,11 +313,11 @@
             "coin"
           ],
           "materialType": "coin",
-          "capacity": 25,
+          "capacity": 125,
           "target": 0,
           "variance": 5,
           "interval": 300,
-          "rate": 5
+          "rate": 50
         }
       ]
     }

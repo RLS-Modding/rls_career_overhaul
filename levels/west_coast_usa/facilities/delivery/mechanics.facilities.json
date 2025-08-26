@@ -1307,7 +1307,7 @@
             "cash"
           ],
           "materialType": "cash",
-          "capacity": 50,
+          "capacity": 150,
           "target": 0,
           "variance": 10,
           "interval": 900,
@@ -1439,7 +1439,7 @@
             "cash"
           ],
           "materialType": "cash",
-          "capacity": 70,
+          "capacity": 170,
           "target": 0,
           "variance": 10,
           "interval": 900,
@@ -1587,7 +1587,7 @@
             "cash"
           ],
           "materialType": "cash",
-          "capacity": 100,
+          "capacity": 150,
           "target": 0,
           "variance": 10,
           "interval": 900,
@@ -1719,7 +1719,7 @@
             "cash"
           ],
           "materialType": "cash",
-          "capacity": 150,
+          "capacity": 300,
           "target": 0,
           "variance": 10,
           "interval": 900,
