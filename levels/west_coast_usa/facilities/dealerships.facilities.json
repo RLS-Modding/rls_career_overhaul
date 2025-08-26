@@ -591,7 +591,10 @@
         {
           "probability": 10,
           "whiteList": {
-            "Value": {},
+            "Value": {
+              "min": 120000,
+              "max": 50000000
+            },
             "Years": {
               "min": 2000,
               "max": 2030
@@ -599,7 +602,7 @@
           }
         },
         {
-          "probability": 5,
+          "probability": 1,
           "whiteList": {
             "Mileage": {
               "min": 16093440,
@@ -609,11 +612,18 @@
               "min": 1980,
               "max": 1999
             },
+            "Country": [
+              "Italy"
+            ],
             "Body Style": [
               "Coupe",
               "Convertible",
               "Sedan"
-            ]
+            ],
+            "Value": {
+              "min": 120000,
+              "max": 50000000
+            }
           }
         },
         {
@@ -626,6 +636,10 @@
             "Years": {
               "min": 1900,
               "max": 1955
+            },
+            "Value": {
+              "min": 40000,
+              "max": 50000000
             }
           }
         }
@@ -648,6 +662,8 @@
       "salesTax": 0.07,
       "ui": {
         "showMatchingConfigs": [
+          true,
+          true,
           true
         ],
         "configSearchText": {}
@@ -1328,11 +1344,11 @@
       ],
       "filter": {
         "whiteList": {
-          "Brand": [
-            "Bruckell"
-          ],
           "Config Type": [
             "Factory"
+          ],
+          "Brand": [
+            "Bruckell"
           ]
         },
         "blackList": {
@@ -1818,12 +1834,12 @@
       ],
       "filter": {
         "whiteList": {
-          "Config Type": [
-            "Factory"
-          ],
           "Brand": [
             "Bruckell",
             "Soliad"
+          ],
+          "Config Type": [
+            "Factory"
           ]
         },
         "blackList": {
@@ -1993,15 +2009,15 @@
           "Type": [
             "Trailer"
           ],
+          "hasLoad": [
+            true
+          ],
           "Tags": [
             "Ambulance"
           ],
           "Body Style": [
             "Ambulance",
             "Pickup"
-          ],
-          "hasLoad": [
-            true
           ]
         }
       },
@@ -2050,7 +2066,7 @@
         "commercialOfficeComputer_screen_1"
       ],
       "ui": {
-        "showMatchingConfigs": [],
+        "showMatchingConfigs": {},
         "configSearchText": {}
       }
     },
@@ -2363,7 +2379,6 @@
           }
         }
       ],
-
       "subFilterNames": [
         "Sub-Filter 1",
         "Sub-Filter 2",
