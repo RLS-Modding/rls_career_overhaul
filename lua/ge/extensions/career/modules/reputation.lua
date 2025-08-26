@@ -128,6 +128,16 @@ local function addReputationToOrg(organization)
 
   local value = career_modules_playerAttributes.getAttributeValue(organization.id .. "Reputation")
   local level, curLvlProgress, neededForNext, prevThreshold, nextThreshold = calcLevelFromReputationValue(value, organization)
+
+  -- Check if reputation level changed and invalidate vehicle cache if needed
+  local previousLevel = organization.reputation and organization.reputation.level
+  if previousLevel ~= nil and previousLevel ~= level then
+    log("I", "Reputation", string.format("Organization %s reputation level changed from %d to %d, invalidating vehicle cache", organization.id, previousLevel, level))
+    if career_modules_vehicleShopping then
+      career_modules_vehicleShopping.invalidateVehicleCache()
+    end
+  end
+
   local data = {
     value = value,
     level = level,

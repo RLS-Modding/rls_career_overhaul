@@ -253,24 +253,30 @@ local function getVehicleValue(configBaseValue, vehicle, ignoreDamage)
   local changedSlots = vehicle.changedSlots
   local addedParts, removedParts = getPartDifference(originalParts, newParts, changedSlots)
   local sumPartValues = 0
-  for slot, partName in pairs(originalParts) do
-    local part = career_modules_partInventory.getPart(vehicle.id, slot)
-    if part and not removedParts[slot] then
-      sumPartValues = sumPartValues + getPartValue(part)
+  if originalParts then
+    for slot, partName in pairs(originalParts) do
+      local part = career_modules_partInventory.getPart(vehicle.id, slot)
+      if part and not removedParts[slot] then
+        sumPartValues = sumPartValues + getPartValue(part)
+      end
     end
   end
   local adjustedBaseValue = getAdjustedVehicleBaseValue(configBaseValue, {mileage = mileage, age = 2023 - (vehicle.year or 2023)})
-  for slot, partName in pairs(addedParts) do
-    local part = career_modules_partInventory.getPart(vehicle.id, slot)
-    if part then
-      sumPartValues = sumPartValues + 0.90 * getPartValue(part)
-      adjustedBaseValue = adjustedBaseValue + 0.90 * getPartValue(part)
+  if addedParts then
+    for slot, partName in pairs(addedParts) do
+      local part = career_modules_partInventory.getPart(vehicle.id, slot)
+      if part then
+          sumPartValues = sumPartValues + 0.90 * getPartValue(part)
+          adjustedBaseValue = adjustedBaseValue + 0.90 * getPartValue(part)
+      end
     end
   end
 
-  for slot, partName in pairs(removedParts) do
-    local part = {value = vehicle.originalParts[slot].value, year = vehicle.year, partCondition = {odometer = mileage}} -- use vehicle mileage to calculate the value of the removed part
-    adjustedBaseValue = adjustedBaseValue - getPartValue(part)
+  if removedParts then
+    for slot, partName in pairs(removedParts) do
+      local part = {value = vehicle.originalParts[slot].value, year = vehicle.year, partCondition = {odometer = mileage}} -- use vehicle mileage to calculate the value of the removed part
+      adjustedBaseValue = adjustedBaseValue - getPartValue(part)
+    end
   end
 
   local repairDetails = getRepairDetails(vehicle)

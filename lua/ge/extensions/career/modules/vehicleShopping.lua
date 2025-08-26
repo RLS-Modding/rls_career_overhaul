@@ -1250,6 +1250,11 @@ local function onWorldReadyState(state)
   end
 end
 
+local function invalidateVehicleCache()
+  log("I", "Career", "Invalidating vehicle cache due to reputation level change")
+  vehicleCache.cacheValid = false
+end
+
 M.openShop = openShop
 M.showVehicle = showVehicle
 M.navigateToPos = navigateToPos
@@ -1260,6 +1265,7 @@ M.getShoppingData = getShoppingData
 M.sendPurchaseDataToUi = sendPurchaseDataToUi
 M.getCurrentSellerId = getCurrentSellerId
 M.getVisualValueFromMileage = getVisualValueFromMileage
+M.invalidateVehicleCache = invalidateVehicleCache
 
 M.openPurchaseMenu = openPurchaseMenu
 M.buyFromPurchaseMenu = buyFromPurchaseMenu
