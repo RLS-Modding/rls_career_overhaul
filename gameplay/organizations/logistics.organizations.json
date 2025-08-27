@@ -2573,18 +2573,21 @@
       {
         // Level -1
         "label": "Probation",
-        "min": -200
+        "min": -200,
+        "hiddenFromDealerList": true
       },
       {
         // Level 0
-        "label": "Rookie"
+        "label": "Rookie",
+        "hiddenFromDealerList": true
       },
       {
         // Level 1
         "deliveryBonus": {
           "value": 1.20
         },
-        "label": "Sergeant"
+        "label": "Sergeant",
+        "hiddenFromDealerList": true
       },
       {
         // Level 2
@@ -2864,7 +2867,8 @@
           "abandonFees": 500,
           "timeLimit": 60,
           "licencePlate": ""
-        }
+        },
+        "hiddenFromDealerList": true
       },
       {
         "stock": 10,
@@ -2879,7 +2883,8 @@
           "abandonFees": 500,
           "timeLimit": 90,
           "licencePlate": ""
-        }
+        },
+        "hiddenFromDealerList": true
       },
       {
         "stock": 15,

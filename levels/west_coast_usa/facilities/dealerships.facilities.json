@@ -12,6 +12,7 @@
         1.35,
         1.8
       ],
+      "associatedOrganization": "fastAutomotive",
       "doors": [
         [
           "fastAutomotive_area",
@@ -190,7 +191,11 @@
         }
       ],
       "filter": {
-        "whiteList": {},
+        "whiteList": {
+          "Type": [
+            "Car"
+          ]
+        },
         "blackList": {
           "Type": [
             "Trailer",
@@ -280,6 +285,7 @@
         1.35,
         1.9
       ],
+      "associatedOrganization": "smashAutoRepairs",
       "doors": [
         [
           "frameDealership_area",
@@ -904,6 +910,7 @@
         1.15,
         1.4
       ],
+      "associatedOrganization": "trustedAutos",
       "doors": [
         [
           "discountDealership_area",
@@ -996,6 +1003,7 @@
         1.1,
         1.3
       ],
+      "associatedOrganization": "joesJunkDealership",
       "doors": [
         [
           "joesJunk_area",
@@ -1064,6 +1072,7 @@
         1.1,
         1.3
       ],
+      "associatedOrganization": "policeLoaner",
       "doors": [
         [
           "policeDealer_area",
@@ -1155,6 +1164,7 @@
         1.1,
         1.3
       ],
+      "associatedOrganization": "serviceDealership",
       "doors": [
         [
           "serviceDealer_area",
@@ -1261,6 +1271,7 @@
           30
         ]
       ],
+      "associatedOrganization": "trailerShop",
       "parkingSpotNames": [
         "trailerShop"
       ],
@@ -1324,6 +1335,7 @@
         1.15,
         1.3
       ],
+      "associatedOrganization": "BruckellDealership",
       "doors": [
         [
           "BruckellDealership_area",
@@ -1484,6 +1496,7 @@
         1.15,
         1.3
       ],
+      "associatedOrganization": "GavrilcarDealership",
       "doors": [
         [
           "GavrilcarDealership_area",
@@ -1646,6 +1659,7 @@
         1.15,
         1.3
       ],
+      "associatedOrganization": "GavriltruckDealership",
       "doors": [
         [
           "GavriltruckDealership_area",
@@ -1814,6 +1828,7 @@
         1.15,
         1.3
       ],
+      "associatedOrganization": "SoliadDealership",
       "doors": [
         [
           "SoliadDealership_area",
@@ -2080,6 +2095,7 @@
         1.2000000476837,
         1.3
       ],
+      "associatedOrganization": "importDealer",
       "doors": [
         [
           "importDealer_area",
@@ -2211,6 +2227,7 @@
         1.15,
         1.3
       ],
+      "associatedOrganization": "raceTab",
       "doors": [
         [
           "raceTab_area_1",

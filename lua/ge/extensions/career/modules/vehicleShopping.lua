@@ -229,7 +229,7 @@ local function getShoppingData()
       if orgId and not data.organizations[orgId] then
         local org = freeroam_organizations.getOrganization(orgId)
         if org then
-          local sanitizedOrg = {reputationLevels = {}, reputation = {level = (org.reputation and org.reputation.level) or 0}}
+          local sanitizedOrg = {reputationLevels = {}, reputation = {level = (org.reputation and org.reputation.level - 1) or 0}}
           if org.reputationLevels then
             for idx, lvl in pairs(org.reputationLevels) do
               sanitizedOrg.reputationLevels[idx] = {hiddenFromDealerList = lvl and lvl.hiddenFromDealerList or nil}
@@ -399,7 +399,7 @@ local function cacheDealers()
       if dealership.associatedOrganization then
         local org = freeroam_organizations.getOrganization(dealership.associatedOrganization)
         if org then
-          local level = org.reputationLevels[org.reputation.level + 2]
+          local level = org.reputationLevels[org.reputation.level + 1]
           filter = level.filter or filter
         end
       end
@@ -408,7 +408,7 @@ local function cacheDealers()
       if dealership.associatedOrganization then
         local org = freeroam_organizations.getOrganization(dealership.associatedOrganization)
         if org then
-          local level = org.reputationLevels[org.reputation.level + 2]
+          local level = org.reputationLevels[org.reputation.level + 1]
           subFilters = level.subFilters or subFilters
         end
       end
