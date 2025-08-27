@@ -8,20 +8,20 @@
             <BngIcon :type="icons.car" class="placeholder-icon" />
           </div>
         </div>
-        <div v-if="vehicle.soldViewCounter > 0" class="sold-overlay">SOLD</div>
+        <div v-if="vehicle.__sold || vehicle.soldViewCounter > 0" class="sold-overlay">SOLD</div>
       </div>
 
       <!-- Vehicle Details -->
       <div class="vehicle-details">
         <div class="vehicle-header">
           <div class="vehicle-title">
-            <h3 class="vehicle-name" :class="{ 'sold': vehicle.soldViewCounter > 0 }">
+            <h3 class="vehicle-name" :class="{ 'sold': vehicle.__sold || vehicle.soldViewCounter > 0 }">
               {{ vehicle.year }} {{ vehicle.Name }} {{ vehicle.model || vehicle.Brand }}
             </h3>
             <p class="vehicle-brand">{{ vehicle.Brand }}</p>
           </div>
           <div class="vehicle-price">
-            <div class="price-amount" :class="{ 'insufficient': hasInsufficientFunds }">
+            <div class="price-amount" :class="{ 'insufficient': hasInsufficientFunds, 'sold': vehicle.__sold || vehicle.soldViewCounter > 0 }">
               <BngUnit :money="vehicle.Value" />
             </div>
             <div v-if="hasInsufficientFunds" class="insufficient-text">Insufficient Funds</div>
@@ -89,7 +89,7 @@
               :accent="ACCENTS.menu"
               size="sm"
               @click="showVehicle(vehicle.shopId)"
-              :disabled="vehicleShoppingData.disableShopping || Boolean(vehicle.soldViewCounter)"
+              :disabled="vehicleShoppingData.disableShopping || Boolean(vehicle.__sold || vehicle.soldViewCounter)"
               class="action-btn"
             >
               {{ vehicle.sellerId === vehicleShoppingData.currentSeller ? 'Inspect Vehicle' : 'Set Route' }}
@@ -100,7 +100,7 @@
               v-if="!vehicleShoppingData.currentSeller"
               :accent="ACCENTS.menu"
               size="sm"
-              :disabled="hasInsufficientTaxiFunds || vehicleShoppingData.disableShopping || Boolean(vehicle.soldViewCounter)"
+              :disabled="hasInsufficientTaxiFunds || vehicleShoppingData.disableShopping || Boolean(vehicle.__sold || vehicle.soldViewCounter)"
               @click="confirmTaxi(vehicle)"
               class="action-btn"
             >
@@ -115,7 +115,7 @@
               v-if="vehicle.sellerId !== 'private'"
               :accent="ACCENTS.main"
               size="sm"
-              :disabled="hasInsufficientFunds || vehicleShoppingData.tutorialPurchase || vehicleShoppingData.disableShopping || Boolean(vehicle.soldViewCounter)"
+              :disabled="hasInsufficientFunds || vehicleShoppingData.tutorialPurchase || vehicleShoppingData.disableShopping || Boolean(vehicle.__sold || vehicle.soldViewCounter)"
               @click="openPurchaseMenu('instant', vehicle.shopId)"
               class="purchase-btn"
             >
@@ -224,50 +224,85 @@ const getAttributeIcon = (vehicle, attribute) => {
 
 <style scoped lang="scss">
 .vehicle-card {
-  background: var(--bng-cool-gray-900);
-  border: 1px solid var(--bng-cool-gray-600);
-  border-radius: var(--bng-corners-2);
-  transition: all 0.3s ease;
+  background: linear-gradient(135deg, var(--bng-cool-gray-850) 0%, var(--bng-cool-gray-900) 100%);
+  border: 1px solid var(--bng-cool-gray-700);
+  border-radius: 0.75rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, 
+      transparent 0%, 
+      var(--bng-cool-gray-600) 50%, 
+      transparent 100%);
+    opacity: 0.5;
+  }
 
   &:hover {
-    border-color: var(--bng-orange-alpha-30);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    border-color: var(--bng-orange-b400);
+    transform: translateY(-3px);
+    box-shadow: 
+      0 10px 25px rgba(0,0,0,0.4),
+      0 0 40px rgba(var(--bng-orange-rgb), 0.1);
+    
+    &::before {
+      background: linear-gradient(90deg, 
+        transparent 0%, 
+        var(--bng-orange-b400) 50%, 
+        transparent 100%);
+      opacity: 0.8;
+    }
   }
 
   .vehicle-content {
     display: flex;
-    gap: 1rem;
-    padding: 0.75rem;
+    gap: 0;
+    padding: 0;
     min-height: 11rem;
+    height: auto;
   }
 
   .vehicle-image {
     position: relative;
-    width: 18rem;
-    height: 11rem;
+    width: 24rem;
     min-height: 11rem;
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    align-self: stretch;
     
     .image-container {
       width: 100%;
       height: 100%;
-      border-radius: var(--bng-corners-1);
+      border-radius: 0.75rem 0 0 0.75rem;
       overflow: hidden;
-      background: var(--bng-cool-gray-800);
+      background: linear-gradient(135deg, var(--bng-cool-gray-800) 0%, var(--bng-cool-gray-850) 100%);
       background-repeat: no-repeat;
       background-position: center center;
       background-size: cover;
-      border: 1px solid var(--bng-cool-gray-700);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
+      border-right: 1px solid var(--bng-cool-gray-750);
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.3);
       display: flex;
       align-items: center;
       justify-content: center;
+      position: relative;
+
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.15) 100%);
+        pointer-events: none;
+      }
 
       /* Ensure no nested image overlays the background */
       .vehicle-img { display: none; }
@@ -292,128 +327,180 @@ const getAttributeIcon = (vehicle, attribute) => {
       position: absolute;
       top: 50%;
       left: 50%;
-      transform: translate(-50%, -50%) rotate(-15deg);
-      background: rgba(239, 68, 68, 0.9);
+      transform: translate(-50%, -50%) rotate(-12deg);
+      background: linear-gradient(135deg, #ef4444, #dc2626);
       color: white;
-      padding: 0.5rem 1.5rem;
-      font-size: 1.25rem;
-      font-weight: bold;
+      padding: 0.625rem 2rem;
+      font-size: 1.5rem;
+      font-weight: 800;
       text-transform: uppercase;
-      border: 2px solid white;
-      border-radius: var(--bng-corners-1);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+      letter-spacing: 0.1em;
+      border: 3px solid white;
+      border-radius: 0.375rem;
+      box-shadow: 
+        0 8px 20px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(0, 0, 0, 0.2);
       z-index: 10;
+      animation: soldPulse 2s ease-in-out infinite;
     }
 
-    
+    @keyframes soldPulse {
+      0%, 100% { transform: translate(-50%, -50%) rotate(-12deg) scale(1); }
+      50% { transform: translate(-50%, -50%) rotate(-12deg) scale(1.05); }
+    }
   }
 
   .vehicle-details {
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding: 0.5rem 0.75rem 0.75rem 0;
+    padding: 0.75rem 1rem;
     min-width: 0;
+    height: 100%;
+    overflow: hidden;
   }
 
   .vehicle-header {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--bng-cool-gray-800);
 
     .vehicle-title {
       flex: 1;
       min-width: 0;
 
       .vehicle-name {
-        font-size: 1.125rem;
-        font-weight: 500;
+        font-size: 1rem;
+        font-weight: 600;
         color: var(--bng-off-white);
         margin: 0 0 0.25rem 0;
-        line-height: 1.3;
+        line-height: 1.2;
+        letter-spacing: -0.01em;
 
         &.sold {
-          color: rgb(239, 68, 68);
+          color: #ef4444;
+          text-decoration: line-through;
+          opacity: 0.8;
         }
       }
 
       .vehicle-brand {
-        font-size: 0.875rem;
-        color: var(--bng-cool-gray-300);
+        font-size: 0.75rem;
+        color: var(--bng-cool-gray-400);
         margin: 0;
+        font-weight: 500;
+        letter-spacing: 0.025em;
+        text-transform: uppercase;
       }
     }
 
     .vehicle-price {
       text-align: right;
       flex-shrink: 0;
+      padding-left: 0.75rem;
 
       .price-amount {
-        font-size: 1.4rem;
-        font-weight: 700;
+        font-size: 1.25rem;
+        font-weight: 800;
         color: var(--bng-orange);
-        margin-bottom: 0.25rem;
+        margin-bottom: 0.125rem;
+        letter-spacing: -0.02em;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
 
         &.insufficient {
-          color: #dc2626;
+          color: #ef4444;
+        }
+
+        &.sold {
+          color: var(--bng-cool-gray-500);
+          text-decoration: line-through;
         }
       }
 
       .insufficient-text {
-        font-size: 0.75rem;
-        color: #dc2626;
-        font-weight: 600;
+        font-size: 0.625rem;
+        color: #ef4444;
+        font-weight: 700;
         text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 0.125rem 0.375rem;
+        background: rgba(239, 68, 68, 0.1);
+        border-radius: 0.25rem;
+        display: inline-block;
       }
     }
   }
 
   .vehicle-specs {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 0.5rem;
-    margin-bottom: 1rem;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.25rem 0.75rem;
+    margin-bottom: 0.5rem;
+    padding: 0;
 
     .spec-item {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      font-size: 0.875rem;
+      gap: 0.375rem;
+      font-size: 0.7rem;
       color: var(--bng-cool-gray-300);
+      padding: 0.125rem 0;
 
       .spec-icon {
-        width: 1rem;
-        height: 1rem;
-        color: var(--bng-cool-gray-400);
+        width: 0.875rem;
+        height: 0.875rem;
+        color: var(--bng-orange-b400);
         flex-shrink: 0;
+        opacity: 0.7;
       }
 
       .spec-label {
-        color: var(--bng-cool-gray-400);
+        color: var(--bng-cool-gray-500);
         flex-shrink: 0;
+        font-size: 0.625rem;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
       }
 
       .spec-value {
         color: var(--bng-off-white);
-        font-weight: 500;
+        font-weight: 600;
+        margin-left: 0.125rem;
+        font-size: 0.7rem;
       }
     }
   }
 
   .seller-info {
-    margin-bottom: 0.75rem;
-    padding: 0.5rem 0.75rem;
+    margin-bottom: 0.5rem;
+    padding: 0.375rem 0.5rem;
     background: var(--bng-cool-gray-875);
-    border-radius: var(--bng-corners-1);
-    border: 1px solid var(--bng-cool-gray-700);
+    border-radius: 0.25rem;
+    border: 1px solid var(--bng-cool-gray-800);
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 2px;
+      height: 100%;
+      background: var(--bng-orange-b400);
+      opacity: 0.5;
+    }
 
     .seller-details {
       display: flex;
       flex-wrap: wrap;
       gap: 1rem;
-      font-size: 0.875rem;
-      color: var(--bng-cool-gray-300);
+      font-size: 0.7rem;
+      color: var(--bng-cool-gray-400);
+      padding-left: 0.375rem;
 
       span {
         display: flex;
@@ -425,57 +512,107 @@ const getAttributeIcon = (vehicle, attribute) => {
       .distance-value,
       .insurance-value {
         color: var(--bng-off-white);
-        font-weight: 500;
+        font-weight: 600;
+        font-size: 0.7rem;
       }
     }
   }
 
   .vehicle-actions {
     margin-top: auto;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--bng-cool-gray-800);
 
     .disabled-message {
       text-align: center;
-      color: var(--bng-cool-gray-400);
+      color: var(--bng-cool-gray-500);
       font-style: italic;
       padding: 0.75rem;
+      background: var(--bng-cool-gray-875);
+      border-radius: 0.375rem;
+      border: 1px dashed var(--bng-cool-gray-700);
     }
 
     .action-buttons {
       display: flex;
       gap: 0.5rem;
       align-items: center;
+      justify-content: flex-end;
+      margin-left: auto;
 
       .action-btn {
-        flex: 1;
-        border: 1px solid var(--bng-cool-gray-600);
+        flex: 0 0 auto;
+        padding: 0.375rem 0.625rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        background: var(--bng-cool-gray-850);
+        border: 1px solid var(--bng-cool-gray-700);
+        border-radius: 0.25rem;
+        transition: all 0.2s ease;
+        position: relative;
+        overflow: hidden;
+        min-width: 7rem;
         
-        &:hover {
-          background: var(--bng-orange-alpha-20);
-          border-color: var(--bng-orange-alpha-50);
+        &::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, var(--bng-orange-alpha-20), transparent);
+          transition: left 0.3s ease;
+        }
+        
+        &:hover:not(:disabled) {
+          background: var(--bng-cool-gray-800);
+          border-color: var(--bng-orange-b400);
+          transform: translateY(-1px);
+          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+          
+          &::before {
+            left: 100%;
+          }
+        }
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
         }
       }
 
       .purchase-btn {
-        flex: 1;
-        background: var(--bng-orange);
+        flex: 0 0 auto;
+        background: linear-gradient(135deg, var(--bng-orange) 0%, var(--bng-orange-b600) 100%);
         color: var(--bng-off-black);
-        border: 1px solid var(--bng-orange);
+        border: 1px solid var(--bng-orange-b600);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+        font-size: 0.75rem;
+        padding: 0.375rem 0.75rem;
+        min-width: 9rem;
 
-        &:hover {
-          background: var(--bng-orange-dark);
+        &:hover:not(:disabled) {
+          background: linear-gradient(135deg, var(--bng-orange-b600) 0%, var(--bng-orange-b700) 100%);
+          border-color: var(--bng-orange-b700);
+          box-shadow: 
+            0 4px 12px rgba(var(--bng-orange-rgb), 0.3),
+            inset 0 1px 0 rgba(255,255,255,0.1);
         }
 
         &:disabled {
-          background: var(--bng-cool-gray-700);
-          color: var(--bng-cool-gray-400);
-          border-color: var(--bng-cool-gray-600);
+          background: var(--bng-cool-gray-750);
+          color: var(--bng-cool-gray-500);
+          border-color: var(--bng-cool-gray-700);
         }
       }
 
       .taxi-price {
-        font-size: 0.75rem;
-        color: var(--bng-cool-gray-300);
-        margin-left: 0.25rem;
+        font-size: 0.625rem;
+        color: var(--bng-cool-gray-400);
+        margin-left: 0.125rem;
+        font-weight: 500;
       }
     }
   }

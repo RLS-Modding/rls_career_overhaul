@@ -127,278 +127,199 @@
             </div>
 
             <!-- Filter Creation Content -->
-            <div class="filter-creation-content">
+            <div class="filter-creation-content" v-show="isOpen">
               <!-- Basic Filters -->
               <div v-if="activeTab === 'basic'" class="filter-section">
-                <!-- Make Filter -->
-                <div class="filter-group">
-                  <label class="filter-label">Make</label>
-                  <BngSelect v-model="selectedMake" :options="makeOptions" placeholder="Select make" />
-                  <BngButton 
-                    :accent="ACCENTS.primary"
-                    size="sm"
-                    @click="addMakeFilter"
-                    class="add-filter-btn"
-                  >
-                    <BngIcon :type="icons.plus" />
-                    Add Make
-                  </BngButton>
+                <!-- Hide Sold Filter - Simple toggle -->
+                <div class="hide-sold-toggle">
+                  <label class="toggle-option compact">
+                    <input type="checkbox" v-model="hideSold" />
+                    <span>Hide sold vehicles</span>
+                  </label>
                 </div>
+
+                <!-- Make Filter -->
+                <FilterSection :active="!!selectedMake">
+                  <template #title>Make</template>
+                  <BngSelect v-model="selectedMake" :options="makeOptions" />
+                  <template #action>
+                    <div class="action-container" :class="{ active: !!selectedMake }" @click="addMakeFilter">
+                      <BngIcon :type="icons.plus" />
+                      <span style="margin-left: .4rem;">Add Make</span>
+                    </div>
+                  </template>
+                </FilterSection>
 
                 <!-- Price Range Filter -->
-                <div class="filter-group">
-                  <label class="filter-label">
-                    Price: ${{ formatNumber(priceRange?.[0]) }} - ${{ formatNumber(priceRange?.[1]) }}
-                  </label>
-                  <div class="dual-slider vertical">
-                    <BngSlider 
-                      class="stacked"
-                      :style="{ '--bng-slider-margin': '0.7em' }"
-                      v-model="priceMin"
-                      :min="priceBounds.min || 0"
-                      :max="priceMax"
-                      :step="1000"
-                    />
-                    <BngSlider 
-                      class="stacked"
-                      :style="{ '--bng-slider-margin': '0.7em' }"
-                      v-model="priceMax"
-                      :min="priceMin"
-                      :max="priceBounds.max || 0"
-                      :step="1000"
-                    />
+                <FilterSection :active="priceMin !== priceBounds.min || priceMax !== priceBounds.max">
+                  <template #title>
+                    <div class="price-filter-header">
+                      <span class="filter-title">Price Range</span>
+                      <div class="can-afford-toggle" :class="{ active: canAfford }">
+                        <label>
+                          <input type="checkbox" v-model="canAfford" />
+                          <span class="toggle-switch"></span>
+                          <span class="toggle-label">
+                            <BngIcon :type="icons.money" class="money-icon" />
+                            <span class="afford-text">Can Afford</span>
+                            <span class="money-amount">${{ formatNumber(playerMoney) }}</span>
+                          </span>
+                        </label>
+                      </div>
+                    </div>
+                  </template>
+                  <div class="range-pill">
+                    <span class="currency-symbol">$</span>
+                    <input class="range-input" type="number" v-model.lazy.number="priceMin" step="1000" placeholder="Min" v-bng-text-input />
+                    <span class="sep">–</span>
+                    <span class="currency-symbol">$</span>
+                    <input class="range-input" type="number" v-model.lazy.number="priceMax" step="1000" placeholder="Max" v-bng-text-input />
                   </div>
-                  <div class="range-labels">
-                    <span>${{ formatNumber(priceBounds.min) }}</span>
-                    <span>${{ formatNumber(priceBounds.max) }}+</span>
+                  <div class="dual-slider vertical compact" v-if="priceBoundsReady">
+                    <BngSlider class="stacked" :style="{ '--bng-slider-margin': '.35em' }" v-model="priceMin" :min="priceBounds.min || 0" :max="priceMax" :step="1000" />
+                    <BngSlider class="stacked" :style="{ '--bng-slider-margin': '.35em' }" v-model="priceMax" :min="priceMin" :max="effectivePriceBounds.max" :step="1000" />
                   </div>
-                  <BngButton 
-                    :accent="ACCENTS.primary"
-                    size="sm"
-                    @click="addPriceFilter"
-                    class="add-filter-btn"
-                  >
-                    <BngIcon :type="icons.plus" />
-                    Add Price
-                  </BngButton>
-                </div>
+                  <template #action>
+                    <div class="action-container" :class="{ active: priceMin !== priceBounds.min || priceMax !== priceBounds.max }" @click="addPriceFilter">
+                      <BngIcon :type="icons.plus" />
+                      <span style="margin-left: .4rem;">Add Price</span>
+                    </div>
+                  </template>
+                </FilterSection>
 
                 <!-- Vehicle Type Filter -->
-                <div class="filter-group">
-                  <label class="filter-label">Vehicle Type</label>
-                  <BngSelect v-model="selectedCategory" :options="categoryOptions" placeholder="Select vehicle type" />
-                  <BngButton 
-                    :accent="ACCENTS.primary"
-                    size="sm"
-                    @click="addCategoryFilter"
-                    class="add-filter-btn"
-                  >
-                    <BngIcon :type="icons.plus" />
-                    Add Type
-                  </BngButton>
-                </div>
+                <FilterSection :active="!!selectedCategory">
+                  <template #title>Vehicle Type</template>
+                  <BngSelect v-model="selectedCategory" :options="categoryOptions" />
+                  <template #action>
+                    <div class="action-container" :class="{ active: !!selectedCategory }" @click="addCategoryFilter">
+                      <BngIcon :type="icons.plus" />
+                      <span style="margin-left: .4rem;">Add Type</span>
+                    </div>
+                  </template>
+                </FilterSection>
               </div>
 
               <!-- Advanced Filters -->
               <div v-if="activeTab === 'advanced'" class="filter-section">
                 <!-- Transmission Filter -->
-                <div class="filter-group">
-                  <label class="filter-label">Transmission</label>
-                  <BngSelect v-model="selectedTransmission" :options="transmissionOptions" placeholder="Select transmission" />
-                  <BngButton 
-                    :accent="ACCENTS.primary"
-                    size="sm"
-                    @click="addTransmissionFilter"
-                    :disabled="!selectedTransmission"
-                    class="add-filter-btn"
-                  >
-                    <BngIcon :type="icons.plus" />
-                    Add Transmission
-                  </BngButton>
-                </div>
+                <FilterSection :active="!!selectedTransmission">
+                  <template #title>Transmission</template>
+                  <BngSelect v-model="selectedTransmission" :options="transmissionOptions" />
+                  <template #action>
+                    <div class="action-container" :class="{ active: !!selectedTransmission }" @click="addTransmissionFilter">
+                      <BngIcon :type="icons.plus" />
+                      <span style="margin-left: .4rem;">Add Transmission</span>
+                    </div>
+                  </template>
+                </FilterSection>
 
                 <!-- Fuel Type Filter -->
-                <div class="filter-group">
-                  <label class="filter-label">Fuel Type</label>
-                  <BngSelect v-model="selectedFuelType" :options="fuelTypeOptions" placeholder="Select fuel type" />
-                  <BngButton 
-                    :accent="ACCENTS.primary"
-                    size="sm"
-                    @click="addFuelTypeFilter"
-                    :disabled="!selectedFuelType"
-                    class="add-filter-btn"
-                  >
-                    <BngIcon :type="icons.plus" />
-                    Add Fuel Type
-                  </BngButton>
-                </div>
+                <FilterSection :active="!!selectedFuelType">
+                  <template #title>Fuel Type</template>
+                  <BngSelect v-model="selectedFuelType" :options="fuelTypeOptions" />
+                  <template #action>
+                    <div class="action-container" :class="{ active: !!selectedFuelType }" @click="addFuelTypeFilter">
+                      <BngIcon :type="icons.plus" />
+                      <span style="margin-left: .4rem;">Add Fuel Type</span>
+                    </div>
+                  </template>
+                </FilterSection>
 
                 <!-- Drivetrain Filter -->
-                <div class="filter-group">
-                  <label class="filter-label">Drivetrain</label>
-                  <BngSelect v-model="selectedDrivetrain" :options="drivetrainOptions" placeholder="Select drivetrain" />
-                  <BngButton 
-                    :accent="ACCENTS.primary"
-                    size="sm"
-                    @click="addDrivetrainFilter"
-                    :disabled="!selectedDrivetrain"
-                    class="add-filter-btn"
-                  >
-                    <BngIcon :type="icons.plus" />
-                    Add Drivetrain
-                  </BngButton>
-                </div>
+                <FilterSection :active="!!selectedDrivetrain">
+                  <template #title>Drivetrain</template>
+                  <BngSelect v-model="selectedDrivetrain" :options="drivetrainOptions" />
+                  <template #action>
+                    <div class="action-container" :class="{ active: !!selectedDrivetrain }" @click="addDrivetrainFilter">
+                      <BngIcon :type="icons.plus" />
+                      <span style="margin-left: .4rem;">Add Drivetrain</span>
+                    </div>
+                  </template>
+                </FilterSection>
 
                 <!-- Year Range Filter -->
-                <div class="filter-group">
-                  <label class="filter-label">Year: {{ yearRange[0] }} - {{ yearRange[1] }}</label>
-                  <div class="dual-slider vertical">
-                    <BngSlider 
-                      class="stacked"
-                      :style="{ '--bng-slider-margin': '0.7em' }"
-                      v-model="yearMin"
-                      :min="yearBounds.min"
-                      :max="yearMax"
-                      :step="1"
-                    />
-                    <BngSlider 
-                      class="stacked"
-                      :style="{ '--bng-slider-margin': '0.7em' }"
-                      v-model="yearMax"
-                      :min="yearMin"
-                      :max="yearBounds.max"
-                      :step="1"
-                    />
+                <FilterSection :active="yearMin !== yearBounds.min || yearMax !== yearBounds.max">
+                  <template #title>Year</template>
+                  <div class="range-pill">
+                    <input class="range-input" type="number" v-model.lazy.number="yearMin" step="1" placeholder="Min" v-bng-text-input />
+                    <span class="sep">-</span>
+                    <input class="range-input" type="number" v-model.lazy.number="yearMax" step="1" placeholder="Max" v-bng-text-input />
                   </div>
-                  <div class="range-labels">
-                    <span>{{ yearBounds.min }}</span>
-                    <span>{{ yearBounds.max }}</span>
+                  <div class="dual-slider vertical compact" v-if="yearBoundsReady">
+                    <BngSlider class="stacked" :style="{ '--bng-slider-margin': '.35em' }" v-model="yearMin" :min="yearBounds.min" :max="yearMax" :step="1" />
+                    <BngSlider class="stacked" :style="{ '--bng-slider-margin': '.35em' }" v-model="yearMax" :min="yearMin" :max="yearBounds.max" :step="1" />
                   </div>
-                  <BngButton 
-                    :accent="ACCENTS.primary"
-                    size="sm"
-                    @click="addYearFilter"
-                    class="add-filter-btn"
-                  >
-                    <BngIcon :type="icons.plus" />
-                    Add Year Range
-                  </BngButton>
-                </div>
+                  <template #action>
+                    <div class="action-container" :class="{ active: yearMin !== yearBounds.min || yearMax !== yearBounds.max }" @click="addYearFilter">
+                      <BngIcon :type="icons.plus" />
+                      <span style="margin-left: .4rem;">Add Year Range</span>
+                    </div>
+                  </template>
+                </FilterSection>
               </div>
 
               <!-- Custom Filters -->
               <div v-if="activeTab === 'custom'" class="filter-section">
                 <!-- Mileage Range Filter -->
-                <div class="filter-group">
-                  <label class="filter-label">
-                    Mileage: {{ formatNumber(mileageRange?.[0]) }} - {{ formatNumber(mileageRange?.[1]) }} mi
-                  </label>
-                  <div class="dual-slider vertical">
-                    <BngSlider 
-                      class="stacked"
-                      :style="{ '--bng-slider-margin': '0.7em' }"
-                      v-model="mileageMin"
-                      :min="mileageBounds.min"
-                      :max="mileageMax"
-                      :step="5000"
-                    />
-                    <BngSlider 
-                      class="stacked"
-                      :style="{ '--bng-slider-margin': '0.7em' }"
-                      v-model="mileageMax"
-                      :min="mileageMin"
-                      :max="mileageBounds.max"
-                      :step="5000"
-                    />
+                <FilterSection :active="mileageMin !== mileageBounds.min || mileageMax !== mileageBounds.max">
+                  <template #title>Mileage</template>
+                  <div class="range-pill">
+                    <input class="range-input" type="number" v-model.lazy.number="mileageMin" step="5000" placeholder="Min" v-bng-text-input />
+                    <span class="sep">-</span>
+                    <input class="range-input" type="number" v-model.lazy.number="mileageMax" step="5000" placeholder="Max" v-bng-text-input />
                   </div>
-                  <div class="range-labels">
-                    <span>{{ formatNumber(mileageBounds.min) }} mi</span>
-                    <span>{{ formatNumber(mileageBounds.max) }}+ mi</span>
+                  <div class="dual-slider vertical compact" v-if="mileageBoundsReady">
+                    <BngSlider class="stacked" :style="{ '--bng-slider-margin': '.35em' }" v-model="mileageMin" :min="mileageBounds.min" :max="mileageMax" :step="5000" />
+                    <BngSlider class="stacked" :style="{ '--bng-slider-margin': '.35em' }" v-model="mileageMax" :min="mileageMin" :max="mileageBounds.max" :step="5000" />
                   </div>
-                  <BngButton 
-                    :accent="ACCENTS.primary"
-                    size="sm"
-                    @click="addMileageFilter"
-                    class="add-filter-btn"
-                  >
-                    <BngIcon :type="icons.plus" />
-                    Add Mileage Range
-                  </BngButton>
-                </div>
+                  <template #action>
+                    <div class="action-container" :class="{ active: mileageMin !== mileageBounds.min || mileageMax !== mileageBounds.max }" @click="addMileageFilter">
+                      <BngIcon :type="icons.plus" />
+                      <span style="margin-left: .4rem;">Add Mileage Range</span>
+                    </div>
+                  </template>
+                </FilterSection>
 
                 <!-- Power Range Filter -->
-                <div class="filter-group">
-                  <label class="filter-label">Power: {{ powerRange[0] }} - {{ powerRange[1] }} hp</label>
-                  <div class="dual-slider vertical">
-                    <BngSlider 
-                      class="stacked"
-                      :style="{ '--bng-slider-margin': '0.7em' }"
-                      v-model="powerMin"
-                      :min="powerBounds.min"
-                      :max="powerMax"
-                      :step="10"
-                    />
-                    <BngSlider 
-                      class="stacked"
-                      :style="{ '--bng-slider-margin': '0.7em' }"
-                      v-model="powerMax"
-                      :min="powerMin"
-                      :max="powerBounds.max"
-                      :step="10"
-                    />
+                <FilterSection :active="powerMin !== powerBounds.min || powerMax !== powerBounds.max">
+                  <template #title>Power</template>
+                  <div class="range-pill">
+                    <input class="range-input" type="number" v-model.lazy.number="powerMin" step="10" placeholder="Min" v-bng-text-input />
+                    <span class="sep">-</span>
+                    <input class="range-input" type="number" v-model.lazy.number="powerMax" step="10" placeholder="Max" v-bng-text-input />
                   </div>
-                  <div class="range-labels">
-                    <span>{{ powerBounds.min }} hp</span>
-                    <span>{{ powerBounds.max }}+ hp</span>
+                  <div class="dual-slider vertical compact" v-if="powerBoundsReady">
+                    <BngSlider class="stacked" :style="{ '--bng-slider-margin': '.35em' }" v-model="powerMin" :min="powerBounds.min" :max="powerMax" :step="10" />
+                    <BngSlider class="stacked" :style="{ '--bng-slider-margin': '.35em' }" v-model="powerMax" :min="powerMin" :max="powerBounds.max" :step="10" />
                   </div>
-                  <BngButton 
-                    :accent="ACCENTS.primary"
-                    size="sm"
-                    @click="addPowerFilter"
-                    class="add-filter-btn"
-                  >
-                    <BngIcon :type="icons.plus" />
-                    Add Power Range
-                  </BngButton>
-                </div>
+                  <template #action>
+                    <div class="action-container" :class="{ active: powerMin !== powerBounds.min || powerMax !== powerBounds.max }" @click="addPowerFilter">
+                      <BngIcon :type="icons.plus" />
+                      <span style="margin-left: .4rem;">Add Power Range</span>
+                    </div>
+                  </template>
+                </FilterSection>
 
                 <!-- Weight Range Filter -->
-                <div class="filter-group">
-                  <label class="filter-label">
-                    Weight: {{ formatNumber(weightRange?.[0]) }} - {{ formatNumber(weightRange?.[1]) }} lbs
-                  </label>
-                  <div class="dual-slider vertical">
-                    <BngSlider 
-                      class="stacked"
-                      :style="{ '--bng-slider-margin': '0.7em' }"
-                      v-model="weightMin"
-                      :min="weightBounds.min"
-                      :max="weightMax"
-                      :step="10"
-                    />
-                    <BngSlider 
-                      class="stacked"
-                      :style="{ '--bng-slider-margin': '0.7em' }"
-                      v-model="weightMax"
-                      :min="weightMin"
-                      :max="weightBounds.max"
-                      :step="10"
-                    />
+                <FilterSection :active="weightMin !== weightBounds.min || weightMax !== weightBounds.max">
+                  <template #title>Weight</template>
+                  <div class="range-pill">
+                    <input class="range-input" type="number" v-model.lazy.number="weightMin" step="10" placeholder="Min" v-bng-text-input />
+                    <span class="sep">-</span>
+                    <input class="range-input" type="number" v-model.lazy.number="weightMax" step="10" placeholder="Max" v-bng-text-input />
                   </div>
-                  <div class="range-labels">
-                    <span>{{ formatNumber(weightBounds.min) }} lbs</span>
-                    <span>{{ formatNumber(weightBounds.max) }}+ lbs</span>
+                  <div class="dual-slider vertical compact" v-if="weightBoundsReady">
+                    <BngSlider class="stacked" :style="{ '--bng-slider-margin': '.35em' }" v-model="weightMin" :min="weightBounds.min" :max="weightMax" :step="10" />
+                    <BngSlider class="stacked" :style="{ '--bng-slider-margin': '.35em' }" v-model="weightMax" :min="weightMin" :max="weightBounds.max" :step="10" />
                   </div>
-                  <BngButton 
-                    :accent="ACCENTS.primary"
-                    size="sm"
-                    @click="addWeightFilter"
-                    class="add-filter-btn"
-                  >
-                    <BngIcon :type="icons.plus" />
-                    Add Weight Range
-                  </BngButton>
-                </div>
+                  <template #action>
+                    <div class="action-container" :class="{ active: weightMin !== weightBounds.min || weightMax !== weightBounds.max }" @click="addWeightFilter">
+                      <BngIcon :type="icons.plus" />
+                      <span style="margin-left: .4rem;">Add Weight Range</span>
+                    </div>
+                  </template>
+                </FilterSection>
               </div>
             </div>
           </div>
@@ -409,9 +330,11 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from "vue"
+import { ref, computed, watch, onBeforeUnmount } from "vue"
 import { BngDropdownContainer, BngIcon, BngButton, BngSelect, BngSlider, BngInput, ACCENTS, icons } from "@/common/components/base"
+import { lua } from "@/bridge"
 import { useVehicleShoppingStore } from "../../stores/vehicleShoppingStore"
+import FilterSection from "./FilterSection.vue"
 
 // Props
 const props = defineProps({
@@ -438,6 +361,9 @@ const allVehicles = computed(() => {
   }
 })
 
+// Player money from store data
+const playerMoney = computed(() => Number((vehicleShoppingStore?.vehicleShoppingData?.playerAttributes?.money && (vehicleShoppingStore.vehicleShoppingData.playerAttributes.money.value ?? vehicleShoppingStore.vehicleShoppingData.playerAttributes.money)) || 0))
+
 const getBounds = (key, fallbackMin, fallbackMax) => computed(() => {
   const list = allVehicles.value
   if (!list || list.length === 0) return { min: fallbackMin, max: fallbackMax }
@@ -462,6 +388,7 @@ const priceBounds = computed(() => {
   const roundedMax = Number.isFinite(max) ? Math.ceil(max / step) * step : step
   return { min: roundedMin, max: roundedMax }
 })
+const priceBoundsReady = computed(() => Number.isFinite(Number(rawPriceBounds.value.min)) && Number.isFinite(Number(rawPriceBounds.value.max)))
 const yearBounds = getBounds('year', 1980, 2024)
 const rawMileageBounds = getBounds('Mileage', 0, 300000)
 const mileageBounds = computed(() => {
@@ -472,6 +399,8 @@ const mileageBounds = computed(() => {
   const roundedMax = Number.isFinite(maxM) ? Math.ceil(maxM / unit) : 0
   return { min: roundedMin, max: roundedMax }
 })
+const yearBoundsReady = computed(() => Number.isFinite(Number(yearBounds.value.min)) && Number.isFinite(Number(yearBounds.value.max)))
+const mileageBoundsReady = computed(() => Number.isFinite(Number(rawMileageBounds.value.min)) && Number.isFinite(Number(rawMileageBounds.value.max)))
 const powerBounds = getBounds('Power', 50, 1000)
 const rawWeightBounds = getBounds('Weight', 0, 10000)
 const weightBounds = computed(() => {
@@ -482,6 +411,8 @@ const weightBounds = computed(() => {
   const roundedMax = Number.isFinite(max) ? Math.ceil(max / step) * step : step
   return { min: roundedMin, max: roundedMax }
 })
+const powerBoundsReady = computed(() => Number.isFinite(Number(powerBounds.value.min)) && Number.isFinite(Number(powerBounds.value.max)))
+const weightBoundsReady = computed(() => Number.isFinite(Number(rawWeightBounds.value.min)) && Number.isFinite(Number(rawWeightBounds.value.max)))
 
 // Filter states
 const selectedMake = ref('')
@@ -489,11 +420,42 @@ const selectedCategory = ref('')
 const selectedTransmission = ref('')
 const selectedFuelType = ref('')
 const selectedDrivetrain = ref('')
-const priceRange = ref([priceBounds.value.min, priceBounds.value.max])
-const yearRange = ref([yearBounds.value.min, yearBounds.value.max])
-const mileageRange = ref([mileageBounds.value.min, mileageBounds.value.max])
-const powerRange = ref([powerBounds.value.min, powerBounds.value.max])
-const weightRange = ref([weightBounds.value.min, weightBounds.value.max])
+const priceRange = ref([priceBounds.value?.min ?? 0, priceBounds.value?.max ?? 0])
+const canAfford = ref(false)
+
+// Sync hideSold with active filters
+const hideSold = computed({
+  get: () => {
+    const filter = props.filters?.hideSold
+    if (!filter) return false
+    return filter.value === true || 
+           (filter.values && filter.values.length > 0 && (filter.values[0] === true || filter.values[0] === 'true'))
+  },
+  set: (val) => {
+    if (val) {
+      emit('add-filter', {
+        category: 'hideSold',
+        type: 'boolean',
+        label: 'Hide Sold',
+        value: true,
+        displayValue: 'Hide Sold Vehicles'
+      })
+    } else {
+      emit('remove-filter', 'hideSold')
+    }
+  }
+})
+
+const effectivePriceBounds = computed(() => {
+  const baseMax = priceBounds.value.max
+  if (!canAfford.value) return { min: priceBounds.value.min, max: baseMax }
+  const cap = Math.max(priceBounds.value.min, Math.min(playerMoney.value, baseMax))
+  return { min: priceBounds.value.min, max: cap }
+})
+const yearRange = ref([yearBounds.value?.min ?? 1980, yearBounds.value?.max ?? 2024])
+const mileageRange = ref([mileageBounds.value?.min ?? 0, mileageBounds.value?.max ?? 0])
+const powerRange = ref([powerBounds.value?.min ?? 0, powerBounds.value?.max ?? 0])
+const weightRange = ref([weightBounds.value?.min ?? 0, weightBounds.value?.max ?? 0])
 
 // Options
 const makeOptions = [
@@ -542,19 +504,23 @@ ensureRangeRef(weightRange, weightBounds.value.min, weightBounds.value.max)
 // Keep ranges within dynamic bounds
 watch(priceBounds, ({min, max}) => {
   const [a, b] = priceRange.value
-  priceRange.value = [Math.max(a, min), Math.min(b, max)]
+  const next = [Math.max(a ?? min, min), Math.min(b ?? max, max)]
+  if (next[0] !== a || next[1] !== b) priceRange.value = next
 }, { immediate: true })
 watch(yearBounds, ({min, max}) => {
   const [a, b] = yearRange.value
-  yearRange.value = [Math.max(a, min), Math.min(b, max)]
+  const next = [Math.max(a ?? min, min), Math.min(b ?? max, max)]
+  if (next[0] !== a || next[1] !== b) yearRange.value = next
 }, { immediate: true })
 watch(mileageBounds, ({min, max}) => {
   const [a, b] = mileageRange.value
-  mileageRange.value = [Math.max(a, min), Math.min(b, max)]
+  const next = [Math.max(a ?? min, min), Math.min(b ?? max, max)]
+  if (next[0] !== a || next[1] !== b) mileageRange.value = next
 }, { immediate: true })
 watch(powerBounds, ({min, max}) => {
   const [a, b] = powerRange.value
-  powerRange.value = [Math.max(a, min), Math.min(b, max)]
+  const next = [Math.max(a ?? min, min), Math.min(b ?? max, max)]
+  if (next[0] !== a || next[1] !== b) powerRange.value = next
 }, { immediate: true })
 
 // Mirror single refs for stacked sliders
@@ -580,19 +546,42 @@ watch(weightRange, ([a, b]) => { weightMin.value = a; weightMax.value = b })
 watch([weightMin, weightMax], ([a, b]) => { weightRange.value = [a, b] })
 watch(powerRange, ([a, b]) => { powerMin.value = a; powerMax.value = b })
 
+// Auto-cap priceMax when canAfford is toggled or money changes
+watch([canAfford, playerMoney, priceBounds], () => {
+  if (!canAfford.value) return
+  const cap = effectivePriceBounds.value.max
+  if (priceMax.value > cap) priceMax.value = cap
+}, { immediate: true })
+
+// Capture keyboard when the dropdown is opened so inputs always receive typing
+watch(isOpen, (open) => {
+  if (lua && lua.setCEFTyping) lua.setCEFTyping(!!open)
+})
+onBeforeUnmount(() => {
+  if (lua && lua.setCEFTyping) lua.setCEFTyping(false)
+})
+
 // Convert filters to active filter objects
 const activeFilters = computed(() => {
   const filters = []
   const currentFilters = props.filters || {}
   
   Object.entries(currentFilters).forEach(([key, value]) => {
-    if (value && (value.min !== undefined || value.max !== undefined || (value.values && value.values.length > 0))) {
+    if (value && (value.min !== undefined || value.max !== undefined || (value.values && value.values.length > 0) || value.value !== undefined)) {
       let displayValue = ''
       
-      if (value.min !== undefined && value.max !== undefined) {
+      // Special handling for hideSold filter
+      if (key === 'hideSold') {
+        displayValue = 'Hide Sold'
+      } else if (value.min !== undefined && value.max !== undefined) {
         displayValue = `${value.min} - ${value.max}`
       } else if (value.values && value.values.length > 0) {
-        displayValue = value.values.join(', ')
+        // Don't show "true" for boolean values
+        if (value.values[0] === true || value.values[0] === 'true') {
+          displayValue = formatFieldLabel(key)
+        } else {
+          displayValue = value.values.join(', ')
+        }
       }
       
       filters.push({
@@ -841,7 +830,7 @@ const addWeightFilter = () => {
 }
 
 .filter-panel {
-  width: 60rem;
+  width: 48rem;
   max-width: calc(100vw - 4rem);
   height: auto;
   max-height: none;
@@ -850,7 +839,217 @@ const addWeightFilter = () => {
   border-radius: var(--bng-corners-2);
   box-shadow: 0 8px 24px rgba(0,0,0,0.5);
   overflow: visible;
-  margin-left: -12.5rem;
+  margin-left: -10rem;
+}
+
+.filter-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.price-filter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 1rem;
+  
+  .filter-title {
+    font-weight: 500;
+    color: var(--bng-off-white);
+  }
+}
+
+.can-afford-toggle {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  background: var(--bng-cool-gray-850);
+  border: 1px solid var(--bng-cool-gray-700);
+  border-radius: 9999px;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: var(--bng-cool-gray-800);
+    border-color: var(--bng-cool-gray-600);
+  }
+  
+  &.active {
+    background: var(--bng-orange-alpha-15);
+    border-color: var(--bng-orange);
+    
+    .toggle-switch {
+      background: var(--bng-orange);
+      
+      &::after {
+        transform: translateX(1rem);
+        background: var(--bng-off-black);
+      }
+    }
+    
+    .money-amount {
+      color: var(--bng-orange);
+      font-weight: 600;
+    }
+  }
+  
+  label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    gap: 0.5rem;
+    
+    input[type="checkbox"] {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+  }
+  
+  .toggle-switch {
+    position: relative;
+    width: 2rem;
+    height: 1.125rem;
+    background: var(--bng-cool-gray-700);
+    border-radius: 9999px;
+    transition: all 0.3s ease;
+    
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0.125rem;
+      left: 0.125rem;
+      width: 0.875rem;
+      height: 0.875rem;
+      background: var(--bng-off-white);
+      border-radius: 50%;
+      transition: transform 0.3s ease;
+    }
+  }
+  
+  .toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.8125rem;
+    color: var(--bng-cool-gray-100);
+    
+    .money-icon {
+      width: 0.875rem;
+      height: 0.875rem;
+      color: var(--bng-cool-gray-400);
+    }
+    
+    .afford-text {
+      font-weight: 500;
+    }
+    
+    .money-amount {
+      color: var(--bng-cool-gray-300);
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+  }
+}
+
+.toggle-option {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.5rem;
+  background: var(--bng-cool-gray-850);
+  border: 1px solid var(--bng-cool-gray-700);
+  border-radius: var(--bng-corners-1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: var(--bng-cool-gray-800);
+    border-color: var(--bng-cool-gray-600);
+  }
+  
+  &.compact {
+    padding: 0.25rem 0.375rem;
+    background: transparent;
+    border: none;
+    
+    &:hover {
+      background: var(--bng-cool-gray-850);
+    }
+  }
+  
+  input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+    cursor: pointer;
+  }
+  
+  span {
+    color: var(--bng-off-white);
+    font-size: 0.75rem;
+  }
+}
+
+.hide-sold-toggle {
+  margin-bottom: 0.625rem;
+  padding-bottom: 0.625rem;
+  border-bottom: 1px solid var(--bng-cool-gray-700);
+}
+
+
+
+.range-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.125rem;
+  background: var(--bng-cool-gray-850);
+  border: 1px solid var(--bng-cool-gray-700);
+  border-radius: 9999px;
+  padding: 0.25rem 0.5rem;
+  margin-bottom: 0.375rem;
+  
+  .currency-symbol {
+    color: var(--bng-cool-gray-400);
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-right: 0.0625rem;
+  }
+  
+  .sep {
+    color: var(--bng-cool-gray-500);
+    font-weight: 500;
+    margin: 0 0.125rem;
+  }
+  
+  .range-input {
+    width: 4.5rem;
+    background: transparent;
+    border: none;
+    color: var(--bng-off-white);
+    outline: none;
+    font-size: 0.75rem;
+    padding: 0;
+    
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    
+    &:focus {
+      color: var(--bng-orange);
+    }
+    
+    &::placeholder {
+      color: var(--bng-cool-gray-500);
+    }
+  }
+}
+.dual-slider.compact :deep(.bng-slider) {
+  margin-top: 0.15rem;
+  margin-bottom: 0.15rem;
 }
 
 .filter-grid {
@@ -870,25 +1069,30 @@ const addWeightFilter = () => {
   display: flex;
   flex-direction: column;
   background: var(--bng-cool-gray-900);
+  max-height: 60vh;
+  overflow: auto;
 }
 
 .column-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem;
+  padding: 0.625rem 0.75rem;
   border-bottom: 1px solid var(--bng-cool-gray-600);
 
   .header-title {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.375rem;
     font-weight: 500;
+    font-size: 0.8125rem;
     color: var(--bng-off-white);
   }
 
   .clear-all-btn {
     color: rgb(239, 68, 68);
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
     
     &:hover {
       background: rgba(239, 68, 68, 0.1);
@@ -897,30 +1101,30 @@ const addWeightFilter = () => {
 }
 
 .filter-count-text {
-  padding: 0.5rem 1rem 0;
-  font-size: 0.875rem;
+  padding: 0.375rem 0.75rem 0;
+  font-size: 0.75rem;
   color: var(--bng-cool-gray-300);
 }
 
 .creation-subtitle {
-  padding: 0 1rem 0.5rem 1rem;
-  font-size: 0.875rem;
+  padding: 0 0.75rem 0.375rem 0.75rem;
+  font-size: 0.75rem;
   color: var(--bng-cool-gray-300);
 }
 
 .active-filters-list {
   flex: 1;
   overflow: visible;
-  padding: 1rem;
+  padding: 0.75rem;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.375rem;
 
   .active-filter-item {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    padding: 0.75rem;
+    padding: 0.5rem;
     background: var(--bng-cool-gray-800);
     border: 1px solid var(--bng-cool-gray-700);
     border-radius: var(--bng-corners-1);
@@ -936,34 +1140,35 @@ const addWeightFilter = () => {
       min-width: 0;
 
       .filter-category {
-        padding: 0.125rem 0.375rem;
+        padding: 0.1rem 0.25rem;
         background: var(--bng-orange-alpha-20);
         color: var(--bng-orange);
         border: 1px solid var(--bng-orange-alpha-50);
         border-radius: var(--bng-corners-1);
-        font-size: 0.75rem;
+        font-size: 0.625rem;
         font-weight: 500;
         display: inline-block;
-        margin-bottom: 0.25rem;
+        margin-bottom: 0.125rem;
       }
 
       .filter-label {
         font-weight: 500;
-        font-size: 0.875rem;
+        font-size: 0.75rem;
         color: var(--bng-off-white);
-        margin-bottom: 0.125rem;
+        margin-bottom: 0.0625rem;
       }
 
       .filter-display {
-        font-size: 0.75rem;
+        font-size: 0.625rem;
         color: var(--bng-cool-gray-300);
       }
     }
 
     .remove-filter-btn {
-      margin-left: 0.5rem;
-      padding: 0.25rem;
+      margin-left: 0.375rem;
+      padding: 0.125rem;
       min-width: auto;
+      font-size: 0.75rem;
     }
   }
 }
@@ -975,44 +1180,45 @@ const addWeightFilter = () => {
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 2rem 1rem;
+  padding: 1.5rem 0.75rem;
   color: var(--bng-cool-gray-400);
 
   .empty-icon {
-    width: 3rem;
-    height: 3rem;
-    margin-bottom: 1rem;
+    width: 2rem;
+    height: 2rem;
+    margin-bottom: 0.5rem;
     opacity: 0.5;
   }
 
   h4 {
     font-weight: 500;
-    margin: 0 0 0.5rem 0;
+    font-size: 0.875rem;
+    margin: 0 0 0.25rem 0;
     color: var(--bng-off-white);
   }
 
   p {
     margin: 0;
-    font-size: 0.875rem;
+    font-size: 0.75rem;
   }
 }
 
 .filter-tabs-container {
-  padding: 0 1rem;
-  margin-bottom: 1rem;
+  padding: 0 0.75rem;
+  margin-bottom: 0.625rem;
   display: flex;
   justify-content: center;
 }
 .filter-tabs {
   display: inline-flex;
-  gap: 0.25rem;
+  gap: 0.125rem;
   background: var(--bng-cool-gray-800);
   border: 1px solid var(--bng-cool-gray-700);
   border-radius: 9999px;
-  padding: 0.25rem;
+  padding: 0.125rem;
 }
 .filter-tabs .tab-btn {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   border-radius: 9999px;
   background: transparent;
   border: none;
@@ -1020,17 +1226,17 @@ const addWeightFilter = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 2.25rem;
-  padding: 0 1rem;
-  min-width: 6rem;
+  height: 1.75rem;
+  padding: 0 0.75rem;
+  min-width: 4.5rem;
 }
 .filter-tabs .tab-btn :deep(button) {
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 2.25rem;
-  padding: 0 1rem;
+  height: 1.75rem;
+  padding: 0 0.75rem;
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
@@ -1047,13 +1253,15 @@ const addWeightFilter = () => {
 .filter-creation-content {
   flex: 1;
   overflow: visible;
-  padding: 0 1rem 1rem 1rem;
+  padding: 0 0.75rem 0.75rem 0.75rem;
 }
 
 .filter-section {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.625rem;
+  
+
 }
 
 .dual-slider {

@@ -148,6 +148,10 @@ export default {
     sendPurchaseDataToUi: () => {},
     removeTradeInVehicle: () => {},
     onShoppingMenuClosed: () => {},
+    // lightweight refresh + navigation helpers
+    updateVehicleList: fromScratch => Boolean,
+    navigateToDealership: dealershipId => String,
+    setShoppingUiOpen: open => Boolean,
   },
 
   career_modules_marketplace: {

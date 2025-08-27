@@ -9,6 +9,7 @@ export const useVehicleShoppingStore = defineStore("vehicleShopping", () => {
   const filters = ref({}) // { field: { min, max } }
   const sortField = ref('Value')
   const sortDirection = ref('asc') // 'asc' | 'desc'
+  const soldRemovalTimers = new Map()
   
   const filteredVehicles = computed(() => {
     const d = vehicleShoppingData.value
@@ -156,7 +157,17 @@ export const useVehicleShoppingStore = defineStore("vehicleShopping", () => {
     let res = Array.isArray(list) ? list.slice() : []
     const activeFilters = filters.value
     res = res.filter(v => {
+      // Handle hideSold filter - check for boolean value or values array
+      if (activeFilters.hideSold) {
+        const shouldHide = activeFilters.hideSold.value === true || 
+                          (activeFilters.hideSold.values && (activeFilters.hideSold.values[0] === true || activeFilters.hideSold.values[0] === 'true'))
+        if (shouldHide && (v.__sold || v.markedSold || (v.soldViewCounter && v.soldViewCounter > 0))) {
+          return false
+        }
+      }
+      
       for (const key in activeFilters) {
+        if (key === 'hideSold') continue // Already handled above
         const range = activeFilters[key]
         if (!range) continue
         if (Array.isArray(range.values) && range.values.length) {
@@ -186,6 +197,94 @@ export const useVehicleShoppingStore = defineStore("vehicleShopping", () => {
   // Actions
   const requestVehicleShoppingData = async () => {
     vehicleShoppingData.value = await lua.career_modules_vehicleShopping.getShoppingData()
+  }
+
+  // Lightweight live updates via events
+  function applyShopDelta(delta) {
+    if (!delta || typeof delta !== 'object') return
+    const d = vehicleShoppingData.value
+    if (!d.vehiclesInShop) d.vehiclesInShop = {}
+    // additions
+    if (Array.isArray(delta.added)) {
+      delta.added.forEach(v => {
+        if (!v || !v.shopId) return
+        d.vehiclesInShop[v.shopId] = v
+      })
+    }
+    // handle sold: keep visible for 2 minutes, then remove (accept either uid or full vehicle)
+    if (Array.isArray(delta.sold)) {
+      delta.sold.forEach(s => {
+        const uid = typeof s === 'string' ? s : s?.uid
+        if (!uid) return
+        let foundKey = null
+        Object.keys(d.vehiclesInShop || {}).some(k => {
+          const v = d.vehiclesInShop[k]
+          if (v && v.uid === uid) { foundKey = k; return true }
+          return false
+        })
+        if (foundKey != null) {
+          const v = d.vehiclesInShop[foundKey]
+          // enrich with incoming sold snapshot if present (preserve shopId)
+          if (s && typeof s === 'object') {
+            const keepShopId = v.shopId
+            d.vehiclesInShop[foundKey] = { ...v, ...s, shopId: keepShopId }
+          }
+          d.vehiclesInShop[foundKey].__soldAt = Date.now()
+          d.vehiclesInShop[foundKey].__sold = true
+          if (soldRemovalTimers.has(uid)) { clearTimeout(soldRemovalTimers.get(uid)) }
+          soldRemovalTimers.set(uid, setTimeout(() => {
+            try {
+              Object.keys(d.vehiclesInShop || {}).forEach(k => {
+                const vv = d.vehiclesInShop[k]
+                if (vv && vv.uid === uid) delete d.vehiclesInShop[k]
+              })
+            } finally {
+              soldRemovalTimers.delete(uid)
+            }
+          }, 120000))
+        }
+      })
+    }
+
+    // handle removed (non-sold): remove immediately
+    if (Array.isArray(delta.removed)) {
+      delta.removed.forEach(uid => {
+        Object.keys(d.vehiclesInShop || {}).forEach(k => {
+          const v = d.vehiclesInShop[k]
+          if (v && v.uid === uid) delete d.vehiclesInShop[k]
+        })
+      })
+    }
+
+    // handle updated: if soldViewCounter increased, mark as sold for display
+    if (Array.isArray(delta.updated)) {
+      delta.updated.forEach(vu => {
+        const uid = vu && vu.uid
+        if (!uid) return
+        Object.keys(d.vehiclesInShop || {}).forEach(k => {
+          const v = d.vehiclesInShop[k]
+          if (v && v.uid === uid) {
+            // Merge updated data but preserve shopId
+            const keepShopId = v.shopId
+            Object.assign(v, vu)
+            v.shopId = keepShopId
+            v.__sold = vu.__sold || true
+            v.__soldAt = Date.now()
+            if (soldRemovalTimers.has(uid)) { clearTimeout(soldRemovalTimers.get(uid)) }
+            soldRemovalTimers.set(uid, setTimeout(() => {
+              try {
+                Object.keys(d.vehiclesInShop || {}).forEach(kk => {
+                  const vv = d.vehiclesInShop[kk]
+                  if (vv && vv.uid === uid) delete d.vehiclesInShop[kk]
+                })
+              } finally {
+                soldRemovalTimers.delete(uid)
+              }
+            }, 120000))
+          }
+        })
+      })
+    }
   }
   
   // Add a method to set the search query
@@ -258,5 +357,6 @@ export const useVehicleShoppingStore = defineStore("vehicleShopping", () => {
     processVehicleList,
     setValueFilter,
     toggleFilterValue,
+    applyShopDelta,
   }
 })
