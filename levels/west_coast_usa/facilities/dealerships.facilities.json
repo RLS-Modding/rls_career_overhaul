@@ -223,6 +223,14 @@
         {
           "probability": 2,
           "whiteList": {
+            "Mileage": {
+              "min": 8046720,
+              "max": 64373760
+            },
+            "Years": {
+              "min": 1900,
+              "max": 1980
+            },
             "Country": [
               "Poland",
               "Italy",
@@ -236,21 +244,11 @@
               "Canada"
             ]
           }
-        },
-        {
-          "probability": 1,
-          "whiteList": {
-            "Type": [
-              "Car",
-              "Truck"
-            ]
-          }
         }
       ],
       "subFilterNames": [
         "Classic",
-        "International",
-        "none"
+        "International"
       ],
       "fees": 649,
       "containsStarterVehicles": false,
