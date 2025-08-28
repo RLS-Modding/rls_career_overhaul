@@ -20,7 +20,7 @@
       "hotlap":25,
       "label":"Beach Circuit",
       "minCheckpointDistance":45,
-      "reward":1500,
+      "reward":2000,
       "type":[
         "offroad",
         "rally"
@@ -43,7 +43,7 @@
       ],
       "hotlap":55,
       "label":"Dirt Circuit",
-      "reward":2000,
+      "reward":3000,
       "type":[
         "offroad",
         "rally"
@@ -55,7 +55,7 @@
         "dirtOval"
       ],
       "damageFactor":1,
-      "hotlap":25,
+      "hotlap":27,
       "label":"Dirt Oval",
       "reward":350,
       "type":[
@@ -117,7 +117,7 @@
       "checkpointRoad":[
         "islandTouge"
       ],
-      "driftGoal":3500,
+      "driftGoal":3000,
       "label":"Island Touge Drift",
       "reward":3000,
       "type":[
@@ -245,7 +245,7 @@
       ],
       "hotlap":23,
       "label":"Quarry Circuit",
-      "reward":1000,
+      "reward":2000,
       "type":[
         "offroad",
         "rally"
@@ -296,7 +296,7 @@
         "rally1"
       ],
       "label":"Rally Stage 1",
-      "reward":2000,
+      "reward":2500,
       "type":[
         "rally"
       ]
@@ -328,7 +328,7 @@
         "rally2"
       ],
       "label":"Rally Stage 2",
-      "reward":2500,
+      "reward":3000,
       "type":[
         "rally"
       ]
@@ -399,7 +399,7 @@
         "rally4"
       ],
       "label":"Rally Stage 4 - Final",
-      "reward":2000,
+      "reward":3000,
       "type":[
         "rally"
       ]
@@ -419,7 +419,7 @@
       "checkpointRoad":[
         "redwoodDrift"
       ],
-      "driftGoal":6000,
+      "driftGoal":7000,
       "label":"Redwood Drift",
       "reward":1500,
       "type":[
@@ -443,7 +443,7 @@
       "checkpointRoad":[
         "redwoodDriftR"
       ],
-      "driftGoal":6000,
+      "driftGoal":7000,
       "label":"Redwood Drift Reverse",
       "reward":1500,
       "type":[
@@ -492,7 +492,7 @@
           4,
           5
         ],
-        "reward":1250
+        "reward":2550
       },
       "bestTime":41,
       "checkpointRoad":[
@@ -500,7 +500,7 @@
       ],
       "hotlap":45,
       "label":"Rubberband Ridge",
-      "reward":1250,
+      "reward":2550,
       "runningStart":true,
       "type":[
         "offroad",
