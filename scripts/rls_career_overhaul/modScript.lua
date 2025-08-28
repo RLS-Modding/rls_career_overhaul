@@ -33,6 +33,10 @@ local function loadExtensions()
     setExtensionUnloadMode("gameplay_taxi", "manual")
     
     setExtensionUnloadMode("gameplay_cab", "manual")
+
+    setExtensionUnloadMode("career_challengeModes", "manual")
+    
+    setExtensionUnloadMode("career_economyAdjuster", "manual")
 end
 
 local function deactivateBeamMP()

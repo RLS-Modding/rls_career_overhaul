@@ -3,7 +3,7 @@
 -- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
 local M = {}
 
-M.dependencies = {'career_career'}
+M.dependencies = {'career_career', 'gameplay_walk'}
 
 local playerData = {
   trafficActive = 0
@@ -193,6 +193,29 @@ local function resetPursuit()
   end
 end
 
+local function isPoliceDisabled()
+  local disabled = false
+  local reason = ""
+
+  -- Check if player is walking (highest priority)
+  if gameplay_walk and gameplay_walk.isWalking() then
+      disabled = true
+      reason = "Police service is not available while walking"
+      return disabled, reason
+  end
+
+  -- Check if police multiplier is 0
+  if career_economyAdjuster then
+      local policeMultiplier = career_economyAdjuster.getSectionMultiplier("police") or 1.0
+      if policeMultiplier == 0 then
+          disabled = true
+          reason = "Police multiplier is set to 0"
+      end
+  end
+
+  return disabled, reason
+end
+
 local function onPursuitAction(vehId, action, data)
   if gameplay_cab and gameplay_cab.inCab() then
     return
@@ -257,6 +280,16 @@ local function onPursuitAction(vehId, action, data)
         end
         if playerIsCop == false then
           local reward = math.floor(110 * (data.score or 10)) / 100
+
+          -- Apply criminal economy multiplier
+          if career_economyAdjuster then
+            local criminalMultiplier = career_economyAdjuster.getSectionMultiplier("criminal") or 1.0
+            reward = math.floor(reward * criminalMultiplier)
+            if criminalMultiplier ~= 1.0 then
+              print(string.format("Criminal: Applied criminal multiplier %.2fx to evasion reward", criminalMultiplier))
+            end
+          end
+
           career_modules_payment.reward({
             money = {
               amount = reward
@@ -285,6 +318,12 @@ local function onPursuitAction(vehId, action, data)
     resetPursuit()
   elseif action == "arrest" then -- pursuit arrest, make the player pay a fine
     if playerIsCop == true then
+      -- Check if police service is disabled
+      local policeDisabled, disabledReason = isPoliceDisabled()
+      if policeDisabled then
+        ui_message("Police service disabled: " .. disabledReason, 8, "Police", "warning")
+        return
+      end
       local bonus = math.floor(180 * data.score) / 100
       bonus = math.max(5000 - bonus, 1000)
       
@@ -300,9 +339,18 @@ local function onPursuitAction(vehId, action, data)
       end
       bonus = bonus * (1 - loanerCut)
 
+      -- Apply police economy multiplier
+      if career_economyAdjuster then
+        local policeMultiplier = career_economyAdjuster.getSectionMultiplier("police") or 1.0
+        bonus = math.floor(bonus * policeMultiplier)
+        if policeMultiplier ~= 1.0 then
+          print(string.format("Police: Applied police multiplier %.2fx to arrest bonus", policeMultiplier))
+        end
+      end
+
       career_modules_payment.reward({
         money = {
-          amount = bonus 
+          amount = bonus
         },
         beamXP = {
           amount = math.floor(bonus / 20)
@@ -354,7 +402,12 @@ local function onVehicleSwitched(oldId, newId)
     setTrafficVars()
     local playerIsCop = getPlayerIsCop()
     if playerIsCop then
-      ui_message("You are now a cop", 5, "Police", "info")
+      local policeDisabled, disabledReason = isPoliceDisabled()
+      if policeDisabled then
+        ui_message("Police service disabled: " .. disabledReason, 8, "Police", "warning")
+      else
+        ui_message("You are now a cop", 5, "Police", "info")
+      end
     end
   end
 end

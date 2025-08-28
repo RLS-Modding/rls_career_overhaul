@@ -3,7 +3,7 @@
     v-bng-scoped-nav="{ activated: isActive }"
     v-bng-blur
     v-bng-sound-class="'bng_hover_generic'"
-    :hideFooter="!isActive"
+    :hideFooter="true"
     :footerStyles="cardFooterStyles"
     class="profile-create-card"
     @activate="onActivated"
@@ -15,13 +15,35 @@
           :maxlength="PROFILE_NAME_MAX_LENGTH"
           :validate="validateFn"
           :errorMessage="nameError"
-          externalLabel="Save Name"
+          externalLabel="Profile Name"
           @keydown.enter="onEnter" />
-        <BngSwitch v-model="hardcoreMode" label-before :inline="false"> Hardcore Mode </BngSwitch>
-        <BngSwitch v-model="tutorialChecked" label-before :inline="false" :label-alignment="LABEL_ALIGNMENTS.START">{{
-          $ctx_t("ui.career.tutorialCheckDesc")
-        }}</BngSwitch>
-        <span class="tutorial-desc" :class="{ checked: tutorialChecked }">{{ $ctx_t("ui.career.tutorialOnDesc") }}</span>
+
+        <div class="section">
+          <div class="section-title-row">
+            <div class="title-icon title-icon-orange" />
+            <div class="title-label">Challenge Mode</div>
+          </div>
+          <ChallengeDropdown v-model="challengeId" />
+        </div>
+
+        <div class="hc-card">
+          <div class="hc-left">
+            <div class="title-icon title-icon-red" />
+            <div class="hc-texts">
+              <div class="hc-title">Hardcore Mode</div>
+              <div class="hc-sub">Increased difficulty, permanent consequences</div>
+            </div>
+          </div>
+          <div class="hc-right">
+            <BngSwitch v-model="hardcoreMode" label-before :inline="false"> </BngSwitch>
+          </div>
+        </div>
+
+        <div class="actions-row">
+          <button ref="startButton" class="modern-btn modern-primary" v-bng-on-ui-nav:ok.asMouse.focusRequired :disabled="nameError !== null" @click="load">Start Game</button>
+          <button ref="cancelButton" class="modern-btn modern-cancel" v-bng-on-ui-nav:ok.asMouse.focusRequired @click="setActive(false)">Cancel</button>
+        </div>
+        
       </template>
       <div v-else class="create-content-cover" @click="setActive(true)">
         <div class="cover-plus-container">
@@ -29,10 +51,6 @@
         </div>
       </div>
     </div>
-    <template #buttons>
-      <BngButton ref="startButton" v-bng-on-ui-nav:ok.asMouse.focusRequired :disabled="nameError !== null" @click="load">Start</BngButton>
-      <BngButton ref="cancelButton" v-bng-on-ui-nav:ok.asMouse.focusRequired accent="outlined" @click="setActive(false)">Cancel</BngButton>
-    </template>
   </BngCard>
 </template>
 
@@ -43,17 +61,17 @@ const cardFooterStyles = {
 </script>
 
 <script setup>
-import { inject, nextTick, ref } from "vue"
+import { inject, nextTick, ref, computed } from "vue"
 import { vBngOnUiNav, vBngScopedNav, vBngBlur, vBngSoundClass } from "@/common/directives"
 import { BngButton, BngCard, BngInput, BngSwitch, LABEL_ALIGNMENTS } from "@/common/components/base"
 import { PROFILE_NAME_MAX_LENGTH } from "../../stores/profilesStore"
 import { setFocus } from "@/services/uiNavFocus"
+import ChallengeDropdown from "./ChallengeDropdown.vue"
 
 const emit = defineEmits(["card:activate", "load"])
 
 const profileName = defineModel("profileName", { required: true })
 const hardcoreMode = ref(false)
-const tutorialChecked = ref(true)
 const isActive = ref(false)
 
 const validateName = inject("validateName")
@@ -74,7 +92,9 @@ const validateFn = name => {
   return !res
 }
 
-const load = () => emit("load", profileName.value, tutorialChecked.value, hardcoreMode.value)
+const challengeId = ref(null)
+
+const load = () => emit("load", profileName.value, false, hardcoreMode.value, challengeId.value)
 
 function onActivated(event) {
   const data = event.detail
@@ -95,7 +115,10 @@ function setActive(value) {
 function onEnter(event) {
   event.preventDefault()
   const focusButton = nameError.value ? cancelButton : startButton
-  if (focusButton.value) nextTick(() => setFocus(focusButton.value.$el))
+  if (focusButton.value) {
+    const el = focusButton.value.$el || focusButton.value
+    nextTick(() => setFocus(el))
+  }
 }
 </script>
 
@@ -108,7 +131,11 @@ function onEnter(event) {
 
   // temp
   :deep(.card-cnt) {
-    border-radius: calc-ui-rem(0.5) !important;
+    border-radius: calc-ui-rem(1) !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
   }
   :deep(.bng-button) {
     font-size: calc-ui-rem() !important;
@@ -118,22 +145,75 @@ function onEnter(event) {
       border-radius: calc-ui-rem(0.25) !important;
     }
   }
+  :deep(.start-btn-modern) {
+    background-image: linear-gradient(90deg, #e96c21, #c85012);
+    border: 0 !important;
+  }
 }
 
 .create-content-container {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  padding: 0.75em 1em;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 1.25em 1.25em;
 
-  > * {
-    margin-bottom: 1.5em;
-  }
+  > * { margin-bottom: 1.25em; }
+
+  padding-bottom: 0;
 
   &.create-active {
-    background: hsla(217, 22%, 12%, 1);
+    background: linear-gradient(180deg, rgba(17,24,39,0.95), rgba(17,24,39,0.9));
   }
 }
+.modern-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1em; align-items: start; }
+.modern-col { display: flex; flex-direction: column; gap: 0.5em; }
+
+.section { display: flex; flex-direction: column; gap: 0.75em; }
+.section-title-row { display: flex; align-items: center; gap: 0.6em; }
+.title-icon { width: 18px; height: 18px; border-radius: 6px; }
+.title-icon-orange { background: rgba(251, 146, 60, 0.3); }
+.title-icon-red { background: rgba(248, 113, 113, 0.3); }
+.title-label { color: #fff; font-weight: 600; }
+
+.actions-row { 
+  display:flex; 
+  gap: 0.4em; 
+  justify-content: center; 
+  margin-top: auto; 
+  padding-bottom: 0; 
+}
+
+.modern-btn { 
+  border: 0 !important; 
+  border-radius: 10px !important; 
+  padding: 0.45em 0.8em !important; 
+  box-shadow: 0 6px 16px rgba(0,0,0,0.25) !important; 
+  transition: transform 0.08s ease, box-shadow 0.12s ease, filter 0.12s ease; 
+}
+.modern-primary { 
+  background-image: linear-gradient(90deg, #ff7a1a, #e85f00) !important; 
+  color: #fff !important; 
+  flex: 2 1 0%;
+  &:hover { filter: brightness(1.05); transform: translateY(-1px); box-shadow: 0 8px 20px rgba(0,0,0,0.35) !important; }
+  &:active { transform: translateY(0); filter: brightness(0.98); }
+}
+.modern-cancel { 
+  background: rgba(55,65,81,0.75) !important; 
+  border: 1px solid rgba(156,163,175,0.4) !important; 
+  color: #f3f4f6 !important; 
+  flex: 1 1 0%;
+  &:hover { filter: brightness(1.06); transform: translateY(-1px); box-shadow: 0 8px 20px rgba(0,0,0,0.3) !important; }
+  &:active { transform: translateY(0); filter: brightness(0.98); }
+}
+
+.hc-card { display: flex; align-items: center; justify-content: space-between; padding: 0.75em; background: rgba(30,41,59,0.6); border: 1px solid rgba(100,116,139,0.35); border-radius: 14px; }
+.hc-left { display: flex; align-items: center; gap: 0.6em; }
+.hc-card .title-icon { width: 22px; height: 22px; border-radius: 6px; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06); background: rgba(148, 63, 63, 0.75); }
+.hc-texts { display: flex; flex-direction: column; }
+.hc-title { color: #fff; font-weight: 600; }
+.hc-sub { color: #94a3b8; font-size: 0.9em; }
+.hc-right { display:flex; align-items:center; }
 
 .create-content-cover {
   display: flex;
@@ -153,13 +233,13 @@ function onEnter(event) {
     height: 100%;
 
     > .cover-plus-button {
-      font-weight: 400;
-      font-size: 13em;
+      font-weight: 500;
+      font-size: 10em;
       line-height: 1em;
       background-color: transparent;
       flex: 0 0 auto;
       text-align: center;
-      color: rgba(255, 255, 255, 0.2);
+      color: rgba(255,255,255,0.25);
     }
   }
 }
@@ -174,5 +254,31 @@ function onEnter(event) {
   &.checked {
     color: #fff !important;
   }
+}
+
+.challenge-mode {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75em;
+}
+.challenge-panel {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  border-radius: calc-ui-rem(0.5);
+  padding: 0.75em;
+}
+.challenge-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em;
+}
+.challenge-desc {
+  color: var(--bng-cool-gray-300);
+}
+.challenge-custom {
+  margin-top: 0.5em;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5em;
 }
 </style>

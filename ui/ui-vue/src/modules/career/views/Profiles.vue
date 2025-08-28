@@ -2,7 +2,7 @@
   <div v-bng-scoped-nav="{ activated: isActivated }" class="profiles-container" @deactivate="onDeactivate">
     <BngScreenHeading class="profiles-title" :preheadings="[$ctx_t('ui.playmodes.career')]">{{ $ctx_t("ui.career.savedProgress") }} </BngScreenHeading>
     <BackAside class="profiles-back" @click="onDeactivate()" />
-    <BngList :layout="LIST_LAYOUTS.RIBBON" :targetWidth="22" :targetHeight="28" :targetMargin="1" noBackground>
+    <BngList :layout="LIST_LAYOUTS.RIBBON" :targetWidth="22" :targetHeight="28" :targetMargin="1" noBackground class="profiles-modern-list">
       <ProfileCreateCard v-model:profileName="newProfileName" class="profile-card" @card:activate="value => onCardActivated(value, -1)" @load="onCreateSave" />
       <ProfileCard
         v-for="(profile, index) of profiles"
@@ -55,9 +55,9 @@ const onLoad = async id => {
   await store.loadProfile(id)
 }
 
-const onCreateSave = async (profileName, tutorialChecked, hardcoreMode) => {
+const onCreateSave = async (profileName, tutorialChecked, hardcoreMode, challengeId) => {
   isLoading = true
-  await store.loadProfile(profileName, tutorialChecked, true, hardcoreMode)
+  await store.loadProfile(profileName, tutorialChecked, true, hardcoreMode, challengeId)
 }
 
 function onCardActivated(active, index) {
@@ -180,6 +180,7 @@ function getNewName() {
 .profile-card {
   height: calc-ui-rem(28);
   width: calc-ui-rem(22);
+  filter: drop-shadow(0 10px 25px rgba(0,0,0,0.35));
 }
 
 .tooltip-outdated-message {

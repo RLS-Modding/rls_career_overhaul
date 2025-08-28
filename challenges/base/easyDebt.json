@@ -1,0 +1,15 @@
+{
+    "name": "Easy Debt",
+    "description": "Start with a small loan and pay it off quickly.",
+    "difficulty": "Easy",
+    "startingCapital": 10000,
+    "loans": {
+        "amount": 100000,
+        "interest": 0.15,
+        "payments": 24
+    },
+    "economyAdjuster": {
+        "taxi": 0
+    },
+    "winCondition": "payOffLoan"
+}

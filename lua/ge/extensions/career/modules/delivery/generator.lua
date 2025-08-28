@@ -163,6 +163,16 @@ local function finalizeParcelItemDistanceAndRewards(item)
       item.rewards.money = item.rewards.money * organizationData.reputationLevels[organizationData.reputation.level+2].deliveryBonus.value
     end
   end
+
+  -- Apply economy adjuster if available
+  if career_economyAdjuster then
+    local baseMoneyReward = item.rewards.money
+    local multiplier = career_economyAdjuster.getSectionMultiplier("delivery_parcel")
+    item.rewards.money = item.rewards.money * multiplier
+    item.rewards.money = math.floor(item.rewards.money + 0.5) -- Round to nearest integer
+    print(string.format("Delivery parcel reward adjusted: %.2f -> %.2f (multiplier: %.2f)",
+      baseMoneyReward, item.rewards.money, multiplier))
+  end
 end
 M.finalizeParcelItemDistanceAndRewards = finalizeParcelItemDistanceAndRewards
 
@@ -475,6 +485,17 @@ local function finalizeVehicleOffer(offer)
     end
     if offer.organization then
       offer.rewards[offer.organization .. "Reputation"] = (5 + round(distance/4000)) * hardcoreMultiplier
+    end
+
+    -- Apply economy adjuster if available
+    if career_economyAdjuster then
+      local baseMoneyReward = offer.rewards.money
+      local deliveryType = offer.data.type == "vehicle" and "delivery_vehicle" or "delivery_trailer"
+      local multiplier = career_economyAdjuster.getSectionMultiplier(deliveryType)
+      offer.rewards.money = offer.rewards.money * multiplier
+      offer.rewards.money = math.floor(offer.rewards.money + 0.5) -- Round to nearest integer
+      print(string.format("Delivery vehicle/trailer reward adjusted: %.2f -> %.2f (multiplier: %.2f)",
+        baseMoneyReward, offer.rewards.money, multiplier))
     end
   end
 end
@@ -789,6 +810,17 @@ local function addMaterialAsParcelToContainer(con, storage, amount, sourceFacId,
     organization = fac.associatedOrganization,
   }
 
+  -- Apply economy adjuster if available
+  if career_economyAdjuster then
+    local materialType = materialData and materialData.type or "fluid"
+    local deliveryType = "delivery_" .. materialType
+    local multiplier = career_economyAdjuster.getSectionMultiplier(deliveryType)
+    item.rewards.money = item.rewards.money * multiplier
+    item.rewards.money = math.floor(item.rewards.money + 0.5) -- Round to nearest integer
+    print(string.format("New material parcel reward adjusted: %d -> %d (multiplier: %.2f)",
+      amount * materialData.money, item.rewards.money, multiplier))
+  end
+
   local label, desc = dParcelMods.getLabelAndShortDescription(materialData.type)
   table.insert(item.modifiers, {type = materialData.type, icon = dParcelMods.getModifierIcon(materialData.type), active = true, label = label, description = desc})
 
@@ -822,6 +854,21 @@ local function splitOffPartsFromMaterialCargo(cargo, otherPartSizes)
     cargo.slots = cargo.slots - size
     cargo.weight = materialData.density * cargo.slots
     cargo.rewards.money = cargo.slots * materialData.money * hardcoreMultiplier
+
+    -- Apply economy adjuster to both copy and cargo rewards if available
+    if career_economyAdjuster then
+      local materialType = materialData and materialData.type or "fluid"
+      local deliveryType = "delivery_" .. materialType
+      local multiplier = career_economyAdjuster.getSectionMultiplier(deliveryType)
+
+      copy.rewards.money = copy.rewards.money * multiplier
+      copy.rewards.money = math.floor(copy.rewards.money + 0.5)
+
+      cargo.rewards.money = cargo.rewards.money * multiplier
+      cargo.rewards.money = math.floor(cargo.rewards.money + 0.5)
+
+      print(string.format("Material split rewards adjusted (multiplier: %.2f)", multiplier))
+    end
   end
   return ret
 end
@@ -856,6 +903,21 @@ local function moveMaterialToDestination(cargo, destination)
     copy.slots = amountForTank
     copy.weight = materialData.density * copy.slots
     copy.rewards.money = copy.slots * materialData.money * hardcoreMultiplier
+
+    -- Apply economy adjuster to both cargo and copy rewards if available
+    if career_economyAdjuster then
+      local materialType = materialData and materialData.type or "fluid"
+      local deliveryType = "delivery_" .. materialType
+      local multiplier = career_economyAdjuster.getSectionMultiplier(deliveryType)
+
+      cargo.rewards.money = cargo.rewards.money * multiplier
+      cargo.rewards.money = math.floor(cargo.rewards.money + 0.5)
+
+      copy.rewards.money = copy.rewards.money * multiplier
+      copy.rewards.money = math.floor(copy.rewards.money + 0.5)
+
+      print(string.format("Material move rewards adjusted (multiplier: %.2f)", multiplier))
+    end
 
     -- move copy to the destination
     dParcelManager.changeCargoLocation(cargo.id, destination)
@@ -903,6 +965,19 @@ local function finalizeMaterialDistanceRewards(item, destination)
       item.rewards[item.organization .. "Reputation"] = xpAmount
       item.rewards.money = item.rewards.money * organizationData.reputationLevels[organizationData.reputation.level+2].deliveryBonus.value * hardcoreMultiplier
     end
+  end
+
+  -- Apply economy adjuster if available
+  if career_economyAdjuster then
+    local baseMoneyReward = item.rewards.money
+    local materialData = M.getMaterialsTemplatesById(item.materialType)
+    local materialType = materialData and materialData.type or "fluid"
+    local deliveryType = "delivery_" .. materialType
+    local multiplier = career_economyAdjuster.getSectionMultiplier(deliveryType)
+    item.rewards.money = item.rewards.money * multiplier
+    item.rewards.money = math.floor(item.rewards.money + 0.5) -- Round to nearest integer
+    print(string.format("Delivery material reward adjusted: %.2f -> %.2f (multiplier: %.2f)",
+      baseMoneyReward, item.rewards.money, multiplier))
   end
 end
 M.finalizeMaterialDistanceRewards = finalizeMaterialDistanceRewards

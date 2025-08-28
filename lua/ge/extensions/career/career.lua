@@ -140,6 +140,11 @@ end
 
 local function onCareerModulesActivated(alreadyInLevel)
   setupCareerActionsAndUnpause()
+
+  if M.pendingChallengeId then
+    career_challengeModes.startChallenge(M.pendingChallengeId)
+    M.pendingChallengeId = nil -- Clear the pending challenge
+  end
 end
 
 local function toggleCareerModules(active, alreadyInLevel)
@@ -298,6 +303,35 @@ local function enableHardcoreMode(enabled)
   M.hardcoreMode = enabled
 end
 
+local function enableChallenge(challengeId)
+  if challengeId then
+    log("I","","Challenge enabled for later start: " .. challengeId)
+  end
+  M.pendingChallengeId = challengeId
+end
+
+local function applyChallengeConfig(cfg)
+  if not cfg then return false end
+  if not isActive() then return false end
+  if type(cfg.money) == 'number' then
+    if career_modules_playerAttributes and career_modules_playerAttributes.setAttributes then
+      career_modules_playerAttributes.setAttributes({money = cfg.money}, {label = "Challenge Start"})
+    end
+  end
+  if type(cfg.loans) == 'table' and career_modules_loans and career_modules_loans.takeLoan then
+    for _, l in ipairs(cfg.loans) do
+      local orgId = l and l.orgId
+      local amount = l and l.amount
+      local payments = l and l.payments
+      local rate = l and l.rate
+      if orgId and type(amount) == 'number' and amount > 0 and type(payments) == 'number' and payments > 0 then
+        career_modules_loans.takeLoan(orgId, amount, payments, rate)
+      end
+    end
+  end
+  return true
+end
+
 local function createOrLoadCareerAndStart(name, specificAutosave)
   --M.tutorialEnabled = string.find(string.lower(name), "tutorial") and true or false
   --M.vehSelectEnabled = string.find(string.lower(name), "vehselect") and true or false
@@ -385,9 +419,14 @@ local function formatSaveSlotForUi(saveSlot)
   local infoData = jsonReadFile(autosavePath .. "/info.json")
   local careerData = jsonReadFile(autosavePath .. "/career/" .. saveFile)
   local hardcoreData = jsonReadFile(autosavePath .. "/career/rls_career/hardcore.json")
+  local challengeData = jsonReadFile(autosavePath .. "/career/rls_career/challengeModes.json")
 
   if hardcoreData then
     data.hardcoreMode = hardcoreData.hardcoreMode
+  end
+
+  if challengeData and challengeData.activeChallenge then
+    data.activeChallenge = challengeData.activeChallenge.name
   end
   
   if careerData and careerData.level then
@@ -651,6 +690,8 @@ M.getAdditionalMenuButtons = getAdditionalMenuButtons
 
 M.enableHardcoreMode = enableHardcoreMode
 M.enableTutorial = enableTutorial
+M.enableChallenge = enableChallenge
+M.applyChallengeConfig = applyChallengeConfig
 M.createOrLoadCareerAndStart = createOrLoadCareerAndStart
 M.activateCareer = activateCareer
 M.deactivateCareer = deactivateCareer
