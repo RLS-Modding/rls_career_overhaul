@@ -31,6 +31,14 @@
           "logisticTypesReceived": [
             "vehNeedsRepair"
           ]
+        },
+        {
+          "psName": "belascoGarageLoaners",
+          "isInspectSpot": false,
+          "logisticTypesProvided": [],
+          "logisticTypesReceived": [],
+          "loanerTrailerPriority": 1,
+          "loanerNonTrailerPriority": 1
         }
       ],
       "sitesFile": "mechanics.sites.json",
