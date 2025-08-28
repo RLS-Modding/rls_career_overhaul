@@ -4,6 +4,7 @@
 local M = {}
 
 M.dependencies = {'career_career', 'gameplay_walk'}
+M.dependencies = {'career_career', 'gameplay_walk'}
 
 local playerData = {
   trafficActive = 0

@@ -1,4 +1,3 @@
-import { computed, ref } from "vue"
 import { defineStore } from "pinia"
 import { lua } from "@/bridge"
 import { $translate } from "@/services"
@@ -28,23 +27,11 @@ export const useProfilesStore = defineStore("profiles", () => {
 
     console.log("profileStore.loadProfile: enabling tutorial", tutorialEnabled)
     console.log("profileStore.loadProfile: enabling hardcore mode", hardcoreMode)
-
-    // Enable challenge for later start (like tutorial and hardcore mode)
-    if (typeof challengeSelection === 'string' && challengeSelection.length > 0) {
-      try {
-        // Ensure challenges are discovered before enabling
-        await lua.career_challengeModes.discoverChallenges()
-        console.log("profileStore.loadProfile: enabling challenge", challengeSelection)
-        const enableChallengeResult = await lua.career_career.enableChallenge(challengeSelection)
-        console.log("profileStore.loadProfile: enableChallengeResult", enableChallengeResult)
-      } catch (e) {
-        console.warn("profileStore.loadProfile: enableChallenge failed", e)
-      }
-    }
+    console.log("profileStore.loadProfile: enabling challenge mode", challengeSelection)
 
     console.log("profileStore.loadProfile: creating or loading career and starting", profileName)
     if (/^ +| +$/.test(profileName)) profileName = profileName.replace(/^ +| +$/g, "")
-    const createOrLoadCareerAndStartResult = await lua.career_career.createOrLoadCareerAndStart(profileName, null, tutorialEnabled, hardcoreMode)
+    const createOrLoadCareerAndStartResult = await lua.career_career.createOrLoadCareerAndStart(profileName, null, tutorialEnabled, hardcoreMode, challengeSelection)
     console.log("profileStore.loadProfile: createOrLoadCareerAndStartResult", createOrLoadCareerAndStartResult)
 
     const toastrMessage = isAdd ? "added" : "loaded"

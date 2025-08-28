@@ -146,6 +146,11 @@ local function onCareerModulesActivated(alreadyInLevel)
     career_challengeModes.startChallenge(M.pendingChallengeId)
     M.pendingChallengeId = nil -- Clear the pending challenge
   end
+
+  if M.pendingChallengeId then
+    career_challengeModes.startChallenge(M.pendingChallengeId)
+    M.pendingChallengeId = nil -- Clear the pending challenge
+  end
 end
 
 local function toggleCareerModules(active, alreadyInLevel)
@@ -412,9 +417,14 @@ local function formatSaveSlotForUi(saveSlot)
   local careerData = jsonReadFile(autosavePath .. "/career/" .. saveFile)
   local hardcoreData = jsonReadFile(autosavePath .. "/career/rls_career/hardcore.json")
   local challengeData = jsonReadFile(autosavePath .. "/career/rls_career/challengeModes.json")
+  local challengeData = jsonReadFile(autosavePath .. "/career/rls_career/challengeModes.json")
 
   if hardcoreData then
     data.hardcoreMode = hardcoreData.hardcoreMode
+  end
+
+  if challengeData and challengeData.activeChallenge then
+    data.activeChallenge = challengeData.activeChallenge.name
   end
 
   if challengeData and challengeData.activeChallenge then
