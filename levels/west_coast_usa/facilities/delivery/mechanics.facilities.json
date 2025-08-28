@@ -98,7 +98,7 @@
           "type": "vehOfferProvider",
           "interval": 300,
           "min": 0,
-          "max": 3,
+          "max": 6,
           "offerDuration": {
             "min": 300,
             "max": 900
@@ -114,7 +114,7 @@
           "type": "vehOfferProvider",
           "interval": 300,
           "min": 0,
-          "max": 3,
+          "max": 6,
           "offerDuration": {
             "min": 300,
             "max": 900
@@ -217,7 +217,7 @@
           "type": "vehOfferProvider",
           "interval": 300,
           "min": 0,
-          "max": 2,
+          "max": 6,
           "offerDuration": {
             "min": 300,
             "max": 900
@@ -233,7 +233,7 @@
           "type": "vehOfferProvider",
           "interval": 300,
           "min": 0,
-          "max": 2,
+          "max": 6,
           "offerDuration": {
             "min": 300,
             "max": 900
@@ -339,7 +339,7 @@
           "type": "vehOfferProvider",
           "interval": 300,
           "min": 0,
-          "max": 3,
+          "max": 6,
           "offerDuration": {
             "min": 300,
             "max": 900
@@ -355,7 +355,7 @@
           "type": "vehOfferProvider",
           "interval": 300,
           "min": 0,
-          "max": 3,
+          "max": 6,
           "offerDuration": {
             "min": 300,
             "max": 900
@@ -370,7 +370,7 @@
           "type": "vehOfferProvider",
           "interval": 300,
           "min": 0,
-          "max": 1,
+          "max": 6,
           "offerDuration": {
             "min": 300,
             "max": 900
@@ -476,7 +476,7 @@
           "type": "vehOfferProvider",
           "interval": 300,
           "min": 0,
-          "max": 3,
+          "max": 6,
           "offerDuration": {
             "min": 300,
             "max": 900
@@ -492,7 +492,7 @@
           "type": "vehOfferProvider",
           "interval": 300,
           "min": 0,
-          "max": 3,
+          "max": 6,
           "offerDuration": {
             "min": 300,
             "max": 900
@@ -507,7 +507,7 @@
           "type": "vehOfferProvider",
           "interval": 300,
           "min": 0,
-          "max": 1,
+          "max": 6,
           "offerDuration": {
             "min": 300,
             "max": 900
@@ -609,7 +609,7 @@
           "type": "vehOfferProvider",
           "interval": 300,
           "min": 0,
-          "max": 3,
+          "max": 6,
           "offerDuration": {
             "min": 300,
             "max": 900
@@ -625,7 +625,7 @@
           "type": "vehOfferProvider",
           "interval": 300,
           "min": 0,
-          "max": 3,
+          "max": 6,
           "offerDuration": {
             "min": 300,
             "max": 900
@@ -640,7 +640,7 @@
           "type": "vehOfferProvider",
           "interval": 300,
           "min": 0,
-          "max": 1,
+          "max": 6,
           "offerDuration": {
             "min": 300,
             "max": 900
@@ -742,7 +742,7 @@
           "type": "vehOfferProvider",
           "interval": 300,
           "min": 0,
-          "max": 1,
+          "max": 6,
           "offerDuration": {
             "min": 300,
             "max": 900
@@ -758,7 +758,7 @@
           "type": "vehOfferProvider",
           "interval": 300,
           "min": 0,
-          "max": 3,
+          "max": 6,
           "offerDuration": {
             "min": 300,
             "max": 900
@@ -773,7 +773,7 @@
           "type": "vehOfferProvider",
           "interval": 300,
           "min": 0,
-          "max": 3,
+          "max": 6,
           "offerDuration": {
             "min": 300,
             "max": 900
@@ -1282,7 +1282,7 @@
           "type": "vehOfferProvider",
           "interval": 300,
           "min": 0,
-          "max": 1,
+          "max": 6,
           "offerDuration": {
             "min": 300,
             "max": 900
@@ -1298,7 +1298,7 @@
           "type": "vehOfferProvider",
           "interval": 300,
           "min": 0,
-          "max": 3,
+          "max": 6,
           "offerDuration": {
             "min": 300,
             "max": 900
@@ -1415,7 +1415,7 @@
           "type": "vehOfferProvider",
           "interval": 300,
           "min": 0,
-          "max": 3,
+          "max": 6,
           "offerDuration": {
             "min": 300,
             "max": 900
@@ -1430,7 +1430,7 @@
           "type": "vehOfferProvider",
           "interval": 300,
           "min": 0,
-          "max": 3,
+          "max": 6,
           "offerDuration": {
             "min": 300,
             "max": 900
@@ -1549,7 +1549,7 @@
           "type": "vehOfferProvider",
           "interval": 300,
           "min": 0,
-          "max": 3,
+          "max": 6,
           "offerDuration": {
             "min": 300,
             "max": 900
@@ -1564,7 +1564,7 @@
           "type": "vehOfferProvider",
           "interval": 300,
           "min": 0,
-          "max": 3,
+          "max": 6,
           "offerDuration": {
             "min": 300,
             "max": 900
@@ -1695,7 +1695,7 @@
           "type": "vehOfferProvider",
           "interval": 300,
           "min": 0,
-          "max": 2,
+          "max": 6,
           "offerDuration": {
             "min": 300,
             "max": 900
@@ -1710,7 +1710,7 @@
           "type": "vehOfferProvider",
           "interval": 300,
           "min": 0,
-          "max": 3,
+          "max": 6,
           "offerDuration": {
             "min": 300,
             "max": 900
