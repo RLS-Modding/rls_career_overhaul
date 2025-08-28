@@ -2244,7 +2244,12 @@ local function expediteRepair(inventoryId, price)
 end
 
 M.isRoadSideAssistanceFree = function(invVehId)
-    local applicablePolicy = plPoliciesData[insuredInvVehs[tostring(invVehId)]]
+    local policyId = insuredInvVehs[tostring(invVehId)] or 0
+    -- No insurance (policy 0) means towing is NOT free
+    if policyId == 0 then
+        return false
+    end
+    local applicablePolicy = plPoliciesData[policyId]
     if not applicablePolicy then
         return true
     end
