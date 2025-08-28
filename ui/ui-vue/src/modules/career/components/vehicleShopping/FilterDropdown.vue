@@ -384,8 +384,9 @@ const priceBounds = computed(() => {
   const min = Number(rawPriceBounds.value.min)
   const max = Number(rawPriceBounds.value.max)
   const step = 1000
-  const roundedMin = Number.isFinite(min) ? Math.floor(min / step) * step : 0
-  const roundedMax = Number.isFinite(max) ? Math.ceil(max / step) * step : step
+  // Ensure prices are always integers rounded to nearest thousand
+  const roundedMin = Number.isFinite(min) ? Math.round(min / step) * step : 0
+  const roundedMax = Number.isFinite(max) ? Math.round(max / step) * step : step
   return { min: roundedMin, max: roundedMax }
 })
 const priceBoundsReady = computed(() => Number.isFinite(Number(rawPriceBounds.value.min)) && Number.isFinite(Number(rawPriceBounds.value.max)))
@@ -483,14 +484,23 @@ const ensureRangeRef = (rangeRef, minVal, maxVal) => {
   watch(rangeRef, (val) => {
     if (Array.isArray(val)) {
       // normalize missing values
-      const a = Number.isFinite(Number(val[0])) ? Number(val[0]) : minVal
-      const b = Number.isFinite(Number(val[1])) ? Number(val[1]) : maxVal
+      let a = Number.isFinite(Number(val[0])) ? Number(val[0]) : minVal
+      let b = Number.isFinite(Number(val[1])) ? Number(val[1]) : maxVal
+
+      // For price ranges, ensure they're integers rounded to nearest thousand
+      if (rangeRef === priceRange) {
+        a = Math.round(a / 1000) * 1000
+        b = Math.round(b / 1000) * 1000
+      }
+
       if (a !== val[0] || b !== val[1]) {
         rangeRef.value = [a, b]
       }
     } else {
       const num = Number(val)
-      rangeRef.value = [minVal, Number.isFinite(num) ? num : maxVal]
+      // For price ranges, ensure they're integers
+      const finalNum = rangeRef === priceRange ? Math.round(num / 1000) * 1000 : (Number.isFinite(num) ? num : maxVal)
+      rangeRef.value = [minVal, finalNum]
     }
   }, { immediate: true })
 }
@@ -504,7 +514,10 @@ ensureRangeRef(weightRange, weightBounds.value.min, weightBounds.value.max)
 // Keep ranges within dynamic bounds
 watch(priceBounds, ({min, max}) => {
   const [a, b] = priceRange.value
-  const next = [Math.max(a ?? min, min), Math.min(b ?? max, max)]
+  // Ensure values are integers and within bounds
+  const constrainedMin = Math.max(Math.round((a ?? min) / 1000) * 1000, min)
+  const constrainedMax = Math.min(Math.round((b ?? max) / 1000) * 1000, max)
+  const next = [constrainedMin, constrainedMax]
   if (next[0] !== a || next[1] !== b) priceRange.value = next
 }, { immediate: true })
 watch(yearBounds, ({min, max}) => {

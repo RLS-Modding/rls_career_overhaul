@@ -48,22 +48,35 @@
           <span>*&nbsp;</span>
           <span>Additional taxes and fees are applicable</span>
         </div>
-        <div class="pagination-toolbar">
-          <BngButton :accent="ACCENTS.primary" class="page-btn" :disabled="currentPage <= 1" @click="currentPage = Math.max(1, currentPage - 1)">Prev</BngButton>
-          <span class="pagination-info">{{ pageStart }}–{{ pageEnd }} of {{ totalItems }}</span>
-          <span class="pagination-info">Page {{ currentPage }} / {{ totalPages }}</span>
-          <BngButton :accent="ACCENTS.primary" class="page-btn" :disabled="currentPage >= totalPages" @click="currentPage = Math.min(totalPages, currentPage + 1)">Next</BngButton>
+
+        <!-- No vehicles at this dealership -->
+        <div v-if="vehicleShoppingStore.filteredVehicles.length === 0" class="empty-state">
+          <BngIcon :type="icons.cars" class="empty-icon" />
+          <h4 class="empty-title">No vehicles available</h4>
+          <p class="empty-description">
+            {{ vehicleShoppingStore?.vehicleShoppingData?.currentSellerNiceName || 'This dealership' }} currently has no vehicles in stock.
+          </p>
         </div>
-        <div class="vehicle-listings">
-          <VehicleCard v-for="(vehicle, key) in pageSlice(vehicleShoppingStore.filteredVehicles)" :key="key"
-            :vehicleShoppingData="vehicleShoppingStore.vehicleShoppingData" :vehicle="vehicle" />
-        </div>
-        <div class="pagination-toolbar">
-          <BngButton :accent="ACCENTS.primary" class="page-btn" :disabled="currentPage <= 1" @click="currentPage = Math.max(1, currentPage - 1)">Prev</BngButton>
-          <span class="pagination-info">{{ pageStart }}–{{ pageEnd }} of {{ totalItems }}</span>
-          <span class="pagination-info">Page {{ currentPage }} / {{ totalPages }}</span>
-          <BngButton :accent="ACCENTS.primary" class="page-btn" :disabled="currentPage >= totalPages" @click="currentPage = Math.min(totalPages, currentPage + 1)">Next</BngButton>
-        </div>
+
+        <!-- Vehicles with pagination -->
+        <template v-else>
+          <div v-if="totalPages > 1" class="pagination-toolbar">
+            <BngButton :accent="ACCENTS.primary" class="page-btn" :disabled="currentPage <= 1" @click="currentPage = Math.max(1, currentPage - 1)">Prev</BngButton>
+            <span class="pagination-info">{{ pageStart }}–{{ pageEnd }} of {{ totalItems }}</span>
+            <span class="pagination-info">Page {{ currentPage }} / {{ totalPages }}</span>
+            <BngButton :accent="ACCENTS.primary" class="page-btn" :disabled="currentPage >= totalPages" @click="currentPage = Math.min(totalPages, currentPage + 1)">Next</BngButton>
+          </div>
+          <div class="vehicle-listings">
+            <VehicleCard v-for="(vehicle, key) in pageSlice(vehicleShoppingStore.filteredVehicles)" :key="key"
+              :vehicleShoppingData="vehicleShoppingStore.vehicleShoppingData" :vehicle="vehicle" />
+          </div>
+          <div v-if="totalPages > 1" class="pagination-toolbar">
+            <BngButton :accent="ACCENTS.primary" class="page-btn" :disabled="currentPage <= 1" @click="currentPage = Math.max(1, currentPage - 1)">Prev</BngButton>
+            <span class="pagination-info">{{ pageStart }}–{{ pageEnd }} of {{ totalItems }}</span>
+            <span class="pagination-info">Page {{ currentPage }} / {{ totalPages }}</span>
+            <BngButton :accent="ACCENTS.primary" class="page-btn" :disabled="currentPage >= totalPages" @click="currentPage = Math.min(totalPages, currentPage + 1)">Next</BngButton>
+          </div>
+        </template>
       </div>
 
       <!-- Show search results when searching -->
@@ -81,22 +94,35 @@
           <span>*&nbsp;</span>
           <span>Additional taxes and fees are applicable</span>
         </div>
-        <div class="pagination-toolbar">
-          <BngButton :accent="ACCENTS.primary" class="page-btn" :disabled="currentPage <= 1" @click="currentPage = Math.max(1, currentPage - 1)">Prev</BngButton>
-          <span class="pagination-info">{{ pageStart }}–{{ pageEnd }} of {{ totalItems }}</span>
-          <span class="pagination-info">Page {{ currentPage }} / {{ totalPages }}</span>
-          <BngButton :accent="ACCENTS.primary" class="page-btn" :disabled="currentPage >= totalPages" @click="currentPage = Math.min(totalPages, currentPage + 1)">Next</BngButton>
+
+        <!-- No search results -->
+        <div v-if="allFilteredVehicles.length === 0" class="empty-state">
+          <BngIcon :type="icons.search" class="empty-icon" />
+          <h4 class="empty-title">No search results</h4>
+          <p class="empty-description">
+            No vehicles match your search for "{{ activeSearchQuery }}". Try adjusting your search terms or filters.
+          </p>
         </div>
-        <div class="vehicle-listings">
-          <VehicleCard v-for="(vehicle, key) in pageSlice(allFilteredVehicles)" :key="vehicle.uid || vehicle.shopId"
-            :vehicleShoppingData="vehicleShoppingStore.vehicleShoppingData" :vehicle="vehicle" />
-        </div>
-        <div class="pagination-toolbar">
-          <BngButton :accent="ACCENTS.primary" class="page-btn" :disabled="currentPage <= 1" @click="currentPage = Math.max(1, currentPage - 1)">Prev</BngButton>
-          <span class="pagination-info">{{ pageStart }}–{{ pageEnd }} of {{ totalItems }}</span>
-          <span class="pagination-info">Page {{ currentPage }} / {{ totalPages }}</span>
-          <BngButton :accent="ACCENTS.primary" class="page-btn" :disabled="currentPage >= totalPages" @click="currentPage = Math.min(totalPages, currentPage + 1)">Next</BngButton>
-        </div>
+
+        <!-- Search results with pagination -->
+        <template v-else>
+          <div v-if="totalPages > 1" class="pagination-toolbar">
+            <BngButton :accent="ACCENTS.primary" class="page-btn" :disabled="currentPage <= 1" @click="currentPage = Math.max(1, currentPage - 1)">Prev</BngButton>
+            <span class="pagination-info">{{ pageStart }}–{{ pageEnd }} of {{ totalItems }}</span>
+            <span class="pagination-info">Page {{ currentPage }} / {{ totalPages }}</span>
+            <BngButton :accent="ACCENTS.primary" class="page-btn" :disabled="currentPage >= totalPages" @click="currentPage = Math.min(totalPages, currentPage + 1)">Next</BngButton>
+          </div>
+          <div class="vehicle-listings">
+            <VehicleCard v-for="(vehicle, key) in pageSlice(allFilteredVehicles)" :key="vehicle.uid || vehicle.shopId"
+              :vehicleShoppingData="vehicleShoppingStore.vehicleShoppingData" :vehicle="vehicle" />
+          </div>
+          <div v-if="totalPages > 1" class="pagination-toolbar">
+            <BngButton :accent="ACCENTS.primary" class="page-btn" :disabled="currentPage <= 1" @click="currentPage = Math.max(1, currentPage - 1)">Prev</BngButton>
+            <span class="pagination-info">{{ pageStart }}–{{ pageEnd }} of {{ totalItems }}</span>
+            <span class="pagination-info">Page {{ currentPage }} / {{ totalPages }}</span>
+            <BngButton :accent="ACCENTS.primary" class="page-btn" :disabled="currentPage >= totalPages" @click="currentPage = Math.min(totalPages, currentPage + 1)">Next</BngButton>
+          </div>
+        </template>
       </div>
 
       <!-- Show dealership selection and grouped vehicles -->
@@ -107,6 +133,9 @@
             <div class="header-left">
               <BngIcon :type="dealersOpen ? icons.arrowSmallDown : icons.arrowSmallRight" class="expand-icon" />
               <h3 class="section-title">Available Dealerships</h3>
+              <span v-if="hiddenDealers.length > 0" class="hidden-count">
+                ({{ visibleDealers.length }} online{{ hiddenDealers.length > 0 ? `, ${hiddenDealers.length} offline` : '' }})
+              </span>
             </div>
             <div class="dealer-controls">
               <BngButton v-if="selectedDealership" :accent="ACCENTS.menu" @click.stop="selectedDealership = null" class="show-all-btn">
@@ -114,38 +143,91 @@
               </BngButton>
             </div>
           </div>
-          <div class="dealership-grid" v-if="dealersOpen">
-            <div 
-              v-for="dealer in sortedDealers" 
-              :key="dealer.id" 
-              class="dealership-card" 
-              :class="{ selected: selectedDealership === dealer.id, hiddenOnline: isDealerHiddenOnline(dealer) }"
-              @click="isDealerHiddenOnline(dealer) ? routeToDealer(dealer.id) : handleDealershipSelect(dealer.id)"
-              :title="isDealerHiddenOnline(dealer) ? 'Not available online. Click to set route.' : ''"
-            >
-              <div v-if="dealerMetadata[dealer.id]?.preview" class="dealership-preview"
-                :style="{ backgroundImage: `url('${dealerMetadata[dealer.id].preview}')` }"></div>
-              <div v-else class="dealership-preview"></div>
-              
-              <div class="dealership-content">
-                <div class="dealership-header">
-                  <div class="dealership-icon">
-                    <BngIcon :type="icons.locationSource" />
+
+          <div class="dealership-content" v-if="dealersOpen">
+            <!-- Visible Dealerships Grid -->
+            <div class="dealership-grid" v-if="visibleDealers.length > 0">
+              <div
+                v-for="dealer in visibleDealers"
+                :key="dealer.id"
+                class="dealership-card"
+                :class="{ selected: selectedDealership === dealer.id }"
+                @click="handleDealershipSelect(dealer.id)"
+              >
+                <div v-if="dealerMetadata[dealer.id]?.preview" class="dealership-preview"
+                  :style="{ backgroundImage: `url('${dealerMetadata[dealer.id].preview}')` }"></div>
+                <div v-else class="dealership-preview"></div>
+
+                <div class="dealership-content">
+                  <div class="dealership-header">
+                    <div class="dealership-icon">
+                      <BngIcon :type="icons.locationSource" />
+                    </div>
+                    <div class="dealership-info">
+                      <h4 class="dealership-name">{{ dealerMetadata[dealer.id]?.name || dealer.name }}</h4>
+                      <p class="dealership-description">
+                        {{ dealerMetadata[dealer.id]?.description || 'Vehicle dealership' }}
+                      </p>
+                    </div>
                   </div>
-                  <div class="dealership-info">
-                    <h4 class="dealership-name">{{ dealerMetadata[dealer.id]?.name || dealer.name }}</h4>
-                    <p class="dealership-description">
-                      {{ isDealerHiddenOnline(dealer) ? 'Not available online. Please visit location.' : (dealerMetadata[dealer.id]?.description || 'Vehicle dealership') }}
-                    </p>
+
+                  <div class="dealership-stats">
+                    <span class="vehicle-count-badge">
+                      {{ dealer.vehicles.length > 0 ? `${dealer.vehicles.length} Available` : 'No vehicles' }}
+                    </span>
+                    <div v-if="selectedDealership === dealer.id" class="selected-badge">Selected</div>
                   </div>
                 </div>
-                
-                <div class="dealership-stats">
-                  <span class="vehicle-count-badge">
-                    {{ isDealerHiddenOnline(dealer) ? 'Visit to view' : (dealer.vehicles.length > 0 ? `${dealer.vehicles.length} Available` : 'No vehicles') }}
+              </div>
+            </div>
+
+            <!-- Hidden Dealerships Section -->
+            <div v-if="hiddenDealers.length > 0" class="hidden-dealers-section">
+              <div class="section-header" @click="hiddenDealersOpen = !hiddenDealersOpen">
+                <div class="header-left">
+                  <BngIcon :type="hiddenDealersOpen ? icons.arrowSmallDown : icons.arrowSmallRight" class="expand-icon" />
+                  <h3 class="section-title">Offline Dealerships</h3>
+                  <span class="hidden-count">
+                    ({{ hiddenDealers.length }} dealer{{ hiddenDealers.length !== 1 ? 's' : '' }})
                   </span>
-                  <div v-if="selectedDealership === dealer.id && !isDealerHiddenOnline(dealer)" class="selected-badge">Selected</div>
-                  <div v-if="isDealerHiddenOnline(dealer)" class="route-badge">Set Route</div>
+                </div>
+                <div class="dealer-controls">
+                  <!-- Can add controls here if needed -->
+                </div>
+              </div>
+
+              <div class="dealership-grid" v-if="hiddenDealersOpen">
+                <div
+                  v-for="dealer in hiddenDealers"
+                  :key="dealer.id"
+                  class="dealership-card hidden-card"
+                  @click="routeToDealer(dealer.id)"
+                  :title="'Not available online. Click to set route to ' + (dealerMetadata[dealer.id]?.name || dealer.name)"
+                >
+                  <div v-if="dealerMetadata[dealer.id]?.preview" class="dealership-preview"
+                    :style="{ backgroundImage: `url('${dealerMetadata[dealer.id].preview}')` }"></div>
+                  <div v-else class="dealership-preview"></div>
+
+                  <div class="dealership-content">
+                    <div class="dealership-header">
+                      <div class="dealership-icon">
+                        <BngIcon :type="icons.locationSource" />
+                      </div>
+                      <div class="dealership-info">
+                        <h4 class="dealership-name">{{ dealerMetadata[dealer.id]?.name || dealer.name }}</h4>
+                        <p class="dealership-description">
+                          {{ dealerMetadata[dealer.id]?.description || 'Vehicle dealership' }}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div class="dealership-stats">
+                      <span class="vehicle-count-badge offline">
+                        Visit location
+                      </span>
+                      <div class="route-badge">Set Route</div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -188,22 +270,24 @@
 
           <div v-else class="vehicle-listings">
             <template v-if="selectedDealership">
-              <VehicleCard 
-                v-for="(vehicle, key) in pageSlice(getSelectedDealerVehicles())" 
+              <VehicleCard
+                v-for="(vehicle, key) in pageSlice(getSelectedDealerVehicles())"
                 :key="key"
-                :vehicleShoppingData="vehicleShoppingStore.vehicleShoppingData" 
-                :vehicle="vehicle" 
+                :vehicleShoppingData="vehicleShoppingStore.vehicleShoppingData"
+                :vehicle="vehicle"
               />
             </template>
             <template v-else>
-              <VehicleCard 
-                v-for="(vehicle, key) in pageSlice(vehicleShoppingStore.filteredVehicles)" 
+              <VehicleCard
+                v-for="(vehicle, key) in pageSlice(vehicleShoppingStore.filteredVehicles)"
                 :key="key"
-                :vehicleShoppingData="vehicleShoppingStore.vehicleShoppingData" 
-                :vehicle="vehicle" 
+                :vehicleShoppingData="vehicleShoppingStore.vehicleShoppingData"
+                :vehicle="vehicle"
               />
             </template>
-            <div class="pagination-toolbar">
+
+            <!-- Only show pagination when there are multiple pages -->
+            <div v-if="totalPages > 1" class="pagination-toolbar">
               <BngButton :accent="ACCENTS.primary" class="page-btn" :disabled="currentPage <= 1" @click="currentPage = Math.max(1, currentPage - 1)">Prev</BngButton>
               <span class="pagination-info">{{ pageStart }}–{{ pageEnd }} of {{ totalItems }}</span>
               <span class="pagination-info">Page {{ currentPage }} / {{ totalPages }}</span>
@@ -388,58 +472,30 @@ const onDealerExpanded = (dealer, state) => {
 }
 
 const sortedDealers = computed(() => {
-  let dealers = vehicleShoppingStore.vehiclesByDealer.slice();
-
-  // Only filter out hidden dealers when we're viewing all dealers (not at a specific dealer)
-  dealers = dealers.filter(dealer => {
-    const dealerMeta = dealerMetadata.value[dealer.id]
-    if (!dealerMeta) return true
-
-    // Check organization's hiddenFromDealerList based on current reputation level
-    let orgHidden = !!dealerMeta.hiddenFromDealerList
-    if (dealerMeta.associatedOrganization) {
-      console.log(dealerMeta.associatedOrganization)
-      const orgData = vehicleShoppingStore.vehicleShoppingData?.organizations?.[dealerMeta.associatedOrganization]
-      if (orgData && orgData.reputationLevels && orgData.reputation && orgData.reputation.level !== undefined && orgData.reputation.level !== null) {
-        const currentLevel = orgData.reputation.level + 2
-        const levelData = orgData.reputationLevels[currentLevel]
-        orgHidden = !!(levelData && levelData.hiddenFromDealerList)
-        console.log("Hidden from dealer list:")
-        console.log(orgHidden)
-      }
-    }
-
-    // Show dealer if neither the dealer nor the organization level wants it hidden
-    return !orgHidden;
-  });
-
-  return dealers.sort((a, b) => {
+  // Include all dealers (hidden ones are marked with hidden: true)
+  return vehicleShoppingStore.vehiclesByDealer.slice().sort((a, b) => {
     const nameA = dealerMetadata.value[a.id]?.name || a.name;
     const nameB = dealerMetadata.value[b.id]?.name || b.name;
     return nameA.localeCompare(nameB);
   });
 });
 
+const visibleDealers = computed(() => {
+  return sortedDealers.value.filter(dealer => !dealer.hidden);
+});
+
+const hiddenDealers = computed(() => {
+  return sortedDealers.value.filter(dealer => dealer.hidden);
+});
+
+const hiddenDealersOpen = ref(false);
+
 // Reset pagination when the list context changes
 watch([itemsPerPage, selectedDealership, hasActiveSearch], () => {
   currentPage.value = 1
 })
 
-// Determine if dealer is hidden online at current reputation level
-function isDealerHiddenOnline(dealer) {
-  const meta = dealerMetadata.value[dealer.id]
-  if (!meta) return false
-  let hidden = !!meta.hiddenFromDealerList
-  if (meta.associatedOrganization) {
-    const orgData = vehicleShoppingStore.vehicleShoppingData?.organizations?.[meta.associatedOrganization]
-    if (orgData && orgData.reputationLevels && orgData.reputation && orgData.reputation.level !== undefined && orgData.reputation.level !== null) {
-      const currentLevel = orgData.reputation.level + 2
-      const levelData = orgData.reputationLevels[currentLevel]
-      hidden = !!(levelData && levelData.hiddenFromDealerList)
-    }
-  }
-  return hidden
-}
+// Hidden dealer logic is now handled in the store and provided via dealer.hidden property
 
 // Route to dealership in-world when hidden online
 async function routeToDealer(dealershipId) {
@@ -1270,6 +1326,44 @@ const filteredVehicleCount = computed(() => {
         text-transform: uppercase;
       }
     }
+
+    &.hidden-card {
+      opacity: 0.85;
+
+      &:hover {
+        opacity: 1;
+        border-color: var(--bng-orange);
+        transform: translateY(-3px);
+        box-shadow:
+          0 10px 25px rgba(0,0,0,0.4),
+          0 0 40px rgba(var(--bng-orange-rgb), 0.1);
+      }
+
+      .dealership-preview {
+        filter: grayscale(0.3);
+      }
+
+      .dealership-name {
+        color: var(--bng-cool-gray-300);
+      }
+
+      .dealership-description {
+        color: var(--bng-cool-gray-500);
+      }
+
+      .vehicle-count-badge.offline {
+        background: rgba(0, 0, 0, 0.4);
+        color: var(--bng-cool-gray-400);
+        border-color: rgba(255, 255, 255, 0.05);
+      }
+
+      .route-badge {
+        opacity: 1;
+        background: rgba(var(--bng-orange-rgb), 0.1);
+        border-color: var(--bng-orange-alpha-50);
+        color: var(--bng-orange);
+      }
+    }
   }
 }
 
@@ -1422,6 +1516,30 @@ const filteredVehicleCount = computed(() => {
     margin: 0;
     max-width: 450px;
     line-height: 1.5;
+  }
+
+  .hidden-count {
+    font-size: 0.75rem;
+    color: var(--bng-cool-gray-400);
+    margin-left: 0.5rem;
+  }
+
+  .dealership-content {
+    margin-top: 0.5rem;
+  }
+
+  .hidden-dealers-section {
+    margin-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 1rem;
+
+    .section-header {
+      margin-bottom: 0.5rem;
+    }
+
+    .dealership-grid {
+      margin-top: 0.5rem;
+    }
   }
 }
 </style>

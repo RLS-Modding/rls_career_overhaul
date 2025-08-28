@@ -1,4 +1,4 @@
-import { computed, ref } from "vue"
+import { computed, ref, watch } from "vue"
 import { defineStore } from "pinia"
 import { lua } from "@/bridge"
 
@@ -11,15 +11,47 @@ export const useVehicleShoppingStore = defineStore("vehicleShopping", () => {
   const sortDirection = ref('asc') // 'asc' | 'desc'
   const soldRemovalTimers = new Map()
   
-  const filteredVehicles = computed(() => {
+  // Helper function to check if a dealer is hidden
+  const isDealerHidden = (dealerId) => {
+    const d = vehicleShoppingData.value
+    if (!d.dealerships) return false
+
+    const dealerMeta = d.dealerships.find(dealer => dealer.id === dealerId)
+    if (!dealerMeta) return false
+
+    // Check dealer's hiddenFromDealerList
+    let hidden = !!dealerMeta.hiddenFromDealerList
+
+    // Check organization's hiddenFromDealerList based on current reputation level
+    if (dealerMeta.associatedOrganization && d.organizations) {
+      const orgData = d.organizations[dealerMeta.associatedOrganization]
+      if (orgData && orgData.reputationLevels && orgData.reputation && orgData.reputation.level !== undefined && orgData.reputation.level !== null) {
+        const currentLevel = orgData.reputation.level + 2
+        const levelData = orgData.reputationLevels[currentLevel]
+        if (levelData && levelData.hiddenFromDealerList) {
+          hidden = true
+        }
+      }
+    }
+
+    return hidden
+  }
+
+    const filteredVehicles = computed(() => {
     const d = vehicleShoppingData.value
     if (!d.vehiclesInShop) return []
 
     let filteredList = Object.keys(d.vehiclesInShop).reduce(function (result, key) {
+      const vehicle = d.vehiclesInShop[key]
+
       if (d.currentSeller) {
-        if (d.vehiclesInShop[key].sellerId === d.currentSeller) result.push(d.vehiclesInShop[key])
+        // When at a specific dealer, only show vehicles from that dealer
+        if (vehicle.sellerId === d.currentSeller) result.push(vehicle)
       } else {
-        result.push(d.vehiclesInShop[key])
+        // When viewing all dealers, filter out vehicles from hidden dealers
+        if (!isDealerHidden(vehicle.sellerId)) {
+          result.push(vehicle)
+        }
       }
 
       return result
@@ -27,25 +59,6 @@ export const useVehicleShoppingStore = defineStore("vehicleShopping", () => {
 
     filteredList = applyFiltersAndSearch(filteredList)
     if (filteredList.length) filteredList.sort(sortComparator)
-
-    // Apply search filtering if searchQuery exists
-    if (searchQuery.value) {
-      const query = searchQuery.value.toLowerCase().trim()
-      filteredList = filteredList.filter(vehicle => {
-        const searchFields = [
-          vehicle.Name,
-          vehicle.Brand,
-          vehicle.niceName,
-          vehicle.model_key,
-          vehicle.config_name,
-        ]
-        
-        // Check each field that might contain what user is searching for
-        return searchFields.some(field => {
-          return field && field.toString().toLowerCase().includes(query)
-        })
-      })
-    }
 
     return filteredList
   })
@@ -55,14 +68,15 @@ export const useVehicleShoppingStore = defineStore("vehicleShopping", () => {
     const d = vehicleShoppingData.value
     if (!d.vehiclesInShop) return []
 
-    // Group vehicles by sellerId
+    // Group vehicles by sellerId (include all dealers, hidden ones will be marked)
     const grouped = Object.values(d.vehiclesInShop).reduce((acc, vehicle) => {
       if (!acc[vehicle.sellerId]) {
         acc[vehicle.sellerId] = {
           id: vehicle.sellerId,
           name: vehicle.sellerName || 'Unknown Dealer',
           vehicles: [],
-          expanded: false
+          expanded: false,
+          hidden: isDealerHidden(vehicle.sellerId) // Mark if dealer is hidden
         }
       }
       acc[vehicle.sellerId].vehicles.push(vehicle)
@@ -75,8 +89,8 @@ export const useVehicleShoppingStore = defineStore("vehicleShopping", () => {
       dealer.vehicles.sort(sortComparator)
     })
 
-    // Only return dealers with vehicles (after filtering)
-    return Object.values(grouped).filter(dealer => dealer.vehicles.length > 0)
+    // Return all dealers (including hidden ones) so they can be displayed in UI
+    return Object.values(grouped)
   })
 
   // Helpers
@@ -197,7 +211,54 @@ export const useVehicleShoppingStore = defineStore("vehicleShopping", () => {
   // Actions
   const requestVehicleShoppingData = async () => {
     vehicleShoppingData.value = await lua.career_modules_vehicleShopping.getShoppingData()
+
+    // Check and update filters when opening shopping interface
+    updateFiltersOnOpen()
   }
+
+  // Update filters when opening shopping interface
+  const updateFiltersOnOpen = () => {
+    const d = vehicleShoppingData.value
+    if (!d.vehiclesInShop) return
+
+    // Get current player money
+    const playerMoney = d.playerAttributes?.money?.value || 0
+
+    // Check if we have a price filter with "can afford" logic
+    const priceFilter = filters.value.Value
+    if (priceFilter && priceFilter.max !== undefined) {
+      // If the current price filter max is higher than player money, update it
+      if (priceFilter.max > playerMoney) {
+        // Only update if it's a "can afford" scenario (price max equals player money)
+        const effectiveMax = Math.max(priceFilter.min || 0, Math.min(playerMoney, priceFilter.max))
+        if (effectiveMax !== priceFilter.max) {
+          setFilterRange('Value', priceFilter.min, effectiveMax)
+          console.log('Updated price filter max to match current money:', effectiveMax)
+        }
+      }
+    }
+  }
+
+  // Watch for player money changes and update "can afford" filter automatically
+  watch(
+    () => vehicleShoppingData.value?.playerAttributes?.money?.value,
+    (newMoney, oldMoney) => {
+      if (newMoney === oldMoney || !newMoney) return
+
+      const priceFilter = filters.value.Value
+      if (priceFilter && priceFilter.max !== undefined) {
+        // If money decreased and we have a filter that's now too high, adjust it
+        if (newMoney < oldMoney && priceFilter.max > newMoney) {
+          const effectiveMax = Math.max(priceFilter.min || 0, Math.min(newMoney, priceFilter.max))
+          if (effectiveMax !== priceFilter.max) {
+            setFilterRange('Value', priceFilter.min, effectiveMax)
+            console.log('Auto-updated price filter max due to money change:', effectiveMax)
+          }
+        }
+      }
+    },
+    { immediate: false }
+  )
 
   // Lightweight live updates via events
   function applyShopDelta(delta) {
@@ -342,6 +403,7 @@ export const useVehicleShoppingStore = defineStore("vehicleShopping", () => {
     filteredVehicles,
     vehiclesByDealer,
     requestVehicleShoppingData,
+    updateFiltersOnOpen,
     searchQuery,
     setSearchQuery,
     // filters & sorting

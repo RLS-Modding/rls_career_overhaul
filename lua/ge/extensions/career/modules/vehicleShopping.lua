@@ -259,16 +259,21 @@ local function getRandomizedPrice(price, range)
   local rand = math.random(0, 1000) / 1000
   if rand < 0 then rand = 0 end
   if rand > 1 then rand = 1 end
+
+  local finalPrice
   if rand <= 0.01 then
     local slope = (NL - L) / 0.01
-    return (L + slope * rand) * price
+    finalPrice = (L + slope * rand) * price
   elseif rand <= 0.99 then
     local slope = (NH - NL) / 0.98
-    return (NL + slope * (rand - 0.01)) * price
+    finalPrice = (NL + slope * (rand - 0.01)) * price
   else
     local slope = (H - NH) / 0.01
-    return (NH + slope * (rand - 0.99)) * price
+    finalPrice = (NH + slope * (rand - 0.99)) * price
   end
+
+  -- Ensure the final price is always an integer (round to nearest thousand)
+  return math.floor(finalPrice / 1000 + 0.5) * 1000
 end
 
 -- Vehicle filtering and processing functions
@@ -720,8 +725,9 @@ local function updateVehicleList(fromScratch)
       end
 
       local totalPartsValue = randomVehicleInfo.cachedPartsValue or (getVehiclePartsValue(randomVehicleInfo.model_key, randomVehicleInfo.key) or 0)
-      totalPartsValue = career_modules_valueCalculator.getDepreciatedPartValue(totalPartsValue, randomVehicleInfo.Mileage) * 1.081
-      local baseValue = math.max(career_modules_valueCalculator.getAdjustedVehicleBaseValue(randomVehicleInfo.Value, {mileage = randomVehicleInfo.Mileage, age = 2025 - randomVehicleInfo.year}), totalPartsValue)
+      totalPartsValue = math.floor(career_modules_valueCalculator.getDepreciatedPartValue(totalPartsValue, randomVehicleInfo.Mileage) * 1.081)
+      local adjustedBaseValue = career_modules_valueCalculator.getAdjustedVehicleBaseValue(randomVehicleInfo.Value, {mileage = randomVehicleInfo.Mileage, age = 2025 - randomVehicleInfo.year})
+      local baseValue = math.floor(math.max(adjustedBaseValue, totalPartsValue) / 1000) * 1000  -- Round to nearest thousand
 
       local range = seller.range
       if seller.associatedOrganization then
