@@ -88,7 +88,7 @@
           <BngButton :accent="ACCENTS.primary" class="page-btn" :disabled="currentPage >= totalPages" @click="currentPage = Math.min(totalPages, currentPage + 1)">Next</BngButton>
         </div>
         <div class="vehicle-listings">
-          <VehicleCard v-for="(vehicle, key) in pageSlice(allFilteredVehicles)" :key="vehicle.shopId"
+          <VehicleCard v-for="(vehicle, key) in pageSlice(allFilteredVehicles)" :key="vehicle.uid || vehicle.shopId"
             :vehicleShoppingData="vehicleShoppingStore.vehicleShoppingData" :vehicle="vehicle" />
         </div>
         <div class="pagination-toolbar">

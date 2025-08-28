@@ -180,6 +180,7 @@ local function getDamagedParts(vehInfo)
 
   local function traversePartsTree(node)
     if not node.partPath then return end
+    if not vehInfo.partConditions then return end
 
     local partCondition = vehInfo.partConditions[node.partPath]
     if not partCondition then

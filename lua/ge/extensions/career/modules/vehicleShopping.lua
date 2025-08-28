@@ -733,6 +733,7 @@ local function updateVehicleList(fromScratch)
       end
       randomVehicleInfo.Value = getRandomizedPrice(baseValue, range)
       randomVehicleInfo.shopId = tableSize(vehiclesInShop) + 1
+      randomVehicleInfo.uid = makeUid(randomVehicleInfo) -- Set UID immediately when vehicle is created
 
       local fees = seller.fees or 0
       if seller.associatedOrganization then
@@ -999,10 +1000,11 @@ local function buySpawnedVehicle(buyVehicleOptions)
 end
 
 local function sendPurchaseDataToUi()
-  local vehicleShopInfo = deepcopy(getVehiclesInShop()[purchaseData.shopId])
-  vehicleShopInfo.shopId = purchaseData.shopId
+  -- Use the stored vehicle info instead of looking up by potentially stale shopId
+  local vehicleShopInfo = deepcopy(purchaseData.vehicleInfo)
   vehicleShopInfo.niceName = vehicleShopInfo.Brand .. " " .. vehicleShopInfo.Name
   vehicleShopInfo.deliveryDelay = getDeliveryDelay(vehicleShopInfo.distance)
+  -- Update vehicleInfo in purchaseData with the fresh copy
   purchaseData.vehicleInfo = vehicleShopInfo
 
   local tradeInValue = purchaseData.tradeInVehicleInfo and purchaseData.tradeInVehicleInfo.Value or 0
@@ -1104,6 +1106,20 @@ local function onAddedVehiclePartsToInventory(inventoryId, newParts)
   vehicle.changedSlots = {}
 
   if deleteAddedVehicle then
+    -- Move vehicle to garage before removing the object
+    local vehicleName = vehicle.niceName or vehicle.Name or "Unknown Vehicle"
+    log("I", "Career", string.format("Moving purchased vehicle '%s' (ID: %d) to garage", vehicleName, inventoryId))
+
+    local moveSuccess = career_modules_inventory.moveVehicleToGarage(inventoryId)
+
+    if moveSuccess then
+      log("I", "Career", string.format("Vehicle '%s' successfully moved to garage", vehicleName))
+    else
+      log("W", "Career", string.format("Failed to move vehicle '%s' to garage - no available space found", vehicleName))
+      -- Still proceed with removing the vehicle object, but notify the player
+      ui_message(string.format("Warning: %s could not be moved to a garage. Please check your garage space.", vehicleName), 5, "vehicleInventory")
+    end
+
     career_modules_inventory.removeVehicleObject(inventoryId)
     deleteAddedVehicle = nil
   end
@@ -1139,17 +1155,41 @@ end
 
 local function showVehicle(shopId)
   local vehicleInfo = getVehiclesInShop()[shopId]
+  if not vehicleInfo then
+    log("E", "Career", "Failed to find vehicle for inspection with shopId: " .. tostring(shopId))
+    return
+  end
   core_jobsystem.create(startInspectionWorkitem, nil, vehicleInfo)
 end
 
 local function quickTravelToVehicle(shopId)
-  local vehicleInfo = vehiclesInShop[shopId]
+  local vehicleInfo = getVehiclesInShop()[shopId]
+  if not vehicleInfo then
+    log("E", "Career", "Failed to find vehicle for quick travel with shopId: " .. tostring(shopId))
+    return
+  end
   core_jobsystem.create(startInspectionWorkitem, nil, vehicleInfo, true)
 end
 
 local function openPurchaseMenu(purchaseType, shopId)
   guihooks.trigger('ChangeState', {state = 'vehiclePurchase', params = {}})
-  purchaseData = {shopId = shopId, purchaseType = purchaseType}
+
+  -- Find the vehicle and store its unique UID instead of mutable shopId
+  local vehicle = getVehiclesInShop()[shopId]
+  if not vehicle then
+    log("E", "Career", "Failed to find vehicle for purchase with shopId: " .. tostring(shopId))
+    return
+  end
+
+  local uid = vehicle.uid or makeUid(vehicle)
+  vehicle.uid = uid -- Ensure UID is set
+
+  purchaseData = {
+    shopId = shopId,
+    uid = uid,
+    purchaseType = purchaseType,
+    vehicleInfo = vehicle -- Store the vehicle info directly to avoid lookup issues
+  }
   extensions.hook("onVehicleShoppingPurchaseMenuOpened", {purchaseType = purchaseType, shopId = shopId})
 end
 
@@ -1187,16 +1227,28 @@ local function buyFromPurchaseMenu(purchaseType, options)
   end
 
   -- Mark the vehicle as sold first, then remove it
-  local vehicleToRemove = vehiclesInShop[purchaseData.vehicleInfo.shopId]
+  -- Find the vehicle by UID to ensure we remove the correct one
+  local vehicleToRemove = nil
+  local vehicleIndex = nil
+  for i, vehicle in ipairs(vehiclesInShop) do
+    if vehicle.uid == purchaseData.uid then
+      vehicleToRemove = vehicle
+      vehicleIndex = i
+      break
+    end
+  end
+
   if vehicleToRemove then
-    vehicleToRemove.uid = vehicleToRemove.uid or makeUid(vehicleToRemove)
     vehicleToRemove.markedSold = true
     vehicleToRemove.soldViewCounter = 1
-    pendingSoldUids[vehicleToRemove.uid] = true
+    pendingSoldUids[purchaseData.uid] = true
+  else
+    log("E", "Career", "Could not find vehicle to remove with UID: " .. tostring(purchaseData.uid))
+    return
   end
-  
+
   -- Remove the vehicle from the shop and update the other vehicles shopIds
-  table.remove(vehiclesInShop, purchaseData.vehicleInfo.shopId)
+  table.remove(vehiclesInShop, vehicleIndex)
   for id, vehInfo in ipairs(vehiclesInShop) do
     vehInfo.shopId = id
   end

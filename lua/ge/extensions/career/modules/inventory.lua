@@ -1875,9 +1875,20 @@ M.moveVehicleToGarage = function(id, garage)
   if not garage or not career_modules_garageManager.isGarageSpace(garage) then
     garage = career_modules_garageManager.getNextAvailableSpace()
   end
-  if vehicles[id] then 
+
+  if not garage then
+    log("W", "Inventory", string.format("No available garage space found for vehicle ID %d", id))
+    return false
+  end
+
+  if vehicles[id] then
     vehicles[id].location = garage
     vehicles[id].niceLocation = career_modules_garageManager.garageIdToName(garage)
+    log("I", "Inventory", string.format("Vehicle ID %d moved to garage: %s", id, garage))
+    return true
+  else
+    log("W", "Inventory", string.format("Vehicle ID %d not found in inventory", id))
+    return false
   end
 end
 
