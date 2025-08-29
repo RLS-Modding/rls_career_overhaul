@@ -88,7 +88,7 @@
             <BngButton
               :accent="ACCENTS.menu"
               size="sm"
-              @click="showVehicle(vehicle.shopId)"
+              @click="showVehicle(vehicle.uid || vehicle.shopId)"
               :disabled="vehicleShoppingData.disableShopping || Boolean(vehicle.__sold || vehicle.soldViewCounter)"
               class="action-btn"
             >
@@ -101,7 +101,7 @@
               :accent="ACCENTS.menu"
               size="sm"
               :disabled="hasInsufficientTaxiFunds || vehicleShoppingData.disableShopping || Boolean(vehicle.__sold || vehicle.soldViewCounter)"
-              @click="confirmTaxi(vehicle)"
+              @click="confirmTaxi(vehicle.uid || vehicle.shopId, vehicle)"
               class="action-btn"
             >
               Take Taxi
@@ -116,7 +116,7 @@
               :accent="ACCENTS.main"
               size="sm"
               :disabled="hasInsufficientFunds || vehicleShoppingData.tutorialPurchase || vehicleShoppingData.disableShopping || Boolean(vehicle.__sold || vehicle.soldViewCounter)"
-              @click="openPurchaseMenu('instant', vehicle.shopId)"
+              @click="openPurchaseMenu('instant', vehicle.uid || vehicle.shopId)"
               class="purchase-btn"
             >
               Purchase
@@ -185,24 +185,24 @@ const formatMileage = (mileage) => {
   return units.buildString('length', mileage, 0)
 }
 
-const confirmTaxi = async vehicle => {
+const confirmTaxi = async (vehicleId, vehicle) => {
   const res = await openConfirmation("", `Do you want to taxi to this vehicle for ${units.beamBucks(vehicle.quickTravelPrice)}?`, [
     { label: $translate.instant("ui.common.yes"), value: true, extras: { default: true } },
     { label: $translate.instant("ui.common.no"), value: false, extras: { accent: ACCENTS.secondary } },
   ])
-  if (res) quickTravelToVehicle(vehicle)
+  if (res) quickTravelToVehicle(vehicleId)
 }
 
-const showVehicle = shopId => {
-  lua.career_modules_vehicleShopping.showVehicle(shopId)
+const showVehicle = vehicleId => {
+  lua.career_modules_vehicleShopping.showVehicle(vehicleId)
 }
 
-const quickTravelToVehicle = vehicle => {
-  lua.career_modules_vehicleShopping.quickTravelToVehicle(vehicle.shopId)
+const quickTravelToVehicle = vehicleId => {
+  lua.career_modules_vehicleShopping.quickTravelToVehicle(vehicleId)
 }
 
-const openPurchaseMenu = (purchaseType, shopId) => {
-  lua.career_modules_vehicleShopping.openPurchaseMenu(purchaseType, shopId)
+const openPurchaseMenu = (purchaseType, vehicleId) => {
+  lua.career_modules_vehicleShopping.openPurchaseMenu(purchaseType, vehicleId)
 }
 
 const getAttributeIcon = (vehicle, attribute) => {

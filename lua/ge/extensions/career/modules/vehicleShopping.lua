@@ -58,6 +58,22 @@ local function makeUid(v)
   return tostring(sid) .. "|" .. tostring(key) .. "|" .. tostring(gen)
 end
 
+local function findVehicleById(vehicleId)
+  -- Support both UID and legacy shopId for backwards compatibility
+  if type(vehicleId) == "number" then
+    -- Legacy shopId lookup
+    return vehiclesInShop[vehicleId]
+  elseif type(vehicleId) == "string" then
+    -- UID lookup
+    for _, vehicle in ipairs(vehiclesInShop) do
+      if vehicle.uid == vehicleId then
+        return vehicle
+      end
+    end
+  end
+  return nil
+end
+
 local function sanitizeVehicleForUi(v)
   local t = {}
   for k, val in pairs(v) do
@@ -1159,31 +1175,31 @@ local function startInspectionWorkitem(job, vehicleInfo, teleportToVehicle)
   extensions.hook("onVehicleShoppingVehicleShown", {vehicleInfo = vehicleInfo})
 end
 
-local function showVehicle(shopId)
-  local vehicleInfo = getVehiclesInShop()[shopId]
+local function showVehicle(vehicleId)
+  local vehicleInfo = findVehicleById(vehicleId)
   if not vehicleInfo then
-    log("E", "Career", "Failed to find vehicle for inspection with shopId: " .. tostring(shopId))
+    log("E", "Career", "Failed to find vehicle for inspection with vehicleId: " .. tostring(vehicleId))
     return
   end
   core_jobsystem.create(startInspectionWorkitem, nil, vehicleInfo)
 end
 
-local function quickTravelToVehicle(shopId)
-  local vehicleInfo = getVehiclesInShop()[shopId]
+local function quickTravelToVehicle(vehicleId)
+  local vehicleInfo = findVehicleById(vehicleId)
   if not vehicleInfo then
-    log("E", "Career", "Failed to find vehicle for quick travel with shopId: " .. tostring(shopId))
+    log("E", "Career", "Failed to find vehicle for quick travel with vehicleId: " .. tostring(vehicleId))
     return
   end
   core_jobsystem.create(startInspectionWorkitem, nil, vehicleInfo, true)
 end
 
-local function openPurchaseMenu(purchaseType, shopId)
+local function openPurchaseMenu(purchaseType, vehicleId)
   guihooks.trigger('ChangeState', {state = 'vehiclePurchase', params = {}})
 
-  -- Find the vehicle and store its unique UID instead of mutable shopId
-  local vehicle = getVehiclesInShop()[shopId]
+  -- Find the vehicle using the new lookup function
+  local vehicle = findVehicleById(vehicleId)
   if not vehicle then
-    log("E", "Career", "Failed to find vehicle for purchase with shopId: " .. tostring(shopId))
+    log("E", "Career", "Failed to find vehicle for purchase with vehicleId: " .. tostring(vehicleId))
     return
   end
 
@@ -1191,12 +1207,12 @@ local function openPurchaseMenu(purchaseType, shopId)
   vehicle.uid = uid -- Ensure UID is set
 
   purchaseData = {
-    shopId = shopId,
+    vehicleId = vehicleId, -- Store the vehicleId used for lookup
     uid = uid,
     purchaseType = purchaseType,
     vehicleInfo = vehicle -- Store the vehicle info directly to avoid lookup issues
   }
-  extensions.hook("onVehicleShoppingPurchaseMenuOpened", {purchaseType = purchaseType, shopId = shopId})
+  extensions.hook("onVehicleShoppingPurchaseMenuOpened", {purchaseType = purchaseType, vehicleId = vehicleId})
 end
 
 local function buyFromPurchaseMenu(purchaseType, options)
@@ -1236,11 +1252,12 @@ local function buyFromPurchaseMenu(purchaseType, options)
   end
 
   -- Mark the vehicle as sold first, then remove it
-  -- Find the vehicle by UID to ensure we remove the correct one
+  -- Find the vehicle by the stored vehicleId to ensure we remove the correct one
   local vehicleToRemove = nil
   local vehicleIndex = nil
   for i, vehicle in ipairs(vehiclesInShop) do
-    if vehicle.uid == purchaseData.uid then
+    -- Check both UID and the original vehicleId for backwards compatibility
+    if vehicle.uid == purchaseData.uid or (purchaseData.vehicleId and vehicle.uid == purchaseData.vehicleId) then
       vehicleToRemove = vehicle
       vehicleIndex = i
       break
@@ -1250,9 +1267,13 @@ local function buyFromPurchaseMenu(purchaseType, options)
   if vehicleToRemove then
     vehicleToRemove.markedSold = true
     vehicleToRemove.soldViewCounter = 1
+    -- Mark both UID and vehicleId as sold for backwards compatibility
     pendingSoldUids[purchaseData.uid] = true
+    if purchaseData.vehicleId and purchaseData.vehicleId ~= purchaseData.uid then
+      pendingSoldUids[purchaseData.vehicleId] = true
+    end
   else
-    log("E", "Career", "Could not find vehicle to remove with UID: " .. tostring(purchaseData.uid))
+    log("E", "Career", "Could not find vehicle to remove with vehicleId: " .. tostring(purchaseData.vehicleId or purchaseData.uid))
     return
   end
 
@@ -1334,6 +1355,8 @@ local function onExtensionLoaded()
       -- Only keep vehicles from current map
       if vehicleInfo.mapId == currentMap then
         vehicleInfo.shopId = #filteredVehicles + 1
+        -- Ensure UID is set for loaded vehicles
+        vehicleInfo.uid = vehicleInfo.uid or makeUid(vehicleInfo)
         table.insert(filteredVehicles, vehicleInfo)
       end
     end
@@ -1407,6 +1430,8 @@ local function onWorldReadyState(state)
     for _, vehicleInfo in ipairs(vehiclesInShop) do
       if vehicleInfo.mapId == currentMap then
         vehicleInfo.shopId = #filteredVehicles + 1
+        -- Ensure UID is set when filtering by map
+        vehicleInfo.uid = vehicleInfo.uid or makeUid(vehicleInfo)
         table.insert(filteredVehicles, vehicleInfo)
       end
     end
@@ -1489,6 +1514,8 @@ local function clearDataFromOtherMaps(targetMap)
   for _, vehicleInfo in ipairs(vehiclesInShop) do
     if vehicleInfo.mapId == targetMap then
       vehicleInfo.shopId = #filteredVehicles + 1
+      -- Ensure UID is set when clearing data from other maps
+      vehicleInfo.uid = vehicleInfo.uid or makeUid(vehicleInfo)
       table.insert(filteredVehicles, vehicleInfo)
     end
   end
