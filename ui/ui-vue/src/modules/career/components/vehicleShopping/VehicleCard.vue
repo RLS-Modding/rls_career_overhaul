@@ -88,7 +88,7 @@
             <BngButton
               :accent="ACCENTS.menu"
               size="sm"
-              @click="showVehicle(vehicle.uid || vehicle.shopId)"
+              @click="showVehicle(getVehicleId())"
               :disabled="vehicleShoppingData.disableShopping || Boolean(vehicle.__sold || vehicle.soldViewCounter)"
               class="action-btn"
             >
@@ -101,7 +101,7 @@
               :accent="ACCENTS.menu"
               size="sm"
               :disabled="hasInsufficientTaxiFunds || vehicleShoppingData.disableShopping || Boolean(vehicle.__sold || vehicle.soldViewCounter)"
-              @click="confirmTaxi(vehicle.uid || vehicle.shopId, vehicle)"
+              @click="confirmTaxi(getVehicleId(), vehicle)"
               class="action-btn"
             >
               Take Taxi
@@ -116,7 +116,7 @@
               :accent="ACCENTS.main"
               size="sm"
               :disabled="hasInsufficientFunds || vehicleShoppingData.tutorialPurchase || vehicleShoppingData.disableShopping || Boolean(vehicle.__sold || vehicle.soldViewCounter)"
-              @click="openPurchaseMenu('instant', vehicle.uid || vehicle.shopId)"
+              @click="openPurchaseMenu('instant', getVehicleId())"
               class="purchase-btn"
             >
               Purchase
@@ -201,7 +201,14 @@ const quickTravelToVehicle = vehicleId => {
   lua.career_modules_vehicleShopping.quickTravelToVehicle(vehicleId)
 }
 
+const getVehicleId = () => {
+  const uid = props.vehicle.uid || props.vehicle.shopId
+  console.log('VehicleCard: getVehicleId called, uid:', uid, 'vehicle:', props.vehicle)
+  return uid
+}
+
 const openPurchaseMenu = (purchaseType, vehicleId) => {
+  console.log('Vue openPurchaseMenu called with purchaseType:', purchaseType, 'vehicleId:', vehicleId)
   lua.career_modules_vehicleShopping.openPurchaseMenu(purchaseType, vehicleId)
 }
 

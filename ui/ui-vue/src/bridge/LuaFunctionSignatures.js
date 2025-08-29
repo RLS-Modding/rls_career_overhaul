@@ -140,7 +140,7 @@ export default {
     openShop: (seller, computerId) => [Any, Any], // i think this needs to be Any instead of String to also allow nil
     cancelShopping: () => {},
     quickTravelToVehicle: id => Number,
-    openPurchaseMenu: (purchaseType, shopId) => [String, Number],
+    openPurchaseMenu: (purchaseType, shopId) => [String, String],
     openInventoryMenuForTradeIn: () => {},
     buyFromPurchaseMenu: (purchaseType, options) => [String, Any],
     cancelPurchase: purchaseType => String,

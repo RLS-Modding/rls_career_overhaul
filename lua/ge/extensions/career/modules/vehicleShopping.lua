@@ -1196,14 +1196,44 @@ end
 local function openPurchaseMenu(purchaseType, vehicleId)
   guihooks.trigger('ChangeState', {state = 'vehiclePurchase', params = {}})
 
+  -- Debug logging to see what's being passed
+  log("D", "Career", "openPurchaseMenu called with purchaseType: " .. tostring(purchaseType) .. ", vehicleId: " .. tostring(vehicleId))
+
+  -- Validate inputs
+  if not purchaseType then
+    log("E", "Career", "openPurchaseMenu: purchaseType is nil")
+    return
+  end
+
+  if not vehicleId or vehicleId == "" then
+    log("E", "Career", "openPurchaseMenu: vehicleId is nil or empty")
+    return
+  end
+
   -- Find the vehicle using the new lookup function
   local vehicle = findVehicleById(vehicleId)
   if not vehicle then
     log("E", "Career", "Failed to find vehicle for purchase with vehicleId: " .. tostring(vehicleId))
+    -- Try to find any vehicle as fallback (for debugging)
+    if #vehiclesInShop > 0 then
+      log("D", "Career", "Available vehicles in shop:")
+      for i, v in ipairs(vehiclesInShop) do
+        log("D", "Career", "  Vehicle " .. i .. ": uid=" .. tostring(v.uid) .. ", shopId=" .. tostring(v.shopId) .. ", key=" .. tostring(v.key))
+      end
+    else
+      log("E", "Career", "No vehicles available in shop")
+    end
     return
   end
 
-  local uid = vehicle.uid or makeUid(vehicle)
+  -- Always create/ensure UID exists
+  local uid = vehicle.uid
+  if not uid or uid == "" then
+    uid = makeUid(vehicle)
+    log("D", "Career", "Created new UID for vehicle: " .. tostring(uid))
+  else
+    log("D", "Career", "Using existing UID: " .. tostring(uid))
+  end
   vehicle.uid = uid -- Ensure UID is set
 
   purchaseData = {
@@ -1212,6 +1242,8 @@ local function openPurchaseMenu(purchaseType, vehicleId)
     purchaseType = purchaseType,
     vehicleInfo = vehicle -- Store the vehicle info directly to avoid lookup issues
   }
+
+  log("D", "Career", "Successfully opened purchase menu for vehicle: " .. tostring(uid))
   extensions.hook("onVehicleShoppingPurchaseMenuOpened", {purchaseType = purchaseType, vehicleId = vehicleId})
 end
 
