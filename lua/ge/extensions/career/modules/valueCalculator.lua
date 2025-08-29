@@ -232,6 +232,7 @@ end
 
 local function getTableSize(t)
   local count = 0
+  if not t then return 0 end
   for _ in pairs(t) do
       count = count + 1
   end

@@ -233,7 +233,7 @@ export const useVehicleShoppingStore = defineStore("vehicleShopping", () => {
         const effectiveMax = Math.max(priceFilter.min || 0, Math.min(playerMoney, priceFilter.max))
         if (effectiveMax !== priceFilter.max) {
           setFilterRange('Value', priceFilter.min, effectiveMax)
-          console.log('Updated price filter max to match current money:', effectiveMax)
+          // console.log('Updated price filter max to match current money:', effectiveMax) // Commented out to prevent log spam
         }
       }
     }
@@ -252,7 +252,7 @@ export const useVehicleShoppingStore = defineStore("vehicleShopping", () => {
           const effectiveMax = Math.max(priceFilter.min || 0, Math.min(newMoney, priceFilter.max))
           if (effectiveMax !== priceFilter.max) {
             setFilterRange('Value', priceFilter.min, effectiveMax)
-            console.log('Auto-updated price filter max due to money change:', effectiveMax)
+            // console.log('Auto-updated price filter max due to money change:', effectiveMax) // Commented out to prevent log spam
           }
         }
       }

@@ -2189,6 +2189,12 @@ local function onVehicleAddedToInventory(data)
         return
     end
 
+    -- If a policy was selected during purchase, use it
+    if data.selectedPolicyId and data.selectedPolicyId >= 0 then
+        insuredInvVehs[tostring(data.inventoryId)] = data.selectedPolicyId
+        return
+    end
+
     local conditionData = {
         vehValue = career_modules_valueCalculator.getInventoryVehicleValue(data.inventoryId, true) or (data.vehicleInfo and data.vehicleInfo.Value) or 0,
         population = data.vehicleInfo and data.vehicleInfo.Population or nil,

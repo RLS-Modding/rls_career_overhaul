@@ -1133,7 +1133,7 @@ local function onAddedVehiclePartsToInventory(inventoryId, newParts)
   endShopping()
   career_modules_inspectVehicle.setInspectScreen(false)
 
-  extensions.hook("onVehicleAddedToInventory", {inventoryId = inventoryId, vehicleInfo = purchaseData and purchaseData.vehicleInfo})
+  extensions.hook("onVehicleAddedToInventory", {inventoryId = inventoryId, vehicleInfo = purchaseData and purchaseData.vehicleInfo, selectedPolicyId = purchaseData and purchaseData.selectedPolicyId})
 
   if career_career.isAutosaveEnabled() then
     career_saveSystem.saveCurrent()
@@ -1213,7 +1213,10 @@ local function buyFromPurchaseMenu(purchaseType, options)
     end
   end
 
-  local buyVehicleOptions = {licensePlateText = options.licensePlateText, dealershipId = options.dealershipId, policyId = options.policyId}
+  -- Store the selected policy ID in purchaseData for use when vehicle is added to inventory
+  local selectedPolicyId = options.policyId or 0
+  purchaseData.selectedPolicyId = selectedPolicyId
+  local buyVehicleOptions = {licensePlateText = options.licensePlateText, dealershipId = options.dealershipId, policyId = selectedPolicyId}
   if purchaseType == "inspect" then
     if options.makeDelivery then
       deleteAddedVehicle = true
