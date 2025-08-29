@@ -273,7 +273,7 @@ local function getRandomizedPrice(price, range)
   end
 
   -- Ensure the final price is always an integer (round to nearest thousand)
-  return math.floor(finalPrice / 1000 + 0.5) * 1000
+  return math.floor(finalPrice)
 end
 
 -- Vehicle filtering and processing functions
