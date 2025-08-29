@@ -295,6 +295,8 @@ local function takeLoan(orgId, amount, payments, rate)
     career_modules_playerAttributes.addAttributes({money = amount}, {label = string.format("Loan received (%s)", loan.orgName)})
   end
   saveLoans()
+
+  career_saveSystem.saveCurrent()
   -- Show loan taken message
   if guihooks and guihooks.trigger then
     if notificationsEnabled then
