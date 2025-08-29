@@ -47,8 +47,12 @@ end
 local repairOptions = {
     repairNoInsurance = function(invVehInfo)
         local repairDetails = career_modules_valueCalculator.getRepairDetails(invVehInfo)
+        if not repairDetails then
+            log("W", "insurance", "Failed to get repair details for vehicle")
+            return nil
+        end
         return {
-            repairTime = repairDetails.repairTime,
+            repairTime = repairDetails.repairTime or 0,
             isPolicyRepair = false,
             repairName = translateLanguage("insurance.repairOptions.repairNoInsurance.name",
               "insurance.repairOptions.repairNoInsurance.name", true),
@@ -57,7 +61,7 @@ local repairOptions = {
                 text = "",
                 price = {
                     money = {
-                        amount = repairDetails.price,
+                        amount = repairDetails.price or 0,
                         canBeNegative = false
                     }
                 }
@@ -70,15 +74,24 @@ local repairOptions = {
             local vehicleValue = career_modules_valueCalculator.getInventoryVehicleValue(invVehInfo.id, true) or 0
             local totalPct = M.getPlPerkValue(policyId, "totalPercentage") or 50
             local threshold = vehicleValue * (totalPct / 100)
-            local fullcost = career_modules_valueCalculator.getRepairDetails(invVehInfo).price
+            local repairDetails = career_modules_valueCalculator.getRepairDetails(invVehInfo)
+            if not repairDetails then
+                log("W", "insurance", "Failed to get repair details for vehicle")
+                return nil
+            end
+            local fullcost = repairDetails.price or 0
             if fullcost >= threshold then
                 return nil
             end
         end
         local perkRepairTime = M.getPlPerkValue(policyId, "repairTime") or math.huge
+        local repairDetails = career_modules_valueCalculator.getRepairDetails(invVehInfo)
+        if not repairDetails then
+            log("W", "insurance", "Failed to get repair details for vehicle")
+            return nil
+        end
         return {
-            repairTime = math.min(perkRepairTime,
-              career_modules_valueCalculator.getRepairDetails(invVehInfo).repairTime),
+            repairTime = math.min(perkRepairTime, repairDetails.repairTime or 0),
             isPolicyRepair = true,
             repairName = translateLanguage("insurance.repairOptions.normalRepair.name",
               "insurance.repairOptions.normalRepair.name", true),
@@ -103,7 +116,12 @@ local repairOptions = {
             local vehicleValue = career_modules_valueCalculator.getInventoryVehicleValue(invVehInfo.id, true) or 0
             local totalPct = M.getPlPerkValue(policyId, "totalPercentage") or 50
             local threshold = vehicleValue * (totalPct / 100)
-            local fullcost = career_modules_valueCalculator.getRepairDetails(invVehInfo).price
+            local repairDetails = career_modules_valueCalculator.getRepairDetails(invVehInfo)
+            if not repairDetails then
+                log("W", "insurance", "Failed to get repair details for vehicle")
+                return nil
+            end
+            local fullcost = repairDetails.price or 0
             if fullcost >= threshold then
                 return nil
             end
@@ -146,7 +164,12 @@ local repairOptions = {
         local vehicleValue = career_modules_valueCalculator.getInventoryVehicleValue(invVehInfo.id, true) or 0
         local totalPct = M.getPlPerkValue(policyId, "totalPercentage") or 50
         local threshold = vehicleValue * (totalPct / 100)
-        local fullcost = career_modules_valueCalculator.getRepairDetails(invVehInfo).price
+        local repairDetails = career_modules_valueCalculator.getRepairDetails(invVehInfo)
+        if not repairDetails then
+            log("W", "insurance", "Failed to get repair details for vehicle")
+            return nil
+        end
+        local fullcost = repairDetails.price or 0
         if fullcost < threshold then return nil end
         return {
             repairTime = 0,
@@ -237,7 +260,10 @@ local gestures = {
 
 -- helper
 local function getPlPerkValue(policyId, perkName)
-    if not policyId or policyId < 0 then return nil end -- negative or nil means not owned/assigned
+    -- Type checking: ensure policyId is a valid number
+    if not policyId or type(policyId) ~= "number" or policyId < 0 then
+        return nil -- negative, nil, or non-numeric means not owned/assigned
+    end
     local policy = availablePolicies[policyId]
     local pl = plPoliciesData[policyId]
     if not policy or not pl then return nil end
@@ -252,6 +278,11 @@ end
 
 -- per-vehicle perk: returns the overridden value for invId if present; otherwise policy-level value
 local function getVehPerkValue(invId, perkName)
+    if not invId or not perkName then
+        log("W", "insurance", "Invalid parameters for getVehPerkValue")
+        return nil
+    end
+
     local assigned = insuredInvVehs[tostring(invId)]
     if not assigned or assigned < 0 then return nil end
     local policyId = math.abs(assigned)
@@ -268,7 +299,7 @@ local function getVehPerkValue(invId, perkName)
     else
         index = plPoliciesData[policyId] and plPoliciesData[policyId].perks and plPoliciesData[policyId].perks[perkName]
     end
-    if choices and index then
+    if choices and index and choices[index] then
         return choices[index]
     end
     return getPlPerkValue(policyId, perkName)
@@ -300,7 +331,13 @@ local function initCurrInsurance()
     else
         local invVehId = career_modules_inventory.getInventoryIdFromVehicleId(newid)
         if invVehId then
-            local owned = career_modules_inventory.getVehicles()[invVehId].owned
+            local vehicles = career_modules_inventory.getVehicles()
+        if not vehicles or not vehicles[invVehId] then
+            log("W", "insurance", "Vehicle not found: " .. tostring(invVehId))
+            currApplicablePolicyId = -1
+            return
+        end
+        local owned = vehicles[invVehId].owned
             if #plPoliciesData > 0 and owned then
                 currApplicablePolicyId = insuredInvVehs[tostring(invVehId)] or 0
                 local plPolicyData = plPoliciesData[currApplicablePolicyId]
@@ -349,7 +386,12 @@ local function loadPoliciesData(resetSomeData)
         local renewal = policyInfo.perks.renewal
         if renewal.changeability and renewal.changeability.changeable and renewal.changeability.changeParams and renewal.changeability.changeParams.premiumInfluence then
             for index, price in pairs(renewal.changeability.changeParams.premiumInfluence) do
-                table.insert(policyInfo.perkPriceScale, price / renewal.changeability.changeParams.premiumInfluence[1])
+                local basePrice = renewal.changeability.changeParams.premiumInfluence[1] or 1
+                if basePrice == 0 then
+                    log("W", "insurance", "Division by zero prevented in perk price scale calculation, using fallback")
+                    basePrice = 1 -- Prevent division by zero
+                end
+                table.insert(policyInfo.perkPriceScale, price / basePrice)
             end
         else
             policyInfo.perkPriceScale = {1}
@@ -430,11 +472,11 @@ local function loadPoliciesData(resetSomeData)
             if currentIndex == nil then
                 updatedPerksData[perkName] = perkInfo.baseValue or 1
             else
-                if choices then
-                    updatedPerksData[perkName] = math.min(#choices, currentIndex)
-                else
-                    updatedPerksData[perkName] = currentIndex
-                end
+                            if choices and #choices > 0 then
+                updatedPerksData[perkName] = math.min(#choices - 1, math.max(0, currentIndex or 0))
+            else
+                updatedPerksData[perkName] = currentIndex or 1
+            end
             end
         end
 
@@ -492,8 +534,15 @@ local function purchasePolicy(policyId, forFree)
     if forFree == nil then
         forFree = false
     end
+
+    if not policyId or not availablePolicies[policyId] then
+        log("W", "insurance", "Invalid policy ID provided to purchasePolicy: " .. tostring(policyId))
+        return
+    end
+
     local policyInfo = availablePolicies[policyId]
-    local label = string.format("Bought insurance tier '%s'", policyInfo.name)
+    local policyName = policyInfo.name or "Unknown Policy"
+    local label = string.format("Bought insurance tier '%s'", policyName)
 
     if career_modules_payment.pay({
         money = {
@@ -529,11 +578,25 @@ local function purchasePolicy(policyId, forFree)
 end
 
 local function inventoryVehNeedsRepair(vehInvId)
-    local vehInfo = career_modules_inventory.getVehicles()[vehInvId]
-    if not vehInfo then
-        return
+    if not vehInvId then
+        log("W", "insurance", "Invalid vehicle ID provided to inventoryVehNeedsRepair")
+        return false
     end
-    return career_modules_valueCalculator.partConditionsNeedRepair(vehInfo.partConditions)
+
+    local vehicles = career_modules_inventory.getVehicles()
+    local vehInfo = vehicles and vehicles[vehInvId]
+
+    if not vehInfo then
+        log("W", "insurance", "Vehicle not found in inventory: " .. tostring(vehInvId))
+        return false
+    end
+
+    if not vehInfo.partConditions then
+        log("W", "insurance", "Vehicle has no part conditions: " .. tostring(vehInvId))
+        return false
+    end
+
+    return career_modules_valueCalculator.partConditionsNeedRepair(vehInfo.partConditions) or false
 end
 
 local function repairPartConditions(data)
@@ -623,14 +686,40 @@ local function makeTestDriveDamageClaim(vehInfo)
         tags = {"insurance", "repair", "testDrive"}
     })
 
+    -- Calculate rate increase with division by zero protection
+    local premiumDetails = M.calculatePremiumDetails(1)
+    local repairTimePrice = 0
+    if premiumDetails and premiumDetails.perksPriceDetails and premiumDetails.perksPriceDetails['repairTime'] then
+        repairTimePrice = premiumDetails.perksPriceDetails['repairTime'].price or 0
+    end
+
+    -- Prevent division by zero
+    local denominator = (700 - repairTimePrice) * 100
+    if denominator == 0 then
+        log("W", "insurance", "Division by zero prevented in test drive claim, using fallback value")
+        denominator = 1 -- Fallback to prevent division by zero
+    end
+
     local rateIncrease = 1 + math.floor(
-        ((vehInfo.value * 0.05) / ((700 - M.calculatePremiumDetails(1).perksPriceDetails['repairTime'].price) * 100)) *
-            100) / 100
+        ((vehInfo.value * 0.05) / denominator) * 100) / 100
+
+    -- Ensure rateIncrease is valid
+    if not rateIncrease or rateIncrease ~= rateIncrease then -- Check for NaN
+        rateIncrease = 1.0
+        log("W", "insurance", "Invalid rateIncrease calculated, using default value")
+    end
+
     local policyId = 1
     if (vehInfo.value > 80000) then
         policyId = 2
     end
-    plPoliciesData[policyId].bonus = math.floor(plPoliciesData[policyId].bonus * rateIncrease * 100) / 100
+
+    if plPoliciesData[policyId] then
+        local currentBonus = plPoliciesData[policyId].bonus or 1.0
+        plPoliciesData[policyId].bonus = math.floor(currentBonus * rateIncrease * 100) / 100
+    else
+        log("W", "insurance", "Policy data not found for policy ID: " .. tostring(policyId))
+    end
 
     label = label .. string.format("\nYour insurance went up to :) %0.2f", plPoliciesData[policyId].bonus)
     ui_message(label, 5, "Insurance", "info")
@@ -655,23 +744,42 @@ local function getPolicyScore(invVehId)
     if invVehId then
         policyId = getPolicyIdFromInvVehId(invVehId)
     end
+    if policyId == 0 or not plPoliciesData[policyId] then
+        -- Vehicle has no insurance or policy data not found
+        return 1.0
+    end
     return plPoliciesData[policyId].bonus
 end
 
 local function changePolicyScore(invVehId, rate, operation)
+    -- Enhanced type checking for all parameters
+    if rate == nil or type(rate) ~= "number" or (rate ~= rate) then -- Check for NaN
+        log("W", "insurance", "Invalid rate provided to changePolicyScore: " .. tostring(rate))
+        return 1.0
+    end
+
     if not operation then
         operation = function(bonus, rate)
             return bonus * rate
         end
     end
+
     local policyId
     if invVehId then
         policyId = getPolicyIdFromInvVehId(invVehId)
     end
-    if not policyId then
-        policyId = 1
+    if not policyId or policyId == 0 then
+        -- Vehicle has no insurance, no policy score to change
+        return 1.0
     end
-    plPoliciesData[policyId].bonus = math.max(operation(math.floor(plPoliciesData[policyId].bonus * 100) / 100, rate),
+
+    if not plPoliciesData[policyId] then
+        log("W", "insurance", "Policy data not found for policy ID: " .. tostring(policyId))
+        return 1.0
+    end
+
+    local currentBonus = plPoliciesData[policyId].bonus or 1.0
+    plPoliciesData[policyId].bonus = math.max(operation(math.floor(currentBonus * 100) / 100, rate),
         minimumPolicyScore)
     return plPoliciesData[policyId].bonus
 end
@@ -806,18 +914,31 @@ local function getRateIncrease(vehId, fullcost, paid)
     local details = M.calculatePremiumDetails(insuredInvVehs[tostring(vehId)] or 0)
     local repairPerk = details.perksPriceDetails and details.perksPriceDetails['repairTime'] or nil
     local repairPrice = (repairPerk and repairPerk.price) or 0
-    return 1 + math.floor((covering /
-                              ((700 - repairPrice) * 100)) * 100) / 100
+
+    -- Prevent division by zero
+    local denominator = (700 - repairPrice) * 100
+    if denominator == 0 then
+        log("W", "insurance", "Division by zero prevented in getRateIncrease, using fallback value")
+        denominator = 1 -- Fallback to prevent division by zero
+    end
+
+    return 1 + math.floor((covering / denominator) * 100) / 100
 end
 
 local function startRepair(inventoryId, repairOptionData, callback)
     career_modules_damageManager.clearDamageState(inventoryId)
     inventoryId = inventoryId or career_modules_inventory.getCurrentVehicle()
+    if not inventoryId then
+        log("W", "insurance", "No inventory ID provided to startRepair")
+        return
+    end
+
     repairOptionData = (repairOptionData and type(repairOptionData) == "table") and repairOptionData or {}
     repairOptionData.name = repairOptionData.name or "instantFreeRepair"
 
     local vehInfo = career_modules_inventory.getVehicles()[inventoryId]
     if not vehInfo then
+        log("W", "insurance", "Vehicle not found in inventory: " .. tostring(inventoryId))
         return
     end
 
@@ -1054,7 +1175,7 @@ local function calculateSimplePremiumSum(policyId, overridesIdx0, invId)
                     local baseIdx1 = pi and pi.perks and pi.perks[perkName] or 1
                     idx0 = baseIdx1 - 1
                 end
-                idx0 = math.max(0, math.min((idx0 or 0), (choices and #choices or 1) - 1))
+                idx0 = math.max(0, math.min((idx0 or 0), (choices and #choices > 0 and #choices - 1 or 0)))
                 if type(infl) == 'table' then
                     renewalFactor = infl[idx0 + 1] or 1
                 else
@@ -1082,7 +1203,7 @@ local function calculateSimplePremiumSum(policyId, overridesIdx0, invId)
                     local baseIdx1 = pi and pi.perks and pi.perks[perkName] or 1
                     idx0 = baseIdx1 - 1
                 end
-                idx0 = math.max(0, math.min((idx0 or 0), (choices and #choices or 1) - 1))
+                idx0 = math.max(0, math.min((idx0 or 0), (choices and #choices > 0 and #choices - 1 or 0)))
                 local price
                 if type(infl) == 'table' then
                     price = infl[idx0 + 1] or 0
@@ -1195,16 +1316,34 @@ local function checkRenewPolicy(policyId)
 end
 
 local function getActualRepairPrice(vehInvInfo)
-    -- This function returns the actual price of the repair, taking into account the deductible and the price of the repair without the policy  
+    -- This function returns the actual price of the repair, taking into account the deductible and the price of the repair without the policy
     -- You will pay the lower value as a deductible is the max you will pay not the lowest
+    if not vehInvInfo or not vehInvInfo.id then
+        log("W", "insurance", "Invalid vehicle info provided to getActualRepairPrice")
+        return 0
+    end
+
     local assignedPolicyId = insuredInvVehs[tostring(vehInvInfo.id)] or 0
     if assignedPolicyId == 0 then
-        return career_modules_valueCalculator.getRepairDetails(vehInvInfo).price
+        local repairDetails = career_modules_valueCalculator.getRepairDetails(vehInvInfo)
+        if not repairDetails then
+            log("W", "insurance", "Failed to get repair details for vehicle")
+            return 0
+        end
+        return repairDetails.price or 0
     end
     local deductiblePct = getPlPerkValue(assignedPolicyId, "deductible") or 0
-    local price = career_modules_valueCalculator.getInventoryVehicleValue(vehInvInfo.id, true) * (deductiblePct / 100)
-    return math.floor(math.min(price * 100, career_modules_valueCalculator.getRepairDetails(vehInvInfo).price * 80)) /
-             100
+    local vehicleValue = career_modules_valueCalculator.getInventoryVehicleValue(vehInvInfo.id, true) or 0
+    local price = vehicleValue * (deductiblePct / 100)
+
+    local repairDetails = career_modules_valueCalculator.getRepairDetails(vehInvInfo)
+    if not repairDetails then
+        log("W", "insurance", "Failed to get repair details for vehicle")
+        return 0
+    end
+    local repairPrice = repairDetails.price or 0
+
+    return math.floor(math.min(price * 100, repairPrice * 80)) / 100
 end
 
 local originComputerId
@@ -1248,7 +1387,8 @@ local function getRepairData()
         repairOptionsSanitized = { repairNoInsurance = repairOptionsSanitized.repairNoInsurance }
     end
 
-    vehInfo.thumbnail = career_modules_inventory.getVehicleThumbnail(vehInfo.id) .. "?" .. (vehInfo.dirtyDate or "")
+    local thumbnail = career_modules_inventory.getVehicleThumbnail(vehInfo.id)
+    vehInfo.thumbnail = (thumbnail or "") .. "?" .. (vehInfo.dirtyDate or "")
     local fullcost = 0
     local deductible = 0
 
@@ -1419,8 +1559,16 @@ end
 
 -- change vehicle policy with a paperwork fee, without immediate assignment from UI selections
 local function applyVehPolicyChange(invVehId, toPolicyId, overridesIdx0)
-    if not invVehId or toPolicyId == nil then return end
-    if toPolicyId == insuredInvVehs[tostring(invVehId)] then return end
+    if not invVehId or toPolicyId == nil then
+        log("W", "insurance", "Invalid parameters for applyVehPolicyChange")
+        return
+    end
+
+    local currentPolicyId = insuredInvVehs[tostring(invVehId)]
+    if toPolicyId == currentPolicyId then
+        log("I", "insurance", "Vehicle already has the target policy: " .. tostring(toPolicyId))
+        return
+    end
     if inventoryVehNeedsRepair(invVehId) then
         guihooks.trigger("toastrMsg", {type = "error", title = "Cannot change insurance", msg = "This vehicle cannot change insurance while it is damaged."})
         return
@@ -1458,7 +1606,7 @@ local function applyVehPolicyChange(invVehId, toPolicyId, overridesIdx0)
                 local ca = policy.perks[perkName].changeability and policy.perks[perkName].changeability.changeParams
                 local choices = ca and ca.choices
                 if choices then
-                    local clamped = math.max(0, math.min(idx0 or 0, #choices - 1))
+                    local clamped = math.max(0, math.min(idx0 or 0, #choices > 0 and #choices - 1 or 0))
                     vehiclePerksOverrides[tostring(invVehId)][perkName] = clamped
                 end
             end
@@ -1477,7 +1625,7 @@ local function setVehPerkOverride(invVehId, perkName, choiceIndex)
     local choices = policy.perks[perkName].changeability and policy.perks[perkName].changeability.changeParams and policy.perks[perkName].changeability.changeParams.choices
     if not choices then return end
     vehiclePerksOverrides[tostring(invVehId)] = vehiclePerksOverrides[tostring(invVehId)] or {}
-    vehiclePerksOverrides[tostring(invVehId)][perkName] = math.max(0, math.min(choiceIndex, #choices - 1))
+    vehiclePerksOverrides[tostring(invVehId)][perkName] = math.max(0, math.min(choiceIndex or 0, #choices > 0 and #choices - 1 or 0))
     M.sendUIData()
 end
 
@@ -2198,10 +2346,21 @@ local function onComputerAddFunctions(menuData, computerFunctions)
 end
 
 local function payBonusReset(policyId)
+    if not policyId or not availablePolicies[policyId] or not plPoliciesData[policyId] then
+        log("W", "insurance", "Invalid policy data for bonus reset: " .. tostring(policyId))
+        return
+    end
+
     local policyData = availablePolicies[policyId]
+    if not policyData.resetBonus or not policyData.resetBonus.conditions or not policyData.resetBonus.price then
+        log("W", "insurance", "Policy missing reset bonus data: " .. tostring(policyId))
+        return
+    end
+
     if plPoliciesData[policyId].bonus > policyData.resetBonus.conditions.minBonus and
       career_modules_payment.canPay(policyData.resetBonus.price) then
-        local label = string.format("Policy score decreased. Tier : %s", policyData.name)
+        local policyName = policyData.name or "Unknown Policy"
+        local label = string.format("Policy score decreased. Tier : %s", policyName)
         career_modules_payment.pay(policyData.resetBonus.price, {
             label = label,
             tags = {"insurance", "goodBehaviour"}
@@ -2212,11 +2371,23 @@ local function payBonusReset(policyId)
 end
 
 M.getPolicyDeductible = function(vehInvId)
-    return getPlPerkValue(insuredInvVehs[tostring(vehInvId)], "deductible")
+    -- Enhanced input validation: handle nil, wrong types, and edge cases
+    if vehInvId == nil or (type(vehInvId) ~= "number" and type(vehInvId) ~= "string") then
+        log("W", "insurance", "Invalid vehicle ID provided to getPolicyDeductible: " .. tostring(vehInvId) .. " - returning 0")
+        return 0
+    end
+    local policyId = insuredInvVehs[tostring(vehInvId)]
+    local result = getPlPerkValue(policyId, "deductible") or 0
+    return result
 end
 
 M.getRepairTime = function(vehInvId)
-    return getPlPerkValue(insuredInvVehs[tostring(vehInvId)], "repairTime")
+    -- Enhanced input validation: handle nil, wrong types, and edge cases
+    if vehInvId == nil or (type(vehInvId) ~= "number" and type(vehInvId) ~= "string") then
+        log("W", "insurance", "Invalid vehicle ID provided to getRepairTime: " .. tostring(vehInvId) .. " - returning 0")
+        return 0
+    end
+    return getPlPerkValue(insuredInvVehs[tostring(vehInvId)], "repairTime") or 0
 end
 
 local function getPlayerPolicyData()
@@ -2375,7 +2546,9 @@ M.onVehicleRemoved = onVehicleRemovedFromInventory
 -- internal use only
 M.getActualRepairPrice = getActualRepairPrice
 M.getPlPerkValue = getPlPerkValue
-M.changePolicyScore = changePolicyScore
+M.changePolicyScore = function(invVehId, rate, operation)
+    return changePolicyScore(invVehId, rate, operation)
+end
 
 -- career debug
 M.resetPlPolicyData = function()

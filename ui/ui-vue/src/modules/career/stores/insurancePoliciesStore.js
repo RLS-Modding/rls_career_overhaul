@@ -24,9 +24,11 @@ export const useInsurancePoliciesStore = defineStore("insurancePolicies", () => 
   events.on("insurancePoliciesData", data => {
     if (Array.isArray(data.policiesData)) {
       data.policiesData.sort((a, b) => (a.initialBuyPrice || 0) - (b.initialBuyPrice || 0))
+      policiesData.value = data.policiesData
+    } else {
+      policiesData.value = []
     }
     careerVouchers.value = data.careerVouchers
-    policiesData.value = data.policiesData
     careerMoney.value = data.careerMoney
     policyHistory.value = data.policyHistory
     vehicles.value = data.vehicles || []
