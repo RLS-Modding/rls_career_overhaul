@@ -90,10 +90,13 @@ export const useVehiclePurchaseStore = defineStore("vehiclePurchase", () => {
   }
 
   function buyVehicle(makeDelivery, policyId) {
-    if (buyRequiredInsurance.value && policyId > 0) {
-      lua.career_modules_insurance.purchasePolicy(policyId)
+    // Don't purchase insurance separately - it will be handled in the backend
+    // This ensures proper synchronization with vehicle purchase
+    let options = {
+      makeDelivery: makeDelivery, 
+      policyId: policyId,
+      purchaseInsurance: buyRequiredInsurance.value && policyId > 0
     }
-    let options = {makeDelivery: makeDelivery, policyId: policyId}
     if (buyCustomLicensePlate.value) {
       options.licensePlateText = customLicensePlateText.value
     }

@@ -76,6 +76,10 @@ end
 
 local function sanitizeVehicleForUi(v)
   local t = {}
+  -- Ensure uid and shopId are preserved
+  t.uid = v.uid or makeUid(v)
+  t.shopId = v.shopId
+  
   for k, val in pairs(v) do
     local ty = type(val)
     if k == "pos" then
@@ -206,6 +210,16 @@ end
 -- Data access functions
 local function getShoppingData()
   local data = {}
+  
+  -- Ensure all vehicles have UIDs before sending to UI
+  for i, vehicle in ipairs(vehiclesInShop) do
+    if not vehicle.uid then
+      vehicle.uid = makeUid(vehicle)
+    end
+    -- Also ensure shopId is set for backwards compatibility
+    vehicle.shopId = i
+  end
+  
   data.vehiclesInShop = convertKeysToStrings(vehiclesInShop)
   data.currentSeller = currentSeller
   if currentSeller then
@@ -1261,8 +1275,16 @@ local function buyFromPurchaseMenu(purchaseType, options)
     end
   end
 
-  -- Store the selected policy ID in purchaseData for use when vehicle is added to inventory
+  -- Handle insurance purchase if requested
   local selectedPolicyId = options.policyId or 0
+  if options.purchaseInsurance and selectedPolicyId > 0 then
+    -- Purchase the insurance policy before buying the vehicle
+    if career_modules_insurance and career_modules_insurance.purchasePolicy then
+      career_modules_insurance.purchasePolicy(selectedPolicyId)
+    end
+  end
+
+  -- Store the selected policy ID in purchaseData for use when vehicle is added to inventory
   purchaseData.selectedPolicyId = selectedPolicyId
   local buyVehicleOptions = {licensePlateText = options.licensePlateText, dealershipId = options.dealershipId, policyId = selectedPolicyId}
   if purchaseType == "inspect" then

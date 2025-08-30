@@ -135,12 +135,12 @@ export default {
   },
 
   career_modules_vehicleShopping: {
-    showVehicle: id => Number,
+    showVehicle: id => Any, // Changed from Number to Any to support both string UIDs and numeric IDs
     navigateToPos: pos => Object,
     openShop: (seller, computerId) => [Any, Any], // i think this needs to be Any instead of String to also allow nil
     cancelShopping: () => {},
-    quickTravelToVehicle: id => Number,
-    openPurchaseMenu: (purchaseType, shopId) => [String, String],
+    quickTravelToVehicle: id => Any, // Changed from Number to Any to support both string UIDs and numeric IDs
+    openPurchaseMenu: (purchaseType, vehicleId) => [String, Any], // Changed second param to Any to support both string UIDs and numeric IDs
     openInventoryMenuForTradeIn: () => {},
     buyFromPurchaseMenu: (purchaseType, options) => [String, Any],
     cancelPurchase: purchaseType => String,

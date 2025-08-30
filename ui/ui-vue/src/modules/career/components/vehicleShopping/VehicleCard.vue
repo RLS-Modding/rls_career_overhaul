@@ -186,11 +186,19 @@ const formatMileage = (mileage) => {
 }
 
 const confirmTaxi = async (vehicleId, vehicle) => {
+  console.log('confirmTaxi called with vehicleId:', vehicleId, 'vehicle:', vehicle)
+  if (!vehicleId) {
+    console.error('confirmTaxi: vehicleId is null or undefined!')
+    return
+  }
   const res = await openConfirmation("", `Do you want to taxi to this vehicle for ${units.beamBucks(vehicle.quickTravelPrice)}?`, [
     { label: $translate.instant("ui.common.yes"), value: true, extras: { default: true } },
     { label: $translate.instant("ui.common.no"), value: false, extras: { accent: ACCENTS.secondary } },
   ])
-  if (res) quickTravelToVehicle(vehicleId)
+  if (res) {
+    console.log('User confirmed taxi, calling quickTravelToVehicle with vehicleId:', vehicleId)
+    quickTravelToVehicle(vehicleId)
+  }
 }
 
 const showVehicle = vehicleId => {
@@ -202,9 +210,13 @@ const quickTravelToVehicle = vehicleId => {
 }
 
 const getVehicleId = () => {
-  const uid = props.vehicle.uid || props.vehicle.shopId
+  // Try multiple ways to get the vehicle ID
+  const uid = props.vehicle.uid || props.vehicle.shopId || props.vehicle.id
   console.log('VehicleCard: getVehicleId called, uid:', uid, 'vehicle:', props.vehicle)
-  return uid
+  if (!uid) {
+    console.error('VehicleCard: Unable to get vehicle ID from vehicle object:', props.vehicle)
+  }
+  return uid || null
 }
 
 const openPurchaseMenu = (purchaseType, vehicleId) => {

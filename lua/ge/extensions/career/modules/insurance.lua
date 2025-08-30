@@ -1554,6 +1554,7 @@ local function changeVehPolicy(invVehId, toPolicyId)
         if not ok then return end
     end
     insuredInvVehs[tostring(invVehId)] = math.abs(toPolicyId)
+    career_saveSystem.saveCurrent()
     M.sendUIData()
 end
 
@@ -1612,6 +1613,7 @@ local function applyVehPolicyChange(invVehId, toPolicyId, overridesIdx0)
             end
         end
     end
+    career_saveSystem.saveCurrent()
     M.sendUIData()
 end
 
@@ -1626,6 +1628,7 @@ local function setVehPerkOverride(invVehId, perkName, choiceIndex)
     if not choices then return end
     vehiclePerksOverrides[tostring(invVehId)] = vehiclePerksOverrides[tostring(invVehId)] or {}
     vehiclePerksOverrides[tostring(invVehId)][perkName] = math.max(0, math.min(choiceIndex or 0, #choices > 0 and #choices - 1 or 0))
+    career_saveSystem.saveCurrent()
     M.sendUIData()
 end
 
@@ -2180,6 +2183,8 @@ end
 -- remove the vehicle from the insuranced vehicles json files
 local function onVehicleRemovedFromInventory(inventoryId)
     insuredInvVehs[tostring(inventoryId)] = nil
+    vehiclePerksOverrides[tostring(inventoryId)] = nil
+    career_saveSystem.saveCurrent()
 end
 
 -- apply the minimum applicable insurance to the vehicle, and save it to the json file
@@ -2192,6 +2197,7 @@ local function onVehicleAddedToInventory(data)
     -- If a policy was selected during purchase, use it
     if data.selectedPolicyId and data.selectedPolicyId >= 0 then
         insuredInvVehs[tostring(data.inventoryId)] = data.selectedPolicyId
+        career_saveSystem.saveCurrent()
         return
     end
 
@@ -2213,12 +2219,14 @@ local function onVehicleAddedToInventory(data)
     -- auto-assign police insurance by vehicle role
     if career_modules_inventory.getVehicleRole and career_modules_inventory.getVehicleRole(data.inventoryId) == 'police' then
         insuredInvVehs[tostring(data.inventoryId)] = 4
+        career_saveSystem.saveCurrent()
         return
     end
 
     local requiredPolicyId = getMinApplicablePolicyId(conditionData)
     -- Always assign at least No Insurance (0) to avoid vehicles having no policy entry
     insuredInvVehs[tostring(data.inventoryId)] = requiredPolicyId or 0
+    career_saveSystem.saveCurrent()
 end
 
 local function openRepairMenu(vehicle, _originComputerId)

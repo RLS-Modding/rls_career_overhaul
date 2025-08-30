@@ -555,16 +555,8 @@ local function onExtensionLoaded()
         end
       end ]]
   
-      if saveInfo.version < career_saveSystem.getSaveSystemVersion() then
-        -- Sell all parts that are not in a vehicle
-        local partsToSell = {}
-        for partId, part in pairs(partInventory) do
-          if part.location == 0 then
-            table.insert(partsToSell, partId)
-          end
-        end
-        sellParts(partsToSell)
-      end
+      -- Removed automatic selling of parts without location
+      -- Parts in inventory (location == 0) should be preserved across game updates
     else
       partInventory = {}
     end
