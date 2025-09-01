@@ -35,15 +35,38 @@
 
       <!-- Show current seller vehicles when at specific dealer -->
       <div v-if="vehicleShoppingStore?.vehicleShoppingData?.currentSeller">
-        <div class="content-header">
-          <h3 class="content-title">{{ vehicleShoppingStore?.vehicleShoppingData?.currentSellerNiceName || 'Dealership' }} - Vehicles</h3>
-          <div class="header-right">
-            <p class="vehicle-count">{{ vehicleShoppingStore.filteredVehicles.length }} vehicle{{ vehicleShoppingStore.filteredVehicles.length !== 1 ? 's' : '' }} found</p>
-            <div class="limit-control">
-              <BngSelect v-model.number="itemsPerPage" :options="pageSizeOptions" />
+        <!-- Current dealership hero card at the top -->
+        <div class="current-dealer-hero">
+          <div
+            class="hero-preview"
+            :style="{ backgroundImage: dealerMetadata[vehicleShoppingStore?.vehicleShoppingData?.currentSeller]?.preview ? `url('${dealerMetadata[vehicleShoppingStore?.vehicleShoppingData?.currentSeller].preview}')` : '' }"
+          ></div>
+          <div class="hero-content">
+            <div class="hero-header">
+              <div class="hero-icon"><BngIcon :type="icons.locationSource" /></div>
+              <div class="hero-info">
+                <h4 class="hero-name">{{ vehicleShoppingStore?.vehicleShoppingData?.currentSellerNiceName }}</h4>
+                <p class="hero-description">{{ dealerMetadata[vehicleShoppingStore?.vehicleShoppingData?.currentSeller]?.description || 'Vehicle dealership' }}</p>
+              </div>
+            </div>
+            <div v-if="getRepData(vehicleShoppingStore?.vehicleShoppingData?.currentSeller)" class="hero-rep">
+              <div class="rep-bar">
+                <div class="rep-fill" :style="{ width: getRepData(vehicleShoppingStore?.vehicleShoppingData?.currentSeller).percentage + '%' }"></div>
+              </div>
+              <div class="rep-details">
+                <div class="rep-label">Level {{ getRepData(vehicleShoppingStore?.vehicleShoppingData?.currentSeller).level }}</div>
+                <div class="rep-percentage">{{ getRepData(vehicleShoppingStore?.vehicleShoppingData?.currentSeller).percentage }}%</div>
+                <div class="rep-purchases-needed" v-if="getRepData(vehicleShoppingStore?.vehicleShoppingData?.currentSeller).purchasesToNext > 0">
+                  {{ getRepData(vehicleShoppingStore?.vehicleShoppingData?.currentSeller).purchasesToNext }} purchase{{ getRepData(vehicleShoppingStore?.vehicleShoppingData?.currentSeller).purchasesToNext !== 1 ? 's' : '' }} to next level
+                </div>
+                <div class="rep-max-level" v-else>Max level</div>
+              </div>
             </div>
           </div>
         </div>
+
+        <!-- Controls removed for cleaner dealership view -->
+
         <div class="price-notice">
           <span>*&nbsp;</span>
           <span>Additional taxes and fees are applicable</span>
@@ -151,7 +174,7 @@
                 v-for="dealer in visibleDealers"
                 :key="dealer.id"
                 class="dealership-card"
-                :class="{ selected: selectedDealership === dealer.id }"
+                :class="{ selected: selectedDealership === dealer.id, 'no-rep': !hasRep(dealer.id) }"
                 @click="handleDealershipSelect(dealer.id)"
               >
                 <div v-if="dealerMetadata[dealer.id]?.preview" class="dealership-preview"
@@ -177,6 +200,20 @@
                     </span>
                     <div v-if="selectedDealership === dealer.id" class="selected-badge">Selected</div>
                   </div>
+                  <div v-if="getRepData(dealer.id)" class="rep-progress">
+                    <div class="rep-bar">
+                      <div class="rep-fill" :style="{ width: getRepData(dealer.id).percentage + '%' }"></div>
+                    </div>
+                    <div class="rep-details">
+                      <div class="rep-label">Level {{ getRepData(dealer.id).level }}</div>
+                      <div class="rep-percentage">{{ getRepData(dealer.id).percentage }}%</div>
+                      <div class="rep-purchases-needed" v-if="getRepData(dealer.id).purchasesToNext > 0">
+                        {{ getRepData(dealer.id).purchasesToNext }} purchase{{ getRepData(dealer.id).purchasesToNext !== 1 ? 's' : '' }} to next level
+                      </div>
+                      <div class="rep-max-level" v-else>Max level</div>
+                    </div>
+                  </div>
+                  <div v-else class="rep-placeholder">Independent seller</div>
                 </div>
               </div>
             </div>
@@ -201,8 +238,8 @@
                   v-for="dealer in hiddenDealers"
                   :key="dealer.id"
                   class="dealership-card hidden-card"
-                  @click="routeToDealer(dealer.id)"
-                  :title="'Not available online. Click to set route to ' + (dealerMetadata[dealer.id]?.name || dealer.name)"
+                  @click="confirmTaxi(dealer.id)"
+                  :title="'Not available online. Click to take a taxi to ' + (dealerMetadata[dealer.id]?.name || dealer.name)"
                 >
                   <div v-if="dealerMetadata[dealer.id]?.preview" class="dealership-preview"
                     :style="{ backgroundImage: `url('${dealerMetadata[dealer.id].preview}')` }"></div>
@@ -225,7 +262,20 @@
                       <span class="vehicle-count-badge offline">
                         Visit location
                       </span>
-                      <div class="route-badge">Set Route</div>
+                      <div class="route-badge">Taxi</div>
+                    </div>
+                    <div v-if="getRepData(dealer.id)" class="rep-progress">
+                      <div class="rep-bar">
+                        <div class="rep-fill" :style="{ width: getRepData(dealer.id).percentage + '%' }"></div>
+                      </div>
+                      <div class="rep-details">
+                        <div class="rep-label">Level {{ getRepData(dealer.id).level }}</div>
+                        <div class="rep-percentage">{{ getRepData(dealer.id).percentage }}%</div>
+                        <div class="rep-purchases-needed" v-if="getRepData(dealer.id).purchasesToNext > 0">
+                          {{ getRepData(dealer.id).purchasesToNext }} purchase{{ getRepData(dealer.id).purchasesToNext !== 1 ? 's' : '' }} to next level
+                        </div>
+                        <div class="rep-max-level" v-else>Max level</div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -307,16 +357,18 @@ import FilterDropdown from "./FilterDropdown.vue"
 import SortDropdown from "./SortDropdown.vue"
 import { BngCard, BngButton, ACCENTS, BngBinding, BngInput, BngSelect, BngDropdownContainer, BngIcon, icons } from "@/common/components/base"
 import { vBngBlur, vBngOnUiNav } from "@/common/directives"
-import { lua } from "@/bridge"
+import { lua, useBridge } from "@/bridge"
 import { useEvents } from "@/services/events"
 import { useVehicleShoppingStore } from "../../stores/vehicleShoppingStore"
 import { Accordion, AccordionItem } from "@/common/components/utility"
+import { openConfirmation } from "@/services/popup"
 
 import { useUINavScope } from "@/services/uiNav"
 useUINavScope("vehicleList")
 
 const vehicleShoppingStore = useVehicleShoppingStore()
 const events = useEvents()
+const { units } = useBridge()
 let onDeltaRef = null
 const dealerMetadata = ref({})
 const inputFocused = ref(false)
@@ -330,6 +382,34 @@ const dealersOpen = ref(true)
 const itemsPerPage = ref(25)
 const pageSizeOptions = [10, 25, 50, 100]
 const currentPage = ref(1)
+
+const orgsById = computed(() => (vehicleShoppingStore?.vehicleShoppingData?.organizations) || {})
+
+function getRepData(dealerId) {
+  const orgId = dealerMetadata.value[dealerId] && dealerMetadata.value[dealerId].associatedOrganization
+  if (!orgId) return null
+  const org = orgsById.value[orgId]
+  if (!org || !org.reputation) return null
+
+  const level = typeof org.reputation.level === 'number' ? org.reputation.level : 0
+  let pct = 0
+  let percentage = 0
+  let vehiclesToNext = 0
+  let purchasesToNext = 0
+
+  const cur = org.reputation.curLvlProgress
+  const need = org.reputation.neededForNext
+
+  if (typeof cur === 'number' && typeof need === 'number' && need > 0) {
+    pct = Math.max(0, Math.min(1, cur / need))
+    percentage = Math.round(pct * 100)
+    vehiclesToNext = Math.max(0, need - cur)
+    // Each purchase gives 10 reputation, so divide by 10 and round up
+    purchasesToNext = Math.ceil(vehiclesToNext / 10)
+  }
+
+  return { level, pct, percentage, vehiclesToNext, purchasesToNext }
+}
 
 const totalItems = computed(() => {
   if (selectedDealership.value) return getSelectedDealerVehicles().length
@@ -497,12 +577,70 @@ watch([itemsPerPage, selectedDealership, hasActiveSearch], () => {
 
 // Hidden dealer logic is now handled in the store and provided via dealer.hidden property
 
+// Helper: check if dealer has organization reputation
+function hasRep(dealerId) {
+  const meta = dealerMetadata.value[dealerId]
+  if (!meta || !meta.associatedOrganization) return false
+  const org = orgsById.value[meta.associatedOrganization]
+  return !!(org && org.reputation)
+}
+
 // Route to dealership in-world when hidden online
 async function routeToDealer(dealershipId) {
   try {
     await lua.career_modules_vehicleShopping.navigateToDealership(dealershipId)
   } catch (e) {
     console.error('Failed to set route to dealership', e)
+  }
+}
+
+async function taxiToDealer(dealershipId) {
+  try {
+    console.log('TaxiToDealer called for dealership:', dealershipId)
+    await lua.career_modules_vehicleShopping.taxiToDealership(dealershipId)
+    console.log('Taxi completed successfully')
+  } catch (e) {
+    console.error('Failed to taxi to dealership:', e)
+    // Show error message to user
+    if (typeof ui_message !== 'undefined') {
+      ui_message(`Failed to taxi to dealership: ${e.message || 'Unknown error'}`, 5, "vehicleShopping")
+    }
+  }
+}
+
+async function confirmTaxi(dealershipId) {
+  try {
+    console.log('ConfirmTaxi called for dealership:', dealershipId)
+
+    const price = await lua.career_modules_vehicleShopping.getTaxiPriceToDealership(dealershipId)
+    console.log('Taxi price:', price)
+
+    const name = dealerMetadata.value[dealershipId]?.name || 'Dealership'
+    console.log('Dealer name:', name)
+
+    // Always show a numeric price using BeamNG formatting (0 shows as 0)
+    const priceDisplay = units.beamBucks(Math.max(0, Number(price) || 0))
+
+    // Use the proper BeamNG UI confirmation system like VehicleCard.vue does
+    console.log('Using openConfirmation dialog...')
+    const res = await openConfirmation("", `Taxi to ${name} for ${priceDisplay}?`, [
+      { label: "Yes", value: true, extras: { default: true } },
+      { label: "No", value: false, extras: { accent: "secondary" } },
+    ])
+    console.log('openConfirmation result:', res)
+
+    if (res) {
+      console.log('User confirmed, calling taxiToDealer...')
+      await taxiToDealer(dealershipId)
+    } else {
+      console.log('User cancelled taxi')
+    }
+  } catch (e) {
+    console.error('Failed to confirm taxi:', e)
+    // If confirmation fails, show an error message
+    if (typeof ui_message !== 'undefined') {
+      ui_message(`Failed to taxi to dealership: ${e.message || 'Unknown error'}`, 5, "vehicleShopping")
+    }
   }
 }
 
@@ -1044,6 +1182,104 @@ const filteredVehicleCount = computed(() => {
     margin-bottom: 1.25rem;
     padding-left: 0.125rem;
   }
+
+  .current-dealer-hero {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(135deg,
+      rgba(var(--bng-cool-gray-900-rgb), 0.6) 0%,
+      rgba(var(--bng-cool-gray-850-rgb), 0.4) 100%
+    );
+    border-radius: 1rem;
+    overflow: hidden;
+    padding: 1rem;
+    margin-bottom: 1rem;
+
+    .hero-preview {
+      min-height: 8rem;
+      background-size: cover;
+      background-position: center;
+      border-radius: 0.75rem;
+      background-color: var(--bng-cool-gray-850);
+    }
+
+    .hero-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+
+      .hero-header {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+      }
+      .hero-icon {
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: var(--bng-orange);
+        flex-shrink: 0;
+      }
+      .hero-name {
+        margin: 0;
+        font-size: 1.125rem;
+        color: white;
+      }
+      .hero-description {
+        margin: 0;
+        font-size: 0.8rem;
+        color: var(--bng-cool-gray-300);
+      }
+      .hero-rep {
+        margin-top: 0.25rem;
+        .rep-bar {
+          position: relative;
+          height: 8px;
+          border-radius: 9999px;
+          background: rgba(255, 255, 255, 0.08);
+          overflow: hidden;
+        }
+        .rep-fill {
+          height: 100%;
+          background: linear-gradient(90deg, var(--bng-orange) 0%, var(--bng-orange-b400) 100%);
+        }
+        .rep-details {
+          margin-top: 0.25rem;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          font-size: 0.8rem;
+        }
+        .rep-label {
+          color: var(--bng-cool-gray-200);
+          font-weight: 600;
+        }
+        .rep-percentage {
+          color: var(--bng-orange);
+          font-weight: 700;
+          font-size: 0.85rem;
+        }
+        .rep-purchases-needed {
+          color: var(--bng-cool-gray-300);
+          font-size: 0.75rem;
+          text-align: right;
+        }
+        .rep-max-level {
+          color: var(--bng-orange);
+          font-size: 0.75rem;
+          font-weight: 600;
+          text-align: right;
+        }
+      }
+    }
+  }
 }
 
 // Dealership Section
@@ -1224,7 +1460,7 @@ const filteredVehicleCount = computed(() => {
       z-index: 2;
       height: 100%;
       min-height: 10rem;
-      padding: 1.25rem;
+      padding: 1.25rem 1.25rem 0.5rem 1.25rem; // Reduced bottom padding from 1.25rem to 0.75rem
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -1289,41 +1525,45 @@ const filteredVehicleCount = computed(() => {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 0.5rem;
       margin-top: auto;
-      padding-top: 0.75rem;
+      padding-top: 0.5rem; // compact
 
       .vehicle-count-badge {
-        padding: 0.375rem 0.625rem;
-        background: rgba(0, 0, 0, 0.6);
-        backdrop-filter: blur(8px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 0.25rem 0.5rem;
+        background: rgba(0, 0, 0, 0.55);
+        backdrop-filter: blur(6px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 0.375rem;
         color: var(--bng-orange);
         font-weight: 700;
-        font-size: 0.875rem;
+        font-size: 0.8rem;
+        line-height: 1;
         text-shadow: 0 1px 2px rgba(0,0,0,0.3);
       }
 
       .selected-badge {
-        padding: 0.375rem 0.625rem;
+        padding: 0.25rem 0.5rem;
         background: var(--bng-orange);
         color: var(--bng-off-black);
         border-radius: 0.375rem;
-        font-size: 0.75rem;
+        font-size: 0.7rem;
         font-weight: 700;
         text-transform: uppercase;
+        line-height: 1;
       }
 
       .route-badge {
-        padding: 0.375rem 0.625rem;
-        background: rgba(0, 0, 0, 0.6);
-        backdrop-filter: blur(8px);
+        padding: 0.25rem 0.5rem;
+        background: rgba(0, 0, 0, 0.55);
+        backdrop-filter: blur(6px);
         color: var(--bng-orange);
         border: 1px dashed var(--bng-orange);
         border-radius: 0.375rem;
-        font-size: 0.75rem;
+        font-size: 0.7rem;
         font-weight: 700;
         text-transform: uppercase;
+        line-height: 1;
       }
     }
 
@@ -1343,12 +1583,19 @@ const filteredVehicleCount = computed(() => {
         filter: grayscale(0.3);
       }
 
+      .dealership-info {
+        max-width: 75%;
+      }
+
       .dealership-name {
-        color: var(--bng-cool-gray-300);
+        color: var(--bng-off-white);
+        font-weight: 800;
+        text-shadow: 0 2px 8px rgba(0,0,0,0.75);
       }
 
       .dealership-description {
-        color: var(--bng-cool-gray-500);
+        color: var(--bng-cool-gray-150);
+        text-shadow: 0 1px 6px rgba(0,0,0,0.75);
       }
 
       .vehicle-count-badge.offline {
@@ -1362,6 +1609,61 @@ const filteredVehicleCount = computed(() => {
         background: rgba(var(--bng-orange-rgb), 0.1);
         border-color: var(--bng-orange-alpha-50);
         color: var(--bng-orange);
+      }
+    }
+
+    .rep-progress {
+      margin-top: 0.25rem; // Reduced from 0.5rem to 0.25rem for more compact layout
+      .rep-bar {
+        position: relative;
+        height: 6px;
+        border-radius: 9999px;
+        background: rgba(255, 255, 255, 0.08);
+        overflow: hidden;
+      }
+      .rep-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--bng-orange) 0%, var(--bng-orange-b400) 100%);
+      }
+      .rep-details {
+        margin-top: 0.2rem;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+        column-gap: 0.5rem;
+        font-size: 0.7rem;
+      }
+      .rep-label {
+        color: var(--bng-cool-gray-300);
+        font-weight: 600;
+      }
+      .rep-percentage {
+        color: var(--bng-orange);
+        font-weight: 700;
+        font-size: 0.75rem;
+        white-space: nowrap;
+      }
+      .rep-purchases-needed {
+        color: var(--bng-cool-gray-400);
+        font-size: 0.65rem;
+        text-align: right;
+      }
+      .rep-max-level {
+        color: var(--bng-orange);
+        font-size: 0.65rem;
+        font-weight: 600;
+        text-align: right;
+        white-space: nowrap;
+      }
+    }
+
+    /* For cards without organization reputation */
+    &.no-rep {
+      .rep-placeholder {
+        margin-top: 0.25rem;
+        color: var(--bng-cool-gray-300);
+        font-size: 0.75rem;
+        font-style: italic;
       }
     }
   }

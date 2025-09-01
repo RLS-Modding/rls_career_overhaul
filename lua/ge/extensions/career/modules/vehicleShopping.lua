@@ -259,7 +259,19 @@ local function getShoppingData()
       if orgId and not data.organizations[orgId] then
         local org = freeroam_organizations.getOrganization(orgId)
         if org then
-          local sanitizedOrg = {reputationLevels = {}, reputation = {level = (org.reputation and org.reputation.level - 1) or 0}}
+          local sanitizedOrg = {reputationLevels = {}, reputation = {}}
+          if org.reputation then
+            sanitizedOrg.reputation.level = org.reputation.level or 0
+            sanitizedOrg.reputation.levelIndex = (org.reputation.level or 0) + 2
+            sanitizedOrg.reputation.value = org.reputation.value
+            sanitizedOrg.reputation.curLvlProgress = org.reputation.curLvlProgress
+            sanitizedOrg.reputation.neededForNext = org.reputation.neededForNext
+            sanitizedOrg.reputation.prevThreshold = org.reputation.prevThreshold
+            sanitizedOrg.reputation.nextThreshold = org.reputation.nextThreshold
+          else
+            sanitizedOrg.reputation.level = 0
+            sanitizedOrg.reputation.levelIndex = 2
+          end
           if org.reputationLevels then
             for idx, lvl in pairs(org.reputationLevels) do
               sanitizedOrg.reputationLevels[idx] = {hiddenFromDealerList = lvl and lvl.hiddenFromDealerList or nil}
@@ -268,6 +280,21 @@ local function getShoppingData()
           data.organizations[orgId] = sanitizedOrg
         end
       end
+    end
+  end
+
+  -- Also expose private sellers metadata so UI can show preview images and text
+  if facilities and facilities.privateSellers then
+    for _, d in ipairs(facilities.privateSellers) do
+      table.insert(data.dealerships, {
+        id = d.id,
+        name = d.name,
+        description = d.description,
+        preview = d.preview,
+        hiddenFromDealerList = d.hiddenFromDealerList,
+        associatedOrganization = d.associatedOrganization,
+      })
+      -- private sellers usually have no associated organization; keep organizations map unchanged
     end
   end
 
@@ -984,6 +1011,46 @@ local function navigateToDealership(dealershipId)
   navigateToPos(pos)
 end
 
+local function taxiToDealership(dealershipId)
+  local dealership = freeroam_facilities.getDealership(dealershipId)
+  if not dealership then return end
+  local pos = freeroam_facilities.getAverageDoorPositionForFacility(dealership)
+  if not pos then return end
+  career_modules_quickTravel.quickTravelToPos(pos, true, string.format("Took a taxi to %s", dealership.name or "dealership"))
+end
+
+local function getTaxiPriceToDealership(dealershipId)
+  local dealership = freeroam_facilities.getDealership(dealershipId)
+  if not dealership then
+    log("W", "Career", "getTaxiPriceToDealership: Dealership not found: " .. tostring(dealershipId))
+    return 0
+  end
+  local pos = freeroam_facilities.getAverageDoorPositionForFacility(dealership)
+  if not pos then
+    log("W", "Career", "getTaxiPriceToDealership: No position found for dealership: " .. tostring(dealershipId))
+    return 0
+  end
+
+  local playerPos = getPlayerVehicle(0):getPosition()
+  local distance = (pos - playerPos):length()
+  log("I", "Career", string.format("getTaxiPriceToDealership: dealership=%s, playerPos=(%.2f,%.2f,%.2f), dealerPos=(%.2f,%.2f,%.2f), distance=%.2f",
+    dealershipId, playerPos.x, playerPos.y, playerPos.z, pos.x, pos.y, pos.z, distance))
+
+  local price, calcDistance = career_modules_quickTravel.getPriceForQuickTravel(pos)
+  log("I", "Career", string.format("getTaxiPriceToDealership: calculated price=%.2f, calcDistance=%.2f", price or 0, calcDistance or 0))
+
+  -- Fallback: if price is 0 but we have a distance, estimate using same constants as quickTravel
+  if (not price or price <= 0) and (calcDistance and calcDistance > 0) then
+    local basePrice = 5
+    local pricePerM = 0.08
+    local est = basePrice + round(calcDistance * pricePerM * 100) / 100
+    log("W", "Career", string.format("getTaxiPriceToDealership: fallback price used=%.2f (distance=%.2f)", est, calcDistance))
+    price = est
+  end
+
+  return price * 5 or 0
+end
+
 local function endShopping()
   career_career.closeAllMenus()
   extensions.hook("onVehicleShoppingMenuClosed", {})
@@ -1039,7 +1106,20 @@ local function sendPurchaseDataToUi()
   -- Use the stored vehicle info instead of looking up by potentially stale shopId
   local vehicleShopInfo = deepcopy(purchaseData.vehicleInfo)
   vehicleShopInfo.niceName = vehicleShopInfo.Brand .. " " .. vehicleShopInfo.Name
-  vehicleShopInfo.deliveryDelay = getDeliveryDelay(vehicleShopInfo.distance)
+  do
+    local distance = vehicleShopInfo.distance
+    if not distance or type(distance) ~= "number" then
+      if vehicleShopInfo.pos then
+        local qtPrice, dist = career_modules_quickTravel.getPriceForQuickTravel(vehicleShopInfo.pos)
+        vehicleShopInfo.quickTravelPrice = vehicleShopInfo.quickTravelPrice or qtPrice
+        distance = dist
+      else
+        distance = 0
+      end
+      vehicleShopInfo.distance = distance
+    end
+    vehicleShopInfo.deliveryDelay = getDeliveryDelay(distance)
+  end
   -- Update vehicleInfo in purchaseData with the fresh copy
   purchaseData.vehicleInfo = vehicleShopInfo
 
@@ -1597,6 +1677,8 @@ M.openShop = openShop
 M.showVehicle = showVehicle
 M.navigateToPos = navigateToPos
 M.navigateToDealership = navigateToDealership
+M.taxiToDealership = taxiToDealership
+M.getTaxiPriceToDealership = getTaxiPriceToDealership
 M.buySpawnedVehicle = buySpawnedVehicle
 M.quickTravelToVehicle = quickTravelToVehicle
 M.updateVehicleList = updateVehicleList

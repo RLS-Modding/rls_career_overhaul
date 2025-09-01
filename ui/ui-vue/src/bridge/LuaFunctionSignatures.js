@@ -151,6 +151,8 @@ export default {
     // lightweight refresh + navigation helpers
     updateVehicleList: fromScratch => Boolean,
     navigateToDealership: dealershipId => String,
+    taxiToDealership: dealershipId => String,
+    getTaxiPriceToDealership: dealershipId => String,
     setShoppingUiOpen: open => Boolean,
   },
 

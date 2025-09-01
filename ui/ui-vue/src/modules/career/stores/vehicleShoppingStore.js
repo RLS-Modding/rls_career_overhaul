@@ -16,7 +16,7 @@ export const useVehicleShoppingStore = defineStore("vehicleShopping", () => {
     const d = vehicleShoppingData.value
     if (!d.dealerships) return false
 
-    const dealerMeta = d.dealerships.find(dealer => dealer.id === dealerId)
+    const dealerMeta = d.dealerships.find(dealer => String(dealer.id) === String(dealerId))
     if (!dealerMeta) return false
 
     // Check dealer's hiddenFromDealerList
@@ -26,9 +26,23 @@ export const useVehicleShoppingStore = defineStore("vehicleShopping", () => {
     if (dealerMeta.associatedOrganization && d.organizations) {
       const orgData = d.organizations[dealerMeta.associatedOrganization]
       if (orgData && orgData.reputationLevels && orgData.reputation && orgData.reputation.level !== undefined && orgData.reputation.level !== null) {
-        const currentLevel = orgData.reputation.level + 2
-        const levelData = orgData.reputationLevels[currentLevel]
+        const currentLevel = orgData.reputation.level || 0
+
+        // Calculate array index: level -1 = index 0, level 0 = index 1, level 1 = index 2, etc.
+        // But handle level 0 specially since the original calculation gives -2
+        let currentIndex = currentLevel + 1  // This gives: level 0 = 1, level 1 = 2, etc.
+
+        // Get level data if index is valid
+        let levelData = null
+        if (currentIndex >= 0 && currentIndex < orgData.reputationLevels.length) {
+          levelData = orgData.reputationLevels[currentIndex]
+        }
+
+        // Debug logging
+        console.log(`Dealer ${dealerId}: level=${currentLevel}, calculatedIndex=${currentIndex}, levelData=`, levelData)
+
         if (levelData && levelData.hiddenFromDealerList) {
+          console.log(`Dealer ${dealerId} hidden due to org reputation level`)
           hidden = true
         }
       }
