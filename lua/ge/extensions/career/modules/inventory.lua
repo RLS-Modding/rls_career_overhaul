@@ -64,19 +64,16 @@ local function getClosestOwnedGarage(pos, levelName)
   local closestGarage
   local minDist = math.huge
   for _, garage in ipairs(facilities.garages) do
-    if not career_modules_garageManager.isPurchasedGarage(garage.id) then
-      goto continue
+    if career_modules_garageManager.isPurchasedGarage(garage.id) then
+      local zones = freeroam_facilities.getZonesForFacility(garage)
+      if zones and not tableIsEmpty(zones) then
+        local dist = zones[1].center:distance(playerPos)
+        if dist < minDist then
+          closestGarage = garage
+          minDist = dist
+        end
+      end
     end
-    local zones = freeroam_facilities.getZonesForFacility(garage)
-    if not zones or tableIsEmpty(zones) then
-      goto continue
-    end
-    local dist = zones[1].center:distance(playerPos)
-    if dist < minDist then
-      closestGarage = garage
-      minDist = dist
-    end
-    ::continue::
   end
   return closestGarage
 end
