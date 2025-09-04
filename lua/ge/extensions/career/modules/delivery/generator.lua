@@ -1252,8 +1252,17 @@ local function setupFacilities(loadData)
       end
       fac.accessPointsByName = accessPointsByName
 
-
-
+      -- Setup dropOffSpots and pickUpSpots based on access points
+      fac.dropOffSpots = {}
+      fac.pickUpSpots = {}
+      for name, ap in pairs(accessPointsByName) do
+        if next(ap.logisticTypesReceivedLookup) then
+          table.insert(fac.dropOffSpots, ap.ps)
+        end
+        if next(ap.logisticTypesProvidedLookup) then
+          table.insert(fac.pickUpSpots, ap.ps)
+        end
+      end
 
       table.insert(facilities, fac)
       facilitiesById[fac.id] = fac

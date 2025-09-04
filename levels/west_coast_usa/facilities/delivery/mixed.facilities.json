@@ -1887,7 +1887,11 @@
       //"dropOffSpotNames":["city_garden"],
       "manualAccessPoints": [
         {
-          "psName": "city_garden"
+          "psName": "city_garden",
+          "logisticTypesProvided": [],
+          "logisticTypesReceived": [
+            "soil"
+          ]
         }
       ],
       "sitesFile": "mixed.sites.json",
