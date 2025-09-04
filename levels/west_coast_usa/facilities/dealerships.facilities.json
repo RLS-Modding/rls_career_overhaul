@@ -952,7 +952,11 @@
           "whiteList": {
             "Country": [
               "United States"
-            ]
+            ],
+            "Value": {
+              "min": 500,
+              "max": 20000
+            }
           }
         },
         {
@@ -969,12 +973,21 @@
               "Soviet Union/Russia",
               "United Kingdom",
               "Sweden"
-            ]
+            ],
+            "Value": {
+              "min": 500,
+              "max": 20000
+            }
           }
         },
         {
           "probability": 1,
-          "whiteList": {}
+          "whiteList": {
+            "Value": {
+              "min": 500,
+              "max": 20000
+            }
+          }
         }
       ],
       "subFilterNames": [

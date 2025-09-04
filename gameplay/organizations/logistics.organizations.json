@@ -736,7 +736,6 @@
         ]
       },
       {
-        "hiddenFromDealerList": true,
         "stock": 10,
         "range": [
           0.88,
@@ -2646,12 +2645,56 @@
           1.25,
           1.5
         ],
-        "fees": 3540,
+        "fees": 1540,
         "testDrive": {
           "abandonFees": 500,
           "timeLimit": 60,
           "licencePlate": ""
-        }
+        },
+        "subFilters": [
+          {
+            "probability": 6,
+            "whiteList": {
+              "Country": [
+                "United States"
+              ],
+              "Value": {
+                "min": 500,
+                "max": 20000
+              }
+            }
+          },
+          {
+            "probability": 2,
+            "whiteList": {
+              "Country": [
+                "Poland",
+                "Italy",
+                "France",
+                "Germany",
+                "Japan",
+                "Canada",
+                "Great Britain",
+                "Soviet Union/Russia",
+                "United Kingdom",
+                "Sweden"
+              ],
+              "Value": {
+                "min": 500,
+                "max": 20000
+              }
+            }
+          },
+          {
+            "probability": 1,
+            "whiteList": {
+              "Value": {
+                "min": 500,
+                "max": 20000
+              }
+            }
+          }
+        ]
       },
       {
         "stock": 10,
@@ -2662,15 +2705,58 @@
           1.20,
           1.4
         ],
-        "fees": 2550,
+        "fees": 1000,
         "testDrive": {
           "abandonFees": 500,
           "timeLimit": 90,
           "licencePlate": ""
-        }
+        },
+        "subFilters": [
+          {
+            "probability": 6,
+            "whiteList": {
+              "Country": [
+                "United States"
+              ],
+              "Value": {
+                "min": 500,
+                "max": 20000
+              }
+            }
+          },
+          {
+            "probability": 2,
+            "whiteList": {
+              "Country": [
+                "Poland",
+                "Italy",
+                "France",
+                "Germany",
+                "Japan",
+                "Canada",
+                "Great Britain",
+                "Soviet Union/Russia",
+                "United Kingdom",
+                "Sweden"
+              ],
+              "Value": {
+                "min": 500,
+                "max": 20000
+              }
+            }
+          },
+          {
+            "probability": 1,
+            "whiteList": {
+              "Value": {
+                "min": 500,
+                "max": 20000
+              }
+            }
+          }
+        ]
       },
       {
-        "hiddenFromDealerList": true,
         "stock": 20,
         "range": [
           0.75,
@@ -2678,12 +2764,56 @@
           1.15,
           1.3
         ],
-        "fees": 1900,
+        "fees": 750,
         "testDrive": {
           "abandonFees": 350,
           "timeLimit": 120,
           "licencePlate": ""
-        }
+        },
+        "subFilters": [
+          {
+            "probability": 6,
+            "whiteList": {
+              "Country": [
+                "United States"
+              ],
+              "Value": {
+                "min": 500,
+                "max": 50000
+              }
+            }
+          },
+          {
+            "probability": 2,
+            "whiteList": {
+              "Country": [
+                "Poland",
+                "Italy",
+                "France",
+                "Germany",
+                "Japan",
+                "Canada",
+                "Great Britain",
+                "Soviet Union/Russia",
+                "United Kingdom",
+                "Sweden"
+              ],
+              "Value": {
+                "min": 500,
+                "max": 50000
+              }
+            }
+          },
+          {
+            "probability": 1,
+            "whiteList": {
+              "Value": {
+                "min": 500,
+                "max": 50000
+              }
+            }
+          }
+        ]
       },
       {
         "stock": 25,
@@ -2693,12 +2823,56 @@
           1.05,
           1.25
         ],
-        "fees": 950,
+        "fees": 400,
         "testDrive": {
           "abandonFees": 250,
           "timeLimit": 150,
           "licencePlate": ""
-        }
+        },
+        "subFilters": [
+          {
+            "probability": 6,
+            "whiteList": {
+              "Country": [
+                "United States"
+              ],
+              "Value": {
+                "min": 500,
+                "max": 100000
+              }
+            }
+          },
+          {
+            "probability": 2,
+            "whiteList": {
+              "Country": [
+                "Poland",
+                "Italy",
+                "France",
+                "Germany",
+                "Japan",
+                "Canada",
+                "Great Britain",
+                "Soviet Union/Russia",
+                "United Kingdom",
+                "Sweden"
+              ],
+              "Value": {
+                "min": 500,
+                "max": 100000
+              }
+            }
+          },
+          {
+            "probability": 1,
+            "whiteList": {
+              "Value": {
+                "min": 500,
+                "max": 100000
+              }
+            }
+          }
+        ]
       },
       {
         "stock": 35,
@@ -2713,7 +2887,51 @@
           "abandonFees": 150,
           "timeLimit": 180,
           "licencePlate": ""
-        }
+        },
+        "subFilters": [
+          {
+            "probability": 6,
+            "whiteList": {
+              "Country": [
+                "United States"
+              ],
+              "Value": {
+                "min": 500,
+                "max": 1000000
+              }
+            }
+          },
+          {
+            "probability": 2,
+            "whiteList": {
+              "Country": [
+                "Poland",
+                "Italy",
+                "France",
+                "Germany",
+                "Japan",
+                "Canada",
+                "Great Britain",
+                "Soviet Union/Russia",
+                "United Kingdom",
+                "Sweden"
+              ],
+              "Value": {
+                "min": 500,
+                "max": 1000000
+              }
+            }
+          },
+          {
+            "probability": 1,
+            "whiteList": {
+              "Value": {
+                "min": 500,
+                "max": 1000000
+              }
+            }
+          }
+        ]
       }
     ]
   },
