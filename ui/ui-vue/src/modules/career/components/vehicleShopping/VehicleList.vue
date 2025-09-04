@@ -465,8 +465,11 @@ const allFilteredVehicles = computed(() => {
     return vehicleShoppingStore.filteredVehicles
   }
 
-  // Otherwise collect vehicles from all dealers
+  // Otherwise collect vehicles from all dealers (excluding hidden/offline dealers)
   vehicleShoppingStore.vehiclesByDealer.forEach(dealer => {
+    // Skip vehicles from hidden/offline dealers during search
+    if (dealer.hidden) return
+
     dealer.vehicles.forEach(vehicle => {
       const searchFields = [
         vehicle.Name,

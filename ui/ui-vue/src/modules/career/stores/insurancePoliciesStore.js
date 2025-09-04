@@ -26,6 +26,7 @@ export const useInsurancePoliciesStore = defineStore("insurancePolicies", () => 
       data.policiesData.sort((a, b) => (a.initialBuyPrice || 0) - (b.initialBuyPrice || 0))
       policiesData.value = data.policiesData
     } else {
+      console.warn('Invalid policies data received:', data.policiesData)
       policiesData.value = []
     }
     careerVouchers.value = data.careerVouchers

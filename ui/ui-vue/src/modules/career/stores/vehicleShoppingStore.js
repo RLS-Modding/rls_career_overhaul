@@ -38,11 +38,7 @@ export const useVehicleShoppingStore = defineStore("vehicleShopping", () => {
           levelData = orgData.reputationLevels[currentIndex]
         }
 
-        // Debug logging
-        console.log(`Dealer ${dealerId}: level=${currentLevel}, calculatedIndex=${currentIndex}, levelData=`, levelData)
-
         if (levelData && levelData.hiddenFromDealerList) {
-          console.log(`Dealer ${dealerId} hidden due to org reputation level`)
           hidden = true
         }
       }
@@ -247,7 +243,6 @@ export const useVehicleShoppingStore = defineStore("vehicleShopping", () => {
         const effectiveMax = Math.max(priceFilter.min || 0, Math.min(playerMoney, priceFilter.max))
         if (effectiveMax !== priceFilter.max) {
           setFilterRange('Value', priceFilter.min, effectiveMax)
-          // console.log('Updated price filter max to match current money:', effectiveMax) // Commented out to prevent log spam
         }
       }
     }
@@ -266,7 +261,6 @@ export const useVehicleShoppingStore = defineStore("vehicleShopping", () => {
           const effectiveMax = Math.max(priceFilter.min || 0, Math.min(newMoney, priceFilter.max))
           if (effectiveMax !== priceFilter.max) {
             setFilterRange('Value', priceFilter.min, effectiveMax)
-            // console.log('Auto-updated price filter max due to money change:', effectiveMax) // Commented out to prevent log spam
           }
         }
       }

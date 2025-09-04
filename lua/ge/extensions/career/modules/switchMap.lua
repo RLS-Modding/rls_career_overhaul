@@ -14,8 +14,6 @@ local function isOverhaulAddonActive(levelName)
     local mods = core_modmanager.getMods()
     for modName, modData in pairs(mods) do
         local OverhaulAddon = "rls_career_overhaul_" .. levelName
-        print(OverhaulAddon)
-        print(modName:lower():find(OverhaulAddon))
         if modName:lower():find(OverhaulAddon) and modData.active then
             return true
         end
@@ -39,10 +37,6 @@ local function onBeamNGTrigger(data)
         guihooks.trigger('ChangeState', {state = 'level-switch'})
         return
     end
-end
-
-local function onExtensionLoaded()
-    print("Switch Map Extension Loaded")
 end
 
 function M.onGetRawPoiListForLevel(levelIdentifier, elements)
@@ -103,6 +97,5 @@ end
 
 M.switchMap = switchMap
 M.onBeamNGTrigger = onBeamNGTrigger
-M.onExtensionLoaded = onExtensionLoaded
 
 return M

@@ -158,7 +158,6 @@ local function commitDelta(newSnap, justExpiredUids)
         soldVeh.__sold = true
         table.insert(updated, soldVeh)
         if justExpiredUids[uid] then
-          log("I", "Career", string.format("Sending updated delta for expired vehicle: uid=%s, __sold=true", uid))
         end
       end
     end
@@ -416,7 +415,6 @@ end
 
 -- Cache management functions
 local function cacheDealers()
-  log("I", "Career", "Caching vehicle configurations for dealerships...")
 
   local startTime = os.clock()
   vehicleCache.cacheValid = false
@@ -528,10 +526,6 @@ local function cacheDealers()
 
   vehicleCache.lastCacheTime = os.time()
   vehicleCache.cacheValid = true
-
-  local endTime = os.clock()
-  log("I", "Career", string.format("Vehicle cache completed in %.3f seconds. Cached %d dealership types with %d pre-calculated parts values.",
-    endTime - startTime, tableSize(vehicleCache.dealershipCache), totalPartsCalculated))
 end
 
 local function getRandomVehicleFromCache(sellerId, count, isStarterVehicle)
@@ -594,7 +588,6 @@ local function getRandomVehicleFromCache(sellerId, count, isStarterVehicle)
 end
 
 local function invalidateVehicleCache()
-  log("I", "Career", "Invalidating vehicle cache due to reputation level change")
   vehicleCache.cacheValid = false
 end
 
@@ -669,7 +662,6 @@ local function updateVehicleList(fromScratch)
         vehicleInfo.soldViewCounter = 1
         vehicleInfo.soldGraceUntil = currentTime + 120
         justExpiredUids[vehicleInfo.uid] = true
-        log("I", "Career", string.format("Vehicle expired and marked as sold: %s (uid: %s)", vehicleInfo.niceName or vehicleInfo.Name or "unknown", vehicleInfo.uid))
       elseif vehicleInfo.soldGraceUntil and currentTime >= vehicleInfo.soldGraceUntil then
         -- Grace period expired - now remove it
         table.remove(vehiclesInShop, i)
@@ -857,7 +849,6 @@ local function updateVehicleList(fromScratch)
     end
   end
 
-  log("I", "Career", "Vehicles in shop: " .. tableSize(vehiclesInShop))
   local newSnap = buildSnapshot()
   commitDelta(newSnap, justExpiredUids)
   guihooks.trigger("vehicleShopDelta", lastDelta)
@@ -1033,11 +1024,8 @@ local function getTaxiPriceToDealership(dealershipId)
 
   local playerPos = getPlayerVehicle(0):getPosition()
   local distance = (pos - playerPos):length()
-  log("I", "Career", string.format("getTaxiPriceToDealership: dealership=%s, playerPos=(%.2f,%.2f,%.2f), dealerPos=(%.2f,%.2f,%.2f), distance=%.2f",
-    dealershipId, playerPos.x, playerPos.y, playerPos.z, pos.x, pos.y, pos.z, distance))
 
   local price, calcDistance = career_modules_quickTravel.getPriceForQuickTravel(pos)
-  log("I", "Career", string.format("getTaxiPriceToDealership: calculated price=%.2f, calcDistance=%.2f", price or 0, calcDistance or 0))
 
   -- Fallback: if price is 0 but we have a distance, estimate using same constants as quickTravel
   if (not price or price <= 0) and (calcDistance and calcDistance > 0) then
@@ -1224,7 +1212,6 @@ local function onAddedVehiclePartsToInventory(inventoryId, newParts)
   if deleteAddedVehicle then
     -- Move vehicle to garage before removing the object
     local vehicleName = vehicle.niceName or vehicle.Name or "Unknown Vehicle"
-    log("I", "Career", string.format("Moving purchased vehicle '%s' (ID: %d) to garage", vehicleName, inventoryId))
 
     local moveSuccess = career_modules_inventory.moveVehicleToGarage(inventoryId)
 
@@ -1579,16 +1566,6 @@ local function onWorldReadyState(state)
     end
     sellersInfos = filteredSellers
     
-    local filteredVehicleCount = #vehiclesInShop
-    local filteredSellerCount = tableSize(sellersInfos)
-    
-    if initialVehicleCount > filteredVehicleCount or initialSellerCount > filteredSellerCount then
-      log("I", "Career", string.format("Map changed to %s: filtered %d vehicles (%d->%d) and %d sellers (%d->%d)", 
-        currentMap, 
-        initialVehicleCount - filteredVehicleCount, initialVehicleCount, filteredVehicleCount,
-        initialSellerCount - filteredSellerCount, initialSellerCount, filteredSellerCount))
-    end
-    
     cacheDealers()
   end
 end
@@ -1666,8 +1643,6 @@ local function clearDataFromOtherMaps(targetMap)
     end
   end
   sellersInfos = filteredSellers
-
-  log("I", "Career", string.format("Cleared %d vehicles and %d sellers from other maps. Current map: %s", removedVehicles, removedSellers, targetMap))
 
   return {vehiclesRemoved = removedVehicles, sellersRemoved = removedSellers}
 end

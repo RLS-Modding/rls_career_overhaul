@@ -408,13 +408,7 @@ local function loadPoliciesData(resetSomeData)
     local savedPlPolicyData =
       (savePath and jsonReadFile(savePath .. "/career/" .. plInsuranceDataFileName .. ".json")) or {}
 
-    local saveInfo = savePath and jsonReadFile(savePath .. "/info.json")
-    if saveInfo and saveInfo.version < 42 then
-        -- any save before 42 doesnt load the vehicles
-        savedPlPolicyData.insuredInvVehs = {}
-    end
-
-    local isFirstLoadEver = not savedPlPolicyData.plPoliciesData or #savedPlPolicyData.plPoliciesData == 0
+    local isFirstLoadEver = not (savedPlPolicyData.plPoliciesData and next(savedPlPolicyData.plPoliciesData) ~= nil)
     if isFirstLoadEver then -- first load ever
         insuredInvVehs = {}
         plHistory = {
@@ -1643,27 +1637,45 @@ end
 
 -- return a list of policy ids that are valid for this vehicle based on its properties
 local function getApplicablePoliciesForVehicle(invId)
+
     local veh = career_modules_inventory.getVehicles()[invId]
-    if not veh then return {0,1,2,3,4} end
+    if not veh then
+        return {0} -- Only no insurance if vehicle not found
+    end
+
     local safeValue = career_modules_valueCalculator.getInventoryVehicleValue(invId, true)
     if not safeValue then
         safeValue = veh.configBaseValue or veh.value or 0
     end
+
     local conditionData = {
         vehValue = safeValue,
         bodyStyle = veh.BodyStyle or (veh.aggregates and veh.aggregates["Body Style"]) or nil
     }
+
     if career_modules_inventory.getVehicleRole and career_modules_inventory.getVehicleRole(invId) == 'police' then
         conditionData.isPolice = true
     end
+
     local ids = {0} -- 0 always available
-    -- police-only
-    if conditionData.isPolice then table.insert(ids, 4) end
-    -- commercial by body style
-    if conditionData.bodyStyle and (conditionData.bodyStyle["Bus"] or conditionData.bodyStyle["Van"] or conditionData.bodyStyle["Semi Truck"]) then
-        table.insert(ids, 3)
+
+    -- police-only policy
+    if conditionData.isPolice then
+        table.insert(ids, 4)
     end
-    -- prestige when value > 80k
+
+    -- commercial policy by body style
+    if conditionData.bodyStyle then
+        if conditionData.bodyStyle["Bus"] then
+            table.insert(ids, 3)
+        elseif conditionData.bodyStyle["Van"] then
+            table.insert(ids, 3)
+        elseif conditionData.bodyStyle["Semi Truck"] then
+            table.insert(ids, 3)
+        end
+    end
+
+    -- prestige policy when value > 80k
     if conditionData.vehValue and conditionData.vehValue > 80000 then
         table.insert(ids, 2)
     else
@@ -2240,7 +2252,6 @@ end
 
 local function changePolicyPerks(policyId, changedPerks)
     local policyTowsValue = getPlPerkValue(policyId, "roadsideAssistance") or 0
-    print("Policy Tows Value: " .. tostring(policyTowsValue))
     for perkName, perkValue in pairs(changedPerks) do
         local index = tableFindKey(availablePolicies[policyId].perks[perkName].changeability.changeParams.choices,
           perkValue)
@@ -2452,7 +2463,6 @@ M.useTow = function(invVehId)
     if policyTows[insuredInvVehs[tostring(invVehId)]] > 0 then
         policyTows[insuredInvVehs[tostring(invVehId)]] = policyTows[insuredInvVehs[tostring(invVehId)]] - 1
     end
-    print("Tows left: " .. tostring(policyTows[insuredInvVehs[tostring(invVehId)]]))
 end
 -- For UI
 M.getVehPolicyInfo = function(vehInvId)
