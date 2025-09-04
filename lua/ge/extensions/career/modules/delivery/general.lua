@@ -682,10 +682,14 @@ local function onActivityAcceptGatherData(elemData, activityData)
             add = cargo.slots
           end
           if cargo.destination.type == "facilityParkingspot" then
-            dropOffableCargoByCargoType[cargo.type]  = dropOffableCargoByCargoType[type] + ((cargo.destination.psPath == elem.psPath and (container.position - psPos):squaredLength() < 25*25) and add or 0)
+            local distance = (container.position - psPos):squaredLength()
+            local canDropOff = cargo.destination.psPath == elem.psPath and distance < 25*25
+            dropOffableCargoByCargoType[cargo.type]  = dropOffableCargoByCargoType[type] + (canDropOff and add or 0)
           elseif cargo.destination.type == "multi" then
             for _, dest in ipairs(cargo.destination.destinations) do
-              dropOffableCargoByCargoType[type]  = dropOffableCargoByCargoType[type] + ((dest.psPath == elem.psPath and (container.position - psPos):squaredLength() < 25*25) and add or 0)
+              local distance = (container.position - psPos):squaredLength()
+              local canDropOff = dest.psPath == elem.psPath and distance < 25*25
+              dropOffableCargoByCargoType[type]  = dropOffableCargoByCargoType[type] + (canDropOff and add or 0)
             end
           end
         end
