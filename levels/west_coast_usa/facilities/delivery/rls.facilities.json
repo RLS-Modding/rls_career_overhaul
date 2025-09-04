@@ -37,10 +37,7 @@
         {
           "psName": "moneyGrabBankParking",
           "isInspectSpot": true,
-          "logisticTypesProvided": [
-            "cash",
-            "coin"
-          ],
+          "logisticTypesProvided": [],
           "logisticTypesReceived": [
             "gold"
           ]
@@ -52,6 +49,15 @@
           "logisticTypesReceived": [],
           "loanerTrailerPriority": 1,
           "loanerNonTrailerPriority": 1
+        },
+        {
+          "psName": "bankPickup",
+          "isInspectSpot": false,
+          "logisticTypesProvided": [
+            "cash",
+            "coin"
+          ],
+          "logisticTypesReceived": []
         }
       ],
       "sitesFile": "rls.sites.json",
@@ -158,7 +164,7 @@
       "preview": "",
       "manualAccessPoints": [
         {
-          "psName": "joesJunkCar",
+          "psName": "joeCashParking",
           "logisticTypesProvided": [],
           "logisticTypesReceived": [
             "cash",

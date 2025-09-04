@@ -1310,7 +1310,7 @@
           ]
         },
         {
-          "type": "materialProvider",
+          "type": "materialReceiver",
           "logisticTypes": [
             "cash"
           ],
@@ -1442,7 +1442,7 @@
           ]
         },
         {
-          "type": "materialProvider",
+          "type": "materialReceiver",
           "logisticTypes": [
             "cash"
           ],
@@ -1590,7 +1590,7 @@
           ]
         },
         {
-          "type": "materialProvider",
+          "type": "materialReceiver",
           "logisticTypes": [
             "cash"
           ],
@@ -1722,7 +1722,7 @@
           ]
         },
         {
-          "type": "materialProvider",
+          "type": "materialReceiver",
           "logisticTypes": [
             "cash"
           ],

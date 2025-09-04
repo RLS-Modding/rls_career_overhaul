@@ -1134,18 +1134,6 @@
           ],
         },
         {
-          "type": "materialProvider",
-          "logisticTypes": [
-            "cement"
-          ],
-          "materialType": "cement",
-          "capacity": 130000,
-          "target": 115000,
-          "variance": 15000,
-          "interval": 300,
-          "rate": 9583
-        },
-        {
           "type": "materialReceiver",
           "logisticTypes": [
             "sand"
