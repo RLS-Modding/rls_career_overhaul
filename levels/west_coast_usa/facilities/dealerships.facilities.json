@@ -1071,7 +1071,9 @@
       },
       "iconOffsetHeight": 1,
       "iconLift": 0.25,
-      "playModeIconName": "poi_entrance_round"
+      "playModeIconName": "poi_entrance_round",
+      "salesTax": 0
+
     },
     {
       "id": "policeDealership",

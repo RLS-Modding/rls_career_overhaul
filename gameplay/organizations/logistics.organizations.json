@@ -2952,7 +2952,7 @@
           1.25,
           1.5
         ],
-        "fees": 3540,
+        "fees": 0,
         "testDrive": {
           "abandonFees": 500,
           "timeLimit": 60,
@@ -2967,7 +2967,7 @@
           1.20,
           1.4
         ],
-        "fees": 2550,
+        "fees": 0,
         "testDrive": {
           "abandonFees": 500,
           "timeLimit": 90,
@@ -2982,7 +2982,7 @@
           1.15,
           1.3
         ],
-        "fees": 1900,
+        "fees": 0,
         "testDrive": {
           "abandonFees": 350,
           "timeLimit": 120,
@@ -2997,7 +2997,7 @@
           1.05,
           1.25
         ],
-        "fees": 950,
+        "fees": 0,
         "testDrive": {
           "abandonFees": 250,
           "timeLimit": 150,
