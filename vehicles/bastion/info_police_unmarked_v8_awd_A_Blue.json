@@ -1,0 +1,91 @@
+{
+  "0-100 km/h":5.3,
+  "0-100 mph":12.4,
+  "0-60 mph":5.1,
+  "100-0 km/h":35.9,
+  "60-0 mph":109.6,
+  "60-100 mph":7.2,
+  "Body Style":"Sedan",
+  "BoundingBox":[
+    [
+      -0.865,
+      -2.138,
+      -0.233
+    ],
+    [
+      1.265,
+      2.937,
+      1.252
+    ]
+  ],
+  "Braking G":1.094,
+  "Config Type":"Police",
+  "Configuration":"Police (Unmarked Blue) 5.7 AWD (A)",
+  "Drivetrain":"AWD",
+  "Fuel Type":"Gasoline",
+  "Induction Type":"NA",
+  "Name":"Police (Unmarked Blue) 5.7 AWD (A)",
+  "Off-Road Score":34,
+  "Population":2000,
+  "Power":369,
+  "PowerPeakRPM":"4950 - 5600",
+  "Propulsion":"ICE",
+  "Source":"Custom",
+  "Top Speed":55.37140064,
+  "Torque":545,
+  "TorquePeakRPM":"3750 - 4750",
+  "Transmission":"Automatic",
+  "Value":50000,
+  "Weight":2125,
+  "Weight/Power":5.758807588,
+  "aggregates":{
+    "Body Style":{
+      "Sedan":true
+    },
+    "Brand":{
+      "Bruckell":true
+    },
+    "Country":{
+      "United States":true
+    },
+    "Derby Class":{
+      "Full-Size Car":true
+    },
+    "Drivetrain":{
+      "AWD":true
+    },
+    "Fuel Type":{
+      "Gasoline":true
+    },
+    "Induction Type":{
+      "NA":true
+    },
+    "Propulsion":{
+      "ICE":true
+    },
+    "Source":{
+      "BeamNG - Official":true,
+      "Custom":true
+    },
+    "Transmission":{
+      "Automatic":true
+    },
+    "Type":{
+      "Car":true
+    },
+    "Weight":{
+      "max":2125,
+      "min":2125
+    },
+    "Weight/Power":{
+      "max":5.758807588,
+      "min":5.758807588
+    },
+    "Years":{
+      "max":2022,
+      "min":2016
+    }
+  },
+  "is_default_config":false,
+  "preview":"/vehicles/bastion/police_unmarked_v8_awd_A_Blue.jpg"
+}

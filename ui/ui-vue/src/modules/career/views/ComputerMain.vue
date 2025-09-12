@@ -175,7 +175,8 @@ const iconById = {
   performanceIndex: icons.raceFlag,
   sleep: icons.night,
   carMeets: icons.cars,
-  marketplace: icons.shoppingCart
+  marketplace: icons.shoppingCart,
+  loans: icons.beamCurrency
 }
 
 const infoById = computed(() => [

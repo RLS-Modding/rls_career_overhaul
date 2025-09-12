@@ -278,7 +278,7 @@ const onOfferUnhovered = (offer) => { offer.hovered = false }
 
 const handleListings = (data) => { 
   listings.value = data
-  console.log('Received listings:', data)
+  // console.log('Received listings:', data) // Commented out to prevent log spam
 }
 
 const getNewData = () => {

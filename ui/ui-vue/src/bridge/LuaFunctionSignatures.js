@@ -135,12 +135,12 @@ export default {
   },
 
   career_modules_vehicleShopping: {
-    showVehicle: id => Number,
+    showVehicle: id => Any, // Changed from Number to Any to support both string UIDs and numeric IDs
     navigateToPos: pos => Object,
     openShop: (seller, computerId) => [Any, Any], // i think this needs to be Any instead of String to also allow nil
     cancelShopping: () => {},
-    quickTravelToVehicle: id => Number,
-    openPurchaseMenu: (purchaseType, shopId) => [String, Number],
+    quickTravelToVehicle: id => Any, // Changed from Number to Any to support both string UIDs and numeric IDs
+    openPurchaseMenu: (purchaseType, vehicleId) => [String, Any], // Changed second param to Any to support both string UIDs and numeric IDs
     openInventoryMenuForTradeIn: () => {},
     buyFromPurchaseMenu: (purchaseType, options) => [String, Any],
     cancelPurchase: purchaseType => String,
@@ -148,6 +148,12 @@ export default {
     sendPurchaseDataToUi: () => {},
     removeTradeInVehicle: () => {},
     onShoppingMenuClosed: () => {},
+    // lightweight refresh + navigation helpers
+    updateVehicleList: fromScratch => Boolean,
+    navigateToDealership: dealershipId => String,
+    taxiToDealership: dealershipId => String,
+    getTaxiPriceToDealership: dealershipId => String,
+    setShoppingUiOpen: open => Boolean,
   },
 
   career_modules_marketplace: {
@@ -226,15 +232,19 @@ export default {
   career_modules_insurance: {
     getProposablePoliciesForVehInv: invVehId => Number,
     changeVehPolicy: (invVehId, policyId) => [Number, Number],
+      applyVehPolicyChange: (invVehId, policyId, overridesIdx0) => [Number, Number],
+      setVehPerkOverride: (invVehId, perkName, choiceIndex) => [Number, String, Number],
     payBonusReset: policyId => Number,
     purchasePolicy: id => Number,
     calculatePremiumDetails: (policyId, tempPerks) => [Number, Any],
+    getPremiumWithPolicyScoreForVehicle: (policyId, invVehId) => [Number, Number],
     changePolicyPerks: (policyId, changedPerks) => [Number, Object],
     startRepairInGarage: (vehicleInfo, repairOptionData) => [Object, Object],
     openRepairMenu: (vehicleInfo, originComputerId) => [Object, Any],
     getRepairData: () => {},
     closeMenu: () => {},
     sendUIData: () => {},
+      getApplicablePoliciesForVehicle: invVehId => Number,
     inventoryVehNeedsRepair: inventoryId => Number,
   },
 
@@ -962,6 +972,19 @@ export default {
     toggleDayNightCycle: toggle => Boolean,
     sleep: time => Number,
     getDayNightCycle: () => {}
+  },
+
+  career_modules_loans: {
+    openMenuFromComputer: computerId => String,
+    closeMenu: () => {},
+    closeAllMenus: () => {},
+    getLoanOffers: () => {},
+    getActiveLoans: () => {},
+    calculatePayment: (amount, rate, payments) => [Number, Number],
+    takeLoan: (orgId, amount, payments) => [String, Number, Number],
+    prepayLoan: (loanId, amount) => [String, Number],
+    getNotificationsEnabled: () => Boolean,
+    setNotificationsEnabled: enabled => Boolean,
   },
 
   career_modules_assignRole: {

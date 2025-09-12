@@ -50,3 +50,4 @@
 {"name":"RLS_EDITS","class":"SimGroup","__parent":"MissionGroup"}
 {"name":"night_light","class":"SimGroup","__parent":"MissionGroup"}
 {"name":"night_light_shadow","class":"SimGroup","__parent":"MissionGroup"}
+{"class":"TSStatic","__parent":"MissionGroup","position":[-833.346008,-656.162537,105.012856],"isRenderEnabled":false,"rotationMatrix":[-0.220315933,-0.975428641,0,0.975428641,-0.220315933,0,0,0,1],"scale":[0.483502626,1,0.483502626],"shapeName":"/levels/west_coast_usa/art/shapes/rls_signs/mve_rntl_sn.dae","useInstanceRenderData":true}

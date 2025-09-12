@@ -4,7 +4,7 @@
       "id": "fastAutomotiveDealership",
       "name": "Fast Automotive",
       "description": "Fast Automotive - Fastest race cars available",
-      "preview": "fast.jpg",
+      "preview": "Fast_Automotive.jpg",
       "stock": 15,
       "range": [
         0.8,
@@ -12,6 +12,7 @@
         1.35,
         1.8
       ],
+      "associatedOrganization": "fastAutomotive",
       "doors": [
         [
           "fastAutomotive_area",
@@ -43,8 +44,8 @@
           "probability": 2,
           "whiteList": {
             "Mileage": {
-              "min": 11000,
-              "max": 17600056
+              "min": 80467.2,
+              "max": 8046720
             },
             "Config Type": [
               "Race"
@@ -56,23 +57,7 @@
           "whiteList": {
             "Mileage": {
               "min": 11000,
-              "max": 17600056
-            },
-            "Config Type": [
-              "Factory",
-              "Race"
-            ],
-            "Body Style": [
-              "ATV"
-            ]
-          }
-        },
-        {
-          "probability": 1,
-          "whiteList": {
-            "Mileage": {
-              "min": 11000,
-              "max": 17600056
+              "max": 14193609.408
             },
             "Brand": [
               "SP",
@@ -88,11 +73,12 @@
           "whiteList": {
             "Mileage": {
               "min": 11000,
-              "max": 17600056
+              "max": 12883442.300438
             },
             "Config Type": [
               "Factory",
-              "Race"
+              "Race",
+              "Custom"
             ],
             "Body Style": [
               "Buggy"
@@ -100,11 +86,11 @@
           }
         },
         {
-          "probability": 1,
+          "probability": 2,
           "whiteList": {
             "Mileage": {
               "min": 11000,
-              "max": 17600056
+              "max": 14193609.408
             },
             "Configuration": [
               "Drag",
@@ -116,7 +102,7 @@
           }
         },
         {
-          "probability": 1,
+          "probability": 2,
           "whiteList": {
             "Mileage": {
               "min": 11000,
@@ -132,7 +118,7 @@
           }
         },
         {
-          "probability": 1,
+          "probability": 2,
           "whiteList": {
             "Mileage": {
               "min": 11000,
@@ -163,13 +149,24 @@
       "iconOffsetHeight": 1,
       "iconLift": 0.25,
       "playModeIconName": "poi_entrance_round",
-      "salesTax": 0.07
+      "salesTax": 0.07,
+      "ui": {
+        "showMatchingConfigs": [
+          false,
+          false,
+          true,
+          false,
+          true,
+          true
+        ],
+        "configSearchText": {}
+      }
     },
     {
       "id": "jeffersonmotors",
       "name": "Jefferson Motors",
       "description": "Jefferson Motors - Custom American cars",
-      "preview": "jefferson_dealership.jpg",
+      "preview": "Jefferson_Motors.jpg",
       "stock": 10,
       "range": [
         0.5,
@@ -195,36 +192,19 @@
       ],
       "filter": {
         "whiteList": {
-          "Config Type": [
-            "Custom"
-          ],
-          "Mileage": {
-            "min": 0,
-            "max": 160934400
-          }
+          "Type": [
+            "Car"
+          ]
         },
         "blackList": {
           "Type": [
-            "Trailer"
+            "Trailer",
+            "Truck"
           ],
           "Config Type": [
             "Police",
             "Service",
             "Frame"
-          ],
-          "Body Style": [
-            "Semi Truck",
-            "Bus",
-            "Tanker Truck",
-            "Flatbed Truck",
-            "Box Truck",
-            "Truck",
-            "Fifth Wheel Truck",
-            "Chassis Cab",
-            "Dump Truck",
-            "Flatbed",
-            "Mixer Truck",
-            "Logging Truck"
           ]
         }
       },
@@ -232,6 +212,14 @@
         {
           "probability": 6,
           "whiteList": {
+            "Mileage": {
+              "min": 8046720,
+              "max": 64373760
+            },
+            "Years": {
+              "min": 1900,
+              "max": 1980
+            },
             "Country": [
               "United States"
             ]
@@ -240,6 +228,14 @@
         {
           "probability": 2,
           "whiteList": {
+            "Mileage": {
+              "min": 8046720,
+              "max": 64373760
+            },
+            "Years": {
+              "min": 1900,
+              "max": 1980
+            },
             "Country": [
               "Poland",
               "Italy",
@@ -253,21 +249,11 @@
               "Canada"
             ]
           }
-        },
-        {
-          "probability": 1,
-          "whiteList": {
-            "Type": [
-              "Car",
-              "Truck"
-            ]
-          }
         }
       ],
       "subFilterNames": [
-        "Domestic",
-        "International",
-        "none"
+        "Classic",
+        "International"
       ],
       "fees": 649,
       "containsStarterVehicles": false,
@@ -281,7 +267,9 @@
       "playModeIconName": "poi_entrance_round",
       "salesTax": 0.07,
       "ui": {
-        "showMatchingConfigs": {},
+        "showMatchingConfigs": [
+          false
+        ],
         "configSearchText": {}
       }
     },
@@ -289,7 +277,7 @@
       "id": "frameDealership",
       "name": "Smash Rollers",
       "description": "Smash Rollers - The perfect start to your build",
-      "preview": "smash.jpg",
+      "preview": "Smash_Rollers.jpg",
       "stock": 7,
       "range": [
         0.2,
@@ -297,6 +285,7 @@
         1.35,
         1.9
       ],
+      "associatedOrganization": "smashAutoRepairs",
       "doors": [
         [
           "frameDealership_area",
@@ -315,8 +304,8 @@
       "filter": {
         "whiteList": {
           "Mileage": {
-            "min": 10,
-            "max": 100000
+            "min": 3218688,
+            "max": 257495040
           },
           "Config Type": [
             "Frame"
@@ -350,7 +339,8 @@
               "Sweden",
               "United Kingdom",
               "Great Britain",
-              "Soviet Union/Russia"
+              "Soviet Union/Russia",
+              "The Netherlands"
             ]
           }
         },
@@ -373,14 +363,27 @@
       },
       "iconOffsetHeight": 1,
       "iconLift": 0.25,
-      "playModeIconName": "poi_entrance_round"
+      "playModeIconName": "poi_entrance_round",
+      "ui": {
+        "showMatchingConfigs": [
+          false,
+          true
+        ],
+        "configSearchText": {}
+      }
     },
     {
       "id": "belascoAuto",
       "name": "Belasco Auto",
       "description": "Belasco Auto - New & quality used vehicle sales.",
-      "preview": "belasco_auto_dealership.jpg",
+      "preview": "Belasco_Auto.jpg",
       "stock": 15,
+      "range": [
+        0.8,
+        0.9,
+        1.25,
+        1.5
+      ],
       "associatedOrganization": "belascoAuto",
       "doors": [
         [
@@ -400,50 +403,102 @@
       ],
       "filter": {
         "whiteList": {
-          "Mileage": {
-            "min": 1000,
-            "max": 1604400
-          },
-          "Years": {
-            "min": 2000,
-            "max": 2025
-          },
           "Type": [
-            "Car"
+            "Car",
+            "Truck"
           ],
           "Config Type": [
             "Factory"
           ],
-          "Value": {
-            "min": 10000,
-            "max": 60000
-          }
+          "Body Style": [
+            "LWB Sedan",
+            "Convertible",
+            "Compact SUV",
+            "Coupe",
+            "Estate",
+            "Hardtop Sedan",
+            "Hatchback",
+            "Liftback",
+            "Minivan",
+            "Sedan",
+            "SUV",
+            "Ute",
+            "coupe",
+            "Wagon",
+            "Pickup"
+          ]
         },
         "blackList": {
-          "Type": [
-            "Trailer"
+          "Configuration": [
+            "Police"
           ],
           "Config Type": [
-            "Police"
+            "Police",
+            "Frame",
+            "Service",
+            "Taxi"
           ],
           "Body Style": [
             "ATV",
             "Buggy"
+          ],
+          "Type": [
+            "Trailer"
           ]
         }
       },
       "subFilters": [
         {
-          "probability": 6,
+          "probability": 10,
           "whiteList": {
+            "Mileage": {
+              "min": 16093.44,
+              "max": 32186880
+            },
+            "Years": {
+              "min": 2018,
+              "max": 2026
+            },
             "Country": [
               "United States"
-            ]
+            ],
+            "Value": {
+              "min": 5000,
+              "max": 96000
+            }
           }
         },
         {
-          "probability": 2,
+          "probability": 10,
           "whiteList": {
+            "Mileage": {
+              "min": 3712113.0275625,
+              "max": 80467200
+            },
+            "Years": {
+              "min": 2005,
+              "max": 2020
+            },
+            "Country": [
+              "United States"
+            ],
+            "Value": {
+              "min": 5000,
+              "max": 100000
+            }
+          }
+        },
+        {
+          "probability": 1,
+          "whiteList": {
+            "Mileage": {
+              "min": 6048719.424,
+              "max": 80467200
+            },
+            "Years": {
+              "min": 1997,
+              "max": 2023
+            },
             "Country": [
               "Poland",
               "Italy",
@@ -454,14 +509,20 @@
               "United Kingdom",
               "Great Britain",
               "Japan",
-              "Soviet Union/Russia"
-            ]
+              "Soviet Union/Russia",
+              "The Netherlands"
+            ],
+            "Value": {
+              "min": 10000,
+              "max": 120000
+            }
           }
         }
       ],
       "subFilterNames": [
-        "Sub-Filter 1",
-        "Sub-Filter 2"
+        "USA New",
+        "USA Trades",
+        "Import Trades"
       ],
       "fees": 749,
       "containsStarterVehicles": false,
@@ -484,7 +545,7 @@
       "id": "richsmotorcompany",
       "name": "Rich's Motor Company",
       "description": "Rich's Motor Company - Prestige auto sales, only the finest quality vehicles are sold here!",
-      "preview": "richsmotorcompany_dealership.jpg",
+      "preview": "rich_auto.jpg",
       "stock": 15,
       "range": [
         0.75,
@@ -515,18 +576,7 @@
         "whiteList": {
           "Type": [
             "Car"
-          ],
-          "Config Type": [
-            "Factory"
-          ],
-          "Value": {
-            "min": 80000,
-            "max": 5500000
-          },
-          "Mileage": {
-            "min": 0,
-            "max": 160934400
-          }
+          ]
         },
         "blackList": {
           "Type": [
@@ -536,55 +586,73 @@
           "Config Type": [
             "Police",
             "Frame",
-            "Race"
-          ],
-          "Configuration": [
-            "Drag",
-            "Drag (A)",
-            "Drag (M)",
-            "Drag (DCT)",
-            "Drag (Sequential",
-            "Drift (Sequential",
-            "Drift (DCT)",
-            "Drift (M)",
-            "Drift (A)",
-            "Drift",
-            "Rally"
+            "Race",
+            "Service"
           ]
         }
       },
       "subFilters": [
         {
-          "probability": 6,
+          "probability": 10,
           "whiteList": {
+            "Value": {
+              "min": 120000,
+              "max": 50000000
+            },
+            "Years": {
+              "min": 2000,
+              "max": 2030
+            }
+          }
+        },
+        {
+          "probability": 1,
+          "whiteList": {
+            "Mileage": {
+              "min": 16093440,
+              "max": 104607360
+            },
+            "Years": {
+              "min": 1980,
+              "max": 1999
+            },
             "Country": [
-              "United States"
-            ]
+              "Italy"
+            ],
+            "Body Style": [
+              "Coupe",
+              "Convertible",
+              "Sedan"
+            ],
+            "Value": {
+              "min": 120000,
+              "max": 50000000
+            }
           }
         },
         {
           "probability": 2,
           "whiteList": {
-            "Country": [
-              "Poland",
-              "Italy",
-              "France",
-              "Germany",
-              "Japan",
-              "Soviet Union/Russia",
-              "United Kingdom",
-              "Sweden",
-              "Canada",
-              "Great Britain"
-            ]
+            "Mileage": {
+              "min": 12874752,
+              "max": 48280320
+            },
+            "Years": {
+              "min": 1900,
+              "max": 1955
+            },
+            "Value": {
+              "min": 40000,
+              "max": 50000000
+            }
           }
-        },
-        {
-          "probability": 1,
-          "whiteList": {}
         }
       ],
-      "subFilterNames": [],
+      "subFilterNames": [
+        "Expensive",
+        "80s",
+        "classic"
+      ],
       "fees": 1250,
       "containsStarterVehicles": false,
       "testDrive": {
@@ -595,10 +663,13 @@
       "iconOffsetHeight": 1,
       "iconLift": 0.25,
       "playModeIconName": "poi_entrance_round",
+      "salesTax": 0.07,
       "ui": {
-        "showMatchingConfigs": {
-          "3": true
-        },
+        "showMatchingConfigs": [
+          true,
+          true,
+          true
+        ],
         "configSearchText": {}
       }
     },
@@ -606,7 +677,7 @@
       "id": "quarrysideAutoSales",
       "name": "Quarryside Auto Sales",
       "description": "Quarryside Auto Sales - Used trucks and vans.",
-      "preview": "quarryside_dealership.jpg",
+      "preview": "Quarryside_Auto_Sales.jpg",
       "stock": 15,
       "range": [
         0.75,
@@ -636,17 +707,8 @@
       ],
       "filter": {
         "whiteList": {
-          "Mileage": {
-            "min": 8800028,
-            "max": 264000845
-          },
           "Config Type": [
             "Factory"
-          ],
-          "Body Style": [
-            "Pickup",
-            "Van",
-            "Chassis Cab"
           ]
         },
         "blackList": {
@@ -663,36 +725,92 @@
       },
       "subFilters": [
         {
-          "probability": 6,
+          "probability": 10,
           "whiteList": {
+            "Mileage": {
+              "min": 160934400,
+              "max": 321868800
+            },
+            "Years": {
+              "min": 1980,
+              "max": 1999
+            },
             "Country": [
               "United States"
-            ]
-          }
-        },
-        {
-          "probability": 2,
-          "whiteList": {
-            "Country": [
-              "Poland",
-              "Italy",
-              "France",
-              "Germany",
-              "Japan",
-              "Canada",
-              "Sweden",
-              "United Kingdom",
-              "Soviet Union/Russia",
-              "Great Britain"
+            ],
+            "Body Style": [
+              "Van",
+              "SUV",
+              "Pickup"
             ]
           }
         },
         {
           "probability": 1,
-          "whiteList": {}
+          "whiteList": {
+            "Mileage": {
+              "min": 160934400,
+              "max": 321868800
+            },
+            "Years": {
+              "min": 1980,
+              "max": 2009
+            },
+            "Country": [
+              "United Kingdom",
+              "Japan",
+              "Canada",
+              "France",
+              "Poland",
+              "Soviet Union/Russia",
+              "Germany",
+              "Great Britain",
+              "Sweden",
+              "Italy",
+              "The Netherlands"
+            ],
+            "Body Style": [
+              "Van",
+              "SUV",
+              "Pickup"
+            ]
+          }
+        },
+        {
+          "probability": 8,
+          "whiteList": {
+            "Mileage": {
+              "min": 160934400,
+              "max": 321868800
+            },
+            "Years": {
+              "min": 1977,
+              "max": 1999
+            },
+            "Country": [
+              "United States"
+            ],
+            "Body Style": [
+              "Coupe",
+              "Convertible",
+              "Hatchback",
+              "Liftback",
+              "Wagon",
+              "Sedan",
+              "Ute",
+              "coupe",
+              "Shooting Brake",
+              "Roadster",
+              "Hardtop Sedan"
+            ]
+          }
         }
       ],
-      "subFilterNames": [],
+      "subFilterNames": [
+        "USA Trucks",
+        "Import Trucks",
+        "USA Car"
+      ],
       "fees": 249,
       "containsStarterVehicles": true,
       "testDrive": {
@@ -702,7 +820,16 @@
       },
       "iconOffsetHeight": 1,
       "iconLift": 0.25,
-      "playModeIconName": "poi_entrance_round"
+      "playModeIconName": "poi_entrance_round",
+      "salesTax": 0.07,
+      "ui": {
+        "showMatchingConfigs": [
+          false,
+          true,
+          true
+        ],
+        "configSearchText": {}
+      }
     },
     {
       "id": "gizamnDealership",
@@ -775,7 +902,7 @@
       "id": "discountedDealership",
       "name": "Trusted Auto Sales",
       "description": "Trusted Auto Sales - Discounted cars",
-      "preview": "trusted.jpg",
+      "preview": "Trusted_Auto.jpg",
       "stock": 25,
       "range": [
         0.5,
@@ -783,6 +910,7 @@
         1.15,
         1.4
       ],
+      "associatedOrganization": "trustedAutos",
       "doors": [
         [
           "discountDealership_area",
@@ -824,7 +952,11 @@
           "whiteList": {
             "Country": [
               "United States"
-            ]
+            ],
+            "Value": {
+              "min": 500,
+              "max": 20000
+            }
           }
         },
         {
@@ -841,15 +973,26 @@
               "Soviet Union/Russia",
               "United Kingdom",
               "Sweden"
-            ]
+            ],
+            "Value": {
+              "min": 500,
+              "max": 20000
+            }
           }
         },
         {
           "probability": 1,
-          "whiteList": {}
+          "whiteList": {
+            "Value": {
+              "min": 500,
+              "max": 20000
+            }
+          }
         }
       ],
-      "subFilterNames": [],
+      "subFilterNames": [
+        "Sub-Filter 1"
+      ],
       "fees": 0,
       "containsStarterVehicles": false,
       "testDrive": {
@@ -873,6 +1016,7 @@
         1.1,
         1.3
       ],
+      "associatedOrganization": "joesJunkDealership",
       "doors": [
         [
           "joesJunk_area",
@@ -927,13 +1071,15 @@
       },
       "iconOffsetHeight": 1,
       "iconLift": 0.25,
-      "playModeIconName": "poi_entrance_round"
+      "playModeIconName": "poi_entrance_round",
+      "salesTax": 0
+
     },
     {
       "id": "policeDealership",
       "name": "Police Dealership",
       "description": "Police Dealership - Purchase police Vehicles here",
-      "preview": "police.jpg",
+      "preview": "Police_Dealership.jpg",
       "stock": 7,
       "range": [
         0.6,
@@ -941,6 +1087,7 @@
         1.1,
         1.3
       ],
+      "associatedOrganization": "policeLoaner",
       "doors": [
         [
           "policeDealer_area",
@@ -1006,7 +1153,9 @@
           "whiteList": {}
         }
       ],
-      "subFilterNames": [],
+      "subFilterNames": [
+        "Sub-Filter 1"
+      ],
       "fees": 500,
       "containsStarterVehicles": false,
       "testDrive": {
@@ -1022,7 +1171,7 @@
       "id": "serviceDealership",
       "name": "Service Dealership",
       "description": "Service Dealership - Purchase Service Vehicles here",
-      "preview": "police.jpg",
+      "preview": "service.jpg",
       "stock": 7,
       "range": [
         0.6,
@@ -1030,6 +1179,7 @@
         1.1,
         1.3
       ],
+      "associatedOrganization": "serviceDealership",
       "doors": [
         [
           "serviceDealer_area",
@@ -1103,7 +1253,9 @@
           "whiteList": {}
         }
       ],
-      "subFilterNames": [],
+      "subFilterNames": [
+        "Sub-Filter 1"
+      ],
       "fees": 500,
       "containsStarterVehicles": false,
       "testDrive": {
@@ -1115,9 +1267,9 @@
       "iconLift": 0.25,
       "playModeIconName": "poi_entrance_round",
       "ui": {
-        "showMatchingConfigs": {
-          "3": true
-        },
+        "showMatchingConfigs": [
+          true
+        ],
         "configSearchText": {}
       }
     },
@@ -1125,7 +1277,7 @@
       "id": "trailerShop",
       "name": "Trailer Dealer",
       "description": "Trailer Sales",
-      "preview": "trailerDealership.jpg",
+      "preview": "trailer_dealer.jpg",
       "stock": 20,
       "doors": [
         [
@@ -1134,6 +1286,7 @@
           30
         ]
       ],
+      "associatedOrganization": "trailerShop",
       "parkingSpotNames": [
         "trailerShop"
       ],
@@ -1189,14 +1342,15 @@
       "id": "BruckellDealership",
       "name": "Bruckell Online Dealership",
       "description": "Bruckell Online Dealership",
-      "preview": "USDM_Dealer_TB.png",
+      "preview": "Brukell_Online_Dealership.jpg",
       "stock": 10,
       "range": [
-        0.8,
-        0.9,
+        0.95,
+        1.0,
         1.15,
-        1.3
+        1.4
       ],
+      "associatedOrganization": "BruckellDealership",
       "doors": [
         [
           "BruckellDealership_area",
@@ -1214,7 +1368,14 @@
         }
       ],
       "filter": {
-        "whiteList": {},
+        "whiteList": {
+          "Config Type": [
+            "Factory"
+          ],
+          "Brand": [
+            "Bruckell"
+          ]
+        },
         "blackList": {
           "Type": [
             "Trailer"
@@ -1226,23 +1387,105 @@
       },
       "subFilters": [
         {
+          "probability": 7,
+          "whiteList": {
+            "Mileage": {
+              "min": 4800,
+              "max": 16093
+            },
+            "Years": {
+              "min": 2010,
+              "max": 2025
+            }
+          }
+        },
+        {
+          "probability": 6,
+          "whiteList": {
+            "Mileage": {
+              "min": 4800,
+              "max": 16093
+            },
+            "Years": {
+              "min": 2000,
+              "max": 2009
+            }
+          }
+        },
+        {
+          "probability": 5,
+          "whiteList": {
+            "Mileage": {
+              "min": 4800,
+              "max": 16093
+            },
+            "Years": {
+              "min": 1990,
+              "max": 1999
+            }
+          }
+        },
+        {
+          "probability": 4,
+          "whiteList": {
+            "Mileage": {
+              "min": 4800,
+              "max": 16093
+            },
+            "Years": {
+              "min": 1980,
+              "max": 1989
+            }
+          }
+        },
+        {
+          "probability": 3,
+          "whiteList": {
+            "Mileage": {
+              "min": 4800,
+              "max": 16093
+            },
+            "Years": {
+              "min": 1970,
+              "max": 1979
+            }
+          }
+        },
+        {
+          "probability": 2,
+          "whiteList": {
+            "Mileage": {
+              "min": 4800,
+              "max": 16093
+            },
+            "Years": {
+              "min": 1950,
+              "max": 1969
+            }
+          }
+        },
+        {
           "probability": 1,
           "whiteList": {
             "Mileage": {
               "min": 4800,
               "max": 16093
             },
-            "Config Type": [
-              "Factory"
-            ],
-            "Brand": [
-              "Bruckell"
-            ]
+            "Years": {
+              "min": 1900,
+              "max": 1949
+            }
           }
         }
       ],
       "subFilterNames": [
-        "Sub-Filter 1"
+        "Sub-Filter 1",
+        "Sub-Filter 1 (Copy)",
+        "Sub-Filter 1 (Copy) (Copy)",
+        "Sub-Filter 1 (Copy) (Copy)",
+        "Sub-Filter 1 (Copy) (Copy)",
+        "Sub-Filter 1 (Copy) (Copy) (Copy)",
+        "Sub-Filter 1 (Copy) (Copy) (Copy) (Copy)"
       ],
       "fees": 2500,
       "containsStarterVehicles": false,
@@ -1253,20 +1496,22 @@
       },
       "iconOffsetHeight": 1,
       "iconLift": 0.25,
-      "playModeIconName": "poi_entrance_round"
+      "playModeIconName": "poi_entrance_round",
+      "salesTax": 0.07
     },
     {
       "id": "GavrilcarDealership",
       "name": "Gavril-Car Online Dealership",
       "description": "Gavril-Car Online Dealership",
-      "preview": "USDM_Dealer_TB.png",
+      "preview": "Gavril_Car_Online_Dealership.jpg",
       "stock": 10,
       "range": [
-        0.8,
-        0.9,
+        0.95,
+        1.0,
         1.15,
-        1.3
+        1.4
       ],
+      "associatedOrganization": "GavrilcarDealership",
       "doors": [
         [
           "GavrilcarDealership_area",
@@ -1284,7 +1529,17 @@
         }
       ],
       "filter": {
-        "whiteList": {},
+        "whiteList": {
+          "Type": [
+            "Car"
+          ],
+          "Brand": [
+            "Gavril"
+          ],
+          "Config Type": [
+            "Factory"
+          ]
+        },
         "blackList": {
           "Type": [
             "Trailer"
@@ -1296,26 +1551,105 @@
       },
       "subFilters": [
         {
+          "probability": 7,
+          "whiteList": {
+            "Mileage": {
+              "min": 4800,
+              "max": 16093
+            },
+            "Years": {
+              "min": 2010,
+              "max": 2025
+            }
+          }
+        },
+        {
+          "probability": 6,
+          "whiteList": {
+            "Mileage": {
+              "min": 4800,
+              "max": 16093
+            },
+            "Years": {
+              "min": 2000,
+              "max": 2009
+            }
+          }
+        },
+        {
+          "probability": 5,
+          "whiteList": {
+            "Mileage": {
+              "min": 4800,
+              "max": 16093
+            },
+            "Years": {
+              "min": 1990,
+              "max": 1999
+            }
+          }
+        },
+        {
+          "probability": 4,
+          "whiteList": {
+            "Mileage": {
+              "min": 4800,
+              "max": 16093
+            },
+            "Years": {
+              "min": 1980,
+              "max": 1989
+            }
+          }
+        },
+        {
+          "probability": 3,
+          "whiteList": {
+            "Mileage": {
+              "min": 4800,
+              "max": 16093
+            },
+            "Years": {
+              "min": 1970,
+              "max": 1979
+            }
+          }
+        },
+        {
+          "probability": 2,
+          "whiteList": {
+            "Mileage": {
+              "min": 4800,
+              "max": 16093
+            },
+            "Years": {
+              "min": 1950,
+              "max": 1969
+            }
+          }
+        },
+        {
           "probability": 1,
           "whiteList": {
             "Mileage": {
               "min": 4800,
               "max": 16093
             },
-            "Config Type": [
-              "Factory"
-            ],
-            "Brand": [
-              "Gavril"
-            ],
-            "Type": [
-              "Car"
-            ]
+            "Years": {
+              "min": 1900,
+              "max": 1949
+            }
           }
         }
       ],
       "subFilterNames": [
-        "Sub-Filter 1"
+        "Sub-Filter 1",
+        "Sub-Filter 2",
+        "Sub-Filter 3",
+        "Sub-Filter 4",
+        "Sub-Filter 5",
+        "Sub-Filter 6",
+        "Sub-Filter 7"
       ],
       "fees": 2500,
       "containsStarterVehicles": false,
@@ -1332,14 +1666,15 @@
       "id": "GavriltruckDealership",
       "name": "Gavril-Truck Online Dealership",
       "description": "Gavril-Truck Online Dealership",
-      "preview": "USDM_Dealer_TB.png",
+      "preview": "Gavril_Truck_Online_Dealership.jpg",
       "stock": 10,
       "range": [
-        0.8,
-        0.9,
+        0.95,
+        1.0,
         1.15,
-        1.3
+        1.4
       ],
+      "associatedOrganization": "GavriltruckDealership",
       "doors": [
         [
           "GavriltruckDealership_area",
@@ -1357,7 +1692,17 @@
         }
       ],
       "filter": {
-        "whiteList": {},
+        "whiteList": {
+          "Type": [
+            "Truck"
+          ],
+          "Brand": [
+            "Gavril"
+          ],
+          "Config Type": [
+            "Factory"
+          ]
+        },
         "blackList": {
           "Type": [
             "Trailer"
@@ -1369,21 +1714,42 @@
       },
       "subFilters": [
         {
-          "probability": 1,
+          "probability": 7,
           "whiteList": {
             "Mileage": {
               "min": 4800,
               "max": 16093
             },
-            "Config Type": [
-              "Factory"
-            ],
-            "Brand": [
-              "Gavril"
-            ],
-            "Type": [
-              "Truck"
-            ]
+            "Years": {
+              "min": 2010,
+              "max": 2025
+            }
+          }
+        },
+        {
+          "probability": 6,
+          "whiteList": {
+            "Mileage": {
+              "min": 4800,
+              "max": 16093
+            },
+            "Years": {
+              "min": 2000,
+              "max": 2009
+            }
+          }
+        },
+        {
+          "probability": 5,
+          "whiteList": {
+            "Mileage": {
+              "min": 4800,
+              "max": 16093
+            },
+            "Years": {
+              "min": 1990,
+              "max": 1999
+            }
           }
         },
         {
@@ -1393,17 +1759,60 @@
               "min": 4800,
               "max": 16093
             },
-            "Config Type": [
-              "Factory"
-            ],
-            "Brand": [
-              "Gavril"
-            ],
-            "Type": [
-              "Pickup"
-            ]
+            "Years": {
+              "min": 1980,
+              "max": 1989
+            }
+          }
+        },
+        {
+          "probability": 3,
+          "whiteList": {
+            "Mileage": {
+              "min": 4800,
+              "max": 16093
+            },
+            "Years": {
+              "min": 1970,
+              "max": 1979
+            }
+          }
+        },
+        {
+          "probability": 2,
+          "whiteList": {
+            "Mileage": {
+              "min": 4800,
+              "max": 16093
+            },
+            "Years": {
+              "min": 1950,
+              "max": 1969
+            }
+          }
+        },
+        {
+          "probability": 1,
+          "whiteList": {
+            "Mileage": {
+              "min": 4800,
+              "max": 16093
+            },
+            "Years": {
+              "min": 1900,
+              "max": 1949
+            }
           }
         }
+      ],
+      "subFilterNames": [
+        "Sub-Filter 1",
+        "Sub-Filter 2",
+        "Sub-Filter 3",
+        "Sub-Filter 4",
+        "Sub-Filter 5",
+        "Sub-Filter 6",
+        "Sub-Filter 7"
       ],
       "fees": 2500,
       "containsStarterVehicles": false,
@@ -1414,20 +1823,27 @@
       },
       "iconOffsetHeight": 1,
       "iconLift": 0.25,
-      "playModeIconName": "poi_entrance_round"
+      "playModeIconName": "poi_entrance_round",
+      "ui": {
+        "showMatchingConfigs": [
+          true
+        ],
+        "configSearchText": {}
+      }
     },
     {
       "id": "SoliadDealership",
       "name": "Soliad Online Dealership",
       "description": "Soliad Online Dealership",
-      "preview": "USDM_Dealer_TB.png",
+      "preview": "Soliade.jpg",
       "stock": 10,
       "range": [
-        0.8,
-        0.9,
+        0.95,
+        1.0,
         1.15,
-        1.3
+        1.4
       ],
+      "associatedOrganization": "SoliadDealership",
       "doors": [
         [
           "SoliadDealership_area",
@@ -1445,7 +1861,15 @@
         }
       ],
       "filter": {
-        "whiteList": {},
+        "whiteList": {
+          "Brand": [
+            "Bruckell",
+            "Soliad"
+          ],
+          "Config Type": [
+            "Factory"
+          ]
+        },
         "blackList": {
           "Type": [
             "Trailer"
@@ -1457,20 +1881,105 @@
       },
       "subFilters": [
         {
+          "probability": 7,
+          "whiteList": {
+            "Mileage": {
+              "min": 4800,
+              "max": 16093
+            },
+            "Years": {
+              "min": 2010,
+              "max": 2025
+            }
+          }
+        },
+        {
+          "probability": 6,
+          "whiteList": {
+            "Mileage": {
+              "min": 4800,
+              "max": 16093
+            },
+            "Years": {
+              "min": 2000,
+              "max": 2009
+            }
+          }
+        },
+        {
+          "probability": 5,
+          "whiteList": {
+            "Mileage": {
+              "min": 4800,
+              "max": 16093
+            },
+            "Years": {
+              "min": 1990,
+              "max": 1999
+            }
+          }
+        },
+        {
+          "probability": 4,
+          "whiteList": {
+            "Mileage": {
+              "min": 4800,
+              "max": 16093
+            },
+            "Years": {
+              "min": 1980,
+              "max": 1989
+            }
+          }
+        },
+        {
+          "probability": 3,
+          "whiteList": {
+            "Mileage": {
+              "min": 4800,
+              "max": 16093
+            },
+            "Years": {
+              "min": 1970,
+              "max": 1979
+            }
+          }
+        },
+        {
+          "probability": 2,
+          "whiteList": {
+            "Mileage": {
+              "min": 4800,
+              "max": 16093
+            },
+            "Years": {
+              "min": 1950,
+              "max": 1969
+            }
+          }
+        },
+        {
           "probability": 1,
           "whiteList": {
             "Mileage": {
               "min": 4800,
               "max": 16093
             },
-            "Config Type": [
-              "Factory"
-            ],
-            "Brand": [
-              "Soliad"
-            ]
+            "Years": {
+              "min": 1900,
+              "max": 1949
+            }
           }
         }
+      ],
+      "subFilterNames": [
+        "Sub-Filter 1",
+        "Sub-Filter 2",
+        "Sub-Filter 3",
+        "Sub-Filter 4",
+        "Sub-Filter 5",
+        "Sub-Filter 6",
+        "Sub-Filter 7"
       ],
       "fees": 2500,
       "containsStarterVehicles": false,
@@ -1487,7 +1996,7 @@
       "id": "truckShop",
       "name": "Commercial Vehicle Sales",
       "description": "Tractors and Trailers",
-      "preview": "commercialGarage_dealership.jpg",
+      "preview": "Commercial_Vehicles.jpg",
       "stock": 20,
       "range": [
         0.8,
@@ -1528,15 +2037,15 @@
           "Type": [
             "Trailer"
           ],
+          "hasLoad": [
+            true
+          ],
           "Tags": [
             "Ambulance"
           ],
           "Body Style": [
             "Ambulance",
             "Pickup"
-          ],
-          "hasLoad": [
-            true
           ]
         }
       },
@@ -1585,7 +2094,7 @@
         "commercialOfficeComputer_screen_1"
       ],
       "ui": {
-        "showMatchingConfigs": [],
+        "showMatchingConfigs": {},
         "configSearchText": {}
       }
     },
@@ -1593,7 +2102,7 @@
       "id": "importDealer",
       "name": "Import Dealership",
       "description": "All thing Imported",
-      "preview": "JDM_Port_Dealer_TB.png",
+      "preview": "Imports.jpg",
       "stock": 25,
       "range": [
         0.8,
@@ -1601,6 +2110,7 @@
         1.2000000476837,
         1.3
       ],
+      "associatedOrganization": "importDealer",
       "doors": [
         [
           "importDealer_area",
@@ -1612,18 +2122,8 @@
         "importDealerParking1"
       ],
       "filter": {
-        "whiteList": {
-          "Mileage": {
-            "min": 0,
-            "max": 760934400
-          }
-        },
+        "whiteList": {},
         "blackList": {
-          "Configuration": [
-            "Drag",
-            "Race",
-            "Rally"
-          ],
           "Type": [
             "Trailer"
           ]
@@ -1631,8 +2131,16 @@
       },
       "subFilters": [
         {
-          "probability": 6,
+          "probability": 7,
           "whiteList": {
+            "Mileage": {
+              "min": 136794240,
+              "max": 321868800
+            },
+            "Years": {
+              "min": 1900,
+              "max": 1999
+            },
             "Country": [
               "Poland",
               "Italy",
@@ -1643,13 +2151,68 @@
               "Sweden",
               "United Kingdom",
               "Soviet Union/Russia",
-              "Great Britain"
+              "Great Britain",
+              "The Netherlands"
+            ]
+          }
+        },
+        {
+          "probability": 4,
+          "whiteList": {
+            "Mileage": {
+              "min": 80467200,
+              "max": 201168000
+            },
+            "Years": {
+              "min": 2000,
+              "max": 2019
+            },
+            "Country": [
+              "Poland",
+              "Italy",
+              "France",
+              "Germany",
+              "Japan",
+              "Canada",
+              "Sweden",
+              "United Kingdom",
+              "Soviet Union/Russia",
+              "Great Britain",
+              "The Netherlands"
+            ]
+          }
+        },
+        {
+          "probability": 3,
+          "whiteList": {
+            "Mileage": {
+              "min": 8046720,
+              "max": 40233600
+            },
+            "Years": {
+              "min": 2020,
+              "max": 2030
+            },
+            "Country": [
+              "Poland",
+              "Italy",
+              "France",
+              "Germany",
+              "Japan",
+              "Canada",
+              "Sweden",
+              "United Kingdom",
+              "Soviet Union/Russia",
+              "Great Britain",
+              "The Netherlands"
             ]
           }
         }
       ],
       "subFilterNames": [
-        "Sub-Filter 1"
+        "Sub-Filter 1",
+        "Sub-Filter 1 (Copy)",
+        "Sub-Filter 1 (Copy)"
       ],
       "fees": 1500,
       "containsStarterVehicles": false,
@@ -1671,6 +2234,7 @@
       "id": "raceTab",
       "name": "RaceTab",
       "description": "All things RaceTab And Raceless",
+      "preview": "RaceTab.jpg",
       "stock": 7,
       "range": [
         0.8,
@@ -1678,6 +2242,7 @@
         1.15,
         1.3
       ],
+      "associatedOrganization": "raceTab",
       "doors": [
         [
           "raceTab_area_1",
@@ -1734,6 +2299,8 @@
     {
       "id": "private",
       "name": "Private",
+      "description": "Private Sellers Selling Private Vehicles",
+      "preview": "Private.png",
       "stock": 30,
       "filter": {
         "whiteList": {
@@ -1751,39 +2318,104 @@
       },
       "subFilters": [
         {
+          "probability": 7,
+          "whiteList": {
+            "Mileage": {
+              "min": 4800,
+              "max": 16093
+            },
+            "Years": {
+              "min": 2010,
+              "max": 2025
+            },
+            "Value": {
+              "min": 500
+            }
+          }
+        },
+        {
           "probability": 6,
           "whiteList": {
-            "Country": [
-              "United States"
-            ]
+            "Mileage": {
+              "min": 4800,
+              "max": 16093
+            },
+            "Years": {
+              "min": 2000,
+              "max": 2009
+            }
+          }
+        },
+        {
+          "probability": 5,
+          "whiteList": {
+            "Mileage": {
+              "min": 4800,
+              "max": 16093
+            },
+            "Years": {
+              "min": 1990,
+              "max": 1999
+            }
+          }
+        },
+        {
+          "probability": 4,
+          "whiteList": {
+            "Mileage": {
+              "min": 4800,
+              "max": 16093
+            },
+            "Years": {
+              "min": 1980,
+              "max": 1989
+            }
+          }
+        },
+        {
+          "probability": 3,
+          "whiteList": {
+            "Mileage": {
+              "min": 4800,
+              "max": 16093
+            },
+            "Years": {
+              "min": 1970,
+              "max": 1979
+            }
           }
         },
         {
           "probability": 2,
           "whiteList": {
-            "Country": [
-              "Poland",
-              "Italy",
-              "France",
-              "Germany",
-              "Japan",
-              "Canada",
-              "Sweden",
-              "United Kingdom",
-              "Great Britain",
-              "Soviet Union/Russia"
-            ]
+            "Mileage": {
+              "min": 4800,
+              "max": 16093
+            },
+            "Years": {
+              "min": 1950,
+              "max": 1969
+            }
           }
         },
         {
           "probability": 1,
           "whiteList": {
+            "Mileage": {
+              "min": 4800,
+              "max": 16093
+            },
             "Years": {
               "min": 1900,
-              "max": 2025
+              "max": 1949
             }
           }
         }
+      ],
+      "subFilterNames": [
+        "Sub-Filter 1",
+        "Sub-Filter 2",
+        "Sub-Filter 3"
       ]
     }
   ]

@@ -175,6 +175,10 @@ watchEffect(() => {
       },
       data: part,
     }
+    // Handle sell function separately - allow selling regardless of missing file status
+    item.functions.sell = partInventoryStore.canSellPart(part)
+
+    // Handle install/uninstall functions only for non-missing files
     if (!part.missingFile && part.accessible) {
       item.functions.install =
         part.fitsCurrentVehicle
@@ -187,8 +191,6 @@ watchEffect(() => {
         && !part.isInCoreSlot
         && !partInventoryStore.partInventoryData.brokenVehicleInventoryIds[part.location]
         && !listedVehicleIds.value.includes(part.location.toString())
-      item.functions.sell =
-        part.location === 0
     }
     const groupId = item[groupBy.value]
     let group = res.find(g => g.id == groupId)

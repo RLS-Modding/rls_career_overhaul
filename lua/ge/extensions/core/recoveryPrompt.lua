@@ -363,7 +363,13 @@ local function addTowingButtons()
           atFadeFunction = function(target)
             career_modules_playerDriving.teleportToGarage(garage.id, scenetree.findObjectById(target.vehId), false)
             if career_modules_quickTravel.getPriceForQuickTravelToGarage(garage) > 0 then
-              career_modules_insurance.useTow(career_modules_inventory.getInventoryIdFromVehicleId(target.vehId))
+              local invId = career_modules_inventory.getInventoryIdFromVehicleId(target.vehId)
+              if career_modules_insurance and career_modules_insurance.useTow then
+                career_modules_insurance.useTow(invId)
+              else
+                -- Fallback: emit a hook so any loaded extension with useTow handles it
+                extensions.hook("useTow", invId)
+              end
             end
             local price = getPrice(target)
             if price then

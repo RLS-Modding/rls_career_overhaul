@@ -1,0 +1,89 @@
+{
+  "100-0 km/h":40,
+  "60-0 mph":122.1,
+  "Body Style":"Sedan",
+  "BoundingBox":[
+    [
+      -0.865,
+      -2.298,
+      -0.223
+    ],
+    [
+      1.265,
+      2.937,
+      1.437
+    ]
+  ],
+  "Braking G":0.983,
+  "Config Type":"Police",
+  "Configuration":"Police 3.5 AWD (A)",
+  "Drivetrain":"AWD",
+  "Fuel Type":"Gasoline",
+  "Induction Type":"NA",
+  "Name":"Police 3.5 AWD (A)",
+  "Off-Road Score":34,
+  "Power":284,
+  "PowerPeakRPM":5850,
+  "Propulsion":"ICE",
+  "Source":"Custom",
+  "Torque":365,
+  "TorquePeakRPM":"3400 - 4550",
+  "Transmission":"Automatic",
+  "Value":40000,
+  "Weight":2035,
+  "Weight/Power":7.165492958,
+  "aggregates":{
+    "Body Style":{
+      "Sedan":true
+    },
+    "Brand":{
+      "Bruckell":true
+    },
+    "Country":{
+      "United States":true
+    },
+    "Derby Class":{
+      "Full-Size Car":true
+    },
+    "Drivetrain":{
+      "AWD":true
+    },
+    "Fuel Type":{
+      "Gasoline":true
+    },
+    "Induction Type":{
+      "NA":true
+    },
+    "Off-Road Score":{
+      "max":34,
+      "min":34
+    },
+    "Propulsion":{
+      "ICE":true
+    },
+    "Source":{
+      "BeamNG - Official":true,
+      "Custom":true
+    },
+    "Transmission":{
+      "Automatic":true
+    },
+    "Type":{
+      "Car":true
+    },
+    "Weight":{
+      "max":2035,
+      "min":2035
+    },
+    "Weight/Power":{
+      "max":7.165492958,
+      "min":7.165492958
+    },
+    "Years":{
+      "max":2022,
+      "min":2016
+    }
+  },
+  "is_default_config":false,
+  "preview":"/vehicles/bastion/police_v6_awd_A.jpg"
+}

@@ -85,7 +85,11 @@ local function getloanerCutValue(level)
     [2] = isHardcore and 0.6 or 0.15,
     [3] = isHardcore and 0.5 or 0,
   }
-  return loanerCutValues[level]
+  local value = loanerCutValues[level]
+  if value == nil then
+    value = loanerCutValues[3] or 0
+  end
+  return value
 end
 
 local function updateLevelDefaults()
@@ -124,6 +128,16 @@ local function addReputationToOrg(organization)
 
   local value = career_modules_playerAttributes.getAttributeValue(organization.id .. "Reputation")
   local level, curLvlProgress, neededForNext, prevThreshold, nextThreshold = calcLevelFromReputationValue(value, organization)
+
+  -- Check if reputation level changed and invalidate vehicle cache if needed
+  local previousLevel = organization.reputation and organization.reputation.level
+  if previousLevel ~= nil and previousLevel ~= level then
+    log("I", "Reputation", string.format("Organization %s reputation level changed from %d to %d, invalidating vehicle cache", organization.id, previousLevel, level))
+    if career_modules_vehicleShopping then
+      career_modules_vehicleShopping.invalidateVehicleCache()
+    end
+  end
+
   local data = {
     value = value,
     level = level,
@@ -133,18 +147,43 @@ local function addReputationToOrg(organization)
     nextThreshold = nextThreshold
   }
 
+  if organization.reputationValues then
+    for i, value in pairs(organization.reputationValues) do
+        reputationValues[i] = value
+    end
+  end
+
   updateLevelDefaults()
 
   for i, levelInfo in ipairs(organization.reputationLevels) do
-    for attributeKey, attributeValue in pairs(levelDefaults[i-2]) do
+    local defaultAttributes = levelDefaults[i-2] or levelDefaults[3]
+    if defaultAttributes then
+      for attributeKey, attributeValue in pairs(defaultAttributes) do
       if levelInfo[attributeKey] then
         if type(levelInfo[attributeKey]) == "table" then
           for key, value in pairs(attributeValue) do
-            levelInfo[attributeKey][key] = levelInfo[attributeKey][key] or value
+            if attributeKey == "loanerCut" then
+              if key == "value" then
+                if isHardcore then
+                  if levelInfo[attributeKey]["hardcoreValue"] then
+                    levelInfo[attributeKey][key] = levelInfo[attributeKey]["hardcoreValue"]
+                  else
+                    levelInfo[attributeKey][key] = value
+                  end
+                else
+                  levelInfo[attributeKey][key] = levelInfo[attributeKey][key] or value
+                end
+              end
+            else
+              if levelInfo[attributeKey][key] == nil then
+                levelInfo[attributeKey][key] = value
+              end
+            end
           end
         end
       else
         levelInfo[attributeKey] = attributeValue
+      end
       end
     end
   end
@@ -153,15 +192,16 @@ end
 
 local function getLabel(lvl)
   updateLevelDefaults()
-  return levelDefaults[lvl].label
+  local d = levelDefaults[lvl] or levelDefaults[3] or levelDefaults[0] or levelDefaults[-1]
+  return d and d.label or ""
 end
 
-local function getMinimumValue()
-  return minimumValue
+local function getMinimumValue(organization)
+  return organization.reputationLevels[1].min or minimumValue
 end
 
-local function getMaximumValue()
-  return maximumValue
+local function getMaximumValue(organization)
+  return organization.reputationLevels[#organization.reputationLevels].max or maximumValue
 end
 
 M.onHardcoreModeChanged = function(hardcoreMode)

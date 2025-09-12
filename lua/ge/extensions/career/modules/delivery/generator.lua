@@ -990,7 +990,8 @@ local mixable = {
   parcel = true,
   fluid = false,
   dryBulk = false,
-  cement = false
+  cement = false,
+  cash = false
 }
 M.isMixable = function(type) return mixable[type] end
 
@@ -1017,6 +1018,9 @@ local function logisticTypeToSystem(type, fac)
     end
     if materialData.type == "cement" then
       return {smallCementDelivery = true, largeCementDelivery = fac and (fac.materialStorages[type] ~= nil)}
+    end
+    if materialData.type == "cash" then
+      return {smallCashDelivery = true, largeCashDelivery = fac and (fac.materialStorages[type] ~= nil)}
     end
   end
   return {}
@@ -1248,8 +1252,17 @@ local function setupFacilities(loadData)
       end
       fac.accessPointsByName = accessPointsByName
 
-
-
+      -- Setup dropOffSpots and pickUpSpots based on access points
+      fac.dropOffSpots = {}
+      fac.pickUpSpots = {}
+      for name, ap in pairs(accessPointsByName) do
+        if next(ap.logisticTypesReceivedLookup) then
+          table.insert(fac.dropOffSpots, ap.ps)
+        end
+        if next(ap.logisticTypesProvidedLookup) then
+          table.insert(fac.pickUpSpots, ap.ps)
+        end
+      end
 
       table.insert(facilities, fac)
       facilitiesById[fac.id] = fac
