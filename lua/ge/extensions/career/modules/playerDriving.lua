@@ -330,6 +330,11 @@ local function onPursuitAction(vehId, action, data)
       end
       ui_message(message, 5, "Police", "info")
       career_modules_inventory.addSuspectCaught(inventoryId)
+
+      -- Track police stops for insurance rewards
+      if career_modules_insurance then
+        career_modules_insurance.incrementPoliceStop(inventoryId)
+      end
     end
     career_saveSystem.saveCurrent()
     --       end

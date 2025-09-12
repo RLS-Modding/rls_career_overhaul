@@ -37,11 +37,10 @@
         {
           "psName": "moneyGrabBankParking",
           "isInspectSpot": true,
-          "logisticTypesProvided": [
-            "cash",
-            "coin"
-          ],
-          "logisticTypesReceived": []
+          "logisticTypesProvided": [],
+          "logisticTypesReceived": [
+            "gold"
+          ]
         },
         {
           "psName": "moneyGrabBankLoaner",
@@ -50,6 +49,15 @@
           "logisticTypesReceived": [],
           "loanerTrailerPriority": 1,
           "loanerNonTrailerPriority": 1
+        },
+        {
+          "psName": "bankPickup",
+          "isInspectSpot": false,
+          "logisticTypesProvided": [
+            "cash",
+            "coin"
+          ],
+          "logisticTypesReceived": []
         }
       ],
       "sitesFile": "rls.sites.json",
@@ -57,7 +65,9 @@
         "cash",
         "coin"
       ],
-      "logisticTypesReceived": [],
+      "logisticTypesReceived": [
+        "gold"
+      ],
       "logisticGenerators": [
         {
           "type": "materialProvider",
@@ -82,6 +92,18 @@
           "variance": 100,
           "interval": 300,
           "rate": 10000
+        },
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "gold"
+          ],
+          "materialType": "gold",
+          "capacity": 7500,
+          "target": 0,
+          "variance": 5,
+          "interval": 300,
+          "rate": 5
         }
       ]
     },
@@ -94,7 +116,6 @@
       "manualAccessPoints": [
         {
           "psName": "beachShopsParking",
-          "isInspectSpot": true,
           "logisticTypesProvided": [],
           "logisticTypesReceived": [
             "cash",
@@ -115,11 +136,11 @@
             "cash"
           ],
           "materialType": "cash",
-          "capacity": 75,
+          "capacity": 175,
           "target": 0,
           "variance": 25,
           "interval": 300,
-          "rate": 15
+          "rate": 150
         },
         {
           "type": "materialReceiver",
@@ -127,11 +148,11 @@
             "coin"
           ],
           "materialType": "coin",
-          "capacity": 75,
+          "capacity": 175,
           "target": 0,
           "variance": 10,
           "interval": 300,
-          "rate": 10
+          "rate": 100
         }
       ]
     },
@@ -143,8 +164,7 @@
       "preview": "",
       "manualAccessPoints": [
         {
-          "psName": "joesJunkCar",
-          "isInspectSpot": true,
+          "psName": "joeCashParking",
           "logisticTypesProvided": [],
           "logisticTypesReceived": [
             "cash",
@@ -165,11 +185,11 @@
             "cash"
           ],
           "materialType": "cash",
-          "capacity": 150,
+          "capacity": 1500,
           "target": 0,
           "variance": 25,
           "interval": 300,
-          "rate": 50
+          "rate": 150
         },
         {
           "type": "materialReceiver",
@@ -177,11 +197,11 @@
             "coin"
           ],
           "materialType": "coin",
-          "capacity": 50,
+          "capacity": 150,
           "target": 0,
           "variance": 10,
           "interval": 300,
-          "rate": 5
+          "rate": 50
         }
       ]
     },
@@ -194,7 +214,6 @@
       "manualAccessPoints": [
         {
           "psName": "mallBank",
-          "isInspectSpot": true,
           "logisticTypesProvided": [],
           "logisticTypesReceived": [
             "cash",
@@ -215,7 +234,7 @@
             "cash"
           ],
           "materialType": "cash",
-          "capacity": 300,
+          "capacity": 1300,
           "target": 0,
           "variance": 25,
           "interval": 300,
@@ -227,11 +246,11 @@
             "coin"
           ],
           "materialType": "coin",
-          "capacity": 100,
+          "capacity": 1000,
           "target": 0,
           "variance": 10,
           "interval": 300,
-          "rate": 5
+          "rate": 50
         }
       ]
     },
@@ -244,57 +263,6 @@
       "manualAccessPoints": [
         {
           "psName": "tennisPickup",
-          "isInspectSpot": true,
-          "logisticTypesProvided": [],
-          "logisticTypesReceived": [
-            "cash",
-            "coin"
-          ]
-        }
-      ],
-      "sitesFile": "rls.sites.json",
-      "logisticTypesProvided": [],
-      "logisticTypesReceived": [
-        "cash",
-        "coin"
-      ],
-      "logisticGenerators": [
-        {
-          "type": "materialReceiver",
-          "logisticTypes": [
-            "cash"
-          ],
-          "materialType": "cash",
-          "capacity": 100,
-          "target": 0,
-          "variance": 25,
-          "interval": 300,
-          "rate": 50
-        },
-        {
-          "type": "materialReceiver",
-          "logisticTypes": [
-            "coin"
-          ],
-          "materialType": "coin",
-          "capacity": 50,
-          "target": 0,
-          "variance": 5,
-          "interval": 300,
-          "rate": 3
-        }
-      ]
-    },
-    {
-      "id": "stadiumPickup",
-      "name": "Stadium Pickup",
-      "description": "When was there even an event here last?",
-      "associatedOrganization": "moneyGrabLogistics",
-      "preview": "",
-      "manualAccessPoints": [
-        {
-          "psName": "stadiumPickup",
-          "isInspectSpot": true,
           "logisticTypesProvided": [],
           "logisticTypesReceived": [
             "cash",
@@ -319,7 +287,7 @@
           "target": 0,
           "variance": 25,
           "interval": 300,
-          "rate": 40
+          "rate": 50
         },
         {
           "type": "materialReceiver",
@@ -331,7 +299,56 @@
           "target": 0,
           "variance": 5,
           "interval": 300,
-          "rate": 5
+          "rate": 30
+        }
+      ]
+    },
+    {
+      "id": "stadiumPickup",
+      "name": "Stadium Pickup",
+      "description": "When was there even an event here last?",
+      "associatedOrganization": "moneyGrabLogistics",
+      "preview": "",
+      "manualAccessPoints": [
+        {
+          "psName": "stadiumPickup",
+          "logisticTypesProvided": [],
+          "logisticTypesReceived": [
+            "cash",
+            "coin"
+          ]
+        }
+      ],
+      "sitesFile": "rls.sites.json",
+      "logisticTypesProvided": [],
+      "logisticTypesReceived": [
+        "cash",
+        "coin"
+      ],
+      "logisticGenerators": [
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "cash"
+          ],
+          "materialType": "cash",
+          "capacity": 600,
+          "target": 0,
+          "variance": 25,
+          "interval": 300,
+          "rate": 40
+        },
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "coin"
+          ],
+          "materialType": "coin",
+          "capacity": 250,
+          "target": 0,
+          "variance": 5,
+          "interval": 300,
+          "rate": 50
         }
       ]
     },
@@ -344,7 +361,6 @@
       "manualAccessPoints": [
         {
           "psName": "skyscraper1",
-          "isInspectSpot": true,
           "logisticTypesProvided": [],
           "logisticTypesReceived": [
             "cash",
@@ -394,7 +410,6 @@
       "manualAccessPoints": [
         {
           "psName": "cityBuildingPickup1",
-          "isInspectSpot": true,
           "logisticTypesProvided": [],
           "logisticTypesReceived": [
             "cash",
@@ -427,11 +442,11 @@
             "coin"
           ],
           "materialType": "coin",
-          "capacity": 20,
+          "capacity": 120,
           "target": 0,
           "variance": 5,
           "interval": 300,
-          "rate": 5
+          "rate": 15
         }
       ]
     },
@@ -444,7 +459,6 @@
       "manualAccessPoints": [
         {
           "psName": "cityBuildingPickup2",
-          "isInspectSpot": true,
           "logisticTypesProvided": [],
           "logisticTypesReceived": [
             "cash",
@@ -477,11 +491,11 @@
             "coin"
           ],
           "materialType": "coin",
-          "capacity": 20,
+          "capacity": 120,
           "target": 0,
           "variance": 5,
           "interval": 300,
-          "rate": 5
+          "rate": 15
         }
       ]
     },
@@ -494,7 +508,6 @@
       "manualAccessPoints": [
         {
           "psName": "cityBuildingPickup3",
-          "isInspectSpot": true,
           "logisticTypesProvided": [],
           "logisticTypesReceived": [
             "cash",
@@ -527,11 +540,11 @@
             "coin"
           ],
           "materialType": "coin",
-          "capacity": 20,
+          "capacity": 120,
           "target": 0,
           "variance": 5,
           "interval": 300,
-          "rate": 5
+          "rate": 15
         }
       ]
     },
@@ -544,7 +557,6 @@
       "manualAccessPoints": [
         {
           "psName": "raceTrackPickup",
-          "isInspectSpot": true,
           "logisticTypesProvided": [],
           "logisticTypesReceived": [
             "cash",
@@ -565,7 +577,7 @@
             "cash"
           ],
           "materialType": "cash",
-          "capacity": 300,
+          "capacity": 1300,
           "target": 0,
           "variance": 50,
           "interval": 300,
@@ -577,11 +589,11 @@
             "coin"
           ],
           "materialType": "coin",
-          "capacity": 200,
+          "capacity": 1200,
           "target": 0,
           "variance": 5,
           "interval": 300,
-          "rate": 25
+          "rate": 75
         }
       ]
     },
@@ -616,7 +628,7 @@
           ],
           "materialType": "gold",
           "capacity": 750,
-          "target": 1000,
+          "target": 750,
           "variance": 5,
           "interval": 300,
           "rate": 5
@@ -644,7 +656,6 @@
       "manualAccessPoints": [
         {
           "psName": "illegalDumping",
-          "isInspectSpot": true,
           "logisticTypesProvided": [],
           "logisticTypesReceived": [
             "mysteriousWaste"

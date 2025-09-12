@@ -38,7 +38,8 @@ end
 
 
 local function getDepreciation(year, power)
-  local powerFactor = power / 300
+  -- Use linear scaling to make power have bigger impact on higher end
+  local powerFactor = 1.0 + (power - 300) * (4.04 - 1.0) / (808 - 300)  -- 50% higher than original linear
   local depreciation = 1
   local isSlowCar = power < 275
 
@@ -179,6 +180,7 @@ local function getDamagedParts(vehInfo)
 
   local function traversePartsTree(node)
     if not node.partPath then return end
+    if not vehInfo.partConditions then return end
 
     local partCondition = vehInfo.partConditions[node.partPath]
     if not partCondition then
@@ -230,6 +232,7 @@ end
 
 local function getTableSize(t)
   local count = 0
+  if not t then return 0 end
   for _ in pairs(t) do
       count = count + 1
   end
@@ -252,24 +255,30 @@ local function getVehicleValue(configBaseValue, vehicle, ignoreDamage)
   local changedSlots = vehicle.changedSlots
   local addedParts, removedParts = getPartDifference(originalParts, newParts, changedSlots)
   local sumPartValues = 0
-  for slot, partName in pairs(originalParts) do
-    local part = career_modules_partInventory.getPart(vehicle.id, slot)
-    if part and not removedParts[slot] then
-      sumPartValues = sumPartValues + getPartValue(part)
+  if originalParts then
+    for slot, partName in pairs(originalParts) do
+      local part = career_modules_partInventory.getPart(vehicle.id, slot)
+      if part and not removedParts[slot] then
+        sumPartValues = sumPartValues + getPartValue(part)
+      end
     end
   end
   local adjustedBaseValue = getAdjustedVehicleBaseValue(configBaseValue, {mileage = mileage, age = 2023 - (vehicle.year or 2023)})
-  for slot, partName in pairs(addedParts) do
-    local part = career_modules_partInventory.getPart(vehicle.id, slot)
-    if part then
-      sumPartValues = sumPartValues + 0.90 * getPartValue(part)
-      adjustedBaseValue = adjustedBaseValue + 0.90 * getPartValue(part)
+  if addedParts then
+    for slot, partName in pairs(addedParts) do
+      local part = career_modules_partInventory.getPart(vehicle.id, slot)
+      if part then
+          sumPartValues = sumPartValues + 0.90 * getPartValue(part)
+          adjustedBaseValue = adjustedBaseValue + 0.90 * getPartValue(part)
+      end
     end
   end
 
-  for slot, partName in pairs(removedParts) do
-    local part = {value = vehicle.originalParts[slot].value, year = vehicle.year, partCondition = {odometer = mileage}} -- use vehicle mileage to calculate the value of the removed part
-    adjustedBaseValue = adjustedBaseValue - getPartValue(part)
+  if removedParts then
+    for slot, partName in pairs(removedParts) do
+      local part = {value = vehicle.originalParts[slot].value, year = vehicle.year, partCondition = {odometer = mileage}} -- use vehicle mileage to calculate the value of the removed part
+      adjustedBaseValue = adjustedBaseValue - getPartValue(part)
+    end
   end
 
   local repairDetails = getRepairDetails(vehicle)

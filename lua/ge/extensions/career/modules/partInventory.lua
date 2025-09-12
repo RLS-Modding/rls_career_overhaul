@@ -123,20 +123,48 @@ end
 
 local function sellParts(partIds)
   local total = 0
+  local validParts = {}
+
   for _, partId in ipairs(partIds) do
     local part = partInventory[partId]
-    if not part or part.location ~= 0 then return end
-    total = total + career_modules_valueCalculator.getPartValue(part)
+    if not part then
+      return -- Part doesn't exist, abort entire transaction
+    end
+
+    -- Calculate part value with fallbacks for missing data
+    local partValue = 0
+    local calculatedValue = career_modules_valueCalculator.getPartValue(part)
+
+    if calculatedValue and calculatedValue > 0 then
+      partValue = calculatedValue
+    elseif part.finalValue and part.finalValue > 0 then
+      partValue = part.finalValue
+    elseif part.value and part.value > 0 then
+      partValue = part.value
+    elseif part.missingFile then
+      -- Parts with missing files still have scrap value
+      partValue = math.max(part.value or 50, 100) -- Minimum scrap value
+    else
+      -- Minimum fallback value for sellable parts
+      partValue = 100
+    end
+
+    total = total + partValue
+    table.insert(validParts, partId)
   end
 
-  career_modules_playerAttributes.addAttributes({money=total}, {tags={"partsSold","selling"}, label = "Sold " .. #partIds .. " Parts."})
-  Engine.Audio.playOnce('AudioGui','event:>UI>Career>Buy_01')
-  for _, partId in ipairs(partIds) do
-    partInventory[partId] = nil
-  end
+  -- Only proceed if we have valid parts to sell
+  if #validParts > 0 then
+    career_modules_playerAttributes.addAttributes({money=total}, {tags={"partsSold","selling"}, label = "Sold " .. #validParts .. " Parts."})
+    Engine.Audio.playOnce('AudioGui','event:>UI>Career>Buy_01')
 
-  if partInventoryOpen then
-    M.sendUIData()
+    for _, partId in ipairs(validParts) do
+      partInventory[partId] = nil
+    end
+
+    if partInventoryOpen then
+      M.sendUIData()
+    end
   end
 end
 
@@ -378,7 +406,8 @@ local function sendUIData()
     data.brokenVehicleInventoryIds[tostring(inventoryId)] = career_modules_insurance.inventoryVehNeedsRepair(inventoryId)
 
     local vehicleUiData = deepcopy(vehicle)
-    vehicleUiData.thumbnail = career_modules_inventory.getVehicleThumbnail(inventoryId) .. "?" .. (vehicleUiData.dirtyDate or "")
+    local thumbnail = career_modules_inventory.getVehicleThumbnail(inventoryId)
+    vehicleUiData.thumbnail = (thumbnail or "") .. "?" .. (vehicleUiData.dirtyDate or "")
     vehiclesUiData[tostring(inventoryId)] = vehicleUiData
   end
 
@@ -390,7 +419,28 @@ local function sendUIData()
         newPart.isInCoreSlot = true
       end
       newPart.id = partId
-      newPart.finalValue = career_modules_valueCalculator.getPartValue(newPart)
+      newPart.name = part.name or part.description or "Unknown Part"
+
+      -- Try to calculate part value, with special handling for missing files
+      local calculatedValue = career_modules_valueCalculator.getPartValue(newPart)
+      if calculatedValue and calculatedValue > 0 then
+        newPart.finalValue = calculatedValue
+      elseif part.value and part.value > 0 then
+        newPart.finalValue = part.value
+      elseif part.finalValue and part.finalValue > 0 then
+        newPart.finalValue = part.finalValue
+      elseif newPart.missingFile then
+        -- Parts with missing files still have scrap value
+        newPart.finalValue = math.max(part.value or 50, 100) -- Minimum scrap value
+      else
+        -- Fallback: assign a minimum value for sellable parts
+        newPart.finalValue = 100
+      end
+
+      -- Ensure description structure is correct for JavaScript
+      if newPart.description and type(newPart.description) == "string" then
+        newPart.description = { description = newPart.description }
+      end
       newPart.accessible = not (vehicles[newPart.location] and
           (vehicles[newPart.location].timeToAccess or
           data.brokenVehicleInventoryIds[newPart.location] or
@@ -419,15 +469,17 @@ local function onVehicleSaveFinished(currentSavePath, oldSaveDate)
   jsonWriteFile(currentSavePath .. "/career/partInventory.json", {serialize(partInventoryCopy)}, true)
   local splitPartInventory = {}
   for partId, part in pairs(partInventoryCopy) do
-    if not splitPartInventory[part.location] then
-      splitPartInventory[part.location] = {}
+    if part.location then
+      if not splitPartInventory[part.location] then
+        splitPartInventory[part.location] = {}
+      end
+      table.insert(splitPartInventory[part.location], part)
     end
-    table.insert(splitPartInventory[part.location], part)
   end
   for location, parts in pairs(splitPartInventory) do
-    if career_modules_inventory.getVehicles()[location] then
-      print("Saving parts for vehicle " .. location)
-      jsonWriteFile(currentSavePath .. "/career/vehicles/parts/" .. location .. ".json", parts, true)
+    if location and career_modules_inventory.getVehicles()[location] then
+      print("Saving parts for vehicle " .. tostring(location))
+      jsonWriteFile(currentSavePath .. "/career/vehicles/parts/" .. tostring(location) .. ".json", parts, true)
     end
   end
   local rlsFiles = FS:findFiles(currentSavePath .. "/career/vehicles/parts/", '*.json', 0, false, false)
@@ -503,16 +555,8 @@ local function onExtensionLoaded()
         end
       end ]]
   
-      if saveInfo.version < career_saveSystem.getSaveSystemVersion() then
-        -- Sell all parts that are not in a vehicle
-        local partsToSell = {}
-        for partId, part in pairs(partInventory) do
-          if part.location == 0 then
-            table.insert(partsToSell, partId)
-          end
-        end
-        sellParts(partsToSell)
-      end
+      -- Removed automatic selling of parts without location
+      -- Parts in inventory (location == 0) should be preserved across game updates
     else
       partInventory = {}
     end

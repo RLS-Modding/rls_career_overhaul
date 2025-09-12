@@ -513,7 +513,7 @@ M.confirmDropOffCheckComplete = function()
   guihooks.trigger("SetDeliveryDropOffRewardResult", rewardResult)
 
   Engine.Audio.playOnce('AudioGui', 'event:>UI>Career>Buy_02')
-  gameplay_markerInteraction.setForceReevaluateOpenPrompt(true)
+  gameplay_markerInteraction.setForceReevaluateOpenPrompt()
   gameplay_rawPois.clear()
 
   M.onVehicleTasksFinished(confirmedDropOffData.offers)

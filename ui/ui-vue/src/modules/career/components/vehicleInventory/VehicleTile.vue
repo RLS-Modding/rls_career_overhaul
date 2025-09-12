@@ -176,7 +176,7 @@ const locked = computed(() => {
     }
   } else if (props.data.needsRepair) {
     res = { reason: "Damaged", location: true }
-  } else if (!props.data.ownsRequiredInsurance) {
+  } else if (!props.data.ownsRequiredInsurance && props.data.policyInfo && props.data.policyInfo.id !== 0) {
     res = { reason: "Insurance required", location: true }
   }
   /// for testing purposes

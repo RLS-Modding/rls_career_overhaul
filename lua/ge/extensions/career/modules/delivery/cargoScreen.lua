@@ -859,7 +859,7 @@ end
 local function formatMaterialDestinationsPlayer(con, materialType)
   local destinations = { }
   for _, fac in ipairs(dGenerator.getFacilities()) do
-    if fac.logisticTypesReceivedLookup[materialType] then
+    if fac.logisticTypesReceivedLookup[materialType] and fac.dropOffSpots and #fac.dropOffSpots > 0 then
 
       local distanceKey = string.format("%d-%s-%s", con.vehId, fac.facId, fac.dropOffSpots[1]:getPath())
       if vehToLocationDistanceCache[distanceKey] == nil then

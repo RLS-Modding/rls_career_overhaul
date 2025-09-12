@@ -13,15 +13,33 @@ local pricePerM = 0.08
 
 local function getDistanceToPoint(pos)
   routePlanner:setupPath(getPlayerVehicle(0):getPosition(), pos)
-  return routePlanner.path[1].distToTarget
+  if routePlanner.path and routePlanner.path[1] and routePlanner.path[1].distToTarget then
+    return routePlanner.path[1].distToTarget
+  else
+    -- Fallback: calculate straight-line distance if route planner fails
+    local playerPos = getPlayerVehicle(0):getPosition()
+    return (pos - playerPos):length()
+  end
 end
 
 local function getPriceForQuickTravel(pos)
   local distance = getDistanceToPoint(pos)
-  if distance < 300 then
-    return 0, distance
+  if not distance or distance < 0 then
+    log("W", "QuickTravel", "Invalid distance calculated, using fallback")
+    distance = 0
   end
-  return basePrice + round(distance * pricePerM * 100) / 100, distance
+
+  log("D", "QuickTravel", string.format("Distance to target: %.2f, basePrice: %.2f, pricePerM: %.2f", distance, basePrice, pricePerM))
+
+  if distance < 300 then
+    local price = math.max(0, basePrice + round(distance * pricePerM * 100) / 100) -- Ensure minimum price even for short distances
+    log("D", "QuickTravel", string.format("Short distance price: %.2f", price))
+    return price, distance
+  end
+
+  local price = basePrice + round(distance * pricePerM * 100) / 100
+  log("D", "QuickTravel", string.format("Long distance price: %.2f", price))
+  return price, distance
 end
 
 local function turnTowardsPos(pos)

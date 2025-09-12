@@ -19,7 +19,7 @@
       },
       "isMultiSpot":false,
       "name":"moneyGrabBankParking",
-      "oldId":2243,
+      "oldId":6929,
       "pos":[
         -553.1967163,
         417.2329407,
@@ -55,7 +55,7 @@
       },
       "isMultiSpot":false,
       "name":"beachShopsParking",
-      "oldId":2244,
+      "oldId":6930,
       "pos":[
         -415.3212891,
         726.1347046,
@@ -91,7 +91,7 @@
       },
       "isMultiSpot":false,
       "name":"moneyGrabBankLoaner",
-      "oldId":2245,
+      "oldId":6931,
       "pos":[
         -545.4387817,
         425.1578979,
@@ -127,7 +127,7 @@
       },
       "isMultiSpot":false,
       "name":"policeLoanerParking",
-      "oldId":2246,
+      "oldId":6932,
       "pos":[
         -744.2387695,
         748.9724731,
@@ -163,7 +163,7 @@
       },
       "isMultiSpot":false,
       "name":"policeLoanerLoaner",
-      "oldId":2247,
+      "oldId":6933,
       "pos":[
         -756.5949097,
         749.008728,
@@ -199,7 +199,7 @@
       },
       "isMultiSpot":false,
       "name":"mallBank",
-      "oldId":2248,
+      "oldId":6934,
       "pos":[
         -423.6934204,
         349.362854,
@@ -235,7 +235,7 @@
       },
       "isMultiSpot":false,
       "name":"tennisPickup",
-      "oldId":2249,
+      "oldId":6935,
       "pos":[
         -92.62316895,
         132.9823608,
@@ -271,7 +271,7 @@
       },
       "isMultiSpot":false,
       "name":"stadiumPickup",
-      "oldId":2250,
+      "oldId":6936,
       "pos":[
         -444.6381226,
         669.6068115,
@@ -307,7 +307,7 @@
       },
       "isMultiSpot":false,
       "name":"skyscraper1",
-      "oldId":2251,
+      "oldId":6937,
       "pos":[
         -483.3085327,
         500.0928955,
@@ -343,7 +343,7 @@
       },
       "isMultiSpot":false,
       "name":"cityBuildingPickup1",
-      "oldId":2252,
+      "oldId":6938,
       "pos":[
         -586.4885254,
         396.9737549,
@@ -379,7 +379,7 @@
       },
       "isMultiSpot":false,
       "name":"cityBuildingPickup2",
-      "oldId":2253,
+      "oldId":6939,
       "pos":[
         -685.871582,
         312.3964233,
@@ -415,7 +415,7 @@
       },
       "isMultiSpot":false,
       "name":"cityBuildingPickup3",
-      "oldId":2254,
+      "oldId":6940,
       "pos":[
         -764.1518555,
         674.2134399,
@@ -451,7 +451,7 @@
       },
       "isMultiSpot":false,
       "name":"sketchyPickup",
-      "oldId":2255,
+      "oldId":6941,
       "pos":[
         -1407.898682,
         -1031.750488,
@@ -487,7 +487,7 @@
       },
       "isMultiSpot":false,
       "name":"illegalDumping",
-      "oldId":2257,
+      "oldId":6942,
       "pos":[
         -442.4095154,
         2052.22168,
@@ -523,7 +523,7 @@
       },
       "isMultiSpot":false,
       "name":"raceTrackPickup",
-      "oldId":2258,
+      "oldId":6943,
       "pos":[
         398.8503723,
         -288.6790466,
@@ -534,6 +534,78 @@
         0,
         -0.6213651299,
         0.7835211158
+      ],
+      "scl":[
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount":1,
+      "spotDirection":"Left",
+      "spotOffset":0,
+      "spotRotation":0
+    },
+    {
+      "color":[
+        1,
+        1,
+        1
+      ],
+      "customFields":{
+        "names":{},
+        "tags":{},
+        "types":{},
+        "values":{}
+      },
+      "isMultiSpot":false,
+      "name":"joeCashParking",
+      "oldId":6944,
+      "pos":[
+        144.9081573,
+        781.4092407,
+        102.0526199
+      ],
+      "rot":[
+        0,
+        0,
+        0,
+        1
+      ],
+      "scl":[
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount":1,
+      "spotDirection":"Left",
+      "spotOffset":0,
+      "spotRotation":0
+    },
+    {
+      "color":[
+        1,
+        1,
+        1
+      ],
+      "customFields":{
+        "names":{},
+        "tags":{},
+        "types":{},
+        "values":{}
+      },
+      "isMultiSpot":false,
+      "name":"bankPickup",
+      "oldId":18465,
+      "pos":[
+        -533.7666626,
+        375.3093567,
+        103.6252213
+      ],
+      "rot":[
+        0,
+        0,
+        0.925052464,
+        -0.3798392117
       ],
       "scl":[
         2.5,

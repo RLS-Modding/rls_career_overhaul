@@ -20,9 +20,7 @@
           "logisticTypesReceived": [
             "parcel",
             "shopSupplies",
-            "foodSupplies",
-            "cash",
-            "coin"
+            "foodSupplies"
           ]
         }
       ],
@@ -33,9 +31,7 @@
       "logisticTypesReceived": [
         "parcel",
         "shopSupplies",
-        "foodSupplies",
-        "cash",
-        "coin"
+        "foodSupplies"
       ],
       "logisticMaxItems": 8,
       "logisticGenerators": [
@@ -57,30 +53,6 @@
           "min": -1,
           "max": 2,
           "interval": 120
-        },
-        {
-          "type": "materialReceiver",
-          "logisticTypes": [
-            "cash"
-          ],
-          "materialType": "cash",
-          "capacity": 50,
-          "target": 0,
-          "variance": 10,
-          "interval": 300,
-          "rate": 10
-        },
-        {
-          "type": "materialReceiver",
-          "logisticTypes": [
-            "coin"
-          ],
-          "materialType": "coin",
-          "capacity": 25,
-          "target": 0,
-          "variance": 5,
-          "interval": 300,
-          "rate": 5
         }
       ]
     },
@@ -99,9 +71,7 @@
           "logisticTypesReceived": [
             "parcel",
             "shopSupplies",
-            "foodSupplies",
-            "cash",
-            "coin"
+            "foodSupplies"
           ]
         }
       ],
@@ -112,9 +82,7 @@
       "logisticTypesReceived": [
         "parcel",
         "shopSupplies",
-        "foodSupplies",
-        "cash",
-        "coin"
+        "foodSupplies"
       ],
       "logisticMaxItems": 8,
       "logisticGenerators": [
@@ -136,30 +104,6 @@
           "min": -1,
           "max": 2,
           "interval": 120
-        },
-        {
-          "type": "materialReceiver",
-          "logisticTypes": [
-            "cash"
-          ],
-          "materialType": "cash",
-          "capacity": 50,
-          "target": 0,
-          "variance": 10,
-          "interval": 300,
-          "rate": 10
-        },
-        {
-          "type": "materialReceiver",
-          "logisticTypes": [
-            "coin"
-          ],
-          "materialType": "coin",
-          "capacity": 25,
-          "target": 0,
-          "variance": 5,
-          "interval": 300,
-          "rate": 5
         }
       ]
     },
@@ -178,9 +122,7 @@
           "logisticTypesReceived": [
             "parcel",
             "shopSupplies",
-            "foodSupplies",
-            "cash",
-            "coin"
+            "foodSupplies"
           ]
         }
       ],
@@ -191,9 +133,7 @@
       "logisticTypesReceived": [
         "parcel",
         "shopSupplies",
-        "foodSupplies",
-        "cash",
-        "coin"
+        "foodSupplies"
       ],
       "logisticMaxItems": 8,
       "logisticGenerators": [
@@ -215,30 +155,6 @@
           "min": -1,
           "max": 2,
           "interval": 120
-        },
-        {
-          "type": "materialReceiver",
-          "logisticTypes": [
-            "cash"
-          ],
-          "materialType": "cash",
-          "capacity": 50,
-          "target": 0,
-          "variance": 10,
-          "interval": 300,
-          "rate": 10
-        },
-        {
-          "type": "materialReceiver",
-          "logisticTypes": [
-            "coin"
-          ],
-          "materialType": "coin",
-          "capacity": 25,
-          "target": 0,
-          "variance": 5,
-          "interval": 300,
-          "rate": 5
         }
       ]
     },
@@ -257,9 +173,7 @@
           "logisticTypesReceived": [
             "parcel",
             "shopSupplies",
-            "foodSupplies",
-            "cash",
-            "coin"
+            "foodSupplies"
           ]
         }
       ],
@@ -270,9 +184,7 @@
       "logisticTypesReceived": [
         "parcel",
         "shopSupplies",
-        "foodSupplies",
-        "cash",
-        "coin"
+        "foodSupplies"
       ],
       "logisticMaxItems": 8,
       "logisticGenerators": [
@@ -294,30 +206,6 @@
           "min": -1,
           "max": 2,
           "interval": 120
-        },
-        {
-          "type": "materialReceiver",
-          "logisticTypes": [
-            "cash"
-          ],
-          "materialType": "cash",
-          "capacity": 50,
-          "target": 0,
-          "variance": 10,
-          "interval": 300,
-          "rate": 10
-        },
-        {
-          "type": "materialReceiver",
-          "logisticTypes": [
-            "coin"
-          ],
-          "materialType": "coin",
-          "capacity": 25,
-          "target": 0,
-          "variance": 5,
-          "interval": 300,
-          "rate": 5
         }
       ]
     }

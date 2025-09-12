@@ -3,7 +3,7 @@
     "information":{
         "authors":"RaceTab Team",
         "name":"Working Dump Storage",
-        "value":850,
+        "value":0,
     },
     "slotType" : "us_semi_dump_load",
     "cargoStorage":[

@@ -64,19 +64,16 @@ local function getClosestOwnedGarage(pos, levelName)
   local closestGarage
   local minDist = math.huge
   for _, garage in ipairs(facilities.garages) do
-    if not career_modules_garageManager.isPurchasedGarage(garage.id) then
-      goto continue
+    if career_modules_garageManager.isPurchasedGarage(garage.id) then
+      local zones = freeroam_facilities.getZonesForFacility(garage)
+      if zones and not tableIsEmpty(zones) then
+        local dist = zones[1].center:distance(playerPos)
+        if dist < minDist then
+          closestGarage = garage
+          minDist = dist
+        end
+      end
     end
-    local zones = freeroam_facilities.getZonesForFacility(garage)
-    if not zones or tableIsEmpty(zones) then
-      goto continue
-    end
-    local dist = zones[1].center:distance(playerPos)
-    if dist < minDist then
-      closestGarage = garage
-      minDist = dist
-    end
-    ::continue::
   end
   return closestGarage
 end
@@ -1445,6 +1442,7 @@ local function sellVehicle(inventoryId, price)
   Engine.Audio.playOnce('AudioGui','event:>UI>Career>Buy_01')
 
   career_modules_log.addLog(string.format("Sold vehicle %d for %f", inventoryId, value), "inventory")
+  career_saveSystem.saveCurrent()
   return true
 end
 
@@ -1874,9 +1872,20 @@ M.moveVehicleToGarage = function(id, garage)
   if not garage or not career_modules_garageManager.isGarageSpace(garage) then
     garage = career_modules_garageManager.getNextAvailableSpace()
   end
-  if vehicles[id] then 
+
+  if not garage then
+    log("W", "Inventory", string.format("No available garage space found for vehicle ID %d", id))
+    return false
+  end
+
+  if vehicles[id] then
     vehicles[id].location = garage
     vehicles[id].niceLocation = career_modules_garageManager.garageIdToName(garage)
+    log("I", "Inventory", string.format("Vehicle ID %d moved to garage: %s", id, garage))
+    return true
+  else
+    log("W", "Inventory", string.format("Vehicle ID %d not found in inventory", id))
+    return false
   end
 end
 

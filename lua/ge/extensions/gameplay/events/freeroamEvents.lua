@@ -248,9 +248,6 @@ local function payoutRace()
                 },
                 beamXP = {
                     amount = math.floor(xp / 10)
-                },
-                vouchers = {
-                    amount = (oldTime == 0 or oldTime > time) and in_race_time < time and 1 or 0
                 }
             }
             for _, type in ipairs(race.type) do
@@ -332,9 +329,6 @@ local function payoutDragRace(raceName, finishTime, finishSpeed, vehId)
         },
         beamXP = {
             amount = math.floor(xp / 10)
-        },
-        vouchers = {
-            amount = newBestTime and 1 or 0
         }
     }
 
