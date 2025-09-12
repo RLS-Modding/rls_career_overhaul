@@ -1,4 +1,4 @@
-# RLS Career Overhaul v2.4.2 (0.36.4)
+# RLS Career Overhaul v2.4.3 (0.36.4)
 
 Welcome to the **RLS Career Overhaul** mod for BeamNG.drive! This mod enhances various aspects of the game, including freeroam events, police interactions, the economy, deliveries, insurance, garage space, and dealerships. Dive into a more immersive and challenging career mode enriched with new features and improvements.
 
@@ -6,7 +6,7 @@ Welcome to the **RLS Career Overhaul** mod for BeamNG.drive! This mod enhances v
 
 ## Table of Contents
 
-- [RLS Career Overhaul v2.4.2 (0.36.4)](#rls-career-overhaul-v242-0364)
+- [RLS Career Overhaul v2.4.3 (0.36.4)](#rls-career-overhaul-v243-0364)
   - [Table of Contents](#table-of-contents)
   - [Installation](#installation)
   - [Settings Manager](#settings-manager)
@@ -29,6 +29,8 @@ Welcome to the **RLS Career Overhaul** mod for BeamNG.drive! This mod enhances v
       - [Policy Score](#policy-score)
     - [Garage Space](#garage-space)
     - [Dealerships](#dealerships)
+      - [Organization-Based Dealership System](#organization-based-dealership-system)
+      - [Enhanced Dealership UI](#enhanced-dealership-ui)
       - [Belasco Auto](#belasco-auto)
       - [Jefferson Motors](#jefferson-motors)
       - [Rich's Motor Company](#richs-motor-company)
@@ -355,8 +357,10 @@ Rock crawls have been added as part of West Coast adjustments and additions to t
 - **Dynamic Police Interactions**:
 
   - **Roaming Police**: Police patrol the roads and attempt to pull you over for traffic violations.
-  - **Play as Police**: Purchase a police vehicle and enforce the law.
-  - **Earn Money**: Evade police or apprehend suspects if you’re an officer.
+  - **Play as Police**: Purchase a police vehicle and enforce the law with levels 1-5 available.
+  - **Loaner Vehicles**: Police officers get access to special loaner vehicles.
+  - **Regional Police**: Added police organizations for Italy and Utah.
+  - **Earn Money**: Evade police or apprehend suspects if you're an officer, with reputation-based rewards.
 
 - **Troubleshooting**:
 
@@ -381,6 +385,7 @@ Rock crawls have been added as part of West Coast adjustments and additions to t
 
 **Expanded Cargo and Adjustments**:
 
+- **Cash Deliveries**: New money delivery jobs alongside traditional cargo deliveries.
 - Adjusted level requirements for delivery tiers.
 - Timed deliveries now allow 25% more time.
 - Rebalanced parcel deliveries.
@@ -398,6 +403,7 @@ Rock crawls have been added as part of West Coast adjustments and additions to t
   - **Repair Times**: Range from 2 minutes to 30 minutes.
   - **Renewal Discounts**: Longer policy periods are cheaper overall.
   - **Roadside Assistance Plans**: Select how many tows (0, 2, 5, 10) you want per renewal. Towing to a garage or retrieving a favorite uses up a tow, while a basic upright or flip is free.
+- **UI Redesign**: Completely redesigned insurance interface with improved usability and fewer bugs.
 - **Repair Impacts**:
   - Repairs replace parts, increasing private repair costs.
   - Insurance repairs reduce vehicle value.
@@ -474,6 +480,34 @@ Your **Policy Score** affects your insurance rates:
 ### Dealerships
 
 Experience a diverse range of dealerships, each with unique specialties and inventory.
+
+#### Organization-Based Dealership System
+
+All dealerships are now dynamically linked to organizations that you can build reputation with over time. As you progress through reputation levels with each organization, you unlock better benefits:
+
+- **Stock Increases**: Higher reputation levels unlock more vehicles in stock
+- **Better Price Ranges**: Improved buy/sell ratios as you gain reputation
+- **Lower Fees**: Reduced dealer fees for established customers
+- **Loan Access**: Higher reputation unlocks loan services with better rates
+- **Premium Features**: Enhanced test drive options and vehicle variety
+- **Exclusive Filters**: Access to rarer, higher-quality vehicles
+
+Each organization's reputation levels are earned through:
+- Purchasing vehicles from their dealerships
+- Completing deliveries for their organization
+- Building relationships through consistent business
+
+**Note**: Some dealerships may be hidden initially and only appear as you reach certain reputation thresholds with their associated organizations.
+
+#### Enhanced Dealership UI
+
+The dealership interface has been completely revamped with modern, user-friendly features:
+
+- **Advanced Search & Filtering**: Find vehicles quickly with comprehensive search and filter options
+- **Smart Sorting**: Sort vehicles by price, year, mileage, brand, and other criteria
+- **Improved Navigation**: Better layout and visual design for easier browsing
+- **Dynamic Content**: UI adapts based on your reputation level with each organization
+- **Enhanced Vehicle Details**: More detailed information and specifications for each vehicle
 
 #### Belasco Auto
 
@@ -725,6 +759,7 @@ A brand-new **Phone UI** has been added:
   - **Taxi App** for quick taxi jobs
   - **Car Meets App** to view meet schedules and manage RSVPs
   - **Marketplace App** for listing or checking offers on vehicles
+  - **Loans App** for managing bank loans and viewing repayment options
 
 ---
 
