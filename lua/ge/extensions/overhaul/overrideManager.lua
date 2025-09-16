@@ -60,6 +60,10 @@ function M.setOverride(originalPath, overridePath, overrideType)
     return result
   end
 
+  -- Also set up for absolute path format (e.g., /lua/ge/extensions/...)
+  local absolutePath = '/lua/ge/extensions/' .. convertedPath
+  package.preload[absolutePath] = package.preload[convertedPath]
+  
   return true
 end
 
@@ -77,6 +81,10 @@ function M.clearOverride(originalPath)
   else
     package.preload[entry.convertedFormat] = nil
   end
+
+  -- Also clear absolute path format
+  local absolutePath = '/lua/ge/extensions/' .. entry.convertedFormat
+  package.preload[absolutePath] = nil
 
   log('I', logTag, 'Cleared override for: ' .. originalPath)
   return true
