@@ -1,4 +1,4 @@
-# RLS Career Overhaul v2.5 (0.37.0)
+# RLS Career Overhaul v2.5 (0.37.1)
 
 Welcome to the **RLS Career Overhaul** mod for BeamNG.drive! This mod enhances various aspects of the game, including freeroam events, police interactions, the economy, deliveries, insurance, garage space, and dealerships. Dive into a more immersive and challenging career mode enriched with new features and improvements.
 
@@ -6,7 +6,7 @@ Welcome to the **RLS Career Overhaul** mod for BeamNG.drive! This mod enhances v
 
 ## Table of Contents
 
-- [RLS Career Overhaul v2.5 (0.37.0)](#rls-career-overhaul-v25-0370)
+- [RLS Career Overhaul v2.5 (0.37.1)](#rls-career-overhaul-v25-0371)
   - [Table of Contents](#table-of-contents)
   - [Installation](#installation)
   - [Settings Manager](#settings-manager)

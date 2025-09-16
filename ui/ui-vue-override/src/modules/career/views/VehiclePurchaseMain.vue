@@ -84,8 +84,6 @@
           </td>
         </tr>
 
-        <!-- removed explicit toggle to always charge the first renewal when policyId > 0 -->
-
         <tr v-if="vehiclePurchaseStore.locationSelectionEnabled">
           <td class="article">
             <div v-if="!vehiclePurchaseStore.ownsRequiredInsurance && !vehiclePurchaseStore.buyRequiredInsurance">
@@ -119,6 +117,9 @@
           :accent="ACCENTS.attention"
           >Remove Trade-In</BngButton
         >
+
+
+        <BngButton @click="startTestDrive" :accent="ACCENTS.secondary" :disabled="vehiclePurchaseStore.alreadyDidTestDrive">Test Drive</BngButton>
 
         <div v-bng-tooltip:top="tradeInButtonMessage">
           <BngButton :disabled="!vehiclePurchaseStore.tradeInEnabled || !hasVehicle" accent="secondary" @click="chooseTradeInVehicle"
@@ -241,6 +242,10 @@ const buy = () => buyVehicle(!vehiclePurchaseStore.locationSelectionEnabled || v
 
 const cancel = () => {
   vehiclePurchaseStore.cancel()
+}
+
+const startTestDrive = () => {
+  vehiclePurchaseStore.startTestDrive()
 }
 
 const chooseTradeInVehicle = () => {

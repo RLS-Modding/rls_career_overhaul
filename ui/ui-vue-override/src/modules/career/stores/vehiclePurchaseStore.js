@@ -9,6 +9,7 @@ export const useVehiclePurchaseStore = defineStore("vehiclePurchase", () => {
   const purchaseType = ref("")
   const vehicleInfo = ref({})
   const playerMoney = ref(0)
+  const alreadyDidTestDrive = ref(false)
   const inventoryHasFreeSlot = ref(false)
   const tradeInVehicleInfo = ref({})
   const tradeInEnabled = ref(false)
@@ -124,6 +125,12 @@ export const useVehiclePurchaseStore = defineStore("vehiclePurchase", () => {
     lua.career_modules_vehicleShopping.cancelPurchase(purchaseType.value)
   }
 
+  function startTestDrive() {
+    if (alreadyDidTestDrive.value) return
+    alreadyDidTestDrive.value = true
+    lua.career_modules_inspectVehicle.startTestDrive()
+  }
+
   function dispose() {
     listen(false)
   }
@@ -140,6 +147,7 @@ export const useVehiclePurchaseStore = defineStore("vehiclePurchase", () => {
     buyVehicle,
     cancel,
     chooseTradeInVehicle,
+    startTestDrive,
     dispose,
     forceNoDelivery,
     forceTradeIn,
