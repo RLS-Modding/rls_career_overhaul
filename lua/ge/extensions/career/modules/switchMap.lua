@@ -46,7 +46,7 @@ function M.onGetRawPoiListForLevel(levelIdentifier, elements)
     -- Look for any switchTo_ object from the available maps
     switchToObj = scenetree.findObject("switchMaps")
     if not switchToObj then
-        for level, levelName in pairs(careerMaps.getOtherAvailableMaps()) do
+        for level, levelName in pairs(overhaul_maps.getOtherAvailableMaps()) do
             local obj = scenetree.findObject("switchTo_" .. level)
             if obj then
                 switchToObj = obj
@@ -63,7 +63,7 @@ function M.onGetRawPoiListForLevel(levelIdentifier, elements)
     -- Create description listing all available maps
     local description = "Available maps to switch to:\n"
     local mapCount = 0
-    for level, levelName in pairs(careerMaps.getOtherAvailableMaps(levelIdentifier)) do
+    for level, levelName in pairs(overhaul_maps.getOtherAvailableMaps(levelIdentifier)) do
         description = description .. "• " .. levelName .. "\n"
         mapCount = mapCount + 1
     end
