@@ -440,9 +440,9 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
                 end
             end
 
-            -- Use custom message for completion or default completion message
-            local message = customMessage or "Race completed!"
-            utils.displayMessage(message, 10, "Reward")
+            if customMessage then
+                utils.displayMessage(customMessage, 10, "Reward")
+            end
         else
             -- Race cancellation logic
             local message = customMessage or "You exited the race zone, Race cancelled"
