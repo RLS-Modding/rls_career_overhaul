@@ -1274,7 +1274,7 @@ local function showVehicle(vehicleId)
     log("E", "Career", "Failed to find vehicle for inspection with vehicleId: " .. tostring(vehicleId))
     return
   end
-  core_jobsystem.create(startInspectionWorkitem, nil, vehicleInfo)
+  core_jobsystem.create(startInspectionWorkitem, nil, vehicleInfo, true)
 end
 
 local function quickTravelToVehicle(vehicleId)

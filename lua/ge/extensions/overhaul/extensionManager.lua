@@ -1,6 +1,6 @@
 local M = {}
 
-local ourModName = "rls_career_overhaul_updating"
+local ourModName = "rls_career_overhaul"
 local ourModId = "RLSCO24"
 local copiedJsonFiles = {}
 
