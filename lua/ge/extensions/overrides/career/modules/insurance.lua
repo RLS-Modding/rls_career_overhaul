@@ -607,12 +607,15 @@ local function repairPartConditions(data)
 
                 local inventoryPart
                 if data.inventoryId then
-                    local partId = career_modules_partInventory.getPartPathToPartIdMap()[data.inventoryId][partPath]
-                    inventoryPart = career_modules_partInventory.getInventory()[partId]
-                    inventoryPart.repairCount = inventoryPart.repairCount or 0
-                    inventoryPart.repairCount = inventoryPart.repairCount + 1
-                    local vehicle = career_modules_inventory.getVehicles()[data.inventoryId]
-                    vehicle.changedSlots[inventoryPart.containingSlot] = true
+                    local map = career_modules_partInventory.getPartPathToPartIdMap()
+                    if map and map[data.inventoryId] and map[data.inventoryId][partPath] then
+                        local partId = map[data.inventoryId][partPath]
+                        inventoryPart = career_modules_partInventory.getInventory()[partId]
+                        inventoryPart.repairCount = inventoryPart.repairCount or 0
+                        inventoryPart.repairCount = inventoryPart.repairCount + 1
+                        local vehicle = career_modules_inventory.getVehicles()[data.inventoryId]
+                        vehicle.changedSlots[inventoryPart.containingSlot] = true
+                    end
                 end
 
                 -- reset the paint
