@@ -91,6 +91,7 @@ local function unloadAllExtensions()
     extensions.unload("overhaul_settings")
     extensions.unload("overhaul_maps")
     extensions.unload("overhaul_clearLevels")
+    extensions.unload("overhaul_customActions")
     extensions.unload("overhaul_ui")
 
     cleanupJsonOverrides()
@@ -137,13 +138,11 @@ local function startup()
     setExtensionUnloadMode("overhaul_settings", "manual")
     setExtensionUnloadMode("overhaul_maps", "manual")
     setExtensionUnloadMode("overhaul_clearLevels", "manual")
+    setExtensionUnloadMode("overhaul_customActions", "manual")
 
     if not core_gamestate.state or core_gamestate.state.state ~= "career" then
         loadExtensions()
     end
-
-    setExtensionUnloadMode("overhaul_ui", "manual")
-    extensions.unload("overhaul_ui")
 
     core_jobsystem.create(function(job)
         job.sleep(5)
@@ -154,6 +153,9 @@ local function startup()
     end)
 
     loadManualUnloadExtensions()
+
+    setExtensionUnloadMode("overhaul_ui", "manual")
+    extensions.load("overhaul_ui")
 end
 
 local function onModActivated(modData)

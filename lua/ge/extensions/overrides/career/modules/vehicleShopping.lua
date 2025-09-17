@@ -1142,7 +1142,7 @@ local function sendPurchaseDataToUi()
     tradeInVehicleInfo = purchaseData.tradeInVehicleInfo,
     prices = purchaseData.prices,
     dealershipId = vehicleShopInfo.sellerId,
-    alreadyDidTestDrive = career_modules_inspectVehicle.getDidTestDrive()
+    alreadyDidTestDrive = career_modules_inspectVehicle.getDidTestDrive() or false
   }
 
   local playerInsuranceData = career_modules_insurance.getPlayerPolicyData()[data.vehicleInfo.requiredInsurance.id]
