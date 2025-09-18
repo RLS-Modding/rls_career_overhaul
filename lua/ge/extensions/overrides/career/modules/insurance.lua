@@ -970,7 +970,7 @@ local function startRepair(inventoryId, repairOptionData, callback)
     end
 
     -- the actual repair
-    local paintRepair = repairOption.paintRepair or getPlPerkValue(insuredInvVehs[tostring(inventoryId)], "paintRepair") == true
+    local paintRepair = repairOption.paintRepair or getVehPerkValue(inventoryId, "paintRepair") == true
     local data = {
         partConditions = vehInfo.partConditions,
         paintRepair = paintRepair,
@@ -2581,6 +2581,8 @@ end
 M.resetPlPolicyData = function()
     loadPoliciesData(true)
 end
+
+M.getVehPerkValue = getVehPerkValue
 
 return M
 

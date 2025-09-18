@@ -468,6 +468,9 @@ function toggleBoolPerk(perkName) {
     if (idx >= 0) {
       console.log('  Calling onVehPerkChange with:', props.veh.id, currentPolicy.value.id, perkName, idx, newValue)
       props.onVehPerkChange(props.veh, currentPolicy.value, perkName, idx, newValue)
+
+      console.log('  Applying boolean perk change immediately to backend')
+      lua.career_modules_insurance.setVehPerkOverride(props.veh.id, perkName, idx)
     } else {
       console.error('  Could not find index for value:', newValue)
     }

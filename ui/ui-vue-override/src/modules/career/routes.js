@@ -197,13 +197,6 @@ export default [
         component: InsurancePolicies,
       },
 
-      // Inspect Vehicle
-      // {
-      //   path: "inspectVehicle",
-      //   name: "inspectVehicle",
-      //   component: InspectVehicle,
-      // },
-
       // Delivery Reward
       {
         path: "cargoDeliveryReward",
