@@ -114,9 +114,6 @@
         }
       },
       "gestures": {
-        "policyScoreDecrease": {
-          "distance": 25000
-        },
         "freeRepair": {
           "distance": 22000
         }
@@ -462,9 +459,6 @@
         }
       },
       "gestures": {
-        "policyScoreDecrease": {
-          "distance": 25000
-        },
         "freeRepair": {
           "distance": 22000
         }

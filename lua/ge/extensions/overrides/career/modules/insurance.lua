@@ -197,43 +197,6 @@ local repairOptions = {
 
 -- gestures are things insurances give you when you've been driving well for a while
 local gestures = {
-    policyScoreDecrease = function(data)
-        local plPolicyData = data.plPolicyData
-        if plPolicyData.bonus <= minimumPolicyScore then
-            return
-        end
-
-        local everyGestures = plHistory.policyHistory[plPolicyData.id].policyScoreDecreases
-        local lastGesture = everyGestures[#everyGestures]
-        local renewalSeconds = M.getPlPerkValue(plPolicyData.id, "renewal") or 0
-
-        -- Get the last claim time instead of distance
-        local lastClaim = plHistory.policyHistory[plPolicyData.id].claims[#plHistory.policyHistory[plPolicyData.id].claims]
-        local lastClaimTime = lastClaim and lastClaim.time or 0
-        local lastGestureTime = lastGesture and lastGesture.time or 0
-        local referenceTime = math.max(lastClaimTime, lastGestureTime)
-
-        -- Use current time to calculate elapsed time since last claim or bonus decrease
-        local currentTime = os.time()
-        local timeSinceLastEvent = currentTime - referenceTime
-
-        if timeSinceLastEvent > renewalSeconds then
-            plPolicyData.bonus = math.floor(plPolicyData.bonus * (1 - bonusDecrease) * 100) / 100
-            if plPolicyData.bonus < minimumPolicyScore then
-                plPolicyData.bonus = minimumPolicyScore
-            end
-
-            table.insert(plHistory.policyHistory[plPolicyData.id].policyScoreDecreases, {
-                happenedAt = plPolicyData.totalMetersDriven,
-                time = os.time(),
-                value = plPolicyData.bonus
-            })
-
-            ui_message(string.format(
-              "Insurance policy '%s' score decreased to %0.2f due to not having submitted any claim for a while",
-              availablePolicies[plPolicyData.id].name, plPolicyData.bonus), 6, "Insurance", "info")
-        end
-    end,
     freeRepair = function(data)
         local plPolicyData = data.plPolicyData
         if plPolicyData.hasFreeRepair then
@@ -488,7 +451,6 @@ local function loadPoliciesData(resetSomeData)
 
             plHistory.policyHistory[policyInfo.id] = {
                 id = policyInfo.id,
-                policyScoreDecreases = {}, -- every time the policy has decrease the bonus because the player has driven well for a while
                 freeRepairs = {}, -- isn't actually free, repairs that don't increase the premium
                 claims = {},
                 initialPurchase = {
@@ -718,7 +680,7 @@ local function makeTestDriveDamageClaim(vehInfo)
         log("W", "insurance", "Policy data not found for policy ID: " .. tostring(policyId))
     end
 
-    label = label .. string.format("\nYour insurance went up to :) %0.2f", plPoliciesData[policyId].bonus)
+    label = label .. string.format("\nYour insurance went up to %0.2f", plPoliciesData[policyId].bonus)
     ui_message(label, 5, "Insurance", "info")
 
     local claim = {
@@ -1279,7 +1241,28 @@ local function calculatePolicyPremium(policyId, overiddenPerks)
     return (premium * perkPriceScale * renewalFactor) * plPolicyInfo.bonus
 end
 
--- make player pay for insurance renewal every X meters
+-- returns true if there has been any claim recorded after the last renewal (or initial purchase if never renewed)
+local function hasClaimsSinceLastRenewal(policyId)
+    local hist = plHistory and plHistory.policyHistory and plHistory.policyHistory[policyId]
+    if not hist then return false end
+    local lastRenewalTime = 0
+    do
+        local rp = hist.renewedPolicy
+        if rp and #rp > 0 then
+            local t = rp[#rp].time
+            if type(t) == 'number' and t > 0 then lastRenewalTime = t end
+        else
+            local ip = hist.initialPurchase and hist.initialPurchase.purchaseTime
+            if type(ip) == 'number' and ip > 0 then lastRenewalTime = ip end
+        end
+    end
+    for _, claim in ipairs(hist.claims or {}) do
+        local ct = (type(claim.time) == 'number' and claim.time > 0) and claim.time or 0
+        if ct > lastRenewalTime then return true end
+    end
+    return false
+end
+
 local function checkRenewPolicy(policyId)
     if not policyId or policyId <= 0 then return end
     if not availablePolicies[policyId] then return end
@@ -1308,6 +1291,19 @@ local function checkRenewPolicy(policyId)
         career_modules_payment.pay({ money = { amount = premium, canBeNegative = true } }, { label = logBookLabel })
         ui_message(label, 5, "Insurance", "info")
         policyTows[policyId] = getPlPerkValue(policyId, "roadsideAssistance") or 0
+
+        -- Decrease insurance score during renewal only if there were no accidents since last renewal
+        if plPoliciesData[policyId] and not hasClaimsSinceLastRenewal(policyId) then
+            local bonusDecrease = 0.05
+            local oldBonus = plPoliciesData[policyId].bonus
+            plPoliciesData[policyId].bonus = math.floor(plPoliciesData[policyId].bonus * (1 - bonusDecrease) * 100) / 100
+            if plPoliciesData[policyId].bonus < 0.5 then
+                plPoliciesData[policyId].bonus = 0.5
+            end
+            ui_message(string.format("Insurance policy '%s' score decreased to %0.2f during renewal (no accidents)",
+                availablePolicies[policyId].name, plPoliciesData[policyId].bonus), 6, "Insurance", "info")
+        end
+
         policyElapsedSeconds[policyId] = 0
     end
 end
@@ -1587,7 +1583,7 @@ local function applyVehPolicyChange(invVehId, toPolicyId, overridesIdx0)
         local polName = (availablePolicies[toPolicyId] and availablePolicies[toPolicyId].name) or tostring(toPolicyId)
         local ok = career_modules_payment.pay({ money = { amount = premium, canBeNegative = false } }, { label = string.format("Insurance premium paid: %s", polName), tags = {"insurance", "premium"} })
         if not ok then return end
-        plHistory.policyHistory[toPolicyId] = plHistory.policyHistory[toPolicyId] or { changedCoverage = {}, renewedPolicy = {}, claims = {}, freeRepairs = {}, policyScoreDecreases = {}, id = toPolicyId, initialPurchase = { purchaseTime = -1, forFree = false } }
+        plHistory.policyHistory[toPolicyId] = plHistory.policyHistory[toPolicyId] or { changedCoverage = {}, renewedPolicy = {}, claims = {}, freeRepairs = {}, id = toPolicyId, initialPurchase = { purchaseTime = -1, forFree = false } }
         table.insert(plHistory.policyHistory[toPolicyId].changedCoverage, { time = os.time(), price = premium })
         if not plPoliciesData[toPolicyId].owned then
             plPoliciesData[toPolicyId].owned = true
@@ -2002,22 +1998,6 @@ local function buildPolicyHistory()
             end
         end
 
-        -- bonus decrease events
-        for _, bonusDecreaseEvent in ipairs(policyHistoryInfo.policyScoreDecreases or {}) do
-            local effectText = {{
-                label = "New policy score",
-                value = bonusDecreaseEvent.value
-            }}
-            local btime = (type(bonusDecreaseEvent.time) == 'number' and bonusDecreaseEvent.time > 0) and bonusDecreaseEvent.time or os.time()
-            table.insert(list, {
-                ts = btime,
-                time = os.date("%c", btime),
-                event = translateLanguage("insurance.history.event.policScoreDecreased.name",
-                  "insurance.history.event.policScoreDecreased.name", true),
-                policyName = availablePolicies[policyHistoryInfo.id or 1].name,
-                effect = effectText
-            })
-        end
 
         -- policy renewed events
         for _, renewedPolicyEvent in ipairs(policyHistoryInfo.renewedPolicy or {}) do
@@ -2209,8 +2189,12 @@ local function onVehicleAddedToInventory(data)
         return
     end
 
-    -- If a policy was selected during purchase, use it
-    if data.selectedPolicyId and data.selectedPolicyId >= 0 then
+    local veh = career_modules_inventory.getVehicles()[data.inventoryId]
+    if veh and veh.owningOrganization then
+        insuredInvVehs[tostring(data.inventoryId)] = 0
+        career_saveSystem.saveCurrent()
+        return
+    elseif data.selectedPolicyId and data.selectedPolicyId >= 0 then
         insuredInvVehs[tostring(data.inventoryId)] = data.selectedPolicyId
         career_saveSystem.saveCurrent()
         return
