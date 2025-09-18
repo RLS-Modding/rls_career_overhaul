@@ -105,6 +105,9 @@ end
 
 
 local function loadAndSanitizeDriftFreeroamSpotsCurrMap()
+  if career_career.isActive() then
+    return
+  end
   local spotsForLevel = {}
   for _, spot in pairs(getDriftSpotsById()) do
     if spot.level == getCurrentLevelIdentifier() then
