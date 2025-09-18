@@ -376,7 +376,7 @@ local function formatSaveSlotForUi(saveSlot)
   }
 
   -- Get level from save data
-  local autosavePath = career_saveSystem.getAutosave(career_saveSystem.getSaveRootDirectory() .. saveSlot)
+  local autosavePath = career_saveSystem.getAutosave(saveSlot)
   local infoData = jsonReadFile(autosavePath .. "/info.json")
   local careerData = jsonReadFile(autosavePath .. "/career/" .. saveFile)
   local hardcoreData = jsonReadFile(autosavePath .. "/career/rls_career/hardcore.json")
@@ -465,8 +465,9 @@ local function formatSaveSlotForUi(saveSlot)
 
   -- add the infoData raw
   if infoData and infoData.version then
-    infoData.incompatibleVersion = career_saveSystem.getBackwardsCompVersion() > infoData.version
-    infoData.outdatedVersion = career_saveSystem.getSaveSystemVersion() > infoData.version
+    local currentVersion = tonumber(infoData.version) or 36
+    infoData.incompatibleVersion = career_saveSystem.getBackwardsCompVersion() > currentVersion
+    infoData.outdatedVersion = career_saveSystem.getSaveSystemVersion() > currentVersion
     tableMerge(data, infoData)
   end
 

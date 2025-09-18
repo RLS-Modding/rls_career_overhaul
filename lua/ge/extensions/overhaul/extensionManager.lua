@@ -76,6 +76,7 @@ local function loadExtensions()
     setExtensionUnloadMode("gameplay_cab", "manual")
 
     extensions.unload("career_career")
+    extensions.unload("career_saveSystem")
 end
 
 local function unloadAllExtensions()
@@ -83,6 +84,7 @@ local function unloadAllExtensions()
     extensions.unload("core_gameContext")
     extensions.unload("gameplay_events_freeroamEvents")
     extensions.unload("career_career")
+    extensions.unload("career_saveSystem")
     extensions.unload("gameplay_phone")
     extensions.unload("freeroam_facilities")
     extensions.unload("gameplay_repo")
@@ -196,8 +198,16 @@ local function onModDeactivated(modData)
     end
 end
 
+local function onVehicleSpawned(_, veh)
+    veh:queueLuaCommand("extensions.load('fuelMultiplier')")
+    veh:queueLuaCommand([[
+        extensions.load('overrideAI')
+        ai = overrideAI
+    ]])
+end
+  
+M.onVehicleSpawned = onVehicleSpawned
 M.onExtensionLoaded = startup
-
 M.onModActivated = onModActivated
 M.onModDeactivated = onModDeactivated
 
