@@ -75,6 +75,10 @@ local function setSaveSlot(slotName, specificAutosave)
     return false
   end
   local savePath = specificAutosave and (saveRoot .. slotName .. "/" .. specificAutosave) or getAutosave(slotName, false) -- get newest autosave
+  
+  if not savePath or savePath == "" then
+    savePath = saveRoot .. slotName .. "/autosave1"
+  end
 
   local data = jsonReadFile(savePath .. "/info.json")
   if data then
