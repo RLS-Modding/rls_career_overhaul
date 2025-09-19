@@ -23,7 +23,7 @@
         </BngButton>
       </template>
       <BngButton
-        v-if="vehicleInventoryStore.vehicleInventoryData.buttonsActive.returnLoanerEnabled && vehSelected.returnLoanerPermission.allow"
+        v-if="vehicleInventoryStore.vehicleInventoryData.buttonsActive.returnLoanerEnabled && vehSelected.returnLoanerPermission && vehSelected.returnLoanerPermission.allow"
         :accent="ACCENTS.menu"
         v-bng-on-ui-nav:ok.focusRequired.asMouse
         @click="confirmReturnVehicle()">
@@ -48,7 +48,7 @@
       <BngButton
         v-if="vehSelected.delayReason !== 'repair' && vehicleInventoryStore.vehicleInventoryData.buttonsActive.repairEnabled"
         :accent="ACCENTS.menu"
-        :disabled="!vehSelected.repairPermission.allow"
+        :disabled="!vehSelected.repairPermission || !vehSelected.repairPermission.allow"
         v-bng-on-ui-nav:ok.focusRequired.asMouse
         @click="openRepairMenu()">
         Repair
@@ -56,13 +56,13 @@
       <BngButton
         v-if="vehicleInventoryStore.vehicleInventoryData.buttonsActive.storingEnabled && !vehSelected.inStorage"
         :accent="ACCENTS.menu"
-        :disabled="!vehSelected.storePermission.allow"
+        :disabled="!vehSelected.storePermission || !vehSelected.storePermission.allow"
         v-bng-on-ui-nav:ok.focusRequired.asMouse
         @click="storeVehicle()">
         Put in storage
       </BngButton>
       <BngButton
-        v-if="vehSelected.deliverPermission.allow"
+        v-if="vehSelected.deliverPermission && vehSelected.deliverPermission.allow"
         :accent="ACCENTS.menu"
         @click="deliverVehicle()">
         Deliver to garage
@@ -76,14 +76,14 @@
       <BngButton
         v-if="vehicleInventoryStore.vehicleInventoryData.buttonsActive.favoriteEnabled"
         :accent="ACCENTS.menu"
-        :disabled="!vehSelected.favoritePermission.allow || vehSelected.favorite"
+        :disabled="!vehSelected.favoritePermission || !vehSelected.favoritePermission.allow || vehSelected.favorite"
         v-bng-on-ui-nav:ok.focusRequired.asMouse
         @click="setFavoriteVehicle()">
         Set as Favorite
       </BngButton>
       <BngButton
         :accent="ACCENTS.menu"
-        :disabled="!vehSelected.licensePlateChangePermission.allow"
+        :disabled="!vehSelected.licensePlateChangePermission || !vehSelected.licensePlateChangePermission.allow"
         v-bng-on-ui-nav:ok.focusRequired.asMouse
         @click="personalizeLicensePlate(vehSelected)">
         Personalize license plate
@@ -97,7 +97,7 @@
       <BngButton
         v-if="vehicleInventoryStore.vehicleInventoryData.buttonsActive.sellEnabled && !vehSelected.listedForSale"
         :accent="ACCENTS.menu"
-        :disabled="!vehSelected.sellPermission.allow"
+        :disabled="!vehSelected.sellPermission || !vehSelected.sellPermission.allow"
         v-bng-on-ui-nav:ok.focusRequired.asMouse
         @click="listVehicleForSale()">
         List vehicle for sale
@@ -105,7 +105,7 @@
       <BngButton
         v-if="vehicleInventoryStore.vehicleInventoryData.buttonsActive.sellEnabled && vehSelected.listedForSale"
         :accent="ACCENTS.menu"
-        :disabled="!vehSelected.sellPermission.allow"
+        :disabled="!vehSelected.sellPermission || !vehSelected.sellPermission.allow"
         v-bng-on-ui-nav:ok.focusRequired.asMouse
         @click="lookAtVehicleListing()">
         Go to vehicle listing
