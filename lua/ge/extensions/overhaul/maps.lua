@@ -172,6 +172,7 @@ end
 
 M.onExtensionLoaded = onExtensionLoaded
 M.onModActivated = retrieveCompatibleMaps
+M.onWorldReadyState = retrieveCompatibleMaps
 
 M.returnCompatibleMap = returnCompatibleMap
 M.getCompatibleMaps = function() return compatibleMaps end
