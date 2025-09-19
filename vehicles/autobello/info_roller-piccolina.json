@@ -1,39 +1,55 @@
 {
-  "0-100 km/h": 0,
-  "0-60 mph":0,
-  "100-0 km/h":0,
-  "60-0 mph":0,
-  "BoundingBox":[
-    [
-      -0.595,
-      -1.51,
-      -0.22824
-    ],
-    [
-      0.905,
-      1.98,
-      1.215
-    ]
-  ],
-  "Braking G":0,
+  "Body Style":"Coupe",
   "Config Type":"Frame",
-  "Configuration":"Rolling Chassis (N/A)",
-  "Description":"Rolling Chassis",
-  "Drivetrain":"N/A",
-  "Fuel Type":"N/A",
-  "Induction Type":"N/A",
-  "Off-Road Score":0,,
-  "Performance Class":0,
-  "Population":0,,
-  "Power":0,,
-  "PowerPeakRPM":0,,
-  "Propulsion":0,
-  "Top Speed":0,,
-  "Torque":0,,
-  "TorquePeakRPM":0,,
-  "Transmission":0,
-  "Value":2000,
-  "Weight":446,
-  "Weight/Power":0,
-  "defaultPaintName1":"Rosso Corallo"
+  "Configuration":"roller-piccolina",
+  "Name":"Piccolina roller-piccolina",
+  "Population":5000,
+  "Source":"Custom",
+  "Value":10000,
+  "aggregates":{
+    "Body Style":{
+      "Sedan":true
+    },
+    "Brand":{
+      "Autobello":true
+    },
+    "Country":{
+      "Italy":true
+    },
+    "Derby Class":{
+      "Sub-Compact Car":true
+    },
+    "Source":{
+      "BeamNG - Official":true,
+      "Custom":true
+    },
+    "Type":{
+      "Car":true
+    },
+    "Years":{
+      "max":1973,
+      "min":1957
+    }
+  },
+  "defaultPaint":{
+    "baseColor":[
+      0.66,
+      0.28,
+      0.22,
+      1.2
+    ],
+    "class":"factory",
+    "clearcoat":0,
+    "clearcoatRoughness":0,
+    "metallic":0,
+    "name":"Rosso Corallo",
+    "roughness":0.07
+  },
+  "defaultPaintName1":"Rosso Corallo",
+  "defaultPaintName2":"Rosso Corallo",
+  "defaultPaintName3":"Rosso Corallo",
+  "is_default_config":false,
+  "paints":{},
+  "pcFilename":"/vehicles/autobello/roller-piccolina.pc",
+  "preview":"/vehicles/autobello/roller-piccolina.jpg"
 }
