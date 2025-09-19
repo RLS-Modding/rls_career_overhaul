@@ -355,12 +355,11 @@ import { reactive, onMounted, onBeforeUnmount, ref, computed, watch } from "vue"
 import VehicleCard from "./VehicleCard.vue"
 import FilterDropdown from "./FilterDropdown.vue"
 import SortDropdown from "./SortDropdown.vue"
-import { BngCard, BngButton, ACCENTS, BngBinding, BngInput, BngSelect, BngDropdownContainer, BngIcon, icons } from "@/common/components/base"
-import { vBngBlur, vBngOnUiNav } from "@/common/directives"
+import { BngCard, BngButton, ACCENTS, BngInput, BngSelect, BngIcon, icons } from "@/common/components/base"
+import { vBngBlur } from "@/common/directives"
 import { lua, useBridge } from "@/bridge"
 import { useEvents } from "@/services/events"
 import { useVehicleShoppingStore } from "../../stores/vehicleShoppingStore"
-import { Accordion, AccordionItem } from "@/common/components/utility"
 import { openConfirmation } from "@/services/popup"
 
 import { useUINavScope } from "@/services/uiNav"
@@ -374,9 +373,6 @@ const dealerMetadata = ref({})
 const inputFocused = ref(false)
 const localSearchQuery = ref('')
 const activeSearchQuery = ref('')
-const sortOpen = ref(false)
-const sortFieldLocal = ref('Value')
-const sortDirectionLocal = ref('Ascending')
 const selectedDealership = ref(null)
 const dealersOpen = ref(true)
 const itemsPerPage = ref(25)
@@ -536,23 +532,8 @@ const getHeaderText = () => {
   return data.currentSellerNiceName
 }
 
-const getWebsiteText = () => {
-  const headerText = getHeaderText()
-  return headerText.replace(/\s+/g, "-") + ".com"
-}
 
-const layouts = reactive([
-  { name: "switch", selected: true, class: "" },
-  { name: "me", selected: false, class: "" },
-  { name: "please", selected: false, class: "" },
-])
-function switchLayout(key) {
-  for (let i = 0; i < layouts.length; i++) layouts[i].selected = key === i
-}
 
-const onDealerExpanded = (dealer, state) => {
-  dealer.expanded = state
-}
 
 const sortedDealers = computed(() => {
   // Include all dealers (hidden ones are marked with hidden: true)
@@ -578,8 +559,6 @@ watch([itemsPerPage, selectedDealership, hasActiveSearch], () => {
   currentPage.value = 1
 })
 
-// Hidden dealer logic is now handled in the store and provided via dealer.hidden property
-
 // Helper: check if dealer has organization reputation
 function hasRep(dealerId) {
   const meta = dealerMetadata.value[dealerId]
@@ -588,14 +567,6 @@ function hasRep(dealerId) {
   return !!(org && org.reputation)
 }
 
-// Route to dealership in-world when hidden online
-async function routeToDealer(dealershipId) {
-  try {
-    await lua.career_modules_vehicleShopping.navigateToDealership(dealershipId)
-  } catch (e) {
-    console.error('Failed to set route to dealership', e)
-  }
-}
 
 async function taxiToDealer(dealershipId) {
   try {
@@ -667,20 +638,7 @@ function removeFilter(key) {
     vehicleShoppingStore.setFilterRange(key)
   }
 }
-function applySort() {
-  const dir = sortDirectionLocal.value === 'Descending' ? 'desc' : 'asc'
-  vehicleShoppingStore.setSort(sortFieldLocal.value || 'Value', dir)
-}
 
-function formatFieldLabel(key) {
-  if (!key) return ''
-  return key
-    .replace(/_/g, ' ')
-    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
-    .replace(/^./, s => s.toUpperCase())
-}
-
-// Keep only the functions we still need
 
 // Handle dealership selection
 const handleDealershipSelect = (dealershipId) => {
@@ -1849,18 +1807,3 @@ const filteredVehicleCount = computed(() => {
 }
 </style>
 
-<style lang="scss">
-/* Global overrides for teleported dropdown panels to prevent scrollbars */
-.bng-dropdown,
-.bng-dropdown__container,
-.dropdown-container,
-.bng-dropdown-content,
-.bng-dropdown__content,
-.dropdown-content,
-.bng-dropdown-panel,
-.bng-dropdown__panel,
-.dropdown-panel {
-  max-height: none !important;
-  overflow: visible !important;
-}
-</style>

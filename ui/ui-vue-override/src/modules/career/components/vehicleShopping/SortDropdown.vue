@@ -1,15 +1,15 @@
 <template>
-  <div class="sort-dropdown">
-    <BngDropdownContainer v-model:opened="isOpen" class="sort-dropdown-container">
-      <template #display>
-        <div class="sort-btn" :class="{ active: isOpen }">
-          Sort
-          <div v-if="isActive" class="sort-count">1</div>
-          <BngIcon :type="icons.arrowSmallDown" />
-        </div>
-      </template>
+  <div class="sort-dropdown" ref="rootEl">
+    <div class="sort-dropdown-container" :class="{ open: isOpen }">
+      <div class="sort-btn" :class="{ active: isOpen }" @click="isOpen = !isOpen">
+        Sort
+        <div v-if="isActive" class="sort-count">1</div>
+        <BngIcon :type="icons.arrowSmallDown" />
+      </div>
 
-      <div class="sort-panel">
+      <Teleport to="body">
+        <div class="sort-panel" v-show="isOpen" @click.stop ref="panelEl">
+          <div class="panel-arrow"></div>
         <div class="panel-header">
           <div class="title">Sort Vehicles</div>
           <BngButton v-if="isActive" :accent="ACCENTS.secondary" size="sm" class="clear-btn" @click="clearSort">Clear</BngButton>
@@ -31,18 +31,21 @@
         </div>
 
         <div class="panel-footer">Select a sorting option to organize the vehicle listings</div>
-      </div>
-    </BngDropdownContainer>
+        </div>
+      </Teleport>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { computed, ref } from "vue"
-import { BngDropdownContainer, BngIcon, BngButton, ACCENTS, icons } from "@/common/components/base"
+import { computed, ref, onMounted, onBeforeUnmount, Teleport, nextTick, watch } from "vue"
+import { BngIcon, BngButton, ACCENTS, icons } from "@/common/components/base"
 import { useVehicleShoppingStore } from "../../stores/vehicleShoppingStore"
 
 const store = useVehicleShoppingStore()
 const isOpen = ref(false)
+const rootEl = ref(null)
+const panelEl = ref(null)
 
 const isActive = computed(() => store.sortField !== 'Value' || store.sortDirection !== 'asc')
 
@@ -82,26 +85,56 @@ const clearSort = () => {
   store.setSort('Value', 'asc')
   isOpen.value = false
 }
+
+// Position panel relative to trigger
+function positionPanel() {
+  if (!rootEl.value || !panelEl.value) return
+  const trigger = rootEl.value.querySelector('.sort-btn')
+  if (!trigger) return
+  const rect = trigger.getBoundingClientRect()
+  panelEl.value.style.position = 'fixed'
+  panelEl.value.style.top = `${rect.bottom + 4}px`
+  panelEl.value.style.left = `${rect.left}px`
+}
+
+// Watch for open state to position panel
+watch(isOpen, async (newVal) => {
+  if (newVal) {
+    await nextTick()
+    positionPanel()
+    window.addEventListener('resize', positionPanel)
+    window.addEventListener('scroll', positionPanel)
+  } else {
+    window.removeEventListener('resize', positionPanel)
+    window.removeEventListener('scroll', positionPanel)
+  }
+})
+
+// local click-outside to close
+function onDocClick(e) {
+  if (!rootEl.value || !panelEl.value) return
+  if (!rootEl.value.contains(e.target) && !panelEl.value.contains(e.target)) {
+    isOpen.value = false
+  }
+}
+onMounted(() => document.addEventListener("click", onDocClick, true))
+onBeforeUnmount(() => {
+  document.removeEventListener("click", onDocClick, true)
+  window.removeEventListener('resize', positionPanel)
+  window.removeEventListener('scroll', positionPanel)
+})
 </script>
 
 <style scoped lang="scss">
 .sort-dropdown {
   display: flex;
+  position: relative;
 }
 
-.sort-dropdown :deep(.bng-dropdown),
-.sort-dropdown :deep(.bng-dropdown__container),
-.sort-dropdown :deep(.dropdown-container) {
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  padding: 0 !important;
-}
 
-.sort-dropdown :deep(.bng-dropdown-opener),
-.sort-dropdown :deep(.bng-dropdown__opener),
-.sort-dropdown :deep(.dropdown-opener) {
-  display: none !important;
+.sort-dropdown-container {
+  position: relative;
+  display: inline-block;
 }
 
 .sort-btn {
@@ -146,6 +179,23 @@ const clearSort = () => {
   border-radius: var(--bng-corners-2);
   box-shadow: 0 8px 24px rgba(0,0,0,0.5);
   padding: 0;
+  position: fixed;
+  z-index: 12000;
+  height: 22rem;
+  overflow: hidden;
+  /* fake popover arrow */
+  .panel-arrow {
+    position: absolute;
+    top: -0.5rem;
+    left: 1rem;
+    width: 1rem;
+    height: 1rem;
+    transform: rotate(45deg);
+    background: var(--bng-cool-gray-900);
+    border-left: 1px solid var(--bng-cool-gray-700);
+    border-top: 1px solid var(--bng-cool-gray-700);
+    box-shadow: -2px -2px 4px rgba(0,0,0,0.15);
+  }
 }
 
 .panel-header {
@@ -160,7 +210,7 @@ const clearSort = () => {
 
 .active-text { padding: 0 1rem 0.5rem 1rem; color: var(--bng-cool-gray-300); font-size: 0.75rem; }
 
-.options-wrapper { max-height: 20rem; overflow-y: auto; }
+.options-wrapper { height: 16rem; overflow-y: auto; }
 .options { padding: 0.5rem; display: flex; flex-direction: column; gap: 0.25rem; }
 
 .option {

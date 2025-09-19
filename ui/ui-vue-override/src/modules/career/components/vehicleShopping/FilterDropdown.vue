@@ -1,5 +1,5 @@
 <template>
-  <div class="filter-dropdown">
+  <div class="filter-dropdown" ref="rootEl">
     <!-- Active filters preview -->
     <div v-if="activeFilters.length > 0" class="active-filters-preview">
       <div 
@@ -20,19 +20,19 @@
       </div>
     </div>
 
-    <!-- Filter dropdown -->
-    <BngDropdownContainer v-model:opened="isOpen" class="filter-dropdown-container">
-      <template #display>
-        <div class="filter-btn" :class="{ active: isOpen }">
-          <BngIcon :type="icons.filter" />
-          Filters
-          <div v-if="activeFilters.length > 0" class="filter-count">
-            {{ activeFilters.length }}
-          </div>
+    <!-- Filter dropdown (local, non-teleported) -->
+    <div class="filter-dropdown-container" :class="{ open: isOpen }">
+      <div class="filter-btn" :class="{ active: isOpen }" @click="isOpen = !isOpen">
+        <BngIcon :type="icons.filter" />
+        Filters
+        <div v-if="activeFilters.length > 0" class="filter-count">
+          {{ activeFilters.length }}
         </div>
-      </template>
+      </div>
 
-      <div class="filter-panel">
+      <Teleport to="body">
+        <div class="filter-panel" v-show="isOpen" @click.stop ref="panelEl">
+          <div class="panel-arrow"></div>
         <div class="filter-grid">
           <!-- Left Column - Active Filters -->
           <div class="active-filters-column">
@@ -50,6 +50,12 @@
               >
                 Clear all
               </BngButton>
+            </div>
+
+            <div v-if="activeFilters.length === 0" class="no-filters-message">
+              <BngIcon :type="icons.filter" class="empty-icon" />
+              <h4>No active filters</h4>
+              <p>Add filters from the options on the right</p>
             </div>
 
             <div v-if="activeFilters.length > 0" class="filter-count-text">
@@ -76,12 +82,6 @@
                   <BngIcon :type="icons.abandon" />
                 </BngButton>
               </div>
-            </div>
-
-            <div v-else class="no-filters-message">
-              <BngIcon :type="icons.filter" class="empty-icon" />
-              <h4>No active filters</h4>
-              <p>Add filters from the options on the right</p>
             </div>
           </div>
 
@@ -145,7 +145,7 @@
                   <template #action>
                     <div class="action-container" :class="{ active: !!selectedMake }" @click="addMakeFilter">
                       <BngIcon :type="icons.plus" />
-                      <span style="margin-left: .4rem;">Add Make</span>
+                      <span style="margin-left: .4rem; color: var(--bng-off-white);">Add Make</span>
                     </div>
                   </template>
                 </FilterSection>
@@ -182,7 +182,7 @@
                   <template #action>
                     <div class="action-container" :class="{ active: priceMin !== priceBounds.min || priceMax !== priceBounds.max }" @click="addPriceFilter">
                       <BngIcon :type="icons.plus" />
-                      <span style="margin-left: .4rem;">Add Price</span>
+                      <span style="margin-left: .4rem; color: var(--bng-off-white);">Add Price</span>
                     </div>
                   </template>
                 </FilterSection>
@@ -194,7 +194,7 @@
                   <template #action>
                     <div class="action-container" :class="{ active: !!selectedCategory }" @click="addCategoryFilter">
                       <BngIcon :type="icons.plus" />
-                      <span style="margin-left: .4rem;">Add Type</span>
+                      <span style="margin-left: .4rem; color: var(--bng-off-white);">Add Type</span>
                     </div>
                   </template>
                 </FilterSection>
@@ -209,7 +209,7 @@
                   <template #action>
                     <div class="action-container" :class="{ active: !!selectedTransmission }" @click="addTransmissionFilter">
                       <BngIcon :type="icons.plus" />
-                      <span style="margin-left: .4rem;">Add Transmission</span>
+                      <span style="margin-left: .4rem; color: var(--bng-off-white);">Add Transmission</span>
                     </div>
                   </template>
                 </FilterSection>
@@ -221,7 +221,7 @@
                   <template #action>
                     <div class="action-container" :class="{ active: !!selectedFuelType }" @click="addFuelTypeFilter">
                       <BngIcon :type="icons.plus" />
-                      <span style="margin-left: .4rem;">Add Fuel Type</span>
+                      <span style="margin-left: .4rem; color: var(--bng-off-white);">Add Fuel Type</span>
                     </div>
                   </template>
                 </FilterSection>
@@ -233,7 +233,7 @@
                   <template #action>
                     <div class="action-container" :class="{ active: !!selectedDrivetrain }" @click="addDrivetrainFilter">
                       <BngIcon :type="icons.plus" />
-                      <span style="margin-left: .4rem;">Add Drivetrain</span>
+                      <span style="margin-left: .4rem; color: var(--bng-off-white);">Add Drivetrain</span>
                     </div>
                   </template>
                 </FilterSection>
@@ -253,7 +253,7 @@
                   <template #action>
                     <div class="action-container" :class="{ active: yearMin !== yearBounds.min || yearMax !== yearBounds.max }" @click="addYearFilter">
                       <BngIcon :type="icons.plus" />
-                      <span style="margin-left: .4rem;">Add Year Range</span>
+                      <span style="margin-left: .4rem; color: var(--bng-off-white);">Add Year Range</span>
                     </div>
                   </template>
                 </FilterSection>
@@ -276,7 +276,7 @@
                   <template #action>
                     <div class="action-container" :class="{ active: mileageMin !== mileageBounds.min || mileageMax !== mileageBounds.max }" @click="addMileageFilter">
                       <BngIcon :type="icons.plus" />
-                      <span style="margin-left: .4rem;">Add Mileage Range</span>
+                      <span style="margin-left: .4rem; color: var(--bng-off-white);">Add Mileage Range</span>
                     </div>
                   </template>
                 </FilterSection>
@@ -296,7 +296,7 @@
                   <template #action>
                     <div class="action-container" :class="{ active: powerMin !== powerBounds.min || powerMax !== powerBounds.max }" @click="addPowerFilter">
                       <BngIcon :type="icons.plus" />
-                      <span style="margin-left: .4rem;">Add Power Range</span>
+                      <span style="margin-left: .4rem; color: var(--bng-off-white);">Add Power Range</span>
                     </div>
                   </template>
                 </FilterSection>
@@ -316,7 +316,7 @@
                   <template #action>
                     <div class="action-container" :class="{ active: weightMin !== weightBounds.min || weightMax !== weightBounds.max }" @click="addWeightFilter">
                       <BngIcon :type="icons.plus" />
-                      <span style="margin-left: .4rem;">Add Weight Range</span>
+                      <span style="margin-left: .4rem; color: var(--bng-off-white);">Add Weight Range</span>
                     </div>
                   </template>
                 </FilterSection>
@@ -324,14 +324,15 @@
             </div>
           </div>
         </div>
-      </div>
-    </BngDropdownContainer>
+        </div>
+      </Teleport>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch, onBeforeUnmount } from "vue"
-import { BngDropdownContainer, BngIcon, BngButton, BngSelect, BngSlider, BngInput, ACCENTS, icons } from "@/common/components/base"
+import { ref, computed, watch, onMounted, onBeforeUnmount, Teleport, nextTick } from "vue"
+import { BngIcon, BngButton, BngSelect, BngSlider, BngInput, ACCENTS, icons } from "@/common/components/base"
 import { lua } from "@/bridge"
 import { useVehicleShoppingStore } from "../../stores/vehicleShoppingStore"
 import FilterSection from "./FilterSection.vue"
@@ -350,6 +351,8 @@ const emit = defineEmits(['update:filters', 'add-filter', 'remove-filter', 'clea
 // State
 const isOpen = ref(false)
 const activeTab = ref('basic')
+const rootEl = ref(null)
+const panelEl = ref(null)
 
 // Vehicle data for dynamic bounds
 const vehicleShoppingStore = useVehicleShoppingStore?.() || null
@@ -478,6 +481,44 @@ const formatNumber = (val) => {
   if (Number.isFinite(n)) return n.toLocaleString(undefined, { maximumFractionDigits: 0 })
   return '0'
 }
+
+// Position panel relative to trigger
+function positionPanel() {
+  if (!rootEl.value || !panelEl.value) return
+  const trigger = rootEl.value.querySelector('.filter-btn')
+  if (!trigger) return
+  const rect = trigger.getBoundingClientRect()
+  panelEl.value.style.position = 'fixed'
+  panelEl.value.style.top = `${rect.bottom + 4}px`
+  panelEl.value.style.left = `${rect.left - 120}px`
+}
+
+// Watch for open state to position panel
+watch(isOpen, async (newVal) => {
+  if (newVal) {
+    await nextTick()
+    positionPanel()
+    window.addEventListener('resize', positionPanel)
+    window.addEventListener('scroll', positionPanel)
+  } else {
+    window.removeEventListener('resize', positionPanel)
+    window.removeEventListener('scroll', positionPanel)
+  }
+})
+
+// local click-outside to close
+function onDocClick(e) {
+  if (!rootEl.value || !panelEl.value) return
+  if (!rootEl.value.contains(e.target) && !panelEl.value.contains(e.target)) {
+    isOpen.value = false
+  }
+}
+onMounted(() => document.addEventListener("click", onDocClick, true))
+onBeforeUnmount(() => {
+  document.removeEventListener("click", onDocClick, true)
+  window.removeEventListener('resize', positionPanel)
+  window.removeEventListener('scroll', positionPanel)
+})
 
 // Ensure sliders always provide an array [min, max]
 const ensureRangeRef = (rangeRef, minVal, maxVal) => {
@@ -704,51 +745,12 @@ const addWeightFilter = () => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  position: relative;
 }
 
-/* Remove the outer button-like shell from BngDropdownContainer */
-.filter-dropdown :deep(.bng-dropdown),
-.filter-dropdown :deep(.bng-dropdown__container),
-.filter-dropdown :deep(.dropdown-container) {
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  padding: 0 !important;
-  overflow: visible !important;
-}
-
-/* Hide the small caret opener so only our .filter-btn is visible */
-.filter-dropdown :deep(.bng-dropdown-opener),
-.filter-dropdown :deep(.bng-dropdown__opener),
-.filter-dropdown :deep(.dropdown-opener) {
-  display: none !important;
-}
-
-/* Ensure all dropdown wrappers never constrain content height */
-.filter-dropdown :deep(.bng-dropdown-content),
-.filter-dropdown :deep(.bng-dropdown__content),
-.filter-dropdown :deep(.dropdown-content),
-.filter-dropdown :deep(.bng-dropdown-panel),
-.filter-dropdown :deep(.bng-dropdown__panel),
-.filter-dropdown :deep(.dropdown-panel) {
-  max-height: none !important;
-  overflow: visible !important;
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-}
-
-/* Kill default popover chrome that sits behind our custom panel */
-.filter-dropdown :deep(.bng-popover),
-.filter-dropdown :deep(.bng-popover__content) {
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  padding: 0 !important;
-  overflow: visible !important;
-}
-.filter-dropdown :deep(.bng-popover__backdrop) {
-  background: transparent !important;
+.filter-dropdown-container {
+  position: relative;
+  display: inline-block;
 }
 
 .active-filters-preview {
@@ -845,14 +847,30 @@ const addWeightFilter = () => {
 .filter-panel {
   width: 48rem;
   max-width: calc(100vw - 4rem);
-  height: auto;
-  max-height: none;
+  height: 32rem;
+  max-height: 32rem;
   background: var(--bng-cool-gray-900);
   border: 1px solid var(--bng-cool-gray-700);
   border-radius: var(--bng-corners-2);
   box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-  overflow: visible;
-  margin-left: -10rem;
+  overflow: hidden;
+  position: fixed;
+  z-index: 12000;
+  display: flex;
+  flex-direction: column;
+  /* fake popover arrow */
+  .panel-arrow {
+    position: absolute;
+    top: -0.5rem;
+    left: 1rem;
+    width: 1rem;
+    height: 1rem;
+    transform: rotate(45deg);
+    background: var(--bng-cool-gray-900);
+    border-left: 1px solid var(--bng-cool-gray-700);
+    border-top: 1px solid var(--bng-cool-gray-700);
+    box-shadow: -2px -2px 4px rgba(0,0,0,0.15);
+  }
 }
 
 .filter-label-row {
@@ -1067,8 +1085,9 @@ const addWeightFilter = () => {
 
 .filter-grid {
   display: grid;
-  grid-template-columns: 1fr 2fr;
-  height: auto;
+  grid-template-columns: 0.75fr 2fr;
+  height: 100%;
+  overflow: hidden;
 }
 
 .active-filters-column {
@@ -1082,8 +1101,8 @@ const addWeightFilter = () => {
   display: flex;
   flex-direction: column;
   background: var(--bng-cool-gray-900);
-  max-height: 60vh;
-  overflow: auto;
+  height: 100%;
+  overflow-y: auto;
 }
 
 .column-header {
@@ -1298,7 +1317,7 @@ const addWeightFilter = () => {
 
   .add-filter-btn {
     background: var(--bng-orange);
-    color: var(--bng-off-black);
+    color: var(--bng-off-white);
     font-weight: 600;
     border: none;
     transition: all 0.2s ease;
