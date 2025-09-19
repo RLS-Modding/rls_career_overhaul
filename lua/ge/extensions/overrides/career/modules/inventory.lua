@@ -1549,13 +1549,14 @@ local function onGetRawPoiListForLevel(levelIdentifier, elements)
       if be:getPlayerVehicleID(0) ~= vehId then -- don't display the current player's vehicle
         if map.objects[vehId] then
           local desc = "Player's vehicle"
-          if vehicles[invId].loanType then
+          if vehicles[invId] and vehicles[invId].loanType then
             desc = "Loaned vehicle"
           end
 
           local id = "plVeh"..vehId
+          if not map.objects[vehId] then goto continue end
           local dist, distUnit = translateDistance(map.objects[vehId].pos:distance(getPlayerVehicle(0):getPosition()), true)
-          local plate = vehicles[invId].config.licenseName
+          local plate = (vehicles[invId] and vehicles[invId].config and vehicles[invId].config.licenseName) or "Unknown"
           local odometer, odoUnit = translateDistance(career_modules_valueCalculator.getVehicleMileageById(invId), true)
 
           desc = string.format("%s | Distance: %0.2f %s | Licence plate: %s | Odometer: %i %s", desc, dist, distUnit, plate, odometer, odoUnit)
@@ -1576,6 +1577,7 @@ local function onGetRawPoiListForLevel(levelIdentifier, elements)
           })
         end
       end
+      ::continue::
     end
   end
 end
