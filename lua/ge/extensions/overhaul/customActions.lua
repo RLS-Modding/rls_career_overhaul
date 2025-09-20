@@ -34,6 +34,7 @@ local function onFileChanged(filename)
 end
 
 M.onExtensionLoaded = injectCustomActions
+M.onWorldReadyState = injectCustomActions
 M.onFirstUpdate = injectCustomActions
 M.onFileChanged = onFileChanged
 
