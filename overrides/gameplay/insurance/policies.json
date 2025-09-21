@@ -286,9 +286,6 @@
         }
       },
       "gestures": {
-        "policyScoreDecrease": {
-          "distance": 20000
-        },
         "freeRepair": {
           "distance": 18000
         }
@@ -622,9 +619,6 @@
       "paperworkFees": 25,
       "initialBuyPrice": 0,
       "gestures": {
-        "policyScoreDecrease": {
-          "distance": 99999999
-        },
         "freeRepair": {
           "distance": 99999999
         }
