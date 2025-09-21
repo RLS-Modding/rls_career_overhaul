@@ -2,6 +2,8 @@ local M = {}
 
 M.dependencies = {"core_input_actions"}
 
+local actionsPath = "lua/ge/extensions/core/input/actions"
+local activeActions = {} -- Track injected actions
 local customActions = {
     openPhone = {
         cat = "gameplay",
@@ -14,28 +16,20 @@ local customActions = {
 }
 
 local function injectCustomActions()
-    local activeActions = core_input_actions.getActiveActions()
-
+    local actions = {}
     for actionName, actionData in pairs(customActions) do
-        dump(actionName)
-        dump(actionData)
         if not activeActions[actionName] then
-            activeActions[actionName] = actionData
+            actions[actionData.cat] = actions[actionData.cat] or jsonReadFile(actionsPath .. "/" .. actionData.cat .. ".json") or {}
+            actions[actionData.cat][actionName] = actionData
+            activeActions[actionName] = true
             log("I", "customActions", "Injected custom action: " .. actionName)
         end
     end
-end
-
-local function onFileChanged(filename)
-    -- Re-inject actions when action files change
-    if string.find(filename, "input/actions") then
-        injectCustomActions()
+    for cat, actionData in pairs(actions) do
+        jsonWriteFile("overriden/" .. actionsPath .. "/" .. cat .. ".json", actionData)
     end
 end
 
-M.onExtensionLoaded = injectCustomActions
-M.onWorldReadyState = injectCustomActions
-M.onFirstUpdate = injectCustomActions
-M.onFileChanged = onFileChanged
+M.injectCustomActions = injectCustomActions
 
 return M

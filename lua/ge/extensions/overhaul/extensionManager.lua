@@ -2,46 +2,6 @@ local M = {}
 
 local ourModName = "rls_career_overhaul"
 local ourModId = "RLSCO24"
-local copiedJsonFiles = {}
-
-local function copyJsonOverrides()
-    local overridesDir = '/lua/ge/extensions/overrides/'
-    local jsonFiles = FS:findFiles(overridesDir, '*.json', -1, true, false)
-
-    if not jsonFiles or #jsonFiles == 0 then
-        return true
-    end
-
-    for _, jsonFile in ipairs(jsonFiles) do
-        local originalPath = jsonFile:gsub('/overrides/', '/')
-
-        local targetDir = originalPath:match("(.*/)")
-        if targetDir then
-            FS:directoryCreate(targetDir)
-        end
-
-        if FS:copyFile(jsonFile, originalPath) then
-            table.insert(copiedJsonFiles, originalPath)
-        end
-    end
-
-    return true
-end
-
-local function cleanupJsonOverrides()
-    if not copiedJsonFiles or #copiedJsonFiles == 0 then
-        return true
-    end
-
-    for _, jsonFile in ipairs(copiedJsonFiles) do
-        if FS:fileExists(jsonFile) then
-            FS:removeFile(jsonFile)
-        end
-    end
-
-    copiedJsonFiles = {}
-    return true
-end
 
 local function checkVersion()
     local fileData = jsonReadFile("integrity.json")
@@ -80,7 +40,6 @@ local function loadExtensions()
 end
 
 local function unloadAllExtensions()
-
     extensions.unload("core_gameContext")
     extensions.unload("gameplay_events_freeroamEvents")
     extensions.unload("career_career")
@@ -94,53 +53,19 @@ local function unloadAllExtensions()
     extensions.unload("overhaul_maps")
     extensions.unload("overhaul_clearLevels")
     extensions.unload("overhaul_customActions")
-    extensions.unload("overhaul_ui")
-
-    cleanupJsonOverrides()
-
 end
 
-local function setupAutomaticOverrides()
-    local success, overrideManager = pcall(require, 'lua.ge.extensions.overhaul.overrideManager')
-    if not success then
-        return false
-    end
-
-    if not overrideManager.installSystem() then
-        return false
-    end
-
-    local overridesDir = '/lua/ge/extensions/overrides/'
-    local luaFiles = FS:findFiles(overridesDir, '*.lua', -1, true, false)
-
-    local overrideCount = 0
-    if luaFiles and #luaFiles > 0 then
-        for _, overrideFile in ipairs(luaFiles) do
-            local modulePath = overrideFile:gsub('^/lua/ge/extensions/', 'lua.ge.extensions.'):gsub('%.lua$', ''):gsub('/', '.')
-            local originalPath = modulePath:gsub('%.overrides%.', '.')
-            local extensionPath = originalPath:gsub('lua%.ge%.extensions%.', ''):gsub('%.', '_')
-
-            if overrideManager.setOverride(extensionPath, modulePath) then
-                overrideCount = overrideCount + 1
-            end
-        end
-    end
-
-
-    copyJsonOverrides()
-
-    return true
-end
 
 local function startup()
     deactivateBeamMP()
 
-    setupAutomaticOverrides()
+    setExtensionUnloadMode("overhaul_overrideManager", "manual")
+    extensions.load("overhaul_overrideManager")
 
     setExtensionUnloadMode("overhaul_settings", "manual")
+    setExtensionUnloadMode("overhaul_customActions", "manual")
     setExtensionUnloadMode("overhaul_maps", "manual")
     setExtensionUnloadMode("overhaul_clearLevels", "manual")
-    setExtensionUnloadMode("overhaul_customActions", "manual")
 
     if not core_gamestate.state or core_gamestate.state.state ~= "career" then
         loadExtensions()
@@ -156,8 +81,8 @@ local function startup()
 
     loadManualUnloadExtensions()
 
-    setExtensionUnloadMode("overhaul_ui", "manual")
-    extensions.load("overhaul_ui")
+    local compatibleMaps = overhaul_maps.getCompatibleMaps()
+    overhaul_overrideManager.initializeOverrides(compatibleMaps)
 end
 
 local function onModActivated(modData)
@@ -210,5 +135,12 @@ M.onVehicleSpawned = onVehicleSpawned
 M.onExtensionLoaded = startup
 M.onModActivated = onModActivated
 M.onModDeactivated = onModDeactivated
+
+M.getModData = function()
+    return {
+        name = ourModName,
+        id = ourModId
+    }
+end
 
 return M
