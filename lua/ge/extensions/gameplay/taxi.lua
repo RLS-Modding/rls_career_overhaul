@@ -1011,8 +1011,10 @@ local function onVehicleSwitched()
     currentVehiclePartsTree = nil
     -- Reset taxi job state when switching vehicles
     state = "start"
+    if currentFare then
+        core_groundMarkers.resetAll()
+    end
     currentFare = nil
-    core_groundMarkers.resetAll()
     jobOfferTimer = 0
     jobOfferInterval = math.random(5, 45)
     cumulativeReward = 0
