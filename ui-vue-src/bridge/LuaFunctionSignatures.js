@@ -136,7 +136,7 @@ export default {
 
   career_modules_vehicleShopping: {
     showVehicle: id => String,
-    navigateToPos: pos => Object,
+    navigateToPos: (pos, vehicleId) => Object, // vehicleId is optional
     openShop: (seller, computerId) => [Any, Any], // i think this needs to be Any instead of String to also allow nil
     cancelShopping: () => {},
     quickTravelToVehicle: id => String,

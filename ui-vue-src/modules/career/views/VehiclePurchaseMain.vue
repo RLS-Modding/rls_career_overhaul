@@ -119,7 +119,7 @@
         >
 
 
-        <BngButton @click="startTestDrive" :accent="ACCENTS.secondary" :disabled="vehiclePurchaseStore.alreadyDidTestDrive">Test Drive</BngButton>
+        <BngButton v-if="vehiclePurchaseStore.vehId" @click="startTestDrive" :accent="ACCENTS.secondary" :disabled="vehiclePurchaseStore.alreadyDidTestDrive">Test Drive</BngButton>
 
         <div v-bng-tooltip:top="tradeInButtonMessage">
           <BngButton :disabled="!vehiclePurchaseStore.tradeInEnabled || !hasVehicle" accent="secondary" @click="chooseTradeInVehicle"

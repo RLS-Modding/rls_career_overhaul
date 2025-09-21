@@ -24,6 +24,7 @@ export const useVehiclePurchaseStore = defineStore("vehiclePurchase", () => {
   const dealershipId = ref("")
   const prices = ref({})
   const selectedPolicyId = ref(0)
+  const vehId = ref(null)
   const insurancePoliciesStore = useInsurancePoliciesStore()
 
   const finalPackagePrice = computed(() => {
@@ -59,6 +60,7 @@ export const useVehiclePurchaseStore = defineStore("vehiclePurchase", () => {
     buyCustomLicensePlate.value = false
     customLicensePlateText.value = ""
     dealershipId.value = data.dealershipId
+    vehId.value = data.vehId || null
 
     forceTradeIn.value = data.forceTradeIn
 
@@ -167,6 +169,7 @@ export const useVehiclePurchaseStore = defineStore("vehiclePurchase", () => {
     tradeInVehicleInfo,
     vehicleInfo,
     buyCustomLicensePlate,
-    customLicensePlateText
+    customLicensePlateText,
+    vehId
   }
 })

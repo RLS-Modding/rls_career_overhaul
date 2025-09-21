@@ -88,7 +88,7 @@
             <BngButton
               :accent="ACCENTS.menu"
               size="sm"
-              @click="showVehicle(getVehicleId())"
+              @click="vehicle.sellerId === vehicleShoppingData.currentSeller ? showVehicle(getVehicleId()) : navigateToPos(vehicle.pos, getVehicleId())"
               :disabled="vehicleShoppingData.disableShopping || Boolean(vehicle.__sold || vehicle.soldViewCounter)"
               class="action-btn"
             >
@@ -203,6 +203,10 @@ const confirmTaxi = async (vehicleId, vehicle) => {
 
 const showVehicle = vehicleId => {
   lua.career_modules_vehicleShopping.showVehicle(vehicleId)
+}
+
+const navigateToPos = pos => {
+  lua.career_modules_vehicleShopping.navigateToPos(pos)
 }
 
 const quickTravelToVehicle = vehicleId => {

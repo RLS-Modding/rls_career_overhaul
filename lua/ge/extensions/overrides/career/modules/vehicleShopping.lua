@@ -655,7 +655,12 @@ local function updateVehicleList(fromScratch)
     local vehicleInfo = vehiclesInShop[i]
     local offerTime = currentTime - vehicleInfo.generationTime
     if offerTime > vehicleInfo.offerTTL then
-      if not vehicleInfo.markedSold then
+      -- Check if vehicle is currently spawned or in purchase menu
+      local spawnedVehicleInfo = career_modules_inspectVehicle.getSpawnedVehicleInfo()
+      local isVehicleSpawned = spawnedVehicleInfo and spawnedVehicleInfo.shopId == vehicleInfo.shopId
+      local isVehicleInPurchase = purchaseData and purchaseData.vehicleInfo and purchaseData.vehicleInfo.uid == vehicleInfo.uid
+
+      if not vehicleInfo.markedSold and not isVehicleSpawned and not isVehicleInPurchase then
         -- First time detecting expiration - mark as sold but keep in list
         vehicleInfo.uid = vehicleInfo.uid or makeUid(vehicleInfo)
         vehicleInfo.markedSold = true
@@ -939,12 +944,6 @@ local function buyVehicleAndSpawnInParkingSpot(options)
   end
 end
 
--- Navigation functions
-local function navigateToPos(pos)
-  core_groundMarkers.setPath(vec3(pos.x, pos.y, pos.z))
-  guihooks.trigger('ChangeState', {state = 'play', params = {}})
-end
-
 -- TODO At this point, the part conditions of the previous vehicle should have already been saved. for example when entering the garage
 local originComputerId
 local function openShop(seller, _originComputerId, screenTag)
@@ -1142,7 +1141,8 @@ local function sendPurchaseDataToUi()
     tradeInVehicleInfo = purchaseData.tradeInVehicleInfo,
     prices = purchaseData.prices,
     dealershipId = vehicleShopInfo.sellerId,
-    alreadyDidTestDrive = career_modules_inspectVehicle.getDidTestDrive() or false
+    alreadyDidTestDrive = career_modules_inspectVehicle.getDidTestDrive() or false,
+    vehId = purchaseData.vehId
   }
 
   local playerInsuranceData = career_modules_insurance.getPlayerPolicyData()[data.vehicleInfo.requiredInsurance.id]
@@ -1266,6 +1266,22 @@ local function startInspectionWorkitem(job, vehicleInfo, teleportToVehicle)
 
   --notify other extensions
   extensions.hook("onVehicleShoppingVehicleShown", {vehicleInfo = vehicleInfo})
+end
+
+-- Navigation functions
+local function navigateToPos(pos, vehicleId)
+  core_groundMarkers.setPath(vec3(pos.x, pos.y, pos.z))
+  guihooks.trigger('ChangeState', {state = 'play', params = {}})
+
+  -- If vehicleId is provided, also spawn the vehicle for inspection
+  if vehicleId then
+    local vehicleInfo = findVehicleById(vehicleId)
+    if not vehicleInfo then
+      log("E", "Career", "Failed to find vehicle for inspection with vehicleId: " .. tostring(vehicleId))
+      return
+    end
+    core_jobsystem.create(startInspectionWorkitem, nil, vehicleInfo, false)
+  end
 end
 
 local function showVehicle(vehicleId)
