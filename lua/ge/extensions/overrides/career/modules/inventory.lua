@@ -517,6 +517,7 @@ local function updatePartConditions(vehId, inventoryId, callback)
   end
   if not veh then
     log("E", "", "Couldnt find vehicle object to get part conditions")
+    if callback then callback() end
     return
   end
 
@@ -695,6 +696,7 @@ local function setupInventory(levelPath)
                           vehiclesToTeleportToGarage[inventoryId] = location
                       end
                       spawn.safeTeleport(veh, location.pos, location.rot)
+                      commands.setGameCamera(true)
                   end
                 end
             end
@@ -1898,8 +1900,6 @@ end
 M.saveFRETimeToVehicle = saveFRETimeToVehicle
 M.getFRETimeToVehicle = getFRETimeToVehicle
 M.getFRECompletions = getFRECompletions
-M.calculateSeatingCapacity = calculateSeatingCapacity
-M.onWorldReadyState = onWorldReadyState
 
 M.addVehicle = addVehicle
 M.removeVehicle = removeVehicle
