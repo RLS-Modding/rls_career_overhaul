@@ -1284,12 +1284,12 @@ local function checkRenewPolicy(policyId)
             policyElapsedSeconds[policyId] = 0
             return
         end
+
         table.insert(plHistory.policyHistory[policyId].renewedPolicy, { time = os.time(), price = premium })
         local polName = (availablePolicies[policyId] and availablePolicies[policyId].name) or tostring(policyId)
         local label = string.format("Insurance renewed! Tier: %s (-%0.2f$) (%d vehicle%s)", polName, premium, chargedVehicles, chargedVehicles == 1 and "" or "s")
         local logBookLabel = string.format("Insurance renewed! Tier: %s", polName)
         career_modules_payment.pay({ money = { amount = premium, canBeNegative = true } }, { label = logBookLabel })
-        ui_message(label, 5, "Insurance", "info")
         policyTows[policyId] = getPlPerkValue(policyId, "roadsideAssistance") or 0
 
         -- Decrease insurance score during renewal only if there were no accidents since last renewal
@@ -1300,9 +1300,11 @@ local function checkRenewPolicy(policyId)
             if plPoliciesData[policyId].bonus < 0.5 then
                 plPoliciesData[policyId].bonus = 0.5
             end
-            ui_message(string.format("Insurance policy '%s' score decreased to %0.2f during renewal (no accidents)",
-                availablePolicies[policyId].name, plPoliciesData[policyId].bonus), 6, "Insurance", "info")
+            label = label .. string.format("Insurance policy '%s' score decreased to %0.2f during renewal (no accidents)",
+            availablePolicies[policyId].name, plPoliciesData[policyId].bonus)
         end
+
+        ui_message(label, 5, "Insurance", "info")
 
         policyElapsedSeconds[policyId] = 0
     end
