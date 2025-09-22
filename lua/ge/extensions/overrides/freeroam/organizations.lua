@@ -6,6 +6,10 @@ local M = {}
 
 local organizations
 
+local blacklist = {
+  "gameplay/organizations/logistics.organizations.json"
+}
+
 local function addAdditionalInfoToOrg(organization)
   career_modules_reputation.addReputationToOrg(organization)
   organization.visible = career_career and career_career.hasInteractedWithOrganization(organization.id)
@@ -20,12 +24,16 @@ local function getOrganizations()
 
     -- parse any other organization files inside the "/organizations" folder
     for _,file in ipairs(FS:findFiles("gameplay/organizations/", '*.organizations.json', -1, false, true)) do
+      if blacklist[file] then
+        goto continue
+      end
       local data = jsonReadFile(file)
       for orgId, orgData in pairs(data) do
         orgData.id = orgId
         addAdditionalInfoToOrg(orgData)
         organizations[orgId] = orgData
       end
+      ::continue::
     end
     log("D","",string.format("Loaded organizations"))
   end

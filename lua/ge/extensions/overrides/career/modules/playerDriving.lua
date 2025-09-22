@@ -198,7 +198,13 @@ local function onPursuitAction(vehId, action, data)
     return
   end
   local playerIsCop = getPlayerIsCop()
-  if vehId ~= be:getPlayerVehicleID(0) and not playerIsCop then
+  if vehId ~= be:getPlayerVehicleID(0) and playerIsCop then
+    local vehicle = scenetree.findObjectById(vehId)
+    local distance = vehicle:getPosition():distance(getPlayerVehicle(0):getPosition())
+    if distance > 15 then
+      return
+    end
+  elseif vehId ~= be:getPlayerVehicleID(0) and not playerIsCop then
     return
   end
 

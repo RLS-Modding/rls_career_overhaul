@@ -3,6 +3,16 @@
 -- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
 
 local M = {}
+
+local blacklist = {
+  "gameplay/delivery/materials.deliveryMaterials.json",
+  "gameplay/delivery/materials.deliveryParcels.json",
+  "gameplay/delivery/mechanics.deliveryParcels.json",
+  "gameplay/delivery/restaurants.deliveryParcels.json",
+  "gameplay/delivery/vehicles.deliveryVehicles.json",
+  "gameplay/delivery/warehouses.deliveryParcels.json",
+}
+
 M.dependencies = {"freeroam_facilities", "gameplay_sites_sitesManager", "util_configListGenerator"}
 local im = ui_imgui
 local dParcelManager, dCargoScreen, dGeneral, dGenerator, dProgress, dVehOfferManager, dParcelMods, dVehOfferManager
@@ -177,6 +187,9 @@ local function getDeliveryParcelTemplates()
     local levelInfo = core_levels.getLevelByName(getCurrentLevelIdentifier())
     local files = FS:findFiles("gameplay/delivery/", '*.deliveryParcels.json', -1, false, true)
     for _,file in ipairs(files) do
+      if blacklist[file] then
+        goto continue
+      end
       for k, v in pairs(jsonReadFile(file) or {}) do
         local item = v
         item.id = k
@@ -212,6 +225,7 @@ local function getDeliveryParcelTemplates()
         item.modChance = item.modChance or {}
         item.modChance.timed = item.modChance.timed or 0.2
       end
+      ::continue::
     end
     log("I","",string.format("Loaded %d item templates from %d files.", #tableKeys(parcelItemTemplates), #files))
   end
@@ -408,6 +422,9 @@ local function getDeliveryVehicleTemplates()
     local files = FS:findFiles("gameplay/delivery/", '*.deliveryVehicles.json', -1, false, true)
     eligibleVehicles = util_configListGenerator.getEligibleVehicles(false, true)
     for _,file in ipairs(files) do
+      if blacklist[file] then
+        goto continue
+      end
       for id, filter in pairs(jsonReadFile(file) or {}) do
         filter.id = id
 
@@ -415,6 +432,7 @@ local function getDeliveryVehicleTemplates()
         table.insert(vehicleFilterTemplates, filter)
         vehicleFilterTemplatesById[id] = filter
       end
+      ::continue::
     end
   end
   return vehicleFilterTemplates
@@ -585,11 +603,15 @@ local function getMaterialsTemplates()
     materialTemplates = {}
     local files = FS:findFiles("gameplay/delivery/", '*.deliveryMaterials.json', -1, false, true)
     for _,file in ipairs(files) do
+      if blacklist[file] then
+        goto continue
+      end
       for id, data in pairs(jsonReadFile(file) or {}) do
         data.id = id
         table.insert(materialTemplates, data)
         materialTemplatesById[id] = data
       end
+      ::continue::
     end
   end
   return materialTemplates
