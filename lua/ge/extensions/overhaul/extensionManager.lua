@@ -130,6 +130,12 @@ local function onVehicleSpawned(_, veh)
         ai = overrideAI
     ]])
 end
+
+M.onUIInitialised = function()
+    -- On UI Initialised, load the custom actions
+    core_input_actions.onFirstUpdate()
+    core_input_actions.getActiveActions()
+end
   
 M.onVehicleSpawned = onVehicleSpawned
 M.onExtensionLoaded = startup
