@@ -5,6 +5,7 @@ local logTag = 'overrideManager'
 local overrides = {}
 local originalLoad = nil
 local originalReload = nil
+local originalReloadUI = nil
 
 local MOD_OVERRIDES_DIR = "/overrides/"
 local LOCAL_OVERRIDEN_ROOT = "/overriden/"
@@ -270,9 +271,6 @@ local function mountCustomOverrides()
   if not FS:directoryExists(LOCAL_OVERRIDEN_ROOT) then
       return false
   end
-  
-  overhaul_customActions.injectCustomActions()
-  applyUIOverrides()
 
   if not FS:isMounted(LOCAL_OVERRIDEN_ROOT) then
       if FS:mount(LOCAL_OVERRIDEN_ROOT) then
@@ -366,11 +364,19 @@ local function onModDeactivated(modData)
   if (ourMod.name and modData.modname == ourMod.name) or
   (ourMod.id and modData.modData and modData.modData.tagid == ourMod.id) then
     unloadOverrides()
+    reloadUI = originalReloadUI
   end
 end
 
 local function onExtensionLoaded()
   ourMod = overhaul_extensionManager.getModData()
+  originalReloadUI = reloadUI
+
+  reloadUI = function()
+    applyUIOverrides()
+    FS:mount(LOCAL_OVERRIDEN_ROOT)
+    originalReloadUI()
+  end
 
   if not installSystem() then
     print("Failed to install override system")
@@ -396,6 +402,11 @@ local function onExtensionLoaded()
   return true
 end
 
+
+M.onUIInitialised = function()
+  FS:remove(LOCAL_OVERRIDEN_ROOT .. "ui/")
+end
+
 M.onExtensionLoaded = onExtensionLoaded
 M.onModDeactivated = onModDeactivated
 
@@ -416,6 +427,5 @@ M.clearNonLevelOverrides = clearNonLevelOverrides
 
 M.initializeOverrides = initializeOverrides
 M.handleMapOverrides = handleMapOverrides
-M.applyUIOverrides = applyUIOverrides
 
 return M

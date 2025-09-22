@@ -131,6 +131,9 @@ function M.onGetRawPoiListForLevel(levelIdentifier, elements)
         end
     end
 end
+M.onCareerModulesActivated = function()
+    print("It was called")
+end
 
 M.canPay = canPay
 M.startCertification = startCertification

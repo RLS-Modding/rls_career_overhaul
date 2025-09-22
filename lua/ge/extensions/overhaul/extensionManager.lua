@@ -52,7 +52,6 @@ local function unloadAllExtensions()
     extensions.unload("overhaul_settings")
     extensions.unload("overhaul_maps")
     extensions.unload("overhaul_clearLevels")
-    extensions.unload("overhaul_customActions")
 end
 
 
@@ -63,7 +62,6 @@ local function startup()
     extensions.load("overhaul_overrideManager")
 
     setExtensionUnloadMode("overhaul_settings", "manual")
-    setExtensionUnloadMode("overhaul_customActions", "manual")
     setExtensionUnloadMode("overhaul_maps", "manual")
     setExtensionUnloadMode("overhaul_clearLevels", "manual")
 
@@ -129,12 +127,6 @@ local function onVehicleSpawned(_, veh)
         extensions.load('overrideAI')
         ai = overrideAI
     ]])
-end
-
-M.onUIInitialised = function()
-    -- On UI Initialised, load the custom actions
-    core_input_actions.onFirstUpdate()
-    core_input_actions.getActiveActions()
 end
   
 M.onVehicleSpawned = onVehicleSpawned

@@ -330,7 +330,7 @@ local function loadPoliciesData(resetSomeData)
         return
     end
 
-    local policiesJsonData = jsonReadFile("gameplay/insurance/policies.json")
+    local policiesJsonData = jsonReadFile("gameplay/insurance/rlsPolicies.json")
     -- Convert to id-keyed map so policy id 0 works and we can index by id
     availablePolicies = {}
     if policiesJsonData and policiesJsonData.insurancePolicies then
