@@ -205,8 +205,8 @@ const showVehicle = vehicleId => {
   lua.career_modules_vehicleShopping.showVehicle(vehicleId)
 }
 
-const navigateToPos = pos => {
-  lua.career_modules_vehicleShopping.navigateToPos(pos)
+const navigateToPos = (pos, vehicleId) => {
+  lua.career_modules_vehicleShopping.navigateToPos(pos, vehicleId)
 }
 
 const quickTravelToVehicle = vehicleId => {

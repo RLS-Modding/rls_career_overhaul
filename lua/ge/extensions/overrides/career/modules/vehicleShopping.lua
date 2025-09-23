@@ -49,6 +49,10 @@ local vehicleCache = {
   cacheValid = false
 }
 
+-- State tracking for hold logic
+local purchaseMenuOpen = false
+local inspectingVehicleUid = nil
+
 -- Utility functions
 local function makeUid(v)
   local sid = v.sellerId or ""
@@ -203,6 +207,9 @@ local function onUpdate(dt)
     refreshAccumulator = 0
     M.updateVehicleList(false)
   end
+
+  -- Check and update spawned vehicle status
+  M.checkSpawnedVehicleStatus()
 end
 
 -- Data access functions
@@ -655,22 +662,40 @@ local function updateVehicleList(fromScratch)
     local vehicleInfo = vehiclesInShop[i]
     local offerTime = currentTime - vehicleInfo.generationTime
     if offerTime > vehicleInfo.offerTTL then
-      -- Check if vehicle is currently spawned or in purchase menu
+      -- Check if vehicle should be held from being sold
       local spawnedVehicleInfo = career_modules_inspectVehicle.getSpawnedVehicleInfo()
-      local isVehicleSpawned = spawnedVehicleInfo and spawnedVehicleInfo.shopId == vehicleInfo.shopId
-      local isVehicleInPurchase = purchaseData and purchaseData.vehicleInfo and purchaseData.vehicleInfo.uid == vehicleInfo.uid
+      local isVehicleSpawned = spawnedVehicleInfo and (
+        spawnedVehicleInfo.shopId == vehicleInfo.shopId or
+        spawnedVehicleInfo.uid == vehicleInfo.uid or
+        (inspectingVehicleUid and inspectingVehicleUid == vehicleInfo.uid)
+      )
+      local isVehicleInPurchase = purchaseData and purchaseData.vehicleInfo and (
+        purchaseData.vehicleInfo.uid == vehicleInfo.uid or
+        (purchaseData.uid and purchaseData.uid == vehicleInfo.uid)
+      )
+      local isVehicleBeingInspected = inspectingVehicleUid == vehicleInfo.uid
+      local isPurchaseMenuOpen = purchaseMenuOpen
 
-      if not vehicleInfo.markedSold and not isVehicleSpawned and not isVehicleInPurchase then
+      if not vehicleInfo.markedSold and not isVehicleSpawned and not isVehicleInPurchase and not isVehicleBeingInspected and not isPurchaseMenuOpen then
         -- First time detecting expiration - mark as sold but keep in list
         vehicleInfo.uid = vehicleInfo.uid or makeUid(vehicleInfo)
         vehicleInfo.markedSold = true
         vehicleInfo.soldViewCounter = 1
         vehicleInfo.soldGraceUntil = currentTime + 120
         justExpiredUids[vehicleInfo.uid] = true
-      elseif vehicleInfo.soldGraceUntil and currentTime >= vehicleInfo.soldGraceUntil then
-        -- Grace period expired - now remove it
-        table.remove(vehiclesInShop, i)
+        log("D", "Career", "Vehicle marked as sold (hold logic check passed): " .. tostring(vehicleInfo.uid))
+      else
+        -- Log why vehicle was not marked as sold
+        local reasons = {}
+        if isVehicleSpawned then table.insert(reasons, "spawned") end
+        if isVehicleInPurchase then table.insert(reasons, "in purchase") end
+        if isVehicleBeingInspected then table.insert(reasons, "being inspected") end
+        if isPurchaseMenuOpen then table.insert(reasons, "purchase menu open") end
+        log("D", "Career", "Vehicle hold logic prevented sale of " .. tostring(vehicleInfo.uid) .. ": " .. table.concat(reasons, ", "))
       end
+    elseif vehicleInfo.soldGraceUntil and currentTime >= vehicleInfo.soldGraceUntil then
+      -- Grace period expired - now remove it
+      table.remove(vehiclesInShop, i)
     end
   end
 
@@ -1066,6 +1091,9 @@ end
 
 local function onShoppingMenuClosed()
   if tether then tether.remove = true tether = nil end
+  -- Clear inspection state when shopping menu closes
+  inspectingVehicleUid = nil
+  purchaseMenuOpen = false
 end
 
 local function getVehiclesInShop()
@@ -1264,6 +1292,9 @@ local function startInspectionWorkitem(job, vehicleInfo, teleportToVehicle)
   ui_fadeScreen.stop(0.5)
   job.sleep(1.0)
 
+  -- Track that this vehicle is being inspected
+  inspectingVehicleUid = vehicleInfo.uid
+
   --notify other extensions
   extensions.hook("onVehicleShoppingVehicleShown", {vehicleInfo = vehicleInfo})
 end
@@ -1352,6 +1383,7 @@ local function openPurchaseMenu(purchaseType, vehicleId)
     vehicleInfo = vehicle -- Store the vehicle info directly to avoid lookup issues
   }
 
+  purchaseMenuOpen = true
   log("D", "Career", "Successfully opened purchase menu for vehicle: " .. tostring(uid))
   extensions.hook("onVehicleShoppingPurchaseMenuOpened", {purchaseType = purchaseType, vehicleId = vehicleId})
 end
@@ -1456,9 +1488,12 @@ local function buyFromPurchaseMenu(purchaseType, options)
       pendingSoldUids[purchaseData.vehicleId] = true
     end
   end
+  purchaseMenuOpen = false
+  inspectingVehicleUid = nil
 end
 
 local function cancelPurchase(purchaseType)
+  purchaseMenuOpen = false
   if purchaseType == "inspect" then
     career_career.closeAllMenus()
   elseif purchaseType == "instant" then
@@ -1503,6 +1538,10 @@ local function onExtensionLoaded()
 
   -- Initialize vehicle cache
   cacheDealers()
+
+  -- Initialize state tracking
+  purchaseMenuOpen = false
+  inspectingVehicleUid = nil
 
   -- load from saveslot
   local saveSlot, savePath = career_saveSystem.getCurrentSaveSlot()
@@ -1729,17 +1768,40 @@ M.cancelPurchase = cancelPurchase
 
 M.getVehiclesInShop = getVehiclesInShop
 
-M.onWorldReadyState = onWorldReadyState
-M.onModActivated = onModActivated
-M.onClientStartMission = onClientStartMission
-M.onVehicleSpawnFinished = onVehicleSpawnFinished
-M.onAddedVehiclePartsToInventory = onAddedVehiclePartsToInventory
-M.onEnterVehicleFinished = onEnterVehicleFinished
-M.onExtensionLoaded = onExtensionLoaded
-M.onSaveCurrentSaveSlot = onSaveCurrentSaveSlot
-M.onShoppingMenuClosed = onShoppingMenuClosed
-M.onComputerAddFunctions = onComputerAddFunctions
-M.onUpdate = onUpdate
+  M.onWorldReadyState = onWorldReadyState
+  M.onModActivated = onModActivated
+  M.onClientStartMission = onClientStartMission
+  M.onVehicleSpawnFinished = onVehicleSpawnFinished
+  M.onAddedVehiclePartsToInventory = onAddedVehiclePartsToInventory
+  M.onEnterVehicleFinished = onEnterVehicleFinished
+  M.onExtensionLoaded = onExtensionLoaded
+  M.onSaveCurrentSaveSlot = onSaveCurrentSaveSlot
+  M.onShoppingMenuClosed = onShoppingMenuClosed
+  M.onComputerAddFunctions = onComputerAddFunctions
+  M.onUpdate = onUpdate
+
+  -- Add callback for when inspection ends
+  M.onVehicleInspectionFinished = function(vehicleUid)
+    if inspectingVehicleUid == vehicleUid then
+      inspectingVehicleUid = nil
+      log("D", "Career", "Inspection finished for vehicle: " .. tostring(vehicleUid))
+    end
+  end
+
+  -- Function to check if spawned vehicle still exists
+  M.checkSpawnedVehicleStatus = function()
+    local spawnedVehicleInfo = career_modules_inspectVehicle.getSpawnedVehicleInfo()
+    if spawnedVehicleInfo and inspectingVehicleUid and spawnedVehicleInfo.uid == inspectingVehicleUid then
+      -- Vehicle is still spawned, keep tracking
+      return true
+    elseif inspectingVehicleUid then
+      -- Vehicle is no longer spawned or inspection ended
+      log("D", "Career", "Clearing inspection state for vehicle: " .. tostring(inspectingVehicleUid))
+      inspectingVehicleUid = nil
+      return false
+    end
+    return false
+  end
 
 M.cacheDealers = cacheDealers
 M.getRandomVehicleFromCache = getRandomVehicleFromCache
