@@ -190,11 +190,14 @@ local function processDuePayments(elapsedSimSeconds)
       else
         local price = { money = { amount = needed } }
         if career_modules_payment and career_modules_payment.canPay(price) and career_modules_payment.pay(price, { label = string.format("Loan payment (%s)", loan.orgName or loan.orgId) }) then
+
           loan.principalOutstanding = r2(math.max(0, (loan.principalOutstanding or 0) - principalDue))
           loan.paymentsSent = (loan.paymentsSent or 0) + 1
           loan.amountPaid = r2((loan.amountPaid or 0) + needed)
+
           loan.nextInterestPaid = 0
           loan.nextPrincipalPaid = 0
+
           loan.secondsUntilNextPayment = loan.secondsUntilNextPayment + PAYMENT_INTERVAL_S
           awardOrgReputation(loan.orgId, 1, loan.orgName)
           -- Show payment success message
@@ -333,6 +336,7 @@ local function prepayLoan(loanId, amount)
       if remain > 0 then
         local coverPrincipal = math.min(remain, principalDue)
         loan.nextPrincipalPaid = r2((loan.nextPrincipalPaid or 0) + coverPrincipal)
+        
         local beforePO = loan.principalOutstanding or 0
         loan.principalOutstanding = r2(math.max(0, beforePO - coverPrincipal))
         remain = r2(remain - coverPrincipal)
