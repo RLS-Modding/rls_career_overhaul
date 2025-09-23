@@ -38,3 +38,5 @@
 {"name":"joesJunk_area","class":"BeamNGGameplayArea","__parent":"customDealerships","position":[152.047394,775.37207,103.759254],"rotationMatrix":[-0.0103931427,-0.999945819,0,0.999945819,-0.0103931427,0,0,0,1],"scale":[1.13588154,1.11619401,2.05547523]}
 {"name":"importDealer_area","class":"BeamNGGameplayArea","__parent":"customDealerships","position":[436.287689,1670.89014,74.9001923],"rotationMatrix":[-0.0103931427,-0.999945819,0,0.999945819,-0.0103931427,0,0,0,1],"scale":[1.13588154,1.11619401,2.05547523]}
 {"name":"importDealer_icon","class":"BeamNGPointOfInterest","__parent":"customDealerships","position":[436.366272,1671.2124,76.2993774],"rotationMatrix":[-0.942321777,-0.334708244,0,0.334708244,-0.942321777,0,0,0,1]}
+{"name":"asotv_icon","class":"BeamNGPointOfInterest","__parent":"customDealerships","position":[35.0738869,651.955933,76.8217621]}
+{"name":"asotv_area","class":"BeamNGGameplayArea","__parent":"customDealerships","position":[35.0738869,651.955933,74.7222595],"scale":[2.27698231,2.27698231,3.37102032]}
