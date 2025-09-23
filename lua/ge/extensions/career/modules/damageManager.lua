@@ -48,13 +48,11 @@ function M.saveDamageState(inventoryId, saveFile, removeVehicle)
     if not saveFile then
         saveFile = GetVehicleSaveFile(inventoryId)
     end
-    print("Checking damage state for vehicle " .. inventoryId .. " to " .. saveFile)
     local vehicle = career_modules_inventory.getVehicles()[inventoryId]
     local spawnedVehicles = career_modules_inventory.getMapInventoryIdToVehId()
     if vehicle and spawnedVehicles[inventoryId] then
         local numberOfBrokenParts = career_modules_valueCalculator.getNumberOfBrokenParts(career_modules_inventory.getVehicles()[inventoryId].partConditions)
         if numberOfBrokenParts > 0 then
-            print("Saving damage state for vehicle " .. inventoryId .. " to " .. saveFile)
             local vehId = career_modules_inventory.getVehicleIdFromInventoryId(inventoryId)
             local object = be:getObjectByID(vehId)
             local dir, _, _ = path.split(saveFile)
@@ -72,7 +70,6 @@ function M.saveDamageState(inventoryId, saveFile, removeVehicle)
                 local object = be:getObjectByID(vehId)
                 object:delete()
             end
-            print("No damage state to save for vehicle " .. inventoryId)
             FS:removeFile(saveFile)
 
             local vehId = career_modules_inventory.getVehicleIdFromInventoryId(inventoryId)
@@ -87,7 +84,6 @@ function M.saveDamageState(inventoryId, saveFile, removeVehicle)
 end
 
 function M.loadDamageState(inventoryId)
-    print("Loading damage state for vehicle " .. inventoryId)
     local saveFile = GetVehicleSaveFile(inventoryId)
     local object = be:getObjectByID(career_modules_inventory.getVehicleIdFromInventoryId(inventoryId))
     if object and FS:fileExists(saveFile) then
@@ -179,7 +175,6 @@ local function onSaveCurrentSaveSlot(currentSavePath)
         local oldDamageFiles = FS:findFiles(oldDamageDir, '*_damageState.json', 0, false, false)
         for _, oldFilePath in ipairs(oldDamageFiles) do
             local _, fileName, _ = path.split(oldFilePath)
-            print("oldFilePath: " .. oldFilePath)
             oldFiles[fileName] = oldFilePath
         end
     end
@@ -188,7 +183,6 @@ local function onSaveCurrentSaveSlot(currentSavePath)
         local newDamageFiles = FS:findFiles(newDamageDir, '*_damageState.json', 0, false, false)
         for _, newFilePath in ipairs(newDamageFiles) do
             local _, fileName, _ = path.split(newFilePath)
-            print("newFilePath: " .. newFilePath)
             newFiles[fileName] = newFilePath
         end
     end

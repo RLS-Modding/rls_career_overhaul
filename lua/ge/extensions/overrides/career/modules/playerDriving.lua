@@ -616,6 +616,13 @@ local function showPosition(pos)
   end
 end
 
+local function onWorldReadyState(state)
+  if state == 2 and career_career.isActive() then
+    setupTraffic()
+  end
+end
+
+M.onWorldReadyState = onWorldReadyState
 M.getPlayerData = getPlayerData
 M.retrieveFavoriteVehicle = retrieveFavoriteVehicle
 M.playerPursuitActive = playerPursuitActive
