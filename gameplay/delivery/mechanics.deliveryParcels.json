@@ -10,7 +10,7 @@
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":300,
     "weight":[11,12,13,14,15],
-    "modChance":{"timed":0.0},
+    "modChance":{"timed":0.0}
   },
   "smallMechanicalParts": {
     "names":["Mechanical Components","Oil Filters", "Wiper Fluid"],
@@ -23,7 +23,7 @@
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":300,
     "weight":[11,12,13,14,15],
-    "modChance":{"timed":0.0},
+    "modChance":{"timed":0.0}
   },
   "mechanicalToolbox": {
     "names":["Toolbox","Tool Crate", "Brake parts","Windshield Wipers"],
@@ -35,7 +35,7 @@
     "generationChance":0.3,
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":300,
-    "weight":[11,12,13,14,15],
+    "weight":[11,12,13,14,15]
   },
   "mechanicalToolboxBig": {
     "names":["Tool Shelf","Engine Parts", "Suspension Kit"],
@@ -47,7 +47,7 @@
     "generationChance":0.15,
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":300,
-    "weight":[45,60,75],
+    "weight":[45,60,75]
   },
   "bigMechanicalParts": {
     "names":["Multi-Set of Brakes","Special Vehicle Parts"],
@@ -60,7 +60,7 @@
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":300,
     "weight":[50],
-    "modChance":{"timed":0.1},
+    "modChance":{"timed":0.1}
   },
   "biggerMechanicalParts": {
     "names":["Replacement Wheel","Big Vehicle Parts"],
@@ -73,7 +73,7 @@
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":300,
     "weight":[45,55],
-    "modChance":{"timed":0.1},
+    "modChance":{"timed":0.1}
   },
   "rareMechanicalBigParts": {
     "names":["Body Kit", "Replacement Engine", "Vehicle Frame Parts", "Vehicle Glassware" ],
@@ -86,7 +86,7 @@
     "duplicationChance":[0,0,0,0,0,0,0,1,0,0,0,0.75,0,0,0,0.5],
     "offerDuration":300,
     "weight":[400,650],
-    "modChance":{"timed":0.1},
+    "modChance":{"timed":0.1}
   },
   "rareMechanicalSmallParts": {
     "names":["Vehicle Electronics Kit", "Engine Management Kit", "Vehicle Authenticator Chip"],
@@ -98,7 +98,7 @@
     "generationChance":0.3,
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":300,
-    "weight":[11,12,13,14,15],
-  },
+    "weight":[11,12,13,14,15]
+  }
 
 }

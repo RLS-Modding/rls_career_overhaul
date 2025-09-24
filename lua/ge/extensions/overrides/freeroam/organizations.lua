@@ -7,7 +7,7 @@ local M = {}
 local organizations
 
 local blacklist = {
-  "gameplay/organizations/logistics.organizations.json"
+  ["gameplay/organizations/logistics.organizations.json"] = true
 }
 
 local function addAdditionalInfoToOrg(organization)
@@ -22,18 +22,20 @@ local function getOrganizations()
     -- init organizations table
     organizations = {}
 
-    -- parse any other organization files inside the "/organizations" folder
-    for _,file in ipairs(FS:findFiles("gameplay/organizations/", '*.organizations.json', -1, false, true)) do
-      if blacklist[file] then
-        goto continue
+    -- parse any other organization files inside the "/organizations" Could not find target facility to deliver from %s with type %s
+    local files = {}
+    for _, file in ipairs(FS:findFiles("gameplay/organizations/", '*.organizations.json', -1, false, true)) do
+      if not blacklist[file] then
+        table.insert(files, file)
       end
+    end
+    for _,file in ipairs(files) do
       local data = jsonReadFile(file)
       for orgId, orgData in pairs(data) do
         orgData.id = orgId
         addAdditionalInfoToOrg(orgData)
         organizations[orgId] = orgData
       end
-      ::continue::
     end
     log("D","",string.format("Loaded organizations"))
   end

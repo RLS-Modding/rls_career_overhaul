@@ -10,7 +10,7 @@
     "duplicationChance":[1,0.5,0.25,0.25],
     "offerDuration":120,
     "weight":[11,12,13],
-    "modChance":{"timed":0.75},
+    "modChance":{"timed":0.75}
   },
   "bigFoodOrder": {
     "names":["Food Banquet", "Party Platter", "Company Food Order"],
@@ -23,7 +23,7 @@
     "duplicationChance":[1,0.5,0.25,0.25],
     "offerDuration":120,
     "weight":[35],
-    "modChance":{"timed":0.75},
+    "modChance":{"timed":0.75}
   },
   "smallFoodIngredients": {
     "names":["Frozen Food Ingredients","Fresh Vegetables","Spices and Herbs"],
@@ -36,7 +36,7 @@
     "duplicationChance":[1,0.5,0.25,0.25],
     "offerDuration":300,
     "weight":[15],
-    "modChance":{"supplies":1},
+    "modChance":{"supplies":1}
   },
   "bigFoodIngredients": {
     "names":["Food Ingredients Box","Fresh Vegetables Box","Kitchen Utensils"],
@@ -49,7 +49,7 @@
     "duplicationChance":[1,0.5,0.25,0.25],
     "offerDuration":300,
     "weight":[60],
-    "modChance":{"supplies":1},
+    "modChance":{"supplies":1}
   },
   "bigRestaurantMachine": {
     "names":["Kitchen Appliance","Soda Machine"],
@@ -62,7 +62,7 @@
     "generationChance":0.2,
     "offerDuration":300,
     "weight":[75],
-    "modChance":{"large":1},
+    "modChance":{"large":1}
   },
   "restaurantFurniture": {
     "names":["Industrial Frier","Furniture Set"],
@@ -75,7 +75,7 @@
     "generationChance":0.2,
     "offerDuration":300,
     "weight":[400],
-    "modChance":{"large":1},
+    "modChance":{"large":1}
   },
   "superSpecialIngredients": {
     "names":["SuperSpecialIngredients"],
@@ -87,6 +87,6 @@
     "duplicationChance":[1,0.5,0.25,0.25],
     "generationChance":0.05,
     "offerDuration":300,
-    "weight":[15],
-  },
+    "weight":[15]
+  }
 }

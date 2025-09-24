@@ -10,7 +10,7 @@
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":360,
     "weight":[11,12,13,14,15],
-    "modChance":{"post":1, "precious":0.25},
+    "modChance":{"post":1, "precious":0.25}
   },
   "mediumPostParcel": {
     "names":["Medium Post Parcel"],
@@ -23,7 +23,7 @@
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":360,
     "weight":[18,20,22],
-    "modChance":{"post":1, "precious":0.25},
+    "modChance":{"post":1, "precious":0.25}
   },
   "bigPostParcel": {
     "names":["Big Post Parcel"],
@@ -36,7 +36,7 @@
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":360,
     "weight":[20,25,30],
-    "modChance":{"post":1, "precious":0.25},
+    "modChance":{"post":1, "precious":0.25}
   },
   "specialPostParcel": {
     "names":["Special Post Parcel"],
@@ -49,7 +49,7 @@
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":360,
     "weight":[14,16,18,20],
-    "modChance":{"post":1, "precious":0.5},
+    "modChance":{"post":1, "precious":0.5}
   },
   "smallOfficeWares": {
     "names":["Office Wares","Office Supplies","Box of Documents"],
@@ -62,7 +62,7 @@
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":360,
     "weight":[15,15,25],
-    "modChance":{"supplies":1},
+    "modChance":{"supplies":1}
   },
   "medOfficeWares": {
     "names":["Office Computers","Office Furniture"],
@@ -75,7 +75,7 @@
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":180,
     "weight":[22,25,28],
-    "modChance":{"supplies":1},
+    "modChance":{"supplies":1}
   },
   "bigOfficeWares": {
     "names":["Cubicle Set","Industrial Shredder"],
@@ -88,7 +88,7 @@
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":360,
     "weight":[50,70,100],
-    "modChance":{"supplies":1},
+    "modChance":{"supplies":1}
   },
   "drivingSimulator": {
     "names":["Driving Simulator"],
@@ -101,7 +101,7 @@
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":360,
     "weight":[250,500],
-    "modChance":{"timed":0.0, "large":1, "precious":1},
+    "modChance":{"timed":0.0, "large":1, "precious":1}
   },
   "smallShopSupplies": {
     "names":["Shop Supplies","Shop Stock","Commercial Wares"],
@@ -114,7 +114,7 @@
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":360,
     "weight":[16,19,22],
-    "modChance":{"supplies":1},
+    "modChance":{"supplies":1}
   },
   "medShopSupplies": {
     "names":["Shop Decoration","Advertisements","Cash Register"],
@@ -127,7 +127,7 @@
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":180,
     "weight":[25,27,29],
-    "modChance":{"supplies":1},
+    "modChance":{"supplies":1}
   },
   "medFragileShopSupplies": {
     "names":["Glassware","Neon Signs"],
@@ -140,7 +140,7 @@
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":180,
     "weight":[50,75,81],
-    "modChance":{"supplies":1},
+    "modChance":{"supplies":1}
   },
   "bigShopSupplies": {
     "names":["Shop Furniture","Shop Supplies Crate"],
@@ -153,7 +153,7 @@
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":180,
     "weight":[45,60,75],
-    "modChance":{"supplies":1},
+    "modChance":{"supplies":1}
   },
   "bigIndustrialGoods": {
     "names":["Industrial Goods","Industrial Wares","Industrial Pallet","Industrial Box"],
@@ -180,5 +180,5 @@
     "offerDuration":360,
     "weight":[600,700,800],
     "modChance":{"timed":0.2}
-  },
+  }
 }

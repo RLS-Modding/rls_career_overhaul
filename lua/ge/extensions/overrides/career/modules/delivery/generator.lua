@@ -5,12 +5,12 @@
 local M = {}
 
 local blacklist = {
-  "gameplay/delivery/materials.deliveryMaterials.json",
-  "gameplay/delivery/materials.deliveryParcels.json",
-  "gameplay/delivery/mechanics.deliveryParcels.json",
-  "gameplay/delivery/restaurants.deliveryParcels.json",
-  "gameplay/delivery/vehicles.deliveryVehicles.json",
-  "gameplay/delivery/warehouses.deliveryParcels.json",
+  ["gameplay/delivery/materials.deliveryMaterials.json"] = true,
+  ["gameplay/delivery/materials.deliveryParcels.json"] = true,
+  ["gameplay/delivery/mechanics.deliveryParcels.json"] = true,
+  ["gameplay/delivery/restaurants.deliveryParcels.json"] = true,
+  ["gameplay/delivery/vehicles.deliveryVehicles.json"] = true,
+  ["gameplay/delivery/warehouses.deliveryParcels.json"] = true,
 }
 
 M.dependencies = {"freeroam_facilities", "gameplay_sites_sitesManager", "util_configListGenerator"}
@@ -185,11 +185,14 @@ local function getDeliveryParcelTemplates()
   if not parcelItemTemplates then
     parcelItemTemplates = {}
     local levelInfo = core_levels.getLevelByName(getCurrentLevelIdentifier())
-    local files = FS:findFiles("gameplay/delivery/", '*.deliveryParcels.json', -1, false, true)
-    for _,file in ipairs(files) do
-      if blacklist[file] then
-        goto continue
+    local Allfiles = FS:findFiles("gameplay/delivery/", '*.deliveryParcels.json', -1, false, true)
+    local files = {}
+    for _, file in ipairs(Allfiles) do
+      if not blacklist[file] then
+        table.insert(files, file)
       end
+    end
+    for _,file in ipairs(files) do
       for k, v in pairs(jsonReadFile(file) or {}) do
         local item = v
         item.id = k
@@ -225,7 +228,6 @@ local function getDeliveryParcelTemplates()
         item.modChance = item.modChance or {}
         item.modChance.timed = item.modChance.timed or 0.2
       end
-      ::continue::
     end
     log("I","",string.format("Loaded %d item templates from %d files.", #tableKeys(parcelItemTemplates), #files))
   end
@@ -419,12 +421,15 @@ local vehicleFilterTemplatesById = {}
 local function getDeliveryVehicleTemplates()
   if not vehicleFilterTemplates then
     vehicleFilterTemplates = {}
-    local files = FS:findFiles("gameplay/delivery/", '*.deliveryVehicles.json', -1, false, true)
+    local Allfiles = FS:findFiles("gameplay/delivery/", '*.deliveryVehicles.json', -1, false, true)
     eligibleVehicles = util_configListGenerator.getEligibleVehicles(false, true)
-    for _,file in ipairs(files) do
-      if blacklist[file] then
-        goto continue
+    local files = {}
+    for _, file in ipairs(Allfiles) do
+      if not blacklist[file] then
+        table.insert(files, file)
       end
+    end
+    for _,file in ipairs(files) do
       for id, filter in pairs(jsonReadFile(file) or {}) do
         filter.id = id
 
@@ -432,7 +437,6 @@ local function getDeliveryVehicleTemplates()
         table.insert(vehicleFilterTemplates, filter)
         vehicleFilterTemplatesById[id] = filter
       end
-      ::continue::
     end
   end
   return vehicleFilterTemplates
@@ -601,17 +605,19 @@ local materialTemplatesById = {}
 local function getMaterialsTemplates()
   if not materialTemplates then
     materialTemplates = {}
-    local files = FS:findFiles("gameplay/delivery/", '*.deliveryMaterials.json', -1, false, true)
-    for _,file in ipairs(files) do
-      if blacklist[file] then
-        goto continue
+    local Allfiles = FS:findFiles("gameplay/delivery/", '*.deliveryMaterials.json', -1, false, true)
+    local files = {}
+    for _, file in ipairs(Allfiles) do
+      if not blacklist[file] then
+        table.insert(files, file)
       end
+    end
+    for _,file in ipairs(files) do
       for id, data in pairs(jsonReadFile(file) or {}) do
         data.id = id
         table.insert(materialTemplates, data)
         materialTemplatesById[id] = data
       end
-      ::continue::
     end
   end
   return materialTemplates

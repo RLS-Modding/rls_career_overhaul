@@ -10,7 +10,7 @@
     "generationChance":0.5,
     "duplicationChance":[1],
     "offerDuration":300,
-    "modChance":{"timed":0.0, "dryBulk":1.0},
+    "modChance":{"timed":0.0, "dryBulk":1.0}
   },
   "soilOrder": {
     "names":["Soil Order"],
@@ -23,7 +23,7 @@
     "generationChance":0.5,
     "duplicationChance":[1],
     "offerDuration":300,
-    "modChance":{"timed":0.0, "dryBulk":1.0},
+    "modChance":{"timed":0.0, "dryBulk":1.0}
   },
   "gravelOrder": {
     "names":["Gravel Order"],
@@ -36,7 +36,7 @@
     "generationChance":0.5,
     "duplicationChance":[1],
     "offerDuration":300,
-    "modChance":{"timed":0.0, "dryBulk":1.0},
+    "modChance":{"timed":0.0, "dryBulk":1.0}
   },
   "gasolineOrder": {
     "names":["Gasoline Order"],
@@ -49,6 +49,6 @@
     "generationChance":0.5,
     "duplicationChance":[1],
     "offerDuration":300,
-    "modChance":{"timed":0.0, "fluid":1.0},
+    "modChance":{"timed":0.0, "fluid":1.0}
   }
 }

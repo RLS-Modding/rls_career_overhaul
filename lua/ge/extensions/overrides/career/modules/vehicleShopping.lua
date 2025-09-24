@@ -676,8 +676,13 @@ local function updateVehicleList(fromScratch)
       local isVehicleBeingInspected = inspectingVehicleUid == vehicleInfo.uid
       local isPurchaseMenuOpen = purchaseMenuOpen
 
-      if not vehicleInfo.markedSold and not isVehicleSpawned and not isVehicleInPurchase and not isVehicleBeingInspected and not isPurchaseMenuOpen then
-        -- First time detecting expiration - mark as sold but keep in list
+      if not vehicleInfo.markedSold and (isVehicleSpawned or isVehicleInPurchase or isVehicleBeingInspected or isPurchaseMenuOpen) then
+        -- Vehicle is actively being used - don't mark as sold, extend its life
+        vehicleInfo.uid = vehicleInfo.uid or makeUid(vehicleInfo)
+        vehicleInfo.offerTTL = vehicleOfferTimeToLive  -- Reset the timer
+        log("D", "Career", "Vehicle hold logic extended life of " .. tostring(vehicleInfo.uid) .. " (actively being used)")
+      elseif not vehicleInfo.markedSold then
+        -- Vehicle is not being used and not already marked as sold - mark it as sold
         vehicleInfo.uid = vehicleInfo.uid or makeUid(vehicleInfo)
         vehicleInfo.markedSold = true
         vehicleInfo.soldViewCounter = 1
@@ -685,13 +690,8 @@ local function updateVehicleList(fromScratch)
         justExpiredUids[vehicleInfo.uid] = true
         log("D", "Career", "Vehicle marked as sold (hold logic check passed): " .. tostring(vehicleInfo.uid))
       else
-        -- Log why vehicle was not marked as sold
-        local reasons = {}
-        if isVehicleSpawned then table.insert(reasons, "spawned") end
-        if isVehicleInPurchase then table.insert(reasons, "in purchase") end
-        if isVehicleBeingInspected then table.insert(reasons, "being inspected") end
-        if isPurchaseMenuOpen then table.insert(reasons, "purchase menu open") end
-        log("D", "Career", "Vehicle hold logic prevented sale of " .. tostring(vehicleInfo.uid) .. ": " .. table.concat(reasons, ", "))
+        -- Log why vehicle was not marked as sold (already marked)
+        log("D", "Career", "Vehicle already marked as sold: " .. tostring(vehicleInfo.uid))
       end
     elseif vehicleInfo.soldGraceUntil and currentTime >= vehicleInfo.soldGraceUntil then
       -- Grace period expired - now remove it
