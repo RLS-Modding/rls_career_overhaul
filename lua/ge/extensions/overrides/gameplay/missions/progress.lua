@@ -964,7 +964,7 @@ local function reduceCareerRewardsForDefaultStars(mission)
       if mission.careerSetup.starsActive[key] then
         local list = mission.careerSetup.starRewards[key] or {}
         if starCount then
-          local rewardMultiplier = starCount == 0 and 1 or 0.1 --math.max(0.1,(1-(starCount or 0) * 0.2))
+          local rewardMultiplier = starCount == 0 and 1 or 0.5 --math.max(0.1,(1-(starCount or 0) * 0.2))
           log("D","", string.format("%s - %s reduced to x%0.2f", mission.id, key, rewardMultiplier*100 ))
           for _, reward in ipairs(list) do
             if reward.attributeKey == "money" then
