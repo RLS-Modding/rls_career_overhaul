@@ -2,7 +2,7 @@
   "races":{
     "beachCircuit":{
       "apexOffset":2,
-      "bestTime":30,
+      "bestTime":32,
       "checkpointIndexs":[
         9,
         16,
@@ -17,7 +17,7 @@
         "beachCircuit"
       ],
       "displaySpeed":true,
-      "hotlap":25,
+      "hotlap":27,
       "label":"Beach Circuit",
       "minCheckpointDistance":45,
       "reward":2000,
@@ -41,7 +41,7 @@
       "checkpointRoad":[
         "dirtloop"
       ],
-      "hotlap":55,
+      "hotlap":60,
       "label":"Dirt Circuit",
       "reward":3000,
       "type":[
@@ -50,12 +50,12 @@
       ]
     },
     "dirtOval":{
-      "bestTime":30,
+      "bestTime":32,
       "checkpointRoad":[
         "dirtOval"
       ],
       "damageFactor":1,
-      "hotlap":27,
+      "hotlap":29,
       "label":"Dirt Oval",
       "reward":350,
       "type":[
@@ -126,7 +126,7 @@
       ]
     },
     "koh1":{
-      "bestTime":120,
+      "bestTime":125,
       "checkpointIndexs":[
         9,
         19,
@@ -145,7 +145,7 @@
       "checkpointRoad":[
         "koh1"
       ],
-      "hotlap":110,
+      "hotlap":115,
       "label":"King of the Hammer 1",
       "reward":2000,
       "type":[
@@ -156,7 +156,7 @@
       ]
     },
     "koh2":{
-      "bestTime":180,
+      "bestTime":185,
       "checkpointIndexs":[
         6,
         15,
@@ -193,7 +193,7 @@
       "checkpointRoad":[
         "koh2"
       ],
-      "hotlap":170,
+      "hotlap":175,
       "label":"King of the Hammer 2",
       "reward":3000,
       "type":[
@@ -216,7 +216,7 @@
       ]
     },
     "mudDrag2":{
-      "bestTime":15,
+      "bestTime":16,
       "checkpointIndexs":{},
       "checkpointRoad":[
         "mudDrag2"
@@ -230,7 +230,7 @@
       ]
     },
     "quarryCircuit":{
-      "bestTime":27,
+      "bestTime":29,
       "checkpointIndexs":[
         5,
         10,
@@ -243,7 +243,7 @@
       "checkpointRoad":[
         "quarryCircuit"
       ],
-      "hotlap":23,
+      "hotlap":25,
       "label":"Quarry Circuit",
       "reward":2000,
       "type":[
@@ -278,7 +278,7 @@
     },
     "rally1":{
       "apexOffset":2,
-      "bestTime":70,
+      "bestTime":75,
       "checkpointIndexs":[
         12,
         19,
@@ -303,7 +303,7 @@
     },
     "rally2":{
       "apexOffset":2,
-      "bestTime":120,
+      "bestTime":125,
       "checkpointIndexs":[
         8,
         12,
@@ -335,7 +335,7 @@
     },
     "rally3":{
       "apexOffset":1,
-      "bestTime":135,
+      "bestTime":140,
       "checkpointIndexs":[
         3,
         16,
@@ -374,7 +374,7 @@
       ]
     },
     "rally4":{
-      "bestTime":90,
+      "bestTime":95,
       "checkpointIndexs":[
         4,
         6,
@@ -486,7 +486,7 @@
         "altInfo":"**Continue Right at the fork for the joker lap.",
         "bestTime":41,
         "checkpointRoad":"rubberBandJoker",
-        "hotlap":45,
+        "hotlap":50,
         "label":"Rubberband Ridge Joker",
         "mergeCheckpoints":[
           4,
@@ -494,11 +494,11 @@
         ],
         "reward":2550
       },
-      "bestTime":41,
+      "bestTime":50,
       "checkpointRoad":[
         "rubberBandMain"
       ],
-      "hotlap":45,
+      "hotlap":55,
       "label":"Rubberband Ridge",
       "reward":2550,
       "runningStart":true,
