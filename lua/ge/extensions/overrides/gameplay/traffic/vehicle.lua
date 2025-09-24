@@ -431,6 +431,9 @@ function C:tryRespawn() -- tests if the vehicle is out of sight and ready to res
     end
 
     if valid or self.ignoreInnerRadius then
+      table.clear(self.queuedFuncs)
+      getObjectByID(self.id):queueLuaCommand('electrics.setLightsState(0)') -- always turn off headlights
+      self.headlights = false
       self.state = 'fadeOut'
     end
   end
@@ -824,11 +827,6 @@ function C:onUpdate(dt, dtSim)
             -- simTimeAuthority.pause(false) -- uncomment this to stop the simulation when this issue happens
             -- commands.setFreeCamera(); core_camera.setPosRot(0, self.pos.x, self.pos.y, self.pos.z, 0, 0, 0, 1) -- uncomment this to move the camera to the vehicle
           end
-        end
-
-        if self.headlights then
-          getObjectByID(self.id):queueLuaCommand('electrics.setLightsState(0)')
-          self.headlights = false
         end
 
         self:fade(dtSim * 5, self.state == 'fadeOut')
