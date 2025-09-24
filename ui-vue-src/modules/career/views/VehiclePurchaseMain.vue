@@ -138,7 +138,7 @@
           v-bng-on-ui-nav:ok.asMouse.focusRequired
           v-bng-click="{
             holdCallback: buy,
-            holdDelay: 1000,
+            holdDelay: 500,
             repeatInterval: 0,
           }">
           <div v-if="vehiclePurchaseStore.finalPackagePrice > vehiclePurchaseStore.playerMoney">Insufficient Funds</div>
@@ -158,8 +158,6 @@ import { useVehiclePurchaseStore } from "../stores/vehiclePurchaseStore"
 import { lua, useBridge } from "@/bridge"
 import { vBngClick, vBngTooltip, vBngPopover } from "@/common/directives"
 import { CareerStatus } from "@/modules/career/components"
-import { openConfirmation } from "@/services/popup"
-import { $translate } from "@/services/translation"
 import { vBngOnUiNav } from "@/common/directives"
 import { useUINavScope } from "@/services/uiNav"
 import { useInsurancePoliciesStore } from "../stores/insurancePoliciesStore"

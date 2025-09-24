@@ -7,7 +7,7 @@ local M = {}
 local organizations
 
 local blacklist = {
-  ["gameplay/organizations/logistics.organizations.json"] = true
+  ["/gameplay/organizations/logistics.organizations.json"] = true
 }
 
 local function addAdditionalInfoToOrg(organization)
@@ -110,4 +110,5 @@ M.getOrganization = getOrganization
 M.getOrganizationIdOrderAndIcon = getOrganizationIdOrderAndIcon
 M.getUIData = getUIData
 M.getUIDataForOrg = getUIDataForOrg
+
 return M
