@@ -192,6 +192,7 @@ local function getDeliveryParcelTemplates()
         table.insert(files, file)
       end
     end
+    dump(files)
     for _,file in ipairs(files) do
       for k, v in pairs(jsonReadFile(file) or {}) do
         local item = v
@@ -429,6 +430,7 @@ local function getDeliveryVehicleTemplates()
         table.insert(files, file)
       end
     end
+    dump(files)
     for _,file in ipairs(files) do
       for id, filter in pairs(jsonReadFile(file) or {}) do
         filter.id = id
@@ -612,6 +614,7 @@ local function getMaterialsTemplates()
         table.insert(files, file)
       end
     end
+    dump(files)
     for _,file in ipairs(files) do
       for id, data in pairs(jsonReadFile(file) or {}) do
         data.id = id
@@ -1468,4 +1471,32 @@ M.getDistanceBetweenFacilities = getDistanceBetweenFacilities
 M.getLocationCoordinates = getLocationCoordinates
 M.distanceBetween = distanceBetween
 M.triggerAllGenerators = triggerAllGenerators
+
+M.test = function()
+  local Allfiles = FS:findFiles("gameplay/delivery/", '*.deliveryMaterials.json', -1, false, true)
+  local files = {}
+  for _, file in ipairs(Allfiles) do
+    if not blacklist[file] then
+      table.insert(files, file)
+    end
+  end
+  dump(files)
+  Allfiles = FS:findFiles("gameplay/delivery/", '*.deliveryParcels.json', -1, false, true)
+  files = {}
+  for _, file in ipairs(Allfiles) do
+    if not blacklist[file] then
+      table.insert(files, file)
+    end
+  end
+  dump(files) 
+  Allfiles = FS:findFiles("gameplay/delivery/", '*.deliveryVehicles.json', -1, false, true)
+  files = {}
+  for _, file in ipairs(Allfiles) do
+    if not blacklist[file] then
+      table.insert(files, file)
+    end
+  end
+  dump(files)
+end
+
 return M
