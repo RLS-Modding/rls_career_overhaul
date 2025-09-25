@@ -78,9 +78,6 @@ local function startup()
     end)
 
     loadManualUnloadExtensions()
-
-    local compatibleMaps = overhaul_maps.getCompatibleMaps()
-    overhaul_overrideManager.initializeOverrides(compatibleMaps)
 end
 
 local function onModActivated(modData)

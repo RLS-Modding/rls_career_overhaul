@@ -9,7 +9,6 @@ local originalReloadUI = nil
 
 local MOD_OVERRIDES_DIR = "/overrides/"
 local LOCAL_OVERRIDEN_ROOT = "/overriden/"
-local mountedLevels = {}
 local mountedRoot = false
 
 local ourMod = nil
@@ -70,9 +69,19 @@ local function setOverride(originalPath, overridePath, overrideType)
   return true
 end
 
+local function clearDirectory(dirPath)
+  if FS:directoryExists(dirPath) then
+    FS:remove(dirPath)
+    return true
+  end
+  return false
+end
+
 local function clearOverride(originalPath)
   local entry = overrides[originalPath]
-  if not entry then return false end
+  if not entry then
+    return false
+  end
 
   overrides[entry.originalFormat] = nil
   overrides[entry.convertedFormat] = nil
@@ -90,163 +99,55 @@ local function clearOverride(originalPath)
   return true
 end
 
-local function getOverride(originalPath)
-  local entry = overrides[originalPath]
-  if not entry then return nil end
-
-  return {
-    type = entry.isExtension and 'extension' or 'require',
-    override = entry.override,
-    originalFormat = entry.originalFormat,
-    convertedFormat = entry.convertedFormat
-  }
-end
-
-local function listOverrides()
-  local result = {}
-  local seen = {}
-
-  for path, entry in pairs(overrides) do
-    if not seen[entry] then
-      seen[entry] = true
-      table.insert(result, {
-        original = entry.originalFormat,
-        override = entry.override,
-        type = entry.isExtension and 'extension' or 'require'
-      })
-    end
-  end
-
-  return result
-end
-
-local function installSystem()
-  if originalLoad then
-    return false
-  end
-
-  originalLoad = extensions.load
-  originalReload = extensions.reload
-
-  extensions.load = function(...)
-    local args = {...}
-    local modifiedArgs = {}
-
-    for _, arg in ipairs(args) do
-      if type(arg) == 'string' then
-        if arg:find('career_') == 1 and (not career_career or not career_career.isActive()) then
-        else
-          local entry = overrides[arg]
-          if entry then
-            table.insert(modifiedArgs, entry.override)
-          else
-            table.insert(modifiedArgs, arg)
-          end
-        end
-      else
-        table.insert(modifiedArgs, arg)
-      end
-    end
-
-    return originalLoad(unpack(modifiedArgs))
-  end
-
-  extensions.reload = function(extPath)
-    if extPath:find('career_') == 1 and (not career_career or not career_career.isActive()) then
-      return false
-    end
-
-    local entry = overrides[extPath]
-    if entry then
-      return originalReload(entry.override)
-    else
-      return originalReload(extPath)
-    end
-  end
-
-  return true
-end
-
-local function unmountCustomOverrides()
-  if FS:unmount(LOCAL_OVERRIDEN_ROOT) then
-    mountedLevels = {}
-    mountedRoot = false
-    return true
-  end
-    return false
-end
-
 local function copyFiles(srcDir, dstDir, logMsg)
   if not FS:directoryExists(srcDir) then
-      return 0
+    return 0
   end
 
   if not FS:directoryExists(dstDir) then
-      FS:directoryCreate(dstDir, true)
+    FS:directoryCreate(dstDir, true)
   end
 
   local copied = 0
   local srcFiles = FS:findFiles(srcDir, '*', -1, true, false)
   for _, srcPath in ipairs(srcFiles) do
-      local rel = srcPath:gsub("^" .. srcDir, "")
-      if rel and rel ~= "" then
-          local dstPath = dstDir .. rel
-          local dstDir = dstPath:match("(.+)/[^/]+$")
-          if dstDir and not FS:directoryExists(dstDir) then
-              FS:directoryCreate(dstDir, true)
-          end
-
-          local doCopy = false
-          local srcStat = FS:stat(srcPath)
-          local dstExists = FS:fileExists(dstPath)
-          if not dstExists then
-              doCopy = true
-          else
-              local dstStat = FS:stat(dstPath)
-              local srcTime = srcStat and srcStat.modtime or 0
-              local dstTime = dstStat and dstStat.modtime or 0
-              if srcTime > dstTime then
-                  doCopy = true
-              end
-          end
-
-          if doCopy then
-              local content = readFile(srcPath)
-              if content and writeFile(dstPath, content) then
-                  copied = copied + 1
-              end
-          end
+    local rel = srcPath:gsub("^" .. srcDir, "")
+    if rel and rel ~= "" then
+      local dstPath = dstDir .. rel
+      local dstDir = dstPath:match("(.+)/[^/]+$")
+      if dstDir and not FS:directoryExists(dstDir) then
+        FS:directoryCreate(dstDir, true)
       end
+
+      local doCopy = false
+      local srcStat = FS:stat(srcPath)
+      local dstExists = FS:fileExists(dstPath)
+      if not dstExists then
+        doCopy = true
+      else
+        local dstStat = FS:stat(dstPath)
+        local srcTime = srcStat and srcStat.modtime or 0
+        local dstTime = dstStat and dstStat.modtime or 0
+        if srcTime > dstTime then
+          doCopy = true
+        end
+      end
+
+      if doCopy then
+        local content = readFile(srcPath)
+        if content and writeFile(dstPath, content) then
+          copied = copied + 1
+        end
+      end
+    end
   end
 
   return copied
 end
 
-local function clearDirectory(dirPath, logMsg)
-  if FS:directoryExists(dirPath) then
-      FS:remove(dirPath)
-      return true
-  end
-  return false
-end
-
-local function clearNonLevelOverrides()
-  if not FS:directoryExists(LOCAL_OVERRIDEN_ROOT) then
-      return
-  end
-
-  local entries = FS:findFiles(LOCAL_OVERRIDEN_ROOT, '*', 0, true, false)
-  for _, entry in ipairs(entries) do
-      local entryName = entry:match("([^/]+)$")
-      if entryName and entryName ~= "levels" then
-          FS:remove(entry)
-      end
-  end
-end
-
 local function applyUIOverrides()
   local uiSrcDir = MOD_OVERRIDES_DIR .. "ui/"
-  local uiDstDir = LOCAL_OVERRIDEN_ROOT .. "ui/"
+  local uiDstDir = "/ui/"
 
   local uiFiles = FS:findFiles(uiSrcDir, "*", -1, true, false)
   for _, srcFile in ipairs(uiFiles or {}) do
@@ -269,45 +170,134 @@ local function mountCustomOverrides()
   local copied = copyFiles(MOD_OVERRIDES_DIR, LOCAL_OVERRIDEN_ROOT)
 
   if not FS:directoryExists(LOCAL_OVERRIDEN_ROOT) then
-      return false
+    return false
   end
 
   if not FS:isMounted(LOCAL_OVERRIDEN_ROOT) then
-      if FS:mount(LOCAL_OVERRIDEN_ROOT) then
-          mountedRoot = true
-          reloadUI()
+    if FS:mount(LOCAL_OVERRIDEN_ROOT) then
+      mountedRoot = true      
 
-          if career_career and career_career.isActive() then
-            guihooks.trigger('ChangeState', {state = 'play', params = {}})
-          end
-      else
-          return false
+      if career_career and career_career.isActive() then
+        guihooks.trigger('ChangeState', {
+          state = 'play',
+          params = {}
+        })
       end
+    else
+      return false
+    end
   else
-      mountedRoot = true
+    mountedRoot = true
   end
   return false
 end
 
-local function removeLevelFromOverride(levelName)
-  local levelPath = LOCAL_OVERRIDEN_ROOT .. "levels/" .. levelName
-  if FS:directoryExists(levelPath) then
-      FS:remove(levelPath)
-      mountedLevels[levelName] = nil
-      return true
+local function overrideLoad(...)
+  local args = {...}
+  local modifiedArgs = {}
+
+  for _, arg in ipairs(args) do
+    if type(arg) == 'string' then
+      if arg:find('career_') == 1 and (not career_career or not career_career.isActive()) then
+      else
+        local entry = overrides[arg]
+        if entry then
+          table.insert(modifiedArgs, entry.override)
+        else
+          table.insert(modifiedArgs, arg)
+        end
+      end
+    else
+      table.insert(modifiedArgs, arg)
+    end
   end
-  return false
+
+  return originalLoad(unpack(modifiedArgs))
 end
 
-local function initializeOverrides(compatibleMaps)
-  for map, _ in pairs(compatibleMaps) do
-    removeLevelFromOverride(map)
+local function overrideReload(extPath)
+  if extPath:find('career_') == 1 and (not career_career or not career_career.isActive()) then
+    return false
   end
-  clearNonLevelOverrides()
 
+  local entry = overrides[extPath]
+  if entry then
+    return originalReload(entry.override)
+  else
+    return originalReload(extPath)
+  end
+end
+
+local function overrideReloadUI()
+  applyUIOverrides()
+  originalReloadUI()
+end
+
+local function installSystem()
+  if originalLoad or originalReload or originalReloadUI then
+    log('E', logTag, 'Override system already installed')
+    return false
+  end
+
+  originalReloadUI = reloadUI
+  if originalReloadUI then
+    reloadUI = overrideReloadUI
+    reloadUI()
+  end
+
+  originalLoad = extensions.load
+  if originalLoad then
+    extensions.load = overrideLoad
+  end
+
+  originalReload = extensions.reload
+  if originalReload then
+    extensions.reload = overrideReload
+  end
+
+  local overridesDir = '/lua/ge/extensions/overrides/'
+  local luaFiles = FS:findFiles(overridesDir, '*.lua', -1, true, false)
+
+  local overrideCount = 0
+  if luaFiles and #luaFiles > 0 then
+    for _, overrideFile in ipairs(luaFiles) do
+      local modulePath = overrideFile:gsub('^/lua/ge/extensions/', 'lua.ge.extensions.'):gsub('%.lua$', ''):gsub('/',
+        '.')
+      local originalPath = modulePath:gsub('%.overrides%.', '.')
+      local extensionPath = originalPath:gsub('lua%.ge%.extensions%.', ''):gsub('%.', '_')
+
+      if setOverride(extensionPath, modulePath) then
+        overrideCount = overrideCount + 1
+      end
+    end
+  end
+
+  clearDirectory(LOCAL_OVERRIDEN_ROOT)
   mountCustomOverrides()
 
   return true
+end
+
+local function unmountCustomOverrides()
+  if FS:unmount(LOCAL_OVERRIDEN_ROOT) then
+    mountedRoot = false
+    return true
+  end
+  return false
+end
+
+local function clearNonLevelOverrides()
+  if not FS:directoryExists(LOCAL_OVERRIDEN_ROOT) then
+    return
+  end
+
+  local entries = FS:findFiles(LOCAL_OVERRIDEN_ROOT, '*', 0, true, false)
+  for _, entry in ipairs(entries) do
+    local entryName = entry:match("([^/]+)$")
+    if entryName and entryName ~= "levels" then
+      FS:remove(entry)
+    end
+  end
 end
 
 local function handleMapOverrides(newMapsWithOverrides)
@@ -322,7 +312,7 @@ local function handleMapOverrides(newMapsWithOverrides)
   clearNonLevelOverrides()
 
   for _, levelName in ipairs(newMapsWithOverrides) do
-    removeLevelFromOverride(levelName)
+    clearDirectory(LOCAL_OVERRIDEN_ROOT .. "levels/" .. levelName)
   end
 
   if wasMount then
@@ -336,9 +326,13 @@ local function unloadOverrides()
     return false
   end
 
+  reloadUI = originalReloadUI
+  originalReloadUI = nil
+
   extensions.load = originalLoad
-  extensions.reload = originalReload
   originalLoad = nil
+
+  extensions.reload = originalReload
   originalReload = nil
 
   local pathsToClear = {}
@@ -351,7 +345,7 @@ local function unloadOverrides()
   end
 
   unmountCustomOverrides()
-  
+
   loadManualUnloadExtensions()
   reloadUI()
 
@@ -359,73 +353,28 @@ local function unloadOverrides()
 end
 
 local function onModDeactivated(modData)
-  if not ourMod then return end
-  
+  if not ourMod then
+    return
+  end
+
   if (ourMod.name and modData.modname == ourMod.name) or
-  (ourMod.id and modData.modData and modData.modData.tagid == ourMod.id) then
+    (ourMod.id and modData.modData and modData.modData.tagid == ourMod.id) then
     unloadOverrides()
-    reloadUI = originalReloadUI
   end
 end
 
 local function onExtensionLoaded()
   ourMod = overhaul_extensionManager.getModData()
-  originalReloadUI = reloadUI
-
-  reloadUI = function()
-    applyUIOverrides()
-    FS:mount(LOCAL_OVERRIDEN_ROOT)
-    originalReloadUI()
-  end
-
-  if not installSystem() then
-    print("Failed to install override system")
-    return false
-  end
-
-  local overridesDir = '/lua/ge/extensions/overrides/'
-  local luaFiles = FS:findFiles(overridesDir, '*.lua', -1, true, false)
-
-  local overrideCount = 0
-  if luaFiles and #luaFiles > 0 then
-    for _, overrideFile in ipairs(luaFiles) do
-      local modulePath = overrideFile:gsub('^/lua/ge/extensions/', 'lua.ge.extensions.'):gsub('%.lua$', ''):gsub('/', '.')
-      local originalPath = modulePath:gsub('%.overrides%.', '.')
-      local extensionPath = originalPath:gsub('lua%.ge%.extensions%.', ''):gsub('%.', '_')
-
-      if setOverride(extensionPath, modulePath) then
-        overrideCount = overrideCount + 1
-      end
-    end
-  end
-
-  return true
+  installSystem()
 end
 
-
 M.onUIInitialised = function()
-  FS:remove(LOCAL_OVERRIDEN_ROOT .. "ui/")
+  clearDirectory("/ui/")
 end
 
 M.onExtensionLoaded = onExtensionLoaded
 M.onModDeactivated = onModDeactivated
 
-M.setOverride = setOverride
-M.clearOverride = clearOverride
-M.getOverride = getOverride
-M.listOverrides = listOverrides
-M.installSystem = installSystem
-
-M.getOverrides = function()
-  return overrides
-end
-
-M.mountCustomOverrides = mountCustomOverrides
-M.unmountCustomOverrides = unmountCustomOverrides
-M.removeLevelFromOverride = removeLevelFromOverride
-M.clearNonLevelOverrides = clearNonLevelOverrides
-
-M.initializeOverrides = initializeOverrides
 M.handleMapOverrides = handleMapOverrides
 
 return M
