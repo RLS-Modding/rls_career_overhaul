@@ -5,12 +5,12 @@
 local M = {}
 
 local blacklist = {
-  ["gameplay/delivery/materials.deliveryMaterials.json"] = true,
-  ["gameplay/delivery/materials.deliveryParcels.json"] = true,
-  ["gameplay/delivery/mechanics.deliveryParcels.json"] = true,
-  ["gameplay/delivery/restaurants.deliveryParcels.json"] = true,
-  ["gameplay/delivery/vehicles.deliveryVehicles.json"] = true,
-  ["gameplay/delivery/warehouses.deliveryParcels.json"] = true,
+  ["/gameplay/delivery/materials.deliveryMaterials.json"] = true,
+  ["/gameplay/delivery/materials.deliveryParcels.json"] = true,
+  ["/gameplay/delivery/mechanics.deliveryParcels.json"] = true,
+  ["/gameplay/delivery/restaurants.deliveryParcels.json"] = true,
+  ["/gameplay/delivery/vehicles.deliveryVehicles.json"] = true,
+  ["/gameplay/delivery/warehouses.deliveryParcels.json"] = true,
 }
 
 M.dependencies = {"freeroam_facilities", "gameplay_sites_sitesManager", "util_configListGenerator"}
