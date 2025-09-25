@@ -52,8 +52,6 @@ function M.loadVehicleStateSelectiveRepair(filename, partsToRepair, partsToRemov
 
   local save = jsonReadFile(filename)
 
-  dump(save)
-
   -- Safety checks
   if not save then
     log("E", "individualRepair.load", "Save file not found or invalid: " .. filename)
@@ -630,8 +628,6 @@ local function loadDamageData(filename, partsToRepair, partsToRemove)
   nodeIDconvert = loadNodeIDconvert(save.partStates)
   beamIDconvert = loadBeamIDconvert(save.partStates)
   hydrosIDconvert = loadBeamIDconvert(save.partStates, true)
-
-  dump(beamIDconvert)
 
   for partPath, state in pairs(save.partStates) do
     if save.partStates[partPath].nodes then

@@ -88,8 +88,6 @@ function M.onGetRawPoiListForLevel(levelIdentifier, elements)
                 }
             }
         }
-
-        dump(poi)
         
         table.insert(elements, poi)
     end
