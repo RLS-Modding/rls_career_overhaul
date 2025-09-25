@@ -77,7 +77,7 @@ export default {
 </script>
 
 <script setup>
-import { computed, onMounted } from "vue"
+import { computed } from "vue"
 import { BngCondition, BngUnit, BngIcon, icons } from "@/common/components/base"
 import { vBngDisabled, vBngTooltip } from "@/common/directives"
 // import { formatTime } from "@/utils/datetime"
