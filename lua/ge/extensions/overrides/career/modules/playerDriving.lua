@@ -304,7 +304,7 @@ local function onPursuitAction(vehId, action, data)
       if vehicle.owningOrganization then
         loanerCut = level.loanerCut.value
       end
-      bonus = bonus * (1 - loanerCut)
+      bonus = math.floor(bonus * (1 - loanerCut))
 
       career_modules_payment.reward({
         money = {

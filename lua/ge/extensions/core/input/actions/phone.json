@@ -1,7 +1,7 @@
 {
     "openPhone": {
         "cat": "gameplay",
-        "order": 97.6,
+        "order": 257,
         "ctx": "tlua",
         "onDown": "if not gameplay_phone then extensions.load('gameplay_phone') end if gameplay_phone then gameplay_phone.togglePhone() end",
         "title": "Toggle Phone",
