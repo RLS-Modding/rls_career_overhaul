@@ -99,33 +99,59 @@ local function clearOverride(originalPath)
   return true
 end
 
-local function copyFiles(srcDir, dstDir, logMsg)
-  if not FS:directoryExists(srcDir) then
+local function copyFiles(srcDir, dstDir)
+  local srcRoot = srcDir:gsub("\\", "/")
+  if srcRoot:sub(-1) ~= "/" then
+    srcRoot = srcRoot .. "/"
+  end
+
+  local dstRoot = dstDir:gsub("\\", "/")
+  if dstRoot:sub(-1) ~= "/" then
+    dstRoot = dstRoot .. "/"
+  end
+
+  if not FS:directoryExists(srcRoot) then
     return 0
   end
 
-  if not FS:directoryExists(dstDir) then
-    FS:directoryCreate(dstDir, true)
+  if not FS:directoryExists(dstRoot) then
+    FS:directoryCreate(dstRoot, true)
   end
 
   local copied = 0
-  local srcFiles = FS:findFiles(srcDir, '*', -1, true, false)
-  for _, srcPath in ipairs(srcFiles) do
-    local rel = srcPath:gsub("^" .. srcDir, "")
-    if rel and rel ~= "" then
-      local dstPath = dstDir .. rel
-      local dstDir = dstPath:match("(.+)/[^/]+$")
+  local uiFiles = FS:findFiles(srcRoot, "*", -1, true, false)
+  for _, srcFile in ipairs(uiFiles or {}) do
+    local srcPath = srcFile:gsub("\\", "/")
+    local relPath = srcPath
+
+    if srcPath:find(srcRoot, 1, true) == 1 then
+      relPath = srcPath:sub(#srcRoot + 1)
+    else
+      local trimmedRoot = srcRoot:gsub("^/+", "")
+      local trimmedPath = srcPath:gsub("^/+", "")
+      if trimmedPath:find(trimmedRoot, 1, true) == 1 then
+        relPath = trimmedPath:sub(#trimmedRoot + 1)
+      end
+    end
+
+    if relPath then
+      relPath = relPath:gsub("^/+", "")
+    end
+
+    if relPath and relPath ~= "" then
+      local dstFile = dstRoot .. relPath
+      local dstDir = dstFile:match("(.+)/[^/]+$")
       if dstDir and not FS:directoryExists(dstDir) then
         FS:directoryCreate(dstDir, true)
       end
 
       local doCopy = false
       local srcStat = FS:stat(srcPath)
-      local dstExists = FS:fileExists(dstPath)
+      local dstExists = FS:fileExists(dstFile)
       if not dstExists then
         doCopy = true
       else
-        local dstStat = FS:stat(dstPath)
+        local dstStat = FS:stat(dstFile)
         local srcTime = srcStat and srcStat.modtime or 0
         local dstTime = dstStat and dstStat.modtime or 0
         if srcTime > dstTime then
@@ -135,7 +161,7 @@ local function copyFiles(srcDir, dstDir, logMsg)
 
       if doCopy then
         local content = readFile(srcPath)
-        if content and writeFile(dstPath, content) then
+        if content and writeFile(dstFile, content) then
           copied = copied + 1
         end
       end
@@ -143,27 +169,6 @@ local function copyFiles(srcDir, dstDir, logMsg)
   end
 
   return copied
-end
-
-local function applyUIOverrides()
-  local uiSrcDir = MOD_OVERRIDES_DIR .. "ui/"
-  local uiDstDir = "/ui/"
-
-  local uiFiles = FS:findFiles(uiSrcDir, "*", -1, true, false)
-  for _, srcFile in ipairs(uiFiles or {}) do
-    local relPath = srcFile:gsub("^" .. uiSrcDir, "")
-    if relPath ~= "" then
-      local dstFile = uiDstDir .. relPath
-
-      local dstDir = dstFile:match("(.+)/[^/]+$")
-      if dstDir and not FS:directoryExists(dstDir) then
-        FS:directoryCreate(dstDir, true)
-      end
-
-      FS:copyFile(srcFile, dstFile)
-    end
-  end
-  return true
 end
 
 local function mountCustomOverrides()
@@ -229,8 +234,12 @@ local function overrideReload(extPath)
 end
 
 local function overrideReloadUI()
-  applyUIOverrides()
-  originalReloadUI()
+  core_jobsystem.create(function(job)
+    copyFiles("/ui/vue-dist/", "/ui/ui-vue/dist/")
+    copyFiles("/ui/startScreen/", "/ui/modules/startScreen/")
+    job.sleep(0.25)
+    originalReloadUI()
+  end)
 end
 
 local function installSystem()
@@ -359,6 +368,7 @@ local function onModDeactivated(modData)
 
   if (ourMod.name and modData.modname == ourMod.name) or
     (ourMod.id and modData.modData and modData.modData.tagid == ourMod.id) then
+    print('Unloading overrides')
     unloadOverrides()
   end
 end
@@ -369,7 +379,10 @@ local function onExtensionLoaded()
 end
 
 M.onUIInitialised = function()
-  clearDirectory("/ui/")
+  core_jobsystem.create(function(job)
+    job.sleep(0.25)
+    clearDirectory("/ui/")
+  end)
 end
 
 M.onExtensionLoaded = onExtensionLoaded
