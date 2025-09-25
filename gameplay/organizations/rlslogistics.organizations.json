@@ -3413,7 +3413,7 @@
         }
       },
       {
-        "stock": 10,
+        "stock": 7,
         "hiddenFromDealerList": true,
         "fees": 2550,
         "testDrive": {
@@ -3423,7 +3423,7 @@
         }
       },
       {
-        "stock": 15,
+        "stock": 12,
         "fees": 1900,
         "testDrive": {
           "abandonFees": 350,
@@ -3432,7 +3432,7 @@
         }
       },
       {
-        "stock": 20,
+        "stock": 15,
         "fees": 950,
         "testDrive": {
           "abandonFees": 250,
@@ -3441,7 +3441,7 @@
         }
       },
       {
-        "stock": 25,
+        "stock": 20,
         "fees": 0,
         "testDrive": {
           "abandonFees": 150,
@@ -3471,7 +3471,7 @@
         }
       },
       {
-        "stock": 10,
+        "stock": 7,
         "hiddenFromDealerList": true,
         "fees": 2550,
         "testDrive": {
@@ -3499,7 +3499,7 @@
         }
       },
       {
-        "stock": 25,
+        "stock": 30,
         "fees": 0,
         "testDrive": {
           "abandonFees": 150,
