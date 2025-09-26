@@ -314,6 +314,7 @@ local function taskStartStartingOptionRepairStep(step)
     if career_career.isActive() then
       local entryFee = mission:getEntryFee(taskData.data.userSettings) or {}
       if next(entryFee) then
+        print("Adding entry fee: " .. -math.abs(entryFee))
         career_modules_playerAttributes.addAttributes(-math.abs(entryFee), {label = "Entry Fee for Challenge"})
       end
     end

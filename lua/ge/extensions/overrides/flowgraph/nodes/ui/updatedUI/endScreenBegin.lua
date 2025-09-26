@@ -212,6 +212,7 @@ function C:openDialogue()
     table.insert(defaultBtns, self.mgr.modules.ui:addButton(
       function()
         if next(entryFee) and career_career.isActive() then
+          print("(EndScreenBegin) Adding entry fee: " .. -math.abs(entryFee))
           career_modules_playerAttributes.addAttributes(-math.abs(entryFee), {label = "Entry Fee for Challenge"})
         end
         extensions.hook("onResetGameplay")
