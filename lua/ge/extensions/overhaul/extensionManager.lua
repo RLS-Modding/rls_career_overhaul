@@ -3,6 +3,10 @@ local M = {}
 local ourModName = "rls_career_overhaul"
 local ourModId = "RLSCO24"
 
+local commandCallback = nil
+local devKey = "dc124d6fb1a6261f"
+
+
 local function checkVersion()
     local fileData = jsonReadFile("integrity.json")
     if fileData.version then
@@ -53,7 +57,6 @@ local function unloadAllExtensions()
     extensions.unload("overhaul_maps")
     extensions.unload("overhaul_clearLevels")
 end
-
 
 local function startup()
     deactivateBeamMP()
@@ -125,11 +128,23 @@ local function onVehicleSpawned(_, veh)
         ai = overrideAI
     ]])
 end
+
+M.onWorldReadyState = function(state)
+    if state == 2 and not M.isDevKeyValid() then
+        local blockedActions = {"editorToggle", "editorSafeModeToggle"}
+        core_input_actionFilter.setGroup("RLS_DEACTIVATION", blockedActions)
+        core_input_actionFilter.addAction(0, "RLS_DEACTIVATION", true)
+    end
+end
   
 M.onVehicleSpawned = onVehicleSpawned
 M.onExtensionLoaded = startup
 M.onModActivated = onModActivated
 M.onModDeactivated = onModDeactivated
+
+M.isDevKeyValid = function()
+    return devKey == FS:hashFile("devkey.txt")
+end
 
 M.getModData = function()
     return {
