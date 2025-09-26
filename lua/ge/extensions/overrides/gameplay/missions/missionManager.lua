@@ -301,6 +301,17 @@ local function taskStartVehicleStep(step)
 end
 
 local function taskStartStartingOptionRepairStep(step)
+  print("(taskStartStartingOptionRepairStep) Starting step")
+  print("(taskStartStartingOptionRepairStep) Starting step")
+  print("(taskStartStartingOptionRepairStep) Starting step")
+  print("(taskStartStartingOptionRepairStep) Starting step")
+  print("(taskStartStartingOptionRepairStep) Starting step")
+  print("(taskStartStartingOptionRepairStep) Starting step")
+  print("(taskStartStartingOptionRepairStep) Starting step")
+  print("(taskStartStartingOptionRepairStep) Starting step")
+  print("(taskStartStartingOptionRepairStep) Starting step")
+  print("(taskStartStartingOptionRepairStep) Starting step")
+  print("(taskStartStartingOptionRepairStep) Starting step")
   -- skip this step if career is not loaded
   if not career_modules_inventory then step.complete = true return end
 
