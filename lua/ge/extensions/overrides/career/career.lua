@@ -629,13 +629,6 @@ local function onSaveFinished()
   end
 end
 
-local function isOverride()
-  print("Overriding career.lua")
-  return true
-end
-
-M.isOverride = isOverride
-
 M.onSaveFinished = onSaveFinished
 M.switchCareerLevel = switchCareerLevel
 M.onWorldReadyState = onWorldReadyState

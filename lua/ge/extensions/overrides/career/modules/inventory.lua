@@ -695,7 +695,10 @@ local function setupInventory(levelPath)
                           vehiclesToTeleportToGarage[inventoryId] = location
                       end
                       spawn.safeTeleport(veh, location.pos, location.rot)
-                      commands.setGameCamera(true)
+                      core_jobsystem.create(function(job)
+                        job.sleep(2)
+                        commands.setGameCamera(true)
+                      end)
                   end
                 end
             end
@@ -1334,6 +1337,7 @@ end
 local function onEnterVehicleFinished(inventoryId)
   if inventoryId then
     lastVehicle = inventoryId
+    commands.setGameCamera(true)
   end
 end
 
@@ -1723,7 +1727,6 @@ local lastRaceTime = nil
 local currentSession = 0
 
 local function saveFRETimeToVehicle(raceName, inventoryId, time, driftScore)
-  print("saveFRETimeToVehicle" .. tostring(raceName) .. " " .. tostring(inventoryId) .. " " .. tostring(time) .. " " .. tostring(driftScore))
   local veh = vehicles[inventoryId]
   if not veh then return end
   veh.FRETimes = veh.FRETimes or {}
@@ -1747,7 +1750,6 @@ local function saveFRETimeToVehicle(raceName, inventoryId, time, driftScore)
     local pausedTime = career_modules_pauseTime.getTotalPauseTime()
     local totalTime = time + pausedTime
     if lastRaceTime and os.time() - lastRaceTime < totalTime + 10 then
-      print("Adding session to " .. raceName)
       currentSession = currentSession + 1
       if not veh.FRECompletions[raceName].consecutive or veh.FRECompletions[raceName].consecutive < currentSession then
         veh.FRECompletions[raceName].consecutive = currentSession
