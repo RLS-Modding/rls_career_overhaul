@@ -2,8 +2,8 @@
   <ComputerWrapper :path="[computerStore.computerData.facilityName]" :title="`Repair ${repairStore.vehicle.niceName}`" back @back="close">
     <BngCard v-if="repairStore.vehicle.niceName" class="repairMain">
       <div class="card-scroll">
-        <div class="insurance-vehicle-card" v-if="repairStore.vehicle.thumbnail">
-          <img :src="repairStore.vehicle.thumbnail" alt="" />
+        <div class="insurance-vehicle-card" v-if="normalizedThumbnail">
+          <img :src="normalizedThumbnail" alt="" />
           <div class="overlay">
             <div class="line">
               <span class="name">{{ repairStore.vehicle.niceName }}</span>
@@ -92,7 +92,7 @@ import { lua } from "@/bridge"
 import { BngButton, BngCard } from "@/common/components/base"
 import ComputerWrapper from "./ComputerWrapper.vue"
 import { useRepairStore } from "../stores/repairStore"
-import { onMounted, onUnmounted } from "vue"
+import { computed, onMounted, onUnmounted } from "vue"
 import { BngUnit } from "@/common/components/base"
 import { useComputerStore } from "../stores/computerStore"
 import { vBngOnUiNav, vBngClick,vBngFocusIf } from "@/common/directives"
@@ -100,6 +100,13 @@ import { vBngOnUiNav, vBngClick,vBngFocusIf } from "@/common/directives"
 const computerStore = useComputerStore()
 
 const repairStore = useRepairStore()
+
+const normalizedThumbnail = computed(() => {
+  const thumb = repairStore.vehicle?.thumbnail
+  if (!thumb) return null
+  const path = String(thumb)
+  return path.startsWith('/') ? path : `/${path}`
+})
 
 const close = () => {
   lua.career_modules_insurance.closeMenu()

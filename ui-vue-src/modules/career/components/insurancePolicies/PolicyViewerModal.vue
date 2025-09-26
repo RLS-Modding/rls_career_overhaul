@@ -4,7 +4,7 @@
       <div class="modal-content panel" @click.stop>
         <div class="viewer">
           <div class="viewer-left">
-            <div class="hero-image" :style="{ backgroundImage: `url('${veh.thumbnail}')` }"></div>
+            <div class="hero-image" :style="{ backgroundImage: thumbnailUrl }"></div>
             <div class="hero-overlay">
               <h3 class="veh-name">{{ veh.name }}</h3>
               <div class="badge">{{ policyName }}</div>
@@ -81,6 +81,14 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close', 'edit'])
+
+const thumbnailUrl = computed(() => {
+  const thumb = props.veh?.thumbnail
+  if (!thumb) return 'none'
+  const path = String(thumb)
+  const normalized = path.startsWith('/') ? path : `/${path}`
+  return `url('${normalized}')`
+})
 
 const policyName = computed(() => {
   const p = (props.policiesData || []).find(pp => pp.id === props.veh.policyId)

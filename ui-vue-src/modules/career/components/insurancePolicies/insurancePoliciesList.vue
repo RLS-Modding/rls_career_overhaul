@@ -60,7 +60,7 @@
           <div class="vehicles-grid">
             <!-- Vehicle Cards -->
             <div v-for="veh in insurancePoliciesStore.vehicles" :key="veh.id" class="vehicle-card glass-card glass-card-hover">
-              <div class="vehicle-hero" :style="{ backgroundImage: `url('${veh.thumbnail}')` }">
+              <div class="vehicle-hero" :style="{ backgroundImage: thumbnailUrl(veh) }">
                 <div class="hero-overlay">
                   <div class="card-top">
                     <div class="veh-title">
@@ -192,6 +192,13 @@ const formatRenewal = (sec) => {
   if (s < 60) return `${s} sec`
   const m = Math.round(s / 60)
   return `${m} min`
+}
+
+const thumbnailUrl = (veh) => {
+  const thumb = veh?.thumbnail
+  if (!thumb) return 'none'
+  const path = String(thumb)
+  return path.startsWith('/') ? `url('${path}')` : `url('/${path}')`
 }
 
 const insurancePoliciesStore = useInsurancePoliciesStore()

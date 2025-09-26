@@ -110,7 +110,11 @@ const partConditionAvg = computed(() => {
 
 const colour = computed(() => props.data?.config?.paints?.[0]?.baseColor ?? "#ccc")
 
-const thumbUrl = computed(() => props.data.thumbnail ? `${props.data.thumbnail}?${props.data.dirtyDate}` : null)
+const thumbUrl = computed(() => {
+  if (!props.data?.thumbnail) return null
+  const path = String(props.data.thumbnail)
+  return path.startsWith('/') ? path : `/${path}`
+})
 
 const description = computed(() => props.isTutorial ? "Tutorial Vehicle" : props.data.description)
 
