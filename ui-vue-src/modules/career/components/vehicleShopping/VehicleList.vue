@@ -401,7 +401,7 @@ function getRepData(dealerId) {
     percentage = Math.round(pct * 100)
     vehiclesToNext = Math.max(0, need - cur)
     // Each purchase gives 10 reputation, so divide by 10 and round up
-    purchasesToNext = Math.ceil(vehiclesToNext / 10)
+    purchasesToNext = Math.ceil(vehiclesToNext / 20)
   }
 
   return { level, pct, percentage, vehiclesToNext, purchasesToNext }
