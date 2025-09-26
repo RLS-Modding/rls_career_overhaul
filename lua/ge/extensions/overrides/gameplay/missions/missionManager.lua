@@ -754,6 +754,11 @@ local function startWithFade(mission, userSettings, startingOptions)
       processTask = taskStartStartingOptionRepairStep
     },
   }
+  print("(startWithFade) Starting step")
+  print("(startWithFade) Starting step")
+  print("(startWithFade) Starting step")
+  print("(startWithFade) Starting step")
+  print("(startWithFade) Starting step")
 
   if not startingOptions.skipPartConditionSnapshot then
     table.insert(taskData.steps, {
@@ -934,7 +939,7 @@ M.allowMissionInteraction = function()
   return true
 end
 
-local showDebugWindow = false
+local showDebugWindow = true
 local debugApprove = false
 local function onUpdate(dtReal, dtSim, dtRaw)
   if showDebugWindow then
