@@ -1398,7 +1398,7 @@ local function buyFromPurchaseMenu(purchaseType, options)
       local orgId = dealership.associatedOrganization
       local org = freeroam_organizations.getOrganization(orgId)
       if org then
-        career_modules_playerAttributes.addAttributes({[orgId .. "Reputation"] = 10}, {tags={"buying"}, label=string.format("Bought vehicle from %s", orgId)})
+        career_modules_playerAttributes.addAttributes({[orgId .. "Reputation"] = 20}, {tags={"buying"}, label=string.format("Bought vehicle from %s", orgId)})
       else
       end
     end
