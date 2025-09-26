@@ -6,20 +6,20 @@
       "model":"bastion"
     },
     {
-      "config":"police_v8_awd_A",
+      "config":"police_unmarked_v8_awd_A_Silver",
       "model":"bastion"
     },
     {
-      "config":"police_v8_awd_A",
+      "config":"police_unmarked_v8_awd_A_Blue",
       "model":"bastion"
     },
     {
-      "config":"police",
-      "model":"roamer"
+      "config":"police_unmarked_v8_awd_A_Red",
+      "model":"bastion"
     },
     {
-      "config":"police_passenger",
-      "model":"van"
+      "config":"info_undercover_redtail",
+      "model":"bastion"
     }
   ],
   "name":"West Coast USA - Police",
