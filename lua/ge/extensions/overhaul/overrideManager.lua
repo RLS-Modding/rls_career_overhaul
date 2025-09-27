@@ -120,51 +120,13 @@ local function copyFiles(srcDir, dstDir)
 
   local copied = 0
   local uiFiles = FS:findFiles(srcRoot, "*", -1, true, false)
-  for _, srcFile in ipairs(uiFiles or {}) do
-    local srcPath = srcFile:gsub("\\", "/")
-    local relPath = srcPath
-
-    if srcPath:find(srcRoot, 1, true) == 1 then
-      relPath = srcPath:sub(#srcRoot + 1)
+  dump(uiFiles)
+  for _, file in ipairs(uiFiles) do
+    local fileContent = readFile(file)
+    if fileContent and writeFile(dstRoot .. file:sub(srcRoot:len() + 1), fileContent) then
+      copied = copied + 1
     else
-      local trimmedRoot = srcRoot:gsub("^/+", "")
-      local trimmedPath = srcPath:gsub("^/+", "")
-      if trimmedPath:find(trimmedRoot, 1, true) == 1 then
-        relPath = trimmedPath:sub(#trimmedRoot + 1)
-      end
-    end
-
-    if relPath then
-      relPath = relPath:gsub("^/+", "")
-    end
-
-    if relPath and relPath ~= "" then
-      local dstFile = dstRoot .. relPath
-      local dstDir = dstFile:match("(.+)/[^/]+$")
-      if dstDir and not FS:directoryExists(dstDir) then
-        FS:directoryCreate(dstDir, true)
-      end
-
-      local doCopy = false
-      local srcStat = FS:stat(srcPath)
-      local dstExists = FS:fileExists(dstFile)
-      if not dstExists then
-        doCopy = true
-      else
-        local dstStat = FS:stat(dstFile)
-        local srcTime = srcStat and srcStat.modtime or 0
-        local dstTime = dstStat and dstStat.modtime or 0
-        if srcTime > dstTime then
-          doCopy = true
-        end
-      end
-
-      if doCopy then
-        local content = readFile(srcPath)
-        if content and writeFile(dstFile, content) then
-          copied = copied + 1
-        end
-      end
+      print('failed to write file ' .. dstRoot .. file:sub(srcRoot:len() + 1))
     end
   end
 
@@ -237,7 +199,7 @@ local function overrideReloadUI()
   core_jobsystem.create(function(job)
     copyFiles("/ui/vue-dist/", "/ui/ui-vue/dist/")
     copyFiles("/ui/startScreen/", "/ui/modules/startScreen/")
-    job.sleep(0.75)
+    job.sleep(0.25)
     originalReloadUI()
   end)
 end
