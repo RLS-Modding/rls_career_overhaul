@@ -15,6 +15,7 @@ local function saveTimeData(currentSavePath)
         currentSavePath = path
         if not currentSavePath then return end
     end
+    if not scenetree.tod then return end
 
     local dirPath = currentSavePath .. "/career/rls_career"
     if not FS:directoryExists(dirPath) then
