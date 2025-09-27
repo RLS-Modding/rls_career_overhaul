@@ -237,7 +237,7 @@ local function overrideReloadUI()
   core_jobsystem.create(function(job)
     copyFiles("/ui/vue-dist/", "/ui/ui-vue/dist/")
     copyFiles("/ui/startScreen/", "/ui/modules/startScreen/")
-    job.sleep(0.25)
+    job.sleep(0.75)
     originalReloadUI()
   end)
 end
