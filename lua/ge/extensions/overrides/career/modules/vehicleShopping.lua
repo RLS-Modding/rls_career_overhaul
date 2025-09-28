@@ -1173,12 +1173,16 @@ local function sendPurchaseDataToUi()
     vehId = purchaseData.vehId
   }
 
-  local playerInsuranceData = career_modules_insurance.getPlayerPolicyData()[data.vehicleInfo.requiredInsurance.id]
-  if playerInsuranceData then
-    data.ownsRequiredInsurance = playerInsuranceData.owned
-  else
+  if not data.vehicleInfo.requiredInsurance then
     data.ownsRequiredInsurance = false
-  end
+  else
+    local playerInsuranceData = career_modules_insurance.getPlayerPolicyData()[data.vehicleInfo.requiredInsurance.id]
+    if playerInsuranceData then
+      data.ownsRequiredInsurance = playerInsuranceData.owned
+    else
+      data.ownsRequiredInsurance = false
+    end
+  end  
 
   local atDealership = (purchaseData.purchaseType == "instant" and currentSeller) or (purchaseData.purchaseType == "inspect" and vehicleShopInfo.sellerId ~= "private")
 
