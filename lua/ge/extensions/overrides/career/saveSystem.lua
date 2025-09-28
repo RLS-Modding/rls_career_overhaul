@@ -24,7 +24,7 @@ local function getAllAutosaves(slotName)
     end
   end
 
-  table.sort(res, function(a,b) return a.date < b.date end)
+  table.sort(res, function(a,b) return tostring(a.date) < tostring(b.date) end)
   return res
 end
 
