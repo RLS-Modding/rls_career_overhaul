@@ -1,50 +1,58 @@
 local M = {}
 
 local compatibleMaps = {
-    ["west_coast_usa"] = "West Coast USA"
+  ["west_coast_usa"] = "West Coast USA"
 }
 
 local function retrieveCompatibleMaps()
-    compatibleMaps = {
-        ["west_coast_usa"] = "West Coast USA"
-    }
-    extensions.hook("onGetMaps")
+  compatibleMaps = {
+    ["west_coast_usa"] = "West Coast USA"
+  }
+  extensions.hook("onGetMaps")
 end
 
 local function returnCompatibleMap(maps)
-    for map, mapName in pairs(maps) do
-        if not compatibleMaps[map] then
-            compatibleMaps[map] = mapName
-        end
-    end
-end
+  local newMapsWithOverrides = {}
 
-local function getCompatibleMaps()
-    return compatibleMaps
+  for map, mapName in pairs(maps) do
+    if not compatibleMaps[map] then
+      compatibleMaps[map] = mapName
+
+      local mapOverridePath = "/overriden/levels/" .. map
+      if FS:directoryExists(mapOverridePath) then
+        table.insert(newMapsWithOverrides, map)
+      end
+    end
+  end
+
+  overhaul_overrideManager.handleMapOverrides(newMapsWithOverrides)
 end
 
 local function getOtherAvailableMaps()
     local maps = {}
     local currentMap = getCurrentLevelIdentifier()
     for map, mapName in pairs(compatibleMaps) do
-        if map ~= currentMap then
-            maps[map] = mapName
-        end
+      if map ~= currentMap then
+        maps[map] = mapName
+      end
     end
     return maps
+  end
+  
+  local function getCompatibleMaps()
+    return compatibleMaps
+  end
+
+local function onExtensionLoaded()
+  retrieveCompatibleMaps()
 end
 
-local function enableMapSwitching()
-    guihooks.trigger('ChangeState', {state = 'switchMap', params = {maps = getOtherAvailableMaps()}})
-end
-
-M.onExtensionLoaded = retrieveCompatibleMaps
+M.onExtensionLoaded = onExtensionLoaded
 M.onModActivated = retrieveCompatibleMaps
-M.onModDeactivated = retrieveCompatibleMaps
+M.onWorldReadyState = retrieveCompatibleMaps
 
 M.returnCompatibleMap = returnCompatibleMap
 M.getCompatibleMaps = getCompatibleMaps
 M.getOtherAvailableMaps = getOtherAvailableMaps
 
 return M
-

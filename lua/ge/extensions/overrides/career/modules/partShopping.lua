@@ -469,7 +469,9 @@ local function getNeededAdditionalParts(parts, inventoryId)
 
   for path, part in pairs(combinedSlotToPartMap) do
     local jbeamData = jbeamIO.getPart(currentVehicleData.ioCtx, part.name)
+    if not jbeamData then goto continue end
     part.slotType = jbeamData.slotType
+    ::continue::
   end
 
   -- add the default part if the slot is empty and they have a default part
@@ -522,7 +524,7 @@ local function findIncompatiblePartsInShoppingCartRec(partName, availableParts, 
       if (shoppingCart.partsIn[childNode.path] and shoppingCart.partsIn[childNode.path].emptyPlaceholder) then
         -- This is an intentionally empty slot, so all child parts are incompatible
         vehicleParts[childNode.path] = nil
-      elseif subPartName and subPartName ~= "" and (slotInfo and (jbeamSlotSystem.partFitsSlot(subPart, slotInfo))) then
+      elseif subPart and subPartName and subPartName ~= "" and (slotInfo and (jbeamSlotSystem.partFitsSlot(subPart, slotInfo))) then
         vehicleParts[childNode.path] = nil
         findIncompatiblePartsInShoppingCartRec(subPartName, availableParts, childNode, vehicleParts, ioCtx)
       end

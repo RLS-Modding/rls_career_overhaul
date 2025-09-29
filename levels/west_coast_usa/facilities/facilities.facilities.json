@@ -367,7 +367,13 @@
       ],
       "functions":{
         "tuning":true,
-        "vehicleInventory":false
+        "insurancePolicies":false,
+        "painting":false,
+        "partInventory":false,
+        "partShop":false,
+        "sleep":false,
+        "vehicleInventory":false,
+        "vehicleShop":false        
       },
       "garageId":"dragTuningPits",
       "icon":"poi_laptop_round",

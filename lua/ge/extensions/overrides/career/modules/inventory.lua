@@ -505,7 +505,7 @@ end
 local function getPartConditionsCallback(partConditions, inventoryId)
   vehicles[inventoryId].partConditions = partConditions
   onPartConditionsUpdateFinished()
-  career_modules_partInventory.updatePartConditionsInInventory(inventoryId)
+  career_modules_partInventory.updatePartConditionsInInventory()
 end
 
 local function updatePartConditions(vehId, inventoryId, callback)
@@ -517,6 +517,7 @@ local function updatePartConditions(vehId, inventoryId, callback)
   end
   if not veh then
     log("E", "", "Couldnt find vehicle object to get part conditions")
+    if callback then callback() end
     return
   end
 
@@ -539,7 +540,6 @@ end
 -- replaceOption 1: replace the current vehicle object
 -- replaceOption 2: replace the vehicle object with the same inventoryId
 local function spawnVehicle(inventoryId, replaceOption, callback)
-  print("Spawning vehicle " .. inventoryId)
   local vehInfo = vehicles[inventoryId]
 
   local carConfigToLoad = vehInfo.config
@@ -695,6 +695,10 @@ local function setupInventory(levelPath)
                           vehiclesToTeleportToGarage[inventoryId] = location
                       end
                       spawn.safeTeleport(veh, location.pos, location.rot)
+                      core_jobsystem.create(function(job)
+                        job.sleep(2)
+                        commands.setGameCamera(true)
+                      end)
                   end
                 end
             end
@@ -808,9 +812,8 @@ local function setupInventory(levelPath)
         extensions.hook("onEnterVehicleFinished", currentVehicle)
     end
 
-    commands.setGameCamera()
+  commands.setGameCamera()
 end
-
 
 local function onCareerModulesActivated(alreadyInLevel)
   if sellAllVehicles then
@@ -834,7 +837,6 @@ end
 local function onClientStartMission(levelPath)
   setupInventory()
 end
-
 
 local function setPartConditionResetSnapshot(veh, callback)
   core_vehicleBridge.executeAction(veh, 'createPartConditionSnapshot', "beforeReset")
@@ -1024,14 +1026,30 @@ end
 local function getVehicleUiData(inventoryId, inventoryIdsInGarage)
   local vehicleData = deepcopy(vehicles[inventoryId])
   if not vehicleData then return end
+  local garage = getClosestGarage()
+  
   if not inventoryIdsInGarage then
-    inventoryIdsInGarage = getVehiclesInGarage(getClosestGarage())
+    inventoryIdsInGarage = getVehiclesInGarage(garage)
   end
 
   vehicleData.value = career_modules_valueCalculator.getInventoryVehicleValue(inventoryId)
   vehicleData.valueRepaired = career_modules_valueCalculator.getInventoryVehicleValue(inventoryId, true)
   vehicleData.quickRepairExtraPrice = career_modules_insurance.getQuickRepairExtraPrice()
   vehicleData.initialRepairTime = career_modules_insurance.getRepairTime(inventoryId)
+
+  if vehicleData.certifications then
+    vehicleData.power = string.format("%d", vehicleData.certifications.power)
+    vehicleData.weight = string.format("%d", vehicleData.certifications.weight)
+    vehicleData.torque = string.format("%d", vehicleData.certifications.torque)
+    vehicleData.powerPerWeight = string.format("%0.3f", vehicleData.certifications.power / vehicleData.certifications.weight)
+  else
+    vehicleData.power = "N/A"
+    vehicleData.weight = "N/A"
+    vehicleData.torque = "N/A"
+    vehicleData.powerPerWeight = "N/A"
+  end
+
+  vehicleData.mileage = M.setMileage(inventoryId)
 
   if inventoryIdToVehId[inventoryId] then
     local vehObj = getObjectByID(inventoryIdToVehId[inventoryId])
@@ -1052,6 +1070,7 @@ local function getVehicleUiData(inventoryId, inventoryIdsInGarage)
   end
 
   vehicleData.needsRepair = career_modules_insurance.inventoryVehNeedsRepair(vehicleData.id)
+  vehicleData.onSite = isVehicleOnSite(inventoryId, garage)
   if inventoryId == favoriteVehicle then
     vehicleData.favorite = true
   end
@@ -1067,6 +1086,8 @@ local function getVehicleUiData(inventoryId, inventoryIdsInGarage)
   vehicleData.sellPermission = career_modules_permissions.getStatusForTag("vehicleSelling", {inventoryId = inventoryId})
   vehicleData.favoritePermission = career_modules_permissions.getStatusForTag("vehicleFavorite", {inventoryId = inventoryId})
   vehicleData.storePermission = career_modules_permissions.getStatusForTag("vehicleStoring", {inventoryId = inventoryId})
+  vehicleData.storePermission.allow = vehicleData.storePermission.allow and (career_modules_garageManager.isGarageSpace(garage.id)[1] or M.getVehicleLocation(inventoryId) == garage.id)
+  vehicleData.deliverPermission = { allow = (career_modules_garageManager.isGarageSpace(garage.id)[1] and vehicleData.location ~= garage.id)}
   vehicleData.licensePlateChangePermission = career_modules_permissions.getStatusForTag({"vehicleLicensePlate", "vehicleModification"}, {inventoryId = inventoryId})
   vehicleData.returnLoanerPermission = career_modules_permissions.getStatusForTag("returnLoanedVehicle", {inventoryId = inventoryId})
 
@@ -1089,75 +1110,13 @@ local function sendDataToUi()
   data.menuHeader = menuHeader
   data.chooseButtonsData = chooseButtonsData
   data.buttonsActive = buttonsActive
-  local vehiclesCopy = deepcopy(vehicles)
 
-  local garage = getClosestGarage()
-  local inventoryIdsInGarage = getVehiclesInGarage(garage)
+  local inventoryIdsInGarage = getVehiclesInGarage(getClosestGarage())
 
-  local playerPolicyData = career_modules_insurance.getPlayerPolicyData()
-
-  for inventoryId, vehicle in pairs(vehiclesCopy) do
-    vehicle.value = career_modules_valueCalculator.getInventoryVehicleValue(inventoryId)
-    vehicle.valueRepaired = career_modules_valueCalculator.getInventoryVehicleValue(inventoryId, true)
-    vehicle.quickRepairExtraPrice = career_modules_insurance.getQuickRepairExtraPrice()
-    vehicle.initialRepairTime = career_modules_insurance.getRepairTime(inventoryId)
-
-    if vehicle.certifications then
-      vehicle.power = string.format("%d", vehicle.certifications.power)
-      vehicle.weight = string.format("%d", vehicle.certifications.weight)
-      vehicle.torque = string.format("%d", vehicle.certifications.torque)
-      vehicle.powerPerWeight = string.format("%0.3f", vehicle.certifications.power / vehicle.certifications.weight)
-    else
-      vehicle.power = "N/A"
-      vehicle.weight = "N/A"
-      vehicle.torque = "N/A"
-      vehicle.powerPerWeight = "N/A"
-    end
-
-    vehicle.mileage = M.setMileage(inventoryId)
-
-    if inventoryIdToVehId[inventoryId] then
-      local vehObj = be:getObjectByID(inventoryIdToVehId[inventoryId])
-      if vehObj then
-        vehicle.distance = vehObj:getPosition():distance(getPlayerVehicle(0):getPosition())
-        vehicle.inGarage = inventoryIdsInGarage[inventoryId]
-      end
-    end
-
-    for otherInventoryId, _ in pairs(inventoryIdsInGarage) do
-      if otherInventoryId ~= inventoryId then
-        vehicle.otherVehicleInGarage = true
-        break
-      end
-    end
-
-    vehicle.needsRepair = career_modules_insurance.inventoryVehNeedsRepair(vehicle.id)
-    vehicle.onSite = isVehicleOnSite(inventoryId, garage)
-    if inventoryId == favoriteVehicle then
-      vehicle.favorite = true
-    end
-
-    local vehPolicyInfo = career_modules_insurance.getVehPolicyInfo(inventoryId)
-    vehicle.policyInfo = vehPolicyInfo.policyInfo
-    vehicle.ownsRequiredInsurance = vehPolicyInfo.policyOwned
-
-    vehicle.thumbnail = getVehicleThumbnail(inventoryId)
-
-    vehicle.junkVehicle = career_modules_permissions.getStatusForTag("junkVehicle", {inventoryId = inventoryId})
-    vehicle.repairPermission = career_modules_permissions.getStatusForTag("vehicleRepair", {inventoryId = inventoryId})
-    vehicle.sellPermission = career_modules_permissions.getStatusForTag("vehicleSelling", {inventoryId = inventoryId})
-    vehicle.favoritePermission = career_modules_permissions.getStatusForTag("vehicleFavorite", {inventoryId = inventoryId})
-    vehicle.storePermission = career_modules_permissions.getStatusForTag("vehicleStoring", {inventoryId = inventoryId})
-    vehicle.storePermission.allow = vehicle.storePermission.allow and (career_modules_garageManager.isGarageSpace(garage.id)[1] or M.getVehicleLocation(inventoryId) == garage.id)
-    vehicle.deliverPermission = { allow = (career_modules_garageManager.isGarageSpace(garage.id)[1] and vehicle.location ~= garage.id)}
-    vehicle.licensePlateChangePermission = career_modules_permissions.getStatusForTag({"vehicleLicensePlate", "vehicleModification"}, {inventoryId = inventoryId})
-    vehicle.returnLoanerPermission = career_modules_permissions.getStatusForTag("returnLoanedVehicle", {inventoryId = inventoryId})
+  for inventoryId, vehicle in pairs(vehicles) do
+    data.vehicles[tostring(inventoryId)] = getVehicleUiData(inventoryId, inventoryIdsInGarage)
   end
 
-  -- convert the keys to strings, so this table wont be converted to an array on js side
-  for inventoryId, vehicle in pairs(vehiclesCopy) do
-    data.vehicles[tostring(inventoryId)] = vehicle
-  end
   data.numberOfFreeSlots = getNumberOfFreeSlots()
   data.originComputerId = originComputerId
 
@@ -1378,6 +1337,7 @@ end
 local function onEnterVehicleFinished(inventoryId)
   if inventoryId then
     lastVehicle = inventoryId
+    commands.setGameCamera(true)
   end
 end
 
@@ -1549,13 +1509,14 @@ local function onGetRawPoiListForLevel(levelIdentifier, elements)
       if be:getPlayerVehicleID(0) ~= vehId then -- don't display the current player's vehicle
         if map.objects[vehId] then
           local desc = "Player's vehicle"
-          if vehicles[invId].loanType then
+          if vehicles[invId] and vehicles[invId].loanType then
             desc = "Loaned vehicle"
           end
 
           local id = "plVeh"..vehId
+          if not map.objects[vehId] then goto continue end
           local dist, distUnit = translateDistance(map.objects[vehId].pos:distance(getPlayerVehicle(0):getPosition()), true)
-          local plate = vehicles[invId].config.licenseName
+          local plate = (vehicles[invId] and vehicles[invId].config and vehicles[invId].config.licenseName) or "Unknown"
           local odometer, odoUnit = translateDistance(career_modules_valueCalculator.getVehicleMileageById(invId), true)
 
           desc = string.format("%s | Distance: %0.2f %s | Licence plate: %s | Odometer: %i %s", desc, dist, distUnit, plate, odometer, odoUnit)
@@ -1576,6 +1537,7 @@ local function onGetRawPoiListForLevel(levelIdentifier, elements)
           })
         end
       end
+      ::continue::
     end
   end
 end
@@ -1765,7 +1727,6 @@ local lastRaceTime = nil
 local currentSession = 0
 
 local function saveFRETimeToVehicle(raceName, inventoryId, time, driftScore)
-  print("saveFRETimeToVehicle" .. tostring(raceName) .. " " .. tostring(inventoryId) .. " " .. tostring(time) .. " " .. tostring(driftScore))
   local veh = vehicles[inventoryId]
   if not veh then return end
   veh.FRETimes = veh.FRETimes or {}
@@ -1789,7 +1750,6 @@ local function saveFRETimeToVehicle(raceName, inventoryId, time, driftScore)
     local pausedTime = career_modules_pauseTime.getTotalPauseTime()
     local totalTime = time + pausedTime
     if lastRaceTime and os.time() - lastRaceTime < totalTime + 10 then
-      print("Adding session to " .. raceName)
       currentSession = currentSession + 1
       if not veh.FRECompletions[raceName].consecutive or veh.FRECompletions[raceName].consecutive < currentSession then
         veh.FRECompletions[raceName].consecutive = currentSession
@@ -1896,8 +1856,6 @@ end
 M.saveFRETimeToVehicle = saveFRETimeToVehicle
 M.getFRETimeToVehicle = getFRETimeToVehicle
 M.getFRECompletions = getFRECompletions
-M.calculateSeatingCapacity = calculateSeatingCapacity
-M.onWorldReadyState = onWorldReadyState
 
 M.addVehicle = addVehicle
 M.removeVehicle = removeVehicle
@@ -1964,6 +1922,7 @@ M.getLastVehicle = getLastVehicle
 M.getVehicleIdFromInventoryId = getVehicleIdFromInventoryId
 M.getInventoryIdFromVehicleId = getInventoryIdFromVehicleId
 M.getMapInventoryIdToVehId = getMapInventoryIdToVehId
+M.debugRespawnCurrentVehicle = debugRespawnCurrentVehicle
 
 M.getVehicleUiData = getVehicleUiData
 

@@ -409,20 +409,6 @@ end
 local function exitRace(isCompletion, customMessage, raceData, subjectID)
     if mActiveRace then
         local raceName = mActiveRace
-        utils.setActiveLight(raceName, "red")
-        lapCount = 0
-        mActiveRace = nil
-        timerActive = false
-        mHotlap = nil
-        currCheckpoint = nil
-        mSplitTimes = {}
-        mAltRoute = false
-        invalidLap = false
-        mInventoryId = nil
-        Assets:hideAllAssets()
-        checkpointManager.removeCheckpoints()
-
-        -- Handle race completion vs cancellation
         if isCompletion then
             -- Race completion logic
             payoutRace()
@@ -440,14 +426,27 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
                 end
             end
 
-            -- Use custom message for completion or default completion message
-            local message = customMessage or "Race completed!"
-            utils.displayMessage(message, 10, "Reward")
+            if customMessage then
+                utils.displayMessage(customMessage, 10, "Reward")
+            end
         else
             -- Race cancellation logic
             local message = customMessage or "You exited the race zone, Race cancelled"
             utils.displayMessage(message, 3)
         end
+
+        utils.setActiveLight(raceName, "red")
+        lapCount = 0
+        mActiveRace = nil
+        timerActive = false
+        mHotlap = nil
+        currCheckpoint = nil
+        mSplitTimes = {}
+        mAltRoute = false
+        invalidLap = false
+        mInventoryId = nil
+        Assets:hideAllAssets()
+        checkpointManager.removeCheckpoints()
 
         -- Common cleanup tasks
         core_jobsystem.create(function(job)

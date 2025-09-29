@@ -4,6 +4,9 @@ local dependencies = {'career_career', 'career_modules_inventory'}
 
 local assignmentData = nil
 local vehiclePresent = nil
+local roleAssignments = {
+    ["policeAssignment"] = "Police"
+}
 
 local function canPay()
     local certificationPrice = {
@@ -14,10 +17,6 @@ local function canPay()
     }
     return career_modules_payment.canPay(certificationPrice)
 end
-
-local roleAssignments = {
-    ["policeAssignment"] = "Police"
-}
 
 local function startCertification()
     guihooks.trigger('ChangeState', {

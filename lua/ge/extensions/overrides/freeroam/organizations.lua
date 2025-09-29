@@ -6,6 +6,10 @@ local M = {}
 
 local organizations
 
+local blacklist = {
+  ["/gameplay/organizations/logistics.organizations.json"] = true
+}
+
 local function addAdditionalInfoToOrg(organization)
   career_modules_reputation.addReputationToOrg(organization)
   organization.visible = career_career and career_career.hasInteractedWithOrganization(organization.id)
@@ -18,8 +22,14 @@ local function getOrganizations()
     -- init organizations table
     organizations = {}
 
-    -- parse any other organization files inside the "/organizations" folder
-    for _,file in ipairs(FS:findFiles("gameplay/organizations/", '*.organizations.json', -1, false, true)) do
+    -- parse any other organization files inside the "/organizations" Could not find target facility to deliver from %s with type %s
+    local files = {}
+    for _, file in ipairs(FS:findFiles("gameplay/organizations/", '*.organizations.json', -1, false, true)) do
+      if not blacklist[file] then
+        table.insert(files, file)
+      end
+    end
+    for _,file in ipairs(files) do
       local data = jsonReadFile(file)
       for orgId, orgData in pairs(data) do
         orgData.id = orgId
@@ -100,4 +110,5 @@ M.getOrganization = getOrganization
 M.getOrganizationIdOrderAndIcon = getOrganizationIdOrderAndIcon
 M.getUIData = getUIData
 M.getUIDataForOrg = getUIDataForOrg
+
 return M

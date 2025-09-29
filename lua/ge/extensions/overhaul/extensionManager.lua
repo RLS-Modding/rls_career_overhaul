@@ -1,47 +1,11 @@
 local M = {}
 
-local ourModName = "rls_career_overhaul_updating"
+local ourModName = "rls_career_overhaul"
 local ourModId = "RLSCO24"
-local copiedJsonFiles = {}
 
-local function copyJsonOverrides()
-    local overridesDir = '/lua/ge/extensions/overrides/'
-    local jsonFiles = FS:findFiles(overridesDir, '*.json', -1, true, false)
+local commandCallback = nil
+local devKey = "dc124d6fb1a6261f"
 
-    if not jsonFiles or #jsonFiles == 0 then
-        return true
-    end
-
-    for _, jsonFile in ipairs(jsonFiles) do
-        local originalPath = jsonFile:gsub('/overrides/', '/')
-
-        local targetDir = originalPath:match("(.*/)")
-        if targetDir then
-            FS:directoryCreate(targetDir)
-        end
-
-        if FS:copyFile(jsonFile, originalPath) then
-            table.insert(copiedJsonFiles, originalPath)
-        end
-    end
-
-    return true
-end
-
-local function cleanupJsonOverrides()
-    if not copiedJsonFiles or #copiedJsonFiles == 0 then
-        return true
-    end
-
-    for _, jsonFile in ipairs(copiedJsonFiles) do
-        if FS:fileExists(jsonFile) then
-            FS:removeFile(jsonFile)
-        end
-    end
-
-    copiedJsonFiles = {}
-    return true
-end
 
 local function checkVersion()
     local fileData = jsonReadFile("integrity.json")
@@ -76,13 +40,14 @@ local function loadExtensions()
     setExtensionUnloadMode("gameplay_cab", "manual")
 
     extensions.unload("career_career")
+    extensions.unload("career_saveSystem")
 end
 
 local function unloadAllExtensions()
-
     extensions.unload("core_gameContext")
     extensions.unload("gameplay_events_freeroamEvents")
     extensions.unload("career_career")
+    extensions.unload("career_saveSystem")
     extensions.unload("gameplay_phone")
     extensions.unload("freeroam_facilities")
     extensions.unload("gameplay_repo")
@@ -91,48 +56,13 @@ local function unloadAllExtensions()
     extensions.unload("overhaul_settings")
     extensions.unload("overhaul_maps")
     extensions.unload("overhaul_clearLevels")
-    extensions.unload("overhaul_ui")
-
-    cleanupJsonOverrides()
-
-end
-
-local function setupAutomaticOverrides()
-    local success, overrideManager = pcall(require, 'lua.ge.extensions.overhaul.overrideManager')
-    if not success then
-        return false
-    end
-
-    if not overrideManager.installSystem() then
-        return false
-    end
-
-    local overridesDir = '/lua/ge/extensions/overrides/'
-    local luaFiles = FS:findFiles(overridesDir, '*.lua', -1, true, false)
-
-    local overrideCount = 0
-    if luaFiles and #luaFiles > 0 then
-        for _, overrideFile in ipairs(luaFiles) do
-            local modulePath = overrideFile:gsub('^/lua/ge/extensions/', 'lua.ge.extensions.'):gsub('%.lua$', ''):gsub('/', '.')
-            local originalPath = modulePath:gsub('%.overrides%.', '.')
-            local extensionPath = originalPath:gsub('lua%.ge%.extensions%.', ''):gsub('%.', '_')
-
-            if overrideManager.setOverride(extensionPath, modulePath) then
-                overrideCount = overrideCount + 1
-            end
-        end
-    end
-
-
-    copyJsonOverrides()
-
-    return true
 end
 
 local function startup()
     deactivateBeamMP()
 
-    setupAutomaticOverrides()
+    setExtensionUnloadMode("overhaul_overrideManager", "manual")
+    extensions.load("overhaul_overrideManager")
 
     setExtensionUnloadMode("overhaul_settings", "manual")
     setExtensionUnloadMode("overhaul_maps", "manual")
@@ -141,9 +71,6 @@ local function startup()
     if not core_gamestate.state or core_gamestate.state.state ~= "career" then
         loadExtensions()
     end
-
-    setExtensionUnloadMode("overhaul_ui", "manual")
-    extensions.unload("overhaul_ui")
 
     core_jobsystem.create(function(job)
         job.sleep(5)
@@ -194,9 +121,36 @@ local function onModDeactivated(modData)
     end
 end
 
-M.onExtensionLoaded = startup
+local function onVehicleSpawned(_, veh)
+    veh:queueLuaCommand("extensions.load('fuelMultiplier')")
+    veh:queueLuaCommand([[
+        extensions.load('overrideAI')
+        ai = overrideAI
+    ]])
+end
 
+M.onWorldReadyState = function(state)
+    if state == 2 and not M.isDevKeyValid() then
+        local blockedActions = {"editorToggle", "editorSafeModeToggle"}
+        core_input_actionFilter.setGroup("RLS_DEACTIVATION", blockedActions)
+        core_input_actionFilter.addAction(0, "RLS_DEACTIVATION", true)
+    end
+end
+  
+M.onVehicleSpawned = onVehicleSpawned
+M.onExtensionLoaded = startup
 M.onModActivated = onModActivated
 M.onModDeactivated = onModDeactivated
+
+M.isDevKeyValid = function()
+    return devKey == FS:hashFile("devkey.txt")
+end
+
+M.getModData = function()
+    return {
+        name = ourModName,
+        id = ourModId
+    }
+end
 
 return M

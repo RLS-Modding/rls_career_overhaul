@@ -46,12 +46,9 @@ local function getPlayerIsCop()
     local invId = career_modules_inventory.getInventoryIdFromVehicleId(vehId)
     local vehicleRole = career_modules_inventory.getVehicleRole(invId)
     if vehicleRole ~= nil then
-      print("setting role to " .. vehicleRole)
       local trafficVehicle = gameplay_traffic.getTrafficData()[vehId]
       if trafficVehicle then
         trafficVehicle:setRole(vehicleRole)
-      else
-        print("no traffic vehicle")
       end
     end
     local licenseText = career_modules_inventory.getLicensePlateText(vehId)
@@ -154,7 +151,7 @@ local function setupTraffic(forceSetup)
     end
 
     -- this will spawn vehicles near the center of the map (player vehicle not ready yet)
-    -- if this would wait until player vehicle active, then the loading screen would fade out early...
+    -- if this would wait until player vehicle active, then the loading screen would fade out early...W
     gameplay_parking.setupVehicles(restrict and testTrafficAmounts.parkedCars or parkedAmount)
     gameplay_traffic.setupTraffic(restrict and testTrafficAmounts.traffic + extraAmount or amount + extraAmount, 0, {
       policeAmount = policeAmount,
@@ -198,7 +195,13 @@ local function onPursuitAction(vehId, action, data)
     return
   end
   local playerIsCop = getPlayerIsCop()
-  if vehId ~= be:getPlayerVehicleID(0) and not playerIsCop then
+  if vehId ~= be:getPlayerVehicleID(0) and playerIsCop then
+    local vehicle = scenetree.findObjectById(vehId)
+    local distance = vehicle:getPosition():distance(getPlayerVehicle(0):getPosition())
+    if distance > 15 then
+      return
+    end
+  elseif vehId ~= be:getPlayerVehicleID(0) and not playerIsCop then
     return
   end
 
@@ -298,7 +301,7 @@ local function onPursuitAction(vehId, action, data)
       if vehicle.owningOrganization then
         loanerCut = level.loanerCut.value
       end
-      bonus = bonus * (1 - loanerCut)
+      bonus = math.floor(bonus * (1 - loanerCut))
 
       career_modules_payment.reward({
         money = {
@@ -491,7 +494,7 @@ local function onTrafficStopped()
 end
 
 local function onPlayerCameraReady()
-  setupTraffic() -- spawns traffic while the loading screen did not fade out yet
+  setupTraffic(true) -- spawns traffic while the loading screen did not fade out yet
 end
 
 local function onUpdate(dtReal, dtSim, dtRaw)
@@ -538,7 +541,7 @@ end
 
 local function onCareerModulesActivated(alreadyInLevel)
   if alreadyInLevel then
-    setupTraffic()
+    setupTraffic(true)
   end
 end
 
@@ -610,6 +613,13 @@ local function showPosition(pos)
   end
 end
 
+local function onWorldReadyState(state)
+  if state == 2 and career_career.isActive() then
+    setupTraffic()
+  end
+end
+
+M.onWorldReadyState = onWorldReadyState
 M.getPlayerData = getPlayerData
 M.retrieveFavoriteVehicle = retrieveFavoriteVehicle
 M.playerPursuitActive = playerPursuitActive

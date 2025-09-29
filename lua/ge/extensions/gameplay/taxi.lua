@@ -405,12 +405,14 @@ local function specificCapcityCases(partName)
       elseif partName:find("sd_seats") then return 33
       elseif partName:find("dd105") then return 29
       elseif partName:find("sd195") then return 43
-      elseif partName:find("lh_seats_upper") then return 53        
+      elseif partName:find("lhd_artic_seats_upper") then return 77
+      elseif partName:find("lhd_artic_seats") then return 30
+      elseif partName:find("lh_seats_upper") then return 53
       elseif partName:find("lh_seats") then return 17
       elseif partName:find("lhd_seats_upper") then return 53        
       elseif partName:find("lhd_seats") then return 17
-      elseif partName:find("capsule_rhd_artic_seats_upper") then return 77
-      elseif partName:find("capsule_rhd_artic_seats") then return 30 end
+      elseif partName:find("rhd_artic_seats_upper") then return 77
+      elseif partName:find("rhd_artic_seats") then return 30 end
     end
     if partName:find("schoolbus_seats_R_c")  then
       return 10
@@ -1011,8 +1013,10 @@ local function onVehicleSwitched()
     currentVehiclePartsTree = nil
     -- Reset taxi job state when switching vehicles
     state = "start"
+    if currentFare then
+        core_groundMarkers.resetAll()
+    end
     currentFare = nil
-    core_groundMarkers.resetAll()
     jobOfferTimer = 0
     jobOfferInterval = math.random(5, 45)
     cumulativeReward = 0
