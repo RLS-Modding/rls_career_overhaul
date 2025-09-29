@@ -338,6 +338,7 @@ end
 local function onExtensionLoaded()
   ourMod = overhaul_extensionManager.getModData()
   installSystem()
+  extensions.unload("ui_console")
 end
 
 M.onUIInitialised = function()

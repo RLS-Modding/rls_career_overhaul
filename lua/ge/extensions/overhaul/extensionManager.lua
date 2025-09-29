@@ -130,10 +130,14 @@ local function onVehicleSpawned(_, veh)
 end
 
 M.onWorldReadyState = function(state)
-    if state == 2 and not M.isDevKeyValid() then
-        local blockedActions = {"editorToggle", "editorSafeModeToggle"}
+    if state == 2 then
+        local blockedActions = {"editorToggle", "editorSafeModeToggle", "vehicleEditorToggle"}
         core_input_actionFilter.setGroup("RLS_DEACTIVATION", blockedActions)
-        core_input_actionFilter.addAction(0, "RLS_DEACTIVATION", true)
+        if not M.isDevKeyValid() and career_career.isActive() then
+            core_input_actionFilter.addAction(0, "RLS_DEACTIVATION", true)
+        else
+            core_input_actionFilter.addAction(0, "RLS_DEACTIVATION", false)
+        end
     end
 end
   
