@@ -2032,7 +2032,8 @@
         },
         "blackList": {
           "Config Type": [
-            "Frame"
+            "Frame",
+            "Loaner"
           ],
           "Type": [
             "Trailer"

@@ -1,0 +1,58 @@
+{
+  "0-100 km/h":27.8,
+  "0-60 mph":26.2,
+  "100-0 km/h":134.1,
+  "60-0 mph":411.6,
+  "Body Style":"Fifth Wheel Truck ",
+  "BoundingBox":[
+    [
+      -1.2044,
+      -2.0441,
+      -0.7626
+    ],
+    [
+      2.0607,
+      2.689,
+      2.3984
+    ]
+  ],
+  "Braking G":0.293,
+  "Commercial Class":"Class 8 Truck",
+  "Config Type":"Loaner",
+  "Configuration":"TC82 Base Shuffleboard (M)",
+  "Description":"Barebones 2-axle cab-over fifthwheel truck, equipment consists of only essentials, front brakes didn't make the budget",
+  "Drag Times":{
+    "brakingG":0.2573060783,
+    "time_0_60":25.69400181,
+    "time_1000":22.15600155,
+    "time_1_4":25.95350183,
+    "time_1_8":17.51300122,
+    "time_330":11.90600085,
+    "time_60":4.668500311,
+    "velAt_1_4":26.99887598,
+    "velAt_1_8":20.36821031
+  },
+  "Drivetrain":"RWD",
+  "Fuel Type":"Diesel",
+  "Induction Type":"Turbo",
+  "Off-Road Score":39,
+  "Population":1100,
+  "Power":267,
+  "PowerPeakRPM":2050,
+  "Propulsion":"ICE",
+  "Top Speed":37.98898047,
+  "Torque":970,
+  "TorquePeakRPM":"1250 - 1900",
+  "Transmission":"Manual",
+  "Value":160000,
+  "Weight":7000,
+  "Weight/Power":26.21722846,
+  "Years":{
+    "max":1977,
+    "min":1972
+  },
+  "defaultPaintName1":"White",
+  "defaultPaintName2":"Black",
+  "defaultPaintName3":"Black",
+  "isAuxiliary":false
+}

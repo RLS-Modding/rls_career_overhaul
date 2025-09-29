@@ -5,70 +5,89 @@
     "icon": "cardboardBox",
     "loanableVehicles": [
       {
-        "model": "us_semi",
-        "config": "tc82_base_shuffleboard",
-        "reputationLvl": 2,
-        "deliveryLvl": 3,
-        "mileage": 100000000
-      },
-      {
-        "model": "us_semi",
-        "config": "t83_base_shuffleboard",
-        "reputationLvl": 2,
-        "deliveryLvl": 4,
-        "mileage": 5000000
+        "model": "md_series",
+        "config": "md_career_shuffleboard_pickup",
+        "reputationLvl": -1,
+        "deliveryLvl": 1,
+        "mileage": 800000000
       },
       {
         "model": "md_series",
-        "config": "md_career_shuffleboard_fifthwheel",
-        "reputationLvl": 1,
+        "config": "md_career_shuffleboard_flatbed",
+        "reputationLvl": 0,
         "deliveryLvl": 2,
-        "mileages": {
-          "-1": 800000000,
-          "0": 300000000,
-          "1": 100000000,
-          "2": 1000000,
-          "3": 10000
-        }
+        "mileage": 800000000
       },
       {
         "model": "md_series",
-        "config": "md_career_shuffleboard_tanker",
-        "reputationLvl": 1,
-        "deliveryLvl": 2,
-        "mileages": {
-          "-1": 800000000,
-          "0": 300000000,
-          "1": 100000000,
-          "2": 1000000,
-          "3": 10000
-        }
+        "config": "md_career_shuffleboard_dump",
+        "reputationLvl": 0,
+        "deliveryLvl": 1,
+        "mileage": 800000000
       },
       {
         "model": "md_series",
         "config": "md_career_shuffleboard_cargobox",
         "reputationLvl": 1,
-        "deliveryLvl": 1,
-        "mileages": {
-          "1": 100000000,
-          "2": 1000000,
-          "3": 10000
-        }
+        "deliveryLvl": 2,
+        "mileage": 800000000
+      },
+      {
+        "model": "md_series",
+        "config": "md_career_shuffleboard_fifthwheel",
+        "reputationLvl": 0,
+        "deliveryLvl": 2,
+        "mileage": 800000000
+      },
+      {
+        "model": "md_series",
+        "config": "md_career_shuffleboard_tanker",
+        "reputationLvl": 0,
+        "deliveryLvl": 2,
+        "mileage": 800000000
       },
       {
         "model": "tanker",
         "config": "career_shuffleboard_empty_short",
         "reputationLvl": -1,
-        "deliveryLvl": 1,
-        "mileage": 0
+        "deliveryLvl": 2,
+        "mileage": 800000000
       },
       {
         "model": "us_semi",
         "config": "tc83s_tanker_shuffleboard",
         "reputationLvl": 2,
-        "deliveryLvl": 3,
-        "mileage": 100000000,
+        "deliveryLvl": 2,
+        "mileage": 800000000
       },
+      {
+        "model": "us_semi",
+        "config": "t83_base_shuffleboard",
+        "reputationLvl": 2,
+        "deliveryLvl": 2,
+        "mileage": 800000000
+      },
+      {
+        "model": "us_semi",
+        "config": "tc82_base_shuffleboard",
+        "reputationLvl": 2,
+        "deliveryLvl": 2,
+        "mileage": 800000000
+      },
+      {
+        "model": "us_semi",
+        "config": "tc82_career_shuffleboard_cargobox",
+        "reputationLvl": 2,
+        "deliveryLvl": 3,
+        "mileage": 800000000
+      },
+      {
+        "model": "us_semi",
+        "config": "tc82_base_shuffleboard_sleeper",
+        "reputationLvl": 3,
+        "deliveryLvl": 3,
+        "mileage": 800000000
+      }
     ],
     "reputationLevels": [
       {
@@ -79,6 +98,10 @@
             "label": "Jank"
           },
         ],
+        "loanerCut": {
+          "value": 0.85,
+          "icon": "boxPickUp03"
+        }
       },
       {
         // Level 0
@@ -88,6 +111,10 @@
             "label": "Old",
           }
         ],
+        "loanerCut": {
+          "value": 0.65,
+          "icon": "boxPickUp03"
+        }
       },
       {
         // Level 1
@@ -97,6 +124,10 @@
             "label": "Good",
           }
         ],
+        "loanerCut": {
+          "value": 0.5,
+          "icon": "boxPickUp03"
+        }
       },
       {
         // Level 2
@@ -106,6 +137,10 @@
             "label": "Better",
           }
         ],
+        "loanerCut": {
+          "value": 0.35,
+          "icon": "boxPickUp03"
+        }
       },
       {
         // Level 3
@@ -115,6 +150,10 @@
             "label": "Best",
           }
         ],
+        "loanerCut": {
+          "value": 0.25,
+          "icon": "boxPickUp03"
+        }
       }
     ]
   },
@@ -736,6 +775,10 @@
         ]
       },
       {
+        "loans": {
+          "max": 80000,
+          "rate": 0.5
+        },
         "stock": 10,
         "range": [
           0.8,
@@ -808,6 +851,10 @@
         ]
       },
       {
+        "loans": {
+          "max": 200000,
+          "rate": 0.35
+        },
         "stock": 20,
         "range": [
           0.6,
@@ -1857,12 +1904,65 @@
     "name": "Hot Rolled Inc.",
     "description": "Produces various steel-related products.",
     "icon": "rocks",
+    "loanableVehicles": [
+      {
+        "model": "us_semi",
+        "config": "us_semi_career_steel_day",
+        "reputationLvl": 1,
+        "deliveryLvl": 3,
+        "mileage": 800000000
+      },
+      {
+        "model": "us_semi",
+        "config": "us_semi_career_steel_cabover",
+        "reputationLvl": 2,
+        "deliveryLvl": 4,
+        "mileage": 800000000
+      },
+      {
+        "model": "md_series",
+        "config": "md_career_5th_wheel",
+        "reputationLvl": 0,
+        "deliveryLvl": 1,
+        "mileage": 800000000
+      }
+    ],
     "reputationLevels": [
-      {},
-      {},
-      {},
-      {},
-      {}
+      {
+        // Level -1
+        "loanerCut": {
+          "value": 0.5,
+          "icon": "boxPickUp03"
+        }
+      },
+      {
+        // Level 0
+        "loanerCut": {
+          "value": 0.4,
+          "icon": "boxPickUp03"
+        }
+      },
+      {
+        // Level 1
+        "loanerCut": {
+          "value": 0.35,
+          "icon": "boxPickUp03"
+        }
+      },
+      {
+        // Level 2
+        "loanerCut": {
+          "value": 0.30,
+          "icon": "boxPickUp03"
+        }
+      },
+      {
+        // Level 3
+        "loanerCut": {
+          "value": 0.25,
+          "icon": "boxPickUp03"
+        }
+      }
     ]
   },
   "lensflareStudios": {
@@ -1881,12 +1981,86 @@
     "name": "Spearleaf Refinery",
     "description": "",
     "icon": "droplet",
+    "loanableVehicles": [
+      {
+        "model": "md_series",
+        "config": "md_career_spearleaf_tanker",
+        "reputationLvl": -1,
+        "deliveryLvl": 0,
+        "mileage": 500000000
+      },
+      {
+        "model": "md_series",
+        "config": "md_career_spearleaf_fifthwheel",
+        "reputationLvl": 0,
+        "deliveryLvl": 1,
+        "mileage": 500000000
+      },
+      {
+        "model": "tanker",
+        "config": "career_spearleaf_empty_short",
+        "reputationLvl": 0,
+        "deliveryLvl": 1,
+        "mileage": 500000000
+      },
+      {
+        "model": "tanker",
+        "config": "career_spearleaf_empty_long",
+        "reputationLvl": 1,
+        "deliveryLvl": 2,
+        "mileage": 500000000
+      },
+      {
+        "model": "us_semi",
+        "config": "tc83s_career_spearleaf_tanker",
+        "reputationLvl": 1,
+        "deliveryLvl": 2,
+        "mileage": 500000000
+      },
+      {
+        "model": "us_semi",
+        "config": "tc82_base_spearleaf_sleeper",
+        "reputationLvl": 2,
+        "deliveryLvl": 3,
+        "mileage": 500000000
+      }
+    ],
     "reputationLevels": [
-      {},
-      {},
-      {},
-      {},
-      {}
+      {
+        // Level -1
+        "loanerCut": {
+          "value": 0.90,
+          "icon": "boxPickUp03"
+        }
+      },
+      {
+        // Level 0
+        "loanerCut": {
+          "value": 0.75,
+          "icon": "boxPickUp03"
+        }
+      },
+      {
+        // Level 1
+        "loanerCut": {
+          "value": 0.45,
+          "icon": "boxPickUp03"
+        }
+      },
+      {
+        // Level 2
+        "loanerCut": {
+          "value": 0.25,
+          "icon": "boxPickUp03"
+        }
+      },
+      {
+        // Level 3
+        "loanerCut": {
+          "value": 0.15,
+          "icon": "boxPickUp03"
+        }
+      }
     ]
   },
   "spearleafLogistics": {
@@ -1917,12 +2091,100 @@
     "name": "Rent-A-Box",
     "description": "A small warehouse in the industrial area outside of belasco city.",
     "icon": "semiTruckUS",
+    "loanableVehicles": [
+      {
+        "model": "tiltdeck",
+        "config": "22ft_standard",
+        "reputationLvl": 0,
+        "deliveryLvl": 1,
+        "mileage": 800000000
+      },
+      {
+        "model": "tiltdeck",
+        "config": "30ft_pintle",
+        "reputationLvl": 0,
+        "deliveryLvl": 2,
+        "mileage": 800000000
+      },
+      {
+        "model": "tiltdeck",
+        "config": "30ft_gooseneck",
+        "reputationLvl": 0,
+        "deliveryLvl": 2,
+        "mileage": 800000000
+      },
+      {
+        "model": "tiltdeck",
+        "config": "30ft_gooseneck_cargo",
+        "reputationLvl": 2,
+        "deliveryLvl": 2,
+        "mileage": 800000000
+      },
+      {
+        "model": "tiltdeck",
+        "config": "22ft_gooseneck_cargo",
+        "reputationLvl": 1,
+        "deliveryLvl": 1,
+        "mileage": 800000000
+      },
+      {
+        "model": "boxutility",
+        "config": "trailer_career_cargo",
+        "reputationLvl": -1,
+        "deliveryLvl": 1,
+        "mileage": 800000000
+      },
+      {
+        "model": "boxutility_large",
+        "config": "trailer_career_cargo_large",
+        "reputationLvl": 0,
+        "deliveryLvl": 1,
+        "mileage": 800000000
+      },
+      {
+        "model": "cargotrailer",
+        "config": "upull_career",
+        "reputationLvl": 1,
+        "deliveryLvl": 1,
+        "mileage": 800000000
+      }
+    ],
     "reputationLevels": [
-      {},
-      {},
-      {},
-      {},
-      {}
+      {
+        // Level -1
+        "loanerCut": {
+          "value": 0.5,
+          "icon": "boxPickUp03"
+        }
+      },
+      {
+        // Level 0
+        "loanerCut": {
+          "value": 0.4,
+          "icon": "boxPickUp03"
+        }
+      },
+      {
+        // Level 1
+        "loanerCut": {
+          "value": 0.35,
+          "icon": "boxPickUp03"
+        }
+      },
+      {
+        // Level 2
+        "loanerCut": {
+          "value": 0.30,
+          "icon": "boxPickUp03"
+        }
+      },
+      {
+        // Level 3
+        "loanerCut": {
+          "value": 0.25,
+          "icon": "boxPickUp03"
+        }
+      }
     ]
   },
   "belascoCityGarage": {
@@ -1945,8 +2207,21 @@
       },
       {
         "model": "us_semi",
+        "config": "tc82_career_rls_repo",
+        "reputationLvl": 1,
+        "deliveryLvl": 1,
+        "mileages": {
+          "-1": 800000000,
+          "0": 300000000,
+          "1": 100000000,
+          "2": 1000000,
+          "3": 10000
+        }
+      },
+      {
+        "model": "us_semi",
         "config": "tc82s_rollback",
-        "reputationLvl": 3,
+        "reputationLvl": 2,
         "deliveryLvl": 2,
         "mileages": {
           "-1": 800000000,
@@ -1959,7 +2234,7 @@
       {
         "model": "pickup",
         "config": "d45_diesel_rollback_M",
-        "reputationLvl": 1,
+        "reputationLvl": 0,
         "deliveryLvl": 0,
         "mileages": {
           "-1": 800000000,
@@ -1972,6 +2247,32 @@
       {
         "model": "van",
         "config": "h45_rollback",
+        "reputationLvl": -1,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 800000000,
+          "0": 300000000,
+          "1": 100000000,
+          "2": 1000000,
+          "3": 10000
+        }
+      },
+      {
+        "model": "pickup",
+        "config": "pickup_career_rls_repo",
+        "reputationLvl": 1,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 800000000,
+          "0": 300000000,
+          "1": 100000000,
+          "2": 1000000,
+          "3": 10000
+        }
+      },
+      {
+        "model": "van",
+        "config": "h45_career_rls_repo",
         "reputationLvl": 0,
         "deliveryLvl": 0,
         "mileages": {
@@ -3508,7 +3809,7 @@
         }
       }
     ]
-  }  
+  }
   /**
   "belascoCityHospital": {
     "name":"Belasco City Hospital",

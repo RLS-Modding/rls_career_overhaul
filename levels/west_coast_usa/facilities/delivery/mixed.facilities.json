@@ -489,7 +489,9 @@
           ],
           "logisticTypesReceived": [
             "vehLargeTruck"
-          ]
+          ],
+          "loanerTrailerPriority": 1,
+          "loanerNonTrailerPriority": 1
         },
         {
           "psName": "hotrolled_fluids",
@@ -552,7 +554,7 @@
             "industrial"
           ],
           "min": -0.5,
-          "max": 2,
+          "max": 4,
           "interval": 90
         },
         {
@@ -634,7 +636,7 @@
           "type": "trailerOfferProvider",
           "interval": 300,
           "min": -1,
-          "max": 2,
+          "max": 5,
           "offerDuration": {
             "min": 300,
             "max": 600
@@ -1552,6 +1554,14 @@
             "food",
             "parcel"
           ],
+        },
+        {
+          "psName": "spearleaf_loaner",
+          "isInspectSpot": false,
+          "logisticTypesProvided": [],
+          "logisticTypesReceived": [],
+          "loanerTrailerPriority": 1,
+          "loanerNonTrailerPriority": 1
         },
         {
           "psName": "refinery_terminal_1",

@@ -1,0 +1,58 @@
+{
+  "Body Style":"Tanker Truck",
+  "BoundingBox":[
+    [
+      -0.8854,
+      -1.156,
+      -0.5474
+    ],
+    [
+      1.7534,
+      5.344,
+      2.0804
+    ]
+  ],
+  "Config Type":"Loaner",
+  "Configuration":"MD60 Tanker Upfit Shuffleboard (A)",
+  "Description":"Late model single cab truck with a tanker upfit.",
+  "Drag Times":{
+    "brakingG":0.5398793836,
+    "time_0_60":0,
+    "time_1000":20.24550086,
+    "time_1_4":24.08250108,
+    "time_1_8":15.66900059,
+    "time_330":10.27050034,
+    "time_60":4.005500112,
+    "velAt_1_4":25.90463367,
+    "velAt_1_8":20.8653473
+  },
+  "Drivetrain":"RWD",
+  "Fuel Type":"Diesel",
+  "Induction Type":"Turbo",
+  "Off-Road Score":27,
+  "Population":4800,
+  "Power":254,
+  "PowerPeakRPM":2400,
+  "Propulsion":"ICE",
+  "Top Speed":25.951334,
+  "Torque":815,
+  "TorquePeakRPM":"1350 - 1900",
+  "Transmission":"Automatic",
+  "Value":98000,
+  "Weight":7035,
+  "Weight/Power":27.69685039,
+  "Years":{
+    "max":1998,
+    "min":1992
+  },
+  "capacity":[
+    {
+      "amount":7400,
+      "type":"fluid"
+    }
+  ],
+  "defaultPaintName1":"White",
+  "defaultPaintName2":"Black",
+  "defaultPaintName3":"Black",
+  "isAuxiliary":false
+}
