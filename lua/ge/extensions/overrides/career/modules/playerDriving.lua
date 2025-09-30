@@ -140,7 +140,7 @@ local function setupTraffic(forceSetup)
     end
 
     -- police amount and vehicle pooling
-    local policeAmount = M.debugMode and testTrafficAmounts.police or 2 -- temporarily disabled by default
+    local policeAmount = 2 -- temporarily disabled by default
     if isNoPoliceModActive() then
       policeAmount = 0
     end
