@@ -818,7 +818,13 @@ function C:onUpdate(dt, dtSim)
       if self.state == 'fadeOut' or self.state == 'fadeIn' then
         if self.state == 'fadeIn' then
           if self.respawnSpeed then
-            getObjectByID(self.id):queueLuaCommand('thrusters.applyVelocity(obj:getDirectionVector() * '..(self.respawnSpeed * self.alpha)..')') -- makes vehicle start at speed
+
+            local veh = getObjectByID(self.id)
+            if veh then
+              local speed = (self.respawnSpeed or 0) * (self.alpha or 1)
+              local command = 'thrusters.applyVelocity(obj:getDirectionVector() * ' .. speed .. ')'
+              veh:queueLuaCommand(command) -- makes vehicle start at speed
+            end
             -- NOTE: why is this disabled?
           end
           if self.damage >= 500 and self.respawnActive and self.alpha > 0 then
