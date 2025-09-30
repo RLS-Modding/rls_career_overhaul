@@ -5873,7 +5873,7 @@ local function modeAdjustments()
       local wp1, wp2 = mapmgr.findClosestRoad(ego.pos)
       if wp1 == nil or wp2 == nil then
         warningAIDisabled("Could not find a road network, or closest road is too far")
-        return
+        return true
       end
       ego.currentSegment[1] = wp1
       ego.currentSegment[2] = wp2
@@ -6049,7 +6049,7 @@ local function modeAdjustments()
       local wpAft, wpFore = mapmgr.findClosestRoad(ego.pos)
       if not (wpAft and wpFore) then
         warningAIDisabled("Could not find a road network, or closest road is too far")
-        return
+        return true
       end
       if ego.dirVec:dot(positions[wpFore] - positions[wpAft]) < 0 then
         wpAft, wpFore = wpFore, wpAft
@@ -6061,11 +6061,11 @@ local function modeAdjustments()
       local target, targetLink
 
       if not (edgeDict and edgeDict[1]) then
-        -- creates the edgeDict and returns a random edge
+        -- creates the edgeDict and return trues a random edge
         target, targetLink = getMapEdges(M.cutOffDrivability or 0, wpFore)
         if not target then
           warningAIDisabled("No available target with selected characteristics")
-          return
+          return true
         end
       end
 
@@ -6116,11 +6116,11 @@ local function modeAdjustments()
           target = nil
           if next(edgeDict) == nil then
             warningAIDisabled("Could not find a path to any of the possible targets")
-            return
+            return true
           end
         elseif not path[1] then
           warningAIDisabled("No Route Found")
-          return
+          return true
         else
           -- insert the second edge node in newRoute if it is not already contained
           local pathCount = #path
@@ -6133,7 +6133,7 @@ local function modeAdjustments()
 
       local route = planAhead(path)
       if not route then
-        return
+        return true
       end
       currentRoute = route
     else
@@ -6155,11 +6155,11 @@ local function modeAdjustments()
         local targetPos = ego.pos + (ego.pos - player.pos) * 100
         local targetSpeed = math.huge
         driveToTarget(targetPos, 1, 0, targetSpeed)
-        return
+        return true
       end
     else
       -- guihooks.message("No vehicle to Flee from", 5, "AI debug") -- TODO: this freezes the up because it runs on the gfx step
-      return
+      return true
     end
 
     ------------------ CHASE MODE ------------------
@@ -6180,19 +6180,19 @@ local function modeAdjustments()
         else
           driveToTarget(player.pos, throttle, brake, targetSpeed)
         end
-        return
+        return true
       elseif internalState.road == 'offroad' then
         local throttle, brake, targetSpeed = targetFollowControl(M.mode == 'chase' and math.huge)
         driveToTarget(player.pos, throttle, brake, targetSpeed)
-        return
+        return true
       elseif currentRoute == nil then
         driveCar(0, 0, 0, 1)
-        return
+        return true
       end
 
     else
       -- guihooks.message("No vehicle to Chase", 5, "AI debug")
-      return
+      return true
     end
 
     ------------------ STOP MODE ------------------
@@ -6217,7 +6217,7 @@ local function modeAdjustments()
       if controller.mainController and restoreGearboxMode then
         controller.mainController.setGearboxMode('realistic')
       end
-      return
+      return true
     end
     ------------------ MANUAL TRAFFIC MODE ------------------
   elseif M.mode == 'manualTraffic' then
@@ -6256,6 +6256,7 @@ local function modeAdjustments()
       trafficActions()
     end
   end
+  return false
 end
 
 M.updateGFX = nop
@@ -6339,7 +6340,9 @@ local function updateGFX(dtGFX)
   ego.currentSegment[1] = nil
   ego.currentSegment[2] = nil
 
-  modeAdjustments()
+  if not modeAdjustments() then
+    return true
+  end
   -----------------------------------------------
 
   if currentRoute then
