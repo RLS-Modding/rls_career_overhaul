@@ -6256,7 +6256,6 @@ local function modeAdjustments()
       trafficActions()
     end
   end
-  return 0
 end
 
 M.updateGFX = nop
@@ -6340,9 +6339,8 @@ local function updateGFX(dtGFX)
   ego.currentSegment[1] = nil
   ego.currentSegment[2] = nil
 
-  if not modeAdjustments() then
-    return
-  end
+  modeAdjustments()
+  -----------------------------------------------
 
   if currentRoute then
     local plan = currentRoute.plan
@@ -7492,7 +7490,6 @@ M.setState = setState
 M.getState = getState
 M.debugDraw = nop
 M.driveUsingPath = driveUsingPath
-M.driveUsingPathWithTraffic = driveUsingPathWithTraffic
 M.setAggressionMode = setAggressionMode
 M.setAggression = setAggressionExternal
 M.onDeserialized = onDeserialized
@@ -7509,6 +7506,7 @@ M.setRecoverOnCrash = setRecoverOnCrash
 M.getEdgeLaneConfig = getEdgeLaneConfig
 M.setPullOver = setPullOver
 M.roadNaturalContinuation = roadNaturalContinuation -- for debugging
+M.driveUsingPathWithTraffic = driveUsingPathWithTraffic
 
 -- scriptai
 M.startRecording = startRecording
