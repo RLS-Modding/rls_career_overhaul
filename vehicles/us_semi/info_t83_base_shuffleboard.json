@@ -20,6 +20,7 @@
   "Commercial Class":"Class 8 Truck",
   "Config Type":"Loaner",
   "Configuration":"T83 Base Shuffleboard (M)",
+  "Name":"T83 Base Shuffleboard (M)",
   "Description":"Basic 3-axle conventional-cab semi truck",
   "Drag Times":{
     "brakingG":0.3148753812,

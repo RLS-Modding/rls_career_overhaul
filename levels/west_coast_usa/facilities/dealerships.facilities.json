@@ -832,73 +832,6 @@
       }
     },
     {
-      "id": "gizamnDealership",
-      "name": "Gizamn's Rod Shop",
-      "description": "",
-      "preview": "Drift_Car_Dealer_TB.png",
-      "stock": 5,
-      "range": [
-        0.8,
-        0.9,
-        1.35,
-        1.8
-      ],
-      "doors": [
-        [
-          "gizamnDealership_area",
-          "gizamnDealership_icon",
-          30
-        ]
-      ],
-      "parkingSpotNames": [
-        "driftDealershipParking"
-      ],
-      "activityAcceptProps": [
-        {
-          "keyLabel": "Used Vehicles"
-        }
-      ],
-      "filter": {
-        "whiteList": {
-          "Config Type": [
-            "Gizamn"
-          ]
-        },
-        "blackList": {
-          "Type": [
-            "Trailer"
-          ],
-          "Config Type": [
-            "Frame"
-          ]
-        }
-      },
-      "subFilters": [
-        {
-          "probability": 1,
-          "whiteList": {
-            "Mileage": {
-              "min": 11000,
-              "max": 17600056
-            }
-          }
-        }
-      ],
-      "subFilterNames": [
-        "Sub-Filter 1"
-      ],
-      "fees": 750,
-      "containsStarterVehicles": false,
-      "testDrive": {
-        "abandonFees": 250,
-        "timeLimit": 120,
-        "licencePlate": ""
-      },
-      "iconOffsetHeight": 1,
-      "iconLift": 0.25,
-      "playModeIconName": "poi_entrance_round"
-    },
-    {
       "id": "discountedDealership",
       "name": "Trusted Auto Sales",
       "description": "Trusted Auto Sales - Discounted cars",
@@ -1073,7 +1006,6 @@
       "iconLift": 0.25,
       "playModeIconName": "poi_entrance_round",
       "salesTax": 0
-
     },
     {
       "id": "policeDealership",
@@ -2358,7 +2290,71 @@
         "configSearchText": {}
       },
       "salesTax": 0.07
-    }    
+    },
+    {
+      "id": "loanerDealership",
+      "name": "Loaned to Own",
+      "description": "Previously loaned vehicles with high mileage",
+      "preview": "asotv.jpg",
+      "stock": 7,
+      "range": [
+        0.7,
+        0.9,
+        1.15,
+        1.3
+      ],
+      "associatedOrganization": "lensflareStudios",
+      "doors": [
+        [
+          "loanerDealership_area",
+          "loanerDealership_icon",
+          30
+        ]
+      ],
+      "parkingSpotNames": [
+        "loanerDealershipParking"
+      ],
+      "filter": {
+        "whiteList": {
+          "Config Type": [
+            "Loaner"
+          ]
+        },
+        "blackList": {
+          "Type": [
+            "Trailer"
+          ]
+        }
+      },
+      "subFilters": [
+        {
+          "probability": 1,
+          "whiteList": {
+            "Mileage": {
+              "min": 965606400,
+              "max": 1287475200
+            }
+          }
+        }
+      ],
+      "subFilterNames": [
+        "Sub-Filter 1"
+      ],
+      "fees": 500,
+      "containsStarterVehicles": false,
+      "testDrive": {
+        "abandonFees": 250,
+        "timeLimit": 120,
+        "licencePlate": ""
+      },
+      "ui": {
+        "showMatchingConfigs": [
+          true
+        ],
+        "configSearchText": {}
+      },
+      "salesTax": 0.07
+    }
   ],
   "privateSellers": [
     {

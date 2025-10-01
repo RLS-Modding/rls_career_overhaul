@@ -1,0 +1,106 @@
+{
+  "Body Style":"dnu",
+  "BoundingBox":[
+    [
+      -0.8854,
+      -1.136,
+      -0.6904
+    ],
+    [
+      1.7534,
+      7.3188,
+      1.632
+    ]
+  ],
+  "Config Type":"Loaner",
+  "Configuration":"Shuffleboard Flatbed",
+  "Drivetrain":"RWD",
+  "Fuel Type":"Diesel",
+  "Induction Type":"Turbo",
+  "Name":"MD-Series Shuffleboard Flatbed",
+  "Off-Road Score":34,
+  "Population":10000,
+  "Power":196,
+  "PowerPeakRPM":2400,
+  "Propulsion":"ICE",
+  "Source":"Custom",
+  "Top Speed":25.890732129511,
+  "Torque":625,
+  "TorquePeakRPM":"1150 - 1900",
+  "Transmission":"Automatic",
+  "Value":100000,
+  "Weight":7430,
+  "Weight/Power":37.908163265306,
+  "aggregates":{
+    "Brand":{
+      "Gavril":true
+    },
+    "Country":{
+      "United States":true
+    },
+    "Derby Class":{
+      "Medium Truck":true
+    },
+    "Drivetrain":{
+      "RWD":true
+    },
+    "Fuel Type":{
+      "Diesel":true
+    },
+    "Induction Type":{
+      "Turbo":true
+    },
+    "Off-Road Score":{
+      "max":34,
+      "min":34
+    },
+    "Propulsion":{
+      "ICE":true
+    },
+    "Source":{
+      "BeamNG - Official":true,
+      "Custom":true
+    },
+    "Top Speed":{
+      "max":25.887097485242,
+      "min":25.887097485242
+    },
+    "Transmission":{
+      "Automatic":true
+    },
+    "Type":{
+      "Truck":true
+    },
+    "Weight":{
+      "max":7430,
+      "min":7430
+    },
+    "Weight/Power":{
+      "max":37.908163265306,
+      "min":37.908163265306
+    }
+  },
+  "defaultPaint":{
+    "baseColor":[
+      0.83,
+      0.83,
+      0.83,
+      1.2
+    ],
+    "class":"factory",
+    "clearcoat":0,
+    "clearcoatRoughness":0,
+    "id":"white",
+    "metallic":0,
+    "name":"White",
+    "roughness":0.07
+  },
+  "defaultPaintName1":"White",
+  "defaultPaintName2":"White",
+  "defaultPaintName3":"White",
+  "infoFilename":"/vehicles/md_series/info_md_career_shuffleboard_flatbed.json",
+  "is_default_config":false,
+  "paints":{},
+  "pcFilename":"/vehicles/md_series/md_career_shuffleboard_flatbed.pc",
+  "preview":"/vehicles/md_series/md_career_shuffleboard_flatbed.jpg"
+}

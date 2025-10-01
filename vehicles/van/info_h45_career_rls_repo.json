@@ -1,0 +1,108 @@
+{
+  "0-100 km/h":11.8,
+  "0-100 mph":40.1,
+  "0-60 mph":11,
+  "100-0 km/h":67.6,
+  "60-0 mph":208.6,
+  "60-100 mph":29,
+  "Body Style":"dnu",
+  "BoundingBox":[
+    [
+      -0.86,
+      -1.35,
+      -0.4103
+    ],
+    [
+      1.96,
+      6.212,
+      1.895
+    ]
+  ],
+  "Braking G":0.581,
+  "Config Type":"Loaner",
+  "Configuration":"Repo Ready Tiltdeck",
+  "Drivetrain":"RWD",
+  "Fuel Type":"Gasoline",
+  "Induction Type":"NA",
+  "Name":"H-Series h45_career_rls_repo",
+  "Off-Road Score":33,
+  "Population":10000,
+  "Power":298,
+  "PowerPeakRPM":"4400 - 5300",
+  "Propulsion":"ICE",
+  "Source":"Custom",
+  "Top Speed":50.226021513797,
+  "Torque":515,
+  "TorquePeakRPM":"2350 - 3950",
+  "Transmission":"Automatic",
+  "Value":60000,
+  "Weight":3775,
+  "Weight/Power":12.667785234899,
+  "aggregates":{
+    "Body Style":{
+      "Van":true
+    },
+    "Brand":{
+      "Gavril":true
+    },
+    "Country":{
+      "United States":true
+    },
+    "Derby Class":{
+      "Medium Truck":true
+    },
+    "Drivetrain":{
+      "RWD":true
+    },
+    "Fuel Type":{
+      "Gasoline":true
+    },
+    "Induction Type":{
+      "NA":true
+    },
+    "Propulsion":{
+      "ICE":true
+    },
+    "Source":{
+      "BeamNG - Official":true,
+      "Custom":true
+    },
+    "Transmission":{
+      "Automatic":true
+    },
+    "Type":{
+      "Truck":true
+    },
+    "Weight":{
+      "max":3775,
+      "min":3775
+    },
+    "Weight/Power":{
+      "max":12.667785234899,
+      "min":12.667785234899
+    }
+  },
+  "defaultPaint":{
+    "baseColor":[
+      0.83,
+      0.83,
+      0.83,
+      1.2
+    ],
+    "class":"factory",
+    "clearcoat":0,
+    "clearcoatRoughness":0,
+    "id":"white",
+    "metallic":0,
+    "name":"White",
+    "roughness":0.07
+  },
+  "defaultPaintName1":"White",
+  "defaultPaintName2":"White",
+  "defaultPaintName3":"White",
+  "infoFilename":"/vehicles/van/info_h45_career_rls_repo.json",
+  "is_default_config":false,
+  "paints":{},
+  "pcFilename":"/vehicles/van/h45_career_rls_repo.pc",
+  "preview":"/vehicles/van/h45_career_rls_repo.jpg"
+}

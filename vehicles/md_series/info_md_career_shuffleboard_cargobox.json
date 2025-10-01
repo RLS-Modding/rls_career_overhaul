@@ -16,6 +16,7 @@
   ],
   "Config Type":"Loaner",
   "Configuration":"MD60 Cargo Box Shuffleboard (A)",
+  "Name":"MD60 Cargo Box Shuffleboard (A)",
   "Description":"Late model single cab truck equipped with a cargo box upfit",
   "Drag Times":{
     "brakingG":0.5582956692,

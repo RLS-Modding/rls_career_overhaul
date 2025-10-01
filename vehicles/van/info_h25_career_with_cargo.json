@@ -1,0 +1,108 @@
+{
+  "0-100 km/h":9.8,
+  "0-100 mph":30.8,
+  "0-60 mph":9.2,
+  "100-0 km/h":48,
+  "60-0 mph":145.7,
+  "60-100 mph":21.6,
+  "Body Style":"dnu",
+  "BoundingBox":[
+    [
+      -0.65,
+      -1.35,
+      -0.4103
+    ],
+    [
+      1.75,
+      4.175,
+      1.73
+    ]
+  ],
+  "Braking G":0.819,
+  "Config Type":"Loaner",
+  "Configuration":"Beam Delivery With Cargo",
+  "Drivetrain":"RWD",
+  "Fuel Type":"Gasoline",
+  "Induction Type":"NA",
+  "Name":"H-Series h25_career_with_cargo",
+  "Off-Road Score":35,
+  "Population":10000,
+  "Power":223,
+  "PowerPeakRPM":"4450 - 5150",
+  "Propulsion":"ICE",
+  "Source":"Custom",
+  "Top Speed":52.656731929329,
+  "Torque":410,
+  "TorquePeakRPM":"2550 - 3400",
+  "Transmission":"Automatic",
+  "Value":45000,
+  "Weight":2590,
+  "Weight/Power":11.614349775785,
+  "aggregates":{
+    "Body Style":{
+      "Van":true
+    },
+    "Brand":{
+      "Gavril":true
+    },
+    "Country":{
+      "United States":true
+    },
+    "Derby Class":{
+      "Medium Truck":true
+    },
+    "Drivetrain":{
+      "RWD":true
+    },
+    "Fuel Type":{
+      "Gasoline":true
+    },
+    "Induction Type":{
+      "NA":true
+    },
+    "Propulsion":{
+      "ICE":true
+    },
+    "Source":{
+      "BeamNG - Official":true,
+      "Custom":true
+    },
+    "Transmission":{
+      "Automatic":true
+    },
+    "Type":{
+      "Truck":true
+    },
+    "Weight":{
+      "max":2590,
+      "min":2590
+    },
+    "Weight/Power":{
+      "max":11.614349775785,
+      "min":11.614349775785
+    }
+  },
+  "defaultPaint":{
+    "baseColor":[
+      0.83,
+      0.83,
+      0.83,
+      1.2
+    ],
+    "class":"factory",
+    "clearcoat":0,
+    "clearcoatRoughness":0,
+    "id":"white",
+    "metallic":0,
+    "name":"White",
+    "roughness":0.07
+  },
+  "defaultPaintName1":"White",
+  "defaultPaintName2":"White",
+  "defaultPaintName3":"White",
+  "infoFilename":"/vehicles/van/info_h25_career_with_cargo.json",
+  "is_default_config":false,
+  "paints":{},
+  "pcFilename":"/vehicles/van/h25_career_with_cargo.pc",
+  "preview":"/vehicles/van/h25_career_with_cargo.jpg"
+}

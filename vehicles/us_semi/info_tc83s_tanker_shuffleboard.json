@@ -20,6 +20,7 @@
   "Commercial Class":"Class 8 Truck",
   "Config Type":"Loaner",
   "Configuration":"TC83s Shuffleboard Tanker(A)",
+  "Name":"TC83s Shuffleboard Tanker(A)",
   "Description":"Heavy duty cab-over truck with a tanker upfit, mounted on a frame with a long middle section, and accessories",
   "Drag Times":{
     "brakingG":0.4903625524,

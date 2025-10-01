@@ -1,0 +1,38 @@
+{
+  "Body Style":"dnu",
+  "Config Type":"Loaner",
+  "Configuration":"U-Pull With Cargo",
+  "Name":"Enclosed Cargo Trailer UPull With Cargo",
+  "Population":10000,
+  "Source":"Custom",
+  "Value":15000,
+  "Weight":1015,
+  "aggregates":{
+    "Body Style":{
+      "dnu":true
+    },
+    "Config Type":{
+      "Loaner":true
+    },
+    "Source":{
+      "BeamNG - Official":true,
+      "Custom":true
+    },
+    "Type":{
+      "Trailer":true
+    },
+    "Value":{
+      "max":15000,
+      "min":15000
+    },
+    "Weight":{
+      "max":1015,
+      "min":1015
+    }
+  },
+  "infoFilename":"/vehicles/cargotrailer/info_upull_career.json",
+  "is_default_config":false,
+  "paints":{},
+  "pcFilename":"/vehicles/cargotrailer/upull_career.pc",
+  "preview":"/vehicles/cargotrailer/upull_career.jpg"
+}

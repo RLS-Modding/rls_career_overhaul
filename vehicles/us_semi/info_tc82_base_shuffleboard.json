@@ -20,6 +20,7 @@
   "Commercial Class":"Class 8 Truck",
   "Config Type":"Loaner",
   "Configuration":"TC82 Base Shuffleboard (M)",
+  "Name":"TC82 Base Shuffleboard (M)",
   "Description":"Barebones 2-axle cab-over fifthwheel truck, equipment consists of only essentials, front brakes didn't make the budget",
   "Drag Times":{
     "brakingG":0.2573060783,

@@ -1,0 +1,101 @@
+{
+  "0-100 km/h":26.1,
+  "0-60 mph":24.4,
+  "BoundingBox":[
+    [
+      -0.9714,
+      -4.18,
+      -0.7626
+    ],
+    [
+      1.8224,
+      3.634,
+      2.2984
+    ]
+  ],
+  "Config Type":"Loaner",
+  "Configuration":"Shuffleboard Sleeper",
+  "Drivetrain":"6x4",
+  "Fuel Type":"Diesel",
+  "Induction Type":"Turbo",
+  "Name":"T-Series Shuffleboard Sleeper",
+  "Off-Road Score":25,
+  "Population":10000,
+  "Power":298,
+  "PowerPeakRPM":2050,
+  "Propulsion":"ICE",
+  "Source":"Custom",
+  "Top Speed":30.099277338104,
+  "Torque":1095,
+  "TorquePeakRPM":"1300 - 1850",
+  "Transmission":"Automatic",
+  "Value":150000,
+  "Weight":8290,
+  "Weight/Power":27.818791946309,
+  "aggregates":{
+    "0-100 km/h":{
+      "max":26.1,
+      "min":26.1
+    },
+    "0-60 mph":{
+      "max":24.4,
+      "min":24.4
+    },
+    "Brand":{
+      "Gavril":true
+    },
+    "Country":{
+      "United States":true
+    },
+    "Derby Class":{
+      "Heavy Truck":true
+    },
+    "Drivetrain":{
+      "6x4":true
+    },
+    "Fuel Type":{
+      "Diesel":true
+    },
+    "Induction Type":{
+      "Turbo":true
+    },
+    "Off-Road Score":{
+      "max":25,
+      "min":25
+    },
+    "Propulsion":{
+      "ICE":true
+    },
+    "Source":{
+      "BeamNG - Official":true,
+      "Custom":true
+    },
+    "Top Speed":{
+      "max":30.045352560853,
+      "min":30.045352560853
+    },
+    "Transmission":{
+      "Automatic":true
+    },
+    "Type":{
+      "Truck":true
+    },
+    "Weight":{
+      "max":8290,
+      "min":8290
+    },
+    "Weight/Power":{
+      "max":27.818791946309,
+      "min":27.818791946309
+    },
+    "Years":{
+      "max":1986,
+      "min":1971
+    }
+  },
+  "infoFilename":"/vehicles/us_semi/info_tc82_base_shuffleboard_sleeper.json",
+  "is_default_config":false,
+  "paints":{},
+  "pcFilename":"/vehicles/us_semi/tc82_base_shuffleboard_sleeper.pc",
+  "preview":"/vehicles/us_semi/tc82_base_shuffleboard_sleeper.jpg"
+}

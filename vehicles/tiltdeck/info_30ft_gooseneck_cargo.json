@@ -1,0 +1,87 @@
+{
+  "BoundingBox":[
+    [
+      -0.662,
+      -2.394,
+      -0.518
+    ],
+    [
+      1.928,
+      9.309,
+      1.422
+    ]
+  ],
+  "Config Type":"Loaner",
+  "Configuration":"30ft Gooseneck With Cargo",
+  "Drivetrain":"4x0",
+  "Fuel Type":"Other",
+  "Name":"Tilt Deck Trailer 30ft Gooseneck With Cargo",
+  "Off-Road Score":1,
+  "Population":10000,
+  "Power":3,
+  "PowerPeakRPM":2450,
+  "Propulsion":"Electric",
+  "Source":"Custom",
+  "Torque":15,
+  "TorquePeakRPM":"0 - 2100",
+  "Transmission":"Other",
+  "Value":50000,
+  "Weight":3570,
+  "Weight/Power":1190,
+  "aggregates":{
+    "Drivetrain":{
+      "4x0":true
+    },
+    "Fuel Type":{
+      "Other":true
+    },
+    "Off-Road Score":{
+      "max":1,
+      "min":1
+    },
+    "Propulsion":{
+      "Electric":true
+    },
+    "Source":{
+      "BeamNG - Official":true,
+      "Custom":true
+    },
+    "Transmission":{
+      "Other":true
+    },
+    "Type":{
+      "Trailer":true
+    },
+    "Weight":{
+      "max":3570,
+      "min":3570
+    },
+    "Weight/Power":{
+      "max":1190,
+      "min":1190
+    }
+  },
+  "defaultPaint":{
+    "baseColor":[
+      0.16,
+      0.28,
+      0.56,
+      1
+    ],
+    "class":"factory",
+    "clearcoat":0,
+    "clearcoatRoughness":0,
+    "id":"sea_blue",
+    "metallic":0,
+    "name":"Sea Blue",
+    "roughness":0.07
+  },
+  "defaultPaintName1":"Sea Blue",
+  "defaultPaintName2":"Sea Blue",
+  "defaultPaintName3":"Sea Blue",
+  "infoFilename":"/vehicles/tiltdeck/info_30ft_gooseneck_cargo.json",
+  "is_default_config":false,
+  "paints":{},
+  "pcFilename":"/vehicles/tiltdeck/30ft_gooseneck_cargo.pc",
+  "preview":"/vehicles/tiltdeck/30ft_gooseneck_cargo.jpg"
+}

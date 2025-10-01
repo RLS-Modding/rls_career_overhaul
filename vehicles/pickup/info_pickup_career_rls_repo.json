@@ -1,0 +1,124 @@
+{
+  "0-100 km/h":16.3,
+  "0-100 mph":61.9,
+  "0-60 mph":15.3,
+  "100-0 km/h":66.9,
+  "60-0 mph":204.1,
+  "60-100 mph":46.6,
+  "Body Style":"dnu",
+  "BoundingBox":[
+    [
+      -0.843,
+      -1.46,
+      -0.3733
+    ],
+    [
+      1.943,
+      6.562,
+      1.645
+    ]
+  ],
+  "Braking G":0.588,
+  "Config Type":"Loaner",
+  "Configuration":"Repo Ready Pickup",
+  "Drivetrain":"RWD",
+  "Fuel Type":"Diesel",
+  "Induction Type":"Turbo",
+  "Name":"D-Series Repo Ready Pickup",
+  "Off-Road Score":26,
+  "Population":10000,
+  "Power":250,
+  "PowerPeakRPM":3350,
+  "Propulsion":"ICE",
+  "Source":"Custom",
+  "Top Speed":46.860180245303,
+  "Torque":600,
+  "TorquePeakRPM":"2250 - 2800",
+  "Transmission":"Manual",
+  "Value":50000,
+  "Weight":3845,
+  "Weight/Power":15.38,
+  "aggregates":{
+    "0-100 km/h":{
+      "max":16.3,
+      "min":16.3
+    },
+    "0-60 mph":{
+      "max":15.3,
+      "min":15.3
+    },
+    "Body Style":{
+      "Pickup":true
+    },
+    "Brand":{
+      "Gavril":true
+    },
+    "Country":{
+      "United States":true
+    },
+    "Derby Class":{
+      "Medium Truck":true
+    },
+    "Drivetrain":{
+      "RWD":true
+    },
+    "Fuel Type":{
+      "Diesel":true
+    },
+    "Induction Type":{
+      "Turbo":true
+    },
+    "Off-Road Score":{
+      "max":26,
+      "min":26
+    },
+    "Propulsion":{
+      "ICE":true
+    },
+    "Source":{
+      "BeamNG - Official":true,
+      "Custom":true
+    },
+    "Top Speed":{
+      "max":46.852062148438,
+      "min":46.852062148438
+    },
+    "Transmission":{
+      "Manual":true
+    },
+    "Type":{
+      "Truck":true
+    },
+    "Weight":{
+      "max":3845,
+      "min":3845
+    },
+    "Weight/Power":{
+      "max":15.38,
+      "min":15.38
+    }
+  },
+  "defaultPaint":{
+    "baseColor":[
+      0.16,
+      0.28,
+      0.56,
+      1
+    ],
+    "class":"factory",
+    "clearcoat":0,
+    "clearcoatRoughness":0,
+    "id":"sea_blue",
+    "metallic":0,
+    "name":"Sea Blue",
+    "roughness":0.07
+  },
+  "defaultPaintName1":"Sea Blue",
+  "defaultPaintName2":"Sea Blue",
+  "defaultPaintName3":"Sea Blue",
+  "infoFilename":"/vehicles/pickup/info_pickup_career_rls_repo.json",
+  "is_default_config":false,
+  "paints":{},
+  "pcFilename":"/vehicles/pickup/pickup_career_rls_repo.pc",
+  "preview":"/vehicles/pickup/pickup_career_rls_repo.jpg"
+}

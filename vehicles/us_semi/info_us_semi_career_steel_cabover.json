@@ -1,0 +1,105 @@
+{
+  "0-100 km/h":16.6,
+  "0-60 mph":15.9,
+  "100-0 km/h":47.7,
+  "60-0 mph":143.6,
+  "Body Style":"dnu",
+  "BoundingBox":[
+    [
+      -1.2044,
+      -3.44374,
+      -0.7626
+    ],
+    [
+      2.0607,
+      5.8959,
+      3.3084
+    ]
+  ],
+  "Braking G":0.824,
+  "Config Type":"Loaner",
+  "Configuration":"Hot Rolled Cabover",
+  "Drivetrain":"8x6",
+  "Fuel Type":"Diesel",
+  "Induction Type":"Turbo",
+  "Name":"T-Series Hot Rolled Cabover",
+  "Off-Road Score":34,
+  "Population":10000,
+  "Power":847,
+  "PowerPeakRPM":1850,
+  "Propulsion":"ICE",
+  "Source":"Custom",
+  "Top Speed":42.444162221029,
+  "Torque":3285,
+  "TorquePeakRPM":"1200 - 1850",
+  "Transmission":"Manual",
+  "Value":400000,
+  "Weight":9980,
+  "Weight/Power":11.782762691854,
+  "aggregates":{
+    "0-100 km/h":{
+      "max":16.5,
+      "min":16.5
+    },
+    "0-60 mph":{
+      "max":15.8,
+      "min":15.8
+    },
+    "Brand":{
+      "Gavril":true
+    },
+    "Country":{
+      "United States":true
+    },
+    "Derby Class":{
+      "Heavy Truck":true
+    },
+    "Drivetrain":{
+      "8x6":true
+    },
+    "Fuel Type":{
+      "Diesel":true
+    },
+    "Induction Type":{
+      "Turbo":true
+    },
+    "Off-Road Score":{
+      "max":34,
+      "min":34
+    },
+    "Propulsion":{
+      "ICE":true
+    },
+    "Source":{
+      "BeamNG - Official":true,
+      "Custom":true
+    },
+    "Top Speed":{
+      "max":42.424771184913,
+      "min":42.424771184913
+    },
+    "Transmission":{
+      "Manual":true
+    },
+    "Type":{
+      "Truck":true
+    },
+    "Weight":{
+      "max":9980,
+      "min":9980
+    },
+    "Weight/Power":{
+      "max":11.782762691854,
+      "min":11.782762691854
+    },
+    "Years":{
+      "max":1986,
+      "min":1971
+    }
+  },
+  "infoFilename":"/vehicles/us_semi/info_us_semi_career_steel_cabover.json",
+  "is_default_config":false,
+  "paints":{},
+  "pcFilename":"/vehicles/us_semi/us_semi_career_steel_cabover.pc",
+  "preview":"/vehicles/us_semi/us_semi_career_steel_cabover.jpg"
+}
