@@ -1,5 +1,5 @@
 <template>
-  <div v-if="open" class="ccm-overlay" @click.self="onRequestClose">
+  <div v-if="open" class="ccm-overlay">
     <div class="ccm-content" @click.stop>
       <div class="ccm-header">
         <div class="ccm-title">Create Challenge</div>
@@ -244,8 +244,6 @@ async function onSave() {
     console.warn('CreateChallenge failed', msg)
     emit('close')
   } else {
-    // Emit the created challenge ID so parent can select it
-    // Even if challengeId is null, we still emit saved to trigger a refresh
     emit('saved', challengeId)
     emit('close')
   }

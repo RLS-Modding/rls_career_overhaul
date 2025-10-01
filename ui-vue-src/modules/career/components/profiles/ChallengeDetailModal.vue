@@ -1,6 +1,6 @@
 <template>
-    <div v-if="open" class="cdm-overlay" @click.self="onClose">
-        <div class="cdm-content">
+    <div v-if="open" class="cdm-overlay">
+        <div class="cdm-content" @click.stop>
             <div class="cdm-header">
                 <div class="cdm-header-left">
                     <div class="cdm-icon" />
@@ -109,8 +109,12 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'select'])
 
-function onClose() { emit('close') }
-function onSelect() { emit('select') }
+function onClose() { 
+    emit('close') 
+}
+function onSelect() { 
+    emit('select') 
+}
 
 const openEconomy = ref(false)
 const hasEconomy = computed(() => !!(props.challenge && props.challenge.economyAdjuster && Object.keys(props.challenge.economyAdjuster).length))

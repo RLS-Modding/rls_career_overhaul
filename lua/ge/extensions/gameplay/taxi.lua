@@ -171,45 +171,6 @@ local function selectRandomPassengerType(valueMultiplier, availableSeats)
     return "STANDARD"
 end
 
--- ================================
--- DRIVER RATING SAVE/LOAD
--- ================================
-local function savePlayerRating(currentSavePath)
-    if not career_career or not career_career.isActive() then return end
-    if not currentSavePath then
-        local slot, path = career_saveSystem.getCurrentSaveSlot()
-        currentSavePath = path
-        if not currentSavePath then return end
-    end
-
-    local dirPath = currentSavePath .. "/career/rls_career"
-    if not FS:directoryExists(dirPath) then
-        FS:directoryCreate(dirPath)
-    end
-
-    local data = {
-        sum = ratingSum,
-        count = ratingCount,
-        average = playerRating
-    }
-    career_saveSystem.jsonWriteFileSafe(dirPath .. "/" .. ratingSaveFile, data, true)
-end
-
-local function loadPlayerRating()
-    if not career_career or not career_career.isActive() then return end
-    local slot, path = career_saveSystem.getCurrentSaveSlot()
-    if not path then return end
-    local filePath = path .. "/career/rls_career/" .. ratingSaveFile
-    local data = jsonReadFile(filePath) or {}
-    ratingSum = tonumber(data.sum or 0) or 0
-    ratingCount = tonumber(data.count or 0) or 0
-    if ratingCount > 0 then
-        playerRating = math.max(1.0, math.min(5.0, (ratingSum / ratingCount)))
-    else
-        playerRating = 5.0
-    end
-end
-
 local function registerPassengerType(key, passengerTypeData)
     -- Set default values if not provided
     passengerTypeData.baseMultiplier = passengerTypeData.baseMultiplier or 1.0

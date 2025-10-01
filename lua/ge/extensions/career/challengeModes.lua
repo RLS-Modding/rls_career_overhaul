@@ -355,61 +355,6 @@ local function getChallengeEditorData()
     end
   end
 
-  -- Fallback if economy adjuster not available
-  if #activityTypes == 0 then
-    local fallbackTypes = {{
-      id = "taxi",
-      name = "Taxi Service",
-      category = "Transport"
-    }, {
-      id = "repo",
-      name = "Vehicle Repossession",
-      category = "Transport"
-    }, {
-      id = "delivery_parcel",
-      name = "Parcel Delivery",
-      category = "Delivery"
-    }, {
-      id = "delivery_vehicle",
-      name = "Vehicle Delivery",
-      category = "Delivery"
-    }, {
-      id = "delivery_trailer",
-      name = "Trailer Delivery",
-      category = "Delivery"
-    }, {
-      id = "rally",
-      name = "Rally Racing",
-      category = "Racing"
-    }, {
-      id = "drift",
-      name = "Drift Racing",
-      category = "Racing"
-    }, {
-      id = "motorsport",
-      name = "Motorsport",
-      category = "Racing"
-    }, {
-      id = "offroad",
-      name = "Offroad Racing",
-      category = "Racing"
-    }, {
-      id = "police",
-      name = "Police Work",
-      category = "Law Enforcement"
-    }, {
-      id = "criminal",
-      name = "Criminal Activities",
-      category = "Criminal"
-    }
-  }
-    -- Add default multipliers for fallback
-    for _, activityType in ipairs(fallbackTypes) do
-      activityType.currentMultiplier = 1.0
-      currentMultipliers[activityType.id] = 1.0
-    end
-    activityTypes = fallbackTypes
-  end
 
   -- Get activity types grouped by source for better UI organization
   local activityTypesBySource = {}
@@ -580,52 +525,6 @@ local function getChallengeForEditing(challengeId)
           end
         end
 
-  -- If no economy adjuster, use fallback types
-  if #allActivityTypes == 0 then
-    local fallbackTypes = {{
-      id = "taxi",
-      name = "Taxi Service",
-      category = "Transport"
-    }, {
-      id = "repo",
-      name = "Vehicle Repossession",
-      category = "Transport"
-    }, {
-      id = "delivery_parcel",
-      name = "Parcel Delivery",
-      category = "Delivery"
-    }, {
-      id = "delivery_vehicle",
-      name = "Vehicle Delivery",
-      category = "Delivery"
-    }, {
-      id = "delivery_trailer",
-      name = "Trailer Delivery",
-      category = "Delivery"
-    }, {
-      id = "rally",
-      name = "Rally Racing",
-      category = "Racing"
-    }, {
-      id = "drift",
-      name = "Drift Racing",
-      category = "Racing"
-    }, {
-      id = "motorsport",
-      name = "Motorsport",
-      category = "Racing"
-    }, {
-      id = "offroad",
-      name = "Offroad Racing",
-      category = "Racing"
-    }}
-
-    for _, activityType in ipairs(fallbackTypes) do
-      activityType.currentMultiplier = 1.0
-      currentMultipliers[activityType.id] = 1.0
-    end
-    allActivityTypes = fallbackTypes
-  end
 
   -- Check if this is the active challenge to include current simulation time
   local simulationTimeSpent = challenge.simulationTimeSpent or 0
@@ -885,8 +784,7 @@ local function startChallenge(challengeId)
   -- Set as active challenge
   activeChallenge = deepcopy(challenge)
   activeChallenge.startedAt = os.time()
-  activeChallenge.simulationTimeSpent = 0 -- Reset simulation time for new challenge
-  simulationTimeAccumulator = 0 -- Reset accumulator
+  activeChallenge.simulationTimeSpent = 0
 
   -- Save challenge data immediately
   local _, currentSavePath = career_saveSystem.getCurrentSaveSlot()
@@ -929,11 +827,6 @@ local function getCurrentSimulationTime()
   return activeChallenge and (activeChallenge.simulationTimeSpent or 0) or 0
 end
 
--- Get formatted simulation time string for active challenge
-local function getFormattedSimulationTime()
-  return formatSimulationTime(getCurrentSimulationTime())
-end
-
 -- Check win condition for active challenge
 local function checkWinCondition()
   if not activeChallenge then
@@ -964,12 +857,9 @@ local function checkWinCondition()
   return false
 end
 
--- Update function to check win conditions and track simulation time
 local updateTimer = 0
 local function onUpdate(dtReal, dtSim, dtRaw)
-  -- Accumulate simulation time for active challenge
   if activeChallenge then
-    simulationTimeAccumulator = simulationTimeAccumulator + (dtSim or 0)
     activeChallenge.simulationTimeSpent = (activeChallenge.simulationTimeSpent or 0) + (dtSim or 0)
   end
 
@@ -1025,51 +915,6 @@ local function getChallengeOptionsForCareerCreation()
       end
     end
 
-    -- If no economy adjuster, use fallback types
-    if #allActivityTypes == 0 then
-      local fallbackTypes = {{
-        id = "taxi",
-        name = "Taxi Service",
-        category = "Transport"
-      }, {
-        id = "repo",
-        name = "Vehicle Repossession",
-        category = "Transport"
-      }, {
-        id = "delivery_parcel",
-        name = "Parcel Delivery",
-        category = "Delivery"
-      }, {
-        id = "delivery_vehicle",
-        name = "Vehicle Delivery",
-        category = "Delivery"
-      }, {
-        id = "delivery_trailer",
-        name = "Trailer Delivery",
-        category = "Delivery"
-      }, {
-        id = "rally",
-        name = "Rally Racing",
-        category = "Racing"
-      }, {
-        id = "drift",
-        name = "Drift Racing",
-        category = "Racing"
-      }, {
-        id = "motorsport",
-        name = "Motorsport",
-        category = "Racing"
-      }, {
-        id = "offroad",
-        name = "Offroad Racing",
-        category = "Racing"
-      }}
-      for _, activityType in ipairs(fallbackTypes) do
-        activityType.currentMultiplier = 1.0
-        currentMultipliers[activityType.id] = 1.0
-      end
-      allActivityTypes = fallbackTypes
-    end
 
     table.insert(options, {
       id = challenge.id,
@@ -1128,9 +973,7 @@ M.getActiveChallenge = getActiveChallenge
 M.isChallengeActive = isChallengeActive
 M.checkWinCondition = checkWinCondition
 
--- Simulation time tracking
 M.getCurrentSimulationTime = getCurrentSimulationTime
-M.getFormattedSimulationTime = getFormattedSimulationTime
 
 -- Challenge discovery and information
 M.discoverChallenges = discoverChallenges

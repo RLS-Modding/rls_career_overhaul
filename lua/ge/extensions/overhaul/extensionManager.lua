@@ -38,6 +38,8 @@ local function loadExtensions()
     setExtensionUnloadMode("gameplay_repo", "manual")
     setExtensionUnloadMode("gameplay_taxi", "manual")
     setExtensionUnloadMode("gameplay_cab", "manual")
+    setExtensionUnloadMode("career_challengeModes", "manual")
+    setExtensionUnloadMode("career_economyAdjuster", "manual")
 
     extensions.unload("career_career")
     extensions.unload("career_saveSystem")
@@ -56,6 +58,8 @@ local function unloadAllExtensions()
     extensions.unload("overhaul_settings")
     extensions.unload("overhaul_maps")
     extensions.unload("overhaul_clearLevels")
+    extensions.unload("career_challengeModes")
+    extensions.unload("career_economyAdjuster")
 end
 
 local function startup()

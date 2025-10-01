@@ -1,3 +1,4 @@
+import { computed, ref } from "vue"
 import { defineStore } from "pinia"
 import { lua } from "@/bridge"
 import { $translate } from "@/services"

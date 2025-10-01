@@ -185,7 +185,7 @@ local function onVehicleSwitched(oldId, newId)
     setTrafficVars()
     local playerIsCop = getPlayerIsCop()
     if playerIsCop then
-      local policeDisabled, disabledReason = isPoliceDisabled()
+      local policeDisabled, disabledReason = career_modules_enforcement.isPoliceDisabled()
       if policeDisabled then
         ui_message("Police service disabled: " .. disabledReason, 8, "Police", "warning")
       else

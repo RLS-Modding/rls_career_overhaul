@@ -23,7 +23,7 @@
             <div class="title-icon title-icon-orange" />
             <div class="title-label">Challenge Mode</div>
           </div>
-          <ChallengeDropdown v-model="challengeId" />
+          <ChallengeDropdown ref="challengeDropdownRef" v-model="challengeId" />
         </div>
 
         <div class="hc-card">
@@ -79,6 +79,7 @@ const nameError = ref(null)
 
 const startButton = ref(null)
 const cancelButton = ref(null)
+const challengeDropdownRef = ref(null)
 
 // TODO: seems hacky but will be updated when input validation has been improved
 const validateFn = name => {
@@ -104,6 +105,14 @@ function onActivated(event) {
 }
 
 function onDeactivated(event) {
+  // Prevent deactivation if any modals are open
+  if (challengeDropdownRef.value) {
+    const hasOpenModal = challengeDropdownRef.value.detailOpen || challengeDropdownRef.value.createOpen
+    if (hasOpenModal) {
+      return
+    }
+  }
+  
   setActive(false)
 }
 

@@ -28,7 +28,7 @@
                     </div>
                 </div>
                 <div class="cd-sep" />
-                <div class="cd-item" @click.stop="openCreate">
+                <div class="cd-item" @click.stop="openCreate" @mousedown.stop>
                     <div class="cd-item-left">
                         <div class="cd-mini-icon" />
                         <div class="cd-item-main">
@@ -53,7 +53,7 @@
                             <div class="cd-time">{{ c.estimatedTime }}</div>
                         </div>
                     </div>
-                    <button class="cd-info" @click.stop="openDetails(c)">i</button>
+                    <button class="cd-info" @click.stop="openDetails(c)" @mousedown.stop>i</button>
                 </div>
             </div>
         </teleport>
@@ -113,9 +113,11 @@ function onDocClick(e) {
     const panel = document.querySelector('.cd-content.cd-fixed')
     const trigger = document.querySelector('.cd-trigger')
     const creator = document.querySelector('.ccm-content')
+    const detailer = document.querySelector('.cdm-content')
     if (panel && panel.contains(target)) return
     if (trigger && trigger.contains(target)) return
     if (creator && creator.contains(target)) return
+    if (detailer && detailer.contains(target)) return
     open.value = false
 }
 async function fetchChallenges() {
@@ -165,9 +167,14 @@ onBeforeUnmount(() => {
 })
 function select(c) { emit('update:modelValue', c.id); open.value = false }
 function clear() { emit('update:modelValue', null); open.value = false }
-function openDetails(c) { detailChallenge.value = c; detailOpen.value = true }
+function openDetails(c) { 
+    detailChallenge.value = c
+    detailOpen.value = true 
+}
 function selectFromModal() { if (detailChallenge.value) { select(detailChallenge.value); detailOpen.value = false; detailChallenge.value = null } }
-function openCreate() { createOpen.value = true }
+function openCreate() { 
+    createOpen.value = true 
+}
 async function onCreated(challengeId) { 
     await fetchChallenges()
     // If a challenge ID was returned from creation, select it
@@ -175,6 +182,11 @@ async function onCreated(challengeId) {
         emit('update:modelValue', challengeId)
     }
 }
+
+defineExpose({
+    detailOpen,
+    createOpen
+})
 </script>
 
 <style scoped lang="scss">
