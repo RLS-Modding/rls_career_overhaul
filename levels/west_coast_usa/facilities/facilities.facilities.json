@@ -496,7 +496,8 @@
         "serviceStationParking4",
         "serviceStationParking5",
         "serviceStationParking6",
-        "serviceStationParking7"
+        "serviceStationParking7",
+        "serviceStationParking8"
       ],
       "preview":"horizon_estate.jpg",
       "zoneNames":[
@@ -515,6 +516,18 @@
         "commercialGarageParking1",
         "commercialGarageParking2",
         "commercialGarageParking3",
+        "commercialGarageParking4",
+        "commercialGarageParking5",
+        "commercialGarageParking6",
+        "commercialGarageParking7",
+        "commercialGarageParking8",
+        "commercialGarageParking9",
+        "commercialGarageParking10",
+        "commercialGarageParking11",
+        "commercialGarageParking12",
+        "commercialGarageParking13",
+        "commercialGarageParking14",
+        "commercialGarageParking15",
         "commercialGarageParkingOutside1",
         "commercialGarageParkingOutside2",
         "commercialGarageParkingOutside3",
