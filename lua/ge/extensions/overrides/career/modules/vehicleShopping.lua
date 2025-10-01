@@ -133,9 +133,8 @@ local function getVisualValueFromMileage(mileage)
 end
 
 local function getDeliveryDelay(distance)
-  if distance < 500 then
-    return 1
-  end
+  if not distance then return 1 end
+  if distance < 500 then return 1 end
   return vehicleDeliveryDelay
 end
 

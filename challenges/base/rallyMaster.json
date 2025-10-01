@@ -1,0 +1,18 @@
+{
+    "id": "rallyMaster",
+    "name": "Rally Master Challenge",
+    "description": "Focus on rally racing to build your fortune",
+    "startingCapital": 15000,
+    "loans": null,
+    "economyAdjuster": {
+        "taxi": 0,
+        "repo": 0,
+        "delivery_parcel": 0,
+        "delivery_vehicle": 0,
+        "rally": 3.0,
+        "offroad": 1.5,
+        "motorsport": 0.5,
+        "drift": 0
+    },
+    "winCondition": "reachTargetMoney"
+}

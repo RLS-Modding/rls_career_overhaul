@@ -259,20 +259,28 @@ local function onUpdate(dtReal, dtSim, dtRaw)
   end
 end
 
-local function takeLoan(orgId, amount, payments, rate)
+local function takeLoan(orgId, amount, payments, rate, uncapped)
   getLoanOrganizations()
   local org = freeroam_organizations.getOrganizations()[orgId]
   if not org then return {error = "invalid_org"} end
-  local level = org.reputationLevels[org.reputation.level + 2]
-  if not level or not level.loans then return {error = "no_offer"} end
-  local max = level.loans.max or 0
-  local baseRate = rate or (level.loans.rate or 0)
-  local outstandingByOrg = getOutstandingPrincipalByOrg()
-  local available = math.max(0, max - (outstandingByOrg[orgId] or 0))
-  if amount <= 0 or amount > available then return {error = "invalid_amount", max = available} end
-  local validTerm = false
-  for _, t in ipairs(TERM_OPTIONS) do if t == payments then validTerm = true break end end
-  if not validTerm then return {error = "invalid_term", terms = TERM_OPTIONS} end
+
+  local baseRate
+  if uncapped then
+    -- For uncapped loans, use provided rate or default to 0
+    baseRate = rate or 0
+  else
+    -- For regular loans, check organization level and loan limits
+    local level = org.reputationLevels[org.reputation.level + 2]
+    if not level or not level.loans then return {error = "no_offer"} end
+    local max = level.loans.max or 0
+    baseRate = rate or (level.loans.rate or 0)
+    local outstandingByOrg = getOutstandingPrincipalByOrg()
+    local available = math.max(0, max - (outstandingByOrg[orgId] or 0))
+    if amount <= 0 or amount > available then return {error = "invalid_amount", max = available} end
+  end
+
+  -- Basic amount validation for uncapped loans
+  if amount <= 0 then return {error = "invalid_amount", max = 0} end
 
   local perPayment, total = calculatePayment(amount, baseRate, payments)
   local basePayment = r2(amount / payments)
@@ -451,8 +459,28 @@ local function onExtensionLoaded()
   loadLoans()
 end
 
+local function onCareerActivated()
+  -- Clear all existing loans when starting a new career
+  -- This prevents loans from previous saves from persisting
+  activeLoans = {}
+  notificationsEnabled = true -- Reset to default
+  log("I", "", "Loans: Cleared all loans for new career")
+  saveLoans()
+end
+
+local function clearAllLoans()
+  -- Clear all existing loans (useful for challenges or resets)
+  local loanCount = #activeLoans
+  activeLoans = {}
+  notificationsEnabled = true -- Reset to default
+  log("I", "", "Loans: Cleared " .. loanCount .. " loans")
+  saveLoans()
+  return loanCount -- Return number of loans cleared
+end
+
 M.onSaveCurrentSaveSlot = onSaveCurrentSaveSlot
 M.onExtensionLoaded = onExtensionLoaded
+M.onCareerActivated = onCareerActivated
 M.onUpdate = onUpdate
 M.onComputerAddFunctions = onComputerAddFunctions
 
@@ -468,5 +496,6 @@ M.closeAllMenus = closeAllMenus
 M.getAvailableFunds = getAvailableFunds
 M.getNotificationsEnabled = getNotificationsEnabled
 M.setNotificationsEnabled = setNotificationsEnabled
+M.clearAllLoans = clearAllLoans
 
 return M

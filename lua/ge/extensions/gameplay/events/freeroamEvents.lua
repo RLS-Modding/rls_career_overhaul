@@ -138,11 +138,11 @@ local function payoutRace()
         driftScore = getDriftScore()
         reward = utils.driftReward(races[mActiveRace], time, driftScore)
     elseif damageFactor > 0 then
-        reward = utils.hybridRaceReward(time, reward, in_race_time, damageFactor, damagePercentage)
+        reward = utils.hybridRaceReward(time, reward, in_race_time, damageFactor, damagePercentage, race.type)
     else
-        reward = utils.raceReward(time, reward, in_race_time)
+        reward = utils.raceReward(time, reward, in_race_time, race.type)
     end
-    print("reward: " .. reward)
+    print("Adjusted reward: " .. reward)
 
     -- Handle leaderboard
     local leaderboardEntry = leaderboardManager.getLeaderboardEntry(mInventoryId, raceLabel)
@@ -315,10 +315,12 @@ local function payoutDragRace(raceName, finishTime, finishSpeed, vehId)
     local baseReward = raceData.reward
 
     -- Calculate reward based on performance
-    local reward = utils.raceReward(targetTime, baseReward, finishTime)
+    local reward = utils.raceReward(targetTime, baseReward, finishTime, raceData.type)
     if reward <= 0 then
         reward = baseReward / 2 -- Minimum reward for completion
     end
+
+    print("Adjusted drag reward: " .. reward)
 
     reward = reward / (career_modules_hardcore.isHardcoreMode() and 2 or 1)
 
@@ -558,6 +560,33 @@ local function onBeamNGTrigger(data)
             end
             Assets:hideAllAssets()
             lapCount = 0
+
+            -- Check if ALL race types are disabled (only disable if every type is 0)
+            local allTypesDisabled = false
+            local disabledTypes = {}
+            if career_economyAdjuster and races[raceName].type then
+                local totalTypes = 0
+                local disabledCount = 0
+
+                for _, raceType in ipairs(races[raceName].type) do
+                    totalTypes = totalTypes + 1
+                    local multiplier = career_economyAdjuster.getEffectiveSectionMultiplier({raceType})
+                    if multiplier == 0 then
+                        disabledCount = disabledCount + 1
+                        table.insert(disabledTypes, raceType)
+                    end
+                end
+
+                -- Only disable if ALL types are disabled
+                allTypesDisabled = totalTypes > 0 and disabledCount == totalTypes
+            end
+
+            if allTypesDisabled then
+                -- Don't allow staging for disabled races
+                local typesString = table.concat(disabledTypes, ", ")
+                utils.displayMessage(string.format("%s is disabled due to %s multiplier(s) being set to 0.", races[raceName].label, typesString), 5)
+                return
+            end
 
             -- Initialize displays if drag race
             if raceName == "drag" then

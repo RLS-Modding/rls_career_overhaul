@@ -3,7 +3,8 @@
 -- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
 local M = {}
 
-M.dependencies = {'career_career'}
+M.dependencies = {'career_career', 'gameplay_walk'}
+M.dependencies = {'career_career', 'gameplay_walk'}
 
 local playerData = {
   trafficActive = 0
@@ -184,7 +185,12 @@ local function onVehicleSwitched(oldId, newId)
     setTrafficVars()
     local playerIsCop = getPlayerIsCop()
     if playerIsCop then
-      ui_message("You are now a cop", 5, "Police", "info")
+      local policeDisabled, disabledReason = career_modules_enforcement.isPoliceDisabled()
+      if policeDisabled then
+        ui_message("Police service disabled: " .. disabledReason, 8, "Police", "warning")
+      else
+        ui_message("You are now a cop", 5, "Police", "info")
+      end
     end
   end
 end

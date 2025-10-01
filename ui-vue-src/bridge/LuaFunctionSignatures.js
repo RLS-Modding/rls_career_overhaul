@@ -71,13 +71,26 @@ export default {
     isActive: () => {},
     sendAllCareerSaveSlotsData: () => {},
     sendCurrentSaveSlotData: () => {},
-    createOrLoadCareerAndStart: (id, specificAutosave, tutorial, hardcore) => [String, Any, Boolean, Boolean],
+    createOrLoadCareerAndStart: (id, specificAutosave, tutorial, hardcore, challengeId) => [String, Any, Boolean, Boolean, String],
+    applyChallengeConfig: config => Object
   },
 
   career_saveSystem: {
     saveCurrent: () => {},
     removeSaveSlot: id => String,
     renameSaveSlot: (name, newName) => [String, String],
+  },
+
+  career_challengeModes: {
+    discoverChallenges: () => {},
+    getChallengeOptionsForCareerCreation: () => {},
+    getChallengeEditorData: () => {},
+    createChallengeFromUI: data => Any,
+    updateCustomChallenge: (id, data) => [String, Object],
+    getChallengeForEditing: id => Object,
+    startChallenge: id => String,
+    getDiscoveredChallenges: () => {},
+    getChallengeCategories: () => {}
   },
 
   career_modules_uiUtils: {
@@ -1089,6 +1102,7 @@ export default {
     prepayLoan: (loanId, amount) => [String, Number],
     getNotificationsEnabled: () => Boolean,
     setNotificationsEnabled: enabled => Boolean,
+    clearAllLoans: () => Number,
   },
 
   career_modules_assignRole: {

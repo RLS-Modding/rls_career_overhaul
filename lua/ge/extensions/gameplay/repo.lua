@@ -6,8 +6,8 @@ local M = {}
 
 -- Dependencies
 M.dependencies = {
-    'util_configListGenerator', 'gameplay_parking', 
-    'freeroam_facilities', 'gameplay_sites_sitesManager'
+    'util_configListGenerator', 'gameplay_parking',
+    'freeroam_facilities', 'gameplay_sites_sitesManager', 'gameplay_walk'
 }
 
 -- Require necessary modules
@@ -237,13 +237,18 @@ function VehicleRepoJob:generateVehicleConfig()
         })
     end
 
+    local repoDisabled, disabledReason = isRepoDisabled()
+    local effectiveState = repoDisabled and "disabled" or "picking_up"
+
     local data = {
-        state = "picking_up",
+        state = effectiveState,
         vehicle = self.randomVehicleInfo,
         deliveryLocation = self.selectedDealership and self.selectedDealership.name or "",
-        distanceToDestination = self.deliveryLocation and (self.vehicleId and 
+        distanceToDestination = self.deliveryLocation and (self.vehicleId and
             (getObjectByID(self.vehicleId):getPosition() - self.deliveryLocation.pos):length() or 0) or 0,
-        totalDistance = self.totalDistanceTraveled or 0
+        totalDistance = self.totalDistanceTraveled or 0,
+        repoDisabled = repoDisabled,
+        disabledReason = disabledReason
     }
     guihooks.trigger('updateRepoState', data)
 end
@@ -304,7 +309,55 @@ function VehicleRepoJob:calculateReward()
     if career_modules_hardcore.isHardcoreMode() then
         reward = reward * 0.4
     end
-    return reward
+
+    print("Base repo reward: " .. reward)
+
+    -- Apply economy adjuster if available
+    local adjustedReward = reward
+    if career_economyAdjuster then
+        -- Use repo type multiplier for repo jobs
+        local multiplier = career_economyAdjuster.getSectionMultiplier("repo")
+        adjustedReward = reward * multiplier
+        adjustedReward = math.floor(adjustedReward + 0.5) -- Round to nearest integer
+        print("Adjusted repo reward: " .. adjustedReward .. " (multiplier: " .. string.format("%.2f", multiplier) .. ")")
+    end
+
+    return adjustedReward
+end
+
+local function isRepoDisabled()
+    local disabled = false
+    local reason = ""
+
+    -- Check if player is walking (highest priority)
+    if gameplay_walk and gameplay_walk.isWalking() then
+        disabled = true
+        reason = "Repo service is not available while walking"
+        return disabled, reason
+    end
+
+    -- Check if repo multiplier is 0
+    if career_economyAdjuster then
+        local repoMultiplier = career_economyAdjuster.getSectionMultiplier("repo") or 1.0
+        if repoMultiplier == 0 then
+            disabled = true
+            reason = "Repo multiplier is set to 0"
+        end
+    end
+
+    -- Check for active challenge that might disable repo
+    if career_challengeModes and career_challengeModes.isChallengeActive() then
+        local activeChallenge = career_challengeModes.getActiveChallenge()
+        if activeChallenge then
+            -- Check if the challenge has economy adjuster settings that disable repo
+            if activeChallenge.economyAdjuster and activeChallenge.economyAdjuster.repo == 0 then
+                disabled = true
+                reason = string.format("Repo is disabled due to '%s' Challenge", activeChallenge.name or "Unknown Challenge")
+            end
+        end
+    end
+
+    return disabled, reason
 end
 
 -- Update function called every frame
@@ -567,26 +620,33 @@ end
 
 function M.requestRepoState()
     local instance = M.getRepoJobInstance()
-    if not instance then return end
-    
-    local state = "no_mission"
-    if instance.isCompleted then
-        state = "completed"
-    elseif instance.isMonitoring then
-        state = instance.isJobStarted and "dropping_off" or "picking_up"
+
+    local repoDisabled, disabledReason = isRepoDisabled()
+    local effectiveState = repoDisabled and "disabled" or "no_mission"
+
+    if instance then
+        local state = "no_mission"
+        if instance.isCompleted then
+            state = "completed"
+        elseif instance.isMonitoring then
+            state = instance.isJobStarted and "dropping_off" or "picking_up"
+        end
+        effectiveState = repoDisabled and "disabled" or state
     end
-    
+
     local data = {
-        state = state,
-        vehicle = instance.randomVehicleInfo,
-        deliveryLocation = instance.selectedDealership and instance.selectedDealership.name or "",
-        distanceToDestination = instance.deliveryLocation and (instance.vehicleId and 
-            (getObjectByID(instance.vehicleId):getPosition() - instance.deliveryLocation.pos):length() or 0) or 0,
-        totalDistance = instance.totalDistanceTraveled or 0,
-        reward = instance.reward or 0,
-        isRepoVehicle = M.isRepoVehicle()
+        state = effectiveState,
+        vehicle = instance and instance.randomVehicleInfo or nil,
+        deliveryLocation = instance and (instance.selectedDealership and instance.selectedDealership.name or "") or "",
+        distanceToDestination = instance and (instance.deliveryLocation and (instance.vehicleId and
+            (getObjectByID(instance.vehicleId):getPosition() - instance.deliveryLocation.pos):length() or 0) or 0) or 0,
+        totalDistance = instance and (instance.totalDistanceTraveled or 0) or 0,
+        reward = instance and (instance.reward or 0) or 0,
+        isRepoVehicle = M.isRepoVehicle(),
+        repoDisabled = repoDisabled,
+        disabledReason = disabledReason
     }
-    
+
     guihooks.trigger('updateRepoState', data)
 end
 

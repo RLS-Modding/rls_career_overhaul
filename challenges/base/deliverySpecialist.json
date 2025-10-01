@@ -1,0 +1,27 @@
+{
+    "id": "deliverySpecialist",
+    "name": "Delivery Specialist Challenge",
+    "description": "Master all delivery types and become a logistics expert",
+    "startingCapital": 8000,
+    "loans": {
+        "amount": 40000,
+        "interest": 0.07,
+        "payments": 10
+    },
+    "economyAdjuster": {
+        "taxi": 0,
+        "repo": 0,
+        "rally": 0,
+        "drift": 0,
+        "motorsport": 0,
+        "offroad": 0,
+        "delivery_parcel": 2.5,
+        "delivery_vehicle": 3.0,
+        "delivery_trailer": 2.0,
+        "delivery_fluid": 2.2,
+        "delivery_dryBulk": 1.8,
+        "delivery_cement": 2.8,
+        "delivery_cash": 1.5
+    },
+    "winCondition": "payOffLoan"
+}

@@ -1,0 +1,17 @@
+{
+    "id": "exampleChallenge",
+    "name": "Example Custom Challenge",
+    "description": "A demonstration challenge showing how to create custom challenges",
+    "startingCapital": 5000,
+    "loans": {
+        "amount": 50000,
+        "interest": 0.10,
+        "payments": 12
+    },
+    "economyAdjuster": {
+        "taxi": 0,
+        "repo": 2.0,
+        "delivery_parcel": 1.5
+    },
+    "winCondition": "payOffLoan"
+}
