@@ -6340,7 +6340,7 @@ local function updateGFX(dtGFX)
   ego.currentSegment[1] = nil
   ego.currentSegment[2] = nil
 
-  if not modeAdjustments() then
+  if modeAdjustments() then
     return true
   end
   -----------------------------------------------
