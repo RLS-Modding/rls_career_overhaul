@@ -924,7 +924,9 @@
         }
       ],
       "subFilterNames": [
-        "Sub-Filter 1"
+        "Sub-Filter 1",
+        "Sub-Filter 2",
+        "Sub-Filter 3"
       ],
       "fees": 0,
       "containsStarterVehicles": false,
@@ -935,7 +937,8 @@
       },
       "iconOffsetHeight": 1,
       "iconLift": 0.25,
-      "playModeIconName": "poi_entrance_round"
+      "playModeIconName": "poi_entrance_round",
+      "salesTax": 0.07
     },
     {
       "id": "joesJunkDealership",
@@ -1211,6 +1214,7 @@
       "description": "Trailer Sales",
       "preview": "trailer_dealer.jpg",
       "stock": 20,
+      "associatedOrganization": "trailerShop",
       "doors": [
         [
           "trailershop_area",
@@ -1218,7 +1222,6 @@
           30
         ]
       ],
-      "associatedOrganization": "trailerShop",
       "parkingSpotNames": [
         "trailerShop"
       ],
@@ -1278,7 +1281,7 @@
       "stock": 10,
       "range": [
         0.95,
-        1.0,
+        1,
         1.15,
         1.4
       ],
@@ -1301,11 +1304,11 @@
       ],
       "filter": {
         "whiteList": {
-          "Config Type": [
-            "Factory"
-          ],
           "Brand": [
             "Bruckell"
+          ],
+          "Config Type": [
+            "Factory"
           ]
         },
         "blackList": {
@@ -1439,7 +1442,7 @@
       "stock": 10,
       "range": [
         0.95,
-        1.0,
+        1,
         1.15,
         1.4
       ],
@@ -1602,7 +1605,7 @@
       "stock": 10,
       "range": [
         0.95,
-        1.0,
+        1,
         1.15,
         1.4
       ],
@@ -1771,7 +1774,7 @@
       "stock": 10,
       "range": [
         0.95,
-        1.0,
+        1,
         1.15,
         1.4
       ],
@@ -1794,12 +1797,12 @@
       ],
       "filter": {
         "whiteList": {
+          "Config Type": [
+            "Factory"
+          ],
           "Brand": [
             "Bruckell",
             "Soliad"
-          ],
-          "Config Type": [
-            "Factory"
           ]
         },
         "blackList": {
@@ -1970,15 +1973,15 @@
           "Type": [
             "Trailer"
           ],
+          "Body Style": [
+            "Ambulance",
+            "Pickup"
+          ],
           "hasLoad": [
             true
           ],
           "Tags": [
             "Ambulance"
-          ],
-          "Body Style": [
-            "Ambulance",
-            "Pickup"
           ]
         }
       },
@@ -2154,14 +2157,14 @@
         "timeLimit": 120,
         "licencePlate": ""
       },
+      "salesTax": 0.15,
       "ui": {
         "showMatchingConfigs": [
           false,
           true
         ],
         "configSearchText": {}
-      },
-      "salesTax": 0.15
+      }
     },
     {
       "id": "raceTab",
@@ -2219,13 +2222,13 @@
         "timeLimit": 120,
         "licencePlate": ""
       },
+      "salesTax": 0.07,
       "ui": {
         "showMatchingConfigs": [
           true
         ],
         "configSearchText": {}
-      },
-      "salesTax": 0.07
+      }
     },
     {
       "id": "asotv",
@@ -2283,13 +2286,13 @@
         "timeLimit": 120,
         "licencePlate": ""
       },
+      "salesTax": 0.07,
       "ui": {
         "showMatchingConfigs": [
           true
         ],
         "configSearchText": {}
-      },
-      "salesTax": 0.07
+      }
     },
     {
       "id": "loanerDealership",
@@ -2347,13 +2350,13 @@
         "timeLimit": 120,
         "licencePlate": ""
       },
+      "salesTax": 0.07,
       "ui": {
         "showMatchingConfigs": [
           true
         ],
         "configSearchText": {}
-      },
-      "salesTax": 0.07
+      }
     }
   ],
   "privateSellers": [
@@ -2389,9 +2392,7 @@
               "min": 2010,
               "max": 2025
             },
-            "Value": {
-              "min": 500
-            }
+            "Value": {}
           }
         },
         {
