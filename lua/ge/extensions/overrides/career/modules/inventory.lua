@@ -1087,7 +1087,8 @@ local function getVehicleUiData(inventoryId, inventoryIdsInGarage)
   vehicleData.favoritePermission = career_modules_permissions.getStatusForTag("vehicleFavorite", {inventoryId = inventoryId})
   vehicleData.storePermission = career_modules_permissions.getStatusForTag("vehicleStoring", {inventoryId = inventoryId})
   vehicleData.storePermission.allow = vehicleData.storePermission.allow and (career_modules_garageManager.isGarageSpace(garage.id)[1] or M.getVehicleLocation(inventoryId) == garage.id)
-  vehicleData.deliverPermission = { allow = (career_modules_garageManager.isGarageSpace(garage.id)[1] and vehicleData.location ~= garage.id)}
+  vehicleData.deliverPermission = { allow = (career_modules_garageManager.isGarageSpace(garage.id)[1] and vehicleData.inStorage and vehicleData.location ~= garage.id)}
+  vehicleData.retrievePermission = { allow = (vehicleData.inStorage and vehicleData.location == garage.id)}
   vehicleData.licensePlateChangePermission = career_modules_permissions.getStatusForTag({"vehicleLicensePlate", "vehicleModification"}, {inventoryId = inventoryId})
   vehicleData.returnLoanerPermission = career_modules_permissions.getStatusForTag("returnLoanedVehicle", {inventoryId = inventoryId})
 
@@ -1290,6 +1291,12 @@ local function spawnVehicleAndTeleportToGarage(enterAfterSpawn, inventoryId, rep
   end)
 end
 
+local function deliverAndReplace(inventoryId)
+  M.deliverVehicle(inventoryId, 5000)
+  local closestGarage = getClosestGarage()
+  M.moveVehicleToGarage(inventoryId, closestGarage.id)
+end
+
 local function openMenuFromComputer(_originComputerId)
   originComputerId = _originComputerId
   openMenu(
@@ -1298,13 +1305,23 @@ local function openMenuFromComputer(_originComputerId)
         callback = function(inventoryId) spawnVehicleAndTeleportToGarage(false, inventoryId) end,
         buttonText = "Retrieve",
         insuranceRequired = true,
-        requiredVehicleNotInGarage = true
+        requiredVehicleNotInGarage = true,
+        requireAtCurrentGarage = true
       },
       {
         callback = function(inventoryId) spawnVehicleAndTeleportToGarage(false, inventoryId, true) end,
         buttonText = "Replace current vehicle",
         insuranceRequired = true,
-        requiredOtherVehicleInGarage = true
+        requiredOtherVehicleInGarage = true,
+        requireAtCurrentGarage = true
+      },
+      {
+        callback = function(inventoryId) deliverAndReplace(inventoryId) end,
+        buttonText = "Deliver and replace",
+        insuranceRequired = true,
+        requiredVehicleNotInGarage = true,
+        requiredOtherVehicleInGarage = true,
+        requireAtDifferentGarage = true
       },
       {
         callback = function(inventoryId)
