@@ -1,0 +1,57 @@
+{
+  "Body Style":"Coupe",
+  "Config Type":"Frame",
+  "Configuration":"Rolling Chassis",
+  "Description":"Rolling Chassis",
+  "Name":"Barstow Rolling Chassis",
+  "Population":2000,
+  "Source":"Custom",
+  "Value":25000,
+  "aggregates":{
+    "Body Style":{
+      "Coupe":true
+    },
+    "Brand":{
+      "Gavril":true
+    },
+    "Country":{
+      "United States":true
+    },
+    "Derby Class":{
+      "Mid-Size Car":true
+    },
+    "Source":{
+      "BeamNG - Official":true,
+      "Custom":true
+    },
+    "Type":{
+      "Car":true
+    },
+    "Years":{
+      "max":1971,
+      "min":1969
+    }
+  },
+  "defaultPaint":{
+    "baseColor":[
+      0.95,
+      0.95,
+      0.95,
+      1.3
+    ],
+    "class":"custom",
+    "clearcoat":0,
+    "clearcoatRoughness":0,
+    "id":"chrome",
+    "metallic":0.99,
+    "name":"Chrome",
+    "roughness":0.06
+  },
+  "defaultPaintName1":"Chrome",
+  "defaultPaintName2":"Chrome",
+  "defaultPaintName3":"Chrome",
+  "is_default_config":false,
+  "paints":{},
+  "pcFilename":"/vehicles/barstow/Rolling Chassis.pc",
+  "preview":"/ui/images/appDefault.png"
+}

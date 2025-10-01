@@ -1,0 +1,58 @@
+{
+  "0-100 km/h":28.9,
+  "0-60 mph":27.4,
+  "100-0 km/h":119.6,
+  "60-0 mph":368.4,
+  "Body Style":"Fifth Wheel Truck ",
+  "BoundingBox":[
+    [
+      -0.9714,
+      -3.3953,
+      -0.7626
+    ],
+    [
+      1.8224,
+      3.4987,
+      2.2984
+    ]
+  ],
+  "Braking G":0.329,
+  "Commercial Class":"Class 8 Truck",
+  "Config Type":"Loaner",
+  "Configuration":"T83 Base Shuffleboard (M)",
+  "Description":"Basic 3-axle conventional-cab semi truck",
+  "Drag Times":{
+    "brakingG":0.3148753812,
+    "time_0_60":27.22150148,
+    "time_1000":23.02600123,
+    "time_1_4":26.89650147,
+    "time_1_8":18.27850094,
+    "time_330":12.53550058,
+    "time_60":5.005500194,
+    "velAt_1_4":26.59495809,
+    "velAt_1_8":19.86060216
+  },
+  "Drivetrain":"6x4",
+  "Fuel Type":"Diesel",
+  "Induction Type":"Turbo",
+  "Off-Road Score":27,
+  "Population":1000,
+  "Power":298,
+  "PowerPeakRPM":2050,
+  "Propulsion":"ICE",
+  "Top Speed":38.43527851,
+  "Torque":1095,
+  "TorquePeakRPM":"1300 - 1850",
+  "Transmission":"Manual",
+  "Value":235000,
+  "Weight":8450,
+  "Weight/Power":28.3557047,
+  "Years":{
+    "max":1977,
+    "min":1972
+  },
+  "defaultPaintName1":"White",
+  "defaultPaintName2":"Black",
+  "defaultPaintName3":"Black",
+  "isAuxiliary":false
+}

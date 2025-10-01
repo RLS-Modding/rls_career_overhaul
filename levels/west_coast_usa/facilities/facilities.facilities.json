@@ -35,7 +35,7 @@
       "iconOffsetHeight":0.15,
       "id":"servicestationGarageComputer",
       "name":"Garage Computer",
-      "preview":"servicestationgaragecomputer.jpg",
+      "preview":"belasco_city_garage.jpg",
       "screens":[
         "servicestationGarageComputer_screen_1"
       ]
@@ -100,7 +100,7 @@
       "iconOffsetHeight":0.24,
       "id":"commercialGarageComputer",
       "name":"Commercial Garage - Large Vehicles",
-      "preview":"commercialGarageComputer.jpg",
+      "preview":"commercial_garage.jpg",
       "screens":[
         "commercialGarageComputer_screen_1"
       ]
@@ -171,7 +171,7 @@
       "iconOffsetHeight":0.15,
       "id":"alderDragwayGarageComputer",
       "name":"Alder Dragway Tuning",
-      "preview":"servicestationgaragecomputer.jpg",
+      "preview":"drag_paddock.jpg",
       "screens":[
         "alderDragwayGarageComputer_screen_1"
       ]
@@ -208,7 +208,7 @@
       "iconOffsetHeight":0.24,
       "id":"chinatownGarageComputer_area",
       "name":"Chinatown Garage",
-      "preview":"commercialGarageComputer2.jpg",
+      "preview":"chinatown_garage.jpg",
       "screens":[
         "commercialGarageComputer_screen_2"
       ]
@@ -240,7 +240,7 @@
       "iconOffsetHeight":0.24,
       "id":"chinatownGarageOverflow_area",
       "name":"Chinatown Overflow",
-      "preview":"commercialGarageComputer2.jpg",
+      "preview":"chinatown_expansion.jpg",
       "screens":[
         "commercialGarageComputer_screen_2"
       ]
@@ -273,7 +273,7 @@
       "iconOffsetHeight":0.24,
       "id":"racePaddockGarage_area",
       "name":"Race Paddock",
-      "preview":"commercialGarageComputer2.jpg",
+      "preview":"race_garage.jpg",
       "screens":[
         "commercialGarageComputer_screen_2"
       ]
@@ -310,7 +310,7 @@
       "iconOffsetHeight":0.24,
       "id":"Sealbrick1058GarageComputer_area",
       "name":"1058 Sealbrick Street Garage",
-      "preview":"commercialGarageComputer2.jpg",
+      "preview":"1058_sealbrick.jpg",
       "screens":[
         "commercialGarageComputer_screen_2"
       ]
@@ -347,7 +347,7 @@
       "iconOffsetHeight":0.24,
       "id":"cul-de-sacGarageComputer_area",
       "name":"Cul-de-Sac Garage",
-      "preview":"commercialGarageComputer2.jpg",
+      "preview":"cul_de_sac.jpg",
       "screens":[
         "commercialGarageComputer_screen_2"
       ]
@@ -367,7 +367,13 @@
       ],
       "functions":{
         "tuning":true,
-        "vehicleInventory":false
+        "insurancePolicies":false,
+        "painting":false,
+        "partInventory":false,
+        "partShop":false,
+        "sleep":false,
+        "vehicleInventory":false,
+        "vehicleShop":false        
       },
       "garageId":"dragTuningPits",
       "icon":"poi_laptop_round",
@@ -375,7 +381,7 @@
       "iconOffsetHeight":0.15,
       "id":"dragTuningPits",
       "name":"Drag Pit Lane",
-      "preview":"servicestationgaragecomputer.jpg",
+      "preview":"drag_tuning.jpg",
       "screens":{}
     },
     {
@@ -407,7 +413,7 @@
       "iconOffsetHeight":0.15,
       "id":"cabinGarage",
       "name":"Redwood Cabin",
-      "preview":"servicestationgaragecomputer.jpg",
+      "preview":"redwood_cabin.jpg",
       "screens":{}
     },
     {
@@ -439,7 +445,7 @@
       "iconOffsetHeight":0.15,
       "id":"horizonEstate",
       "name":"52 Horizon Estate Dr",
-      "preview":"servicestationgaragecomputer.jpg",
+      "preview":"horizon_estate.jpg",
       "screens":{}
     },
     {
@@ -471,7 +477,7 @@
       "iconOffsetHeight":0.15,
       "id":"hilltopGarage",
       "name":"Hill Top Villa",
-      "preview":"servicestationgaragecomputer.jpg",
+      "preview":"hilltop_villa.jpg",
       "screens":{}
     }
   ],
@@ -492,7 +498,7 @@
         "serviceStationParking6",
         "serviceStationParking7"
       ],
-      "preview":"garage_servicestation.jpg",
+      "preview":"horizon_estate.jpg",
       "zoneNames":[
         "servicestationGarage1",
         "servicestationGarage2"
@@ -634,7 +640,7 @@
         "cul-de-sacGarageParking4",
         "cul-de-sacGarageParking5"
       ],
-      "preview":"garage_servicestation.jpg",
+      "preview":"garage_servicestatiot.jpg",
       "tags":[
         "truck"
       ],

@@ -100,5 +100,34 @@
     ],
     "translucentBlendOp": "None",
     "version": 1.5
+  },
+    "mve_rntl_sn": {
+    "name": "mve_rntl_sn",
+    "mapTo": "mve_rntl_sn",
+    "class": "Material",
+    "Stages": [
+      {
+        "baseColorMap": "/levels/west_coast_usa/art/shapes/rls_signs/moo_rntl_sign_b.color.png",
+        "metallicFactor": 0.135000005,
+        "roughnessMap": "/levels/west_coast_usa/art/shapes/rls_signs/sign2d_r.data.png",
+        "vertColor": true
+      },
+      {
+        "metallicFactor": null,
+        "vertColor": null
+      },
+      {
+        "metallicFactor": null,
+        "vertColor": null
+      },
+      {
+        "metallicFactor": null,
+        "vertColor": null
+      }
+    ],
+    "groundType": "METAL",
+    "materialTag1": "building",
+    "translucentBlendOp": "None",
+    "version": 1.5
   }
 }

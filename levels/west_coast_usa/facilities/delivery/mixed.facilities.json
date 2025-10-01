@@ -192,7 +192,7 @@
           "type": "vehOfferProvider",
           "interval": 300,
           "min": 0,
-          "max": 2,
+          "max": 6,
           "offerDuration": {
             "min": 300,
             "max": 300
@@ -489,7 +489,9 @@
           ],
           "logisticTypesReceived": [
             "vehLargeTruck"
-          ]
+          ],
+          "loanerTrailerPriority": 1,
+          "loanerNonTrailerPriority": 1
         },
         {
           "psName": "hotrolled_fluids",
@@ -552,7 +554,7 @@
             "industrial"
           ],
           "min": -0.5,
-          "max": 2,
+          "max": 4,
           "interval": 90
         },
         {
@@ -592,7 +594,7 @@
           "type": "vehOfferProvider",
           "interval": 300,
           "min": 0,
-          "max": 2,
+          "max": 6,
           "offerDuration": {
             "min": 300,
             "max": 300
@@ -634,7 +636,7 @@
           "type": "trailerOfferProvider",
           "interval": 300,
           "min": -1,
-          "max": 2,
+          "max": 5,
           "offerDuration": {
             "min": 300,
             "max": 600
@@ -805,7 +807,7 @@
           "type": "vehOfferProvider",
           "interval": 300,
           "min": 0,
-          "max": 2,
+          "max": 6,
           "offerDuration": {
             "min": 300,
             "max": 300
@@ -1081,7 +1083,7 @@
           "type": "vehOfferProvider",
           "interval": 300,
           "min": 0,
-          "max": 2,
+          "max": 6,
           "offerDuration": {
             "min": 300,
             "max": 300
@@ -1132,18 +1134,6 @@
           "logisticTypes": [
             "trailerDeliveryConstructionMaterials"
           ],
-        },
-        {
-          "type": "materialProvider",
-          "logisticTypes": [
-            "cement"
-          ],
-          "materialType": "cement",
-          "capacity": 130000,
-          "target": 115000,
-          "variance": 15000,
-          "interval": 300,
-          "rate": 9583
         },
         {
           "type": "materialReceiver",
@@ -1492,7 +1482,7 @@
           "type": "vehOfferProvider",
           "interval": 300,
           "min": 0,
-          "max": 2,
+          "max": 6,
           "offerDuration": {
             "min": 300,
             "max": 300
@@ -1564,6 +1554,14 @@
             "food",
             "parcel"
           ],
+        },
+        {
+          "psName": "spearleaf_loaner",
+          "isInspectSpot": false,
+          "logisticTypesProvided": [],
+          "logisticTypesReceived": [],
+          "loanerTrailerPriority": 1,
+          "loanerNonTrailerPriority": 1
         },
         {
           "psName": "refinery_terminal_1",
@@ -1764,7 +1762,7 @@
           "type": "vehOfferProvider",
           "interval": 300,
           "min": 0,
-          "max": 2,
+          "max": 6,
           "offerDuration": {
             "min": 300,
             "max": 300
@@ -1899,7 +1897,11 @@
       //"dropOffSpotNames":["city_garden"],
       "manualAccessPoints": [
         {
-          "psName": "city_garden"
+          "psName": "city_garden",
+          "logisticTypesProvided": [],
+          "logisticTypesReceived": [
+            "soil"
+          ]
         }
       ],
       "sitesFile": "mixed.sites.json",

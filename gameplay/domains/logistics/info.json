@@ -1,0 +1,24 @@
+{
+  "name":"ui.career.logistics.name",
+  "description":"ui.career.logistics.description",
+  "order": 1100,
+  "icon": "deliveryTruck",
+  "color": "var(--bng-cool-gray-700-rgb)",
+  "accentColor": "var(--bng-add-green-550-rgb)",
+  "defaultRewardMultipliers": true,
+  "showOrganizations": true,
+  "levels":[
+    {
+      "requiredValue":0,
+    },
+    {
+      "requiredValue":200,
+    },
+    {
+      "requiredValue":750,
+    },
+    {
+      "requiredValue":1500,
+    }
+  ],
+}

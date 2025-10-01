@@ -14,8 +14,6 @@ local function isOverhaulAddonActive(levelName)
     local mods = core_modmanager.getMods()
     for modName, modData in pairs(mods) do
         local OverhaulAddon = "rls_career_overhaul_" .. levelName
-        print(OverhaulAddon)
-        print(modName:lower():find(OverhaulAddon))
         if modName:lower():find(OverhaulAddon) and modData.active then
             return true
         end
@@ -41,10 +39,6 @@ local function onBeamNGTrigger(data)
     end
 end
 
-local function onExtensionLoaded()
-    print("Switch Map Extension Loaded")
-end
-
 function M.onGetRawPoiListForLevel(levelIdentifier, elements)
     -- Find any object with switchTo_ prefix by checking available maps
     local switchToObj = nil
@@ -52,7 +46,7 @@ function M.onGetRawPoiListForLevel(levelIdentifier, elements)
     -- Look for any switchTo_ object from the available maps
     switchToObj = scenetree.findObject("switchMaps")
     if not switchToObj then
-        for level, levelName in pairs(careerMaps.getOtherAvailableMaps()) do
+        for level, levelName in pairs(overhaul_maps.getOtherAvailableMaps()) do
             local obj = scenetree.findObject("switchTo_" .. level)
             if obj then
                 switchToObj = obj
@@ -69,7 +63,7 @@ function M.onGetRawPoiListForLevel(levelIdentifier, elements)
     -- Create description listing all available maps
     local description = "Available maps to switch to:\n"
     local mapCount = 0
-    for level, levelName in pairs(careerMaps.getOtherAvailableMaps(levelIdentifier)) do
+    for level, levelName in pairs(overhaul_maps.getOtherAvailableMaps(levelIdentifier)) do
         description = description .. "• " .. levelName .. "\n"
         mapCount = mapCount + 1
     end
@@ -94,8 +88,6 @@ function M.onGetRawPoiListForLevel(levelIdentifier, elements)
                 }
             }
         }
-
-        dump(poi)
         
         table.insert(elements, poi)
     end
@@ -103,6 +95,5 @@ end
 
 M.switchMap = switchMap
 M.onBeamNGTrigger = onBeamNGTrigger
-M.onExtensionLoaded = onExtensionLoaded
 
 return M

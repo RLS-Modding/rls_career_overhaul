@@ -175,7 +175,7 @@
           "type": "vehOfferProvider",
           "interval": 300,
           "min": 0,
-          "max": 2,
+          "max": 6,
           "offerDuration": {
             "min": 300,
             "max": 300
@@ -339,6 +339,14 @@
             "trailerDeliveryConstructionMaterials"
           ]
         },
+        {
+          "psName": "rentaboxLoaners",
+          "isInspectSpot": false,
+          "logisticTypesProvided": [],
+          "logisticTypesReceived": [],
+          "loanerTrailerPriority": 1,
+          "loanerNonTrailerPriority": 1
+        }        
       ],
       //"pickUpSpotNames":["rentabox_parking"],
       //"dropOffSpotNames":["rentabox_parking"],
@@ -747,7 +755,7 @@
           "type": "vehOfferProvider",
           "interval": 300,
           "min": 0,
-          "max": 2,
+          "max": 6,
           "offerDuration": {
             "min": 300,
             "max": 300

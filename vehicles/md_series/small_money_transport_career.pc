@@ -72,7 +72,7 @@
     "armored_licenseplate_R":"armored_licenseplate_R",
     "armored_lightbar":"",
     "armored_lightbar_R":"",
-    "armored_load":"armored_cargoload_money_6m_working",
+    "armored_load":"armored_cargo_load_money_6m_working",
     "armored_markerlight_B":"armored_markerlight_B",
     "armored_markerlight_F":"armored_markerlight_F",
     "armored_markerlight_L":"armored_markerlight_L",

@@ -11,21 +11,21 @@ angular.module('beamng.stuff')
   };
   
   $scope.loadSettings = function() {
-    bngApi.engineLua("extensions.rlsSettings.loadSettings()");
+    bngApi.engineLua("extensions.overhaul_settings.loadSettings()");
     
-    bngApi.engineLua("extensions.rlsSettings.getSetting('mapDevMode')", function(result) {
+    bngApi.engineLua("extensions.overhaul_settings.getSetting('mapDevMode')", function(result) {
       $scope.$apply(() => {
         $scope.toggles.mapDevMode = result || false;
       });
     });
     
-    bngApi.engineLua("extensions.rlsSettings.getSetting('noPoliceMode')", function(result) {
+    bngApi.engineLua("extensions.overhaul_settings.getSetting('noPoliceMode')", function(result) {
       $scope.$apply(() => {
         $scope.toggles.noPoliceMode = result || false;
       });
     });
     
-    bngApi.engineLua("extensions.rlsSettings.getSetting('noParkedMode')", function(result) {
+    bngApi.engineLua("extensions.overhaul_settings.getSetting('noParkedMode')", function(result) {
       $scope.$apply(() => {
         $scope.toggles.noParkedMode = result || false;
       });
@@ -34,17 +34,17 @@ angular.module('beamng.stuff')
   
   $scope.toggleMapDevMode = function() {
     $scope.toggles.mapDevMode = !$scope.toggles.mapDevMode;
-    bngApi.engineLua(`extensions.rlsSettings.setSetting('mapDevMode', ${$scope.toggles.mapDevMode})`);
+    bngApi.engineLua(`extensions.overhaul_settings.setSetting('mapDevMode', ${$scope.toggles.mapDevMode})`);
   };
   
   $scope.toggleNoPoliceMode = function() {
     $scope.toggles.noPoliceMode = !$scope.toggles.noPoliceMode;
-    bngApi.engineLua(`extensions.rlsSettings.setSetting('noPoliceMode', ${$scope.toggles.noPoliceMode})`);
+    bngApi.engineLua(`extensions.overhaul_settings.setSetting('noPoliceMode', ${$scope.toggles.noPoliceMode})`);
   };
   
   $scope.toggleNoParkedMode = function() {
     $scope.toggles.noParkedMode = !$scope.toggles.noParkedMode;
-    bngApi.engineLua(`extensions.rlsSettings.setSetting('noParkedMode', ${$scope.toggles.noParkedMode})`);
+    bngApi.engineLua(`extensions.overhaul_settings.setSetting('noParkedMode', ${$scope.toggles.noParkedMode})`);
   };
   
   $scope.goBack = function() {

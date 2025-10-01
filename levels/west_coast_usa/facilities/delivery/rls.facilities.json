@@ -37,10 +37,7 @@
         {
           "psName": "moneyGrabBankParking",
           "isInspectSpot": true,
-          "logisticTypesProvided": [
-            "cash",
-            "coin"
-          ],
+          "logisticTypesProvided": [],
           "logisticTypesReceived": [
             "gold"
           ]
@@ -52,6 +49,15 @@
           "logisticTypesReceived": [],
           "loanerTrailerPriority": 1,
           "loanerNonTrailerPriority": 1
+        },
+        {
+          "psName": "bankPickup",
+          "isInspectSpot": false,
+          "logisticTypesProvided": [
+            "cash",
+            "coin"
+          ],
+          "logisticTypesReceived": []
         }
       ],
       "sitesFile": "rls.sites.json",
@@ -110,7 +116,6 @@
       "manualAccessPoints": [
         {
           "psName": "beachShopsParking",
-          "isInspectSpot": true,
           "logisticTypesProvided": [],
           "logisticTypesReceived": [
             "cash",
@@ -159,8 +164,7 @@
       "preview": "",
       "manualAccessPoints": [
         {
-          "psName": "joesJunkCar",
-          "isInspectSpot": true,
+          "psName": "joeCashParking",
           "logisticTypesProvided": [],
           "logisticTypesReceived": [
             "cash",
@@ -210,7 +214,6 @@
       "manualAccessPoints": [
         {
           "psName": "mallBank",
-          "isInspectSpot": true,
           "logisticTypesProvided": [],
           "logisticTypesReceived": [
             "cash",
@@ -260,7 +263,6 @@
       "manualAccessPoints": [
         {
           "psName": "tennisPickup",
-          "isInspectSpot": true,
           "logisticTypesProvided": [],
           "logisticTypesReceived": [
             "cash",
@@ -310,7 +312,6 @@
       "manualAccessPoints": [
         {
           "psName": "stadiumPickup",
-          "isInspectSpot": true,
           "logisticTypesProvided": [],
           "logisticTypesReceived": [
             "cash",
@@ -360,7 +361,6 @@
       "manualAccessPoints": [
         {
           "psName": "skyscraper1",
-          "isInspectSpot": true,
           "logisticTypesProvided": [],
           "logisticTypesReceived": [
             "cash",
@@ -410,7 +410,6 @@
       "manualAccessPoints": [
         {
           "psName": "cityBuildingPickup1",
-          "isInspectSpot": true,
           "logisticTypesProvided": [],
           "logisticTypesReceived": [
             "cash",
@@ -460,7 +459,6 @@
       "manualAccessPoints": [
         {
           "psName": "cityBuildingPickup2",
-          "isInspectSpot": true,
           "logisticTypesProvided": [],
           "logisticTypesReceived": [
             "cash",
@@ -510,7 +508,6 @@
       "manualAccessPoints": [
         {
           "psName": "cityBuildingPickup3",
-          "isInspectSpot": true,
           "logisticTypesProvided": [],
           "logisticTypesReceived": [
             "cash",
@@ -560,7 +557,6 @@
       "manualAccessPoints": [
         {
           "psName": "raceTrackPickup",
-          "isInspectSpot": true,
           "logisticTypesProvided": [],
           "logisticTypesReceived": [
             "cash",
@@ -660,7 +656,6 @@
       "manualAccessPoints": [
         {
           "psName": "illegalDumping",
-          "isInspectSpot": true,
           "logisticTypesProvided": [],
           "logisticTypesReceived": [
             "mysteriousWaste"

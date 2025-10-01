@@ -2,13 +2,25 @@
   "races":{
     "beachCircuit":{
       "apexOffset":2,
-      "bestTime":30,
-      "checkpointRoad":"beachCircuit",
+      "bestTime":32,
+      "checkpointIndexs":[
+        9,
+        16,
+        25,
+        30,
+        39,
+        51,
+        56,
+        63
+      ],
+      "checkpointRoad":[
+        "beachCircuit"
+      ],
       "displaySpeed":true,
-      "hotlap":25,
+      "hotlap":27,
       "label":"Beach Circuit",
       "minCheckpointDistance":45,
-      "reward":1500,
+      "reward":2000,
       "type":[
         "offroad",
         "rally"
@@ -16,20 +28,34 @@
     },
     "dirtCircuit":{
       "bestTime":65,
-      "checkpointRoad":"dirtloop",
-      "hotlap":55,
+      "checkpointIndexs":[
+        3,
+        13,
+        22,
+        38,
+        46,
+        54,
+        58,
+        66
+      ],
+      "checkpointRoad":[
+        "dirtloop"
+      ],
+      "hotlap":60,
       "label":"Dirt Circuit",
-      "reward":2000,
+      "reward":3000,
       "type":[
         "offroad",
         "rally"
       ]
     },
     "dirtOval":{
-      "bestTime":30,
-      "checkpointRoad":"dirtOval",
+      "bestTime":32,
+      "checkpointRoad":[
+        "dirtOval"
+      ],
       "damageFactor":1,
-      "hotlap":25,
+      "hotlap":29,
       "label":"Dirt Oval",
       "reward":350,
       "type":[
@@ -49,7 +75,10 @@
     },
     "dragHighway":{
       "bestTime":18,
-      "checkpointRoad":"dragHighway",
+      "checkpointIndexs":{},
+      "checkpointRoad":[
+        "dragHighway"
+      ],
       "displaySpeed":true,
       "label":"No Prep Highway Drag",
       "reward":1900,
@@ -59,7 +88,16 @@
     },
     "hotrolledDrift":{
       "bestTime":30,
-      "checkpointRoad":"hotrolledDrift",
+      "checkpointIndexs":[
+        6,
+        16,
+        20,
+        27,
+        33
+      ],
+      "checkpointRoad":[
+        "hotrolledDrift"
+      ],
       "driftGoal":3500,
       "label":"Hotrolled Drift",
       "reward":1500,
@@ -70,8 +108,16 @@
     },
     "islandTouge":{
       "bestTime":25,
-      "checkpointRoad":"islandTouge",
-      "driftGoal":3500,
+      "checkpointIndexs":[
+        7,
+        16,
+        27,
+        41
+      ],
+      "checkpointRoad":[
+        "islandTouge"
+      ],
+      "driftGoal":3000,
       "label":"Island Touge Drift",
       "reward":3000,
       "type":[
@@ -80,9 +126,26 @@
       ]
     },
     "koh1":{
-      "bestTime":120,
-      "checkpointRoad":"koh1",
-      "hotlap":110,
+      "bestTime":125,
+      "checkpointIndexs":[
+        9,
+        19,
+        30,
+        36,
+        50,
+        62,
+        71,
+        76,
+        82,
+        90,
+        98,
+        107,
+        111
+      ],
+      "checkpointRoad":[
+        "koh1"
+      ],
+      "hotlap":115,
       "label":"King of the Hammer 1",
       "reward":2000,
       "type":[
@@ -93,9 +156,44 @@
       ]
     },
     "koh2":{
-      "bestTime":180,
-      "checkpointRoad":"koh2",
-      "hotlap":170,
+      "bestTime":185,
+      "checkpointIndexs":[
+        6,
+        15,
+        23,
+        26,
+        30,
+        33,
+        46,
+        51,
+        55,
+        64,
+        68,
+        70,
+        75,
+        79,
+        81,
+        85,
+        91,
+        93,
+        96,
+        100,
+        103,
+        107,
+        112,
+        123,
+        130,
+        132,
+        133,
+        135,
+        141,
+        146,
+        152
+      ],
+      "checkpointRoad":[
+        "koh2"
+      ],
+      "hotlap":175,
       "label":"King of the Hammer 2",
       "reward":3000,
       "type":[
@@ -107,7 +205,9 @@
     },
     "mudDrag1":{
       "bestTime":9,
-      "checkpointRoad":"mudDrag1",
+      "checkpointRoad":[
+        "mudDrag1"
+      ],
       "label":"Mud Drag Easy",
       "reward":1500,
       "type":[
@@ -116,8 +216,11 @@
       ]
     },
     "mudDrag2":{
-      "bestTime":15,
-      "checkpointRoad":"mudDrag2",
+      "bestTime":16,
+      "checkpointIndexs":{},
+      "checkpointRoad":[
+        "mudDrag2"
+      ],
       "label":"Mud Drag Hard",
       "reward":2700,
       "type":[
@@ -127,11 +230,22 @@
       ]
     },
     "quarryCircuit":{
-      "bestTime":27,
-      "checkpointRoad":"quarryCircuit",
-      "hotlap":23,
+      "bestTime":29,
+      "checkpointIndexs":[
+        5,
+        10,
+        13,
+        21,
+        23,
+        25,
+        32
+      ],
+      "checkpointRoad":[
+        "quarryCircuit"
+      ],
+      "hotlap":25,
       "label":"Quarry Circuit",
-      "reward":1000,
+      "reward":2000,
       "type":[
         "offroad",
         "rally"
@@ -139,7 +253,19 @@
     },
     "raceTrackDrift":{
       "bestTime":35,
-      "checkpointRoad":"raceTrackDrift",
+      "checkpointIndexs":[
+        5,
+        10,
+        15,
+        19,
+        21,
+        24,
+        27,
+        31
+      ],
+      "checkpointRoad":[
+        "raceTrackDrift"
+      ],
       "driftGoal":4000,
       "hotlap":30,
       "label":"Parking Lot Drift",
@@ -152,28 +278,95 @@
     },
     "rally1":{
       "apexOffset":2,
-      "bestTime":70,
-      "checkpointRoad":"rally1",
+      "bestTime":75,
+      "checkpointIndexs":[
+        12,
+        19,
+        24,
+        38,
+        43,
+        49,
+        54,
+        59,
+        61,
+        65,
+        71
+      ],
+      "checkpointRoad":[
+        "rally1"
+      ],
       "label":"Rally Stage 1",
-      "reward":2000,
+      "reward":2500,
       "type":[
         "rally"
       ]
     },
     "rally2":{
       "apexOffset":2,
-      "bestTime":120,
-      "checkpointRoad":"rally2",
+      "bestTime":125,
+      "checkpointIndexs":[
+        8,
+        12,
+        16,
+        19,
+        22,
+        25,
+        27,
+        29,
+        37,
+        50,
+        52,
+        58,
+        61,
+        63,
+        66,
+        76,
+        83,
+        88
+      ],
+      "checkpointRoad":[
+        "rally2"
+      ],
       "label":"Rally Stage 2",
-      "reward":2500,
+      "reward":3000,
       "type":[
         "rally"
       ]
     },
     "rally3":{
       "apexOffset":1,
-      "bestTime":135,
-      "checkpointRoad":"rally3",
+      "bestTime":140,
+      "checkpointIndexs":[
+        3,
+        16,
+        22,
+        28,
+        37,
+        41,
+        45,
+        51,
+        55,
+        60,
+        68,
+        72,
+        79,
+        85,
+        94,
+        104,
+        116,
+        125,
+        134,
+        140,
+        142,
+        148,
+        153,
+        162,
+        167,
+        173
+      ],
+      "checkpointRoad":[
+        "rally3"
+      ],
       "label":"Rally Stage 3",
       "reward":3000,
       "type":[
@@ -181,18 +374,52 @@
       ]
     },
     "rally4":{
-      "bestTime":90,
-      "checkpointRoad":"rally4",
+      "bestTime":95,
+      "checkpointIndexs":[
+        4,
+        6,
+        10,
+        13,
+        17,
+        20,
+        24,
+        28,
+        35,
+        39,
+        41,
+        45,
+        50,
+        55,
+        60,
+        67,
+        73,
+        79
+      ],
+      "checkpointRoad":[
+        "rally4"
+      ],
       "label":"Rally Stage 4 - Final",
-      "reward":2000,
+      "reward":3000,
       "type":[
         "rally"
       ]
     },
     "redwoodDrift":{
       "bestTime":60,
-      "checkpointRoad":"redwoodDrift",
-      "driftGoal":6000,
+      "checkpointIndexs":[
+        5,
+        8,
+        16,
+        28,
+        34,
+        39,
+        46,
+        59
+      ],
+      "checkpointRoad":[
+        "redwoodDrift"
+      ],
+      "driftGoal":7000,
       "label":"Redwood Drift",
       "reward":1500,
       "type":[
@@ -202,8 +429,21 @@
     },
     "redwoodDriftR":{
       "bestTime":60,
-      "checkpointRoad":"redwoodDriftR",
-      "driftGoal":6000,
+      "checkpointIndexs":[
+        6,
+        10,
+        20,
+        25,
+        29,
+        31,
+        36,
+        40,
+        50
+      ],
+      "checkpointRoad":[
+        "redwoodDriftR"
+      ],
+      "driftGoal":7000,
       "label":"Redwood Drift Reverse",
       "reward":1500,
       "type":[
@@ -213,20 +453,30 @@
     },
     "rockClimbL":{
       "bestTime":12,
-      "checkpointRoad":"rockClimbL",
+      "checkpointIndexs":[
+        4
+      ],
+      "checkpointRoad":[
+        "rockClimbL"
+      ],
       "damageFactor":1,
       "label":"Rock Crawl Long",
       "reward":3500,
+      "timeout":60,
       "type":[
         "crawl"
       ]
     },
     "rockClimbS":{
       "bestTime":5,
-      "checkpointRoad":"rockClimbS",
+      "checkpointIndexs":{},
+      "checkpointRoad":[
+        "rockClimbS"
+      ],
       "damageFactor":1,
       "label":"Rock Crawl Short",
       "reward":1500,
+      "timeout":60,
       "type":[
         "crawl"
       ]
@@ -236,19 +486,21 @@
         "altInfo":"**Continue Right at the fork for the joker lap.",
         "bestTime":41,
         "checkpointRoad":"rubberBandJoker",
-        "hotlap":45,
+        "hotlap":50,
         "label":"Rubberband Ridge Joker",
         "mergeCheckpoints":[
           4,
           5
         ],
-        "reward":1250
+        "reward":2550
       },
-      "bestTime":41,
-      "checkpointRoad":"rubberBandMain",
-      "hotlap":45,
+      "bestTime":50,
+      "checkpointRoad":[
+        "rubberBandMain"
+      ],
+      "hotlap":55,
       "label":"Rubberband Ridge",
-      "reward":1250,
+      "reward":2550,
       "runningStart":true,
       "type":[
         "offroad",
@@ -257,7 +509,9 @@
     },
     "sealbrikDrift":{
       "bestTime":30,
-      "checkpointRoad":"sealbrikDrift",
+      "checkpointRoad":[
+        "sealbrikDrift"
+      ],
       "driftGoal":4500,
       "label":"Sealbrik Drift",
       "reward":1500,
@@ -277,14 +531,17 @@
           1,
           10
         ],
-        "reward":1750
+        "reward":1500
       },
       "apexOffset":1,
       "bestTime":140,
-      "checkpointRoad":"trackloop",
+      "checkpointIndexs":{},
+      "checkpointRoad":[
+        "trackloop"
+      ],
       "hotlap":125,
       "label":"Track",
-      "reward":2250,
+      "reward":2000,
       "runningStart":true,
       "type":[
         "motorsport",
