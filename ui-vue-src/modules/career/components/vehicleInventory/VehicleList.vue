@@ -231,7 +231,9 @@ const isFunctionAvailable = (vehicle, buttonData) => !(
   vehicle.missingFile ||
   (buttonData.requiredVehicleNotInGarage && vehicle.inGarage) ||
   (buttonData.requiredOtherVehicleInGarage && !vehicle.otherVehicleInGarage) ||
-  (buttonData.ownedRequired && !vehicle.owned)
+  (buttonData.ownedRequired && !vehicle.owned) ||
+  (buttonData.requireAtCurrentGarage && (!vehicle.retrievePermission || !vehicle.retrievePermission.allow)) ||
+  (buttonData.requireAtDifferentGarage && (!vehicle.deliverPermission || !vehicle.deliverPermission.allow))
 )
 
 const listVehicleForSale = () => {

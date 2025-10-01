@@ -420,6 +420,7 @@ local function specificCapcityCases(partName)
     if partName:find("schoolbus_seats_L_c")  then
       return 10
     end
+    if partName:find("limo_seat") then return 8 end
     return nil
 end
   
@@ -441,7 +442,7 @@ local function cyclePartsTree(partData, seatingCapacity)
         end
         if partName:find("citybus_seats") then seatSize = 44
         elseif partName:find("skin") then seatSize = 0 end
-        if specificCapcityCases(partName) then seatSize = specificCapcityCases(partName) end
+        seatSize = specificCapcityCases(partName) or seatSize
         seatingCapacity = seatingCapacity + seatSize
       end
       if part.children then

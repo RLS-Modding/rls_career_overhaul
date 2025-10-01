@@ -426,7 +426,7 @@ local function runFilter(newEntry)
   end
 end
 
-function noCheating(data)
+local function noCheating(data)
   print("Hmmm what you doing here?")
   return 0
 end

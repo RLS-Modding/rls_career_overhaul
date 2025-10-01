@@ -437,7 +437,7 @@ local function getFittingPartFromInventory(parentPart, slotName, currentVehicleD
     local partSlotOfThisPartInShoppingCart = getPartSlotFromPartIdInShoppingCart(partId) -- for checking if the part is already in the shopping cart
 
     local partDescription = jbeamIO.getPart(currentVehicleData.ioCtx, inventoryPart.name)
-    if inventoryPart.location == 0 and inventoryPart.vehicleModel == parentPart.vehicleModel and (not partSlotOfThisPartInShoppingCart) and jbeamSlotSystem.partFitsSlot(partDescription, parentPart.description.slotInfoUi[slotName]) then
+    if partDescription and inventoryPart.location == 0 and inventoryPart.vehicleModel == parentPart.vehicleModel and (not partSlotOfThisPartInShoppingCart) and jbeamSlotSystem.partFitsSlot(partDescription, parentPart.description.slotInfoUi[slotName]) then
       local shopPart = deepcopy(inventoryPart)
       shopPart.containingSlot = parentPart.containingSlot .. slotName .. "/"
       shopPart.partPath = shopPart.containingSlot .. inventoryPart.name
