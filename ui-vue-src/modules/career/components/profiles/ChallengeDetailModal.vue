@@ -14,7 +14,7 @@
                         </div>
                     </div>
                 </div>
-                <button class="cdm-close" @click="onClose">×</button>
+                <button class="cdm-close" @click="onClose" @mousedown.stop>×</button>
             </div>
 
             <div class="cdm-body">
@@ -90,8 +90,8 @@
                 </div>
 
                 <div class="cdm-footer">
-                    <button class="cdm-primary" @click="onSelect">Select This Challenge</button>
-                    <button class="cdm-outline" @click="onClose">Cancel</button>
+                    <button class="cdm-primary" @click="onSelect" @mousedown.stop>Select This Challenge</button>
+                    <button class="cdm-outline" @click="onClose" @mousedown.stop>Cancel</button>
                 </div>
             </div>
         </div>

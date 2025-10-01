@@ -3,7 +3,7 @@
     <div class="ccm-content" @click.stop>
       <div class="ccm-header">
         <div class="ccm-title">Create Challenge</div>
-        <button class="ccm-close" @click="onRequestClose">×</button>
+        <button class="ccm-close" @click="onRequestClose" @mousedown.stop>×</button>
       </div>
 
       <div class="ccm-body">
@@ -32,6 +32,11 @@
             <label>Win Condition</label>
             <BngSelect v-model="formWinCondition" :options="winConditionOptions" :config="winConditionConfig" placeholder="Select win condition" />
           </div>
+        </div>
+
+        <div v-if="formWinCondition === 'reachTargetMoney'" class="ccm-field">
+          <label>Target Money</label>
+          <input v-model.number="formTargetMoney" type="number" min="0" class="ccm-input" placeholder="100000" />
         </div>
 
         <div class="ccm-section-title">Loan (optional)</div>
@@ -64,8 +69,8 @@
       </div>
 
       <div class="ccm-footer">
-        <button class="ccm-primary" :disabled="!canSave" @click="onSave">Save</button>
-        <button class="ccm-outline" @click="onRequestClose">Cancel</button>
+        <button class="ccm-primary" :disabled="!canSave" @click="onSave" @mousedown.stop>Save</button>
+        <button class="ccm-outline" @click="onRequestClose" @mousedown.stop>Cancel</button>
       </div>
     </div>
   </div>
@@ -88,6 +93,7 @@ const formName = ref('')
 const formDescription = ref('')
 const formStartingCapital = ref(10000)
 const formWinCondition = ref('payOffLoan')
+const formTargetMoney = ref(100000)
 const formLoanAmount = ref(0)
 const formLoanInterest = ref(0.10)
 const formLoanPayments = ref(12)
@@ -103,6 +109,7 @@ const form = computed(() => ({
   description: formDescription.value,
   startingCapital: formStartingCapital.value,
   winCondition: formWinCondition.value,
+  targetMoney: formTargetMoney.value,
   loans: {
     amount: formLoanAmount.value,
     interest: formLoanInterest.value,
@@ -178,6 +185,7 @@ watch(() => props.open, (isOpen) => {
     const first = list[0]?.id || 'payOffLoan'
     formWinCondition.value = first
   }
+  formTargetMoney.value = props.editorData?.defaults?.targetMoney ?? 100000
   formLoanAmount.value = props.editorData?.defaults?.loanAmount ?? 0
   formLoanInterest.value = props.editorData?.defaults?.loanInterest ?? 0.10
   formLoanPayments.value = props.editorData?.defaults?.loanPayments ?? 12
@@ -229,6 +237,9 @@ async function onSave() {
     startingCapital: formStartingCapital.value,
     winCondition: formWinCondition.value,
     economyAdjuster: Object.keys(formEconomyAdjuster).length > 0 ? formEconomyAdjuster : undefined,
+  }
+  if (formWinCondition.value === 'reachTargetMoney' && formTargetMoney.value) {
+    payload.targetMoney = formTargetMoney.value
   }
   if (formLoanAmount.value && formLoanAmount.value > 0) {
     payload.loans = { amount: formLoanAmount.value, interest: formLoanInterest.value, payments: formLoanPayments.value }
