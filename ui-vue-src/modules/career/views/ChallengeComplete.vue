@@ -172,7 +172,9 @@ onMounted(() => {
         }
     })
     
-    lua.career_challengeModes.requestChallengeCompleteData()
+    setTimeout(() => {
+        lua.career_challengeModes.requestChallengeCompleteData()
+    }, 1000)
 })
 
 onBeforeUnmount(() => {
