@@ -805,10 +805,13 @@ local function makeRepairClaim(invVehId, price, rateIncrease)
         plPoliciesData[tostring(policyId)].hasFreeRepair = false
         hasUsedFreeRepair = true
     else
+        local oldBonus = plPoliciesData[tostring(policyId)].bonus
         plPoliciesData[tostring(policyId)].bonus = math.min(math.floor(plPoliciesData[tostring(policyId)].bonus * rateIncrease * 100) / 100, 35)
-        local label = string.format("Your Insurance Increased by " .. rateIncrease .. " to " ..
-                                        plPoliciesData[tostring(policyId)].bonus)
-        ui_message(label, 5, "Insurance", "info")
+        if rateIncrease ~= 1.0 and plPoliciesData[tostring(policyId)].bonus ~= oldBonus then
+            local label = string.format("Your Insurance Score Increased by %.2fx to %.2f",
+                                            rateIncrease, plPoliciesData[tostring(policyId)].bonus)
+            ui_message(label, 5, "Insurance", "info")
+        end
     end
 
     local claim = {
