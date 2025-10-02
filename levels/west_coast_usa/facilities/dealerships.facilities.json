@@ -867,14 +867,7 @@
           }
         },
         "blackList": {
-          "Body Style": [
-            "ATV",
-            "Buggy",
-            "Semi Truck"
-          ],
           "Config Type": [
-            "Police",
-            "Service",
             "Frame"
           ]
         }
