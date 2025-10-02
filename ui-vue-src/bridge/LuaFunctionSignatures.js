@@ -86,11 +86,10 @@ export default {
     getChallengeOptionsForCareerCreation: () => {},
     getChallengeEditorData: () => {},
     createChallengeFromUI: data => Any,
-    updateCustomChallenge: (id, data) => [String, Object],
-    getChallengeForEditing: id => Object,
     startChallenge: id => String,
-    getDiscoveredChallenges: () => {},
-    getChallengeCategories: () => {}
+    getActiveChallenge: () => {},
+    isChallengeActive: () => {},
+    requestChallengeCompleteData: () => {}
   },
 
   career_modules_uiUtils: {
@@ -1158,6 +1157,18 @@ export default {
 
   overhaul_maps: {
     getOtherAvailableMaps: () => {}
+  },
+
+  career_modules_playerAttributes: {
+    addAttributes: (change, reason, fullprice) => [Object, Any, Boolean],
+    setAttributes: (newValues, reason) => [Object, Any],
+    getAttribute: attributeName => Any,
+    getAttributeValue: attributeName => Any,
+    getAllAttributes: () => {},
+    getAttributeLog: () => {},
+    onSaveCurrentSaveSlot: currentSavePath => String,
+    onExtensionLoaded: () => {},
+    onCareerModulesActivated: () => {},
   },
 
   career_modules_switchMap: {

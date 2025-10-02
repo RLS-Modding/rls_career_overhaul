@@ -307,8 +307,6 @@ local function takeLoan(orgId, amount, payments, rate, uncapped)
   end
   saveLoans()
 
-  career_saveSystem.saveCurrent()
-  -- Show loan taken message
   if guihooks and guihooks.trigger then
     if notificationsEnabled then
       guihooks.trigger("toastrMsg", {type="info", title="Loan Approved", msg="Received $" .. string.format("%.2f", amount) .. " loan from " .. (loan.orgName or loan.orgId) .. " at " .. string.format("%.1f", (loan.rate or 0) * 100) .. "% interest over " .. payments .. " payments."})

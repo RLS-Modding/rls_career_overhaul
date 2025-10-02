@@ -143,13 +143,8 @@ local function onCareerModulesActivated(alreadyInLevel)
   setupCareerActionsAndUnpause()
 
   if M.pendingChallengeId then
-    career_challengeModes.startChallenge(M.pendingChallengeId)
-    M.pendingChallengeId = nil -- Clear the pending challenge
-  end
-
-  if M.pendingChallengeId then
-    career_challengeModes.startChallenge(M.pendingChallengeId)
-    M.pendingChallengeId = nil -- Clear the pending challenge
+    career_challengeModes.startChallenge(M.pendingChallengeId, true)
+    M.pendingChallengeId = nil
   end
 end
 

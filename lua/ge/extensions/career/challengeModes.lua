@@ -5,6 +5,7 @@ local M = {}
 
 local discoveredChallenges = {}
 local activeChallenge = nil
+local completedChallengeData = nil
 
 -- Challenge template
 local challengeTemplate = {
@@ -385,19 +386,7 @@ local function endChallenge()
     saveChallengeData(currentSavePath)
   end
 
-  if guihooks and guihooks.trigger then
-    local winConditionInfo = getWinConditionInfo(endedChallenge.winCondition)
-    guihooks.trigger('challenge:ended', {
-      id = endedChallenge.id,
-      name = endedChallenge.name,
-      winCondition = endedChallenge.winCondition,
-      winConditionName = winConditionInfo.name,
-      winConditionDescription = winConditionInfo.description,
-      targetMoney = endedChallenge.winCondition == "reachTargetMoney" and (endedChallenge.targetMoney or 1000000) or nil,
-      simulationTimeSpent = endedChallenge.simulationTimeSpent or 0
-    })
-  end
-
+  career_saveSystem.saveCurrent()
   return true
 end
 
@@ -438,6 +427,20 @@ local function startChallenge(challengeId)
     return false
   end
 
+  if challenge.startingCapital and career_modules_playerAttributes then
+    local currentMoney = career_modules_playerAttributes.getAttributeValue('money') or 0
+    local targetMoney = challenge.startingCapital
+
+    if currentMoney ~= targetMoney then
+      local difference = targetMoney - currentMoney
+      career_modules_playerAttributes.addAttributes({
+        money = difference
+      }, {
+        label = "Challenge starting capital: " .. challenge.name
+      })
+    end
+  end
+
   if challenge.loans and career_modules_loans then
     local loanConfig = challenge.loans
     if loanConfig.amount and loanConfig.amount > 0 then
@@ -451,20 +454,6 @@ local function startChallenge(challengeId)
       if not result or result.error then
         return false
       end
-    end
-  end
-
-  if challenge.startingCapital and career_modules_playerAttributes then
-    local currentMoney = career_modules_playerAttributes.getAttributeValue('money') or 0
-    local targetMoney = challenge.startingCapital
-
-    if currentMoney ~= targetMoney then
-      local difference = targetMoney - currentMoney
-      career_modules_playerAttributes.addAttributes({
-        money = difference
-      }, {
-        label = "Challenge starting capital: " .. challenge.name
-      })
     end
   end
 
@@ -546,20 +535,33 @@ local function onUpdate(dtReal, dtSim, dtRaw)
   updateTimer = 0
 
   if activeChallenge and checkWinCondition() then
+    local winConditionInfo = getWinConditionInfo(activeChallenge.winCondition)
+    
+    completedChallengeData = {
+      id = activeChallenge.id,
+      name = activeChallenge.name,
+      description = activeChallenge.description,
+      winCondition = activeChallenge.winCondition,
+      winConditionName = winConditionInfo.name,
+      winConditionDescription = winConditionInfo.description,
+      targetMoney = activeChallenge.winCondition == "reachTargetMoney" and (activeChallenge.targetMoney or 1000000) or nil,
+      simulationTimeSpent = activeChallenge.simulationTimeSpent or 0,
+      startingCapital = activeChallenge.startingCapital,
+      loans = activeChallenge.loans
+    }
+    
     if guihooks and guihooks.trigger then
-      local winConditionInfo = getWinConditionInfo(activeChallenge.winCondition)
-      guihooks.trigger('challenge:completed', {
-        id = activeChallenge.id,
-        name = activeChallenge.name,
-        winCondition = activeChallenge.winCondition,
-        winConditionName = winConditionInfo.name,
-        winConditionDescription = winConditionInfo.description,
-        targetMoney = activeChallenge.winCondition == "reachTargetMoney" and (activeChallenge.targetMoney or 1000000) or nil,
-        simulationTimeSpent = activeChallenge.simulationTimeSpent or 0
-      })
+      guihooks.trigger('ChangeState', {state = 'challenge-completed'})
     end
 
     endChallenge()
+  end
+end
+
+local function requestChallengeCompleteData()
+  if completedChallengeData and guihooks and guihooks.trigger then
+    guihooks.trigger('challengeCompleteData', completedChallengeData)
+    completedChallengeData = nil
   end
 end
 
@@ -629,6 +631,7 @@ M.discoverChallenges = discoverChallenges
 M.getChallengeEditorData = getChallengeEditorData
 M.createChallengeFromUI = createChallengeFromUI
 M.getChallengeOptionsForCareerCreation = getChallengeOptionsForCareerCreation
+M.requestChallengeCompleteData = requestChallengeCompleteData
 
 M.onExtensionLoaded = onExtensionLoaded
 M.onUpdate = onUpdate

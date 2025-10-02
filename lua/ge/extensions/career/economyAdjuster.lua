@@ -57,7 +57,10 @@ local function discoverActivityTypes()
     local activityTypesFound = {}
 
     if gameplay_taxi then
-        local taxiPassengerTypesFound = false
+        activityTypesFound["taxi"] = true
+        typeSources["taxi"] = typeSources["taxi"] or {}
+        typeSources["taxi"]["taxi_module"] = true
+        
         if gameplay_taxi.getPassengerTypes then
             local passengerTypes = gameplay_taxi.getPassengerTypes()
             if passengerTypes and type(passengerTypes) == "table" then
@@ -67,16 +70,9 @@ local function discoverActivityTypes()
                         activityTypesFound[passengerTypeKey] = true
                         typeSources[passengerTypeKey] = typeSources[passengerTypeKey] or {}
                         typeSources[passengerTypeKey]["taxi_passenger"] = true
-                        taxiPassengerTypesFound = true
                     end
                 end
             end
-        end
-
-        if not taxiPassengerTypesFound then
-            activityTypesFound["taxi"] = true
-            typeSources["taxi"] = typeSources["taxi"] or {}
-            typeSources["taxi"]["taxi_module"] = true
         end
     end
 
