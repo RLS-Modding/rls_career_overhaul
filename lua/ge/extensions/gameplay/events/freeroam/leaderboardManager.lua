@@ -48,6 +48,20 @@ local function isBestTime(entry)
         return entry.driftScore > leaderboardEntry.driftScore
     end
 
+    -- Handle top speed races
+    if entry.topSpeed and entry.topSpeed > 0 then
+        local utils = require('gameplay/events/freeroam/utils')
+        local races = utils.loadRaceData()
+        local race = races[entry.raceName]
+        
+        if race and race.topSpeed then
+            if not leaderboardEntry.topSpeed then
+                return true
+            end
+            return entry.topSpeed > leaderboardEntry.topSpeed
+        end
+    end
+
     -- Handle damage-based races
     if entry.damageFactor and entry.damageFactor > 0 then
         -- If this is a damage-based race, compare based on the hybrid system
@@ -118,6 +132,7 @@ local function addLeaderboardEntry(entry)
         leaderboardEntry[raceLabel].driftScore = entry.driftScore
         leaderboardEntry[raceLabel].damagePercentage = entry.damagePercentage
         leaderboardEntry[raceLabel].damageFactor = entry.damageFactor
+        leaderboardEntry[raceLabel].topSpeed = entry.topSpeed
         return true
     end
     return false

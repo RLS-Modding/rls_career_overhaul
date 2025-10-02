@@ -239,6 +239,31 @@ local function driftReward(race, time, driftScore)
   return race.reward * timeFactor * driftFactor
 end
 
+local function topSpeedReward(goalSpeed, baseReward, actualSpeed, raceTypes)
+  if actualSpeed == 0 then
+    return 0
+  end
+
+  local baseRewardValue
+  local ratio = actualSpeed / goalSpeed
+  if ratio < 1 then
+    baseRewardValue = math.floor(ratio * baseReward * 100) / 100
+  else
+    baseRewardValue = math.floor((math.pow(ratio, (1 + (baseReward / 500)))) * baseReward * 100) / 100
+    if baseRewardValue > baseReward * 30 then
+      baseRewardValue = baseReward * 30
+    end
+  end
+
+  if raceTypes and career_economyAdjuster then
+    local multiplier = calculateAverageMultiplier(raceTypes)
+    baseRewardValue = baseRewardValue * multiplier
+    baseRewardValue = math.floor(baseRewardValue + 0.5)
+  end
+
+  return baseRewardValue
+end
+
 local function hybridRaceReward(goalTime, baseReward, actualTime, damageFactor, damagePercentage, raceTypes)
   if damageFactor == 0 then
     return raceReward(goalTime, baseReward, actualTime, raceTypes)
@@ -359,7 +384,7 @@ local function displayStagedMessage(vehId, raceName, getMessage)
     if not bestTime then
       if careerMode then
         local adjustedBaseReward = raceReward(targetTime, reward, targetTime, raceData and raceData.type or nil)
-        return string.format("%sTarget Time: %s\n(Achieve this to earn a reward of $%.2f and 1 Bonus Star)", label,
+        return string.format("%sTarget Time: %s\n(Achieve this to earn a reward of $%.2f)", label,
           formatTime(targetTime), adjustedBaseReward)
       else
         return string.format("%sTarget Time: %s", label, formatTime(targetTime))
@@ -368,7 +393,7 @@ local function displayStagedMessage(vehId, raceName, getMessage)
       if careerMode then
         local adjustedBaseReward = raceReward(targetTime, reward, targetTime, raceData and raceData.type or nil)
         return string.format(
-          "%sYour Best Time: %s | Target Time: %s\n(Achieve target to earn a reward of $%.2f and 1 Bonus Star)", label,
+          "%sYour Best Time: %s | Target Time: %s\n(Achieve target to earn a reward of $%.2f)", label,
           formatTime(bestTime), formatTime(targetTime), adjustedBaseReward)
       else
         return string.format("%sYour Best Time: %s | Target Time: %s", label, formatTime(bestTime),
@@ -426,7 +451,33 @@ local function displayStagedMessage(vehId, raceName, getMessage)
     end
   end
 
-  if race.driftGoal then
+  if race.topSpeed then
+    local bestSpeed = leaderboardEntry and leaderboardEntry.topSpeed or nil
+    local bestTime = leaderboardEntry and leaderboardEntry.time or nil
+    local targetSpeed = race.topSpeedGoal
+
+    if bestSpeed and bestTime then
+      if careerMode then
+        local adjustedReward = topSpeedReward(targetSpeed, race.reward, bestSpeed, race.type)
+        message = message .. string.format(
+          "Your Best Speed: %.2f mph | Target Speed: %.2f mph\nYour Best Time: %s\n(Improve to earn at least $%.2f)",
+          bestSpeed, targetSpeed, formatTime(bestTime), adjustedReward)
+      else
+        message = message .. string.format(
+          "Your Best Speed: %.2f mph | Target Speed: %.2f mph\nYour Best Time: %s",
+          bestSpeed, targetSpeed, formatTime(bestTime))
+      end
+    else
+      if careerMode then
+        local adjustedReward = topSpeedReward(targetSpeed, race.reward, targetSpeed, race.type)
+        message = message .. string.format(
+          "Target Speed: %.2f mph\n(Achieve this to earn a reward of $%.2f and 1 Bonus Star)",
+          targetSpeed, adjustedReward)
+      else
+        message = message .. string.format("Target Speed: %.2f mph", targetSpeed)
+      end
+    end
+  elseif race.driftGoal then
     -- Handle drift event staging message
     local bestScore = leaderboardEntry.driftScore
     local bestTime = leaderboardEntry.time
@@ -507,13 +558,15 @@ local function displayStagedMessage(vehId, raceName, getMessage)
   end
 
   -- Add note for time-based events in career mode
-  if careerMode and not race.driftGoal then
+  if careerMode and not race.driftGoal and not race.topSpeed then
     if race.damageFactor and race.damageFactor > 0 then
       message = message ..
                   "\n\n**Note: All rewards are cut by 50% if they are below your best score. Score is calculated based on both time and damage.**"
     else
       message = message .. "\n\n**Note: All rewards are cut by 50% if they are below your best time.**"
     end
+  elseif careerMode and race.topSpeed then
+    message = message .. "\n\n**Note: All rewards are cut by 50% if they are below your best speed.**"
   end
 
   if not getMessage then
@@ -587,6 +640,7 @@ M.displayMessage = displayMessage
 M.formatTime = formatTime
 M.raceReward = raceReward
 M.driftReward = driftReward
+M.topSpeedReward = topSpeedReward
 M.hybridRaceReward = hybridRaceReward
 M.hotlapMultiplier = hotlapMultiplier
 M.saveAndSetTrafficAmount = saveAndSetTrafficAmount

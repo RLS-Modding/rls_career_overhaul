@@ -37,6 +37,8 @@ local initialVehicleDamage = 0
 local mInventoryId = nil
 local newBestSession = false
 
+local maxSpeed = 0
+
 local races = nil
 local isReplay = false
 
@@ -134,7 +136,9 @@ local function payoutRace()
 
     -- Calculate scores and rewards
     local driftScore = 0
-    if race.driftGoal then
+    if race.topSpeed then
+        reward = utils.topSpeedReward(race.topSpeedGoal, reward, maxSpeed, race.type)
+    elseif race.driftGoal then
         driftScore = getDriftScore()
         reward = utils.driftReward(races[mActiveRace], time, driftScore)
     elseif damageFactor > 0 then
@@ -160,7 +164,8 @@ local function payoutRace()
         driftScore = driftScore,
         inventoryId = mInventoryId,
         damagePercentage = damagePercentage,
-        damageFactor = damageFactor
+        damageFactor = damageFactor,
+        topSpeed = maxSpeed
     }
 
     local newBest = leaderboardManager.addLeaderboardEntry(newEntry)
@@ -168,7 +173,16 @@ local function payoutRace()
     -- Build the base message that's shown regardless of career mode
     local message = invalidLap and "Lap Invalidated\n" or ""
 
-    if race.driftGoal then
+    if race.topSpeed then
+        message = message ..
+                      string.format("%s\nTop Speed: %.2f mph\nTime: %s", raceLabel, maxSpeed, utils.formatTime(in_race_time))
+        if oldTime then
+            local oldSpeed = leaderboardEntry and leaderboardEntry.topSpeed or 0
+            message = message ..
+                          string.format("\nPrevious Best Speed: %.2f mph\nPrevious Best Time: %s", oldSpeed,
+                    utils.formatTime(oldTime))
+        end
+    elseif race.driftGoal then
         message = message ..
                       string.format("%s\nDrift Score: %d\nTime: %s", raceLabel, driftScore,
                 utils.formatTime(in_race_time))
@@ -447,6 +461,7 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
         mAltRoute = false
         invalidLap = false
         mInventoryId = nil
+        maxSpeed = 0
         Assets:hideAllAssets()
         checkpointManager.removeCheckpoints()
 
@@ -632,6 +647,7 @@ local function onBeamNGTrigger(data)
             checkpointManager.setAltRoute(false)
             mAltRoute = false
             in_race_time = 0
+            maxSpeed = 0
             timerActive = true
             checkpointsHit = 0
             totalCheckpoints = checkpointManager.calculateTotalCheckpoints()
@@ -652,6 +668,7 @@ local function onBeamNGTrigger(data)
             Assets:displayAssets(data)
             timerActive = true
             in_race_time = 0
+            maxSpeed = 0
             mActiveRace = raceName
             lapCount = 0
             mInventoryId = career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId(data.subjectID) or data.subjectID
@@ -836,21 +853,20 @@ local function onExtensionUnloaded()
 end
 
 local function onUpdate(dtReal, dtSim, dtRaw)
-
-    -- This function updates the race time.
-    -- It increments the in_race_time if the timer is active.
-    --
-    -- Parameters:
-    --   dtReal (number): Real delta time.
-    --   dtSim (number): Simulated delta time.
-    --   dtRaw (number): Raw delta time.
     if mActiveRace and races[mActiveRace].checkpointRoad then
         if processRoad.checkPlayerOnRoad() == false then
-            exitRace(false) -- Cancellation due to going off road
+            exitRace(false)
         end
     end
     if timerActive == true then
         in_race_time = in_race_time + dtSim
+        local playerVehicleId = be:getPlayerVehicleID(0)
+        if playerVehicleId then
+            local currentSpeed = math.abs(be:getObjectVelocityXYZ(playerVehicleId)) * speedUnit
+            if currentSpeed > maxSpeed then
+                maxSpeed = currentSpeed
+            end
+        end
     else
         in_race_time = 0
     end
