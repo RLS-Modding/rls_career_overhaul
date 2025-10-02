@@ -39,7 +39,7 @@
           <input v-model.number="formTargetMoney" type="number" min="0" class="ccm-input" placeholder="100000" />
         </div>
 
-        <div class="ccm-section-title">Loan (optional)</div>
+        <div class="ccm-section-title">Debt (optional)</div>
         <div class="ccm-grid3">
           <div class="ccm-field">
             <label>Amount</label>
@@ -124,7 +124,7 @@ const winConditionOptions = computed(() => {
   const list = (Array.isArray(raw) && raw.length > 0)
     ? raw
     : [
-        { id: 'payOffLoan', name: 'Pay Off Loan' },
+        { id: 'payOffLoan', name: 'Get out of debt' },
         { id: 'reachTargetMoney', name: 'Reach Target Money' }
       ]
   return list.map(w => ({ value: w.id, label: w.name || w.id }))

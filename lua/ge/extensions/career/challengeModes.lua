@@ -24,6 +24,34 @@ local challengeTemplate = {
   simulationTimeSpent = 0
 }
 
+local winConditions = {
+  {
+    id = "payOffLoan",
+    name = "Get out of debt",
+    description = "Complete the challenge by paying off all loans",
+    checkCondition = function()
+      if career_modules_loans then
+        local activeLoans = career_modules_loans.getActiveLoans()
+        return #activeLoans == 0
+      end
+      return false
+    end
+  },
+  {
+    id = "reachTargetMoney",
+    name = "Reach Target Money",
+    description = "Complete the challenge by reaching a target amount of money",
+    checkCondition = function()
+      if career_modules_playerAttributes then
+        local currentMoney = career_modules_playerAttributes.getAttributeValue('money') or 0
+        local targetMoney = activeChallenge.targetMoney or 1000000
+        return currentMoney >= targetMoney
+      end
+      return false
+    end
+  }
+}
+
 -- Discovery Functions
 
 local function findChallengeFiles(basePath, foundFiles)
@@ -183,19 +211,6 @@ local function getActivityTypeInfo(activityType)
 end
 
 local function getWinConditionInfo(winConditionId)
-  local winConditions = {
-    {
-      id = "payOffLoan",
-      name = "Pay Off Loan",
-      description = "Complete the challenge by paying off all loans"
-    },
-    {
-      id = "reachTargetMoney",
-      name = "Reach Target Money",
-      description = "Complete the challenge by reaching a target amount of money"
-    }
-  }
-
   for _, condition in ipairs(winConditions) do
     if condition.id == winConditionId then
       return condition
@@ -205,7 +220,10 @@ local function getWinConditionInfo(winConditionId)
   return {
     id = winConditionId,
     name = winConditionId,
-    description = "Unknown win condition"
+    description = "Unknown win condition",
+    checkCondition = function()
+      return false
+    end
   }
 end
 
@@ -245,18 +263,7 @@ local function getChallengeEditorData()
   end
 
   return {
-    winConditions = {
-      {
-        id = "payOffLoan",
-        name = "Pay Off Loan",
-        description = "Complete the challenge by paying off all loans"
-      },
-      {
-        id = "reachTargetMoney",
-        name = "Reach Target Money",
-        description = "Complete the challenge by reaching a target amount of money"
-      }
-    },
+    winConditions = winConditions,
     activityTypes = activityTypes,
     activityTypesBySource = activityTypesBySource,
     currentMultipliers = currentMultipliers,
@@ -427,20 +434,6 @@ local function startChallenge(challengeId)
     return false
   end
 
-  if challenge.startingCapital and career_modules_playerAttributes then
-    local currentMoney = career_modules_playerAttributes.getAttributeValue('money') or 0
-    local targetMoney = challenge.startingCapital
-
-    if currentMoney ~= targetMoney then
-      local difference = targetMoney - currentMoney
-      career_modules_playerAttributes.addAttributes({
-        money = difference
-      }, {
-        label = "Challenge starting capital: " .. challenge.name
-      })
-    end
-  end
-
   if challenge.loans and career_modules_loans then
     local loanConfig = challenge.loans
     if loanConfig.amount and loanConfig.amount > 0 then
@@ -454,6 +447,20 @@ local function startChallenge(challengeId)
       if not result or result.error then
         return false
       end
+    end
+  end
+
+  if challenge.startingCapital and career_modules_playerAttributes then
+    local currentMoney = career_modules_playerAttributes.getAttributeValue('money') or 0
+    local targetMoney = challenge.startingCapital
+
+    if currentMoney ~= targetMoney then
+      local difference = targetMoney - currentMoney
+      career_modules_playerAttributes.addAttributes({
+        money = difference
+      }, {
+        label = "Challenge starting capital: " .. challenge.name
+      })
     end
   end
 
@@ -503,23 +510,8 @@ local function checkWinCondition()
 
   local winCondition = activeChallenge.winCondition
 
-  if winCondition == "payOffLoan" then
-    if career_modules_loans then
-      local activeLoans = career_modules_loans.getActiveLoans()
-      return #activeLoans == 0
-    end
-    return false
-
-  elseif winCondition == "reachTargetMoney" then
-    if career_modules_playerAttributes then
-      local currentMoney = career_modules_playerAttributes.getAttributeValue('money') or 0
-      local targetMoney = activeChallenge.targetMoney or 1000000
-      return currentMoney >= targetMoney
-    end
-    return false
-  end
-
-  return false
+  local winConditionInfo = getWinConditionInfo(winCondition)
+  return winConditionInfo.checkCondition()
 end
 
 local updateTimer = 0
@@ -623,7 +615,36 @@ local function getChallengeOptionsForCareerCreation()
   return options
 end
 
+local function addWinCondition(winCondition)
+  if not winCondition or type(winCondition) ~= "table" then
+    print("Invalid win condition")
+    return false
+  end
+  if not winCondition.id or type(winCondition.id) ~= "string" then
+    print("Win condition must have an ID")
+    return false
+  end
+  if not winCondition.name or type(winCondition.name) ~= "string" then
+    print("Win condition must have a name")
+    return false
+  end
+  if not winCondition.description or type(winCondition.description) ~= "string" then
+    print("Win condition must have a description")
+    return false
+  end
+  if not winCondition.checkCondition or type(winCondition.checkCondition) ~= "function" then
+    print("Win condition must have a check condition function")
+    return false
+  end
+  if winConditions[winCondition.id] then
+    print("Win condition already exists")
+    return false
+  end
+  table.insert(winConditions, winCondition)
+end
+
 -- Module Exports
+M.addWinCondition = addWinCondition
 M.startChallenge = startChallenge
 M.getActiveChallenge = getActiveChallenge
 M.isChallengeActive = isChallengeActive

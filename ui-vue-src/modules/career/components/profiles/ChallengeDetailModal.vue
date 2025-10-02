@@ -26,7 +26,7 @@
                             <div class="cdm-card-value cdm-green">{{ challenge?.startingCash }}</div>
                         </div>
                         <div class="cdm-card">
-                            <div class="cdm-card-label">Loan Amount</div>
+                            <div class="cdm-card-label">Debt Amount</div>
                             <div class="cdm-card-value cdm-red">{{ challenge?.loanAmount }}</div>
                         </div>
                         <div class="cdm-card">
