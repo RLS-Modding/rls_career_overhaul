@@ -868,7 +868,8 @@
         },
         "blackList": {
           "Config Type": [
-            "Frame"
+            "Frame",
+            "Loaner"
           ]
         }
       },
@@ -2289,9 +2290,9 @@
     },
     {
       "id": "loanerDealership",
-      "name": "Loaned to Own",
+      "name": "Loaned to Owned",
       "description": "Previously loaned vehicles with high mileage",
-      "preview": "asotv.jpg",
+      "preview": "trailer_dealer.jpg",
       "stock": 7,
       "range": [
         0.7,

@@ -3,7 +3,7 @@
   "Config Type":"Loaner",
   "Configuration":"U-Pull With Cargo",
   "Name":"Enclosed Cargo Trailer UPull With Cargo",
-  "Population":10000,
+  "Population":5000,
   "Source":"Custom",
   "Value":15000,
   "Weight":1015,

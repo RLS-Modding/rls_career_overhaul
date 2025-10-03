@@ -3,7 +3,7 @@
   "Config Type":"Loaner",
   "Configuration":"With Cargo",
   "Name":"Large Box Utility Trailer With Cargo",
-  "Population":10000,
+  "Population":5000,
   "Source":"Custom",
   "Value":10000,
   "Weight":630,

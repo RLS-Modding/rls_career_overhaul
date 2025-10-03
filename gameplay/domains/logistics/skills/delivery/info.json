@@ -17,7 +17,8 @@
       },
       "unlockFlags": [
         "smallPackagesDelivery",
-        "smallTrailersDelivery"
+        "smallTrailersDelivery",
+        "hazardousMaterialsDelivery",
       ],
       "unlocks": [
         {
@@ -31,6 +32,12 @@
           "icon": "smallTrailer",
           "heading": "Small Trailers",
           "description": "Deliver small and medium-sized trailers using cars and pickup trucks."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "hazardLights",
+          "heading": "Hazardous Materials",
+          "description": "Deliver hazardous waste fluids."
         }
       ]
     },
@@ -46,7 +53,6 @@
       "unlockFlags": [
         "largePackagesDelivery",
         "largeTrailersDelivery",
-        "hazardousMaterialsDelivery",
       ],
       "unlocks": [
         {
@@ -60,13 +66,7 @@
           "icon": "semiTrailer",
           "heading": "Large Trailers",
           "description": "Deliver full-sized transport trailers."
-        },
-        {
-          "type": "unlockCard",
-          "icon": "hazardLights",
-          "heading": "Hazardous Materials",
-          "description": "Deliver hazardous waste fluids.",
-        },
+        }
       ]
     },
     {

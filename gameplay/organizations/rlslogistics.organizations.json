@@ -2151,7 +2151,7 @@
       {
         "model": "van",
         "config": "h25_career_with_cargo",
-        "reputationLvl": 1,
+        "reputationLvl": 0,
         "deliveryLvl": 1,
         "mileage": 800000000
       }
