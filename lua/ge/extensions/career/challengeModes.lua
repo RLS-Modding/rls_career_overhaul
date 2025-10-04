@@ -409,8 +409,8 @@ local function onCareerActivated()
 end
 
 local function onCareerDeactivated()
-  if activeChallenge then
-    endChallenge()
+  if activeChallenge and career_economyAdjuster then
+    career_economyAdjuster.resetToDefaults()
   end
 end
 
