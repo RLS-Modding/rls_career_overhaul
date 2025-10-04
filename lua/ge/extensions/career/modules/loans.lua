@@ -224,6 +224,7 @@ local function processDuePayments(elapsedSimSeconds)
           end
         end
       end
+      career_saveSystem.saveCurrent()
     end
 
     if (loan.principalOutstanding or 0) <= 1e-6 then
@@ -241,7 +242,6 @@ local function processDuePayments(elapsedSimSeconds)
   for _, loan in ipairs(activeLoans) do table.insert(enriched, buildUiLoan(loan)) end
   guihooks.trigger('loans:tick', enriched)
   guihooks.trigger('loans:funds', career_modules_playerAttributes.getAttributeValue('money'))
-  career_saveSystem.saveCurrent()
 end
 
 local function onUpdate(dtReal, dtSim, dtRaw)
