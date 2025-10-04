@@ -201,7 +201,7 @@ local function processDuePayments(elapsedSimSeconds)
           loan.secondsUntilNextPayment = loan.secondsUntilNextPayment + PAYMENT_INTERVAL_S
           awardOrgReputation(loan.orgId, 1, loan.orgName)
           -- Show payment success message
-          if notificationsEnabled and guihooks and guihooks.trigger then
+          if notificationsEnabled then
             guihooks.trigger("toastrMsg", {type="success", title="Loan Payment Made", msg="Successfully paid $" .. string.format("%.2f", needed) .. " to " .. (loan.orgName or loan.orgId)})
           end
         else
@@ -215,7 +215,7 @@ local function processDuePayments(elapsedSimSeconds)
           loan.secondsUntilNextPayment = loan.secondsUntilNextPayment + PAYMENT_INTERVAL_S
           awardOrgReputation(loan.orgId, -5, loan.orgName)
           -- Show payment missed message
-          if notificationsEnabled and guihooks and guihooks.trigger then
+          if notificationsEnabled then
             local capitalizedMsg = ""
             if interestDue > 0 then
               capitalizedMsg = " $" .. string.format("%.2f", interestDue) .. " interest added to principal."
@@ -231,23 +231,17 @@ local function processDuePayments(elapsedSimSeconds)
       local completedId = loan.id
       local completedOrg = loan.orgName or loan.orgId
       table.remove(activeLoans, i)
-      if guihooks and guihooks.trigger then
-        guihooks.trigger('loans:completed', { id = completedId, orgName = completedOrg })
-        if notificationsEnabled then
-          guihooks.trigger("toastrMsg", {type="success", title="Loan Paid Off", msg="Congratulations! Your loan with " .. completedOrg .. " has been fully paid off."})
-        end
+      guihooks.trigger('loans:completed', { id = completedId, orgName = completedOrg })
+      if notificationsEnabled then
+        guihooks.trigger("toastrMsg", {type="success", title="Loan Paid Off", msg="Congratulations! Your loan with " .. completedOrg .. " has been fully paid off."})
       end
     end
   end
-  if guihooks and guihooks.trigger then
-    local enriched = {}
-    for _, loan in ipairs(activeLoans) do table.insert(enriched, buildUiLoan(loan)) end
-    guihooks.trigger('loans:tick', enriched)
-  end
-  -- also broadcast current available funds for UI to cap inputs
-  if guihooks and guihooks.trigger and career_modules_playerAttributes then
-    guihooks.trigger('loans:funds', career_modules_playerAttributes.getAttributeValue('money'))
-  end
+  local enriched = {}
+  for _, loan in ipairs(activeLoans) do table.insert(enriched, buildUiLoan(loan)) end
+  guihooks.trigger('loans:tick', enriched)
+  guihooks.trigger('loans:funds', career_modules_playerAttributes.getAttributeValue('money'))
+  career_saveSystem.saveCurrent()
 end
 
 local function onUpdate(dtReal, dtSim, dtRaw)
