@@ -106,21 +106,7 @@ local function initDisplays()
 end
 
 local function displayMessage(message, duration)
-  ui_message(message, duration, "info", "info")
-end
-
-local function onPursuitAction(id, pursuitData)
-  local playerVehicleId = be:getPlayerVehicleID(0)
-
-  if id == playerVehicleId then
-    if pursuitData.type == "start" then
-      playerInPursuit = true
-    elseif pursuitData.type == "evade" or pursuitData.type == "reset" then
-      playerInPursuit = false
-    elseif pursuitData.type == "arrest" then
-      playerInPursuit = false
-    end
-  end
+  ui_message(message, duration, "FRE", "info")
 end
 
 local function hasFinishTrigger(race)
