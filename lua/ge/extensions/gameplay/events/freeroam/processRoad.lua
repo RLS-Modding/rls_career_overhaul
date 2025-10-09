@@ -28,9 +28,10 @@ local exitCountdownStart = 5
 local lastCountdownTime = 0
 
 local STATIONARY_TIMEOUT = 10
+local stationaryTimeout = STATIONARY_TIMEOUT -- Race-specific timeout (defaults to constant)
 local lastMovementTime = nil
 local lastCountdownUpdate = nil
-local remainingTime = STATIONARY_TIMEOUT
+local remainingTime = stationaryTimeout
 
 local activeRace = nil
 
@@ -607,22 +608,22 @@ local function checkPlayerOnRoad()
         if not lastMovementTime then
             lastMovementTime = currentTime
             lastCountdownUpdate = currentTime
-            remainingTime = STATIONARY_TIMEOUT
+            remainingTime = stationaryTimeout
         else
             local timeStopped = currentTime - lastMovementTime
             
             -- Update countdown every second
             if currentTime - lastCountdownUpdate >= 1 then
-                remainingTime = STATIONARY_TIMEOUT - timeStopped
+                remainingTime = stationaryTimeout - timeStopped
                 lastCountdownUpdate = currentTime
                 
                 if remainingTime > 0 then
-                    ui_message("Warning: Move your vehicle! Race ends in " .. remainingTime .. " seconds!", 2, "ProcessRoad")
+                    ui_message("Warning: Move your vehicle! Race ends in " .. remainingTime .. " seconds!", 2, "info")
                 end
             end
             
             -- End race when time runs out
-            if timeStopped >= STATIONARY_TIMEOUT then
+            if timeStopped >= stationaryTimeout then
                 return false
             end
         end
@@ -630,7 +631,7 @@ local function checkPlayerOnRoad()
         -- Reset timers when vehicle is moving
         lastMovementTime = nil
         lastCountdownUpdate = nil
-        remainingTime = STATIONARY_TIMEOUT
+        remainingTime = stationaryTimeout
     end
 
     -- Check both main and alt routes
@@ -688,15 +689,15 @@ local function checkPlayerOnRoad()
     if distanceFromPath > (MAX_DISTANCE_FROM_PATH + 25) then
         if exitCountdown == 0 then
             exitCountdown = exitCountdownStart
-            ui_message("Warning: You are exiting the event! " .. exitCountdown .. " seconds to return!", 3, "ProcessRoad")
+            ui_message("Warning: You are exiting the event! " .. exitCountdown .. " seconds to return!", 3, "info")
             lastCountdownTime = currentTime
         elseif currentTime - lastCountdownTime >= 1 then
             exitCountdown = exitCountdown - 1
             lastCountdownTime = currentTime
             if exitCountdown > 0 then
-                ui_message("Exiting event in " .. exitCountdown .. " seconds!", 2, "ProcessRoad")
+                ui_message("Exiting event in " .. exitCountdown .. " seconds!", 2, "info")
             else
-                ui_message("Event exited!", 3, "ProcessRoad")
+                ui_message("Event exited!", 3, "info")
                 return false
             end
         end
@@ -709,7 +710,7 @@ local function checkPlayerOnRoad()
     else
         if exitCountdown > 0 then
             exitCountdown = 0
-            ui_message("Back on track!", 2, "ProcessRoad")
+            ui_message("Back on track!", 2, "info")
         end
     end
 
@@ -731,6 +732,11 @@ local function isLoop()
     local isLoop = math.abs(firstNode.x - lastNode.x) < threshold and math.abs(firstNode.y - lastNode.y) < threshold and
                        math.abs(firstNode.z - lastNode.z) < threshold
     return isLoop
+end
+
+local function setStationaryTimeout(timeout)
+    stationaryTimeout = timeout or STATIONARY_TIMEOUT
+    remainingTime = stationaryTimeout -- Reset remaining time when timeout changes
 end
 
 local function flipCheckpoints(originalCheckpoints)
@@ -847,6 +853,7 @@ M.getRoadNodesFromRace = getRoadNodesFromRace
 M.isLoop = isLoop
 M.reset = reset
 M.checkPlayerOnRoad = checkPlayerOnRoad
+M.setStationaryTimeout = setStationaryTimeout
 M.onExtensionLoaded = onExtensionLoaded
 
 return M
