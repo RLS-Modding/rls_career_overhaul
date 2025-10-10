@@ -85,15 +85,24 @@ local function getLoanOffers()
   for orgId, org in pairs(freeroam_organizations.getOrganizations()) do
     local level = org.reputationLevels[org.reputation.level + 2]
     if level and level.loans then
-      local l = level.loans
-      local available = math.max(0, (l.max or 0) - (outstandingByOrg[orgId] or 0))
-      table.insert(offers, {
-        id = orgId,
-        name = org.name or orgId,
-        max = available,
-        rate = l.rate,
-        terms = TERM_OPTIONS
-      })
+      local minLoanLevel = nil
+      for levelIdx, levelData in ipairs(org.reputationLevels) do
+        if levelData.loans then
+          minLoanLevel = levelIdx - 2
+          break
+        end
+      end
+      if minLoanLevel and org.reputation.level >= minLoanLevel then
+        local l = level.loans
+        local available = math.max(0, (l.max or 0) - (outstandingByOrg[orgId] or 0))
+        table.insert(offers, {
+          id = orgId,
+          name = org.name or orgId,
+          max = available,
+          rate = l.rate,
+          terms = TERM_OPTIONS
+        })
+      end
     end
   end
   table.sort(offers, function(a,b) return a.name < b.name end)
