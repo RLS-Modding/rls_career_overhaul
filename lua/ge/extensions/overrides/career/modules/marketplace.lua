@@ -305,9 +305,11 @@ local function acceptOffer(inventoryId, offerIndex)
       if sellSuccess then
         if offer.customer == "Salmon The Negotiator" then
           local value = career_modules_valueCalculator.getInventoryVehicleValue(inventoryId) or 10000
+          print("value: " .. value)
+          print("offer.value: " .. offer.value)
           local reputation = math.floor((value - (offer.value or 0)) / 1500)
+          print("acceptOffer: Giving " .. reputation .. " reputation to Salmon Bank")
           career_modules_payment.reward({ salmonBankReputation = {amount = reputation}})
-          freeroam_organizations.getOrganization("salmonBank")
         end
         table.remove(listing.offers, offerIndex)
         Engine.Audio.playOnce('AudioGui','event:>UI>Career>Buy_01')
