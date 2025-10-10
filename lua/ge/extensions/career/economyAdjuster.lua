@@ -41,6 +41,7 @@ local function discoverRaceTypes()
                             if type(raceType) == "string" then
                                 raceTypesFound[raceType] = true
                                 typeSources[raceType] = typeSources[raceType] or {}
+                                typeSources[raceType]["freeroam_module"] = true
                                 typeSources[raceType][string.format("race_%s", mapName)] = true
                             end
                         end
@@ -69,7 +70,7 @@ local function discoverActivityTypes()
                         local passengerTypeKey = string.format("taxi_%s", passengerType.key:lower())
                         activityTypesFound[passengerTypeKey] = true
                         typeSources[passengerTypeKey] = typeSources[passengerTypeKey] or {}
-                        typeSources[passengerTypeKey]["taxi_passenger"] = true
+                        typeSources[passengerTypeKey]["taxi_module"] = true
                     end
                 end
             end

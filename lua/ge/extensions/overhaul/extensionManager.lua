@@ -40,6 +40,7 @@ local function loadExtensions()
     setExtensionUnloadMode("gameplay_cab", "manual")
     setExtensionUnloadMode("career_challengeModes", "manual")
     setExtensionUnloadMode("career_economyAdjuster", "manual")
+    setExtensionUnloadMode("career_challengeSeedEncoder", "manual")
 
     extensions.unload("career_career")
     extensions.unload("career_saveSystem")
@@ -60,6 +61,7 @@ local function unloadAllExtensions()
     extensions.unload("overhaul_clearLevels")
     extensions.unload("career_challengeModes")
     extensions.unload("career_economyAdjuster")
+    extensions.unload("career_challengeSeedEncoder")
 end
 
 local function startup()

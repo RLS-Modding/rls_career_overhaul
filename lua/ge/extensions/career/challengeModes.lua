@@ -3,11 +3,34 @@ local M = {}
 -- Manages challenge discovery, creation, and execution
 -- Automatically finds challenges in the challenges/ folder structure
 
+-- ============================================================================
+-- CONSTANTS AND VARIABLES
+-- ============================================================================
+
+local CHALLENGE_VERSION = "1.0"
+
+-- Economy multiplier constraints
+local ECONOMY_MULTIPLIER_STEP = 0.25
+local ECONOMY_MULTIPLIER_MIN = 0.25
+local ECONOMY_MULTIPLIER_MAX = 10.0
+
+-- Loan amount constraints
+local LOAN_AMOUNT_STEP = 1000
+local LOAN_AMOUNT_MIN = 0
+local LOAN_AMOUNT_MAX = 10000000
+
+-- Starting capital constraints
+local STARTING_CAPITAL_STEP = 500
+
 local discoveredChallenges = {}
 local activeChallenge = nil
 local completedChallengeData = nil
+local updateTimer = 0
 
--- Challenge template
+-- ============================================================================
+-- DATA STRUCTURES
+-- ============================================================================
+
 local challengeTemplate = {
   id = "",
   name = "",
@@ -20,7 +43,7 @@ local challengeTemplate = {
   category = "custom",
   createdBy = "",
   createdDate = "",
-  version = "1.0",
+  version = CHALLENGE_VERSION,
   simulationTimeSpent = 0
 }
 
@@ -29,6 +52,8 @@ local winConditions = {
     id = "payOffLoan",
     name = "Get out of debt",
     description = "Complete the challenge by paying off all loans",
+    variables = {},
+    requiresLoans = true,
     checkCondition = function()
       if career_modules_loans then
         local activeLoans = career_modules_loans.getActiveLoans()
@@ -41,6 +66,19 @@ local winConditions = {
     id = "reachTargetMoney",
     name = "Reach Target Money",
     description = "Complete the challenge by reaching a target amount of money",
+    variables = {
+      targetMoney = {
+        type = "number",
+        label = "Target Money",
+        min = 10000,
+        max = 25000000,
+        randomMax = 1000000,
+        default = 100000,
+        decimals = 0,
+        step = 1000,
+        order = 1
+      }
+    },
     checkCondition = function()
       if career_modules_playerAttributes then
         local currentMoney = career_modules_playerAttributes.getAttributeValue('money') or 0
@@ -52,7 +90,139 @@ local winConditions = {
   }
 }
 
--- Discovery Functions
+local typeValidators = {
+  number = function(value, definition)
+    if type(value) ~= "number" then
+      return false, "Value must be a number"
+    end
+    if definition.min and value < definition.min then
+      return false, string.format("Value must be >= %s", tostring(definition.min))
+    end
+    if definition.max and value > definition.max then
+      return false, string.format("Value must be <= %s", tostring(definition.max))
+    end
+    return true
+  end,
+  integer = function(value, definition)
+    local ok, msg = typeValidators.number(value, definition)
+    if not ok then return ok, msg end
+    if math.floor(value) ~= value then
+      return false, "Value must be an integer"
+    end
+    return true
+  end,
+  string = function(value, definition)
+    if type(value) ~= "string" then
+      return false, "Value must be a string"
+    end
+    if definition.minLength and #value < definition.minLength then
+      return false, string.format("Minimum length is %d", definition.minLength)
+    end
+    if definition.maxLength and #value > definition.maxLength then
+      return false, string.format("Maximum length is %d", definition.maxLength)
+    end
+    return true
+  end,
+  boolean = function(value)
+    if type(value) ~= "boolean" then
+      return false, "Value must be a boolean"
+    end
+    return true
+  end
+}
+
+-- ============================================================================
+-- HELPER FUNCTIONS
+-- ============================================================================
+
+local function validateEconomyMultiplier(value)
+  if not value or type(value) ~= "number" then
+    return false, "Invalid multiplier value"
+  end
+  
+  if value < 0.0 or value > ECONOMY_MULTIPLIER_MAX then
+    return false, string.format("Multiplier must be between 0.0 and %.2f", ECONOMY_MULTIPLIER_MAX)
+  end
+  
+  -- Allow 0.0 (disabled) without step validation
+  if value == 0.0 then
+    return true
+  end
+  
+  local remainder = value % ECONOMY_MULTIPLIER_STEP
+  if math.abs(remainder) > 0.01 and math.abs(remainder - ECONOMY_MULTIPLIER_STEP) > 0.01 then
+    return false, string.format("Multiplier must be a multiple of %.2f", ECONOMY_MULTIPLIER_STEP)
+  end
+  
+  return true
+end
+
+local function roundEconomyMultiplier(value)
+  if not value or type(value) ~= "number" then
+    return 1.0
+  end
+  
+  local rounded = math.floor((value / ECONOMY_MULTIPLIER_STEP) + 0.5) * ECONOMY_MULTIPLIER_STEP
+  rounded = math.max(ECONOMY_MULTIPLIER_MIN, math.min(ECONOMY_MULTIPLIER_MAX, rounded))
+  return rounded
+end
+
+local function validateLoanAmount(value)
+  if not value or type(value) ~= "number" then
+    return false, "Invalid loan amount value"
+  end
+  
+  if value < LOAN_AMOUNT_MIN or value > LOAN_AMOUNT_MAX then
+    return false, string.format("Loan amount must be between %d and %d", LOAN_AMOUNT_MIN, LOAN_AMOUNT_MAX)
+  end
+  
+  local remainder = value % LOAN_AMOUNT_STEP
+  if math.abs(remainder) > 0.01 and math.abs(remainder - LOAN_AMOUNT_STEP) > 0.01 then
+    return false, string.format("Loan amount must be a multiple of %d", LOAN_AMOUNT_STEP)
+  end
+  
+  return true
+end
+
+local function roundLoanAmount(value)
+  if not value or type(value) ~= "number" then
+    return LOAN_AMOUNT_MIN
+  end
+  
+  local rounded = math.floor((value / LOAN_AMOUNT_STEP) + 0.5) * LOAN_AMOUNT_STEP
+  rounded = math.max(LOAN_AMOUNT_MIN, math.min(LOAN_AMOUNT_MAX, rounded))
+  return rounded
+end
+
+local function validateStartingCapital(value)
+  if not value or type(value) ~= "number" then
+    return false, "Invalid starting capital value"
+  end
+  
+  if value < 0 then
+    return false, "Starting capital must be non-negative"
+  end
+  
+  local remainder = value % STARTING_CAPITAL_STEP
+  if math.abs(remainder) > 0.01 and math.abs(remainder - STARTING_CAPITAL_STEP) > 0.01 then
+    return false, string.format("Starting capital must be a multiple of %d", STARTING_CAPITAL_STEP)
+  end
+  
+  return true
+end
+
+local function roundStartingCapital(value)
+  if not value or type(value) ~= "number" then
+    return 0
+  end
+  
+  local rounded = math.floor((value / STARTING_CAPITAL_STEP) + 0.5) * STARTING_CAPITAL_STEP
+  return math.max(0, rounded)
+end
+
+-- ============================================================================
+-- DISCOVERY FUNCTIONS
+-- ============================================================================
 
 local function findChallengeFiles(basePath, foundFiles)
   foundFiles = foundFiles or {}
@@ -113,7 +283,63 @@ local function discoverChallenges()
   return discoveredChallenges
 end
 
--- Validation Functions
+-- ============================================================================
+-- VALIDATION FUNCTIONS
+-- ============================================================================
+
+local function getWinConditionById(winConditionId)
+  if not winConditionId then return nil end
+  for _, condition in ipairs(winConditions) do
+    if condition.id == winConditionId then
+      return condition
+    end
+  end
+  return nil
+end
+
+local function applyVariableDefaults(challengeData)
+  local condition = getWinConditionById(challengeData.winCondition)
+  local variables = condition and condition.variables or {}
+  for variableName, definition in pairs(variables) do
+    if challengeData[variableName] == nil then
+      if definition.default ~= nil then
+        if definition.type == "boolean" then
+          challengeData[variableName] = definition.default == true
+        elseif definition.type == "integer" then
+          challengeData[variableName] = math.floor(definition.default + 0.5)
+        else
+          challengeData[variableName] = definition.default
+        end
+      end
+    end
+  end
+end
+
+local function validateWinConditionVariables(challengeData)
+  local condition = getWinConditionById(challengeData.winCondition)
+  local variables = condition and condition.variables or {}
+
+  for variableName, definition in pairs(variables) do
+    local value = challengeData[variableName]
+    if definition.required ~= false then
+      if value == nil then
+        return false, string.format("Missing required variable '%s'", variableName)
+      end
+    end
+
+    if value ~= nil then
+      local validator = typeValidators[definition.type or "number"]
+      if validator then
+        local isValid, message = validator(value, definition)
+        if not isValid then
+          return false, string.format("Invalid value for '%s': %s", variableName, message)
+        end
+      end
+    end
+  end
+
+  return true
+end
 
 local function validateChallenge(challengeData)
   if not challengeData or type(challengeData) ~= "table" then
@@ -135,6 +361,24 @@ local function validateChallenge(challengeData)
   if challengeData.startingCapital and type(challengeData.startingCapital) ~= "number" then
     return false, "Starting capital must be a number"
   end
+  
+  -- Validate starting capital constraints
+  if challengeData.startingCapital then
+    local valid, message = validateStartingCapital(challengeData.startingCapital)
+    if not valid then
+      return false, message
+    end
+  end
+
+  local condition = getWinConditionById(challengeData.winCondition)
+  if condition and condition.requiresLoans then
+    if not challengeData.loans or type(challengeData.loans) ~= "table" then
+      return false, "This win condition requires a loan to be configured"
+    end
+    if not challengeData.loans.amount or challengeData.loans.amount <= 0 then
+      return false, "Loan amount must be greater than 0 for this win condition"
+    end
+  end
 
   if challengeData.loans then
     if type(challengeData.loans) ~= "table" then
@@ -149,25 +393,41 @@ local function validateChallenge(challengeData)
     if challengeData.loans.payments and type(challengeData.loans.payments) ~= "number" then
       return false, "Loan payments must be a number"
     end
+    
+    -- Validate loan amount constraints
+    if challengeData.loans.amount then
+      local valid, message = validateLoanAmount(challengeData.loans.amount)
+      if not valid then
+        return false, message
+      end
+    end
   end
 
   if challengeData.economyAdjuster and type(challengeData.economyAdjuster) ~= "table" then
     return false, "Economy adjuster must be a table"
   end
 
-  if challengeData.winCondition == "reachTargetMoney" then
-    if challengeData.targetMoney and type(challengeData.targetMoney) ~= "number" then
-      return false, "Target money must be a number"
+  -- Validate economy multipliers
+  if challengeData.economyAdjuster then
+    for activityType, multiplier in pairs(challengeData.economyAdjuster) do
+      local valid, message = validateEconomyMultiplier(multiplier)
+      if not valid then
+        return false, string.format("Economy multiplier for %s: %s", activityType, message)
+      end
     end
-    if challengeData.targetMoney and challengeData.targetMoney <= 0 then
-      return false, "Target money must be greater than 0"
-    end
+  end
+
+  local ok, message = validateWinConditionVariables(challengeData)
+  if not ok then
+    return false, message
   end
 
   return true, "Valid"
 end
 
--- UI Integration
+-- ============================================================================
+-- UI INTEGRATION FUNCTIONS
+-- ============================================================================
 
 local function getActivityTypeInfo(activityType)
   local typeInfo = {
@@ -262,8 +522,25 @@ local function getChallengeEditorData()
     end
   end
 
+  local serializedWinConditions = {}
+  for _, condition in ipairs(winConditions) do
+    local entry = {
+      id = condition.id,
+      name = condition.name,
+      description = condition.description,
+      variables = {},
+      requiresLoans = condition.requiresLoans or false
+    }
+    if condition.variables then
+      for variableName, definition in pairs(condition.variables) do
+        entry.variables[variableName] = deepcopy(definition)
+      end
+    end
+    table.insert(serializedWinConditions, entry)
+  end
+
   return {
-    winConditions = winConditions,
+    winConditions = serializedWinConditions,
     activityTypes = activityTypes,
     activityTypesBySource = activityTypesBySource,
     currentMultipliers = currentMultipliers,
@@ -292,6 +569,25 @@ local function createChallengeFromUI(challengeData)
     return false, "Challenge must have a valid ID and name", nil
   end
 
+  applyVariableDefaults(challengeData)
+
+  -- Round economy multipliers before validation
+  if challengeData.economyAdjuster then
+    for activityType, multiplier in pairs(challengeData.economyAdjuster) do
+      challengeData.economyAdjuster[activityType] = roundEconomyMultiplier(multiplier)
+    end
+  end
+
+  -- Round loan amounts before validation
+  if challengeData.loans and challengeData.loans.amount then
+    challengeData.loans.amount = roundLoanAmount(challengeData.loans.amount)
+  end
+
+  -- Round starting capital before validation
+  if challengeData.startingCapital then
+    challengeData.startingCapital = roundStartingCapital(challengeData.startingCapital)
+  end
+
   local valid, message = validateChallenge(challengeData)
   if not valid then
     return false, message, nil
@@ -302,15 +598,44 @@ local function createChallengeFromUI(challengeData)
     FS:directoryCreate(customPath)
   end
 
-  local newChallenge = deepcopy(challengeTemplate)
-  for k, v in pairs(challengeData) do
-    newChallenge[k] = v
+  local newChallenge = {}
+
+  -- Only include essential fields
+  newChallenge.id = challengeData.id
+  newChallenge.name = challengeData.name
+  newChallenge.description = challengeData.description
+  newChallenge.startingCapital = challengeData.startingCapital
+  newChallenge.winCondition = challengeData.winCondition
+  newChallenge.version = CHALLENGE_VERSION
+
+  -- Include win condition variables
+  local condition = getWinConditionById(challengeData.winCondition)
+  if condition and condition.variables then
+    for variableName, definition in pairs(condition.variables) do
+      if challengeData[variableName] ~= nil then
+        newChallenge[variableName] = challengeData[variableName]
+      end
+    end
   end
 
-  newChallenge.category = "custom"
-  newChallenge.createdBy = "player"
-  newChallenge.createdDate = os.date("%Y-%m-%d %H:%M:%S")
-  newChallenge.version = "1.0"
+  -- Include loans if present
+  if challengeData.loans and challengeData.loans.amount and challengeData.loans.amount > 0 then
+    newChallenge.loans = challengeData.loans
+  end
+
+  -- Only include economy adjustments that are not 1, with step enforcement
+  if challengeData.economyAdjuster then
+    local filteredAdjuster = {}
+    for activityType, multiplier in pairs(challengeData.economyAdjuster) do
+      if multiplier ~= 1.0 then
+        local roundedMultiplier = roundEconomyMultiplier(multiplier)
+        filteredAdjuster[activityType] = roundedMultiplier
+      end
+    end
+    if next(filteredAdjuster) then
+      newChallenge.economyAdjuster = filteredAdjuster
+    end
+  end
 
   local filePath = customPath .. "/" .. challengeData.id .. ".json"
   local success = jsonWriteFile(filePath, newChallenge, true)
@@ -323,7 +648,9 @@ local function createChallengeFromUI(challengeData)
   end
 end
 
--- Challenge Execution & Management
+-- ============================================================================
+-- CHALLENGE EXECUTION & MANAGEMENT FUNCTIONS
+-- ============================================================================
 
 local function saveChallengeData(currentSavePath)
   if not currentSavePath then
@@ -361,18 +688,16 @@ local function loadChallengeData(currentSavePath)
       career_economyAdjuster.setAllTypeMultipliers(activeChallenge.economyAdjuster)
     end
 
-    if guihooks and guihooks.trigger then
-      local winConditionInfo = getWinConditionInfo(activeChallenge.winCondition)
-      guihooks.trigger('challenge:started', {
-        id = activeChallenge.id,
-        name = activeChallenge.name,
-        description = activeChallenge.description,
-        winCondition = activeChallenge.winCondition,
-        winConditionName = winConditionInfo.name,
-        winConditionDescription = winConditionInfo.description,
-        targetMoney = activeChallenge.winCondition == "reachTargetMoney" and (activeChallenge.targetMoney or 1000000) or nil
-      })
-    end
+    local winConditionInfo = getWinConditionInfo(activeChallenge.winCondition)
+    guihooks.trigger('challenge:started', {
+      id = activeChallenge.id,
+      name = activeChallenge.name,
+      description = activeChallenge.description,
+      winCondition = activeChallenge.winCondition,
+      winConditionName = winConditionInfo.name,
+      winConditionDescription = winConditionInfo.description,
+      targetMoney = activeChallenge.winCondition == "reachTargetMoney" and (activeChallenge.targetMoney or 1000000) or nil
+    })
   end
 end
 
@@ -429,6 +754,8 @@ local function startChallenge(challengeId)
     return false
   end
 
+  applyVariableDefaults(challenge)
+
   local valid, message = validateChallenge(challenge)
   if not valid then
     return false
@@ -477,15 +804,13 @@ local function startChallenge(challengeId)
     saveChallengeData(currentSavePath)
   end
 
-  if guihooks and guihooks.trigger then
-    guihooks.trigger('challenge:started', {
-      id = challenge.id,
-      name = challenge.name,
-      description = challenge.description,
-      winCondition = challenge.winCondition,
-      simulationTimeSpent = 0
-    })
-  end
+  guihooks.trigger('challenge:started', {
+    id = challenge.id,
+    name = challenge.name,
+    description = challenge.description,
+    winCondition = challenge.winCondition,
+    simulationTimeSpent = 0
+  })
 
   return true
 end
@@ -514,7 +839,6 @@ local function checkWinCondition()
   return winConditionInfo.checkCondition()
 end
 
-local updateTimer = 0
 local function onUpdate(dtReal, dtSim, dtRaw)
   if activeChallenge then
     activeChallenge.simulationTimeSpent = (activeChallenge.simulationTimeSpent or 0) + (dtSim or 0)
@@ -542,28 +866,39 @@ local function onUpdate(dtReal, dtSim, dtRaw)
       loans = activeChallenge.loans
     }
     
-    if guihooks and guihooks.trigger then
-      guihooks.trigger('ChangeState', {state = 'challenge-completed'})
-    end
+    guihooks.trigger('ChangeState', {state = 'challenge-completed'})
 
     endChallenge()
   end
 end
 
 local function requestChallengeCompleteData()
-  if completedChallengeData and guihooks and guihooks.trigger then
+  if completedChallengeData then
     guihooks.trigger('challengeCompleteData', completedChallengeData)
     completedChallengeData = nil
   end
 end
 
--- Career Creation Integration
+-- ============================================================================
+-- CAREER CREATION INTEGRATION FUNCTIONS
+-- ============================================================================
 
 local function getChallengeOptionsForCareerCreation()
   local options = {}
 
   for challengeId, challenge in pairs(discoveredChallenges) do
     local winConditionInfo = getWinConditionInfo(challenge.winCondition)
+    local condition = getWinConditionById(challenge.winCondition)
+
+    local variables = {}
+    if condition and condition.variables then
+      for variableName, definition in pairs(condition.variables) do
+        variables[variableName] = {
+          value = challenge[variableName],
+          definition = deepcopy(definition)
+        }
+      end
+    end
 
     local currentMultipliers = {}
     local allActivityTypes = {}
@@ -594,6 +929,7 @@ local function getChallengeOptionsForCareerCreation()
       winCondition = challenge.winCondition,
       winConditionName = winConditionInfo.name,
       winConditionDescription = winConditionInfo.description,
+      variables = variables,
       targetMoney = challenge.winCondition == "reachTargetMoney" and (challenge.targetMoney or 1000000) or nil,
       economyAdjuster = challenge.economyAdjuster or {},
       allActivityTypes = allActivityTypes,
@@ -613,6 +949,30 @@ local function getChallengeOptionsForCareerCreation()
   end)
 
   return options
+end
+
+local function mergeVariableDefinition(variableId, definition)
+  if not definition then return nil end
+  local merged = {
+    type = definition.type or "number",
+    label = definition.label or variableId,
+    hint = definition.hint,
+    min = definition.min,
+    max = definition.max,
+    minLength = definition.minLength,
+    maxLength = definition.maxLength,
+    placeholder = definition.placeholder,
+    step = definition.step,
+    decimals = definition.decimals,
+    order = definition.order,
+    default = definition.default,
+    required = definition.required ~= false
+  }
+  if merged.type == "integer" then
+    merged.decimals = 0
+    merged.step = merged.step or 1
+  end
+  return merged
 end
 
 local function addWinCondition(winCondition)
@@ -640,11 +1000,188 @@ local function addWinCondition(winCondition)
     print("Win condition already exists")
     return false
   end
+
+  if winCondition.variables then
+    local mergedVariables = {}
+    for variableId, definition in pairs(winCondition.variables) do
+      mergedVariables[variableId] = mergeVariableDefinition(variableId, definition)
+    end
+    winCondition.variables = mergedVariables
+  end
+
   table.insert(winConditions, winCondition)
 end
 
--- Module Exports
+-- ============================================================================
+-- SEED ENCODING/DECODING FUNCTIONS
+-- ============================================================================
+
+local function getChallengeSeeded(challengeId)
+  local challenge = discoveredChallenges[challengeId]
+  if not challenge then
+    return nil, "Challenge not found"
+  end
+  
+  if not career_challengeSeedEncoder then
+    return nil, "Seed encoder not available"
+  end
+  
+  local success, seed, err = pcall(career_challengeSeedEncoder.encodeChallengeToSeed, challenge)
+  if not success then
+    return nil, "Encoding error: " .. tostring(seed)
+  end
+  
+  if not seed then
+    return nil, err or "Failed to encode seed"
+  end
+  
+  return seed
+end
+
+local function createChallengeFromSeedUI(seed, name, description)
+  if not seed or seed == "" then
+    return false, "No seed provided", nil
+  end
+  
+  if career_challengeSeedEncoder then
+    local success, message, challengeId = career_challengeSeedEncoder.createChallengeFromSeed(seed, name, description)
+    if success then
+      discoverChallenges()
+    end
+    return success, message, challengeId
+  end
+  
+  return false, "Seed encoder not available", nil
+end
+
+local function getWinConditions()
+  return winConditions
+end
+
+local function encodeChallengeDataToSeed(challengeData)
+  if not career_challengeSeedEncoder then
+    return false, "Seed encoder not available"
+  end
+
+  local payload = deepcopy(challengeTemplate)
+  payload.id = payload.id ~= "" and payload.id or "seedTemplate"
+  payload.name = payload.name ~= "" and payload.name or "Seed Template"
+  payload.description = payload.description or ""
+  payload.category = payload.category or "custom"
+
+  for k, v in pairs(challengeData or {}) do
+    if v ~= nil then
+      payload[k] = v
+    end
+  end
+
+  local success, seed, err = pcall(career_challengeSeedEncoder.encodeChallengeToSeed, payload)
+  if not success then
+    return false, "Encoding error: " .. tostring(seed)
+  end
+  
+  if not seed then
+    return false, err or "Failed to encode seed"
+  end
+
+  return true, seed
+end
+
+local function decodeSeedToChallengeData(seed)
+  if not career_challengeSeedEncoder then
+    return false, "Seed encoder not available"
+  end
+
+  local decoded, err = career_challengeSeedEncoder.decodeSeedToChallenge(seed)
+  if not decoded then
+    return false, err or "Failed to decode seed"
+  end
+
+  local resolved, resolveErr = career_challengeSeedEncoder.resolveHashesToNames(decoded)
+  if not resolved then
+    return false, resolveErr or "Failed to resolve seed data"
+  end
+
+  return true, resolved
+end
+
+local function requestGenerateRandomSeed(options)
+  options = options or {}
+
+  local seed, data = career_challengeSeedEncoder.generateRandomSeed(options)
+  dump(seed)
+  if not seed then
+    guihooks.trigger('challengeSeedGenerated', {
+      success = false,
+      error = data or "Failed to generate seed"
+    })
+    return
+  end
+
+  guihooks.trigger('challengeSeedGenerated', {
+    success = true,
+    seed = seed,
+    data = data
+  })
+end
+
+local function generateRandomChallengeData(options, ...)
+  options = options or {}
+  if not career_challengeSeedEncoder then
+    return false, "Seed encoder not available"
+  end
+
+  local data, err = career_challengeSeedEncoder.generateRandomChallengeData(options)
+  if not data then
+    return false, err or "Failed to generate challenge data"
+  end
+
+  return true, data
+end
+
+local function requestSeedEncode(requestId, challengeData)
+  local ok, seedOrErr = encodeChallengeDataToSeed(challengeData)
+  local response = {
+    requestId = requestId,
+    success = ok == true
+  }
+
+  if ok then
+    response.seed = seedOrErr
+  else
+    response.error = seedOrErr or "Failed to encode seed"
+  end
+
+  guihooks.trigger('challengeSeedEncodeResponse', response)
+
+  return response.success, response.seed or response.error
+end
+
+local function requestSeedDecode(requestId, seed)
+  local ok, dataOrErr = decodeSeedToChallengeData(seed)
+  local response = {
+    requestId = requestId,
+    seed = seed,
+    success = ok == true
+  }
+
+  if ok then
+    response.data = dataOrErr
+  else
+    response.error = dataOrErr or "Failed to decode seed"
+  end
+
+  guihooks.trigger('challengeSeedDecodeResponse', response)
+
+  return response.success, response.data or response.error
+end
+
+-- ============================================================================
+-- EXPORTS
+-- ============================================================================
+
 M.addWinCondition = addWinCondition
+M.getWinConditions = getWinConditions
 M.startChallenge = startChallenge
 M.getActiveChallenge = getActiveChallenge
 M.isChallengeActive = isChallengeActive
@@ -653,7 +1190,14 @@ M.getChallengeEditorData = getChallengeEditorData
 M.createChallengeFromUI = createChallengeFromUI
 M.getChallengeOptionsForCareerCreation = getChallengeOptionsForCareerCreation
 M.requestChallengeCompleteData = requestChallengeCompleteData
-
+M.getChallengeSeeded = getChallengeSeeded
+M.createChallengeFromSeedUI = createChallengeFromSeedUI
+M.requestGenerateRandomSeed = requestGenerateRandomSeed
+M.requestSeedEncode = requestSeedEncode
+M.requestSeedDecode = requestSeedDecode
+M.generateRandomChallengeData = generateRandomChallengeData
+M.encodeChallengeDataToSeed = encodeChallengeDataToSeed
+M.decodeSeedToChallengeData = decodeSeedToChallengeData
 M.onExtensionLoaded = onExtensionLoaded
 M.onUpdate = onUpdate
 M.onCareerActive = function(started)

@@ -17,5 +17,6 @@
         "drift": 1.0,
         "motorsport": 1.0
     },
-    "winCondition": "reachTargetMoney"
+    "winCondition": "reachTargetMoney",
+    "targetMoney":1000000
 }

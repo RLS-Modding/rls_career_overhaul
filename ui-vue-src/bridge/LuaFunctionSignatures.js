@@ -89,7 +89,15 @@ export default {
     startChallenge: id => String,
     getActiveChallenge: () => {},
     isChallengeActive: () => {},
-    requestChallengeCompleteData: () => {}
+    requestChallengeCompleteData: () => {},
+    getChallengeSeeded: id => String,
+    encodeChallengeDataToSeed: data => Any,
+    decodeSeedToChallengeData: seed => String,
+    requestGenerateRandomSeed: () => {},
+    requestSeedEncode: (requestId, challengeData) => [String, Any],
+    requestSeedDecode: (requestId, seed) => [String, String],
+    createChallengeFromSeedUI: (seed, name, description) => [String, String, String],
+    generateRandomChallengeData: () => {}
   },
 
   career_modules_uiUtils: {

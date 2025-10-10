@@ -160,16 +160,14 @@ function onEnter(event) {
   }
 }
 
+
 .create-content-container {
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
-  padding: 1.25em 1.25em;
-
-  > * { margin-bottom: 1.25em; }
-
-  padding-bottom: 0;
+  padding: 1em 1.25em 1.25em;
+  gap: 1em;
 
   &.create-active {
     background: linear-gradient(180deg, rgba(17,24,39,0.95), rgba(17,24,39,0.9));
@@ -185,12 +183,11 @@ function onEnter(event) {
 .title-icon-red { background: rgba(248, 113, 113, 0.3); }
 .title-label { color: #fff; font-weight: 600; }
 
-.actions-row { 
-  display:flex; 
-  gap: 0.4em; 
-  justify-content: center; 
-  margin-top: auto; 
-  padding-bottom: 0; 
+.actions-row {
+  display:flex;
+  gap: 0.75em;
+  justify-content: center;
+  margin-top: auto;
 }
 
 .modern-btn { 

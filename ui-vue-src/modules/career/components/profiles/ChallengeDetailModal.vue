@@ -69,12 +69,12 @@
                     </div>
                 </div>
 
-                <div v-if="challenge?.targetMoney" class="cdm-section">
-                    <div class="cdm-section-title">Target</div>
+                <div v-if="challengeVariables.length > 0" class="cdm-section">
+                    <div class="cdm-section-title">Win Condition Settings</div>
                     <div class="cdm-grid">
-                        <div class="cdm-card">
-                            <div class="cdm-card-label">Target Money</div>
-                            <div class="cdm-card-value cdm-green">${{ Number(challenge?.targetMoney).toLocaleString() }}</div>
+                        <div v-for="variable in challengeVariables" :key="variable.name" class="cdm-card">
+                            <div class="cdm-card-label">{{ variable.label }}</div>
+                            <div class="cdm-card-value" :class="variable.colorClass">{{ variable.displayValue }}</div>
                         </div>
                     </div>
                 </div>
@@ -89,6 +89,16 @@
                     <div class="cdm-objective-text"><strong>{{ challenge?.objective }}</strong><template v-if="challenge?.objectiveDescription"> — {{ challenge?.objectiveDescription }}</template></div>
                 </div>
 
+                <div class="cdm-seed-section">
+                    <div class="cdm-seed-title">Challenge Seed</div>
+                    <div class="cdm-seed-row">
+                        <input :value="challengeSeed" class="cdm-seed-input" readonly />
+                        <button class="cdm-seed-copy" @click="copySeedToClipboard" @mousedown.stop>
+                            {{ copyButtonText }}
+                        </button>
+                    </div>
+                </div>
+
                 <div class="cdm-footer">
                     <button class="cdm-primary" @click="onSelect" @mousedown.stop>Select This Challenge</button>
                     <button class="cdm-outline" @click="onClose" @mousedown.stop>Cancel</button>
@@ -99,7 +109,8 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, computed, ref } from 'vue'
+import { defineProps, defineEmits, computed, ref, watch } from 'vue'
+import { lua } from '@/bridge'
 
 const props = defineProps({
     open: { type: Boolean, default: false },
@@ -109,6 +120,9 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'select'])
 
+const challengeSeed = ref('')
+const copyButtonText = ref('Copy Seed')
+
 function onClose() { 
     emit('close') 
 }
@@ -116,12 +130,98 @@ function onSelect() {
     emit('select') 
 }
 
+async function loadChallengeSeed() {
+    if (!props.challenge || !props.challenge.id) {
+        challengeSeed.value = ''
+        return
+    }
+    try {
+        const seed = await lua.career_challengeModes.getChallengeSeeded(props.challenge.id)
+        challengeSeed.value = seed || ''
+    } catch (err) {
+        console.error('Failed to load challenge seed:', err)
+        challengeSeed.value = ''
+    }
+}
+
+async function copySeedToClipboard() {
+    if (!challengeSeed.value) return
+    try {
+        await navigator.clipboard.writeText(challengeSeed.value)
+        copyButtonText.value = 'Copied!'
+        setTimeout(() => {
+            copyButtonText.value = 'Copy Seed'
+        }, 2000)
+    } catch (err) {
+        console.error('Failed to copy seed:', err)
+        copyButtonText.value = 'Failed'
+        setTimeout(() => {
+            copyButtonText.value = 'Copy Seed'
+        }, 2000)
+    }
+}
+
+watch(() => props.open, (isOpen) => {
+    if (isOpen) {
+        loadChallengeSeed()
+        copyButtonText.value = 'Copy Seed'
+    }
+})
+
+watch(() => props.challenge, () => {
+    if (props.open) {
+        loadChallengeSeed()
+    }
+})
+
 const openEconomy = ref(false)
 const hasEconomy = computed(() => !!(props.challenge && props.challenge.economyAdjuster && Object.keys(props.challenge.economyAdjuster).length))
 const allTypes = computed(() => {
     const raw = props.editorData && props.editorData.activityTypes
     const list = Array.isArray(raw) ? raw : []
     return list.map(t => t.id)
+})
+
+const challengeVariables = computed(() => {
+    if (!props.challenge) return []
+    const winCondition = props.editorData?.winConditions?.find(w => w.id === props.challenge.winCondition)
+    if (!winCondition || !winCondition.variables) return []
+    
+    const result = []
+    for (const [variableId, definition] of Object.entries(winCondition.variables)) {
+        const value = props.challenge[variableId]
+        if (value === undefined) continue
+        
+        let displayValue = value
+        let colorClass = 'cdm-blue'
+        
+        if (definition.type === 'boolean') {
+            displayValue = value ? 'Yes' : 'No'
+            colorClass = value ? 'cdm-green' : 'cdm-red'
+        } else if (definition.type === 'number' || definition.type === 'integer') {
+            if (variableId.toLowerCase().includes('money') || variableId.toLowerCase().includes('cost') || variableId.toLowerCase().includes('price')) {
+                displayValue = '$' + Number(value).toLocaleString()
+                colorClass = 'cdm-green'
+            } else {
+                displayValue = Number(value).toLocaleString()
+            }
+        }
+        
+        result.push({
+            name: variableId,
+            label: definition.label || variableId,
+            displayValue: displayValue,
+            colorClass: colorClass
+        })
+    }
+    
+    result.sort((a, b) => {
+        const da = (winCondition.variables[a.name]?.order) || 0
+        const db = (winCondition.variables[b.name]?.order) || 0
+        return da - db
+    })
+    
+    return result
 })
 const econMap = computed(() => ({ ...(props.challenge?.economyAdjuster || {}) }))
 const disabledEntries = computed(() => {
@@ -413,4 +513,52 @@ function formatMultiplier(mult) {
 .cdm-econ-zero { color: #f87171; line-height: 1.2; }
 
 .cdm-econ-neutral { color: #e5e7eb; line-height: 1.2; }
+
+.cdm-seed-section {
+    background: rgba(59, 130, 246, 0.08);
+    border: 1px solid rgba(59, 130, 246, 0.25);
+    border-radius: 10px;
+    padding: 0.75rem;
+}
+
+.cdm-seed-title {
+    color: #93c5fd;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.cdm-seed-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.cdm-seed-input {
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid rgba(100, 116, 139, 0.35);
+    color: #e2e8f0;
+    border-radius: 8px;
+    padding: 0.5rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    cursor: text;
+    user-select: all;
+}
+
+.cdm-seed-copy {
+    background: linear-gradient(90deg, #2563eb, #1d4ed8);
+    border: 0;
+    color: #fff;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    white-space: nowrap;
+    font-size: 0.9rem;
+    transition: opacity 0.2s;
+}
+
+.cdm-seed-copy:hover {
+    opacity: 0.9;
+}
 </style>
