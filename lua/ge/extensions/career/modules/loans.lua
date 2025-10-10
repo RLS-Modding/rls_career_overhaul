@@ -80,31 +80,22 @@ local function getOutstandingPrincipalByOrg()
   end
 
 local function getLoanOffers()
-  print("getLoanOffers: Starting to generate loan offers")
   local offers = {}
   local outstandingByOrg = getOutstandingPrincipalByOrg()
-  print("getLoanOffers: Outstanding loans by org: " .. dumps(outstandingByOrg))
 
   for orgId, org in pairs(freeroam_organizations.getOrganizations()) do
-    print("getLoanOffers: Processing org: " .. orgId .. " reputation level: " .. org.reputation.level)
     local level = org.reputationLevels[org.reputation.level + 2]
-    print("getLoanOffers: Org level data: " .. dumps(level))
     if level and level.loans then
-      print("getLoanOffers: Org has loans available")
       local minLoanLevel = nil
       for levelIdx, levelData in ipairs(org.reputationLevels) do
         if levelData.loans then
           minLoanLevel = levelIdx - 2
-          print("getLoanOffers: Found min loan level: " .. minLoanLevel .. " at levelIdx: " .. levelIdx)
           break
         end
       end
-      print("getLoanOffers: Min loan level: " .. tostring(minLoanLevel) .. " current level: " .. org.reputation.level)
       if minLoanLevel and org.reputation.level >= minLoanLevel then
-        print("getLoanOffers: Org meets minimum level requirement")
         local l = level.loans
         local available = math.max(0, (l.max or 0) - (outstandingByOrg[orgId] or 0))
-        print("getLoanOffers: Loan max: " .. (l.max or 0) .. " outstanding: " .. (outstandingByOrg[orgId] or 0) .. " available: " .. available)
         table.insert(offers, {
           id = orgId,
           name = org.name or orgId,
@@ -112,17 +103,11 @@ local function getLoanOffers()
           rate = l.rate,
           terms = TERM_OPTIONS
         })
-        print("getLoanOffers: Added offer for org: " .. orgId .. " available: " .. available)
-      else
-        print("getLoanOffers: Org does not meet minimum level requirement")
       end
     else
-      print("getLoanOffers: Org has no loans available at current level")
     end
   end
-  print("getLoanOffers: Total offers before sorting: " .. #offers)
   table.sort(offers, function(a,b) return a.name < b.name end)
-  print("getLoanOffers: Returning offers: " .. dumps(offers))
   return offers
 end
 
