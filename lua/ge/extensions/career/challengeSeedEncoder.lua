@@ -5,7 +5,7 @@ local M = {}
 -- ============================================================================
 
 -- Extended character set for Base90 encoding
-local baseChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/!@#$%^&*()[]{}|\\:;\"'<>,.?~`"
+local baseChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/!@#$%^&=()[]{}|\\:;\"'<>,.?~`"
 
 -- Binary markers for different data types
 local MARKER_WIN_CONDITION_DATA = 0x01
