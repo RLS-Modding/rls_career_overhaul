@@ -206,6 +206,22 @@ local modifiers = {
         shortDescription = "",
         important = true
 
+    },
+    pepperReduction = {
+        unlockFlag = "smallPackagesDelivery",
+        makeTemplate = function(g, p, distance)
+            return {
+                type = "post",
+                moneyMultipler = 0.5
+            }
+        end,
+        unlockLabel = "Pepper Valley Frieght",
+        priority = 2,
+        icon = "cardboardBox",
+        label = "Remote Parcel",
+        shortDescription = "",
+        important = true
+
     }
 }
 
@@ -233,6 +249,9 @@ local progressTemplate = {
         delivieries = 0
     },
     remoteDelivery = {
+        delivieries = 0
+    },
+    pepperReduction = {
         delivieries = 0
     }
 }
