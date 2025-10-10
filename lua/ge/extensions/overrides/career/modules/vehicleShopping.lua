@@ -147,7 +147,11 @@ local function getOrgLevelData(org, offset)
   if not levels then
     return nil
   end
-  return levels[repLevel + (offset or 0)]
+  local arrayIndex = repLevel + 2 + (offset or 0)
+  if arrayIndex < 1 or arrayIndex > #levels then
+    return nil
+  end
+  return levels[arrayIndex]
 end
 
 -- Delta tracking functions
