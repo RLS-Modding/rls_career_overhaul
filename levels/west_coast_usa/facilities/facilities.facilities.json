@@ -741,6 +741,7 @@
       "energyTypes":[
         "gasoline",
         "diesel",
+        "n2o",
         "unknown"
       ],
       "id":"trilobite_garage",
@@ -836,6 +837,18 @@
               "trilobite_garage_sign_B3_4"
             ]
           ]
+        },
+        "n2o":{
+          "priceBaseline":25.00,
+          "priceRandomnessBias":0.2,
+          "priceRandomnessGain":0.1,
+          "us_9_10_tax":true
+        },
+        "unknown":{
+          "priceBaseline":15.00,
+          "priceRandomnessBias":0.2,
+          "priceRandomnessGain":0.1,
+          "us_9_10_tax":true
         }
       },
       "pumps":[
@@ -868,7 +881,8 @@
     {
       "description":"levels.west_coast_usa.gasStationPoints.trilobite_garage_KEVee.description",
       "energyTypes":[
-        "electricEnergy"
+        "electricEnergy",
+        "unknown"
       ],
       "id":"trilobite_garage_KEVee",
       "name":"levels.west_coast_usa.gasStationPoints.trilobite_garage_KEVee.title",
@@ -900,6 +914,7 @@
       "energyTypes":[
         "gasoline",
         "diesel",
+        "n2o",
         "unknown"
       ],
       "id":"trilobite_city",
@@ -995,6 +1010,18 @@
               "trilobite_city_sign_B3_4"
             ]
           ]
+        },
+        "n2o":{
+          "priceBaseline":25.00,
+          "priceRandomnessBias":0.2,
+          "priceRandomnessGain":0.1,
+          "us_9_10_tax":true
+        },
+        "unknown":{
+          "priceBaseline":15.00,
+          "priceRandomnessBias":0.2,
+          "priceRandomnessGain":0.1,
+          "us_9_10_tax":true
         }
       },
       "pumps":[
@@ -1055,6 +1082,7 @@
       "energyTypes":[
         "gasoline",
         "diesel",
+        "n2o",
         "unknown"
       ],
       "id":"apex",
@@ -1150,6 +1178,18 @@
               "apex_sign_B3_4"
             ]
           ]
+        },
+        "n2o":{
+          "priceBaseline":25.00,
+          "priceRandomnessBias":0.2,
+          "priceRandomnessGain":0.1,
+          "us_9_10_tax":true
+        },
+        "unknown":{
+          "priceBaseline":15.00,
+          "priceRandomnessBias":0.2,
+          "priceRandomnessGain":0.1,
+          "us_9_10_tax":true
         }
       },
       "pumps":[
@@ -1184,6 +1224,7 @@
       "energyTypes":[
         "gasoline",
         "diesel",
+        "n2o",
         "unknown"
       ],
       "id":"nodeoline",
@@ -1279,6 +1320,18 @@
               "nodeoline_sign_B3_4"
             ]
           ]
+        },
+        "n2o":{
+          "priceBaseline":25.00,
+          "priceRandomnessBias":0.2,
+          "priceRandomnessGain":0.1,
+          "us_9_10_tax":true
+        },
+        "unknown":{
+          "priceBaseline":15.00,
+          "priceRandomnessBias":0.2,
+          "priceRandomnessGain":0.1,
+          "us_9_10_tax":true
         }
       },
       "pumps":[
@@ -1313,6 +1366,7 @@
       "energyTypes":[
         "gasoline",
         "diesel",
+        "n2o",
         "unknown"
       ],
       "id":"tyranos_island",
@@ -1408,6 +1462,18 @@
               "tyranos_island_sign_B3_4"
             ]
           ]
+        },
+        "n2o":{
+          "priceBaseline":25.00,
+          "priceRandomnessBias":0.2,
+          "priceRandomnessGain":0.1,
+          "us_9_10_tax":true
+        },
+        "unknown":{
+          "priceBaseline":15.00,
+          "priceRandomnessBias":0.2,
+          "priceRandomnessGain":0.1,
+          "us_9_10_tax":true
         }
       },
       "pumps":[
@@ -1432,7 +1498,8 @@
     {
       "description":"levels.west_coast_usa.gasStationPoints.tyranos_island_KEVee.description",
       "energyTypes":[
-        "electricEnergy"
+        "electricEnergy",
+        "unknown"
       ],
       "id":"tyranos_island_KEVee",
       "name":"levels.west_coast_usa.gasStationPoints.tyranos_island_KEVee.title",
@@ -1464,6 +1531,7 @@
       "energyTypes":[
         "gasoline",
         "diesel",
+        "n2o",
         "unknown"
       ],
       "id":"apex_commercial",
@@ -1559,6 +1627,18 @@
               "apex_commercial_sign_B3_4"
             ]
           ]
+        },
+        "n2o":{
+          "priceBaseline":25.00,
+          "priceRandomnessBias":0.2,
+          "priceRandomnessGain":0.1,
+          "us_9_10_tax":true
+        },
+        "unknown":{
+          "priceBaseline":15.00,
+          "priceRandomnessBias":0.2,
+          "priceRandomnessGain":0.1,
+          "us_9_10_tax":true
         }
       },
       "pumps":[
