@@ -613,12 +613,15 @@ local function storeFuelLevels(callback)
     storedFuelLevels = {}
     if data and data[1] then
       for _, tank in ipairs(data[1]) do
-        storedFuelLevels[tank.name] = {
-          currentEnergy = tank.currentEnergy,
-          maxEnergy = tank.maxEnergy,
-          energyType = tank.energyType,
-          relativeFuel = tank.maxEnergy > 0 and (tank.currentEnergy / tank.maxEnergy) or 0
-        }
+        -- Only store fuel levels for actual fuel tanks, not nitrous bottles
+        if tank.energyType ~= "n2o" then
+          storedFuelLevels[tank.name] = {
+            currentEnergy = tank.currentEnergy,
+            maxEnergy = tank.maxEnergy,
+            energyType = tank.energyType,
+            relativeFuel = tank.maxEnergy > 0 and (tank.currentEnergy / tank.maxEnergy) or 0
+          }
+        end
       end
     end
     if callback then callback() end
