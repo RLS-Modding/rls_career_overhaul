@@ -40,6 +40,9 @@ local challengeTemplate = {
   economyAdjuster = {},
   winCondition = "",
   targetMoney = 1000000, -- Default target for reachTargetMoney challenges
+  targetSpeed = 100, -- Default target for reachTargetSpeed challenges
+  maxSpeed = 0, -- Track maximum speed achieved
+  startingGarages = {}, -- Default starting garages for challenges
   category = "custom",
   createdBy = "",
   createdDate = "",
@@ -54,6 +57,7 @@ local winConditions = {
     description = "Complete the challenge by paying off all loans",
     variables = {},
     requiresLoans = true,
+    updateFrequency = 10, -- Check every 10 seconds since loan payments are infrequent
     checkCondition = function()
       if career_modules_loans then
         local activeLoans = career_modules_loans.getActiveLoans()
@@ -79,6 +83,7 @@ local winConditions = {
         order = 1
       }
     },
+    updateFrequency = 3, -- Check every 3 seconds since money changes frequently
     checkCondition = function()
       if career_modules_playerAttributes then
         local currentMoney = career_modules_playerAttributes.getAttributeValue('money') or 0
@@ -86,6 +91,30 @@ local winConditions = {
         return currentMoney >= targetMoney
       end
       return false
+    end
+  },
+  {
+    id = "reachTargetSpeed",
+    name = "Reach Target Speed",
+    description = "Complete the challenge by reaching a target speed in MPH",
+    variables = {
+      targetSpeed = {
+        type = "number",
+        label = "Target Speed (MPH)",
+        min = 50,
+        max = 500,
+        randomMax = 300,
+        default = 150,
+        decimals = 0,
+        step = 10,
+        order = 1
+      }
+    },
+    updateFrequency = 1, -- Check every second since speed changes frequently
+    checkCondition = function()
+      local targetSpeed = activeChallenge.targetSpeed or 100
+      local maxSpeed = activeChallenge.maxSpeed or 0
+      return maxSpeed >= targetSpeed
     end
   }
 }
@@ -481,10 +510,73 @@ local function getWinConditionInfo(winConditionId)
     id = winConditionId,
     name = winConditionId,
     description = "Unknown win condition",
+    updateFrequency = 5, -- Default update frequency
     checkCondition = function()
       return false
     end
   }
+end
+
+local function getAvailableGarages()
+  local availableGarages = {}
+  
+  -- Get all available career maps
+  local compatibleMaps = overhaul_maps.getCompatibleMaps() or {}
+  
+  local careerMaps = {}
+  
+  -- Convert compatible maps to the format we need
+  for mapId, mapName in pairs(compatibleMaps) do
+    table.insert(careerMaps, {id = mapId, name = mapName})
+  end
+  
+  -- Parse facility files for each career map
+  for _, map in ipairs(careerMaps) do
+    local levelInfo = core_levels.getLevelByName(map.id)
+    if levelInfo then
+      -- Parse info.json of the level
+      local infoFile = levelInfo.dir .. "/info.json"
+      
+      if FS:fileExists(infoFile) then
+        local data = jsonReadFile(infoFile)
+        
+        if data and data.garages then
+          for _, garage in ipairs(data.garages) do
+            table.insert(availableGarages, {
+              id = garage.id,
+              name = garage.name,
+              price = garage.defaultPrice or 0,
+              capacity = garage.capacity or 0,
+              starterGarage = garage.starterGarage or false
+            })
+          end
+        end
+      end
+      
+      -- Parse any other facility files inside the levels /facilities folder
+      local facilitiesDir = levelInfo.dir .. "/facilities/"
+      
+      local facilityFiles = FS:findFiles(facilitiesDir, '*.facilities.json', -1, false, true)
+      
+      for _, file in ipairs(facilityFiles) do
+        local data = jsonReadFile(file)
+        
+        if data and data.garages then
+          for _, garage in ipairs(data.garages) do
+            table.insert(availableGarages, {
+              id = garage.id,
+              name = garage.name,
+              price = garage.defaultPrice or 0,
+              capacity = garage.capacity or 0,
+              starterGarage = garage.starterGarage or false
+            })
+          end
+        end
+      end
+    end
+  end
+  
+  return availableGarages
 end
 
 local function getChallengeEditorData()
@@ -504,6 +596,9 @@ local function getChallengeEditorData()
       end
     end
   end
+
+  -- Get available garages for selection
+  local availableGarages = getAvailableGarages()
 
   local activityTypesBySource = {}
   if career_economyAdjuster and career_economyAdjuster.getTypesBySource then
@@ -544,13 +639,15 @@ local function getChallengeEditorData()
     activityTypes = activityTypes,
     activityTypesBySource = activityTypesBySource,
     currentMultipliers = currentMultipliers,
+    availableGarages = availableGarages,
     loanTerms = {6, 12, 18, 24, 36, 48, 60},
     defaults = {
       startingCapital = 10000,
       loanAmount = 50000,
       loanInterest = 0.10,
       loanPayments = 12,
-      targetMoney = 1000000
+      targetMoney = 1000000,
+      startingGarages = {}
     },
     stats = {
       totalActivityTypes = #activityTypes,
@@ -559,7 +656,8 @@ local function getChallengeEditorData()
         local count = 0
         for _ in pairs(tbl) do count = count + 1 end
         return count
-      end)(activityTypesBySource)
+      end)(activityTypesBySource),
+      totalGarages = #availableGarages
     }
   }
 end
@@ -616,6 +714,11 @@ local function createChallengeFromUI(challengeData)
         newChallenge[variableName] = challengeData[variableName]
       end
     end
+  end
+
+  -- Include starting garages if present
+  if challengeData.startingGarages and type(challengeData.startingGarages) == "table" and #challengeData.startingGarages > 0 then
+    newChallenge.startingGarages = challengeData.startingGarages
   end
 
   -- Include loans if present
@@ -791,6 +894,15 @@ local function startChallenge(challengeId)
     end
   end
 
+  -- Set starting garages if specified
+  if challenge.startingGarages and type(challenge.startingGarages) == "table" and #challenge.startingGarages > 0 then
+    if career_modules_garageManager then
+      for _, garageId in ipairs(challenge.startingGarages) do
+        career_modules_garageManager.addPurchasedGarage(garageId)
+      end
+    end
+  end
+
   if challenge.economyAdjuster and career_economyAdjuster then
     career_economyAdjuster.setAllTypeMultipliers(challenge.economyAdjuster)
   end
@@ -842,10 +954,29 @@ end
 local function onUpdate(dtReal, dtSim, dtRaw)
   if activeChallenge then
     activeChallenge.simulationTimeSpent = (activeChallenge.simulationTimeSpent or 0) + (dtSim or 0)
+    
+    -- Track max speed for reachTargetSpeed challenges
+    if activeChallenge.winCondition == "reachTargetSpeed" then
+      local playerVehicleId = be:getPlayerVehicleID(0)
+      if playerVehicleId then
+        local currentSpeed = math.abs(be:getObjectVelocityXYZ(playerVehicleId)) * 2.23694 -- Convert m/s to MPH
+        if currentSpeed > (activeChallenge.maxSpeed or 0) then
+          activeChallenge.maxSpeed = currentSpeed
+        end
+      end
+    end
   end
 
   updateTimer = updateTimer + dtRaw
-  if updateTimer < 5 then
+  
+  -- Get update frequency from win condition, default to 5 seconds
+  local updateFrequency = 5
+  if activeChallenge then
+    local winConditionInfo = getWinConditionInfo(activeChallenge.winCondition)
+    updateFrequency = winConditionInfo.updateFrequency or 5
+  end
+  
+  if updateTimer < updateFrequency then
     return
   end
   updateTimer = 0
@@ -861,6 +992,8 @@ local function onUpdate(dtReal, dtSim, dtRaw)
       winConditionName = winConditionInfo.name,
       winConditionDescription = winConditionInfo.description,
       targetMoney = activeChallenge.winCondition == "reachTargetMoney" and (activeChallenge.targetMoney or 1000000) or nil,
+      targetSpeed = activeChallenge.winCondition == "reachTargetSpeed" and (activeChallenge.targetSpeed or 100) or nil,
+      maxSpeed = activeChallenge.winCondition == "reachTargetSpeed" and (activeChallenge.maxSpeed or 0) or nil,
       simulationTimeSpent = activeChallenge.simulationTimeSpent or 0,
       startingCapital = activeChallenge.startingCapital,
       loans = activeChallenge.loans
@@ -931,6 +1064,7 @@ local function getChallengeOptionsForCareerCreation()
       winConditionDescription = winConditionInfo.description,
       variables = variables,
       targetMoney = challenge.winCondition == "reachTargetMoney" and (challenge.targetMoney or 1000000) or nil,
+      startingGarages = challenge.startingGarages or {},
       economyAdjuster = challenge.economyAdjuster or {},
       allActivityTypes = allActivityTypes,
       currentMultipliers = currentMultipliers,
@@ -1109,7 +1243,6 @@ local function requestGenerateRandomSeed(options)
   options = options or {}
 
   local seed, data = career_challengeSeedEncoder.generateRandomSeed(options)
-  dump(seed)
   if not seed then
     guihooks.trigger('challengeSeedGenerated', {
       success = false,
@@ -1198,6 +1331,7 @@ M.requestSeedDecode = requestSeedDecode
 M.generateRandomChallengeData = generateRandomChallengeData
 M.encodeChallengeDataToSeed = encodeChallengeDataToSeed
 M.decodeSeedToChallengeData = decodeSeedToChallengeData
+M.getAvailableGarages = getAvailableGarages
 M.onExtensionLoaded = onExtensionLoaded
 M.onUpdate = onUpdate
 M.onCareerActive = function(started)

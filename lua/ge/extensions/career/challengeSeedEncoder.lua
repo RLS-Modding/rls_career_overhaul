@@ -11,6 +11,7 @@ local baseChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz012345678
 local MARKER_WIN_CONDITION_DATA = 0x01
 local MARKER_LOANS = 0x02
 local MARKER_ECONOMY_ADJUSTER = 0x03
+local MARKER_STARTING_GARAGES = 0x04
 local MARKER_VARIABLE_NUMBER = 0x10
 local MARKER_VARIABLE_INTEGER = 0x11
 local MARKER_VARIABLE_BOOLEAN = 0x12
@@ -365,6 +366,67 @@ local function getModuleHierarchy()
   return {}
 end
 
+local function getAvailableGarageIds()
+  local ids = {}
+  
+  -- Use the shared function from challengeModes if available
+  if career_challengeModes and career_challengeModes.getAvailableGarages then
+    local garages = career_challengeModes.getAvailableGarages()
+    for _, garage in ipairs(garages) do
+      if garage.id and type(garage.id) == "string" and garage.id ~= "" then
+        table.insert(ids, garage.id)
+      end
+    end
+    return ids
+  end
+  
+  -- Fallback: Get all available career maps
+  local compatibleMaps = {}
+  if overhaul_maps and overhaul_maps.getCompatibleMaps then
+    compatibleMaps = overhaul_maps.getCompatibleMaps() or {}
+  end
+  
+  local careerMaps = {}
+  -- Convert compatible maps to the format we need
+  for mapId, mapName in pairs(compatibleMaps) do
+    table.insert(careerMaps, {id = mapId, name = mapName})
+  end
+  
+  -- Parse facility files for each career map
+  for _, map in ipairs(careerMaps) do
+    local levelInfo = core_levels.getLevelByName(map.id)
+    if levelInfo then
+      -- Parse info.json of the level
+      local infoFile = levelInfo.dir .. "/info.json"
+      if FS:fileExists(infoFile) then
+        local data = jsonReadFile(infoFile)
+        if data and data.garages then
+          for _, garage in ipairs(data.garages) do
+            if garage.id and type(garage.id) == "string" and garage.id ~= "" then
+              table.insert(ids, garage.id)
+            end
+          end
+        end
+      end
+      
+      -- Parse any other facility files inside the levels /facilities folder
+      local facilitiesDir = levelInfo.dir .. "/facilities/"
+      for _, file in ipairs(FS:findFiles(facilitiesDir, '*.facilities.json', -1, false, true)) do
+        local data = jsonReadFile(file)
+        if data and data.garages then
+          for _, garage in ipairs(data.garages) do
+            if garage.id and type(garage.id) == "string" and garage.id ~= "" then
+              table.insert(ids, garage.id)
+            end
+          end
+        end
+      end
+    end
+  end
+  
+  return ids
+end
+
 local function filterDisabledSubModules(economyAdjuster)
   if not economyAdjuster or type(economyAdjuster) ~= "table" then
     return economyAdjuster
@@ -605,6 +667,19 @@ local function encodeChallengeToSeed(challengeData)
     end
   end
   
+  if challengeData.startingGarages and type(challengeData.startingGarages) == "table" and #challengeData.startingGarages > 0 then
+    table.insert(buffer, string.char(MARKER_STARTING_GARAGES))
+    
+    -- Encode number of garages
+    writeVarInt(buffer, #challengeData.startingGarages)
+    
+    -- Encode each garage ID as hash
+    for _, garageId in ipairs(challengeData.startingGarages) do
+      local garageHash = simpleHash(garageId)
+      writeVarInt(buffer, garageHash)
+    end
+  end
+  
   table.insert(buffer, string.char(MARKER_END))
   
   local binaryData = table.concat(buffer)
@@ -695,6 +770,28 @@ local function decodeSeedToChallenge(seed)
       end
       challengeData.loans.payments = string.byte(binaryData, offset)
       offset = offset + 1
+    elseif marker == MARKER_STARTING_GARAGES then
+      if offset + 2 > #binaryData then
+        return nil, "Incomplete starting garages data"
+      end
+      challengeData.startingGarages = {}
+      
+      -- Decode number of garages
+      local garageCount, newOffset, err = readVarInt(binaryData, offset)
+      if err then
+        return nil, "Failed to read garage count: " .. err
+      end
+      offset = newOffset
+      
+      -- Decode each garage hash
+      for i = 1, garageCount do
+        local garageHash, newOffset, err = readVarInt(binaryData, offset)
+        if err then
+          return nil, "Failed to read garage hash " .. i .. ": " .. err
+        end
+        offset = newOffset
+        table.insert(challengeData.startingGarages, "_hash_" .. garageHash)
+      end
     elseif marker == MARKER_ECONOMY_ADJUSTER then
       if offset + 2 > #binaryData then
         return nil, "Incomplete economy adjuster data"
@@ -834,6 +931,35 @@ local function resolveHashesToNames(decodedChallenge)
     decodedChallenge.economyAdjuster = resolvedAdjuster
   end
 
+  -- Resolve starting garage hashes
+  if decodedChallenge.startingGarages then
+    local availableGarages = getAvailableGarageIds()
+    local resolvedGarages = {}
+    
+    for _, garageEntry in ipairs(decodedChallenge.startingGarages) do
+      if garageEntry:sub(1, 6) == "_hash_" then
+        local hash = tonumber(garageEntry:sub(7))
+        local resolved = false
+        
+        for _, garageId in ipairs(availableGarages) do
+          if simpleHash(garageId) == hash then
+            table.insert(resolvedGarages, garageId)
+            resolved = true
+            break
+          end
+        end
+        
+        if not resolved then
+          print("Warning: Could not resolve starting garage hash: " .. hash)
+        end
+      else
+        table.insert(resolvedGarages, garageEntry)
+      end
+    end
+    
+    decodedChallenge.startingGarages = resolvedGarages
+  end
+
   return decodedChallenge
 end
 
@@ -928,6 +1054,26 @@ local function generateRandomChallengeData(options)
     local filteredAdjuster = filterDisabledSubModules(adjuster)
     if next(filteredAdjuster) then
       data.economyAdjuster = filteredAdjuster
+    end
+  end
+
+  -- Add starting garages if specified or random
+  if options.startingGarages ~= nil then
+    data.startingGarages = options.startingGarages
+  elseif math.random() < 0.3 then -- 30% chance to have starting garages
+    local availableGarages = getAvailableGarageIds()
+    if #availableGarages > 0 then
+      local garageCount = math.random(1, math.min(3, #availableGarages))
+      local selectedGarages = {}
+      
+      for i = 1, garageCount do
+        local garageIndex = math.random(1, #availableGarages)
+        local garageId = availableGarages[garageIndex]
+        table.insert(selectedGarages, garageId)
+        table.remove(availableGarages, garageIndex) -- Remove to avoid duplicates
+      end
+      
+      data.startingGarages = selectedGarages
     end
   end
 

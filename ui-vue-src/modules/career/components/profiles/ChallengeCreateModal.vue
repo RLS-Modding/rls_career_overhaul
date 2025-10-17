@@ -142,6 +142,65 @@
               </div>
             </div>
 
+            <!-- Starting Garages Tab -->
+            <div v-if="activeTab === 'garages'" class="ccm-tab-panel">
+              <div class="ccm-field">
+                <input v-model="garageQuery" class="ccm-input" placeholder="Search garages..." />
+              </div>
+              
+              <div class="ccm-garage-default">
+                <button 
+                  class="ccm-garage-default-btn" 
+                  type="button" 
+                  @click="onUseDefaultGarages"
+                  :class="{ 'ccm-garage-default-active': formStartingGarages.length === 0 }"
+                >
+                  Default
+                </button>
+                <div class="ccm-hint">Default starter garage (free)</div>
+              </div>
+
+              <div v-if="formStartingGarages.length > 0" class="ccm-garage-selection">
+                <div class="ccm-garage-selected">
+                  <div class="ccm-garage-selected-title">Selected Garages ({{ formStartingGarages.length }})</div>
+                  <div class="ccm-garage-selected-list">
+                    <div v-for="garageId in formStartingGarages" :key="garageId" class="ccm-garage-selected-item">
+                      <span>{{ getGarageName(garageId) }}</span>
+                      <button 
+                        class="ccm-garage-remove" 
+                        type="button" 
+                        @click="removeGarage(garageId)"
+                        @mousedown.stop
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="ccm-garages">
+                <div v-for="garage in filteredGarages" :key="garage.id" class="ccm-garage-row">
+                  <label class="ccm-garage-label">
+                    <input
+                      v-model="formStartingGarages"
+                      :value="garage.id"
+                      type="checkbox"
+                      class="ccm-garage-checkbox"
+                    />
+                    <div class="ccm-garage-info">
+                      <div class="ccm-garage-name">{{ garage.name }}</div>
+                      <div class="ccm-garage-details">
+                        <span class="ccm-garage-price">${{ garage.price?.toLocaleString() || '0' }}</span>
+                        <span class="ccm-garage-capacity">{{ garage.capacity || 0 }} slots</span>
+                        <span v-if="garage.starterGarage" class="ccm-garage-starter">Starter</span>
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+
             <!-- Economy Multipliers Tab -->
             <div v-if="activeTab === 'economy'" class="ccm-tab-panel">
               <div class="ccm-section-title">Economy Multipliers (optional)</div>
@@ -199,9 +258,11 @@ const formLoanAmount = ref(0)
 const formLoanInterest = ref(0.10)
 const formLoanPayments = ref(12)
 const formEconomyAdjuster = reactive({})
+const formStartingGarages = ref([])
 const seedInput = ref('')
 const seedError = ref('')
 const econQuery = ref('')
+const garageQuery = ref('')
 const activeTab = ref('starting')
 const copyStatus = ref('')
 let copyStatusTimer
@@ -222,7 +283,8 @@ const form = computed(() => ({
     interest: formLoanInterest.value,
     payments: formLoanPayments.value
   },
-  economyAdjuster: formEconomyAdjuster
+  economyAdjuster: formEconomyAdjuster,
+  startingGarages: formStartingGarages.value
 }))
 const initialSnapshot = ref('')
 
@@ -237,7 +299,8 @@ const seedPayload = computed(() => {
           payments: formLoanPayments.value
         }
       : undefined,
-    economyAdjuster: Object.keys(formEconomyAdjuster).length > 0 ? formEconomyAdjuster : undefined
+    economyAdjuster: Object.keys(formEconomyAdjuster).length > 0 ? formEconomyAdjuster : undefined,
+    startingGarages: formStartingGarages.value.length > 0 ? formStartingGarages.value : undefined
   }
   for (const [key, value] of Object.entries(formVariables)) {
     if (value !== undefined) {
@@ -328,11 +391,24 @@ const activeVariables = computed(() => {
   return result
 })
 
+const availableGarages = computed(() => {
+  const raw = props.editorData && props.editorData.availableGarages
+  return Array.isArray(raw) ? raw : []
+})
+
+const filteredGarages = computed(() => {
+  const q = garageQuery.value.trim().toLowerCase()
+  const garages = availableGarages.value
+  if (!q) return garages
+  return garages.filter(g => ((g.name || g.id || '').toLowerCase().includes(q)))
+})
+
 const tabs = computed(() => {
   const tabList = [{ id: 'starting', label: 'Starting Parameters' }]
   if (activeVariables.value.length > 0) {
     tabList.push({ id: 'winCondition', label: 'Win Condition Settings' })
   }
+  tabList.push({ id: 'garages', label: 'Starting Garages' })
   tabList.push({ id: 'economy', label: 'Economy Multipliers' })
   return tabList
 })
@@ -508,6 +584,7 @@ async function onSave() {
     startingCapital: formStartingCapital.value,
     winCondition: formWinCondition.value,
     economyAdjuster: Object.keys(formEconomyAdjuster).length > 0 ? formEconomyAdjuster : undefined,
+    startingGarages: formStartingGarages.value.length > 0 ? formStartingGarages.value : undefined,
   }
 
   const defs = variableDefinitions.value
@@ -549,6 +626,7 @@ function resetFormDefaults() {
   formLoanAmount.value = props.editorData?.defaults?.loanAmount ?? 0
   formLoanInterest.value = props.editorData?.defaults?.loanInterest ?? 0.10
   formLoanPayments.value = props.editorData?.defaults?.loanPayments ?? 12
+  formStartingGarages.value = []
   
   Object.keys(formEconomyAdjuster).forEach(k => delete formEconomyAdjuster[k])
   const rawTypes = props.editorData?.activityTypes
@@ -605,6 +683,12 @@ function applySeedDataToForm(challenge) {
     formLoanAmount.value = 0
     formLoanInterest.value = 0
     formLoanPayments.value = 0
+  }
+  
+  if (challenge.startingGarages) {
+    formStartingGarages.value = Array.isArray(challenge.startingGarages) ? challenge.startingGarages : []
+  } else {
+    formStartingGarages.value = []
   }
   
   Object.keys(formEconomyAdjuster).forEach(k => delete formEconomyAdjuster[k])
@@ -795,6 +879,22 @@ watch(seedInput, (val) => {
     seedError.value = ''
   }
 })
+
+function getGarageName(garageId) {
+  const garage = availableGarages.value.find(g => g.id === garageId)
+  return garage ? garage.name : garageId
+}
+
+function removeGarage(garageId) {
+  const index = formStartingGarages.value.indexOf(garageId)
+  if (index > -1) {
+    formStartingGarages.value.splice(index, 1)
+  }
+}
+
+function onUseDefaultGarages() {
+  formStartingGarages.value = []
+}
 </script>
 
 <style scoped lang="scss">
@@ -1100,5 +1200,186 @@ select {
   color: #94a3b8;
   padding: 2rem;
   font-style: italic;
+}
+
+.ccm-garage-default {
+  margin-bottom: 0.75rem;
+  padding: 0.375rem 0.5rem;
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ccm-garage-default-btn {
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  color: #22c55e;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.8rem;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.ccm-garage-default-btn:hover {
+  background: rgba(34, 197, 94, 0.25);
+  border-color: rgba(34, 197, 94, 0.6);
+}
+
+.ccm-garage-default-btn.ccm-garage-default-active {
+  background: rgba(34, 197, 94, 0.3);
+  border-color: rgba(34, 197, 94, 0.7);
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+}
+
+.ccm-garage-selection {
+  margin-bottom: 1rem;
+}
+
+.ccm-garage-selected {
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+
+.ccm-garage-selected-title {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #3b82f6;
+}
+
+.ccm-garage-selected-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.ccm-garage-selected-item {
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 6px;
+  padding: 0.25rem 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.ccm-garage-remove {
+  background: transparent;
+  border: 0;
+  color: #ef4444;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+}
+
+.ccm-garage-remove:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.ccm-garages {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+  max-height: 14rem;
+  overflow: auto;
+  padding-right: 0.25rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 116, 139, 0.5) transparent;
+}
+
+.ccm-garages::-webkit-scrollbar {
+  width: 8px;
+}
+
+.ccm-garages::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 4px;
+}
+
+.ccm-garages::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.5);
+  border-radius: 4px;
+}
+
+.ccm-garages::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.7);
+}
+
+.ccm-garage-row {
+  display: flex;
+  align-items: center;
+}
+
+.ccm-garage-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+  width: 100%;
+}
+
+.ccm-garage-label:hover {
+  background: rgba(100, 116, 139, 0.1);
+}
+
+.ccm-garage-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #3b82f6;
+}
+
+.ccm-garage-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.ccm-garage-name {
+  font-weight: 500;
+  color: #e2e8f0;
+}
+
+.ccm-garage-details {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.ccm-garage-price {
+  color: #22c55e;
+  font-weight: 500;
+}
+
+.ccm-garage-capacity {
+  color: #8b5cf6;
+}
+
+.ccm-garage-starter {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
 }
 </style>

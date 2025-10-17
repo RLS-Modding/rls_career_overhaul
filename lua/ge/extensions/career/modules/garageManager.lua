@@ -87,10 +87,23 @@ end
 
 local function purchaseDefaultGarage()
   if career_career.hardcoreMode or career_modules_hardcore.isHardcoreMode() then return end
+  
+  -- Check if challenge has starting garages
+  if career_challengeModes and career_challengeModes.isChallengeActive() then
+    local activeChallenge = career_challengeModes.getActiveChallenge()
+    if activeChallenge and activeChallenge.startingGarages and #activeChallenge.startingGarages > 0 then
+      -- Challenge has starting garages, don't purchase default starter garage
+      log("D", "garageManager", "purchaseDefaultGarage: Skipping default garage purchase - challenge has starting garages: " .. dumps(activeChallenge.startingGarages))
+      return
+    end
+  end
+  
+  -- Only purchase default starter garage if no challenge starting garages are selected
   local garages = freeroam_facilities.getFacilitiesByType("garage")
   if not garages or #garages == 0 then return end  -- Return if no garages
   for _, garage in ipairs(garages) do
     if garage.starterGarage then
+      log("D", "garageManager", "purchaseDefaultGarage: Purchasing default starter garage: " .. garage.id)
       addPurchasedGarage(garage.id)
       return
     end
@@ -124,6 +137,21 @@ local function loadPurchasedGarages()
     discoveredGarages = {}
   end
 
+  -- If we have an active challenge with starting garages, ensure they are purchased
+  if career_challengeModes and career_challengeModes.isChallengeActive() then
+    local activeChallenge = career_challengeModes.getActiveChallenge()
+    if activeChallenge and activeChallenge.startingGarages and #activeChallenge.startingGarages > 0 then
+      log("D", "garageManager", "loadPurchasedGarages: Ensuring challenge starting garages are purchased: " .. dumps(activeChallenge.startingGarages))
+      for _, garageId in ipairs(activeChallenge.startingGarages) do
+        if not purchasedGarages[garageId] then
+          log("D", "garageManager", "loadPurchasedGarages: Adding missing challenge starting garage: " .. garageId)
+          purchasedGarages[garageId] = true
+          discoveredGarages[garageId] = true
+        end
+      end
+    end
+  end
+
   reloadRecoveryPrompt()
   buildGarageSizes()
   fillGarages()
@@ -142,6 +170,14 @@ local function getGaragePrice(garage)
   if career_modules_hardcore.isHardcoreMode() then
     return garage.defaultPrice
   else
+    -- Check if this garage is a starting garage in an active challenge FIRST
+    if career_challengeModes and career_challengeModes.isChallengeActive() then
+      local activeChallenge = career_challengeModes.getActiveChallenge()
+      if activeChallenge and activeChallenge.startingGarages then
+        return garage.defaultPrice
+      end
+    end
+    
     return garage.starterGarage and 0 or garage.defaultPrice
   end
 end
@@ -285,7 +321,22 @@ local function getGaragePrice(garageId, computerId)
     if career_modules_hardcore.isHardcoreMode() then
       return garage.defaultPrice
     else
+      -- Check if this garage is a starting garage in an active challenge
+      if career_challengeModes and career_challengeModes.isChallengeActive() then
+        local activeChallenge = career_challengeModes.getActiveChallenge()
+        if activeChallenge and activeChallenge.startingGarages then
+          for _, startingGarageId in ipairs(activeChallenge.startingGarages) do
+            if startingGarageId == garageId then
+              -- This garage is selected as a starting garage, charge full price
+              log("D", "garageManager", "getGaragePrice: Garage " .. garageId .. " is challenge starting garage, charging full price: " .. garage.defaultPrice)
+              return tonumber(garage.defaultPrice)
+            end
+          end
+        end
+      end
+      
       local price = garage.starterGarage and 0 or garage.defaultPrice
+      log("D", "garageManager", "getGaragePrice: Garage " .. garageId .. " price: " .. price .. " (starterGarage: " .. tostring(garage.starterGarage) .. ")")
       return tonumber(price)
     end
   end

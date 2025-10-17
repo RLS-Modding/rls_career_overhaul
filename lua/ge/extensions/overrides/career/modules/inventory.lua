@@ -768,10 +768,29 @@ local function setupInventory(levelPath)
             -- default placement is in front of the dealership, facing it
             -- spawn.safeTeleport(getPlayerVehicle(0), vec3(838.51,-522.42,165.75))
             -- gameplay_walk.setRot(vec3(-1,-1,0), vec3(0,0,1))
-            if levelName == "west_coast_usa" then
-                freeroam_facilities.teleportToGarage("chinatownGarage", getPlayerVehicle(0))
-            elseif levelName == "italy" then
-                freeroam_facilities.teleportToGarage("uncleGarage", getPlayerVehicle(0))
+            -- Spawn at starter garage or selected starting garage
+            local spawnGarageId = nil
+            
+            -- Check if we have a challenge with starting garages
+            local activeChallenge = career_challengeModes and career_challengeModes.getActiveChallenge()
+            if activeChallenge and activeChallenge.startingGarages and #activeChallenge.startingGarages > 0 then
+                -- Use the first selected starting garage
+                spawnGarageId = activeChallenge.startingGarages[1]
+            else
+                -- Use the map's starter garage
+                local facilities = freeroam_facilities.getFacilities(levelName)
+                if facilities and facilities.garages then
+                    for _, garage in ipairs(facilities.garages) do
+                        if garage.starterGarage then
+                            spawnGarageId = garage.id
+                            break
+                        end
+                    end
+                end
+            end
+            
+            if spawnGarageId then
+                freeroam_facilities.teleportToGarage(spawnGarageId, getPlayerVehicle(0))
             end
             career_modules_garageManager.purchaseDefaultGarage()
         else
@@ -802,10 +821,29 @@ local function setupInventory(levelPath)
 
                 spawn.safeTeleport(getPlayerVehicle(0), unicycleSavedPosition)
             else
-                if levelName == "west_coast_usa" then
-                    freeroam_facilities.teleportToGarage("chinatownGarage", getPlayerVehicle(0))
-                elseif levelName == "italy" then
-                    freeroam_facilities.teleportToGarage("uncleGarage", getPlayerVehicle(0))
+                -- Spawn at starter garage or selected starting garage
+                local spawnGarageId = nil
+                
+                -- Check if we have a challenge with starting garages
+                local activeChallenge = career_challengeModes and career_challengeModes.getActiveChallenge()
+                if activeChallenge and activeChallenge.startingGarages and #activeChallenge.startingGarages > 0 then
+                    -- Use the first selected starting garage
+                    spawnGarageId = activeChallenge.startingGarages[1]
+                else
+                    -- Use the map's starter garage
+                    local facilities = freeroam_facilities.getFacilities(levelName)
+                    if facilities and facilities.garages then
+                        for _, garage in ipairs(facilities.garages) do
+                            if garage.starterGarage then
+                                spawnGarageId = garage.id
+                                break
+                            end
+                        end
+                    end
+                end
+                
+                if spawnGarageId then
+                    freeroam_facilities.teleportToGarage(spawnGarageId, getPlayerVehicle(0))
                 end
             end
         end
