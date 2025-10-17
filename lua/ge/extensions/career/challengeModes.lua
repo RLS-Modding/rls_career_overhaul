@@ -39,9 +39,6 @@ local challengeTemplate = {
   loans = nil,
   economyAdjuster = {},
   winCondition = "",
-  targetMoney = 1000000, -- Default target for reachTargetMoney challenges
-  targetSpeed = 100, -- Default target for reachTargetSpeed challenges
-  maxSpeed = 0, -- Track maximum speed achieved
   startingGarages = {}, -- Default starting garages for challenges
   category = "custom",
   createdBy = "",
@@ -112,6 +109,16 @@ local winConditions = {
     },
     updateFrequency = 1, -- Check every second since speed changes frequently
     checkCondition = function()
+      -- Track current speed
+      local playerVehicleId = be:getPlayerVehicleID(0)
+      if playerVehicleId then
+        local currentSpeed = math.abs(be:getObjectVelocityXYZ(playerVehicleId)) * 2.23694 -- Convert m/s to MPH
+        if currentSpeed > (activeChallenge.maxSpeed or 0) then
+          activeChallenge.maxSpeed = currentSpeed
+        end
+      end
+      
+      -- Check win condition
       local targetSpeed = activeChallenge.targetSpeed or 100
       local maxSpeed = activeChallenge.maxSpeed or 0
       return maxSpeed >= targetSpeed
@@ -155,6 +162,30 @@ local typeValidators = {
   boolean = function(value)
     if type(value) ~= "boolean" then
       return false, "Value must be a boolean"
+    end
+    return true
+  end,
+  array = function(value, definition)
+    if type(value) ~= "table" then
+      return false, "Value must be an array"
+    end
+    if definition.minLength and #value < definition.minLength then
+      return false, string.format("Minimum length is %d", definition.minLength)
+    end
+    if definition.maxLength and #value > definition.maxLength then
+      return false, string.format("Maximum length is %d", definition.maxLength)
+    end
+    return true
+  end,
+  multiselect = function(value, definition)
+    if type(value) ~= "table" then
+      return false, "Value must be an array"
+    end
+    if definition.minLength and #value < definition.minLength then
+      return false, string.format("Minimum length is %d", definition.minLength)
+    end
+    if definition.maxLength and #value > definition.maxLength then
+      return false, string.format("Maximum length is %d", definition.maxLength)
     end
     return true
   end
@@ -629,6 +660,10 @@ local function getChallengeEditorData()
     if condition.variables then
       for variableName, definition in pairs(condition.variables) do
         entry.variables[variableName] = deepcopy(definition)
+        -- Handle function-based options
+        if entry.variables[variableName].options and type(entry.variables[variableName].options) == "function" then
+          entry.variables[variableName].options = entry.variables[variableName].options()
+        end
       end
     end
     table.insert(serializedWinConditions, entry)
@@ -954,17 +989,6 @@ end
 local function onUpdate(dtReal, dtSim, dtRaw)
   if activeChallenge then
     activeChallenge.simulationTimeSpent = (activeChallenge.simulationTimeSpent or 0) + (dtSim or 0)
-    
-    -- Track max speed for reachTargetSpeed challenges
-    if activeChallenge.winCondition == "reachTargetSpeed" then
-      local playerVehicleId = be:getPlayerVehicleID(0)
-      if playerVehicleId then
-        local currentSpeed = math.abs(be:getObjectVelocityXYZ(playerVehicleId)) * 2.23694 -- Convert m/s to MPH
-        if currentSpeed > (activeChallenge.maxSpeed or 0) then
-          activeChallenge.maxSpeed = currentSpeed
-        end
-      end
-    end
   end
 
   updateTimer = updateTimer + dtRaw
@@ -991,13 +1015,24 @@ local function onUpdate(dtReal, dtSim, dtRaw)
       winCondition = activeChallenge.winCondition,
       winConditionName = winConditionInfo.name,
       winConditionDescription = winConditionInfo.description,
-      targetMoney = activeChallenge.winCondition == "reachTargetMoney" and (activeChallenge.targetMoney or 1000000) or nil,
-      targetSpeed = activeChallenge.winCondition == "reachTargetSpeed" and (activeChallenge.targetSpeed or 100) or nil,
-      maxSpeed = activeChallenge.winCondition == "reachTargetSpeed" and (activeChallenge.maxSpeed or 0) or nil,
       simulationTimeSpent = activeChallenge.simulationTimeSpent or 0,
       startingCapital = activeChallenge.startingCapital,
       loans = activeChallenge.loans
     }
+    
+    -- Add win condition variables dynamically
+    if winConditionInfo and winConditionInfo.variables then
+      for variableName, definition in pairs(winConditionInfo.variables) do
+        if activeChallenge[variableName] ~= nil then
+          completedChallengeData[variableName] = activeChallenge[variableName]
+        end
+      end
+    end
+    
+    -- Add maxSpeed if it was tracked
+    if activeChallenge.maxSpeed then
+      completedChallengeData.maxSpeed = activeChallenge.maxSpeed
+    end
     
     guihooks.trigger('ChangeState', {state = 'challenge-completed'})
 
@@ -1063,7 +1098,6 @@ local function getChallengeOptionsForCareerCreation()
       winConditionName = winConditionInfo.name,
       winConditionDescription = winConditionInfo.description,
       variables = variables,
-      targetMoney = challenge.winCondition == "reachTargetMoney" and (challenge.targetMoney or 1000000) or nil,
       startingGarages = challenge.startingGarages or {},
       economyAdjuster = challenge.economyAdjuster or {},
       allActivityTypes = allActivityTypes,
@@ -1308,6 +1342,54 @@ local function requestSeedDecode(requestId, seed)
 
   return response.success, response.data or response.error
 end
+
+table.insert(winConditions, {
+  id = "ownSpecificGarage",
+  name = "Own Specific Garage",
+  description = "Complete the challenge by purchasing specific garages",
+  variables = {
+    targetGarages = {
+      type = "multiselect",
+      label = "Target Garages",
+      hint = "Select the garages that must be owned to complete the challenge",
+      required = true,
+      order = 1,
+      options = function() return getAvailableGarages() end
+    }
+  },
+  updateFrequency = 5, -- Check every 5 seconds since garage purchases are infrequent
+  checkCondition = function()
+    if not career_modules_garageManager then
+      return false
+    end
+    
+    local targetGarages = activeChallenge.targetGarages
+    if not targetGarages or type(targetGarages) ~= "table" or #targetGarages == 0 then
+      return false
+    end
+    
+    local purchasedGarages = career_modules_garageManager.getPurchasedGarages()
+    if not purchasedGarages then
+      return false
+    end
+    
+    -- Check if all target garages are owned
+    for _, targetGarageId in ipairs(targetGarages) do
+      local isOwned = false
+      for _, garageId in ipairs(purchasedGarages) do
+        if garageId == targetGarageId then
+          isOwned = true
+          break
+        end
+      end
+      if not isOwned then
+        return false
+      end
+    end
+    
+    return true
+  end
+})
 
 -- ============================================================================
 -- EXPORTS

@@ -137,10 +137,68 @@
                     class="ccm-input"
                     @keyup.enter="onSeedEnter"
                   />
-                  <div v-if="variable.hint" class="ccm-hint">{{ variable.hint }}</div>
+                  <div
+                    v-else-if="variable.type === 'array'"
+                    :id="'var-' + variable.id"
+                    class="ccm-array-input"
+                  >
+                    <div class="ccm-hint">{{ variable.hint }}</div>
+                    <div class="ccm-hint">This variable is handled by the Target Garages tab</div>
+                  </div>
+                  <!-- Multiselect variable handling -->
+                  <div v-else-if="variable.type === 'multiselect'" class="ccm-multiselect-section">
+                    <div v-if="variable.hint" class="ccm-hint">{{ variable.hint }}</div>
+                    
+                    <div class="ccm-field">
+                      <input v-model="multiselectQueries[variable.id]" class="ccm-input" :placeholder="`Search ${variable.label.toLowerCase()}...`" />
+                    </div>
+
+                    <div v-if="getMultiselectValues(variable.id).length > 0" class="ccm-garage-selection">
+                      <div class="ccm-garage-selected">
+                        <div class="ccm-garage-selected-title">Selected {{ variable.label }} ({{ getMultiselectValues(variable.id).length }})</div>
+                        <div class="ccm-garage-selected-list">
+                          <div v-for="itemId in getMultiselectValues(variable.id)" :key="itemId" class="ccm-garage-selected-item">
+                            <span>{{ getMultiselectItemName(variable.id, itemId) }}</span>
+                            <button 
+                              class="ccm-garage-remove" 
+                              type="button" 
+                              @click="removeMultiselectItem(variable.id, itemId)"
+                              @mousedown.stop
+                            >
+                              ×
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="ccm-garages">
+                      <div v-for="item in getFilteredMultiselectOptions(variable.id)" :key="item.id" class="ccm-garage-row">
+                        <label class="ccm-garage-label">
+                          <input
+                            v-model="formVariables[variable.id]"
+                            :value="item.id"
+                            type="checkbox"
+                            class="ccm-garage-checkbox"
+                          />
+                          <div class="ccm-garage-info">
+                            <div class="ccm-garage-name">{{ item.name }}</div>
+                            <div class="ccm-garage-details">
+                              <span v-if="item.price" class="ccm-garage-price">${{ item.price?.toLocaleString() || '0' }}</span>
+                              <span v-if="item.capacity" class="ccm-garage-capacity">{{ item.capacity || 0 }} slots</span>
+                              <span v-if="item.category" class="ccm-garage-category">{{ item.category }}</span>
+                              <span v-if="item.starterGarage" class="ccm-garage-starter">Starter</span>
+                            </div>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  <div v-if="variable.hint && variable.type !== 'multiselect'" class="ccm-hint">{{ variable.hint }}</div>
                 </div>
               </div>
             </div>
+
 
             <!-- Starting Garages Tab -->
             <div v-if="activeTab === 'garages'" class="ccm-tab-panel">
@@ -265,6 +323,7 @@ const econQuery = ref('')
 const garageQuery = ref('')
 const activeTab = ref('starting')
 const copyStatus = ref('')
+const multiselectQueries = reactive({})
 let copyStatusTimer
 
 const events = useEvents()
@@ -312,18 +371,7 @@ const seedPayload = computed(() => {
 
 const winConditionOptions = computed(() => {
   const raw = props.editorData && props.editorData.winConditions
-  const list = (Array.isArray(raw) && raw.length > 0)
-    ? raw
-    : [
-        { id: 'payOffLoan', name: 'Get out of debt', description: '', variables: {}, requiresLoans: true },
-        { id: 'reachTargetMoney', name: 'Reach Target Money', description: '', variables: {
-            targetMoney: {
-              type: 'number', label: 'Target Money', min: 1000, max: 100000000000, default: 1000000,
-              decimals: 0, step: 1000
-            }
-          }
-        }
-      ]
+  const list = Array.isArray(raw) ? raw : []
   return list.map(w => ({
     id: w.id,
     name: w.name || w.id,
@@ -342,6 +390,15 @@ const variableDefinitions = computed(() => {
 const loansRequired = computed(() => {
   const selected = winConditionOptions.value.find(opt => opt.value === formWinCondition.value)
   return (selected && selected.data && selected.data.requiresLoans) === true
+})
+
+
+const hasMultiselectVariables = computed(() => {
+  return activeVariables.value.some(v => v.type === 'multiselect')
+})
+
+const multiselectVariables = computed(() => {
+  return activeVariables.value.filter(v => v.type === 'multiselect')
 })
 
 const activeVariables = computed(() => {
@@ -380,6 +437,23 @@ const activeVariables = computed(() => {
         label: definition.label || variableId,
         hint: definition.hint,
         props: {}
+      })
+    } else if (type === 'array') {
+      result.push({
+        id: variableId,
+        type: type,
+        label: definition.label || variableId,
+        hint: definition.hint,
+        props: {}
+      })
+    } else if (type === 'multiselect') {
+      result.push({
+        id: variableId,
+        type: type,
+        label: definition.label || variableId,
+        hint: definition.hint,
+        props: {},
+        options: definition.options
       })
     }
   }
@@ -422,9 +496,19 @@ watch(tabs, (tabList) => {
 function initializeVariables() {
   const defs = variableDefinitions.value
   Object.keys(formVariables).forEach(key => { delete formVariables[key] })
+  Object.keys(multiselectQueries).forEach(key => { delete multiselectQueries[key] })
+  
   for (const [variableId, definition] of Object.entries(defs)) {
     if (definition.default !== undefined) {
       formVariables[variableId] = definition.default
+    } else if (definition.type === 'array' || definition.type === 'multiselect') {
+      // Initialize array/multiselect variables as empty arrays
+      formVariables[variableId] = []
+    }
+    
+    // Initialize multiselect query
+    if (definition.type === 'multiselect') {
+      multiselectQueries[variableId] = ''
     }
   }
 }
@@ -705,6 +789,13 @@ function applySeedDataToForm(challenge) {
         formVariables[variableId] = challenge[variableId]
       } else if (definition.default !== undefined) {
         formVariables[variableId] = definition.default
+      } else if (definition.type === 'array' || definition.type === 'multiselect') {
+        formVariables[variableId] = []
+      }
+      
+      // Initialize multiselect query
+      if (definition.type === 'multiselect') {
+        multiselectQueries[variableId] = ''
       }
     }
     
@@ -880,6 +971,7 @@ watch(seedInput, (val) => {
   }
 })
 
+
 function getGarageName(garageId) {
   const garage = availableGarages.value.find(g => g.id === garageId)
   return garage ? garage.name : garageId
@@ -892,8 +984,46 @@ function removeGarage(garageId) {
   }
 }
 
+
 function onUseDefaultGarages() {
   formStartingGarages.value = []
+}
+
+function getMultiselectOptions(variableId) {
+  const variable = multiselectVariables.value.find(v => v.id === variableId)
+  if (!variable || !variable.options) return []
+  
+  // Options is now a direct table/array
+  return Array.isArray(variable.options) ? variable.options : []
+}
+
+function getFilteredMultiselectOptions(variableId) {
+  const options = getMultiselectOptions(variableId)
+  const query = multiselectQueries[variableId] || ''
+  const q = query.trim().toLowerCase()
+  
+  if (!q) return options
+  return options.filter(item => 
+    (item.name || item.id || '').toLowerCase().includes(q)
+  )
+}
+
+function getMultiselectValues(variableId) {
+  return formVariables[variableId] || []
+}
+
+function getMultiselectItemName(variableId, itemId) {
+  const options = getMultiselectOptions(variableId)
+  const item = options.find(opt => opt.id === itemId)
+  return item ? item.name : itemId
+}
+
+function removeMultiselectItem(variableId, itemId) {
+  const values = formVariables[variableId] || []
+  const index = values.indexOf(itemId)
+  if (index > -1) {
+    values.splice(index, 1)
+  }
 }
 </script>
 
@@ -1372,6 +1502,10 @@ select {
 
 .ccm-garage-capacity {
   color: #8b5cf6;
+}
+
+.ccm-garage-category {
+  color: #f59e0b;
 }
 
 .ccm-garage-starter {

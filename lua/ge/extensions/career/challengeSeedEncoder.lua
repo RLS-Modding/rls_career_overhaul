@@ -16,6 +16,7 @@ local MARKER_VARIABLE_NUMBER = 0x10
 local MARKER_VARIABLE_INTEGER = 0x11
 local MARKER_VARIABLE_BOOLEAN = 0x12
 local MARKER_VARIABLE_STRING = 0x13
+local MARKER_VARIABLE_TABLE = 0x14
 local MARKER_RUN_LENGTH = 0x20
 local MARKER_END = 0xFF
 
@@ -490,6 +491,8 @@ local function encodeVariable(buffer, variableName, definition, value)
     marker = MARKER_VARIABLE_STRING
   elseif typeName == "integer" then
     marker = MARKER_VARIABLE_INTEGER
+  elseif typeName == "multiselect" or typeName == "array" then
+    marker = MARKER_VARIABLE_TABLE
   else
     marker = MARKER_VARIABLE_NUMBER
   end
@@ -502,6 +505,28 @@ local function encodeVariable(buffer, variableName, definition, value)
   elseif marker == MARKER_VARIABLE_STRING then
     writeUint16(buffer, #value)
     table.insert(buffer, value)
+  elseif marker == MARKER_VARIABLE_TABLE then
+    -- Encode table as array of values
+    if type(value) == "table" then
+      writeUint16(buffer, #value)
+      for _, item in ipairs(value) do
+        if type(item) == "string" then
+          writeUint16(buffer, #item)
+          table.insert(buffer, item)
+        else
+          -- Convert non-string items to string
+          local strItem = tostring(item)
+          writeUint16(buffer, #strItem)
+          table.insert(buffer, strItem)
+        end
+      end
+    else
+      -- Single value, wrap in table
+      writeUint16(buffer, 1)
+      local strValue = tostring(value)
+      writeUint16(buffer, #strValue)
+      table.insert(buffer, strValue)
+    end
   else
     -- Enforce min/max constraints
     if definition then
@@ -544,6 +569,27 @@ local function decodeVariable(challengeData, variableDefinitions, marker, bytes,
     end
     value = bytes:sub(offset, offset + length - 1)
     offset = offset + length
+  elseif marker == MARKER_VARIABLE_TABLE then
+    if offset + 1 > #bytes then
+      return nil, offset, "Incomplete table data"
+    end
+    local count
+    count, offset = readUint16(bytes, offset)
+    value = {}
+    
+    for i = 1, count do
+      if offset + 1 > #bytes then
+        return nil, offset, "Incomplete table item data"
+      end
+      local itemLength
+      itemLength, offset = readUint16(bytes, offset)
+      if offset + itemLength - 1 > #bytes then
+        return nil, offset, "Incomplete table item data"
+      end
+      local item = bytes:sub(offset, offset + itemLength - 1)
+      offset = offset + itemLength
+      table.insert(value, item)
+    end
   else
     local decoded
     decoded, offset = readFloat(bytes, offset)
@@ -567,12 +613,12 @@ local function decodeVariable(challengeData, variableDefinitions, marker, bytes,
     variableName = "_var_" .. tostring(nameHash)
   end
 
-  if definition and definition.step and definition.step ~= 1 then
+  if definition and definition.step and definition.step ~= 1 and type(value) == "number" then
     value = value * definition.step
   end
 
-  -- Enforce min/max constraints after decoding
-  if definition then
+  -- Enforce min/max constraints after decoding (only for numeric values)
+  if definition and type(value) == "number" then
     if definition.min and value < definition.min then
       value = definition.min
     end
