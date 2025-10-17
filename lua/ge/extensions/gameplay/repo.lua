@@ -92,8 +92,54 @@ function VehicleRepoJob:destroy()
     end
 end
 
+local function isRepoDisabled()
+    local disabled = false
+    local reason = ""
+
+    -- Check if player is walking (highest priority)
+    if gameplay_walk and gameplay_walk.isWalking() then
+        disabled = true
+        reason = "Repo service is not available while walking"
+        return disabled, reason
+    end
+
+    -- Check if repo multiplier is 0
+    if career_economyAdjuster then
+        local repoMultiplier = career_economyAdjuster.getSectionMultiplier("repo") or 1.0
+        if repoMultiplier == 0 then
+            disabled = true
+            reason = "Repo multiplier is set to 0"
+        end
+    end
+
+    -- Check for active challenge that might disable repo
+    if career_challengeModes and career_challengeModes.isChallengeActive() then
+        local activeChallenge = career_challengeModes.getActiveChallenge()
+        if activeChallenge then
+            -- Check if the challenge has economy adjuster settings that disable repo
+            if activeChallenge.economyAdjuster and activeChallenge.economyAdjuster.repo == 0 then
+                disabled = true
+                reason = string.format("Repo is disabled due to '%s' Challenge", activeChallenge.name or "Unknown Challenge")
+            end
+        end
+    end
+
+    return disabled, reason
+end
+
 -- Generate a new repo job
 function VehicleRepoJob:generateJob()
+    -- Set loading state immediately
+    local data = {
+        state = "loading",
+        vehicle = nil,
+        deliveryLocation = "",
+        distanceToDestination = 0,
+        totalDistance = 0,
+        repoDisabled = false,
+        disabledReason = ""
+    }
+    guihooks.trigger('updateRepoState', data)
     
     -- Start the coroutine for job generation
     self.jobCoroutine = coroutine.create(function()
@@ -137,6 +183,22 @@ function VehicleRepoJob:generateJob()
             self:spawnVehicle()
             self.spawnedVehicle = true
         end
+        
+        -- Set final state after generation is complete
+        local repoDisabled, disabledReason = isRepoDisabled()
+        local effectiveState = repoDisabled and "disabled" or "picking_up"
+
+        local finalData = {
+            state = effectiveState,
+            vehicle = self.randomVehicleInfo,
+            deliveryLocation = self.selectedDealership and self.selectedDealership.name or "",
+            distanceToDestination = self.deliveryLocation and (self.vehicleId and
+                (getObjectByID(self.vehicleId):getPosition() - self.deliveryLocation.pos):length() or 0) or 0,
+            totalDistance = self.totalDistanceTraveled or 0,
+            repoDisabled = repoDisabled,
+            disabledReason = disabledReason
+        }
+        guihooks.trigger('updateRepoState', finalData)
     end)
 end
 
@@ -325,40 +387,7 @@ function VehicleRepoJob:calculateReward()
     return adjustedReward
 end
 
-local function isRepoDisabled()
-    local disabled = false
-    local reason = ""
 
-    -- Check if player is walking (highest priority)
-    if gameplay_walk and gameplay_walk.isWalking() then
-        disabled = true
-        reason = "Repo service is not available while walking"
-        return disabled, reason
-    end
-
-    -- Check if repo multiplier is 0
-    if career_economyAdjuster then
-        local repoMultiplier = career_economyAdjuster.getSectionMultiplier("repo") or 1.0
-        if repoMultiplier == 0 then
-            disabled = true
-            reason = "Repo multiplier is set to 0"
-        end
-    end
-
-    -- Check for active challenge that might disable repo
-    if career_challengeModes and career_challengeModes.isChallengeActive() then
-        local activeChallenge = career_challengeModes.getActiveChallenge()
-        if activeChallenge then
-            -- Check if the challenge has economy adjuster settings that disable repo
-            if activeChallenge.economyAdjuster and activeChallenge.economyAdjuster.repo == 0 then
-                disabled = true
-                reason = string.format("Repo is disabled due to '%s' Challenge", activeChallenge.name or "Unknown Challenge")
-            end
-        end
-    end
-
-    return disabled, reason
-end
 
 -- Update function called every frame
 function VehicleRepoJob:onUpdate(dtReal, dtSim, dtRaw) 
@@ -628,6 +657,8 @@ function M.requestRepoState()
         local state = "no_mission"
         if instance.isCompleted then
             state = "completed"
+        elseif instance.jobCoroutine and coroutine.status(instance.jobCoroutine) ~= "dead" then
+            state = "loading"
         elseif instance.isMonitoring then
             state = instance.isJobStarted and "dropping_off" or "picking_up"
         end
