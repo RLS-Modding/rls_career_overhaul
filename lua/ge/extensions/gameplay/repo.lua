@@ -643,7 +643,24 @@ end
 
 -- Check if the vehicle is a repo vehicle
 function M.isRepoVehicle()
-    local licenseText = core_vehicles.getVehicleLicenseText(be:getPlayerVehicle(0))
+    local playerVehicle = be:getPlayerVehicle(0)
+    if not playerVehicle then
+        return false
+    end
+    
+    local inventoryId = career_modules_inventory.getInventoryIdFromVehicleId(playerVehicle:getID())
+    if inventoryId then
+        local vehicles = career_modules_inventory.getVehicles()
+        if vehicles and vehicles[inventoryId] and vehicles[inventoryId].config then
+            local licenseName = vehicles[inventoryId].config.licenseName
+            if licenseName then
+                return licenseName:lower() == "repo"
+            end
+        end
+    end
+    
+    -- Fallback to vehicle license text if not in inventory
+    local licenseText = core_vehicles.getVehicleLicenseText(playerVehicle)
     return licenseText and licenseText:lower() == "repo"
 end
 
