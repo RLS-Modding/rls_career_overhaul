@@ -48,6 +48,9 @@ local function addAttributes(change, reason, fullprice)
     if (attributeName == "vouchers" and value > 0) and career_modules_hardcore.isHardcoreMode() then
       change[attributeName] = 0
     end
+    if attributeName == "money" and value < 0 and career_modules_cheats and career_modules_cheats.isCheatsMode() then
+      change[attributeName] = 0
+    end
     if value > 0  and not fullprice then
       change[attributeName] = value / (career_modules_hardcore.isHardcoreMode() and 2 or 1)
     end
@@ -111,7 +114,11 @@ local function getAttributeValue(attributeName)
   if not attributes then
     return 0
   end
-  return (attributes[attributeName] or baseAttribute).value
+  local value = (attributes[attributeName] or baseAttribute).value
+  if attributeName == "money" and career_modules_cheats and career_modules_cheats.isCheatsMode() then
+    return 1e12
+  end
+  return value
 end
 
 local function getAllAttributes()

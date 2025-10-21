@@ -1,5 +1,5 @@
 <template>
-  <div v-bng-scoped-nav="{ activated: isActivated }" class="profiles-container" @deactivate="onDeactivate">
+  <div v-bng-scoped-nav="{ activated: isActivated, canDeactivate }" class="profiles-container" @deactivate="onDeactivate">
     <BngScreenHeading class="profiles-title" :preheadings="[$ctx_t('ui.playmodes.career')]">{{ $ctx_t("ui.career.savedProgress") }} </BngScreenHeading>
     <BackAside class="profiles-back" @click="onDeactivate()" />
     <BngList :layout="LIST_LAYOUTS.RIBBON" :targetWidth="22" :targetHeight="28" :targetMargin="1" noBackground class="profiles-modern-list">
@@ -55,9 +55,9 @@ const onLoad = async id => {
   await store.loadProfile(id)
 }
 
-const onCreateSave = async (profileName, tutorialChecked, hardcoreMode, challengeId) => {
+const onCreateSave = async (profileName, tutorialChecked, hardcoreMode, challengeId, cheatsMode) => {
   isLoading = true
-  await store.loadProfile(profileName, tutorialChecked, true, hardcoreMode, challengeId)
+  await store.loadProfile(profileName, tutorialChecked, true, hardcoreMode, challengeId, cheatsMode)
 }
 
 function onCardActivated(active, index) {
@@ -84,7 +84,7 @@ onBeforeUnmount(() => {
 
 provide("validateName", validateName)
 
-function onDeactivate() {
+const onDeactivate = () => {
   // if (store.isLoading) return
 
   if (isLoading) {
@@ -94,6 +94,10 @@ function onDeactivate() {
   } else {
     window.bngVue.gotoGameState("menu.mainmenu")
   }
+}
+
+const canDeactivate = () => {
+  return false
 }
 
 async function onProfilesReceived(data) {

@@ -7,6 +7,9 @@ local M = {}
 M.dependencies = {'career_career'}
 
 local function canPay(price)
+  if career_modules_cheats and career_modules_cheats.isCheatsMode() then
+    return true
+  end
   for currency, info in pairs(price) do
     if not info.canBeNegative and career_modules_playerAttributes.getAttributeValue(currency) < info.amount then
       return false
@@ -17,6 +20,9 @@ end
 
 local function pay(price, reason)
   if not canPay(price) then return false end
+  if career_modules_cheats and career_modules_cheats.isCheatsMode() then
+    return true
+  end
   local change = {}
   for currency, info in pairs(price) do
     change[currency] = -info.amount

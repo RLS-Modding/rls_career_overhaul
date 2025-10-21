@@ -312,7 +312,7 @@ local function applyChallengeConfig(cfg)
   return true
 end
 
-local function createOrLoadCareerAndStart(name, specificAutosave, tutorial, hardcore, challengeId)
+local function createOrLoadCareerAndStart(name, specificAutosave, tutorial, hardcore, challengeId, cheats)
   --M.tutorialEnabled = string.find(string.lower(name), "tutorial") and true or false
   --M.vehSelectEnabled = string.find(string.lower(name), "vehselect") and true or false
   log("I","",string.format("Create or Load Career: %s - %s", name, specificAutosave))
@@ -325,6 +325,10 @@ local function createOrLoadCareerAndStart(name, specificAutosave, tutorial, hard
       log("I","","Hardcore mode enabled.")
     end
     M.hardcoreMode = hardcore
+    if cheats then
+      log("I","","Cheats mode enabled.")
+    end
+    M.cheatsMode = cheats
     if challengeId then
       log("I","","Challenge enabled for later start: " .. challengeId)
     end
@@ -411,11 +415,16 @@ local function formatSaveSlotForUi(saveSlot)
   local infoData = jsonReadFile(autosavePath .. "/info.json")
   local careerData = jsonReadFile(autosavePath .. "/career/" .. saveFile)
   local hardcoreData = jsonReadFile(autosavePath .. "/career/rls_career/hardcore.json")
+  local cheatsData = jsonReadFile(autosavePath .. "/career/rls_career/cheats.json")
   local challengeData = jsonReadFile(autosavePath .. "/career/rls_career/challengeModes.json")
   local challengeData = jsonReadFile(autosavePath .. "/career/rls_career/challengeModes.json")
 
   if hardcoreData then
     data.hardcoreMode = hardcoreData.hardcoreMode
+  end
+
+  if cheatsData then
+    data.cheatsMode = cheatsData.cheatsMode
   end
 
   if challengeData and challengeData.activeChallenge then

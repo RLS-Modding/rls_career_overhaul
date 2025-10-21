@@ -1,13 +1,10 @@
 <template>
   <BngCard
-    v-bng-scoped-nav="{ activated: isActive }"
     v-bng-blur
     v-bng-sound-class="'bng_hover_generic'"
     :hideFooter="true"
     :footerStyles="cardFooterStyles"
-    class="profile-create-card"
-    @activate="onActivated"
-    @deactivate="onDeactivated">
+    class="profile-create-card">
     <div :class="{ 'create-active': isActive }" class="create-content-container">
       <template v-if="isActive">
         <BngInput
@@ -23,29 +20,40 @@
             <div class="title-icon title-icon-orange" />
             <div class="title-label">Challenge Mode</div>
           </div>
-          <ChallengeDropdown ref="challengeDropdownRef" v-model="challengeId" />
+          <ChallengeDropdown ref="challengeDropdownRef" v-model="challengeId" :disabled="cheatsMode" />
         </div>
 
         <div class="hc-card">
           <div class="hc-left">
             <div class="title-icon title-icon-red" />
             <div class="hc-texts">
-              <div class="hc-title">Hardcore Mode</div>
-              <div class="hc-sub">Increased difficulty, permanent consequences</div>
+              <div class="hc-title">Hardcore</div>
             </div>
           </div>
           <div class="hc-right">
-            <BngSwitch v-model="hardcoreMode" label-before :inline="false"> </BngSwitch>
+            <BngSwitch v-model="hardcoreMode" label-before :inline="false" :disabled="cheatsMode"> </BngSwitch>
+          </div>
+        </div>
+
+        <div class="hc-card">
+          <div class="hc-left">
+            <div class="title-icon title-icon-green" />
+            <div class="hc-texts">
+              <div class="hc-title">Cheats</div>
+            </div>
+          </div>
+          <div class="hc-right">
+            <BngSwitch v-model="cheatsMode" label-before :inline="false" :disabled="challengeId !== null || hardcoreMode"> </BngSwitch>
           </div>
         </div>
 
         <div class="actions-row">
-          <button ref="startButton" class="modern-btn modern-primary" v-bng-on-ui-nav:ok.asMouse.focusRequired :disabled="nameError !== null" @click="load">Start Game</button>
-          <button ref="cancelButton" class="modern-btn modern-cancel" v-bng-on-ui-nav:ok.asMouse.focusRequired @click="setActive(false)">Cancel</button>
+          <button ref="startButton" class="modern-btn modern-primary" :disabled="nameError !== null" @click="load">Start Game</button>
+          <button ref="cancelButton" class="modern-btn modern-cancel" @click="cancel">Cancel</button>
         </div>
         
       </template>
-      <div v-else class="create-content-cover" @click="setActive(true)">
+      <div v-else class="create-content-cover" @click="activateCard">
         <div class="cover-plus-container">
           <div class="cover-plus-button">+</div>
         </div>
@@ -61,7 +69,7 @@ const cardFooterStyles = {
 </script>
 
 <script setup>
-import { inject, nextTick, ref, computed } from "vue"
+import { inject, nextTick, ref, computed, watch } from "vue"
 import { vBngOnUiNav, vBngScopedNav, vBngBlur, vBngSoundClass } from "@/common/directives"
 import { BngButton, BngCard, BngInput, BngSwitch, LABEL_ALIGNMENTS } from "@/common/components/base"
 import { PROFILE_NAME_MAX_LENGTH } from "../../stores/profilesStore"
@@ -72,6 +80,7 @@ const emit = defineEmits(["card:activate", "load"])
 
 const profileName = defineModel("profileName", { required: true })
 const hardcoreMode = ref(false)
+const cheatsMode = ref(false)
 const isActive = ref(false)
 
 const validateName = inject("validateName")
@@ -95,30 +104,51 @@ const validateFn = name => {
 
 const challengeId = ref(null)
 
-const load = () => emit("load", profileName.value, false, hardcoreMode.value, challengeId.value)
-
-function onActivated(event) {
-  const data = event.detail
-  if (data.activationType === "full") {
-    setActive(true)
+watch(cheatsMode, (newVal) => {
+  if (newVal && challengeId.value !== null) {
+    challengeId.value = null
   }
-}
-
-function onDeactivated(event) {
-  // Prevent deactivation if any modals are open
-  if (challengeDropdownRef.value) {
-    const hasOpenModal = challengeDropdownRef.value.detailOpen || challengeDropdownRef.value.createOpen
-    if (hasOpenModal) {
-      return
-    }
+  if (newVal && hardcoreMode.value) {
+    hardcoreMode.value = false
   }
-  
-  setActive(false)
-}
+})
+
+watch(hardcoreMode, (newVal) => {
+  if (newVal && cheatsMode.value) {
+    cheatsMode.value = false
+  }
+})
+
+watch(challengeId, (newVal) => {
+  if (newVal !== null && cheatsMode.value) {
+    cheatsMode.value = false
+  }
+})
+
+const load = () => emit("load", profileName.value, false, hardcoreMode.value, challengeId.value, cheatsMode.value)
+
 
 function setActive(value) {
   isActive.value = value
   emit("card:activate", value)
+}
+
+function cancel(event) {
+  event.preventDefault()
+  event.stopPropagation()
+  setActive(false)
+}
+
+function activateCard(event) {
+  event.stopPropagation()
+  setActive(true)
+}
+
+function onOutsideClick(event) {
+  // Only close if clicking outside the card bounds
+  if (!event.target.closest('.profile-create-card')) {
+    setActive(false)
+  }
 }
 
 function onEnter(event) {
@@ -181,6 +211,7 @@ function onEnter(event) {
 .title-icon { width: 18px; height: 18px; border-radius: 6px; }
 .title-icon-orange { background: rgba(251, 146, 60, 0.3); }
 .title-icon-red { background: rgba(248, 113, 113, 0.3); }
+.title-icon-green { background: rgba(34, 197, 94, 0.3); }
 .title-label { color: #fff; font-weight: 600; }
 
 .actions-row {
@@ -215,7 +246,9 @@ function onEnter(event) {
 
 .hc-card { display: flex; align-items: center; justify-content: space-between; padding: 0.75em; background: rgba(30,41,59,0.6); border: 1px solid rgba(100,116,139,0.35); border-radius: 14px; }
 .hc-left { display: flex; align-items: center; gap: 0.6em; }
-.hc-card .title-icon { width: 22px; height: 22px; border-radius: 6px; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06); background: rgba(148, 63, 63, 0.75); }
+.hc-card .title-icon { width: 22px; height: 22px; border-radius: 6px; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06); }
+.hc-card .title-icon-red { background: rgba(148, 63, 63, 0.75); }
+.hc-card .title-icon-green { background: rgba(34, 197, 94, 0.75); }
 .hc-texts { display: flex; flex-direction: column; }
 .hc-title { color: #fff; font-weight: 600; }
 .hc-sub { color: #94a3b8; font-size: 0.9em; }
