@@ -1689,7 +1689,7 @@
       ],
       "id":"trilobite_drag",
       "name":"Alder Dragway Fuel",
-      "preview":"fuel_trilobite_garage.jpg",
+      "preview":"drag_fuel.jpg",
       "prices":{
         "diesel":{
           "priceBaseline":50.53,
