@@ -94,7 +94,7 @@ function getBranchColor(branch) {
 .profile-status {
   display: flex;
   flex-direction: column;
-  padding: 0 1em 1em;
+  padding: 0.75em 1em 0.5em;
   color: #fff;
   background: hsla(217, 22%, 12%, 1);
 
@@ -129,10 +129,11 @@ function getBranchColor(branch) {
   overflow: hidden;
   flex-direction: column;
   background: hsla(217, 22%, 12%, 1);
+  padding-top: 0.5em;
 
   > .profile-status-level {
     display: flex;
-    padding: 0.5em 0 0;
+    padding: 0.4em 0 0;
     flex-direction: row;
     justify-content: flex-start;
     align-items: flex-end;

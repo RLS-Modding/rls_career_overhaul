@@ -22,10 +22,14 @@
             <span v-else>{{ $ctx_t("ui.career.lastplayed") }} {{ lastPlayedDescription }}</span>
           </div>
         </div>
-        <div v-if="!isManage && challengeInfo" class="profile-card-challenge">
-          <div class="challenge-chip" title="Challenge Mode">
+        <div v-if="!isManage && (challengeInfo || cheatsMode)" class="profile-card-badges">
+          <div v-if="challengeInfo" class="challenge-chip" title="Challenge Mode">
             <span class="chip-sq"></span>
             <span class="chip-text">{{ challengeInfo.name }}</span>
+          </div>
+          <div v-if="cheatsMode" class="cheats-chip" title="Cheats Enabled">
+            <span class="chip-sq"></span>
+            <span class="chip-text">Cheats</span>
           </div>
         </div>
       </div>
@@ -157,6 +161,7 @@ const props = defineProps({
   active: Boolean,
   branches: Array,
   activeChallenge: Object,
+  cheatsMode: Boolean,
 })
 
 const emit = defineEmits(["card:activate", "manage:change", "load"])
@@ -405,8 +410,11 @@ function onInputBlur() {
       overflow: hidden;
     }
 
-    > .profile-card-challenge {
+    > .profile-card-badges {
       padding: 0 0.6em 0.2em 0.6em;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35em;
     }
 
     .challenge-chip {
@@ -422,6 +430,21 @@ function onInputBlur() {
       font-weight: 800;
       color: #ffffff;
     }
+
+    .cheats-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45em;
+      padding: 0.25em 0.7em;
+      background-image: linear-gradient(90deg, #9333ea, #7c3aed);
+      border: 0;
+      border-radius: 12px;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.28);
+      font-size: 0.92em;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
     .chip-sq {
       width: 10px;
       height: 10px;
@@ -447,7 +470,7 @@ function onInputBlur() {
   display: flex;
   flex: 0.0001 1 auto;
   flex-flow: column;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: stretch;
   // padding: 0 1em 1em;
   overflow: hidden;
