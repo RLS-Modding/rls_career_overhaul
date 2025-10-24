@@ -1296,7 +1296,8 @@ local function sendPurchaseDataToUi()
     prices = purchaseData.prices,
     dealershipId = vehicleShopInfo.sellerId,
     alreadyDidTestDrive = career_modules_inspectVehicle.getDidTestDrive() or false,
-    vehId = purchaseData.vehId
+    vehId = purchaseData.vehId,
+    cheatsMode = career_modules_cheats and career_modules_cheats.isCheatsMode() or false
   }
 
   if not data.vehicleInfo.requiredInsurance then

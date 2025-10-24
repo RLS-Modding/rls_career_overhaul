@@ -124,6 +124,7 @@ const challengeSeed = ref('')
 const copyButtonText = ref('Copy Seed')
 
 function onClose() { 
+    if (!props.open) return
     emit('close') 
 }
 function onSelect() { 

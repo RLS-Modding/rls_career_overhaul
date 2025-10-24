@@ -657,6 +657,7 @@ const canSave = computed(() => !!formId.value && !!formName.value)
 const isDirty = computed(() => JSON.stringify(form.value) !== initialSnapshot.value)
 
 function onRequestClose() {
+  if (!props.open) return
   emit('close')
 }
 

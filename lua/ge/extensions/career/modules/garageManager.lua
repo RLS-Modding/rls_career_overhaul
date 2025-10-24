@@ -221,6 +221,9 @@ local function requestGarageData()
 end
 
 local function canPay()
+  if career_modules_cheats and career_modules_cheats.isCheatsMode() then
+    return true
+  end
   if not garageToPurchase then return false end
   local price = { money = { amount = getGaragePrice(garageToPurchase), canBeNegative = false } }
   for currency, info in pairs(price) do
