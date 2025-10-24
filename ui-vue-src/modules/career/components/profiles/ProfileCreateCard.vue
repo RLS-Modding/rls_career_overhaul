@@ -127,7 +127,6 @@ watch(challengeId, (newVal) => {
 
 const load = () => emit("load", profileName.value, false, hardcoreMode.value, challengeId.value, cheatsMode.value)
 
-
 function setActive(value) {
   isActive.value = value
   emit("card:activate", value)

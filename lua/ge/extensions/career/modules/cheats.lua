@@ -8,16 +8,20 @@ local saveData = {}
 
 local function onCareerActive(active)
     if not active then return false end
-    -- load from saveslot
     local saveSlot, savePath = career_saveSystem.getCurrentSaveSlot()
     saveData = savePath and jsonReadFile(savePath .. "/career/rls_career/" .. saveFile) or {}
   
     if not next(saveData) then
         saveData = {
-            cheatsMode = career_career.cheatsMode
+            cheatsMode = false
         }
     end
-    isCheatsMode = saveData.cheatsMode
+    
+    if saveData.cheatsMode == nil then
+        saveData.cheatsMode = false
+    end
+    
+    isCheatsMode = saveData.cheatsMode == true
     extensions.hook("onCheatsModeChanged", isCheatsMode)
 end
 
@@ -26,7 +30,11 @@ local function onSaveCurrentSaveSlot(currentSavePath)
 end
 
 M.enableCheatsMode = function(enabled)
-    isCheatsMode = enabled
+    if enabled and not isCheatsMode then
+        isCheatsMode = true
+        saveData.cheatsMode = true
+        extensions.hook("onCheatsModeChanged", isCheatsMode)
+    end
 end
 
 M.isCheatsMode = function()

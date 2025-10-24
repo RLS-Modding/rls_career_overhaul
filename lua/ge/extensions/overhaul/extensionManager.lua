@@ -135,16 +135,25 @@ local function onVehicleSpawned(_, veh)
     ]])
 end
 
+local function updateEditorBlocking()
+    local blockedActions = {"editorToggle", "editorSafeModeToggle", "vehicleEditorToggle"}
+    core_input_actionFilter.setGroup("RLS_DEACTIVATION", blockedActions)
+    local cheatsEnabled = career_modules_cheats and career_modules_cheats.isCheatsMode()
+    if not M.isDevKeyValid() and career_career.isActive() and not cheatsEnabled then
+        core_input_actionFilter.addAction(0, "RLS_DEACTIVATION", true)
+    else
+        core_input_actionFilter.addAction(0, "RLS_DEACTIVATION", false)
+    end
+end
+
 M.onWorldReadyState = function(state)
     if state == 2 then
-        local blockedActions = {"editorToggle", "editorSafeModeToggle", "vehicleEditorToggle"}
-        core_input_actionFilter.setGroup("RLS_DEACTIVATION", blockedActions)
-        if not M.isDevKeyValid() and career_career.isActive() then
-            core_input_actionFilter.addAction(0, "RLS_DEACTIVATION", true)
-        else
-            core_input_actionFilter.addAction(0, "RLS_DEACTIVATION", false)
-        end
+        updateEditorBlocking()
     end
+end
+
+M.onCheatsModeChanged = function(enabled)
+    updateEditorBlocking()
 end
   
 M.onVehicleSpawned = onVehicleSpawned

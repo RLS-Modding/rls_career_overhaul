@@ -32,6 +32,9 @@ local actionWhitelist = deepcopy(devActions)
 arrayConcat(actionWhitelist, nodegrabberActions)
 local blockedActions = core_input_actionFilter.createActionTemplate({"vehicleTeleporting", "vehicleMenues", "physicsControls", "aiControls", "vehicleSwitching", "funStuff"}, actionWhitelist)
 
+local cheatActionWhitelist = deepcopy(devActions)
+local cheatblockedActions = core_input_actionFilter.createActionTemplate({"vehicleMenues", "aiControls", "funStuff"}, cheatActionWhitelist)
+
 -- TODO maybe save whenever we go into the esc menu
 
 local function updateNodegrabberBlocking()
@@ -52,7 +55,12 @@ local function blockInputActions(block)
     core_input_actionFilter.addAction(0, 'careerBlockedDevActions', block)
   end
 
-  core_input_actionFilter.setGroup('careerBlockedActions', blockedActions)
+  local actionsToBlock = blockedActions
+  if career_modules_cheats and career_modules_cheats.isCheatsMode() then
+    actionsToBlock = cheatblockedActions
+  end
+
+  core_input_actionFilter.setGroup('careerBlockedActions', actionsToBlock)
   core_input_actionFilter.addAction(0, 'careerBlockedActions', block)
 
   updateNodegrabberBlocking()
@@ -66,6 +74,11 @@ end
 local function onGlobalCameraSet(modeName)
   if not careerActive then return end
   updateNodegrabberBlocking()
+end
+
+local function onCheatsModeChanged(enabled)
+  if not careerActive then return end
+  blockInputActions(true)
 end
 
 local debugModules = {}
@@ -714,6 +727,7 @@ M.onAnyMissionChanged = onAnyMissionChanged
 M.onVehicleAddedToInventory = onVehicleAddedToInventory
 M.onCameraModeChanged = onCameraModeChanged
 M.onGlobalCameraSet = onGlobalCameraSet
+M.onCheatsModeChanged = onCheatsModeChanged
 
 M.sendCurrentSaveSlotName = sendCurrentSaveSlotName
 
