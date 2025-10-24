@@ -173,10 +173,12 @@ const props = defineProps({
 })
 
 const hasInsufficientFunds = computed(() => {
+  if (props.vehicleShoppingData.cheatsMode) return false
   return props.vehicle.Value > props.vehicleShoppingData.playerAttributes.money.value
 })
 
 const hasInsufficientTaxiFunds = computed(() => {
+  if (props.vehicleShoppingData.cheatsMode) return false
   return props.vehicleShoppingData.playerAttributes.money.value < props.vehicle.quickTravelPrice
 })
 

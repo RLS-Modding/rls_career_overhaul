@@ -1179,6 +1179,10 @@ export default {
     onCareerModulesActivated: () => {},
   },
 
+  career_modules_payment: {
+    canPay: price => Object,
+  },
+
   career_modules_switchMap: {
     switchMap: (level) => {}
   }

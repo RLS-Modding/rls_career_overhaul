@@ -268,6 +268,7 @@ local function getShoppingData()
   data.playerAttributes = career_modules_playerAttributes.getAllAttributes()
   data.inventoryHasFreeSlot = career_modules_inventory.hasFreeSlot()
   data.numberOfFreeSlots = career_modules_inventory.getNumberOfFreeSlots()
+  data.cheatsMode = career_modules_cheats and career_modules_cheats.isCheatsMode() or false
 
   data.tutorialPurchase = (not career_modules_linearTutorial.getTutorialFlag("purchasedFirstCar")) or nil
 

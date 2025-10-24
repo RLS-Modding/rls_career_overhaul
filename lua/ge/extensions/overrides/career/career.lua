@@ -32,8 +32,7 @@ local actionWhitelist = deepcopy(devActions)
 arrayConcat(actionWhitelist, nodegrabberActions)
 local blockedActions = core_input_actionFilter.createActionTemplate({"vehicleTeleporting", "vehicleMenues", "physicsControls", "aiControls", "vehicleSwitching", "funStuff"}, actionWhitelist)
 
-local cheatActionWhitelist = {}
-local cheatblockedActions = core_input_actionFilter.createActionTemplate({"vehicleMenues", "aiControls", "funStuff"}, cheatActionWhitelist)
+local cheatblockedActions = core_input_actionFilter.createActionTemplate({"aiControls", "funStuff"})
 
 -- TODO maybe save whenever we go into the esc menu
 

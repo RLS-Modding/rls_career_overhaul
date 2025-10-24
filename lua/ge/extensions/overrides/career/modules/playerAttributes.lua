@@ -25,9 +25,6 @@ local function init()
   if career_career.hardcoreMode then
     startingCapital = 0
   end
-  if career_modules_cheats and career_modules_cheats.isCheatsMode() then
-    startingCapital = 1e12
-  end
   M.setAttributes({money=startingCapital}, {label="Starting Capital"})
 end
 
@@ -51,7 +48,7 @@ local function addAttributes(change, reason, fullprice)
     if (attributeName == "vouchers" and value > 0) and career_modules_hardcore.isHardcoreMode() then
       change[attributeName] = 0
     end
-    if attributeName == "money" and value < 0 and career_modules_cheats and career_modules_cheats.isCheatsMode() then
+    if attributeName == "money" and career_modules_cheats and career_modules_cheats.isCheatsMode() then
       change[attributeName] = 0
     end
     if value > 0  and not fullprice then
@@ -117,11 +114,7 @@ local function getAttributeValue(attributeName)
   if not attributes then
     return 0
   end
-  local value = (attributes[attributeName] or baseAttribute).value
-  if attributeName == "money" and career_modules_cheats and career_modules_cheats.isCheatsMode() then
-    return 1e12
-  end
-  return value
+  return (attributes[attributeName] or baseAttribute).value
 end
 
 local function getAllAttributes()
@@ -170,10 +163,6 @@ local function onExtensionLoaded()
         losses = -data.losses.all
       end
       attributes[name].value = math.min(data.value, gains - losses, moneySum)
-      
-      if career_modules_cheats and career_modules_cheats.isCheatsMode() then
-        attributes[name].value = 1e12
-      end
     end
   end
 end
@@ -200,9 +189,6 @@ local function onCareerModulesActivated()
 end
 
 local function onCheatsModeChanged(enabled)
-  if enabled and attributes and attributes.money then
-    attributes.money.value = 1e12
-  end
 end
 
 -- logbook integration

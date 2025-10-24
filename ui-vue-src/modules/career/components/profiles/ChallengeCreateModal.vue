@@ -3,7 +3,7 @@
     <div class="ccm-content" @click.stop>
       <div class="ccm-header">
         <div class="ccm-title">Create Challenge</div>
-        <button class="ccm-close" @click="onRequestClose" @mousedown.stop>×</button>
+        <button class="ccm-close" @click.stop="onRequestClose" @mousedown.stop>×</button>
       </div>
 
       <div class="ccm-body">
@@ -37,8 +37,8 @@
             <div class="ccm-hint">Leave empty to generate a random seed, or enter a custom seed</div>
           </div>
           <div class="ccm-seed-row">
-            <button class="ccm-seed-btn ccm-seed-generate" type="button" @click="onGenerateSeed" @mousedown.stop>Generate Random Seed</button>
-            <button class="ccm-seed-btn ccm-seed-action ccm-seed-copy" type="button" @click="onCopySeed" @mousedown.stop :disabled="!seedInput">{{ copyStatus || 'Copy Seed' }}</button>
+            <button class="ccm-seed-btn ccm-seed-generate" type="button" @click.stop="onGenerateSeed" @mousedown.stop>Generate Random Seed</button>
+            <button class="ccm-seed-btn ccm-seed-action ccm-seed-copy" type="button" @click.stop="onCopySeed" @mousedown.stop :disabled="!seedInput">{{ copyStatus || 'Copy Seed' }}</button>
           </div>
           <div v-if="seedError" class="ccm-seed-error">{{ seedError }}</div>
         </div>
@@ -49,7 +49,7 @@
               v-for="tab in tabs" 
               :key="tab.id"
               :class="['ccm-tab-btn', { 'ccm-tab-active': activeTab === tab.id }]"
-              @click="activeTab = tab.id"
+              @click.stop="activeTab = tab.id"
             >
               {{ tab.label }}
             </button>
@@ -162,7 +162,7 @@
                             <button 
                               class="ccm-garage-remove" 
                               type="button" 
-                              @click="removeMultiselectItem(variable.id, itemId)"
+                              @click.stop="removeMultiselectItem(variable.id, itemId)"
                               @mousedown.stop
                             >
                               ×
@@ -210,7 +210,7 @@
                 <button 
                   class="ccm-garage-default-btn" 
                   type="button" 
-                  @click="onUseDefaultGarages"
+                  @click.stop="onUseDefaultGarages"
                   :class="{ 'ccm-garage-default-active': formStartingGarages.length === 0 }"
                 >
                   Default
@@ -227,7 +227,7 @@
                       <button 
                         class="ccm-garage-remove" 
                         type="button" 
-                        @click="removeGarage(garageId)"
+                        @click.stop="removeGarage(garageId)"
                         @mousedown.stop
                       >
                         ×
@@ -287,8 +287,8 @@
       </div>
 
       <div class="ccm-footer">
-        <button class="ccm-primary" :disabled="!canSave" @click="onSave" @mousedown.stop>Save</button>
-        <button class="ccm-outline" @click="onRequestClose" @mousedown.stop>Cancel</button>
+        <button class="ccm-primary" :disabled="!canSave" @click.stop="onSave" @mousedown.stop>Save</button>
+        <button class="ccm-outline" @click.stop="onRequestClose" @mousedown.stop>Cancel</button>
       </div>
     </div>
   </div>
