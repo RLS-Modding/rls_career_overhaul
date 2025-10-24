@@ -491,13 +491,14 @@
       "name":"Belasco City Garage",
       "parkingSpotNames":[
         "serviceStationParking1",
-        "serviceStationParking2",
         "serviceStationParking3",
         "serviceStationParking4",
         "serviceStationParking5",
         "serviceStationParking6",
         "serviceStationParking7",
-        "serviceStationParking8"
+        "serviceStationParking8",
+        "serviceStationParking2"
+
       ],
       "preview":"horizon_estate.jpg",
       "zoneNames":[
@@ -1677,6 +1678,50 @@
           "fuel_apex_commercial_KEVee_pump_icon_3"
         ]
       ]
-    }
+    },
+    {
+      "description":"Fuel at the Drag strip! This must be pricy...",
+      "energyTypes":[
+        "gasoline",
+        "diesel",
+        "n2o",
+        "unknown"
+      ],
+      "id":"trilobite_drag",
+      "name":"Alder Dragway Fuel",
+      "preview":"fuel_trilobite_garage.jpg",
+      "prices":{
+        "diesel":{
+          "priceBaseline":50.53,
+          "priceRandomnessBias":0.2,
+          "priceRandomnessGain":0.1,
+          "us_9_10_tax":true
+        },
+        "gasoline":{
+          "priceBaseline":50.37,
+          "priceRandomnessBias":0.2,
+          "priceRandomnessGain":0.1,
+          "us_9_10_tax":true
+        },
+        "n2o":{
+          "priceBaseline":75.00,
+          "priceRandomnessBias":0.2,
+          "priceRandomnessGain":0.1,
+          "us_9_10_tax":true
+        },
+        "unknown":{
+          "priceBaseline":65.00,
+          "priceRandomnessBias":0.2,
+          "priceRandomnessGain":0.1,
+          "us_9_10_tax":true
+        }
+      },
+      "pumps":[
+        [
+          "fuel_trilobite_drag_pump_area_1",
+          "fuel_trilobite_drag_pump_icon_1"
+        ]
+      ]
+    }  
   ]
 }

@@ -51,3 +51,6 @@
 {"name":"night_light","class":"SimGroup","__parent":"MissionGroup"}
 {"name":"night_light_shadow","class":"SimGroup","__parent":"MissionGroup"}
 {"class":"TSStatic","__parent":"MissionGroup","position":[-833.346008,-656.162537,105.012856],"isRenderEnabled":false,"rotationMatrix":[-0.220315933,-0.975428641,0,0.975428641,-0.220315933,0,0,0,1],"scale":[0.483502626,1,0.483502626],"shapeName":"/levels/west_coast_usa/art/shapes/rls_signs/mve_rntl_sn.dae","useInstanceRenderData":true}
+{"name":"p_fuel_pump_2015_nodeoline11","internalName":"p_fuel_pump_2015_nodeoline11","class":"Prefab","__parent":"MissionGroup","position":[-263.926575,-311.656311,118.756111],"filename":"/levels/west_coast_usa/art/prefabs/p_fuel_pump_2015_trilobite.prefab.json","rotationMatrix":[0.535364747,-0.844620883,0,0.844620883,0.535364747,0,0,0,1]}
+{"name":"fuel_trilobite_drag_pump_icon_1","class":"BeamNGPointOfInterest","__parent":"MissionGroup","position":[-263.921143,-311.665283,120.83094],"rotationMatrix":[0.52385962,-0.851804554,0,0.851804554,0.52385962,0,0,0,1]}
+{"name":"fuel_trilobite_drag_pump_area_1","class":"BeamNGGameplayArea","__parent":"MissionGroup","position":[-263.332428,-311.351471,118.991615],"rotationMatrix":[-0.847919226,-0.530124903,0,0.530124903,-0.847919226,0,0,0,1],"scale":[2.20000005,0.600000024,2.74953604]}
