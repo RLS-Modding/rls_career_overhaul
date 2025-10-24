@@ -52,7 +52,7 @@ local function updateNodegrabberBlocking()
 end
 
 local function blockInputActions(block)
-  if shipping_build then
+  if shipping_build and not (career_modules_cheats and career_modules_cheats.isCheatsMode()) then
     core_input_actionFilter.setGroup('careerBlockedDevActions', devActions)
     core_input_actionFilter.addAction(0, 'careerBlockedDevActions', block)
   end
