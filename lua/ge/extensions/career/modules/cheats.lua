@@ -12,8 +12,9 @@ local function onCareerActive(active)
     saveData = savePath and jsonReadFile(savePath .. "/career/rls_career/" .. saveFile) or {}
   
     if not next(saveData) then
+        local initialCheatsMode = career_career.cheatsMode or false
         saveData = {
-            cheatsMode = false
+            cheatsMode = initialCheatsMode
         }
     end
     
