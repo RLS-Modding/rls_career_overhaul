@@ -70,7 +70,7 @@
 </template>
 
 <script setup>
-import { computed, ref, nextTick, onMounted, onBeforeUnmount } from 'vue'
+import { computed, ref, nextTick, onMounted, onBeforeUnmount, watch } from 'vue'
 import { lua } from '@/bridge'
 import ChallengeDetailModal from './ChallengeDetailModal.vue'
 import ChallengeCreateModal from './ChallengeCreateModal.vue'
@@ -95,7 +95,16 @@ const selectedChallenge = computed(() => challenges.value.find(c => c.id === pro
 
 function toggle() {
     open.value = !open.value
-    if (open.value) nextTick(position)
+    if (open.value) {
+        nextTick(position)
+        if (lua.setCEFTyping) {
+            lua.setCEFTyping(true)
+        }
+    } else {
+        if (lua.setCEFTyping) {
+            lua.setCEFTyping(false)
+        }
+    }
 }
 function position() {
     const trigger = document.querySelector('.cd-trigger')
@@ -112,8 +121,8 @@ function onDocClick(e) {
     const target = e.target
     const panel = document.querySelector('.cd-content.cd-fixed')
     const trigger = document.querySelector('.cd-trigger')
-    const creator = document.querySelector('.ccm-content')
-    const detailer = document.querySelector('.cdm-content')
+    const creator = document.querySelector('.ccm-overlay')
+    const detailer = document.querySelector('.cdm-overlay')
     if (panel && panel.contains(target)) return
     if (trigger && trigger.contains(target)) return
     if (creator && creator.contains(target)) return
@@ -164,16 +173,43 @@ onBeforeUnmount(() => {
     document.removeEventListener('mousedown', onDocClick)
     window.removeEventListener('resize', position)
     window.removeEventListener('scroll', position, true)
+    if (lua.setCEFTyping) {
+        lua.setCEFTyping(false)
+    }
 })
-function select(c) { emit('update:modelValue', c.id); open.value = false }
-function clear() { emit('update:modelValue', null); open.value = false }
+
+watch([detailOpen, createOpen], ([detail, create]) => {
+    const anyModalOpen = detail || create
+    if (!anyModalOpen && !open.value) {
+        if (lua.setCEFTyping) {
+            lua.setCEFTyping(false)
+        }
+    }
+})
+
+function select(c) { 
+    emit('update:modelValue', c.id)
+    open.value = false
+    if (lua.setCEFTyping) {
+        lua.setCEFTyping(false)
+    }
+}
+function clear() { 
+    emit('update:modelValue', null)
+    open.value = false
+    if (lua.setCEFTyping) {
+        lua.setCEFTyping(false)
+    }
+}
 function openDetails(c) { 
     detailChallenge.value = c
-    detailOpen.value = true 
+    detailOpen.value = true
+    open.value = false
 }
 function selectFromModal() { if (detailChallenge.value) { select(detailChallenge.value); detailOpen.value = false; detailChallenge.value = null } }
 function openCreate() { 
-    createOpen.value = true 
+    createOpen.value = true
+    open.value = false
 }
 async function onCreated(challengeId) { 
     await fetchChallenges()

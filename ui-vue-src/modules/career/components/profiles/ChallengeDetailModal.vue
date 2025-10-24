@@ -163,9 +163,18 @@ async function copySeedToClipboard() {
 }
 
 watch(() => props.open, (isOpen) => {
-    if (isOpen) {
-        loadChallengeSeed()
-        copyButtonText.value = 'Copy Seed'
+    if (!isOpen) {
+        if (lua.setCEFTyping) {
+            lua.setCEFTyping(false)
+        }
+        return
+    }
+
+    loadChallengeSeed()
+    copyButtonText.value = 'Copy Seed'
+    
+    if (lua.setCEFTyping) {
+        lua.setCEFTyping(true)
     }
 })
 
