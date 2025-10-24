@@ -32,13 +32,16 @@ local actionWhitelist = deepcopy(devActions)
 arrayConcat(actionWhitelist, nodegrabberActions)
 local blockedActions = core_input_actionFilter.createActionTemplate({"vehicleTeleporting", "vehicleMenues", "physicsControls", "aiControls", "vehicleSwitching", "funStuff"}, actionWhitelist)
 
-local cheatActionWhitelist = deepcopy(devActions)
+local cheatActionWhitelist = {}
 local cheatblockedActions = core_input_actionFilter.createActionTemplate({"vehicleMenues", "aiControls", "funStuff"}, cheatActionWhitelist)
 
 -- TODO maybe save whenever we go into the esc menu
 
 local function updateNodegrabberBlocking()
-  -- enable node grabber only in walking mode
+  if (career_modules_cheats and career_modules_cheats.isCheatsMode()) then
+    return
+  end
+  -- enable node grabber only in walking mode (unless cheats are enabled)
   if careerActive and (core_camera.getActiveGlobalCameraName() or not gameplay_walk.isWalking()) then
     core_input_actionFilter.setGroup('careerNodeGrabberActions', nodegrabberActions)
     core_input_actionFilter.addAction(0, 'careerNodeGrabberActions', true)
