@@ -1,11 +1,14 @@
 <template>
   <BngCard
+    v-bng-scoped-nav="{ activated: isActive }"
     v-bng-blur
     v-bng-sound-class="'bng_hover_generic'"
-    :hideFooter="true"
+    :hideFooter="!isActive"
     :footerStyles="cardFooterStyles"
-    class="profile-create-card">
-    <div :class="{ 'create-active': isActive }" class="create-content-container">
+    class="profile-create-card"
+    @activate="() => setActive(true)"
+    @deactivate="() => setActive(false)">
+    <div v-bng-on-ui-nav:menu="onMenu" :class="{ 'create-active': isActive }" class="create-content-container">
       <template v-if="isActive">
         <BngInput
           v-model="profileName"
@@ -46,19 +49,17 @@
             <BngSwitch v-model="cheatsMode" label-before :inline="false" :disabled="challengeId !== null || hardcoreMode"> </BngSwitch>
           </div>
         </div>
-
-        <div class="actions-row">
-          <button ref="startButton" class="modern-btn modern-primary" :disabled="nameError !== null" @click="load">Start Game</button>
-          <button ref="cancelButton" class="modern-btn modern-cancel" @click="cancel">Cancel</button>
-        </div>
-        
       </template>
-      <div v-else class="create-content-cover" @click="activateCard">
+      <div v-else class="create-content-cover" @click="setActive(true)">
         <div class="cover-plus-container">
           <div class="cover-plus-button">+</div>
         </div>
       </div>
     </div>
+    <template #buttons>
+      <button ref="startButton" class="modern-btn modern-primary" :disabled="nameError !== null" @click="load">Start Game</button>
+      <button ref="cancelButton" class="modern-btn modern-cancel" @click="setActive(false)">Cancel</button>
+    </template>
   </BngCard>
 </template>
 
@@ -132,31 +133,14 @@ function setActive(value) {
   emit("card:activate", value)
 }
 
-function cancel(event) {
-  event.preventDefault()
-  event.stopPropagation()
-  setActive(false)
-}
-
-function activateCard(event) {
-  event.stopPropagation()
-  setActive(true)
-}
-
-function onOutsideClick(event) {
-  // Only close if clicking outside the card bounds
-  if (!event.target.closest('.profile-create-card')) {
-    setActive(false)
-  }
-}
-
 function onEnter(event) {
   event.preventDefault()
   const focusButton = nameError.value ? cancelButton : startButton
-  if (focusButton.value) {
-    const el = focusButton.value.$el || focusButton.value
-    nextTick(() => setFocus(el))
-  }
+  if (focusButton.value) nextTick(() => setFocus(focusButton.value))
+}
+
+function onMenu() {
+  setActive(false)
 }
 </script>
 
@@ -175,18 +159,6 @@ function onEnter(event) {
     flex-direction: column;
     height: 100%;
   }
-  :deep(.bng-button) {
-    font-size: calc-ui-rem() !important;
-    line-height: calc-ui-rem(1.5) !important;
-    margin: calc-ui-rem(0.25) !important;
-    &, .background {
-      border-radius: calc-ui-rem(0.25) !important;
-    }
-  }
-  :deep(.start-btn-modern) {
-    background-image: linear-gradient(90deg, #e96c21, #c85012);
-    border: 0 !important;
-  }
 }
 
 
@@ -195,7 +167,7 @@ function onEnter(event) {
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
-  padding: 1em 1.25em 1.25em;
+  padding: 1em 1.25em;
   gap: 1em;
 
   &.create-active {
@@ -213,11 +185,11 @@ function onEnter(event) {
 .title-icon-green { background: rgba(34, 197, 94, 0.3); }
 .title-label { color: #fff; font-weight: 600; }
 
-.actions-row {
-  display:flex;
+:deep(.card-footer) {
+  display: flex;
   gap: 0.75em;
   justify-content: center;
-  margin-top: auto;
+  padding: 1em 1.25em;
 }
 
 .modern-btn { 
@@ -226,6 +198,8 @@ function onEnter(event) {
   padding: 0.45em 0.8em !important; 
   box-shadow: 0 6px 16px rgba(0,0,0,0.25) !important; 
   transition: transform 0.08s ease, box-shadow 0.12s ease, filter 0.12s ease; 
+  font-size: calc-ui-rem() !important;
+  cursor: pointer;
 }
 .modern-primary { 
   background-image: linear-gradient(90deg, #ff7a1a, #e85f00) !important; 
@@ -233,6 +207,10 @@ function onEnter(event) {
   flex: 2 1 0%;
   &:hover { filter: brightness(1.05); transform: translateY(-1px); box-shadow: 0 8px 20px rgba(0,0,0,0.35) !important; }
   &:active { transform: translateY(0); filter: brightness(0.98); }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 }
 .modern-cancel { 
   background: rgba(55,65,81,0.75) !important; 
