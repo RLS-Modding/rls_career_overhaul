@@ -1,6 +1,7 @@
 <template>
-  <div v-if="open" class="ccm-overlay">
-    <div class="ccm-content" @click.stop>
+  <div v-show="open" class="ccm-overlay" @click.stop @mousedown.stop>
+    <!-- MODAL IS RENDERING -->
+    <div class="ccm-content" @click.stop @mousedown.stop>
       <div class="ccm-header">
         <div class="ccm-title">Create Challenge</div>
         <button class="ccm-close" @click.stop="onRequestClose" @mousedown.stop>×</button>
@@ -73,7 +74,12 @@
                 </div>
                 <div class="ccm-field">
                   <label>Win Condition</label>
-                  <BngSelect v-model="formWinCondition" :options="winConditionOptions" :config="winConditionConfig" placeholder="Select win condition" />
+                  <template v-if="winConditionOptions && winConditionOptions.length > 0">
+                    <BngSelect v-model="formWinCondition" :options="winConditionOptions" :config="winConditionConfig" placeholder="Select win condition" />
+                  </template>
+                  <template v-else>
+                    <div class="ccm-hint">Loading win conditions…</div>
+                  </template>
                 </div>
               </div>
 
@@ -370,21 +376,33 @@ const seedPayload = computed(() => {
 })
 
 const winConditionOptions = computed(() => {
-  const raw = props.editorData && props.editorData.winConditions
-  const list = Array.isArray(raw) ? raw : []
-  return list.map(w => ({
-    id: w.id,
-    name: w.name || w.id,
-    description: w.description || '',
-    variables: w.variables || {},
-    requiresLoans: w.requiresLoans || false
-  })).map(w => ({ value: w.id, label: w.name, data: w }))
+  try {
+    console.log('[ChallengeCreateModal] winConditionOptions computed running')
+    const raw = props.editorData && props.editorData.winConditions
+    const list = Array.isArray(raw) ? raw : []
+    console.log('[ChallengeCreateModal] winConditionOptions list length:', list.length)
+    return list.map(w => ({
+      id: w.id,
+      name: w.name || w.id,
+      description: w.description || '',
+      variables: w.variables || {},
+      requiresLoans: w.requiresLoans || false
+    })).map(w => ({ value: w.id, label: w.name, data: w }))
+  } catch (error) {
+    console.error('[ChallengeCreateModal] Error in winConditionOptions:', error)
+    return []
+  }
 })
 const winConditionConfig = { value: opt => opt.value, label: opt => opt.label }
 
 const variableDefinitions = computed(() => {
-  const selected = winConditionOptions.value.find(opt => opt.value === formWinCondition.value)
-  return (selected && selected.data && selected.data.variables) || {}
+  try {
+    const selected = winConditionOptions.value.find(opt => opt.value === formWinCondition.value)
+    return (selected && selected.data && selected.data.variables) || {}
+  } catch (error) {
+    console.error('[ChallengeCreateModal] Error in variableDefinitions:', error)
+    return {}
+  }
 })
 
 const loansRequired = computed(() => {
@@ -402,9 +420,12 @@ const multiselectVariables = computed(() => {
 })
 
 const activeVariables = computed(() => {
-  const defs = variableDefinitions.value
-  const result = []
-  for (const [variableId, definition] of Object.entries(defs)) {
+  try {
+    console.log('[ChallengeCreateModal] activeVariables computed running')
+    const defs = variableDefinitions.value
+    console.log('[ChallengeCreateModal] variableDefinitions:', defs)
+    const result = []
+    for (const [variableId, definition] of Object.entries(defs)) {
     const type = definition.type || 'number'
     if (type === 'number' || type === 'integer') {
       result.push({
@@ -462,7 +483,12 @@ const activeVariables = computed(() => {
     const db = (defs[b.id] && defs[b.id].order) || 0
     return da - db
   })
+  console.log('[ChallengeCreateModal] activeVariables result:', result)
   return result
+  } catch (error) {
+    console.error('[ChallengeCreateModal] Error in activeVariables:', error)
+    return []
+  }
 })
 
 const availableGarages = computed(() => {
@@ -488,10 +514,10 @@ const tabs = computed(() => {
 })
 
 watch(tabs, (tabList) => {
-  if (!tabList.some(tab => tab.id === activeTab.value)) {
+  if (tabList && tabList.length > 0 && !tabList.some(tab => tab.id === activeTab.value)) {
     activeTab.value = tabList[0]?.id || 'starting'
   }
-})
+}, { immediate: false })
 
 function initializeVariables() {
   const defs = variableDefinitions.value
@@ -559,32 +585,56 @@ const interestPercent = computed({
   }
 })
 
-watch(() => props.open, (isOpen) => {
+watch(() => props.open, (isOpen, oldIsOpen) => {
+  console.log('[ChallengeCreateModal] ========== PROPS.OPEN CHANGED ==========')
+  console.log('[ChallengeCreateModal] oldIsOpen:', oldIsOpen, '→ newIsOpen:', isOpen)
+  console.log('[ChallengeCreateModal] current props.open:', props.open)
+  console.trace('[ChallengeCreateModal] Stack trace for props.open change')
+  
   if (!isOpen) {
+    console.log('[ChallengeCreateModal] Closing modal - props.open became false')
+    console.trace('[ChallengeCreateModal] Stack trace for closing')
     if (lua.setCEFTyping) {
       lua.setCEFTyping(false)
     }
     return
   }
 
-  if (seedInput.value && seedInput.value.trim() !== '') {
-    applySeedToForm(seedInput.value)
-  } else {
-    resetFormDefaults()
-    updateSeedFromPayload()
+  console.log('[ChallengeCreateModal] Opening modal')
+  console.log('[ChallengeCreateModal] editorData:', props.editorData)
+  console.log('[ChallengeCreateModal] editorData structure:', JSON.stringify(props.editorData, null, 2))
+  
+  try {
+    console.log('[ChallengeCreateModal] About to check seedInput')
+    if (seedInput.value && seedInput.value.trim() !== '') {
+      console.log('[ChallengeCreateModal] Applying seed from input')
+      applySeedToForm(seedInput.value)
+    } else {
+      console.log('[ChallengeCreateModal] Resetting form defaults')
+      resetFormDefaults()
+      console.log('[ChallengeCreateModal] Updating seed from payload')
+      updateSeedFromPayload()
+    }
+
+    console.log('[ChallengeCreateModal] Creating initial snapshot')
+    initialSnapshot.value = JSON.stringify(form.value)
+    console.log('[ChallengeCreateModal] Initial snapshot created')
+
+    nextTick(() => {
+      console.log('[ChallengeCreateModal] In nextTick callback')
+      if (lua.setCEFTyping) {
+        lua.setCEFTyping(true)
+      }
+      const firstInput = document.querySelector('.ccm-input')
+      if (firstInput) {
+        firstInput.focus()
+      }
+    })
+    console.log('[ChallengeCreateModal] Watch handler completed successfully')
+  } catch (error) {
+    console.error('[ChallengeCreateModal] Error in watch handler:', error)
+    console.error('[ChallengeCreateModal] Error stack:', error.stack)
   }
-
-  initialSnapshot.value = JSON.stringify(form.value)
-
-  nextTick(() => {
-    if (lua.setCEFTyping) {
-      lua.setCEFTyping(true)
-    }
-    const firstInput = document.querySelector('.ccm-input')
-    if (firstInput) {
-      firstInput.focus()
-    }
-  })
 })
 
 function handleSeedGenerated(payload) {
@@ -638,12 +688,19 @@ function handleSeedDecodeResponse(payload) {
 }
 
 onMounted(() => {
+  console.log('[ChallengeCreateModal] Component MOUNTED')
+  console.log('[ChallengeCreateModal] Initial props.open:', props.open)
+  console.log('[ChallengeCreateModal] Initial editorData:', props.editorData)
+  console.trace('[ChallengeCreateModal] Stack trace for mount')
   events.on('challengeSeedGenerated', handleSeedGenerated)
   events.on('challengeSeedEncodeResponse', handleSeedEncodeResponse)
   events.on('challengeSeedDecodeResponse', handleSeedDecodeResponse)
 })
 
 onBeforeUnmount(() => {
+  console.log('[ChallengeCreateModal] Component UNMOUNTING')
+  console.log('[ChallengeCreateModal] props.open at unmount:', props.open)
+  console.trace('[ChallengeCreateModal] Stack trace for unmount')
   events.off('challengeSeedGenerated', handleSeedGenerated)
   events.off('challengeSeedEncodeResponse', handleSeedEncodeResponse)
   events.off('challengeSeedDecodeResponse', handleSeedDecodeResponse)
@@ -657,8 +714,16 @@ const canSave = computed(() => !!formId.value && !!formName.value)
 const isDirty = computed(() => JSON.stringify(form.value) !== initialSnapshot.value)
 
 function onRequestClose() {
-  if (!props.open) return
+  console.log('[ChallengeCreateModal] ========== onRequestClose CALLED ==========')
+  console.log('[ChallengeCreateModal] props.open:', props.open)
+  console.trace('[ChallengeCreateModal] Stack trace for onRequestClose')
+  if (!props.open) {
+    console.log('[ChallengeCreateModal] onRequestClose blocked - already closed')
+    return
+  }
+  console.log('[ChallengeCreateModal] Emitting close event')
   emit('close')
+  console.log('[ChallengeCreateModal] ========== close event EMITTED ==========')
 }
 
 async function onSave() {

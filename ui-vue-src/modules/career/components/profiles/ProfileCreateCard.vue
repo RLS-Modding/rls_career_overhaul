@@ -3,74 +3,70 @@
     v-bng-scoped-nav="{ activated: isActive }"
     v-bng-blur
     v-bng-sound-class="'bng_hover_generic'"
-    :hideFooter="!isActive"
-    :footerStyles="cardFooterStyles"
+    :hideFooter="true"
     class="profile-create-card"
     @activate="() => setActive(true)"
     @deactivate="() => setActive(false)">
     <div v-bng-on-ui-nav:menu="onMenu" :class="{ 'create-active': isActive }" class="create-content-container">
-      <template v-if="isActive">
-        <BngInput
-          v-model="profileName"
-          :maxlength="PROFILE_NAME_MAX_LENGTH"
-          :validate="validateFn"
-          :errorMessage="nameError"
-          externalLabel="Profile Name"
-          @keydown.enter="onEnter" />
+      <div v-show="isActive" class="active-content">
+        <div class="content-sections">
+          <BngInput
+            v-model="profileName"
+            :maxlength="PROFILE_NAME_MAX_LENGTH"
+            :validate="validateFn"
+            :errorMessage="nameError"
+            externalLabel="Profile Name"
+            @keydown.enter="onEnter" />
 
-        <div class="section">
-          <div class="section-title-row">
-            <div class="title-icon title-icon-orange" />
-            <div class="title-label">Challenge Mode</div>
+          <div class="section">
+            <div class="section-title-row">
+              <div class="title-icon title-icon-orange" />
+              <div class="title-label">Challenge Mode</div>
+            </div>
+            <ChallengeDropdown ref="challengeDropdownRef" v-model="challengeId" :disabled="cheatsMode" />
           </div>
-          <ChallengeDropdown ref="challengeDropdownRef" v-model="challengeId" :disabled="cheatsMode" />
-        </div>
 
-        <div class="hc-card">
-          <div class="hc-left">
-            <div class="title-icon title-icon-red" />
-            <div class="hc-texts">
-              <div class="hc-title">Hardcore</div>
+          <div class="hc-card">
+            <div class="hc-left">
+              <div class="title-icon title-icon-red" />
+              <div class="hc-texts">
+                <div class="hc-title">Hardcore</div>
+              </div>
+            </div>
+            <div class="hc-right">
+              <BngSwitch v-model="hardcoreMode" label-before :inline="false" :disabled="cheatsMode"> </BngSwitch>
             </div>
           </div>
-          <div class="hc-right">
-            <BngSwitch v-model="hardcoreMode" label-before :inline="false" :disabled="cheatsMode"> </BngSwitch>
+
+          <div class="hc-card">
+            <div class="hc-left">
+              <div class="title-icon title-icon-green" />
+              <div class="hc-texts">
+                <div class="hc-title">Cheats</div>
+              </div>
+            </div>
+            <div class="hc-right">
+              <BngSwitch v-model="cheatsMode" label-before :inline="false" :disabled="challengeId !== null || hardcoreMode"> </BngSwitch>
+            </div>
           </div>
         </div>
 
-        <div class="hc-card">
-          <div class="hc-left">
-            <div class="title-icon title-icon-green" />
-            <div class="hc-texts">
-              <div class="hc-title">Cheats</div>
-            </div>
-          </div>
-          <div class="hc-right">
-            <BngSwitch v-model="cheatsMode" label-before :inline="false" :disabled="challengeId !== null || hardcoreMode"> </BngSwitch>
-          </div>
+        <div class="card-buttons">
+          <button ref="startButton" class="modern-btn modern-primary" :disabled="nameError !== null" @click="load">Start Game</button>
+          <button ref="cancelButton" class="modern-btn modern-cancel" @click="closeCard">Cancel</button>
         </div>
-      </template>
-      <div v-else class="create-content-cover" @click="setActive(true)">
+      </div>
+      <div v-show="!isActive" class="create-content-cover" @click="setActive(true)">
         <div class="cover-plus-container">
           <div class="cover-plus-button">+</div>
         </div>
       </div>
     </div>
-    <template #buttons>
-      <button ref="startButton" class="modern-btn modern-primary" :disabled="nameError !== null" @click="load">Start Game</button>
-      <button ref="cancelButton" class="modern-btn modern-cancel" @click="setActive(false)">Cancel</button>
-    </template>
   </BngCard>
 </template>
 
-<script>
-const cardFooterStyles = {
-  "background-color": "hsla(217, 22%, 12%, 1)",
-}
-</script>
-
 <script setup>
-import { inject, nextTick, ref, computed, watch } from "vue"
+import { inject, nextTick, ref, watch } from "vue"
 import { vBngOnUiNav, vBngScopedNav, vBngBlur, vBngSoundClass } from "@/common/directives"
 import { BngButton, BngCard, BngInput, BngSwitch, LABEL_ALIGNMENTS } from "@/common/components/base"
 import { PROFILE_NAME_MAX_LENGTH } from "../../stores/profilesStore"
@@ -91,7 +87,6 @@ const startButton = ref(null)
 const cancelButton = ref(null)
 const challengeDropdownRef = ref(null)
 
-// TODO: seems hacky but will be updated when input validation has been improved
 const validateFn = name => {
   const res = validateName(name)
   if (!res) {
@@ -129,6 +124,14 @@ watch(challengeId, (newVal) => {
 const load = () => emit("load", profileName.value, false, hardcoreMode.value, challengeId.value, cheatsMode.value)
 
 function setActive(value) {
+  if (value === false) {
+    const creator = document.querySelector('.ccm-overlay')
+    const detailer = document.querySelector('.cdm-overlay')
+    if (creator || detailer) {
+      return
+    }
+  }
+  console.log('[ProfileCreateCard] setActive:', value)
   isActive.value = value
   emit("card:activate", value)
 }
@@ -142,6 +145,12 @@ function onEnter(event) {
 function onMenu() {
   setActive(false)
 }
+
+function closeCard() {
+  console.log('[ProfileCreateCard] closeCard called')
+  isActive.value = false
+  emit("card:activate", false)
+}
 </script>
 
 <style lang="scss" scoped>
@@ -151,7 +160,6 @@ function onMenu() {
   font-size: calc-ui-rem();
   color: white;
 
-  // temp
   :deep(.card-cnt) {
     border-radius: calc-ui-rem(1) !important;
     box-shadow: 0 8px 24px rgba(0,0,0,0.4);
@@ -167,38 +175,66 @@ function onMenu() {
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
-  padding: 1em 1.25em;
+  padding: 1.25em;
   gap: 1em;
 
   &.create-active {
     background: linear-gradient(180deg, rgba(17,24,39,0.95), rgba(17,24,39,0.9));
   }
 }
-.modern-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1em; align-items: start; }
-.modern-col { display: flex; flex-direction: column; gap: 0.5em; }
 
-.section { display: flex; flex-direction: column; gap: 0.75em; }
-.section-title-row { display: flex; align-items: center; gap: 0.6em; }
-.title-icon { width: 18px; height: 18px; border-radius: 6px; }
+.active-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  gap: 1em;
+}
+
+.content-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+}
+
+.section { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 1em; 
+}
+.section-title-row { 
+  display: flex; 
+  align-items: center; 
+  gap: 0.6em; 
+}
+.title-icon { 
+  width: 20px; 
+  height: 20px; 
+  border-radius: 6px; 
+  flex-shrink: 0;
+}
 .title-icon-orange { background: rgba(251, 146, 60, 0.3); }
 .title-icon-red { background: rgba(248, 113, 113, 0.3); }
 .title-icon-green { background: rgba(34, 197, 94, 0.3); }
-.title-label { color: #fff; font-weight: 600; }
+.title-label { color: #fff; font-weight: 600; font-size: 0.95em; }
 
-:deep(.card-footer) {
+.card-buttons {
   display: flex;
   gap: 0.75em;
   justify-content: center;
-  padding: 1em 1.25em;
+  padding-top: 1.5em;
+  border-top: 1px solid rgba(100, 116, 139, 0.2);
+  margin-top: auto;
 }
 
 .modern-btn { 
   border: 0 !important; 
   border-radius: 10px !important; 
-  padding: 0.45em 0.8em !important; 
+  padding: 0.5em 1em !important; 
   box-shadow: 0 6px 16px rgba(0,0,0,0.25) !important; 
   transition: transform 0.08s ease, box-shadow 0.12s ease, filter 0.12s ease; 
   font-size: calc-ui-rem() !important;
+  font-weight: 500;
   cursor: pointer;
 }
 .modern-primary { 
@@ -210,26 +246,59 @@ function onMenu() {
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    transform: none !important;
   }
 }
 .modern-cancel { 
-  background: rgba(55,65,81,0.75) !important; 
+  background: rgba(55,65,81,0.85) !important; 
   border: 1px solid rgba(156,163,175,0.4) !important; 
   color: #f3f4f6 !important; 
   flex: 1 1 0%;
-  &:hover { filter: brightness(1.06); transform: translateY(-1px); box-shadow: 0 8px 20px rgba(0,0,0,0.3) !important; }
+  &:hover { 
+    filter: brightness(1.1); 
+    transform: translateY(-1px); 
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3) !important; 
+    background: rgba(55,65,81,0.95) !important;
+  }
   &:active { transform: translateY(0); filter: brightness(0.98); }
 }
 
-.hc-card { display: flex; align-items: center; justify-content: space-between; padding: 0.75em; background: rgba(30,41,59,0.6); border: 1px solid rgba(100,116,139,0.35); border-radius: 14px; }
-.hc-left { display: flex; align-items: center; gap: 0.6em; }
-.hc-card .title-icon { width: 22px; height: 22px; border-radius: 6px; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06); }
+.hc-card { 
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; 
+  padding: 0.875em; 
+  background: rgba(30,41,59,0.6); 
+  border: 1px solid rgba(100,116,139,0.35); 
+  border-radius: 12px; 
+}
+.hc-left { 
+  display: flex; 
+  align-items: center; 
+  gap: 0.65em; 
+}
+.hc-card .title-icon { 
+  width: 22px; 
+  height: 22px; 
+  border-radius: 6px; 
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06); 
+  flex-shrink: 0;
+}
 .hc-card .title-icon-red { background: rgba(148, 63, 63, 0.75); }
 .hc-card .title-icon-green { background: rgba(34, 197, 94, 0.75); }
-.hc-texts { display: flex; flex-direction: column; }
-.hc-title { color: #fff; font-weight: 600; }
-.hc-sub { color: #94a3b8; font-size: 0.9em; }
-.hc-right { display:flex; align-items:center; }
+.hc-texts { 
+  display: flex; 
+  flex-direction: column; 
+}
+.hc-title { 
+  color: #fff; 
+  font-weight: 600; 
+  font-size: 0.95em;
+}
+.hc-right { 
+  display: flex; 
+  align-items: center; 
+}
 
 .create-content-cover {
   display: flex;
@@ -258,43 +327,5 @@ function onMenu() {
       color: rgba(255,255,255,0.25);
     }
   }
-}
-
-.tutorial-desc {
-  padding-top: 1.5em;
-  text-align: left;
-  color: var(--bng-cool-gray-400);
-  margin-top: auto;
-  padding-top: 0;
-
-  &.checked {
-    color: #fff !important;
-  }
-}
-
-.challenge-mode {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75em;
-}
-.challenge-panel {
-  background: rgba(30, 41, 59, 0.6);
-  border: 1px solid rgba(100, 116, 139, 0.3);
-  border-radius: calc-ui-rem(0.5);
-  padding: 0.75em;
-}
-.challenge-options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5em;
-}
-.challenge-desc {
-  color: var(--bng-cool-gray-300);
-}
-.challenge-custom {
-  margin-top: 0.5em;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.5em;
 }
 </style>

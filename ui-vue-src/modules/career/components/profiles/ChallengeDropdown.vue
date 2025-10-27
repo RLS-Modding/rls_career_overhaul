@@ -63,7 +63,7 @@
                 @close="detailOpen = false; detailChallenge = null" @select="selectFromModal" />
         </teleport>
         <teleport to="body">
-            <ChallengeCreateModal :open="createOpen" :editorData="editorData" @close="createOpen = false"
+            <ChallengeCreateModal :key="'create-challenge'" :open="createOpen" :editorData="editorData" @close="() => { console.log('[ChallengeDropdown] Modal @close handler fired'); createOpen = false }"
                 @saved="onCreated" />
         </teleport>
     </div>
@@ -85,7 +85,12 @@ const fixedStyle = ref('')
 const detailOpen = ref(false)
 const detailChallenge = ref(null)
 const createOpen = ref(false)
-const editorData = ref({})
+const editorData = ref({ 
+  winConditions: [],
+  activityTypes: [],
+  availableGarages: [],
+  defaults: {}
+})
 
 const challenges = ref([])
 const loading = ref(false)
@@ -118,15 +123,27 @@ function position() {
 }
 function onDocClick(e) {
     if (!open.value) return
+    if (createOpen.value || detailOpen.value) {
+        console.log('[ChallengeDropdown] Modal open, ignoring click')
+        return
+    }
     const target = e.target
     const panel = document.querySelector('.cd-content.cd-fixed')
     const trigger = document.querySelector('.cd-trigger')
     const creator = document.querySelector('.ccm-overlay')
     const detailer = document.querySelector('.cdm-overlay')
+    console.log('[ChallengeDropdown] onDocClick fired')
+    console.log('[ChallengeDropdown] target:', target)
+    console.log('[ChallengeDropdown] createOpen.value:', createOpen.value)
+    console.log('[ChallengeDropdown] creator element found:', !!creator)
     if (panel && panel.contains(target)) return
     if (trigger && trigger.contains(target)) return
-    if (creator && creator.contains(target)) return
-    if (detailer && detailer.contains(target)) return
+    if (creator) {
+        console.log('[ChallengeDropdown] Creator modal found, not closing dropdown')
+        return
+    }
+    if (detailer) return
+    console.log('[ChallengeDropdown] Closing dropdown')
     open.value = false
 }
 async function fetchChallenges() {
@@ -164,12 +181,16 @@ async function fetchChallenges() {
 }
 
 onMounted(() => {
+    console.log('[ChallengeDropdown] Component MOUNTED')
+    console.trace('[ChallengeDropdown] Stack trace for mount')
     document.addEventListener('mousedown', onDocClick)
     window.addEventListener('resize', position)
     window.addEventListener('scroll', position, true)
     fetchChallenges()
 })
 onBeforeUnmount(() => {
+    console.log('[ChallengeDropdown] Component UNMOUNTING')
+    console.trace('[ChallengeDropdown] Stack trace for unmount')
     document.removeEventListener('mousedown', onDocClick)
     window.removeEventListener('resize', position)
     window.removeEventListener('scroll', position, true)
@@ -178,7 +199,13 @@ onBeforeUnmount(() => {
     }
 })
 
+watch(createOpen, (newVal, oldVal) => {
+    console.log('[ChallengeDropdown] createOpen changed from', oldVal, 'to', newVal)
+    console.trace('[ChallengeDropdown] Stack trace for createOpen change')
+})
+
 watch([detailOpen, createOpen], ([detail, create]) => {
+    console.log('[ChallengeDropdown] Modal states changed - detailOpen:', detail, 'createOpen:', create)
     const anyModalOpen = detail || create
     if (!anyModalOpen && !open.value) {
         if (lua.setCEFTyping) {
@@ -186,6 +213,11 @@ watch([detailOpen, createOpen], ([detail, create]) => {
         }
     }
 })
+
+watch(() => editorData.value, (newVal, oldVal) => {
+    console.log('[ChallengeDropdown] editorData changed')
+    console.log('[ChallengeDropdown] editorData keys:', Object.keys(newVal))
+}, { deep: true })
 
 function select(c) { 
     emit('update:modelValue', c.id)
@@ -207,9 +239,15 @@ function openDetails(c) {
     open.value = false
 }
 function selectFromModal() { if (detailChallenge.value) { select(detailChallenge.value); detailOpen.value = false; detailChallenge.value = null } }
-function openCreate() { 
+function openCreate(e) { 
+    console.log('[ChallengeDropdown] openCreate called')
+    if (e) {
+        e.preventDefault()
+        e.stopPropagation()
+    }
+    console.log('[ChallengeDropdown] Setting createOpen to true')
     createOpen.value = true
-    open.value = false
+    console.log('[ChallengeDropdown] After set - createOpen:', createOpen.value)
 }
 async function onCreated(challengeId) { 
     await fetchChallenges()
