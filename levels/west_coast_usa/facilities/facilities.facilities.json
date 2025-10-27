@@ -612,7 +612,7 @@
     },
     {
       "capacity":2,
-      "defaultPrice":75000,
+      "defaultPrice":50000,
       "description":"This is the starter garage, humble beginnings.",
       "icon":"poi_garage_2_round",
       "id":"chinatownGarageOverflow",
@@ -765,7 +765,7 @@
     },
     {
       "capacity":4,
-      "defaultPrice":200000,
+      "defaultPrice":150000,
       "description":"A storage aread for all your drag needs\n",
       "icon":"poi_garage_2_round",
       "id":"alderDragwayStorage",
