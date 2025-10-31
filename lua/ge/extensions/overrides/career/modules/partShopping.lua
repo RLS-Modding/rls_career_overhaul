@@ -327,6 +327,7 @@ local function sendShoppingDataToUI()
   end
 
   shoppingData.playerMoney = career_modules_playerAttributes.getAttributeValue("money")
+  shoppingData.cheatsMode = career_modules_cheats and career_modules_cheats.isCheatsMode() or false
   guihooks.trigger("partShoppingData", shoppingData)
 end
 
@@ -884,7 +885,8 @@ local function getBuyingLabel()
 end
 
 local function applyShopping()
-  if career_modules_playerAttributes.getAttributeValue("money") < shoppingCart.total then return end
+  local cheatsMode = career_modules_cheats and career_modules_cheats.isCheatsMode() or false
+  if not cheatsMode and career_modules_playerAttributes.getAttributeValue("money") < shoppingCart.total then return end
 
   local vehicles = career_modules_inventory.getVehicles()
   vehicles[currentVehicle] = previewVehicle
@@ -892,7 +894,9 @@ local function applyShopping()
   updateInventory()
   endShopping(true)
   local buyingLabel = getBuyingLabel()
-  career_modules_playerAttributes.addAttributes({money=-shoppingCart.total}, {tags={"partsBought", "buying"},label=buyingLabel})
+  if not cheatsMode then
+    career_modules_playerAttributes.addAttributes({money=-shoppingCart.total}, {tags={"partsBought", "buying"},label=buyingLabel})
+  end
   if career_career.isAutosaveEnabled() then
     career_saveSystem.saveCurrent({currentVehicle})
   else
