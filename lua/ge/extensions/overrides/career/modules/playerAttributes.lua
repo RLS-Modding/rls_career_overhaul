@@ -25,6 +25,10 @@ local function init()
   if career_career.hardcoreMode then
     startingCapital = 0
   end
+  if career_modules_cheats and career_modules_cheats.isCheatsMode() then
+  startingCapital = 1e12
+  end
+
   M.setAttributes({money=startingCapital}, {label="Starting Capital"})
 end
 
@@ -163,6 +167,11 @@ local function onExtensionLoaded()
         losses = -data.losses.all
       end
       attributes[name].value = math.min(data.value, gains - losses, moneySum)
+      
+      if career_modules_cheats and career_modules_cheats.isCheatsMode() then
+        attributes[name].value = 1e12
+      end
+
     end
   end
 end
@@ -189,6 +198,9 @@ local function onCareerModulesActivated()
 end
 
 local function onCheatsModeChanged(enabled)
+  if enabled and attributes and attributes.money then
+    attributes.money.value = 1e12
+  end
 end
 
 -- logbook integration
