@@ -410,12 +410,17 @@ defineExpose({
 .cd-item-left {
     display: flex;
     gap: 0.5rem;
-    align-items: center;
+    align-items: flex-start;
 }
 
 .cd-mini-icon {
     width: 26px;
     height: 26px;
+    min-width: 26px;
+    min-height: 26px;
+    max-width: 26px;
+    max-height: 26px;
+    flex-shrink: 0;
     border-radius: 6px;
     background: rgba(71, 85, 105, 0.5);
 }
