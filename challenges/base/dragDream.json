@@ -1,0 +1,55 @@
+{
+  "description":"No garage. No fleet. Just a dream to go drag racing. With $500 in your pocket and $15,000 in student debt, make your dream a reality and own every property at the drag strip. You don't have a garage yet, but the drag strip lets you sleep at the tuning lanes. Maybe stop by the local logistic companies and see if they will loan you a vehicle to get to work in!",
+  "economyAdjuster":{
+    "apexRacing":0.25,
+    "crawl":0.25,
+    "criminal":0.25,
+    "delivery_cash":2,
+    "delivery_cement":2,
+    "delivery_dryBulk":2,
+    "delivery_fluid":2,
+    "delivery_parcel":1.5,
+    "delivery_trailer":2,
+    "delivery_vehicle":3,
+    "drag":2.5,
+    "drift":0.25,
+    "extremeMud":0.25,
+    "freeroam":2.5,
+    "motorsport":0.25,
+    "mud":0.25,
+    "offroad":0.25,
+    "oval":0.25,
+    "police":0.25,
+    "rally":0.25,
+    "repo":0.25,
+    "taxi":0.25,
+    "taxi_business":0.25,
+    "taxi_commuter":0.25,
+    "taxi_executive":0.25,
+    "taxi_family":0.25,
+    "taxi_luxury":0.25,
+    "taxi_party":0.25,
+    "taxi_standard":0.25,
+    "taxi_student":0.25,
+    "taxi_thrill":0.25,
+    "taxi_tourist":0.25,
+    "topSpeed":0.25
+  },
+  "id":"dragDream",
+  "loans":{
+    "amount":15000,
+    "interest":0.05,
+    "payments":48
+  },
+  "name":"Drag Dream",
+  "startingCapital":500,
+  "startingGarages":[
+    "dragTuningPits"
+  ],
+  "targetGarages":[
+    "alderDragwayGarage",
+    "alderDragwayStorage"
+  ],
+  "version":"1.0",
+  "winCondition":"ownSpecificGarage"
+}
