@@ -428,7 +428,9 @@ function VehicleRepoJob:onUpdate(dtReal, dtSim, dtRaw)
     local vehiclePos = vehicle:getPosition()
     local repoPos
     local distance
-    if not getObjectByID(self.repoVehicleID) then
+    
+    local repoVehicle = self.repoVehicleID and getObjectByID(self.repoVehicleID)
+    if not repoVehicle then
         self.repoVehicleID = nil
         self.repoVehicle = nil
         if self.vehicleId then
@@ -443,10 +445,10 @@ function VehicleRepoJob:onUpdate(dtReal, dtSim, dtRaw)
         ui_message("Your Repo Vehicle has been removed.\nYou have lost your job.", 10, "info", "info")
         self:destroy()
         return
-    else
-        repoPos = self.repoVehicle:getPosition()
-        distance = (vehiclePos - repoPos):length()
     end
+    
+    repoPos = repoVehicle:getPosition()
+    distance = (vehiclePos - repoPos):length()
 
     if not self.isJobStarted then
         if distance <= 20 then
