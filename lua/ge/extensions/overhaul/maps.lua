@@ -60,6 +60,7 @@ end
 M.onExtensionLoaded = onExtensionLoaded
 M.onModActivated = retrieveCompatibleMaps
 M.onWorldReadyState = retrieveCompatibleMaps
+M.onUiReady = retrieveCompatibleMaps
 
 M.returnCompatibleMap = returnCompatibleMap
 M.getCompatibleMaps = getCompatibleMaps
