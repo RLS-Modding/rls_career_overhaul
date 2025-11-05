@@ -13,6 +13,7 @@ local MARKER_LOANS = 0x02
 local MARKER_ECONOMY_ADJUSTER = 0x03
 local MARKER_STARTING_GARAGES = 0x04
 local MARKER_DIFFICULTY = 0x05
+local MARKER_MAP = 0x06
 local MARKER_VARIABLE_NUMBER = 0x10
 local MARKER_VARIABLE_INTEGER = 0x11
 local MARKER_VARIABLE_BOOLEAN = 0x12
@@ -733,6 +734,12 @@ local function encodeChallengeToSeed(challengeData)
     end
   end
   
+  if challengeData.map and challengeData.map ~= "" then
+    table.insert(buffer, string.char(MARKER_MAP))
+    local mapHash = simpleHash(challengeData.map)
+    writeVarInt(buffer, mapHash)
+  end
+  
   table.insert(buffer, string.char(MARKER_END))
   
   local binaryData = table.concat(buffer)
@@ -853,6 +860,16 @@ local function decodeSeedToChallenge(seed)
         offset = newOffset
         table.insert(challengeData.startingGarages, "_hash_" .. garageHash)
       end
+    elseif marker == MARKER_MAP then
+      if offset + 1 > #binaryData then
+        return nil, "Incomplete map data"
+      end
+      local mapHash, newOffset, err = readVarInt(binaryData, offset)
+      if err then
+        return nil, "Failed to read map hash: " .. err
+      end
+      offset = newOffset
+      challengeData.map = "_hash_" .. mapHash
     elseif marker == MARKER_ECONOMY_ADJUSTER then
       if offset + 2 > #binaryData then
         return nil, "Incomplete economy adjuster data"
@@ -1019,6 +1036,29 @@ local function resolveHashesToNames(decodedChallenge)
     end
     
     decodedChallenge.startingGarages = resolvedGarages
+  end
+
+  -- Resolve map hash
+  if decodedChallenge.map and decodedChallenge.map:sub(1, 6) == "_hash_" then
+    local hash = tonumber(decodedChallenge.map:sub(7))
+    local availableMaps = {}
+    if overhaul_maps and overhaul_maps.getCompatibleMaps then
+      availableMaps = overhaul_maps.getCompatibleMaps() or {}
+    end
+    
+    local resolved = false
+    for mapId, mapName in pairs(availableMaps) do
+      if simpleHash(mapId) == hash then
+        decodedChallenge.map = mapId
+        resolved = true
+        break
+      end
+    end
+    
+    if not resolved then
+      print("Warning: Could not resolve map hash: " .. hash)
+      decodedChallenge.map = nil
+    end
   end
 
   return decodedChallenge

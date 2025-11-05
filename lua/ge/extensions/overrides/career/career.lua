@@ -351,7 +351,21 @@ local function createOrLoadCareerAndStart(name, specificAutosave, tutorial, hard
     end
     M.pendingChallengeId = challengeId
     
-    activateCareer(true, startingMap)
+    local mapToUse = startingMap
+    if challengeId and career_challengeModes then
+      local challengeOptions = career_challengeModes.getChallengeOptionsForCareerCreation()
+      if challengeOptions then
+        for _, challenge in ipairs(challengeOptions) do
+          if challenge.id == challengeId and challenge.map then
+            mapToUse = challenge.map
+            log("I","","Using challenge map: " .. mapToUse)
+            break
+          end
+        end
+      end
+    end
+    
+    activateCareer(true, mapToUse)
     return true
   end
   return false

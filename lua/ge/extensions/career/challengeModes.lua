@@ -841,6 +841,11 @@ local function createChallengeFromUI(challengeData)
     newChallenge.startingGarages = challengeData.startingGarages
   end
 
+  -- Include map if present
+  if challengeData.map then
+    newChallenge.map = challengeData.map
+  end
+
   -- Include loans if present
   if challengeData.loans and challengeData.loans.amount and challengeData.loans.amount > 0 then
     newChallenge.loans = challengeData.loans
@@ -1189,7 +1194,8 @@ local function getChallengeOptionsForCareerCreation()
       currentMultipliers = currentMultipliers,
       isBaseGame = challenge.isBaseGame or false,
       isLocal = challenge.isLocal or false,
-      simulationTimeSpent = challenge.simulationTimeSpent or 0
+      simulationTimeSpent = challenge.simulationTimeSpent or 0,
+      map = challenge.map
     })
   end
 

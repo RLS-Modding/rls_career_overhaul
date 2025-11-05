@@ -27,6 +27,7 @@
               <button 
                 type="button" 
                 class="map-dropdown-trigger" 
+                :disabled="isMapDisabled"
                 @click.stop="toggleMapDropdown"
                 @mousedown.stop
               >
@@ -154,6 +155,13 @@ const mapDropdownRef = ref(null)
 const mapDropdownOpen = ref(false)
 const mapDropdownStyle = ref('')
 
+const selectedChallenge = ref(null)
+
+const isMapDisabled = computed(() => {
+  if (!selectedChallenge.value) return false
+  return selectedChallenge.value.map !== null && selectedChallenge.value.map !== undefined
+})
+
 const selectedMapLabel = computed(() => {
   if (!selectedMap.value) return 'Select Starting Map'
   const map = mapOptions.value.find(m => m.id === selectedMap.value)
@@ -161,6 +169,7 @@ const selectedMapLabel = computed(() => {
 })
 
 function toggleMapDropdown() {
+  if (isMapDisabled.value) return
   mapDropdownOpen.value = !mapDropdownOpen.value
   if (mapDropdownOpen.value) {
     nextTick(positionMapDropdown)
@@ -238,9 +247,30 @@ watch(hardcoreMode, (newVal) => {
   }
 })
 
-watch(challengeId, (newVal) => {
+watch(challengeId, async (newVal) => {
   if (newVal !== null && cheatsMode.value) {
     cheatsMode.value = false
+  }
+  
+  if (newVal) {
+    try {
+      const list = await lua.career_challengeModes.getChallengeOptionsForCareerCreation()
+      const safeList = Array.isArray(list) ? list : []
+      const challenge = safeList.find(c => c.id === newVal)
+      selectedChallenge.value = challenge || null
+      if (challenge && challenge.map) {
+        selectedMap.value = challenge.map
+      } else {
+        selectedMap.value = null
+      }
+    } catch (error) {
+      console.error('Failed to fetch challenge:', error)
+      selectedChallenge.value = null
+      selectedMap.value = null
+    }
+  } else {
+    selectedChallenge.value = null
+    selectedMap.value = null
   }
 })
 

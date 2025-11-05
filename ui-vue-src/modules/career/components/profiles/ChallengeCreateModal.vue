@@ -19,38 +19,83 @@
           </div>
         </div>
 
-        <div class="ccm-field">
-          <label>Difficulty</label>
-          <div class="ccm-difficulty-dropdown" ref="difficultyDropdownRef">
-            <button 
-              type="button" 
-              class="ccm-difficulty-trigger" 
-              @click.stop="toggleDifficultyDropdown"
-              @mousedown.stop
-            >
-              <span>{{ formDifficulty }}</span>
-              <span class="ccm-difficulty-chevron">▾</span>
-            </button>
-            <teleport to="body">
-              <div 
-                v-if="difficultyDropdownOpen" 
-                class="ccm-difficulty-content" 
-                :style="difficultyDropdownStyle"
-                @click.stop
+        <div class="ccm-grid2">
+          <div class="ccm-field">
+            <label>Difficulty</label>
+            <div class="ccm-difficulty-dropdown" ref="difficultyDropdownRef">
+              <button 
+                type="button" 
+                class="ccm-difficulty-trigger" 
+                @click.stop="toggleDifficultyDropdown"
                 @mousedown.stop
               >
+                <span>{{ formDifficulty }}</span>
+                <span class="ccm-difficulty-chevron">▾</span>
+              </button>
+              <teleport to="body">
                 <div 
-                  v-for="diff in difficultyOptions" 
-                  :key="diff"
-                  class="ccm-difficulty-option"
-                  :class="{ 'ccm-difficulty-selected': diff === formDifficulty }"
-                  @click.stop="selectDifficulty(diff)"
+                  v-if="difficultyDropdownOpen" 
+                  class="ccm-difficulty-content" 
+                  :style="difficultyDropdownStyle"
+                  @click.stop
                   @mousedown.stop
                 >
-                  {{ diff }}
+                  <div 
+                    v-for="diff in difficultyOptions" 
+                    :key="diff"
+                    class="ccm-difficulty-option"
+                    :class="{ 'ccm-difficulty-selected': diff === formDifficulty }"
+                    @click.stop="selectDifficulty(diff)"
+                    @mousedown.stop
+                  >
+                    {{ diff }}
+                  </div>
                 </div>
-              </div>
-            </teleport>
+              </teleport>
+            </div>
+          </div>
+          <div class="ccm-field">
+            <label>Starting Map</label>
+            <div class="ccm-map-dropdown" ref="mapDropdownRef">
+              <button 
+                type="button" 
+                class="ccm-map-trigger" 
+                @click.stop="toggleMapDropdown"
+                @mousedown.stop
+              >
+                <span>{{ formMapLabel }}</span>
+                <span class="ccm-map-chevron">▾</span>
+              </button>
+              <teleport to="body">
+                <div 
+                  v-if="mapDropdownOpen" 
+                  class="ccm-map-content" 
+                  :style="mapDropdownStyle"
+                  @click.stop
+                  @mousedown.stop
+                >
+                  <div 
+                    class="ccm-map-option"
+                    :class="{ 'ccm-map-selected': formMap === null }"
+                    @click.stop="selectMap(null)"
+                    @mousedown.stop
+                  >
+                    Any
+                  </div>
+                  <div v-if="mapOptions.length > 0" class="ccm-map-sep"></div>
+                  <div 
+                    v-for="map in mapOptions" 
+                    :key="map.id"
+                    class="ccm-map-option"
+                    :class="{ 'ccm-map-selected': map.id === formMap }"
+                    @click.stop="selectMap(map.id)"
+                    @mousedown.stop
+                  >
+                    {{ map.name }}
+                  </div>
+                </div>
+              </teleport>
+            </div>
           </div>
         </div>
 
@@ -360,6 +405,7 @@ const formLoanInterest = ref(0.10)
 const formLoanPayments = ref(12)
 const formEconomyAdjuster = reactive({})
 const formStartingGarages = ref([])
+const formMap = ref(null)
 const seedInput = ref('')
 const seedError = ref('')
 const econQuery = ref('')
@@ -373,6 +419,11 @@ const difficultyDropdownRef = ref(null)
 const difficultyDropdownOpen = ref(false)
 const difficultyDropdownStyle = ref('')
 const difficultyOptions = ['Easy', 'Medium', 'Hard', 'Impossible']
+
+const mapDropdownRef = ref(null)
+const mapDropdownOpen = ref(false)
+const mapDropdownStyle = ref('')
+const mapOptions = ref([])
 
 function selectDifficulty(difficulty) {
   formDifficulty.value = difficulty
@@ -407,6 +458,45 @@ function onDifficultyDocClick(e) {
   difficultyDropdownOpen.value = false
 }
 
+const formMapLabel = computed(() => {
+  if (!formMap.value) return 'Any'
+  const map = mapOptions.value.find(m => m.id === formMap.value)
+  return map ? map.name : 'Any'
+})
+
+function toggleMapDropdown() {
+  mapDropdownOpen.value = !mapDropdownOpen.value
+  if (mapDropdownOpen.value) {
+    nextTick(positionMapDropdown)
+  }
+}
+
+function positionMapDropdown() {
+  if (!mapDropdownRef.value) return
+  const trigger = mapDropdownRef.value.querySelector('.ccm-map-trigger')
+  if (!trigger) return
+  const rect = trigger.getBoundingClientRect()
+  const width = rect.width
+  const margin = 8
+  const left = rect.left
+  const top = rect.bottom + margin
+  mapDropdownStyle.value = `position:fixed;z-index:3001;top:${top}px;left:${left}px;width:${width}px;`
+}
+
+function selectMap(mapId) {
+  formMap.value = mapId
+  mapDropdownOpen.value = false
+}
+
+function onMapDocClick(e) {
+  if (!mapDropdownOpen.value) return
+  const dropdown = document.querySelector('.ccm-map-content')
+  const trigger = mapDropdownRef.value?.querySelector('.ccm-map-trigger')
+  if (dropdown && dropdown.contains(e.target)) return
+  if (trigger && trigger.contains(e.target)) return
+  mapDropdownOpen.value = false
+}
+
 const events = useEvents()
 const isApplyingSeed = ref(false)
 const pendingRequests = ref(new Set())
@@ -425,7 +515,8 @@ const form = computed(() => ({
     payments: formLoanPayments.value
   },
   economyAdjuster: formEconomyAdjuster,
-  startingGarages: formStartingGarages.value
+  startingGarages: formStartingGarages.value,
+  map: formMap.value || undefined
 }))
 const initialSnapshot = ref('')
 
@@ -442,7 +533,8 @@ const seedPayload = computed(() => {
         }
       : undefined,
     economyAdjuster: Object.keys(formEconomyAdjuster).length > 0 ? formEconomyAdjuster : undefined,
-    startingGarages: formStartingGarages.value.length > 0 ? formStartingGarages.value : undefined
+    startingGarages: formStartingGarages.value.length > 0 ? formStartingGarages.value : undefined,
+    map: formMap.value || undefined
   }
   for (const [key, value] of Object.entries(formVariables)) {
     if (value !== undefined) {
@@ -688,6 +780,11 @@ watch(() => props.open, (isOpen, oldIsOpen) => {
       formName.value = props.editChallengeData.name || ''
       formDescription.value = props.editChallengeData.description || ''
       formId.value = props.editChallengeData.id || ''
+      if (props.editChallengeData.map !== undefined) {
+        formMap.value = props.editChallengeData.map || null
+      } else {
+        formMap.value = null
+      }
     } else if (seedInput.value && seedInput.value.trim() !== '') {
       console.log('[ChallengeCreateModal] Applying seed from input')
       applySeedToForm(seedInput.value)
@@ -769,7 +866,7 @@ function handleSeedDecodeResponse(payload) {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   console.log('[ChallengeCreateModal] Component MOUNTED')
   console.log('[ChallengeCreateModal] Initial props.open:', props.open)
   console.log('[ChallengeCreateModal] Initial editorData:', props.editorData)
@@ -778,8 +875,23 @@ onMounted(() => {
   events.on('challengeSeedEncodeResponse', handleSeedEncodeResponse)
   events.on('challengeSeedDecodeResponse', handleSeedDecodeResponse)
   document.addEventListener('mousedown', onDifficultyDocClick)
+  document.addEventListener('mousedown', onMapDocClick)
   window.addEventListener('resize', positionDifficultyDropdown)
   window.addEventListener('scroll', positionDifficultyDropdown, true)
+  window.addEventListener('resize', positionMapDropdown)
+  window.addEventListener('scroll', positionMapDropdown, true)
+  
+  try {
+    const maps = await lua.overhaul_maps.getCompatibleMaps()
+    if (maps && Object.keys(maps).length > 0) {
+      mapOptions.value = Object.entries(maps).map(([key, value]) => ({
+        id: key,
+        name: value
+      }))
+    }
+  } catch (error) {
+    console.error('Failed to load maps:', error)
+  }
 })
 
 onBeforeUnmount(() => {
@@ -790,8 +902,11 @@ onBeforeUnmount(() => {
   events.off('challengeSeedEncodeResponse', handleSeedEncodeResponse)
   events.off('challengeSeedDecodeResponse', handleSeedDecodeResponse)
   document.removeEventListener('mousedown', onDifficultyDocClick)
+  document.removeEventListener('mousedown', onMapDocClick)
   window.removeEventListener('resize', positionDifficultyDropdown)
   window.removeEventListener('scroll', positionDifficultyDropdown, true)
+  window.removeEventListener('resize', positionMapDropdown)
+  window.removeEventListener('scroll', positionMapDropdown, true)
   if (copyStatusTimer) {
     clearTimeout(copyStatusTimer)
     copyStatusTimer = null
@@ -824,6 +939,7 @@ async function onSave() {
     winCondition: formWinCondition.value,
     economyAdjuster: Object.keys(formEconomyAdjuster).length > 0 ? formEconomyAdjuster : undefined,
     startingGarages: formStartingGarages.value.length > 0 ? formStartingGarages.value : undefined,
+    map: formMap.value || undefined
   }
 
   const defs = variableDefinitions.value
@@ -867,6 +983,7 @@ function resetFormDefaults() {
   formLoanInterest.value = props.editorData?.defaults?.loanInterest ?? 0.10
   formLoanPayments.value = props.editorData?.defaults?.loanPayments ?? 12
   formStartingGarages.value = []
+  formMap.value = null
   
   Object.keys(formEconomyAdjuster).forEach(k => delete formEconomyAdjuster[k])
   const rawTypes = props.editorData?.activityTypes
@@ -915,6 +1032,12 @@ function applySeedDataToForm(challenge) {
   
   if (challenge.winCondition) {
     formWinCondition.value = challenge.winCondition
+  }
+  
+  if (challenge.map !== undefined) {
+    formMap.value = challenge.map || null
+  } else {
+    formMap.value = null
   }
   
   Object.keys(formVariables).forEach(k => delete formVariables[k])
@@ -1321,6 +1444,69 @@ select {
 .ccm-difficulty-option.ccm-difficulty-selected {
   background: rgba(59, 130, 246, 0.2);
   color: #60a5fa;
+}
+
+.ccm-map-dropdown {
+  position: relative;
+}
+
+.ccm-map-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(100, 116, 139, 0.35);
+  color: #fff;
+  border-radius: 8px;
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.ccm-map-trigger:hover {
+  background: rgba(30, 41, 59, 0.8);
+  border-color: rgba(100, 116, 139, 0.5);
+}
+
+.ccm-map-chevron {
+  opacity: 0.8;
+  font-size: 0.9rem;
+}
+
+.ccm-map-content {
+  position: fixed;
+  background: rgba(15, 23, 42, 0.98);
+  border: 1px solid rgba(71, 85, 105, 0.6);
+  border-radius: 8px;
+  padding: 0.25rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  max-height: 200px;
+  overflow: auto;
+  z-index: 3001;
+}
+
+.ccm-map-option {
+  padding: 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #fff;
+  transition: background 0.2s ease;
+}
+
+.ccm-map-option:hover {
+  background: rgba(30, 41, 59, 0.6);
+}
+
+.ccm-map-option.ccm-map-selected {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+}
+
+.ccm-map-sep {
+  height: 1px;
+  background: rgba(71, 85, 105, 0.5);
+  margin: 0.25rem 0;
 }
 
 .ccm-section-title {
