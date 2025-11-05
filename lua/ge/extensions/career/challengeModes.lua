@@ -284,6 +284,90 @@ end
 -- DISCOVERY FUNCTIONS
 -- ============================================================================
 
+local function normalizePath(path)
+  if not path then return "" end
+  path = path:gsub("\\", "/")
+  path = path:gsub("//+", "/")
+  if not path:startswith("/") then
+    path = "/" .. path
+  end
+  return path
+end
+
+local function getZipFileMap(zipPath)
+  local zip = ZipArchive()
+  local fileMap = {}
+  
+  if zip:openArchiveName(zipPath, "R") then
+    local fileList = zip:getFileList()
+    for i, f in ipairs(fileList) do
+      fileMap[f] = i
+    end
+    zip:close()
+  end
+  
+  return fileMap
+end
+
+local function getActiveMods()
+  local activeMods = {}
+  local allMods = core_modmanager.getMods()
+  
+  if not allMods then
+    return {}
+  end
+  
+  for modName, modData in pairs(allMods) do
+    if modData.active then
+      activeMods[modName] = modData
+    end
+  end
+  
+  return activeMods
+end
+
+local function getModFiles(modData, modName)
+  local files = {}
+  
+  if modData.modData and modData.modData.hashes then
+    for _, hashData in ipairs(modData.modData.hashes) do
+      local filePath = normalizePath(hashData[1])
+      table.insert(files, filePath)
+    end
+  elseif modData.unpackedPath and FS:directoryExists(modData.unpackedPath) then
+    local modFiles = FS:findFiles(modData.unpackedPath, '*', -1, true, false)
+    for _, fullPath in ipairs(modFiles) do
+      local relativePath = fullPath:gsub(modData.unpackedPath, "")
+      relativePath = normalizePath(relativePath)
+      table.insert(files, relativePath)
+    end
+  elseif modData.fullpath and FS:fileExists(modData.fullpath) then
+    local zipFileMap = getZipFileMap(modData.fullpath)
+    for filePath, _ in pairs(zipFileMap) do
+      local normalized = normalizePath(filePath)
+      table.insert(files, normalized)
+    end
+  end
+  
+  return files
+end
+
+local function isChallengeFileInMod(challengeFilePath)
+  local activeMods = getActiveMods()
+  local normalizedTarget = normalizePath(challengeFilePath)
+  
+  for modName, modData in pairs(activeMods) do
+    local modFiles = getModFiles(modData, modName)
+    for _, filePath in ipairs(modFiles) do
+      if filePath == normalizedTarget then
+        return true
+      end
+    end
+  end
+  
+  return false
+end
+
 local function findChallengeFiles(basePath, foundFiles)
   foundFiles = foundFiles or {}
 
@@ -334,6 +418,7 @@ local function discoverChallenges()
       if challengeId then
         challengeData.id = challengeId
         challengeData.filePath = jsonFile
+        challengeData.isLocal = not isChallengeFileInMod(jsonFile)
 
         discoveredChallenges[challengeId] = challengeData
       end
@@ -1103,6 +1188,7 @@ local function getChallengeOptionsForCareerCreation()
       allActivityTypes = allActivityTypes,
       currentMultipliers = currentMultipliers,
       isBaseGame = challenge.isBaseGame or false,
+      isLocal = challenge.isLocal or false,
       simulationTimeSpent = challenge.simulationTimeSpent or 0
     })
   end

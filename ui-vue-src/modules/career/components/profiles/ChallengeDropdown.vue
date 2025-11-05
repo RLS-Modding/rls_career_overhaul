@@ -9,6 +9,7 @@
                         <div class="cd-meta">
                             <span class="cd-badge" :class="'cd-diff-' + selectedChallenge.difficulty.toLowerCase()">{{
                                 selectedChallenge.difficulty }}</span>
+                            <span v-if="selectedChallenge.isLocal" class="cd-badge cd-badge-local">Local</span>
                         </div>
                     </template>
                     <template v-else>
@@ -48,6 +49,7 @@
                                 <div class="cd-item-title">{{ c.name }}</div>
                                 <span class="cd-badge" :class="'cd-diff-' + c.difficulty.toLowerCase()">{{ c.difficulty
                                     }}</span>
+                                <span v-if="c.isLocal" class="cd-badge cd-badge-local">Local</span>
                             </div>
                             <div class="cd-sub">{{ c.shortDescription }}</div>
                             <div class="cd-time">{{ c.estimatedTime }}</div>
@@ -170,7 +172,8 @@ async function fetchChallenges() {
             objectiveDescription: c.winConditionDescription || '',
             targetMoney: c.targetMoney,
             economyAdjuster: c.economyAdjuster || {},
-            estimatedTime: c.estimatedTime || ''
+            estimatedTime: c.estimatedTime || '',
+            isLocal: c.isLocal || false
         }))
     } catch (e) {
         console.warn('ChallengeDropdown: failed to fetch challenges', e)
@@ -357,6 +360,12 @@ defineExpose({
     color: #dc2626;
     border-color: rgba(220, 38, 38, 0.5);
     background: rgba(220, 38, 38, 0.15);
+}
+
+.cd-badge-local {
+    color: #60a5fa;
+    border-color: rgba(96, 165, 250, 0.5);
+    background: rgba(96, 165, 250, 0.15);
 }
 
 .cd-chevron {

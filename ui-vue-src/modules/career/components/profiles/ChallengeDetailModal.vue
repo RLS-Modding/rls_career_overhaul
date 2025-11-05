@@ -10,6 +10,7 @@
                             <span class="cdm-badge"
                                 :class="'cdm-diff-' + (challenge?.difficulty || 'Easy').toLowerCase()">{{
                                     challenge?.difficulty }}</span>
+                            <span v-if="challenge?.isLocal" class="cdm-badge cdm-badge-local">Local</span>
                             <span class="cdm-time">{{ challenge?.estimatedTime }}</span>
                         </div>
                     </div>
@@ -346,6 +347,12 @@ function formatMultiplier(mult) {
     color: #dc2626;
     border-color: rgba(220, 38, 38, 0.5);
     background: rgba(220, 38, 38, 0.15);
+}
+
+.cdm-badge-local {
+    color: #60a5fa;
+    border-color: rgba(96, 165, 250, 0.5);
+    background: rgba(96, 165, 250, 0.15);
 }
 
 .cdm-time {
