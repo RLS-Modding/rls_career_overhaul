@@ -91,6 +91,8 @@ export default {
     isChallengeActive: () => {},
     requestChallengeCompleteData: () => {},
     getChallengeSeeded: id => String,
+    getChallengeDataForEdit: id => String,
+    deleteChallenge: id => String,
     encodeChallengeDataToSeed: data => Any,
     decodeSeedToChallengeData: seed => String,
     requestGenerateRandomSeed: () => {},

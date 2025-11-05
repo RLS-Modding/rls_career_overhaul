@@ -62,10 +62,13 @@
 
         <teleport to="body">
             <ChallengeDetailModal :open="detailOpen" :challenge="detailChallenge" :editorData="editorData"
-                @close="detailOpen = false; detailChallenge = null" @select="selectFromModal" />
+                @close="detailOpen = false; detailChallenge = null" @select="selectFromModal" 
+                @edit="onEditChallenge" @delete="onDeleteChallenge" />
         </teleport>
         <teleport to="body">
-            <ChallengeCreateModal :key="'create-challenge'" :open="createOpen" :editorData="editorData" @close="() => { console.log('[ChallengeDropdown] Modal @close handler fired'); createOpen = false }"
+            <ChallengeCreateModal :key="'create-challenge'" :open="createOpen" :editorData="editorData" 
+                :editChallengeData="editChallengeData"
+                @close="() => { console.log('[ChallengeDropdown] Modal @close handler fired'); createOpen = false; editChallengeData = null }"
                 @saved="onCreated" />
         </teleport>
     </div>
@@ -87,7 +90,8 @@ const fixedStyle = ref('')
 const detailOpen = ref(false)
 const detailChallenge = ref(null)
 const createOpen = ref(false)
-const editorData = ref({ 
+const editChallengeData = ref(null)
+const editorData = ref({
   winConditions: [],
   activityTypes: [],
   availableGarages: [],
@@ -254,9 +258,30 @@ function openCreate(e) {
 }
 async function onCreated(challengeId) { 
     await fetchChallenges()
-    // If a challenge ID was returned from creation, select it
     if (challengeId) {
         emit('update:modelValue', challengeId)
+    }
+    editChallengeData.value = null
+}
+
+async function onEditChallenge(challengeId) {
+    try {
+        const challengeData = await lua.career_challengeModes.getChallengeDataForEdit(challengeId)
+        if (challengeData) {
+            editChallengeData.value = challengeData
+            createOpen.value = true
+        } else {
+            console.error('Failed to load challenge data for editing')
+        }
+    } catch (err) {
+        console.error('Failed to edit challenge:', err)
+    }
+}
+
+async function onDeleteChallenge(challengeId) {
+    await fetchChallenges()
+    if (props.modelValue === challengeId) {
+        emit('update:modelValue', null)
     }
 }
 

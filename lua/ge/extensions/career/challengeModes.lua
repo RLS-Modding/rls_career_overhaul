@@ -1292,6 +1292,82 @@ local function getChallengeSeeded(challengeId)
   return seed
 end
 
+local function decodeSeedToChallengeData(seed)
+  if not career_challengeSeedEncoder then
+    return false, "Seed encoder not available"
+  end
+
+  local decoded, err = career_challengeSeedEncoder.decodeSeedToChallenge(seed)
+  if not decoded then
+    return false, err or "Failed to decode seed"
+  end
+
+  local resolved, resolveErr = career_challengeSeedEncoder.resolveHashesToNames(decoded)
+  if not resolved then
+    return false, resolveErr or "Failed to resolve seed data"
+  end
+
+  return true, resolved
+end
+
+local function getChallengeDataForEdit(challengeId)
+  local challenge = discoveredChallenges[challengeId]
+  if not challenge then
+    return nil, "Challenge not found"
+  end
+  
+  if not career_challengeSeedEncoder then
+    return nil, "Seed encoder not available"
+  end
+  
+  local success, seed, err = pcall(career_challengeSeedEncoder.encodeChallengeToSeed, challenge)
+  if not success then
+    return nil, "Encoding error: " .. tostring(seed)
+  end
+  
+  if not seed then
+    return nil, err or "Failed to encode seed"
+  end
+  
+  local decodeSuccess, decodedData, decodeErr = decodeSeedToChallengeData(seed)
+  if not decodeSuccess then
+    return nil, decodeErr or "Failed to decode seed"
+  end
+  
+  if decodedData then
+    decodedData.name = challenge.name
+    decodedData.description = challenge.description or ""
+    decodedData.id = challenge.id
+    decodedData.difficulty = challenge.difficulty or "Medium"
+  end
+  
+  return decodedData
+end
+
+local function deleteChallenge(challengeId)
+  local challenge = discoveredChallenges[challengeId]
+  if not challenge then
+    return false, "Challenge not found"
+  end
+  
+  if not challenge.isLocal then
+    return false, "Can only delete local challenges"
+  end
+  
+  if not challenge.filePath then
+    return false, "Challenge file path not found"
+  end
+  
+  if FS:fileExists(challenge.filePath) then
+    if not FS:remove(challenge.filePath) then
+      return false, "Failed to delete challenge file"
+    end
+  end
+  
+  discoverChallenges()
+  return true, "Challenge deleted successfully"
+end
+
 local function createChallengeFromSeedUI(seed, name, description)
   if not seed or seed == "" then
     return false, "No seed provided", nil
@@ -1339,24 +1415,6 @@ local function encodeChallengeDataToSeed(challengeData)
   end
 
   return true, seed
-end
-
-local function decodeSeedToChallengeData(seed)
-  if not career_challengeSeedEncoder then
-    return false, "Seed encoder not available"
-  end
-
-  local decoded, err = career_challengeSeedEncoder.decodeSeedToChallenge(seed)
-  if not decoded then
-    return false, err or "Failed to decode seed"
-  end
-
-  local resolved, resolveErr = career_challengeSeedEncoder.resolveHashesToNames(decoded)
-  if not resolved then
-    return false, resolveErr or "Failed to resolve seed data"
-  end
-
-  return true, resolved
 end
 
 local function requestGenerateRandomSeed(options)
@@ -1492,6 +1550,8 @@ M.createChallengeFromUI = createChallengeFromUI
 M.getChallengeOptionsForCareerCreation = getChallengeOptionsForCareerCreation
 M.requestChallengeCompleteData = requestChallengeCompleteData
 M.getChallengeSeeded = getChallengeSeeded
+M.getChallengeDataForEdit = getChallengeDataForEdit
+M.deleteChallenge = deleteChallenge
 M.createChallengeFromSeedUI = createChallengeFromSeedUI
 M.requestGenerateRandomSeed = requestGenerateRandomSeed
 M.requestSeedEncode = requestSeedEncode

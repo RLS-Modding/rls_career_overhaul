@@ -101,12 +101,38 @@
                 </div>
 
                 <div class="cdm-footer">
-                    <button class="cdm-primary" @click="onSelect" @mousedown.stop>Select This Challenge</button>
-                    <button class="cdm-outline" @click="onClose" @mousedown.stop>Cancel</button>
+                    <div v-if="challenge?.isLocal" class="cdm-footer-actions">
+                        <button class="cdm-edit" @click="onEdit" @mousedown.stop>Edit</button>
+                        <button class="cdm-delete" @click="onDelete" @mousedown.stop>Delete</button>
+                    </div>
+                    <div class="cdm-footer-main">
+                        <button class="cdm-primary" @click="onSelect" @mousedown.stop>Select This Challenge</button>
+                        <button class="cdm-outline" @click="onClose" @mousedown.stop>Cancel</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+    <teleport to="body">
+        <div v-if="deleteConfirmOpen" class="cdm-delete-overlay" @click.stop @mousedown.stop>
+            <div class="cdm-delete-modal" @click.stop @mousedown.stop>
+                <div class="cdm-delete-header">
+                    <div class="cdm-delete-title">Delete Challenge</div>
+                    <button class="cdm-delete-close" @click.stop="deleteConfirmOpen = false" @mousedown.stop>×</button>
+                </div>
+                <div class="cdm-delete-body">
+                    <p>Are you sure you want to delete "<strong>{{ challenge?.name }}</strong>"?</p>
+                    <p class="cdm-delete-warning">This action cannot be undone.</p>
+                </div>
+                <div class="cdm-delete-footer">
+                    <button class="cdm-delete-cancel" @click.stop="deleteConfirmOpen = false" @mousedown.stop>Cancel</button>
+                    <button class="cdm-delete-confirm" @click.stop="confirmDelete" @mousedown.stop :disabled="deleting">
+                        {{ deleting ? 'Deleting...' : 'Delete' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </teleport>
 </template>
 
 <script setup>
@@ -119,10 +145,12 @@ const props = defineProps({
     editorData: { type: Object, default: () => ({ activityTypes: [] }) },
 })
 
-const emit = defineEmits(['close', 'select'])
+const emit = defineEmits(['close', 'select', 'edit', 'delete'])
 
 const challengeSeed = ref('')
 const copyButtonText = ref('Copy Seed')
+const deleting = ref(false)
+const deleteConfirmOpen = ref(false)
 
 function onClose() { 
     if (!props.open) return
@@ -130,6 +158,47 @@ function onClose() {
 }
 function onSelect() { 
     emit('select') 
+}
+async function onEdit() {
+    if (!props.challenge || !props.challenge.id) return
+    emit('edit', props.challenge.id)
+    onClose()
+}
+function onDelete() {
+    if (!props.challenge || !props.challenge.id) return
+    deleteConfirmOpen.value = true
+}
+async function confirmDelete() {
+    if (!props.challenge || !props.challenge.id) return
+    if (deleting.value) return
+    
+    deleting.value = true
+    try {
+        const result = await lua.career_challengeModes.deleteChallenge(props.challenge.id)
+        if (Array.isArray(result)) {
+            const [success, message] = result
+            if (success) {
+                deleteConfirmOpen.value = false
+                emit('delete', props.challenge.id)
+                onClose()
+            } else {
+                console.error('Failed to delete challenge:', message)
+                deleteConfirmOpen.value = false
+            }
+        } else if (result && result.success !== false) {
+            deleteConfirmOpen.value = false
+            emit('delete', props.challenge.id)
+            onClose()
+        } else {
+            console.error('Failed to delete challenge')
+            deleteConfirmOpen.value = false
+        }
+    } catch (err) {
+        console.error('Failed to delete challenge:', err)
+        deleteConfirmOpen.value = false
+    } finally {
+        deleting.value = false
+    }
 }
 
 async function loadChallengeSeed() {
@@ -456,9 +525,49 @@ function formatMultiplier(mult) {
 
 .cdm-footer {
     display: flex;
+    flex-direction: column;
     gap: 0.5rem;
     padding-top: 0.75rem;
+}
+
+.cdm-footer-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-start;
+}
+
+.cdm-footer-main {
+    display: flex;
+    gap: 0.5rem;
     justify-content: flex-end;
+}
+
+.cdm-edit {
+    background: rgba(59, 130, 246, 0.2);
+    border: 1px solid rgba(59, 130, 246, 0.5);
+    color: #60a5fa;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.875rem;
+}
+
+.cdm-edit:hover {
+    background: rgba(59, 130, 246, 0.3);
+}
+
+.cdm-delete {
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.5);
+    color: #f87171;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.875rem;
+}
+
+.cdm-delete:hover {
+    background: rgba(239, 68, 68, 0.3);
 }
 
 .cdm-primary {
@@ -583,5 +692,128 @@ function formatMultiplier(mult) {
 
 .cdm-seed-copy:hover {
     opacity: 0.9;
+}
+
+.cdm-delete-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+}
+
+.cdm-delete-modal {
+    background: rgba(15, 23, 42, 0.98);
+    border: 1px solid rgba(71, 85, 105, 0.6);
+    border-radius: 12px;
+    padding: 0;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.cdm-delete-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid rgba(71, 85, 105, 0.6);
+}
+
+.cdm-delete-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #e2e8f0;
+}
+
+.cdm-delete-close {
+    background: transparent;
+    border: 0;
+    color: #94a3b8;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.cdm-delete-close:hover {
+    color: #e2e8f0;
+}
+
+.cdm-delete-body {
+    padding: 1.5rem;
+    color: #e2e8f0;
+}
+
+.cdm-delete-body p {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.cdm-delete-body p:last-child {
+    margin-bottom: 0;
+}
+
+.cdm-delete-body strong {
+    color: #60a5fa;
+}
+
+.cdm-delete-warning {
+    color: #f87171 !important;
+    font-size: 0.875rem;
+}
+
+.cdm-delete-footer {
+    display: flex;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid rgba(71, 85, 105, 0.6);
+    justify-content: flex-end;
+}
+
+.cdm-delete-cancel {
+    background: transparent;
+    border: 1px solid rgba(100, 116, 139, 0.5);
+    color: #cbd5e1;
+    padding: 0.6rem 1.25rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.cdm-delete-cancel:hover {
+    background: rgba(100, 116, 139, 0.2);
+    border-color: rgba(100, 116, 139, 0.7);
+}
+
+.cdm-delete-confirm {
+    background: linear-gradient(90deg, #ef4444, #dc2626);
+    border: 0;
+    color: #fff;
+    padding: 0.6rem 1.25rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.cdm-delete-confirm:hover:not(:disabled) {
+    background: linear-gradient(90deg, #f87171, #ef4444);
+}
+
+.cdm-delete-confirm:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 </style>

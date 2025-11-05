@@ -3,7 +3,7 @@
     <!-- MODAL IS RENDERING -->
     <div class="ccm-content" @click.stop @mousedown.stop>
       <div class="ccm-header">
-        <div class="ccm-title">Create Challenge</div>
+        <div class="ccm-title">{{ editChallengeData ? 'Edit Challenge' : 'Create Challenge' }}</div>
         <button class="ccm-close" @click.stop="onRequestClose" @mousedown.stop>×</button>
       </div>
 
@@ -15,7 +15,7 @@
           </div>
           <div class="ccm-field">
             <label>ID</label>
-            <input v-model="formId" type="text" class="ccm-input" placeholder="myChallengeId" />
+            <input v-model="formId" type="text" class="ccm-input" placeholder="myChallengeId" :disabled="!!editChallengeData" />
           </div>
         </div>
 
@@ -343,7 +343,8 @@ import { BngSelect } from '@/common/components/base'
 
 const props = defineProps({
   open: { type: Boolean, default: false },
-  editorData: { type: Object, default: () => ({}) }
+  editorData: { type: Object, default: () => ({}) },
+  editChallengeData: { type: Object, default: null }
 })
 const emit = defineEmits(['close', 'saved'])
 
@@ -681,8 +682,13 @@ watch(() => props.open, (isOpen, oldIsOpen) => {
   console.log('[ChallengeCreateModal] editorData structure:', JSON.stringify(props.editorData, null, 2))
   
   try {
-    console.log('[ChallengeCreateModal] About to check seedInput')
-    if (seedInput.value && seedInput.value.trim() !== '') {
+    if (props.editChallengeData) {
+      console.log('[ChallengeCreateModal] Applying edit challenge data')
+      applySeedDataToForm(props.editChallengeData)
+      formName.value = props.editChallengeData.name || ''
+      formDescription.value = props.editChallengeData.description || ''
+      formId.value = props.editChallengeData.id || ''
+    } else if (seedInput.value && seedInput.value.trim() !== '') {
       console.log('[ChallengeCreateModal] Applying seed from input')
       applySeedToForm(seedInput.value)
     } else {
