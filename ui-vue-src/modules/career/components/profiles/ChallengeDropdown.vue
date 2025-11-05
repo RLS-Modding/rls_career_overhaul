@@ -61,12 +61,12 @@
         </teleport>
 
         <teleport to="body">
-            <ChallengeDetailModal :open="detailOpen" :challenge="detailChallenge" :editorData="editorData"
+            <ChallengeDetailModal v-if="detailOpen" :open="detailOpen" :challenge="detailChallenge" :editorData="editorData"
                 @close="detailOpen = false; detailChallenge = null" @select="selectFromModal" 
                 @edit="onEditChallenge" @delete="onDeleteChallenge" />
         </teleport>
         <teleport to="body">
-            <ChallengeCreateModal :key="'create-challenge'" :open="createOpen" :editorData="editorData" 
+            <ChallengeCreateModal v-if="createOpen" :key="'create-challenge'" :open="createOpen" :editorData="editorData" 
                 :editChallengeData="editChallengeData"
                 @close="() => { console.log('[ChallengeDropdown] Modal @close handler fired'); createOpen = false; editChallengeData = null }"
                 @saved="onCreated" />
@@ -340,7 +340,8 @@ defineExpose({
 }
 
 .cd-placeholder {
-    color: #e5e7eb;
+  color: #e5e7eb;
+  font-size: 0.95rem;
 }
 
 .cd-meta {

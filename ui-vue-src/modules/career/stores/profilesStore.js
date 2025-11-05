@@ -7,8 +7,8 @@ export const PROFILE_NAME_MAX_LENGTH = 100
 export const PROFILE_NAME_PATTERN = /^[a-zA-Z0-9_]+$/
 
 export const useProfilesStore = defineStore("profiles", () => {
-  async function loadProfile(profileName, tutorialEnabled, isAdd = false, hardcoreMode = false, challengeSelection = null, cheatsMode = false) {
-    console.log("profileStore.loadProfile", profileName, tutorialEnabled, isAdd, hardcoreMode, challengeSelection, cheatsMode)
+  async function loadProfile(profileName, tutorialEnabled, isAdd = false, hardcoreMode = false, challengeSelection = null, cheatsMode = false, startingMap = null) {
+    console.log("profileStore.loadProfile", profileName, tutorialEnabled, isAdd, hardcoreMode, challengeSelection, cheatsMode, startingMap)
     if (!profileName) {
       console.warn("profileStore.loadProfile: profileName is required. Not loading profile.")
       return false
@@ -30,10 +30,11 @@ export const useProfilesStore = defineStore("profiles", () => {
     console.log("profileStore.loadProfile: enabling hardcore mode", hardcoreMode)
     console.log("profileStore.loadProfile: enabling challenge mode", challengeSelection)
     console.log("profileStore.loadProfile: enabling cheats mode", cheatsMode)
+    console.log("profileStore.loadProfile: starting map", startingMap)
 
     console.log("profileStore.loadProfile: creating or loading career and starting", profileName)
     if (/^ +| +$/.test(profileName)) profileName = profileName.replace(/^ +| +$/g, "")
-    const createOrLoadCareerAndStartResult = await lua.career_career.createOrLoadCareerAndStart(profileName, null, tutorialEnabled, hardcoreMode, challengeSelection, cheatsMode)
+    const createOrLoadCareerAndStartResult = await lua.career_career.createOrLoadCareerAndStart(profileName, null, tutorialEnabled, hardcoreMode, challengeSelection, cheatsMode, startingMap)
     console.log("profileStore.loadProfile: createOrLoadCareerAndStartResult", createOrLoadCareerAndStartResult)
 
     const toastrMessage = isAdd ? "added" : "loaded"

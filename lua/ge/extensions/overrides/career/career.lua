@@ -231,7 +231,7 @@ local function removeNonTrafficVehicles()
   end
 end
 
-local function activateCareer(removeVehicles)
+local function activateCareer(removeVehicles, levelToLoad)
   if careerActive then return end
   -- load career
   local saveSlot, savePath = career_saveSystem.getCurrentSaveSlot()
@@ -246,7 +246,9 @@ local function activateCareer(removeVehicles)
   log("I", "Loading career from " .. savePath .. "/career/" .. saveFile)
   local careerData = (savePath and jsonReadFile(savePath .. "/career/" .. saveFile)) or {}
   local newSave = tableIsEmpty(careerData)
-  local levelToLoad = careerData.level or levelName
+  if not levelToLoad then
+    levelToLoad = careerData.level or levelName
+  end
   boughtStarterVehicle = true
   organizationInteraction = careerData.organizationInteraction or {}
 
@@ -327,7 +329,7 @@ local function applyChallengeConfig(cfg)
   return true
 end
 
-local function createOrLoadCareerAndStart(name, specificAutosave, tutorial, hardcore, challengeId, cheats)
+local function createOrLoadCareerAndStart(name, specificAutosave, tutorial, hardcore, challengeId, cheats, startingMap)
   --M.tutorialEnabled = string.find(string.lower(name), "tutorial") and true or false
   --M.vehSelectEnabled = string.find(string.lower(name), "vehselect") and true or false
   log("I","",string.format("Create or Load Career: %s - %s", name, specificAutosave))
@@ -348,7 +350,8 @@ local function createOrLoadCareerAndStart(name, specificAutosave, tutorial, hard
       log("I","","Challenge enabled for later start: " .. challengeId)
     end
     M.pendingChallengeId = challengeId
-    activateCareer()
+    
+    activateCareer(true, startingMap)
     return true
   end
   return false
@@ -690,7 +693,7 @@ local function onSaveFinished()
   if switchLevel then
     deactivateCareer()
     spawn.preventPlayerSpawning = true
-    activateCareer()
+    activateCareer(true, switchLevel)
   end
 end
 
@@ -699,7 +702,6 @@ M.switchCareerLevel = switchCareerLevel
 M.onWorldReadyState = onWorldReadyState
 
 M.getAdditionalMenuButtons = getAdditionalMenuButtons
-
 
 M.applyChallengeConfig = applyChallengeConfig
 M.createOrLoadCareerAndStart = createOrLoadCareerAndStart

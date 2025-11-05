@@ -8,7 +8,7 @@
     @activate="() => setActive(true)"
     @deactivate="() => setActive(false)">
     <div v-bng-on-ui-nav:menu="onMenu" :class="{ 'create-active': isActive }" class="create-content-container">
-      <div v-show="isActive" class="active-content">
+      <div v-if="isActive" class="active-content">
         <div class="content-sections">
           <BngInput
             v-model="profileName"
@@ -19,34 +19,81 @@
             @keydown.enter="onEnter" />
 
           <div class="section">
-            <div class="section-title-row">
-              <div class="title-icon title-icon-orange" />
-              <div class="title-label">Challenge Mode</div>
-            </div>
             <ChallengeDropdown ref="challengeDropdownRef" v-model="challengeId" :disabled="cheatsMode" />
           </div>
 
-          <div class="hc-card">
-            <div class="hc-left">
-              <div class="title-icon title-icon-red" />
-              <div class="hc-texts">
-                <div class="hc-title">Hardcore</div>
-              </div>
-            </div>
-            <div class="hc-right">
-              <BngSwitch v-model="hardcoreMode" label-before :inline="false" :disabled="cheatsMode"> </BngSwitch>
+          <div v-if="hasOtherMaps" class="section">
+            <div class="map-dropdown" ref="mapDropdownRef">
+              <button 
+                type="button" 
+                class="map-dropdown-trigger" 
+                @click.stop="toggleMapDropdown"
+                @mousedown.stop
+              >
+                <div class="map-dropdown-left">
+                  <div class="map-dropdown-icon" :class="selectedMap ? 'map-dropdown-icon-selected' : 'map-dropdown-icon-default'" />
+                  <div class="map-dropdown-label" :class="{ 'map-dropdown-placeholder': !selectedMap }">{{ selectedMapLabel }}</div>
+                </div>
+                <span class="map-dropdown-chevron">▾</span>
+              </button>
+              <teleport to="body">
+                <div 
+                  v-if="mapDropdownOpen" 
+                  class="map-dropdown-content" 
+                  :style="mapDropdownStyle"
+                  @click.stop
+                  @mousedown.stop
+                >
+                  <div 
+                    v-if="selectedMap"
+                    class="map-dropdown-option"
+                    @click.stop="clearMap"
+                    @mousedown.stop
+                  >
+                    Default (West Coast USA)
+                  </div>
+                  <div v-if="selectedMap" class="map-dropdown-sep"></div>
+                  <div 
+                    v-for="map in mapOptions" 
+                    :key="map.id"
+                    class="map-dropdown-option"
+                    :class="{ 'map-dropdown-selected': map.id === selectedMap }"
+                    @click.stop="selectMap(map)"
+                    @mousedown.stop
+                  >
+                    {{ map.name }}
+                  </div>
+                </div>
+              </teleport>
             </div>
           </div>
 
-          <div class="hc-card">
-            <div class="hc-left">
-              <div class="title-icon title-icon-green" />
-              <div class="hc-texts">
-                <div class="hc-title">Cheats</div>
+          <div class="section">
+            <div class="modes-section">
+              <div class="modes-header">
+                <div class="modes-label">Modes</div>
               </div>
-            </div>
-            <div class="hc-right">
-              <BngSwitch v-model="cheatsMode" label-before :inline="false" :disabled="challengeId !== null || hardcoreMode"> </BngSwitch>
+              <div class="modes-content">
+                <div class="mode-item">
+                  <div class="mode-left">
+                    <div class="title-icon title-icon-red" />
+                    <div class="mode-title">Hardcore</div>
+                  </div>
+                  <div class="mode-right">
+                    <BngSwitch v-model="hardcoreMode" label-before :inline="false" :disabled="cheatsMode"> </BngSwitch>
+                  </div>
+                </div>
+
+                <div class="mode-item">
+                  <div class="mode-left">
+                    <div class="title-icon title-icon-green" />
+                    <div class="mode-title">Freeroam+</div>
+                  </div>
+                  <div class="mode-right">
+                    <BngSwitch v-model="cheatsMode" label-before :inline="false" :disabled="challengeId !== null || hardcoreMode"> </BngSwitch>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -56,7 +103,7 @@
           <button ref="cancelButton" class="modern-btn modern-cancel" @click="closeCard">Cancel</button>
         </div>
       </div>
-      <div v-show="!isActive" class="create-content-cover" @click="setActive(true)">
+      <div v-if="!isActive" class="create-content-cover" @click="setActive(true)">
         <div class="cover-plus-container">
           <div class="cover-plus-button">+</div>
         </div>
@@ -66,11 +113,12 @@
 </template>
 
 <script setup>
-import { inject, nextTick, ref, watch } from "vue"
+import { inject, nextTick, ref, watch, computed, onMounted, onBeforeUnmount } from "vue"
 import { vBngOnUiNav, vBngScopedNav, vBngBlur, vBngSoundClass } from "@/common/directives"
 import { BngButton, BngCard, BngInput, BngSwitch, LABEL_ALIGNMENTS } from "@/common/components/base"
 import { PROFILE_NAME_MAX_LENGTH } from "../../stores/profilesStore"
 import { setFocus } from "@/services/uiNavFocus"
+import { lua } from "@/bridge"
 import ChallengeDropdown from "./ChallengeDropdown.vue"
 
 const emit = defineEmits(["card:activate", "load"])
@@ -99,6 +147,81 @@ const validateFn = name => {
 }
 
 const challengeId = ref(null)
+const selectedMap = ref(null)
+const mapOptions = ref([])
+const hasOtherMaps = ref(false)
+const mapDropdownRef = ref(null)
+const mapDropdownOpen = ref(false)
+const mapDropdownStyle = ref('')
+
+const selectedMapLabel = computed(() => {
+  if (!selectedMap.value) return 'Select Starting Map'
+  const map = mapOptions.value.find(m => m.id === selectedMap.value)
+  return map ? map.name : 'Select Starting Map'
+})
+
+function toggleMapDropdown() {
+  mapDropdownOpen.value = !mapDropdownOpen.value
+  if (mapDropdownOpen.value) {
+    nextTick(positionMapDropdown)
+  }
+}
+
+function positionMapDropdown() {
+  if (!mapDropdownRef.value) return
+  const trigger = mapDropdownRef.value.querySelector('.map-dropdown-trigger')
+  if (!trigger) return
+  const rect = trigger.getBoundingClientRect()
+  const width = rect.width
+  const margin = 8
+  const left = rect.left
+  const top = rect.bottom + margin
+  mapDropdownStyle.value = `position:fixed;z-index:2000;top:${top}px;left:${left}px;width:${width}px;`
+}
+
+function onMapDocClick(e) {
+  if (!mapDropdownOpen.value) return
+  const dropdown = document.querySelector('.map-dropdown-content')
+  const trigger = mapDropdownRef.value?.querySelector('.map-dropdown-trigger')
+  if (dropdown && dropdown.contains(e.target)) return
+  if (trigger && trigger.contains(e.target)) return
+  mapDropdownOpen.value = false
+}
+
+function selectMap(map) {
+  selectedMap.value = map.id
+  mapDropdownOpen.value = false
+}
+
+function clearMap() {
+  selectedMap.value = null
+  mapDropdownOpen.value = false
+}
+
+onMounted(async () => {
+  try {
+    const maps = await lua.overhaul_maps.getMapsExcludingWestCoast()
+    if (maps && Object.keys(maps).length > 0) {
+      hasOtherMaps.value = true
+      mapOptions.value = Object.entries(maps).map(([key, value]) => ({
+        id: key,
+        name: value
+      }))
+    }
+  } catch (error) {
+    console.error('Failed to load maps:', error)
+    hasOtherMaps.value = false
+  }
+  document.addEventListener('mousedown', onMapDocClick)
+  window.addEventListener('resize', positionMapDropdown)
+  window.addEventListener('scroll', positionMapDropdown, true)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('mousedown', onMapDocClick)
+  window.removeEventListener('resize', positionMapDropdown)
+  window.removeEventListener('scroll', positionMapDropdown, true)
+})
 
 watch(cheatsMode, (newVal) => {
   if (newVal && challengeId.value !== null) {
@@ -121,7 +244,7 @@ watch(challengeId, (newVal) => {
   }
 })
 
-const load = () => emit("load", profileName.value, false, hardcoreMode.value, challengeId.value, cheatsMode.value)
+const load = () => emit("load", profileName.value, false, hardcoreMode.value, challengeId.value, cheatsMode.value, selectedMap.value)
 
 function setActive(value) {
   if (value === false) {
@@ -188,41 +311,89 @@ function closeCard() {
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
-  gap: 1em;
+  gap: 0.75em;
 }
 
 .content-sections {
   display: flex;
   flex-direction: column;
-  gap: 1em;
+  gap: 0.75em;
 }
 
 .section { 
   display: flex; 
   flex-direction: column; 
-  gap: 1em; 
+  gap: 0; 
 }
-.section-title-row { 
-  display: flex; 
-  align-items: center; 
-  gap: 0.6em; 
-}
+
 .title-icon { 
-  width: 20px; 
-  height: 20px; 
+  width: 28px; 
+  height: 28px; 
   border-radius: 6px; 
   flex-shrink: 0;
 }
-.title-icon-orange { background: rgba(251, 146, 60, 0.3); }
 .title-icon-red { background: rgba(248, 113, 113, 0.3); }
 .title-icon-green { background: rgba(34, 197, 94, 0.3); }
-.title-label { color: #fff; font-weight: 600; font-size: 0.95em; }
+
+.modes-section {
+  background: rgba(30, 41, 59, 0.9);
+  border: 1px solid rgba(71, 85, 105, 0.5);
+  border-radius: 10px;
+  padding: 0.75rem;
+}
+
+.modes-header {
+  margin-bottom: 0.5rem;
+}
+
+.modes-label {
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.modes-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.mode-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.125rem 0;
+}
+
+.mode-left {
+  display: flex;
+  align-items: center;
+  gap: 0.65em;
+}
+
+.mode-right {
+  display: flex;
+  align-items: center;
+}
+
+.mode-item .title-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.mode-title {
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
 
 .card-buttons {
   display: flex;
   gap: 0.75em;
   justify-content: center;
-  padding-top: 1.5em;
+  padding-top: 1em;
   border-top: 1px solid rgba(100, 116, 139, 0.2);
   margin-top: auto;
 }
@@ -278,8 +449,8 @@ function closeCard() {
   gap: 0.65em; 
 }
 .hc-card .title-icon { 
-  width: 22px; 
-  height: 22px; 
+  width: 28px; 
+  height: 28px; 
   border-radius: 6px; 
   box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06); 
   flex-shrink: 0;
@@ -298,6 +469,119 @@ function closeCard() {
 .hc-right { 
   display: flex; 
   align-items: center; 
+}
+
+.map-dropdown {
+  position: relative;
+}
+
+.map-dropdown-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(30, 41, 59, 0.9);
+  border: 1px solid rgba(71, 85, 105, 0.5);
+  color: #fff;
+  padding: 0.75rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  &:hover:not(:disabled) {
+    background: rgba(30, 41, 59, 1);
+    border-color: rgba(71, 85, 105, 0.7);
+  }
+}
+
+.map-dropdown-left {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.map-dropdown-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.map-dropdown-icon-default {
+  background: rgba(59, 130, 246, 0.2);
+}
+
+.map-dropdown-icon-selected {
+  background: rgba(59, 130, 246, 0.25);
+}
+
+.map-dropdown-label {
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.map-dropdown-label.map-dropdown-placeholder {
+  color: #e5e7eb;
+  font-weight: normal;
+}
+
+.map-dropdown-chevron {
+  opacity: 0.8;
+}
+
+.map-dropdown-content {
+  position: fixed;
+  background: rgba(15, 23, 42, 0.98);
+  border: 1px solid rgba(71, 85, 105, 0.6);
+  border-radius: 10px;
+  padding: 0.25rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  max-height: 450px;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 122, 26, 0.75) rgba(100, 116, 139, 0.2);
+  z-index: 2000;
+}
+
+.map-dropdown-content::-webkit-scrollbar { width: 10px; }
+.map-dropdown-content::-webkit-scrollbar-track { background: rgba(100, 116, 139, 0.2); border-radius: 10px; }
+.map-dropdown-content::-webkit-scrollbar-thumb {
+  background-image: linear-gradient(180deg, #ff7a1a, #e85f00);
+  border-radius: 10px;
+  border: 2px solid rgba(15, 23, 42, 0.98);
+}
+.map-dropdown-content::-webkit-scrollbar-thumb:hover {
+  background-image: linear-gradient(180deg, #ff8a2a, #f86f10);
+}
+
+.map-dropdown-option {
+  padding: 0.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #fff;
+  font-size: 0.9rem;
+  transition: background 0.2s ease;
+  
+  &:hover {
+    background: rgba(30, 41, 59, 0.6);
+  }
+}
+
+.map-dropdown-option.map-dropdown-selected {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+}
+
+.map-dropdown-sep {
+  height: 1px;
+  background: rgba(71, 85, 105, 0.5);
+  margin: 0.25rem 0;
 }
 
 .create-content-cover {

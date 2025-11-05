@@ -55,9 +55,9 @@ const onLoad = async id => {
   await store.loadProfile(id)
 }
 
-const onCreateSave = async (profileName, tutorialChecked, hardcoreMode, challengeId, cheatsMode) => {
+const onCreateSave = async (profileName, tutorialChecked, hardcoreMode, challengeId, cheatsMode, startingMap) => {
   isLoading = true
-  await store.loadProfile(profileName, tutorialChecked, true, hardcoreMode, challengeId, cheatsMode)
+  await store.loadProfile(profileName, tutorialChecked, true, hardcoreMode, challengeId, cheatsMode, startingMap)
 }
 
 function onCardActivated(active, index) {

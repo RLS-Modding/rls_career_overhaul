@@ -1166,7 +1166,8 @@ export default {
   },
 
   overhaul_maps: {
-    getOtherAvailableMaps: () => {}
+    getOtherAvailableMaps: () => {},
+    getMapsExcludingWestCoast: () => {}
   },
 
   career_modules_playerAttributes: {

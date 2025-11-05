@@ -27,9 +27,9 @@
             <span class="chip-sq"></span>
             <span class="chip-text">{{ challengeInfo.name }}</span>
           </div>
-          <div v-if="cheatsMode" class="cheats-chip" title="Cheats Enabled">
+          <div v-if="cheatsMode" class="cheats-chip" title="Freeroam+ Enabled">
             <span class="chip-sq"></span>
-            <span class="chip-text">Cheats</span>
+            <span class="chip-text">Freeroam+</span>
           </div>
         </div>
       </div>
