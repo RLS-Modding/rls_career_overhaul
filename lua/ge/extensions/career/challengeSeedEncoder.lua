@@ -12,6 +12,7 @@ local MARKER_WIN_CONDITION_DATA = 0x01
 local MARKER_LOANS = 0x02
 local MARKER_ECONOMY_ADJUSTER = 0x03
 local MARKER_STARTING_GARAGES = 0x04
+local MARKER_DIFFICULTY = 0x05
 local MARKER_VARIABLE_NUMBER = 0x10
 local MARKER_VARIABLE_INTEGER = 0x11
 local MARKER_VARIABLE_BOOLEAN = 0x12
@@ -672,6 +673,12 @@ local function encodeChallengeToSeed(challengeData)
   
   writeUint32(buffer, startingCapital)
 
+  local difficultyMap = { Easy = 0, Medium = 1, Hard = 2, Impossible = 3 }
+  local difficulty = challengeData.difficulty or "Medium"
+  local difficultyValue = difficultyMap[difficulty] or 1
+  table.insert(buffer, string.char(MARKER_DIFFICULTY))
+  table.insert(buffer, string.char(difficultyValue))
+
   local variableDefinitions = getWinConditionVariableDefinitions(winCondition)
   if variableDefinitions then
     for variableName, definition in pairs(variableDefinitions) do
@@ -816,6 +823,14 @@ local function decodeSeedToChallenge(seed)
       end
       challengeData.loans.payments = string.byte(binaryData, offset)
       offset = offset + 1
+    elseif marker == MARKER_DIFFICULTY then
+      if offset > #binaryData then
+        return nil, "Incomplete difficulty data"
+      end
+      local difficultyValue = string.byte(binaryData, offset)
+      offset = offset + 1
+      local difficultyMap = { [0] = "Easy", [1] = "Medium", [2] = "Hard", [3] = "Impossible" }
+      challengeData.difficulty = difficultyMap[difficultyValue] or "Medium"
     elseif marker == MARKER_STARTING_GARAGES then
       if offset + 2 > #binaryData then
         return nil, "Incomplete starting garages data"

@@ -353,6 +353,12 @@ defineExpose({
     background: rgba(248, 113, 113, 0.15);
 }
 
+.cdm-diff-impossible {
+    color: #dc2626;
+    border-color: rgba(220, 38, 38, 0.5);
+    background: rgba(220, 38, 38, 0.15);
+}
+
 .cd-chevron {
     opacity: 0.8;
 }

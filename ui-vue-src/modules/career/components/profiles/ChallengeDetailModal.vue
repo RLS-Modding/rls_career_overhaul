@@ -342,6 +342,12 @@ function formatMultiplier(mult) {
     background: rgba(248, 113, 113, 0.15);
 }
 
+.cdm-diff-impossible {
+    color: #dc2626;
+    border-color: rgba(220, 38, 38, 0.5);
+    background: rgba(220, 38, 38, 0.15);
+}
+
 .cdm-time {
     color: #94a3b8;
     font-size: 0.75rem;

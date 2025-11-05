@@ -20,6 +20,41 @@
         </div>
 
         <div class="ccm-field">
+          <label>Difficulty</label>
+          <div class="ccm-difficulty-dropdown" ref="difficultyDropdownRef">
+            <button 
+              type="button" 
+              class="ccm-difficulty-trigger" 
+              @click.stop="toggleDifficultyDropdown"
+              @mousedown.stop
+            >
+              <span>{{ formDifficulty }}</span>
+              <span class="ccm-difficulty-chevron">▾</span>
+            </button>
+            <teleport to="body">
+              <div 
+                v-if="difficultyDropdownOpen" 
+                class="ccm-difficulty-content" 
+                :style="difficultyDropdownStyle"
+                @click.stop
+                @mousedown.stop
+              >
+                <div 
+                  v-for="diff in difficultyOptions" 
+                  :key="diff"
+                  class="ccm-difficulty-option"
+                  :class="{ 'ccm-difficulty-selected': diff === formDifficulty }"
+                  @click.stop="selectDifficulty(diff)"
+                  @mousedown.stop
+                >
+                  {{ diff }}
+                </div>
+              </div>
+            </teleport>
+          </div>
+        </div>
+
+        <div class="ccm-field">
           <label>Description</label>
           <textarea v-model="formDescription" class="ccm-textarea" rows="3" />
         </div>
@@ -315,6 +350,7 @@ const emit = defineEmits(['close', 'saved'])
 const formId = ref('')
 const formName = ref('')
 const formDescription = ref('')
+const formDifficulty = ref('Medium')
 const formStartingCapital = ref(10000)
 const formWinCondition = ref('payOffLoan')
 const formVariables = reactive({})
@@ -332,6 +368,44 @@ const copyStatus = ref('')
 const multiselectQueries = reactive({})
 let copyStatusTimer
 
+const difficultyDropdownRef = ref(null)
+const difficultyDropdownOpen = ref(false)
+const difficultyDropdownStyle = ref('')
+const difficultyOptions = ['Easy', 'Medium', 'Hard', 'Impossible']
+
+function selectDifficulty(difficulty) {
+  formDifficulty.value = difficulty
+  difficultyDropdownOpen.value = false
+}
+
+function toggleDifficultyDropdown() {
+  difficultyDropdownOpen.value = !difficultyDropdownOpen.value
+  if (difficultyDropdownOpen.value) {
+    nextTick(positionDifficultyDropdown)
+  }
+}
+
+function positionDifficultyDropdown() {
+  if (!difficultyDropdownRef.value) return
+  const trigger = difficultyDropdownRef.value.querySelector('.ccm-difficulty-trigger')
+  if (!trigger) return
+  const rect = trigger.getBoundingClientRect()
+  const width = rect.width
+  const margin = 8
+  const left = rect.left
+  const top = rect.bottom + margin
+  difficultyDropdownStyle.value = `position:fixed;z-index:3001;top:${top}px;left:${left}px;width:${width}px;`
+}
+
+function onDifficultyDocClick(e) {
+  if (!difficultyDropdownOpen.value) return
+  const dropdown = document.querySelector('.ccm-difficulty-content')
+  const trigger = difficultyDropdownRef.value?.querySelector('.ccm-difficulty-trigger')
+  if (dropdown && dropdown.contains(e.target)) return
+  if (trigger && trigger.contains(e.target)) return
+  difficultyDropdownOpen.value = false
+}
+
 const events = useEvents()
 const isApplyingSeed = ref(false)
 const pendingRequests = ref(new Set())
@@ -340,6 +414,7 @@ const form = computed(() => ({
   id: formId.value,
   name: formName.value,
   description: formDescription.value,
+  difficulty: formDifficulty.value,
   startingCapital: formStartingCapital.value,
   winCondition: formWinCondition.value,
   variables: { ...formVariables },
@@ -357,6 +432,7 @@ const seedPayload = computed(() => {
   const payload = {
     startingCapital: formStartingCapital.value,
     winCondition: formWinCondition.value,
+    difficulty: formDifficulty.value,
     loans: formLoanAmount.value && formLoanAmount.value > 0
       ? {
           amount: formLoanAmount.value,
@@ -695,6 +771,9 @@ onMounted(() => {
   events.on('challengeSeedGenerated', handleSeedGenerated)
   events.on('challengeSeedEncodeResponse', handleSeedEncodeResponse)
   events.on('challengeSeedDecodeResponse', handleSeedDecodeResponse)
+  document.addEventListener('mousedown', onDifficultyDocClick)
+  window.addEventListener('resize', positionDifficultyDropdown)
+  window.addEventListener('scroll', positionDifficultyDropdown, true)
 })
 
 onBeforeUnmount(() => {
@@ -704,6 +783,9 @@ onBeforeUnmount(() => {
   events.off('challengeSeedGenerated', handleSeedGenerated)
   events.off('challengeSeedEncodeResponse', handleSeedEncodeResponse)
   events.off('challengeSeedDecodeResponse', handleSeedDecodeResponse)
+  document.removeEventListener('mousedown', onDifficultyDocClick)
+  window.removeEventListener('resize', positionDifficultyDropdown)
+  window.removeEventListener('scroll', positionDifficultyDropdown, true)
   if (copyStatusTimer) {
     clearTimeout(copyStatusTimer)
     copyStatusTimer = null
@@ -731,6 +813,7 @@ async function onSave() {
     id: formId.value,
     name: formName.value,
     description: formDescription.value,
+    difficulty: formDifficulty.value,
     startingCapital: formStartingCapital.value,
     winCondition: formWinCondition.value,
     economyAdjuster: Object.keys(formEconomyAdjuster).length > 0 ? formEconomyAdjuster : undefined,
@@ -769,6 +852,7 @@ function resetFormDefaults() {
   formId.value = ''
   formName.value = ''
   formDescription.value = ''
+  formDifficulty.value = props.editorData?.defaults?.difficulty ?? 'Medium'
   formStartingCapital.value = props.editorData?.defaults?.startingCapital ?? 10000
   const rawWin = props.editorData?.winConditions
   const list = Array.isArray(rawWin) ? rawWin : []
@@ -817,6 +901,10 @@ function applySeedDataToForm(challenge) {
   
   if (challenge.startingCapital !== undefined) {
     formStartingCapital.value = challenge.startingCapital
+  }
+  
+  if (challenge.difficulty !== undefined) {
+    formDifficulty.value = challenge.difficulty
   }
   
   if (challenge.winCondition) {
@@ -1170,6 +1258,63 @@ select {
 
 .ccm-textarea {
   resize: vertical;
+}
+
+.ccm-difficulty-dropdown {
+  position: relative;
+}
+
+.ccm-difficulty-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(100, 116, 139, 0.35);
+  color: #fff;
+  border-radius: 8px;
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.ccm-difficulty-trigger:hover {
+  background: rgba(30, 41, 59, 0.8);
+  border-color: rgba(100, 116, 139, 0.5);
+}
+
+.ccm-difficulty-chevron {
+  opacity: 0.8;
+  font-size: 0.9rem;
+}
+
+.ccm-difficulty-content {
+  position: fixed;
+  background: rgba(15, 23, 42, 0.98);
+  border: 1px solid rgba(71, 85, 105, 0.6);
+  border-radius: 8px;
+  padding: 0.25rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  max-height: 200px;
+  overflow: auto;
+  z-index: 3001;
+}
+
+.ccm-difficulty-option {
+  padding: 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #fff;
+  transition: background 0.2s ease;
+}
+
+.ccm-difficulty-option:hover {
+  background: rgba(30, 41, 59, 0.6);
+}
+
+.ccm-difficulty-option.ccm-difficulty-selected {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
 }
 
 .ccm-section-title {
