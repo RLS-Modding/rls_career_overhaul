@@ -112,14 +112,13 @@ local winConditions = {
       -- Track current speed
       if gameplay_walk.isWalking() then
         return false
-    end
+      end
       local playerVehicleId = be:getPlayerVehicleID(0)
       if playerVehicleId then
-        local currentSpeed = math.abs(be:getObjectVelocityXYZ(playerVehicleId)) * 2.23694 -- Convert m/s to MPH
-        print("Current speed: " .. currentSpeed)
+        local vel = vec3(be:getObjectVelocityXYZ(playerVehicleId))
+        local currentSpeed = vel:length() * 2.23694 -- Convert m/s to MPH
         if currentSpeed > (activeChallenge.maxSpeed or 0) then
           activeChallenge.maxSpeed = currentSpeed
-          print("New max speed: " .. activeChallenge.maxSpeed)
         end
       end
       
