@@ -463,12 +463,21 @@ local function onExtensionLoaded()
 end
 
 local function onCareerActivated()
-  -- Clear all existing loans when starting a new career
-  -- This prevents loans from previous saves from persisting
-  activeLoans = {}
-  notificationsEnabled = true -- Reset to default
-  log("I", "", "Loans: Cleared all loans for new career")
-  saveLoans()
+  local _, currentSavePath = career_saveSystem.getCurrentSaveSlot()
+  if not currentSavePath then return end
+  
+  -- Check if loans file exists - if it does, load it; if not, initialize for new save
+  local loansFilePath = currentSavePath .. saveFile
+  if FS:fileExists(loansFilePath) then
+    -- Existing save - load loans
+    loadLoans()
+  else
+    -- New save - clear and initialize
+    activeLoans = {}
+    notificationsEnabled = true
+    log("I", "", "Loans: Initialized for new career")
+    saveLoans()
+  end
 end
 
 local function clearAllLoans()
