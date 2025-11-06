@@ -93,11 +93,12 @@
                 <div class="cdm-seed-section">
                     <div class="cdm-seed-title">Challenge Seed</div>
                     <div class="cdm-seed-row">
-                        <input :value="challengeSeed" class="cdm-seed-input" readonly />
-                        <button class="cdm-seed-copy" @click="copySeedToClipboard" @mousedown.stop>
+                        <input :value="challengeSeed" class="cdm-seed-input" readonly :placeholder="challengeSeed ? '' : 'Loading seed...'" />
+                        <button class="cdm-seed-copy" @click="copySeedToClipboard" @mousedown.stop :disabled="!challengeSeed">
                             {{ copyButtonText }}
                         </button>
                     </div>
+                    <div v-if="!challengeSeed" class="cdm-seed-debug">Seed not loaded (check console for details)</div>
                 </div>
 
                 <div class="cdm-footer">
@@ -136,8 +137,11 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, computed, ref, watch } from 'vue'
+import { defineProps, defineEmits, computed, ref, watch, onMounted, onBeforeUnmount } from 'vue'
 import { lua } from '@/bridge'
+import { useEvents } from '@/services/events'
+
+const events = useEvents()
 
 const props = defineProps({
     open: { type: Boolean, default: false },
@@ -201,17 +205,49 @@ async function confirmDelete() {
     }
 }
 
-async function loadChallengeSeed() {
+function handleChallengeSeedResponse(payload) {
+    if (!payload || payload.challengeId !== props.challenge?.id) {
+        return
+    }
+    
+    if (!payload.success) {
+        console.error('[ChallengeDetailModal] Seed encoding failed:', payload.error)
+        challengeSeed.value = ''
+        return
+    }
+    
+    if (payload.seed && typeof payload.seed === 'string' && payload.seed.trim() !== '') {
+        challengeSeed.value = payload.seed
+    } else {
+        challengeSeed.value = ''
+    }
+}
+
+function loadChallengeSeed() {
     if (!props.challenge || !props.challenge.id) {
         challengeSeed.value = ''
         return
     }
-    try {
-        const seed = await lua.career_challengeModes.getChallengeSeeded(props.challenge.id)
-        challengeSeed.value = seed || ''
-    } catch (err) {
-        console.error('Failed to load challenge seed:', err)
+    
+    if (!lua.career_challengeModes) {
+        console.error('[ChallengeDetailModal] lua.career_challengeModes is not available!')
         challengeSeed.value = ''
+        return
+    }
+    
+    if (typeof lua.career_challengeModes.requestChallengeSeeded !== 'function') {
+        console.error('[ChallengeDetailModal] requestChallengeSeeded is not a function!')
+        challengeSeed.value = ''
+        return
+    }
+    
+    challengeSeed.value = ''
+    
+    try {
+        lua.career_challengeModes.discoverChallenges()
+        lua.career_challengeModes.requestChallengeSeeded(props.challenge.id)
+    } catch (err) {
+        console.error('[ChallengeDetailModal] Error calling Lua functions:', err)
     }
 }
 
@@ -252,6 +288,24 @@ watch(() => props.challenge, () => {
     if (props.open) {
         loadChallengeSeed()
     }
+})
+
+
+onMounted(() => {
+    events.on('challengeSeedResponse', handleChallengeSeedResponse)
+    
+    if (props.open && props.challenge?.id) {
+        loadChallengeSeed()
+        copyButtonText.value = 'Copy Seed'
+        
+        if (lua.setCEFTyping) {
+            lua.setCEFTyping(true)
+        }
+    }
+})
+
+onBeforeUnmount(() => {
+    events.off('challengeSeedResponse', handleChallengeSeedResponse)
 })
 
 const openEconomy = ref(false)
@@ -330,6 +384,8 @@ function formatMultiplier(mult) {
 </script>
 
 <style scoped lang="scss">
+@use "@/styles/modules/mixins" as *;
+
 .cdm-overlay {
     position: fixed;
     inset: 0;
@@ -341,13 +397,17 @@ function formatMultiplier(mult) {
 }
 
 .cdm-content {
-    width: min(42rem, calc(100% - 2rem));
+    width: min(42em, 90vw);
+    max-width: calc(100vw - 2em);
     background: rgba(15, 23, 42, 0.98);
     border: 1px solid rgba(71, 85, 105, 0.6);
     border-radius: 14px;
     box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
     color: #fff;
-    padding: 1rem 1rem 0.75rem;
+    padding: 1em 1em 0.75em;
+    font-size: calc-ui-em();
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 .cdm-header {
@@ -358,34 +418,36 @@ function formatMultiplier(mult) {
 
 .cdm-header-left {
     display: flex;
-    gap: 0.75rem;
+    gap: 0.75em;
     align-items: center;
 }
 
 .cdm-icon {
-    width: 36px;
-    height: 36px;
+    width: 2.25em;
+    height: 2.25em;
     border-radius: 8px;
     background: rgba(100, 116, 139, 0.35);
+    flex-shrink: 0;
+    aspect-ratio: 1;
 }
 
 .cdm-title {
-    font-size: 1.1rem;
+    font-size: 1.1em;
     font-weight: 600;
 }
 
 .cdm-sub {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.5em;
     align-items: center;
-    margin-top: 0.25rem;
+    margin-top: 0.25em;
 }
 
 .cdm-badge {
     border: 1px solid;
     border-radius: 6px;
     padding: 2px 6px;
-    font-size: 0.7rem;
+    font-size: 0.7em;
 }
 
 .cdm-diff-easy {
@@ -406,7 +468,7 @@ function formatMultiplier(mult) {
     background: rgba(251, 146, 60, 0.15);
 }
 
-.cdm-diff-extreme {
+.cdm-diff-exteme {
     color: #f87171;
     border-color: rgba(248, 113, 113, 0.5);
     background: rgba(248, 113, 113, 0.15);
@@ -426,46 +488,46 @@ function formatMultiplier(mult) {
 
 .cdm-time {
     color: #94a3b8;
-    font-size: 0.75rem;
+    font-size: 0.75em;
 }
 
 .cdm-close {
     background: transparent;
     border: 0;
     color: #94a3b8;
-    font-size: 1.25rem;
+    font-size: 1.25em;
     cursor: pointer;
 }
 
 .cdm-body {
-    margin-top: 1rem;
+    margin-top: 1em;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1em;
 }
 
 .cdm-section-title {
     font-weight: 600;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.5em;
 }
 
 .cdm-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0.75rem;
+    gap: 0.75em;
 }
 
 .cdm-card {
     background: rgba(30, 41, 59, 0.6);
     border: 1px solid rgba(100, 116, 139, 0.35);
     border-radius: 10px;
-    padding: 0.75rem;
+    padding: 0.75em;
 }
 
 .cdm-card-label {
     color: #94a3b8;
-    font-size: 0.8rem;
-    margin-bottom: 0.35rem;
+    font-size: 0.8em;
+    margin-bottom: 0.35em;
 }
 
 .cdm-card-value {
@@ -492,31 +554,31 @@ function formatMultiplier(mult) {
     background: rgba(245, 158, 11, 0.12);
     border: 1px solid rgba(245, 158, 11, 0.35);
     border-radius: 10px;
-    padding: 0.75rem;
+    padding: 0.75em;
 }
 
 .cdm-special-title {
     color: #fbbf24;
     font-weight: 600;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.25em;
 }
 
 .cdm-special-text {
     color: #fde68a;
-    font-size: 0.9rem;
+    font-size: 0.9em;
 }
 
 .cdm-objective {
     background: rgba(59, 130, 246, 0.12);
     border: 1px solid rgba(59, 130, 246, 0.35);
     border-radius: 10px;
-    padding: 0.75rem;
+    padding: 0.75em;
 }
 
 .cdm-objective-title {
     color: #93c5fd;
     font-weight: 600;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.25em;
 }
 
 .cdm-objective-text {
@@ -526,19 +588,19 @@ function formatMultiplier(mult) {
 .cdm-footer {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    padding-top: 0.75rem;
+    gap: 0.5em;
+    padding-top: 0.75em;
 }
 
 .cdm-footer-actions {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.5em;
     justify-content: flex-start;
 }
 
 .cdm-footer-main {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.5em;
     justify-content: flex-end;
 }
 
@@ -546,10 +608,10 @@ function formatMultiplier(mult) {
     background: rgba(59, 130, 246, 0.2);
     border: 1px solid rgba(59, 130, 246, 0.5);
     color: #60a5fa;
-    padding: 0.5rem 1rem;
+    padding: 0.5em 1em;
     border-radius: 8px;
     cursor: pointer;
-    font-size: 0.875rem;
+    font-size: inherit;
 }
 
 .cdm-edit:hover {
@@ -560,10 +622,10 @@ function formatMultiplier(mult) {
     background: rgba(239, 68, 68, 0.2);
     border: 1px solid rgba(239, 68, 68, 0.5);
     color: #f87171;
-    padding: 0.5rem 1rem;
+    padding: 0.5em 1em;
     border-radius: 8px;
     cursor: pointer;
-    font-size: 0.875rem;
+    font-size: inherit;
 }
 
 .cdm-delete:hover {
@@ -574,18 +636,20 @@ function formatMultiplier(mult) {
     background: linear-gradient(90deg, #2563eb, #1d4ed8);
     border: 0;
     color: #fff;
-    padding: 0.6rem 1rem;
+    padding: 0.6em 1em;
     border-radius: 8px;
     cursor: pointer;
+    font-size: inherit;
 }
 
 .cdm-outline {
     background: transparent;
     border: 1px solid rgba(100, 116, 139, 0.5);
     color: #cbd5e1;
-    padding: 0.6rem 1rem;
+    padding: 0.6em 1em;
     border-radius: 8px;
     cursor: pointer;
+    font-size: inherit;
 }
 
 .cdm-accordion {
@@ -597,8 +661,9 @@ function formatMultiplier(mult) {
     border: 1px solid rgba(100, 116, 139, 0.35);
     color: #e2e8f0;
     border-radius: 10px;
-    padding: 0.5rem 0.75rem;
+    padding: 0.5em 0.75em;
     cursor: pointer;
+    font-size: inherit;
 }
 
 .cdm-arrow {
@@ -624,13 +689,13 @@ function formatMultiplier(mult) {
     box-shadow: inset 0 0 0 1px rgba(100, 116, 139, 0.15);
 }
 
-.cdm-econ-split { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 0.75rem; padding: 0.5rem; background: rgba(15,23,42,0.6); align-items: stretch; }
+.cdm-econ-split { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5em 0.75em; padding: 0.5em; background: rgba(15,23,42,0.6); align-items: stretch; }
 
-.cdm-econ-col { display: flex; flex-direction: column; gap: 0.35rem; min-height: 0; }
+.cdm-econ-col { display: flex; flex-direction: column; gap: 0.35em; min-height: 0; }
 
-.cdm-subtitle { color:#94a3b8; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.15rem; }
+.cdm-subtitle { color:#94a3b8; font-weight: 600; font-size: 0.85em; margin-bottom: 0.15em; }
 
-.cdm-econ { display: grid; grid-template-columns: 1fr auto; gap: 0.25rem 0.75rem; background: rgba(30,41,59,0.6); border: 1px solid rgba(100,116,139,0.35); border-radius: 8px; padding: 0.4rem 0.6rem; height: 250px; overflow: auto; }
+.cdm-econ { display: grid; grid-template-columns: 1fr auto; gap: 0.25em 0.75em; background: rgba(30,41,59,0.6); border: 1px solid rgba(100,116,139,0.35); border-radius: 8px; padding: 0.4em 0.6em; height: 15.625em; overflow: auto; font-size: inherit; }
 
 .cdm-econ-row {
     display: contents;
@@ -650,19 +715,19 @@ function formatMultiplier(mult) {
     background: rgba(59, 130, 246, 0.08);
     border: 1px solid rgba(59, 130, 246, 0.25);
     border-radius: 10px;
-    padding: 0.75rem;
+    padding: 0.75em;
 }
 
 .cdm-seed-title {
     color: #93c5fd;
     font-weight: 600;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.5em;
 }
 
 .cdm-seed-row {
     display: grid;
     grid-template-columns: 1fr auto;
-    gap: 0.5rem;
+    gap: 0.5em;
     align-items: center;
 }
 
@@ -671,9 +736,9 @@ function formatMultiplier(mult) {
     border: 1px solid rgba(100, 116, 139, 0.35);
     color: #e2e8f0;
     border-radius: 8px;
-    padding: 0.5rem;
+    padding: 0.5em;
     font-family: 'Courier New', monospace;
-    font-size: 0.9rem;
+    font-size: 0.9em;
     cursor: text;
     user-select: all;
 }
@@ -682,16 +747,28 @@ function formatMultiplier(mult) {
     background: linear-gradient(90deg, #2563eb, #1d4ed8);
     border: 0;
     color: #fff;
-    padding: 0.5rem 1rem;
+    padding: 0.5em 1em;
     border-radius: 8px;
     cursor: pointer;
     white-space: nowrap;
-    font-size: 0.9rem;
+    font-size: inherit;
     transition: opacity 0.2s;
 }
 
-.cdm-seed-copy:hover {
+.cdm-seed-copy:hover:not(:disabled) {
     opacity: 0.9;
+}
+
+.cdm-seed-copy:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.cdm-seed-debug {
+    margin-top: 0.5em;
+    font-size: 0.75em;
+    color: #94a3b8;
+    font-style: italic;
 }
 
 .cdm-delete-overlay {
@@ -713,20 +790,21 @@ function formatMultiplier(mult) {
     border-radius: 12px;
     padding: 0;
     width: 90%;
-    max-width: 400px;
+    max-width: 25em;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    font-size: calc-ui-rem();
 }
 
 .cdm-delete-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1.25rem 1.5rem;
+    padding: 1.25em 1.5em;
     border-bottom: 1px solid rgba(71, 85, 105, 0.6);
 }
 
 .cdm-delete-title {
-    font-size: 1.25rem;
+    font-size: 1.25em;
     font-weight: 600;
     color: #e2e8f0;
 }
@@ -735,15 +813,16 @@ function formatMultiplier(mult) {
     background: transparent;
     border: 0;
     color: #94a3b8;
-    font-size: 1.5rem;
+    font-size: 1.5em;
     cursor: pointer;
     padding: 0;
-    width: 24px;
-    height: 24px;
+    width: 1.5em;
+    height: 1.5em;
     display: flex;
     align-items: center;
     justify-content: center;
     line-height: 1;
+    aspect-ratio: 1;
 }
 
 .cdm-delete-close:hover {
@@ -751,13 +830,13 @@ function formatMultiplier(mult) {
 }
 
 .cdm-delete-body {
-    padding: 1.5rem;
+    padding: 1.5em;
     color: #e2e8f0;
 }
 
 .cdm-delete-body p {
-    margin: 0 0 0.75rem 0;
-    font-size: 0.95rem;
+    margin: 0 0 0.75em 0;
+    font-size: 0.95em;
     line-height: 1.5;
 }
 
@@ -771,13 +850,13 @@ function formatMultiplier(mult) {
 
 .cdm-delete-warning {
     color: #f87171 !important;
-    font-size: 0.875rem;
+    font-size: 0.875em;
 }
 
 .cdm-delete-footer {
     display: flex;
-    gap: 0.75rem;
-    padding: 1rem 1.5rem;
+    gap: 0.75em;
+    padding: 1em 1.5em;
     border-top: 1px solid rgba(71, 85, 105, 0.6);
     justify-content: flex-end;
 }
@@ -786,10 +865,10 @@ function formatMultiplier(mult) {
     background: transparent;
     border: 1px solid rgba(100, 116, 139, 0.5);
     color: #cbd5e1;
-    padding: 0.6rem 1.25rem;
+    padding: 0.6em 1.25em;
     border-radius: 8px;
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: inherit;
 }
 
 .cdm-delete-cancel:hover {
@@ -801,10 +880,10 @@ function formatMultiplier(mult) {
     background: linear-gradient(90deg, #ef4444, #dc2626);
     border: 0;
     color: #fff;
-    padding: 0.6rem 1.25rem;
+    padding: 0.6em 1.25em;
     border-radius: 8px;
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: inherit;
     font-weight: 500;
 }
 

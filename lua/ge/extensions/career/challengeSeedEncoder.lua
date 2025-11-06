@@ -677,67 +677,97 @@ local function encodeChallengeToSeed(challengeData)
   local difficultyMap = { Easy = 0, Medium = 1, Hard = 2, Impossible = 3 }
   local difficulty = challengeData.difficulty or "Medium"
   local difficultyValue = difficultyMap[difficulty] or 1
-  table.insert(buffer, string.char(MARKER_DIFFICULTY))
-  table.insert(buffer, string.char(difficultyValue))
+  local success, err = pcall(function()
+    table.insert(buffer, string.char(MARKER_DIFFICULTY))
+    table.insert(buffer, string.char(difficultyValue))
+  end)
+  if not success then
+    print("Warning: ChallengeSeedEncoder failed to encode difficulty: " .. tostring(err))
+  end
 
-  local variableDefinitions = getWinConditionVariableDefinitions(winCondition)
-  if variableDefinitions then
-    for variableName, definition in pairs(variableDefinitions) do
-      local value = challengeData[variableName]
-      -- Only encode if value is different from default
-      if value ~= nil and (definition.default == nil or value ~= definition.default) then
-        encodeVariable(buffer, variableName, definition, value)
+  local success, err = pcall(function()
+    local variableDefinitions = getWinConditionVariableDefinitions(winCondition)
+    if variableDefinitions then
+      for variableName, definition in pairs(variableDefinitions) do
+        local value = challengeData[variableName]
+        -- Only encode if value is different from default
+        if value ~= nil and (definition.default == nil or value ~= definition.default) then
+          encodeVariable(buffer, variableName, definition, value)
+        end
       end
     end
+  end)
+  if not success then
+    print("Warning: ChallengeSeedEncoder failed to encode variables: " .. tostring(err))
   end
   
   if challengeData.loans and challengeData.loans.amount and challengeData.loans.amount > 0 then
-    table.insert(buffer, string.char(MARKER_LOANS))
-    
-    -- Round loan amount to step increments
-    local roundedAmount = roundLoanAmount(challengeData.loans.amount)
-    writeVarInt(buffer, roundedAmount)
-    
-    writeFloat(buffer, challengeData.loans.interest or 0.10)
-    
-    table.insert(buffer, string.char(math.min(255, challengeData.loans.payments or 12)))
+    local success, err = pcall(function()
+      table.insert(buffer, string.char(MARKER_LOANS))
+      
+      -- Round loan amount to step increments
+      local roundedAmount = roundLoanAmount(challengeData.loans.amount)
+      writeVarInt(buffer, roundedAmount)
+      
+      writeFloat(buffer, challengeData.loans.interest or 0.10)
+      
+      table.insert(buffer, string.char(math.min(255, challengeData.loans.payments or 12)))
+    end)
+    if not success then
+      print("Warning: ChallengeSeedEncoder failed to encode loans: " .. tostring(err))
+    end
   end
   
   if challengeData.economyAdjuster and type(challengeData.economyAdjuster) == "table" then
-    -- Filter out disabled sub-modules based on parent module hierarchy
-    local filteredAdjuster = filterDisabledSubModules(challengeData.economyAdjuster)
-    
-    for activityType, multiplier in pairs(filteredAdjuster) do
-      if multiplier ~= 1.0 then
-        table.insert(buffer, string.char(MARKER_ECONOMY_ADJUSTER))
-        local activityHash = simpleHash(activityType)
-        writeVarInt(buffer, activityHash)
-        
-        -- Round multiplier to step increments and encode as step multiple
-        local roundedMultiplier = roundEconomyMultiplier(multiplier)
-        local stepMultiple = math.floor((roundedMultiplier / 0.25) + 0.5)
-        writeVarInt(buffer, stepMultiple)
+    local success, err = pcall(function()
+      -- Filter out disabled sub-modules based on parent module hierarchy
+      local filteredAdjuster = filterDisabledSubModules(challengeData.economyAdjuster)
+      
+      for activityType, multiplier in pairs(filteredAdjuster) do
+        if multiplier ~= 1.0 then
+          table.insert(buffer, string.char(MARKER_ECONOMY_ADJUSTER))
+          local activityHash = simpleHash(activityType)
+          writeVarInt(buffer, activityHash)
+          
+          -- Round multiplier to step increments and encode as step multiple
+          local roundedMultiplier = roundEconomyMultiplier(multiplier)
+          local stepMultiple = math.floor((roundedMultiplier / 0.25) + 0.5)
+          writeVarInt(buffer, stepMultiple)
+        end
       end
+    end)
+    if not success then
+      print("Warning: ChallengeSeedEncoder failed to encode economy adjuster: " .. tostring(err))
     end
   end
   
   if challengeData.startingGarages and type(challengeData.startingGarages) == "table" and #challengeData.startingGarages > 0 then
-    table.insert(buffer, string.char(MARKER_STARTING_GARAGES))
-    
-    -- Encode number of garages
-    writeVarInt(buffer, #challengeData.startingGarages)
-    
-    -- Encode each garage ID as hash
-    for _, garageId in ipairs(challengeData.startingGarages) do
-      local garageHash = simpleHash(garageId)
-      writeVarInt(buffer, garageHash)
+    local success, err = pcall(function()
+      table.insert(buffer, string.char(MARKER_STARTING_GARAGES))
+      
+      -- Encode number of garages
+      writeVarInt(buffer, #challengeData.startingGarages)
+      
+      -- Encode each garage ID as hash
+      for _, garageId in ipairs(challengeData.startingGarages) do
+        local garageHash = simpleHash(garageId)
+        writeVarInt(buffer, garageHash)
+      end
+    end)
+    if not success then
+      print("Warning: ChallengeSeedEncoder failed to encode starting garages: " .. tostring(err))
     end
   end
   
   if challengeData.map and challengeData.map ~= "" then
-    table.insert(buffer, string.char(MARKER_MAP))
-    local mapHash = simpleHash(challengeData.map)
-    writeVarInt(buffer, mapHash)
+    local success, err = pcall(function()
+      table.insert(buffer, string.char(MARKER_MAP))
+      local mapHash = simpleHash(challengeData.map)
+      writeVarInt(buffer, mapHash)
+    end)
+    if not success then
+      print("Warning: ChallengeSeedEncoder failed to encode map: " .. tostring(err))
+    end
   end
   
   table.insert(buffer, string.char(MARKER_END))

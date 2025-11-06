@@ -1316,28 +1316,53 @@ local function decodeSeedToChallengeData(seed)
   return true, resolved
 end
 
-local function getChallengeDataForEdit(challengeId)
+local function requestChallengeDataForEdit(challengeId)
   local challenge = discoveredChallenges[challengeId]
   if not challenge then
-    return nil, "Challenge not found"
+    guihooks.trigger('challengeEditDataResponse', {
+      challengeId = challengeId,
+      success = false,
+      error = "Challenge not found"
+    })
+    return
   end
   
   if not career_challengeSeedEncoder then
-    return nil, "Seed encoder not available"
+    guihooks.trigger('challengeEditDataResponse', {
+      challengeId = challengeId,
+      success = false,
+      error = "Seed encoder not available"
+    })
+    return
   end
   
   local success, seed, err = pcall(career_challengeSeedEncoder.encodeChallengeToSeed, challenge)
   if not success then
-    return nil, "Encoding error: " .. tostring(seed)
+    guihooks.trigger('challengeEditDataResponse', {
+      challengeId = challengeId,
+      success = false,
+      error = "Encoding error: " .. tostring(seed)
+    })
+    return
   end
   
   if not seed then
-    return nil, err or "Failed to encode seed"
+    guihooks.trigger('challengeEditDataResponse', {
+      challengeId = challengeId,
+      success = false,
+      error = err or "Failed to encode seed"
+    })
+    return
   end
   
   local decodeSuccess, decodedData, decodeErr = decodeSeedToChallengeData(seed)
   if not decodeSuccess then
-    return nil, decodeErr or "Failed to decode seed"
+    guihooks.trigger('challengeEditDataResponse', {
+      challengeId = challengeId,
+      success = false,
+      error = decodeErr or "Failed to decode seed"
+    })
+    return
   end
   
   if decodedData then
@@ -1345,9 +1370,26 @@ local function getChallengeDataForEdit(challengeId)
     decodedData.description = challenge.description or ""
     decodedData.id = challenge.id
     decodedData.difficulty = challenge.difficulty or "Medium"
+    decodedData.seed = seed
+    
+    if challenge.map then
+      decodedData.map = challenge.map
+    end
+    
+    for k, v in pairs(challenge) do
+      if decodedData[k] == nil and k ~= "id" and k ~= "name" and k ~= "description" and k ~= "difficulty" and k ~= "seed" then
+        if k ~= "filePath" and k ~= "isLocal" and k ~= "isBaseGame" and k ~= "startedAt" and k ~= "simulationTimeSpent" then
+          decodedData[k] = v
+        end
+      end
+    end
   end
   
-  return decodedData
+  guihooks.trigger('challengeEditDataResponse', {
+    challengeId = challengeId,
+    success = true,
+    data = decodedData
+  })
 end
 
 local function deleteChallenge(challengeId)
@@ -1493,6 +1535,52 @@ local function requestSeedDecode(requestId, seed)
   return response.success, response.data or response.error
 end
 
+local function requestChallengeSeeded(challengeId)
+  local challenge = discoveredChallenges[challengeId]
+  if not challenge then
+    guihooks.trigger('challengeSeedResponse', {
+      challengeId = challengeId,
+      success = false,
+      error = "Challenge not found"
+    })
+    return
+  end
+  
+  if not career_challengeSeedEncoder then
+    guihooks.trigger('challengeSeedResponse', {
+      challengeId = challengeId,
+      success = false,
+      error = "Seed encoder not available"
+    })
+    return
+  end
+  
+  local success, seed, err = pcall(career_challengeSeedEncoder.encodeChallengeToSeed, challenge)
+  if not success then
+    guihooks.trigger('challengeSeedResponse', {
+      challengeId = challengeId,
+      success = false,
+      error = "Encoding error: " .. tostring(seed)
+    })
+    return
+  end
+  
+  if not seed then
+    guihooks.trigger('challengeSeedResponse', {
+      challengeId = challengeId,
+      success = false,
+      error = err or "Failed to encode seed"
+    })
+    return
+  end
+  
+  guihooks.trigger('challengeSeedResponse', {
+    challengeId = challengeId,
+    success = true,
+    seed = seed
+  })
+end
+
 table.insert(winConditions, {
   id = "ownSpecificGarage",
   name = "Own Specific Garage",
@@ -1557,11 +1645,13 @@ M.getChallengeOptionsForCareerCreation = getChallengeOptionsForCareerCreation
 M.requestChallengeCompleteData = requestChallengeCompleteData
 M.getChallengeSeeded = getChallengeSeeded
 M.getChallengeDataForEdit = getChallengeDataForEdit
+M.requestChallengeDataForEdit = requestChallengeDataForEdit
 M.deleteChallenge = deleteChallenge
 M.createChallengeFromSeedUI = createChallengeFromSeedUI
 M.requestGenerateRandomSeed = requestGenerateRandomSeed
 M.requestSeedEncode = requestSeedEncode
 M.requestSeedDecode = requestSeedDecode
+M.requestChallengeSeeded = requestChallengeSeeded
 M.generateRandomChallengeData = generateRandomChallengeData
 M.encodeChallengeDataToSeed = encodeChallengeDataToSeed
 M.decodeSeedToChallengeData = decodeSeedToChallengeData

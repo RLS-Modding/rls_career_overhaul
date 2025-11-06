@@ -246,9 +246,9 @@
                           <div v-for="itemId in getMultiselectValues(variable.id)" :key="itemId" class="ccm-garage-selected-item">
                             <span>{{ getMultiselectItemName(variable.id, itemId) }}</span>
                             <button 
-                              class="ccm-garage-remove" 
+                              class="ccm-garage-emove" 
                               type="button" 
-                              @click.stop="removeMultiselectItem(variable.id, itemId)"
+                              @click.stop="emoveMultiselectItem(variable.id, itemId)"
                               @mousedown.stop
                             >
                               ×
@@ -311,9 +311,9 @@
                     <div v-for="garageId in formStartingGarages" :key="garageId" class="ccm-garage-selected-item">
                       <span>{{ getGarageName(garageId) }}</span>
                       <button 
-                        class="ccm-garage-remove" 
+                        class="ccm-garage-emove" 
                         type="button" 
-                        @click.stop="removeGarage(garageId)"
+                        @click.stop="emoveGarage(garageId)"
                         @mousedown.stop
                       >
                         ×
@@ -389,7 +389,8 @@ import { BngSelect } from '@/common/components/base'
 const props = defineProps({
   open: { type: Boolean, default: false },
   editorData: { type: Object, default: () => ({}) },
-  editChallengeData: { type: Object, default: null }
+  editChallengeData: { type: Object, default: null },
+  editChallengeId: { type: String, default: null }
 })
 const emit = defineEmits(['close', 'saved'])
 
@@ -546,10 +547,8 @@ const seedPayload = computed(() => {
 
 const winConditionOptions = computed(() => {
   try {
-    console.log('[ChallengeCreateModal] winConditionOptions computed running')
     const raw = props.editorData && props.editorData.winConditions
     const list = Array.isArray(raw) ? raw : []
-    console.log('[ChallengeCreateModal] winConditionOptions list length:', list.length)
     return list.map(w => ({
       id: w.id,
       name: w.name || w.id,
@@ -590,9 +589,7 @@ const multiselectVariables = computed(() => {
 
 const activeVariables = computed(() => {
   try {
-    console.log('[ChallengeCreateModal] activeVariables computed running')
     const defs = variableDefinitions.value
-    console.log('[ChallengeCreateModal] variableDefinitions:', defs)
     const result = []
     for (const [variableId, definition] of Object.entries(defs)) {
     const type = definition.type || 'number'
@@ -652,7 +649,6 @@ const activeVariables = computed(() => {
     const db = (defs[b.id] && defs[b.id].order) || 0
     return da - db
   })
-  console.log('[ChallengeCreateModal] activeVariables result:', result)
   return result
   } catch (error) {
     console.error('[ChallengeCreateModal] Error in activeVariables:', error)
@@ -754,53 +750,46 @@ const interestPercent = computed({
   }
 })
 
-watch(() => props.open, (isOpen, oldIsOpen) => {
-  console.log('[ChallengeCreateModal] ========== PROPS.OPEN CHANGED ==========')
-  console.log('[ChallengeCreateModal] oldIsOpen:', oldIsOpen, '→ newIsOpen:', isOpen)
-  console.log('[ChallengeCreateModal] current props.open:', props.open)
-  console.trace('[ChallengeCreateModal] Stack trace for props.open change')
-  
+watch(() => props.open, async (isOpen, oldIsOpen) => {
   if (!isOpen) {
-    console.log('[ChallengeCreateModal] Closing modal - props.open became false')
-    console.trace('[ChallengeCreateModal] Stack trace for closing')
     if (lua.setCEFTyping) {
       lua.setCEFTyping(false)
     }
     return
   }
 
-  console.log('[ChallengeCreateModal] Opening modal')
-  console.log('[ChallengeCreateModal] editorData:', props.editorData)
-  console.log('[ChallengeCreateModal] editorData structure:', JSON.stringify(props.editorData, null, 2))
-  
   try {
-    if (props.editChallengeData) {
-      console.log('[ChallengeCreateModal] Applying edit challenge data')
-      applySeedDataToForm(props.editChallengeData)
+    if (props.editChallengeId) {
+      try {
+        lua.career_challengeModes.requestChallengeDataForEdit(props.editChallengeId)
+      } catch (err) {
+        console.error('[ChallengeCreateModal] Error calling requestChallengeDataForEdit:', err)
+      }
+    } else if (props.editChallengeData) {
+      if (props.editChallengeData.seed) {
+        seedInput.value = props.editChallengeData.seed
+      }
+      
+      applySeedDataToForm(props.editChallengeData, true)
       formName.value = props.editChallengeData.name || ''
       formDescription.value = props.editChallengeData.description || ''
       formId.value = props.editChallengeData.id || ''
+      
       if (props.editChallengeData.map !== undefined) {
         formMap.value = props.editChallengeData.map || null
       } else {
         formMap.value = null
       }
     } else if (seedInput.value && seedInput.value.trim() !== '') {
-      console.log('[ChallengeCreateModal] Applying seed from input')
       applySeedToForm(seedInput.value)
     } else {
-      console.log('[ChallengeCreateModal] Resetting form defaults')
       resetFormDefaults()
-      console.log('[ChallengeCreateModal] Updating seed from payload')
       updateSeedFromPayload()
     }
 
-    console.log('[ChallengeCreateModal] Creating initial snapshot')
     initialSnapshot.value = JSON.stringify(form.value)
-    console.log('[ChallengeCreateModal] Initial snapshot created')
 
     nextTick(() => {
-      console.log('[ChallengeCreateModal] In nextTick callback')
       if (lua.setCEFTyping) {
         lua.setCEFTyping(true)
       }
@@ -809,26 +798,19 @@ watch(() => props.open, (isOpen, oldIsOpen) => {
         firstInput.focus()
       }
     })
-    console.log('[ChallengeCreateModal] Watch handler completed successfully')
   } catch (error) {
     console.error('[ChallengeCreateModal] Error in watch handler:', error)
-    console.error('[ChallengeCreateModal] Error stack:', error.stack)
   }
 })
 
 function handleSeedGenerated(payload) {
-  console.log('handleSeedGenerated')
-  console.log('challengeSeedGenerated event received:', payload)
-
   if (!payload || payload.success === false) {
     seedError.value = payload?.error || 'Failed to generate seed'
-    console.error('Seed generation failed:', payload?.error)
     return
   }
 
   if (!payload.seed || payload.seed.trim() === '') {
     seedError.value = 'Generated seed is empty'
-    console.error('Empty seed in event:', payload)
     return
   }
 
@@ -866,20 +848,68 @@ function handleSeedDecodeResponse(payload) {
   }
 }
 
+function handleChallengeEditDataResponse(payload) {
+  if (!payload || payload.challengeId !== props.editChallengeId) {
+    return
+  }
+  
+  if (!payload.success) {
+    console.error('[ChallengeCreateModal] Edit data fetch failed:', payload.error)
+    seedError.value = payload.error || 'Failed to load challenge data'
+    return
+  }
+  
+  const challengeData = payload.data
+  if (!challengeData) {
+    console.error('[ChallengeCreateModal] No challenge data in response')
+    seedError.value = 'No challenge data received'
+    return
+  }
+  
+  if (challengeData.seed) {
+    seedInput.value = challengeData.seed
+  }
+  
+  applySeedDataToForm(challengeData, true)
+  
+  formName.value = challengeData.name || ''
+  formDescription.value = challengeData.description || ''
+  formId.value = challengeData.id || ''
+  
+  if (challengeData.map !== undefined) {
+    formMap.value = challengeData.map || null
+  } else {
+    formMap.value = null
+  }
+  
+  if (challengeData.difficulty) {
+    formDifficulty.value = challengeData.difficulty
+  }
+  
+  nextTick(() => {
+    initialSnapshot.value = JSON.stringify(form.value)
+  })
+}
+
 onMounted(async () => {
-  console.log('[ChallengeCreateModal] Component MOUNTED')
-  console.log('[ChallengeCreateModal] Initial props.open:', props.open)
-  console.log('[ChallengeCreateModal] Initial editorData:', props.editorData)
-  console.trace('[ChallengeCreateModal] Stack trace for mount')
   events.on('challengeSeedGenerated', handleSeedGenerated)
   events.on('challengeSeedEncodeResponse', handleSeedEncodeResponse)
   events.on('challengeSeedDecodeResponse', handleSeedDecodeResponse)
+  events.on('challengeEditDataResponse', handleChallengeEditDataResponse)
   document.addEventListener('mousedown', onDifficultyDocClick)
   document.addEventListener('mousedown', onMapDocClick)
   window.addEventListener('resize', positionDifficultyDropdown)
   window.addEventListener('scroll', positionDifficultyDropdown, true)
   window.addEventListener('resize', positionMapDropdown)
   window.addEventListener('scroll', positionMapDropdown, true)
+  
+  if (props.open && props.editChallengeId) {
+    try {
+      lua.career_challengeModes.requestChallengeDataForEdit(props.editChallengeId)
+    } catch (err) {
+      console.error('[ChallengeCreateModal] Error requesting edit data on mount:', err)
+    }
+  }
   
   try {
     const maps = await lua.overhaul_maps.getCompatibleMaps()
@@ -895,12 +925,10 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
-  console.log('[ChallengeCreateModal] Component UNMOUNTING')
-  console.log('[ChallengeCreateModal] props.open at unmount:', props.open)
-  console.trace('[ChallengeCreateModal] Stack trace for unmount')
   events.off('challengeSeedGenerated', handleSeedGenerated)
   events.off('challengeSeedEncodeResponse', handleSeedEncodeResponse)
   events.off('challengeSeedDecodeResponse', handleSeedDecodeResponse)
+  events.off('challengeEditDataResponse', handleChallengeEditDataResponse)
   document.removeEventListener('mousedown', onDifficultyDocClick)
   document.removeEventListener('mousedown', onMapDocClick)
   window.removeEventListener('resize', positionDifficultyDropdown)
@@ -917,16 +945,10 @@ const canSave = computed(() => !!formId.value && !!formName.value)
 const isDirty = computed(() => JSON.stringify(form.value) !== initialSnapshot.value)
 
 function onRequestClose() {
-  console.log('[ChallengeCreateModal] ========== onRequestClose CALLED ==========')
-  console.log('[ChallengeCreateModal] props.open:', props.open)
-  console.trace('[ChallengeCreateModal] Stack trace for onRequestClose')
   if (!props.open) {
-    console.log('[ChallengeCreateModal] onRequestClose blocked - already closed')
     return
   }
-  console.log('[ChallengeCreateModal] Emitting close event')
   emit('close')
-  console.log('[ChallengeCreateModal] ========== close event EMITTED ==========')
 }
 
 async function onSave() {
@@ -1018,8 +1040,7 @@ function applySeedToForm(seed) {
   lua.career_challengeModes.requestSeedDecode(requestId, seed)
 }
 
-function applySeedDataToForm(challenge) {
-  console.log('applySeedDataToForm challenge data:', challenge)
+function applySeedDataToForm(challenge, skipSeedUpdate = false) {
   isApplyingSeed.value = true
   
   if (challenge.startingCapital !== undefined) {
@@ -1083,7 +1104,9 @@ function applySeedDataToForm(challenge) {
     }
     
     seedError.value = ''
-    updateSeedFromPayload()
+    if (!skipSeedUpdate) {
+      updateSeedFromPayload()
+    }
     isApplyingSeed.value = false
   })
 }
@@ -1123,7 +1146,6 @@ async function onCopySeed() {
       copyStatusTimer = null
     }, 3000)
   } catch (err) {
-    console.warn('Failed to copy to clipboard:', err)
     seedError.value = 'Failed to copy to clipboard'
   }
 }
@@ -1254,13 +1276,23 @@ watch(seedInput, (val) => {
   }
 })
 
+watch(() => props.editChallengeId, (newId, oldId) => {
+  if (newId && props.open) {
+    try {
+      lua.career_challengeModes.requestChallengeDataForEdit(newId)
+    } catch (err) {
+      console.error('[ChallengeCreateModal] Error requesting edit data:', err)
+    }
+  }
+}, { immediate: true })
+
 
 function getGarageName(garageId) {
   const garage = availableGarages.value.find(g => g.id === garageId)
   return garage ? garage.name : garageId
 }
 
-function removeGarage(garageId) {
+function emoveGarage(garageId) {
   const index = formStartingGarages.value.indexOf(garageId)
   if (index > -1) {
     formStartingGarages.value.splice(index, 1)
@@ -1301,7 +1333,7 @@ function getMultiselectItemName(variableId, itemId) {
   return item ? item.name : itemId
 }
 
-function removeMultiselectItem(variableId, itemId) {
+function emoveMultiselectItem(variableId, itemId) {
   const values = formVariables[variableId] || []
   const index = values.indexOf(itemId)
   if (index > -1) {
@@ -1311,6 +1343,8 @@ function removeMultiselectItem(variableId, itemId) {
 </script>
 
 <style scoped lang="scss">
+@use "@/styles/modules/mixins" as *;
+
 .ccm-overlay {
   position: fixed;
   inset: 0;
@@ -1322,13 +1356,17 @@ function removeMultiselectItem(variableId, itemId) {
 }
 
 .ccm-content {
-  width: min(46rem, calc(100% - 2rem));
+  width: min(46em, 90vw);
+  max-width: calc(100vw - 2em);
   background: rgba(15, 23, 42, 0.98);
   border: 1px solid rgba(71, 85, 105, 0.6);
   border-radius: 14px;
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
   color: #fff;
-  padding: 1rem;
+  padding: 1em;
+  font-size: calc-ui-rem();
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .ccm-header {
@@ -1339,40 +1377,61 @@ function removeMultiselectItem(variableId, itemId) {
 
 .ccm-title {
   font-weight: 600;
-  font-size: 1.05rem;
+  font-size: 1.05em;
 }
 
 .ccm-close {
   background: transparent;
   border: 0;
   color: #94a3b8;
-  font-size: 1.25rem;
+  font-size: 1.25em;
   cursor: pointer;
 }
 
 .ccm-body {
-  margin-top: 0.75rem;
+  margin-top: 0.75em;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.75em;
 }
 
 .ccm-grid2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
+  gap: 0.75em;
 }
 
 .ccm-grid3 {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap: 0.75rem;
+  gap: 0.75em;
 }
 
 .ccm-field {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.25em;
+  
+  :deep(.bng-select) {
+    font-size: inherit !important;
+  }
+  
+  :deep(.bng-select-content),
+  :deep(.bng-select-content .label),
+  :deep(.bng-select-content .label *) {
+    font-size: inherit !important;
+  }
+  
+  :deep(.bng-select-dropdown),
+  :deep(.bng-select-option),
+  :deep(.bng-select-option *) {
+    font-size: inherit !important;
+  }
+  
+  :deep(.bng-button),
+  :deep(.bng-select .bng-button) {
+    font-size: inherit !important;
+  }
 }
 
 .ccm-input,
@@ -1382,7 +1441,8 @@ select {
   border: 1px solid rgba(100, 116, 139, 0.35);
   color: #fff;
   border-radius: 8px;
-  padding: 0.5rem;
+  padding: 0.5em;
+  font-size: inherit;
 }
 
 .ccm-textarea {
@@ -1402,9 +1462,10 @@ select {
   border: 1px solid rgba(100, 116, 139, 0.35);
   color: #fff;
   border-radius: 8px;
-  padding: 0.5rem;
+  padding: 0.5em;
   cursor: pointer;
   transition: background 0.2s ease, border-color 0.2s ease;
+  font-size: inherit;
 }
 
 .ccm-difficulty-trigger:hover {
@@ -1414,7 +1475,7 @@ select {
 
 .ccm-difficulty-chevron {
   opacity: 0.8;
-  font-size: 0.9rem;
+  font-size: 0.9em;
 }
 
 .ccm-difficulty-content {
@@ -1422,19 +1483,21 @@ select {
   background: rgba(15, 23, 42, 0.98);
   border: 1px solid rgba(71, 85, 105, 0.6);
   border-radius: 8px;
-  padding: 0.25rem;
+  padding: 0.25em;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  max-height: 200px;
+  max-height: 12.5em;
   overflow: auto;
   z-index: 3001;
+  font-size: inherit;
 }
 
 .ccm-difficulty-option {
-  padding: 0.5rem;
+  padding: 0.5em;
   border-radius: 6px;
   cursor: pointer;
   color: #fff;
   transition: background 0.2s ease;
+  font-size: inherit;
 }
 
 .ccm-difficulty-option:hover {
@@ -1459,9 +1522,10 @@ select {
   border: 1px solid rgba(100, 116, 139, 0.35);
   color: #fff;
   border-radius: 8px;
-  padding: 0.5rem;
+  padding: 0.5em;
   cursor: pointer;
   transition: background 0.2s ease, border-color 0.2s ease;
+  font-size: inherit;
 }
 
 .ccm-map-trigger:hover {
@@ -1471,7 +1535,7 @@ select {
 
 .ccm-map-chevron {
   opacity: 0.8;
-  font-size: 0.9rem;
+  font-size: 0.9em;
 }
 
 .ccm-map-content {
@@ -1479,19 +1543,21 @@ select {
   background: rgba(15, 23, 42, 0.98);
   border: 1px solid rgba(71, 85, 105, 0.6);
   border-radius: 8px;
-  padding: 0.25rem;
+  padding: 0.25em;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  max-height: 200px;
+  max-height: 12.5em;
   overflow: auto;
   z-index: 3001;
+  font-size: inherit;
 }
 
 .ccm-map-option {
-  padding: 0.5rem;
+  padding: 0.5em;
   border-radius: 6px;
   cursor: pointer;
   color: #fff;
   transition: background 0.2s ease;
+  font-size: inherit;
 }
 
 .ccm-map-option:hover {
@@ -1506,23 +1572,23 @@ select {
 .ccm-map-sep {
   height: 1px;
   background: rgba(71, 85, 105, 0.5);
-  margin: 0.25rem 0;
+  margin: 0.25em 0;
 }
 
 .ccm-section-title {
-  margin-top: 0.25rem;
+  margin-top: 0.25em;
   font-weight: 600;
 }
 
 .ccm-seed-section {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.25em;
 }
 
 .ccm-seed-row {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.5em;
   align-items: center;
   flex-wrap: wrap;
 }
@@ -1531,10 +1597,11 @@ select {
   flex: 1 1 0;
   min-width: 0;
   border-radius: 8px;
-  padding: 0.5rem 0.75rem;
+  padding: 0.5em 0.75em;
   border: 1px solid transparent;
   cursor: pointer;
   transition: background 0.2s ease, transform 0.1s ease;
+  font-size: inherit;
 }
 .ccm-seed-generate {
   background: rgba(30, 41, 59, 0.75);
@@ -1567,29 +1634,29 @@ select {
 
 .ccm-seed-input {
   font-family: 'Courier New', monospace;
-  font-size: 0.9rem;
+  font-size: 0.9em;
   width: 100%;
 }
 
 .ccm-seed-error {
   color: #f87171;
-  font-size: 0.85rem;
-  padding-left: 0.25rem;
+  font-size: 0.85em;
+  padding-left: 0.25em;
 }
 
 .ccm-hint {
   color: #94a3b8;
-  font-size: 0.75rem;
-  margin-top: 0.15rem;
+  font-size: 0.75em;
+  margin-top: 0.15em;
 }
 
 .ccm-econ {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.5rem 1rem;
-  max-height: 14rem;
+  gap: 0.5em 1em;
+  max-height: 14em;
   overflow: auto;
-  padding-right: 0.25rem;
+  padding-right: 0.25em;
   scrollbar-width: thin;
   scrollbar-color: rgba(100, 116, 139, 0.5) transparent;
 }
@@ -1614,15 +1681,15 @@ select {
 
 .ccm-econ-row {
   display: grid;
-  grid-template-columns: 1fr 120px;
-  gap: 0.5rem;
+  grid-template-columns: 1fr 7.5em;
+  gap: 0.5em;
   align-items: center;
 }
 
 .ccm-footer {
   display: flex;
-  gap: 0.5rem;
-  padding-top: 0.75rem;
+  gap: 0.5em;
+  padding-top: 0.75em;
   justify-content: flex-end;
 }
 
@@ -1630,33 +1697,35 @@ select {
   background: linear-gradient(90deg, #2563eb, #1d4ed8);
   border: 0;
   color: #fff;
-  padding: 0.6rem 1rem;
+  padding: 0.6em 1em;
   border-radius: 8px;
   cursor: pointer;
+  font-size: inherit;
 }
 
 .ccm-outline {
   background: transparent;
   border: 1px solid rgba(100, 116, 139, 0.5);
   color: #cbd5e1;
-  padding: 0.6rem 1rem;
+  padding: 0.6em 1em;
   border-radius: 8px;
   cursor: pointer;
+  font-size: inherit;
 }
 
 .ccm-variables-section {
   background: rgba(59, 130, 246, 0.08);
   border: 1px solid rgba(59, 130, 246, 0.25);
   border-radius: 10px;
-  padding: 0.75rem;
+  padding: 0.75em;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.75em;
 }
 
 .ccm-checkbox {
-  width: 20px;
-  height: 20px;
+  width: 1.25em;
+  height: 1.25em;
   cursor: pointer;
   accent-color: #2563eb;
 }
@@ -1664,7 +1733,7 @@ select {
 .ccm-field:has(.ccm-checkbox) {
   flex-direction: row;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.5em;
 }
 
 .ccm-field:has(.ccm-checkbox) label {
@@ -1686,24 +1755,24 @@ select {
 }
 
 .ccm-tabs {
-  margin-top: 0.5rem;
+  margin-top: 0.5em;
 }
 
 .ccm-tab-nav {
   display: flex;
   border-bottom: 1px solid rgba(100, 116, 139, 0.3);
-  margin-bottom: 1rem;
+  margin-bottom: 1em;
 }
 
 .ccm-tab-btn {
   background: transparent;
   border: 0;
   color: #94a3b8;
-  padding: 0.75rem 1rem;
+  padding: 0.75em 1em;
   cursor: pointer;
   border-bottom: 2px solid transparent;
   transition: all 0.2s ease;
-  font-size: 0.9rem;
+  font-size: 0.9em;
   border-radius: 8px 8px 0 0;
 }
 
@@ -1719,42 +1788,42 @@ select {
 }
 
 .ccm-tab-content {
-  min-height: 200px;
+  min-height: 12.5em;
 }
 
 .ccm-tab-panel {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.75em;
 }
 
 .ccm-no-settings {
   text-align: center;
   color: #94a3b8;
-  padding: 2rem;
+  padding: 2em;
   font-style: italic;
 }
 
 .ccm-garage-default {
-  margin-bottom: 0.75rem;
-  padding: 0.375rem 0.5rem;
+  margin-bottom: 0.75em;
+  padding: 0.375em 0.5em;
   background: rgba(34, 197, 94, 0.08);
   border: 1px solid rgba(34, 197, 94, 0.25);
   border-radius: 6px;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.5em;
 }
 
 .ccm-garage-default-btn {
   background: rgba(34, 197, 94, 0.15);
   border: 1px solid rgba(34, 197, 94, 0.4);
   color: #22c55e;
-  padding: 0.25rem 0.5rem;
+  padding: 0.25em 0.5em;
   border-radius: 4px;
   cursor: pointer;
   font-weight: 500;
-  font-size: 0.8rem;
+  font-size: 0.8em;
   transition: all 0.2s ease;
   white-space: nowrap;
 }
@@ -1771,37 +1840,37 @@ select {
 }
 
 .ccm-garage-selection {
-  margin-bottom: 1rem;
+  margin-bottom: 1em;
 }
 
 .ccm-garage-selected {
   background: rgba(59, 130, 246, 0.08);
   border: 1px solid rgba(59, 130, 246, 0.25);
   border-radius: 8px;
-  padding: 0.75rem;
+  padding: 0.75em;
 }
 
 .ccm-garage-selected-title {
   font-weight: 600;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.5em;
   color: #3b82f6;
 }
 
 .ccm-garage-selected-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.5em;
 }
 
 .ccm-garage-selected-item {
   background: rgba(59, 130, 246, 0.15);
   border: 1px solid rgba(59, 130, 246, 0.3);
   border-radius: 6px;
-  padding: 0.25rem 0.5rem;
+  padding: 0.25em 0.5em;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.85rem;
+  gap: 0.5em;
+  font-size: 0.85em;
 }
 
 .ccm-garage-remove {
@@ -1809,10 +1878,10 @@ select {
   border: 0;
   color: #ef4444;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 1em;
   padding: 0;
-  width: 16px;
-  height: 16px;
+  width: 1em;
+  height: 1em;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1826,10 +1895,10 @@ select {
 .ccm-garages {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 0.5rem;
-  max-height: 14rem;
+  gap: 0.5em;
+  max-height: 14em;
   overflow: auto;
-  padding-right: 0.25rem;
+  padding-right: 0.25em;
   scrollbar-width: thin;
   scrollbar-color: rgba(100, 116, 139, 0.5) transparent;
 }
@@ -1860,9 +1929,9 @@ select {
 .ccm-garage-label {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.75em;
   cursor: pointer;
-  padding: 0.5rem;
+  padding: 0.5em;
   border-radius: 6px;
   transition: background 0.2s ease;
   width: 100%;
@@ -1873,8 +1942,8 @@ select {
 }
 
 .ccm-garage-checkbox {
-  width: 18px;
-  height: 18px;
+  width: 1.125em;
+  height: 1.125em;
   cursor: pointer;
   accent-color: #3b82f6;
 }
@@ -1883,7 +1952,7 @@ select {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.25em;
 }
 
 .ccm-garage-name {
@@ -1893,8 +1962,8 @@ select {
 
 .ccm-garage-details {
   display: flex;
-  gap: 0.75rem;
-  font-size: 0.8rem;
+  gap: 0.75em;
+  font-size: 0.8em;
   color: #94a3b8;
 }
 
@@ -1914,9 +1983,9 @@ select {
 .ccm-garage-starter {
   background: rgba(34, 197, 94, 0.2);
   color: #22c55e;
-  padding: 0.1rem 0.4rem;
+  padding: 0.1em 0.4em;
   border-radius: 4px;
-  font-size: 0.75rem;
+  font-size: 0.75em;
   font-weight: 500;
 }
 </style>

@@ -163,9 +163,9 @@ const isMapDisabled = computed(() => {
 })
 
 const selectedMapLabel = computed(() => {
-  if (!selectedMap.value) return 'Select Starting Map'
+  if (!selectedMap.value) return 'Select Map'
   const map = mapOptions.value.find(m => m.id === selectedMap.value)
-  return map ? map.name : 'Select Starting Map'
+  return map ? map.name : 'Select Map'
 })
 
 function toggleMapDropdown() {
@@ -348,19 +348,45 @@ function closeCard() {
   display: flex;
   flex-direction: column;
   gap: 0.75em;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .section { 
   display: flex; 
   flex-direction: column; 
   gap: 0; 
+  width: 100%;
+  flex-shrink: 0;
+  
+  :deep(.cd-name),
+  :deep(.cd-placeholder) {
+    font-size: inherit !important;
+  }
+  
+  :deep(.cd-icon) {
+    width: 1.25em;
+    height: 1.25em;
+    aspect-ratio: 1;
+  }
+  
+  :deep(.cd-trigger) {
+    padding: 0.75em;
+    font-size: inherit;
+  }
+  
+  :deep(.cd-left) {
+    gap: 0.75em;
+  }
 }
 
 .title-icon { 
-  width: 28px; 
-  height: 28px; 
+  width: 1.75em; 
+  height: 1.75em; 
   border-radius: 6px; 
   flex-shrink: 0;
+  aspect-ratio: 1;
 }
 .title-icon-red { background: rgba(248, 113, 113, 0.3); }
 .title-icon-green { background: rgba(34, 197, 94, 0.3); }
@@ -369,30 +395,30 @@ function closeCard() {
   background: rgba(30, 41, 59, 0.9);
   border: 1px solid rgba(71, 85, 105, 0.5);
   border-radius: 10px;
-  padding: 0.75rem;
+  padding: 0.75em;
+  width: 100%;
 }
 
 .modes-header {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.5em;
 }
 
 .modes-label {
   color: #fff;
   font-weight: 600;
-  font-size: 0.95rem;
 }
 
 .modes-content {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.4em;
 }
 
 .mode-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.125rem 0;
+  padding: 0.125em 0;
 }
 
 .mode-left {
@@ -407,16 +433,17 @@ function closeCard() {
 }
 
 .mode-item .title-icon {
-  width: 20px;
-  height: 20px;
+  width: 1.25em;
+  height: 1.25em;
   border-radius: 6px;
   flex-shrink: 0;
+  aspect-ratio: 1;
 }
 
 .mode-title {
   color: #fff;
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 0.85em;
 }
 
 .card-buttons {
@@ -479,11 +506,12 @@ function closeCard() {
   gap: 0.65em; 
 }
 .hc-card .title-icon { 
-  width: 28px; 
-  height: 28px; 
+  width: 1.75em; 
+  height: 1.75em; 
   border-radius: 6px; 
   box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06); 
   flex-shrink: 0;
+  aspect-ratio: 1;
 }
 .hc-card .title-icon-red { background: rgba(148, 63, 63, 0.75); }
 .hc-card .title-icon-green { background: rgba(34, 197, 94, 0.75); }
@@ -503,6 +531,7 @@ function closeCard() {
 
 .map-dropdown {
   position: relative;
+  width: 100%;
 }
 
 .map-dropdown-trigger {
@@ -513,10 +542,11 @@ function closeCard() {
   background: rgba(30, 41, 59, 0.9);
   border: 1px solid rgba(71, 85, 105, 0.5);
   color: #fff;
-  padding: 0.75rem;
+  padding: 0.75em;
   border-radius: 10px;
   cursor: pointer;
   transition: background 0.2s ease, border-color 0.2s ease;
+  font-size: inherit;
   
   &:disabled {
     opacity: 0.5;
@@ -531,15 +561,16 @@ function closeCard() {
 
 .map-dropdown-left {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.75em;
   align-items: center;
 }
 
 .map-dropdown-icon {
-  width: 28px;
-  height: 28px;
+  width: 1.25em;
+  height: 1.25em;
   border-radius: 6px;
   flex-shrink: 0;
+  aspect-ratio: 1;
 }
 
 .map-dropdown-icon-default {
@@ -552,7 +583,6 @@ function closeCard() {
 
 .map-dropdown-label {
   color: #fff;
-  font-size: 0.95rem;
   font-weight: 600;
 }
 
@@ -570,13 +600,14 @@ function closeCard() {
   background: rgba(15, 23, 42, 0.98);
   border: 1px solid rgba(71, 85, 105, 0.6);
   border-radius: 10px;
-  padding: 0.25rem;
+  padding: 0.25em;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  max-height: 450px;
+  max-height: 28em;
   overflow: auto;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 122, 26, 0.75) rgba(100, 116, 139, 0.2);
   z-index: 2000;
+  font-size: calc-ui-rem();
 }
 
 .map-dropdown-content::-webkit-scrollbar { width: 10px; }
@@ -591,11 +622,11 @@ function closeCard() {
 }
 
 .map-dropdown-option {
-  padding: 0.5rem;
+  padding: 0.5em;
   border-radius: 8px;
   cursor: pointer;
   color: #fff;
-  font-size: 0.9rem;
+  font-size: 0.9em;
   transition: background 0.2s ease;
   
   &:hover {
@@ -611,7 +642,7 @@ function closeCard() {
 .map-dropdown-sep {
   height: 1px;
   background: rgba(71, 85, 105, 0.5);
-  margin: 0.25rem 0;
+  margin: 0.25em 0;
 }
 
 .create-content-cover {

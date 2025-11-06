@@ -13,7 +13,7 @@
                         </div>
                     </template>
                     <template v-else>
-                        <div class="cd-placeholder">Select Challenge Mode</div>
+                        <div class="cd-placeholder">Select Challenge</div>
                     </template>
                 </div>
             </div>
@@ -68,7 +68,8 @@
         <teleport to="body">
             <ChallengeCreateModal v-if="createOpen" :key="'create-challenge'" :open="createOpen" :editorData="editorData" 
                 :editChallengeData="editChallengeData"
-                @close="() => { console.log('[ChallengeDropdown] Modal @close handler fired'); createOpen = false; editChallengeData = null }"
+                :editChallengeId="editChallengeId"
+                @close="() => { createOpen = false; editChallengeData = null; editChallengeId = null }"
                 @saved="onCreated" />
         </teleport>
     </div>
@@ -91,6 +92,7 @@ const detailOpen = ref(false)
 const detailChallenge = ref(null)
 const createOpen = ref(false)
 const editChallengeData = ref(null)
+const editChallengeId = ref(null)
 const editorData = ref({
   winConditions: [],
   activityTypes: [],
@@ -121,16 +123,18 @@ function position() {
     const trigger = document.querySelector('.cd-trigger')
     if (!trigger) return
     const rect = trigger.getBoundingClientRect()
-    const width = 416 // 26rem
+    const triggerStyle = window.getComputedStyle(trigger)
+    const baseFontSize = parseFloat(triggerStyle.fontSize) || 16
+    const minWidth = 28 * baseFontSize
+    const width = Math.max(rect.width * 1.5, minWidth)
     const margin = 8
-    const left = Math.max(margin, Math.min(rect.left - 16, window.innerWidth - width - margin))
+    const left = Math.max(margin, Math.min(rect.left - (width - rect.width) / 2, window.innerWidth - width - margin))
     const top = rect.bottom + margin
     fixedStyle.value = `position:fixed;z-index:2000;top:${top}px;left:${left}px;width:${width}px;`
 }
 function onDocClick(e) {
     if (!open.value) return
     if (createOpen.value || detailOpen.value) {
-        console.log('[ChallengeDropdown] Modal open, ignoring click')
         return
     }
     const target = e.target
@@ -138,18 +142,12 @@ function onDocClick(e) {
     const trigger = document.querySelector('.cd-trigger')
     const creator = document.querySelector('.ccm-overlay')
     const detailer = document.querySelector('.cdm-overlay')
-    console.log('[ChallengeDropdown] onDocClick fired')
-    console.log('[ChallengeDropdown] target:', target)
-    console.log('[ChallengeDropdown] createOpen.value:', createOpen.value)
-    console.log('[ChallengeDropdown] creator element found:', !!creator)
     if (panel && panel.contains(target)) return
     if (trigger && trigger.contains(target)) return
     if (creator) {
-        console.log('[ChallengeDropdown] Creator modal found, not closing dropdown')
         return
     }
     if (detailer) return
-    console.log('[ChallengeDropdown] Closing dropdown')
     open.value = false
 }
 async function fetchChallenges() {
@@ -188,16 +186,12 @@ async function fetchChallenges() {
 }
 
 onMounted(() => {
-    console.log('[ChallengeDropdown] Component MOUNTED')
-    console.trace('[ChallengeDropdown] Stack trace for mount')
     document.addEventListener('mousedown', onDocClick)
     window.addEventListener('resize', position)
     window.addEventListener('scroll', position, true)
     fetchChallenges()
 })
 onBeforeUnmount(() => {
-    console.log('[ChallengeDropdown] Component UNMOUNTING')
-    console.trace('[ChallengeDropdown] Stack trace for unmount')
     document.removeEventListener('mousedown', onDocClick)
     window.removeEventListener('resize', position)
     window.removeEventListener('scroll', position, true)
@@ -206,13 +200,7 @@ onBeforeUnmount(() => {
     }
 })
 
-watch(createOpen, (newVal, oldVal) => {
-    console.log('[ChallengeDropdown] createOpen changed from', oldVal, 'to', newVal)
-    console.trace('[ChallengeDropdown] Stack trace for createOpen change')
-})
-
 watch([detailOpen, createOpen], ([detail, create]) => {
-    console.log('[ChallengeDropdown] Modal states changed - detailOpen:', detail, 'createOpen:', create)
     const anyModalOpen = detail || create
     if (!anyModalOpen && !open.value) {
         if (lua.setCEFTyping) {
@@ -220,11 +208,6 @@ watch([detailOpen, createOpen], ([detail, create]) => {
         }
     }
 })
-
-watch(() => editorData.value, (newVal, oldVal) => {
-    console.log('[ChallengeDropdown] editorData changed')
-    console.log('[ChallengeDropdown] editorData keys:', Object.keys(newVal))
-}, { deep: true })
 
 function select(c) { 
     emit('update:modelValue', c.id)
@@ -247,14 +230,11 @@ function openDetails(c) {
 }
 function selectFromModal() { if (detailChallenge.value) { select(detailChallenge.value); detailOpen.value = false; detailChallenge.value = null } }
 function openCreate(e) { 
-    console.log('[ChallengeDropdown] openCreate called')
     if (e) {
         e.preventDefault()
         e.stopPropagation()
     }
-    console.log('[ChallengeDropdown] Setting createOpen to true')
     createOpen.value = true
-    console.log('[ChallengeDropdown] After set - createOpen:', createOpen.value)
 }
 async function onCreated(challengeId) { 
     await fetchChallenges()
@@ -262,20 +242,12 @@ async function onCreated(challengeId) {
         emit('update:modelValue', challengeId)
     }
     editChallengeData.value = null
+    editChallengeId.value = null
 }
 
 async function onEditChallenge(challengeId) {
-    try {
-        const challengeData = await lua.career_challengeModes.getChallengeDataForEdit(challengeId)
-        if (challengeData) {
-            editChallengeData.value = challengeData
-            createOpen.value = true
-        } else {
-            console.error('Failed to load challenge data for editing')
-        }
-    } catch (err) {
-        console.error('Failed to edit challenge:', err)
-    }
+    editChallengeId.value = challengeId
+    createOpen.value = true
 }
 
 async function onDeleteChallenge(challengeId) {
@@ -292,6 +264,8 @@ defineExpose({
 </script>
 
 <style scoped lang="scss">
+@use "@/styles/modules/mixins" as *;
+
 .cd-root {
     position: relative;
 }
@@ -304,21 +278,23 @@ defineExpose({
     background: rgba(30, 41, 59, 0.9);
     border: 1px solid rgba(71, 85, 105, 0.5);
     color: #fff;
-    padding: 0.75rem;
+    padding: 0.75em;
     border-radius: 10px;
     cursor: pointer;
 }
 
 .cd-left {
     display: flex;
-    gap: 0.75rem;
+    gap: 0.75em;
     align-items: center;
 }
 
 .cd-icon {
-    width: 28px;
-    height: 28px;
+    width: 1.75em;
+    height: 1.75em;
     border-radius: 6px;
+    flex-shrink: 0;
+    aspect-ratio: 1;
 }
 
 .cd-icon-default {
@@ -336,26 +312,26 @@ defineExpose({
 
 .cd-name {
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 0.95em;
 }
 
 .cd-placeholder {
   color: #e5e7eb;
-  font-size: 0.95rem;
+  font-size: 0.95em;
 }
 
 .cd-meta {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    margin-top: 0.15rem;
+    gap: 0.5em;
+    margin-top: 0.15em;
 }
 
 .cd-badge {
     border: 1px solid;
     border-radius: 6px;
     padding: 2px 6px;
-    font-size: 0.65rem;
+    font-size: 0.65em;
 }
 
 .cd-diff-easy {
@@ -401,18 +377,19 @@ defineExpose({
 .cd-content {
     position: absolute;
     z-index: 100;
-    margin-top: 0.5rem;
-    width: 26rem;
-    left: -1rem;
+    margin-top: 0.5em;
+    width: 100%;
+    left: 0;
     background: rgba(15, 23, 42, 0.98);
     border: 1px solid rgba(71, 85, 105, 0.6);
     border-radius: 10px;
-    padding: 0.25rem;
+    padding: 0.25em;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    max-height: 450px;
+    max-height: 28em;
     overflow: auto;
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 122, 26, 0.75) rgba(100, 116, 139, 0.2);
+    font-size: calc-ui-rem();
 }
 
 .cd-content::-webkit-scrollbar { width: 10px; }
@@ -439,7 +416,7 @@ defineExpose({
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.5rem;
+    padding: 0.5em;
     border-radius: 8px;
     cursor: pointer;
 }
@@ -450,20 +427,21 @@ defineExpose({
 
 .cd-item-left {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.5em;
     align-items: flex-start;
 }
 
 .cd-mini-icon {
-    width: 26px;
-    height: 26px;
-    min-width: 26px;
-    min-height: 26px;
-    max-width: 26px;
-    max-height: 26px;
+    width: 1.625em;
+    height: 1.625em;
+    min-width: 1.625em;
+    min-height: 1.625em;
+    max-width: 1.625em;
+    max-height: 1.625em;
     flex-shrink: 0;
     border-radius: 6px;
     background: rgba(71, 85, 105, 0.5);
+    aspect-ratio: 1;
 }
 
 .cd-item-main {
@@ -474,38 +452,40 @@ defineExpose({
 .cd-row {
     display: flex;
     align-items: center;
-    gap: 0.35rem;
+    gap: 0.35em;
 }
 
 .cd-item-title {
     color: #fff;
-    font-size: 0.9rem;
+    font-size: 0.9em;
     font-weight: 600;
 }
 
 .cd-sub {
     color: #94a3b8;
-    font-size: 0.75rem;
-    margin-top: 0.1rem;
+    font-size: 0.75em;
+    margin-top: 0.1em;
 }
 
 .cd-time {
     color: #64748b;
-    font-size: 0.7rem;
-    margin-top: 0.2rem;
+    font-size: 0.7em;
+    margin-top: 0.2em;
     display: flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: 0.25em;
 }
 
 .cd-info {
     background: transparent;
     border: 0;
     color: #cbd5e1;
-    width: 28px;
-    height: 28px;
+    width: 1.75em;
+    height: 1.75em;
     border-radius: 6px;
     cursor: pointer;
+    flex-shrink: 0;
+    aspect-ratio: 1;
 }
 
 .cd-info:hover {
