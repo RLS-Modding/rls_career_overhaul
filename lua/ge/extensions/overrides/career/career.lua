@@ -600,10 +600,7 @@ end
 
 local function onClientEndMission(levelPath)
   if not careerActive then return end
-  local levelNameToLoad = path.levelFromPath(levelPath)
-  if levelNameToLoad == levelName then
-    deactivateCareer()
-  end
+  deactivateCareer()
 end
 
 local function onSerialize()
