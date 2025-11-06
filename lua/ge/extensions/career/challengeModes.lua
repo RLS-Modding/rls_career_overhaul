@@ -110,6 +110,9 @@ local winConditions = {
     updateFrequency = 1, -- Check every second since speed changes frequently
     checkCondition = function()
       -- Track current speed
+      if gameplay_walk.isWalking() then
+        return false
+    end
       local playerVehicleId = be:getPlayerVehicleID(0)
       if playerVehicleId then
         local currentSpeed = math.abs(be:getObjectVelocityXYZ(playerVehicleId)) * 2.23694 -- Convert m/s to MPH
