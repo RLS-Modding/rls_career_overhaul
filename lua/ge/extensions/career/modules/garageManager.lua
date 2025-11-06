@@ -363,6 +363,22 @@ local function canSellGarage(computerId)
   if not garage then
     return false
   end
+  
+  if garage.starterGarage then
+    return {false, 0}
+  end
+  
+  if career_challengeModes and career_challengeModes.isChallengeActive() then
+    local activeChallenge = career_challengeModes.getActiveChallenge()
+    if activeChallenge and activeChallenge.startingGarages then
+      for _, startingGarageId in ipairs(activeChallenge.startingGarages) do
+        if startingGarageId == garageId then
+          return {false, 0}
+        end
+      end
+    end
+  end
+  
   local space = isGarageSpace(garageId)
   local capacity = math.ceil(garage.capacity / (career_modules_hardcore.isHardcoreMode() and 2 or 1))
   return {space[2] == capacity, capacity - space[2]}
@@ -373,11 +389,30 @@ local function sellGarage(computerId, sellPrice)
   if not garageId then
     return false
   end
+  local garage = freeroam_facilities.getFacility("garage", garageId)
+  if not garage then
+    return false
+  end
+  
+  if garage.starterGarage then
+    return false
+  end
+  
+  if career_challengeModes and career_challengeModes.isChallengeActive() then
+    local activeChallenge = career_challengeModes.getActiveChallenge()
+    if activeChallenge and activeChallenge.startingGarages then
+      for _, startingGarageId in ipairs(activeChallenge.startingGarages) do
+        if startingGarageId == garageId then
+          return false
+        end
+      end
+    end
+  end
+  
   guihooks.trigger('ChangeState', {state = 'play'})
   purchasedGarages[garageId] = nil
   reloadRecoveryPrompt()
   buildGarageSizes()
-  local garage = freeroam_facilities.getFacility("garage", garageId)
   local soldMessage = "Sold "
   if garage then
     soldMessage = soldMessage .. garage.name

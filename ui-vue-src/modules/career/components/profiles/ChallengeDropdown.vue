@@ -41,7 +41,7 @@
                     </div>
                 </div>
                 <div class="cd-sep" />
-                <div v-for="c in challenges" :key="c.id" class="cd-item" @click="select(c)">
+                <div v-for="c in sortedChallenges" :key="c.id" class="cd-item" @click="select(c)">
                     <div class="cd-item-left">
                         <div class="cd-mini-icon" />
                         <div class="cd-item-main">
@@ -103,6 +103,19 @@ const editorData = ref({
 const challenges = ref([])
 const loading = ref(false)
 const error = ref(null)
+
+const difficultyOrder = { 'Easy': 0, 'Medium': 1, 'Hard': 2, 'Impossible': 3 }
+
+const sortedChallenges = computed(() => {
+    return [...challenges.value].sort((a, b) => {
+        const diffA = difficultyOrder[a.difficulty || 'Medium'] ?? 99
+        const diffB = difficultyOrder[b.difficulty || 'Medium'] ?? 99
+        if (diffA !== diffB) {
+            return diffA - diffB
+        }
+        return (a.name || '').localeCompare(b.name || '')
+    })
+})
 
 const selectedChallenge = computed(() => challenges.value.find(c => c.id === props.modelValue))
 
