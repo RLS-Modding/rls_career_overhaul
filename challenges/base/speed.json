@@ -34,7 +34,7 @@
     "taxi_student":0.25,
     "taxi_thrill":0.25,
     "taxi_tourist":0.25,
-    "topSpeed":0.25
+    "topSpeed":3
   },
   "id":"speed",
   "name":"Speed is Life",
