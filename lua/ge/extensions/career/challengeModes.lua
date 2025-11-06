@@ -116,8 +116,10 @@ local winConditions = {
       local playerVehicleId = be:getPlayerVehicleID(0)
       if playerVehicleId then
         local currentSpeed = math.abs(be:getObjectVelocityXYZ(playerVehicleId)) * 2.23694 -- Convert m/s to MPH
+        print("Current speed: " .. currentSpeed)
         if currentSpeed > (activeChallenge.maxSpeed or 0) then
           activeChallenge.maxSpeed = currentSpeed
+          print("New max speed: " .. activeChallenge.maxSpeed)
         end
       end
       
