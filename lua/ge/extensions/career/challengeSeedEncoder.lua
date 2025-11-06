@@ -841,6 +841,7 @@ local function decodeSeedToChallenge(seed)
       
       -- Decode loan amount
       if offset <= #binaryData then
+        local err
         challengeData.loans.amount, offset, err = readVarInt(binaryData, offset)
         if err then
           return nil, "Failed to read loan amount: " .. err
@@ -849,6 +850,7 @@ local function decodeSeedToChallenge(seed)
       
       -- Decode interest rate
       if offset <= #binaryData then
+        local err
         challengeData.loans.interest, offset, err = readFloat(binaryData, offset)
         if err then
           return nil, "Failed to read loan interest: " .. err
