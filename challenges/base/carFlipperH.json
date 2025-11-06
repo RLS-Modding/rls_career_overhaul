@@ -1,5 +1,6 @@
 {
-  "description":"Show West Coast you are the best car dealer by purchasing every property purely by flipping cars. You took a tough loan but through your knowledge of the car market maybe you can bounce back.",
+  "description":"Show West Coast you are the best car dealer by purchasing every property purely by flipping cars. You took a tough loan but through your knowledge of the car market maybe you can bounce back",
+  "difficulty":"Impossible",
   "economyAdjuster":{
     "apexRacing":0.25,
     "crawl":0.25,
@@ -41,6 +42,7 @@
     "interest":0.08,
     "payments":72
   },
+  "map":"west_coast_usa",
   "name":"Big Risk Big Dreams",
   "startingCapital":1000000,
   "startingGarages":[

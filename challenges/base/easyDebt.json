@@ -1,15 +1,17 @@
 {
-    "name": "Easy Debt",
-    "description": "Start with a small loan and pay it off quickly.",
-    "difficulty": "Easy",
-    "startingCapital": 10000,
-    "loans": {
-        "amount": 100000,
-        "interest": 0.15,
-        "payments": 24
-    },
-    "economyAdjuster": {
-        "taxi": 0
-    },
-    "winCondition": "payOffLoan"
+  "description":"Start on any map with a small loan and pay it off quickly.",
+  "difficulty":"Easy",
+  "economyAdjuster":{
+    "taxi":0.25
+  },
+  "id":"easyDebt",
+  "loans":{
+    "amount":100000,
+    "interest":0.15,
+    "payments":24
+  },
+  "name":"Easy Debt",
+  "startingCapital":25000,
+  "version":"1.0",
+  "winCondition":"payOffLoan"
 }

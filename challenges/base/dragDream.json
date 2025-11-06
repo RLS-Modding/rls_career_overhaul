@@ -1,5 +1,6 @@
 {
-  "description":"No garage. No fleet. Just a dream to go drag racing. With $500 in your pocket and $15,000 in student debt, make your dream a reality and own every property at the drag strip. You don't have a garage yet, but the drag strip lets you sleep at the tuning lanes. Maybe stop by the local logistic companies and see if they will loan you a vehicle to get to work in!",
+  "description":"No garage. No fleet. Just a dream to go drag racing. With $500 in your pocket and $15,000 in student debt, make your dream a reality and own every property at the drag strip. You don't have a garage yet, but the drag strip lets you sleep at the tuning lanes. Maybe stop by the local logistic companies and see if they will loan you a vehicle to get to work!",
+  "difficulty":"Impossible",
   "economyAdjuster":{
     "apexRacing":0.25,
     "crawl":0.25,
@@ -41,6 +42,7 @@
     "interest":0.05,
     "payments":48
   },
+  "map":"west_coast_usa",
   "name":"Drag Dream",
   "startingCapital":500,
   "startingGarages":[
