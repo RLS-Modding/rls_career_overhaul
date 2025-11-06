@@ -1,6 +1,6 @@
 {
   "description":"Be the first local drag racer to hit a top speed of over 250mph!",
-  "difficulty":"Medium",
+  "difficulty":"Easy",
   "economyAdjuster":{
     "apexRacing":0.25,
     "crawl":0.25,
