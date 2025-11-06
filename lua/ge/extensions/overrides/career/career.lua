@@ -23,6 +23,7 @@ local careerModules = {}
 local boughtStarterVehicle
 local organizationInteraction = {}
 local switchLevel = nil
+local isNewSaveFlag = false
 
 local devActions = {"dropPlayerAtCameraNoReset"}
 local nodegrabberActions = {"nodegrabberGrab", "nodegrabberRender", "nodegrabberStrength", "nodegrabberAction"}
@@ -160,7 +161,23 @@ local function onCareerModulesActivated(alreadyInLevel)
   if M.pendingChallengeId then
     career_challengeModes.startChallenge(M.pendingChallengeId, true)
     M.pendingChallengeId = nil
+  elseif isNewSaveFlag and career_modules_playerAttributes then
+    local startingCapital = 10000
+    if M.hardcoreMode then
+      startingCapital = 0
+    end
+    if career_modules_cheats and career_modules_cheats.isCheatsMode() then
+      startingCapital = 1e12
+    end
+    
+    career_modules_playerAttributes.setAttributes({
+      money = startingCapital
+    }, {
+      label = "Starting Capital"
+    })
   end
+  
+  isNewSaveFlag = false
 end
 
 local function toggleCareerModules(active, alreadyInLevel)
@@ -246,6 +263,7 @@ local function activateCareer(removeVehicles, levelToLoad)
   log("I", "Loading career from " .. savePath .. "/career/" .. saveFile)
   local careerData = (savePath and jsonReadFile(savePath .. "/career/" .. saveFile)) or {}
   local newSave = tableIsEmpty(careerData)
+  isNewSaveFlag = newSave
   if not levelToLoad then
     levelToLoad = careerData.level or levelName
   end
@@ -289,6 +307,7 @@ local function deactivateCareer(saveCareer)
   if not careerActive then return end
   M.onUpdate = nil
   careerActive = false
+  M.pendingChallengeId = nil
   toggleCareerModules(false)
   blockInputActions(false)
   gameplay_rawPois.clear()
@@ -330,45 +349,106 @@ local function applyChallengeConfig(cfg)
 end
 
 local function createOrLoadCareerAndStart(name, specificAutosave, tutorial, hardcore, challengeId, cheats, startingMap)
-  --M.tutorialEnabled = string.find(string.lower(name), "tutorial") and true or false
-  --M.vehSelectEnabled = string.find(string.lower(name), "vehselect") and true or false
+  if careerActive then
+    deactivateCareer()
+  end
+  
+  M.pendingChallengeId = nil
+  
   log("I","",string.format("Create or Load Career: %s - %s", name, specificAutosave))
-  if career_saveSystem.setSaveSlot(name, specificAutosave) then
-    if tutorial then
-      log("I","","Tutorial enabled.")
+  
+  core_jobsystem.create(function(job)
+    while career_modules_playerAttributes do
+      print("Waiting for player attributes to be unloaded...")
+      job.sleep(0.05)
     end
-    M.tutorialEnabled = tutorial
-    if hardcore then
-      log("I","","Hardcore mode enabled.")
-    end
-    M.hardcoreMode = hardcore
-    if cheats then
-      log("I","","Cheats mode enabled.")
-    end
-    M.cheatsMode = cheats
-    if challengeId then
-      log("I","","Challenge enabled for later start: " .. challengeId)
-    end
-    M.pendingChallengeId = challengeId
     
-    local mapToUse = startingMap
-    if challengeId and career_challengeModes then
-      local challengeOptions = career_challengeModes.getChallengeOptionsForCareerCreation()
-      if challengeOptions then
-        for _, challenge in ipairs(challengeOptions) do
-          if challenge.id == challengeId and challenge.map then
-            mapToUse = challenge.map
-            log("I","","Using challenge map: " .. mapToUse)
-            break
-          end
+    local slotPath = career_saveSystem.getSaveRootDirectory() .. name
+    local isNewSave = false
+    
+    if specificAutosave then
+      local specificPath = slotPath .. "/" .. specificAutosave .. "/info.json"
+      isNewSave = not FS:fileExists(specificPath)
+    else
+      local allAutosaves = career_saveSystem.getAllAutosaves(name)
+      isNewSave = tableSize(allAutosaves) == 0
+    end
+    
+    if isNewSave then
+      for i = 1, 3 do
+        local autosaveDir = slotPath .. "/autosave" .. i
+        if FS:directoryExists(autosaveDir) then
+          FS:directoryRemove(autosaveDir)
         end
       end
     end
     
-    activateCareer(true, mapToUse)
-    return true
-  end
-  return false
+    if career_saveSystem.setSaveSlot(name, specificAutosave) then
+      local saveSlot, savePath = career_saveSystem.getCurrentSaveSlot()
+      if savePath and isNewSave then
+        local careerDir = savePath .. "/career"
+        if FS:directoryExists(careerDir) then
+          local files = FS:findFiles(careerDir, "*", -1, false, false)
+          for _, file in ipairs(files) do
+            if FS:fileExists(file) then
+              FS:removeFile(file)
+            elseif FS:directoryExists(file) then
+              FS:directoryRemove(file)
+            end
+          end
+        end
+        
+        if not challengeId then
+          local rlsCareerDir = savePath .. "/career/rls_career"
+          if FS:directoryExists(rlsCareerDir) then
+            local files = FS:findFiles(rlsCareerDir, "*", -1, false, false)
+            for _, file in ipairs(files) do
+              if FS:fileExists(file) then
+                FS:removeFile(file)
+              elseif FS:directoryExists(file) then
+                FS:directoryRemove(file)
+              end
+            end
+          end
+        end
+      end
+      
+      if tutorial then
+        log("I","","Tutorial enabled.")
+      end
+      M.tutorialEnabled = tutorial
+      if hardcore then
+        log("I","","Hardcore mode enabled.")
+      end
+      M.hardcoreMode = hardcore
+      if cheats then
+        log("I","","Cheats mode enabled.")
+      end
+      M.cheatsMode = cheats
+      if challengeId then
+        log("I","","Challenge enabled for later start: " .. challengeId)
+      end
+      M.pendingChallengeId = challengeId
+      
+      local mapToUse = startingMap
+      if challengeId and career_challengeModes then
+        local challengeOptions = career_challengeModes.getChallengeOptionsForCareerCreation()
+        if challengeOptions then
+          for _, challenge in ipairs(challengeOptions) do
+            if challenge.id == challengeId and challenge.map then
+              mapToUse = challenge.map
+              log("I","","Using challenge map: " .. mapToUse)
+              break
+            end
+          end
+        end
+      end
+      
+      activateCareer(true, mapToUse)
+    end
+  end)
+  
+  return true
 end
 
 local function onSaveCurrentSaveSlot(currentSavePath)

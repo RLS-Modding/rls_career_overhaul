@@ -134,6 +134,16 @@ local function onExtensionLoaded()
   -- load from saveslot
   local saveSlot, savePath = career_saveSystem.getCurrentSaveSlot()
   if not saveSlot then return end
+  
+  local careerDataPath = savePath .. "/career/general.json"
+  local careerData = jsonReadFile(careerDataPath) or {}
+  local isNewSave = tableIsEmpty(careerData)
+  
+  if isNewSave then
+    init()
+    return
+  end
+  
   local jsonData = (savePath and jsonReadFile(savePath .. "/career/playerAttributes.json")) or {}
 
   local saveInfo = savePath and jsonReadFile(savePath .. "/info.json")
@@ -143,7 +153,11 @@ local function onExtensionLoaded()
     jsonData.bonusStars = nil
   end
 
-  attributeLog = (savePath and jsonReadFile(savePath .. "/career/attributeLog.json")) or attributeLog
+  local attributeLogData = (savePath and jsonReadFile(savePath .. "/career/attributeLog.json")) or {}
+  if not tableIsEmpty(attributeLogData) then
+    attributeLog = attributeLogData
+  end
+  
   local moneySum = 0
   for _, change in ipairs(attributeLog) do
     if change.attributeChange.money then
@@ -152,26 +166,28 @@ local function onExtensionLoaded()
   end
   print("moneySum: " .. moneySum)
 
-  for name, data in pairs(jsonData) do
-    attributes[name] = attributes[name] or deepcopy(baseAttribute)
-    for k,v in pairs(data) do
-      attributes[name][k] = v
-    end
-    if name == "money" then
-      local gains = 0
-      if data.gains.all then
-        gains = data.gains.all
+  if not tableIsEmpty(jsonData) then
+    for name, data in pairs(jsonData) do
+      attributes[name] = attributes[name] or deepcopy(baseAttribute)
+      for k,v in pairs(data) do
+        attributes[name][k] = v
       end
-      local losses = 0
-      if data.losses.all then
-        losses = -data.losses.all
-      end
-      attributes[name].value = math.min(data.value, gains - losses, moneySum)
-      
-      if career_modules_cheats and career_modules_cheats.isCheatsMode() then
-        attributes[name].value = 1e12
-      end
+      if name == "money" then
+        local gains = 0
+        if data.gains.all then
+          gains = data.gains.all
+        end
+        local losses = 0
+        if data.losses.all then
+          losses = -data.losses.all
+        end
+        attributes[name].value = math.min(data.value, gains - losses, moneySum)
+        
+        if career_modules_cheats and career_modules_cheats.isCheatsMode() then
+          attributes[name].value = 1e12
+        end
 
+      end
     end
   end
 end

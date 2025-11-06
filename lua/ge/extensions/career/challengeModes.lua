@@ -908,26 +908,32 @@ local function loadChallengeData(currentSavePath)
   end
 
   local filePath = currentSavePath .. "/career/rls_career/challengeModes.json"
-  local challengeData = jsonReadFile(filePath) or {}
-
-  if challengeData.activeChallenge then
-    activeChallenge = deepcopy(challengeData.activeChallenge)
-
-    if activeChallenge.economyAdjuster and career_economyAdjuster then
-      career_economyAdjuster.setAllTypeMultipliers(activeChallenge.economyAdjuster)
-    end
-
-    local winConditionInfo = getWinConditionInfo(activeChallenge.winCondition)
-    guihooks.trigger('challenge:started', {
-      id = activeChallenge.id,
-      name = activeChallenge.name,
-      description = activeChallenge.description,
-      winCondition = activeChallenge.winCondition,
-      winConditionName = winConditionInfo.name,
-      winConditionDescription = winConditionInfo.description,
-      targetMoney = activeChallenge.winCondition == "reachTargetMoney" and (activeChallenge.targetMoney or 1000000) or nil
-    })
+  if not FS:fileExists(filePath) then
+    return
   end
+  
+  local challengeData = jsonReadFile(filePath) or {}
+  
+  if not challengeData.activeChallenge then
+    return
+  end
+
+  activeChallenge = deepcopy(challengeData.activeChallenge)
+
+  if activeChallenge.economyAdjuster and career_economyAdjuster then
+    career_economyAdjuster.setAllTypeMultipliers(activeChallenge.economyAdjuster)
+  end
+
+  local winConditionInfo = getWinConditionInfo(activeChallenge.winCondition)
+  guihooks.trigger('challenge:started', {
+    id = activeChallenge.id,
+    name = activeChallenge.name,
+    description = activeChallenge.description,
+    winCondition = activeChallenge.winCondition,
+    winConditionName = winConditionInfo.name,
+    winConditionDescription = winConditionInfo.description,
+    targetMoney = activeChallenge.winCondition == "reachTargetMoney" and (activeChallenge.targetMoney or 1000000) or nil
+  })
 end
 
 local function endChallenge()
