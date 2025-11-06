@@ -7,8 +7,8 @@
                     <template v-if="selectedChallenge">
                         <div class="cd-name">{{ selectedChallenge.name }}</div>
                         <div class="cd-meta">
-                            <span class="cd-badge" :class="'cd-diff-' + selectedChallenge.difficulty.toLowerCase()">{{
-                                selectedChallenge.difficulty }}</span>
+                            <span class="cd-badge" :class="'cd-diff-' + (selectedChallenge.difficulty || 'Medium').toLowerCase()">{{
+                                selectedChallenge.difficulty || 'Medium' }}</span>
                             <span v-if="selectedChallenge.isLocal" class="cd-badge cd-badge-local">Local</span>
                         </div>
                     </template>
@@ -47,7 +47,7 @@
                         <div class="cd-item-main">
                             <div class="cd-row">
                                 <div class="cd-item-title">{{ c.name }}</div>
-                                <span class="cd-badge" :class="'cd-diff-' + c.difficulty.toLowerCase()">{{ c.difficulty
+                                <span class="cd-badge" :class="'cd-diff-' + (c.difficulty || 'Medium').toLowerCase()">{{ c.difficulty || 'Medium'
                                     }}</span>
                                 <span v-if="c.isLocal" class="cd-badge cd-badge-local">Local</span>
                             </div>
@@ -359,7 +359,7 @@ defineExpose({
     background: rgba(248, 113, 113, 0.15);
 }
 
-.cdm-diff-impossible {
+.cd-diff-impossible {
     color: #dc2626;
     border-color: rgba(220, 38, 38, 0.5);
     background: rgba(220, 38, 38, 0.15);

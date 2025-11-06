@@ -8,11 +8,11 @@
                         <div class="cdm-title-row">
                             <div class="cdm-title">{{ challenge?.name }}</div>
                             <span class="cdm-badge"
-                                :class="'cdm-diff-' + (challenge?.difficulty || 'Easy').toLowerCase()">{{
-                                    challenge?.difficulty }}</span>
+                                :class="'cdm-diff-' + (displayChallenge?.difficulty || 'Easy').toLowerCase()">{{
+                                    displayChallenge?.difficulty || 'Medium' }}</span>
+                            <span v-if="challenge?.isLocal" class="cdm-badge cdm-badge-local">Local</span>
                         </div>
                         <div class="cdm-sub">
-                            <span v-if="challenge?.isLocal" class="cdm-badge cdm-badge-local">Local</span>
                             <span class="cdm-time">{{ challenge?.estimatedTime }}</span>
                         </div>
                         <div v-if="challenge?.shortDescription" class="cdm-desc">{{ challenge?.shortDescription }}</div>
@@ -387,6 +387,10 @@ onMounted(() => {
 onBeforeUnmount(() => {
     events.off('challengeSeedResponse', handleChallengeSeedResponse)
     events.off('challengeEditDataResponse', handleChallengeEditDataResponse)
+})
+
+const displayChallenge = computed(() => {
+    return fullChallengeData.value || props.challenge
 })
 
 const hasEconomy = computed(() => {

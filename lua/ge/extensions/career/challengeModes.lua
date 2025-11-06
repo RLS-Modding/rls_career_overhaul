@@ -822,6 +822,7 @@ local function createChallengeFromUI(challengeData)
   newChallenge.id = challengeData.id
   newChallenge.name = challengeData.name
   newChallenge.description = challengeData.description
+  newChallenge.difficulty = challengeData.difficulty or "Medium"
   newChallenge.startingCapital = challengeData.startingCapital
   newChallenge.winCondition = challengeData.winCondition
   newChallenge.version = CHALLENGE_VERSION
@@ -956,8 +957,23 @@ end
 
 local function onCareerActivated()
   local _, currentSavePath = career_saveSystem.getCurrentSaveSlot()
+  
   if currentSavePath then
-    loadChallengeData(currentSavePath)
+    local careerDataPath = currentSavePath .. "/career/general.json"
+    local careerData = jsonReadFile(careerDataPath) or {}
+    local isNewSave = tableIsEmpty(careerData)
+    
+    if isNewSave and not activeChallenge then
+      activeChallenge = nil
+      completedChallengeData = nil
+      updateTimer = 0
+    elseif not isNewSave then
+      loadChallengeData(currentSavePath)
+    end
+  elseif not activeChallenge then
+    activeChallenge = nil
+    completedChallengeData = nil
+    updateTimer = 0
   end
 end
 
@@ -965,6 +981,9 @@ local function onCareerDeactivated()
   if activeChallenge and career_economyAdjuster then
     career_economyAdjuster.resetToDefaults()
   end
+  activeChallenge = nil
+  completedChallengeData = nil
+  updateTimer = 0
 end
 
 local function onExtensionLoaded()
@@ -1178,6 +1197,7 @@ local function getChallengeOptionsForCareerCreation()
       id = challenge.id,
       name = challenge.name,
       description = challenge.description or "",
+      difficulty = challenge.difficulty or "Medium",
       category = challenge.category or "",
       startingCapital = challenge.startingCapital or 10000,
       hasLoans = challenge.loans ~= nil,
