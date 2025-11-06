@@ -265,6 +265,14 @@ local function getStoredLocations()
   return storedLocation
 end
 
+local function getPurchasedGarages()
+  local result = {}
+  for garageId, _ in pairs(purchasedGarages) do
+    table.insert(result, garageId)
+  end
+  return result
+end
+
 local function isGarageSpace(garage)
   if not garageSize[garage] then
     buildGarageSizes()
@@ -415,6 +423,7 @@ M.getFreeSlots = getFreeSlots
 M.onCareerModulesActivated = onCareerModulesActivated
 M.onExtensionLoaded = onExtensionLoaded
 M.isPurchasedGarage = isPurchasedGarage
+M.getPurchasedGarages = getPurchasedGarages
 M.addPurchasedGarage = addPurchasedGarage
 M.addDiscoveredGarage = addDiscoveredGarage
 M.isDiscoveredGarage = isDiscoveredGarage
