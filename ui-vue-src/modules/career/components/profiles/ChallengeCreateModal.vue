@@ -176,7 +176,7 @@
                     v-model.number="formLoanAmount" 
                     type="number" 
                     step="1000" 
-                    min="10000" 
+                    :min="loansRequired ? 10000 : 0" 
                     max="10000000" 
                     class="ccm-input" 
                     :class="{ 'ccm-required': loansRequired && !formLoanAmount }" 
@@ -1264,7 +1264,7 @@ function roundLoanAmount() {
   if (value === undefined || value === null) return
   
   const step = 1000
-  const min = 10000
+  const min = loansRequired.value ? 10000 : 0
   const max = 10000000
   
   let rounded = Math.floor((value / step) + 0.5) * step
