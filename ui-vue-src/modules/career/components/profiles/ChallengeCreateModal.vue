@@ -3,105 +3,110 @@
     <!-- MODAL IS RENDERING -->
     <div class="ccm-content" @click.stop @mousedown.stop>
       <div class="ccm-header">
-        <div class="ccm-title">{{ editChallengeData ? 'Edit Challenge' : 'Create Challenge' }}</div>
+        <div class="ccm-header-left">
+          <div class="ccm-icon" />
+          <div class="ccm-title">{{ editChallengeData ? 'Edit Challenge' : 'Create Challenge' }}</div>
+        </div>
         <button class="ccm-close" @click.stop="onRequestClose" @mousedown.stop>×</button>
       </div>
 
       <div class="ccm-body">
-        <div class="ccm-grid2">
-          <div class="ccm-field">
-            <label>Name</label>
-            <input v-model="formName" type="text" class="ccm-input" placeholder="My Challenge" />
-          </div>
-          <div class="ccm-field">
-            <label>ID</label>
-            <input v-model="formId" type="text" class="ccm-input" placeholder="myChallengeId" :disabled="!!editChallengeData" />
-          </div>
-        </div>
-
-        <div class="ccm-grid2">
-          <div class="ccm-field">
-            <label>Difficulty</label>
-            <div class="ccm-difficulty-dropdown" ref="difficultyDropdownRef">
-              <button 
-                type="button" 
-                class="ccm-difficulty-trigger" 
-                @click.stop="toggleDifficultyDropdown"
-                @mousedown.stop
-              >
-                <span>{{ formDifficulty }}</span>
-                <span class="ccm-difficulty-chevron">▾</span>
-              </button>
-              <teleport to="body">
-                <div 
-                  v-if="difficultyDropdownOpen" 
-                  class="ccm-difficulty-content" 
-                  :style="difficultyDropdownStyle"
-                  @click.stop
-                  @mousedown.stop
-                >
-                  <div 
-                    v-for="diff in difficultyOptions" 
-                    :key="diff"
-                    class="ccm-difficulty-option"
-                    :class="{ 'ccm-difficulty-selected': diff === formDifficulty }"
-                    @click.stop="selectDifficulty(diff)"
-                    @mousedown.stop
-                  >
-                    {{ diff }}
-                  </div>
-                </div>
-              </teleport>
+        <div class="ccm-basic-section">
+          <div class="ccm-grid2">
+            <div class="ccm-field">
+              <label>Name</label>
+              <input v-model="formName" type="text" class="ccm-input" placeholder="My Challenge" />
+            </div>
+            <div class="ccm-field">
+              <label>ID</label>
+              <input v-model="formId" type="text" class="ccm-input" placeholder="myChallengeId" :disabled="!!editChallengeData" />
             </div>
           </div>
-          <div class="ccm-field">
-            <label>Starting Map</label>
-            <div class="ccm-map-dropdown" ref="mapDropdownRef">
-              <button 
-                type="button" 
-                class="ccm-map-trigger" 
-                @click.stop="toggleMapDropdown"
-                @mousedown.stop
-              >
-                <span>{{ formMapLabel }}</span>
-                <span class="ccm-map-chevron">▾</span>
-              </button>
-              <teleport to="body">
-                <div 
-                  v-if="mapDropdownOpen" 
-                  class="ccm-map-content" 
-                  :style="mapDropdownStyle"
-                  @click.stop
+
+          <div class="ccm-grid2">
+            <div class="ccm-field">
+              <label>Difficulty</label>
+              <div class="ccm-difficulty-dropdown" ref="difficultyDropdownRef">
+                <button 
+                  type="button" 
+                  class="ccm-difficulty-trigger" 
+                  @click.stop="toggleDifficultyDropdown"
                   @mousedown.stop
                 >
+                  <span>{{ formDifficulty }}</span>
+                  <span class="ccm-difficulty-chevron">▾</span>
+                </button>
+                <teleport to="body">
                   <div 
-                    class="ccm-map-option"
-                    :class="{ 'ccm-map-selected': formMap === null }"
-                    @click.stop="selectMap(null)"
+                    v-if="difficultyDropdownOpen" 
+                    class="ccm-difficulty-content" 
+                    :style="difficultyDropdownStyle"
+                    @click.stop
                     @mousedown.stop
                   >
-                    Any
+                    <div 
+                      v-for="diff in difficultyOptions" 
+                      :key="diff"
+                      class="ccm-difficulty-option"
+                      :class="{ 'ccm-difficulty-selected': diff === formDifficulty }"
+                      @click.stop="selectDifficulty(diff)"
+                      @mousedown.stop
+                    >
+                      {{ diff }}
+                    </div>
                   </div>
-                  <div v-if="mapOptions.length > 0" class="ccm-map-sep"></div>
+                </teleport>
+              </div>
+            </div>
+            <div class="ccm-field">
+              <label>Starting Map</label>
+              <div class="ccm-map-dropdown" ref="mapDropdownRef">
+                <button 
+                  type="button" 
+                  class="ccm-map-trigger" 
+                  @click.stop="toggleMapDropdown"
+                  @mousedown.stop
+                >
+                  <span>{{ formMapLabel }}</span>
+                  <span class="ccm-map-chevron">▾</span>
+                </button>
+                <teleport to="body">
                   <div 
-                    v-for="map in mapOptions" 
-                    :key="map.id"
-                    class="ccm-map-option"
-                    :class="{ 'ccm-map-selected': map.id === formMap }"
-                    @click.stop="selectMap(map.id)"
+                    v-if="mapDropdownOpen" 
+                    class="ccm-map-content" 
+                    :style="mapDropdownStyle"
+                    @click.stop
                     @mousedown.stop
                   >
-                    {{ map.name }}
+                    <div 
+                      class="ccm-map-option"
+                      :class="{ 'ccm-map-selected': formMap === null }"
+                      @click.stop="selectMap(null)"
+                      @mousedown.stop
+                    >
+                      Any
+                    </div>
+                    <div v-if="mapOptions.length > 0" class="ccm-map-sep"></div>
+                    <div 
+                      v-for="map in mapOptions" 
+                      :key="map.id"
+                      class="ccm-map-option"
+                      :class="{ 'ccm-map-selected': map.id === formMap }"
+                      @click.stop="selectMap(map.id)"
+                      @mousedown.stop
+                    >
+                      {{ map.name }}
+                    </div>
                   </div>
-                </div>
-              </teleport>
+                </teleport>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="ccm-field">
-          <label>Description</label>
-          <textarea v-model="formDescription" class="ccm-textarea" rows="3" />
+          <div class="ccm-field">
+            <label>Description</label>
+            <textarea v-model="formDescription" class="ccm-textarea" rows="2" />
+          </div>
         </div>
 
         <div class="ccm-seed-section">
@@ -115,7 +120,6 @@
               @keyup.enter="onSeedEnter"
               @blur="onSeedBlur"
             />
-            <div class="ccm-hint">Leave empty to generate a random seed, or enter a custom seed</div>
           </div>
           <div class="ccm-seed-row">
             <button class="ccm-seed-btn ccm-seed-generate" type="button" @click.stop="onGenerateSeed" @mousedown.stop>Generate Random Seed</button>
@@ -163,8 +167,9 @@
                 </div>
               </div>
 
-              <div class="ccm-section-title">Debt {{ loansRequired ? '(required)' : '(optional)' }}</div>
-              <div class="ccm-grid3">
+              <div class="ccm-debt-section">
+                <div class="ccm-section-title">Debt {{ loansRequired ? '(required)' : '(optional)' }}</div>
+                <div class="ccm-grid3">
                 <div class="ccm-field">
                   <label>Amount{{ loansRequired ? ' *' : '' }}</label>
                   <input 
@@ -188,6 +193,7 @@
                   <input v-model.number="formLoanPayments" type="number" :min="loansRequired ? 1 : 0" step="1" class="ccm-input" :class="{ 'ccm-required': loansRequired && !formLoanAmount }" />
                   <div class="ccm-hint">≈ {{ paymentsMinutes }} min • ${{ perPaymentDisplay }} per</div>
                 </div>
+              </div>
               </div>
             </div>
 
@@ -314,11 +320,12 @@
 
             <!-- Economy Multipliers Tab -->
             <div v-if="activeTab === 'economy'" class="ccm-tab-panel">
-              <div class="ccm-section-title">Economy Multipliers (optional)</div>
-              <div class="ccm-field">
-                <input v-model="econQuery" class="ccm-input" placeholder="Search multipliers..." />
-              </div>
-              <div class="ccm-econ">
+              <div class="ccm-econ-section">
+                <div class="ccm-section-title">Economy Multipliers (optional)</div>
+                <div class="ccm-field">
+                  <input v-model="econQuery" class="ccm-input" placeholder="Search multipliers..." />
+                </div>
+                <div class="ccm-econ">
                 <div v-for="t in filteredActivityTypes" :key="t.id" class="ccm-econ-row">
                   <label>{{ t.name }}</label>
                   <input
@@ -333,6 +340,7 @@
                     @blur="onEconomyMultiplierBlur(t.id)"
                   />
                 </div>
+              </div>
               </div>
             </div>
           </div>
@@ -1407,36 +1415,77 @@ function closeMultiselectModal() {
 }
 
 .ccm-content {
-  width: min(46em, 90vw);
+  width: min(60em, 90vw);
   max-width: calc(100vw - 2em);
+  height: 85vh;
   background: rgba(15, 23, 42, 0.98);
   border: 1px solid rgba(71, 85, 105, 0.6);
   border-radius: 14px;
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
   color: #fff;
-  padding: 1em;
-  font-size: calc-ui-rem();
-  max-height: 90vh;
-  overflow-y: auto;
+  padding: 1em 1em 0.75em;
+  font-size: calc-ui-em();
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .ccm-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
+  padding-bottom: 0.75em;
+  border-bottom: 1px solid rgba(100, 116, 139, 0.2);
+  flex-shrink: 0;
+}
+
+.ccm-header-left {
+  display: flex;
+  gap: 0.875em;
+  align-items: center;
+  flex: 1;
+}
+
+.ccm-icon {
+  width: 2.5em;
+  height: 2.5em;
+  border-radius: 10px;
+  background: rgba(59, 130, 246, 0.2);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  flex-shrink: 0;
+  aspect-ratio: 1;
 }
 
 .ccm-title {
   font-weight: 600;
-  font-size: 1.05em;
+  font-size: 1.25em;
+  line-height: 1.3;
 }
 
 .ccm-close {
   background: transparent;
   border: 0;
   color: #94a3b8;
-  font-size: 1.25em;
+  font-size: 1.5em;
   cursor: pointer;
+  padding: 0.25em;
+  line-height: 1;
+  transition: color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.ccm-close:hover {
+  color: #e2e8f0;
+}
+
+.ccm-basic-section {
+  background: rgba(30, 41, 59, 0.4);
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  border-radius: 10px;
+  padding: 0.75em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75em;
 }
 
 .ccm-body {
@@ -1444,6 +1493,9 @@ function closeMultiselectModal() {
   display: flex;
   flex-direction: column;
   gap: 0.75em;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .ccm-grid2 {
@@ -1461,7 +1513,7 @@ function closeMultiselectModal() {
 .ccm-field {
   display: flex;
   flex-direction: column;
-  gap: 0.25em;
+  gap: 0.35em;
   
   :deep(.bng-select) {
     font-size: inherit !important;
@@ -1485,15 +1537,32 @@ function closeMultiselectModal() {
   }
 }
 
+.ccm-field label {
+  color: #94a3b8;
+  font-size: 0.85em;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
 .ccm-input,
 .ccm-textarea,
 select {
   background: rgba(30, 41, 59, 0.6);
   border: 1px solid rgba(100, 116, 139, 0.35);
-  color: #fff;
-  border-radius: 8px;
-  padding: 0.5em;
+  color: #e2e8f0;
+  border-radius: 10px;
+  padding: 0.6em 0.75em;
   font-size: inherit;
+  transition: all 0.2s ease;
+}
+
+.ccm-input:focus,
+.ccm-textarea:focus {
+  outline: none;
+  border-color: rgba(59, 130, 246, 0.6);
+  background: rgba(30, 41, 59, 0.8);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .ccm-textarea {
@@ -1511,11 +1580,11 @@ select {
   justify-content: space-between;
   background: rgba(30, 41, 59, 0.6);
   border: 1px solid rgba(100, 116, 139, 0.35);
-  color: #fff;
-  border-radius: 8px;
-  padding: 0.5em;
+  color: #e2e8f0;
+  border-radius: 10px;
+  padding: 0.6em 0.75em;
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition: all 0.2s ease;
   font-size: inherit;
 }
 
@@ -1571,11 +1640,11 @@ select {
   justify-content: space-between;
   background: rgba(30, 41, 59, 0.6);
   border: 1px solid rgba(100, 116, 139, 0.35);
-  color: #fff;
-  border-radius: 8px;
-  padding: 0.5em;
+  color: #e2e8f0;
+  border-radius: 10px;
+  padding: 0.6em 0.75em;
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition: all 0.2s ease;
   font-size: inherit;
 }
 
@@ -1627,14 +1696,23 @@ select {
 }
 
 .ccm-section-title {
-  margin-top: 0.25em;
+  margin-top: 0;
+  margin-bottom: 0.5em;
   font-weight: 600;
+  font-size: 0.9em;
+  color: #93c5fd;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .ccm-seed-section {
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  border-radius: 10px;
+  padding: 0.75em;
   display: flex;
   flex-direction: column;
-  gap: 0.25em;
+  gap: 0.5em;
 }
 
 .ccm-seed-row {
@@ -1647,31 +1725,35 @@ select {
   white-space: nowrap;
   flex: 1 1 0;
   min-width: 0;
-  border-radius: 8px;
-  padding: 0.5em 0.75em;
+  border-radius: 10px;
+  padding: 0.6em 1em;
   border: 1px solid transparent;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.1s ease;
+  transition: all 0.2s ease;
   font-size: inherit;
+  font-weight: 500;
 }
 .ccm-seed-generate {
-  background: rgba(30, 41, 59, 0.75);
-  border-color: rgba(100, 116, 139, 0.45);
+  background: rgba(30, 41, 59, 0.6);
+  border-color: rgba(100, 116, 139, 0.35);
   color: #e2e8f0;
 }
 .ccm-seed-generate:hover {
-  background: rgba(30, 41, 59, 0.85);
+  background: rgba(30, 41, 59, 0.8);
+  border-color: rgba(100, 116, 139, 0.5);
+  transform: translateY(-1px);
 }
 .ccm-seed-action {
   font-weight: 600;
-  color: #0b1120;
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.2);
 }
 .ccm-seed-copy {
-  background: rgba(96, 165, 250, 0.9);
+  background: linear-gradient(90deg, #2563eb, #1d4ed8);
+  color: #fff;
+  border: 0;
 }
 .ccm-seed-action:hover {
   transform: translateY(-1px);
+  opacity: 0.9;
 }
 .ccm-seed-action:active {
   transform: translateY(0);
@@ -1680,7 +1762,7 @@ select {
   background: rgba(148, 163, 184, 0.5);
   color: rgba(15, 23, 42, 0.65);
   cursor: not-allowed;
-  box-shadow: none;
+  opacity: 0.6;
 }
 
 .ccm-seed-input {
@@ -1697,33 +1779,61 @@ select {
 
 .ccm-hint {
   color: #94a3b8;
-  font-size: 0.75em;
-  margin-top: 0.15em;
+  font-size: 0.8em;
+  margin-top: 0.25em;
+  font-style: italic;
+}
+
+.ccm-debt-section {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 10px;
+  padding: 0.75em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+.ccm-debt-section .ccm-section-title {
+  color: #fca5a5;
+  margin-top: 0;
+  margin-bottom: 0.5em;
+}
+
+.ccm-econ-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
 }
 
 .ccm-econ {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.5em 1em;
-  max-height: 14em;
+  gap: 0.5em 0.75em;
+  flex: 1;
+  min-height: 0;
   overflow: auto;
-  padding-right: 0.25em;
+  padding-right: 0.5em;
   scrollbar-width: thin;
   scrollbar-color: rgba(100, 116, 139, 0.5) transparent;
+  background: rgba(30, 41, 59, 0.3);
+  border: 1px solid rgba(100, 116, 139, 0.2);
+  border-radius: 10px;
+  padding: 0.75em;
 }
 
 .ccm-econ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 .ccm-econ::-webkit-scrollbar-track {
-  background: transparent;
-  border-radius: 4px;
+  background: rgba(30, 41, 59, 0.5);
+  border-radius: 3px;
 }
 
 .ccm-econ::-webkit-scrollbar-thumb {
   background: rgba(100, 116, 139, 0.5);
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 .ccm-econ::-webkit-scrollbar-thumb:hover {
@@ -1733,15 +1843,24 @@ select {
 .ccm-econ-row {
   display: grid;
   grid-template-columns: 1fr 7.5em;
-  gap: 0.5em;
+  gap: 0.75em;
   align-items: center;
+}
+
+.ccm-econ-row label {
+  color: #e2e8f0;
+  font-weight: 500;
+  font-size: 0.9em;
 }
 
 .ccm-footer {
   display: flex;
-  gap: 0.5em;
+  gap: 0.75em;
   padding-top: 0.75em;
+  border-top: 1px solid rgba(100, 116, 139, 0.2);
+  margin-top: 0.5em;
   justify-content: flex-end;
+  flex-shrink: 0;
 }
 
 .ccm-primary {
@@ -1765,8 +1884,8 @@ select {
 }
 
 .ccm-variables-section {
-  background: rgba(59, 130, 246, 0.08);
-  border: 1px solid rgba(59, 130, 246, 0.25);
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
   border-radius: 10px;
   padding: 0.75em;
   display: flex;
@@ -1798,7 +1917,12 @@ select {
 
 .ccm-required {
   border-color: rgba(239, 68, 68, 0.6) !important;
-  background: rgba(239, 68, 68, 0.08) !important;
+  background: rgba(239, 68, 68, 0.12) !important;
+}
+
+.ccm-required:focus {
+  border-color: rgba(239, 68, 68, 0.8) !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
 }
 
 .ccm-section-title:has-text('required') {
@@ -1806,24 +1930,31 @@ select {
 }
 
 .ccm-tabs {
-  margin-top: 0.5em;
+  margin-top: 0.25em;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 .ccm-tab-nav {
   display: flex;
   border-bottom: 1px solid rgba(100, 116, 139, 0.3);
-  margin-bottom: 1em;
+  margin-bottom: 0.75em;
+  gap: 0.5em;
+  flex-shrink: 0;
 }
 
 .ccm-tab-btn {
   background: transparent;
   border: 0;
   color: #94a3b8;
-  padding: 0.75em 1em;
+  padding: 0.6em 1em;
   cursor: pointer;
   border-bottom: 2px solid transparent;
   transition: all 0.2s ease;
   font-size: 0.9em;
+  font-weight: 500;
   border-radius: 8px 8px 0 0;
 }
 
@@ -1833,13 +1964,15 @@ select {
 }
 
 .ccm-tab-btn.ccm-tab-active {
-  color: #3b82f6;
-  border-bottom-color: #3b82f6;
+  color: #60a5fa;
+  border-bottom-color: #60a5fa;
   background: rgba(59, 130, 246, 0.08);
 }
 
 .ccm-tab-content {
-  min-height: 12.5em;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .ccm-tab-panel {
@@ -1895,16 +2028,19 @@ select {
 }
 
 .ccm-garage-selected {
-  background: rgba(59, 130, 246, 0.08);
-  border: 1px solid rgba(59, 130, 246, 0.25);
-  border-radius: 8px;
-  padding: 0.75em;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 10px;
+  padding: 1em;
 }
 
 .ccm-garage-selected-title {
   font-weight: 600;
-  margin-bottom: 0.5em;
-  color: #3b82f6;
+  margin-bottom: 0.75em;
+  color: #60a5fa;
+  font-size: 0.95em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .ccm-garage-selected-list {
@@ -1947,25 +2083,30 @@ select {
   display: grid;
   grid-template-columns: 1fr;
   gap: 0.5em;
-  max-height: 14em;
+  flex: 1;
+  min-height: 0;
   overflow: auto;
-  padding-right: 0.25em;
+  padding-right: 0.5em;
   scrollbar-width: thin;
   scrollbar-color: rgba(100, 116, 139, 0.5) transparent;
+  background: rgba(30, 41, 59, 0.3);
+  border: 1px solid rgba(100, 116, 139, 0.2);
+  border-radius: 10px;
+  padding: 0.75em;
 }
 
 .ccm-garages::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 .ccm-garages::-webkit-scrollbar-track {
-  background: transparent;
-  border-radius: 4px;
+  background: rgba(30, 41, 59, 0.5);
+  border-radius: 3px;
 }
 
 .ccm-garages::-webkit-scrollbar-thumb {
   background: rgba(100, 116, 139, 0.5);
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 .ccm-garages::-webkit-scrollbar-thumb:hover {
@@ -2047,12 +2188,13 @@ select {
   justify-content: space-between;
   background: rgba(30, 41, 59, 0.6);
   border: 1px solid rgba(100, 116, 139, 0.35);
-  color: #fff;
-  border-radius: 8px;
-  padding: 0.5em;
+  color: #e2e8f0;
+  border-radius: 10px;
+  padding: 0.6em 0.75em;
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition: all 0.2s ease;
   font-size: inherit;
+  font-weight: 500;
 }
 
 .ccm-multiselect-button:hover {
