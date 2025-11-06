@@ -1,5 +1,6 @@
 {
-  "description":"You couldn’t wait any longer — it was time to follow in the footsteps of your idol, Lizard Lick Towing. After spending every dime the bank would lend you, you took the plunge and bought Belasco Garage. Start off borrowing loaner repo trucks, hit the streets, and work your way out of debt one recovery at a time.",
+  "description":"You couldn’t wait any longer — it was time to follow in the footsteps of your idol, Lizard Lick Towing. The Bank loaned you 200k but you spent 150k on your house. Start off borrowing loaner repo trucks or purchasing your own. Then hit the streets, and work your way out of debt one recovery at a time.",
+  "difficulty":"Hard",
   "economyAdjuster":{
     "apexRacing":0.25,
     "crawl":0.25,
@@ -37,12 +38,13 @@
   },
   "id":"lizardLicker",
   "loans":{
-    "amount":550000,
+    "amount":200000,
     "interest":0.1,
-    "payments":72
+    "payments":48
   },
+  "map":"west_coast_usa",
   "name":"Lizard Licker",
-  "startingCapital":0,
+  "startingCapital":50000,
   "startingGarages":[
     "servicestationGarage"
   ],

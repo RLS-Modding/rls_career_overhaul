@@ -1,5 +1,6 @@
 {
   "description":"You decide to take the big step and purchase the Taxi Medallion. It promised better ride fare rates, but now you're having doubts after taking out a massive loan to buy it. Work your way out of debt and prove your self-doubt wrong!",
+  "difficulty":"Impossible",
   "economyAdjuster":{
     "apexRacing":0.25,
     "crawl":0.25,
@@ -39,6 +40,7 @@
     "interest":0.15,
     "payments":72
   },
+  "map":"west_coast_usa",
   "name":"City Slicker",
   "startingCapital":15000,
   "startingGarages":[
