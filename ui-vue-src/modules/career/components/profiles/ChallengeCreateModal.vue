@@ -234,51 +234,18 @@
                   <!-- Multiselect variable handling -->
                   <div v-else-if="variable.type === 'multiselect'" class="ccm-multiselect-section">
                     <div v-if="variable.hint" class="ccm-hint">{{ variable.hint }}</div>
-                    
-                    <div class="ccm-field">
-                      <input v-model="multiselectQueries[variable.id]" class="ccm-input" :placeholder="`Search ${variable.label.toLowerCase()}...`" />
-                    </div>
-
-                    <div v-if="getMultiselectValues(variable.id).length > 0" class="ccm-garage-selection">
-                      <div class="ccm-garage-selected">
-                        <div class="ccm-garage-selected-title">Selected {{ variable.label }} ({{ getMultiselectValues(variable.id).length }})</div>
-                        <div class="ccm-garage-selected-list">
-                          <div v-for="itemId in getMultiselectValues(variable.id)" :key="itemId" class="ccm-garage-selected-item">
-                            <span>{{ getMultiselectItemName(variable.id, itemId) }}</span>
-                            <button 
-                              class="ccm-garage-emove" 
-                              type="button" 
-                              @click.stop="emoveMultiselectItem(variable.id, itemId)"
-                              @mousedown.stop
-                            >
-                              ×
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="ccm-garages">
-                      <div v-for="item in getFilteredMultiselectOptions(variable.id)" :key="item.id" class="ccm-garage-row">
-                        <label class="ccm-garage-label">
-                          <input
-                            v-model="formVariables[variable.id]"
-                            :value="item.id"
-                            type="checkbox"
-                            class="ccm-garage-checkbox"
-                          />
-                          <div class="ccm-garage-info">
-                            <div class="ccm-garage-name">{{ item.name }}</div>
-                            <div class="ccm-garage-details">
-                              <span v-if="item.price" class="ccm-garage-price">${{ item.price?.toLocaleString() || '0' }}</span>
-                              <span v-if="item.capacity" class="ccm-garage-capacity">{{ item.capacity || 0 }} slots</span>
-                              <span v-if="item.category" class="ccm-garage-category">{{ item.category }}</span>
-                              <span v-if="item.starterGarage" class="ccm-garage-starter">Starter</span>
-                            </div>
-                          </div>
-                        </label>
-                      </div>
-                    </div>
+                    <button 
+                      type="button"
+                      class="ccm-multiselect-button"
+                      @click.stop="openMultiselectModal(variable.id)"
+                      @mousedown.stop
+                    >
+                      <span>Select {{ variable.label }}</span>
+                      <span v-if="getMultiselectValues(variable.id).length > 0" class="ccm-multiselect-count">
+                        ({{ getMultiselectValues(variable.id).length }} selected)
+                      </span>
+                      <span class="ccm-multiselect-arrow">▾</span>
+                    </button>
                   </div>
                   <div v-if="variable.hint && variable.type !== 'multiselect'" class="ccm-hint">{{ variable.hint }}</div>
                 </div>
@@ -378,6 +345,70 @@
       </div>
     </div>
   </div>
+
+  <teleport to="body">
+    <div v-if="multiselectModalOpen" class="ccm-multiselect-overlay" @click.stop="closeMultiselectModal" @mousedown.stop>
+      <div class="ccm-multiselect-modal" @click.stop @mousedown.stop>
+        <div class="ccm-multiselect-header">
+          <div class="ccm-multiselect-title">{{ currentMultiselectVariable?.label || 'Select Items' }}</div>
+          <button class="ccm-multiselect-close" @click.stop="closeMultiselectModal" @mousedown.stop>×</button>
+        </div>
+        <div class="ccm-multiselect-body">
+          <div v-if="getMultiselectValues(currentMultiselectVariableId).length > 0" class="ccm-multiselect-selected-section">
+            <div class="ccm-multiselect-selected-title">
+              Selected {{ currentMultiselectVariable?.label || 'Items' }} ({{ getMultiselectValues(currentMultiselectVariableId).length }})
+            </div>
+            <div class="ccm-multiselect-selected-list">
+              <div v-for="itemId in getMultiselectValues(currentMultiselectVariableId)" :key="itemId" class="ccm-multiselect-selected-item">
+                <span>{{ getMultiselectItemName(currentMultiselectVariableId, itemId) }}</span>
+                <button 
+                  class="ccm-multiselect-remove" 
+                  type="button" 
+                  @click.stop="emoveMultiselectItem(currentMultiselectVariableId, itemId)"
+                  @mousedown.stop
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="ccm-multiselect-field">
+            <input 
+              v-model="multiselectQueries[currentMultiselectVariableId]" 
+              class="ccm-multiselect-input" 
+              :placeholder="`Search ${currentMultiselectVariable?.label?.toLowerCase() || 'items'}...`" 
+            />
+          </div>
+
+          <div class="ccm-multiselect-list">
+            <div v-for="item in getFilteredMultiselectOptions(currentMultiselectVariableId)" :key="item.id" class="ccm-multiselect-row">
+              <label class="ccm-multiselect-label">
+                <input
+                  v-model="formVariables[currentMultiselectVariableId]"
+                  :value="item.id"
+                  type="checkbox"
+                  class="ccm-multiselect-checkbox"
+                />
+                <div class="ccm-multiselect-info">
+                  <div class="ccm-multiselect-name">{{ item.name }}</div>
+                  <div class="ccm-multiselect-details">
+                    <span v-if="item.price" class="ccm-multiselect-price">${{ item.price?.toLocaleString() || '0' }}</span>
+                    <span v-if="item.capacity" class="ccm-multiselect-capacity">{{ item.capacity || 0 }} slots</span>
+                    <span v-if="item.category" class="ccm-multiselect-category">{{ item.category }}</span>
+                    <span v-if="item.starterGarage" class="ccm-multiselect-starter">Starter</span>
+                  </div>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="ccm-multiselect-footer">
+          <button class="ccm-multiselect-save" @click.stop="closeMultiselectModal" @mousedown.stop>Done</button>
+        </div>
+      </div>
+    </div>
+  </teleport>
 </template>
 
 <script setup>
@@ -414,6 +445,8 @@ const garageQuery = ref('')
 const activeTab = ref('starting')
 const copyStatus = ref('')
 const multiselectQueries = reactive({})
+const multiselectModalOpen = ref(false)
+const currentMultiselectVariableId = ref('')
 let copyStatusTimer
 
 const difficultyDropdownRef = ref(null)
@@ -1340,6 +1373,24 @@ function emoveMultiselectItem(variableId, itemId) {
     values.splice(index, 1)
   }
 }
+
+const currentMultiselectVariable = computed(() => {
+  if (!currentMultiselectVariableId.value) return null
+  return activeVariables.value.find(v => v.id === currentMultiselectVariableId.value)
+})
+
+function openMultiselectModal(variableId) {
+  currentMultiselectVariableId.value = variableId
+  if (!multiselectQueries[variableId]) {
+    multiselectQueries[variableId] = ''
+  }
+  multiselectModalOpen.value = true
+}
+
+function closeMultiselectModal() {
+  multiselectModalOpen.value = false
+  currentMultiselectVariableId.value = ''
+}
 </script>
 
 <style scoped lang="scss">
@@ -1987,5 +2038,283 @@ select {
   border-radius: 4px;
   font-size: 0.75em;
   font-weight: 500;
+}
+
+.ccm-multiselect-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(100, 116, 139, 0.35);
+  color: #fff;
+  border-radius: 8px;
+  padding: 0.5em;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  font-size: inherit;
+}
+
+.ccm-multiselect-button:hover {
+  background: rgba(30, 41, 59, 0.8);
+  border-color: rgba(100, 116, 139, 0.5);
+}
+
+.ccm-multiselect-count {
+  color: #60a5fa;
+  font-weight: 500;
+}
+
+.ccm-multiselect-arrow {
+  opacity: 0.8;
+  font-size: 0.9em;
+}
+
+.ccm-multiselect-overlay {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(2, 8, 23, 0.6), rgba(2, 8, 23, 0.75));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3001;
+}
+
+.ccm-multiselect-modal {
+  width: min(42em, 90vw);
+  max-width: calc(100vw - 2em);
+  background: rgba(15, 23, 42, 0.98);
+  border: 1px solid rgba(71, 85, 105, 0.6);
+  border-radius: 14px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: calc-ui-rem();
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.ccm-multiselect-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1em 1.5em;
+  border-bottom: 1px solid rgba(71, 85, 105, 0.6);
+}
+
+.ccm-multiselect-title {
+  font-weight: 600;
+  font-size: 1.05em;
+}
+
+.ccm-multiselect-close {
+  background: transparent;
+  border: 0;
+  color: #94a3b8;
+  font-size: 1.25em;
+  cursor: pointer;
+  padding: 0;
+  width: 1.5em;
+  height: 1.5em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.ccm-multiselect-close:hover {
+  color: #e2e8f0;
+}
+
+.ccm-multiselect-body {
+  padding: 1em 1.5em;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+}
+
+.ccm-multiselect-selected-section {
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  border-radius: 8px;
+  padding: 0.75em;
+}
+
+.ccm-multiselect-selected-title {
+  font-weight: 600;
+  margin-bottom: 0.5em;
+  color: #3b82f6;
+}
+
+.ccm-multiselect-selected-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em;
+}
+
+.ccm-multiselect-selected-item {
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 6px;
+  padding: 0.25em 0.5em;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  font-size: 0.85em;
+}
+
+.ccm-multiselect-remove {
+  background: transparent;
+  border: 0;
+  color: #ef4444;
+  cursor: pointer;
+  font-size: 1em;
+  padding: 0;
+  width: 1em;
+  height: 1em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+}
+
+.ccm-multiselect-remove:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.ccm-multiselect-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+}
+
+.ccm-multiselect-input {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(100, 116, 139, 0.35);
+  color: #fff;
+  border-radius: 8px;
+  padding: 0.5em;
+  font-size: inherit;
+}
+
+.ccm-multiselect-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5em;
+  max-height: 20em;
+  overflow: auto;
+  padding-right: 0.25em;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 116, 139, 0.5) transparent;
+}
+
+.ccm-multiselect-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.ccm-multiselect-list::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 4px;
+}
+
+.ccm-multiselect-list::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.5);
+  border-radius: 4px;
+}
+
+.ccm-multiselect-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.7);
+}
+
+.ccm-multiselect-row {
+  display: flex;
+  align-items: center;
+}
+
+.ccm-multiselect-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75em;
+  cursor: pointer;
+  padding: 0.5em;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+  width: 100%;
+}
+
+.ccm-multiselect-label:hover {
+  background: rgba(100, 116, 139, 0.1);
+}
+
+.ccm-multiselect-checkbox {
+  width: 1.125em;
+  height: 1.125em;
+  cursor: pointer;
+  accent-color: #3b82f6;
+}
+
+.ccm-multiselect-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+}
+
+.ccm-multiselect-name {
+  font-weight: 500;
+  color: #e2e8f0;
+}
+
+.ccm-multiselect-details {
+  display: flex;
+  gap: 0.75em;
+  font-size: 0.8em;
+  color: #94a3b8;
+}
+
+.ccm-multiselect-price {
+  color: #22c55e;
+  font-weight: 500;
+}
+
+.ccm-multiselect-capacity {
+  color: #8b5cf6;
+}
+
+.ccm-multiselect-category {
+  color: #f59e0b;
+}
+
+.ccm-multiselect-starter {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+  padding: 0.1em 0.4em;
+  border-radius: 4px;
+  font-size: 0.75em;
+  font-weight: 500;
+}
+
+.ccm-multiselect-footer {
+  display: flex;
+  gap: 0.5em;
+  padding: 1em 1.5em;
+  border-top: 1px solid rgba(71, 85, 105, 0.6);
+  justify-content: flex-end;
+}
+
+.ccm-multiselect-save {
+  background: linear-gradient(90deg, #2563eb, #1d4ed8);
+  border: 0;
+  color: #fff;
+  padding: 0.6em 1em;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: inherit;
+}
+
+.ccm-multiselect-save:hover {
+  opacity: 0.9;
 }
 </style>

@@ -172,7 +172,9 @@ async function fetchChallenges() {
             paymentSchedule: (typeof c.loanPayments === 'number') ? ((c.loanPayments * 5) + ' min total (' + c.loanPayments + ' payments)') : undefined,
             objective: c.winConditionName || c.winCondition || '',
             objectiveDescription: c.winConditionDescription || '',
+            winCondition: c.winCondition,
             targetMoney: c.targetMoney,
+            targetGarages: c.targetGarages,
             economyAdjuster: c.economyAdjuster || {},
             estimatedTime: c.estimatedTime || '',
             isLocal: c.isLocal || false

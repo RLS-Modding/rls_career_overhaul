@@ -938,7 +938,7 @@ local function decodeSeedToChallenge(seed)
       for i = 1, count do
         challengeData.economyAdjuster["_run_" .. i] = value * 0.25
       end
-    elseif marker >= MARKER_VARIABLE_NUMBER and marker <= MARKER_VARIABLE_STRING then
+    elseif marker >= MARKER_VARIABLE_NUMBER and marker <= MARKER_VARIABLE_TABLE then
       if not resolvedWinCondition then
         resolvedWinCondition = true
         local availableConditions = getWinConditionIds()
@@ -1091,6 +1091,57 @@ local function resolveHashesToNames(decodedChallenge)
     end
   end
 
+  -- Resolve targetGarages hashes for ownSpecificGarage win condition
+  if decodedChallenge.winCondition == "ownSpecificGarage" and decodedChallenge.targetGarages then
+    local availableGarages = getAvailableGarageIds()
+    local resolvedGarages = {}
+    
+    for _, garageEntry in ipairs(decodedChallenge.targetGarages) do
+      local isKnownGarage = false
+      if type(garageEntry) == "string" then
+        for _, garageId in ipairs(availableGarages) do
+          if garageEntry == garageId then
+            table.insert(resolvedGarages, garageEntry)
+            isKnownGarage = true
+            break
+          end
+        end
+      end
+      
+      if not isKnownGarage then
+        local hash = nil
+        if type(garageEntry) == "string" then
+          if garageEntry:sub(1, 6) == "_hash_" then
+            hash = tonumber(garageEntry:sub(7))
+          elseif tonumber(garageEntry) then
+            hash = tonumber(garageEntry)
+          end
+        elseif type(garageEntry) == "number" then
+          hash = garageEntry
+        end
+        
+        if hash then
+          local resolved = false
+          for _, garageId in ipairs(availableGarages) do
+            if simpleHash(garageId) == hash then
+              table.insert(resolvedGarages, garageId)
+              resolved = true
+              break
+            end
+          end
+          
+          if not resolved then
+            print("Warning: Could not resolve target garage hash: " .. hash)
+          end
+        else
+          table.insert(resolvedGarages, garageEntry)
+        end
+      end
+    end
+    
+    decodedChallenge.targetGarages = resolvedGarages
+  end
+
   return decodedChallenge
 end
 
@@ -1145,6 +1196,30 @@ local function generateRandomChallengeData(options)
         data[variableName] = math.random() < 0.5
       elseif varType == "string" then
         data[variableName] = definition.default or "random_" .. variableName
+      elseif varType == "multiselect" or varType == "array" then
+        if variableName == "targetGarages" then
+          local availableGarages = getAvailableGarageIds()
+          if #availableGarages > 0 then
+            local garageCount = math.random(1, math.min(3, #availableGarages))
+            local selectedGarages = {}
+            local garagePool = {}
+            for _, gid in ipairs(availableGarages) do
+              table.insert(garagePool, gid)
+            end
+            
+            for i = 1, garageCount do
+              if #garagePool == 0 then break end
+              local garageIndex = math.random(1, #garagePool)
+              local garageId = garagePool[garageIndex]
+              table.insert(selectedGarages, garageId)
+              table.remove(garagePool, garageIndex)
+            end
+            
+            data[variableName] = selectedGarages
+          end
+        else
+          data[variableName] = {}
+        end
       else
         local minVal = definition.min or 1
         local maxVal = definition.randomMax or definition.max or 1000000
