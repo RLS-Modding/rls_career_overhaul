@@ -337,9 +337,43 @@ local function printConfiguration()
     print("=====================================\n")
 end
 
+local function getParentModuleName(sectionName)
+    if not sectionName then return nil end
+    
+    local sources = typeSources[sectionName]
+    if not sources then return nil end
+    
+    for sourceName, _ in pairs(sources) do
+        if sourceName:match("_module$") then
+            local parentName = sourceName:gsub("_module$", "")
+            if parentName ~= sectionName then
+                return parentName
+            end
+        end
+    end
+    
+    return nil
+end
+
 local function getSectionMultiplier(sectionName)
     if not sectionName then return 1.0 end
-    return typeMultipliers[sectionName] or 1.0
+    
+    local explicitMultiplier = typeMultipliers[sectionName]
+    local hasExplicitMultiplier = explicitMultiplier ~= nil
+    
+    local parentModuleName = getParentModuleName(sectionName)
+    if parentModuleName then
+        local parentMultiplier = typeMultipliers[parentModuleName]
+        if parentMultiplier == 0 then
+            if hasExplicitMultiplier and explicitMultiplier ~= 1.0 then
+                return explicitMultiplier
+            else
+                return 0
+            end
+        end
+    end
+    
+    return explicitMultiplier or 1.0
 end
 
 local function getSectionMultipliers(sections)
