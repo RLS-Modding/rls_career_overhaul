@@ -165,7 +165,7 @@ const isMapDisabled = computed(() => {
 const selectedMapLabel = computed(() => {
   if (!selectedMap.value) return 'Default (West Coast USA)'
   const map = mapOptions.value.find(m => m.id === selectedMap.value)
-  return map ? map.name : 'default West'
+  return map ? map.name : 'Default (West Coast USA)'
 })
 
 function toggleMapDropdown() {
