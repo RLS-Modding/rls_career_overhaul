@@ -154,8 +154,6 @@ function onContinue() {
 
 onMounted(() => {
     events.on('challengeCompleteData', (data) => {
-        console.log('Challenge completion data:', data)
-        
         if (data) {
             id.value = data.id || ''
             name.value = data.name || 'Challenge Complete'

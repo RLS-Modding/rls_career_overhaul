@@ -49,7 +49,6 @@ local function safeCall(func)
   if ok then
     return result
   end
-  print("Warning: challengeSeedEncoder call failed: " .. tostring(result))
   return nil
 end
 
@@ -677,15 +676,12 @@ local function encodeChallengeToSeed(challengeData)
   local difficultyMap = { Easy = 0, Medium = 1, Hard = 2, Impossible = 3 }
   local difficulty = challengeData.difficulty or "Medium"
   local difficultyValue = difficultyMap[difficulty] or 1
-  local success, err = pcall(function()
+  pcall(function()
     table.insert(buffer, string.char(MARKER_DIFFICULTY))
     table.insert(buffer, string.char(difficultyValue))
   end)
-  if not success then
-    print("Warning: ChallengeSeedEncoder failed to encode difficulty: " .. tostring(err))
-  end
 
-  local success, err = pcall(function()
+  pcall(function()
     local variableDefinitions = getWinConditionVariableDefinitions(winCondition)
     if variableDefinitions then
       for variableName, definition in pairs(variableDefinitions) do
@@ -697,12 +693,9 @@ local function encodeChallengeToSeed(challengeData)
       end
     end
   end)
-  if not success then
-    print("Warning: ChallengeSeedEncoder failed to encode variables: " .. tostring(err))
-  end
   
   if challengeData.loans and challengeData.loans.amount and challengeData.loans.amount > 0 then
-    local success, err = pcall(function()
+    pcall(function()
       table.insert(buffer, string.char(MARKER_LOANS))
       
       -- Round loan amount to step increments
@@ -713,13 +706,10 @@ local function encodeChallengeToSeed(challengeData)
       
       table.insert(buffer, string.char(math.min(255, challengeData.loans.payments or 12)))
     end)
-    if not success then
-      print("Warning: ChallengeSeedEncoder failed to encode loans: " .. tostring(err))
-    end
   end
   
   if challengeData.economyAdjuster and type(challengeData.economyAdjuster) == "table" then
-    local success, err = pcall(function()
+    pcall(function()
       -- Filter out disabled sub-modules based on parent module hierarchy
       local filteredAdjuster = filterDisabledSubModules(challengeData.economyAdjuster)
       
@@ -736,13 +726,10 @@ local function encodeChallengeToSeed(challengeData)
         end
       end
     end)
-    if not success then
-      print("Warning: ChallengeSeedEncoder failed to encode economy adjuster: " .. tostring(err))
-    end
   end
   
   if challengeData.startingGarages and type(challengeData.startingGarages) == "table" and #challengeData.startingGarages > 0 then
-    local success, err = pcall(function()
+    pcall(function()
       table.insert(buffer, string.char(MARKER_STARTING_GARAGES))
       
       -- Encode number of garages
@@ -754,20 +741,14 @@ local function encodeChallengeToSeed(challengeData)
         writeVarInt(buffer, garageHash)
       end
     end)
-    if not success then
-      print("Warning: ChallengeSeedEncoder failed to encode starting garages: " .. tostring(err))
-    end
   end
   
   if challengeData.map and challengeData.map ~= "" then
-    local success, err = pcall(function()
+    pcall(function()
       table.insert(buffer, string.char(MARKER_MAP))
       local mapHash = simpleHash(challengeData.map)
       writeVarInt(buffer, mapHash)
     end)
-    if not success then
-      print("Warning: ChallengeSeedEncoder failed to encode map: " .. tostring(err))
-    end
   end
   
   table.insert(buffer, string.char(MARKER_END))
@@ -1029,10 +1010,6 @@ local function resolveHashesToNames(decodedChallenge)
             break
           end
         end
-
-        if not resolved then
-          print("Warning: Could not resolve economy adjuster hash: " .. hash)
-        end
       else
         resolvedAdjuster[key] = multiplier
       end
@@ -1057,10 +1034,6 @@ local function resolveHashesToNames(decodedChallenge)
             resolved = true
             break
           end
-        end
-        
-        if not resolved then
-          print("Warning: Could not resolve starting garage hash: " .. hash)
         end
       else
         table.insert(resolvedGarages, garageEntry)
@@ -1088,7 +1061,6 @@ local function resolveHashesToNames(decodedChallenge)
     end
     
     if not resolved then
-      print("Warning: Could not resolve map hash: " .. hash)
       decodedChallenge.map = nil
     end
   end
@@ -1130,10 +1102,6 @@ local function resolveHashesToNames(decodedChallenge)
               resolved = true
               break
             end
-          end
-          
-          if not resolved then
-            print("Warning: Could not resolve target garage hash: " .. hash)
           end
         else
           table.insert(resolvedGarages, garageEntry)

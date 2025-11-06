@@ -284,7 +284,6 @@ function setActive(value) {
       return
     }
   }
-  console.log('[ProfileCreateCard] setActive:', value)
   isActive.value = value
   emit("card:activate", value)
 }
@@ -300,7 +299,6 @@ function onMenu() {
 }
 
 function closeCard() {
-  console.log('[ProfileCreateCard] closeCard called')
   isActive.value = false
   emit("card:activate", false)
 }

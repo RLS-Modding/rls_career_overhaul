@@ -180,7 +180,6 @@ async function fetchChallenges() {
             isLocal: c.isLocal || false
         }))
     } catch (e) {
-        console.warn('ChallengeDropdown: failed to fetch challenges', e)
         error.value = 'Failed to load challenges'
     } finally {
         loading.value = false

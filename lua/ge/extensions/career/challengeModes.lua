@@ -1237,27 +1237,21 @@ end
 
 local function addWinCondition(winCondition)
   if not winCondition or type(winCondition) ~= "table" then
-    print("Invalid win condition")
     return false
   end
   if not winCondition.id or type(winCondition.id) ~= "string" then
-    print("Win condition must have an ID")
     return false
   end
   if not winCondition.name or type(winCondition.name) ~= "string" then
-    print("Win condition must have a name")
     return false
   end
   if not winCondition.description or type(winCondition.description) ~= "string" then
-    print("Win condition must have a description")
     return false
   end
   if not winCondition.checkCondition or type(winCondition.checkCondition) ~= "function" then
-    print("Win condition must have a check condition function")
     return false
   end
   if winConditions[winCondition.id] then
-    print("Win condition already exists")
     return false
   end
 
