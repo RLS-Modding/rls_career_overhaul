@@ -442,11 +442,14 @@ local function filterDisabledSubModules(economyAdjuster)
     if multiplier == 0 then
       local children = hierarchy[activityType]
       if children then
-        -- This is a parent module being disabled, don't include child modules
+        -- This is a parent module being disabled
         filtered[activityType] = multiplier
-        -- Skip any child modules that might be in the adjuster
+        -- Check each child: only keep if multiplier is explicitly set and != 1.0
         for _, childType in ipairs(children) do
-          -- Don't add child modules if parent is disabled
+          local childMultiplier = economyAdjuster[childType]
+          if childMultiplier and childMultiplier ~= 1.0 then
+            filtered[childType] = childMultiplier
+          end
         end
       else
         -- This is a standalone module or child module, include it
@@ -455,18 +458,25 @@ local function filterDisabledSubModules(economyAdjuster)
     else
       -- Multiplier is not 0, check if parent module is disabled
       local isChildOfDisabledParent = false
+      local parentMultiplier = nil
       for parentType, children in pairs(hierarchy) do
         for _, childType in ipairs(children) do
-          if childType == activityType and economyAdjuster[parentType] == 0 then
-            isChildOfDisabledParent = true
-            break
+          if childType == activityType then
+            parentMultiplier = economyAdjuster[parentType]
+            if parentMultiplier == 0 then
+              isChildOfDisabledParent = true
+              break
+            end
           end
         end
         if isChildOfDisabledParent then break end
       end
       
-      -- Only include if not a child of a disabled parent
+      -- Include if not a child of disabled parent, OR if multiplier is != 1.0 (explicitly set)
       if not isChildOfDisabledParent then
+        filtered[activityType] = multiplier
+      elseif parentMultiplier == 0 and multiplier ~= 1.0 then
+        -- Child has multiplier != 1.0 (explicitly set) but parent is disabled, keep child enabled
         filtered[activityType] = multiplier
       end
     end
