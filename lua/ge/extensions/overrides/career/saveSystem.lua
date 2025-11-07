@@ -74,7 +74,18 @@ local function setSaveSlot(slotName, specificAutosave)
   if not isLegalDirectoryName(slotName) then
     return false
   end
-  local savePath = specificAutosave and (saveRoot .. slotName .. "/" .. specificAutosave) or getAutosave(slotName, false) -- get newest autosave
+  
+  local savePath
+  if specificAutosave then
+    savePath = saveRoot .. slotName .. "/" .. specificAutosave
+  else
+    local allAutosaves = getAllAutosaves(slotName)
+    if tableSize(allAutosaves) == 0 then
+      savePath = saveRoot .. slotName .. "/autosave1"
+    else
+      savePath = getAutosave(slotName, false)
+    end
+  end
   
   if not savePath or savePath == "" then
     savePath = saveRoot .. slotName .. "/autosave1"

@@ -1,0 +1,59 @@
+{
+  "0-100 km/h":22,
+  "0-60 mph":20.5,
+  "100-0 km/h":48.2,
+  "60-0 mph":146.4,
+  "Body Style":"Tanker Truck",
+  "BoundingBox":[
+    [
+      -1.049,
+      -2.2053,
+      -0.7626
+    ],
+    [
+      1.917,
+      7.2634,
+      2.3984
+    ]
+  ],
+  "Braking G":0.816,
+  "Commercial Class":"Class 8 Truck",
+  "Config Type":"Loaner",
+  "Configuration":"TC83s Shuffleboard Tanker(A)",
+  "Name":"TC83s Shuffleboard Tanker(A)",
+  "Description":"Heavy duty cab-over truck with a tanker upfit, mounted on a frame with a long middle section, and accessories",
+  "Drag Times":{
+    "brakingG":0.4903625524,
+    "time_0_60":21.16800133,
+    "time_1000":18.82100116,
+    "time_1_4":22.50500142,
+    "time_1_8":14.44050087,
+    "time_330":9.39950054,
+    "time_60":3.398000205,
+    "velAt_1_4":27.70131779,
+    "velAt_1_8":22.05111666
+  },
+  "Drivetrain":"6x4",
+  "Fuel Type":"Diesel",
+  "Induction Type":"Turbo",
+  "Off-Road Score":34,
+  "Population":800,
+  "Power":404,
+  "PowerPeakRPM":2050,
+  "Propulsion":"ICE",
+  "Top Speed":33.29584544,
+  "Torque":1495,
+  "TorquePeakRPM":"1300 - 1850",
+  "Transmission":"Automatic",
+  "Value":338000,
+  "Weight":10485,
+  "Weight/Power":25.9529703,
+  "Years":{
+    "max":1986,
+    "min":1978
+  },
+  "defaultPaintName1":"White",
+  "defaultPaintName2":"Black",
+  "defaultPaintName3":"Black",
+  "isAuxiliary":false
+}

@@ -1,0 +1,61 @@
+{
+  "0-100 km/h":29.3,
+  "0-60 mph":27.4,
+  "Body Style":"Box Truck",
+  "BoundingBox":[
+    [
+      -0.826,
+      -1.156,
+      -0.6174
+    ],
+    [
+      1.694,
+      7.2126,
+      2.8588
+    ]
+  ],
+  "Config Type":"Loaner",
+  "Configuration":"MD60 Cargo Box Shuffleboard (A)",
+  "Name":"MD60 Cargo Box Shuffleboard (A)",
+  "Description":"Late model single cab truck equipped with a cargo box upfit",
+  "Drag Times":{
+    "brakingG":0.5582956692,
+    "time_0_60":0,
+    "time_1000":21.15250092,
+    "time_1_4":25.26000118,
+    "time_1_8":16.27650061,
+    "time_330":10.62950037,
+    "time_60":4.036000172,
+    "velAt_1_4":25.04097937,
+    "velAt_1_8":19.64481796
+  },
+  "Drivetrain":"RWD",
+  "Fuel Type":"Diesel",
+  "Induction Type":"Turbo",
+  "Off-Road Score":27,
+  "Population":6100,
+  "Power":254,
+  "PowerPeakRPM":2400,
+  "Propulsion":"ICE",
+  "Top Speed":28.78780937,
+  "Torque":815,
+  "TorquePeakRPM":"1350 - 1900",
+  "Transmission":"Automatic",
+  "Value":87000,
+  "Weight":7990,
+  "Weight/Power":31.45669291,
+  "Years":{
+    "max":1998,
+    "min":1992
+  },
+  "capacity":[
+    {
+      "amount":768,
+      "type":"parcel"
+    }
+  ],
+  "defaultPaintName1":"White",
+  "defaultPaintName2":"Black",
+  "defaultPaintName3":"White",
+  "isAuxiliary":false
+}

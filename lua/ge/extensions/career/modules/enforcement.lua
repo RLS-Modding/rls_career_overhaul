@@ -14,6 +14,29 @@ local CONSTANTS = {
   REPUTATION_BONUS_AMOUNT = 10,
 }
 
+local function isPoliceDisabled()
+  local disabled = false
+  local reason = ""
+
+  -- Check if player is walking (highest priority)
+  if gameplay_walk and gameplay_walk.isWalking() then
+      disabled = true
+      reason = "Police service is not available while walking"
+      return disabled, reason
+  end
+
+  -- Check if police multiplier is 0
+  if career_economyAdjuster then
+      local policeMultiplier = career_economyAdjuster.getSectionMultiplier("police") or 1.0
+      if policeMultiplier == 0 then
+          disabled = true
+          reason = "Police multiplier is set to 0"
+      end
+  end
+
+  return disabled, reason
+end
+
 local function resetPursuit()
   local vehId = be:getPlayerVehicleID(0)
   local playerTrafficData = gameplay_traffic.getTrafficData()[vehId]
@@ -65,6 +88,11 @@ end
 
 local function handleCriminalEvadeReward(vehId, data, inventoryId)
   if vehId ~= be:getPlayerVehicleID(0) then
+    return
+  end
+
+  if career_economyAdjuster.getTypeMultiplier("criminal") == 0 then
+    ui_message("Criminal work is disabled", 8, "Criminal", "warning")
     return
   end
 
@@ -139,6 +167,12 @@ local function onPursuitAction(vehId, action, data)
     inventoryId = career_modules_inventory.getInventoryIdFromVehicleId(vehId)
   }
 
+  local policeDisabled, disabledReason = isPoliceDisabled()
+  if policeDisabled and playerData.isCop then
+    ui_message("Police service disabled: " .. disabledReason, 8, "Police", "warning")
+    return
+  end
+
   if not playerData.inventoryId then
     playerData.inventoryId = career_modules_inventory.getInventoryIdFromVehicleId(be:getPlayerVehicleID(0))
   end
@@ -198,5 +232,6 @@ end
 
 M.onPursuitAction = onPursuitAction
 M.Constants = CONSTANTS
+M.isPoliceDisabled = isPoliceDisabled
 
 return M

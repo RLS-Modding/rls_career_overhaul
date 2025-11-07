@@ -1,0 +1,29 @@
+{
+  "description":"Master all delivery types and become a logistics expert and get out of debt",
+  "difficulty":"Easy",
+  "economyAdjuster":{
+    "delivery_cash":1.5,
+    "delivery_cement":2.75,
+    "delivery_dryBulk":1.75,
+    "delivery_fluid":2.25,
+    "delivery_parcel":2.5,
+    "delivery_trailer":2,
+    "delivery_vehicle":3,
+    "drift":0.25,
+    "motorsport":0.25,
+    "offroad":0.25,
+    "rally":0.25,
+    "repo":0.25,
+    "taxi":0.25
+  },
+  "id":"deliverySpecialist",
+  "loans":{
+    "amount":40000,
+    "interest":0.07,
+    "payments":10
+  },
+  "name":"Delivery Specialist Challenge",
+  "startingCapital":8000,
+  "version":"1.0",
+  "winCondition":"payOffLoan"
+}

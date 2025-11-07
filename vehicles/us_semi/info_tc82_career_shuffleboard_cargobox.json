@@ -1,0 +1,105 @@
+{
+  "0-100 km/h":35.2,
+  "0-60 mph":32.5,
+  "100-0 km/h":45.1,
+  "60-0 mph":136.5,
+  "Body Style":"dnu",
+  "BoundingBox":[
+    [
+      -1.2044,
+      -2.85594,
+      -0.7346
+    ],
+    [
+      2.0607,
+      8.0652,
+      2.9789
+    ]
+  ],
+  "Braking G":0.872,
+  "Config Type":"Loaner",
+  "Configuration":"Shuffleboard Cargobox",
+  "Drivetrain":"RWD",
+  "Fuel Type":"Diesel",
+  "Induction Type":"Turbo",
+  "Name":"T-Series Shuffleboard Cargobox",
+  "Off-Road Score":24,
+  "Population":5000,
+  "Power":298,
+  "PowerPeakRPM":2050,
+  "Propulsion":"ICE",
+  "Source":"Custom",
+  "Top Speed":32.86887540275,
+  "Torque":1095,
+  "TorquePeakRPM":"1300 - 1850",
+  "Transmission":"Automatic",
+  "Value":150000,
+  "Weight":10470,
+  "Weight/Power":35.134228187919,
+  "aggregates":{
+    "0-100 km/h":{
+      "max":35.3,
+      "min":35.3
+    },
+    "0-60 mph":{
+      "max":32.5,
+      "min":32.5
+    },
+    "Brand":{
+      "Gavril":true
+    },
+    "Country":{
+      "United States":true
+    },
+    "Derby Class":{
+      "Heavy Truck":true
+    },
+    "Drivetrain":{
+      "RWD":true
+    },
+    "Fuel Type":{
+      "Diesel":true
+    },
+    "Induction Type":{
+      "Turbo":true
+    },
+    "Off-Road Score":{
+      "max":24,
+      "min":24
+    },
+    "Propulsion":{
+      "ICE":true
+    },
+    "Source":{
+      "BeamNG - Official":true,
+      "Custom":true
+    },
+    "Top Speed":{
+      "max":32.860547479096,
+      "min":32.860547479096
+    },
+    "Transmission":{
+      "Automatic":true
+    },
+    "Type":{
+      "Truck":true
+    },
+    "Weight":{
+      "max":10470,
+      "min":10470
+    },
+    "Weight/Power":{
+      "max":35.134228187919,
+      "min":35.134228187919
+    },
+    "Years":{
+      "max":1986,
+      "min":1971
+    }
+  },
+  "infoFilename":"/vehicles/us_semi/info_tc82_career_shuffleboard_cargobox.json",
+  "is_default_config":false,
+  "paints":{},
+  "pcFilename":"/vehicles/us_semi/tc82_career_shuffleboard_cargobox.pc",
+  "preview":"/vehicles/us_semi/tc82_career_shuffleboard_cargobox.jpg"
+}

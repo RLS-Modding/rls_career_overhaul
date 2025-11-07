@@ -71,13 +71,37 @@ export default {
     isActive: () => {},
     sendAllCareerSaveSlotsData: () => {},
     sendCurrentSaveSlotData: () => {},
-    createOrLoadCareerAndStart: (id, specificAutosave, tutorial, hardcore) => [String, Any, Boolean, Boolean],
+    createOrLoadCareerAndStart: (id, specificAutosave, tutorial, hardcore, challengeId) => [String, Any, Boolean, Boolean, String],
+    applyChallengeConfig: config => Object
   },
 
   career_saveSystem: {
     saveCurrent: () => {},
     removeSaveSlot: id => String,
     renameSaveSlot: (name, newName) => [String, String],
+  },
+
+  career_challengeModes: {
+    discoverChallenges: () => {},
+    getChallengeOptionsForCareerCreation: () => {},
+    getChallengeEditorData: () => {},
+    createChallengeFromUI: data => Any,
+    startChallenge: id => String,
+    getActiveChallenge: () => {},
+    isChallengeActive: () => {},
+    requestChallengeCompleteData: () => {},
+    getChallengeSeeded: id => String,
+    requestChallengeSeeded: id => {},
+    getChallengeDataForEdit: id => String,
+    requestChallengeDataForEdit: id => {},
+    deleteChallenge: id => String,
+    encodeChallengeDataToSeed: data => Any,
+    decodeSeedToChallengeData: seed => String,
+    requestGenerateRandomSeed: () => {},
+    requestSeedEncode: (requestId, challengeData) => [String, Any],
+    requestSeedDecode: (requestId, seed) => [String, String],
+    createChallengeFromSeedUI: (seed, name, description) => [String, String, String],
+    generateRandomChallengeData: () => {}
   },
 
   career_modules_uiUtils: {
@@ -1089,6 +1113,7 @@ export default {
     prepayLoan: (loanId, amount) => [String, Number],
     getNotificationsEnabled: () => Boolean,
     setNotificationsEnabled: enabled => Boolean,
+    clearAllLoans: () => Number,
   },
 
   career_modules_assignRole: {
@@ -1143,7 +1168,25 @@ export default {
   },
 
   overhaul_maps: {
-    getOtherAvailableMaps: () => {}
+    getOtherAvailableMaps: () => {},
+    getMapsExcludingWestCoast: () => {},
+    getCompatibleMaps: () => {}
+  },
+
+  career_modules_playerAttributes: {
+    addAttributes: (change, reason, fullprice) => [Object, Any, Boolean],
+    setAttributes: (newValues, reason) => [Object, Any],
+    getAttribute: attributeName => Any,
+    getAttributeValue: attributeName => Any,
+    getAllAttributes: () => {},
+    getAttributeLog: () => {},
+    onSaveCurrentSaveSlot: currentSavePath => String,
+    onExtensionLoaded: () => {},
+    onCareerModulesActivated: () => {},
+  },
+
+  career_modules_payment: {
+    canPay: price => Object,
   },
 
   career_modules_switchMap: {

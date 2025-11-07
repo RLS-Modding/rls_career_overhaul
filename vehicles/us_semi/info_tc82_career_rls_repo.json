@@ -1,0 +1,105 @@
+{
+  "0-100 km/h":30.7,
+  "0-60 mph":28.5,
+  "100-0 km/h":44.8,
+  "60-0 mph":135.6,
+  "Body Style":"dnu",
+  "BoundingBox":[
+    [
+      -1.2044,
+      -2.0441,
+      -0.73413172501827
+    ],
+    [
+      2.0607,
+      9.1281,
+      3.3084
+    ]
+  ],
+  "Braking G":0.878,
+  "Config Type":"Loaner",
+  "Configuration":"Repo Ready Tiltdeck",
+  "Drivetrain":"RWD",
+  "Fuel Type":"Diesel",
+  "Induction Type":"Turbo",
+  "Name":"T-Series Repo Ready Tiltdeck",
+  "Off-Road Score":19,
+  "Population":5000,
+  "Power":267,
+  "PowerPeakRPM":2050,
+  "Propulsion":"ICE",
+  "Source":"Custom",
+  "Top Speed":33.056564746686,
+  "Torque":970,
+  "TorquePeakRPM":"1250 - 1900",
+  "Transmission":"Automatic",
+  "Value":150000,
+  "Weight":8365,
+  "Weight/Power":31.329588014981,
+  "aggregates":{
+    "0-100 km/h":{
+      "max":30.7,
+      "min":30.7
+    },
+    "0-60 mph":{
+      "max":28.5,
+      "min":28.5
+    },
+    "Brand":{
+      "Gavril":true
+    },
+    "Country":{
+      "United States":true
+    },
+    "Derby Class":{
+      "Heavy Truck":true
+    },
+    "Drivetrain":{
+      "RWD":true
+    },
+    "Fuel Type":{
+      "Diesel":true
+    },
+    "Induction Type":{
+      "Turbo":true
+    },
+    "Off-Road Score":{
+      "max":19,
+      "min":19
+    },
+    "Propulsion":{
+      "ICE":true
+    },
+    "Source":{
+      "BeamNG - Official":true,
+      "Custom":true
+    },
+    "Top Speed":{
+      "max":33.037818734478,
+      "min":33.037818734478
+    },
+    "Transmission":{
+      "Automatic":true
+    },
+    "Type":{
+      "Truck":true
+    },
+    "Weight":{
+      "max":8365,
+      "min":8365
+    },
+    "Weight/Power":{
+      "max":31.329588014981,
+      "min":31.329588014981
+    },
+    "Years":{
+      "max":1986,
+      "min":1971
+    }
+  },
+  "infoFilename":"/vehicles/us_semi/info_tc82_career_rls_repo.json",
+  "is_default_config":false,
+  "paints":{},
+  "pcFilename":"/vehicles/us_semi/tc82_career_rls_repo.pc",
+  "preview":"/vehicles/us_semi/tc82_career_rls_repo.jpg"
+}

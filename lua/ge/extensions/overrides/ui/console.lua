@@ -975,7 +975,8 @@ local function onUpdate(dtReal, dtSim, dtRaw)
       if mustFocusKeyboard then im.SetKeyboardFocusHere() end
       im.PushItemWidth(im.GetContentRegionAvailWidth() - 70 * uiScale)
       local consoleCallback = "noCheating"
-      if overhaul_extensionManager.isDevKeyValid() then
+      local careerActive = career_career and career_career.isActive()
+      if overhaul_extensionManager.isDevKeyValid() or not careerActive or (careerActive and not career_modules_cheats.isCheatsMode()) then
         consoleCallback = "ConsoleInputCallback"
       else
         consoleCallback = "noCheating"

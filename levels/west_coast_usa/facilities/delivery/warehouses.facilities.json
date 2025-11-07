@@ -339,6 +339,14 @@
             "trailerDeliveryConstructionMaterials"
           ]
         },
+        {
+          "psName": "rentaboxLoaners",
+          "isInspectSpot": false,
+          "logisticTypesProvided": [],
+          "logisticTypesReceived": [],
+          "loanerTrailerPriority": 1,
+          "loanerNonTrailerPriority": 1
+        }        
       ],
       //"pickUpSpotNames":["rentabox_parking"],
       //"dropOffSpotNames":["rentabox_parking"],

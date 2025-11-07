@@ -38,6 +38,10 @@ local function getOrganizations()
       end
     end
     log("D","",string.format("Loaded organizations"))
+  else
+    for orgId, org in pairs(organizations) do
+      addAdditionalInfoToOrg(org)
+    end
   end
   return organizations
 end
@@ -47,7 +51,6 @@ local function getOrganization(id)
   local organizations = getOrganizations()
   local organization = organizations and organizations[id]
   if organization then
-    addAdditionalInfoToOrg(organization)
     return organization
   else
     log("E","","Could not find organization with id " .. dumps(id))

@@ -133,9 +133,8 @@ local function getVisualValueFromMileage(mileage)
 end
 
 local function getDeliveryDelay(distance)
-  if distance < 500 then
-    return 1
-  end
+  if not distance then return 1 end
+  if distance < 500 then return 1 end
   return vehicleDeliveryDelay
 end
 
@@ -148,7 +147,11 @@ local function getOrgLevelData(org, offset)
   if not levels then
     return nil
   end
-  return levels[repLevel + (offset or 0)]
+  local arrayIndex = repLevel + 2 + (offset or 0)
+  if arrayIndex < 1 or arrayIndex > #levels then
+    return nil
+  end
+  return levels[arrayIndex]
 end
 
 -- Delta tracking functions
@@ -265,6 +268,7 @@ local function getShoppingData()
   data.playerAttributes = career_modules_playerAttributes.getAllAttributes()
   data.inventoryHasFreeSlot = career_modules_inventory.hasFreeSlot()
   data.numberOfFreeSlots = career_modules_inventory.getNumberOfFreeSlots()
+  data.cheatsMode = career_modules_cheats and career_modules_cheats.isCheatsMode() or false
 
   data.tutorialPurchase = (not career_modules_linearTutorial.getTutorialFlag("purchasedFirstCar")) or nil
 
@@ -1024,8 +1028,8 @@ end
 
 local deleteAddedVehicle
 local function buyVehicleAndSendToGarage(options)
-  if career_modules_playerAttributes.getAttributeValue("money") < purchaseData.prices.finalPrice or
-    not career_modules_inventory.hasFreeSlot() then
+  local canAfford = career_modules_cheats and career_modules_cheats.isCheatsMode() or career_modules_playerAttributes.getAttributeValue("money") >= purchaseData.prices.finalPrice
+  if not canAfford or not career_modules_inventory.hasFreeSlot() then
     return
   end
   payForVehicle()
@@ -1044,8 +1048,8 @@ local function buyVehicleAndSendToGarage(options)
 end
 
 local function buyVehicleAndSpawnInParkingSpot(options)
-  if career_modules_playerAttributes.getAttributeValue("money") < purchaseData.prices.finalPrice or
-    not career_modules_inventory.hasFreeSlot() then
+  local canAfford = career_modules_cheats and career_modules_cheats.isCheatsMode() or career_modules_playerAttributes.getAttributeValue("money") >= purchaseData.prices.finalPrice
+  if not canAfford or not career_modules_inventory.hasFreeSlot() then
     return
   end
   payForVehicle()
@@ -1226,8 +1230,8 @@ local function removeUnusedPlayerVehicles()
 end
 
 local function buySpawnedVehicle(buyVehicleOptions)
-  if career_modules_playerAttributes.getAttributeValue("money") >= purchaseData.prices.finalPrice and
-    career_modules_inventory.hasFreeSlot() then
+  local canAfford = career_modules_cheats and career_modules_cheats.isCheatsMode() or career_modules_playerAttributes.getAttributeValue("money") >= purchaseData.prices.finalPrice
+  if canAfford and career_modules_inventory.hasFreeSlot() then
     local vehObj = getObjectByID(purchaseData.vehId)
     payForVehicle()
     local newInventoryId = career_modules_inventory.addVehicle(vehObj:getID())
@@ -1292,7 +1296,8 @@ local function sendPurchaseDataToUi()
     prices = purchaseData.prices,
     dealershipId = vehicleShopInfo.sellerId,
     alreadyDidTestDrive = career_modules_inspectVehicle.getDidTestDrive() or false,
-    vehId = purchaseData.vehId
+    vehId = purchaseData.vehId,
+    cheatsMode = career_modules_cheats and career_modules_cheats.isCheatsMode() or false
   }
 
   if not data.vehicleInfo.requiredInsurance then

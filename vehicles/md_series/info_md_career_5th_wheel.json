@@ -1,0 +1,119 @@
+{
+  "0-100 km/h":17.5,
+  "0-60 mph":16.5,
+  "100-0 km/h":50.6,
+  "60-0 mph":153.6,
+  "Body Style":"dnu",
+  "BoundingBox":[
+    [
+      -0.826,
+      -1.135984,
+      -0.6204
+    ],
+    [
+      1.694,
+      5.7486,
+      2.1796
+    ]
+  ],
+  "Braking G":0.776,
+  "Config Type":"Loaner",
+  "Configuration":"Hot Rolled Fifthwheel",
+  "Drivetrain":"RWD",
+  "Fuel Type":"Diesel",
+  "Induction Type":"Turbo",
+  "Name":"MD-Series Hot Rolled Fifthwheel",
+  "Off-Road Score":34,
+  "Population":5000,
+  "Power":356,
+  "PowerPeakRPM":2450,
+  "Propulsion":"ICE",
+  "Source":"Custom",
+  "Top Speed":34.114171975238,
+  "Torque":1085,
+  "TorquePeakRPM":"1350 - 2050",
+  "Transmission":"Automatic",
+  "Value":120000,
+  "Weight":6525,
+  "Weight/Power":18.328651685393,
+  "aggregates":{
+    "0-100 km/h":{
+      "max":17.5,
+      "min":17.5
+    },
+    "0-60 mph":{
+      "max":16.5,
+      "min":16.5
+    },
+    "Brand":{
+      "Gavril":true
+    },
+    "Country":{
+      "United States":true
+    },
+    "Derby Class":{
+      "Medium Truck":true
+    },
+    "Drivetrain":{
+      "RWD":true
+    },
+    "Fuel Type":{
+      "Diesel":true
+    },
+    "Induction Type":{
+      "Turbo":true
+    },
+    "Off-Road Score":{
+      "max":34,
+      "min":34
+    },
+    "Propulsion":{
+      "ICE":true
+    },
+    "Source":{
+      "BeamNG - Official":true,
+      "Custom":true
+    },
+    "Top Speed":{
+      "max":34.173927835711,
+      "min":34.173927835711
+    },
+    "Transmission":{
+      "Automatic":true
+    },
+    "Type":{
+      "Truck":true
+    },
+    "Weight":{
+      "max":6525,
+      "min":6525
+    },
+    "Weight/Power":{
+      "max":18.328651685393,
+      "min":18.328651685393
+    }
+  },
+  "defaultPaint":{
+    "baseColor":[
+      0.83,
+      0.83,
+      0.83,
+      1.2
+    ],
+    "class":"factory",
+    "clearcoat":0,
+    "clearcoatRoughness":0,
+    "id":"white",
+    "metallic":0,
+    "name":"White",
+    "roughness":0.07
+  },
+  "defaultPaintName1":"White",
+  "defaultPaintName2":"White",
+  "defaultPaintName3":"White",
+  "infoFilename":"/vehicles/md_series/info_md_career_5th_wheel.json",
+  "is_default_config":false,
+  "paints":{},
+  "pcFilename":"/vehicles/md_series/md_career_5th_wheel.pc",
+  "preview":"/vehicles/md_series/md_career_5th_wheel.jpg"
+}

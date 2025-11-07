@@ -71,16 +71,12 @@ local repairOptions = {
     normalRepair = function(invVehInfo)
         local policyId = insuredInvVehs[tostring(invVehInfo.id)] or 0
         if policyId > 0 then
-            local vehicleValue = career_modules_valueCalculator.getInventoryVehicleValue(invVehInfo.id, true) or 0
+            local vehicleValueUndamaged = career_modules_valueCalculator.getInventoryVehicleValue(invVehInfo.id, true) or 0
+            local vehicleValueDamaged = career_modules_valueCalculator.getInventoryVehicleValue(invVehInfo.id, false) or 0
+            local valueLoss = vehicleValueUndamaged - vehicleValueDamaged
             local totalPct = M.getPlPerkValue(policyId, "totalPercentage") or 50
-            local threshold = vehicleValue * (totalPct / 100)
-            local repairDetails = career_modules_valueCalculator.getRepairDetails(invVehInfo)
-            if not repairDetails then
-                log("W", "insurance", "Failed to get repair details for vehicle")
-                return nil
-            end
-            local fullcost = repairDetails.price or 0
-            if fullcost >= threshold then
+            local threshold = vehicleValueUndamaged * (totalPct / 100)
+            if valueLoss >= threshold then
                 return nil
             end
         end
@@ -113,16 +109,12 @@ local repairOptions = {
             return nil
         end
         if policyId > 0 then
-            local vehicleValue = career_modules_valueCalculator.getInventoryVehicleValue(invVehInfo.id, true) or 0
+            local vehicleValueUndamaged = career_modules_valueCalculator.getInventoryVehicleValue(invVehInfo.id, true) or 0
+            local vehicleValueDamaged = career_modules_valueCalculator.getInventoryVehicleValue(invVehInfo.id, false) or 0
+            local valueLoss = vehicleValueUndamaged - vehicleValueDamaged
             local totalPct = M.getPlPerkValue(policyId, "totalPercentage") or 50
-            local threshold = vehicleValue * (totalPct / 100)
-            local repairDetails = career_modules_valueCalculator.getRepairDetails(invVehInfo)
-            if not repairDetails then
-                log("W", "insurance", "Failed to get repair details for vehicle")
-                return nil
-            end
-            local fullcost = repairDetails.price or 0
-            if fullcost >= threshold then
+            local threshold = vehicleValueUndamaged * (totalPct / 100)
+            if valueLoss >= threshold then
                 return nil
             end
         end
@@ -161,16 +153,12 @@ local repairOptions = {
     insuranceTotalLoss = function(invVehInfo)
         local policyId = insuredInvVehs[tostring(invVehInfo.id)] or 0
         if policyId <= 0 then return nil end
-        local vehicleValue = career_modules_valueCalculator.getInventoryVehicleValue(invVehInfo.id, true) or 0
+        local vehicleValueUndamaged = career_modules_valueCalculator.getInventoryVehicleValue(invVehInfo.id, true) or 0
+        local vehicleValueDamaged = career_modules_valueCalculator.getInventoryVehicleValue(invVehInfo.id, false) or 0
+        local valueLoss = vehicleValueUndamaged - vehicleValueDamaged
         local totalPct = M.getPlPerkValue(policyId, "totalPercentage") or 50
-        local threshold = vehicleValue * (totalPct / 100)
-        local repairDetails = career_modules_valueCalculator.getRepairDetails(invVehInfo)
-        if not repairDetails then
-            log("W", "insurance", "Failed to get repair details for vehicle")
-            return nil
-        end
-        local fullcost = repairDetails.price or 0
-        if fullcost < threshold then return nil end
+        local threshold = vehicleValueUndamaged * (totalPct / 100)
+        if valueLoss < threshold then return nil end
         return {
             repairTime = 0,
             isPolicyRepair = true,
@@ -179,7 +167,7 @@ local repairOptions = {
                 {
                     {
                         text = "Pay Out",
-                        price = { money = { amount = vehicleValue * -0.75, canBeNegative = false } }
+                        price = { money = { amount = vehicleValueUndamaged * -0.75, canBeNegative = false } }
                     }
                 }
             }
@@ -1457,12 +1445,14 @@ local function getRepairData()
       career_modules_inventory.getVehicles()[vehInfo.id].partConditions)
     -- If totaled for this policy: only offer total-out and private repair
     if policyId > 0 then
-        local vehicleValue = career_modules_valueCalculator.getInventoryVehicleValue(vehInfo.id, true) or 0
+        local vehicleValueUndamaged = career_modules_valueCalculator.getInventoryVehicleValue(vehInfo.id, true) or 0
+        local vehicleValueDamaged = career_modules_valueCalculator.getInventoryVehicleValue(vehInfo.id, false) or 0
+        local valueLoss = vehicleValueUndamaged - vehicleValueDamaged
         local totalPct = getPlPerkValue(policyId, "totalPercentage") or 100
-        local threshold = vehicleValue * (totalPct / 100)
-        if fullcost >= threshold then
+        local threshold = vehicleValueUndamaged * (totalPct / 100)
+        if valueLoss >= threshold then
             data.repairOptions = { repairNoInsurance = data.repairOptions.repairNoInsurance }
-            local payout = math.floor(vehicleValue * 0.75)
+            local payout = math.floor(vehicleValueUndamaged * 0.75)
             data.repairOptions.insuranceTotalLoss = {
                 isPolicyRepair = true,
                 repairName = "Total Out Vehicle",
