@@ -133,8 +133,6 @@ The **RLS Career Overhaul** mod significantly enhances the career mode experienc
 
 With **Challenge Modes** and **Freeroam+**, the mod offers multiple gameplay modes that allow you to play career however you want. Whether you prefer structured challenges with specific goals, economic freedom without constraints, or the standard career progression, there's a mode to suit your playstyle.
 
-Now, the mod is also **compatible with Italy** (using the Italy Addon). The Italy Addon is available via the Silver Patreon Membership.
-
 ---
 
 ## Features
