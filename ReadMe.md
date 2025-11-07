@@ -1,6 +1,6 @@
 # RLS Career Overhaul v2.5.3 (0.37.6)
 
-Welcome to the **RLS Career Overhaul** mod for BeamNG.drive! This mod enhances various aspects of the game, including freeroam events, police interactions, the economy, deliveries, insurance, garage space, and dealerships. Dive into a more immersive and challenging career mode enriched with new features and improvements.
+Welcome to the **RLS Career Overhaul** mod for BeamNG.drive! This mod enhances various aspects of the game, including freeroam events, police interactions, the economy, deliveries, insurance, garage space, and dealerships. With Challenge Modes and Freeroam+, you can play career however you want - whether you prefer structured challenges, economic freedom, or the standard career experience. Dive into a more immersive and challenging career mode enriched with new features and improvements.
 
 ---
 
@@ -58,16 +58,16 @@ Welcome to the **RLS Career Overhaul** mod for BeamNG.drive! This mod enhances v
     - [Phone UI](#phone-ui)
     - [Taxi Work](#taxi-work)
     - [Marketplace](#marketplace)
+    - [Loans System](#loans-system)
+      - [Features](#features-2)
   - [Game Modes](#game-modes)
     - [Hardcore Mode](#hardcore-mode)
     - [Freeroam+](#freeroam)
     - [Challenge Mode System](#challenge-mode-system)
-      - [Features](#features-2)
+      - [Features](#features-3)
       - [Win Conditions](#win-conditions)
       - [Challenge Customization](#challenge-customization)
       - [API Support](#api-support)
-    - [Loans System](#loans-system)
-      - [Features](#features-3)
     - [New Vehicles](#new-vehicles)
     - [General Adjustments](#general-adjustments)
   - [Conclusion](#conclusion)
@@ -82,7 +82,6 @@ Welcome to the **RLS Career Overhaul** mod for BeamNG.drive! This mod enhances v
    - Navigate to the [Releases](https://github.com/Raceless-RLS/rls_career_overhaul/releases) section of the mod's GitHub page.
    - Select the latest release.
    - Scroll to the bottom and download `rls_career_overhaul_v2.X.X.zip`.
-   - Download `rls_no_police.zip` if you don't want the police to spawn in career mode.
 
 2. **Move to Mods Folder**:
 
@@ -130,7 +129,9 @@ All settings are automatically saved and persist between game sessions. The sett
 
 ## Overview
 
-The **RLS Career Overhaul** mod significantly enhances the career mode experience in BeamNG.drive. It introduces a variety of freeroam events, dynamic police interactions, an improved economy, revamped deliveries, a sophisticated insurance system, expanded garage space, reworked dealerships, challenge mode system, Freeroam+ mode, loans system, and more.
+The **RLS Career Overhaul** mod significantly enhances the career mode experience in BeamNG.drive. It introduces a variety of freeroam events, dynamic police interactions, an improved economy, revamped deliveries, a sophisticated insurance system, expanded garage space, reworked dealerships, loans system, and more.
+
+With **Challenge Modes** and **Freeroam+**, the mod offers multiple gameplay modes that allow you to play career however you want. Whether you prefer structured challenges with specific goals, economic freedom without constraints, or the standard career progression, there's a mode to suit your playstyle.
 
 Now, the mod is also **compatible with Italy** (using the Italy Addon). The Italy Addon is available via the Silver Patreon Membership.
 
@@ -803,6 +804,23 @@ List and sell your vehicles in-game:
 
 ---
 
+### Loans System
+
+The loans system allows you to borrow money from various organizations to help finance your career. This is a general feature available in regular career mode.
+
+#### Features
+
+- **Multiple Loan Sources**: Borrow from different organizations based on your reputation level
+- **Loaner Vehicles**: Access to loaner vehicles including:
+  - Van loaners
+  - Repo-ready vehicles
+  - Trailer loaners
+  - Custom loaners
+- **Loaner Dealership**: New dealership specifically for loaner vehicles
+- **Auto-save**: Automatically saves after paying loans
+
+---
+
 ## Game Modes
 
 The mod offers several gameplay modes to suit different playstyles and preferences.
@@ -860,29 +878,12 @@ A comprehensive challenge system that allows you to create, edit, and play custo
 - **Map Selection**: Choose which map to play the challenge on
 - **Starting Garages**: Set starting garage locations
 - **Difficulty Selection**: Choose challenge difficulty
-- **Debt System**: Separate debt system for challenges (different from regular career loans)
+- **Debt System**: Challenge mode includes a debt system that uses the loan system
 - **Challenge Seed Encoder**: Share challenge seeds between users for reproducible challenges
 
 #### API Support
 
 Mods can add win conditions or challenges without editing the base game, enabling modding of the mod itself. This allows for greater freedom and extensibility.
-
----
-
-### Loans System
-
-The loans system allows you to borrow money from various organizations to help finance your career.
-
-#### Features
-
-- **Multiple Loan Sources**: Borrow from different organizations based on your reputation level
-- **Loaner Vehicles**: Access to loaner vehicles including:
-  - Van loaners
-  - Repo-ready vehicles
-  - Trailer loaners
-  - Custom loaners
-- **Loaner Dealership**: New dealership specifically for loaner vehicles
-- **Auto-save**: Automatically saves after paying loans
 
 ---
 
