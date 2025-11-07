@@ -1,4 +1,4 @@
-# RLS Career Overhaul v2.5.2.6 (0.37.6)
+# RLS Career Overhaul v2.5.3 (0.37.6)
 
 Welcome to the **RLS Career Overhaul** mod for BeamNG.drive! This mod enhances various aspects of the game, including freeroam events, police interactions, the economy, deliveries, insurance, garage space, and dealerships. Dive into a more immersive and challenging career mode enriched with new features and improvements.
 
@@ -6,7 +6,7 @@ Welcome to the **RLS Career Overhaul** mod for BeamNG.drive! This mod enhances v
 
 ## Table of Contents
 
-- [RLS Career Overhaul v2.5 (0.37.5)](#rls-career-overhaul-v25-0375)
+- [RLS Career Overhaul v2.5.3 (0.37.6)](#rls-career-overhaul-v253-0376)
   - [Table of Contents](#table-of-contents)
   - [Installation](#installation)
   - [Settings Manager](#settings-manager)
@@ -39,11 +39,11 @@ Welcome to the **RLS Career Overhaul** mod for BeamNG.drive! This mod enhances v
       - [Trailer Dealer](#trailer-dealer)
       - [Service Dealership](#service-dealership)
       - [Private Sellers](#private-sellers)
-      - [Gizamn's Rod Shop](#gizamns-rod-shop)
       - [Trusted Auto Sales](#trusted-auto-sales)
       - [Joe's Junk](#joes-junk)
       - [Fast Automotive](#fast-automotive)
       - [Police Dealership](#police-dealership)
+      - [Loaner Vehicles Dealership](#loaner-vehicles-dealership)
     - [Car Meets](#car-meets)
       - [Meet Locations](#meet-locations)
       - [Meet Types](#meet-types)
@@ -58,7 +58,17 @@ Welcome to the **RLS Career Overhaul** mod for BeamNG.drive! This mod enhances v
     - [Phone UI](#phone-ui)
     - [Taxi Work](#taxi-work)
     - [Marketplace](#marketplace)
+  - [Game Modes](#game-modes)
     - [Hardcore Mode](#hardcore-mode)
+    - [Freeroam+](#freeroam)
+    - [Challenge Mode System](#challenge-mode-system)
+      - [Features](#features-2)
+      - [Win Conditions](#win-conditions)
+      - [Challenge Customization](#challenge-customization)
+      - [API Support](#api-support)
+    - [Loans System](#loans-system)
+      - [Features](#features-3)
+    - [New Vehicles](#new-vehicles)
     - [General Adjustments](#general-adjustments)
   - [Conclusion](#conclusion)
   - [Notes](#notes)
@@ -120,7 +130,7 @@ All settings are automatically saved and persist between game sessions. The sett
 
 ## Overview
 
-The **RLS Career Overhaul** mod significantly enhances the career mode experience in BeamNG.drive. It introduces a variety of freeroam events, dynamic police interactions, an improved economy, revamped deliveries, a sophisticated insurance system, expanded garage space, reworked dealerships, and more.
+The **RLS Career Overhaul** mod significantly enhances the career mode experience in BeamNG.drive. It introduces a variety of freeroam events, dynamic police interactions, an improved economy, revamped deliveries, a sophisticated insurance system, expanded garage space, reworked dealerships, challenge mode system, Freeroam+ mode, loans system, and more.
 
 Now, the mod is also **compatible with Italy** (using the Italy Addon). The Italy Addon is available via the Silver Patreon Membership.
 
@@ -319,6 +329,11 @@ Rock crawls have been added as part of West Coast adjustments and additions to t
     - **Target Time**: **12 seconds**
     - **Reward**: **\$1,500**
 
+- **Top Speed FRE**:
+
+  - **Description**: A freeroam event focused on achieving top speeds. Test your vehicle's maximum speed capabilities.
+  - **Requirements**: Reach the target speed to complete the event.
+
 **Hot-lapping Reward Changes**:
 
 - Removed the 2× reward bonus for best lap time.
@@ -370,6 +385,11 @@ Rock crawls have been added as part of West Coast adjustments and additions to t
 
 ### Economy
 
+- **Economy Adjuster System**: New system that allows adjusting economy multipliers for different activities
+- **Fuel Consistency**: Fuel consistency when buying fuel tanks
+- **N2O and Unknown Fuels**: Support for N2O and unknown fuel types
+- **Insurance Threshold Changes**: Updated insurance threshold calculations
+- **Stationary Timeout**: Added stationary timeout feature
 - **Increased Traffic Violation Costs**:
   - **Higher Ticket Prices**: Speeding and red-light camera fines have been increased.
   - **Adjusted Speed Trap Pricing**: Speed trap fines scale by speed over the limit.
@@ -387,6 +407,12 @@ Rock crawls have been added as part of West Coast adjustments and additions to t
 - Restructured loaner vehicle levels.
 - Balanced EXP.
 - In Hardcore mode, the loaner vehicle cut is changed to be more punitive.
+
+**Pepper Valley Modifiers**:
+
+- **Remote Delivery Modifier**: Special delivery modifier for Pepper Valley map
+- **Gooseneck Trailers**: Added gooseneck delivery trailers (22ft and 30ft variants) for Pepper Valley
+- **Pepper Valley Facilities**: New delivery facilities including warehouses and mixed delivery sites
 
 ---
 
@@ -468,6 +494,8 @@ Your **Policy Score** affects your insurance rates:
   - **Cul-de-Sac Garage**: (\$425,000, 5 Slots)
   - **Sealbrick 1058 Garage**: (\$180,000, 3 Slots)
   - **Race Paddock Garage**: (\$155,000, 1 Slot)
+  - **Alder Drag Way Storage Garage**: New garage location with storage capacity
+  - **Drag Strip Fuel Station**: Fuel station located at the drag strip
 
 ---
 
@@ -599,13 +627,6 @@ All online dealerships feature:
   - No trailers or semi trucks
 - **Features**: No dealer fees
 
-#### Gizamn's Rod Shop
-
-- **Stock**: 5 vehicles
-- **Specialization**: Gizamn custom configurations
-- **Vehicle Types**: Low-medium mileage (6.8-10.9 miles / 11-17.6 km)
-- **Dealer Fees**: \$750
-
 #### Trusted Auto Sales
 
 - **Description**: Discounted cars
@@ -613,6 +634,7 @@ All online dealerships feature:
 - **Vehicle Types**: Very high mileage (189,520-382,765 miles / 305,000-616,000 km)
 - **Restrictions**: No ATVs, Buggies, Semi Trucks
 - **Dealer Fees**: None
+- **Note**: Rollers no longer spawn at this dealership
 
 #### Joe's Junk
 
@@ -637,6 +659,12 @@ All online dealerships feature:
 - **Stock**: 8 vehicles
 - **Specialization**: Police vehicles
 - **Dealer Fees**: \$500
+
+#### Loaner Vehicles Dealership
+
+- **Description**: New dealership for loaner vehicles
+- **Specialization**: Loaner vehicles including vans, repo-ready vehicles, trailers, and custom loaners
+- **Note**: Gizamn's Rod Shop and drift dealership door have been removed
 
 ---
 
@@ -725,6 +753,7 @@ A brand-new **Phone UI** has been added:
   - **Taxi App** for quick taxi jobs
   - **Car Meets App** to view meet schedules and manage RSVPs
   - **Marketplace App** for listing or checking offers on vehicles
+  - **Repo App** Access repo missions from your phone
 
 ---
 
@@ -774,9 +803,13 @@ List and sell your vehicles in-game:
 
 ---
 
+## Game Modes
+
+The mod offers several gameplay modes to suit different playstyles and preferences.
+
 ### Hardcore Mode
 
-A new challenging gameplay setting:
+A challenging gameplay setting for players seeking a more difficult experience:
 
 - Start with **\$0** and one of 6 random hardcore starter vehicles.
 - No initial garage; capacities halved (rounded up).
@@ -787,6 +820,75 @@ A new challenging gameplay setting:
 - No Police mod is disabled.
 - No voucher rewards.
 - A "Hardcore" banner is shown in menus.
+
+---
+
+### Freeroam+
+
+Freeroam+ is a way to experience career without the burden of the economy. Enable this mode to enjoy career features without economic constraints.
+
+---
+
+### Challenge Mode System
+
+A comprehensive challenge system that allows you to create, edit, and play custom challenges with various win conditions and parameters.
+
+#### Features
+
+- **Challenge Creation & Management**: Create, edit, and delete custom challenges through intuitive modals
+- **Pre-built Challenges**: 12 pre-built challenges including:
+  - Car Flipper (Easy, Medium, Hard variants)
+  - City Slicker
+  - Delivery Specialist
+  - Drag Dream
+  - Easy Debt
+  - Lizard Licker
+  - Millionaire Challenge
+  - Mud Monster
+  - Speed
+  - Suburban Life
+
+#### Win Conditions
+
+- **Get out of debt**: Complete the challenge by paying off all loans
+- **Reach Target Money**: Reach a specified amount of money
+- **Reach Target Speed**: Achieve a target speed in MPH (Top Speed run)
+- **Own Specific Garage**: Purchase specific garages to complete the challenge
+
+#### Challenge Customization
+
+- **Map Selection**: Choose which map to play the challenge on
+- **Starting Garages**: Set starting garage locations
+- **Difficulty Selection**: Choose challenge difficulty
+- **Debt System**: Separate debt system for challenges (different from regular career loans)
+- **Challenge Seed Encoder**: Share challenge seeds between users for reproducible challenges
+
+#### API Support
+
+Mods can add win conditions or challenges without editing the base game, enabling modding of the mod itself. This allows for greater freedom and extensibility.
+
+---
+
+### Loans System
+
+The loans system allows you to borrow money from various organizations to help finance your career.
+
+#### Features
+
+- **Multiple Loan Sources**: Borrow from different organizations based on your reputation level
+- **Loaner Vehicles**: Access to loaner vehicles including:
+  - Van loaners
+  - Repo-ready vehicles
+  - Trailer loaners
+  - Custom loaners
+- **Loaner Dealership**: New dealership specifically for loaner vehicles
+- **Auto-save**: Automatically saves after paying loans
+
+---
+
+### New Vehicles
+
+A variety of new custom career-focused vehicles have been added, including MD Series variants, US Semi configurations, repo vehicles, delivery trailers, and other specialized vehicles for various career activities.
 
 ---
 
