@@ -299,15 +299,14 @@ local function acceptOffer(inventoryId, offerIndex)
       if offer.expiredViewCounter then
         return -- Cannot accept expired offers
       end
+      local value = career_modules_valueCalculator.getInventoryVehicleValue(inventoryId) or 10000
       
       -- Try to sell the vehicle and check if it was successful
       local sellSuccess = career_modules_inventory.sellVehicle(inventoryId, offer.value)
       if sellSuccess then
         if offer.customer == "Salmon The Negotiator" then
-          local value = career_modules_valueCalculator.getInventoryVehicleValue(inventoryId) or 10000
           local reputation = math.floor((value - (offer.value or 0)) / 1500)
           career_modules_payment.reward({ salmonBankReputation = {amount = reputation}})
-          freeroam_organizations.getOrganization("salmonBank")
         end
         table.remove(listing.offers, offerIndex)
         Engine.Audio.playOnce('AudioGui','event:>UI>Career>Buy_01')

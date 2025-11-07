@@ -28,9 +28,10 @@ local exitCountdownStart = 5
 local lastCountdownTime = 0
 
 local STATIONARY_TIMEOUT = 10
+local stationaryTimeout = STATIONARY_TIMEOUT -- Race-specific timeout (defaults to constant)
 local lastMovementTime = nil
 local lastCountdownUpdate = nil
-local remainingTime = STATIONARY_TIMEOUT
+local remainingTime = stationaryTimeout
 
 local activeRace = nil
 
@@ -607,13 +608,13 @@ local function checkPlayerOnRoad()
         if not lastMovementTime then
             lastMovementTime = currentTime
             lastCountdownUpdate = currentTime
-            remainingTime = STATIONARY_TIMEOUT
+            remainingTime = stationaryTimeout
         else
             local timeStopped = currentTime - lastMovementTime
             
             -- Update countdown every second
             if currentTime - lastCountdownUpdate >= 1 then
-                remainingTime = STATIONARY_TIMEOUT - timeStopped
+                remainingTime = stationaryTimeout - timeStopped
                 lastCountdownUpdate = currentTime
                 
                 if remainingTime > 0 then
@@ -622,7 +623,7 @@ local function checkPlayerOnRoad()
             end
             
             -- End race when time runs out
-            if timeStopped >= STATIONARY_TIMEOUT then
+            if timeStopped >= stationaryTimeout then
                 return false
             end
         end
@@ -630,7 +631,7 @@ local function checkPlayerOnRoad()
         -- Reset timers when vehicle is moving
         lastMovementTime = nil
         lastCountdownUpdate = nil
-        remainingTime = STATIONARY_TIMEOUT
+        remainingTime = stationaryTimeout
     end
 
     -- Check both main and alt routes
@@ -731,6 +732,11 @@ local function isLoop()
     local isLoop = math.abs(firstNode.x - lastNode.x) < threshold and math.abs(firstNode.y - lastNode.y) < threshold and
                        math.abs(firstNode.z - lastNode.z) < threshold
     return isLoop
+end
+
+local function setStationaryTimeout(timeout)
+    stationaryTimeout = timeout or STATIONARY_TIMEOUT
+    remainingTime = stationaryTimeout -- Reset remaining time when timeout changes
 end
 
 local function flipCheckpoints(originalCheckpoints)
@@ -847,6 +853,7 @@ M.getRoadNodesFromRace = getRoadNodesFromRace
 M.isLoop = isLoop
 M.reset = reset
 M.checkPlayerOnRoad = checkPlayerOnRoad
+M.setStationaryTimeout = setStationaryTimeout
 M.onExtensionLoaded = onExtensionLoaded
 
 return M

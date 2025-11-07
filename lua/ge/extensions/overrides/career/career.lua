@@ -23,6 +23,7 @@ local careerModules = {}
 local boughtStarterVehicle
 local organizationInteraction = {}
 local switchLevel = nil
+local isNewSaveFlag = false
 
 local devActions = {"dropPlayerAtCameraNoReset"}
 local nodegrabberActions = {"nodegrabberGrab", "nodegrabberRender", "nodegrabberStrength", "nodegrabberAction"}
@@ -32,10 +33,15 @@ local actionWhitelist = deepcopy(devActions)
 arrayConcat(actionWhitelist, nodegrabberActions)
 local blockedActions = core_input_actionFilter.createActionTemplate({"vehicleTeleporting", "vehicleMenues", "physicsControls", "aiControls", "vehicleSwitching", "funStuff"}, actionWhitelist)
 
+local cheatblockedActions = core_input_actionFilter.createActionTemplate({"aiControls", "funStuff"})
+
 -- TODO maybe save whenever we go into the esc menu
 
 local function updateNodegrabberBlocking()
-  -- enable node grabber only in walking mode
+  if (career_modules_cheats and career_modules_cheats.isCheatsMode()) then
+    return
+  end
+  -- enable node grabber only in walking mode (unless cheats are enabled)
   if careerActive and (core_camera.getActiveGlobalCameraName() or not gameplay_walk.isWalking()) then
     core_input_actionFilter.setGroup('careerNodeGrabberActions', nodegrabberActions)
     core_input_actionFilter.addAction(0, 'careerNodeGrabberActions', true)
@@ -47,12 +53,17 @@ local function updateNodegrabberBlocking()
 end
 
 local function blockInputActions(block)
-  if shipping_build then
+  if shipping_build and not (career_modules_cheats and career_modules_cheats.isCheatsMode()) then
     core_input_actionFilter.setGroup('careerBlockedDevActions', devActions)
     core_input_actionFilter.addAction(0, 'careerBlockedDevActions', block)
   end
 
-  core_input_actionFilter.setGroup('careerBlockedActions', blockedActions)
+  local actionsToBlock = blockedActions
+  if career_modules_cheats and career_modules_cheats.isCheatsMode() then
+    actionsToBlock = cheatblockedActions
+  end
+
+  core_input_actionFilter.setGroup('careerBlockedActions', actionsToBlock)
   core_input_actionFilter.addAction(0, 'careerBlockedActions', block)
 
   updateNodegrabberBlocking()
@@ -66,6 +77,11 @@ end
 local function onGlobalCameraSet(modeName)
   if not careerActive then return end
   updateNodegrabberBlocking()
+end
+
+local function onCheatsModeChanged(enabled)
+  if not careerActive then return end
+  blockInputActions(true)
 end
 
 local debugModules = {}
@@ -141,6 +157,27 @@ end
 
 local function onCareerModulesActivated(alreadyInLevel)
   setupCareerActionsAndUnpause()
+
+  if M.pendingChallengeId then
+    career_challengeModes.startChallenge(M.pendingChallengeId, true)
+    M.pendingChallengeId = nil
+  elseif isNewSaveFlag and career_modules_playerAttributes then
+    local startingCapital = 10000
+    if M.hardcoreMode then
+      startingCapital = 0
+    end
+    if career_modules_cheats and career_modules_cheats.isCheatsMode() then
+      startingCapital = 1e12
+    end
+    
+    career_modules_playerAttributes.setAttributes({
+      money = startingCapital
+    }, {
+      label = "Starting Capital"
+    })
+  end
+  
+  isNewSaveFlag = false
 end
 
 local function toggleCareerModules(active, alreadyInLevel)
@@ -211,7 +248,7 @@ local function removeNonTrafficVehicles()
   end
 end
 
-local function activateCareer(removeVehicles)
+local function activateCareer(removeVehicles, levelToLoad)
   if careerActive then return end
   -- load career
   local saveSlot, savePath = career_saveSystem.getCurrentSaveSlot()
@@ -226,7 +263,10 @@ local function activateCareer(removeVehicles)
   log("I", "Loading career from " .. savePath .. "/career/" .. saveFile)
   local careerData = (savePath and jsonReadFile(savePath .. "/career/" .. saveFile)) or {}
   local newSave = tableIsEmpty(careerData)
-  local levelToLoad = careerData.level or levelName
+  isNewSaveFlag = newSave
+  if not levelToLoad then
+    levelToLoad = careerData.level or levelName
+  end
   boughtStarterVehicle = true
   organizationInteraction = careerData.organizationInteraction or {}
 
@@ -267,6 +307,7 @@ local function deactivateCareer(saveCareer)
   if not careerActive then return end
   M.onUpdate = nil
   careerActive = false
+  M.pendingChallengeId = nil
   toggleCareerModules(false)
   blockInputActions(false)
   gameplay_rawPois.clear()
@@ -285,23 +326,129 @@ local function isActive()
   return careerActive
 end
 
-local function createOrLoadCareerAndStart(name, specificAutosave, tutorial, hardcore)
-  --M.tutorialEnabled = string.find(string.lower(name), "tutorial") and true or false
-  --M.vehSelectEnabled = string.find(string.lower(name), "vehselect") and true or false
-  log("I","",string.format("Create or Load Career: %s - %s", name, specificAutosave))
-  if career_saveSystem.setSaveSlot(name, specificAutosave) then
-    M.tutorialEnabled = tutorial
-    if tutorial then
-      log("I","","Tutorial enabled.")
+local function applyChallengeConfig(cfg)
+  if not cfg then return false end
+  if not isActive() then return false end
+  if type(cfg.money) == 'number' then
+    if career_modules_playerAttributes and career_modules_playerAttributes.setAttributes then
+      career_modules_playerAttributes.setAttributes({money = cfg.money}, {label = "Challenge Start"})
     end
-    if hardcore then
-      log("I","","Hardcore mode enabled.")
-    end
-    M.hardcoreMode = hardcore
-    activateCareer()
-    return true
   end
-  return false
+  if type(cfg.loans) == 'table' and career_modules_loans and career_modules_loans.takeLoan then
+    for _, l in ipairs(cfg.loans) do
+      local orgId = l and l.orgId
+      local amount = l and l.amount
+      local payments = l and l.payments
+      local rate = l and l.rate
+      if orgId and type(amount) == 'number' and amount > 0 and type(payments) == 'number' and payments > 0 then
+        career_modules_loans.takeLoan(orgId, amount, payments, rate)
+      end
+    end
+  end
+  return true
+end
+
+local function createOrLoadCareerAndStart(name, specificAutosave, tutorial, hardcore, challengeId, cheats, startingMap)
+  if careerActive then
+    deactivateCareer()
+  end
+  
+  M.pendingChallengeId = nil
+  
+  log("I","",string.format("Create or Load Career: %s - %s", name, specificAutosave))
+  
+  core_jobsystem.create(function(job)
+    while career_modules_playerAttributes do
+      print("Waiting for player attributes to be unloaded...")
+      job.sleep(0.05)
+    end
+    
+    local slotPath = career_saveSystem.getSaveRootDirectory() .. name
+    local isNewSave = false
+    
+    if specificAutosave then
+      local specificPath = slotPath .. "/" .. specificAutosave .. "/info.json"
+      isNewSave = not FS:fileExists(specificPath)
+    else
+      local allAutosaves = career_saveSystem.getAllAutosaves(name)
+      isNewSave = tableSize(allAutosaves) == 0
+    end
+    
+    if isNewSave then
+      for i = 1, 3 do
+        local autosaveDir = slotPath .. "/autosave" .. i
+        if FS:directoryExists(autosaveDir) then
+          FS:directoryRemove(autosaveDir)
+        end
+      end
+    end
+    
+    if career_saveSystem.setSaveSlot(name, specificAutosave) then
+      local saveSlot, savePath = career_saveSystem.getCurrentSaveSlot()
+      if savePath and isNewSave then
+        local careerDir = savePath .. "/career"
+        if FS:directoryExists(careerDir) then
+          local files = FS:findFiles(careerDir, "*", -1, false, false)
+          for _, file in ipairs(files) do
+            if FS:fileExists(file) then
+              FS:removeFile(file)
+            elseif FS:directoryExists(file) then
+              FS:directoryRemove(file)
+            end
+          end
+        end
+        
+        if not challengeId then
+          local rlsCareerDir = savePath .. "/career/rls_career"
+          if FS:directoryExists(rlsCareerDir) then
+            local files = FS:findFiles(rlsCareerDir, "*", -1, false, false)
+            for _, file in ipairs(files) do
+              if FS:fileExists(file) then
+                FS:removeFile(file)
+              elseif FS:directoryExists(file) then
+                FS:directoryRemove(file)
+              end
+            end
+          end
+        end
+      end
+      
+      if tutorial then
+        log("I","","Tutorial enabled.")
+      end
+      M.tutorialEnabled = tutorial
+      if hardcore then
+        log("I","","Hardcore mode enabled.")
+      end
+      M.hardcoreMode = hardcore
+      if cheats then
+        log("I","","Cheats mode enabled.")
+      end
+      M.cheatsMode = cheats
+      if challengeId then
+        log("I","","Challenge enabled for later start: " .. challengeId)
+      end
+      M.pendingChallengeId = challengeId
+      
+      local mapToUse = startingMap
+      if challengeId and career_challengeModes then
+        local challengeOptions = career_challengeModes.getChallengeOptionsForCareerCreation()
+        if challengeOptions then
+          for _, challenge in ipairs(challengeOptions) do
+            if challenge.id == challengeId and challenge.map then
+              mapToUse = challenge.map
+              log("I","","Using challenge map: " .. mapToUse)
+              break
+            end
+          end
+        end
+      end
+      
+      activateCareer(true, mapToUse)
+    end
+  end)
+  
+  return true
 end
 
 local function onSaveCurrentSaveSlot(currentSavePath)
@@ -380,9 +527,24 @@ local function formatSaveSlotForUi(saveSlot)
   local infoData = jsonReadFile(autosavePath .. "/info.json")
   local careerData = jsonReadFile(autosavePath .. "/career/" .. saveFile)
   local hardcoreData = jsonReadFile(autosavePath .. "/career/rls_career/hardcore.json")
+  local cheatsData = jsonReadFile(autosavePath .. "/career/rls_career/cheats.json")
+  local challengeData = jsonReadFile(autosavePath .. "/career/rls_career/challengeModes.json")
+  local challengeData = jsonReadFile(autosavePath .. "/career/rls_career/challengeModes.json")
 
   if hardcoreData then
     data.hardcoreMode = hardcoreData.hardcoreMode
+  end
+
+  if cheatsData then
+    data.cheatsMode = cheatsData.cheatsMode
+  end
+
+  if challengeData and challengeData.activeChallenge then
+    data.activeChallenge = challengeData.activeChallenge.name
+  end
+
+  if challengeData and challengeData.activeChallenge then
+    data.activeChallenge = challengeData.activeChallenge.name
   end
   
   if careerData and careerData.level then
@@ -518,10 +680,7 @@ end
 
 local function onClientEndMission(levelPath)
   if not careerActive then return end
-  local levelNameToLoad = path.levelFromPath(levelPath)
-  if levelNameToLoad == levelName then
-    deactivateCareer()
-  end
+  deactivateCareer()
 end
 
 local function onSerialize()
@@ -625,7 +784,7 @@ local function onSaveFinished()
   if switchLevel then
     deactivateCareer()
     spawn.preventPlayerSpawning = true
-    activateCareer()
+    activateCareer(true, switchLevel)
   end
 end
 
@@ -635,6 +794,7 @@ M.onWorldReadyState = onWorldReadyState
 
 M.getAdditionalMenuButtons = getAdditionalMenuButtons
 
+M.applyChallengeConfig = applyChallengeConfig
 M.createOrLoadCareerAndStart = createOrLoadCareerAndStart
 M.activateCareer = activateCareer
 M.deactivateCareer = deactivateCareer
@@ -662,6 +822,7 @@ M.onAnyMissionChanged = onAnyMissionChanged
 M.onVehicleAddedToInventory = onVehicleAddedToInventory
 M.onCameraModeChanged = onCameraModeChanged
 M.onGlobalCameraSet = onGlobalCameraSet
+M.onCheatsModeChanged = onCheatsModeChanged
 
 M.sendCurrentSaveSlotName = sendCurrentSaveSlotName
 

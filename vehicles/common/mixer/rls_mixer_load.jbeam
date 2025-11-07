@@ -1,0 +1,246 @@
+{
+"rls_mixer_drum_S_cargo_load": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"RLS Career Concrete",
+        "value":1,
+    },
+    "slotType" : "mixer_drum_S_load",
+    "cargoStorage":[
+        ["groupId", "name","cargoTypes", "capacity"],
+        ["MixerDrum","Mixer Drum",["cement"], 6000],
+    ],
+    "variables": [
+        ["name", "type", "unit", "category", "default", "min", "max", "title", "description"],
+        ["$loadVolume", "range", "L", "Load", 0, 0, 6000, "Load Volume", "Amount of concrete loaded in the mixer", {"stepDis":1}],
+    ],
+    "flexbodies": [
+         ["mesh", "[group]:", "nonFlexMaterials"],
+    ],
+    "nodes": [
+         ["id", "posX", "posY", "posZ"],
+         {"frictionCoef":0.5},
+         {"nodeMaterial":"|NM_PLASTIC"},
+         {"group":"mixer_load"},
+         {"collision":true},
+         {"selfCollision":false},
+         {"nodeWeight":"$=1+$loadVolume*2.4","nodeWeightFunction":"=1+$volume*$density","cargoGroup":"MixerDrum"},
+          ["mxdl",0,1.387,2.3795],
+          //["mxdl",0,0.93,2.273],
+         {"cargoGroup":""},
+         {"collision":true},
+         {"selfCollision":true},
+         {"group":""},
+
+    ],
+    "beams": [
+          ["id1:", "id2:"],
+          {"beamPrecompression":1, "beamType":"|BOUNDED", "beamLongBound":2, "beamShortBound":0.5},
+          //{"beamSpring":50000,"beamDamp":30000,"beamLimitSpring":10000000,"beamLimitDamp":30000},
+
+          {"beamSpring":"$=10+50000*$loadVolume/9000",                              "beamDamp":"$=1+30000*$loadVolume/9000"},
+          {"beamSpringFunction":"=10+50000*$volume*$density/(9000*2.4)",            "beamDampFunction":"=1+30000*$volume*$density/(9000*2.4)"},
+
+          {"beamLimitSpring":"$=100+10000000*$loadVolume/9000",                     "beamLimitDamp":"$=1+30000*$loadVolume/9000"},
+          {"beamLimitSpringFunction":"=100+10000000*$volume*$density/(9000*2.4)",   "beamLimitDampFunction":"=1+30000*$volume*$density/(9000*2.4)"},
+
+          {"beamDeform":"FLT_MAX","beamStrength":"FLT_MAX"},
+          ["mxdl","mxd0"],
+
+          ["mxdl","mxd01"],
+          ["mxdl","mxd02"],
+          ["mxdl","mxd03"],
+          ["mxdl","mxd04"],
+          ["mxdl","mxd05"],
+          ["mxdl","mxd06"],
+          ["mxdl","mxd07"],
+          ["mxdl","mxd08"],
+
+          ["mxdl","mxd11"],
+          ["mxdl","mxd12"],
+          ["mxdl","mxd13"],
+          ["mxdl","mxd14"],
+          ["mxdl","mxd15"],
+          ["mxdl","mxd16"],
+          ["mxdl","mxd17"],
+          ["mxdl","mxd18"],
+
+          ["mxdl","mxd31"],
+          ["mxdl","mxd32"],
+          ["mxdl","mxd33"],
+          ["mxdl","mxd34"],
+          ["mxdl","mxd35"],
+          ["mxdl","mxd36"],
+          ["mxdl","mxd37"],
+          ["mxdl","mxd38"],
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+    ],
+},
+
+"rls_mixer_drum_M_cargo_load": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"RLS Career Concrete",
+        "value":1,
+    },
+    "slotType" : "mixer_drum_M_load",
+    "cargoStorage":[
+        ["groupId", "name","cargoTypes", "capacity"],
+        ["MixerDrum", "Mixer Drum",["cement"], 9000],
+    ],
+    "variables": [
+        ["name", "type", "unit", "category", "default", "min", "max", "title", "description"],
+        ["$loadVolume", "range", "L", "Load", 0, 0, 9000, "Load Volume", "Amount of concrete loaded in the mixer", {"stepDis":1}],
+    ],
+    "flexbodies": [
+         ["mesh", "[group]:", "nonFlexMaterials"],
+    ],
+    "nodes": [
+         ["id", "posX", "posY", "posZ"],
+         {"frictionCoef":0.5},
+         {"nodeMaterial":"|NM_PLASTIC"},
+         {"group":"mixer_load"},
+         {"collision":true},
+         {"selfCollision":false},
+         {"nodeWeight":"$=1+$loadVolume*2.4","nodeWeightFunction":"=1+$volume*$density","cargoGroup":"MixerDrum"},
+          ["mxdl",0,1.5102,2.3357],
+         {"cargoGroup":""},
+         {"collision":true},
+         {"selfCollision":true},
+         {"group":""},
+
+    ],
+    "beams": [
+          ["id1:", "id2:"],
+          {"beamPrecompression":1, "beamType":"|BOUNDED", "beamLongBound":2, "beamShortBound":0.5},
+          //{"beamSpring":50000,"beamDamp":30000,"beamLimitSpring":10000000,"beamLimitDamp":30000},
+
+          {"beamSpring":"$=10+50000*$loadVolume/9000",                              "beamDamp":"$=1+30000*$loadVolume/9000"},
+          {"beamSpringFunction":"=10+50000*$volume*$density/(9000*2.4)",            "beamDampFunction":"=1+30000*$volume*$density/(9000*2.4)"},
+
+          {"beamLimitSpring":"$=100+10000000*$loadVolume/9000",                     "beamLimitDamp":"$=1+30000*$loadVolume/9000"},
+          {"beamLimitSpringFunction":"=100+10000000*$volume*$density/(9000*2.4)",   "beamLimitDampFunction":"=1+30000*$volume*$density/(9000*2.4)"},
+
+          {"beamDeform":"FLT_MAX","beamStrength":"FLT_MAX"},
+          ["mxdl","mxd0"],
+
+          ["mxdl","mxd01"],
+          ["mxdl","mxd02"],
+          ["mxdl","mxd03"],
+          ["mxdl","mxd04"],
+          ["mxdl","mxd05"],
+          ["mxdl","mxd06"],
+          ["mxdl","mxd07"],
+          ["mxdl","mxd08"],
+
+          ["mxdl","mxd11"],
+          ["mxdl","mxd12"],
+          ["mxdl","mxd13"],
+          ["mxdl","mxd14"],
+          ["mxdl","mxd15"],
+          ["mxdl","mxd16"],
+          ["mxdl","mxd17"],
+          ["mxdl","mxd18"],
+
+          ["mxdl","mxd31"],
+          ["mxdl","mxd32"],
+          ["mxdl","mxd33"],
+          ["mxdl","mxd34"],
+          ["mxdl","mxd35"],
+          ["mxdl","mxd36"],
+          ["mxdl","mxd37"],
+          ["mxdl","mxd38"],
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+    ],
+},
+
+"rls_mixer_drum_L_cargo_load": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"RLS Career Concrete",
+        "value":1,
+    },
+    "slotType" : "mixer_drum_L_load",
+    "cargoStorage":[
+        ["groupId", "name","cargoTypes", "capacity"],
+        ["MixerDrum", "Mixer Drum",["cement"], 12000],
+    ],
+    "variables": [
+        ["name", "type", "unit", "category", "default", "min", "max", "title", "description"],
+        ["$loadVolume", "range", "L", "Load", 0, 0, 12000, "Load Volume", "Amount of concrete loaded in the mixer", {"stepDis":1}],
+    ],
+    "flexbodies": [
+         ["mesh", "[group]:", "nonFlexMaterials"],
+    ],
+    "nodes": [
+         ["id", "posX", "posY", "posZ"],
+         {"frictionCoef":0.5},
+         {"nodeMaterial":"|NM_PLASTIC"},
+         {"group":"mixer_load"},
+         {"collision":true},
+         {"selfCollision":false},
+         {"nodeWeight":"$=1+$loadVolume*2.4","nodeWeightFunction":"=1+$volume*$density","cargoGroup":"MixerDrum"},
+          ["mxdl",0,1.8257,2.33493],
+          //["mxdl",0,2.7325,2.4734],
+          //["mxdl",0,2.12545,2.3805],
+          //["mxdl",0,1.5184,2.2876],
+         {"cargoGroup":""},
+         {"collision":true},
+         {"selfCollision":true},
+         {"group":""},
+
+    ],
+    "beams": [
+          ["id1:", "id2:"],
+          {"beamPrecompression":1, "beamType":"|BOUNDED", "beamLongBound":2, "beamShortBound":0.5},
+          //{"beamSpring":50000,"beamDamp":30000,"beamLimitSpring":10000000,"beamLimitDamp":30000},
+
+          {"beamSpring":"$=10+50000*$loadVolume/9000",                              "beamDamp":"$=1+30000*$loadVolume/9000"},
+          {"beamSpringFunction":"=10+50000*$volume*$density/(9000*2.4)",            "beamDampFunction":"=1+30000*$volume*$density/(9000*2.4)"},
+
+          {"beamLimitSpring":"$=100+10000000*$loadVolume/9000",                     "beamLimitDamp":"$=1+30000*$loadVolume/9000"},
+          {"beamLimitSpringFunction":"=100+10000000*$volume*$density/(9000*2.4)",   "beamLimitDampFunction":"=1+30000*$volume*$density/(9000*2.4)"},
+
+          {"beamDeform":"FLT_MAX","beamStrength":"FLT_MAX"},
+          ["mxdl","mxd0"],
+
+          ["mxdl","mxd01"],
+          ["mxdl","mxd02"],
+          ["mxdl","mxd03"],
+          ["mxdl","mxd04"],
+          ["mxdl","mxd05"],
+          ["mxdl","mxd06"],
+          ["mxdl","mxd07"],
+          ["mxdl","mxd08"],
+
+          ["mxdl","mxd11"],
+          ["mxdl","mxd12"],
+          ["mxdl","mxd13"],
+          ["mxdl","mxd14"],
+          ["mxdl","mxd15"],
+          ["mxdl","mxd16"],
+          ["mxdl","mxd17"],
+          ["mxdl","mxd18"],
+
+          ["mxdl","mxd21"],
+          ["mxdl","mxd22"],
+          ["mxdl","mxd23"],
+          ["mxdl","mxd24"],
+          ["mxdl","mxd25"],
+          ["mxdl","mxd26"],
+          ["mxdl","mxd27"],
+          ["mxdl","mxd28"],
+
+          /*["mxdl","mxd31"],
+          ["mxdl","mxd32"],
+          ["mxdl","mxd33"],
+          ["mxdl","mxd34"],
+          ["mxdl","mxd35"],
+          ["mxdl","mxd36"],
+          ["mxdl","mxd37"],
+          ["mxdl","mxd38"],*/
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+    ],
+},
+
+}

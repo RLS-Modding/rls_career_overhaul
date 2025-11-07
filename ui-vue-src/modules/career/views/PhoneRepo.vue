@@ -74,6 +74,16 @@
                 </div>
             </div>
 
+            <!-- Disabled State Overlay -->
+            <div class="disabled-overlay" v-if="currentState === 'disabled'" @click="closeDisabledOverlay">
+                <div class="disabled-modal" @click.stop>
+                    <button class="disabled-close" @click="closeDisabledOverlay">✕</button>
+                    <div class="disabled-icon">🚫</div>
+                    <div class="disabled-title">Repo Unavailable</div>
+                    <div class="disabled-message">{{ disabledReason || 'Repo is currently disabled' }}</div>
+                </div>
+            </div>
+
             <!-- Completed State -->
             <div class="complete-overlay" v-if="currentState === 'completed'">
                 <div class="complete-modal">
@@ -109,6 +119,7 @@ const container = ref(null)
 const currentState = ref('no_mission')
 const currentReward = ref(0)
 const isInRepoVehicle = ref(false)
+const disabledReason = ref('')
 
 // Vehicle Details
 const vehicleBrand = ref('')
@@ -162,6 +173,13 @@ const handleBackgroundClick = () => {
     }
 }
 
+const closeDisabledOverlay = () => {
+    // Navigate back to start state when closing disabled overlay
+    if (currentState.value === 'disabled') {
+        currentState.value = 'no_mission'
+    }
+}
+
 const updateRepoState = (data) => {
     if (!data) return
 
@@ -199,6 +217,11 @@ const updateRepoState = (data) => {
     // Update isInRepoVehicle
     if (data.isRepoVehicle !== undefined) {
         isInRepoVehicle.value = data.isRepoVehicle
+    }
+
+    // Update disabled reason
+    if (typeof data.disabledReason !== 'undefined') {
+        disabledReason.value = data.disabledReason
     }
 }
 
@@ -410,5 +433,91 @@ onMounted(() => {
 
 .panel-content {
     margin-bottom: 1rem;
+}
+
+.disabled-overlay {
+    position: absolute;
+    top: 40px; /* Start below the phone header */
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(2px);
+    z-index: 10; /* Lower z-index to not block phone navigation */
+    pointer-events: none; /* Allow clicks to pass through to elements behind */
+}
+
+.disabled-modal {
+    background: rgba(255, 255, 255, 0.95);
+    color: rgb(0, 0, 0);
+    padding: 3rem 2rem 2.5rem 2rem; /* Extra top padding for close button */
+    border-radius: 20px;
+    text-align: center;
+    font-weight: 600;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    max-width: 85%;
+    animation: fadeInUp 0.3s ease-out;
+    position: relative; /* For absolute positioning of close button */
+    pointer-events: auto; /* Allow interaction with the modal itself */
+}
+
+.disabled-icon {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+    opacity: 0.8;
+}
+
+.disabled-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    color: rgb(100, 100, 100);
+}
+
+.disabled-message {
+    font-size: 1.1rem;
+    font-weight: 500;
+    line-height: 1.4;
+    color: rgb(80, 80, 80);
+}
+
+.disabled-close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: rgba(0, 0, 0, 0.1);
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+    font-weight: bold;
+    color: rgb(100, 100, 100);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    z-index: 11; /* Higher than overlay but lower than phone nav */
+}
+
+.disabled-close:hover {
+    background: rgba(0, 0, 0, 0.2);
+    transform: scale(1.1);
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 </style> 

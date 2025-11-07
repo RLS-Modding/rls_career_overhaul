@@ -310,10 +310,22 @@ local function spawnTaxiCab(playerPos)
   return taxiId
 end
 
+local function resetCabSystem()
+  activeCab = nil
+  cabState = "none"
+  playerInCab = false
+  destination = nil
+  waypointCheckTimer = 0
+end
+
 local function callCab()
   if activeCab then
-    print("Cab: A cab is already active!")
-    return
+    local taxi = getObjectByID(activeCab)
+    if taxi then
+      taxi:delete()
+    end
+    resetCabSystem()
+    print("Cab: Previous cab deleted, calling new one")
   end
 
   local player = getPlayerVehicle(0)
@@ -337,14 +349,6 @@ local function callCab()
     print("Cab: Failed to spawn taxi")
     ui_message("Taxi service is currently unavailable.", 5, "cab", "cab")
   end
-end
-
-local function resetCabSystem()
-  activeCab = nil
-  cabState = "none"
-  playerInCab = false
-  destination = nil
-  waypointCheckTimer = 0
 end
 
 local function onVehicleSwitched(oldId, newId)

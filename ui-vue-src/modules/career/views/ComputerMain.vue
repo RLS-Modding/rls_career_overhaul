@@ -224,11 +224,17 @@ const sellGarage = async function() {
     
     const [isEmpty, vehicleCount] = canSell
     
-    // If garage has vehicles, show error message
+    // If garage cannot be sold, show appropriate error message
     if (!isEmpty) {
-      await openConfirmation("", `You have ${vehicleCount} vehicle${vehicleCount !== 1 ? 's' : ''} in this garage. Please move or sell your vehicles out of this garage to sell it.`, [
-        { label: "OK", value: true, extras: { default: true } },
-      ])
+      if (vehicleCount === 0) {
+        await openConfirmation("", `You cannot sell this garage. Starting garages cannot be sold.`, [
+          { label: "OK", value: true, extras: { default: true } },
+        ])
+      } else {
+        await openConfirmation("", `You have ${vehicleCount} vehicle${vehicleCount !== 1 ? 's' : ''} in this garage. Please move or sell your vehicles out of this garage to sell it.`, [
+          { label: "OK", value: true, extras: { default: true } },
+        ])
+      }
       return
     }
     

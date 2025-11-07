@@ -25,6 +25,7 @@ local previewVehicleSlotData = {}
 local tutorialPartNames = {cargo_load_box_M_seat_load_R = true}
 
 local tether -- tether object for aborting shopping when walking too far away
+local storedFuelLevels = {}
 
 -- TODO it needs to be decided, which parts come with their own subparts when you buy them and which parts you can use the existing subparts of the vehicle for
 -- for now, i will assume that parts come with default subparts, except when a fitting part is already in the vehicle
@@ -326,6 +327,7 @@ local function sendShoppingDataToUI()
   end
 
   shoppingData.playerMoney = career_modules_playerAttributes.getAttributeValue("money")
+  shoppingData.cheatsMode = career_modules_cheats and career_modules_cheats.isCheatsMode() or false
   guihooks.trigger("partShoppingData", shoppingData)
 end
 
@@ -601,6 +603,57 @@ local function fillEmptySlotsWithInitialParts(initialNode, previewNode)
   end
 end
 
+local function storeFuelLevels(callback)
+  local veh = getCurrentVehicleObj()
+  if not veh then 
+    if callback then callback() end
+    return 
+  end
+  
+  core_vehicleBridge.requestValue(veh, function(data)
+    storedFuelLevels = {}
+    if data and data[1] then
+      for _, tank in ipairs(data[1]) do
+        -- Only store fuel levels for actual fuel tanks, not nitrous bottles
+        if tank.energyType ~= "n2o" then
+          storedFuelLevels[tank.name] = {
+            currentEnergy = tank.currentEnergy,
+            maxEnergy = tank.maxEnergy,
+            energyType = tank.energyType,
+            relativeFuel = tank.maxEnergy > 0 and (tank.currentEnergy / tank.maxEnergy) or 0
+          }
+        end
+      end
+    end
+    if callback then callback() end
+  end, 'energyStorage')
+end
+
+local function restoreFuelLevels()
+  local veh = getCurrentVehicleObj()
+  if not veh or not next(storedFuelLevels) then return end
+  
+  core_vehicleBridge.requestValue(veh, function(data)
+    if not data or not data[1] then return end
+    
+    for _, tank in ipairs(data[1]) do
+      local stored = storedFuelLevels[tank.name]
+      if stored and stored.energyType == tank.energyType then
+        local newFuelAmount = math.min(stored.currentEnergy, tank.maxEnergy)
+        if tank.maxEnergy > stored.maxEnergy then
+          newFuelAmount = tank.maxEnergy * stored.relativeFuel
+        end
+        
+        -- Ensure minimum fuel level (5% of tank capacity)
+        local minFuel = tank.maxEnergy * 0.05
+        newFuelAmount = math.max(newFuelAmount, minFuel)
+        
+        core_vehicleBridge.executeAction(veh, 'setEnergyStorageEnergy', tank.name, newFuelAmount)
+      end
+    end
+  end, 'energyStorage')
+end
+
 local function updateInstalledParts(addedParts, removedParts)
   if not shoppingSessionActive then return end
 
@@ -690,26 +743,27 @@ local function updateInstalledParts(addedParts, removedParts)
     previewVehicle.partConditions[part.partPath] = part.partCondition
   end
 
-  local additionalVehicleData = {spawnWithEngineRunning = false}
-  core_vehicle_manager.queueAdditionalVehicleData(additionalVehicleData, getCurrentVehicleObj():getID())
+  storeFuelLevels(function()
+    local additionalVehicleData = {spawnWithEngineRunning = false}
+    core_vehicle_manager.queueAdditionalVehicleData(additionalVehicleData, getCurrentVehicleObj():getID())
 
-  local spawnOptions = {}
-  spawnOptions.config = previewVehicle.config
-  spawnOptions.keepOtherVehRotation = true
+    local spawnOptions = {}
+    spawnOptions.config = previewVehicle.config
+    spawnOptions.keepOtherVehRotation = true
 
+    core_vehicles.replaceVehicle(previewVehicle.model, spawnOptions, getCurrentVehicleObj())
+    core_vehicleBridge.executeAction(getCurrentVehicleObj(), 'initPartConditions', previewVehicle.partConditions, nil, nil, nil, career_modules_painting.getPrimerColor())
 
-  core_vehicles.replaceVehicle(previewVehicle.model, spawnOptions, getCurrentVehicleObj())
-  core_vehicleBridge.executeAction(getCurrentVehicleObj(), 'initPartConditions', previewVehicle.partConditions, nil, nil, nil, career_modules_painting.getPrimerColor())
+    getCurrentVehicleObj():queueLuaCommand("extensions.load('individualRepair')")
+    career_modules_damageManager.repairPartsAndReloadState(currentVehicle, partPaths, partsToRemove)
 
-  getCurrentVehicleObj():queueLuaCommand("extensions.load('individualRepair')")
-  career_modules_damageManager.repairPartsAndReloadState(currentVehicle, partPaths, partsToRemove)
-
-  -- Doing the callback immediately will result in wrong values for some parts, so we do it one frame later
-  core_vehicleBridge.requestValue(getCurrentVehicleObj(),
-  function()
-    queueCallbackInVehicle(getCurrentVehicleObj(), "career_modules_partShopping.updatePreviewVehicle", "partCondition.getConditions()")
-  end
-  , 'ping')
+    core_vehicleBridge.requestValue(getCurrentVehicleObj(),
+    function()
+      restoreFuelLevels()
+      queueCallbackInVehicle(getCurrentVehicleObj(), "career_modules_partShopping.updatePreviewVehicle", "partCondition.getConditions()")
+    end
+    , 'ping')
+  end)
 end
 
 local function removePart(part)
@@ -769,6 +823,7 @@ end
 local function endShopping(_closeMenuAfterSaving)
   closeMenuAfterSaving = career_career.isAutosaveEnabled() and _closeMenuAfterSaving
   shoppingSessionActive = false
+  storedFuelLevels = {}
   if not closeMenuAfterSaving then
     closeMenu()
   end
@@ -830,7 +885,8 @@ local function getBuyingLabel()
 end
 
 local function applyShopping()
-  if career_modules_playerAttributes.getAttributeValue("money") < shoppingCart.total then return end
+  local cheatsMode = career_modules_cheats and career_modules_cheats.isCheatsMode() or false
+  if not cheatsMode and career_modules_playerAttributes.getAttributeValue("money") < shoppingCart.total then return end
 
   local vehicles = career_modules_inventory.getVehicles()
   vehicles[currentVehicle] = previewVehicle
@@ -838,7 +894,9 @@ local function applyShopping()
   updateInventory()
   endShopping(true)
   local buyingLabel = getBuyingLabel()
-  career_modules_playerAttributes.addAttributes({money=-shoppingCart.total}, {tags={"partsBought", "buying"},label=buyingLabel})
+  if not cheatsMode then
+    career_modules_playerAttributes.addAttributes({money=-shoppingCart.total}, {tags={"partsBought", "buying"},label=buyingLabel})
+  end
   if career_career.isAutosaveEnabled() then
     career_saveSystem.saveCurrent({currentVehicle})
   else

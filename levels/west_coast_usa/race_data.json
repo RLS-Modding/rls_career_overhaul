@@ -22,8 +22,7 @@
       "minCheckpointDistance":45,
       "reward":2000,
       "type":[
-        "offroad",
-        "rally"
+        "offroad"
       ]
     },
     "dirtCircuit":{
@@ -45,8 +44,7 @@
       "label":"Dirt Circuit",
       "reward":3000,
       "type":[
-        "offroad",
-        "rally"
+        "offroad"
       ]
     },
     "dirtOval":{
@@ -59,8 +57,7 @@
       "label":"Dirt Oval",
       "reward":350,
       "type":[
-        "oval",
-        "offroad"
+        "oval"
       ]
     },
     "drag":{
@@ -102,7 +99,6 @@
       "label":"Hotrolled Drift",
       "reward":1500,
       "type":[
-        "motorsport",
         "drift"
       ]
     },
@@ -121,7 +117,6 @@
       "label":"Island Touge Drift",
       "reward":3000,
       "type":[
-        "motorsport",
         "drift"
       ]
     },
@@ -149,10 +144,7 @@
       "label":"King of the Hammer 1",
       "reward":2000,
       "type":[
-        "motorsport",
-        "rally",
-        "offroad",
-        "crawl"
+        "offroad"
       ]
     },
     "koh2":{
@@ -197,10 +189,7 @@
       "label":"King of the Hammer 2",
       "reward":3000,
       "type":[
-        "motorsport",
-        "rally",
-        "offroad",
-        "crawl"
+        "offroad"
       ]
     },
     "mudDrag1":{
@@ -211,8 +200,7 @@
       "label":"Mud Drag Easy",
       "reward":1500,
       "type":[
-        "mud",
-        "drag"
+        "mud"
       ]
     },
     "mudDrag2":{
@@ -224,8 +212,6 @@
       "label":"Mud Drag Hard",
       "reward":2700,
       "type":[
-        "mud",
-        "drag",
         "extremeMud"
       ]
     },
@@ -247,7 +233,6 @@
       "label":"Quarry Circuit",
       "reward":2000,
       "type":[
-        "offroad",
         "rally"
       ]
     },
@@ -272,7 +257,6 @@
       "minCheckpointDistance":20,
       "reward":1500,
       "type":[
-        "motorsport",
         "drift"
       ]
     },
@@ -423,7 +407,6 @@
       "label":"Redwood Drift",
       "reward":1500,
       "type":[
-        "motorsport",
         "drift"
       ]
     },
@@ -447,7 +430,6 @@
       "label":"Redwood Drift Reverse",
       "reward":1500,
       "type":[
-        "motorsport",
         "drift"
       ]
     },
@@ -503,8 +485,7 @@
       "reward":2550,
       "runningStart":true,
       "type":[
-        "offroad",
-        "rally"
+        "offroad"
       ]
     },
     "sealbrikDrift":{
@@ -516,7 +497,6 @@
       "label":"Sealbrik Drift",
       "reward":1500,
       "type":[
-        "motorsport",
         "drift"
       ]
     },
@@ -544,7 +524,6 @@
       "reward":2000,
       "runningStart":true,
       "type":[
-        "motorsport",
         "apexRacing"
       ]
     }

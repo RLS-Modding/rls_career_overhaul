@@ -43,6 +43,16 @@ local function getOtherAvailableMaps()
     return compatibleMaps
   end
 
+local function getMapsExcludingWestCoast()
+  local maps = {}
+  for map, mapName in pairs(compatibleMaps) do
+    if map ~= "west_coast_usa" then
+      maps[map] = mapName
+    end
+  end
+  return maps
+end
+
 local function onExtensionLoaded()
   retrieveCompatibleMaps()
 end
@@ -50,9 +60,11 @@ end
 M.onExtensionLoaded = onExtensionLoaded
 M.onModActivated = retrieveCompatibleMaps
 M.onWorldReadyState = retrieveCompatibleMaps
+M.onUiReady = retrieveCompatibleMaps
 
 M.returnCompatibleMap = returnCompatibleMap
 M.getCompatibleMaps = getCompatibleMaps
 M.getOtherAvailableMaps = getOtherAvailableMaps
+M.getMapsExcludingWestCoast = getMapsExcludingWestCoast
 
 return M

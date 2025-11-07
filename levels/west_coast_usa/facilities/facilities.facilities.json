@@ -366,14 +366,14 @@
         ]
       ],
       "functions":{
-        "tuning":true,
         "insurancePolicies":false,
         "painting":false,
         "partInventory":false,
         "partShop":false,
         "sleep":false,
+        "tuning":true,
         "vehicleInventory":false,
-        "vehicleShop":false        
+        "vehicleShop":false
       },
       "garageId":"dragTuningPits",
       "icon":"poi_laptop_round",
@@ -479,6 +479,35 @@
       "name":"Hill Top Villa",
       "preview":"hilltop_villa.jpg",
       "screens":{}
+    },
+    {
+      "activityAcceptProps":[
+        {
+          "keyLabel":"Vehicle & Parts Management"
+        }
+      ],
+      "description":"ui.career.computer.bigmapLabel.garage",
+      "doors":[
+        [
+          "alderDragwayStorage_area",
+          "alderDragwayStorage_icon"
+        ]
+      ],
+      "functions":{
+        "insurancePolicies":true,
+        "partInventory":true,
+        "sleep":true,
+        "tuning":true,
+        "vehicleInventory":true
+      },
+      "garageId":"alderDragwayStorage",
+      "icon":"poi_laptop_round",
+      "iconLift":0.2,
+      "iconOffsetHeight":0.15,
+      "id":"alderDragwayStorage",
+      "name":"Alder Dragway Storage",
+      "preview":"servicestationgaragecomputer.jpg",
+      "screens":{}
     }
   ],
   "garages":[
@@ -491,12 +520,13 @@
       "name":"Belasco City Garage",
       "parkingSpotNames":[
         "serviceStationParking1",
-        "serviceStationParking2",
         "serviceStationParking3",
         "serviceStationParking4",
         "serviceStationParking5",
         "serviceStationParking6",
-        "serviceStationParking7"
+        "serviceStationParking7",
+        "serviceStationParking8",
+        "serviceStationParking2"
       ],
       "preview":"horizon_estate.jpg",
       "zoneNames":[
@@ -515,6 +545,18 @@
         "commercialGarageParking1",
         "commercialGarageParking2",
         "commercialGarageParking3",
+        "commercialGarageParking4",
+        "commercialGarageParking5",
+        "commercialGarageParking6",
+        "commercialGarageParking7",
+        "commercialGarageParking8",
+        "commercialGarageParking9",
+        "commercialGarageParking10",
+        "commercialGarageParking11",
+        "commercialGarageParking12",
+        "commercialGarageParking13",
+        "commercialGarageParking14",
+        "commercialGarageParking15",
         "commercialGarageParkingOutside1",
         "commercialGarageParkingOutside2",
         "commercialGarageParkingOutside3",
@@ -570,7 +612,7 @@
     },
     {
       "capacity":2,
-      "defaultPrice":75000,
+      "defaultPrice":50000,
       "description":"This is the starter garage, humble beginnings.",
       "icon":"poi_garage_2_round",
       "id":"chinatownGarageOverflow",
@@ -720,6 +762,24 @@
       "zoneNames":[
         "hill_top_villa_1"
       ]
+    },
+    {
+      "capacity":4,
+      "defaultPrice":150000,
+      "description":"A storage aread for all your drag needs\n",
+      "icon":"poi_garage_2_round",
+      "id":"alderDragwayStorage",
+      "name":"Alder Dragway Storage",
+      "parkingSpotNames":[
+        "spot_alderDragwayStorage_1",
+        "spot_alderDragwayStorage_2",
+        "spot_alderDragwayStorage_3",
+        "spot_alderDragwayStorage_4"
+      ],
+      "preview":"dragway_pit_garages.jpg",
+      "zoneNames":[
+        "alderDragwayStorage_1"
+      ]
     }
   ],
   "gasStations":[
@@ -728,6 +788,7 @@
       "energyTypes":[
         "gasoline",
         "diesel",
+        "n2o",
         "unknown"
       ],
       "id":"trilobite_garage",
@@ -823,6 +884,18 @@
               "trilobite_garage_sign_B3_4"
             ]
           ]
+        },
+        "n2o":{
+          "priceBaseline":25,
+          "priceRandomnessBias":0.2,
+          "priceRandomnessGain":0.1,
+          "us_9_10_tax":true
+        },
+        "unknown":{
+          "priceBaseline":15,
+          "priceRandomnessBias":0.2,
+          "priceRandomnessGain":0.1,
+          "us_9_10_tax":true
         }
       },
       "pumps":[
@@ -855,7 +928,8 @@
     {
       "description":"levels.west_coast_usa.gasStationPoints.trilobite_garage_KEVee.description",
       "energyTypes":[
-        "electricEnergy"
+        "electricEnergy",
+        "unknown"
       ],
       "id":"trilobite_garage_KEVee",
       "name":"levels.west_coast_usa.gasStationPoints.trilobite_garage_KEVee.title",
@@ -887,6 +961,7 @@
       "energyTypes":[
         "gasoline",
         "diesel",
+        "n2o",
         "unknown"
       ],
       "id":"trilobite_city",
@@ -982,6 +1057,18 @@
               "trilobite_city_sign_B3_4"
             ]
           ]
+        },
+        "n2o":{
+          "priceBaseline":25,
+          "priceRandomnessBias":0.2,
+          "priceRandomnessGain":0.1,
+          "us_9_10_tax":true
+        },
+        "unknown":{
+          "priceBaseline":15,
+          "priceRandomnessBias":0.2,
+          "priceRandomnessGain":0.1,
+          "us_9_10_tax":true
         }
       },
       "pumps":[
@@ -1042,6 +1129,7 @@
       "energyTypes":[
         "gasoline",
         "diesel",
+        "n2o",
         "unknown"
       ],
       "id":"apex",
@@ -1137,6 +1225,18 @@
               "apex_sign_B3_4"
             ]
           ]
+        },
+        "n2o":{
+          "priceBaseline":25,
+          "priceRandomnessBias":0.2,
+          "priceRandomnessGain":0.1,
+          "us_9_10_tax":true
+        },
+        "unknown":{
+          "priceBaseline":15,
+          "priceRandomnessBias":0.2,
+          "priceRandomnessGain":0.1,
+          "us_9_10_tax":true
         }
       },
       "pumps":[
@@ -1171,6 +1271,7 @@
       "energyTypes":[
         "gasoline",
         "diesel",
+        "n2o",
         "unknown"
       ],
       "id":"nodeoline",
@@ -1266,6 +1367,18 @@
               "nodeoline_sign_B3_4"
             ]
           ]
+        },
+        "n2o":{
+          "priceBaseline":25,
+          "priceRandomnessBias":0.2,
+          "priceRandomnessGain":0.1,
+          "us_9_10_tax":true
+        },
+        "unknown":{
+          "priceBaseline":15,
+          "priceRandomnessBias":0.2,
+          "priceRandomnessGain":0.1,
+          "us_9_10_tax":true
         }
       },
       "pumps":[
@@ -1300,6 +1413,7 @@
       "energyTypes":[
         "gasoline",
         "diesel",
+        "n2o",
         "unknown"
       ],
       "id":"tyranos_island",
@@ -1395,6 +1509,18 @@
               "tyranos_island_sign_B3_4"
             ]
           ]
+        },
+        "n2o":{
+          "priceBaseline":25,
+          "priceRandomnessBias":0.2,
+          "priceRandomnessGain":0.1,
+          "us_9_10_tax":true
+        },
+        "unknown":{
+          "priceBaseline":15,
+          "priceRandomnessBias":0.2,
+          "priceRandomnessGain":0.1,
+          "us_9_10_tax":true
         }
       },
       "pumps":[
@@ -1419,7 +1545,8 @@
     {
       "description":"levels.west_coast_usa.gasStationPoints.tyranos_island_KEVee.description",
       "energyTypes":[
-        "electricEnergy"
+        "electricEnergy",
+        "unknown"
       ],
       "id":"tyranos_island_KEVee",
       "name":"levels.west_coast_usa.gasStationPoints.tyranos_island_KEVee.title",
@@ -1451,6 +1578,7 @@
       "energyTypes":[
         "gasoline",
         "diesel",
+        "n2o",
         "unknown"
       ],
       "id":"apex_commercial",
@@ -1546,6 +1674,18 @@
               "apex_commercial_sign_B3_4"
             ]
           ]
+        },
+        "n2o":{
+          "priceBaseline":25,
+          "priceRandomnessBias":0.2,
+          "priceRandomnessGain":0.1,
+          "us_9_10_tax":true
+        },
+        "unknown":{
+          "priceBaseline":15,
+          "priceRandomnessBias":0.2,
+          "priceRandomnessGain":0.1,
+          "us_9_10_tax":true
         }
       },
       "pumps":[
@@ -1582,6 +1722,50 @@
         [
           "fuel_apex_commercial_KEVee_pump_area_3",
           "fuel_apex_commercial_KEVee_pump_icon_3"
+        ]
+      ]
+    },
+    {
+      "description":"Fuel at the Drag strip! This must be pricy...",
+      "energyTypes":[
+        "gasoline",
+        "diesel",
+        "n2o",
+        "unknown"
+      ],
+      "id":"trilobite_drag",
+      "name":"Alder Dragway Fuel",
+      "preview":"drag_fuel.jpg",
+      "prices":{
+        "diesel":{
+          "priceBaseline":50.53,
+          "priceRandomnessBias":0.2,
+          "priceRandomnessGain":0.1,
+          "us_9_10_tax":true
+        },
+        "gasoline":{
+          "priceBaseline":50.37,
+          "priceRandomnessBias":0.2,
+          "priceRandomnessGain":0.1,
+          "us_9_10_tax":true
+        },
+        "n2o":{
+          "priceBaseline":75,
+          "priceRandomnessBias":0.2,
+          "priceRandomnessGain":0.1,
+          "us_9_10_tax":true
+        },
+        "unknown":{
+          "priceBaseline":65,
+          "priceRandomnessBias":0.2,
+          "priceRandomnessGain":0.1,
+          "us_9_10_tax":true
+        }
+      },
+      "pumps":[
+        [
+          "fuel_trilobite_drag_pump_area_1",
+          "fuel_trilobite_drag_pump_icon_1"
         ]
       ]
     }

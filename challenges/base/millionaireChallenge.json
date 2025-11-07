@@ -1,0 +1,22 @@
+{
+    "id": "millionaireChallenge",
+    "name": "Become a Millionaire",
+    "description": "Start with nothing and build a million dollar fortune",
+    "startingCapital": 30000,
+    "loans": {
+        "amount": 100000,
+        "interest": 0.20,
+        "payments": 36
+    },
+    "economyAdjuster": {
+        "taxi": 1.5,
+        "repo": 2.0,
+        "delivery_parcel": 1.0,
+        "delivery_vehicle": 1.2,
+        "rally": 1.0,
+        "drift": 1.0,
+        "motorsport": 1.0
+    },
+    "winCondition": "reachTargetMoney",
+    "targetMoney":1000000
+}

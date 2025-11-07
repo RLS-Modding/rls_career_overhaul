@@ -7,6 +7,7 @@
       :partShoppingData="partShoppingStore.partShoppingData"
       :cart-data="cartData"
       :player-money="partShoppingStore.partShoppingData.playerMoney"
+      :cheats-mode="partShoppingStore.partShoppingData.cheatsMode"
       :apply="applyShopping"
       :cancel="confirmCancel"
       :confirm-button-text="'Confirm'"

@@ -37,6 +37,7 @@ import PhoneLoans from "./views/PhoneLoans.vue"
 import PhoneLoanDetails from "./views/PhoneLoanDetails.vue"
 import PhoneOfferDetails from "./views/PhoneOfferDetails.vue"
 import LevelSwitch from "./views/LevelSwitch.vue"
+import ChallengeComplete from "./views/ChallengeComplete.vue"
 
 export default [
   // Career Pause
@@ -395,6 +396,11 @@ export default [
         path: "level-switch",
         name: "level-switch",
         component: LevelSwitch
+      },
+      {
+        path: "challenge-completed",
+        name: "challenge-completed",
+        component: ChallengeComplete
       }
 
     ],

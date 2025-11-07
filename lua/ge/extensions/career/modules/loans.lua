@@ -82,18 +82,29 @@ local function getOutstandingPrincipalByOrg()
 local function getLoanOffers()
   local offers = {}
   local outstandingByOrg = getOutstandingPrincipalByOrg()
+
   for orgId, org in pairs(freeroam_organizations.getOrganizations()) do
     local level = org.reputationLevels[org.reputation.level + 2]
     if level and level.loans then
-      local l = level.loans
-      local available = math.max(0, (l.max or 0) - (outstandingByOrg[orgId] or 0))
-      table.insert(offers, {
-        id = orgId,
-        name = org.name or orgId,
-        max = available,
-        rate = l.rate,
-        terms = TERM_OPTIONS
-      })
+      local minLoanLevel = nil
+      for levelIdx, levelData in ipairs(org.reputationLevels) do
+        if levelData.loans then
+          minLoanLevel = levelIdx - 2
+          break
+        end
+      end
+      if minLoanLevel and org.reputation.level >= minLoanLevel then
+        local l = level.loans
+        local available = math.max(0, (l.max or 0) - (outstandingByOrg[orgId] or 0))
+        table.insert(offers, {
+          id = orgId,
+          name = org.name or orgId,
+          max = available,
+          rate = l.rate,
+          terms = TERM_OPTIONS
+        })
+      end
+    else
     end
   end
   table.sort(offers, function(a,b) return a.name < b.name end)
@@ -201,7 +212,7 @@ local function processDuePayments(elapsedSimSeconds)
           loan.secondsUntilNextPayment = loan.secondsUntilNextPayment + PAYMENT_INTERVAL_S
           awardOrgReputation(loan.orgId, 1, loan.orgName)
           -- Show payment success message
-          if notificationsEnabled and guihooks and guihooks.trigger then
+          if notificationsEnabled then
             guihooks.trigger("toastrMsg", {type="success", title="Loan Payment Made", msg="Successfully paid $" .. string.format("%.2f", needed) .. " to " .. (loan.orgName or loan.orgId)})
           end
         else
@@ -215,7 +226,7 @@ local function processDuePayments(elapsedSimSeconds)
           loan.secondsUntilNextPayment = loan.secondsUntilNextPayment + PAYMENT_INTERVAL_S
           awardOrgReputation(loan.orgId, -5, loan.orgName)
           -- Show payment missed message
-          if notificationsEnabled and guihooks and guihooks.trigger then
+          if notificationsEnabled then
             local capitalizedMsg = ""
             if interestDue > 0 then
               capitalizedMsg = " $" .. string.format("%.2f", interestDue) .. " interest added to principal."
@@ -224,6 +235,7 @@ local function processDuePayments(elapsedSimSeconds)
           end
         end
       end
+      career_saveSystem.saveCurrent()
     end
 
     if (loan.principalOutstanding or 0) <= 1e-6 then
@@ -231,23 +243,16 @@ local function processDuePayments(elapsedSimSeconds)
       local completedId = loan.id
       local completedOrg = loan.orgName or loan.orgId
       table.remove(activeLoans, i)
-      if guihooks and guihooks.trigger then
-        guihooks.trigger('loans:completed', { id = completedId, orgName = completedOrg })
-        if notificationsEnabled then
-          guihooks.trigger("toastrMsg", {type="success", title="Loan Paid Off", msg="Congratulations! Your loan with " .. completedOrg .. " has been fully paid off."})
-        end
+      guihooks.trigger('loans:completed', { id = completedId, orgName = completedOrg })
+      if notificationsEnabled then
+        guihooks.trigger("toastrMsg", {type="success", title="Loan Paid Off", msg="Congratulations! Your loan with " .. completedOrg .. " has been fully paid off."})
       end
     end
   end
-  if guihooks and guihooks.trigger then
-    local enriched = {}
-    for _, loan in ipairs(activeLoans) do table.insert(enriched, buildUiLoan(loan)) end
-    guihooks.trigger('loans:tick', enriched)
-  end
-  -- also broadcast current available funds for UI to cap inputs
-  if guihooks and guihooks.trigger and career_modules_playerAttributes then
-    guihooks.trigger('loans:funds', career_modules_playerAttributes.getAttributeValue('money'))
-  end
+  local enriched = {}
+  for _, loan in ipairs(activeLoans) do table.insert(enriched, buildUiLoan(loan)) end
+  guihooks.trigger('loans:tick', enriched)
+  guihooks.trigger('loans:funds', career_modules_playerAttributes.getAttributeValue('money'))
 end
 
 local function onUpdate(dtReal, dtSim, dtRaw)
@@ -259,20 +264,28 @@ local function onUpdate(dtReal, dtSim, dtRaw)
   end
 end
 
-local function takeLoan(orgId, amount, payments, rate)
+local function takeLoan(orgId, amount, payments, rate, uncapped)
   getLoanOrganizations()
   local org = freeroam_organizations.getOrganizations()[orgId]
   if not org then return {error = "invalid_org"} end
-  local level = org.reputationLevels[org.reputation.level + 2]
-  if not level or not level.loans then return {error = "no_offer"} end
-  local max = level.loans.max or 0
-  local baseRate = rate or (level.loans.rate or 0)
-  local outstandingByOrg = getOutstandingPrincipalByOrg()
-  local available = math.max(0, max - (outstandingByOrg[orgId] or 0))
-  if amount <= 0 or amount > available then return {error = "invalid_amount", max = available} end
-  local validTerm = false
-  for _, t in ipairs(TERM_OPTIONS) do if t == payments then validTerm = true break end end
-  if not validTerm then return {error = "invalid_term", terms = TERM_OPTIONS} end
+
+  local baseRate
+  if uncapped then
+    -- For uncapped loans, use provided rate or default to 0
+    baseRate = rate or 0
+  else
+    -- For regular loans, check organization level and loan limits
+    local level = org.reputationLevels[org.reputation.level + 2]
+    if not level or not level.loans then return {error = "no_offer"} end
+    local max = level.loans.max or 0
+    baseRate = rate or (level.loans.rate or 0)
+    local outstandingByOrg = getOutstandingPrincipalByOrg()
+    local available = math.max(0, max - (outstandingByOrg[orgId] or 0))
+    if amount <= 0 or amount > available then return {error = "invalid_amount", max = available} end
+  end
+
+  -- Basic amount validation for uncapped loans
+  if amount <= 0 then return {error = "invalid_amount", max = 0} end
 
   local perPayment, total = calculatePayment(amount, baseRate, payments)
   local basePayment = r2(amount / payments)
@@ -299,8 +312,6 @@ local function takeLoan(orgId, amount, payments, rate)
   end
   saveLoans()
 
-  career_saveSystem.saveCurrent()
-  -- Show loan taken message
   if guihooks and guihooks.trigger then
     if notificationsEnabled then
       guihooks.trigger("toastrMsg", {type="info", title="Loan Approved", msg="Received $" .. string.format("%.2f", amount) .. " loan from " .. (loan.orgName or loan.orgId) .. " at " .. string.format("%.1f", (loan.rate or 0) * 100) .. "% interest over " .. payments .. " payments."})
@@ -451,8 +462,37 @@ local function onExtensionLoaded()
   loadLoans()
 end
 
+local function onCareerActivated()
+  local _, currentSavePath = career_saveSystem.getCurrentSaveSlot()
+  if not currentSavePath then return end
+  
+  -- Check if loans file exists - if it does, load it; if not, initialize for new save
+  local loansFilePath = currentSavePath .. saveFile
+  if FS:fileExists(loansFilePath) then
+    -- Existing save - load loans
+    loadLoans()
+  else
+    -- New save - clear and initialize
+    activeLoans = {}
+    notificationsEnabled = true
+    log("I", "", "Loans: Initialized for new career")
+    saveLoans()
+  end
+end
+
+local function clearAllLoans()
+  -- Clear all existing loans (useful for challenges or resets)
+  local loanCount = #activeLoans
+  activeLoans = {}
+  notificationsEnabled = true -- Reset to default
+  log("I", "", "Loans: Cleared " .. loanCount .. " loans")
+  saveLoans()
+  return loanCount -- Return number of loans cleared
+end
+
 M.onSaveCurrentSaveSlot = onSaveCurrentSaveSlot
 M.onExtensionLoaded = onExtensionLoaded
+M.onCareerActivated = onCareerActivated
 M.onUpdate = onUpdate
 M.onComputerAddFunctions = onComputerAddFunctions
 
@@ -468,5 +508,6 @@ M.closeAllMenus = closeAllMenus
 M.getAvailableFunds = getAvailableFunds
 M.getNotificationsEnabled = getNotificationsEnabled
 M.setNotificationsEnabled = setNotificationsEnabled
+M.clearAllLoans = clearAllLoans
 
 return M

@@ -77,7 +77,7 @@
           <th class="price highlightCategory">{{ units.beamBucks(vehiclePurchaseStore.finalPackagePrice) }}</th>
         </tr>
 
-        <tr v-if="vehiclePurchaseStore.finalPackagePrice > vehiclePurchaseStore.playerMoney" class="moneyWarning">
+        <tr v-if="!canAffordPurchase" class="moneyWarning">
           <td class="article highlightCategory">Additional funds required</td>
           <td class="price highlightCategory">
             {{ units.beamBucks(vehiclePurchaseStore.finalPackagePrice - vehiclePurchaseStore.playerMoney) }}
@@ -129,7 +129,7 @@
 
         <BngButton
           :disabled="
-            vehiclePurchaseStore.finalPackagePrice > vehiclePurchaseStore.playerMoney ||
+            !canAffordPurchase ||
             !vehicleFitsInventory ||
             (vehiclePurchaseStore.forceTradeIn && !vehiclePurchaseStore.tradeInVehicleInfo.niceName) ||
             vehiclePurchaseStore.buyCustomLicensePlate && !licensePlateTextValid
@@ -141,7 +141,7 @@
             holdDelay: 500,
             repeatInterval: 0,
           }">
-          <div v-if="vehiclePurchaseStore.finalPackagePrice > vehiclePurchaseStore.playerMoney">Insufficient Funds</div>
+          <div v-if="!canAffordPurchase">Insufficient Funds</div>
           <div v-else-if="!vehicleFitsInventory">No free inventory slots</div>
           <div v-else>Purchase</div>
         </BngButton>
@@ -177,6 +177,11 @@ const selectedPolicyId = computed({
 
 const vehiclePurchaseStore = useVehiclePurchaseStore()
 const insurancePoliciesStore = useInsurancePoliciesStore()
+
+const canAffordPurchase = computed(() => {
+  if (vehiclePurchaseStore.cheatsMode) return true
+  return vehiclePurchaseStore.finalPackagePrice <= vehiclePurchaseStore.playerMoney
+})
 
 const isLicensePlateTextValid = (text) => {
   lua.career_modules_inventory.isLicensePlateValid(text).then(valid => {

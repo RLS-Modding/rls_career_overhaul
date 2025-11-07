@@ -1,0 +1,116 @@
+{
+  "0-100 km/h":23.2,
+  "0-60 mph":22.1,
+  "Body Style":"dnu",
+  "BoundingBox":[
+    [
+      -0.826,
+      -1.156,
+      -0.6904
+    ],
+    [
+      1.694,
+      4.299,
+      1.5796
+    ]
+  ],
+  "Config Type":"Loaner",
+  "Configuration":"Shuffleboard Pickup",
+  "Drivetrain":"RWD",
+  "Fuel Type":"Diesel",
+  "Induction Type":"Turbo",
+  "Name":"MD-Series Shuffleboard Pickup",
+  "Off-Road Score":39,
+  "Population":5000,
+  "Power":254,
+  "PowerPeakRPM":2400,
+  "Propulsion":"ICE",
+  "Source":"Custom",
+  "Top Speed":30.6372756123,
+  "Torque":815,
+  "TorquePeakRPM":"1350 - 1900",
+  "Transmission":"Manual",
+  "Value":80000,
+  "Weight":5740,
+  "Weight/Power":22.59842519685,
+  "aggregates":{
+    "0-100 km/h":{
+      "max":23.2,
+      "min":23.2
+    },
+    "0-60 mph":{
+      "max":22.1,
+      "min":22.1
+    },
+    "Brand":{
+      "Gavril":true
+    },
+    "Country":{
+      "United States":true
+    },
+    "Derby Class":{
+      "Medium Truck":true
+    },
+    "Drivetrain":{
+      "RWD":true
+    },
+    "Fuel Type":{
+      "Diesel":true
+    },
+    "Induction Type":{
+      "Turbo":true
+    },
+    "Off-Road Score":{
+      "max":39,
+      "min":39
+    },
+    "Propulsion":{
+      "ICE":true
+    },
+    "Source":{
+      "BeamNG - Official":true,
+      "Custom":true
+    },
+    "Top Speed":{
+      "max":30.605836002998,
+      "min":30.605836002998
+    },
+    "Transmission":{
+      "Manual":true
+    },
+    "Type":{
+      "Truck":true
+    },
+    "Weight":{
+      "max":5740,
+      "min":5740
+    },
+    "Weight/Power":{
+      "max":22.59842519685,
+      "min":22.59842519685
+    }
+  },
+  "defaultPaint":{
+    "baseColor":[
+      0.83,
+      0.83,
+      0.83,
+      1.2
+    ],
+    "class":"factory",
+    "clearcoat":0,
+    "clearcoatRoughness":0,
+    "id":"white",
+    "metallic":0,
+    "name":"White",
+    "roughness":0.07
+  },
+  "defaultPaintName1":"White",
+  "defaultPaintName2":"White",
+  "defaultPaintName3":"White",
+  "infoFilename":"/vehicles/md_series/info_md_career_shuffleboard_pickup.json",
+  "is_default_config":false,
+  "paints":{},
+  "pcFilename":"/vehicles/md_series/md_career_shuffleboard_pickup.pc",
+  "preview":"/vehicles/md_series/md_career_shuffleboard_pickup.jpg"
+}

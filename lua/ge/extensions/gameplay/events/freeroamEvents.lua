@@ -37,6 +37,8 @@ local initialVehicleDamage = 0
 local mInventoryId = nil
 local newBestSession = false
 
+local maxSpeed = 0
+
 local races = nil
 local isReplay = false
 
@@ -134,15 +136,17 @@ local function payoutRace()
 
     -- Calculate scores and rewards
     local driftScore = 0
-    if race.driftGoal then
+    if race.topSpeed then
+        reward = utils.topSpeedReward(race.topSpeedGoal, reward, maxSpeed, race.type)
+    elseif race.driftGoal then
         driftScore = getDriftScore()
         reward = utils.driftReward(races[mActiveRace], time, driftScore)
     elseif damageFactor > 0 then
-        reward = utils.hybridRaceReward(time, reward, in_race_time, damageFactor, damagePercentage)
+        reward = utils.hybridRaceReward(time, reward, in_race_time, damageFactor, damagePercentage, race.type)
     else
-        reward = utils.raceReward(time, reward, in_race_time)
+        reward = utils.raceReward(time, reward, in_race_time, race.type)
     end
-    print("reward: " .. reward)
+    print("Adjusted reward: " .. reward)
 
     -- Handle leaderboard
     local leaderboardEntry = leaderboardManager.getLeaderboardEntry(mInventoryId, raceLabel)
@@ -160,7 +164,8 @@ local function payoutRace()
         driftScore = driftScore,
         inventoryId = mInventoryId,
         damagePercentage = damagePercentage,
-        damageFactor = damageFactor
+        damageFactor = damageFactor,
+        topSpeed = maxSpeed
     }
 
     local newBest = leaderboardManager.addLeaderboardEntry(newEntry)
@@ -168,7 +173,16 @@ local function payoutRace()
     -- Build the base message that's shown regardless of career mode
     local message = invalidLap and "Lap Invalidated\n" or ""
 
-    if race.driftGoal then
+    if race.topSpeed then
+        message = message ..
+                      string.format("%s\nTop Speed: %.2f mph\nTime: %s", raceLabel, maxSpeed, utils.formatTime(in_race_time))
+        if oldTime then
+            local oldSpeed = leaderboardEntry and leaderboardEntry.topSpeed or 0
+            message = message ..
+                          string.format("\nPrevious Best Speed: %.2f mph\nPrevious Best Time: %s", oldSpeed,
+                    utils.formatTime(oldTime))
+        end
+    elseif race.driftGoal then
         message = message ..
                       string.format("%s\nDrift Score: %d\nTime: %s", raceLabel, driftScore,
                 utils.formatTime(in_race_time))
@@ -315,10 +329,12 @@ local function payoutDragRace(raceName, finishTime, finishSpeed, vehId)
     local baseReward = raceData.reward
 
     -- Calculate reward based on performance
-    local reward = utils.raceReward(targetTime, baseReward, finishTime)
+    local reward = utils.raceReward(targetTime, baseReward, finishTime, raceData.type)
     if reward <= 0 then
         reward = baseReward / 2 -- Minimum reward for completion
     end
+
+    print("Adjusted drag reward: " .. reward)
 
     reward = reward / (career_modules_hardcore.isHardcoreMode() and 2 or 1)
 
@@ -445,6 +461,7 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
         mAltRoute = false
         invalidLap = false
         mInventoryId = nil
+        maxSpeed = 0
         Assets:hideAllAssets()
         checkpointManager.removeCheckpoints()
 
@@ -559,6 +576,33 @@ local function onBeamNGTrigger(data)
             Assets:hideAllAssets()
             lapCount = 0
 
+            -- Check if ALL race types are disabled (only disable if every type is 0)
+            local allTypesDisabled = false
+            local disabledTypes = {}
+            if career_economyAdjuster and races[raceName].type then
+                local totalTypes = 0
+                local disabledCount = 0
+
+                for _, raceType in ipairs(races[raceName].type) do
+                    totalTypes = totalTypes + 1
+                    local multiplier = career_economyAdjuster.getEffectiveSectionMultiplier({raceType})
+                    if multiplier == 0 then
+                        disabledCount = disabledCount + 1
+                        table.insert(disabledTypes, raceType)
+                    end
+                end
+
+                -- Only disable if ALL types are disabled
+                allTypesDisabled = totalTypes > 0 and disabledCount == totalTypes
+            end
+
+            if allTypesDisabled then
+                -- Don't allow staging for disabled races
+                local typesString = table.concat(disabledTypes, ", ")
+                utils.displayMessage(string.format("%s is disabled due to %s multiplier(s) being set to 0.", races[raceName].label, typesString), 5)
+                return
+            end
+
             -- Initialize displays if drag race
             if raceName == "drag" then
                 utils.initDisplays()
@@ -591,6 +635,7 @@ local function onBeamNGTrigger(data)
                 end
             end
             initialVehicleDamage = utils.getVehicleDamage()
+            processRoad.setStationaryTimeout(races[raceName].timeout)
             checkpointManager.setRace(races[raceName], raceName)
             Assets:displayAssets(data)
             utils.playCheckpointSound()
@@ -603,6 +648,7 @@ local function onBeamNGTrigger(data)
             checkpointManager.setAltRoute(false)
             mAltRoute = false
             in_race_time = 0
+            maxSpeed = 0
             timerActive = true
             checkpointsHit = 0
             totalCheckpoints = checkpointManager.calculateTotalCheckpoints()
@@ -623,6 +669,7 @@ local function onBeamNGTrigger(data)
             Assets:displayAssets(data)
             timerActive = true
             in_race_time = 0
+            maxSpeed = 0
             mActiveRace = raceName
             lapCount = 0
             mInventoryId = career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId(data.subjectID) or data.subjectID
@@ -644,6 +691,7 @@ local function onBeamNGTrigger(data)
             if races[raceName].checkpointRoad then
                 -- Clear existing nodes and checkpoints
                 processRoad.reset()
+                processRoad.setStationaryTimeout(races[raceName].timeout)
                 local checkpoints, altCheckpoints = processRoad.getCheckpoints(races[raceName])
 
                 checkpointManager.createCheckpoints(checkpoints, altCheckpoints)
@@ -807,21 +855,20 @@ local function onExtensionUnloaded()
 end
 
 local function onUpdate(dtReal, dtSim, dtRaw)
-
-    -- This function updates the race time.
-    -- It increments the in_race_time if the timer is active.
-    --
-    -- Parameters:
-    --   dtReal (number): Real delta time.
-    --   dtSim (number): Simulated delta time.
-    --   dtRaw (number): Raw delta time.
     if mActiveRace and races[mActiveRace].checkpointRoad then
         if processRoad.checkPlayerOnRoad() == false then
-            exitRace(false) -- Cancellation due to going off road
+            exitRace(false)
         end
     end
     if timerActive == true then
         in_race_time = in_race_time + dtSim
+        local playerVehicleId = be:getPlayerVehicleID(0)
+        if playerVehicleId then
+            local currentSpeed = math.abs(be:getObjectVelocityXYZ(playerVehicleId)) * speedUnit
+            if currentSpeed > maxSpeed then
+                maxSpeed = currentSpeed
+            end
+        end
     else
         in_race_time = 0
     end

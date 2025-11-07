@@ -1,0 +1,55 @@
+{
+  "description":"Start small, think big. You’ve got $30,000 starting loan, a two-car garage in the suburbs, and a dream to build a reliable taxi or delivery service. No racing, no fame — just honest work, steady upgrades, and a growing fleet. Can you turn this humble hustle into a citywide transport empire and move to the Cul-da-sac House?",
+  "difficulty":"Medium",
+  "economyAdjuster":{
+    "apexRacing":0.25,
+    "crawl":0.25,
+    "criminal":0.25,
+    "delivery_cash":1.5,
+    "delivery_cement":1.5,
+    "delivery_dryBulk":1.5,
+    "delivery_fluid":1.5,
+    "delivery_parcel":1.5,
+    "delivery_trailer":1.5,
+    "delivery_vehicle":1.5,
+    "drag":0.25,
+    "drift":0.25,
+    "extremeMud":0.25,
+    "freeroam":0.25,
+    "motorsport":0.25,
+    "mud":0.25,
+    "offroad":0.25,
+    "oval":0.25,
+    "police":0.25,
+    "rally":0.25,
+    "repo":0.25,
+    "taxi":1.5,
+    "taxi_business":1.5,
+    "taxi_commuter":1.5,
+    "taxi_executive":1.5,
+    "taxi_family":1.5,
+    "taxi_luxury":1.5,
+    "taxi_party":1.5,
+    "taxi_standard":1.5,
+    "taxi_student":1.5,
+    "taxi_thrill":1.5,
+    "taxi_tourist":1.5
+  },
+  "id":"suburbanLife",
+  "loans":{
+    "amount":30000,
+    "interest":0.07,
+    "payments":24
+  },
+  "map":"west_coast_usa",
+  "name":"Suburban Life",
+  "startingCapital":30000,
+  "startingGarages":[
+    "horizonEstate"
+  ],
+  "targetGarages":[
+    "cul-de-sacGarage"
+  ],
+  "version":"1.0",
+  "winCondition":"ownSpecificGarage"
+}

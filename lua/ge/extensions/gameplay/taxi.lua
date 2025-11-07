@@ -1,5 +1,5 @@
 local M = {}
-M.dependencies = {'gameplay_sites_sitesManager', 'freeroam_facilities'}
+M.dependencies = {'gameplay_sites_sitesManager', 'freeroam_facilities', 'gameplay_walk'}
 
 -- ================================
 -- MODULE DEPENDENCIES
@@ -132,12 +132,12 @@ local function selectRandomPassengerType(valueMultiplier, availableSeats)
     local totalWeight = 0
     
     for typeKey, passengerType in pairs(passengerTypes) do
-        local seatsValid = (not availableSeats) or 
-                          (availableSeats >= (passengerType.seatRange[1] or 1) and 
+        local seatsValid = (not availableSeats) or
+                          (availableSeats >= (passengerType.seatRange[1] or 1) and
                            availableSeats <= (passengerType.seatRange[2] or 999))
-        
-        local valueValid = (not valueMultiplier) or 
-                          (valueMultiplier >= (passengerType.valueRange[1] or 0.0) and 
+
+        local valueValid = (not valueMultiplier) or
+                          (valueMultiplier >= (passengerType.valueRange[1] or 0.0) and
                            valueMultiplier <= (passengerType.valueRange[2] or 999.0))
 
         local ratingValid = true
@@ -169,45 +169,6 @@ local function selectRandomPassengerType(valueMultiplier, availableSeats)
     end
     
     return "STANDARD"
-end
-
--- ================================
--- DRIVER RATING SAVE/LOAD
--- ================================
-local function savePlayerRating(currentSavePath)
-    if not career_career or not career_career.isActive() then return end
-    if not currentSavePath then
-        local slot, path = career_saveSystem.getCurrentSaveSlot()
-        currentSavePath = path
-        if not currentSavePath then return end
-    end
-
-    local dirPath = currentSavePath .. "/career/rls_career"
-    if not FS:directoryExists(dirPath) then
-        FS:directoryCreate(dirPath)
-    end
-
-    local data = {
-        sum = ratingSum,
-        count = ratingCount,
-        average = playerRating
-    }
-    career_saveSystem.jsonWriteFileSafe(dirPath .. "/" .. ratingSaveFile, data, true)
-end
-
-local function loadPlayerRating()
-    if not career_career or not career_career.isActive() then return end
-    local slot, path = career_saveSystem.getCurrentSaveSlot()
-    if not path then return end
-    local filePath = path .. "/career/rls_career/" .. ratingSaveFile
-    local data = jsonReadFile(filePath) or {}
-    ratingSum = tonumber(data.sum or 0) or 0
-    ratingCount = tonumber(data.count or 0) or 0
-    if ratingCount > 0 then
-        playerRating = math.max(1.0, math.min(5.0, (ratingSum / ratingCount)))
-    else
-        playerRating = 5.0
-    end
 end
 
 local function registerPassengerType(key, passengerTypeData)
@@ -461,6 +422,40 @@ local function calculateSeatingCapacity()
     end
     return cyclePartsTree({currentVehiclePartsTree}, 0)
 end
+local function isTaxiDisabled()
+    local disabled = false
+    local reason = ""
+
+    -- Check if player is walking (highest priority)
+    if gameplay_walk and gameplay_walk.isWalking() then
+        disabled = true
+        reason = "Taxi service is not available while walking"
+        return disabled, reason
+    end
+
+    -- Check if taxi multiplier is 0
+    if career_economyAdjuster then
+        local taxiMultiplier = career_economyAdjuster.getSectionMultiplier("taxi") or 1.0
+        if taxiMultiplier == 0 then
+            disabled = true
+            reason = "Taxi multiplier is set to 0"
+        end
+    end
+
+    -- Check for active challenge that might disable taxi
+    if career_challengeModes and career_challengeModes.isChallengeActive() then
+        local activeChallenge = career_challengeModes.getActiveChallenge()
+        if activeChallenge then
+            -- Check if the challenge has economy adjuster settings that disable taxi
+            if activeChallenge.economyAdjuster and activeChallenge.economyAdjuster.taxi == 0 then
+                disabled = true
+                reason = string.format("Taxi is disabled due to '%s' Challenge", activeChallenge.name or "Unknown Challenge")
+            end
+        end
+    end
+
+    return disabled, reason
+end
 
 local function calculateCapacity(vehicleId)
     if not vehicleId then
@@ -474,8 +469,13 @@ local function calculateCapacity(vehicleId)
     end
     local seatingCapacity = calculateSeatingCapacity()
     availableSeats = seatingCapacity - 1
+    local taxiDisabled, disabledReason = isTaxiDisabled()
+
+    -- If taxi is disabled, override state to "disabled"
+    local effectiveState = taxiDisabled and "disabled" or state
+
     dataToSend = {
-        state = state,
+        state = effectiveState,
         currentFare = currentFare,
         availableSeats = availableSeats,
         vehicleMultiplier = vehicleMultiplier,
@@ -483,7 +483,9 @@ local function calculateCapacity(vehicleId)
         fareStreak = fareStreak,
         currentPassengerType = currentFare and currentFare.passengerTypeName or nil,
         playerRating = playerRating,
-        lastPassengerRating = lastPassengerRating
+        lastPassengerRating = lastPassengerRating,
+        taxiDisabled = taxiDisabled,
+        disabledReason = disabledReason
     }
     guihooks.trigger('updateTaxiState', dataToSend)
     return availableSeats
@@ -618,11 +620,28 @@ end
 local function calculateBaseFare(passengerCount, totalDistance, valueMultiplier, selectedPassengerType)
     local baseFare = 100 * (passengerCount ^ 0.5) * valueMultiplier * distanceMultiplier * selectedPassengerType.baseMultiplier
     baseFare = baseFare * (totalDistance / 1000)
-    
+
     if career_career and career_career.isActive() and career_modules_hardcore.isHardcoreMode() then
         baseFare = baseFare * 0.66
     end
-    
+
+    -- Apply economy adjuster multiplier for specific passenger type
+    if career_economyAdjuster then
+        -- Try specific passenger type multiplier first (e.g., "taxi_business")
+        local passengerTypeKey = string.format("taxi_%s", selectedPassengerType.name:lower())
+        local multiplier = career_economyAdjuster.getSectionMultiplier(passengerTypeKey) or 1.0
+
+        multiplier = multiplier * (career_economyAdjuster.getSectionMultiplier("taxi") or 1.0)
+
+        baseFare = baseFare * multiplier
+        baseFare = math.floor(baseFare + 0.5)
+
+        if multiplier ~= 1.0 then
+            print(string.format("Taxi: Applied %s multiplier %.2fx to %s passenger",
+                passengerTypeKey, multiplier, selectedPassengerType.name))
+        end
+    end
+
     return baseFare
 end
 
@@ -640,6 +659,12 @@ local function generateValueMultiplier()
 end
 
 local function generateJob()
+    local taxiDisabled, disabledReason = isTaxiDisabled()
+    if taxiDisabled then
+        print("Taxi is disabled: " .. disabledReason)
+        return false
+    end
+
     validPickupSpots = findValidPickupSpots()
     if not validPickupSpots or #validPickupSpots == 0 then
         print("No nearby pickup locations found!")
@@ -727,6 +752,12 @@ end
 -- JOB LIFECYCLE MANAGEMENT
 -- ================================
 startRide = function(fare)
+    local taxiDisabled, disabledReason = isTaxiDisabled()
+    if taxiDisabled then
+        print("Taxi is disabled: " .. disabledReason)
+        return
+    end
+
     if not fare and not currentFare then
         print("No fare provided and no current fare")
         return
@@ -813,8 +844,13 @@ local function completeRide()
         gameplay_phone.togglePhone("You completed a taxi fare! Open the phone to view your earnings.")
     end
 
+    local taxiDisabled, disabledReason = isTaxiDisabled()
+
+    -- If taxi is disabled, override state to "disabled"
+    local effectiveState = taxiDisabled and "disabled" or state
+
     dataToSend = {
-        state = state,
+        state = effectiveState,
         currentFare = currentFare,
         availableSeats = availableSeats,
         vehicleMultiplier = vehicleMultiplier,
@@ -822,7 +858,9 @@ local function completeRide()
         fareStreak = fareStreak,
         currentPassengerType = currentFare and currentFare.passengerTypeName or nil,
         playerRating = playerRating,
-        lastPassengerRating = lastPassengerRating
+        lastPassengerRating = lastPassengerRating,
+        taxiDisabled = taxiDisabled,
+        disabledReason = disabledReason
     }
     guihooks.trigger('updateTaxiState', dataToSend)
 
@@ -878,6 +916,13 @@ local function stopTaxiJob()
 end
 
 local function setAvailable()
+    local taxiDisabled, disabledReason = isTaxiDisabled()
+    if taxiDisabled then
+        print("Taxi is disabled: " .. disabledReason)
+        requestTaxiState()
+        return
+    end
+
     state = "ready"
     jobOfferTimer = 0
     jobOfferInterval = math.random(5, 45)
@@ -899,8 +944,13 @@ end
 
 requestTaxiState = function()
     prepareTaxiJob()
+    local taxiDisabled, disabledReason = isTaxiDisabled()
+
+    -- If taxi is disabled, override state to "disabled"
+    local effectiveState = taxiDisabled and "disabled" or state
+
     dataToSend = {
-        state = state,
+        state = effectiveState,
         currentFare = currentFare,
         availableSeats = availableSeats,
         vehicleMultiplier = vehicleMultiplier,
@@ -908,7 +958,9 @@ requestTaxiState = function()
         fareStreak = fareStreak,
         currentPassengerType = currentFare and currentFare.passengerTypeName or nil,
         playerRating = playerRating,
-        lastPassengerRating = lastPassengerRating
+        lastPassengerRating = lastPassengerRating,
+        taxiDisabled = taxiDisabled,
+        disabledReason = disabledReason
     }
     guihooks.trigger('updateTaxiState', dataToSend)
 end
@@ -947,8 +999,13 @@ local function update(_, dt)
             currentFare.startTime = os.time()
             currentFare.totalDistance = currentFare.totalDistance + dropoffDistance
             M.rideData = {}
+            local taxiDisabled, disabledReason = isTaxiDisabled()
+
+            -- If taxi is disabled, override state to "disabled"
+            local effectiveState = taxiDisabled and "disabled" or state
+
             dataToSend = {
-                state = state,
+                state = effectiveState,
                 currentFare = currentFare,
                 availableSeats = availableSeats,
                 vehicleMultiplier = vehicleMultiplier,
@@ -956,7 +1013,9 @@ local function update(_, dt)
             fareStreak = fareStreak,
             currentPassengerType = currentFare and currentFare.passengerTypeName or nil,
             playerRating = playerRating,
-            lastPassengerRating = lastPassengerRating
+            lastPassengerRating = lastPassengerRating,
+            taxiDisabled = taxiDisabled,
+            disabledReason = disabledReason
             }
             guihooks.trigger('updateTaxiState', dataToSend)
         end
@@ -975,29 +1034,52 @@ local function update(_, dt)
     end
 
     if state == "ready" then
+        local taxiDisabled, disabledReason = isTaxiDisabled()
+        if taxiDisabled then
+            -- If taxi becomes disabled while ready, update UI and stay in start state
+            print("Taxi became disabled: " .. disabledReason)
+            state = "start"
+            requestTaxiState()
+            return
+        end
+
         jobOfferTimer = jobOfferTimer + 1
         if jobOfferTimer >= jobOfferInterval then
-            state = "accept"
             local newFare = generateJob()
-            if not gameplay_phone.isPhoneOpen() then
-                print("Phone is not open, opening phone")
-                gameplay_phone.togglePhone("You have a new taxi fare! Open the phone to view the details.")
+            if newFare then
+                state = "accept"
+                if not gameplay_phone.isPhoneOpen() then
+                    print("Phone is not open, opening phone")
+                    gameplay_phone.togglePhone("You have a new taxi fare! Open the phone to view the details.")
+                end
+            else
+                -- If generateJob returned false (taxi disabled), reset timer
+                jobOfferTimer = 0
+                jobOfferInterval = math.random(5, 45)
             end
-            dataToSend = {
-                state = state,
-                currentFare = newFare,
-                availableSeats = availableSeats,
-                vehicleMultiplier = vehicleMultiplier,
-                cumulativeReward = cumulativeReward,
-                fareStreak = fareStreak,
-                currentPassengerType = newFare and newFare.passengerTypeName or nil,
-                playerRating = playerRating,
-                lastPassengerRating = lastPassengerRating
-            }
-            guihooks.trigger('updateTaxiState', dataToSend)
 
-            jobOfferTimer = 0
-            jobOfferInterval = math.random(5, 45)
+            if newFare then
+                local taxiDisabled, disabledReason = isTaxiDisabled()
+
+                -- If taxi is disabled, override state to "disabled"
+                local effectiveState = taxiDisabled and "disabled" or state
+
+                dataToSend = {
+                    state = effectiveState,
+                    currentFare = newFare,
+                    availableSeats = availableSeats,
+                    vehicleMultiplier = vehicleMultiplier,
+                    cumulativeReward = cumulativeReward,
+                    fareStreak = fareStreak,
+                    currentPassengerType = newFare and newFare.passengerTypeName or nil,
+                    playerRating = playerRating,
+                    lastPassengerRating = lastPassengerRating,
+                    taxiDisabled = taxiDisabled,
+                    disabledReason = disabledReason
+                }
+                guihooks.trigger('updateTaxiState', dataToSend)
+
+            end
         end
     end
 end
@@ -1033,15 +1115,22 @@ local function onVehicleSwitched()
         generateValueMultiplier()
     end
     
+    local taxiDisabled, disabledReason = isTaxiDisabled()
+
+    -- If taxi is disabled, override state to "disabled"
+    local effectiveState = taxiDisabled and "disabled" or state
+
     dataToSend = {
-        state = state,
+        state = effectiveState,
         currentFare = currentFare,
         availableSeats = availableSeats,
         vehicleMultiplier = vehicleMultiplier,
         cumulativeReward = cumulativeReward,
         fareStreak = fareStreak,
         playerRating = playerRating,
-        lastPassengerRating = lastPassengerRating
+        lastPassengerRating = lastPassengerRating,
+        taxiDisabled = taxiDisabled,
+        disabledReason = disabledReason
     }
     guihooks.trigger('updateTaxiState', dataToSend)
 end
@@ -1121,5 +1210,50 @@ M.getPassengerType = getPassengerType
 M.updateSensorData = updateSensorData
 M.returnPartsTree = returnPartsTree
 M.receiveSensorData = receiveSensorData
+
+-- Test function for individual passenger type multipliers
+M.testIndividualPassengerMultipliers = function()
+    print("\n=== TESTING INDIVIDUAL PASSENGER TYPE MULTIPLIERS ===")
+
+    -- Test with different passenger types
+    local testPassengers = {
+        {key = "BUSINESS", name = "Business", baseMultiplier = 0.75},
+        {key = "STANDARD", name = "Standard", baseMultiplier = 1.0},
+        {key = "VIP", name = "VIP", baseMultiplier = 1.5}
+    }
+
+    local testMultipliers = {0.5, 1.0, 1.5}
+    local testDistance = 5000 -- 5km
+    local testPassengersCount = 2
+    local testValueMultiplier = 1.0
+
+    for _, passengerType in ipairs(testPassengers) do
+        local passengerTypeKey = string.format("taxi_%s", passengerType.key:lower())
+        print(string.format("\n--- Testing %s passengers (base: %.1fx) ---", passengerType.name, passengerType.baseMultiplier))
+
+        for _, economyMult in ipairs(testMultipliers) do
+            -- Set the specific passenger type multiplier
+            if career_economyAdjuster then
+                career_economyAdjuster.setTypeMultiplier(passengerTypeKey, economyMult)
+            end
+
+            -- Calculate fare
+            local baseFare = calculateBaseFare(testPassengersCount, testDistance, testValueMultiplier, passengerType)
+            local totalMultiplier = passengerType.baseMultiplier * economyMult
+
+            print(string.format("  Economy %.1fx on %s: $%d (%.1fx total multiplier)",
+                economyMult, passengerTypeKey, baseFare, totalMultiplier))
+        end
+
+        -- Reset to default
+        if career_economyAdjuster then
+            career_economyAdjuster.setTypeMultiplier(passengerTypeKey, 1.0)
+        end
+    end
+
+    print("\n=== INDIVIDUAL PASSENGER TYPE MULTIPLIERS TEST COMPLETE ===")
+    print("💡 Each passenger type can now have its own economy multiplier!")
+    print("   This allows fine-tuned control over different passenger earnings")
+end
 
 return M

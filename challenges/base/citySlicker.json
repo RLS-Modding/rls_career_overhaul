@@ -1,0 +1,51 @@
+{
+  "description":"You decide to take the big step and purchase the Taxi Medallion. It promised better ride fare rates, but now you're having doubts after taking out a massive loan to buy it. Work your way out of debt and prove your self-doubt wrong!",
+  "difficulty":"Impossible",
+  "economyAdjuster":{
+    "apexRacing":0.25,
+    "crawl":0.25,
+    "criminal":0.25,
+    "delivery_cash":0.25,
+    "delivery_cement":0.25,
+    "delivery_dryBulk":0.25,
+    "delivery_fluid":0.25,
+    "delivery_parcel":0.25,
+    "delivery_trailer":0.25,
+    "delivery_vehicle":0.25,
+    "drift":0.25,
+    "extremeMud":0.25,
+    "freeroam":0.25,
+    "motorsport":0.25,
+    "mud":0.25,
+    "offroad":0.25,
+    "oval":0.25,
+    "rally":0.25,
+    "repo":0.25,
+    "taxi":3,
+    "taxi_business":2,
+    "taxi_commuter":3,
+    "taxi_executive":4,
+    "taxi_family":3,
+    "taxi_luxury":3,
+    "taxi_party":3,
+    "taxi_standard":2,
+    "taxi_student":2,
+    "taxi_thrill":1.5,
+    "taxi_tourist":5,
+    "topSpeed":0.25
+  },
+  "id":"citySlicker",
+  "loans":{
+    "amount":1000000,
+    "interest":0.15,
+    "payments":72
+  },
+  "map":"west_coast_usa",
+  "name":"City Slicker",
+  "startingCapital":15000,
+  "startingGarages":[
+    "chinatownGarageOverflow"
+  ],
+  "version":"1.0",
+  "winCondition":"payOffLoan"
+}
