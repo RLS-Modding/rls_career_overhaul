@@ -18,7 +18,8 @@ local facilityTypeToListName = {
   computer = "computers",
   privateSeller = "privateSellers",
   deliveryProvider = "deliveryProviders",
-  dragstrip = "dragstrips"
+  dragstrip = "dragstrips",
+  tuningShop = "tuningShops"
 }
 
 local facilityTypeToUiLabelSingular = {
@@ -28,7 +29,8 @@ local facilityTypeToUiLabelSingular = {
   computer = "Computer",
   privateSeller = "Private Seller",
   deliveryProvider = "Delivery Provider",
-  dragstrip = "Drag Strip"
+  dragstrip = "Drag Strip",
+  tuningShop = "Tuning Shop"
 }
 
 
@@ -353,6 +355,13 @@ local facilityPoiDefaults = {
     quickTravelAvailable = false,
     clusterType = 'walkingMarker',
   },
+  tuningShop = {
+    clusterInBigMap = true,
+    clusterInPlayMode = false,
+    interactableInPlayMode = true,
+    quickTravelAvailable = false,
+    clusterType = 'walkingMarker',
+  },
 }
 
 M.zoneMarkerFormatFacility = function(f, elements, bigMapIcon)
@@ -443,6 +452,11 @@ local function onGetRawPoiListForLevel(levelIdentifier, elements)
   for i, dragstrip in ipairs(facilities.dragstrips or {}) do
     M.walkingMarkerFormatFacility(dragstrip, elements)
   end
+  if career_career.isActive() then
+    for i, tuningShop in ipairs(facilities.tuningShops or {}) do
+      M.walkingMarkerFormatFacility(tuningShop, elements)
+    end
+  end
 end
 M.onGetRawPoiListForLevel = onGetRawPoiListForLevel
 
@@ -512,6 +526,27 @@ local function onActivityAcceptGatherData(elemData, activityData)
         data.buttonLabel = "View History"
         data.buttonFun = function() gameplay_drag_freeroamDragStrip.openHistoryScreen(elem.facility) end
 
+        table.insert(activityData, data)
+      end
+      if elem.type == "tuningShop" then
+        data.props = {}
+        for _, prop in ipairs(elem.facility.activityAcceptProps or {}) do
+          table.insert(data.props,{
+            icon = prop.icon or "checkmark",
+            keyLabel = prop.keyLabel,
+            valueLabel = prop.valueLabel,
+          })
+        end
+        data.buttonLabel = career_modules_business_businessManager.isPurchasedBusiness("tuningShop", elem.facility.id) and "Open Tuning Shop" or "Purchase Business"
+        data.buttonFun = function()
+          if career_career.isActive() then
+            if not career_modules_business_businessManager.isPurchasedBusiness("tuningShop", elem.facility.id) then
+              career_modules_business_businessManager.showPurchaseBusinessPrompt("tuningShop", elem.facility.id)
+            else
+              career_modules_business_businessManager.openBusinessMenu("tuningShop", elem.facility.id)
+            end
+          end
+        end
         table.insert(activityData, data)
       end
     end

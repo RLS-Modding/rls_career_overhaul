@@ -1,6 +1,6 @@
 local M = {}
 
-M.dependencies = {'util_configListGenerator', 'career_career'}
+M.dependencies = {'util_configListGenerator', 'career_career', 'career_modules_business_businessManager'}
 
 local raceData = nil
 local raceDataLevel = nil
@@ -139,12 +139,29 @@ local function clearJobs()
   jobIdCounter = 0
 end
 
+local function openMenu(businessId)
+  log("D", "TuningShop", "Opening menu for business: " .. tostring(businessId))
+end
+
+-- Register tuning shop callbacks with business manager
+function M.onCareerActivated()
+  career_modules_business_businessManager.registerBusinessCallback("tuningShop", {
+    onPurchase = function(businessId)
+      log("D", "TuningShop", "Tuning shop purchased: " .. tostring(businessId))
+    end,
+    onMenuOpen = function(businessId)
+      openMenu(businessId)
+    end
+  })
+end
+
 M.powerToWeightToTime = powerToWeightToTime
 M.generateJob = generateJob
 M.getJobs = getJobs
 M.clearJobs = clearJobs
 M.getFactoryConfigs = getFactoryConfigs
 M.loadRaceData = loadRaceData
+M.openMenu = openMenu
 
 return M
 
