@@ -114,6 +114,9 @@ local function addLeaderboardEntry(entry)
     if career_career and career_career.isActive() then
         career_modules_inventory.saveFRETimeToVehicle(entry.raceLabel, entry.inventoryId, entry.time, entry.driftScore)
     end
+    
+    gameplay_events_freeroam_dataCollection.collectDataFromEntry(entry)
+    
     if not leaderboard then
         leaderboard = {}
     end

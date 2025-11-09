@@ -66,6 +66,7 @@
       "displaySpeed":true,
       "label":"Drag Strip",
       "reward":1650,
+      "predictCoef":{ "a": -3.1197, "b": 9.9079, "c": 0.2978 },
       "type":[
         "drag"
       ]
@@ -507,6 +508,7 @@
         "checkpointRoad":"trackalt",
         "hotlap":85,
         "label":"Short Track",
+        "predictCoef": { "a": 53.8287, "b": 15.0958, "c": 0.4576 },
         "mergeCheckpoints":[
           1,
           10
@@ -523,6 +525,7 @@
       "label":"Track",
       "reward":2000,
       "runningStart":true,
+      "predictCoef": { "a": 84.7006, "b": 15.9663, "c": 0.5826 },
       "type":[
         "apexRacing"
       ]
