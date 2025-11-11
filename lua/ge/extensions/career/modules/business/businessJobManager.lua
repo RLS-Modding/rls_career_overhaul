@@ -1,6 +1,6 @@
 local M = {}
 
-M.dependencies = {'career_career', 'career_saveSystem', 'career_modules_business_businessInventory', 'career_modules_payment'}
+M.dependencies = {'career_career', 'career_saveSystem', 'career_modules_business_businessInventory', 'career_modules_payment', 'career_modules_bank'}
 
 local jobGenerators = {}
 local businessJobs = {}
@@ -210,14 +210,22 @@ local function abandonJob(businessId, jobId)
   local penalty = math.floor(reward * 0.5)
   
   local price = { money = { amount = penalty, canBeNegative = false } }
-  local canPay = career_modules_payment.canPay(price)
+  
+  local businessAccount = nil
+  if career_modules_bank then
+    local businessType = job.businessType or "tuningShop"
+    businessAccount = career_modules_bank.getBusinessAccount(businessType, businessId)
+  end
+  
+  local accountId = businessAccount and businessAccount.id or nil
+  local canPay = career_modules_payment.canPay(price, accountId)
   
   if not canPay then
-    log("W", "businessJobManager", "abandonJob: Player cannot afford penalty of " .. tostring(penalty))
+    log("W", "businessJobManager", "abandonJob: Business account cannot afford penalty of " .. tostring(penalty))
     return false
   end
   
-  local success = career_modules_payment.pay(price, { label = "Abandoned job penalty", tags = {"jobAbandonment", "penalty"} })
+  local success = career_modules_payment.pay(price, { label = "Abandoned job penalty", tags = {"jobAbandonment", "penalty"} }, accountId)
   if not success then
     log("W", "businessJobManager", "abandonJob: Failed to charge penalty")
     return false

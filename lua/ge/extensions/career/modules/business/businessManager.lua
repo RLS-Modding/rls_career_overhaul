@@ -1,6 +1,6 @@
 local M = {}
 
-M.dependencies = {'career_career', 'freeroam_facilities', 'career_modules_payment', 'career_modules_playerAttributes', 'career_saveSystem'}
+M.dependencies = {'career_career', 'freeroam_facilities', 'career_modules_payment', 'career_modules_playerAttributes', 'career_saveSystem', 'career_modules_bank'}
 
 -- Track purchased businesses by business type and ID
 -- Structure: purchasedBusinesses[businessType][businessId] = true
@@ -52,6 +52,13 @@ local function addPurchasedBusiness(businessType, businessId)
   end
   purchasedBusinesses[businessType][businessId] = true
   savePurchasedBusinesses()
+  
+  -- Create business account
+  if career_modules_bank then
+    local business = freeroam_facilities.getFacility(businessType, businessId)
+    local businessName = business and business.name or (businessType .. " " .. businessId)
+    career_modules_bank.createBusinessAccount(businessType, businessId, businessName)
+  end
   
   -- Call business-specific callback if registered
   if businessCallbacks[businessType] and businessCallbacks[businessType].onPurchase then

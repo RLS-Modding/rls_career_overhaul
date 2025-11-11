@@ -6,10 +6,23 @@ local M = {}
 
 M.dependencies = {'career_career'}
 
-local function canPay(price)
+local function canPay(price, accountId)
   if career_modules_cheats and career_modules_cheats.isCheatsMode() then
     return true
   end
+  
+  if accountId and career_modules_bank then
+    local accountBalance = career_modules_bank.getAccountBalance(accountId)
+    for currency, info in pairs(price) do
+      if currency == "money" then
+        if not info.canBeNegative and accountBalance < info.amount then
+          return false
+        end
+      end
+    end
+    return true
+  end
+  
   for currency, info in pairs(price) do
     if not info.canBeNegative and career_modules_playerAttributes.getAttributeValue(currency) < info.amount then
       return false
@@ -18,11 +31,16 @@ local function canPay(price)
   return true
 end
 
-local function pay(price, reason)
-  if not canPay(price) then return false end
+local function pay(price, reason, accountId)
+  if not canPay(price, accountId) then return false end
   if career_modules_cheats and career_modules_cheats.isCheatsMode() then
     return true
   end
+  
+  if accountId and career_modules_bank then
+    return career_modules_bank.payFromAccount(price, accountId)
+  end
+  
   local change = {}
   for currency, info in pairs(price) do
     change[currency] = -info.amount
@@ -31,8 +49,11 @@ local function pay(price, reason)
   return true
 end
 
-
-local function reward(price, reason, fullReward)
+local function reward(price, reason, fullReward, accountId)
+  if accountId and career_modules_bank then
+    return career_modules_bank.rewardToAccount(price, accountId)
+  end
+  
   local change = {}
   for currency, info in pairs(price) do
     change[currency] = info.amount

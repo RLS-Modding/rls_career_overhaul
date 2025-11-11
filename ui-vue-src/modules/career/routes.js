@@ -37,6 +37,9 @@ import PhoneRepo from "./views/PhoneRepo.vue"
 import PhoneLoans from "./views/PhoneLoans.vue"
 import PhoneLoanDetails from "./views/PhoneLoanDetails.vue"
 import PhoneOfferDetails from "./views/PhoneOfferDetails.vue"
+import PhoneBank from "./views/PhoneBank.vue"
+import PhoneBankAccount from "./views/PhoneBankAccount.vue"
+import PhoneBankRename from "./views/PhoneBankRename.vue"
 import LevelSwitch from "./views/LevelSwitch.vue"
 import ChallengeComplete from "./views/ChallengeComplete.vue"
 import BusinessComputerMain from "./views/BusinessComputerMain.vue"
@@ -397,6 +400,26 @@ export default [
         path: "phone-loan-offer/:orgId",
         name: "phone-offer-details",
         component: PhoneOfferDetails,
+        props: true
+      },
+
+      {
+        path: "phone-bank",
+        name: "phone-bank",
+        component: PhoneBank
+      },
+
+      {
+        path: "phone-bank/:accountId",
+        name: "phone-bank-account",
+        component: PhoneBankAccount,
+        props: true
+      },
+
+      {
+        path: "phone-bank/:accountId/rename",
+        name: "phone-bank-rename",
+        component: PhoneBankRename,
         props: true
       },
 

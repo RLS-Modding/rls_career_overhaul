@@ -38,7 +38,7 @@
 import { useEvents } from '@/services/events'
 import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { vBngOnUiNav } from "@/common/directives"
-import { useRouter, useRoute, onBeforeRouteUpdate } from 'vue-router'
+import { useRouter, useRoute, onBeforeRouteUpdate, onBeforeRouteLeave } from 'vue-router'
 import { lua } from "@/bridge"
 
 const props = defineProps({
@@ -121,21 +121,39 @@ onBeforeRouteUpdate((to, from) => {
   }
 })
 
+// Handle route leave - check if we're going to another phone route
+onBeforeRouteLeave((to, from) => {
+  // If going to another phone route, keep phone visible
+  if (isPhoneRoute(to.name)) {
+    sessionStorage.setItem('phoneVisible', 'true')
+    // Don't animate down - phone stays visible
+    return true // Allow navigation
+  } else {
+    // Going to non-phone route - animate down
+    if (phoneRef.value && isEntered.value) {
+      isEntered.value = false
+      // Wait for animation before allowing navigation
+      return new Promise(resolve => {
+        setTimeout(() => {
+          sessionStorage.removeItem('phoneVisible')
+          resolve(true)
+        }, 400)
+      })
+    }
+    sessionStorage.removeItem('phoneVisible')
+    return true
+  }
+})
+
 onUnmounted(async () => {
-  // Check if we're navigating to another phone route
+  // Cleanup - animation is handled by onBeforeRouteLeave
+  // Only clean up if we're actually leaving phone routes (not navigating between them)
   const nextRoute = router.currentRoute.value
   const isNavigatingToPhoneRoute = isPhoneRoute(nextRoute.name)
   
   if (!isNavigatingToPhoneRoute) {
-    // Only animate down if we're not going to another phone route
-    if (phoneRef.value && isEntered.value) {
-      isEntered.value = false
-      await new Promise(resolve => setTimeout(resolve, 400))
-    }
+    // Already handled by onBeforeRouteLeave, but ensure cleanup
     sessionStorage.removeItem('phoneVisible')
-  } else {
-    // Keep phone visible for next route
-    sessionStorage.setItem('phoneVisible', 'true')
   }
 })
 
@@ -151,15 +169,8 @@ const close = async () => {
   lua.career_career.closeAllMenus()
 }
 
-const back = async () => {
-  // Check if we're going back to another phone route
-  const historyState = window.history.state
-  // Animate phone down before navigating back (unless going to another phone route)
-  if (phoneRef.value && isEntered.value) {
-    isEntered.value = false
-    // Wait for animation to complete before navigating
-    await new Promise(resolve => setTimeout(resolve, 400))
-  }
+const back = () => {
+  // Just navigate back - let onBeforeRouteLeave handle the animation logic
   router.back()
 }
 

@@ -1241,6 +1241,21 @@ export default {
     canPay: price => Object,
   },
 
+  career_modules_bank: {
+    createAccount: (name, accountType, initialDeposit) => [String, String, Number],
+    deleteAccount: accountId => String,
+    renameAccount: (accountId, newName) => [String, String],
+    deposit: (accountId, amount) => [String, Number],
+    withdraw: (accountId, amount) => [String, Number],
+    transfer: (fromAccountId, toAccountId, amount) => [String, String, Number],
+    getAccounts: () => {},
+    getAccountBalance: accountId => String,
+    getBusinessAccount: (businessType, businessId) => [String, String],
+    getPendingTransfers: () => {},
+    cancelPendingTransfer: transferId => String,
+    getAccountTransactions: (accountId, limit) => [String, Number],
+  },
+
   career_modules_switchMap: {
     switchMap: (level) => {}
   }

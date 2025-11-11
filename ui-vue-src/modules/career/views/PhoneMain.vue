@@ -32,6 +32,7 @@ const router = useRouter()
 
 const apps = [
   { name: 'Loans', icon: icons.beamCurrency, route: '/career/phone-loans', color: '#5a8dee', iconColor: '#ffffff' },
+  { name: 'Bank', icon: icons.beamCurrency, route: '/career/phone-bank', color: '#10b981', iconColor: '#ffffff' },
   { name: 'Marketplace', icon: icons.shoppingCart, route: '/career/phone-marketplace', color: '#228B22', iconColor: '#ffffff' },
   { name: 'Car Meet', icon: icons.cars, route: '/career/car-meets-phone', color: '#696969', iconColor: '#ffffff' },
   { name: 'Repo', icon: icons.tow, route: '/career/phone-repo', color: '#1E90FF', iconColor: '#ffffff' },
