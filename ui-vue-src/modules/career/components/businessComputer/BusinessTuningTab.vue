@@ -12,53 +12,98 @@
       
       <!-- Content - Only show when not loading -->
       <div v-else class="tuning-content-wrapper">
+        <div class="search-section">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Search tuning options"
+            class="search-input"
+            @focus="onSearchFocus"
+            @blur="onSearchBlur"
+            @keydown.enter.stop="triggerSearch"
+            @keydown.stop @keyup.stop @keypress.stop
+            v-bng-text-input
+            :disabled="loading"
+          />
+          <button
+            v-if="searchQuery.length > 0"
+            @click="clearSearch"
+            class="clear-search-button"
+            type="button"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        
         <div class="tuning-scrollable">
-          <div v-if="buckets.length === 0" class="no-tuning-data">
-            <p>No tuning options available for this vehicle.</p>
+          <div v-if="filteredBuckets.length === 0" class="no-tuning-data">
+            <p v-if="activeSearchQuery">No tuning options found matching "{{ activeSearchQuery }}"</p>
+            <p v-else>No tuning options available for this vehicle.</p>
           </div>
           
-          <div v-for="category in buckets" :key="category.name" class="tuning-section">
-            <div class="section-header">
+          <div v-for="category in filteredBuckets" :key="category.name" class="tuning-section">
+            <button class="section-header" @click="toggleSection(category.name)">
               <h3>{{ category.name }}</h3>
-            </div>
-            <div class="section-content">
-              <div v-for="subCategory in category.items" :key="subCategory.name" class="subcategory-group">
-                <h4 v-if="subCategory.name !== 'Other' && subCategory.name" class="subcategory-heading">
-                  {{ subCategory.name }}
-                </h4>
-                <div class="slider-control" v-for="varData in subCategory.items" :key="varData.name">
-                  <label>{{ varData.title }}</label>
-                  <div class="slider-wrapper">
-                    <input 
-                      type="range" 
-                      v-model.number="varData.valDis"
-                      :min="varData.minDis ?? 0"
-                      :max="varData.maxDis ?? 100"
-                      :step="getStepValue(varData)"
-                      class="slider"
-                      :style="getSliderStyle(varData)"
-                      @input="onTuningChange(varData.name, varData.valDis)"
-                      :disabled="isSliderDisabled(varData)"
-                    />
-                    <input 
-                      type="number"
-                      v-model.number="varData.displayValue"
-                      :min="getDisplayMin(varData)"
-                      :max="getDisplayMax(varData)"
-                      :step="getDisplayStep(varData)"
-                      class="value-input"
-                      @input="onValueInput(varData)"
-                      @focus="onValueFocus"
-                      @blur="onValueBlur(varData)"
-                      @keydown.stop @keyup.stop @keypress.stop
-                      v-bng-text-input
-                      :disabled="isSliderDisabled(varData)"
-                    />
-                    <span v-if="varData.unit" class="value-unit">{{ varData.unit === 'percent' ? '%' : varData.unit }}</span>
+              <svg 
+                class="chevron-icon" 
+                width="20" 
+                height="20" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                stroke-width="2"
+                :class="{ rotated: !isSectionCollapsed(category.name) }"
+              >
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </button>
+            <transition name="section-collapse">
+              <div v-if="!isSectionCollapsed(category.name)" class="section-content">
+                <div v-for="subCategory in category.items" :key="subCategory.name" class="subcategory-group">
+                  <h4 v-if="subCategory.name !== 'Other' && subCategory.name" class="subcategory-heading">
+                    {{ subCategory.name }}
+                  </h4>
+                  <div class="slider-control" v-for="varData in subCategory.items" :key="varData.name">
+                    <label>{{ varData.title }}</label>
+                    <div class="slider-wrapper">
+                      <input 
+                        type="range" 
+                        v-model.number="varData.valDis"
+                        :min="varData.minDis ?? 0"
+                        :max="varData.maxDis ?? 100"
+                        :step="getStepValue(varData)"
+                        class="slider"
+                        :style="getSliderStyle(varData)"
+                        @input="onTuningChange(varData.name, varData.valDis)"
+                        :disabled="isSliderDisabled(varData)"
+                      />
+                      <input 
+                        type="number"
+                        v-model.number="varData.displayValue"
+                        :min="getDisplayMin(varData)"
+                        :max="getDisplayMax(varData)"
+                        :step="getDisplayStep(varData)"
+                        class="value-input"
+                        @input="onValueInput(varData)"
+                        @focus="onValueFocus"
+                        @blur="onValueBlur(varData)"
+                        @keydown.stop @keyup.stop @keypress.stop
+                        v-bng-text-input
+                        :disabled="isSliderDisabled(varData)"
+                      />
+                      <span v-if="varData.unit" class="value-unit">{{ varData.unit === 'percent' ? '%' : varData.unit }}</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </transition>
           </div>
         </div>
 
@@ -89,10 +134,87 @@ const store = useBusinessComputerStore()
 const events = useEvents()
 
 const liveUpdates = ref(false)
-const loading = ref(true) // Start with loading = true to show loading message immediately
+const loading = ref(true)
 const tuningVariables = ref({})
 const originalTuningVariables = ref({})
 const buckets = ref([])
+const collapsedSections = ref({})
+const searchQuery = ref("")
+const activeSearchQuery = ref("")
+
+const onSearchFocus = () => {
+  try { lua.setCEFTyping(true) } catch (_) {}
+}
+
+const onSearchBlur = () => {
+  try { triggerSearch() } catch (_) {}
+  try { lua.setCEFTyping(false) } catch (_) {}
+}
+
+const triggerSearch = () => {
+  activeSearchQuery.value = searchQuery.value.trim()
+  if (activeSearchQuery.value.length > 0) {
+    filteredBuckets.value.forEach(bucket => {
+      collapsedSections.value[bucket.name] = false
+    })
+  }
+}
+
+const clearSearch = () => {
+  searchQuery.value = ""
+  activeSearchQuery.value = ""
+  try { lua.setCEFTyping(false) } catch (_) {}
+}
+
+const hasActiveSearch = computed(() => activeSearchQuery.value.length > 0)
+
+const filteredBuckets = computed(() => {
+  if (!hasActiveSearch.value) {
+    return buckets.value
+  }
+  
+  const query = activeSearchQuery.value.toLowerCase()
+  const filtered = []
+  
+  buckets.value.forEach(bucket => {
+    const matchingSubCategories = []
+    
+    bucket.items.forEach(subCategory => {
+      const matchingItems = subCategory.items.filter(item => {
+        const title = (item.title || item.name || '').toLowerCase()
+        return title.includes(query)
+      })
+      
+      if (matchingItems.length > 0) {
+        matchingSubCategories.push({
+          ...subCategory,
+          items: matchingItems.sort((a, b) => {
+            const titleA = (a.title || a.name || '').toLowerCase()
+            const titleB = (b.title || b.name || '').toLowerCase()
+            return titleA.localeCompare(titleB)
+          })
+        })
+      }
+    })
+    
+    if (matchingSubCategories.length > 0) {
+      filtered.push({
+        ...bucket,
+        items: matchingSubCategories.sort((a, b) => a.name.localeCompare(b.name))
+      })
+    }
+  })
+  
+  return filtered.sort((a, b) => a.name.localeCompare(b.name))
+})
+
+const toggleSection = (sectionName) => {
+  collapsedSections.value[sectionName] = !collapsedSections.value[sectionName]
+}
+
+const isSectionCollapsed = (sectionName) => {
+  return collapsedSections.value[sectionName] === true
+}
 
 // Organize tuning variables into buckets (categories) with subcategories
 const organizeTuningData = (tuningData) => {
@@ -146,10 +268,17 @@ const organizeTuningData = (tuningData) => {
     })
   }
   
-  // Sort buckets and subcategories
+  // Sort buckets, subcategories, and items alphabetically
   bucketsArray.sort((a, b) => a.name.localeCompare(b.name))
   bucketsArray.forEach(bucket => {
     bucket.items.sort((a, b) => a.name.localeCompare(b.name))
+    bucket.items.forEach(subCategory => {
+      subCategory.items.sort((a, b) => {
+        const titleA = (a.title || a.name || '').toLowerCase()
+        const titleB = (b.title || b.name || '').toLowerCase()
+        return titleA.localeCompare(titleB)
+      })
+    })
   })
   
   return bucketsArray
@@ -506,6 +635,72 @@ onBeforeUnmount(() => {
   flex-direction: column;
   height: 100%;
   overflow: hidden;
+  gap: 1rem;
+}
+
+.search-section {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  
+  .search-icon {
+    position: absolute;
+    left: 0.75em;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.4);
+    width: 1em;
+    height: 1em;
+    pointer-events: none;
+    z-index: 1;
+  }
+  
+  .search-input {
+    width: 100%;
+    padding: 0.75em 1em 0.75em 2.5em;
+    background: rgba(23, 23, 23, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.25em;
+    color: white;
+    font-size: 0.875em;
+    
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+    
+    &:focus {
+      outline: none;
+      border-color: rgba(245, 73, 0, 0.5);
+      padding-right: 2.5em;
+    }
+  }
+  
+  .clear-search-button {
+    position: absolute;
+    right: 0.5em;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.25em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.5);
+    transition: color 0.2s;
+    z-index: 1;
+    
+    &:hover {
+      color: rgba(255, 255, 255, 0.8);
+    }
+    
+    svg {
+      width: 1em;
+      height: 1em;
+    }
+  }
 }
 
 .tuning-scrollable {
@@ -546,9 +741,20 @@ onBeforeUnmount(() => {
 }
 
 .section-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 1rem 1.5rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(23, 23, 23, 0.3);
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+  
+  &:hover {
+    background: rgba(23, 23, 23, 0.5);
+  }
   
   h3 {
     margin: 0;
@@ -556,10 +762,47 @@ onBeforeUnmount(() => {
     font-size: 1.125rem;
     font-weight: 600;
   }
+  
+  .chevron-icon {
+    color: rgba(255, 255, 255, 0.4);
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+    
+    &.rotated {
+      transform: rotate(180deg);
+    }
+  }
 }
 
 .section-content {
   padding: 1.5rem;
+  overflow: hidden;
+}
+
+.section-collapse-enter-active,
+.section-collapse-leave-active {
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+  overflow: hidden;
+}
+
+.section-collapse-enter-from {
+  max-height: 0;
+  opacity: 0;
+}
+
+.section-collapse-enter-to {
+  max-height: 2000px;
+  opacity: 1;
+}
+
+.section-collapse-leave-from {
+  max-height: 2000px;
+  opacity: 1;
+}
+
+.section-collapse-leave-to {
+  max-height: 0;
+  opacity: 0;
 }
 
 .subcategory-group {

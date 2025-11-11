@@ -1,6 +1,6 @@
 <template>
   <div class="business-computer-wrapper">
-    <BngCard v-if="!store.loading" class="business-computer-container" :class="{ 'vehicle-view': store.vehicleView === 'parts' || store.vehicleView === 'tuning', 'collapsed': isVehicleViewCollapsed && (store.vehicleView === 'parts' || store.vehicleView === 'tuning') }" v-bng-blur>
+    <BngCard v-if="!store.loading" class="business-computer-container" :class="{ 'vehicle-view': store.vehicleView === 'parts' || store.vehicleView === 'tuning', 'collapsed': isVehicleViewCollapsed && (store.vehicleView === 'parts' || store.vehicleView === 'tuning') }" v-bng-blur ref="containerRef">
       <div class="main-header" :class="{ 'collapsed': isVehicleViewCollapsed && (store.vehicleView === 'parts' || store.vehicleView === 'tuning') }">
         <h1>{{ store.vehicleView === 'parts' ? 'Parts Customization' : store.vehicleView === 'tuning' ? 'Tuning' : store.businessName }}</h1>
         <div class="header-actions">
@@ -138,17 +138,21 @@
           </div>
         </main>
 
-        <div v-if="store.vehicleView === 'parts' && store.pulledOutVehicle && !isVehicleViewCollapsed" class="parts-panel">
-          <div class="content-body">
-            <BusinessPartsCustomizationTab />
+        <transition name="panel-collapse">
+          <div v-if="store.vehicleView === 'parts' && store.pulledOutVehicle && !isVehicleViewCollapsed" class="parts-panel">
+            <div class="content-body">
+              <BusinessPartsCustomizationTab />
+            </div>
           </div>
-        </div>
+        </transition>
 
-        <div v-else-if="store.vehicleView === 'tuning' && store.pulledOutVehicle && !isVehicleViewCollapsed" class="tuning-panel">
-          <div class="content-body">
-            <BusinessTuningTab />
+        <transition name="panel-collapse">
+          <div v-if="store.vehicleView === 'tuning' && store.pulledOutVehicle && !isVehicleViewCollapsed" class="tuning-panel">
+            <div class="content-body">
+              <BusinessTuningTab />
+            </div>
           </div>
-        </div>
+        </transition>
       </div>
     </BngCard>
     
@@ -159,7 +163,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue"
+import { ref, onMounted, onUnmounted, watch, nextTick } from "vue"
 import { useBusinessComputerStore } from "../stores/businessComputerStore"
 import BusinessHomeView from "../components/businessComputer/BusinessHomeView.vue"
 import BusinessActiveJobsTab from "../components/businessComputer/BusinessActiveJobsTab.vue"
@@ -180,13 +184,143 @@ const props = defineProps({
 const store = useBusinessComputerStore()
 const isCollapsed = ref(false)
 const isVehicleViewCollapsed = ref(false)
+const containerRef = ref(null)
 
-const close = () => {
-  // If we're in parts or tuning view, go back to home instead of closing
-  if (store.vehicleView === 'parts' || store.vehicleView === 'tuning') {
-    store.switchView('home')
-    store.clearVehicleView()
+watch(() => store.vehicleView, (newView) => {
+  if (!newView || (newView !== 'parts' && newView !== 'tuning')) {
+    isVehicleViewCollapsed.value = false
+  }
+})
+
+watch(() => isVehicleViewCollapsed.value, async (collapsed) => {
+  if (!containerRef.value || !store.vehicleView) return
+  
+  const container = containerRef.value.$el || containerRef.value
+  const header = container.querySelector('.main-header')
+  if (!header) return
+  
+  const headerHeight = header.offsetHeight
+  const fullHeight = window.innerHeight * 0.85
+  
+  if (collapsed) {
+    container.style.height = fullHeight + 'px'
+    container.style.transition = 'height 0.4s ease'
+    await nextTick()
+    requestAnimationFrame(() => {
+      container.style.height = headerHeight + 'px'
+    })
   } else {
+    container.style.height = headerHeight + 'px'
+    container.style.transition = 'height 0.6s ease'
+    await nextTick()
+    requestAnimationFrame(() => {
+      container.style.height = fullHeight + 'px'
+      setTimeout(() => {
+        container.style.height = ''
+        container.style.transition = ''
+      }, 600)
+    })
+  }
+})
+
+const close = async () => {
+  // If we're in parts or tuning view, switch to home immediately and animate expansion
+  if (store.vehicleView === 'parts' || store.vehicleView === 'tuning') {
+    if (containerRef.value) {
+      const container = containerRef.value.$el || containerRef.value
+      const header = container.querySelector('.main-header')
+      if (!header) {
+        // Fallback if no header
+        store.switchView('home')
+        store.closeVehicleView()
+        isVehicleViewCollapsed.value = false
+        return
+      }
+      
+      const headerHeight = header.offsetHeight
+      const wasCollapsed = isVehicleViewCollapsed.value
+      const currentHeight = wasCollapsed ? headerHeight : container.offsetHeight
+      const currentWidth = container.offsetWidth
+      const fullHeight = window.innerHeight * 0.85
+      const computedStyle = getComputedStyle(container)
+      const fontSize = parseFloat(computedStyle.fontSize) || 16
+      const fullWidth = 60 * fontSize // 60em in pixels
+      
+      // Capture current position if collapsed
+      const wasFixed = wasCollapsed && getComputedStyle(container).position === 'fixed'
+      const currentBottom = wasCollapsed ? '0' : ''
+      const currentLeft = wasCollapsed ? '2em' : ''
+      
+      // Set initial state BEFORE switching views to prevent reset
+      if (wasCollapsed) {
+        container.style.position = 'fixed'
+        container.style.bottom = currentBottom
+        container.style.left = currentLeft
+      }
+      container.style.width = currentWidth + 'px'
+      container.style.height = currentHeight + 'px'
+      container.style.transition = 'none'
+      container.style.transform = 'none'
+      
+      // Switch views immediately so header shows "Tuning Shop"
+      store.switchView('home')
+      store.closeVehicleView()
+      
+      // Reset collapse state
+      isVehicleViewCollapsed.value = false
+      
+      // Wait for DOM update
+      await nextTick()
+      
+      // Re-apply styles after view switch (in case they were reset)
+      if (wasCollapsed) {
+        container.style.position = 'fixed'
+        container.style.bottom = currentBottom
+        container.style.left = currentLeft
+      }
+      container.style.width = currentWidth + 'px'
+      container.style.height = currentHeight + 'px'
+      container.style.transition = 'none'
+      
+      // Force a reflow
+      container.offsetHeight
+      
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          // Now set transition and animate
+          container.style.transition = 'width 0.6s ease, height 0.6s ease'
+          container.style.width = fullWidth + 'px'
+          container.style.height = fullHeight + 'px'
+          
+          // Clean up after animation completes
+          setTimeout(() => {
+            container.style.width = ''
+            container.style.height = ''
+            container.style.position = ''
+            container.style.bottom = ''
+            container.style.left = ''
+            container.style.transition = ''
+            container.style.transform = ''
+          }, 600)
+        })
+      })
+      return
+    }
+    
+    // Fallback if no container ref
+    store.switchView('home')
+    store.closeVehicleView()
+    isVehicleViewCollapsed.value = false
+  } else {
+    // Reset collapse state immediately and reset container height
+    isVehicleViewCollapsed.value = false
+    
+    if (containerRef.value) {
+      const container = containerRef.value.$el || containerRef.value
+      container.style.height = ''
+      container.style.transition = ''
+    }
+    
     store.onMenuClosed()
     lua.career_career.closeAllMenus()
   }
@@ -232,7 +366,7 @@ onUnmounted(kill)
   border: 2px solid rgba(245, 73, 0, 0.4);
   border-radius: 0.5em;
   overflow: hidden;
-  transition: width 0.3s, transform 0.3s ease, bottom 0.3s ease;
+  transition: width 0.4s ease, transform 0.4s ease, bottom 0.4s ease;
   
   &.vehicle-view {
     width: 30em;
@@ -256,7 +390,7 @@ onUnmounted(kill)
   border-bottom: 2px solid rgba(245, 73, 0, 0.4);
   background: transparent;
   flex-shrink: 0;
-  transition: all 0.3s ease;
+  transition: all 0.4s ease;
   
   &.collapsed {
     border-bottom: none;
@@ -478,6 +612,10 @@ onUnmounted(kill)
 .parts-panel,
 .tuning-panel {
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
 }
 
 .close-button {
@@ -539,6 +677,21 @@ onUnmounted(kill)
   height: 100%;
   color: white;
   font-size: 1.5em;
+}
+
+.panel-collapse-enter-active,
+.panel-collapse-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.panel-collapse-enter-from,
+.panel-collapse-leave-to {
+  opacity: 0;
+}
+
+.panel-collapse-enter-to,
+.panel-collapse-leave-from {
+  opacity: 1;
 }
 </style>
 

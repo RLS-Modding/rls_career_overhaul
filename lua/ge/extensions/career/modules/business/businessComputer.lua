@@ -408,6 +408,13 @@ local function formatPartsTreeForUI(node, slotName, slotInfo, availableParts, sl
       end
     end
     
+    -- Sort parts alphabetically by niceName
+    table.sort(availablePartsList, function(a, b)
+      local nameA = string.lower(a.niceName or a.name or "")
+      local nameB = string.lower(b.niceName or b.name or "")
+      return nameA < nameB
+    end)
+    
     -- Only add if there are available parts
     if #availablePartsList > 0 then
       table.insert(result, {

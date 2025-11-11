@@ -330,7 +330,19 @@ const searchResults = computed(() => {
   }
   
   searchTree(partsTree.value)
-  return results
+  
+  return results.map(result => ({
+    ...result,
+    parts: [...result.parts].sort((a, b) => {
+      const nameA = (a.niceName || a.name || '').toLowerCase()
+      const nameB = (b.niceName || b.name || '').toLowerCase()
+      return nameA.localeCompare(nameB)
+    })
+  })).sort((a, b) => {
+    const nameA = (a.slotNiceName || a.slotName || '').toLowerCase()
+    const nameB = (b.slotNiceName || b.slotName || '').toLowerCase()
+    return nameA.localeCompare(nameB)
+  })
 })
 
 const getCategoryByPath = (path) => {
@@ -357,15 +369,28 @@ const currentCategory = computed(() => {
 })
 
 const currentCategoryOptions = computed(() => {
-  return currentCategory.value?.availableParts || null
+  const parts = currentCategory.value?.availableParts || null
+  if (!parts) return null
+  return [...parts].sort((a, b) => {
+    const nameA = (a.niceName || a.name || '').toLowerCase()
+    const nameB = (b.niceName || b.name || '').toLowerCase()
+    return nameA.localeCompare(nameB)
+  })
 })
 
 const displayCategories = computed(() => {
+  let categories = []
   if (navigationPath.value.length === 0) {
-    return partsTree.value
+    categories = partsTree.value
+  } else {
+    const category = getCategoryByPath(navigationPath.value)
+    categories = category?.children || []
   }
-  const category = getCategoryByPath(navigationPath.value)
-  return category?.children || []
+  return [...categories].sort((a, b) => {
+    const nameA = (a.slotNiceName || a.slotName || '').toLowerCase()
+    const nameB = (b.slotNiceName || b.slotName || '').toLowerCase()
+    return nameA.localeCompare(nameB)
+  })
 })
 
 const visibleBreadcrumbs = computed(() => {
@@ -532,7 +557,11 @@ const buildHierarchy = (flatList, slotsNiceNameMap) => {
     node.availableParts = slot.availableParts || []
   })
   
-  return roots
+  return roots.sort((a, b) => {
+    const nameA = (a.slotNiceName || a.slotName || '').toLowerCase()
+    const nameB = (b.slotNiceName || b.slotName || '').toLowerCase()
+    return nameA.localeCompare(nameB)
+  })
 }
 
 watch(() => searchResults.value, (newResults) => {
@@ -824,7 +853,11 @@ onBeforeUnmount(() => {
   flex-shrink: 0;
   
   &.collapsed {
-    margin-bottom: 0.75em;
+    margin-bottom: 0;
+    
+    .result-section-header {
+      margin-bottom: 0;
+    }
   }
   
   .result-section-header {
