@@ -1,9 +1,13 @@
 <template>
-  <div class="phone-wrapper" :style="{ 
-    '--scale': scale,
-    '--status-font-color': statusFontColor,
-    '--status-blend-mode': statusBlendMode
-  }">
+  <div 
+    ref="phoneRef"
+    class="phone-wrapper" 
+    :class="{ 'phone-entered': isEntered }"
+    :style="{ 
+      '--scale': scale,
+      '--status-font-color': statusFontColor,
+      '--status-blend-mode': statusBlendMode
+    }">
     <div class="phone-bevel"></div>
     <div class="phone-screen">
       <!-- Status Bar -->
@@ -32,9 +36,9 @@
 
 <script setup>
 import { useEvents } from '@/services/events'
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { vBngOnUiNav } from "@/common/directives"
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute, onBeforeRouteUpdate } from 'vue-router'
 import { lua } from "@/bridge"
 
 const props = defineProps({
@@ -59,6 +63,15 @@ const props = defineProps({
 const events = useEvents()
 const timeString = ref('9:10')
 const router = useRouter()
+const route = useRoute()
+const phoneRef = ref(null)
+const isEntered = ref(false)
+
+// Check if a route name is a phone route
+const isPhoneRoute = (routeName) => {
+  if (!routeName) return false
+  return routeName.startsWith('phone-') || routeName === 'car-meets-phone'
+}
 
 const updateTime = (data) => {
   if (data) {
@@ -66,22 +79,88 @@ const updateTime = (data) => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   lua.extensions.load("ui_phone_time")
   events.on("phone_time_update", data => updateTime(data))
   events.on("closePhone", close)
+  
+  // Check if phone was already visible (navigating between phone routes)
+  const wasPhoneVisible = sessionStorage.getItem('phoneVisible') === 'true'
+  
+  if (phoneRef.value) {
+    await nextTick()
+    
+    if (wasPhoneVisible) {
+      // Coming from another phone route - skip animation, show immediately
+      // Set transform immediately without transition
+      if (phoneRef.value) {
+        phoneRef.value.style.transition = 'none'
+        isEntered.value = true
+        // Re-enable transition after a frame
+        requestAnimationFrame(() => {
+          if (phoneRef.value) {
+            phoneRef.value.style.transition = ''
+          }
+        })
+      }
+    } else {
+      // First time opening phone - animate up
+      requestAnimationFrame(() => {
+        isEntered.value = true
+      })
+      sessionStorage.setItem('phoneVisible', 'true')
+    }
+  }
 })
 
-onUnmounted(() => {
+// Handle route updates (navigating between phone routes)
+onBeforeRouteUpdate((to, from) => {
+  // If navigating between phone routes, keep phone visible (no animation)
+  if (isPhoneRoute(to.name) && isPhoneRoute(from.name)) {
+    isEntered.value = true
+  }
 })
 
-const back = () => {
-  router.back()
-}
+onUnmounted(async () => {
+  // Check if we're navigating to another phone route
+  const nextRoute = router.currentRoute.value
+  const isNavigatingToPhoneRoute = isPhoneRoute(nextRoute.name)
+  
+  if (!isNavigatingToPhoneRoute) {
+    // Only animate down if we're not going to another phone route
+    if (phoneRef.value && isEntered.value) {
+      isEntered.value = false
+      await new Promise(resolve => setTimeout(resolve, 400))
+    }
+    sessionStorage.removeItem('phoneVisible')
+  } else {
+    // Keep phone visible for next route
+    sessionStorage.setItem('phoneVisible', 'true')
+  }
+})
 
-const close = () => {
+const close = async () => {
+  // Animate phone down before closing
+  if (phoneRef.value && isEntered.value) {
+    isEntered.value = false
+    // Wait for animation to complete
+    await new Promise(resolve => setTimeout(resolve, 400))
+  }
+  sessionStorage.removeItem('phoneVisible')
   lua.extensions.unload("ui_phone_time")
   lua.career_career.closeAllMenus()
+}
+
+const back = async () => {
+  // Check if we're going back to another phone route
+  const historyState = window.history.state
+  // Animate phone down before navigating back (unless going to another phone route)
+  if (phoneRef.value && isEntered.value) {
+    isEntered.value = false
+    // Wait for animation to complete before navigating
+    await new Promise(resolve => setTimeout(resolve, 400))
+  }
+  router.back()
 }
 
 </script>
@@ -92,8 +171,14 @@ const close = () => {
   bottom: -1.25em;
   right: 2em;
   z-index: 1000;
-  transform: scale(var(--scale));
+  transform: scale(var(--scale)) translateY(100%);
   transform-origin: bottom right;
+  opacity: 1;
+  transition: transform 0.4s ease;
+  
+  &.phone-entered {
+    transform: scale(var(--scale)) translateY(0);
+  }
   
   .phone-bevel {
     position: absolute;
@@ -176,7 +261,7 @@ const close = () => {
   justify-content: flex-end;
 }
 
-.status-back{
+.status-back {
   background-color: transparent;
   outline: none;
   border: none;
@@ -187,4 +272,4 @@ const close = () => {
   font-weight: bold;
   color: var(--status-font-color);
 }
-</style> 
+</style>
