@@ -4,7 +4,7 @@
       "id": "fastAutoTuningShop",
       "type": "tuningShop",
       "name": "Tuning Shop",
-      "defaultPrice": 50000,
+      "price": 50000,
       "description": "Professional vehicle tuning services. Accept tuning jobs and improve vehicle performance.",
       
       "icon": "poi_laptop_round",
@@ -37,6 +37,17 @@
           "valueLabel": "Available"
         }
       ]
+    }
+  ],
+  "businessGarages": [
+    {
+      "id": "fastAutoTuningShopGarage",
+      "name": "Fast Auto Tuning Shop Garage",
+      "description": "Business garage for storing vehicles",
+      "sitesFile": "tuningShops.sites.json",
+      "parkingSpotNames": ["fastAutoTuningShopParking1"],
+      "zoneNames": ["fastAutoTuningShopGarage1"],
+      "capacity": 5
     }
   ]
 }

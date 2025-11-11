@@ -27,6 +27,7 @@ import Loans from "./views/LoanMenu.vue"
 import RoleAssignment from "./views/RoleAssignment.vue"
 import CarMeets from "./views/CarMeetsMenu.vue"
 import PurchaseGarage from "./views/PurchaseGarage.vue"
+import PurchaseBusiness from "./views/PurchaseBusiness.vue"
 import PhoneMain from "./views/PhoneMain.vue"
 import PhoneMinimap from "./views/PhoneMinimap.vue"
 import PhoneMarketplace from "./views/PhoneMarketplace.vue"
@@ -38,6 +39,7 @@ import PhoneLoanDetails from "./views/PhoneLoanDetails.vue"
 import PhoneOfferDetails from "./views/PhoneOfferDetails.vue"
 import LevelSwitch from "./views/LevelSwitch.vue"
 import ChallengeComplete from "./views/ChallengeComplete.vue"
+import BusinessComputerMain from "./views/BusinessComputerMain.vue"
 
 export default [
   // Career Pause
@@ -339,6 +341,12 @@ export default [
       },
 
       {
+        path: "purchase-business",
+        name: "purchase-business",
+        component: PurchaseBusiness
+      },
+
+      {
         path: "phone-minimap",
         name: "phone-minimap",
         component: PhoneMinimap
@@ -401,6 +409,18 @@ export default [
         path: "challenge-completed",
         name: "challenge-completed",
         component: ChallengeComplete
+      },
+
+      {
+        path: "business-computer/:businessType/:businessId",
+        name: "business-computer",
+        component: BusinessComputerMain,
+        props: true,
+        meta: {
+          uiApps: {
+            shown: false,
+          },
+        },
       }
 
     ],

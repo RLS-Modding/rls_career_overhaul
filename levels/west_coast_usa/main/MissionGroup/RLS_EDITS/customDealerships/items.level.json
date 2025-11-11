@@ -38,3 +38,5 @@
 {"name":"asotv_area","class":"BeamNGGameplayArea","__parent":"customDealerships","position":[35.0738869,651.955933,74.7222595],"scale":[2.27698231,2.27698231,3.37102032]}
 {"name":"loanerDealership_icon","class":"BeamNGPointOfInterest","__parent":"customDealerships","position":[-794.97522,-547.758423,103.292824],"rotationMatrix":[-0.666391015,0.74560225,0,-0.74560225,-0.666391015,0,0,0,1]}
 {"name":"loanerDealership_area","class":"BeamNGGameplayArea","__parent":"customDealerships","position":[-794.97522,-547.758423,101.193321],"rotationMatrix":[-0.666391015,0.74560225,0,-0.74560225,-0.666391015,0,0,0,1],"scale":[2.27698231,2.27698231,3.37102032]}
+{"name":"fastAutoTuningShop_icon","class":"BeamNGPointOfInterest","__parent":"customDealerships","position":[285.611908,-188.965149,144.614609],"rotationMatrix":[0.942377269,0.33455205,0,-0.33455205,0.942377269,0,0,0,1]}
+{"name":"fastAutoTuningShop_area","class":"BeamNGGameplayArea","__parent":"customDealerships","position":[285.609406,-188.958603,144.612946],"rotationMatrix":[0.0105581284,0.999944389,0,-0.999944389,0.0105581284,0,0,0,1],"scale":[2.26982427,1.97193146,1.19194996]}

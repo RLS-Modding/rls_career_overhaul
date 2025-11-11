@@ -1144,6 +1144,58 @@ export default {
     sellGarage: () => {}
   },
 
+  career_modules_business_businessManager: {
+    requestBusinessData: () => {},
+    canPayBusiness: () => {},
+    buyBusiness: () => {},
+    cancelBusinessPurchase: () => {},
+  },
+
+  career_modules_business_businessComputer: {
+    getBusinessComputerUIData: (businessType, businessId) => [String, String],
+    acceptJob: (businessId, jobId) => [String, Integer],
+    declineJob: (businessId, jobId) => [String, Integer],
+    abandonJob: (businessId, jobId) => [String, Integer],
+    pullOutVehicle: (businessId, vehicleId) => [String, Integer],
+    putAwayVehicle: (businessId) => String,
+    getActiveJobs: (businessId) => String,
+    getNewJobs: (businessId) => String,
+    getVehiclePartsTree: (businessId, vehicleId) => [String, Integer],
+    requestVehiclePartsTree: (businessId, vehicleId) => [String, Integer],
+    getVehicleTuningData: (businessId, vehicleId) => [String, Integer],
+    requestVehicleTuningData: (businessId, vehicleId) => [String, Integer],
+    applyVehicleTuning: (businessId, vehicleId, tuningVars) => [String, Integer, Object],
+    clearVehicleDataCaches: () => {},
+  },
+
+  career_modules_business_businessInventory: {
+    getBusinessVehicles: (businessId) => String,
+    storeVehicle: (businessId, vehicleData) => [String, Any],
+    removeVehicle: (businessId, vehicleId) => [String, Integer],
+    getVehicleById: (businessId, vehicleId) => [String, Integer],
+    pullOutVehicle: (businessId, vehicleId) => [String, Integer],
+    putAwayVehicle: (businessId) => String,
+    getPulledOutVehicle: (businessId) => String,
+  },
+
+  career_modules_business_businessPartInventory: {
+    getBusinessParts: (businessId) => String,
+    addPart: (businessId, partData) => [String, Any],
+    removePart: (businessId, partId) => [String, String],
+    getPartById: (businessId, partId) => [String, String],
+    sellPart: (businessId, partId) => [String, String],
+    getPartsByVehicle: (businessId, vehicleModel) => [String, String],
+  },
+
+  career_modules_business_businessJobManager: {
+    registerJobGenerator: (businessType, generatorFunction) => [String, Any],
+    getJobsForBusiness: (businessId, businessType) => [String, String],
+    acceptJob: (businessId, jobId) => [String, Integer],
+    declineJob: (businessId, jobId) => [String, Integer],
+    completeJob: (businessId, jobId) => [String, Integer],
+    getJobById: (businessId, jobId) => [String, Integer],
+  },
+
   gameplay_taxi: {
     prepareTaxiJob: () => {},
     acceptJob: () => {},

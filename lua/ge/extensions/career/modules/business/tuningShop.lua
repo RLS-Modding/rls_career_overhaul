@@ -1,6 +1,6 @@
 local M = {}
 
-M.dependencies = {'util_configListGenerator', 'career_career', 'career_modules_business_businessManager'}
+M.dependencies = {'util_configListGenerator', 'career_career', 'career_modules_business_businessManager', 'career_modules_business_businessJobManager'}
 
 local raceData = nil
 local raceDataLevel = nil
@@ -110,6 +110,11 @@ local function generateJob()
   
   local targetTime = baseTime * 0.80
   
+  local mileageMinMiles = 30000
+  local mileageMaxMiles = 130000
+  local mileageMiles = math.random(mileageMinMiles, mileageMaxMiles)
+  local mileageMeters = mileageMiles * 1609.34
+  
   jobIdCounter = jobIdCounter + 1
   
   local job = {
@@ -118,6 +123,7 @@ local function generateJob()
       model_key = selectedConfig.model_key,
       key = selectedConfig.key
     },
+    mileage = mileageMeters,
     raceType = raceType,
     raceLabel = raceLabel,
     baseTime = baseTime,
@@ -141,6 +147,11 @@ end
 
 local function openMenu(businessId)
   log("D", "TuningShop", "Opening menu for business: " .. tostring(businessId))
+  guihooks.trigger('ChangeState', {state = 'business-computer', params = {businessType = 'tuningShop', businessId = tostring(businessId)}})
+end
+
+local function generateTuningJob()
+  return generateJob()
 end
 
 -- Register tuning shop callbacks with business manager
@@ -153,6 +164,8 @@ function M.onCareerActivated()
       openMenu(businessId)
     end
   })
+  
+  career_modules_business_businessJobManager.registerJobGenerator("tuningShop", generateTuningJob)
 end
 
 M.powerToWeightToTime = powerToWeightToTime

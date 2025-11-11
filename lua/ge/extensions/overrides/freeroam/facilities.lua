@@ -19,7 +19,8 @@ local facilityTypeToListName = {
   privateSeller = "privateSellers",
   deliveryProvider = "deliveryProviders",
   dragstrip = "dragstrips",
-  tuningShop = "tuningShops"
+  tuningShop = "tuningShops",
+  businessGarage = "businessGarages"
 }
 
 local facilityTypeToUiLabelSingular = {
@@ -30,7 +31,8 @@ local facilityTypeToUiLabelSingular = {
   privateSeller = "Private Seller",
   deliveryProvider = "Delivery Provider",
   dragstrip = "Drag Strip",
-  tuningShop = "Tuning Shop"
+  tuningShop = "Tuning Shop",
+  businessGarage = "Business Garage"
 }
 
 
