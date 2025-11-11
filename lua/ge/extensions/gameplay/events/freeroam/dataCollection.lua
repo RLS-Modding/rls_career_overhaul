@@ -68,10 +68,10 @@ local function getVehicleIdFromEntry(entry)
   return vehId
 end
 
-local function onPowerToWeightCalculated(vehId, powerToWeight, raceName, time, isAltRoute)
+local function onVehicleRaceDataCollected(vehId, power, weight, year, raceName, time, isAltRoute)
   print(
-    "onPowerToWeightCalculated: " .. tostring(vehId) .. " " .. tostring(powerToWeight) .. " " .. tostring(raceName) ..
-      " " .. tostring(time))
+    "onVehicleRaceDataCollected: " .. tostring(vehId) .. " power:" .. tostring(power) .. " weight:" .. tostring(weight) .. 
+    " year:" .. tostring(year) .. " " .. tostring(raceName) .. " time:" .. tostring(time))
   local key = tostring(vehId) .. "_" .. tostring(raceName) .. "_" .. tostring(time)
   local pendingEntry = pendingDataEntries[key]
 
@@ -79,7 +79,7 @@ local function onPowerToWeightCalculated(vehId, powerToWeight, raceName, time, i
     return
   end
 
-  if not powerToWeight or powerToWeight <= 0 then
+  if not power or not weight or not year or not time or power <= 0 or weight <= 0 then
     pendingDataEntries[key] = nil
     return
   end
@@ -99,7 +99,9 @@ local function onPowerToWeightCalculated(vehId, powerToWeight, raceName, time, i
   end
 
   table.insert(existingData, {
-    p2w = powerToWeight,
+    power = power,
+    weight = weight,
+    year = year,
     time = time
   })
 
@@ -108,22 +110,35 @@ local function onPowerToWeightCalculated(vehId, powerToWeight, raceName, time, i
   pendingDataEntries[key] = nil
 end
 
-local function collectPowerToWeight(entry)
+local function onVehicleModelReceived(vehId, power, weight, model, raceName, time, isAltRoute)
+  local year = 2000
+  
+  if model and core_vehicles and core_vehicles.getModel then
+    local modelData = core_vehicles.getModel(model)
+    if modelData and modelData.model then
+      local years = modelData.model.Years
+      if years then
+        if type(years) == "table" and years.min and years.max then
+          year = math.floor((years.min + years.max) / 2)
+        elseif type(years) == "number" then
+          year = years
+        end
+      elseif modelData.model.Year then
+        year = modelData.model.Year
+      end
+    end
+  end
+  
+  onVehicleRaceDataCollected(vehId, power, weight, year, raceName, time, isAltRoute)
+end
+
+local function collectVehicleRaceData(entry)
   if not isCollectingDataEnabled then
     return
   end
 
-  local vehId = getVehicleIdFromEntry(entry)
-  if not vehId then
-    return
-  end
-
-  local vehObj = getObjectByID(vehId)
-  if not vehObj then
-    vehObj = be:getPlayerVehicle(0)
-  end
-
-  if not vehObj then
+  local inventoryId = entry.inventoryId
+  if not inventoryId then
     return
   end
 
@@ -143,32 +158,49 @@ local function collectPowerToWeight(entry)
     return
   end
 
-  local key = vehId .. "_" .. raceName .. "_" .. tostring(time)
+  local vehId = getVehicleIdFromEntry(entry)
+  if not vehId then
+    return
+  end
+
+  local vehObj = getObjectByID(vehId)
+  if not vehObj then
+    vehObj = be:getPlayerVehicle(0)
+  end
+
+  if not vehObj then
+    return
+  end
+
+  local key = tostring(vehId) .. "_" .. tostring(raceName) .. "_" .. tostring(time)
   pendingDataEntries[key] = {
     raceName = raceName,
     time = time,
     isAltRoute = entry.isAltRoute or false
   }
 
-  print("collectPowerToWeight: " .. raceName .. " " .. time)
+  print("collectVehicleRaceData: Querying vehicle for power/weight/year - " .. raceName .. " time:" .. time)
 
-  vehObj:queueLuaCommand(string.format([[
+  local luaCommand = [[
             local engine = powertrain.getDevicesByCategory("engine")[1]
             if engine then
                 local power = engine.maxPower
                 local weight = obj:calcBeamStats().total_weight
                 if power and weight and weight > 0 then
-                    local powerToWeight = power / weight
-                    obj:queueGameEngineLua("gameplay_events_freeroam_dataCollection.onPowerToWeightCalculated(%d, " .. powerToWeight .. ", ']] ..
-                                         tostring(raceName) .. [[', ]] .. tostring(time) .. [[, ]] ..
+                    local model = v.config.model or ""
+                    
+                    obj:queueGameEngineLua("gameplay_events_freeroam_dataCollection.onVehicleModelReceived(]] .. 
+                                         tostring(vehId) .. [[, " .. power .. ", " .. weight .. ", '" .. model .. "', ']] ..
+                                         raceName .. [[', ]] .. tostring(time) .. [[, ]] ..
                                          tostring(entry.isAltRoute or false) .. [[)")
                 end
             end
-        ]], vehId))
+        ]]
+
+  vehObj:queueLuaCommand(luaCommand)
 end
 
 local function fitP2WModel(samples)
-  -- require at least a few data points
   if not samples or #samples < 3 then
     return nil, "not_enough_samples"
   end
@@ -180,7 +212,6 @@ local function fitP2WModel(samples)
     c = 0
   }
 
-  -- search c in a reasonable range
   local cMin, cMax, cStep = 0.1, 1.5, 0.01
 
   for c = cMin, cMax, cStep do
@@ -188,8 +219,17 @@ local function fitP2WModel(samples)
     local sumX, sumY, sumXX, sumXY = 0, 0, 0, 0
 
     for _, s in ipairs(samples) do
-      local r = s.p2w
-      local t = s.time
+      local r, t
+      if s.p2w and s.time then
+        r = s.p2w
+        t = s.time
+      elseif s.power and s.weight and s.time then
+        r = s.power / s.weight
+        t = s.time
+      else
+        goto continue
+      end
+      
       if r and t and r > 0 then
         local x = 1 / (r ^ c)
         sumX = sumX + x
@@ -198,6 +238,7 @@ local function fitP2WModel(samples)
         sumXY = sumXY + x * t
         n = n + 1
       end
+      ::continue::
     end
 
     if n >= 3 then
@@ -206,17 +247,26 @@ local function fitP2WModel(samples)
         local b = (n * sumXY - sumX * sumY) / denom
         local a = (sumY - b * sumX) / n
 
-        -- compute error
         local err = 0
         for _, s in ipairs(samples) do
-          local r = s.p2w
-          local t = s.time
+          local r, t
+          if s.p2w and s.time then
+            r = s.p2w
+            t = s.time
+          elseif s.power and s.weight and s.time then
+            r = s.power / s.weight
+            t = s.time
+          else
+            goto continue_err
+          end
+          
           if r and t and r > 0 then
             local x = 1 / (r ^ c)
             local pred = a + b * x
             local diff = t - pred
             err = err + diff * diff
           end
+          ::continue_err::
         end
 
         if err < best.err and b > 0 then
@@ -238,6 +288,133 @@ local function fitP2WModel(samples)
     b = best.b,
     c = best.c,
     err = best.err
+  }
+end
+
+local function fitPowerWeightYearModel(samples)
+  if not samples or #samples < 7 then
+    return nil, "not_enough_samples"
+  end
+
+  local n = #samples
+  local powerVals = {}
+  local weightVals = {}
+  local yearVals = {}
+  local timeVals = {}
+
+  for _, s in ipairs(samples) do
+    if s.power and s.weight and s.year and s.time and s.power > 0 and s.weight > 0 then
+      table.insert(powerVals, s.power)
+      table.insert(weightVals, s.weight)
+      table.insert(yearVals, s.year)
+      table.insert(timeVals, s.time)
+    end
+  end
+
+  n = #powerVals
+  if n < 7 then
+    return nil, "not_enough_valid_samples"
+  end
+
+  local powerMin, powerMax = math.huge, -math.huge
+  local weightMin, weightMax = math.huge, -math.huge
+  local yearMin, yearMax = math.huge, -math.huge
+
+  for i = 1, n do
+    if powerVals[i] < powerMin then powerMin = powerVals[i] end
+    if powerVals[i] > powerMax then powerMax = powerVals[i] end
+    if weightVals[i] < weightMin then weightMin = weightVals[i] end
+    if weightVals[i] > weightMax then weightMax = weightVals[i] end
+    if yearVals[i] < yearMin then yearMin = yearVals[i] end
+    if yearVals[i] > yearMax then yearMax = yearVals[i] end
+  end
+
+  if powerMax == powerMin or weightMax == weightMin or yearMax == yearMin then
+    return nil, "no_variation_in_data"
+  end
+
+  local normalizePower = function(p) return (p - powerMin) / (powerMax - powerMin) end
+  local normalizeWeight = function(w) return (w - weightMin) / (weightMax - weightMin) end
+  local normalizeYear = function(y) return (y - yearMin) / (yearMax - yearMin) end
+
+  local X = {}
+  local Y = {}
+
+  for i = 1, n do
+    local p = normalizePower(powerVals[i])
+    local w = normalizeWeight(weightVals[i])
+    local y = normalizeYear(yearVals[i])
+    
+    table.insert(X, {1, p, w, y, p*p, w*w, y*y})
+    table.insert(Y, timeVals[i])
+  end
+
+  local XtX = {}
+  for i = 1, 7 do
+    XtX[i] = {}
+    for j = 1, 7 do
+      XtX[i][j] = 0
+      for k = 1, n do
+        XtX[i][j] = XtX[i][j] + X[k][i] * X[k][j]
+      end
+    end
+  end
+
+  local XtY = {}
+  for i = 1, 7 do
+    XtY[i] = 0
+    for k = 1, n do
+      XtY[i] = XtY[i] + X[k][i] * Y[k]
+    end
+  end
+
+  local det = 0
+  for i = 1, 7 do
+    local pivot = XtX[i][i]
+    if math.abs(pivot) < 1e-10 then
+      return nil, "singular_matrix"
+    end
+    for j = i + 1, 7 do
+      local factor = XtX[j][i] / pivot
+      for k = i, 7 do
+        XtX[j][k] = XtX[j][k] - factor * XtX[i][k]
+      end
+      XtY[j] = XtY[j] - factor * XtY[i]
+    end
+  end
+
+  local coef = {}
+  for i = 7, 1, -1 do
+    coef[i] = XtY[i]
+    for j = i + 1, 7 do
+      coef[i] = coef[i] - XtX[i][j] * coef[j]
+    end
+    coef[i] = coef[i] / XtX[i][i]
+  end
+
+  local err = 0
+  for i = 1, n do
+    local pred = coef[1] + coef[2]*X[i][2] + coef[3]*X[i][3] + coef[4]*X[i][4] + 
+                 coef[5]*X[i][5] + coef[6]*X[i][6] + coef[7]*X[i][7]
+    local diff = Y[i] - pred
+    err = err + diff * diff
+  end
+
+  return {
+    a = coef[1],
+    b = coef[2],
+    c = coef[3],
+    d = coef[4],
+    e = coef[5],
+    f = coef[6],
+    g = coef[7],
+    err = err,
+    powerMin = powerMin,
+    powerMax = powerMax,
+    weightMin = weightMin,
+    weightMax = weightMax,
+    yearMin = yearMin,
+    yearMax = yearMax
   }
 end
 
@@ -282,21 +459,57 @@ local function analyzeData()
       local samples = jsonReadFile(filePath)
 
       if samples and type(samples) == "table" and #samples > 0 then
-        local coef, err = fitP2WModel(samples)
-        if coef then
+        local coefOld, errOld = fitP2WModel(samples)
+        local coefNew, errNew = fitPowerWeightYearModel(samples)
+        
+        if coefOld then
           if isAltRoute and race.altRoute then
             race.altRoute.predictCoef = {
-              a = coef.a,
-              b = coef.b,
-              c = coef.c
+              a = coefOld.a,
+              b = coefOld.b,
+              c = coefOld.c
             }
+            if coefNew then
+              race.altRoute.predictCoefNew = {
+                a = coefNew.a,
+                b = coefNew.b,
+                c = coefNew.c,
+                d = coefNew.d,
+                e = coefNew.e,
+                f = coefNew.f,
+                g = coefNew.g,
+                powerMin = coefNew.powerMin,
+                powerMax = coefNew.powerMax,
+                weightMin = coefNew.weightMin,
+                weightMax = coefNew.weightMax,
+                yearMin = coefNew.yearMin,
+                yearMax = coefNew.yearMax
+              }
+            end
             updated = true
           elseif not isAltRoute then
             race.predictCoef = {
-              a = coef.a,
-              b = coef.b,
-              c = coef.c
+              a = coefOld.a,
+              b = coefOld.b,
+              c = coefOld.c
             }
+            if coefNew then
+              race.predictCoefNew = {
+                a = coefNew.a,
+                b = coefNew.b,
+                c = coefNew.c,
+                d = coefNew.d,
+                e = coefNew.e,
+                f = coefNew.f,
+                g = coefNew.g,
+                powerMin = coefNew.powerMin,
+                powerMax = coefNew.powerMax,
+                weightMin = coefNew.weightMin,
+                weightMax = coefNew.weightMax,
+                yearMin = coefNew.yearMin,
+                yearMax = coefNew.yearMax
+              }
+            end
             updated = true
           end
         end
@@ -317,7 +530,7 @@ local function collectDataFromEntry(entry)
     return
   end
 
-  collectPowerToWeight(entry)
+  collectVehicleRaceData(entry)
 end
 
 local function collectData(enabled)
@@ -331,14 +544,31 @@ end
 local function onWorldReadyState(state)
   if state == 2 then
     races = nil
+    if overhaul_extensionManager and overhaul_extensionManager.isDevKeyValid then
+      if overhaul_extensionManager.isDevKeyValid() then
+        isCollectingDataEnabled = true
+        print("Data collection enabled by default (dev mode active)")
+      end
+    end
   end
 end
 
-M.onPowerToWeightCalculated = onPowerToWeightCalculated
+local function onExtensionLoaded()
+  if overhaul_extensionManager and overhaul_extensionManager.isDevKeyValid then
+    if overhaul_extensionManager.isDevKeyValid() then
+      isCollectingDataEnabled = true
+      print("Data collection enabled by default (dev mode active)")
+    end
+  end
+end
+
+M.onVehicleRaceDataCollected = onVehicleRaceDataCollected
+M.onVehicleModelReceived = onVehicleModelReceived
 M.collectDataFromEntry = collectDataFromEntry
 M.collectData = collectData
 M.isCollectingData = isCollectingData
 M.onWorldReadyState = onWorldReadyState
+M.onExtensionLoaded = onExtensionLoaded
 M.analyzeData = analyzeData
 
 return M
