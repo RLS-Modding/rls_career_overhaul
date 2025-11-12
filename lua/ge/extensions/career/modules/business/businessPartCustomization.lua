@@ -497,6 +497,60 @@ local function buildPartsTreeFromCart(businessId, parts)
     return requiredParts
   end
 
+-- Get fitting part from business inventory (similar to vanilla getFittingPartFromInventory)
+local function getFittingPartFromInventory(businessId, parentPart, slotName, currentVehicleData, currentCart)
+  if not businessId or not parentPart or not slotName or not currentVehicleData then
+    return nil
+  end
+  
+  if not career_modules_business_businessPartInventory then
+    return nil
+  end
+  
+  local businessParts = career_modules_business_businessPartInventory.getBusinessParts(businessId)
+  if not businessParts then return nil end
+  
+  -- Build set of slot paths already in cart to avoid duplicates
+  local cartSlotPaths = {}
+  if currentCart then
+    for _, item in ipairs(currentCart) do
+      if item.type == 'part' and item.slotPath then
+        cartSlotPaths[item.slotPath] = true
+      end
+    end
+  end
+  
+  local slotInfo = parentPart.description and parentPart.description.slotInfoUi and parentPart.description.slotInfoUi[slotName]
+  if not slotInfo then return nil end
+  
+  -- Calculate target slot path
+  local targetSlotPath = parentPart.containingSlot .. slotName .. "/"
+  
+  -- Skip if target slot is already in cart
+  if cartSlotPaths[targetSlotPath] then
+    return nil
+  end
+  
+  -- Check each part in business inventory
+  for _, inventoryPart in ipairs(businessParts) do
+    -- Get jbeam data for the inventory part
+    local partDescription = jbeamIO.getPart(currentVehicleData.ioCtx, inventoryPart.name)
+    if partDescription and jbeamSlotSystem.partFitsSlot(partDescription, slotInfo) then
+      -- Found a fitting part - create shop part object
+      local shopPart = deepcopy(inventoryPart)
+      shopPart.containingSlot = targetSlotPath
+      shopPart.slot = slotName
+      shopPart.vehicleModel = parentPart.vehicleModel
+      shopPart.description = partDescription
+      shopPart.finalValue = 0 -- Parts from inventory are free
+      shopPart.fromInventory = true -- Mark as from inventory
+      return shopPart
+    end
+  end
+  
+  return nil
+end
+
 -- Get needed additional parts (following vanilla pattern exactly)
 -- Takes parts map (keyed by slotPath), returns updated parts map and boolean indicating if parts were added
 local function getNeededAdditionalParts(businessId, vehicleId, parts, baselineTree, currentCart)
@@ -552,64 +606,106 @@ local function getNeededAdditionalParts(businessId, vehicleId, parts, baselineTr
     combinedSlotToPartMap[slotPath] = deepcopy(part)
   end
   
-  -- Get slotType for all parts
+  -- Get slotType for all parts (matching vanilla pattern)
   for path, part in pairs(combinedSlotToPartMap) do
     local jbeamData = jbeamIO.getPart(vehicleData.ioCtx, part.name)
     if jbeamData then
       part.slotType = jbeamData.slotType
-      part.description = jbeamData
     end
   end
   
-  -- Check each part's child slots and add default parts if needed
+  -- Check each part's child slots and add default parts if needed (matching vanilla pattern exactly)
   local addedParts = false
   local resultParts = deepcopy(parts)
   
-  for slotPath, part in pairs(parts) do
-    if part.description and part.description.slotInfoUi then
-      for slotName, slotInfo in pairs(part.description.slotInfoUi) do
-        local childPath = slotPath .. slotName .. "/"
-        
-        -- Check if slot is empty or part doesn't fit
-        local childPart = combinedSlotToPartMap[childPath]
-        local needsPart = true
-        if childPart then
-          local childJbeamData = jbeamIO.getPart(vehicleData.ioCtx, childPart.name)
-          if childJbeamData and jbeamSlotSystem.partFitsSlot(childJbeamData, slotInfo) then
-            needsPart = false
-          end
-        end
-        
-        if needsPart then
-          -- Get default part name
-          local defaultPartName = nil
-          if part.description.slots2 then
-            for _, slot in ipairs(part.description.slots2) do
-              if slot.name == slotName and slot.default and slot.default ~= "" then
-                defaultPartName = slot.default
-                break
-              end
-            end
-          end
-          
-          if defaultPartName then
-            -- Create part entry for default part
-            local defaultPart = {
-              name = defaultPartName,
-              containingSlot = childPath,
-              slot = slotName,
-              description = jbeamIO.getPart(vehicleData.ioCtx, defaultPartName)
-            }
-            
-            resultParts[childPath] = defaultPart
-            addedParts = true
-            
-            -- Update combined map for next iteration
-            combinedSlotToPartMap[childPath] = defaultPart
-          end
+  -- Helper to get default part name from jbeam data
+  local function getDefaultPartName(jbeamData, slotName)
+    if jbeamData and jbeamData.slots2 then
+      for _, slot in ipairs(jbeamData.slots2) do
+        if slot.name == slotName and slot.default and slot.default ~= "" then
+          return slot.default
         end
       end
     end
+    return nil
+  end
+  
+  for slotPath, part in pairs(parts) do
+    log('D', 'businessPartCustomization', string.format('[getNeededAdditionalParts] Checking part: %s at slot: %s', part.name or 'unknown', slotPath))
+    if part.description and part.description.slotInfoUi then
+      log('D', 'businessPartCustomization', string.format('[getNeededAdditionalParts] Part %s has %d child slots', part.name, tableSize(part.description.slotInfoUi)))
+      for slotName, slotInfo in pairs(part.description.slotInfoUi) do
+        local childPath = slotPath .. slotName .. "/"
+        log('D', 'businessPartCustomization', string.format('[getNeededAdditionalParts] Checking child slot: %s (path: %s)', slotName, childPath))
+        
+        -- Check if slot is empty or part doesn't fit (matching vanilla pattern exactly - line 462)
+        -- Vanilla passes the part object directly to partFitsSlot, which internally loads jbeam data
+        local existingPart = combinedSlotToPartMap[childPath]
+        local partFits = false
+        if existingPart then
+          partFits = jbeamSlotSystem.partFitsSlot(existingPart, slotInfo)
+          log('D', 'businessPartCustomization', string.format('[getNeededAdditionalParts] Slot %s has existing part: %s, fits: %s', childPath, existingPart.name or 'unknown', tostring(partFits)))
+        else
+          log('D', 'businessPartCustomization', string.format('[getNeededAdditionalParts] Slot %s is empty', childPath))
+        end
+        
+        if not existingPart or not partFits then
+          local jbeamData = jbeamIO.getPart(vehicleData.ioCtx, part.name)
+          
+          -- Look for a fitting part from business inventory first (matching vanilla pattern)
+          local fittingPart = getFittingPartFromInventory(businessId, part, slotName, vehicleData, currentCart)
+          if fittingPart then
+            log('D', 'businessPartCustomization', string.format('[getNeededAdditionalParts] Found fitting part from inventory: %s at %s', fittingPart.name, childPath))
+          else
+            log('D', 'businessPartCustomization', string.format('[getNeededAdditionalParts] No fitting part from inventory for slot %s', childPath))
+          end
+          
+          -- If no fitting part from inventory, try default part
+          if not fittingPart then
+            local partNameToGenerate = getDefaultPartName(jbeamData, slotName)
+            if partNameToGenerate then
+              log('D', 'businessPartCustomization', string.format('[getNeededAdditionalParts] Found default part name: %s for slot %s', partNameToGenerate, childPath))
+              -- Generate default part (matching vanilla generatePart pattern)
+              local defaultJbeamData = jbeamIO.getPart(vehicleData.ioCtx, partNameToGenerate)
+              if defaultJbeamData then
+                fittingPart = {
+                  name = partNameToGenerate,
+                  containingSlot = childPath,
+                  slot = slotName,
+                  description = defaultJbeamData,
+                  vehicleModel = part.vehicleModel
+                }
+                log('D', 'businessPartCustomization', string.format('[getNeededAdditionalParts] Generated default part: %s at %s', partNameToGenerate, childPath))
+              end
+            else
+              log('D', 'businessPartCustomization', string.format('[getNeededAdditionalParts] No default part found for slot %s', childPath))
+            end
+          end
+          
+          if fittingPart then
+            resultParts[childPath] = fittingPart
+            addedParts = true
+            
+            -- Update combined map for next iteration (so nested children can be detected)
+            combinedSlotToPartMap[childPath] = fittingPart
+            
+            -- Mark as sourcePart if not a core slot (matching vanilla pattern)
+            if slotInfo and not slotInfo.coreSlot then
+              fittingPart.sourcePart = true
+            end
+            log('D', 'businessPartCustomization', string.format('[getNeededAdditionalParts] ADDED part: %s at %s (sourcePart: %s)', fittingPart.name, childPath, tostring(fittingPart.sourcePart or false)))
+          end
+        end
+      end
+    else
+      log('D', 'businessPartCustomization', string.format('[getNeededAdditionalParts] Part %s has no slotInfoUi', part.name or 'unknown'))
+    end
+  end
+  
+  if addedParts then
+    log('D', 'businessPartCustomization', string.format('[getNeededAdditionalParts] Found %d additional parts, total result parts: %d', tableSize(resultParts) - tableSize(parts), tableSize(resultParts)))
+  else
+    log('D', 'businessPartCustomization', '[getNeededAdditionalParts] No additional parts needed')
   end
   
   return resultParts, addedParts
@@ -937,9 +1033,9 @@ local function findChangedParts(baselineTree, newTree, changedParts, path)
   return changedParts
 end
 
--- Add a part to the cart and automatically include required parts
+-- Add a part to the cart by spawning vehicle and comparing configs
+-- Uses applyCartPartsToVehicle pattern to spawn vehicle, then compares actual config
 -- Returns the updated cart with all required parts included
--- Follows vanilla pattern exactly: loop until no more required parts are found
 local function addPartToCart(businessId, vehicleId, currentCart, partToAdd)
   if not businessId or not vehicleId or not partToAdd or not partToAdd.partName or not partToAdd.slotPath then
     return currentCart or {}
@@ -960,177 +1056,414 @@ local function addPartToCart(businessId, vehicleId, currentCart, partToAdd)
   local cart = deepcopy(currentCart or {})
   
   -- Remove any existing part in the same slot (different part) and all its children
-  local partsToRemove = {}
   for i = #cart, 1, -1 do
     local item = cart[i]
     if item.type == 'part' then
       -- If this is the same slot (replacement) or a child of the slot being changed
       if item.slotPath == partToAdd.slotPath or item.slotPath:match("^" .. partToAdd.slotPath:gsub("%-", "%%-") .. "[^/]+") then
-        table.insert(partsToRemove, i)
+        table.remove(cart, i)
       end
     end
   end
   
-  for _, index in ipairs(partsToRemove) do
-    table.remove(cart, index)
-  end
-  
-  -- Get vehicle data for jbeam access
+  -- Get vehicle object
   local vehObj = getBusinessVehicleObject(businessId, vehicleId)
-  if not vehObj then return currentCart or {} end
+  if not vehObj then 
+    log('E', 'businessPartCustomization', '[addPartToCart] Failed to get vehicle object')
+    return currentCart or {} 
+  end
   
   local vehId = vehObj:getID()
   local vehicleData = extensions.core_vehicle_manager.getVehicleData(vehId)
-  if not vehicleData or not vehicleData.ioCtx then return currentCart or {} end
+  if not vehicleData or not vehicleData.ioCtx then 
+    log('E', 'businessPartCustomization', '[addPartToCart] Failed to get vehicle data')
+    return currentCart or {} 
+  end
   
   local availableParts = jbeamIO.getAvailableParts(vehicleData.ioCtx)
+  local vehicleModel = vehObj:getJBeamFilename()
   
-  -- Start with new part in parts map (like vanilla uses)
-  local addedParts = {}
-  local jbeamData = jbeamIO.getPart(vehicleData.ioCtx, partToAdd.partName)
-  if jbeamData then
-    addedParts[partToAdd.slotPath] = {
-      name = partToAdd.partName,
-      containingSlot = partToAdd.slotPath,
-      slot = partToAdd.slotPath:match("/([^/]+)/$") or "",
-      description = jbeamData
-    }
-  end
-  
-  -- Loop until no more parts added (EXACTLY like vanilla lines 589-605)
-  local werePartsAdded = true
-  while werePartsAdded do
-    addedParts, werePartsAdded = getNeededAdditionalParts(businessId, vehicleId, addedParts, baselineTree, cart)
-  end
-  
-  -- After loop completes, convert parts map to cart format and build final tree
+  -- Build temp cart with baseline + cart + new part
   local tempCart = deepcopy(cart)
-  for slotPath, part in pairs(addedParts) do
-    -- Check if part already exists in cart
-    local exists = false
-    for _, item in ipairs(tempCart) do
-      if item.type == 'part' and item.slotPath == slotPath then
-        exists = true
-        break
-      end
-    end
-    
-    if not exists then
-      -- Get part nice name and price from jbeam data
-      local partNiceName = availableParts[part.name] or part.name
-      local partValue = 0
-      if part.description and part.description.value then
-        partValue = part.description.value
-      end
-      
-      -- Get slot nice name
-      local slotNiceName = ""
-      local parentPath = slotPath:match("(.+)/[^/]+/$") or "/"
-      local parentNode = getNodeFromSlotPath(baselineTree, parentPath)
-      if parentNode and parentNode.children then
-        local slotName = slotPath:match("/([^/]+)/$") or ""
-        for childSlotName, _ in pairs(parentNode.children) do
-          if childSlotName == slotName then
-            slotNiceName = childSlotName
-            break
+  table.insert(tempCart, {
+    type = 'part',
+    partName = partToAdd.partName,
+    partNiceName = partToAdd.partNiceName or partToAdd.partName,
+    slotPath = partToAdd.slotPath,
+    slotNiceName = partToAdd.slotNiceName or "",
+    price = partToAdd.price or 0
+  })
+  
+  log('D', 'businessPartCustomization', string.format('[addPartToCart] Applying part %s to vehicle (tempCart has %d items)', partToAdd.partName, #tempCart))
+  
+  -- Use applyCartPartsToVehicle pattern to spawn vehicle with tempCart
+  -- This will automatically add default parts for empty slots
+  local initialConfig = deepcopy(initialVehicles[businessId].config)
+  
+  -- Build complete config from baseline + tempCart (same as applyCartPartsToVehicle does)
+  local completeConfig = deepcopy(initialVehicles[businessId].config)
+  
+  -- Apply all parts from tempCart to the config
+  for _, part in ipairs(tempCart) do
+    if part.type == 'part' and part.partName and part.slotPath then
+      local node = getNodeFromSlotPath(completeConfig.partsTree, part.slotPath)
+      if node then
+        node.chosenPartName = part.partName
+      else
+        -- Create node if it doesn't exist
+        local parentPath = part.slotPath:match("(.+)/[^/]+/$") or "/"
+        local parentNode = getNodeFromSlotPath(completeConfig.partsTree, parentPath)
+        if parentNode then
+          if not parentNode.children then parentNode.children = {} end
+          local slotName = part.slotPath:match("/([^/]+)/$") or part.slotPath:match("/([^/]+)$") or ""
+          if slotName and slotName ~= "" then
+            parentNode.children[slotName] = {
+              chosenPartName = part.partName,
+              path = part.slotPath,
+              children = {},
+              suitablePartNames = {part.partName},
+              unsuitablePartNames = {},
+              decisionMethod = "user"
+            }
           end
         end
       end
-      
-      table.insert(tempCart, {
-        type = 'part',
-        partName = part.name,
-        partNiceName = partNiceName,
-        slotPath = slotPath,
-        slotNiceName = slotNiceName,
-        price = partValue
-      })
     end
   end
   
-  -- Build final tree with ALL parts (baseline + cart + new + required)
-  local finalTree = buildPartsTreeFromCart(businessId, tempCart)
-  
-  -- Compare baseline vs final tree to find ALL changed parts (including children)
-  local changedPartsMap = findChangedParts(baselineTree, finalTree, {})
-  
-  -- Build final cart: keep unchanged items + add all changed parts
-  local finalCart = {}
-  
-  -- First, add all items from current cart that aren't being changed
-  for _, item in ipairs(cart) do
-    if item.type == 'part' then
-      local isBeingChanged = false
-      for slotPath, _ in pairs(changedPartsMap) do
-        if item.slotPath == slotPath then
-          isBeingChanged = true
-          break
+  -- Store fuel levels before replacing vehicle
+  storeFuelLevels(vehObj, function(storedFuelLevels)
+    local additionalVehicleData = {spawnWithEngineRunning = false}
+    core_vehicle_manager.queueAdditionalVehicleData(additionalVehicleData, vehId)
+    
+    local spawnOptions = {}
+    spawnOptions.config = completeConfig
+    spawnOptions.keepOtherVehRotation = true
+    
+    -- Replace vehicle with complete config (game will auto-add default parts)
+    core_vehicles.replaceVehicle(vehicleModel, spawnOptions, vehObj)
+    
+    -- Wait for vehicle to spawn and get actual config
+    core_vehicleBridge.requestValue(vehObj, function()
+      -- Get actual config from spawned vehicle (includes auto-added default parts)
+      local actualVehicleData = extensions.core_vehicle_manager.getVehicleData(vehId)
+      if not actualVehicleData or not actualVehicleData.config or not actualVehicleData.config.partsTree then
+        log('E', 'businessPartCustomization', '[addPartToCart] Failed to get actual vehicle config after spawn')
+        -- Restore original config
+        core_vehicles.replaceVehicle(vehicleModel, {config = initialConfig, keepOtherVehRotation = true}, vehObj)
+        restoreFuelLevels(vehObj, storedFuelLevels)
+        return
+      end
+      
+      local actualTree = actualVehicleData.config.partsTree
+      
+      log('D', 'businessPartCustomization', '[addPartToCart] Got actual config, comparing with baseline')
+      
+      -- Compare baseline vs actual config to find ALL changed parts (including auto-added defaults)
+      local changedPartsMap = findChangedParts(baselineTree, actualTree, {})
+      log('D', 'businessPartCustomization', string.format('[addPartToCart] Found %d changed parts in actual config', tableSize(changedPartsMap)))
+      
+      -- Build final cart: keep unchanged items + add all changed parts
+      local finalCart = {}
+      
+      -- First, add all items from current cart that aren't being changed
+      for _, item in ipairs(cart) do
+        if item.type == 'part' then
+          local isBeingChanged = false
+          for slotPath, _ in pairs(changedPartsMap) do
+            if item.slotPath == slotPath then
+              isBeingChanged = true
+              break
+            end
+          end
+          if not isBeingChanged then
+            table.insert(finalCart, item)
+          end
+        else
+          -- Keep non-part items (tuning, etc.)
+          table.insert(finalCart, item)
         end
       end
-      if not isBeingChanged then
-        table.insert(finalCart, item)
-      end
-    else
-      -- Keep non-part items (tuning, etc.)
-      table.insert(finalCart, item)
-    end
-  end
-  
-  -- Add all changed parts to cart with proper info
-  for slotPath, partInfo in pairs(changedPartsMap) do
-    -- Get part info from tempCart if available (has nice name and price)
-    local partData = nil
-    for _, item in ipairs(tempCart) do
-      if item.type == 'part' and item.slotPath == slotPath then
-        partData = item
-        break
-      end
-    end
-    
-    -- If not found in tempCart, get from jbeam
-    if not partData then
-      local jbeamData = jbeamIO.getPart(vehicleData.ioCtx, partInfo.partName)
-      local partNiceName = availableParts[partInfo.partName] or partInfo.partName
-      local partValue = 0
-      if jbeamData and jbeamData.value then
-        partValue = jbeamData.value
-      end
       
-      -- Get slot nice name
-      local slotNiceName = ""
-      local parentPath = slotPath:match("(.+)/[^/]+/$") or "/"
-      local parentNode = getNodeFromSlotPath(baselineTree, parentPath)
-      if parentNode and parentNode.children then
-        local slotName = slotPath:match("/([^/]+)/$") or ""
-        for childSlotName, _ in pairs(parentNode.children) do
-          if childSlotName == slotName then
-            slotNiceName = childSlotName
-            break
+      -- Add all changed parts to cart with proper info
+      for slotPath, partInfo in pairs(changedPartsMap) do
+        local jbeamData = jbeamIO.getPart(vehicleData.ioCtx, partInfo.partName)
+        
+        -- Get part nice name from jbeamData.information.description (matching part customization menu)
+        -- This matches how formatPartsTreeForUI gets part names (line 393-394 in businessComputer.lua)
+        local partNiceName = partInfo.partName
+        if jbeamData and jbeamData.information and jbeamData.information.description then
+          local desc = jbeamData.information.description
+          partNiceName = type(desc) == "table" and desc.description or desc or partInfo.partName
+        else
+          -- Fallback to availableParts if jbeamData doesn't have description
+          local partDescription = availableParts[partInfo.partName]
+          if partDescription then
+            if type(partDescription) == "string" then
+              partNiceName = partDescription
+            elseif partDescription.description then
+              local desc = partDescription.description
+              partNiceName = type(desc) == "table" and desc.description or desc or partInfo.partName
+            end
           end
         end
+        
+        -- Calculate part value (matching vanilla pattern)
+        local partValue = 0
+        if jbeamData then
+          -- Get base value from jbeam (matching vanilla line 95)
+          local baseValue = jbeamData.information and jbeamData.information.value or 100
+          
+          -- Use valueCalculator to get final value (matching vanilla line 108)
+          if career_modules_valueCalculator then
+            local partForValueCalc = {
+              name = partInfo.partName,
+              value = baseValue,
+              partCondition = {integrityValue = 1, odometer = 0, visualValue = 1},
+              vehicleModel = vehicleModel
+            }
+            partValue = math.max(roundNear(career_modules_valueCalculator.getPartValue(partForValueCalc), 5) - 0.01, 0)
+          else
+            partValue = baseValue
+          end
+        end
+        
+        -- Get slot nice name from slotInfoUi (matching part customization menu)
+        local slotNiceName = ""
+        local slotInfo = nil
+        local slotName = slotPath:match("/([^/]+)/$") or ""
+        
+        -- Primary method: Get slot info from parent part's slotInfoUi in actual tree
+        -- This is the most reliable method as it uses the actual installed parent part
+        local parentPath = slotPath:match("(.+)/[^/]+/$") or "/"
+        local actualParentNode = getNodeFromSlotPath(actualTree, parentPath)
+        if actualParentNode and actualParentNode.chosenPartName then
+          local parentJbeamData = jbeamIO.getPart(vehicleData.ioCtx, actualParentNode.chosenPartName)
+          if parentJbeamData and parentJbeamData.slotInfoUi and parentJbeamData.slotInfoUi[slotName] then
+            slotInfo = parentJbeamData.slotInfoUi[slotName]
+            local desc = slotInfo.description
+            slotNiceName = type(desc) == "table" and desc.description or desc or slotName
+            log('D', 'businessPartCustomization', string.format('[addPartToCart] Got slot nice name from parent %s: %s (slot: %s)', actualParentNode.chosenPartName, slotNiceName, slotName))
+          else
+            log('D', 'businessPartCustomization', string.format('[addPartToCart] Parent %s found but no slotInfoUi[%s]', actualParentNode.chosenPartName or 'nil', slotName))
+          end
+        else
+          log('D', 'businessPartCustomization', string.format('[addPartToCart] Could not find parent node at path: %s (for slot: %s)', parentPath, slotPath))
+        end
+        
+        -- Fallback: Try previewVehicleSlotData (built from all available parts)
+        -- This works for top-level slots or when parent lookup fails
+        if slotNiceName == "" and previewVehicleSlotData[businessId] then
+          -- Try exact path match first (for top-level slots)
+          if previewVehicleSlotData[businessId][slotPath] then
+            slotInfo = previewVehicleSlotData[businessId][slotPath]
+            if slotInfo.description then
+              local desc = slotInfo.description
+              slotNiceName = type(desc) == "table" and desc.description or desc or slotName
+            end
+          end
+          
+          -- If still not found, try to find by slot name in any path
+          if slotNiceName == "" then
+            for path, info in pairs(previewVehicleSlotData[businessId]) do
+              -- Extract slot name from path
+              local pathSlotName = path:match("/([^/]+)/$") or ""
+              if pathSlotName == slotName then
+                slotInfo = info
+                if info.description then
+                  local desc = info.description
+                  slotNiceName = type(desc) == "table" and desc.description or desc or slotName
+                  break
+                end
+              end
+            end
+          end
+        end
+        
+        -- Final fallback to slot name
+        if slotNiceName == "" then
+          slotNiceName = slotName
+        end
+        
+        -- Determine if part can be removed (matching vanilla sourcePart logic)
+        -- A part can be removed if:
+        -- 1. It's not a core slot, OR
+        -- 2. The baseline vehicle had a part in that slot (we're replacing it)
+        local canRemove = false
+        local baselinePartName = initialVehicles[businessId].partList[slotPath]
+        if slotInfo then
+          -- If not a core slot, can remove
+          if not slotInfo.coreSlot then
+            canRemove = true
+          -- If core slot but baseline had a part, can remove (replacing existing)
+          elseif baselinePartName and baselinePartName ~= "" then
+            canRemove = true
+          end
+        else
+          -- If no slot info, allow removal if baseline had a part
+          if baselinePartName and baselinePartName ~= "" then
+            canRemove = true
+          end
+        end
+        
+        local partData = {
+          type = 'part',
+          partName = partInfo.partName,
+          partNiceName = partNiceName,
+          slotPath = slotPath,
+          slotNiceName = slotNiceName,
+          price = partValue,
+          canRemove = canRemove
+        }
+        
+        -- If this is the part being directly added, use its info
+        if slotPath == partToAdd.slotPath then
+          partData.partNiceName = partToAdd.partNiceName or partData.partNiceName
+          partData.price = partToAdd.price or partData.price
+          partData.slotNiceName = partToAdd.slotNiceName or partData.slotNiceName
+          -- Directly added parts can always be removed
+          partData.canRemove = true
+        end
+        
+        table.insert(finalCart, partData)
+        log('D', 'businessPartCustomization', string.format('[addPartToCart] Added to finalCart: %s (%s) at %s, price: %s', partData.partName, partData.partNiceName, partData.slotPath, tostring(partData.price)))
       end
       
-      partData = {
-        type = 'part',
-        partName = partInfo.partName,
-        partNiceName = partNiceName,
-        slotPath = slotPath,
-        slotNiceName = slotNiceName,
-        price = partValue
+      log('D', 'businessPartCustomization', string.format('[addPartToCart] FINAL CART: %d items total', #finalCart))
+      for i, item in ipairs(finalCart) do
+        if item.type == 'part' then
+          log('D', 'businessPartCustomization', string.format('[addPartToCart]   [%d] %s (%s) at %s - $%s', i, item.partName, item.partNiceName or 'no name', item.slotPath, tostring(item.price)))
+        end
+      end
+      
+      -- Update preview vehicle with the actual config (vehicle is already spawned with correct parts)
+      previewVehicles[businessId] = {
+        config = deepcopy(actualVehicleData.config),
+        partList = flattenPartsTree(actualVehicleData.config.partsTree or {}),
+        partConditions = deepcopy(initialVehicles[businessId].partConditions or {}),
+        model = vehicleModel
       }
-    end
-    
-    -- If this is the part being directly added, use its info
-    if slotPath == partToAdd.slotPath then
-      partData.partNiceName = partToAdd.partNiceName or partData.partNiceName
-      partData.price = partToAdd.price or partData.price
-      partData.slotNiceName = partToAdd.slotNiceName or partData.slotNiceName
-    end
-    
-    table.insert(finalCart, partData)
+      
+      -- Restore fuel levels (vehicle config is already correct, just restore fuel)
+      restoreFuelLevels(vehObj, storedFuelLevels)
+      
+      -- Send updated cart back to UI via event
+      guihooks.trigger('businessComputer:onPartCartUpdated', {
+        businessId = businessId,
+        vehicleId = vehicleId,
+        cart = finalCart
+      })
+      
+      -- Request parts tree update so customization menu reflects the changes
+      if career_modules_business_businessComputer then
+        career_modules_business_businessComputer.requestVehiclePartsTree(businessId, vehicleId)
+      end
+      
+      -- Calculate and send power/weight after cart is updated (vehicle is already spawned with new parts)
+      local cacheKey = businessId .. "_" .. tostring(vehicleId)
+      local requestId = cacheKey .. "_" .. tostring(os.clock())
+      
+      -- Execute Lua command in vehicle context to get both power and weight
+      vehObj:queueLuaCommand([[
+        local engine = powertrain.getDevicesByCategory("engine")[1]
+        local stats = obj:calcBeamStats()
+        if engine and stats then
+          local power = engine.maxPower
+          local weight = stats.total_weight
+          if power and weight and weight > 0 then
+            obj:queueGameEngineLua("career_modules_business_businessPartCustomization.onPowerWeightReceived(']] .. requestId .. [[', " .. power .. ", " .. weight .. ")")
+          end
+        end
+      ]])
+      
+      -- Note: We keep the vehicle spawned with the test config (which includes all the parts)
+      -- This way the vehicle preview matches the cart. We don't restore the original config
+      -- because the user wants to see the parts they're adding.
+    end, 'ping')
+  end)
+  
+  -- Return temp cart immediately (will be updated via event)
+  return cart
+end
+
+-- Find removed parts by comparing baseline vs final part lists
+-- Returns array of part data objects ready for business inventory
+local function findRemovedParts(businessId, vehicleId)
+  if not businessId or not vehicleId then
+    return {}
   end
   
-  return finalCart
+  -- Ensure initial vehicle state is stored
+  if not initialVehicles[businessId] then
+    return {}
+  end
+  
+  local initialVehicle = initialVehicles[businessId]
+  local previewVehicle = previewVehicles[businessId]
+  
+  if not initialVehicle or not previewVehicle then
+    return {}
+  end
+  
+  local baselinePartList = initialVehicle.partList or {}
+  local finalPartList = previewVehicle.partList or {}
+  
+  local removedParts = {}
+  
+  -- Get vehicle data for jbeam access and part value calculation
+  local vehObj = getBusinessVehicleObject(businessId, vehicleId)
+  if not vehObj then return {} end
+  
+  local vehId = vehObj:getID()
+  local vehicleData = extensions.core_vehicle_manager.getVehicleData(vehId)
+  if not vehicleData then return {} end
+  
+  -- Get vehicle model
+  local vehicle = career_modules_business_businessInventory.getVehicleById(businessId, vehicleId)
+  if not vehicle or not vehicle.vehicleConfig then return {} end
+  local vehicleModel = vehicle.vehicleConfig.model_key or vehicle.model_key
+  
+  -- Compare baseline vs final - find parts that were removed
+  for slotPath, partName in pairs(baselinePartList) do
+    if partName and partName ~= "" then
+      -- Check if part is still in final config
+      local finalPartName = finalPartList[slotPath]
+      if not finalPartName or finalPartName == "" or finalPartName ~= partName then
+        -- Part was removed - create part data object
+        local partCondition = initialVehicle.partConditions and initialVehicle.partConditions[slotPath .. partName]
+        if not partCondition then
+          -- Default condition if not found
+          partCondition = {
+            integrityValue = 1,
+            visualValue = 1,
+            odometer = 0
+          }
+        end
+        
+        -- Create part data object
+        local partData = {
+          name = partName,
+          containingSlot = slotPath,
+          slot = slotPath:match("/([^/]+)/$") or slotPath:match("/([^/]+)$") or "",
+          vehicleModel = vehicleModel,
+          partCondition = partCondition
+        }
+        
+        -- Calculate part value using valueCalculator (matching vanilla pattern)
+        if career_modules_valueCalculator then
+          partData.value = career_modules_valueCalculator.getPartValue(partData) or 0
+        else
+          -- Fallback if valueCalculator not available
+          local jbeamData = jbeamIO.getPart(vehicleData.ioCtx, partName)
+          partData.value = (jbeamData and jbeamData.information and jbeamData.information.value) or 100
+        end
+        
+        table.insert(removedParts, partData)
+      end
+    end
+  end
+  
+  return removedParts
 end
 
 -- Clear preview vehicle state (called when leaving part customization)
@@ -1154,6 +1487,9 @@ M.getPreviewVehicleConfig = getPreviewVehicleConfig
 M.clearPreviewVehicle = clearPreviewVehicle
 M.getAllRequiredParts = getAllRequiredParts
 M.addPartToCart = addPartToCart
+M.findRemovedParts = findRemovedParts
 
 return M
+
+
 

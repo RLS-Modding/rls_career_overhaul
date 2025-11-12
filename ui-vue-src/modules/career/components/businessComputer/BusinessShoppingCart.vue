@@ -1,5 +1,56 @@
 <template>
   <div class="business-shopping-cart" :class="{ expanded }" v-bng-blur>
+    <!-- Confirmation Modal -->
+    <Teleport to="body">
+      <transition name="modal-fade">
+        <div v-if="showConfirmModal" class="modal-overlay" @click.self="cancelClose">
+          <div class="modal-content">
+            <h2>Confirm Exit</h2>
+            <p>Are you sure you want to leave this view? You will be losing progress.</p>
+            <div class="modal-buttons">
+              <button class="btn btn-secondary" @click="cancelClose">Cancel</button>
+              <button class="btn btn-primary" @click="confirmCancel">Yes, Leave</button>
+            </div>
+          </div>
+        </div>
+      </transition>
+    </Teleport>
+    
+    <!-- Tab Options Modal -->
+    <Teleport to="body">
+      <transition name="dropdown-fade">
+        <div v-if="tabMenuVisible" class="tab-menu-overlay" @click.self="hideTabMenu">
+          <div 
+            class="tab-menu-modal" 
+            :style="{ left: tabMenuX + 'px', top: tabMenuY + 'px' }"
+            @click.stop
+          >
+            <button class="menu-item" @click="startRenaming(tabMenuTabId)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+              Rename
+            </button>
+            <button class="menu-item" @click="store.duplicateTab(tabMenuTabId); hideTabMenu()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              Duplicate
+            </button>
+            <button class="menu-item" @click="clearCurrentTab(); hideTabMenu()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+              </svg>
+              Clear
+            </button>
+          </div>
+        </div>
+      </transition>
+    </Teleport>
+    
     <div class="cart-header">
       <h3>Shopping Cart</h3>
       <button class="expand-toggle" @click="expanded = !expanded">
@@ -22,25 +73,45 @@
       <div v-if="expanded" class="cart-main">
       <div class="cart-tabs">
         <div class="tabs-list">
-          <button
+          <div
             v-for="tab in store.cartTabs"
             :key="tab.id"
-            class="tab-button"
-            :class="{ active: tab.id === store.activeTabId }"
-            @click="store.switchTab(tab.id)"
+            class="tab-wrapper"
+            @contextmenu.prevent="showTabMenu($event, tab.id)"
           >
-            {{ tab.name }}
             <button
-              v-if="store.cartTabs.length > 1"
-              class="tab-close"
-              @click.stop="store.deleteTab(tab.id)"
+              class="tab-button"
+              :class="{ active: tab.id === store.activeTabId }"
+              @click="handleTabClick(tab.id, $event)"
             >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"/>
-                <line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
+              <input
+                v-if="editingTabId === tab.id"
+                v-model="editingTabName"
+                type="text"
+                @focus="onRenameFocus"
+                @blur="onRenameBlur(tab.id)"
+                @keydown.enter.stop="finishRenaming(tab.id)"
+                @keydown.esc.stop="cancelRenaming"
+                @keydown.stop @keyup.stop @keypress.stop
+                class="tab-rename-input"
+                v-bng-text-input
+                :ref="el => { if (el) renameInput = el }"
+                @click.stop
+                @mousedown.stop
+              />
+              <span v-else>{{ tab.name }}</span>
+              <button
+                v-if="store.cartTabs.length > 1"
+                class="tab-close"
+                @click.stop="store.deleteTab(tab.id)"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
             </button>
-          </button>
+          </div>
           <button class="tab-add" @click="store.createNewTab" title="New Build">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="12" y1="5" x2="12" y2="19"/>
@@ -55,7 +126,6 @@
         </div>
         
         <template v-if="partsItems.length > 0">
-          <div class="cart-section-header">Parts</div>
           <PartsTreeItem
             v-for="node in store.partsTree"
             :key="node.id"
@@ -84,43 +154,64 @@
       </div>
       
       <div class="cart-footer">
-        <div v-if="store.originalPower !== null && store.currentPower !== null" class="power-weight-stats">
-          <div class="stats-container">
-            <div class="stat-row">
-              <div class="stat-label-col">Power:</div>
-              <div class="stat-value-col">{{ Math.round(store.originalPower) }} kW</div>
-              <div class="stat-arrow-col">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M5 12h14M12 5l7 7-7 7"/>
-                </svg>
+        <transition name="footer-collapse">
+          <div v-if="!footerCollapsed" class="footer-details">
+            <div v-if="store.originalPower !== null && store.currentPower !== null" class="power-weight-stats">
+              <div class="stats-container">
+                <div class="stat-row">
+                  <div class="stat-label-col">Power:</div>
+                  <div class="stat-value-col">{{ Math.round(store.originalPower) }} kW</div>
+                  <div class="stat-arrow-col">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                  </div>
+                  <div class="stat-value-col">{{ Math.round(store.currentPower) }} kW</div>
+                </div>
+                <div class="stat-row">
+                  <div class="stat-label-col">Weight:</div>
+                  <div class="stat-value-col">{{ Math.round(store.originalWeight) }} kg</div>
+                  <div class="stat-arrow-col">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                  </div>
+                  <div class="stat-value-col">{{ Math.round(store.currentWeight) }} kg</div>
+                </div>
+                <div class="stat-row">
+                  <div class="stat-label-col">Power/Weight:</div>
+                  <div class="stat-value-col">{{ store.originalPowerToWeightRatio ? store.originalPowerToWeightRatio.toFixed(2) : '-' }}</div>
+                  <div class="stat-arrow-col">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                  </div>
+                  <div class="stat-value-col">{{ store.powerToWeightRatio ? store.powerToWeightRatio.toFixed(2) : '-' }}</div>
+                </div>
               </div>
-              <div class="stat-value-col">{{ Math.round(store.currentPower) }} kW</div>
             </div>
-            <div class="stat-row">
-              <div class="stat-label-col">Weight:</div>
-              <div class="stat-value-col">{{ Math.round(store.originalWeight) }} kg</div>
-              <div class="stat-arrow-col">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M5 12h14M12 5l7 7-7 7"/>
-                </svg>
+            <div class="cart-summary-breakdown">
+              <div class="summary-row">
+                <span>Subtotal:</span>
+                <span>${{ subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
               </div>
-              <div class="stat-value-col">{{ Math.round(store.currentWeight) }} kg</div>
-            </div>
-            <div class="stat-row">
-              <div class="stat-label-col">Power/Weight:</div>
-              <div class="stat-value-col">{{ store.originalPowerToWeightRatio ? store.originalPowerToWeightRatio.toFixed(2) : '-' }}</div>
-              <div class="stat-arrow-col">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M5 12h14M12 5l7 7-7 7"/>
-                </svg>
+              <div class="summary-row">
+                <span>Tax (7%):</span>
+                <span>${{ taxAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
               </div>
-              <div class="stat-value-col">{{ store.powerToWeightRatio ? store.powerToWeightRatio.toFixed(2) : '-' }}</div>
             </div>
           </div>
-        </div>
-        <div class="cart-total">
-          <span>Total:</span>
-          <span class="total-amount">${{ totalCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
+        </transition>
+        <div class="cart-total-wrapper">
+          <div class="cart-total">
+            <span>Total:</span>
+            <span class="total-amount">${{ totalCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
+          </div>
+          <button class="footer-toggle" @click="footerCollapsed = !footerCollapsed" :title="footerCollapsed ? 'Show details' : 'Hide details'">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" :class="{ rotated: footerCollapsed }">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
         </div>
         <div class="cart-buttons">
           <button class="btn btn-secondary" @click="cancel">Cancel</button>
@@ -148,11 +239,11 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue"
+import { ref, computed, watch, onMounted, onBeforeUnmount, Teleport, nextTick } from "vue"
 import { useBusinessComputerStore } from "../../stores/businessComputerStore"
 import { lua } from "@/bridge"
 import { useEvents } from "@/services/events"
-import { vBngBlur } from "@/common/directives"
+import { vBngBlur, vBngTextInput } from "@/common/directives"
 import PartsTreeItem from "./PartsTreeItem.vue"
 
 const store = useBusinessComputerStore()
@@ -165,6 +256,15 @@ const handlePowerWeightData = (data) => {
 
 const expanded = ref(false)
 const businessBalance = ref(0)
+const tabMenuVisible = ref(false)
+const tabMenuTabId = ref(null)
+const tabMenuX = ref(0)
+const tabMenuY = ref(0)
+const editingTabId = ref(null)
+const editingTabName = ref('')
+const renameInput = ref(null)
+const showConfirmModal = ref(false)
+const footerCollapsed = ref(false)
 
 const partsItems = computed(() => store.partsCart || [])
 const tuningItems = computed(() => store.tuningCart || [])
@@ -173,8 +273,18 @@ const tuningCost = computed(() => {
   return store.tuningCost || 0
 })
 
-const totalCost = computed(() => {
+const salesTaxRate = 0.07 // 7% sales tax (matching vanilla)
+
+const subtotal = computed(() => {
   return store.getCartTotal || 0
+})
+
+const taxAmount = computed(() => {
+  return subtotal.value * salesTaxRate
+})
+
+const totalCost = computed(() => {
+  return subtotal.value + taxAmount.value
 })
 
 const totalItems = computed(() => {
@@ -253,7 +363,35 @@ const purchase = async () => {
   }
 }
 
-const cancel = async () => {
+const cancel = () => {
+  // Check if there are items in cart - if so, show confirmation
+  if (partsItems.value.length > 0 || tuningItems.value.length > 0) {
+    showConfirmModal.value = true
+    return
+  }
+  
+  // No items in cart, proceed with cancel
+  performCancel()
+}
+
+const confirmCancel = async () => {
+  showConfirmModal.value = false
+  await performCancel()
+}
+
+const cancelClose = async () => {
+  showConfirmModal.value = false
+  
+  // Navigate back to home menu
+  store.switchView('home')
+  
+  // Also clear vehicle view if we're in one
+  if (store.vehicleView) {
+    await store.closeVehicleView()
+  }
+}
+
+const performCancel = async () => {
   // Reset vehicle to original state before clearing cart
   if (store.businessId && store.pulledOutVehicle?.vehicleId) {
     try {
@@ -269,6 +407,117 @@ const cancel = async () => {
   
   store.clearCart()
   expanded.value = false
+}
+
+const handleTabClick = (tabId, event) => {
+  // Don't do anything if we're currently editing this tab
+  if (editingTabId.value === tabId) {
+    return
+  }
+  
+  // If clicking on active tab, show context menu
+  if (tabId === store.activeTabId) {
+    // Show context menu positioned under the button
+    if (event) {
+      showTabMenu(event, tabId)
+    }
+    return
+  }
+  // Otherwise switch to the tab
+  store.switchTab(tabId)
+  hideTabMenu()
+}
+
+const showTabMenu = (event, tabId) => {
+  if (tabId !== store.activeTabId) return
+  
+  // Use the button element from the event
+  const button = event.currentTarget || event.target.closest('.tab-button')
+  if (!button) return
+  
+  const rect = button.getBoundingClientRect()
+  
+  tabMenuTabId.value = tabId
+  tabMenuX.value = rect.left
+  tabMenuY.value = rect.bottom + 4 // Position just below the button with small gap
+  tabMenuVisible.value = true
+}
+
+const hideTabMenu = () => {
+  tabMenuVisible.value = false
+  tabMenuTabId.value = null
+}
+
+const onRenameFocus = () => {
+  try { lua.setCEFTyping(true) } catch (_) {}
+}
+
+const onRenameBlur = (tabId) => {
+  try { lua.setCEFTyping(false) } catch (_) {}
+  finishRenaming(tabId)
+}
+
+const startRenaming = async (tabId) => {
+  const tab = store.cartTabs.find(t => t.id === tabId)
+  if (!tab) return
+  
+  editingTabId.value = tabId
+  editingTabName.value = tab.name
+  hideTabMenu()
+  
+  // Wait for Vue to update the DOM, then focus the input
+  await nextTick()
+  await nextTick() // Double nextTick to ensure DOM is fully updated
+  
+  // Use requestAnimationFrame to ensure input is rendered
+  requestAnimationFrame(() => {
+    if (renameInput.value) {
+      renameInput.value.focus()
+      renameInput.value.select()
+    }
+  })
+}
+
+const finishRenaming = (tabId) => {
+  if (editingTabName.value && editingTabName.value.trim()) {
+    store.renameTab(tabId, editingTabName.value)
+  }
+  editingTabId.value = null
+  editingTabName.value = ''
+}
+
+const cancelRenaming = () => {
+  editingTabId.value = null
+  editingTabName.value = ''
+}
+
+const clearCurrentTab = async () => {
+  // Clear only the current tab's cart (not all tabs)
+  store.partsCart = []
+  store.tuningCart = []
+  
+  // Reset vehicle to original state
+  if (store.businessId && store.pulledOutVehicle?.vehicleId) {
+    try {
+      await lua.career_modules_business_businessComputer.resetVehicleToOriginal(
+        store.businessId,
+        store.pulledOutVehicle.vehicleId
+      )
+      // Power/weight will be updated automatically by Lua after vehicle replacement
+      
+      // Wait a bit for vehicle replacement to complete, then reload parts tree
+      setTimeout(async () => {
+        if (store.pulledOutVehicle?.vehicleId) {
+          await store.requestVehiclePartsTree(store.pulledOutVehicle.vehicleId)
+        }
+      }, 300)
+    } catch (error) {
+      console.error("Failed to reset vehicle to original:", error)
+    }
+  }
+  
+  // Save the cleared state to the current tab
+  store.saveCurrentTabState()
 }
 
 watch([() => store.businessType, () => store.businessId], () => {
@@ -297,6 +546,9 @@ onMounted(async () => {
   events.on('bank:onAccountUpdate', handleAccountUpdate)
   loadBalance()
   
+  // Close context menu when clicking outside
+  document.addEventListener('click', hideTabMenu)
+  
   // Initialize cart when component mounts if vehicle is already pulled out
   // Delay until UI animation completes (600ms) to avoid vehicle spawning during animation
   if (store.pulledOutVehicle && (store.vehicleView === 'parts' || store.vehicleView === 'tuning')) {
@@ -323,6 +575,7 @@ watch(() => store.pulledOutVehicle, async (newVehicle) => {
 
 onBeforeUnmount(() => {
   events.off('bank:onAccountUpdate', handleAccountUpdate)
+  document.removeEventListener('click', hideTabMenu)
 })
 </script>
 
@@ -332,7 +585,6 @@ onBeforeUnmount(() => {
   bottom: 2em;
   right: 2em;
   width: 28em;
-  max-height: 40em;
   background: rgba(15, 15, 15, 0.95);
   border: 2px solid rgba(245, 73, 0, 0.4);
   border-radius: 0.5em;
@@ -342,7 +594,7 @@ onBeforeUnmount(() => {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
   
   &.expanded {
-    max-height: 40em;
+    height: 40em;
   }
 }
 
@@ -425,6 +677,7 @@ onBeforeUnmount(() => {
     gap: 0.5em;
     align-items: center;
     overflow-x: auto;
+    position: relative;
     
     &::-webkit-scrollbar {
       height: 4px;
@@ -438,6 +691,10 @@ onBeforeUnmount(() => {
       background: rgba(255, 255, 255, 0.1);
       border-radius: 2px;
     }
+  }
+  
+  .tab-wrapper {
+    position: relative;
   }
   
   .tab-button {
@@ -489,6 +746,34 @@ onBeforeUnmount(() => {
       }
     }
   }
+  
+  .tab-rename-input {
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0.25em;
+    color: inherit;
+    font-size: inherit;
+    font-family: inherit;
+    font-weight: inherit;
+    outline: none;
+    text-align: left;
+    
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+    
+    &:focus {
+      outline: none;
+    }
+  }
+  
+  .tab-button.active .tab-rename-input {
+    color: white;
+  }
+  
   
   .tab-add {
     display: flex;
@@ -643,15 +928,19 @@ onBeforeUnmount(() => {
   border-top: 2px solid rgba(245, 73, 0, 0.4);
   background: rgba(23, 23, 23, 0.5);
   
+  .footer-details {
+    overflow: hidden;
+  }
+  
   .power-weight-stats {
-    margin-bottom: 1em;
-    padding-bottom: 1em;
+    margin-bottom: 0.75em;
+    padding-bottom: 0.75em;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     
     .stats-container {
       display: grid;
       grid-template-columns: auto 1fr auto 1fr;
-      gap: 0.75em;
+      gap: 0.5em;
       align-items: center;
     }
     
@@ -728,11 +1017,43 @@ onBeforeUnmount(() => {
     }
   }
   
-  .cart-total {
+  .cart-summary-breakdown {
+    margin-bottom: 0.75em;
+    padding-bottom: 0.75em;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.25em;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.875em;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+      
+      span:last-child {
+        font-family: 'Courier New', monospace;
+        color: rgba(255, 255, 255, 0.8);
+      }
+    }
+  }
+  
+  .cart-total-wrapper {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1em;
+    gap: 0.5em;
+  }
+  
+  .cart-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex: 1;
     color: rgba(255, 255, 255, 0.9);
     font-size: 1em;
     
@@ -741,6 +1062,38 @@ onBeforeUnmount(() => {
       font-weight: 600;
       font-size: 1.25em;
       font-family: 'Courier New', monospace;
+    }
+  }
+  
+  .footer-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2em;
+    height: 2em;
+    padding: 0;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 0.25em;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    
+    &:hover {
+      color: rgba(245, 73, 0, 1);
+      border-color: rgba(245, 73, 0, 0.6);
+      background: rgba(245, 73, 0, 0.1);
+    }
+    
+    svg {
+      width: 16px;
+      height: 16px;
+      transition: transform 0.2s ease;
+      
+      &.rotated {
+        transform: rotate(180deg);
+      }
     }
   }
   
@@ -782,6 +1135,194 @@ onBeforeUnmount(() => {
       background: rgba(75, 75, 75, 1);
     }
   }
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background: rgba(15, 15, 15, 0.95);
+  border: 2px solid rgba(245, 73, 0, 0.6);
+  border-radius: 0.5em;
+  padding: 2em;
+  max-width: 30em;
+  width: 90%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  
+  h2 {
+    margin: 0 0 1em 0;
+    color: white;
+    font-size: 1.5em;
+    font-weight: 600;
+  }
+  
+  p {
+    margin: 0 0 2em 0;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1em;
+    line-height: 1.5;
+  }
+  
+  .modal-buttons {
+    display: flex;
+    gap: 1em;
+    justify-content: flex-end;
+  }
+  
+  .btn {
+    padding: 0.75em 1.5em;
+    border: none;
+    border-radius: 0.25em;
+    font-size: 0.875em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    
+    &.btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.9);
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.15);
+      }
+    }
+    
+    &.btn-primary {
+      background: #F54900;
+      color: white;
+      
+      &:hover {
+        background: #ff5a14;
+        box-shadow: 0 0 10px rgba(245, 73, 0, 0.4);
+      }
+    }
+  }
+}
+
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.2s ease;
+  
+  .modal-content {
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+}
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+  
+  .modal-content {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+}
+
+.tab-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: transparent;
+  z-index: 9999;
+  pointer-events: auto;
+}
+
+.tab-menu-modal {
+  position: fixed;
+  background: rgba(15, 15, 15, 0.95);
+  border: 2px solid rgba(245, 73, 0, 0.6);
+  border-radius: 0.5em;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  z-index: 10000;
+  min-width: 180px;
+  padding: 0.5em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+  backdrop-filter: blur(4px);
+  
+  .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75em;
+    padding: 0.75em 1em;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.875em;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s;
+    border-radius: 0.375em;
+    
+    &:hover {
+      background: rgba(245, 73, 0, 0.3);
+      color: white;
+    }
+    
+    &:active {
+      background: rgba(245, 73, 0, 0.4);
+    }
+    
+    svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      stroke-width: 2;
+    }
+  }
+}
+
+.dropdown-fade-enter-active,
+.dropdown-fade-leave-active {
+  transition: opacity 0.15s ease;
+  
+  .tab-menu-modal {
+    transition: transform 0.15s ease, opacity 0.15s ease;
+  }
+}
+
+.dropdown-fade-enter-from,
+.dropdown-fade-leave-to {
+  opacity: 0;
+  
+  .tab-menu-modal {
+    transform: translateY(-8px) scale(0.95);
+    opacity: 0;
+  }
+}
+
+.footer-collapse-enter-active,
+.footer-collapse-leave-active {
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.footer-collapse-enter-from,
+.footer-collapse-leave-to {
+  max-height: 0;
+  opacity: 0;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.footer-collapse-enter-to,
+.footer-collapse-leave-from {
+  max-height: 500px;
+  opacity: 1;
 }
 </style>
 

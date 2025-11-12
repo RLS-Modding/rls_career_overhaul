@@ -449,21 +449,12 @@ const installPart = async (part, slot) => {
     slotName: slot.slotName
   }
   
-  // Add part to cart (this will also add required parts)
+  // Add part to cart (this will also add required parts and update vehicle preview)
+  // The addPartToCart function spawns the vehicle with the parts, compares configs to find
+  // all required child parts, then sends updated cart via event and updates the vehicle preview
   await store.addPartToCart(part, normalizedSlot)
   
-  // Apply baseline + all cart parts (including the newly added one and required parts) to vehicle
-  if (store.pulledOutVehicle && store.pulledOutVehicle.vehicleId && store.businessId) {
-    try {
-      await lua.career_modules_business_businessComputer.applyCartPartsToVehicle(
-        store.businessId,
-        store.pulledOutVehicle.vehicleId,
-        store.partsCart
-      )
-    } catch (error) {
-      console.error("Failed to apply cart parts to vehicle:", error)
-    }
-  }
+  // Parts tree will be automatically reloaded via the event handler in addPartToCart
 }
 
 const handlePartsTreeData = (data) => {
@@ -620,6 +611,17 @@ watch(() => store.pulledOutVehicle, (newVehicle, oldVehicle) => {
     navigationPath.value = []
   }
   // Don't load data here - wait for onMounted
+})
+
+// Watch for tab changes and reload parts tree to reflect the new tab's cart
+watch(() => store.activeTabId, async (newTabId, oldTabId) => {
+  if (newTabId && newTabId !== oldTabId && store.pulledOutVehicle && store.vehicleView === 'parts') {
+    // Wait for the vehicle to update with the new tab's parts (switchTab applies parts asynchronously)
+    // Give it enough time for vehicle replacement to complete
+    setTimeout(() => {
+      loadPartsTree()
+    }, 600) // Delay to ensure vehicle has been updated with new tab's parts
+  }
 })
 
 onMounted(() => {

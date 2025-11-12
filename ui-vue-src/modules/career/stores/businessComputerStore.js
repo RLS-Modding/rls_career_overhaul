@@ -1,6 +1,7 @@
 import { computed, ref } from "vue"
 import { defineStore } from "pinia"
 import { lua } from "@/bridge"
+import { useBridge } from "@/bridge"
 
 export const useBusinessComputerStore = defineStore("businessComputer", () => {
   const businessData = ref({})
@@ -329,12 +330,26 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   const switchTab = async (tabId) => {
     if (tabId === activeTabId.value) return
     
+    // Save current tab state first
     saveCurrentTabState()
+    
+    // Get the target tab's state
+    const targetTab = cartTabs.value.find(t => t.id === tabId)
+    if (!targetTab) return
+    
+    // Compare current cart with target tab's saved state
+    const currentParts = JSON.stringify(partsCart.value)
+    const currentTuning = JSON.stringify(tuningCart.value)
+    const targetParts = JSON.stringify(targetTab.parts || [])
+    const targetTuning = JSON.stringify(targetTab.tuning || [])
+    const hasSameContent = currentParts === targetParts && currentTuning === targetTuning
+    
+    // Switch to the tab
     activeTabId.value = tabId
     loadTabState(tabId)
     
-    // Restore vehicle state with parts from this tab
-    if (businessId.value && pulledOutVehicle.value?.vehicleId) {
+    // Only reload vehicle if the content is different
+    if (!hasSameContent && businessId.value && pulledOutVehicle.value?.vehicleId) {
       try {
         // Reset to original first
         await lua.career_modules_business_businessComputer.resetVehicleToOriginal(
@@ -369,6 +384,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
         console.error("Failed to restore vehicle state for tab:", error)
       }
     }
+    // If hasSameContent is true, vehicle already has the correct parts/tuning, so no reload needed
   }
   
   const deleteTab = (tabId) => {
@@ -386,6 +402,117 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     }
   }
   
+  const duplicateTab = async (tabId) => {
+    const tab = cartTabs.value.find(t => t.id === tabId)
+    if (!tab) return
+    
+    // Save current tab state first
+    saveCurrentTabState()
+    
+    // Check if we're duplicating the active tab (same parts/tuning = no reload needed)
+    const isDuplicatingActiveTab = tabId === activeTabId.value
+    const currentParts = JSON.stringify(partsCart.value)
+    const currentTuning = JSON.stringify(tuningCart.value)
+    const tabParts = JSON.stringify(tab.parts || [])
+    const tabTuning = JSON.stringify(tab.tuning || [])
+    const hasSameContent = isDuplicatingActiveTab && 
+                           currentParts === tabParts && 
+                           currentTuning === tabTuning
+    
+    // Find highest build number
+    let maxNumber = 0
+    cartTabs.value.forEach(t => {
+      const match = t.name.match(/^Build (\d+)$/)
+      if (match) {
+        const num = parseInt(match[1], 10)
+        if (num > maxNumber) maxNumber = num
+      }
+    })
+    const newTabNumber = maxNumber + 1
+    
+    // Create duplicate tab with copied parts and tuning
+    const duplicatedTab = {
+      id: `tab_${Date.now()}`,
+      name: `Build ${newTabNumber}`,
+      parts: JSON.parse(JSON.stringify(tab.parts || [])), // Deep copy
+      tuning: JSON.parse(JSON.stringify(tab.tuning || [])) // Deep copy
+    }
+    
+    cartTabs.value.push(duplicatedTab)
+    activeTabId.value = duplicatedTab.id
+    
+    // Load the duplicated tab's state
+    loadTabState(duplicatedTab.id)
+    
+    // Only reload vehicle if the content is different (shouldn't happen when duplicating, but safety check)
+    if (!hasSameContent && businessId.value && pulledOutVehicle.value?.vehicleId) {
+      try {
+        // Reset to original first
+        await lua.career_modules_business_businessComputer.resetVehicleToOriginal(
+          businessId.value,
+          pulledOutVehicle.value.vehicleId
+        )
+        
+        // Then apply parts from duplicated tab
+        if (partsCart.value.length > 0) {
+          await lua.career_modules_business_businessComputer.applyPartsToVehicle(
+            businessId.value,
+            pulledOutVehicle.value.vehicleId,
+            partsCart.value
+          )
+        }
+        
+        // Apply tuning from duplicated tab
+        if (tuningCart.value.length > 0) {
+          const tuningVars = {}
+          tuningCart.value.forEach(change => {
+            tuningVars[change.varName] = change.value
+          })
+          await lua.career_modules_business_businessComputer.applyTuningToVehicle(
+            businessId.value,
+            pulledOutVehicle.value.vehicleId,
+            tuningVars
+          )
+        }
+      } catch (error) {
+        console.error("Failed to apply duplicated tab state:", error)
+      }
+    }
+    // If hasSameContent is true, vehicle already has the correct parts/tuning, so no reload needed
+  }
+  
+  const renameTab = (tabId, newName) => {
+    const tab = cartTabs.value.find(t => t.id === tabId)
+    if (!tab) return
+    
+    // Trim and validate name
+    const trimmedName = (newName || '').trim()
+    if (!trimmedName || trimmedName.length === 0) return
+    
+    tab.name = trimmedName
+    saveCurrentTabState()
+  }
+  
+  const { events } = useBridge()
+  
+  const handlePartCartUpdated = (data) => {
+    if (data.businessId === businessId.value && data.vehicleId === pulledOutVehicle.value?.vehicleId) {
+      if (data.cart && Array.isArray(data.cart)) {
+      // Add IDs to cart items for Vue (Lua doesn't need them)
+      partsCart.value = data.cart.map(item => ({
+        ...item,
+        id: `${item.slotPath}_${item.partName}`,
+        canRemove: item.canRemove !== false // Preserve canRemove flag
+      }))
+        // Auto-save to current tab when cart is updated
+        saveCurrentTabState()
+      }
+    }
+  }
+  
+  // Setup event listener
+  events.on('businessComputer:onPartCartUpdated', handlePartCartUpdated)
+  
   const addPartToCart = async (part, slot) => {
     if (!businessId.value || !pulledOutVehicle.value?.vehicleId) {
       return
@@ -400,18 +527,17 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     }
     
     try {
-      // Call Lua to add part to cart and get back the complete cart (with required parts)
-      const updatedCart = await lua.career_modules_business_businessComputer.addPartToCart(
+      // Call Lua to add part to cart (returns temp cart immediately, final cart comes via event)
+      const tempCart = await lua.career_modules_business_businessComputer.addPartToCart(
         businessId.value,
         pulledOutVehicle.value.vehicleId,
         partsCart.value,
         partToAdd
       )
       
-      // Update Vue cart with the complete cart from Lua (includes required parts)
-      if (updatedCart && Array.isArray(updatedCart)) {
-        // Add IDs to cart items for Vue (Lua doesn't need them)
-        partsCart.value = updatedCart.map(item => ({
+      // Update Vue cart with temp cart immediately (will be updated via event when vehicle spawns)
+      if (tempCart && Array.isArray(tempCart)) {
+        partsCart.value = tempCart.map(item => ({
           ...item,
           id: `${item.slotPath}_${item.partName}`
         }))
@@ -427,23 +553,61 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   }
 
   const removePartFromCart = async (itemId) => {
-    const index = partsCart.value.findIndex(item => item.id === itemId)
-    if (index >= 0) {
-      partsCart.value.splice(index, 1)
-      saveCurrentTabState()
-      
-      // Apply baseline + remaining cart parts to vehicle
-      if (businessId.value && pulledOutVehicle.value?.vehicleId) {
-        try {
-          await lua.career_modules_business_businessComputer.applyCartPartsToVehicle(
-            businessId.value,
-            pulledOutVehicle.value.vehicleId,
-            partsCart.value
-          )
-          // Power/weight will be updated when vehicle replacement completes (via hook)
-        } catch (error) {
-          console.error("Failed to apply cart parts after removal:", error)
+    // Build the parts tree to find parent-child relationships
+    const tree = buildPartsTree(partsCart.value)
+    
+    // Find the node to remove and collect all its children IDs recursively
+    const collectChildIds = (node, targetId, collectedIds = []) => {
+      if (node.id === targetId) {
+        // Found the target node, collect all its children recursively
+        const collectAllChildren = (childNode) => {
+          collectedIds.push(childNode.id)
+          if (childNode.children && childNode.children.length > 0) {
+            for (const grandchild of childNode.children) {
+              collectAllChildren(grandchild)
+            }
+          }
         }
+        if (node.children && node.children.length > 0) {
+          for (const child of node.children) {
+            collectAllChildren(child)
+          }
+        }
+        return true
+      }
+      
+      // Search in children
+      if (node.children && node.children.length > 0) {
+        for (const child of node.children) {
+          if (collectChildIds(child, targetId, collectedIds)) {
+            return true
+          }
+        }
+      }
+      return false
+    }
+    
+    // Collect all IDs to remove (parent + all children)
+    const idsToRemove = [itemId]
+    for (const rootNode of tree) {
+      collectChildIds(rootNode, itemId, idsToRemove)
+    }
+    
+    // Remove all collected IDs from cart
+    partsCart.value = partsCart.value.filter(item => !idsToRemove.includes(item.id))
+    saveCurrentTabState()
+    
+    // Apply baseline + remaining cart parts to vehicle
+    if (businessId.value && pulledOutVehicle.value?.vehicleId) {
+      try {
+        await lua.career_modules_business_businessComputer.applyCartPartsToVehicle(
+          businessId.value,
+          pulledOutVehicle.value.vehicleId,
+          partsCart.value
+        )
+        // Power/weight will be updated when vehicle replacement completes (via hook)
+      } catch (error) {
+        console.error("Failed to apply cart parts after removal:", error)
       }
     }
   }
@@ -727,6 +891,8 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     createNewTab,
     switchTab,
     deleteTab,
+    duplicateTab,
+    renameTab,
     initializeCartForVehicle,
     buildPartsTree,
     partsTree,

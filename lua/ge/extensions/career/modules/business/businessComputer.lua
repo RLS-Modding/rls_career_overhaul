@@ -725,12 +725,14 @@ local function purchaseCartItems(businessId, accountId, cartData)
 
   local parts = cartData.parts or {}
   local tuning = cartData.tuning or {}
+  
+  local salesTax = 0.07 -- 7% sales tax (matching vanilla)
 
-  -- Calculate total cost
-  local totalCost = 0
+  -- Calculate subtotal (parts + tuning, before tax)
+  local subtotal = 0
 
   for _, part in ipairs(parts) do
-    totalCost = totalCost + (part.price or 0)
+    subtotal = subtotal + (part.price or 0)
   end
 
   -- Calculate tuning cost properly
@@ -745,16 +747,20 @@ local function purchaseCartItems(businessId, accountId, cartData)
       end
       
       local tuningCost = calculateTuningCost(businessId, vehicle.vehicleId, tuningVars, originalVars)
-      totalCost = totalCost + tuningCost
+      subtotal = subtotal + tuningCost
     else
       -- Fallback if vehicle not found
-      totalCost = totalCost + (50 * #tuning)
+      subtotal = subtotal + (50 * #tuning)
     end
   end
 
-  if totalCost <= 0 then
+  if subtotal <= 0 then
     return false
   end
+  
+  -- Calculate tax and total
+  local taxAmount = subtotal * salesTax
+  local totalCost = subtotal + taxAmount
 
   -- Charge from account
   local success = career_modules_bank.payFromAccount({
@@ -829,6 +835,15 @@ local function purchaseCartItems(businessId, accountId, cartData)
         if pulledOutVehicle and pulledOutVehicle.vehicleId == vehicle.vehicleId then
           pulledOutVehicle.config = vehicle.config
           pulledOutVehicle.partList = vehicle.partList
+        end
+        
+        -- Find removed parts and add them to business inventory (matching vanilla updateInventory pattern)
+        if career_modules_business_businessPartCustomization and career_modules_business_businessPartInventory then
+          local removedParts = career_modules_business_businessPartCustomization.findRemovedParts(businessId, vehicle.vehicleId)
+          for _, removedPart in ipairs(removedParts) do
+            -- Add part to business inventory
+            career_modules_business_businessPartInventory.addPart(businessId, removedPart)
+          end
         end
       end
     end
