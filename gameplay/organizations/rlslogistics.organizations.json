@@ -2607,7 +2607,59 @@
   "moneyGrabBusiness": {
     "name": "MoneyGrab Business Banking",
     "description": "Business loans",
-    "icon": "beamCurrency"
+    "icon": "beamCurrency",
+    "reputationLevels": [
+      {
+        // Level -1
+        "loanerCut": {
+          "value": 0.75,
+          "icon": "boxPickUp03"
+        },
+        "loans": {
+          "max": 50000,
+          "rate": 0.50
+        },
+        "requiredValue": -75,
+        "min": -200
+      },
+      {
+        // Level 0
+        "loanerCut": {
+          "value": 0.5,
+          "icon": "boxPickUp03"
+        },
+        "loans": {
+          "max": 50000,
+          "rate": 0.25
+        },
+        "requiredValue": -25
+      },
+      {
+        // Level 1
+        "loans": {
+          "max": 100000,
+          "rate": 0.20
+        },
+        "requiredValue": 100
+      },
+      {
+        // Level 2
+        "loans": {
+          "max": 250000,
+          "rate": 0.15
+        },
+        "requiredValue": 250
+      },
+      {
+        // Level 3
+        "loans": {
+          "max": 500000,
+          "rate": 0.10
+        },
+        "requiredValue": 750,
+        "max": 1000
+      }
+    ]
   },
   "salmonBank": {
     "name": "Salmon's Private Bank",
