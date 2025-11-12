@@ -210,7 +210,24 @@ local function spawnBusinessVehicle(businessId, vehicleId)
     keepLoaded = true
   }
   
+  -- If vehicle has a custom config with partsTree, use it
+  if vehicle.config and vehicle.config.partsTree then
+    vehicleData.config = vehicle.config
+  end
+  
   local vehObj = core_vehicles.spawnNewVehicle(modelKey, vehicleData)
+  
+  -- Apply part conditions if they exist
+  if vehicle.partConditions and vehObj then
+    core_vehicleBridge.executeAction(vehObj, 'initPartConditions', vehicle.partConditions, nil, nil, nil, nil)
+  end
+  
+  -- Apply tuning vars if they exist
+  if vehicle.vars and vehObj then
+    for varName, value in pairs(vehicle.vars) do
+      core_vehicleBridge.executeAction(vehObj, 'setVar', varName, value)
+    end
+  end
   if not vehObj then 
     log("E", "businessInventory", "spawnBusinessVehicle: core_vehicles.spawnNewVehicle returned nil")
     return nil 

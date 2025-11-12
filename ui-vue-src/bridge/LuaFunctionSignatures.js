@@ -1152,6 +1152,8 @@ export default {
   },
 
   career_modules_business_businessComputer: {
+    getAllRequiredParts: (businessId, vehicleId, parts, cartParts) => [String, Integer, Array, Array],
+    addPartToCart: (businessId, vehicleId, currentCart, partToAdd) => [String, Integer, Array, Object],
     getBusinessComputerUIData: (businessType, businessId) => [String, String],
     acceptJob: (businessId, jobId) => [String, Integer],
     declineJob: (businessId, jobId) => [String, Integer],
@@ -1166,6 +1168,38 @@ export default {
     requestVehicleTuningData: (businessId, vehicleId) => [String, Integer],
     applyVehicleTuning: (businessId, vehicleId, tuningVars) => [String, Integer, Object],
     clearVehicleDataCaches: () => {},
+    getBusinessAccountBalance: (businessType, businessId) => [String, String],
+    purchaseCartItems: (businessId, accountId, cartData) => [String, String, Object],
+    installPartOnVehicle: (businessId, vehicleId, partName, slotPath) => [String, Integer, String, String],
+    initializePreviewVehicle: (businessId, vehicleId) => [String, Integer],
+    applyTuningToVehicle: (businessId, vehicleId, tuningVars) => [String, Integer, Object],
+    calculateTuningCost: (businessId, vehicleId, tuningVars, originalVars) => Number,
+    getTuningShoppingCart: (businessId, vehicleId, tuningVars, originalVars) => Object,
+    getVehiclePowerWeight: (businessId, vehicleId) => Object,
+    resetVehicleToOriginal: (businessId, vehicleId) => [String, Integer],
+    applyPartsToVehicle: (businessId, vehicleId, parts) => [String, Integer, Array],
+    applyCartPartsToVehicle: (businessId, vehicleId, parts) => [String, Integer, Array],
+  },
+
+  career_modules_business_businessPartCustomization: {
+    initializePreviewVehicle: (businessId, vehicleId) => [String, Integer],
+    resetVehicleToOriginal: (businessId, vehicleId) => [String, Integer],
+    applyPartsToVehicle: (businessId, vehicleId, parts) => [String, Integer, Array],
+    applyCartPartsToVehicle: (businessId, vehicleId, parts) => [String, Integer, Array],
+    installPartOnVehicle: (businessId, vehicleId, partName, slotPath) => [String, Integer, String, String],
+    getVehiclePowerWeight: (businessId, vehicleId) => Object,
+    getPreviewVehicleConfig: (businessId) => Object,
+    clearPreviewVehicle: (businessId) => String,
+    onPowerWeightReceived: (requestId, power, weight) => [String, Number, Number],
+  },
+
+  career_modules_business_businessVehicleTuning: {
+    requestVehicleTuningData: (businessId, vehicleId) => [String, Integer],
+    getVehicleTuningData: (businessId, vehicleId) => [String, Integer],
+    applyTuningToVehicle: (businessId, vehicleId, tuningVars) => [String, Integer, Object],
+    calculateTuningCost: (businessId, vehicleId, tuningVars, originalVars) => Number,
+    applyVehicleTuning: (businessId, vehicleId, tuningVars, accountId) => [String, Integer, Object, String],
+    clearTuningDataCache: () => [],
   },
 
   career_modules_business_businessInventory: {

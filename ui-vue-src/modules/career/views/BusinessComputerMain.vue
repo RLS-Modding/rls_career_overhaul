@@ -1,5 +1,23 @@
 <template>
   <div class="business-computer-wrapper">
+    <BusinessAccountBalance v-if="!store.loading && store.businessId && store.businessType" />
+    <BusinessShoppingCart v-if="!store.loading && (store.vehicleView === 'parts' || store.vehicleView === 'tuning')" />
+    <!-- Confirmation Modal -->
+    <Teleport to="body">
+      <transition name="modal-fade">
+        <div v-if="showConfirmModal" class="modal-overlay" @click.self="cancelClose">
+          <div class="modal-content">
+            <h2>Confirm Exit</h2>
+            <p>Are you sure you want to leave this view? You will be losing progress.</p>
+            <div class="modal-buttons">
+              <button class="btn btn-secondary" @click="cancelClose">Cancel</button>
+              <button class="btn btn-primary" @click="confirmClose">Yes, Leave</button>
+            </div>
+          </div>
+        </div>
+      </transition>
+    </Teleport>
+    
     <BngCard v-if="!store.loading" class="business-computer-container" :class="{ 'vehicle-view': store.vehicleView === 'parts' || store.vehicleView === 'tuning', 'collapsed': isVehicleViewCollapsed && (store.vehicleView === 'parts' || store.vehicleView === 'tuning') }" v-bng-blur ref="containerRef">
       <div class="main-header" :class="{ 'collapsed': isVehicleViewCollapsed && (store.vehicleView === 'parts' || store.vehicleView === 'tuning') }">
         <h1>{{ store.vehicleView === 'parts' ? 'Parts Customization' : store.vehicleView === 'tuning' ? 'Tuning' : store.businessName }}</h1>
@@ -163,7 +181,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch, nextTick } from "vue"
+import { ref, onMounted, onUnmounted, watch, nextTick, Teleport } from "vue"
 import { useBusinessComputerStore } from "../stores/businessComputerStore"
 import BusinessHomeView from "../components/businessComputer/BusinessHomeView.vue"
 import BusinessActiveJobsTab from "../components/businessComputer/BusinessActiveJobsTab.vue"
@@ -172,6 +190,8 @@ import BusinessInventoryTab from "../components/businessComputer/BusinessInvento
 import BusinessPartsInventoryTab from "../components/businessComputer/BusinessPartsInventoryTab.vue"
 import BusinessTuningTab from "../components/businessComputer/BusinessTuningTab.vue"
 import BusinessPartsCustomizationTab from "../components/businessComputer/BusinessPartsCustomizationTab.vue"
+import BusinessAccountBalance from "../components/businessComputer/BusinessAccountBalance.vue"
+import BusinessShoppingCart from "../components/businessComputer/BusinessShoppingCart.vue"
 import { lua } from "@/bridge"
 import { BngCard } from "@/common/components/base"
 import { vBngBlur } from "@/common/directives"
@@ -223,16 +243,52 @@ watch(() => isVehicleViewCollapsed.value, async (collapsed) => {
   }
 })
 
+const showConfirmModal = ref(false)
+const wasInVehicleView = ref(false)
+
 const close = async () => {
-  // If we're in parts or tuning view, switch to home immediately and animate expansion
-  if (store.vehicleView === 'parts' || store.vehicleView === 'tuning') {
+  // Check if we're in parts/tuning view and have items in cart
+  if ((store.vehicleView === 'parts' || store.vehicleView === 'tuning') && 
+      (store.partsCart.length > 0 || store.tuningCart.length > 0)) {
+    // Show confirmation modal
+    showConfirmModal.value = true
+    return
+  }
+  
+  // No items in cart, proceed with close
+  await performClose()
+}
+
+const confirmClose = async () => {
+  showConfirmModal.value = false
+  
+  // Track if we were in a vehicle view
+  const wasVehicleView = store.vehicleView === 'parts' || store.vehicleView === 'tuning'
+  wasInVehicleView.value = wasVehicleView
+  
+  // Reset vehicle and clear cart (closeVehicleView handles this)
+  if (wasVehicleView) {
+    await store.closeVehicleView()
+  }
+  
+  // Continue with close animation logic
+  await performClose()
+}
+
+const cancelClose = () => {
+  showConfirmModal.value = false
+}
+
+const performClose = async () => {
+  // If we were in parts or tuning view (or still are), switch to home and animate expansion
+  if (wasInVehicleView.value || store.vehicleView === 'parts' || store.vehicleView === 'tuning') {
     if (containerRef.value) {
       const container = containerRef.value.$el || containerRef.value
       const header = container.querySelector('.main-header')
       if (!header) {
         // Fallback if no header
         store.switchView('home')
-        store.closeVehicleView()
+        // Note: closeVehicleView was already called in confirmClose if needed
         isVehicleViewCollapsed.value = false
         return
       }
@@ -264,7 +320,7 @@ const close = async () => {
       
       // Switch views immediately so header shows "Tuning Shop"
       store.switchView('home')
-      store.closeVehicleView()
+      // Note: closeVehicleView was already called in confirmClose if needed
       
       // Reset collapse state
       isVehicleViewCollapsed.value = false
@@ -301,6 +357,7 @@ const close = async () => {
             container.style.left = ''
             container.style.transition = ''
             container.style.transform = ''
+            wasInVehicleView.value = false
           }, 600)
         })
       })
@@ -309,8 +366,9 @@ const close = async () => {
     
     // Fallback if no container ref
     store.switchView('home')
-    store.closeVehicleView()
+    // Note: closeVehicleView was already called in confirmClose if needed
     isVehicleViewCollapsed.value = false
+    wasInVehicleView.value = false
   } else {
     // Reset collapse state immediately and reset container height
     isVehicleViewCollapsed.value = false
@@ -692,6 +750,98 @@ onUnmounted(kill)
 .panel-collapse-enter-to,
 .panel-collapse-leave-from {
   opacity: 1;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background: rgba(15, 15, 15, 0.95);
+  border: 2px solid rgba(245, 73, 0, 0.6);
+  border-radius: 0.5em;
+  padding: 2em;
+  max-width: 30em;
+  width: 90%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  
+  h2 {
+    margin: 0 0 1em 0;
+    color: white;
+    font-size: 1.5em;
+    font-weight: 600;
+  }
+  
+  p {
+    margin: 0 0 2em 0;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1em;
+    line-height: 1.5;
+  }
+  
+  .modal-buttons {
+    display: flex;
+    gap: 1em;
+    justify-content: flex-end;
+  }
+  
+  .btn {
+    padding: 0.75em 1.5em;
+    border: none;
+    border-radius: 0.25em;
+    font-size: 0.875em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    
+    &.btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.9);
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.15);
+      }
+    }
+    
+    &.btn-primary {
+      background: #F54900;
+      color: white;
+      
+      &:hover {
+        background: #ff5a14;
+        box-shadow: 0 0 10px rgba(245, 73, 0, 0.4);
+      }
+    }
+  }
+}
+
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.2s ease;
+  
+  .modal-content {
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+}
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+  
+  .modal-content {
+    transform: scale(0.95);
+    opacity: 0;
+  }
 }
 </style>
 

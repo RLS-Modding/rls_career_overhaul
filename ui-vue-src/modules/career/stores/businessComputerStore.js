@@ -9,6 +9,19 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   const pulledOutVehicle = ref(null)
   const loading = ref(false)
 
+  const partsCart = ref([])
+  const tuningCart = ref([])
+  const tuningDataCache = ref({})
+  
+  const cartTabs = ref([{ id: 'default', name: 'Build 1', parts: [], tuning: [] }])
+  const activeTabId = ref('default')
+  const originalVehicleState = ref(null)
+  
+  const originalPower = ref(null)
+  const originalWeight = ref(null)
+  const currentPower = ref(null)
+  const currentWeight = ref(null)
+
   const businessId = computed(() => businessData.value.businessId)
   const businessType = computed(() => businessData.value.businessType)
   const businessName = computed(() => businessData.value.businessName || "Business")
@@ -128,15 +141,77 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     vehicleView.value = null
   }
 
-  const switchVehicleView = (view) => {
+  const switchVehicleView = async (view) => {
+    // Clear cart when leaving part customization view
+    if (vehicleView.value === 'parts' && view !== 'parts') {
+      clearCart()
+      // Reset vehicle to original state when leaving part customization
+      if (businessId.value && pulledOutVehicle.value?.vehicleId) {
+        try {
+          await lua.career_modules_business_businessComputer.resetVehicleToOriginal(
+            businessId.value,
+            pulledOutVehicle.value.vehicleId
+          )
+          // Clear preview vehicle state
+          await lua.career_modules_business_businessPartCustomization.clearPreviewVehicle(businessId.value)
+        } catch (error) {
+          console.error("Failed to reset vehicle when leaving part customization:", error)
+        }
+      }
+    }
+    
+    // Check if we're entering parts view (before setting the view)
+    const enteringPartsView = view === 'parts' && vehicleView.value !== 'parts'
+    
+    // Set the view immediately for UI animation
     vehicleView.value = view
+    
+    // Initialize cart when opening part customization view - delay until animation completes (600ms)
+    if (enteringPartsView) {
+      // Wait for UI animation to complete before initializing vehicle
+      setTimeout(async () => {
+        // Double-check we're still in parts view (user might have switched away)
+        if (vehicleView.value === 'parts') {
+          await initializeCartForVehicle()
+        }
+      }, 600)
+    }
   }
 
-  const closeVehicleView = () => {
+  const closeVehicleView = async () => {
+    // Clear cart when closing vehicle view
+    if (vehicleView.value === 'parts') {
+      clearCart()
+      // Reset vehicle to original state when closing part customization
+      if (businessId.value && pulledOutVehicle.value?.vehicleId) {
+        try {
+          await lua.career_modules_business_businessComputer.resetVehicleToOriginal(
+            businessId.value,
+            pulledOutVehicle.value.vehicleId
+          )
+          // Clear preview vehicle state
+          await lua.career_modules_business_businessPartCustomization.clearPreviewVehicle(businessId.value)
+        } catch (error) {
+          console.error("Failed to reset vehicle when closing part customization:", error)
+        }
+      }
+    }
     vehicleView.value = null
   }
 
   const onMenuClosed = () => {
+    // Clear cart when menu is closed
+    clearCart()
+    
+    // Clear preview vehicle state on Lua side
+    if (businessId.value) {
+      try {
+        lua.career_modules_business_businessPartCustomization.clearPreviewVehicle(businessId.value)
+      } catch (error) {
+        console.error("Failed to clear preview vehicle:", error)
+      }
+    }
+    
     activeView.value = "home"
     vehicleView.value = null
     pulledOutVehicle.value = null
@@ -189,6 +264,426 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     }
   }
 
+  const saveCurrentTabState = () => {
+    const activeTab = cartTabs.value.find(tab => tab.id === activeTabId.value)
+    if (activeTab) {
+      activeTab.parts = JSON.parse(JSON.stringify(partsCart.value))
+      activeTab.tuning = JSON.parse(JSON.stringify(tuningCart.value))
+    }
+  }
+  
+  const loadTabState = (tabId) => {
+    const tab = cartTabs.value.find(t => t.id === tabId)
+    if (tab) {
+      partsCart.value = JSON.parse(JSON.stringify(tab.parts || []))
+      tuningCart.value = JSON.parse(JSON.stringify(tab.tuning || []))
+    }
+  }
+  
+  const createNewTab = async () => {
+    saveCurrentTabState()
+    
+    // Find the lowest available build number
+    const existingNumbers = new Set()
+    cartTabs.value.forEach(tab => {
+      const match = tab.name.match(/^Build (\d+)$/)
+      if (match) {
+        existingNumbers.add(parseInt(match[1], 10))
+      }
+    })
+    
+    // Find the first missing number starting from 1
+    let newTabNumber = 1
+    while (existingNumbers.has(newTabNumber)) {
+      newTabNumber++
+    }
+    
+    const newTab = {
+      id: `tab_${Date.now()}`,
+      name: `Build ${newTabNumber}`,
+      parts: [],
+      tuning: []
+    }
+    
+    cartTabs.value.push(newTab)
+    activeTabId.value = newTab.id
+    
+    // Reset cart to original vehicle state
+    partsCart.value = []
+    tuningCart.value = []
+    
+    // Reset vehicle to original state
+    if (businessId.value && pulledOutVehicle.value?.vehicleId) {
+      try {
+        await lua.career_modules_business_businessComputer.resetVehicleToOriginal(
+          businessId.value,
+          pulledOutVehicle.value.vehicleId
+        )
+        // Power/weight will be updated when vehicle replacement completes (via hook)
+      } catch (error) {
+        console.error("Failed to reset vehicle to original:", error)
+      }
+    }
+  }
+  
+  const switchTab = async (tabId) => {
+    if (tabId === activeTabId.value) return
+    
+    saveCurrentTabState()
+    activeTabId.value = tabId
+    loadTabState(tabId)
+    
+    // Restore vehicle state with parts from this tab
+    if (businessId.value && pulledOutVehicle.value?.vehicleId) {
+      try {
+        // Reset to original first
+        await lua.career_modules_business_businessComputer.resetVehicleToOriginal(
+          businessId.value,
+          pulledOutVehicle.value.vehicleId
+        )
+        
+        // Then apply parts from this tab
+        if (partsCart.value.length > 0) {
+          await lua.career_modules_business_businessComputer.applyPartsToVehicle(
+            businessId.value,
+            pulledOutVehicle.value.vehicleId,
+            partsCart.value
+          )
+        }
+        
+        // Apply tuning from this tab
+        if (tuningCart.value.length > 0) {
+          const tuningVars = {}
+          tuningCart.value.forEach(change => {
+            tuningVars[change.varName] = change.value
+          })
+          await lua.career_modules_business_businessComputer.applyTuningToVehicle(
+            businessId.value,
+            pulledOutVehicle.value.vehicleId,
+            tuningVars
+          )
+        }
+        
+        // Power/weight will be updated when vehicle replacement completes (via hook)
+      } catch (error) {
+        console.error("Failed to restore vehicle state for tab:", error)
+      }
+    }
+  }
+  
+  const deleteTab = (tabId) => {
+    if (cartTabs.value.length <= 1) return
+    
+    const index = cartTabs.value.findIndex(tab => tab.id === tabId)
+    if (index < 0) return
+    
+    cartTabs.value.splice(index, 1)
+    
+    if (activeTabId.value === tabId) {
+      // Switch to first available tab
+      activeTabId.value = cartTabs.value[0].id
+      loadTabState(activeTabId.value)
+    }
+  }
+  
+  const addPartToCart = async (part, slot) => {
+    if (!businessId.value || !pulledOutVehicle.value?.vehicleId) {
+      return
+    }
+    
+    const partToAdd = {
+      partName: part.name,
+      partNiceName: part.niceName,
+      slotPath: slot.path,
+      slotNiceName: slot.slotNiceName || slot.slotName,
+      price: part.value || 0
+    }
+    
+    try {
+      // Call Lua to add part to cart and get back the complete cart (with required parts)
+      const updatedCart = await lua.career_modules_business_businessComputer.addPartToCart(
+        businessId.value,
+        pulledOutVehicle.value.vehicleId,
+        partsCart.value,
+        partToAdd
+      )
+      
+      // Update Vue cart with the complete cart from Lua (includes required parts)
+      if (updatedCart && Array.isArray(updatedCart)) {
+        // Add IDs to cart items for Vue (Lua doesn't need them)
+        partsCart.value = updatedCart.map(item => ({
+          ...item,
+          id: `${item.slotPath}_${item.partName}`
+        }))
+      }
+    } catch (error) {
+      console.error("Failed to add part to cart:", error)
+    }
+    
+    // Auto-save to current tab
+    saveCurrentTabState()
+    
+    // Power/weight will be updated automatically by Lua when vehicle replacement completes
+  }
+
+  const removePartFromCart = async (itemId) => {
+    const index = partsCart.value.findIndex(item => item.id === itemId)
+    if (index >= 0) {
+      partsCart.value.splice(index, 1)
+      saveCurrentTabState()
+      
+      // Apply baseline + remaining cart parts to vehicle
+      if (businessId.value && pulledOutVehicle.value?.vehicleId) {
+        try {
+          await lua.career_modules_business_businessComputer.applyCartPartsToVehicle(
+            businessId.value,
+            pulledOutVehicle.value.vehicleId,
+            partsCart.value
+          )
+          // Power/weight will be updated when vehicle replacement completes (via hook)
+        } catch (error) {
+          console.error("Failed to apply cart parts after removal:", error)
+        }
+      }
+    }
+  }
+  
+  const removeTuningFromCart = (varName) => {
+    const index = tuningCart.value.findIndex(item => item.varName === varName)
+    if (index >= 0) {
+      tuningCart.value.splice(index, 1)
+      saveCurrentTabState()
+    }
+  }
+
+  const addTuningToCart = async (tuningVars, originalVars) => {
+    if (!businessId.value || !pulledOutVehicle.value?.vehicleId) {
+      tuningCart.value = []
+      saveCurrentTabState()
+      return
+    }
+    
+    // Get shopping cart structure from Lua (uses hierarchical pricing from tuning.lua)
+    try {
+      const shoppingCart = await lua.career_modules_business_businessComputer.getTuningShoppingCart(
+        businessId.value,
+        pulledOutVehicle.value.vehicleId,
+        tuningVars,
+        originalVars
+      )
+      
+      // Convert shopping cart items to tuning cart format
+      // Only include actual variables (level 3), not categories/subcategories
+      const changes = []
+      for (const item of shoppingCart.items || []) {
+        if (item.type === 'variable' && item.level === 3) {
+          const varName = item.varName
+          const value = tuningVars[varName]
+          const originalValue = originalVars[varName]?.valDis
+          
+          if (value !== undefined && originalValue !== undefined && value !== originalValue) {
+            changes.push({
+              varName,
+              value,
+              originalValue,
+              price: item.price || 0,
+              title: item.title || varName
+            })
+          }
+        }
+      }
+      
+      tuningCart.value = changes
+      saveCurrentTabState()
+      
+      // Update power/weight after tuning change
+      updatePowerWeight()
+    } catch (error) {
+      console.error("Failed to get tuning shopping cart:", error)
+      tuningCart.value = []
+      saveCurrentTabState()
+    }
+  }
+
+  const clearCart = () => {
+    // Reset to a single default tab with empty cart
+    cartTabs.value = [{ id: 'default', name: 'Build 1', parts: [], tuning: [] }]
+    activeTabId.value = 'default'
+    partsCart.value = []
+    tuningCart.value = []
+  }
+  
+  const handlePowerWeightData = (data) => {
+    if (!data || !data.success) return
+    
+    // Only update if it's for the current vehicle
+    if (data.businessId === businessId.value && data.vehicleId === pulledOutVehicle.value?.vehicleId) {
+      // If this is the first time we're getting data, set it as original
+      if (originalPower.value === null && originalWeight.value === null) {
+        originalPower.value = data.power
+        originalWeight.value = data.weight
+      }
+      
+      // Always update current values
+      currentPower.value = data.power
+      currentWeight.value = data.weight
+    }
+  }
+  
+  const initializeCartForVehicle = async () => {
+    // Reset tabs when vehicle changes or when opening shop
+    cartTabs.value = [{ id: 'default', name: 'Build 1', parts: [], tuning: [] }]
+    activeTabId.value = 'default'
+    partsCart.value = []
+    tuningCart.value = []
+    originalVehicleState.value = null
+    
+    // Reset power/weight
+    originalPower.value = null
+    originalWeight.value = null
+    currentPower.value = null
+    currentWeight.value = null
+    
+    // Reset vehicle to original state (baseline from inventory) when opening shop
+    if (businessId.value && pulledOutVehicle.value?.vehicleId) {
+      try {
+        await lua.career_modules_business_businessComputer.resetVehicleToOriginal(
+          businessId.value,
+          pulledOutVehicle.value.vehicleId
+        )
+        // Power/weight will be updated automatically by Lua after vehicle replacement
+      } catch (error) {
+        console.error("Failed to reset vehicle:", error)
+      }
+    }
+  }
+  
+  const updatePowerWeight = async () => {
+    if (!businessId.value || !pulledOutVehicle.value?.vehicleId) return
+    
+    try {
+      // This will return nil, but trigger the async request
+      // Data will arrive via 'businessComputer:onVehiclePowerWeight' hook
+      lua.career_modules_business_businessComputer.getVehiclePowerWeight(
+        businessId.value,
+        pulledOutVehicle.value.vehicleId
+      )
+    } catch (error) {
+      console.error("Failed to request power/weight:", error)
+    }
+  }
+  
+  const powerToWeightRatio = computed(() => {
+    if (!currentPower.value || !currentWeight.value || currentWeight.value <= 0) return null
+    return currentPower.value / currentWeight.value
+  })
+  
+  const originalPowerToWeightRatio = computed(() => {
+    if (!originalPower.value || !originalWeight.value || originalWeight.value <= 0) return null
+    return originalPower.value / originalWeight.value
+  })
+  
+  const powerChange = computed(() => {
+    if (originalPower.value === null || currentPower.value === null) return null
+    return currentPower.value - originalPower.value
+  })
+  
+  const weightChange = computed(() => {
+    if (originalWeight.value === null || currentWeight.value === null) return null
+    return currentWeight.value - originalWeight.value
+  })
+  
+  const buildPartsTree = (parts) => {
+    if (!parts || parts.length === 0) return []
+    
+    // Build a map of all parts by their slot path
+    const partMap = new Map()
+    parts.forEach(part => {
+      const path = (part.slotPath || '').trim()
+      if (path) {
+        partMap.set(path, {
+          ...part,
+          children: [],
+          path: path
+        })
+      }
+    })
+    
+    // Helper to get parent path
+    const getParentPath = (path) => {
+      const pathParts = path.split('/').filter(p => p)
+      if (pathParts.length <= 1) return null
+      return '/' + pathParts.slice(0, -1).join('/') + '/'
+    }
+    
+    // Build parent-child relationships
+    const rootNodes = []
+    
+    // Process all parts and build tree
+    partMap.forEach((part, path) => {
+      const parentPath = getParentPath(path)
+      
+      if (!parentPath) {
+        // Root level part (no parent)
+        rootNodes.push(part)
+      } else {
+        // Check if parent exists in cart
+        const parent = partMap.get(parentPath)
+        if (parent) {
+          // Parent is in cart, add as child
+          if (!parent.children) parent.children = []
+          parent.children.push(part)
+        } else {
+          // Parent not in cart, this is a root node
+          rootNodes.push(part)
+        }
+      }
+    })
+    
+    // Recursively sort children
+    const sortNode = (node) => {
+      if (node.children && node.children.length > 0) {
+        node.children.forEach(child => sortNode(child))
+        node.children.sort((a, b) => {
+          const nameA = (a.partNiceName || a.partName || a.slotNiceName || '').toLowerCase()
+          const nameB = (b.partNiceName || b.partName || b.slotNiceName || '').toLowerCase()
+          return nameA.localeCompare(nameB)
+        })
+      }
+    }
+    
+    rootNodes.forEach(node => sortNode(node))
+    
+    // Sort root nodes
+    return rootNodes.sort((a, b) => {
+      const nameA = (a.partNiceName || a.partName || a.slotNiceName || '').toLowerCase()
+      const nameB = (b.partNiceName || b.partName || b.slotNiceName || '').toLowerCase()
+      return nameA.localeCompare(nameB)
+    })
+  }
+  
+  const partsTree = computed(() => {
+    return buildPartsTree(partsCart.value)
+  })
+
+  const getCartTotal = computed(() => {
+    let total = 0
+    
+    partsCart.value.forEach(item => {
+      total += item.price || 0
+    })
+    
+    tuningCart.value.forEach(item => {
+      total += item.price || 0
+    })
+    
+    return total
+  })
+  
+  const tuningCost = computed(() => {
+    return tuningCart.value.reduce((sum, item) => sum + (item.price || 0), 0)
+  })
+
   return {
     businessData,
     activeView,
@@ -216,6 +711,35 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     requestVehiclePartsTree,
     requestVehicleTuningData,
     applyVehicleTuning,
+    partsCart,
+    tuningCart,
+    addPartToCart,
+    removePartFromCart,
+    addTuningToCart,
+    removeTuningFromCart,
+    clearCart,
+    getCartTotal,
+    tuningCost,
+    tuningDataCache,
+    cartTabs,
+    activeTabId,
+    originalVehicleState,
+    createNewTab,
+    switchTab,
+    deleteTab,
+    initializeCartForVehicle,
+    buildPartsTree,
+    partsTree,
+    originalPower,
+    originalWeight,
+    currentPower,
+    currentWeight,
+    powerToWeightRatio,
+    originalPowerToWeightRatio,
+    powerChange,
+    weightChange,
+    updatePowerWeight,
+    handlePowerWeightData,
   }
 })
 

@@ -509,6 +509,15 @@ const onTuningChange = (varName, value) => {
     }
   }
   
+  // Update cart with current changes
+  const tuningVars = {}
+  for (const [name, data] of Object.entries(tuningVariables.value)) {
+    if (data.valDis !== undefined) {
+      tuningVars[name] = data.valDis
+    }
+  }
+  store.addTuningToCart(tuningVars, originalTuningVariables.value)
+  
   // If live updates are enabled, apply immediately
   if (liveUpdates.value) {
     applySettings()
@@ -551,6 +560,9 @@ const resetSettings = async () => {
   // Reorganize buckets
   buckets.value = organizeTuningData(tuningVariables.value)
   
+  // Clear tuning cart
+  store.addTuningToCart({}, originalTuningVariables.value)
+  
   // If live updates are enabled, apply immediately
   if (liveUpdates.value) {
     applySettings()
@@ -571,10 +583,22 @@ const applySettings = async () => {
   }
   
   try {
-    const success = await store.applyVehicleTuning(store.pulledOutVehicle.vehicleId, tuningVars)
-    if (success) {
-      // Update original values to current values
-      originalTuningVariables.value = JSON.parse(JSON.stringify(tuningVariables.value))
+    // Apply tuning visually to preview vehicle
+    if (store.businessId) {
+      await lua.career_modules_business_businessComputer.applyTuningToVehicle(
+        store.businessId,
+        store.pulledOutVehicle.vehicleId,
+        tuningVars
+      )
+    }
+    
+    // Save tuning to vehicle data (only if not live updates, or on purchase)
+    if (!liveUpdates.value) {
+      const success = await store.applyVehicleTuning(store.pulledOutVehicle.vehicleId, tuningVars)
+      if (success) {
+        // Update original values to current values
+        originalTuningVariables.value = JSON.parse(JSON.stringify(tuningVariables.value))
+      }
     }
   } catch (error) {
     console.error("Failed to apply tuning settings:", error)
@@ -588,6 +612,7 @@ watch(() => store.pulledOutVehicle, (newVehicle, oldVehicle) => {
     originalTuningVariables.value = {}
     buckets.value = []
     loading.value = false
+    store.clearCart()
   }
   // Don't load data here - wait for onMounted
 })

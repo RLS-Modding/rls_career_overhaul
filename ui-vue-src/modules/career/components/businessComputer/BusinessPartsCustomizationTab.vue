@@ -428,8 +428,42 @@ const navigateToPath = (index) => {
 }
 
 const installPart = async (part, slot) => {
-  console.log("Installing part:", part.name, "in slot:", slot.path)
-  // TODO: Implement part installation
+  // Handle both search results (slotPath) and category navigation (path)
+  let slotPath = slot.slotPath || slot.path
+  
+  // Normalize path: ensure it starts with / and ends with /
+  if (!slotPath.startsWith('/')) {
+    slotPath = '/' + slotPath
+  }
+  if (!slotPath.endsWith('/')) {
+    slotPath = slotPath + '/'
+  }
+  
+  console.log("Adding part to cart:", part.name, "in slot:", slotPath)
+  
+  // Create a normalized slot object for addPartToCart
+  const normalizedSlot = {
+    path: slotPath,
+    slotPath: slotPath,
+    slotNiceName: slot.slotNiceName || slot.slotName,
+    slotName: slot.slotName
+  }
+  
+  // Add part to cart (this will also add required parts)
+  await store.addPartToCart(part, normalizedSlot)
+  
+  // Apply baseline + all cart parts (including the newly added one and required parts) to vehicle
+  if (store.pulledOutVehicle && store.pulledOutVehicle.vehicleId && store.businessId) {
+    try {
+      await lua.career_modules_business_businessComputer.applyCartPartsToVehicle(
+        store.businessId,
+        store.pulledOutVehicle.vehicleId,
+        store.partsCart
+      )
+    } catch (error) {
+      console.error("Failed to apply cart parts to vehicle:", error)
+    }
+  }
 }
 
 const handlePartsTreeData = (data) => {
@@ -581,6 +615,7 @@ watch(() => store.pulledOutVehicle, (newVehicle, oldVehicle) => {
     slotsNiceName.value = {}
     partsNiceName.value = {}
     loading.value = false
+    store.clearCart()
   } else {
     navigationPath.value = []
   }
@@ -591,14 +626,14 @@ onMounted(() => {
   // Register event listener for parts tree data
   events.on('businessComputer:onVehiclePartsTree', handlePartsTreeData)
   
-  // Request data immediately - Lua will check cache and return instantly if cached
-  // Otherwise wait for CSS transition to complete (0.3s) before requesting
+  // Wait for UI animation to complete (600ms) before requesting parts tree data
+  // This ensures vehicle spawning doesn't happen until animation is finished
   requestAnimationFrame(() => {
     setTimeout(() => {
-      if (store.pulledOutVehicle) {
+      if (store.pulledOutVehicle && store.vehicleView === 'parts') {
         loadPartsTree()
       }
-    }, 350) // Wait for 0.3s transition + 50ms buffer
+    }, 600) // Wait for full animation to complete
   })
 })
 
