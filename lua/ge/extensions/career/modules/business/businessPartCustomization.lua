@@ -1085,14 +1085,23 @@ local function addPartToCart(businessId, vehicleId, currentCart, partToAdd)
   
   -- Build temp cart with baseline + cart + new part
   local tempCart = deepcopy(cart)
-  table.insert(tempCart, {
+  local newPartItem = {
     type = 'part',
     partName = partToAdd.partName,
     partNiceName = partToAdd.partNiceName or partToAdd.partName,
     slotPath = partToAdd.slotPath,
     slotNiceName = partToAdd.slotNiceName or "",
     price = partToAdd.price or 0
-  })
+  }
+  
+  -- If part is from inventory, mark it and set price to 0
+  if partToAdd.fromInventory then
+    newPartItem.fromInventory = true
+    newPartItem.partId = partToAdd.partId
+    newPartItem.price = 0
+  end
+  
+  table.insert(tempCart, newPartItem)
   
   log('D', 'businessPartCustomization', string.format('[addPartToCart] Applying part %s to vehicle (tempCart has %d items)', partToAdd.partName, #tempCart))
   
@@ -1323,6 +1332,13 @@ local function addPartToCart(businessId, vehicleId, currentCart, partToAdd)
           partData.slotNiceName = partToAdd.slotNiceName or partData.slotNiceName
           -- Directly added parts can always be removed
           partData.canRemove = true
+          
+          -- If part is from inventory, mark it
+          if partToAdd.fromInventory then
+            partData.fromInventory = true
+            partData.partId = partToAdd.partId
+            partData.price = 0
+          end
         end
         
         table.insert(finalCart, partData)

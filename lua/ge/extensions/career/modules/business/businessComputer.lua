@@ -362,8 +362,59 @@ local function getNewJobs(businessId)
 end
 
 -- Function to recursively format parts tree for UI (flattened for easier navigation)
+-- Get compatible parts from business inventory for a slot
+local function getCompatiblePartsFromInventory(businessId, slotPath, slotInfo, vehicleData, vehicleModel)
+  if not businessId or not slotPath or not slotInfo or not vehicleData or not vehicleData.ioCtx then
+    return {}
+  end
+  
+  if not career_modules_business_businessPartInventory then
+    return {}
+  end
+  
+  local businessParts = career_modules_business_businessPartInventory.getBusinessParts(businessId)
+  if not businessParts then return {} end
+  
+  local compatibleParts = {}
+  
+  for _, inventoryPart in ipairs(businessParts) do
+    -- Check if part is compatible with vehicle model (if specified)
+    if not vehicleModel or not inventoryPart.vehicleModel or inventoryPart.vehicleModel == vehicleModel then
+      -- Get jbeam data for the inventory part
+      local partDescription = jbeamIO.getPart(vehicleData.ioCtx, inventoryPart.name)
+      if partDescription and jbeamSlotSystem.partFitsSlot(partDescription, slotInfo) then
+        -- Get part nice name
+        local niceName = inventoryPart.name
+        if partDescription.information and partDescription.information.description then
+          niceName = type(partDescription.information.description) == "table" and 
+                     partDescription.information.description.description or 
+                     partDescription.information.description or 
+                     inventoryPart.name
+        end
+        
+        -- Get mileage
+        local mileage = 0
+        if inventoryPart.partCondition and inventoryPart.partCondition.odometer then
+          mileage = inventoryPart.partCondition.odometer
+        end
+        
+        table.insert(compatibleParts, {
+          name = inventoryPart.name,
+          niceName = niceName,
+          value = 0, -- Used parts are free
+          mileage = mileage,
+          partId = inventoryPart.partId,
+          fromInventory = true
+        })
+      end
+    end
+  end
+  
+  return compatibleParts
+end
+
 local function formatPartsTreeForUI(node, slotName, slotInfo, availableParts, slotsNiceName, partsNiceName, pathPrefix,
-  parentSlotName, ioCtx)
+  parentSlotName, ioCtx, businessId, vehicleData, vehicleModel)
   if not node then
     return {}
   end
@@ -403,6 +454,12 @@ local function formatPartsTreeForUI(node, slotName, slotInfo, availableParts, sl
     partInfo = availableParts[node.chosenPartName]
   end
 
+  -- Get slotInfo for this slot (needed for inventory compatibility check)
+  local currentSlotInfo = slotInfo
+  if not currentSlotInfo and partInfo and partInfo.slotInfoUi and slotName then
+    currentSlotInfo = partInfo.slotInfoUi[slotName]
+  end
+  
   -- Create entry for this slot if it has available parts (but skip root node)
   if not isRootNode and node.suitablePartNames and #node.suitablePartNames > 0 then
     local availablePartsList = {}
@@ -441,8 +498,14 @@ local function formatPartsTreeForUI(node, slotName, slotInfo, availableParts, sl
       return nameA < nameB
     end)
 
-    -- Only add if there are available parts
-    if #availablePartsList > 0 then
+    -- Get compatible parts from business inventory
+    local compatibleInventoryParts = {}
+    if businessId and vehicleData and currentSlotInfo then
+      compatibleInventoryParts = getCompatiblePartsFromInventory(businessId, currentPath, currentSlotInfo, vehicleData, vehicleModel)
+    end
+    
+    -- Only add if there are available parts or compatible inventory parts
+    if #availablePartsList > 0 or #compatibleInventoryParts > 0 then
       table.insert(result, {
         id = currentPath,
         path = currentPath,
@@ -451,6 +514,7 @@ local function formatPartsTreeForUI(node, slotName, slotInfo, availableParts, sl
         chosenPartName = node.chosenPartName or "",
         partNiceName = partNiceName,
         availableParts = availablePartsList,
+        compatibleInventoryParts = compatibleInventoryParts,
         parentSlotName = parentSlotName
       })
     end
@@ -465,7 +529,7 @@ local function formatPartsTreeForUI(node, slotName, slotInfo, availableParts, sl
         childSlotInfo = partInfo.slotInfoUi[childSlotName]
       end
       local childResults = formatPartsTreeForUI(childNode, childSlotName, childSlotInfo, availableParts, slotsNiceName,
-        partsNiceName, childPath, slotNiceName, ioCtx)
+        partsNiceName, childPath, slotNiceName, ioCtx, businessId, vehicleData, vehicleModel)
       for _, childResult in ipairs(childResults) do
         table.insert(result, childResult)
       end
@@ -589,9 +653,16 @@ local function requestVehiclePartsTree(businessId, vehicleId)
       partsNiceName[partName] = type(desc) == "table" and desc.description or desc
     end
 
+    -- Get vehicle model for inventory filtering
+    local vehicle = career_modules_business_businessInventory.getVehicleById(businessId, vehicleId)
+    local vehicleModel = nil
+    if vehicle and vehicle.vehicleConfig then
+      vehicleModel = vehicle.vehicleConfig.model_key or vehicle.model_key
+    end
+    
     -- Format parts tree for UI (returns a flat list of slots with their available parts)
     local partsTreeList = formatPartsTreeForUI(vehicleData.config.partsTree, "", nil, availableParts, slotsNiceName,
-      partsNiceName, "/", nil, vehicleData.ioCtx)
+      partsNiceName, "/", nil, vehicleData.ioCtx, businessId, vehicleData, vehicleModel)
 
     -- Clean up spawned vehicle
     if vehicleObj then

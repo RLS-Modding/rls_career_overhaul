@@ -1,6 +1,6 @@
 <template>
   <div class="home-view">
-    <BusinessVehicleCard v-if="store.pulledOutVehicle" :vehicle="store.pulledOutVehicle" />
+    <BusinessVehicleCard v-if="store.pulledOutVehicle" :vehicle="store.pulledOutVehicle" @put-away="handlePutAway" />
     
     <div class="section-card">
       <div class="card-header">

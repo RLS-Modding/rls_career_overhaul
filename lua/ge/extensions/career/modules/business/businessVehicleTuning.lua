@@ -2,6 +2,8 @@ local M = {}
 
 M.dependencies = {'career_career', 'core_vehicles', 'core_jobsystem', 'career_modules_bank'}
 
+local jbeamIO = require('jbeam/io')
+
 -- Cache for tuning data (keyed by businessId_vehicleId)
 local tuningDataCache = {}
 
@@ -167,9 +169,18 @@ local function requestVehicleTuningData(businessId, vehicleId)
       return
     end
 
+    -- Get preview vehicle config (includes parts from cart) if available
+    local previewConfig = nil
+    if career_modules_business_businessPartCustomization then
+      previewConfig = career_modules_business_businessPartCustomization.getPreviewVehicleConfig(businessId)
+    end
+    
+    -- Use preview config if available, otherwise use base config
+    local configToUse = previewConfig or configKey
+    
     -- Spawn vehicle temporarily to get tuning data
     local vehicleObj = core_vehicles.spawnNewVehicle(modelKey, {
-      config = configKey,
+      config = configToUse,
       pos = vec3(0, 0, -1000), -- Spawn far away
       rot = quat(0, 0, 0, 1),
       keepLoaded = true,
@@ -203,8 +214,139 @@ local function requestVehicleTuningData(businessId, vehicleId)
     -- Get current vars from vehicle config (if any)
     local currentVars = vehicle.vars or {}
 
-    -- Get all available tuning variables
+    -- Get all available tuning variables from vehicle
     local tuningVariables = deepcopy(vehicleData.vdata.variables)
+    
+    -- Also get tuning variables from parts in the partsTree
+    -- Use vehicle object's config.partsTree (includes all installed parts)
+    local partsTree = nil
+    if vehicleObj and vehicleObj.config and vehicleObj.config.partsTree then
+      partsTree = vehicleObj.config.partsTree
+    elseif vehicleData.config and vehicleData.config.partsTree then
+      partsTree = vehicleData.config.partsTree
+    end
+    
+    if partsTree and vehicleData.ioCtx then
+      -- Helper function to recursively traverse parts tree and extract tuning variables
+      local function extractPartTuningVars(node, partTuningVars)
+        if not node then return end
+        
+        -- If this node has a chosen part, get its jbeam and extract tuning variables
+        if node.chosenPartName and node.chosenPartName ~= "" then
+          local jbeamData = jbeamIO.getPart(vehicleData.ioCtx, node.chosenPartName)
+          if jbeamData and jbeamData.variables then
+            -- Merge variables from this part into tuning variables
+            -- Handle both array and table formats
+            for key, varData in pairs(jbeamData.variables) do
+              -- Determine the actual variable name
+              local varName = nil
+              if type(key) == "string" then
+                -- Table format: key is the variable name
+                varName = key
+              elseif type(key) == "number" and type(varData) == "table" then
+                -- Array format: varData should have a 'name' field
+                if varData.name then
+                  varName = varData.name
+                else
+                  -- Skip if no name field
+                  goto continue
+                end
+              else
+                -- Skip invalid entries
+                goto continue
+              end
+              
+              -- Only add if it's a tuning variable (has min/max or is a known tuning var)
+              local isTuningVar = false
+              if varData.min ~= nil or varData.max ~= nil then
+                isTuningVar = true
+              elseif type(varName) == "string" and varName:match("^%$") then
+                isTuningVar = true
+              end
+              
+              if isTuningVar then
+                -- If variable already exists, merge min/max values (use most restrictive)
+                if partTuningVars[varName] then
+                  if varData.min ~= nil then
+                    -- Use highest min (most restrictive)
+                    if partTuningVars[varName].min == nil or varData.min > partTuningVars[varName].min then
+                      partTuningVars[varName].min = varData.min
+                    end
+                  end
+                  if varData.max ~= nil then
+                    -- Use lowest max (most restrictive)
+                    if partTuningVars[varName].max == nil or varData.max < partTuningVars[varName].max then
+                      partTuningVars[varName].max = varData.max
+                    end
+                  end
+                  -- Merge other properties
+                  if varData.step and not partTuningVars[varName].step then
+                    partTuningVars[varName].step = varData.step
+                  end
+                  if varData.title and not partTuningVars[varName].title then
+                    partTuningVars[varName].title = varData.title
+                  end
+                  if varData.category and not partTuningVars[varName].category then
+                    partTuningVars[varName].category = varData.category
+                  end
+                  if varData.subCategory and not partTuningVars[varName].subCategory then
+                    partTuningVars[varName].subCategory = varData.subCategory
+                  end
+                else
+                  -- New variable from part
+                  partTuningVars[varName] = deepcopy(varData)
+                end
+              end
+              ::continue::
+            end
+          end
+        end
+        
+        -- Recursively process children
+        if node.children then
+          for _, childNode in pairs(node.children) do
+            extractPartTuningVars(childNode, partTuningVars)
+          end
+        end
+      end
+      
+      local partTuningVars = {}
+      extractPartTuningVars(partsTree, partTuningVars)
+      
+      -- Merge part tuning variables into main tuning variables
+      for varName, varData in pairs(partTuningVars) do
+        if not tuningVariables[varName] then
+          -- New variable from parts, add it
+          tuningVariables[varName] = varData
+        else
+          -- Variable exists, merge min/max values (use most restrictive)
+          if varData.min ~= nil then
+            -- Use highest min (most restrictive)
+            if tuningVariables[varName].min == nil or varData.min > tuningVariables[varName].min then
+              tuningVariables[varName].min = varData.min
+            end
+          end
+          if varData.max ~= nil then
+            -- Use lowest max (most restrictive)
+            if tuningVariables[varName].max == nil or varData.max < tuningVariables[varName].max then
+              tuningVariables[varName].max = varData.max
+            end
+          end
+        end
+      end
+    end
+
+    -- Filter out fuel volume and other unwanted variables (matching normal tuning menu)
+    tuningVariables["$fuel"] = nil
+    tuningVariables["$fuel_R"] = nil
+    tuningVariables["$fuel_L"] = nil
+    
+    -- Filter out Cargo category variables
+    for varName, varData in pairs(tuningVariables) do
+      if varData.category == "Cargo" then
+        tuningVariables[varName] = nil
+      end
+    end
 
     -- Merge current vars with defaults and calculate display values
     for varName, varData in pairs(tuningVariables) do
@@ -271,12 +413,85 @@ local function applyTuningToVehicle(businessId, vehicleId, tuningVars)
   local vehObj = getBusinessVehicleObject(businessId, vehicleId)
   if not vehObj then return false end
   
+  -- Get current preview vehicle config (includes parts from cart)
+  if not career_modules_business_businessPartCustomization then
+    return false
+  end
+  
+  local currentConfig = career_modules_business_businessPartCustomization.getPreviewVehicleConfig(businessId)
+  if not currentConfig then
+    -- If no preview config exists, initialize it
+    if not career_modules_business_businessPartCustomization.initializePreviewVehicle then
+      return false
+    end
+    if not career_modules_business_businessPartCustomization.initializePreviewVehicle(businessId, vehicleId) then
+      return false
+    end
+    currentConfig = career_modules_business_businessPartCustomization.getPreviewVehicleConfig(businessId)
+    if not currentConfig then
+      return false
+    end
+  end
+  
+  -- Get vehicle model
+  local vehicle = career_modules_business_businessInventory.getVehicleById(businessId, vehicleId)
+  if not vehicle or not vehicle.vehicleConfig then return false end
+  local modelKey = vehicle.vehicleConfig.model_key or vehicle.model_key
+  if not modelKey then return false end
+  
+  -- Create updated config with new tuning vars
+  local updatedConfig = deepcopy(currentConfig)
+  if not updatedConfig.vars then
+    updatedConfig.vars = {}
+  end
+  
+  -- Merge tuning vars with existing vars
+  for varName, value in pairs(tuningVars) do
+    updatedConfig.vars[varName] = value
+  end
+  
   local vehId = vehObj:getID()
   
-  -- Apply tuning variables to vehicle
-  for varName, value in pairs(tuningVars) do
-    core_vehicleBridge.executeAction(vehObj, 'setVar', varName, value)
-  end
+  -- Store fuel levels before replacing vehicle (using same pattern as parts customization)
+  core_vehicleBridge.requestValue(vehObj, function(data)
+    local storedFuelLevels = {}
+    if data and data[1] then
+      for _, tank in ipairs(data[1]) do
+        -- Only store fuel levels for actual fuel tanks, not nitrous bottles
+        if tank.energyType ~= "n2o" then
+          storedFuelLevels[tank.name] = {
+            currentEnergy = tank.currentEnergy,
+            maxEnergy = tank.maxEnergy,
+            energyType = tank.energyType,
+            relativeFuel = tank.maxEnergy > 0 and (tank.currentEnergy / tank.maxEnergy) or 0
+          }
+        end
+      end
+    end
+    
+    local additionalVehicleData = {spawnWithEngineRunning = false}
+    core_vehicle_manager.queueAdditionalVehicleData(additionalVehicleData, vehId)
+    
+    local spawnOptions = {}
+    spawnOptions.config = updatedConfig
+    spawnOptions.keepOtherVehRotation = true
+    
+    -- Replace vehicle with updated config (includes parts + tuning vars)
+    core_vehicles.replaceVehicle(modelKey, spawnOptions, vehObj)
+    
+    -- Restore fuel levels after vehicle replacement
+    core_vehicleBridge.requestValue(vehObj, function(newData)
+      if storedFuelLevels and next(storedFuelLevels) and newData and newData[1] then
+        for _, tank in ipairs(newData[1]) do
+          if tank.name and storedFuelLevels[tank.name] and tank.energyType ~= "n2o" then
+            local stored = storedFuelLevels[tank.name]
+            local targetEnergy = stored.relativeFuel * tank.maxEnergy
+            core_vehicleBridge.executeAction(vehObj, 'setEnergyStorageEnergy', tank.name, targetEnergy)
+          end
+        end
+      end
+    end, 'energyStorage')
+  end, 'energyStorage')
   
   return true
 end
