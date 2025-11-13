@@ -207,6 +207,38 @@ local modifiers = {
         important = true
 
     },
+    gapMailDelivery = {
+        unlockFlag = "smallPackagesDelivery",
+        makeTemplate = function(g, p, distance)
+            return {
+                type = "post",
+                moneyMultipler = 15.0
+            }
+        end,
+        unlockLabel = "Remote Delivery Parcels",
+        priority = 2,
+        icon = "cardboardBox",
+        label = "Remote Parcel",
+        shortDescription = "",
+        important = true
+
+    },
+    gapMaintenanceDelivery = {
+        unlockFlag = "smallPackagesDelivery",
+        makeTemplate = function(g, p, distance)
+            return {
+                type = "post",
+                moneyMultipler = 15.0
+            }
+        end,
+        unlockLabel = "Remote Delivery Parcels",
+        priority = 2,
+        icon = "cardboardBox",
+        label = "Remote Parcel",
+        shortDescription = "",
+        important = true
+
+    },
     pepperReduction = {
         unlockFlag = "smallPackagesDelivery",
         makeTemplate = function(g, p, distance)
@@ -249,6 +281,12 @@ local progressTemplate = {
         delivieries = 0
     },
     remoteDelivery = {
+        delivieries = 0
+    },
+    gapMailDelivery = {
+        delivieries = 0
+    },
+    gapMaintenanceDelivery = {
         delivieries = 0
     },
     pepperReduction = {
