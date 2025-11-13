@@ -460,17 +460,43 @@ function M.onPartsTreeReceived(requestId, partsTreeStr)
         varData._rangeInverted = false
       end
       
-      varData.valDis = varData.val or actualMin
-      varData.minDis = actualMin
-      varData.maxDis = actualMax
+      -- Special handling for Wheel Alignment percentage variables
+      -- Set slider range to -100% to 100% but keep actual values unchanged
+      if varData.category == "Wheel Alignment" and (varData.unit == '%' or varData.unit == 'percent') then
+        varData.minDis = -1
+        varData.maxDis = 1
+        -- Default to 0 if val is not set or is at the original min
+        if varData.val == nil or varData.val == actualMin then
+          varData.valDis = 0
+        else
+          -- Map the actual value to the -1 to 1 range proportionally
+          -- This keeps the slider centered at 0 but allows mapping existing values
+          local range = actualMax - actualMin
+          if range > 0 then
+            -- Map from [actualMin, actualMax] to [-1, 1]
+            varData.valDis = ((varData.val - actualMin) / range) * 2 - 1
+          else
+            varData.valDis = 0
+          end
+        end
+      else
+        varData.valDis = varData.val or actualMin
+        varData.minDis = actualMin
+        varData.maxDis = actualMax
+      end
       
       -- Use step if available, otherwise calculate a reasonable default based on range
       if varData.step and varData.step > 0 then
         varData.stepDis = varData.step
       else
-        -- Calculate step as 1/1000th of the range, but ensure it's at least 0.001
-        local range = math.abs(actualMax - actualMin)
-        varData.stepDis = math.max(0.001, math.min(1, range / 1000))
+        -- For wheel alignment percentages, use 0.01 step (1% increments)
+        if varData.category == "Wheel Alignment" and (varData.unit == '%' or varData.unit == 'percent') then
+          varData.stepDis = 0.01
+        else
+          -- Calculate step as 1/1000th of the range, but ensure it's at least 0.001
+          local range = math.abs(actualMax - actualMin)
+          varData.stepDis = math.max(0.001, math.min(1, range / 1000))
+        end
       end
 
       -- Ensure valDis is within bounds
@@ -642,12 +668,50 @@ local function createShoppingCart(businessId, vehicleId, changedVars, originalVa
     -- Construct the shopping cart and calculate prices for each item
     local varPrice
     if isOnBlackList(varData) then
-      shoppingCart.items[varName] = {
-        name = varName,
-        title = string.format("%s %s %s", varData.category or "", varData.subCategory or "", varData.title or varName),
-        price = 0
-      }
       varPrice = 0
+      -- Still add to category structure so it gets flattened to level 3
+      if varData.category then
+        -- Add the category to the shopping cart if it's not there yet
+        if not shoppingCart.items[varData.category] then
+          shoppingCart.items[varData.category] = {
+            type = "category",
+            items = {},
+            price = 0,
+            title = varData.category
+          }
+        end
+        
+        -- Add the subCategory to the shopping cart if it's not there yet
+        if varData.subCategory and not shoppingCart.items[varData.category].items[varData.subCategory] then
+          shoppingCart.items[varData.category].items[varData.subCategory] = {
+            type = "subCategory",
+            items = {},
+            price = 0,
+            title = varData.subCategory
+          }
+        end
+        
+        if varData.subCategory then
+          shoppingCart.items[varData.category].items[varData.subCategory].items[varName] = {
+            name = varName,
+            title = varData.title or varName,
+            price = 0
+          }
+        else
+          shoppingCart.items[varData.category].items[varName] = {
+            name = varName,
+            title = varData.title or varName,
+            price = 0
+          }
+        end
+      else
+        -- No category, add at top level
+        shoppingCart.items[varName] = {
+          name = varName,
+          title = varData.title or varName,
+          price = 0
+        }
+      end
     elseif varData.category then
       -- Add the category to the shopping cart if it's not there yet
       if not shoppingCart.items[varData.category] then
@@ -871,11 +935,12 @@ local function addTuningToCart(businessId, vehicleId, currentTuningVars, baselin
   -- Get shopping cart to calculate prices (only for changed variables)
   local shoppingCart = getShoppingCart(businessId, vehicleId, changedVars, baselineTuningVars)
   
-  -- Build cart items array with only changed variables (level 3)
+  -- Build cart items array with only changed variables (level 3, or level 1 for items without categories)
   -- Use table.insert to ensure sequential integer keys (serializes as array)
   local cartItems = {}
   for _, item in ipairs(shoppingCart.items or {}) do
-    if item.type == "variable" and item.level == 3 then
+    -- Include level 3 items (nested in category/subcategory) or level 1 items that are variables (no category)
+    if item.type == "variable" and (item.level == 3 or item.level == 1) then
       local varName = item.varName
       local currentValue = changedVars[varName]
       

@@ -190,7 +190,7 @@
                   </button>
                   <div class="item-info">
                     <div class="item-name">{{ item.title || item.varName }}</div>
-                    <div class="item-slot">{{ item.originalValue?.toFixed(2) }} → {{ item.value?.toFixed(2) }}</div>
+                    <div class="item-slot">{{ convertToDisplayValue(item, item.originalValue) }} → {{ convertToDisplayValue(item, item.value) }}</div>
                   </div>
                   <div class="item-price">${{ (item.price || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</div>
                 </div>
@@ -317,6 +317,30 @@ const tuningSectionCollapsed = ref(false)
 
 const partsItems = computed(() => store.partsCart || [])
 const tuningItems = computed(() => store.tuningCart || [])
+
+const convertToDisplayValue = (item, actualValue) => {
+  if (actualValue === null || actualValue === undefined) return '0'
+  if (!store.tuningDataCache || !store.pulledOutVehicle) return actualValue.toFixed(2)
+  
+  const cacheKey = `${store.businessId}_${store.pulledOutVehicle.vehicleId}`
+  const tuningData = store.tuningDataCache[cacheKey]
+  if (!tuningData || !tuningData[item.varName]) return actualValue.toFixed(2)
+  
+  const varData = tuningData[item.varName]
+  
+  if (varData.category === "Wheel Alignment" && (varData.unit === '%' || varData.unit === 'percent')) {
+    const actualMin = varData.min ?? 0
+    const actualMax = varData.max ?? 100
+    const range = actualMax - actualMin
+    if (range > 0) {
+      const sliderValue = ((actualValue - actualMin) / range) * 2 - 1
+      const displayValue = Math.round(sliderValue * 100)
+      return displayValue.toString()
+    }
+  }
+  
+  return actualValue.toFixed(2)
+}
 
 const tuningCost = computed(() => {
   return store.tuningCost || 0

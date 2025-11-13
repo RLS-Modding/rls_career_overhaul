@@ -71,7 +71,26 @@
                     {{ subCategory.name }}
                   </h4>
                   <div class="slider-control" v-for="varData in subCategory.items" :key="varData.name">
-                    <label>{{ varData.title }}</label>
+                    <div class="slider-header">
+                      <label>{{ varData.title }}</label>
+                      <div class="value-input-group">
+                        <input 
+                          type="number"
+                          v-model.number="varData.displayValue"
+                          :min="getDisplayMin(varData)"
+                          :max="getDisplayMax(varData)"
+                          :step="varData.category === 'Wheel Alignment' && (varData.unit === '%' || varData.unit === 'percent') ? 1 : getDisplayStep(varData)"
+                          class="value-input"
+                          @input="onValueInput(varData)"
+                          @focus="onValueFocus"
+                          @blur="onValueBlur(varData)"
+                          @keydown.stop @keyup.stop @keypress.stop
+                          v-bng-text-input
+                          :disabled="isSliderDisabled(varData)"
+                        />
+                        <span v-if="varData.unit" class="value-unit">{{ varData.unit === 'percent' ? '%' : varData.unit }}</span>
+                      </div>
+                    </div>
                     <div class="slider-wrapper">
                       <input 
                         type="range" 
@@ -84,21 +103,6 @@
                         @input="onTuningChange(varData.name, varData.valDis)"
                         :disabled="isSliderDisabled(varData)"
                       />
-                      <input 
-                        type="number"
-                        v-model.number="varData.displayValue"
-                        :min="getDisplayMin(varData)"
-                        :max="getDisplayMax(varData)"
-                        :step="getDisplayStep(varData)"
-                        class="value-input"
-                        @input="onValueInput(varData)"
-                        @focus="onValueFocus"
-                        @blur="onValueBlur(varData)"
-                        @keydown.stop @keyup.stop @keypress.stop
-                        v-bng-text-input
-                        :disabled="isSliderDisabled(varData)"
-                      />
-                      <span v-if="varData.unit" class="value-unit">{{ varData.unit === 'percent' ? '%' : varData.unit }}</span>
                     </div>
                   </div>
                 </div>
@@ -246,9 +250,15 @@ const organizeTuningData = (tuningData) => {
     }
     
     // Add variable to subcategory
-    const displayVal = varData.unit === '%' || varData.unit === 'percent' 
-      ? (varData.valDis ?? varData.minDis ?? 0) * 100 
-      : (varData.valDis ?? varData.minDis ?? 0)
+    let displayVal
+    if (varData.unit === '%' || varData.unit === 'percent') {
+      displayVal = (varData.valDis ?? varData.minDis ?? 0) * 100
+      if (varData.category === "Wheel Alignment") {
+        displayVal = Math.round(displayVal)
+      }
+    } else {
+      displayVal = varData.valDis ?? varData.minDis ?? 0
+    }
     
     bucketsMap[category].items[subCategory].items.push({
       ...varData,
@@ -300,7 +310,11 @@ const formatValue = (value, unit) => {
 const getDisplayValue = (varData) => {
   const value = varData.valDis ?? (varData.minDis ?? 0)
   if (varData.unit === '%' || varData.unit === 'percent') {
-    return value * 100
+    const display = value * 100
+    if (varData.category === "Wheel Alignment") {
+      return Math.round(display)
+    }
+    return display
   }
   return value
 }
@@ -324,6 +338,9 @@ const getDisplayMax = (varData) => {
 const getDisplayStep = (varData) => {
   const step = getStepValue(varData)
   if (varData.unit === '%' || varData.unit === 'percent') {
+    if (varData.category === "Wheel Alignment") {
+      return 1
+    }
     return step * 100
   }
   return step
@@ -336,6 +353,9 @@ const onValueInput = (varData) => {
   }
   
   if (varData.unit === '%' || varData.unit === 'percent') {
+    if (varData.category === "Wheel Alignment") {
+      inputValue = Math.round(inputValue)
+    }
     inputValue = inputValue / 100
   }
   
@@ -343,12 +363,16 @@ const onValueInput = (varData) => {
   const max = varData.maxDis ?? 100
   inputValue = Math.max(min, Math.min(max, inputValue))
   
+  if (varData.category === "Wheel Alignment" && (varData.unit === '%' || varData.unit === 'percent')) {
+    inputValue = Math.round(inputValue * 100) / 100
+  }
+  
   varData.valDis = inputValue
   
   if (tuningVariables.value[varData.name]) {
     tuningVariables.value[varData.name].valDis = inputValue
     if (varData.unit === '%' || varData.unit === 'percent') {
-      tuningVariables.value[varData.name].displayValue = inputValue * 100
+      tuningVariables.value[varData.name].displayValue = Math.round(inputValue * 100)
     } else {
       tuningVariables.value[varData.name].displayValue = inputValue
     }
@@ -467,7 +491,11 @@ const handleTuningData = (data) => {
         baseline[varName].val = currentVal
         
         if (baseline[varName].unit === '%' || baseline[varName].unit === 'percent') {
-          baseline[varName].displayValue = currentVal * 100
+          if (baseline[varName].category === "Wheel Alignment") {
+            baseline[varName].displayValue = Math.round(currentVal * 100)
+          } else {
+            baseline[varName].displayValue = currentVal * 100
+          }
         } else {
           baseline[varName].displayValue = currentVal
         }
@@ -500,11 +528,21 @@ const loadTuningData = async () => {
 const onTuningChange = (varName, value) => {
   if (!tuningVariables.value[varName]) return
   
+  const varData = tuningVariables.value[varName]
+  
+  if (varData.category === "Wheel Alignment" && (varData.unit === '%' || varData.unit === 'percent')) {
+    // Round to nearest 0.01 step (1% increment) to avoid floating point precision issues
+    value = Math.round(value / 0.01) * 0.01
+  }
+  
   tuningVariables.value[varName].valDis = value
   
-  const varData = tuningVariables.value[varName]
   if (varData.unit === '%' || varData.unit === 'percent') {
-    varData.displayValue = value * 100
+    if (varData.category === "Wheel Alignment") {
+      varData.displayValue = Math.round(value * 100)
+    } else {
+      varData.displayValue = value * 100
+    }
   } else {
     varData.displayValue = value
   }
@@ -555,17 +593,22 @@ const loadTuningFromCart = () => {
   
   for (const [varName, varData] of Object.entries(tuningVariables.value)) {
     if (cartTuningMap.hasOwnProperty(varName)) {
-      varData.valDis = cartTuningMap[varName]
+      const actualValue = cartTuningMap[varName]
+      varData.valDis = convertWheelAlignmentToSlider(varData, actualValue)
     } else {
       const originalData = originalTuningVariables.value[varName]
       if (originalData) {
         const resetVal = originalData.valDis !== undefined ? originalData.valDis : (originalData.val !== undefined ? originalData.val : (originalData.minDis !== undefined ? originalData.minDis : 0))
-        varData.valDis = resetVal
+        varData.valDis = convertWheelAlignmentToSlider(varData, resetVal)
       }
     }
     
     if (varData.unit === '%' || varData.unit === 'percent') {
-      varData.displayValue = varData.valDis * 100
+      if (varData.category === "Wheel Alignment") {
+        varData.displayValue = Math.round(varData.valDis * 100)
+      } else {
+        varData.displayValue = varData.valDis * 100
+      }
     } else {
       varData.displayValue = varData.valDis
     }
@@ -582,13 +625,13 @@ const resetSettings = async () => {
   const baselineTuningVars = {}
   for (const [varName, varData] of Object.entries(tuningVariables.value)) {
     const originalData = originalTuningVariables.value[varName]
+    let baselineVal
     if (originalData) {
-      const baselineVal = originalData.valDis !== undefined ? originalData.valDis : (originalData.val !== undefined ? originalData.val : (originalData.minDis !== undefined ? originalData.minDis : 0))
-      baselineTuningVars[varName] = baselineVal
+      baselineVal = originalData.valDis !== undefined ? originalData.valDis : (originalData.val !== undefined ? originalData.val : (originalData.minDis !== undefined ? originalData.minDis : 0))
     } else {
-      const currentVal = varData.valDis !== undefined ? varData.valDis : (varData.val !== undefined ? varData.val : (varData.minDis !== undefined ? varData.minDis : 0))
-      baselineTuningVars[varName] = currentVal
+      baselineVal = varData.valDis !== undefined ? varData.valDis : (varData.val !== undefined ? varData.val : (varData.minDis !== undefined ? varData.minDis : 0))
     }
+    baselineTuningVars[varName] = convertWheelAlignmentToActual(varData, baselineVal)
   }
   
   for (const [varName, varData] of Object.entries(tuningVariables.value)) {
@@ -596,15 +639,19 @@ const resetSettings = async () => {
     let resetVal
     
     if (originalData) {
-      resetVal = originalData.valDis !== undefined ? originalData.valDis : (originalData.val !== undefined ? originalData.val : (originalData.minDis !== undefined ? originalData.minDis : 0))
+      resetVal = originalData.valDis !== undefined ? originalData.valDis : (originalData.val !== undefined ? convertWheelAlignmentToSlider(varData, originalData.val) : (originalData.minDis !== undefined ? originalData.minDis : 0))
     } else {
-      resetVal = varData.valDis !== undefined ? varData.valDis : (varData.val !== undefined ? varData.val : (varData.minDis !== undefined ? varData.minDis : 0))
+      resetVal = varData.valDis !== undefined ? varData.valDis : (varData.val !== undefined ? convertWheelAlignmentToSlider(varData, varData.val) : (varData.minDis !== undefined ? varData.minDis : 0))
     }
     
     tuningVariables.value[varName].valDis = resetVal
     
     if (tuningVariables.value[varName].unit === '%' || tuningVariables.value[varName].unit === 'percent') {
-      tuningVariables.value[varName].displayValue = resetVal * 100
+      if (tuningVariables.value[varName].category === "Wheel Alignment") {
+        tuningVariables.value[varName].displayValue = Math.round(resetVal * 100)
+      } else {
+        tuningVariables.value[varName].displayValue = resetVal * 100
+      }
     } else {
       tuningVariables.value[varName].displayValue = resetVal
     }
@@ -639,13 +686,39 @@ const resetSettings = async () => {
   }
 }
 
+const convertWheelAlignmentToActual = (varData, valDis) => {
+  if (varData.category === "Wheel Alignment" && (varData.unit === '%' || varData.unit === 'percent')) {
+    const actualMin = varData.min ?? 0
+    const actualMax = varData.max ?? 100
+    const range = actualMax - actualMin
+    if (range > 0) {
+      return ((valDis + 1) / 2) * range + actualMin
+    }
+    return actualMin
+  }
+  return valDis
+}
+
+const convertWheelAlignmentToSlider = (varData, actualValue) => {
+  if (varData.category === "Wheel Alignment" && (varData.unit === '%' || varData.unit === 'percent')) {
+    const actualMin = varData.min ?? 0
+    const actualMax = varData.max ?? 100
+    const range = actualMax - actualMin
+    if (range > 0) {
+      return ((actualValue - actualMin) / range) * 2 - 1
+    }
+    return 0
+  }
+  return actualValue
+}
+
 const applySettings = async () => {
   if (!store.pulledOutVehicle || !store.pulledOutVehicle.vehicleId) return
   
   const tuningVars = {}
   for (const [varName, varData] of Object.entries(tuningVariables.value)) {
     if (varData.valDis !== undefined) {
-      tuningVars[varName] = varData.valDis
+      tuningVars[varName] = convertWheelAlignmentToActual(varData, varData.valDis)
     }
   }
   
@@ -925,20 +998,30 @@ defineExpose({
     margin-bottom: 0;
   }
   
-  label {
-    display: block;
-    color: rgba(255, 255, 255, 0.7);
+  .slider-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     margin-bottom: 0.5rem;
-    font-size: 0.875rem;
+    
+    label {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.875rem;
+      margin: 0;
+    }
+    
+    .value-input-group {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
   }
   
   .slider-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+    width: 100%;
     
     .slider {
-      flex: 1;
+      width: 100%;
       height: 0.5rem;
       border-radius: 0.25rem;
       outline: none;
@@ -999,52 +1082,40 @@ defineExpose({
         }
       }
     }
+  }
+  
+  .value-input {
+    min-width: 4rem;
+    padding: 0.25rem 0.5rem;
+    background: rgba(26, 26, 26, 1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.25rem;
+    text-align: center;
+    color: white;
+    font-size: 0.875rem;
+    outline: none;
     
-    .value-input {
-      min-width: 4rem;
-      padding: 0.25rem 0.5rem;
-      background: rgba(26, 26, 26, 1);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 0.25rem;
-      text-align: center;
-      color: white;
-      font-size: 0.875rem;
-      outline: none;
-      
-      /* Remove spinner arrows */
-      -moz-appearance: textfield;
-      
-      &::-webkit-outer-spin-button,
-      &::-webkit-inner-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-      }
-      
-      &:focus {
-        border-color: rgba(245, 73, 0, 0.5);
-      }
-      
-      &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
+    -moz-appearance: textfield;
+    
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
     }
     
-    .value-unit {
-      color: rgba(255, 255, 255, 0.7);
-      font-size: 0.875rem;
-      margin-left: 0.25rem;
+    &:focus {
+      border-color: rgba(245, 73, 0, 0.5);
     }
     
-    .value {
-      min-width: 4rem;
-      padding: 0.25rem 0.5rem;
-      background: rgba(26, 26, 26, 1);
-      border-radius: 0.25rem;
-      text-align: center;
-      color: white;
-      font-size: 0.875rem;
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
+  }
+  
+  .value-unit {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.875rem;
   }
 }
 

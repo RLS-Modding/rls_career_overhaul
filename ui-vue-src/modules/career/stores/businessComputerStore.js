@@ -789,17 +789,35 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     }
     
     // Convert originalVars from tuning data format to simple varName->value map
-    // Use valDis (display value) since tuningVars uses valDis values
+    // Convert to actual range for comparison (tuningVars uses actual range)
     const baselineVars = {}
     if (originalVars) {
       for (const [varName, varData] of Object.entries(originalVars)) {
         if (varData) {
-          // Prefer valDis (display value) since that's what tuningVars contains
+          let baselineValue
           if (varData.valDis !== undefined) {
-            baselineVars[varName] = varData.valDis
+            baselineValue = varData.valDis
           } else if (varData.val !== undefined) {
-            baselineVars[varName] = varData.val
+            baselineValue = varData.val
+          } else {
+            continue
           }
+          
+          // Convert wheel alignment values from slider range to actual range
+          if (varData.category === "Wheel Alignment" && (varData.unit === '%' || varData.unit === 'percent')) {
+            const actualMin = varData.min ?? 0
+            const actualMax = varData.max ?? 100
+            const range = actualMax - actualMin
+            if (range > 0) {
+              // Round slider value to nearest 0.01 step first to avoid precision issues
+              const roundedSliderValue = Math.round(baselineValue / 0.01) * 0.01
+              baselineValue = ((roundedSliderValue + 1) / 2) * range + actualMin
+            } else {
+              baselineValue = actualMin
+            }
+          }
+          
+          baselineVars[varName] = baselineValue
         }
       }
     }
