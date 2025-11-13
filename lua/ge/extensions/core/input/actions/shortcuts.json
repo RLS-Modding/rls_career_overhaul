@@ -1,0 +1,11 @@
+{
+    "launchMostRecentCareer": {
+        "cat": "gameplay",
+        "order": 258,
+        "ctx": "tlua",
+        "onDown": "if career_career and career_career.launchMostRecentCareer then career_career.launchMostRecentCareer() end",
+        "title": "Launch Most Recent Career",
+        "desc": "Launch the career with the most recent save"
+    }
+}
+
