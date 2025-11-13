@@ -112,14 +112,38 @@
         </div>
 
         <div class="tuning-controls">
-          <label class="switch-label">
-            <input type="checkbox" v-model="liveUpdates" class="switch-input" />
-            <span class="switch-slider"></span>
-            <span class="switch-text">Live updates</span>
-          </label>
-          <div class="control-buttons">
-            <button class="btn btn-secondary" @click="resetSettings">Reset</button>
-            <button class="btn btn-primary" @click="applySettings">Apply</button>
+          <div class="wheel-data-section">
+            <button class="wheel-data-header" @click="toggleWheelData">
+              <span class="wheel-data-label">Live Wheel Data</span>
+              <svg 
+                class="chevron-icon" 
+                width="14" 
+                height="14" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                stroke-width="2"
+                :class="{ rotated: wheelDataExpanded }"
+              >
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </button>
+            <transition name="section-collapse">
+              <div v-if="wheelDataExpanded" class="wheel-data-content">
+                <BusinessWheelData ref="wheelDataRef" :business-id="store.businessId" :vehicle-id="store.pulledOutVehicle?.vehicleId" />
+              </div>
+            </transition>
+          </div>
+          <div class="controls-row">
+            <label class="switch-label">
+              <input type="checkbox" v-model="liveUpdates" class="switch-input" />
+              <span class="switch-slider"></span>
+              <span class="switch-text">Live updates</span>
+            </label>
+            <div class="control-buttons">
+              <button class="btn btn-secondary" @click="resetSettings">Reset</button>
+              <button class="btn btn-primary" @click="applySettings">Apply</button>
+            </div>
           </div>
         </div>
       </div>
@@ -133,6 +157,7 @@ import { useBusinessComputerStore } from "../../stores/businessComputerStore"
 import { lua } from "@/bridge"
 import { vBngTextInput } from "@/common/directives"
 import { useEvents } from "@/services/events"
+import BusinessWheelData from "./BusinessWheelData.vue"
 
 const store = useBusinessComputerStore()
 const events = useEvents()
@@ -145,6 +170,15 @@ const buckets = ref([])
 const collapsedSections = ref({})
 const searchQuery = ref("")
 const activeSearchQuery = ref("")
+const wheelDataExpanded = ref(false)
+const wheelDataRef = ref(null)
+
+const toggleWheelData = () => {
+  wheelDataExpanded.value = !wheelDataExpanded.value
+  if (wheelDataExpanded.value && wheelDataRef.value && wheelDataRef.value.reloadExtension) {
+    wheelDataRef.value.reloadExtension()
+  }
+}
 
 const onSearchFocus = () => {
   try { lua.setCEFTyping(true) } catch (_) {}
@@ -1085,7 +1119,7 @@ defineExpose({
   }
   
   .value-input {
-    min-width: 4rem;
+    width: 5rem;
     padding: 0.25rem 0.5rem;
     background: rgba(26, 26, 26, 1);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -1095,6 +1129,7 @@ defineExpose({
     font-size: 0.875rem;
     outline: none;
     
+    appearance: textfield;
     -moz-appearance: textfield;
     
     &::-webkit-outer-spin-button,
@@ -1121,14 +1156,64 @@ defineExpose({
 
 .tuning-controls {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 0.5rem;
   padding: 1rem;
   background: rgba(23, 23, 23, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 0.5rem;
   flex-shrink: 0;
   margin-top: 1rem;
+  
+  .wheel-data-section {
+    width: 100%;
+    
+    .wheel-data-header {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.375rem 0.625rem;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+      border-radius: 0.25rem;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.05);
+      }
+      
+      .wheel-data-label {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.8125rem;
+        user-select: none;
+        font-weight: 500;
+      }
+      
+      .chevron-icon {
+        color: rgba(255, 255, 255, 0.4);
+        flex-shrink: 0;
+        transition: transform 0.3s ease;
+        
+        &.rotated {
+          transform: rotate(180deg);
+        }
+      }
+    }
+    
+    .wheel-data-content {
+      margin-top: 0.25rem;
+    }
+  }
+  
+  .controls-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 1rem;
+  }
   
   .switch-label {
     display: flex;
@@ -1138,6 +1223,7 @@ defineExpose({
     cursor: pointer;
     font-size: 0.875rem;
     position: relative;
+    flex-shrink: 0;
     
     .switch-input {
       position: absolute;
@@ -1190,6 +1276,7 @@ defineExpose({
   .control-buttons {
     display: flex;
     gap: 0.5rem;
+    flex-shrink: 0;
   }
 }
 

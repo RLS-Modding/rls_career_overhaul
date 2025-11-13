@@ -1167,6 +1167,8 @@ export default {
     getVehicleTuningData: (businessId, vehicleId) => [String, Integer],
     requestVehicleTuningData: (businessId, vehicleId) => [String, Integer],
     applyVehicleTuning: (businessId, vehicleId, tuningVars) => [String, Integer, Object],
+    loadWheelDataExtension: (businessId, vehicleId) => [String, Integer],
+    unloadWheelDataExtension: (businessId, vehicleId) => [String, Integer],
     clearVehicleDataCaches: () => {},
     getBusinessAccountBalance: (businessType, businessId) => [String, String],
     purchaseCartItems: (businessId, accountId, cartData) => [String, String, Object],

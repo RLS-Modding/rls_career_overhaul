@@ -628,6 +628,14 @@ local function applyTuningToVehicle(businessId, vehicleId, tuningVars)
           end
         end
       ]])
+      
+      -- Reload wheel data extension after vehicle respawn
+      if career_modules_business_businessComputer then
+        core_jobsystem.create(function(job)
+          job.sleep(0.1)
+          career_modules_business_businessComputer.loadWheelDataExtension(businessId, vehicleId)
+        end)
+      end
     end, 'energyStorage')
   end, 'energyStorage')
   

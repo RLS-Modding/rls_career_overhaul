@@ -715,6 +715,110 @@ local function applyTuningToVehicle(businessId, vehicleId, tuningVars)
   return false
 end
 
+local activeWheelDataVehicles = {}
+
+local function loadWheelDataExtension(businessId, vehicleId)
+  if not businessId or not vehicleId then
+    return false
+  end
+  
+  local vehicleObj = getBusinessVehicleObject(businessId, vehicleId)
+  if not vehicleObj then
+    return false
+  end
+  
+  local vehId = vehicleObj:getID()
+  local key = businessId .. "_" .. tostring(vehicleId)
+  
+  for oldVehId, entry in pairs(activeWheelDataVehicles) do
+    if entry.key == key and oldVehId ~= vehId then
+      local oldVehicleObj = be:getObjectByID(oldVehId)
+      if oldVehicleObj then
+        oldVehicleObj:queueLuaCommand([[
+          if extensions.businessWheelData then
+            extensions.businessWheelData.disableWheelData()
+          end
+          extensions.unload("businessWheelData")
+        ]])
+      end
+      activeWheelDataVehicles[oldVehId] = nil
+    end
+  end
+  
+  vehicleObj:queueLuaCommand([[
+    if extensions.businessWheelData then
+      extensions.businessWheelData.disableWheelData()
+    end
+    extensions.unload("businessWheelData")
+  ]])
+  
+  vehicleObj:queueLuaCommand([[
+    extensions.load("businessWheelData")
+    if extensions.businessWheelData then
+      extensions.businessWheelData.enableWheelData()
+    end
+  ]])
+  
+  activeWheelDataVehicles[vehId] = {
+    businessId = businessId,
+    vehicleId = vehicleId,
+    key = key
+  }
+  
+  return true
+end
+
+local function unloadWheelDataExtension(businessId, vehicleId)
+  if not businessId or not vehicleId then
+    return false
+  end
+  
+  local vehicleObj = getBusinessVehicleObject(businessId, vehicleId)
+  if not vehicleObj then
+    return false
+  end
+  
+  local vehId = vehicleObj:getID()
+  if not activeWheelDataVehicles[vehId] then
+    return false
+  end
+  
+  vehicleObj:queueLuaCommand([[
+    if extensions.businessWheelData then
+      extensions.businessWheelData.disableWheelData()
+    end
+    extensions.unload("businessWheelData")
+  ]])
+  
+  activeWheelDataVehicles[vehId] = nil
+  
+  return true
+end
+
+local function onVehicleWheelDataUpdate(vehId, dataStr)
+  local vehicleInfo = activeWheelDataVehicles[vehId]
+  if not vehicleInfo then
+    return
+  end
+  
+  local data = {}
+  if dataStr and dataStr ~= "{}" then
+    local success, decoded = pcall(function()
+      return jsonDecode(dataStr)
+    end)
+    if success and decoded then
+      data = decoded
+    end
+  end
+  
+  guihooks.trigger('businessComputer:onVehicleWheelData', {
+    success = true,
+    businessId = vehicleInfo.businessId,
+    vehicleId = tonumber(vehicleInfo.vehicleId),
+    wheelData = data
+  })
+end
+
 local function calculateTuningCost(businessId, vehicleId, tuningVars, originalVars)
   if career_modules_business_businessVehicleTuning then
     return career_modules_business_businessVehicleTuning.calculateTuningCost(businessId, vehicleId, tuningVars, originalVars)
@@ -983,6 +1087,8 @@ M.requestVehiclePartsTree = requestVehiclePartsTree
 M.getVehicleTuningData = getVehicleTuningData
 M.requestVehicleTuningData = requestVehicleTuningData
 M.applyVehicleTuning = applyVehicleTuning
+M.loadWheelDataExtension = loadWheelDataExtension
+M.unloadWheelDataExtension = unloadWheelDataExtension
 M.clearVehicleDataCaches = clearVehicleDataCaches
 M.getBusinessAccountBalance = getBusinessAccountBalance
 M.purchaseCartItems = purchaseCartItems
@@ -998,6 +1104,6 @@ M.applyPartsToVehicle = applyPartsToVehicle
 M.applyCartPartsToVehicle = applyCartPartsToVehicle
 M.getAllRequiredParts = getAllRequiredParts
 M.addPartToCart = addPartToCart
+M.onVehicleWheelDataUpdate = onVehicleWheelDataUpdate
 
 return M
-
