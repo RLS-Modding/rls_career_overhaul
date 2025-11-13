@@ -128,13 +128,28 @@
                 </div>
                 <div class="option-actions">
                   <span class="option-price">₿ {{ (part.value || 0).toLocaleString() }}</span>
+                  <div v-if="part.installed" class="installed-button-wrapper">
+                    <button
+                      class="btn btn-disabled"
+                      @click.stop="toggleRemoveMenu(result.slotPath, part.name)"
+                    >
+                      Installed
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"/>
+                      </svg>
+                    </button>
+                    <div v-if="removeMenuVisible === `${result.slotPath}_${part.name}`" class="remove-menu">
+                      <button class="remove-menu-item" @click="removePart(part, result)">
+                        Remove
+                      </button>
+                    </div>
+                  </div>
                   <button
-                    class="btn"
-                    :class="part.installed ? 'btn-disabled' : 'btn-primary'"
-                    :disabled="part.installed"
+                    v-else
+                    class="btn btn-primary"
                     @click="installPart(part, result)"
                   >
-                    {{ part.installed ? 'Installed' : 'Install' }}
+                    Install
                   </button>
                 </div>
               </div>
@@ -189,14 +204,53 @@
               </div>
               <div class="option-actions">
                 <span class="option-price">₿ {{ (option.value || 0).toLocaleString() }}</span>
-                <button
-                  class="btn"
-                  :class="option.installed ? 'btn-disabled' : 'btn-primary'"
-                  :disabled="option.installed"
-                  @click="installPart(option, currentCategory)"
-                >
-                  {{ option.installed ? 'Installed' : 'Install' }}
-                </button>
+                <div v-if="option.installed" class="installed-button-wrapper">
+                  <button
+                    class="btn btn-disabled"
+                    @click.stop="toggleRemoveMenu(currentCategory.path, option.name)"
+                  >
+                    Installed
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                  </button>
+                  <div v-if="removeMenuVisible === `${currentCategory.path}_${option.name}`" class="remove-menu">
+                    <button class="remove-menu-item" @click="removePart(option, currentCategory)">
+                      Remove
+                    </button>
+                  </div>
+                </div>
+                <div v-else class="install-button-wrapper">
+                  <button
+                    v-if="!currentCategory.compatibleInventoryParts || currentCategory.compatibleInventoryParts.length === 0"
+                    class="btn btn-primary"
+                    @click="installPart(option, currentCategory)"
+                  >
+                    Install
+                  </button>
+                  <div v-else class="install-dropdown-wrapper">
+                    <button
+                      class="btn btn-primary"
+                      @click.stop="toggleInstallMenu(currentCategory.path, option.name)"
+                    >
+                      Install
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"/>
+                      </svg>
+                    </button>
+                    <div v-if="installMenuVisible === `${currentCategory.path}_${option.name}`" class="install-menu">
+                      <button class="install-menu-item" @click="installPart(option, currentCategory)">
+                        Install New
+                      </button>
+                      <div v-for="usedPart in currentCategory.compatibleInventoryParts" :key="usedPart.partId" class="install-menu-item">
+                        <button class="install-menu-item-button" @click="installUsedPart(usedPart, currentCategory)">
+                          Install Used
+                          <span class="mileage-badge">{{ formatMileage(usedPart.mileage) }}</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -253,6 +307,8 @@ const slotsNiceName = ref({})
 const partsNiceName = ref({})
 const loading = ref(true) // Start with loading = true to show loading message immediately
 const openSearchSections = ref({})
+const removeMenuVisible = ref(null)
+const installMenuVisible = ref(null)
 
 const hasActiveSearch = computed(() => activeSearchQuery.value.length > 0)
 
@@ -457,6 +513,68 @@ const installPart = async (part, slot) => {
   // Parts tree will be automatically reloaded via the event handler in addPartToCart
 }
 
+const toggleRemoveMenu = (slotPath, partName) => {
+  const menuKey = `${slotPath}_${partName}`
+  if (removeMenuVisible.value === menuKey) {
+    removeMenuVisible.value = null
+  } else {
+    removeMenuVisible.value = menuKey
+    installMenuVisible.value = null
+  }
+}
+
+const toggleInstallMenu = (slotPath, partName) => {
+  const menuKey = `${slotPath}_${partName}`
+  if (installMenuVisible.value === menuKey) {
+    installMenuVisible.value = null
+  } else {
+    installMenuVisible.value = menuKey
+    removeMenuVisible.value = null
+  }
+}
+
+const formatMileage = (miles) => {
+  if (!miles || miles === 0) return "0 mi"
+  if (miles < 1000) return `${Math.round(miles)} mi`
+  return `${(miles / 1000).toFixed(1)}k mi`
+}
+
+const installUsedPart = async (usedPart, slot) => {
+  installMenuVisible.value = null
+  
+  const partToAdd = {
+    partName: usedPart.name,
+    slotPath: slot.path,
+    fromInventory: true,
+    partId: usedPart.partId
+  }
+  
+  await store.addPartToCart(partToAdd)
+}
+
+const removePart = async (part, slot) => {
+  removeMenuVisible.value = null
+  
+  // Handle both search results (slotPath) and category navigation (path)
+  let slotPath = slot.slotPath || slot.path
+  
+  // Normalize path: ensure it starts with / and ends with /
+  if (!slotPath.startsWith('/')) {
+    slotPath = '/' + slotPath
+  }
+  if (!slotPath.endsWith('/')) {
+    slotPath = slotPath + '/'
+  }
+  
+  // Remove part from cart by slotPath
+  await store.removePartBySlotPath(slotPath)
+  
+  // Reload parts tree to reflect the removal
+  setTimeout(() => {
+    loadPartsTree()
+  }, 300)
+}
+
 const handlePartsTreeData = (data) => {
   if (!data || !data.success) {
     console.error("Failed to load parts tree:", data?.error)
@@ -624,9 +742,21 @@ watch(() => store.activeTabId, async (newTabId, oldTabId) => {
   }
 })
 
+const handleClickOutside = (e) => {
+  if (!e.target.closest('.installed-button-wrapper')) {
+    removeMenuVisible.value = null
+  }
+  if (!e.target.closest('.install-dropdown-wrapper')) {
+    installMenuVisible.value = null
+  }
+}
+
 onMounted(() => {
   // Register event listener for parts tree data
   events.on('businessComputer:onVehiclePartsTree', handlePartsTreeData)
+  
+  // Close remove menu when clicking outside
+  document.addEventListener('click', handleClickOutside)
   
   // Wait for UI animation to complete (600ms) before requesting parts tree data
   // This ensures vehicle spawning doesn't happen until animation is finished
@@ -642,6 +772,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   // Clean up event listener
   events.off('businessComputer:onVehiclePartsTree', handlePartsTreeData)
+  document.removeEventListener('click', handleClickOutside)
 })
 </script>
 
@@ -854,6 +985,8 @@ onBeforeUnmount(() => {
       color: white;
       font-size: 0.875em;
       font-weight: 600;
+      text-align: left;
+      word-wrap: break-word;
     }
   }
   
@@ -953,6 +1086,8 @@ onBeforeUnmount(() => {
   .category-name {
     color: white;
     font-size: 0.875em;
+    text-align: left;
+    word-wrap: break-word;
   }
   
   .category-right {
@@ -1019,7 +1154,126 @@ onBeforeUnmount(() => {
   &.btn-disabled {
     background: rgba(55, 55, 55, 1);
     color: rgba(255, 255, 255, 0.4);
-    cursor: not-allowed;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    
+    svg {
+      width: 12px;
+      height: 12px;
+      transition: transform 0.2s;
+    }
+    
+    &:hover {
+      background: rgba(65, 65, 65, 1);
+    }
+  }
+}
+
+.installed-button-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.install-button-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.install-dropdown-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.install-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.25em;
+  background: rgba(15, 15, 15, 0.95);
+  border: 2px solid rgba(245, 73, 0, 0.6);
+  border-radius: 0.375em;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  min-width: 180px;
+  overflow: hidden;
+}
+
+.install-menu-item {
+  display: block;
+  width: 100%;
+}
+
+.install-menu-item-button {
+  width: 100%;
+  padding: 0.75em 1em;
+  background: transparent;
+  border: none;
+  color: white;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5em;
+  transition: background 0.2s;
+  
+  &:hover {
+    background: rgba(245, 73, 0, 0.2);
+  }
+  
+  &:first-child {
+    border-top-left-radius: 0.375em;
+    border-top-right-radius: 0.375em;
+  }
+  
+  &:last-child {
+    border-bottom-left-radius: 0.375em;
+    border-bottom-right-radius: 0.375em;
+  }
+}
+
+.install-menu-item:first-child button {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mileage-badge {
+  font-size: 0.75em;
+  color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.25em 0.5em;
+  border-radius: 0.25em;
+}
+
+.remove-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.25em;
+  background: rgba(15, 15, 15, 0.95);
+  border: 2px solid rgba(245, 73, 0, 0.6);
+  border-radius: 0.375em;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  min-width: 120px;
+  overflow: hidden;
+  
+  .remove-menu-item {
+    width: 100%;
+    padding: 0.75em 1em;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.875em;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.2s;
+    
+    &:hover {
+      background: rgba(245, 73, 0, 0.3);
+      color: white;
+    }
   }
 }
 </style>

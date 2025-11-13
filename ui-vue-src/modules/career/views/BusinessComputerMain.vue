@@ -1,7 +1,7 @@
 <template>
   <div class="business-computer-wrapper">
     <BusinessAccountBalance v-if="!store.loading && store.businessId && store.businessType" />
-    <BusinessShoppingCart v-if="!store.loading && (store.vehicleView === 'parts' || store.vehicleView === 'tuning')" />
+    <BusinessShoppingCart v-if="!store.loading && (store.vehicleView === 'parts' || store.vehicleView === 'tuning')" :key="store.pulledOutVehicle?.vehicleId || 'no-vehicle'" />
     <!-- Confirmation Modal -->
     <Teleport to="body">
       <transition name="modal-fade">
@@ -18,7 +18,7 @@
       </transition>
     </Teleport>
     
-    <BngCard v-if="!store.loading" class="business-computer-container" :class="{ 'vehicle-view': store.vehicleView === 'parts' || store.vehicleView === 'tuning', 'collapsed': isVehicleViewCollapsed && (store.vehicleView === 'parts' || store.vehicleView === 'tuning') }" v-bng-blur ref="containerRef">
+    <BngCard v-if="!store.loading" class="business-computer-container" :class="{ 'vehicle-view': store.vehicleView === 'parts' || store.vehicleView === 'tuning', 'collapsed': isVehicleViewCollapsed && (store.vehicleView === 'parts' || store.vehicleView === 'tuning'), 'vehicle-sidebar-expanded': !isVehicleSidebarCollapsed && (store.vehicleView === 'parts' || store.vehicleView === 'tuning') }" v-bng-blur ref="containerRef">
       <div class="main-header" :class="{ 'collapsed': isVehicleViewCollapsed && (store.vehicleView === 'parts' || store.vehicleView === 'tuning') }">
         <h1>{{ store.vehicleView === 'parts' ? 'Parts Customization' : store.vehicleView === 'tuning' ? 'Tuning' : store.businessName }}</h1>
         <div class="header-actions">
@@ -44,6 +44,50 @@
       </div>
       
       <div class="content-layout" :class="{ 'vehicle-view': store.vehicleView === 'parts' || store.vehicleView === 'tuning' }">
+        <aside v-if="store.vehicleView === 'parts' || store.vehicleView === 'tuning'" :class="['vehicle-sidebar', { collapsed: isVehicleSidebarCollapsed }]">
+          <div class="sidebar-header">
+            <button class="collapse-toggle" @click="isVehicleSidebarCollapsed = !isVehicleSidebarCollapsed">
+              <svg v-if="isVehicleSidebarCollapsed" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 18l6-6-6-6"/>
+              </svg>
+              <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M15 18l-6-6 6-6"/>
+              </svg>
+            </button>
+          </div>
+          
+          <nav class="sidebar-nav">
+            <div class="nav-section">
+              <div class="nav-section-title">{{ isVehicleSidebarCollapsed ? 'V' : 'VEHICLE' }}</div>
+              <ul class="nav-list">
+                <li>
+                  <button 
+                    :class="['nav-item', { active: store.vehicleView === 'parts' }]"
+                    @click="store.switchVehicleView('parts')"
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                    </svg>
+                    <span v-if="!isVehicleSidebarCollapsed">Parts</span>
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    :class="['nav-item', { active: store.vehicleView === 'tuning' }]"
+                    @click="store.switchVehicleView('tuning')"
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="3"/>
+                      <path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24"/>
+                    </svg>
+                    <span v-if="!isVehicleSidebarCollapsed">Tuning</span>
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </nav>
+        </aside>
+        
         <aside v-if="store.vehicleView !== 'parts' && store.vehicleView !== 'tuning'" :class="['sidebar', { collapsed: isCollapsed }]">
           <div class="sidebar-header">
             <button class="collapse-toggle" @click="isCollapsed = !isCollapsed">
@@ -204,11 +248,13 @@ const props = defineProps({
 const store = useBusinessComputerStore()
 const isCollapsed = ref(false)
 const isVehicleViewCollapsed = ref(false)
+const isVehicleSidebarCollapsed = ref(true)
 const containerRef = ref(null)
 
 watch(() => store.vehicleView, (newView) => {
   if (!newView || (newView !== 'parts' && newView !== 'tuning')) {
     isVehicleViewCollapsed.value = false
+    isVehicleSidebarCollapsed.value = true
   }
 })
 
@@ -427,15 +473,20 @@ onUnmounted(kill)
   transition: width 0.4s ease, transform 0.4s ease, bottom 0.4s ease;
   
   &.vehicle-view {
-    width: 30em;
+    width: 32em;
+    transition: width 0.3s ease;
     
     &.collapsed {
       position: fixed;
       bottom: 0;
       left: 2em;
       height: auto;
-      width: 30em;
+      width: 32em;
       transform: translateY(0);
+    }
+    
+    &.vehicle-sidebar-expanded {
+      width: 42em;
     }
   }
 }
@@ -524,6 +575,22 @@ onUnmounted(kill)
 }
 
 .sidebar {
+  width: 14em;
+  background: transparent;
+  border: none;
+  border-right: 2px solid rgba(245, 73, 0, 0.4);
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.3s;
+  flex-shrink: 0;
+  
+  &.collapsed {
+    width: 4em;
+  }
+}
+
+.vehicle-sidebar {
   width: 14em;
   background: transparent;
   border: none;
@@ -643,7 +710,8 @@ onUnmounted(kill)
   }
 }
 
-.sidebar.collapsed .nav-item {
+.sidebar.collapsed .nav-item,
+.vehicle-sidebar.collapsed .nav-item {
   justify-content: center;
   gap: 0;
 }

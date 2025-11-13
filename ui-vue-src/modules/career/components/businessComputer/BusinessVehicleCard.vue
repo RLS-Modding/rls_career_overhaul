@@ -23,8 +23,8 @@
             <span class="job-id">Job ID: {{ vehicle.jobId }}</span>
           </div>
           <div class="vehicle-actions">
-            <button class="btn btn-secondary" @click="$emit('put-away')">Put Away Vehicle</button>
-            <button class="btn btn-primary" @click="goToTuning">Go to Tuning</button>
+            <button class="btn btn-secondary" @click.stop="$emit('put-away')">Put Away Vehicle</button>
+            <button class="btn btn-primary" @click.stop="goToTuning">Go to Tuning</button>
           </div>
         </div>
       </div>

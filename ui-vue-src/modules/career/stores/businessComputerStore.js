@@ -143,10 +143,16 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   }
 
   const switchVehicleView = async (view) => {
-    // Clear cart when leaving part customization view
-    if (vehicleView.value === 'parts' && view !== 'parts') {
+    // Store previous view before changing it
+    const previousView = vehicleView.value
+    
+    // Only clear cart when leaving vehicle views entirely (not when switching between parts/tuning)
+    const isSwitchingBetweenVehicleViews = (previousView === 'parts' || previousView === 'tuning') && (view === 'parts' || view === 'tuning')
+    const isLeavingVehicleViews = previousView !== null && !isSwitchingBetweenVehicleViews && (view !== 'parts' && view !== 'tuning')
+    
+    if (isLeavingVehicleViews) {
       clearCart()
-      // Reset vehicle to original state when leaving part customization
+      // Reset vehicle to original state when leaving vehicle views
       if (businessId.value && pulledOutVehicle.value?.vehicleId) {
         try {
           await lua.career_modules_business_businessComputer.resetVehicleToOriginal(
@@ -156,19 +162,20 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
           // Clear preview vehicle state
           await lua.career_modules_business_businessPartCustomization.clearPreviewVehicle(businessId.value)
         } catch (error) {
-          console.error("Failed to reset vehicle when leaving part customization:", error)
+          console.error("Failed to reset vehicle when leaving vehicle views:", error)
         }
       }
     }
     
-    // Check if we're entering parts view (before setting the view)
-    const enteringPartsView = view === 'parts' && vehicleView.value !== 'parts'
+    // Check if we're entering parts view from a non-vehicle view (not switching from tuning)
+    const enteringPartsViewFromNonVehicle = view === 'parts' && previousView !== 'parts' && previousView !== 'tuning'
     
     // Set the view immediately for UI animation
     vehicleView.value = view
     
-    // Initialize cart when opening part customization view - delay until animation completes (600ms)
-    if (enteringPartsView) {
+    // Initialize cart only when first opening parts view from a non-vehicle view
+    // Don't initialize if switching from tuning (cart should persist)
+    if (enteringPartsViewFromNonVehicle) {
       // Wait for UI animation to complete before initializing vehicle
       setTimeout(async () => {
         // Double-check we're still in parts view (user might have switched away)
@@ -177,13 +184,34 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
         }
       }, 600)
     }
+    
+    // When switching to tuning view, ensure vehicle has parts from cart applied
+    if (view === 'tuning' && previousView !== 'tuning') {
+      // Vehicle should already have parts applied from cart, but verify tuning data is refreshed
+      setTimeout(async () => {
+        if (vehicleView.value === 'tuning' && pulledOutVehicle.value?.vehicleId) {
+          await requestVehicleTuningData(pulledOutVehicle.value.vehicleId)
+        }
+      }, 600)
+    }
+    
+    // When switching to parts view from tuning, ensure parts are still applied
+    if (view === 'parts' && previousView === 'tuning') {
+      // Cart should persist, just ensure parts are applied
+      setTimeout(async () => {
+        if (vehicleView.value === 'parts' && pulledOutVehicle.value?.vehicleId && partsCart.value.length > 0) {
+          // Request parts tree to refresh UI
+          await requestVehiclePartsTree(pulledOutVehicle.value.vehicleId)
+        }
+      }, 600)
+    }
   }
 
   const closeVehicleView = async () => {
-    // Clear cart when closing vehicle view
-    if (vehicleView.value === 'parts') {
+    // Clear cart when closing vehicle view (only when actually closing, not when switching between parts/tuning)
+    if (vehicleView.value === 'parts' || vehicleView.value === 'tuning') {
       clearCart()
-      // Reset vehicle to original state when closing part customization
+      // Reset vehicle to original state when closing vehicle customization
       if (businessId.value && pulledOutVehicle.value?.vehicleId) {
         try {
           await lua.career_modules_business_businessComputer.resetVehicleToOriginal(
@@ -193,7 +221,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
           // Clear preview vehicle state
           await lua.career_modules_business_businessPartCustomization.clearPreviewVehicle(businessId.value)
         } catch (error) {
-          console.error("Failed to reset vehicle when closing part customization:", error)
+          console.error("Failed to reset vehicle when closing vehicle customization:", error)
         }
       }
     }
@@ -347,6 +375,9 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     // Switch to the tab
     activeTabId.value = tabId
     loadTabState(tabId)
+    
+    // Trigger event to update tuning UI
+    events.trigger('businessComputer:tabSwitched')
     
     // Only reload vehicle if the content is different
     if (!hasSameContent && businessId.value && pulledOutVehicle.value?.vehicleId) {
@@ -605,9 +636,138 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
           pulledOutVehicle.value.vehicleId,
           partsCart.value
         )
+        
+        // Wait for vehicle to update, then find removed parts and add to inventory
+        setTimeout(async () => {
+          try {
+            // Use findRemovedParts to get all removed parts (including children)
+            const removedParts = await lua.career_modules_business_businessPartCustomization.findRemovedParts(
+              businessId.value,
+              pulledOutVehicle.value.vehicleId
+            )
+            
+            // Add all removed parts to business inventory
+            if (removedParts && Array.isArray(removedParts)) {
+              for (const removedPart of removedParts) {
+                await lua.career_modules_business_businessPartInventory.addPart(
+                  businessId.value,
+                  removedPart
+                )
+              }
+            }
+            
+            // Reload parts tree to reflect removal
+            await store.requestVehiclePartsTree(pulledOutVehicle.value.vehicleId)
+          } catch (error) {
+            console.error("Failed to add removed parts to inventory:", error)
+          }
+        }, 500) // Wait for vehicle replacement to complete
+        
         // Power/weight will be updated when vehicle replacement completes (via hook)
       } catch (error) {
         console.error("Failed to apply cart parts after removal:", error)
+      }
+    }
+  }
+  
+  const removePartBySlotPath = async (slotPath) => {
+    // Normalize slot path
+    let normalizedPath = (slotPath || '').trim()
+    if (!normalizedPath.startsWith('/')) {
+      normalizedPath = '/' + normalizedPath
+    }
+    if (!normalizedPath.endsWith('/')) {
+      normalizedPath = normalizedPath + '/'
+    }
+    
+    // Find the part in the cart by slotPath
+    const partToRemove = partsCart.value.find(item => {
+      const itemPath = (item.slotPath || '').trim()
+      return itemPath === normalizedPath
+    })
+    
+    if (partToRemove) {
+      // Collect all parts that will be removed (parent + children) before removal
+      const tree = buildPartsTree(partsCart.value)
+      const idsToRemove = [partToRemove.id]
+      
+      const collectChildIds = (node, targetId, collectedIds = []) => {
+        if (node.id === targetId) {
+          const collectAllChildren = (childNode) => {
+            collectedIds.push(childNode.id)
+            if (childNode.children && childNode.children.length > 0) {
+              for (const grandchild of childNode.children) {
+                collectAllChildren(grandchild)
+              }
+            }
+          }
+          if (node.children && node.children.length > 0) {
+            for (const child of node.children) {
+              collectAllChildren(child)
+            }
+          }
+          return true
+        }
+        if (node.children && node.children.length > 0) {
+          for (const child of node.children) {
+            if (collectChildIds(child, targetId, collectedIds)) {
+              return true
+            }
+          }
+        }
+        return false
+      }
+      
+      for (const rootNode of tree) {
+        collectChildIds(rootNode, partToRemove.id, idsToRemove)
+      }
+      
+      // Get the parts that will be removed (for inventory)
+      const partsToAddToInventory = partsCart.value.filter(item => idsToRemove.includes(item.id))
+      
+      // Remove from cart
+      partsCart.value = partsCart.value.filter(item => !idsToRemove.includes(item.id))
+      saveCurrentTabState()
+      
+      // Apply baseline + remaining cart parts to vehicle
+      if (businessId.value && pulledOutVehicle.value?.vehicleId) {
+        try {
+          await lua.career_modules_business_businessComputer.applyCartPartsToVehicle(
+            businessId.value,
+            pulledOutVehicle.value.vehicleId,
+            partsCart.value
+          )
+          
+          // Wait for vehicle to update, then find removed parts and add to inventory
+          setTimeout(async () => {
+            try {
+              // Use findRemovedParts to get all removed parts (including children)
+              const removedParts = await lua.career_modules_business_businessPartCustomization.findRemovedParts(
+                businessId.value,
+                pulledOutVehicle.value.vehicleId
+              )
+              
+              // Add all removed parts to business inventory
+              if (removedParts && Array.isArray(removedParts)) {
+                for (const removedPart of removedParts) {
+                  await lua.career_modules_business_businessPartInventory.addPart(
+                    businessId.value,
+                    removedPart
+                  )
+                }
+              }
+              
+              // Reload parts tree to reflect removal
+              await store.requestVehiclePartsTree(pulledOutVehicle.value.vehicleId)
+            } catch (error) {
+              console.error("Failed to add removed parts to inventory:", error)
+            }
+          }, 500) // Wait for vehicle replacement to complete
+          
+          // Power/weight will be updated when vehicle replacement completes (via hook)
+        } catch (error) {
+          console.error("Failed to apply cart parts after removal:", error)
+        }
       }
     }
   }
@@ -879,6 +1039,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     tuningCart,
     addPartToCart,
     removePartFromCart,
+    removePartBySlotPath,
     addTuningToCart,
     removeTuningFromCart,
     clearCart,

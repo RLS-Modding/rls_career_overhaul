@@ -539,6 +539,44 @@ const hasChanges = computed(() => {
   return false
 })
 
+const loadTuningFromCart = () => {
+  if (!tuningVariables.value || !originalTuningVariables.value) return
+  
+  // Build a map of tuning values from cart
+  const cartTuningMap = {}
+  store.tuningCart.forEach(item => {
+    cartTuningMap[item.varName] = item.value
+  })
+  
+  // Apply cart values to tuning variables, or reset to original if not in cart
+  for (const [varName, varData] of Object.entries(tuningVariables.value)) {
+    if (cartTuningMap.hasOwnProperty(varName)) {
+      // Use value from cart
+      varData.valDis = cartTuningMap[varName]
+    } else {
+      // Reset to original value
+      const originalData = originalTuningVariables.value[varName]
+      if (originalData) {
+        const resetVal = originalData.valDis !== undefined ? originalData.valDis : (originalData.val !== undefined ? originalData.val : (originalData.minDis !== undefined ? originalData.minDis : 0))
+        varData.valDis = resetVal
+      }
+    }
+    
+    // Update displayValue
+    if (varData.unit === '%' || varData.unit === 'percent') {
+      varData.displayValue = varData.valDis * 100
+    } else {
+      varData.displayValue = varData.valDis
+    }
+  }
+  
+  // Update buckets
+  buckets.value = organizeTuningData(tuningVariables.value)
+  
+  // Update power/weight after loading tuning from cart
+  store.updatePowerWeight()
+}
+
 const resetSettings = async () => {
   if (!originalTuningVariables.value) return
   
@@ -562,6 +600,9 @@ const resetSettings = async () => {
   
   // Clear tuning cart
   store.addTuningToCart({}, originalTuningVariables.value)
+  
+  // Update power/weight after resetting
+  store.updatePowerWeight()
   
   // If live updates are enabled, apply immediately
   if (liveUpdates.value) {
@@ -592,6 +633,9 @@ const applySettings = async () => {
       )
     }
     
+    // Update cart with current tuning changes (this also updates power/weight)
+    await store.addTuningToCart(tuningVars, originalTuningVariables.value)
+    
     // Save tuning to vehicle data (only if not live updates, or on purchase)
     if (!liveUpdates.value) {
       const success = await store.applyVehicleTuning(store.pulledOutVehicle.vehicleId, tuningVars)
@@ -599,6 +643,8 @@ const applySettings = async () => {
         // Update original values to current values
         originalTuningVariables.value = JSON.parse(JSON.stringify(tuningVariables.value))
       }
+      // Update power/weight after applying tuning
+      store.updatePowerWeight()
     }
   } catch (error) {
     console.error("Failed to apply tuning settings:", error)
@@ -617,9 +663,22 @@ watch(() => store.pulledOutVehicle, (newVehicle, oldVehicle) => {
   // Don't load data here - wait for onMounted
 })
 
+const handleResetTuning = () => {
+  resetSettings()
+}
+
+const handleTabSwitched = () => {
+  // When tab switches, load tuning from cart
+  loadTuningFromCart()
+}
+
 onMounted(() => {
   // Register event listener for tuning data
   events.on('businessComputer:onVehicleTuningData', handleTuningData)
+  // Register event listener for reset tuning
+  events.on('businessComputer:resetTuning', handleResetTuning)
+  // Register event listener for tab switch
+  events.on('businessComputer:tabSwitched', handleTabSwitched)
   
   // Request data immediately - Lua will check cache and return instantly if cached
   // Otherwise wait for CSS transition to complete (0.3s) before requesting
@@ -633,8 +692,15 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  // Clean up event listener
+  // Clean up event listeners
   events.off('businessComputer:onVehicleTuningData', handleTuningData)
+  events.off('businessComputer:resetTuning', handleResetTuning)
+  events.off('businessComputer:tabSwitched', handleTabSwitched)
+})
+
+defineExpose({
+  resetSettings,
+  loadTuningFromCart
 })
 </script>
 

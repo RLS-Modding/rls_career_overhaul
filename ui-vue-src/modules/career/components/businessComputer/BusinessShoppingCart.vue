@@ -126,29 +126,76 @@
         </div>
         
         <template v-if="partsItems.length > 0">
-          <PartsTreeItem
-            v-for="node in store.partsTree"
-            :key="node.id"
-            :node="node"
-            :level="0"
-            @remove="store.removePartFromCart"
-          />
+          <div class="cart-section">
+            <button class="cart-section-header" @click="partsSectionCollapsed = !partsSectionCollapsed">
+              <div class="section-header-content">
+                <h3>Parts</h3>
+                <span class="section-subtotal">Subtotal: ${{ partsCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
+              </div>
+              <svg 
+                class="section-chevron" 
+                width="20" 
+                height="20" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                stroke-width="2"
+                :class="{ rotated: partsSectionCollapsed }"
+              >
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </button>
+            <transition name="section-collapse">
+              <div v-if="!partsSectionCollapsed" class="section-content">
+                <PartsTreeItem
+                  v-for="node in store.partsTree"
+                  :key="node.id"
+                  :node="node"
+                  :level="0"
+                  @remove="store.removePartFromCart"
+                />
+              </div>
+            </transition>
+          </div>
         </template>
         
         <template v-if="tuningItems.length > 0">
-          <div class="cart-section-header">Tuning</div>
-          <div v-for="item in tuningItems" :key="item.varName" class="cart-item">
-            <button class="remove-button" @click="store.removeTuningFromCart(item.varName)">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"/>
-                <line x1="6" y1="6" x2="18" y2="18"/>
+          <div class="cart-section">
+            <button class="cart-section-header" @click="tuningSectionCollapsed = !tuningSectionCollapsed">
+              <div class="section-header-content">
+                <h3>Tuning</h3>
+                <span class="section-subtotal">Subtotal: ${{ tuningCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
+              </div>
+              <svg 
+                class="section-chevron" 
+                width="20" 
+                height="20" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                stroke-width="2"
+                :class="{ rotated: tuningSectionCollapsed }"
+              >
+                <polyline points="6 9 12 15 18 9"/>
               </svg>
             </button>
-            <div class="item-info">
-              <div class="item-name">{{ item.title || item.varName }}</div>
-              <div class="item-slot">{{ item.originalValue?.toFixed(2) }} → {{ item.value?.toFixed(2) }}</div>
-            </div>
-            <div class="item-price">${{ (item.price || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</div>
+            <transition name="section-collapse">
+              <div v-if="!tuningSectionCollapsed" class="section-content">
+                <div v-for="item in tuningItems" :key="item.varName" class="cart-item">
+                  <button class="remove-button" @click="store.removeTuningFromCart(item.varName)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="18" y1="6" x2="6" y2="18"/>
+                      <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                  <div class="item-info">
+                    <div class="item-name">{{ item.title || item.varName }}</div>
+                    <div class="item-slot">{{ item.originalValue?.toFixed(2) }} → {{ item.value?.toFixed(2) }}</div>
+                  </div>
+                  <div class="item-price">${{ (item.price || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</div>
+                </div>
+              </div>
+            </transition>
           </div>
         </template>
       </div>
@@ -160,13 +207,13 @@
               <div class="stats-container">
                 <div class="stat-row">
                   <div class="stat-label-col">Power:</div>
-                  <div class="stat-value-col">{{ Math.round(store.originalPower) }} kW</div>
+                  <div class="stat-value-col">{{ Math.round((store.originalPower || 0) * 1.35962) }} PS</div>
                   <div class="stat-arrow-col">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M5 12h14M12 5l7 7-7 7"/>
                     </svg>
                   </div>
-                  <div class="stat-value-col">{{ Math.round(store.currentPower) }} kW</div>
+                  <div class="stat-value-col">{{ Math.round((store.currentPower || 0) * 1.35962) }} PS</div>
                 </div>
                 <div class="stat-row">
                   <div class="stat-label-col">Weight:</div>
@@ -265,12 +312,20 @@ const editingTabName = ref('')
 const renameInput = ref(null)
 const showConfirmModal = ref(false)
 const footerCollapsed = ref(false)
+const partsSectionCollapsed = ref(false)
+const tuningSectionCollapsed = ref(false)
 
 const partsItems = computed(() => store.partsCart || [])
 const tuningItems = computed(() => store.tuningCart || [])
 
 const tuningCost = computed(() => {
   return store.tuningCost || 0
+})
+
+const partsCost = computed(() => {
+  const total = store.getCartTotal || 0
+  const tuning = tuningCost.value
+  return total - tuning
 })
 
 const salesTaxRate = 0.07 // 7% sales tax (matching vanilla)
@@ -405,6 +460,9 @@ const performCancel = async () => {
     }
   }
   
+  // Reset tuning variables to original
+  events.trigger('businessComputer:resetTuning')
+  
   store.clearCart()
   expanded.value = false
 }
@@ -516,6 +574,9 @@ const clearCurrentTab = async () => {
     }
   }
   
+  // Reset tuning variables to original
+  events.trigger('businessComputer:resetTuning')
+  
   // Save the cleared state to the current tab
   store.saveCurrentTabState()
 }
@@ -549,27 +610,36 @@ onMounted(async () => {
   // Close context menu when clicking outside
   document.addEventListener('click', hideTabMenu)
   
-  // Initialize cart when component mounts if vehicle is already pulled out
-  // Delay until UI animation completes (600ms) to avoid vehicle spawning during animation
-  if (store.pulledOutVehicle && (store.vehicleView === 'parts' || store.vehicleView === 'tuning')) {
-    setTimeout(async () => {
-      // Double-check we're still in the vehicle view (user might have switched away)
-      if (store.vehicleView === 'parts' || store.vehicleView === 'tuning') {
-        await store.initializeCartForVehicle()
-      }
-    }, 600)
-  }
+  // Don't initialize cart here - let switchVehicleView handle it
+  // This prevents clearing cart when switching between parts/tuning views
 })
 
-watch(() => store.pulledOutVehicle, async (newVehicle) => {
-  if (newVehicle && (store.vehicleView === 'parts' || store.vehicleView === 'tuning')) {
+// Track if we've initialized for the current vehicle to prevent re-initialization when switching views
+const initializedVehicleId = ref(null)
+
+watch(() => store.pulledOutVehicle, async (newVehicle, oldVehicle) => {
+  // Only initialize cart when vehicle is first pulled out (not when switching views)
+  // Don't initialize if we're switching between parts/tuning - let switchVehicleView handle it
+  // Also don't initialize if we've already initialized for this vehicle
+  if (newVehicle && 
+      !oldVehicle && 
+      newVehicle.vehicleId !== initializedVehicleId.value &&
+      (store.vehicleView === 'parts' || store.vehicleView === 'tuning')) {
     // Delay until UI animation completes (600ms) to avoid vehicle spawning during animation
     setTimeout(async () => {
       // Double-check we're still in the vehicle view and vehicle is still pulled out
-      if (newVehicle && (store.vehicleView === 'parts' || store.vehicleView === 'tuning')) {
+      if (newVehicle && 
+          newVehicle.vehicleId === store.pulledOutVehicle?.vehicleId &&
+          (store.vehicleView === 'parts' || store.vehicleView === 'tuning')) {
         await store.initializeCartForVehicle()
+        initializedVehicleId.value = newVehicle.vehicleId
       }
     }, 600)
+  }
+  
+  // Reset initialized flag when vehicle is put away
+  if (!newVehicle && oldVehicle) {
+    initializedVehicleId.value = null
   }
 }, { immediate: true })
 
@@ -857,15 +927,94 @@ onBeforeUnmount(() => {
   color: rgba(255, 255, 255, 0.5);
 }
 
+.cart-section {
+  margin-bottom: 1em;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
 .cart-section-header {
-  padding: 0.5em 0;
-  color: rgba(245, 73, 0, 1);
-  font-weight: 600;
-  font-size: 0.875em;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75em 1em;
+  background: rgba(23, 23, 23, 0.5);
+  border: 1px solid rgba(245, 73, 0, 0.3);
+  border-radius: 0.375em;
+  cursor: pointer;
+  transition: all 0.2s;
   margin-bottom: 0.5em;
+  
+  &:hover {
+    background: rgba(23, 23, 23, 0.7);
+    border-color: rgba(245, 73, 0, 0.5);
+  }
+  
+  .section-header-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25em;
+    flex: 1;
+    
+    h3 {
+      margin: 0;
+      color: rgba(245, 73, 0, 1);
+      font-weight: 600;
+      font-size: 0.875em;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .section-subtotal {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.75em;
+      font-family: 'Courier New', monospace;
+    }
+  }
+  
+  .section-chevron {
+    color: rgba(255, 255, 255, 0.4);
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+    
+    &.rotated {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+.section-content {
+  overflow: hidden;
+}
+
+.section-collapse-enter-active,
+.section-collapse-leave-active {
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+  overflow: hidden;
+}
+
+.section-collapse-enter-from {
+  max-height: 0;
+  opacity: 0;
+}
+
+.section-collapse-enter-to {
+  max-height: 2000px;
+  opacity: 1;
+}
+
+.section-collapse-leave-from {
+  max-height: 2000px;
+  opacity: 1;
+}
+
+.section-collapse-leave-to {
+  max-height: 0;
+  opacity: 0;
 }
 
 .cart-item {
