@@ -91,7 +91,8 @@ local function getPrice(category, subCategory, varName)
       return prices.default.variables[varName].price or 0
     end
   end
-  return 0
+  -- Use default price if price cannot be retrieved
+  return prices.default and prices.default.price or 200
 end
 
 local function getPriceCategory(category)
@@ -169,28 +170,12 @@ local function requestVehicleTuningData(businessId, vehicleId)
       return
     end
 
-    -- Get preview vehicle config (includes parts from cart) if available
-    local previewConfig = nil
-    if career_modules_business_businessPartCustomization then
-      previewConfig = career_modules_business_businessPartCustomization.getPreviewVehicleConfig(businessId)
-    end
-    
-    -- Use preview config if available, otherwise use base config
-    local configToUse = previewConfig or configKey
-    
-    -- Spawn vehicle temporarily to get tuning data
-    local vehicleObj = core_vehicles.spawnNewVehicle(modelKey, {
-      config = configToUse,
-      pos = vec3(0, 0, -1000), -- Spawn far away
-      rot = quat(0, 0, 0, 1),
-      keepLoaded = true,
-      autoEnterVehicle = false
-    })
-
+    -- Get the actual preview vehicle object (already spawned and visible)
+    local vehicleObj = getBusinessVehicleObject(businessId, vehicleId)
     if not vehicleObj then
       guihooks.trigger('businessComputer:onVehicleTuningData', {
         success = false,
-        error = "Failed to spawn vehicle"
+        error = "Preview vehicle not found"
       })
       return
     end
@@ -200,10 +185,6 @@ local function requestVehicleTuningData(businessId, vehicleId)
     -- Get vehicle data and tuning variables
     local vehicleData = extensions.core_vehicle_manager.getVehicleData(vehId)
     if not vehicleData or not vehicleData.vdata or not vehicleData.vdata.variables then
-      -- Clean up spawned vehicle
-      if vehicleObj then
-        vehicleObj:delete()
-      end
       guihooks.trigger('businessComputer:onVehicleTuningData', {
         success = false,
         error = "No tuning variables found"
@@ -211,21 +192,123 @@ local function requestVehicleTuningData(businessId, vehicleId)
       return
     end
 
-    -- Get current vars from vehicle config (if any)
+    -- Get baseline vars from initial vehicle state (baseline from inventory)
+    -- This ensures we compare tuning changes against the original state, not current modified state
+    local baselineVars = {}
+    if career_modules_business_businessPartCustomization then
+      local initialVehicle = career_modules_business_businessPartCustomization.getInitialVehicleState(businessId)
+      if initialVehicle and initialVehicle.vars then
+        baselineVars = initialVehicle.vars
+      end
+    end
+    
+    -- Get current vars from vehicle (for display purposes)
+    -- But we'll use baseline vars as the "original" for comparison
     local currentVars = vehicle.vars or {}
 
     -- Get all available tuning variables from vehicle
     local tuningVariables = deepcopy(vehicleData.vdata.variables)
     
-    -- Also get tuning variables from parts in the partsTree
-    -- Use vehicle object's config.partsTree (includes all installed parts)
-    local partsTree = nil
-    if vehicleObj and vehicleObj.config and vehicleObj.config.partsTree then
-      partsTree = vehicleObj.config.partsTree
-    elseif vehicleData.config and vehicleData.config.partsTree then
-      partsTree = vehicleData.config.partsTree
-    end
+    -- Get parts tree from vehicle Lua context (v.config.partsTree)
+    -- This gets the live vehicle's parts tree with all currently installed parts
+    local requestId = "tuning_" .. businessId .. "_" .. tostring(vehicleId) .. "_" .. tostring(os.clock())
     
+    -- Store context for callback
+    local context = {
+      businessId = businessId,
+      vehicleId = vehicleId,
+      vehicleData = vehicleData,
+      currentVars = currentVars,
+      baselineVars = baselineVars,
+      tuningVariables = tuningVariables,
+      cacheKey = cacheKey
+    }
+    
+    -- Call into vehicle Lua to get v.config.partsTree
+    -- Use jsonEncode if available, otherwise fall back to serialize
+    vehicleObj:queueLuaCommand([[
+      if v and v.config and v.config.partsTree then
+        local partsTreeStr = nil
+        if jsonEncode then
+          partsTreeStr = jsonEncode(v.config.partsTree)
+          partsTreeStr = string.gsub(partsTreeStr, "'", "\\'")
+        elseif serialize then
+          partsTreeStr = serialize(v.config.partsTree)
+          partsTreeStr = string.gsub(partsTreeStr, "'", "\\'")
+        end
+        if partsTreeStr then
+          obj:queueGameEngineLua("career_modules_business_businessVehicleTuning.onPartsTreeReceived(']] .. requestId .. [[', '" .. partsTreeStr .. "')")
+        else
+          obj:queueGameEngineLua("career_modules_business_businessVehicleTuning.onPartsTreeReceived(']] .. requestId .. [[', nil)")
+        end
+      else
+        obj:queueGameEngineLua("career_modules_business_businessVehicleTuning.onPartsTreeReceived(']] .. requestId .. [[', nil)")
+      end
+    ]])
+    
+    -- Store context for async callback
+    if not M._tuningRequestContexts then
+      M._tuningRequestContexts = {}
+    end
+    M._tuningRequestContexts[requestId] = context
+    
+    -- Processing will continue in onPartsTreeReceived callback
+    return
+  end)
+end
+
+function M.onVehicleVarReceived(contextId, varName, value)
+end
+
+-- Callback function to receive parts tree from vehicle Lua context
+function M.onPartsTreeReceived(requestId, partsTreeStr)
+  local context = M._tuningRequestContexts and M._tuningRequestContexts[requestId]
+  if not context then
+    log('E', 'businessVehicleTuning', '[onPartsTreeReceived] No context found for requestId: ' .. tostring(requestId))
+    return
+  end
+  
+  -- Clean up context
+  M._tuningRequestContexts[requestId] = nil
+  
+  local businessId = context.businessId
+  local vehicleId = context.vehicleId
+  local vehicleData = context.vehicleData
+  local currentVars = context.currentVars
+  local baselineVars = context.baselineVars
+  local tuningVariables = context.tuningVariables
+  local cacheKey = context.cacheKey
+  
+  -- Deserialize parts tree from JSON or serialized Lua
+  local partsTree = nil
+  if partsTreeStr and partsTreeStr ~= "nil" and partsTreeStr ~= "" then
+    -- Try JSON decode first
+    local success, result = pcall(function()
+      if jsonDecode then
+        return jsonDecode(partsTreeStr)
+      else
+        -- Fall back to loadstring for serialized Lua
+        return loadstring("return " .. partsTreeStr)()
+      end
+    end)
+    if success and result then
+      partsTree = result
+    else
+      log('E', 'businessVehicleTuning', '[onPartsTreeReceived] Failed to decode parts tree. First 100 chars: ' .. tostring(partsTreeStr:sub(1, 100)))
+    end
+  end
+  
+  if not partsTree then
+    guihooks.trigger('businessComputer:onVehicleTuningData', {
+      success = false,
+      businessId = businessId,
+      vehicleId = vehicleId,
+      error = "Could not get parts tree from vehicle"
+    })
+    return
+  end
+    
+    -- Process tuning variables from parts tree
     if partsTree and vehicleData.ioCtx then
       -- Helper function to recursively traverse parts tree and extract tuning variables
       local function extractPartTuningVars(node, partTuningVars)
@@ -348,10 +431,13 @@ local function requestVehicleTuningData(businessId, vehicleId)
       end
     end
 
-    -- Merge current vars with defaults and calculate display values
+    -- Merge baseline vars with defaults and calculate display values
+    -- Use baseline vars as the "original" values for comparison
     for varName, varData in pairs(tuningVariables) do
-      -- Use current var value if it exists, otherwise use the default val from the variable definition
-      if currentVars[varName] ~= nil then
+      -- Use baseline var value if it exists (baseline from inventory), otherwise use current var, otherwise use default
+      if baselineVars[varName] ~= nil then
+        varData.val = baselineVars[varName]
+      elseif currentVars[varName] ~= nil then
         varData.val = currentVars[varName]
       elseif varData.val == nil then
         -- If no val is set, use min as baseline (or 0 if min is nil)
@@ -360,15 +446,30 @@ local function requestVehicleTuningData(businessId, vehicleId)
 
       -- Calculate display values (valDis, minDis, maxDis, stepDis)
       -- These are typically the same as val/min/max/step unless there's a conversion factor
-      varData.valDis = varData.val or (varData.min or 0)
-      varData.minDis = varData.min or 0
-      varData.maxDis = varData.max or 100
+      local rawMin = varData.min or 0
+      local rawMax = varData.max or 100
+      
+      -- Handle inverted ranges (when min > max, swap them)
+      local actualMin = rawMin
+      local actualMax = rawMax
+      if rawMin > rawMax then
+        actualMin = rawMax
+        actualMax = rawMin
+        varData._rangeInverted = true
+      else
+        varData._rangeInverted = false
+      end
+      
+      varData.valDis = varData.val or actualMin
+      varData.minDis = actualMin
+      varData.maxDis = actualMax
+      
       -- Use step if available, otherwise calculate a reasonable default based on range
       if varData.step and varData.step > 0 then
         varData.stepDis = varData.step
       else
         -- Calculate step as 1/1000th of the range, but ensure it's at least 0.001
-        local range = math.abs((varData.max or 100) - (varData.min or 0))
+        local range = math.abs(actualMax - actualMin)
         varData.stepDis = math.max(0.001, math.min(1, range / 1000))
       end
 
@@ -378,24 +479,20 @@ local function requestVehicleTuningData(businessId, vehicleId)
       elseif varData.valDis > varData.maxDis then
         varData.valDis = varData.maxDis
       end
-    end
-
-    -- Clean up spawned vehicle
-    if vehicleObj then
-      vehicleObj:delete()
+      
     end
 
     -- Cache the data
     tuningDataCache[cacheKey] = tuningVariables
 
-    -- Trigger hook with data
+    -- Trigger hook with data (include baseline vars separately so Vue can use them for reset)
     guihooks.trigger('businessComputer:onVehicleTuningData', {
       success = true,
       businessId = businessId,
       vehicleId = vehicleId,
-      tuningData = tuningVariables
+      tuningData = tuningVariables,
+      baselineVars = baselineVars
     })
-  end)
 end
 
 -- Legacy function for backward compatibility (now uses hook internally)
@@ -445,7 +542,6 @@ local function applyTuningToVehicle(businessId, vehicleId, tuningVars)
     updatedConfig.vars = {}
   end
   
-  -- Merge tuning vars with existing vars
   for varName, value in pairs(tuningVars) do
     updatedConfig.vars[varName] = value
   end
@@ -476,11 +572,10 @@ local function applyTuningToVehicle(businessId, vehicleId, tuningVars)
     spawnOptions.config = updatedConfig
     spawnOptions.keepOtherVehRotation = true
     
-    -- Replace vehicle with updated config (includes parts + tuning vars)
     core_vehicles.replaceVehicle(modelKey, spawnOptions, vehObj)
     
-    -- Restore fuel levels after vehicle replacement
     core_vehicleBridge.requestValue(vehObj, function(newData)
+      
       if storedFuelLevels and next(storedFuelLevels) and newData and newData[1] then
         for _, tank in ipairs(newData[1]) do
           if tank.name and storedFuelLevels[tank.name] and tank.energyType ~= "n2o" then
@@ -490,6 +585,23 @@ local function applyTuningToVehicle(businessId, vehicleId, tuningVars)
           end
         end
       end
+      
+      -- Calculate and send power/weight after tuning is applied
+      local cacheKey = businessId .. "_" .. tostring(vehicleId)
+      local requestId = cacheKey .. "_" .. tostring(os.clock())
+      
+      -- Execute Lua command in vehicle context to get both power and weight
+      vehObj:queueLuaCommand([[
+        local engine = powertrain.getDevicesByCategory("engine")[1]
+        local stats = obj:calcBeamStats()
+        if engine and stats then
+          local power = engine.maxPower
+          local weight = stats.total_weight
+          if power and weight and weight > 0 then
+            obj:queueGameEngineLua("career_modules_business_businessPartCustomization.onPowerWeightReceived(']] .. requestId .. [[', " .. power .. ", " .. weight .. ")")
+          end
+        end
+      ]])
     end, 'energyStorage')
   end, 'energyStorage')
   
@@ -643,16 +755,35 @@ local function applyVehicleTuning(businessId, vehicleId, tuningVars, accountId)
     vehicle.vars[varName] = value
   end
 
-  -- Update pulled out vehicle if it's the same one
   local pulledOutVehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
   if pulledOutVehicle and pulledOutVehicle.vehicleId == vehicleId then
     pulledOutVehicle.vars = vehicle.vars
+    
+    if pulledOutVehicle.config then
+      if not pulledOutVehicle.config.vars then
+        pulledOutVehicle.config.vars = {}
+      end
+      for varName, value in pairs(vehicle.vars) do
+        pulledOutVehicle.config.vars[varName] = value
+      end
+    end
   end
 
-  -- Save the updated vehicle data
-  career_modules_business_businessInventory.updateVehicle(businessId, vehicleId, {
+  local updateData = {
     vars = vehicle.vars
-  })
+  }
+  
+  if vehicle.config then
+    if not vehicle.config.vars then
+      vehicle.config.vars = {}
+    end
+    for varName, value in pairs(vehicle.vars) do
+      vehicle.config.vars[varName] = value
+    end
+    updateData.config = vehicle.config
+  end
+  
+  career_modules_business_businessInventory.updateVehicle(businessId, vehicleId, updateData)
 
   return true
 end
@@ -702,6 +833,79 @@ local function getShoppingCart(businessId, vehicleId, tuningVars, originalVars)
   return shoppingCartUI
 end
 
+-- Add tuning changes to cart (similar to addPartToCart pattern)
+-- Returns array of tuning cart items with only changed variables
+local function addTuningToCart(businessId, vehicleId, currentTuningVars, baselineTuningVars)
+  if not businessId or not vehicleId or not currentTuningVars then
+    return {}
+  end
+  
+  -- Get baseline vars from initial vehicle state if not provided
+  if not baselineTuningVars and career_modules_business_businessPartCustomization then
+    local initialVehicle = career_modules_business_businessPartCustomization.getInitialVehicleState(businessId)
+    if initialVehicle and initialVehicle.vars then
+      baselineTuningVars = initialVehicle.vars
+    end
+  end
+  
+  -- If still no baseline, use empty table (all changes from defaults)
+  baselineTuningVars = baselineTuningVars or {}
+  
+  -- Filter to only changed variables (like vanilla tuning.lua does)
+  local changedVars = {}
+  for varName, currentValue in pairs(currentTuningVars) do
+    if currentValue ~= nil then
+      local baselineValue = baselineTuningVars[varName]
+      -- Check if value actually changed (handle nil baseline as changed)
+      if baselineValue == nil or math.abs(currentValue - baselineValue) >= 0.001 then
+        changedVars[varName] = currentValue
+      end
+    end
+  end
+  
+  -- If no changes, return empty array (ensure it's serialized as array, not object)
+  if not next(changedVars) then
+    return {}
+  end
+  
+  -- Get shopping cart to calculate prices (only for changed variables)
+  local shoppingCart = getShoppingCart(businessId, vehicleId, changedVars, baselineTuningVars)
+  
+  -- Build cart items array with only changed variables (level 3)
+  -- Use table.insert to ensure sequential integer keys (serializes as array)
+  local cartItems = {}
+  for _, item in ipairs(shoppingCart.items or {}) do
+    if item.type == "variable" and item.level == 3 then
+      local varName = item.varName
+      local currentValue = changedVars[varName]
+      
+      if currentValue ~= nil then
+        local baselineValue = baselineTuningVars[varName]
+        
+        -- Get variable title from tuning data cache
+        local cacheKey = businessId .. "_" .. tostring(vehicleId)
+        local tuningData = tuningDataCache[cacheKey]
+        local varTitle = varName
+        if tuningData and tuningData[varName] and tuningData[varName].title then
+          varTitle = tuningData[varName].title
+        end
+        
+        table.insert(cartItems, {
+          varName = varName,
+          value = currentValue,
+          originalValue = baselineValue or 0,
+          price = item.price or 0,
+          title = varTitle
+        })
+      end
+    end
+  end
+  
+  -- Ensure we return an array (even if empty, use table.insert to maintain array structure)
+  -- cartItems should already be an array due to table.insert, but return explicitly
+  return cartItems
+end
+
 -- Exports
 M.requestVehicleTuningData = requestVehicleTuningData
 M.getVehicleTuningData = getVehicleTuningData
@@ -710,6 +914,7 @@ M.calculateTuningCost = calculateTuningCost
 M.getShoppingCart = getShoppingCart
 M.applyVehicleTuning = applyVehicleTuning
 M.clearTuningDataCache = clearTuningDataCache
+M.addTuningToCart = addTuningToCart
 
 return M
 

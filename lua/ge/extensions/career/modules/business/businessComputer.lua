@@ -729,6 +729,13 @@ local function getTuningShoppingCart(businessId, vehicleId, tuningVars, original
   return {items = {}, total = 0, taxes = 0}
 end
 
+local function addTuningToCart(businessId, vehicleId, currentTuningVars, baselineTuningVars)
+  if career_modules_business_businessVehicleTuning then
+    return career_modules_business_businessVehicleTuning.addTuningToCart(businessId, vehicleId, currentTuningVars, baselineTuningVars)
+  end
+  return {}
+end
+
 local function getAllRequiredParts(businessId, vehicleId, parts, cartParts)
   if career_modules_business_businessPartCustomization then
     return career_modules_business_businessPartCustomization.getAllRequiredParts(businessId, vehicleId, parts, cartParts)
@@ -880,7 +887,10 @@ local function purchaseCartItems(businessId, accountId, cartData)
       if previewConfig then
         vehicle.config = previewConfig
         
-        -- Build part list from parts tree
+        if vehicle.vars then
+          vehicle.config.vars = deepcopy(vehicle.vars)
+        end
+        
         local partList = {}
         local function extractParts(tree)
           if tree.chosenPartName and tree.path then
@@ -919,7 +929,6 @@ local function purchaseCartItems(businessId, accountId, cartData)
       end
     end
 
-    -- Apply tuning
     if #tuning > 0 then
       local tuningVars = {}
       for _, change in ipairs(tuning) do
@@ -982,6 +991,7 @@ M.initializePreviewVehicle = initializePreviewVehicle
 M.applyTuningToVehicle = applyTuningToVehicle
 M.calculateTuningCost = calculateTuningCost
 M.getTuningShoppingCart = getTuningShoppingCart
+M.addTuningToCart = addTuningToCart
 M.getVehiclePowerWeight = getVehiclePowerWeight
 M.resetVehicleToOriginal = resetVehicleToOriginal
 M.applyPartsToVehicle = applyPartsToVehicle

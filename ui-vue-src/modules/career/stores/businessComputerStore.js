@@ -108,10 +108,8 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
       console.error("pullOutVehicle: No businessId")
       return false
     }
-    console.log("pullOutVehicle: Calling Lua with businessId=", businessId.value, "vehicleId=", vehicleId)
     try {
       const success = await lua.career_modules_business_businessComputer.pullOutVehicle(businessId.value, vehicleId)
-      console.log("pullOutVehicle: Lua returned", success)
       if (success) {
         await loadBusinessData(businessType.value, businessId.value)
       }
@@ -310,47 +308,60 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   }
   
   const createNewTab = async () => {
-    saveCurrentTabState()
-    
-    // Find the lowest available build number
-    const existingNumbers = new Set()
-    cartTabs.value.forEach(tab => {
-      const match = tab.name.match(/^Build (\d+)$/)
-      if (match) {
-        existingNumbers.add(parseInt(match[1], 10))
+    try {
+      saveCurrentTabState()
+      
+      // Find the lowest available build number
+      const existingNumbers = new Set()
+      cartTabs.value.forEach(tab => {
+        const match = tab.name.match(/^Build (\d+)$/)
+        if (match) {
+          existingNumbers.add(parseInt(match[1], 10))
+        }
+      })
+      
+      // Find the first missing number starting from 1
+      let newTabNumber = 1
+      while (existingNumbers.has(newTabNumber)) {
+        newTabNumber++
       }
-    })
-    
-    // Find the first missing number starting from 1
-    let newTabNumber = 1
-    while (existingNumbers.has(newTabNumber)) {
-      newTabNumber++
-    }
-    
-    const newTab = {
-      id: `tab_${Date.now()}`,
-      name: `Build ${newTabNumber}`,
-      parts: [],
-      tuning: []
-    }
-    
-    cartTabs.value.push(newTab)
-    activeTabId.value = newTab.id
-    
-    // Reset cart to original vehicle state
-    partsCart.value = []
-    tuningCart.value = []
-    
-    // Reset vehicle to original state
-    if (businessId.value && pulledOutVehicle.value?.vehicleId) {
-      try {
-        await lua.career_modules_business_businessComputer.resetVehicleToOriginal(
-          businessId.value,
-          pulledOutVehicle.value.vehicleId
-        )
-        // Power/weight will be updated when vehicle replacement completes (via hook)
-      } catch (error) {
-        console.error("Failed to reset vehicle to original:", error)
+      
+      const newTab = {
+        id: `tab_${Date.now()}`,
+        name: `Build ${newTabNumber}`,
+        parts: [],
+        tuning: []
+      }
+      
+      cartTabs.value.push(newTab)
+      activeTabId.value = newTab.id
+      
+      // Reset cart to original vehicle state
+      partsCart.value = []
+      tuningCart.value = []
+      
+      // Reset vehicle to original state
+      if (businessId.value && pulledOutVehicle.value?.vehicleId) {
+        try {
+          const success = await lua.career_modules_business_businessComputer.resetVehicleToOriginal(
+            businessId.value,
+            pulledOutVehicle.value.vehicleId
+          )
+          if (!success) {
+            console.error("resetVehicleToOriginal returned false")
+          }
+        } catch (error) {
+          console.error("Failed to reset vehicle to original:", error)
+        }
+      }
+    } catch (error) {
+      console.error("Failed to create new tab:", error)
+      if (cartTabs.value.length > 0 && cartTabs.value[cartTabs.value.length - 1].id === activeTabId.value) {
+        cartTabs.value.pop()
+        if (cartTabs.value.length > 0) {
+          activeTabId.value = cartTabs.value[0].id
+          loadTabState(activeTabId.value)
+        }
       }
     }
   }
@@ -358,64 +369,45 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   const switchTab = async (tabId) => {
     if (tabId === activeTabId.value) return
     
-    // Save current tab state first
     saveCurrentTabState()
     
-    // Get the target tab's state
     const targetTab = cartTabs.value.find(t => t.id === tabId)
     if (!targetTab) return
     
-    // Compare current cart with target tab's saved state
-    const currentParts = JSON.stringify(partsCart.value)
-    const currentTuning = JSON.stringify(tuningCart.value)
-    const targetParts = JSON.stringify(targetTab.parts || [])
-    const targetTuning = JSON.stringify(targetTab.tuning || [])
-    const hasSameContent = currentParts === targetParts && currentTuning === targetTuning
-    
-    // Switch to the tab
     activeTabId.value = tabId
     loadTabState(tabId)
     
-    // Trigger event to update tuning UI
-    events.trigger('businessComputer:tabSwitched')
-    
-    // Only reload vehicle if the content is different
-    if (!hasSameContent && businessId.value && pulledOutVehicle.value?.vehicleId) {
+    if (businessId.value && pulledOutVehicle.value?.vehicleId) {
       try {
-        // Reset to original first
-        await lua.career_modules_business_businessComputer.resetVehicleToOriginal(
+        await lua.career_modules_business_businessComputer.applyCartPartsToVehicle(
           businessId.value,
-          pulledOutVehicle.value.vehicleId
+          pulledOutVehicle.value.vehicleId,
+          partsCart.value
         )
         
-        // Then apply parts from this tab
-        if (partsCart.value.length > 0) {
-          await lua.career_modules_business_businessComputer.applyPartsToVehicle(
-            businessId.value,
-            pulledOutVehicle.value.vehicleId,
-            partsCart.value
-          )
-        }
+        const tuningVars = {}
+        const cart = Array.isArray(tuningCart.value) ? tuningCart.value : []
+        cart.forEach(change => {
+          tuningVars[change.varName] = change.value
+        })
+        await lua.career_modules_business_businessComputer.applyTuningToVehicle(
+          businessId.value,
+          pulledOutVehicle.value.vehicleId,
+          tuningVars
+        )
         
-        // Apply tuning from this tab
-        if (tuningCart.value.length > 0) {
-          const tuningVars = {}
-          tuningCart.value.forEach(change => {
-            tuningVars[change.varName] = change.value
-          })
-          await lua.career_modules_business_businessComputer.applyTuningToVehicle(
-            businessId.value,
-            pulledOutVehicle.value.vehicleId,
-            tuningVars
-          )
-        }
-        
-        // Power/weight will be updated when vehicle replacement completes (via hook)
+        setTimeout(() => {
+          if (vehicleView.value === 'parts') {
+            requestVehiclePartsTree(pulledOutVehicle.value.vehicleId)
+          }
+          if (vehicleView.value === 'tuning') {
+            requestVehicleTuningData(pulledOutVehicle.value.vehicleId)
+          }
+        }, 100)
       } catch (error) {
         console.error("Failed to restore vehicle state for tab:", error)
       }
     }
-    // If hasSameContent is true, vehicle already has the correct parts/tuning, so no reload needed
   }
   
   const deleteTab = (tabId) => {
@@ -486,17 +478,18 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
         
         // Then apply parts from duplicated tab
         if (partsCart.value.length > 0) {
-          await lua.career_modules_business_businessComputer.applyPartsToVehicle(
+          await lua.career_modules_business_businessComputer.applyCartPartsToVehicle(
             businessId.value,
             pulledOutVehicle.value.vehicleId,
             partsCart.value
           )
         }
         
-        // Apply tuning from duplicated tab
-        if (tuningCart.value.length > 0) {
+        // Apply tuning from duplicated tab (or reset to baseline if tab has no tuning)
+        const cart = Array.isArray(tuningCart.value) ? tuningCart.value : []
+        if (cart.length > 0) {
           const tuningVars = {}
-          tuningCart.value.forEach(change => {
+          cart.forEach(change => {
             tuningVars[change.varName] = change.value
           })
           await lua.career_modules_business_businessComputer.applyTuningToVehicle(
@@ -505,6 +498,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
             tuningVars
           )
         }
+        // If tuningCart is empty, vehicle already has baseline tuning from resetVehicleToOriginal
       } catch (error) {
         console.error("Failed to apply duplicated tab state:", error)
       }
@@ -529,14 +523,21 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   const handlePartCartUpdated = (data) => {
     if (data.businessId === businessId.value && data.vehicleId === pulledOutVehicle.value?.vehicleId) {
       if (data.cart && Array.isArray(data.cart)) {
-      // Add IDs to cart items for Vue (Lua doesn't need them)
-      partsCart.value = data.cart.map(item => ({
-        ...item,
-        id: `${item.slotPath}_${item.partName}`,
-        canRemove: item.canRemove !== false // Preserve canRemove flag
-      }))
-        // Auto-save to current tab when cart is updated
+        partsCart.value = data.cart.map(item => ({
+          ...item,
+          id: `${item.slotPath}_${item.partName}`,
+          canRemove: item.canRemove !== false
+        }))
         saveCurrentTabState()
+        
+        setTimeout(() => {
+          if (vehicleView.value === 'parts') {
+            requestVehiclePartsTree(pulledOutVehicle.value.vehicleId)
+          }
+          if (vehicleView.value === 'tuning') {
+            requestVehicleTuningData(pulledOutVehicle.value.vehicleId)
+          }
+        }, 100)
       }
     }
   }
@@ -787,43 +788,45 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
       return
     }
     
-    // Get shopping cart structure from Lua (uses hierarchical pricing from tuning.lua)
-    try {
-      const shoppingCart = await lua.career_modules_business_businessComputer.getTuningShoppingCart(
-        businessId.value,
-        pulledOutVehicle.value.vehicleId,
-        tuningVars,
-        originalVars
-      )
-      
-      // Convert shopping cart items to tuning cart format
-      // Only include actual variables (level 3), not categories/subcategories
-      const changes = []
-      for (const item of shoppingCart.items || []) {
-        if (item.type === 'variable' && item.level === 3) {
-          const varName = item.varName
-          const value = tuningVars[varName]
-          const originalValue = originalVars[varName]?.valDis
-          
-          if (value !== undefined && originalValue !== undefined && value !== originalValue) {
-            changes.push({
-              varName,
-              value,
-              originalValue,
-              price: item.price || 0,
-              title: item.title || varName
-            })
+    // Convert originalVars from tuning data format to simple varName->value map
+    // Use valDis (display value) since tuningVars uses valDis values
+    const baselineVars = {}
+    if (originalVars) {
+      for (const [varName, varData] of Object.entries(originalVars)) {
+        if (varData) {
+          // Prefer valDis (display value) since that's what tuningVars contains
+          if (varData.valDis !== undefined) {
+            baselineVars[varName] = varData.valDis
+          } else if (varData.val !== undefined) {
+            baselineVars[varName] = varData.val
           }
         }
       }
+    }
+    
+    try {
+      const cartItems = await lua.career_modules_business_businessComputer.addTuningToCart(
+        businessId.value,
+        pulledOutVehicle.value.vehicleId,
+        tuningVars,
+        baselineVars
+      )
       
-      tuningCart.value = changes
+      let itemsArray = []
+      if (Array.isArray(cartItems)) {
+        itemsArray = cartItems
+      } else if (cartItems && typeof cartItems === 'object') {
+        itemsArray = Object.values(cartItems)
+      }
+      
+      
+      tuningCart.value = itemsArray
       saveCurrentTabState()
       
       // Update power/weight after tuning change
       updatePowerWeight()
     } catch (error) {
-      console.error("Failed to get tuning shopping cart:", error)
+      console.error("Failed to add tuning to cart:", error)
       tuningCart.value = []
       saveCurrentTabState()
     }
@@ -993,11 +996,13 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   const getCartTotal = computed(() => {
     let total = 0
     
-    partsCart.value.forEach(item => {
+    const parts = Array.isArray(partsCart.value) ? partsCart.value : []
+    parts.forEach(item => {
       total += item.price || 0
     })
     
-    tuningCart.value.forEach(item => {
+    const tuning = Array.isArray(tuningCart.value) ? tuningCart.value : []
+    tuning.forEach(item => {
       total += item.price || 0
     })
     
@@ -1005,7 +1010,8 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   })
   
   const tuningCost = computed(() => {
-    return tuningCart.value.reduce((sum, item) => sum + (item.price || 0), 0)
+    const tuning = Array.isArray(tuningCart.value) ? tuningCart.value : []
+    return tuning.reduce((sum, item) => sum + (item.price || 0), 0)
   })
 
   return {

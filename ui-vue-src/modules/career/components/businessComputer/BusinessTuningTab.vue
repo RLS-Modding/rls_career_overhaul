@@ -246,12 +246,14 @@ const organizeTuningData = (tuningData) => {
     }
     
     // Add variable to subcategory
+    const displayVal = varData.unit === '%' || varData.unit === 'percent' 
+      ? (varData.valDis ?? varData.minDis ?? 0) * 100 
+      : (varData.valDis ?? varData.minDis ?? 0)
+    
     bucketsMap[category].items[subCategory].items.push({
       ...varData,
       name: varName,
-      displayValue: varData.unit === '%' || varData.unit === 'percent' 
-        ? (varData.valDis ?? varData.minDis ?? 0) * 100 
-        : (varData.valDis ?? varData.minDis ?? 0)
+      displayValue: displayVal
     })
   }
   
@@ -333,20 +335,16 @@ const onValueInput = (varData) => {
     return
   }
   
-  // Convert from display value to actual value
   if (varData.unit === '%' || varData.unit === 'percent') {
     inputValue = inputValue / 100
   }
   
-  // Clamp to min/max
   const min = varData.minDis ?? 0
   const max = varData.maxDis ?? 100
   inputValue = Math.max(min, Math.min(max, inputValue))
   
-  // Update the actual value
   varData.valDis = inputValue
   
-  // Update in tuningVariables as well
   if (tuningVariables.value[varData.name]) {
     tuningVariables.value[varData.name].valDis = inputValue
     if (varData.unit === '%' || varData.unit === 'percent') {
@@ -458,7 +456,24 @@ const handleTuningData = (data) => {
       }
       
       tuningVariables.value = data.tuningData
-      originalTuningVariables.value = JSON.parse(JSON.stringify(data.tuningData))
+      
+      const baseline = {}
+      
+      for (const [varName, varData] of Object.entries(data.tuningData)) {
+        baseline[varName] = JSON.parse(JSON.stringify(varData))
+        
+        const currentVal = varData.valDis !== undefined ? varData.valDis : (varData.val !== undefined ? varData.val : (varData.minDis !== undefined ? varData.minDis : 0))
+        baseline[varName].valDis = currentVal
+        baseline[varName].val = currentVal
+        
+        if (baseline[varName].unit === '%' || baseline[varName].unit === 'percent') {
+          baseline[varName].displayValue = currentVal * 100
+        } else {
+          baseline[varName].displayValue = currentVal
+        }
+      }
+      
+      originalTuningVariables.value = baseline
       buckets.value = organizeTuningData(data.tuningData)
     }
     loading.value = false
@@ -485,10 +500,8 @@ const loadTuningData = async () => {
 const onTuningChange = (varName, value) => {
   if (!tuningVariables.value[varName]) return
   
-  // Update the display value
   tuningVariables.value[varName].valDis = value
   
-  // Update displayValue for the input field
   const varData = tuningVariables.value[varName]
   if (varData.unit === '%' || varData.unit === 'percent') {
     varData.displayValue = value * 100
@@ -496,7 +509,6 @@ const onTuningChange = (varName, value) => {
     varData.displayValue = value
   }
   
-  // Update displayValue in buckets as well
   for (const bucket of buckets.value) {
     for (const subCategory of bucket.items) {
       for (const item of subCategory.items) {
@@ -509,16 +521,8 @@ const onTuningChange = (varName, value) => {
     }
   }
   
-  // Update cart with current changes
-  const tuningVars = {}
-  for (const [name, data] of Object.entries(tuningVariables.value)) {
-    if (data.valDis !== undefined) {
-      tuningVars[name] = data.valDis
-    }
-  }
-  store.addTuningToCart(tuningVars, originalTuningVariables.value)
-  
-  // If live updates are enabled, apply immediately
+  // Only add to cart and apply if live updates are enabled
+  // Otherwise, user must press Apply button to add to cart
   if (liveUpdates.value) {
     applySettings()
   }
@@ -542,19 +546,17 @@ const hasChanges = computed(() => {
 const loadTuningFromCart = () => {
   if (!tuningVariables.value || !originalTuningVariables.value) return
   
-  // Build a map of tuning values from cart
+  const cart = Array.isArray(store.tuningCart) ? store.tuningCart : []
+  
   const cartTuningMap = {}
-  store.tuningCart.forEach(item => {
+  cart.forEach(item => {
     cartTuningMap[item.varName] = item.value
   })
   
-  // Apply cart values to tuning variables, or reset to original if not in cart
   for (const [varName, varData] of Object.entries(tuningVariables.value)) {
     if (cartTuningMap.hasOwnProperty(varName)) {
-      // Use value from cart
       varData.valDis = cartTuningMap[varName]
     } else {
-      // Reset to original value
       const originalData = originalTuningVariables.value[varName]
       if (originalData) {
         const resetVal = originalData.valDis !== undefined ? originalData.valDis : (originalData.val !== undefined ? originalData.val : (originalData.minDis !== undefined ? originalData.minDis : 0))
@@ -562,7 +564,6 @@ const loadTuningFromCart = () => {
       }
     }
     
-    // Update displayValue
     if (varData.unit === '%' || varData.unit === 'percent') {
       varData.displayValue = varData.valDis * 100
     } else {
@@ -570,41 +571,69 @@ const loadTuningFromCart = () => {
     }
   }
   
-  // Update buckets
   buckets.value = organizeTuningData(tuningVariables.value)
   
-  // Update power/weight after loading tuning from cart
   store.updatePowerWeight()
 }
 
 const resetSettings = async () => {
-  if (!originalTuningVariables.value) return
+  if (!originalTuningVariables.value || !store.pulledOutVehicle || !store.pulledOutVehicle.vehicleId) return
   
-  // Reset all values to original
-  for (const [varName, originalData] of Object.entries(originalTuningVariables.value)) {
-    if (tuningVariables.value[varName]) {
-      const resetVal = originalData.valDis !== undefined ? originalData.valDis : (originalData.val !== undefined ? originalData.val : (originalData.minDis !== undefined ? originalData.minDis : 0))
-      tuningVariables.value[varName].valDis = resetVal
-      
-      // Update displayValue
-      if (tuningVariables.value[varName].unit === '%' || tuningVariables.value[varName].unit === 'percent') {
-        tuningVariables.value[varName].displayValue = resetVal * 100
-      } else {
-        tuningVariables.value[varName].displayValue = resetVal
-      }
+  const baselineTuningVars = {}
+  for (const [varName, varData] of Object.entries(tuningVariables.value)) {
+    const originalData = originalTuningVariables.value[varName]
+    if (originalData) {
+      const baselineVal = originalData.valDis !== undefined ? originalData.valDis : (originalData.val !== undefined ? originalData.val : (originalData.minDis !== undefined ? originalData.minDis : 0))
+      baselineTuningVars[varName] = baselineVal
+    } else {
+      const currentVal = varData.valDis !== undefined ? varData.valDis : (varData.val !== undefined ? varData.val : (varData.minDis !== undefined ? varData.minDis : 0))
+      baselineTuningVars[varName] = currentVal
     }
   }
   
-  // Reorganize buckets
+  for (const [varName, varData] of Object.entries(tuningVariables.value)) {
+    const originalData = originalTuningVariables.value[varName]
+    let resetVal
+    
+    if (originalData) {
+      resetVal = originalData.valDis !== undefined ? originalData.valDis : (originalData.val !== undefined ? originalData.val : (originalData.minDis !== undefined ? originalData.minDis : 0))
+    } else {
+      resetVal = varData.valDis !== undefined ? varData.valDis : (varData.val !== undefined ? varData.val : (varData.minDis !== undefined ? varData.minDis : 0))
+    }
+    
+    tuningVariables.value[varName].valDis = resetVal
+    
+    if (tuningVariables.value[varName].unit === '%' || tuningVariables.value[varName].unit === 'percent') {
+      tuningVariables.value[varName].displayValue = resetVal * 100
+    } else {
+      tuningVariables.value[varName].displayValue = resetVal
+    }
+  }
+  
   buckets.value = organizeTuningData(tuningVariables.value)
   
-  // Clear tuning cart
-  store.addTuningToCart({}, originalTuningVariables.value)
+  try {
+    if (store.businessId) {
+      await lua.career_modules_business_businessComputer.applyTuningToVehicle(
+        store.businessId,
+        store.pulledOutVehicle.vehicleId,
+        baselineTuningVars
+      )
+      
+      setTimeout(() => {
+        if (store.vehicleView === 'parts') {
+          store.requestVehiclePartsTree(store.pulledOutVehicle.vehicleId)
+        }
+      }, 100)
+    }
+  } catch (error) {
+    console.error("Failed to apply baseline tuning:", error)
+  }
   
-  // Update power/weight after resetting
+  await store.addTuningToCart({}, originalTuningVariables.value)
+  
   store.updatePowerWeight()
   
-  // If live updates are enabled, apply immediately
   if (liveUpdates.value) {
     applySettings()
   }
@@ -613,45 +642,36 @@ const resetSettings = async () => {
 const applySettings = async () => {
   if (!store.pulledOutVehicle || !store.pulledOutVehicle.vehicleId) return
   
-  // Build tuning vars object with actual values (convert display values back to actual values)
   const tuningVars = {}
   for (const [varName, varData] of Object.entries(tuningVariables.value)) {
     if (varData.valDis !== undefined) {
-      // Convert display value back to actual value if needed
-      // For now, we'll use valDis directly, but this might need conversion based on the variable type
       tuningVars[varName] = varData.valDis
     }
   }
   
   try {
-    // Apply tuning visually to preview vehicle
+    await store.addTuningToCart(tuningVars, originalTuningVariables.value)
+    
     if (store.businessId) {
       await lua.career_modules_business_businessComputer.applyTuningToVehicle(
         store.businessId,
         store.pulledOutVehicle.vehicleId,
         tuningVars
       )
+      
+      setTimeout(() => {
+        if (store.vehicleView === 'parts') {
+          store.requestVehiclePartsTree(store.pulledOutVehicle.vehicleId)
+        }
+      }, 100)
     }
     
-    // Update cart with current tuning changes (this also updates power/weight)
-    await store.addTuningToCart(tuningVars, originalTuningVariables.value)
-    
-    // Save tuning to vehicle data (only if not live updates, or on purchase)
-    if (!liveUpdates.value) {
-      const success = await store.applyVehicleTuning(store.pulledOutVehicle.vehicleId, tuningVars)
-      if (success) {
-        // Update original values to current values
-        originalTuningVariables.value = JSON.parse(JSON.stringify(tuningVariables.value))
-      }
-      // Update power/weight after applying tuning
-      store.updatePowerWeight()
-    }
+    store.updatePowerWeight()
   } catch (error) {
     console.error("Failed to apply tuning settings:", error)
   }
 }
 
-// Watch for vehicle changes
 watch(() => store.pulledOutVehicle, (newVehicle, oldVehicle) => {
   if (!newVehicle) {
     tuningVariables.value = {}
@@ -660,42 +680,28 @@ watch(() => store.pulledOutVehicle, (newVehicle, oldVehicle) => {
     loading.value = false
     store.clearCart()
   }
-  // Don't load data here - wait for onMounted
 })
 
-const handleResetTuning = () => {
-  resetSettings()
-}
-
-const handleTabSwitched = () => {
-  // When tab switches, load tuning from cart
-  loadTuningFromCart()
-}
-
 onMounted(() => {
-  // Register event listener for tuning data
   events.on('businessComputer:onVehicleTuningData', handleTuningData)
-  // Register event listener for reset tuning
-  events.on('businessComputer:resetTuning', handleResetTuning)
-  // Register event listener for tab switch
-  events.on('businessComputer:tabSwitched', handleTabSwitched)
   
-  // Request data immediately - Lua will check cache and return instantly if cached
-  // Otherwise wait for CSS transition to complete (0.3s) before requesting
   requestAnimationFrame(() => {
     setTimeout(() => {
       if (store.pulledOutVehicle) {
         loadTuningData()
       }
-    }, 350) // Wait for 0.3s transition + 50ms buffer
+    }, 350)
   })
 })
 
 onBeforeUnmount(() => {
-  // Clean up event listeners
   events.off('businessComputer:onVehicleTuningData', handleTuningData)
-  events.off('businessComputer:resetTuning', handleResetTuning)
-  events.off('businessComputer:tabSwitched', handleTabSwitched)
+})
+
+watch(() => store.activeTabId, () => {
+  if (store.vehicleView === 'tuning') {
+    loadTuningFromCart()
+  }
 })
 
 defineExpose({

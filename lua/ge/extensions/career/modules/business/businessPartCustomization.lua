@@ -202,7 +202,13 @@ local function resetVehicleToOriginal(businessId, vehicleId)
     return false
   end
   
-  local originalConfig = initialVehicle.config
+  local originalConfig = deepcopy(initialVehicle.config)
+  
+  -- Include variables in config (they should be part of config, not set separately)
+  if initialVehicle.vars then
+    originalConfig.vars = deepcopy(initialVehicle.vars)
+  end
+  
   local vehId = vehObj:getID()
   
   -- Store fuel levels before replacing vehicle
@@ -214,18 +220,12 @@ local function resetVehicleToOriginal(businessId, vehicleId)
     spawnOptions.config = originalConfig
     spawnOptions.keepOtherVehRotation = true
     
-    -- Replace vehicle with original config
+    -- Replace vehicle with original config (includes vars)
     core_vehicles.replaceVehicle(modelKey, spawnOptions, vehObj)
     
-    -- Apply original part conditions and tuning from initial state
+    -- Apply original part conditions from initial state
     if initialVehicle.partConditions then
       core_vehicleBridge.executeAction(vehObj, 'initPartConditions', initialVehicle.partConditions, nil, nil, nil, nil)
-    end
-    
-    if initialVehicle.vars then
-      for varName, value in pairs(initialVehicle.vars) do
-        core_vehicleBridge.executeAction(vehObj, 'setVar', varName, value)
-      end
     end
     
     -- Restore fuel levels after vehicle replacement
@@ -889,6 +889,11 @@ local function applyCartPartsToVehicle(businessId, vehicleId, parts)
         career_modules_business_businessComputer.requestVehiclePartsTree(businessId, vehicleId)
       end
       
+      -- Invalidate tuning cache since parts changed (tuning options may have changed)
+      if career_modules_business_businessVehicleTuning then
+        career_modules_business_businessVehicleTuning.clearTuningDataCache()
+      end
+      
       -- Automatically calculate and send power/weight after vehicle replacement
       local cacheKey = businessId .. "_" .. tostring(vehicleId)
       local requestId = cacheKey .. "_" .. tostring(os.clock())
@@ -988,6 +993,14 @@ end
 local function getPreviewVehicleConfig(businessId)
   if previewVehicles[businessId] then
     return previewVehicles[businessId].config
+  end
+  return nil
+end
+
+-- Get initial vehicle state (baseline from inventory)
+local function getInitialVehicleState(businessId)
+  if initialVehicles[businessId] then
+    return initialVehicles[businessId]
   end
   return nil
 end
@@ -1375,6 +1388,11 @@ local function addPartToCart(businessId, vehicleId, currentCart, partToAdd)
         career_modules_business_businessComputer.requestVehiclePartsTree(businessId, vehicleId)
       end
       
+      -- Invalidate tuning cache since parts changed (tuning options may have changed)
+      if career_modules_business_businessVehicleTuning then
+        career_modules_business_businessVehicleTuning.clearTuningDataCache()
+      end
+      
       -- Calculate and send power/weight after cart is updated (vehicle is already spawned with new parts)
       local cacheKey = businessId .. "_" .. tostring(vehicleId)
       local requestId = cacheKey .. "_" .. tostring(os.clock())
@@ -1500,6 +1518,7 @@ M.applyCartPartsToVehicle = applyCartPartsToVehicle
 M.installPartOnVehicle = installPartOnVehicle
 M.getVehiclePowerWeight = getVehiclePowerWeight
 M.getPreviewVehicleConfig = getPreviewVehicleConfig
+M.getInitialVehicleState = getInitialVehicleState
 M.clearPreviewVehicle = clearPreviewVehicle
 M.getAllRequiredParts = getAllRequiredParts
 M.addPartToCart = addPartToCart

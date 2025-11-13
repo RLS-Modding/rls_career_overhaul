@@ -447,21 +447,25 @@ const cancelClose = async () => {
 }
 
 const performCancel = async () => {
-  // Reset vehicle to original state before clearing cart
   if (store.businessId && store.pulledOutVehicle?.vehicleId) {
     try {
       await lua.career_modules_business_businessComputer.resetVehicleToOriginal(
         store.businessId,
         store.pulledOutVehicle.vehicleId
       )
-      // Power/weight will be updated automatically by Lua after vehicle replacement
+      
+      setTimeout(() => {
+        if (store.vehicleView === 'parts') {
+          store.requestVehiclePartsTree(store.pulledOutVehicle.vehicleId)
+        }
+        if (store.vehicleView === 'tuning') {
+          store.requestVehicleTuningData(store.pulledOutVehicle.vehicleId)
+        }
+      }, 100)
     } catch (error) {
       console.error("Failed to reset vehicle to original:", error)
     }
   }
-  
-  // Reset tuning variables to original
-  events.trigger('businessComputer:resetTuning')
   
   store.clearCart()
   expanded.value = false
@@ -574,8 +578,7 @@ const clearCurrentTab = async () => {
     }
   }
   
-  // Reset tuning variables to original
-  events.trigger('businessComputer:resetTuning')
+  // Note: Tuning UI will reload when tuning data is refreshed after vehicle reset
   
   // Save the cleared state to the current tab
   store.saveCurrentTabState()

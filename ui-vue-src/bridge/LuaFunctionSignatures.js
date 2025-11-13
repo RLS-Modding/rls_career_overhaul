@@ -1175,6 +1175,7 @@ export default {
     applyTuningToVehicle: (businessId, vehicleId, tuningVars) => [String, Integer, Object],
     calculateTuningCost: (businessId, vehicleId, tuningVars, originalVars) => Number,
     getTuningShoppingCart: (businessId, vehicleId, tuningVars, originalVars) => Object,
+    addTuningToCart: (businessId, vehicleId, currentTuningVars, baselineTuningVars) => [String, Integer, Object, Object],
     getVehiclePowerWeight: (businessId, vehicleId) => Object,
     resetVehicleToOriginal: (businessId, vehicleId) => [String, Integer],
     applyPartsToVehicle: (businessId, vehicleId, parts) => [String, Integer, Array],

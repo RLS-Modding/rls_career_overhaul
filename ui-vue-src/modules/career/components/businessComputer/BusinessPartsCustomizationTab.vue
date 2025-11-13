@@ -495,8 +495,6 @@ const installPart = async (part, slot) => {
     slotPath = slotPath + '/'
   }
   
-  console.log("Adding part to cart:", part.name, "in slot:", slotPath)
-  
   // Create a normalized slot object for addPartToCart
   const normalizedSlot = {
     path: slotPath,

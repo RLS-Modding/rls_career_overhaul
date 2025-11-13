@@ -212,7 +212,17 @@ local function spawnBusinessVehicle(businessId, vehicleId)
   
   -- If vehicle has a custom config with partsTree, use it
   if vehicle.config and vehicle.config.partsTree then
-    vehicleData.config = vehicle.config
+    vehicleData.config = deepcopy(vehicle.config)
+    -- Include variables in config (they should be part of config, not set separately)
+    if vehicle.vars then
+      vehicleData.config.vars = deepcopy(vehicle.vars)
+    end
+  elseif vehicle.vars then
+    -- If using configKey, create a config object with vars
+    vehicleData.config = {
+      key = configKey,
+      vars = deepcopy(vehicle.vars)
+    }
   end
   
   local vehObj = core_vehicles.spawnNewVehicle(modelKey, vehicleData)
@@ -220,13 +230,6 @@ local function spawnBusinessVehicle(businessId, vehicleId)
   -- Apply part conditions if they exist
   if vehicle.partConditions and vehObj then
     core_vehicleBridge.executeAction(vehObj, 'initPartConditions', vehicle.partConditions, nil, nil, nil, nil)
-  end
-  
-  -- Apply tuning vars if they exist
-  if vehicle.vars and vehObj then
-    for varName, value in pairs(vehicle.vars) do
-      core_vehicleBridge.executeAction(vehObj, 'setVar', varName, value)
-    end
   end
   if not vehObj then 
     log("E", "businessInventory", "spawnBusinessVehicle: core_vehicles.spawnNewVehicle returned nil")

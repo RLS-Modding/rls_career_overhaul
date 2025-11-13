@@ -69,21 +69,15 @@ import BusinessJobCard from "./BusinessJobCard.vue"
 const store = useBusinessComputerStore()
 
 const handlePullOut = async (job) => {
-  console.log("handlePullOut: Called with job", job)
   if (!Array.isArray(store.vehicles)) {
     console.error("handlePullOut: vehicles is not an array", store.vehicles)
     return
   }
-  console.log("handlePullOut: vehicles array", store.vehicles)
-  console.log("handlePullOut: Looking for vehicle with jobId matching job.id", job.id, "type:", typeof job.id)
   
   const vehicle = store.vehicles.find(v => {
-    console.log("handlePullOut: Checking vehicle", v, "jobId:", v.jobId, "type:", typeof v.jobId)
     return v.jobId == job.id || v.jobId === job.id || String(v.jobId) === String(job.id)
   })
-  console.log("handlePullOut: Found vehicle", vehicle)
   if (vehicle) {
-    console.log("handlePullOut: Calling pullOutVehicle with vehicleId", vehicle.vehicleId)
     await store.pullOutVehicle(vehicle.vehicleId)
   } else {
     console.error("handlePullOut: No vehicle found for job.id", job.id, "Available vehicles:", store.vehicles.map(v => ({ vehicleId: v.vehicleId, jobId: v.jobId })))
