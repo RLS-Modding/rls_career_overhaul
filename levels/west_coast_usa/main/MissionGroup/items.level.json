@@ -52,3 +52,7 @@
 {"name":"RLS_EDITS","class":"SimGroup","__parent":"MissionGroup"}
 {"name":"night_light","class":"SimGroup","__parent":"MissionGroup"}
 {"name":"night_light_shadow","class":"SimGroup","__parent":"MissionGroup"}
+{"class":"TSStatic","__parent":"MissionGroup","position":[304.287415,-134.943939,148.119736],"isRenderEnabled":false,"rotationMatrix":[-8.74227695e-08,-0.999999881,0,0.999999881,-8.74227695e-08,0,0,0,0.999999881],"scale":[1,1.49757266,1.49757266],"shapeName":"/levels/west_coast_usa/art/shapes/buildings/garage_racetrack2.dae","useInstanceRenderData":true}
+{"class":"TSStatic","__parent":"MissionGroup","position":[296.884094,-134.592392,155.657715],"isRenderEnabled":false,"rotationMatrix":[-0.999999881,8.74227695e-08,0,-8.74227695e-08,-0.999999881,0,0,0,0.999999881],"shapeName":"/levels/west_coast_usa/art/shapes/objects/light_city.dae","useInstanceRenderData":true}
+{"class":"TSStatic","__parent":"MissionGroup","position":[312.208466,-134.592392,155.657715],"isRenderEnabled":false,"rotationMatrix":[-0.999999881,8.74227695e-08,0,-8.74227695e-08,-0.999999881,0,0,0,0.999999881],"shapeName":"/levels/west_coast_usa/art/shapes/objects/light_city.dae","useInstanceRenderData":true}
+{"class":"TSStatic","__parent":"MissionGroup","position":[304.739685,-134.592392,155.657715],"isRenderEnabled":false,"rotationMatrix":[-0.999999881,8.74227695e-08,0,-8.74227695e-08,-0.999999881,0,0,0,0.999999881],"shapeName":"/levels/west_coast_usa/art/shapes/objects/light_city.dae","useInstanceRenderData":true}
