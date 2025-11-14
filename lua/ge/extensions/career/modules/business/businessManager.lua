@@ -78,7 +78,7 @@ local function showPurchaseBusinessPrompt(businessType, businessId)
     facility = business
   }
   
-  local price = business.defaultPrice or 0
+  local price = business.price or 0
   if price == 0 then
     addPurchasedBusiness(businessType, businessId)
     -- Call menu callback if registered
@@ -99,7 +99,7 @@ local function requestBusinessData()
   if business then
     local businessData = {
       name = business.name,
-      price = business.defaultPrice or 0,
+      price = business.price or 0,
       description = business.description or "",
       businessType = businessToPurchase.type,
       businessId = businessToPurchase.id
@@ -115,7 +115,7 @@ local function canPayBusiness()
     return true
   end
   if not businessToPurchase then return false end
-  local price = { money = { amount = businessToPurchase.facility.defaultPrice or 0, canBeNegative = false } }
+  local price = { money = { amount = businessToPurchase.facility.price or 0, canBeNegative = false } }
   for currency, info in pairs(price) do
     if not info.canBeNegative and career_modules_playerAttributes.getAttributeValue(currency) < info.amount then
       return false
@@ -128,7 +128,7 @@ end
 local function buyBusiness()
   if businessToPurchase then
     local business = businessToPurchase.facility
-    local price = { money = { amount = business.defaultPrice or 0, canBeNegative = false } }
+    local price = { money = { amount = business.price or 0, canBeNegative = false } }
     local success = career_modules_payment.pay(price, { label = "Purchased " .. business.name })
     if success then
       addPurchasedBusiness(businessToPurchase.type, businessToPurchase.id)

@@ -183,7 +183,11 @@ local function formatJobForUI(job, businessId)
       goalTimeFormatted = string.format("%d min", minutes)
     end
   else
-    goalTimeFormatted = string.format("%d s", math.floor(goalTimeSeconds + 0.5))
+    if job.raceType == "drag" then
+      goalTimeFormatted = string.format("%.1f s", goalTimeSeconds)
+    else
+      goalTimeFormatted = string.format("%d s", math.floor(goalTimeSeconds + 0.5))
+    end
   end
   
   local goal = goalTimeFormatted .. " " .. (job.raceLabel or "")

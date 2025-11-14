@@ -118,10 +118,10 @@
                 <span class="goal-chip-label">Goal</span>
                 <span class="goal-chip-value">{{ job.goal }}</span>
               </div>
-              <div class="current-time-wrapper">
-                <span class="current-time-label">Current</span>
-                <span class="current-time-value">{{ formatTimeWithUnit(job.currentTime ?? job.baselineTime, job.timeUnit) }}</span>
-              </div>
+                <div class="current-time-wrapper">
+                  <span class="current-time-label">Current</span>
+                  <span class="current-time-value">{{ formatTimeWithUnit(job.currentTime ?? job.baselineTime, job.timeUnit, job.raceType) }}</span>
+                </div>
             </div>
             <div class="progress-bar">
               <div 
@@ -191,7 +191,7 @@
                 </div>
                 <div class="current-time-wrapper">
                   <span class="current-time-label">Current</span>
-                  <span class="current-time-value">{{ formatTimeWithUnit(job.currentTime ?? job.baselineTime, job.timeUnit) }}</span>
+                  <span class="current-time-value">{{ formatTimeWithUnit(job.currentTime ?? job.baselineTime, job.timeUnit, job.raceType) }}</span>
                 </div>
               </div>
               <div class="progress-bar">
@@ -302,7 +302,7 @@ const hasPulledOutVehicle = computed(() => {
   return store.pulledOutVehicle !== null && !isPulledOut.value
 })
 
-const formatTime = (time) => {
+const formatTime = (time, raceType) => {
   if (typeof time !== 'number' || isNaN(time)) {
     return time || '0'
   }
@@ -319,18 +319,23 @@ const formatTime = (time) => {
     }
   }
   
+  // For drag races, show 1 decimal place
+  if (raceType === 'drag') {
+    return time.toFixed(1) + ' s'
+  }
+  
   // Otherwise show as seconds rounded to nearest integer
   return Math.round(time) + ' s'
 }
 
-const formatTimeWithUnit = (time, timeUnit) => {
+const formatTimeWithUnit = (time, timeUnit, raceType) => {
   if (typeof time !== 'number' || isNaN(time)) {
     return (time || '0') + (timeUnit || '')
   }
   
   // Times are always stored in seconds in the backend
   // Format them appropriately regardless of timeUnit
-  const formatted = formatTime(time)
+  const formatted = formatTime(time, raceType)
   
   // formatTime already includes units, so just return it
   return formatted

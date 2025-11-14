@@ -4,7 +4,7 @@
       "id": "fastAutoTuningShop",
       "type": "tuningShop",
       "name": "Tuning Shop",
-      "price": 50000,
+      "price": 500000,
       "description": "Professional vehicle tuning services. Accept tuning jobs and improve vehicle performance.",
       
       "icon": "poi_laptop_round",
