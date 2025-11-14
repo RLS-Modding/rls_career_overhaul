@@ -11,7 +11,7 @@
           <span v-if="job.vehicleType" class="badge badge-orange">{{ job.vehicleType }}</span>
         </h3>
         <div class="reward-container-new">
-          <span class="reward-label">Reward</span>
+          <span class="reward-label">Payment</span>
           <span class="reward-value">${{ job.reward.toLocaleString() }}</span>
         </div>
         <div class="job-metrics-new">
@@ -57,7 +57,7 @@
         </div>
         <div class="job-info-new-horizontal">
           <div class="reward-container-new">
-            <span class="reward-label">Reward</span>
+            <span class="reward-label">Payment</span>
             <span class="reward-value">${{ job.reward.toLocaleString() }}</span>
           </div>
           <div class="job-metrics-new">
@@ -103,7 +103,7 @@
           <span v-if="job.vehicleType" class="badge badge-orange">{{ job.vehicleType }}</span>
         </h3>
         <div class="reward-container-active">
-          <span class="reward-label">Reward</span>
+          <span class="reward-label">Payment</span>
           <span class="reward-value">${{ job.reward.toLocaleString() }}</span>
         </div>
         <div class="job-metrics-active">
@@ -174,7 +174,7 @@
         </div>
         <div class="job-info-active-horizontal">
           <div class="reward-container-active">
-            <span class="reward-label">Reward</span>
+            <span class="reward-label">Payment</span>
             <span class="reward-value">${{ job.reward.toLocaleString() }}</span>
           </div>
           <div class="job-metrics-active">

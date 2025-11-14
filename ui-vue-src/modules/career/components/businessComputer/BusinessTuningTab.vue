@@ -735,6 +735,27 @@ const convertWheelAlignmentToActual = (varData, valDis) => {
     }
     return actualMin
   }
+  
+  // Handle variables with display ranges (options.minDis/maxDis)
+  if (varData.options && typeof varData.options === 'object') {
+    const optionsMinDis = varData.options.minDis
+    const optionsMaxDis = varData.options.maxDis
+    if (optionsMinDis !== undefined || optionsMaxDis !== undefined) {
+      const actualMin = varData.min ?? 0
+      const actualMax = varData.max ?? 100
+      const actualRange = actualMax - actualMin
+      const displayMin = optionsMinDis ?? actualMin
+      const displayMax = optionsMaxDis ?? actualMax
+      const displayRange = displayMax - displayMin
+      
+      if (actualRange > 0 && displayRange > 0) {
+        // Map from [displayMin, displayMax] back to [actualMin, actualMax]
+        return ((valDis - displayMin) / displayRange) * actualRange + actualMin
+      }
+      return actualMin
+    }
+  }
+  
   return valDis
 }
 
@@ -748,6 +769,27 @@ const convertWheelAlignmentToSlider = (varData, actualValue) => {
     }
     return 0
   }
+  
+  // Handle variables with display ranges (options.minDis/maxDis)
+  if (varData.options && typeof varData.options === 'object') {
+    const optionsMinDis = varData.options.minDis
+    const optionsMaxDis = varData.options.maxDis
+    if (optionsMinDis !== undefined || optionsMaxDis !== undefined) {
+      const actualMin = varData.min ?? 0
+      const actualMax = varData.max ?? 100
+      const actualRange = actualMax - actualMin
+      const displayMin = optionsMinDis ?? actualMin
+      const displayMax = optionsMaxDis ?? actualMax
+      const displayRange = displayMax - displayMin
+      
+      if (actualRange > 0 && displayRange > 0) {
+        // Map from [actualMin, actualMax] to [displayMin, displayMax]
+        return ((actualValue - actualMin) / actualRange) * displayRange + displayMin
+      }
+      return displayMin
+    }
+  }
+  
   return actualValue
 }
 

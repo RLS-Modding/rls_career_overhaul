@@ -337,6 +337,9 @@ function M.onPartsTreeReceived(requestId, partsTreeStr)
                   if varData.subCategory and not partTuningVars[varName].subCategory then
                     partTuningVars[varName].subCategory = varData.subCategory
                   end
+                  if varData.options and not partTuningVars[varName].options then
+                    partTuningVars[varName].options = deepcopy(varData.options)
+                  end
                 else
                   partTuningVars[varName] = deepcopy(varData)
                 end
@@ -395,7 +398,7 @@ function M.onPartsTreeReceived(requestId, partsTreeStr)
       end
 
       -- Calculate display values (valDis, minDis, maxDis, stepDis)
-      -- These are typically the same as val/min/max/step unless there's a conversion factor
+      -- Check for options object first, then fall back to calculated values
       local rawMin = varData.min or 0
       local rawMax = varData.max or 100
       
@@ -409,6 +412,12 @@ function M.onPartsTreeReceived(requestId, partsTreeStr)
       else
         varData._rangeInverted = false
       end
+      
+      -- Check if options object provides display values
+      local hasOptions = varData.options and type(varData.options) == "table"
+      local optionsMinDis = hasOptions and varData.options.minDis
+      local optionsMaxDis = hasOptions and varData.options.maxDis
+      local optionsStepDis = hasOptions and varData.options.stepDis
       
       -- Special handling for Wheel Alignment percentage variables
       -- Set slider range to -100% to 100% but keep actual values unchanged
@@ -430,13 +439,38 @@ function M.onPartsTreeReceived(requestId, partsTreeStr)
           end
         end
       else
-        varData.valDis = varData.val or actualMin
-        varData.minDis = actualMin
-        varData.maxDis = actualMax
+        -- Use options.minDis/maxDis if available, otherwise use calculated values
+        if optionsMinDis ~= nil then
+          varData.minDis = optionsMinDis
+        else
+          varData.minDis = actualMin
+        end
+        if optionsMaxDis ~= nil then
+          varData.maxDis = optionsMaxDis
+        else
+          varData.maxDis = actualMax
+        end
+        
+        -- Map actual value to display range if display range differs from actual range
+        local actualVal = varData.val or actualMin
+        if optionsMinDis ~= nil or optionsMaxDis ~= nil then
+          -- Map from [actualMin, actualMax] to [minDis, maxDis]
+          local actualRange = actualMax - actualMin
+          local displayRange = varData.maxDis - varData.minDis
+          if actualRange > 0 and displayRange > 0 then
+            varData.valDis = ((actualVal - actualMin) / actualRange) * displayRange + varData.minDis
+          else
+            varData.valDis = varData.minDis
+          end
+        else
+          varData.valDis = actualVal
+        end
       end
       
       -- Use step if available, otherwise calculate a reasonable default based on range
-      if varData.step and varData.step > 0 then
+      if optionsStepDis ~= nil then
+        varData.stepDis = optionsStepDis
+      elseif varData.step and varData.step > 0 then
         varData.stepDis = varData.step
       else
         -- For wheel alignment percentages, use 0.01 step (1% increments)
@@ -444,7 +478,7 @@ function M.onPartsTreeReceived(requestId, partsTreeStr)
           varData.stepDis = 0.01
         else
           -- Calculate step as 1/1000th of the range, but ensure it's at least 0.001
-          local range = math.abs(actualMax - actualMin)
+          local range = math.abs(varData.maxDis - varData.minDis)
           varData.stepDis = math.max(0.001, math.min(1, range / 1000))
         end
       end

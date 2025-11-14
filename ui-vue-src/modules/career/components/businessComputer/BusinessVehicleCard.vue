@@ -24,7 +24,7 @@
         </div>
         <div class="vehicle-info">
           <div v-if="job" class="reward-container">
-            <span class="reward-label">Reward</span>
+            <span class="reward-label">Payment</span>
             <span class="reward-value">${{ job.reward.toLocaleString() }}</span>
           </div>
           <div v-if="job" class="job-metrics">

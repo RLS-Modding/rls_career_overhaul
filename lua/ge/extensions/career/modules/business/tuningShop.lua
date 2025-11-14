@@ -108,12 +108,16 @@ local function generateJob()
   local baseTime = powerToWeightToTime(powerToWeight, raceType)
   if not baseTime then return nil end
   
-  local targetTime = baseTime * 0.80
+  local divisor = 1.1 + math.random() * 0.1
+  local targetTime = baseTime / divisor
   
-  local mileageMinMiles = 30000
-  local mileageMaxMiles = 130000
+  local mileageMinMiles = 20000
+  local mileageMaxMiles = 120000
   local mileageMiles = math.random(mileageMinMiles, mileageMaxMiles)
   local mileageMeters = mileageMiles * 1609.34
+  
+  local rewardRaw = 20000 + (divisor - 1.1) * 100000
+  local reward = math.floor(rewardRaw / 1000) * 1000
   
   jobIdCounter = jobIdCounter + 1
   
@@ -129,7 +133,7 @@ local function generateJob()
     baseTime = baseTime,
     targetTime = targetTime,
     powerToWeight = powerToWeight,
-    budget = 5000
+    reward = reward
   }
   
   table.insert(jobs, job)

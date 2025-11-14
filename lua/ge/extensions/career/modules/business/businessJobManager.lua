@@ -224,7 +224,7 @@ local function completeJob(businessId, jobId)
   end
   
   -- Pay reward to business account
-  local reward = math.floor((job.budget or 5000) * 3)
+  local reward = job.reward or 20000
   if career_modules_bank then
     local businessType = job.businessType or "tuningShop"
     local businessAccount = career_modules_bank.getBusinessAccount(businessType, businessId)
@@ -314,7 +314,7 @@ local function abandonJob(businessId, jobId)
   local businessJobId = career_modules_business_businessInventory.getBusinessJobIdentifier(businessId, jobId)
   leaderboardManager.clearLeaderboardForVehicle(businessJobId)
   
-  local reward = math.floor((job.budget or 5000) * 3)
+  local reward = job.reward or 20000
   local penalty = math.floor(reward * 0.5)
   
   local price = { money = { amount = penalty, canBeNegative = false } }
