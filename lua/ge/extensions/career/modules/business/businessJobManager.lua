@@ -183,16 +183,11 @@ local function canCompleteJob(businessId, jobId)
   local currentTime = getJobCurrentTime(businessId, jobId)
   if not currentTime then return false end
   
-  -- Leaderboard times are always in seconds
-  -- Job targetTime might be in seconds or minutes depending on race type
-  -- For track races, if targetTime seems to be in minutes (value > 1000), convert to seconds
   local targetTime = job.targetTime
   if (job.raceType == "track" or job.raceType == "trackAlt") and targetTime > 1000 then
-    -- Assume targetTime is in minutes, convert to seconds for comparison
     targetTime = targetTime * 60
   end
   
-  -- For drag races and track races, time must be <= targetTime (lower is better)
   if job.raceType == "drag" or job.raceType == "track" or job.raceType == "trackAlt" then
     return currentTime <= targetTime
   end
@@ -215,12 +210,10 @@ local function completeJob(businessId, jobId)
   
   local job = jobs.active[jobIndex]
   
-  -- Verify time requirement is met
   if not canCompleteJob(businessId, jobId) then
     return false
   end
   
-  -- Pay reward to business account
   local reward = job.reward or 20000
   if career_modules_bank then
     local businessType = job.businessType or "tuningShop"
@@ -346,10 +339,11 @@ local function onSaveCurrentSaveSlot(currentSavePath)
   end
 end
 
-function M.onCareerActivated()
+local function onCareerActivated()
   businessJobs = {}
 end
 
+M.onCareerActivated = onCareerActivated
 M.registerJobGenerator = registerJobGenerator
 M.getJobsForBusiness = getJobsForBusiness
 M.acceptJob = acceptJob

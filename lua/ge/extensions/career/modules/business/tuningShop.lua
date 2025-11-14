@@ -177,8 +177,7 @@ local function generateTuningJob()
   return generateJob()
 end
 
--- Register tuning shop callbacks with business manager
-function M.onCareerActivated()
+local function onCareerActivated()
   career_modules_business_businessManager.registerBusinessCallback("tuningShop", {
     onPurchase = function(businessId)
       log("D", "TuningShop", "Tuning shop purchased: " .. tostring(businessId))
@@ -195,6 +194,7 @@ function M.onCareerActivated()
   career_modules_business_businessJobManager.registerJobGenerator("tuningShop", generateTuningJob)
 end
 
+M.onCareerActivated = onCareerActivated
 M.powerToWeightToTime = powerToWeightToTime
 M.generateJob = generateJob
 M.getJobs = getJobs

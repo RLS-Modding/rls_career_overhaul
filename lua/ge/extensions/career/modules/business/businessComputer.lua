@@ -5,18 +5,13 @@ M.dependencies = {'career_career', 'career_saveSystem', 'freeroam_facilities', '
 local jbeamIO = require('jbeam/io')
 local jbeamSlotSystem = require('jbeam/slotSystem')
 
--- Cache for vehicle info lookup
 local vehicleInfoCache = nil
-
--- Cache for parts tree (keyed by businessId_vehicleId)
 local partsTreeCache = {}
 
--- Function to invalidate cache (useful when vehicles are added/removed)
 local function invalidateVehicleInfoCache()
   vehicleInfoCache = nil
 end
 
--- Function to clear vehicle data caches
 local function clearVehicleDataCaches()
   partsTreeCache = {}
   if career_modules_business_businessVehicleTuning then
@@ -24,11 +19,9 @@ local function clearVehicleDataCaches()
   end
 end
 
--- Helper function to get vehicle object from business
 local function getBusinessVehicleObject(businessId, vehicleId)
   if not businessId or not vehicleId then return nil end
   
-  -- Get spawned vehicle ID from businessInventory
   if career_modules_business_businessInventory then
     local vehId = career_modules_business_businessInventory.getSpawnedVehicleId(businessId, vehicleId)
     if vehId then
@@ -43,10 +36,7 @@ local function normalizeConfigKey(configKey)
   if not configKey then
     return nil
   end
-  -- Config key from getEligibleVehicles might be a path like "vehicles/legran/configurations/legran_s_v6_a.pc"
-  -- or just a name like "legran_s_v6_a". We need to extract just the config name.
   if configKey:find("/") then
-    -- It's a path, extract the filename without extension
     local parts = {}
     for part in configKey:gmatch("[^/]+") do
       table.insert(parts, part)
@@ -57,7 +47,6 @@ local function normalizeConfigKey(configKey)
       return name or filename
     end
   else
-    -- It's already just a name, might have extension
     local name, ext = configKey:match("^(.+)%.(.+)$")
     return name or configKey
   end
@@ -69,17 +58,13 @@ local function getVehicleInfo(modelKey, configKey)
     return nil
   end
 
-  -- Normalize config key for matching
   local normalizedConfigKey = normalizeConfigKey(configKey)
 
-  -- Try to get from eligible vehicles cache first (same as vehicleShopping.lua)
   if util_configListGenerator and util_configListGenerator.getEligibleVehicles then
-    -- Cache eligible vehicles to avoid repeated calls
     if not vehicleInfoCache then
       vehicleInfoCache = util_configListGenerator.getEligibleVehicles(false, false) or {}
     end
 
-    -- Find matching vehicle (try both original and normalized key)
     for _, vehicleInfo in ipairs(vehicleInfoCache) do
       if vehicleInfo.model_key == modelKey then
         local vehicleKey = normalizeConfigKey(vehicleInfo.key)
@@ -90,14 +75,12 @@ local function getVehicleInfo(modelKey, configKey)
     end
   end
 
-  -- Fallback: try to get config info using core_vehicles.getConfig (same as inventory.lua)
   if core_vehicles and core_vehicles.getConfig then
     local model = core_vehicles.getModel(modelKey)
     if model and not tableIsEmpty(model) then
       local configName = normalizedConfigKey
       local configInfo = core_vehicles.getConfig(modelKey, configName)
       if configInfo then
-        -- Build a vehicleInfo-like structure from config
         return {
           model_key = modelKey,
           key = configKey,
@@ -171,7 +154,6 @@ local function formatJobForUI(job, businessId)
     timeUnit = "min"
   end
 
-  -- Format goal time properly (times are in seconds, format as "X min Y s" if >= 60s)
   local goalTimeFormatted = ""
   local goalTimeSeconds = job.targetTime or 0
   local decimalPlaces = job.decimalPlaces or 0
@@ -193,12 +175,10 @@ local function formatJobForUI(job, businessId)
   
   local goal = goalTimeFormatted .. " " .. (job.raceLabel or "")
 
-  -- Time values are stored in seconds
   local baselineTime = job.baseTime or 0
   local currentTime = job.currentTime or job.baseTime or 0
   local goalTime = job.targetTime or 0
 
-  -- Try to get best leaderboard time for this job (checking all race label variations)
   if job.raceLabel and businessId and job.jobId then
     local bestTime = career_modules_business_businessHelpers.getBestLeaderboardTime(businessId, job.jobId, job.raceType, job.raceLabel)
     if bestTime then
@@ -387,8 +367,6 @@ local function getNewJobs(businessId)
   return newJobs
 end
 
--- Function to recursively format parts tree for UI (flattened for easier navigation)
--- Get compatible parts from business inventory for a slot
 local function getCompatiblePartsFromInventory(businessId, slotPath, slotInfo, vehicleData, vehicleModel)
   if not businessId or not slotPath or not slotInfo or not vehicleData or not vehicleData.ioCtx then
     return {}
@@ -404,12 +382,9 @@ local function getCompatiblePartsFromInventory(businessId, slotPath, slotInfo, v
   local compatibleParts = {}
   
   for _, inventoryPart in ipairs(businessParts) do
-    -- Check if part is compatible with vehicle model (if specified)
     if not vehicleModel or not inventoryPart.vehicleModel or inventoryPart.vehicleModel == vehicleModel then
-      -- Get jbeam data for the inventory part
       local partDescription = jbeamIO.getPart(vehicleData.ioCtx, inventoryPart.name)
       if partDescription and jbeamSlotSystem.partFitsSlot(partDescription, slotInfo) then
-        -- Get part nice name
         local niceName = inventoryPart.name
         if partDescription.information and partDescription.information.description then
           niceName = type(partDescription.information.description) == "table" and 
@@ -418,7 +393,6 @@ local function getCompatiblePartsFromInventory(businessId, slotPath, slotInfo, v
                      inventoryPart.name
         end
         
-        -- Get mileage
         local mileage = 0
         if inventoryPart.partCondition and inventoryPart.partCondition.odometer then
           mileage = inventoryPart.partCondition.odometer
@@ -448,10 +422,8 @@ local function formatPartsTreeForUI(node, slotName, slotInfo, availableParts, sl
   local result = {}
   local currentPath = node.path or pathPrefix or "/"
 
-  -- Skip the root node (vehicle itself) - only process its children
   local isRootNode = (currentPath == "/" or currentPath == "" or slotName == "")
 
-  -- Get slot nice name from slotInfo or slotsNiceName
   local slotNiceName = node.slotNiceName or ""
   if not slotNiceName and slotInfo then
     slotNiceName = type(slotInfo.description) == "table" and slotInfo.description.description or slotInfo.description or
@@ -463,7 +435,6 @@ local function formatPartsTreeForUI(node, slotName, slotInfo, availableParts, sl
     slotNiceName = slotName
   end
 
-  -- Get nice name for chosen part
   local partNiceName = node.chosenPartNiceName or ""
   if node.chosenPartName and availableParts[node.chosenPartName] then
     local partInfo = availableParts[node.chosenPartName]
@@ -474,19 +445,16 @@ local function formatPartsTreeForUI(node, slotName, slotInfo, availableParts, sl
     partNiceName = node.chosenPartName
   end
 
-  -- Get part info for current node to access slotInfoUi for children
   local partInfo = nil
   if node.chosenPartName and availableParts[node.chosenPartName] then
     partInfo = availableParts[node.chosenPartName]
   end
 
-  -- Get slotInfo for this slot (needed for inventory compatibility check)
   local currentSlotInfo = slotInfo
   if not currentSlotInfo and partInfo and partInfo.slotInfoUi and slotName then
     currentSlotInfo = partInfo.slotInfoUi[slotName]
   end
   
-  -- Create entry for this slot if it has available parts (but skip root node)
   if not isRootNode and node.suitablePartNames and #node.suitablePartNames > 0 then
     local availablePartsList = {}
     for _, partName in ipairs(node.suitablePartNames) do
@@ -495,8 +463,7 @@ local function formatPartsTreeForUI(node, slotName, slotInfo, availableParts, sl
         local desc = partInfoData.description
         local niceName = type(desc) == "table" and desc.description or desc or partName
 
-        -- Get part price using jbeamIO.getPart (same as vanilla part shopping)
-        local value = 100 -- Default fallback
+        local value = 100
         if ioCtx then
           local jbeamData = jbeamIO.getPart(ioCtx, partName)
           if jbeamData and jbeamData.information and jbeamData.information.value then
@@ -517,20 +484,17 @@ local function formatPartsTreeForUI(node, slotName, slotInfo, availableParts, sl
       end
     end
 
-    -- Sort parts alphabetically by niceName
     table.sort(availablePartsList, function(a, b)
       local nameA = string.lower(a.niceName or a.name or "")
       local nameB = string.lower(b.niceName or b.name or "")
       return nameA < nameB
     end)
 
-    -- Get compatible parts from business inventory
     local compatibleInventoryParts = {}
     if businessId and vehicleData and currentSlotInfo then
       compatibleInventoryParts = getCompatiblePartsFromInventory(businessId, currentPath, currentSlotInfo, vehicleData, vehicleModel)
     end
     
-    -- Only add if there are available parts or compatible inventory parts
     if #availablePartsList > 0 or #compatibleInventoryParts > 0 then
       table.insert(result, {
         id = currentPath,
@@ -546,7 +510,6 @@ local function formatPartsTreeForUI(node, slotName, slotInfo, availableParts, sl
     end
   end
 
-  -- Process children recursively
   if node.children then
     for childSlotName, childNode in pairs(node.children) do
       local childPath = (currentPath == "/" and "" or currentPath) .. childSlotName .. "/"
@@ -565,7 +528,6 @@ local function formatPartsTreeForUI(node, slotName, slotInfo, availableParts, sl
   return result
 end
 
--- Function to request parts tree for a business vehicle (triggers hook)
 local function requestVehiclePartsTree(businessId, vehicleId)
   if not businessId or not vehicleId then
     guihooks.trigger('businessComputer:onVehiclePartsTree', {
@@ -575,7 +537,6 @@ local function requestVehiclePartsTree(businessId, vehicleId)
     return
   end
 
-  -- Check cache first (but only if preview vehicle hasn't been modified)
   local cacheKey = businessId .. "_" .. tostring(vehicleId)
   local previewConfig = nil
   if career_modules_business_businessPartCustomization then
@@ -583,7 +544,6 @@ local function requestVehiclePartsTree(businessId, vehicleId)
   end
   
   if partsTreeCache[cacheKey] and not previewConfig then
-    -- Return cached data immediately only if no preview vehicle exists
     guihooks.trigger('businessComputer:onVehiclePartsTree', {
       success = true,
       businessId = businessId,
@@ -595,7 +555,6 @@ local function requestVehiclePartsTree(businessId, vehicleId)
     return
   end
 
-  -- Run async to avoid blocking
   core_jobsystem.create(function(job)
     local vehicle = career_modules_business_businessInventory.getVehicleById(businessId, vehicleId)
     if not vehicle or not vehicle.vehicleConfig then
@@ -617,7 +576,6 @@ local function requestVehiclePartsTree(businessId, vehicleId)
       return
     end
 
-    -- Use preview vehicle config if available (has installed parts), otherwise use stored config
     local configToUse = configKey
     if career_modules_business_businessPartCustomization then
       local previewConfig = career_modules_business_businessPartCustomization.getPreviewVehicleConfig(businessId)
@@ -626,7 +584,6 @@ local function requestVehiclePartsTree(businessId, vehicleId)
       end
     end
 
-    -- Spawn vehicle temporarily to get parts tree
     local vehicleObj = core_vehicles.spawnNewVehicle(modelKey, {
       config = configToUse,
       pos = vec3(0, 0, -1000), -- Spawn far away
@@ -645,10 +602,8 @@ local function requestVehiclePartsTree(businessId, vehicleId)
 
     local vehId = vehicleObj:getID()
 
-    -- Get vehicle data
     local vehicleData = extensions.core_vehicle_manager.getVehicleData(vehId)
     if not vehicleData or not vehicleData.config or not vehicleData.config.partsTree then
-      -- Clean up spawned vehicle
       if vehicleObj then
         vehicleObj:delete()
       end
@@ -659,10 +614,8 @@ local function requestVehiclePartsTree(businessId, vehicleId)
       return
     end
 
-    -- Get available parts
     local availableParts = jbeamIO.getAvailableParts(vehicleData.ioCtx)
 
-    -- Build slots nice names
     local slotsNiceName = {}
     local partsNiceName = {}
 
@@ -674,35 +627,29 @@ local function requestVehiclePartsTree(businessId, vehicleId)
         end
       end
 
-      -- Get part nice names
       local desc = partInfo.description
       partsNiceName[partName] = type(desc) == "table" and desc.description or desc
     end
 
-    -- Get vehicle model for inventory filtering
     local vehicle = career_modules_business_businessInventory.getVehicleById(businessId, vehicleId)
     local vehicleModel = nil
     if vehicle and vehicle.vehicleConfig then
       vehicleModel = vehicle.vehicleConfig.model_key or vehicle.model_key
     end
     
-    -- Format parts tree for UI (returns a flat list of slots with their available parts)
     local partsTreeList = formatPartsTreeForUI(vehicleData.config.partsTree, "", nil, availableParts, slotsNiceName,
       partsNiceName, "/", nil, vehicleData.ioCtx, businessId, vehicleData, vehicleModel)
 
-    -- Clean up spawned vehicle
     if vehicleObj then
       vehicleObj:delete()
     end
 
-    -- Cache the data
     partsTreeCache[cacheKey] = {
       partsTree = partsTreeList,
       slotsNiceName = slotsNiceName,
       partsNiceName = partsNiceName
     }
 
-    -- Trigger hook with data
     guihooks.trigger('businessComputer:onVehiclePartsTree', {
       success = true,
       businessId = businessId,
@@ -714,13 +661,11 @@ local function requestVehiclePartsTree(businessId, vehicleId)
   end)
 end
 
--- Legacy function for backward compatibility (now uses hook internally)
 local function getVehiclePartsTree(businessId, vehicleId)
   requestVehiclePartsTree(businessId, vehicleId)
-  return nil -- Return nil since data comes via hook
+  return nil
 end
 
--- Forward tuning functions to businessVehicleTuning module
 local function requestVehicleTuningData(businessId, vehicleId)
   if career_modules_business_businessVehicleTuning then
     return career_modules_business_businessVehicleTuning.requestVehicleTuningData(businessId, vehicleId)
@@ -887,7 +832,6 @@ local function applyVehicleTuning(businessId, vehicleId, tuningVars, accountId)
   return false
 end
 
--- Forward part customization functions to businessPartCustomization module
 local function initializePreviewVehicle(businessId, vehicleId)
   if career_modules_business_businessPartCustomization then
     return career_modules_business_businessPartCustomization.initializePreviewVehicle(businessId, vehicleId)
@@ -934,16 +878,14 @@ local function purchaseCartItems(businessId, accountId, cartData)
   local parts = cartData.parts or {}
   local tuning = cartData.tuning or {}
   
-  local salesTax = 0.07 -- 7% sales tax (matching vanilla)
+  local salesTax = 0.07
 
-  -- Calculate subtotal (parts + tuning, before tax)
   local subtotal = 0
 
   for _, part in ipairs(parts) do
     subtotal = subtotal + (part.price or 0)
   end
 
-  -- Calculate tuning cost properly
   if #tuning > 0 then
     local vehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
     if vehicle and vehicle.vehicleId then
@@ -951,7 +893,6 @@ local function purchaseCartItems(businessId, accountId, cartData)
       
       local tuningVars = {}
       for _, change in ipairs(tuning) do
-        -- Only process variables, skip categories and subcategories
         if change.type == "variable" and change.varName and change.value ~= nil then
           tuningVars[change.varName] = change.value
         end
@@ -960,7 +901,6 @@ local function purchaseCartItems(businessId, accountId, cartData)
       local tuningCost = calculateTuningCost(businessId, vehicle.vehicleId, tuningVars, originalVars)
       subtotal = subtotal + tuningCost
     else
-      -- Fallback if vehicle not found - only count variables
       local variableCount = 0
       for _, change in ipairs(tuning) do
         if change.type == "variable" and change.varName and change.value ~= nil then
@@ -975,11 +915,9 @@ local function purchaseCartItems(businessId, accountId, cartData)
     return false
   end
   
-  -- Calculate tax and total
   local taxAmount = subtotal * salesTax
   local totalCost = subtotal + taxAmount
 
-  -- Charge from account
   local success = career_modules_bank.payFromAccount({
     money = {
       amount = totalCost,
@@ -990,9 +928,7 @@ local function purchaseCartItems(businessId, accountId, cartData)
     return false
   end
 
-  -- Explicitly trigger account update hook to ensure UI gets updated
   if career_modules_bank then
-    -- Parse accountId format: "business_" + businessType + "_" + businessId
     local businessTypeFromAccount, businessIdFromAccount = accountId:match("^business_(.+)_(.+)$")
     if businessTypeFromAccount and businessIdFromAccount then
       local account = career_modules_bank.getBusinessAccount(businessTypeFromAccount, businessIdFromAccount)
@@ -1010,14 +946,11 @@ local function purchaseCartItems(businessId, accountId, cartData)
     end
   end
 
-  -- Apply parts
   local vehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
   if vehicle and vehicle.vehicleId then
-    -- Apply all parts at once using applyCartPartsToVehicle
     if #parts > 0 then
       applyCartPartsToVehicle(businessId, vehicle.vehicleId, parts)
       
-      -- Get preview vehicle config to save
       local previewConfig = nil
       if career_modules_business_businessPartCustomization then
         previewConfig = career_modules_business_businessPartCustomization.getPreviewVehicleConfig(businessId)
@@ -1050,18 +983,15 @@ local function purchaseCartItems(businessId, accountId, cartData)
           partList = vehicle.partList
         })
         
-        -- Update pulled out vehicle reference
         local pulledOutVehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
         if pulledOutVehicle and pulledOutVehicle.vehicleId == vehicle.vehicleId then
           pulledOutVehicle.config = vehicle.config
           pulledOutVehicle.partList = vehicle.partList
         end
         
-        -- Find removed parts and add them to business inventory (matching vanilla updateInventory pattern)
         if career_modules_business_businessPartCustomization and career_modules_business_businessPartInventory then
           local removedParts = career_modules_business_businessPartCustomization.findRemovedParts(businessId, vehicle.vehicleId)
           for _, removedPart in ipairs(removedParts) do
-            -- Add part to business inventory
             career_modules_business_businessPartInventory.addPart(businessId, removedPart)
           end
         end
@@ -1071,7 +1001,6 @@ local function purchaseCartItems(businessId, accountId, cartData)
     if #tuning > 0 then
       local tuningVars = {}
       for _, change in ipairs(tuning) do
-        -- Only process variables, skip categories and subcategories
         if change.type == "variable" and change.varName and change.value ~= nil then
           tuningVars[change.varName] = change.value
         end
@@ -1100,8 +1029,7 @@ local function getBusinessAccountBalance(businessType, businessId)
   return 0
 end
 
--- Forward power/weight functions to businessPartCustomization module
-function M.onPowerWeightReceived(requestId, power, weight)
+local function onPowerWeightReceived(requestId, power, weight)
   if career_modules_business_businessPartCustomization then
     return career_modules_business_businessPartCustomization.onPowerWeightReceived(requestId, power, weight)
   end
@@ -1114,16 +1042,20 @@ local function getVehiclePowerWeight(businessId, vehicleId)
   return nil
 end
 
+local function completeJob(businessId, jobId)
+  return career_modules_business_businessJobManager.completeJob(businessId, jobId)
+end
+
+local function canCompleteJob(businessId, jobId)
+  return career_modules_business_businessJobManager.canCompleteJob(businessId, jobId)
+end
+
 M.getBusinessComputerUIData = getBusinessComputerUIData
 M.acceptJob = acceptJob
 M.declineJob = declineJob
 M.abandonJob = abandonJob
-M.completeJob = function(businessId, jobId)
-  return career_modules_business_businessJobManager.completeJob(businessId, jobId)
-end
-M.canCompleteJob = function(businessId, jobId)
-  return career_modules_business_businessJobManager.canCompleteJob(businessId, jobId)
-end
+M.completeJob = completeJob
+M.canCompleteJob = canCompleteJob
 M.pullOutVehicle = pullOutVehicle
 M.putAwayVehicle = putAwayVehicle
 M.getActiveJobs = getActiveJobs
@@ -1151,5 +1083,6 @@ M.applyCartPartsToVehicle = applyCartPartsToVehicle
 M.getAllRequiredParts = getAllRequiredParts
 M.addPartToCart = addPartToCart
 M.onVehicleWheelDataUpdate = onVehicleWheelDataUpdate
+M.onPowerWeightReceived = onPowerWeightReceived
 
 return M

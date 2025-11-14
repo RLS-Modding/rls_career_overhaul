@@ -113,7 +113,7 @@ local function getPartsByVehicle(businessId, vehicleModel)
   return filtered
 end
 
-function M.onCareerActivated()
+local function onCareerActivated()
   businessParts = {}
 end
 
@@ -123,6 +123,7 @@ local function onSaveCurrentSaveSlot(currentSavePath)
   end
 end
 
+M.onCareerActivated = onCareerActivated
 M.getBusinessParts = getBusinessParts
 M.addPart = addPart
 M.removePart = removePart

@@ -185,15 +185,12 @@ local function spawnBusinessVehicle(businessId, vehicleId)
     keepLoaded = true
   }
   
-  -- If vehicle has a custom config with partsTree, use it
   if vehicle.config and vehicle.config.partsTree then
     vehicleData.config = deepcopy(vehicle.config)
-    -- Include variables in config (they should be part of config, not set separately)
     if vehicle.vars then
       vehicleData.config.vars = deepcopy(vehicle.vars)
     end
   elseif vehicle.vars then
-    -- If using configKey, create a config object with vars
     vehicleData.config = {
       key = configKey,
       vars = deepcopy(vehicle.vars)
@@ -202,7 +199,6 @@ local function spawnBusinessVehicle(businessId, vehicleId)
   
   local vehObj = core_vehicles.spawnNewVehicle(modelKey, vehicleData)
   
-  -- Apply part conditions if they exist
   if vehicle.partConditions and vehObj then
     core_vehicleBridge.executeAction(vehObj, 'initPartConditions', vehicle.partConditions, nil, nil, nil, nil)
   end
@@ -315,7 +311,7 @@ local function getBusinessVehicleFromSpawnedId(spawnedVehicleId)
   return nil, nil
 end
 
-function M.onCareerActivated()
+local function onCareerActivated()
   businessVehicles = {}
   pulledOutVehicles = {}
   spawnedBusinessVehicles = {}
@@ -334,7 +330,6 @@ local function updateVehicle(businessId, vehicleId, vehicleData)
   
   for i, vehicle in ipairs(vehicles) do
     if vehicle.vehicleId == vehicleId then
-      -- Merge the new data with existing vehicle data
       for key, value in pairs(vehicleData) do
         vehicle[key] = value
       end
@@ -346,6 +341,7 @@ local function updateVehicle(businessId, vehicleId, vehicleData)
   return false
 end
 
+M.onCareerActivated = onCareerActivated
 M.getBusinessVehicles = getBusinessVehicles
 M.storeVehicle = storeVehicle
 M.removeVehicle = removeVehicle
