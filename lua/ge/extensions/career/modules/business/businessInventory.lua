@@ -102,51 +102,39 @@ end
 local function getBusinessGarage(businessId)
   local business = freeroam_facilities.getFacility("tuningShop", businessId)
   if not business then 
-    log("E", "businessInventory", "getBusinessGarage: Could not find business facility")
     return nil 
   end
   
   if not business.businessGarageId then 
-    log("E", "businessInventory", "getBusinessGarage: Business missing businessGarageId")
     return nil 
   end
   
-  log("D", "businessInventory", "getBusinessGarage: Looking for garage with id=" .. tostring(business.businessGarageId))
-  
   local businessGarages = freeroam_facilities.getFacilitiesByType("businessGarage")
   if not businessGarages then 
-    log("E", "businessInventory", "getBusinessGarage: Could not get businessGarages facilities")
     return nil 
   end
   
   for _, garage in ipairs(businessGarages) do
     if garage.id == business.businessGarageId then
-      log("D", "businessInventory", "getBusinessGarage: Found garage " .. tostring(garage.id))
       return garage
     end
   end
   
-  log("E", "businessInventory", "getBusinessGarage: Garage not found with id=" .. tostring(business.businessGarageId))
   return nil
 end
 
 local function getBusinessGarageParkingSpots(businessId)
   local garage = getBusinessGarage(businessId)
   if not garage then 
-    log("E", "businessInventory", "getBusinessGarageParkingSpots: Could not find business garage for businessId=" .. tostring(businessId))
     return {} 
   end
   
   if not garage.sitesFile then 
-    log("E", "businessInventory", "getBusinessGarageParkingSpots: Garage missing sitesFile")
     return {} 
   end
   
-  log("D", "businessInventory", "getBusinessGarageParkingSpots: Loading sites from " .. tostring(garage.sitesFile))
-  
   local sites = gameplay_sites_sitesManager.loadSites(garage.sitesFile)
   if not sites or not sites.parkingSpots then 
-    log("E", "businessInventory", "getBusinessGarageParkingSpots: Could not load sites or parkingSpots missing")
     return {} 
   end
   
@@ -155,13 +143,8 @@ local function getBusinessGarageParkingSpots(businessId)
     local spot = sites.parkingSpots.byName[spotName]
     if spot and not spot.missing then
       table.insert(spots, spot)
-      log("D", "businessInventory", "getBusinessGarageParkingSpots: Found parking spot " .. tostring(spotName))
-    else
-      log("W", "businessInventory", "getBusinessGarageParkingSpots: Parking spot not found or missing: " .. tostring(spotName))
     end
   end
-  
-  log("D", "businessInventory", "getBusinessGarageParkingSpots: Found " .. tostring(#spots) .. " parking spots")
   
   return spots
 end
@@ -185,12 +168,10 @@ end
 local function spawnBusinessVehicle(businessId, vehicleId)
   local vehicle = getVehicleById(businessId, vehicleId)
   if not vehicle then 
-    log("E", "businessInventory", "spawnBusinessVehicle: Vehicle not found")
     return nil 
   end
   
   if not vehicle.vehicleConfig then 
-    log("E", "businessInventory", "spawnBusinessVehicle: Vehicle missing vehicleConfig. Vehicle data: " .. dumpsz(vehicle, 2))
     return nil 
   end
   
@@ -198,11 +179,8 @@ local function spawnBusinessVehicle(businessId, vehicleId)
   local configKey = vehicle.vehicleConfig.key or vehicle.config_key
   
   if not modelKey or not configKey then 
-    log("E", "businessInventory", "spawnBusinessVehicle: Missing model_key or key. modelKey=" .. tostring(modelKey) .. ", configKey=" .. tostring(configKey))
     return nil 
   end
-  
-  log("D", "businessInventory", "spawnBusinessVehicle: Spawning vehicle model=" .. tostring(modelKey) .. ", config=" .. tostring(configKey))
   
   local vehicleData = {
     config = configKey,
@@ -232,11 +210,8 @@ local function spawnBusinessVehicle(businessId, vehicleId)
     core_vehicleBridge.executeAction(vehObj, 'initPartConditions', vehicle.partConditions, nil, nil, nil, nil)
   end
   if not vehObj then 
-    log("E", "businessInventory", "spawnBusinessVehicle: core_vehicles.spawnNewVehicle returned nil")
     return nil 
   end
-  
-  log("D", "businessInventory", "spawnBusinessVehicle: Vehicle spawned successfully with ID=" .. tostring(vehObj:getID()))
   
   if not spawnedBusinessVehicles[businessId] then
     spawnedBusinessVehicles[businessId] = {}
@@ -274,34 +249,21 @@ end
 local function pullOutVehicle(businessId, vehicleId)
   if not businessId or not vehicleId then return false end
   
-  log("D", "businessInventory", "pullOutVehicle: Called with businessId=" .. tostring(businessId) .. ", vehicleId=" .. tostring(vehicleId))
-  
   local vehicle = getVehicleById(businessId, vehicleId)
   if not vehicle then 
-    log("E", "businessInventory", "pullOutVehicle: Vehicle not found for businessId=" .. tostring(businessId) .. ", vehicleId=" .. tostring(vehicleId))
     return false 
   end
   
   local existingVehicle = pulledOutVehicles[businessId]
   if existingVehicle and existingVehicle.vehicleId ~= vehicleId then
-    log("D", "businessInventory", "pullOutVehicle: Removing existing vehicle " .. tostring(existingVehicle.vehicleId))
     removeBusinessVehicleObject(businessId, existingVehicle.vehicleId)
   end
   
   pulledOutVehicles[businessId] = vehicle
   
-  log("D", "businessInventory", "pullOutVehicle: Spawning vehicle...")
   local vehObj = spawnBusinessVehicle(businessId, vehicleId)
   if vehObj then
-    log("D", "businessInventory", "pullOutVehicle: Vehicle spawned, teleporting to garage...")
-    local success = teleportToBusinessGarage(businessId, vehObj, false)
-    if not success then
-      log("W", "businessInventory", "pullOutVehicle: Failed to teleport vehicle to business garage")
-    else
-      log("D", "businessInventory", "pullOutVehicle: Vehicle successfully pulled out and teleported")
-    end
-  else
-    log("E", "businessInventory", "pullOutVehicle: Failed to spawn vehicle")
+    teleportToBusinessGarage(businessId, vehObj, false)
   end
   
   return true
@@ -328,6 +290,18 @@ end
 
 local function getBusinessVehicleIdentifier(businessId, vehicleId)
   return "business_" .. tostring(businessId) .. "_" .. tostring(vehicleId)
+end
+
+local function getBusinessJobIdentifier(businessId, jobId)
+  return "business_" .. tostring(businessId) .. "_job_" .. tostring(jobId)
+end
+
+local function getJobIdFromVehicle(businessId, vehicleId)
+  local vehicle = getVehicleById(businessId, vehicleId)
+  if vehicle and vehicle.jobId then
+    return vehicle.jobId
+  end
+  return nil
 end
 
 local function getBusinessVehicleFromSpawnedId(spawnedVehicleId)
@@ -386,6 +360,8 @@ M.teleportToBusinessGarage = teleportToBusinessGarage
 M.removeBusinessVehicleObject = removeBusinessVehicleObject
 M.getSpawnedVehicleId = getSpawnedVehicleId
 M.getBusinessVehicleIdentifier = getBusinessVehicleIdentifier
+M.getBusinessJobIdentifier = getBusinessJobIdentifier
+M.getJobIdFromVehicle = getJobIdFromVehicle
 M.getBusinessVehicleFromSpawnedId = getBusinessVehicleFromSpawnedId
 
 return M

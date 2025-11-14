@@ -1157,6 +1157,8 @@ export default {
     getBusinessComputerUIData: (businessType, businessId) => [String, String],
     acceptJob: (businessId, jobId) => [String, Integer],
     declineJob: (businessId, jobId) => [String, Integer],
+    completeJob: (businessId, jobId) => [String, Integer],
+    canCompleteJob: (businessId, jobId) => [String, Integer],
     abandonJob: (businessId, jobId) => [String, Integer],
     pullOutVehicle: (businessId, vehicleId) => [String, Integer],
     putAwayVehicle: (businessId) => String,

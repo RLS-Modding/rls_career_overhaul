@@ -8,7 +8,7 @@
     <div class="parts-stats">
       <div class="stat">
         <span class="label">Total Parts</span>
-        <span class="value">{{ store.parts.length }}</span>
+        <span class="value">{{ Array.isArray(store.parts) ? store.parts.length : 0 }}</span>
       </div>
       <div class="stat">
         <span class="label">Total Value</span>
@@ -50,7 +50,7 @@
       </div>
     </div>
     
-    <div v-if="store.parts.length === 0" class="empty-state">
+    <div v-if="!Array.isArray(store.parts) || store.parts.length === 0" class="empty-state">
       No parts in inventory
     </div>
   </div>
@@ -64,12 +64,15 @@ import { lua } from "@/bridge"
 const store = useBusinessComputerStore()
 
 const totalValue = computed(() => {
-  return store.parts.reduce((sum, part) => sum + (part.price || part.value || 0), 0)
+  const parts = Array.isArray(store.parts) ? store.parts : []
+  if (parts.length === 0) return 0
+  return parts.reduce((sum, part) => sum + (part.price || part.value || 0), 0)
 })
 
 const groupedParts = computed(() => {
+  const parts = Array.isArray(store.parts) ? store.parts : []
   const groups = {}
-  store.parts.forEach(part => {
+  parts.forEach(part => {
     const vehicle = part.compatibleVehicle || "Unknown"
     if (!groups[vehicle]) {
       groups[vehicle] = { vehicle, parts: [] }
@@ -97,7 +100,6 @@ const handleSellPart = async (part) => {
       await store.loadBusinessData(store.businessType, store.businessId)
     }
   } catch (error) {
-    console.error("Failed to sell part:", error)
   }
 }
 </script>

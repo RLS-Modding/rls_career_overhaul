@@ -484,10 +484,8 @@ const navigateToPath = (index) => {
 }
 
 const installPart = async (part, slot) => {
-  // Handle both search results (slotPath) and category navigation (path)
   let slotPath = slot.slotPath || slot.path
   
-  // Normalize path: ensure it starts with / and ends with /
   if (!slotPath.startsWith('/')) {
     slotPath = '/' + slotPath
   }
@@ -495,7 +493,6 @@ const installPart = async (part, slot) => {
     slotPath = slotPath + '/'
   }
   
-  // Create a normalized slot object for addPartToCart
   const normalizedSlot = {
     path: slotPath,
     slotPath: slotPath,
@@ -503,12 +500,7 @@ const installPart = async (part, slot) => {
     slotName: slot.slotName
   }
   
-  // Add part to cart (this will also add required parts and update vehicle preview)
-  // The addPartToCart function spawns the vehicle with the parts, compares configs to find
-  // all required child parts, then sends updated cart via event and updates the vehicle preview
   await store.addPartToCart(part, normalizedSlot)
-  
-  // Parts tree will be automatically reloaded via the event handler in addPartToCart
 }
 
 const toggleRemoveMenu = (slotPath, partName) => {
@@ -553,10 +545,8 @@ const installUsedPart = async (usedPart, slot) => {
 const removePart = async (part, slot) => {
   removeMenuVisible.value = null
   
-  // Handle both search results (slotPath) and category navigation (path)
   let slotPath = slot.slotPath || slot.path
   
-  // Normalize path: ensure it starts with / and ends with /
   if (!slotPath.startsWith('/')) {
     slotPath = '/' + slotPath
   }
@@ -564,10 +554,8 @@ const removePart = async (part, slot) => {
     slotPath = slotPath + '/'
   }
   
-  // Remove part from cart by slotPath
   await store.removePartBySlotPath(slotPath)
   
-  // Reload parts tree to reflect the removal
   setTimeout(() => {
     loadPartsTree()
   }, 300)
@@ -575,7 +563,6 @@ const removePart = async (part, slot) => {
 
 const handlePartsTreeData = (data) => {
   if (!data || !data.success) {
-    console.error("Failed to load parts tree:", data?.error)
     partsTree.value = []
     slotsNiceName.value = {}
     partsNiceName.value = {}
@@ -585,7 +572,6 @@ const handlePartsTreeData = (data) => {
   
   if (data.vehicleId === store.pulledOutVehicle?.vehicleId && data.businessId === store.businessId) {
     if (data.partsTree) {
-      // Cache the data in the store
       const cacheKey = `${data.businessId}_${data.vehicleId}`
       if (store.partsTreeCache) {
         store.partsTreeCache[cacheKey] = {
@@ -614,13 +600,9 @@ const loadPartsTree = async () => {
     return
   }
   
-  // Always show loading state immediately
   loading.value = true
   
-  // Request data (returns immediately, data comes via hook)
-  // Lua will check cache and return instantly if cached
   store.requestVehiclePartsTree(store.pulledOutVehicle.vehicleId).catch(error => {
-    console.error("Failed to request parts tree:", error)
     loading.value = false
   })
 }

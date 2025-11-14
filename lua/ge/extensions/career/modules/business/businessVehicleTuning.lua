@@ -135,10 +135,8 @@ local function requestVehicleTuningData(businessId, vehicleId)
     return
   end
 
-  -- Check cache first
   local cacheKey = businessId .. "_" .. tostring(vehicleId)
   if tuningDataCache[cacheKey] then
-    -- Return cached data immediately
     guihooks.trigger('businessComputer:onVehicleTuningData', {
       success = true,
       businessId = businessId,
@@ -148,7 +146,6 @@ local function requestVehicleTuningData(businessId, vehicleId)
     return
   end
 
-  -- Run async to avoid blocking
   core_jobsystem.create(function(job)
     local vehicle = career_modules_business_businessInventory.getVehicleById(businessId, vehicleId)
     if not vehicle or not vehicle.vehicleConfig then
@@ -170,7 +167,6 @@ local function requestVehicleTuningData(businessId, vehicleId)
       return
     end
 
-    -- Get the actual preview vehicle object (already spawned and visible)
     local vehicleObj = getBusinessVehicleObject(businessId, vehicleId)
     if not vehicleObj then
       guihooks.trigger('businessComputer:onVehicleTuningData', {
@@ -182,7 +178,6 @@ local function requestVehicleTuningData(businessId, vehicleId)
 
     local vehId = vehicleObj:getID()
 
-    -- Get vehicle data and tuning variables
     local vehicleData = extensions.core_vehicle_manager.getVehicleData(vehId)
     if not vehicleData or not vehicleData.vdata or not vehicleData.vdata.variables then
       guihooks.trigger('businessComputer:onVehicleTuningData', {
@@ -192,8 +187,6 @@ local function requestVehicleTuningData(businessId, vehicleId)
       return
     end
 
-    -- Get baseline vars from initial vehicle state (baseline from inventory)
-    -- This ensures we compare tuning changes against the original state, not current modified state
     local baselineVars = {}
     if career_modules_business_businessPartCustomization then
       local initialVehicle = career_modules_business_businessPartCustomization.getInitialVehicleState(businessId)
@@ -202,18 +195,11 @@ local function requestVehicleTuningData(businessId, vehicleId)
       end
     end
     
-    -- Get current vars from vehicle (for display purposes)
-    -- But we'll use baseline vars as the "original" for comparison
     local currentVars = vehicle.vars or {}
-
-    -- Get all available tuning variables from vehicle
     local tuningVariables = deepcopy(vehicleData.vdata.variables)
     
-    -- Get parts tree from vehicle Lua context (v.config.partsTree)
-    -- This gets the live vehicle's parts tree with all currently installed parts
     local requestId = "tuning_" .. businessId .. "_" .. tostring(vehicleId) .. "_" .. tostring(os.clock())
     
-    -- Store context for callback
     local context = {
       businessId = businessId,
       vehicleId = vehicleId,
@@ -224,8 +210,6 @@ local function requestVehicleTuningData(businessId, vehicleId)
       cacheKey = cacheKey
     }
     
-    -- Call into vehicle Lua to get v.config.partsTree
-    -- Use jsonEncode if available, otherwise fall back to serialize
     vehicleObj:queueLuaCommand([[
       if v and v.config and v.config.partsTree then
         local partsTreeStr = nil
@@ -246,13 +230,11 @@ local function requestVehicleTuningData(businessId, vehicleId)
       end
     ]])
     
-    -- Store context for async callback
     if not M._tuningRequestContexts then
       M._tuningRequestContexts = {}
     end
     M._tuningRequestContexts[requestId] = context
     
-    -- Processing will continue in onPartsTreeReceived callback
     return
   end)
 end
@@ -260,15 +242,12 @@ end
 function M.onVehicleVarReceived(contextId, varName, value)
 end
 
--- Callback function to receive parts tree from vehicle Lua context
 function M.onPartsTreeReceived(requestId, partsTreeStr)
   local context = M._tuningRequestContexts and M._tuningRequestContexts[requestId]
   if not context then
-    log('E', 'businessVehicleTuning', '[onPartsTreeReceived] No context found for requestId: ' .. tostring(requestId))
     return
   end
   
-  -- Clean up context
   M._tuningRequestContexts[requestId] = nil
   
   local businessId = context.businessId
@@ -279,22 +258,17 @@ function M.onPartsTreeReceived(requestId, partsTreeStr)
   local tuningVariables = context.tuningVariables
   local cacheKey = context.cacheKey
   
-  -- Deserialize parts tree from JSON or serialized Lua
   local partsTree = nil
   if partsTreeStr and partsTreeStr ~= "nil" and partsTreeStr ~= "" then
-    -- Try JSON decode first
     local success, result = pcall(function()
       if jsonDecode then
         return jsonDecode(partsTreeStr)
       else
-        -- Fall back to loadstring for serialized Lua
         return loadstring("return " .. partsTreeStr)()
       end
     end)
     if success and result then
       partsTree = result
-    else
-      log('E', 'businessVehicleTuning', '[onPartsTreeReceived] Failed to decode parts tree. First 100 chars: ' .. tostring(partsTreeStr:sub(1, 100)))
     end
   end
   
@@ -318,28 +292,20 @@ function M.onPartsTreeReceived(requestId, partsTreeStr)
         if node.chosenPartName and node.chosenPartName ~= "" then
           local jbeamData = jbeamIO.getPart(vehicleData.ioCtx, node.chosenPartName)
           if jbeamData and jbeamData.variables then
-            -- Merge variables from this part into tuning variables
-            -- Handle both array and table formats
             for key, varData in pairs(jbeamData.variables) do
-              -- Determine the actual variable name
               local varName = nil
               if type(key) == "string" then
-                -- Table format: key is the variable name
                 varName = key
               elseif type(key) == "number" and type(varData) == "table" then
-                -- Array format: varData should have a 'name' field
                 if varData.name then
                   varName = varData.name
                 else
-                  -- Skip if no name field
                   goto continue
                 end
               else
-                -- Skip invalid entries
                 goto continue
               end
               
-              -- Only add if it's a tuning variable (has min/max or is a known tuning var)
               local isTuningVar = false
               if varData.min ~= nil or varData.max ~= nil then
                 isTuningVar = true
@@ -348,21 +314,17 @@ function M.onPartsTreeReceived(requestId, partsTreeStr)
               end
               
               if isTuningVar then
-                -- If variable already exists, merge min/max values (use most restrictive)
                 if partTuningVars[varName] then
                   if varData.min ~= nil then
-                    -- Use highest min (most restrictive)
                     if partTuningVars[varName].min == nil or varData.min > partTuningVars[varName].min then
                       partTuningVars[varName].min = varData.min
                     end
                   end
                   if varData.max ~= nil then
-                    -- Use lowest max (most restrictive)
                     if partTuningVars[varName].max == nil or varData.max < partTuningVars[varName].max then
                       partTuningVars[varName].max = varData.max
                     end
                   end
-                  -- Merge other properties
                   if varData.step and not partTuningVars[varName].step then
                     partTuningVars[varName].step = varData.step
                   end
@@ -376,7 +338,6 @@ function M.onPartsTreeReceived(requestId, partsTreeStr)
                     partTuningVars[varName].subCategory = varData.subCategory
                   end
                 else
-                  -- New variable from part
                   partTuningVars[varName] = deepcopy(varData)
                 end
               end
@@ -385,7 +346,6 @@ function M.onPartsTreeReceived(requestId, partsTreeStr)
           end
         end
         
-        -- Recursively process children
         if node.children then
           for _, childNode in pairs(node.children) do
             extractPartTuningVars(childNode, partTuningVars)
@@ -396,21 +356,16 @@ function M.onPartsTreeReceived(requestId, partsTreeStr)
       local partTuningVars = {}
       extractPartTuningVars(partsTree, partTuningVars)
       
-      -- Merge part tuning variables into main tuning variables
       for varName, varData in pairs(partTuningVars) do
         if not tuningVariables[varName] then
-          -- New variable from parts, add it
           tuningVariables[varName] = varData
         else
-          -- Variable exists, merge min/max values (use most restrictive)
           if varData.min ~= nil then
-            -- Use highest min (most restrictive)
             if tuningVariables[varName].min == nil or varData.min > tuningVariables[varName].min then
               tuningVariables[varName].min = varData.min
             end
           end
           if varData.max ~= nil then
-            -- Use lowest max (most restrictive)
             if tuningVariables[varName].max == nil or varData.max < tuningVariables[varName].max then
               tuningVariables[varName].max = varData.max
             end
@@ -419,22 +374,17 @@ function M.onPartsTreeReceived(requestId, partsTreeStr)
       end
     end
 
-    -- Filter out fuel volume and other unwanted variables (matching normal tuning menu)
     tuningVariables["$fuel"] = nil
     tuningVariables["$fuel_R"] = nil
     tuningVariables["$fuel_L"] = nil
     
-    -- Filter out Cargo category variables
     for varName, varData in pairs(tuningVariables) do
       if varData.category == "Cargo" then
         tuningVariables[varName] = nil
       end
     end
 
-    -- Merge baseline vars with defaults and calculate display values
-    -- Use baseline vars as the "original" values for comparison
     for varName, varData in pairs(tuningVariables) do
-      -- Use baseline var value if it exists (baseline from inventory), otherwise use current var, otherwise use default
       if baselineVars[varName] ~= nil then
         varData.val = baselineVars[varName]
       elseif currentVars[varName] ~= nil then
@@ -677,49 +627,18 @@ local function createShoppingCart(businessId, vehicleId, changedVars, originalVa
     local varPrice
     if isOnBlackList(varData) then
       varPrice = 0
-      -- Still add to category structure so it gets flattened to level 3
-      if varData.category then
-        -- Add the category to the shopping cart if it's not there yet
-        if not shoppingCart.items[varData.category] then
-          shoppingCart.items[varData.category] = {
-            type = "category",
-            items = {},
-            price = 0,
-            title = varData.category
-          }
-        end
-        
-        -- Add the subCategory to the shopping cart if it's not there yet
-        if varData.subCategory and not shoppingCart.items[varData.category].items[varData.subCategory] then
-          shoppingCart.items[varData.category].items[varData.subCategory] = {
-            type = "subCategory",
-            items = {},
-            price = 0,
-            title = varData.subCategory
-          }
-        end
-        
-        if varData.subCategory then
-          shoppingCart.items[varData.category].items[varData.subCategory].items[varName] = {
-            name = varName,
-            title = varData.title or varName,
-            price = 0
-          }
-        else
-          shoppingCart.items[varData.category].items[varName] = {
-            name = varName,
-            title = varData.title or varName,
-            price = 0
-          }
-        end
-      else
-        -- No category, add at top level
-        shoppingCart.items[varName] = {
-          name = varName,
-          title = varData.title or varName,
-          price = 0
-        }
+      -- Add directly to top level (like vanilla tuning.lua)
+      -- Format title to include subcategory for clarity
+      local displayTitle = varData.title or varName
+      if varData.subCategory and varData.subCategory ~= "" and varData.subCategory ~= "Other" then
+        displayTitle = varData.subCategory .. " - " .. displayTitle
       end
+      
+      shoppingCart.items[varName] = {
+        name = varName,
+        title = displayTitle,
+        price = 0
+      }
     elseif varData.category then
       -- Add the category to the shopping cart if it's not there yet
       if not shoppingCart.items[varData.category] then
@@ -943,12 +862,24 @@ local function addTuningToCart(businessId, vehicleId, currentTuningVars, baselin
   -- Get shopping cart to calculate prices (only for changed variables)
   local shoppingCart = getShoppingCart(businessId, vehicleId, changedVars, baselineTuningVars)
   
-  -- Build cart items array with only changed variables (level 3, or level 1 for items without categories)
+  -- Build cart items array with all levels (categories, subcategories, and variables)
   -- Use table.insert to ensure sequential integer keys (serializes as array)
   local cartItems = {}
   for _, item in ipairs(shoppingCart.items or {}) do
-    -- Include level 3 items (nested in category/subcategory) or level 1 items that are variables (no category)
-    if item.type == "variable" and (item.level == 3 or item.level == 1) then
+    -- Include all items: categories (level 1), subcategories (level 2), and variables (level 1, 2, or 3)
+    if item.type == "category" or item.type == "subCategory" then
+      -- Add category or subcategory header
+      table.insert(cartItems, {
+        varName = item.varName or "",
+        value = nil,
+        originalValue = nil,
+        price = item.price or 0,
+        title = item.title or item.varName or "",
+        level = item.level or 1,
+        type = item.type
+      })
+    elseif item.type == "variable" then
+      -- Add variable item
       local varName = item.varName
       local currentValue = changedVars[varName]
       
@@ -959,8 +890,17 @@ local function addTuningToCart(businessId, vehicleId, currentTuningVars, baselin
         local cacheKey = businessId .. "_" .. tostring(vehicleId)
         local tuningData = tuningDataCache[cacheKey]
         local varTitle = varName
-        if tuningData and tuningData[varName] and tuningData[varName].title then
-          varTitle = tuningData[varName].title
+        if tuningData and tuningData[varName] then
+          local varData = tuningData[varName]
+          if varData.title then
+            varTitle = varData.title
+          end
+          -- Only add subcategory prefix for level 1 or 2 items (not nested under subcategory header)
+          -- Level 3 items are already under subcategory headers, so no prefix needed
+          local itemLevel = item.level or 1
+          if itemLevel < 3 and varData.subCategory and varData.subCategory ~= "Other" and varData.subCategory ~= "" then
+            varTitle = varData.subCategory .. " - " .. varTitle
+          end
         end
         
         table.insert(cartItems, {
@@ -968,7 +908,9 @@ local function addTuningToCart(businessId, vehicleId, currentTuningVars, baselin
           value = currentValue,
           originalValue = baselineValue or 0,
           price = item.price or 0,
-          title = varTitle
+          title = varTitle,
+          level = item.level or 1,
+          type = "variable"
         })
       end
     end

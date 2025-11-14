@@ -645,12 +645,9 @@ local function getNeededAdditionalParts(businessId, vehicleId, parts, baselineTr
   end
   
   for slotPath, part in pairs(parts) do
-    log('D', 'businessPartCustomization', string.format('[getNeededAdditionalParts] Checking part: %s at slot: %s', part.name or 'unknown', slotPath))
     if part.description and part.description.slotInfoUi then
-      log('D', 'businessPartCustomization', string.format('[getNeededAdditionalParts] Part %s has %d child slots', part.name, tableSize(part.description.slotInfoUi)))
       for slotName, slotInfo in pairs(part.description.slotInfoUi) do
         local childPath = slotPath .. slotName .. "/"
-        log('D', 'businessPartCustomization', string.format('[getNeededAdditionalParts] Checking child slot: %s (path: %s)', slotName, childPath))
         
         -- Check if slot is empty or part doesn't fit (matching vanilla pattern exactly - line 462)
         -- Vanilla passes the part object directly to partFitsSlot, which internally loads jbeam data
@@ -658,9 +655,6 @@ local function getNeededAdditionalParts(businessId, vehicleId, parts, baselineTr
         local partFits = false
         if existingPart then
           partFits = jbeamSlotSystem.partFitsSlot(existingPart, slotInfo)
-          log('D', 'businessPartCustomization', string.format('[getNeededAdditionalParts] Slot %s has existing part: %s, fits: %s', childPath, existingPart.name or 'unknown', tostring(partFits)))
-        else
-          log('D', 'businessPartCustomization', string.format('[getNeededAdditionalParts] Slot %s is empty', childPath))
         end
         
         if not existingPart or not partFits then
@@ -668,17 +662,11 @@ local function getNeededAdditionalParts(businessId, vehicleId, parts, baselineTr
           
           -- Look for a fitting part from business inventory first (matching vanilla pattern)
           local fittingPart = getFittingPartFromInventory(businessId, part, slotName, vehicleData, currentCart)
-          if fittingPart then
-            log('D', 'businessPartCustomization', string.format('[getNeededAdditionalParts] Found fitting part from inventory: %s at %s', fittingPart.name, childPath))
-          else
-            log('D', 'businessPartCustomization', string.format('[getNeededAdditionalParts] No fitting part from inventory for slot %s', childPath))
-          end
           
           -- If no fitting part from inventory, try default part
           if not fittingPart then
             local partNameToGenerate = getDefaultPartName(jbeamData, slotName)
             if partNameToGenerate then
-              log('D', 'businessPartCustomization', string.format('[getNeededAdditionalParts] Found default part name: %s for slot %s', partNameToGenerate, childPath))
               -- Generate default part (matching vanilla generatePart pattern)
               local defaultJbeamData = jbeamIO.getPart(vehicleData.ioCtx, partNameToGenerate)
               if defaultJbeamData then
@@ -689,10 +677,7 @@ local function getNeededAdditionalParts(businessId, vehicleId, parts, baselineTr
                   description = defaultJbeamData,
                   vehicleModel = part.vehicleModel
                 }
-                log('D', 'businessPartCustomization', string.format('[getNeededAdditionalParts] Generated default part: %s at %s', partNameToGenerate, childPath))
               end
-            else
-              log('D', 'businessPartCustomization', string.format('[getNeededAdditionalParts] No default part found for slot %s', childPath))
             end
           end
           
@@ -707,19 +692,10 @@ local function getNeededAdditionalParts(businessId, vehicleId, parts, baselineTr
             if slotInfo and not slotInfo.coreSlot then
               fittingPart.sourcePart = true
             end
-            log('D', 'businessPartCustomization', string.format('[getNeededAdditionalParts] ADDED part: %s at %s (sourcePart: %s)', fittingPart.name, childPath, tostring(fittingPart.sourcePart or false)))
           end
         end
       end
-    else
-      log('D', 'businessPartCustomization', string.format('[getNeededAdditionalParts] Part %s has no slotInfoUi', part.name or 'unknown'))
     end
-  end
-  
-  if addedParts then
-    log('D', 'businessPartCustomization', string.format('[getNeededAdditionalParts] Found %d additional parts, total result parts: %d', tableSize(resultParts) - tableSize(parts), tableSize(resultParts)))
-  else
-    log('D', 'businessPartCustomization', '[getNeededAdditionalParts] No additional parts needed')
   end
   
   return resultParts, addedParts
@@ -1096,14 +1072,12 @@ local function addPartToCart(businessId, vehicleId, currentCart, partToAdd)
   -- Get vehicle object
   local vehObj = getBusinessVehicleObject(businessId, vehicleId)
   if not vehObj then 
-    log('E', 'businessPartCustomization', '[addPartToCart] Failed to get vehicle object')
     return currentCart or {} 
   end
   
   local vehId = vehObj:getID()
   local vehicleData = extensions.core_vehicle_manager.getVehicleData(vehId)
   if not vehicleData or not vehicleData.ioCtx then 
-    log('E', 'businessPartCustomization', '[addPartToCart] Failed to get vehicle data')
     return currentCart or {} 
   end
   
@@ -1129,8 +1103,6 @@ local function addPartToCart(businessId, vehicleId, currentCart, partToAdd)
   end
   
   table.insert(tempCart, newPartItem)
-  
-  log('D', 'businessPartCustomization', string.format('[addPartToCart] Applying part %s to vehicle (tempCart has %d items)', partToAdd.partName, #tempCart))
   
   -- Use applyCartPartsToVehicle pattern to spawn vehicle with tempCart
   -- This will automatically add default parts for empty slots
@@ -1184,7 +1156,6 @@ local function addPartToCart(businessId, vehicleId, currentCart, partToAdd)
       -- Get actual config from spawned vehicle (includes auto-added default parts)
       local actualVehicleData = extensions.core_vehicle_manager.getVehicleData(vehId)
       if not actualVehicleData or not actualVehicleData.config or not actualVehicleData.config.partsTree then
-        log('E', 'businessPartCustomization', '[addPartToCart] Failed to get actual vehicle config after spawn')
         -- Restore original config
         core_vehicles.replaceVehicle(vehicleModel, {config = initialConfig, keepOtherVehRotation = true}, vehObj)
         restoreFuelLevels(vehObj, storedFuelLevels)
@@ -1193,11 +1164,8 @@ local function addPartToCart(businessId, vehicleId, currentCart, partToAdd)
       
       local actualTree = actualVehicleData.config.partsTree
       
-      log('D', 'businessPartCustomization', '[addPartToCart] Got actual config, comparing with baseline')
-      
       -- Compare baseline vs actual config to find ALL changed parts (including auto-added defaults)
       local changedPartsMap = findChangedParts(baselineTree, actualTree, {})
-      log('D', 'businessPartCustomization', string.format('[addPartToCart] Found %d changed parts in actual config', tableSize(changedPartsMap)))
       
       -- Build final cart: keep unchanged items + add all changed parts
       local finalCart = {}
@@ -1279,12 +1247,7 @@ local function addPartToCart(businessId, vehicleId, currentCart, partToAdd)
             slotInfo = parentJbeamData.slotInfoUi[slotName]
             local desc = slotInfo.description
             slotNiceName = type(desc) == "table" and desc.description or desc or slotName
-            log('D', 'businessPartCustomization', string.format('[addPartToCart] Got slot nice name from parent %s: %s (slot: %s)', actualParentNode.chosenPartName, slotNiceName, slotName))
-          else
-            log('D', 'businessPartCustomization', string.format('[addPartToCart] Parent %s found but no slotInfoUi[%s]', actualParentNode.chosenPartName or 'nil', slotName))
           end
-        else
-          log('D', 'businessPartCustomization', string.format('[addPartToCart] Could not find parent node at path: %s (for slot: %s)', parentPath, slotPath))
         end
         
         -- Fallback: Try previewVehicleSlotData (built from all available parts)
@@ -1369,14 +1332,6 @@ local function addPartToCart(businessId, vehicleId, currentCart, partToAdd)
         end
         
         table.insert(finalCart, partData)
-        log('D', 'businessPartCustomization', string.format('[addPartToCart] Added to finalCart: %s (%s) at %s, price: %s', partData.partName, partData.partNiceName, partData.slotPath, tostring(partData.price)))
-      end
-      
-      log('D', 'businessPartCustomization', string.format('[addPartToCart] FINAL CART: %d items total', #finalCart))
-      for i, item in ipairs(finalCart) do
-        if item.type == 'part' then
-          log('D', 'businessPartCustomization', string.format('[addPartToCart]   [%d] %s (%s) at %s - $%s', i, item.partName, item.partNiceName or 'no name', item.slotPath, tostring(item.price)))
-        end
       end
       
       -- Update preview vehicle with the actual config (vehicle is already spawned with correct parts)

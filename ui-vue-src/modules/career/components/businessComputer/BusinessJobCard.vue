@@ -82,15 +82,19 @@
             </button>
             <template v-else>
               <button 
-                v-if="!isPulledOut"
+                v-if="isPulledOut"
+                class="btn btn-primary"
+                @click="$emit('put-away')"
+              >
+                Put Away Vehicle
+              </button>
+              <button 
+                v-else
                 class="btn btn-primary"
                 @click="$emit('pull-out', job)"
                 :disabled="hasPulledOutVehicle"
               >
                 Pull Out Vehicle
-              </button>
-              <button v-else class="btn btn-secondary" @click="$emit('put-away')">
-                Put Away Vehicle
               </button>
               <button class="btn btn-danger" @click="$emit('abandon', job)">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -126,6 +130,7 @@
 <script setup>
 import { computed, ref, onMounted, watch } from "vue"
 import { useBusinessComputerStore } from "../../stores/businessComputerStore"
+import { lua } from "@/bridge"
 
 const props = defineProps({
   job: Object,
@@ -231,7 +236,6 @@ const checkCanComplete = async () => {
     const result = await lua.career_modules_business_businessComputer.canCompleteJob(props.businessId, props.job.jobId)
     canComplete.value = result === true
   } catch (error) {
-    console.error("Error checking if job can be completed:", error)
     canComplete.value = false
   }
 }
@@ -266,6 +270,7 @@ watch(() => props.job, () => {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 1rem;
+  align-items: start;
 }
 
 .job-card.vertical .job-content {
@@ -458,6 +463,7 @@ watch(() => props.job, () => {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  min-height: 0;
 }
 
 .job-header {
@@ -685,6 +691,8 @@ watch(() => props.job, () => {
   display: flex;
   gap: 0.5rem;
   margin-top: auto;
+  flex-shrink: 0;
+  position: relative;
 }
 
 .btn {

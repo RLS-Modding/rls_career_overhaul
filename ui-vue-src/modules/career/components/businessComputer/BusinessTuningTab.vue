@@ -500,7 +500,6 @@ const getSliderStyle = (varData) => {
 
 const handleTuningData = (data) => {
   if (!data || !data.success) {
-    console.error("Failed to load tuning data:", data?.error)
     loading.value = false
     return
   }
@@ -537,6 +536,9 @@ const handleTuningData = (data) => {
       
       originalTuningVariables.value = baseline
       buckets.value = organizeTuningData(data.tuningData)
+      
+      // Load cart values into UI after tuning data is set up
+      loadTuningFromCart()
     }
     loading.value = false
   }
@@ -554,7 +556,6 @@ const loadTuningData = async () => {
   // Request data (returns immediately, data comes via hook)
   // Lua will check cache and return instantly if cached
   store.requestVehicleTuningData(store.pulledOutVehicle.vehicleId).catch(error => {
-    console.error("Failed to request tuning data:", error)
     loading.value = false
   })
 }
@@ -622,18 +623,23 @@ const loadTuningFromCart = () => {
   
   const cartTuningMap = {}
   cart.forEach(item => {
-    cartTuningMap[item.varName] = item.value
+    // Only process variables, skip categories and subcategories
+    if (item.type === 'variable' && item.varName && item.value !== undefined) {
+      cartTuningMap[item.varName] = item.value
+    }
   })
   
   for (const [varName, varData] of Object.entries(tuningVariables.value)) {
     if (cartTuningMap.hasOwnProperty(varName)) {
       const actualValue = cartTuningMap[varName]
+      varData.val = actualValue
       varData.valDis = convertWheelAlignmentToSlider(varData, actualValue)
     } else {
       const originalData = originalTuningVariables.value[varName]
       if (originalData) {
-        const resetVal = originalData.valDis !== undefined ? originalData.valDis : (originalData.val !== undefined ? originalData.val : (originalData.minDis !== undefined ? originalData.minDis : 0))
-        varData.valDis = convertWheelAlignmentToSlider(varData, resetVal)
+        const resetVal = originalData.valDis !== undefined ? originalData.valDis : (originalData.val !== undefined ? convertWheelAlignmentToSlider(varData, originalData.val) : (originalData.minDis !== undefined ? originalData.minDis : 0))
+        varData.valDis = resetVal
+        varData.val = convertWheelAlignmentToActual(varData, resetVal)
       }
     }
     
@@ -708,7 +714,6 @@ const resetSettings = async () => {
       }, 100)
     }
   } catch (error) {
-    console.error("Failed to apply baseline tuning:", error)
   }
   
   await store.addTuningToCart({}, originalTuningVariables.value)
@@ -775,7 +780,6 @@ const applySettings = async () => {
     
     store.updatePowerWeight()
   } catch (error) {
-    console.error("Failed to apply tuning settings:", error)
   }
 }
 

@@ -135,30 +135,43 @@ const searchQuery = ref('')
 const openSections = ref({})
 
 const filteredParts = computed(() => {
-  if (!searchQuery.value.trim()) {
-    return store.parts
+  try {
+    const parts = Array.isArray(store.parts) ? store.parts : []
+    if (!searchQuery.value.trim()) {
+      return parts
+    }
+    const query = searchQuery.value.toLowerCase()
+    return parts.filter(part => 
+      (part.name && part.name.toLowerCase().includes(query)) ||
+      (part.compatibleVehicle && part.compatibleVehicle.toLowerCase().includes(query))
+    )
+  } catch (error) {
+    return []
   }
-  const query = searchQuery.value.toLowerCase()
-  return store.parts.filter(part => 
-    (part.name && part.name.toLowerCase().includes(query)) ||
-    (part.compatibleVehicle && part.compatibleVehicle.toLowerCase().includes(query))
-  )
 })
 
 const groupedParts = computed(() => {
-  const groups = {}
-  filteredParts.value.forEach(part => {
-    const vehicle = part.compatibleVehicle || "Unknown"
-    if (!groups[vehicle]) {
-      groups[vehicle] = []
-    }
-    groups[vehicle].push(part)
-  })
-  return groups
+  try {
+    const parts = Array.isArray(filteredParts.value) ? filteredParts.value : []
+    const groups = {}
+    parts.forEach(part => {
+      if (!part) return
+      const vehicle = part.compatibleVehicle || "Unknown"
+      if (!groups[vehicle]) {
+        groups[vehicle] = []
+      }
+      groups[vehicle].push(part)
+    })
+    return groups
+  } catch (error) {
+    return {}
+  }
 })
 
 const totalValue = computed(() => {
-  return filteredParts.value.reduce((sum, part) => sum + (part.price || part.value || 0), 0)
+  const parts = Array.isArray(filteredParts.value) ? filteredParts.value : []
+  if (parts.length === 0) return 0
+  return parts.reduce((sum, part) => sum + (part.price || part.value || 0), 0)
 })
 
 const toggleSection = (vehicle) => {
@@ -183,7 +196,6 @@ const handleSellPart = async (part) => {
       await store.loadBusinessData(store.businessType, store.businessId)
     }
   } catch (error) {
-    console.error("Failed to sell part:", error)
   }
 }
 
@@ -195,19 +207,18 @@ const handleSellAllVehicleParts = async (vehicle, parts) => {
     }
     await store.loadBusinessData(store.businessType, store.businessId)
   } catch (error) {
-    console.error("Failed to sell all parts:", error)
   }
 }
 
 const handleSellAllParts = async () => {
-  if (!store.businessId || store.parts.length === 0) return
+  const parts = Array.isArray(store.parts) ? store.parts : []
+  if (!store.businessId || parts.length === 0) return
   try {
-    for (const part of store.parts) {
+    for (const part of parts) {
       await lua.career_modules_business_businessPartInventory.sellPart(store.businessId, part.partId)
     }
     await store.loadBusinessData(store.businessType, store.businessId)
   } catch (error) {
-    console.error("Failed to sell all parts:", error)
   }
 }
 </script>

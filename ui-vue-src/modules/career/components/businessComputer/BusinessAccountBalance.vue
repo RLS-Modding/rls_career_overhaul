@@ -38,7 +38,6 @@ const loadBalance = async () => {
     )
     balance.value = accountBalance || 0
   } catch (error) {
-    console.error("Failed to load business account balance:", error)
     balance.value = 0
   }
 }

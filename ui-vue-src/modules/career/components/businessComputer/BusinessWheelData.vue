@@ -67,7 +67,6 @@ const loadExtension = () => {
   try {
     lua.career_modules_business_businessComputer.loadWheelDataExtension(props.businessId, props.vehicleId)
   } catch (error) {
-    console.error("Failed to load wheel data extension:", error)
   }
 }
 
@@ -79,7 +78,6 @@ const unloadExtension = () => {
   try {
     lua.career_modules_business_businessComputer.unloadWheelDataExtension(props.businessId, props.vehicleId)
   } catch (error) {
-    console.error("Failed to unload wheel data extension:", error)
   }
 }
 

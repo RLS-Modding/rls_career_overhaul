@@ -1,6 +1,6 @@
 local M = {}
 
-M.dependencies = {'career_career', 'career_saveSystem', 'career_modules_business_businessInventory', 'career_modules_payment', 'career_modules_bank', 'gameplay_events_freeroam_leaderboardManager'}
+M.dependencies = {'career_career', 'career_saveSystem', 'career_modules_business_businessInventory', 'career_modules_payment', 'career_modules_bank', 'career_modules_business_businessHelpers'}
 
 local jobGenerators = {}
 local businessJobs = {}
@@ -115,14 +115,7 @@ local function acceptJob(businessId, jobId)
       mileage = job.mileage or 0,
       storedTime = os.time()
     }
-    local success, vehicleId = career_modules_business_businessInventory.storeVehicle(businessId, vehicleData)
-    if success then
-      log("D", "businessJobManager", "acceptJob: Stored vehicle for job " .. tostring(jobId) .. " with vehicleId " .. tostring(vehicleId) .. " and mileage " .. tostring(vehicleData.mileage))
-    else
-      log("W", "businessJobManager", "acceptJob: Failed to store vehicle for job " .. tostring(jobId))
-    end
-  else
-    log("W", "businessJobManager", "acceptJob: Job " .. tostring(jobId) .. " has no vehicleConfig")
+    career_modules_business_businessInventory.storeVehicle(businessId, vehicleData)
   end
   
   saveBusinessJobs(businessId)
@@ -149,23 +142,34 @@ local function declineJob(businessId, jobId)
   return false
 end
 
+local function getJobById(businessId, jobId)
+  local jobs = loadBusinessJobs(businessId)
+  
+  for _, job in ipairs(jobs.active or {}) do
+    if job.jobId == jobId then return job end
+  end
+  
+  for _, job in ipairs(jobs.new or {}) do
+    if job.jobId == jobId then return job end
+  end
+  
+  for _, job in ipairs(jobs.completed or {}) do
+    if job.jobId == jobId then return job end
+  end
+  
+  return nil
+end
+
 local function getJobCurrentTime(businessId, jobId)
   local job = getJobById(businessId, jobId)
   if not job or not job.raceLabel then
     return nil
   end
   
-  local vehicles = career_modules_business_businessInventory.getBusinessVehicles(businessId)
-  for _, vehicle in ipairs(vehicles) do
-    if vehicle.jobId == jobId then
-      local businessVehicleId = career_modules_business_businessInventory.getBusinessVehicleIdentifier(businessId, vehicle.vehicleId)
-      local leaderboardManager = require('gameplay/events/freeroam/leaderboardManager')
-      local leaderboardEntry = leaderboardManager.getLeaderboardEntry(businessVehicleId, job.raceLabel)
-      if leaderboardEntry and leaderboardEntry.time then
-        return leaderboardEntry.time
-      end
-      break
-    end
+  local bestTime = career_modules_business_businessHelpers.getBestLeaderboardTime(businessId, jobId, job.raceType, job.raceLabel)
+  
+  if bestTime then
+    return bestTime
   end
   
   return job.currentTime or job.baseTime
@@ -221,24 +225,24 @@ local function completeJob(businessId, jobId)
   
   -- Pay reward to business account
   local reward = math.floor((job.budget or 5000) * 3)
-  if career_modules_bank and career_modules_payment then
+  if career_modules_bank then
     local businessType = job.businessType or "tuningShop"
     local businessAccount = career_modules_bank.getBusinessAccount(businessType, businessId)
     if businessAccount then
       local accountId = businessAccount.id
-      local success = career_modules_payment.reward({
+      local success = career_modules_bank.rewardToAccount({
         money = {
           amount = reward
         }
-      }, {
-        label = "Job Completion: " .. (job.raceLabel or "Race"),
-        tags = {"job", "completion", "business"}
       }, accountId)
       if not success then
-        log("W", "businessJobManager", "completeJob: Failed to pay reward to business account")
         return false
       end
+    else
+      return false
     end
+  else
+    return false
   end
   
   -- Remove vehicle associated with this job (same as abandonJob)
@@ -257,8 +261,11 @@ local function completeJob(businessId, jobId)
       career_modules_business_businessInventory.putAwayVehicle(businessId)
     end
     career_modules_business_businessInventory.removeVehicle(businessId, vehicleToRemove.vehicleId)
-    log("D", "businessJobManager", "completeJob: Removed vehicle " .. tostring(vehicleToRemove.vehicleId) .. " for completed job")
   end
+  
+  local leaderboardManager = require('gameplay/events/freeroam/leaderboardManager')
+  local businessJobId = career_modules_business_businessInventory.getBusinessJobIdentifier(businessId, jobId)
+  leaderboardManager.clearLeaderboardForVehicle(businessJobId)
   
   job = table.remove(jobs.active, jobIndex)
   job.status = "completed"
@@ -301,8 +308,11 @@ local function abandonJob(businessId, jobId)
       career_modules_business_businessInventory.putAwayVehicle(businessId)
     end
     career_modules_business_businessInventory.removeVehicle(businessId, vehicleToRemove.vehicleId)
-    log("D", "businessJobManager", "abandonJob: Removed vehicle " .. tostring(vehicleToRemove.vehicleId) .. " for abandoned job")
   end
+  
+  local leaderboardManager = require('gameplay/events/freeroam/leaderboardManager')
+  local businessJobId = career_modules_business_businessInventory.getBusinessJobIdentifier(businessId, jobId)
+  leaderboardManager.clearLeaderboardForVehicle(businessJobId)
   
   local reward = math.floor((job.budget or 5000) * 3)
   local penalty = math.floor(reward * 0.5)
@@ -319,39 +329,18 @@ local function abandonJob(businessId, jobId)
   local canPay = career_modules_payment.canPay(price, accountId)
   
   if not canPay then
-    log("W", "businessJobManager", "abandonJob: Business account cannot afford penalty of " .. tostring(penalty))
     return false
   end
   
   local success = career_modules_payment.pay(price, { label = "Abandoned job penalty", tags = {"jobAbandonment", "penalty"} }, accountId)
   if not success then
-    log("W", "businessJobManager", "abandonJob: Failed to charge penalty")
     return false
   end
   
   table.remove(jobs.active, jobIndex)
   saveBusinessJobs(businessId)
   
-  log("D", "businessJobManager", "abandonJob: Abandoned job " .. tostring(jobId) .. " with penalty of " .. tostring(penalty))
   return true
-end
-
-local function getJobById(businessId, jobId)
-  local jobs = loadBusinessJobs(businessId)
-  
-  for _, job in ipairs(jobs.active or {}) do
-    if job.jobId == jobId then return job end
-  end
-  
-  for _, job in ipairs(jobs.new or {}) do
-    if job.jobId == jobId then return job end
-  end
-  
-  for _, job in ipairs(jobs.completed or {}) do
-    if job.jobId == jobId then return job end
-  end
-  
-  return nil
 end
 
 function M.onCareerActivated()
@@ -369,4 +358,5 @@ M.canCompleteJob = canCompleteJob
 M.getJobCurrentTime = getJobCurrentTime
 
 return M
+
 

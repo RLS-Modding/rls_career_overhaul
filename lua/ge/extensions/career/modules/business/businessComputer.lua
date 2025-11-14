@@ -1,6 +1,6 @@
 local M = {}
 
-M.dependencies = {'career_career', 'career_saveSystem', 'freeroam_facilities', 'core_vehicles', 'core_jobsystem', 'gameplay_events_freeroam_leaderboardManager'}
+M.dependencies = {'career_career', 'career_saveSystem', 'freeroam_facilities', 'core_vehicles', 'core_jobsystem', 'career_modules_business_businessHelpers'}
 
 local jbeamIO = require('jbeam/io')
 local jbeamSlotSystem = require('jbeam/slotSystem')
@@ -116,6 +116,7 @@ local function getVehicleInfo(modelKey, configKey)
   return nil
 end
 
+
 local function formatJobForUI(job, businessId)
   if not job then
     return nil
@@ -192,19 +193,11 @@ local function formatJobForUI(job, businessId)
   local currentTime = job.currentTime or job.baseTime or 0
   local goalTime = job.targetTime or 0
 
-  -- Try to get leaderboard time for this job's vehicle
-  if job.raceLabel and businessId then
-    local vehicles = career_modules_business_businessInventory.getBusinessVehicles(businessId)
-    for _, vehicle in ipairs(vehicles) do
-      if vehicle.jobId == job.jobId then
-        local businessVehicleId = career_modules_business_businessInventory.getBusinessVehicleIdentifier(businessId, vehicle.vehicleId)
-        local leaderboardManager = require('gameplay/events/freeroam/leaderboardManager')
-        local leaderboardEntry = leaderboardManager.getLeaderboardEntry(businessVehicleId, job.raceLabel)
-        if leaderboardEntry and leaderboardEntry.time then
-          currentTime = leaderboardEntry.time
-        end
-        break
-      end
+  -- Try to get best leaderboard time for this job (checking all race label variations)
+  if job.raceLabel and businessId and job.jobId then
+    local bestTime = career_modules_business_businessHelpers.getBestLeaderboardTime(businessId, job.jobId, job.raceType, job.raceLabel)
+    if bestTime then
+      currentTime = bestTime
     end
   end
 
@@ -363,10 +356,7 @@ local function abandonJob(businessId, jobId)
 end
 
 local function pullOutVehicle(businessId, vehicleId)
-  log("D", "businessComputer",
-    "pullOutVehicle: Called with businessId=" .. tostring(businessId) .. ", vehicleId=" .. tostring(vehicleId))
   local result = career_modules_business_businessInventory.pullOutVehicle(businessId, vehicleId)
-  log("D", "businessComputer", "pullOutVehicle: Result=" .. tostring(result))
   return result
 end
 
@@ -956,14 +946,23 @@ local function purchaseCartItems(businessId, accountId, cartData)
       
       local tuningVars = {}
       for _, change in ipairs(tuning) do
-        tuningVars[change.varName] = change.value
+        -- Only process variables, skip categories and subcategories
+        if change.type == "variable" and change.varName and change.value ~= nil then
+          tuningVars[change.varName] = change.value
+        end
       end
       
       local tuningCost = calculateTuningCost(businessId, vehicle.vehicleId, tuningVars, originalVars)
       subtotal = subtotal + tuningCost
     else
-      -- Fallback if vehicle not found
-      subtotal = subtotal + (50 * #tuning)
+      -- Fallback if vehicle not found - only count variables
+      local variableCount = 0
+      for _, change in ipairs(tuning) do
+        if change.type == "variable" and change.varName and change.value ~= nil then
+          variableCount = variableCount + 1
+        end
+      end
+      subtotal = subtotal + (50 * variableCount)
     end
   end
 
@@ -1067,7 +1066,10 @@ local function purchaseCartItems(businessId, accountId, cartData)
     if #tuning > 0 then
       local tuningVars = {}
       for _, change in ipairs(tuning) do
-        tuningVars[change.varName] = change.value
+        -- Only process variables, skip categories and subcategories
+        if change.type == "variable" and change.varName and change.value ~= nil then
+          tuningVars[change.varName] = change.value
+        end
       end
       applyVehicleTuning(businessId, vehicle.vehicleId, tuningVars, nil)
     end

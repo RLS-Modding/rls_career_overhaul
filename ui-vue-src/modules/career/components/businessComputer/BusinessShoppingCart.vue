@@ -181,16 +181,35 @@
             </button>
             <transition name="section-collapse">
               <div v-if="!tuningSectionCollapsed" class="section-content">
-                <div v-for="item in tuningItems" :key="item.varName" class="cart-item">
-                  <button class="remove-button" @click="store.removeTuningFromCart(item.varName)">
+                <div 
+                  v-for="item in tuningItems" 
+                  :key="`${item.type}-${item.varName}-${item.level || 1}`" 
+                  class="cart-item"
+                  :class="{
+                    'cart-item-category': item.type === 'category',
+                    'cart-item-subcategory': item.type === 'subCategory',
+                    'cart-item-variable': item.type === 'variable'
+                  }"
+                  :style="{ paddingLeft: `${((item.level || 1) - 1) * 1.5}rem` }"
+                >
+                  <button 
+                    v-if="item.type === 'variable'" 
+                    class="remove-button" 
+                    @click="store.removeTuningFromCart(item.varName)"
+                  >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <line x1="18" y1="6" x2="6" y2="18"/>
                       <line x1="6" y1="6" x2="18" y2="18"/>
                     </svg>
                   </button>
+                  <div v-else class="remove-button-spacer"></div>
                   <div class="item-info">
-                    <div class="item-name">{{ item.title || item.varName }}</div>
-                    <div class="item-slot">{{ convertToDisplayValue(item, item.originalValue) }} → {{ convertToDisplayValue(item, item.value) }}</div>
+                    <div class="item-name" :class="{ 'item-name-header': item.type !== 'variable' }">
+                      {{ item.title || item.varName }}
+                    </div>
+                    <div v-if="item.type === 'variable' && item.value !== undefined && item.originalValue !== undefined" class="item-slot">
+                      {{ convertToDisplayValue(item, item.originalValue) }} → {{ convertToDisplayValue(item, item.value) }}
+                    </div>
                   </div>
                   <div class="item-price">${{ (item.price || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</div>
                 </div>
@@ -383,7 +402,6 @@ const loadBalance = async () => {
     )
     businessBalance.value = balance || 0
   } catch (error) {
-    console.error("Failed to load business account balance:", error)
     businessBalance.value = 0
   }
 }
@@ -413,43 +431,35 @@ const purchase = async () => {
     )
     
     if (success) {
-      // Clear cart and reset vehicle to baseline after purchase
       store.clearCart()
       expanded.value = false
       
-      // Reset vehicle to baseline (purchased parts are now saved, so baseline includes them)
       if (store.businessId && store.pulledOutVehicle?.vehicleId) {
         try {
           await lua.career_modules_business_businessComputer.resetVehicleToOriginal(
             store.businessId,
             store.pulledOutVehicle.vehicleId
           )
-          // Re-initialize preview vehicle with new baseline (includes purchased parts)
           await lua.career_modules_business_businessComputer.initializePreviewVehicle(
             store.businessId,
             store.pulledOutVehicle.vehicleId
           )
-          // Power/weight will be updated automatically by Lua after vehicle replacement
         } catch (error) {
-          console.error("Failed to reset vehicle after purchase:", error)
         }
       }
       
       await loadBalance()
     }
   } catch (error) {
-    console.error("Failed to purchase cart items:", error)
   }
 }
 
 const cancel = () => {
-  // Check if there are items in cart - if so, show confirmation
   if (partsItems.value.length > 0 || tuningItems.value.length > 0) {
     showConfirmModal.value = true
     return
   }
   
-  // No items in cart, proceed with cancel
   performCancel()
 }
 
@@ -461,10 +471,8 @@ const confirmCancel = async () => {
 const cancelClose = async () => {
   showConfirmModal.value = false
   
-  // Navigate back to home menu
   store.switchView('home')
   
-  // Also clear vehicle view if we're in one
   if (store.vehicleView) {
     await store.closeVehicleView()
   }
@@ -487,7 +495,6 @@ const performCancel = async () => {
         }
       }, 100)
     } catch (error) {
-      console.error("Failed to reset vehicle to original:", error)
     }
   }
   
@@ -598,7 +605,6 @@ const clearCurrentTab = async () => {
         }
       }, 300)
     } catch (error) {
-      console.error("Failed to reset vehicle to original:", error)
     }
   }
   
@@ -1073,6 +1079,32 @@ onBeforeUnmount(() => {
     }
   }
   
+  .remove-button-spacer {
+    width: 24px;
+    flex-shrink: 0;
+  }
+  
+  &.cart-item-category {
+    border-bottom: 1px solid rgba(245, 73, 0, 0.3);
+    padding-top: 1em;
+    padding-bottom: 0.5em;
+    
+    &:first-child {
+      padding-top: 0;
+    }
+  }
+  
+  &.cart-item-subcategory {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+  }
+  
+  &.cart-item-variable {
+    padding-top: 0.25em;
+    padding-bottom: 0.25em;
+  }
+  
   .item-info {
     flex: 1;
     min-width: 0;
@@ -1082,6 +1114,13 @@ onBeforeUnmount(() => {
       font-size: 0.875em;
       font-weight: 500;
       margin-bottom: 0.25em;
+      
+      &.item-name-header {
+        color: rgba(245, 73, 0, 1);
+        font-weight: 600;
+        font-size: 0.9375em;
+        margin-bottom: 0;
+      }
     }
     
     .item-slot {

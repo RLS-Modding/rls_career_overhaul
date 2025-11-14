@@ -34,7 +34,6 @@ const store = useBusinessComputerStore()
 
 const handlePullOut = async (job) => {
   if (!Array.isArray(store.vehicles)) {
-    console.error("handlePullOut: vehicles is not an array", store.vehicles)
     return
   }
   
@@ -43,8 +42,6 @@ const handlePullOut = async (job) => {
   })
   if (vehicle) {
     await store.pullOutVehicle(vehicle.vehicleId)
-  } else {
-    console.error("handlePullOut: No vehicle found for job.id", job.id, "Available vehicles:", store.vehicles.map(v => ({ vehicleId: v.vehicleId, jobId: v.jobId })))
   }
 }
 
@@ -57,7 +54,8 @@ const handleAbandon = async (job) => {
 }
 
 const handleComplete = async (job) => {
-  await store.completeJob(parseInt(job.id))
+  const jobId = job.jobId ?? parseInt(job.id)
+  await store.completeJob(jobId)
 }
 </script>
 

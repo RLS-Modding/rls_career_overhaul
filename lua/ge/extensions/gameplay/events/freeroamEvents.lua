@@ -146,25 +146,33 @@ local function payoutRace()
     else
         reward = utils.raceReward(time, reward, in_race_time, race.type)
     end
-    print("Adjusted reward: " .. reward)
 
     -- Handle leaderboard
     local inventoryIdToUse = mInventoryId
     
-    -- Check if this is a business vehicle (check current player vehicle)
-    if career_modules_business_businessInventory then
-        local playerVehicleId = be:getPlayerVehicleID(0)
-        if playerVehicleId then
-            local businessId, vehicleId = career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId(playerVehicleId)
-            if businessId and vehicleId then
-                inventoryIdToUse = career_modules_business_businessInventory.getBusinessVehicleIdentifier(businessId, vehicleId)
-            elseif mInventoryId and not tostring(mInventoryId):match("^business_") then
-                -- If mInventoryId is not already a business identifier, try to convert it
-                -- This handles the case where the race started with a regular vehicle but we want to check business vehicles
-                inventoryIdToUse = mInventoryId
+        -- If mInventoryId is already a business job identifier, use it directly
+        -- Otherwise, check if this is a business vehicle (check current player vehicle)
+        if mInventoryId and tostring(mInventoryId):match("^business_.+_job_") then
+            -- Already a business job identifier, use it as-is
+            inventoryIdToUse = mInventoryId
+        elseif career_modules_business_businessInventory then
+            local playerVehicleId = be:getPlayerVehicleID(0)
+            if playerVehicleId then
+                local businessId, vehicleId = career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId(playerVehicleId)
+                if businessId and vehicleId then
+                    local jobId = career_modules_business_businessInventory.getJobIdFromVehicle(businessId, vehicleId)
+                    if jobId then
+                        inventoryIdToUse = career_modules_business_businessInventory.getBusinessJobIdentifier(businessId, jobId)
+                    else
+                        inventoryIdToUse = career_modules_business_businessInventory.getBusinessVehicleIdentifier(businessId, vehicleId)
+                    end
+                elseif mInventoryId and not tostring(mInventoryId):match("^business_") then
+                    -- If mInventoryId is not already a business identifier, try to convert it
+                    -- This handles the case where the race started with a regular vehicle but we want to check business vehicles
+                    inventoryIdToUse = mInventoryId
+                end
             end
         end
-    end
     
     local leaderboardEntry = leaderboardManager.getLeaderboardEntry(inventoryIdToUse, raceLabel)
 
@@ -323,7 +331,12 @@ local function payoutDragRace(raceName, finishTime, finishSpeed, vehId)
         if career_modules_business_businessInventory then
             local businessId, vehicleId = career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId(vehId)
             if businessId and vehicleId then
-                inventoryIdToUse = career_modules_business_businessInventory.getBusinessVehicleIdentifier(businessId, vehicleId)
+                local jobId = career_modules_business_businessInventory.getJobIdFromVehicle(businessId, vehicleId)
+                if jobId then
+                    inventoryIdToUse = career_modules_business_businessInventory.getBusinessJobIdentifier(businessId, jobId)
+                else
+                    inventoryIdToUse = career_modules_business_businessInventory.getBusinessVehicleIdentifier(businessId, vehicleId)
+                end
             else
                 inventoryIdToUse = career_modules_inventory.getInventoryIdFromVehicleId(vehId) or vehId
             end
@@ -362,8 +375,6 @@ local function payoutDragRace(raceName, finishTime, finishSpeed, vehId)
     if reward <= 0 then
         reward = baseReward / 2 -- Minimum reward for completion
     end
-
-    print("Adjusted drag reward: " .. reward)
 
     reward = reward / (career_modules_hardcore.isHardcoreMode() and 2 or 1)
 
@@ -728,7 +739,12 @@ local function onBeamNGTrigger(data)
             if career_modules_business_businessInventory then
                 local businessId, vehicleId = career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId(data.subjectID)
                 if businessId and vehicleId then
-                    mInventoryId = career_modules_business_businessInventory.getBusinessVehicleIdentifier(businessId, vehicleId)
+                    local jobId = career_modules_business_businessInventory.getJobIdFromVehicle(businessId, vehicleId)
+                    if jobId then
+                        mInventoryId = career_modules_business_businessInventory.getBusinessJobIdentifier(businessId, jobId)
+                    else
+                        mInventoryId = career_modules_business_businessInventory.getBusinessVehicleIdentifier(businessId, vehicleId)
+                    end
                 else
                     mInventoryId = career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId(data.subjectID) or data.subjectID
                 end
@@ -873,8 +889,6 @@ local function onWorldReadyState(state)
 end
 
 local function loadExtensions()
-    print("Initializing Freeroam Events Modules")
-
     local freeroamPath = "/lua/ge/extensions/gameplay/events/freeroam/"
     local files = FS:findFiles(freeroamPath, "*.lua", -1, true, false)
     
@@ -887,7 +901,6 @@ local function loadExtensions()
                 setExtensionUnloadMode(extensionName, "manual")
                 extensions.unload(extensionName)
                 table.insert(loadedExtensions, extensionName)
-                print("Loaded extension: " .. extensionName)
             end
         end
     end
@@ -901,15 +914,9 @@ local function unloadExtensions()
 end
 
 local function onExtensionLoaded()
-    print("Initializing Freeroam Events Main")
     loadExtensions()
     if getCurrentLevelIdentifier() then
         races = utils.loadRaceData()
-        if races ~= {} then
-            print("Race data loaded for level: " .. getCurrentLevelIdentifier())
-        else
-            print("No race data found for level: " .. getCurrentLevelIdentifier())
-        end
     end
 end
 
