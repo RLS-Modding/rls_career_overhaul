@@ -66,6 +66,11 @@
       "displaySpeed":true,
       "label":"Drag Strip",
       "reward":1650,
+      "tuningShop":{
+        "minImprovement": 1.1,
+        "maxImprovement": 1.2,
+        "decimalPlaces": 1
+      },
       "predictCoef":{ "a": -3.1197, "b": 9.9079, "c": 0.2978 },
       "type":[
         "drag"
@@ -507,6 +512,11 @@
         "bestTime":100,
         "checkpointRoad":"trackalt",
         "hotlap":85,
+        "tuningShop":{
+          "minImprovement": 1.05,
+          "maxImprovement": 1.1,
+          "decimalPlaces": 0
+        },
         "label":"Short Track",
         "predictCoef": { "a": 53.8287, "b": 15.0958, "c": 0.4576 },
         "mergeCheckpoints":[
@@ -523,6 +533,11 @@
       ],
       "hotlap":125,
       "label":"Track",
+      "tuningShop":{
+        "minImprovement": 1.05,
+        "maxImprovement": 1.1,
+        "decimalPlaces": 0
+      },
       "reward":2000,
       "runningStart":true,
       "predictCoef": { "a": 84.7006, "b": 15.9663, "c": 0.5826 },

@@ -174,6 +174,7 @@ local function formatJobForUI(job, businessId)
   -- Format goal time properly (times are in seconds, format as "X min Y s" if >= 60s)
   local goalTimeFormatted = ""
   local goalTimeSeconds = job.targetTime or 0
+  local decimalPlaces = job.decimalPlaces or 0
   if goalTimeSeconds >= 60 then
     local minutes = math.floor(goalTimeSeconds / 60)
     local seconds = math.floor(goalTimeSeconds % 60 + 0.5)
@@ -183,8 +184,8 @@ local function formatJobForUI(job, businessId)
       goalTimeFormatted = string.format("%d min", minutes)
     end
   else
-    if job.raceType == "drag" then
-      goalTimeFormatted = string.format("%.1f s", goalTimeSeconds)
+    if decimalPlaces > 0 then
+      goalTimeFormatted = string.format("%." .. decimalPlaces .. "f s", goalTimeSeconds)
     else
       goalTimeFormatted = string.format("%d s", math.floor(goalTimeSeconds + 0.5))
     end
@@ -221,6 +222,7 @@ local function formatJobForUI(job, businessId)
     timeUnit = timeUnit,
     raceType = job.raceType,
     raceLabel = job.raceLabel,
+    decimalPlaces = job.decimalPlaces or 0,
     deadline = job.deadline or "7 days",
     priority = job.priority or "medium"
   }
