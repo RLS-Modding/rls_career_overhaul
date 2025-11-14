@@ -1,6 +1,11 @@
 <template>
   <div class="home-view">
-    <BusinessVehicleCard v-if="store.pulledOutVehicle" :vehicle="store.pulledOutVehicle" @put-away="handlePutAway" />
+    <BusinessVehicleCard 
+      v-if="store.pulledOutVehicle" 
+      :vehicle="store.pulledOutVehicle" 
+      :job="currentVehicleJob"
+      @put-away="handlePutAway" 
+    />
     
     <div class="section-card">
       <div class="card-header">
@@ -64,11 +69,28 @@
 </template>
 
 <script setup>
+import { computed } from "vue"
 import { useBusinessComputerStore } from "../../stores/businessComputerStore"
 import BusinessVehicleCard from "./BusinessVehicleCard.vue"
 import BusinessJobCard from "./BusinessJobCard.vue"
 
 const store = useBusinessComputerStore()
+
+const currentVehicleJob = computed(() => {
+  const vehicle = store.pulledOutVehicle
+  const jobsSource = store.activeJobs
+  const jobs = Array.isArray(jobsSource)
+    ? jobsSource
+    : (Array.isArray(jobsSource?.value) ? jobsSource.value : [])
+  if (!vehicle || !vehicle.jobId) {
+    return null
+  }
+  const vehicleJobId = String(vehicle.jobId)
+  return jobs.find(job => {
+    const jobId = job?.jobId ?? job?.id
+    return jobId !== undefined && jobId !== null && String(jobId) === vehicleJobId
+  }) || null
+})
 
 const handlePullOut = async (job) => {
   if (!Array.isArray(store.vehicles)) {

@@ -1,78 +1,212 @@
 <template>
   <div class="job-card" :class="{ active: isActive, vertical: isVertical }">
-    <div class="job-content">
-      <div class="image-section">
-        <div class="job-image">
+    <div v-if="!isActive" class="job-content-new" :class="{ vertical: isVertical }">
+      <div v-if="isVertical" class="job-content-new-vertical">
+        <div class="job-image-new">
           <img :src="job.vehicleImage" :alt="job.vehicleName" />
           <span class="status-badge" :class="statusClass">{{ statusText }}</span>
         </div>
-        <div v-if="!isVertical" class="image-header">
-          <h4>{{ job.vehicleYear }} {{ job.vehicleName }}</h4>
-          <span class="job-id">Job ID: {{ job.id }}</span>
+        <h3 class="vehicle-name-new">
+          {{ job.vehicleYear }} {{ job.vehicleName }}
+          <span v-if="job.vehicleType" class="badge badge-orange">{{ job.vehicleType }}</span>
+        </h3>
+        <div class="reward-container-new">
+          <span class="reward-label">Reward</span>
+          <span class="reward-value">${{ job.reward.toLocaleString() }}</span>
         </div>
-      </div>
-      <div class="job-details">
-        <div v-if="isVertical" class="job-header">
-          <h4>{{ job.vehicleYear }} {{ job.vehicleName }}</h4>
-          <div class="header-meta">
-            <span v-if="job.vehicleType" class="vehicle-type-badge-inline">
-              {{ job.vehicleType }}
-            </span>
-            <span class="job-id">Job ID: {{ job.id }}</span>
-          </div>
-        </div>
-        <div v-if="!isActive && job.vehicleType && !isVertical" class="vehicle-type-badge">
-          <span>{{ job.vehicleType }}</span>
-        </div>
-        <div class="job-goal-wrapper">
-          <div class="job-goal">
+        <div class="job-metrics-new">
+          <div class="goal-chip">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="10"/>
               <circle cx="12" cy="12" r="6"/>
               <path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>
             </svg>
-            <span class="goal-label">Goal</span>
-          </div>
-          <div class="goal-value">{{ job.goal }}</div>
-        </div>
-        <div class="job-stats">
-          <div class="stat">
-            <span class="label">Budget</span>
-            <span class="value budget">${{ job.budget.toLocaleString() }}</span>
-          </div>
-          <div class="stat">
-            <span class="label">Reward</span>
-            <span class="value reward">${{ job.reward.toLocaleString() }}</span>
+            <div class="goal-chip-text">
+              <span class="goal-chip-label">Goal</span>
+              <span class="goal-chip-value">{{ job.goal }}</span>
+            </div>
           </div>
         </div>
-        <div v-if="!isActive && job.deadline" class="job-deadline">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-            <line x1="16" y1="2" x2="16" y2="6"/>
-            <line x1="8" y1="2" x2="8" y2="6"/>
-            <line x1="3" y1="10" x2="21" y2="10"/>
-          </svg>
-          <span>Deadline: {{ job.deadline }}</span>
+        <div class="job-actions-new">
+          <button class="btn btn-success" @click.stop="$emit('accept', job)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            Accept
+          </button>
+          <button class="btn btn-danger" @click.stop="$emit('decline', job)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+            Decline
+          </button>
         </div>
-        <div v-if="isActive" class="job-progress">
-          <div class="progress-header">
-            <span>Performance</span>
-            <span>{{ formatTimeWithUnit(job.currentTime, job.timeUnit) }}</span>
+      </div>
+      <template v-else>
+        <div class="image-section-new-horizontal">
+          <div class="job-image-new-horizontal">
+            <img :src="job.vehicleImage" :alt="job.vehicleName" />
+            <span class="status-badge" :class="statusClass">{{ statusText }}</span>
           </div>
-          <div class="progress-bar">
-            <div 
-              class="progress-fill" 
-              :style="{ width: progressPercent + '%' }"
-            ></div>
-          </div>
-          <span class="progress-goal">Goal: {{ formatTimeWithUnit(job.goalTime, job.timeUnit) }}</span>
+          <h3 class="vehicle-name-new-horizontal">
+            {{ job.vehicleYear }} {{ job.vehicleName }}
+            <span v-if="job.vehicleType" class="badge badge-orange">{{ job.vehicleType }}</span>
+          </h3>
         </div>
-        <div class="job-actions">
-          <template v-if="isActive">
+        <div class="job-info-new-horizontal">
+          <div class="reward-container-new">
+            <span class="reward-label">Reward</span>
+            <span class="reward-value">${{ job.reward.toLocaleString() }}</span>
+          </div>
+          <div class="job-metrics-new">
+            <div class="goal-chip">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <circle cx="12" cy="12" r="6"/>
+                <path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>
+              </svg>
+              <div class="goal-chip-text">
+                <span class="goal-chip-label">Goal</span>
+                <span class="goal-chip-value">{{ job.goal }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="job-actions-new-horizontal">
+            <button class="btn btn-success" @click.stop="$emit('accept', job)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+              Accept
+            </button>
+            <button class="btn btn-danger" @click.stop="$emit('decline', job)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+              Decline
+            </button>
+          </div>
+        </div>
+      </template>
+    </div>
+    <div v-else class="job-content-active" :class="{ vertical: isVertical }">
+      <div v-if="isVertical" class="job-content-active-vertical">
+        <div class="job-image-active">
+          <img :src="job.vehicleImage" :alt="job.vehicleName" />
+          <span class="status-badge" :class="statusClass">{{ statusText }}</span>
+        </div>
+        <h3 class="vehicle-name-active">
+          {{ job.vehicleYear }} {{ job.vehicleName }}
+          <span v-if="job.vehicleType" class="badge badge-orange">{{ job.vehicleType }}</span>
+        </h3>
+        <div class="reward-container-active">
+          <span class="reward-label">Reward</span>
+          <span class="reward-value">${{ job.reward.toLocaleString() }}</span>
+        </div>
+        <div class="job-metrics-active">
+          <div class="goal-chip">
+            <div class="goal-chip-content">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <circle cx="12" cy="12" r="6"/>
+                <path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>
+              </svg>
+              <div class="goal-chip-text">
+                <span class="goal-chip-label">Goal</span>
+                <span class="goal-chip-value">{{ job.goal }}</span>
+              </div>
+              <div class="current-time-wrapper">
+                <span class="current-time-label">Current</span>
+                <span class="current-time-value">{{ formatTimeWithUnit(job.currentTime ?? job.baselineTime, job.timeUnit) }}</span>
+              </div>
+            </div>
+            <div class="progress-bar">
+              <div 
+                class="progress-fill" 
+                :style="{ width: progressPercent + '%' }"
+              ></div>
+            </div>
+          </div>
+        </div>
+        <div class="job-actions-active">
+          <button 
+            v-if="canComplete || canCompleteLocal"
+            class="btn btn-success"
+            @click.stop="$emit('complete', job)"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            Complete Job
+          </button>
+          <template v-else>
+            <button 
+              class="btn btn-primary"
+              @click.stop="isPulledOut ? $emit('put-away') : $emit('pull-out', job)"
+              :disabled="!isPulledOut && hasPulledOutVehicle"
+            >
+              {{ isPulledOut ? 'Put Away Vehicle' : 'Pull Out Vehicle' }}
+            </button>
+            <button class="btn btn-danger" @click.stop="$emit('abandon', job)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+              Abandon
+            </button>
+          </template>
+        </div>
+      </div>
+      <template v-else>
+        <div class="image-section-active-horizontal">
+          <div class="job-image-active-horizontal">
+            <img :src="job.vehicleImage" :alt="job.vehicleName" />
+            <span class="status-badge" :class="statusClass">{{ statusText }}</span>
+          </div>
+          <h3 class="vehicle-name-active-horizontal">
+            {{ job.vehicleYear }} {{ job.vehicleName }}
+            <span v-if="job.vehicleType" class="badge badge-orange">{{ job.vehicleType }}</span>
+          </h3>
+        </div>
+        <div class="job-info-active-horizontal">
+          <div class="reward-container-active">
+            <span class="reward-label">Reward</span>
+            <span class="reward-value">${{ job.reward.toLocaleString() }}</span>
+          </div>
+          <div class="job-metrics-active">
+            <div class="goal-chip">
+              <div class="goal-chip-content">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <circle cx="12" cy="12" r="6"/>
+                  <path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>
+                </svg>
+                <div class="goal-chip-text">
+                  <span class="goal-chip-label">Goal</span>
+                  <span class="goal-chip-value">{{ job.goal }}</span>
+                </div>
+                <div class="current-time-wrapper">
+                  <span class="current-time-label">Current</span>
+                  <span class="current-time-value">{{ formatTimeWithUnit(job.currentTime ?? job.baselineTime, job.timeUnit) }}</span>
+                </div>
+              </div>
+              <div class="progress-bar">
+                <div 
+                  class="progress-fill" 
+                  :style="{ width: progressPercent + '%' }"
+                ></div>
+              </div>
+            </div>
+          </div>
+          <div class="job-actions-active-horizontal">
             <button 
               v-if="canComplete || canCompleteLocal"
               class="btn btn-success"
-              @click="$emit('complete', job)"
+              @click.stop="$emit('complete', job)"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
@@ -82,21 +216,13 @@
             </button>
             <template v-else>
               <button 
-                v-if="isPulledOut"
                 class="btn btn-primary"
-                @click="$emit('put-away')"
+                @click.stop="isPulledOut ? $emit('put-away') : $emit('pull-out', job)"
+                :disabled="!isPulledOut && hasPulledOutVehicle"
               >
-                Put Away Vehicle
+                {{ isPulledOut ? 'Put Away Vehicle' : 'Pull Out Vehicle' }}
               </button>
-              <button 
-                v-else
-                class="btn btn-primary"
-                @click="$emit('pull-out', job)"
-                :disabled="hasPulledOutVehicle"
-              >
-                Pull Out Vehicle
-              </button>
-              <button class="btn btn-danger" @click="$emit('abandon', job)">
+              <button class="btn btn-danger" @click.stop="$emit('abandon', job)">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="18" y1="6" x2="6" y2="18"/>
                   <line x1="6" y1="6" x2="18" y2="18"/>
@@ -104,25 +230,9 @@
                 Abandon
               </button>
             </template>
-          </template>
-          <template v-else>
-            <button class="btn btn-success" @click="$emit('accept', job)">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                <polyline points="22 4 12 14.01 9 11.01"/>
-              </svg>
-              Accept
-            </button>
-            <button class="btn btn-danger" @click="$emit('decline', job)">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"/>
-                <line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
-              Decline
-            </button>
-          </template>
+          </div>
         </div>
-      </div>
+      </template>
     </div>
   </div>
 </template>
@@ -295,7 +405,7 @@ watch(() => props.job, () => {
   img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
   }
   
   .status-badge {
@@ -308,15 +418,15 @@ watch(() => props.job, () => {
     font-weight: 500;
     
     &.status-active {
-      background: rgba(234, 179, 8, 0.2);
-      color: rgba(234, 179, 8, 1);
-      border: 1px solid rgba(234, 179, 8, 0.5);
+      background: rgba(234, 179, 8, 0.7);
+      color: white;
+      border: none;
     }
     
     &.status-available {
-      background: rgba(59, 130, 246, 0.2);
-      color: rgba(59, 130, 246, 1);
-      border: 1px solid rgba(59, 130, 246, 0.5);
+      background: rgba(59, 130, 246, 0.7);
+      color: white;
+      border: none;
     }
   }
 }
@@ -336,10 +446,6 @@ watch(() => props.job, () => {
     overflow-wrap: break-word;
   }
   
-  .job-id {
-    color: rgba(255, 255, 255, 0.5);
-    font-size: 0.875rem;
-  }
 }
 
 .job-card.vertical {
@@ -397,12 +503,6 @@ watch(() => props.job, () => {
       font-weight: 500;
     }
     
-    .job-id {
-      margin-left: 0;
-      white-space: nowrap;
-      font-size: 0.875rem;
-      color: rgba(255, 255, 255, 0.5);
-    }
   }
   
   .job-goal-wrapper {
@@ -477,21 +577,12 @@ watch(() => props.job, () => {
     font-size: 1rem;
     font-weight: 600;
   }
-  
-  .job-id {
-    color: rgba(255, 255, 255, 0.5);
-    font-size: 0.875rem;
-  }
 }
 
 .job-card.active .job-header {
   flex-direction: column;
   align-items: flex-start;
   gap: 0.25em;
-  
-  .job-id {
-    margin-left: 0;
-  }
 }
 
 .vehicle-type-badge {
@@ -523,6 +614,52 @@ watch(() => props.job, () => {
   
   span {
     color: white;
+  }
+}
+
+.new-job-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.new-job-info .goal-chip {
+  justify-content: space-between;
+}
+
+.reward-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.1rem;
+}
+
+.reward-label {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.reward-value {
+  font-size: 0.875rem;
+  color: rgba(34, 197, 94, 1);
+  font-weight: 600;
+}
+
+.job-deadline-compact {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.75rem;
+  padding-left: 0.25rem;
+  
+  svg {
+    flex-shrink: 0;
+    color: rgba(255, 255, 255, 0.4);
+  }
+  
+  span {
+    color: rgba(255, 255, 255, 0.5);
   }
 }
 
@@ -658,33 +795,114 @@ watch(() => props.job, () => {
 }
 
 .job-progress {
-  .progress-header {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.875rem;
-    color: rgba(255, 255, 255, 0.7);
-    margin-bottom: 0.25rem;
-  }
+  display: flex;
+  flex-direction: column;
+}
+
+.goal-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(245, 73, 0, 0.15);
+  border-radius: 0.45rem;
+  border: 1px solid rgba(245, 73, 0, 0.35);
+}
+
+.goal-chip-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  justify-content: space-between;
   
-  .progress-bar {
-    height: 0.5rem;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 0.25rem;
-    overflow: hidden;
-    
-    .progress-fill {
-      height: 100%;
-      background: rgba(245, 73, 0, 1);
-      transition: width 0.3s;
-    }
+  svg {
+    color: rgba(245, 73, 0, 1);
+    flex-shrink: 0;
   }
-  
-  .progress-goal {
-    display: block;
-    font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.5);
-    margin-top: 0.25rem;
-  }
+}
+
+.goal-chip-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  flex: 1;
+}
+
+.goal-chip-label {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.goal-chip-value {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 600;
+}
+
+.current-time-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.current-time-label {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.current-time-value {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.goal-performance {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.goal-performance .metric {
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 0.45rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.goal-performance .metric-label {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.goal-performance .metric-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+}
+
+.goal-performance .metric.goal .metric-value {
+  color: rgba(245, 73, 0, 1);
+}
+
+.goal-chip .progress-bar {
+  width: 100%;
+  height: 0.375rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 0.1875rem;
+  overflow: hidden;
+  margin-top: 0.125rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background: rgba(245, 73, 0, 1);
+  transition: width 0.3s;
 }
 
 .job-actions {
@@ -692,7 +910,6 @@ watch(() => props.job, () => {
   gap: 0.5rem;
   margin-top: auto;
   flex-shrink: 0;
-  position: relative;
 }
 
 .btn {
@@ -702,12 +919,13 @@ watch(() => props.job, () => {
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background-color 0.2s, opacity 0.2s;
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  box-sizing: border-box;
   
   svg {
     flex-shrink: 0;
@@ -724,6 +942,8 @@ watch(() => props.job, () => {
     &:disabled {
       opacity: 0.5;
       cursor: not-allowed;
+      pointer-events: none;
+      flex-shrink: 0;
     }
   }
   
@@ -751,6 +971,430 @@ watch(() => props.job, () => {
     
     &:hover {
       background: rgba(239, 68, 68, 0.9);
+    }
+  }
+}
+
+.job-content-active {
+  &.vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  &:not(.vertical) {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1.5rem;
+    align-items: stretch;
+  }
+}
+
+.job-content-active-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.job-image-active {
+  position: relative;
+  width: 100%;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.5);
+  
+  img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  
+  .status-badge {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    
+    &.status-active {
+      background: rgba(234, 179, 8, 0.7);
+      color: white;
+      border: none;
+    }
+    
+    &.status-available {
+      background: rgba(59, 130, 246, 0.7);
+      color: white;
+      border: none;
+    }
+  }
+}
+
+.image-section-active-horizontal {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex-shrink: 0;
+  width: 16rem;
+  max-width: 16rem;
+}
+
+.job-image-active-horizontal {
+  position: relative;
+  width: 16rem;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.5);
+  
+  img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  
+  .status-badge {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    
+    &.status-active {
+      background: rgba(234, 179, 8, 0.7);
+      color: white;
+      border: none;
+    }
+    
+    &.status-available {
+      background: rgba(59, 130, 246, 0.7);
+      color: white;
+      border: none;
+    }
+  }
+}
+
+.vehicle-name-active {
+  margin: 0;
+  color: white;
+  font-size: 1.25rem;
+  font-weight: 600;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.5;
+  
+  .badge {
+    display: inline-block;
+    margin-left: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    vertical-align: middle;
+    
+    &.badge-orange {
+      background: rgba(245, 73, 0, 0.2);
+      color: rgba(245, 73, 0, 1);
+      border: 1px solid rgba(245, 73, 0, 0.5);
+    }
+  }
+}
+
+.vehicle-name-active-horizontal {
+  margin: 0;
+  color: white;
+  font-size: 1.25rem;
+  font-weight: 600;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.5;
+  
+  .badge {
+    display: inline-block;
+    margin-left: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    vertical-align: middle;
+    
+    &.badge-orange {
+      background: rgba(245, 73, 0, 0.2);
+      color: rgba(245, 73, 0, 1);
+      border: 1px solid rgba(245, 73, 0, 0.5);
+    }
+  }
+}
+
+.reward-container-active {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(34, 197, 94, 0.15);
+  border-radius: 0.45rem;
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  
+  .reward-label {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+  }
+  
+  .reward-value {
+    font-size: 1.125rem;
+    color: rgba(34, 197, 94, 1);
+    font-weight: 600;
+  }
+}
+
+.job-info-active-horizontal {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.job-metrics-active {
+  display: flex;
+  flex-direction: column;
+}
+
+.job-actions-active {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  
+  .btn {
+    width: 100%;
+  }
+}
+
+.job-actions-active-horizontal {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: auto;
+  
+  .btn {
+    flex: 0 0 calc(50% - 0.25rem);
+    min-width: 0;
+    
+    &:disabled {
+      flex: 0 0 calc(50% - 0.25rem);
+    }
+  }
+}
+
+.job-content-new {
+  &.vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  &:not(.vertical) {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1.5rem;
+    align-items: stretch;
+  }
+}
+
+.job-content-new-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.job-image-new {
+  position: relative;
+  width: 100%;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.5);
+  
+  img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  
+  .status-badge {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    
+    &.status-active {
+      background: rgba(234, 179, 8, 0.7);
+      color: white;
+      border: none;
+    }
+    
+    &.status-available {
+      background: rgba(59, 130, 246, 0.7);
+      color: white;
+      border: none;
+    }
+  }
+}
+
+.image-section-new-horizontal {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex-shrink: 0;
+  width: 16rem;
+  max-width: 16rem;
+}
+
+.job-image-new-horizontal {
+  position: relative;
+  width: 16rem;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.5);
+  
+  img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  
+  .status-badge {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    
+    &.status-active {
+      background: rgba(234, 179, 8, 0.7);
+      color: white;
+      border: none;
+    }
+    
+    &.status-available {
+      background: rgba(59, 130, 246, 0.7);
+      color: white;
+      border: none;
+    }
+  }
+}
+
+.vehicle-name-new {
+  margin: 0;
+  color: white;
+  font-size: 1.25rem;
+  font-weight: 600;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.5;
+  
+  .badge {
+    display: inline-block;
+    margin-left: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    vertical-align: middle;
+    
+    &.badge-orange {
+      background: rgba(245, 73, 0, 0.2);
+      color: rgba(245, 73, 0, 1);
+      border: 1px solid rgba(245, 73, 0, 0.5);
+    }
+  }
+}
+
+.vehicle-name-new-horizontal {
+  margin: 0;
+  color: white;
+  font-size: 1.25rem;
+  font-weight: 600;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.5;
+  
+  .badge {
+    display: inline-block;
+    margin-left: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    vertical-align: middle;
+    
+    &.badge-orange {
+      background: rgba(245, 73, 0, 0.2);
+      color: rgba(245, 73, 0, 1);
+      border: 1px solid rgba(245, 73, 0, 0.5);
+    }
+  }
+}
+
+.reward-container-new {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(34, 197, 94, 0.15);
+  border-radius: 0.45rem;
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  
+  .reward-label {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+  }
+  
+  .reward-value {
+    font-size: 1.125rem;
+    color: rgba(34, 197, 94, 1);
+    font-weight: 600;
+  }
+}
+
+.job-info-new-horizontal {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.job-metrics-new {
+  display: flex;
+  flex-direction: column;
+}
+
+.job-actions-new {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  
+  .btn {
+    width: 100%;
+  }
+}
+
+.job-actions-new-horizontal {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: auto;
+  
+  .btn {
+    flex: 0 0 calc(50% - 0.25rem);
+    min-width: 0;
+    
+    &:disabled {
+      flex: 0 0 calc(50% - 0.25rem);
     }
   }
 }
