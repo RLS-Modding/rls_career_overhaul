@@ -26,6 +26,12 @@ local function loadBusinessVehicles(businessId)
   local data = jsonReadFile(filePath) or {}
   businessVehicles[businessId] = data.vehicles or {}
   
+  for _, vehicle in ipairs(businessVehicles[businessId]) do
+    if vehicle.vehicleId then
+      vehicle.vehicleId = tonumber(vehicle.vehicleId) or vehicle.vehicleId
+    end
+  end
+  
   return businessVehicles[businessId]
 end
 
@@ -55,6 +61,7 @@ local function storeVehicle(businessId, vehicleData)
   local vehicles = loadBusinessVehicles(businessId)
   
   local vehicleId = vehicleData.vehicleId or (#vehicles + 1)
+  vehicleId = tonumber(vehicleId) or vehicleId
   vehicleData.vehicleId = vehicleId
   vehicleData.storedTime = os.time()
   
@@ -67,10 +74,12 @@ end
 local function removeVehicle(businessId, vehicleId)
   if not businessId or not vehicleId then return false end
   
+  vehicleId = tonumber(vehicleId) or vehicleId
   local vehicles = loadBusinessVehicles(businessId)
   
   for i, vehicle in ipairs(vehicles) do
-    if vehicle.vehicleId == vehicleId then
+    local vehId = tonumber(vehicle.vehicleId) or vehicle.vehicleId
+    if vehId == vehicleId then
       table.remove(vehicles, i)
       businessVehicles[businessId] = vehicles
       return true
@@ -81,10 +90,14 @@ local function removeVehicle(businessId, vehicleId)
 end
 
 local function getVehicleById(businessId, vehicleId)
+  if not businessId or not vehicleId then return nil end
+  
+  vehicleId = tonumber(vehicleId) or vehicleId
   local vehicles = loadBusinessVehicles(businessId)
   
   for _, vehicle in ipairs(vehicles) do
-    if vehicle.vehicleId == vehicleId then
+    local vehId = tonumber(vehicle.vehicleId) or vehicle.vehicleId
+    if vehId == vehicleId then
       return vehicle
     end
   end
@@ -163,12 +176,16 @@ local function getBusinessGaragePosRot(businessId, veh)
 end
 
 local function spawnBusinessVehicle(businessId, vehicleId)
+  vehicleId = tonumber(vehicleId) or vehicleId
+  
   local vehicle = getVehicleById(businessId, vehicleId)
   if not vehicle then 
+    log("E", "businessInventory", "spawnBusinessVehicle: Vehicle not found for businessId=" .. tostring(businessId) .. ", vehicleId=" .. tostring(vehicleId))
     return nil 
   end
   
   if not vehicle.vehicleConfig then 
+    log("E", "businessInventory", "spawnBusinessVehicle: Vehicle missing vehicleConfig for businessId=" .. tostring(businessId) .. ", vehicleId=" .. tostring(vehicleId))
     return nil 
   end
   
@@ -176,6 +193,7 @@ local function spawnBusinessVehicle(businessId, vehicleId)
   local configKey = vehicle.vehicleConfig.key or vehicle.config_key
   
   if not modelKey or not configKey then 
+    log("E", "businessInventory", "spawnBusinessVehicle: Vehicle missing modelKey or configKey. modelKey=" .. tostring(modelKey) .. ", configKey=" .. tostring(configKey) .. ", businessId=" .. tostring(businessId) .. ", vehicleId=" .. tostring(vehicleId))
     return nil 
   end
   
@@ -203,6 +221,7 @@ local function spawnBusinessVehicle(businessId, vehicleId)
     core_vehicleBridge.executeAction(vehObj, 'initPartConditions', vehicle.partConditions, nil, nil, nil, nil)
   end
   if not vehObj then 
+    log("E", "businessInventory", "spawnBusinessVehicle: Failed to spawn vehicle. modelKey=" .. tostring(modelKey) .. ", configKey=" .. tostring(configKey) .. ", businessId=" .. tostring(businessId) .. ", vehicleId=" .. tostring(vehicleId))
     return nil 
   end
   
@@ -226,6 +245,9 @@ local function teleportToBusinessGarage(businessId, veh, resetVeh)
 end
 
 local function removeBusinessVehicleObject(businessId, vehicleId)
+  if not businessId or not vehicleId then return end
+  
+  vehicleId = tonumber(vehicleId) or vehicleId
   if not spawnedBusinessVehicles[businessId] or not spawnedBusinessVehicles[businessId][vehicleId] then
     return
   end
@@ -240,16 +262,30 @@ local function removeBusinessVehicleObject(businessId, vehicleId)
 end
 
 local function pullOutVehicle(businessId, vehicleId)
-  if not businessId or not vehicleId then return false end
+  if not businessId or not vehicleId then 
+    log("E", "businessInventory", "pullOutVehicle: Missing parameters. businessId=" .. tostring(businessId) .. ", vehicleId=" .. tostring(vehicleId))
+    return false 
+  end
+  
+  vehicleId = tonumber(vehicleId) or vehicleId
   
   local vehicle = getVehicleById(businessId, vehicleId)
   if not vehicle then 
+    log("E", "businessInventory", "pullOutVehicle: Vehicle not found. businessId=" .. tostring(businessId) .. ", vehicleId=" .. tostring(vehicleId))
+    local vehicles = loadBusinessVehicles(businessId)
+    log("D", "businessInventory", "pullOutVehicle: Available vehicles for businessId=" .. tostring(businessId) .. ": " .. tostring(#vehicles))
+    for i, v in ipairs(vehicles) do
+      log("D", "businessInventory", "pullOutVehicle: Vehicle[" .. tostring(i) .. "] vehicleId=" .. tostring(v.vehicleId) .. " (type: " .. type(v.vehicleId) .. ")")
+    end
     return false 
   end
   
   local existingVehicle = pulledOutVehicles[businessId]
-  if existingVehicle and existingVehicle.vehicleId ~= vehicleId then
-    removeBusinessVehicleObject(businessId, existingVehicle.vehicleId)
+  if existingVehicle then
+    local existingId = tonumber(existingVehicle.vehicleId) or existingVehicle.vehicleId
+    if existingId ~= vehicleId then
+      removeBusinessVehicleObject(businessId, existingVehicle.vehicleId)
+    end
   end
   
   pulledOutVehicles[businessId] = vehicle
@@ -257,6 +293,11 @@ local function pullOutVehicle(businessId, vehicleId)
   local vehObj = spawnBusinessVehicle(businessId, vehicleId)
   if vehObj then
     teleportToBusinessGarage(businessId, vehObj, false)
+    log("D", "businessInventory", "pullOutVehicle: Successfully pulled out vehicle. businessId=" .. tostring(businessId) .. ", vehicleId=" .. tostring(vehicleId))
+  else
+    log("E", "businessInventory", "pullOutVehicle: Failed to spawn vehicle. businessId=" .. tostring(businessId) .. ", vehicleId=" .. tostring(vehicleId))
+    pulledOutVehicles[businessId] = nil
+    return false
   end
   
   return true
@@ -275,6 +316,9 @@ local function putAwayVehicle(businessId)
 end
 
 local function getSpawnedVehicleId(businessId, vehicleId)
+  if not businessId or not vehicleId then return nil end
+  
+  vehicleId = tonumber(vehicleId) or vehicleId
   if spawnedBusinessVehicles[businessId] and spawnedBusinessVehicles[businessId][vehicleId] then
     return spawnedBusinessVehicles[businessId][vehicleId]
   end
@@ -290,6 +334,9 @@ local function getBusinessJobIdentifier(businessId, jobId)
 end
 
 local function getJobIdFromVehicle(businessId, vehicleId)
+  if not businessId or not vehicleId then return nil end
+  
+  vehicleId = tonumber(vehicleId) or vehicleId
   local vehicle = getVehicleById(businessId, vehicleId)
   if vehicle and vehicle.jobId then
     return vehicle.jobId
@@ -326,10 +373,12 @@ end
 local function updateVehicle(businessId, vehicleId, vehicleData)
   if not businessId or not vehicleId or not vehicleData then return false end
   
+  vehicleId = tonumber(vehicleId) or vehicleId
   local vehicles = loadBusinessVehicles(businessId)
   
   for i, vehicle in ipairs(vehicles) do
-    if vehicle.vehicleId == vehicleId then
+    local vehId = tonumber(vehicle.vehicleId) or vehicle.vehicleId
+    if vehId == vehicleId then
       for key, value in pairs(vehicleData) do
         vehicle[key] = value
       end
