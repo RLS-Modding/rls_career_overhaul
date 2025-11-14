@@ -164,6 +164,17 @@
               <ul class="nav-list">
                 <li>
                   <button 
+                    :class="['nav-item', { active: store.vehicleView === 'parts' }]"
+                    @click="store.switchVehicleView('parts')"
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                    </svg>
+                    <span v-if="!isCollapsed">Parts</span>
+                  </button>
+                </li>
+                <li>
+                  <button 
                     :class="['nav-item', { active: store.vehicleView === 'tuning' }]"
                     @click="store.switchVehicleView('tuning')"
                   >
@@ -172,17 +183,6 @@
                       <path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24"/>
                     </svg>
                     <span v-if="!isCollapsed">Tuning</span>
-                  </button>
-                </li>
-                <li>
-                  <button 
-                    :class="['nav-item', { active: store.vehicleView === 'parts' }]"
-                    @click="store.switchVehicleView('parts')"
-                  >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
-                    </svg>
-                    <span v-if="!isCollapsed">Parts</span>
                   </button>
                 </li>
               </ul>
