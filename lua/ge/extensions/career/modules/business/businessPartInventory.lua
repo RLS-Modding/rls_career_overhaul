@@ -27,11 +27,10 @@ local function loadBusinessParts(businessId)
   return businessParts[businessId]
 end
 
-local function saveBusinessParts(businessId)
-  if not businessId or not businessParts[businessId] then return end
+local function saveBusinessParts(businessId, currentSavePath)
+  if not businessId or not businessParts[businessId] or not currentSavePath then return end
   
-  local filePath = getBusinessPartsPath(businessId)
-  if not filePath then return end
+  local filePath = currentSavePath .. "/career/rls_career/businesses/" .. businessId .. "/parts.json"
   
   local dirPath = string.match(filePath, "^(.*)/[^/]+$")
   if dirPath and not FS:directoryExists(dirPath) then
@@ -60,7 +59,6 @@ local function addPart(businessId, partData)
   table.insert(parts, partData)
   businessParts[businessId] = parts
   
-  saveBusinessParts(businessId)
   return true, partId
 end
 
@@ -73,7 +71,6 @@ local function removePart(businessId, partId)
     if part.partId == partId then
       table.remove(parts, i)
       businessParts[businessId] = parts
-      saveBusinessParts(businessId)
       return true
     end
   end
@@ -120,12 +117,19 @@ function M.onCareerActivated()
   businessParts = {}
 end
 
+local function onSaveCurrentSaveSlot(currentSavePath)
+  for businessId, _ in pairs(businessParts) do
+    saveBusinessParts(businessId, currentSavePath)
+  end
+end
+
 M.getBusinessParts = getBusinessParts
 M.addPart = addPart
 M.removePart = removePart
 M.getPartById = getPartById
 M.sellPart = sellPart
 M.getPartsByVehicle = getPartsByVehicle
+M.onSaveCurrentSaveSlot = onSaveCurrentSaveSlot
 
 return M
 

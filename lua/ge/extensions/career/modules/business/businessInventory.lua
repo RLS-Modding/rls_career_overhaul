@@ -29,11 +29,10 @@ local function loadBusinessVehicles(businessId)
   return businessVehicles[businessId]
 end
 
-local function saveBusinessVehicles(businessId)
-  if not businessId or not businessVehicles[businessId] then return end
+local function saveBusinessVehicles(businessId, currentSavePath)
+  if not businessId or not businessVehicles[businessId] or not currentSavePath then return end
   
-  local filePath = getBusinessVehiclesPath(businessId)
-  if not filePath then return end
+  local filePath = currentSavePath .. "/career/rls_career/businesses/" .. businessId .. "/vehicles.json"
   
   local dirPath = string.match(filePath, "^(.*)/[^/]+$")
   if dirPath and not FS:directoryExists(dirPath) then
@@ -62,7 +61,6 @@ local function storeVehicle(businessId, vehicleData)
   table.insert(vehicles, vehicleData)
   businessVehicles[businessId] = vehicles
   
-  saveBusinessVehicles(businessId)
   return true, vehicleId
 end
 
@@ -75,7 +73,6 @@ local function removeVehicle(businessId, vehicleId)
     if vehicle.vehicleId == vehicleId then
       table.remove(vehicles, i)
       businessVehicles[businessId] = vehicles
-      saveBusinessVehicles(businessId)
       return true
     end
   end
@@ -324,6 +321,12 @@ function M.onCareerActivated()
   spawnedBusinessVehicles = {}
 end
 
+local function onSaveCurrentSaveSlot(currentSavePath)
+  for businessId, _ in pairs(businessVehicles) do
+    saveBusinessVehicles(businessId, currentSavePath)
+  end
+end
+
 local function updateVehicle(businessId, vehicleId, vehicleData)
   if not businessId or not vehicleId or not vehicleData then return false end
   
@@ -336,7 +339,6 @@ local function updateVehicle(businessId, vehicleId, vehicleData)
         vehicle[key] = value
       end
       businessVehicles[businessId] = vehicles
-      saveBusinessVehicles(businessId)
       return true
     end
   end
@@ -363,6 +365,7 @@ M.getBusinessVehicleIdentifier = getBusinessVehicleIdentifier
 M.getBusinessJobIdentifier = getBusinessJobIdentifier
 M.getJobIdFromVehicle = getJobIdFromVehicle
 M.getBusinessVehicleFromSpawnedId = getBusinessVehicleFromSpawnedId
+M.onSaveCurrentSaveSlot = onSaveCurrentSaveSlot
 
 return M
 

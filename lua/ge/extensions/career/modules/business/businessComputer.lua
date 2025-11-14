@@ -1080,6 +1080,8 @@ local function purchaseCartItems(businessId, accountId, cartData)
     end
   end
 
+  career_saveSystem.saveCurrent()
+
   return true
 end
 

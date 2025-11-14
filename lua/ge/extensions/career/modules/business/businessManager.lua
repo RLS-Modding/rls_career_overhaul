@@ -27,9 +27,7 @@ local function loadPurchasedBusinesses()
 end
 
 -- Save purchased businesses to save file
-local function savePurchasedBusinesses()
-  if not career_career.isActive() then return end
-  local _, currentSavePath = career_saveSystem.getCurrentSaveSlot()
+local function savePurchasedBusinesses(currentSavePath)
   if not currentSavePath then return end
   
   local filePath = currentSavePath .. "/career/rls_career/businesses.json"
@@ -51,7 +49,6 @@ local function addPurchasedBusiness(businessType, businessId)
     purchasedBusinesses[businessType] = {}
   end
   purchasedBusinesses[businessType][businessId] = true
-  savePurchasedBusinesses()
   
   -- Create business account
   if career_modules_bank then
@@ -64,6 +61,8 @@ local function addPurchasedBusiness(businessType, businessId)
   if businessCallbacks[businessType] and businessCallbacks[businessType].onPurchase then
     businessCallbacks[businessType].onPurchase(businessId)
   end
+  
+  career_saveSystem.saveCurrent()
 end
 
 -- Show purchase prompt for a business
@@ -180,6 +179,11 @@ function M.onCareerModulesActivated()
   -- Callbacks can be registered here or in individual business modules' onCareerActivated
 end
 
+-- Hook called when saving current save slot
+local function onSaveCurrentSaveSlot(currentSavePath)
+  savePurchasedBusinesses(currentSavePath)
+end
+
 -- Public API
 M.registerBusinessCallback = registerBusinessCallback
 M.isPurchasedBusiness = isPurchasedBusiness
@@ -191,6 +195,7 @@ M.cancelBusinessPurchase = cancelBusinessPurchase
 M.openBusinessMenu = openBusinessMenu
 M.getPurchasedBusinesses = getPurchasedBusinesses
 M.getBusinessGarageId = getBusinessGarageId
+M.onSaveCurrentSaveSlot = onSaveCurrentSaveSlot
 
 return M
 
