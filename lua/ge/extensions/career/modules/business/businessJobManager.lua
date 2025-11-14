@@ -1,6 +1,6 @@
 local M = {}
 
-M.dependencies = {'career_career', 'career_saveSystem', 'career_modules_business_businessInventory', 'career_modules_payment', 'career_modules_bank'}
+M.dependencies = {'career_career', 'career_saveSystem', 'career_modules_business_businessInventory', 'career_modules_payment', 'career_modules_bank', 'gameplay_events_freeroam_leaderboardManager'}
 
 local jobGenerators = {}
 local businessJobs = {}
@@ -149,6 +149,56 @@ local function declineJob(businessId, jobId)
   return false
 end
 
+local function getJobCurrentTime(businessId, jobId)
+  local job = getJobById(businessId, jobId)
+  if not job or not job.raceLabel then
+    return nil
+  end
+  
+  local vehicles = career_modules_business_businessInventory.getBusinessVehicles(businessId)
+  for _, vehicle in ipairs(vehicles) do
+    if vehicle.jobId == jobId then
+      local businessVehicleId = career_modules_business_businessInventory.getBusinessVehicleIdentifier(businessId, vehicle.vehicleId)
+      local leaderboardManager = require('gameplay/events/freeroam/leaderboardManager')
+      local leaderboardEntry = leaderboardManager.getLeaderboardEntry(businessVehicleId, job.raceLabel)
+      if leaderboardEntry and leaderboardEntry.time then
+        return leaderboardEntry.time
+      end
+      break
+    end
+  end
+  
+  return job.currentTime or job.baseTime
+end
+
+local function canCompleteJob(businessId, jobId)
+  local job = getJobById(businessId, jobId)
+  if not job then return false end
+  
+  if job.status ~= "active" then return false end
+  
+  if not job.raceType or not job.targetTime then return false end
+  
+  local currentTime = getJobCurrentTime(businessId, jobId)
+  if not currentTime then return false end
+  
+  -- Leaderboard times are always in seconds
+  -- Job targetTime might be in seconds or minutes depending on race type
+  -- For track races, if targetTime seems to be in minutes (value > 1000), convert to seconds
+  local targetTime = job.targetTime
+  if (job.raceType == "track" or job.raceType == "trackAlt") and targetTime > 1000 then
+    -- Assume targetTime is in minutes, convert to seconds for comparison
+    targetTime = targetTime * 60
+  end
+  
+  -- For drag races and track races, time must be <= targetTime (lower is better)
+  if job.raceType == "drag" or job.raceType == "track" or job.raceType == "trackAlt" then
+    return currentTime <= targetTime
+  end
+  
+  return false
+end
+
 local function completeJob(businessId, jobId)
   local jobs = loadBusinessJobs(businessId)
   
@@ -162,7 +212,55 @@ local function completeJob(businessId, jobId)
   
   if not jobIndex then return false end
   
-  local job = table.remove(jobs.active, jobIndex)
+  local job = jobs.active[jobIndex]
+  
+  -- Verify time requirement is met
+  if not canCompleteJob(businessId, jobId) then
+    return false
+  end
+  
+  -- Pay reward to business account
+  local reward = math.floor((job.budget or 5000) * 3)
+  if career_modules_bank and career_modules_payment then
+    local businessType = job.businessType or "tuningShop"
+    local businessAccount = career_modules_bank.getBusinessAccount(businessType, businessId)
+    if businessAccount then
+      local accountId = businessAccount.id
+      local success = career_modules_payment.reward({
+        money = {
+          amount = reward
+        }
+      }, {
+        label = "Job Completion: " .. (job.raceLabel or "Race"),
+        tags = {"job", "completion", "business"}
+      }, accountId)
+      if not success then
+        log("W", "businessJobManager", "completeJob: Failed to pay reward to business account")
+        return false
+      end
+    end
+  end
+  
+  -- Remove vehicle associated with this job (same as abandonJob)
+  local vehicles = career_modules_business_businessInventory.getBusinessVehicles(businessId)
+  local vehicleToRemove = nil
+  for _, vehicle in ipairs(vehicles) do
+    if vehicle.jobId == jobId then
+      vehicleToRemove = vehicle
+      break
+    end
+  end
+  
+  if vehicleToRemove then
+    local pulledOutVehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
+    if pulledOutVehicle and pulledOutVehicle.vehicleId == vehicleToRemove.vehicleId then
+      career_modules_business_businessInventory.putAwayVehicle(businessId)
+    end
+    career_modules_business_businessInventory.removeVehicle(businessId, vehicleToRemove.vehicleId)
+    log("D", "businessJobManager", "completeJob: Removed vehicle " .. tostring(vehicleToRemove.vehicleId) .. " for completed job")
+  end
+  
+  job = table.remove(jobs.active, jobIndex)
   job.status = "completed"
   job.completedTime = os.time()
   
@@ -267,6 +365,8 @@ M.declineJob = declineJob
 M.completeJob = completeJob
 M.abandonJob = abandonJob
 M.getJobById = getJobById
+M.canCompleteJob = canCompleteJob
+M.getJobCurrentTime = getJobCurrentTime
 
 return M
 

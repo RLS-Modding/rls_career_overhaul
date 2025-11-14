@@ -23,9 +23,11 @@
             :key="job.id"
             :job="job"
             :is-active="true"
+            :business-id="store.businessId"
             @pull-out="handlePullOut"
             @put-away="handlePutAway"
             @abandon="handleAbandon"
+            @complete="handleComplete"
           />
         </div>
       </div>
@@ -98,6 +100,10 @@ const handleAccept = async (job) => {
 
 const handleDecline = async (job) => {
   await store.declineJob(parseInt(job.id))
+}
+
+const handleComplete = async (job) => {
+  await store.completeJob(parseInt(job.id))
 }
 </script>
 

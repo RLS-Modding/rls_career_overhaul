@@ -57,7 +57,7 @@
         <div v-if="isActive" class="job-progress">
           <div class="progress-header">
             <span>Performance</span>
-            <span>{{ formatTime(job.currentTime) }}{{ job.timeUnit }}</span>
+            <span>{{ formatTimeWithUnit(job.currentTime, job.timeUnit) }}</span>
           </div>
           <div class="progress-bar">
             <div 
@@ -65,28 +65,41 @@
               :style="{ width: progressPercent + '%' }"
             ></div>
           </div>
-          <span class="progress-goal">Goal: {{ formatTime(job.goalTime) }}{{ job.timeUnit }}</span>
+          <span class="progress-goal">Goal: {{ formatTimeWithUnit(job.goalTime, job.timeUnit) }}</span>
         </div>
         <div class="job-actions">
           <template v-if="isActive">
             <button 
-              v-if="!isPulledOut"
-              class="btn btn-primary"
-              @click="$emit('pull-out', job)"
-              :disabled="hasPulledOutVehicle"
+              v-if="canComplete || canCompleteLocal"
+              class="btn btn-success"
+              @click="$emit('complete', job)"
             >
-              Pull Out Vehicle
-            </button>
-            <button v-else class="btn btn-secondary" @click="$emit('put-away')">
-              Put Away Vehicle
-            </button>
-            <button class="btn btn-danger" @click="$emit('abandon', job)">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"/>
-                <line x1="6" y1="6" x2="18" y2="18"/>
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
               </svg>
-              Abandon
+              Complete Job
             </button>
+            <template v-else>
+              <button 
+                v-if="!isPulledOut"
+                class="btn btn-primary"
+                @click="$emit('pull-out', job)"
+                :disabled="hasPulledOutVehicle"
+              >
+                Pull Out Vehicle
+              </button>
+              <button v-else class="btn btn-secondary" @click="$emit('put-away')">
+                Put Away Vehicle
+              </button>
+              <button class="btn btn-danger" @click="$emit('abandon', job)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+                Abandon
+              </button>
+            </template>
           </template>
           <template v-else>
             <button class="btn btn-success" @click="$emit('accept', job)">
@@ -111,7 +124,7 @@
 </template>
 
 <script setup>
-import { computed } from "vue"
+import { computed, ref, onMounted, watch } from "vue"
 import { useBusinessComputerStore } from "../../stores/businessComputerStore"
 
 const props = defineProps({
@@ -120,10 +133,36 @@ const props = defineProps({
   isVertical: {
     type: Boolean,
     default: false
-  }
+  },
+  businessId: String
 })
 
+const emit = defineEmits(['pull-out', 'put-away', 'abandon', 'accept', 'decline', 'complete'])
+
 const store = useBusinessComputerStore()
+const canComplete = ref(false)
+
+const canCompleteLocal = computed(() => {
+  if (!props.isActive || props.job.currentTime === undefined || props.job.currentTime === null || props.job.goalTime === undefined || props.job.goalTime === null) {
+    return false
+  }
+  
+  // For track races and drag races, lower time is better (currentTime <= goalTime)
+  // Both times should be in the same unit (seconds from leaderboard)
+  if (props.job.raceType === "track" || props.job.raceType === "trackAlt" || props.job.raceType === "drag") {
+    // Ensure we have valid numbers
+    const currentTime = Number(props.job.currentTime)
+    const goalTime = Number(props.job.goalTime)
+    
+    if (isNaN(currentTime) || isNaN(goalTime) || goalTime <= 0) {
+      return false
+    }
+    
+    return currentTime <= goalTime
+  }
+  
+  return false
+})
 
 const statusText = computed(() => {
   return props.isActive ? "In Progress" : "Available"
@@ -149,11 +188,65 @@ const hasPulledOutVehicle = computed(() => {
 })
 
 const formatTime = (time) => {
-  if (typeof time === 'number') {
-    return time.toFixed(1)
+  if (typeof time !== 'number' || isNaN(time)) {
+    return time || '0'
   }
-  return time
+  
+  // If time is 60 seconds or more, format as "X min Y s" or just "X min" if seconds are 0
+  if (time >= 60) {
+    const minutes = Math.floor(time / 60)
+    const seconds = Math.round(time % 60)
+    // Only show seconds if they're significant (>= 1)
+    if (seconds >= 1) {
+      return `${minutes} min ${seconds} s`
+    } else {
+      return `${minutes} min`
+    }
+  }
+  
+  // Otherwise show as seconds rounded to nearest integer
+  return Math.round(time) + ' s'
 }
+
+const formatTimeWithUnit = (time, timeUnit) => {
+  if (typeof time !== 'number' || isNaN(time)) {
+    return (time || '0') + (timeUnit || '')
+  }
+  
+  // Times are always stored in seconds in the backend
+  // Format them appropriately regardless of timeUnit
+  const formatted = formatTime(time)
+  
+  // formatTime already includes units, so just return it
+  return formatted
+}
+
+const checkCanComplete = async () => {
+  if (!props.isActive || !props.businessId || !props.job.jobId) {
+    canComplete.value = false
+    return
+  }
+  
+  try {
+    const result = await lua.career_modules_business_businessComputer.canCompleteJob(props.businessId, props.job.jobId)
+    canComplete.value = result === true
+  } catch (error) {
+    console.error("Error checking if job can be completed:", error)
+    canComplete.value = false
+  }
+}
+
+onMounted(() => {
+  checkCanComplete()
+})
+
+watch(() => [props.isActive, props.job.currentTime, props.job.goalTime, props.job.jobId], () => {
+  checkCanComplete()
+}, { immediate: false })
+
+watch(() => props.job, () => {
+  checkCanComplete()
+}, { deep: true })
 </script>
 
 <style scoped lang="scss">

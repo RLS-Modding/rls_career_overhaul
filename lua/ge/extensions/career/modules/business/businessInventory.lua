@@ -326,6 +326,24 @@ local function getSpawnedVehicleId(businessId, vehicleId)
   return nil
 end
 
+local function getBusinessVehicleIdentifier(businessId, vehicleId)
+  return "business_" .. tostring(businessId) .. "_" .. tostring(vehicleId)
+end
+
+local function getBusinessVehicleFromSpawnedId(spawnedVehicleId)
+  if not spawnedVehicleId then return nil, nil end
+  
+  for businessId, vehicles in pairs(spawnedBusinessVehicles) do
+    for vehicleId, spawnedId in pairs(vehicles) do
+      if spawnedId == spawnedVehicleId then
+        return businessId, vehicleId
+      end
+    end
+  end
+  
+  return nil, nil
+end
+
 function M.onCareerActivated()
   businessVehicles = {}
   pulledOutVehicles = {}
@@ -367,6 +385,8 @@ M.spawnBusinessVehicle = spawnBusinessVehicle
 M.teleportToBusinessGarage = teleportToBusinessGarage
 M.removeBusinessVehicleObject = removeBusinessVehicleObject
 M.getSpawnedVehicleId = getSpawnedVehicleId
+M.getBusinessVehicleIdentifier = getBusinessVehicleIdentifier
+M.getBusinessVehicleFromSpawnedId = getBusinessVehicleFromSpawnedId
 
 return M
 

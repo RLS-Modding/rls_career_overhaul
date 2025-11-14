@@ -182,82 +182,96 @@ local function resetVehicleToOriginal(businessId, vehicleId)
   local vehObj = getBusinessVehicleObject(businessId, vehicleId)
   if not vehObj then return false end
   
-  -- Get original vehicle state from inventory
-  local vehicle = career_modules_business_businessInventory.getVehicleById(businessId, vehicleId)
-  if not vehicle or not vehicle.vehicleConfig then return false end
-  
-  local modelKey = vehicle.vehicleConfig.model_key or vehicle.model_key
-  if not modelKey then return false end
-  
-  -- Ensure initial vehicle state is stored (from when vehicle was first pulled out)
-  if not initialVehicles[businessId] then
-    if not initializePreviewVehicle(businessId, vehicleId) then
-      return false
-    end
-  end
-  
-  -- Use the stored initial vehicle config (baseline from inventory)
-  local initialVehicle = initialVehicles[businessId]
-  if not initialVehicle or not initialVehicle.config then
-    return false
-  end
-  
-  local originalConfig = deepcopy(initialVehicle.config)
-  
-  -- Include variables in config (they should be part of config, not set separately)
-  if initialVehicle.vars then
-    originalConfig.vars = deepcopy(initialVehicle.vars)
-  end
-  
-  local vehId = vehObj:getID()
-  
-  -- Store fuel levels before replacing vehicle
-  storeFuelLevels(vehObj, function(storedFuelLevels)
-    local additionalVehicleData = {spawnWithEngineRunning = false}
-    core_vehicle_manager.queueAdditionalVehicleData(additionalVehicleData, vehId)
+  -- Use job system with delay to ensure inventory has been fully updated (prevents race conditions)
+  core_jobsystem.create(function(job)
+    job.sleep(0.5)
     
-    local spawnOptions = {}
-    spawnOptions.config = originalConfig
-    spawnOptions.keepOtherVehRotation = true
+    -- Get current vehicle state from inventory (always use current state, not cached)
+    local vehicle = career_modules_business_businessInventory.getVehicleById(businessId, vehicleId)
+    if not vehicle or not vehicle.vehicleConfig then return end
     
-    -- Replace vehicle with original config (includes vars)
-    core_vehicles.replaceVehicle(modelKey, spawnOptions, vehObj)
+    local modelKey = vehicle.vehicleConfig.model_key or vehicle.model_key
+    if not modelKey then return end
     
-    -- Apply original part conditions from initial state
-    if initialVehicle.partConditions then
-      core_vehicleBridge.executeAction(vehObj, 'initPartConditions', initialVehicle.partConditions, nil, nil, nil, nil)
+    -- Always reload config from current inventory state (includes any purchased parts)
+    -- Use vehicle.config if it exists (has custom parts), otherwise get from spawned vehicle
+    local originalConfig = nil
+    if vehicle.config then
+      originalConfig = deepcopy(vehicle.config)
+    else
+      local vehId = vehObj:getID()
+      local vehicleData = extensions.core_vehicle_manager.getVehicleData(vehId)
+      if vehicleData and vehicleData.config then
+        originalConfig = deepcopy(vehicleData.config)
+      else
+        return
+      end
     end
     
-    -- Restore fuel levels after vehicle replacement
-    core_vehicleBridge.requestValue(vehObj, function()
-      restoreFuelLevels(vehObj, storedFuelLevels)
+    -- Include variables in config (they should be part of config, not set separately)
+    if vehicle.vars then
+      originalConfig.vars = deepcopy(vehicle.vars)
+    end
+    
+    -- Update initialVehicles cache with current inventory state
+    initialVehicles[businessId] = {
+      config = deepcopy(originalConfig),
+      partList = flattenPartsTree(originalConfig.partsTree or {}),
+      partConditions = deepcopy(vehicle.partConditions or {}),
+      vars = deepcopy(vehicle.vars or {}),
+      model = modelKey
+    }
+    
+    local vehId = vehObj:getID()
+    
+    -- Store fuel levels before replacing vehicle
+    storeFuelLevels(vehObj, function(storedFuelLevels)
+      local additionalVehicleData = {spawnWithEngineRunning = false}
+      core_vehicle_manager.queueAdditionalVehicleData(additionalVehicleData, vehId)
       
-      -- Automatically calculate and send power/weight after vehicle replacement
-      local cacheKey = businessId .. "_" .. tostring(vehicleId)
-      local requestId = cacheKey .. "_" .. tostring(os.clock())
+      local spawnOptions = {}
+      spawnOptions.config = originalConfig
+      spawnOptions.keepOtherVehRotation = true
       
-      -- Execute Lua command in vehicle context to get both power and weight
-      vehObj:queueLuaCommand([[
-        local engine = powertrain.getDevicesByCategory("engine")[1]
-        local stats = obj:calcBeamStats()
-        if engine and stats then
-          local power = engine.maxPower
-          local weight = stats.total_weight
-          if power and weight and weight > 0 then
-            obj:queueGameEngineLua("career_modules_business_businessPartCustomization.onPowerWeightReceived(']] .. requestId .. [[', " .. power .. ", " .. weight .. ")")
+      -- Replace vehicle with original config (includes vars)
+      core_vehicles.replaceVehicle(modelKey, spawnOptions, vehObj)
+      
+      -- Apply original part conditions from current inventory state
+      if vehicle.partConditions then
+        core_vehicleBridge.executeAction(vehObj, 'initPartConditions', vehicle.partConditions, nil, nil, nil, nil)
+      end
+      
+      -- Restore fuel levels after vehicle replacement
+      core_vehicleBridge.requestValue(vehObj, function()
+        restoreFuelLevels(vehObj, storedFuelLevels)
+        
+        -- Automatically calculate and send power/weight after vehicle replacement
+        local cacheKey = businessId .. "_" .. tostring(vehicleId)
+        local requestId = cacheKey .. "_" .. tostring(os.clock())
+        
+        -- Execute Lua command in vehicle context to get both power and weight
+        vehObj:queueLuaCommand([[
+          local engine = powertrain.getDevicesByCategory("engine")[1]
+          local stats = obj:calcBeamStats()
+          if engine and stats then
+            local power = engine.maxPower
+            local weight = stats.total_weight
+            if power and weight and weight > 0 then
+              obj:queueGameEngineLua("career_modules_business_businessPartCustomization.onPowerWeightReceived(']] .. requestId .. [[', " .. power .. ", " .. weight .. ")")
+            end
           end
-        end
-      ]])
-    end, 'ping')
+        ]])
+      end, 'ping')
+    end)
+    
+    -- Reset preview vehicle to match current inventory state
+    previewVehicles[businessId] = {
+      config = deepcopy(originalConfig),
+      partList = flattenPartsTree(originalConfig.partsTree or {}),
+      partConditions = deepcopy(vehicle.partConditions or {}),
+      model = modelKey
+    }
   end)
-  
-  -- Reset preview vehicle to match initial state
-  previewVehicles[businessId] = {
-    config = deepcopy(originalConfig),
-    partList = flattenPartsTree(originalConfig.partsTree or {}),
-    partConditions = deepcopy(initialVehicle.partConditions or {}),
-    model = modelKey
-  }
   
   return true
 end

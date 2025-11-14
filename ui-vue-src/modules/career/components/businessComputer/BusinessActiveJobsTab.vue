@@ -12,9 +12,11 @@
         :job="job"
         :is-active="true"
         :is-vertical="true"
+        :business-id="store.businessId"
         @pull-out="handlePullOut"
         @put-away="handlePutAway"
         @abandon="handleAbandon"
+        @complete="handleComplete"
       />
     </div>
     
@@ -52,6 +54,10 @@ const handlePutAway = async () => {
 
 const handleAbandon = async (job) => {
   await store.abandonJob(parseInt(job.id))
+}
+
+const handleComplete = async (job) => {
+  await store.completeJob(parseInt(job.id))
 }
 </script>
 

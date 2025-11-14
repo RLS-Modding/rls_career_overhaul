@@ -149,7 +149,24 @@ local function payoutRace()
     print("Adjusted reward: " .. reward)
 
     -- Handle leaderboard
-    local leaderboardEntry = leaderboardManager.getLeaderboardEntry(mInventoryId, raceLabel)
+    local inventoryIdToUse = mInventoryId
+    
+    -- Check if this is a business vehicle (check current player vehicle)
+    if career_modules_business_businessInventory then
+        local playerVehicleId = be:getPlayerVehicleID(0)
+        if playerVehicleId then
+            local businessId, vehicleId = career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId(playerVehicleId)
+            if businessId and vehicleId then
+                inventoryIdToUse = career_modules_business_businessInventory.getBusinessVehicleIdentifier(businessId, vehicleId)
+            elseif mInventoryId and not tostring(mInventoryId):match("^business_") then
+                -- If mInventoryId is not already a business identifier, try to convert it
+                -- This handles the case where the race started with a regular vehicle but we want to check business vehicles
+                inventoryIdToUse = mInventoryId
+            end
+        end
+    end
+    
+    local leaderboardEntry = leaderboardManager.getLeaderboardEntry(inventoryIdToUse, raceLabel)
 
     local oldTime = leaderboardEntry and leaderboardEntry.time or 0
     local oldScore = leaderboardEntry and leaderboardEntry.driftScore or 0
@@ -162,7 +179,7 @@ local function payoutRace()
         time = in_race_time,
         splitTimes = mSplitTimes,
         driftScore = driftScore,
-        inventoryId = mInventoryId,
+        inventoryId = inventoryIdToUse,
         damagePercentage = damagePercentage,
         damageFactor = damageFactor,
         topSpeed = maxSpeed
@@ -299,11 +316,23 @@ end
 -- Simplified payoutRace function for drag races
 local function payoutDragRace(raceName, finishTime, finishSpeed, vehId)
     -- Load the leaderboard
+    local inventoryIdToUse = vehId
+    
     if career_career.isActive() then
-        vehId = career_modules_inventory.getInventoryIdFromVehicleId(vehId) or vehId
+        -- Check if this is a business vehicle first
+        if career_modules_business_businessInventory then
+            local businessId, vehicleId = career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId(vehId)
+            if businessId and vehicleId then
+                inventoryIdToUse = career_modules_business_businessInventory.getBusinessVehicleIdentifier(businessId, vehicleId)
+            else
+                inventoryIdToUse = career_modules_inventory.getInventoryIdFromVehicleId(vehId) or vehId
+            end
+        else
+            inventoryIdToUse = career_modules_inventory.getInventoryIdFromVehicleId(vehId) or vehId
+        end
     end
 
-    local leaderboardEntry = leaderboardManager.getLeaderboardEntry(vehId, races["drag"].label)
+    local leaderboardEntry = leaderboardManager.getLeaderboardEntry(inventoryIdToUse, races["drag"].label)
     local oldTime = leaderboardEntry and leaderboardEntry.time or 0
 
     local newEntry = {
@@ -311,7 +340,7 @@ local function payoutDragRace(raceName, finishTime, finishSpeed, vehId)
         raceName = raceName,
         time = finishTime,
         splitTimes = mSplitTimes,
-        inventoryId = vehId
+        inventoryId = inventoryIdToUse
     }
 
     local newBestTime = leaderboardManager.addLeaderboardEntry(newEntry)
@@ -491,12 +520,24 @@ local function onBeamNGTrigger(data)
     end
     if gameplay_walk.isWalking() then return end
     if career_career.isActive() then
-        if not career_modules_inventory.getInventoryIdFromVehicleId(data.subjectID) then
-            return
+        -- Check if it's a business vehicle first
+        local isBusinessVehicle = false
+        if career_modules_business_businessInventory then
+            local businessId, vehicleId = career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId(data.subjectID)
+            if businessId and vehicleId then
+                isBusinessVehicle = true
+            end
         end
-        local vehicle = career_modules_inventory.getVehicles()[career_modules_inventory.getInventoryIdFromVehicleId(data.subjectID)]
-        if vehicle.loanType then
-            return
+        
+        -- If not a business vehicle, check if it's an inventory vehicle
+        if not isBusinessVehicle then
+            if not career_modules_inventory.getInventoryIdFromVehicleId(data.subjectID) then
+                return
+            end
+            local vehicle = career_modules_inventory.getVehicles()[career_modules_inventory.getInventoryIdFromVehicleId(data.subjectID)]
+            if vehicle.loanType then
+                return
+            end
         end
     end
 
@@ -614,7 +655,17 @@ local function onBeamNGTrigger(data)
             -- print("Staged race: " .. raceName)
             local vehId = data.subjectID
             if career_career.isActive() then
-                vehId = career_modules_inventory.getInventoryIdFromVehicleId(vehId) or vehId
+                -- Check if it's a business vehicle first
+                if career_modules_business_businessInventory then
+                    local businessId, vehicleId = career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId(data.subjectID)
+                    if businessId and vehicleId then
+                        vehId = career_modules_business_businessInventory.getBusinessVehicleIdentifier(businessId, vehicleId)
+                    else
+                        vehId = career_modules_inventory.getInventoryIdFromVehicleId(vehId) or vehId
+                    end
+                else
+                    vehId = career_modules_inventory.getInventoryIdFromVehicleId(vehId) or vehId
+                end
             end
             utils.displayStagedMessage(vehId, raceName)
             utils.setActiveLight(raceName, "yellow")
@@ -672,7 +723,19 @@ local function onBeamNGTrigger(data)
             maxSpeed = 0
             mActiveRace = raceName
             lapCount = 0
-            mInventoryId = career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId(data.subjectID) or data.subjectID
+            
+            -- Set mInventoryId - check for business vehicle first, then inventory vehicle
+            if career_modules_business_businessInventory then
+                local businessId, vehicleId = career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId(data.subjectID)
+                if businessId and vehicleId then
+                    mInventoryId = career_modules_business_businessInventory.getBusinessVehicleIdentifier(businessId, vehicleId)
+                else
+                    mInventoryId = career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId(data.subjectID) or data.subjectID
+                end
+            else
+                mInventoryId = career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId(data.subjectID) or data.subjectID
+            end
+            
             invalidLap = false
 
             utils.displayStartMessage(raceName)

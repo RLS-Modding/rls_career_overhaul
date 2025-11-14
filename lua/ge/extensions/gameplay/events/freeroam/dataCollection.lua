@@ -54,7 +54,41 @@ end
 local function getVehicleIdFromEntry(entry)
   local vehId = entry.inventoryId
 
-  if career_career and career_career.isActive() and career_modules_inventory then
+  -- Check if this is a business vehicle identifier
+  if vehId and type(vehId) == "string" and vehId:match("^business_") then
+    -- Extract businessId and vehicleId from the identifier (format: "business_businessId_vehicleId")
+    -- Find the last underscore position
+    local lastUnderscorePos = 0
+    for i = #vehId, 1, -1 do
+      if vehId:sub(i, i) == "_" then
+        lastUnderscorePos = i
+        break
+      end
+    end
+    
+    if lastUnderscorePos > 9 then -- Must be after "business_"
+      local businessId = vehId:sub(9, lastUnderscorePos - 1) -- Skip "business_" prefix
+      local vehicleIdStr = vehId:sub(lastUnderscorePos + 1)
+      local vehicleId = tonumber(vehicleIdStr)
+      
+      if businessId and vehicleId and career_modules_business_businessInventory then
+        -- Get the actual spawned vehicle ID
+        local spawnedVehId = career_modules_business_businessInventory.getSpawnedVehicleId(businessId, vehicleId)
+        if spawnedVehId then
+          vehId = spawnedVehId
+        else
+          -- Fall back to current player vehicle if business vehicle not spawned
+          vehId = be:getPlayerVehicleID(0)
+        end
+      else
+        -- Fall back to current player vehicle if we can't parse the identifier
+        vehId = be:getPlayerVehicleID(0)
+      end
+    else
+      -- Fall back to current player vehicle if we can't parse the identifier
+      vehId = be:getPlayerVehicleID(0)
+    end
+  elseif career_career and career_career.isActive() and career_modules_inventory then
     local actualVehId = career_modules_inventory.getVehicleIdFromInventoryId(vehId)
     if actualVehId then
       vehId = actualVehId

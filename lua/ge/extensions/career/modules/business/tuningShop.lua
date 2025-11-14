@@ -1,6 +1,6 @@
 local M = {}
 
-M.dependencies = {'util_configListGenerator', 'career_career', 'career_modules_business_businessManager', 'career_modules_business_businessJobManager'}
+M.dependencies = {'util_configListGenerator', 'career_career', 'career_modules_business_businessManager', 'career_modules_business_businessJobManager', 'career_modules_bank'}
 
 local raceData = nil
 local raceDataLevel = nil
@@ -159,6 +159,10 @@ function M.onCareerActivated()
   career_modules_business_businessManager.registerBusinessCallback("tuningShop", {
     onPurchase = function(businessId)
       log("D", "TuningShop", "Tuning shop purchased: " .. tostring(businessId))
+      if career_modules_bank then
+        local accountId = "business_tuningShop_" .. tostring(businessId)
+        career_modules_bank.rewardToAccount({money = {amount = 25000}}, accountId)
+      end
     end,
     onMenuOpen = function(businessId)
       openMenu(businessId)

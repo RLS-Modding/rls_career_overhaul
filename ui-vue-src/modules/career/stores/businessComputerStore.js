@@ -103,6 +103,21 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     }
   }
 
+  const completeJob = async (jobId) => {
+    if (!businessId.value) return false
+    try {
+      const success = await lua.career_modules_business_businessComputer.completeJob(businessId.value, jobId)
+      if (success) {
+        pulledOutVehicle.value = null
+        await loadBusinessData(businessType.value, businessId.value)
+      }
+      return success
+    } catch (error) {
+      console.error("Failed to complete job:", error)
+      return false
+    }
+  }
+
   const pullOutVehicle = async (vehicleId) => {
     if (!businessId.value) {
       console.error("pullOutVehicle: No businessId")
@@ -185,9 +200,27 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     
     // When switching to tuning view, ensure vehicle has parts from cart applied
     if (view === 'tuning' && previousView !== 'tuning') {
-      // Vehicle should already have parts applied from cart, but verify tuning data is refreshed
+      // Apply tuning cart values to vehicle before requesting tuning data
       setTimeout(async () => {
         if (vehicleView.value === 'tuning' && pulledOutVehicle.value?.vehicleId) {
+          const cart = Array.isArray(tuningCart.value) ? tuningCart.value : []
+          if (cart.length > 0) {
+            // Apply cart tuning values to vehicle first
+            const tuningVars = {}
+            cart.forEach(change => {
+              tuningVars[change.varName] = change.value
+            })
+            try {
+              await lua.career_modules_business_businessComputer.applyTuningToVehicle(
+                businessId.value,
+                pulledOutVehicle.value.vehicleId,
+                tuningVars
+              )
+            } catch (error) {
+              console.error("Failed to apply tuning cart values:", error)
+            }
+          }
+          // Then request tuning data (will show cart values in UI)
           await requestVehicleTuningData(pulledOutVehicle.value.vehicleId)
         }
       }, 600)
@@ -1050,6 +1083,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     acceptJob,
     declineJob,
     abandonJob,
+    completeJob,
     pullOutVehicle,
     putAwayVehicle,
     switchView,

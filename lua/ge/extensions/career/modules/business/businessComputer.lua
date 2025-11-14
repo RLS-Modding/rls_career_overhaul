@@ -1,6 +1,6 @@
 local M = {}
 
-M.dependencies = {'career_career', 'career_saveSystem', 'freeroam_facilities', 'core_vehicles', 'core_jobsystem'}
+M.dependencies = {'career_career', 'career_saveSystem', 'freeroam_facilities', 'core_vehicles', 'core_jobsystem', 'gameplay_events_freeroam_leaderboardManager'}
 
 local jbeamIO = require('jbeam/io')
 local jbeamSlotSystem = require('jbeam/slotSystem')
@@ -170,12 +170,43 @@ local function formatJobForUI(job, businessId)
     timeUnit = "min"
   end
 
-  local goal = string.format("%.1f%s %s", job.targetTime, timeUnit, job.raceLabel or "")
+  -- Format goal time properly (times are in seconds, format as "X min Y s" if >= 60s)
+  local goalTimeFormatted = ""
+  local goalTimeSeconds = job.targetTime or 0
+  if goalTimeSeconds >= 60 then
+    local minutes = math.floor(goalTimeSeconds / 60)
+    local seconds = math.floor(goalTimeSeconds % 60 + 0.5)
+    if seconds >= 1 then
+      goalTimeFormatted = string.format("%d min %d s", minutes, seconds)
+    else
+      goalTimeFormatted = string.format("%d min", minutes)
+    end
+  else
+    goalTimeFormatted = string.format("%d s", math.floor(goalTimeSeconds + 0.5))
+  end
+  
+  local goal = goalTimeFormatted .. " " .. (job.raceLabel or "")
 
-  -- Format time values to 1 decimal place
+  -- Time values are stored in seconds
   local baselineTime = job.baseTime or 0
   local currentTime = job.currentTime or job.baseTime or 0
   local goalTime = job.targetTime or 0
+
+  -- Try to get leaderboard time for this job's vehicle
+  if job.raceLabel and businessId then
+    local vehicles = career_modules_business_businessInventory.getBusinessVehicles(businessId)
+    for _, vehicle in ipairs(vehicles) do
+      if vehicle.jobId == job.jobId then
+        local businessVehicleId = career_modules_business_businessInventory.getBusinessVehicleIdentifier(businessId, vehicle.vehicleId)
+        local leaderboardManager = require('gameplay/events/freeroam/leaderboardManager')
+        local leaderboardEntry = leaderboardManager.getLeaderboardEntry(businessVehicleId, job.raceLabel)
+        if leaderboardEntry and leaderboardEntry.time then
+          currentTime = leaderboardEntry.time
+        end
+        break
+      end
+    end
+  end
 
   return {
     id = tostring(job.jobId),
@@ -1078,6 +1109,12 @@ M.getBusinessComputerUIData = getBusinessComputerUIData
 M.acceptJob = acceptJob
 M.declineJob = declineJob
 M.abandonJob = abandonJob
+M.completeJob = function(businessId, jobId)
+  return career_modules_business_businessJobManager.completeJob(businessId, jobId)
+end
+M.canCompleteJob = function(businessId, jobId)
+  return career_modules_business_businessJobManager.canCompleteJob(businessId, jobId)
+end
 M.pullOutVehicle = pullOutVehicle
 M.putAwayVehicle = putAwayVehicle
 M.getActiveJobs = getActiveJobs
