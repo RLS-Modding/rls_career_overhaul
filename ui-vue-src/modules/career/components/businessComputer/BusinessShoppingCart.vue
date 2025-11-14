@@ -226,13 +226,13 @@
               <div class="stats-container">
                 <div class="stat-row">
                   <div class="stat-label-col">Power:</div>
-                  <div class="stat-value-col">{{ Math.round((store.originalPower || 0) * 1.35962) }} PS</div>
+                  <div class="stat-value-col">{{ Math.round(store.originalPower || 0) }} PS</div>
                   <div class="stat-arrow-col">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M5 12h14M12 5l7 7-7 7"/>
                     </svg>
                   </div>
-                  <div class="stat-value-col">{{ Math.round((store.currentPower || 0) * 1.35962) }} PS</div>
+                  <div class="stat-value-col">{{ Math.round(store.currentPower || 0) }} PS</div>
                 </div>
                 <div class="stat-row">
                   <div class="stat-label-col">Weight:</div>

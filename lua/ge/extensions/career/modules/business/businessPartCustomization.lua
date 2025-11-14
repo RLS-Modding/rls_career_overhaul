@@ -123,6 +123,86 @@ local function restoreFuelLevels(vehObj, storedFuelLevels)
   end, 'energyStorage')
 end
 
+-- Helper function to request vehicle power/weight calculation
+local function requestVehiclePowerWeight(vehObj, businessId, vehicleId)
+  if not vehObj or not businessId or not vehicleId then return end
+  
+  local cacheKey = businessId .. "_" .. tostring(vehicleId)
+  local requestId = cacheKey .. "_" .. tostring(os.clock())
+  
+  vehObj:queueLuaCommand([[
+    local engine = powertrain.getDevicesByCategory("engine")[1]
+    local stats = obj:calcBeamStats()
+    if engine and stats then
+      local power = engine.maxPower
+      local weight = stats.total_weight
+      if power and weight and weight > 0 then
+        obj:queueGameEngineLua("career_modules_business_businessPartCustomization.onPowerWeightReceived(']] .. requestId .. [[', " .. power .. ", " .. weight .. ")")
+      end
+    end
+  ]])
+end
+
+-- Helper function to create or update a parts tree node
+local function createOrUpdatePartsTreeNode(partsTree, partName, slotPath)
+  if not partsTree or not partName or not slotPath then return false end
+  
+  local node = getNodeFromSlotPath(partsTree, slotPath)
+  if node then
+    node.chosenPartName = partName
+    return true
+  end
+  
+  local parentPath = slotPath:match("(.+)/[^/]+/$") or "/"
+  local parentNode = getNodeFromSlotPath(partsTree, parentPath)
+  if parentNode then
+    if not parentNode.children then parentNode.children = {} end
+    local slotName = slotPath:match("/([^/]+)/$") or slotPath:match("/([^/]+)$") or ""
+    if slotName and slotName ~= "" then
+      parentNode.children[slotName] = {
+        chosenPartName = partName,
+        path = slotPath,
+        children = {},
+        suitablePartNames = {partName},
+        unsuitablePartNames = {},
+        decisionMethod = "user"
+      }
+      return true
+    end
+  end
+  
+  return false
+end
+
+-- Helper function to replace vehicle with fuel handling and optional callbacks
+local function replaceVehicleWithFuelHandling(vehObj, modelKey, config, beforeRestoreCallback, afterRestoreCallback)
+  if not vehObj or not modelKey or not config then
+    if afterRestoreCallback then afterRestoreCallback() end
+    return
+  end
+  
+  local vehId = vehObj:getID()
+  storeFuelLevels(vehObj, function(storedFuelLevels)
+    local additionalVehicleData = {spawnWithEngineRunning = false}
+    core_vehicle_manager.queueAdditionalVehicleData(additionalVehicleData, vehId)
+    
+    local spawnOptions = {}
+    spawnOptions.config = config
+    spawnOptions.keepOtherVehRotation = true
+    
+    core_vehicles.replaceVehicle(modelKey, spawnOptions, vehObj)
+    
+    if beforeRestoreCallback then
+      beforeRestoreCallback()
+    end
+    
+    core_vehicleBridge.requestValue(vehObj, function()
+      restoreFuelLevels(vehObj, storedFuelLevels)
+      if afterRestoreCallback then afterRestoreCallback() end
+    end, 'ping')
+  end)
+end
+
 -- Initialize preview vehicle for a business (called when vehicle is pulled out)
 local function initializePreviewVehicle(businessId, vehicleId)
   if not businessId or not vehicleId then return false end
@@ -224,45 +304,16 @@ local function resetVehicleToOriginal(businessId, vehicleId)
     
     local vehId = vehObj:getID()
     
-    -- Store fuel levels before replacing vehicle
-    storeFuelLevels(vehObj, function(storedFuelLevels)
-      local additionalVehicleData = {spawnWithEngineRunning = false}
-      core_vehicle_manager.queueAdditionalVehicleData(additionalVehicleData, vehId)
-      
-      local spawnOptions = {}
-      spawnOptions.config = originalConfig
-      spawnOptions.keepOtherVehRotation = true
-      
-      -- Replace vehicle with original config (includes vars)
-      core_vehicles.replaceVehicle(modelKey, spawnOptions, vehObj)
-      
-      -- Apply original part conditions from current inventory state
-      if vehicle.partConditions then
-        core_vehicleBridge.executeAction(vehObj, 'initPartConditions', vehicle.partConditions, nil, nil, nil, nil)
+    replaceVehicleWithFuelHandling(vehObj, modelKey, originalConfig, 
+      function()
+        if vehicle.partConditions then
+          core_vehicleBridge.executeAction(vehObj, 'initPartConditions', vehicle.partConditions, nil, nil, nil, nil)
+        end
+      end,
+      function()
+        requestVehiclePowerWeight(vehObj, businessId, vehicleId)
       end
-      
-      -- Restore fuel levels after vehicle replacement
-      core_vehicleBridge.requestValue(vehObj, function()
-        restoreFuelLevels(vehObj, storedFuelLevels)
-        
-        -- Automatically calculate and send power/weight after vehicle replacement
-        local cacheKey = businessId .. "_" .. tostring(vehicleId)
-        local requestId = cacheKey .. "_" .. tostring(os.clock())
-        
-        -- Execute Lua command in vehicle context to get both power and weight
-        vehObj:queueLuaCommand([[
-          local engine = powertrain.getDevicesByCategory("engine")[1]
-          local stats = obj:calcBeamStats()
-          if engine and stats then
-            local power = engine.maxPower
-            local weight = stats.total_weight
-            if power and weight and weight > 0 then
-              obj:queueGameEngineLua("career_modules_business_businessPartCustomization.onPowerWeightReceived(']] .. requestId .. [[', " .. power .. ", " .. weight .. ")")
-            end
-          end
-        ]])
-      end, 'ping')
-    end)
+    )
     
     -- Reset preview vehicle to match current inventory state
     previewVehicles[businessId] = {
@@ -309,28 +360,7 @@ local function applyPartsToVehicle(businessId, vehicleId, parts)
   -- Update all parts in the parts tree
   for _, part in ipairs(parts) do
     if part.partName and part.slotPath then
-      local node = getNodeFromSlotPath(completeConfig.partsTree, part.slotPath)
-      if node then
-        node.chosenPartName = part.partName
-      else
-        -- Create node if it doesn't exist
-        local parentPath = part.slotPath:match("(.+)/[^/]+/$") or "/"
-        local parentNode = getNodeFromSlotPath(completeConfig.partsTree, parentPath)
-        if parentNode then
-          if not parentNode.children then parentNode.children = {} end
-          local slotName = part.slotPath:match("/([^/]+)/$") or part.slotPath:match("/([^/]+)$") or ""
-          if slotName and slotName ~= "" then
-            parentNode.children[slotName] = {
-              chosenPartName = part.partName,
-              path = part.slotPath,
-              children = {},
-              suitablePartNames = {part.partName},
-              unsuitablePartNames = {},
-              decisionMethod = "user"
-            }
-          end
-        end
-      end
+      createOrUpdatePartsTreeNode(completeConfig.partsTree, part.partName, part.slotPath)
     end
   end
   
@@ -342,49 +372,17 @@ local function applyPartsToVehicle(businessId, vehicleId, parts)
     model = modelKey
   }
   
-  -- Store fuel levels before replacing vehicle
-  local vehId = vehObj:getID()
-  storeFuelLevels(vehObj, function(storedFuelLevels)
-    local additionalVehicleData = {spawnWithEngineRunning = false}
-    core_vehicle_manager.queueAdditionalVehicleData(additionalVehicleData, vehId)
-    
-    local spawnOptions = {}
-    spawnOptions.config = completeConfig  -- Use the complete config with all parts
-    spawnOptions.keepOtherVehRotation = true
-    
-    -- Replace vehicle with complete config
-    core_vehicles.replaceVehicle(modelKey, spawnOptions, vehObj)
-    
-    -- Initialize part conditions
-    core_vehicleBridge.executeAction(vehObj, 'initPartConditions', previewVehicles[businessId].partConditions or {}, nil, nil, nil, nil)
-    
-    -- Restore fuel levels after vehicle replacement
-    core_vehicleBridge.requestValue(vehObj, function()
-      restoreFuelLevels(vehObj, storedFuelLevels)
-      
-      -- Notify businessComputer to regenerate parts tree
+  replaceVehicleWithFuelHandling(vehObj, modelKey, completeConfig,
+    function()
+      core_vehicleBridge.executeAction(vehObj, 'initPartConditions', previewVehicles[businessId].partConditions or {}, nil, nil, nil, nil)
+    end,
+    function()
       if career_modules_business_businessComputer then
         career_modules_business_businessComputer.requestVehiclePartsTree(businessId, vehicleId)
       end
-      
-      -- Automatically calculate and send power/weight after vehicle replacement
-      local cacheKey = businessId .. "_" .. tostring(vehicleId)
-      local requestId = cacheKey .. "_" .. tostring(os.clock())
-      
-      -- Execute Lua command in vehicle context to get both power and weight
-      vehObj:queueLuaCommand([[
-        local engine = powertrain.getDevicesByCategory("engine")[1]
-        local stats = obj:calcBeamStats()
-        if engine and stats then
-          local power = engine.maxPower
-          local weight = stats.total_weight
-          if power and weight and weight > 0 then
-            obj:queueGameEngineLua("career_modules_business_businessPartCustomization.onPowerWeightReceived(']] .. requestId .. [[', " .. power .. ", " .. weight .. ")")
-          end
-        end
-      ]])
-    end, 'ping')
-  end)
+      requestVehiclePowerWeight(vehObj, businessId, vehicleId)
+    end
+  )
   
   return true
 end
@@ -407,28 +405,7 @@ local function buildPartsTreeFromCart(businessId, parts)
     if parts and #parts > 0 then
       for _, part in ipairs(parts) do
         if part.partName and part.slotPath then
-          local node = getNodeFromSlotPath(partsTree, part.slotPath)
-          if node then
-            node.chosenPartName = part.partName
-          else
-            -- Create node if it doesn't exist
-            local parentPath = part.slotPath:match("(.+)/[^/]+/$") or "/"
-            local parentNode = getNodeFromSlotPath(partsTree, parentPath)
-            if parentNode then
-              if not parentNode.children then parentNode.children = {} end
-              local slotName = part.slotPath:match("/([^/]+)/$") or part.slotPath:match("/([^/]+)$") or ""
-              if slotName and slotName ~= "" then
-                parentNode.children[slotName] = {
-                  chosenPartName = part.partName,
-                  path = part.slotPath,
-                  children = {},
-                  suitablePartNames = {part.partName},
-                  unsuitablePartNames = {},
-                  decisionMethod = "user"
-                }
-              end
-            end
-          end
+          createOrUpdatePartsTreeNode(partsTree, part.partName, part.slotPath)
         end
       end
     end
@@ -723,27 +700,7 @@ local function getAllRequiredParts(businessId, vehicleId, parts, cartParts)
         if not processedParts[reqKey] then
           table.insert(allRequiredParts, reqPart)
           -- Update current parts tree to include this required part for nested checks
-          local reqNode = getNodeFromSlotPath(currentPartsTree, reqPart.slotPath)
-          if not reqNode then
-            local parentPath = reqPart.slotPath:match("(.+)/[^/]+/$") or "/"
-            local parentNode = getNodeFromSlotPath(currentPartsTree, parentPath)
-            if parentNode then
-              if not parentNode.children then parentNode.children = {} end
-              local slotName = reqPart.slotPath:match("/([^/]+)/$") or reqPart.slotPath:match("/([^/]+)$") or ""
-              if slotName and slotName ~= "" then
-                parentNode.children[slotName] = {
-                  chosenPartName = reqPart.partName,
-                  path = reqPart.slotPath,
-                  children = {},
-                  suitablePartNames = {reqPart.partName},
-                  unsuitablePartNames = {},
-                  decisionMethod = "user"
-                }
-              end
-            end
-          else
-            reqNode.chosenPartName = reqPart.partName
-          end
+          createOrUpdatePartsTreeNode(currentPartsTree, reqPart.partName, reqPart.slotPath)
           processPart(reqPart.partName, reqPart.slotPath)
         end
       end
@@ -819,28 +776,7 @@ local function applyCartPartsToVehicle(businessId, vehicleId, parts)
     -- Apply all parts (cart + required) to the config
     for slotPath, part in pairs(allParts) do
       if part.partName and part.slotPath then
-        local node = getNodeFromSlotPath(completeConfig.partsTree, part.slotPath)
-        if node then
-          node.chosenPartName = part.partName
-        else
-          -- Create node if it doesn't exist
-          local parentPath = part.slotPath:match("(.+)/[^/]+/$") or "/"
-          local parentNode = getNodeFromSlotPath(completeConfig.partsTree, parentPath)
-          if parentNode then
-            if not parentNode.children then parentNode.children = {} end
-            local slotName = part.slotPath:match("/([^/]+)/$") or part.slotPath:match("/([^/]+)$") or ""
-            if slotName and slotName ~= "" then
-              parentNode.children[slotName] = {
-                chosenPartName = part.partName,
-                path = part.slotPath,
-                children = {},
-                suitablePartNames = {part.partName},
-                unsuitablePartNames = {},
-                decisionMethod = "user"
-              }
-            end
-          end
-        end
+        createOrUpdatePartsTreeNode(completeConfig.partsTree, part.partName, part.slotPath)
       end
     end
   end
@@ -854,54 +790,20 @@ local function applyCartPartsToVehicle(businessId, vehicleId, parts)
     model = modelKey
   }
   
-  -- Store fuel levels before replacing vehicle
-  local vehId = vehObj:getID()
-  storeFuelLevels(vehObj, function(storedFuelLevels)
-    local additionalVehicleData = {spawnWithEngineRunning = false}
-    core_vehicle_manager.queueAdditionalVehicleData(additionalVehicleData, vehId)
-    
-    local spawnOptions = {}
-    spawnOptions.config = completeConfig
-    spawnOptions.keepOtherVehRotation = true
-    
-    -- Replace vehicle with complete config (baseline + cart parts)
-    core_vehicles.replaceVehicle(modelKey, spawnOptions, vehObj)
-    
-    -- Initialize part conditions
-    core_vehicleBridge.executeAction(vehObj, 'initPartConditions', previewVehicles[businessId].partConditions or {}, nil, nil, nil, nil)
-    
-    -- Restore fuel levels after vehicle replacement
-    core_vehicleBridge.requestValue(vehObj, function()
-      restoreFuelLevels(vehObj, storedFuelLevels)
-      
-      -- Notify businessComputer to regenerate parts tree
+  replaceVehicleWithFuelHandling(vehObj, modelKey, completeConfig,
+    function()
+      core_vehicleBridge.executeAction(vehObj, 'initPartConditions', previewVehicles[businessId].partConditions or {}, nil, nil, nil, nil)
+    end,
+    function()
       if career_modules_business_businessComputer then
         career_modules_business_businessComputer.requestVehiclePartsTree(businessId, vehicleId)
       end
-      
-      -- Invalidate tuning cache since parts changed (tuning options may have changed)
       if career_modules_business_businessVehicleTuning then
         career_modules_business_businessVehicleTuning.clearTuningDataCache()
       end
-      
-      -- Automatically calculate and send power/weight after vehicle replacement
-      local cacheKey = businessId .. "_" .. tostring(vehicleId)
-      local requestId = cacheKey .. "_" .. tostring(os.clock())
-      
-      -- Execute Lua command in vehicle context to get both power and weight
-      vehObj:queueLuaCommand([[
-        local engine = powertrain.getDevicesByCategory("engine")[1]
-        local stats = obj:calcBeamStats()
-        if engine and stats then
-          local power = engine.maxPower
-          local weight = stats.total_weight
-          if power and weight and weight > 0 then
-            obj:queueGameEngineLua("career_modules_business_businessPartCustomization.onPowerWeightReceived(']] .. requestId .. [[', " .. power .. ", " .. weight .. ")")
-          end
-        end
-      ]])
-    end, 'ping')
-  end)
+      requestVehiclePowerWeight(vehObj, businessId, vehicleId)
+    end
+  )
   
   return true
 end
@@ -958,22 +860,7 @@ local function getVehiclePowerWeight(businessId, vehicleId)
     return powerWeightCache[cacheKey]
   end
   
-  -- Generate unique request ID
-  local requestId = cacheKey .. "_" .. tostring(os.clock())
-  
-  -- Execute Lua command in vehicle context to get both power and weight
-  -- calcBeamStats() is only available in vehicle Lua context, not game engine Lua
-  vehObj:queueLuaCommand([[
-    local engine = powertrain.getDevicesByCategory("engine")[1]
-    local stats = obj:calcBeamStats()
-    if engine and stats then
-      local power = engine.maxPower
-      local weight = stats.total_weight
-      if power and weight and weight > 0 then
-        obj:queueGameEngineLua("career_modules_business_businessPartCustomization.onPowerWeightReceived(']] .. requestId .. [[', " .. power .. ", " .. weight .. ")")
-      end
-    end
-  ]])
+  requestVehiclePowerWeight(vehObj, businessId, vehicleId)
   
   -- Always return nil - data will come via async callback and hook
   return nil
@@ -1114,28 +1001,7 @@ local function addPartToCart(businessId, vehicleId, currentCart, partToAdd)
   -- Apply all parts from tempCart to the config
   for _, part in ipairs(tempCart) do
     if part.type == 'part' and part.partName and part.slotPath then
-      local node = getNodeFromSlotPath(completeConfig.partsTree, part.slotPath)
-      if node then
-        node.chosenPartName = part.partName
-      else
-        -- Create node if it doesn't exist
-        local parentPath = part.slotPath:match("(.+)/[^/]+/$") or "/"
-        local parentNode = getNodeFromSlotPath(completeConfig.partsTree, parentPath)
-        if parentNode then
-          if not parentNode.children then parentNode.children = {} end
-          local slotName = part.slotPath:match("/([^/]+)/$") or part.slotPath:match("/([^/]+)$") or ""
-          if slotName and slotName ~= "" then
-            parentNode.children[slotName] = {
-              chosenPartName = part.partName,
-              path = part.slotPath,
-              children = {},
-              suitablePartNames = {part.partName},
-              unsuitablePartNames = {},
-              decisionMethod = "user"
-            }
-          end
-        end
-      end
+      createOrUpdatePartsTreeNode(completeConfig.partsTree, part.partName, part.slotPath)
     end
   end
   
@@ -1362,22 +1228,7 @@ local function addPartToCart(businessId, vehicleId, currentCart, partToAdd)
         career_modules_business_businessVehicleTuning.clearTuningDataCache()
       end
       
-      -- Calculate and send power/weight after cart is updated (vehicle is already spawned with new parts)
-      local cacheKey = businessId .. "_" .. tostring(vehicleId)
-      local requestId = cacheKey .. "_" .. tostring(os.clock())
-      
-      -- Execute Lua command in vehicle context to get both power and weight
-      vehObj:queueLuaCommand([[
-        local engine = powertrain.getDevicesByCategory("engine")[1]
-        local stats = obj:calcBeamStats()
-        if engine and stats then
-          local power = engine.maxPower
-          local weight = stats.total_weight
-          if power and weight and weight > 0 then
-            obj:queueGameEngineLua("career_modules_business_businessPartCustomization.onPowerWeightReceived(']] .. requestId .. [[', " .. power .. ", " .. weight .. ")")
-          end
-        end
-      ]])
+      requestVehiclePowerWeight(vehObj, businessId, vehicleId)
       
       -- Note: We keep the vehicle spawned with the test config (which includes all the parts)
       -- This way the vehicle preview matches the cart. We don't restore the original config
