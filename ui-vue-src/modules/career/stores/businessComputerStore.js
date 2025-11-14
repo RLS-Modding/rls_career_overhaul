@@ -709,7 +709,129 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
         } catch (error) {
         }
       }
+    } else {
+      if (businessId.value && pulledOutVehicle.value?.vehicleId) {
+        try {
+          const initialVehicle = await lua.career_modules_business_businessPartCustomization.getInitialVehicleState(businessId.value)
+          if (initialVehicle && initialVehicle.partList && initialVehicle.partList[normalizedPath]) {
+            const initialPartName = initialVehicle.partList[normalizedPath]
+            if (initialPartName && initialPartName !== '') {
+              const collectChildSlotPaths = (node, parentPath, collectedPaths = []) => {
+                if (!node || !node.children) return collectedPaths
+                
+                for (const slotName in node.children) {
+                  if (node.children.hasOwnProperty(slotName)) {
+                    const childNode = node.children[slotName]
+                    const childPath = parentPath + slotName + '/'
+                    if (childNode && childNode.chosenPartName && childNode.chosenPartName !== '') {
+                      collectedPaths.push(childPath)
+                      if (childNode.children) {
+                        collectChildSlotPaths(childNode, childPath, collectedPaths)
+                      }
+                    }
+                  }
+                }
+                return collectedPaths
+              }
+              
+              const childPaths = []
+              const node = getNodeFromSlotPath(initialVehicle.config.partsTree, normalizedPath)
+              if (node) {
+                collectChildSlotPaths(node, normalizedPath, childPaths)
+              }
+              
+              const getPartNiceName = (partName, partsNiceName) => {
+                if (partsNiceName && partsNiceName[partName]) {
+                  const niceName = partsNiceName[partName]
+                  return typeof niceName === 'object' ? (niceName.description || niceName) : niceName
+                }
+                return partName
+              }
+              
+              const partNiceName = getPartNiceName(initialPartName, initialVehicle.partsNiceName || {})
+              const removalMarkers = [
+                {
+                  type: 'part',
+                  partName: '',
+                  partNiceName: `Removed ${partNiceName}`,
+                  slotPath: normalizedPath,
+                  slotNiceName: '',
+                  price: 0,
+                  emptyPlaceholder: true,
+                  id: `${normalizedPath}_empty`
+                }
+              ]
+              
+              for (const childPath of childPaths) {
+                const childPartName = initialVehicle.partList[childPath]
+                if (childPartName && childPartName !== '') {
+                  const childPartNiceName = getPartNiceName(childPartName, initialVehicle.partsNiceName || {})
+                  removalMarkers.push({
+                    type: 'part',
+                    partName: '',
+                    partNiceName: `Removed ${childPartNiceName}`,
+                    slotPath: childPath,
+                    slotNiceName: '',
+                    price: 0,
+                    emptyPlaceholder: true,
+                    id: `${childPath}_empty`
+                  })
+                }
+              }
+              
+              partsCart.value = [...partsCart.value, ...removalMarkers]
+              saveCurrentTabState()
+              
+              await lua.career_modules_business_businessComputer.applyCartPartsToVehicle(
+                businessId.value,
+                pulledOutVehicle.value.vehicleId,
+                partsCart.value
+              )
+              
+              setTimeout(async () => {
+                try {
+                  const removedParts = await lua.career_modules_business_businessPartCustomization.findRemovedParts(
+                    businessId.value,
+                    pulledOutVehicle.value.vehicleId
+                  )
+                  
+                  if (removedParts && Array.isArray(removedParts)) {
+                    for (const removedPart of removedParts) {
+                      await lua.career_modules_business_businessPartInventory.addPart(
+                        businessId.value,
+                        removedPart
+                      )
+                    }
+                  }
+                  
+                  await requestVehiclePartsTree(pulledOutVehicle.value.vehicleId)
+                } catch (error) {
+                }
+              }, 500)
+            }
+          }
+        } catch (error) {
+        }
+      }
     }
+  }
+  
+  const getNodeFromSlotPath = (tree, path) => {
+    if (!tree || !path) return null
+    if (path === '/') return tree
+    
+    const segments = path.split('/').filter(p => p)
+    let currentNode = tree
+    
+    for (const segment of segments) {
+      if (currentNode.children && currentNode.children[segment]) {
+        currentNode = currentNode.children[segment]
+      } else {
+        return null
+      }
+    }
+    
+    return currentNode
   }
   
   const removeTuningFromCart = (varName) => {

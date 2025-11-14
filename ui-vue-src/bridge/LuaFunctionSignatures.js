@@ -1196,6 +1196,8 @@ export default {
     installPartOnVehicle: (businessId, vehicleId, partName, slotPath) => [String, Integer, String, String],
     getVehiclePowerWeight: (businessId, vehicleId) => Object,
     getPreviewVehicleConfig: (businessId) => Object,
+    getInitialVehicleState: (businessId) => Object,
+    findRemovedParts: (businessId, vehicleId) => [String, Integer],
     clearPreviewVehicle: (businessId) => String,
     onPowerWeightReceived: (requestId, power, weight) => [String, Number, Number],
   },

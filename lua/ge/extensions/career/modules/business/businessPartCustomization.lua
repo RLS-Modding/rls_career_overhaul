@@ -130,11 +130,17 @@ local function requestVehiclePowerWeight(vehObj, businessId, vehicleId)
 end
 
 local function createOrUpdatePartsTreeNode(partsTree, partName, slotPath)
-  if not partsTree or not partName or not slotPath then return false end
+  if not partsTree or not slotPath then return false end
   
   local node = getNodeFromSlotPath(partsTree, slotPath)
   if node then
-    node.chosenPartName = partName
+    if partName == "" or not partName then
+      node.chosenPartName = ""
+      node.emptyPlaceholder = true
+    else
+      node.chosenPartName = partName
+      node.emptyPlaceholder = nil
+    end
     return true
   end
   
@@ -144,13 +150,15 @@ local function createOrUpdatePartsTreeNode(partsTree, partName, slotPath)
     if not parentNode.children then parentNode.children = {} end
     local slotName = slotPath:match("/([^/]+)/$") or slotPath:match("/([^/]+)$") or ""
     if slotName and slotName ~= "" then
+      local chosenPartName = (partName == "" or not partName) and "" or partName
       parentNode.children[slotName] = {
-        chosenPartName = partName,
+        chosenPartName = chosenPartName,
         path = slotPath,
         children = {},
-        suitablePartNames = {partName},
+        suitablePartNames = chosenPartName ~= "" and {chosenPartName} or {},
         unsuitablePartNames = {},
-        decisionMethod = "user"
+        decisionMethod = "user",
+        emptyPlaceholder = (partName == "" or not partName) and true or nil
       }
       return true
     end
@@ -212,7 +220,8 @@ local function initializePreviewVehicle(businessId, vehicleId)
     partList = flattenPartsTree(originalConfig.partsTree or {}),
     partConditions = deepcopy(vehicle.partConditions or {}),
     vars = deepcopy(vehicle.vars or {}),
-    model = modelKey
+    model = modelKey,
+    vehicleId = vehicleId
   }
   
   -- Initialize preview vehicle with the same original state
@@ -225,7 +234,10 @@ local function initializePreviewVehicle(businessId, vehicleId)
   
   previewVehicleSlotData[businessId] = {}
   local availableParts = jbeamIO.getAvailableParts(vehicleData.ioCtx)
+  local partsNiceName = {}
   for partName, partInfo in pairs(availableParts) do
+    local desc = partInfo.description
+    partsNiceName[partName] = type(desc) == "table" and desc.description or desc
     if partInfo.slotInfoUi then
       for slotName, slotInfo in pairs(partInfo.slotInfoUi) do
         local path = "/" .. slotName .. "/"
@@ -233,6 +245,8 @@ local function initializePreviewVehicle(businessId, vehicleId)
       end
     end
   end
+  
+  initialVehicles[businessId].partsNiceName = partsNiceName
   
   return true
 end
@@ -682,21 +696,48 @@ local function applyCartPartsToVehicle(businessId, vehicleId, parts)
   -- Build complete config: baseline + all cart parts
   local completeConfig = deepcopy(initialVehicle.config)
   
+  -- Helper function to recursively clear child parts
+  local function clearChildParts(node, path)
+    if not node or not node.children then return end
+    for slotName, childNode in pairs(node.children) do
+      local childPath = path .. slotName .. "/"
+      childNode.chosenPartName = ""
+      if childNode.children then
+        clearChildParts(childNode, childPath)
+      end
+    end
+  end
+  
   -- Apply all parts from cart to the config, and find all required parts (like vanilla updateInstalledParts)
   if parts and #parts > 0 then
-    -- Use the same system as vanilla: find all required parts recursively
-    local allPartsToApply = {}
+    -- First, handle removal markers (emptyPlaceholder)
+    local removalMarkers = {}
+    local partsToApply = {}
+    
     for _, part in ipairs(parts) do
-      if part.partName and part.slotPath then
-        table.insert(allPartsToApply, {partName = part.partName, slotPath = part.slotPath})
+      if part.emptyPlaceholder or (part.partName == "" or not part.partName) then
+        removalMarkers[part.slotPath] = part
+      elseif part.partName and part.slotPath then
+        table.insert(partsToApply, {partName = part.partName, slotPath = part.slotPath})
       end
     end
     
-    local requiredParts = getAllRequiredParts(businessId, vehicleId, allPartsToApply, parts)
+    -- Apply removal markers first (clear parts from config)
+    for slotPath, removalMarker in pairs(removalMarkers) do
+      local node = getNodeFromSlotPath(completeConfig.partsTree, slotPath)
+      if node then
+        node.chosenPartName = ""
+        node.emptyPlaceholder = true
+        clearChildParts(node, slotPath)
+      end
+    end
+    
+    -- Use the same system as vanilla: find all required parts recursively
+    local requiredParts = getAllRequiredParts(businessId, vehicleId, partsToApply, parts)
     
     local allParts = {}
     for _, part in ipairs(parts) do
-      if part.partName and part.slotPath then
+      if part.partName and part.slotPath and part.partName ~= "" then
         allParts[part.slotPath] = part
       end
     end
@@ -714,7 +755,7 @@ local function applyCartPartsToVehicle(businessId, vehicleId, parts)
     end
     
     for slotPath, part in pairs(allParts) do
-      if part.partName and part.slotPath then
+      if part.partName and part.slotPath and part.partName ~= "" then
         createOrUpdatePartsTreeNode(completeConfig.partsTree, part.partName, part.slotPath)
       end
     end
@@ -804,7 +845,7 @@ end
 
 local function getInitialVehicleState(businessId)
   if initialVehicles[businessId] then
-    return initialVehicles[businessId]
+    return deepcopy(initialVehicles[businessId])
   end
   return nil
 end
