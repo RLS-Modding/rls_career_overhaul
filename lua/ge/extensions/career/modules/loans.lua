@@ -200,8 +200,15 @@ local function processDuePayments(elapsedSimSeconds)
         awardOrgReputation(loan.orgId, 1, loan.orgName)
       else
         local price = { money = { amount = needed } }
-        if career_modules_payment and career_modules_payment.canPay(price) and career_modules_payment.pay(price, { label = string.format("Loan payment (%s)", loan.orgName or loan.orgId) }) then
-
+        local paymentSuccess = false
+        
+        if loan.businessAccountId and career_modules_bank then
+          paymentSuccess = career_modules_bank.payFromAccount(price, loan.businessAccountId)
+        elseif career_modules_payment then
+          paymentSuccess = career_modules_payment.canPay(price) and career_modules_payment.pay(price, { label = string.format("Loan payment (%s)", loan.orgName or loan.orgId) })
+        end
+        
+        if paymentSuccess then
           loan.principalOutstanding = r2(math.max(0, (loan.principalOutstanding or 0) - principalDue))
           loan.paymentsSent = (loan.paymentsSent or 0) + 1
           loan.amountPaid = r2((loan.amountPaid or 0) + needed)
@@ -264,7 +271,7 @@ local function onUpdate(dtReal, dtSim, dtRaw)
   end
 end
 
-local function takeLoan(orgId, amount, payments, rate, uncapped)
+local function takeLoan(orgId, amount, payments, rate, uncapped, businessAccountId)
   getLoanOrganizations()
   local org = freeroam_organizations.getOrganizations()[orgId]
   if not org then return {error = "invalid_org"} end
@@ -302,10 +309,15 @@ local function takeLoan(orgId, amount, payments, rate, uncapped)
     secondsUntilNextPayment = PAYMENT_INTERVAL_S,
     prepaidCredit = 0,
     amountPaid = 0,
+    businessAccountId = businessAccountId,
   }
   table.insert(activeLoans, loan)
 
-  if career_modules_payment then
+  if businessAccountId then
+    -- For business loans, the loan amount is debt, not cash - don't reward anything
+    -- The down payment was already deposited into the business account separately
+    -- Do nothing - this is just debt tracking
+  elseif career_modules_payment then
     career_modules_payment.reward({ money = { amount = amount } }, { label = string.format("Loan received (%s)", loan.orgName) }, true)
   else
     career_modules_playerAttributes.addAttributes({money = amount}, {label = string.format("Loan received (%s)", loan.orgName)})
@@ -329,8 +341,18 @@ local function prepayLoan(loanId, amount)
   for index, loan in ipairs(activeLoans) do
     if loan.id == loanId then
       local price = { money = { amount = amount } }
-      if not (career_modules_payment and career_modules_payment.canPay(price)) then return { error = "insufficient_funds" } end
-      if not career_modules_payment.pay(price, { label = string.format("Loan prepayment (%s)", loan.orgName or loan.orgId) }) then return { error = "pay_failed" } end
+      local paymentSuccess = false
+      
+      if loan.businessAccountId and career_modules_bank then
+        local account = career_modules_bank.getAccountBalance(loan.businessAccountId)
+        if (account or 0) < amount then return { error = "insufficient_funds" } end
+        paymentSuccess = career_modules_bank.payFromAccount(price, loan.businessAccountId)
+      elseif career_modules_payment then
+        if not career_modules_payment.canPay(price) then return { error = "insufficient_funds" } end
+        paymentSuccess = career_modules_payment.pay(price, { label = string.format("Loan prepayment (%s)", loan.orgName or loan.orgId) })
+      end
+      
+      if not paymentSuccess then return { error = "pay_failed" } end
 
       local base = loan.basePayment or 0
       local interest = r2(base * (loan.rate or 0))

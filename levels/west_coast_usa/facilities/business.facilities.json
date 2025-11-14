@@ -5,6 +5,7 @@
       "type": "tuningShop",
       "name": "Tuning Shop",
       "price": 500000,
+      "downPayment": 25000,
       "description": "Professional vehicle tuning services. Accept tuning jobs and improve vehicle performance.",
       
       "icon": "poi_laptop_round",

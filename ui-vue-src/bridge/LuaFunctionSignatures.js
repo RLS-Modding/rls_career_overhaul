@@ -1147,7 +1147,9 @@ export default {
   career_modules_business_businessManager: {
     requestBusinessData: () => {},
     canPayBusiness: () => {},
+    canAffordDownPayment: () => {},
     buyBusiness: () => {},
+    financeBusiness: () => {},
     cancelBusinessPurchase: () => {},
   },
 

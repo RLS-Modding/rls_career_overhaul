@@ -19,6 +19,12 @@
               Purchase
             </BngButton>
             <BngButton
+              @click="showFinanceModal = true"
+              :accent="ACCENTS.primary"
+            >
+              Finance
+            </BngButton>
+            <BngButton
               @click="cancelPurchase"
               :accent="ACCENTS.secondary"
             >
@@ -27,25 +33,65 @@
           </div>
         </BngCard>
       </div>
+
+    <div v-if="showFinanceModal" class="confirmation-overlay finance-overlay" v-bng-blur @click.stop>
+      <BngCard class="confirmation-card" @click.stop>
+        <BngCardHeading>Finance {{ businessName }}</BngCardHeading>
+
+        <div class="modal-content">
+          <p>Finance this business with a down payment?</p>
+          <div class="finance-details">
+            <p><strong>Down Payment:</strong> <BngUnit :money="downPayment" /></p>
+            <p><strong>Amount to Finance:</strong> <BngUnit :money="financedAmount" /></p>
+            <p><strong>Terms:</strong> 0% interest, 6 hours (72 payments every 5 minutes)</p>
+          </div>
+        </div>
+
+        <div class="confirm-button-container">
+          <BngButton
+            @click="confirmFinance"
+            :accent="ACCENTS.primary"
+            :disabled="!canAffordDownPayment"
+          >
+            Confirm Finance
+          </BngButton>
+          <BngButton
+            @click="showFinanceModal = false"
+            :accent="ACCENTS.secondary"
+          >
+            Cancel
+          </BngButton>
+        </div>
+      </BngCard>
+    </div>
   </LayoutSingle>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { lua } from '@/bridge'
 import {
   BngButton,
   ACCENTS,
   BngCard,
-  BngCardHeading
+  BngCardHeading,
+  BngUnit
 } from '@/common/components/base'
 import { LayoutSingle } from '@/common/layouts'
+import { vBngBlur } from '@/common/directives'
 
 const purchaseButton = ref(null)
 const price = ref(0)
 const businessName = ref('')
 const description = ref('')
+const downPayment = ref(0)
 const cantPay = ref(true)
+const showFinanceModal = ref(false)
+const canAffordDownPayment = ref(false)
+
+const financedAmount = computed(() => {
+  return Math.max(0, price.value - downPayment.value)
+})
 
 onMounted(async () => {
   const businessData = await lua.career_modules_business_businessManager.requestBusinessData()
@@ -53,7 +99,9 @@ onMounted(async () => {
     price.value = businessData.price
     businessName.value = businessData.name
     description.value = businessData.description || ''
+    downPayment.value = businessData.downPayment || 0
     cantPay.value = !(await lua.career_modules_business_businessManager.canPayBusiness())
+    canAffordDownPayment.value = await lua.career_modules_business_businessManager.canAffordDownPayment()
   }
 })
 
@@ -64,6 +112,11 @@ function confirmPurchase() {
 
 function cancelPurchase() {
   lua.career_modules_business_businessManager.cancelBusinessPurchase()
+  lua.career_career.closeAllMenus()
+}
+
+function confirmFinance() {
+  lua.career_modules_business_businessManager.financeBusiness()
   lua.career_career.closeAllMenus()
 }
 
@@ -114,6 +167,19 @@ function cancelPurchase() {
   justify-content: center;
   gap: 1em;
   margin-top: 0.25em;
+}
+
+.finance-overlay {
+  z-index: 101;
+  background: rgba(0, 0, 0, 0.85);
+}
+
+.finance-details {
+  margin-top: 1em;
+  text-align: left;
+  p {
+    margin: 0.5em 0;
+  }
 }
 </style>
 
