@@ -30,6 +30,22 @@ local function loadBusinessJobs(businessId)
     completed = data.completed or {}
   }
   
+  for _, job in ipairs(businessJobs[businessId].active or {}) do
+    if job.jobId then
+      job.jobId = tonumber(job.jobId) or job.jobId
+    end
+  end
+  for _, job in ipairs(businessJobs[businessId].new or {}) do
+    if job.jobId then
+      job.jobId = tonumber(job.jobId) or job.jobId
+    end
+  end
+  for _, job in ipairs(businessJobs[businessId].completed or {}) do
+    if job.jobId then
+      job.jobId = tonumber(job.jobId) or job.jobId
+    end
+  end
+  
   return businessJobs[businessId]
 end
 
@@ -88,11 +104,15 @@ local function getJobsForBusiness(businessId, businessType)
 end
 
 local function acceptJob(businessId, jobId)
+  if not businessId or not jobId then return false end
+  
+  jobId = tonumber(jobId) or jobId
   local jobs = loadBusinessJobs(businessId)
   
   local jobIndex = nil
   for i, job in ipairs(jobs.new or {}) do
-    if job.jobId == jobId then
+    local jId = tonumber(job.jobId) or job.jobId
+    if jId == jobId then
       jobIndex = i
       break
     end
@@ -121,11 +141,15 @@ local function acceptJob(businessId, jobId)
 end
 
 local function declineJob(businessId, jobId)
+  if not businessId or not jobId then return false end
+  
+  jobId = tonumber(jobId) or jobId
   local jobs = loadBusinessJobs(businessId)
   
   local jobIndex = nil
   for i, job in ipairs(jobs.new or {}) do
-    if job.jobId == jobId then
+    local jId = tonumber(job.jobId) or job.jobId
+    if jId == jobId then
       jobIndex = i
       break
     end
@@ -140,18 +164,24 @@ local function declineJob(businessId, jobId)
 end
 
 local function getJobById(businessId, jobId)
+  if not businessId or not jobId then return nil end
+  
+  jobId = tonumber(jobId) or jobId
   local jobs = loadBusinessJobs(businessId)
   
   for _, job in ipairs(jobs.active or {}) do
-    if job.jobId == jobId then return job end
+    local jId = tonumber(job.jobId) or job.jobId
+    if jId == jobId then return job end
   end
   
   for _, job in ipairs(jobs.new or {}) do
-    if job.jobId == jobId then return job end
+    local jId = tonumber(job.jobId) or job.jobId
+    if jId == jobId then return job end
   end
   
   for _, job in ipairs(jobs.completed or {}) do
-    if job.jobId == jobId then return job end
+    local jId = tonumber(job.jobId) or job.jobId
+    if jId == jobId then return job end
   end
   
   return nil
@@ -173,15 +203,30 @@ local function getJobCurrentTime(businessId, jobId)
 end
 
 local function canCompleteJob(businessId, jobId)
+  if not businessId or not jobId then return false end
+  
+  jobId = tonumber(jobId) or jobId
   local job = getJobById(businessId, jobId)
-  if not job then return false end
+  if not job then 
+    log("D", "businessJobManager", "canCompleteJob: Job not found. businessId=" .. tostring(businessId) .. ", jobId=" .. tostring(jobId))
+    return false 
+  end
   
-  if job.status ~= "active" then return false end
+  if job.status ~= "active" then 
+    log("D", "businessJobManager", "canCompleteJob: Job not active. businessId=" .. tostring(businessId) .. ", jobId=" .. tostring(jobId) .. ", status=" .. tostring(job.status))
+    return false 
+  end
   
-  if not job.raceType or not job.targetTime then return false end
+  if not job.raceType or not job.targetTime then 
+    log("D", "businessJobManager", "canCompleteJob: Job missing raceType or targetTime. businessId=" .. tostring(businessId) .. ", jobId=" .. tostring(jobId))
+    return false 
+  end
   
   local currentTime = getJobCurrentTime(businessId, jobId)
-  if not currentTime then return false end
+  if not currentTime then 
+    log("D", "businessJobManager", "canCompleteJob: Could not get current time. businessId=" .. tostring(businessId) .. ", jobId=" .. tostring(jobId))
+    return false 
+  end
   
   local targetTime = job.targetTime
   if (job.raceType == "track" or job.raceType == "trackAlt") and targetTime > 1000 then
@@ -189,28 +234,48 @@ local function canCompleteJob(businessId, jobId)
   end
   
   if job.raceType == "drag" or job.raceType == "track" or job.raceType == "trackAlt" then
-    return currentTime <= targetTime
+    local canComplete = currentTime <= targetTime
+    if not canComplete then
+      log("D", "businessJobManager", "canCompleteJob: Time not met. businessId=" .. tostring(businessId) .. ", jobId=" .. tostring(jobId) .. ", currentTime=" .. tostring(currentTime) .. ", targetTime=" .. tostring(targetTime))
+    end
+    return canComplete
   end
   
   return false
 end
 
 local function completeJob(businessId, jobId)
+  if not businessId or not jobId then 
+    log("E", "businessJobManager", "completeJob: Missing parameters. businessId=" .. tostring(businessId) .. ", jobId=" .. tostring(jobId))
+    return false 
+  end
+  
+  jobId = tonumber(jobId) or jobId
   local jobs = loadBusinessJobs(businessId)
   
   local jobIndex = nil
   for i, job in ipairs(jobs.active or {}) do
-    if job.jobId == jobId then
+    local jId = tonumber(job.jobId) or job.jobId
+    if jId == jobId then
       jobIndex = i
       break
     end
   end
   
-  if not jobIndex then return false end
+  if not jobIndex then 
+    log("E", "businessJobManager", "completeJob: Job not found in active jobs. businessId=" .. tostring(businessId) .. ", jobId=" .. tostring(jobId))
+    local activeJobs = jobs.active or {}
+    log("D", "businessJobManager", "completeJob: Available active jobs: " .. tostring(#activeJobs))
+    for i, job in ipairs(activeJobs) do
+      log("D", "businessJobManager", "completeJob: Active job[" .. tostring(i) .. "] jobId=" .. tostring(job.jobId) .. " (type: " .. type(job.jobId) .. ")")
+    end
+    return false 
+  end
   
   local job = jobs.active[jobIndex]
   
   if not canCompleteJob(businessId, jobId) then
+    log("E", "businessJobManager", "completeJob: Job cannot be completed. businessId=" .. tostring(businessId) .. ", jobId=" .. tostring(jobId))
     return false
   end
   
@@ -226,20 +291,23 @@ local function completeJob(businessId, jobId)
         }
       }, accountId)
       if not success then
+        log("E", "businessJobManager", "completeJob: Failed to reward account. businessId=" .. tostring(businessId) .. ", jobId=" .. tostring(jobId) .. ", accountId=" .. tostring(accountId) .. ", reward=" .. tostring(reward))
         return false
       end
     else
+      log("E", "businessJobManager", "completeJob: Business account not found. businessId=" .. tostring(businessId) .. ", jobId=" .. tostring(jobId) .. ", businessType=" .. tostring(businessType))
       return false
     end
   else
+    log("E", "businessJobManager", "completeJob: career_modules_bank not available. businessId=" .. tostring(businessId) .. ", jobId=" .. tostring(jobId))
     return false
   end
   
-  -- Remove vehicle associated with this job (same as abandonJob)
   local vehicles = career_modules_business_businessInventory.getBusinessVehicles(businessId)
   local vehicleToRemove = nil
   for _, vehicle in ipairs(vehicles) do
-    if vehicle.jobId == jobId then
+    local vJobId = tonumber(vehicle.jobId) or vehicle.jobId
+    if vJobId == jobId then
       vehicleToRemove = vehicle
       break
     end
@@ -247,8 +315,12 @@ local function completeJob(businessId, jobId)
   
   if vehicleToRemove then
     local pulledOutVehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
-    if pulledOutVehicle and pulledOutVehicle.vehicleId == vehicleToRemove.vehicleId then
-      career_modules_business_businessInventory.putAwayVehicle(businessId)
+    if pulledOutVehicle then
+      local pulledId = tonumber(pulledOutVehicle.vehicleId) or pulledOutVehicle.vehicleId
+      local removeId = tonumber(vehicleToRemove.vehicleId) or vehicleToRemove.vehicleId
+      if pulledId == removeId then
+        career_modules_business_businessInventory.putAwayVehicle(businessId)
+      end
     end
     career_modules_business_businessInventory.removeVehicle(businessId, vehicleToRemove.vehicleId)
   end
@@ -266,16 +338,21 @@ local function completeJob(businessId, jobId)
   
   career_saveSystem.saveCurrent()
   
+  log("D", "businessJobManager", "completeJob: Successfully completed job. businessId=" .. tostring(businessId) .. ", jobId=" .. tostring(jobId))
   return true
 end
 
 local function abandonJob(businessId, jobId)
+  if not businessId or not jobId then return false end
+  
+  jobId = tonumber(jobId) or jobId
   local jobs = loadBusinessJobs(businessId)
   
   local jobIndex = nil
   local job = nil
   for i, activeJob in ipairs(jobs.active or {}) do
-    if activeJob.jobId == jobId then
+    local jId = tonumber(activeJob.jobId) or activeJob.jobId
+    if jId == jobId then
       jobIndex = i
       job = activeJob
       break
@@ -287,7 +364,8 @@ local function abandonJob(businessId, jobId)
   local vehicles = career_modules_business_businessInventory.getBusinessVehicles(businessId)
   local vehicleToRemove = nil
   for _, vehicle in ipairs(vehicles) do
-    if vehicle.jobId == jobId then
+    local vJobId = tonumber(vehicle.jobId) or vehicle.jobId
+    if vJobId == jobId then
       vehicleToRemove = vehicle
       break
     end
@@ -295,8 +373,12 @@ local function abandonJob(businessId, jobId)
   
   if vehicleToRemove then
     local pulledOutVehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
-    if pulledOutVehicle and pulledOutVehicle.vehicleId == vehicleToRemove.vehicleId then
-      career_modules_business_businessInventory.putAwayVehicle(businessId)
+    if pulledOutVehicle then
+      local pulledId = tonumber(pulledOutVehicle.vehicleId) or pulledOutVehicle.vehicleId
+      local removeId = tonumber(vehicleToRemove.vehicleId) or vehicleToRemove.vehicleId
+      if pulledId == removeId then
+        career_modules_business_businessInventory.putAwayVehicle(businessId)
+      end
     end
     career_modules_business_businessInventory.removeVehicle(businessId, vehicleToRemove.vehicleId)
   end
