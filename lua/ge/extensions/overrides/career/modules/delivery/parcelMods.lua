@@ -228,7 +228,7 @@ local modifiers = {
         makeTemplate = function(g, p, distance)
             return {
                 type = "post",
-                moneyMultipler = 15.0
+                moneyMultipler = 3.0
             }
         end,
         unlockLabel = "Remote Delivery Parcels",
