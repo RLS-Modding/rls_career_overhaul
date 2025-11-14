@@ -33,11 +33,11 @@ local function loadBusinessJobs(businessId)
   return businessJobs[businessId]
 end
 
-local function saveBusinessJobs(businessId)
+local function saveBusinessJobs(businessId, currentSavePath)
   if not businessId or not businessJobs[businessId] then return end
+  if not currentSavePath then return end
   
-  local filePath = getBusinessJobsPath(businessId)
-  if not filePath then return end
+  local filePath = currentSavePath .. "/career/rls_career/businesses/" .. businessId .. "/jobs.json"
   
   local dirPath = string.match(filePath, "^(.*)/[^/]+$")
   if dirPath and not FS:directoryExists(dirPath) then
@@ -78,7 +78,6 @@ local function getJobsForBusiness(businessId, businessType)
   if not jobs.new or #jobs.new == 0 then
     local newJobs = generateNewJobs(businessId, businessType, 5)
     jobs.new = newJobs
-    saveBusinessJobs(businessId)
   end
   
   return {
@@ -118,7 +117,6 @@ local function acceptJob(businessId, jobId)
     career_modules_business_businessInventory.storeVehicle(businessId, vehicleData)
   end
   
-  saveBusinessJobs(businessId)
   return true
 end
 
@@ -135,7 +133,6 @@ local function declineJob(businessId, jobId)
   
   if jobIndex then
     table.remove(jobs.new, jobIndex)
-    saveBusinessJobs(businessId)
     return true
   end
   
@@ -274,7 +271,8 @@ local function completeJob(businessId, jobId)
   if not jobs.completed then jobs.completed = {} end
   table.insert(jobs.completed, job)
   
-  saveBusinessJobs(businessId)
+  career_saveSystem.saveCurrent()
+  
   return true
 end
 
@@ -338,9 +336,14 @@ local function abandonJob(businessId, jobId)
   end
   
   table.remove(jobs.active, jobIndex)
-  saveBusinessJobs(businessId)
   
   return true
+end
+
+local function onSaveCurrentSaveSlot(currentSavePath)
+  for businessId, _ in pairs(businessJobs) do
+    saveBusinessJobs(businessId, currentSavePath)
+  end
 end
 
 function M.onCareerActivated()
@@ -356,6 +359,7 @@ M.abandonJob = abandonJob
 M.getJobById = getJobById
 M.canCompleteJob = canCompleteJob
 M.getJobCurrentTime = getJobCurrentTime
+M.onSaveCurrentSaveSlot = onSaveCurrentSaveSlot
 
 return M
 

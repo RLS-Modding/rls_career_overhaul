@@ -91,6 +91,31 @@ local function getRaceLabel()
     return raceLabel
 end
 
+local function getBusinessAccountFromVehicle(spawnedVehicleId)
+    if not career_career.isActive() or not career_modules_business_businessInventory then
+        return nil
+    end
+    
+    local businessId, vehicleId = career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId(spawnedVehicleId)
+    if not businessId or not vehicleId then
+        return nil
+    end
+    
+    if not career_modules_bank then
+        return nil
+    end
+    
+    local businessTypes = {"tuningShop"}
+    for _, businessType in ipairs(businessTypes) do
+        local businessAccount = career_modules_bank.getBusinessAccount(businessType, businessId)
+        if businessAccount then
+            return businessAccount, businessType, businessId
+        end
+    end
+    
+    return nil
+end
+
 local function payoutRace()
     if not mActiveRace then
         return 0
@@ -285,29 +310,66 @@ local function payoutRace()
         reward = reward / (career_modules_hardcore.isHardcoreMode() and 2 or 1)
 
         if reward > 0 then
-            local xp = math.floor(reward / 20)
-            local totalReward = {
-                money = {
-                    amount = reward
-                },
-                beamXP = {
-                    amount = math.floor(xp / 10)
+            local playerVehicleId = be:getPlayerVehicleID(0)
+            local businessAccount, businessType, businessId = getBusinessAccountFromVehicle(playerVehicleId)
+            
+            if businessAccount then
+                local businessReward = math.floor(reward * 0.5)
+                local xp = math.floor(reward / 20)
+                
+                local xpReward = {
+                    beamXP = {
+                        amount = math.floor(xp / 10)
+                    }
                 }
-            }
-            for _, type in ipairs(race.type) do
-                totalReward[type] = {
-                    amount = xp
+                for _, type in ipairs(race.type) do
+                    xpReward[type] = {
+                        amount = xp
+                    }
+                end
+                
+                career_modules_payment.reward(xpReward, {
+                    label = rewardLabel(mActiveRace, newBest),
+                    tags = {"gameplay", "reward", "mission"}
+                }, true)
+                
+                if career_modules_bank then
+                    career_modules_bank.rewardToAccount({
+                        money = {
+                            amount = businessReward
+                        }
+                    }, businessAccount.id)
+                end
+                
+                message = message .. string.format("\nXP: %d | Business Reward: $%.2f (50%% to business account)", xp, businessReward)
+                if career_modules_hardcore.isHardcoreMode() then
+                    message = message .. "\nHardcore mode is enabled, all rewards are halved."
+                end
+            else
+                local xp = math.floor(reward / 20)
+                local totalReward = {
+                    money = {
+                        amount = reward
+                    },
+                    beamXP = {
+                        amount = math.floor(xp / 10)
+                    }
                 }
-            end
+                for _, type in ipairs(race.type) do
+                    totalReward[type] = {
+                        amount = xp
+                    }
+                end
 
-            career_modules_payment.reward(totalReward, {
-                label = rewardLabel(mActiveRace, newBest),
-                tags = {"gameplay", "reward", "mission"}
-            }, true)
+                career_modules_payment.reward(totalReward, {
+                    label = rewardLabel(mActiveRace, newBest),
+                    tags = {"gameplay", "reward", "mission"}
+                }, true)
 
-            message = message .. string.format("\nXP: %d | Reward: $%.2f", xp, reward)
-            if career_modules_hardcore.isHardcoreMode() then
-                message = message .. "\nHardcore mode is enabled, all rewards are halved."
+                message = message .. string.format("\nXP: %d | Reward: $%.2f", xp, reward)
+                if career_modules_hardcore.isHardcoreMode() then
+                    message = message .. "\nHardcore mode is enabled, all rewards are halved."
+                end
             end
             career_saveSystem.saveCurrent()
         end
@@ -383,36 +445,74 @@ local function payoutDragRace(raceName, finishTime, finishSpeed, vehId)
     -- Calculate experience points
     local xp = math.floor(reward / 20)
 
-    -- Prepare total reward
-    local totalReward = {
-        money = {
-            amount = reward
-        },
-        beamXP = {
-            amount = math.floor(xp / 10)
+    -- Check if this is a business vehicle
+    local businessAccount, businessType, businessId = getBusinessAccountFromVehicle(vehId)
+    
+    if businessAccount then
+        local businessReward = math.floor(reward * 0.5)
+        
+        local xpReward = {
+            beamXP = {
+                amount = math.floor(xp / 10)
+            }
         }
-    }
+        
+        local reason = {
+            label = raceData.label .. (newBestTime and " - New Best Time!" or " - Completion"),
+            tags = {"gameplay", "reward", "drag"}
+        }
+        
+        career_modules_payment.reward(xpReward, reason, true)
+        
+        if career_modules_bank then
+            career_modules_bank.rewardToAccount({
+                money = {
+                    amount = businessReward
+                }
+            }, businessAccount.id)
+        end
+        
+        local message = string.format("%s\n%s\nTime: %s\nSpeed: %.2f mph\nXP: %d | Business Reward: $%.2f (50%% to business account)",
+            newBestTime and "Congratulations! New Best Time!" or "", raceData.label, utils.formatTime(finishTime), finishSpeed,
+            xp, businessReward)
+        
+        if career_modules_hardcore.isHardcoreMode() then
+            message = message .. "\nHardcore mode is enabled, all rewards are halved."
+        end
+        
+        ui_message(message, 20, "Reward")
+    else
+        -- Prepare total reward
+        local totalReward = {
+            money = {
+                amount = reward
+            },
+            beamXP = {
+                amount = math.floor(xp / 10)
+            }
+        }
 
-    -- Create reason for reward
-    local reason = {
-        label = raceData.label .. (newBestTime and " - New Best Time!" or " - Completion"),
-        tags = {"gameplay", "reward", "drag"}
-    }
+        -- Create reason for reward
+        local reason = {
+            label = raceData.label .. (newBestTime and " - New Best Time!" or " - Completion"),
+            tags = {"gameplay", "reward", "drag"}
+        }
 
-    -- Process the reward
-    career_modules_payment.reward(totalReward, reason, true)
+        -- Process the reward
+        career_modules_payment.reward(totalReward, reason, true)
 
-    -- Prepare the completion message
-    local message = string.format("%s\n%s\nTime: %s\nSpeed: %.2f mph\nXP: %d | Reward: $%.2f",
-        newBestTime and "Congratulations! New Best Time!" or "", raceData.label, utils.formatTime(finishTime), finishSpeed,
-        xp, reward)
+        -- Prepare the completion message
+        local message = string.format("%s\n%s\nTime: %s\nSpeed: %.2f mph\nXP: %d | Reward: $%.2f",
+            newBestTime and "Congratulations! New Best Time!" or "", raceData.label, utils.formatTime(finishTime), finishSpeed,
+            xp, reward)
 
-    if career_modules_hardcore.isHardcoreMode() then
-        message = message .. "\nHardcore mode is enabled, all rewards are halved."
+        if career_modules_hardcore.isHardcoreMode() then
+            message = message .. "\nHardcore mode is enabled, all rewards are halved."
+        end
+
+        -- Display the message
+        ui_message(message, 20, "Reward")
     end
-
-    -- Display the message
-    ui_message(message, 20, "Reward")
 
     -- Save the leaderboard and game state
     career_saveSystem.saveCurrent()
