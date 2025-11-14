@@ -444,7 +444,6 @@ function M.onPartsTreeReceived(requestId, partsTreeStr)
       elseif currentVars[varName] ~= nil then
         varData.val = currentVars[varName]
       elseif varData.val == nil then
-        -- If no val is set, use min as baseline (or 0 if min is nil)
         varData.val = varData.min or 0
       end
 
@@ -633,10 +632,10 @@ local function applyTuningToVehicle(businessId, vehicleId, tuningVars)
     updatedConfig.vars = {}
   end
   
-  -- Only apply variables that belong to currently installed parts
+  local varsToApply = {}
+  
   for varName, value in pairs(tuningVars) do
     if tuningData and tuningData[varName] and tuningData[varName]._parts then
-      -- Variable exists in multiple parts - check which part is currently installed
       local partsList = tuningData[varName]._parts
       local shouldApply = false
       
@@ -647,7 +646,6 @@ local function applyTuningToVehicle(businessId, vehicleId, tuningVars)
         if partName and slotPath and partsTree then
           local node = getNodeFromSlotPath(partsTree, slotPath)
           if node and node.chosenPartName == partName then
-            -- This part is installed - apply the variable
             shouldApply = true
             break
           end
@@ -655,13 +653,14 @@ local function applyTuningToVehicle(businessId, vehicleId, tuningVars)
       end
       
       if shouldApply then
-        updatedConfig.vars[varName] = value
+        varsToApply[varName] = value
       end
     else
-      -- Variable doesn't have part info or only exists in one part - apply normally
-      updatedConfig.vars[varName] = value
+      varsToApply[varName] = value
     end
   end
+  
+  updatedConfig.vars = tableMerge(deepcopy(updatedConfig.vars), varsToApply)
   
   local vehId = vehObj:getID()
   
@@ -892,10 +891,9 @@ local function applyVehicleTuning(businessId, vehicleId, tuningVars, accountId)
     vehicle.vars = {}
   end
 
-  -- Merge new tuning vars with existing ones, but only apply variables that belong to installed parts
+  local varsToApply = {}
   for varName, value in pairs(tuningVars) do
     if tuningData and tuningData[varName] and tuningData[varName]._parts then
-      -- Variable exists in multiple parts - check which part is currently installed
       local partsList = tuningData[varName]._parts
       local shouldApply = false
       
@@ -906,7 +904,6 @@ local function applyVehicleTuning(businessId, vehicleId, tuningVars, accountId)
         if partName and slotPath and partsTree then
           local node = getNodeFromSlotPath(partsTree, slotPath)
           if node and node.chosenPartName == partName then
-            -- This part is installed - apply the variable
             shouldApply = true
             break
           end
@@ -914,25 +911,28 @@ local function applyVehicleTuning(businessId, vehicleId, tuningVars, accountId)
       end
       
       if shouldApply then
-        vehicle.vars[varName] = value
+        varsToApply[varName] = value
       end
     else
-      -- Variable doesn't have part info or only exists in one part - apply normally
-      vehicle.vars[varName] = value
+      varsToApply[varName] = value
     end
   end
 
+  local vehicleVarsCurrent = vehicle.vars or {}
+  vehicle.vars = tableMerge(vehicleVarsCurrent, varsToApply)
+
   local pulledOutVehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
   if pulledOutVehicle and pulledOutVehicle.vehicleId == vehicleId then
-    pulledOutVehicle.vars = vehicle.vars
+    if not pulledOutVehicle.vars then
+      pulledOutVehicle.vars = {}
+    end
+    pulledOutVehicle.vars = tableMerge(pulledOutVehicle.vars, vehicle.vars)
     
     if pulledOutVehicle.config then
       if not pulledOutVehicle.config.vars then
         pulledOutVehicle.config.vars = {}
       end
-      for varName, value in pairs(vehicle.vars) do
-        pulledOutVehicle.config.vars[varName] = value
-      end
+      pulledOutVehicle.config.vars = tableMerge(pulledOutVehicle.config.vars, vehicle.vars)
     end
   end
 
@@ -944,9 +944,7 @@ local function applyVehicleTuning(businessId, vehicleId, tuningVars, accountId)
     if not vehicle.config.vars then
       vehicle.config.vars = {}
     end
-    for varName, value in pairs(vehicle.vars) do
-      vehicle.config.vars[varName] = value
-    end
+    vehicle.config.vars = tableMerge(vehicle.config.vars, vehicle.vars)
     updateData.config = vehicle.config
   end
   
