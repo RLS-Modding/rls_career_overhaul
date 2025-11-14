@@ -285,8 +285,11 @@ function M.onPartsTreeReceived(requestId, partsTreeStr)
     -- Process tuning variables from parts tree
     if partsTree and vehicleData.ioCtx then
       -- Helper function to recursively traverse parts tree and extract tuning variables
-      local function extractPartTuningVars(node, partTuningVars)
+      -- Now tracks which part each variable belongs to
+      local function extractPartTuningVars(node, partTuningVars, slotPath)
         if not node then return end
+        
+        local currentSlotPath = slotPath or (node.path or "/")
         
         -- If this node has a chosen part, get its jbeam and extract tuning variables
         if node.chosenPartName and node.chosenPartName ~= "" then
@@ -314,34 +317,42 @@ function M.onPartsTreeReceived(requestId, partsTreeStr)
               end
               
               if isTuningVar then
-                if partTuningVars[varName] then
+                -- Create a unique key that includes part info: varName_partName_slotPath
+                local varKey = varName .. "_" .. node.chosenPartName .. "_" .. currentSlotPath
+                
+                if partTuningVars[varKey] then
+                  -- Variable already exists from another part - merge ranges
                   if varData.min ~= nil then
-                    if partTuningVars[varName].min == nil or varData.min > partTuningVars[varName].min then
-                      partTuningVars[varName].min = varData.min
+                    if partTuningVars[varKey].min == nil or varData.min > partTuningVars[varKey].min then
+                      partTuningVars[varKey].min = varData.min
                     end
                   end
                   if varData.max ~= nil then
-                    if partTuningVars[varName].max == nil or varData.max < partTuningVars[varName].max then
-                      partTuningVars[varName].max = varData.max
+                    if partTuningVars[varKey].max == nil or varData.max < partTuningVars[varKey].max then
+                      partTuningVars[varKey].max = varData.max
                     end
                   end
-                  if varData.step and not partTuningVars[varName].step then
-                    partTuningVars[varName].step = varData.step
+                  if varData.step and not partTuningVars[varKey].step then
+                    partTuningVars[varKey].step = varData.step
                   end
-                  if varData.title and not partTuningVars[varName].title then
-                    partTuningVars[varName].title = varData.title
+                  if varData.title and not partTuningVars[varKey].title then
+                    partTuningVars[varKey].title = varData.title
                   end
-                  if varData.category and not partTuningVars[varName].category then
-                    partTuningVars[varName].category = varData.category
+                  if varData.category and not partTuningVars[varKey].category then
+                    partTuningVars[varKey].category = varData.category
                   end
-                  if varData.subCategory and not partTuningVars[varName].subCategory then
-                    partTuningVars[varName].subCategory = varData.subCategory
+                  if varData.subCategory and not partTuningVars[varKey].subCategory then
+                    partTuningVars[varKey].subCategory = varData.subCategory
                   end
-                  if varData.options and not partTuningVars[varName].options then
-                    partTuningVars[varName].options = deepcopy(varData.options)
+                  if varData.options and not partTuningVars[varKey].options then
+                    partTuningVars[varKey].options = deepcopy(varData.options)
                   end
                 else
-                  partTuningVars[varName] = deepcopy(varData)
+                  -- Store variable with part information
+                  partTuningVars[varKey] = deepcopy(varData)
+                  partTuningVars[varKey]._partName = node.chosenPartName
+                  partTuningVars[varKey]._slotPath = currentSlotPath
+                  partTuningVars[varKey]._varName = varName
                 end
               end
               ::continue::
@@ -351,7 +362,7 @@ function M.onPartsTreeReceived(requestId, partsTreeStr)
         
         if node.children then
           for _, childNode in pairs(node.children) do
-            extractPartTuningVars(childNode, partTuningVars)
+            extractPartTuningVars(childNode, partTuningVars, childNode.path or currentSlotPath)
           end
         end
       end
@@ -359,20 +370,60 @@ function M.onPartsTreeReceived(requestId, partsTreeStr)
       local partTuningVars = {}
       extractPartTuningVars(partsTree, partTuningVars)
       
-      for varName, varData in pairs(partTuningVars) do
-        if not tuningVariables[varName] then
-          tuningVariables[varName] = varData
+      -- Build a map of varName -> array of variable entries (one per part)
+      local varNameToParts = {}
+      for varKey, varData in pairs(partTuningVars) do
+        local varName = varData._varName
+        if not varNameToParts[varName] then
+          varNameToParts[varName] = {}
+        end
+        table.insert(varNameToParts[varName], varData)
+      end
+      
+      -- For each variable name, store all parts that have it
+      -- When multiple parts have the same variable, we'll need to check which part is installed
+      for varName, partsList in pairs(varNameToParts) do
+        if #partsList == 1 then
+          -- Only one part has this variable - store it normally
+          local varData = partsList[1]
+          tuningVariables[varName] = {
+            min = varData.min,
+            max = varData.max,
+            step = varData.step,
+            title = varData.title,
+            category = varData.category,
+            subCategory = varData.subCategory,
+            options = varData.options,
+            _parts = {varData}
+          }
         else
-          if varData.min ~= nil then
-            if tuningVariables[varName].min == nil or varData.min > tuningVariables[varName].min then
-              tuningVariables[varName].min = varData.min
+          -- Multiple parts have this variable - store all of them
+          -- Merge min/max ranges from all parts
+          local mergedMin = nil
+          local mergedMax = nil
+          for _, varData in ipairs(partsList) do
+            if varData.min ~= nil then
+              if mergedMin == nil or varData.min > mergedMin then
+                mergedMin = varData.min
+              end
+            end
+            if varData.max ~= nil then
+              if mergedMax == nil or varData.max < mergedMax then
+                mergedMax = varData.max
+              end
             end
           end
-          if varData.max ~= nil then
-            if tuningVariables[varName].max == nil or varData.max < tuningVariables[varName].max then
-              tuningVariables[varName].max = varData.max
-            end
-          end
+          
+          tuningVariables[varName] = {
+            min = mergedMin,
+            max = mergedMax,
+            step = partsList[1].step,
+            title = partsList[1].title,
+            category = partsList[1].category,
+            subCategory = partsList[1].subCategory,
+            options = partsList[1].options,
+            _parts = partsList
+          }
         end
       end
     end
@@ -511,6 +562,29 @@ local function getVehicleTuningData(businessId, vehicleId)
   return nil -- Return nil since data comes via hook
 end
 
+-- Helper function to get node from slot path (from partShopping.lua)
+local function getNodeFromSlotPath(tree, path)
+  if not tree or not path then return nil end
+  
+  if path == "/" then return tree end
+  
+  local segments = {}
+  for segment in string.gmatch(path, "[^/]+") do
+    table.insert(segments, segment)
+  end
+  
+  local currentNode = tree
+  for _, segment in ipairs(segments) do
+    if currentNode.children and currentNode.children[segment] then
+      currentNode = currentNode.children[segment]
+    else
+      return nil
+    end
+  end
+  
+  return currentNode
+end
+
 -- Function to apply tuning visually to preview vehicle
 local function applyTuningToVehicle(businessId, vehicleId, tuningVars)
   if not businessId or not vehicleId or not tuningVars then
@@ -546,14 +620,47 @@ local function applyTuningToVehicle(businessId, vehicleId, tuningVars)
   local modelKey = vehicle.vehicleConfig.model_key or vehicle.model_key
   if not modelKey then return false end
   
+  -- Get tuning data cache to check which parts variables belong to
+  local cacheKey = businessId .. "_" .. tostring(vehicleId)
+  local tuningData = tuningDataCache[cacheKey]
+  
+  -- Get parts tree to check which parts are installed
+  local partsTree = currentConfig.partsTree
+  
   -- Create updated config with new tuning vars
   local updatedConfig = deepcopy(currentConfig)
   if not updatedConfig.vars then
     updatedConfig.vars = {}
   end
   
+  -- Only apply variables that belong to currently installed parts
   for varName, value in pairs(tuningVars) do
-    updatedConfig.vars[varName] = value
+    if tuningData and tuningData[varName] and tuningData[varName]._parts then
+      -- Variable exists in multiple parts - check which part is currently installed
+      local partsList = tuningData[varName]._parts
+      local shouldApply = false
+      
+      for _, partVarData in ipairs(partsList) do
+        local partName = partVarData._partName
+        local slotPath = partVarData._slotPath
+        
+        if partName and slotPath and partsTree then
+          local node = getNodeFromSlotPath(partsTree, slotPath)
+          if node and node.chosenPartName == partName then
+            -- This part is installed - apply the variable
+            shouldApply = true
+            break
+          end
+        end
+      end
+      
+      if shouldApply then
+        updatedConfig.vars[varName] = value
+      end
+    else
+      -- Variable doesn't have part info or only exists in one part - apply normally
+      updatedConfig.vars[varName] = value
+    end
   end
   
   local vehId = vehObj:getID()
@@ -751,6 +858,16 @@ local function applyVehicleTuning(businessId, vehicleId, tuningVars, accountId)
     return false
   end
 
+  -- Get tuning data cache to check which parts variables belong to
+  local cacheKey = businessId .. "_" .. tostring(vehicleId)
+  local tuningData = tuningDataCache[cacheKey]
+  
+  -- Get parts tree from vehicle config to check which parts are installed
+  local partsTree = nil
+  if vehicle.config and vehicle.config.partsTree then
+    partsTree = vehicle.config.partsTree
+  end
+
   -- Charge from business account if accountId is provided
   if accountId and career_modules_bank then
     -- Get original vars for cost calculation
@@ -775,9 +892,34 @@ local function applyVehicleTuning(businessId, vehicleId, tuningVars, accountId)
     vehicle.vars = {}
   end
 
-  -- Merge new tuning vars with existing ones
+  -- Merge new tuning vars with existing ones, but only apply variables that belong to installed parts
   for varName, value in pairs(tuningVars) do
-    vehicle.vars[varName] = value
+    if tuningData and tuningData[varName] and tuningData[varName]._parts then
+      -- Variable exists in multiple parts - check which part is currently installed
+      local partsList = tuningData[varName]._parts
+      local shouldApply = false
+      
+      for _, partVarData in ipairs(partsList) do
+        local partName = partVarData._partName
+        local slotPath = partVarData._slotPath
+        
+        if partName and slotPath and partsTree then
+          local node = getNodeFromSlotPath(partsTree, slotPath)
+          if node and node.chosenPartName == partName then
+            -- This part is installed - apply the variable
+            shouldApply = true
+            break
+          end
+        end
+      end
+      
+      if shouldApply then
+        vehicle.vars[varName] = value
+      end
+    else
+      -- Variable doesn't have part info or only exists in one part - apply normally
+      vehicle.vars[varName] = value
+    end
   end
 
   local pulledOutVehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
