@@ -8,6 +8,19 @@ local factoryConfigs = nil
 local jobs = {}
 local jobIdCounter = 0
 
+local blacklistedModels = {
+  atv = true,
+  citybus = true,
+  lansdale = true,
+  md_series = true,
+  pigeon = true,
+  racetruck = true,
+  rockbouncer = true,
+  us_semi = true,
+  van = true,
+  utv = true
+}
+
 local function loadRaceData()
   local currentLevel = getCurrentLevelIdentifier()
   if not currentLevel then return {} end
@@ -31,7 +44,7 @@ local function getFactoryConfigs()
     if not configType and vehicleInfo.aggregates and vehicleInfo.aggregates["Config Type"] then
       configType = next(vehicleInfo.aggregates["Config Type"])
     end
-    if configType == "Factory" then
+    if configType == "Factory" and not blacklistedModels[vehicleInfo.model_key] then
       table.insert(factoryConfigs, vehicleInfo)
     end
   end
