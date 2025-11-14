@@ -320,7 +320,7 @@ const handlePowerWeightData = (data) => {
   store.handlePowerWeightData(data)
 }
 
-const expanded = ref(false)
+const expanded = ref(true)
 const businessBalance = ref(0)
 const tabMenuVisible = ref(false)
 const tabMenuTabId = ref(null)
