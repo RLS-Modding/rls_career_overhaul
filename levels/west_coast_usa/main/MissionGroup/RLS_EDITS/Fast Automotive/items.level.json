@@ -6,3 +6,4 @@
 {"name":"Fast Auto Props","class":"SimGroup","__parent":"Fast Automotive"}
 {"name":"garageOfficeLightsFATrigger","class":"BeamNGTrigger","__parent":"Fast Automotive","position":[303.134277,-122.906151,148.076584],"luaFunction":"onBeamNGTrigger","rotationMatrix":[-8.74227695e-08,0.999999881,0,-0.999999881,-8.74227695e-08,0,0,0,0.999999881],"scale":[30.7248669,29.5001221,9.68263626],"tickPeriod":500,"ticking":true,"triggerMode":"Overlaps","triggerTestType":"Bounding box"}
 {"name":"garageMainLightsFA","class":"SimGroup","__parent":"Fast Automotive"}
+{"class":"TSStatic","__parent":"Fast Automotive","position":[285.729767,-116.667923,142.575989],"isRenderEnabled":false,"rotationMatrix":[1,0,0,0,0.916838288,-0.399258673,0,0.399258673,0.916838288],"shapeName":"/levels/west_coast_usa/art/shapes/rocks/eca_rock_big_narrow.dae","useInstanceRenderData":true}
