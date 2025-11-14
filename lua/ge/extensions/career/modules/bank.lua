@@ -120,6 +120,8 @@ local function onSaveCurrentSaveSlot(currentSavePath)
   end
 end
 
+local processPendingTransfers
+
 local function triggerAccountUpdate(accountId)
   if not accountId or not accounts[accountId] then
     return
@@ -154,7 +156,7 @@ local function triggerAccountUpdate(accountId)
   end
 end
 
-local function processPendingTransfers()
+processPendingTransfers = function()
   if not career_career.isActive() then
     return
   end
