@@ -714,11 +714,14 @@ watch(() => store.pulledOutVehicle, (newVehicle, oldVehicle) => {
 // Watch for tab changes and reload parts tree to reflect the new tab's cart
 watch(() => store.activeTabId, async (newTabId, oldTabId) => {
   if (newTabId && newTabId !== oldTabId && store.pulledOutVehicle && store.vehicleView === 'parts') {
-    // Wait for the vehicle to update with the new tab's parts (switchTab applies parts asynchronously)
-    // Give it enough time for vehicle replacement to complete
+    if (store.isCurrentTabApplied) {
+      return
+    }
     setTimeout(() => {
-      loadPartsTree()
-    }, 600) // Delay to ensure vehicle has been updated with new tab's parts
+      if (!store.isCurrentTabApplied) {
+        loadPartsTree()
+      }
+    }, 600)
   }
 })
 

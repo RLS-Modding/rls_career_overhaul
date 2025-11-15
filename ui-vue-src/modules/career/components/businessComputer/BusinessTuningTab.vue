@@ -998,7 +998,7 @@ onBeforeUnmount(() => {
 })
 
 watch(() => store.activeTabId, () => {
-  if (store.vehicleView === 'tuning') {
+  if (store.vehicleView === 'tuning' && !store.isCurrentTabApplied) {
     loadTuningFromCart()
   }
 })

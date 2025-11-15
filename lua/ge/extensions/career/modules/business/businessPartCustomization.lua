@@ -10,6 +10,7 @@ local initialVehicles = {}
 local previewVehicleSlotData = {}
 local powerWeightCache = {}
 local powerWeightCallbacks = {}
+local vehicleOperationInProgress = {}
 
 local function getBusinessVehicleObject(businessId, vehicleId)
   if not businessId or not vehicleId then return nil end
@@ -267,36 +268,43 @@ local function resetVehicleToOriginal(businessId, vehicleId)
     if not modelKey then return end
     
     local originalConfig = nil
-    if vehicle.config then
-      originalConfig = deepcopy(vehicle.config)
+    local baselineExists = initialVehicles[businessId] ~= nil
+    
+    if baselineExists then
+      originalConfig = deepcopy(initialVehicles[businessId].config)
     else
-      local vehId = vehObj:getID()
-      local vehicleData = extensions.core_vehicle_manager.getVehicleData(vehId)
-      if vehicleData and vehicleData.config then
-        originalConfig = deepcopy(vehicleData.config)
+      if vehicle.config then
+        originalConfig = deepcopy(vehicle.config)
       else
-        return
+        local vehId = vehObj:getID()
+        local vehicleData = extensions.core_vehicle_manager.getVehicleData(vehId)
+        if vehicleData and vehicleData.config then
+          originalConfig = deepcopy(vehicleData.config)
+        else
+          return
+        end
       end
+      
+      if vehicle.vars then
+        originalConfig.vars = deepcopy(vehicle.vars)
+      end
+      
+      initialVehicles[businessId] = {
+        config = deepcopy(originalConfig),
+        partList = flattenPartsTree(originalConfig.partsTree or {}),
+        partConditions = deepcopy(vehicle.partConditions or {}),
+        vars = deepcopy(vehicle.vars or {}),
+        model = modelKey
+      }
     end
-    
-    if vehicle.vars then
-      originalConfig.vars = deepcopy(vehicle.vars)
-    end
-    
-    initialVehicles[businessId] = {
-      config = deepcopy(originalConfig),
-      partList = flattenPartsTree(originalConfig.partsTree or {}),
-      partConditions = deepcopy(vehicle.partConditions or {}),
-      vars = deepcopy(vehicle.vars or {}),
-      model = modelKey
-    }
     
     local vehId = vehObj:getID()
     
     replaceVehicleWithFuelHandling(vehObj, modelKey, originalConfig, 
       function()
-        if vehicle.partConditions then
-          core_vehicleBridge.executeAction(vehObj, 'initPartConditions', vehicle.partConditions, nil, nil, nil, nil)
+        local partConditions = baselineExists and initialVehicles[businessId].partConditions or vehicle.partConditions
+        if partConditions then
+          core_vehicleBridge.executeAction(vehObj, 'initPartConditions', partConditions, nil, nil, nil, nil)
         end
       end,
       function()
@@ -307,7 +315,7 @@ local function resetVehicleToOriginal(businessId, vehicleId)
     previewVehicles[businessId] = {
       config = deepcopy(originalConfig),
       partList = flattenPartsTree(originalConfig.partsTree or {}),
-      partConditions = deepcopy(vehicle.partConditions or {}),
+      partConditions = deepcopy(baselineExists and initialVehicles[businessId].partConditions or vehicle.partConditions or {}),
       model = modelKey
     }
   end)
@@ -678,11 +686,22 @@ local function getAllRequiredParts(businessId, vehicleId, parts, cartParts)
 local function applyCartPartsToVehicle(businessId, vehicleId, parts)
   if not businessId or not vehicleId then return false end
   
+  local operationKey = businessId .. "_" .. tostring(vehicleId)
+  if vehicleOperationInProgress[operationKey] then
+    return false
+  end
+  
+  vehicleOperationInProgress[operationKey] = true
+  
   local vehObj = getBusinessVehicleObject(businessId, vehicleId)
-  if not vehObj then return false end
+  if not vehObj then
+    vehicleOperationInProgress[operationKey] = nil
+    return false
+  end
   
   if not initialVehicles[businessId] then
     if not initializePreviewVehicle(businessId, vehicleId) then
+      vehicleOperationInProgress[operationKey] = nil
       return false
     end
   end
@@ -690,6 +709,7 @@ local function applyCartPartsToVehicle(businessId, vehicleId, parts)
   -- Use the stored initial vehicle config (baseline from inventory)
   local initialVehicle = initialVehicles[businessId]
   if not initialVehicle or not initialVehicle.config then
+    vehicleOperationInProgress[operationKey] = nil
     return false
   end
   
@@ -774,6 +794,7 @@ local function applyCartPartsToVehicle(businessId, vehicleId, parts)
       core_vehicleBridge.executeAction(vehObj, 'initPartConditions', previewVehicles[businessId].partConditions or {}, nil, nil, nil, nil)
     end,
     function()
+      vehicleOperationInProgress[operationKey] = nil
       if career_modules_business_businessComputer then
         career_modules_business_businessComputer.requestVehiclePartsTree(businessId, vehicleId)
       end
@@ -1233,6 +1254,11 @@ local function clearPreviewVehicle(businessId)
     initialVehicles[businessId] = nil
     previewVehicleSlotData[businessId] = nil
     powerWeightCache = {}
+    for key, _ in pairs(vehicleOperationInProgress) do
+      if key:match("^" .. businessId .. "_") then
+        vehicleOperationInProgress[key] = nil
+      end
+    end
   end
 end
 

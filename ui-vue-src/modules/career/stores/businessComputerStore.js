@@ -14,9 +14,11 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   const tuningCart = ref([])
   const tuningDataCache = ref({})
   
-  const cartTabs = ref([{ id: 'default', name: 'Build 1', parts: [], tuning: [] }])
+  const cartTabs = ref([{ id: 'default', name: 'Build 1', parts: [], tuning: [], cartHash: null }])
   const activeTabId = ref('default')
   const originalVehicleState = ref(null)
+  const currentAppliedCartHash = ref(null)
+  const isSwitchingTab = ref(false)
   
   const originalPower = ref(null)
   const originalWeight = ref(null)
@@ -285,11 +287,36 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     }
   }
 
+  const generateCartHash = (parts, tuning) => {
+    const partsData = (parts || []).map(p => ({
+      slotPath: p.slotPath || '',
+      partName: p.partName || '',
+      emptyPlaceholder: p.emptyPlaceholder || false
+    })).sort((a, b) => (a.slotPath + a.partName).localeCompare(b.slotPath + b.partName))
+    
+    const tuningData = (tuning || []).filter(t => t.type === 'variable' && t.varName && t.value !== undefined)
+      .map(t => ({
+        varName: t.varName || '',
+        value: t.value
+      })).sort((a, b) => a.varName.localeCompare(b.varName))
+    
+    const hashString = JSON.stringify({ parts: partsData, tuning: tuningData })
+    
+    let hash = 0
+    for (let i = 0; i < hashString.length; i++) {
+      const char = hashString.charCodeAt(i)
+      hash = ((hash << 5) - hash) + char
+      hash = hash & hash
+    }
+    return hash.toString(36)
+  }
+  
   const saveCurrentTabState = () => {
     const activeTab = cartTabs.value.find(tab => tab.id === activeTabId.value)
     if (activeTab) {
       activeTab.parts = JSON.parse(JSON.stringify(partsCart.value))
       activeTab.tuning = JSON.parse(JSON.stringify(tuningCart.value))
+      activeTab.cartHash = generateCartHash(activeTab.parts, activeTab.tuning)
     }
   }
   
@@ -298,8 +325,26 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     if (tab) {
       partsCart.value = JSON.parse(JSON.stringify(tab.parts || []))
       tuningCart.value = JSON.parse(JSON.stringify(tab.tuning || []))
+      if (!tab.cartHash) {
+        tab.cartHash = generateCartHash(tab.parts || [], tab.tuning || [])
+      }
     }
   }
+  
+  const getCurrentTabHash = () => {
+    const activeTab = cartTabs.value.find(tab => tab.id === activeTabId.value)
+    if (activeTab && activeTab.cartHash) {
+      return activeTab.cartHash
+    }
+    return generateCartHash(partsCart.value, tuningCart.value)
+  }
+  
+  const isCurrentTabApplied = computed(() => {
+    const activeTab = cartTabs.value.find(tab => tab.id === activeTabId.value)
+    if (!activeTab || !currentAppliedCartHash.value) return false
+    const tabHash = activeTab.cartHash || generateCartHash(activeTab.parts || [], activeTab.tuning || [])
+    return currentAppliedCartHash.value === tabHash
+  })
   
   const createNewTab = async () => {
     try {
@@ -322,7 +367,8 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
         id: `tab_${Date.now()}`,
         name: `Build ${newTabNumber}`,
         parts: [],
-        tuning: []
+        tuning: [],
+        cartHash: generateCartHash([], [])
       }
       
       cartTabs.value.push(newTab)
@@ -330,6 +376,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
       
       partsCart.value = []
       tuningCart.value = []
+      currentAppliedCartHash.value = generateCartHash([], [])
       
       if (businessId.value && pulledOutVehicle.value?.vehicleId) {
         try {
@@ -353,46 +400,67 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   
   const switchTab = async (tabId) => {
     if (tabId === activeTabId.value) return
+    if (isSwitchingTab.value) return
     
-    saveCurrentTabState()
+    isSwitchingTab.value = true
     
-    const targetTab = cartTabs.value.find(t => t.id === tabId)
-    if (!targetTab) return
-    
-    activeTabId.value = tabId
-    loadTabState(tabId)
-    
-    if (businessId.value && pulledOutVehicle.value?.vehicleId) {
-      try {
-        await lua.career_modules_business_businessComputer.applyCartPartsToVehicle(
-          businessId.value,
-          pulledOutVehicle.value.vehicleId,
-          partsCart.value
-        )
-        
-        const tuningVars = {}
-        const cart = Array.isArray(tuningCart.value) ? tuningCart.value : []
-        cart.forEach(change => {
-          if (change.type === 'variable' && change.varName && change.value !== undefined) {
-            tuningVars[change.varName] = change.value
-          }
-        })
-        await lua.career_modules_business_businessComputer.applyTuningToVehicle(
-          businessId.value,
-          pulledOutVehicle.value.vehicleId,
-          tuningVars
-        )
-        
-        setTimeout(() => {
-          if (vehicleView.value === 'parts') {
-            requestVehiclePartsTree(pulledOutVehicle.value.vehicleId)
-          }
-          if (vehicleView.value === 'tuning') {
-            requestVehicleTuningData(pulledOutVehicle.value.vehicleId)
-          }
-          }, 100)
-      } catch (error) {
+    try {
+      saveCurrentTabState()
+      
+      const targetTab = cartTabs.value.find(t => t.id === tabId)
+      if (!targetTab) {
+        isSwitchingTab.value = false
+        return
       }
+      
+      const targetHash = targetTab.cartHash || generateCartHash(targetTab.parts || [], targetTab.tuning || [])
+      
+      if (businessId.value && pulledOutVehicle.value?.vehicleId && currentAppliedCartHash.value === targetHash) {
+        activeTabId.value = tabId
+        isSwitchingTab.value = false
+        return
+      }
+      
+      activeTabId.value = tabId
+      loadTabState(tabId)
+      
+      if (businessId.value && pulledOutVehicle.value?.vehicleId) {
+        
+        try {
+          await lua.career_modules_business_businessComputer.applyCartPartsToVehicle(
+            businessId.value,
+            pulledOutVehicle.value.vehicleId,
+            partsCart.value
+          )
+          
+          const tuningVars = {}
+          const cart = Array.isArray(tuningCart.value) ? tuningCart.value : []
+          cart.forEach(change => {
+            if (change.type === 'variable' && change.varName && change.value !== undefined) {
+              tuningVars[change.varName] = change.value
+            }
+          })
+          await lua.career_modules_business_businessComputer.applyTuningToVehicle(
+            businessId.value,
+            pulledOutVehicle.value.vehicleId,
+            tuningVars
+          )
+          
+          currentAppliedCartHash.value = targetHash
+          
+          setTimeout(() => {
+            if (vehicleView.value === 'parts') {
+              requestVehiclePartsTree(pulledOutVehicle.value.vehicleId)
+            }
+            if (vehicleView.value === 'tuning') {
+              requestVehicleTuningData(pulledOutVehicle.value.vehicleId)
+            }
+          }, 100)
+        } catch (error) {
+        }
+      }
+    } finally {
+      isSwitchingTab.value = false
     }
   }
   
@@ -439,7 +507,8 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
       id: `tab_${Date.now()}`,
       name: `Build ${newTabNumber}`,
       parts: JSON.parse(JSON.stringify(tab.parts || [])),
-      tuning: JSON.parse(JSON.stringify(tab.tuning || []))
+      tuning: JSON.parse(JSON.stringify(tab.tuning || [])),
+      cartHash: generateCartHash(tab.parts || [], tab.tuning || [])
     }
     
     cartTabs.value.push(duplicatedTab)
@@ -476,8 +545,12 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
             tuningVars
           )
         }
+        
+        currentAppliedCartHash.value = generateCartHash(partsCart.value, tuningCart.value)
       } catch (error) {
       }
+    } else if (hasSameContent) {
+      currentAppliedCartHash.value = generateCartHash(partsCart.value, tuningCart.value)
     }
   }
   
@@ -503,6 +576,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
           canRemove: item.canRemove !== false
         }))
         saveCurrentTabState()
+        currentAppliedCartHash.value = generateCartHash(partsCart.value, tuningCart.value)
         
         setTimeout(() => {
           if (vehicleView.value === 'parts') {
@@ -545,6 +619,8 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
           ...item,
           id: `${item.slotPath}_${item.partName}`
         }))
+        saveCurrentTabState()
+        currentAppliedCartHash.value = generateCartHash(partsCart.value, tuningCart.value)
       }
     } catch (error) {
     }
@@ -677,6 +753,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
       
       partsCart.value = partsCart.value.filter(item => !idsToRemove.includes(item.id))
       saveCurrentTabState()
+      currentAppliedCartHash.value = generateCartHash(partsCart.value, tuningCart.value)
       
       if (businessId.value && pulledOutVehicle.value?.vehicleId) {
         try {
@@ -781,6 +858,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
               
               partsCart.value = [...partsCart.value, ...removalMarkers]
               saveCurrentTabState()
+              currentAppliedCartHash.value = generateCartHash(partsCart.value, tuningCart.value)
               
               await lua.career_modules_business_businessComputer.applyCartPartsToVehicle(
                 businessId.value,
@@ -839,6 +917,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     if (index >= 0) {
       tuningCart.value.splice(index, 1)
       saveCurrentTabState()
+      currentAppliedCartHash.value = generateCartHash(partsCart.value, tuningCart.value)
     }
   }
 
@@ -901,6 +980,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
       
       tuningCart.value = itemsArray
       saveCurrentTabState()
+      currentAppliedCartHash.value = generateCartHash(partsCart.value, tuningCart.value)
       
       // Update power/weight after tuning change
       updatePowerWeight()
@@ -912,10 +992,11 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
 
   const clearCart = () => {
     // Reset to a single default tab with empty cart
-    cartTabs.value = [{ id: 'default', name: 'Build 1', parts: [], tuning: [] }]
+    cartTabs.value = [{ id: 'default', name: 'Build 1', parts: [], tuning: [], cartHash: generateCartHash([], []) }]
     activeTabId.value = 'default'
     partsCart.value = []
     tuningCart.value = []
+    currentAppliedCartHash.value = null
   }
   
   const handlePowerWeightData = (data) => {
@@ -936,11 +1017,12 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   }
   
   const initializeCartForVehicle = async () => {
-    cartTabs.value = [{ id: 'default', name: 'Build 1', parts: [], tuning: [] }]
+    cartTabs.value = [{ id: 'default', name: 'Build 1', parts: [], tuning: [], cartHash: generateCartHash([], []) }]
     activeTabId.value = 'default'
     partsCart.value = []
     tuningCart.value = []
     originalVehicleState.value = null
+    currentAppliedCartHash.value = generateCartHash([], [])
     
     originalPower.value = null
     originalWeight.value = null
@@ -1134,6 +1216,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     weightChange,
     updatePowerWeight,
     handlePowerWeightData,
+    isCurrentTabApplied,
   }
 })
 
