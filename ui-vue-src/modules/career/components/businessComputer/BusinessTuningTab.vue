@@ -286,7 +286,7 @@ const organizeTuningData = (tuningData) => {
     // Add variable to subcategory
     let displayVal
     if (varData.unit === '%' || varData.unit === 'percent') {
-      displayVal = (varData.valDis ?? varData.minDis ?? 0) * 100
+      displayVal = varData.valDis ?? varData.minDis ?? 0
       if (varData.category === "Wheel Alignment") {
         displayVal = Math.round(displayVal)
       }
@@ -332,8 +332,7 @@ const organizeTuningData = (tuningData) => {
 
 const formatValue = (value, unit) => {
   if (unit === '%' || unit === 'percent') {
-    // Multiply by 100 for percentage display
-    return (value * 100).toFixed(2)
+    return value.toFixed(2)
   }
   if (unit) {
     return `${value}${unit}`
@@ -344,11 +343,10 @@ const formatValue = (value, unit) => {
 const getDisplayValue = (varData) => {
   const value = varData.valDis ?? (varData.minDis ?? 0)
   if (varData.unit === '%' || varData.unit === 'percent') {
-    const display = value * 100
     if (varData.category === "Wheel Alignment") {
-      return Math.round(display)
+      return Math.round(value)
     }
-    return display
+    return value
   }
   return value
 }
@@ -356,7 +354,7 @@ const getDisplayValue = (varData) => {
 const getDisplayMin = (varData) => {
   const min = varData.minDis ?? 0
   if (varData.unit === '%' || varData.unit === 'percent') {
-    return min * 100
+    return min
   }
   return min
 }
@@ -364,7 +362,7 @@ const getDisplayMin = (varData) => {
 const getDisplayMax = (varData) => {
   const max = varData.maxDis ?? 100
   if (varData.unit === '%' || varData.unit === 'percent') {
-    return max * 100
+    return max
   }
   return max
 }
@@ -375,7 +373,7 @@ const getDisplayStep = (varData) => {
     if (varData.category === "Wheel Alignment") {
       return 1
     }
-    return step * 100
+    return step
   }
   return step
 }
@@ -390,7 +388,6 @@ const onValueInput = (varData) => {
     if (varData.category === "Wheel Alignment") {
       inputValue = Math.round(inputValue)
     }
-    inputValue = inputValue / 100
   }
   
   const min = varData.minDis ?? 0
@@ -406,7 +403,7 @@ const onValueInput = (varData) => {
   if (tuningVariables.value[varData.name]) {
     tuningVariables.value[varData.name].valDis = inputValue
     if (varData.unit === '%' || varData.unit === 'percent') {
-      tuningVariables.value[varData.name].displayValue = Math.round(inputValue * 100)
+      tuningVariables.value[varData.name].displayValue = Math.round(inputValue)
     } else {
       tuningVariables.value[varData.name].displayValue = inputValue
     }
@@ -525,9 +522,9 @@ const handleTuningData = (data) => {
         
         if (baseline[varName].unit === '%' || baseline[varName].unit === 'percent') {
           if (baseline[varName].category === "Wheel Alignment") {
-            baseline[varName].displayValue = Math.round(currentVal * 100)
+            baseline[varName].displayValue = Math.round(currentVal)
           } else {
-            baseline[varName].displayValue = currentVal * 100
+            baseline[varName].displayValue = currentVal
           }
         } else {
           baseline[varName].displayValue = currentVal
@@ -574,9 +571,9 @@ const onTuningChange = (varName, value) => {
   
   if (varData.unit === '%' || varData.unit === 'percent') {
     if (varData.category === "Wheel Alignment") {
-      varData.displayValue = Math.round(value * 100)
+      varData.displayValue = Math.round(value)
     } else {
-      varData.displayValue = value * 100
+      varData.displayValue = value
     }
   } else {
     varData.displayValue = value
@@ -645,9 +642,9 @@ const loadTuningFromCart = () => {
     
     if (varData.unit === '%' || varData.unit === 'percent') {
       if (varData.category === "Wheel Alignment") {
-        varData.displayValue = Math.round(varData.valDis * 100)
+        varData.displayValue = Math.round(varData.valDis)
       } else {
-        varData.displayValue = varData.valDis * 100
+        varData.displayValue = varData.valDis
       }
     } else {
       varData.displayValue = varData.valDis
@@ -688,9 +685,9 @@ const resetSettings = async () => {
     
     if (tuningVariables.value[varName].unit === '%' || tuningVariables.value[varName].unit === 'percent') {
       if (tuningVariables.value[varName].category === "Wheel Alignment") {
-        tuningVariables.value[varName].displayValue = Math.round(resetVal * 100)
+        tuningVariables.value[varName].displayValue = Math.round(resetVal)
       } else {
-        tuningVariables.value[varName].displayValue = resetVal * 100
+        tuningVariables.value[varName].displayValue = resetVal
       }
     } else {
       tuningVariables.value[varName].displayValue = resetVal

@@ -162,12 +162,10 @@ processPendingTransfers = function()
   end
 
   local currentTime = os.time()
-  local completed = {}
 
   for id, transfer in pairs(pendingTransfers) do
     if not transfer or not transfer.completesAt or not transfer.fromAccountId or not transfer.toAccountId then
-      -- Skip invalid transfers
-      table.insert(completed, id)
+      pendingTransfers[id] = nil
     elseif currentTime >= transfer.completesAt then
       local fromAccount = accounts[transfer.fromAccountId]
       local toAccount = accounts[transfer.toAccountId]
@@ -189,14 +187,12 @@ processPendingTransfers = function()
           relatedAccountId = transfer.fromAccountId
         })
 
-        table.insert(completed, id)
+        pendingTransfers[id] = nil
         triggerAccountUpdate(transfer.toAccountId)
+      else
+        pendingTransfers[id] = nil
       end
     end
-  end
-
-  for _, id in ipairs(completed) do
-    pendingTransfers[id] = nil
   end
 
 end
@@ -613,6 +609,30 @@ local function cancelPendingTransfer(transferId)
   if fromAccount then
     local transferAmount = transfer.amount or 0
     fromAccount.balance = (fromAccount.balance or 0) + transferAmount
+
+    if transactions[transfer.fromAccountId] then
+      for i = #transactions[transfer.fromAccountId], 1, -1 do
+        local trans = transactions[transfer.fromAccountId][i]
+        if trans.pending and trans.type == "transfer_out" and trans.relatedAccountId == transfer.toAccountId and math.abs(trans.amount - transferAmount) < 0.01 then
+          table.remove(transactions[transfer.fromAccountId], i)
+          break
+        end
+      end
+    end
+
+    if not transactions[transfer.fromAccountId] then
+      transactions[transfer.fromAccountId] = {}
+    end
+    table.insert(transactions[transfer.fromAccountId], {
+      id = Engine.generateUUID(),
+      accountId = transfer.fromAccountId,
+      type = "transfer_cancelled",
+      amount = transferAmount,
+      timestamp = os.time(),
+      description = "Transfer cancelled - refund",
+      relatedAccountId = transfer.toAccountId
+    })
+
     triggerAccountUpdate(transfer.fromAccountId)
   end
 
