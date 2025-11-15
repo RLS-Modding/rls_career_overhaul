@@ -94,13 +94,13 @@
                     <div class="slider-wrapper">
                       <input 
                         type="range" 
-                        v-model.number="varData.valDis"
-                        :min="varData.minDis ?? 0"
-                        :max="varData.maxDis ?? 100"
-                        :step="getStepValue(varData)"
+                        v-model.number="varData.displayValue"
+                        :min="getDisplayMin(varData)"
+                        :max="getDisplayMax(varData)"
+                        :step="getDisplayStep(varData)"
                         class="slider"
                         :style="getSliderStyle(varData)"
-                        @input="onTuningChange(varData.name, varData.valDis)"
+                        @input="onSliderChange(varData)"
                         :disabled="isSliderDisabled(varData)"
                       />
                     </div>
@@ -286,12 +286,29 @@ const organizeTuningData = (tuningData) => {
     // Add variable to subcategory
     let displayVal
     if (varData.unit === '%' || varData.unit === 'percent') {
-      displayVal = varData.valDis ?? varData.minDis ?? 0
+      const actualValue = varData.valDis ?? varData.val ?? (varData.default ?? varData.min ?? 0)
       if (varData.category === "Wheel Alignment") {
-        displayVal = Math.round(displayVal)
+        displayVal = Math.round(actualValue)
+      } else {
+        const min = varData.min ?? 0
+        const max = varData.max ?? 100
+        const minDis = varData.minDis ?? min
+        const maxDis = varData.maxDis ?? max
+        
+        if (minDis !== min || maxDis !== max) {
+          const actualRange = max - min
+          const displayRange = maxDis - minDis
+          if (actualRange > 0 && displayRange > 0) {
+            displayVal = ((actualValue - min) / actualRange) * displayRange + minDis
+          } else {
+            displayVal = actualValue
+          }
+        } else {
+          displayVal = actualValue
+        }
       }
     } else {
-      displayVal = varData.valDis ?? varData.minDis ?? 0
+      displayVal = varData.valDis ?? varData.val ?? (varData.default ?? varData.minDis ?? 0)
     }
     
     bucketsMap[category].items[subCategory].items.push({
@@ -341,75 +358,102 @@ const formatValue = (value, unit) => {
 }
 
 const getDisplayValue = (varData) => {
-  const value = varData.valDis ?? (varData.minDis ?? 0)
+  const actualValue = varData.valDis ?? varData.val ?? (varData.default ?? varData.min ?? 0)
   if (varData.unit === '%' || varData.unit === 'percent') {
     if (varData.category === "Wheel Alignment") {
-      return Math.round(value)
+      return Math.round(actualValue)
     }
-    return value
+    
+    const min = varData.min ?? 0
+    const max = varData.max ?? 100
+    const minDis = varData.minDis ?? min
+    const maxDis = varData.maxDis ?? max
+    
+    if (minDis !== min || maxDis !== max) {
+      const actualRange = max - min
+      const displayRange = maxDis - minDis
+      if (actualRange > 0 && displayRange > 0) {
+        return ((actualValue - min) / actualRange) * displayRange + minDis
+      }
+    }
+    
+    return actualValue
   }
-  return value
+  return actualValue
 }
 
 const getDisplayMin = (varData) => {
-  const min = varData.minDis ?? 0
-  if (varData.unit === '%' || varData.unit === 'percent') {
-    return min
-  }
-  return min
+  return varData.minDis ?? varData.min ?? 0
 }
 
 const getDisplayMax = (varData) => {
-  const max = varData.maxDis ?? 100
-  if (varData.unit === '%' || varData.unit === 'percent') {
-    return max
-  }
-  return max
+  return varData.maxDis ?? varData.max ?? 100
 }
 
 const getDisplayStep = (varData) => {
-  const step = getStepValue(varData)
   if (varData.unit === '%' || varData.unit === 'percent') {
     if (varData.category === "Wheel Alignment") {
       return 1
     }
-    return step
+    
+    const min = varData.min ?? 0
+    const max = varData.max ?? 100
+    const minDis = varData.minDis ?? min
+    const maxDis = varData.maxDis ?? max
+    
+    if (minDis !== min || maxDis !== max) {
+      const step = varData.stepDis ?? getStepValue(varData)
+      return step
+    }
   }
-  return step
+  
+  return varData.stepDis ?? getStepValue(varData)
 }
 
 const onValueInput = (varData) => {
-  let inputValue = varData.displayValue
-  if (isNaN(inputValue) || inputValue === null || inputValue === undefined) {
+  let displayValue = varData.displayValue
+  if (isNaN(displayValue) || displayValue === null || displayValue === undefined) {
     return
   }
   
+  const minDis = varData.minDis ?? varData.min ?? 0
+  const maxDis = varData.maxDis ?? varData.max ?? 100
+  
+  displayValue = Math.max(minDis, Math.min(maxDis, displayValue))
+  
+  let actualValue = displayValue
+  
   if (varData.unit === '%' || varData.unit === 'percent') {
     if (varData.category === "Wheel Alignment") {
-      inputValue = Math.round(inputValue)
+      displayValue = Math.round(displayValue)
+      actualValue = displayValue
+    } else {
+      const min = varData.min ?? 0
+      const max = varData.max ?? 100
+      const actualRange = max - min
+      const displayRange = maxDis - minDis
+      
+      if (minDis !== min || maxDis !== max) {
+        if (actualRange > 0 && displayRange > 0) {
+          actualValue = ((displayValue - minDis) / displayRange) * actualRange + min
+        }
+      }
     }
   }
-  
-  const min = varData.minDis ?? 0
-  const max = varData.maxDis ?? 100
-  inputValue = Math.max(min, Math.min(max, inputValue))
   
   if (varData.category === "Wheel Alignment" && (varData.unit === '%' || varData.unit === 'percent')) {
-    inputValue = Math.round(inputValue * 100) / 100
+    actualValue = Math.round(actualValue * 100) / 100
   }
   
-  varData.valDis = inputValue
+  varData.valDis = actualValue
+  varData.displayValue = displayValue
   
   if (tuningVariables.value[varData.name]) {
-    tuningVariables.value[varData.name].valDis = inputValue
-    if (varData.unit === '%' || varData.unit === 'percent') {
-      tuningVariables.value[varData.name].displayValue = Math.round(inputValue)
-    } else {
-      tuningVariables.value[varData.name].displayValue = inputValue
-    }
+    tuningVariables.value[varData.name].valDis = actualValue
+    tuningVariables.value[varData.name].displayValue = displayValue
   }
   
-  onTuningChange(varData.name, inputValue)
+  onTuningChange(varData.name, actualValue)
 }
 
 const onValueFocus = () => {
@@ -463,29 +507,25 @@ const isSliderDisabled = (varData) => {
 }
 
 const getSliderStyle = (varData) => {
-  const min = varData.minDis ?? 0
-  const max = varData.maxDis ?? 100
-  const value = varData.valDis ?? min
+  const minDis = varData.minDis ?? varData.min ?? 0
+  const maxDis = varData.maxDis ?? varData.max ?? 100
+  const displayValue = varData.displayValue ?? minDis
   
-  // Handle invalid values
-  if (isNaN(min) || isNaN(max) || isNaN(value)) {
+  if (isNaN(minDis) || isNaN(maxDis) || isNaN(displayValue)) {
     return {
       '--slider-percentage': '0%'
     }
   }
   
-  // Handle edge case where min equals max
-  if (max === min) {
+  if (maxDis === minDis) {
     return {
       '--slider-percentage': '0%'
     }
   }
   
-  // Calculate percentage and clamp between 0 and 100
-  let percentage = ((value - min) / (max - min)) * 100
+  let percentage = ((displayValue - minDis) / (maxDis - minDis)) * 100
   percentage = Math.max(0, Math.min(100, percentage))
   
-  // Ensure we return a valid percentage string
   if (isNaN(percentage)) {
     percentage = 0
   }
@@ -524,7 +564,22 @@ const handleTuningData = (data) => {
           if (baseline[varName].category === "Wheel Alignment") {
             baseline[varName].displayValue = Math.round(currentVal)
           } else {
-            baseline[varName].displayValue = currentVal
+            const min = baseline[varName].min ?? 0
+            const max = baseline[varName].max ?? 100
+            const minDis = baseline[varName].minDis ?? min
+            const maxDis = baseline[varName].maxDis ?? max
+            
+            if (minDis !== min || maxDis !== max) {
+              const actualRange = max - min
+              const displayRange = maxDis - minDis
+              if (actualRange > 0 && displayRange > 0) {
+                baseline[varName].displayValue = ((currentVal - min) / actualRange) * displayRange + minDis
+              } else {
+                baseline[varName].displayValue = currentVal
+              }
+            } else {
+              baseline[varName].displayValue = currentVal
+            }
           }
         } else {
           baseline[varName].displayValue = currentVal
@@ -557,26 +612,92 @@ const loadTuningData = async () => {
   })
 }
 
-const onTuningChange = (varName, value) => {
+const onSliderChange = (varData) => {
+  if (!varData || !tuningVariables.value[varData.name]) return
+  
+  let displayValue = varData.displayValue
+  const minDis = varData.minDis ?? varData.min ?? 0
+  const maxDis = varData.maxDis ?? varData.max ?? 100
+  
+  displayValue = Math.max(minDis, Math.min(maxDis, displayValue))
+  
+  let actualValue = displayValue
+  
+  if (varData.unit === '%' || varData.unit === 'percent') {
+    if (varData.category === "Wheel Alignment") {
+      displayValue = Math.round(displayValue)
+      actualValue = displayValue
+    } else {
+      const min = varData.min ?? 0
+      const max = varData.max ?? 100
+      const actualRange = max - min
+      const displayRange = maxDis - minDis
+      
+      if (minDis !== min || maxDis !== max) {
+        if (actualRange > 0 && displayRange > 0) {
+          actualValue = ((displayValue - minDis) / displayRange) * actualRange + min
+        }
+      }
+    }
+  }
+  
+  varData.displayValue = displayValue
+  varData.valDis = actualValue
+  
+  tuningVariables.value[varData.name].valDis = actualValue
+  tuningVariables.value[varData.name].displayValue = displayValue
+  
+  for (const bucket of buckets.value) {
+    for (const subCategory of bucket.items) {
+      for (const item of subCategory.items) {
+        if (item.name === varData.name) {
+          item.displayValue = displayValue
+          item.valDis = actualValue
+          break
+        }
+      }
+    }
+  }
+  
+  if (liveUpdates.value) {
+    applySettings()
+  }
+}
+
+const onTuningChange = (varName, actualValue) => {
   if (!tuningVariables.value[varName]) return
   
   const varData = tuningVariables.value[varName]
   
   if (varData.category === "Wheel Alignment" && (varData.unit === '%' || varData.unit === 'percent')) {
-    // Round to nearest 0.01 step (1% increment) to avoid floating point precision issues
-    value = Math.round(value / 0.01) * 0.01
+    actualValue = Math.round(actualValue / 0.01) * 0.01
   }
   
-  tuningVariables.value[varName].valDis = value
+  tuningVariables.value[varName].valDis = actualValue
   
   if (varData.unit === '%' || varData.unit === 'percent') {
     if (varData.category === "Wheel Alignment") {
-      varData.displayValue = Math.round(value)
+      varData.displayValue = Math.round(actualValue)
     } else {
-      varData.displayValue = value
+      const min = varData.min ?? 0
+      const max = varData.max ?? 100
+      const minDis = varData.minDis ?? min
+      const maxDis = varData.maxDis ?? max
+      
+      if (minDis !== min || maxDis !== max) {
+        const actualRange = max - min
+        const displayRange = maxDis - minDis
+        if (actualRange > 0 && displayRange > 0) {
+          varData.displayValue = ((actualValue - min) / actualRange) * displayRange + minDis
+        } else {
+          varData.displayValue = actualValue
+        }
+      } else {
+        varData.displayValue = actualValue
+      }
     }
   } else {
-    varData.displayValue = value
+    varData.displayValue = actualValue
   }
   
   for (const bucket of buckets.value) {
@@ -584,15 +705,13 @@ const onTuningChange = (varName, value) => {
       for (const item of subCategory.items) {
         if (item.name === varName) {
           item.displayValue = varData.displayValue
-          item.valDis = value
+          item.valDis = actualValue
           break
         }
       }
     }
   }
   
-  // Only add to cart and apply if live updates are enabled
-  // Otherwise, user must press Apply button to add to cart
   if (liveUpdates.value) {
     applySettings()
   }
@@ -644,7 +763,22 @@ const loadTuningFromCart = () => {
       if (varData.category === "Wheel Alignment") {
         varData.displayValue = Math.round(varData.valDis)
       } else {
-        varData.displayValue = varData.valDis
+        const min = varData.min ?? 0
+        const max = varData.max ?? 100
+        const minDis = varData.minDis ?? min
+        const maxDis = varData.maxDis ?? max
+        
+        if (minDis !== min || maxDis !== max) {
+          const actualRange = max - min
+          const displayRange = maxDis - minDis
+          if (actualRange > 0 && displayRange > 0) {
+            varData.displayValue = ((varData.valDis - min) / actualRange) * displayRange + minDis
+          } else {
+            varData.displayValue = varData.valDis
+          }
+        } else {
+          varData.displayValue = varData.valDis
+        }
       }
     } else {
       varData.displayValue = varData.valDis
@@ -687,7 +821,22 @@ const resetSettings = async () => {
       if (tuningVariables.value[varName].category === "Wheel Alignment") {
         tuningVariables.value[varName].displayValue = Math.round(resetVal)
       } else {
-        tuningVariables.value[varName].displayValue = resetVal
+        const min = tuningVariables.value[varName].min ?? 0
+        const max = tuningVariables.value[varName].max ?? 100
+        const minDis = tuningVariables.value[varName].minDis ?? min
+        const maxDis = tuningVariables.value[varName].maxDis ?? max
+        
+        if (minDis !== min || maxDis !== max) {
+          const actualRange = max - min
+          const displayRange = maxDis - minDis
+          if (actualRange > 0 && displayRange > 0) {
+            tuningVariables.value[varName].displayValue = ((resetVal - min) / actualRange) * displayRange + minDis
+          } else {
+            tuningVariables.value[varName].displayValue = resetVal
+          }
+        } else {
+          tuningVariables.value[varName].displayValue = resetVal
+        }
       }
     } else {
       tuningVariables.value[varName].displayValue = resetVal
