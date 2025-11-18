@@ -70,6 +70,7 @@
                 <SkillTreeNode
                   v-for="node in tree.nodes"
                   :key="node.id"
+                  :ref="el => setNodeRef(el, tree.treeId, node.id)"
                   :node="node"
                   :tree-id="tree.treeId"
                   @upgrade="(node) => handleUpgrade(node, tree.treeId)"
@@ -127,12 +128,21 @@ const panStartTranslateX = ref(0)
 const panStartTranslateY = ref(0)
 
 const treeOffsets = ref({})
+const nodeSizes = ref(new Map())
+const nodeRefs = ref(new Map())
 
 const NODE_WIDTH = ref(200)
 const NODE_HEIGHT = ref(200)
 const NODE_SPACING_X = 280
 const NODE_SPACING_Y = 300
 const TREE_SPACING = 300
+
+const setNodeRef = (el, treeId, nodeId) => {
+  if (el) {
+    const key = `${treeId}_${nodeId}`
+    nodeRefs.value.set(key, el)
+  }
+}
 
 const getTreeOffsetX = (treeId) => {
   if (!treeOffsets.value[treeId]) {
@@ -160,10 +170,13 @@ const allConnections = computed(() => {
         node.dependencies.forEach(depId => {
           const depNode = tree.nodes.find(n => n.id === depId)
           if (depNode && node.position && depNode.position) {
-            const parentX = treeOffsetX + (depNode.position.x || 0) + (NODE_WIDTH.value / 2)
+            const depSize = nodeSizes.value.get(depId) || { width: NODE_WIDTH.value, height: NODE_HEIGHT.value }
+            const nodeSize = nodeSizes.value.get(node.id) || { width: NODE_WIDTH.value, height: NODE_HEIGHT.value }
+            
+            const parentX = treeOffsetX + (depNode.position.x || 0) + (depSize.width / 2)
             const parentY = treeOffsetY + (depNode.position.y || 0)
-            const childX = treeOffsetX + (node.position.x || 0) + (NODE_WIDTH.value / 2)
-            const childY = treeOffsetY + (node.position.y || 0) + NODE_HEIGHT.value
+            const childX = treeOffsetX + (node.position.x || 0) + (nodeSize.width / 2)
+            const childY = treeOffsetY + (node.position.y || 0) + nodeSize.height
             
             const midY = parentY + ((childY - parentY) / 2)
             
@@ -218,23 +231,66 @@ const initializeNodePositions = (trees) => {
 
 const measureNodeSize = () => {
   nextTick(() => {
-    const nodeElements = document.querySelectorAll('.skill-node')
-    if (nodeElements.length > 0) {
-      let maxWidth = 0
-      let maxHeight = 0
-      nodeElements.forEach(el => {
-        const rect = el.getBoundingClientRect()
-        maxWidth = Math.max(maxWidth, rect.width)
-        maxHeight = Math.max(maxHeight, rect.height)
+    let maxWidth = 0
+    let maxHeight = 0
+    
+    trees.value.forEach(tree => {
+      if (!tree || !tree.nodes) return
+      const treeOffsetX = getTreeOffsetX(tree.treeId)
+      const treeOffsetY = getTreeOffsetY(tree.treeId)
+      
+      tree.nodes.forEach(node => {
+        const key = `${tree.treeId}_${node.id}`
+        let domEl = null
+        
+        const ref = nodeRefs.value.get(key)
+        if (ref) {
+          if (ref.$el) {
+            domEl = ref.$el
+          } else if (ref instanceof HTMLElement) {
+            domEl = ref
+          } else if (ref.getBoundingClientRect) {
+            domEl = ref
+          }
+        }
+        
+        if (!domEl && node.position) {
+          const nodeElements = document.querySelectorAll('.skill-node')
+          const expectedX = treeOffsetX + (node.position.x || 0)
+          const expectedY = treeOffsetY + (node.position.y || 0)
+          
+          domEl = Array.from(nodeElements).find(elem => {
+            const rect = elem.getBoundingClientRect()
+            const canvasRect = canvasRef.value?.getBoundingClientRect()
+            if (!canvasRect) return false
+            
+            const elemX = (rect.left - canvasRect.left - translateX.value) / scale.value
+            const elemY = (rect.top - canvasRect.top - translateY.value) / scale.value
+            
+            return Math.abs(elemX - expectedX) < 5 && Math.abs(elemY - expectedY) < 5
+          })
+        }
+        
+        if (domEl) {
+          const rect = domEl.getBoundingClientRect()
+          const currentScale = scale.value || 1.0
+          const width = rect.width / currentScale
+          const height = rect.height / currentScale
+          
+          nodeSizes.value.set(node.id, { width, height })
+          maxWidth = Math.max(maxWidth, width)
+          maxHeight = Math.max(maxHeight, height)
+        }
       })
-      if (maxWidth > 0) {
-        NODE_WIDTH.value = maxWidth
-        console.log('[SkillTreeTab] Measured node width:', maxWidth)
-      }
-      if (maxHeight > 0) {
-        NODE_HEIGHT.value = maxHeight
-        console.log('[SkillTreeTab] Measured node height:', maxHeight)
-      }
+    })
+    
+    if (maxWidth > 0) {
+      NODE_WIDTH.value = maxWidth
+      console.log('[SkillTreeTab] Measured max node width:', maxWidth)
+    }
+    if (maxHeight > 0) {
+      NODE_HEIGHT.value = maxHeight
+      console.log('[SkillTreeTab] Measured max node height:', maxHeight)
     }
   })
 }
@@ -250,6 +306,8 @@ const handleTreesResponse = (data) => {
   if (data.success && data.trees) {
     console.log('[SkillTreeTab] Successfully loaded', data.trees.length, 'trees')
     trees.value = data.trees || []
+    nodeRefs.value.clear()
+    nodeSizes.value.clear()
     initializeNodePositions(trees.value)
     if (trees.value.length > 0) {
       nextTick(() => {
@@ -273,6 +331,8 @@ const handleTreesUpdated = (data) => {
     if (data.trees) {
       console.log('[SkillTreeTab] Updating trees:', data.trees.length)
       trees.value = data.trees || []
+      nodeRefs.value.clear()
+      nodeSizes.value.clear()
       initializeNodePositions(trees.value)
       nextTick(() => {
         measureNodeSize()
@@ -299,6 +359,9 @@ const handleUpgrade = (node, treeId) => {
 const confirmUpgrade = () => {
   if (!modalNode.value || !modalTreeId.value || !store.businessId) return
   
+  const businessType = props.data?.businessType || store.businessType
+  if (!businessType) return
+  
   const requestId = `purchase_${Date.now()}_${Math.random()}`
   pendingRequests.value.set(requestId, { 
     type: 'purchase',
@@ -307,7 +370,8 @@ const confirmUpgrade = () => {
   })
   
   lua.career_modules_business_businessSkillTree.requestPurchaseUpgrade(
-    requestId, 
+    requestId,
+    businessType,
     store.businessId, 
     modalTreeId.value, 
     modalNode.value.id

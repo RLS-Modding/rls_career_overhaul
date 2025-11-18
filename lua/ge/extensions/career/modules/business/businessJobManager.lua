@@ -76,7 +76,7 @@ local function generateNewJobs(businessId, businessType, count)
   local newJobs = {}
   
   for i = 1, count do
-    local job = generator()
+    local job = generator(businessId)
     if job then
       job.businessId = businessId
       job.businessType = businessType

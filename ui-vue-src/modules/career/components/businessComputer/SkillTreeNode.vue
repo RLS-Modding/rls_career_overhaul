@@ -11,11 +11,11 @@
       top: (node.position?.y || 0) + 'px'
     }"
     @click.stop="handleClick"
-    @mousedown="handleMouseDown"
+    @mousedown.stop
   >
     <div class="node-header">
       <h3 class="node-title">{{ node.title }}</h3>
-      <div v-if="node.maxLevel" class="node-level">
+      <div v-if="node.maxLevel > 1" class="node-level">
         {{ node.currentLevel }}/{{ node.maxLevel }}
       </div>
     </div>
@@ -35,7 +35,6 @@
 </template>
 
 <script setup>
-import { computed } from "vue"
 
 const props = defineProps({
   node: Object,
@@ -43,12 +42,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['upgrade'])
-
-const handleMouseDown = (event) => {
-  if (event.button === 0) {
-    event.stopPropagation()
-  }
-}
 
 const formatCost = (cost, currentLevel) => {
   if (typeof cost === 'number') {
@@ -64,9 +57,6 @@ const formatCost = (cost, currentLevel) => {
 }
 
 const handleClick = () => {
-  if (!props.node.unlocked || props.node.maxed || !props.node.affordable) {
-    return
-  }
   emit('upgrade', props.node)
 }
 </script>
@@ -89,12 +79,14 @@ const handleClick = () => {
   }
 
   &.locked {
-    opacity: 0.5;
-    cursor: not-allowed;
+    opacity: 0.6;
+    cursor: pointer;
     border-color: rgba(255, 255, 255, 0.1);
 
     &:hover {
-      transform: none;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      opacity: 0.8;
     }
   }
 
@@ -109,8 +101,8 @@ const handleClick = () => {
   }
 
   &.maxed {
-    border-color: rgba(0, 255, 0, 0.5);
-    background: rgba(0, 26, 0, 0.9);
+    border-color: rgba(245, 73, 0, 0.8);
+    background: rgba(35, 12, 0, 0.98);
   }
 
   &.purchased {

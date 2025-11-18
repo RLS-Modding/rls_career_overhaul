@@ -67,9 +67,28 @@
       "label":"Drag Strip",
       "reward":1650,
       "tuningShop":{
-        "minImprovement": 1.1,
-        "maxImprovement": 1.2,
-        "decimalPlaces": 1
+        "levels": [
+          {
+            "minImprovement": 1.1,
+            "maxImprovement": 1.2,
+            "minPayout": 20000,
+            "maxPayout": 30000
+          },
+          {
+            "minImprovement": 1.2,
+            "maxImprovement": 1.8,
+            "minPayout": 30000,
+            "maxPayout": 50000
+          },
+          {
+            "minImprovement": 1.8,
+            "maxImprovement": 2.4,
+            "minPayout": 50000,
+            "maxPayout": 80000
+          }
+        ],
+        "decimalPlaces": 1,
+        "communte": 120
       },
       "predictCoef":{ "a": -3.1197, "b": 9.9079, "c": 0.2978 },
       "type":[
@@ -513,9 +532,28 @@
         "checkpointRoad":"trackalt",
         "hotlap":85,
         "tuningShop":{
-          "minImprovement": 1.05,
-          "maxImprovement": 1.1,
-          "decimalPlaces": 0
+          "levels": [
+            {
+              "minImprovement": 1.05,
+              "maxImprovement": 1.1,
+              "minPayout": 20000,
+              "maxPayout": 30000
+            },
+            {
+              "minImprovement": 1.125,
+              "maxImprovement": 1.15,
+              "minPayout": 30000,
+              "maxPayout": 40000
+            },
+            {
+              "minImprovement": 1.15,
+              "maxImprovement": 1.2,
+              "minPayout": 40000,
+              "maxPayout": 50000
+            }
+          ],
+          "decimalPlaces": 1,
+          "communte": 45
         },
         "label":"Short Track",
         "predictCoef": { "a": 53.8287, "b": 15.0958, "c": 0.4576 },
@@ -534,9 +572,28 @@
       "hotlap":125,
       "label":"Track",
       "tuningShop":{
-        "minImprovement": 1.05,
-        "maxImprovement": 1.1,
-        "decimalPlaces": 0
+        "levels": [
+          {
+            "minImprovement": 1.05,
+            "maxImprovement": 1.1,
+            "minPayout": 20000,
+            "maxPayout": 30000
+          },
+          {
+            "minImprovement": 1.125,
+            "maxImprovement": 1.15,
+            "minPayout": 30000,
+            "maxPayout": 40000
+          },
+          {
+            "minImprovement": 1.15,
+            "maxImprovement": 1.2,
+            "minPayout": 40000,
+            "maxPayout": 50000
+          }
+        ],
+        "decimalPlaces": 1,
+        "communte": 45
       },
       "reward":2000,
       "runningStart":true,

@@ -440,20 +440,8 @@ local function canAffordUpgrade(businessType, businessId, treeId, nodeId, trees)
   return false
 end
 
-local function purchaseUpgrade(businessId, treeId, nodeId)
-  if not businessId or not treeId or not nodeId then
-    return false
-  end
-
-  local businessType = nil
-  if freeroam_facilities then
-    local business = freeroam_facilities.getFacility(nil, businessId)
-    if business then
-      businessType = business.type
-    end
-  end
-
-  if not businessType then
+local function purchaseUpgrade(businessType, businessId, treeId, nodeId)
+  if not businessType or not businessId or not treeId or not nodeId then
     return false
   end
 
@@ -493,14 +481,6 @@ local function purchaseUpgrade(businessId, treeId, nodeId)
 
   local cost = calculateUpgradeCost(node, currentLevel)
   if cost > 0 then
-    local businessType = nil
-    if freeroam_facilities then
-      local business = freeroam_facilities.getFacility(nil, businessId)
-      if business then
-        businessType = business.type
-      end
-    end
-
     if businessType and career_modules_bank then
       local account = career_modules_bank.getBusinessAccount(businessType, businessId)
       if account then
@@ -557,6 +537,7 @@ local function getTreesForBusiness(businessType, businessId)
         id = node.id,
         title = node.title,
         description = node.description,
+        detailedDescription = node.detailedDescription,
         cost = node.cost,
         maxLevel = node.maxLevel,
         currentLevel = nodeLevel,
@@ -619,8 +600,8 @@ local function requestSkillTrees(requestId, businessType, businessId)
   })
 end
 
-local function requestPurchaseUpgrade(requestId, businessId, treeId, nodeId)
-  local success = purchaseUpgrade(businessId, treeId, nodeId)
+local function requestPurchaseUpgrade(requestId, businessType, businessId, treeId, nodeId)
+  local success = purchaseUpgrade(businessType, businessId, treeId, nodeId)
   guihooks.trigger('businessSkillTree:onPurchaseResponse', {
     requestId = requestId,
     success = success,
@@ -630,21 +611,12 @@ local function requestPurchaseUpgrade(requestId, businessId, treeId, nodeId)
   })
   if success then
     career_saveSystem.saveCurrent()
-    local businessType = nil
-    if freeroam_facilities then
-      local business = freeroam_facilities.getFacility(nil, businessId)
-      if business then
-        businessType = business.type
-      end
-    end
-    if businessType then
-      local updatedTrees = getTreesForBusiness(businessType, businessId)
-      guihooks.trigger('businessSkillTree:onTreesUpdated', {
-        businessType = businessType,
-        businessId = businessId,
-        trees = updatedTrees
-      })
-    end
+    local updatedTrees = getTreesForBusiness(businessType, businessId)
+    guihooks.trigger('businessSkillTree:onTreesUpdated', {
+      businessType = businessType,
+      businessId = businessId,
+      trees = updatedTrees
+    })
   end
 end
 
@@ -678,6 +650,7 @@ M.getTreesForBusiness = getTreesForBusiness
 M.purchaseUpgrade = purchaseUpgrade
 M.canAffordUpgrade = canAffordUpgrade
 M.getTotalUpgradesInTree = getTotalUpgradesInTree
+M.getNodeProgress = getNodeProgress
 M.ensureTabsRegistered = ensureTabsRegistered
 M.requestSkillTrees = requestSkillTrees
 M.requestPurchaseUpgrade = requestPurchaseUpgrade

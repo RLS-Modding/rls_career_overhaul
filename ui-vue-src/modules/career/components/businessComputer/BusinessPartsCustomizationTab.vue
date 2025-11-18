@@ -127,7 +127,7 @@
                   <h4>{{ part.niceName || part.name }}</h4>
                 </div>
                 <div class="option-actions">
-                  <span class="option-price">₿ {{ (part.value || 0).toLocaleString() }}</span>
+                  <span class="option-price">$ {{ (part.value || 0).toLocaleString() }}</span>
                   <div v-if="part.installed" class="installed-button-wrapper">
                     <button
                       class="btn btn-disabled"
@@ -203,7 +203,7 @@
                 <h4>{{ option.niceName || option.name }}</h4>
               </div>
               <div class="option-actions">
-                <span class="option-price">₿ {{ (option.value || 0).toLocaleString() }}</span>
+                <span class="option-price">$ {{ (option.value || 0).toLocaleString() }}</span>
                 <div v-if="option.installed" class="installed-button-wrapper">
                   <button
                     class="btn btn-disabled"

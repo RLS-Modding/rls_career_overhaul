@@ -1,6 +1,6 @@
 local M = {}
 
-M.dependencies = {'util_configListGenerator', 'career_career'}
+M.dependencies = {'util_configListGenerator', 'career_career', 'career_modules_business_businessSkillTree'}
 
 local raceData = nil
 local raceDataLevel = nil
@@ -52,6 +52,48 @@ local function getFactoryConfigs()
   return factoryConfigs
 end
 
+local function getSkillTreeUpgradeCount(businessId)
+  if not businessId or not career_modules_business_businessSkillTree then
+    return 0
+  end
+  
+  local treeId = "quality-of-life"
+  local upgradeCount = 0
+  
+  local moreComplicatedLevel = career_modules_business_businessSkillTree.getNodeProgress(businessId, treeId, "more-complicated")
+  if moreComplicatedLevel > 0 then
+    upgradeCount = upgradeCount + 1
+  end
+  
+  local moreComplicatedIILevel = career_modules_business_businessSkillTree.getNodeProgress(businessId, treeId, "more-complicated-ii")
+  if moreComplicatedIILevel > 0 then
+    upgradeCount = upgradeCount + 1
+  end
+  
+  return upgradeCount
+end
+
+local function selectJobLevel(upgradeCount, maxLevels)
+  if upgradeCount == 0 then
+    return 1
+  elseif upgradeCount == 1 then
+    if math.random() < 0.5 then
+      return 1
+    else
+      return math.min(2, maxLevels)
+    end
+  else
+    local rand = math.random()
+    if rand < 0.3333 then
+      return 1
+    elseif rand < 0.6666 then
+      return math.min(2, maxLevels)
+    else
+      return math.min(3, maxLevels)
+    end
+  end
+end
+
 local function powerToWeightToTime(powerToWeight, raceId)
   local races = loadRaceData()
   if not races or not races.races then return nil end
@@ -76,7 +118,7 @@ local function powerToWeightToTime(powerToWeight, raceId)
   return time
 end
 
-local function generateJob()
+local function generateJob(businessId)
   local configs = getFactoryConfigs()
   if not configs or #configs == 0 then return nil end
   
@@ -122,9 +164,25 @@ local function generateJob()
   if not baseTime then return nil end
   
   local tuningShopConfig = race and race.tuningShop or {}
-  local minImprovement = tuningShopConfig.minImprovement or 1.1
-  local maxImprovement = tuningShopConfig.maxImprovement or 1.2
+  local levels = tuningShopConfig.levels or {}
   local decimalPlaces = tuningShopConfig.decimalPlaces or 0
+  
+  if not levels or #levels == 0 then return nil end
+  
+  local upgradeCount = getSkillTreeUpgradeCount(businessId)
+  local maxAvailableLevel = math.min(#levels, upgradeCount + 1)
+  local selectedLevelIndex = selectJobLevel(upgradeCount, maxAvailableLevel)
+  
+  selectedLevelIndex = math.min(selectedLevelIndex, #levels)
+  selectedLevelIndex = math.max(1, selectedLevelIndex)
+  
+  local levelData = levels[selectedLevelIndex]
+  if not levelData then return nil end
+  
+  local minImprovement = levelData.minImprovement or 1.1
+  local maxImprovement = levelData.maxImprovement or 1.2
+  local minPayout = levelData.minPayout or 20000
+  local maxPayout = levelData.maxPayout or 30000
   
   local divisor = minImprovement + math.random() * (maxImprovement - minImprovement)
   local targetTime = baseTime / divisor
@@ -134,7 +192,7 @@ local function generateJob()
   local mileageMiles = math.random(mileageMinMiles, mileageMaxMiles)
   local mileageMeters = mileageMiles * 1609.34
   
-  local rewardRaw = 20000 + (divisor - minImprovement) * 10000 / (maxImprovement - minImprovement)
+  local rewardRaw = minPayout + math.random() * (maxPayout - minPayout)
   local reward = math.floor(rewardRaw / 1000) * 1000
   
   jobIdCounter = jobIdCounter + 1
@@ -173,8 +231,8 @@ local function openMenu(businessId)
   guihooks.trigger('ChangeState', {state = 'business-computer', params = {businessType = 'tuningShop', businessId = tostring(businessId)}})
 end
 
-local function generateTuningJob()
-  return generateJob()
+local function generateTuningJob(businessId)
+  return generateJob(businessId)
 end
 
 local function onCareerActivated()
