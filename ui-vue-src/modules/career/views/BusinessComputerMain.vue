@@ -101,59 +101,17 @@
           </div>
           
           <nav class="sidebar-nav">
-            <div class="nav-section">
-              <div class="nav-section-title">{{ isCollapsed ? 'B' : 'BASIC' }}</div>
+            <div v-for="(tabs, section) in store.tabsBySection" :key="section" class="nav-section">
+              <div class="nav-section-title">{{ isCollapsed ? section.charAt(0) : section }}</div>
               <ul class="nav-list">
-                <li>
+                <li v-for="tab in tabs" :key="tab.id">
                   <button 
-                    :class="['nav-item', { active: store.activeView === 'home' }]"
-                    @click="store.switchView('home')"
+                    :class="['nav-item', { active: store.activeView === tab.id }]"
+                    @click.stop="store.switchView(tab.id)"
+                    @mousedown.stop
                   >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                      <polyline points="9 22 9 12 15 12 15 22"/>
-                    </svg>
-                    <span v-if="!isCollapsed">Home</span>
-                  </button>
-                </li>
-                <li>
-                  <button 
-                    :class="['nav-item', { active: store.activeView === 'active-jobs' }]"
-                    @click="store.switchView('active-jobs')"
-                  >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                      <polyline points="22 4 12 14.01 9 11.01"/>
-                    </svg>
-                    <span v-if="!isCollapsed">Active Jobs</span>
-                  </button>
-                </li>
-                <li>
-                  <button 
-                    :class="['nav-item', { active: store.activeView === 'new-jobs' }]"
-                    @click="store.switchView('new-jobs')"
-                  >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                      <polyline points="14 2 14 8 20 8"/>
-                      <line x1="16" y1="13" x2="8" y2="13"/>
-                      <line x1="16" y1="17" x2="8" y2="17"/>
-                      <polyline points="10 9 9 9 8 9"/>
-                    </svg>
-                    <span v-if="!isCollapsed">New Jobs</span>
-                  </button>
-                </li>
-                <li>
-                  <button 
-                    :class="['nav-item', { active: store.activeView === 'inventory' }]"
-                    @click="store.switchView('inventory')"
-                  >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M16.5 9.4l-9-5.19M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                      <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
-                      <line x1="12" y1="22.08" x2="12" y2="12"/>
-                    </svg>
-                    <span v-if="!isCollapsed">Inventory</span>
+                    <svg v-if="tab.icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" v-html="tab.icon"></svg>
+                    <span v-if="!isCollapsed">{{ tab.label }}</span>
                   </button>
                 </li>
               </ul>
@@ -192,11 +150,11 @@
 
         <main v-if="!store.vehicleView" class="main-content">
           <div class="content-body">
-            <BusinessHomeView v-if="store.activeView === 'home'" />
-            <BusinessActiveJobsTab v-else-if="store.activeView === 'active-jobs'" />
-            <BusinessNewJobsTab v-else-if="store.activeView === 'new-jobs'" />
-            <BusinessInventoryTab v-else-if="store.activeView === 'inventory'" />
-            <BusinessPartsInventoryTab v-else-if="store.activeView === 'parts-inventory'" />
+            <component 
+              :is="activeTabComponent" 
+              v-if="activeTabComponent"
+              :data="activeTabData"
+            />
           </div>
         </main>
 
@@ -225,7 +183,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch, nextTick, Teleport } from "vue"
+import { ref, onMounted, onUnmounted, watch, nextTick, Teleport, computed } from "vue"
 import { useBusinessComputerStore } from "../stores/businessComputerStore"
 import BusinessHomeView from "../components/businessComputer/BusinessHomeView.vue"
 import BusinessActiveJobsTab from "../components/businessComputer/BusinessActiveJobsTab.vue"
@@ -236,6 +194,7 @@ import BusinessTuningTab from "../components/businessComputer/BusinessTuningTab.
 import BusinessPartsCustomizationTab from "../components/businessComputer/BusinessPartsCustomizationTab.vue"
 import BusinessAccountBalance from "../components/businessComputer/BusinessAccountBalance.vue"
 import BusinessShoppingCart from "../components/businessComputer/BusinessShoppingCart.vue"
+import { getTabComponent } from "../components/businessComputer/tabComponents"
 import { lua } from "@/bridge"
 import { BngCard } from "@/common/components/base"
 import { vBngBlur } from "@/common/directives"
@@ -250,6 +209,33 @@ const isCollapsed = ref(false)
 const isVehicleViewCollapsed = ref(false)
 const isVehicleSidebarCollapsed = ref(true)
 const containerRef = ref(null)
+
+const activeTab = computed(() => {
+  return store.registeredTabs.find(tab => tab.id === store.activeView) || null
+})
+
+const activeTabComponent = computed(() => {
+  if (!activeTab.value) {
+    return null
+  }
+  const component = getTabComponent(activeTab.value.component)
+  return component
+})
+
+const activeTabData = computed(() => {
+  if (!activeTab.value) return null
+  return {
+    ...activeTab.value.data,
+    businessId: store.businessId,
+    businessType: store.businessType
+  }
+})
+
+watch(() => store.registeredTabs, (tabs) => {
+  if (tabs.length > 0 && store.activeView === 'home' && !tabs.find(t => t.id === 'home')) {
+    store.switchView(tabs[0].id)
+  }
+}, { immediate: true })
 
 watch(() => store.vehicleView, (newView) => {
   if (!newView || (newView !== 'parts' && newView !== 'tuning')) {

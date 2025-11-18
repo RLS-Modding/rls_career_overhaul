@@ -1221,6 +1221,11 @@ export default {
     getPulledOutVehicle: (businessId) => String,
   },
 
+  career_modules_business_businessSkillTree: {
+    requestSkillTrees: (requestId, businessType, businessId) => [String, String, String],
+    requestPurchaseUpgrade: (requestId, businessId, treeId, nodeId) => [String, String, String, String],
+  },
+
   career_modules_business_businessPartInventory: {
     getBusinessParts: (businessId) => String,
     addPart: (businessId, partData) => [String, Any],

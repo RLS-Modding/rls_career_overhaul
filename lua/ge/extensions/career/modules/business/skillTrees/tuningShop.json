@@ -1,0 +1,355 @@
+{
+  "businessType": "tuningShop",
+  "trees": [
+    {
+      "treeId": "automation",
+      "treeName": "Automation",
+      "description": "Upgrade your shop's automation capabilities",
+      "icon": "<path d=\"M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5\"/>",
+      "nodes": [
+        {
+          "id": "shop-techs",
+          "title": "Shop Techs",
+          "description": "Hire workers to automate job completion",
+          "cost": {
+            "base": 25000,
+            "increment": 50000
+          },
+          "maxLevel": 4,
+          "dependencies": []
+        },
+        {
+          "id": "faster-techs",
+          "title": "Faster Techs",
+          "description": "Tech build time 5% faster",
+          "cost": {
+            "base": 10000,
+            "increment": 10000
+          },
+          "maxLevel": 6,
+          "dependencies": ["shop-techs"]
+        },
+        {
+          "id": "reliable-techs",
+          "title": "Reliable Techs",
+          "description": "Higher chance of success. +5% Per Upgrade",
+          "cost": {
+            "base": 5000,
+            "increment": 5000
+          },
+          "maxLevel": 5,
+          "dependencies": ["shop-techs"]
+        },
+        {
+          "id": "manager",
+          "title": "Manager",
+          "description": "Auto-assign workers to jobs",
+          "cost": 100000,
+          "maxLevel": 1,
+          "dependencies": ["faster-techs", "reliable-techs"],
+          "prerequisites": [
+            {
+              "type": "totalUpgrades",
+              "min": 5
+            }
+          ]
+        },
+        {
+          "id": "manager-speed",
+          "title": "Manager Speed",
+          "description": "Tech assignment time -2 min",
+          "cost": {
+            "base": 5000,
+            "increment": 5000
+          },
+          "maxLevel": 5,
+          "dependencies": ["manager"]
+        },
+        {
+          "id": "faster-techs-ii",
+          "title": "Faster Techs II",
+          "description": "Tech build time 5% faster",
+          "cost": {
+            "base": 15000,
+            "increment": 15000
+          },
+          "maxLevel": 7,
+          "dependencies": ["manager-speed"]
+        },
+        {
+          "id": "smart-techs",
+          "title": "Smart Techs",
+          "description": "Techs build costs 5% cheaper",
+          "cost": {
+            "base": 10000,
+            "increment": 10000
+          },
+          "maxLevel": 5,
+          "dependencies": ["manager-speed"]
+        },
+        {
+          "id": "skilled-techs",
+          "title": "Skilled Techs",
+          "description": "Can accept jobs Higher of Tier +1",
+          "cost": {
+            "base": 25000,
+            "increment": 25000
+          },
+          "maxLevel": 2,
+          "dependencies": ["manager-speed"]
+        },
+        {
+          "id": "general-manager",
+          "title": "General Manager",
+          "description": "Manager assigns jobs immediately",
+          "cost": 250000,
+          "maxLevel": 15,
+          "dependencies": ["faster-techs-ii"],
+          "prerequisites": [
+            {
+              "type": "totalUpgrades",
+              "min": 1
+            }
+          ]
+        },
+        {
+          "id": "perfect-techs",
+          "title": "Perfect Techs",
+          "description": "Techs never fail",
+          "cost": 250000,
+          "maxLevel": 1,
+          "dependencies": ["skilled-techs"],
+          "prerequisites": [
+            {
+              "type": "totalUpgrades",
+              "min": 15
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "treeId": "quality-of-life",
+      "treeName": "Quality Of Life",
+      "description": "Improve your shop experience and convenience",
+      "icon": "<path d=\"M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5\"/>",
+      "nodes": [
+        {
+          "id": "shop-app",
+          "title": "Shop App",
+          "description": "Unlock Phone App to view jobs and manage your shop",
+          "cost": 0,
+          "maxLevel": 1,
+          "dependencies": []
+        },
+        {
+          "id": "kit-storage",
+          "title": "Kit Storage",
+          "description": "+2 savable tuning kits",
+          "cost": {
+            "base": 10000,
+            "increment": 5000
+          },
+          "maxLevel": 4,
+          "dependencies": ["shop-app"]
+        },
+        {
+          "id": "more-complicated",
+          "title": "More Complicated",
+          "description": "Get more difficult and higher rewarding jobs",
+          "cost": 75000,
+          "maxLevel": 1,
+          "dependencies": ["shop-app"]
+        },
+        {
+          "id": "no-hard-feelings",
+          "title": "No Hard Feelings",
+          "description": "Abandoning Jobs cost 5% less",
+          "cost": {
+            "base": 25000,
+            "increment": 25000
+          },
+          "maxLevel": 5,
+          "dependencies": ["kit-storage", "more-complicated"]
+        },
+        {
+          "id": "brand-recognition",
+          "title": "Brand Recognition",
+          "description": "Receive an increased job offer chance of a specific brand",
+          "cost": 100000,
+          "maxLevel": 5,
+          "dependencies": ["no-hard-feelings"],
+          "prerequisites": [
+            {
+              "type": "totalUpgrades",
+              "min": 5
+            }
+          ]
+        },
+        {
+          "id": "race-recognition",
+          "title": "Race Recognition",
+          "description": "Receive an increased job offer chance of a specific race type",
+          "cost": 100000,
+          "maxLevel": 5,
+          "dependencies": ["no-hard-feelings"],
+          "prerequisites": [
+            {
+              "type": "totalUpgrades",
+              "min": 5
+            }
+          ]
+        },
+        {
+          "id": "kit-storage-ii",
+          "title": "Kit Storage",
+          "description": "+2 savable tuning kits",
+          "cost": {
+            "base": 10000,
+            "increment": 10000
+          },
+          "maxLevel": 5,
+          "dependencies": ["brand-recognition"]
+        },
+        {
+          "id": "more-complicated-ii",
+          "title": "More Complicated",
+          "description": "Get more difficult and higher rewarding jobs",
+          "cost": 150000,
+          "maxLevel": 1,
+          "dependencies": ["race-recognition"]
+        },
+        {
+          "id": "personal-use",
+          "title": "Personal Use",
+          "description": "Tune personal vehicles in the shop",
+          "cost": 300000,
+          "maxLevel": 1,
+          "dependencies": ["kit-storage-ii"],
+          "prerequisites": [
+            {
+              "type": "totalUpgrades",
+              "min": 15
+            }
+          ]
+        },
+        {
+          "id": "i-give-up",
+          "title": "I Give Up",
+          "description": "You can abandon jobs for free",
+          "cost": 150000,
+          "maxLevel": 1,
+          "dependencies": ["more-complicated-ii"],
+          "prerequisites": [
+            {
+              "type": "totalUpgrades",
+              "min": 15
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "treeId": "shop-upgrades",
+      "treeName": "Shop Upgrades",
+      "description": "Upgrade your shop facilities and capabilities",
+      "icon": "<path d=\"M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5\"/>",
+      "nodes": [
+        {
+          "id": "towing",
+          "title": "Towing",
+          "description": "Unlock towing capabilities",
+          "cost": 20000,
+          "maxLevel": 1,
+          "dependencies": []
+        },
+        {
+          "id": "lift-2",
+          "title": "Lift #2",
+          "description": "+1 simultaneous Worker / Vehicle pulled out",
+          "cost": 20000,
+          "maxLevel": 1,
+          "dependencies": ["towing"]
+        },
+        {
+          "id": "dyno",
+          "title": "Dyno",
+          "description": "Unlock dynamic Power and Weight stats in shop",
+          "cost": 25000,
+          "maxLevel": 1,
+          "dependencies": ["lift-2"]
+        },
+        {
+          "id": "part-suppliers",
+          "title": "Part Suppliers",
+          "description": "Part Cost 5% less",
+          "cost": {
+            "base": 5000,
+            "increment": 5000
+          },
+          "maxLevel": 5,
+          "dependencies": ["towing"]
+        },
+        {
+          "id": "part-reseller",
+          "title": "Part Reseller",
+          "description": "Parts resell for 5% higher",
+          "cost": {
+            "base": 5000,
+            "increment": 5000
+          },
+          "maxLevel": 5,
+          "dependencies": ["part-suppliers"]
+        },
+        {
+          "id": "lift-3",
+          "title": "Lift #3",
+          "description": "+1 simultaneous Worker / Vehicle pulled out",
+          "cost": 50000,
+          "maxLevel": 1,
+          "dependencies": ["dyno", "part-reseller"],
+          "prerequisites": [
+            {
+              "type": "totalUpgrades",
+              "min": 5
+            }
+          ]
+        },
+        {
+          "id": "xp-gain",
+          "title": "XP Gain",
+          "description": "Gain 25% more XP",
+          "cost": {
+            "base": 50000,
+            "increment": 25000
+          },
+          "maxLevel": 4,
+          "dependencies": ["lift-3"]
+        },
+        {
+          "id": "solar-panels",
+          "title": "Solar Panels",
+          "description": "All operating costs are free",
+          "cost": 200000,
+          "maxLevel": 1,
+          "dependencies": ["xp-gain"]
+        },
+        {
+          "id": "lift-4",
+          "title": "Lift #4",
+          "description": "+1 simultaneous Worker/Vehicle pulled out",
+          "cost": 100000,
+          "maxLevel": 1,
+          "dependencies": ["xp-gain"],
+          "prerequisites": [
+            {
+              "type": "totalUpgrades",
+              "min": 10
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

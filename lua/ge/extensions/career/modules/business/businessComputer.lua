@@ -1,6 +1,6 @@
 local M = {}
 
-M.dependencies = {'career_career', 'career_saveSystem', 'freeroam_facilities', 'core_vehicles', 'core_jobsystem', 'career_modules_business_businessHelpers'}
+M.dependencies = {'career_career', 'career_saveSystem', 'freeroam_facilities', 'core_vehicles', 'core_jobsystem'}
 
 local jbeamIO = require('jbeam/io')
 local jbeamSlotSystem = require('jbeam/slotSystem')
@@ -309,6 +309,22 @@ local function getBusinessComputerUIData(businessType, businessId)
     totalPartsValue = totalPartsValue + (part.price or part.value or 0)
   end
 
+  local tabs = {}
+  if career_modules_business_businessTabRegistry then
+    if career_modules_business_businessSkillTree and career_modules_business_businessSkillTree.ensureTabsRegistered then
+      log('I', 'businessComputer', 'Ensuring skill tree tabs registered for: ' .. tostring(businessType))
+      pcall(function()
+        career_modules_business_businessSkillTree.ensureTabsRegistered(businessType)
+      end)
+    else
+      log('W', 'businessComputer', 'Skill tree module or ensureTabsRegistered not available')
+    end
+    tabs = career_modules_business_businessTabRegistry.getTabs(businessType) or {}
+    log('I', 'businessComputer', 'Retrieved ' .. tostring(#tabs) .. ' tabs for businessType: ' .. tostring(businessType))
+  else
+    log('W', 'businessComputer', 'Tab registry not available')
+  end
+
   return {
     businessId = businessId,
     businessType = businessType,
@@ -318,6 +334,7 @@ local function getBusinessComputerUIData(businessType, businessId)
     vehicles = vehicleList,
     parts = parts,
     pulledOutVehicle = pulledOutVehicleData,
+    tabs = tabs,
     stats = {
       totalVehicles = #vehicleList,
       totalParts = #parts,
@@ -1084,5 +1101,11 @@ M.getAllRequiredParts = getAllRequiredParts
 M.addPartToCart = addPartToCart
 M.onVehicleWheelDataUpdate = onVehicleWheelDataUpdate
 M.onPowerWeightReceived = onPowerWeightReceived
+
+local function onExtensionLoaded()
+  return true
+end
+
+M.onExtensionLoaded = onExtensionLoaded
 
 return M
