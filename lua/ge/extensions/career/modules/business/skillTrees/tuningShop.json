@@ -1,0 +1,420 @@
+{
+  "businessType": "tuningShop",
+  "trees": [
+    {
+      "treeId": "quality-of-life",
+      "treeName": "Quality Of Life",
+      "description": "Improve your shop experience and convenience",
+      "icon": "<path d=\"M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5\"/>",
+      "nodes": [
+        {
+          "id": "shop-app",
+          "title": "Shop App",
+          "description": "Unlock Phone App to view jobs and manage your shop",
+          "detailedDescription": "Stay connected to the shop without sitting at the terminal.\n\n**Phone App**\n- Browse or accept jobs remotely\n- Manage tech assignments",
+          "cost": 25000,
+          "maxLevel": 1,
+          "dependencies": []
+        },
+        {
+          "id": "kit-storage",
+          "title": "Kit Storage",
+          "description": "+2 savable tuning kits",
+          "detailedDescription": "Keep a deeper library of proven setups.\n\n**Per Level**\n- +2 tuning kit save slots\n- Reapply repeat builds without rebuilding from memory",
+          "cost": {
+            "base": 10000,
+            "increment": 5000
+          },
+          "maxLevel": 4,
+          "dependencies": ["shop-app"]
+        },
+        {
+          "id": "more-complicated",
+          "title": "More Complicated",
+          "description": "Get more difficult and higher rewarding jobs",
+          "detailedDescription": "Invite tougher customers who pay better.\n\n**Effects**\n- Access higher difficulty job listings\n- Expect stricter goals but noticeably larger rewards",
+          "cost": 75000,
+          "maxLevel": 1,
+          "dependencies": ["shop-app"]
+        },
+        {
+          "id": "no-hard-feelings",
+          "title": "No Hard Feelings",
+          "description": "Abandoning Jobs cost 5% less",
+          "detailedDescription": "Walking away hurts less.\n\n**Per Level**\n- Abandonment fee reduced by 5%\n- Safer to drop unprofitable or impossible jobs",
+          "cost": {
+            "base": 25000,
+            "increment": 25000
+          },
+          "maxLevel": 5,
+          "dependencies": ["kit-storage", "more-complicated"]
+        },
+        {
+          "id": "brand-recognition",
+          "title": "Brand Recognition",
+          "description": "Receive an increased job offer chance of a specific brand",
+          "detailedDescription": "Lean into a favorite manufacturer.\n\n**Choose a brand**\n- Increased chance of offers from that brand\n- Familiar chassis = faster turnarounds and better margins",
+          "cost": 100000,
+          "maxLevel": 1,
+          "dependencies": ["no-hard-feelings"],
+          "prerequisites": [
+            {
+              "type": "totalUpgrades",
+              "min": 5
+            }
+          ]
+        },
+        {
+          "id": "race-recognition",
+          "title": "Race Recognition",
+          "description": "Receive an increased job offer chance of a specific race type",
+          "detailedDescription": "Market your specialty to race organizers.\n\n**Pick a discipline**\n- More offers for track, drag, or short-track builds\n- Aligns work with the events you run best",
+          "cost": 100000,
+          "maxLevel": 1,
+          "dependencies": ["no-hard-feelings"],
+          "prerequisites": [
+            {
+              "type": "totalUpgrades",
+              "min": 5
+            }
+          ]
+        },
+        {
+          "id": "kit-storage-ii",
+          "title": "Kit Storage",
+          "description": "+2 savable tuning kits",
+          "detailedDescription": "Extend your setup archive even further.\n\n**Per Level**\n- +2 additional kit slots beyond the first tier\n- Maintain variants for trims, weather, and track types",
+          "cost": {
+            "base": 10000,
+            "increment": 10000
+          },
+          "maxLevel": 5,
+          "dependencies": ["brand-recognition"]
+        },
+        {
+          "id": "more-complicated-ii",
+          "title": "More Complicated",
+          "description": "Get more difficult and higher rewarding jobs",
+          "detailedDescription": "Final tier of elite clientele.\n\n**What Changes**\n- Opens the hardest, highest-paying contracts\n- Expect strict parts lists, tuning targets, and deadlines",
+          "cost": 150000,
+          "maxLevel": 1,
+          "dependencies": ["race-recognition"]
+        },
+        {
+          "id": "personal-use",
+          "title": "Personal Use",
+          "description": "Tune personal vehicles in the shop",
+          "detailedDescription": "Bring your own cars onto the equipment.\n\n**Benefits**\n- Personal vehicles can use every unlocked upgrade and tool\n- Enjoy the same part discounts and towing perks\n- Build wild personal projects without leaving the shop",
+          "cost": 300000,
+          "maxLevel": 1,
+          "dependencies": ["kit-storage-ii"],
+          "prerequisites": [
+            {
+              "type": "totalUpgrades",
+              "min": 15
+            }
+          ]
+        },
+        {
+          "id": "i-give-up",
+          "title": "I Give Up",
+          "description": "You can abandon jobs for free",
+          "detailedDescription": "Quit without a bill.\n\n**Effect**\n- Abandon any accepted job for free\n- Evaluate risky offers with zero downside",
+          "cost": 150000,
+          "maxLevel": 1,
+          "dependencies": ["more-complicated-ii"],
+          "prerequisites": [
+            {
+              "type": "totalUpgrades",
+              "min": 15
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "treeId": "automation",
+      "treeName": "Automation",
+      "description": "Upgrade your shop's automation capabilities",
+      "icon": "<path d=\"M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5\"/>",
+      "nodes": [
+        {
+          "id": "shop-techs",
+          "title": "Shop Techs",
+          "description": "Hire workers to automate job completion",
+          "detailedDescription": "Hire automated builders to keep jobs moving.\n\n**Cycle**\n- Build cost = 30% of the job payout\n- Success on first run: pay build + 5% of net profit\n- Failed run triggers a rebuild at 1.25x cost\n- Total failure = build + abandonment cost, no tech cut\n\n**Extras**\n- FRE runs add winnings to rewards or soften losses\n- Each tech costs $2,500 per 30 minutes of uptime",
+          "cost": {
+            "base": 25000,
+            "increment": 50000
+          },
+          "maxLevel": 4,
+          "dependencies": []
+        },
+        {
+          "id": "faster-techs",
+          "title": "Faster Techs",
+          "description": "Tech build time 5% faster",
+          "detailedDescription": "Train techs to wrap builds sooner.\n\n**Per Level**\n- Build time -5%\n- Faster turnover and less queueing",
+          "cost": {
+            "base": 10000,
+            "increment": 10000
+          },
+          "maxLevel": 6,
+          "dependencies": ["shop-techs"]
+        },
+        {
+          "id": "reliable-techs",
+          "title": "Reliable Techs",
+          "description": "Higher chance of success. +5% Per Upgrade",
+          "detailedDescription": "Improve first-attempt reliability.\n\n**Per Level**\n- +5% chance of meeting the target time on run #1\n- Fewer rebuilds and downtime",
+          "cost": {
+            "base": 5000,
+            "increment": 5000
+          },
+          "maxLevel": 5,
+          "dependencies": ["shop-techs"]
+        },
+        {
+          "id": "event-retries",
+          "title": "Event Retries",
+          "description": "Techs will run the event +1 more times after build",
+          "detailedDescription": "Give techs more chances to nail the run.\n\n**Per Level**\n- +1 additional event attempt after the build\n- Each retry adds a 2.5 minute cooldown before the next run",
+          "cost": {
+            "base": 25000,
+            "increment": 50000
+          },
+          "maxLevel": 2,
+          "dependencies": ["reliable-techs"]
+        },
+        {
+          "id": "manager",
+          "title": "Manager",
+          "description": "Auto-assign workers to jobs",
+          "detailedDescription": "Put job triage on autopilot.\n\n**Manager**\n- Assigns idle techs every 20 minutes\n- Costs $5,000 per 30 minutes to keep on payroll\n- Keeps you free to focus on other tasks",
+          "cost": 100000,
+          "maxLevel": 1,
+          "dependencies": ["faster-techs", "event-retries"],
+          "prerequisites": [
+            {
+              "type": "totalUpgrades",
+              "min": 5
+            }
+          ]
+        },
+        {
+          "id": "manager-speed",
+          "title": "Manager Speed",
+          "description": "Tech assignment time -2 min",
+          "detailedDescription": "Make the manager react quicker.\n\n**Per Level**\n- Assignment interval -2 minutes (down to 10)\n- Techs sit idle for less time between jobs",
+          "cost": {
+            "base": 25000,
+            "increment": 25000
+          },
+          "maxLevel": 5,
+          "dependencies": ["manager"]
+        },
+        {
+          "id": "faster-techs-ii",
+          "title": "Faster Techs II",
+          "description": "Tech build time 5% faster",
+          "detailedDescription": "Advanced training for veteran crews.\n\n**Per Level**\n- Additional 5% reduction to build time\n- Keeps up with heavier job volume",
+          "cost": {
+            "base": 15000,
+            "increment": 15000
+          },
+          "maxLevel": 7,
+          "dependencies": ["manager-speed"]
+        },
+        {
+          "id": "smart-techs",
+          "title": "Smart Techs",
+          "description": "Techs build costs 5% cheaper",
+          "detailedDescription": "Teach techs to waste fewer parts.\n\n**Per Level**\n- Build cost -5%\n- Higher profit per automated run",
+          "cost": {
+            "base": 10000,
+            "increment": 10000
+          },
+          "maxLevel": 5,
+          "dependencies": ["manager-speed"]
+        },
+        {
+          "id": "skilled-techs",
+          "title": "Skilled Techs",
+          "description": "Can accept jobs Higher of Tier +1",
+          "detailedDescription": "Raise the ceiling on their capabilities.\n\n**Per Level**\n- Techs can accept jobs one tier higher\n- Unlock higher-paying automated contracts",
+          "cost": {
+            "base": 25000,
+            "increment": 25000
+          },
+          "maxLevel": 2,
+          "dependencies": ["manager-speed"]
+        },
+        {
+          "id": "general-manager",
+          "title": "General Manager",
+          "description": "Manager assigns jobs immediately",
+          "detailedDescription": "Promote to an instant-response general manager.\n\n**Effect**\n- Jobs are assigned the moment a tech frees up\n- Operating cost rises to $25,000 per 30 minutes",
+          "cost": 250000,
+          "maxLevel": 1,
+          "dependencies": ["faster-techs-ii"],
+          "prerequisites": [
+            {
+              "type": "totalUpgrades",
+              "min": 15
+            }
+          ]
+        },
+        {
+          "id": "perfect-techs",
+          "title": "Perfect Techs",
+          "description": "Techs never fail",
+          "detailedDescription": "Automation endgame.\n\n**Effect**\n- Techs never fail and always meet the target on the first run\n- Rebuilds, retries, and abandonment risks disappear",
+          "cost": 250000,
+          "maxLevel": 1,
+          "dependencies": ["skilled-techs"],
+          "prerequisites": [
+            {
+              "type": "totalUpgrades",
+              "min": 15
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "treeId": "shop-upgrades",
+      "treeName": "Shop Upgrades",
+      "description": "Upgrade your shop facilities and capabilities",
+      "icon": "<path d=\"M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5\"/>",
+      "nodes": [
+        {
+          "id": "towing",
+          "title": "Towing",
+          "description": "Unlock towing capabilities",
+          "detailedDescription": "Bring cars home instantly.\n\n**Effect**\n- Tow vehicles back to the shop after remote drives\n- Skip the return trip and get straight to work",
+          "cost": 20000,
+          "maxLevel": 1,
+          "dependencies": []
+        },
+        {
+          "id": "lift-2",
+          "title": "Lift #2",
+          "description": "+1 simultaneous Worker / Vehicle pulled out",
+          "detailedDescription": "Add another lift bay.\n\n**Effect**\n- +1 simultaneous worker / pulled-out vehicle\n- Each lift costs $5,000 per 30 minutes to operate",
+          "cost": 20000,
+          "maxLevel": 1,
+          "dependencies": ["towing"]
+        },
+        {
+          "id": "dyno",
+          "title": "Dyno",
+          "description": "Unlock dynamic Power and Weight stats in shop",
+          "detailedDescription": "Drop a dyno next to the lifts.\n\n**Features**\n- Live power and weight stats inside the shopping cart\n- Preview how part combos change performance before buying",
+          "cost": 25000,
+          "maxLevel": 1,
+          "dependencies": ["lift-2"]
+        },
+        {
+          "id": "part-suppliers",
+          "title": "Part Suppliers",
+          "description": "Part Cost 5% less",
+          "detailedDescription": "Negotiate volume pricing.\n\n**Per Level**\n- Part cost -5%\n- Better margin on every build",
+          "cost": {
+            "base": 25000,
+            "increment": 25000
+          },
+          "maxLevel": 5,
+          "dependencies": ["towing"]
+        },
+        {
+          "id": "part-reseller",
+          "title": "Part Reseller",
+          "description": "Parts resell for 5% higher",
+          "detailedDescription": "Flip take-off parts for more.\n\n**Per Level**\n- Resale value +5%\n- Recover extra cash when swapping builds",
+          "cost": {
+            "base": 15000,
+            "increment": 25000
+          },
+          "maxLevel": 5,
+          "dependencies": ["part-suppliers"]
+        },
+        {
+          "id": "lift-3",
+          "title": "Lift #3",
+          "description": "+1 simultaneous Worker / Vehicle pulled out",
+          "detailedDescription": "Fill the shop with a third lift.\n\n**Effect**\n- +1 worker slot / pulled vehicle (up to three)\n- Each lift still costs $5,000 per 30 minutes",
+          "cost": 50000,
+          "maxLevel": 1,
+          "dependencies": ["dyno", "part-reseller"],
+          "prerequisites": [
+            {
+              "type": "totalUpgrades",
+              "min": 5
+            }
+          ]
+        },
+        {
+          "id": "marketing",
+          "title": "Marketing",
+          "description": "Jobs generate 25% faster",
+          "detailedDescription": "Keep the phones ringing.\n\n**Per Level**\n- Job generation speed +25%\n- Higher throughput for every tree",
+          "cost": {
+            "base": 25000,
+            "increment": 25000
+          },
+          "maxLevel": 5,
+          "dependencies": ["lift-3"]
+        },
+        {
+          "id": "bigger-books",
+          "title": "Bigger Books",
+          "description": "Store 1 more active job",
+          "detailedDescription": "Hold more contracts at once.\n\n**Per Level**\n- +1 active job slot\n- Prevent idle techs while waiting on parts or timers",
+          "cost": {
+            "base": 10000,
+            "increment": 20000
+          },
+          "maxLevel": 5,
+          "dependencies": ["lift-3"]
+        },
+        {
+          "id": "xp-gain",
+          "title": "XP Gain",
+          "description": "Gain 25% more XP",
+          "detailedDescription": "Get upgrades faster.\n\n**Per Level**\n- XP gain +25%\n- Unlock the late-tree upgrades sooner",
+          "cost": {
+            "base": 50000,
+            "increment": 25000
+          },
+          "maxLevel": 4,
+          "dependencies": ["marketing", "bigger-books"]
+        },
+        {
+          "id": "solar-panels",
+          "title": "Solar Panels",
+          "description": "All operating costs are free",
+          "detailedDescription": "Power the business with sun and cut every bill.\n\n**Effect**\n- Removes operating costs for lifts, techs, managers, and general manager\n- Profit stays in your pocket",
+          "cost": 200000,
+          "maxLevel": 1,
+          "dependencies": ["xp-gain"]
+        },
+        {
+          "id": "lift-4",
+          "title": "Lift #4",
+          "description": "+1 simultaneous Worker/Vehicle pulled out",
+          "detailedDescription": "Max out the floor space.\n\n**Effect**\n- +1 more lift for a total of four worker slots\n- Each lift continues to cost $5,000 per 30 minutes",
+          "cost": 100000,
+          "maxLevel": 1,
+          "dependencies": ["xp-gain"],
+          "prerequisites": [
+            {
+              "type": "totalUpgrades",
+              "min": 10
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

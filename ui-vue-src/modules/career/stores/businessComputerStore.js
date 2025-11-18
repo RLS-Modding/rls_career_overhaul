@@ -9,6 +9,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   const vehicleView = ref(null)
   const pulledOutVehicle = ref(null)
   const loading = ref(false)
+  const registeredTabs = ref([])
 
   const partsCart = ref([])
   const tuningCart = ref([])
@@ -52,7 +53,22 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     } else {
       pulledOutVehicle.value = null
     }
+    if (data.tabs) {
+      registeredTabs.value = data.tabs
+    }
   }
+
+  const tabsBySection = computed(() => {
+    const sections = {}
+    registeredTabs.value.forEach(tab => {
+      const section = tab.section || 'BASIC'
+      if (!sections[section]) {
+        sections[section] = []
+      }
+      sections[section].push(tab)
+    })
+    return sections
+  })
 
   const loadBusinessData = async (businessType, businessId) => {
     loading.value = true
@@ -1156,12 +1172,28 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     return tuning.reduce((sum, item) => sum + (item.price || 0), 0)
   })
 
+  const skillTreeProgress = ref({})
+
+  const loadSkillTrees = async (businessId) => {
+    return []
+  }
+
+  const purchaseSkillUpgrade = async (treeId, nodeId) => {
+    return false
+  }
+
+  const getTotalUpgradesInTree = async (treeId) => {
+    return 0
+  }
+
   return {
     businessData,
     activeView,
     vehicleView,
     pulledOutVehicle,
     loading,
+    registeredTabs,
+    tabsBySection,
     businessId,
     businessType,
     businessName,
@@ -1217,6 +1249,10 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     updatePowerWeight,
     handlePowerWeightData,
     isCurrentTabApplied,
+    skillTreeProgress,
+    loadSkillTrees,
+    purchaseSkillUpgrade,
+    getTotalUpgradesInTree,
   }
 })
 
