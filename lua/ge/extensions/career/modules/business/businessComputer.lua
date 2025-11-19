@@ -390,6 +390,30 @@ local function getBusinessComputerUIData(businessType, businessId)
   return result
 end
 
+local function requestPartInventory(businessId)
+  if not businessId then
+    if guihooks then
+      guihooks.trigger('businessComputer:onPartInventoryData', {success = false, error = "Missing businessId"})
+    end
+    return
+  end
+
+  if not career_modules_business_businessPartInventory then
+    if guihooks then
+      guihooks.trigger('businessComputer:onPartInventoryData', {success = false, error = "Inventory module not available", businessId = businessId})
+    end
+    return
+  end
+
+  local data = career_modules_business_businessPartInventory.getUIData(businessId) or {}
+  data.businessId = businessId
+  data.success = true
+
+  if guihooks then
+    guihooks.trigger('businessComputer:onPartInventoryData', data)
+  end
+end
+
 local function acceptJob(businessId, jobId)
   local module = resolveBusinessModule(businessId)
   if module and module.acceptJob then
@@ -470,8 +494,34 @@ local function getNewJobs(businessId)
   return {}
 end
 
+local function buildOwnedPartsLookup(inventoryParts, vehicleModel)
+  if not inventoryParts then return nil end
+  local lookup = {}
+  for _, part in ipairs(inventoryParts) do
+    if part and part.name then
+      if not part.vehicleModel or part.vehicleModel == vehicleModel then
+        local mileage = part.mileage
+        if not mileage and part.partCondition and part.partCondition.odometer then
+          mileage = part.partCondition.odometer / 1609.344
+        end
+        local variant = {
+          partId = part.partId,
+          name = part.name,
+          partCondition = part.partCondition,
+          finalValue = part.finalValue,
+          value = part.value,
+          mileage = mileage
+        }
+        lookup[part.name] = lookup[part.name] or {}
+        table.insert(lookup[part.name], variant)
+      end
+    end
+  end
+  return lookup
+end
+
 local function formatPartsTreeForUI(node, slotName, slotInfo, availableParts, slotsNiceName, partsNiceName, pathPrefix,
-  parentSlotName, ioCtx, businessId, vehicleData, vehicleModel)
+  parentSlotName, ioCtx, businessId, vehicleData, vehicleModel, ownedPartsByName)
   if not node then
     return {}
   end
@@ -514,6 +564,8 @@ local function formatPartsTreeForUI(node, slotName, slotInfo, availableParts, sl
   
   if not isRootNode and node.suitablePartNames and #node.suitablePartNames > 0 then
     local availablePartsList = {}
+    local addedPartNames = {}
+
     for _, partName in ipairs(node.suitablePartNames) do
       local partInfoData = availableParts[partName]
       if partInfoData then
@@ -538,6 +590,45 @@ local function formatPartsTreeForUI(node, slotName, slotInfo, availableParts, sl
           value = value,
           installed = (node.chosenPartName == partName)
         })
+        addedPartNames[partName] = true
+      end
+    end
+
+    local slotCompatibleVariants = {}
+    if ownedPartsByName then
+      for _, partName in ipairs(node.suitablePartNames) do
+        local variants = ownedPartsByName[partName]
+        if variants and #variants > 0 then
+          local existingEntry = nil
+          for _, entry in ipairs(availablePartsList) do
+            if entry.name == partName then
+              existingEntry = entry
+              break
+            end
+          end
+          if not existingEntry then
+            local partInfoData = availableParts[partName]
+            local niceName = partName
+            if partInfoData then
+              local desc = partInfoData.description
+              niceName = type(desc) == "table" and desc.description or desc or partName
+            end
+            existingEntry = {
+              name = partName,
+              niceName = niceName,
+              value = 0,
+              installed = false,
+              fromInventory = true,
+              isOwned = true
+            }
+            table.insert(availablePartsList, existingEntry)
+          end
+          existingEntry.hasOwnedVariants = true
+          existingEntry.ownedVariants = variants
+          for _, variant in ipairs(variants) do
+            table.insert(slotCompatibleVariants, variant)
+          end
+        end
       end
     end
 
@@ -547,8 +638,6 @@ local function formatPartsTreeForUI(node, slotName, slotInfo, availableParts, sl
       return nameA < nameB
     end)
 
-    local compatibleInventoryParts = {}
-    
     if #availablePartsList > 0 then
       table.insert(result, {
         id = currentPath,
@@ -558,7 +647,7 @@ local function formatPartsTreeForUI(node, slotName, slotInfo, availableParts, sl
         chosenPartName = node.chosenPartName or "",
         partNiceName = partNiceName,
         availableParts = availablePartsList,
-        compatibleInventoryParts = compatibleInventoryParts,
+        compatibleInventoryParts = slotCompatibleVariants,
         parentSlotName = parentSlotName
       })
     end
@@ -572,7 +661,7 @@ local function formatPartsTreeForUI(node, slotName, slotInfo, availableParts, sl
         childSlotInfo = partInfo.slotInfoUi[childSlotName]
       end
       local childResults = formatPartsTreeForUI(childNode, childSlotName, childSlotInfo, availableParts, slotsNiceName,
-        partsNiceName, childPath, slotNiceName, ioCtx, businessId, vehicleData, vehicleModel)
+        partsNiceName, childPath, slotNiceName, ioCtx, businessId, vehicleData, vehicleModel, ownedPartsByName)
       for _, childResult in ipairs(childResults) do
         table.insert(result, childResult)
       end
@@ -690,9 +779,15 @@ local function requestVehiclePartsTree(businessId, vehicleId)
     if vehicle and vehicle.vehicleConfig then
       vehicleModel = vehicle.vehicleConfig.model_key or vehicle.model_key
     end
+
+    local ownedPartsLookup = nil
+    if career_modules_business_businessPartInventory and vehicleModel then
+      local inventoryParts = career_modules_business_businessPartInventory.getPartsByModel(vehicleModel)
+      ownedPartsLookup = buildOwnedPartsLookup(inventoryParts, vehicleModel)
+    end
     
     local partsTreeList = formatPartsTreeForUI(vehicleData.config.partsTree, "", nil, availableParts, slotsNiceName,
-      partsNiceName, "/", nil, vehicleData.ioCtx, businessId, vehicleData, vehicleModel)
+      partsNiceName, "/", nil, vehicleData.ioCtx, businessId, vehicleData, vehicleModel, ownedPartsLookup)
 
     if vehicleObj then
       vehicleObj:delete()
@@ -1047,6 +1142,24 @@ local function purchaseCartItems(businessId, accountId, cartData)
   local vehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
   if vehicle and vehicle.vehicleId then
     if #parts > 0 then
+      -- Handle inventory transactions
+      if career_modules_business_businessPartCustomization and career_modules_business_businessPartInventory then
+        -- Track removed parts before applying changes
+        local removedParts = career_modules_business_businessPartCustomization.findRemovedParts(businessId, vehicle.vehicleId)
+        
+        -- Add removed parts to inventory
+        if removedParts and #removedParts > 0 then
+          career_modules_business_businessPartInventory.addParts(removedParts)
+        end
+        
+        -- Remove installed used parts from inventory
+        for _, part in ipairs(parts) do
+          if part.fromInventory and part.partId then
+            career_modules_business_businessPartInventory.removePart(part.partId)
+          end
+        end
+      end
+
       applyCartPartsToVehicle(businessId, vehicle.vehicleId, parts)
       
       local previewConfig = nil
@@ -1197,6 +1310,7 @@ M.getAllRequiredParts = getAllRequiredParts
 M.addPartToCart = addPartToCart
 M.onVehicleWheelDataUpdate = onVehicleWheelDataUpdate
 M.onPowerWeightReceived = onPowerWeightReceived
+M.requestPartInventory = requestPartInventory
 
 local function onExtensionLoaded()
   businessContexts = {}

@@ -283,10 +283,10 @@
           <button class="btn btn-secondary" @click="cancel">Cancel</button>
           <button 
             class="btn btn-primary" 
-            :disabled="totalCost === 0 || totalCost > businessBalance"
+            :disabled="!canPurchase"
             @click="purchase"
           >
-            Purchase
+            {{ totalCost > 0 ? 'Purchase' : 'Apply Changes' }}
           </button>
         </div>
       </div>
@@ -386,7 +386,15 @@ const totalCost = computed(() => {
 })
 
 const totalItems = computed(() => {
-  return partsItems.value.length + (tuningItems.value.length > 0 ? 1 : 0)
+  return partsItems.value.length + tuningItems.value.length
+})
+
+const canPurchase = computed(() => {
+  if (!store.businessId || !store.businessType) return false
+  const hasItems = totalItems.value > 0
+  if (!hasItems) return false
+  if (totalCost.value > businessBalance.value) return false
+  return true
 })
 
 const loadBalance = async () => {
@@ -417,7 +425,7 @@ const handleAccountUpdate = (data) => {
 }
 
 const purchase = async () => {
-  if (totalCost.value === 0 || totalCost.value > businessBalance.value) return
+  if (!canPurchase.value) return
   
   try {
     const accountId = "business_" + store.businessType + "_" + store.businessId

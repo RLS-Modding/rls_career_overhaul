@@ -101,10 +101,6 @@
               </div>
 
               <div class="price-display">
-                <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="12" y1="1" x2="12" y2="23"/>
-                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-                </svg>
                 <span>${{ ((part.price || part.value || 0)).toLocaleString() }}</span>
               </div>
 
@@ -126,7 +122,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue"
+import { ref, computed, onMounted } from "vue"
 import { useBusinessComputerStore } from "../../stores/businessComputerStore"
 
 const store = useBusinessComputerStore()
@@ -186,6 +182,12 @@ const getConditionClass = (condition) => {
   }
   return classes[condition] || 'condition-good'
 }
+
+onMounted(() => {
+  if (store.requestPartInventory) {
+    store.requestPartInventory()
+  }
+})
 
 </script>
 
@@ -398,7 +400,7 @@ const getConditionClass = (condition) => {
 .part-item {
   display: flex;
   align-items: center;
-  gap: 1em;
+  gap: 0.6em;
   padding: 0.75em;
   background: rgba(26, 26, 26, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -467,11 +469,12 @@ const getConditionClass = (condition) => {
 .price-display {
   display: flex;
   align-items: center;
-  gap: 0.5em;
-  padding: 0.375em 1em;
+  gap: 0.35em;
+  padding: 0.25em 0.5em;
   background: rgba(23, 23, 23, 0.5);
   border-radius: 0.25em;
-  min-width: 8.75em;
+  min-width: 5.5em;
+  flex: 0 1 auto;
   
   .icon {
     color: rgba(255, 255, 255, 0.4);
@@ -480,8 +483,9 @@ const getConditionClass = (condition) => {
   
   span {
     color: rgba(245, 73, 0, 1);
-    font-size: 0.875em;
+    font-size: 0.8em;
     white-space: nowrap;
+    text-align: right;
   }
 }
 

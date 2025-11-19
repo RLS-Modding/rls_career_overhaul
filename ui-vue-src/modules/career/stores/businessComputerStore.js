@@ -364,6 +364,17 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     }
   }
 
+  const requestPartInventory = async () => {
+    if (!businessId.value) return null
+
+    try {
+      await lua.career_modules_business_businessComputer.requestPartInventory(businessId.value)
+      return null
+    } catch (error) {
+      return null
+    }
+  }
+
   const requestVehicleTuningData = async (vehicleId) => {
     if (!businessId.value || !vehicleId) return null
     if (isDamageLocked.value) {
@@ -714,15 +725,72 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
       return
     }
 
+    // Prevent updates if user is working on a vehicle
+    if (vehicleView.value) {
+      return
+    }
+
+    // Prevent updates if user is in a tab that doesn't display job lists
+    const allowedViews = ['home', 'new-jobs', 'active-jobs']
+    if (!allowedViews.includes(activeView.value)) {
+      return
+    }
+
     try {
       await loadBusinessData(currentBusinessType, currentBusinessId)
     } catch (error) {
     }
   }
 
+  const handlePartInventoryData = (data) => {
+    const currentBusinessId = businessId.value
+    if (!currentBusinessId) return
+
+    if (!data || !data.success) return
+    if (String(data.businessId) !== String(currentBusinessId)) return
+
+    const partsByModel = data.partsByModel || {}
+    const mappedParts = []
+
+    Object.entries(partsByModel).forEach(([model, list]) => {
+      if (!Array.isArray(list)) return
+      list.forEach(p => {
+        if (!p) return
+        const c = p.partCondition || {}
+        const integrity = typeof c.integrityValue === "number" ? c.integrityValue : 1
+        let condition = "Good"
+        if (integrity >= 0.9) condition = "Excellent"
+        else if (integrity >= 0.75) condition = "Good"
+        else if (integrity >= 0.5) condition = "Fair"
+        else condition = "Poor"
+
+        const odo = typeof c.odometer === "number" ? c.odometer : 0
+        const mileage = Math.max(0, Math.round(odo / 1609.344))
+
+        const price = p.finalValue || p.value || 0
+
+        mappedParts.push({
+          partId: p.partId,
+          name: p.niceName || p.name,
+          compatibleVehicle: p.vehicleNiceName || model,
+          condition,
+          mileage,
+          price,
+          value: price
+        })
+      })
+    })
+
+    businessData.value = {
+      ...businessData.value,
+      parts: mappedParts
+    }
+  }
+
   // Setup event listener
   events.on('businessComputer:onPartCartUpdated', handlePartCartUpdated)
   events.on('businessComputer:onJobsUpdated', handleJobsUpdated)
+  events.on('businessComputer:onPartInventoryData', handlePartInventoryData)
   
   const addPartToCart = async (part, slot) => {
     if (!businessId.value || !pulledOutVehicle.value?.vehicleId) {
@@ -1314,6 +1382,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     onMenuClosed,
     requestVehiclePartsTree,
     requestVehicleTuningData,
+    requestPartInventory,
     applyVehicleTuning,
     partsCart,
     tuningCart,

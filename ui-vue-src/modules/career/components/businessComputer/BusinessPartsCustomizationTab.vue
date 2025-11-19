@@ -144,13 +144,39 @@
                       </button>
                     </div>
                   </div>
-                  <button
-                    v-else
-                    class="btn btn-primary"
-                    @click="installPart(part, result)"
-                  >
-                    Install
-                  </button>
+                  <div v-else class="install-button-wrapper">
+                    <button
+                      v-if="!hasOwnedVariants(part)"
+                      class="btn btn-primary"
+                      @click="installPart(part, result)"
+                    >
+                      Install
+                    </button>
+                    <div v-else class="install-dropdown-wrapper">
+                      <button
+                        class="btn btn-primary"
+                        @click.stop="toggleInstallMenu(result.slotPath, part.name)"
+                      >
+                        Install
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                      </button>
+                      <div v-if="installMenuVisible === `${result.slotPath}_${part.name}`" class="install-menu">
+                        <button v-if="!part.fromInventory" class="install-menu-item-button" @click="installPart(part, result)">
+                          <span>New</span>
+                          <span class="price-badge">$ {{ (part.value || 0).toLocaleString() }}</span>
+                        </button>
+                        <div v-for="usedPart in getOwnedVariants(part)" :key="usedPart.partId" class="install-menu-item">
+                          <button class="install-menu-item-button" @click="installUsedPart(usedPart, result)">
+                            <span>Owned</span>
+                            <span class="mileage-badge">{{ formatMileage(getUsedPartMileage(usedPart)) }}</span>
+                            <span class="price-badge">$ {{ (usedPart.finalValue || usedPart.value || 0).toLocaleString() }}</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -222,7 +248,7 @@
                 </div>
                 <div v-else class="install-button-wrapper">
                   <button
-                    v-if="!currentCategory.compatibleInventoryParts || currentCategory.compatibleInventoryParts.length === 0"
+                    v-if="!hasOwnedVariants(option)"
                     class="btn btn-primary"
                     @click="installPart(option, currentCategory)"
                   >
@@ -239,13 +265,15 @@
                       </svg>
                     </button>
                     <div v-if="installMenuVisible === `${currentCategory.path}_${option.name}`" class="install-menu">
-                      <button class="install-menu-item" @click="installPart(option, currentCategory)">
-                        Install New
+                      <button v-if="!option.fromInventory" class="install-menu-item-button" @click="installPart(option, currentCategory)">
+                        <span>New</span>
+                        <span class="price-badge">$ {{ (option.value || 0).toLocaleString() }}</span>
                       </button>
-                      <div v-for="usedPart in currentCategory.compatibleInventoryParts" :key="usedPart.partId" class="install-menu-item">
+                      <div v-for="usedPart in getOwnedVariants(option)" :key="usedPart.partId" class="install-menu-item">
                         <button class="install-menu-item-button" @click="installUsedPart(usedPart, currentCategory)">
-                          Install Used
-                          <span class="mileage-badge">{{ formatMileage(usedPart.mileage) }}</span>
+                          <span>Owned</span>
+                          <span class="mileage-badge">{{ formatMileage(getUsedPartMileage(usedPart)) }}</span>
+                          <span class="price-badge">$ {{ (usedPart.finalValue || usedPart.value || 0).toLocaleString() }}</span>
                         </button>
                       </div>
                     </div>
@@ -370,7 +398,8 @@ const searchResults = computed(() => {
               slotPath: slotKey,
               slotName: node.slotName || '',
               slotNiceName: node.slotNiceName || node.slotName || '',
-              parts: []
+              parts: [],
+              compatibleInventoryParts: node.compatibleInventoryParts || []
             }
             results.push(slotMap[slotKey])
           }
@@ -529,17 +558,69 @@ const formatMileage = (miles) => {
   return `${(miles / 1000).toFixed(1)}k mi`
 }
 
+const getUsedPartMileage = (usedPart) => {
+  if (!usedPart) return 0
+  if (typeof usedPart.mileage === "number") {
+    return usedPart.mileage
+  }
+  const odometer = usedPart.partCondition && typeof usedPart.partCondition.odometer === "number"
+    ? usedPart.partCondition.odometer
+    : 0
+  return odometer / 1609.344
+}
+
+const getOwnedVariants = (part) => {
+  if (!part) return []
+  if (Array.isArray(part.ownedVariants) && part.ownedVariants.length > 0) {
+    return part.ownedVariants
+  }
+  if (part.fromInventory && part.partId) {
+    return [{
+      partId: part.partId,
+      name: part.name,
+      partCondition: part.partCondition,
+      finalValue: part.finalValue,
+      value: part.value,
+      mileage: part.mileage
+    }]
+  }
+  return []
+}
+
+const hasOwnedVariants = (part) => {
+  return getOwnedVariants(part).length > 0
+}
+
 const installUsedPart = async (usedPart, slot) => {
   installMenuVisible.value = null
   
-  const partToAdd = {
-    partName: usedPart.name,
-    slotPath: slot.path,
-    fromInventory: true,
-    partId: usedPart.partId
+  let slotPath = slot.slotPath || slot.path
+  if (!slotPath.startsWith('/')) {
+    slotPath = '/' + slotPath
+  }
+  if (!slotPath.endsWith('/')) {
+    slotPath = slotPath + '/'
   }
   
-  await store.addPartToCart(partToAdd)
+  const normalizedSlot = {
+    path: slotPath,
+    slotPath: slotPath,
+    slotNiceName: slot.slotNiceName || slot.slotName,
+    slotName: slot.slotName
+  }
+  
+  const partToAdd = {
+    name: usedPart.name,
+    partName: usedPart.name,
+    partNiceName: usedPart.niceName || usedPart.name,
+    value: usedPart.finalValue || usedPart.value || 0,
+    fromInventory: true,
+    partId: usedPart.partId,
+    partCondition: usedPart.partCondition,
+    mileage: usedPart.mileage
+  }
+  
+  await store.addPartToCart(partToAdd, normalizedSlot)
 }
 
 const removePart = async (part, slot) => {
@@ -678,6 +759,7 @@ const buildHierarchy = (flatList, slotsNiceNameMap) => {
     node.slotNiceName = slotNiceName
     node.partNiceName = slot.partNiceName || '-'
     node.availableParts = slot.availableParts || []
+    node.compatibleInventoryParts = slot.compatibleInventoryParts || []
   })
   
   return roots.sort((a, b) => {
@@ -1225,6 +1307,14 @@ onBeforeUnmount(() => {
   font-size: 0.75em;
   color: rgba(255, 255, 255, 0.6);
   background: rgba(255, 255, 255, 0.1);
+  padding: 0.25em 0.5em;
+  border-radius: 0.25em;
+}
+
+.price-badge {
+  font-size: 0.75em;
+  color: rgba(245, 73, 0, 1);
+  background: rgba(245, 73, 0, 0.15);
   padding: 0.25em 0.5em;
   border-radius: 0.25em;
 }
