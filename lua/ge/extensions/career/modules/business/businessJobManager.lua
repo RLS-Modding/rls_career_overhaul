@@ -342,6 +342,18 @@ local function completeJob(businessId, jobId)
   return true
 end
 
+local function getAbandonPenalty(businessId, jobId)
+  if not businessId or not jobId then return 0 end
+  
+  local job = getJobById(businessId, jobId)
+  if not job then return 0 end
+  
+  local reward = job.reward or 20000
+  local penalty = math.floor(reward * 0.5)
+  
+  return penalty
+end
+
 local function abandonJob(businessId, jobId)
   if not businessId or not jobId then return false end
   
@@ -387,8 +399,7 @@ local function abandonJob(businessId, jobId)
   local businessJobId = career_modules_business_businessInventory.getBusinessJobIdentifier(businessId, jobId)
   leaderboardManager.clearLeaderboardForVehicle(businessJobId)
   
-  local reward = job.reward or 20000
-  local penalty = math.floor(reward * 0.5)
+  local penalty = getAbandonPenalty(businessId, jobId)
   
   local price = { money = { amount = penalty, canBeNegative = false } }
   
@@ -432,11 +443,10 @@ M.acceptJob = acceptJob
 M.declineJob = declineJob
 M.completeJob = completeJob
 M.abandonJob = abandonJob
+M.getAbandonPenalty = getAbandonPenalty
 M.getJobById = getJobById
 M.canCompleteJob = canCompleteJob
 M.getJobCurrentTime = getJobCurrentTime
 M.onSaveCurrentSaveSlot = onSaveCurrentSaveSlot
 
 return M
-
-

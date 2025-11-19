@@ -186,6 +186,13 @@ local function formatJobForUI(job, businessId)
     end
   end
 
+  local penalty = 0
+  if career_modules_business_businessJobManager and career_modules_business_businessJobManager.getAbandonPenalty then
+    penalty = career_modules_business_businessJobManager.getAbandonPenalty(businessId, job.jobId)
+  else
+    penalty = math.floor((job.reward or 20000) * 0.5)
+  end
+
   return {
     id = tostring(job.jobId),
     jobId = job.jobId,
@@ -204,7 +211,8 @@ local function formatJobForUI(job, businessId)
     raceLabel = job.raceLabel,
     decimalPlaces = job.decimalPlaces or 0,
     deadline = job.deadline or "7 days",
-    priority = job.priority or "medium"
+    priority = job.priority or "medium",
+    penalty = penalty
   }
 end
 
@@ -1067,12 +1075,20 @@ local function canCompleteJob(businessId, jobId)
   return career_modules_business_businessJobManager.canCompleteJob(businessId, jobId)
 end
 
+local function getAbandonPenalty(businessId, jobId)
+  if career_modules_business_businessJobManager and career_modules_business_businessJobManager.getAbandonPenalty then
+    return career_modules_business_businessJobManager.getAbandonPenalty(businessId, jobId)
+  end
+  return 0
+end
+
 M.getBusinessComputerUIData = getBusinessComputerUIData
 M.acceptJob = acceptJob
 M.declineJob = declineJob
 M.abandonJob = abandonJob
 M.completeJob = completeJob
 M.canCompleteJob = canCompleteJob
+M.getAbandonPenalty = getAbandonPenalty
 M.pullOutVehicle = pullOutVehicle
 M.putAwayVehicle = putAwayVehicle
 M.getActiveJobs = getActiveJobs
