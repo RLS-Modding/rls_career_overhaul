@@ -11,7 +11,11 @@ local raceData = nil
 local raceDataLevel = nil
 local factoryConfigs = nil
 local businessJobs = {}
+local generationTimers = {}
 local jobIdCounter = 0
+
+local GEN_INTERVAL_SECONDS = 120
+local EXPIRY_SECONDS = 300
 
 local DAMAGE_LOCK_THRESHOLD = 1000
 
@@ -29,6 +33,39 @@ local blacklistedModels = {
 }
 
 local vehicleInfoCache = nil
+
+local function normalizeBusinessId(businessId)
+  return tonumber(businessId) or businessId
+end
+
+local function getGenerationIntervalSeconds(businessId)
+  return GEN_INTERVAL_SECONDS
+end
+
+local function getJobExpirySeconds(businessId)
+  return EXPIRY_SECONDS
+end
+
+local function ensureJobLifetime(job, businessId)
+  if not job then return end
+  local lifetime = tonumber(job.remainingLifetime)
+  if not lifetime or lifetime <= 0 then
+    job.remainingLifetime = getJobExpirySeconds(businessId)
+  else
+    job.remainingLifetime = lifetime
+  end
+end
+
+local function notifyJobsUpdated(businessId)
+  if not businessId or not guihooks then
+    return
+  end
+
+  guihooks.trigger('businessComputer:onJobsUpdated', {
+    businessType = "tuningShop",
+    businessId = tostring(businessId)
+  })
+end
 
 local function invalidateVehicleInfoCache()
   vehicleInfoCache = nil
@@ -111,6 +148,7 @@ local function getBusinessJobsPath(businessId)
 end
 
 local function loadBusinessJobs(businessId)
+  businessId = normalizeBusinessId(businessId)
   if not businessId then return {} end
   
   if businessJobs[businessId] then
@@ -136,6 +174,7 @@ local function loadBusinessJobs(businessId)
     if job.jobId then
       job.jobId = tonumber(job.jobId) or job.jobId
     end
+    ensureJobLifetime(job, businessId)
   end
   for _, job in ipairs(businessJobs[businessId].completed or {}) do
     if job.jobId then
@@ -143,10 +182,15 @@ local function loadBusinessJobs(businessId)
     end
   end
   
+  if not businessJobs[businessId].new then
+    businessJobs[businessId].new = {}
+  end
+
   return businessJobs[businessId]
 end
 
 local function saveBusinessJobs(businessId, currentSavePath)
+  businessId = normalizeBusinessId(businessId)
   if not businessId or not businessJobs[businessId] then return end
   if not currentSavePath then return end
   
@@ -365,6 +409,7 @@ local function generateNewJobs(businessId, count)
       job.businessId = businessId
       job.businessType = "tuningShop"
       job.status = "new"
+      job.remainingLifetime = getJobExpirySeconds(businessId)
       table.insert(newJobs, job)
     end
   end
@@ -372,12 +417,59 @@ local function generateNewJobs(businessId, count)
   return newJobs
 end
 
+local function processJobGeneration(businessId, jobs, dtSim)
+  local interval = getGenerationIntervalSeconds(businessId)
+  if interval <= 0 then return false end
+
+  local timer = generationTimers[businessId] or 0
+  timer = timer + dtSim
+
+  if not jobs.new then
+    jobs.new = {}
+  end
+
+  local changed = false
+  while timer >= interval do
+    local job = generateJob(businessId)
+    if not job then
+      break
+    end
+    job.businessId = businessId
+    job.businessType = "tuningShop"
+    job.status = "new"
+    job.remainingLifetime = getJobExpirySeconds(businessId)
+    table.insert(jobs.new, job)
+    timer = timer - interval
+    changed = true
+  end
+
+  generationTimers[businessId] = timer
+  return changed
+end
+
+local function updateNewJobExpirations(businessId, jobs, dtSim)
+  if not jobs.new or dtSim <= 0 then
+    return false
+  end
+
+  local defaultLifetime = getJobExpirySeconds(businessId)
+  local changed = false
+  for i = #jobs.new, 1, -1 do
+    local job = jobs.new[i]
+    job.remainingLifetime = (tonumber(job.remainingLifetime) or defaultLifetime) - dtSim
+    if job.remainingLifetime <= 0 then
+      table.remove(jobs.new, i)
+      changed = true
+    end
+  end
+
+  return changed
+end
+
 local function getJobsForBusiness(businessId)
   local jobs = loadBusinessJobs(businessId)
-  
-  if not jobs.new or #jobs.new == 0 then
-    local newJobs = generateNewJobs(businessId, 5)
-    jobs.new = newJobs
+  if not jobs.new then
+    jobs.new = {}
   end
   
   return {
@@ -792,6 +884,14 @@ local function formatJobForUI(job, businessId)
   end
 
   local penalty = getAbandonPenalty(businessId, job.jobId)
+  local expiresInSeconds = nil
+  if job.status == "new" then
+    local lifetime = tonumber(job.remainingLifetime)
+    if not lifetime or lifetime < 0 then
+      lifetime = getJobExpirySeconds(businessId)
+    end
+    expiresInSeconds = math.max(0, math.floor(lifetime))
+  end
 
   return {
     id = tostring(job.jobId),
@@ -810,8 +910,7 @@ local function formatJobForUI(job, businessId)
     raceType = job.raceType,
     raceLabel = job.raceLabel,
     decimalPlaces = job.decimalPlaces or 0,
-    deadline = job.deadline or "7 days",
-    priority = job.priority or "medium",
+    expiresInSeconds = expiresInSeconds,
     penalty = penalty
   }
 end
@@ -1047,6 +1146,49 @@ local function getNewJobs(businessId)
   return newJobs
 end
 
+local function onUpdate(dtReal, dtSim, dtRaw)
+  if not career_career.isActive() then
+    return
+  end
+
+  if not career_modules_business_businessManager or not career_modules_business_businessManager.getPurchasedBusinesses then
+    return
+  end
+
+  local purchased = career_modules_business_businessManager.getPurchasedBusinesses("tuningShop") or {}
+  local ownedBusinesses = {}
+  local deltaSim = math.max(dtSim or 0, 0)
+
+  for businessId, owned in pairs(purchased) do
+    if owned then
+      local id = normalizeBusinessId(businessId)
+      ownedBusinesses[id] = true
+      local jobs = loadBusinessJobs(id)
+      jobs.new = jobs.new or {}
+
+      local jobsChanged = false
+      if deltaSim > 0 then
+        if processJobGeneration(id, jobs, deltaSim) then
+          jobsChanged = true
+        end
+        if updateNewJobExpirations(id, jobs, deltaSim) then
+          jobsChanged = true
+        end
+      end
+
+      if jobsChanged then
+        notifyJobsUpdated(id)
+      end
+    end
+  end
+
+  for id in pairs(generationTimers) do
+    if not ownedBusinesses[id] then
+      generationTimers[id] = nil
+    end
+  end
+end
+
 local function openMenu(businessId)
   log("D", "TuningShop", "Opening menu for business: " .. tostring(businessId))
   guihooks.trigger('ChangeState', {state = 'business-computer', params = {businessType = 'tuningShop', businessId = tostring(businessId)}})
@@ -1107,6 +1249,7 @@ local function onCareerActivated()
   end
   
   businessJobs = {}
+  generationTimers = {}
 end
 
 local function onSaveCurrentSaveSlot(currentSavePath)
@@ -1116,6 +1259,7 @@ local function onSaveCurrentSaveSlot(currentSavePath)
 end
 
 M.onCareerActivated = onCareerActivated
+M.onUpdate = onUpdate
 M.powerToWeightToTime = powerToWeightToTime
 M.generateJob = generateJob
 M.loadRaceData = loadRaceData

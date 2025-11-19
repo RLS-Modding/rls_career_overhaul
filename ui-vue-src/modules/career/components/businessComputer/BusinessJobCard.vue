@@ -27,6 +27,17 @@
             </div>
           </div>
         </div>
+        <div
+          class="expiration-chip"
+          v-if="expirationText"
+          :class="{ expired: isExpired }"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          <span>{{ expirationText }}</span>
+        </div>
         <div class="job-actions-new">
           <button class="btn btn-success" @click.stop="$emit('accept', job)">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -72,6 +83,17 @@
                 <span class="goal-chip-value">{{ job.goal }}</span>
               </div>
             </div>
+          </div>
+          <div
+            class="expiration-chip"
+            v-if="expirationText"
+            :class="{ expired: isExpired }"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <span>{{ expirationText }}</span>
           </div>
           <div class="job-actions-new-horizontal">
             <button class="btn btn-success" @click.stop="$emit('accept', job)">
@@ -262,7 +284,7 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted, watch } from "vue"
+import { computed, ref, onMounted, onUnmounted, watch } from "vue"
 import { useBusinessComputerStore } from "../../stores/businessComputerStore"
 import { lua } from "@/bridge"
 
@@ -294,6 +316,9 @@ const damageLockApplies = computed(() => {
   return jobIdentifier.value === pulledOutJobIdentifier.value
 })
 const canComplete = ref(false)
+const remainingSeconds = ref(null)
+const countdownTimer = ref(null)
+const hasRequestedAfterExpiry = ref(false)
 
 const canCompleteLocal = computed(() => {
   if (!props.isActive || props.job.currentTime === undefined || props.job.currentTime === null || props.job.goalTime === undefined || props.job.goalTime === null) {
@@ -380,6 +405,71 @@ const formatTimeWithUnit = (time, timeUnit, decimalPlaces) => {
   return formatted
 }
 
+const stopCountdown = () => {
+  if (countdownTimer.value) {
+    clearInterval(countdownTimer.value)
+    countdownTimer.value = null
+  }
+}
+
+const syncRemainingSeconds = () => {
+  if (props.isActive) {
+    remainingSeconds.value = null
+    return
+  }
+
+  if (typeof props.job?.expiresInSeconds === "number") {
+    remainingSeconds.value = Math.max(0, Math.floor(props.job.expiresInSeconds))
+  } else {
+    remainingSeconds.value = null
+  }
+}
+
+const requestJobsAfterExpiry = async () => {
+  if (hasRequestedAfterExpiry.value) {
+    return
+  }
+
+  hasRequestedAfterExpiry.value = true
+
+  const currentBusinessId = store.businessId
+  const currentBusinessType = store.businessType
+
+  if (!currentBusinessId || !currentBusinessType || !store.loadBusinessData) {
+    return
+  }
+
+  try {
+    await store.loadBusinessData(currentBusinessType, currentBusinessId)
+  } catch (error) {
+  }
+}
+
+const startCountdown = () => {
+  stopCountdown()
+  hasRequestedAfterExpiry.value = false
+  syncRemainingSeconds()
+  if (remainingSeconds.value === null) {
+    return
+  }
+
+  countdownTimer.value = setInterval(() => {
+    if (remainingSeconds.value === null) {
+      stopCountdown()
+      return
+    }
+
+    if (remainingSeconds.value <= 0) {
+      remainingSeconds.value = 0
+      requestJobsAfterExpiry()
+      stopCountdown()
+      return
+    }
+
+    remainingSeconds.value = remainingSeconds.value - 1
+  }, 1000)
+}
+
 const checkCanComplete = async () => {
   if (!props.isActive || !props.businessId || !props.job.jobId) {
     canComplete.value = false
@@ -394,8 +484,30 @@ const checkCanComplete = async () => {
   }
 }
 
+const isExpired = computed(() => {
+  if (props.isActive) {
+    return false
+  }
+  return remainingSeconds.value !== null && remainingSeconds.value <= 0
+})
+
+const expirationText = computed(() => {
+  if (props.isActive || remainingSeconds.value === null) {
+    return null
+  }
+  if (remainingSeconds.value <= 0) {
+    return "Expired"
+  }
+  return `Expires in ${formatTime(remainingSeconds.value, 0)}`
+})
+
 onMounted(() => {
   checkCanComplete()
+  startCountdown()
+})
+
+onUnmounted(() => {
+  stopCountdown()
 })
 
 watch(() => [props.isActive, props.job.currentTime, props.job.goalTime, props.job.jobId], () => {
@@ -403,8 +515,17 @@ watch(() => [props.isActive, props.job.currentTime, props.job.goalTime, props.jo
 }, { immediate: false })
 
 watch(() => props.job, () => {
+  hasRequestedAfterExpiry.value = false
   checkCanComplete()
 }, { deep: true })
+
+watch(() => props.isActive, () => {
+  hasRequestedAfterExpiry.value = false
+})
+
+watch(() => [props.job?.jobId, props.job?.expiresInSeconds, props.isActive], () => {
+  startCountdown()
+})
 </script>
 
 <style scoped lang="scss">
@@ -653,23 +774,6 @@ watch(() => props.job, () => {
   }
 }
 
-.job-deadline {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.875rem;
-  
-  svg {
-    flex-shrink: 0;
-    color: rgba(245, 73, 0, 1);
-  }
-  
-  span {
-    color: white;
-  }
-}
-
 .new-job-info {
   display: flex;
   flex-direction: column;
@@ -696,24 +800,6 @@ watch(() => props.job, () => {
   font-size: 0.875rem;
   color: rgba(34, 197, 94, 1);
   font-weight: 600;
-}
-
-.job-deadline-compact {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 0.75rem;
-  padding-left: 0.25rem;
-  
-  svg {
-    flex-shrink: 0;
-    color: rgba(255, 255, 255, 0.4);
-  }
-  
-  span {
-    color: rgba(255, 255, 255, 0.5);
-  }
 }
 
 .job-goal-wrapper {
@@ -1459,6 +1545,35 @@ watch(() => props.job, () => {
       flex: 0 0 calc(50% - 0.25rem);
     }
   }
+}
+
+.expiration-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  width: fit-content;
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: 0.25rem;
+}
+
+.expiration-chip svg {
+  color: rgba(59, 130, 246, 1);
+}
+
+.expiration-chip.expired {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: rgba(239, 68, 68, 1);
+}
+
+.expiration-chip.expired svg {
+  color: rgba(239, 68, 68, 1);
 }
 </style>
 

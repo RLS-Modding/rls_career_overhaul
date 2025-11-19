@@ -59,7 +59,37 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   }
   
   const activeJobs = computed(() => businessData.value.activeJobs || [])
-  const newJobs = computed(() => businessData.value.newJobs || [])
+  const newJobs = computed(() => {
+    const jobs = businessData.value.newJobs
+    if (!Array.isArray(jobs)) {
+      return []
+    }
+
+    const getExpiresInSeconds = (job) => {
+      return typeof job?.expiresInSeconds === "number" ? job.expiresInSeconds : Number.POSITIVE_INFINITY
+    }
+
+    const getJobSortId = (job) => {
+      if (job?.jobId !== undefined) {
+        return Number(job.jobId) || job.jobId
+      }
+      return job?.id || 0
+    }
+
+    return [...jobs].sort((a, b) => {
+      const expireA = getExpiresInSeconds(a)
+      const expireB = getExpiresInSeconds(b)
+      if (expireA !== expireB) {
+        return expireA - expireB
+      }
+      const idA = getJobSortId(a)
+      const idB = getJobSortId(b)
+      if (idA === idB) {
+        return 0
+      }
+      return idA < idB ? -1 : 1
+    })
+  })
   const vehicles = computed(() => {
     const v = businessData.value.vehicles
     if (!v) return []
@@ -200,9 +230,21 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     }
   }
 
-  const switchView = (view) => {
+  const switchView = async (view) => {
     activeView.value = view
     vehicleView.value = null
+
+    const shouldRefresh =
+      (view === "new-jobs" || view === "home") &&
+      businessId.value &&
+      businessType.value
+
+    if (shouldRefresh) {
+      try {
+        await loadBusinessData(businessType.value, businessId.value)
+      } catch (error) {
+      }
+    }
   }
 
   const switchVehicleView = async (view) => {
@@ -654,8 +696,33 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     }
   }
   
+  const handleJobsUpdated = async (data) => {
+    const currentBusinessId = businessId.value
+    const currentBusinessType = businessType.value
+
+    if (!currentBusinessId || !currentBusinessType) {
+      return
+    }
+
+    const eventBusinessType = data?.businessType
+    if (eventBusinessType && eventBusinessType !== currentBusinessType) {
+      return
+    }
+
+    const eventBusinessId = data?.businessId
+    if (eventBusinessId && String(eventBusinessId) !== String(currentBusinessId)) {
+      return
+    }
+
+    try {
+      await loadBusinessData(currentBusinessType, currentBusinessId)
+    } catch (error) {
+    }
+  }
+
   // Setup event listener
   events.on('businessComputer:onPartCartUpdated', handlePartCartUpdated)
+  events.on('businessComputer:onJobsUpdated', handleJobsUpdated)
   
   const addPartToCart = async (part, slot) => {
     if (!businessId.value || !pulledOutVehicle.value?.vehicleId) {
