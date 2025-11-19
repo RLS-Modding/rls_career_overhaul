@@ -131,33 +131,45 @@
             </div>
           </div>
         </div>
-        <div class="job-actions-active">
-          <button 
-            v-if="canComplete || canCompleteLocal"
-            class="btn btn-success"
-            @click.stop="$emit('complete', job)"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-              <polyline points="22 4 12 14.01 9 11.01"/>
-            </svg>
-            Complete Job
-          </button>
-          <template v-else>
-            <button 
-              class="btn btn-primary"
-              @click.stop="isPulledOut ? $emit('put-away') : $emit('pull-out', job)"
-              :disabled="!isPulledOut && hasPulledOutVehicle"
-            >
-              {{ isPulledOut ? 'Put Away Vehicle' : 'Pull Out Vehicle' }}
-            </button>
-            <button class="btn btn-danger" @click.stop="$emit('abandon', job)">
+        <div class="job-actions-active" :class="{ locked: damageLockApplies }">
+          <template v-if="damageLockApplies">
+            <div class="lock-message">Customer Vehicle Damaged</div>
+            <button class="btn btn-danger" @mousedown.stop @click.stop="$emit('abandon', job)">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="18" y1="6" x2="6" y2="18"/>
                 <line x1="6" y1="6" x2="18" y2="18"/>
               </svg>
               Abandon
             </button>
+          </template>
+          <template v-else>
+            <button 
+              v-if="canComplete || canCompleteLocal"
+              class="btn btn-success"
+              @click.stop="$emit('complete', job)"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+              Complete Job
+            </button>
+            <template v-else>
+              <button 
+                class="btn btn-primary"
+                @click.stop="isPulledOut ? $emit('put-away') : $emit('pull-out', job)"
+                :disabled="!isPulledOut && hasPulledOutVehicle"
+              >
+                {{ isPulledOut ? 'Put Away Vehicle' : 'Pull Out Vehicle' }}
+              </button>
+              <button class="btn btn-danger" @mousedown.stop @click.stop="$emit('abandon', job)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+                Abandon
+              </button>
+            </template>
           </template>
         </div>
       </div>
@@ -202,33 +214,45 @@
               </div>
             </div>
           </div>
-          <div class="job-actions-active-horizontal">
-            <button 
-              v-if="canComplete || canCompleteLocal"
-              class="btn btn-success"
-              @click.stop="$emit('complete', job)"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                <polyline points="22 4 12 14.01 9 11.01"/>
-              </svg>
-              Complete Job
-            </button>
-            <template v-else>
-              <button 
-                class="btn btn-primary"
-                @click.stop="isPulledOut ? $emit('put-away') : $emit('pull-out', job)"
-                :disabled="!isPulledOut && hasPulledOutVehicle"
-              >
-                {{ isPulledOut ? 'Put Away Vehicle' : 'Pull Out Vehicle' }}
-              </button>
-              <button class="btn btn-danger" @click.stop="$emit('abandon', job)">
+          <div class="job-actions-active-horizontal" :class="{ locked: damageLockApplies }">
+            <template v-if="damageLockApplies">
+              <div class="lock-message">Customer Vehicle Damaged</div>
+              <button class="btn btn-danger" @mousedown.stop @click.stop="$emit('abandon', job)">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="18" y1="6" x2="6" y2="18"/>
                   <line x1="6" y1="6" x2="18" y2="18"/>
                 </svg>
                 Abandon
               </button>
+            </template>
+            <template v-else>
+              <button 
+                v-if="canComplete || canCompleteLocal"
+                class="btn btn-success"
+                @click.stop="$emit('complete', job)"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                  <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                Complete Job
+              </button>
+              <template v-else>
+                <button 
+                  class="btn btn-primary"
+                  @click.stop="isPulledOut ? $emit('put-away') : $emit('pull-out', job)"
+                  :disabled="!isPulledOut && hasPulledOutVehicle"
+                >
+                  {{ isPulledOut ? 'Put Away Vehicle' : 'Pull Out Vehicle' }}
+                </button>
+                <button class="btn btn-danger" @mousedown.stop @click.stop="$emit('abandon', job)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                  Abandon
+                </button>
+              </template>
             </template>
           </div>
         </div>
@@ -255,6 +279,20 @@ const props = defineProps({
 const emit = defineEmits(['pull-out', 'put-away', 'abandon', 'accept', 'decline', 'complete'])
 
 const store = useBusinessComputerStore()
+const normalizeJobId = (value) => {
+  if (value === undefined || value === null) {
+    return null
+  }
+  return String(value)
+}
+const jobIdentifier = computed(() => normalizeJobId(props.job?.jobId ?? props.job?.id))
+const pulledOutJobIdentifier = computed(() => normalizeJobId(store.pulledOutVehicle?.jobId))
+const damageLockApplies = computed(() => {
+  if (!store.isDamageLocked || !jobIdentifier.value || !pulledOutJobIdentifier.value) {
+    return false
+  }
+  return jobIdentifier.value === pulledOutJobIdentifier.value
+})
 const canComplete = ref(false)
 
 const canCompleteLocal = computed(() => {
@@ -370,6 +408,15 @@ watch(() => props.job, () => {
 </script>
 
 <style scoped lang="scss">
+.lock-message {
+  color: rgba(239, 68, 68, 1);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: center;
+  margin-bottom: 0.25rem;
+  width: 100%;
+}
+
 .job-card {
   background: rgba(23, 23, 23, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -1189,6 +1236,15 @@ watch(() => props.job, () => {
     
     &:disabled {
       flex: 0 0 calc(50% - 0.25rem);
+    }
+  }
+
+  &.locked {
+    flex-direction: column;
+
+    .btn {
+      flex: 1;
+      width: 100%;
     }
   }
 }

@@ -5,6 +5,7 @@
       :vehicle="store.pulledOutVehicle" 
       :job="currentVehicleJob"
       @put-away="handlePutAway" 
+      @abandon="handleAbandon(currentVehicleJob)"
     />
     
     <div class="section-card">
@@ -134,6 +135,9 @@ const handlePutAway = async () => {
 }
 
 const handleAbandon = (job) => {
+  if (!job) {
+    return
+  }
   jobToAbandon.value = job
   showAbandonModal.value = true
 }

@@ -29,6 +29,34 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   const businessId = computed(() => businessData.value.businessId)
   const businessType = computed(() => businessData.value.businessType)
   const businessName = computed(() => businessData.value.businessName || "Business")
+  const damageLockInfo = computed(() => {
+    const vehicle = businessData.value?.pulledOutVehicle
+    return {
+      damage: vehicle?.damage ?? businessData.value?.vehicleDamage ?? 0,
+      threshold: vehicle?.damageThreshold ?? businessData.value?.vehicleDamageThreshold ?? 1000
+    }
+  })
+  const isDamageLocked = computed(() => !!businessData.value?.pulledOutVehicle?.damageLocked)
+  const showDamageLockWarning = () => {
+    const info = damageLockInfo.value
+    const damage = Math.round(info.damage || 0)
+    const threshold = info.threshold || 1000
+    const message = `Vehicle damage (${damage}) exceeds the ${threshold} limit. Abandon the job to continue.`
+    try {
+      lua.ui_message(message, 5, "Business Computer", "error")
+    } catch (error) {
+      console.warn("Failed to show damage lock warning", error)
+    }
+  }
+  const normalizeLuaResult = (result) => {
+    if (result && typeof result === "object" && result.success === false) {
+      if (result.error) {
+        showDamageLockWarning()
+      }
+      return false
+    }
+    return result
+  }
   
   const activeJobs = computed(() => businessData.value.activeJobs || [])
   const newJobs = computed(() => businessData.value.newJobs || [])
@@ -139,12 +167,16 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     if (!businessId.value) {
       return false
     }
+    if (isDamageLocked.value) {
+      showDamageLockWarning()
+      return false
+    }
     try {
-      const success = await lua.career_modules_business_businessComputer.pullOutVehicle(businessId.value, vehicleId)
+      const success = normalizeLuaResult(await lua.career_modules_business_businessComputer.pullOutVehicle(businessId.value, vehicleId))
       if (success) {
         await loadBusinessData(businessType.value, businessId.value)
       }
-      return success
+      return !!success
     } catch (error) {
       return false
     }
@@ -152,13 +184,17 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
 
   const putAwayVehicle = async () => {
     if (!businessId.value) return false
+    if (isDamageLocked.value) {
+      showDamageLockWarning()
+      return false
+    }
     try {
-      const success = await lua.career_modules_business_businessComputer.putAwayVehicle(businessId.value)
+      const success = normalizeLuaResult(await lua.career_modules_business_businessComputer.putAwayVehicle(businessId.value))
       if (success) {
         pulledOutVehicle.value = null
         await loadBusinessData(businessType.value, businessId.value)
       }
-      return success
+      return !!success
     } catch (error) {
       return false
     }
@@ -170,6 +206,10 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   }
 
   const switchVehicleView = async (view) => {
+    if ((view === 'parts' || view === 'tuning') && isDamageLocked.value) {
+      showDamageLockWarning()
+      return
+    }
     const previousView = vehicleView.value
     
     const isSwitchingBetweenVehicleViews = (previousView === 'parts' || previousView === 'tuning') && (view === 'parts' || view === 'tuning')
@@ -284,6 +324,10 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
 
   const requestVehicleTuningData = async (vehicleId) => {
     if (!businessId.value || !vehicleId) return null
+    if (isDamageLocked.value) {
+      showDamageLockWarning()
+      return null
+    }
     
     try {
       await lua.career_modules_business_businessComputer.requestVehicleTuningData(businessId.value, vehicleId)
@@ -295,6 +339,10 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
 
   const applyVehicleTuning = async (vehicleId, tuningVars) => {
     if (!businessId.value || !vehicleId || !tuningVars) return false
+    if (isDamageLocked.value) {
+      showDamageLockWarning()
+      return false
+    }
     try {
       const success = await lua.career_modules_business_businessComputer.applyVehicleTuning(businessId.value, vehicleId, tuningVars)
       return success
@@ -613,6 +661,10 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     if (!businessId.value || !pulledOutVehicle.value?.vehicleId) {
       return
     }
+    if (isDamageLocked.value) {
+      showDamageLockWarning()
+      return
+    }
     
     const partToAdd = {
       partName: part.name,
@@ -645,6 +697,10 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   }
 
   const removePartFromCart = async (itemId) => {
+    if (isDamageLocked.value) {
+      showDamageLockWarning()
+      return
+    }
     const tree = buildPartsTree(partsCart.value)
     
     const collectChildIds = (node, targetId, collectedIds = []) => {
@@ -717,6 +773,10 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   }
   
   const removePartBySlotPath = async (slotPath) => {
+    if (isDamageLocked.value) {
+      showDamageLockWarning()
+      return
+    }
     let normalizedPath = (slotPath || '').trim()
     if (!normalizedPath.startsWith('/')) {
       normalizedPath = '/' + normalizedPath
@@ -943,6 +1003,10 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
       saveCurrentTabState()
       return
     }
+    if (isDamageLocked.value) {
+      showDamageLockWarning()
+      return
+    }
     
     // Convert originalVars from tuning data format to simple varName->value map
     // Convert to actual range for comparison (tuningVars uses actual range)
@@ -1033,6 +1097,10 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   }
   
   const initializeCartForVehicle = async () => {
+    if (isDamageLocked.value) {
+      showDamageLockWarning()
+      return
+    }
     cartTabs.value = [{ id: 'default', name: 'Build 1', parts: [], tuning: [], cartHash: generateCartHash([], []) }]
     activeTabId.value = 'default'
     partsCart.value = []
@@ -1058,6 +1126,10 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   
   const updatePowerWeight = async () => {
     if (!businessId.value || !pulledOutVehicle.value?.vehicleId) return
+    if (isDamageLocked.value) {
+      showDamageLockWarning()
+      return
+    }
     
     try {
       lua.career_modules_business_businessComputer.getVehiclePowerWeight(
@@ -1197,6 +1269,8 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     businessId,
     businessType,
     businessName,
+    damageLockInfo,
+    isDamageLocked,
     activeJobs,
     newJobs,
     vehicles,

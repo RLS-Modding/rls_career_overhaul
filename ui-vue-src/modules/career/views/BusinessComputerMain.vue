@@ -62,8 +62,10 @@
               <ul class="nav-list">
                 <li>
                   <button 
-                    :class="['nav-item', { active: store.vehicleView === 'parts' }]"
+                    :class="['nav-item', { active: store.vehicleView === 'parts', disabled: store.isDamageLocked }]"
+                    :disabled="store.isDamageLocked"
                     @click="store.switchVehicleView('parts')"
+                    @mousedown.stop
                   >
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
@@ -73,8 +75,10 @@
                 </li>
                 <li>
                   <button 
-                    :class="['nav-item', { active: store.vehicleView === 'tuning' }]"
+                    :class="['nav-item', { active: store.vehicleView === 'tuning', disabled: store.isDamageLocked }]"
+                    :disabled="store.isDamageLocked"
                     @click="store.switchVehicleView('tuning')"
+                    @mousedown.stop
                   >
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <circle cx="12" cy="12" r="3"/>
@@ -122,8 +126,10 @@
               <ul class="nav-list">
                 <li>
                   <button 
-                    :class="['nav-item', { active: store.vehicleView === 'parts' }]"
+                    :class="['nav-item', { active: store.vehicleView === 'parts', disabled: store.isDamageLocked }]"
+                    :disabled="store.isDamageLocked"
                     @click="store.switchVehicleView('parts')"
+                    @mousedown.stop
                   >
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
@@ -133,8 +139,10 @@
                 </li>
                 <li>
                   <button 
-                    :class="['nav-item', { active: store.vehicleView === 'tuning' }]"
+                    :class="['nav-item', { active: store.vehicleView === 'tuning', disabled: store.isDamageLocked }]"
+                    :disabled="store.isDamageLocked"
                     @click="store.switchVehicleView('tuning')"
+                    @mousedown.stop
                   >
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <circle cx="12" cy="12" r="3"/>
@@ -693,6 +701,12 @@ onUnmounted(kill)
     background: #F54900;
     color: #FFFFFF;
     box-shadow: 0 0 10px rgba(245, 73, 0, 0.2);
+  }
+
+  &.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
   }
 }
 

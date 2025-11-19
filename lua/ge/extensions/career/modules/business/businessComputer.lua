@@ -19,6 +19,8 @@ local function clearVehicleDataCaches()
   end
 end
 
+local DAMAGE_LOCK_THRESHOLD = 1000
+
 local function getBusinessVehicleObject(businessId, vehicleId)
   if not businessId or not vehicleId then return nil end
   
@@ -30,6 +32,74 @@ local function getBusinessVehicleObject(businessId, vehicleId)
   end
   
   return nil
+end
+
+local function getVehicleDamageByVehId(vehId)
+  if not vehId or not map or not map.objects then
+    return 0
+  end
+
+  local objectData = map.objects[vehId]
+  if not objectData then
+    return 0
+  end
+
+  return objectData.damage or 0
+end
+
+local function isDamageLocked(businessId, vehicleId)
+  local lockInfo = {
+    locked = false,
+    damage = 0,
+    threshold = DAMAGE_LOCK_THRESHOLD
+  }
+
+  if not businessId or not vehicleId then
+    return lockInfo
+  end
+
+  local vehObj = getBusinessVehicleObject(businessId, vehicleId)
+  if not vehObj then
+    return lockInfo
+  end
+
+  local vehId = vehObj:getID()
+  if not vehId then
+    return lockInfo
+  end
+
+  local damage = getVehicleDamageByVehId(vehId)
+  lockInfo.damage = damage
+  lockInfo.locked = damage >= DAMAGE_LOCK_THRESHOLD
+
+  return lockInfo
+end
+
+local function notifyDamageLocked(lockInfo)
+  if not lockInfo or not lockInfo.locked then
+    return
+  end
+
+  local message = string.format("Vehicle damage (%.0f) exceeds the %d limit. Abandon the job to continue.", lockInfo.damage or 0, lockInfo.threshold or DAMAGE_LOCK_THRESHOLD)
+  if ui_message then
+    ui_message(message, 5, "Business Computer", "error")
+  else
+    log('W', 'businessComputer', message)
+  end
+end
+
+local function shouldPreventVehicleOperation(businessId, vehicleId)
+  if not businessId or not vehicleId then
+    return false
+  end
+
+  local lockInfo = isDamageLocked(businessId, vehicleId)
+  if lockInfo.locked then
+    notifyDamageLocked(lockInfo)
+    return true
+  end
+
+  return false
 end
 
 local function normalizeConfigKey(configKey)
@@ -291,6 +361,11 @@ local function getBusinessComputerUIData(businessType, businessId)
   local vehicles = career_modules_business_businessInventory.getBusinessVehicles(businessId)
   local parts = career_modules_business_businessPartInventory.getBusinessParts(businessId)
   local pulledOutVehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
+  local pulledOutDamageInfo = {
+    locked = false,
+    damage = 0,
+    threshold = DAMAGE_LOCK_THRESHOLD
+  }
 
   local activeJobs = {}
   for _, job in ipairs(jobs.active or {}) do
@@ -310,6 +385,12 @@ local function getBusinessComputerUIData(businessType, businessId)
   local pulledOutVehicleData = nil
   if pulledOutVehicle then
     pulledOutVehicleData = formatVehicleForUI(pulledOutVehicle, businessId)
+    pulledOutDamageInfo = isDamageLocked(businessId, pulledOutVehicle.vehicleId)
+    if pulledOutVehicleData then
+      pulledOutVehicleData.damage = pulledOutDamageInfo.damage
+      pulledOutVehicleData.damageLocked = pulledOutDamageInfo.locked
+      pulledOutVehicleData.damageThreshold = pulledOutDamageInfo.threshold
+    end
   end
 
   local totalPartsValue = 0
@@ -329,6 +410,22 @@ local function getBusinessComputerUIData(businessType, businessId)
     end
     tabs = career_modules_business_businessTabRegistry.getTabs(businessType) or {}
     log('I', 'businessComputer', 'Retrieved ' .. tostring(#tabs) .. ' tabs for businessType: ' .. tostring(businessType))
+
+    if pulledOutDamageInfo.locked then
+      local allowedTabs = {
+        home = true,
+        ["active-jobs"] = true,
+        ["new-jobs"] = true
+      }
+
+      local filteredTabs = {}
+      for _, tab in ipairs(tabs) do
+        if tab.id and allowedTabs[tab.id] then
+          table.insert(filteredTabs, tab)
+        end
+      end
+      tabs = filteredTabs
+    end
   else
     log('W', 'businessComputer', 'Tab registry not available')
   end
@@ -343,6 +440,9 @@ local function getBusinessComputerUIData(businessType, businessId)
     parts = parts,
     pulledOutVehicle = pulledOutVehicleData,
     tabs = tabs,
+    vehicleDamage = pulledOutDamageInfo.damage,
+    vehicleDamageLocked = pulledOutDamageInfo.locked,
+    vehicleDamageThreshold = pulledOutDamageInfo.threshold,
     stats = {
       totalVehicles = #vehicleList,
       totalParts = #parts,
@@ -366,11 +466,37 @@ local function abandonJob(businessId, jobId)
 end
 
 local function pullOutVehicle(businessId, vehicleId)
+  if not businessId or not vehicleId then
+    return false
+  end
+
+  local currentVehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
+  if currentVehicle and currentVehicle.vehicleId then
+    local lockInfo = isDamageLocked(businessId, currentVehicle.vehicleId)
+    if lockInfo.locked then
+      notifyDamageLocked(lockInfo)
+      return { success = false, error = "Vehicle damage >= 1000. Abandon the job first." }
+    end
+  end
+
   local result = career_modules_business_businessInventory.pullOutVehicle(businessId, vehicleId)
   return result
 end
 
 local function putAwayVehicle(businessId)
+  if not businessId then
+    return false
+  end
+
+  local currentVehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
+  if currentVehicle and currentVehicle.vehicleId then
+    local lockInfo = isDamageLocked(businessId, currentVehicle.vehicleId)
+    if lockInfo.locked then
+      notifyDamageLocked(lockInfo)
+      return { success = false, error = "Vehicle damage >= 1000. Abandon the job first." }
+    end
+  end
+
   return career_modules_business_businessInventory.putAwayVehicle(businessId)
 end
 
@@ -692,12 +818,20 @@ local function getVehiclePartsTree(businessId, vehicleId)
 end
 
 local function requestVehicleTuningData(businessId, vehicleId)
+  if shouldPreventVehicleOperation(businessId, vehicleId) then
+    return false
+  end
+
   if career_modules_business_businessVehicleTuning then
     return career_modules_business_businessVehicleTuning.requestVehicleTuningData(businessId, vehicleId)
   end
 end
 
 local function getVehicleTuningData(businessId, vehicleId)
+  if shouldPreventVehicleOperation(businessId, vehicleId) then
+    return nil
+  end
+
   if career_modules_business_businessVehicleTuning then
     return career_modules_business_businessVehicleTuning.getVehicleTuningData(businessId, vehicleId)
   end
@@ -705,6 +839,10 @@ local function getVehicleTuningData(businessId, vehicleId)
 end
 
 local function applyTuningToVehicle(businessId, vehicleId, tuningVars)
+  if shouldPreventVehicleOperation(businessId, vehicleId) then
+    return false
+  end
+
   if career_modules_business_businessVehicleTuning then
     return career_modules_business_businessVehicleTuning.applyTuningToVehicle(businessId, vehicleId, tuningVars)
   end
@@ -830,6 +968,10 @@ local function getTuningShoppingCart(businessId, vehicleId, tuningVars, original
 end
 
 local function addTuningToCart(businessId, vehicleId, currentTuningVars, baselineTuningVars)
+  if shouldPreventVehicleOperation(businessId, vehicleId) then
+    return {}
+  end
+
   if career_modules_business_businessVehicleTuning then
     return career_modules_business_businessVehicleTuning.addTuningToCart(businessId, vehicleId, currentTuningVars, baselineTuningVars)
   end
@@ -844,6 +986,10 @@ local function getAllRequiredParts(businessId, vehicleId, parts, cartParts)
 end
 
 local function addPartToCart(businessId, vehicleId, currentCart, partToAdd)
+  if shouldPreventVehicleOperation(businessId, vehicleId) then
+    return currentCart or {}
+  end
+
   if career_modules_business_businessPartCustomization then
     return career_modules_business_businessPartCustomization.addPartToCart(businessId, vehicleId, currentCart, partToAdd)
   end
@@ -851,6 +997,10 @@ local function addPartToCart(businessId, vehicleId, currentCart, partToAdd)
 end
 
 local function applyVehicleTuning(businessId, vehicleId, tuningVars, accountId)
+  if shouldPreventVehicleOperation(businessId, vehicleId) then
+    return false
+  end
+
   if career_modules_business_businessVehicleTuning then
     return career_modules_business_businessVehicleTuning.applyVehicleTuning(businessId, vehicleId, tuningVars, accountId)
   end
@@ -858,6 +1008,10 @@ local function applyVehicleTuning(businessId, vehicleId, tuningVars, accountId)
 end
 
 local function initializePreviewVehicle(businessId, vehicleId)
+  if shouldPreventVehicleOperation(businessId, vehicleId) then
+    return false
+  end
+
   if career_modules_business_businessPartCustomization then
     return career_modules_business_businessPartCustomization.initializePreviewVehicle(businessId, vehicleId)
   end
@@ -865,6 +1019,10 @@ local function initializePreviewVehicle(businessId, vehicleId)
 end
 
 local function resetVehicleToOriginal(businessId, vehicleId)
+  if shouldPreventVehicleOperation(businessId, vehicleId) then
+    return false
+  end
+
   if career_modules_business_businessPartCustomization then
     return career_modules_business_businessPartCustomization.resetVehicleToOriginal(businessId, vehicleId)
   end
@@ -872,6 +1030,10 @@ local function resetVehicleToOriginal(businessId, vehicleId)
 end
 
 local function applyPartsToVehicle(businessId, vehicleId, parts)
+  if shouldPreventVehicleOperation(businessId, vehicleId) then
+    return false
+  end
+
   if career_modules_business_businessPartCustomization then
     return career_modules_business_businessPartCustomization.applyPartsToVehicle(businessId, vehicleId, parts)
   end
@@ -879,6 +1041,10 @@ local function applyPartsToVehicle(businessId, vehicleId, parts)
 end
 
 local function applyCartPartsToVehicle(businessId, vehicleId, parts)
+  if shouldPreventVehicleOperation(businessId, vehicleId) then
+    return false
+  end
+
   if career_modules_business_businessPartCustomization then
     return career_modules_business_businessPartCustomization.applyCartPartsToVehicle(businessId, vehicleId, parts)
   end
@@ -886,6 +1052,10 @@ local function applyCartPartsToVehicle(businessId, vehicleId, parts)
 end
 
 local function installPartOnVehicle(businessId, vehicleId, partName, slotPath)
+  if shouldPreventVehicleOperation(businessId, vehicleId) then
+    return false
+  end
+
   if career_modules_business_businessPartCustomization then
     return career_modules_business_businessPartCustomization.installPartOnVehicle(businessId, vehicleId, partName, slotPath)
   end
@@ -1061,6 +1231,10 @@ local function onPowerWeightReceived(requestId, power, weight)
 end
 
 local function getVehiclePowerWeight(businessId, vehicleId)
+  if shouldPreventVehicleOperation(businessId, vehicleId) then
+    return nil
+  end
+
   if career_modules_business_businessPartCustomization then
     return career_modules_business_businessPartCustomization.getVehiclePowerWeight(businessId, vehicleId)
   end

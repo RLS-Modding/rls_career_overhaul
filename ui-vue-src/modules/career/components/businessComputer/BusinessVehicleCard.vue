@@ -49,9 +49,22 @@
               </div>
             </div>
           </div>
-          <div class="vehicle-actions">
-            <button class="btn btn-secondary" @click.stop="$emit('put-away')">Put Away Vehicle</button>
-            <button class="btn btn-primary" @click.stop="goToTuning">Go to Tuning</button>
+          <div class="vehicle-actions" :class="{ locked: store.isDamageLocked }">
+            <div v-if="store.isDamageLocked" class="lock-message">
+              Customer Vehicle Damaged
+            </div>
+            <button
+              v-if="store.isDamageLocked"
+              class="btn btn-danger"
+              @mousedown.stop
+              @click.stop="$emit('abandon')"
+            >
+              Abandon Job
+            </button>
+            <template v-else>
+              <button class="btn btn-secondary" @click.stop="$emit('put-away')">Put Away Vehicle</button>
+              <button class="btn btn-primary" @click.stop="goToTuning">Go to Tuning</button>
+            </template>
           </div>
         </div>
       </div>
@@ -72,6 +85,7 @@ const props = defineProps({
 })
 
 const store = useBusinessComputerStore()
+defineEmits(['put-away', 'abandon'])
 
 const goToTuning = () => {
   store.switchVehicleView('tuning')
@@ -247,6 +261,23 @@ const goalProgress = computed(() => {
   display: flex;
   gap: 0.5rem;
   margin-top: auto;
+
+  &.locked {
+    flex-direction: column;
+
+    .btn {
+      flex: 1;
+      width: 100%;
+    }
+  }
+}
+
+.lock-message {
+  color: rgba(239, 68, 68, 1);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: center;
+  margin-bottom: 0.25rem;
 }
 
 .btn {
@@ -274,6 +305,15 @@ const goalProgress = computed(() => {
     
     &:hover {
       background: rgba(75, 75, 75, 1);
+    }
+  }
+
+  &.btn-danger {
+    background: rgba(239, 68, 68, 1);
+    color: white;
+
+    &:hover {
+      background: rgba(239, 68, 68, 0.9);
     }
   }
 }

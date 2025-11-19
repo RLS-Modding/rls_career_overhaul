@@ -75,6 +75,7 @@ const handlePutAway = async () => {
 }
 
 const handleAbandon = (job) => {
+  if (!job) return
   jobToAbandon.value = job
   showAbandonModal.value = true
 }

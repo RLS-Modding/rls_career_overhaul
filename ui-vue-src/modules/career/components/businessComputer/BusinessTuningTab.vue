@@ -172,6 +172,25 @@ const searchQuery = ref("")
 const activeSearchQuery = ref("")
 const wheelDataExpanded = ref(false)
 const wheelDataRef = ref(null)
+const damageLockWarning = () => {
+  const info = store.damageLockInfo || {}
+  const damage = Math.round(info.damage || 0)
+  const threshold = info.threshold || 1000
+  const message = `Vehicle damage (${damage}) exceeds the ${threshold} limit. Abandon the job to continue.`
+  try {
+    lua.ui_message(message, 5, "Business Computer", "error")
+  } catch (error) {
+    console.warn("Failed to show damage lock warning", error)
+  }
+}
+const isDamageLocked = computed(() => store.isDamageLocked)
+const guardDamageLock = () => {
+  if (isDamageLocked.value) {
+    damageLockWarning()
+    return true
+  }
+  return false
+}
 
 const toggleWheelData = () => {
   wheelDataExpanded.value = !wheelDataExpanded.value
@@ -597,6 +616,10 @@ const handleTuningData = (data) => {
 }
 
 const loadTuningData = async () => {
+  if (guardDamageLock()) {
+    loading.value = false
+    return
+  }
   if (!store.pulledOutVehicle || !store.pulledOutVehicle.vehicleId) {
     loading.value = false
     return
@@ -665,6 +688,9 @@ const onSliderChange = (varData) => {
 }
 
 const onTuningChange = (varName, actualValue) => {
+  if (guardDamageLock()) {
+    return
+  }
   if (!tuningVariables.value[varName]) return
   
   const varData = tuningVariables.value[varName]
@@ -733,6 +759,9 @@ const hasChanges = computed(() => {
 })
 
 const loadTuningFromCart = () => {
+  if (guardDamageLock()) {
+    return
+  }
   if (!tuningVariables.value || !originalTuningVariables.value) return
   
   const cart = Array.isArray(store.tuningCart) ? store.tuningCart : []
@@ -791,6 +820,9 @@ const loadTuningFromCart = () => {
 }
 
 const resetSettings = async () => {
+  if (guardDamageLock()) {
+    return
+  }
   if (!originalTuningVariables.value || !store.pulledOutVehicle || !store.pulledOutVehicle.vehicleId) return
   
   const baselineTuningVars = {}
@@ -940,6 +972,9 @@ const convertWheelAlignmentToSlider = (varData, actualValue) => {
 }
 
 const applySettings = async () => {
+  if (guardDamageLock()) {
+    return
+  }
   if (!store.pulledOutVehicle || !store.pulledOutVehicle.vehicleId) return
   
   const tuningVars = {}
