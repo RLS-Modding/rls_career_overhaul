@@ -473,59 +473,6 @@ local function buildPartsTreeFromCart(businessId, parts)
     return requiredParts
   end
 
-local function getFittingPartFromInventory(businessId, parentPart, slotName, currentVehicleData, currentCart)
-  if not businessId or not parentPart or not slotName or not currentVehicleData then
-    return nil
-  end
-  
-  if not career_modules_business_businessPartInventory then
-    return nil
-  end
-  
-  local businessParts = career_modules_business_businessPartInventory.getBusinessParts(businessId)
-  if not businessParts then return nil end
-  
-  -- Build set of slot paths already in cart to avoid duplicates
-  local cartSlotPaths = {}
-  if currentCart then
-    for _, item in ipairs(currentCart) do
-      if item.type == 'part' and item.slotPath then
-        cartSlotPaths[item.slotPath] = true
-      end
-    end
-  end
-  
-  local slotInfo = parentPart.description and parentPart.description.slotInfoUi and parentPart.description.slotInfoUi[slotName]
-  if not slotInfo then return nil end
-  
-  -- Calculate target slot path
-  local targetSlotPath = parentPart.containingSlot .. slotName .. "/"
-  
-  -- Skip if target slot is already in cart
-  if cartSlotPaths[targetSlotPath] then
-    return nil
-  end
-  
-  -- Check each part in business inventory
-  for _, inventoryPart in ipairs(businessParts) do
-    -- Get jbeam data for the inventory part
-    local partDescription = jbeamIO.getPart(currentVehicleData.ioCtx, inventoryPart.name)
-    if partDescription and jbeamSlotSystem.partFitsSlot(partDescription, slotInfo) then
-      -- Found a fitting part - create shop part object
-      local shopPart = deepcopy(inventoryPart)
-      shopPart.containingSlot = targetSlotPath
-      shopPart.slot = slotName
-      shopPart.vehicleModel = parentPart.vehicleModel
-      shopPart.description = partDescription
-      shopPart.finalValue = 0 -- Parts from inventory are free
-      shopPart.fromInventory = true -- Mark as from inventory
-      return shopPart
-    end
-  end
-  
-  return nil
-end
-
 local function getNeededAdditionalParts(businessId, vehicleId, parts, baselineTree, currentCart)
   if not businessId or not vehicleId or not parts then
     return parts, false
@@ -611,21 +558,18 @@ local function getNeededAdditionalParts(businessId, vehicleId, parts, baselineTr
         if not existingPart or not partFits then
           local jbeamData = jbeamIO.getPart(vehicleData.ioCtx, part.name)
           
-          local fittingPart = getFittingPartFromInventory(businessId, part, slotName, vehicleData, currentCart)
-          
-          if not fittingPart then
-            local partNameToGenerate = getDefaultPartName(jbeamData, slotName)
-            if partNameToGenerate then
-              local defaultJbeamData = jbeamIO.getPart(vehicleData.ioCtx, partNameToGenerate)
-              if defaultJbeamData then
-                fittingPart = {
-                  name = partNameToGenerate,
-                  containingSlot = childPath,
-                  slot = slotName,
-                  description = defaultJbeamData,
-                  vehicleModel = part.vehicleModel
-                }
-              end
+          local fittingPart = nil
+          local partNameToGenerate = getDefaultPartName(jbeamData, slotName)
+          if partNameToGenerate then
+            local defaultJbeamData = jbeamIO.getPart(vehicleData.ioCtx, partNameToGenerate)
+            if defaultJbeamData then
+              fittingPart = {
+                name = partNameToGenerate,
+                containingSlot = childPath,
+                slot = slotName,
+                description = defaultJbeamData,
+                vehicleModel = part.vehicleModel
+              }
             end
           end
           

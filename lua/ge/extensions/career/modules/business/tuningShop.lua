@@ -1038,7 +1038,7 @@ local function getUIData(businessId)
 
   local jobs = getJobsForBusiness(businessId)
   local vehicles = career_modules_business_businessInventory.getBusinessVehicles(businessId)
-  local parts = career_modules_business_businessPartInventory.getBusinessParts(businessId)
+  local parts = {}
   local pulledOutVehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
   local pulledOutDamageInfo = {
     locked = false,

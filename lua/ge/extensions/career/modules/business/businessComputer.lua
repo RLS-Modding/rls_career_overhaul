@@ -470,52 +470,6 @@ local function getNewJobs(businessId)
   return {}
 end
 
-local function getCompatiblePartsFromInventory(businessId, slotPath, slotInfo, vehicleData, vehicleModel)
-  if not businessId or not slotPath or not slotInfo or not vehicleData or not vehicleData.ioCtx then
-    return {}
-  end
-  
-  if not career_modules_business_businessPartInventory then
-    return {}
-  end
-  
-  local businessParts = career_modules_business_businessPartInventory.getBusinessParts(businessId)
-  if not businessParts then return {} end
-  
-  local compatibleParts = {}
-  
-  for _, inventoryPart in ipairs(businessParts) do
-    if not vehicleModel or not inventoryPart.vehicleModel or inventoryPart.vehicleModel == vehicleModel then
-      local partDescription = jbeamIO.getPart(vehicleData.ioCtx, inventoryPart.name)
-      if partDescription and jbeamSlotSystem.partFitsSlot(partDescription, slotInfo) then
-        local niceName = inventoryPart.name
-        if partDescription.information and partDescription.information.description then
-          niceName = type(partDescription.information.description) == "table" and 
-                     partDescription.information.description.description or 
-                     partDescription.information.description or 
-                     inventoryPart.name
-        end
-        
-        local mileage = 0
-        if inventoryPart.partCondition and inventoryPart.partCondition.odometer then
-          mileage = inventoryPart.partCondition.odometer
-        end
-        
-        table.insert(compatibleParts, {
-          name = inventoryPart.name,
-          niceName = niceName,
-          value = 0, -- Used parts are free
-          mileage = mileage,
-          partId = inventoryPart.partId,
-          fromInventory = true
-        })
-      end
-    end
-  end
-  
-  return compatibleParts
-end
-
 local function formatPartsTreeForUI(node, slotName, slotInfo, availableParts, slotsNiceName, partsNiceName, pathPrefix,
   parentSlotName, ioCtx, businessId, vehicleData, vehicleModel)
   if not node then
@@ -594,11 +548,8 @@ local function formatPartsTreeForUI(node, slotName, slotInfo, availableParts, sl
     end)
 
     local compatibleInventoryParts = {}
-    if businessId and vehicleData and currentSlotInfo then
-      compatibleInventoryParts = getCompatiblePartsFromInventory(businessId, currentPath, currentSlotInfo, vehicleData, vehicleModel)
-    end
     
-    if #availablePartsList > 0 or #compatibleInventoryParts > 0 then
+    if #availablePartsList > 0 then
       table.insert(result, {
         id = currentPath,
         path = currentPath,
@@ -1136,12 +1087,6 @@ local function purchaseCartItems(businessId, accountId, cartData)
           pulledOutVehicle.partList = vehicle.partList
         end
         
-        if career_modules_business_businessPartCustomization and career_modules_business_businessPartInventory then
-          local removedParts = career_modules_business_businessPartCustomization.findRemovedParts(businessId, vehicle.vehicleId)
-          for _, removedPart in ipairs(removedParts) do
-            career_modules_business_businessPartInventory.addPart(businessId, removedPart)
-          end
-        end
       end
     end
 

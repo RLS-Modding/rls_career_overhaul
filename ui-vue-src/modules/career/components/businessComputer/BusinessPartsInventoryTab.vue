@@ -43,7 +43,7 @@
                 <span class="mileage">{{ item.mileage.toLocaleString() }} mi</span>
                 <span class="price">${{ (item.price || item.value || 0).toLocaleString() }}</span>
               </div>
-              <button class="btn btn-primary" @click="handleSellPart(item)">Sell Part</button>
+              <button class="btn btn-primary" disabled title="Selling disabled">Sell Part</button>
             </div>
           </div>
         </div>
@@ -59,7 +59,6 @@
 <script setup>
 import { computed } from "vue"
 import { useBusinessComputerStore } from "../../stores/businessComputerStore"
-import { lua } from "@/bridge"
 
 const store = useBusinessComputerStore()
 
@@ -92,16 +91,6 @@ const conditionClass = (condition) => {
   return classes[condition] || ''
 }
 
-const handleSellPart = async (part) => {
-  if (!store.businessId) return
-  try {
-    const success = await lua.career_modules_business_businessPartInventory.sellPart(store.businessId, part.partId)
-    if (success) {
-      await store.loadBusinessData(store.businessType, store.businessId)
-    }
-  } catch (error) {
-  }
-}
 </script>
 
 <style scoped lang="scss">

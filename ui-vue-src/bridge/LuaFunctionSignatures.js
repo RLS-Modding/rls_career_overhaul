@@ -1239,15 +1239,6 @@ export default {
     requestPurchaseUpgrade: (requestId, businessType, businessId, treeId, nodeId) => [String, String, String, String, String],
   },
 
-  career_modules_business_businessPartInventory: {
-    getBusinessParts: (businessId) => String,
-    addPart: (businessId, partData) => [String, Any],
-    removePart: (businessId, partId) => [String, String],
-    getPartById: (businessId, partId) => [String, String],
-    sellPart: (businessId, partId) => [String, String],
-    getPartsByVehicle: (businessId, vehicleModel) => [String, String],
-  },
-
   gameplay_taxi: {
     prepareTaxiJob: () => {},
     acceptJob: () => {},

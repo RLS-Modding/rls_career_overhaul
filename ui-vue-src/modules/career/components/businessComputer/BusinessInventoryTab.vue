@@ -28,7 +28,7 @@
           <p class="stat-label">Total Value</p>
           <p class="stat-value green">${{ totalValue.toLocaleString() }}</p>
         </div>
-        <button class="btn btn-primary sell-all-btn" @click="handleSellAllParts">
+        <button class="btn btn-primary sell-all-btn" disabled title="Selling disabled">
           Sell All Parts
         </button>
       </div>
@@ -108,14 +108,14 @@
                 <span>${{ ((part.price || part.value || 0)).toLocaleString() }}</span>
               </div>
 
-              <button class="btn btn-primary sell-part-btn" @click="handleSellPart(part)">
+              <button class="btn btn-primary sell-part-btn" disabled title="Selling disabled">
                 Sell Part
               </button>
             </div>
           </div>
           
           <div class="sell-all-footer">
-            <button class="btn btn-primary sell-all-vehicle-btn" @click="handleSellAllVehicleParts(vehicle, vehicleParts)">
+            <button class="btn btn-primary sell-all-vehicle-btn" disabled title="Selling disabled">
               Sell All {{ vehicle }} Parts
             </button>
           </div>
@@ -128,7 +128,6 @@
 <script setup>
 import { ref, computed } from "vue"
 import { useBusinessComputerStore } from "../../stores/businessComputerStore"
-import { lua } from "@/bridge"
 
 const store = useBusinessComputerStore()
 const searchQuery = ref('')
@@ -188,39 +187,6 @@ const getConditionClass = (condition) => {
   return classes[condition] || 'condition-good'
 }
 
-const handleSellPart = async (part) => {
-  if (!store.businessId) return
-  try {
-    const success = await lua.career_modules_business_businessPartInventory.sellPart(store.businessId, part.partId)
-    if (success) {
-      await store.loadBusinessData(store.businessType, store.businessId)
-    }
-  } catch (error) {
-  }
-}
-
-const handleSellAllVehicleParts = async (vehicle, parts) => {
-  if (!store.businessId || !parts || parts.length === 0) return
-  try {
-    for (const part of parts) {
-      await lua.career_modules_business_businessPartInventory.sellPart(store.businessId, part.partId)
-    }
-    await store.loadBusinessData(store.businessType, store.businessId)
-  } catch (error) {
-  }
-}
-
-const handleSellAllParts = async () => {
-  const parts = Array.isArray(store.parts) ? store.parts : []
-  if (!store.businessId || parts.length === 0) return
-  try {
-    for (const part of parts) {
-      await lua.career_modules_business_businessPartInventory.sellPart(store.businessId, part.partId)
-    }
-    await store.loadBusinessData(store.businessType, store.businessId)
-  } catch (error) {
-  }
-}
 </script>
 
 <style scoped lang="scss">

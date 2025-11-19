@@ -816,20 +816,6 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
         
         setTimeout(async () => {
           try {
-            const removedParts = await lua.career_modules_business_businessPartCustomization.findRemovedParts(
-              businessId.value,
-              pulledOutVehicle.value.vehicleId
-            )
-            
-            if (removedParts && Array.isArray(removedParts)) {
-              for (const removedPart of removedParts) {
-                await lua.career_modules_business_businessPartInventory.addPart(
-                  businessId.value,
-                  removedPart
-                )
-              }
-            }
-            
             await store.requestVehiclePartsTree(pulledOutVehicle.value.vehicleId)
           } catch (error) {
           }
@@ -908,20 +894,6 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
           
           setTimeout(async () => {
             try {
-              const removedParts = await lua.career_modules_business_businessPartCustomization.findRemovedParts(
-                businessId.value,
-                pulledOutVehicle.value.vehicleId
-              )
-              
-              if (removedParts && Array.isArray(removedParts)) {
-                for (const removedPart of removedParts) {
-                  await lua.career_modules_business_businessPartInventory.addPart(
-                    businessId.value,
-                    removedPart
-                  )
-                }
-              }
-              
               await store.requestVehiclePartsTree(pulledOutVehicle.value.vehicleId)
             } catch (error) {
             }
@@ -1011,20 +983,6 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
               
               setTimeout(async () => {
                 try {
-                  const removedParts = await lua.career_modules_business_businessPartCustomization.findRemovedParts(
-                    businessId.value,
-                    pulledOutVehicle.value.vehicleId
-                  )
-                  
-                  if (removedParts && Array.isArray(removedParts)) {
-                    for (const removedPart of removedParts) {
-                      await lua.career_modules_business_businessPartInventory.addPart(
-                        businessId.value,
-                        removedPart
-                      )
-                    }
-                  }
-                  
                   await requestVehiclePartsTree(pulledOutVehicle.value.vehicleId)
                 } catch (error) {
                 }
