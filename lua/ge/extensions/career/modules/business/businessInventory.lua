@@ -109,8 +109,8 @@ local function getPulledOutVehicle(businessId)
   return pulledOutVehicles[businessId]
 end
 
-local function getBusinessGarage(businessId)
-  local business = freeroam_facilities.getFacility("tuningShop", businessId)
+local function getBusinessGarage(businessType, businessId)
+  local business = freeroam_facilities.getFacility(businessType, businessId)
   if not business then 
     return nil 
   end
@@ -133,8 +133,8 @@ local function getBusinessGarage(businessId)
   return nil
 end
 
-local function getBusinessGarageParkingSpots(businessId)
-  local garage = getBusinessGarage(businessId)
+local function getBusinessGarageParkingSpots(businessType, businessId)
+  local garage = getBusinessGarage(businessType, businessId)
   if not garage then 
     return {} 
   end
@@ -159,12 +159,12 @@ local function getBusinessGarageParkingSpots(businessId)
   return spots
 end
 
-local function getBusinessGaragePosRot(businessId, veh)
+local function getBusinessGaragePosRot(businessType, businessId, veh)
   veh = veh or getPlayerVehicle(0)
-  local garage = getBusinessGarage(businessId)
+  local garage = getBusinessGarage(businessType, businessId)
   if not garage then return nil, nil end
   
-  local parkingSpots = getBusinessGarageParkingSpots(businessId)
+  local parkingSpots = getBusinessGarageParkingSpots(businessType, businessId)
   if #parkingSpots == 0 then return nil, nil end
   
   local parkingSpot = gameplay_sites_sitesManager.getBestParkingSpotForVehicleFromList(veh:getID(), parkingSpots)
@@ -233,9 +233,9 @@ local function spawnBusinessVehicle(businessId, vehicleId)
   return vehObj
 end
 
-local function teleportToBusinessGarage(businessId, veh, resetVeh)
+local function teleportToBusinessGarage(businessType, businessId, veh, resetVeh)
   resetVeh = resetVeh or false
-  local pos, rot = getBusinessGaragePosRot(businessId, veh)
+  local pos, rot = getBusinessGaragePosRot(businessType, businessId, veh)
   if pos and rot then
     spawn.safeTeleport(veh, pos, rot, nil, nil, nil, true, resetVeh)
     core_camera.resetCamera(0)
@@ -261,9 +261,9 @@ local function removeBusinessVehicleObject(businessId, vehicleId)
   spawnedBusinessVehicles[businessId][vehicleId] = nil
 end
 
-local function pullOutVehicle(businessId, vehicleId)
-  if not businessId or not vehicleId then 
-    log("E", "businessInventory", "pullOutVehicle: Missing parameters. businessId=" .. tostring(businessId) .. ", vehicleId=" .. tostring(vehicleId))
+local function pullOutVehicle(businessType, businessId, vehicleId)
+  if not businessType or not businessId or not vehicleId then 
+    log("E", "businessInventory", "pullOutVehicle: Missing parameters. businessType=" .. tostring(businessType) .. ", businessId=" .. tostring(businessId) .. ", vehicleId=" .. tostring(vehicleId))
     return false 
   end
   
@@ -292,7 +292,7 @@ local function pullOutVehicle(businessId, vehicleId)
   
   local vehObj = spawnBusinessVehicle(businessId, vehicleId)
   if vehObj then
-    teleportToBusinessGarage(businessId, vehObj, false)
+    teleportToBusinessGarage(businessType, businessId, vehObj, false)
     log("D", "businessInventory", "pullOutVehicle: Successfully pulled out vehicle. businessId=" .. tostring(businessId) .. ", vehicleId=" .. tostring(vehicleId))
   else
     log("E", "businessInventory", "pullOutVehicle: Failed to spawn vehicle. businessId=" .. tostring(businessId) .. ", vehicleId=" .. tostring(vehicleId))

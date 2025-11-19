@@ -489,7 +489,7 @@ local function purchaseUpgrade(businessType, businessId, treeId, nodeId)
             amount = cost,
             canBeNegative = false
           }
-        }, account.id)
+        }, account.id, "Skill Upgrade", "Purchased " .. (node.title or "upgrade"))
         if not success then
           return false
         end

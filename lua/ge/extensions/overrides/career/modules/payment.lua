@@ -38,7 +38,8 @@ local function pay(price, reason, accountId)
   end
   
   if accountId and career_modules_bank then
-    return career_modules_bank.payFromAccount(price, accountId)
+    reason = reason or {}
+    return career_modules_bank.payFromAccount(price, accountId, reason.label, reason.description)
   end
   
   local change = {}
@@ -51,7 +52,8 @@ end
 
 local function reward(price, reason, fullReward, accountId)
   if accountId and career_modules_bank then
-    return career_modules_bank.rewardToAccount(price, accountId)
+    reason = reason or {}
+    return career_modules_bank.rewardToAccount(price, accountId, reason.label, reason.description)
   end
   
   local change = {}

@@ -168,7 +168,7 @@ local function financeBusiness()
   if career_modules_bank then
     businessAccount = career_modules_bank.getBusinessAccount(businessToPurchase.type, businessToPurchase.id)
     if businessAccount and downPaymentAmount > 0 then
-      career_modules_bank.rewardToAccount({ money = { amount = downPaymentAmount } }, businessAccount.id)
+      career_modules_bank.rewardToAccount({ money = { amount = downPaymentAmount } }, businessAccount.id, "Capital Injection", "Down payment deposit")
     end
   end
   

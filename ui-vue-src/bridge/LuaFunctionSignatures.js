@@ -1188,6 +1188,19 @@ export default {
     applyCartPartsToVehicle: (businessId, vehicleId, parts) => [String, Integer, Array],
   },
 
+  career_modules_business_tuningShop: {
+    getUIData: (businessId) => String,
+    getJobsForBusiness: (businessId) => String,
+    getActiveJobs: (businessId) => String,
+    getNewJobs: (businessId) => String,
+    acceptJob: (businessId, jobId) => [String, Integer],
+    declineJob: (businessId, jobId) => [String, Integer],
+    abandonJob: (businessId, jobId) => [String, Integer],
+    completeJob: (businessId, jobId) => [String, Integer],
+    canCompleteJob: (businessId, jobId) => [String, Integer],
+    getAbandonPenalty: (businessId, jobId) => [String, Integer],
+  },
+
   career_modules_business_businessPartCustomization: {
     initializePreviewVehicle: (businessId, vehicleId) => [String, Integer],
     resetVehicleToOriginal: (businessId, vehicleId) => [String, Integer],
@@ -1233,15 +1246,6 @@ export default {
     getPartById: (businessId, partId) => [String, String],
     sellPart: (businessId, partId) => [String, String],
     getPartsByVehicle: (businessId, vehicleModel) => [String, String],
-  },
-
-  career_modules_business_businessJobManager: {
-    registerJobGenerator: (businessType, generatorFunction) => [String, Any],
-    getJobsForBusiness: (businessId, businessType) => [String, String],
-    acceptJob: (businessId, jobId) => [String, Integer],
-    declineJob: (businessId, jobId) => [String, Integer],
-    completeJob: (businessId, jobId) => [String, Integer],
-    getJobById: (businessId, jobId) => [String, Integer],
   },
 
   gameplay_taxi: {

@@ -7,6 +7,32 @@ local jbeamSlotSystem = require('jbeam/slotSystem')
 
 local vehicleInfoCache = nil
 local partsTreeCache = {}
+local businessContexts = {}
+
+local function setBusinessContext(businessType, businessId)
+  if not businessType or not businessId then return end
+  businessContexts[businessId] = businessType
+end
+
+local function getBusinessModule(businessType)
+  if not businessType then return nil end
+  return _G["career_modules_business_" .. tostring(businessType)]
+end
+
+local function resolveBusinessModule(businessId)
+  if not businessId then return nil, nil end
+  local businessType = businessContexts[businessId]
+  if not businessType then
+    log('E', 'businessComputer', 'No business context for businessId=' .. tostring(businessId))
+    return nil, nil
+  end
+  local module = getBusinessModule(businessType)
+  if not module then
+    log('E', 'businessComputer', 'Missing business module career_modules_business_' .. tostring(businessType))
+    return nil, businessType
+  end
+  return module, businessType
+end
 
 local function invalidateVehicleInfoCache()
   vehicleInfoCache = nil
@@ -256,12 +282,7 @@ local function formatJobForUI(job, businessId)
     end
   end
 
-  local penalty = 0
-  if career_modules_business_businessJobManager and career_modules_business_businessJobManager.getAbandonPenalty then
-    penalty = career_modules_business_businessJobManager.getAbandonPenalty(businessId, job.jobId)
-  else
-    penalty = math.floor((job.reward or 20000) * 0.5)
-  end
+  local penalty = math.floor((job.reward or 20000) * 0.5)
 
   return {
     id = tostring(job.jobId),
@@ -352,122 +373,56 @@ local function getBusinessComputerUIData(businessType, businessId)
     return nil
   end
 
-  local business = freeroam_facilities.getFacility(businessType, businessId)
-  if not business then
+  setBusinessContext(businessType, businessId)
+
+  local module = getBusinessModule(businessType)
+  if not module or not module.getUIData then
+    log('E', 'businessComputer', 'Business module missing getUIData for type ' .. tostring(businessType))
     return nil
   end
 
-  local jobs = career_modules_business_businessJobManager.getJobsForBusiness(businessId, businessType)
-  local vehicles = career_modules_business_businessInventory.getBusinessVehicles(businessId)
-  local parts = career_modules_business_businessPartInventory.getBusinessParts(businessId)
-  local pulledOutVehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
-  local pulledOutDamageInfo = {
-    locked = false,
-    damage = 0,
-    threshold = DAMAGE_LOCK_THRESHOLD
-  }
-
-  local activeJobs = {}
-  for _, job in ipairs(jobs.active or {}) do
-    table.insert(activeJobs, formatJobForUI(job, businessId))
+  local ok, result = pcall(module.getUIData, businessId)
+  if not ok then
+    log('E', 'businessComputer', 'Error getting UI data for type ' .. tostring(businessType) .. ': ' .. tostring(result))
+    return nil
   end
 
-  local newJobs = {}
-  for _, job in ipairs(jobs.new or {}) do
-    table.insert(newJobs, formatJobForUI(job, businessId))
-  end
-
-  local vehicleList = {}
-  for _, vehicle in ipairs(vehicles) do
-    table.insert(vehicleList, formatVehicleForUI(vehicle, businessId))
-  end
-
-  local pulledOutVehicleData = nil
-  if pulledOutVehicle then
-    pulledOutVehicleData = formatVehicleForUI(pulledOutVehicle, businessId)
-    pulledOutDamageInfo = isDamageLocked(businessId, pulledOutVehicle.vehicleId)
-    if pulledOutVehicleData then
-      pulledOutVehicleData.damage = pulledOutDamageInfo.damage
-      pulledOutVehicleData.damageLocked = pulledOutDamageInfo.locked
-      pulledOutVehicleData.damageThreshold = pulledOutDamageInfo.threshold
-    end
-  end
-
-  local totalPartsValue = 0
-  for _, part in ipairs(parts) do
-    totalPartsValue = totalPartsValue + (part.price or part.value or 0)
-  end
-
-  local tabs = {}
-  if career_modules_business_businessTabRegistry then
-    if career_modules_business_businessSkillTree and career_modules_business_businessSkillTree.ensureTabsRegistered then
-      log('I', 'businessComputer', 'Ensuring skill tree tabs registered for: ' .. tostring(businessType))
-      pcall(function()
-        career_modules_business_businessSkillTree.ensureTabsRegistered(businessType)
-      end)
-    else
-      log('W', 'businessComputer', 'Skill tree module or ensureTabsRegistered not available')
-    end
-    tabs = career_modules_business_businessTabRegistry.getTabs(businessType) or {}
-    log('I', 'businessComputer', 'Retrieved ' .. tostring(#tabs) .. ' tabs for businessType: ' .. tostring(businessType))
-
-    if pulledOutDamageInfo.locked then
-      local allowedTabs = {
-        home = true,
-        ["active-jobs"] = true,
-        ["new-jobs"] = true
-      }
-
-      local filteredTabs = {}
-      for _, tab in ipairs(tabs) do
-        if tab.id and allowedTabs[tab.id] then
-          table.insert(filteredTabs, tab)
-        end
-      end
-      tabs = filteredTabs
-    end
-  else
-    log('W', 'businessComputer', 'Tab registry not available')
-  end
-
-  return {
-    businessId = businessId,
-    businessType = businessType,
-    businessName = business.name or "Business",
-    activeJobs = activeJobs,
-    newJobs = newJobs,
-    vehicles = vehicleList,
-    parts = parts,
-    pulledOutVehicle = pulledOutVehicleData,
-    tabs = tabs,
-    vehicleDamage = pulledOutDamageInfo.damage,
-    vehicleDamageLocked = pulledOutDamageInfo.locked,
-    vehicleDamageThreshold = pulledOutDamageInfo.threshold,
-    stats = {
-      totalVehicles = #vehicleList,
-      totalParts = #parts,
-      totalPartsValue = totalPartsValue,
-      activeJobsCount = #activeJobs,
-      newJobsCount = #newJobs
-    }
-  }
+  return result
 end
 
 local function acceptJob(businessId, jobId)
-  return career_modules_business_businessJobManager.acceptJob(businessId, jobId)
+  local module = resolveBusinessModule(businessId)
+  if module and module.acceptJob then
+    return module.acceptJob(businessId, jobId)
+  end
+  return false
 end
 
 local function declineJob(businessId, jobId)
-  return career_modules_business_businessJobManager.declineJob(businessId, jobId)
+  local module = resolveBusinessModule(businessId)
+  if module and module.declineJob then
+    return module.declineJob(businessId, jobId)
+  end
+  return false
 end
 
 local function abandonJob(businessId, jobId)
-  return career_modules_business_businessJobManager.abandonJob(businessId, jobId)
+  local module = resolveBusinessModule(businessId)
+  if module and module.abandonJob then
+    return module.abandonJob(businessId, jobId)
+  end
+  return false
 end
 
 local function pullOutVehicle(businessId, vehicleId)
   if not businessId or not vehicleId then
     return false
+  end
+
+  local businessType = businessContexts[businessId]
+  if not businessType then
+    log('E', 'businessComputer', 'Cannot pull out vehicle, unknown business type for businessId=' .. tostring(businessId))
+    return { success = false, error = "Unknown business type" }
   end
 
   local currentVehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
@@ -479,8 +434,7 @@ local function pullOutVehicle(businessId, vehicleId)
     end
   end
 
-  local result = career_modules_business_businessInventory.pullOutVehicle(businessId, vehicleId)
-  return result
+  return career_modules_business_businessInventory.pullOutVehicle(businessType, businessId, vehicleId)
 end
 
 local function putAwayVehicle(businessId)
@@ -501,21 +455,19 @@ local function putAwayVehicle(businessId)
 end
 
 local function getActiveJobs(businessId)
-  local jobs = career_modules_business_businessJobManager.getJobsForBusiness(businessId, "tuningShop")
-  local activeJobs = {}
-  for _, job in ipairs(jobs.active or {}) do
-    table.insert(activeJobs, formatJobForUI(job, businessId))
+  local module = resolveBusinessModule(businessId)
+  if module and module.getActiveJobs then
+    return module.getActiveJobs(businessId)
   end
-  return activeJobs
+  return {}
 end
 
 local function getNewJobs(businessId)
-  local jobs = career_modules_business_businessJobManager.getJobsForBusiness(businessId, "tuningShop")
-  local newJobs = {}
-  for _, job in ipairs(jobs.new or {}) do
-    table.insert(newJobs, formatJobForUI(job, businessId))
+  local module = resolveBusinessModule(businessId)
+  if module and module.getNewJobs then
+    return module.getNewJobs(businessId)
   end
-  return newJobs
+  return {}
 end
 
 local function getCompatiblePartsFromInventory(businessId, slotPath, slotInfo, vehicleData, vehicleModel)
@@ -1118,7 +1070,7 @@ local function purchaseCartItems(businessId, accountId, cartData)
       amount = totalCost,
       canBeNegative = false
     }
-  }, accountId)
+  }, accountId, "Shop Purchase", "Purchased parts/tuning")
   if not success then
     return false
   end
@@ -1242,16 +1194,25 @@ local function getVehiclePowerWeight(businessId, vehicleId)
 end
 
 local function completeJob(businessId, jobId)
-  return career_modules_business_businessJobManager.completeJob(businessId, jobId)
+  local module = resolveBusinessModule(businessId)
+  if module and module.completeJob then
+    return module.completeJob(businessId, jobId)
+  end
+  return false
 end
 
 local function canCompleteJob(businessId, jobId)
-  return career_modules_business_businessJobManager.canCompleteJob(businessId, jobId)
+  local module = resolveBusinessModule(businessId)
+  if module and module.canCompleteJob then
+    return module.canCompleteJob(businessId, jobId)
+  end
+  return false
 end
 
 local function getAbandonPenalty(businessId, jobId)
-  if career_modules_business_businessJobManager and career_modules_business_businessJobManager.getAbandonPenalty then
-    return career_modules_business_businessJobManager.getAbandonPenalty(businessId, jobId)
+  local module = resolveBusinessModule(businessId)
+  if module and module.getAbandonPenalty then
+    return module.getAbandonPenalty(businessId, jobId)
   end
   return 0
 end
@@ -1293,6 +1254,7 @@ M.onVehicleWheelDataUpdate = onVehicleWheelDataUpdate
 M.onPowerWeightReceived = onPowerWeightReceived
 
 local function onExtensionLoaded()
+  businessContexts = {}
   return true
 end
 

@@ -473,7 +473,7 @@ local function applyVehicleTuning(businessId, vehicleId, tuningVars, accountId)
           amount = tuningCost,
           canBeNegative = false
         }
-      }, accountId)
+      }, accountId, "Tuning Service", "Parts and labor")
       if not success then
         return false
       end

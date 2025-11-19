@@ -338,7 +338,7 @@ local function payoutRace()
                         money = {
                             amount = businessReward
                         }
-                    }, businessAccount.id)
+                    }, businessAccount.id, "Event Reward", rewardLabel(mActiveRace, newBest))
                 end
                 
                 message = message .. string.format("\nXP: %d | Business Reward: $%.2f (50%% to business account)", xp, businessReward)
@@ -469,7 +469,7 @@ local function payoutDragRace(raceName, finishTime, finishSpeed, vehId)
                 money = {
                     amount = businessReward
                 }
-            }, businessAccount.id)
+            }, businessAccount.id, "Event Reward", raceData.label .. (newBestTime and " - New Best Time!" or " - Completion"))
         end
         
         local message = string.format("%s\n%s\nTime: %s\nSpeed: %.2f mph\nXP: %d | Business Reward: $%.2f (50%% to business account)",

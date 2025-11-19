@@ -181,6 +181,7 @@ processPendingTransfers = function()
           id = Engine.generateUUID(),
           accountId = transfer.toAccountId,
           type = "transfer_in",
+          label = "Transfer In",
           amount = transferAmount,
           timestamp = transfer.completesAt,
           description = "Transfer from " .. (fromAccount.name or "Account"),
@@ -256,6 +257,7 @@ local function createAccount(name, accountType, initialDeposit)
       id = Engine.generateUUID(),
       accountId = accountId,
       type = "deposit",
+      label = "Deposit",
       amount = initialDeposit,
       timestamp = os.time(),
       description = "Initial deposit"
@@ -346,6 +348,68 @@ local function renameAccount(accountId, newName)
   return true
 end
 
+local function addFunds(accountId, amount, label, description, typeOverride)
+  if not accountId or not accounts[accountId] then
+    return false
+  end
+  if not amount or amount <= 0 then
+    return false
+  end
+
+  local account = accounts[accountId]
+  account.balance = (account.balance or 0) + amount
+
+  if not transactions[accountId] then
+    transactions[accountId] = {}
+  end
+  table.insert(transactions[accountId], {
+    id = Engine.generateUUID(),
+    accountId = accountId,
+    type = typeOverride or "deposit",
+    label = label or "Deposit",
+    amount = amount,
+    timestamp = os.time(),
+    description = description or "Funds added"
+  })
+
+  triggerAccountUpdate(accountId)
+
+  return true
+end
+
+local function removeFunds(accountId, amount, label, description, typeOverride, allowNegativeBalance)
+  if not accountId or not accounts[accountId] then
+    return false
+  end
+  if not amount or amount <= 0 then
+    return false
+  end
+
+  local account = accounts[accountId]
+  if not allowNegativeBalance and (account.balance or 0) < amount then
+    return false
+  end
+
+  account.balance = (account.balance or 0) - amount
+
+  if not transactions[accountId] then
+    transactions[accountId] = {}
+  end
+  table.insert(transactions[accountId], {
+    id = Engine.generateUUID(),
+    accountId = accountId,
+    type = typeOverride or "withdraw",
+    label = label or "Withdrawal",
+    amount = amount,
+    timestamp = os.time(),
+    description = description or "Funds removed"
+  })
+
+  triggerAccountUpdate(accountId)
+
+  return true
+end
+
 local function deposit(accountId, amount)
   if not accountId or not accounts[accountId] then
     return false
@@ -392,24 +456,7 @@ local function deposit(accountId, amount)
     return false
   end
 
-  local account = accounts[accountId]
-  account.balance = (account.balance or 0) + amount
-
-  if not transactions[accountId] then
-    transactions[accountId] = {}
-  end
-  table.insert(transactions[accountId], {
-    id = Engine.generateUUID(),
-    accountId = accountId,
-    type = "deposit",
-    amount = amount,
-    timestamp = os.time(),
-    description = "Deposit"
-  })
-
-  triggerAccountUpdate(accountId)
-
-  return true
+  return addFunds(accountId, amount, "Deposit", "Initial deposit")
 end
 
 local function withdraw(accountId, amount)
@@ -425,7 +472,6 @@ local function withdraw(accountId, amount)
     return false
   end
 
-  account.balance = (account.balance or 0) - amount
   if career_modules_payment and career_modules_payment.reward then
     career_modules_payment.reward({
       money = {
@@ -436,21 +482,7 @@ local function withdraw(accountId, amount)
     }, true)
   end
 
-  if not transactions[accountId] then
-    transactions[accountId] = {}
-  end
-  table.insert(transactions[accountId], {
-    id = Engine.generateUUID(),
-    accountId = accountId,
-    type = "withdraw",
-    amount = amount,
-    timestamp = os.time(),
-    description = "Withdrawal"
-  })
-
-  triggerAccountUpdate(accountId)
-
-  return true
+  return removeFunds(accountId, amount, "Withdrawal", "Funds withdrawn")
 end
 
 local function transfer(fromAccountId, toAccountId, amount)
@@ -494,6 +526,7 @@ local function transfer(fromAccountId, toAccountId, amount)
       id = Engine.generateUUID(),
       accountId = fromAccountId,
       type = "transfer_out",
+      label = "Transfer Out",
       amount = amount,
       timestamp = currentTime,
       description = "Transfer to " .. (toAccount and toAccount.name or "Account"),
@@ -519,6 +552,7 @@ local function transfer(fromAccountId, toAccountId, amount)
       id = Engine.generateUUID(),
       accountId = fromAccountId,
       type = "transfer_out",
+      label = "Transfer Out",
       amount = amount,
       timestamp = currentTime,
       description = "Transfer to " .. (toAccount.name or "Account"),
@@ -532,6 +566,7 @@ local function transfer(fromAccountId, toAccountId, amount)
       id = Engine.generateUUID(),
       accountId = toAccountId,
       type = "transfer_in",
+      label = "Transfer In",
       amount = amount,
       timestamp = currentTime,
       description = "Transfer from " .. (fromAccount.name or "Account"),
@@ -627,6 +662,7 @@ local function cancelPendingTransfer(transferId)
       id = Engine.generateUUID(),
       accountId = transfer.fromAccountId,
       type = "transfer_cancelled",
+      label = "Transfer Refund",
       amount = transferAmount,
       timestamp = os.time(),
       description = "Transfer cancelled - refund",
@@ -641,51 +677,40 @@ local function cancelPendingTransfer(transferId)
   return true
 end
 
-local function payFromAccount(price, accountId)
+local function payFromAccount(price, accountId, label, description)
   if not accountId or not accounts[accountId] then
     return false
   end
 
   processPendingTransfers()
 
-  local account = accounts[accountId]
   local totalAmount = 0
+  local allowNegativeBalance = false
 
   for currency, info in pairs(price) do
     if currency == "money" then
       totalAmount = totalAmount + info.amount
+      if info.canBeNegative then
+        allowNegativeBalance = true
+      end
     end
   end
 
-  if (account.balance or 0) < totalAmount then
-    return false
+  if not allowNegativeBalance then
+    local account = accounts[accountId]
+    if (account.balance or 0) < totalAmount then
+      return false
+    end
   end
 
-  account.balance = (account.balance or 0) - totalAmount
-
-  if not transactions[accountId] then
-    transactions[accountId] = {}
-  end
-  table.insert(transactions[accountId], {
-    id = Engine.generateUUID(),
-    accountId = accountId,
-    type = "payment",
-    amount = totalAmount,
-    timestamp = os.time(),
-    description = "Payment"
-  })
-
-  triggerAccountUpdate(accountId)
-
-  return true
+  return removeFunds(accountId, totalAmount, label or "Payment", description or "Payment", "payment", allowNegativeBalance)
 end
 
-local function rewardToAccount(price, accountId)
+local function rewardToAccount(price, accountId, label, description)
   if not accountId or not accounts[accountId] then
     return false
   end
 
-  local account = accounts[accountId]
   local totalAmount = 0
 
   for currency, info in pairs(price) do
@@ -698,23 +723,7 @@ local function rewardToAccount(price, accountId)
     return false
   end
 
-  account.balance = (account.balance or 0) + totalAmount
-
-  if not transactions[accountId] then
-    transactions[accountId] = {}
-  end
-  table.insert(transactions[accountId], {
-    id = Engine.generateUUID(),
-    accountId = accountId,
-    type = "reward",
-    amount = totalAmount,
-    timestamp = os.time(),
-    description = "Deposit"
-  })
-
-  triggerAccountUpdate(accountId)
-
-  return true
+  return addFunds(accountId, totalAmount, label or "Reward", description or "Deposit", "reward")
 end
 
 local updateInterval = 5
@@ -740,6 +749,8 @@ M.deleteAccount = deleteAccount
 M.renameAccount = renameAccount
 M.deposit = deposit
 M.withdraw = withdraw
+M.addFunds = addFunds
+M.removeFunds = removeFunds
 M.transfer = transfer
 M.getAccounts = getAccounts
 M.getAccountBalance = getAccountBalance

@@ -203,9 +203,9 @@ local function processDuePayments(elapsedSimSeconds)
         local paymentSuccess = false
         
         if loan.businessAccountId and career_modules_bank then
-          paymentSuccess = career_modules_bank.payFromAccount(price, loan.businessAccountId)
+          paymentSuccess = career_modules_bank.payFromAccount(price, loan.businessAccountId, "Loan Payment", "Payment to " .. (loan.orgName or loan.orgId))
         elseif career_modules_payment then
-          paymentSuccess = career_modules_payment.canPay(price) and career_modules_payment.pay(price, { label = string.format("Loan payment (%s)", loan.orgName or loan.orgId) })
+          paymentSuccess = career_modules_payment.canPay(price) and career_modules_payment.pay(price, { label = "Loan Payment", description = "Payment to " .. (loan.orgName or loan.orgId) })
         end
         
         if paymentSuccess then
@@ -318,7 +318,7 @@ local function takeLoan(orgId, amount, payments, rate, uncapped, businessAccount
     -- The down payment was already deposited into the business account separately
     -- Do nothing - this is just debt tracking
   elseif career_modules_payment then
-    career_modules_payment.reward({ money = { amount = amount } }, { label = string.format("Loan received (%s)", loan.orgName) }, true)
+    career_modules_payment.reward({ money = { amount = amount } }, { label = "Loan Received", description = "Loan from " .. loan.orgName }, true)
   else
     career_modules_playerAttributes.addAttributes({money = amount}, {label = string.format("Loan received (%s)", loan.orgName)})
   end
@@ -346,10 +346,10 @@ local function prepayLoan(loanId, amount)
       if loan.businessAccountId and career_modules_bank then
         local account = career_modules_bank.getAccountBalance(loan.businessAccountId)
         if (account or 0) < amount then return { error = "insufficient_funds" } end
-        paymentSuccess = career_modules_bank.payFromAccount(price, loan.businessAccountId)
+        paymentSuccess = career_modules_bank.payFromAccount(price, loan.businessAccountId, "Loan Prepayment", "Prepayment to " .. (loan.orgName or loan.orgId))
       elseif career_modules_payment then
         if not career_modules_payment.canPay(price) then return { error = "insufficient_funds" } end
-        paymentSuccess = career_modules_payment.pay(price, { label = string.format("Loan prepayment (%s)", loan.orgName or loan.orgId) })
+        paymentSuccess = career_modules_payment.pay(price, { label = "Loan Prepayment", description = "Prepayment to " .. (loan.orgName or loan.orgId) })
       end
       
       if not paymentSuccess then return { error = "pay_failed" } end
