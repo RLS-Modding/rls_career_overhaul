@@ -194,8 +194,6 @@
 import { ref, onMounted, onUnmounted, watch, nextTick, Teleport, computed } from "vue"
 import { useBusinessComputerStore } from "../stores/businessComputerStore"
 import BusinessHomeView from "../components/businessComputer/BusinessHomeView.vue"
-import BusinessActiveJobsTab from "../components/businessComputer/BusinessActiveJobsTab.vue"
-import BusinessNewJobsTab from "../components/businessComputer/BusinessNewJobsTab.vue"
 import BusinessInventoryTab from "../components/businessComputer/BusinessInventoryTab.vue"
 import BusinessPartsInventoryTab from "../components/businessComputer/BusinessPartsInventoryTab.vue"
 import BusinessTuningTab from "../components/businessComputer/BusinessTuningTab.vue"

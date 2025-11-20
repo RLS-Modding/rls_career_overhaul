@@ -1,6 +1,5 @@
 import BusinessHomeView from "./BusinessHomeView.vue"
-import BusinessActiveJobsTab from "./BusinessActiveJobsTab.vue"
-import BusinessNewJobsTab from "./BusinessNewJobsTab.vue"
+import BusinessJobsTab from "./BusinessJobsTab.vue"
 import BusinessInventoryTab from "./BusinessInventoryTab.vue"
 import BusinessPartsInventoryTab from "./BusinessPartsInventoryTab.vue"
 import BusinessTuningTab from "./BusinessTuningTab.vue"
@@ -9,8 +8,7 @@ import BusinessSkillTreeTab from "./BusinessSkillTreeTab.vue"
 
 const componentMap = {
   BusinessHomeView,
-  BusinessActiveJobsTab,
-  BusinessNewJobsTab,
+  BusinessJobsTab,
   BusinessInventoryTab,
   BusinessPartsInventoryTab,
   BusinessTuningTab,

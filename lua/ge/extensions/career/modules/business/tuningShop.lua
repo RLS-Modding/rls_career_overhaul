@@ -1089,8 +1089,7 @@ local function getUIData(businessId)
     if pulledOutDamageInfo.locked then
       local allowedTabs = {
         home = true,
-        ["active-jobs"] = true,
-        ["new-jobs"] = true
+        jobs = true
       }
 
       local filteredTabs = {}
@@ -1202,6 +1201,24 @@ local function onCareerActivated()
         local accountId = "business_tuningShop_" .. tostring(businessId)
         career_modules_bank.rewardToAccount({money = {amount = 25000}}, accountId, "Business Purchase Reward", "Initial operating capital")
       end
+      
+      local normalizedId = normalizeBusinessId(businessId)
+      local jobs = loadBusinessJobs(normalizedId)
+      if not jobs.new then
+        jobs.new = {}
+      end
+      
+      local newJobs = generateNewJobs(normalizedId, 3)
+      for _, job in ipairs(newJobs) do
+        table.insert(jobs.new, job)
+      end
+      
+      local _, currentSavePath = career_saveSystem.getCurrentSaveSlot()
+      if currentSavePath then
+        saveBusinessJobs(normalizedId, currentSavePath)
+      end
+      
+      notifyJobsUpdated(normalizedId)
     end,
     onMenuOpen = function(businessId)
       openMenu(businessId)
@@ -1221,21 +1238,12 @@ local function onCareerActivated()
     })
 
     career_modules_business_businessTabRegistry.registerTab("tuningShop", {
-      id = "active-jobs",
-      label = "Active Jobs",
-      icon = '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>',
-      component = "BusinessActiveJobsTab",
+      id = "jobs",
+      label = "Jobs",
+      icon = '<path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
+      component = "BusinessJobsTab",
       section = "BASIC",
       order = 2
-    })
-
-    career_modules_business_businessTabRegistry.registerTab("tuningShop", {
-      id = "new-jobs",
-      label = "New Jobs",
-      icon = '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>',
-      component = "BusinessNewJobsTab",
-      section = "BASIC",
-      order = 3
     })
 
     career_modules_business_businessTabRegistry.registerTab("tuningShop", {
@@ -1244,7 +1252,7 @@ local function onCareerActivated()
       icon = '<path d="M16.5 9.4l-9-5.19M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>',
       component = "BusinessInventoryTab",
       section = "BASIC",
-      order = 4
+      order = 3
     })
   end
   

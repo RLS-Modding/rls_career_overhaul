@@ -235,7 +235,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     vehicleView.value = null
 
     const shouldRefresh =
-      (view === "new-jobs" || view === "home") &&
+      (view === "jobs" || view === "home") &&
       businessId.value &&
       businessType.value
 
@@ -731,7 +731,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     }
 
     // Prevent updates if user is in a tab that doesn't display job lists
-    const allowedViews = ['home', 'new-jobs', 'active-jobs']
+    const allowedViews = ['home', 'jobs']
     if (!allowedViews.includes(activeView.value)) {
       return
     }
