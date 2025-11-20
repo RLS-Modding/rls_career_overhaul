@@ -59,6 +59,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   }
   
   const activeJobs = computed(() => businessData.value.activeJobs || [])
+  const maxActiveJobs = computed(() => businessData.value.maxActiveJobs ?? 2)
   const newJobs = computed(() => {
     const jobs = businessData.value.newJobs
     if (!Array.isArray(jobs)) {
@@ -1365,6 +1366,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     damageLockInfo,
     isDamageLocked,
     activeJobs,
+    maxActiveJobs,
     newJobs,
     vehicles,
     parts,

@@ -369,7 +369,7 @@
           "id": "bigger-books",
           "title": "Bigger Books",
           "description": "Store 1 more active job",
-          "detailedDescription": "Hold more contracts at once.\n\n**Per Level**\n- +1 active job slot\n- Prevent idle techs while waiting on parts or timers",
+          "detailedDescription": "Hold more contracts at once.\n\n**Base Limit**\n- Start with 2 active job slots\n\n**Per Level**\n- +1 active job slot (2 + level)\n- Prevent idle techs while waiting on parts or timers",
           "cost": {
             "base": 10000,
             "increment": 20000

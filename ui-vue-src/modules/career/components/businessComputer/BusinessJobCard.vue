@@ -39,7 +39,12 @@
           <span>{{ expirationText }}</span>
         </div>
         <div class="job-actions-new">
-          <button class="btn btn-success" @click.stop="$emit('accept', job)">
+          <button 
+            class="btn btn-success" 
+            :disabled="isAcceptDisabled"
+            :title="isAcceptDisabled ? `Active job limit reached (${store.maxActiveJobs} max)` : ''"
+            @click.stop="$emit('accept', job)"
+          >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
               <polyline points="22 4 12 14.01 9 11.01"/>
@@ -96,7 +101,12 @@
             <span>{{ expirationText }}</span>
           </div>
           <div class="job-actions-new-horizontal">
-            <button class="btn btn-success" @click.stop="$emit('accept', job)">
+            <button 
+              class="btn btn-success" 
+              :disabled="isAcceptDisabled"
+              :title="isAcceptDisabled ? `Active job limit reached (${store.maxActiveJobs} max)` : ''"
+              @click.stop="$emit('accept', job)"
+            >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
                 <polyline points="22 4 12 14.01 9 11.01"/>
@@ -314,6 +324,10 @@ const damageLockApplies = computed(() => {
     return false
   }
   return jobIdentifier.value === pulledOutJobIdentifier.value
+})
+const isAcceptDisabled = computed(() => {
+  if (props.isActive) return false
+  return store.activeJobs.length >= store.maxActiveJobs
 })
 const canComplete = ref(false)
 const remainingSeconds = ref(null)

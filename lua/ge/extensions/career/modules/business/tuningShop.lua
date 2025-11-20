@@ -39,7 +39,15 @@ local function normalizeBusinessId(businessId)
 end
 
 local function getGenerationIntervalSeconds(businessId)
-  return GEN_INTERVAL_SECONDS
+  local baseInterval = GEN_INTERVAL_SECONDS
+  if not businessId or not career_modules_business_businessSkillTree then
+    return baseInterval
+  end
+  
+  local treeId = "shop-upgrades"
+  local marketingLevel = career_modules_business_businessSkillTree.getNodeProgress(businessId, treeId, "marketing") or 0
+  
+  return baseInterval / (1 + 0.25 * marketingLevel)
 end
 
 local function getJobExpirySeconds(businessId)
@@ -353,6 +361,18 @@ local function getSkillTreeUpgradeCount(businessId)
   return upgradeCount
 end
 
+local function getMaxActiveJobs(businessId)
+  local baseLimit = 2
+  if not businessId or not career_modules_business_businessSkillTree then
+    return baseLimit
+  end
+  
+  local treeId = "shop-upgrades"
+  local biggerBooksLevel = career_modules_business_businessSkillTree.getNodeProgress(businessId, treeId, "bigger-books") or 0
+  
+  return baseLimit + biggerBooksLevel
+end
+
 local function selectJobLevel(upgradeCount, maxLevels)
   if upgradeCount == 0 then
     return 1
@@ -586,6 +606,14 @@ local function acceptJob(businessId, jobId)
   
   jobId = tonumber(jobId) or jobId
   local jobs = loadBusinessJobs(businessId)
+  
+  local maxActiveJobs = getMaxActiveJobs(businessId)
+  local currentActiveCount = #(jobs.active or {})
+  
+  if currentActiveCount >= maxActiveJobs then
+    log("W", "tuningShop", "Cannot accept job: active job limit reached. Current: " .. tostring(currentActiveCount) .. ", Max: " .. tostring(maxActiveJobs))
+    return false
+  end
   
   local jobIndex = nil
   for i, job in ipairs(jobs.new or {}) do
@@ -1219,6 +1247,7 @@ local function getUIData(businessId)
     vehicleDamage = pulledOutDamageInfo.damage,
     vehicleDamageLocked = pulledOutDamageInfo.locked,
     vehicleDamageThreshold = pulledOutDamageInfo.threshold,
+    maxActiveJobs = getMaxActiveJobs(businessId),
     stats = {
       totalVehicles = #vehicleList,
       totalParts = #parts,
