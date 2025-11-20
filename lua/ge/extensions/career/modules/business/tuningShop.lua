@@ -17,7 +17,7 @@ local jobIdCounter = 0
 local GEN_INTERVAL_SECONDS = 120
 local EXPIRY_SECONDS = 300
 
-local DAMAGE_LOCK_THRESHOLD = 1000
+local DAMAGE_LOCK_THRESHOLD = 1750
 
 local blacklistedModels = {
   atv = true,
