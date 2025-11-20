@@ -111,6 +111,9 @@ local function calcLevelFromReputationValue(val, organization)
       level = i
     end
   end
+  if level == -1 then
+    level = 1
+  end
   local currentLevelRequiredValue = levels[level].requiredValue or minimumValue
   local nextLevelRequiredValue = levels[level+1] and levels[level+1].requiredValue or maximumValue
 
