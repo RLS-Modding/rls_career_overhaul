@@ -17,10 +17,9 @@
               :key="`active-${job.id}`"
               class="job-item"
             >
-              <BusinessJobCard
+              <PhoneJobCard
                 :job="job"
                 :is-active="true"
-                :is-vertical="true"
                 :business-id="store.businessId"
                 @abandon="handleAbandon(job)"
                 @complete="handleComplete(job)"
@@ -38,10 +37,9 @@
               :key="`new-${job.id}`"
               class="job-item"
             >
-              <BusinessJobCard
+              <PhoneJobCard
                 :job="job"
                 :is-active="false"
-                :is-vertical="true"
                 @accept="handleAccept(job)"
                 @decline="handleDecline(job)"
               />
@@ -83,7 +81,7 @@
 <script setup>
 import { ref, computed, onMounted } from "vue"
 import PhoneWrapper from "./PhoneWrapper.vue"
-import BusinessJobCard from "../components/businessComputer/BusinessJobCard.vue"
+import PhoneJobCard from "../components/phone/PhoneJobCard.vue"
 import { useBusinessComputerStore } from "../stores/businessComputerStore"
 import { lua } from "@/bridge"
 
@@ -190,8 +188,40 @@ onMounted(async () => {
 .phone-tuning-shop {
   height: 100%;
   overflow-y: auto;
-  padding: 1rem;
+  padding: 0.75rem;
   padding-top: 3.5rem;
+  position: relative;
+  background: 
+    radial-gradient(circle at 20% 30%, rgba(245, 73, 0, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(59, 130, 246, 0.03) 0%, transparent 50%),
+    linear-gradient(135deg, rgba(10, 10, 10, 0.98) 0%, rgba(15, 15, 15, 0.98) 100%);
+  background-attachment: fixed;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(255, 255, 255, 0.01) 2px,
+        rgba(255, 255, 255, 0.01) 4px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 2px,
+        rgba(255, 255, 255, 0.01) 2px,
+        rgba(255, 255, 255, 0.01) 4px
+      );
+    pointer-events: none;
+    opacity: 0.3;
+  }
   
   /* Hide scrollbar for Chrome, Safari and Opera */
   &::-webkit-scrollbar {
@@ -200,6 +230,13 @@ onMounted(async () => {
   /* Hide scrollbar for IE, Edge and Firefox */
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
+}
+
+.jobs-content {
+  position: relative;
+  z-index: 1;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .loading-state, .error-state, .empty-state {
@@ -211,113 +248,36 @@ onMounted(async () => {
   color: rgba(255, 255, 255, 0.5);
   font-size: 1.1rem;
   padding: 2rem;
+  position: relative;
+  z-index: 1;
 }
 
 .job-section {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
   
   h3 {
-    margin: 0 0 0.75rem 0;
+    margin: 0 0 0.625rem 0;
     color: rgba(245, 73, 0, 1);
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 600;
-    padding-left: 0.25rem;
+    padding-left: 0.125rem;
   }
 }
 
 .jobs-list {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
+  grid-template-columns: 1fr;
+  gap: 0.625rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .job-item {
-  /* Ensure card takes full width */
-}
-
-:deep(.job-card) {
-  font-size: 0.85rem;
-  
-  .vehicle-name-active,
-  .vehicle-name-new {
-    font-size: 1rem;
-  }
-  
-  .reward-value {
-    font-size: 1rem;
-  }
-  
-  .goal-chip {
-    padding: 0.5rem 0.6rem;
-    
-    .goal-chip-content {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.4rem;
-    }
-    
-    .goal-chip-text {
-      width: 100%;
-    }
-    
-    .goal-chip-value {
-      font-size: 0.75rem;
-      line-height: 1.2;
-    }
-    
-    .goal-chip-label {
-      font-size: 0.6rem;
-      margin-bottom: 0.1rem;
-    }
-    
-    .current-time-wrapper {
-      align-items: flex-start;
-      margin-top: 0.25rem;
-      padding-top: 0.25rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-      width: 100%;
-    }
-    
-    .current-time-value {
-      font-size: 0.75rem;
-      line-height: 1.2;
-    }
-    
-    .current-time-label {
-      font-size: 0.6rem;
-      margin-bottom: 0.1rem;
-    }
-  }
-  
-  .reward-label {
-    font-size: 0.65rem;
-  }
-  
-  .status-badge {
-    font-size: 0.65rem;
-    padding: 0.2rem 0.4rem;
-  }
-  
-  .badge {
-    font-size: 0.65rem;
-    padding: 0.2rem 0.4rem;
-  }
-  
-  .btn {
-    font-size: 0.75rem;
-    padding: 0.4rem 0.75rem;
-  }
-  
-  .expiration-chip {
-    font-size: 0.65rem;
-    padding: 0.25rem 0.6rem;
-  }
-}
-
-:deep(.job-actions-active) {
-  .btn-primary {
-    display: none;
-  }
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 /* Reuse modal styles from BusinessJobsTab */
