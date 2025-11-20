@@ -50,7 +50,7 @@
       "name": "Fast Auto Tuning Shop Garage",
       "description": "Business garage for storing vehicles",
       "sitesFile": "tuningShops.sites.json",
-      "parkingSpotNames": ["fastAutoTuningShopParking1"],
+      "parkingSpotNames": ["fastAutoTuningShopParking1", "fastAutoTuningShopParking2", "fastAutoTuningShopParking3", "fastAutoTuningShopParking4"],
       "zoneNames": ["fastAutoTuningShopGarage1"],
       "capacity": 5
     }
