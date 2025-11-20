@@ -175,6 +175,53 @@ local function getBusinessGaragePosRot(businessType, businessId, veh)
   return parkingSpots[1].pos, parkingSpots[1].rot
 end
 
+local function getVisualValueFromMileage(mileage)
+  if not mileage then
+    return nil
+  end
+  return career_modules_vehicleShopping.getVisualValueFromMileage(mileage)
+end
+
+local function requestAndStorePartConditions(vehicle, vehObj)
+  if not vehObj or not vehicle then
+    return
+  end
+  core_vehicleBridge.requestValue(vehObj, function(res)
+    if not res or not res.result then
+      return
+    end
+    vehicle.partConditions = deepcopy(res.result)
+  end, 'getPartConditions')
+end
+
+local function applyPartConditionsForVehicle(vehicle, vehObj)
+  if not vehObj or not vehicle then
+    return
+  end
+
+  if vehicle.partConditions then
+    log("D", "businessInventory",
+      "applyPartConditionsForVehicle: Using stored partConditions for vehicleId=" .. tostring(vehicle.vehicleId))
+    core_vehicleBridge.executeAction(vehObj, 'initPartConditions', vehicle.partConditions)
+    return
+  end
+
+  local mileage = tonumber(vehicle.mileage or 0)
+  if mileage > 0 then
+    local visualValue = getVisualValueFromMileage(mileage) or 1
+    print("applyPartConditionsForVehicle: mileage=" .. tostring(mileage) .. ", visualValue=" .. tostring(visualValue))
+    vehObj:queueLuaCommand(string.format("partCondition.initConditions(nil, %d, nil, %f)", mileage, visualValue))
+    requestAndStorePartConditions(vehicle, vehObj)
+    return
+  end
+
+  log("D", "businessInventory",
+    "applyPartConditionsForVehicle: No mileage or partConditions, requesting default for vehicleId=" ..
+      tostring(vehicle.vehicleId))
+  requestAndStorePartConditions(vehicle, vehObj)
+end
+
+
 local function spawnBusinessVehicle(businessId, vehicleId)
   vehicleId = tonumber(vehicleId) or vehicleId
   
@@ -217,13 +264,14 @@ local function spawnBusinessVehicle(businessId, vehicleId)
   
   local vehObj = core_vehicles.spawnNewVehicle(modelKey, vehicleData)
   
-  if vehicle.partConditions and vehObj then
-    core_vehicleBridge.executeAction(vehObj, 'initPartConditions', vehicle.partConditions, nil, nil, nil, nil)
-  end
   if not vehObj then 
     log("E", "businessInventory", "spawnBusinessVehicle: Failed to spawn vehicle. modelKey=" .. tostring(modelKey) .. ", configKey=" .. tostring(configKey) .. ", businessId=" .. tostring(businessId) .. ", vehicleId=" .. tostring(vehicleId))
     return nil 
   end
+
+  core_vehicleBridge.requestValue(vehObj, function()
+    applyPartConditionsForVehicle(vehicle, vehObj)
+  end, 'ping')
   
   if not spawnedBusinessVehicles[businessId] then
     spawnedBusinessVehicles[businessId] = {}
@@ -413,4 +461,3 @@ M.getBusinessVehicleFromSpawnedId = getBusinessVehicleFromSpawnedId
 M.onSaveCurrentSaveSlot = onSaveCurrentSaveSlot
 
 return M
-
