@@ -852,8 +852,26 @@ local function getAbandonPenalty(businessId, jobId)
   local job = getJobById(businessId, jobId)
   if not job then return 0 end
   
+  if businessId and career_modules_business_businessSkillTree then
+    local treeId = "quality-of-life"
+    local iGiveUpLevel = career_modules_business_businessSkillTree.getNodeProgress(businessId, treeId, "i-give-up") or 0
+    if iGiveUpLevel > 0 then
+      return 0
+    end
+  end
+  
   local reward = job.reward or 20000
-  local penalty = math.floor(reward * 0.5)
+  local basePenalty = reward * 0.5
+  
+  local reduction = 0
+  if businessId and career_modules_business_businessSkillTree then
+    local treeId = "quality-of-life"
+    local noHardFeelingsLevel = career_modules_business_businessSkillTree.getNodeProgress(businessId, treeId, "no-hard-feelings") or 0
+    reduction = noHardFeelingsLevel * 0.05
+  end
+  
+  local penaltyMultiplier = math.max(0, 0.5 - reduction)
+  local penalty = math.floor(reward * penaltyMultiplier)
   
   return penalty
 end
@@ -905,24 +923,26 @@ local function abandonJob(businessId, jobId)
   
   local penalty = getAbandonPenalty(businessId, jobId)
 
-  if career_modules_bank then
-    local businessName = job.businessName or ("tuningShop " .. tostring(businessId))
-    local businessAccount = career_modules_bank.getBusinessAccount("tuningShop", businessId)
-    if not businessAccount then
-      career_modules_bank.createBusinessAccount("tuningShop", businessId, businessName)
-      businessAccount = career_modules_bank.getBusinessAccount("tuningShop", businessId)
-    end
-    
-    if businessAccount then
-      local success = career_modules_bank.removeFunds(businessAccount.id, penalty, "Job Penalty", "Abandoned Job #" .. tostring(jobId), "penalty", true)
-      if not success then
+  if penalty > 0 then
+    if career_modules_bank then
+      local businessName = job.businessName or ("tuningShop " .. tostring(businessId))
+      local businessAccount = career_modules_bank.getBusinessAccount("tuningShop", businessId)
+      if not businessAccount then
+        career_modules_bank.createBusinessAccount("tuningShop", businessId, businessName)
+        businessAccount = career_modules_bank.getBusinessAccount("tuningShop", businessId)
+      end
+      
+      if businessAccount then
+        local success = career_modules_bank.removeFunds(businessAccount.id, penalty, "Job Penalty", "Abandoned Job #" .. tostring(jobId), "penalty", true)
+        if not success then
+          return false
+        end
+      else
         return false
       end
     else
       return false
     end
-  else
-    return false
   end
   
   table.remove(jobs.active, jobIndex)
