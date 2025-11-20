@@ -12,6 +12,32 @@ local powerWeightCache = {}
 local powerWeightCallbacks = {}
 local vehicleOperationInProgress = {}
 
+local function getPartSupplierDiscountMultiplier(businessId)
+  if not businessId or not career_modules_business_businessSkillTree then
+    return 1.0
+  end
+  
+  local businessType = "tuningShop"
+  local treeId = "shop-upgrades"
+  local nodeId = "part-suppliers"
+  
+  local level = career_modules_business_businessSkillTree.getNodeProgress(businessId, treeId, nodeId) or 0
+  return 1.0 - (0.05 * level)
+end
+
+local function getPartResellerMultiplier(businessId)
+  if not businessId or not career_modules_business_businessSkillTree then
+    return 1.0
+  end
+  
+  local businessType = "tuningShop"
+  local treeId = "shop-upgrades"
+  local nodeId = "part-reseller"
+  
+  local level = career_modules_business_businessSkillTree.getNodeProgress(businessId, treeId, nodeId) or 0
+  return 1.0 + (0.05 * level)
+end
+
 local function getBusinessVehicleObject(businessId, vehicleId)
   if not businessId or not vehicleId then return nil end
   
@@ -706,14 +732,48 @@ local function applyCartPartsToVehicle(businessId, vehicleId, parts)
       end
     end
     
+    local discountMultiplier = getPartSupplierDiscountMultiplier(businessId)
+    local vehObj = getBusinessVehicleObject(businessId, vehicleId)
+    local vehicleModel = nil
+    if vehObj then
+      vehicleModel = vehObj:getJBeamFilename()
+    end
+    
     for _, reqPart in ipairs(requiredParts) do
       if not allParts[reqPart.slotPath] then
+        local reqPartPrice = reqPart.value or 0
+        
+        if reqPartPrice > 0 and vehObj then
+          local vehId = vehObj:getID()
+          local vehicleData = extensions.core_vehicle_manager.getVehicleData(vehId)
+          if vehicleData and vehicleData.ioCtx then
+            local jbeamData = jbeamIO.getPart(vehicleData.ioCtx, reqPart.partName)
+            if jbeamData then
+              local baseValue = jbeamData.information and jbeamData.information.value or 100
+              
+              if career_modules_valueCalculator then
+                local partForValueCalc = {
+                  name = reqPart.partName,
+                  value = baseValue,
+                  partCondition = {integrityValue = 1, odometer = 0, visualValue = 1},
+                  vehicleModel = vehicleModel
+                }
+                reqPartPrice = math.max(roundNear(career_modules_valueCalculator.getPartValue(partForValueCalc), 5) - 0.01, 0)
+              else
+                reqPartPrice = baseValue
+              end
+              
+              reqPartPrice = reqPartPrice * discountMultiplier
+            end
+          end
+        end
+        
         allParts[reqPart.slotPath] = {
           partName = reqPart.partName,
           slotPath = reqPart.slotPath,
           partNiceName = reqPart.partNiceName or reqPart.partName,
           slotNiceName = reqPart.slotName or '',
-          price = reqPart.value or 0
+          price = reqPartPrice
         }
       end
     end
@@ -1008,6 +1068,9 @@ local function addPartToCart(businessId, vehicleId, currentCart, partToAdd)
           else
             partValue = baseValue
           end
+          
+          local discountMultiplier = getPartSupplierDiscountMultiplier(businessId)
+          partValue = partValue * discountMultiplier
         end
         
         local slotNiceName = ""
@@ -1079,7 +1142,6 @@ local function addPartToCart(businessId, vehicleId, currentCart, partToAdd)
         
         if slotPath == partToAdd.slotPath then
           partData.partNiceName = partToAdd.partNiceName or partData.partNiceName
-          partData.price = partToAdd.price or partData.price
           partData.slotNiceName = partToAdd.slotNiceName or partData.slotNiceName
           partData.canRemove = true
           
@@ -1087,6 +1149,8 @@ local function addPartToCart(businessId, vehicleId, currentCart, partToAdd)
             partData.fromInventory = true
             partData.partId = partToAdd.partId
             partData.price = 0
+          else
+            partData.price = partValue
           end
         end
         
@@ -1183,6 +1247,9 @@ local function findRemovedParts(businessId, vehicleId)
           local jbeamData = jbeamIO.getPart(vehicleData.ioCtx, partName)
           partData.value = (jbeamData and jbeamData.information and jbeamData.information.value) or 100
         end
+        
+        local resellerMultiplier = getPartResellerMultiplier(businessId)
+        partData.value = partData.value * resellerMultiplier
         
         table.insert(removedParts, partData)
       end

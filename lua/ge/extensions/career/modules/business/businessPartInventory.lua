@@ -4,6 +4,7 @@ local jbeamIO = require('jbeam/io')
 
 local inventory = {}
 local businessPartInventoryPath = "business/partInventory.json"
+local activeBusinessId = nil
 
 local function getInventory()
   return inventory
@@ -109,6 +110,8 @@ local function loadJBeamDataForParts(parts)
 end
 
 local function getUIData(businessId)
+  activeBusinessId = businessId
+  
   local uiData = {}
   
   -- Group parts by model
@@ -172,7 +175,14 @@ local function getUIData(businessId)
 
     -- Calculate value with condition
     if career_modules_valueCalculator then
-        expandedPart.finalValue = career_modules_valueCalculator.getPartValue(expandedPart)
+        local baseValue = career_modules_valueCalculator.getPartValue(expandedPart) * 0.9
+        
+        local resellerLevel = 0
+        if businessId and career_modules_business_businessSkillTree then
+          resellerLevel = career_modules_business_businessSkillTree.getNodeProgress(businessId, "shop-upgrades", "part-reseller") or 0
+        end
+        
+        expandedPart.finalValue = baseValue * (1 + (0.05 * resellerLevel))
     end
 
     table.insert(partsByModel[part.vehicleModel], expandedPart)
@@ -191,6 +201,149 @@ local function onSaveFinished()
   saveInventory()
 end
 
+local function sellPart(partId)
+  if not partId then return false, 0 end
+  
+  local part = inventory[partId]
+  if not part then return false, 0 end
+  
+  local price = 0
+  if career_modules_valueCalculator then
+    local expandedPart = deepcopy(part)
+    local jbeamData = nil
+    local vehicleDir = string.format("/vehicles/%s/", part.vehicleModel)
+    if FS:directoryExists(vehicleDir) then
+      local vehicleFolders = {vehicleDir, "/vehicles/common/"}
+      local ioCtx = jbeamIO.startLoading(vehicleFolders)
+      if ioCtx then
+        jbeamData = jbeamIO.getPart(ioCtx, part.name)
+      end
+    end
+    
+    if jbeamData and jbeamData.information then
+      expandedPart.value = jbeamData.information.value or 100
+      expandedPart.niceName = jbeamData.information.name or part.name
+    else
+      expandedPart.value = 100
+      expandedPart.niceName = part.name
+    end
+    
+    price = career_modules_valueCalculator.getPartValue(expandedPart) or 0
+  else
+    price = 100
+  end
+  
+  price = price * 0.9
+  
+  local resellerLevel = 0
+  if activeBusinessId and career_modules_business_businessSkillTree then
+    resellerLevel = career_modules_business_businessSkillTree.getNodeProgress(activeBusinessId, "shop-upgrades", "part-reseller") or 0
+  end
+  
+  price = price * (1 + (0.05 * resellerLevel))
+  
+  inventory[partId] = nil
+  return true, price
+end
+
+local function sellAllParts()
+  if not career_modules_valueCalculator then
+    return false, 0
+  end
+  
+  local resellerLevel = 0
+  if activeBusinessId and career_modules_business_businessSkillTree then
+    resellerLevel = career_modules_business_businessSkillTree.getNodeProgress(activeBusinessId, "shop-upgrades", "part-reseller") or 0
+  end
+  
+  local totalPrice = 0
+  local partsToRemove = {}
+  
+  for partId, part in pairs(inventory) do
+    if part then
+      local expandedPart = deepcopy(part)
+      local jbeamData = nil
+      local vehicleDir = string.format("/vehicles/%s/", part.vehicleModel)
+      if FS:directoryExists(vehicleDir) then
+        local vehicleFolders = {vehicleDir, "/vehicles/common/"}
+        local ioCtx = jbeamIO.startLoading(vehicleFolders)
+        if ioCtx then
+          jbeamData = jbeamIO.getPart(ioCtx, part.name)
+        end
+      end
+      
+      if jbeamData and jbeamData.information then
+        expandedPart.value = jbeamData.information.value or 100
+        expandedPart.niceName = jbeamData.information.name or part.name
+      else
+        expandedPart.value = 100
+        expandedPart.niceName = part.name
+      end
+      
+      local price = career_modules_valueCalculator.getPartValue(expandedPart) or 0
+      price = price * 0.9
+      price = price * (1 + (0.05 * resellerLevel))
+      totalPrice = totalPrice + price
+      table.insert(partsToRemove, partId)
+    end
+  end
+  
+  for _, partId in ipairs(partsToRemove) do
+    inventory[partId] = nil
+  end
+  
+  return true, totalPrice
+end
+
+local function sellPartsByVehicle(vehicleModel)
+  if not vehicleModel or not career_modules_valueCalculator then
+    return false, 0
+  end
+  
+  local resellerLevel = 0
+  if activeBusinessId and career_modules_business_businessSkillTree then
+    resellerLevel = career_modules_business_businessSkillTree.getNodeProgress(activeBusinessId, "shop-upgrades", "part-reseller") or 0
+  end
+  
+  local totalPrice = 0
+  local partsToRemove = {}
+  
+  for partId, part in pairs(inventory) do
+    if part and part.vehicleModel == vehicleModel then
+      local expandedPart = deepcopy(part)
+      local jbeamData = nil
+      local vehicleDir = string.format("/vehicles/%s/", part.vehicleModel)
+      if FS:directoryExists(vehicleDir) then
+        local vehicleFolders = {vehicleDir, "/vehicles/common/"}
+        local ioCtx = jbeamIO.startLoading(vehicleFolders)
+        if ioCtx then
+          jbeamData = jbeamIO.getPart(ioCtx, part.name)
+        end
+      end
+      
+      if jbeamData and jbeamData.information then
+        expandedPart.value = jbeamData.information.value or 100
+        expandedPart.niceName = jbeamData.information.name or part.name
+      else
+        expandedPart.value = 100
+        expandedPart.niceName = part.name
+      end
+      
+      local price = career_modules_valueCalculator.getPartValue(expandedPart) or 0
+      price = price * 0.9
+      price = price * (1 + (0.05 * resellerLevel))
+      totalPrice = totalPrice + price
+      table.insert(partsToRemove, partId)
+    end
+  end
+  
+  for _, partId in ipairs(partsToRemove) do
+    inventory[partId] = nil
+  end
+  
+  return true, totalPrice
+end
+
 M.addPart = addPart
 M.addParts = addParts
 M.removePart = removePart
@@ -200,6 +353,9 @@ M.updatePartCondition = updatePartCondition
 M.getUIData = getUIData
 M.loadInventory = loadInventory
 M.saveInventory = saveInventory
+M.sellPart = sellPart
+M.sellAllParts = sellAllParts
+M.sellPartsByVehicle = sellPartsByVehicle
 
 M.onExtensionLoaded = onExtensionLoaded
 M.onSaveFinished = onSaveFinished

@@ -28,7 +28,7 @@
           <p class="stat-label">Total Value</p>
           <p class="stat-value green">${{ totalValue.toLocaleString() }}</p>
         </div>
-        <button class="btn btn-primary sell-all-btn" disabled title="Selling disabled">
+        <button class="btn btn-primary sell-all-btn" @click.stop="sellAllParts" @mousedown.stop>
           Sell All Parts
         </button>
       </div>
@@ -88,8 +88,8 @@
                 <p class="part-id">ID: {{ part.partId }}</p>
               </div>
 
-              <span class="condition-badge" :class="getConditionClass(part.condition)">
-                {{ part.condition }}
+              <span class="condition-badge" :class="getConditionClass(part.mileage || 0)">
+                {{ getConditionText(part.mileage || 0) }}
               </span>
 
               <div class="mileage-display">
@@ -104,14 +104,14 @@
                 <span>${{ ((part.price || part.value || 0)).toLocaleString() }}</span>
               </div>
 
-              <button class="btn btn-primary sell-part-btn" disabled title="Selling disabled">
+              <button class="btn btn-primary sell-part-btn" @click.stop="sellPart(part.partId)" @mousedown.stop>
                 Sell Part
               </button>
             </div>
           </div>
           
           <div class="sell-all-footer">
-            <button class="btn btn-primary sell-all-vehicle-btn" disabled title="Selling disabled">
+            <button class="btn btn-primary sell-all-vehicle-btn" @click.stop="sellAllVehicleParts(vehicle)" @mousedown.stop>
               Sell All {{ vehicle }} Parts
             </button>
           </div>
@@ -124,6 +124,7 @@
 <script setup>
 import { ref, computed, onMounted } from "vue"
 import { useBusinessComputerStore } from "../../stores/businessComputerStore"
+import { lua } from "@/bridge"
 
 const store = useBusinessComputerStore()
 const searchQuery = ref('')
@@ -173,14 +174,64 @@ const toggleSection = (vehicle) => {
   openSections.value[vehicle] = openSections.value[vehicle] === false ? true : false
 }
 
-const getConditionClass = (condition) => {
-  const classes = {
-    'Excellent': 'condition-excellent',
-    'Good': 'condition-good',
-    'Fair': 'condition-fair',
-    'Poor': 'condition-poor'
+const getConditionClass = (mileage) => {
+  if (mileage < 10000) {
+    return 'condition-excellent'
+  } else if (mileage < 50000) {
+    return 'condition-good'
+  } else if (mileage < 100000) {
+    return 'condition-fair'
+  } else {
+    return 'condition-poor'
   }
-  return classes[condition] || 'condition-good'
+}
+
+const getConditionText = (mileage) => {
+  if (mileage < 10000) {
+    return 'Excellent'
+  } else if (mileage < 50000) {
+    return 'Good'
+  } else if (mileage < 100000) {
+    return 'Fair'
+  } else {
+    return 'Poor'
+  }
+}
+
+const sellPart = async (partId) => {
+  if (!store.businessId || !partId) return
+  try {
+    await lua.career_modules_business_businessComputer.sellPart(store.businessId, partId)
+    if (store.requestPartInventory) {
+      await store.requestPartInventory()
+    }
+  } catch (error) {
+    console.error("Failed to sell part", error)
+  }
+}
+
+const sellAllParts = async () => {
+  if (!store.businessId) return
+  try {
+    await lua.career_modules_business_businessComputer.sellAllParts(store.businessId)
+    if (store.requestPartInventory) {
+      await store.requestPartInventory()
+    }
+  } catch (error) {
+    console.error("Failed to sell all parts", error)
+  }
+}
+
+const sellAllVehicleParts = async (vehicleName) => {
+  if (!store.businessId || !vehicleName) return
+  try {
+    await lua.career_modules_business_businessComputer.sellPartsByVehicle(store.businessId, vehicleName)
+    if (store.requestPartInventory) {
+      await store.requestPartInventory()
+    }
+  } catch (error) {
+    console.error("Failed to sell vehicle parts", error)
+  }
 }
 
 onMounted(() => {

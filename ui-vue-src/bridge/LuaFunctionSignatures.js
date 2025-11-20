@@ -1187,6 +1187,9 @@ export default {
     applyPartsToVehicle: (businessId, vehicleId, parts) => [String, Integer, Array],
     applyCartPartsToVehicle: (businessId, vehicleId, parts) => [String, Integer, Array],
     requestPartInventory: (businessId) => String,
+    sellPart: (businessId, partId) => [String, Integer],
+    sellAllParts: (businessId) => String,
+    sellPartsByVehicle: (businessId, vehicleNiceName) => [String, String],
   },
 
   career_modules_business_tuningShop: {

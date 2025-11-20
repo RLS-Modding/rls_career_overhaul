@@ -414,6 +414,132 @@ local function requestPartInventory(businessId)
   end
 end
 
+local function sellPart(businessId, partId)
+  if not businessId or not partId then
+    return false
+  end
+
+  if not career_modules_business_businessPartInventory then
+    return false
+  end
+
+  local businessType = businessContexts[businessId]
+  if not businessType then
+    return false
+  end
+
+  local success, price = career_modules_business_businessPartInventory.sellPart(partId)
+  if not success or price <= 0 then
+    return false
+  end
+
+  if career_modules_bank then
+    local account = career_modules_bank.getBusinessAccount(businessType, businessId)
+    if account then
+      career_modules_bank.rewardToAccount({money = {amount = price}}, account.id, "Sold Parts", "Sold part")
+      if ui_message then
+        ui_message(string.format("Sold parts $%s", tostring(math.floor(price))), 3, "Parts Inventory", "info")
+      end
+    end
+  end
+
+  career_modules_business_businessPartInventory.saveInventory()
+  requestPartInventory(businessId)
+
+  return true
+end
+
+local function sellAllParts(businessId)
+  if not businessId then
+    return false
+  end
+
+  if not career_modules_business_businessPartInventory then
+    return false
+  end
+
+  local businessType = businessContexts[businessId]
+  if not businessType then
+    return false
+  end
+
+  local success, totalPrice = career_modules_business_businessPartInventory.sellAllParts()
+  if not success or totalPrice <= 0 then
+    return false
+  end
+
+  if career_modules_bank then
+    local account = career_modules_bank.getBusinessAccount(businessType, businessId)
+    if account then
+      career_modules_bank.rewardToAccount({money = {amount = totalPrice}}, account.id, "Sold Parts", "Sold all parts")
+      if ui_message then
+        ui_message(string.format("Sold parts $%s", tostring(math.floor(totalPrice))), 3, "Parts Inventory", "info")
+      end
+    end
+  end
+
+  career_modules_business_businessPartInventory.saveInventory()
+  requestPartInventory(businessId)
+
+  return true
+end
+
+local function sellPartsByVehicle(businessId, vehicleNiceName)
+  if not businessId or not vehicleNiceName then
+    return false
+  end
+
+  if not career_modules_business_businessPartInventory then
+    return false
+  end
+
+  local businessType = businessContexts[businessId]
+  if not businessType then
+    return false
+  end
+
+  local vehicleModel = nil
+  local inventory = career_modules_business_businessPartInventory.getInventory()
+  for _, part in pairs(inventory) do
+    if part and part.vehicleModel then
+      local modelData = core_vehicles.getModel(part.vehicleModel)
+      if modelData and modelData.model then
+        local brand = modelData.model.Brand or ""
+        local name = modelData.model.Name
+        local niceName = (brand .. " " .. name):match("^%s*(.-)%s*$")
+        if niceName == vehicleNiceName then
+          vehicleModel = part.vehicleModel
+          break
+        end
+      end
+    end
+  end
+
+  if not vehicleModel then
+    return false
+  end
+
+  local success, totalPrice = career_modules_business_businessPartInventory.sellPartsByVehicle(vehicleModel)
+  if not success or totalPrice <= 0 then
+    return false
+  end
+
+  if career_modules_bank then
+    local account = career_modules_bank.getBusinessAccount(businessType, businessId)
+    if account then
+      career_modules_bank.rewardToAccount({money = {amount = totalPrice}}, account.id, "Sold Parts", "Sold " .. vehicleNiceName .. " parts")
+      if ui_message then
+        ui_message(string.format("Sold parts $%s", tostring(math.floor(totalPrice))), 3, "Parts Inventory", "info")
+      end
+    end
+  end
+
+  career_modules_business_businessPartInventory.saveInventory()
+  requestPartInventory(businessId)
+
+  return true
+end
+
 local function acceptJob(businessId, jobId)
   local module = resolveBusinessModule(businessId)
   if module and module.acceptJob then
@@ -492,6 +618,19 @@ local function getNewJobs(businessId)
     return module.getNewJobs(businessId)
   end
   return {}
+end
+
+local function getPartSupplierDiscountMultiplier(businessId)
+  if not businessId or not career_modules_business_businessSkillTree then
+    return 1.0
+  end
+  
+  local businessType = "tuningShop"
+  local treeId = "shop-upgrades"
+  local nodeId = "part-suppliers"
+  
+  local level = career_modules_business_businessSkillTree.getNodeProgress(businessId, treeId, nodeId) or 0
+  return 1.0 - (0.05 * level)
 end
 
 local function buildOwnedPartsLookup(inventoryParts, vehicleModel)
@@ -582,6 +721,11 @@ local function formatPartsTreeForUI(node, slotName, slotInfo, availableParts, sl
           end
         elseif partInfoData.information and partInfoData.information.value then
           value = partInfoData.information.value
+        end
+        
+        if businessId and value > 0 then
+          local discountMultiplier = getPartSupplierDiscountMultiplier(businessId)
+          value = value * discountMultiplier
         end
 
         table.insert(availablePartsList, {
@@ -1311,6 +1455,9 @@ M.addPartToCart = addPartToCart
 M.onVehicleWheelDataUpdate = onVehicleWheelDataUpdate
 M.onPowerWeightReceived = onPowerWeightReceived
 M.requestPartInventory = requestPartInventory
+M.sellPart = sellPart
+M.sellAllParts = sellAllParts
+M.sellPartsByVehicle = sellPartsByVehicle
 
 local function onExtensionLoaded()
   businessContexts = {}
