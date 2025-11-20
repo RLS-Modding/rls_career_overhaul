@@ -468,6 +468,10 @@ local function generateJob(businessId)
   local divisor = minImprovement + math.random() * (maxImprovement - minImprovement)
   local targetTime = baseTime / divisor
   
+  local multiplier = 10 ^ decimalPlaces
+  baseTime = math.floor(baseTime * multiplier + 0.5) / multiplier
+  targetTime = math.floor(targetTime * multiplier + 0.5) / multiplier
+  
   local mileageMinMiles = 20000
   local mileageMaxMiles = 120000
   local mileageMiles = math.random(mileageMinMiles, mileageMaxMiles)
@@ -1364,6 +1368,15 @@ local function onSaveCurrentSaveSlot(currentSavePath)
   end
 end
 
+local function isShopAppUnlocked(businessId)
+  if not businessId or not career_modules_business_businessSkillTree then
+    return false
+  end
+  
+  local level = career_modules_business_businessSkillTree.getNodeProgress(businessId, "quality-of-life", "shop-app")
+  return level and level > 0
+end
+
 M.onCareerActivated = onCareerActivated
 M.onUpdate = onUpdate
 M.powerToWeightToTime = powerToWeightToTime
@@ -1381,5 +1394,6 @@ M.completeJob = completeJob
 M.canCompleteJob = canCompleteJob
 M.getAbandonPenalty = getAbandonPenalty
 M.onSaveCurrentSaveSlot = onSaveCurrentSaveSlot
+M.isShopAppUnlocked = isShopAppUnlocked
 
 return M

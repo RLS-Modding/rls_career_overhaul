@@ -1151,6 +1151,7 @@ export default {
     buyBusiness: () => {},
     financeBusiness: () => {},
     cancelBusinessPurchase: () => {},
+    getPurchasedBusinesses: businessType => String,
   },
 
   career_modules_business_businessComputer: {
@@ -1241,6 +1242,7 @@ export default {
   career_modules_business_businessSkillTree: {
     requestSkillTrees: (requestId, businessType, businessId) => [String, String, String],
     requestPurchaseUpgrade: (requestId, businessType, businessId, treeId, nodeId) => [String, String, String, String, String],
+    getNodeProgress: (businessId, treeId, nodeId) => [String, String, String],
   },
 
   gameplay_taxi: {

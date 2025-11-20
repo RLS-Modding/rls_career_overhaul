@@ -40,6 +40,7 @@ import PhoneOfferDetails from "./views/PhoneOfferDetails.vue"
 import PhoneBank from "./views/PhoneBank.vue"
 import PhoneBankAccount from "./views/PhoneBankAccount.vue"
 import PhoneBankRename from "./views/PhoneBankRename.vue"
+import PhoneTuningShop from "./views/PhoneTuningShop.vue"
 import LevelSwitch from "./views/LevelSwitch.vue"
 import ChallengeComplete from "./views/ChallengeComplete.vue"
 import BusinessComputerMain from "./views/BusinessComputerMain.vue"
@@ -421,6 +422,12 @@ export default [
         name: "phone-bank-rename",
         component: PhoneBankRename,
         props: true
+      },
+
+      {
+        path: "phone-tuning-shop",
+        name: "phone-tuning-shop",
+        component: PhoneTuningShop
       },
 
       {
