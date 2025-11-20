@@ -147,6 +147,101 @@ local function getBusinessJobsPath(businessId)
   return currentSavePath .. "/career/rls_career/businesses/" .. businessId .. "/jobs.json"
 end
 
+local function syncJobIdCounter()
+  local maxJobId = 0
+  local usedIds = {}
+  local idMapping = {}
+  
+  for _, jobs in pairs(businessJobs) do
+    for _, job in ipairs(jobs.active or {}) do
+      if job.jobId then
+        local jId = tonumber(job.jobId) or job.jobId
+        if type(jId) == "number" then
+          if jId > maxJobId then
+            maxJobId = jId
+          end
+          usedIds[jId] = (usedIds[jId] or 0) + 1
+        end
+      end
+    end
+    for _, job in ipairs(jobs.new or {}) do
+      if job.jobId then
+        local jId = tonumber(job.jobId) or job.jobId
+        if type(jId) == "number" then
+          if jId > maxJobId then
+            maxJobId = jId
+          end
+          usedIds[jId] = (usedIds[jId] or 0) + 1
+        end
+      end
+    end
+    for _, job in ipairs(jobs.completed or {}) do
+      if job.jobId then
+        local jId = tonumber(job.jobId) or job.jobId
+        if type(jId) == "number" then
+          if jId > maxJobId then
+            maxJobId = jId
+          end
+          usedIds[jId] = (usedIds[jId] or 0) + 1
+        end
+      end
+    end
+  end
+  
+  local nextId = maxJobId + 1
+  for businessId, jobs in pairs(businessJobs) do
+    for _, job in ipairs(jobs.active or {}) do
+      if job.jobId then
+        local jId = tonumber(job.jobId) or job.jobId
+        if type(jId) == "number" and usedIds[jId] and usedIds[jId] > 1 then
+          local oldId = jId
+          job.jobId = nextId
+          idMapping[businessId] = idMapping[businessId] or {}
+          idMapping[businessId][oldId] = nextId
+          usedIds[nextId] = 1
+          nextId = nextId + 1
+          usedIds[jId] = usedIds[jId] - 1
+        end
+      end
+    end
+    for _, job in ipairs(jobs.new or {}) do
+      if job.jobId then
+        local jId = tonumber(job.jobId) or job.jobId
+        if type(jId) == "number" and usedIds[jId] and usedIds[jId] > 1 then
+          local oldId = jId
+          job.jobId = nextId
+          idMapping[businessId] = idMapping[businessId] or {}
+          idMapping[businessId][oldId] = nextId
+          usedIds[nextId] = 1
+          nextId = nextId + 1
+          usedIds[jId] = usedIds[jId] - 1
+        end
+      end
+    end
+  end
+  
+  for businessId, mapping in pairs(idMapping) do
+    if career_modules_business_businessInventory then
+      local vehicles = career_modules_business_businessInventory.getBusinessVehicles(businessId)
+      if vehicles then
+        for _, vehicle in ipairs(vehicles) do
+          if vehicle.jobId then
+            local vJobId = tonumber(vehicle.jobId) or vehicle.jobId
+            if mapping[vJobId] then
+              vehicle.jobId = mapping[vJobId]
+              career_modules_business_businessInventory.storeVehicle(businessId, vehicle)
+            end
+          end
+        end
+      end
+    end
+  end
+  
+  if maxJobId >= jobIdCounter or nextId > jobIdCounter then
+    jobIdCounter = nextId
+  end
+end
+
 local function loadBusinessJobs(businessId)
   businessId = normalizeBusinessId(businessId)
   if not businessId then return {} end
@@ -185,6 +280,8 @@ local function loadBusinessJobs(businessId)
   if not businessJobs[businessId].new then
     businessJobs[businessId].new = {}
   end
+
+  syncJobIdCounter()
 
   return businessJobs[businessId]
 end
@@ -302,6 +399,7 @@ local function powerToWeightToTime(powerToWeight, raceId)
 end
 
 local function generateJob(businessId)
+  syncJobIdCounter()
   local configs = getFactoryConfigs()
   if not configs or #configs == 0 then return nil end
   

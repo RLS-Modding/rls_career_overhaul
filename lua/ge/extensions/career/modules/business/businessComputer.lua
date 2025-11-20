@@ -1356,9 +1356,10 @@ local function purchaseCartItems(businessId, accountId, cartData)
       end
       applyVehicleTuning(businessId, vehicle.vehicleId, tuningVars, nil)
     end
-  end
 
-  career_saveSystem.saveCurrent()
+    -- Use centralized finalization logic (put away and respawn)
+    career_modules_business_businessVehicleModificationUtil.finalizePurchase(businessId, vehicle.vehicleId, nop)
+  end
 
   return true
 end

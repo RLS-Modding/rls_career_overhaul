@@ -122,9 +122,24 @@ const handlePullOut = async (job) => {
     return
   }
   
+  const jobId = job.jobId ?? job.id
+  if (jobId === undefined || jobId === null) {
+    return
+  }
+
+  const normalizeId = (id) => {
+    if (id === undefined || id === null) return null
+    const num = Number(id)
+    return isNaN(num) ? String(id) : num
+  }
+
+  const normalizedJobId = normalizeId(jobId)
   const vehicle = store.vehicles.find(v => {
-    return v.jobId == job.id || v.jobId === job.id || String(v.jobId) === String(job.id)
+    if (!v.jobId) return false
+    const normalizedVehicleJobId = normalizeId(v.jobId)
+    return normalizedVehicleJobId === normalizedJobId
   })
+  
   if (vehicle) {
     await store.pullOutVehicle(vehicle.vehicleId)
   }
