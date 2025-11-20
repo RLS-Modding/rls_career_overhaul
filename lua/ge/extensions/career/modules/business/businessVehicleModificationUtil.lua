@@ -26,6 +26,11 @@ local function finalizePurchase(businessId, vehicleId, callback)
     if success then
       -- After successful respawn, clear caches to ensure fresh data
       career_modules_business_businessPartCustomization.clearPreviewVehicle(businessId)
+      
+      -- Re-initialize the preview vehicle immediately to ensure we have the correct config cached
+      -- This ensures that subsequent UI requests (like requestVehiclePartsTree) see the updated custom config
+      career_modules_business_businessPartCustomization.initializePreviewVehicle(businessId, vehicleId)
+      
       career_modules_business_businessVehicleTuning.clearTuningDataCache()
       -- Save the game state
       career_saveSystem.saveCurrent()

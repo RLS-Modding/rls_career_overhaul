@@ -233,13 +233,24 @@ local function initializePreviewVehicle(businessId, vehicleId)
   
   local vehId = vehObj:getID()
   local vehicleData = extensions.core_vehicle_manager.getVehicleData(vehId)
-  if not vehicleData or not vehicleData.config or not vehicleData.config.partsTree then
+  
+  -- We need vehicleData for ioCtx later, but config should come from storage if possible
+  if not vehicleData then
     return false
   end
   
   -- Store initial vehicle state from the stored vehicle config (baseline from inventory)
-  -- Use vehicle.config if it exists (has custom parts), otherwise use vehicleData.config (base config)
-  local originalConfig = vehicle.config or vehicleData.config
+  -- PRIORITIZE vehicle.config from storage as it contains the purchase result
+  local originalConfig = nil
+  
+  if vehicle.config and vehicle.config.partsTree then
+    originalConfig = vehicle.config
+  elseif vehicleData.config and vehicleData.config.partsTree then
+    originalConfig = vehicleData.config
+  else
+    return false
+  end
+  
   local modelKey = vehicle.vehicleConfig.model_key or vehicle.model_key
   
   initialVehicles[businessId] = {

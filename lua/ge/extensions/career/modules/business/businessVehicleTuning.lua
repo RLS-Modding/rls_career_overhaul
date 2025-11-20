@@ -215,18 +215,7 @@ local function requestVehicleTuningData(businessId, vehicleId)
       end
       
       if varData.valDis == nil and varData.val ~= nil then
-        if varData.category == "Wheel Alignment" and (varData.unit == '%' or varData.unit == 'percent') then
-          local actualMin = varData.min or 0
-          local actualMax = varData.max or 100
-          local range = actualMax - actualMin
-          if range > 0 then
-            varData.valDis = ((varData.val - actualMin) / range) * 2 - 1
-          else
-            varData.valDis = 0
-          end
-        else
-          varData.valDis = varData.val
-        end
+        varData.valDis = varData.val
       end
     end
 
