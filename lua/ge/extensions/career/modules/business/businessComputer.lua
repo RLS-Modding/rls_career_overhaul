@@ -1379,6 +1379,21 @@ local function getBusinessAccountBalance(businessType, businessId)
   return 0
 end
 
+local function getBusinessXP(businessType, businessId)
+  if not businessType or not businessId then
+    return 0
+  end
+  
+  setBusinessContext(businessType, businessId)
+  
+  local module = getBusinessModule(businessType)
+  if module and module.getBusinessXP then
+    return module.getBusinessXP(businessId)
+  end
+  
+  return 0
+end
+
 local function onPowerWeightReceived(requestId, power, weight)
   if career_modules_business_businessPartCustomization then
     return career_modules_business_businessPartCustomization.onPowerWeightReceived(requestId, power, weight)
@@ -1440,6 +1455,7 @@ M.loadWheelDataExtension = loadWheelDataExtension
 M.unloadWheelDataExtension = unloadWheelDataExtension
 M.clearVehicleDataCaches = clearVehicleDataCaches
 M.getBusinessAccountBalance = getBusinessAccountBalance
+M.getBusinessXP = getBusinessXP
 M.purchaseCartItems = purchaseCartItems
 M.installPartOnVehicle = installPartOnVehicle
 M.initializePreviewVehicle = initializePreviewVehicle

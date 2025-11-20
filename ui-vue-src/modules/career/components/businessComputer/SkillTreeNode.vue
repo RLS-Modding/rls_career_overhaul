@@ -20,9 +20,15 @@
       </div>
     </div>
     <p v-if="node.description" class="node-description">{{ node.description }}</p>
-    <div class="node-cost">
-      <span class="cost-label">Cost:</span>
-      <span class="cost-value">${{ formatCost(node.cost, node.currentLevel) }}</span>
+    <div class="node-costs">
+      <div class="node-cost" v-if="formatCost(node.cost, node.currentLevel) !== '0'">
+        <span class="cost-label">Cost:</span>
+        <span class="cost-value">${{ formatCost(node.cost, node.currentLevel) }}</span>
+      </div>
+      <div class="node-cost" v-if="node.xpCost !== undefined">
+        <span class="cost-label">XP:</span>
+        <span class="cost-value xp">{{ formatCost(node.xpCost, node.currentLevel) }}</span>
+      </div>
     </div>
     <div v-if="!node.unlocked" class="node-lock">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -136,13 +142,19 @@ const handleClick = () => {
   line-height: 1.4;
 }
 
+.node-costs {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
 .node-cost {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 0.75rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
 
   .cost-label {
     color: rgba(255, 255, 255, 0.6);
@@ -153,6 +165,10 @@ const handleClick = () => {
     color: #4CAF50;
     font-weight: 600;
     font-size: 0.875rem;
+    
+    &.xp {
+      color: #2196F3;
+    }
   }
 }
 

@@ -12,7 +12,7 @@
       </div>
       <div class="stat">
         <span class="label">Total Value</span>
-        <span class="value">${{ totalValue.toLocaleString() }}</span>
+        <span class="value">${{ formatPrice(totalValue) }}</span>
       </div>
     </div>
     
@@ -41,7 +41,7 @@
                   {{ item.condition }}
                 </span>
                 <span class="mileage">{{ item.mileage.toLocaleString() }} mi</span>
-                <span class="price">${{ (item.price || item.value || 0).toLocaleString() }}</span>
+                <span class="price">${{ formatPrice(item.price || item.value || 0) }}</span>
               </div>
               <button class="btn btn-primary" disabled title="Selling disabled">Sell Part</button>
             </div>
@@ -65,7 +65,8 @@ const store = useBusinessComputerStore()
 const totalValue = computed(() => {
   const parts = Array.isArray(store.parts) ? store.parts : []
   if (parts.length === 0) return 0
-  return parts.reduce((sum, part) => sum + (part.price || part.value || 0), 0)
+  const total = parts.reduce((sum, part) => sum + (part.price || part.value || 0), 0)
+  return Math.round(total * 100) / 100
 })
 
 const groupedParts = computed(() => {
@@ -80,6 +81,11 @@ const groupedParts = computed(() => {
   })
   return Object.values(groups)
 })
+
+const formatPrice = (price) => {
+  const rounded = Math.round(price * 100) / 100
+  return rounded.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+}
 
 const conditionClass = (condition) => {
   const classes = {

@@ -5,9 +5,14 @@
         <div class="modal-content" @click.stop>
           <div class="modal-title">{{ modalTitle }}</div>
           <div class="upgrade-info">
-            <div class="info-row cost-row">
+            <div class="info-row cost-row" v-if="formatCost(node.cost, node.currentLevel) !== '0'">
               <span class="value cost" :class="{ 'unaffordable': !node.affordable }">
                 ${{ formatCost(node.cost, node.currentLevel) }}
+              </span>
+            </div>
+            <div class="info-row cost-row" v-if="node.xpCost !== undefined">
+              <span class="value cost xp" :class="{ 'unaffordable': !node.affordable }">
+                {{ formatCost(node.xpCost, node.currentLevel) }} XP
               </span>
             </div>
             
@@ -282,6 +287,14 @@ const handleCancel = () => {
         
         &.unaffordable {
           color: #f44336;
+        }
+
+        &.xp {
+          color: #2196F3;
+          
+          &.unaffordable {
+            color: #f44336;
+          }
         }
       }
     }

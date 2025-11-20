@@ -3,6 +3,9 @@
     <div class="balance-content">
       <div class="balance-label">Business Account</div>
       <div class="balance-value">${{ formattedBalance }}</div>
+      <div class="xp-value" v-if="xp !== null">
+        {{ xp }} <span class="xp-label">XP</span>
+      </div>
     </div>
   </div>
 </template>
@@ -17,6 +20,7 @@ const store = useBusinessComputerStore()
 const events = useEvents()
 
 const balance = ref(0)
+const xp = ref(0)
 
 const formattedBalance = computed(() => {
   return balance.value.toLocaleString('en-US', {
@@ -37,8 +41,15 @@ const loadBalance = async () => {
       store.businessId
     )
     balance.value = accountBalance || 0
+    
+    const businessXP = await lua.career_modules_business_businessComputer.getBusinessXP(
+      store.businessType,
+      store.businessId
+    )
+    xp.value = businessXP || 0
   } catch (error) {
     balance.value = 0
+    xp.value = 0
   }
 }
 
@@ -97,6 +108,25 @@ onBeforeUnmount(() => {
       color: rgba(245, 73, 0, 1);
       font-weight: 600;
       font-family: 'Courier New', monospace;
+    }
+    
+    .xp-value {
+      font-size: 1em;
+      color: rgba(245, 73, 0, 1);
+      font-weight: 600;
+      font-family: 'Courier New', monospace;
+      display: flex;
+      align-items: center;
+      align-self: flex-end;
+      gap: 0.25em;
+      
+      .xp-label {
+        font-size: 0.75em;
+        color: rgba(255, 255, 255, 0.6);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 500;
+      }
     }
   }
 }

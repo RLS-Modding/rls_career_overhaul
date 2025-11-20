@@ -11,6 +11,7 @@ local raceData = nil
 local raceDataLevel = nil
 local factoryConfigs = nil
 local businessJobs = {}
+local businessXP = {}
 local generationTimers = {}
 local jobIdCounter = 0
 
@@ -48,6 +49,17 @@ local function getGenerationIntervalSeconds(businessId)
   local marketingLevel = career_modules_business_businessSkillTree.getNodeProgress(businessId, treeId, "marketing") or 0
   
   return baseInterval / (1 + 0.25 * marketingLevel)
+end
+
+local function getXPGainMultiplier(businessId)
+  if not businessId or not career_modules_business_businessSkillTree then
+    return 1
+  end
+  
+  local treeId = "shop-upgrades"
+  local xpGainLevel = career_modules_business_businessSkillTree.getNodeProgress(businessId, treeId, "xp-gain") or 0
+  
+  return 1 + (0.25 * xpGainLevel)
 end
 
 local function getJobExpirySeconds(businessId)
@@ -142,8 +154,78 @@ local function getVehicleInfo(modelKey, configKey)
       end
     end
   end
-
+  
   return nil
+end
+
+-- XP Management Logic
+
+local function getBusinessXPPath(businessId)
+  if not career_career.isActive() then return nil end
+  local _, currentSavePath = career_saveSystem.getCurrentSaveSlot()
+  if not currentSavePath then return nil end
+  return currentSavePath .. "/career/rls_career/businesses/" .. businessId .. "/xp.json"
+end
+
+local function loadBusinessXP(businessId)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId then return 0 end
+  
+  if businessXP[businessId] then
+    return businessXP[businessId]
+  end
+  
+  local filePath = getBusinessXPPath(businessId)
+  if not filePath then return 0 end
+  
+  local data = jsonReadFile(filePath) or {}
+  local xp = data.xp or 0
+  businessXP[businessId] = xp
+  return xp
+end
+
+local function saveBusinessXP(businessId, currentSavePath)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId or businessXP[businessId] == nil then return end
+  if not currentSavePath then return end
+  
+  local filePath = currentSavePath .. "/career/rls_career/businesses/" .. businessId .. "/xp.json"
+  
+  local dirPath = string.match(filePath, "^(.*)/[^/]+$")
+  if dirPath and not FS:directoryExists(dirPath) then
+    FS:directoryCreate(dirPath)
+  end
+  
+  local data = {
+    xp = businessXP[businessId]
+  }
+  
+  jsonWriteFile(filePath, data, true)
+end
+
+local function getBusinessXP(businessId)
+  return loadBusinessXP(businessId)
+end
+
+local function addBusinessXP(businessId, amount)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId or not amount or amount <= 0 then return end
+  
+  local currentXP = loadBusinessXP(businessId)
+  businessXP[businessId] = currentXP + amount
+end
+
+local function spendBusinessXP(businessId, amount)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId or not amount or amount <= 0 then return false end
+  
+  local currentXP = loadBusinessXP(businessId)
+  if currentXP >= amount then
+    businessXP[businessId] = currentXP - amount
+    return true
+  end
+  
+  return false
 end
 
 -- Job Management Logic
@@ -807,6 +889,14 @@ local function completeJob(businessId, jobId)
     return false
   end
   
+  -- Award XP
+  local baseXP = 10
+  local xpMultiplier = getXPGainMultiplier(businessId)
+  local xpReward = math.floor(baseXP * xpMultiplier)
+  
+  addBusinessXP(businessId, xpReward)
+  log("D", "tuningShop", "completeJob: Awarded " .. tostring(xpReward) .. " XP to business " .. tostring(businessId))
+
   local vehicles = career_modules_business_businessInventory.getBusinessVehicles(businessId)
   local vehicleToRemove = nil
   for _, vehicle in ipairs(vehicles) do
@@ -1408,12 +1498,16 @@ local function onCareerActivated()
   end
   
   businessJobs = {}
+  businessXP = {}
   generationTimers = {}
 end
 
 local function onSaveCurrentSaveSlot(currentSavePath)
   for businessId, _ in pairs(businessJobs) do
     saveBusinessJobs(businessId, currentSavePath)
+  end
+  for businessId, _ in pairs(businessXP) do
+    saveBusinessXP(businessId, currentSavePath)
   end
 end
 
@@ -1444,5 +1538,8 @@ M.canCompleteJob = canCompleteJob
 M.getAbandonPenalty = getAbandonPenalty
 M.onSaveCurrentSaveSlot = onSaveCurrentSaveSlot
 M.isShopAppUnlocked = isShopAppUnlocked
+M.getBusinessXP = getBusinessXP
+M.addBusinessXP = addBusinessXP
+M.spendBusinessXP = spendBusinessXP
 
 return M

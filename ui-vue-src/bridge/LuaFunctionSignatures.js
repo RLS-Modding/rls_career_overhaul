@@ -1176,6 +1176,7 @@ export default {
     unloadWheelDataExtension: (businessId, vehicleId) => [String, Integer],
     clearVehicleDataCaches: () => {},
     getBusinessAccountBalance: (businessType, businessId) => [String, String],
+    getBusinessXP: (businessType, businessId) => [String, String],
     purchaseCartItems: (businessId, accountId, cartData) => [String, String, Object],
     installPartOnVehicle: (businessId, vehicleId, partName, slotPath) => [String, Integer, String, String],
     initializePreviewVehicle: (businessId, vehicleId) => [String, Integer],

@@ -393,6 +393,24 @@ local function calculateUpgradeCost(node, currentLevel)
   return 0
 end
 
+local function calculateUpgradeXPCost(node, currentLevel)
+  if not node.xpCost then
+    return 0
+  end
+
+  if type(node.xpCost) == "number" then
+    return node.xpCost
+  end
+
+  if type(node.xpCost) == "table" then
+    local base = node.xpCost.base or node.xpCost[1] or 0
+    local increment = node.xpCost.increment or node.xpCost[2] or 0
+    return base + (increment * currentLevel)
+  end
+
+  return 0
+end
+
 local function canAffordUpgrade(businessType, businessId, treeId, nodeId, trees)
   local tree = nil
   for _, t in ipairs(trees) do
@@ -428,16 +446,30 @@ local function canAffordUpgrade(businessType, businessId, treeId, nodeId, trees)
   end
 
   local cost = calculateUpgradeCost(node, currentLevel)
-  if cost <= 0 then
-    return true
+  if cost > 0 then
+    if businessType and career_modules_business_businessComputer then
+      local balance = career_modules_business_businessComputer.getBusinessAccountBalance(businessType, businessId)
+      if balance < cost then
+        return false
+      end
+    else
+      return false
+    end
   end
 
-  if businessType and career_modules_business_businessComputer then
-    local balance = career_modules_business_businessComputer.getBusinessAccountBalance(businessType, businessId)
-    return balance >= cost
+  local xpCost = calculateUpgradeXPCost(node, currentLevel)
+  if xpCost > 0 then
+    if businessType and career_modules_business_businessComputer then
+      local xp = career_modules_business_businessComputer.getBusinessXP(businessType, businessId)
+      if xp < xpCost then
+        return false
+      end
+    else
+      return false
+    end
   end
 
-  return false
+  return true
 end
 
 local function purchaseUpgrade(businessType, businessId, treeId, nodeId)
@@ -501,6 +533,18 @@ local function purchaseUpgrade(businessType, businessId, treeId, nodeId)
     end
   end
 
+  local xpCost = calculateUpgradeXPCost(node, currentLevel)
+  if xpCost > 0 then
+    local module = _G["career_modules_business_" .. tostring(businessType)]
+    if module and module.spendBusinessXP then
+      if not module.spendBusinessXP(businessId, xpCost) then
+        return false
+      end
+    else
+      return false
+    end
+  end
+
   setNodeProgress(businessId, treeId, nodeId, currentLevel + 1)
   return true
 end
@@ -546,7 +590,8 @@ local function getTreesForBusiness(businessType, businessId)
         position = node.position,
         unlocked = checkPrerequisites(businessId, tree.treeId, node, trees),
         affordable = canAffordUpgrade(businessType, businessId, tree.treeId, node.id, trees),
-        maxed = node.maxLevel and nodeLevel >= node.maxLevel
+        maxed = node.maxLevel and nodeLevel >= node.maxLevel,
+        xpCost = node.xpCost
       }
       table.insert(treeData.nodes, nodeData)
     end

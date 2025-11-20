@@ -26,7 +26,7 @@
         </div>
         <div class="stat-card">
           <p class="stat-label">Total Value</p>
-          <p class="stat-value green">${{ totalValue.toLocaleString() }}</p>
+          <p class="stat-value green">${{ formatPrice(totalValue) }}</p>
         </div>
         <button class="btn btn-primary sell-all-btn" @click.stop="sellAllParts" @mousedown.stop>
           Sell All Parts
@@ -101,7 +101,7 @@
               </div>
 
               <div class="price-display">
-                <span>${{ ((part.price || part.value || 0)).toLocaleString() }}</span>
+                <span>${{ formatPrice(part.price || part.value || 0) }}</span>
               </div>
 
               <button class="btn btn-primary sell-part-btn" @click.stop="sellPart(part.partId)" @mousedown.stop>
@@ -167,8 +167,14 @@ const groupedParts = computed(() => {
 const totalValue = computed(() => {
   const parts = Array.isArray(filteredParts.value) ? filteredParts.value : []
   if (parts.length === 0) return 0
-  return parts.reduce((sum, part) => sum + (part.price || part.value || 0), 0)
+  const total = parts.reduce((sum, part) => sum + (part.price || part.value || 0), 0)
+  return Math.round(total * 100) / 100
 })
+
+const formatPrice = (price) => {
+  const rounded = Math.round(price * 100) / 100
+  return rounded.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+}
 
 const toggleSection = (vehicle) => {
   openSections.value[vehicle] = openSections.value[vehicle] === false ? true : false
