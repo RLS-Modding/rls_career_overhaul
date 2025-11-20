@@ -9,6 +9,26 @@ local function slowerThan(v) local veh = getPlayerVehicle(0) if veh then return 
 
 local movingSlowlyThreshold = 10 -- m/s
 local stoppedThreshold = 0.5 --m/s
+
+local function getTuningShopBusinessVehicleContext(vehId)
+  if not (vehId and career_modules_business_businessInventory) then return nil, nil end
+  local businessId, vehicleId = career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId(vehId)
+  if not businessId or not vehicleId then return nil, nil end
+
+  local vehicles = career_modules_business_businessInventory.getBusinessVehicles(businessId)
+  if not vehicles then return businessId, nil end
+
+  vehicleId = tonumber(vehicleId) or vehicleId
+  for _, vehicle in ipairs(vehicles) do
+    local storedId = tonumber(vehicle.vehicleId) or vehicle.vehicleId
+    if storedId == vehicleId then
+      return businessId, vehicle
+    end
+  end
+
+  return businessId, nil
+end
+
 local conditions = {
   outOfPursuit = function(type, vehId)
     if career_modules_playerDriving and career_modules_playerDriving.playerPursuitActive() then
@@ -86,6 +106,18 @@ local conditions = {
       return true
     end
     return false
+  end,
+  vehicleIsTuningShopJobVehicle = function(type, vehId)
+    local businessId, vehicle = getTuningShopBusinessVehicleContext(vehId)
+    if not businessId or not vehicle then return false end
+    return vehicle.jobId ~= nil
+  end,
+  tuningShopTowingUnlocked = function(type, vehId)
+    if not career_modules_business_businessSkillTree then return false end
+    local businessId = getTuningShopBusinessVehicleContext(vehId)
+    if not businessId then return false end
+    local level = career_modules_business_businessSkillTree.getNodeProgress(businessId, "shop-upgrades", "towing")
+    return level and level > 0
   end
 }
 
@@ -330,7 +362,54 @@ local buttonOptions = {
     icon = "car",
     confirmationText = "Do you want to return this loaned vehicle?"
   },
+  towToTuningShop = {
+    label = function(options, target)
+      local businessId = getTuningShopBusinessVehicleContext(target.vehId)
+      if businessId and freeroam_facilities then
+        local facility = freeroam_facilities.getFacility("tuningShop", businessId)
+        if facility and facility.name then
+          local localizedName = translateLanguage and translateLanguage(facility.name, facility.name, true) or facility.name
+          return string.format("Tow to %s", localizedName)
+        end
+      end
+      return "Tow to Tuning Shop"
+    end,
+    type = "vehicle",
+    includeConditions = {conditions.vehicleIsTuningShopJobVehicle, conditions.tuningShopTowingUnlocked},
+    enableConditions = {conditions.outOfPursuit, conditions.vehicleSlow, conditions.notTestdriving},
+    atFadeFunction = function(target)
+      local businessId = getTuningShopBusinessVehicleContext(target.vehId)
+      if not (businessId and career_modules_business_businessInventory) then return end
+      local veh = scenetree.findObjectById(target.vehId)
+      if veh then
+        career_modules_business_businessInventory.teleportToBusinessGarage("tuningShop", businessId, veh, false)
+      end
+    end,
+    order = 12,
+    startSlot = 7,
+    active = true,
+    enabled = true,
+    fadeActive = true,
+    fadeStartSound = "event:>UI>Missions>Vehicle_Recover",
+    icon = "tow",
+    confirmationText = "Do you want to tow this vehicle back to the tuning shop?",
+    menuTag = "towing",
+    path = "towing/",
+    message = "ui.career.towed"
+  },
 }
+
+local function updateTuningShopTowButton(newVehId)
+  if not buttonOptions.towToTuningShop then return end
+  local vehId = newVehId or (be and be:getPlayerVehicleID(0))
+  local businessId, vehicle = getTuningShopBusinessVehicleContext(vehId)
+  local activeState = false
+  if businessId and vehicle and vehicle.jobId and career_modules_business_businessSkillTree then
+    local level = career_modules_business_businessSkillTree.getNodeProgress(businessId, "shop-upgrades", "towing")
+    activeState = level and level > 0
+  end
+  buttonOptions.towToTuningShop.active = activeState and true or false
+end
 
 local function addTowingButtons()
   if not getCurrentLevelIdentifier() then return end
@@ -519,6 +598,7 @@ local function setActive(a) active = a end
 local function setDefaultsForFreeroam()
   active = false
   for _, o in pairs(buttonOptions) do o.active = false end
+  updateTuningShopTowButton()
 end
 
 local function setDefaultsForCareer()
@@ -533,6 +613,7 @@ local function setDefaultsForCareer()
   buttonOptions.returnLoanedVehicle.active = true
   addTowingButtons()
   addTaxiButtons()
+  updateTuningShopTowButton()
 end
 
 local function setDefaultsForTutorial()
@@ -542,6 +623,7 @@ local function setDefaultsForTutorial()
   buttonOptions.repairHere.active = true
   buttonOptions.flipUpright.active = true
   buttonOptions.getFavoriteVehicle.active = false
+  updateTuningShopTowButton()
 end
 
 local function setEverythingActive()
@@ -965,6 +1047,10 @@ local function onQuickAccessLoaded()
   quickAccessInitialized = nil
 end
 
+local function onVehicleSwitched(oldId, newId, player)
+  updateTuningShopTowButton(newId)
+end
+
 M.addTowingButtons = addTowingButtons
 M.addTaxiButtons = addTaxiButtons
 
@@ -981,4 +1067,5 @@ M.onClientStartMission = onClientStartMission
 M.onBeforeRadialOpened = onBeforeRadialOpened
 M.onHideRadialMenu = onHideRadialMenu
 M.onQuickAccessLoaded = onQuickAccessLoaded
+M.onVehicleSwitched = onVehicleSwitched
 return M
