@@ -1528,11 +1528,14 @@ local function getJobCurrentTime(businessId, jobId)
   
   local bestTime = career_modules_business_businessHelpers.getBestLeaderboardTime(businessId, jobId, job.raceType, job.raceLabel)
   
-  if bestTime then
-    return bestTime
+  local currentTime = bestTime or job.currentTime or job.baseTime
+  if not currentTime then
+    return nil
   end
   
-  return job.currentTime or job.baseTime
+  local decimalPlaces = job.decimalPlaces or 0
+  local multiplier = 10 ^ decimalPlaces
+  return math.floor(currentTime * multiplier + 0.5) / multiplier
 end
 
 local function canCompleteJob(businessId, jobId)
@@ -1860,6 +1863,12 @@ local function formatJobForUI(job, businessId)
     end
   end
 
+  local decimalPlaces = job.decimalPlaces or 0
+  local multiplier = 10 ^ decimalPlaces
+  baselineTime = math.floor(baselineTime * multiplier + 0.5) / multiplier
+  currentTime = math.floor(currentTime * multiplier + 0.5) / multiplier
+  goalTime = math.floor(goalTime * multiplier + 0.5) / multiplier
+
   local penalty = getAbandonPenalty(businessId, job.jobId)
   local expiresInSeconds = nil
   if job.status == "new" then
@@ -1880,9 +1889,9 @@ local function formatJobForUI(job, businessId)
     goal = goal,
     reward = job.reward or 20000,
     status = job.status or "new",
-    baselineTime = tonumber(string.format("%.1f", baselineTime)),
-    currentTime = tonumber(string.format("%.1f", currentTime)),
-    goalTime = tonumber(string.format("%.1f", goalTime)),
+    baselineTime = baselineTime,
+    currentTime = currentTime,
+    goalTime = goalTime,
     timeUnit = timeUnit,
     raceType = job.raceType,
     raceLabel = job.raceLabel,
