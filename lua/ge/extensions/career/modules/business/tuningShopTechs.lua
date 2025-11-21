@@ -347,9 +347,11 @@ local function finalizeTechJobSuccess(businessId, tech, job)
   job.techAssigned = nil
 
   local totalSpent = tonumber(tech.totalSpent) or 0
+  local buildCost = tonumber(tech.buildCost) or 0
   local eventFunds = tonumber(tech.eventFunds) or 0
+  local cappedEventFunds = math.min(eventFunds, buildCost)
   local reward = tonumber(job.reward) or 0
-  local net = reward - totalSpent + eventFunds
+  local net = reward - totalSpent + cappedEventFunds
   local payout = math.max(0, math.floor(net * 0.95))
 
   if helpers.creditBusinessAccount then
@@ -376,7 +378,7 @@ local function finalizeTechJobSuccess(businessId, tech, job)
       payout = payout,
       net = net,
       totalSpent = totalSpent,
-      eventFunds = eventFunds,
+      eventFunds = cappedEventFunds,
       attempts = tech.totalAttempts,
       predictedTime = tech.predictedEventTime
     })
