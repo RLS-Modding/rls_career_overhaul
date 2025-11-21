@@ -1197,6 +1197,12 @@ export default {
     sellPart: (businessId, partId) => [String, Integer],
     sellAllParts: (businessId) => String,
     sellPartsByVehicle: (businessId, vehicleNiceName) => [String, String],
+    getBrandSelection: (businessId) => String,
+    setBrandSelection: (businessId, brand) => [String, String],
+    getRaceSelection: (businessId) => String,
+    setRaceSelection: (businessId, raceType) => [String, String],
+    requestAvailableBrands: () => {},
+    requestAvailableRaceTypes: () => {},
   },
 
   career_modules_business_tuningShop: {

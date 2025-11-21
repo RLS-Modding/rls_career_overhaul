@@ -4,6 +4,7 @@ import { lua } from "@/bridge"
 import { useBridge } from "@/bridge"
 
 export const useBusinessComputerStore = defineStore("businessComputer", () => {
+  const bridge = useBridge()
   const businessData = ref({})
   const activeView = ref("home")
   const vehicleView = ref(null)
@@ -1588,6 +1589,124 @@ const handleTechsUpdated = (data) => {
     updateDynoUpgradeStatus()
   }, { immediate: true })
 
+  const brandSelection = ref(null)
+  const raceSelection = ref(null)
+  const availableBrands = ref([])
+  const availableRaceTypes = ref([])
+  const brandRecognitionUnlocked = ref(false)
+  const raceRecognitionUnlocked = ref(false)
+
+  const updateBrandRecognitionStatus = async () => {
+    if (!businessId.value) {
+      brandRecognitionUnlocked.value = false
+      return
+    }
+    try {
+      const level = await lua.career_modules_business_businessSkillTree.getNodeProgress(
+        businessId.value,
+        "quality-of-life",
+        "brand-recognition"
+      )
+      brandRecognitionUnlocked.value = (level || 0) > 0
+    } catch (error) {
+      brandRecognitionUnlocked.value = false
+    }
+  }
+
+  const updateRaceRecognitionStatus = async () => {
+    if (!businessId.value) {
+      raceRecognitionUnlocked.value = false
+      return
+    }
+    try {
+      const level = await lua.career_modules_business_businessSkillTree.getNodeProgress(
+        businessId.value,
+        "quality-of-life",
+        "race-recognition"
+      )
+      raceRecognitionUnlocked.value = (level || 0) > 0
+    } catch (error) {
+      raceRecognitionUnlocked.value = false
+    }
+  }
+
+  const getBrandSelection = async () => {
+    if (!businessId.value) return null
+    try {
+      const selection = await lua.career_modules_business_businessComputer.getBrandSelection(businessId.value)
+      brandSelection.value = selection || null
+      return selection
+    } catch (error) {
+      return null
+    }
+  }
+
+  const setBrandSelection = async (brand) => {
+    if (!businessId.value) return false
+    try {
+      const success = await lua.career_modules_business_businessComputer.setBrandSelection(businessId.value, brand || null)
+      if (success) {
+        brandSelection.value = brand || null
+      }
+      return success
+    } catch (error) {
+      return false
+    }
+  }
+
+  const getRaceSelection = async () => {
+    if (!businessId.value) return null
+    try {
+      const selection = await lua.career_modules_business_businessComputer.getRaceSelection(businessId.value)
+      raceSelection.value = selection || null
+      return selection
+    } catch (error) {
+      return null
+    }
+  }
+
+  const setRaceSelection = async (raceType) => {
+    if (!businessId.value) return false
+    try {
+      const success = await lua.career_modules_business_businessComputer.setRaceSelection(businessId.value, raceType || null)
+      if (success) {
+        raceSelection.value = raceType || null
+      }
+      return success
+    } catch (error) {
+      return false
+    }
+  }
+
+  const getAvailableBrands = () => {
+    try {
+      lua.career_modules_business_businessComputer.requestAvailableBrands()
+    } catch (error) {
+      console.error("Error requesting available brands:", error)
+    }
+  }
+
+  const getAvailableRaceTypes = () => {
+    try {
+      lua.career_modules_business_businessComputer.requestAvailableRaceTypes()
+    } catch (error) {
+      console.error("Error requesting available race types:", error)
+    }
+  }
+
+  watch(businessId, async () => {
+    updateBrandRecognitionStatus()
+    updateRaceRecognitionStatus()
+    if (brandRecognitionUnlocked.value) {
+      await getBrandSelection()
+      await getAvailableBrands()
+    }
+    if (raceRecognitionUnlocked.value) {
+      await getRaceSelection()
+      await getAvailableRaceTypes()
+    }
+  }, { immediate: true })
+
   return {
     businessData,
     activeView,
@@ -1675,6 +1794,20 @@ const handleTechsUpdated = (data) => {
     managerAssignmentInterval,
     managerReadyToAssign,
     managerTimeRemaining,
+    brandSelection,
+    raceSelection,
+    availableBrands,
+    availableRaceTypes,
+    brandRecognitionUnlocked,
+    raceRecognitionUnlocked,
+    getBrandSelection,
+    setBrandSelection,
+    getRaceSelection,
+    setRaceSelection,
+    getAvailableBrands,
+    getAvailableRaceTypes,
+    updateBrandRecognitionStatus,
+    updateRaceRecognitionStatus,
   }
 })
 

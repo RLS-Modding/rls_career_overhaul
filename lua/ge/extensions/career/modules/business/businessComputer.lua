@@ -846,6 +846,68 @@ local function getNewJobs(businessId)
   return {}
 end
 
+local function getBrandSelection(businessId)
+  local module = resolveBusinessModule(businessId)
+  if module and module.getBrandSelection then
+    return module.getBrandSelection(businessId)
+  end
+  return nil
+end
+
+local function setBrandSelection(businessId, brand)
+  local module = resolveBusinessModule(businessId)
+  if module and module.setBrandSelection then
+    return module.setBrandSelection(businessId, brand)
+  end
+  return false
+end
+
+local function getRaceSelection(businessId)
+  local module = resolveBusinessModule(businessId)
+  if module and module.getRaceSelection then
+    return module.getRaceSelection(businessId)
+  end
+  return nil
+end
+
+local function setRaceSelection(businessId, raceType)
+  local module = resolveBusinessModule(businessId)
+  if module and module.setRaceSelection then
+    return module.setRaceSelection(businessId, raceType)
+  end
+  return false
+end
+
+local function getAvailableBrands()
+  local module = getBusinessModule("tuningShop")
+  if module and module.getAvailableBrands then
+    return module.getAvailableBrands()
+  end
+  return {}
+end
+
+local function getAvailableRaceTypes()
+  local module = getBusinessModule("tuningShop")
+  if module and module.getAvailableRaceTypes then
+    return module.getAvailableRaceTypes()
+  end
+  return {}
+end
+
+local function requestAvailableBrands()
+  local module = getBusinessModule("tuningShop")
+  if module and module.requestAvailableBrands then
+    module.requestAvailableBrands()
+  end
+end
+
+local function requestAvailableRaceTypes()
+  local module = getBusinessModule("tuningShop")
+  if module and module.requestAvailableRaceTypes then
+    module.requestAvailableRaceTypes()
+  end
+end
+
 local function getPartSupplierDiscountMultiplier(businessId)
   if not businessId or not career_modules_business_businessSkillTree then
     return 1.0
@@ -1758,6 +1820,14 @@ M.requestPartInventory = requestPartInventory
 M.sellPart = sellPart
 M.sellAllParts = sellAllParts
 M.sellPartsByVehicle = sellPartsByVehicle
+M.getBrandSelection = getBrandSelection
+M.setBrandSelection = setBrandSelection
+M.getRaceSelection = getRaceSelection
+M.setRaceSelection = setRaceSelection
+M.getAvailableBrands = getAvailableBrands
+M.getAvailableRaceTypes = getAvailableRaceTypes
+M.requestAvailableBrands = requestAvailableBrands
+M.requestAvailableRaceTypes = requestAvailableRaceTypes
 
 local function onExtensionLoaded()
   businessContexts = {}

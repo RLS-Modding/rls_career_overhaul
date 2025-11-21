@@ -416,6 +416,90 @@ local function spendBusinessXP(businessId, amount)
   return false
 end
 
+-- Selection Storage Logic
+
+local businessSelections = {}
+
+local function getBusinessSelectionsPath(businessId)
+  if not career_career.isActive() then return nil end
+  local _, currentSavePath = career_saveSystem.getCurrentSaveSlot()
+  if not currentSavePath then return nil end
+  return currentSavePath .. "/career/rls_career/businesses/" .. businessId .. "/selections.json"
+end
+
+local function loadBusinessSelections(businessId)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId then return {} end
+  
+  if businessSelections[businessId] then
+    return businessSelections[businessId]
+  end
+  
+  local filePath = getBusinessSelectionsPath(businessId)
+  if not filePath then return {} end
+  
+  local data = jsonReadFile(filePath) or {}
+  businessSelections[businessId] = {
+    brand = data.brand or nil,
+    raceType = data.raceType or nil
+  }
+  return businessSelections[businessId]
+end
+
+local function saveBusinessSelections(businessId, currentSavePath)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId or not businessSelections[businessId] then return end
+  if not currentSavePath then return end
+  
+  local filePath = currentSavePath .. "/career/rls_career/businesses/" .. businessId .. "/selections.json"
+  
+  local dirPath = string.match(filePath, "^(.*)/[^/]+$")
+  if dirPath and not FS:directoryExists(dirPath) then
+    FS:directoryCreate(dirPath)
+  end
+  
+  local data = {
+    brand = businessSelections[businessId].brand,
+    raceType = businessSelections[businessId].raceType
+  }
+  
+  jsonWriteFile(filePath, data, true)
+end
+
+local function getBrandSelection(businessId)
+  local selections = loadBusinessSelections(businessId)
+  return selections.brand
+end
+
+local function setBrandSelection(businessId, brand)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId then return false end
+  
+  if not businessSelections[businessId] then
+    businessSelections[businessId] = {}
+  end
+  
+  businessSelections[businessId].brand = brand
+  return true
+end
+
+local function getRaceSelection(businessId)
+  local selections = loadBusinessSelections(businessId)
+  return selections.raceType
+end
+
+local function setRaceSelection(businessId, raceType)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId then return false end
+  
+  if not businessSelections[businessId] then
+    businessSelections[businessId] = {}
+  end
+  
+  businessSelections[businessId].raceType = raceType
+  return true
+end
+
 -- Manager Timer Management Logic
 
 local function getManagerTimerPath(businessId)
@@ -891,6 +975,82 @@ local function getFactoryConfigs()
   return factoryConfigs
 end
 
+local function getAvailableBrands()
+  local configs = getFactoryConfigs()
+  local brands = {}
+  local brandSet = {}
+  
+  if not configs or #configs == 0 then
+    log("W", "tuningShop", "getAvailableBrands: No factory configs found")
+    return brands
+  end
+  
+  for _, config in ipairs(configs) do
+    if not config or not config.model_key or not config.key then
+      goto continue
+    end
+    
+    local brand = nil
+    local vehicleInfo = getVehicleInfo(config.model_key, config.key)
+    
+    if vehicleInfo then
+      if vehicleInfo.Brand and vehicleInfo.Brand ~= "" then
+        brand = vehicleInfo.Brand
+      elseif vehicleInfo.aggregates and vehicleInfo.aggregates.Brand then
+        local brandAgg = vehicleInfo.aggregates.Brand
+        if type(brandAgg) == "table" then
+          brand = next(brandAgg)
+        elseif type(brandAgg) == "string" then
+          brand = brandAgg
+        end
+      end
+    end
+    
+    if not brand or brand == "" then
+      if config.Brand and config.Brand ~= "" then
+        brand = config.Brand
+      elseif config.aggregates and config.aggregates.Brand then
+        local brandAgg = config.aggregates.Brand
+        if type(brandAgg) == "table" then
+          brand = next(brandAgg)
+        elseif type(brandAgg) == "string" then
+          brand = brandAgg
+        end
+      end
+    end
+    
+    if brand and brand ~= "" and not brandSet[brand] then
+      brandSet[brand] = true
+      table.insert(brands, brand)
+    end
+    
+    ::continue::
+  end
+  
+  table.sort(brands)
+  log("D", "tuningShop", "getAvailableBrands: Found " .. tostring(#brands) .. " brands")
+  return brands
+end
+
+local function getAvailableRaceTypes()
+  local races = loadRaceData()
+  local raceTypes = {}
+  
+  if races and races.races then
+    if races.races.track then
+      table.insert(raceTypes, { id = "track", label = "Track" })
+    end
+    if races.races.track and races.races.track.altRoute then
+      table.insert(raceTypes, { id = "trackAlt", label = "Short Track" })
+    end
+    if races.races.drag then
+      table.insert(raceTypes, { id = "drag", label = "Drag Strip" })
+    end
+  end
+  
+  return raceTypes
+end
+
 local function getSkillTreeUpgradeCount(businessId)
   if not businessId or not career_modules_business_businessSkillTree then
     return 0
@@ -985,7 +1145,28 @@ local function generateJob(businessId)
   local configs = getFactoryConfigs()
   if not configs or #configs == 0 then return nil end
   
-  local selectedConfig = configs[math.random(#configs)]
+  local selectedConfig = nil
+  local brandSelection = getBrandSelection(businessId)
+  local brandRecognitionUnlocked = getSkillTreeLevel(businessId, "quality-of-life", "brand-recognition") > 0
+  
+  if brandRecognitionUnlocked and brandSelection and brandSelection ~= "" then
+    if math.random() < 0.75 then
+      local brandConfigs = {}
+      for _, config in ipairs(configs) do
+        local vehicleInfo = getVehicleInfo(config.model_key, config.key)
+        if vehicleInfo and vehicleInfo.Brand == brandSelection then
+          table.insert(brandConfigs, config)
+        end
+      end
+      if #brandConfigs > 0 then
+        selectedConfig = brandConfigs[math.random(#brandConfigs)]
+      end
+    end
+  end
+  
+  if not selectedConfig then
+    selectedConfig = configs[math.random(#configs)]
+  end
   
   local power = selectedConfig.Power
   if not power and selectedConfig.aggregates and selectedConfig.aggregates.Power then
@@ -1007,7 +1188,28 @@ local function generateJob(businessId)
   if not races or not races.races then return nil end
   
   local raceTypes = {"track", "trackAlt", "drag"}
-  local raceType = raceTypes[math.random(#raceTypes)]
+  local raceType = nil
+  local raceSelection = getRaceSelection(businessId)
+  local raceRecognitionUnlocked = getSkillTreeLevel(businessId, "quality-of-life", "race-recognition") > 0
+  
+  if raceRecognitionUnlocked and raceSelection and raceSelection ~= "" then
+    if math.random() < 0.75 then
+      local isValidRaceType = false
+      for _, rt in ipairs(raceTypes) do
+        if rt == raceSelection then
+          isValidRaceType = true
+          break
+        end
+      end
+      if isValidRaceType then
+        raceType = raceSelection
+      end
+    end
+  end
+  
+  if not raceType then
+    raceType = raceTypes[math.random(#raceTypes)]
+  end
   
   local race = nil
   local raceLabel = ""
@@ -2087,6 +2289,24 @@ local function openMenu(businessId)
   guihooks.trigger('ChangeState', {state = 'business-computer', params = {businessType = 'tuningShop', businessId = tostring(businessId)}})
 end
 
+local function requestAvailableBrands()
+  local brands = getAvailableBrands()
+  if guihooks then
+    guihooks.trigger('businessComputer:onAvailableBrandsReceived', {
+      brands = brands
+    })
+  end
+end
+
+local function requestAvailableRaceTypes()
+  local raceTypes = getAvailableRaceTypes()
+  if guihooks then
+    guihooks.trigger('businessComputer:onAvailableRaceTypesReceived', {
+      raceTypes = raceTypes
+    })
+  end
+end
+
 local function onCareerActivated()
   career_modules_business_businessManager.registerBusinessCallback("tuningShop", {
     onPurchase = function(businessId)
@@ -2166,6 +2386,7 @@ local function onCareerActivated()
   businessJobs = {}
   businessXP = {}
   generationTimers = {}
+  businessSelections = {}
   
   tuningShopTechs.initialize({
     normalizeBusinessId = normalizeBusinessId,
@@ -2209,6 +2430,9 @@ local function onSaveCurrentSaveSlot(currentSavePath)
   for businessId, _ in pairs(managerTimers) do
     saveManagerTimer(businessId, currentSavePath)
   end
+  for businessId, _ in pairs(businessSelections) do
+    saveBusinessSelections(businessId, currentSavePath)
+  end
 end
 
 local function isShopAppUnlocked(businessId)
@@ -2248,5 +2472,13 @@ M.updateTechName = tuningShopTechs.updateTechName
 M.assignJobToTech = tuningShopTechs.assignJobToTech
 M.isJobLockedByTech = tuningShopTechs.isJobLockedByTech
 M.getManagerData = getManagerData
+M.getBrandSelection = getBrandSelection
+M.setBrandSelection = setBrandSelection
+M.getRaceSelection = getRaceSelection
+M.setRaceSelection = setRaceSelection
+M.getAvailableBrands = getAvailableBrands
+M.getAvailableRaceTypes = getAvailableRaceTypes
+M.requestAvailableBrands = requestAvailableBrands
+M.requestAvailableRaceTypes = requestAvailableRaceTypes
 
 return M

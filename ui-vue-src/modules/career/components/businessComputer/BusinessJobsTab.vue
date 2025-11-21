@@ -5,6 +5,30 @@
       <p>Manage active work and available opportunities in one place</p>
     </div>
 
+    <div v-if="showRecognitionBanner" class="recognition-banner">
+      <div 
+        v-if="store.brandRecognitionUnlocked" 
+        class="recognition-section"
+        @click.stop="openBrandModal"
+        @mousedown.stop="openBrandModal"
+      >
+        <span class="banner-label">Brand Recognition</span>
+        <span class="banner-value">{{ brandSelectionDisplay }}</span>
+      </div>
+
+      <div v-if="store.brandRecognitionUnlocked && store.raceRecognitionUnlocked" class="summary-divider"></div>
+
+      <div 
+        v-if="store.raceRecognitionUnlocked" 
+        class="recognition-section"
+        @click.stop="openRaceModal"
+        @mousedown.stop="openRaceModal"
+      >
+        <span class="banner-label">Race Recognition</span>
+        <span class="banner-value">{{ raceSelectionDisplay }}</span>
+      </div>
+    </div>
+
     <div v-if="store.activeJobs.length || store.newJobs.length" class="jobs-content">
       <!-- Active Jobs Section -->
       <div v-if="store.activeJobs.length > 0" class="job-section">
@@ -72,15 +96,112 @@
         </div>
       </transition>
     </Teleport>
+
+    <Teleport to="body">
+      <transition name="modal-fade">
+        <div
+          v-if="showBrandModal"
+          class="modal-overlay"
+          @click.self.stop="closeBrandModal"
+          @mousedown.self.stop="closeBrandModal"
+        >
+          <div class="modal-content selection-modal" @click.stop @mousedown.stop>
+            <div class="modal-header">
+              <h2>Select Brand</h2>
+              <button class="modal-close" @click.stop="closeBrandModal" @mousedown.stop="closeBrandModal">×</button>
+            </div>
+            <div class="modal-body">
+              <div v-if="isLoadingBrands" class="modal-empty">
+                <p>Loading brands...</p>
+              </div>
+              <div v-else-if="store.availableBrands.length === 0" class="modal-empty">
+                <p>No brands available</p>
+                <small>Try refreshing or check if vehicles are loaded</small>
+              </div>
+              <div v-else class="selection-list">
+                <button 
+                  class="selection-item"
+                  :class="{ 'selected': !store.brandSelection }"
+                  @click.stop="selectBrand(null)"
+                  @mousedown.stop="selectBrand(null)"
+                >
+                  <span>Clear Selection</span>
+                </button>
+                <button 
+                  v-for="brand in store.availableBrands"
+                  :key="brand"
+                  class="selection-item"
+                  :class="{ 'selected': store.brandSelection === brand }"
+                  @click.stop="selectBrand(brand)"
+                  @mousedown.stop="selectBrand(brand)"
+                >
+                  <span>{{ brand }}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </transition>
+    </Teleport>
+
+    <Teleport to="body">
+      <transition name="modal-fade">
+        <div
+          v-if="showRaceModal"
+          class="modal-overlay"
+          @click.self.stop="closeRaceModal"
+          @mousedown.self.stop="closeRaceModal"
+        >
+          <div class="modal-content selection-modal" @click.stop @mousedown.stop>
+            <div class="modal-header">
+              <h2>Select Race Type</h2>
+              <button class="modal-close" @click.stop="closeRaceModal" @mousedown.stop="closeRaceModal">×</button>
+            </div>
+            <div class="modal-body">
+              <div v-if="isLoadingRaceTypes" class="modal-empty">
+                <p>Loading race types...</p>
+              </div>
+              <div v-else-if="store.availableRaceTypes.length === 0" class="modal-empty">
+                <p>No race types available</p>
+                <small>Check if race data is loaded</small>
+              </div>
+              <div v-else class="selection-list">
+                <button 
+                  class="selection-item"
+                  :class="{ 'selected': !store.raceSelection }"
+                  @click.stop="selectRace(null)"
+                  @mousedown.stop="selectRace(null)"
+                >
+                  <span>Clear Selection</span>
+                </button>
+                <button 
+                  v-for="raceType in store.availableRaceTypes"
+                  :key="raceType.id"
+                  class="selection-item"
+                  :class="{ 'selected': store.raceSelection === raceType.id }"
+                  @click.stop="selectRace(raceType.id)"
+                  @mousedown.stop="selectRace(raceType.id)"
+                >
+                  <span>{{ raceType.label }}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </transition>
+    </Teleport>
   </div>
 </template>
 
 <script setup>
-import { computed, ref, Teleport } from "vue"
+import { computed, ref, Teleport, onMounted, onUnmounted, watch } from "vue"
 import { useBusinessComputerStore } from "../../stores/businessComputerStore"
+import { useBridge } from "@/bridge"
 import BusinessJobCard from "./BusinessJobCard.vue"
 
 const store = useBusinessComputerStore()
+const { events } = useBridge()
+
 const normalizeId = (id) => {
   if (id === undefined || id === null) return null
   const num = Number(id)
@@ -90,6 +211,108 @@ const normalizeId = (id) => {
 const showAbandonModal = ref(false)
 const jobToAbandon = ref(null)
 const interceptEvent = () => {}
+
+const showBrandModal = ref(false)
+const showRaceModal = ref(false)
+const isLoadingBrands = ref(false)
+const isLoadingRaceTypes = ref(false)
+
+const showRecognitionBanner = computed(() => {
+  return store.brandRecognitionUnlocked || store.raceRecognitionUnlocked
+})
+
+const brandSelectionDisplay = computed(() => {
+  return store.brandSelection || "Not Selected"
+})
+
+const raceSelectionDisplay = computed(() => {
+  if (!store.raceSelection) return "Not Selected"
+  const raceType = store.availableRaceTypes.find(rt => rt.id === store.raceSelection)
+  return raceType ? raceType.label : "Not Selected"
+})
+
+const handleBrandsReceived = (data) => {
+  if (data && Array.isArray(data.brands)) {
+    store.availableBrands = data.brands
+  } else {
+    store.availableBrands = []
+  }
+  isLoadingBrands.value = false
+}
+
+const openBrandModal = async () => {
+  showBrandModal.value = true
+  if (store.availableBrands.length === 0) {
+    isLoadingBrands.value = true
+    store.getAvailableBrands()
+  }
+}
+
+const closeBrandModal = () => {
+  showBrandModal.value = false
+}
+
+const selectBrand = async (brand) => {
+  await store.setBrandSelection(brand)
+  closeBrandModal()
+}
+
+const handleRaceTypesReceived = (data) => {
+  if (data && Array.isArray(data.raceTypes)) {
+    store.availableRaceTypes = data.raceTypes
+  } else {
+    store.availableRaceTypes = []
+  }
+  isLoadingRaceTypes.value = false
+}
+
+const openRaceModal = async () => {
+  showRaceModal.value = true
+  if (store.availableRaceTypes.length === 0) {
+    isLoadingRaceTypes.value = true
+    store.getAvailableRaceTypes()
+  }
+}
+
+const closeRaceModal = () => {
+  showRaceModal.value = false
+}
+
+const selectRace = async (raceType) => {
+  await store.setRaceSelection(raceType)
+  closeRaceModal()
+}
+
+onMounted(async () => {
+  await store.updateBrandRecognitionStatus()
+  await store.updateRaceRecognitionStatus()
+  if (store.brandRecognitionUnlocked) {
+    await store.getBrandSelection()
+  }
+  if (store.raceRecognitionUnlocked) {
+    await store.getRaceSelection()
+  }
+  
+  events.on('businessComputer:onAvailableBrandsReceived', handleBrandsReceived)
+  events.on('businessComputer:onAvailableRaceTypesReceived', handleRaceTypesReceived)
+})
+
+onUnmounted(() => {
+  events.off('businessComputer:onAvailableBrandsReceived', handleBrandsReceived)
+  events.off('businessComputer:onAvailableRaceTypesReceived', handleRaceTypesReceived)
+})
+
+watch(() => store.brandRecognitionUnlocked, async (unlocked) => {
+  if (unlocked) {
+    await store.getBrandSelection()
+  }
+})
+
+watch(() => store.raceRecognitionUnlocked, async (unlocked) => {
+  if (unlocked) {
+    await store.getRaceSelection()
+  }
+})
 
 const penaltyCost = computed(() => {
   if (!jobToAbandon.value) return 0
@@ -173,6 +396,49 @@ const handleDecline = async (job) => {
   p {
     margin: 0;
     color: rgba(255, 255, 255, 0.6);
+  }
+}
+
+.recognition-banner {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.75rem;
+  background: rgba(30, 30, 30, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  flex-wrap: wrap;
+
+  .recognition-section {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+
+  .banner-label {
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  .banner-value {
+    color: #fff;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .summary-divider {
+    width: 1px;
+    height: 1.5rem;
+    background: rgba(255, 255, 255, 0.1);
   }
 }
 
@@ -284,6 +550,112 @@ const handleDecline = async (job) => {
       &:hover {
         background: rgba(239, 68, 68, 0.9);
         box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+      }
+    }
+  }
+
+  &.selection-modal {
+    max-width: 25em;
+    padding: 0;
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.2);
+
+      h2 {
+        margin: 0;
+        font-size: 1.1rem;
+        color: #fff;
+        font-weight: 600;
+      }
+
+      .modal-close {
+        background: none;
+        border: none;
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 1.5rem;
+        line-height: 1;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 4px;
+        transition: all 0.2s;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.1);
+          color: #fff;
+        }
+      }
+    }
+
+    .modal-body {
+      padding: 1rem;
+      max-height: 400px;
+      overflow-y: auto;
+
+      &::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.1);
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.2);
+        }
+      }
+
+      .modal-empty {
+        text-align: center;
+        padding: 2rem 1rem;
+
+        p {
+          color: rgba(255, 255, 255, 0.5);
+          margin: 0;
+        }
+      }
+
+      .selection-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        .selection-item {
+          width: 100%;
+          padding: 0.75rem 1rem;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 0.5rem;
+          color: rgba(255, 255, 255, 0.9);
+          font-size: 0.9rem;
+          text-align: left;
+          cursor: pointer;
+          transition: all 0.2s;
+
+          &:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+          }
+
+          &.selected {
+            background: rgba(245, 73, 0, 0.2);
+            border-color: rgba(245, 73, 0, 0.5);
+            color: #fff;
+            font-weight: 600;
+          }
+
+          span {
+            display: block;
+          }
+        }
       }
     }
   }
