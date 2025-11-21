@@ -438,6 +438,9 @@ const handleTreesUpdated = (data) => {
 }
 
 const handleUpgrade = (node, treeId) => {
+  if (node.commingSoon) {
+    return
+  }
   modalNode.value = node
   modalTreeId.value = treeId
   showModal.value = true

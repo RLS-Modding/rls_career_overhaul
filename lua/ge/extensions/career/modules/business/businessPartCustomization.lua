@@ -38,19 +38,6 @@ local function getPartSupplierDiscountMultiplier(businessId)
   return 1.0 - (0.05 * level)
 end
 
-local function getPartResellerMultiplier(businessId)
-  if not businessId or not career_modules_business_businessSkillTree then
-    return 1.0
-  end
-  
-  local businessType = "tuningShop"
-  local treeId = "shop-upgrades"
-  local nodeId = "part-reseller"
-  
-  local level = career_modules_business_businessSkillTree.getNodeProgress(businessId, treeId, nodeId) or 0
-  return 1.0 + (0.05 * level)
-end
-
 local function getBusinessVehicleObject(businessId, vehicleId)
   if not businessId or not vehicleId then return nil end
   
@@ -1283,9 +1270,6 @@ local function findRemovedParts(businessId, vehicleId)
           local jbeamData = jbeamIO.getPart(vehicleData.ioCtx, partName)
           partData.value = (jbeamData and jbeamData.information and jbeamData.information.value) or 100
         end
-        
-        local resellerMultiplier = getPartResellerMultiplier(businessId)
-        partData.value = partData.value * resellerMultiplier
         
         table.insert(removedParts, partData)
       end

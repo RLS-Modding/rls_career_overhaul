@@ -9,6 +9,18 @@ local function normalizeJobId(jobId)
   return tostring(jobId)
 end
 
+local function getCheapTunesDiscountMultiplier(businessId)
+  if not businessId or not career_modules_business_businessSkillTree then
+    return 1.0
+  end
+  
+  local treeId = "shop-upgrades"
+  local nodeId = "cheap-tunes"
+  
+  local level = career_modules_business_businessSkillTree.getNodeProgress(businessId, treeId, nodeId) or 0
+  return math.max(0.0, 1.0 - (0.2 * level))
+end
+
 local prices = {
   Suspension = {
     Front = {
@@ -453,7 +465,9 @@ local function calculateTuningCost(businessId, vehicleId, tuningVars, originalVa
   if not tuningVars then return 0 end
   
   local shoppingCart = createShoppingCart(businessId, vehicleId, tuningVars, originalVars)
-  return math.floor(shoppingCart.total + 0.5)
+  local discountMultiplier = getCheapTunesDiscountMultiplier(businessId)
+  local discountedTotal = shoppingCart.total * discountMultiplier
+  return math.floor(discountedTotal + 0.5)
 end
 
 local function applyVehicleTuning(businessId, vehicleId, tuningVars, accountId)

@@ -176,13 +176,7 @@ local function getUIData(businessId)
     -- Calculate value with condition
     if career_modules_valueCalculator then
         local baseValue = career_modules_valueCalculator.getPartValue(expandedPart) * 0.9
-        
-        local resellerLevel = 0
-        if businessId and career_modules_business_businessSkillTree then
-          resellerLevel = career_modules_business_businessSkillTree.getNodeProgress(businessId, "shop-upgrades", "part-reseller") or 0
-        end
-        
-        expandedPart.finalValue = baseValue * (1 + (0.05 * resellerLevel))
+        expandedPart.finalValue = baseValue
     end
 
     table.insert(partsByModel[part.vehicleModel], expandedPart)
@@ -235,13 +229,6 @@ local function sellPart(partId)
   
   price = price * 0.9
   
-  local resellerLevel = 0
-  if activeBusinessId and career_modules_business_businessSkillTree then
-    resellerLevel = career_modules_business_businessSkillTree.getNodeProgress(activeBusinessId, "shop-upgrades", "part-reseller") or 0
-  end
-  
-  price = price * (1 + (0.05 * resellerLevel))
-  
   inventory[partId] = nil
   return true, price
 end
@@ -249,11 +236,6 @@ end
 local function sellAllParts()
   if not career_modules_valueCalculator then
     return false, 0
-  end
-  
-  local resellerLevel = 0
-  if activeBusinessId and career_modules_business_businessSkillTree then
-    resellerLevel = career_modules_business_businessSkillTree.getNodeProgress(activeBusinessId, "shop-upgrades", "part-reseller") or 0
   end
   
   local totalPrice = 0
@@ -282,7 +264,6 @@ local function sellAllParts()
       
       local price = career_modules_valueCalculator.getPartValue(expandedPart) or 0
       price = price * 0.9
-      price = price * (1 + (0.05 * resellerLevel))
       totalPrice = totalPrice + price
       table.insert(partsToRemove, partId)
     end
@@ -298,11 +279,6 @@ end
 local function sellPartsByVehicle(vehicleModel)
   if not vehicleModel or not career_modules_valueCalculator then
     return false, 0
-  end
-  
-  local resellerLevel = 0
-  if activeBusinessId and career_modules_business_businessSkillTree then
-    resellerLevel = career_modules_business_businessSkillTree.getNodeProgress(activeBusinessId, "shop-upgrades", "part-reseller") or 0
   end
   
   local totalPrice = 0
@@ -331,7 +307,6 @@ local function sellPartsByVehicle(vehicleModel)
       
       local price = career_modules_valueCalculator.getPartValue(expandedPart) or 0
       price = price * 0.9
-      price = price * (1 + (0.05 * resellerLevel))
       totalPrice = totalPrice + price
       table.insert(partsToRemove, partId)
     end

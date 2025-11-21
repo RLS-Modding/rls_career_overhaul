@@ -591,7 +591,8 @@ local function getTreesForBusiness(businessType, businessId)
         unlocked = checkPrerequisites(businessId, tree.treeId, node, trees),
         affordable = canAffordUpgrade(businessType, businessId, tree.treeId, node.id, trees),
         maxed = node.maxLevel and nodeLevel >= node.maxLevel,
-        xpCost = node.xpCost
+        xpCost = node.xpCost,
+        commingSoon = node.commingSoon
       }
       table.insert(treeData.nodes, nodeData)
     end

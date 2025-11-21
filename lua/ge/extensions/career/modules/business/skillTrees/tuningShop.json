@@ -28,7 +28,8 @@
           },
           "xpCost": 10,
           "maxLevel": 4,
-          "dependencies": ["shop-app"]
+          "dependencies": ["shop-app"],
+          "commingSoon": true
         },
         {
           "id": "more-complicated",
@@ -96,7 +97,8 @@
           },
           "xpCost": 10,
           "maxLevel": 5,
-          "dependencies": ["brand-recognition"]
+          "dependencies": ["brand-recognition"],
+          "commingSoon": true
         },
         {
           "id": "more-complicated-ii",
@@ -122,7 +124,8 @@
               "type": "totalUpgrades",
               "min": 15
             }
-          ]
+          ],
+          "commingSoon": true
         },
         {
           "id": "i-give-up",
@@ -368,13 +371,13 @@
           "dependencies": ["towing"]
         },
         {
-          "id": "part-reseller",
-          "title": "Part Reseller",
-          "description": "Parts resell for 5% higher",
-          "detailedDescription": "Flip take-off parts for more.\n\n**Per Level**\n- Resale value +5%\n- Recover extra cash when swapping builds",
+          "id": "cheap-tunes",
+          "title": "Cheap Tunes",
+          "description": "Tune cost 20% less",
+          "detailedDescription": "Reduce tuning service costs.\n\n**Per Level**\n- Tune cost -20%\n- Level 5 makes all tunes free",
           "cost": {
-            "base": 15000,
-            "increment": 25000
+            "base": 10000,
+            "increment": 10000
           },
           "xpCost": 10,
           "maxLevel": 5,
@@ -391,7 +394,7 @@
           },
           "xpCost": 10,
           "maxLevel": 5,
-          "dependencies": ["dyno", "part-reseller"],
+          "dependencies": ["dyno", "cheap-tunes"],
           "prerequisites": [
             {
               "type": "totalUpgrades",

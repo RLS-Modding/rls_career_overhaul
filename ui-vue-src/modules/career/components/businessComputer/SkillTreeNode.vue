@@ -4,7 +4,8 @@
       'locked': !node.unlocked,
       'affordable': node.affordable && node.unlocked && !node.maxed,
       'maxed': node.maxed,
-      'purchased': node.currentLevel > 0
+      'purchased': node.currentLevel > 0,
+      'comming-soon': node.commingSoon
     }]"
     :style="{
       left: (node.position?.x || 0) + 'px',
@@ -13,30 +14,35 @@
     @click.stop="handleClick"
     @mousedown.stop
   >
-    <div class="node-header">
-      <h3 class="node-title">{{ node.title }}</h3>
-      <div v-if="node.maxLevel > 1" class="node-level">
-        {{ node.currentLevel }}/{{ node.maxLevel }}
-      </div>
+    <div v-if="node.commingSoon" class="coming-soon-content">
+      <span class="coming-soon-text">Coming Soon</span>
     </div>
-    <p v-if="node.description" class="node-description">{{ node.description }}</p>
-    <div class="node-costs">
-      <div class="node-cost" v-if="formatCost(node.cost, node.currentLevel) !== '0'">
-        <span class="cost-label">Cost:</span>
-        <span class="cost-value">${{ formatCost(node.cost, node.currentLevel) }}</span>
+    <template v-else>
+      <div class="node-header">
+        <h3 class="node-title">{{ node.title }}</h3>
+        <div v-if="node.maxLevel > 1" class="node-level">
+          {{ node.currentLevel }}/{{ node.maxLevel }}
+        </div>
       </div>
-      <div class="node-cost" v-if="node.xpCost !== undefined">
-        <span class="cost-label">XP:</span>
-        <span class="cost-value xp">{{ formatCost(node.xpCost, node.currentLevel) }}</span>
+      <p v-if="node.description" class="node-description">{{ node.description }}</p>
+      <div class="node-costs">
+        <div class="node-cost" v-if="formatCost(node.cost, node.currentLevel) !== '0'">
+          <span class="cost-label">Cost:</span>
+          <span class="cost-value">${{ formatCost(node.cost, node.currentLevel) }}</span>
+        </div>
+        <div class="node-cost" v-if="node.xpCost !== undefined">
+          <span class="cost-label">XP:</span>
+          <span class="cost-value xp">{{ formatCost(node.xpCost, node.currentLevel) }}</span>
+        </div>
       </div>
-    </div>
-    <div v-if="!node.unlocked" class="node-lock">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-      </svg>
-      <span>Locked</span>
-    </div>
+      <div v-if="!node.unlocked" class="node-lock">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+        <span>Locked</span>
+      </div>
+    </template>
   </div>
 </template>
 
@@ -63,6 +69,9 @@ const formatCost = (cost, currentLevel) => {
 }
 
 const handleClick = () => {
+  if (props.node.commingSoon) {
+    return
+  }
   emit('upgrade', props.node)
 }
 </script>
@@ -114,6 +123,36 @@ const handleClick = () => {
   &.purchased {
     border-color: rgba(245, 73, 0, 0.6);
   }
+
+  &.comming-soon {
+    opacity: 0.5;
+    cursor: default;
+    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(26, 26, 26, 0.6);
+
+    &:hover {
+      transform: none;
+      box-shadow: none;
+      opacity: 0.5;
+    }
+  }
+}
+
+.coming-soon-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 100px;
+}
+
+.coming-soon-text {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
 }
 
 .node-header {
