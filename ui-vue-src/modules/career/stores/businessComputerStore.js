@@ -152,6 +152,12 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     return Array.isArray(p) ? p : []
   })
   const stats = computed(() => businessData.value.stats || {})
+  
+  const hasManager = computed(() => businessData.value?.hasManager === true)
+  const hasGeneralManager = computed(() => businessData.value?.hasGeneralManager === true)
+  const managerAssignmentInterval = computed(() => businessData.value?.managerAssignmentInterval || null)
+  const managerReadyToAssign = computed(() => businessData.value?.managerReadyToAssign === true)
+  const managerTimeRemaining = computed(() => businessData.value?.managerTimeRemaining || null)
 
   const setBusinessData = (data) => {
     const vehiclesFromData = Array.isArray(data?.pulledOutVehicles)
@@ -1633,6 +1639,11 @@ const handleTechsUpdated = (data) => {
     techs,
     assignTechToJob,
     renameTech,
+    hasManager,
+    hasGeneralManager,
+    managerAssignmentInterval,
+    managerReadyToAssign,
+    managerTimeRemaining,
   }
 })
 

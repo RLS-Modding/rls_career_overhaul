@@ -13,6 +13,7 @@ local factoryConfigs = nil
 local businessJobs = {}
 local businessXP = {}
 local generationTimers = {}
+local managerTimers = {}
 local jobIdCounter = 0
 
 local freeroamUtils = require('gameplay/events/freeroam/utils')
@@ -415,6 +416,134 @@ local function spendBusinessXP(businessId, amount)
   return false
 end
 
+-- Manager Timer Management Logic
+
+local function getManagerTimerPath(businessId)
+  if not career_career.isActive() then return nil end
+  local _, currentSavePath = career_saveSystem.getCurrentSaveSlot()
+  if not currentSavePath then return nil end
+  return currentSavePath .. "/career/rls_career/businesses/" .. businessId .. "/manager.json"
+end
+
+local function loadManagerTimer(businessId)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId then
+    return { elapsed = 0, flagActive = false }
+  end
+  
+  if managerTimers[businessId] then
+    return managerTimers[businessId]
+  end
+  
+  local filePath = getManagerTimerPath(businessId)
+  if not filePath then
+    managerTimers[businessId] = { elapsed = 0, flagActive = false }
+    return managerTimers[businessId]
+  end
+  
+  local data = jsonReadFile(filePath) or {}
+  managerTimers[businessId] = {
+    elapsed = tonumber(data.elapsed) or 0,
+    flagActive = data.flagActive == true
+  }
+  return managerTimers[businessId]
+end
+
+local function saveManagerTimer(businessId, currentSavePath)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId or not managerTimers[businessId] then return end
+  if not currentSavePath then return end
+  
+  local filePath = currentSavePath .. "/career/rls_career/businesses/" .. businessId .. "/manager.json"
+  
+  local dirPath = string.match(filePath, "^(.*)/[^/]+$")
+  if dirPath and not FS:directoryExists(dirPath) then
+    FS:directoryCreate(dirPath)
+  end
+  
+  local data = {
+    elapsed = managerTimers[businessId].elapsed,
+    flagActive = managerTimers[businessId].flagActive
+  }
+  
+  jsonWriteFile(filePath, data, true)
+end
+
+local function hasManager(businessId)
+  if not businessId or not career_modules_business_businessSkillTree then
+    return false
+  end
+  local level = career_modules_business_businessSkillTree.getNodeProgress(businessId, "automation", "manager")
+  return level and level > 0
+end
+
+local function hasGeneralManager(businessId)
+  if not businessId or not career_modules_business_businessSkillTree then
+    return false
+  end
+  local level = career_modules_business_businessSkillTree.getNodeProgress(businessId, "automation", "general-manager")
+  return level and level > 0
+end
+
+local function getManagerAssignmentInterval(businessId)
+  local baseInterval = 1800
+  if not businessId or not career_modules_business_businessSkillTree then
+    return baseInterval
+  end
+  
+  local speedLevel = career_modules_business_businessSkillTree.getNodeProgress(businessId, "automation", "manager-speed") or 0
+  local interval = baseInterval - (speedLevel * 120)
+  return math.max(600, interval)
+end
+
+local function getManagerTimerState(businessId)
+  if not businessId then
+    return { elapsed = 0, flagActive = false }
+  end
+  return loadManagerTimer(businessId)
+end
+
+local function processManagerTimers(businessId, dtSim)
+  if not businessId or dtSim <= 0 then
+    return false
+  end
+  
+  if not hasManager(businessId) then
+    return false
+  end
+  
+  if hasGeneralManager(businessId) then
+    return false
+  end
+  
+  local timerState = getManagerTimerState(businessId)
+  local interval = getManagerAssignmentInterval(businessId)
+  
+  timerState.elapsed = timerState.elapsed + dtSim
+  
+  local changed = false
+  if timerState.elapsed >= interval then
+    timerState.flagActive = true
+    timerState.elapsed = 0
+    changed = true
+  end
+  
+  managerTimers[businessId] = timerState
+  return changed
+end
+
+local function getMaxActiveJobs(businessId)
+  local baseLimit = 2
+  if not businessId or not career_modules_business_businessSkillTree then
+    return baseLimit
+  end
+  
+  local treeId = "shop-upgrades"
+  local biggerBooksLevel = career_modules_business_businessSkillTree.getNodeProgress(businessId, treeId, "bigger-books") or 0
+  
+  return baseLimit + biggerBooksLevel
+end
+
 -- Job Management Logic
 
 local function getFasterTechReduction(businessId)
@@ -779,18 +908,6 @@ local function getSkillTreeUpgradeCount(businessId)
   return upgradeCount
 end
 
-local function getMaxActiveJobs(businessId)
-  local baseLimit = 2
-  if not businessId or not career_modules_business_businessSkillTree then
-    return baseLimit
-  end
-  
-  local treeId = "shop-upgrades"
-  local biggerBooksLevel = career_modules_business_businessSkillTree.getNodeProgress(businessId, treeId, "bigger-books") or 0
-  
-  return baseLimit + biggerBooksLevel
-end
-
 local function getMaxPulledOutVehicles(businessId)
   local limit = 1
   if not businessId or not career_modules_business_businessSkillTree then
@@ -959,7 +1076,8 @@ local function generateJob(businessId)
     reward = reward,
     decimalPlaces = decimalPlaces,
     commuteSeconds = commuteSeconds,
-    eventReward = race and race.reward or 0
+    eventReward = race and race.reward or 0,
+    tier = selectedLevelIndex
   }
   
   return job
@@ -1085,6 +1203,89 @@ local function acceptJob(businessId, jobId)
       storedTime = os.time()
     }
     career_modules_business_businessInventory.storeVehicle(businessId, vehicleData)
+  end
+  
+  return true
+end
+
+local function processManagerAssignments(businessId)
+  if not businessId then
+    return false
+  end
+  
+  if not hasManager(businessId) then
+    return false
+  end
+  
+  local timerState = getManagerTimerState(businessId)
+  local isGeneralManager = hasGeneralManager(businessId)
+  local flagActive = isGeneralManager or timerState.flagActive
+  
+  if not flagActive then
+    return false
+  end
+  
+  local idleTechs = tuningShopTechs.getIdleTechs(businessId)
+  if #idleTechs == 0 then
+    return false
+  end
+  
+  if not tuningShopTechs.canAssignTechToJob(businessId) then
+    return false
+  end
+  
+  local jobs = loadBusinessJobs(businessId)
+  if not jobs.new or #jobs.new == 0 then
+    return false
+  end
+  
+  local maxActiveJobs = getMaxActiveJobs(businessId)
+  local currentActiveCount = #(jobs.active or {})
+  
+  if currentActiveCount >= maxActiveJobs then
+    return false
+  end
+  
+  local techMaxTier = tuningShopTechs.getTechMaxTier(businessId)
+  local suitableJob = nil
+  local suitableJobIndex = nil
+  
+  for i, newJob in ipairs(jobs.new) do
+    local jobTier = tonumber(newJob.tier) or 1
+    if jobTier <= techMaxTier then
+      suitableJob = newJob
+      suitableJobIndex = i
+      break
+    end
+  end
+  
+  if not suitableJob then
+    return false
+  end
+  
+  local jobId = tonumber(suitableJob.jobId) or suitableJob.jobId
+  if not jobId then
+    return false
+  end
+  
+  local acceptSuccess = acceptJob(businessId, jobId)
+  if not acceptSuccess then
+    return false
+  end
+  
+  local idleTech = idleTechs[1]
+  if not idleTech then
+    return false
+  end
+  
+  local assignSuccess, assignError = tuningShopTechs.assignJobToTech(businessId, idleTech.id, jobId)
+  if not assignSuccess then
+    return false
+  end
+  
+  if not isGeneralManager then
+    timerState.flagActive = false
+    managerTimers[businessId] = timerState
   end
   
   return true
@@ -1483,7 +1684,8 @@ local function formatJobForUI(job, businessId)
     expiresInSeconds = expiresInSeconds,
     penalty = penalty,
     techAssigned = job.techAssigned,
-    isLocked = job.locked or false
+    isLocked = job.locked or false,
+    tier = tonumber(job.tier) or 1
   }
 end
 
@@ -1745,7 +1947,58 @@ local function getUIData(businessId)
       totalPartsValue = totalPartsValue,
       activeJobsCount = #activeJobs,
       newJobsCount = #newJobs
-    }
+    },
+    hasManager = hasManager(businessId),
+    hasGeneralManager = hasGeneralManager(businessId),
+    managerAssignmentInterval = hasManager(businessId) and getManagerAssignmentInterval(businessId) or nil,
+    managerReadyToAssign = (function()
+      if not hasManager(businessId) then
+        return false
+      end
+      if hasGeneralManager(businessId) then
+        return true
+      end
+      local timerState = getManagerTimerState(businessId)
+      return timerState.flagActive == true
+    end)(),
+    managerTimeRemaining = (function()
+      if not hasManager(businessId) or hasGeneralManager(businessId) then
+        return nil
+      end
+      local timerState = getManagerTimerState(businessId)
+      local interval = getManagerAssignmentInterval(businessId)
+      return math.max(0, interval - timerState.elapsed)
+    end)()
+  }
+end
+
+local function getManagerData(businessId)
+  if not businessId then
+    return nil
+  end
+  
+  return {
+    hasManager = hasManager(businessId),
+    hasGeneralManager = hasGeneralManager(businessId),
+    managerAssignmentInterval = hasManager(businessId) and getManagerAssignmentInterval(businessId) or nil,
+    managerReadyToAssign = (function()
+      if not hasManager(businessId) then
+        return false
+      end
+      if hasGeneralManager(businessId) then
+        return true
+      end
+      local timerState = getManagerTimerState(businessId)
+      return timerState.flagActive == true
+    end)(),
+    managerTimeRemaining = (function()
+      if not hasManager(businessId) or hasGeneralManager(businessId) then
+        return nil
+      end
+      local timerState = getManagerTimerState(businessId)
+      local interval = getManagerAssignmentInterval(businessId)
+      return math.max(0, interval - timerState.elapsed)
+    end)()
   }
 end
 
@@ -1796,6 +2049,14 @@ local function onUpdate(dtReal, dtSim, dtRaw)
           jobsChanged = true
         end
         tuningShopTechs.processTechs(id, deltaSim)
+        
+        if processManagerTimers(id, deltaSim) then
+          jobsChanged = true
+        end
+      end
+      
+      if processManagerAssignments(id) then
+        jobsChanged = true
       end
 
       if jobsChanged then
@@ -1807,6 +2068,12 @@ local function onUpdate(dtReal, dtSim, dtRaw)
   for id in pairs(generationTimers) do
     if not ownedBusinesses[id] then
       generationTimers[id] = nil
+    end
+  end
+  
+  for id in pairs(managerTimers) do
+    if not ownedBusinesses[id] then
+      managerTimers[id] = nil
     end
   end
 end
@@ -1843,6 +2110,7 @@ local function onCareerActivated()
       end
       
       tuningShopTechs.loadBusinessTechs(normalizedId)
+      loadManagerTimer(normalizedId)
       
       notifyJobsUpdated(normalizedId)
     end,
@@ -1916,7 +2184,8 @@ local function onCareerActivated()
     getAbandonPenalty = getAbandonPenalty,
     calculateActualEventPayment = calculateActualEventPayment,
     loadBusinessJobs = loadBusinessJobs,
-    notifyJobsUpdated = notifyJobsUpdated
+    notifyJobsUpdated = notifyJobsUpdated,
+    getMaxPulledOutVehicles = getMaxPulledOutVehicles
   })
   
   tuningShopTechs.resetTechs()
@@ -1931,6 +2200,9 @@ local function onSaveCurrentSaveSlot(currentSavePath)
   end
   for businessId, _ in pairs(businessJobs) do
     tuningShopTechs.saveBusinessTechs(businessId, currentSavePath)
+  end
+  for businessId, _ in pairs(managerTimers) do
+    saveManagerTimer(businessId, currentSavePath)
   end
 end
 
@@ -1970,5 +2242,6 @@ M.getTechsForBusiness = tuningShopTechs.getTechsForBusiness
 M.updateTechName = tuningShopTechs.updateTechName
 M.assignJobToTech = tuningShopTechs.assignJobToTech
 M.isJobLockedByTech = tuningShopTechs.isJobLockedByTech
+M.getManagerData = getManagerData
 
 return M

@@ -495,6 +495,27 @@ local function getBusinessComputerUIData(businessType, businessId)
   return result
 end
 
+local function getManagerData(businessType, businessId)
+  if not businessType or not businessId then
+    return nil
+  end
+
+  setBusinessContext(businessType, businessId)
+
+  local module = getBusinessModule(businessType)
+  if not module or not module.getManagerData then
+    return nil
+  end
+
+  local ok, result = pcall(module.getManagerData, businessId)
+  if not ok then
+    log('E', 'businessComputer', 'Error getting manager data for type ' .. tostring(businessType) .. ': ' .. tostring(result))
+    return nil
+  end
+
+  return result
+end
+
 local function requestPartInventory(businessId)
   if not businessId then
     if guihooks then
@@ -1692,6 +1713,7 @@ local function getAbandonPenalty(businessId, jobId)
 end
 
 M.getBusinessComputerUIData = getBusinessComputerUIData
+M.getManagerData = getManagerData
 M.acceptJob = acceptJob
 M.declineJob = declineJob
 M.abandonJob = abandonJob

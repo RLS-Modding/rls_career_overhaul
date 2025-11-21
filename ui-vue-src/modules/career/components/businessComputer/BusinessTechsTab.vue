@@ -4,6 +4,29 @@
       <h2>Techs</h2>
       <p>Monitor worker automation and assign jobs without leaving the desk.</p>
     </div>
+    <div class="techs-info-banners">
+      <div class="techs-summary-banner">
+        <div class="summary-section" v-if="techCapabilityTier">
+          <span class="banner-label">Capability</span>
+          <span class="banner-value">Tier {{ techCapabilityTier }}</span>
+        </div>
+
+        <div class="summary-divider" v-if="techCapabilityTier && hasManager"></div>
+
+        <div class="summary-section" v-if="hasManager">
+          <span class="banner-label">Manager</span>
+          <span class="banner-value">
+            <span v-if="hasGeneralManager">General GM</span>
+            <span class="summary-separator" v-if="hasGeneralManager">•</span>
+            <span>{{ managerAssignmentFrequency }}</span>
+            <span class="summary-separator">•</span>
+            <span :class="{ 'ready': managerReadyToAssign }">
+              {{ managerStatusText }}
+            </span>
+          </span>
+        </div>
+      </div>
+    </div>
 
     <div v-if="techList.length" class="techs-grid">
       <div
@@ -137,10 +160,6 @@
         >
           <div
             class="job-select-modal"
-            :style="{
-              top: `${modalPosition.top}px`,
-              left: `${modalPosition.left}px`
-            }"
             @click.stop
             @mousedown.stop
           >
@@ -196,11 +215,51 @@ const availableJobs = computed(() => {
 })
 
 const techList = computed(() => techs.value)
+const techCapabilityTier = computed(() => {
+  const firstWithTier = techList.value.find(t => typeof t.maxTier === "number")
+  return firstWithTier ? firstWithTier.maxTier : null
+})
+
+const hasManager = computed(() => store.hasManager)
+const hasGeneralManager = computed(() => store.hasGeneralManager)
+const managerAssignmentInterval = computed(() => store.managerAssignmentInterval)
+const managerReadyToAssign = computed(() => store.managerReadyToAssign)
+const managerTimeRemainingFromStore = computed(() => store.managerTimeRemaining)
+const localManagerTimeRemaining = ref(null)
+
+const managerAssignmentFrequency = computed(() => {
+  if (hasGeneralManager.value) {
+    return "Instant"
+  }
+  if (!managerAssignmentInterval.value) {
+    return ""
+  }
+  const minutes = Math.floor(managerAssignmentInterval.value / 60)
+  if (minutes === 1) {
+    return "Every 1 minute"
+  }
+  return `Every ${minutes} minutes`
+})
+
+const managerStatusText = computed(() => {
+  if (managerReadyToAssign.value) {
+    return "Ready to assign"
+  }
+  const timeRemaining = localManagerTimeRemaining.value
+  if (timeRemaining !== null && timeRemaining !== undefined && timeRemaining > 0) {
+    const minutes = Math.floor(timeRemaining / 60)
+    const seconds = Math.floor(timeRemaining % 60)
+    if (minutes > 0) {
+      return `Next in ${minutes}m ${seconds}s`
+    }
+    return `Next in ${seconds}s`
+  }
+  return "Not ready"
+})
 
 const editingTechId = ref(null)
 const editedName = ref("")
 const openModalTechId = ref(null)
-const modalPosition = ref({ top: 0, left: 0 })
 
 const vFocus = {
   mounted: (el) => el.focus()
@@ -277,6 +336,13 @@ const updateProgress = () => {
      }
   })
   
+  if (localManagerTimeRemaining.value !== null && localManagerTimeRemaining.value !== undefined && localManagerTimeRemaining.value > 0) {
+    localManagerTimeRemaining.value = Math.max(0, localManagerTimeRemaining.value - dt)
+    if (localManagerTimeRemaining.value <= 0 && !managerReadyToAssign.value) {
+      localManagerTimeRemaining.value = 0
+    }
+  }
+  
   animationFrameId = requestAnimationFrame(updateProgress)
 }
 
@@ -287,34 +353,6 @@ const openJobModal = async (tech, event) => {
   }
   
   openModalTechId.value = tech.id
-  await nextTick()
-  
-  const button = event?.target?.closest('.btn-assign')
-  if (button) {
-    const rect = button.getBoundingClientRect()
-    const modalWidth = 500
-    const modalHeight = Math.min(window.innerHeight * 0.8, 600)
-    const spacing = 8
-    
-    let left = rect.left
-    let top = rect.bottom + spacing
-    
-    if (left + modalWidth > window.innerWidth) {
-      left = window.innerWidth - modalWidth - 16
-    }
-    if (left < 16) {
-      left = 16
-    }
-    
-    if (top + modalHeight > window.innerHeight) {
-      top = rect.top - modalHeight - spacing
-    }
-    if (top < 16) {
-      top = 16
-    }
-    
-    modalPosition.value = { top, left }
-  }
 }
 
 const closeJobModal = () => {
@@ -349,12 +387,42 @@ const handleTechsUpdated = (data) => {
   }
 }
 
+const refreshManagerTime = async () => {
+  if (!store.businessId || !store.businessType) return
+  try {
+    const data = await lua.career_modules_business_businessComputer.getManagerData(store.businessType, store.businessId)
+    if (data && data.managerTimeRemaining !== null && data.managerTimeRemaining !== undefined) {
+      localManagerTimeRemaining.value = data.managerTimeRemaining
+    }
+  } catch (error) {
+    console.warn("Failed to refresh manager time", error)
+  }
+}
+
+watch(managerTimeRemainingFromStore, (newValue) => {
+  if (newValue !== null && newValue !== undefined) {
+    localManagerTimeRemaining.value = newValue
+  }
+}, { immediate: true })
+
+watch(managerReadyToAssign, (isReady) => {
+  if (isReady) {
+    localManagerTimeRemaining.value = 0
+  }
+})
+
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
   events.on('businessComputer:onTechsUpdated', handleTechsUpdated)
   if (store.techs && Array.isArray(store.techs)) {
     techs.value = JSON.parse(JSON.stringify(store.techs))
   }
+  
+  if (managerTimeRemainingFromStore.value !== null && managerTimeRemainingFromStore.value !== undefined) {
+    localManagerTimeRemaining.value = managerTimeRemainingFromStore.value
+  }
+  
+  refreshManagerTime()
   
   lastTime = performance.now()
   updateProgress()
@@ -411,6 +479,60 @@ const getBuildCost = (tech) => {
   flex-direction: column;
   gap: 2rem;
   padding-bottom: 2rem;
+}
+
+.techs-info-banners {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.techs-summary-banner {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.75rem;
+  background: rgba(30, 30, 30, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  flex-wrap: wrap;
+
+  .summary-section {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .banner-label {
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  .banner-value {
+    color: #fff;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+    
+    .summary-separator {
+      color: rgba(255, 255, 255, 0.3);
+    }
+    
+    .ready {
+      color: #2ecc71;
+    }
+  }
+  
+  .summary-divider {
+    width: 1px;
+    height: 1.5rem;
+    background: rgba(255, 255, 255, 0.1);
+  }
 }
 
 .tab-header {
@@ -761,10 +883,12 @@ const getBuildCost = (tech) => {
   z-index: 10000;
   background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .job-select-modal {
-  position: fixed;
   background: #1a1a1a;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;

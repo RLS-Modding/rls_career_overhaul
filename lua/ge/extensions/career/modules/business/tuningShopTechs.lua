@@ -65,10 +65,10 @@ local function normalizeBusinessId(businessId)
 end
 
 local function getTechCapacity(businessId)
-  local base = 0
+  local techsHired = 0
   local level = helpers.getSkillTreeLevel and helpers.getSkillTreeLevel(businessId, "automation", "shop-techs") or 0
-  base = base + level
-  return base
+  techsHired = techsHired + level
+  return techsHired
 end
 
 local function ensureTechName(tech, index)
@@ -244,7 +244,8 @@ local function formatTechForUIEntry(businessId, tech)
     fundsHeld = tech.fundsHeld,
     successRate = successRate,
     successfulJobs = successfulJobs,
-    failedJobs = failedJobs
+    failedJobs = failedJobs,
+    maxTier = M.getTechMaxTier(businessId)
   }
 end
 
@@ -848,6 +849,44 @@ local function isJobLockedByTech(businessId, jobId)
   return false
 end
 
+local function getWorkingTechsCount(businessId)
+  local techs = loadBusinessTechs(businessId)
+  local count = 0
+  for _, tech in ipairs(techs) do
+    if tech.jobId then
+      count = count + 1
+    end
+  end
+  return count
+end
+
+local function getIdleTechs(businessId)
+  local techs = loadBusinessTechs(businessId)
+  local idleTechs = {}
+  for _, tech in ipairs(techs) do
+    if not tech.jobId and (tech.currentAction == "idle" or not tech.currentAction) then
+      table.insert(idleTechs, tech)
+    end
+  end
+  return idleTechs
+end
+
+local function canAssignTechToJob(businessId)
+  local liftsAvailable = 1
+  if helpers.getMaxPulledOutVehicles then
+    liftsAvailable = helpers.getMaxPulledOutVehicles(businessId) or 1
+  end
+  
+  local workingTechs = getWorkingTechsCount(businessId)
+  return workingTechs < liftsAvailable
+end
+
+local function getTechMaxTier(businessId)
+  local baseTier = 1
+  local skilledTechsLevel = helpers.getSkillTreeLevel and helpers.getSkillTreeLevel(businessId, "automation", "skilled-techs") or 0
+  return baseTier + skilledTechsLevel
+end
+
 local function assignJobToTech(businessId, techId, jobId)
   businessId = normalizeBusinessId(businessId)
   techId = tonumber(techId)
@@ -884,6 +923,16 @@ local function assignJobToTech(businessId, techId, jobId)
 
   if job.techAssigned and job.techAssigned ~= techId then
     return false, "jobLocked"
+  end
+
+  local jobTier = tonumber(job.tier) or 1
+  local techMaxTier = getTechMaxTier(businessId)
+  if jobTier > techMaxTier then
+    return false, "tierTooHigh"
+  end
+
+  if not canAssignTechToJob(businessId) then
+    return false, "noLiftAvailable"
   end
 
   tech.jobId = jobId
@@ -928,6 +977,9 @@ M.assignJobToTech = assignJobToTech
 M.formatTechForUIEntry = formatTechForUIEntry
 M.notifyTechsUpdated = notifyTechsUpdated
 M.resetTechs = resetTechs
+M.getIdleTechs = getIdleTechs
+M.getTechMaxTier = getTechMaxTier
+M.canAssignTechToJob = canAssignTechToJob
 
 return M
 

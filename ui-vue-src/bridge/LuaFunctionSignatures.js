@@ -1158,6 +1158,7 @@ export default {
     getAllRequiredParts: (businessId, vehicleId, parts, cartParts) => [String, Integer, Array, Array],
     addPartToCart: (businessId, vehicleId, currentCart, partToAdd) => [String, Integer, Array, Object],
     getBusinessComputerUIData: (businessType, businessId) => [String, String],
+    getManagerData: (businessType, businessId) => [String, String],
     acceptJob: (businessId, jobId) => [String, Integer],
     declineJob: (businessId, jobId) => [String, Integer],
     completeJob: (businessId, jobId) => [String, Integer],

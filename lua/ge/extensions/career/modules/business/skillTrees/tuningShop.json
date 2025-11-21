@@ -204,7 +204,7 @@
           "id": "manager",
           "title": "Manager",
           "description": "Auto-assign workers to jobs",
-          "detailedDescription": "Put job triage on autopilot.\n\n**Manager**\n- Assigns idle techs every 20 minutes\n- Costs $5,000 per 30 minutes to keep on payroll\n- Keeps you free to focus on other tasks",
+          "detailedDescription": "Put job triage on autopilot.\n\n**Manager**\n- Assigns idle techs every 30 minutes\n- Costs $5,000 per 30 minutes to keep on payroll\n- Keeps you free to focus on other tasks",
           "cost": 100000,
           "xpCost": 0,
           "maxLevel": 1,
@@ -365,13 +365,16 @@
           "dependencies": ["part-suppliers"]
         },
         {
-          "id": "lift-3",
-          "title": "Lift #3",
-          "description": "+1 simultaneous Worker / Vehicle pulled out",
-          "detailedDescription": "Fill the shop with a third lift.\n\n**Effect**\n- +1 worker slot / pulled vehicle (up to three)\n- Each lift still costs $5,000 per 30 minutes",
-          "cost": 50000,
+          "id": "bigger-books",
+          "title": "Bigger Books",
+          "description": "Store 1 more active job",
+          "detailedDescription": "Hold more contracts at once.\n\n**Base Limit**\n- Start with 2 active job slots\n\n**Per Level**\n- +1 active job slot (2 + level)\n- Prevent idle techs while waiting on parts or timers",
+          "cost": {
+            "base": 10000,
+            "increment": 20000
+          },
           "xpCost": 0,
-          "maxLevel": 1,
+          "maxLevel": 5,
           "dependencies": ["dyno", "part-reseller"],
           "prerequisites": [
             {
@@ -379,6 +382,16 @@
               "min": 5
             }
           ]
+        },
+        {
+          "id": "lift-3",
+          "title": "Lift #3",
+          "description": "+1 simultaneous Worker / Vehicle pulled out",
+          "detailedDescription": "Fill the shop with a third lift.\n\n**Effect**\n- +1 worker slot / pulled vehicle (up to three)\n- Each lift still costs $5,000 per 30 minutes",
+          "cost": 50000,
+          "xpCost": 0,
+          "maxLevel": 1,
+          "dependencies": ["bigger-books"]
         },
         {
           "id": "marketing",
@@ -391,21 +404,9 @@
           },
           "xpCost": 0,
           "maxLevel": 5,
-          "dependencies": ["lift-3"]
+          "dependencies": ["bigger-books"]
         },
-        {
-          "id": "bigger-books",
-          "title": "Bigger Books",
-          "description": "Store 1 more active job",
-          "detailedDescription": "Hold more contracts at once.\n\n**Base Limit**\n- Start with 2 active job slots\n\n**Per Level**\n- +1 active job slot (2 + level)\n- Prevent idle techs while waiting on parts or timers",
-          "cost": {
-            "base": 10000,
-            "increment": 20000
-          },
-          "xpCost": 0,
-          "maxLevel": 5,
-          "dependencies": ["lift-3"]
-        },
+
         {
           "id": "xp-gain",
           "title": "XP Gain",
@@ -417,7 +418,7 @@
           },
           "xpCost": 0,
           "maxLevel": 4,
-          "dependencies": ["marketing", "bigger-books"]
+          "dependencies": ["marketing", "lift-3"]
         },
         {
           "id": "solar-panels",

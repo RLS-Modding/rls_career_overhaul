@@ -4,34 +4,71 @@
       <img :src="job.vehicleImage" :alt="job.vehicleName" />
       <span class="status-badge">Available</span>
     </div>
-    <h3 class="job-assign-card__title">
-      {{ job.vehicleYear }} {{ job.vehicleName }}
-      <span v-if="job.vehicleType" class="badge badge-orange">{{ job.vehicleType }}</span>
-    </h3>
-    <div class="job-assign-card__payment">
-      <span class="payment-label">Payment</span>
-      <span class="payment-value">${{ formatPayment(job.reward) }}</span>
+    <div class="job-assign-card__body">
+      <div class="job-assign-card__title-row">
+        <div class="job-assign-card__title-block">
+          <h3>{{ job.vehicleYear }} {{ job.vehicleName }}</h3>
+          <span v-if="job.vehicleType" class="vehicle-type">{{ job.vehicleType }}</span>
+        </div>
+      </div>
+      <div class="job-assign-card__summary">
+        <span class="summary-item price">${{ formatPayment(job.reward) }}</span>
+        <span class="summary-separator">•</span>
+        <span class="summary-item tier">{{ jobTierLabel }}</span>
+      </div>
+      <div class="job-assign-card__goal-line" v-if="goalSummary">
+        {{ goalSummary }}
+      </div>
+      <button 
+        class="job-assign-card__button"
+        @click.stop="$emit('assign', job)"
+        @mousedown.stop
+      >
+        Assign
+      </button>
     </div>
-    <div class="job-assign-card__goal">
-      <span class="goal-label">Goal</span>
-      <span class="goal-value">{{ job.goal }}</span>
-    </div>
-    <button 
-      class="job-assign-card__button"
-      @click.stop="$emit('assign', job)"
-      @mousedown.stop
-    >
-      Assign
-    </button>
   </div>
 </template>
 
 <script setup>
+import { computed } from "vue"
+
 const props = defineProps({
   job: Object
 })
 
 const emit = defineEmits(['assign'])
+
+const jobTier = computed(() => {
+  const tier = props.job?.tier
+  return typeof tier === "number" ? tier : 1
+})
+
+const jobTierLabel = computed(() => `Tier ${jobTier.value}`)
+
+const goalTimeText = computed(() => {
+  const goal = props.job?.goal
+  if (!goal) {
+    return ""
+  }
+  const raceLabel = props.job?.raceLabel
+  if (raceLabel) {
+    const suffix = ` ${raceLabel}`
+    if (goal.endsWith(suffix)) {
+      return goal.slice(0, goal.length - suffix.length).trim()
+    }
+  }
+  return goal
+})
+
+const goalSummary = computed(() => {
+  const raceLabel = props.job?.raceLabel
+  const timeText = goalTimeText.value
+  if (raceLabel && timeText) {
+    return `${raceLabel} · ${timeText}`
+  }
+  return timeText || raceLabel || ""
+})
 
 const formatPayment = (amount) => {
   if (typeof amount !== 'number') return '0'
@@ -41,17 +78,18 @@ const formatPayment = (amount) => {
 
 <style scoped lang="scss">
 .job-assign-card {
-  background: rgba(23, 23, 23, 0.5);
+  background: rgba(23, 23, 23, 0.55);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
   padding: 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, transform 0.2s;
   
   &:hover {
     border-color: rgba(245, 73, 0, 0.5);
+    transform: translateY(-2px);
   }
 }
 
@@ -60,7 +98,7 @@ const formatPayment = (amount) => {
   width: 100%;
   border-radius: 0.5rem;
   overflow: hidden;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.35);
   
   img {
     width: 100%;
@@ -72,117 +110,90 @@ const formatPayment = (amount) => {
     position: absolute;
     top: 0.5rem;
     right: 0.5rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
     font-size: 0.75rem;
     font-weight: 500;
-    background: rgba(59, 130, 246, 0.7);
+    background: rgba(59, 130, 246, 0.75);
     color: white;
     border: none;
   }
 }
 
-.job-assign-card__title {
-  margin: 0;
-  color: white;
-  font-size: 1rem;
-  font-weight: 600;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  line-height: 1.4;
-  
-  .badge {
-    display: inline-block;
-    margin-left: 0.5rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
-    font-weight: 500;
-    vertical-align: middle;
-    
-    &.badge-orange {
-      background: rgba(245, 73, 0, 0.2);
-      color: rgba(245, 73, 0, 1);
-      border: 1px solid rgba(245, 73, 0, 0.5);
-    }
-  }
-}
-
-.job-assign-card__payment {
-  padding: 0.5rem 0.75rem;
-  background: rgba(34, 197, 94, 0.15);
-  border-radius: 0.375rem;
-  border: 1px solid rgba(34, 197, 94, 0.35);
+.job-assign-card__body {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
-  min-width: 0;
-  overflow: hidden;
-  
-  .payment-label {
-    font-size: 0.7rem;
-    color: rgba(255, 255, 255, 0.6);
-    white-space: nowrap;
-  }
-  
-  .payment-value {
-    font-size: 0.875rem;
-    color: rgba(34, 197, 94, 1);
+  gap: 0.5rem;
+}
+
+.job-assign-card__title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.job-assign-card__title-block {
+  h3 {
+    margin: 0;
+    color: #fff;
+    font-size: 1rem;
     font-weight: 600;
-    word-break: break-word;
-    overflow-wrap: break-word;
-    line-height: 1.2;
-    max-width: 100%;
+  }
+
+  .vehicle-type {
+    margin-top: 0.15rem;
+    display: inline-block;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
   }
 }
 
-.job-assign-card__goal {
-  padding: 0.5rem 0.75rem;
-  background: rgba(245, 73, 0, 0.15);
-  border-radius: 0.375rem;
-  border: 1px solid rgba(245, 73, 0, 0.35);
+.job-assign-card__summary {
   display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  min-width: 0;
-  overflow: hidden;
-  
-  .goal-label {
-    font-size: 0.7rem;
-    color: rgba(255, 255, 255, 0.6);
-    white-space: nowrap;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+
+  .summary-item.price {
+    color: #22c55e;
   }
-  
-  .goal-value {
-    font-size: 0.875rem;
-    color: rgba(255, 255, 255, 0.95);
-    font-weight: 500;
-    word-break: break-word;
-    overflow-wrap: break-word;
-    line-height: 1.2;
-    max-width: 100%;
+
+  .summary-item.tier {
+    color: rgba(255, 255, 255, 0.75);
   }
+
+  .summary-separator {
+    color: rgba(255, 255, 255, 0.35);
+  }
+}
+
+.job-assign-card__goal-line {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.75);
 }
 
 .job-assign-card__button {
   width: 100%;
-  padding: 0.625rem 1rem;
+  padding: 0.65rem 1rem;
   background: rgba(245, 73, 0, 1);
   color: white;
   border: none;
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
-  font-weight: 500;
+  border-radius: 0.4rem;
+  font-size: 0.9rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, transform 0.2s;
   margin-top: 0.25rem;
   
   &:hover {
     background: rgba(245, 73, 0, 0.9);
+    transform: translateY(-1px);
   }
   
   &:active {
     background: rgba(245, 73, 0, 0.8);
+    transform: none;
   }
 }
 </style>
