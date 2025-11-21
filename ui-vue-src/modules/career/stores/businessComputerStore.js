@@ -223,6 +223,9 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     if (!businessId.value) return false
     try {
       const success = await lua.career_modules_business_businessComputer.assignTechToJob(businessId.value, techId, jobId)
+      if (success) {
+        await loadBusinessData(businessType.value, businessId.value)
+      }
       return success
     } catch (error) {
       return false
@@ -903,7 +906,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     }
 
     // Prevent updates if user is in a tab that doesn't display job lists
-    const allowedViews = ['home', 'jobs']
+    const allowedViews = ['home', 'jobs', 'techs']
     if (!allowedViews.includes(activeView.value)) {
       return
     }

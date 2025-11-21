@@ -1203,12 +1203,15 @@ local function handleValidationResult(businessId, tech, job)
     return
   end
 
-  local success = validationSucceeded(tech, job)
-  tech.latestResult = {
-    predictedTime = tech.predictedEventTime,
-    targetTime = job.targetTime,
-    success = success
-  }
+  local success = tech.latestResult and tech.latestResult.success
+  if success == nil then
+    success = validationSucceeded(tech, job)
+    tech.latestResult = {
+      predictedTime = tech.predictedEventTime,
+      targetTime = job.targetTime,
+      success = success
+    }
+  end
 
   if success then
     finalizeTechJobSuccess(businessId, tech, job)
@@ -1217,17 +1220,17 @@ local function handleValidationResult(businessId, tech, job)
 
   local attemptsAllowed = tech.maxValidationAttempts or 1
   local attemptsUsed = tech.validationAttempts or 0
-  if attemptsUsed < attemptsAllowed then
-    startCooldownPhase(tech, job)
+  if attemptsUsed >= attemptsAllowed then
+    if tech.phase == "validation" then
+      startUpdatePhase(businessId, tech, job)
+      return
+    end
+
+    finalizeTechJobFailure(businessId, tech, job, "validationFailed")
     return
   end
 
-  if tech.phase == "validation" then
-    startUpdatePhase(businessId, tech, job)
-    return
-  end
-
-  finalizeTechJobFailure(businessId, tech, job, "validationFailed")
+  resetTechToIdle(tech)
 end
 
 local function advanceTechState(businessId, tech)
@@ -1255,7 +1258,36 @@ local function advanceTechState(businessId, tech)
     end
     local actualPayment = calculateActualEventPayment(businessId, job, predictedTime)
     tech.eventFunds = (tech.eventFunds or 0) + actualPayment
-    startDriveBack(tech, job)
+    if tech.phase == "baseline" then
+      startDriveBack(tech, job)
+    else
+      local success = validationSucceeded(tech, job)
+      tech.latestResult = {
+        predictedTime = tech.predictedEventTime,
+        targetTime = job.targetTime,
+        success = success
+      }
+      
+      if success then
+        startDriveBack(tech, job)
+      else
+        startCooldownPhase(tech, job)
+      end
+    end
+    return true
+  elseif action == "cooldown" then
+    if tech.phase == "baseline" then
+      startDriveBack(tech, job)
+    else
+      local attemptsAllowed = tech.maxValidationAttempts or 1
+      local attemptsUsed = tech.validationAttempts or 0
+      
+      if attemptsUsed >= attemptsAllowed then
+        startDriveBack(tech, job)
+      else
+        startEventRun(businessId, tech, job)
+      end
+    end
     return true
   elseif action == "driveBack" then
     if tech.phase == "baseline" then
@@ -1269,9 +1301,6 @@ local function advanceTechState(businessId, tech)
     return true
   elseif action == "update" then
     beginValidationCycle(businessId, tech, job, "postUpdate")
-    return true
-  elseif action == "cooldown" then
-    startCommute(businessId, tech, job)
     return true
   elseif action == "completed" or action == "failed" then
     resetTechToIdle(tech)
