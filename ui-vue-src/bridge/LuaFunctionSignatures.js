@@ -1163,6 +1163,8 @@ export default {
     completeJob: (businessId, jobId) => [String, Integer],
     canCompleteJob: (businessId, jobId) => [String, Integer],
     abandonJob: (businessId, jobId) => [String, Integer],
+    assignTechToJob: (businessId, techId, jobId) => [String, Integer],
+    renameTech: (businessId, techId, newName) => [String, Integer],
     pullOutVehicle: (businessId, vehicleId) => [String, Integer],
     putAwayVehicle: (businessId, vehicleId) => String,
     setActiveVehicle: (businessId, vehicleId) => [String, Integer],

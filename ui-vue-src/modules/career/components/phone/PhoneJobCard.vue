@@ -46,7 +46,10 @@
           
           <div class="actions">
             <template v-if="isActive">
-              <template v-if="damageLockApplies">
+              <template v-if="hasTechAssigned">
+                <div class="tech-message">{{ techName || 'Tech' }} is working on this</div>
+              </template>
+              <template v-else-if="damageLockApplies">
                  <button class="btn-icon danger" @click.stop="$emit('abandon', job)">
                     <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                  </button>
@@ -104,6 +107,17 @@ const normalizeJobId = (value) => {
 }
 
 const jobIdentifier = computed(() => normalizeJobId(props.job?.jobId ?? props.job?.id))
+const techAssigned = computed(() => {
+  if (!props.job?.techAssigned) return null
+  return props.job.techAssigned
+})
+const techName = computed(() => {
+  if (!techAssigned.value) return null
+  const techs = store.techs || []
+  const tech = techs.find(t => String(t.id) === String(techAssigned.value))
+  return tech?.name || null
+})
+const hasTechAssigned = computed(() => !!techAssigned.value)
 const pulledOutVehicleForJob = computed(() => {
   if (!Array.isArray(store.pulledOutVehicles)) {
     return null
@@ -537,5 +551,17 @@ watch(() => [props.job?.jobId, props.job?.expiresInSeconds, props.isActive], sta
   font-size: 0.7rem;
   font-weight: 600;
   padding: 2px 0;
+}
+
+.tech-message {
+  color: rgba(245, 73, 0, 1);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 4px 8px;
+  background: rgba(245, 73, 0, 0.15);
+  border-radius: 4px;
+  border: 1px solid rgba(245, 73, 0, 0.3);
+  white-space: nowrap;
 }
 </style>

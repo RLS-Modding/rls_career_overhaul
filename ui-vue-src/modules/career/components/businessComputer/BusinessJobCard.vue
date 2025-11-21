@@ -39,25 +39,41 @@
           <span>{{ expirationText }}</span>
         </div>
         <div class="job-actions-new">
-          <button 
-            class="btn btn-success" 
-            :disabled="isAcceptDisabled"
-            :title="isAcceptDisabled ? `Active job limit reached (${store.maxActiveJobs} max)` : ''"
-            @click.stop="$emit('accept', job)"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-              <polyline points="22 4 12 14.01 9 11.01"/>
-            </svg>
-            Accept
-          </button>
-          <button class="btn btn-danger" @click.stop="$emit('decline', job)">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="18" y1="6" x2="6" y2="18"/>
-              <line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-            Decline
-          </button>
+          <template v-if="assignMode">
+            <button 
+              class="btn btn-primary" 
+              @click.stop="$emit('assign', job)"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="8.5" cy="7" r="4"/>
+                <line x1="20" y1="8" x2="20" y2="14"/>
+                <line x1="23" y1="11" x2="17" y2="11"/>
+              </svg>
+              Assign
+            </button>
+          </template>
+          <template v-else>
+            <button 
+              class="btn btn-success" 
+              :disabled="isAcceptDisabled"
+              :title="isAcceptDisabled ? `Active job limit reached (${store.maxActiveJobs} max)` : ''"
+              @click.stop="$emit('accept', job)"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+              Accept
+            </button>
+            <button class="btn btn-danger" @click.stop="$emit('decline', job)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+              Decline
+            </button>
+          </template>
         </div>
       </div>
       <template v-else>
@@ -101,25 +117,41 @@
             <span>{{ expirationText }}</span>
           </div>
           <div class="job-actions-new-horizontal">
-            <button 
-              class="btn btn-success" 
-              :disabled="isAcceptDisabled"
-              :title="isAcceptDisabled ? `Active job limit reached (${store.maxActiveJobs} max)` : ''"
-              @click.stop="$emit('accept', job)"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                <polyline points="22 4 12 14.01 9 11.01"/>
-              </svg>
-              Accept
-            </button>
-            <button class="btn btn-danger" @click.stop="$emit('decline', job)">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"/>
-                <line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
-              Decline
-            </button>
+            <template v-if="assignMode">
+              <button 
+                class="btn btn-primary" 
+                @click.stop="$emit('assign', job)"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="8.5" cy="7" r="4"/>
+                  <line x1="20" y1="8" x2="20" y2="14"/>
+                  <line x1="23" y1="11" x2="17" y2="11"/>
+                </svg>
+                Assign
+              </button>
+            </template>
+            <template v-else>
+              <button 
+                class="btn btn-success" 
+                :disabled="isAcceptDisabled"
+                :title="isAcceptDisabled ? `Active job limit reached (${store.maxActiveJobs} max)` : ''"
+                @click.stop="$emit('accept', job)"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                  <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                Accept
+              </button>
+              <button class="btn btn-danger" @click.stop="$emit('decline', job)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+                Decline
+              </button>
+            </template>
           </div>
         </div>
       </template>
@@ -164,7 +196,10 @@
           </div>
         </div>
         <div class="job-actions-active" :class="{ locked: damageLockApplies }">
-          <template v-if="damageLockApplies">
+          <template v-if="hasTechAssigned">
+            <div class="tech-message">{{ techName || 'Tech' }} is working on this</div>
+          </template>
+          <template v-else-if="damageLockApplies">
             <div class="lock-message">Customer Vehicle Damaged</div>
             <button class="btn btn-danger" @mousedown.stop @click.stop="$emit('abandon', job)">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -247,7 +282,10 @@
             </div>
           </div>
           <div class="job-actions-active-horizontal" :class="{ locked: damageLockApplies }">
-            <template v-if="damageLockApplies">
+            <template v-if="hasTechAssigned">
+              <div class="tech-message">{{ techName || 'Tech' }} is working on this</div>
+            </template>
+            <template v-else-if="damageLockApplies">
               <div class="lock-message">Customer Vehicle Damaged</div>
               <button class="btn btn-danger" @mousedown.stop @click.stop="$emit('abandon', job)">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -305,10 +343,14 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
-  businessId: String
+  businessId: String,
+  assignMode: {
+    type: Boolean,
+    default: false
+  }
 })
 
-const emit = defineEmits(['pull-out', 'put-away', 'abandon', 'accept', 'decline', 'complete'])
+const emit = defineEmits(['pull-out', 'put-away', 'abandon', 'accept', 'decline', 'complete', 'assign'])
 
 const store = useBusinessComputerStore()
 const normalizeJobId = (value) => {
@@ -318,6 +360,17 @@ const normalizeJobId = (value) => {
   return String(value)
 }
 const jobIdentifier = computed(() => normalizeJobId(props.job?.jobId ?? props.job?.id))
+const techAssigned = computed(() => {
+  if (!props.job?.techAssigned) return null
+  return props.job.techAssigned
+})
+const techName = computed(() => {
+  if (!techAssigned.value) return null
+  const techs = store.techs || []
+  const tech = techs.find(t => String(t.id) === String(techAssigned.value))
+  return tech?.name || null
+})
+const hasTechAssigned = computed(() => !!techAssigned.value)
 const pulledOutVehicleForJob = computed(() => {
   if (!Array.isArray(store.pulledOutVehicles)) {
     return null
@@ -562,6 +615,18 @@ watch(() => [props.job?.jobId, props.job?.expiresInSeconds, props.isActive], () 
   text-align: center;
   margin-bottom: 0.25rem;
   width: 100%;
+}
+
+.tech-message {
+  color: rgba(245, 73, 0, 1);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: center;
+  width: 100%;
+  padding: 0.5rem;
+  background: rgba(245, 73, 0, 0.1);
+  border-radius: 0.375rem;
+  border: 1px solid rgba(245, 73, 0, 0.3);
 }
 
 .job-card {
@@ -1524,16 +1589,21 @@ watch(() => [props.job?.jobId, props.job?.expiresInSeconds, props.isActive], () 
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  min-width: 0;
   
   .reward-label {
     font-size: 0.75rem;
     color: rgba(255, 255, 255, 0.6);
+    white-space: nowrap;
   }
   
   .reward-value {
-    font-size: 1.125rem;
+    font-size: 1rem;
     color: rgba(34, 197, 94, 1);
     font-weight: 600;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.2;
   }
 }
 

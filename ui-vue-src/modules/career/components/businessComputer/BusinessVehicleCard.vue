@@ -50,17 +50,21 @@
             </div>
           </div>
           <div class="vehicle-actions" :class="{ locked: store.isDamageLocked }">
-            <div v-if="store.isDamageLocked" class="lock-message">
-              Customer Vehicle Damaged
-            </div>
-            <button
-              v-if="store.isDamageLocked"
-              class="btn btn-danger"
-              @mousedown.stop
-              @click.stop="$emit('abandon')"
-            >
-              Abandon Job
-            </button>
+            <template v-if="hasTechAssigned">
+              <div class="tech-message">{{ techName || 'Tech' }} is working on this</div>
+            </template>
+            <template v-else-if="store.isDamageLocked">
+              <div class="lock-message">
+                Customer Vehicle Damaged
+              </div>
+              <button
+                class="btn btn-danger"
+                @mousedown.stop
+                @click.stop="$emit('abandon')"
+              >
+                Abandon Job
+              </button>
+            </template>
             <template v-else>
               <button class="btn btn-secondary" @click.stop="$emit('put-away', vehicle?.vehicleId)">Put Away Vehicle</button>
               <button class="btn btn-primary" @click.stop="goToTuning">Go to Tuning</button>
@@ -86,6 +90,18 @@ const props = defineProps({
 
 const store = useBusinessComputerStore()
 defineEmits(['put-away', 'abandon'])
+
+const techAssigned = computed(() => {
+  if (!props.job?.techAssigned) return null
+  return props.job.techAssigned
+})
+const techName = computed(() => {
+  if (!techAssigned.value) return null
+  const techs = store.techs || []
+  const tech = techs.find(t => String(t.id) === String(techAssigned.value))
+  return tech?.name || null
+})
+const hasTechAssigned = computed(() => !!techAssigned.value)
 
 const goToTuning = () => {
   store.switchVehicleView('tuning')
@@ -278,6 +294,18 @@ const goalProgress = computed(() => {
   font-weight: 500;
   text-align: center;
   margin-bottom: 0.25rem;
+}
+
+.tech-message {
+  color: rgba(245, 73, 0, 1);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: center;
+  width: 100%;
+  padding: 0.5rem;
+  background: rgba(245, 73, 0, 0.1);
+  border-radius: 0.375rem;
+  border: 1px solid rgba(245, 73, 0, 0.3);
 }
 
 .btn {

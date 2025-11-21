@@ -5,6 +5,7 @@ import BusinessPartsInventoryTab from "./BusinessPartsInventoryTab.vue"
 import BusinessTuningTab from "./BusinessTuningTab.vue"
 import BusinessPartsCustomizationTab from "./BusinessPartsCustomizationTab.vue"
 import BusinessSkillTreeTab from "./BusinessSkillTreeTab.vue"
+import BusinessTechsTab from "./BusinessTechsTab.vue"
 
 const componentMap = {
   BusinessHomeView,
@@ -13,7 +14,8 @@ const componentMap = {
   BusinessPartsInventoryTab,
   BusinessTuningTab,
   BusinessPartsCustomizationTab,
-  BusinessSkillTreeTab
+  BusinessSkillTreeTab,
+  BusinessTechsTab
 }
 
 export function getTabComponent(componentName) {

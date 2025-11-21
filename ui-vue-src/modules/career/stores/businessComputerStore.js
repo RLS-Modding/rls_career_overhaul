@@ -134,6 +134,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
       return idA < idB ? -1 : 1
     })
   })
+  const techs = computed(() => businessData.value.techs || [])
   const vehicles = computed(() => {
     const v = businessData.value.vehicles
     if (!v) return []
@@ -215,6 +216,16 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     }
   }
 
+  const assignTechToJob = async (techId, jobId) => {
+    if (!businessId.value) return false
+    try {
+      const success = await lua.career_modules_business_businessComputer.assignTechToJob(businessId.value, techId, jobId)
+      return success
+    } catch (error) {
+      return false
+    }
+  }
+
   const declineJob = async (jobId) => {
     if (!businessId.value) return false
     try {
@@ -250,6 +261,16 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
         pulledOutVehicle.value = null
         await loadBusinessData(businessType.value, businessId.value)
       }
+      return success
+    } catch (error) {
+      return false
+    }
+  }
+
+  const renameTech = async (techId, newName) => {
+    if (!businessId.value) return false
+    try {
+      const success = await lua.career_modules_business_businessComputer.renameTech(businessId.value, techId, newName ?? "")
       return success
     } catch (error) {
       return false
@@ -890,6 +911,32 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     }
   }
 
+const handleTechsUpdated = (data) => {
+  const currentBusinessId = businessId.value
+  const currentBusinessType = businessType.value
+
+  if (!currentBusinessId || !currentBusinessType) {
+    return
+  }
+
+  const eventBusinessType = data?.businessType
+  if (eventBusinessType && eventBusinessType !== currentBusinessType) {
+    return
+  }
+
+  const eventBusinessId = data?.businessId
+  if (eventBusinessId && String(eventBusinessId) !== String(currentBusinessId)) {
+    return
+  }
+
+  if (data?.techs && Array.isArray(data.techs)) {
+    businessData.value = {
+      ...businessData.value,
+      techs: data.techs
+    }
+  }
+}
+
   const handlePartInventoryData = (data) => {
     const currentBusinessId = businessId.value
     if (!currentBusinessId) return
@@ -938,6 +985,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   // Setup event listener
   events.on('businessComputer:onPartCartUpdated', handlePartCartUpdated)
   events.on('businessComputer:onJobsUpdated', handleJobsUpdated)
+  events.on('businessComputer:onTechsUpdated', handleTechsUpdated)
   events.on('businessComputer:onPartInventoryData', handlePartInventoryData)
   
   const addPartToCart = async (part, slot) => {
@@ -1576,6 +1624,9 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     purchaseSkillUpgrade,
     getTotalUpgradesInTree,
     maxPulledOutVehicles,
+    techs,
+    assignTechToJob,
+    renameTech,
   }
 })
 

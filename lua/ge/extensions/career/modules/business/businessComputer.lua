@@ -669,6 +669,52 @@ local function abandonJob(businessId, jobId)
   return false
 end
 
+local function assignTechToJob(businessId, techId, jobId)
+  if not businessId or not techId or not jobId then
+    return false
+  end
+
+  local businessType = businessContexts[businessId]
+  if not businessType then
+    return false
+  end
+
+  local module = getBusinessModule(businessType)
+  if module and module.assignJobToTech then
+    local ok, result = pcall(module.assignJobToTech, businessId, techId, jobId)
+    if not ok then
+      log('E', 'businessComputer', 'assignTechToJob failed: ' .. tostring(result))
+      return false
+    end
+    return result
+  end
+
+  return false
+end
+
+local function renameTech(businessId, techId, newName)
+  if not businessId or not techId then
+    return false
+  end
+
+  local businessType = businessContexts[businessId]
+  if not businessType then
+    return false
+  end
+
+  local module = getBusinessModule(businessType)
+  if module and module.updateTechName then
+    local ok, result = pcall(module.updateTechName, businessId, techId, newName)
+    if not ok then
+      log('E', 'businessComputer', 'renameTech failed: ' .. tostring(result))
+      return false
+    end
+    return result
+  end
+
+  return false
+end
+
 local function pullOutVehicle(businessId, vehicleId)
   if not businessId or not vehicleId then
     return false
@@ -704,6 +750,20 @@ local function pullOutVehicle(businessId, vehicleId)
         career_modules_business_businessInventory.setActiveVehicle(businessId, normalizedVehicleId)
       end
       return true
+    end
+  end
+
+  if module and module.isJobLockedByTech and career_modules_business_businessInventory then
+    local vehicles = career_modules_business_businessInventory.getBusinessVehicles(businessId) or {}
+    for _, stored in ipairs(vehicles) do
+      local storedId = normalizeVehicleIdValue(stored.vehicleId)
+      if storedId == normalizedVehicleId then
+        local jobId = tonumber(stored.jobId) or stored.jobId
+        if jobId and module.isJobLockedByTech(businessId, jobId) then
+          return { success = false, errorCode = "jobLocked" }
+        end
+        break
+      end
     end
   end
 
@@ -1635,6 +1695,8 @@ M.getBusinessComputerUIData = getBusinessComputerUIData
 M.acceptJob = acceptJob
 M.declineJob = declineJob
 M.abandonJob = abandonJob
+M.assignTechToJob = assignTechToJob
+M.renameTech = renameTech
 M.completeJob = completeJob
 M.canCompleteJob = canCompleteJob
 M.getAbandonPenalty = getAbandonPenalty

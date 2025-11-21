@@ -11,9 +11,12 @@ local raceData = nil
 local raceDataLevel = nil
 local factoryConfigs = nil
 local businessJobs = {}
+local businessTechs = {}
 local businessXP = {}
 local generationTimers = {}
 local jobIdCounter = 0
+
+local freeroamUtils = require('gameplay/events/freeroam/utils')
 
 local GEN_INTERVAL_SECONDS = 120
 local EXPIRY_SECONDS = 300
@@ -84,6 +87,396 @@ local function notifyJobsUpdated(businessId)
   guihooks.trigger('businessComputer:onJobsUpdated', {
     businessType = "tuningShop",
     businessId = tostring(businessId)
+  })
+end
+
+local function getSkillTreeLevel(businessId, treeId, nodeId)
+  if not businessId or not career_modules_business_businessSkillTree then
+    return 0
+  end
+  local level = career_modules_business_businessSkillTree.getNodeProgress(businessId, treeId, nodeId)
+  return tonumber(level) or 0
+end
+
+local function getTechCapacity(businessId)
+  local base = 0
+  local level = getSkillTreeLevel(businessId, "automation", "shop-techs")
+  base = base + level
+  return base
+end
+
+local function ensureTechName(tech, index)
+  if tech and (not tech.name or tech.name == "") then
+    tech.name = string.format("Tech #%d", index or tech.id or 1)
+  end
+end
+
+local function ensureTechIdentity(tech, index)
+  if not tech.id then
+    tech.id = index
+  end
+  ensureTechName(tech, index)
+  tech.state = tech.state or 0
+  tech.stateElapsed = tech.stateElapsed or 0
+  tech.stateDuration = tech.stateDuration or 0
+  tech.currentAction = tech.currentAction or "idle"
+  tech.phase = tech.phase or "idle"
+  tech.retriesUsed = tech.retriesUsed or 0
+  tech.totalAttempts = tech.totalAttempts or 0
+  tech.fundsHeld = tech.fundsHeld or 0
+  tech.buildCost = tech.buildCost or 0
+  tech.totalSpent = tech.totalSpent or 0
+  tech.eventFunds = tech.eventFunds or 0
+  tech.maxValidationAttempts = tech.maxValidationAttempts or 0
+  tech.validationAttempts = tech.validationAttempts or 0
+  tech.cooldownDuration = tech.cooldownDuration or 150
+end
+
+local function ensureTechSlots(businessId)
+  if not businessId then return end
+  local capacity = math.max(0, getTechCapacity(businessId))
+  if capacity <= 0 then
+    businessTechs[businessId] = {}
+    return
+  end
+
+  local techs = businessTechs[businessId] or {}
+  for index = 1, capacity do
+    techs[index] = techs[index] or {
+      id = index,
+      name = string.format("Tech #%d", index),
+      state = 0,
+      stateElapsed = 0,
+      stateDuration = 0,
+      jobId = nil,
+      retriesUsed = 0,
+      totalAttempts = 0,
+      fundsHeld = 0,
+      buildCost = 0,
+      eventFunds = 0
+    }
+    ensureTechIdentity(techs[index], index)
+  end
+
+  for i = capacity + 1, #techs do
+    techs[i] = nil
+  end
+
+  businessTechs[businessId] = techs
+  return techs
+end
+
+local function getBusinessTechsPath(businessId)
+  if not career_career.isActive() then return nil end
+  local _, currentSavePath = career_saveSystem.getCurrentSaveSlot()
+  if not currentSavePath then return nil end
+  return currentSavePath .. "/career/rls_career/businesses/" .. businessId .. "/techs.json"
+end
+
+local function loadBusinessTechs(businessId)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId then return {} end
+
+  if businessTechs[businessId] then
+    ensureTechSlots(businessId)
+    return businessTechs[businessId]
+  end
+
+  local filePath = getBusinessTechsPath(businessId)
+  local techs = {}
+  if filePath then
+    local data = jsonReadFile(filePath) or {}
+    if data and data.techs then
+      for index, tech in ipairs(data.techs) do
+        ensureTechIdentity(tech, index)
+        techs[index] = tech
+      end
+    end
+  end
+
+  businessTechs[businessId] = techs
+  ensureTechSlots(businessId)
+  return businessTechs[businessId]
+end
+
+local TECH_ACTION_LABELS = {
+  idle = function(job)
+    return "Idle"
+  end,
+  driveToEvent = function(job)
+    return string.format("Driving to %s", job and job.raceLabel or "Event")
+  end,
+  runEvent = function(job)
+    return string.format("Running %s Event", job and job.raceLabel or "Event")
+  end,
+  driveBack = function()
+    return "Driving back to the shop"
+  end,
+  build = function(job)
+    return string.format("Building Vehicle for %s Event", job and job.raceLabel or "Event")
+  end,
+  update = function(job)
+    return string.format("Updating Vehicle tune for %s Event", job and job.raceLabel or "Event")
+  end,
+  cooldown = function()
+    return "Cooling down between runs"
+  end,
+  completed = function()
+    return "Job Complete"
+  end,
+  failed = function()
+    return "Job Failed"
+  end
+}
+
+local function getTechDisplayLabel(action, job)
+  local fn = TECH_ACTION_LABELS[action]
+  if fn then
+    return fn(job)
+  end
+  return "Working"
+end
+
+local function getBusinessJobsPath(businessId)
+  if not career_career.isActive() then return nil end
+  local _, currentSavePath = career_saveSystem.getCurrentSaveSlot()
+  if not currentSavePath then return nil end
+  return currentSavePath .. "/career/rls_career/businesses/" .. businessId .. "/jobs.json"
+end
+
+local function syncJobIdCounter()
+  local maxJobId = 0
+  local usedIds = {}
+  local idMapping = {}
+  
+  for _, jobs in pairs(businessJobs) do
+    for _, job in ipairs(jobs.active or {}) do
+      if job.jobId then
+        local jId = tonumber(job.jobId) or job.jobId
+        if type(jId) == "number" then
+          if jId > maxJobId then
+            maxJobId = jId
+          end
+          usedIds[jId] = (usedIds[jId] or 0) + 1
+        end
+      end
+    end
+    for _, job in ipairs(jobs.new or {}) do
+      if job.jobId then
+        local jId = tonumber(job.jobId) or job.jobId
+        if type(jId) == "number" then
+          if jId > maxJobId then
+            maxJobId = jId
+          end
+          usedIds[jId] = (usedIds[jId] or 0) + 1
+        end
+      end
+    end
+    for _, job in ipairs(jobs.completed or {}) do
+      if job.jobId then
+        local jId = tonumber(job.jobId) or job.jobId
+        if type(jId) == "number" then
+          if jId > maxJobId then
+            maxJobId = jId
+          end
+          usedIds[jId] = (usedIds[jId] or 0) + 1
+        end
+      end
+    end
+  end
+  
+  local nextId = maxJobId + 1
+  for businessId, jobs in pairs(businessJobs) do
+    for _, job in ipairs(jobs.active or {}) do
+      if job.jobId then
+        local jId = tonumber(job.jobId) or job.jobId
+        if type(jId) == "number" and usedIds[jId] and usedIds[jId] > 1 then
+          local oldId = jId
+          job.jobId = nextId
+          idMapping[businessId] = idMapping[businessId] or {}
+          idMapping[businessId][oldId] = nextId
+          usedIds[nextId] = 1
+          nextId = nextId + 1
+          usedIds[jId] = usedIds[jId] - 1
+        end
+      end
+    end
+    for _, job in ipairs(jobs.new or {}) do
+      if job.jobId then
+        local jId = tonumber(job.jobId) or job.jobId
+        if type(jId) == "number" and usedIds[jId] and usedIds[jId] > 1 then
+          local oldId = jId
+          job.jobId = nextId
+          idMapping[businessId] = idMapping[businessId] or {}
+          idMapping[businessId][oldId] = nextId
+          usedIds[nextId] = 1
+          nextId = nextId + 1
+          usedIds[jId] = usedIds[jId] - 1
+        end
+      end
+    end
+  end
+  
+  for businessId, mapping in pairs(idMapping) do
+    if career_modules_business_businessInventory then
+      local vehicles = career_modules_business_businessInventory.getBusinessVehicles(businessId)
+      if vehicles then
+        for _, vehicle in ipairs(vehicles) do
+          if vehicle.jobId then
+            local vJobId = tonumber(vehicle.jobId) or vehicle.jobId
+            if mapping[vJobId] then
+              vehicle.jobId = mapping[vJobId]
+              career_modules_business_businessInventory.storeVehicle(businessId, vehicle)
+            end
+          end
+        end
+      end
+    end
+  end
+  
+  if maxJobId >= jobIdCounter or nextId > jobIdCounter then
+    jobIdCounter = nextId
+  end
+end
+
+local function loadBusinessJobs(businessId)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId then return {} end
+  
+  if businessJobs[businessId] then
+    return businessJobs[businessId]
+  end
+  
+  local filePath = getBusinessJobsPath(businessId)
+  if not filePath then return {} end
+  
+  local data = jsonReadFile(filePath) or {}
+  businessJobs[businessId] = {
+    active = data.active or {},
+    new = data.new or {},
+    completed = data.completed or {}
+  }
+  
+  for _, job in ipairs(businessJobs[businessId].active or {}) do
+    if job.jobId then
+      job.jobId = tonumber(job.jobId) or job.jobId
+    end
+    job.commuteSeconds = tonumber(job.commuteSeconds) or 120
+    job.eventReward = tonumber(job.eventReward) or 0
+  end
+  for _, job in ipairs(businessJobs[businessId].new or {}) do
+    if job.jobId then
+      job.jobId = tonumber(job.jobId) or job.jobId
+    end
+    ensureJobLifetime(job, businessId)
+    job.commuteSeconds = tonumber(job.commuteSeconds) or 120
+    job.eventReward = tonumber(job.eventReward) or 0
+  end
+  for _, job in ipairs(businessJobs[businessId].completed or {}) do
+    if job.jobId then
+      job.jobId = tonumber(job.jobId) or job.jobId
+    end
+  end
+  
+  if not businessJobs[businessId].new then
+    businessJobs[businessId].new = {}
+  end
+
+  syncJobIdCounter()
+
+  return businessJobs[businessId]
+end
+
+local function getJobById(businessId, jobId)
+  if not businessId or not jobId then return nil end
+  
+  jobId = tonumber(jobId) or jobId
+  local jobs = loadBusinessJobs(businessId)
+  
+  for _, job in ipairs(jobs.active or {}) do
+    local jId = tonumber(job.jobId) or job.jobId
+    if jId == jobId then return job end
+  end
+  
+  for _, job in ipairs(jobs.new or {}) do
+    local jId = tonumber(job.jobId) or job.jobId
+    if jId == jobId then return job end
+  end
+  
+  for _, job in ipairs(jobs.completed or {}) do
+    local jId = tonumber(job.jobId) or job.jobId
+    if jId == jobId then return job end
+  end
+  
+  return nil
+end
+
+local function formatTechForUIEntry(businessId, tech)
+  if not tech then
+    return nil
+  end
+
+  local job = nil
+  if tech.jobId then
+    job = getJobById(businessId, tech.jobId)
+  end
+
+  local label = getTechDisplayLabel(tech.currentAction, job)
+  local totalSeconds = math.max(0, tonumber(tech.stateDuration) or 0)
+  local elapsedSeconds = math.max(0, tonumber(tech.stateElapsed) or 0)
+  local progress = 0
+  if totalSeconds > 0 then
+    progress = math.min(1, math.max(0, elapsedSeconds / totalSeconds))
+  end
+
+  local jobLabel = nil
+  if job and job.raceLabel then
+    jobLabel = job.raceLabel
+  elseif tech.finishedJobInfo and tech.finishedJobInfo.label then
+    jobLabel = tech.finishedJobInfo.label
+  end
+
+  return {
+    id = tech.id,
+    name = tech.name,
+    state = tech.state or 0,
+    action = tech.currentAction or "idle",
+    label = label,
+    progress = progress,
+    remainingSeconds = math.max(0, math.floor(totalSeconds - elapsedSeconds)),
+    totalSeconds = math.floor(totalSeconds),
+    jobId = tech.jobId,
+    jobLabel = jobLabel,
+    phase = tech.phase,
+    validationAttempts = tech.validationAttempts or 0,
+    maxValidationAttempts = tech.maxValidationAttempts or 0,
+    eventFunds = math.floor(tech.eventFunds or 0),
+    totalSpent = math.floor(tech.totalSpent or 0),
+    latestResult = tech.latestResult,
+    finishedJobInfo = tech.finishedJobInfo,
+    canAssign = not tech.jobId and (tech.currentAction == "idle"),
+    fundsHeld = tech.fundsHeld
+  }
+end
+
+local function notifyTechsUpdated(businessId)
+  if not businessId then
+    return
+  end
+
+  local techEntries = {}
+  local techList = loadBusinessTechs(businessId)
+  for _, tech in ipairs(techList) do
+    local formattedTech = formatTechForUIEntry(businessId, tech)
+    if formattedTech then
+      table.insert(techEntries, formattedTech)
+    end
+  end
+
+  guihooks.trigger('businessComputer:onTechsUpdated', {
+    businessType = "tuningShop",
+    businessId = tostring(businessId),
+    techs = techEntries
   })
 end
 
@@ -230,151 +623,711 @@ end
 
 -- Job Management Logic
 
-local function getBusinessJobsPath(businessId)
-  if not career_career.isActive() then return nil end
-  local _, currentSavePath = career_saveSystem.getCurrentSaveSlot()
-  if not currentSavePath then return nil end
-  return currentSavePath .. "/career/rls_career/businesses/" .. businessId .. "/jobs.json"
+local function getFasterTechReduction(businessId)
+  local level1 = getSkillTreeLevel(businessId, "automation", "faster-techs")
+  local level2 = getSkillTreeLevel(businessId, "automation", "faster-techs-ii")
+  local total = math.max(0, level1 + level2)
+  local reduction = math.min(0.65, total * 0.05)
+  return reduction
 end
 
-local function syncJobIdCounter()
-  local maxJobId = 0
-  local usedIds = {}
-  local idMapping = {}
-  
-  for _, jobs in pairs(businessJobs) do
-    for _, job in ipairs(jobs.active or {}) do
-      if job.jobId then
-        local jId = tonumber(job.jobId) or job.jobId
-        if type(jId) == "number" then
-          if jId > maxJobId then
-            maxJobId = jId
-          end
-          usedIds[jId] = (usedIds[jId] or 0) + 1
-        end
+local function getBuildTimeSeconds(baseSeconds, businessId)
+  local reduction = getFasterTechReduction(businessId)
+  return math.max(1, baseSeconds * (1 - reduction))
+end
+
+local function getBuildCostDiscount(businessId)
+  local suppliers = math.min(0.25, getSkillTreeLevel(businessId, "shop-upgrades", "part-suppliers") * 0.05)
+  local smart = math.min(0.25, getSkillTreeLevel(businessId, "automation", "smart-techs") * 0.05)
+  return math.min(0.5, suppliers + smart)
+end
+
+local function getReliableFailureReduction(businessId)
+  return math.min(0.25, getSkillTreeLevel(businessId, "automation", "reliable-techs") * 0.05)
+end
+
+local function hasPerfectTechs(businessId)
+  return getSkillTreeLevel(businessId, "automation", "perfect-techs") > 0
+end
+
+local function getEventRetryAllowance(businessId)
+  return math.max(0, getSkillTreeLevel(businessId, "automation", "event-retries"))
+end
+
+local function getBusinessAccount(businessId)
+  if not career_modules_bank then return nil end
+  local account = career_modules_bank.getBusinessAccount("tuningShop", businessId)
+  if not account then
+    career_modules_bank.createBusinessAccount("tuningShop", businessId)
+    account = career_modules_bank.getBusinessAccount("tuningShop", businessId)
+  end
+  return account
+end
+
+local function creditBusinessAccount(businessId, amount, reason, description)
+  amount = math.floor(amount or 0)
+  if amount <= 0 then return true end
+  local account = getBusinessAccount(businessId)
+  if not account then return false end
+  return career_modules_bank.rewardToAccount({money = {amount = amount}}, account.id, reason or "Automation Payout", description or "")
+end
+
+local function debitBusinessAccount(businessId, amount, reason, description)
+  amount = math.floor(amount or 0)
+  if amount <= 0 then return true end
+  local account = getBusinessAccount(businessId)
+  if not account then return false end
+  return career_modules_bank.removeFunds(account.id, amount, reason or "Automation Expense", description or "", "expense", true)
+end
+
+local function removeJobVehicle(businessId, jobId)
+  if not career_modules_business_businessInventory or not businessId or not jobId then return end
+  local vehicles = career_modules_business_businessInventory.getBusinessVehicles(businessId) or {}
+  local vehicleToRemove = nil
+  for _, vehicle in ipairs(vehicles) do
+    local vJobId = tonumber(vehicle.jobId) or vehicle.jobId
+    if vJobId == jobId then
+      vehicleToRemove = vehicle
+      break
+    end
+  end
+
+  if not vehicleToRemove then return end
+
+  local removeId = tonumber(vehicleToRemove.vehicleId) or vehicleToRemove.vehicleId
+  if career_modules_business_businessInventory.getPulledOutVehicles then
+    local pulledVehicles = career_modules_business_businessInventory.getPulledOutVehicles(businessId) or {}
+    for _, pulled in ipairs(pulledVehicles) do
+      local pulledId = tonumber(pulled.vehicleId) or pulled.vehicleId
+      if pulledId == removeId then
+        career_modules_business_businessInventory.putAwayVehicle(businessId, removeId)
+        break
       end
     end
-    for _, job in ipairs(jobs.new or {}) do
-      if job.jobId then
-        local jId = tonumber(job.jobId) or job.jobId
-        if type(jId) == "number" then
-          if jId > maxJobId then
-            maxJobId = jId
-          end
-          usedIds[jId] = (usedIds[jId] or 0) + 1
-        end
-      end
-    end
-    for _, job in ipairs(jobs.completed or {}) do
-      if job.jobId then
-        local jId = tonumber(job.jobId) or job.jobId
-        if type(jId) == "number" then
-          if jId > maxJobId then
-            maxJobId = jId
-          end
-          usedIds[jId] = (usedIds[jId] or 0) + 1
-        end
+  else
+    local pulledOutVehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
+    if pulledOutVehicle then
+      local pulledId = tonumber(pulledOutVehicle.vehicleId) or pulledOutVehicle.vehicleId
+      if pulledId == removeId then
+        career_modules_business_businessInventory.putAwayVehicle(businessId)
       end
     end
   end
+
+  career_modules_business_businessInventory.removeVehicle(businessId, vehicleToRemove.vehicleId)
+end
+
+local function clearJobLeaderboardEntry(businessId, jobId)
+  if not career_modules_business_businessInventory then return end
+  local leaderboardManager = require('gameplay/events/freeroam/leaderboardManager')
+  local businessJobId = career_modules_business_businessInventory.getBusinessJobIdentifier(businessId, jobId)
+  leaderboardManager.clearLeaderboardForVehicle(businessJobId)
+end
+
+local TECH_STATE = {
+  IDLE = 0,
+  DRIVE_BASELINE = 1,
+  RUN_EVENT = 2,
+  DRIVE_BACK = 3,
+  BUILD = 4,
+  DRIVE_VALIDATION = 5,
+  UPDATE = 6,
+  DRIVE_FINAL = 7,
+  FAILED = 8,
+  COMPLETED = 9,
+  COOLDOWN = 10
+}
+
+local function setTechState(tech, stateCode, action, duration, meta)
+  tech.state = stateCode or TECH_STATE.IDLE
+  tech.currentAction = action or "idle"
+  tech.stateDuration = math.max(0, duration or 0)
+  tech.stateElapsed = 0
+  tech.stateMeta = meta or {}
+end
+
+local function resetTechToIdle(tech)
+  tech.jobId = nil
+  tech.phase = "idle"
+  tech.validationAttempts = 0
+  tech.maxValidationAttempts = 0
+  tech.retriesUsed = 0
+  tech.totalAttempts = 0
+  tech.fundsHeld = 0
+  tech.buildCost = 0
+  tech.totalSpent = 0
+  tech.eventFunds = 0
+  tech.predictedEventTime = nil
+  tech.latestResult = nil
+  tech.finishedJobInfo = nil
+  setTechState(tech, TECH_STATE.IDLE, "idle", 0, {})
+end
+
+local function getCommuteSeconds(job)
+  if not job then return 120 end
+  return math.max(15, tonumber(job.commuteSeconds) or 120)
+end
+
+local function getEventReward(job)
+  if not job then return 0 end
+  return tonumber(job.eventReward) or 0
+end
+
+local function loadRaceData()
+  local currentLevel = getCurrentLevelIdentifier()
+  if not currentLevel then return {} end
   
-  local nextId = maxJobId + 1
-  for businessId, jobs in pairs(businessJobs) do
-    for _, job in ipairs(jobs.active or {}) do
-      if job.jobId then
-        local jId = tonumber(job.jobId) or job.jobId
-        if type(jId) == "number" and usedIds[jId] and usedIds[jId] > 1 then
-          local oldId = jId
-          job.jobId = nextId
-          idMapping[businessId] = idMapping[businessId] or {}
-          idMapping[businessId][oldId] = nextId
-          usedIds[nextId] = 1
-          nextId = nextId + 1
-          usedIds[jId] = usedIds[jId] - 1
-        end
-      end
+  if raceData and raceDataLevel == currentLevel then return raceData end
+  
+  local raceDataPath = "levels/" .. currentLevel .. "/race_data.json"
+  raceData = jsonReadFile(raceDataPath) or {}
+  raceDataLevel = currentLevel
+  return raceData
+end
+
+local function calculateActualEventPayment(businessId, job, predictedTime)
+  if not job or not predictedTime or predictedTime <= 0 then
+    return 0
+  end
+
+  local races = loadRaceData()
+  if not races or not races.races then
+    return getEventReward(job)
+  end
+
+  local race = nil
+  local raceType = job.raceType
+
+  if raceType == "trackAlt" then
+    race = races.races.track and races.races.track.altRoute
+  elseif raceType == "track" then
+    race = races.races.track
+  elseif raceType == "drag" then
+    race = races.races.drag
+  end
+
+  if not race then
+    return getEventReward(job)
+  end
+
+  local time = race.bestTime
+  local reward = race.reward
+  local damageFactor = race.damageFactor or 0
+
+  local actualTime = predictedTime
+  local targetTime = job.targetTime or time
+  local damagePercentage = 0
+
+  if damageFactor > 0 then
+    damagePercentage = 0
+  end
+
+  if race.topSpeed then
+    local targetSpeed = race.topSpeedGoal or 0
+    local estimatedSpeed = targetSpeed * 0.95
+    reward = freeroamUtils.topSpeedReward(targetSpeed, reward, estimatedSpeed, race.type)
+  elseif race.driftGoal then
+    local targetDrift = race.driftGoal or 0
+    local estimatedDrift = targetDrift * 0.95
+    reward = freeroamUtils.driftReward(race, actualTime, estimatedDrift)
+  elseif damageFactor > 0 then
+    reward = freeroamUtils.hybridRaceReward(time, reward, actualTime, damageFactor, damagePercentage, race.type)
+  else
+    reward = freeroamUtils.raceReward(time, reward, actualTime, race.type)
+  end
+
+  if not career_career or not career_career.isActive() then
+    return math.max(0, reward)
+  end
+
+  local isNewBest = actualTime <= targetTime
+  if not isNewBest then
+    reward = reward / 2
+  end
+
+  if isNewBest then
+    reward = reward * 1.2
+  end
+
+  if career_modules_hardcore and career_modules_hardcore.isHardcoreMode() then
+    reward = reward / 2
+  end
+
+  return math.max(0, math.floor(reward + 0.5))
+end
+
+local function generateValidationTime(businessId, job)
+  if not job then return 0 end
+  local target = tonumber(job.targetTime) or 0
+  if target <= 0 then
+    return math.max(1, target)
+  end
+
+  if hasPerfectTechs(businessId) then
+    local minRatio = 0.975
+    local maxRatio = 0.999
+    local ratio = minRatio + math.random() * (maxRatio - minRatio)
+    return target * ratio
+  end
+
+  local minRatio = 0.9875
+  local maxRatio = 1.0375
+  local reductionPercent = getReliableFailureReduction(businessId)
+  if reductionPercent > 0 then
+    local normalized = reductionPercent / 0.25
+    maxRatio = 1.0375 - (0.025 * normalized)
+    maxRatio = math.max(1.0125, maxRatio)
+  end
+
+  local ratio = minRatio + math.random() * (maxRatio - minRatio)
+  return target * ratio
+end
+
+local BASE_BUILD_SECONDS = 900
+local BASE_UPDATE_SECONDS = 300
+local BASE_COOLDOWN_SECONDS = 150
+
+local function calculateBuildCost(businessId, job)
+  if not job then return 0 end
+  local reward = tonumber(job.reward) or 0
+  local baseCost = math.floor(reward * 0.3)
+  local discount = getBuildCostDiscount(businessId)
+  local cost = math.floor(baseCost * (1 - discount))
+  return math.max(0, cost)
+end
+
+local function calculateUpdateCost(tech)
+  local buildCost = tonumber(tech and tech.buildCost) or 0
+  if buildCost <= 0 then
+    return 0
+  end
+  return math.floor(buildCost * 1.25)
+end
+
+local function moveJobToCompleted(businessId, jobId, status, automationData)
+  local jobs = loadBusinessJobs(businessId)
+  local jobIndex = nil
+  local job = nil
+
+  for i, activeJob in ipairs(jobs.active or {}) do
+    local jId = tonumber(activeJob.jobId) or activeJob.jobId
+    if jId == jobId then
+      jobIndex = i
+      job = activeJob
+      break
     end
-    for _, job in ipairs(jobs.new or {}) do
-      if job.jobId then
-        local jId = tonumber(job.jobId) or job.jobId
-        if type(jId) == "number" and usedIds[jId] and usedIds[jId] > 1 then
-          local oldId = jId
-          job.jobId = nextId
-          idMapping[businessId] = idMapping[businessId] or {}
-          idMapping[businessId][oldId] = nextId
-          usedIds[nextId] = 1
-          nextId = nextId + 1
-          usedIds[jId] = usedIds[jId] - 1
-        end
-      end
+  end
+
+  if not jobIndex or not job then
+    return nil
+  end
+
+  local removedJob = table.remove(jobs.active, jobIndex)
+  removedJob.status = status or "completed"
+  removedJob.completedTime = os.time()
+  removedJob.automationResult = automationData or {}
+  removedJob.techAssigned = nil
+
+  jobs.completed = jobs.completed or {}
+  table.insert(jobs.completed, removedJob)
+
+  notifyJobsUpdated(businessId)
+  career_saveSystem.saveCurrent()
+  return removedJob
+end
+
+local function finalizeTechJobSuccess(businessId, tech, job)
+  if not job then
+    resetTechToIdle(tech)
+    return
+  end
+
+  job.locked = false
+  job.techAssigned = nil
+
+  local totalSpent = tonumber(tech.totalSpent) or 0
+  local eventFunds = tonumber(tech.eventFunds) or 0
+  local reward = tonumber(job.reward) or 0
+  local net = reward - totalSpent + eventFunds
+  local payout = math.max(0, math.floor(net * 0.95))
+
+  creditBusinessAccount(businessId, payout, "Automation Job Reward", string.format("Job #%s automation payout", tostring(job.jobId)))
+
+  local baseXP = 10
+  local xpReward = math.floor(baseXP * getXPGainMultiplier(businessId))
+  addBusinessXP(businessId, xpReward)
+
+  removeJobVehicle(businessId, job.jobId)
+  clearJobLeaderboardEntry(businessId, job.jobId)
+
+  moveJobToCompleted(businessId, job.jobId, "completed", {
+    result = "success",
+    payout = payout,
+    net = net,
+    totalSpent = totalSpent,
+    eventFunds = eventFunds,
+    attempts = tech.totalAttempts,
+    predictedTime = tech.predictedEventTime
+  })
+
+  tech.finishedJobInfo = {
+    label = job.raceLabel,
+    payout = payout
+  }
+  tech.jobId = nil
+  tech.phase = "completed"
+  setTechState(tech, TECH_STATE.COMPLETED, "completed", 3, {jobLabel = job.raceLabel})
+  notifyTechsUpdated(businessId)
+end
+
+local function getAbandonPenalty(businessId, jobId)
+  if not businessId or not jobId then return 0 end
+  
+  local job = getJobById(businessId, jobId)
+  if not job then return 0 end
+  
+  if businessId and career_modules_business_businessSkillTree then
+    local treeId = "quality-of-life"
+    local iGiveUpLevel = career_modules_business_businessSkillTree.getNodeProgress(businessId, treeId, "i-give-up") or 0
+    if iGiveUpLevel > 0 then
+      return 0
     end
   end
   
-  for businessId, mapping in pairs(idMapping) do
-    if career_modules_business_businessInventory then
-      local vehicles = career_modules_business_businessInventory.getBusinessVehicles(businessId)
-      if vehicles then
-        for _, vehicle in ipairs(vehicles) do
-          if vehicle.jobId then
-            local vJobId = tonumber(vehicle.jobId) or vehicle.jobId
-            if mapping[vJobId] then
-              vehicle.jobId = mapping[vJobId]
-              career_modules_business_businessInventory.storeVehicle(businessId, vehicle)
+  local reward = job.reward or 20000
+  local basePenalty = reward * 0.5
+  
+  local reduction = 0
+  if businessId and career_modules_business_businessSkillTree then
+    local treeId = "quality-of-life"
+    local noHardFeelingsLevel = career_modules_business_businessSkillTree.getNodeProgress(businessId, treeId, "no-hard-feelings") or 0
+    reduction = noHardFeelingsLevel * 0.05
+  end
+  
+  local penaltyMultiplier = math.max(0, 0.5 - reduction)
+  local penalty = math.floor(reward * penaltyMultiplier)
+  
+  return penalty
+end
+
+
+local function finalizeTechJobFailure(businessId, tech, job, reason)
+  if not job then
+    resetTechToIdle(tech)
+    return
+  end
+
+  job.locked = false
+  job.techAssigned = nil
+
+  local totalSpent = tonumber(tech.totalSpent) or 0
+  local eventFunds = tonumber(tech.eventFunds) or 0
+  local penaltyBase = getAbandonPenalty(businessId, job.jobId)
+  local penalty = math.max(0, penaltyBase + totalSpent - eventFunds)
+
+  if penalty > 0 then
+    debitBusinessAccount(businessId, penalty, "Automation Failure Penalty", string.format("Job #%s failure", tostring(job.jobId)))
+  end
+
+  removeJobVehicle(businessId, job.jobId)
+  clearJobLeaderboardEntry(businessId, job.jobId)
+
+  moveJobToCompleted(businessId, job.jobId, "failed", {
+    result = "failed",
+    penalty = penalty,
+    totalSpent = totalSpent,
+    eventFunds = eventFunds,
+    attempts = tech.totalAttempts,
+    predictedTime = tech.predictedEventTime,
+    reason = reason
+  })
+
+  tech.finishedJobInfo = {
+    label = job.raceLabel,
+    penalty = penalty
+  }
+  tech.jobId = nil
+  tech.phase = "failed"
+  setTechState(tech, TECH_STATE.FAILED, "failed", 3, {jobLabel = job.raceLabel})
+  notifyTechsUpdated(businessId)
+end
+
+local function determineDriveStateCode(tech)
+  if tech.phase == "validation" then
+    return TECH_STATE.DRIVE_VALIDATION
+  elseif tech.phase == "postUpdate" then
+    return TECH_STATE.DRIVE_FINAL
+  else
+    return TECH_STATE.DRIVE_BASELINE
+  end
+end
+
+local function startCommute(businessId, tech, job)
+  if not job then
+    resetTechToIdle(tech)
+    return
+  end
+  local duration = getCommuteSeconds(job)
+  local stateCode = determineDriveStateCode(tech)
+  setTechState(tech, stateCode, "driveToEvent", duration, {jobId = job.jobId})
+end
+
+local function startEventRun(businessId, tech, job)
+  if not job then
+    resetTechToIdle(tech)
+    return
+  end
+
+  if tech.phase == "baseline" then
+    local duration = math.max(1, tonumber(job.baseTime) or tonumber(job.targetTime) or 60)
+    setTechState(tech, TECH_STATE.RUN_EVENT, "runEvent", duration, {jobId = job.jobId, phase = tech.phase})
+    return
+  end
+
+  tech.validationAttempts = (tech.validationAttempts or 0) + 1
+  tech.totalAttempts = (tech.totalAttempts or 0) + 1
+  tech.predictedEventTime = generateValidationTime(businessId, job)
+  local duration = math.max(1, tech.predictedEventTime)
+  setTechState(tech, TECH_STATE.RUN_EVENT, "runEvent", duration, {jobId = job.jobId, phase = tech.phase})
+end
+
+local function startDriveBack(tech, job)
+  if not job then
+    resetTechToIdle(tech)
+    return
+  end
+  local duration = getCommuteSeconds(job)
+  setTechState(tech, TECH_STATE.DRIVE_BACK, "driveBack", duration, {jobId = job.jobId})
+end
+
+local function startBuildPhase(businessId, tech, job)
+  if not job then
+    resetTechToIdle(tech)
+    return
+  end
+
+  local buildCost = calculateBuildCost(businessId, job)
+  tech.buildCost = buildCost
+  tech.totalSpent = buildCost
+
+  if buildCost > 0 then
+    local success = debitBusinessAccount(businessId, buildCost, "Automation Build Cost", string.format("Job #%s build", tostring(job.jobId)))
+    if not success then
+      finalizeTechJobFailure(businessId, tech, job, "paymentFailed")
+      return
+    end
+  end
+
+  local duration = getBuildTimeSeconds(BASE_BUILD_SECONDS, businessId)
+  setTechState(tech, TECH_STATE.BUILD, "build", duration, {jobId = job.jobId})
+end
+
+local function startUpdatePhase(businessId, tech, job)
+  if not job then
+    resetTechToIdle(tech)
+    return
+  end
+
+  local updateCost = calculateUpdateCost(tech)
+  if updateCost > 0 then
+    tech.totalSpent = (tech.totalSpent or 0) + updateCost
+    local success = debitBusinessAccount(businessId, updateCost, "Automation Tune Update", string.format("Job #%s update", tostring(job.jobId)))
+    if not success then
+      finalizeTechJobFailure(businessId, tech, job, "paymentFailed")
+      return
+    end
+  end
+
+  local duration = getBuildTimeSeconds(BASE_UPDATE_SECONDS, businessId)
+  setTechState(tech, TECH_STATE.UPDATE, "update", duration, {jobId = job.jobId})
+end
+
+local function beginValidationCycle(businessId, tech, job, phase)
+  tech.phase = phase or "validation"
+  tech.validationAttempts = 0
+  tech.maxValidationAttempts = 1 + getEventRetryAllowance(businessId)
+  tech.predictedEventTime = nil
+  startCommute(businessId, tech, job)
+end
+
+local function startCooldownPhase(tech, job)
+  if not job then
+    resetTechToIdle(tech)
+    return
+  end
+  local duration = tech.cooldownDuration or BASE_COOLDOWN_SECONDS
+  setTechState(tech, TECH_STATE.COOLDOWN, "cooldown", duration, {jobId = job.jobId})
+end
+
+local function validationSucceeded(tech, job)
+  local target = tonumber(job and job.targetTime) or 0
+  if target <= 0 then
+    return true
+  end
+  local predicted = tonumber(tech and tech.predictedEventTime) or target
+  return predicted <= target
+end
+
+local function handleValidationResult(businessId, tech, job)
+  if not job then
+    resetTechToIdle(tech)
+    return
+  end
+
+  local success = validationSucceeded(tech, job)
+  tech.latestResult = {
+    predictedTime = tech.predictedEventTime,
+    targetTime = job.targetTime,
+    success = success
+  }
+
+  if success then
+    finalizeTechJobSuccess(businessId, tech, job)
+    return
+  end
+
+  local attemptsAllowed = tech.maxValidationAttempts or 1
+  local attemptsUsed = tech.validationAttempts or 0
+  if attemptsUsed < attemptsAllowed then
+    startCooldownPhase(tech, job)
+    return
+  end
+
+  if tech.phase == "validation" then
+    startUpdatePhase(businessId, tech, job)
+    return
+  end
+
+  finalizeTechJobFailure(businessId, tech, job, "validationFailed")
+end
+
+local function advanceTechState(businessId, tech)
+  if not tech then return false end
+  if not tech.jobId and tech.currentAction ~= "completed" and tech.currentAction ~= "failed" then
+    resetTechToIdle(tech)
+    return false
+  end
+
+  local job = getJobById(businessId, tech.jobId)
+  if (not job) and tech.jobId then
+    resetTechToIdle(tech)
+    return false
+  end
+
+  local action = tech.currentAction
+
+  if action == "driveToEvent" then
+    startEventRun(businessId, tech, job)
+    return true
+  elseif action == "runEvent" then
+    local predictedTime = tech.predictedEventTime
+    if tech.phase == "baseline" then
+      predictedTime = job.baseTime or job.targetTime or 0
+    end
+    local actualPayment = calculateActualEventPayment(businessId, job, predictedTime)
+    tech.eventFunds = (tech.eventFunds or 0) + actualPayment
+    startDriveBack(tech, job)
+    return true
+  elseif action == "driveBack" then
+    if tech.phase == "baseline" then
+      startBuildPhase(businessId, tech, job)
+    else
+      handleValidationResult(businessId, tech, job)
+    end
+    return true
+  elseif action == "build" then
+    beginValidationCycle(businessId, tech, job, "validation")
+    return true
+  elseif action == "update" then
+    beginValidationCycle(businessId, tech, job, "postUpdate")
+    return true
+  elseif action == "cooldown" then
+    startCommute(businessId, tech, job)
+    return true
+  elseif action == "completed" or action == "failed" then
+    resetTechToIdle(tech)
+    return false
+  else
+    resetTechToIdle(tech)
+    return false
+  end
+end
+
+local function processTechs(businessId, dtSim)
+  if not businessId or dtSim <= 0 then return end
+
+  local techs = loadBusinessTechs(businessId)
+  local anyChanged = false
+
+  for _, tech in ipairs(techs) do
+    if tech.currentAction ~= "idle" then
+      local timeRemaining = dtSim
+      local safety = 0
+      
+      local originalAction = tech.currentAction
+      local originalPhase = tech.phase
+
+      while timeRemaining > 0 and safety < 16 do
+        safety = safety + 1
+        local duration = tech.stateDuration or 0
+        
+        if duration <= 0 then
+          if not advanceTechState(businessId, tech) then
+            break
+          else
+            goto continue_inner
+          end
+        end
+
+        local needed = duration - tech.stateElapsed
+        if needed <= 0 then
+          if not advanceTechState(businessId, tech) then
+            break
+          end
+        else
+          local delta = math.min(needed, timeRemaining)
+          tech.stateElapsed = tech.stateElapsed + delta
+          timeRemaining = timeRemaining - delta
+          
+          if tech.stateElapsed >= tech.stateDuration - 1e-6 then
+            if not advanceTechState(businessId, tech) then
+              break
             end
           end
         end
+        ::continue_inner::
+      end
+      
+      if tech.currentAction ~= originalAction or tech.phase ~= originalPhase then
+        anyChanged = true
       end
     end
   end
-  
-  if maxJobId >= jobIdCounter or nextId > jobIdCounter then
-    jobIdCounter = nextId
+
+  if anyChanged then
+    notifyTechsUpdated(businessId)
   end
 end
 
-local function loadBusinessJobs(businessId)
+local function saveBusinessTechs(businessId, currentSavePath)
   businessId = normalizeBusinessId(businessId)
-  if not businessId then return {} end
-  
-  if businessJobs[businessId] then
-    return businessJobs[businessId]
+  if not businessId or not businessTechs[businessId] then return end
+  if not currentSavePath then return end
+
+  local filePath = currentSavePath .. "/career/rls_career/businesses/" .. businessId .. "/techs.json"
+  local dirPath = string.match(filePath, "^(.*)/[^/]+$")
+  if dirPath and not FS:directoryExists(dirPath) then
+    FS:directoryCreate(dirPath)
   end
-  
-  local filePath = getBusinessJobsPath(businessId)
-  if not filePath then return {} end
-  
-  local data = jsonReadFile(filePath) or {}
-  businessJobs[businessId] = {
-    active = data.active or {},
-    new = data.new or {},
-    completed = data.completed or {}
+
+  local data = {
+    techs = businessTechs[businessId]
   }
-  
-  for _, job in ipairs(businessJobs[businessId].active or {}) do
-    if job.jobId then
-      job.jobId = tonumber(job.jobId) or job.jobId
-    end
-  end
-  for _, job in ipairs(businessJobs[businessId].new or {}) do
-    if job.jobId then
-      job.jobId = tonumber(job.jobId) or job.jobId
-    end
-    ensureJobLifetime(job, businessId)
-  end
-  for _, job in ipairs(businessJobs[businessId].completed or {}) do
-    if job.jobId then
-      job.jobId = tonumber(job.jobId) or job.jobId
-    end
-  end
-  
-  if not businessJobs[businessId].new then
-    businessJobs[businessId].new = {}
-  end
 
-  syncJobIdCounter()
-
-  return businessJobs[businessId]
+  jsonWriteFile(filePath, data, true)
 end
+
+
 
 local function saveBusinessJobs(businessId, currentSavePath)
   businessId = normalizeBusinessId(businessId)
@@ -391,17 +1344,6 @@ local function saveBusinessJobs(businessId, currentSavePath)
   jsonWriteFile(filePath, businessJobs[businessId], true)
 end
 
-local function loadRaceData()
-  local currentLevel = getCurrentLevelIdentifier()
-  if not currentLevel then return {} end
-  
-  if raceData and raceDataLevel == currentLevel then return raceData end
-  
-  local raceDataPath = "levels/" .. currentLevel .. "/race_data.json"
-  raceData = jsonReadFile(raceDataPath) or {}
-  raceDataLevel = currentLevel
-  return raceData
-end
 
 local function getFactoryConfigs()
   if factoryConfigs then return factoryConfigs end
@@ -572,6 +1514,7 @@ local function generateJob(businessId)
   local tuningShopConfig = race and race.tuningShop or {}
   local levels = tuningShopConfig.levels or {}
   local decimalPlaces = tuningShopConfig.decimalPlaces or 0
+  local commuteSeconds = tuningShopConfig.commute or tuningShopConfig.communte or 120
   
   if not levels or #levels == 0 then return nil end
   
@@ -620,7 +1563,9 @@ local function generateJob(businessId)
     targetTime = targetTime,
     powerToWeight = powerToWeight,
     reward = reward,
-    decimalPlaces = decimalPlaces
+    decimalPlaces = decimalPlaces,
+    commuteSeconds = commuteSeconds,
+    eventReward = race and race.reward or 0
   }
   
   return job
@@ -772,30 +1717,6 @@ local function declineJob(businessId, jobId)
   end
   
   return false
-end
-
-local function getJobById(businessId, jobId)
-  if not businessId or not jobId then return nil end
-  
-  jobId = tonumber(jobId) or jobId
-  local jobs = loadBusinessJobs(businessId)
-  
-  for _, job in ipairs(jobs.active or {}) do
-    local jId = tonumber(job.jobId) or job.jobId
-    if jId == jobId then return job end
-  end
-  
-  for _, job in ipairs(jobs.new or {}) do
-    local jId = tonumber(job.jobId) or job.jobId
-    if jId == jobId then return job end
-  end
-  
-  for _, job in ipairs(jobs.completed or {}) do
-    local jId = tonumber(job.jobId) or job.jobId
-    if jId == jobId then return job end
-  end
-  
-  return nil
 end
 
 local function getJobCurrentTime(businessId, jobId)
@@ -968,36 +1889,6 @@ local function completeJob(businessId, jobId)
   
   log("D", "tuningShop", "completeJob: Successfully completed job. businessId=" .. tostring(businessId) .. ", jobId=" .. tostring(jobId))
   return true
-end
-
-local function getAbandonPenalty(businessId, jobId)
-  if not businessId or not jobId then return 0 end
-  
-  local job = getJobById(businessId, jobId)
-  if not job then return 0 end
-  
-  if businessId and career_modules_business_businessSkillTree then
-    local treeId = "quality-of-life"
-    local iGiveUpLevel = career_modules_business_businessSkillTree.getNodeProgress(businessId, treeId, "i-give-up") or 0
-    if iGiveUpLevel > 0 then
-      return 0
-    end
-  end
-  
-  local reward = job.reward or 20000
-  local basePenalty = reward * 0.5
-  
-  local reduction = 0
-  if businessId and career_modules_business_businessSkillTree then
-    local treeId = "quality-of-life"
-    local noHardFeelingsLevel = career_modules_business_businessSkillTree.getNodeProgress(businessId, treeId, "no-hard-feelings") or 0
-    reduction = noHardFeelingsLevel * 0.05
-  end
-  
-  local penaltyMultiplier = math.max(0, 0.5 - reduction)
-  local penalty = math.floor(reward * penaltyMultiplier)
-  
-  return penalty
 end
 
 local function abandonJob(businessId, jobId)
@@ -1196,7 +2087,9 @@ local function formatJobForUI(job, businessId)
     raceLabel = job.raceLabel,
     decimalPlaces = job.decimalPlaces or 0,
     expiresInSeconds = expiresInSeconds,
-    penalty = penalty
+    penalty = penalty,
+    techAssigned = job.techAssigned,
+    isLocked = job.locked or false
   }
 end
 
@@ -1409,7 +2302,8 @@ local function getUIData(businessId)
     if hasDamageLockedVehicle then
       local allowedTabs = {
         home = true,
-        jobs = true
+          jobs = true,
+          techs = true
       }
 
       local filteredTabs = {}
@@ -1422,6 +2316,15 @@ local function getUIData(businessId)
     end
   else
     log('W', 'tuningShop', 'Tab registry not available')
+  end
+
+  local techEntries = {}
+  local techList = loadBusinessTechs(businessId)
+  for _, tech in ipairs(techList) do
+    local formattedTech = formatTechForUIEntry(businessId, tech)
+    if formattedTech then
+      table.insert(techEntries, formattedTech)
+    end
   end
 
   return {
@@ -1437,6 +2340,7 @@ local function getUIData(businessId)
     activeVehicleId = activeVehicleId,
     maxPulledOutVehicles = getMaxPulledOutVehicles(businessId),
     tabs = tabs,
+    techs = techEntries,
     vehicleDamage = pulledOutDamageInfo.damage,
     vehicleDamageLocked = pulledOutDamageInfo.locked,
     vehicleDamageThreshold = pulledOutDamageInfo.threshold,
@@ -1497,6 +2401,7 @@ local function onUpdate(dtReal, dtSim, dtRaw)
         if updateNewJobExpirations(id, jobs, deltaSim) then
           jobsChanged = true
         end
+            processTechs(id, deltaSim)
       end
 
       if jobsChanged then
@@ -1540,7 +2445,10 @@ local function onCareerActivated()
       local _, currentSavePath = career_saveSystem.getCurrentSaveSlot()
       if currentSavePath then
         saveBusinessJobs(normalizedId, currentSavePath)
+        saveBusinessTechs(normalizedId, currentSavePath)
       end
+      
+      loadBusinessTechs(normalizedId)
       
       notifyJobsUpdated(normalizedId)
     end,
@@ -1578,11 +2486,21 @@ local function onCareerActivated()
       section = "BASIC",
       order = 3
     })
+
+    career_modules_business_businessTabRegistry.registerTab("tuningShop", {
+      id = "techs",
+      label = "Techs",
+      icon = '<circle cx="12" cy="7" r="4"/><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><circle cx="19" cy="7" r="3"/><path d="M22 21v-2a3 3 0 0 0-3-3h-2"/>',
+      component = "BusinessTechsTab",
+      section = "BASIC",
+      order = 4
+    })
   end
   
   businessJobs = {}
   businessXP = {}
   generationTimers = {}
+  businessTechs = {}
 end
 
 local function onSaveCurrentSaveSlot(currentSavePath)
@@ -1591,6 +2509,9 @@ local function onSaveCurrentSaveSlot(currentSavePath)
   end
   for businessId, _ in pairs(businessXP) do
     saveBusinessXP(businessId, currentSavePath)
+  end
+  for businessId, _ in pairs(businessTechs) do
+    saveBusinessTechs(businessId, currentSavePath)
   end
 end
 
@@ -1601,6 +2522,124 @@ local function isShopAppUnlocked(businessId)
   
   local level = career_modules_business_businessSkillTree.getNodeProgress(businessId, "quality-of-life", "shop-app")
   return level and level > 0
+end
+
+local function getTechById(businessId, techId)
+  if not businessId or not techId then return nil end
+  local techs = loadBusinessTechs(businessId)
+  for _, tech in ipairs(techs) do
+    if tech.id == techId then
+      return tech
+    end
+  end
+  return nil
+end
+
+local function updateTechName(businessId, techId, newName)
+  businessId = normalizeBusinessId(businessId)
+  techId = tonumber(techId)
+  if not businessId or not techId then
+    return false
+  end
+
+  local tech = getTechById(businessId, techId)
+  if not tech then return false end
+
+  if type(newName) == "string" then
+    local trimmed = newName:match("^%s*(.-)%s*$")
+    if trimmed == "" then
+      trimmed = string.format("Tech #%d", techId)
+    end
+    tech.name = trimmed
+    notifyTechsUpdated(businessId)
+    return true
+  end
+
+  return false
+end
+
+local function getTechsForBusiness(businessId)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId then return {} end
+
+  local techs = loadBusinessTechs(businessId)
+  local result = {}
+  for _, tech in ipairs(techs) do
+    table.insert(result, deepcopy(tech))
+  end
+  return result
+end
+
+local function isJobLockedByTech(businessId, jobId)
+  businessId = normalizeBusinessId(businessId)
+  jobId = tonumber(jobId) or jobId
+  if not businessId or not jobId then return false end
+
+  local techs = loadBusinessTechs(businessId)
+  for _, tech in ipairs(techs) do
+    local tJobId = tonumber(tech.jobId) or tech.jobId
+    if tJobId == jobId then
+      return true
+    end
+  end
+  return false
+end
+
+local function assignJobToTech(businessId, techId, jobId)
+  businessId = normalizeBusinessId(businessId)
+  techId = tonumber(techId)
+  jobId = tonumber(jobId) or jobId
+
+  if not businessId or not techId or not jobId then
+    return false, "invalidParameters"
+  end
+
+  local tech = getTechById(businessId, techId)
+  if not tech then
+    return false, "techNotFound"
+  end
+
+  if tech.jobId then
+    return false, "techBusy"
+  end
+
+  local jobs = loadBusinessJobs(businessId)
+  local job = nil
+  for _, activeJob in ipairs(jobs.active or {}) do
+    local jId = tonumber(activeJob.jobId) or activeJob.jobId
+    if jId == jobId then
+      job = activeJob
+      break
+    end
+  end
+
+  if not job then
+    return false, "jobNotActive"
+  end
+
+  if job.techAssigned and job.techAssigned ~= techId then
+    return false, "jobLocked"
+  end
+
+  tech.jobId = jobId
+  tech.phase = "baseline"
+  tech.validationAttempts = 0
+  tech.maxValidationAttempts = 0
+  tech.totalAttempts = 0
+  tech.totalSpent = 0
+  tech.eventFunds = 0
+  tech.retriesUsed = 0
+  tech.predictedEventTime = nil
+  tech.latestResult = nil
+  job.techAssigned = techId
+  job.locked = true
+
+  local commuteSeconds = getCommuteSeconds(job)
+  setTechState(tech, TECH_STATE.DRIVE_BASELINE, "driveToEvent", commuteSeconds, {jobId = jobId, phase = "baseline"})
+
+  notifyTechsUpdated(businessId)
+  notifyJobsUpdated(businessId)
+  return true
 end
 
 M.onCareerActivated = onCareerActivated
@@ -1625,5 +2664,9 @@ M.getBusinessXP = getBusinessXP
 M.addBusinessXP = addBusinessXP
 M.spendBusinessXP = spendBusinessXP
 M.getMaxPulledOutVehicles = getMaxPulledOutVehicles
+M.getTechsForBusiness = getTechsForBusiness
+M.updateTechName = updateTechName
+M.assignJobToTech = assignJobToTech
+M.isJobLockedByTech = isJobLockedByTech
 
 return M
