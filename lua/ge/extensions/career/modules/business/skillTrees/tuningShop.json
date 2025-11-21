@@ -139,7 +139,7 @@
           "prerequisites": [
             {
               "type": "totalUpgrades",
-              "min": 15
+              "min": 5
             }
           ]
         }
