@@ -197,7 +197,15 @@
         </div>
         <div class="job-actions-active" :class="{ locked: damageLockApplies }">
           <template v-if="hasTechAssigned">
-            <div class="tech-message">{{ techName || 'Tech' }} is working on this</div>
+            <div class="tech-work-container">
+              <template v-if="assignedTech && assignedTech.jobId">
+                <div class="tech-status-title">{{ techStatus }}</div>
+                <div class="tech-progress-bar-bg">
+                  <div class="tech-progress-bar-fill" :style="{ width: techProgress + '%' }"></div>
+                </div>
+              </template>
+              <div class="tech-message">{{ techName || 'Tech' }} is working on this</div>
+            </div>
           </template>
           <template v-else-if="damageLockApplies">
             <div class="lock-message">Customer Vehicle Damaged</div>
@@ -283,7 +291,15 @@
           </div>
           <div class="job-actions-active-horizontal" :class="{ locked: damageLockApplies }">
             <template v-if="hasTechAssigned">
-              <div class="tech-message">{{ techName || 'Tech' }} is working on this</div>
+              <div class="tech-work-container">
+                <template v-if="assignedTech && assignedTech.jobId">
+                  <div class="tech-status-title">{{ techStatus }}</div>
+                  <div class="tech-progress-bar-bg">
+                    <div class="tech-progress-bar-fill" :style="{ width: techProgress + '%' }"></div>
+                  </div>
+                </template>
+                <div class="tech-message">{{ techName || 'Tech' }} is working on this</div>
+              </div>
             </template>
             <template v-else-if="damageLockApplies">
               <div class="lock-message">Customer Vehicle Damaged</div>
@@ -364,13 +380,39 @@ const techAssigned = computed(() => {
   if (!props.job?.techAssigned) return null
   return props.job.techAssigned
 })
-const techName = computed(() => {
+const assignedTech = computed(() => {
   if (!techAssigned.value) return null
   const techs = store.techs || []
-  const tech = techs.find(t => String(t.id) === String(techAssigned.value))
-  return tech?.name || null
+  const tech = techs.find(t => String(t.id) === String(techAssigned.value)) || null
+  if (!tech) return null
+  const techJobId = normalizeJobId(tech.jobId)
+  if (techJobId !== jobIdentifier.value) return null
+  return tech
+})
+const techName = computed(() => {
+  return assignedTech.value?.name || null
 })
 const hasTechAssigned = computed(() => !!techAssigned.value)
+const techProgress = computed(() => {
+  if (!assignedTech.value || !assignedTech.value.jobId) return 0
+  const progress = assignedTech.value.progress
+  return typeof progress === 'number' ? Math.min(100, Math.max(0, progress * 100)) : 0
+})
+const techStatus = computed(() => {
+  if (!assignedTech.value) return null
+  const phaseMap = {
+    baseline: "Baseline Run",
+    validation: "Validation Run",
+    postUpdate: "Final Verification",
+    completed: "Completed",
+    failed: "Failed",
+    idle: "Idle",
+    build: "Building Vehicle",
+    update: "Tuning Vehicle",
+    cooldown: "Cooling Down"
+  }
+  return assignedTech.value.label || phaseMap[assignedTech.value.phase] || assignedTech.value.action || "Working"
+})
 const pulledOutVehicleForJob = computed(() => {
   if (!Array.isArray(store.pulledOutVehicles)) {
     return null
@@ -615,6 +657,37 @@ watch(() => [props.job?.jobId, props.job?.expiresInSeconds, props.isActive], () 
   text-align: center;
   margin-bottom: 0.25rem;
   width: 100%;
+}
+
+.tech-work-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tech-status-title {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: center;
+}
+
+.tech-progress-bar-bg {
+  width: 100%;
+  height: 0.375rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 0.1875rem;
+  overflow: hidden;
+}
+
+.tech-progress-bar-fill {
+  height: 100%;
+  background: rgba(245, 73, 0, 1);
+  border-radius: 0.1875rem;
+  transition: width 0.3s ease;
 }
 
 .tech-message {
