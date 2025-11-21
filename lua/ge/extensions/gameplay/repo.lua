@@ -57,23 +57,24 @@ function VehicleRepoJob:new()
     return instance
 end
 
--- Destroy the current job and clean up resources
-function VehicleRepoJob:destroy()
+-- Reset to initial state (ready to generate new mission)
+function VehicleRepoJob:resetToInitialState()
     if self.vehicleId then
+        if gameplay_traffic then
+            pcall(function() gameplay_traffic.removeTraffic(self.vehicleId) end)
+        end
         local vehicle = getObjectByID(self.vehicleId)
         if vehicle then
-            vehicle:delete()
+            pcall(function() vehicle:delete() end)
         end
     end
 
-    -- Add marker cleanup
     if marker then
-        marker:unregisterObject()
-        marker:delete()
+        pcall(function() marker:unregisterObject() end)
+        pcall(function() marker:delete() end)
         marker = nil
     end
 
-    -- Reset all job-related data
     self.vehicleId = nil
     self.vehicleValue = nil
     self.pickupLocation = nil
@@ -87,9 +88,42 @@ function VehicleRepoJob:destroy()
     self.spawnedVehicle = false
     self.isCompleted = false
     self.reward = nil
+    self.jobCoroutine = nil
+    self.randomVehicleInfo = nil
+    self.vehicleConfig = nil
+    self.validSpots = nil
+    self.selectedSpot = nil
+    self.vehInfo = nil
+    self.updateTimer = nil
     if core_groundMarkers then
         core_groundMarkers.resetAll()
     end
+end
+
+-- Destroy the current job and clean up resources
+function VehicleRepoJob:destroy()
+    self:resetToInitialState()
+end
+
+-- Check if vehicle exists, reset if it doesn't
+function VehicleRepoJob:checkVehicleExists()
+    if not self.vehicleId then
+        return true
+    end
+    
+    local vehicle = getObjectByID(self.vehicleId)
+    if not vehicle then
+        self:resetToInitialState()
+        return false
+    end
+    
+    local success = pcall(function() vehicle:getPosition() end)
+    if not success then
+        self:resetToInitialState()
+        return false
+    end
+    
+    return true
 end
 
 local function isRepoDisabled()
@@ -188,12 +222,22 @@ function VehicleRepoJob:generateJob()
         local repoDisabled, disabledReason = isRepoDisabled()
         local effectiveState = repoDisabled and "disabled" or "picking_up"
 
+        local distanceToDestination = 0
+        if self.deliveryLocation and self.vehicleId then
+            local vehicle = getObjectByID(self.vehicleId)
+            if vehicle then
+                local success, pos = pcall(function() return vehicle:getPosition() end)
+                if success and pos then
+                    distanceToDestination = (pos - self.deliveryLocation.pos):length()
+                end
+            end
+        end
+
         local finalData = {
             state = effectiveState,
             vehicle = self.randomVehicleInfo,
             deliveryLocation = self.selectedDealership and self.selectedDealership.name or "",
-            distanceToDestination = self.deliveryLocation and (self.vehicleId and
-                (getObjectByID(self.vehicleId):getPosition() - self.deliveryLocation.pos):length() or 0) or 0,
+            distanceToDestination = distanceToDestination,
             totalDistance = self.totalDistanceTraveled or 0,
             repoDisabled = repoDisabled,
             disabledReason = disabledReason
@@ -302,12 +346,22 @@ function VehicleRepoJob:generateVehicleConfig()
     local repoDisabled, disabledReason = isRepoDisabled()
     local effectiveState = repoDisabled and "disabled" or "picking_up"
 
+    local distanceToDestination = 0
+    if self.deliveryLocation and self.vehicleId then
+        local vehicle = getObjectByID(self.vehicleId)
+        if vehicle then
+            local success, pos = pcall(function() return vehicle:getPosition() end)
+            if success and pos then
+                distanceToDestination = (pos - self.deliveryLocation.pos):length()
+            end
+        end
+    end
+
     local data = {
         state = effectiveState,
         vehicle = self.randomVehicleInfo,
         deliveryLocation = self.selectedDealership and self.selectedDealership.name or "",
-        distanceToDestination = self.deliveryLocation and (self.vehicleId and
-            (getObjectByID(self.vehicleId):getPosition() - self.deliveryLocation.pos):length() or 0) or 0,
+        distanceToDestination = distanceToDestination,
         totalDistance = self.totalDistanceTraveled or 0,
         repoDisabled = repoDisabled,
         disabledReason = disabledReason
@@ -406,6 +460,11 @@ function VehicleRepoJob:onUpdate(dtReal, dtSim, dtRaw)
         return
     end
 
+    -- Check if vehicle still exists, reset if it doesn't
+    if not self:checkVehicleExists() then
+        return
+    end
+
     -- Only do distance checks once per second
     if self.updateTimer < 1 then
         return
@@ -422,10 +481,18 @@ function VehicleRepoJob:onUpdate(dtReal, dtSim, dtRaw)
     local playerPos = playerVehicle:getPosition()
     local vehicle = getObjectByID(self.vehicleId)
     if not vehicle then
+        self:resetToInitialState()
         return
     end
 
-    local vehiclePos = vehicle:getPosition()
+    local vehiclePos
+    local success, pos = pcall(function() return vehicle:getPosition() end)
+    if not success or not pos then
+        self:resetToInitialState()
+        return
+    end
+    vehiclePos = pos
+    
     local repoPos
     local distance
     
@@ -436,25 +503,37 @@ function VehicleRepoJob:onUpdate(dtReal, dtSim, dtRaw)
         if self.vehicleId then
             local vehicle = getObjectByID(self.vehicleId)
             if vehicle then
-                vehicle:delete()
+                pcall(function() vehicle:delete() end)
             end
         end
         if core_groundMarkers then
             core_groundMarkers.resetAll()
         end
         ui_message("Your Repo Vehicle has been removed.\nYou have lost your job.", 10, "info", "info")
-        self:destroy()
+        self:resetToInitialState()
         return
     end
     
-    repoPos = repoVehicle:getPosition()
+    local repoPosSuccess, repoPosResult = pcall(function() return repoVehicle:getPosition() end)
+    if not repoPosSuccess or not repoPosResult then
+        self:resetToInitialState()
+        return
+    end
+    repoPos = repoPosResult
     distance = (vehiclePos - repoPos):length()
 
     if not self.isJobStarted then
         if distance <= 20 then
             self.isJobStarted = true
             ui_message("Pick up the " .. self.vehInfo.Brand .. " " .. self.vehInfo.Name .. ".\nPlease drive it to " .. self.selectedDealership.name .. ".", 10, "info", "info")
-            vehicle:queueLuaCommand('input.event("parkingbrake", 1, "FILTER_DI", nil, nil, nil, nil)')
+            local vehicle = getObjectByID(self.vehicleId)
+            if vehicle then
+                local success = pcall(function() vehicle:queueLuaCommand('input.event("parkingbrake", 1, "FILTER_DI", nil, nil, nil, nil)') end)
+                if not success then
+                    self:resetToInitialState()
+                    return
+                end
+            end
             
             -- First insert the vehicle into traffic system
             gameplay_traffic.insertTraffic(self.vehicleId, true) -- true means ignore AI control
@@ -481,7 +560,7 @@ function VehicleRepoJob:onUpdate(dtReal, dtSim, dtRaw)
                 self.returnCountdown = self.returnCountdown - 1 -- Changed from dtSim to 1 since we're updating once per second
                 if self.returnCountdown <= 0 then
                     ui_message("Someone else has picked up the " .. self.vehInfo.Brand .. " " .. self.vehInfo.Name .. ".", 10, "info", "info")
-                    self:destroy()
+                    self:resetToInitialState()
                     return
                 end
             end
@@ -489,8 +568,13 @@ function VehicleRepoJob:onUpdate(dtReal, dtSim, dtRaw)
             if self.returnCountdown then
                 ui_message("You have returned to your Repo Vehicle.", 3, "info", "info")
                 self.returnCountdown = nil
-                local vehiclePos = vehicle:getPosition()
-                core_groundMarkers.setPath(vehiclePos)
+                local vehicle = getObjectByID(self.vehicleId)
+                if vehicle then
+                    local success, pos = pcall(function() return vehicle:getPosition() end)
+                    if success and pos then
+                        core_groundMarkers.setPath(pos)
+                    end
+                end
                 self.isJobStarted = false
             end
         end
@@ -505,7 +589,7 @@ function VehicleRepoJob:onUpdate(dtReal, dtSim, dtRaw)
                 self.returnCountdown = self.returnCountdown - 1 -- Changed from dtSim to 1 since we're updating once per second
                 if self.returnCountdown <= 0 then
                     ui_message("Someone else has picked up the " .. self.vehInfo.Brand .. " " .. self.vehInfo.Name .. ".", 10, "info", "info")
-                    self:destroy()
+                    self:resetToInitialState()
                     return
                 end
             end
@@ -513,16 +597,40 @@ function VehicleRepoJob:onUpdate(dtReal, dtSim, dtRaw)
             if self.returnCountdown then
                 ui_message("You have returned to the " .. self.vehInfo.Brand .. " " .. self.vehInfo.Name .. ".", 3, "info", "info")
                 self.returnCountdown = nil
-                local vehiclePos = vehicle:getPosition()
-                core_groundMarkers.setPath(vehiclePos)
+                local vehicle = getObjectByID(self.vehicleId)
+                if vehicle then
+                    local success, pos = pcall(function() return vehicle:getPosition() end)
+                    if success and pos then
+                        core_groundMarkers.setPath(pos)
+                    end
+                end
                 self.isJobStarted = false
             end
         end
     end
 
     if self.jobStartTime then
+        local vehicle = getObjectByID(self.vehicleId)
+        if not vehicle then
+            self:resetToInitialState()
+            return
+        end
+        
+        local success, pos = pcall(function() return vehicle:getPosition() end)
+        if not success or not pos then
+            self:resetToInitialState()
+            return
+        end
+        vehiclePos = pos
+        
         local distanceFromDestination = (vehiclePos - self.deliveryLocation.pos):length()
-        local velocity = vehicle:getVelocity():length()
+        local velSuccess, vel = pcall(function() return vehicle:getVelocity():length() end)
+        if not velSuccess or not vel then
+            self:resetToInitialState()
+            return
+        end
+        local velocity = vel
+        
         if distanceFromDestination <= 3 and velocity <= 1 then
             core_jobsystem.create(function(job)
                 ui_fadeScreen.cycle(0.5, 0.5, 0.5)
@@ -535,7 +643,7 @@ function VehicleRepoJob:onUpdate(dtReal, dtSim, dtRaw)
                            
                 -- Add safety check for marker
                 if marker then
-                    marker:delete()
+                    pcall(function() marker:delete() end)
                     marker = nil
                 end
             
@@ -563,7 +671,7 @@ function VehicleRepoJob:onUpdate(dtReal, dtSim, dtRaw)
                 if self.vehicleId then
                     local vehicle = getObjectByID(self.vehicleId)
                     if vehicle then
-                        vehicle:delete()
+                        pcall(function() vehicle:delete() end)
                     end
                     self.vehicleId = nil
                 end
@@ -590,20 +698,30 @@ function VehicleRepoJob:onUpdate(dtReal, dtSim, dtRaw)
 
     if self.jobStartTime and playerVehicle:getID() == self.vehicleId then
         if distance > 50 then
-            vehicle:queueLuaCommand([[
-            if electrics.values.ignition then
-              electrics.setIgnitionLevel(0)
+            local vehicle = getObjectByID(self.vehicleId)
+            if vehicle then
+                local success = pcall(function() vehicle:queueLuaCommand([[
+                if electrics.values.ignition then
+                  electrics.setIgnitionLevel(0)
+                end
+              ]]) end)
+                if not success then
+                    self:resetToInitialState()
+                    return
+                end
             end
-          ]])
         end
     end
 
     if distance <= 15 and not self.jobStartTime then
-        local velocity = vehicle:getVelocity():length()
-        if velocity > 2 then
-            self.jobStartTime = os.time()
-            core_groundMarkers.setPath(self.deliveryLocation.pos)
-            self.totalDistanceTraveled = self.totalDistanceTraveled + core_groundMarkers.getPathLength()
+        local vehicle = getObjectByID(self.vehicleId)
+        if vehicle then
+            local velSuccess, vel = pcall(function() return vehicle:getVelocity():length() end)
+            if velSuccess and vel and vel > 2 then
+                self.jobStartTime = os.time()
+                core_groundMarkers.setPath(self.deliveryLocation.pos)
+                self.totalDistanceTraveled = self.totalDistanceTraveled + core_groundMarkers.getPathLength()
+            end
         end
     end
 end
@@ -673,6 +791,12 @@ function M.requestRepoState()
     local effectiveState = repoDisabled and "disabled" or "no_mission"
 
     if instance then
+        if instance.isMonitoring and instance.vehicleId then
+            if not instance:checkVehicleExists() then
+                instance = M.getRepoJobInstance()
+            end
+        end
+        
         local state = "no_mission"
         if instance.isCompleted then
             state = "completed"
@@ -684,12 +808,22 @@ function M.requestRepoState()
         effectiveState = repoDisabled and "disabled" or state
     end
 
+    local distanceToDestination = 0
+    if instance and instance.deliveryLocation and instance.vehicleId then
+        local vehicle = getObjectByID(instance.vehicleId)
+        if vehicle then
+            local success, pos = pcall(function() return vehicle:getPosition() end)
+            if success and pos then
+                distanceToDestination = (pos - instance.deliveryLocation.pos):length()
+            end
+        end
+    end
+
     local data = {
         state = effectiveState,
         vehicle = instance and instance.randomVehicleInfo or nil,
         deliveryLocation = instance and (instance.selectedDealership and instance.selectedDealership.name or "") or "",
-        distanceToDestination = instance and (instance.deliveryLocation and (instance.vehicleId and
-            (getObjectByID(instance.vehicleId):getPosition() - instance.deliveryLocation.pos):length() or 0) or 0) or 0,
+        distanceToDestination = distanceToDestination,
         totalDistance = instance and (instance.totalDistanceTraveled or 0) or 0,
         reward = instance and (instance.reward or 0) or 0,
         isRepoVehicle = M.isRepoVehicle(),
