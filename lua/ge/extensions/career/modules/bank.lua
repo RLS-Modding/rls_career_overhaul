@@ -49,6 +49,19 @@ local function loadBankData()
 
   if data.transactions then
     for _, trans in ipairs(data.transactions) do
+      if trans.type then
+        local transType = trans.type
+        local amount = trans.amount or 0
+        
+        if transType == "deposit" or transType == "transfer_in" or transType == "reward" then
+          trans.amount = math.abs(amount)
+        elseif transType == "withdraw" or transType == "transfer_out" or transType == "payment" or transType == "penalty" or transType == "transfer_cancelled" then
+          trans.amount = -math.abs(amount)
+        end
+        
+        trans.type = nil
+      end
+      
       if not transactions[trans.accountId] then
         transactions[trans.accountId] = {}
       end
@@ -180,7 +193,6 @@ processPendingTransfers = function()
         table.insert(transactions[transfer.toAccountId], {
           id = Engine.generateUUID(),
           accountId = transfer.toAccountId,
-          type = "transfer_in",
           label = "Transfer In",
           amount = transferAmount,
           timestamp = transfer.completesAt,
@@ -256,7 +268,6 @@ local function createAccount(name, accountType, initialDeposit)
     table.insert(transactions[accountId], {
       id = Engine.generateUUID(),
       accountId = accountId,
-      type = "deposit",
       label = "Deposit",
       amount = initialDeposit,
       timestamp = os.time(),
@@ -348,7 +359,7 @@ local function renameAccount(accountId, newName)
   return true
 end
 
-local function addFunds(accountId, amount, label, description, typeOverride)
+local function addFunds(accountId, amount, label, description)
   if not accountId or not accounts[accountId] then
     return false
   end
@@ -365,7 +376,6 @@ local function addFunds(accountId, amount, label, description, typeOverride)
   table.insert(transactions[accountId], {
     id = Engine.generateUUID(),
     accountId = accountId,
-    type = typeOverride or "deposit",
     label = label or "Deposit",
     amount = amount,
     timestamp = os.time(),
@@ -377,7 +387,7 @@ local function addFunds(accountId, amount, label, description, typeOverride)
   return true
 end
 
-local function removeFunds(accountId, amount, label, description, typeOverride, allowNegativeBalance)
+local function removeFunds(accountId, amount, label, description, allowNegativeBalance)
   if not accountId or not accounts[accountId] then
     return false
   end
@@ -398,9 +408,8 @@ local function removeFunds(accountId, amount, label, description, typeOverride, 
   table.insert(transactions[accountId], {
     id = Engine.generateUUID(),
     accountId = accountId,
-    type = typeOverride or "withdraw",
     label = label or "Withdrawal",
-    amount = amount,
+    amount = -amount,
     timestamp = os.time(),
     description = description or "Funds removed"
   })
@@ -525,9 +534,8 @@ local function transfer(fromAccountId, toAccountId, amount)
     table.insert(transactions[fromAccountId], {
       id = Engine.generateUUID(),
       accountId = fromAccountId,
-      type = "transfer_out",
       label = "Transfer Out",
-      amount = amount,
+      amount = -amount,
       timestamp = currentTime,
       description = "Transfer to " .. (toAccount and toAccount.name or "Account"),
       relatedAccountId = toAccountId,
@@ -551,9 +559,8 @@ local function transfer(fromAccountId, toAccountId, amount)
     table.insert(transactions[fromAccountId], {
       id = Engine.generateUUID(),
       accountId = fromAccountId,
-      type = "transfer_out",
       label = "Transfer Out",
-      amount = amount,
+      amount = -amount,
       timestamp = currentTime,
       description = "Transfer to " .. (toAccount.name or "Account"),
       relatedAccountId = toAccountId
@@ -565,7 +572,6 @@ local function transfer(fromAccountId, toAccountId, amount)
     table.insert(transactions[toAccountId], {
       id = Engine.generateUUID(),
       accountId = toAccountId,
-      type = "transfer_in",
       label = "Transfer In",
       amount = amount,
       timestamp = currentTime,
@@ -648,7 +654,7 @@ local function cancelPendingTransfer(transferId)
     if transactions[transfer.fromAccountId] then
       for i = #transactions[transfer.fromAccountId], 1, -1 do
         local trans = transactions[transfer.fromAccountId][i]
-        if trans.pending and trans.type == "transfer_out" and trans.relatedAccountId == transfer.toAccountId and math.abs(trans.amount - transferAmount) < 0.01 then
+        if trans.pending and trans.relatedAccountId == transfer.toAccountId and math.abs(math.abs(trans.amount) - transferAmount) < 0.01 and trans.amount < 0 then
           table.remove(transactions[transfer.fromAccountId], i)
           break
         end
@@ -661,7 +667,6 @@ local function cancelPendingTransfer(transferId)
     table.insert(transactions[transfer.fromAccountId], {
       id = Engine.generateUUID(),
       accountId = transfer.fromAccountId,
-      type = "transfer_cancelled",
       label = "Transfer Refund",
       amount = transferAmount,
       timestamp = os.time(),
@@ -703,7 +708,7 @@ local function payFromAccount(price, accountId, label, description)
     end
   end
 
-  return removeFunds(accountId, totalAmount, label or "Payment", description or "Payment", "payment", allowNegativeBalance)
+  return removeFunds(accountId, totalAmount, label or "Payment", description or "Payment", nil, allowNegativeBalance)
 end
 
 local function rewardToAccount(price, accountId, label, description)
@@ -723,7 +728,7 @@ local function rewardToAccount(price, accountId, label, description)
     return false
   end
 
-  return addFunds(accountId, totalAmount, label or "Reward", description or "Deposit", "reward")
+  return addFunds(accountId, totalAmount, label or "Reward", description or "Deposit", nil)
 end
 
 local updateInterval = 5

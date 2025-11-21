@@ -1817,6 +1817,36 @@ M.addPartToCart = addPartToCart
 M.onVehicleWheelDataUpdate = onVehicleWheelDataUpdate
 M.onPowerWeightReceived = onPowerWeightReceived
 M.requestPartInventory = requestPartInventory
+M.requestFinancesData = function(businessType, businessId)
+  if not businessType or not businessId then
+    if guihooks then
+      guihooks.trigger('businessComputer:onFinancesData', {success = false, error = "Missing parameters"})
+    end
+    return
+  end
+
+  local module = getBusinessModule(businessType)
+  if module and module.requestFinancesData then
+    module.requestFinancesData(businessId)
+  else
+    if guihooks then
+      guihooks.trigger('businessComputer:onFinancesData', {success = false, error = "Finances not available for this business type", businessType = businessType, businessId = businessId})
+    end
+  end
+end
+M.requestSimulationTime = function()
+  local module = getBusinessModule("tuningShop")
+  if module and module.requestSimulationTime then
+    module.requestSimulationTime()
+  else
+    if guihooks then
+      guihooks.trigger('businessComputer:onSimulationTime', {
+        success = true,
+        simulationTime = os.time()
+      })
+    end
+  end
+end
 M.sellPart = sellPart
 M.sellAllParts = sellAllParts
 M.sellPartsByVehicle = sellPartsByVehicle

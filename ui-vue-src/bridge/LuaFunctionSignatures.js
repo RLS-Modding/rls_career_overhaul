@@ -1194,6 +1194,8 @@ export default {
     applyPartsToVehicle: (businessId, vehicleId, parts) => [String, Integer, Array],
     applyCartPartsToVehicle: (businessId, vehicleId, parts) => [String, Integer, Array],
     requestPartInventory: (businessId) => String,
+    requestFinancesData: (businessType, businessId) => [String, String],
+    requestSimulationTime: () => {},
     sellPart: (businessId, partId) => [String, Integer],
     sellAllParts: (businessId) => String,
     sellPartsByVehicle: (businessId, vehicleNiceName) => [String, String],

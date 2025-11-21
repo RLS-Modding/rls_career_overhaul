@@ -176,6 +176,7 @@ local function buildUiLoan(loan)
     secondsUntilNextPayment = loan.secondsUntilNextPayment or PAYMENT_INTERVAL_S,
     createdAt = loan.createdAt,
     interestRemaining = interestRemaining,
+    businessAccountId = loan.businessAccountId,
   }
 end
 

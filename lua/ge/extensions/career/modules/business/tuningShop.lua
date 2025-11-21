@@ -14,6 +14,7 @@ local businessJobs = {}
 local businessXP = {}
 local generationTimers = {}
 local managerTimers = {}
+local operatingCostTimers = {}
 local jobIdCounter = 0
 
 local freeroamUtils = require('gameplay/events/freeroam/utils')
@@ -614,6 +615,57 @@ local function processManagerTimers(businessId, dtSim)
   
   managerTimers[businessId] = timerState
   return changed
+end
+
+local function getOperatingCostTimerPath(businessId)
+  if not career_career.isActive() then return nil end
+  local _, currentSavePath = career_saveSystem.getCurrentSaveSlot()
+  if not currentSavePath then return nil end
+  return currentSavePath .. "/career/rls_career/businesses/" .. businessId .. "/operatingCost.json"
+end
+
+local function loadOperatingCostTimer(businessId)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId then
+    return { elapsed = 0, lastChargeTime = nil }
+  end
+  
+  if operatingCostTimers[businessId] then
+    return operatingCostTimers[businessId]
+  end
+  
+  local filePath = getOperatingCostTimerPath(businessId)
+  if not filePath then
+    operatingCostTimers[businessId] = { elapsed = 0, lastChargeTime = nil }
+    return operatingCostTimers[businessId]
+  end
+  
+  local data = jsonReadFile(filePath) or {}
+  operatingCostTimers[businessId] = {
+    elapsed = tonumber(data.elapsed) or 0,
+    lastChargeTime = tonumber(data.lastChargeTime) or nil
+  }
+  return operatingCostTimers[businessId]
+end
+
+local function saveOperatingCostTimer(businessId, currentSavePath)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId or not operatingCostTimers[businessId] then return end
+  if not currentSavePath then return end
+  
+  local filePath = currentSavePath .. "/career/rls_career/businesses/" .. businessId .. "/operatingCost.json"
+  
+  local dirPath = string.match(filePath, "^(.*)/[^/]+$")
+  if dirPath and not FS:directoryExists(dirPath) then
+    FS:directoryCreate(dirPath)
+  end
+  
+  local data = {
+    elapsed = operatingCostTimers[businessId].elapsed,
+    lastChargeTime = operatingCostTimers[businessId].lastChargeTime
+  }
+  
+  jsonWriteFile(filePath, data, true)
 end
 
 local function getMaxActiveJobs(businessId)
@@ -2014,6 +2066,211 @@ local function isDamageLocked(businessId, vehicleId)
   return lockInfo
 end
 
+local function getOperatingCosts(businessId)
+  if not businessId then
+    return {
+      baseLift = 5000,
+      additionalLifts = 0,
+      techs = 0,
+      manager = 0,
+      generalManager = 0,
+      total = 5000,
+      maxCost = 55000,
+      solarPowerActive = false
+    }
+  end
+
+  local baseLift = 5000
+  local additionalLifts = 0
+  local techsCost = 0
+  local managerCost = 0
+  local generalManagerCost = 0
+  local solarPowerActive = false
+
+  if career_modules_business_businessSkillTree then
+    local treeId = "shop-upgrades"
+    
+    local lift2Level = career_modules_business_businessSkillTree.getNodeProgress(businessId, treeId, "lift-2") or 0
+    local lift3Level = career_modules_business_businessSkillTree.getNodeProgress(businessId, treeId, "lift-3") or 0
+    local lift4Level = career_modules_business_businessSkillTree.getNodeProgress(businessId, treeId, "lift-4") or 0
+    
+    if lift2Level > 0 then additionalLifts = additionalLifts + 1 end
+    if lift3Level > 0 then additionalLifts = additionalLifts + 1 end
+    if lift4Level > 0 then additionalLifts = additionalLifts + 1 end
+
+    local solarLevel = career_modules_business_businessSkillTree.getNodeProgress(businessId, treeId, "solar-panels") or 0
+    solarPowerActive = solarLevel > 0
+
+    local automationTreeId = "automation"
+    local managerLevel = career_modules_business_businessSkillTree.getNodeProgress(businessId, automationTreeId, "manager") or 0
+    local generalManagerLevel = career_modules_business_businessSkillTree.getNodeProgress(businessId, automationTreeId, "general-manager") or 0
+
+    if managerLevel > 0 then
+      managerCost = 5000
+    end
+    if generalManagerLevel > 0 then
+      generalManagerCost = 25000
+    end
+  end
+
+  local techList = tuningShopTechs.getTechsForBusiness(businessId) or {}
+  local techCount = #techList
+  techsCost = techCount * 2500
+
+  local additionalLiftsCost = additionalLifts * 5000
+  local total = baseLift + additionalLiftsCost + techsCost + managerCost + generalManagerCost
+  local maxCost = 55000
+
+  if solarPowerActive then
+    total = 0
+  end
+
+  return {
+    baseLift = baseLift,
+    additionalLifts = additionalLifts,
+    additionalLiftsCost = additionalLiftsCost,
+    techs = techCount,
+    techsCost = techsCost,
+    manager = managerCost > 0 and 1 or 0,
+    managerCost = managerCost,
+    generalManager = generalManagerCost > 0 and 1 or 0,
+    generalManagerCost = generalManagerCost,
+    total = total,
+    maxCost = maxCost,
+    solarPowerActive = solarPowerActive
+  }
+end
+
+local function processOperatingCosts(businessId, dtSim)
+  if not businessId or dtSim <= 0 then
+    return false
+  end
+  
+  local operatingCosts = getOperatingCosts(businessId)
+  if operatingCosts.solarPowerActive or operatingCosts.total <= 0 then
+    return false
+  end
+  
+  local timerState = loadOperatingCostTimer(businessId)
+  local paymentInterval = 1800
+  
+  timerState.elapsed = timerState.elapsed + dtSim
+  
+  local charged = false
+  if timerState.elapsed >= paymentInterval then
+    local currentTime = os.time()
+    local success = debitBusinessAccount(businessId, operatingCosts.total, "Operating Costs", 
+      string.format("Operating costs: Base Lift $%d, Additional Lifts $%d, Techs $%d, Manager $%d, General Manager $%d", 
+        operatingCosts.baseLift, operatingCosts.additionalLiftsCost, operatingCosts.techsCost, 
+        operatingCosts.managerCost, operatingCosts.generalManagerCost))
+    
+    if success then
+      timerState.elapsed = math.max(0, timerState.elapsed - paymentInterval)
+      timerState.lastChargeTime = currentTime
+      charged = true
+    else
+      timerState.elapsed = 0
+    end
+  end
+  
+  operatingCostTimers[businessId] = timerState
+  return charged
+end
+
+local function getFinancesData(businessId)
+  if not businessId then
+    return nil
+  end
+
+  local operatingCosts = getOperatingCosts(businessId)
+  
+  local account = nil
+  local accountBalance = 0
+  local accountId = nil
+  local transactions = {}
+  local businessLoans = {}
+
+  if career_modules_bank then
+    account = career_modules_bank.getBusinessAccount("tuningShop", businessId)
+    if account then
+      accountId = account.id
+      accountBalance = career_modules_bank.getAccountBalance(accountId) or 0
+      transactions = career_modules_bank.getAccountTransactions(accountId, 100) or {}
+    end
+  end
+
+  if career_modules_loans and accountId then
+    local allLoans = career_modules_loans.getActiveLoans() or {}
+    for _, loan in ipairs(allLoans) do
+      if loan.businessAccountId == accountId then
+        table.insert(businessLoans, loan)
+      end
+    end
+  end
+
+  local operatingCostTimer = nil
+  if not operatingCosts.solarPowerActive and operatingCosts.total > 0 then
+    local timerState = loadOperatingCostTimer(businessId)
+    local paymentInterval = 1800
+    local remainingTime = paymentInterval - (timerState.elapsed % paymentInterval)
+    operatingCostTimer = {
+      elapsed = timerState.elapsed,
+      lastChargeTime = timerState.lastChargeTime,
+      paymentInterval = paymentInterval,
+      remainingTime = remainingTime
+    }
+  end
+
+  return {
+    operatingCosts = operatingCosts,
+    account = {
+      id = accountId,
+      balance = accountBalance,
+      name = account and account.name or nil
+    },
+    transactions = transactions,
+    loans = businessLoans,
+    operatingCostTimer = operatingCostTimer
+  }
+end
+
+local function requestFinancesData(businessId)
+  if not businessId then
+    if guihooks then
+      guihooks.trigger('businessComputer:onFinancesData', {success = false, error = "Missing businessId"})
+    end
+    return
+  end
+
+  local financesData = getFinancesData(businessId)
+  if not financesData then
+    if guihooks then
+      guihooks.trigger('businessComputer:onFinancesData', {success = false, error = "Failed to get finances data", businessId = businessId})
+    end
+    return
+  end
+
+  local data = {
+    success = true,
+    businessId = businessId,
+    finances = financesData,
+    simulationTime = os.time()
+  }
+
+  if guihooks then
+    guihooks.trigger('businessComputer:onFinancesData', data)
+  end
+end
+
+local function requestSimulationTime()
+  if guihooks then
+    guihooks.trigger('businessComputer:onSimulationTime', {
+      success = true,
+      simulationTime = os.time()
+    })
+  end
+end
+
 local function getUIData(businessId)
   if not businessId then
     return nil
@@ -2268,6 +2525,8 @@ local function onUpdate(dtReal, dtSim, dtRaw)
         if processManagerTimers(id, deltaSim) then
           jobsChanged = true
         end
+        
+        processOperatingCosts(id, deltaSim)
       end
       
       if processManagerAssignments(id) then
@@ -2289,6 +2548,12 @@ local function onUpdate(dtReal, dtSim, dtRaw)
   for id in pairs(managerTimers) do
     if not ownedBusinesses[id] then
       managerTimers[id] = nil
+    end
+  end
+  
+  for id in pairs(operatingCostTimers) do
+    if not ownedBusinesses[id] then
+      operatingCostTimers[id] = nil
     end
   end
 end
@@ -2344,6 +2609,7 @@ local function onCareerActivated()
       
       tuningShopTechs.loadBusinessTechs(normalizedId)
       loadManagerTimer(normalizedId)
+      loadOperatingCostTimer(normalizedId)
       
       notifyJobsUpdated(normalizedId)
     end,
@@ -2389,6 +2655,15 @@ local function onCareerActivated()
       component = "BusinessTechsTab",
       section = "BASIC",
       order = 4
+    })
+
+    career_modules_business_businessTabRegistry.registerTab("tuningShop", {
+      id = "finances",
+      label = "Finances",
+      icon = '<path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
+      component = "BusinessFinancesTab",
+      section = "BASIC",
+      order = 5
     })
   end
   
@@ -2438,6 +2713,9 @@ local function onSaveCurrentSaveSlot(currentSavePath)
   end
   for businessId, _ in pairs(managerTimers) do
     saveManagerTimer(businessId, currentSavePath)
+  end
+  for businessId, _ in pairs(operatingCostTimers) do
+    saveOperatingCostTimer(businessId, currentSavePath)
   end
   for businessId, _ in pairs(businessSelections) do
     saveBusinessSelections(businessId, currentSavePath)
@@ -2489,5 +2767,9 @@ M.getAvailableBrands = getAvailableBrands
 M.getAvailableRaceTypes = getAvailableRaceTypes
 M.requestAvailableBrands = requestAvailableBrands
 M.requestAvailableRaceTypes = requestAvailableRaceTypes
+M.getOperatingCosts = getOperatingCosts
+M.getFinancesData = getFinancesData
+M.requestFinancesData = requestFinancesData
+M.requestSimulationTime = requestSimulationTime
 
 return M

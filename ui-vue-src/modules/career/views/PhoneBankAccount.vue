@@ -51,11 +51,11 @@
                 class="history-item"
               >
                 <div class="transaction-info">
-                  <p class="transaction-type">{{ getTransactionTypeLabel(transaction.type) }}</p>
+                  <p class="transaction-type">{{ getTransactionTypeLabel(transaction) }}</p>
                   <p class="transaction-date">{{ formatDate(transaction.timestamp) }}</p>
                 </div>
-                <div class="transaction-amount" :class="getTransactionAmountClass(transaction.type)">
-                  {{ getTransactionAmountPrefix(transaction.type) }}${{ formatCurrency(transaction.amount) }}
+                <div class="transaction-amount" :class="getTransactionAmountClass(transaction.amount)">
+                  {{ getTransactionAmountPrefix(transaction.amount) }}${{ formatCurrency(Math.abs(transaction.amount || 0)) }}
                 </div>
               </div>
             </div>
@@ -155,27 +155,30 @@ const formatDate = (timestamp) => {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
-const getTransactionTypeLabel = (type) => {
-  const labels = {
-    deposit: 'Deposit',
-    withdraw: 'Withdrawal',
-    transfer_in: 'Transfer In',
-    transfer_out: 'Transfer Out',
-    payment: 'Payment',
-    reward: 'Deposit'
+const getTransactionTypeLabel = (transaction) => {
+  const amount = transaction.amount || 0
+  const label = transaction.label
+  
+  if (label) {
+    return label
   }
-  return labels[type] || type
+  
+  if (amount >= 0) {
+    return 'Deposit'
+  } else {
+    return 'Withdrawal'
+  }
 }
 
-const getTransactionAmountPrefix = (type) => {
-  if (type === 'deposit' || type === 'transfer_in' || type === 'reward') {
+const getTransactionAmountPrefix = (amount) => {
+  if ((amount || 0) >= 0) {
     return '+'
   }
-  return '-'
+  return ''
 }
 
-const getTransactionAmountClass = (type) => {
-  if (type === 'deposit' || type === 'transfer_in' || type === 'reward') {
+const getTransactionAmountClass = (amount) => {
+  if ((amount || 0) >= 0) {
     return 'positive'
   }
   return 'negative'
