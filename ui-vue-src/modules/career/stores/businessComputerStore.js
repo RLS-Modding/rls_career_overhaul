@@ -1,4 +1,4 @@
-import { computed, ref } from "vue"
+import { computed, ref, watch } from "vue"
 import { defineStore } from "pinia"
 import { lua } from "@/bridge"
 import { useBridge } from "@/bridge"
@@ -1559,6 +1559,29 @@ const handleTechsUpdated = (data) => {
     return 0
   }
 
+  const hasDynoUpgrade = ref(false)
+  
+  const updateDynoUpgradeStatus = async () => {
+    if (!businessId.value) {
+      hasDynoUpgrade.value = false
+      return
+    }
+    try {
+      const level = await lua.career_modules_business_businessSkillTree.getNodeProgress(
+        businessId.value,
+        "shop-upgrades",
+        "dyno"
+      )
+      hasDynoUpgrade.value = (level || 0) > 0
+    } catch (error) {
+      hasDynoUpgrade.value = false
+    }
+  }
+  
+  watch(businessId, () => {
+    updateDynoUpgradeStatus()
+  }, { immediate: true })
+
   return {
     businessData,
     activeView,
@@ -1632,6 +1655,8 @@ const handleTechsUpdated = (data) => {
     handlePowerWeightData,
     isCurrentTabApplied,
     skillTreeProgress,
+    hasDynoUpgrade,
+    updateDynoUpgradeStatus,
     loadSkillTrees,
     purchaseSkillUpgrade,
     getTotalUpgradesInTree,

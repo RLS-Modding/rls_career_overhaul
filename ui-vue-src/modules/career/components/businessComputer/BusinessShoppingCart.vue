@@ -222,7 +222,7 @@
       <div class="cart-footer">
         <transition name="footer-collapse">
           <div v-if="!footerCollapsed" class="footer-details">
-            <div v-if="store.originalPower !== null && store.currentPower !== null" class="power-weight-stats">
+            <div v-if="store.hasDynoUpgrade && store.originalPower !== null && store.currentPower !== null" class="power-weight-stats">
               <div class="stats-container">
                 <div class="stat-row">
                   <div class="stat-label-col">Power:</div>
@@ -642,18 +642,6 @@ watch([() => store.businessType, () => store.businessId], () => {
   loadBalance()
 }, { immediate: true })
 
-// Power/weight updates are now handled entirely by Lua - no need for this handler
-
-onMounted(() => {
-  // Register event listener for power/weight data (sent automatically by Lua)
-  events.on('businessComputer:onVehiclePowerWeight', handlePowerWeightData)
-})
-
-onBeforeUnmount(() => {
-  // Clean up event listener
-  events.off('businessComputer:onVehiclePowerWeight', handlePowerWeightData)
-})
-
 watch(() => store.vehicleView, (newView) => {
   if (newView !== 'parts' && newView !== 'tuning') {
     expanded.value = false
@@ -661,6 +649,15 @@ watch(() => store.vehicleView, (newView) => {
 })
 
 onMounted(async () => {
+  // Register event listener for power/weight data (sent automatically by Lua)
+  events.on('businessComputer:onVehiclePowerWeight', handlePowerWeightData)
+  // Update dyno upgrade status when skill trees are updated
+  events.on('businessSkillTree:onTreesUpdated', () => {
+    store.updateDynoUpgradeStatus()
+  })
+  // Initial update
+  store.updateDynoUpgradeStatus()
+  
   events.on('bank:onAccountUpdate', handleAccountUpdate)
   loadBalance()
   
@@ -702,6 +699,9 @@ watch(() => store.pulledOutVehicle, async (newVehicle, oldVehicle) => {
 }, { immediate: true })
 
 onBeforeUnmount(() => {
+  // Clean up event listeners
+  events.off('businessComputer:onVehiclePowerWeight', handlePowerWeightData)
+  events.off('businessSkillTree:onTreesUpdated', store.updateDynoUpgradeStatus)
   events.off('bank:onAccountUpdate', handleAccountUpdate)
   document.removeEventListener('click', hideTabMenu)
 })

@@ -153,6 +153,13 @@ end
 local function requestVehiclePowerWeight(vehObj, businessId, vehicleId)
   if not vehObj or not businessId or not vehicleId then return end
   
+  if career_modules_business_businessSkillTree then
+    local dynoLevel = career_modules_business_businessSkillTree.getNodeProgress(businessId, "shop-upgrades", "dyno") or 0
+    if dynoLevel == 0 then
+      return
+    end
+  end
+  
   local cacheKey = businessId .. "_" .. tostring(vehicleId)
   local requestId = cacheKey .. "_" .. tostring(os.clock())
   
@@ -863,6 +870,13 @@ end
 local function getVehiclePowerWeight(businessId, vehicleId)
   if not businessId or not vehicleId then
     return nil
+  end
+  
+  if career_modules_business_businessSkillTree then
+    local dynoLevel = career_modules_business_businessSkillTree.getNodeProgress(businessId, "shop-upgrades", "dyno") or 0
+    if dynoLevel == 0 then
+      return nil
+    end
   end
   
   local vehObj = getBusinessVehicleObject(businessId, vehicleId)
