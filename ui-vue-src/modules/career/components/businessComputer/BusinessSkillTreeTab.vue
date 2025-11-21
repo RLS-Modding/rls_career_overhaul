@@ -127,6 +127,93 @@ const panStartY = ref(0)
 const panStartTranslateX = ref(0)
 const panStartTranslateY = ref(0)
 
+const VIEW_STATE_STORAGE_KEY = 'rlsBusinessSkillTreeViewState'
+let viewStateSaveTimeout = null
+
+const canUseLocalStorage = () => typeof window !== 'undefined' && typeof window.localStorage !== 'undefined'
+
+const getBusinessIdentifiers = () => {
+  const businessType = props.data?.businessType || store.businessType
+  const businessId = props.data?.businessId || store.businessId
+  return {
+    businessType,
+    businessId
+  }
+}
+
+const getViewStateKey = () => {
+  const ids = getBusinessIdentifiers()
+  if (!ids.businessType || !ids.businessId) return null
+  return `${ids.businessType}_${ids.businessId}`
+}
+
+const readViewStateStorage = () => {
+  if (!canUseLocalStorage()) return {}
+  try {
+    const raw = window.localStorage.getItem(VIEW_STATE_STORAGE_KEY)
+    if (!raw) return {}
+    const parsed = JSON.parse(raw)
+    return typeof parsed === 'object' && parsed !== null ? parsed : {}
+  } catch (error) {
+    return {}
+  }
+}
+
+const writeViewStateStorage = (data) => {
+  if (!canUseLocalStorage()) return
+  try {
+    window.localStorage.setItem(VIEW_STATE_STORAGE_KEY, JSON.stringify(data))
+  } catch (error) {
+  }
+}
+
+const persistViewState = () => {
+  if (!canUseLocalStorage()) return
+  const key = getViewStateKey()
+  if (!key) return
+  const storage = readViewStateStorage()
+  storage[key] = {
+    translateX: translateX.value,
+    translateY: translateY.value,
+    scale: scale.value
+  }
+  writeViewStateStorage(storage)
+}
+
+const scheduleViewStateSave = () => {
+  if (!canUseLocalStorage()) return
+  if (viewStateSaveTimeout) {
+    clearTimeout(viewStateSaveTimeout)
+  }
+  viewStateSaveTimeout = setTimeout(() => {
+    viewStateSaveTimeout = null
+    persistViewState()
+  }, 150)
+}
+
+const restorePersistedViewState = () => {
+  if (!canUseLocalStorage()) return false
+  try {
+    const storage = readViewStateStorage()
+    const key = getViewStateKey()
+    const state = storage[key]
+    if (!state) return false
+    const nextScale = typeof state.scale === 'number' ? Math.max(0.1, Math.min(5.0, state.scale)) : 1.0
+    translateX.value = typeof state.translateX === 'number' ? state.translateX : 0
+    translateY.value = typeof state.translateY === 'number' ? state.translateY : 0
+    scale.value = nextScale
+    return true
+  } catch (error) {
+    return false
+  }
+}
+
+const applyTreeViewState = () => {
+  if (!restorePersistedViewState()) {
+    resetView()
+  }
+}
+
 const treeOffsets = ref({})
 const nodeSizes = ref(new Map())
 const nodeRefs = ref(new Map())
@@ -314,7 +401,7 @@ const handleTreesResponse = (data) => {
         measureNodeSize()
         nextTick(() => {
           calculateTreeOffsets()
-          resetView()
+          applyTreeViewState()
         })
       })
     }
@@ -338,7 +425,7 @@ const handleTreesUpdated = (data) => {
         measureNodeSize()
         nextTick(() => {
           calculateTreeOffsets()
-          resetView()
+          applyTreeViewState()
         })
       })
     }
@@ -446,6 +533,10 @@ const onWheel = (event) => {
 watch(() => [props.data, store.businessId, store.businessType], () => {
   loadTrees()
 }, { immediate: true, deep: true })
+
+watch([translateX, translateY, scale], () => {
+  scheduleViewStateSave()
+})
 
 const autoLayoutAllTrees = () => {
   trees.value.forEach(tree => {
@@ -704,6 +795,7 @@ const resetView = () => {
 
 onMounted(() => {
   console.log('[SkillTreeTab] Component mounted, registering event listeners')
+  restorePersistedViewState()
   events.on('businessSkillTree:onTreesResponse', handleTreesResponse)
   events.on('businessSkillTree:onTreesUpdated', handleTreesUpdated)
   events.on('businessSkillTree:onPurchaseResponse', handlePurchaseResponse)
@@ -719,6 +811,10 @@ onBeforeUnmount(() => {
   events.off('businessSkillTree:onPurchaseResponse', handlePurchaseResponse)
   window.removeEventListener('mousemove', onPan)
   window.removeEventListener('mouseup', stopPan)
+  if (viewStateSaveTimeout) {
+    clearTimeout(viewStateSaveTimeout)
+    viewStateSaveTimeout = null
+  }
 })
 </script>
 

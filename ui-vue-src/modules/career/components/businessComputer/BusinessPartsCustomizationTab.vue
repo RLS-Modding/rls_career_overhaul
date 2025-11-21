@@ -341,7 +341,7 @@ const events = useEvents()
 const searchQuery = ref("")
 const activeSearchQuery = ref("")
 const navigationPath = ref([])
-const isPartsOpen = ref(true)
+const isPartsOpen = ref(false)
 const partsTree = ref([])
 const slotsNiceName = ref({})
 const partsNiceName = ref({})
@@ -363,7 +363,6 @@ const onSearchBlur = () => {
 
 const triggerSearch = () => {
   activeSearchQuery.value = searchQuery.value.trim()
-  // Open all sections by default when searching
   if (hasActiveSearch.value && searchResults.value.length > 0) {
     searchResults.value.forEach(result => {
       openSearchSections.value[result.slotPath] = true
@@ -512,7 +511,6 @@ const getBreadcrumbIndex = (visibleIndex) => {
 
 const navigateToCategory = (category) => {
   navigationPath.value.push(category.id)
-  isPartsOpen.value = true
 }
 
 const navigateToPath = (index) => {
@@ -521,7 +519,6 @@ const navigateToPath = (index) => {
   } else {
     navigationPath.value = navigationPath.value.slice(0, index + 1)
   }
-  isPartsOpen.value = true
 }
 
 const installPart = async (part, slot) => {
@@ -797,15 +794,6 @@ const buildHierarchy = (flatList, slotsNiceNameMap) => {
   })
 }
 
-watch(() => searchResults.value, (newResults) => {
-  if (hasActiveSearch.value && newResults.length > 0) {
-    newResults.forEach(result => {
-      if (openSearchSections.value[result.slotPath] === undefined) {
-        openSearchSections.value[result.slotPath] = true
-      }
-    })
-  }
-}, { immediate: true })
 
 watch(() => store.pulledOutVehicle, (newVehicle, oldVehicle) => {
   if (!newVehicle) {
@@ -825,6 +813,16 @@ watch(() => store.pulledOutVehicle, (newVehicle, oldVehicle) => {
     }
   }
 })
+
+watch(() => searchResults.value, (newResults) => {
+  if (hasActiveSearch.value && newResults.length > 0) {
+    newResults.forEach(result => {
+      if (openSearchSections.value[result.slotPath] === undefined) {
+        openSearchSections.value[result.slotPath] = true
+      }
+    })
+  }
+}, { immediate: true })
 
 // Watch for tab changes and reload parts tree to reflect the new tab's cart
 watch(() => store.activeTabId, async (newTabId, oldTabId) => {
