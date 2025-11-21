@@ -1271,7 +1271,14 @@ local function advanceTechState(businessId, tech)
       if success then
         startDriveBack(tech, job)
       else
-        startCooldownPhase(tech, job)
+        local attemptsAllowed = tech.maxValidationAttempts or 1
+        local attemptsUsed = tech.validationAttempts or 0
+        
+        if attemptsUsed >= attemptsAllowed then
+          startDriveBack(tech, job)
+        else
+          startCooldownPhase(tech, job)
+        end
       end
     end
     return true
