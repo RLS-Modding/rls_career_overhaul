@@ -62,7 +62,7 @@
               Abandon Job
             </button>
             <template v-else>
-              <button class="btn btn-secondary" @click.stop="$emit('put-away')">Put Away Vehicle</button>
+              <button class="btn btn-secondary" @click.stop="$emit('put-away', vehicle?.vehicleId)">Put Away Vehicle</button>
               <button class="btn btn-primary" @click.stop="goToTuning">Go to Tuning</button>
             </template>
           </div>

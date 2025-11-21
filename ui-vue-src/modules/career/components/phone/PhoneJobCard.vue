@@ -104,10 +104,15 @@ const normalizeJobId = (value) => {
 }
 
 const jobIdentifier = computed(() => normalizeJobId(props.job?.jobId ?? props.job?.id))
-const pulledOutJobIdentifier = computed(() => normalizeJobId(store.pulledOutVehicle?.jobId))
+const pulledOutVehicleForJob = computed(() => {
+  if (!Array.isArray(store.pulledOutVehicles)) {
+    return null
+  }
+  return store.pulledOutVehicles.find(vehicle => normalizeJobId(vehicle?.jobId) === jobIdentifier.value) || null
+})
 const damageLockApplies = computed(() => {
-  if (!store.isDamageLocked || !jobIdentifier.value || !pulledOutJobIdentifier.value) return false
-  return jobIdentifier.value === pulledOutJobIdentifier.value
+  if (!pulledOutVehicleForJob.value) return false
+  return !!pulledOutVehicleForJob.value.damageLocked
 })
 
 const canComplete = ref(false)

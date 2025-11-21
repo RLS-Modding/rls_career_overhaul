@@ -18,7 +18,7 @@
                 :is-vertical="true"
                 :business-id="store.businessId"
                 @pull-out="handlePullOut(job)"
-                @put-away="handlePutAway"
+                @put-away="handlePutAway(job)"
                 @abandon="handleAbandon(job)"
                 @complete="handleComplete(job)"
               />
@@ -81,6 +81,11 @@ import { useBusinessComputerStore } from "../../stores/businessComputerStore"
 import BusinessJobCard from "./BusinessJobCard.vue"
 
 const store = useBusinessComputerStore()
+const normalizeId = (id) => {
+  if (id === undefined || id === null) return null
+  const num = Number(id)
+  return isNaN(num) ? String(id) : num
+}
 
 const showAbandonModal = ref(false)
 const jobToAbandon = ref(null)
@@ -91,38 +96,31 @@ const penaltyCost = computed(() => {
   return jobToAbandon.value.penalty || 0
 })
 
-const handlePullOut = async (job) => {
+const findVehicleForJob = (job) => {
   if (!Array.isArray(store.vehicles)) {
-    return
+    return null
   }
-
-  const jobId = job.jobId ?? job.id
-  if (jobId === undefined || jobId === null) {
-    return
+  const jobId = normalizeId(job?.jobId ?? job?.id)
+  if (jobId === null) {
+    return null
   }
+  return store.vehicles.find(vehicle => {
+    if (!vehicle.jobId) return false
+    return normalizeId(vehicle.jobId) === jobId
+  }) || null
+}
 
-  const normalizeId = (id) => {
-    if (id === undefined || id === null) return null
-    const num = Number(id)
-    return isNaN(num) ? String(id) : num
-  }
-
-  const normalizedJobId = normalizeId(jobId)
-  const vehicle = store.vehicles.find(v => {
-    if (!v.jobId) return false
-    const normalizedVehicleJobId = normalizeId(v.jobId)
-    return normalizedVehicleJobId === normalizedJobId
-  })
-  
+const handlePullOut = async (job) => {
+  const vehicle = findVehicleForJob(job)
   if (!vehicle) {
     return
   }
-  
   await store.pullOutVehicle(vehicle.vehicleId)
 }
 
-const handlePutAway = async () => {
-  await store.putAwayVehicle()
+const handlePutAway = async (job) => {
+  const vehicle = findVehicleForJob(job)
+  await store.putAwayVehicle(vehicle?.vehicleId)
 }
 
 const handleAbandon = (job) => {

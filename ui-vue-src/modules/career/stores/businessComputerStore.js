@@ -8,12 +8,15 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   const activeView = ref("home")
   const vehicleView = ref(null)
   const pulledOutVehicle = ref(null)
+  const pulledOutVehicles = ref([])
+  const activeVehicleId = ref(null)
   const loading = ref(false)
   const registeredTabs = ref([])
 
   const partsCart = ref([])
   const tuningCart = ref([])
   const tuningDataCache = ref({})
+  const partsTreeCache = ref({})
   
   const cartTabs = ref([{ id: 'default', name: 'Build 1', parts: [], tuning: [], cartHash: null }])
   const activeTabId = ref('default')
@@ -29,14 +32,44 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   const businessId = computed(() => businessData.value.businessId)
   const businessType = computed(() => businessData.value.businessType)
   const businessName = computed(() => businessData.value.businessName || "Business")
+  const normalizeVehicleIdValue = (id) => {
+    if (id === undefined || id === null) return null
+    const numeric = Number(id)
+    return Number.isNaN(numeric) ? String(id) : numeric
+  }
+  const normalizeJobIdValue = (jobId) => {
+    if (jobId === undefined || jobId === null) {
+      return 'nojob'
+    }
+    return String(jobId)
+  }
+  const clearCachesForJob = (jobId) => {
+    const key = normalizeJobIdValue(jobId)
+    if (partsTreeCache.value[key]) {
+      delete partsTreeCache.value[key]
+    }
+    if (tuningDataCache.value[key]) {
+      delete tuningDataCache.value[key]
+    }
+  }
+  const getBusinessVehicleById = (vehicleId) => {
+    const list = vehicles.value || []
+    return list.find(vehicle => normalizeVehicleIdValue(vehicle?.vehicleId) === vehicleId) || null
+  }
   const damageLockInfo = computed(() => {
-    const vehicle = businessData.value?.pulledOutVehicle
+    const vehicle = pulledOutVehicle.value
     return {
       damage: vehicle?.damage ?? businessData.value?.vehicleDamage ?? 0,
       threshold: vehicle?.damageThreshold ?? businessData.value?.vehicleDamageThreshold ?? 1000
     }
   })
-  const isDamageLocked = computed(() => !!businessData.value?.pulledOutVehicle?.damageLocked)
+  const hasDamageLockedVehicle = computed(() => {
+    if (Array.isArray(pulledOutVehicles.value) && pulledOutVehicles.value.length > 0) {
+      return pulledOutVehicles.value.some(vehicle => vehicle?.damageLocked)
+    }
+    return !!businessData.value?.vehicleDamageLocked
+  })
+  const isDamageLocked = computed(() => hasDamageLockedVehicle.value)
   const showDamageLockWarning = () => {
     const info = damageLockInfo.value
     const damage = Math.round(info.damage || 0)
@@ -48,10 +81,20 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
       console.warn("Failed to show damage lock warning", error)
     }
   }
+  const showErrorMessage = (message) => {
+    if (!message) return
+    try {
+      lua.ui_message(message, 5, "Business Computer", "error")
+    } catch (error) {
+      console.warn("Failed to show error message", error)
+    }
+  }
   const normalizeLuaResult = (result) => {
     if (result && typeof result === "object" && result.success === false) {
-      if (result.error) {
+      if (result.errorCode === "damageLocked") {
         showDamageLockWarning()
+      } else if (result.message) {
+        showErrorMessage(result.message)
       }
       return false
     }
@@ -98,6 +141,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     if (typeof v === 'object') return Object.values(v)
     return []
   })
+  const maxPulledOutVehicles = computed(() => businessData.value?.maxPulledOutVehicles ?? 1)
   const parts = computed(() => {
     if (!businessData.value || !businessData.value.parts) return []
     const p = businessData.value.parts
@@ -106,14 +150,32 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   const stats = computed(() => businessData.value.stats || {})
 
   const setBusinessData = (data) => {
-    businessData.value = data
-    if (data.pulledOutVehicle) {
-      pulledOutVehicle.value = data.pulledOutVehicle
-    } else {
-      pulledOutVehicle.value = null
+    const vehiclesFromData = Array.isArray(data?.pulledOutVehicles)
+      ? data.pulledOutVehicles
+      : (data?.pulledOutVehicle ? [data.pulledOutVehicle] : [])
+    pulledOutVehicles.value = vehiclesFromData
+    let nextActiveId = data?.activeVehicleId
+    if (nextActiveId === undefined || nextActiveId === null) {
+      nextActiveId = vehiclesFromData[0]?.vehicleId ?? data?.pulledOutVehicle?.vehicleId ?? null
     }
-    if (data.tabs) {
-      registeredTabs.value = data.tabs
+    activeVehicleId.value = nextActiveId ?? null
+    const normalizedActiveId = normalizeVehicleIdValue(nextActiveId)
+    let activeEntry = null
+    if (normalizedActiveId !== null) {
+      activeEntry = vehiclesFromData.find(vehicle => normalizeVehicleIdValue(vehicle?.vehicleId) === normalizedActiveId) || null
+    }
+    if (!activeEntry && data?.pulledOutVehicle) {
+      activeEntry = data.pulledOutVehicle
+    }
+    pulledOutVehicle.value = activeEntry || null
+    const payload = {
+      ...data,
+      pulledOutVehicle: activeEntry,
+      pulledOutVehicles: vehiclesFromData
+    }
+    businessData.value = payload
+    if (payload.tabs) {
+      registeredTabs.value = payload.tabs
     }
   }
 
@@ -213,17 +275,100 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     }
   }
 
-  const putAwayVehicle = async () => {
+  const putAwayVehicle = async (vehicleId) => {
     if (!businessId.value) return false
     if (isDamageLocked.value) {
       showDamageLockWarning()
       return false
     }
     try {
-      const success = normalizeLuaResult(await lua.career_modules_business_businessComputer.putAwayVehicle(businessId.value))
+      const targetVehicleId = vehicleId ?? pulledOutVehicle.value?.vehicleId ?? null
+      const normalizedTargetId = normalizeVehicleIdValue(targetVehicleId)
+      const targetVehicleEntry = normalizedTargetId ? getBusinessVehicleById(normalizedTargetId) : null
+      const targetJobId = targetVehicleEntry?.jobId
+      const success = normalizeLuaResult(await lua.career_modules_business_businessComputer.putAwayVehicle(businessId.value, targetVehicleId))
       if (success) {
-        pulledOutVehicle.value = null
+        clearCachesForJob(targetJobId)
+        try {
+          lua.career_modules_business_businessComputer.clearVehicleDataCaches()
+        } catch (error) {
+        }
+        
+        if (!vehicleId || normalizeVehicleIdValue(vehicleId) === normalizeVehicleIdValue(pulledOutVehicle.value?.vehicleId)) {
+          pulledOutVehicle.value = null
+          activeVehicleId.value = null
+        }
         await loadBusinessData(businessType.value, businessId.value)
+      }
+      return !!success
+    } catch (error) {
+      return false
+    }
+  }
+
+  const setActiveVehicleSelection = async (vehicleId) => {
+    if (!businessId.value || vehicleId === undefined || vehicleId === null) {
+      return false
+    }
+    const normalizedTarget = normalizeVehicleIdValue(vehicleId)
+    if (normalizeVehicleIdValue(activeVehicleId.value) === normalizedTarget) {
+      return true
+    }
+    
+    const previousVehicleId = activeVehicleId.value
+    
+    try {
+      const success = normalizeLuaResult(await lua.career_modules_business_businessComputer.setActiveVehicle(businessId.value, vehicleId))
+      if (success) {
+        if (previousVehicleId && businessId.value && previousVehicleId !== normalizedTarget) {
+          try {
+            await lua.career_modules_business_businessComputer.resetVehicleToOriginal(
+              businessId.value,
+              previousVehicleId
+            )
+            await lua.career_modules_business_businessPartCustomization.clearPreviewVehicle(businessId.value)
+          } catch (error) {
+          }
+        }
+        clearCart()
+        
+        originalPower.value = null
+        originalWeight.value = null
+        currentPower.value = null
+        currentWeight.value = null
+        originalVehicleState.value = null
+        
+        activeVehicleId.value = vehicleId
+        const vehiclesList = Array.isArray(pulledOutVehicles.value) ? pulledOutVehicles.value : []
+        let selectedVehicle = vehiclesList.find(vehicle => normalizeVehicleIdValue(vehicle?.vehicleId) === normalizedTarget) || null
+        const requiresRefresh = !selectedVehicle || selectedVehicle.jobId === undefined || selectedVehicle.jobId === null
+        pulledOutVehicle.value = selectedVehicle
+        businessData.value = {
+          ...businessData.value,
+          pulledOutVehicle: selectedVehicle
+        }
+        
+        if (requiresRefresh && businessType.value && businessId.value) {
+          try {
+            await loadBusinessData(businessType.value, businessId.value)
+            const refreshedList = Array.isArray(pulledOutVehicles.value) ? pulledOutVehicles.value : []
+            selectedVehicle = refreshedList.find(vehicle => normalizeVehicleIdValue(vehicle?.vehicleId) === normalizedTarget) || null
+            pulledOutVehicle.value = selectedVehicle
+          } catch (error) {
+          }
+        }
+        
+        if (selectedVehicle && (vehicleView.value === 'parts' || vehicleView.value === 'tuning')) {
+          setTimeout(async () => {
+            if (vehicleView.value === 'parts' && selectedVehicle?.vehicleId) {
+              await initializeCartForVehicle()
+              await requestVehiclePartsTree(selectedVehicle.vehicleId)
+            } else if (vehicleView.value === 'tuning' && selectedVehicle?.vehicleId) {
+              await initializeCartForVehicle()
+              await requestVehicleTuningData(selectedVehicle.vehicleId)
+            }
+          }, 100)
+        }
       }
       return !!success
     } catch (error) {
@@ -337,6 +482,8 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
 
   const onMenuClosed = () => {
     clearCart()
+    partsTreeCache.value = {}
+    tuningDataCache.value = {}
     
     if (businessId.value) {
       try {
@@ -1357,6 +1504,8 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     activeView,
     vehicleView,
     pulledOutVehicle,
+    pulledOutVehicles,
+    activeVehicleId,
     loading,
     registeredTabs,
     tabsBySection,
@@ -1378,6 +1527,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     completeJob,
     pullOutVehicle,
     putAwayVehicle,
+    setActiveVehicleSelection,
     switchView,
     switchVehicleView,
     closeVehicleView,
@@ -1394,9 +1544,11 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     addTuningToCart,
     removeTuningFromCart,
     clearCart,
+    clearCachesForJob,
     getCartTotal,
     tuningCost,
     tuningDataCache,
+    partsTreeCache,
     cartTabs,
     activeTabId,
     originalVehicleState,
@@ -1423,6 +1575,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     loadSkillTrees,
     purchaseSkillUpgrade,
     getTotalUpgradesInTree,
+    maxPulledOutVehicles,
   }
 })
 

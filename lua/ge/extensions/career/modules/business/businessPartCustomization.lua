@@ -5,12 +5,25 @@ M.dependencies = {'career_career', 'core_vehicles', 'core_jobsystem'}
 local jbeamIO = require('jbeam/io')
 local jbeamSlotSystem = require('jbeam/slotSystem')
 
-local previewVehicles = {}
-local initialVehicles = {}
-local previewVehicleSlotData = {}
-local powerWeightCache = {}
-local powerWeightCallbacks = {}
-local vehicleOperationInProgress = {}
+local currentSession = nil
+
+local function resetCurrentSession()
+  currentSession = nil
+end
+
+local function sessionMatches(businessId, vehicleId)
+  if not currentSession then return false end
+  if currentSession.businessId ~= businessId then return false end
+  if vehicleId and currentSession.vehicleId ~= vehicleId then return false end
+  return true
+end
+
+local function getActiveSession(businessId)
+  if sessionMatches(businessId) then
+    return currentSession
+  end
+  return nil
+end
 
 local function getPartSupplierDiscountMultiplier(businessId)
   if not businessId or not career_modules_business_businessSkillTree then
@@ -253,24 +266,24 @@ local function initializePreviewVehicle(businessId, vehicleId)
   
   local modelKey = vehicle.vehicleConfig.model_key or vehicle.model_key
   
-  initialVehicles[businessId] = {
+  local initialState = {
     config = deepcopy(originalConfig),
     partList = flattenPartsTree(originalConfig.partsTree or {}),
     partConditions = deepcopy(vehicle.partConditions or {}),
     vars = deepcopy(vehicle.vars or {}),
     model = modelKey,
-    vehicleId = vehicleId
+    vehicleId = vehicleId,
+    partsNiceName = {}
   }
   
-  -- Initialize preview vehicle with the same original state
-  previewVehicles[businessId] = {
+  local previewState = {
     config = deepcopy(originalConfig),
     partList = flattenPartsTree(originalConfig.partsTree or {}),
     partConditions = deepcopy(vehicle.partConditions or {}),
     model = modelKey
   }
   
-  previewVehicleSlotData[businessId] = {}
+  local slotData = {}
   local availableParts = jbeamIO.getAvailableParts(vehicleData.ioCtx)
   local partsNiceName = {}
   for partName, partInfo in pairs(availableParts) do
@@ -279,14 +292,34 @@ local function initializePreviewVehicle(businessId, vehicleId)
     if partInfo.slotInfoUi then
       for slotName, slotInfo in pairs(partInfo.slotInfoUi) do
         local path = "/" .. slotName .. "/"
-        previewVehicleSlotData[businessId][path] = slotInfo
+        slotData[path] = slotInfo
       end
     end
   end
+  initialState.partsNiceName = partsNiceName
   
-  initialVehicles[businessId].partsNiceName = partsNiceName
+  currentSession = {
+    businessId = businessId,
+    vehicleId = vehicleId,
+    initial = initialState,
+    preview = previewState,
+    slotData = slotData,
+    powerWeight = nil,
+    operationInProgress = false
+  }
   
   return true
+end
+
+local function ensureActiveSession(businessId, vehicleId)
+  local session = getActiveSession(businessId)
+  if session and (not vehicleId or session.vehicleId == vehicleId) then
+    return session
+  end
+  if vehicleId and initializePreviewVehicle(businessId, vehicleId) then
+    return currentSession
+  end
+  return nil
 end
 
 local function resetVehicleToOriginal(businessId, vehicleId)
@@ -294,6 +327,9 @@ local function resetVehicleToOriginal(businessId, vehicleId)
   
   local vehObj = getBusinessVehicleObject(businessId, vehicleId)
   if not vehObj then return false end
+
+  local session = ensureActiveSession(businessId, vehicleId)
+  if not session or not session.initial then return false end
   
   core_jobsystem.create(function(job)
     job.sleep(0.5)
@@ -305,41 +341,19 @@ local function resetVehicleToOriginal(businessId, vehicleId)
     if not modelKey then return end
     
     local originalConfig = nil
-    local baselineExists = initialVehicles[businessId] ~= nil
+    local baselineExists = session.initial ~= nil
     
     if baselineExists then
-      originalConfig = deepcopy(initialVehicles[businessId].config)
+      originalConfig = deepcopy(session.initial.config)
     else
-      if vehicle.config then
-        originalConfig = deepcopy(vehicle.config)
-      else
-        local vehId = vehObj:getID()
-        local vehicleData = extensions.core_vehicle_manager.getVehicleData(vehId)
-        if vehicleData and vehicleData.config then
-          originalConfig = deepcopy(vehicleData.config)
-        else
-          return
-        end
-      end
-      
-      if vehicle.vars then
-        originalConfig.vars = deepcopy(vehicle.vars)
-      end
-      
-      initialVehicles[businessId] = {
-        config = deepcopy(originalConfig),
-        partList = flattenPartsTree(originalConfig.partsTree or {}),
-        partConditions = deepcopy(vehicle.partConditions or {}),
-        vars = deepcopy(vehicle.vars or {}),
-        model = modelKey
-      }
+      return
     end
     
     local vehId = vehObj:getID()
     
     replaceVehicleWithFuelHandling(vehObj, modelKey, originalConfig, 
       function()
-        local partConditions = baselineExists and initialVehicles[businessId].partConditions or vehicle.partConditions
+        local partConditions = baselineExists and session.initial.partConditions or vehicle.partConditions
         if partConditions then
           core_vehicleBridge.executeAction(vehObj, 'initPartConditions', partConditions, nil, nil, nil, nil)
         end
@@ -349,10 +363,10 @@ local function resetVehicleToOriginal(businessId, vehicleId)
       end
     )
     
-    previewVehicles[businessId] = {
+    session.preview = {
       config = deepcopy(originalConfig),
       partList = flattenPartsTree(originalConfig.partsTree or {}),
-      partConditions = deepcopy(baselineExists and initialVehicles[businessId].partConditions or vehicle.partConditions or {}),
+      partConditions = deepcopy(baselineExists and session.initial.partConditions or vehicle.partConditions or {}),
       model = modelKey
     }
   end)
@@ -372,13 +386,12 @@ local function applyPartsToVehicle(businessId, vehicleId, parts)
   local modelKey = vehicle.vehicleConfig.model_key or vehicle.model_key
   if not modelKey then return false end
   
-  if not initialVehicles[businessId] then
-    if not initializePreviewVehicle(businessId, vehicleId) then
-      return false
-    end
+  local session = ensureActiveSession(businessId, vehicleId)
+  if not session then
+    return false
   end
   
-  local initialVehicle = initialVehicles[businessId]
+  local initialVehicle = session.initial
   if not initialVehicle or not initialVehicle.config then
     return false
   end
@@ -391,7 +404,7 @@ local function applyPartsToVehicle(businessId, vehicleId, parts)
     end
   end
   
-  previewVehicles[businessId] = {
+  session.preview = {
     config = completeConfig,
     partList = flattenPartsTree(completeConfig.partsTree or {}),
     partConditions = deepcopy(vehicle.partConditions or {}),
@@ -400,7 +413,7 @@ local function applyPartsToVehicle(businessId, vehicleId, parts)
   
   replaceVehicleWithFuelHandling(vehObj, modelKey, completeConfig,
     function()
-      core_vehicleBridge.executeAction(vehObj, 'initPartConditions', previewVehicles[businessId].partConditions or {}, nil, nil, nil, nil)
+      core_vehicleBridge.executeAction(vehObj, 'initPartConditions', session.preview.partConditions or {}, nil, nil, nil, nil)
     end,
     function()
       if career_modules_business_businessComputer then
@@ -414,11 +427,12 @@ local function applyPartsToVehicle(businessId, vehicleId, parts)
 end
 
 local function buildPartsTreeFromCart(businessId, parts)
-    if not businessId or not initialVehicles[businessId] then
+    local session = getActiveSession(businessId)
+    if not session or not session.initial or not session.initial.config then
       return {}
     end
     
-    local baselineConfig = initialVehicles[businessId].config
+    local baselineConfig = session.initial.config
     if not baselineConfig or not baselineConfig.partsTree then
       return {}
     end
@@ -667,30 +681,25 @@ local function getAllRequiredParts(businessId, vehicleId, parts, cartParts)
 local function applyCartPartsToVehicle(businessId, vehicleId, parts)
   if not businessId or not vehicleId then return false end
   
-  local operationKey = businessId .. "_" .. tostring(vehicleId)
-  if vehicleOperationInProgress[operationKey] then
+  local session = ensureActiveSession(businessId, vehicleId)
+  if not session then
+    return false
+  end
+  if session.operationInProgress then
     return false
   end
   
-  vehicleOperationInProgress[operationKey] = true
+  session.operationInProgress = true
   
   local vehObj = getBusinessVehicleObject(businessId, vehicleId)
   if not vehObj then
-    vehicleOperationInProgress[operationKey] = nil
+    session.operationInProgress = false
     return false
   end
   
-  if not initialVehicles[businessId] then
-    if not initializePreviewVehicle(businessId, vehicleId) then
-      vehicleOperationInProgress[operationKey] = nil
-      return false
-    end
-  end
-  
-  -- Use the stored initial vehicle config (baseline from inventory)
-  local initialVehicle = initialVehicles[businessId]
+  local initialVehicle = session.initial
   if not initialVehicle or not initialVehicle.config then
-    vehicleOperationInProgress[operationKey] = nil
+    session.operationInProgress = false
     return false
   end
   
@@ -744,7 +753,6 @@ local function applyCartPartsToVehicle(businessId, vehicleId, parts)
     end
     
     local discountMultiplier = getPartSupplierDiscountMultiplier(businessId)
-    local vehObj = getBusinessVehicleObject(businessId, vehicleId)
     local vehicleModel = nil
     if vehObj then
       vehicleModel = vehObj:getJBeamFilename()
@@ -797,7 +805,7 @@ local function applyCartPartsToVehicle(businessId, vehicleId, parts)
   end
   
   local modelKey = initialVehicle.model
-  previewVehicles[businessId] = {
+  session.preview = {
     config = completeConfig,
     partList = flattenPartsTree(completeConfig.partsTree or {}),
     partConditions = deepcopy(initialVehicle.partConditions or {}),
@@ -806,10 +814,10 @@ local function applyCartPartsToVehicle(businessId, vehicleId, parts)
   
   replaceVehicleWithFuelHandling(vehObj, modelKey, completeConfig,
     function()
-      core_vehicleBridge.executeAction(vehObj, 'initPartConditions', previewVehicles[businessId].partConditions or {}, nil, nil, nil, nil)
+      core_vehicleBridge.executeAction(vehObj, 'initPartConditions', session.preview.partConditions or {}, nil, nil, nil, nil)
     end,
     function()
-      vehicleOperationInProgress[operationKey] = nil
+      session.operationInProgress = false
       if career_modules_business_businessComputer then
         career_modules_business_businessComputer.requestVehiclePartsTree(businessId, vehicleId)
       end
@@ -830,19 +838,21 @@ end
 local function onPowerWeightReceived(requestId, power, weight)
   local businessId, vehicleId = requestId:match("^(.+)_(.+)_")
   if businessId and vehicleId and power and weight and weight > 0 then
-    local cacheKey = businessId .. "_" .. vehicleId
+    local numericVehicleId = tonumber(vehicleId)
     local result = {
       power = power,
       weight = weight,
       powerToWeight = power / weight
     }
-    powerWeightCache[cacheKey] = result
+    if sessionMatches(businessId, numericVehicleId) then
+      currentSession.powerWeight = result
+    end
     
     -- Notify Vue via hook when data arrives
     guihooks.trigger('businessComputer:onVehiclePowerWeight', {
       success = true,
       businessId = businessId,
-      vehicleId = tonumber(vehicleId),
+      vehicleId = numericVehicleId or vehicleId,
       power = power,
       weight = weight,
       powerToWeight = result.powerToWeight
@@ -860,11 +870,9 @@ local function getVehiclePowerWeight(businessId, vehicleId)
     return nil
   end
   
-  local cacheKey = businessId .. "_" .. tostring(vehicleId)
-  
-  -- Check cache first
-  if powerWeightCache[cacheKey] then
-    return powerWeightCache[cacheKey]
+  local session = getActiveSession(businessId)
+  if session and session.vehicleId == vehicleId and session.powerWeight then
+    return session.powerWeight
   end
   
   requestVehiclePowerWeight(vehObj, businessId, vehicleId)
@@ -873,15 +881,17 @@ local function getVehiclePowerWeight(businessId, vehicleId)
 end
 
 local function getPreviewVehicleConfig(businessId)
-  if previewVehicles[businessId] then
-    return previewVehicles[businessId].config
+  local session = getActiveSession(businessId)
+  if session and session.preview then
+    return session.preview.config
   end
   return nil
 end
 
 local function getInitialVehicleState(businessId)
-  if initialVehicles[businessId] then
-    return deepcopy(initialVehicles[businessId])
+  local session = getActiveSession(businessId)
+  if session and session.initial then
+    return deepcopy(session.initial)
   end
   return nil
 end
@@ -924,18 +934,18 @@ local function addPartToCart(businessId, vehicleId, currentCart, partToAdd)
     return currentCart or {}
   end
   
-  if not initialVehicles[businessId] then
-    if not initializePreviewVehicle(businessId, vehicleId) then
-      return currentCart or {}
-    end
+  local session = ensureActiveSession(businessId, vehicleId)
+  if not session or not session.initial or not session.initial.config then
+    return currentCart or {}
   end
   
-  local baselineTree = initialVehicles[businessId].config.partsTree
+  local baselineTree = session.initial.config.partsTree
   if not baselineTree then
     return currentCart or {}
   end
   
   local cart = deepcopy(currentCart or {})
+  local slotData = session.slotData or {}
   
   for i = #cart, 1, -1 do
     local item = cart[i]
@@ -983,10 +993,10 @@ local function addPartToCart(businessId, vehicleId, currentCart, partToAdd)
   
   -- Use applyCartPartsToVehicle pattern to spawn vehicle with tempCart
   -- This will automatically add default parts for empty slots
-  local initialConfig = deepcopy(initialVehicles[businessId].config)
+  local initialConfig = deepcopy(session.initial.config)
   
   -- Build complete config from baseline + tempCart (same as applyCartPartsToVehicle does)
-  local completeConfig = deepcopy(initialVehicles[businessId].config)
+  local completeConfig = deepcopy(session.initial.config)
   
   -- Apply all parts from tempCart to the config
   for _, part in ipairs(tempCart) do
@@ -1099,9 +1109,9 @@ local function addPartToCart(businessId, vehicleId, currentCart, partToAdd)
           end
         end
         
-        if slotNiceName == "" and previewVehicleSlotData[businessId] then
-          if previewVehicleSlotData[businessId][slotPath] then
-            slotInfo = previewVehicleSlotData[businessId][slotPath]
+        if slotNiceName == "" and slotData then
+          if slotData[slotPath] then
+            slotInfo = slotData[slotPath]
             if slotInfo.description then
               local desc = slotInfo.description
               slotNiceName = type(desc) == "table" and desc.description or desc or slotName
@@ -1109,7 +1119,7 @@ local function addPartToCart(businessId, vehicleId, currentCart, partToAdd)
           end
           
           if slotNiceName == "" then
-            for path, info in pairs(previewVehicleSlotData[businessId]) do
+            for path, info in pairs(slotData) do
               local pathSlotName = path:match("/([^/]+)/$") or ""
               if pathSlotName == slotName then
                 slotInfo = info
@@ -1128,7 +1138,7 @@ local function addPartToCart(businessId, vehicleId, currentCart, partToAdd)
         end
         
         local canRemove = false
-        local baselinePartName = initialVehicles[businessId].partList[slotPath]
+        local baselinePartName = session.initial.partList[slotPath]
         if slotInfo then
           if not slotInfo.coreSlot then
             canRemove = true
@@ -1168,10 +1178,10 @@ local function addPartToCart(businessId, vehicleId, currentCart, partToAdd)
         table.insert(finalCart, partData)
       end
       
-      previewVehicles[businessId] = {
+      session.preview = {
         config = deepcopy(actualVehicleData.config),
         partList = flattenPartsTree(actualVehicleData.config.partsTree or {}),
-        partConditions = deepcopy(initialVehicles[businessId].partConditions or {}),
+        partConditions = deepcopy(session.initial.partConditions or {}),
         model = vehicleModel
       }
       
@@ -1203,12 +1213,13 @@ local function findRemovedParts(businessId, vehicleId)
     return {}
   end
   
-  if not initialVehicles[businessId] then
+  local session = getActiveSession(businessId)
+  if not session or not session.initial or not session.preview then
     return {}
   end
   
-  local initialVehicle = initialVehicles[businessId]
-  local previewVehicle = previewVehicles[businessId]
+  local initialVehicle = session.initial
+  local previewVehicle = session.preview
   
   if not initialVehicle or not previewVehicle then
     return {}
@@ -1271,16 +1282,8 @@ local function findRemovedParts(businessId, vehicleId)
 end
 
 local function clearPreviewVehicle(businessId)
-  if businessId then
-    previewVehicles[businessId] = nil
-    initialVehicles[businessId] = nil
-    previewVehicleSlotData[businessId] = nil
-    powerWeightCache = {}
-    for key, _ in pairs(vehicleOperationInProgress) do
-      if key:match("^" .. businessId .. "_") then
-        vehicleOperationInProgress[key] = nil
-      end
-    end
+  if businessId and sessionMatches(businessId) then
+    resetCurrentSession()
   end
 end
 
@@ -1299,6 +1302,7 @@ M.addPartToCart = addPartToCart
 M.findRemovedParts = findRemovedParts
 
 return M
+
 
 
 

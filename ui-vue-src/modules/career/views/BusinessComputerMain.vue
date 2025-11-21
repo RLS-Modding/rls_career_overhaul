@@ -121,6 +121,22 @@
               </ul>
             </div>
             
+            <div v-if="vehicleList.length" :class="['garage-selector', { collapsed: isCollapsed }]">
+              <div class="selector-title" v-if="!isCollapsed">Garage Vehicles</div>
+              <div class="selector-pills">
+                <button
+                  v-for="vehicle in vehicleList"
+                  :key="vehicle.vehicleId"
+                  class="selector-pill"
+                  :class="{ active: isActiveVehicle(vehicle.vehicleId), locked: vehicle.damageLocked }"
+                  @mousedown.stop
+                  @click.stop="selectVehicle(vehicle.vehicleId)"
+                >
+                  <span class="pill-name">{{ vehicle.vehicleName }}</span>
+                  <span v-if="vehicle.damageLocked" class="pill-status">Damaged</span>
+                </button>
+              </div>
+            </div>
             <div v-if="store.pulledOutVehicle" class="nav-section">
               <div class="nav-section-title">{{ isCollapsed ? 'V' : 'VEHICLE' }}</div>
               <ul class="nav-list">
@@ -215,6 +231,18 @@ const isCollapsed = ref(false)
 const isVehicleViewCollapsed = ref(false)
 const isVehicleSidebarCollapsed = ref(true)
 const containerRef = ref(null)
+const vehicleList = computed(() => Array.isArray(store.pulledOutVehicles) ? store.pulledOutVehicles : [])
+const normalizeVehicleId = (value) => {
+  if (value === undefined || value === null) return null
+  const numeric = Number(value)
+  return Number.isNaN(numeric) ? String(value) : numeric
+}
+const isActiveVehicle = (vehicleId) => {
+  return normalizeVehicleId(vehicleId) === normalizeVehicleId(store.activeVehicleId)
+}
+const selectVehicle = async (vehicleId) => {
+  await store.setActiveVehicleSelection(vehicleId)
+}
 
 const activeTab = computed(() => {
   return store.registeredTabs.find(tab => tab.id === store.activeView) || null
@@ -645,6 +673,71 @@ onUnmounted(kill)
     
     &:hover {
       background: rgba(255, 255, 255, 0.15);
+    }
+  }
+}
+
+.garage-selector {
+  padding: 1em;
+  border-top: 1px solid rgba(245, 73, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+
+  &.collapsed {
+    padding: 0.75em 0.5em;
+  }
+
+  .selector-title {
+    font-size: 0.8em;
+    color: rgba(255, 255, 255, 0.5);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .selector-pills {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4em;
+  }
+
+  .selector-pill {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.4em 0.6em;
+    border-radius: 0.4em;
+    border: 1px solid transparent;
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: border 0.2s, background 0.2s;
+
+    &.active {
+      border-color: rgba(245, 73, 0, 0.9);
+      background: rgba(245, 73, 0, 0.15);
+    }
+
+    &.locked {
+      border-color: rgba(239, 68, 68, 0.8);
+    }
+
+    &:hover {
+      border-color: rgba(245, 73, 0, 0.6);
+    }
+
+    .pill-name {
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-right: 0.5em;
+    }
+
+    .pill-status {
+      font-size: 0.75em;
+      color: rgba(239, 68, 68, 0.9);
     }
   }
 }

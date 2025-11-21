@@ -455,6 +455,29 @@ local function getMaxActiveJobs(businessId)
   return baseLimit + biggerBooksLevel
 end
 
+local function getMaxPulledOutVehicles(businessId)
+  local limit = 1
+  if not businessId or not career_modules_business_businessSkillTree then
+    return limit
+  end
+  
+  local treeId = "shop-upgrades"
+  local upgrades = {
+    "lift-2",
+    "lift-3",
+    "lift-4"
+  }
+  
+  for _, nodeId in ipairs(upgrades) do
+    local level = career_modules_business_businessSkillTree.getNodeProgress(businessId, treeId, nodeId) or 0
+    if level > 0 then
+      limit = limit + 1
+    end
+  end
+  
+  return limit
+end
+
 local function selectJobLevel(upgradeCount, maxLevels)
   if upgradeCount == 0 then
     return 1
@@ -908,12 +931,23 @@ local function completeJob(businessId, jobId)
   end
   
   if vehicleToRemove then
-    local pulledOutVehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
-    if pulledOutVehicle then
-      local pulledId = tonumber(pulledOutVehicle.vehicleId) or pulledOutVehicle.vehicleId
-      local removeId = tonumber(vehicleToRemove.vehicleId) or vehicleToRemove.vehicleId
-      if pulledId == removeId then
-        career_modules_business_businessInventory.putAwayVehicle(businessId)
+    local removeId = tonumber(vehicleToRemove.vehicleId) or vehicleToRemove.vehicleId
+    if career_modules_business_businessInventory.getPulledOutVehicles then
+      local pulledVehicles = career_modules_business_businessInventory.getPulledOutVehicles(businessId) or {}
+      for _, pulled in ipairs(pulledVehicles) do
+        local pulledId = tonumber(pulled.vehicleId) or pulled.vehicleId
+        if pulledId == removeId then
+          career_modules_business_businessInventory.putAwayVehicle(businessId, removeId)
+          break
+        end
+      end
+    else
+      local pulledOutVehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
+      if pulledOutVehicle then
+        local pulledId = tonumber(pulledOutVehicle.vehicleId) or pulledOutVehicle.vehicleId
+        if pulledId == removeId then
+          career_modules_business_businessInventory.putAwayVehicle(businessId)
+        end
       end
     end
     career_modules_business_businessInventory.removeVehicle(businessId, vehicleToRemove.vehicleId)
@@ -996,12 +1030,23 @@ local function abandonJob(businessId, jobId)
   end
   
   if vehicleToRemove then
-    local pulledOutVehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
-    if pulledOutVehicle then
-      local pulledId = tonumber(pulledOutVehicle.vehicleId) or pulledOutVehicle.vehicleId
-      local removeId = tonumber(vehicleToRemove.vehicleId) or vehicleToRemove.vehicleId
-      if pulledId == removeId then
-        career_modules_business_businessInventory.putAwayVehicle(businessId)
+    local removeId = tonumber(vehicleToRemove.vehicleId) or vehicleToRemove.vehicleId
+    if career_modules_business_businessInventory.getPulledOutVehicles then
+      local pulledVehicles = career_modules_business_businessInventory.getPulledOutVehicles(businessId) or {}
+      for _, pulled in ipairs(pulledVehicles) do
+        local pulledId = tonumber(pulled.vehicleId) or pulled.vehicleId
+        if pulledId == removeId then
+          career_modules_business_businessInventory.putAwayVehicle(businessId, removeId)
+          break
+        end
+      end
+    else
+      local pulledOutVehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
+      if pulledOutVehicle then
+        local pulledId = tonumber(pulledOutVehicle.vehicleId) or pulledOutVehicle.vehicleId
+        if pulledId == removeId then
+          career_modules_business_businessInventory.putAwayVehicle(businessId)
+        end
       end
     end
     career_modules_business_businessInventory.removeVehicle(businessId, vehicleToRemove.vehicleId)
@@ -1279,12 +1324,48 @@ local function getUIData(businessId)
   local jobs = getJobsForBusiness(businessId)
   local vehicles = career_modules_business_businessInventory.getBusinessVehicles(businessId)
   local parts = {}
-  local pulledOutVehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
+  local pulledOutVehiclesRaw = {}
+  if career_modules_business_businessInventory.getPulledOutVehicles then
+    pulledOutVehiclesRaw = career_modules_business_businessInventory.getPulledOutVehicles(businessId) or {}
+  else
+    local singleVehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
+    if singleVehicle then
+      pulledOutVehiclesRaw = {singleVehicle}
+    end
+  end
+  local activeVehicle = nil
+  if career_modules_business_businessInventory.getActiveVehicle then
+    activeVehicle = career_modules_business_businessInventory.getActiveVehicle(businessId)
+  else
+    activeVehicle = pulledOutVehiclesRaw[1]
+  end
+  local activeVehicleId = activeVehicle and (tonumber(activeVehicle.vehicleId) or activeVehicle.vehicleId)
   local pulledOutDamageInfo = {
     locked = false,
     damage = 0,
     threshold = DAMAGE_LOCK_THRESHOLD
   }
+  local formattedPulledOutVehicles = {}
+  local hasDamageLockedVehicle = false
+  for _, vehicle in ipairs(pulledOutVehiclesRaw) do
+    local formatted = formatVehicleForUI(vehicle, businessId)
+    if formatted then
+      local vehicleDamageInfo = isDamageLocked(businessId, vehicle.vehicleId)
+      if vehicleDamageInfo.locked then
+        hasDamageLockedVehicle = true
+      end
+      formatted.damage = vehicleDamageInfo.damage
+      formatted.damageLocked = vehicleDamageInfo.locked
+      formatted.damageThreshold = vehicleDamageInfo.threshold
+      if activeVehicleId and (tonumber(formatted.vehicleId) or formatted.vehicleId) == activeVehicleId then
+        formatted.isActive = true
+        pulledOutDamageInfo = vehicleDamageInfo
+      else
+        formatted.isActive = false
+      end
+      table.insert(formattedPulledOutVehicles, formatted)
+    end
+  end
 
   local activeJobs = {}
   for _, job in ipairs(jobs.active or {}) do
@@ -1302,9 +1383,8 @@ local function getUIData(businessId)
   end
 
   local pulledOutVehicleData = nil
-  if pulledOutVehicle then
-    pulledOutVehicleData = formatVehicleForUI(pulledOutVehicle, businessId)
-    pulledOutDamageInfo = isDamageLocked(businessId, pulledOutVehicle.vehicleId)
+  if activeVehicle then
+    pulledOutVehicleData = formatVehicleForUI(activeVehicle, businessId)
     if pulledOutVehicleData then
       pulledOutVehicleData.damage = pulledOutDamageInfo.damage
       pulledOutVehicleData.damageLocked = pulledOutDamageInfo.locked
@@ -1326,7 +1406,7 @@ local function getUIData(businessId)
     end
     tabs = career_modules_business_businessTabRegistry.getTabs(businessType) or {}
 
-    if pulledOutDamageInfo.locked then
+    if hasDamageLockedVehicle then
       local allowedTabs = {
         home = true,
         jobs = true
@@ -1353,6 +1433,9 @@ local function getUIData(businessId)
     vehicles = vehicleList,
     parts = parts,
     pulledOutVehicle = pulledOutVehicleData,
+    pulledOutVehicles = formattedPulledOutVehicles,
+    activeVehicleId = activeVehicleId,
+    maxPulledOutVehicles = getMaxPulledOutVehicles(businessId),
     tabs = tabs,
     vehicleDamage = pulledOutDamageInfo.damage,
     vehicleDamageLocked = pulledOutDamageInfo.locked,
@@ -1541,5 +1624,6 @@ M.isShopAppUnlocked = isShopAppUnlocked
 M.getBusinessXP = getBusinessXP
 M.addBusinessXP = addBusinessXP
 M.spendBusinessXP = spendBusinessXP
+M.getMaxPulledOutVehicles = getMaxPulledOutVehicles
 
 return M

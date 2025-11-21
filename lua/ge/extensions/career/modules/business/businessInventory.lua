@@ -5,6 +5,14 @@ M.dependencies = {'career_career', 'career_saveSystem', 'gameplay_sites_sitesMan
 local businessVehicles = {}
 local pulledOutVehicles = {}
 local spawnedBusinessVehicles = {}
+local vehicleIdCounters = {}
+
+local function clearCachesForVehicleJob(businessId, vehicle)
+  if not vehicle then return end
+  if career_modules_business_businessComputer and career_modules_business_businessComputer.clearBusinessCachesForJob then
+    career_modules_business_businessComputer.clearBusinessCachesForJob(businessId, vehicle.jobId)
+  end
+end
 
 local function getBusinessVehiclesPath(businessId)
   if not career_career.isActive() then return nil end
@@ -32,7 +40,23 @@ local function loadBusinessVehicles(businessId)
     end
   end
   
+  local maxId = 0
+  for _, vehicle in ipairs(businessVehicles[businessId]) do
+    local vehId = tonumber(vehicle.vehicleId)
+    if vehId and vehId > maxId then
+      maxId = vehId
+    end
+  end
+  vehicleIdCounters[businessId] = math.max((vehicleIdCounters[businessId] or 1), maxId + 1)
+  
   return businessVehicles[businessId]
+end
+
+local function getNextVehicleId(businessId)
+  vehicleIdCounters[businessId] = vehicleIdCounters[businessId] or 1
+  local nextId = vehicleIdCounters[businessId]
+  vehicleIdCounters[businessId] = nextId + 1
+  return nextId
 end
 
 local function saveBusinessVehicles(businessId, currentSavePath)
@@ -60,8 +84,15 @@ local function storeVehicle(businessId, vehicleData)
   
   local vehicles = loadBusinessVehicles(businessId)
   
-  local vehicleId = vehicleData.vehicleId or (#vehicles + 1)
+  local vehicleId = vehicleData.vehicleId
+  if vehicleId == nil then
+    vehicleId = getNextVehicleId(businessId)
+  end
   vehicleId = tonumber(vehicleId) or vehicleId
+  if type(vehicleId) == "number" then
+    local nextId = vehicleId + 1
+    vehicleIdCounters[businessId] = math.max(vehicleIdCounters[businessId] or nextId, nextId)
+  end
   vehicleData.vehicleId = vehicleId
   vehicleData.storedTime = os.time()
   
@@ -105,8 +136,65 @@ local function getVehicleById(businessId, vehicleId)
   return nil
 end
 
-local function getPulledOutVehicle(businessId)
+local function normalizeVehicleId(vehicleId)
+  if vehicleId == nil then return nil end
+  return tonumber(vehicleId) or vehicleId
+end
+
+local function ensurePulledOutState(businessId)
+  if not pulledOutVehicles[businessId] then
+    pulledOutVehicles[businessId] = {
+      vehicles = {},
+      activeVehicleId = nil,
+      spotAssignments = {}
+    }
+  end
   return pulledOutVehicles[businessId]
+end
+
+local function findPulledOutVehicleIndex(state, vehicleId)
+  if not state or not state.vehicles then return nil end
+  for index, vehicle in ipairs(state.vehicles) do
+    if normalizeVehicleId(vehicle.vehicleId) == vehicleId then
+      return index
+    end
+  end
+  return nil
+end
+
+local function getPulledOutVehicles(businessId)
+  local state = pulledOutVehicles[businessId]
+  if not state or not state.vehicles then
+    return {}
+  end
+  return state.vehicles
+end
+
+local function getActiveVehicle(businessId)
+  local state = pulledOutVehicles[businessId]
+  if not state or not state.vehicles then return nil end
+  if state.activeVehicleId then
+    local index = findPulledOutVehicleIndex(state, state.activeVehicleId)
+    if index then
+      return state.vehicles[index]
+    end
+  end
+  return state.vehicles[1]
+end
+
+local function setActiveVehicle(businessId, vehicleId)
+  if not businessId or not vehicleId then return false end
+  local state = pulledOutVehicles[businessId]
+  if not state then return false end
+  local normalizedId = normalizeVehicleId(vehicleId)
+  local index = findPulledOutVehicleIndex(state, normalizedId)
+  if not index then return false end
+  state.activeVehicleId = normalizedId
+  return true
+end
+
+local function getPulledOutVehicle(businessId)
+  return getActiveVehicle(businessId)
 end
 
 local function getBusinessGarage(businessType, businessId)
@@ -159,13 +247,18 @@ local function getBusinessGarageParkingSpots(businessType, businessId)
   return spots
 end
 
-local function getBusinessGaragePosRot(businessType, businessId, veh)
+local function getBusinessGaragePosRot(businessType, businessId, veh, spotIndex)
   veh = veh or getPlayerVehicle(0)
   local garage = getBusinessGarage(businessType, businessId)
   if not garage then return nil, nil end
   
   local parkingSpots = getBusinessGarageParkingSpots(businessType, businessId)
   if #parkingSpots == 0 then return nil, nil end
+  
+  if spotIndex and parkingSpots[spotIndex] then
+    local spot = parkingSpots[spotIndex]
+    return spot.pos, spot.rot
+  end
   
   local parkingSpot = gameplay_sites_sitesManager.getBestParkingSpotForVehicleFromList(veh:getID(), parkingSpots)
   if parkingSpot then
@@ -281,9 +374,9 @@ local function spawnBusinessVehicle(businessId, vehicleId)
   return vehObj
 end
 
-local function teleportToBusinessGarage(businessType, businessId, veh, resetVeh)
+local function teleportToBusinessGarage(businessType, businessId, veh, resetVeh, spotIndex)
   resetVeh = resetVeh or false
-  local pos, rot = getBusinessGaragePosRot(businessType, businessId, veh)
+  local pos, rot = getBusinessGaragePosRot(businessType, businessId, veh, spotIndex)
   if pos and rot then
     spawn.safeTeleport(veh, pos, rot, nil, nil, nil, true, resetVeh)
     core_camera.resetCamera(0)
@@ -309,15 +402,37 @@ local function removeBusinessVehicleObject(businessId, vehicleId)
   spawnedBusinessVehicles[businessId][vehicleId] = nil
 end
 
+local function getAvailableParkingSpotIndex(businessType, businessId, state)
+  local parkingSpots = getBusinessGarageParkingSpots(businessType, businessId)
+  if #parkingSpots == 0 then
+    return nil
+  end
+  local used = {}
+  for _, index in pairs(state.spotAssignments or {}) do
+    if index then
+      used[index] = true
+    end
+  end
+  for idx = 1, #parkingSpots do
+    if not used[idx] then
+      return idx
+    end
+  end
+  return ((#state.vehicles) % #parkingSpots) + 1
+end
+
 local function pullOutVehicle(businessType, businessId, vehicleId)
   if not businessType or not businessId or not vehicleId then 
     log("E", "businessInventory", "pullOutVehicle: Missing parameters. businessType=" .. tostring(businessType) .. ", businessId=" .. tostring(businessId) .. ", vehicleId=" .. tostring(vehicleId))
     return false 
   end
   
-  vehicleId = tonumber(vehicleId) or vehicleId
+  local normalizedVehicleId = normalizeVehicleId(vehicleId)
+  if not normalizedVehicleId then
+    return false
+  end
   
-  local vehicle = getVehicleById(businessId, vehicleId)
+  local vehicle = getVehicleById(businessId, normalizedVehicleId)
   if not vehicle then 
     log("E", "businessInventory", "pullOutVehicle: Vehicle not found. businessId=" .. tostring(businessId) .. ", vehicleId=" .. tostring(vehicleId))
     local vehicles = loadBusinessVehicles(businessId)
@@ -328,38 +443,71 @@ local function pullOutVehicle(businessType, businessId, vehicleId)
     return false 
   end
   
-  local existingVehicle = pulledOutVehicles[businessId]
-  if existingVehicle then
-    local existingId = tonumber(existingVehicle.vehicleId) or existingVehicle.vehicleId
-    if existingId ~= vehicleId then
-      removeBusinessVehicleObject(businessId, existingVehicle.vehicleId)
-    end
+  local state = ensurePulledOutState(businessId)
+  local existingIndex = findPulledOutVehicleIndex(state, normalizedVehicleId)
+  if existingIndex then
+    state.activeVehicleId = normalizedVehicleId
+    return true
   end
   
-  pulledOutVehicles[businessId] = vehicle
-  
-  local vehObj = spawnBusinessVehicle(businessId, vehicleId)
-  if vehObj then
-    teleportToBusinessGarage(businessType, businessId, vehObj, false)
-    log("D", "businessInventory", "pullOutVehicle: Successfully pulled out vehicle. businessId=" .. tostring(businessId) .. ", vehicleId=" .. tostring(vehicleId))
-  else
+  local vehObj = spawnBusinessVehicle(businessId, normalizedVehicleId)
+  if not vehObj then
     log("E", "businessInventory", "pullOutVehicle: Failed to spawn vehicle. businessId=" .. tostring(businessId) .. ", vehicleId=" .. tostring(vehicleId))
-    pulledOutVehicles[businessId] = nil
+    if #state.vehicles == 0 then
+      pulledOutVehicles[businessId] = nil
+    end
     return false
   end
+  
+  table.insert(state.vehicles, vehicle)
+  state.activeVehicleId = normalizedVehicleId
+  state.spotAssignments = state.spotAssignments or {}
+  local spotIndex = getAvailableParkingSpotIndex(businessType, businessId, state)
+  state.spotAssignments[normalizedVehicleId] = spotIndex
+  teleportToBusinessGarage(businessType, businessId, vehObj, false, spotIndex)
+  log("D", "businessInventory", "pullOutVehicle: Successfully pulled out vehicle. businessId=" .. tostring(businessId) .. ", vehicleId=" .. tostring(vehicleId))
   
   return true
 end
 
-local function putAwayVehicle(businessId)
+local function putAwayVehicle(businessId, vehicleId)
   if not businessId then return false end
   
-  local vehicle = pulledOutVehicles[businessId]
-  if vehicle then
-    removeBusinessVehicleObject(businessId, vehicle.vehicleId)
+  local state = pulledOutVehicles[businessId]
+  if not state or not state.vehicles then
+    pulledOutVehicles[businessId] = nil
+    return true
   end
   
-  pulledOutVehicles[businessId] = nil
+  if not vehicleId then
+    for _, vehicle in ipairs(state.vehicles) do
+      clearCachesForVehicleJob(businessId, vehicle)
+      removeBusinessVehicleObject(businessId, vehicle.vehicleId)
+    end
+    pulledOutVehicles[businessId] = nil
+    return true
+  end
+  
+  local normalizedVehicleId = normalizeVehicleId(vehicleId)
+  local index = findPulledOutVehicleIndex(state, normalizedVehicleId)
+  if not index then
+    return false
+  end
+  
+  local vehicle = state.vehicles[index]
+  clearCachesForVehicleJob(businessId, vehicle)
+  removeBusinessVehicleObject(businessId, vehicle.vehicleId)
+  table.remove(state.vehicles, index)
+  if state.spotAssignments then
+    state.spotAssignments[normalizedVehicleId] = nil
+  end
+  if state.activeVehicleId == normalizedVehicleId then
+    state.activeVehicleId = state.vehicles[1] and normalizeVehicleId(state.vehicles[1].vehicleId) or nil
+  end
+  if #state.vehicles == 0 then
+    pulledOutVehicles[businessId] = nil
+  end
+  
   return true
 end
 
@@ -410,6 +558,7 @@ local function onCareerActivated()
   businessVehicles = {}
   pulledOutVehicles = {}
   spawnedBusinessVehicles = {}
+  vehicleIdCounters = {}
 end
 
 local function onSaveCurrentSaveSlot(currentSavePath)
@@ -447,6 +596,9 @@ M.updateVehicle = updateVehicle
 M.pullOutVehicle = pullOutVehicle
 M.putAwayVehicle = putAwayVehicle
 M.getPulledOutVehicle = getPulledOutVehicle
+M.getPulledOutVehicles = getPulledOutVehicles
+M.getActiveVehicle = getActiveVehicle
+M.setActiveVehicle = setActiveVehicle
 M.getBusinessGarage = getBusinessGarage
 M.getBusinessGarageParkingSpots = getBusinessGarageParkingSpots
 M.getBusinessGaragePosRot = getBusinessGaragePosRot

@@ -318,12 +318,17 @@ const normalizeJobId = (value) => {
   return String(value)
 }
 const jobIdentifier = computed(() => normalizeJobId(props.job?.jobId ?? props.job?.id))
-const pulledOutJobIdentifier = computed(() => normalizeJobId(store.pulledOutVehicle?.jobId))
+const pulledOutVehicleForJob = computed(() => {
+  if (!Array.isArray(store.pulledOutVehicles)) {
+    return null
+  }
+  return store.pulledOutVehicles.find(vehicle => normalizeJobId(vehicle?.jobId) === jobIdentifier.value) || null
+})
 const damageLockApplies = computed(() => {
-  if (!store.isDamageLocked || !jobIdentifier.value || !pulledOutJobIdentifier.value) {
+  if (!pulledOutVehicleForJob.value) {
     return false
   }
-  return jobIdentifier.value === pulledOutJobIdentifier.value
+  return !!pulledOutVehicleForJob.value.damageLocked
 })
 const isAcceptDisabled = computed(() => {
   if (props.isActive) return false
@@ -372,11 +377,18 @@ const progressPercent = computed(() => {
 })
 
 const isPulledOut = computed(() => {
-  return store.pulledOutVehicle && store.pulledOutVehicle.jobId === props.job.id
+  return !!pulledOutVehicleForJob.value
+})
+
+const liftsFull = computed(() => {
+  if (Array.isArray(store.pulledOutVehicles)) {
+    return store.pulledOutVehicles.length >= store.maxPulledOutVehicles
+  }
+  return !!store.pulledOutVehicle
 })
 
 const hasPulledOutVehicle = computed(() => {
-  return store.pulledOutVehicle !== null && !isPulledOut.value
+  return liftsFull.value && !isPulledOut.value
 })
 
 const formatTime = (time, decimalPlaces) => {

@@ -88,7 +88,7 @@
           }
         ],
         "decimalPlaces": 1,
-        "communte": 120
+        "commute": 120
       },
       "predictCoef":{ "a": -3.1197, "b": 9.9079, "c": 0.2978 },
       "type":[
@@ -553,7 +553,7 @@
             }
           ],
           "decimalPlaces": 1,
-          "communte": 45
+          "commute": 45
         },
         "label":"Short Track",
         "predictCoef": { "a": 53.8287, "b": 15.0958, "c": 0.4576 },
@@ -593,7 +593,7 @@
           }
         ],
         "decimalPlaces": 1,
-        "communte": 45
+        "commute": 45
       },
       "reward":2000,
       "runningStart":true,

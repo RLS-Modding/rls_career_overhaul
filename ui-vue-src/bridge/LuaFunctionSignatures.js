@@ -1164,7 +1164,9 @@ export default {
     canCompleteJob: (businessId, jobId) => [String, Integer],
     abandonJob: (businessId, jobId) => [String, Integer],
     pullOutVehicle: (businessId, vehicleId) => [String, Integer],
-    putAwayVehicle: (businessId) => String,
+    putAwayVehicle: (businessId, vehicleId) => String,
+    setActiveVehicle: (businessId, vehicleId) => [String, Integer],
+    getActiveVehicle: (businessId) => String,
     getActiveJobs: (businessId) => String,
     getNewJobs: (businessId) => String,
     getVehiclePartsTree: (businessId, vehicleId) => [String, Integer],
@@ -1236,8 +1238,11 @@ export default {
     removeVehicle: (businessId, vehicleId) => [String, Integer],
     getVehicleById: (businessId, vehicleId) => [String, Integer],
     pullOutVehicle: (businessId, vehicleId) => [String, Integer],
-    putAwayVehicle: (businessId) => String,
+    putAwayVehicle: (businessId, vehicleId) => String,
     getPulledOutVehicle: (businessId) => String,
+    getPulledOutVehicles: (businessId) => String,
+    getActiveVehicle: (businessId) => String,
+    setActiveVehicle: (businessId, vehicleId) => [String, Integer],
   },
 
   career_modules_business_businessSkillTree: {

@@ -2,7 +2,12 @@ local M = {}
 
 M.dependencies = {'career_career', 'core_vehicles', 'core_jobsystem', 'career_modules_bank'}
 
-local tuningDataCache = {}
+local function normalizeJobId(jobId)
+  if jobId == nil then
+    return "nojob"
+  end
+  return tostring(jobId)
+end
 
 local prices = {
   Suspension = {
@@ -117,6 +122,19 @@ local function getBusinessVehicleObject(businessId, vehicleId)
   return nil
 end
 
+local function fetchVehicleTuningVariables(businessId, vehicleId)
+  local vehObj = getBusinessVehicleObject(businessId, vehicleId)
+  if not vehObj then return nil end
+  
+  local vehId = vehObj:getID()
+  local vehicleData = extensions.core_vehicle_manager.getVehicleData(vehId)
+  if not vehicleData or not vehicleData.vdata or not vehicleData.vdata.variables then
+    return nil
+  end
+  
+  return deepcopy(vehicleData.vdata.variables)
+end
+
 local function requestVehicleTuningData(businessId, vehicleId)
   if not businessId or not vehicleId then
     guihooks.trigger('businessComputer:onVehicleTuningData', {
@@ -126,13 +144,11 @@ local function requestVehicleTuningData(businessId, vehicleId)
     return
   end
 
-  local cacheKey = businessId .. "_" .. tostring(vehicleId)
-  if tuningDataCache[cacheKey] then
+  local initialVehicle = career_modules_business_businessInventory.getVehicleById(businessId, vehicleId)
+  if not initialVehicle then
     guihooks.trigger('businessComputer:onVehicleTuningData', {
-      success = true,
-      businessId = businessId,
-      vehicleId = vehicleId,
-      tuningData = tuningDataCache[cacheKey]
+      success = false,
+      error = "Vehicle not found"
     })
     return
   end
@@ -219,12 +235,11 @@ local function requestVehicleTuningData(businessId, vehicleId)
       end
     end
 
-    tuningDataCache[cacheKey] = tuningVariables
-
     guihooks.trigger('businessComputer:onVehicleTuningData', {
       success = true,
       businessId = businessId,
       vehicleId = vehicleId,
+      jobId = vehicle.jobId,
       tuningData = tuningVariables,
       baselineVars = baselineVars
     })
@@ -315,8 +330,8 @@ local function applyTuningToVehicle(businessId, vehicleId, tuningVars)
         end
       end
       
-      local cacheKey = businessId .. "_" .. tostring(vehicleId)
-      local requestId = cacheKey .. "_" .. tostring(os.clock())
+      local jobKey = normalizeJobId(vehicle.jobId)
+      local requestId = tostring(businessId) .. "_" .. jobKey .. "_" .. tostring(os.clock())
       
       vehObj:queueLuaCommand([[
         local engine = powertrain.getDevicesByCategory("engine")[1]
@@ -347,8 +362,7 @@ local function createShoppingCart(businessId, vehicleId, changedVars, originalVa
     return {items = {}, total = 0, taxes = 0}
   end
   
-  local cacheKey = businessId .. "_" .. tostring(vehicleId)
-  local tuningData = tuningDataCache[cacheKey]
+  local tuningData = fetchVehicleTuningVariables(businessId, vehicleId)
   if not tuningData then return {items = {}, total = 0, taxes = 0} end
   
   local shoppingCart = {items = {}}
@@ -476,7 +490,12 @@ local function applyVehicleTuning(businessId, vehicleId, tuningVars, accountId)
   local vehicleVarsCurrent = vehicle.vars or {}
   vehicle.vars = tableMerge(vehicleVarsCurrent, tuningVars)
 
-  local pulledOutVehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
+  local pulledOutVehicle = nil
+  if career_modules_business_businessInventory.getActiveVehicle then
+    pulledOutVehicle = career_modules_business_businessInventory.getActiveVehicle(businessId)
+  else
+    pulledOutVehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
+  end
   if pulledOutVehicle and pulledOutVehicle.vehicleId == vehicleId then
     if not pulledOutVehicle.vars then
       pulledOutVehicle.vars = {}
@@ -508,8 +527,10 @@ local function applyVehicleTuning(businessId, vehicleId, tuningVars, accountId)
   return true
 end
 
+local function clearTuningDataCacheForJob()
+end
+
 local function clearTuningDataCache()
-  tuningDataCache = {}
 end
 
 local function getShoppingCart(businessId, vehicleId, tuningVars, originalVars)
@@ -581,6 +602,7 @@ local function addTuningToCart(businessId, vehicleId, currentTuningVars, baselin
   local shoppingCart = getShoppingCart(businessId, vehicleId, changedVars, baselineTuningVars)
   
   local cartItems = {}
+  local tuningDataForJob = fetchVehicleTuningVariables(businessId, vehicleId)
   for _, item in ipairs(shoppingCart.items or {}) do
     if item.type == "category" or item.type == "subCategory" then
       table.insert(cartItems, {
@@ -599,8 +621,7 @@ local function addTuningToCart(businessId, vehicleId, currentTuningVars, baselin
       if currentValue ~= nil then
         local baselineValue = baselineTuningVars[varName]
         
-        local cacheKey = businessId .. "_" .. tostring(vehicleId)
-        local tuningData = tuningDataCache[cacheKey]
+        local tuningData = tuningDataForJob
         local varTitle = varName
         if tuningData and tuningData[varName] then
           local varData = tuningData[varName]
@@ -636,6 +657,7 @@ M.calculateTuningCost = calculateTuningCost
 M.getShoppingCart = getShoppingCart
 M.applyVehicleTuning = applyVehicleTuning
 M.clearTuningDataCache = clearTuningDataCache
+M.clearTuningDataCacheForJob = clearTuningDataCacheForJob
 M.addTuningToCart = addTuningToCart
 
 return M

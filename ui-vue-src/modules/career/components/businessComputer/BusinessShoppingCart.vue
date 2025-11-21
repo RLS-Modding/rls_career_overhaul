@@ -337,11 +337,26 @@ const tuningSectionCollapsed = ref(false)
 const partsItems = computed(() => store.partsCart || [])
 const tuningItems = computed(() => store.tuningCart || [])
 
+const normalizeJobId = (value) => {
+  if (value === undefined || value === null) {
+    return 'nojob'
+  }
+  return String(value)
+}
+
+const getVehicleCacheKey = () => {
+  if (!store.pulledOutVehicle) {
+    return null
+  }
+  return normalizeJobId(store.pulledOutVehicle.jobId)
+}
+
 const convertToDisplayValue = (item, actualValue) => {
   if (actualValue === null || actualValue === undefined) return '0'
   if (!store.tuningDataCache || !store.pulledOutVehicle) return actualValue.toFixed(2)
   
-  const cacheKey = `${store.businessId}_${store.pulledOutVehicle.vehicleId}`
+  const cacheKey = getVehicleCacheKey()
+  if (!cacheKey) return actualValue.toFixed(2)
   const tuningData = store.tuningDataCache[cacheKey]
   if (!tuningData || !tuningData[item.varName]) return actualValue.toFixed(2)
   
@@ -440,6 +455,7 @@ const purchase = async () => {
     
     if (success) {
       store.clearCart()
+      store.clearCachesForJob(store.pulledOutVehicle?.jobId)
       expanded.value = false
       
       if (store.businessId && store.pulledOutVehicle?.vehicleId) {
@@ -655,32 +671,33 @@ onMounted(async () => {
   // This prevents clearing cart when switching between parts/tuning views
 })
 
-// Track if we've initialized for the current vehicle to prevent re-initialization when switching views
-const initializedVehicleId = ref(null)
+// Track if we've initialized for the current job to prevent re-initialization when switching views
+const initializedJobId = ref(null)
 
 watch(() => store.pulledOutVehicle, async (newVehicle, oldVehicle) => {
-  // Only initialize cart when vehicle is first pulled out (not when switching views)
-  // Don't initialize if we're switching between parts/tuning - let switchVehicleView handle it
-  // Also don't initialize if we've already initialized for this vehicle
+  const newJobKey = newVehicle ? normalizeJobId(newVehicle.jobId) : null
+  const oldJobKey = oldVehicle ? normalizeJobId(oldVehicle.jobId) : null
+
   if (newVehicle && 
-      !oldVehicle && 
-      newVehicle.vehicleId !== initializedVehicleId.value &&
+      newJobKey !== initializedJobId.value &&
       (store.vehicleView === 'parts' || store.vehicleView === 'tuning')) {
     // Delay until UI animation completes (600ms) to avoid vehicle spawning during animation
     setTimeout(async () => {
       // Double-check we're still in the vehicle view and vehicle is still pulled out
       if (newVehicle && 
-          newVehicle.vehicleId === store.pulledOutVehicle?.vehicleId &&
+          newJobKey === normalizeJobId(store.pulledOutVehicle?.jobId) &&
           (store.vehicleView === 'parts' || store.vehicleView === 'tuning')) {
         await store.initializeCartForVehicle()
-        initializedVehicleId.value = newVehicle.vehicleId
+        initializedJobId.value = newJobKey
       }
-    }, 600)
+    }, oldVehicle ? 100 : 600)
   }
   
-  // Reset initialized flag when vehicle is put away
+  // Reset initialized flag when vehicle is put away or switched
   if (!newVehicle && oldVehicle) {
-    initializedVehicleId.value = null
+    initializedJobId.value = null
+  } else if (oldVehicle && newVehicle && newJobKey !== oldJobKey) {
+    initializedJobId.value = null
   }
 }, { immediate: true })
 

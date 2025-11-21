@@ -9,6 +9,44 @@ local vehicleInfoCache = nil
 local partsTreeCache = {}
 local businessContexts = {}
 
+local function normalizeJobIdValue(jobId)
+  if jobId == nil then
+    return "nojob"
+  end
+  return tostring(jobId)
+end
+
+local function getPartsCacheBucket(businessId, createIfMissing)
+  if not businessId then return nil end
+  local bucket = partsTreeCache[businessId]
+  if not bucket and createIfMissing then
+    bucket = {}
+    partsTreeCache[businessId] = bucket
+  end
+  return bucket
+end
+
+local function getCachedPartsTree(businessId, jobId)
+  local bucket = getPartsCacheBucket(businessId, false)
+  if not bucket then return nil end
+  return bucket[normalizeJobIdValue(jobId)]
+end
+
+local function setCachedPartsTree(businessId, jobId, data)
+  if not businessId then return end
+  local bucket = getPartsCacheBucket(businessId, true)
+  bucket[normalizeJobIdValue(jobId)] = data
+end
+
+local function clearPartsTreeCacheForJob(businessId, jobId)
+  local bucket = getPartsCacheBucket(businessId, false)
+  if not bucket then return end
+  bucket[normalizeJobIdValue(jobId)] = nil
+  if not next(bucket) then
+    partsTreeCache[businessId] = nil
+  end
+end
+
 local function setBusinessContext(businessType, businessId)
   if not businessType or not businessId then return end
   businessContexts[businessId] = businessType
@@ -45,6 +83,14 @@ local function clearVehicleDataCaches()
   end
 end
 
+local function clearCachesForJob(businessId, jobId)
+  if not businessId then return end
+  clearPartsTreeCacheForJob(businessId, jobId)
+  if career_modules_business_businessVehicleTuning and career_modules_business_businessVehicleTuning.clearTuningDataCacheForJob then
+    career_modules_business_businessVehicleTuning.clearTuningDataCacheForJob(businessId, jobId)
+  end
+end
+
 local DAMAGE_LOCK_THRESHOLD = 1000
 
 local function getBusinessVehicleObject(businessId, vehicleId)
@@ -73,6 +119,39 @@ local function getVehicleDamageByVehId(vehId)
   return objectData.damage or 0
 end
 
+local function normalizeVehicleIdValue(vehicleId)
+  if vehicleId == nil then return nil end
+  local num = tonumber(vehicleId)
+  if num then
+    return num
+  end
+  return vehicleId
+end
+
+local function getPulledOutVehiclesList(businessId)
+  if not career_modules_business_businessInventory then
+    return {}
+  end
+  if career_modules_business_businessInventory.getPulledOutVehicles then
+    return career_modules_business_businessInventory.getPulledOutVehicles(businessId) or {}
+  end
+  local vehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
+  if vehicle then
+    return {vehicle}
+  end
+  return {}
+end
+
+local function getActiveBusinessVehicle(businessId)
+  if not career_modules_business_businessInventory then
+    return nil
+  end
+  if career_modules_business_businessInventory.getActiveVehicle then
+    return career_modules_business_businessInventory.getActiveVehicle(businessId)
+  end
+  return career_modules_business_businessInventory.getPulledOutVehicle(businessId)
+end
+
 local function isDamageLocked(businessId, vehicleId)
   local lockInfo = {
     locked = false,
@@ -99,6 +178,32 @@ local function isDamageLocked(businessId, vehicleId)
   lockInfo.locked = damage >= DAMAGE_LOCK_THRESHOLD
 
   return lockInfo
+end
+
+local function getDamageLockedVehicleInfo(businessId, vehicleId)
+  if not businessId then
+    return nil
+  end
+  
+  if vehicleId then
+    local lockInfo = isDamageLocked(businessId, vehicleId)
+    if lockInfo.locked then
+      lockInfo.vehicleId = vehicleId
+      return lockInfo
+    end
+    return nil
+  end
+  
+  for _, vehicle in ipairs(getPulledOutVehiclesList(businessId)) do
+    local vId = normalizeVehicleIdValue(vehicle.vehicleId)
+    local lockInfo = isDamageLocked(businessId, vId)
+    if lockInfo.locked then
+      lockInfo.vehicleId = vId
+      return lockInfo
+    end
+  end
+  
+  return nil
 end
 
 local function notifyDamageLocked(lockInfo)
@@ -572,33 +677,73 @@ local function pullOutVehicle(businessId, vehicleId)
   local businessType = businessContexts[businessId]
   if not businessType then
     log('E', 'businessComputer', 'Cannot pull out vehicle, unknown business type for businessId=' .. tostring(businessId))
-    return { success = false, error = "Unknown business type" }
+    return { success = false, errorCode = "unknownBusiness" }
   end
 
-  local currentVehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
-  if currentVehicle and currentVehicle.vehicleId then
-    local lockInfo = isDamageLocked(businessId, currentVehicle.vehicleId)
-    if lockInfo.locked then
-      notifyDamageLocked(lockInfo)
-      return { success = false, error = "Vehicle damage >= 1000. Abandon the job first." }
+  local module = getBusinessModule(businessType)
+  local maxPulledOut = 1
+  if module and module.getMaxPulledOutVehicles then
+    maxPulledOut = tonumber(module.getMaxPulledOutVehicles(businessId)) or 1
+  end
+  if maxPulledOut < 1 then
+    maxPulledOut = 1
+  end
+
+  local lockInfo = getDamageLockedVehicleInfo(businessId)
+  if lockInfo then
+    notifyDamageLocked(lockInfo)
+    return { success = false, errorCode = "damageLocked" }
+  end
+
+  local normalizedVehicleId = normalizeVehicleIdValue(vehicleId)
+  local pulledOutVehiclesList = getPulledOutVehiclesList(businessId)
+  for _, current in ipairs(pulledOutVehiclesList) do
+    local currentId = normalizeVehicleIdValue(current.vehicleId)
+    if currentId == normalizedVehicleId then
+      if career_modules_business_businessInventory.setActiveVehicle then
+        career_modules_business_businessInventory.setActiveVehicle(businessId, normalizedVehicleId)
+      end
+      return true
     end
   end
 
-  return career_modules_business_businessInventory.pullOutVehicle(businessType, businessId, vehicleId)
+  if #pulledOutVehiclesList >= maxPulledOut then
+    local message = string.format("All %d lift slots are in use. Put away a vehicle first.", maxPulledOut)
+    return { success = false, errorCode = "maxVehicles", message = message }
+  end
+
+  local result = career_modules_business_businessInventory.pullOutVehicle(businessType, businessId, vehicleId)
+  if result and career_modules_business_businessInventory.setActiveVehicle then
+    career_modules_business_businessInventory.setActiveVehicle(businessId, normalizedVehicleId)
+  end
+  return result
 end
 
-local function putAwayVehicle(businessId)
+local function putAwayVehicle(businessId, vehicleId)
   if not businessId then
     return false
   end
 
-  local currentVehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
-  if currentVehicle and currentVehicle.vehicleId then
-    local lockInfo = isDamageLocked(businessId, currentVehicle.vehicleId)
-    if lockInfo.locked then
+  local targetVehicleId = vehicleId
+  if not targetVehicleId then
+    local activeVehicle = getActiveBusinessVehicle(businessId)
+    targetVehicleId = activeVehicle and activeVehicle.vehicleId
+  end
+
+  if targetVehicleId then
+    local normalizedVehicleId = normalizeVehicleIdValue(targetVehicleId)
+    local lockInfo = getDamageLockedVehicleInfo(businessId, normalizedVehicleId)
+    if lockInfo then
       notifyDamageLocked(lockInfo)
-      return { success = false, error = "Vehicle damage >= 1000. Abandon the job first." }
+      return { success = false, errorCode = "damageLocked" }
     end
+    return career_modules_business_businessInventory.putAwayVehicle(businessId, normalizedVehicleId)
+  end
+
+  local lockInfo = getDamageLockedVehicleInfo(businessId)
+  if lockInfo then
+    notifyDamageLocked(lockInfo)
+    return { success = false, errorCode = "damageLocked" }
   end
 
   return career_modules_business_businessInventory.putAwayVehicle(businessId)
@@ -824,20 +969,30 @@ local function requestVehiclePartsTree(businessId, vehicleId)
     return
   end
 
-  local cacheKey = businessId .. "_" .. tostring(vehicleId)
+  local initialVehicle = career_modules_business_businessInventory.getVehicleById(businessId, vehicleId)
+  if not initialVehicle then
+    guihooks.trigger('businessComputer:onVehiclePartsTree', {
+      success = false,
+      error = "Vehicle not found"
+    })
+    return
+  end
+
   local previewConfig = nil
   if career_modules_business_businessPartCustomization then
     previewConfig = career_modules_business_businessPartCustomization.getPreviewVehicleConfig(businessId)
   end
   
-  if partsTreeCache[cacheKey] and not previewConfig then
+  local cachedEntry = getCachedPartsTree(businessId, initialVehicle.jobId)
+  if cachedEntry and cachedEntry.vehicleId == initialVehicle.vehicleId and not previewConfig then
     guihooks.trigger('businessComputer:onVehiclePartsTree', {
       success = true,
       businessId = businessId,
       vehicleId = vehicleId,
-      partsTree = partsTreeCache[cacheKey].partsTree,
-      slotsNiceName = partsTreeCache[cacheKey].slotsNiceName,
-      partsNiceName = partsTreeCache[cacheKey].partsNiceName
+      jobId = initialVehicle.jobId,
+      partsTree = cachedEntry.partsTree,
+      slotsNiceName = cachedEntry.slotsNiceName,
+      partsNiceName = cachedEntry.partsNiceName
     })
     return
   end
@@ -937,16 +1092,18 @@ local function requestVehiclePartsTree(businessId, vehicleId)
       vehicleObj:delete()
     end
 
-    partsTreeCache[cacheKey] = {
+    setCachedPartsTree(businessId, vehicle.jobId, {
+      vehicleId = vehicle.vehicleId,
       partsTree = partsTreeList,
       slotsNiceName = slotsNiceName,
       partsNiceName = partsNiceName
-    }
+    })
 
     guihooks.trigger('businessComputer:onVehiclePartsTree', {
       success = true,
       businessId = businessId,
       vehicleId = vehicleId,
+      jobId = vehicle.jobId,
       partsTree = partsTreeList,
       slotsNiceName = slotsNiceName,
       partsNiceName = partsNiceName
@@ -1224,7 +1381,7 @@ local function purchaseCartItems(businessId, accountId, cartData)
   end
 
   if #tuning > 0 then
-    local vehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
+    local vehicle = getActiveBusinessVehicle(businessId)
     if vehicle and vehicle.vehicleId then
       local originalVars = vehicle.vars or {}
       
@@ -1283,7 +1440,7 @@ local function purchaseCartItems(businessId, accountId, cartData)
     end
   end
 
-  local vehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
+  local vehicle = getActiveBusinessVehicle(businessId)
   if vehicle and vehicle.vehicleId then
     if #parts > 0 then
       -- Handle inventory transactions
@@ -1338,10 +1495,23 @@ local function purchaseCartItems(businessId, accountId, cartData)
           partList = vehicle.partList
         })
         
-        local pulledOutVehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
-        if pulledOutVehicle and pulledOutVehicle.vehicleId == vehicle.vehicleId then
-          pulledOutVehicle.config = vehicle.config
-          pulledOutVehicle.partList = vehicle.partList
+        if career_modules_business_businessInventory.getPulledOutVehicles then
+          local pulledVehicles = career_modules_business_businessInventory.getPulledOutVehicles(businessId) or {}
+          local targetId = normalizeVehicleIdValue(vehicle.vehicleId)
+          for _, pulled in ipairs(pulledVehicles) do
+            local pulledId = normalizeVehicleIdValue(pulled.vehicleId)
+            if pulledId == targetId then
+              pulled.config = vehicle.config
+              pulled.partList = vehicle.partList
+              break
+            end
+          end
+        else
+          local pulledOutVehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
+          if pulledOutVehicle and pulledOutVehicle.vehicleId == vehicle.vehicleId then
+            pulledOutVehicle.config = vehicle.config
+            pulledOutVehicle.partList = vehicle.partList
+          end
         end
         
       end
@@ -1359,6 +1529,10 @@ local function purchaseCartItems(businessId, accountId, cartData)
 
     -- Use centralized finalization logic (put away and respawn)
     career_modules_business_businessVehicleModificationUtil.finalizePurchase(businessId, vehicle.vehicleId, nop)
+  end
+
+  if vehicle then
+    clearCachesForJob(businessId, vehicle.jobId)
   end
 
   return true
@@ -1419,6 +1593,28 @@ local function completeJob(businessId, jobId)
   return false
 end
 
+local function setActiveVehicle(businessId, vehicleId)
+  if not businessId or not vehicleId then
+    return false
+  end
+
+  local lockInfo = getDamageLockedVehicleInfo(businessId, vehicleId)
+  if lockInfo then
+    notifyDamageLocked(lockInfo)
+    return { success = false, errorCode = "damageLocked" }
+  end
+
+  if career_modules_business_businessInventory and career_modules_business_businessInventory.setActiveVehicle then
+    return career_modules_business_businessInventory.setActiveVehicle(businessId, vehicleId)
+  end
+
+  return false
+end
+
+local function getActiveVehicle(businessId)
+  return getActiveBusinessVehicle(businessId)
+end
+
 local function canCompleteJob(businessId, jobId)
   local module = resolveBusinessModule(businessId)
   if module and module.canCompleteJob then
@@ -1444,6 +1640,8 @@ M.canCompleteJob = canCompleteJob
 M.getAbandonPenalty = getAbandonPenalty
 M.pullOutVehicle = pullOutVehicle
 M.putAwayVehicle = putAwayVehicle
+M.setActiveVehicle = setActiveVehicle
+M.getActiveVehicle = getActiveVehicle
 M.getActiveJobs = getActiveJobs
 M.getNewJobs = getNewJobs
 M.getVehiclePartsTree = getVehiclePartsTree
@@ -1454,6 +1652,7 @@ M.applyVehicleTuning = applyVehicleTuning
 M.loadWheelDataExtension = loadWheelDataExtension
 M.unloadWheelDataExtension = unloadWheelDataExtension
 M.clearVehicleDataCaches = clearVehicleDataCaches
+M.clearBusinessCachesForJob = clearCachesForJob
 M.getBusinessAccountBalance = getBusinessAccountBalance
 M.getBusinessXP = getBusinessXP
 M.purchaseCartItems = purchaseCartItems

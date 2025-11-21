@@ -532,16 +532,28 @@ const getSliderStyle = (varData) => {
   }
 }
 
+const normalizeJobId = (value) => {
+  if (value === undefined || value === null) {
+    return 'nojob'
+  }
+  return String(value)
+}
+
 const handleTuningData = (data) => {
   if (!data || !data.success) {
     loading.value = false
     return
   }
   
-  if (data.vehicleId === store.pulledOutVehicle?.vehicleId && data.businessId === store.businessId) {
+  const currentJobId = normalizeJobId(store.pulledOutVehicle?.jobId)
+  const eventJobId = normalizeJobId(data.jobId)
+
+  if (data.vehicleId === store.pulledOutVehicle?.vehicleId &&
+      data.businessId === store.businessId &&
+      currentJobId === eventJobId) {
     if (data.tuningData) {
       // Cache the data in the store
-      const cacheKey = `${data.businessId}_${data.vehicleId}`
+      const cacheKey = eventJobId
       if (store.tuningDataCache) {
         store.tuningDataCache[cacheKey] = data.tuningData
       }
@@ -807,6 +819,13 @@ watch(() => store.pulledOutVehicle, (newVehicle, oldVehicle) => {
     buckets.value = []
     loading.value = false
     store.clearCart()
+  } else {
+    if (oldVehicle && newVehicle && oldVehicle.vehicleId !== newVehicle.vehicleId && store.vehicleView === 'tuning') {
+      loading.value = true
+      setTimeout(() => {
+        loadTuningData()
+      }, 100)
+    }
   }
 })
 

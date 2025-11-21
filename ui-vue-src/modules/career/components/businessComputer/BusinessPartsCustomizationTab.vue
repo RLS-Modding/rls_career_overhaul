@@ -324,6 +324,18 @@ import { vBngTextInput } from "@/common/directives"
 import { useEvents } from "@/services/events"
 
 const store = useBusinessComputerStore()
+const normalizeJobId = (value) => {
+  if (value === undefined || value === null) {
+    return 'nojob'
+  }
+  return String(value)
+}
+const getCacheKeyForVehicle = () => {
+  if (!store.pulledOutVehicle) {
+    return null
+  }
+  return normalizeJobId(store.pulledOutVehicle.jobId)
+}
 const events = useEvents()
 
 const searchQuery = ref("")
@@ -651,11 +663,16 @@ const handlePartsTreeData = (data) => {
     return
   }
   
-  if (data.vehicleId === store.pulledOutVehicle?.vehicleId && data.businessId === store.businessId) {
+  if (
+    data.vehicleId === store.pulledOutVehicle?.vehicleId &&
+    data.businessId === store.businessId &&
+    normalizeJobId(data.jobId) === normalizeJobId(store.pulledOutVehicle?.jobId)
+  ) {
     if (data.partsTree) {
-      const cacheKey = `${data.businessId}_${data.vehicleId}`
+      const cacheKey = normalizeJobId(data.jobId)
       if (store.partsTreeCache) {
         store.partsTreeCache[cacheKey] = {
+          vehicleId: data.vehicleId,
           partsTree: data.partsTree,
           slotsNiceName: data.slotsNiceName,
           partsNiceName: data.partsNiceName
@@ -682,6 +699,17 @@ const loadPartsTree = async () => {
   }
   
   loading.value = true
+  
+  const cacheKey = getCacheKeyForVehicle()
+  const cachedEntry = cacheKey && store.partsTreeCache && store.partsTreeCache[cacheKey]
+  if (cachedEntry && cachedEntry.vehicleId === store.pulledOutVehicle.vehicleId) {
+    slotsNiceName.value = cachedEntry.slotsNiceName || {}
+    partsNiceName.value = cachedEntry.partsNiceName || {}
+    const tree = buildHierarchy(cachedEntry.partsTree || [], cachedEntry.slotsNiceName || {})
+    partsTree.value = tree
+    loading.value = false
+    return
+  }
   
   store.requestVehiclePartsTree(store.pulledOutVehicle.vehicleId).catch(error => {
     loading.value = false
@@ -789,8 +817,13 @@ watch(() => store.pulledOutVehicle, (newVehicle, oldVehicle) => {
     store.clearCart()
   } else {
     navigationPath.value = []
+    if (oldVehicle && newVehicle && oldVehicle.vehicleId !== newVehicle.vehicleId && store.vehicleView === 'parts') {
+      loading.value = true
+      setTimeout(() => {
+        loadPartsTree()
+      }, 100)
+    }
   }
-  // Don't load data here - wait for onMounted
 })
 
 // Watch for tab changes and reload parts tree to reflect the new tab's cart

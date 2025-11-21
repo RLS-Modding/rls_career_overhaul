@@ -7,7 +7,7 @@
       @put-away="handlePutAway" 
       @abandon="handleAbandon(currentVehicleJob)"
     />
-    
+
     <div class="section-card">
       <div class="card-header">
         <div class="card-header-content">
@@ -92,6 +92,11 @@ import BusinessVehicleCard from "./BusinessVehicleCard.vue"
 import BusinessJobCard from "./BusinessJobCard.vue"
 
 const store = useBusinessComputerStore()
+const normalizeId = (id) => {
+  if (id === undefined || id === null) return null
+  const num = Number(id)
+  return isNaN(num) ? String(id) : num
+}
 
 const showAbandonModal = ref(false)
 const jobToAbandon = ref(null)
@@ -125,12 +130,6 @@ const handlePullOut = async (job) => {
   const jobId = job.jobId ?? job.id
   if (jobId === undefined || jobId === null) {
     return
-  }
-
-  const normalizeId = (id) => {
-    if (id === undefined || id === null) return null
-    const num = Number(id)
-    return isNaN(num) ? String(id) : num
   }
 
   const normalizedJobId = normalizeId(jobId)
