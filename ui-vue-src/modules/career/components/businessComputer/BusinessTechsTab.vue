@@ -47,6 +47,9 @@
               </svg>
             </button>
           </div>
+          <div class="tech-card__success-rate" v-if="tech.successRate !== undefined">
+            <span class="success-rate-value">{{ tech.successRate }}%</span>
+          </div>
         </div>
 
         <div class="tech-card__progress-container" v-if="tech.jobId">
@@ -80,13 +83,17 @@
           </div>
           
           <div class="tech-card__stats-grid">
-             <div class="stat-item" v-if="tech.jobId">
+             <div class="stat-item" v-if="tech.jobId && tech.phase !== 'baseline' && !(tech.validationAttempts === 0 && tech.maxValidationAttempts === 0)">
               <span class="stat-label">Attempts</span>
               <span class="stat-value">{{ tech.validationAttempts }} <span class="stat-sub">/ {{ tech.maxValidationAttempts }}</span></span>
             </div>
-             <div class="stat-item" v-if="tech.totalSpent > 0">
-              <span class="stat-label">Cost</span>
-              <span class="stat-value">${{ tech.totalSpent }}</span>
+             <div class="stat-item" v-if="tech.jobReward !== undefined && tech.jobReward > 0">
+              <span class="stat-label">Payment</span>
+              <span class="stat-value">${{ formatPayment(tech.jobReward) }}</span>
+            </div>
+             <div class="stat-item" v-if="getBuildCost(tech) > 0">
+              <span class="stat-label">Build Cost</span>
+              <span class="stat-value">${{ formatPayment(getBuildCost(tech)) }}</span>
             </div>
           </div>
 
@@ -179,10 +186,14 @@ const store = useBusinessComputerStore()
 const { events } = useBridge()
 
 const techs = ref([])
-const activeJobs = computed(() => store.activeJobs || [])
-const availableJobs = computed(() =>
-  activeJobs.value.filter(job => !job.techAssigned)
-)
+const activeJobs = computed(() => {
+  const jobs = store.activeJobs
+  return Array.isArray(jobs) ? jobs : []
+})
+const availableJobs = computed(() => {
+  const jobs = activeJobs.value
+  return Array.isArray(jobs) ? jobs.filter(job => !job.techAssigned) : []
+})
 
 const techList = computed(() => techs.value)
 
@@ -197,12 +208,15 @@ const vFocus = {
 
 const jobLookup = computed(() => {
   const map = new Map()
-  activeJobs.value.forEach(job => {
-    const id = job?.jobId ?? job?.id
-    if (id !== undefined && id !== null) {
-      map.set(String(id), job)
-    }
-  })
+  const jobs = activeJobs.value
+  if (Array.isArray(jobs)) {
+    jobs.forEach(job => {
+      const id = job?.jobId ?? job?.id
+      if (id !== undefined && id !== null) {
+        map.set(String(id), job)
+      }
+    })
+  }
   return map
 })
 
@@ -378,6 +392,17 @@ const onRenameFocus = () => {
 const onRenameBlur = () => {
   try { lua.setCEFTyping(false) } catch (_) {}
 }
+
+const formatPayment = (amount) => {
+  if (typeof amount !== 'number') return '0'
+  return amount.toLocaleString()
+}
+
+const getBuildCost = (tech) => {
+  const totalSpent = tech.totalSpent || 0
+  const eventFunds = tech.eventFunds || 0
+  return Math.max(0, totalSpent - eventFunds)
+}
 </script>
 
 <style scoped lang="scss">
@@ -439,8 +464,30 @@ const onRenameBlur = () => {
 .tech-card__header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.75rem;
+}
+
+.tech-card__success-rate {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15rem;
+  min-width: 0;
+  
+  .success-rate-label {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  
+  .success-rate-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+    white-space: nowrap;
+  }
 }
 
 .tech-card__title {
@@ -604,6 +651,10 @@ const onRenameBlur = () => {
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
   margin-top: 0.25rem;
+  
+  .stat-item:nth-child(3) {
+    grid-column: 1 / -1;
+  }
   
   .stat-item {
     background: rgba(0, 0, 0, 0.2);

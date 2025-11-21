@@ -130,6 +130,8 @@ local function ensureTechIdentity(tech, index)
   tech.maxValidationAttempts = tech.maxValidationAttempts or 0
   tech.validationAttempts = tech.validationAttempts or 0
   tech.cooldownDuration = tech.cooldownDuration or 150
+  tech.successfulJobs = tech.successfulJobs or 0
+  tech.failedJobs = tech.failedJobs or 0
 end
 
 local function ensureTechSlots(businessId)
@@ -436,6 +438,19 @@ local function formatTechForUIEntry(businessId, tech)
     jobLabel = tech.finishedJobInfo.label
   end
 
+  local successfulJobs = tech.successfulJobs or 0
+  local failedJobs = tech.failedJobs or 0
+  local totalJobs = successfulJobs + failedJobs
+  local successRate = 0
+  if totalJobs > 0 then
+    successRate = math.floor((successfulJobs / totalJobs) * 100 + 0.5)
+  end
+
+  local jobReward = nil
+  if job and job.reward then
+    jobReward = tonumber(job.reward) or 0
+  end
+
   return {
     id = tech.id,
     name = tech.name,
@@ -447,6 +462,7 @@ local function formatTechForUIEntry(businessId, tech)
     totalSeconds = math.floor(totalSeconds),
     jobId = tech.jobId,
     jobLabel = jobLabel,
+    jobReward = jobReward,
     phase = tech.phase,
     validationAttempts = tech.validationAttempts or 0,
     maxValidationAttempts = tech.maxValidationAttempts or 0,
@@ -455,7 +471,10 @@ local function formatTechForUIEntry(businessId, tech)
     latestResult = tech.latestResult,
     finishedJobInfo = tech.finishedJobInfo,
     canAssign = not tech.jobId and (tech.currentAction == "idle"),
-    fundsHeld = tech.fundsHeld
+    fundsHeld = tech.fundsHeld,
+    successRate = successRate,
+    successfulJobs = successfulJobs,
+    failedJobs = failedJobs
   }
 end
 
@@ -677,7 +696,7 @@ local function debitBusinessAccount(businessId, amount, reason, description)
   if amount <= 0 then return true end
   local account = getBusinessAccount(businessId)
   if not account then return false end
-  return career_modules_bank.removeFunds(account.id, amount, reason or "Automation Expense", description or "", "expense", true)
+  return career_modules_bank.removeFunds(account.id, amount, reason or "Automation Expense", "", description or "Expense", true)
 end
 
 local function removeJobVehicle(businessId, jobId)
@@ -856,7 +875,7 @@ local function calculateActualEventPayment(businessId, job, predictedTime)
   return math.max(0, math.floor(reward + 0.5))
 end
 
-local function generateValidationTime(businessId, job)
+local function generateValidationTime(businessId, job, updateTune)
   if not job then return 0 end
   local target = tonumber(job.targetTime) or 0
   if target <= 0 then
@@ -872,10 +891,15 @@ local function generateValidationTime(businessId, job)
 
   local minRatio = 0.9875
   local maxRatio = 1.0375
+  
+  if updateTune then
+    maxRatio = 1.023214
+  end
+  
   local reductionPercent = getReliableFailureReduction(businessId)
   if reductionPercent > 0 then
     local normalized = reductionPercent / 0.25
-    maxRatio = 1.0375 - (0.025 * normalized)
+    maxRatio = maxRatio - (0.025 * normalized)
     maxRatio = math.max(1.0125, maxRatio)
   end
 
@@ -890,10 +914,13 @@ local BASE_COOLDOWN_SECONDS = 150
 local function calculateBuildCost(businessId, job)
   if not job then return 0 end
   local reward = tonumber(job.reward) or 0
-  local baseCost = math.floor(reward * 0.3)
+  local baseCost = reward * 0.3
+  local variation = 0.95 + (math.random() * 0.1)
+  local variedCost = baseCost * variation
   local discount = getBuildCostDiscount(businessId)
-  local cost = math.floor(baseCost * (1 - discount))
-  return math.max(0, cost)
+  local cost = variedCost * (1 - discount)
+  local rounded = math.floor(cost * 100 + 0.5) / 100
+  return math.max(0, rounded)
 end
 
 local function calculateUpdateCost(tech)
@@ -901,7 +928,7 @@ local function calculateUpdateCost(tech)
   if buildCost <= 0 then
     return 0
   end
-  return math.floor(buildCost * 1.25)
+  return math.floor(buildCost * 0.25)
 end
 
 local function moveJobToCompleted(businessId, jobId, status, automationData)
@@ -974,6 +1001,7 @@ local function finalizeTechJobSuccess(businessId, tech, job)
     label = job.raceLabel,
     payout = payout
   }
+  tech.successfulJobs = (tech.successfulJobs or 0) + 1
   tech.jobId = nil
   tech.phase = "completed"
   setTechState(tech, TECH_STATE.COMPLETED, "completed", 3, {jobLabel = job.raceLabel})
@@ -1023,7 +1051,7 @@ local function finalizeTechJobFailure(businessId, tech, job, reason)
   local totalSpent = tonumber(tech.totalSpent) or 0
   local eventFunds = tonumber(tech.eventFunds) or 0
   local penaltyBase = getAbandonPenalty(businessId, job.jobId)
-  local penalty = math.max(0, penaltyBase + totalSpent - eventFunds)
+  local penalty = math.max(0, penaltyBase)
 
   if penalty > 0 then
     debitBusinessAccount(businessId, penalty, "Automation Failure Penalty", string.format("Job #%s failure", tostring(job.jobId)))
@@ -1046,6 +1074,7 @@ local function finalizeTechJobFailure(businessId, tech, job, reason)
     label = job.raceLabel,
     penalty = penalty
   }
+  tech.failedJobs = (tech.failedJobs or 0) + 1
   tech.jobId = nil
   tech.phase = "failed"
   setTechState(tech, TECH_STATE.FAILED, "failed", 3, {jobLabel = job.raceLabel})
@@ -1086,7 +1115,7 @@ local function startEventRun(businessId, tech, job)
 
   tech.validationAttempts = (tech.validationAttempts or 0) + 1
   tech.totalAttempts = (tech.totalAttempts or 0) + 1
-  tech.predictedEventTime = generateValidationTime(businessId, job)
+  tech.predictedEventTime = generateValidationTime(businessId, job, tech.phase == "postUpdate")
   local duration = math.max(1, tech.predictedEventTime)
   setTechState(tech, TECH_STATE.RUN_EVENT, "runEvent", duration, {jobId = job.jobId, phase = tech.phase})
 end
