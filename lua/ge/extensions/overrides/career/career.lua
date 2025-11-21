@@ -524,6 +524,9 @@ local function formatSaveSlotForUi(saveSlot)
 
   -- Get level from save data
   local autosavePath = career_saveSystem.getAutosave(saveSlot)
+  if not autosavePath then
+    return data
+  end
   local infoData = jsonReadFile(autosavePath .. "/info.json")
   local careerData = jsonReadFile(autosavePath .. "/career/" .. saveFile)
   local hardcoreData = jsonReadFile(autosavePath .. "/career/rls_career/hardcore.json")

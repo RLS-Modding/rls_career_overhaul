@@ -181,6 +181,7 @@ end
 
 local function processDuePayments(elapsedSimSeconds)
   local now = os.time()
+  local loansModified = false
   for i = #activeLoans, 1, -1 do
     local loan = activeLoans[i]
     loan.secondsUntilNextPayment = (loan.secondsUntilNextPayment or PAYMENT_INTERVAL_S) - elapsedSimSeconds
@@ -198,6 +199,7 @@ local function processDuePayments(elapsedSimSeconds)
         loan.nextPrincipalPaid = 0
         loan.secondsUntilNextPayment = loan.secondsUntilNextPayment + PAYMENT_INTERVAL_S
         awardOrgReputation(loan.orgId, 1, loan.orgName)
+        loansModified = true
       else
         local price = { money = { amount = needed } }
         local paymentSuccess = false
@@ -218,6 +220,7 @@ local function processDuePayments(elapsedSimSeconds)
 
           loan.secondsUntilNextPayment = loan.secondsUntilNextPayment + PAYMENT_INTERVAL_S
           awardOrgReputation(loan.orgId, 1, loan.orgName)
+          loansModified = true
           -- Show payment success message
           if notificationsEnabled then
             guihooks.trigger("toastrMsg", {type="success", title="Loan Payment Made", msg="Successfully paid $" .. string.format("%.2f", needed) .. " to " .. (loan.orgName or loan.orgId)})
@@ -232,6 +235,7 @@ local function processDuePayments(elapsedSimSeconds)
           loan.missed = (loan.missed or 0) + 1
           loan.secondsUntilNextPayment = loan.secondsUntilNextPayment + PAYMENT_INTERVAL_S
           awardOrgReputation(loan.orgId, -5, loan.orgName)
+          loansModified = true
           -- Show payment missed message
           if notificationsEnabled then
             local capitalizedMsg = ""
@@ -242,7 +246,6 @@ local function processDuePayments(elapsedSimSeconds)
           end
         end
       end
-      career_saveSystem.saveCurrent()
     end
 
     if (loan.principalOutstanding or 0) <= 1e-6 then
@@ -250,11 +253,15 @@ local function processDuePayments(elapsedSimSeconds)
       local completedId = loan.id
       local completedOrg = loan.orgName or loan.orgId
       table.remove(activeLoans, i)
+      loansModified = true
       guihooks.trigger('loans:completed', { id = completedId, orgName = completedOrg })
       if notificationsEnabled then
         guihooks.trigger("toastrMsg", {type="success", title="Loan Paid Off", msg="Congratulations! Your loan with " .. completedOrg .. " has been fully paid off."})
       end
     end
+  end
+  if loansModified then
+    career_saveSystem.saveCurrent()
   end
   local enriched = {}
   for _, loan in ipairs(activeLoans) do table.insert(enriched, buildUiLoan(loan)) end
@@ -322,7 +329,7 @@ local function takeLoan(orgId, amount, payments, rate, uncapped, businessAccount
   else
     career_modules_playerAttributes.addAttributes({money = amount}, {label = string.format("Loan received (%s)", loan.orgName)})
   end
-  saveLoans()
+  career_saveSystem.saveCurrent()
 
   if guihooks and guihooks.trigger then
     if notificationsEnabled then
@@ -394,7 +401,7 @@ local function prepayLoan(loanId, amount)
         local completedId = loan.id
         local completedOrg = loan.orgName or loan.orgId
         table.remove(activeLoans, index)
-        saveLoans()
+        career_saveSystem.saveCurrent()
         if guihooks and guihooks.trigger then
           guihooks.trigger('loans:completed', { id = completedId, orgName = completedOrg })
           if notificationsEnabled then
@@ -408,7 +415,7 @@ local function prepayLoan(loanId, amount)
         return { id = completedId, status = 'paid_off' }
       end
 
-      saveLoans()
+      career_saveSystem.saveCurrent()
       if guihooks and guihooks.trigger then
         guihooks.trigger('loans:activeUpdated')
         if career_modules_playerAttributes then
@@ -460,7 +467,7 @@ end
 
 local function setNotificationsEnabled(enabled)
   notificationsEnabled = enabled
-  saveLoans()
+  career_saveSystem.saveCurrent()
   if guihooks and guihooks.trigger then
     guihooks.trigger('loans:notificationsUpdated', enabled)
   end
@@ -498,7 +505,6 @@ local function onCareerActivated()
     activeLoans = {}
     notificationsEnabled = true
     log("I", "", "Loans: Initialized for new career")
-    saveLoans()
   end
 end
 
@@ -508,7 +514,7 @@ local function clearAllLoans()
   activeLoans = {}
   notificationsEnabled = true -- Reset to default
   log("I", "", "Loans: Cleared " .. loanCount .. " loans")
-  saveLoans()
+  career_saveSystem.saveCurrent()
   return loanCount -- Return number of loans cleared
 end
 
