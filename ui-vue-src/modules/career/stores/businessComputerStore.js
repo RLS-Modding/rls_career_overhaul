@@ -103,7 +103,13 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   
   const activeJobs = computed(() => {
     const jobs = businessData.value.activeJobs
-    return Array.isArray(jobs) ? jobs : []
+    if (!Array.isArray(jobs)) return []
+    return [...jobs].sort((a, b) => {
+      const aHasTech = !!(a?.techAssigned)
+      const bHasTech = !!(b?.techAssigned)
+      if (aHasTech === bHasTech) return 0
+      return aHasTech ? 1 : -1
+    })
   })
   const maxActiveJobs = computed(() => businessData.value.maxActiveJobs ?? 2)
   const newJobs = computed(() => {

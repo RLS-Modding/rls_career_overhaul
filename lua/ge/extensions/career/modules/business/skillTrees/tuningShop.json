@@ -285,6 +285,22 @@
           ]
         },
         {
+          "id": "master-techs",
+          "title": "Master Techs",
+          "description": "Techs skip baseline run and start building instantly",
+          "detailedDescription": "Techs skip the baseline run and start building instantly. \n\n**Effect**\n- Techs are much faster at getting jobs done\n- Baseline success rate: 15% (before upgrades)\n- Update success rate: 25% (before upgrades)",
+          "cost": 200000,
+          "xpCost": 10,
+          "maxLevel": 1,
+          "dependencies": ["smart-techs"],
+          "prerequisites": [
+            {
+              "type": "totalUpgrades",
+              "min": 15
+            }
+          ]
+        },
+        {
           "id": "perfect-techs",
           "title": "Perfect Techs",
           "description": "Techs never fail",

@@ -5,7 +5,7 @@
       <p>Monitor worker automation and assign jobs without leaving the desk.</p>
     </div>
     <div class="techs-info-banners">
-      <div class="techs-summary-banner">
+      <div class="techs-summary-banner" v-if="techCapabilityTier || hasManager">
         <div class="summary-section" v-if="techCapabilityTier">
           <span class="banner-label">Capability</span>
           <span class="banner-value">Tier {{ techCapabilityTier }}</span>
@@ -16,7 +16,7 @@
         <div class="summary-section" v-if="hasManager">
           <span class="banner-label">Manager</span>
           <span class="banner-value">
-            <span v-if="hasGeneralManager">General GM</span>
+            <span v-if="hasGeneralManager">GM</span>
             <span class="summary-separator" v-if="hasGeneralManager">•</span>
             <span>{{ managerAssignmentFrequency }}</span>
             <span class="summary-separator">•</span>

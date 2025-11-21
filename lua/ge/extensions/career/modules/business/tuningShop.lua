@@ -573,6 +573,10 @@ local function hasPerfectTechs(businessId)
   return getSkillTreeLevel(businessId, "automation", "perfect-techs") > 0
 end
 
+local function hasMasterTechs(businessId)
+  return getSkillTreeLevel(businessId, "automation", "master-techs") > 0
+end
+
 local function getEventRetryAllowance(businessId)
   return math.max(0, getSkillTreeLevel(businessId, "automation", "event-retries"))
 end
@@ -2173,6 +2177,7 @@ local function onCareerActivated()
     calculateBuildCost = calculateBuildCost,
     getEventRetryAllowance = getEventRetryAllowance,
     hasPerfectTechs = hasPerfectTechs,
+    hasMasterTechs = hasMasterTechs,
     getReliableFailureReduction = getReliableFailureReduction,
     creditBusinessAccount = creditBusinessAccount,
     debitBusinessAccount = debitBusinessAccount,

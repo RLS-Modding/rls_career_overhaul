@@ -314,8 +314,18 @@ local function generateValidationTime(businessId, job, updateTune)
   local minRatio = 0.9875
   local maxRatio = 1.0375
 
-  if updateTune then
-    maxRatio = 1.023214
+  local hasMasterTechs = helpers.hasMasterTechs and helpers.hasMasterTechs(businessId) or false
+  
+  if hasMasterTechs then
+    if updateTune then
+      maxRatio = 1.0375
+    else
+      maxRatio = 1.07083
+    end
+  else
+    if updateTune then
+      maxRatio = 1.023214
+    end
   end
 
   local reductionPercent = helpers.getReliableFailureReduction and helpers.getReliableFailureReduction(businessId) or 0
@@ -938,7 +948,6 @@ local function assignJobToTech(businessId, techId, jobId)
   end
 
   tech.jobId = jobId
-  tech.phase = "baseline"
   tech.validationAttempts = 0
   tech.maxValidationAttempts = 0
   tech.totalAttempts = 0
@@ -950,11 +959,19 @@ local function assignJobToTech(businessId, techId, jobId)
   job.techAssigned = techId
   job.locked = true
 
-  local commuteSeconds = helpers.getCommuteSeconds and helpers.getCommuteSeconds(job) or 120
-  setTechState(tech, TECH_STATE.DRIVE_BASELINE, "driveToEvent", commuteSeconds, {
-    jobId = jobId,
-    phase = "baseline"
-  })
+  local hasMasterTechs = helpers.hasMasterTechs and helpers.hasMasterTechs(businessId) or false
+  
+  if hasMasterTechs then
+    tech.phase = "build"
+    startBuildPhase(businessId, tech, job)
+  else
+    tech.phase = "baseline"
+    local commuteSeconds = helpers.getCommuteSeconds and helpers.getCommuteSeconds(job) or 120
+    setTechState(tech, TECH_STATE.DRIVE_BASELINE, "driveToEvent", commuteSeconds, {
+      jobId = jobId,
+      phase = "baseline"
+    })
+  end
 
   notifyTechsUpdated(businessId)
   if helpers.notifyJobsUpdated then
