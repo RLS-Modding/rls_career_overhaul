@@ -388,15 +388,8 @@ local function applyTuningToVehicle(businessId, vehicleId, tuningVars)
       local requestId = tostring(businessId) .. "_" .. jobKey .. "_" .. tostring(os.clock())
 
       vehObj:queueLuaCommand([[
-        local engine = powertrain.getDevicesByCategory("engine")[1]
-        local stats = obj:calcBeamStats()
-        if engine and stats then
-          local power = engine.maxPower
-          local weight = stats.total_weight
-          if power and weight and weight > 0 then
-            obj:queueGameEngineLua("career_modules_business_businessPartCustomization.onPowerWeightReceived(']] ..
-                               requestId .. [[', " .. power .. ", " .. weight .. ")")
-          end
+        if controller and controller.mainController then
+          controller.mainController.sendTorqueData()
         end
       ]])
 

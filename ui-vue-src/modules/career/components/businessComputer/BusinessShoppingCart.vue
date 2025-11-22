@@ -173,7 +173,22 @@
             <div v-if="!footerCollapsed" class="footer-details">
               <div v-if="store.hasDynoUpgrade && store.originalPower !== null && store.currentPower !== null"
                 class="power-weight-stats">
-                <div class="stats-container">
+
+                <div class="performance-section-header">
+                  <span class="section-title">Performance</span>
+                  <div class="view-toggles">
+                    <button class="toggle-btn" :class="{ active: performanceViewMode === 'stats' }"
+                      @click="performanceViewMode = 'stats'">
+                      Stats
+                    </button>
+                    <button class="toggle-btn" :class="{ active: performanceViewMode === 'dyno' }"
+                      @click="performanceViewMode = 'dyno'">
+                      Dyno
+                    </button>
+                  </div>
+                </div>
+
+                <div v-if="performanceViewMode === 'stats'" class="stats-container">
                   <div class="stat-row">
                     <div class="stat-label-col">Power:</div>
                     <div class="stat-value-col">{{ Math.round(store.originalPower || 0) }} PS</div>
@@ -207,20 +222,81 @@
                       </svg>
                     </div>
                     <div class="stat-value-col">{{ store.powerToWeightRatio ? store.powerToWeightRatio.toFixed(2) : '-'
-                      }}</div>
+                    }}</div>
                   </div>
+                </div>
+
+                <div v-else class="dyno-container">
+                  <svg class="dyno-graph" width="100%" height="100%" viewBox="0 0 300 140" preserveAspectRatio="none"
+                    @mousemove="handleGraphMouseMove" @mouseleave="handleGraphLeave">
+                    <defs>
+                      <linearGradient id="torqueGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#F54900;stop-opacity:0.3" />
+                        <stop offset="100%" style="stop-color:#F54900;stop-opacity:0" />
+                      </linearGradient>
+                    </defs>
+
+                    <!-- Grid lines -->
+                    <line x1="30" y1="30" x2="300" y2="30" stroke="rgba(255,255,255,0.1)" stroke-width="1" />
+                    <line x1="30" y1="60" x2="300" y2="60" stroke="rgba(255,255,255,0.1)" stroke-width="1" />
+                    <line x1="30" y1="90" x2="300" y2="90" stroke="rgba(255,255,255,0.1)" stroke-width="1" />
+
+                    <!-- Y Axis Labels -->
+                    <text x="25" y="34" text-anchor="end" fill="rgba(255,255,255,0.4)" font-size="10">{{
+                      Math.round(maxTorque *
+                      0.75) }}</text>
+                    <text x="25" y="64" text-anchor="end" fill="rgba(255,255,255,0.4)" font-size="10">{{
+                      Math.round(maxTorque *
+                      0.5) }}</text>
+                    <text x="25" y="94" text-anchor="end" fill="rgba(255,255,255,0.4)" font-size="10">{{
+                      Math.round(maxTorque *
+                      0.25) }}</text>
+
+                    <!-- X Axis Labels -->
+                    <text x="30" y="135" text-anchor="start" fill="rgba(255,255,255,0.4)" font-size="10">0</text>
+                    <text x="165" y="135" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-size="10">{{
+                      Math.round(maxRpm
+                      * 0.5) }}</text>
+                    <text x="295" y="135" text-anchor="end" fill="rgba(255,255,255,0.4)" font-size="10">{{
+                      Math.round(maxRpm)
+                      }}</text>
+
+                    <path :d="graphPath" fill="url(#torqueGradient)" />
+                    <path :d="graphLinePath" fill="none" stroke="#F54900" stroke-width="2" />
+
+                    <!-- Hover Indicator -->
+                    <g v-if="graphHover">
+                      <line :x1="graphHover.x" y1="0" :x2="graphHover.x" y2="120" stroke="rgba(255,255,255,0.5)"
+                        stroke-width="1" stroke-dasharray="4" />
+                      <circle :cx="graphHover.x" :cy="graphHover.y" r="4" fill="#F54900" stroke="white"
+                        stroke-width="2" />
+
+                      <!-- Tooltip Background -->
+                      <rect :x="graphHover.tooltipX" :y="graphHover.tooltipY" width="90" height="35" rx="4"
+                        fill="rgba(0,0,0,0.9)" stroke="rgba(245,73,0,0.5)" stroke-width="1" />
+
+                      <!-- Tooltip Text -->
+                      <text :x="graphHover.tooltipX + 45" :y="graphHover.tooltipY + 14" text-anchor="middle"
+                        fill="white" font-size="10" font-weight="bold">{{ Math.round(graphHover.torque) }} Nm</text>
+                      <text :x="graphHover.tooltipX + 45" :y="graphHover.tooltipY + 28" text-anchor="middle"
+                        fill="rgba(255,255,255,0.7)" font-size="9">@ {{ Math.round(graphHover.rpm) }} RPM</text>
+                    </g>
+
+                    <!-- Transparent interaction layer -->
+                    <rect x="0" y="0" width="300" height="140" fill="transparent" />
+                  </svg>
                 </div>
               </div>
               <div class="cart-summary-breakdown">
                 <div class="summary-row">
                   <span>Subtotal:</span>
                   <span>${{ subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                    }}</span>
+                  }}</span>
                 </div>
                 <div class="summary-row">
                   <span>Tax (7%):</span>
                   <span>${{ taxAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                    }}</span>
+                  }}</span>
                 </div>
               </div>
             </div>
@@ -279,7 +355,183 @@ const events = useEvents()
 // Handle power/weight data from Lua
 const handlePowerWeightData = (data) => {
   store.handlePowerWeightData(data)
+  if (data.torque) {
+    torqueData.value = data.torque
+  } else {
+    torqueData.value = null
+  }
 }
+
+const torqueData = ref(null)
+const performanceViewMode = ref('stats') // 'stats' or 'dyno'
+
+const torqueGraphData = computed(() => {
+  if (!torqueData.value) return []
+
+  // torqueData format: { {"rpm", "torque"}, {0, 0}, {500, 155}, ... }
+  // First item is header, rest are data points
+
+  const points = []
+  // Skip header (index 0)
+  for (let i = 1; i < torqueData.value.length; i++) {
+    const point = torqueData.value[i]
+    if (point && point.length >= 2) {
+      points.push({
+        rpm: point[0],
+        torque: point[1]
+      })
+    }
+  }
+
+  return points
+})
+
+const maxRpm = computed(() => {
+  if (!torqueGraphData.value.length) return 8000
+  return Math.max(...torqueGraphData.value.map(p => p.rpm))
+})
+
+const maxTorque = computed(() => {
+  if (!torqueGraphData.value.length) return 500
+  return Math.max(...torqueGraphData.value.map(p => p.torque))
+})
+
+const graphHover = ref(null)
+
+const handleGraphMouseMove = (e) => {
+  if (!torqueGraphData.value.length) return
+
+  const svg = e.currentTarget
+  const pt = svg.createSVGPoint()
+  pt.x = e.clientX
+  pt.y = e.clientY
+  const svgP = pt.matrixTransform(svg.getScreenCTM().inverse())
+
+  const width = 300
+  const height = 120 // Graph area height, total SVG height is 140
+  const paddingLeft = 30
+  const paddingRight = 5
+
+  const availableWidth = width - paddingLeft - paddingRight
+
+  // Calculate RPM from x
+  // x = paddingLeft + (rpm / maxRpm) * availableWidth
+  // rpm = ((x - paddingLeft) / availableWidth) * maxRpm
+
+  let clickRpm = ((svgP.x - paddingLeft) / availableWidth) * maxRpm.value
+  clickRpm = Math.max(0, Math.min(maxRpm.value, clickRpm))
+
+  // Find closest point
+  const points = torqueGraphData.value
+  let closest = points[0]
+  let minDiff = Math.abs(points[0].rpm - clickRpm)
+
+  for (let i = 1; i < points.length; i++) {
+    const diff = Math.abs(points[i].rpm - clickRpm)
+    if (diff < minDiff) {
+      minDiff = diff
+      closest = points[i]
+    }
+  }
+
+  const availableHeight = height
+  const scaleX = availableWidth / maxRpm.value
+  const scaleY = availableHeight / (maxTorque.value * 1.1)
+
+  const x = paddingLeft + closest.rpm * scaleX
+  const y = height - closest.torque * scaleY
+
+  // Tooltip position
+  let tooltipX = x - 45
+  let tooltipY = y - 45
+
+  // Keep tooltip within bounds
+  if (tooltipX < 0) tooltipX = 0
+  if (tooltipX > width - 90) tooltipX = width - 90
+  if (tooltipY < 0) tooltipY = 0
+
+  graphHover.value = {
+    x,
+    y,
+    rpm: closest.rpm,
+    torque: closest.torque,
+    tooltipX,
+    tooltipY
+  }
+}
+
+const handleGraphLeave = () => {
+  graphHover.value = null
+}
+
+const graphPath = computed(() => {
+  if (torqueGraphData.value.length === 0) return ''
+
+  const points = torqueGraphData.value
+
+  const width = 300
+  const height = 120 // Graph area height
+  const paddingLeft = 30
+  const paddingRight = 5
+
+  const availableWidth = width - paddingLeft - paddingRight
+  const availableHeight = height
+
+  const scaleX = availableWidth / maxRpm.value
+  const scaleY = availableHeight / (maxTorque.value * 1.1)
+
+  let path = `M ${paddingLeft} ${height}` // Start at bottom left
+
+  points.forEach((p, i) => {
+    const x = paddingLeft + p.rpm * scaleX
+    const y = height - p.torque * scaleY
+
+    if (i === 0) {
+      path = `M ${x} ${y}`
+    } else {
+      path += ` L ${x} ${y}`
+    }
+  })
+
+  // Close area for fill
+  const lastPoint = points[points.length - 1]
+  const lastX = paddingLeft + lastPoint.rpm * scaleX
+  path += ` L ${lastX} ${height} L ${paddingLeft} ${height} Z`
+
+  return path
+})
+
+const graphLinePath = computed(() => {
+  if (torqueGraphData.value.length === 0) return ''
+
+  const points = torqueGraphData.value
+
+  const width = 300
+  const height = 120 // Graph area height
+  const paddingLeft = 30
+  const paddingRight = 5
+
+  const availableWidth = width - paddingLeft - paddingRight
+  const availableHeight = height
+
+  const scaleX = availableWidth / maxRpm.value
+  const scaleY = availableHeight / (maxTorque.value * 1.1)
+
+  let path = ''
+
+  points.forEach((p, i) => {
+    const x = paddingLeft + p.rpm * scaleX
+    const y = height - p.torque * scaleY
+
+    if (i === 0) {
+      path = `M ${x} ${y}`
+    } else {
+      path += ` L ${x} ${y}`
+    }
+  })
+
+  return path
+})
 
 const expanded = ref(true)
 const businessBalance = ref(0)
@@ -1143,43 +1395,96 @@ onBeforeUnmount(() => {
   }
 
   .power-weight-stats {
-    margin-bottom: 0.75em;
-    padding-bottom: 0.75em;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 1em;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 0.25em;
+    padding: 0.75em;
+    position: relative;
+
+    .performance-section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75em;
+
+      .section-title {
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 600;
+        font-size: 0.9em;
+      }
+
+      .view-toggles {
+        display: flex;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 4px;
+        padding: 2px;
+        gap: 2px;
+
+        .toggle-btn {
+          background: transparent;
+          border: none;
+          color: rgba(255, 255, 255, 0.5);
+          font-size: 0.75rem;
+          padding: 2px 8px;
+          cursor: pointer;
+          border-radius: 2px;
+          transition: all 0.2s;
+
+          &:hover {
+            color: rgba(255, 255, 255, 0.8);
+          }
+
+          &.active {
+            background: rgba(245, 73, 0, 0.2);
+            color: #F54900;
+          }
+        }
+      }
+    }
+
+    .dyno-container {
+      height: 140px;
+      width: 100%;
+      position: relative;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+      overflow: hidden;
+
+      .dyno-graph {
+        display: block;
+        cursor: crosshair;
+      }
+    }
 
     .stats-container {
-      display: grid;
-      grid-template-columns: auto 1fr auto 1fr;
+      display: flex;
+      flex-direction: column;
       gap: 0.5em;
-      align-items: center;
     }
 
     .stat-row {
-      display: contents;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       font-size: 0.875em;
 
       .stat-label-col {
         color: rgba(255, 255, 255, 0.6);
-        text-align: right;
-        padding-right: 0.5em;
-        grid-column: 1;
+        width: 100px;
       }
 
       .stat-value-col {
         color: rgba(255, 255, 255, 0.9);
         font-family: 'Courier New', monospace;
+        width: 80px;
         text-align: right;
-        white-space: nowrap;
-        grid-column: 2;
       }
 
       .stat-arrow-col {
+        color: rgba(245, 73, 0, 0.8);
         display: flex;
         align-items: center;
         justify-content: center;
-        color: rgba(245, 73, 0, 0.8);
-        flex-shrink: 0;
-        grid-column: 3;
         width: 24px;
 
         svg {
@@ -1187,58 +1492,6 @@ onBeforeUnmount(() => {
           height: 16px;
         }
       }
-
-      .stat-value-col:last-of-type {
-        grid-column: 4;
-      }
-    }
-
-    .stat-row:nth-child(1) .stat-label-col {
-      grid-row: 1;
-    }
-
-    .stat-row:nth-child(1) .stat-value-col:nth-of-type(1) {
-      grid-row: 1;
-    }
-
-    .stat-row:nth-child(1) .stat-arrow-col {
-      grid-row: 1;
-    }
-
-    .stat-row:nth-child(1) .stat-value-col:nth-of-type(2) {
-      grid-row: 1;
-    }
-
-    .stat-row:nth-child(2) .stat-label-col {
-      grid-row: 2;
-    }
-
-    .stat-row:nth-child(2) .stat-value-col:nth-of-type(1) {
-      grid-row: 2;
-    }
-
-    .stat-row:nth-child(2) .stat-arrow-col {
-      grid-row: 2;
-    }
-
-    .stat-row:nth-child(2) .stat-value-col:nth-of-type(2) {
-      grid-row: 2;
-    }
-
-    .stat-row:nth-child(3) .stat-label-col {
-      grid-row: 3;
-    }
-
-    .stat-row:nth-child(3) .stat-value-col:nth-of-type(1) {
-      grid-row: 3;
-    }
-
-    .stat-row:nth-child(3) .stat-arrow-col {
-      grid-row: 3;
-    }
-
-    .stat-row:nth-child(3) .stat-value-col:nth-of-type(2) {
-      grid-row: 3;
     }
   }
 
