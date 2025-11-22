@@ -29,6 +29,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   const originalWeight = ref(null)
   const currentPower = ref(null)
   const currentWeight = ref(null)
+  const originalCurveData = ref(null)
 
   const businessId = computed(() => businessData.value.businessId)
   const businessType = computed(() => businessData.value.businessType)
@@ -376,7 +377,9 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
         originalWeight.value = null
         currentPower.value = null
         currentWeight.value = null
+        currentWeight.value = null
         originalVehicleState.value = null
+        originalCurveData.value = null
 
         activeVehicleId.value = vehicleId
         const vehiclesList = Array.isArray(pulledOutVehicles.value) ? pulledOutVehicles.value : []
@@ -1765,6 +1768,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     originalWeight,
     currentPower,
     currentWeight,
+    originalCurveData,
     powerToWeightRatio,
     originalPowerToWeightRatio,
     powerChange,

@@ -237,49 +237,75 @@
                     </defs>
 
                     <!-- Grid lines -->
-                    <line x1="30" y1="30" x2="300" y2="30" stroke="rgba(255,255,255,0.1)" stroke-width="1" />
-                    <line x1="30" y1="60" x2="300" y2="60" stroke="rgba(255,255,255,0.1)" stroke-width="1" />
-                    <line x1="30" y1="90" x2="300" y2="90" stroke="rgba(255,255,255,0.1)" stroke-width="1" />
+                    <line x1="30" y1="30" x2="270" y2="30" stroke="rgba(255,255,255,0.1)" stroke-width="1" />
+                    <line x1="30" y1="60" x2="270" y2="60" stroke="rgba(255,255,255,0.1)" stroke-width="1" />
+                    <line x1="30" y1="90" x2="270" y2="90" stroke="rgba(255,255,255,0.1)" stroke-width="1" />
 
-                    <!-- Y Axis Labels -->
+                    <!-- Y Axis Labels (Torque - Left) -->
                     <text x="25" y="34" text-anchor="end" fill="rgba(255,255,255,0.4)" font-size="10">{{
                       Math.round(maxTorque *
-                      0.75) }}</text>
+                        0.75) }}</text>
                     <text x="25" y="64" text-anchor="end" fill="rgba(255,255,255,0.4)" font-size="10">{{
                       Math.round(maxTorque *
-                      0.5) }}</text>
+                        0.5) }}</text>
                     <text x="25" y="94" text-anchor="end" fill="rgba(255,255,255,0.4)" font-size="10">{{
                       Math.round(maxTorque *
-                      0.25) }}</text>
+                        0.25) }}</text>
+
+                    <!-- Y Axis Labels (Power - Right) -->
+                    <text x="275" y="34" text-anchor="start" fill="#FF4444" font-size="10">{{ Math.round(maxPower *
+                      0.75)
+                    }}</text>
+                    <text x="275" y="64" text-anchor="start" fill="#FF4444" font-size="10">{{ Math.round(maxPower * 0.5)
+                    }}</text>
+                    <text x="275" y="94" text-anchor="start" fill="#FF4444" font-size="10">{{ Math.round(maxPower *
+                      0.25)
+                    }}</text>
 
                     <!-- X Axis Labels -->
                     <text x="30" y="135" text-anchor="start" fill="rgba(255,255,255,0.4)" font-size="10">0</text>
-                    <text x="165" y="135" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-size="10">{{
+                    <text x="150" y="135" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-size="10">{{
                       Math.round(maxRpm
-                      * 0.5) }}</text>
-                    <text x="295" y="135" text-anchor="end" fill="rgba(255,255,255,0.4)" font-size="10">{{
+                        * 0.5) }}</text>
+                    <text x="270" y="135" text-anchor="end" fill="rgba(255,255,255,0.4)" font-size="10">{{
                       Math.round(maxRpm)
-                      }}</text>
+                    }}</text>
 
-                    <path :d="graphPath" fill="url(#torqueGradient)" />
-                    <path :d="graphLinePath" fill="none" stroke="#F54900" stroke-width="2" />
+                    <!-- Graphs -->
+                    <!-- Original (Before) - Dashed -->
+                    <path v-if="originalTorquePath" :d="originalTorquePath" fill="none" stroke="rgba(255,255,255,0.3)"
+                      stroke-width="2" stroke-dasharray="4" />
+                    <path v-if="originalPowerPath" :d="originalPowerPath" fill="none" stroke="rgba(255,68,68,0.3)"
+                      stroke-width="2" stroke-dasharray="4" />
+
+                    <!-- Current (After) - Solid -->
+                    <path :d="torquePath" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="2" />
+                    <path :d="powerPath" fill="none" stroke="#FF4444" stroke-width="2" />
 
                     <!-- Hover Indicator -->
                     <g v-if="graphHover">
                       <line :x1="graphHover.x" y1="0" :x2="graphHover.x" y2="120" stroke="rgba(255,255,255,0.5)"
                         stroke-width="1" stroke-dasharray="4" />
-                      <circle :cx="graphHover.x" :cy="graphHover.y" r="4" fill="#F54900" stroke="white"
-                        stroke-width="2" />
 
                       <!-- Tooltip Background -->
-                      <rect :x="graphHover.tooltipX" :y="graphHover.tooltipY" width="90" height="35" rx="4"
-                        fill="rgba(0,0,0,0.9)" stroke="rgba(245,73,0,0.5)" stroke-width="1" />
+                      <rect :x="graphHover.tooltipX" :y="graphHover.tooltipY" width="110" height="60" rx="4"
+                        fill="rgba(0,0,0,0.9)" stroke="rgba(255,255,255,0.2)" stroke-width="1" />
 
                       <!-- Tooltip Text -->
-                      <text :x="graphHover.tooltipX + 45" :y="graphHover.tooltipY + 14" text-anchor="middle"
-                        fill="white" font-size="10" font-weight="bold">{{ Math.round(graphHover.torque) }} Nm</text>
-                      <text :x="graphHover.tooltipX + 45" :y="graphHover.tooltipY + 28" text-anchor="middle"
-                        fill="rgba(255,255,255,0.7)" font-size="9">@ {{ Math.round(graphHover.rpm) }} RPM</text>
+                      <text :x="graphHover.tooltipX + 55" :y="graphHover.tooltipY + 14" text-anchor="middle"
+                        fill="#FF4444" font-size="10" font-weight="bold">
+                        {{ Math.round(graphHover.power) }} hp
+                        <tspan v-if="graphHover.originalPower" fill="rgba(255,68,68,0.5)" font-size="9"> ({{
+                          Math.round(graphHover.originalPower) }})</tspan>
+                      </text>
+                      <text :x="graphHover.tooltipX + 55" :y="graphHover.tooltipY + 26" text-anchor="middle"
+                        fill="rgba(255,255,255,0.7)" font-size="10">
+                        {{ Math.round(graphHover.torque) }} Nm
+                        <tspan v-if="graphHover.originalTorque" fill="rgba(255,255,255,0.4)" font-size="9"> ({{
+                          Math.round(graphHover.originalTorque) }})</tspan>
+                      </text>
+                      <text :x="graphHover.tooltipX + 55" :y="graphHover.tooltipY + 38" text-anchor="middle"
+                        fill="rgba(255,255,255,0.5)" font-size="9">@ {{ Math.round(graphHover.rpm) }} RPM</text>
                     </g>
 
                     <!-- Transparent interaction layer -->
@@ -355,51 +381,154 @@ const events = useEvents()
 // Handle power/weight data from Lua
 const handlePowerWeightData = (data) => {
   store.handlePowerWeightData(data)
-  if (data.torque) {
-    torqueData.value = data.torque
-  } else {
-    torqueData.value = null
-  }
+  // Legacy handling removed in favor of TorqueCurveChanged
 }
 
 const torqueData = ref(null)
-const performanceViewMode = ref('stats') // 'stats' or 'dyno'
+const powerData = ref(null)
+const originalTorqueData = ref(null)
+const originalPowerData = ref(null)
+const maxPowerValue = ref(0)
+const maxTorqueValue = ref(0)
+const maxRpmValue = ref(0)
 
-const torqueGraphData = computed(() => {
-  if (!torqueData.value) return []
+const processCurveData = (data) => {
+  if (!data) return null
 
-  // torqueData format: { {"rpm", "torque"}, {0, 0}, {500, 155}, ... }
-  // First item is header, rest are data points
+  let curves = []
+  if (data.curves) {
+    if (Array.isArray(data.curves)) {
+      curves = data.curves
+    } else if (typeof data.curves === 'object') {
+      curves = Object.values(data.curves)
+    }
+  } else if (Array.isArray(data)) {
+    curves = data
+  } else {
+    curves = [data]
+  }
 
-  const points = []
-  // Skip header (index 0)
-  for (let i = 1; i < torqueData.value.length; i++) {
-    const point = torqueData.value[i]
-    if (point && point.length >= 2) {
-      points.push({
-        rpm: point[0],
-        torque: point[1]
-      })
+  let bestCurve = null
+  let highestMaxPower = -1
+
+  for (const curve of curves) {
+    let currentMaxPower = 0
+    for (const rpm in curve.power) {
+      const val = curve.power[rpm]
+      if (val > currentMaxPower) currentMaxPower = val
+    }
+
+    if (currentMaxPower > highestMaxPower) {
+      highestMaxPower = currentMaxPower
+      bestCurve = curve
     }
   }
 
-  return points
+  if (bestCurve) {
+    const tPoints = []
+    for (const rpm in bestCurve.torque) {
+      tPoints.push([parseInt(rpm), bestCurve.torque[rpm]])
+    }
+    tPoints.sort((a, b) => a[0] - b[0])
+
+    const pPoints = []
+    for (const rpm in bestCurve.power) {
+      const rawVal = bestCurve.power[rpm]
+      const hpVal = rawVal > 10000 ? rawVal * 0.00134102 : rawVal * 1.34102
+      pPoints.push([parseInt(rpm), hpVal])
+    }
+    pPoints.sort((a, b) => a[0] - b[0])
+
+    return {
+      torque: tPoints,
+      power: pPoints,
+      maxRpm: data.maxRPM || 8000
+    }
+  }
+  return null
+}
+
+const onTorqueCurveChanged = (data) => {
+  if (!data) return
+
+  const processed = processCurveData(data)
+  if (processed) {
+    // If cart is empty and we don't have original data yet, save it
+    if (store.partsCart.length === 0 && store.tuningCart.length === 0 && !store.originalCurveData) {
+      store.originalCurveData = data
+    }
+
+    // If we have original data in store, process it for display
+    if (store.originalCurveData) {
+      const originalProcessed = processCurveData(store.originalCurveData)
+      if (originalProcessed) {
+        originalTorqueData.value = originalProcessed.torque
+        originalPowerData.value = originalProcessed.power
+      }
+    }
+
+    torqueData.value = processed.torque
+    powerData.value = processed.power
+    maxRpmValue.value = processed.maxRpm
+
+    // Calculate max values across both datasets
+    let maxT = 0
+    const allTorque = [...(torqueData.value || []), ...(originalTorqueData.value || [])]
+    for (const p of allTorque) {
+      if (p[1] > maxT) maxT = p[1]
+    }
+    maxTorqueValue.value = maxT
+
+    let maxP = 0
+    const allPower = [...(powerData.value || []), ...(originalPowerData.value || [])]
+    for (const p of allPower) {
+      if (p[1] > maxP) maxP = p[1]
+    }
+    maxPowerValue.value = maxP
+  }
+}
+
+onMounted(() => {
+  events.on('TorqueCurveChanged', onTorqueCurveChanged)
+  if (window.bngApi) {
+    window.bngApi.activeObjectLua('controller.mainController.sendTorqueData()')
+  }
+  loadBalance()
 })
 
-const maxRpm = computed(() => {
-  if (!torqueGraphData.value.length) return 8000
-  return Math.max(...torqueGraphData.value.map(p => p.rpm))
+onBeforeUnmount(() => {
+  events.off('TorqueCurveChanged', onTorqueCurveChanged)
+})
+const performanceViewMode = ref('stats') // 'stats' or 'dyno'
+
+const torqueGraphPoints = computed(() => {
+  if (!torqueData.value) return []
+  return torqueData.value.map(p => ({ rpm: p[0], val: p[1] }))
 })
 
-const maxTorque = computed(() => {
-  if (!torqueGraphData.value.length) return 500
-  return Math.max(...torqueGraphData.value.map(p => p.torque))
+const powerGraphPoints = computed(() => {
+  if (!powerData.value) return []
+  return powerData.value.map(p => ({ rpm: p[0], val: p[1] }))
 })
+
+const originalTorqueGraphPoints = computed(() => {
+  if (!originalTorqueData.value) return []
+  return originalTorqueData.value.map(p => ({ rpm: p[0], val: p[1] }))
+})
+
+const originalPowerGraphPoints = computed(() => {
+  if (!originalPowerData.value) return []
+  return originalPowerData.value.map(p => ({ rpm: p[0], val: p[1] }))
+})
+
+const maxRpm = computed(() => maxRpmValue.value || 8000)
+const maxTorque = computed(() => maxTorqueValue.value || 500)
+const maxPower = computed(() => maxPowerValue.value || 500)
 
 const graphHover = ref(null)
 
 const handleGraphMouseMove = (e) => {
-  if (!torqueGraphData.value.length) return
+  if (!torqueGraphPoints.value.length && !powerGraphPoints.value.length) return
 
   const svg = e.currentTarget
   const pt = svg.createSVGPoint()
@@ -408,53 +537,53 @@ const handleGraphMouseMove = (e) => {
   const svgP = pt.matrixTransform(svg.getScreenCTM().inverse())
 
   const width = 300
-  const height = 120 // Graph area height, total SVG height is 140
+  const height = 120
   const paddingLeft = 30
-  const paddingRight = 5
+  const paddingRight = 30
 
   const availableWidth = width - paddingLeft - paddingRight
-
-  // Calculate RPM from x
-  // x = paddingLeft + (rpm / maxRpm) * availableWidth
-  // rpm = ((x - paddingLeft) / availableWidth) * maxRpm
 
   let clickRpm = ((svgP.x - paddingLeft) / availableWidth) * maxRpm.value
   clickRpm = Math.max(0, Math.min(maxRpm.value, clickRpm))
 
-  // Find closest point
-  const points = torqueGraphData.value
-  let closest = points[0]
-  let minDiff = Math.abs(points[0].rpm - clickRpm)
-
-  for (let i = 1; i < points.length; i++) {
-    const diff = Math.abs(points[i].rpm - clickRpm)
-    if (diff < minDiff) {
-      minDiff = diff
-      closest = points[i]
+  // Find closest points
+  const findClosest = (points) => {
+    if (!points.length) return null
+    let closest = points[0]
+    let minDiff = Math.abs(points[0].rpm - clickRpm)
+    for (let i = 1; i < points.length; i++) {
+      const diff = Math.abs(points[i].rpm - clickRpm)
+      if (diff < minDiff) {
+        minDiff = diff
+        closest = points[i]
+      }
     }
+    return closest
   }
 
-  const availableHeight = height
+  const closestTorque = findClosest(torqueGraphPoints.value)
+  const closestPower = findClosest(powerGraphPoints.value)
+  const closestOriginalTorque = findClosest(originalTorqueGraphPoints.value)
+  const closestOriginalPower = findClosest(originalPowerGraphPoints.value)
+
+  const displayRpm = closestTorque ? closestTorque.rpm : (closestPower ? closestPower.rpm : 0)
+
   const scaleX = availableWidth / maxRpm.value
-  const scaleY = availableHeight / (maxTorque.value * 1.1)
+  const x = paddingLeft + displayRpm * scaleX
 
-  const x = paddingLeft + closest.rpm * scaleX
-  const y = height - closest.torque * scaleY
-
-  // Tooltip position
   let tooltipX = x - 45
-  let tooltipY = y - 45
+  let tooltipY = 10
 
-  // Keep tooltip within bounds
   if (tooltipX < 0) tooltipX = 0
   if (tooltipX > width - 90) tooltipX = width - 90
-  if (tooltipY < 0) tooltipY = 0
 
   graphHover.value = {
     x,
-    y,
-    rpm: closest.rpm,
-    torque: closest.torque,
+    rpm: displayRpm,
+    torque: closestTorque ? closestTorque.val : 0,
+    power: closestPower ? closestPower.val : 0,
+    originalTorque: closestOriginalTorque ? closestOriginalTorque.val : 0,
+    originalPower: closestOriginalPower ? closestOriginalPower.val : 0,
     tooltipX,
     tooltipY
   }
@@ -464,74 +593,34 @@ const handleGraphLeave = () => {
   graphHover.value = null
 }
 
-const graphPath = computed(() => {
-  if (torqueGraphData.value.length === 0) return ''
-
-  const points = torqueGraphData.value
+const makePath = (points, maxValue) => {
+  if (!points.length) return ''
 
   const width = 300
-  const height = 120 // Graph area height
+  const height = 120
   const paddingLeft = 30
-  const paddingRight = 5
+  const paddingRight = 30
 
   const availableWidth = width - paddingLeft - paddingRight
   const availableHeight = height
 
   const scaleX = availableWidth / maxRpm.value
-  const scaleY = availableHeight / (maxTorque.value * 1.1)
-
-  let path = `M ${paddingLeft} ${height}` // Start at bottom left
-
-  points.forEach((p, i) => {
-    const x = paddingLeft + p.rpm * scaleX
-    const y = height - p.torque * scaleY
-
-    if (i === 0) {
-      path = `M ${x} ${y}`
-    } else {
-      path += ` L ${x} ${y}`
-    }
-  })
-
-  // Close area for fill
-  const lastPoint = points[points.length - 1]
-  const lastX = paddingLeft + lastPoint.rpm * scaleX
-  path += ` L ${lastX} ${height} L ${paddingLeft} ${height} Z`
-
-  return path
-})
-
-const graphLinePath = computed(() => {
-  if (torqueGraphData.value.length === 0) return ''
-
-  const points = torqueGraphData.value
-
-  const width = 300
-  const height = 120 // Graph area height
-  const paddingLeft = 30
-  const paddingRight = 5
-
-  const availableWidth = width - paddingLeft - paddingRight
-  const availableHeight = height
-
-  const scaleX = availableWidth / maxRpm.value
-  const scaleY = availableHeight / (maxTorque.value * 1.1)
+  const scaleY = availableHeight / (maxValue * 1.1)
 
   let path = ''
-
   points.forEach((p, i) => {
     const x = paddingLeft + p.rpm * scaleX
-    const y = height - p.torque * scaleY
-
-    if (i === 0) {
-      path = `M ${x} ${y}`
-    } else {
-      path += ` L ${x} ${y}`
-    }
+    const y = height - p.val * scaleY
+    if (i === 0) path = `M ${x} ${y}`
+    else path += ` L ${x} ${y}`
   })
-
   return path
-})
+}
+
+const torquePath = computed(() => makePath(torqueGraphPoints.value, maxTorque.value))
+const powerPath = computed(() => makePath(powerGraphPoints.value, maxPower.value))
+const originalTorquePath = computed(() => makePath(originalTorqueGraphPoints.value, maxTorque.value))
+const originalPowerPath = computed(() => makePath(originalPowerGraphPoints.value, maxPower.value))
 
 const expanded = ref(true)
 const businessBalance = ref(0)

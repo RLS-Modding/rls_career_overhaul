@@ -388,9 +388,7 @@ local function applyTuningToVehicle(businessId, vehicleId, tuningVars)
       local requestId = tostring(businessId) .. "_" .. jobKey .. "_" .. tostring(os.clock())
 
       vehObj:queueLuaCommand([[
-        if controller and controller.mainController then
-          controller.mainController.sendTorqueData()
-        end
+        controller.mainController.sendTorqueData()
       ]])
 
       if career_modules_business_businessComputer then
