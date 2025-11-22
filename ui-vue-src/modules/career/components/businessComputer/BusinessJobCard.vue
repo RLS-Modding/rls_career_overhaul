@@ -1,76 +1,131 @@
 <template>
   <div class="job-card" :class="{ active: isActive }">
-    <div v-if="!isActive" class="job-content-new">
+    <!-- Full Layout (formerly New Job Style) -->
+    <div v-if="layout === 'full'" class="job-content-new">
       <div class="job-image-new">
         <img :src="job.vehicleImage" :alt="job.vehicleName" />
-        <div
-          class="expiration-overlay"
-          v-if="expirationText"
-          :class="{ expired: isExpired }"
-        >
+        <div class="expiration-overlay" v-if="expirationText" :class="{ expired: isExpired }">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <circle cx="12" cy="12" r="10"/>
-            <polyline points="12 6 12 12 16 14"/>
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
           </svg>
           <span>{{ expirationText }}</span>
         </div>
       </div>
-      
+
       <div class="job-details-container">
         <h3 class="vehicle-name-new">
           {{ job.vehicleYear }} {{ job.vehicleName }}
         </h3>
 
         <div class="job-meta-row">
-            <div class="reward-text">
+          <div class="reward-text">
             <span class="currency">$</span>{{ job.reward.toLocaleString() }}
           </div>
           <div class="separator">•</div>
           <div class="goal-text">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>
-                <circle cx="12" cy="12" r="10"/>
-              </svg>
-              <span>{{ job.goal }}</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M12 2v4m0 12v4M2 12h4m12 0h4" />
+              <circle cx="12" cy="12" r="10" />
+            </svg>
+            <span>{{ job.goal }}</span>
+          </div>
+        </div>
+
+        <!-- Active Job Status in Full Layout -->
+        <div v-if="isActive" class="job-status-full">
+          <div v-if="hasTechAssigned" class="tech-status-sleek">
+            <div class="tech-info-row">
+              <span class="tech-phase">{{ techStatus }}</span>
+              <span class="tech-name-small">by {{ techName || 'Tech' }}</span>
+            </div>
+            <div class="tech-progress-bar">
+              <div class="tech-progress-fill" :style="{ width: techProgress + '%' }"></div>
+            </div>
+          </div>
+          <div v-else class="goal-section-sleek">
+            <div class="goal-row current">
+              <span class="goal-label">Current</span>
+              <span class="goal-value highlight">{{ formatTimeWithUnit(job.currentTime ?? job.baselineTime,
+                job.timeUnit, job.decimalPlaces) }}</span>
+            </div>
+            <div class="progress-bar-sleek">
+              <div class="progress-fill" :style="{ width: progressPercent + '%' }"></div>
+            </div>
           </div>
         </div>
 
         <div class="job-actions-new">
-          <template v-if="assignMode">
-            <button 
-              class="btn btn-primary" 
-              @click.stop="$emit('assign', job)"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                <circle cx="8.5" cy="7" r="4"/>
-                <line x1="20" y1="8" x2="20" y2="14"/>
-                <line x1="23" y1="11" x2="17" y2="11"/>
-              </svg>
-              Assign
-            </button>
+          <template v-if="isActive">
+            <!-- Active Job Actions for Full Layout -->
+            <div class="job-actions-sleek full-layout-actions" :class="{ locked: damageLockApplies }">
+              <template v-if="!hasTechAssigned">
+                <template v-if="damageLockApplies">
+                  <div class="lock-message">Vehicle Damaged</div>
+                  <button class="btn btn-danger full-width" @mousedown.stop @click.stop="$emit('abandon', job)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                    Abandon
+                  </button>
+                </template>
+                <template v-else>
+                  <button v-if="canComplete || canCompleteLocal" class="btn btn-success flex-grow"
+                    @click.stop="$emit('complete', job)">
+                    Complete
+                  </button>
+                  <template v-else>
+                    <button class="btn btn-primary flex-grow"
+                      @click.stop="isPulledOut ? $emit('put-away') : $emit('pull-out', job)"
+                      :disabled="!isPulledOut && hasPulledOutVehicle">
+                      {{ isPulledOut ? 'Put Away' : 'Pull Out' }}
+                    </button>
+                    <button class="btn btn-danger btn-icon" @mousedown.stop @click.stop="$emit('abandon', job)"
+                      title="Abandon">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.5">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                      </svg>
+                    </button>
+                  </template>
+                </template>
+              </template>
+            </div>
           </template>
           <template v-else>
-            <button 
-              class="btn btn-success flex-grow" 
-              :disabled="isAcceptDisabled"
-              :title="isAcceptDisabled ? `Active job limit reached (${store.maxActiveJobs} max)` : ''"
-              @click.stop="$emit('accept', job)"
-            >
-              Accept
-            </button>
-            <button class="btn btn-danger btn-icon" @click.stop="$emit('decline', job)">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <line x1="18" y1="6" x2="6" y2="18"/>
-                <line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
-            </button>
+            <!-- New Job Actions -->
+            <template v-if="assignMode">
+              <button class="btn btn-primary" @click.stop="$emit('assign', job)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="8.5" cy="7" r="4" />
+                  <line x1="20" y1="8" x2="20" y2="14" />
+                  <line x1="23" y1="11" x2="17" y2="11" />
+                </svg>
+                Assign
+              </button>
+            </template>
+            <template v-else>
+              <button class="btn btn-success flex-grow" :disabled="isAcceptDisabled"
+                :title="isAcceptDisabled ? `Active job limit reached (${store.maxActiveJobs} max)` : ''"
+                @click.stop="$emit('accept', job)">
+                Accept
+              </button>
+              <button class="btn btn-danger btn-icon" @click.stop="$emit('decline', job)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </template>
           </template>
         </div>
       </div>
     </div>
-    
-    <!-- Sleek Active State -->
+
+    <!-- Compact Layout (formerly Active/Sleek State) -->
     <div v-else class="job-content-active sleek">
       <div class="job-header-sleek">
         <div class="job-image-sleek">
@@ -87,69 +142,98 @@
       </div>
 
       <div class="job-status-sleek">
-        <!-- Tech Working Status -->
-        <div v-if="hasTechAssigned" class="tech-status-sleek">
-          <div class="tech-info-row">
-             <span class="tech-phase">{{ techStatus }}</span>
-             <span class="tech-name-small">by {{ techName || 'Tech' }}</span>
+        <template v-if="isActive">
+          <!-- Tech Working Status -->
+          <div v-if="hasTechAssigned" class="tech-status-sleek">
+            <div class="tech-info-row">
+              <span class="tech-phase">{{ techStatus }}</span>
+              <span class="tech-name-small">by {{ techName || 'Tech' }}</span>
+            </div>
+            <div class="tech-progress-bar">
+              <div class="tech-progress-fill" :style="{ width: techProgress + '%' }"></div>
+            </div>
           </div>
-          <div class="tech-progress-bar">
-             <div class="tech-progress-fill" :style="{ width: techProgress + '%' }"></div>
-          </div>
-        </div>
 
-        <!-- Goal Section (Only if NO Tech) -->
-        <div v-else class="goal-section-sleek">
-           <div class="goal-row">
+          <!-- Goal Section (Only if NO Tech) -->
+          <div v-else class="goal-section-sleek">
+            <div class="goal-row">
               <span class="goal-label">Goal</span>
               <span class="goal-value">{{ job.goal }}</span>
-           </div>
-           <div class="goal-row current">
+            </div>
+            <div class="goal-row current">
               <span class="goal-label">Current</span>
-              <span class="goal-value highlight">{{ formatTimeWithUnit(job.currentTime ?? job.baselineTime, job.timeUnit, job.decimalPlaces) }}</span>
-           </div>
-           <div class="progress-bar-sleek">
+              <span class="goal-value highlight">{{ formatTimeWithUnit(job.currentTime ?? job.baselineTime,
+                job.timeUnit, job.decimalPlaces) }}</span>
+            </div>
+            <div class="progress-bar-sleek">
               <div class="progress-fill" :style="{ width: progressPercent + '%' }"></div>
-           </div>
-        </div>
+            </div>
+          </div>
+        </template>
+        <template v-else>
+          <!-- Compact New Job Info -->
+          <div class="goal-section-sleek">
+            <div class="goal-row">
+              <span class="goal-label">Goal</span>
+              <span class="goal-value">{{ job.goal }}</span>
+            </div>
+            <div v-if="expirationText" class="goal-row current">
+              <span class="goal-label">Expires</span>
+              <span class="goal-value" :class="{ 'text-danger': isExpired }">{{ expirationText.replace('Expires in ',
+                '') }}</span>
+            </div>
+          </div>
+        </template>
       </div>
 
       <div class="job-actions-sleek" :class="{ locked: damageLockApplies }">
-        <template v-if="!hasTechAssigned">
-          <template v-if="damageLockApplies">
-            <div class="lock-message">Vehicle Damaged</div>
-            <button class="btn btn-danger full-width" @mousedown.stop @click.stop="$emit('abandon', job)">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"/>
-                <line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
-              Abandon
-            </button>
-          </template>
-          <template v-else>
-            <button 
-              v-if="canComplete || canCompleteLocal"
-              class="btn btn-success flex-grow"
-              @click.stop="$emit('complete', job)"
-            >
-              Complete
-            </button>
-            <template v-else>
-              <button 
-                class="btn btn-primary flex-grow"
-                @click.stop="isPulledOut ? $emit('put-away') : $emit('pull-out', job)"
-                :disabled="!isPulledOut && hasPulledOutVehicle"
-              >
-                {{ isPulledOut ? 'Put Away' : 'Pull Out' }}
-              </button>
-              <button class="btn btn-danger btn-icon" @mousedown.stop @click.stop="$emit('abandon', job)" title="Abandon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                  <line x1="18" y1="6" x2="6" y2="18"/>
-                  <line x1="6" y1="6" x2="18" y2="18"/>
+        <template v-if="isActive">
+          <template v-if="!hasTechAssigned">
+            <template v-if="damageLockApplies">
+              <div class="lock-message">Vehicle Damaged</div>
+              <button class="btn btn-danger full-width" @mousedown.stop @click.stop="$emit('abandon', job)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
+                Abandon
               </button>
             </template>
+            <template v-else>
+              <button v-if="canComplete || canCompleteLocal" class="btn btn-success flex-grow"
+                @click.stop="$emit('complete', job)">
+                Complete
+              </button>
+              <template v-else>
+                <button class="btn btn-primary flex-grow"
+                  @click.stop="isPulledOut ? $emit('put-away') : $emit('pull-out', job)"
+                  :disabled="!isPulledOut && hasPulledOutVehicle">
+                  {{ isPulledOut ? 'Put Away' : 'Pull Out' }}
+                </button>
+                <button class="btn btn-danger btn-icon" @mousedown.stop @click.stop="$emit('abandon', job)"
+                  title="Abandon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </template>
+            </template>
           </template>
+        </template>
+        <template v-else>
+          <!-- Compact New Job Actions -->
+          <button class="btn btn-success flex-grow" :disabled="isAcceptDisabled"
+            :title="isAcceptDisabled ? `Active job limit reached (${store.maxActiveJobs} max)` : ''"
+            @click.stop="$emit('accept', job)">
+            Accept
+          </button>
+          <button class="btn btn-danger btn-icon" @click.stop="$emit('decline', job)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
         </template>
       </div>
     </div>
@@ -168,6 +252,11 @@ const props = defineProps({
   assignMode: {
     type: Boolean,
     default: false
+  },
+  layout: {
+    type: String,
+    default: 'compact',
+    validator: (value) => ['compact', 'full'].includes(value)
   }
 })
 
@@ -243,21 +332,21 @@ const canCompleteLocal = computed(() => {
   if (!props.isActive || props.job.currentTime === undefined || props.job.currentTime === null || props.job.goalTime === undefined || props.job.goalTime === null) {
     return false
   }
-  
+
   // For track races and drag races, lower time is better (currentTime <= goalTime)
   // Both times should be in the same unit (seconds from leaderboard)
   if (props.job.raceType === "track" || props.job.raceType === "trackAlt" || props.job.raceType === "drag") {
     // Ensure we have valid numbers
     const currentTime = Number(props.job.currentTime)
     const goalTime = Number(props.job.goalTime)
-    
+
     if (isNaN(currentTime) || isNaN(goalTime) || goalTime <= 0) {
       return false
     }
-    
+
     return currentTime <= goalTime
   }
-  
+
   return false
 })
 
@@ -271,8 +360,8 @@ const statusClass = computed(() => {
 
 const progressPercent = computed(() => {
   if (!props.isActive || !props.job.baselineTime || !props.job.goalTime) return 0
-  const progress = ((props.job.baselineTime - props.job.currentTime) / 
-                    (props.job.baselineTime - props.job.goalTime)) * 100
+  const progress = ((props.job.baselineTime - props.job.currentTime) /
+    (props.job.baselineTime - props.job.goalTime)) * 100
   return Math.max(0, Math.min(100, progress))
 })
 
@@ -295,7 +384,7 @@ const formatTime = (time, decimalPlaces) => {
   if (typeof time !== 'number' || isNaN(time)) {
     return time || '0'
   }
-  
+
   if (time >= 60) {
     const minutes = Math.floor(time / 60)
     const seconds = Math.round(time % 60)
@@ -305,12 +394,12 @@ const formatTime = (time, decimalPlaces) => {
       return `${minutes} min`
     }
   }
-  
+
   const decimals = decimalPlaces || 0
   if (decimals > 0) {
     return time.toFixed(decimals) + ' s'
   }
-  
+
   return Math.round(time) + ' s'
 }
 
@@ -392,7 +481,7 @@ const checkCanComplete = async () => {
     canComplete.value = false
     return
   }
-  
+
   try {
     const result = await lua.career_modules_business_businessComputer.canCompleteJob(props.businessId, props.job.jobId)
     canComplete.value = result === true
@@ -452,7 +541,7 @@ watch(() => [props.job?.jobId, props.job?.expiresInSeconds, props.isActive], () 
   border-radius: 0.5rem;
   padding: 0.75rem;
   transition: border-color 0.2s;
-  
+
   &:hover {
     border-color: rgba(245, 73, 0, 0.5);
   }
@@ -471,39 +560,57 @@ watch(() => [props.job?.jobId, props.job?.expiresInSeconds, props.isActive], () 
   justify-content: center;
   gap: 0.5rem;
   transition: all 0.2s;
-  
+
   &.flex-grow {
     flex: 1;
   }
-  
+
   &.full-width {
     width: 100%;
   }
-  
+
   &.btn-icon {
     padding: 0.5rem;
-    width: 2.25rem; /* fixed width for icon buttons */
+    width: 2.25rem;
+    /* fixed width for icon buttons */
     flex-shrink: 0;
   }
 
   &.btn-primary {
     background: rgba(245, 73, 0, 1);
     color: white;
-    &:hover:not(:disabled) { background: rgba(245, 73, 0, 0.9); }
-    &:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    &:hover:not(:disabled) {
+      background: rgba(245, 73, 0, 0.9);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
   }
-  
+
   &.btn-success {
     background: rgba(34, 197, 94, 1);
     color: white;
-    &:hover:not(:disabled) { background: rgba(34, 197, 94, 0.9); }
-    &:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    &:hover:not(:disabled) {
+      background: rgba(34, 197, 94, 0.9);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
   }
-  
+
   &.btn-danger {
     background: rgba(239, 68, 68, 1);
     color: white;
-    &:hover { background: rgba(239, 68, 68, 0.9); }
+
+    &:hover {
+      background: rgba(239, 68, 68, 0.9);
+    }
   }
 }
 
@@ -521,7 +628,7 @@ watch(() => [props.job?.jobId, props.job?.expiresInSeconds, props.isActive], () 
   border-radius: 0.375rem;
   overflow: hidden;
   background: rgba(0, 0, 0, 0.5);
-  
+
   img {
     width: 100%;
     height: 100%;
@@ -544,12 +651,12 @@ watch(() => [props.job?.jobId, props.job?.expiresInSeconds, props.isActive], () 
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  
+
   &.expired {
     background: rgba(239, 68, 68, 0.9);
     color: white;
   }
-  
+
   svg {
     opacity: 0.9;
   }
@@ -589,7 +696,7 @@ watch(() => [props.job?.jobId, props.job?.expiresInSeconds, props.isActive], () 
   display: flex;
   align-items: baseline;
   gap: 1px;
-  
+
   .currency {
     font-size: 0.75em;
     opacity: 0.8;
@@ -602,7 +709,7 @@ watch(() => [props.job?.jobId, props.job?.expiresInSeconds, props.isActive], () 
   align-items: center;
   gap: 0.35rem;
   font-weight: 500;
-  
+
   svg {
     flex-shrink: 0;
   }
@@ -629,13 +736,14 @@ watch(() => [props.job?.jobId, props.job?.expiresInSeconds, props.isActive], () 
 }
 
 .job-image-sleek {
-  width: 4rem; /* Compact thumbnail size */
+  width: 4rem;
+  /* Compact thumbnail size */
   height: 4rem;
   border-radius: 0.375rem;
   overflow: hidden;
   background: rgba(0, 0, 0, 0.5);
   flex-shrink: 0;
-  
+
   img {
     width: 100%;
     height: 100%;
@@ -706,7 +814,7 @@ watch(() => [props.job?.jobId, props.job?.expiresInSeconds, props.isActive], () 
   background: rgba(0, 0, 0, 0.3);
   border-radius: 2px;
   overflow: hidden;
-  
+
   .tech-progress-fill {
     height: 100%;
     background: #f97316;
@@ -730,17 +838,17 @@ watch(() => [props.job?.jobId, props.job?.expiresInSeconds, props.isActive], () 
   justify-content: space-between;
   align-items: baseline;
   font-size: 0.8rem;
-  
+
   .goal-label {
     color: rgba(255, 255, 255, 0.5);
     text-transform: uppercase;
     font-size: 0.7rem;
   }
-  
+
   .goal-value {
     color: rgba(255, 255, 255, 0.9);
     font-weight: 500;
-    
+
     &.highlight {
       color: white;
       font-weight: 600;
@@ -754,7 +862,7 @@ watch(() => [props.job?.jobId, props.job?.expiresInSeconds, props.isActive], () 
   border-radius: 1.5px;
   overflow: hidden;
   margin-top: 0.15rem;
-  
+
   .progress-fill {
     height: 100%;
     background: #f97316;
@@ -765,6 +873,10 @@ watch(() => [props.job?.jobId, props.job?.expiresInSeconds, props.isActive], () 
   display: flex;
   gap: 0.5rem;
   margin-top: auto;
+
+  &.full-layout-actions {
+    flex: 1;
+  }
 }
 
 .lock-message {

@@ -6,24 +6,16 @@
     </div>
 
     <div v-if="showRecognitionBanner" class="recognition-banner">
-      <div 
-        v-if="store.brandRecognitionUnlocked" 
-        class="recognition-section"
-        @click.stop="openBrandModal"
-        @mousedown.stop="openBrandModal"
-      >
+      <div v-if="store.brandRecognitionUnlocked" class="recognition-section" @click.stop="openBrandModal"
+        @mousedown.stop="openBrandModal">
         <span class="banner-label">Brand Recognition</span>
         <span class="banner-value">{{ brandSelectionDisplay }}</span>
       </div>
 
       <div v-if="store.brandRecognitionUnlocked && store.raceRecognitionUnlocked" class="summary-divider"></div>
 
-      <div 
-        v-if="store.raceRecognitionUnlocked" 
-        class="recognition-section"
-        @click.stop="openRaceModal"
-        @mousedown.stop="openRaceModal"
-      >
+      <div v-if="store.raceRecognitionUnlocked" class="recognition-section" @click.stop="openRaceModal"
+        @mousedown.stop="openRaceModal">
         <span class="banner-label">Race Recognition</span>
         <span class="banner-value">{{ raceSelectionDisplay }}</span>
       </div>
@@ -36,15 +28,9 @@
         <div class="jobs-grid">
           <template v-for="job in store.activeJobs" :key="`active-${job.id}`">
             <div class="job-card-wrapper" @click.stop="interceptEvent" @mousedown.stop="interceptEvent">
-              <BusinessJobCard
-                :job="job"
-                :is-active="true"
-                :business-id="store.businessId"
-                @pull-out="handlePullOut(job)"
-                @put-away="handlePutAway(job)"
-                @abandon="handleAbandon(job)"
-                @complete="handleComplete(job)"
-              />
+              <BusinessJobCard :job="job" :is-active="true" :business-id="store.businessId" layout="full"
+                @pull-out="handlePullOut(job)" @put-away="handlePutAway(job)" @abandon="handleAbandon(job)"
+                @complete="handleComplete(job)" />
             </div>
           </template>
         </div>
@@ -56,12 +42,8 @@
         <div class="jobs-grid">
           <template v-for="job in store.newJobs" :key="`new-${job.id}`">
             <div class="job-card-wrapper" @click.stop="interceptEvent" @mousedown.stop="interceptEvent">
-              <BusinessJobCard
-                :job="job"
-                :is-active="false"
-                @accept="handleAccept(job)"
-                @decline="handleDecline(job)"
-              />
+              <BusinessJobCard :job="job" :is-active="false" layout="full" @accept="handleAccept(job)"
+                @decline="handleDecline(job)" />
             </div>
           </template>
         </div>
@@ -74,12 +56,8 @@
 
     <Teleport to="body">
       <transition name="modal-fade">
-        <div
-          v-if="showAbandonModal"
-          class="modal-overlay"
-          @click.self.stop="cancelAbandon"
-          @mousedown.self.stop="cancelAbandon"
-        >
+        <div v-if="showAbandonModal" class="modal-overlay" @click.self.stop="cancelAbandon"
+          @mousedown.self.stop="cancelAbandon">
           <div class="modal-content">
             <h2>Abandon Job</h2>
             <p>
@@ -87,8 +65,10 @@
               <span class="penalty-text">${{ penaltyCost.toLocaleString() }}</span>.
             </p>
             <div class="modal-buttons">
-              <button class="btn btn-secondary" @click.stop="cancelAbandon" @mousedown.stop="cancelAbandon">Cancel</button>
-              <button class="btn btn-danger" @click.stop="confirmAbandon" @mousedown.stop="confirmAbandon">Yes, Abandon</button>
+              <button class="btn btn-secondary" @click.stop="cancelAbandon"
+                @mousedown.stop="cancelAbandon">Cancel</button>
+              <button class="btn btn-danger" @click.stop="confirmAbandon" @mousedown.stop="confirmAbandon">Yes,
+                Abandon</button>
             </div>
           </div>
         </div>
@@ -97,12 +77,8 @@
 
     <Teleport to="body">
       <transition name="modal-fade">
-        <div
-          v-if="showBrandModal"
-          class="modal-overlay"
-          @click.self.stop="closeBrandModal"
-          @mousedown.self.stop="closeBrandModal"
-        >
+        <div v-if="showBrandModal" class="modal-overlay" @click.self.stop="closeBrandModal"
+          @mousedown.self.stop="closeBrandModal">
           <div class="modal-content selection-modal" @click.stop @mousedown.stop>
             <div class="modal-header">
               <h2>Select Brand</h2>
@@ -117,22 +93,13 @@
                 <small>Try refreshing or check if vehicles are loaded</small>
               </div>
               <div v-else class="selection-list">
-                <button 
-                  class="selection-item"
-                  :class="{ 'selected': !store.brandSelection }"
-                  @click.stop="selectBrand(null)"
-                  @mousedown.stop="selectBrand(null)"
-                >
+                <button class="selection-item" :class="{ 'selected': !store.brandSelection }"
+                  @click.stop="selectBrand(null)" @mousedown.stop="selectBrand(null)">
                   <span>Clear Selection</span>
                 </button>
-                <button 
-                  v-for="brand in store.availableBrands"
-                  :key="brand"
-                  class="selection-item"
-                  :class="{ 'selected': store.brandSelection === brand }"
-                  @click.stop="selectBrand(brand)"
-                  @mousedown.stop="selectBrand(brand)"
-                >
+                <button v-for="brand in store.availableBrands" :key="brand" class="selection-item"
+                  :class="{ 'selected': store.brandSelection === brand }" @click.stop="selectBrand(brand)"
+                  @mousedown.stop="selectBrand(brand)">
                   <span>{{ brand }}</span>
                 </button>
               </div>
@@ -144,12 +111,8 @@
 
     <Teleport to="body">
       <transition name="modal-fade">
-        <div
-          v-if="showRaceModal"
-          class="modal-overlay"
-          @click.self.stop="closeRaceModal"
-          @mousedown.self.stop="closeRaceModal"
-        >
+        <div v-if="showRaceModal" class="modal-overlay" @click.self.stop="closeRaceModal"
+          @mousedown.self.stop="closeRaceModal">
           <div class="modal-content selection-modal" @click.stop @mousedown.stop>
             <div class="modal-header">
               <h2>Select Race Type</h2>
@@ -164,22 +127,13 @@
                 <small>Check if race data is loaded</small>
               </div>
               <div v-else class="selection-list">
-                <button 
-                  class="selection-item"
-                  :class="{ 'selected': !store.raceSelection }"
-                  @click.stop="selectRace(null)"
-                  @mousedown.stop="selectRace(null)"
-                >
+                <button class="selection-item" :class="{ 'selected': !store.raceSelection }"
+                  @click.stop="selectRace(null)" @mousedown.stop="selectRace(null)">
                   <span>Clear Selection</span>
                 </button>
-                <button 
-                  v-for="raceType in store.availableRaceTypes"
-                  :key="raceType.id"
-                  class="selection-item"
-                  :class="{ 'selected': store.raceSelection === raceType.id }"
-                  @click.stop="selectRace(raceType.id)"
-                  @mousedown.stop="selectRace(raceType.id)"
-                >
+                <button v-for="raceType in store.availableRaceTypes" :key="raceType.id" class="selection-item"
+                  :class="{ 'selected': store.raceSelection === raceType.id }" @click.stop="selectRace(raceType.id)"
+                  @mousedown.stop="selectRace(raceType.id)">
                   <span>{{ raceType.label }}</span>
                 </button>
               </div>
@@ -208,7 +162,7 @@ const normalizeId = (id) => {
 
 const showAbandonModal = ref(false)
 const jobToAbandon = ref(null)
-const interceptEvent = () => {}
+const interceptEvent = () => { }
 
 const showBrandModal = ref(false)
 const showRaceModal = ref(false)
@@ -290,7 +244,7 @@ onMounted(async () => {
   if (store.raceRecognitionUnlocked) {
     await store.getRaceSelection()
   }
-  
+
   events.on('businessComputer:onAvailableBrandsReceived', handleBrandsReceived)
   events.on('businessComputer:onAvailableRaceTypesReceived', handleRaceTypesReceived)
 })

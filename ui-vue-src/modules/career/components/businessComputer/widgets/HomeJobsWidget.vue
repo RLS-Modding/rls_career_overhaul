@@ -3,16 +3,10 @@
     <div class="widget-header">
       <h3>Jobs Overview</h3>
       <div class="tabs">
-        <button 
-          :class="{ active: activeTab === 'active' }" 
-          @click="activeTab = 'active'"
-        >
+        <button :class="{ active: activeTab === 'active' }" @click="activeTab = 'active'">
           Active ({{ store.activeJobs.length }})
         </button>
-        <button 
-          :class="{ active: activeTab === 'new' }" 
-          @click="activeTab = 'new'"
-        >
+        <button :class="{ active: activeTab === 'new' }" @click="activeTab = 'new'">
           New ({{ store.newJobs.length }})
         </button>
       </div>
@@ -24,17 +18,10 @@
       </div>
       <div v-else class="jobs-grid">
         <div v-for="job in displayList" :key="job.id || job.jobId" class="grid-item">
-          <BusinessJobCard
-            :job="job"
-            :is-active="activeTab === 'active'"
-            :business-id="store.businessId"
-            @pull-out="$emit('pull-out', job)"
-            @put-away="$emit('put-away', job)"
-            @abandon="$emit('abandon', job)"
-            @complete="$emit('complete', job)"
-            @accept="$emit('accept', job)"
-            @decline="$emit('decline', job)"
-          />
+          <BusinessJobCard :job="job" :is-active="activeTab === 'active'" :business-id="store.businessId"
+            layout="compact" @pull-out="$emit('pull-out', job)" @put-away="$emit('put-away', job)"
+            @abandon="$emit('abandon', job)" @complete="$emit('complete', job)" @accept="$emit('accept', job)"
+            @decline="$emit('decline', job)" />
         </div>
       </div>
     </div>
@@ -55,7 +42,7 @@ const currentList = computed(() => {
 
 const displayList = computed(() => {
   // No strict limit, let grid handle it, or maybe limit to 6-8
-  return currentList.value.slice(0, 8) 
+  return currentList.value.slice(0, 8)
 })
 
 defineEmits(['pull-out', 'put-away', 'abandon', 'complete', 'accept', 'decline'])
@@ -113,7 +100,7 @@ defineEmits(['pull-out', 'put-away', 'abandon', 'complete', 'accept', 'decline']
     &.active {
       background: rgba(255, 255, 255, 0.1);
       color: #fff;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     }
   }
 }
@@ -122,15 +109,17 @@ defineEmits(['pull-out', 'put-away', 'abandon', 'complete', 'accept', 'decline']
   padding: 1rem;
   flex: 1;
   overflow-y: auto;
-  
+
   &::-webkit-scrollbar {
     width: 6px;
   }
+
   &::-webkit-scrollbar-track {
-    background: rgba(0,0,0,0.1);
+    background: rgba(0, 0, 0, 0.1);
   }
+
   &::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 3px;
   }
 }
