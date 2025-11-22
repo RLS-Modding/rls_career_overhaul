@@ -3,8 +3,20 @@
     <div class="card-content">
       <div class="image-container">
         <img :src="job.vehicleImage" :alt="job.vehicleName" />
-        <div class="status-overlay" :class="statusClass">
+        <div v-if="isActive" class="status-overlay status-active">
           {{ statusText }}
+        </div>
+        
+        <div
+            class="expiration-overlay"
+            v-if="expirationText"
+            :class="{ expired: isExpired }"
+        >
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <span>{{ expirationText }}</span>
         </div>
       </div>
       
@@ -13,7 +25,6 @@
           <h4 class="vehicle-name" :title="`${job.vehicleYear} ${job.vehicleName}`">
             {{ job.vehicleYear }} {{ job.vehicleName }}
           </h4>
-          <span v-if="job.vehicleType" class="vehicle-type">{{ job.vehicleType }}</span>
         </div>
         
         <div class="goal-section">
@@ -32,10 +43,6 @@
             <div class="progress-bar-bg">
               <div class="progress-bar-fill" :style="{ width: `${progressPercent}%` }"></div>
             </div>
-          </div>
-          
-          <div v-else-if="expirationText" class="expiry-row" :class="{ expired: isExpired }">
-             {{ expirationText }}
           </div>
         </div>
         
@@ -153,7 +160,6 @@ const isGoodProgress = computed(() => {
 })
 
 const statusText = computed(() => props.isActive ? "In Progress" : "New")
-const statusClass = computed(() => props.isActive ? "status-active" : "status-new")
 
 const progressPercent = computed(() => {
   if (!props.isActive || !props.job.baselineTime || !props.job.goalTime) return 0
@@ -309,12 +315,6 @@ watch(() => [props.job?.jobId, props.job?.expiresInSeconds, props.isActive], sta
       color: #000;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     }
-    
-    &.status-new {
-      background: #3b82f6;
-      color: #fff;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-    }
   }
   
   &::after {
@@ -327,6 +327,33 @@ watch(() => [props.job?.jobId, props.job?.expiresInSeconds, props.isActive], sta
     background: linear-gradient(to right, transparent, rgba(20, 20, 20, 0.95));
     z-index: 1;
     pointer-events: none;
+  }
+}
+
+.expiration-overlay {
+  position: absolute;
+  bottom: 0.25rem;
+  right: 0.25rem;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  color: rgba(255, 255, 255, 0.9);
+  padding: 0.15rem 0.35rem;
+  border-radius: 0.25rem;
+  font-size: 0.6rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  z-index: 5;
+  
+  &.expired {
+    background: rgba(239, 68, 68, 0.9);
+    color: white;
+  }
+  
+  svg {
+    opacity: 0.9;
+    flex-shrink: 0;
   }
 }
 
@@ -364,16 +391,6 @@ watch(() => [props.job?.jobId, props.job?.expiresInSeconds, props.isActive], sta
   min-width: 0;
   max-width: 100%;
   box-sizing: border-box;
-}
-
-.vehicle-type {
-  font-size: 0.6rem;
-  color: rgba(255, 255, 255, 0.5);
-  background: rgba(255, 255, 255, 0.1);
-  padding: 1px 5px;
-  border-radius: 3px;
-  flex-shrink: 0;
-  white-space: nowrap;
 }
 
 .goal-section {
@@ -449,12 +466,6 @@ watch(() => [props.job?.jobId, props.job?.expiresInSeconds, props.isActive], sta
   background: #f54900;
   border-radius: 2px;
   transition: width 0.3s ease;
-}
-
-.expiry-row {
-  font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.5);
-  &.expired { color: #ef4444; }
 }
 
 .footer {

@@ -4,118 +4,106 @@
       <div v-if="isVertical" class="job-content-new-vertical">
         <div class="job-image-new">
           <img :src="job.vehicleImage" :alt="job.vehicleName" />
-          <span class="status-badge" :class="statusClass">{{ statusText }}</span>
-        </div>
-        <h3 class="vehicle-name-new">
-          {{ job.vehicleYear }} {{ job.vehicleName }}
-          <span v-if="job.vehicleType" class="badge badge-orange">{{ job.vehicleType }}</span>
-        </h3>
-        <div class="reward-container-new">
-          <span class="reward-label">Payment</span>
-          <span class="reward-value">${{ job.reward.toLocaleString() }}</span>
-        </div>
-        <div class="job-metrics-new">
-          <div class="goal-chip">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <div
+            class="expiration-overlay"
+            v-if="expirationText"
+            :class="{ expired: isExpired }"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <circle cx="12" cy="12" r="10"/>
-              <circle cx="12" cy="12" r="6"/>
-              <path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>
+              <polyline points="12 6 12 12 16 14"/>
             </svg>
-            <div class="goal-chip-text">
-              <span class="goal-chip-label">Goal</span>
-              <span class="goal-chip-value">{{ job.goal }}</span>
-            </div>
+            <span>{{ expirationText }}</span>
           </div>
         </div>
-        <div
-          class="expiration-chip"
-          v-if="expirationText"
-          :class="{ expired: isExpired }"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <polyline points="12 6 12 12 16 14"/>
-          </svg>
-          <span>{{ expirationText }}</span>
-        </div>
-        <div class="job-actions-new">
-          <template v-if="assignMode">
-            <button 
-              class="btn btn-primary" 
-              @click.stop="$emit('assign', job)"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                <circle cx="8.5" cy="7" r="4"/>
-                <line x1="20" y1="8" x2="20" y2="14"/>
-                <line x1="23" y1="11" x2="17" y2="11"/>
-              </svg>
-              Assign
-            </button>
-          </template>
-          <template v-else>
-            <button 
-              class="btn btn-success" 
-              :disabled="isAcceptDisabled"
-              :title="isAcceptDisabled ? `Active job limit reached (${store.maxActiveJobs} max)` : ''"
-              @click.stop="$emit('accept', job)"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                <polyline points="22 4 12 14.01 9 11.01"/>
-              </svg>
-              Accept
-            </button>
-            <button class="btn btn-danger" @click.stop="$emit('decline', job)">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"/>
-                <line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
-              Decline
-            </button>
-          </template>
+        
+        <div class="job-details-container">
+          <h3 class="vehicle-name-new">
+            {{ job.vehicleYear }} {{ job.vehicleName }}
+          </h3>
+
+          <div class="job-meta-row">
+             <div class="reward-text">
+              <span class="currency">$</span>{{ job.reward.toLocaleString() }}
+            </div>
+            <div class="separator">•</div>
+            <div class="goal-text">
+               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                 <path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>
+                 <circle cx="12" cy="12" r="10"/>
+               </svg>
+               <span>{{ job.goal }}</span>
+            </div>
+          </div>
+
+          <div class="job-actions-new">
+            <template v-if="assignMode">
+              <button 
+                class="btn btn-primary" 
+                @click.stop="$emit('assign', job)"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="8.5" cy="7" r="4"/>
+                  <line x1="20" y1="8" x2="20" y2="14"/>
+                  <line x1="23" y1="11" x2="17" y2="11"/>
+                </svg>
+                Assign
+              </button>
+            </template>
+            <template v-else>
+              <button 
+                class="btn btn-success flex-grow" 
+                :disabled="isAcceptDisabled"
+                :title="isAcceptDisabled ? `Active job limit reached (${store.maxActiveJobs} max)` : ''"
+                @click.stop="$emit('accept', job)"
+              >
+                Accept
+              </button>
+              <button class="btn btn-danger btn-icon" @click.stop="$emit('decline', job)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </template>
+          </div>
         </div>
       </div>
       <template v-else>
         <div class="image-section-new-horizontal">
           <div class="job-image-new-horizontal">
             <img :src="job.vehicleImage" :alt="job.vehicleName" />
-            <span class="status-badge" :class="statusClass">{{ statusText }}</span>
+            <div
+                class="expiration-overlay"
+                v-if="expirationText"
+                :class="{ expired: isExpired }"
+            >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                <span>{{ expirationText }}</span>
+            </div>
           </div>
           <h3 class="vehicle-name-new-horizontal">
             {{ job.vehicleYear }} {{ job.vehicleName }}
-            <span v-if="job.vehicleType" class="badge badge-orange">{{ job.vehicleType }}</span>
           </h3>
         </div>
         <div class="job-info-new-horizontal">
-          <div class="reward-container-new">
-            <span class="reward-label">Payment</span>
-            <span class="reward-value">${{ job.reward.toLocaleString() }}</span>
-          </div>
-          <div class="job-metrics-new">
-            <div class="goal-chip">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <circle cx="12" cy="12" r="6"/>
-                <path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>
-              </svg>
-              <div class="goal-chip-text">
-                <span class="goal-chip-label">Goal</span>
-                <span class="goal-chip-value">{{ job.goal }}</span>
-              </div>
+            <div class="job-meta-column">
+                <div class="reward-text large">
+                    <span class="currency">$</span>{{ job.reward.toLocaleString() }}
+                </div>
+                 <div class="goal-text">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>
+                        <circle cx="12" cy="12" r="10"/>
+                    </svg>
+                    <span>{{ job.goal }}</span>
+                </div>
             </div>
-          </div>
-          <div
-            class="expiration-chip"
-            v-if="expirationText"
-            :class="{ expired: isExpired }"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/>
-              <polyline points="12 6 12 12 16 14"/>
-            </svg>
-            <span>{{ expirationText }}</span>
-          </div>
+
           <div class="job-actions-new-horizontal">
             <template v-if="assignMode">
               <button 
@@ -133,23 +121,18 @@
             </template>
             <template v-else>
               <button 
-                class="btn btn-success" 
+                class="btn btn-success flex-grow" 
                 :disabled="isAcceptDisabled"
                 :title="isAcceptDisabled ? `Active job limit reached (${store.maxActiveJobs} max)` : ''"
                 @click.stop="$emit('accept', job)"
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                  <polyline points="22 4 12 14.01 9 11.01"/>
-                </svg>
                 Accept
               </button>
-              <button class="btn btn-danger" @click.stop="$emit('decline', job)">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <button class="btn btn-danger btn-icon" @click.stop="$emit('decline', job)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <line x1="18" y1="6" x2="6" y2="18"/>
                   <line x1="6" y1="6" x2="18" y2="18"/>
                 </svg>
-                Decline
               </button>
             </template>
           </div>
@@ -164,7 +147,6 @@
         </div>
         <h3 class="vehicle-name-active">
           {{ job.vehicleYear }} {{ job.vehicleName }}
-          <span v-if="job.vehicleType" class="badge badge-orange">{{ job.vehicleType }}</span>
         </h3>
         <div class="reward-container-active">
           <span class="reward-label">Payment</span>
@@ -256,7 +238,6 @@
           </div>
           <h3 class="vehicle-name-active-horizontal">
             {{ job.vehicleYear }} {{ job.vehicleName }}
-            <span v-if="job.vehicleType" class="badge badge-orange">{{ job.vehicleType }}</span>
           </h3>
         </div>
         <div class="job-info-active-horizontal">
@@ -650,63 +631,11 @@ watch(() => [props.job?.jobId, props.job?.expiresInSeconds, props.isActive], () 
 </script>
 
 <style scoped lang="scss">
-.lock-message {
-  color: rgba(239, 68, 68, 1);
-  font-size: 0.875rem;
-  font-weight: 500;
-  text-align: center;
-  margin-bottom: 0.25rem;
-  width: 100%;
-}
-
-.tech-work-container {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.tech-status-title {
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  text-align: center;
-}
-
-.tech-progress-bar-bg {
-  width: 100%;
-  height: 0.375rem;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 0.1875rem;
-  overflow: hidden;
-}
-
-.tech-progress-bar-fill {
-  height: 100%;
-  background: rgba(245, 73, 0, 1);
-  border-radius: 0.1875rem;
-  transition: width 0.3s ease;
-}
-
-.tech-message {
-  color: rgba(245, 73, 0, 1);
-  font-size: 0.875rem;
-  font-weight: 500;
-  text-align: center;
-  width: 100%;
-  padding: 0.5rem;
-  background: rgba(245, 73, 0, 0.1);
-  border-radius: 0.375rem;
-  border: 1px solid rgba(245, 73, 0, 0.3);
-}
-
 .job-card {
   background: rgba(23, 23, 23, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 0.5rem;
-  padding: 1rem;
+  padding: 0.75rem;
   transition: border-color 0.2s;
   
   &:hover {
@@ -714,1035 +643,373 @@ watch(() => [props.job?.jobId, props.job?.expiresInSeconds, props.isActive], () 
   }
 }
 
-.job-content {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 1rem;
-  align-items: start;
-}
-
-.job-card.vertical .job-content {
-  grid-template-columns: 1fr;
-}
-
-.image-section {
+.job-content-new-vertical {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  flex-shrink: 0;
 }
 
-.job-image {
+.job-image-new {
   position: relative;
-  width: 12rem;
+  width: 100%;
   aspect-ratio: 16/9;
-  border-radius: 0.5rem;
+  border-radius: 0.375rem;
   overflow: hidden;
   background: rgba(0, 0, 0, 0.5);
   
   img {
     width: 100%;
     height: 100%;
-    object-fit: contain;
-  }
-  
-  .status-badge {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
-    font-weight: 500;
-    
-    &.status-active {
-      background: rgba(234, 179, 8, 0.7);
-      color: white;
-      border: none;
-    }
-    
-    &.status-available {
-      background: rgba(59, 130, 246, 0.7);
-      color: white;
-      border: none;
-    }
+    object-fit: cover;
+    display: block;
   }
 }
 
-.image-header {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25em;
-  width: 12rem;
-  
-  h4 {
-    margin: 0;
-    color: white;
-    font-size: 1rem;
-    font-weight: 600;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-  }
-  
-}
-
-.job-card.vertical {
-  padding: 1em;
-  
-  .job-content {
-    display: flex;
-    flex-direction: column;
-    gap: 1em;
-  }
-  
-  .job-image {
-    width: 100%;
-    margin-bottom: 0;
-  }
-  
-  .job-details {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75em;
-    padding: 0;
-  }
-  
-  .job-header {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: flex-start;
-    margin-bottom: 0;
-    gap: 0.5em;
-    
-    h4 {
-      margin: 0;
-      flex: 1;
-      font-size: 1rem;
-      font-weight: 600;
-      color: white;
-    }
-    
-    .header-meta {
-      display: flex;
-      align-items: center;
-      gap: 0.75em;
-      flex-wrap: wrap;
-    }
-    
-    .vehicle-type-badge-inline {
-      display: inline-block;
-      padding: 0.25em 0.5em;
-      background: rgba(245, 73, 0, 0.2);
-      color: rgba(245, 73, 0, 1);
-      border: 1px solid rgba(245, 73, 0, 0.5);
-      border-radius: 0.25rem;
-      font-size: 0.75rem;
-      font-weight: 500;
-    }
-    
-  }
-  
-  .job-goal-wrapper {
-    padding: 0.75em;
-    background: rgba(38, 38, 38, 0.6);
-    border-radius: 0.25rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5em;
-    
-    .job-goal {
-      display: flex;
-      align-items: center;
-      gap: 0.5em;
-      margin: 0;
-      
-      svg {
-        color: rgba(245, 73, 0, 1);
-        flex-shrink: 0;
-      }
-      
-      .goal-label {
-        color: rgba(255, 255, 255, 0.6);
-        font-size: 0.75rem;
-      }
-    }
-    
-    .goal-value {
-      color: rgba(245, 73, 0, 1);
-      font-size: 0.875rem;
-      font-weight: 500;
-      margin-left: 1.5em;
-    }
-  }
-  
-  .job-stats {
-    margin-top: 0;
-    margin-bottom: 0;
-    
-    .stat {
-      padding: 0.75em;
-      background: rgba(38, 38, 38, 0.6);
-    }
-  }
-  
-  .job-deadline {
-    margin-top: 0;
-    margin-bottom: 0;
-    font-size: 0.875rem;
-  }
-  
-  .job-actions {
-    margin-top: 0.5em;
-  }
-}
-
-.job-details {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  min-height: 0;
-}
-
-.job-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  
-  h4 {
-    margin: 0;
-    color: white;
-    font-size: 1rem;
-    font-weight: 600;
-  }
-}
-
-.job-card.active .job-header {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.25em;
-}
-
-.vehicle-type-badge {
-  margin-top: 0.5rem;
-  
-  span {
-    display: inline-block;
-    padding: 0.25rem 0.5rem;
-    background: rgba(245, 73, 0, 0.2);
-    color: rgba(245, 73, 0, 1);
-    border: 1px solid rgba(245, 73, 0, 0.5);
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
-    font-weight: 500;
-  }
-}
-
-.new-job-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.new-job-info .goal-chip {
-  justify-content: space-between;
-}
-
-.reward-info {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.1rem;
-}
-
-.reward-label {
-  font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.reward-value {
-  font-size: 0.875rem;
-  color: rgba(34, 197, 94, 1);
-  font-weight: 600;
-}
-
-.job-goal-wrapper {
-  display: none;
-}
-
-.job-card.vertical .job-goal-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5em;
-  padding: 0.75em;
-  background: rgba(38, 38, 38, 0.6);
+.expiration-overlay {
+  position: absolute;
+  bottom: 0.5rem;
+  right: 0.5rem;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  color: rgba(255, 255, 255, 0.9);
+  padding: 0.25rem 0.5rem;
   border-radius: 0.25rem;
-  
-  .job-goal {
-    display: flex;
-    align-items: center;
-    gap: 0.5em;
-    margin: 0;
-    
-    svg {
-      color: rgba(245, 73, 0, 1);
-      flex-shrink: 0;
-    }
-    
-    .goal-label {
-      color: rgba(255, 255, 255, 0.6);
-      font-size: 0.75rem;
-    }
-  }
-  
-  .goal-value {
-    color: rgba(245, 73, 0, 1);
-    font-size: 0.875rem;
-    font-weight: 500;
-    margin-left: 1.5em;
-  }
-}
-
-.job-goal {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: rgba(245, 73, 0, 1);
+  font-size: 0.75rem;
   font-weight: 500;
-  font-size: 0.875rem;
-  
-  svg {
-    flex-shrink: 0;
-    color: rgba(245, 73, 0, 1);
-  }
-  
-  span {
-    color: rgba(245, 73, 0, 1);
-  }
-}
-
-.job-card.vertical .job-goal {
-  display: none;
-}
-
-.job-card.active .job-goal {
-  span {
-    color: rgba(245, 73, 0, 1);
-  }
-}
-
-.job-stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-  
-  .stat {
-    padding: 0.5rem;
-    background: rgba(38, 38, 38, 0.6);
-    border-radius: 0.25rem;
-    
-    .label {
-      display: block;
-      color: rgba(255, 255, 255, 0.5);
-      font-size: 0.75rem;
-      margin-bottom: 0.25rem;
-    }
-    
-    .value {
-      display: block;
-      font-weight: 500;
-      font-size: 0.875rem;
-      
-      &.budget {
-        color: rgba(245, 73, 0, 1);
-      }
-      
-      &.reward {
-        color: rgba(34, 197, 94, 1);
-      }
-    }
-  }
-}
-
-.job-card.active .job-stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75em;
-  
-  .stat {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.25em;
-    padding: 0.75em;
-    background: rgba(38, 38, 38, 0.6);
-    border-radius: 0.25rem;
-    
-    .label {
-      display: block;
-      margin-bottom: 0;
-      color: rgba(255, 255, 255, 0.5);
-      font-size: 0.75rem;
-    }
-    
-    .value {
-      display: block;
-    }
-  }
-}
-
-.job-card.vertical.active .job-stats {
-  .stat {
-    padding: 0.75em;
-  }
-}
-
-.job-progress {
-  display: flex;
-  flex-direction: column;
-}
-
-.goal-chip {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  background: rgba(245, 73, 0, 0.15);
-  border-radius: 0.45rem;
-  border: 1px solid rgba(245, 73, 0, 0.35);
-}
-
-.goal-chip-content {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  justify-content: space-between;
+  gap: 0.35rem;
+  
+  &.expired {
+    background: rgba(239, 68, 68, 0.9);
+    color: white;
+  }
   
   svg {
-    color: rgba(245, 73, 0, 1);
-    flex-shrink: 0;
+    opacity: 0.9;
   }
 }
 
-.goal-chip-text {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-  flex: 1;
-}
-
-.goal-chip-label {
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.goal-chip-value {
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.95);
-  font-weight: 600;
-}
-
-.current-time-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-  align-items: flex-end;
-  text-align: right;
-}
-
-.current-time-label {
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.current-time-value {
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.95);
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.goal-performance {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.75rem;
-}
-
-.goal-performance .metric {
-  padding: 0.75rem;
-  background: rgba(255, 255, 255, 0.04);
-  border-radius: 0.45rem;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.goal-performance .metric-label {
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.goal-performance .metric-value {
-  font-size: 1rem;
-  font-weight: 600;
-  color: white;
-}
-
-.goal-performance .metric.goal .metric-value {
-  color: rgba(245, 73, 0, 1);
-}
-
-.goal-chip .progress-bar {
-  width: 100%;
-  height: 0.375rem;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 0.1875rem;
-  overflow: hidden;
-  margin-top: 0.125rem;
-}
-
-.progress-fill {
-  height: 100%;
-  background: rgba(245, 73, 0, 1);
-  transition: width 0.3s;
-}
-
-.job-actions {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: auto;
-  flex-shrink: 0;
-}
-
-.btn {
-  flex: 1;
-  padding: 0.5rem 1rem;
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s, opacity 0.2s;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  box-sizing: border-box;
-  
-  svg {
-    flex-shrink: 0;
-  }
-  
-  &.btn-primary {
-    background: rgba(245, 73, 0, 1);
-    color: white;
-    
-    &:hover:not(:disabled) {
-      background: rgba(245, 73, 0, 0.9);
-    }
-    
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      pointer-events: none;
-      flex-shrink: 0;
-    }
-  }
-  
-  &.btn-secondary {
-    background: rgba(55, 55, 55, 1);
-    color: white;
-    
-    &:hover {
-      background: rgba(75, 75, 75, 1);
-    }
-  }
-  
-  &.btn-success {
-    background: rgba(34, 197, 94, 1);
-    color: white;
-    
-    &:hover {
-      background: rgba(34, 197, 94, 0.9);
-    }
-  }
-  
-  &.btn-danger {
-    background: rgba(239, 68, 68, 1);
-    color: white;
-    
-    &:hover {
-      background: rgba(239, 68, 68, 0.9);
-    }
-  }
-}
-
-.job-content-active {
-  &.vertical {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-  
-  &:not(.vertical) {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 1.5rem;
-    align-items: stretch;
-  }
-}
-
-.job-content-active-vertical {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.job-image-active {
-  position: relative;
-  width: 100%;
-  border-radius: 0.5rem;
-  overflow: hidden;
-  background: rgba(0, 0, 0, 0.5);
-  
-  img {
-    width: 100%;
-    height: auto;
-    display: block;
-  }
-  
-  .status-badge {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
-    font-weight: 500;
-    
-    &.status-active {
-      background: rgba(234, 179, 8, 0.7);
-      color: white;
-      border: none;
-    }
-    
-    &.status-available {
-      background: rgba(59, 130, 246, 0.7);
-      color: white;
-      border: none;
-    }
-  }
-}
-
-.image-section-active-horizontal {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  flex-shrink: 0;
-  width: 16rem;
-  max-width: 16rem;
-}
-
-.job-image-active-horizontal {
-  position: relative;
-  width: 16rem;
-  border-radius: 0.5rem;
-  overflow: hidden;
-  background: rgba(0, 0, 0, 0.5);
-  
-  img {
-    width: 100%;
-    height: auto;
-    display: block;
-  }
-  
-  .status-badge {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
-    font-weight: 500;
-    
-    &.status-active {
-      background: rgba(234, 179, 8, 0.7);
-      color: white;
-      border: none;
-    }
-    
-    &.status-available {
-      background: rgba(59, 130, 246, 0.7);
-      color: white;
-      border: none;
-    }
-  }
-}
-
-.vehicle-name-active {
-  margin: 0;
-  color: white;
-  font-size: 1.25rem;
-  font-weight: 600;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  line-height: 1.5;
-  
-  .badge {
-    display: inline-block;
-    margin-left: 0.5rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
-    font-weight: 500;
-    vertical-align: middle;
-    
-    &.badge-orange {
-      background: rgba(245, 73, 0, 0.2);
-      color: rgba(245, 73, 0, 1);
-      border: 1px solid rgba(245, 73, 0, 0.5);
-    }
-  }
-}
-
-.vehicle-name-active-horizontal {
-  margin: 0;
-  color: white;
-  font-size: 1.25rem;
-  font-weight: 600;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  line-height: 1.5;
-  
-  .badge {
-    display: inline-block;
-    margin-left: 0.5rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
-    font-weight: 500;
-    vertical-align: middle;
-    
-    &.badge-orange {
-      background: rgba(245, 73, 0, 0.2);
-      color: rgba(245, 73, 0, 1);
-      border: 1px solid rgba(245, 73, 0, 0.5);
-    }
-  }
-}
-
-.reward-container-active {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  background: rgba(34, 197, 94, 0.15);
-  border-radius: 0.45rem;
-  border: 1px solid rgba(34, 197, 94, 0.35);
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  
-  .reward-label {
-    font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.6);
-  }
-  
-  .reward-value {
-    font-size: 1.125rem;
-    color: rgba(34, 197, 94, 1);
-    font-weight: 600;
-  }
-}
-
-.job-info-active-horizontal {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.job-metrics-active {
-  display: flex;
-  flex-direction: column;
-}
-
-.job-actions-active {
+.job-details-container {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  
-  .btn {
-    width: 100%;
-  }
-}
-
-.job-actions-active-horizontal {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: auto;
-  
-  .btn {
-    flex: 0 0 calc(50% - 0.25rem);
-    min-width: 0;
-    
-    &:disabled {
-      flex: 0 0 calc(50% - 0.25rem);
-    }
-  }
-
-  &.locked {
-    flex-direction: column;
-
-    .btn {
-      flex: 1;
-      width: 100%;
-    }
-  }
-}
-
-.job-content-new {
-  &.vertical {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-  
-  &:not(.vertical) {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 1.5rem;
-    align-items: stretch;
-  }
-}
-
-.job-content-new-vertical {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.job-image-new {
-  position: relative;
-  width: 100%;
-  border-radius: 0.5rem;
-  overflow: hidden;
-  background: rgba(0, 0, 0, 0.5);
-  
-  img {
-    width: 100%;
-    height: auto;
-    display: block;
-  }
-  
-  .status-badge {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
-    font-weight: 500;
-    
-    &.status-active {
-      background: rgba(234, 179, 8, 0.7);
-      color: white;
-      border: none;
-    }
-    
-    &.status-available {
-      background: rgba(59, 130, 246, 0.7);
-      color: white;
-      border: none;
-    }
-  }
-}
-
-.image-section-new-horizontal {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  flex-shrink: 0;
-  width: 16rem;
-  max-width: 16rem;
-}
-
-.job-image-new-horizontal {
-  position: relative;
-  width: 16rem;
-  border-radius: 0.5rem;
-  overflow: hidden;
-  background: rgba(0, 0, 0, 0.5);
-  
-  img {
-    width: 100%;
-    height: auto;
-    display: block;
-  }
-  
-  .status-badge {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
-    font-weight: 500;
-    
-    &.status-active {
-      background: rgba(234, 179, 8, 0.7);
-      color: white;
-      border: none;
-    }
-    
-    &.status-available {
-      background: rgba(59, 130, 246, 0.7);
-      color: white;
-      border: none;
-    }
-  }
 }
 
 .vehicle-name-new {
   margin: 0;
   color: white;
-  font-size: 1.25rem;
+  font-size: 1rem;
   font-weight: 600;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  line-height: 1.5;
-  
-  .badge {
-    display: inline-block;
-    margin-left: 0.5rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
-    font-weight: 500;
-    vertical-align: middle;
-    
-    &.badge-orange {
-      background: rgba(245, 73, 0, 0.2);
-      color: rgba(245, 73, 0, 1);
-      border: 1px solid rgba(245, 73, 0, 0.5);
-    }
-  }
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.vehicle-name-new-horizontal {
-  margin: 0;
-  color: white;
-  font-size: 1.25rem;
+.job-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.separator {
+  color: rgba(255, 255, 255, 0.2);
+}
+
+.reward-text {
+  color: #22c55e;
   font-weight: 600;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  line-height: 1.5;
+  display: flex;
+  align-items: baseline;
+  gap: 1px;
   
-  .badge {
-    display: inline-block;
-    margin-left: 0.5rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
-    font-weight: 500;
-    vertical-align: middle;
-    
-    &.badge-orange {
-      background: rgba(245, 73, 0, 0.2);
-      color: rgba(245, 73, 0, 1);
-      border: 1px solid rgba(245, 73, 0, 0.5);
-    }
+  .currency {
+    font-size: 0.75em;
+    opacity: 0.8;
+  }
+  
+  &.large {
+      font-size: 1.125rem;
   }
 }
 
-.reward-container-new {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  background: rgba(34, 197, 94, 0.15);
-  border-radius: 0.45rem;
-  border: 1px solid rgba(34, 197, 94, 0.35);
+.goal-text {
+  color: rgba(245, 73, 0, 1);
   display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  min-width: 0;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 500;
   
-  .reward-label {
-    font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.6);
-    white-space: nowrap;
+  svg {
+    flex-shrink: 0;
   }
-  
-  .reward-value {
-    font-size: 1rem;
-    color: rgba(34, 197, 94, 1);
-    font-weight: 600;
-    word-break: break-word;
-    overflow-wrap: break-word;
-    line-height: 1.2;
-  }
-}
-
-.job-info-new-horizontal {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.job-metrics-new {
-  display: flex;
-  flex-direction: column;
 }
 
 .job-actions-new {
   display: flex;
-  flex-direction: column;
   gap: 0.5rem;
-  
-  .btn {
-    width: 100%;
-  }
+  margin-top: 0.25rem;
+  flex-direction: row; /* Ensure row layout */
 }
 
 .job-actions-new-horizontal {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: auto;
+}
+
+.btn {
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
   display: flex;
+  align-items: center;
+  justify-content: center;
   gap: 0.5rem;
-  margin-top: auto;
+  transition: all 0.2s;
   
-  .btn {
-    flex: 0 0 calc(50% - 0.25rem);
-    min-width: 0;
-    
-    &:disabled {
-      flex: 0 0 calc(50% - 0.25rem);
-    }
+  &.flex-grow {
+    flex: 1;
+  }
+  
+  &.btn-icon {
+    padding: 0.5rem;
+    width: 2.25rem; /* fixed width for icon buttons */
+    flex-shrink: 0;
+  }
+
+  &.btn-primary {
+    background: rgba(245, 73, 0, 1);
+    color: white;
+    &:hover:not(:disabled) { background: rgba(245, 73, 0, 0.9); }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+  
+  &.btn-success {
+    background: rgba(34, 197, 94, 1);
+    color: white;
+    &:hover:not(:disabled) { background: rgba(34, 197, 94, 0.9); }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+  
+  &.btn-danger {
+    background: rgba(239, 68, 68, 1);
+    color: white;
+    &:hover { background: rgba(239, 68, 68, 0.9); }
   }
 }
 
-.expiration-chip {
-  display: inline-flex;
+/* Horizontal Specifics */
+.image-section-new-horizontal {
+  position: relative;
+  width: 14rem;
+  flex-shrink: 0;
+}
+
+.job-image-new-horizontal {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  border-radius: 0.375rem;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.5);
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+.vehicle-name-new-horizontal {
+  margin: 0.5rem 0 0 0;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.job-content-new {
+  &:not(.vertical) {
+    display: flex;
+    gap: 1rem;
+  }
+}
+
+.job-info-new-horizontal {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.job-meta-column {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+/* Active Job Styles (Preserved/Tweaked) */
+.job-content-active-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.job-image-active {
+  position: relative;
+  width: 100%;
+  border-radius: 0.375rem;
+  overflow: hidden;
+  aspect-ratio: 16/9;
+  background: rgba(0, 0, 0, 0.5);
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .status-badge {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background: rgba(234, 179, 8, 0.9);
+    color: black;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+}
+
+.vehicle-name-active {
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+  margin: 0;
+}
+
+.reward-container-active {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.35rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  width: fit-content;
-  background: rgba(59, 130, 246, 0.15);
-  border: 1px solid rgba(59, 130, 246, 0.35);
-  color: rgba(255, 255, 255, 0.85);
-  margin-top: 0.25rem;
+  padding: 0.5rem;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: 0.375rem;
+  
+  .reward-label { font-size: 0.75rem; opacity: 0.7; }
+  .reward-value { color: #22c55e; font-weight: 600; }
 }
 
-.expiration-chip svg {
-  color: rgba(59, 130, 246, 1);
+.job-metrics-active .goal-chip {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.375rem;
+  padding: 0.5rem;
+  
+  .goal-chip-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    
+    svg { opacity: 0.8; color: #f97316; }
+  }
+  
+  .goal-chip-text { flex: 1; }
+  .goal-chip-label { font-size: 0.7rem; opacity: 0.6; display: block; }
+  .goal-chip-value { font-weight: 600; font-size: 0.9rem; }
+  
+  .progress-bar {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    .progress-fill { height: 100%; background: #f97316; }
+  }
 }
 
-.expiration-chip.expired {
-  background: rgba(239, 68, 68, 0.12);
-  border-color: rgba(239, 68, 68, 0.4);
-  color: rgba(239, 68, 68, 1);
+.image-section-active-horizontal {
+  width: 14rem;
+  flex-shrink: 0;
 }
 
-.expiration-chip.expired svg {
-  color: rgba(239, 68, 68, 1);
+.job-image-active-horizontal {
+  position: relative;
+  border-radius: 0.375rem;
+  overflow: hidden;
+  aspect-ratio: 16/9;
+  
+  img { width: 100%; height: 100%; object-fit: cover; }
+  .status-badge {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    background: rgba(234, 179, 8, 0.9);
+    color: black;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+}
+
+.vehicle-name-active-horizontal {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+  color: white;
+}
+
+.job-info-active-horizontal {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.job-actions-active, .job-actions-active-horizontal {
+  margin-top: auto;
+  display: flex;
+  gap: 0.5rem;
+  
+  &.locked { flex-direction: column; }
+}
+
+.current-time-wrapper {
+  text-align: right;
+  .current-time-label { font-size: 0.7rem; opacity: 0.6; display: block; }
+  .current-time-value { font-weight: 600; font-size: 0.9rem; }
+}
+
+.lock-message {
+  color: #ef4444;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.tech-work-container {
+  background: rgba(245, 73, 0, 0.1);
+  border: 1px solid rgba(245, 73, 0, 0.2);
+  border-radius: 0.375rem;
+  padding: 0.5rem;
+  text-align: center;
+  
+  .tech-status-title { color: #f97316; font-size: 0.75rem; font-weight: 600; margin-bottom: 0.25rem; }
+  .tech-progress-bar-bg { height: 4px; background: rgba(0,0,0,0.3); border-radius: 2px; overflow: hidden; }
+  .tech-progress-bar-fill { height: 100%; background: #f97316; }
+  .tech-message { font-size: 0.75rem; margin-top: 0.25rem; opacity: 0.8; }
 }
 </style>
-
