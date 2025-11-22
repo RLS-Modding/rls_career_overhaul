@@ -89,9 +89,9 @@
             <g class="chart-grid">
               <line v-for="i in 5" :key="`grid-${i}`" 
                 :x1="0" 
-                :y1="chartHeight - chartPadding - ((i - 1) * (chartHeight * 0.7) / 4)"
+                :y1="chartHeight - chartBottomPadding - ((i - 1) * (chartHeight - chartPadding - chartBottomPadding) / 4)"
                 :x2="chartWidth"
-                :y2="chartHeight - chartPadding - ((i - 1) * (chartHeight * 0.7) / 4)"
+                :y2="chartHeight - chartBottomPadding - ((i - 1) * (chartHeight - chartPadding - chartBottomPadding) / 4)"
                 stroke="rgba(255,255,255,0.03)"
                 stroke-width="1"
               />
@@ -141,7 +141,7 @@
                 :x1="chartData[hoveredIndex].x"
                 :y1="chartPadding"
                 :x2="chartData[hoveredIndex].x"
-                :y2="chartHeight - chartPadding"
+                :y2="chartHeight - chartBottomPadding"
                 stroke="#F54900"
                 stroke-width="1"
                 stroke-dasharray="4,4"
@@ -162,7 +162,7 @@
               :class="{ 
                 active: selectedTimeScale === scale.value,
                 'button-first': index === 0,
-                'button-middle': index === 1,
+                'button-middle': index > 0 && index < timeScales.length - 1,
                 'button-last': index === timeScales.length - 1
               }"
               @click.stop="selectedTimeScale = scale.value"
@@ -388,11 +388,13 @@ onUnmounted(() => {
 const chartWidth = 800
 const chartHeight = 300
 const chartPadding = 40
+const chartBottomPadding = 60
 
 const selectedTimeScale = ref('all')
 const timeScales = [
   { label: 'All Time', value: 'all' },
   { label: '24hrs', value: '24h' },
+  { label: '3hrs', value: '3h' },
   { label: '1hr', value: '1h' }
 ]
 
@@ -459,6 +461,8 @@ const filteredHistoryPoints = computed(() => {
 
   if (selectedTimeScale.value === '1h') {
     cutoffTime = now - 3600
+  } else if (selectedTimeScale.value === '3h') {
+    cutoffTime = now - 10800
   } else if (selectedTimeScale.value === '24h') {
     cutoffTime = now - 86400
   }
@@ -483,7 +487,7 @@ const chartData = computed(() => {
   if (historyPoints.length === 0) {
     return [{
       x: chartWidth,
-      y: chartHeight - chartPadding - (chartHeight * 0.7 * 0.5),
+      y: chartHeight - chartBottomPadding - ((chartHeight - chartPadding - chartBottomPadding) * 0.5),
       balance: accountBalance.value,
       date: 'Now',
       timestamp: Date.now() / 1000
@@ -495,9 +499,10 @@ const chartData = computed(() => {
   const timeRange = lastTimestamp - firstTimestamp || 1
   
   const balances = historyPoints.map(p => p.balance)
-  const minBalance = Math.min(...balances, 0)
-  const maxBalance = Math.max(...balances, Math.max(accountBalance.value || 1000, 1000))
+  const minBalance = Math.min(...balances)
+  const maxBalance = Math.max(...balances)
   const range = maxBalance - minBalance || 1
+  const availableHeight = chartHeight - chartPadding - chartBottomPadding
 
   const points = historyPoints.map((point) => {
     const timeOffset = point.timestamp - firstTimestamp
@@ -505,7 +510,7 @@ const chartData = computed(() => {
     
     const normalizedBalance = (point.balance - minBalance) / range
     
-    const y = chartHeight - chartPadding - (normalizedBalance * (chartHeight * 0.7))
+    const y = chartHeight - chartBottomPadding - (normalizedBalance * availableHeight)
     
     return {
       x,
@@ -524,26 +529,44 @@ const zeroLineY = computed(() => {
   if (historyPoints.length === 0) return null
 
   const balances = historyPoints.map(p => p.balance)
-  const minBalance = Math.min(...balances, 0)
-  const maxBalance = Math.max(...balances, Math.max(accountBalance.value || 1000, 1000))
+  const minBalance = Math.min(...balances)
+  const maxBalance = Math.max(...balances)
   const range = maxBalance - minBalance || 1
+  const availableHeight = chartHeight - chartPadding - chartBottomPadding
 
   if (minBalance > 0 || maxBalance < 0) return null
 
   const normalizedZero = (0 - minBalance) / range
-  return chartHeight - chartPadding - (normalizedZero * (chartHeight * 0.7))
+  return chartHeight - chartBottomPadding - (normalizedZero * availableHeight)
 })
 
 const chartPath = computed(() => {
   if (chartData.value.length === 0) return ''
   
   const points = chartData.value
-  const bottomY = chartHeight - chartPadding
+  const bottomY = chartHeight - chartBottomPadding
   let path = `M ${points[0].x} ${bottomY}`
   path += ` L ${points[0].x} ${points[0].y}`
   
+  if (points.length === 1) {
+    path += ` L ${points[0].x} ${bottomY} Z`
+    return path
+  }
+  
   for (let i = 0; i < points.length - 1; i++) {
-    path += ` L ${points[i + 1].x} ${points[i + 1].y}`
+    const p1 = points[i]
+    const p2 = points[i + 1]
+    
+    const dx = p2.x - p1.x
+    const dy = p2.y - p1.y
+    
+    const tension = 0.3
+    const cp1x = p1.x + dx * tension
+    const cp1y = p1.y + dy * tension
+    const cp2x = p2.x - dx * tension
+    const cp2y = p2.y - dy * tension
+    
+    path += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`
   }
   
   path += ` L ${points[points.length - 1].x} ${bottomY} Z`
@@ -554,11 +577,27 @@ const chartLinePath = computed(() => {
   if (chartData.value.length === 0) return ''
   
   const points = chartData.value
+  
+  if (points.length === 1) {
+    return `M ${points[0].x} ${points[0].y}`
+  }
+  
   let path = `M ${points[0].x} ${points[0].y}`
   
-  // Create smooth line connecting all points (stock chart style)
-  for (let i = 1; i < points.length; i++) {
-    path += ` L ${points[i].x} ${points[i].y}`
+  for (let i = 0; i < points.length - 1; i++) {
+    const p1 = points[i]
+    const p2 = points[i + 1]
+    
+    const dx = p2.x - p1.x
+    const dy = p2.y - p1.y
+    
+    const tension = 0.3
+    const cp1x = p1.x + dx * tension
+    const cp1y = p1.y + dy * tension
+    const cp2x = p2.x - dx * tension
+    const cp2y = p2.y - dy * tension
+    
+    path += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`
   }
   
   return path
@@ -878,6 +917,10 @@ const formatCurrency = (amount) => {
       border-radius: 0;
       border-left: none;
       border-right: none;
+      
+      &:not(:last-child) {
+        border-right: none;
+      }
     }
 
     &.button-last {
