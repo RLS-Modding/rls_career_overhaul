@@ -222,7 +222,7 @@
         {
           "id": "manager-speed",
           "title": "Manager Speed",
-          "description": "Tech assignment time -2 min",
+          "description": "Tech assignment time -3 min",
           "detailedDescription": "Make the manager react quicker.\n\n**Per Level**\n- Assignment interval -2 minutes (down to 10)\n- Techs sit idle for less time between jobs",
           "cost": {
             "base": 25000,
