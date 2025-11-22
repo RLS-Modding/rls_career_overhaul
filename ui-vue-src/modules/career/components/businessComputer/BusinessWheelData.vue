@@ -51,10 +51,8 @@ const format = (value) => (value ? parseFloat(value).toFixed(3) : "")
 
 const handleWheelData = (hookData) => {
   if (hookData && hookData.success && hookData.businessId === props.businessId && String(hookData.vehicleId) === String(props.vehicleId)) {
-    if (hookData.wheelData && Array.isArray(hookData.wheelData)) {
+    if (hookData.wheelData && Array.isArray(hookData.wheelData) && hookData.wheelData.length > 0) {
       data.value = hookData.wheelData
-    } else {
-      data.value = []
     }
   }
 }
@@ -63,7 +61,7 @@ const loadExtension = () => {
   if (!props.businessId || !props.vehicleId) {
     return
   }
-  
+
   try {
     lua.career_modules_business_businessComputer.loadWheelDataExtension(props.businessId, props.vehicleId)
   } catch (error) {
@@ -74,7 +72,7 @@ const unloadExtension = () => {
   if (!props.businessId || !props.vehicleId) {
     return
   }
-  
+
   try {
     lua.career_modules_business_businessComputer.unloadWheelDataExtension(props.businessId, props.vehicleId)
   } catch (error) {
@@ -84,12 +82,12 @@ const unloadExtension = () => {
 watch(() => [props.businessId, props.vehicleId], (newValues, oldValues) => {
   const [newBusinessId, newVehicleId] = newValues || []
   const [oldBusinessId, oldVehicleId] = oldValues || []
-  
+
   if (oldBusinessId && oldVehicleId && (oldBusinessId !== newBusinessId || oldVehicleId !== newVehicleId)) {
     unloadExtension()
     data.value = []
   }
-  
+
   if (newBusinessId && newVehicleId) {
     loadExtension()
   } else {
@@ -126,8 +124,8 @@ defineExpose({
   border-collapse: collapse;
   font-size: 0.8125rem;
   color: #ffffff !important;
-  
-  thead > tr {
+
+  thead>tr {
     th {
       text-align: left;
       padding: 0.5rem 0.75rem;
@@ -135,19 +133,19 @@ defineExpose({
       font-weight: 600;
       font-size: 0.75rem;
       text-transform: uppercase;
-      
+
       &:first-child {
         text-align: center;
       }
     }
   }
-  
+
   tbody tr {
     td {
       padding: 0.5rem 0.75rem;
       color: #ffffff !important;
       text-align: left;
-      
+
       &.data-name {
         font-weight: 500;
         text-align: center;
@@ -162,10 +160,9 @@ defineExpose({
   text-align: center;
   color: #ffffff !important;
   font-size: 0.875rem;
-  
+
   p {
     color: #ffffff !important;
   }
 }
 </style>
-

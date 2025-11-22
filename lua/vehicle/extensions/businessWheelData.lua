@@ -5,16 +5,25 @@ local deg = math.deg
 
 local enabledVehicles = {}
 
+local smoothedData = {}
+local updateTimer = 0
+local updateRate = 0.1 -- 10Hz update rate
+local smoothingFactor = 0.1 -- Smoothing factor (lower is smoother but more laggy)
+
+local function lerp(a, b, t)
+  return a + (b - a) * t
+end
+
 local function updateGFX(dt)
   local vehId = obj:getID()
   if not vehId or not enabledVehicles[vehId] then
     return
   end
-  
+
   if not v or not v.data or not v.data.wheels or not wheels then
     return
   end
-  
+
   local vehForward = obj:getDirectionVector()
   local vehRight = obj:getDirectionVectorRight()
   if not vehRight then
@@ -25,10 +34,10 @@ local function updateGFX(dt)
     vehRight = vehForward:cross(vehUp)
     vehRight:normalize()
   end
-  
+
   local surfaceUp = vec3()
   local count = 0
-  
+
   for i = 0, wheels.wheelRotatorCount - 1 do
     local wheel = wheels.wheelRotators[i]
     local nodeId = wheel.lastTreadContactNode
@@ -39,54 +48,92 @@ local function updateGFX(dt)
       count = count + 1
     end
   end
-  
+
   if count == 0 then
+    -- If no contact, we might want to keep previous values or return. 
+    -- Returning here means we just don't update the smoothed data this frame.
     return
   end
-  
+
   surfaceUp:setScaled(1 / count)
   local surfaceRight = vehForward:cross(surfaceUp)
   surfaceRight:normalize()
   local surfaceForward = surfaceUp:cross(surfaceRight)
   surfaceForward:normalize()
-  
-  local data = {}
-  for _,wd in pairs(v.data.wheels) do
+
+  -- Calculate raw data for this frame
+  for _, wd in pairs(v.data.wheels) do
     local name = wd.name
-    local wheelData = {name = name}
-    
+
+    -- Initialize smoothed data for this wheel if missing
+    if not smoothedData[name] then
+      smoothedData[name] = {
+        name = name,
+        camber = 0,
+        toe = 0,
+        caster = 0,
+        sai = 0
+      }
+    end
+
+    local currentData = {}
+
     if wd.steerAxisUp and wd.steerAxisDown then
       local casterSign = -obj:nodeVecCos(wd.steerAxisUp, wd.steerAxisDown, surfaceForward)
-      wheelData.caster = deg(acos(obj:nodeVecPlanarCos(wd.steerAxisUp, wd.steerAxisDown, surfaceUp, surfaceForward))) * sign(casterSign)
-      wheelData.sai = deg(acos(obj:nodeVecPlanarCos(wd.steerAxisUp, wd.steerAxisDown, surfaceUp, surfaceRight)))
+      currentData.caster =
+        deg(acos(obj:nodeVecPlanarCos(wd.steerAxisUp, wd.steerAxisDown, surfaceUp, surfaceForward))) * sign(casterSign)
+      currentData.sai = deg(acos(obj:nodeVecPlanarCos(wd.steerAxisUp, wd.steerAxisDown, surfaceUp, surfaceRight)))
     end
-    
-    wheelData.camber = (90 - deg(acos(obj:nodeVecPlanarCos(wd.node2, wd.node1, surfaceUp, surfaceRight))))
+
+    currentData.camber = (90 - deg(acos(obj:nodeVecPlanarCos(wd.node2, wd.node1, surfaceUp, surfaceRight))))
     local toeSign = obj:nodeVecCos(wd.node1, wd.node2, vehForward)
-    wheelData.toe = deg(acos(obj:nodeVecPlanarCos(wd.node1, wd.node2, vehRight, vehForward)))
-    if wheelData.toe > 90 then
-      wheelData.toe = (180 - wheelData.toe) * sign(toeSign)
+    currentData.toe = deg(acos(obj:nodeVecPlanarCos(wd.node1, wd.node2, vehRight, vehForward)))
+    if currentData.toe > 90 then
+      currentData.toe = (180 - currentData.toe) * sign(toeSign)
     else
-      wheelData.toe = wheelData.toe * sign(toeSign)
+      currentData.toe = currentData.toe * sign(toeSign)
     end
-    
-    if isnan(wheelData.toe) or isinf(wheelData.toe) then
-      wheelData.toe = 0
+
+    -- Sanitize inputs
+    if isnan(currentData.toe) or isinf(currentData.toe) then
+      currentData.toe = 0
     end
-    if isnan(wheelData.camber) or isinf(wheelData.camber) then
-      wheelData.camber = 0
+    if isnan(currentData.camber) or isinf(currentData.camber) then
+      currentData.camber = 0
     end
-    if wheelData.caster and (isnan(wheelData.caster) or isinf(wheelData.caster)) then
-      wheelData.caster = 0
+    if currentData.caster and (isnan(currentData.caster) or isinf(currentData.caster)) then
+      currentData.caster = 0
     end
-    if wheelData.sai and (isnan(wheelData.sai) or isinf(wheelData.sai)) then
-      wheelData.sai = 0
+    if currentData.sai and (isnan(currentData.sai) or isinf(currentData.sai)) then
+      currentData.sai = 0
     end
-    
-    table.insert(data, wheelData)
+
+    -- Apply smoothing
+    smoothedData[name].camber = lerp(smoothedData[name].camber, currentData.camber, smoothingFactor)
+    smoothedData[name].toe = lerp(smoothedData[name].toe, currentData.toe, smoothingFactor)
+
+    if currentData.caster then
+      smoothedData[name].caster = lerp(smoothedData[name].caster, currentData.caster, smoothingFactor)
+    end
+    if currentData.sai then
+      smoothedData[name].sai = lerp(smoothedData[name].sai, currentData.sai, smoothingFactor)
+    end
   end
-  
-  obj:queueGameEngineLua("career_modules_business_businessComputer.onVehicleWheelDataUpdate(" .. vehId .. ", '" .. jsonEncode(data):gsub("'", "\\'"):gsub("\\", "\\\\") .. "')")
+
+  -- Rate limiting for UI updates
+  updateTimer = updateTimer + dt
+  if updateTimer >= updateRate then
+    updateTimer = 0
+
+    -- Convert smoothedData map to array for JSON
+    local dataToSend = {}
+    for _, wheelData in pairs(smoothedData) do
+      table.insert(dataToSend, wheelData)
+    end
+
+    obj:queueGameEngineLua("career_modules_business_businessComputer.onVehicleWheelDataUpdate(" .. vehId .. ", '" ..
+                             jsonEncode(dataToSend):gsub("'", "\\'"):gsub("\\", "\\\\") .. "')")
+  end
 end
 
 local function enableWheelData()
