@@ -1,68 +1,34 @@
 <template>
-  <div class="home-view">
-    <BusinessVehicleCard 
-      v-if="store.pulledOutVehicle" 
-      :vehicle="store.pulledOutVehicle" 
-      :job="currentVehicleJob"
-      @put-away="handlePutAway" 
-      @abandon="handleAbandon(currentVehicleJob)"
-    />
-
-    <div class="section-card">
-      <div class="card-header">
-        <div class="card-header-content">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
-            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
-          </svg>
-          <h3>Active Jobs</h3>
-        </div>
-        <p class="card-description">Jobs currently in progress</p>
-      </div>
-      <div class="card-content">
-        <div v-if="store.activeJobs.length === 0" class="empty-state">
-          No active jobs
-        </div>
-        <div v-else class="jobs-list">
-          <BusinessJobCard
-            v-for="job in store.activeJobs"
-            :key="job.id"
-            :job="job"
-            :is-active="true"
-            :business-id="store.businessId"
-            @pull-out="handlePullOut"
-            @put-away="handlePutAway"
-            @abandon="handleAbandon"
-            @complete="handleComplete"
-          />
-        </div>
-      </div>
+  <div class="home-dashboard">
+    <!-- Top Row: Garage Widget (Full Width) -->
+    <div class="top-row">
+      <HomeGarageWidget 
+        @put-away="handlePutAway"
+        @abandon="handleAbandon"
+        @go-to-jobs="store.switchView('jobs')"
+      />
     </div>
 
-    <div class="section-card">
-      <div class="card-header">
-        <div class="card-header-content">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
-            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
-          </svg>
-          <h3>New Jobs</h3>
-        </div>
-        <p class="card-description">Available jobs ready to start</p>
+    <!-- Bottom Grid: Jobs (Left) and Side Stack (Right) -->
+    <div class="dashboard-grid">
+      <div class="dashboard-column main-column">
+        <HomeJobsWidget 
+          @pull-out="handlePullOut"
+          @put-away="handlePutAway"
+          @abandon="handleAbandon"
+          @complete="handleComplete"
+          @accept="handleAccept"
+          @decline="handleDecline"
+        />
       </div>
-      <div class="card-content">
-        <div v-if="store.newJobs.length === 0" class="empty-state">
-          No new jobs available
-        </div>
-        <div v-else class="jobs-list">
-          <BusinessJobCard
-            v-for="job in store.newJobs.slice(0, 3)"
-            :key="job.id"
-            :job="job"
-            :is-active="false"
-            @accept="handleAccept"
-            @decline="handleDecline"
+      
+      <div class="dashboard-column side-column">
+        <div class="side-stack">
+          <HomeTechsWidget 
+            @go-to-techs="store.switchView('techs')"
           />
+          
+          <HomeFinancesWidget />
         </div>
       </div>
     </div>
@@ -88,8 +54,10 @@
 <script setup>
 import { computed, ref, Teleport } from "vue"
 import { useBusinessComputerStore } from "../../stores/businessComputerStore"
-import BusinessVehicleCard from "./BusinessVehicleCard.vue"
-import BusinessJobCard from "./BusinessJobCard.vue"
+import HomeJobsWidget from "./widgets/HomeJobsWidget.vue"
+import HomeGarageWidget from "./widgets/HomeGarageWidget.vue"
+import HomeTechsWidget from "./widgets/HomeTechsWidget.vue"
+import HomeFinancesWidget from "./widgets/HomeFinancesWidget.vue"
 
 const store = useBusinessComputerStore()
 const normalizeId = (id) => {
@@ -104,22 +72,6 @@ const jobToAbandon = ref(null)
 const penaltyCost = computed(() => {
   if (!jobToAbandon.value) return 0
   return jobToAbandon.value.penalty || 0
-})
-
-const currentVehicleJob = computed(() => {
-  const vehicle = store.pulledOutVehicle
-  const jobsSource = store.activeJobs
-  const jobs = Array.isArray(jobsSource)
-    ? jobsSource
-    : (Array.isArray(jobsSource?.value) ? jobsSource.value : [])
-  if (!vehicle || !vehicle.jobId) {
-    return null
-  }
-  const vehicleJobId = String(vehicle.jobId)
-  return jobs.find(job => {
-    const jobId = job?.jobId ?? job?.id
-    return jobId !== undefined && jobId !== null && String(jobId) === vehicleJobId
-  }) || null
 })
 
 const handlePullOut = async (job) => {
@@ -184,64 +136,67 @@ const handleComplete = async (job) => {
 </script>
 
 <style scoped lang="scss">
-.home-view {
+.home-dashboard {
+  height: 100%;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  padding-bottom: 1rem; 
   gap: 1.5rem;
 }
 
-.section-card {
-  background: rgba(26, 26, 26, 0.5);
-  border: 1px solid rgba(245, 73, 0, 0.3);
-  border-radius: 0.5rem;
-  overflow: hidden;
+.top-row {
+  flex-shrink: 0;
 }
 
-.card-header {
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(23, 23, 23, 0.3);
-}
-
-.card-header-content {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.5rem;
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  min-height: 0; /* Allow children to scroll */
+  flex: 1;
+  overflow-y: auto; /* Allow grid to scroll if needed on small screens */
   
-  svg {
-    color: rgba(245, 73, 0, 1);
-    flex-shrink: 0;
-  }
-  
-  h3 {
-    margin: 0;
-    color: rgba(245, 73, 0, 1);
-    font-size: 1.125rem;
-    font-weight: 600;
+  @media (min-width: 1280px) {
+    grid-template-columns: 1fr 1fr; /* 50% - 50% split as requested */
+    overflow-y: hidden; /* Lock scroll on large screens */
   }
 }
 
-.card-description {
-  margin: 0;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.875rem;
-}
-
-.card-content {
-  padding: 1.5rem;
-}
-
-.jobs-list {
+.dashboard-column {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.5rem;
+  min-height: 0;
+  
+  &.main-column {
+    height: 100%;
+    overflow: hidden; /* Jobs widget handles its own scroll */
+  }
+  
+  &.side-column {
+    height: 100%;
+    overflow: hidden; /* Match main column - widgets handle their own scroll */
+    min-height: 0;
+  }
 }
 
-.empty-state {
-  padding: 2rem;
-  text-align: center;
-  color: rgba(255, 255, 255, 0.5);
+.side-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  height: 100%; /* Fill full height of side column */
+  min-height: 0;
+  
+  :deep(.finances-widget) {
+    flex: 1; /* Equal height with techs */
+    min-height: 0;
+  }
+  
+  :deep(.techs-widget) {
+    flex: 1; /* Equal height with finances */
+    min-height: 0;
+  }
 }
 
 /* Modal Styles */

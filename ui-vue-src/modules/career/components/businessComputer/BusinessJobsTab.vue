@@ -39,7 +39,6 @@
               <BusinessJobCard
                 :job="job"
                 :is-active="true"
-                :is-vertical="true"
                 :business-id="store.businessId"
                 @pull-out="handlePullOut(job)"
                 @put-away="handlePutAway(job)"
@@ -60,7 +59,6 @@
               <BusinessJobCard
                 :job="job"
                 :is-active="false"
-                :is-vertical="true"
                 @accept="handleAccept(job)"
                 @decline="handleDecline(job)"
               />
