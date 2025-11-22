@@ -18,13 +18,13 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   const tuningCart = ref([])
   const tuningDataCache = ref({})
   const partsTreeCache = ref({})
-  
+
   const cartTabs = ref([{ id: 'default', name: 'Build 1', parts: [], tuning: [], cartHash: null }])
   const activeTabId = ref('default')
   const originalVehicleState = ref(null)
   const currentAppliedCartHash = ref(null)
   const isSwitchingTab = ref(false)
-  
+
   const originalPower = ref(null)
   const originalWeight = ref(null)
   const currentPower = ref(null)
@@ -101,7 +101,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     }
     return result
   }
-  
+
   const activeJobs = computed(() => {
     const jobs = businessData.value.activeJobs
     if (!Array.isArray(jobs)) return []
@@ -159,7 +159,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     return Array.isArray(p) ? p : []
   })
   const stats = computed(() => businessData.value.stats || {})
-  
+
   const hasManager = computed(() => businessData.value?.hasManager === true)
   const hasGeneralManager = computed(() => businessData.value?.hasGeneralManager === true)
   const managerAssignmentInterval = computed(() => businessData.value?.managerAssignmentInterval || null)
@@ -333,7 +333,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
           lua.career_modules_business_businessComputer.clearVehicleDataCaches()
         } catch (error) {
         }
-        
+
         if (!vehicleId || normalizeVehicleIdValue(vehicleId) === normalizeVehicleIdValue(pulledOutVehicle.value?.vehicleId)) {
           pulledOutVehicle.value = null
           activeVehicleId.value = null
@@ -354,9 +354,9 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     if (normalizeVehicleIdValue(activeVehicleId.value) === normalizedTarget) {
       return true
     }
-    
+
     const previousVehicleId = activeVehicleId.value
-    
+
     try {
       const success = normalizeLuaResult(await lua.career_modules_business_businessComputer.setActiveVehicle(businessId.value, vehicleId))
       if (success) {
@@ -371,13 +371,13 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
           }
         }
         clearCart()
-        
+
         originalPower.value = null
         originalWeight.value = null
         currentPower.value = null
         currentWeight.value = null
         originalVehicleState.value = null
-        
+
         activeVehicleId.value = vehicleId
         const vehiclesList = Array.isArray(pulledOutVehicles.value) ? pulledOutVehicles.value : []
         let selectedVehicle = vehiclesList.find(vehicle => normalizeVehicleIdValue(vehicle?.vehicleId) === normalizedTarget) || null
@@ -387,7 +387,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
           ...businessData.value,
           pulledOutVehicle: selectedVehicle
         }
-        
+
         if (requiresRefresh && businessType.value && businessId.value) {
           try {
             await loadBusinessData(businessType.value, businessId.value)
@@ -397,7 +397,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
           } catch (error) {
           }
         }
-        
+
         if (selectedVehicle && (vehicleView.value === 'parts' || vehicleView.value === 'tuning')) {
           setTimeout(async () => {
             if (vehicleView.value === 'parts' && selectedVehicle?.vehicleId) {
@@ -439,10 +439,10 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
       return
     }
     const previousView = vehicleView.value
-    
+
     const isSwitchingBetweenVehicleViews = (previousView === 'parts' || previousView === 'tuning') && (view === 'parts' || view === 'tuning')
     const isLeavingVehicleViews = previousView !== null && !isSwitchingBetweenVehicleViews && (view !== 'parts' && view !== 'tuning')
-    
+
     if (isLeavingVehicleViews) {
       clearCart()
       if (businessId.value && pulledOutVehicle.value?.vehicleId) {
@@ -456,11 +456,11 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
         }
       }
     }
-    
+
     const enteringPartsViewFromNonVehicle = view === 'parts' && previousView !== 'parts' && previousView !== 'tuning'
-    
+
     vehicleView.value = view
-    
+
     if (enteringPartsViewFromNonVehicle) {
       setTimeout(async () => {
         if (vehicleView.value === 'parts') {
@@ -468,7 +468,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
         }
       }, 600)
     }
-    
+
     if (view === 'tuning' && previousView !== 'tuning') {
       setTimeout(async () => {
         if (vehicleView.value === 'tuning' && pulledOutVehicle.value?.vehicleId) {
@@ -493,7 +493,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
         }
       }, 600)
     }
-    
+
     if (view === 'parts' && previousView === 'tuning') {
       setTimeout(async () => {
         if (vehicleView.value === 'parts' && pulledOutVehicle.value?.vehicleId && partsCart.value.length > 0) {
@@ -524,14 +524,14 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     clearCart()
     partsTreeCache.value = {}
     tuningDataCache.value = {}
-    
+
     if (businessId.value) {
       try {
         lua.career_modules_business_businessPartCustomization.clearPreviewVehicle(businessId.value)
       } catch (error) {
       }
     }
-    
+
     activeView.value = "home"
     vehicleView.value = null
     pulledOutVehicle.value = null
@@ -543,7 +543,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
 
   const requestVehiclePartsTree = async (vehicleId) => {
     if (!businessId.value || !vehicleId) return null
-    
+
     try {
       await lua.career_modules_business_businessComputer.requestVehiclePartsTree(businessId.value, vehicleId)
       return null
@@ -569,7 +569,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
       showDamageLockWarning()
       return null
     }
-    
+
     try {
       await lua.career_modules_business_businessComputer.requestVehicleTuningData(businessId.value, vehicleId)
       return null
@@ -598,15 +598,15 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
       partName: p.partName || '',
       emptyPlaceholder: p.emptyPlaceholder || false
     })).sort((a, b) => (a.slotPath + a.partName).localeCompare(b.slotPath + b.partName))
-    
+
     const tuningData = (tuning || []).filter(t => t.type === 'variable' && t.varName && t.value !== undefined)
       .map(t => ({
         varName: t.varName || '',
         value: t.value
       })).sort((a, b) => a.varName.localeCompare(b.varName))
-    
+
     const hashString = JSON.stringify({ parts: partsData, tuning: tuningData })
-    
+
     let hash = 0
     for (let i = 0; i < hashString.length; i++) {
       const char = hashString.charCodeAt(i)
@@ -615,7 +615,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     }
     return hash.toString(36)
   }
-  
+
   const saveCurrentTabState = () => {
     const activeTab = cartTabs.value.find(tab => tab.id === activeTabId.value)
     if (activeTab) {
@@ -624,7 +624,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
       activeTab.cartHash = generateCartHash(activeTab.parts, activeTab.tuning)
     }
   }
-  
+
   const loadTabState = (tabId) => {
     const tab = cartTabs.value.find(t => t.id === tabId)
     if (tab) {
@@ -635,7 +635,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
       }
     }
   }
-  
+
   const getCurrentTabHash = () => {
     const activeTab = cartTabs.value.find(tab => tab.id === activeTabId.value)
     if (activeTab && activeTab.cartHash) {
@@ -643,18 +643,18 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     }
     return generateCartHash(partsCart.value, tuningCart.value)
   }
-  
+
   const isCurrentTabApplied = computed(() => {
     const activeTab = cartTabs.value.find(tab => tab.id === activeTabId.value)
     if (!activeTab || !currentAppliedCartHash.value) return false
     const tabHash = activeTab.cartHash || generateCartHash(activeTab.parts || [], activeTab.tuning || [])
     return currentAppliedCartHash.value === tabHash
   })
-  
+
   const createNewTab = async () => {
     try {
       saveCurrentTabState()
-      
+
       const existingNumbers = new Set()
       cartTabs.value.forEach(tab => {
         const match = tab.name.match(/^Build (\d+)$/)
@@ -662,12 +662,12 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
           existingNumbers.add(parseInt(match[1], 10))
         }
       })
-      
+
       let newTabNumber = 1
       while (existingNumbers.has(newTabNumber)) {
         newTabNumber++
       }
-      
+
       const newTab = {
         id: `tab_${Date.now()}`,
         name: `Build ${newTabNumber}`,
@@ -675,14 +675,14 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
         tuning: [],
         cartHash: generateCartHash([], [])
       }
-      
+
       cartTabs.value.push(newTab)
       activeTabId.value = newTab.id
-      
+
       partsCart.value = []
       tuningCart.value = []
       currentAppliedCartHash.value = generateCartHash([], [])
-      
+
       if (businessId.value && pulledOutVehicle.value?.vehicleId) {
         try {
           await lua.career_modules_business_businessComputer.resetVehicleToOriginal(
@@ -702,42 +702,42 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
       }
     }
   }
-  
+
   const switchTab = async (tabId) => {
     if (tabId === activeTabId.value) return
     if (isSwitchingTab.value) return
-    
+
     isSwitchingTab.value = true
-    
+
     try {
       saveCurrentTabState()
-      
+
       const targetTab = cartTabs.value.find(t => t.id === tabId)
       if (!targetTab) {
         isSwitchingTab.value = false
         return
       }
-      
+
       const targetHash = targetTab.cartHash || generateCartHash(targetTab.parts || [], targetTab.tuning || [])
-      
+
       if (businessId.value && pulledOutVehicle.value?.vehicleId && currentAppliedCartHash.value === targetHash) {
         activeTabId.value = tabId
         isSwitchingTab.value = false
         return
       }
-      
+
       activeTabId.value = tabId
       loadTabState(tabId)
-      
+
       if (businessId.value && pulledOutVehicle.value?.vehicleId) {
-        
+
         try {
           await lua.career_modules_business_businessComputer.applyCartPartsToVehicle(
             businessId.value,
             pulledOutVehicle.value.vehicleId,
             partsCart.value
           )
-          
+
           const tuningVars = {}
           const cart = Array.isArray(tuningCart.value) ? tuningCart.value : []
           cart.forEach(change => {
@@ -750,9 +750,9 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
             pulledOutVehicle.value.vehicleId,
             tuningVars
           )
-          
+
           currentAppliedCartHash.value = targetHash
-          
+
           setTimeout(() => {
             if (vehicleView.value === 'parts') {
               requestVehiclePartsTree(pulledOutVehicle.value.vehicleId)
@@ -768,36 +768,36 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
       isSwitchingTab.value = false
     }
   }
-  
+
   const deleteTab = (tabId) => {
     if (cartTabs.value.length <= 1) return
-    
+
     const index = cartTabs.value.findIndex(tab => tab.id === tabId)
     if (index < 0) return
-    
+
     cartTabs.value.splice(index, 1)
-    
+
     if (activeTabId.value === tabId) {
       activeTabId.value = cartTabs.value[0].id
       loadTabState(activeTabId.value)
     }
   }
-  
+
   const duplicateTab = async (tabId) => {
     const tab = cartTabs.value.find(t => t.id === tabId)
     if (!tab) return
-    
+
     saveCurrentTabState()
-    
+
     const isDuplicatingActiveTab = tabId === activeTabId.value
     const currentParts = JSON.stringify(partsCart.value)
     const currentTuning = JSON.stringify(tuningCart.value)
     const tabParts = JSON.stringify(tab.parts || [])
     const tabTuning = JSON.stringify(tab.tuning || [])
-    const hasSameContent = isDuplicatingActiveTab && 
-                           currentParts === tabParts && 
-                           currentTuning === tabTuning
-    
+    const hasSameContent = isDuplicatingActiveTab &&
+      currentParts === tabParts &&
+      currentTuning === tabTuning
+
     let maxNumber = 0
     cartTabs.value.forEach(t => {
       const match = t.name.match(/^Build (\d+)$/)
@@ -807,7 +807,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
       }
     })
     const newTabNumber = maxNumber + 1
-    
+
     const duplicatedTab = {
       id: `tab_${Date.now()}`,
       name: `Build ${newTabNumber}`,
@@ -815,19 +815,19 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
       tuning: JSON.parse(JSON.stringify(tab.tuning || [])),
       cartHash: generateCartHash(tab.parts || [], tab.tuning || [])
     }
-    
+
     cartTabs.value.push(duplicatedTab)
     activeTabId.value = duplicatedTab.id
-    
+
     loadTabState(duplicatedTab.id)
-    
+
     if (!hasSameContent && businessId.value && pulledOutVehicle.value?.vehicleId) {
       try {
         await lua.career_modules_business_businessComputer.resetVehicleToOriginal(
           businessId.value,
           pulledOutVehicle.value.vehicleId
         )
-        
+
         if (partsCart.value.length > 0) {
           await lua.career_modules_business_businessComputer.applyCartPartsToVehicle(
             businessId.value,
@@ -835,7 +835,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
             partsCart.value
           )
         }
-        
+
         const cart = Array.isArray(tuningCart.value) ? tuningCart.value : []
         if (cart.length > 0) {
           const tuningVars = {}
@@ -850,7 +850,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
             tuningVars
           )
         }
-        
+
         currentAppliedCartHash.value = generateCartHash(partsCart.value, tuningCart.value)
       } catch (error) {
       }
@@ -858,20 +858,20 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
       currentAppliedCartHash.value = generateCartHash(partsCart.value, tuningCart.value)
     }
   }
-  
+
   const renameTab = (tabId, newName) => {
     const tab = cartTabs.value.find(t => t.id === tabId)
     if (!tab) return
-    
+
     const trimmedName = (newName || '').trim()
     if (!trimmedName || trimmedName.length === 0) return
-    
+
     tab.name = trimmedName
     saveCurrentTabState()
   }
-  
+
   const { events } = useBridge()
-  
+
   const handlePartCartUpdated = (data) => {
     if (data.businessId === businessId.value && data.vehicleId === pulledOutVehicle.value?.vehicleId) {
       if (data.cart && Array.isArray(data.cart)) {
@@ -882,7 +882,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
         }))
         saveCurrentTabState()
         currentAppliedCartHash.value = generateCartHash(partsCart.value, tuningCart.value)
-        
+
         setTimeout(() => {
           if (vehicleView.value === 'parts') {
             requestVehiclePartsTree(pulledOutVehicle.value.vehicleId)
@@ -894,7 +894,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
       }
     }
   }
-  
+
   const handleJobsUpdated = async (data) => {
     const currentBusinessId = businessId.value
     const currentBusinessType = businessType.value
@@ -930,31 +930,31 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     }
   }
 
-const handleTechsUpdated = (data) => {
-  const currentBusinessId = businessId.value
-  const currentBusinessType = businessType.value
+  const handleTechsUpdated = (data) => {
+    const currentBusinessId = businessId.value
+    const currentBusinessType = businessType.value
 
-  if (!currentBusinessId || !currentBusinessType) {
-    return
-  }
+    if (!currentBusinessId || !currentBusinessType) {
+      return
+    }
 
-  const eventBusinessType = data?.businessType
-  if (eventBusinessType && eventBusinessType !== currentBusinessType) {
-    return
-  }
+    const eventBusinessType = data?.businessType
+    if (eventBusinessType && eventBusinessType !== currentBusinessType) {
+      return
+    }
 
-  const eventBusinessId = data?.businessId
-  if (eventBusinessId && String(eventBusinessId) !== String(currentBusinessId)) {
-    return
-  }
+    const eventBusinessId = data?.businessId
+    if (eventBusinessId && String(eventBusinessId) !== String(currentBusinessId)) {
+      return
+    }
 
-  if (data?.techs && Array.isArray(data.techs)) {
-    businessData.value = {
-      ...businessData.value,
-      techs: data.techs
+    if (data?.techs && Array.isArray(data.techs)) {
+      businessData.value = {
+        ...businessData.value,
+        techs: data.techs
+      }
     }
   }
-}
 
   const handlePartInventoryData = (data) => {
     const currentBusinessId = businessId.value
@@ -1006,7 +1006,7 @@ const handleTechsUpdated = (data) => {
   events.on('businessComputer:onJobsUpdated', handleJobsUpdated)
   events.on('businessComputer:onTechsUpdated', handleTechsUpdated)
   events.on('businessComputer:onPartInventoryData', handlePartInventoryData)
-  
+
   const addPartToCart = async (part, slot) => {
     if (!businessId.value || !pulledOutVehicle.value?.vehicleId) {
       return
@@ -1015,7 +1015,7 @@ const handleTechsUpdated = (data) => {
       showDamageLockWarning()
       return
     }
-    
+
     const partToAdd = {
       partName: part.name,
       partNiceName: part.niceName,
@@ -1023,7 +1023,7 @@ const handleTechsUpdated = (data) => {
       slotNiceName: slot.slotNiceName || slot.slotName,
       price: part.value || 0
     }
-    
+
     try {
       const tempCart = await lua.career_modules_business_businessComputer.addPartToCart(
         businessId.value,
@@ -1031,7 +1031,7 @@ const handleTechsUpdated = (data) => {
         partsCart.value,
         partToAdd
       )
-      
+
       if (tempCart && Array.isArray(tempCart)) {
         partsCart.value = tempCart.map(item => ({
           ...item,
@@ -1042,7 +1042,7 @@ const handleTechsUpdated = (data) => {
       }
     } catch (error) {
     }
-    
+
     saveCurrentTabState()
   }
 
@@ -1052,7 +1052,7 @@ const handleTechsUpdated = (data) => {
       return
     }
     const tree = buildPartsTree(partsCart.value)
-    
+
     const collectChildIds = (node, targetId, collectedIds = []) => {
       if (node.id === targetId) {
         const collectAllChildren = (childNode) => {
@@ -1070,7 +1070,7 @@ const handleTechsUpdated = (data) => {
         }
         return true
       }
-      
+
       if (node.children && node.children.length > 0) {
         for (const child of node.children) {
           if (collectChildIds(child, targetId, collectedIds)) {
@@ -1080,15 +1080,15 @@ const handleTechsUpdated = (data) => {
       }
       return false
     }
-    
+
     const idsToRemove = [itemId]
     for (const rootNode of tree) {
       collectChildIds(rootNode, itemId, idsToRemove)
     }
-    
+
     partsCart.value = partsCart.value.filter(item => !idsToRemove.includes(item.id))
     saveCurrentTabState()
-    
+
     if (businessId.value && pulledOutVehicle.value?.vehicleId) {
       try {
         await lua.career_modules_business_businessComputer.applyCartPartsToVehicle(
@@ -1096,7 +1096,7 @@ const handleTechsUpdated = (data) => {
           pulledOutVehicle.value.vehicleId,
           partsCart.value
         )
-        
+
         setTimeout(async () => {
           try {
             await store.requestVehiclePartsTree(pulledOutVehicle.value.vehicleId)
@@ -1107,7 +1107,7 @@ const handleTechsUpdated = (data) => {
       }
     }
   }
-  
+
   const removePartBySlotPath = async (slotPath) => {
     if (isDamageLocked.value) {
       showDamageLockWarning()
@@ -1120,16 +1120,16 @@ const handleTechsUpdated = (data) => {
     if (!normalizedPath.endsWith('/')) {
       normalizedPath = normalizedPath + '/'
     }
-    
+
     const partToRemove = partsCart.value.find(item => {
       const itemPath = (item.slotPath || '').trim()
       return itemPath === normalizedPath
     })
-    
+
     if (partToRemove) {
       const tree = buildPartsTree(partsCart.value)
       const idsToRemove = [partToRemove.id]
-      
+
       const collectChildIds = (node, targetId, collectedIds = []) => {
         if (node.id === targetId) {
           const collectAllChildren = (childNode) => {
@@ -1156,17 +1156,17 @@ const handleTechsUpdated = (data) => {
         }
         return false
       }
-      
+
       for (const rootNode of tree) {
         collectChildIds(rootNode, partToRemove.id, idsToRemove)
       }
-      
+
       const partsToAddToInventory = partsCart.value.filter(item => idsToRemove.includes(item.id))
-      
+
       partsCart.value = partsCart.value.filter(item => !idsToRemove.includes(item.id))
       saveCurrentTabState()
       currentAppliedCartHash.value = generateCartHash(partsCart.value, tuningCart.value)
-      
+
       if (businessId.value && pulledOutVehicle.value?.vehicleId) {
         try {
           await lua.career_modules_business_businessComputer.applyCartPartsToVehicle(
@@ -1174,7 +1174,7 @@ const handleTechsUpdated = (data) => {
             pulledOutVehicle.value.vehicleId,
             partsCart.value
           )
-          
+
           setTimeout(async () => {
             try {
               await store.requestVehiclePartsTree(pulledOutVehicle.value.vehicleId)
@@ -1193,7 +1193,7 @@ const handleTechsUpdated = (data) => {
             if (initialPartName && initialPartName !== '') {
               const collectChildSlotPaths = (node, parentPath, collectedPaths = []) => {
                 if (!node || !node.children) return collectedPaths
-                
+
                 for (const slotName in node.children) {
                   if (node.children.hasOwnProperty(slotName)) {
                     const childNode = node.children[slotName]
@@ -1208,13 +1208,13 @@ const handleTechsUpdated = (data) => {
                 }
                 return collectedPaths
               }
-              
+
               const childPaths = []
               const node = getNodeFromSlotPath(initialVehicle.config.partsTree, normalizedPath)
               if (node) {
                 collectChildSlotPaths(node, normalizedPath, childPaths)
               }
-              
+
               const getPartNiceName = (partName, partsNiceName) => {
                 if (partsNiceName && partsNiceName[partName]) {
                   const niceName = partsNiceName[partName]
@@ -1222,7 +1222,7 @@ const handleTechsUpdated = (data) => {
                 }
                 return partName
               }
-              
+
               const partNiceName = getPartNiceName(initialPartName, initialVehicle.partsNiceName || {})
               const removalMarkers = [
                 {
@@ -1236,7 +1236,7 @@ const handleTechsUpdated = (data) => {
                   id: `${normalizedPath}_empty`
                 }
               ]
-              
+
               for (const childPath of childPaths) {
                 const childPartName = initialVehicle.partList[childPath]
                 if (childPartName && childPartName !== '') {
@@ -1253,17 +1253,17 @@ const handleTechsUpdated = (data) => {
                   })
                 }
               }
-              
+
               partsCart.value = [...partsCart.value, ...removalMarkers]
               saveCurrentTabState()
               currentAppliedCartHash.value = generateCartHash(partsCart.value, tuningCart.value)
-              
+
               await lua.career_modules_business_businessComputer.applyCartPartsToVehicle(
                 businessId.value,
                 pulledOutVehicle.value.vehicleId,
                 partsCart.value
               )
-              
+
               setTimeout(async () => {
                 try {
                   await requestVehiclePartsTree(pulledOutVehicle.value.vehicleId)
@@ -1277,14 +1277,14 @@ const handleTechsUpdated = (data) => {
       }
     }
   }
-  
+
   const getNodeFromSlotPath = (tree, path) => {
     if (!tree || !path) return null
     if (path === '/') return tree
-    
+
     const segments = path.split('/').filter(p => p)
     let currentNode = tree
-    
+
     for (const segment of segments) {
       if (currentNode.children && currentNode.children[segment]) {
         currentNode = currentNode.children[segment]
@@ -1292,17 +1292,8 @@ const handleTechsUpdated = (data) => {
         return null
       }
     }
-    
+
     return currentNode
-  }
-  
-  const removeTuningFromCart = (varName) => {
-    const index = tuningCart.value.findIndex(item => item.varName === varName)
-    if (index >= 0) {
-      tuningCart.value.splice(index, 1)
-      saveCurrentTabState()
-      currentAppliedCartHash.value = generateCartHash(partsCart.value, tuningCart.value)
-    }
   }
 
   const addTuningToCart = async (tuningVars, originalVars) => {
@@ -1315,7 +1306,7 @@ const handleTechsUpdated = (data) => {
       showDamageLockWarning()
       return
     }
-    
+
     // Convert originalVars from tuning data format to simple varName->value map
     // Convert to actual range for comparison (tuningVars uses actual range)
     const baselineVars = {}
@@ -1323,33 +1314,19 @@ const handleTechsUpdated = (data) => {
       for (const [varName, varData] of Object.entries(originalVars)) {
         if (varData) {
           let baselineValue
-          if (varData.valDis !== undefined) {
-            baselineValue = varData.valDis
-          } else if (varData.val !== undefined) {
+          if (varData.val !== undefined) {
             baselineValue = varData.val
+          } else if (varData.valDis !== undefined) {
+            baselineValue = varData.valDis
           } else {
             continue
           }
-          
-          // Convert wheel alignment values from slider range to actual range
-          if (varData.category === "Wheel Alignment" && (varData.unit === '%' || varData.unit === 'percent')) {
-            const actualMin = varData.min ?? 0
-            const actualMax = varData.max ?? 100
-            const range = actualMax - actualMin
-            if (range > 0) {
-              // Round slider value to nearest 0.01 step first to avoid precision issues
-              const roundedSliderValue = Math.round(baselineValue / 0.01) * 0.01
-              baselineValue = ((roundedSliderValue + 1) / 2) * range + actualMin
-            } else {
-              baselineValue = actualMin
-            }
-          }
-          
+
           baselineVars[varName] = baselineValue
         }
       }
     }
-    
+
     try {
       const cartItems = await lua.career_modules_business_businessComputer.addTuningToCart(
         businessId.value,
@@ -1357,24 +1334,40 @@ const handleTechsUpdated = (data) => {
         tuningVars,
         baselineVars
       )
-      
+
       let itemsArray = []
       if (Array.isArray(cartItems)) {
         itemsArray = cartItems
       } else if (cartItems && typeof cartItems === 'object') {
         itemsArray = Object.values(cartItems)
       }
-      
-      
+
+
       tuningCart.value = itemsArray
       saveCurrentTabState()
       currentAppliedCartHash.value = generateCartHash(partsCart.value, tuningCart.value)
-      
+
       // Update power/weight after tuning change
       updatePowerWeight()
     } catch (error) {
       tuningCart.value = []
       saveCurrentTabState()
+    }
+  }
+
+  const removeTuningFromCart = async (varName) => {
+    const index = tuningCart.value.findIndex(item => item.varName === varName)
+    if (index >= 0) {
+      tuningCart.value.splice(index, 1)
+
+      const tuningVars = {}
+      tuningCart.value.forEach(item => {
+        if (item.type === 'variable' && item.varName && item.value !== undefined) {
+          tuningVars[item.varName] = item.value
+        }
+      })
+
+      await addTuningToCart(tuningVars)
     }
   }
 
@@ -1386,10 +1379,10 @@ const handleTechsUpdated = (data) => {
     tuningCart.value = []
     currentAppliedCartHash.value = null
   }
-  
+
   const handlePowerWeightData = (data) => {
     if (!data || !data.success) return
-    
+
     // Only update if it's for the current vehicle
     if (data.businessId === businessId.value && data.vehicleId === pulledOutVehicle.value?.vehicleId) {
       // If this is the first time we're getting data, set it as original
@@ -1397,13 +1390,13 @@ const handleTechsUpdated = (data) => {
         originalPower.value = data.power
         originalWeight.value = data.weight
       }
-      
+
       // Always update current values
       currentPower.value = data.power
       currentWeight.value = data.weight
     }
   }
-  
+
   const initializeCartForVehicle = async () => {
     if (isDamageLocked.value) {
       showDamageLockWarning()
@@ -1415,12 +1408,12 @@ const handleTechsUpdated = (data) => {
     tuningCart.value = []
     originalVehicleState.value = null
     currentAppliedCartHash.value = generateCartHash([], [])
-    
+
     originalPower.value = null
     originalWeight.value = null
     currentPower.value = null
     currentWeight.value = null
-    
+
     if (businessId.value && pulledOutVehicle.value?.vehicleId) {
       try {
         await lua.career_modules_business_businessComputer.resetVehicleToOriginal(
@@ -1431,14 +1424,14 @@ const handleTechsUpdated = (data) => {
       }
     }
   }
-  
+
   const updatePowerWeight = async () => {
     if (!businessId.value || !pulledOutVehicle.value?.vehicleId) return
     if (isDamageLocked.value) {
       showDamageLockWarning()
       return
     }
-    
+
     try {
       lua.career_modules_business_businessComputer.getVehiclePowerWeight(
         businessId.value,
@@ -1447,30 +1440,30 @@ const handleTechsUpdated = (data) => {
     } catch (error) {
     }
   }
-  
+
   const powerToWeightRatio = computed(() => {
     if (!currentPower.value || !currentWeight.value || currentWeight.value <= 0) return null
     return currentPower.value / currentWeight.value
   })
-  
+
   const originalPowerToWeightRatio = computed(() => {
     if (!originalPower.value || !originalWeight.value || originalWeight.value <= 0) return null
     return originalPower.value / originalWeight.value
   })
-  
+
   const powerChange = computed(() => {
     if (originalPower.value === null || currentPower.value === null) return null
     return currentPower.value - originalPower.value
   })
-  
+
   const weightChange = computed(() => {
     if (originalWeight.value === null || currentWeight.value === null) return null
     return currentWeight.value - originalWeight.value
   })
-  
+
   const buildPartsTree = (parts) => {
     if (!parts || parts.length === 0) return []
-    
+
     const partMap = new Map()
     parts.forEach(part => {
       const path = (part.slotPath || '').trim()
@@ -1482,18 +1475,18 @@ const handleTechsUpdated = (data) => {
         })
       }
     })
-    
+
     const getParentPath = (path) => {
       const pathParts = path.split('/').filter(p => p)
       if (pathParts.length <= 1) return null
       return '/' + pathParts.slice(0, -1).join('/') + '/'
     }
-    
+
     const rootNodes = []
-    
+
     partMap.forEach((part, path) => {
       const parentPath = getParentPath(path)
-      
+
       if (!parentPath) {
         rootNodes.push(part)
       } else {
@@ -1506,7 +1499,7 @@ const handleTechsUpdated = (data) => {
         }
       }
     })
-    
+
     const sortNode = (node) => {
       if (node.children && node.children.length > 0) {
         node.children.forEach(child => sortNode(child))
@@ -1517,36 +1510,36 @@ const handleTechsUpdated = (data) => {
         })
       }
     }
-    
+
     rootNodes.forEach(node => sortNode(node))
-    
+
     return rootNodes.sort((a, b) => {
       const nameA = (a.partNiceName || a.partName || a.slotNiceName || '').toLowerCase()
       const nameB = (b.partNiceName || b.partName || b.slotNiceName || '').toLowerCase()
       return nameA.localeCompare(nameB)
     })
   }
-  
+
   const partsTree = computed(() => {
     return buildPartsTree(partsCart.value)
   })
 
   const getCartTotal = computed(() => {
     let total = 0
-    
+
     const parts = Array.isArray(partsCart.value) ? partsCart.value : []
     parts.forEach(item => {
       total += item.price || 0
     })
-    
+
     const tuning = Array.isArray(tuningCart.value) ? tuningCart.value : []
     tuning.forEach(item => {
       total += item.price || 0
     })
-    
+
     return total
   })
-  
+
   const tuningCost = computed(() => {
     const tuning = Array.isArray(tuningCart.value) ? tuningCart.value : []
     return tuning.reduce((sum, item) => sum + (item.price || 0), 0)
@@ -1567,7 +1560,7 @@ const handleTechsUpdated = (data) => {
   }
 
   const hasDynoUpgrade = ref(false)
-  
+
   const updateDynoUpgradeStatus = async () => {
     if (!businessId.value) {
       hasDynoUpgrade.value = false
@@ -1584,7 +1577,7 @@ const handleTechsUpdated = (data) => {
       hasDynoUpgrade.value = false
     }
   }
-  
+
   watch(businessId, () => {
     updateDynoUpgradeStatus()
   }, { immediate: true })

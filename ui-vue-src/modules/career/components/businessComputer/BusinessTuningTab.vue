@@ -3,65 +3,45 @@
     <div v-if="!store.pulledOutVehicle" class="no-vehicle">
       <p>No vehicle in garage. Pull out a vehicle from Active Jobs to access tuning options.</p>
     </div>
-    
+
     <template v-else>
       <!-- Loading State -->
       <div v-if="loading" class="loading">
         <p>Loading tuning data...</p>
       </div>
-      
+
       <!-- Content - Only show when not loading -->
       <div v-else class="tuning-content-wrapper">
         <div class="search-section">
-          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8"/>
-            <path d="m21 21-4.35-4.35"/>
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2">
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.35-4.35" />
           </svg>
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="Search tuning options"
-            class="search-input"
-            @focus="onSearchFocus"
-            @blur="onSearchBlur"
-            @keydown.enter.stop="triggerSearch"
-            @keydown.stop @keyup.stop @keypress.stop
-            v-bng-text-input
-            :disabled="loading"
-          />
-          <button
-            v-if="searchQuery.length > 0"
-            @click="clearSearch"
-            class="clear-search-button"
-            type="button"
-          >
+          <input v-model="searchQuery" type="text" placeholder="Search tuning options" class="search-input"
+            @focus="onSearchFocus" @blur="onSearchBlur" @keydown.enter.stop="triggerSearch" @keydown.stop @keyup.stop
+            @keypress.stop v-bng-text-input :disabled="loading" />
+          <button v-if="searchQuery.length > 0" @click="clearSearch" class="clear-search-button" type="button">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="18" y1="6" x2="6" y2="18"/>
-              <line x1="6" y1="6" x2="18" y2="18"/>
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
         </div>
-        
+
         <div class="tuning-scrollable">
           <div v-if="filteredBuckets.length === 0" class="no-tuning-data">
             <p v-if="activeSearchQuery">No tuning options found matching "{{ activeSearchQuery }}"</p>
             <p v-else>No tuning options available for this vehicle.</p>
           </div>
-          
-          <div v-for="category in filteredBuckets" :key="category.name" class="tuning-section">
+
+          <div v-for="category in filteredBuckets" :key="category.name" class="tuning-section"
+            v-show="category.items && category.items.length > 0">
             <button class="section-header" @click="toggleSection(category.name)">
               <h3>{{ category.name }}</h3>
-              <svg 
-                class="chevron-icon" 
-                width="20" 
-                height="20" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                stroke-width="2"
-                :class="{ rotated: !isSectionCollapsed(category.name) }"
-              >
-                <polyline points="6 9 12 15 18 9"/>
+              <svg class="chevron-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" :class="{ rotated: !isSectionCollapsed(category.name) }">
+                <polyline points="6 9 12 15 18 9" />
               </svg>
             </button>
             <transition name="section-collapse">
@@ -74,35 +54,20 @@
                     <div class="slider-header">
                       <label>{{ varData.title }}</label>
                       <div class="value-input-group">
-                        <input 
-                          type="number"
-                          v-model.number="varData.displayValue"
-                          :min="getDisplayMin(varData)"
-                          :max="getDisplayMax(varData)"
-                        :step="getDisplayStep(varData)"
-                        class="value-input"
-                          @input="onValueInput(varData)"
-                          @focus="onValueFocus"
-                          @blur="onValueBlur(varData)"
-                          @keydown.stop @keyup.stop @keypress.stop
-                          v-bng-text-input
-                          :disabled="isSliderDisabled(varData)"
-                        />
-                        <span v-if="varData.unit" class="value-unit">{{ varData.unit === 'percent' ? '%' : varData.unit }}</span>
+                        <input type="number" v-model.number="varData.displayValue" :min="getDisplayMin(varData)"
+                          :max="getDisplayMax(varData)" :step="getDisplayStep(varData)" class="value-input"
+                          @input="onValueInput(varData)" @focus="onValueFocus" @blur="onValueBlur(varData)"
+                          @keydown.stop @keyup.stop @keypress.stop v-bng-text-input
+                          :disabled="isSliderDisabled(varData)" />
+                        <span v-if="varData.unit" class="value-unit">{{ varData.unit === 'percent' ? '%' : varData.unit
+                          }}</span>
                       </div>
                     </div>
                     <div class="slider-wrapper">
-                      <input 
-                        type="range" 
-                        v-model.number="varData.displayValue"
-                        :min="getDisplayMin(varData)"
-                        :max="getDisplayMax(varData)"
-                        :step="getDisplayStep(varData)"
-                        class="slider"
-                        :style="getSliderStyle(varData)"
-                        @input="onSliderChange(varData)"
-                        :disabled="isSliderDisabled(varData)"
-                      />
+                      <input type="range" v-model.number="varData.displayValue" :min="getDisplayMin(varData)"
+                        :max="getDisplayMax(varData)" :step="getDisplayStep(varData)" class="slider"
+                        :style="getSliderStyle(varData)" @input="onSliderChange(varData)"
+                        :disabled="isSliderDisabled(varData)" />
                     </div>
                   </div>
                 </div>
@@ -115,22 +80,15 @@
           <div class="wheel-data-section">
             <button class="wheel-data-header" @click="toggleWheelData">
               <span class="wheel-data-label">Live Wheel Data</span>
-              <svg 
-                class="chevron-icon" 
-                width="14" 
-                height="14" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                stroke-width="2"
-                :class="{ rotated: wheelDataExpanded }"
-              >
-                <polyline points="6 9 12 15 18 9"/>
+              <svg class="chevron-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" :class="{ rotated: wheelDataExpanded }">
+                <polyline points="6 9 12 15 18 9" />
               </svg>
             </button>
             <transition name="section-collapse">
               <div v-if="wheelDataExpanded" class="wheel-data-content">
-                <BusinessWheelData ref="wheelDataRef" :business-id="store.businessId" :vehicle-id="store.pulledOutVehicle?.vehicleId" />
+                <BusinessWheelData ref="wheelDataRef" :business-id="store.businessId"
+                  :vehicle-id="store.pulledOutVehicle?.vehicleId" />
               </div>
             </transition>
           </div>
@@ -200,12 +158,12 @@ const toggleWheelData = () => {
 }
 
 const onSearchFocus = () => {
-  try { lua.setCEFTyping(true) } catch (_) {}
+  try { lua.setCEFTyping(true) } catch (_) { }
 }
 
 const onSearchBlur = () => {
-  try { triggerSearch() } catch (_) {}
-  try { lua.setCEFTyping(false) } catch (_) {}
+  try { triggerSearch() } catch (_) { }
+  try { lua.setCEFTyping(false) } catch (_) { }
 }
 
 const triggerSearch = () => {
@@ -220,7 +178,7 @@ const triggerSearch = () => {
 const clearSearch = () => {
   searchQuery.value = ""
   activeSearchQuery.value = ""
-  try { lua.setCEFTyping(false) } catch (_) {}
+  try { lua.setCEFTyping(false) } catch (_) { }
 }
 
 const hasActiveSearch = computed(() => activeSearchQuery.value.length > 0)
@@ -229,19 +187,19 @@ const filteredBuckets = computed(() => {
   if (!hasActiveSearch.value) {
     return buckets.value
   }
-  
+
   const query = activeSearchQuery.value.toLowerCase()
   const filtered = []
-  
+
   buckets.value.forEach(bucket => {
     const matchingSubCategories = []
-    
+
     bucket.items.forEach(subCategory => {
       const matchingItems = subCategory.items.filter(item => {
         const title = (item.title || item.name || '').toLowerCase()
         return title.includes(query)
       })
-      
+
       if (matchingItems.length > 0) {
         matchingSubCategories.push({
           ...subCategory,
@@ -253,7 +211,7 @@ const filteredBuckets = computed(() => {
         })
       }
     })
-    
+
     if (matchingSubCategories.length > 0) {
       filtered.push({
         ...bucket,
@@ -261,7 +219,7 @@ const filteredBuckets = computed(() => {
       })
     }
   })
-  
+
   return filtered.sort((a, b) => a.name.localeCompare(b.name))
 })
 
@@ -332,16 +290,16 @@ const convertDisplayToActual = (varData, displayValue) => {
 // Organize tuning variables into buckets (categories) with subcategories
 const organizeTuningData = (tuningData) => {
   if (!tuningData) return []
-  
+
   const bucketsMap = {}
-  
+
   // Iterate through all tuning variables
   for (const [varName, varData] of Object.entries(tuningData)) {
     if (!varData || typeof varData !== 'object') continue
-    
+
     const category = varData.category || 'Other'
     const subCategory = varData.subCategory || 'Other'
-    
+
     // Initialize category bucket if it doesn't exist
     if (!bucketsMap[category]) {
       bucketsMap[category] = {
@@ -349,7 +307,7 @@ const organizeTuningData = (tuningData) => {
         items: {}
       }
     }
-    
+
     // Initialize subcategory if it doesn't exist
     if (!bucketsMap[category].items[subCategory]) {
       bucketsMap[category].items[subCategory] = {
@@ -357,18 +315,18 @@ const organizeTuningData = (tuningData) => {
         items: []
       }
     }
-    
+
     // Add variable to subcategory
     const actualValue = varData.val ?? (varData.default ?? getActualMin(varData))
     const displayVal = convertActualToDisplay(varData, actualValue)
-    
+
     bucketsMap[category].items[subCategory].items.push({
       ...varData,
       name: varName,
       displayValue: displayVal
     })
   }
-  
+
   // Convert buckets map to array
   const bucketsArray = []
   for (const [categoryName, categoryData] of Object.entries(bucketsMap)) {
@@ -381,7 +339,7 @@ const organizeTuningData = (tuningData) => {
       items: subCategories
     })
   }
-  
+
   // Sort buckets, subcategories, and items alphabetically
   bucketsArray.sort((a, b) => a.name.localeCompare(b.name))
   bucketsArray.forEach(bucket => {
@@ -394,7 +352,7 @@ const organizeTuningData = (tuningData) => {
       })
     })
   })
-  
+
   return bucketsArray
 }
 
@@ -425,7 +383,7 @@ const getDisplayStep = (varData) => {
   if (typeof varData.stepDis === 'number' && varData.stepDis > 0) {
     return varData.stepDis
   }
-  
+
   return getStepValue(varData)
 }
 
@@ -434,23 +392,23 @@ const onValueInput = (varData) => {
   if (!isFinite(displayValue)) {
     return
   }
-  
+
   const { minDis, maxDis } = getDisplayBounds(varData)
   displayValue = Math.max(minDis, Math.min(maxDis, displayValue))
   displayValue = roundDisplayValue(displayValue)
-  
+
   const actualValue = convertDisplayToActual(varData, displayValue)
-  
+
   varData.val = actualValue
   varData.valDis = actualValue
   varData.displayValue = displayValue
-  
+
   if (tuningVariables.value[varData.name]) {
     tuningVariables.value[varData.name].val = actualValue
     tuningVariables.value[varData.name].valDis = actualValue
     tuningVariables.value[varData.name].displayValue = displayValue
   }
-  
+
   onTuningChange(varData.name, actualValue)
 }
 
@@ -469,37 +427,37 @@ const getStepValue = (varData) => {
   if (varData.stepDis !== undefined && varData.stepDis !== null && !isNaN(varData.stepDis) && varData.stepDis > 0) {
     return varData.stepDis
   }
-  
+
   // If step is provided and valid, use it
   if (varData.step !== undefined && varData.step !== null && !isNaN(varData.step) && varData.step > 0) {
     return varData.step
   }
-  
+
   // Calculate a reasonable step based on the display range
   const { minDis, maxDis } = getDisplayBounds(varData)
   const range = Math.abs(maxDis - minDis)
-  
+
   // Use 1/1000th of the range, but ensure it's at least 0.001 and not too small
   const calculatedStep = Math.max(0.001, Math.min(1, range / 1000))
-  
+
   return calculatedStep
 }
 
 const isSliderDisabled = (varData) => {
   const min = varData.minDis ?? 0
   const max = varData.maxDis ?? 100
-  
+
   // Disable if min equals max or values are invalid
   if (min === max || isNaN(min) || isNaN(max)) {
     return true
   }
-  
+
   // Disable if step is invalid or zero
   const step = getStepValue(varData)
   if (isNaN(step) || step <= 0) {
     return true
   }
-  
+
   return false
 }
 
@@ -507,26 +465,26 @@ const getSliderStyle = (varData) => {
   const minDis = varData.minDis ?? varData.min ?? 0
   const maxDis = varData.maxDis ?? varData.max ?? 100
   const displayValue = varData.displayValue ?? minDis
-  
+
   if (isNaN(minDis) || isNaN(maxDis) || isNaN(displayValue)) {
     return {
       '--slider-percentage': '0%'
     }
   }
-  
+
   if (maxDis === minDis) {
     return {
       '--slider-percentage': '0%'
     }
   }
-  
+
   let percentage = ((displayValue - minDis) / (maxDis - minDis)) * 100
   percentage = Math.max(0, Math.min(100, percentage))
-  
+
   if (isNaN(percentage)) {
     percentage = 0
   }
-  
+
   return {
     '--slider-percentage': `${percentage}%`
   }
@@ -544,36 +502,36 @@ const handleTuningData = (data) => {
     loading.value = false
     return
   }
-  
+
   const currentJobId = normalizeJobId(store.pulledOutVehicle?.jobId)
   const eventJobId = normalizeJobId(data.jobId)
 
   if (data.vehicleId === store.pulledOutVehicle?.vehicleId &&
-      data.businessId === store.businessId &&
-      currentJobId === eventJobId) {
+    data.businessId === store.businessId &&
+    currentJobId === eventJobId) {
     if (data.tuningData) {
       // Cache the data in the store
       const cacheKey = eventJobId
       if (store.tuningDataCache) {
         store.tuningDataCache[cacheKey] = data.tuningData
       }
-      
+
       tuningVariables.value = data.tuningData
-      
+
       const baseline = {}
-      
+
       for (const [varName, varData] of Object.entries(data.tuningData)) {
         baseline[varName] = JSON.parse(JSON.stringify(varData))
-        
+
         const currentVal = varData.val ?? (varData.default ?? getActualMin(varData))
         baseline[varName].val = currentVal
         baseline[varName].valDis = currentVal
         baseline[varName].displayValue = convertActualToDisplay(varData, currentVal)
       }
-      
+
       originalTuningVariables.value = baseline
       buckets.value = organizeTuningData(data.tuningData)
-      
+
       // Load cart values into UI after tuning data is set up
       loadTuningFromCart()
     }
@@ -590,10 +548,10 @@ const loadTuningData = async () => {
     loading.value = false
     return
   }
-  
+
   // Always show loading state immediately
   loading.value = true
-  
+
   // Request data (returns immediately, data comes via hook)
   // Lua will check cache and return instantly if cached
   store.requestVehicleTuningData(store.pulledOutVehicle.vehicleId).catch(error => {
@@ -603,22 +561,22 @@ const loadTuningData = async () => {
 
 const onSliderChange = (varData) => {
   if (!varData || !tuningVariables.value[varData.name]) return
-  
+
   let displayValue = Number(varData.displayValue)
   const { minDis, maxDis } = getDisplayBounds(varData)
   displayValue = Math.max(minDis, Math.min(maxDis, displayValue))
   displayValue = roundDisplayValue(displayValue)
-  
+
   const actualValue = convertDisplayToActual(varData, displayValue)
-  
+
   varData.displayValue = displayValue
   varData.val = actualValue
   varData.valDis = actualValue
-  
+
   tuningVariables.value[varData.name].val = actualValue
   tuningVariables.value[varData.name].valDis = actualValue
   tuningVariables.value[varData.name].displayValue = displayValue
-  
+
   for (const bucket of buckets.value) {
     for (const subCategory of bucket.items) {
       for (const item of subCategory.items) {
@@ -630,7 +588,7 @@ const onSliderChange = (varData) => {
       }
     }
   }
-  
+
   if (liveUpdates.value) {
     applySettings()
   }
@@ -641,14 +599,14 @@ const onTuningChange = (varName, actualValue) => {
     return
   }
   if (!tuningVariables.value[varName]) return
-  
+
   const varData = tuningVariables.value[varName]
-  
+
   tuningVariables.value[varName].val = actualValue
   tuningVariables.value[varName].valDis = actualValue
-  
+
   varData.displayValue = convertActualToDisplay(varData, actualValue)
-  
+
   for (const bucket of buckets.value) {
     for (const subCategory of bucket.items) {
       for (const item of subCategory.items) {
@@ -660,7 +618,7 @@ const onTuningChange = (varName, actualValue) => {
       }
     }
   }
-  
+
   if (liveUpdates.value) {
     applySettings()
   }
@@ -668,16 +626,16 @@ const onTuningChange = (varName, actualValue) => {
 
 const hasChanges = computed(() => {
   if (!tuningVariables.value || !originalTuningVariables.value) return false
-  
+
   for (const [varName, varData] of Object.entries(tuningVariables.value)) {
     const original = originalTuningVariables.value[varName]
     if (!original) continue
-    
+
     if (varData.valDis !== original.valDis) {
       return true
     }
   }
-  
+
   return false
 })
 
@@ -686,9 +644,9 @@ const loadTuningFromCart = () => {
     return
   }
   if (!tuningVariables.value || !originalTuningVariables.value) return
-  
+
   const cart = Array.isArray(store.tuningCart) ? store.tuningCart : []
-  
+
   const cartTuningMap = {}
   cart.forEach(item => {
     // Only process variables, skip categories and subcategories
@@ -696,7 +654,7 @@ const loadTuningFromCart = () => {
       cartTuningMap[item.varName] = item.value
     }
   })
-  
+
   for (const [varName, varData] of Object.entries(tuningVariables.value)) {
     if (cartTuningMap.hasOwnProperty(varName)) {
       const actualValue = cartTuningMap[varName]
@@ -710,12 +668,12 @@ const loadTuningFromCart = () => {
       varData.val = resetVal
       varData.valDis = resetVal
     }
-    
+
     varData.displayValue = convertActualToDisplay(varData, varData.valDis)
   }
-  
+
   buckets.value = organizeTuningData(tuningVariables.value)
-  
+
   store.updatePowerWeight()
 }
 
@@ -724,7 +682,7 @@ const resetSettings = async () => {
     return
   }
   if (!originalTuningVariables.value || !store.pulledOutVehicle || !store.pulledOutVehicle.vehicleId) return
-  
+
   const baselineTuningVars = {}
   for (const [varName, varData] of Object.entries(tuningVariables.value)) {
     const originalData = originalTuningVariables.value[varName]
@@ -739,14 +697,14 @@ const resetSettings = async () => {
     const resetVal = originalData
       ? (originalData.val ?? getActualMin(varData))
       : (varData.val ?? getActualMin(varData))
-    
+
     tuningVariables.value[varName].val = resetVal
     tuningVariables.value[varName].valDis = resetVal
     tuningVariables.value[varName].displayValue = convertActualToDisplay(varData, resetVal)
   }
-  
+
   buckets.value = organizeTuningData(tuningVariables.value)
-  
+
   try {
     if (store.businessId) {
       await lua.career_modules_business_businessComputer.applyTuningToVehicle(
@@ -754,7 +712,7 @@ const resetSettings = async () => {
         store.pulledOutVehicle.vehicleId,
         baselineTuningVars
       )
-      
+
       setTimeout(() => {
         if (store.vehicleView === 'parts') {
           store.requestVehiclePartsTree(store.pulledOutVehicle.vehicleId)
@@ -763,11 +721,11 @@ const resetSettings = async () => {
     }
   } catch (error) {
   }
-  
+
   await store.addTuningToCart({}, originalTuningVariables.value)
-  
+
   store.updatePowerWeight()
-  
+
   if (liveUpdates.value) {
     applySettings()
   }
@@ -778,7 +736,7 @@ const applySettings = async () => {
     return
   }
   if (!store.pulledOutVehicle || !store.pulledOutVehicle.vehicleId) return
-  
+
   const tuningVars = {}
   for (const [varName, varData] of Object.entries(tuningVariables.value)) {
     if (varData.val !== undefined) {
@@ -789,24 +747,24 @@ const applySettings = async () => {
       tuningVars[varName] = convertDisplayToActual(varData, varData.displayValue)
     }
   }
-  
+
   try {
     await store.addTuningToCart(tuningVars, originalTuningVariables.value)
-    
+
     if (store.businessId) {
       await lua.career_modules_business_businessComputer.applyTuningToVehicle(
         store.businessId,
         store.pulledOutVehicle.vehicleId,
         tuningVars
       )
-      
+
       setTimeout(() => {
         if (store.vehicleView === 'parts') {
           store.requestVehiclePartsTree(store.pulledOutVehicle.vehicleId)
         }
       }, 100)
     }
-    
+
     store.updatePowerWeight()
   } catch (error) {
   }
@@ -831,7 +789,7 @@ watch(() => store.pulledOutVehicle, (newVehicle, oldVehicle) => {
 
 onMounted(() => {
   events.on('businessComputer:onVehicleTuningData', handleTuningData)
-  
+
   requestAnimationFrame(() => {
     setTimeout(() => {
       if (store.pulledOutVehicle) {
@@ -887,7 +845,7 @@ defineExpose({
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  
+
   .search-icon {
     position: absolute;
     left: 0.75em;
@@ -899,7 +857,7 @@ defineExpose({
     pointer-events: none;
     z-index: 1;
   }
-  
+
   .search-input {
     width: 100%;
     padding: 0.75em 1em 0.75em 2.5em;
@@ -908,18 +866,18 @@ defineExpose({
     border-radius: 0.25em;
     color: white;
     font-size: 0.875em;
-    
+
     &::placeholder {
       color: rgba(255, 255, 255, 0.5);
     }
-    
+
     &:focus {
       outline: none;
       border-color: rgba(245, 73, 0, 0.5);
       padding-right: 2.5em;
     }
   }
-  
+
   .clear-search-button {
     position: absolute;
     right: 0.5em;
@@ -935,11 +893,11 @@ defineExpose({
     color: rgba(255, 255, 255, 0.5);
     transition: color 0.2s;
     z-index: 1;
-    
+
     &:hover {
       color: rgba(255, 255, 255, 0.8);
     }
-    
+
     svg {
       width: 1em;
       height: 1em;
@@ -951,21 +909,21 @@ defineExpose({
   flex: 1;
   overflow-y: auto;
   padding-bottom: 1rem;
-  
+
   /* Custom scrollbar matching business computer */
   &::-webkit-scrollbar {
     width: 8px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: rgba(0, 0, 0, 0.2);
     border-radius: 4px;
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.1);
     border-radius: 4px;
-    
+
     &:hover {
       background: rgba(255, 255, 255, 0.15);
     }
@@ -978,7 +936,7 @@ defineExpose({
   border-radius: 0.5rem;
   overflow: hidden;
   margin-bottom: 1.5rem;
-  
+
   &:last-child {
     margin-bottom: 0;
   }
@@ -995,23 +953,23 @@ defineExpose({
   border: none;
   cursor: pointer;
   transition: background 0.2s;
-  
+
   &:hover {
     background: rgba(23, 23, 23, 0.5);
   }
-  
+
   h3 {
     margin: 0;
     color: rgba(245, 73, 0, 1);
     font-size: 1.125rem;
     font-weight: 600;
   }
-  
+
   .chevron-icon {
     color: rgba(255, 255, 255, 0.4);
     flex-shrink: 0;
     transition: transform 0.3s ease;
-    
+
     &.rotated {
       transform: rotate(180deg);
     }
@@ -1051,7 +1009,7 @@ defineExpose({
 
 .subcategory-group {
   margin-bottom: 1.5rem;
-  
+
   &:last-child {
     margin-bottom: 0;
   }
@@ -1067,33 +1025,33 @@ defineExpose({
 
 .slider-control {
   margin-bottom: 1rem;
-  
+
   &:last-child {
     margin-bottom: 0;
   }
-  
+
   .slider-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin-bottom: 0.5rem;
-    
+
     label {
       color: rgba(255, 255, 255, 0.7);
       font-size: 0.875rem;
       margin: 0;
     }
-    
+
     .value-input-group {
       display: flex;
       align-items: center;
       gap: 0.25rem;
     }
   }
-  
+
   .slider-wrapper {
     width: 100%;
-    
+
     .slider {
       width: 100%;
       height: 0.5rem;
@@ -1103,7 +1061,7 @@ defineExpose({
       -webkit-appearance: none;
       appearance: none;
       background: transparent;
-      
+
       &::-webkit-slider-runnable-track {
         width: 100%;
         height: 0.5rem;
@@ -1111,7 +1069,7 @@ defineExpose({
         border: none;
         background: linear-gradient(to right, rgba(245, 73, 0, 1) 0%, rgba(245, 73, 0, 1) var(--slider-percentage, 0%), rgba(255, 255, 255, 0.1) var(--slider-percentage, 0%), rgba(255, 255, 255, 0.1) 100%);
       }
-      
+
       &::-moz-range-track {
         width: 100%;
         height: 0.5rem;
@@ -1119,7 +1077,7 @@ defineExpose({
         border: none;
         background: linear-gradient(to right, rgba(245, 73, 0, 1) 0%, rgba(245, 73, 0, 1) var(--slider-percentage, 0%), rgba(255, 255, 255, 0.1) var(--slider-percentage, 0%), rgba(255, 255, 255, 0.1) 100%);
       }
-      
+
       &::-webkit-slider-thumb {
         -webkit-appearance: none;
         appearance: none;
@@ -1132,7 +1090,7 @@ defineExpose({
         border: none;
         box-shadow: none;
       }
-      
+
       &::-moz-range-thumb {
         width: 1rem;
         height: 1rem;
@@ -1142,22 +1100,22 @@ defineExpose({
         border: none;
         box-shadow: none;
       }
-      
+
       &:disabled {
         opacity: 0.5;
         cursor: not-allowed;
-        
+
         &::-webkit-slider-thumb {
           cursor: not-allowed;
         }
-        
+
         &::-moz-range-thumb {
           cursor: not-allowed;
         }
       }
     }
   }
-  
+
   .value-input {
     width: 5rem;
     padding: 0.25rem 0.5rem;
@@ -1168,26 +1126,26 @@ defineExpose({
     color: white;
     font-size: 0.875rem;
     outline: none;
-    
+
     appearance: textfield;
     -moz-appearance: textfield;
-    
+
     &::-webkit-outer-spin-button,
     &::-webkit-inner-spin-button {
       -webkit-appearance: none;
       margin: 0;
     }
-    
+
     &:focus {
       border-color: rgba(245, 73, 0, 0.5);
     }
-    
+
     &:disabled {
       opacity: 0.5;
       cursor: not-allowed;
     }
   }
-  
+
   .value-unit {
     color: rgba(255, 255, 255, 0.7);
     font-size: 0.875rem;
@@ -1204,10 +1162,10 @@ defineExpose({
   border-radius: 0.5rem;
   flex-shrink: 0;
   margin-top: 1rem;
-  
+
   .wheel-data-section {
     width: 100%;
-    
+
     .wheel-data-header {
       width: 100%;
       display: flex;
@@ -1219,34 +1177,34 @@ defineExpose({
       cursor: pointer;
       transition: background 0.2s;
       border-radius: 0.25rem;
-      
+
       &:hover {
         background: rgba(255, 255, 255, 0.05);
       }
-      
+
       .wheel-data-label {
         color: rgba(255, 255, 255, 0.6);
         font-size: 0.8125rem;
         user-select: none;
         font-weight: 500;
       }
-      
+
       .chevron-icon {
         color: rgba(255, 255, 255, 0.4);
         flex-shrink: 0;
         transition: transform 0.3s ease;
-        
+
         &.rotated {
           transform: rotate(180deg);
         }
       }
     }
-    
+
     .wheel-data-content {
       margin-top: 0.25rem;
     }
   }
-  
+
   .controls-row {
     display: flex;
     align-items: center;
@@ -1254,7 +1212,7 @@ defineExpose({
     width: 100%;
     gap: 1rem;
   }
-  
+
   .switch-label {
     display: flex;
     align-items: center;
@@ -1264,26 +1222,26 @@ defineExpose({
     font-size: 0.875rem;
     position: relative;
     flex-shrink: 0;
-    
+
     .switch-input {
       position: absolute;
       opacity: 0;
       width: 0;
       height: 0;
-      
-      &:checked + .switch-slider {
+
+      &:checked+.switch-slider {
         background: rgba(245, 73, 0, 1);
-        
+
         &::before {
           transform: translateX(1.5rem) translateY(-50%);
         }
       }
-      
-      &:focus + .switch-slider {
+
+      &:focus+.switch-slider {
         box-shadow: 0 0 0 2px rgba(245, 73, 0, 0.3);
       }
     }
-    
+
     .switch-slider {
       position: relative;
       display: inline-block;
@@ -1293,7 +1251,7 @@ defineExpose({
       border-radius: 0.75rem;
       transition: background 0.2s;
       flex-shrink: 0;
-      
+
       &::before {
         content: '';
         position: absolute;
@@ -1307,12 +1265,12 @@ defineExpose({
         transition: transform 0.2s;
       }
     }
-    
+
     .switch-text {
       user-select: none;
     }
   }
-  
+
   .control-buttons {
     display: flex;
     gap: 0.5rem;
@@ -1328,29 +1286,28 @@ defineExpose({
   cursor: pointer;
   transition: all 0.2s;
   border: none;
-  
+
   &.btn-primary {
     background: rgba(245, 73, 0, 1);
     color: white;
-    
+
     &:hover:not(:disabled) {
       background: rgba(245, 73, 0, 0.9);
     }
-    
+
     &:disabled {
       opacity: 0.5;
       cursor: not-allowed;
     }
   }
-  
+
   &.btn-secondary {
     background: rgba(55, 55, 55, 1);
     color: white;
-    
+
     &:hover {
       background: rgba(75, 75, 75, 1);
     }
   }
 }
 </style>
-

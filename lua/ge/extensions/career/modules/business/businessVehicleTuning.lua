@@ -13,10 +13,10 @@ local function getCheapTunesDiscountMultiplier(businessId)
   if not businessId or not career_modules_business_businessSkillTree then
     return 1.0
   end
-  
+
   local treeId = "shop-upgrades"
   local nodeId = "cheap-tunes"
-  
+
   local level = career_modules_business_businessSkillTree.getNodeProgress(businessId, treeId, nodeId) or 0
   return math.max(0.0, 1.0 - (0.2 * level))
 end
@@ -43,13 +43,27 @@ local prices = {
     default = {
       default = true,
       variables = {
-        ["$gear_1"] = { price = 100},
-        ["$gear_2"] = { price = 100},
-        ["$gear_3"] = { price = 100},
-        ["$gear_4"] = { price = 100},
-        ["$gear_5"] = { price = 100},
-        ["$gear_6"] = { price = 100},
-        ["$gear_R"] = { price = 100},
+        ["$gear_1"] = {
+          price = 100
+        },
+        ["$gear_2"] = {
+          price = 100
+        },
+        ["$gear_3"] = {
+          price = 100
+        },
+        ["$gear_4"] = {
+          price = 100
+        },
+        ["$gear_5"] = {
+          price = 100
+        },
+        ["$gear_6"] = {
+          price = 100
+        },
+        ["$gear_R"] = {
+          price = 100
+        }
       }
     }
   },
@@ -70,18 +84,33 @@ local prices = {
   }
 }
 
-local shoppingCartBlackList = {
-  {name = "$$ffbstrength", category = "Chassis"},
-  {name = "$tirepressure_F", category = "Wheels", subCategory = "Front"},
-  {name = "$tirepressure_R", category = "Wheels", subCategory = "Rear"},
-}
+local shoppingCartBlackList = {{
+  name = "$$ffbstrength",
+  category = "Chassis"
+}, {
+  name = "$tirepressure_F",
+  category = "Wheels",
+  subCategory = "Front"
+}, {
+  name = "$tirepressure_R",
+  category = "Wheels",
+  subCategory = "Rear"
+}}
 
 local function isOnBlackList(varData)
   for _, blackListItem in ipairs(shoppingCartBlackList) do
-    if blackListItem.name ~= varData.name then goto continue end
-    if blackListItem.category ~= varData.category then goto continue end
-    if blackListItem.subCategory ~= varData.subCategory then goto continue end
-    do return true end
+    if blackListItem.name ~= varData.name then
+      goto continue
+    end
+    if blackListItem.category ~= varData.category then
+      goto continue
+    end
+    if blackListItem.subCategory ~= varData.subCategory then
+      goto continue
+    end
+    do
+      return true
+    end
     ::continue::
   end
   return false
@@ -107,7 +136,9 @@ local function getPrice(category, subCategory, varName)
 end
 
 local function getPriceCategory(category)
-  if prices[category] then return prices[category].price or 0 end
+  if prices[category] then
+    return prices[category].price or 0
+  end
   return prices.default.price
 end
 
@@ -122,28 +153,32 @@ local function getPriceSubCategory(category, subCategory)
 end
 
 local function getBusinessVehicleObject(businessId, vehicleId)
-  if not businessId or not vehicleId then return nil end
-  
+  if not businessId or not vehicleId then
+    return nil
+  end
+
   if career_modules_business_businessInventory then
     local vehId = career_modules_business_businessInventory.getSpawnedVehicleId(businessId, vehicleId)
     if vehId then
       return getObjectByID(vehId)
     end
   end
-  
+
   return nil
 end
 
 local function fetchVehicleTuningVariables(businessId, vehicleId)
   local vehObj = getBusinessVehicleObject(businessId, vehicleId)
-  if not vehObj then return nil end
-  
+  if not vehObj then
+    return nil
+  end
+
   local vehId = vehObj:getID()
   local vehicleData = extensions.core_vehicle_manager.getVehicleData(vehId)
   if not vehicleData or not vehicleData.vdata or not vehicleData.vdata.variables then
     return nil
   end
-  
+
   return deepcopy(vehicleData.vdata.variables)
 end
 
@@ -213,20 +248,20 @@ local function requestVehicleTuningData(businessId, vehicleId)
         baselineVars = initialVehicle.vars
       end
     end
-    
+
     local currentVars = vehicle.vars or {}
     local tuningVariables = deepcopy(vehicleData.vdata.variables)
-    
+
     for varName, varData in pairs(tuningVariables) do
       if not baselineVars[varName] then
         baselineVars[varName] = varData.val
       end
     end
-    
+
     tuningVariables["$fuel"] = nil
     tuningVariables["$fuel_R"] = nil
     tuningVariables["$fuel_L"] = nil
-    
+
     for varName, varData in pairs(tuningVariables) do
       if varData.category == "Cargo" then
         tuningVariables[varName] = nil
@@ -241,7 +276,7 @@ local function requestVehicleTuningData(businessId, vehicleId)
       elseif varData.val == nil then
         varData.val = varData.default or varData.min or 0
       end
-      
+
       if varData.valDis == nil and varData.val ~= nil then
         varData.valDis = varData.val
       end
@@ -255,11 +290,10 @@ local function requestVehicleTuningData(businessId, vehicleId)
       tuningData = tuningVariables,
       baselineVars = baselineVars
     })
-    
+
     return
   end)
 end
-
 
 local function getVehicleTuningData(businessId, vehicleId)
   requestVehicleTuningData(businessId, vehicleId)
@@ -270,14 +304,16 @@ local function applyTuningToVehicle(businessId, vehicleId, tuningVars)
   if not businessId or not vehicleId or not tuningVars then
     return false
   end
-  
+
   local vehObj = getBusinessVehicleObject(businessId, vehicleId)
-  if not vehObj then return false end
-  
+  if not vehObj then
+    return false
+  end
+
   if not career_modules_business_businessPartCustomization then
     return false
   end
-  
+
   local currentConfig = career_modules_business_businessPartCustomization.getPreviewVehicleConfig(businessId)
   if not currentConfig then
     if not career_modules_business_businessPartCustomization.initializePreviewVehicle then
@@ -291,21 +327,25 @@ local function applyTuningToVehicle(businessId, vehicleId, tuningVars)
       return false
     end
   end
-  
+
   local vehicle = career_modules_business_businessInventory.getVehicleById(businessId, vehicleId)
-  if not vehicle or not vehicle.vehicleConfig then return false end
+  if not vehicle or not vehicle.vehicleConfig then
+    return false
+  end
   local modelKey = vehicle.vehicleConfig.model_key or vehicle.model_key
-  if not modelKey then return false end
-  
+  if not modelKey then
+    return false
+  end
+
   local updatedConfig = deepcopy(currentConfig)
   if not updatedConfig.vars then
     updatedConfig.vars = {}
   end
-  
+
   updatedConfig.vars = tableMerge(deepcopy(updatedConfig.vars), tuningVars)
-  
+
   local vehId = vehObj:getID()
-  
+
   core_vehicleBridge.requestValue(vehObj, function(data)
     local storedFuelLevels = {}
     if data and data[1] then
@@ -320,18 +360,20 @@ local function applyTuningToVehicle(businessId, vehicleId, tuningVars)
         end
       end
     end
-    
-    local additionalVehicleData = {spawnWithEngineRunning = false}
+
+    local additionalVehicleData = {
+      spawnWithEngineRunning = false
+    }
     core_vehicle_manager.queueAdditionalVehicleData(additionalVehicleData, vehId)
-    
+
     local spawnOptions = {}
     spawnOptions.config = updatedConfig
     spawnOptions.keepOtherVehRotation = true
-    
+
     core_vehicles.replaceVehicle(modelKey, spawnOptions, vehObj)
-    
+
     core_vehicleBridge.requestValue(vehObj, function(newData)
-      
+
       if storedFuelLevels and next(storedFuelLevels) and newData and newData[1] then
         for _, tank in ipairs(newData[1]) do
           if tank.name and storedFuelLevels[tank.name] and tank.energyType ~= "n2o" then
@@ -341,10 +383,10 @@ local function applyTuningToVehicle(businessId, vehicleId, tuningVars)
           end
         end
       end
-      
+
       local jobKey = normalizeJobId(vehicle.jobId)
       local requestId = tostring(businessId) .. "_" .. jobKey .. "_" .. tostring(os.clock())
-      
+
       vehObj:queueLuaCommand([[
         local engine = powertrain.getDevicesByCategory("engine")[1]
         local stats = obj:calcBeamStats()
@@ -352,11 +394,12 @@ local function applyTuningToVehicle(businessId, vehicleId, tuningVars)
           local power = engine.maxPower
           local weight = stats.total_weight
           if power and weight and weight > 0 then
-            obj:queueGameEngineLua("career_modules_business_businessPartCustomization.onPowerWeightReceived(']] .. requestId .. [[', " .. power .. ", " .. weight .. ")")
+            obj:queueGameEngineLua("career_modules_business_businessPartCustomization.onPowerWeightReceived(']] ..
+                               requestId .. [[', " .. power .. ", " .. weight .. ")")
           end
         end
       ]])
-      
+
       if career_modules_business_businessComputer then
         core_jobsystem.create(function(job)
           job.sleep(0.1)
@@ -365,40 +408,56 @@ local function applyTuningToVehicle(businessId, vehicleId, tuningVars)
       end
     end, 'energyStorage')
   end, 'energyStorage')
-  
+
   return true
 end
 
 local function createShoppingCart(businessId, vehicleId, changedVars, originalVars)
   if not changedVars or not next(changedVars) then
-    return {items = {}, total = 0, taxes = 0}
+    return {
+      items = {},
+      total = 0,
+      taxes = 0
+    }
   end
-  
+
   local tuningData = fetchVehicleTuningVariables(businessId, vehicleId)
-  if not tuningData then return {items = {}, total = 0, taxes = 0} end
-  
-  local shoppingCart = {items = {}}
+  if not tuningData then
+    return {
+      items = {},
+      total = 0,
+      taxes = 0
+    }
+  end
+
+  local shoppingCart = {
+    items = {}
+  }
   local total = 0
-  
+
+  -- First pass: Identify changed variables and build structure
   for varName, value in pairs(changedVars) do
     local varData = tuningData[varName]
-    if not varData then goto continue end
-    
+    if not varData then
+      goto continue
+    end
+
     local originalValue = originalVars and originalVars[varName]
     if originalValue == nil then
       originalValue = varData.val or varData.default or varData.min or 0
     end
-    
-    if type(originalValue) == "table" and originalValue.valDis then
-      originalValue = originalValue.valDis
+
+    if type(originalValue) == "table" then
+      originalValue = originalValue.val
     end
-    
-    if math.abs(value - originalValue) < 0.001 then goto continue end
-    
-    local varPrice
+
+    if math.abs(value - originalValue) < 0.000001 then
+      goto continue
+    end
+
     if isOnBlackList(varData) then
-      varPrice = 0
-      local displayTitle = string.format("%s %s %s", varData.category or "", varData.subCategory or "", varData.title or varName)
+      local displayTitle = string.format("%s %s %s", varData.category or "", varData.subCategory or "",
+        varData.title or varName)
       shoppingCart.items[varName] = {
         name = varName,
         title = displayTitle,
@@ -406,16 +465,16 @@ local function createShoppingCart(businessId, vehicleId, changedVars, originalVa
       }
     elseif varData.category then
       if not shoppingCart.items[varData.category] then
-        local price = getPriceCategory(varData.category)
-        total = total + price
+        -- Category price is 0 for the cart total, but we'll calculate a visual total
         shoppingCart.items[varData.category] = {
           type = "category",
           items = {},
-          price = price,
+          price = 0,
+          visualPrice = 0,
           title = varData.category
         }
       end
-      
+
       if varData.subCategory and not shoppingCart.items[varData.category].items[varData.subCategory] then
         local price = getPriceSubCategory(varData.category, varData.subCategory)
         total = total + price
@@ -425,45 +484,47 @@ local function createShoppingCart(businessId, vehicleId, changedVars, originalVa
           price = price,
           title = varData.subCategory
         }
+        -- Add subcategory price to category visual total
+        shoppingCart.items[varData.category].visualPrice = (shoppingCart.items[varData.category].visualPrice or 0) +
+                                                             price
       end
-      
+
+      -- Variables are now free (included in subcategory/category price)
       if varData.subCategory then
-        varPrice = getPrice(varData.category, varData.subCategory, varName)
         shoppingCart.items[varData.category].items[varData.subCategory].items[varName] = {
           name = varName,
           title = varData.title or varName,
-          price = varPrice
+          price = 0
         }
       else
-        varPrice = getPrice(varData.category, varData.subCategory, varName)
         shoppingCart.items[varData.category].items[varName] = {
           name = varName,
           title = varData.title or varName,
-          price = varPrice
+          price = 0
         }
       end
     else
-      varPrice = getPrice(varData.category, varData.subCategory, varName)
       shoppingCart.items[varName] = {
         name = varName,
         title = varData.title or varName,
-        price = varPrice
+        price = 0
       }
     end
-    
-    total = total + varPrice
+
     ::continue::
   end
-  
+
   shoppingCart.taxes = total * 0.07
   shoppingCart.total = total + shoppingCart.taxes
-  
+
   return shoppingCart
 end
 
 local function calculateTuningCost(businessId, vehicleId, tuningVars, originalVars)
-  if not tuningVars then return 0 end
-  
+  if not tuningVars then
+    return 0
+  end
+
   local shoppingCart = createShoppingCart(businessId, vehicleId, tuningVars, originalVars)
   local discountMultiplier = getCheapTunesDiscountMultiplier(businessId)
   local discountedTotal = shoppingCart.total * discountMultiplier
@@ -482,7 +543,7 @@ local function applyVehicleTuning(businessId, vehicleId, tuningVars, accountId)
 
   if accountId and career_modules_bank then
     local originalVars = vehicle.vars or {}
-    
+
     local tuningCost = calculateTuningCost(businessId, vehicleId, tuningVars, originalVars)
     if tuningCost > 0 then
       local success = career_modules_bank.payFromAccount({
@@ -515,7 +576,7 @@ local function applyVehicleTuning(businessId, vehicleId, tuningVars, accountId)
       pulledOutVehicle.vars = {}
     end
     pulledOutVehicle.vars = tableMerge(pulledOutVehicle.vars, vehicle.vars)
-    
+
     if pulledOutVehicle.config then
       if not pulledOutVehicle.config.vars then
         pulledOutVehicle.config.vars = {}
@@ -527,7 +588,7 @@ local function applyVehicleTuning(businessId, vehicleId, tuningVars, accountId)
   local updateData = {
     vars = vehicle.vars
   }
-  
+
   if vehicle.config then
     if not vehicle.config.vars then
       vehicle.config.vars = {}
@@ -535,7 +596,7 @@ local function applyVehicleTuning(businessId, vehicleId, tuningVars, accountId)
     vehicle.config.vars = tableMerge(vehicle.config.vars, vehicle.vars)
     updateData.config = vehicle.config
   end
-  
+
   career_modules_business_businessInventory.updateVehicle(businessId, vehicleId, updateData)
 
   return true
@@ -549,8 +610,10 @@ end
 
 local function getShoppingCart(businessId, vehicleId, tuningVars, originalVars)
   local shoppingCart = createShoppingCart(businessId, vehicleId, tuningVars, originalVars)
-  
-  local shoppingCartUI = {items = {}}
+
+  local shoppingCartUI = {
+    items = {}
+  }
   for name, info in pairs(shoppingCart.items) do
     table.insert(shoppingCartUI.items, {
       varName = info.name or name,
@@ -578,10 +641,10 @@ local function getShoppingCart(businessId, vehicleId, tuningVars, originalVars)
       end
     end
   end
-  
+
   shoppingCartUI.taxes = shoppingCart.taxes
   shoppingCartUI.total = shoppingCart.total
-  
+
   return shoppingCartUI
 end
 
@@ -589,16 +652,16 @@ local function addTuningToCart(businessId, vehicleId, currentTuningVars, baselin
   if not businessId or not vehicleId or not currentTuningVars then
     return {}
   end
-  
+
   if not baselineTuningVars and career_modules_business_businessPartCustomization then
     local initialVehicle = career_modules_business_businessPartCustomization.getInitialVehicleState(businessId)
     if initialVehicle and initialVehicle.vars then
       baselineTuningVars = initialVehicle.vars
     end
   end
-  
+
   baselineTuningVars = baselineTuningVars or {}
-  
+
   local changedVars = {}
   for varName, currentValue in pairs(currentTuningVars) do
     if currentValue ~= nil then
@@ -608,13 +671,13 @@ local function addTuningToCart(businessId, vehicleId, currentTuningVars, baselin
       end
     end
   end
-  
+
   if not next(changedVars) then
     return {}
   end
-  
+
   local shoppingCart = getShoppingCart(businessId, vehicleId, changedVars, baselineTuningVars)
-  
+
   local cartItems = {}
   local tuningDataForJob = fetchVehicleTuningVariables(businessId, vehicleId)
   for _, item in ipairs(shoppingCart.items or {}) do
@@ -624,6 +687,7 @@ local function addTuningToCart(businessId, vehicleId, currentTuningVars, baselin
         value = nil,
         originalValue = nil,
         price = item.price or 0,
+        visualPrice = item.visualPrice,
         title = item.title or item.varName or "",
         level = item.level or 1,
         type = item.type
@@ -631,10 +695,10 @@ local function addTuningToCart(businessId, vehicleId, currentTuningVars, baselin
     elseif item.type == "variable" then
       local varName = item.varName
       local currentValue = changedVars[varName]
-      
+
       if currentValue ~= nil then
         local baselineValue = baselineTuningVars[varName]
-        
+
         local tuningData = tuningDataForJob
         local varTitle = varName
         if tuningData and tuningData[varName] then
@@ -647,7 +711,7 @@ local function addTuningToCart(businessId, vehicleId, currentTuningVars, baselin
             varTitle = varData.subCategory .. " - " .. varTitle
           end
         end
-        
+
         table.insert(cartItems, {
           varName = varName,
           value = currentValue,
@@ -660,7 +724,7 @@ local function addTuningToCart(businessId, vehicleId, currentTuningVars, baselin
       end
     end
   end
-  
+
   return cartItems
 end
 
@@ -675,5 +739,4 @@ M.clearTuningDataCacheForJob = clearTuningDataCacheForJob
 M.addTuningToCart = addTuningToCart
 
 return M
-
 
