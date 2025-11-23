@@ -20,10 +20,10 @@
     },
     {
       "baseColor":[
-        0.8,
-        0.42,
-        0.1,
-        1
+        0.5,
+        0.5,
+        0.5,
+        1.2
       ],
       "clearcoat":0,
       "clearcoatRoughness":0,
@@ -73,12 +73,12 @@
     "licenseplate_design_2_1":"",
     "load_seat_FR":"",
     "n2o_system":"",
-    "paint_design":"us_semi_skin_twotone",
+    "paint_design":"us_semi_skin_rlsupulllongnose",
     "semi_wbeam_axles":"semi_wbeam_axles",
     "semi_wbeam_springs":"semi_wbeam_springs",
     "skin_cabover_interior":"skin_cabover_interior_tan",
     "skin_frame":"us_semi_skin_frame_black",
-    "skin_us_semi_cargobox":"us_semi_cargobox_skin_bng",
+    "skin_us_semi_cargobox":"us_semi_cargobox_skin_rlsupull26ft",
     "us_semi_air_compressor":"us_semi_air_compressor",
     "us_semi_air_tank_cabov":"us_semi_air_tank_cabov",
     "us_semi_axle_F":"us_semi_axle_F",
