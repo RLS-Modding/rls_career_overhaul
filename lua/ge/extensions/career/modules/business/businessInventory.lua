@@ -6,6 +6,7 @@ local businessVehicles = {}
 local pulledOutVehicles = {}
 local spawnedBusinessVehicles = {}
 local vehicleIdCounters = {}
+local pendingConfigCallbacks = {}
 
 local function clearCachesForVehicleJob(businessId, vehicle)
   if not vehicle then
@@ -519,19 +520,24 @@ local function pullOutVehicle(businessType, businessId, vehicleId)
     "pullOutVehicle: Successfully pulled out vehicle. businessId=" .. tostring(businessId) .. ", vehicleId=" ..
       tostring(vehicleId))
 
-  -- Request and save vehicle config to ensure it's available in inventory
-  core_vehicleBridge.requestValue(vehObj, function(data)
-    if data and data.config then
-      log("D", "businessInventory", "pullOutVehicle: Syncing config for vehicle " .. tostring(normalizedVehicleId))
-      updateVehicle(businessId, normalizedVehicleId, {
-        config = data.config,
-        vars = data.config.vars
-      })
-    end
-  end, 'vehicleData')
+  local callbackId = tostring(businessId) .. "_" .. tostring(normalizedVehicleId) .. "_" .. tostring(os.time())
+  pendingConfigCallbacks[callbackId] = {
+    businessId = businessId,
+    vehicleId = normalizedVehicleId
+  }
+
+  dump(vehicle)
+  if not vehicle.config then
+    vehObj:queueLuaCommand([[
+        local configData = serialize(v.config)
+        obj:queueGameEngineLua("career_modules_business_businessInventory.onVehicleConfigReceived(']] .. callbackId ..
+                             [[', " .. configData .. ")")
+      ]])
+  end
 
   return true
 end
+
 
 local function putAwayVehicle(businessId, vehicleId)
   if not businessId then
@@ -660,6 +666,28 @@ local function updateVehicle(businessId, vehicleId, vehicleData)
   return false
 end
 
+local function onVehicleConfigReceived(callbackId, config)
+  local callbackData = pendingConfigCallbacks[callbackId]
+  if not callbackData then
+    return
+  end
+
+  pendingConfigCallbacks[callbackId] = nil
+
+  local businessId = callbackData.businessId
+  local vehicleId = callbackData.vehicleId
+
+  if not config then
+    return
+  end
+
+  log("D", "businessInventory", "onVehicleConfigReceived: Syncing config for vehicle " .. tostring(vehicleId))
+  updateVehicle(businessId, vehicleId, {
+    config = config,
+    vars = config.vars
+  })
+end
+
 M.onCareerActivated = onCareerActivated
 M.getBusinessVehicles = getBusinessVehicles
 M.storeVehicle = storeVehicle
@@ -683,6 +711,7 @@ M.getBusinessVehicleIdentifier = getBusinessVehicleIdentifier
 M.getBusinessJobIdentifier = getBusinessJobIdentifier
 M.getJobIdFromVehicle = getJobIdFromVehicle
 M.getBusinessVehicleFromSpawnedId = getBusinessVehicleFromSpawnedId
+M.onVehicleConfigReceived = onVehicleConfigReceived
 M.onSaveCurrentSaveSlot = onSaveCurrentSaveSlot
 
 return M

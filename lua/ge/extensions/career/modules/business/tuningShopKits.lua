@@ -952,6 +952,11 @@ local function onVehicleConfigReceived(callbackId, config)
     career_modules_bank.removeFunds(accountId, kitCost, "Kit Application", "Applied kit: " .. kit.name)
   end
 
+  if career_modules_business_businessPartCustomization and career_modules_business_businessPartCustomization.clearPreviewVehicle then
+    log("I", "tuningShopKits", "Clearing part customization session to reset baseline...")
+    career_modules_business_businessPartCustomization.clearPreviewVehicle(businessId)
+  end
+
   log("I", "tuningShopKits", "========== KIT APPLICATION COMPLETE ==========")
   log("I", "tuningShopKits", "Kit applied successfully: " .. kit.name)
 
