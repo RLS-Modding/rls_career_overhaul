@@ -13,6 +13,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   const activeVehicleId = ref(null)
   const loading = ref(false)
   const registeredTabs = ref([])
+  const kits = ref([])
 
   const partsCart = ref([])
   const tuningCart = ref([])
@@ -195,6 +196,9 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     if (payload.tabs) {
       registeredTabs.value = payload.tabs
     }
+    if (payload.stats) {
+      kits.value = payload.stats.kits || []
+    }
   }
 
   const tabsBySection = computed(() => {
@@ -210,6 +214,10 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   })
 
   const loadBusinessData = async (businessType, businessId) => {
+    if (businessId === true || businessId === "true") {
+      console.error("loadBusinessData called with invalid businessId:", businessId)
+      return
+    }
     loading.value = true
     try {
       const data = await lua.career_modules_business_businessComputer.getBusinessComputerUIData(businessType, businessId)
@@ -592,6 +600,52 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
       return success
     } catch (error) {
       return false
+    }
+  }
+
+  const createKit = async (jobId, kitName) => {
+    if (!businessId.value || businessId.value === true) return false
+    try {
+      const spawnedVehicleId = pulledOutVehicle.value?.spawnedVehicleId
+      const success = await lua.career_modules_business_tuningShopKits.createKit(businessId.value, jobId, kitName, spawnedVehicleId)
+      if (success) {
+        await loadBusinessData(businessType.value, businessId.value)
+      }
+      return success
+    } catch (error) {
+      return false
+    }
+  }
+
+  const deleteKit = async (kitId) => {
+    if (!businessId.value) return false
+    try {
+      const success = await lua.career_modules_business_tuningShopKits.deleteKit(businessId.value, kitId)
+      if (success) {
+        await loadBusinessData(businessType.value, businessId.value)
+      }
+      return success
+    } catch (error) {
+      return false
+    }
+  }
+
+  const applyKit = async (vehicleId, kitId) => {
+    if (!businessId.value || !vehicleId || !kitId) return false
+    if (isDamageLocked.value) {
+      showDamageLockWarning()
+      return false
+    }
+    try {
+      const result = await lua.career_modules_business_tuningShopKits.applyKit(businessId.value, vehicleId, kitId)
+      if (result && result.success) {
+        await loadBusinessData(businessType.value, businessId.value)
+        return { success: true, cost: result.cost }
+      } else {
+        return { success: false, error: result ? result.error : "Unknown error" }
+      }
+    } catch (error) {
+      return { success: false, error: "Lua error" }
     }
   }
 
@@ -1703,6 +1757,12 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     }
   }, { immediate: true })
 
+  bridge.events.on("businessComputer:onKitsUpdated", (data) => {
+    if (data && data.businessId && String(data.businessId) === String(businessId.value)) {
+      loadBusinessData(businessType.value, businessId.value)
+    }
+  })
+
   return {
     businessData,
     activeView,
@@ -1805,6 +1865,10 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     getAvailableRaceTypes,
     updateBrandRecognitionStatus,
     updateRaceRecognitionStatus,
+    createKit,
+    deleteKit,
+    applyKit,
+    kits
   }
 })
 

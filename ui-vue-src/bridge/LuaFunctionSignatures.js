@@ -36,12 +36,12 @@ export default {
 
   // TODO - incomplete, add as neeeded
 
-  getVehicleColor: () => {},
+  getVehicleColor: () => { },
   getVehicleColorPalette: index => Integer,
   resetGameplay: playerID => Integer,
-  quit: () => {},
-  checkFSErrors: () => {},
-  returnToMainMenu: () => {},
+  quit: () => { },
+  checkFSErrors: () => { },
+  returnToMainMenu: () => { },
 
 
 
@@ -51,15 +51,15 @@ export default {
   },
 
   simTimeAuthority: {
-    togglePause: () => {},
-    getPause: () => {},
+    togglePause: () => { },
+    getPause: () => { },
     pause: (state) => Boolean,
-    pushPauseRequest: () => {},
-    popPauseRequest: () => {},
+    pushPauseRequest: () => { },
+    popPauseRequest: () => { },
   },
 
   commands: {
-    toggleCamera: () => {},
+    toggleCamera: () => { },
   },
 
   ui_audio: {
@@ -67,79 +67,79 @@ export default {
   },
 
   career_career: {
-    closeAllMenus: () => {},
-    isActive: () => {},
-    sendAllCareerSaveSlotsData: () => {},
-    sendCurrentSaveSlotData: () => {},
+    closeAllMenus: () => { },
+    isActive: () => { },
+    sendAllCareerSaveSlotsData: () => { },
+    sendCurrentSaveSlotData: () => { },
     createOrLoadCareerAndStart: (id, specificAutosave, tutorial, hardcore, challengeId) => [String, Any, Boolean, Boolean, String],
     applyChallengeConfig: config => Object
   },
 
   career_saveSystem: {
-    saveCurrent: () => {},
+    saveCurrent: () => { },
     removeSaveSlot: id => String,
     renameSaveSlot: (name, newName) => [String, String],
   },
 
   career_challengeModes: {
-    discoverChallenges: () => {},
-    getChallengeOptionsForCareerCreation: () => {},
-    getChallengeEditorData: () => {},
+    discoverChallenges: () => { },
+    getChallengeOptionsForCareerCreation: () => { },
+    getChallengeEditorData: () => { },
     createChallengeFromUI: data => Any,
     startChallenge: id => String,
-    getActiveChallenge: () => {},
-    isChallengeActive: () => {},
-    requestChallengeCompleteData: () => {},
+    getActiveChallenge: () => { },
+    isChallengeActive: () => { },
+    requestChallengeCompleteData: () => { },
     getChallengeSeeded: id => String,
-    requestChallengeSeeded: id => {},
+    requestChallengeSeeded: id => { },
     getChallengeDataForEdit: id => String,
-    requestChallengeDataForEdit: id => {},
+    requestChallengeDataForEdit: id => { },
     deleteChallenge: id => String,
     encodeChallengeDataToSeed: data => Any,
     decodeSeedToChallengeData: seed => String,
-    requestGenerateRandomSeed: () => {},
+    requestGenerateRandomSeed: () => { },
     requestSeedEncode: (requestId, challengeData) => [String, Any],
     requestSeedDecode: (requestId, seed) => [String, String],
     createChallengeFromSeedUI: (seed, name, description) => [String, String, String],
-    generateRandomChallengeData: () => {}
+    generateRandomChallengeData: () => { }
   },
 
   career_modules_uiUtils: {
     getCareerStatusData: withMocked(
-      () => {},
+      () => { },
       () => getMockedData("career.status")
     ),
     getCareerSimpleStats: withMocked(
-      () => {},
+      () => { },
       () => getMockedData("career.simpleStats")
     ),
-    getCareerPauseContextButtons: () => {},
+    getCareerPauseContextButtons: () => { },
     callCareerPauseContextButtons: id => Number,
-    getCareerCurrentLevelName: () => {},
+    getCareerCurrentLevelName: () => { },
   },
 
   career_modules_fuel: {
-    requestRefuelingTransactionData: () => {},
-    sendUpdateDataToUI: () => {},
+    requestRefuelingTransactionData: () => { },
+    sendUpdateDataToUI: () => { },
     uiButtonStartFueling: energyType => String,
     uiButtonStopFueling: energyType => String,
     onChangeFlowRate: flowRate => Number,
-    payPrice: () => {},
-    uiCancelTransaction: () => {},
+    payPrice: () => { },
+    uiCancelTransaction: () => { },
   },
 
   career_modules_logbook: {
     getLogbook: withMocked(
-      () => {},
+      () => { },
       () => getMockedData("logbook.sample")
     ),
     setLogbookEntryRead: (id, state) => [String, Boolean],
   },
 
   career_modules_milestones_milestones: {
-    getMilestones: () => {},
-    claim: id => {},
-    unclaimedMilestonesCount: () => {},
+    getMilestones: () => { },
+    claim: id => { },
+    unclaimedMilestonesCount: () => { },
   },
 
   career_modules_branches_landing: {
@@ -147,31 +147,31 @@ export default {
     getBranchSkillCardData: id => String,
     getBranchPageData: id => String,
     getLandingPageData: domain => String,
-    getCargoProgressForUI: () => {},
+    getCargoProgressForUI: () => { },
   },
 
   career_modules_partShopping: {
-    cancelShopping: () => {},
-    applyShopping: () => {},
+    cancelShopping: () => { },
+    applyShopping: () => { },
     installPartByPartShopId: id => Number,
     removePartBySlot: slot => String,
-    sendShoppingDataToUI: () => {},
+    sendShoppingDataToUI: () => { },
   },
 
   career_modules_vehicleShopping: {
     showVehicle: id => String,
     navigateToPos: (pos, vehicleId) => Object, // vehicleId is optional
     openShop: (seller, computerId) => [Any, Any], // i think this needs to be Any instead of String to also allow nil
-    cancelShopping: () => {},
+    cancelShopping: () => { },
     quickTravelToVehicle: id => String,
     openPurchaseMenu: (purchaseType, shopId) => [String, String],
-    openInventoryMenuForTradeIn: () => {},
+    openInventoryMenuForTradeIn: () => { },
     buyFromPurchaseMenu: (purchaseType, options) => [String, Any],
     cancelPurchase: purchaseType => String,
-    getShoppingData: () => {},
-    sendPurchaseDataToUi: () => {},
-    removeTradeInVehicle: () => {},
-    onShoppingMenuClosed: () => {},
+    getShoppingData: () => { },
+    sendPurchaseDataToUi: () => { },
+    removeTradeInVehicle: () => { },
+    onShoppingMenuClosed: () => { },
     // lightweight refresh + navigation helpers
     updateVehicleList: fromScratch => Boolean,
     navigateToDealership: dealershipId => String,
@@ -181,28 +181,28 @@ export default {
   },
 
   career_modules_marketplace: {
-    getListings: () => {},
+    getListings: () => { },
     menuOpened: open => Boolean,
     acceptOffer: (inventoryId, offerIndex) => [Number, Number],
     declineOffer: (inventoryId, offerIndex) => [Number, Number],
     listVehicles: (inventoryIds) => [Array],
-    openMenu: () => {},
+    openMenu: () => { },
     removeVehicleListing: inventoryId => Number,
   },
 
   career_modules_testDrive: {
-    stop: () => {},
+    stop: () => { },
   },
 
   career_modules_inspectVehicle: {
-    startTestDrive: () => {},
+    startTestDrive: () => { },
     onInspectScreenChanged: enabled => Boolean,
-    onPurchaseMenuClosed: () => {},
-    repairVehicle: () => {},
+    onPurchaseMenuClosed: () => { },
+    repairVehicle: () => { },
   },
 
   career_modules_loanerVehicles: {
-    markForSpawning: loanInfo => {},
+    markForSpawning: loanInfo => { },
     spawnAndLoanVehicle: (vehicleInfo, loanInfo) => [Object, Object],
     getLoanedVehiclesByOrg: orgId => String,
     returnVehicle: inventoryId => Number,
@@ -216,21 +216,21 @@ export default {
     expediteRepairFromInventory: (inventoryId, price) => [Number, Number],
     enterVehicle: id => Number,
     openMenuFromComputer: computerId => String,
-    closeMenu: () => {},
+    closeMenu: () => { },
     chooseVehicleFromMenu: (vehId, buttonId, repairPrevVeh) => [Number, Number, Boolean],
     setFavoriteVehicle: id => Number,
-    sendDataToUi: () => {},
+    sendDataToUi: () => { },
     removeVehicleObject: id => Number,
     getVehicle: id => Number,
-    getVehicles: () => {},
+    getVehicles: () => { },
     getVehicleUiData: id => Number,
-    isEmpty: () => {},
+    isEmpty: () => { },
     setLicensePlateText: (inventoryId, text) => [Number, String],
     purchaseLicensePlateText: (inventoryId, text, money) => [Number, String, Number],
     isLicensePlateValid: text => String,
     isVehicleNameValid: text => String,
     renameVehicle: (inventoryId, name) => [Number, String],
-    getVehiclesForSale: () => {},
+    getVehiclesForSale: () => { },
     removeVehicleFromSale: id => Number,
     removeVehicle: id => Number,
     deliverVehicle: (id, money) => [Number, Number],
@@ -240,22 +240,22 @@ export default {
   career_modules_vehiclePerformance: {
     startDragTest: id => Number,
     startDragTestFromOutsideMenu: (id, computerId) => [Number, String],
-    cancelTest: () => {},
+    cancelTest: () => { },
   },
 
   career_modules_partInventory: {
     openMenu: computerId => Any,
-    closeMenu: () => {},
-    sendUIData: () => {},
+    closeMenu: () => { },
+    sendUIData: () => { },
     sellParts: ids => Array,
-    partInventoryClosed: () => {},
+    partInventoryClosed: () => { },
   },
 
   career_modules_insurance: {
     getProposablePoliciesForVehInv: invVehId => Number,
     changeVehPolicy: (invVehId, policyId) => [Number, Number],
-      applyVehPolicyChange: (invVehId, policyId, overridesIdx0) => [Number, Number],
-      setVehPerkOverride: (invVehId, perkName, choiceIndex) => [Number, String, Number],
+    applyVehPolicyChange: (invVehId, policyId, overridesIdx0) => [Number, Number],
+    setVehPerkOverride: (invVehId, perkName, choiceIndex) => [Number, String, Number],
     payBonusReset: policyId => Number,
     purchasePolicy: id => Number,
     calculatePremiumDetails: (policyId, tempPerks) => [Number, Any],
@@ -263,31 +263,31 @@ export default {
     changePolicyPerks: (policyId, changedPerks) => [Number, Object],
     startRepairInGarage: (vehicleInfo, repairOptionData) => [Object, Object],
     openRepairMenu: (vehicleInfo, originComputerId) => [Object, Any],
-    getRepairData: () => {},
-    closeMenu: () => {},
-    sendUIData: () => {},
-      getApplicablePoliciesForVehicle: invVehId => Number,
+    getRepairData: () => { },
+    closeMenu: () => { },
+    sendUIData: () => { },
+    getApplicablePoliciesForVehicle: invVehId => Number,
     inventoryVehNeedsRepair: inventoryId => Number,
   },
 
   career_modules_tuning: {
     apply: tuningValues => Object,
     start: (vehId, origin) => [Any, Any],
-    getTuningData: () => {},
-    close: () => {},
-    applyShopping: () => {},
-    cancelShopping: () => {},
+    getTuningData: () => { },
+    close: () => { },
+    applyShopping: () => { },
+    cancelShopping: () => { },
     removeVarFromShoppingCart: varName => String,
   },
 
   career_modules_painting: {
-    apply: () => {},
+    apply: () => { },
     start: (vehId, origin) => [Any, Any],
-    getPaintData: () => {},
-    close: () => {},
+    getPaintData: () => { },
+    close: () => { },
     setPaints: paint => Object,
-    getFactoryPaint: () => {},
-    onUIOpened: () => {},
+    getFactoryPaint: () => { },
+    onUIOpened: () => { },
   },
 
   career_modules_questManager: {
@@ -296,8 +296,8 @@ export default {
   },
 
   career_modules_computer: {
-    onMenuClosed: () => {},
-    getComputerUIData: () => {},
+    onMenuClosed: () => { },
+    getComputerUIData: () => { },
     computerButtonCallback: (buttonId, inventoryId) => [String, Any],
     openComputerMenuById: computerId => String,
   },
@@ -305,121 +305,121 @@ export default {
   career_modules_delivery_general: {
     setAutomaticRoute: enabled => Boolean,
     setDetailedDropOff: enabled => Boolean,
-    setSetting: (key, value) => {},
-    getSettings: () => {},
-    setDeliveryTimePaused: paused => {},
+    setSetting: (key, value) => { },
+    getSettings: () => { },
+    setDeliveryTimePaused: paused => { },
   },
 
   career_modules_delivery_cargoScreen: {
     requestCargoDataForUi: (facilityId, parkingSpotPath, updateMaxTimeStamp) => [Any, Any, Any],
     moveCargoFromUi: (cargoId, targetLocation) => [Number, Object],
-    commitDeliveryConfiguration: () => {},
-    cancelDeliveryConfiguration: () => {},
-    exitDeliveryMode: () => {},
-    exitCargoOverviewScreen: () => {},
+    commitDeliveryConfiguration: () => { },
+    cancelDeliveryConfiguration: () => { },
+    exitDeliveryMode: () => { },
+    exitCargoOverviewScreen: () => { },
     showCargoRoutePreview: cargoId => Any,
     showVehicleOfferRoutePreview: offerId => Any,
     setCargoRoute: (cargoId, origin) => [Number, Boolean],
-    showLocationRoutePreview: (location, asProvider) => {},
-    showCargoContainerHelpPopup: () => {},
-    setBestRoute: () => {},
+    showLocationRoutePreview: (location, asProvider) => { },
+    showCargoContainerHelpPopup: () => { },
+    setBestRoute: () => { },
     spawnOffer: (offerId, fadeToBlack) => [Number, Any],
     abandonAcceptedOffer: vehId => Number,
     setCargoScreenTab: tab => String,
-    unloadCargoPopupClosed: () => {},
-    moveMaterialFromUi: () => {},
-    requestDropOffData: () => {},
-    confirmDropOffData: (data, facId, psPath) => {},
-    dropOffPopupClosed: mode => {},
-    clearTransientMoveForCargo: cargoId => {},
-    clearTransientMovesForStorage: materialType => {},
-    applyTransientMoves: () => {},
-    toggleOfferForSpawning: id => {},
-    tryLoadAll: cargoIds => {},
-    showRoutePreview: route => {},
+    unloadCargoPopupClosed: () => { },
+    moveMaterialFromUi: () => { },
+    requestDropOffData: () => { },
+    confirmDropOffData: (data, facId, psPath) => { },
+    dropOffPopupClosed: mode => { },
+    clearTransientMoveForCargo: cargoId => { },
+    clearTransientMovesForStorage: materialType => { },
+    applyTransientMoves: () => { },
+    toggleOfferForSpawning: id => { },
+    tryLoadAll: cargoIds => { },
+    showRoutePreview: route => { },
     deliveryScreenExternalButtonPressed: id => Any,
   },
 
   career_modules_delivery_progress: {
-    activateSound: (soundLabel, active) => {},
+    activateSound: (soundLabel, active) => { },
   },
 
   career_modules_linearTutorial: {
-    introPopup: (key, force) => {},
-    wasIntroPopupsSeen: pages => {},
-    isLinearTutorialActive: () => {},
+    introPopup: (key, force) => { },
+    wasIntroPopupsSeen: pages => { },
+    isLinearTutorialActive: () => { },
   },
 
   gameplay_drag_general: {
-    screenshotTimeslip: () => {},
+    screenshotTimeslip: () => { },
     getHistory: saveFile => [Object],
   },
 
   gameplay_crashTest_scenarioManager: {
-    nextStepFromUI: () => {},
+    nextStepFromUI: () => { },
   },
 
   gameplay_discover: {
-    getDiscoverPages: () => {},
+    getDiscoverPages: () => { },
     startDiscover: discoverId => String,
   },
 
   freeroam_organizations: {
-    getUIData: () => {},
+    getUIData: () => { },
     getUIDataForOrg: orgId => String,
   },
 
   core_replay: {
-    onInit: () => {},
+    onInit: () => { },
     loadFile: filename => String,
-    stop: () => {},
-    openReplayFolderInExplorer: () => {},
-    getRecordings: () => {},
+    stop: () => { },
+    openReplayFolderInExplorer: () => { },
+    getRecordings: () => { },
     removeRecording: filename => String,
-    togglePlay: () => {},
-    toggleRecording: () => {},
-    cancelRecording: () => {},
+    togglePlay: () => { },
+    toggleRecording: () => { },
+    cancelRecording: () => { },
     toggleSpeed: speed => Number,
-    pause: () => {},
+    pause: () => { },
     seek: positionPercent => Number,
     acceptRename: (oldFilename, newFilename) => [String, String],
-    saveMissionReplay: filename => {},
-    removeMissionSavedReplay: filename => {},
+    saveMissionReplay: filename => { },
+    removeMissionSavedReplay: filename => { },
   },
 
 
   core_gamestate: {
-    requestGameState: () => {},
+    requestGameState: () => { },
   },
 
   core_gameContext: {
     getGameContext: withMocked(
-      params => {},
+      params => { },
       params => getMockedData("gameContext.gameContextData")
     ),
   },
 
   core_online: {
-    requestState: () => {},
+    requestState: () => { },
   },
 
   core_hardwareinfo: {
-    requestState: () => {},
-    getInfo: () => {},
+    requestState: () => { },
+    getInfo: () => { },
   },
 
   gameplay_statistic: {
-    sendGUIState: () => {},
+    sendGUIState: () => { },
   },
 
   core_quickAccess: {
-    getUiData: () => {},
+    getUiData: () => { },
     selectItem: (id, buttonDown, actionIndex) => [Number, Boolean, Number],
     contextAction: (id, buttonDown, actionIndex) => [Number, Boolean, Number],
-    back: () => {},
+    back: () => { },
     setEnabled: (enabled, level, force) => [Boolean, String, Boolean],
     openDynamicSlotConfigurator: index => Number,
-    getDynamicSlotConfigurationData: () => {},
+    getDynamicSlotConfigurationData: () => { },
     setDynamicSlotConfiguration: (key, data) => [String, Object],
     toggle: () => [],
     tryAction: action => String,
@@ -427,41 +427,41 @@ export default {
   },
 
   ui_bindingsLegend: {
-    sendDataToUI: () => {},
+    sendDataToUI: () => { },
     triggerInputAction: (action, value) => [String, Number],
   },
 
   freeroam_bigMapMode: {
     enterBigMap: (instant) => Object,
     exitBigMap: (force) => Boolean,
-    setBigmapScreenBounds: (windowBounds, mapBounds) => {},
+    setBigmapScreenBounds: (windowBounds, mapBounds) => { },
     navigateToMission: (poiId) => String,
     selectPoi: (poiId) => String,
     poiHovered: (poiId, active) => [String, Boolean],
     teleportToPoi: (poiId) => String,
     setOnlyIdsVisible: (poiIds) => Array,
-    deselect: () => {},
-    openPopupCallback: () => {},
-    toggleBigMap: () => {},
+    deselect: () => { },
+    openPopupCallback: () => { },
+    toggleBigMap: () => { },
     setUiFocus: (focus) => Boolean,
   },
 
   freeroam_bigMapPoiProvider: {
-    sendMissionLocationsToMinimap: () => {},
-    sendCurrentLevelMissionsToBigmap: () => {},
+    sendMissionLocationsToMinimap: () => { },
+    sendCurrentLevelMissionsToBigmap: () => { },
     toggleGroupVisibility: groupKey => String,
   },
 
   freeroam_vueBigMap: {
-    enterBigMap: () => {},
-    exitBigMap: () => {},
+    enterBigMap: () => { },
+    exitBigMap: () => { },
 
-    getPoiData: () => {},
-    getFilters: () => {},
-    getGroups: () => {},
+    getPoiData: () => { },
+    getFilters: () => { },
+    getGroups: () => { },
     toggleFiltersByIds: (filterIds) => Object,
     toggleFilterSectionById: (sectionId) => Object,
-    getGameStateInfo: () => {},
+    getGameStateInfo: () => { },
 
     selectPoiFromList: (poiId) => String,
     hoverPoiFromList: (poiId, active) => [String, Boolean],
@@ -480,8 +480,8 @@ export default {
     hook: hook => String,
 
     tech_license: {
-      requestState: () => {},
-      isValid: () => {},
+      requestState: () => { },
+      isValid: () => { },
     },
 
     core_input_actionFilter: {
@@ -490,55 +490,55 @@ export default {
     },
 
     core_input_bindings: {
-      FFBSafetyDataRequest: () => {},
-      resetBindings: () => {},
-      resetBindingsForDevice: deviceName => {},
+      FFBSafetyDataRequest: () => { },
+      resetBindings: () => { },
+      resetBindingsForDevice: deviceName => { },
       setMenuActionMapEnabled: state => Boolean,
-      getMenuActionMapEnabled: () => {},
+      getMenuActionMapEnabled: () => { },
       setMenuActionEnabled: (enabled, actionName) => [Boolean, String],
       notifyUI: reason => String,
       saveBindingsToDisk: deviceContents => Object,
-      getRecentDevices: () => {},
+      getRecentDevices: () => { },
     },
 
     core_vehicle_partmgmt: {
-      getConfigList: () => {},
+      getConfigList: () => { },
       highlightParts: (parts, vehID) => [Object, Number],
       loadLocal: filename => String,
-      resetPartsToLoadedConfig: () => {},
-      resetVarsToLoadedConfig: () => {},
-      resetAllToLoadedConfig: () => {},
-      openConfigFolderInExplorer: () => {},
+      resetPartsToLoadedConfig: () => { },
+      resetVarsToLoadedConfig: () => { },
+      resetAllToLoadedConfig: () => { },
+      openConfigFolderInExplorer: () => { },
       removeLocal: configName => String,
-      savedefault: () => {},
+      savedefault: () => { },
       saveLocal: filename => String,
-      sendDataToUI: () => {},
+      sendDataToUI: () => { },
       selectPart: (part, subparts) => [String, Boolean],
       selectParts: (parts, vehID) => [Object, Number],
-      selectReset: () => {},
+      selectReset: () => { },
       setConfigVars: vars => Object,
       setPartsConfig: config => Object, // deprecated
       setPartsTreeConfig: config => Object, // there's also second "respawn" argument for this
       showHighlightedParts: vehID => Number,
-      setDynamicTextureMaterials: () => {},
+      setDynamicTextureMaterials: () => { },
       partsSelectorChanged: parts => Object,
-      sendPartsSelectorStateToUI: () => {},
+      sendPartsSelectorStateToUI: () => { },
     },
 
     core_vehicle_mirror: {
-      getAnglesOffset: () => {},
+      getAnglesOffset: () => { },
       focusOnMirror: mirror_name => Any, //optional String
       setAngleOffset: (mirrorName, x, z, v, save) => [String, Number, Number, Boolean, Boolean],
     },
 
     gameplay_drift_general: {
-      onDriftAppMounted: () => {},
-      onDriftAppUnmounted: () => {},
+      onDriftAppMounted: () => { },
+      onDriftAppUnmounted: () => { },
     },
 
     gameplay_missions_missionScreen: {
       getMissionScreenData: withMocked(
-        () => {},
+        () => { },
         () => getMockedData("missionDetails.getMissionScreenData")
       ),
       startMissionById: (missionId, userSettings, startingOptions) => [String, Object, Object],
@@ -547,14 +547,14 @@ export default {
       startFromWithinMission: (id, userSettings) => [String, Object],
       getActiveStarsForUserSettings: (id, userSettings) => [String, Object],
       requestStartingOptionsForUserSettings: (id, userSettings) => [String, Object],
-      isAnyMissionActive: () => {},
-      isMissionStartOrEndScreenActive: () => {},
+      isAnyMissionActive: () => { },
+      isMissionStartOrEndScreenActive: () => { },
       openAPMChallenges: (branch, skill) => [String, String],
       navigateToMission: id => [String],
       setPreselectedMissionId: id => [String],
       showMissionRules: id => [String],
-      getMissionTiles: () => {},
-      activateSound: (soundLabel, active, frequency) => {},
+      getMissionTiles: () => { },
+      activateSound: (soundLabel, active, frequency) => { },
       activateSoundBlur: active => {
         Boolean
       },
@@ -562,29 +562,29 @@ export default {
     },
 
     gameplay_missions_missionManager: {
-      getCurrentTaskdataTypeOrNil: () => {},
+      getCurrentTaskdataTypeOrNil: () => { },
     },
 
     gameplay_garageMode: {
-      start: () => {},
-      isActive: () => {},
+      start: () => { },
+      isActive: () => { },
       setCamera: view => String,
       setLighting: lights => Array,
-      getLighting: () => {},
+      getLighting: () => { },
       setGarageMenuState: state => String,
-      stop: () => {},
-      testVehicle: () => {},
+      stop: () => { },
+      testVehicle: () => { },
     },
 
     ui_dynamicDecals: {
-      initialize: () => {},
-      exit: () => {},
-      requestUpdatedData: () => {},
-      setupEditor: () => {},
+      initialize: () => { },
+      exit: () => { },
+      requestUpdatedData: () => { },
+      setupEditor: () => { },
       loadSaveFile: path => String,
-      createSaveFile: () => {},
-      saveChanges: filename => {},
-      cancelChanges: () => {},
+      createSaveFile: () => { },
+      saveChanges: filename => { },
+      cancelChanges: () => { },
       exportSkin: skinName => String,
       moveSelectedLayer: order => Number,
       setDecalTexture: filePath => String,
@@ -600,13 +600,13 @@ export default {
       toggleApplyingDecal: enable => Boolean,
       toggleActionMap: enable => Boolean,
       toggleDecalVisibility: enable => Boolean,
-      redo: () => {},
-      undo: () => {},
+      redo: () => { },
+      undo: () => { },
       createLayer: layerData => Object,
       createFillLayer: fillLayerData => Object,
       createGroupLayer: layerData => Object,
       updateLayer: layerData => Object,
-      deleteSelectedLayer: () => {},
+      deleteSelectedLayer: () => { },
       selectLayer: layerUid => String,
       toggleStampActionMap: enable => Boolean,
       toggleLayerHighlight: uid => String,
@@ -615,50 +615,50 @@ export default {
 
     ui_liveryEditor: {
       save: filename => String,
-      setup: () => {},
-      deactivate: () => {},
+      setup: () => { },
+      deactivate: () => { },
       setDecalTexture: texturePath => String,
       useMousePosition: enable => Boolean,
       useSurfaceNormal: enable => Boolean,
-      requestSettingsData: () => {},
+      requestSettingsData: () => { },
     },
 
     ui_liveryEditor_colorPresets: {
-      getPresets: () => {},
-      addPreset: () => {},
+      getPresets: () => { },
+      addPreset: () => { },
     },
 
     ui_liveryEditor_editor: {
-      setup: () => {},
-      startEditor: () => {},
-      exitEditor: () => {},
-      startSession: () => {},
-      applyDecal: () => {},
-      applySkin: () => {},
-      createNew: () => {},
+      setup: () => { },
+      startEditor: () => { },
+      exitEditor: () => { },
+      startSession: () => { },
+      applyDecal: () => { },
+      applySkin: () => { },
+      createNew: () => { },
       loadFile: path => String,
       save: filename => String,
-      applyChanges: () => {},
+      applyChanges: () => { },
     },
 
     ui_liveryEditor_editMode: {
-      reapply: () => {},
-      requestReapply: () => {},
-      cancelReapply: () => {},
+      reapply: () => { },
+      requestReapply: () => { },
+      cancelReapply: () => { },
       setActiveLayer: layerUid => String,
       setActiveLayerDirection: direction => Number,
       removeAppliedLayer: layerUid => String,
       resetCursorProperties: properties => Array,
-      toggleHighlightActive: () => {},
-      activate: () => {},
-      deactivate: () => {},
-      apply: () => {},
-      requestApply: () => {},
-      cancelRequestApply: () => {},
-      toggleRequestApply: () => {},
+      toggleHighlightActive: () => { },
+      activate: () => { },
+      deactivate: () => { },
+      apply: () => { },
+      requestApply: () => { },
+      cancelRequestApply: () => { },
+      toggleRequestApply: () => { },
       saveChanges: params => Object,
-      cancelChanges: () => {},
-      duplicateActiveLayer: () => {},
+      cancelChanges: () => { },
+      duplicateActiveLayer: () => { },
     },
 
     ui_liveryEditor_camera: {
@@ -667,12 +667,12 @@ export default {
     },
 
     ui_liveryEditor_controls: {
-      toggleUseMousePos: () => {},
+      toggleUseMousePos: () => { },
     },
 
     ui_liveryEditor_history: {
-      redo: () => {},
-      undo: () => {},
+      redo: () => { },
+      undo: () => { },
     },
 
     ui_liveryEditor_layerAction: {
@@ -681,7 +681,7 @@ export default {
     },
 
     ui_liveryEditor_layerEdit: {
-      setup: () => {},
+      setup: () => { },
       setLayer: layerUid => String,
       editNewDecal: params => Object,
       translateLayer: (x, y) => [Number, Number],
@@ -699,30 +699,30 @@ export default {
       setSkew: (x, y) => [Number, Number],
       setMirrored: settings => [Boolean, Boolean, Number],
       setLayerMaterials: properties => Object,
-      activateStampReapply: () => {},
-      cancelStampReapply: () => {},
-      requestLayerMaterials: () => {},
-      saveChanges: () => {},
-      cancelChanges: () => {},
-      requestStateData: () => {},
-      requestInitialLayerData: () => {},
-      requestTransform: () => {},
-      endTransform: () => {},
+      activateStampReapply: () => { },
+      cancelStampReapply: () => { },
+      requestLayerMaterials: () => { },
+      saveChanges: () => { },
+      cancelChanges: () => { },
+      requestStateData: () => { },
+      requestInitialLayerData: () => { },
+      requestTransform: () => { },
+      endTransform: () => { },
       showCursorOrLayer: show => Boolean,
-      requestReposition: () => {},
-      cancelReposition: () => {},
-      applyReposition: () => {},
-      toggleUseMouseOrCursor: () => {},
+      requestReposition: () => { },
+      cancelReposition: () => { },
+      applyReposition: () => { },
+      toggleUseMouseOrCursor: () => { },
       setIsRotationPrecise: value => Boolean,
       setAllowRotationAction: value => Boolean,
     },
 
     ui_liveryEditor_layers: {
-      requestInitialData: () => {},
+      requestInitialData: () => { },
     },
 
     ui_liveryEditor_layers_cursor: {
-      requestData: () => {},
+      requestData: () => { },
     },
 
     ui_liveryEditor_layers_decals: {
@@ -736,34 +736,34 @@ export default {
 
     ui_liveryEditor_layers_fill: {
       updateLayer: params => Object,
-      saveChanges: () => {},
-      restoreLayer: () => {},
-      restoreDefault: () => {},
-      requestLayerData: () => {},
+      saveChanges: () => { },
+      restoreLayer: () => { },
+      restoreDefault: () => { },
+      requestLayerData: () => { },
     },
 
     ui_liveryEditor_resources: {
-      requestData: () => {},
-      getDecalTextures: () => {},
-      getTextureCategories: () => {},
+      requestData: () => { },
+      getDecalTextures: () => { },
+      getTextureCategories: () => { },
       getTexturesByCategory: category => String,
     },
 
     ui_liveryEditor_selection: {
-      duplicateSelectedLayer: () => {},
-      getSelectedLayersData: () => {},
+      duplicateSelectedLayer: () => { },
+      getSelectedLayersData: () => { },
       setSelected: layerUid => String,
       setMultipleSelected: layerUids => Array,
-      clearSelection: () => {},
-      toggleSelection: layerIds => {},
+      clearSelection: () => { },
+      toggleSelection: layerIds => { },
       select: (layerIds, highlight) => [Array, Boolean],
-      toggleHighlightSelectedLayer: () => {},
-      requestInitialData: () => {},
+      toggleHighlightSelectedLayer: () => { },
+      requestInitialData: () => { },
     },
 
     ui_liveryEditor_tools: {
       useTool: tool => String,
-      closeCurrentTool: () => {},
+      closeCurrentTool: () => { },
     },
 
     ui_liveryEditor_tools_material: {
@@ -775,20 +775,20 @@ export default {
     },
 
     ui_liveryEditor_tools_misc: {
-      duplicate: () => {},
+      duplicate: () => { },
     },
 
     ui_liveryEditor_tools_group: {
-      moveOrderUp: () => {},
-      moveOrderDown: () => {},
-      changeOrderToTop: () => {},
-      changeOrderToBottom: () => {},
+      moveOrderUp: () => { },
+      moveOrderDown: () => { },
+      changeOrderToTop: () => { },
+      changeOrderToBottom: () => { },
       moveOrderUpById: layerUid => [String],
       moveOrderDownById: layerUid => [String],
       setOrder: order => Number,
       changeOrder: (oldOrder, oldParent, newOrder, newParent) => [Number, String, Number, String],
-      groupLayers: () => {},
-      ungroupLayer: () => {},
+      groupLayers: () => { },
+      ungroupLayer: () => { },
     },
 
     ui_liveryEditor_tools_transform: {
@@ -800,17 +800,17 @@ export default {
       setRotation: degrees => Number,
       skew: (skewX, skewY) => [Number, Number],
       setSkew: (skewX, skewY) => [Number, Number],
-      useStamp: () => {},
-      cancelStamp: () => {},
+      useStamp: () => { },
+      cancelStamp: () => { },
     },
 
     ui_liveryEditor_tools_settings: {
-      deleteLayer: () => {},
+      deleteLayer: () => { },
       setMirrored: (mirrored, flip) => [Boolean, Boolean],
       setVisibility: show => Boolean,
-      toggleVisibility: () => {},
+      toggleVisibility: () => { },
       toggleVisibilityById: layerUid => String,
-      toggleLock: () => {},
+      toggleLock: () => { },
       toggleLockById: layerUid => String,
       setMirrored: (mirrored, flip) => [Boolean, Boolean],
       setMirrorOffset: offset => Number,
@@ -820,8 +820,8 @@ export default {
     },
 
     ui_liveryEditor_userData: {
-      requestUpdatedData: () => {},
-      getSaveFiles: () => {},
+      requestUpdatedData: () => { },
+      getSaveFiles: () => { },
       createSaveFile: filename => String,
       renameFile: (filename, newFilename) => [String, String],
       deleteSaveFile: filename => String,
@@ -834,30 +834,30 @@ export default {
     ui_router: {
       addOrUpdateRoute: (route, config, options) => [String, Object, Object],
       push: (routeName, params) => [String, Object],
-      back: () => {},
-      forward: () => {},
+      back: () => { },
+      forward: () => { },
       loadComplete: uiType => String,
       routeChangeComplete: uiType => String,
     },
 
     editor_api_dynamicDecals: {
-      setup: () => {},
-      getLayerStack: () => {},
+      setup: () => { },
+      getLayerStack: () => { },
       setLayerNameBuildString: buildString => String,
-      onUpdate_: () => {},
+      onUpdate_: () => { },
 
-      pushDynamicDecalsActionMap: () => {},
-      popDynamicDecalsActionMap: () => {},
+      pushDynamicDecalsActionMap: () => { },
+      popDynamicDecalsActionMap: () => { },
 
-      addBrushStrokeLayer: () => {},
-      highlightLayer: layerTable => {},
-      highlightLayerByUid: layerUidString => {},
-      disableDecalHighlighting: () => {},
-      getHighlightedLayer: () => {},
+      addBrushStrokeLayer: () => { },
+      highlightLayer: layerTable => { },
+      highlightLayerByUid: layerUidString => { },
+      disableDecalHighlighting: () => { },
+      getHighlightedLayer: () => { },
       setLayerVisibility: (layerUidString, visibilityBool) => [String, Boolean],
       toggleLayerVisibility: layerUidString => String,
-      changeDecalSize: (increaseBool, stepNumber) => {},
-      changeDecalRotation: (clockwiseBool, stepRadianNumber) => {},
+      changeDecalSize: (increaseBool, stepNumber) => { },
+      changeDecalRotation: (clockwiseBool, stepRadianNumber) => { },
     },
   },
 
@@ -872,24 +872,24 @@ export default {
   },
 
   ui_missionInfo: {
-    performActivityAction: id => {},
-    setActivityIndexVisible: index => {},
-    closeDialogue: () => {},
+    performActivityAction: id => { },
+    setActivityIndexVisible: index => { },
+    closeDialogue: () => { },
   },
 
   ui_apps_genericMissionData: {
-    sendAllData: () => {},
+    sendAllData: () => { },
     setData: args => Object,
-    clearData: () => {},
+    clearData: () => { },
   },
   ui_apps_pointsBar: {
-    requestAllData: () => {},
+    requestAllData: () => { },
   },
   ui_gameplayAppContainers: {
     // New individual app visibility API
     getVisibleApps: (containerId) => String,
-    onGameplayAppContainerMounted: () => {},
-    onGameplayAppContainerUnmounted: () => {},
+    onGameplayAppContainerMounted: () => { },
+    onGameplayAppContainerUnmounted: () => { },
     getAvailableApps: (containerId) => String,
     setAppVisibility: (containerId, appId, visible) => [String, String, Boolean],
     getAppVisibility: (containerId, appId) => [String, String],
@@ -911,7 +911,7 @@ export default {
   },
 
   settings: {
-    notifyUI: () => {},
+    notifyUI: () => { },
     setState: state => Object,
     getValue: value => String,
     setValue: (settingName, value) => [String, Any],
@@ -922,77 +922,77 @@ export default {
   },
 
   core_modmanager: {
-    requestState: () => {},
+    requestState: () => { },
   },
 
   core_vehicles: {
-    cloneCurrent: () => {},
+    cloneCurrent: () => { },
     getModel: model => String,
     getCurrentVehicleDetails: withMocked(
-      () => {},
+      () => { },
       () => getMockedData("vehicle.details")
     ),
     getVehicleLicenseText: id => Number, // TODO - not sure if this will be used - may need to send some Lua code directly - consider how to do this
-    loadDefault: () => {},
-    removeAll: () => {},
-    removeAllExceptCurrent: () => {},
-    removeCurrent: () => {},
-    requestList: () => {},
-    requestListEnd: () => {},
+    loadDefault: () => { },
+    removeAll: () => { },
+    removeAllExceptCurrent: () => { },
+    removeCurrent: () => { },
+    requestList: () => { },
+    requestListEnd: () => { },
     setPlateText: plateText => String,
     setMeshVisibility: state => Number,
-    spawnDefault: () => {},
+    spawnDefault: () => { },
     spawnNewVehicle: (model, args) => [String, Object],
     replaceVehicle: (model, args) => [String, Object],
     isLicensePlateValid: text => Any,
-    getModelList: () => {},
-    getModel: () => {},
+    getModelList: () => { },
+    getModel: () => { },
   },
 
   ui_vehicleSelector: {
     //getVehicleTiles: () => {},
     getTiles: (currentPath, pathChanged) => [Object, Boolean],
-    getFilters: () => {},
-    getActiveFilters: () => {},
+    getFilters: () => { },
+    getActiveFilters: () => { },
     toggleFilter: (propName, option) => [String, String],
     updateRangeFilter: (propName, min, max) => [String, Number, Number],
     resetRangeFilter: propName => String,
     resetSetFilter: propName => String,
-    getDisplayDataOptions: () => {},
+    getDisplayDataOptions: () => { },
     setDisplayDataOption: (key, value) => [String, Any],
-    resetDisplayDataToDefaults: () => {},
+    resetDisplayDataToDefaults: () => { },
     toggleFavourite: (model, config) => [String, String],
-    getSearchText: () => {},
-    setSearchText: (searchText) => {},
+    getSearchText: () => { },
+    setSearchText: (searchText) => { },
     getScreenHeaderTitleAndPath: (path) => Object,
 
     profilerFinish: (tag) => String,
-    closedFromUI: () => {},
+    closedFromUI: () => { },
   },
   ui_vehicleSelector_detailsInteraction: {
     getDetails: itemDetails => Object,
     executeButton: (buttonId, additionalData) => [Number, Object],
-    getManagementDetails: () => {},
-    exitCallback: () => {},
+    getManagementDetails: () => { },
+    exitCallback: () => { },
     executeDoubleClick: itemDetails => Object,
     exploreFolder: path => String,
     goToMod: modId => String,
   },
 
   ui_topBar: {
-    hide: () => {},
-    requestData: () => {},
-    requestEntries: () => {},
+    hide: () => { },
+    requestData: () => { },
+    requestEntries: () => { },
     setActiveItem: itemId => String,
     selectItem: itemId => String,
-    show: () => {},
+    show: () => { },
   },
 
 
   core_vehicle_manager: {
-    reloadAllVehicles: () => {},
-    toggleDebug: () => {},
-    getDebug: () => {},
+    reloadAllVehicles: () => { },
+    toggleDebug: () => { },
+    getDebug: () => { },
   },
 
   core_vehicle_colors: {
@@ -1000,20 +1000,20 @@ export default {
   },
 
   core_recoveryPrompt: {
-    getUIData: () => {},
+    getUIData: () => { },
     buttonPressed: id => [String],
     uiPopupButtonPressed: index => [Integer],
-    uiPopupCancelPressed: () => {},
-    onPopupClosed: () => {},
+    uiPopupCancelPressed: () => { },
+    onPopupClosed: () => { },
   },
 
   core_remoteController: {
     devicesConnected: () => Boolean,
-    getQRCode: () => {},
+    getQRCode: () => { },
   },
 
   core_levels: {
-    startLevel: () => {},
+    startLevel: () => { },
   },
 
   util_screenshotCreator: {
@@ -1021,25 +1021,25 @@ export default {
   },
 
   util_groundModelDebug: {
-    openWindow: () => {},
+    openWindow: () => { },
   },
 
   scenario_scenariosLoader: {
-    getList: () => {},
+    getList: () => { },
     start: scenario => Object,
   },
 
   ui_apps_minimap_minimap: {
     setDrawTransform: (x, y, width, height) => [Number, Number, Number, Number],
-    hide: () => {},
-    toggleOptions: () => {},
-    getMode: () => {},
+    hide: () => { },
+    toggleOptions: () => { },
+    getMode: () => { },
     setOcclusionTransform: (id, x, y, width, height) => [String, Number, Number, Number, Number],
     resetOcclusionTransform: (id) => [String],
   },
 
   ui_apps_minimap_additionalInfo: {
-    requestAdditionalInfo: () => {},
+    requestAdditionalInfo: () => { },
   },
 
   WinInput: {
@@ -1051,13 +1051,13 @@ export default {
       playOnce: (channel, sound) => [String, String],
     },
     Render: {
-      getAdapterType: () => {},
+      getAdapterType: () => { },
     },
     UI: {
-      getUIEngine: () => {},
+      getUIEngine: () => { },
     },
     Platform: {
-      getFSInfo: () => {},
+      getFSInfo: () => { },
     },
   },
 
@@ -1095,19 +1095,19 @@ export default {
   // }
 
   career_modules_sleep: {
-    closeMenu: () => {},
-    closeAllMenus: () => {},
+    closeMenu: () => { },
+    closeAllMenus: () => { },
     toggleDayNightCycle: toggle => Boolean,
     sleep: time => Number,
-    getDayNightCycle: () => {}
+    getDayNightCycle: () => { }
   },
 
   career_modules_loans: {
     openMenuFromComputer: computerId => String,
-    closeMenu: () => {},
-    closeAllMenus: () => {},
-    getLoanOffers: () => {},
-    getActiveLoans: () => {},
+    closeMenu: () => { },
+    closeAllMenus: () => { },
+    getLoanOffers: () => { },
+    getActiveLoans: () => { },
     calculatePayment: (amount, rate, payments) => [Number, Number],
     takeLoan: (orgId, amount, payments) => [String, Number, Number],
     prepayLoan: (loanId, amount) => [String, Number],
@@ -1117,40 +1117,40 @@ export default {
   },
 
   career_modules_assignRole: {
-    canPay: () => {},
-    startCertification: () => {},
-    requestAssignmentData: () => {}
+    canPay: () => { },
+    startCertification: () => { },
+    requestAssignmentData: () => { }
   },
 
   career_modules_carmeets: {
-    rsvpToMeet: attendanceLevel => {},
-    decline: () => {},
-    closeMenu: () => {},
-    openMenu: () => {},
-    checkAvailableMeets: () => {},
-    requestRSVPData: () => {},
-    cancelRSVP: () => {},
-    setRoute: () => {},
-    updateAttendance: attendanceLevel => {}
+    rsvpToMeet: attendanceLevel => { },
+    decline: () => { },
+    closeMenu: () => { },
+    openMenu: () => { },
+    checkAvailableMeets: () => { },
+    requestRSVPData: () => { },
+    cancelRSVP: () => { },
+    setRoute: () => { },
+    updateAttendance: attendanceLevel => { }
   },
 
   career_modules_garageManager: {
-    requestGarageData: () => {},
-    canPay: () => {},
-    buyGarage: () => {},
-    cancelGaragePurchase: () => {},
-    getGaragePrice: () => {},
-    canSellGarage: () => {},
-    sellGarage: () => {}
+    requestGarageData: () => { },
+    canPay: () => { },
+    buyGarage: () => { },
+    cancelGaragePurchase: () => { },
+    getGaragePrice: () => { },
+    canSellGarage: () => { },
+    sellGarage: () => { }
   },
 
   career_modules_business_businessManager: {
-    requestBusinessData: () => {},
-    canPayBusiness: () => {},
-    canAffordDownPayment: () => {},
-    buyBusiness: () => {},
-    financeBusiness: () => {},
-    cancelBusinessPurchase: () => {},
+    requestBusinessData: () => { },
+    canPayBusiness: () => { },
+    canAffordDownPayment: () => { },
+    buyBusiness: () => { },
+    financeBusiness: () => { },
+    cancelBusinessPurchase: () => { },
     getPurchasedBusinesses: businessType => String,
   },
 
@@ -1179,7 +1179,7 @@ export default {
     applyVehicleTuning: (businessId, vehicleId, tuningVars) => [String, Integer, Object],
     loadWheelDataExtension: (businessId, vehicleId) => [String, Integer],
     unloadWheelDataExtension: (businessId, vehicleId) => [String, Integer],
-    clearVehicleDataCaches: () => {},
+    clearVehicleDataCaches: () => { },
     getBusinessAccountBalance: (businessType, businessId) => [String, String],
     getBusinessXP: (businessType, businessId) => [String, String],
     purchaseCartItems: (businessId, accountId, cartData) => [String, String, Object],
@@ -1195,7 +1195,7 @@ export default {
     applyCartPartsToVehicle: (businessId, vehicleId, parts) => [String, Integer, Array],
     requestPartInventory: (businessId) => String,
     requestFinancesData: (businessType, businessId) => [String, String],
-    requestSimulationTime: () => {},
+    requestSimulationTime: () => { },
     sellPart: (businessId, partId) => [String, Integer],
     sellAllParts: (businessId) => String,
     sellPartsByVehicle: (businessId, vehicleNiceName) => [String, String],
@@ -1203,8 +1203,11 @@ export default {
     setBrandSelection: (businessId, brand) => [String, String],
     getRaceSelection: (businessId) => String,
     setRaceSelection: (businessId, raceType) => [String, String],
-    requestAvailableBrands: () => {},
-    requestAvailableRaceTypes: () => {},
+    requestAvailableBrands: () => { },
+    requestAvailableRaceTypes: () => { },
+    createKit: (businessId, jobId, kitName) => [String, Any, String],
+    deleteKit: (businessId, kitId) => [String, String],
+    applyKit: (businessId, vehicleId, kitId) => [String, Any, String],
   },
 
   career_modules_business_tuningShop: {
@@ -1263,32 +1266,32 @@ export default {
   },
 
   gameplay_taxi: {
-    prepareTaxiJob: () => {},
-    acceptJob: () => {},
-    rejectJob: () => {},
-    setAvailable: () => {},
-    stopTaxiJob: () => {},
-    getTaxiJob: () => {},
-    requestTaxiState: () => {}
+    prepareTaxiJob: () => { },
+    acceptJob: () => { },
+    rejectJob: () => { },
+    setAvailable: () => { },
+    stopTaxiJob: () => { },
+    getTaxiJob: () => { },
+    requestTaxiState: () => { }
   },
 
   career_modules_hardcore: {
-    isHardcoreMode: () => {}
+    isHardcoreMode: () => { }
   },
 
   gameplay_repo: {
-    generateJob: () => {},
-    getRepoJobInstance: () => {},
-    requestRepoState: () => {},
-    cancelJob: () => {},
-    completeJob: () => {},
-    isRepoVehicle: () => {}
+    generateJob: () => { },
+    getRepoJobInstance: () => { },
+    requestRepoState: () => { },
+    cancelJob: () => { },
+    completeJob: () => { },
+    isRepoVehicle: () => { }
   },
 
   overhaul_maps: {
-    getOtherAvailableMaps: () => {},
-    getMapsExcludingWestCoast: () => {},
-    getCompatibleMaps: () => {}
+    getOtherAvailableMaps: () => { },
+    getMapsExcludingWestCoast: () => { },
+    getCompatibleMaps: () => { }
   },
 
   career_modules_playerAttributes: {
@@ -1296,11 +1299,11 @@ export default {
     setAttributes: (newValues, reason) => [Object, Any],
     getAttribute: attributeName => Any,
     getAttributeValue: attributeName => Any,
-    getAllAttributes: () => {},
-    getAttributeLog: () => {},
+    getAllAttributes: () => { },
+    getAttributeLog: () => { },
     onSaveCurrentSaveSlot: currentSavePath => String,
-    onExtensionLoaded: () => {},
-    onCareerModulesActivated: () => {},
+    onExtensionLoaded: () => { },
+    onCareerModulesActivated: () => { },
   },
 
   career_modules_payment: {
@@ -1314,15 +1317,22 @@ export default {
     deposit: (accountId, amount) => [String, Number],
     withdraw: (accountId, amount) => [String, Number],
     transfer: (fromAccountId, toAccountId, amount) => [String, String, Number],
-    getAccounts: () => {},
+    getAccounts: () => { },
     getAccountBalance: accountId => String,
     getBusinessAccount: (businessType, businessId) => [String, String],
-    getPendingTransfers: () => {},
+    getPendingTransfers: () => { },
     cancelPendingTransfer: transferId => String,
     getAccountTransactions: (accountId, limit) => [String, Number],
   },
 
   career_modules_switchMap: {
-    switchMap: (level) => {}
-  }
+    switchMap: (level) => { }
+  },
+
+  career_modules_business_tuningShopKits: {
+    loadBusinessKits: businessId => Object,
+    createKit: (businessId, jobId, kitName) => [Boolean],
+    deleteKit: (businessId, kitId) => [Boolean],
+    applyKit: (businessId, vehicleId, kitId) => Object,
+  },
 }
