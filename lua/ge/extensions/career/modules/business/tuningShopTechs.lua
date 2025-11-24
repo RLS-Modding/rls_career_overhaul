@@ -1,9 +1,6 @@
 local M = {}
 
-M.dependencies = {
-  'career_career',
-  'career_saveSystem'
-}
+M.dependencies = {'career_career', 'career_saveSystem'}
 
 local businessTechs = {}
 local helpers = {}
@@ -315,7 +312,7 @@ local function generateValidationTime(businessId, job, updateTune)
   local maxRatio = 1.0375
 
   local hasMasterTechs = helpers.hasMasterTechs and helpers.hasMasterTechs(businessId) or false
-  
+
   if hasMasterTechs then
     if updateTune then
       maxRatio = 1.0375
@@ -736,29 +733,53 @@ local function processTechs(businessId, dtSim)
       while timeRemaining > 0 and safety < 16 do
         safety = safety + 1
         local duration = tech.stateDuration or 0
+
+        -- Capture state before attempting advance
+        local beforeState = tech.state
+        local beforeAction = tech.currentAction
+        local beforePhase = tech.phase
+
+        local advanced = false
+
         if duration <= 0 then
           if not advanceTechState(businessId, tech) then
             break
           else
-            goto continue_inner
-          end
-        end
-
-        local needed = duration - tech.stateElapsed
-        if needed <= 0 then
-          if not advanceTechState(businessId, tech) then
-            break
+            advanced = true
           end
         else
-          local delta = math.min(needed, timeRemaining)
-          tech.stateElapsed = tech.stateElapsed + delta
-          timeRemaining = timeRemaining - delta
-          if tech.stateElapsed >= tech.stateDuration - 1e-6 then
+          local needed = duration - tech.stateElapsed
+          if needed <= 0 then
             if not advanceTechState(businessId, tech) then
               break
+            else
+              advanced = true
+            end
+          else
+            local delta = math.min(needed, timeRemaining)
+            tech.stateElapsed = tech.stateElapsed + delta
+            timeRemaining = timeRemaining - delta
+            if tech.stateElapsed >= tech.stateDuration - 1e-6 then
+              if not advanceTechState(businessId, tech) then
+                break
+              else
+                advanced = true
+              end
             end
           end
         end
+
+        if advanced then
+          -- Check if state actually changed
+          if tech.state == beforeState and tech.currentAction == beforeAction and tech.phase == beforePhase then
+            log("W", "tuningShopTechs",
+              string.format("Tech #%d stuck in infinite loop (state: %s, action: %s). Breaking.", tech.id,
+                tostring(tech.state), tostring(tech.currentAction)))
+            break
+          end
+          goto continue_inner
+        end
+
         ::continue_inner::
       end
       anyChanged = true
@@ -888,14 +909,15 @@ local function canAssignTechToJob(businessId)
   if helpers.getMaxPulledOutVehicles then
     liftsAvailable = helpers.getMaxPulledOutVehicles(businessId) or 1
   end
-  
+
   local workingTechs = getWorkingTechsCount(businessId)
   return workingTechs < liftsAvailable
 end
 
 local function getTechMaxTier(businessId)
   local baseTier = 1
-  local skilledTechsLevel = helpers.getSkillTreeLevel and helpers.getSkillTreeLevel(businessId, "automation", "skilled-techs") or 0
+  local skilledTechsLevel = helpers.getSkillTreeLevel and
+                              helpers.getSkillTreeLevel(businessId, "automation", "skilled-techs") or 0
   return baseTier + skilledTechsLevel
 end
 
@@ -960,7 +982,7 @@ local function assignJobToTech(businessId, techId, jobId)
   job.locked = true
 
   local hasMasterTechs = helpers.hasMasterTechs and helpers.hasMasterTechs(businessId) or false
-  
+
   if hasMasterTechs then
     tech.phase = "build"
     startBuildPhase(businessId, tech, job)
