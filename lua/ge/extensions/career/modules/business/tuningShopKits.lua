@@ -199,7 +199,7 @@ local function createKit(businessId, jobId, kitName, spawnedVehicleId)
     return false
   end
 
-  local maxKits = getMaxKitStorage(businessId)
+  local maxKits = M.getMaxKitStorage(businessId)
   local currentKits = loadBusinessKits(businessId)
   if #currentKits >= maxKits then
     return false
