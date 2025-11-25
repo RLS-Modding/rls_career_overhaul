@@ -199,6 +199,12 @@ local function createKit(businessId, jobId, kitName, spawnedVehicleId)
     return false
   end
 
+  local maxKits = getMaxKitStorage(businessId)
+  local currentKits = loadBusinessKits(businessId)
+  if #currentKits >= maxKits then
+    return false
+  end
+
   local tuningShop = career_modules_business_tuningShop
 
   local vehicle = nil
@@ -266,6 +272,20 @@ local function getPartSupplierDiscountMultiplier(businessId)
 
   local level = career_modules_business_businessSkillTree.getNodeProgress(businessId, treeId, nodeId) or 0
   return 1.0 - (0.05 * level)
+end
+
+local function getMaxKitStorage(businessId)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId or not career_modules_business_businessSkillTree then
+    return 0
+  end
+  local kitStorageLevel = career_modules_business_businessSkillTree.getNodeProgress(businessId, "quality-of-life", "kit-storage") or 0
+  local kitStorageIILevel = career_modules_business_businessSkillTree.getNodeProgress(businessId, "quality-of-life", "kit-storage-ii") or 0
+  return (kitStorageLevel * 2) + (kitStorageIILevel * 2)
+end
+
+local function hasKitStorageUnlocked(businessId)
+  return getMaxKitStorage(businessId) > 0
 end
 
 local function storeFuelLevels(vehObj, callback)
@@ -1078,6 +1098,8 @@ M.createKit = createKit
 M.deleteKit = deleteKit
 M.applyKit = applyKit
 M.onVehicleConfigReceived = onVehicleConfigReceived
+M.getMaxKitStorage = getMaxKitStorage
+M.hasKitStorageUnlocked = hasKitStorageUnlocked
 
 M.onSaveCurrentSaveSlot = onSaveCurrentSaveSlot
 

@@ -1,7 +1,15 @@
 <template>
     <div class="kits-tab">
         <div class="kits-header">
-            <h2>Kits</h2>
+            <div class="kits-header-top">
+                <h2>Kits</h2>
+                <div class="kits-capacity">
+                    <span class="capacity-text">{{ store.currentKitCount }} / {{ store.maxKitStorage }}</span>
+                    <div class="capacity-bar">
+                        <div class="capacity-fill" :style="{ width: capacityPercent + '%' }"></div>
+                    </div>
+                </div>
+            </div>
             <p class="kits-description">Save configurations from completable jobs and apply them to other vehicles</p>
         </div>
 
@@ -23,12 +31,13 @@
                             <span class="stat-value">{{ formatTime(job.currentTime) }}</span>
                         </div>
                     </div>
-                    <button @click.stop="showCreateKitDialog(job)" @mousedown.stop class="btn-create-kit">
+                    <button @click.stop="showCreateKitDialog(job)" @mousedown.stop class="btn-create-kit"
+                        :disabled="isAtMaxCapacity" :title="isAtMaxCapacity ? 'Kit storage is full' : ''">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
                             <path d="M12 5v14M5 12h14" />
                         </svg>
-                        Create Kit
+                        {{ isAtMaxCapacity ? 'Storage Full' : 'Create Kit' }}
                     </button>
                 </div>
             </div>
@@ -204,13 +213,17 @@ const completableJobs = computed(() => {
     const activeJobs = store.activeJobs || []
     const pulledOutVehicles = store.pulledOutVehicles || []
 
-    // Filter to only jobs that are pulled out in the garage
     return activeJobs.filter(job => {
         const isPulledOut = pulledOutVehicles.some(v => String(v.jobId) === String(job.jobId))
         return isPulledOut && !job.techAssigned
     })
 })
 const kits = computed(() => store.kits || [])
+const capacityPercent = computed(() => {
+    if (store.maxKitStorage === 0) return 0
+    return Math.min(100, (store.currentKitCount / store.maxKitStorage) * 100)
+})
+const isAtMaxCapacity = computed(() => store.currentKitCount >= store.maxKitStorage)
 const pulledOutVehicle = computed(() => store.pulledOutVehicle)
 
 const handleKitsUpdated = async (data) => {
@@ -371,11 +384,45 @@ const closeDeleteDialog = () => {
     margin-bottom: 2rem;
 }
 
+.kits-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
 .kits-header h2 {
     font-size: 2rem;
     font-weight: 600;
-    margin: 0 0 0.5rem 0;
+    margin: 0;
     color: #fff;
+}
+
+.kits-capacity {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.capacity-text {
+    font-size: 0.9rem;
+    color: #999;
+    font-weight: 500;
+}
+
+.capacity-bar {
+    width: 100px;
+    height: 8px;
+    background: #333;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.capacity-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #2563eb, #3b82f6);
+    border-radius: 4px;
+    transition: width 0.3s ease;
 }
 
 .kits-description {
@@ -495,8 +542,14 @@ const closeDeleteDialog = () => {
     transition: background 0.2s;
 }
 
-.btn-create-kit:hover {
+.btn-create-kit:hover:not(:disabled) {
     background: #1d4ed8;
+}
+
+.btn-create-kit:disabled {
+    background: #333;
+    color: #666;
+    cursor: not-allowed;
 }
 
 .kit-actions {

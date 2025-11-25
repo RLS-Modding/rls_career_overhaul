@@ -28,8 +28,7 @@
           },
           "xpCost": 10,
           "maxLevel": 4,
-          "dependencies": ["shop-app"],
-          "commingSoon": true
+          "dependencies": ["shop-app"]
         },
         {
           "id": "more-complicated",
@@ -97,8 +96,7 @@
           },
           "xpCost": 10,
           "maxLevel": 5,
-          "dependencies": ["brand-recognition"],
-          "commingSoon": true
+          "dependencies": ["brand-recognition"]
         },
         {
           "id": "more-complicated-ii",

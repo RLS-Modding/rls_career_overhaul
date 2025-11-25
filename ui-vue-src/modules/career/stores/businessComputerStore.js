@@ -14,6 +14,8 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   const loading = ref(false)
   const registeredTabs = ref([])
   const kits = ref([])
+  const maxKitStorage = ref(0)
+  const currentKitCount = ref(0)
 
   const partsCart = ref([])
   const tuningCart = ref([])
@@ -211,6 +213,8 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     }
     if (payload.stats) {
       kits.value = payload.stats.kits || []
+      maxKitStorage.value = payload.stats.maxKitStorage || 0
+      currentKitCount.value = payload.stats.currentKitCount || 0
     }
     startTechSimulation()
   }
@@ -2057,6 +2061,8 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     deleteKit,
     applyKit,
     kits,
+    maxKitStorage,
+    currentKitCount,
     playerInZone
   }
 })

@@ -2799,6 +2799,17 @@ local function getUIData(businessId)
       end
       tabs = filteredTabs
     end
+
+    local tuningShopKits = getTuningShopKits()
+    if tuningShopKits and not tuningShopKits.hasKitStorageUnlocked(businessId) then
+      local filteredTabs = {}
+      for _, tab in ipairs(tabs) do
+        if tab.id ~= "kits" then
+          table.insert(filteredTabs, tab)
+        end
+      end
+      tabs = filteredTabs
+    end
   else
     log('W', 'tuningShop', 'Tab registry not available')
   end
@@ -2837,7 +2848,9 @@ local function getUIData(businessId)
       totalPartsValue = totalPartsValue,
       activeJobsCount = #activeJobs,
       newJobsCount = #newJobs,
-      kits = getTuningShopKits().loadBusinessKits(businessId)
+      kits = getTuningShopKits().loadBusinessKits(businessId),
+      maxKitStorage = getTuningShopKits().getMaxKitStorage(businessId),
+      currentKitCount = #(getTuningShopKits().loadBusinessKits(businessId))
     },
     hasManager = hasManager(businessId),
     hasGeneralManager = hasGeneralManager(businessId),
