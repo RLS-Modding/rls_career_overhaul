@@ -1837,7 +1837,8 @@ local function purchaseCartItems(businessId, accountId, cartData)
       applyVehicleTuning(businessId, vehicle.vehicleId, tuningVars, nil)
     end
 
-    -- Use centralized finalization logic (put away and respawn)
+    M.exitShoppingVehicle(businessId)
+
     career_modules_business_businessVehicleModificationUtil.finalizePurchase(businessId, vehicle.vehicleId, nop)
     
     log("D", "businessComputer", "purchaseCartItems: Successfully processed purchase (parts=" .. tostring(#parts) .. ", tuning=" .. tostring(#tuning) .. ", cost=" .. tostring(totalCost) .. ")")
@@ -1943,6 +1944,60 @@ end
 
 local function getActiveVehicle(businessId)
   return getActiveBusinessVehicle(businessId)
+end
+
+local function enterShoppingVehicle(businessId, vehicleId)
+  if not businessId or not vehicleId then
+    log("W", "businessComputer", "enterShoppingVehicle: Missing businessId or vehicleId")
+    return false
+  end
+  
+  if not career_modules_business_businessInventory then
+    log("W", "businessComputer", "enterShoppingVehicle: businessInventory module not available")
+    return false
+  end
+  
+  local spawnedVehId = career_modules_business_businessInventory.getSpawnedVehicleId(businessId, vehicleId)
+  if not spawnedVehId then
+    log("W", "businessComputer", "enterShoppingVehicle: No spawned vehicle found for vehicleId=" .. tostring(vehicleId))
+    return false
+  end
+  
+  local vehObj = be:getObjectByID(spawnedVehId)
+  if not vehObj then
+    log("W", "businessComputer", "enterShoppingVehicle: Could not get vehicle object for spawnedVehId=" .. tostring(spawnedVehId))
+    return false
+  end
+  
+  log("D", "businessComputer", "enterShoppingVehicle: Entering vehicle " .. tostring(spawnedVehId))
+  be:enterVehicle(0, vehObj)
+  return true
+end
+
+local function exitShoppingVehicle(businessId)
+  local playerVeh = be:getPlayerVehicle(0)
+  if not playerVeh then
+    return false
+  end
+  if businessId and career_modules_business_businessInventory then
+    local pulledOutList = getPulledOutVehiclesList(businessId)
+    local playerVehId = playerVeh:getID()
+    local isBusinessVehicle = false
+    for _, vehicle in ipairs(pulledOutList) do
+      local spawnedId = career_modules_business_businessInventory.getSpawnedVehicleId(businessId, vehicle.vehicleId)
+      if spawnedId and spawnedId == playerVehId then
+        isBusinessVehicle = true
+        break
+      end
+    end
+    if not isBusinessVehicle then
+      return false
+    end
+  end
+  if gameplay_walk then
+    gameplay_walk.setWalkingMode(true, nil, nil, true)
+  end
+  return true
 end
 
 local function canCompleteJob(businessId, jobId)
@@ -2223,5 +2278,7 @@ end
 M.onExtensionLoaded = onExtensionLoaded
 M.getTechData = getTechData
 M.getManagerData = getManagerData
+M.enterShoppingVehicle = enterShoppingVehicle
+M.exitShoppingVehicle = exitShoppingVehicle
 
 return M

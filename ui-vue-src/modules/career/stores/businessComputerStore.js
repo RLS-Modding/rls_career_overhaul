@@ -36,6 +36,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   const businessId = computed(() => businessData.value.businessId)
   const businessType = computed(() => businessData.value.businessType)
   const businessName = computed(() => businessData.value.businessName || "Business")
+  const playerInZone = computed(() => businessData.value.playerInZone !== false)
   const normalizeVehicleIdValue = (id) => {
     if (id === undefined || id === null) return null
     const numeric = Number(id)
@@ -499,6 +500,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
 
     const isSwitchingBetweenVehicleViews = (previousView === 'parts' || previousView === 'tuning') && (view === 'parts' || view === 'tuning')
     const isLeavingVehicleViews = previousView !== null && !isSwitchingBetweenVehicleViews && (view !== 'parts' && view !== 'tuning')
+    const isEnteringVehicleViews = (view === 'parts' || view === 'tuning') && previousView !== 'parts' && previousView !== 'tuning'
 
     if (isLeavingVehicleViews) {
       clearCart()
@@ -512,6 +514,21 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
         } catch (error) {
         }
       }
+    }
+
+    if (isEnteringVehicleViews && businessId.value && pulledOutVehicle.value?.vehicleId) {
+      try {
+        console.log('Entering shopping vehicle:', businessId.value, pulledOutVehicle.value.vehicleId)
+        const result = await lua.career_modules_business_businessComputer.enterShoppingVehicle(
+          businessId.value,
+          pulledOutVehicle.value.vehicleId
+        )
+        console.log('enterShoppingVehicle result:', result)
+      } catch (error) {
+        console.error('enterShoppingVehicle error:', error)
+      }
+    } else if (isEnteringVehicleViews) {
+      console.log('Not entering vehicle - businessId:', businessId.value, 'vehicleId:', pulledOutVehicle.value?.vehicleId)
     }
 
     const enteringPartsViewFromNonVehicle = view === 'parts' && previousView !== 'parts' && previousView !== 'tuning'
@@ -2039,7 +2056,8 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     createKit,
     deleteKit,
     applyKit,
-    kits
+    kits,
+    playerInZone
   }
 })
 

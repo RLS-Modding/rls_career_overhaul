@@ -1209,6 +1209,8 @@ export default {
     createKit: (businessId, jobId, kitName) => [String, Any, String],
     deleteKit: (businessId, kitId) => [String, String],
     applyKit: (businessId, vehicleId, kitId) => [String, Any, String],
+    enterShoppingVehicle: (businessId, vehicleId) => [String, Integer],
+    exitShoppingVehicle: (businessId) => String,
   },
 
   career_modules_business_tuningShop: {

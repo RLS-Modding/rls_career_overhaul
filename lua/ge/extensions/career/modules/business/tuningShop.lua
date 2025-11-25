@@ -35,6 +35,155 @@ local EXPIRY_SECONDS = 300
 
 local DAMAGE_LOCK_THRESHOLD = 1750
 
+local cachedGarageZones = {}
+
+local function getGarageZones(businessId)
+  if cachedGarageZones[businessId] then
+    return cachedGarageZones[businessId]
+  end
+  
+  local businessType = "tuningShop"
+  local garage = nil
+  
+  if career_modules_business_businessInventory and career_modules_business_businessInventory.getBusinessGarage then
+    garage = career_modules_business_businessInventory.getBusinessGarage(businessType, businessId)
+  end
+  
+  if not garage then
+    local business = freeroam_facilities.getFacility(businessType, businessId)
+    if not business then
+      log("D", "tuningShop", "getGarageZones: Business not found for businessId=" .. tostring(businessId))
+      return nil
+    end
+    
+    log("D", "tuningShop", "getGarageZones: business.businessGarageId=" .. tostring(business.businessGarageId))
+    
+    local businessGarages = freeroam_facilities.getFacilitiesByType("businessGarage")
+    if businessGarages then
+      for _, g in ipairs(businessGarages) do
+        if g.id == business.businessGarageId then
+          garage = g
+          break
+        end
+      end
+    end
+  end
+  
+  if not garage then
+    log("D", "tuningShop", "getGarageZones: Garage not found for businessId=" .. tostring(businessId))
+    return nil
+  end
+  
+  if not garage.sitesFile then
+    log("D", "tuningShop", "getGarageZones: Garage has no sitesFile")
+    return nil
+  end
+  
+  log("D", "tuningShop", "getGarageZones: Loading sites from " .. tostring(garage.sitesFile))
+  local sites = gameplay_sites_sitesManager.loadSites(garage.sitesFile)
+  if not sites then
+    log("D", "tuningShop", "getGarageZones: Failed to load sites")
+    return nil
+  end
+  
+  if not sites.zones then
+    log("D", "tuningShop", "getGarageZones: Sites have no zones")
+    return nil
+  end
+  
+  local zoneCount = sites.zones.sorted and #sites.zones.sorted or 0
+  log("D", "tuningShop", "getGarageZones: Loaded " .. tostring(zoneCount) .. " zones")
+  
+  cachedGarageZones[businessId] = sites.zones
+  return sites.zones
+end
+
+local function isPositionInGarageZone(businessId, pos)
+  if not businessId or not pos then
+    log("D", "tuningShop", "isPositionInGarageZone: Missing businessId or pos")
+    return false
+  end
+  
+  local zones = getGarageZones(businessId)
+  if not zones then
+    log("D", "tuningShop", "isPositionInGarageZone: No zones found for businessId=" .. tostring(businessId))
+    return false
+  end
+  
+  local zoneCount = zones.sorted and #zones.sorted or 0
+  log("D", "tuningShop", "isPositionInGarageZone: Checking " .. tostring(zoneCount) .. " zones")
+  
+  for _, zone in ipairs(zones.sorted or {}) do
+    if zone and zone.containsPoint2D then
+      local contains = zone:containsPoint2D(pos)
+      if contains then
+        log("D", "tuningShop", "isPositionInGarageZone: Position is in zone " .. tostring(zone.name or "unnamed"))
+        return true
+      end
+    end
+  end
+  
+  log("D", "tuningShop", "isPositionInGarageZone: Position not in any zone")
+  return false
+end
+
+local function isSpawnedVehicleInGarageZone(businessId, vehicleId)
+  if not businessId or not vehicleId then
+    log("D", "tuningShop", "isSpawnedVehicleInGarageZone: Missing businessId or vehicleId")
+    return false
+  end
+  
+  local spawnedVehId = nil
+  if career_modules_business_businessInventory and career_modules_business_businessInventory.getSpawnedVehicleId then
+    spawnedVehId = career_modules_business_businessInventory.getSpawnedVehicleId(businessId, vehicleId)
+  end
+  
+  if not spawnedVehId then
+    log("D", "tuningShop", "isSpawnedVehicleInGarageZone: No spawned vehicle ID found for vehicleId=" .. tostring(vehicleId))
+    return false
+  end
+  
+  local vehObj = be:getObjectByID(spawnedVehId)
+  if not vehObj then
+    log("D", "tuningShop", "isSpawnedVehicleInGarageZone: Vehicle object not found for spawnedVehId=" .. tostring(spawnedVehId))
+    return false
+  end
+  
+  local vehPos = vehObj:getPosition()
+  if not vehPos then
+    log("D", "tuningShop", "isSpawnedVehicleInGarageZone: Could not get vehicle position")
+    return false
+  end
+  
+  local inZone = isPositionInGarageZone(businessId, vehPos)
+  log("D", "tuningShop", "isSpawnedVehicleInGarageZone: vehicleId=" .. tostring(vehicleId) .. ", pos=" .. tostring(vehPos) .. ", inZone=" .. tostring(inZone))
+  return inZone
+end
+
+local function isPlayerInTuningShopZone(businessId)
+  if not businessId then
+    return false
+  end
+  
+  local playerVeh = be:getPlayerVehicle(0)
+  local playerPos = nil
+  
+  if playerVeh then
+    playerPos = playerVeh:getPosition()
+  else
+    local cam = core_camera.getActiveCamName()
+    if cam == "freeCam" or cam == "free" then
+      playerPos = core_camera.getPosition()
+    end
+  end
+  
+  if not playerPos then
+    return false
+  end
+  
+  return isPositionInGarageZone(businessId, playerPos)
+end
+
 local blacklistedModels = {
   atv = true,
   citybus = true,
@@ -2524,6 +2673,8 @@ local function getUIData(businessId)
     return nil
   end
 
+  local playerInZone = isPlayerInTuningShopZone(businessId)
+
   local jobs = getJobsForBusiness(businessId)
   local vehicles = career_modules_business_businessInventory.getBusinessVehicles(businessId)
   local parts = {}
@@ -2536,12 +2687,32 @@ local function getUIData(businessId)
       pulledOutVehiclesRaw = {singleVehicle}
     end
   end
+
+  local pulledOutVehiclesInZone = {}
+  log("D", "tuningShop", "getUIData: Checking " .. tostring(#pulledOutVehiclesRaw) .. " pulled out vehicles for zone")
+  for _, vehicle in ipairs(pulledOutVehiclesRaw) do
+    local inZone = isSpawnedVehicleInGarageZone(businessId, vehicle.vehicleId)
+    log("D", "tuningShop", "getUIData: vehicleId=" .. tostring(vehicle.vehicleId) .. " inZone=" .. tostring(inZone))
+    if inZone then
+      table.insert(pulledOutVehiclesInZone, vehicle)
+    end
+  end
+  log("D", "tuningShop", "getUIData: " .. tostring(#pulledOutVehiclesInZone) .. " vehicles in zone")
+
   local activeVehicle = nil
   if career_modules_business_businessInventory.getActiveVehicle then
-    activeVehicle = career_modules_business_businessInventory.getActiveVehicle(businessId)
+    local rawActive = career_modules_business_businessInventory.getActiveVehicle(businessId)
+    if rawActive and isSpawnedVehicleInGarageZone(businessId, rawActive.vehicleId) then
+      activeVehicle = rawActive
+    elseif #pulledOutVehiclesInZone > 0 then
+      activeVehicle = pulledOutVehiclesInZone[1]
+    end
   else
-    activeVehicle = pulledOutVehiclesRaw[1]
+    if #pulledOutVehiclesInZone > 0 then
+      activeVehicle = pulledOutVehiclesInZone[1]
+    end
   end
+
   local activeVehicleId = activeVehicle and (tonumber(activeVehicle.vehicleId) or activeVehicle.vehicleId)
   local pulledOutDamageInfo = {
     locked = false,
@@ -2550,7 +2721,7 @@ local function getUIData(businessId)
   }
   local formattedPulledOutVehicles = {}
   local hasDamageLockedVehicle = false
-  for _, vehicle in ipairs(pulledOutVehiclesRaw) do
+  for _, vehicle in ipairs(pulledOutVehiclesInZone) do
     local formatted = formatVehicleForUI(vehicle, businessId)
     if formatted then
       local vehicleDamageInfo = isDamageLocked(businessId, vehicle.vehicleId)
@@ -2560,6 +2731,7 @@ local function getUIData(businessId)
       formatted.damage = vehicleDamageInfo.damage
       formatted.damageLocked = vehicleDamageInfo.locked
       formatted.damageThreshold = vehicleDamageInfo.threshold
+      formatted.inGarageZone = true
       if activeVehicleId and (tonumber(formatted.vehicleId) or formatted.vehicleId) == activeVehicleId then
         formatted.isActive = true
         pulledOutDamageInfo = vehicleDamageInfo
@@ -2581,14 +2753,17 @@ local function getUIData(businessId)
   end
 
   local vehicleList = {}
-  for _, vehicle in ipairs(vehicles) do
-    table.insert(vehicleList, formatVehicleForUI(vehicle, businessId))
+  if playerInZone then
+    for _, vehicle in ipairs(vehicles) do
+      table.insert(vehicleList, formatVehicleForUI(vehicle, businessId))
+    end
   end
 
   local pulledOutVehicleData = nil
   if activeVehicle then
     pulledOutVehicleData = formatVehicleForUI(activeVehicle, businessId)
     if pulledOutVehicleData then
+      pulledOutVehicleData.inGarageZone = true
       pulledOutVehicleData.damage = pulledOutDamageInfo.damage
       pulledOutVehicleData.damageLocked = pulledOutDamageInfo.locked
       pulledOutVehicleData.damageThreshold = pulledOutDamageInfo.threshold
@@ -2655,6 +2830,7 @@ local function getUIData(businessId)
     vehicleDamageLocked = pulledOutDamageInfo.locked,
     vehicleDamageThreshold = pulledOutDamageInfo.threshold,
     maxActiveJobs = getMaxActiveJobs(businessId),
+    playerInZone = playerInZone,
     stats = {
       totalVehicles = #vehicleList,
       totalParts = #parts,
@@ -3135,5 +3311,9 @@ M.getVehicleByJobId = getVehicleByJobId
 M.getTechsForBusiness = function(businessId)
   return tuningShopTechs.loadBusinessTechs(businessId)
 end
+
+M.isPlayerInTuningShopZone = isPlayerInTuningShopZone
+M.isSpawnedVehicleInGarageZone = isSpawnedVehicleInGarageZone
+M.isPositionInGarageZone = isPositionInGarageZone
 
 return M
