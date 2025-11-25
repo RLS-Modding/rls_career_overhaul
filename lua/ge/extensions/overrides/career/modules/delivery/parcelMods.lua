@@ -296,32 +296,11 @@ local progressTemplate = {
 
 local progress = deepcopy(progressTemplate)
 
-M.setProgress = function(data)
-    progress = data or deepcopy(progressTemplate)
-end
-
-M.getProgress = function()
-    return progress
-end
-
-M.getModData = function(key)
-    return modifiers[key]
-end
-M.getModifierIcon = function(key)
-    return modifiers[key].icon
-end
-M.getLabelAndShortDescription = function(key)
-    return modifiers[key].label, modifiers[key].shortDescription
-end
-M.isImportant = function(key)
-    return modifiers[key].important or false
-end
 
 local function calculateTimedModifierTime(distance)
     local r = math.random() + 1
     return (distance / 13) + (30 * r)
 end
-M.calculateTimedModifierTime = calculateTimedModifierTime
 
 local sortByPrio = function(a, b)
     return modifiers[a.type].priority < modifiers[b.type].priority
@@ -351,7 +330,6 @@ local function generateModifiers(item, parcelTemplate, distance)
     table.sort(mods, sortByPrio)
     return mods
 end
-M.generateModifiers = generateModifiers
 
 local function isParcelModUnlocked(modKey)
     if not modifiers[modKey] or not modifiers[modKey].unlockFlag then
@@ -359,7 +337,6 @@ local function isParcelModUnlocked(modKey)
     end
     return career_modules_unlockFlags.getFlag(modifiers[modKey].unlockFlag)
 end
-M.isParcelModUnlocked = isParcelModUnlocked
 
 local function lockedBecauseOfMods(modKeys)
     local minTier = 1
@@ -380,7 +357,6 @@ local function lockedBecauseOfMods(modKeys)
     end)
     return locked, definitions[1]
 end
-M.lockedBecauseOfMods = lockedBecauseOfMods
 
 local function getParcelModUnlockStatusSimple()
     local status = {}
@@ -389,10 +365,7 @@ local function getParcelModUnlockStatusSimple()
     end
     return status
 end
-M.getParcelModUnlockStatusSimple = getParcelModUnlockStatusSimple
-M.getParcelModProgressLabel = function(key)
-    return modifiers[key].unlockLabel
-end
+
 
 local function trackModifierStats(cargo)
     for _, mod in ipairs(cargo.modifiers or {}) do
@@ -412,31 +385,98 @@ local function trackModifierStats(cargo)
         end
     end
 end
-M.trackModifierStats = trackModifierStats
 
---[[
-local function onGetSkillUnlockInfoForUi(skill, unlocks)
-  if skill.id ~= "delivery" then return end
-  unlocks[1] = unlocks[1] or {}
-  local modsByTier = {}
-  for modKey, info in pairs(modifiers) do
-    local tier = 1
-    if info.requirements and info.requirements.delivery then
-      tier = info.requirements.delivery
+local function addModifier(key, mod)
+    if not key or type(key) ~= "string" or key == "" then
+        log("E", "parcelMods", "addModifier: Invalid modifier key")
+        return false
     end
-    modsByTier[tier] = modsByTier[tier] or {}
-    table.insert(modsByTier[tier], modKey)
-  end
-  for tier, list in pairs(modsByTier) do
-    table.sort(list)
-    unlocks[tier] = unlocks[tier] or {}
-    for _, value in ipairs(list) do
-      table.insert(unlocks[tier], {type="text", label = value})
+    
+    if not mod or type(mod) ~= "table" then
+        log("E", "parcelMods", "addModifier: Modifier data must be a table")
+        return false
     end
-  end
+    
+    if modifiers[key] then
+        log("W", "parcelMods", "addModifier: Modifier '" .. key .. "' already exists, overwriting")
+    end
+    
+    if not mod.makeTemplate or type(mod.makeTemplate) ~= "function" then
+        log("E", "parcelMods", "addModifier: Modifier '" .. key .. "' missing required 'makeTemplate' function")
+        return false
+    end
+    
+    if not mod.unlockFlag or type(mod.unlockFlag) ~= "string" then
+        log("E", "parcelMods", "addModifier: Modifier '" .. key .. "' missing required 'unlockFlag' string")
+        return false
+    end
+    
+    if not mod.unlockLabel or type(mod.unlockLabel) ~= "string" then
+        log("E", "parcelMods", "addModifier: Modifier '" .. key .. "' missing required 'unlockLabel' string")
+        return false
+    end
+    
+    if not mod.priority or type(mod.priority) ~= "number" then
+        log("E", "parcelMods", "addModifier: Modifier '" .. key .. "' missing required 'priority' number")
+        return false
+    end
+    
+    if not mod.icon or type(mod.icon) ~= "string" then
+        log("E", "parcelMods", "addModifier: Modifier '" .. key .. "' missing required 'icon' string")
+        return false
+    end
+    
+    if not mod.label or type(mod.label) ~= "string" then
+        log("E", "parcelMods", "addModifier: Modifier '" .. key .. "' missing required 'label' string")
+        return false
+    end
+    
+    modifiers[key] = mod
+    
+    if not progressTemplate[key] then
+        progressTemplate[key] = {
+            delivieries = 0
+        }
+    end
+    
+    log("I", "parcelMods", "addModifier: Successfully added modifier '" .. key .. "'")
+    return true
 end
 
-M.onGetSkillUnlockInfoForUi = onGetSkillUnlockInfoForUi
+M.setProgress = function(data)
+    progress = data or deepcopy(progressTemplate)
+end
 
-]]
+M.getProgress = function()
+    return progress
+end
+
+M.getModData = function(key)
+    return modifiers[key]
+end
+
+M.getModifierIcon = function(key)
+    return modifiers[key].icon
+end
+
+M.getLabelAndShortDescription = function(key)
+    return modifiers[key].label, modifiers[key].shortDescription
+end
+
+M.isImportant = function(key)
+    return modifiers[key].important or false
+end
+
+M.addModifier = addModifier
+M.calculateTimedModifierTime = calculateTimedModifierTime
+M.generateModifiers = generateModifiers
+M.isParcelModUnlocked = isParcelModUnlocked
+M.lockedBecauseOfMods = lockedBecauseOfMods
+M.trackModifierStats = trackModifierStats
+M.getParcelModUnlockStatusSimple = getParcelModUnlockStatusSimple
+M.getParcelModProgressLabel = function(key)
+    return modifiers[key].unlockLabel
+end
+
+
 return M
