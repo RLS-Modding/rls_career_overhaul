@@ -2662,6 +2662,76 @@ local function requestSimulationTime()
   end
 end
 
+local function ensureTabsRegistered()
+  if not career_modules_business_businessTabRegistry then
+    log("W", "TuningShop", "Tab registry not available")
+    return false
+  end
+
+  local existingTabs = career_modules_business_businessTabRegistry.getTabs("tuningShop") or {}
+  if #existingTabs > 0 then
+    return true
+  end
+
+  log("I", "TuningShop", "Registering tabs for tuningShop")
+
+  career_modules_business_businessTabRegistry.registerTab("tuningShop", {
+    id = "home",
+    label = "Home",
+    icon = '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
+    component = "BusinessHomeView",
+    section = "BASIC",
+    order = 1
+  })
+
+  career_modules_business_businessTabRegistry.registerTab("tuningShop", {
+    id = "jobs",
+    label = "Jobs",
+    icon = '<path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
+    component = "BusinessJobsTab",
+    section = "BASIC",
+    order = 2
+  })
+
+  career_modules_business_businessTabRegistry.registerTab("tuningShop", {
+    id = "kits",
+    label = "Kits",
+    icon = '<rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
+    component = "BusinessKitsTab",
+    section = "BASIC",
+    order = 2.5
+  })
+
+  career_modules_business_businessTabRegistry.registerTab("tuningShop", {
+    id = "inventory",
+    label = "Inventory",
+    icon = '<path d="M16.5 9.4l-9-5.19M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>',
+    component = "BusinessInventoryTab",
+    section = "BASIC",
+    order = 3
+  })
+
+  career_modules_business_businessTabRegistry.registerTab("tuningShop", {
+    id = "techs",
+    label = "Techs",
+    icon = '<circle cx="12" cy="7" r="4"/><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><circle cx="19" cy="7" r="3"/><path d="M22 21v-2a3 3 0 0 0-3-3h-2"/>',
+    component = "BusinessTechsTab",
+    section = "BASIC",
+    order = 4
+  })
+
+  career_modules_business_businessTabRegistry.registerTab("tuningShop", {
+    id = "finances",
+    label = "Finances",
+    icon = '<path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
+    component = "BusinessFinancesTab",
+    section = "BASIC",
+    order = 5
+  })
+
+  return true
+end
+
 local function getUIData(businessId)
   if not businessId then
     return nil
@@ -2777,12 +2847,17 @@ local function getUIData(businessId)
 
   local tabs = {}
   if career_modules_business_businessTabRegistry then
+    ensureTabsRegistered()
     if career_modules_business_businessSkillTree and career_modules_business_businessSkillTree.ensureTabsRegistered then
       pcall(function()
         career_modules_business_businessSkillTree.ensureTabsRegistered(businessType)
       end)
     end
     tabs = career_modules_business_businessTabRegistry.getTabs(businessType) or {}
+    log("I", "tuningShop", "getUIData: Got " .. tostring(#tabs) .. " tabs from registry")
+    for i, tab in ipairs(tabs) do
+      log("D", "tuningShop", "Tab " .. tostring(i) .. ": id=" .. tostring(tab.id) .. ", label=" .. tostring(tab.label))
+    end
 
     if hasDamageLockedVehicle then
       local allowedTabs = {
@@ -3041,6 +3116,7 @@ end
 
 local function openMenu(businessId)
   log("D", "TuningShop", "Opening menu for business: " .. tostring(businessId))
+  ensureTabsRegistered()
   guihooks.trigger('ChangeState', {
     state = 'business-computer',
     params = {
@@ -3071,7 +3147,10 @@ end
 local function onCareerActivated()
   career_modules_business_businessManager.registerBusinessCallback("tuningShop", {
     onPurchase = function(businessId)
-      log("D", "TuningShop", "Tuning shop purchased: " .. tostring(businessId))
+      log("I", "TuningShop", "Tuning shop purchased: " .. tostring(businessId))
+
+      ensureTabsRegistered()
+
       if career_modules_bank then
         local accountId = "business_tuningShop_" .. tostring(businessId)
         career_modules_bank.rewardToAccount({
@@ -3082,12 +3161,26 @@ local function onCareerActivated()
       end
 
       local normalizedId = normalizeBusinessId(businessId)
-      local jobs = loadBusinessJobs(normalizedId)
+
+      loadRaceData()
+      getFactoryConfigs()
+
+      if not businessJobs[normalizedId] then
+        businessJobs[normalizedId] = {
+          active = {},
+          new = {},
+          completed = {}
+        }
+      end
+
+      local jobs = businessJobs[normalizedId]
       if not jobs.new then
         jobs.new = {}
       end
 
       local newJobs = generateNewJobs(normalizedId, 3)
+      log("I", "TuningShop", "Generated " .. tostring(#newJobs) .. " initial jobs for business " .. tostring(normalizedId))
+
       for _, job in ipairs(newJobs) do
         table.insert(jobs.new, job)
       end
@@ -3109,63 +3202,7 @@ local function onCareerActivated()
     end
   })
 
-  -- No longer registering job generator
-
-  if career_modules_business_businessTabRegistry then
-    career_modules_business_businessTabRegistry.registerTab("tuningShop", {
-      id = "home",
-      label = "Home",
-      icon = '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
-      component = "BusinessHomeView",
-      section = "BASIC",
-      order = 1
-    })
-
-    career_modules_business_businessTabRegistry.registerTab("tuningShop", {
-      id = "jobs",
-      label = "Jobs",
-      icon = '<path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
-      component = "BusinessJobsTab",
-      section = "BASIC",
-      order = 2
-    })
-
-    career_modules_business_businessTabRegistry.registerTab("tuningShop", {
-      id = "kits",
-      label = "Kits",
-      icon = '<rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
-      component = "BusinessKitsTab",
-      section = "BASIC",
-      order = 2.5
-    })
-
-    career_modules_business_businessTabRegistry.registerTab("tuningShop", {
-      id = "inventory",
-      label = "Inventory",
-      icon = '<path d="M16.5 9.4l-9-5.19M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>',
-      component = "BusinessInventoryTab",
-      section = "BASIC",
-      order = 3
-    })
-
-    career_modules_business_businessTabRegistry.registerTab("tuningShop", {
-      id = "techs",
-      label = "Techs",
-      icon = '<circle cx="12" cy="7" r="4"/><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><circle cx="19" cy="7" r="3"/><path d="M22 21v-2a3 3 0 0 0-3-3h-2"/>',
-      component = "BusinessTechsTab",
-      section = "BASIC",
-      order = 4
-    })
-
-    career_modules_business_businessTabRegistry.registerTab("tuningShop", {
-      id = "finances",
-      label = "Finances",
-      icon = '<path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
-      component = "BusinessFinancesTab",
-      section = "BASIC",
-      order = 5
-    })
-  end
+  ensureTabsRegistered()
 
   businessJobs = {}
   businessXP = {}

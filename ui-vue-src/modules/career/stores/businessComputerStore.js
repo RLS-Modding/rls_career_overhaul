@@ -192,7 +192,8 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     }
     pulledOutVehicle.value = activeEntry || null
     const now = Date.now() / 1000
-    const processedTechs = (data.techs || []).map(tech => {
+    const techsArray = Array.isArray(data.techs) ? data.techs : Object.values(data.techs || {})
+    const processedTechs = techsArray.map(tech => {
       if (tech.jobId && tech.totalSeconds > 0 && tech.elapsedSeconds !== undefined) {
         return {
           ...tech,
@@ -208,8 +209,19 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
       techs: processedTechs
     }
     businessData.value = payload
+    console.log('[BusinessStore] setBusinessData - payload.tabs:', payload.tabs, 'type:', typeof payload.tabs, 'isArray:', Array.isArray(payload.tabs))
     if (payload.tabs) {
-      registeredTabs.value = payload.tabs
+      let tabsArray = []
+      if (Array.isArray(payload.tabs)) {
+        tabsArray = payload.tabs
+      } else if (typeof payload.tabs === 'object') {
+        tabsArray = Object.values(payload.tabs)
+      }
+      console.log('[BusinessStore] converted tabs:', tabsArray, 'length:', tabsArray.length)
+      registeredTabs.value = tabsArray
+    } else {
+      console.log('[BusinessStore] payload.tabs is falsy!')
+      registeredTabs.value = []
     }
     if (payload.stats) {
       kits.value = payload.stats.kits || []
@@ -222,7 +234,8 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   const updateTechs = (newTechs) => {
     if (!businessData.value) businessData.value = {}
     const now = Date.now() / 1000
-    const processedTechs = (newTechs || []).map(tech => {
+    const techsArray = Array.isArray(newTechs) ? newTechs : Object.values(newTechs || {})
+    const processedTechs = techsArray.map(tech => {
       if (tech.jobId && tech.totalSeconds > 0 && tech.elapsedSeconds !== undefined) {
         return {
           ...tech,
@@ -287,7 +300,9 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
 
   const tabsBySection = computed(() => {
     const sections = {}
-    registeredTabs.value.forEach(tab => {
+    const tabs = Array.isArray(registeredTabs.value) ? registeredTabs.value : Object.values(registeredTabs.value || {})
+    tabs.forEach(tab => {
+      if (!tab) return
       const section = tab.section || 'BASIC'
       if (!sections[section]) {
         sections[section] = []
@@ -305,9 +320,13 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     loading.value = true
     isMenuActive.value = true
     try {
+      console.log('[BusinessStore] loadBusinessData calling Lua with:', businessType, businessId)
       const data = await lua.career_modules_business_businessComputer.getBusinessComputerUIData(businessType, businessId)
+      console.log('[BusinessStore] loadBusinessData received data:', data)
+      console.log('[BusinessStore] data.tabs:', data?.tabs)
       setBusinessData(data)
     } catch (error) {
+      console.error('[BusinessStore] loadBusinessData error:', error)
     } finally {
       loading.value = false
     }
