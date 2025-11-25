@@ -79,13 +79,17 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue"
+import { ref, computed, onMounted, onUnmounted } from "vue"
 import PhoneWrapper from "./PhoneWrapper.vue"
 import PhoneJobCard from "../components/phone/PhoneJobCard.vue"
 import { useBusinessComputerStore } from "../stores/businessComputerStore"
 import { lua } from "@/bridge"
 
 const store = useBusinessComputerStore()
+
+onUnmounted(() => {
+  store.onMenuClosed()
+})
 const loading = ref(true)
 const hasBusiness = ref(false)
 

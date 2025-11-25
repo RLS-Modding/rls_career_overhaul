@@ -4,12 +4,17 @@ M.dependencies = {'career_career', 'career_saveSystem'}
 
 local skillTreeCache = {}
 local skillTreeProgress = {}
+local skillTreeFileCache = {}
 
 local function loadSkillTreeFile(filePath)
   if not filePath then
     return nil
   end
+  if skillTreeFileCache[filePath] then
+    return skillTreeFileCache[filePath]
+  end
   local data = jsonReadFile(filePath)
+  skillTreeFileCache[filePath] = data
   return data
 end
 
@@ -296,13 +301,8 @@ local function saveAllSkillTreeProgress(currentSavePath)
   end
 
   local filePath = currentSavePath .. "/career/businessSkillTrees.json"
-  local data = jsonReadFile(filePath) or {}
   
-  for businessId, progress in pairs(skillTreeProgress) do
-    data[businessId] = progress
-  end
-  
-  career_saveSystem.jsonWriteFileSafe(filePath, data, true)
+  career_saveSystem.jsonWriteFileSafe(filePath, skillTreeProgress, true)
 end
 
 local function getNodeProgress(businessId, treeId, nodeId)

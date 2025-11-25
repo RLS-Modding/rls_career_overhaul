@@ -19,6 +19,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   const tuningCart = ref([])
   const tuningDataCache = ref({})
   const partsTreeCache = ref({})
+  const isMenuActive = ref(false)
 
   const cartTabs = ref([{ id: 'default', name: 'Build 1', parts: [], tuning: [], cartHash: null }])
   const activeTabId = ref('default')
@@ -219,6 +220,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
       return
     }
     loading.value = true
+    isMenuActive.value = true
     try {
       const data = await lua.career_modules_business_businessComputer.getBusinessComputerUIData(businessType, businessId)
       setBusinessData(data)
@@ -498,6 +500,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   }
 
   const onMenuClosed = () => {
+    isMenuActive.value = false
     clearCart()
     partsTreeCache.value = {}
     tuningDataCache.value = {}
@@ -512,6 +515,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     activeView.value = "home"
     vehicleView.value = null
     pulledOutVehicle.value = null
+    businessData.value = {}
     try {
       lua.career_modules_business_businessComputer.clearVehicleDataCaches()
     } catch (error) {
@@ -889,6 +893,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   const { events } = useBridge()
 
   const handlePartCartUpdated = (data) => {
+    if (!isMenuActive.value) return
     if (data.businessId === businessId.value && data.vehicleId === pulledOutVehicle.value?.vehicleId) {
       if (data.cart && Array.isArray(data.cart)) {
         partsCart.value = data.cart.map(item => ({
@@ -912,6 +917,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   }
 
   const handleJobsUpdated = async (data) => {
+    if (!isMenuActive.value) return
     const currentBusinessId = businessId.value
     const currentBusinessType = businessType.value
 
@@ -953,6 +959,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   }
 
   const handleTechsUpdated = (data) => {
+    if (!isMenuActive.value) return
     const currentBusinessId = businessId.value
     const currentBusinessType = businessType.value
 
@@ -979,6 +986,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   }
 
   const handlePartInventoryData = (data) => {
+    if (!isMenuActive.value) return
     const currentBusinessId = businessId.value
     if (!currentBusinessId) return
 
@@ -1024,6 +1032,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   }
 
   const handleJobAccepted = (data) => {
+    if (!isMenuActive.value) return
     if (String(data.businessId) !== String(businessId.value)) return
     businessData.value = {
       ...businessData.value,
@@ -1035,6 +1044,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   }
 
   const handleJobDeclined = (data) => {
+    if (!isMenuActive.value) return
     if (String(data.businessId) !== String(businessId.value)) return
     businessData.value = {
       ...businessData.value,
@@ -1043,6 +1053,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   }
 
   const handleJobAbandoned = (data) => {
+    if (!isMenuActive.value) return
     if (String(data.businessId) !== String(businessId.value)) return
     pulledOutVehicle.value = null
     const vehiclesFromData = Array.isArray(data.pulledOutVehicles) ? data.pulledOutVehicles : []
@@ -1059,6 +1070,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   }
 
   const handleJobCompleted = (data) => {
+    if (!isMenuActive.value) return
     if (String(data.businessId) !== String(businessId.value)) return
     pulledOutVehicle.value = null
     const vehiclesFromData = Array.isArray(data.pulledOutVehicles) ? data.pulledOutVehicles : []
@@ -1075,6 +1087,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   }
 
   const handleTechAssigned = (data) => {
+    if (!isMenuActive.value) return
     if (String(data.businessId) !== String(businessId.value)) return
     businessData.value = {
       ...businessData.value,
@@ -1084,6 +1097,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   }
 
   const handleVehiclePulledOut = (data) => {
+    if (!isMenuActive.value) return
     if (String(data.businessId) !== String(businessId.value)) return
     const vehiclesFromData = Array.isArray(data.pulledOutVehicles) ? data.pulledOutVehicles : []
     pulledOutVehicles.value = vehiclesFromData
@@ -1100,6 +1114,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   }
 
   const handleVehiclePutAway = (data) => {
+    if (!isMenuActive.value) return
     if (String(data.businessId) !== String(businessId.value)) return
     const vehiclesFromData = Array.isArray(data.pulledOutVehicles) ? data.pulledOutVehicles : []
     pulledOutVehicles.value = vehiclesFromData
@@ -1685,7 +1700,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   const hasDynoUpgrade = ref(false)
 
   const updateDynoUpgradeStatus = async () => {
-    if (!businessId.value) {
+    if (!isMenuActive.value || !businessId.value) {
       hasDynoUpgrade.value = false
       return
     }
@@ -1713,7 +1728,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   const raceRecognitionUnlocked = ref(false)
 
   const updateBrandRecognitionStatus = async () => {
-    if (!businessId.value) {
+    if (!isMenuActive.value || !businessId.value) {
       brandRecognitionUnlocked.value = false
       return
     }
@@ -1730,7 +1745,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   }
 
   const updateRaceRecognitionStatus = async () => {
-    if (!businessId.value) {
+    if (!isMenuActive.value || !businessId.value) {
       raceRecognitionUnlocked.value = false
       return
     }
@@ -1824,6 +1839,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   }, { immediate: true })
 
   bridge.events.on("businessComputer:onKitsUpdated", (data) => {
+    if (!isMenuActive.value) return
     if (data && data.businessId && String(data.businessId) === String(businessId.value)) {
       if (data.kits) {
         kits.value = data.kits
@@ -1848,6 +1864,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     pulledOutVehicles,
     activeVehicleId,
     loading,
+    isMenuActive,
     registeredTabs,
     tabsBySection,
     businessId,
