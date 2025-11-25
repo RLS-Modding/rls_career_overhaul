@@ -164,10 +164,27 @@
                     <p class="dialog-warning" v-if="selectedKit">
                         This will replace all parts and tuning settings.
                     </p>
+                    <div v-if="loadingCostBreakdown" class="cost-breakdown loading">
+                        <p>Calculating costs...</p>
+                    </div>
+                    <div v-else-if="costBreakdown" class="cost-breakdown">
+                        <div class="cost-row">
+                            <span class="cost-label">Cost of new parts:</span>
+                            <span class="cost-value">${{ formatCurrency(costBreakdown.newPartsCost) }}</span>
+                        </div>
+                        <div class="cost-row trade-in" v-if="costBreakdown.tradeInCredit > 0">
+                            <span class="cost-label">Trade-in value (90%):</span>
+                            <span class="cost-value negative">-${{ formatCurrency(costBreakdown.tradeInCredit) }}</span>
+                        </div>
+                        <div class="cost-row total">
+                            <span class="cost-label">Total cost:</span>
+                            <span class="cost-value total-value">${{ formatCurrency(costBreakdown.totalCost) }}</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="dialog-footer">
                     <button @click.stop="closeApplyDialog" @mousedown.stop class="btn-secondary">Cancel</button>
-                    <button @click.stop="confirmApplyKit" @mousedown.stop class="btn-primary">Apply Kit</button>
+                    <button @click.stop="confirmApplyKit" @mousedown.stop class="btn-primary" :disabled="loadingCostBreakdown">Apply Kit</button>
                 </div>
             </div>
         </div>
@@ -217,6 +234,8 @@ const showApplyDialog = ref(false)
 const selectedJob = ref(null)
 const selectedKit = ref(null)
 const kitName = ref('')
+const costBreakdown = ref(null)
+const loadingCostBreakdown = ref(false)
 
 const vFocus = {
     mounted: (el) => el.focus()
@@ -241,6 +260,11 @@ const formatTime = (time) => {
         return `${minutes}:${seconds.toString().padStart(2, '0')}`
     }
     return `${numTime.toFixed(2)}s`
+}
+
+const formatCurrency = (value) => {
+    if (value === null || value === undefined) return '0.00'
+    return Number(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 const countParts = (parts) => {
@@ -275,10 +299,27 @@ const handleCreateKit = async () => {
     }
 }
 
-const handleApplyKit = (kit) => {
+const handleApplyKit = async (kit) => {
     if (!canApplyKit(kit)) return
+    if (!pulledOutVehicle.value) return
+
     selectedKit.value = kit
+    costBreakdown.value = null
+    loadingCostBreakdown.value = true
     showApplyDialog.value = true
+
+    try {
+        const breakdown = await lua.career_modules_business_tuningShopKits.getKitCostBreakdown(
+            store.businessId,
+            pulledOutVehicle.value.vehicleId,
+            kit.id
+        )
+        costBreakdown.value = breakdown
+    } catch (error) {
+        console.error('Failed to get cost breakdown:', error)
+    } finally {
+        loadingCostBreakdown.value = false
+    }
 }
 
 const confirmApplyKit = async () => {
@@ -290,7 +331,6 @@ const confirmApplyKit = async () => {
         closeApplyDialog()
     } else {
         console.error('Failed to apply kit:', result.error)
-        // Optionally keep dialog open or show error
         closeApplyDialog()
     }
 }
@@ -298,6 +338,7 @@ const confirmApplyKit = async () => {
 const closeApplyDialog = () => {
     showApplyDialog.value = false
     selectedKit.value = null
+    costBreakdown.value = null
 }
 
 const handleDeleteKit = async (kit) => {
@@ -677,5 +718,60 @@ const closeDeleteDialog = () => {
     color: #ef4444;
     font-size: 0.875rem;
     margin-top: 0.5rem;
+}
+
+.cost-breakdown {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+    border: 1px solid #333;
+}
+
+.cost-breakdown.loading {
+    text-align: center;
+    color: #999;
+}
+
+.cost-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    font-size: 0.9rem;
+}
+
+.cost-row:not(:last-child) {
+    border-bottom: 1px solid #333;
+}
+
+.cost-label {
+    color: #999;
+}
+
+.cost-value {
+    color: #fff;
+    font-weight: 500;
+}
+
+.cost-value.negative {
+    color: #22c55e;
+}
+
+.cost-row.total {
+    margin-top: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 2px solid #444;
+}
+
+.cost-row.total .cost-label {
+    color: #fff;
+    font-weight: 600;
+}
+
+.cost-row.total .total-value {
+    color: #fbbf24;
+    font-weight: 700;
+    font-size: 1.1rem;
 }
 </style>

@@ -1334,5 +1334,6 @@ export default {
     createKit: (businessId, jobId, kitName) => [Boolean],
     deleteKit: (businessId, kitId) => [Boolean],
     applyKit: (businessId, vehicleId, kitId) => Object,
+    getKitCostBreakdown: (businessId, vehicleId, kitId) => Object,
   },
 }

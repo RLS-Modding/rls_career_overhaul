@@ -342,6 +342,35 @@ local function flattenKitTree(node, result)
   return result
 end
 
+local function comparePartsTree(kitNode, currentNode, slotPath, differingParts)
+  slotPath = slotPath or "/"
+  differingParts = differingParts or {}
+
+  if not kitNode then
+    return differingParts
+  end
+
+  local kitPart = kitNode.chosenPartName or ""
+  local currentPart = currentNode and currentNode.chosenPartName or ""
+
+  if kitPart ~= "" and kitPart ~= currentPart then
+    differingParts[slotPath] = {
+      partName = kitPart,
+      oldPartName = currentPart ~= "" and currentPart or nil
+    }
+  end
+
+  if kitNode.children then
+    for slotName, kitChild in pairs(kitNode.children) do
+      local childPath = slotPath .. slotName .. "/"
+      local currentChild = currentNode and currentNode.children and currentNode.children[slotName] or nil
+      comparePartsTree(kitChild, currentChild, childPath, differingParts)
+    end
+  end
+
+  return differingParts
+end
+
 local function getNodeFromSlotPath(tree, path)
   if not tree or not path then
     return nil
@@ -569,6 +598,144 @@ local function calculateKitCost(businessId, vehicleId, kit)
   return totalCost
 end
 
+local function findSlotInTree(tree, slotName)
+  if not tree or not tree.children then
+    return nil
+  end
+
+  if tree.children[slotName] then
+    return tree.children[slotName]
+  end
+
+  for _, childNode in pairs(tree.children) do
+    local found = findSlotInTree(childNode, slotName)
+    if found then
+      return found
+    end
+  end
+
+  return nil
+end
+
+local function getKitCostBreakdown(businessId, vehicleId, kitId)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId or not vehicleId or not kitId then
+    return nil
+  end
+
+  local kits = loadBusinessKits(businessId)
+  local kit = nil
+  for _, k in ipairs(kits) do
+    if k.id == kitId then
+      kit = k
+      break
+    end
+  end
+
+  if not kit or not kit.parts then
+    return nil
+  end
+
+  local vehicle = career_modules_business_businessInventory.getVehicleById(businessId, vehicleId)
+  if not vehicle then
+    return nil
+  end
+
+  local vehObj = nil
+  if career_modules_business_businessInventory and career_modules_business_businessInventory.getSpawnedVehicleId then
+    local spawnedVehicleId = career_modules_business_businessInventory.getSpawnedVehicleId(businessId, vehicleId)
+    if spawnedVehicleId then
+      vehObj = getObjectByID(spawnedVehicleId)
+    end
+  end
+
+  if not vehObj then
+    return nil
+  end
+
+  local vehId = vehObj:getID()
+  local vehicleData = extensions.core_vehicle_manager.getVehicleData(vehId)
+  if not vehicleData or not vehicleData.ioCtx then
+    return nil
+  end
+
+  local vehicleModel = vehObj:getJBeamFilename()
+  local discountMultiplier = getPartSupplierDiscountMultiplier(businessId)
+  local vehicleMileage = tonumber(vehicle.mileage or 0)
+
+  local currentPartsTree = vehicleData.config and vehicleData.config.partsTree or
+                           (vehicle.config and vehicle.config.partsTree or nil)
+  local differingParts = {}
+
+  for slotName, kitNode in pairs(kit.parts) do
+    local slotPath = "/" .. slotName .. "/"
+    local currentNode = findSlotInTree(currentPartsTree, slotName)
+    comparePartsTree(kitNode, currentNode, slotPath, differingParts)
+  end
+
+  local newPartsCost = 0
+  local oldPartsValue = 0
+
+  for slotPath, partInfo in pairs(differingParts) do
+    local jbeamData = jbeamIO.getPart(vehicleData.ioCtx, partInfo.partName)
+    if jbeamData then
+      local baseValue = jbeamData.information and jbeamData.information.value or 100
+      local newPartPrice = baseValue
+
+      if career_modules_valueCalculator then
+        local partForValueCalc = {
+          name = partInfo.partName,
+          value = baseValue,
+          partCondition = {
+            integrityValue = 1,
+            odometer = 0,
+            visualValue = 1
+          },
+          vehicleModel = vehicleModel
+        }
+        newPartPrice = math.max(roundNear(career_modules_valueCalculator.getPartValue(partForValueCalc), 5) - 0.01, 0)
+      end
+
+      newPartPrice = newPartPrice * discountMultiplier
+      newPartsCost = newPartsCost + newPartPrice
+    end
+
+    if partInfo.oldPartName then
+      local oldJbeamData = jbeamIO.getPart(vehicleData.ioCtx, partInfo.oldPartName)
+      if oldJbeamData then
+        local oldBaseValue = oldJbeamData.information and oldJbeamData.information.value or 100
+        local oldPartPrice = oldBaseValue
+
+        if career_modules_valueCalculator then
+          local partForValueCalc = {
+            name = partInfo.oldPartName,
+            value = oldBaseValue,
+            partCondition = {
+              integrityValue = 1,
+              odometer = vehicleMileage,
+              visualValue = 1
+            },
+            vehicleModel = vehicleModel
+          }
+          oldPartPrice = math.max(roundNear(career_modules_valueCalculator.getPartValue(partForValueCalc), 5) - 0.01, 0)
+        end
+
+        oldPartsValue = oldPartsValue + oldPartPrice
+      end
+    end
+  end
+
+  local tradeInCredit = oldPartsValue * 0.9
+  local totalCost = math.max(newPartsCost - tradeInCredit, 0)
+
+  return {
+    newPartsCost = newPartsCost,
+    oldPartsValue = oldPartsValue,
+    tradeInCredit = tradeInCredit,
+    totalCost = totalCost
+  }
+end
+
 local function applyKit(businessId, vehicleId, kitId)
   businessId = normalizeBusinessId(businessId)
   if not businessId or not vehicleId or not kitId then
@@ -635,7 +802,13 @@ local function applyKit(businessId, vehicleId, kitId)
     }
   end
 
-  local kitCost = 0
+  local costBreakdown = getKitCostBreakdown(businessId, vehicleId, kitId) or {
+    newPartsCost = 0,
+    oldPartsValue = 0,
+    tradeInCredit = 0,
+    totalCost = 0
+  }
+  local kitCost = costBreakdown.totalCost
 
   local businessAccount = nil
   local accountId = nil
@@ -649,6 +822,7 @@ local function applyKit(businessId, vehicleId, kitId)
           success = false,
           error = "Insufficient funds",
           cost = kitCost,
+          costBreakdown = costBreakdown,
           balance = balance
         }
       end
@@ -702,7 +876,8 @@ local function applyKit(businessId, vehicleId, kitId)
     kitId = kitId,
     kit = kit,
     accountId = accountId,
-    kitCost = kitCost
+    kitCost = kitCost,
+    costBreakdown = costBreakdown
   }
 
   storeFuelLevels(vehObj, function(storedFuelLevels)
@@ -730,7 +905,8 @@ local function applyKit(businessId, vehicleId, kitId)
 
   return {
     success = true,
-    cost = kitCost
+    cost = kitCost,
+    costBreakdown = costBreakdown
   }
 end
 
@@ -782,6 +958,48 @@ local function onVehicleConfigReceived(callbackId, config)
     end
   end
   extractParts(actualConfig.partsTree or {})
+
+  local kitPartPaths = {}
+  if kit.parts then
+    for slotName, kitNode in pairs(kit.parts) do
+      local function extractKitPartPaths(node, path)
+        path = path or "/"
+        if node.chosenPartName and node.chosenPartName ~= "" then
+          kitPartPaths[path .. node.chosenPartName] = true
+        end
+        if node.children then
+          for childSlot, childNode in pairs(node.children) do
+            extractKitPartPaths(childNode, path .. childSlot .. "/")
+          end
+        end
+      end
+      extractKitPartPaths(kitNode, "/" .. slotName .. "/")
+    end
+  end
+
+  local vehObj = nil
+  if career_modules_business_businessInventory and career_modules_business_businessInventory.getSpawnedVehicleId then
+    local spawnedVehicleId = career_modules_business_businessInventory.getSpawnedVehicleId(businessId, vehicleId)
+    if spawnedVehicleId then
+      vehObj = getObjectByID(spawnedVehicleId)
+    end
+  end
+
+  if vehObj and kit.parts then
+    local newPartConditions = {}
+    for slotPath, partName in pairs(partList) do
+      if kitPartPaths[slotPath .. partName] then
+        newPartConditions[slotPath .. partName] = {
+          integrityValue = 1,
+          odometer = 0,
+          visualValue = 1
+        }
+      end
+    end
+    if next(newPartConditions) then
+      core_vehicleBridge.executeAction(vehObj, 'initPartConditions', newPartConditions)
+    end
+  end
 
   if career_modules_business_businessInventory then
     career_modules_business_businessInventory.updateVehicle(businessId, vehicleId, {
@@ -855,6 +1073,7 @@ end
 M.loadBusinessKits = loadBusinessKits
 M.getBusinessKits = loadBusinessKits
 M.getKitDetails = getKitDetails
+M.getKitCostBreakdown = getKitCostBreakdown
 M.createKit = createKit
 M.deleteKit = deleteKit
 M.applyKit = applyKit
