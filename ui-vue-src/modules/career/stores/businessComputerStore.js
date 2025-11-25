@@ -188,10 +188,21 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
       activeEntry = data.pulledOutVehicle
     }
     pulledOutVehicle.value = activeEntry || null
+    const now = Date.now() / 1000
+    const processedTechs = (data.techs || []).map(tech => {
+      if (tech.jobId && tech.totalSeconds > 0 && tech.elapsedSeconds !== undefined) {
+        return {
+          ...tech,
+          startTime: now - tech.elapsedSeconds
+        }
+      }
+      return tech
+    })
     const payload = {
       ...data,
       pulledOutVehicle: activeEntry,
-      pulledOutVehicles: vehiclesFromData
+      pulledOutVehicles: vehiclesFromData,
+      techs: processedTechs
     }
     businessData.value = payload
     if (payload.tabs) {
@@ -199,6 +210,73 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     }
     if (payload.stats) {
       kits.value = payload.stats.kits || []
+    }
+    startTechSimulation()
+  }
+
+  const updateTechs = (newTechs) => {
+    if (!businessData.value) businessData.value = {}
+    const now = Date.now() / 1000
+    const processedTechs = (newTechs || []).map(tech => {
+      if (tech.jobId && tech.totalSeconds > 0 && tech.elapsedSeconds !== undefined) {
+        return {
+          ...tech,
+          startTime: now - tech.elapsedSeconds
+        }
+      }
+      return tech
+    })
+    businessData.value.techs = processedTechs
+    startTechSimulation()
+  }
+
+  let techSimulationInterval = null
+  const startTechSimulation = () => {
+    if (techSimulationInterval) return
+
+    techSimulationInterval = setInterval(() => {
+      const currentTechs = businessData.value.techs
+      if (!currentTechs || !Array.isArray(currentTechs)) return
+
+      const now = Date.now() / 1000 // seconds
+      let anyActive = false
+
+      currentTechs.forEach(tech => {
+        if (tech.jobId && tech.totalSeconds > 0) {
+          // If we have a startTime, use it for precise sync
+          // Otherwise fall back to decrementing remainingSeconds (less precise but works for legacy)
+          if (tech.startTime) {
+            const elapsed = now - tech.startTime
+            tech.remainingSeconds = Math.max(0, tech.totalSeconds - elapsed)
+            tech.progress = Math.min(1, elapsed / tech.totalSeconds)
+            anyActive = true
+          } else if (tech.remainingSeconds > 0) {
+            // Fallback: decrement by 0.1s (interval duration)
+            // Note: This is less accurate if the interval drifts
+            tech.remainingSeconds = Math.max(0, tech.remainingSeconds - 0.1)
+            tech.progress = Math.min(1, 1 - (tech.remainingSeconds / tech.totalSeconds))
+            anyActive = true
+          } else {
+            tech.progress = 1
+            tech.remainingSeconds = 0
+          }
+        }
+      })
+
+      // Update manager timer if present
+      if (businessData.value.managerTimeRemaining !== undefined && businessData.value.managerTimeRemaining !== null) {
+        if (businessData.value.managerTimeRemaining > 0) {
+          businessData.value.managerTimeRemaining = Math.max(0, businessData.value.managerTimeRemaining - 0.1)
+        }
+      }
+
+    }, 100) // 10Hz update for smoothness
+  }
+
+  const stopTechSimulation = () => {
+    if (techSimulationInterval) {
+      clearInterval(techSimulationInterval)
+      techSimulationInterval = null
     }
   }
 
@@ -520,6 +598,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
       lua.career_modules_business_businessComputer.clearVehicleDataCaches()
     } catch (error) {
     }
+    stopTechSimulation()
   }
 
   const requestVehiclePartsTree = async (vehicleId) => {
@@ -978,10 +1057,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     }
 
     if (data?.techs && Array.isArray(data.techs)) {
-      businessData.value = {
-        ...businessData.value,
-        techs: data.techs
-      }
+      updateTechs(data.techs)
     }
   }
 
@@ -1893,6 +1969,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     requestVehiclePartsTree,
     requestVehicleTuningData,
     requestPartInventory,
+    updateTechs,
     applyVehicleTuning,
     partsCart,
     tuningCart,

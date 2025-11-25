@@ -2204,6 +2204,24 @@ local function onExtensionLoaded()
   return true
 end
 
+local function getTechData(businessId)
+  local module = resolveBusinessModule(businessId)
+  if module and module.getTechData then
+    return module.getTechData(businessId)
+  end
+  return nil
+end
+
+local function getManagerData(businessId)
+  local module = resolveBusinessModule(businessId)
+  if module and module.getManagerData then
+    return module.getManagerData(businessId)
+  end
+  return nil
+end
+
 M.onExtensionLoaded = onExtensionLoaded
+M.getTechData = getTechData
+M.getManagerData = getManagerData
 
 return M

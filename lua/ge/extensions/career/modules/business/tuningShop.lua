@@ -12,10 +12,10 @@ local managerTimers = {}
 local operatingCostTimers = {}
 local jobIdCounter = 0
 
-local UPDATE_INTERVAL_JOBS = 0.5
-local UPDATE_INTERVAL_TECHS = 0.6
-local UPDATE_INTERVAL_MANAGER = 0.7
-local UPDATE_INTERVAL_COSTS = 1.0
+local UPDATE_INTERVAL_JOBS = 0.1
+local UPDATE_INTERVAL_TECHS = 0.15
+local UPDATE_INTERVAL_MANAGER = 0.2
+local UPDATE_INTERVAL_COSTS = 0.5
 
 local jobsAccumulator = 0
 local techsAccumulator = 0.15
@@ -871,12 +871,19 @@ local function removeJobVehicle(businessId, jobId)
   end
 
   local removeId = tonumber(vehicleToRemove.vehicleId) or vehicleToRemove.vehicleId
+  local wasPulledOut = false
+
   if career_modules_business_businessInventory.getPulledOutVehicles then
     local pulledVehicles = career_modules_business_businessInventory.getPulledOutVehicles(businessId) or {}
     for _, pulled in ipairs(pulledVehicles) do
       local pulledId = tonumber(pulled.vehicleId) or pulled.vehicleId
       if pulledId == removeId then
-        career_modules_business_businessInventory.putAwayVehicle(businessId, removeId)
+        wasPulledOut = true
+        if career_modules_business_businessComputer and career_modules_business_businessComputer.putAwayVehicle then
+          career_modules_business_businessComputer.putAwayVehicle(businessId, removeId)
+        else
+          career_modules_business_businessInventory.putAwayVehicle(businessId, removeId)
+        end
         break
       end
     end
@@ -885,12 +892,31 @@ local function removeJobVehicle(businessId, jobId)
     if pulledOutVehicle then
       local pulledId = tonumber(pulledOutVehicle.vehicleId) or pulledOutVehicle.vehicleId
       if pulledId == removeId then
-        career_modules_business_businessInventory.putAwayVehicle(businessId)
+        wasPulledOut = true
+        if career_modules_business_businessComputer and career_modules_business_businessComputer.putAwayVehicle then
+          career_modules_business_businessComputer.putAwayVehicle(businessId)
+        else
+          career_modules_business_businessInventory.putAwayVehicle(businessId)
+        end
       end
     end
   end
 
   career_modules_business_businessInventory.removeVehicle(businessId, vehicleToRemove.vehicleId)
+
+  if not wasPulledOut and guihooks and career_modules_business_businessComputer and
+    career_modules_business_businessComputer.getVehiclesOnly then
+    local vehiclesData = career_modules_business_businessComputer.getVehiclesOnly(businessId)
+    local businessType = "tuningShop"
+    guihooks.trigger('businessComputer:onVehiclePutAway', {
+      businessType = businessType,
+      businessId = tostring(businessId),
+      vehicleId = removeId,
+      vehicles = vehiclesData.vehicles,
+      pulledOutVehicles = vehiclesData.pulledOutVehicles,
+      maxPulledOutVehicles = vehiclesData.maxPulledOutVehicles
+    })
+  end
 end
 
 local function clearJobLeaderboardEntry(businessId, jobId)
@@ -2745,10 +2771,18 @@ local function onUpdate(dtReal, dtSim, dtRaw)
   local managerTime = shouldProcessManager and managerAccumulator or 0
   local costsTime = shouldProcessCosts and costsAccumulator or 0
 
-  if shouldProcessJobs then jobsAccumulator = 0 end
-  if shouldProcessTechs then techsAccumulator = 0 end
-  if shouldProcessManager then managerAccumulator = 0 end
-  if shouldProcessCosts then costsAccumulator = 0 end
+  if shouldProcessJobs then
+    jobsAccumulator = 0
+  end
+  if shouldProcessTechs then
+    techsAccumulator = 0
+  end
+  if shouldProcessManager then
+    managerAccumulator = 0
+  end
+  if shouldProcessCosts then
+    costsAccumulator = 0
+  end
 
   for businessId, owned in pairs(purchased) do
     if owned then
@@ -2972,7 +3006,12 @@ local function onCareerActivated()
     calculateActualEventPayment = calculateActualEventPayment,
     loadBusinessJobs = loadBusinessJobs,
     notifyJobsUpdated = notifyJobsUpdated,
-    getMaxPulledOutVehicles = getMaxPulledOutVehicles
+    getMaxPulledOutVehicles = getMaxPulledOutVehicles,
+    clearBusinessCachesForJob = function(businessId, jobId)
+      if career_modules_business_businessComputer and career_modules_business_businessComputer.clearBusinessCachesForJob then
+        career_modules_business_businessComputer.clearBusinessCachesForJob(businessId, jobId)
+      end
+    end
   })
 
   tuningShopTechs.resetTechs()
@@ -3012,6 +3051,44 @@ local function isShopAppUnlocked(businessId)
   return level and level > 0
 end
 
+local function getTechData(businessId)
+  if not businessId then
+    return nil
+  end
+  
+  local techs = tuningShopTechs.getTechsForBusiness(businessId)
+  local formattedTechs = {}
+  for _, tech in ipairs(techs) do
+    local formatted = tuningShopTechs.formatTechForUIEntry(businessId, tech)
+    if formatted then
+      table.insert(formattedTechs, formatted)
+    end
+  end
+  
+  return {
+    businessId = tostring(businessId),
+    techs = formattedTechs
+  }
+end
+
+local function getManagerData(businessId)
+  if not businessId or not hasManager(businessId) then
+    return nil
+  end
+  
+  local timerState = getManagerTimerState(businessId)
+  local interval = getManagerAssignmentInterval(businessId)
+  
+  return {
+    businessId = tostring(businessId),
+    elapsed = timerState.elapsed,
+    interval = interval,
+    available = timerState.flagActive or (timerState.elapsed >= interval),
+    nextAvailableIn = math.max(0, interval - timerState.elapsed),
+    hasGeneralManager = hasGeneralManager(businessId)
+  }
+end
+
 M.onCareerActivated = onCareerActivated
 M.onUpdate = onUpdate
 M.powerToWeightToTime = powerToWeightToTime
@@ -3038,6 +3115,7 @@ M.getTechsForBusiness = tuningShopTechs.getTechsForBusiness
 M.updateTechName = tuningShopTechs.updateTechName
 M.assignJobToTech = tuningShopTechs.assignJobToTech
 M.isJobLockedByTech = tuningShopTechs.isJobLockedByTech
+M.getTechData = getTechData
 M.getManagerData = getManagerData
 M.getBrandSelection = getBrandSelection
 M.setBrandSelection = setBrandSelection
@@ -3053,5 +3131,9 @@ M.requestFinancesData = requestFinancesData
 M.requestSimulationTime = requestSimulationTime
 M.getJobById = getJobById
 M.getVehicleByJobId = getVehicleByJobId
+
+M.getTechsForBusiness = function(businessId)
+  return tuningShopTechs.loadBusinessTechs(businessId)
+end
 
 return M

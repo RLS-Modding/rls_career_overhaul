@@ -13,16 +13,18 @@
       ],
       "customFields":{
         "names":{},
-        "tags":{},
+        "tags":[
+          "perfect"
+        ],
         "types":{},
         "values":{}
       },
       "isMultiSpot":false,
       "name":"fastAutoTuningShopParking1",
-      "oldId":7277,
+      "oldId":2243,
       "pos":[
-        299.40319824219,
-        -118.94734954834,
+        300.09426879883,
+        -118.10678863525,
         143.88786315918
       ],
       "rot":[
@@ -49,16 +51,18 @@
       ],
       "customFields":{
         "names":{},
-        "tags":{},
+        "tags":[
+          "perfect"
+        ],
         "types":{},
         "values":{}
       },
       "isMultiSpot":false,
       "name":"fastAutoTuningShopParking2",
-      "oldId":7278,
+      "oldId":2244,
       "pos":[
-        292.85430908203,
-        -118.05532073975,
+        293.11337280273,
+        -118.28645324707,
         143.88787841797
       ],
       "rot":[
@@ -85,16 +89,18 @@
       ],
       "customFields":{
         "names":{},
-        "tags":{},
+        "tags":[
+          "perfect"
+        ],
         "types":{},
         "values":{}
       },
       "isMultiSpot":false,
       "name":"fastAutoTuningShopParking3",
-      "oldId":7279,
+      "oldId":2245,
       "pos":[
-        305.6188659668,
-        -119.19699859619,
+        306.21948242188,
+        -118.42710113525,
         144.05670166016
       ],
       "rot":[
@@ -121,16 +127,18 @@
       ],
       "customFields":{
         "names":{},
-        "tags":{},
+        "tags":[
+          "perfect"
+        ],
         "types":{},
         "values":{}
       },
       "isMultiSpot":false,
       "name":"fastAutoTuningShopParking4",
-      "oldId":7280,
+      "oldId":2246,
       "pos":[
-        311.75689697266,
-        -119.15293884277,
+        312.54837036133,
+        -118.14115142822,
         144.02117919922
       ],
       "rot":[
@@ -177,7 +185,7 @@
         "values":{}
       },
       "name":"fastAutoTuningShopGarage1",
-      "oldId":7276,
+      "oldId":2242,
       "top":{
         "active":false,
         "normal":[

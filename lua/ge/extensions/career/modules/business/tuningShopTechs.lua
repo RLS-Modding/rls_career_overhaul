@@ -225,8 +225,9 @@ local function formatTechForUIEntry(businessId, tech)
     action = tech.currentAction or "idle",
     label = label,
     progress = progress,
-    remainingSeconds = math.max(0, math.floor(totalSeconds - elapsedSeconds)),
-    totalSeconds = math.floor(totalSeconds),
+    elapsedSeconds = elapsedSeconds,
+    totalSeconds = totalSeconds,
+    serverTime = os.clock(),
     jobId = tech.jobId,
     jobLabel = jobLabel,
     jobReward = jobReward,
@@ -777,12 +778,12 @@ local function processTechs(businessId, dtSim)
                 tostring(tech.state), tostring(tech.currentAction)))
             break
           end
+          anyChanged = true
           goto continue_inner
         end
 
         ::continue_inner::
       end
-      anyChanged = true
     end
   end
 
@@ -980,6 +981,14 @@ local function assignJobToTech(businessId, techId, jobId)
   tech.latestResult = nil
   job.techAssigned = techId
   job.locked = true
+
+  if helpers.clearBusinessCachesForJob then
+    helpers.clearBusinessCachesForJob(businessId, jobId)
+  end
+
+  if helpers.removeJobVehicle then
+    helpers.removeJobVehicle(businessId, jobId)
+  end
 
   local hasMasterTechs = helpers.hasMasterTechs and helpers.hasMasterTechs(businessId) or false
 

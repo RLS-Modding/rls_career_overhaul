@@ -204,7 +204,6 @@ import JobAssignCard from "./JobAssignCard.vue"
 const store = useBusinessComputerStore()
 const { events } = useBridge()
 
-const techs = ref([])
 const activeJobs = computed(() => {
   const jobs = store.activeJobs
   return Array.isArray(jobs) ? jobs : []
@@ -214,7 +213,7 @@ const availableJobs = computed(() => {
   return Array.isArray(jobs) ? jobs.filter(job => !job.techAssigned) : []
 })
 
-const techList = computed(() => techs.value)
+const techList = computed(() => store.techs || [])
 const techCapabilityTier = computed(() => {
   const firstWithTier = techList.value.find(t => typeof t.maxTier === "number")
   return firstWithTier ? firstWithTier.maxTier : null
@@ -315,7 +314,6 @@ const formatTime = (seconds) => {
     return `${m}m ${s}s`
 }
 
-// Animation Loop
 let animationFrameId = null
 let lastTime = performance.now()
 
@@ -323,24 +321,9 @@ const updateProgress = () => {
   const now = performance.now()
   const dt = (now - lastTime) / 1000
   lastTime = now
-
-  techs.value.forEach(tech => {
-     if (tech.jobId && tech.totalSeconds > 0) {
-        if (tech.remainingSeconds > 0) {
-            tech.remainingSeconds = Math.max(0, tech.remainingSeconds - dt)
-            tech.progress = Math.min(1, 1 - (tech.remainingSeconds / tech.totalSeconds))
-        } else {
-           tech.progress = 1
-           tech.remainingSeconds = 0
-        }
-     }
-  })
   
   if (localManagerTimeRemaining.value !== null && localManagerTimeRemaining.value !== undefined && localManagerTimeRemaining.value > 0) {
     localManagerTimeRemaining.value = Math.max(0, localManagerTimeRemaining.value - dt)
-    if (localManagerTimeRemaining.value <= 0 && !managerReadyToAssign.value) {
-      localManagerTimeRemaining.value = 0
-    }
   }
   
   animationFrameId = requestAnimationFrame(updateProgress)
@@ -382,21 +365,21 @@ const handleTechsUpdated = (data) => {
   }
 
   if (data?.techs && Array.isArray(data.techs)) {
-      // Merge strategy to prevent jump if possible, but simple replacement is safer for state sync
-    techs.value = JSON.parse(JSON.stringify(data.techs))
+    store.updateTechs(data.techs)
   }
 }
 
 const refreshManagerTime = async () => {
-  if (!store.businessId || !store.businessType) return
+  if (!store.businessId) return
   try {
-    const data = await lua.career_modules_business_businessComputer.getManagerData(store.businessType, store.businessId)
-    if (data && data.managerTimeRemaining !== null && data.managerTimeRemaining !== undefined) {
-      localManagerTimeRemaining.value = data.managerTimeRemaining
+    const data = await lua.career_modules_business_businessComputer.getManagerData(store.businessId)
+    if (data) {
+      if (data.managerTimeRemaining !== undefined) {
+        localManagerTimeRemaining.value = data.managerTimeRemaining
+      }
+      managerReadyToAssign.value = data.managerReadyToAssign
     }
-  } catch (error) {
-    console.warn("Failed to refresh manager time", error)
-  }
+  } catch (e) {}
 }
 
 watch(managerTimeRemainingFromStore, (newValue) => {
@@ -414,9 +397,6 @@ watch(managerReadyToAssign, (isReady) => {
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
   events.on('businessComputer:onTechsUpdated', handleTechsUpdated)
-  if (store.techs && Array.isArray(store.techs)) {
-    techs.value = JSON.parse(JSON.stringify(store.techs))
-  }
   
   if (managerTimeRemainingFromStore.value !== null && managerTimeRemainingFromStore.value !== undefined) {
     localManagerTimeRemaining.value = managerTimeRemainingFromStore.value
@@ -424,6 +404,13 @@ onMounted(() => {
   
   refreshManagerTime()
   
+  // Request fresh tech data to sync progress
+  lua.career_modules_business_businessComputer.getTechsOnly(store.businessId).then(data => {
+    if (data && data.techs) {
+      handleTechsUpdated(data)
+    }
+  })
+
   lastTime = performance.now()
   updateProgress()
 })
