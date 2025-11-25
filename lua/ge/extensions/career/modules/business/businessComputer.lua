@@ -713,8 +713,8 @@ local function acceptJob(businessId, jobId)
   if module and module.acceptJob then
     local success = module.acceptJob(businessId, jobId)
     if success and guihooks then
-      local jobsData = getJobsOnly(businessId)
-      local vehiclesData = getVehiclesOnly(businessId)
+      local jobsData = M.getJobsOnly(businessId)
+      local vehiclesData = M.getVehiclesOnly(businessId)
       guihooks.trigger('businessComputer:onJobAccepted', {
         businessType = businessType,
         businessId = businessId,
@@ -735,7 +735,7 @@ local function declineJob(businessId, jobId)
   if module and module.declineJob then
     local success = module.declineJob(businessId, jobId)
     if success and guihooks then
-      local jobsData = getJobsOnly(businessId)
+      local jobsData = M.getJobsOnly(businessId)
       guihooks.trigger('businessComputer:onJobDeclined', {
         businessType = businessType,
         businessId = businessId,
@@ -753,8 +753,8 @@ local function abandonJob(businessId, jobId)
   if module and module.abandonJob then
     local success = module.abandonJob(businessId, jobId)
     if success and guihooks then
-      local jobsData = getJobsOnly(businessId)
-      local vehiclesData = getVehiclesOnly(businessId)
+      local jobsData = M.getJobsOnly(businessId)
+      local vehiclesData = M.getVehiclesOnly(businessId)
       guihooks.trigger('businessComputer:onJobAbandoned', {
         businessType = businessType,
         businessId = businessId,
@@ -787,8 +787,8 @@ local function assignTechToJob(businessId, techId, jobId)
       return false
     end
     if result and guihooks then
-      local jobsData = getJobsOnly(businessId)
-      local techsData = getTechsOnly(businessId)
+      local jobsData = M.getJobsOnly(businessId)
+      local techsData = M.getTechsOnly(businessId)
       guihooks.trigger('businessComputer:onTechAssigned', {
         businessType = businessType,
         businessId = businessId,
@@ -903,7 +903,7 @@ local function pullOutVehicle(businessId, vehicleId)
     career_modules_business_businessInventory.setActiveVehicle(businessId, normalizedVehicleId)
   end
   if result and guihooks then
-    local vehiclesData = getVehiclesOnly(businessId)
+    local vehiclesData = M.getVehiclesOnly(businessId)
     guihooks.trigger('businessComputer:onVehiclePulledOut', {
       businessType = businessType,
       businessId = businessId,
@@ -940,7 +940,7 @@ local function putAwayVehicle(businessId, vehicleId)
     end
     local result = career_modules_business_businessInventory.putAwayVehicle(businessId, normalizedVehicleId)
     if result and guihooks then
-      local vehiclesData = getVehiclesOnly(businessId)
+      local vehiclesData = M.getVehiclesOnly(businessId)
       guihooks.trigger('businessComputer:onVehiclePutAway', {
         businessType = businessType,
         businessId = businessId,
@@ -964,7 +964,7 @@ local function putAwayVehicle(businessId, vehicleId)
 
   local result = career_modules_business_businessInventory.putAwayVehicle(businessId)
   if result and guihooks then
-    local vehiclesData = getVehiclesOnly(businessId)
+    local vehiclesData = M.getVehiclesOnly(businessId)
     guihooks.trigger('businessComputer:onVehiclePutAway', {
       businessType = businessType,
       businessId = businessId,
@@ -1893,8 +1893,8 @@ local function completeJob(businessId, jobId)
   if module and module.completeJob then
     local success = module.completeJob(businessId, jobId)
     if success and guihooks then
-      local jobsData = getJobsOnly(businessId)
-      local vehiclesData = getVehiclesOnly(businessId)
+      local jobsData = M.getJobsOnly(businessId)
+      local vehiclesData = M.getVehiclesOnly(businessId)
       guihooks.trigger('businessComputer:onJobCompleted', {
         businessType = businessType,
         businessId = businessId,
