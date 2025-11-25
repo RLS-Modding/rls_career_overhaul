@@ -416,14 +416,136 @@ local function spawnBusinessVehicle(businessId, vehicleId)
   return vehObj
 end
 
-local function teleportToBusinessGarage(businessType, businessId, veh, resetVeh, spotIndex)
-  resetVeh = resetVeh or false
-  local pos, rot = getBusinessGaragePosRot(businessType, businessId, veh, spotIndex)
-  if pos and rot then
-    spawn.safeTeleport(veh, pos, rot, nil, nil, nil, true, resetVeh)
-    core_camera.resetCamera(0)
+local function getGroundHeight(pos)
+  local rayStart = vec3(pos.x, pos.y, pos.z + 5)
+  local rayDir = vec3(0, 0, -1)
+  local rayDist = 15
+
+  local hitDist = castRayStatic(rayStart, rayDir, rayDist)
+  local heightOffset = -0.5
+
+  if hitDist < rayDist then
+    local groundZ = rayStart.z - hitDist
+    return groundZ + heightOffset
+  end
+
+  return pos.z + heightOffset
+end
+
+local function isSpotBlocked(veh, pos, rot)
+  if not veh or not pos or not rot then
     return true
   end
+
+  local vehId = veh:getID()
+  local adjustedRot = quat(0,0,1,0) * rot
+
+  local bb = veh:getSpawnWorldOOBB()
+  if not bb then
+    return false
+  end
+
+  local halfExtents = bb:getHalfExtents()
+  local groundZ = getGroundHeight(pos)
+  
+  local vehicleCenterPos = vec3(pos.x, pos.y, groundZ + halfExtents.z)
+
+  local axis0, axis1, axis2 = adjustedRot * vec3(1,0,0), adjustedRot * vec3(0,1,0), adjustedRot * vec3(0,0,1)
+
+  for otherId, otherVeh in activeVehiclesIterator() do
+    if otherId ~= vehId then
+      local otherBB = otherVeh:getWorldBox()
+      if otherBB then
+        local otherCenter = otherBB:getCenter()
+        local otherHalfExtents = otherBB:getExtents() / 2
+        if overlapsOBB_OBB(vehicleCenterPos, axis0 * halfExtents.x, axis1 * halfExtents.y, axis2 * halfExtents.z,
+                           otherCenter, vec3(1,0,0) * otherHalfExtents.x, vec3(0,1,0) * otherHalfExtents.y, vec3(0,0,1) * otherHalfExtents.z) then
+          return true
+        end
+      end
+    end
+  end
+
+  return false
+end
+
+local function getBoundingBoxOffsets(veh)
+  local bb = veh:getSpawnWorldOOBB()
+  if not bb then
+    return vec3(0, 0, 0), 0
+  end
+
+  local currentPos = veh:getPosition()
+  local currentRot = quat(veh:getRotation())
+  local bbCenter = bb:getCenter()
+  local halfExtents = bb:getHalfExtents()
+  
+  local worldOffset = bbCenter - currentPos
+  local localOffset = currentRot:inversed() * worldOffset
+
+  local xyOffset = vec3(localOffset.x, localOffset.y, 0)
+  local bottomZOffset = halfExtents.z
+
+  return xyOffset, bottomZOffset
+end
+
+local function teleportVehicleExact(veh, pos, rot, resetVeh)
+  if not veh or not pos or not rot then
+    return false
+  end
+
+  local adjustedRot = quat(0,0,1,0) * rot
+  local groundZ = getGroundHeight(pos)
+  
+  local xyOffset, bottomZOffset = getBoundingBoxOffsets(veh)
+  local rotatedXYOffset = adjustedRot * xyOffset
+  
+  local targetXYCenter = vec3(pos.x, pos.y, 0)
+  local targetBottomZ = groundZ
+  
+  local refNodeXY = targetXYCenter - vec3(rotatedXYOffset.x, rotatedXYOffset.y, 0)
+  local refNodeZ = targetBottomZ + bottomZOffset
+  
+  local refNodePos = vec3(refNodeXY.x, refNodeXY.y, refNodeZ)
+
+  if resetVeh then
+    veh:setPosRot(refNodePos.x, refNodePos.y, refNodePos.z, adjustedRot.x, adjustedRot.y, adjustedRot.z, adjustedRot.w)
+    veh:resetBrokenFlexMesh()
+  else
+    veh:setClusterPosRelRot(veh:getRefNodeId(), refNodePos.x, refNodePos.y, refNodePos.z, adjustedRot.x, adjustedRot.y, adjustedRot.z, adjustedRot.w)
+    veh:applyClusterVelocityScaleAdd(veh:getRefNodeId(), 0, 0, 0, 0)
+  end
+
+  return true
+end
+
+local function teleportToBusinessGarage(businessType, businessId, veh, resetVeh, spotIndex)
+  resetVeh = resetVeh or false
+  local parkingSpots = getBusinessGarageParkingSpots(businessType, businessId)
+
+  if #parkingSpots == 0 then
+    return false
+  end
+
+  if spotIndex and parkingSpots[spotIndex] then
+    local spot = parkingSpots[spotIndex]
+    if not isSpotBlocked(veh, spot.pos, spot.rot) then
+      teleportVehicleExact(veh, spot.pos, spot.rot, resetVeh)
+      core_camera.resetCamera(0)
+      return true, spotIndex
+    end
+  end
+
+  for idx = 1, #parkingSpots do
+    local spot = parkingSpots[idx]
+    if not isSpotBlocked(veh, spot.pos, spot.rot) then
+      teleportVehicleExact(veh, spot.pos, spot.rot, resetVeh)
+      core_camera.resetCamera(0)
+      return true, idx
+    end
+  end
+
+  log("W", "businessInventory", "teleportToBusinessGarage: All parking spots blocked for businessId=" .. tostring(businessId))
   return false
 end
 
@@ -510,15 +632,29 @@ local function pullOutVehicle(businessType, businessId, vehicleId)
     return false
   end
 
+  state.spotAssignments = state.spotAssignments or {}
+  local preferredSpotIndex = getAvailableParkingSpotIndex(businessType, businessId, state)
+  local teleportSuccess, actualSpotIndex = teleportToBusinessGarage(businessType, businessId, vehObj, true, preferredSpotIndex)
+
+  if not teleportSuccess then
+    log("E", "businessInventory", "pullOutVehicle: All parking spots blocked. Removing spawned vehicle. businessId=" ..
+      tostring(businessId) .. ", vehicleId=" .. tostring(vehicleId))
+    vehObj:delete()
+    if spawnedBusinessVehicles[businessId] then
+      spawnedBusinessVehicles[businessId][normalizedVehicleId] = nil
+    end
+    if #state.vehicles == 0 then
+      pulledOutVehicles[businessId] = nil
+    end
+    return false
+  end
+
   table.insert(state.vehicles, vehicle)
   state.activeVehicleId = normalizedVehicleId
-  state.spotAssignments = state.spotAssignments or {}
-  local spotIndex = getAvailableParkingSpotIndex(businessType, businessId, state)
-  state.spotAssignments[normalizedVehicleId] = spotIndex
-  teleportToBusinessGarage(businessType, businessId, vehObj, false, spotIndex)
+  state.spotAssignments[normalizedVehicleId] = actualSpotIndex
   log("D", "businessInventory",
-    "pullOutVehicle: Successfully pulled out vehicle. businessId=" .. tostring(businessId) .. ", vehicleId=" ..
-      tostring(vehicleId))
+    "pullOutVehicle: Successfully pulled out vehicle at spot " .. tostring(actualSpotIndex) ..
+      ". businessId=" .. tostring(businessId) .. ", vehicleId=" .. tostring(vehicleId))
 
   local callbackId = tostring(businessId) .. "_" .. tostring(normalizedVehicleId) .. "_" .. tostring(os.time())
   pendingConfigCallbacks[callbackId] = {
