@@ -1707,39 +1707,46 @@ local function purchaseCartItems(businessId, accountId, cartData)
     end
   end
 
-  if subtotal <= 0 then
-    return false
-  end
-
   local taxAmount = subtotal * salesTax
   local totalCost = subtotal + taxAmount
 
-  local success = career_modules_bank.payFromAccount({
-    money = {
-      amount = totalCost,
-      canBeNegative = false
-    }
-  }, accountId, "Shop Purchase", "Purchased parts/tuning")
-  if not success then
+  local hasItems = (#parts > 0) or (#tuning > 0)
+  if not hasItems then
+    log("D", "businessComputer", "purchaseCartItems: No items in cart")
     return false
   end
 
-  if career_modules_bank then
-    local businessTypeFromAccount, businessIdFromAccount = accountId:match("^business_(.+)_(.+)$")
-    if businessTypeFromAccount and businessIdFromAccount then
-      local account = career_modules_bank.getBusinessAccount(businessTypeFromAccount, businessIdFromAccount)
-      if account then
-        local accountData = {
-          accountId = account.id,
-          balance = account.balance or 0,
-          accountType = account.type or "unknown",
-          businessType = account.businessType,
-          businessId = account.businessId,
-          name = account.name or "Account"
-        }
-        guihooks.trigger('bank:onAccountUpdate', accountData)
+  if totalCost > 0 then
+    local success = career_modules_bank.payFromAccount({
+      money = {
+        amount = totalCost,
+        canBeNegative = false
+      }
+    }, accountId, "Shop Purchase", "Purchased parts/tuning")
+    if not success then
+      log("E", "businessComputer", "purchaseCartItems: Payment failed for amount " .. tostring(totalCost))
+      return false
+    end
+
+    if career_modules_bank then
+      local businessTypeFromAccount, businessIdFromAccount = accountId:match("^business_(.+)_(.+)$")
+      if businessTypeFromAccount and businessIdFromAccount then
+        local account = career_modules_bank.getBusinessAccount(businessTypeFromAccount, businessIdFromAccount)
+        if account then
+          local accountData = {
+            accountId = account.id,
+            balance = account.balance or 0,
+            accountType = account.type or "unknown",
+            businessType = account.businessType,
+            businessId = account.businessId,
+            name = account.name or "Account"
+          }
+          guihooks.trigger('bank:onAccountUpdate', accountData)
+        end
       end
     end
+  else
+    log("D", "businessComputer", "purchaseCartItems: Processing free purchase (subtotal=0, parts=" .. tostring(#parts) .. ", tuning=" .. tostring(#tuning) .. ")")
   end
 
   local vehicle = getActiveBusinessVehicle(businessId)
@@ -1832,6 +1839,10 @@ local function purchaseCartItems(businessId, accountId, cartData)
 
     -- Use centralized finalization logic (put away and respawn)
     career_modules_business_businessVehicleModificationUtil.finalizePurchase(businessId, vehicle.vehicleId, nop)
+    
+    log("D", "businessComputer", "purchaseCartItems: Successfully processed purchase (parts=" .. tostring(#parts) .. ", tuning=" .. tostring(#tuning) .. ", cost=" .. tostring(totalCost) .. ")")
+  else
+    log("W", "businessComputer", "purchaseCartItems: No active vehicle found for businessId=" .. tostring(businessId))
   end
 
   if vehicle then
