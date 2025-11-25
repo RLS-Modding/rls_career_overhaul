@@ -236,17 +236,28 @@ const selectRace = async (raceType) => {
 }
 
 onMounted(async () => {
-  await store.updateBrandRecognitionStatus()
-  await store.updateRaceRecognitionStatus()
-  if (store.brandRecognitionUnlocked) {
-    await store.getBrandSelection()
-  }
-  if (store.raceRecognitionUnlocked) {
-    await store.getRaceSelection()
-  }
-
   events.on('businessComputer:onAvailableBrandsReceived', handleBrandsReceived)
   events.on('businessComputer:onAvailableRaceTypesReceived', handleRaceTypesReceived)
+  
+  const needsBrandStatus = store.brandRecognitionUnlocked === undefined || store.brandRecognitionUnlocked === null
+  const needsRaceStatus = store.raceRecognitionUnlocked === undefined || store.raceRecognitionUnlocked === null
+  
+  if (needsBrandStatus || needsRaceStatus) {
+    await Promise.all([
+      needsBrandStatus ? store.updateBrandRecognitionStatus() : Promise.resolve(),
+      needsRaceStatus ? store.updateRaceRecognitionStatus() : Promise.resolve()
+    ])
+  }
+  
+  const needsBrandSelection = store.brandRecognitionUnlocked && store.brandSelection === null
+  const needsRaceSelection = store.raceRecognitionUnlocked && store.raceSelection === null
+  
+  if (needsBrandSelection || needsRaceSelection) {
+    await Promise.all([
+      needsBrandSelection ? store.getBrandSelection() : Promise.resolve(),
+      needsRaceSelection ? store.getRaceSelection() : Promise.resolve()
+    ])
+  }
 })
 
 onUnmounted(() => {
@@ -255,13 +266,13 @@ onUnmounted(() => {
 })
 
 watch(() => store.brandRecognitionUnlocked, async (unlocked) => {
-  if (unlocked) {
+  if (unlocked && store.brandSelection === null) {
     await store.getBrandSelection()
   }
 })
 
 watch(() => store.raceRecognitionUnlocked, async (unlocked) => {
-  if (unlocked) {
+  if (unlocked && store.raceSelection === null) {
     await store.getRaceSelection()
   }
 })

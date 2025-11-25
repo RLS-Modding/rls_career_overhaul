@@ -232,9 +232,6 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     if (!businessId.value) return false
     try {
       const success = await lua.career_modules_business_businessComputer.acceptJob(businessId.value, jobId)
-      if (success) {
-        await loadBusinessData(businessType.value, businessId.value)
-      }
       return success
     } catch (error) {
       return false
@@ -245,9 +242,6 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     if (!businessId.value) return false
     try {
       const success = await lua.career_modules_business_businessComputer.assignTechToJob(businessId.value, techId, jobId)
-      if (success) {
-        await loadBusinessData(businessType.value, businessId.value)
-      }
       return success
     } catch (error) {
       return false
@@ -258,9 +252,6 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     if (!businessId.value) return false
     try {
       const success = await lua.career_modules_business_businessComputer.declineJob(businessId.value, jobId)
-      if (success) {
-        await loadBusinessData(businessType.value, businessId.value)
-      }
       return success
     } catch (error) {
       return false
@@ -271,10 +262,6 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     if (!businessId.value) return false
     try {
       const success = await lua.career_modules_business_businessComputer.abandonJob(businessId.value, jobId)
-      if (success) {
-        pulledOutVehicle.value = null
-        await loadBusinessData(businessType.value, businessId.value)
-      }
       return success
     } catch (error) {
       return false
@@ -285,10 +272,6 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     if (!businessId.value) return false
     try {
       const success = await lua.career_modules_business_businessComputer.completeJob(businessId.value, jobId)
-      if (success) {
-        pulledOutVehicle.value = null
-        await loadBusinessData(businessType.value, businessId.value)
-      }
       return success
     } catch (error) {
       return false
@@ -315,9 +298,6 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     }
     try {
       const success = normalizeLuaResult(await lua.career_modules_business_businessComputer.pullOutVehicle(businessId.value, vehicleId))
-      if (success) {
-        await loadBusinessData(businessType.value, businessId.value)
-      }
       return !!success
     } catch (error) {
       return false
@@ -342,12 +322,10 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
           lua.career_modules_business_businessComputer.clearVehicleDataCaches()
         } catch (error) {
         }
-
         if (!vehicleId || normalizeVehicleIdValue(vehicleId) === normalizeVehicleIdValue(pulledOutVehicle.value?.vehicleId)) {
           pulledOutVehicle.value = null
           activeVehicleId.value = null
         }
-        await loadBusinessData(businessType.value, businessId.value)
       }
       return !!success
     } catch (error) {
@@ -430,18 +408,6 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   const switchView = async (view) => {
     activeView.value = view
     vehicleView.value = null
-
-    const shouldRefresh =
-      (view === "jobs" || view === "home") &&
-      businessId.value &&
-      businessType.value
-
-    if (shouldRefresh) {
-      try {
-        await loadBusinessData(businessType.value, businessId.value)
-      } catch (error) {
-      }
-    }
   }
 
   const switchVehicleView = async (view) => {
@@ -608,9 +574,6 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     try {
       const spawnedVehicleId = pulledOutVehicle.value?.spawnedVehicleId
       const success = await lua.career_modules_business_tuningShopKits.createKit(businessId.value, jobId, kitName, spawnedVehicleId)
-      if (success) {
-        await loadBusinessData(businessType.value, businessId.value)
-      }
       return success
     } catch (error) {
       return false
@@ -621,9 +584,6 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     if (!businessId.value) return false
     try {
       const success = await lua.career_modules_business_tuningShopKits.deleteKit(businessId.value, kitId)
-      if (success) {
-        await loadBusinessData(businessType.value, businessId.value)
-      }
       return success
     } catch (error) {
       return false
@@ -639,7 +599,6 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     try {
       const result = await lua.career_modules_business_tuningShopKits.applyKit(businessId.value, vehicleId, kitId)
       if (result && result.success) {
-        await loadBusinessData(businessType.value, businessId.value)
         return { success: true, cost: result.cost }
       } else {
         return { success: false, error: result ? result.error : "Unknown error" }
@@ -970,19 +929,25 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
       return
     }
 
-    // Prevent updates if user is working on a vehicle
     if (vehicleView.value) {
       return
     }
 
-    // Prevent updates if user is in a tab that doesn't display job lists
     const allowedViews = ['home', 'jobs', 'techs']
     if (!allowedViews.includes(activeView.value)) {
       return
     }
 
     try {
-      await loadBusinessData(currentBusinessType, currentBusinessId)
+      const jobsData = await lua.career_modules_business_businessComputer.getJobsOnly(currentBusinessId)
+      if (jobsData) {
+        businessData.value = {
+          ...businessData.value,
+          activeJobs: jobsData.activeJobs || [],
+          newJobs: jobsData.newJobs || [],
+          maxActiveJobs: jobsData.maxActiveJobs ?? businessData.value.maxActiveJobs
+        }
+      }
     } catch (error) {
     }
   }
@@ -1058,11 +1023,112 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     }
   }
 
-  // Setup event listener
+  const handleJobAccepted = (data) => {
+    if (String(data.businessId) !== String(businessId.value)) return
+    businessData.value = {
+      ...businessData.value,
+      activeJobs: data.activeJobs || [],
+      newJobs: data.newJobs || [],
+      maxActiveJobs: data.maxActiveJobs ?? businessData.value.maxActiveJobs,
+      vehicles: data.vehicles || businessData.value.vehicles
+    }
+  }
+
+  const handleJobDeclined = (data) => {
+    if (String(data.businessId) !== String(businessId.value)) return
+    businessData.value = {
+      ...businessData.value,
+      newJobs: data.newJobs || []
+    }
+  }
+
+  const handleJobAbandoned = (data) => {
+    if (String(data.businessId) !== String(businessId.value)) return
+    pulledOutVehicle.value = null
+    const vehiclesFromData = Array.isArray(data.pulledOutVehicles) ? data.pulledOutVehicles : []
+    pulledOutVehicles.value = vehiclesFromData
+    if (vehiclesFromData.length === 0) {
+      activeVehicleId.value = null
+    }
+    businessData.value = {
+      ...businessData.value,
+      activeJobs: data.activeJobs || [],
+      vehicles: data.vehicles || [],
+      pulledOutVehicles: vehiclesFromData
+    }
+  }
+
+  const handleJobCompleted = (data) => {
+    if (String(data.businessId) !== String(businessId.value)) return
+    pulledOutVehicle.value = null
+    const vehiclesFromData = Array.isArray(data.pulledOutVehicles) ? data.pulledOutVehicles : []
+    pulledOutVehicles.value = vehiclesFromData
+    if (vehiclesFromData.length === 0) {
+      activeVehicleId.value = null
+    }
+    businessData.value = {
+      ...businessData.value,
+      activeJobs: data.activeJobs || [],
+      vehicles: data.vehicles || [],
+      pulledOutVehicles: vehiclesFromData
+    }
+  }
+
+  const handleTechAssigned = (data) => {
+    if (String(data.businessId) !== String(businessId.value)) return
+    businessData.value = {
+      ...businessData.value,
+      activeJobs: data.activeJobs || businessData.value.activeJobs,
+      techs: data.techs || businessData.value.techs
+    }
+  }
+
+  const handleVehiclePulledOut = (data) => {
+    if (String(data.businessId) !== String(businessId.value)) return
+    const vehiclesFromData = Array.isArray(data.pulledOutVehicles) ? data.pulledOutVehicles : []
+    pulledOutVehicles.value = vehiclesFromData
+    if (data.vehicleId) {
+      activeVehicleId.value = data.vehicleId
+      pulledOutVehicle.value = vehiclesFromData.find(v => normalizeVehicleIdValue(v?.vehicleId) === normalizeVehicleIdValue(data.vehicleId)) || null
+    }
+    businessData.value = {
+      ...businessData.value,
+      vehicles: data.vehicles || [],
+      pulledOutVehicles: vehiclesFromData,
+      maxPulledOutVehicles: data.maxPulledOutVehicles ?? businessData.value.maxPulledOutVehicles
+    }
+  }
+
+  const handleVehiclePutAway = (data) => {
+    if (String(data.businessId) !== String(businessId.value)) return
+    const vehiclesFromData = Array.isArray(data.pulledOutVehicles) ? data.pulledOutVehicles : []
+    pulledOutVehicles.value = vehiclesFromData
+    if (vehiclesFromData.length === 0) {
+      pulledOutVehicle.value = null
+      activeVehicleId.value = null
+    } else if (data.vehicleId && normalizeVehicleIdValue(pulledOutVehicle.value?.vehicleId) === normalizeVehicleIdValue(data.vehicleId)) {
+      pulledOutVehicle.value = vehiclesFromData[0] || null
+      activeVehicleId.value = pulledOutVehicle.value?.vehicleId || null
+    }
+    businessData.value = {
+      ...businessData.value,
+      vehicles: data.vehicles || [],
+      pulledOutVehicles: vehiclesFromData,
+      maxPulledOutVehicles: data.maxPulledOutVehicles ?? businessData.value.maxPulledOutVehicles
+    }
+  }
+
   events.on('businessComputer:onPartCartUpdated', handlePartCartUpdated)
   events.on('businessComputer:onJobsUpdated', handleJobsUpdated)
   events.on('businessComputer:onTechsUpdated', handleTechsUpdated)
   events.on('businessComputer:onPartInventoryData', handlePartInventoryData)
+  events.on('businessComputer:onJobAccepted', handleJobAccepted)
+  events.on('businessComputer:onJobDeclined', handleJobDeclined)
+  events.on('businessComputer:onJobAbandoned', handleJobAbandoned)
+  events.on('businessComputer:onJobCompleted', handleJobCompleted)
+  events.on('businessComputer:onTechAssigned', handleTechAssigned)
+  events.on('businessComputer:onVehiclePulledOut', handleVehiclePulledOut)
+  events.on('businessComputer:onVehiclePutAway', handleVehiclePutAway)
 
   const addPartToCart = async (part, slot) => {
     if (!businessId.value || !pulledOutVehicle.value?.vehicleId) {
@@ -1759,7 +1825,18 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
 
   bridge.events.on("businessComputer:onKitsUpdated", (data) => {
     if (data && data.businessId && String(data.businessId) === String(businessId.value)) {
-      loadBusinessData(businessType.value, businessId.value)
+      if (data.kits) {
+        kits.value = data.kits
+        businessData.value = {
+          ...businessData.value,
+          stats: {
+            ...(businessData.value.stats || {}),
+            kits: data.kits
+          }
+        }
+      } else {
+        loadBusinessData(businessType.value, businessId.value)
+      }
     }
   })
 

@@ -709,25 +709,62 @@ local function sellPartsByVehicle(businessId, vehicleNiceName)
 end
 
 local function acceptJob(businessId, jobId)
-  local module = resolveBusinessModule(businessId)
+  local module, businessType = resolveBusinessModule(businessId)
   if module and module.acceptJob then
-    return module.acceptJob(businessId, jobId)
+    local success = module.acceptJob(businessId, jobId)
+    if success and guihooks then
+      local jobsData = getJobsOnly(businessId)
+      local vehiclesData = getVehiclesOnly(businessId)
+      guihooks.trigger('businessComputer:onJobAccepted', {
+        businessType = businessType,
+        businessId = businessId,
+        jobId = jobId,
+        activeJobs = jobsData.activeJobs,
+        newJobs = jobsData.newJobs,
+        maxActiveJobs = jobsData.maxActiveJobs,
+        vehicles = vehiclesData.vehicles
+      })
+    end
+    return success
   end
   return false
 end
 
 local function declineJob(businessId, jobId)
-  local module = resolveBusinessModule(businessId)
+  local module, businessType = resolveBusinessModule(businessId)
   if module and module.declineJob then
-    return module.declineJob(businessId, jobId)
+    local success = module.declineJob(businessId, jobId)
+    if success and guihooks then
+      local jobsData = getJobsOnly(businessId)
+      guihooks.trigger('businessComputer:onJobDeclined', {
+        businessType = businessType,
+        businessId = businessId,
+        jobId = jobId,
+        newJobs = jobsData.newJobs
+      })
+    end
+    return success
   end
   return false
 end
 
 local function abandonJob(businessId, jobId)
-  local module = resolveBusinessModule(businessId)
+  local module, businessType = resolveBusinessModule(businessId)
   if module and module.abandonJob then
-    return module.abandonJob(businessId, jobId)
+    local success = module.abandonJob(businessId, jobId)
+    if success and guihooks then
+      local jobsData = getJobsOnly(businessId)
+      local vehiclesData = getVehiclesOnly(businessId)
+      guihooks.trigger('businessComputer:onJobAbandoned', {
+        businessType = businessType,
+        businessId = businessId,
+        jobId = jobId,
+        activeJobs = jobsData.activeJobs,
+        vehicles = vehiclesData.vehicles,
+        pulledOutVehicles = vehiclesData.pulledOutVehicles
+      })
+    end
+    return success
   end
   return false
 end
@@ -748,6 +785,18 @@ local function assignTechToJob(businessId, techId, jobId)
     if not ok then
       log('E', 'businessComputer', 'assignTechToJob failed: ' .. tostring(result))
       return false
+    end
+    if result and guihooks then
+      local jobsData = getJobsOnly(businessId)
+      local techsData = getTechsOnly(businessId)
+      guihooks.trigger('businessComputer:onTechAssigned', {
+        businessType = businessType,
+        businessId = businessId,
+        techId = techId,
+        jobId = jobId,
+        activeJobs = jobsData.activeJobs,
+        techs = techsData.techs
+      })
     end
     return result
   end
@@ -853,6 +902,17 @@ local function pullOutVehicle(businessId, vehicleId)
   if result and career_modules_business_businessInventory.setActiveVehicle then
     career_modules_business_businessInventory.setActiveVehicle(businessId, normalizedVehicleId)
   end
+  if result and guihooks then
+    local vehiclesData = getVehiclesOnly(businessId)
+    guihooks.trigger('businessComputer:onVehiclePulledOut', {
+      businessType = businessType,
+      businessId = businessId,
+      vehicleId = normalizedVehicleId,
+      vehicles = vehiclesData.vehicles,
+      pulledOutVehicles = vehiclesData.pulledOutVehicles,
+      maxPulledOutVehicles = vehiclesData.maxPulledOutVehicles
+    })
+  end
   return result
 end
 
@@ -861,6 +921,7 @@ local function putAwayVehicle(businessId, vehicleId)
     return false
   end
 
+  local businessType = businessContexts[businessId]
   local targetVehicleId = vehicleId
   if not targetVehicleId then
     local activeVehicle = getActiveBusinessVehicle(businessId)
@@ -877,7 +938,19 @@ local function putAwayVehicle(businessId, vehicleId)
         errorCode = "damageLocked"
       }
     end
-    return career_modules_business_businessInventory.putAwayVehicle(businessId, normalizedVehicleId)
+    local result = career_modules_business_businessInventory.putAwayVehicle(businessId, normalizedVehicleId)
+    if result and guihooks then
+      local vehiclesData = getVehiclesOnly(businessId)
+      guihooks.trigger('businessComputer:onVehiclePutAway', {
+        businessType = businessType,
+        businessId = businessId,
+        vehicleId = normalizedVehicleId,
+        vehicles = vehiclesData.vehicles,
+        pulledOutVehicles = vehiclesData.pulledOutVehicles,
+        maxPulledOutVehicles = vehiclesData.maxPulledOutVehicles
+      })
+    end
+    return result
   end
 
   local lockInfo = getDamageLockedVehicleInfo(businessId)
@@ -889,7 +962,18 @@ local function putAwayVehicle(businessId, vehicleId)
     }
   end
 
-  return career_modules_business_businessInventory.putAwayVehicle(businessId)
+  local result = career_modules_business_businessInventory.putAwayVehicle(businessId)
+  if result and guihooks then
+    local vehiclesData = getVehiclesOnly(businessId)
+    guihooks.trigger('businessComputer:onVehiclePutAway', {
+      businessType = businessType,
+      businessId = businessId,
+      vehicles = vehiclesData.vehicles,
+      pulledOutVehicles = vehiclesData.pulledOutVehicles,
+      maxPulledOutVehicles = vehiclesData.maxPulledOutVehicles
+    })
+  end
+  return result
 end
 
 local function getActiveJobs(businessId)
@@ -1805,9 +1889,22 @@ local function getVehiclePowerWeight(businessId, vehicleId)
 end
 
 local function completeJob(businessId, jobId)
-  local module = resolveBusinessModule(businessId)
+  local module, businessType = resolveBusinessModule(businessId)
   if module and module.completeJob then
-    return module.completeJob(businessId, jobId)
+    local success = module.completeJob(businessId, jobId)
+    if success and guihooks then
+      local jobsData = getJobsOnly(businessId)
+      local vehiclesData = getVehiclesOnly(businessId)
+      guihooks.trigger('businessComputer:onJobCompleted', {
+        businessType = businessType,
+        businessId = businessId,
+        jobId = jobId,
+        activeJobs = jobsData.activeJobs,
+        vehicles = vehiclesData.vehicles,
+        pulledOutVehicles = vehiclesData.pulledOutVehicles
+      })
+    end
+    return success
   end
   return false
 end
@@ -1851,6 +1948,118 @@ local function getAbandonPenalty(businessId, jobId)
     return module.getAbandonPenalty(businessId, jobId)
   end
   return 0
+end
+
+local function getJobsOnly(businessId)
+  local module = resolveBusinessModule(businessId)
+  if not module then
+    return { activeJobs = {}, newJobs = {} }
+  end
+  local activeJobs = {}
+  local newJobs = {}
+  if module.getActiveJobs then
+    activeJobs = module.getActiveJobs(businessId) or {}
+  end
+  if module.getNewJobs then
+    newJobs = module.getNewJobs(businessId) or {}
+  end
+  local maxActiveJobs = 2
+  if module.getMaxActiveJobs then
+    maxActiveJobs = module.getMaxActiveJobs(businessId) or 2
+  end
+  return {
+    businessId = businessId,
+    activeJobs = activeJobs,
+    newJobs = newJobs,
+    maxActiveJobs = maxActiveJobs
+  }
+end
+
+local function getVehiclesOnly(businessId)
+  if not businessId or not career_modules_business_businessInventory then
+    return { vehicles = {}, pulledOutVehicles = {} }
+  end
+  local vehicles = career_modules_business_businessInventory.getBusinessVehicles(businessId) or {}
+  local pulledOutVehiclesRaw = getPulledOutVehiclesList(businessId)
+  local formattedVehicles = {}
+  for _, vehicle in ipairs(vehicles) do
+    table.insert(formattedVehicles, formatVehicleForUI(vehicle, businessId))
+  end
+  local formattedPulledOut = {}
+  for _, vehicle in ipairs(pulledOutVehiclesRaw) do
+    local formatted = formatVehicleForUI(vehicle, businessId)
+    if formatted then
+      local vehicleDamageInfo = isDamageLocked(businessId, vehicle.vehicleId)
+      formatted.damage = vehicleDamageInfo.damage
+      formatted.damageLocked = vehicleDamageInfo.locked
+      formatted.damageThreshold = vehicleDamageInfo.threshold
+      table.insert(formattedPulledOut, formatted)
+    end
+  end
+  local module = resolveBusinessModule(businessId)
+  local maxPulledOut = 1
+  if module and module.getMaxPulledOutVehicles then
+    maxPulledOut = module.getMaxPulledOutVehicles(businessId) or 1
+  end
+  return {
+    businessId = businessId,
+    vehicles = formattedVehicles,
+    pulledOutVehicles = formattedPulledOut,
+    maxPulledOutVehicles = maxPulledOut
+  }
+end
+
+local function getTechsOnly(businessId)
+  local module = resolveBusinessModule(businessId)
+  if not module then
+    return { techs = {} }
+  end
+  local techs = {}
+  if module.getTechsForBusiness then
+    local rawTechs = module.getTechsForBusiness(businessId) or {}
+    local tuningShopTechs = require('ge/extensions/career/modules/business/tuningShopTechs')
+    for _, tech in ipairs(rawTechs) do
+      local formattedTech = tuningShopTechs.formatTechForUIEntry(businessId, tech)
+      if formattedTech then
+        table.insert(techs, formattedTech)
+      end
+    end
+  end
+  return {
+    businessId = businessId,
+    techs = techs
+  }
+end
+
+local function getStatsOnly(businessId)
+  local module = resolveBusinessModule(businessId)
+  if not module then
+    return { stats = {} }
+  end
+  local kits = {}
+  local tuningShopKits = _G["career_modules_business_tuningShopKits"]
+  if tuningShopKits and tuningShopKits.loadBusinessKits then
+    kits = tuningShopKits.loadBusinessKits(businessId) or {}
+  end
+  local vehicles = {}
+  if career_modules_business_businessInventory then
+    vehicles = career_modules_business_businessInventory.getBusinessVehicles(businessId) or {}
+  end
+  return {
+    businessId = businessId,
+    stats = {
+      totalVehicles = #vehicles,
+      kits = kits
+    }
+  }
+end
+
+local function getManagerDataOnly(businessId)
+  local module, businessType = resolveBusinessModule(businessId)
+  if not module or not module.getManagerData then
+    return nil
+  end
+  return module.getManagerData(businessId)
 end
 
 M.getBusinessComputerUIData = getBusinessComputerUIData
@@ -1946,6 +2155,11 @@ M.getAvailableRaceTypes = getAvailableRaceTypes
 M.requestAvailableBrands = requestAvailableBrands
 M.requestAvailableRaceTypes = requestAvailableRaceTypes
 M.getPartSupplierDiscountMultiplier = getPartSupplierDiscountMultiplier
+M.getJobsOnly = getJobsOnly
+M.getVehiclesOnly = getVehiclesOnly
+M.getTechsOnly = getTechsOnly
+M.getStatsOnly = getStatsOnly
+M.getManagerDataOnly = getManagerDataOnly
 
 M.createKit = function(businessId, jobId, kitName)
   local module = resolveBusinessModule(businessId)

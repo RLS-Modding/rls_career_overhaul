@@ -12,6 +12,16 @@ local managerTimers = {}
 local operatingCostTimers = {}
 local jobIdCounter = 0
 
+local UPDATE_INTERVAL_JOBS = 0.5
+local UPDATE_INTERVAL_TECHS = 0.6
+local UPDATE_INTERVAL_MANAGER = 0.7
+local UPDATE_INTERVAL_COSTS = 1.0
+
+local jobsAccumulator = 0
+local techsAccumulator = 0.15
+local managerAccumulator = 0.30
+local costsAccumulator = 0.45
+
 local freeroamUtils = require('gameplay/events/freeroam/utils')
 local tuningShopTechs = require('ge/extensions/career/modules/business/tuningShopTechs')
 -- local tuningShopKits = require('ge/extensions/career/modules/business/tuningShopKits')
@@ -2704,40 +2714,75 @@ local function onUpdate(dtReal, dtSim, dtRaw)
     return
   end
 
+  local deltaSim = math.max(dtSim or 0, 0)
+  if deltaSim <= 0 then
+    return
+  end
+
+  jobsAccumulator = jobsAccumulator + deltaSim
+  techsAccumulator = techsAccumulator + deltaSim
+  managerAccumulator = managerAccumulator + deltaSim
+  costsAccumulator = costsAccumulator + deltaSim
+
+  local shouldProcessJobs = jobsAccumulator >= UPDATE_INTERVAL_JOBS
+  local shouldProcessTechs = techsAccumulator >= UPDATE_INTERVAL_TECHS
+  local shouldProcessManager = managerAccumulator >= UPDATE_INTERVAL_MANAGER
+  local shouldProcessCosts = costsAccumulator >= UPDATE_INTERVAL_COSTS
+
+  if not (shouldProcessJobs or shouldProcessTechs or shouldProcessManager or shouldProcessCosts) then
+    return
+  end
+
   if not career_modules_business_businessManager or not career_modules_business_businessManager.getPurchasedBusinesses then
     return
   end
 
   local purchased = career_modules_business_businessManager.getPurchasedBusinesses("tuningShop") or {}
   local ownedBusinesses = {}
-  local deltaSim = math.max(dtSim or 0, 0)
+
+  local jobsTime = shouldProcessJobs and jobsAccumulator or 0
+  local techsTime = shouldProcessTechs and techsAccumulator or 0
+  local managerTime = shouldProcessManager and managerAccumulator or 0
+  local costsTime = shouldProcessCosts and costsAccumulator or 0
+
+  if shouldProcessJobs then jobsAccumulator = 0 end
+  if shouldProcessTechs then techsAccumulator = 0 end
+  if shouldProcessManager then managerAccumulator = 0 end
+  if shouldProcessCosts then costsAccumulator = 0 end
 
   for businessId, owned in pairs(purchased) do
     if owned then
       local id = normalizeBusinessId(businessId)
       ownedBusinesses[id] = true
-      local jobs = loadBusinessJobs(id)
-      jobs.new = jobs.new or {}
 
       local jobsChanged = false
-      if deltaSim > 0 then
-        if processJobGeneration(id, jobs, deltaSim) then
-          jobsChanged = true
-        end
-        if updateNewJobExpirations(id, jobs, deltaSim) then
-          jobsChanged = true
-        end
-        tuningShopTechs.processTechs(id, deltaSim)
 
-        if processManagerTimers(id, deltaSim) then
+      if shouldProcessJobs then
+        local jobs = loadBusinessJobs(id)
+        jobs.new = jobs.new or {}
+        if processJobGeneration(id, jobs, jobsTime) then
           jobsChanged = true
         end
-
-        processOperatingCosts(id, deltaSim)
+        if updateNewJobExpirations(id, jobs, jobsTime) then
+          jobsChanged = true
+        end
       end
 
-      if processManagerAssignments(id) then
-        jobsChanged = true
+      if shouldProcessTechs then
+        tuningShopTechs.processTechs(id, techsTime)
+      end
+
+      if shouldProcessManager then
+        if processManagerTimers(id, managerTime) then
+          jobsChanged = true
+        end
+        if processManagerAssignments(id) then
+          jobsChanged = true
+        end
+      end
+
+      if shouldProcessCosts then
+        processOperatingCosts(id, costsTime)
       end
 
       if jobsChanged then
@@ -2746,21 +2791,27 @@ local function onUpdate(dtReal, dtSim, dtRaw)
     end
   end
 
-  for id in pairs(generationTimers) do
-    if not ownedBusinesses[id] then
-      generationTimers[id] = nil
+  if shouldProcessJobs then
+    for id in pairs(generationTimers) do
+      if not ownedBusinesses[id] then
+        generationTimers[id] = nil
+      end
     end
   end
 
-  for id in pairs(managerTimers) do
-    if not ownedBusinesses[id] then
-      managerTimers[id] = nil
+  if shouldProcessManager then
+    for id in pairs(managerTimers) do
+      if not ownedBusinesses[id] then
+        managerTimers[id] = nil
+      end
     end
   end
 
-  for id in pairs(operatingCostTimers) do
-    if not ownedBusinesses[id] then
-      operatingCostTimers[id] = nil
+  if shouldProcessCosts then
+    for id in pairs(operatingCostTimers) do
+      if not ownedBusinesses[id] then
+        operatingCostTimers[id] = nil
+      end
     end
   end
 end

@@ -130,6 +130,8 @@ const searchQuery = ref("")
 const activeSearchQuery = ref("")
 const wheelDataExpanded = ref(false)
 const wheelDataRef = ref(null)
+const liveUpdateDebounceTimer = ref(null)
+const LIVE_UPDATE_DEBOUNCE_MS = 150
 const damageLockWarning = () => {
   const info = store.damageLockInfo || {}
   const damage = Math.round(info.damage || 0)
@@ -559,6 +561,15 @@ const loadTuningData = async () => {
   })
 }
 
+const debouncedLiveUpdate = () => {
+  if (liveUpdateDebounceTimer.value) {
+    clearTimeout(liveUpdateDebounceTimer.value)
+  }
+  liveUpdateDebounceTimer.value = setTimeout(() => {
+    applySettings()
+  }, LIVE_UPDATE_DEBOUNCE_MS)
+}
+
 const onSliderChange = (varData) => {
   if (!varData || !tuningVariables.value[varData.name]) return
 
@@ -590,7 +601,7 @@ const onSliderChange = (varData) => {
   }
 
   if (liveUpdates.value) {
-    applySettings()
+    debouncedLiveUpdate()
   }
 }
 
@@ -620,7 +631,7 @@ const onTuningChange = (varName, actualValue) => {
   }
 
   if (liveUpdates.value) {
-    applySettings()
+    debouncedLiveUpdate()
   }
 }
 
@@ -801,6 +812,9 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   events.off('businessComputer:onVehicleTuningData', handleTuningData)
+  if (liveUpdateDebounceTimer.value) {
+    clearTimeout(liveUpdateDebounceTimer.value)
+  }
 })
 
 watch(() => store.activeTabId, () => {
