@@ -382,7 +382,7 @@ local buttonOptions = {
       if not (businessId and career_modules_business_businessInventory) then return end
       local veh = scenetree.findObjectById(target.vehId)
       if veh then
-        career_modules_business_businessInventory.teleportToBusinessGarage("tuningShop", businessId, veh, false)
+        career_modules_business_businessInventory.teleportToBusinessGarage("tuningShop", businessId, veh, true)
       end
     end,
     order = 12,
