@@ -13,6 +13,8 @@
     }"
     @click.stop="handleClick"
     @mousedown.stop
+    data-focusable
+    :data-focusable-disabled="node.commingSoon || undefined"
   >
     <div v-if="node.commingSoon" class="coming-soon-content">
       <span class="coming-soon-text">Coming Soon</span>

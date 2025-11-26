@@ -95,7 +95,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick, reactive } from "vue"
+import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick, reactive, inject } from "vue"
 import { useBusinessComputerStore } from "../../stores/businessComputerStore"
 import SkillTreeNode from "./SkillTreeNode.vue"
 import SkillTreeUpgradeModal from "./SkillTreeUpgradeModal.vue"
@@ -104,6 +104,7 @@ import { lua } from "@/bridge"
 import { useEvents } from "@/services/events"
 
 const events = useEvents()
+const controllerNav = inject('controllerNav', null)
 
 const props = defineProps({
   data: Object
@@ -510,6 +511,55 @@ const stopPan = () => {
   isPanning.value = false
 }
 
+let lastPannedElement = null
+
+const panToElement = (element) => {
+  if (!element || !canvasRef.value) return
+  
+  // Skip if we already panned to this element
+  if (lastPannedElement === element) return
+  lastPannedElement = element
+  
+  const canvasRect = canvasRef.value.getBoundingClientRect()
+  const elementRect = element.getBoundingClientRect()
+  const targetScale = 1
+  
+  // Calculate the element's center in world space (tree-content coordinates)
+  const worldX = (elementRect.left + elementRect.width / 2 - canvasRect.left - translateX.value) / scale.value
+  const worldY = (elementRect.top + elementRect.height / 2 - canvasRect.top - translateY.value) / scale.value
+  
+  // Calculate target translation to center element at target scale
+  const targetX = canvasRect.width / 2 - worldX * targetScale
+  const targetY = canvasRect.height / 2 - worldY * targetScale
+  
+  const startX = translateX.value
+  const startY = translateY.value
+  const startScale = scale.value
+  const duration = 250
+  const startTime = performance.now()
+  
+  const animate = (currentTime) => {
+    const elapsed = currentTime - startTime
+    const progress = Math.min(elapsed / duration, 1)
+    const eased = 1 - Math.pow(1 - progress, 3) // ease-out cubic
+    
+    scale.value = startScale + (targetScale - startScale) * eased
+    translateX.value = startX + (targetX - startX) * eased
+    translateY.value = startY + (targetY - startY) * eased
+    
+    if (progress < 1) {
+      requestAnimationFrame(animate)
+    } else {
+      scheduleViewStateSave()
+    }
+  }
+  
+  requestAnimationFrame(animate)
+}
+
+// Watch for controller focus changes - will be set up in onMounted
+let focusWatchStop = null
+
 const onWheel = (event) => {
   const zoomStep = 0.05
   const minScale = 0.1
@@ -804,6 +854,19 @@ onMounted(() => {
   events.on('businessSkillTree:onPurchaseResponse', handlePurchaseResponse)
   window.addEventListener('mousemove', onPan)
   window.addEventListener('mouseup', stopPan)
+  
+  // Set up watch for controller focus changes to auto-pan to focused skill nodes
+  if (controllerNav) {
+    focusWatchStop = watch(
+      () => controllerNav.currentFocusedElement.value,
+      (focusedEl) => {
+        if (focusedEl && focusedEl.classList.contains('skill-node')) {
+          panToElement(focusedEl)
+        }
+      }
+    )
+  }
+  
   console.log('[SkillTreeTab] Event listeners registered, loading trees')
   loadTrees()
 })
@@ -814,6 +877,10 @@ onBeforeUnmount(() => {
   events.off('businessSkillTree:onPurchaseResponse', handlePurchaseResponse)
   window.removeEventListener('mousemove', onPan)
   window.removeEventListener('mouseup', stopPan)
+  if (focusWatchStop) {
+    focusWatchStop()
+    focusWatchStop = null
+  }
   if (viewStateSaveTimeout) {
     clearTimeout(viewStateSaveTimeout)
     viewStateSaveTimeout = null

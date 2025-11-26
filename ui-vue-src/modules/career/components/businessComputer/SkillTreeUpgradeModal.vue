@@ -2,7 +2,7 @@
   <Teleport to="body">
     <transition name="modal-fade">
       <div v-if="show" class="modal-overlay" @click.self="handleCancel">
-        <div class="modal-content" @click.stop>
+        <div class="modal-content" @click.stop ref="modalContentRef">
           <div class="modal-title">{{ modalTitle }}</div>
           <div class="upgrade-info">
             <div class="info-row cost-row" v-if="formatCost(node.cost, node.currentLevel) !== '0'">
@@ -37,12 +37,13 @@
             </div>
           </div>
           <div class="modal-buttons">
-            <button class="btn btn-secondary" @click.stop="handleCancel" @mousedown.stop>Close</button>
+            <button class="btn btn-secondary" @click.stop="handleCancel" @mousedown.stop data-focusable>Close</button>
             <button 
               class="btn btn-primary" 
               :disabled="!canPurchase"
               @click.stop="handleConfirm" 
               @mousedown.stop
+              data-focusable
             >
               {{ buttonText }}
             </button>
@@ -54,7 +55,7 @@
 </template>
 
 <script setup>
-import { computed } from "vue"
+import { computed, ref, watch, nextTick, inject, onMounted, onUnmounted } from "vue"
 import { Teleport } from "vue"
 
 const props = defineProps({
@@ -67,6 +68,34 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['confirm', 'cancel'])
+
+const controllerNav = inject('controllerNav', null)
+const modalContentRef = ref(null)
+
+const pushModalToController = () => {
+  if (!controllerNav || !props.show) return
+  nextTick(() => {
+    if (modalContentRef.value) {
+      controllerNav.pushModal(modalContentRef.value, handleCancel)
+    }
+  })
+}
+
+onMounted(() => {
+  pushModalToController()
+})
+
+onUnmounted(() => {
+  if (controllerNav && modalContentRef.value) {
+    controllerNav.removeModal(modalContentRef.value)
+  }
+})
+
+watch(() => props.show, (isOpen) => {
+  if (isOpen) {
+    pushModalToController()
+  }
+})
 
 const modalTitle = computed(() => {
   if (props.node.maxed) return 'Upgrade Maxed'

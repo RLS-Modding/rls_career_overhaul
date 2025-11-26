@@ -32,7 +32,7 @@
                         </div>
                     </div>
                     <button @click.stop="showCreateKitDialog(job)" @mousedown.stop class="btn-create-kit"
-                        :disabled="isAtMaxCapacity" :title="isAtMaxCapacity ? 'Kit storage is full' : ''">
+                        :disabled="isAtMaxCapacity" :title="isAtMaxCapacity ? 'Kit storage is full' : ''" data-focusable>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
                             <path d="M12 5v14M5 12h14" />
@@ -70,10 +70,10 @@
                     </div>
                     <div class="kit-actions">
                         <button @click.stop="handleApplyKit(kit)" @mousedown.stop class="btn-apply"
-                            :disabled="!canApplyKit(kit)">
+                            :disabled="!canApplyKit(kit)" data-focusable>
                             Apply to Vehicle
                         </button>
-                        <button @click.stop="handleDeleteKit(kit)" @mousedown.stop class="btn-delete">
+                        <button @click.stop="handleDeleteKit(kit)" @mousedown.stop class="btn-delete" data-focusable>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
                                 <path
@@ -97,10 +97,10 @@
 
         <!-- Create Kit Dialog -->
         <div v-if="showDialog" class="dialog-overlay" @click.self="closeDialog">
-            <div class="dialog" v-bng-blur>
+            <div class="dialog" v-bng-blur ref="createDialogRef">
                 <div class="dialog-header">
                     <h3>Create Kit</h3>
-                    <button @click.stop="closeDialog" @mousedown.stop class="btn-close">
+                    <button @click.stop="closeDialog" @mousedown.stop class="btn-close" data-focusable>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
                             <path d="M18 6L6 18M6 6l12 12" />
@@ -119,9 +119,9 @@
                     </div>
                 </div>
                 <div class="dialog-footer">
-                    <button @click.stop="closeDialog" @mousedown.stop class="btn-secondary">Cancel</button>
+                    <button @click.stop="closeDialog" @mousedown.stop class="btn-secondary" data-focusable>Cancel</button>
                     <button @click.stop="handleCreateKit" @mousedown.stop :disabled="!kitName.trim()"
-                        class="btn-primary">Create Kit</button>
+                        class="btn-primary" data-focusable>Create Kit</button>
                 </div>
             </div>
         </div>
@@ -130,10 +130,10 @@
     <!-- Delete Confirmation Dialog -->
     <Teleport to="body">
         <div v-if="showDeleteDialog" class="dialog-overlay" @click.self="closeDeleteDialog">
-            <div class="dialog" v-bng-blur>
+            <div class="dialog" v-bng-blur ref="deleteDialogRef">
                 <div class="dialog-header">
                     <h3>Delete Kit</h3>
-                    <button @click.stop="closeDeleteDialog" @mousedown.stop class="btn-close">
+                    <button @click.stop="closeDeleteDialog" @mousedown.stop class="btn-close" data-focusable>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
                             <path d="M18 6L6 18M6 6l12 12" />
@@ -146,8 +146,8 @@
                     </p>
                 </div>
                 <div class="dialog-footer">
-                    <button @click.stop="closeDeleteDialog" @mousedown.stop class="btn-secondary">Cancel</button>
-                    <button @click.stop="confirmDeleteKit" @mousedown.stop class="btn-danger">Delete</button>
+                    <button @click.stop="closeDeleteDialog" @mousedown.stop class="btn-secondary" data-focusable>Cancel</button>
+                    <button @click.stop="confirmDeleteKit" @mousedown.stop class="btn-danger" data-focusable>Delete</button>
                 </div>
             </div>
         </div>
@@ -156,10 +156,10 @@
     <!-- Apply Confirmation Dialog -->
     <Teleport to="body">
         <div v-if="showApplyDialog" class="dialog-overlay" @click.self="closeApplyDialog">
-            <div class="dialog" v-bng-blur>
+            <div class="dialog" v-bng-blur ref="applyDialogRef">
                 <div class="dialog-header">
                     <h3>Apply Kit</h3>
-                    <button @click.stop="closeApplyDialog" @mousedown.stop class="btn-close">
+                    <button @click.stop="closeApplyDialog" @mousedown.stop class="btn-close" data-focusable>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
                             <path d="M18 6L6 18M6 6l12 12" />
@@ -192,8 +192,8 @@
                     </div>
                 </div>
                 <div class="dialog-footer">
-                    <button @click.stop="closeApplyDialog" @mousedown.stop class="btn-secondary">Cancel</button>
-                    <button @click.stop="confirmApplyKit" @mousedown.stop class="btn-primary" :disabled="loadingCostBreakdown">Apply Kit</button>
+                    <button @click.stop="closeApplyDialog" @mousedown.stop class="btn-secondary" data-focusable>Cancel</button>
+                    <button @click.stop="confirmApplyKit" @mousedown.stop class="btn-primary" :disabled="loadingCostBreakdown" data-focusable>Apply Kit</button>
                 </div>
             </div>
         </div>
@@ -201,13 +201,18 @@
 </template>
 
 <script setup>
-import { ref, computed, Teleport, onMounted, onUnmounted } from 'vue'
+import { ref, computed, Teleport, onMounted, onUnmounted, watch, inject, nextTick } from 'vue'
 import { useBusinessComputerStore } from '@/modules/career/stores/businessComputerStore'
 import { useBridge, lua } from "@/bridge"
 import { vBngTextInput, vBngBlur } from "@/common/directives"
 
 const store = useBusinessComputerStore()
 const { events } = useBridge()
+
+const controllerNav = inject('controllerNav', null)
+const createDialogRef = ref(null)
+const deleteDialogRef = ref(null)
+const applyDialogRef = ref(null)
 
 const completableJobs = computed(() => {
     const activeJobs = store.activeJobs || []
@@ -371,6 +376,45 @@ const closeDeleteDialog = () => {
     showDeleteDialog.value = false
     selectedKit.value = null
 }
+
+watch(showDialog, (isOpen) => {
+    if (!controllerNav) return
+    if (isOpen) {
+        nextTick(() => {
+            if (createDialogRef.value) {
+                controllerNav.pushModal(createDialogRef.value, closeDialog)
+            }
+        })
+    } else if (createDialogRef.value) {
+        controllerNav.removeModal(createDialogRef.value)
+    }
+})
+
+watch(showDeleteDialog, (isOpen) => {
+    if (!controllerNav) return
+    if (isOpen) {
+        nextTick(() => {
+            if (deleteDialogRef.value) {
+                controllerNav.pushModal(deleteDialogRef.value, closeDeleteDialog)
+            }
+        })
+    } else if (deleteDialogRef.value) {
+        controllerNav.removeModal(deleteDialogRef.value)
+    }
+})
+
+watch(showApplyDialog, (isOpen) => {
+    if (!controllerNav) return
+    if (isOpen) {
+        nextTick(() => {
+            if (applyDialogRef.value) {
+                controllerNav.pushModal(applyDialogRef.value, closeApplyDialog)
+            }
+        })
+    } else if (applyDialogRef.value) {
+        controllerNav.removeModal(applyDialogRef.value)
+    }
+})
 </script>
 
 <style scoped>

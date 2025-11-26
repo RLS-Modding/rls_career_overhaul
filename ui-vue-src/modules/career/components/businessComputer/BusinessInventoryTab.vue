@@ -28,7 +28,7 @@
           <p class="stat-label">Total Value</p>
           <p class="stat-value green">${{ formatPrice(totalValue) }}</p>
         </div>
-        <button class="btn btn-primary sell-all-btn" @click.stop="sellAllParts" @mousedown.stop>
+        <button class="btn btn-primary sell-all-btn" @click.stop="sellAllParts" @mousedown.stop data-focusable>
           Sell All Parts
         </button>
       </div>
@@ -45,7 +45,7 @@
         :key="vehicle"
         class="parts-group-card"
       >
-        <div class="card-header" @click="toggleSection(vehicle)">
+        <div class="card-header" @click="toggleSection(vehicle)" data-focusable>
           <div class="header-left">
             <h3>{{ vehicle }}</h3>
             <span class="parts-count-badge">{{ vehicleParts.length }} {{ vehicleParts.length === 1 ? 'Part' : 'Parts' }}</span>
@@ -104,14 +104,14 @@
                 <span>${{ formatPrice(part.price || part.value || 0) }}</span>
               </div>
 
-              <button class="btn btn-primary sell-part-btn" @click.stop="sellPart(part.partId)" @mousedown.stop>
+              <button class="btn btn-primary sell-part-btn" @click.stop="sellPart(part.partId)" @mousedown.stop data-focusable>
                 Sell Part
               </button>
             </div>
           </div>
           
           <div class="sell-all-footer">
-            <button class="btn btn-primary sell-all-vehicle-btn" @click.stop="sellAllVehicleParts(vehicle)" @mousedown.stop>
+            <button class="btn btn-primary sell-all-vehicle-btn" @click.stop="sellAllVehicleParts(vehicle)" @mousedown.stop data-focusable>
               Sell All {{ vehicle }} Parts
             </button>
           </div>

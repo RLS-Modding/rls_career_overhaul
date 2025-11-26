@@ -19,7 +19,7 @@
             <span class="cost-value-large">
               {{ formatCurrency(operatingCosts.total) }}
             </span>
-            <button class="info-button" @click="showBreakdown = !showBreakdown" :class="{ active: showBreakdown }">
+            <button class="info-button" @click="showBreakdown = !showBreakdown" :class="{ active: showBreakdown }" data-focusable>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/>
                 <path d="M8 5V5.01M8 11V8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>

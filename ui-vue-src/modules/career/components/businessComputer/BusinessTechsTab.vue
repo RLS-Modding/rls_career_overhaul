@@ -63,6 +63,7 @@
               class="icon-button"
               @click.stop="toggleRename(tech)"
               @mousedown.stop
+              data-focusable
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -135,6 +136,7 @@
               :disabled="availableJobs.length === 0"
               @click.stop="openJobModal(tech, $event)"
               @mousedown.stop
+              data-focusable
             >
               <span class="btn-icon">+</span>
               {{ availableJobs.length === 0 ? "No Jobs Available" : "Assign New Job" }}
@@ -162,6 +164,7 @@
             class="job-select-modal"
             @click.stop
             @mousedown.stop
+            ref="jobModalRef"
           >
             <div class="job-select-modal__header">
               <h3>Assign Job to Tech</h3>
@@ -169,6 +172,7 @@
                 class="job-select-modal__close"
                 @click.stop="closeJobModal"
                 @mousedown.stop
+                data-focusable
               >
                 ×
               </button>
@@ -195,7 +199,7 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref, Teleport, nextTick, onMounted, onUnmounted, watch } from "vue"
+import { computed, reactive, ref, Teleport, nextTick, onMounted, onUnmounted, watch, inject } from "vue"
 import { useBusinessComputerStore } from "../../stores/businessComputerStore"
 import { useBridge, lua } from "@/bridge"
 import { vBngTextInput } from "@/common/directives"
@@ -203,6 +207,8 @@ import JobAssignCard from "./JobAssignCard.vue"
 
 const store = useBusinessComputerStore()
 const { events } = useBridge()
+const controllerNav = inject('controllerNav', null)
+const jobModalRef = ref(null)
 
 const activeJobs = computed(() => {
   const jobs = store.activeJobs
@@ -341,6 +347,19 @@ const openJobModal = async (tech, event) => {
 const closeJobModal = () => {
   openModalTechId.value = null
 }
+
+watch(openModalTechId, (newId, oldId) => {
+  if (!controllerNav) return
+  if (newId !== null) {
+    nextTick(() => {
+      if (jobModalRef.value) {
+        controllerNav.pushModal(jobModalRef.value, closeJobModal)
+      }
+    })
+  } else if (oldId !== null && jobModalRef.value) {
+    controllerNav.removeModal(jobModalRef.value)
+  }
+})
 
 const selectJob = async (tech, jobId) => {
   const success = await store.assignTechToJob(tech.id, jobId)

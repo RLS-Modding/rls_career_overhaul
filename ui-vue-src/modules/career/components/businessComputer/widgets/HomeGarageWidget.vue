@@ -62,10 +62,10 @@
 
       <!-- Bottom Actions Bar (Full Width) -->
       <div class="actions-row">
-        <button class="btn-action" @click="$emit('put-away')">
+        <button class="btn-action" @click="$emit('put-away')" data-focusable>
           Put Away
         </button>
-        <button class="btn-icon danger" @click="$emit('abandon', currentVehicleJob)" title="Abandon Job">
+        <button class="btn-icon danger" @click="$emit('abandon', currentVehicleJob)" title="Abandon Job" data-focusable>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="18" y1="6" x2="6" y2="18"/>
             <line x1="6" y1="6" x2="18" y2="18"/>
@@ -76,7 +76,7 @@
 
     <div class="widget-content empty" v-else>
       <p>No vehicle is currently being worked on.</p>
-      <button class="btn-link" @click="$emit('go-to-jobs')">Select a vehicle from Jobs</button>
+      <button class="btn-link" @click="$emit('go-to-jobs')" data-focusable>Select a vehicle from Jobs</button>
     </div>
   </div>
 </template>

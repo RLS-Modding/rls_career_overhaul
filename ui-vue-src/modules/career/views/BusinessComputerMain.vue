@@ -6,12 +6,12 @@
     <Teleport to="body">
       <transition name="modal-fade">
         <div v-if="showConfirmModal" class="modal-overlay" @click.self="cancelClose">
-          <div class="modal-content">
+          <div class="modal-content" ref="confirmModalRef">
             <h2>Confirm Exit</h2>
             <p>Are you sure you want to leave this view? You will be losing progress.</p>
             <div class="modal-buttons">
-              <button class="btn btn-secondary" @click="cancelClose">Cancel</button>
-              <button class="btn btn-primary" @click="confirmClose">Yes, Leave</button>
+              <button class="btn btn-secondary" @click="cancelClose" data-focusable>Cancel</button>
+              <button class="btn btn-primary" @click="confirmClose" data-focusable>Yes, Leave</button>
             </div>
           </div>
         </div>
@@ -34,7 +34,7 @@
               <polyline points="6 9 12 15 18 9"/>
             </svg>
           </button>
-          <button class="close-button" @click="close">
+          <button class="close-button" @click="close" data-focusable>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="18" y1="6" x2="6" y2="18"/>
               <line x1="6" y1="6" x2="18" y2="18"/>
@@ -207,7 +207,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch, nextTick, Teleport, computed } from "vue"
+import { ref, onMounted, onUnmounted, watch, nextTick, Teleport, computed, provide } from "vue"
 import { useBusinessComputerStore } from "../stores/businessComputerStore"
 import BusinessHomeView from "../components/businessComputer/BusinessHomeView.vue"
 import BusinessInventoryTab from "../components/businessComputer/BusinessInventoryTab.vue"
@@ -220,6 +220,7 @@ import { getTabComponent } from "../components/businessComputer/tabComponents"
 import { lua } from "@/bridge"
 import { BngCard } from "@/common/components/base"
 import { vBngBlur } from "@/common/directives"
+import { useControllerNavigation } from "../composables/useControllerNavigation"
 
 const props = defineProps({
   businessType: String,
@@ -231,6 +232,48 @@ const isCollapsed = ref(false)
 const isVehicleViewCollapsed = ref(false)
 const isVehicleSidebarCollapsed = ref(true)
 const containerRef = ref(null)
+const confirmModalRef = ref(null)
+
+const navigateToPreviousTab = () => {
+  if (store.vehicleView === 'parts' || store.vehicleView === 'tuning') {
+    const views = ['parts', 'tuning']
+    const currentIdx = views.indexOf(store.vehicleView)
+    const prevIdx = currentIdx <= 0 ? views.length - 1 : currentIdx - 1
+    store.switchVehicleView(views[prevIdx])
+  } else {
+    const tabs = store.registeredTabs || []
+    if (tabs.length === 0) return
+    const currentIdx = tabs.findIndex(t => t.id === store.activeView)
+    const prevIdx = currentIdx <= 0 ? tabs.length - 1 : currentIdx - 1
+    store.switchView(tabs[prevIdx].id)
+  }
+  nextTick(() => controllerNav.focusFirst())
+}
+
+const navigateToNextTab = () => {
+  if (store.vehicleView === 'parts' || store.vehicleView === 'tuning') {
+    const views = ['parts', 'tuning']
+    const currentIdx = views.indexOf(store.vehicleView)
+    const nextIdx = currentIdx >= views.length - 1 ? 0 : currentIdx + 1
+    store.switchVehicleView(views[nextIdx])
+  } else {
+    const tabs = store.registeredTabs || []
+    if (tabs.length === 0) return
+    const currentIdx = tabs.findIndex(t => t.id === store.activeView)
+    const nextIdx = currentIdx >= tabs.length - 1 ? 0 : currentIdx + 1
+    store.switchView(tabs[nextIdx].id)
+  }
+  nextTick(() => controllerNav.focusFirst())
+}
+
+const controllerNav = useControllerNavigation({
+  containerRef,
+  onBack: () => close(),
+  onTabLeft: navigateToPreviousTab,
+  onTabRight: navigateToNextTab
+})
+provide('controllerNav', controllerNav)
+
 const vehicleList = computed(() => Array.isArray(store.pulledOutVehicles) ? store.pulledOutVehicles : [])
 const normalizeVehicleId = (value) => {
   if (value === undefined || value === null) return null
@@ -270,6 +313,12 @@ watch(() => store.registeredTabs, (tabs) => {
     store.switchView(tabs[0].id)
   }
 }, { immediate: true })
+
+watch(controllerNav.isControllerActive, (active) => {
+  if (active) {
+    nextTick(() => controllerNav.focusFirst())
+  }
+})
 
 watch(() => store.vehicleView, (newView) => {
   if (!newView || (newView !== 'parts' && newView !== 'tuning')) {
@@ -344,6 +393,18 @@ const confirmClose = async () => {
 const cancelClose = () => {
   showConfirmModal.value = false
 }
+
+watch(showConfirmModal, (isOpen) => {
+  if (isOpen) {
+    nextTick(() => {
+      if (confirmModalRef.value) {
+        controllerNav.pushModal(confirmModalRef.value, cancelClose)
+      }
+    })
+  } else if (confirmModalRef.value) {
+    controllerNav.removeModal(confirmModalRef.value)
+  }
+})
 
 const performClose = async () => {
   // If we were in parts or tuning view (or still are), switch to home and animate expansion
@@ -453,6 +514,7 @@ const performClose = async () => {
 const start = async () => {
   if (props.businessType && props.businessId) {
     await store.loadBusinessData(props.businessType, props.businessId)
+    nextTick(() => controllerNav.focusFirst())
   }
 }
 
@@ -1000,6 +1062,27 @@ onUnmounted(kill)
   .modal-content {
     transform: scale(0.95);
     opacity: 0;
+  }
+}
+</style>
+
+<style lang="scss">
+[data-focusable].controller-focused {
+  outline: 2px solid rgba(245, 73, 0, 0.8) !important;
+  outline-offset: 2px;
+  animation: controller-focus-pulse 1.5s ease-in-out infinite;
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes controller-focus-pulse {
+  0%, 100% { 
+    outline-color: rgba(245, 73, 0, 0.8);
+    box-shadow: 0 0 8px rgba(245, 73, 0, 0.3);
+  }
+  50% { 
+    outline-color: rgba(245, 73, 0, 0.4);
+    box-shadow: 0 0 4px rgba(245, 73, 0, 0.1);
   }
 }
 </style>

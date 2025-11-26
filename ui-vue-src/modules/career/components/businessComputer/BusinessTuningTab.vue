@@ -21,7 +21,7 @@
           <input v-model="searchQuery" type="text" placeholder="Search tuning options" class="search-input"
             @focus="onSearchFocus" @blur="onSearchBlur" @keydown.enter.stop="triggerSearch" @keydown.stop @keyup.stop
             @keypress.stop v-bng-text-input :disabled="loading" />
-          <button v-if="searchQuery.length > 0" @click="clearSearch" class="clear-search-button" type="button">
+          <button v-if="searchQuery.length > 0" @click="clearSearch" class="clear-search-button" type="button" data-focusable>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
@@ -37,7 +37,7 @@
 
           <div v-for="category in filteredBuckets" :key="category.name" class="tuning-section"
             v-show="category.items && category.items.length > 0">
-            <button class="section-header" @click="toggleSection(category.name)">
+            <button class="section-header" @click="toggleSection(category.name)" data-focusable>
               <h3>{{ category.name }}</h3>
               <svg class="chevron-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                 stroke-width="2" :class="{ rotated: !isSectionCollapsed(category.name) }">
@@ -50,7 +50,9 @@
                   <h4 v-if="subCategory.name !== 'Other' && subCategory.name" class="subcategory-heading">
                     {{ subCategory.name }}
                   </h4>
-                  <div class="slider-control" v-for="varData in subCategory.items" :key="varData.name">
+                  <div class="slider-control" v-for="varData in subCategory.items" :key="varData.name"
+                    data-focusable data-slider
+                    :data-focusable-disabled="isSliderDisabled(varData) || undefined">
                     <div class="slider-header">
                       <label>{{ varData.title }}</label>
                       <div class="value-input-group">
@@ -78,7 +80,7 @@
 
         <div class="tuning-controls">
           <div class="wheel-data-section">
-            <button class="wheel-data-header" @click="toggleWheelData">
+            <button class="wheel-data-header" @click="toggleWheelData" data-focusable>
               <span class="wheel-data-label">Live Wheel Data</span>
               <svg class="chevron-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                 stroke-width="2" :class="{ rotated: wheelDataExpanded }">
@@ -99,8 +101,8 @@
               <span class="switch-text">Live updates</span>
             </label>
             <div class="control-buttons">
-              <button class="btn btn-secondary" @click="resetSettings">Reset</button>
-              <button class="btn btn-primary" @click="applySettings">Apply</button>
+              <button class="btn btn-secondary" @click="resetSettings" data-focusable>Reset</button>
+              <button class="btn btn-primary" @click="applySettings" data-focusable>Apply</button>
             </div>
           </div>
         </div>

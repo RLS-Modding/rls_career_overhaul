@@ -3,10 +3,10 @@
     <div class="widget-header">
       <h3>Jobs Overview</h3>
       <div class="tabs">
-        <button :class="{ active: activeTab === 'active' }" @click="activeTab = 'active'">
+        <button :class="{ active: activeTab === 'active' }" @click="activeTab = 'active'" data-focusable>
           Active ({{ store.activeJobs.length }})
         </button>
-        <button :class="{ active: activeTab === 'new' }" @click="activeTab = 'new'">
+        <button :class="{ active: activeTab === 'new' }" @click="activeTab = 'new'" data-focusable>
           New ({{ store.newJobs.length }})
         </button>
       </div>

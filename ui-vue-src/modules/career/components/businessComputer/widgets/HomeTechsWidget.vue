@@ -18,7 +18,7 @@
             </svg>
         </div>
         <p>No technicians hired</p>
-        <button class="btn-link" @click="$emit('go-to-techs')">Hire Techs</button>
+        <button class="btn-link" @click="$emit('go-to-techs')" data-focusable>Hire Techs</button>
       </div>
       <div v-else class="techs-list">
         <div 

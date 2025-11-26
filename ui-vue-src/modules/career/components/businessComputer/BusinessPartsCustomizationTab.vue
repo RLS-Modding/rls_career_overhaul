@@ -23,6 +23,7 @@
         @click="clearSearch"
         class="clear-search-button"
         type="button"
+        data-focusable
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="18" y1="6" x2="6" y2="18"/>
@@ -43,6 +44,7 @@
       <button
         @click="navigateToPath(-1)"
         class="breadcrumb-link"
+        data-focusable
       >
         All Parts
       </button>
@@ -54,6 +56,7 @@
           class="breadcrumb-link ellipsis"
           @click="navigateToPath(-1)"
           title="Show all breadcrumbs"
+          data-focusable
         >
           ...
         </button>
@@ -65,6 +68,7 @@
         <button
           @click="navigateToPath(getBreadcrumbIndex(index))"
           :class="['breadcrumb-link', { active: getBreadcrumbIndex(index) === navigationPath.length - 1 }]"
+          data-focusable
         >
           {{ getCategoryByPath(navigationPath.slice(0, getBreadcrumbIndex(index) + 1))?.slotNiceName || getCategoryByPath(navigationPath.slice(0, getBreadcrumbIndex(index) + 1))?.slotName }}
         </button>
@@ -89,6 +93,7 @@
             <button
               class="result-section-header"
               @click="toggleSearchSection(result.slotPath)"
+              data-focusable
             >
               <h3>{{ result.slotNiceName || result.slotName }}</h3>
               <svg 
@@ -132,6 +137,7 @@
                     <button
                       class="btn btn-disabled"
                       @click.stop="toggleRemoveMenu(result.slotPath, part.name)"
+                      data-focusable
                     >
                       Installed
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -139,7 +145,7 @@
                       </svg>
                     </button>
                     <div v-if="removeMenuVisible === `${result.slotPath}_${part.name}`" class="remove-menu">
-                      <button class="remove-menu-item" @click="removePart(part, result)">
+                      <button class="remove-menu-item" @click="removePart(part, result)" data-focusable>
                         Remove
                       </button>
                     </div>
@@ -149,6 +155,7 @@
                       v-if="!hasOwnedVariants(part)"
                       class="btn btn-primary"
                       @click="installPart(part, result)"
+                      data-focusable
                     >
                       Install
                     </button>
@@ -156,6 +163,7 @@
                       <button
                         class="btn btn-primary"
                         @click.stop="toggleInstallMenu(result.slotPath, part.name)"
+                        data-focusable
                       >
                         Install
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -163,12 +171,12 @@
                         </svg>
                       </button>
                       <div v-if="installMenuVisible === `${result.slotPath}_${part.name}`" class="install-menu">
-                        <button v-if="!part.fromInventory" class="install-menu-item-button" @click="installPart(part, result)">
+                        <button v-if="!part.fromInventory" class="install-menu-item-button" @click="installPart(part, result)" data-focusable>
                           <span>New</span>
                           <span class="price-badge">$ {{ (part.value || 0).toLocaleString() }}</span>
                         </button>
                         <div v-for="usedPart in getOwnedVariants(part)" :key="usedPart.partId" class="install-menu-item">
-                          <button class="install-menu-item-button" @click="installUsedPart(usedPart, result)">
+                          <button class="install-menu-item-button" @click="installUsedPart(usedPart, result)" data-focusable>
                             <span>Owned</span>
                             <span class="mileage-badge">{{ formatMileage(getUsedPartMileage(usedPart)) }}</span>
                             <span class="price-badge">$ {{ (usedPart.finalValue || usedPart.value || 0).toLocaleString() }}</span>
@@ -191,6 +199,7 @@
           <button
             class="options-header"
             @click="isPartsOpen = !isPartsOpen"
+            data-focusable
           >
             <h3>{{ currentCategory?.slotNiceName || currentCategory?.slotName }} Parts</h3>
             <svg 
@@ -234,6 +243,7 @@
                   <button
                     class="btn btn-disabled"
                     @click.stop="toggleRemoveMenu(currentCategory.path, option.name)"
+                    data-focusable
                   >
                     Installed
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -241,7 +251,7 @@
                     </svg>
                   </button>
                   <div v-if="removeMenuVisible === `${currentCategory.path}_${option.name}`" class="remove-menu">
-                    <button class="remove-menu-item" @click="removePart(option, currentCategory)">
+                    <button class="remove-menu-item" @click="removePart(option, currentCategory)" data-focusable>
                       Remove
                     </button>
                   </div>
@@ -251,6 +261,7 @@
                     v-if="!hasOwnedVariants(option)"
                     class="btn btn-primary"
                     @click="installPart(option, currentCategory)"
+                    data-focusable
                   >
                     Install
                   </button>
@@ -258,6 +269,7 @@
                     <button
                       class="btn btn-primary"
                       @click.stop="toggleInstallMenu(currentCategory.path, option.name)"
+                      data-focusable
                     >
                       Install
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -265,12 +277,12 @@
                       </svg>
                     </button>
                     <div v-if="installMenuVisible === `${currentCategory.path}_${option.name}`" class="install-menu">
-                      <button v-if="!option.fromInventory" class="install-menu-item-button" @click="installPart(option, currentCategory)">
+                      <button v-if="!option.fromInventory" class="install-menu-item-button" @click="installPart(option, currentCategory)" data-focusable>
                         <span>New</span>
                         <span class="price-badge">$ {{ (option.value || 0).toLocaleString() }}</span>
                       </button>
                       <div v-for="usedPart in getOwnedVariants(option)" :key="usedPart.partId" class="install-menu-item">
-                        <button class="install-menu-item-button" @click="installUsedPart(usedPart, currentCategory)">
+                        <button class="install-menu-item-button" @click="installUsedPart(usedPart, currentCategory)" data-focusable>
                           <span>Owned</span>
                           <span class="mileage-badge">{{ formatMileage(getUsedPartMileage(usedPart)) }}</span>
                           <span class="price-badge">$ {{ (usedPart.finalValue || usedPart.value || 0).toLocaleString() }}</span>
@@ -291,6 +303,7 @@
             :key="category.id"
             @click="navigateToCategory(category)"
             class="category-item"
+            data-focusable
           >
             <span class="category-name">{{ category.slotNiceName || category.slotName }}</span>
             <div class="category-right">

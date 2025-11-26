@@ -37,12 +37,12 @@
     <Teleport to="body">
       <transition name="modal-fade">
         <div v-if="showAbandonModal" class="modal-overlay" @click.self="cancelAbandon">
-          <div class="modal-content">
+          <div class="modal-content" ref="abandonModalRef">
             <h2>Abandon Job</h2>
             <p>Are you sure you want to abandon this job? You will be charged a penalty of <span class="penalty-text">${{ penaltyCost.toLocaleString() }}</span>.</p>
             <div class="modal-buttons">
-              <button class="btn btn-secondary" @click="cancelAbandon">Cancel</button>
-              <button class="btn btn-danger" @click="confirmAbandon">Yes, Abandon</button>
+              <button class="btn btn-secondary" @click="cancelAbandon" data-focusable>Cancel</button>
+              <button class="btn btn-danger" @click="confirmAbandon" data-focusable>Yes, Abandon</button>
             </div>
           </div>
         </div>
@@ -52,7 +52,7 @@
 </template>
 
 <script setup>
-import { computed, ref, Teleport } from "vue"
+import { computed, ref, Teleport, inject, watch, nextTick } from "vue"
 import { useBusinessComputerStore } from "../../stores/businessComputerStore"
 import HomeJobsWidget from "./widgets/HomeJobsWidget.vue"
 import HomeGarageWidget from "./widgets/HomeGarageWidget.vue"
@@ -60,6 +60,8 @@ import HomeTechsWidget from "./widgets/HomeTechsWidget.vue"
 import HomeFinancesWidget from "./widgets/HomeFinancesWidget.vue"
 
 const store = useBusinessComputerStore()
+const controllerNav = inject('controllerNav', null)
+const abandonModalRef = ref(null)
 const normalizeId = (id) => {
   if (id === undefined || id === null) return null
   const num = Number(id)
@@ -120,6 +122,19 @@ const cancelAbandon = () => {
   showAbandonModal.value = false
   jobToAbandon.value = null
 }
+
+watch(showAbandonModal, (isOpen) => {
+  if (!controllerNav) return
+  if (isOpen) {
+    nextTick(() => {
+      if (abandonModalRef.value) {
+        controllerNav.pushModal(abandonModalRef.value, cancelAbandon)
+      }
+    })
+  } else if (abandonModalRef.value) {
+    controllerNav.removeModal(abandonModalRef.value)
+  }
+})
 
 const handleAccept = async (job) => {
   await store.acceptJob(parseInt(job.id))

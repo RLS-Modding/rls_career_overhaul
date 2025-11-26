@@ -62,7 +62,7 @@
               <template v-if="!hasTechAssigned">
                 <template v-if="damageLockApplies">
                   <div class="lock-message">Vehicle Damaged</div>
-                  <button class="btn btn-danger full-width" @mousedown.stop @click.stop="$emit('abandon', job)">
+                  <button class="btn btn-danger full-width" @mousedown.stop @click.stop="$emit('abandon', job)" data-focusable>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <line x1="18" y1="6" x2="6" y2="18" />
                       <line x1="6" y1="6" x2="18" y2="18" />
@@ -72,17 +72,17 @@
                 </template>
                 <template v-else>
                   <button v-if="canComplete || canCompleteLocal" class="btn btn-success flex-grow"
-                    @click.stop="$emit('complete', job)">
+                    @click.stop="$emit('complete', job)" data-focusable>
                     Complete
                   </button>
                   <template v-else>
                     <button class="btn btn-primary flex-grow"
                       @click.stop="isPulledOut ? $emit('put-away') : $emit('pull-out', job)"
-                      :disabled="!isPulledOut && hasPulledOutVehicle">
+                      :disabled="!isPulledOut && hasPulledOutVehicle" data-focusable>
                       {{ isPulledOut ? 'Put Away' : 'Pull Out' }}
                     </button>
                     <button class="btn btn-danger btn-icon" @mousedown.stop @click.stop="$emit('abandon', job)"
-                      title="Abandon">
+                      title="Abandon" data-focusable>
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2.5">
                         <line x1="18" y1="6" x2="6" y2="18" />
@@ -97,7 +97,7 @@
           <template v-else>
             <!-- New Job Actions -->
             <template v-if="assignMode">
-              <button class="btn btn-primary" @click.stop="$emit('assign', job)">
+              <button class="btn btn-primary" @click.stop="$emit('assign', job)" data-focusable>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
                   <circle cx="8.5" cy="7" r="4" />
@@ -110,10 +110,10 @@
             <template v-else>
               <button class="btn btn-success flex-grow" :disabled="isAcceptDisabled"
                 :title="isAcceptDisabled ? `Active job limit reached (${store.maxActiveJobs} max)` : ''"
-                @click.stop="$emit('accept', job)">
+                @click.stop="$emit('accept', job)" data-focusable>
                 Accept
               </button>
-              <button class="btn btn-danger btn-icon" @click.stop="$emit('decline', job)">
+              <button class="btn btn-danger btn-icon" @click.stop="$emit('decline', job)" data-focusable>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <line x1="18" y1="6" x2="6" y2="18" />
                   <line x1="6" y1="6" x2="18" y2="18" />
@@ -191,7 +191,7 @@
           <template v-if="!hasTechAssigned">
             <template v-if="damageLockApplies">
               <div class="lock-message">Vehicle Damaged</div>
-              <button class="btn btn-danger full-width" @mousedown.stop @click.stop="$emit('abandon', job)">
+              <button class="btn btn-danger full-width" @mousedown.stop @click.stop="$emit('abandon', job)" data-focusable>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="18" y1="6" x2="6" y2="18" />
                   <line x1="6" y1="6" x2="18" y2="18" />
@@ -201,17 +201,17 @@
             </template>
             <template v-else>
               <button v-if="canComplete || canCompleteLocal" class="btn btn-success flex-grow"
-                @click.stop="$emit('complete', job)">
+                @click.stop="$emit('complete', job)" data-focusable>
                 Complete
               </button>
               <template v-else>
                 <button class="btn btn-primary flex-grow"
                   @click.stop="isPulledOut ? $emit('put-away') : $emit('pull-out', job)"
-                  :disabled="!isPulledOut && hasPulledOutVehicle">
+                  :disabled="!isPulledOut && hasPulledOutVehicle" data-focusable>
                   {{ isPulledOut ? 'Put Away' : 'Pull Out' }}
                 </button>
                 <button class="btn btn-danger btn-icon" @mousedown.stop @click.stop="$emit('abandon', job)"
-                  title="Abandon">
+                  title="Abandon" data-focusable>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                     <line x1="18" y1="6" x2="6" y2="18" />
                     <line x1="6" y1="6" x2="18" y2="18" />
@@ -225,10 +225,10 @@
           <!-- Compact New Job Actions -->
           <button class="btn btn-success flex-grow" :disabled="isAcceptDisabled"
             :title="isAcceptDisabled ? `Active job limit reached (${store.maxActiveJobs} max)` : ''"
-            @click.stop="$emit('accept', job)">
+            @click.stop="$emit('accept', job)" data-focusable>
             Accept
           </button>
-          <button class="btn btn-danger btn-icon" @click.stop="$emit('decline', job)">
+          <button class="btn btn-danger btn-icon" @click.stop="$emit('decline', job)" data-focusable>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />

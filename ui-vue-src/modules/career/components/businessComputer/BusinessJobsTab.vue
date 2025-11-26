@@ -7,7 +7,7 @@
 
     <div v-if="showRecognitionBanner" class="recognition-banner">
       <div v-if="store.brandRecognitionUnlocked" class="recognition-section" @click.stop="openBrandModal"
-        @mousedown.stop="openBrandModal">
+        @mousedown.stop="openBrandModal" data-focusable>
         <span class="banner-label">Brand Recognition</span>
         <span class="banner-value">{{ brandSelectionDisplay }}</span>
       </div>
@@ -15,7 +15,7 @@
       <div v-if="store.brandRecognitionUnlocked && store.raceRecognitionUnlocked" class="summary-divider"></div>
 
       <div v-if="store.raceRecognitionUnlocked" class="recognition-section" @click.stop="openRaceModal"
-        @mousedown.stop="openRaceModal">
+        @mousedown.stop="openRaceModal" data-focusable>
         <span class="banner-label">Race Recognition</span>
         <span class="banner-value">{{ raceSelectionDisplay }}</span>
       </div>
@@ -58,7 +58,7 @@
       <transition name="modal-fade">
         <div v-if="showAbandonModal" class="modal-overlay" @click.self.stop="cancelAbandon"
           @mousedown.self.stop="cancelAbandon">
-          <div class="modal-content">
+          <div class="modal-content" ref="abandonModalRef">
             <h2>Abandon Job</h2>
             <p>
               Are you sure you want to abandon this job? You will be charged a penalty of
@@ -66,8 +66,8 @@
             </p>
             <div class="modal-buttons">
               <button class="btn btn-secondary" @click.stop="cancelAbandon"
-                @mousedown.stop="cancelAbandon">Cancel</button>
-              <button class="btn btn-danger" @click.stop="confirmAbandon" @mousedown.stop="confirmAbandon">Yes,
+                @mousedown.stop="cancelAbandon" data-focusable>Cancel</button>
+              <button class="btn btn-danger" @click.stop="confirmAbandon" @mousedown.stop="confirmAbandon" data-focusable>Yes,
                 Abandon</button>
             </div>
           </div>
@@ -79,10 +79,10 @@
       <transition name="modal-fade">
         <div v-if="showBrandModal" class="modal-overlay" @click.self.stop="closeBrandModal"
           @mousedown.self.stop="closeBrandModal">
-          <div class="modal-content selection-modal" @click.stop @mousedown.stop>
+          <div class="modal-content selection-modal" @click.stop @mousedown.stop ref="brandModalRef">
             <div class="modal-header">
               <h2>Select Brand</h2>
-              <button class="modal-close" @click.stop="closeBrandModal" @mousedown.stop="closeBrandModal">×</button>
+              <button class="modal-close" @click.stop="closeBrandModal" @mousedown.stop="closeBrandModal" data-focusable>×</button>
             </div>
             <div class="modal-body">
               <div v-if="isLoadingBrands" class="modal-empty">
@@ -94,12 +94,12 @@
               </div>
               <div v-else class="selection-list">
                 <button class="selection-item" :class="{ 'selected': !store.brandSelection }"
-                  @click.stop="selectBrand(null)" @mousedown.stop="selectBrand(null)">
+                  @click.stop="selectBrand(null)" @mousedown.stop="selectBrand(null)" data-focusable>
                   <span>Clear Selection</span>
                 </button>
                 <button v-for="brand in store.availableBrands" :key="brand" class="selection-item"
                   :class="{ 'selected': store.brandSelection === brand }" @click.stop="selectBrand(brand)"
-                  @mousedown.stop="selectBrand(brand)">
+                  @mousedown.stop="selectBrand(brand)" data-focusable>
                   <span>{{ brand }}</span>
                 </button>
               </div>
@@ -113,10 +113,10 @@
       <transition name="modal-fade">
         <div v-if="showRaceModal" class="modal-overlay" @click.self.stop="closeRaceModal"
           @mousedown.self.stop="closeRaceModal">
-          <div class="modal-content selection-modal" @click.stop @mousedown.stop>
+          <div class="modal-content selection-modal" @click.stop @mousedown.stop ref="raceModalRef">
             <div class="modal-header">
               <h2>Select Race Type</h2>
-              <button class="modal-close" @click.stop="closeRaceModal" @mousedown.stop="closeRaceModal">×</button>
+              <button class="modal-close" @click.stop="closeRaceModal" @mousedown.stop="closeRaceModal" data-focusable>×</button>
             </div>
             <div class="modal-body">
               <div v-if="isLoadingRaceTypes" class="modal-empty">
@@ -128,12 +128,12 @@
               </div>
               <div v-else class="selection-list">
                 <button class="selection-item" :class="{ 'selected': !store.raceSelection }"
-                  @click.stop="selectRace(null)" @mousedown.stop="selectRace(null)">
+                  @click.stop="selectRace(null)" @mousedown.stop="selectRace(null)" data-focusable>
                   <span>Clear Selection</span>
                 </button>
                 <button v-for="raceType in store.availableRaceTypes" :key="raceType.id" class="selection-item"
                   :class="{ 'selected': store.raceSelection === raceType.id }" @click.stop="selectRace(raceType.id)"
-                  @mousedown.stop="selectRace(raceType.id)">
+                  @mousedown.stop="selectRace(raceType.id)" data-focusable>
                   <span>{{ raceType.label }}</span>
                 </button>
               </div>
@@ -146,12 +146,16 @@
 </template>
 
 <script setup>
-import { computed, ref, Teleport, onMounted, onUnmounted, watch } from "vue"
+import { computed, ref, Teleport, onMounted, onUnmounted, watch, inject, nextTick } from "vue"
 import { useBusinessComputerStore } from "../../stores/businessComputerStore"
 import { useBridge } from "@/bridge"
 import BusinessJobCard from "./BusinessJobCard.vue"
 
 const store = useBusinessComputerStore()
+const controllerNav = inject('controllerNav', null)
+const abandonModalRef = ref(null)
+const brandModalRef = ref(null)
+const raceModalRef = ref(null)
 const { events } = useBridge()
 
 const normalizeId = (id) => {
@@ -229,6 +233,45 @@ const openRaceModal = async () => {
 const closeRaceModal = () => {
   showRaceModal.value = false
 }
+
+watch(showAbandonModal, (isOpen) => {
+  if (!controllerNav) return
+  if (isOpen) {
+    nextTick(() => {
+      if (abandonModalRef.value) {
+        controllerNav.pushModal(abandonModalRef.value, cancelAbandon)
+      }
+    })
+  } else if (abandonModalRef.value) {
+    controllerNav.removeModal(abandonModalRef.value)
+  }
+})
+
+watch(showBrandModal, (isOpen) => {
+  if (!controllerNav) return
+  if (isOpen) {
+    nextTick(() => {
+      if (brandModalRef.value) {
+        controllerNav.pushModal(brandModalRef.value, closeBrandModal)
+      }
+    })
+  } else if (brandModalRef.value) {
+    controllerNav.removeModal(brandModalRef.value)
+  }
+})
+
+watch(showRaceModal, (isOpen) => {
+  if (!controllerNav) return
+  if (isOpen) {
+    nextTick(() => {
+      if (raceModalRef.value) {
+        controllerNav.pushModal(raceModalRef.value, closeRaceModal)
+      }
+    })
+  } else if (raceModalRef.value) {
+    controllerNav.removeModal(raceModalRef.value)
+  }
+})
 
 const selectRace = async (raceType) => {
   await store.setRaceSelection(raceType)

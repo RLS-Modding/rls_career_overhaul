@@ -23,6 +23,7 @@
         class="job-assign-card__button"
         @click.stop="$emit('assign', job)"
         @mousedown.stop
+        data-focusable
       >
         Assign
       </button>
