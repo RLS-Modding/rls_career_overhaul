@@ -345,8 +345,20 @@
           </div>
           <div class="cart-buttons">
             <button class="btn btn-secondary" @click="cancel">Cancel</button>
-            <button class="btn btn-primary" :disabled="!canPurchase" @click="purchase">
-              {{ totalCost > 0 ? 'Purchase' : 'Apply Changes' }}
+            <button 
+              class="btn btn-primary btn-hold" 
+              :class="{ 'is-holding': isHolding, 'is-processing': isProcessing }"
+              :disabled="!canPurchase || isProcessing"
+              @mousedown.stop="startHold"
+              @mouseup.stop="endHold"
+              @mouseleave="endHold"
+              @touchstart.stop.prevent="startHold"
+              @touchend.stop.prevent="endHold"
+              @touchcancel.stop="endHold"
+              @click.stop.prevent
+            >
+              <span class="hold-progress" :style="{ width: holdProgress + '%' }"></span>
+              <span class="btn-label">{{ isProcessing ? 'Processing...' : (totalCost > 0 ? 'Hold to Purchase' : 'Hold to Apply') }}</span>
             </button>
           </div>
         </div>
@@ -640,6 +652,13 @@ const footerCollapsed = ref(false)
 const partsSectionCollapsed = ref(false)
 const tuningSectionCollapsed = ref(false)
 
+const HOLD_DURATION = 1000
+const isHolding = ref(false)
+const holdProgress = ref(0)
+const holdStartTime = ref(null)
+const holdAnimationId = ref(null)
+const isProcessing = ref(false)
+
 const partsItems = computed(() => store.partsCart || [])
 const tuningItems = computed(() => store.tuningCart || [])
 
@@ -788,9 +807,16 @@ const purchase = async () => {
       }
 
       await loadBalance()
+      
+      await finishAndReturnHome()
     }
   } catch (error) {
   }
+}
+
+const finishAndReturnHome = async () => {
+  store.vehicleView = null
+  store.switchView('home')
 }
 
 const cancel = () => {
@@ -800,6 +826,56 @@ const cancel = () => {
   }
 
   performCancel()
+}
+
+const startHold = () => {
+  if (!canPurchase.value || isProcessing.value) return
+  
+  isHolding.value = true
+  holdStartTime.value = Date.now()
+  holdProgress.value = 0
+  
+  const updateProgress = () => {
+    if (!isHolding.value) return
+    
+    const elapsed = Date.now() - holdStartTime.value
+    holdProgress.value = Math.min(100, (elapsed / HOLD_DURATION) * 100)
+    
+    if (holdProgress.value >= 100) {
+      isHolding.value = false
+      holdProgress.value = 0
+      handlePrimaryAction()
+    } else {
+      holdAnimationId.value = requestAnimationFrame(updateProgress)
+    }
+  }
+  
+  holdAnimationId.value = requestAnimationFrame(updateProgress)
+}
+
+const endHold = () => {
+  if (!isHolding.value) return
+  
+  isHolding.value = false
+  holdProgress.value = 0
+  holdStartTime.value = null
+  
+  if (holdAnimationId.value) {
+    cancelAnimationFrame(holdAnimationId.value)
+    holdAnimationId.value = null
+  }
+}
+
+const handlePrimaryAction = async () => {
+  if (isProcessing.value || !canPurchase.value) return
+  
+  isProcessing.value = true
+  
+  try {
+    await purchase()
+  } finally {
+    isProcessing.value = false
+  }
 }
 
 const confirmCancel = async () => {
@@ -1739,6 +1815,43 @@ onBeforeUnmount(() => {
     &:disabled {
       opacity: 0.5;
       cursor: not-allowed;
+    }
+  }
+
+  &.btn-hold {
+    position: relative;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+
+    .hold-progress {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.25);
+      transition: width 0.05s linear;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .btn-label {
+      position: relative;
+      z-index: 1;
+    }
+
+    &.is-holding {
+      transform: scale(0.98);
+      box-shadow: 0 0 15px rgba(245, 73, 0, 0.5);
+    }
+
+    &.is-processing {
+      opacity: 0.7;
+      cursor: wait;
+    }
+
+    &:not(:disabled):active {
+      transform: scale(0.98);
     }
   }
 
