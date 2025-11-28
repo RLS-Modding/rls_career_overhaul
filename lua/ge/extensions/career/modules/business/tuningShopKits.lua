@@ -1031,7 +1031,15 @@ local function getKitCostBreakdown(businessId, vehicleId, kitId)
   for _ in pairs(differingParts) do
     changedPartsCount = changedPartsCount + 1
   end
-  local installTimeSeconds = changedPartsCount * 25
+
+  -- Base install time is 25 seconds per part, reduced by 5 seconds per level of quick-installs upgrade
+  local baseTimePerPart = 25
+  local quickInstallsLevel = 0
+  if career_modules_business_businessSkillTree and career_modules_business_businessSkillTree.getNodeProgress then
+    quickInstallsLevel = career_modules_business_businessSkillTree.getNodeProgress(businessId, "quality-of-life", "quick-installs") or 0
+  end
+  local timePerPart = math.max(5, baseTimePerPart - (quickInstallsLevel * 5)) -- Minimum 5 seconds per part
+  local installTimeSeconds = changedPartsCount * timePerPart
 
   return {
     newPartsCost = newPartsCost,

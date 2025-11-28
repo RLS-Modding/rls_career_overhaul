@@ -51,7 +51,20 @@
           },
           "xpCost": 10,
           "maxLevel": 5,
-          "dependencies": ["shop-app"]
+          "dependencies": ["more-complicated"]
+        },
+        {
+          "id": "quick-installs",
+          "title": "Quick Installs",
+          "description": "Kit install time -5s per part",
+          "detailedDescription": "Streamline kit installations.\n\n**Per Level**\n- Kit install time reduced by 5 seconds per part\n- Get vehicles back on the road faster",
+          "cost": {
+            "base": 15000,
+            "increment": 15000
+          },
+          "xpCost": 10,
+          "maxLevel": 4,
+          "dependencies": ["kit-storage"]
         },
         {
           "id": "no-hard-feelings",
@@ -64,7 +77,7 @@
           },
           "xpCost": 10,
           "maxLevel": 5,
-          "dependencies": ["kit-storage", "more-complicated", "thatll-buff-out"]
+          "dependencies": ["quick-installs", "thatll-buff-out"]
         },
         {
           "id": "brand-recognition",
@@ -149,7 +162,7 @@
           "prerequisites": [
             {
               "type": "totalUpgrades",
-              "min": 5
+              "min": 15
             }
           ]
         }
