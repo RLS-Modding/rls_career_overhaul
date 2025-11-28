@@ -32,18 +32,39 @@ end
 
 local function isPurchasedBusiness(businessType, businessId)
   if not purchasedBusinesses[businessType] then return false end
-  return purchasedBusinesses[businessType][businessId] or false
+  local entry = purchasedBusinesses[businessType][businessId]
+  if entry == true or (type(entry) == "table") then
+    return true
+  end
+  return false
+end
+
+local function getBusinessInfo(businessType, businessId)
+  if not purchasedBusinesses[businessType] then return nil end
+  local entry = purchasedBusinesses[businessType][businessId]
+  if type(entry) == "table" then
+    return entry
+  elseif entry == true then
+    return { name = businessType .. " " .. businessId }
+  end
+  return nil
 end
 
 local function addPurchasedBusiness(businessType, businessId, skipCallback)
   if not purchasedBusinesses[businessType] then
     purchasedBusinesses[businessType] = {}
   end
-  purchasedBusinesses[businessType][businessId] = true
+  
+  local business = freeroam_facilities.getFacility(businessType, businessId)
+  local businessName = business and business.name or (businessType .. " " .. businessId)
+  local mapId = getCurrentLevelIdentifier and getCurrentLevelIdentifier() or nil
+  
+  purchasedBusinesses[businessType][businessId] = {
+    name = businessName,
+    mapId = mapId
+  }
   
   if career_modules_bank then
-    local business = freeroam_facilities.getFacility(businessType, businessId)
-    local businessName = business and business.name or (businessType .. " " .. businessId)
     career_modules_bank.createBusinessAccount(businessType, businessId, businessName)
   end
   
@@ -220,6 +241,7 @@ M.onCareerActivated = onCareerActivated
 M.onCareerModulesActivated = onCareerModulesActivated
 M.registerBusinessCallback = registerBusinessCallback
 M.isPurchasedBusiness = isPurchasedBusiness
+M.getBusinessInfo = getBusinessInfo
 M.showPurchaseBusinessPrompt = showPurchaseBusinessPrompt
 M.requestBusinessData = requestBusinessData
 M.canPayBusiness = canPayBusiness

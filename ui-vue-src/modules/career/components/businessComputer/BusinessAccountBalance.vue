@@ -53,13 +53,23 @@ const loadBalance = async () => {
   }
 }
 
-const handleAccountUpdate = (data) => {
+const handleAccountUpdate = async (data) => {
   if (!data || !store.businessType || !store.businessId) return
   
   const accountId = "business_" + store.businessType + "_" + store.businessId
   
   if (data.accountId === accountId) {
     balance.value = data.balance || 0
+    
+    try {
+      const businessXP = await lua.career_modules_business_businessComputer.getBusinessXP(
+        store.businessType,
+        store.businessId
+      )
+      xp.value = businessXP || 0
+    } catch (error) {
+      xp.value = 0
+    }
   }
 }
 

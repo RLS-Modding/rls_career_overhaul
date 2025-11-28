@@ -546,6 +546,7 @@ local function purchaseUpgrade(businessType, businessId, treeId, nodeId)
   end
 
   setNodeProgress(businessId, treeId, nodeId, currentLevel + 1)
+  Engine.Audio.playOnce('AudioGui','event:>UI>Career>Buy_01')
   return true
 end
 

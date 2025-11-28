@@ -2080,6 +2080,7 @@ local function purchaseCartItems(businessId, accountId, cartData)
     clearCachesForJob(businessId, vehicle.jobId)
   end
 
+  Engine.Audio.playOnce('AudioGui','event:>UI>Career>Buy_01')
   return true
 end
 

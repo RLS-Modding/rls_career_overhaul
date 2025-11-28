@@ -7,6 +7,7 @@ local raceDataLevel = nil
 local factoryConfigs = nil
 local businessJobs = {}
 local businessXP = {}
+local cachedRaceDataByBusiness = {}
 local generationTimers = {}
 local managerTimers = {}
 local operatingCostTimers = {}
@@ -482,6 +483,10 @@ local function loadBusinessJobs(businessId)
     new = data.new or {},
     completed = data.completed or {}
   }
+  
+  if data.cachedRaceData then
+    cachedRaceDataByBusiness[businessId] = data.cachedRaceData
+  end
 
   for _, job in ipairs(businessJobs[businessId].active or {}) do
     if job.jobId then
@@ -1224,20 +1229,34 @@ local function getEventReward(job)
   return tonumber(job.eventReward) or 0
 end
 
-local function loadRaceData()
+local function loadRaceData(businessId)
   local currentLevel = getCurrentLevelIdentifier()
-  if not currentLevel then
-    return {}
-  end
+  local normalizedBusinessId = businessId and normalizeBusinessId(businessId) or nil
+  
+  if currentLevel then
+    if raceData and raceDataLevel == currentLevel then
+      if normalizedBusinessId then
+        cachedRaceDataByBusiness[normalizedBusinessId] = raceData
+      end
+      return raceData
+    end
 
-  if raceData and raceDataLevel == currentLevel then
+    local raceDataPath = "levels/" .. currentLevel .. "/race_data.json"
+    raceData = jsonReadFile(raceDataPath) or {}
+    raceDataLevel = currentLevel
+    
+    if normalizedBusinessId and raceData and raceData.races then
+      cachedRaceDataByBusiness[normalizedBusinessId] = raceData
+    end
+    
     return raceData
   end
-
-  local raceDataPath = "levels/" .. currentLevel .. "/race_data.json"
-  raceData = jsonReadFile(raceDataPath) or {}
-  raceDataLevel = currentLevel
-  return raceData
+  
+  if normalizedBusinessId and cachedRaceDataByBusiness[normalizedBusinessId] then
+    return cachedRaceDataByBusiness[normalizedBusinessId]
+  end
+  
+  return {}
 end
 
 local function calculateActualEventPayment(businessId, job, predictedTime)
@@ -1245,7 +1264,7 @@ local function calculateActualEventPayment(businessId, job, predictedTime)
     return 0
   end
 
-  local races = loadRaceData()
+  local races = loadRaceData(businessId)
   if not races or not races.races then
     return getEventReward(job)
   end
@@ -1407,7 +1426,14 @@ local function saveBusinessJobs(businessId, currentSavePath)
     FS:directoryCreate(dirPath)
   end
 
-  jsonWriteFile(filePath, businessJobs[businessId], true)
+  local saveData = {
+    active = businessJobs[businessId].active,
+    new = businessJobs[businessId].new,
+    completed = businessJobs[businessId].completed,
+    cachedRaceData = cachedRaceDataByBusiness[businessId]
+  }
+
+  jsonWriteFile(filePath, saveData, true)
 end
 
 local function getFactoryConfigs()
@@ -1578,8 +1604,8 @@ local function selectJobLevel(upgradeCount, maxLevels)
   end
 end
 
-local function powerToWeightToTime(powerToWeight, raceId)
-  local races = loadRaceData()
+local function powerToWeightToTime(powerToWeight, raceId, businessId)
+  local races = loadRaceData(businessId)
   if not races or not races.races then
     return nil
   end
@@ -1654,7 +1680,7 @@ local function generateJob(businessId)
 
   local powerToWeight = power / weight
 
-  local races = loadRaceData()
+  local races = loadRaceData(businessId)
   if not races or not races.races then
     return nil
   end
@@ -1697,7 +1723,7 @@ local function generateJob(businessId)
     raceLabel = race and race.label or "Drag Strip"
   end
 
-  local baseTime = powerToWeightToTime(powerToWeight, raceType)
+  local baseTime = powerToWeightToTime(powerToWeight, raceType, businessId)
   if not baseTime then
     return nil
   end
@@ -2831,22 +2857,35 @@ local function getUIData(businessId)
 
   local businessType = "tuningShop"
   local business = freeroam_facilities.getFacility(businessType, businessId)
-  if not business then
-    return nil
+  local isOnBusinessMap = business ~= nil
+  
+  local businessName = "Tuning Shop"
+  if business then
+    businessName = business.name or businessName
+  elseif career_modules_business_businessManager and career_modules_business_businessManager.getBusinessInfo then
+    local savedInfo = career_modules_business_businessManager.getBusinessInfo(businessType, businessId)
+    if savedInfo and savedInfo.name then
+      businessName = savedInfo.name
+    end
   end
 
-  local playerInZone = isPlayerInTuningShopZone(businessId)
+  local playerInZone = isOnBusinessMap and isPlayerInTuningShopZone(businessId) or false
 
   local jobs = getJobsForBusiness(businessId)
-  local vehicles = career_modules_business_businessInventory.getBusinessVehicles(businessId)
+  local vehicles = {}
+  if isOnBusinessMap and career_modules_business_businessInventory then
+    vehicles = career_modules_business_businessInventory.getBusinessVehicles(businessId) or {}
+  end
   local parts = {}
   local pulledOutVehiclesRaw = {}
-  if career_modules_business_businessInventory.getPulledOutVehicles then
-    pulledOutVehiclesRaw = career_modules_business_businessInventory.getPulledOutVehicles(businessId) or {}
-  else
-    local singleVehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
-    if singleVehicle then
-      pulledOutVehiclesRaw = {singleVehicle}
+  if isOnBusinessMap and career_modules_business_businessInventory then
+    if career_modules_business_businessInventory.getPulledOutVehicles then
+      pulledOutVehiclesRaw = career_modules_business_businessInventory.getPulledOutVehicles(businessId) or {}
+    else
+      local singleVehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
+      if singleVehicle then
+        pulledOutVehiclesRaw = {singleVehicle}
+      end
     end
   end
 
@@ -2859,7 +2898,7 @@ local function getUIData(businessId)
 
   local personalVehiclesInZone = {}
   local personalUseUnlocked = isPersonalUseUnlocked(businessId)
-  if personalUseUnlocked and playerInZone then
+  if personalUseUnlocked and playerInZone and isOnBusinessMap then
     local inventoryVehiclesInZone = getInventoryVehiclesInGarageZone(businessId)
     for _, invVeh in ipairs(inventoryVehiclesInZone) do
       local personalEntry = createPersonalVehicleEntry(businessId, invVeh.inventoryId, invVeh.inventoryVehicleData, invVeh.spawnedId)
@@ -2871,7 +2910,7 @@ local function getUIData(businessId)
 
   local activeVehicle = nil
   local selectedPersonalVehicle = false
-  if career_modules_business_businessInventory.getActiveVehicle then
+  if isOnBusinessMap and career_modules_business_businessInventory and career_modules_business_businessInventory.getActiveVehicle then
     local rawActive = career_modules_business_businessInventory.getActiveVehicle(businessId)
     if rawActive and isSpawnedVehicleInGarageZone(businessId, rawActive.vehicleId) then
       activeVehicle = rawActive
@@ -2881,7 +2920,7 @@ local function getUIData(businessId)
       activeVehicle = personalVehiclesInZone[1]
       selectedPersonalVehicle = true
     end
-  else
+  elseif isOnBusinessMap then
     if #pulledOutVehiclesInZone > 0 then
       activeVehicle = pulledOutVehiclesInZone[1]
     elseif #personalVehiclesInZone > 0 then
@@ -3034,7 +3073,7 @@ local function getUIData(businessId)
   return {
     businessId = businessId,
     businessType = businessType,
-    businessName = business.name or "Tuning Shop",
+    businessName = businessName,
     activeJobs = activeJobs,
     newJobs = newJobs,
     vehicles = vehicleList,
@@ -3299,7 +3338,7 @@ local function onCareerActivated()
 
       local normalizedId = normalizeBusinessId(businessId)
 
-      loadRaceData()
+      loadRaceData(normalizedId)
       getFactoryConfigs()
 
       if not businessJobs[normalizedId] then
@@ -3345,6 +3384,7 @@ local function onCareerActivated()
   businessXP = {}
   generationTimers = {}
   businessSelections = {}
+  cachedRaceDataByBusiness = {}
 
   tuningShopTechs.initialize({
     normalizeBusinessId = normalizeBusinessId,
