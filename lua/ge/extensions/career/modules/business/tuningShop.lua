@@ -2871,7 +2871,7 @@ local function getUIData(businessId)
 
   -- Auto-store the active personal vehicle so enterShoppingVehicle can find it
   if selectedPersonalVehicle and activeVehicle and activeVehicle.isPersonal then
-    activePersonalVehicle[businessId] = activeVehicle
+    activePersonalVehicle[normalizeBusinessId(businessId)] = activeVehicle
   end
 
   local activeVehicleId = activeVehicle and (tonumber(activeVehicle.vehicleId) or activeVehicle.vehicleId)
@@ -3449,7 +3449,7 @@ local function selectPersonalVehicle(businessId, inventoryId)
   if not personalEntry then
     return { success = false, errorCode = "failedToCreate", message = "Failed to create personal vehicle entry" }
   end
-  activePersonalVehicle[businessId] = personalEntry
+  activePersonalVehicle[normalizeBusinessId(businessId)] = personalEntry
   if guihooks then
     local formatted = formatVehicleForUI(personalEntry, businessId)
     if formatted then
@@ -3472,11 +3472,13 @@ local function selectPersonalVehicle(businessId, inventoryId)
 end
 
 local function getActivePersonalVehicle(businessId)
-  return activePersonalVehicle[businessId]
+  local normalizedId = normalizeBusinessId(businessId)
+  return activePersonalVehicle[normalizedId]
 end
 
 local function clearActivePersonalVehicle(businessId)
-  activePersonalVehicle[businessId] = nil
+  local normalizedId = normalizeBusinessId(businessId)
+  activePersonalVehicle[normalizedId] = nil
 end
 
 M.onCareerActivated = onCareerActivated

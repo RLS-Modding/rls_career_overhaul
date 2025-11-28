@@ -177,7 +177,7 @@ local function getInventoryIdFromPersonalVehicleId(vehicleId, businessId)
   end
   if career_modules_business_tuningShop and career_modules_business_tuningShop.getActivePersonalVehicle and businessId then
     local activePersonal = career_modules_business_tuningShop.getActivePersonalVehicle(businessId)
-    if activePersonal and activePersonal.vehicleId == vehicleId and activePersonal.inventoryId then
+    if activePersonal and tostring(activePersonal.vehicleId) == tostring(vehicleId) and activePersonal.inventoryId then
       return activePersonal.inventoryId
     end
   end
@@ -229,7 +229,7 @@ local function getPersonalVehicleData(vehicleId, businessId)
   
   if career_modules_business_tuningShop and career_modules_business_tuningShop.getActivePersonalVehicle and businessId then
     local activePersonal = career_modules_business_tuningShop.getActivePersonalVehicle(businessId)
-    if activePersonal and activePersonal.vehicleId == vehicleId then
+    if activePersonal and tostring(activePersonal.vehicleId) == tostring(vehicleId) then
       return activePersonal
     end
   end
@@ -678,7 +678,7 @@ local function applyVehicleTuning(businessId, vehicleId, tuningVars, accountId)
     else
       pulledOutVehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
     end
-    if pulledOutVehicle and pulledOutVehicle.vehicleId == vehicleId then
+    if pulledOutVehicle and tostring(pulledOutVehicle.vehicleId) == tostring(vehicleId) then
       if not pulledOutVehicle.vars then
         pulledOutVehicle.vars = {}
       end

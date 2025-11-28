@@ -15,10 +15,10 @@ local function sessionMatches(businessId, vehicleId)
   if not currentSession then
     return false
   end
-  if currentSession.businessId ~= businessId then
+  if tostring(currentSession.businessId) ~= tostring(businessId) then
     return false
   end
-  if vehicleId and currentSession.vehicleId ~= vehicleId then
+  if vehicleId and tostring(currentSession.vehicleId) ~= tostring(vehicleId) then
     return false
   end
   return true
@@ -64,7 +64,7 @@ local function getInventoryIdFromPersonalVehicleId(vehicleId, businessId)
   end
   if career_modules_business_tuningShop and career_modules_business_tuningShop.getActivePersonalVehicle and businessId then
     local activePersonal = career_modules_business_tuningShop.getActivePersonalVehicle(businessId)
-    if activePersonal and activePersonal.vehicleId == vehicleId and activePersonal.inventoryId then
+    if activePersonal and tostring(activePersonal.vehicleId) == tostring(vehicleId) and activePersonal.inventoryId then
       return activePersonal.inventoryId
     end
   end
@@ -311,7 +311,7 @@ local function getPersonalVehicleData(vehicleId, businessId)
   
   if career_modules_business_tuningShop and career_modules_business_tuningShop.getActivePersonalVehicle and businessId then
     local activePersonal = career_modules_business_tuningShop.getActivePersonalVehicle(businessId)
-    if activePersonal and activePersonal.vehicleId == vehicleId then
+    if activePersonal and tostring(activePersonal.vehicleId) == tostring(vehicleId) then
       return activePersonal
     end
   end
@@ -424,7 +424,7 @@ end
 
 local function ensureActiveSession(businessId, vehicleId)
   local session = getActiveSession(businessId)
-  if session and (not vehicleId or session.vehicleId == vehicleId) then
+  if session and (not vehicleId or tostring(session.vehicleId) == tostring(vehicleId)) then
     return session
   end
   if vehicleId and initializePreviewVehicle(businessId, vehicleId) then
@@ -1034,7 +1034,7 @@ local function getVehiclePowerWeight(businessId, vehicleId)
   end
 
   local session = getActiveSession(businessId)
-  if session and session.vehicleId == vehicleId and session.powerWeight then
+  if session and tostring(session.vehicleId) == tostring(vehicleId) and session.powerWeight then
     return session.powerWeight
   end
 

@@ -674,8 +674,8 @@ const handlePartsTreeData = (data) => {
   }
   
   if (
-    data.vehicleId === store.pulledOutVehicle?.vehicleId &&
-    data.businessId === store.businessId &&
+    String(data.vehicleId) === String(store.pulledOutVehicle?.vehicleId) &&
+    String(data.businessId) === String(store.businessId) &&
     normalizeJobId(data.jobId) === normalizeJobId(store.pulledOutVehicle?.jobId)
   ) {
     if (data.partsTree) {
@@ -698,6 +698,8 @@ const handlePartsTreeData = (data) => {
       slotsNiceName.value = {}
       partsNiceName.value = {}
     }
+    loading.value = false
+  } else {
     loading.value = false
   }
 }

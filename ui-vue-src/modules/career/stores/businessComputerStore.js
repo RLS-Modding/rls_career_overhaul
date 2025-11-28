@@ -1040,7 +1040,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
 
   const handlePartCartUpdated = (data) => {
     if (!isMenuActive.value) return
-    if (data.businessId === businessId.value && data.vehicleId === pulledOutVehicle.value?.vehicleId) {
+    if (String(data.businessId) === String(businessId.value) && String(data.vehicleId) === String(pulledOutVehicle.value?.vehicleId)) {
       if (data.cart && Array.isArray(data.cart)) {
         partsCart.value = data.cart.map(item => ({
           ...item,
@@ -1665,7 +1665,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     if (!data || !data.success) return
 
     // Only update if it's for the current vehicle
-    if (data.businessId === businessId.value && data.vehicleId === pulledOutVehicle.value?.vehicleId) {
+    if (String(data.businessId) === String(businessId.value) && String(data.vehicleId) === String(pulledOutVehicle.value?.vehicleId)) {
       // If this is the first time we're getting data, set it as original
       if (originalPower.value === null && originalWeight.value === null) {
         originalPower.value = data.power

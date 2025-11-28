@@ -510,8 +510,8 @@ const handleTuningData = (data) => {
   const currentJobId = normalizeJobId(store.pulledOutVehicle?.jobId)
   const eventJobId = normalizeJobId(data.jobId)
 
-  if (data.vehicleId === store.pulledOutVehicle?.vehicleId &&
-    data.businessId === store.businessId &&
+  if (String(data.vehicleId) === String(store.pulledOutVehicle?.vehicleId) &&
+    String(data.businessId) === String(store.businessId) &&
     currentJobId === eventJobId) {
     if (data.tuningData) {
       // Cache the data in the store
@@ -539,6 +539,8 @@ const handleTuningData = (data) => {
       // Load cart values into UI after tuning data is set up
       loadTuningFromCart()
     }
+    loading.value = false
+  } else {
     loading.value = false
   }
 }

@@ -136,7 +136,7 @@ local function getInventoryIdFromPersonalVehicleId(vehicleId, businessId)
   if career_modules_business_tuningShop and career_modules_business_tuningShop.getActivePersonalVehicle then
     if businessId then
       local activePersonal = career_modules_business_tuningShop.getActivePersonalVehicle(businessId)
-      if activePersonal and activePersonal.vehicleId == vehicleId and activePersonal.inventoryId then
+      if activePersonal and tostring(activePersonal.vehicleId) == tostring(vehicleId) and activePersonal.inventoryId then
         return activePersonal.inventoryId
       end
     else
@@ -144,7 +144,7 @@ local function getInventoryIdFromPersonalVehicleId(vehicleId, businessId)
       local businesses = career_modules_business_businessManager and career_modules_business_businessManager.getBusinesses("tuningShop") or {}
       for bId, _ in pairs(businesses) do
         local activePersonal = career_modules_business_tuningShop.getActivePersonalVehicle(bId)
-        if activePersonal and activePersonal.vehicleId == vehicleId and activePersonal.inventoryId then
+        if activePersonal and tostring(activePersonal.vehicleId) == tostring(vehicleId) and activePersonal.inventoryId then
           return activePersonal.inventoryId
         end
       end
@@ -1324,7 +1324,7 @@ local function getPersonalVehicleData(vehicleId, businessId)
       local businesses = career_modules_business_businessManager and career_modules_business_businessManager.getBusinesses("tuningShop") or {}
       for bId, _ in pairs(businesses) do
         local entry = career_modules_business_tuningShop.getActivePersonalVehicle(bId)
-        if entry and entry.vehicleId == vehicleId then
+        if entry and tostring(entry.vehicleId) == tostring(vehicleId) then
           activePersonal = entry
           break
         end
@@ -1332,7 +1332,7 @@ local function getPersonalVehicleData(vehicleId, businessId)
     end
   end
   
-  if activePersonal and activePersonal.vehicleId == vehicleId then
+  if activePersonal and tostring(activePersonal.vehicleId) == tostring(vehicleId) then
     return activePersonal
   end
   
@@ -1399,13 +1399,51 @@ local function requestVehiclePartsTree(businessId, vehicleId)
     return
   end
 
-  local initialVehicle = career_modules_business_businessInventory.getVehicleById(businessId, vehicleId)
+  local normalizedVehicleId = tonumber(vehicleId) or vehicleId
+  local initialVehicle = career_modules_business_businessInventory.getVehicleById(businessId, normalizedVehicleId)
   if not initialVehicle then
     guihooks.trigger('businessComputer:onVehiclePartsTree', {
       success = false,
       error = "Vehicle not found"
     })
     return
+  end
+
+  local spawnedVehicleId = nil
+  if career_modules_business_businessInventory and career_modules_business_businessInventory.getSpawnedVehicleId then
+    spawnedVehicleId = career_modules_business_businessInventory.getSpawnedVehicleId(businessId, normalizedVehicleId)
+  end
+
+  if spawnedVehicleId then
+    local vehicleData = extensions.core_vehicle_manager.getVehicleData(spawnedVehicleId)
+    if vehicleData and vehicleData.config and vehicleData.config.partsTree then
+      local availableParts = jbeamIO.getAvailableParts(vehicleData.ioCtx)
+      local slotsNiceName = {}
+      local partsNiceName = {}
+      
+      for partName, partInfo in pairs(availableParts) do
+        if partInfo.slotInfoUi then
+          for slotName, slotInfo in pairs(partInfo.slotInfoUi) do
+            slotsNiceName[slotName] = type(slotInfo.description) == "table" and slotInfo.description.description or slotInfo.description
+          end
+        end
+        local desc = partInfo.description
+        partsNiceName[partName] = type(desc) == "table" and desc.description or desc
+      end
+      
+      local partsTreeList = formatPartsTreeForUI(vehicleData.config.partsTree, "", nil, availableParts, slotsNiceName, partsNiceName, nil)
+      
+      guihooks.trigger('businessComputer:onVehiclePartsTree', {
+        success = true,
+        businessId = businessId,
+        vehicleId = vehicleId,
+        jobId = initialVehicle.jobId,
+        partsTree = partsTreeList,
+        slotsNiceName = slotsNiceName,
+        partsNiceName = partsNiceName
+      })
+      return
+    end
   end
 
   local previewConfig = nil
@@ -1427,7 +1465,7 @@ local function requestVehiclePartsTree(businessId, vehicleId)
     return
   end
 
-  -- Business vehicles need job system to spawn temporary vehicle
+  -- Fallback: Business vehicles need job system to spawn temporary vehicle
   core_jobsystem.create(function(job)
     local vehicle = career_modules_business_businessInventory.getVehicleById(businessId, vehicleId)
     if not vehicle or not vehicle.vehicleConfig then
@@ -2140,18 +2178,29 @@ local function exitShoppingVehicle(businessId)
   if not playerVeh then
     return false
   end
-  if businessId and career_modules_business_businessInventory then
-    local pulledOutList = getPulledOutVehiclesList(businessId)
+  if businessId then
     local playerVehId = playerVeh:getID()
-    local isBusinessVehicle = false
-    for _, vehicle in ipairs(pulledOutList) do
-      local spawnedId = career_modules_business_businessInventory.getSpawnedVehicleId(businessId, vehicle.vehicleId)
-      if spawnedId and spawnedId == playerVehId then
-        isBusinessVehicle = true
-        break
+    local isValidVehicle = false
+
+    if career_modules_business_tuningShop and career_modules_business_tuningShop.getActivePersonalVehicle then
+      local activePersonal = career_modules_business_tuningShop.getActivePersonalVehicle(businessId)
+      if activePersonal and activePersonal.spawnedVehicleId == playerVehId then
+        isValidVehicle = true
       end
     end
-    if not isBusinessVehicle then
+
+    if not isValidVehicle and career_modules_business_businessInventory then
+      local pulledOutList = getPulledOutVehiclesList(businessId)
+      for _, vehicle in ipairs(pulledOutList) do
+        local spawnedId = career_modules_business_businessInventory.getSpawnedVehicleId(businessId, vehicle.vehicleId)
+        if spawnedId and spawnedId == playerVehId then
+          isValidVehicle = true
+          break
+        end
+      end
+    end
+
+    if not isValidVehicle then
       return false
     end
   end

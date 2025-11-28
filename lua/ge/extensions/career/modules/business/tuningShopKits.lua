@@ -26,7 +26,7 @@ local function getPersonalVehicleData(vehicleId, businessId)
   end
   if career_modules_business_tuningShop and career_modules_business_tuningShop.getActivePersonalVehicle and businessId then
     local activePersonal = career_modules_business_tuningShop.getActivePersonalVehicle(businessId)
-    if activePersonal and activePersonal.vehicleId == vehicleId then
+    if activePersonal and tostring(activePersonal.vehicleId) == tostring(vehicleId) then
       return activePersonal
     end
   end
@@ -958,14 +958,26 @@ local function applyKit(businessId, vehicleId, kitId)
       }
     end
 
-    modelKey = vehicle.vehicleConfig.model_key or vehicle.model_key
-    currentConfig = deepcopy(vehicle.config)
-
+    local spawnedVehicleId = nil
     if career_modules_business_businessInventory and career_modules_business_businessInventory.getSpawnedVehicleId then
-      local spawnedVehicleId = career_modules_business_businessInventory.getSpawnedVehicleId(businessId, vehicleId)
+      spawnedVehicleId = career_modules_business_businessInventory.getSpawnedVehicleId(businessId, vehicleId)
       if spawnedVehicleId then
         vehObj = getObjectByID(spawnedVehicleId)
       end
+    end
+
+    if vehObj then
+      local vehicleData = extensions.core_vehicle_manager.getVehicleData(spawnedVehicleId)
+      if vehicleData and vehicleData.config then
+        modelKey = vehicleData.config.model or vehObj:getJBeamFilename()
+        currentConfig = deepcopy(vehicleData.config)
+      else
+        modelKey = vehicle.vehicleConfig.model_key or vehicle.model_key
+        currentConfig = deepcopy(vehicle.config)
+      end
+    else
+      modelKey = vehicle.vehicleConfig.model_key or vehicle.model_key
+      currentConfig = deepcopy(vehicle.config)
     end
   end
 
@@ -1230,13 +1242,14 @@ local function onVehicleConfigReceived(callbackId, config)
         end
       else
         local pulledOutVehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
-        if pulledOutVehicle and (tonumber(pulledOutVehicle.vehicleId) == tonumber(vehicleId) or pulledOutVehicle.vehicleId == vehicleId) then
+        if pulledOutVehicle and tostring(pulledOutVehicle.vehicleId) == tostring(vehicleId) then
           pulledOutVehicle.config = actualConfig
           pulledOutVehicle.vars = actualConfig.vars
           pulledOutVehicle.partList = partList
         end
       end
     end
+    career_saveSystem.saveCurrent()
   end
 
   if career_modules_bank and accountId and kitCost > 0 then

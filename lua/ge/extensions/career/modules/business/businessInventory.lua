@@ -8,6 +8,10 @@ local spawnedBusinessVehicles = {}
 local vehicleIdCounters = {}
 local pendingConfigCallbacks = {}
 
+local function normalizeBusinessId(businessId)
+  return tonumber(businessId) or businessId
+end
+
 local function clearCachesForVehicleJob(businessId, vehicle)
   if not vehicle then
     return
@@ -33,6 +37,7 @@ local function loadBusinessVehicles(businessId)
     return {}
   end
 
+  businessId = normalizeBusinessId(businessId)
   if businessVehicles[businessId] then
     return businessVehicles[businessId]
   end
@@ -64,6 +69,7 @@ local function loadBusinessVehicles(businessId)
 end
 
 local function getNextVehicleId(businessId)
+  businessId = normalizeBusinessId(businessId)
   vehicleIdCounters[businessId] = vehicleIdCounters[businessId] or 1
   local nextId = vehicleIdCounters[businessId]
   vehicleIdCounters[businessId] = nextId + 1
@@ -71,6 +77,7 @@ local function getNextVehicleId(businessId)
 end
 
 local function saveBusinessVehicles(businessId, currentSavePath)
+  businessId = normalizeBusinessId(businessId)
   if not businessId or not businessVehicles[businessId] or not currentSavePath then
     return
   end
@@ -97,6 +104,7 @@ local function storeVehicle(businessId, vehicleData)
     return false
   end
 
+  businessId = normalizeBusinessId(businessId)
   local vehicles = loadBusinessVehicles(businessId)
 
   local vehicleId = vehicleData.vehicleId
@@ -122,6 +130,7 @@ local function removeVehicle(businessId, vehicleId)
     return false
   end
 
+  businessId = normalizeBusinessId(businessId)
   vehicleId = tonumber(vehicleId) or vehicleId
   local vehicles = loadBusinessVehicles(businessId)
 
@@ -163,6 +172,7 @@ local function normalizeVehicleId(vehicleId)
 end
 
 local function ensurePulledOutState(businessId)
+  businessId = normalizeBusinessId(businessId)
   if not pulledOutVehicles[businessId] then
     pulledOutVehicles[businessId] = {
       vehicles = {},
@@ -186,6 +196,7 @@ local function findPulledOutVehicleIndex(state, vehicleId)
 end
 
 local function getPulledOutVehicles(businessId)
+  businessId = normalizeBusinessId(businessId)
   local state = pulledOutVehicles[businessId]
   if not state or not state.vehicles then
     return {}
@@ -194,6 +205,7 @@ local function getPulledOutVehicles(businessId)
 end
 
 local function getActiveVehicle(businessId)
+  businessId = normalizeBusinessId(businessId)
   local state = pulledOutVehicles[businessId]
   if not state or not state.vehicles then
     return nil
@@ -211,6 +223,7 @@ local function setActiveVehicle(businessId, vehicleId)
   if not businessId or not vehicleId then
     return false
   end
+  businessId = normalizeBusinessId(businessId)
   local state = pulledOutVehicles[businessId]
   if not state then
     return false
@@ -350,6 +363,7 @@ local function applyPartConditionsForVehicle(vehicle, vehObj)
 end
 
 local function spawnBusinessVehicle(businessId, vehicleId)
+  businessId = normalizeBusinessId(businessId)
   vehicleId = tonumber(vehicleId) or vehicleId
 
   local vehicle = getVehicleById(businessId, vehicleId)
@@ -554,6 +568,7 @@ local function removeBusinessVehicleObject(businessId, vehicleId)
     return
   end
 
+  businessId = normalizeBusinessId(businessId)
   vehicleId = tonumber(vehicleId) or vehicleId
   if not spawnedBusinessVehicles[businessId] or not spawnedBusinessVehicles[businessId][vehicleId] then
     return
@@ -595,6 +610,7 @@ local function pullOutVehicle(businessType, businessId, vehicleId)
     return false
   end
 
+  businessId = normalizeBusinessId(businessId)
   local normalizedVehicleId = normalizeVehicleId(vehicleId)
   if not normalizedVehicleId then
     return false
@@ -680,6 +696,7 @@ local function putAwayVehicle(businessId, vehicleId)
     return false
   end
 
+  businessId = normalizeBusinessId(businessId)
   local state = pulledOutVehicles[businessId]
   if not state or not state.vehicles then
     pulledOutVehicles[businessId] = nil
@@ -723,6 +740,7 @@ local function getSpawnedVehicleId(businessId, vehicleId)
     return nil
   end
 
+  businessId = normalizeBusinessId(businessId)
   vehicleId = tonumber(vehicleId) or vehicleId
   if spawnedBusinessVehicles[businessId] and spawnedBusinessVehicles[businessId][vehicleId] then
     return spawnedBusinessVehicles[businessId][vehicleId]
