@@ -108,7 +108,13 @@ local function clearCachesForJob(businessId, jobId)
   end
 end
 
-local DAMAGE_LOCK_THRESHOLD = 1000
+local function getDamageThreshold(businessId)
+  if career_modules_business_tuningShop and career_modules_business_tuningShop.getDamageThreshold then
+    return career_modules_business_tuningShop.getDamageThreshold(businessId)
+  end
+  return 1500
+end
+
 local function isPersonalVehicleId(vehicleId)
   if not vehicleId then
     return false
@@ -233,10 +239,11 @@ local function getActiveBusinessVehicle(businessId)
 end
 
 local function isDamageLocked(businessId, vehicleId)
+  local threshold = getDamageThreshold(businessId)
   local lockInfo = {
     locked = false,
     damage = 0,
-    threshold = DAMAGE_LOCK_THRESHOLD
+    threshold = threshold
   }
 
   if not businessId or not vehicleId then
@@ -255,7 +262,7 @@ local function isDamageLocked(businessId, vehicleId)
 
   local damage = getVehicleDamageByVehId(vehId)
   lockInfo.damage = damage
-  lockInfo.locked = damage >= DAMAGE_LOCK_THRESHOLD
+  lockInfo.locked = damage >= threshold
 
   return lockInfo
 end
@@ -292,7 +299,7 @@ local function notifyDamageLocked(lockInfo)
   end
 
   local message = string.format("Vehicle damage (%.0f) exceeds the %d limit. Abandon the job to continue.",
-    lockInfo.damage or 0, lockInfo.threshold or DAMAGE_LOCK_THRESHOLD)
+    lockInfo.damage or 0, lockInfo.threshold or 1500)
   if ui_message then
     ui_message(message, 5, "Business Computer", "error")
   else
@@ -542,6 +549,19 @@ local function formatVehicleForUI(vehicle, businessId)
     end
   end
 
+  local tuningShopKits = _G["career_modules_business_tuningShopKits"]
+  local kitInstallLocked = false
+  local kitInstallTimeRemaining = 0
+  local kitInstallKitName = nil
+  if tuningShopKits and businessId then
+    kitInstallLocked = tuningShopKits.isVehicleKitLocked(businessId, vehicle.vehicleId) or false
+    kitInstallTimeRemaining = tuningShopKits.getKitInstallTimeRemaining(businessId, vehicle.vehicleId) or 0
+    local lockInfo = tuningShopKits.getKitInstallLock(businessId, vehicle.vehicleId)
+    if lockInfo then
+      kitInstallKitName = lockInfo.kitName
+    end
+  end
+
   return {
     id = tostring(vehicle.vehicleId),
     vehicleId = vehicle.vehicleId,
@@ -550,7 +570,10 @@ local function formatVehicleForUI(vehicle, businessId)
     vehicleType = vehicleType,
     vehicleImage = vehicleImage,
     jobId = vehicle.jobId,
-    storedTime = vehicle.storedTime
+    storedTime = vehicle.storedTime,
+    kitInstallLocked = kitInstallLocked,
+    kitInstallTimeRemaining = kitInstallTimeRemaining,
+    kitInstallKitName = kitInstallKitName
   }
 end
 
@@ -945,6 +968,17 @@ local function pullOutVehicle(businessId, vehicleId)
         end
         break
       end
+    end
+  end
+
+  if career_modules_business_tuningShopKits and career_modules_business_tuningShopKits.isVehicleKitLocked then
+    if career_modules_business_tuningShopKits.isVehicleKitLocked(businessId, normalizedVehicleId) then
+      local remaining = career_modules_business_tuningShopKits.getKitInstallTimeRemaining(businessId, normalizedVehicleId)
+      return {
+        success = false,
+        errorCode = "kitInstallLocked",
+        timeRemaining = remaining
+      }
     end
   end
 

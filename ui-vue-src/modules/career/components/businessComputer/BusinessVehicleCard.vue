@@ -54,8 +54,18 @@
               </div>
             </div>
           </div>
-          <div class="vehicle-actions" :class="{ locked: store.isDamageLocked }">
-            <template v-if="hasTechAssigned">
+          <div class="vehicle-actions" :class="{ locked: store.isDamageLocked || kitInstallLocked }">
+            <template v-if="kitInstallLocked">
+              <div class="kit-install-message">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M12 6v6l4 2"/>
+                </svg>
+                <span>Installing {{ vehicle?.kitInstallKitName || 'kit' }}</span>
+              </div>
+              <div class="kit-install-time">{{ formatKitInstallTime(kitInstallSecondsRemaining) }} remaining</div>
+            </template>
+            <template v-else-if="hasTechAssigned">
               <div class="tech-message">{{ techName || 'Tech' }} is working on this</div>
             </template>
             <template v-else-if="store.isDamageLocked">
@@ -82,7 +92,7 @@
 </template>
 
 <script setup>
-import { computed } from "vue"
+import { computed, ref, onMounted, onUnmounted, watch } from "vue"
 import { useBusinessComputerStore } from "../../stores/businessComputerStore"
 
 const props = defineProps({
@@ -108,8 +118,64 @@ const techName = computed(() => {
 })
 const hasTechAssigned = computed(() => !!techAssigned.value)
 
+const kitInstallSecondsRemaining = ref(0)
+const kitInstallTimer = ref(null)
+
+const syncKitInstallTime = () => {
+  const serverTime = props.vehicle?.kitInstallTimeRemaining || 0
+  kitInstallSecondsRemaining.value = Math.max(0, Math.floor(serverTime))
+}
+
+const startKitInstallCountdown = () => {
+  stopKitInstallCountdown()
+  syncKitInstallTime()
+  if (kitInstallSecondsRemaining.value <= 0) return
+  kitInstallTimer.value = setInterval(() => {
+    if (kitInstallSecondsRemaining.value <= 0) {
+      stopKitInstallCountdown()
+      return
+    }
+    kitInstallSecondsRemaining.value = kitInstallSecondsRemaining.value - 1
+  }, 1000)
+}
+
+const stopKitInstallCountdown = () => {
+  if (kitInstallTimer.value) {
+    clearInterval(kitInstallTimer.value)
+    kitInstallTimer.value = null
+  }
+}
+
+const kitInstallLocked = computed(() => {
+  if (props.vehicle?.kitInstallLocked === true) return true
+  return kitInstallSecondsRemaining.value > 0
+})
+
+onMounted(() => {
+  startKitInstallCountdown()
+})
+
+onUnmounted(() => {
+  stopKitInstallCountdown()
+})
+
+watch(() => props.vehicle?.kitInstallTimeRemaining, () => {
+  startKitInstallCountdown()
+})
+
 const goToTuning = () => {
   store.switchVehicleView('tuning')
+}
+
+const formatKitInstallTime = (seconds) => {
+  if (!seconds || seconds <= 0) return '0s'
+  const numSeconds = Number(seconds)
+  if (isNaN(numSeconds)) return '0s'
+  if (numSeconds < 60) return `${Math.round(numSeconds)}s`
+  const minutes = Math.floor(numSeconds / 60)
+  const remainingSeconds = Math.round(numSeconds % 60)
+  if (remainingSeconds === 0) return `${minutes}m`
+  return `${minutes}m ${remainingSeconds}s`
 }
 
 const formatTime = (time) => {
@@ -317,6 +383,33 @@ const goalProgress = computed(() => {
   background: rgba(245, 73, 0, 0.1);
   border-radius: 0.375rem;
   border: 1px solid rgba(245, 73, 0, 0.3);
+}
+
+.kit-install-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: rgba(59, 130, 246, 1);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: center;
+  width: 100%;
+  padding: 0.5rem;
+  background: rgba(59, 130, 246, 0.1);
+  border-radius: 0.375rem;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+.kit-install-time {
+  color: rgba(59, 130, 246, 0.8);
+  font-size: 0.75rem;
+  text-align: center;
+  width: 100%;
 }
 
 .btn {

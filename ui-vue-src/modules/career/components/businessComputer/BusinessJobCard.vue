@@ -58,8 +58,20 @@
         <div class="job-actions-new">
           <template v-if="isActive">
             <!-- Active Job Actions for Full Layout -->
-            <div class="job-actions-sleek full-layout-actions" :class="{ locked: damageLockApplies }">
-              <template v-if="!hasTechAssigned">
+            <div class="job-actions-sleek full-layout-actions" :class="{ locked: damageLockApplies || kitInstallLocked }">
+              <template v-if="kitInstallLocked">
+                <div class="kit-install-status">
+                  <div class="kit-install-message">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"/>
+                      <path d="M12 6v6l4 2"/>
+                    </svg>
+                    <span>Installing {{ kitInstallKitName }}</span>
+                  </div>
+                  <div class="kit-install-time">{{ formatKitInstallTime(kitInstallSecondsRemaining) }} remaining</div>
+                </div>
+              </template>
+              <template v-else-if="!hasTechAssigned">
                 <template v-if="damageLockApplies">
                   <div class="lock-message">Vehicle Damaged</div>
                   <button class="btn btn-danger full-width" @mousedown.stop @click.stop="$emit('abandon', job)" data-focusable>
@@ -186,9 +198,21 @@
         </template>
       </div>
 
-      <div class="job-actions-sleek" :class="{ locked: damageLockApplies }">
+      <div class="job-actions-sleek" :class="{ locked: damageLockApplies || kitInstallLocked }">
         <template v-if="isActive">
-          <template v-if="!hasTechAssigned">
+          <template v-if="kitInstallLocked">
+            <div class="kit-install-status">
+              <div class="kit-install-message">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M12 6v6l4 2"/>
+                </svg>
+                <span>Installing {{ kitInstallKitName }}</span>
+              </div>
+              <div class="kit-install-time">{{ formatKitInstallTime(kitInstallSecondsRemaining) }} remaining</div>
+            </div>
+          </template>
+          <template v-else-if="!hasTechAssigned">
             <template v-if="damageLockApplies">
               <div class="lock-message">Vehicle Damaged</div>
               <button class="btn btn-danger full-width" @mousedown.stop @click.stop="$emit('abandon', job)" data-focusable>
@@ -313,12 +337,52 @@ const pulledOutVehicleForJob = computed(() => {
   }
   return store.pulledOutVehicles.find(vehicle => normalizeJobId(vehicle?.jobId) === jobIdentifier.value) || null
 })
+const vehicleForJob = computed(() => {
+  if (!Array.isArray(store.vehicles)) {
+    return null
+  }
+  return store.vehicles.find(vehicle => normalizeJobId(vehicle?.jobId) === jobIdentifier.value) || null
+})
 const damageLockApplies = computed(() => {
   if (!pulledOutVehicleForJob.value) {
     return false
   }
   return !!pulledOutVehicleForJob.value.damageLocked
 })
+const kitInstallLocked = computed(() => {
+  const vehicle = vehicleForJob.value || pulledOutVehicleForJob.value
+  if (vehicle?.kitInstallLocked === true) return true
+  return kitInstallSecondsRemaining.value > 0
+})
+const kitInstallSecondsRemaining = ref(0)
+const kitInstallTimer = ref(null)
+const kitInstallKitName = computed(() => {
+  const vehicle = vehicleForJob.value || pulledOutVehicleForJob.value
+  return vehicle?.kitInstallKitName || 'kit'
+})
+const syncKitInstallTime = () => {
+  const vehicle = vehicleForJob.value || pulledOutVehicleForJob.value
+  const serverTime = vehicle?.kitInstallTimeRemaining || 0
+  kitInstallSecondsRemaining.value = Math.max(0, Math.floor(serverTime))
+}
+const startKitInstallCountdown = () => {
+  stopKitInstallCountdown()
+  syncKitInstallTime()
+  if (kitInstallSecondsRemaining.value <= 0) return
+  kitInstallTimer.value = setInterval(() => {
+    if (kitInstallSecondsRemaining.value <= 0) {
+      stopKitInstallCountdown()
+      return
+    }
+    kitInstallSecondsRemaining.value = kitInstallSecondsRemaining.value - 1
+  }, 1000)
+}
+const stopKitInstallCountdown = () => {
+  if (kitInstallTimer.value) {
+    clearInterval(kitInstallTimer.value)
+    kitInstallTimer.value = null
+  }
+}
 const isAcceptDisabled = computed(() => {
   if (props.isActive) return false
   return store.activeJobs.length >= store.maxActiveJobs
@@ -409,6 +473,17 @@ const formatTimeWithUnit = (time, timeUnit, decimalPlaces) => {
   }
   const formatted = formatTime(time, decimalPlaces)
   return formatted
+}
+
+const formatKitInstallTime = (seconds) => {
+  if (!seconds || seconds <= 0) return '0s'
+  const numSeconds = Number(seconds)
+  if (isNaN(numSeconds)) return '0s'
+  if (numSeconds < 60) return `${Math.round(numSeconds)}s`
+  const minutes = Math.floor(numSeconds / 60)
+  const remainingSeconds = Math.round(numSeconds % 60)
+  if (remainingSeconds === 0) return `${minutes}m`
+  return `${minutes}m ${remainingSeconds}s`
 }
 
 const stopCountdown = () => {
@@ -510,10 +585,12 @@ const expirationText = computed(() => {
 onMounted(() => {
   checkCanComplete()
   startCountdown()
+  startKitInstallCountdown()
 })
 
 onUnmounted(() => {
   stopCountdown()
+  stopKitInstallCountdown()
 })
 
 watch(() => [props.isActive, props.job.currentTime, props.job.goalTime, props.job.jobId], () => {
@@ -531,6 +608,10 @@ watch(() => props.isActive, () => {
 
 watch(() => [props.job?.jobId, props.job?.expiresInSeconds, props.isActive], () => {
   startCountdown()
+})
+
+watch(() => [vehicleForJob.value?.kitInstallTimeRemaining, pulledOutVehicleForJob.value?.kitInstallTimeRemaining], () => {
+  startKitInstallCountdown()
 })
 </script>
 
@@ -885,6 +966,40 @@ watch(() => [props.job?.jobId, props.job?.expiresInSeconds, props.isActive], () 
   font-weight: 600;
   text-align: center;
   margin-bottom: 0.25rem;
+  width: 100%;
+}
+
+.kit-install-status {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.kit-install-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: #3b82f6;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+  width: 100%;
+  padding: 0.5rem;
+  background: rgba(59, 130, 246, 0.1);
+  border-radius: 0.375rem;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+.kit-install-time {
+  color: rgba(59, 130, 246, 0.8);
+  font-size: 0.75rem;
+  text-align: center;
   width: 100%;
 }
 </style>

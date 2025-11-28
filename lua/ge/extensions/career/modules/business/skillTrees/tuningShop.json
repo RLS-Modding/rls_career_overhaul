@@ -41,6 +41,19 @@
           "dependencies": ["shop-app"]
         },
         {
+          "id": "thatll-buff-out",
+          "title": "That'll Buff Out",
+          "description": "+100% damage threshold",
+          "detailedDescription": "Customers accept vehicles in rougher condition.\n\n**Per Level**\n- +100% damage threshold\n- Vehicles under the threshold won't force job abandonment",
+          "cost": {
+            "base": 15000,
+            "increment": 10000
+          },
+          "xpCost": 10,
+          "maxLevel": 5,
+          "dependencies": ["shop-app"]
+        },
+        {
           "id": "no-hard-feelings",
           "title": "No Hard Feelings",
           "description": "Abandoning Jobs cost 5% less",
@@ -51,7 +64,7 @@
           },
           "xpCost": 10,
           "maxLevel": 5,
-          "dependencies": ["kit-storage", "more-complicated"]
+          "dependencies": ["kit-storage", "more-complicated", "thatll-buff-out"]
         },
         {
           "id": "brand-recognition",

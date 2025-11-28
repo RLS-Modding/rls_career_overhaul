@@ -326,7 +326,6 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
       console.error("loadBusinessData called with invalid businessId:", businessId)
       return
     }
-    loading.value = true
     isMenuActive.value = true
     try {
       console.log('[BusinessStore] loadBusinessData calling Lua with:', businessType, businessId)
@@ -336,8 +335,6 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
       setBusinessData(data)
     } catch (error) {
       console.error('[BusinessStore] loadBusinessData error:', error)
-    } finally {
-      loading.value = false
     }
   }
 
@@ -539,6 +536,12 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   const switchView = async (view) => {
     activeView.value = view
     vehicleView.value = null
+    if (businessId.value && businessType.value) {
+      try {
+        await loadBusinessData(businessType.value, businessId.value)
+      } catch (error) {
+      }
+    }
   }
 
   const switchVehicleView = async (view) => {
@@ -1063,35 +1066,33 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   }
 
   const handleJobsUpdated = async (data) => {
+    console.log('[BusinessStore] handleJobsUpdated received:', data, 'isMenuActive:', isMenuActive.value)
     if (!isMenuActive.value) return
     const currentBusinessId = businessId.value
     const currentBusinessType = businessType.value
 
     if (!currentBusinessId || !currentBusinessType) {
+      console.log('[BusinessStore] handleJobsUpdated - no businessId or businessType')
       return
     }
 
     const eventBusinessType = data?.businessType
     if (eventBusinessType && eventBusinessType !== currentBusinessType) {
+      console.log('[BusinessStore] handleJobsUpdated - businessType mismatch:', eventBusinessType, '!=', currentBusinessType)
       return
     }
 
     const eventBusinessId = data?.businessId
     if (eventBusinessId && String(eventBusinessId) !== String(currentBusinessId)) {
+      console.log('[BusinessStore] handleJobsUpdated - businessId mismatch:', eventBusinessId, '!=', currentBusinessId)
       return
     }
 
-    if (vehicleView.value) {
-      return
-    }
-
-    const allowedViews = ['home', 'jobs', 'techs']
-    if (!allowedViews.includes(activeView.value)) {
-      return
-    }
-
+    // Always fetch fresh data when jobs are updated, regardless of current view
+    console.log('[BusinessStore] handleJobsUpdated - fetching fresh job data for:', currentBusinessId)
     try {
       const jobsData = await lua.career_modules_business_businessComputer.getJobsOnly(currentBusinessId)
+      console.log('[BusinessStore] handleJobsUpdated - received jobsData:', jobsData)
       if (jobsData) {
         businessData.value = {
           ...businessData.value,
@@ -1099,8 +1100,10 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
           newJobs: jobsData.newJobs || [],
           maxActiveJobs: jobsData.maxActiveJobs ?? businessData.value.maxActiveJobs
         }
+        console.log('[BusinessStore] handleJobsUpdated - updated businessData with', (jobsData.activeJobs || []).length, 'active jobs and', (jobsData.newJobs || []).length, 'new jobs')
       }
     } catch (error) {
+      console.error('[BusinessStore] Error fetching jobs data:', error)
     }
   }
 
@@ -1995,6 +1998,30 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
         }
       } else {
         loadBusinessData(businessType.value, businessId.value)
+      }
+    }
+  })
+
+  bridge.events.on("businessComputer:onKitInstallComplete", async (data) => {
+    if (!isMenuActive.value) return
+    if (data && data.businessId && String(data.businessId) === String(businessId.value)) {
+      // Refresh vehicle data to update kit install lock status
+      try {
+        const vehiclesData = await lua.career_modules_business_businessComputer.getVehiclesOnly(businessId.value)
+        if (vehiclesData) {
+          const vehiclesFromData = Array.isArray(vehiclesData.pulledOutVehicles)
+            ? vehiclesData.pulledOutVehicles
+            : []
+          pulledOutVehicles.value = vehiclesFromData
+          businessData.value = {
+            ...businessData.value,
+            vehicles: vehiclesData.vehicles || [],
+            pulledOutVehicles: vehiclesFromData,
+            maxPulledOutVehicles: vehiclesData.maxPulledOutVehicles ?? businessData.value.maxPulledOutVehicles
+          }
+        }
+      } catch (error) {
+        console.error("Error refreshing vehicle data after kit install complete:", error)
       }
     }
   })

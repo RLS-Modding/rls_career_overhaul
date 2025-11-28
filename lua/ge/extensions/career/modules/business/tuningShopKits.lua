@@ -5,6 +5,7 @@ local json = require('json')
 
 local businessKits = {}
 local pendingKitCallbacks = {}
+local kitInstallLocks = {}
 
 local function isPersonalVehicleId(vehicleId)
   if not vehicleId then
@@ -199,6 +200,7 @@ local function createKitFromConfig(businessId, jobId, kitName, config)
     tuning = tuning,
     createdTime = os.time()
   }
+  kit.partCount = countKitParts(kit)
 
   if not businessKits[businessId] then
     businessKits[businessId] = {}
@@ -268,6 +270,7 @@ local function createKitFromPersonalVehicle(businessId, vehicleId, kitName)
     createdTime = os.time(),
     isPersonalSource = true
   }
+  kit.partCount = countKitParts(kit)
 
   if not businessKits[businessId] then
     businessKits[businessId] = {}
@@ -392,6 +395,146 @@ local function hasKitStorageUnlocked(businessId)
   return getMaxKitStorage(businessId) > 0
 end
 
+local function getKitInstallLocksPath(businessId)
+  if not career_career.isActive() then
+    return nil
+  end
+  local _, currentSavePath = career_saveSystem.getCurrentSaveSlot()
+  if not currentSavePath then
+    return nil
+  end
+  return currentSavePath .. "/career/rls_career/businesses/" .. businessId .. "/kitInstallLocks.json"
+end
+
+local function loadKitInstallLocks(businessId)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId then
+    return {}
+  end
+  if kitInstallLocks[businessId] then
+    return kitInstallLocks[businessId]
+  end
+  local filePath = getKitInstallLocksPath(businessId)
+  if not filePath then
+    return {}
+  end
+  local data = jsonReadFile(filePath) or {}
+  kitInstallLocks[businessId] = data.locks or {}
+  return kitInstallLocks[businessId]
+end
+
+local function saveKitInstallLocks(businessId, currentSavePath)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId then
+    return
+  end
+  if not currentSavePath then
+    return
+  end
+  local filePath = currentSavePath .. "/career/rls_career/businesses/" .. businessId .. "/kitInstallLocks.json"
+  local dirPath = string.match(filePath, "^(.*)/[^/]+$")
+  if dirPath and not FS:directoryExists(dirPath) then
+    FS:directoryCreate(dirPath)
+  end
+  local data = { locks = kitInstallLocks[businessId] or {} }
+  jsonWriteFile(filePath, data, true)
+end
+
+local function setKitInstallLock(businessId, vehicleId, unlockTime, kitName)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId or not vehicleId then
+    return
+  end
+  if not kitInstallLocks[businessId] then
+    kitInstallLocks[businessId] = {}
+  end
+  kitInstallLocks[businessId][tostring(vehicleId)] = {
+    unlockTime = unlockTime,
+    kitName = kitName
+  }
+  local _, currentSavePath = career_saveSystem.getCurrentSaveSlot()
+  if currentSavePath then
+    saveKitInstallLocks(businessId, currentSavePath)
+  end
+end
+
+local function clearKitInstallLock(businessId, vehicleId)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId or not vehicleId then
+    return
+  end
+  if not kitInstallLocks[businessId] then
+    return
+  end
+  kitInstallLocks[businessId][tostring(vehicleId)] = nil
+  local _, currentSavePath = career_saveSystem.getCurrentSaveSlot()
+  if currentSavePath then
+    saveKitInstallLocks(businessId, currentSavePath)
+  end
+end
+
+local function getKitInstallLock(businessId, vehicleId)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId or not vehicleId then
+    return nil
+  end
+  local locks = loadKitInstallLocks(businessId)
+  return locks[tostring(vehicleId)]
+end
+
+local function isVehicleKitLocked(businessId, vehicleId)
+  local lock = getKitInstallLock(businessId, vehicleId)
+  if not lock then
+    return false
+  end
+  return os.time() < lock.unlockTime
+end
+
+local function getKitInstallTimeRemaining(businessId, vehicleId)
+  local lock = getKitInstallLock(businessId, vehicleId)
+  if not lock then
+    return 0
+  end
+  local remaining = lock.unlockTime - os.time()
+  return math.max(0, remaining)
+end
+
+local function processKitInstallLocks(businessId)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId then
+    return
+  end
+  local locks = loadKitInstallLocks(businessId)
+  if not locks or not next(locks) then
+    return
+  end
+  local currentTime = os.time()
+  local changed = false
+  local unlockedVehicles = {}
+  for vehicleId, lock in pairs(locks) do
+    if currentTime >= lock.unlockTime then
+      table.insert(unlockedVehicles, { vehicleId = vehicleId, kitName = lock.kitName })
+      locks[vehicleId] = nil
+      changed = true
+    end
+  end
+  if changed then
+    local _, currentSavePath = career_saveSystem.getCurrentSaveSlot()
+    if currentSavePath then
+      saveKitInstallLocks(businessId, currentSavePath)
+    end
+    for _, unlocked in ipairs(unlockedVehicles) do
+      if guihooks then
+        guihooks.trigger('businessComputer:onKitInstallComplete', {
+          businessId = businessId,
+          vehicleId = unlocked.vehicleId,
+          kitName = unlocked.kitName
+        })
+      end
+    end
+  end
+end
+
 local function storeFuelLevels(vehObj, callback)
   if not vehObj then
     if callback then
@@ -464,6 +607,18 @@ local function flattenKitTree(node, result)
   end
 
   return result
+end
+
+local function countKitParts(kit)
+  if not kit or not kit.parts then
+    return 0
+  end
+  local count = 0
+  for _, partTree in pairs(kit.parts) do
+    local parts = flattenKitTree(partTree)
+    count = count + #parts
+  end
+  return count
 end
 
 local function comparePartsTree(kitNode, currentNode, slotPath, differingParts)
@@ -872,11 +1027,19 @@ local function getKitCostBreakdown(businessId, vehicleId, kitId)
   local tradeInCredit = oldPartsValue * 0.9
   local totalCost = math.max(newPartsCost - tradeInCredit, 0)
 
+  local changedPartsCount = 0
+  for _ in pairs(differingParts) do
+    changedPartsCount = changedPartsCount + 1
+  end
+  local installTimeSeconds = changedPartsCount * 25
+
   return {
     newPartsCost = newPartsCost,
     oldPartsValue = oldPartsValue,
     tradeInCredit = tradeInCredit,
-    totalCost = totalCost
+    totalCost = totalCost,
+    changedPartsCount = changedPartsCount,
+    installTimeSeconds = installTimeSeconds
   }
 end
 
@@ -1006,9 +1169,12 @@ local function applyKit(businessId, vehicleId, kitId)
     newPartsCost = 0,
     oldPartsValue = 0,
     tradeInCredit = 0,
-    totalCost = 0
+    totalCost = 0,
+    changedPartsCount = 0,
+    installTimeSeconds = 0
   }
   local kitCost = costBreakdown.totalCost
+  local installTimeSeconds = costBreakdown.installTimeSeconds or 0
 
   local businessAccount = nil
   local accountId = nil
@@ -1078,7 +1244,8 @@ local function applyKit(businessId, vehicleId, kitId)
     accountId = accountId,
     kitCost = kitCost,
     costBreakdown = costBreakdown,
-    inventoryId = inventoryId
+    inventoryId = inventoryId,
+    installTimeSeconds = installTimeSeconds
   }
 
   storeFuelLevels(vehObj, function(storedFuelLevels)
@@ -1126,6 +1293,7 @@ local function onVehicleConfigReceived(callbackId, config)
   local kitCost = callbackData.kitCost
   local kitId = callbackData.kitId
   local inventoryId = callbackData.inventoryId
+  local installTimeSeconds = callbackData.installTimeSeconds or 0
 
   if not config then
     return
@@ -1260,13 +1428,23 @@ local function onVehicleConfigReceived(callbackId, config)
     career_modules_business_businessPartCustomization.clearPreviewVehicle(businessId)
   end
 
+  if installTimeSeconds > 0 then
+    local unlockTime = os.time() + installTimeSeconds
+    setKitInstallLock(businessId, vehicleId, unlockTime, kit.name)
+
+    if career_modules_business_businessComputer and career_modules_business_businessComputer.putAwayVehicle then
+      career_modules_business_businessComputer.putAwayVehicle(businessId, vehicleId)
+    end
+  end
+
   if guihooks then
     guihooks.trigger('businessComputer:onKitApplied', {
       businessId = businessId,
       vehicleId = vehicleId,
       kitId = kitId,
       kitName = kit.name,
-      cost = kitCost
+      cost = kitCost,
+      installTimeSeconds = installTimeSeconds
     })
   end
 end
@@ -1290,18 +1468,26 @@ local function onSaveCurrentSaveSlot(currentSavePath)
   for businessId, _ in pairs(businessKits) do
     saveBusinessKits(businessId, currentSavePath)
   end
+  for businessId, _ in pairs(kitInstallLocks) do
+    saveKitInstallLocks(businessId, currentSavePath)
+  end
 end
 
 M.loadBusinessKits = loadBusinessKits
 M.getBusinessKits = loadBusinessKits
 M.getKitDetails = getKitDetails
 M.getKitCostBreakdown = getKitCostBreakdown
+M.countKitParts = countKitParts
 M.createKit = createKit
 M.deleteKit = deleteKit
 M.applyKit = applyKit
 M.onVehicleConfigReceived = onVehicleConfigReceived
 M.getMaxKitStorage = getMaxKitStorage
 M.hasKitStorageUnlocked = hasKitStorageUnlocked
+M.isVehicleKitLocked = isVehicleKitLocked
+M.getKitInstallTimeRemaining = getKitInstallTimeRemaining
+M.getKitInstallLock = getKitInstallLock
+M.processKitInstallLocks = processKitInstallLocks
 
 M.onSaveCurrentSaveSlot = onSaveCurrentSaveSlot
 

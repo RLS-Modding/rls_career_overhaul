@@ -89,7 +89,7 @@
                         </div>
                         <div class="detail">
                             <span class="detail-label">Parts:</span>
-                            <span class="detail-value">{{ countParts(kit.parts) }}</span>
+                            <span class="detail-value">{{ countParts(kit) }}</span>
                         </div>
                     </div>
                     <div class="kit-actions">
@@ -202,6 +202,14 @@
                     </div>
                     <div v-else-if="costBreakdown" class="cost-breakdown">
                         <div class="cost-row">
+                            <span class="cost-label">Parts to change:</span>
+                            <span class="cost-value">{{ costBreakdown.changedPartsCount || 0 }}</span>
+                        </div>
+                        <div class="cost-row">
+                            <span class="cost-label">Install time:</span>
+                            <span class="cost-value">{{ formatInstallTime(costBreakdown.installTimeSeconds) }}</span>
+                        </div>
+                        <div class="cost-row">
                             <span class="cost-label">Cost of new parts:</span>
                             <span class="cost-value">${{ formatCurrency(costBreakdown.newPartsCost) }}</span>
                         </div>
@@ -265,13 +273,28 @@ const handleKitsUpdated = async (data) => {
     }
 }
 
-// Listen for kit updates from Lua
+const handleKitApplied = async (data) => {
+    if (data?.businessId && store.businessId && String(data.businessId) === String(store.businessId)) {
+        await store.loadBusinessData(store.businessType, store.businessId)
+    }
+}
+
+const handleKitInstallComplete = async (data) => {
+    if (data?.businessId && store.businessId && String(data.businessId) === String(store.businessId)) {
+        await store.loadBusinessData(store.businessType, store.businessId)
+    }
+}
+
 onMounted(() => {
     events.on('businessComputer:onKitsUpdated', handleKitsUpdated)
+    events.on('businessComputer:onKitApplied', handleKitApplied)
+    events.on('businessComputer:onKitInstallComplete', handleKitInstallComplete)
 })
 
 onUnmounted(() => {
     events.off('businessComputer:onKitsUpdated', handleKitsUpdated)
+    events.off('businessComputer:onKitApplied', handleKitApplied)
+    events.off('businessComputer:onKitInstallComplete', handleKitInstallComplete)
 })
 
 const showDialog = ref(false)
@@ -313,9 +336,21 @@ const formatCurrency = (value) => {
     return Number(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
-const countParts = (parts) => {
-    if (!parts || typeof parts !== 'object') return 0
-    return Object.keys(parts).length
+const formatInstallTime = (seconds) => {
+    if (!seconds || seconds <= 0) return 'Instant'
+    const numSeconds = Number(seconds)
+    if (isNaN(numSeconds)) return 'Instant'
+    if (numSeconds < 60) return `${numSeconds} seconds`
+    const minutes = Math.floor(numSeconds / 60)
+    const remainingSeconds = numSeconds % 60
+    if (remainingSeconds === 0) return `${minutes} minute${minutes !== 1 ? 's' : ''}`
+    return `${minutes}m ${remainingSeconds}s`
+}
+
+const countParts = (kit) => {
+    if (kit && kit.partCount !== undefined) return kit.partCount
+    if (!kit || !kit.parts || typeof kit.parts !== 'object') return 0
+    return Object.keys(kit.parts).length
 }
 
 const canApplyKit = (kit) => {

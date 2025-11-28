@@ -33,7 +33,15 @@ end
 local GEN_INTERVAL_SECONDS = 120
 local EXPIRY_SECONDS = 300
 
-local DAMAGE_LOCK_THRESHOLD = 1750
+local BASE_DAMAGE_THRESHOLD = 1500
+
+local function getDamageThreshold(businessId)
+  local level = 0
+  if businessId and career_modules_business_businessSkillTree and career_modules_business_businessSkillTree.getNodeProgress then
+    level = career_modules_business_businessSkillTree.getNodeProgress(businessId, "quality-of-life", "thatll-buff-out") or 0
+  end
+  return BASE_DAMAGE_THRESHOLD * (1 + level)
+end
 
 local cachedGarageZones = {}
 local activePersonalVehicle = {}
@@ -2453,6 +2461,18 @@ local function formatVehicleForUI(vehicle, businessId)
     result.inGarageZone = true
   end
 
+  local kitsModule = getTuningShopKits()
+  if kitsModule and kitsModule.isVehicleKitLocked then
+    result.kitInstallLocked = kitsModule.isVehicleKitLocked(businessId, vehicle.vehicleId)
+    if result.kitInstallLocked then
+      result.kitInstallTimeRemaining = kitsModule.getKitInstallTimeRemaining(businessId, vehicle.vehicleId)
+      local lock = kitsModule.getKitInstallLock(businessId, vehicle.vehicleId)
+      if lock then
+        result.kitInstallKitName = lock.kitName
+      end
+    end
+  end
+
   return result
 end
 
@@ -2485,10 +2505,11 @@ local function getVehicleDamageByVehId(vehId)
 end
 
 local function isDamageLocked(businessId, vehicleId)
+  local threshold = getDamageThreshold(businessId)
   local lockInfo = {
     locked = false,
     damage = 0,
-    threshold = DAMAGE_LOCK_THRESHOLD
+    threshold = threshold
   }
 
   if not businessId or not vehicleId then
@@ -2507,7 +2528,7 @@ local function isDamageLocked(businessId, vehicleId)
 
   local damage = getVehicleDamageByVehId(vehId)
   lockInfo.damage = damage
-  lockInfo.locked = damage >= DAMAGE_LOCK_THRESHOLD
+  lockInfo.locked = damage >= threshold
 
   return lockInfo
 end
@@ -2878,7 +2899,7 @@ local function getUIData(businessId)
   local pulledOutDamageInfo = {
     locked = false,
     damage = 0,
-    threshold = DAMAGE_LOCK_THRESHOLD
+    threshold = getDamageThreshold(businessId)
   }
   local formattedPulledOutVehicles = {}
   local hasDamageLockedVehicle = false
@@ -2908,7 +2929,7 @@ local function getUIData(businessId)
     if formatted then
       formatted.damage = 0
       formatted.damageLocked = false
-      formatted.damageThreshold = DAMAGE_LOCK_THRESHOLD
+      formatted.damageThreshold = getDamageThreshold(businessId)
       formatted.inGarageZone = true
       formatted.isPersonal = true
       formatted.inventoryId = personalVehicle.inventoryId
@@ -3181,6 +3202,10 @@ local function onUpdate(dtReal, dtSim, dtRaw)
 
       if shouldProcessTechs then
         tuningShopTechs.processTechs(id, techsTime)
+        local kitsModule = getTuningShopKits()
+        if kitsModule and kitsModule.processKitInstallLocks then
+          kitsModule.processKitInstallLocks(id)
+        end
       end
 
       if shouldProcessManager then
@@ -3455,7 +3480,7 @@ local function selectPersonalVehicle(businessId, inventoryId)
     if formatted then
       formatted.damage = 0
       formatted.damageLocked = false
-      formatted.damageThreshold = DAMAGE_LOCK_THRESHOLD
+      formatted.damageThreshold = getDamageThreshold(businessId)
       formatted.inGarageZone = true
       formatted.isPersonal = true
       formatted.inventoryId = inventoryId
@@ -3536,5 +3561,6 @@ M.getInventoryVehiclesInGarageZone = getInventoryVehiclesInGarageZone
 M.selectPersonalVehicle = selectPersonalVehicle
 M.getActivePersonalVehicle = getActivePersonalVehicle
 M.clearActivePersonalVehicle = clearActivePersonalVehicle
+M.getDamageThreshold = getDamageThreshold
 
 return M
