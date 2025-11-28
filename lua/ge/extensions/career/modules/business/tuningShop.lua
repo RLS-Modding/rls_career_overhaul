@@ -103,6 +103,20 @@ local function isPositionInGarageZone(businessId, pos)
   return false
 end
 
+local function isPersonalVehicleId(vehicleId)
+  if not vehicleId then
+    return false
+  end
+  return tostring(vehicleId):sub(1, 9) == "personal_"
+end
+
+local function getSpawnedIdFromPersonalVehicleId(vehicleId)
+  if not isPersonalVehicleId(vehicleId) then
+    return nil
+  end
+  return tonumber(tostring(vehicleId):sub(10))
+end
+
 local function isSpawnedVehicleInGarageZone(businessId, vehicleId)
   if not businessId or not vehicleId then
     return false

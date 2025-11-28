@@ -6,6 +6,33 @@ local json = require('json')
 local businessKits = {}
 local pendingKitCallbacks = {}
 
+local function isPersonalVehicleId(vehicleId)
+  if not vehicleId then
+    return false
+  end
+  return tostring(vehicleId):sub(1, 9) == "personal_"
+end
+
+local function getSpawnedIdFromPersonalVehicleId(vehicleId)
+  if not isPersonalVehicleId(vehicleId) then
+    return nil
+  end
+  return tonumber(tostring(vehicleId):sub(10))
+end
+
+local function getPersonalVehicleData(vehicleId, businessId)
+  if not isPersonalVehicleId(vehicleId) then
+    return nil
+  end
+  if career_modules_business_tuningShop and career_modules_business_tuningShop.getActivePersonalVehicle and businessId then
+    local activePersonal = career_modules_business_tuningShop.getActivePersonalVehicle(businessId)
+    if activePersonal and activePersonal.vehicleId == vehicleId then
+      return activePersonal
+    end
+  end
+  return nil
+end
+
 local function normalizeBusinessId(businessId)
   if type(businessId) == "boolean" then
     return "fastAutoTuningShop"
@@ -193,9 +220,86 @@ local function createKitFromConfig(businessId, jobId, kitName, config)
   return true
 end
 
+local function createKitFromPersonalVehicle(businessId, vehicleId, kitName)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId or not vehicleId or not kitName then
+    return false
+  end
+
+  local maxKits = M.getMaxKitStorage(businessId)
+  local currentKits = loadBusinessKits(businessId)
+  if #currentKits >= maxKits then
+    return false
+  end
+
+  local personalVehicle = getPersonalVehicleData(vehicleId, businessId)
+  if not personalVehicle then
+    return false
+  end
+
+  local spawnedId = getSpawnedIdFromPersonalVehicleId(vehicleId)
+  if not spawnedId then
+    return false
+  end
+
+  local vehObj = be:getObjectByID(spawnedId)
+  if not vehObj then
+    return false
+  end
+
+  local vehicleData = extensions.core_vehicle_manager.getVehicleData(spawnedId)
+  if not vehicleData or not vehicleData.config or not vehicleData.config.partsTree then
+    return false
+  end
+
+  local config = vehicleData.config
+  local kitParts = extractKitParts(config.partsTree)
+  local tuning = config.vars or {}
+
+  local kit = {
+    id = tostring(os.time()) .. "-" .. tostring(math.random(1000, 9999)),
+    name = kitName,
+    model_key = config.model or vehObj:getJBeamFilename(),
+    sourceJobId = nil,
+    sourceJobEvent = "Personal Vehicle",
+    sourceJobTime = nil,
+    parts = kitParts,
+    tuning = tuning,
+    createdTime = os.time(),
+    isPersonalSource = true
+  }
+
+  if not businessKits[businessId] then
+    businessKits[businessId] = {}
+  end
+
+  table.insert(businessKits[businessId], kit)
+
+  local _, currentSavePath = career_saveSystem.getCurrentSaveSlot()
+  if currentSavePath then
+    saveBusinessKits(businessId, currentSavePath)
+  end
+
+  if guihooks then
+    guihooks.trigger('businessComputer:onKitsUpdated', {
+      businessId = businessId
+    })
+  end
+
+  return true
+end
+
 local function createKit(businessId, jobId, kitName, spawnedVehicleId)
   businessId = normalizeBusinessId(businessId)
-  if not businessId or not jobId or not kitName then
+  if not businessId or not kitName then
+    return false
+  end
+
+  if isPersonalVehicleId(jobId) then
+    return createKitFromPersonalVehicle(businessId, jobId, kitName)
+  end
+
+  if not jobId then
     return false
   end
 
@@ -656,17 +760,38 @@ local function getKitCostBreakdown(businessId, vehicleId, kitId)
     return nil
   end
 
-  local vehicle = career_modules_business_businessInventory.getVehicleById(businessId, vehicleId)
-  if not vehicle then
-    return nil
-  end
-
+  local isPersonal = isPersonalVehicleId(vehicleId)
+  local vehicle = nil
   local vehObj = nil
-  if career_modules_business_businessInventory and career_modules_business_businessInventory.getSpawnedVehicleId then
-    local spawnedVehicleId = career_modules_business_businessInventory.getSpawnedVehicleId(businessId, vehicleId)
-    if spawnedVehicleId then
-      vehObj = getObjectByID(spawnedVehicleId)
+  local vehicleMileage = 0
+
+  if isPersonal then
+    vehicle = getPersonalVehicleData(vehicleId, businessId)
+    if not vehicle then
+      return nil
     end
+    local spawnedId = getSpawnedIdFromPersonalVehicleId(vehicleId)
+    if spawnedId then
+      vehObj = be:getObjectByID(spawnedId)
+    end
+    if vehicle.inventoryId and career_modules_inventory then
+      local invVehicles = career_modules_inventory.getVehicles()
+      if invVehicles and invVehicles[vehicle.inventoryId] then
+        vehicleMileage = tonumber(invVehicles[vehicle.inventoryId].mileage or 0)
+      end
+    end
+  else
+    vehicle = career_modules_business_businessInventory.getVehicleById(businessId, vehicleId)
+    if not vehicle then
+      return nil
+    end
+    if career_modules_business_businessInventory and career_modules_business_businessInventory.getSpawnedVehicleId then
+      local spawnedVehicleId = career_modules_business_businessInventory.getSpawnedVehicleId(businessId, vehicleId)
+      if spawnedVehicleId then
+        vehObj = getObjectByID(spawnedVehicleId)
+      end
+    end
+    vehicleMileage = tonumber(vehicle.mileage or 0)
   end
 
   if not vehObj then
@@ -681,7 +806,6 @@ local function getKitCostBreakdown(businessId, vehicleId, kitId)
 
   local vehicleModel = vehObj:getJBeamFilename()
   local discountMultiplier = getPartSupplierDiscountMultiplier(businessId)
-  local vehicleMileage = tonumber(vehicle.mileage or 0)
 
   local currentPartsTree = vehicleData.config and vehicleData.config.partsTree or
                            (vehicle.config and vehicle.config.partsTree or nil)
@@ -782,15 +906,68 @@ local function applyKit(businessId, vehicleId, kitId)
     }
   end
 
-  local vehicle = career_modules_business_businessInventory.getVehicleById(businessId, vehicleId)
-  if not vehicle or not vehicle.vehicleConfig then
-    return {
-      success = false,
-      error = "Vehicle configuration not found"
-    }
-  end
+  local isPersonal = isPersonalVehicleId(vehicleId)
+  local vehicle = nil
+  local modelKey = nil
+  local currentConfig = nil
+  local vehObj = nil
+  local inventoryId = nil
 
-  local modelKey = vehicle.vehicleConfig.model_key or vehicle.model_key
+  if isPersonal then
+    vehicle = getPersonalVehicleData(vehicleId, businessId)
+    if not vehicle then
+      return {
+        success = false,
+        error = "Personal vehicle not found"
+      }
+    end
+
+    local spawnedId = getSpawnedIdFromPersonalVehicleId(vehicleId)
+    if not spawnedId then
+      return {
+        success = false,
+        error = "Invalid personal vehicle ID"
+      }
+    end
+
+    vehObj = be:getObjectByID(spawnedId)
+    if not vehObj then
+      return {
+        success = false,
+        error = "Personal vehicle not spawned"
+      }
+    end
+
+    local vehicleData = extensions.core_vehicle_manager.getVehicleData(spawnedId)
+    if not vehicleData or not vehicleData.config then
+      return {
+        success = false,
+        error = "Personal vehicle configuration not found"
+      }
+    end
+
+    modelKey = vehicleData.config.model or vehObj:getJBeamFilename()
+    currentConfig = deepcopy(vehicleData.config)
+    inventoryId = vehicle.inventoryId
+  else
+    vehicle = career_modules_business_businessInventory.getVehicleById(businessId, vehicleId)
+    if not vehicle or not vehicle.vehicleConfig then
+      return {
+        success = false,
+        error = "Vehicle configuration not found"
+      }
+    end
+
+    modelKey = vehicle.vehicleConfig.model_key or vehicle.model_key
+    currentConfig = deepcopy(vehicle.config)
+
+    if career_modules_business_businessInventory and career_modules_business_businessInventory.getSpawnedVehicleId then
+      local spawnedVehicleId = career_modules_business_businessInventory.getSpawnedVehicleId(businessId, vehicleId)
+      if spawnedVehicleId then
+        vehObj = getObjectByID(spawnedVehicleId)
+      end
+    end
+  end
 
   if not modelKey then
     return {
@@ -799,20 +976,11 @@ local function applyKit(businessId, vehicleId, kitId)
     }
   end
 
-  local currentConfig = deepcopy(vehicle.config)
   if not currentConfig or not currentConfig.partsTree then
     return {
       success = false,
       error = "Vehicle configuration tree not found"
     }
-  end
-
-  local vehObj = nil
-  if career_modules_business_businessInventory and career_modules_business_businessInventory.getSpawnedVehicleId then
-    local spawnedVehicleId = career_modules_business_businessInventory.getSpawnedVehicleId(businessId, vehicleId)
-    if spawnedVehicleId then
-      vehObj = getObjectByID(spawnedVehicleId)
-    end
   end
 
   if not vehObj then
@@ -897,7 +1065,8 @@ local function applyKit(businessId, vehicleId, kitId)
     kit = kit,
     accountId = accountId,
     kitCost = kitCost,
-    costBreakdown = costBreakdown
+    costBreakdown = costBreakdown,
+    inventoryId = inventoryId
   }
 
   storeFuelLevels(vehObj, function(storedFuelLevels)
@@ -944,6 +1113,7 @@ local function onVehicleConfigReceived(callbackId, config)
   local accountId = callbackData.accountId
   local kitCost = callbackData.kitCost
   local kitId = callbackData.kitId
+  local inventoryId = callbackData.inventoryId
 
   if not config then
     return
@@ -998,7 +1168,12 @@ local function onVehicleConfigReceived(callbackId, config)
   end
 
   local vehObj = nil
-  if career_modules_business_businessInventory and career_modules_business_businessInventory.getSpawnedVehicleId then
+  if inventoryId then
+    local spawnedId = getSpawnedIdFromPersonalVehicleId(vehicleId)
+    if spawnedId then
+      vehObj = be:getObjectByID(spawnedId)
+    end
+  elseif career_modules_business_businessInventory and career_modules_business_businessInventory.getSpawnedVehicleId then
     local spawnedVehicleId = career_modules_business_businessInventory.getSpawnedVehicleId(businessId, vehicleId)
     if spawnedVehicleId then
       vehObj = getObjectByID(spawnedVehicleId)
@@ -1021,31 +1196,45 @@ local function onVehicleConfigReceived(callbackId, config)
     end
   end
 
-  if career_modules_business_businessInventory then
-    career_modules_business_businessInventory.updateVehicle(businessId, vehicleId, {
-      config = actualConfig,
-      vars = actualConfig.vars,
-      partList = partList
-    })
-
-    if career_modules_business_businessInventory.getPulledOutVehicles then
-      local pulledVehicles = career_modules_business_businessInventory.getPulledOutVehicles(businessId) or {}
-      local targetId = tonumber(vehicleId) or vehicleId
-      for _, pulled in ipairs(pulledVehicles) do
-        local pulledId = tonumber(pulled.vehicleId) or pulled.vehicleId
-        if pulledId == targetId then
-          pulled.config = actualConfig
-          pulled.vars = actualConfig.vars
-          pulled.partList = partList
-          break
+  if inventoryId then
+    if career_modules_inventory then
+      local vehicles = career_modules_inventory.getVehicles()
+      if vehicles and vehicles[inventoryId] then
+        vehicles[inventoryId].config = actualConfig
+        vehicles[inventoryId].config.vars = actualConfig.vars
+        if career_modules_inventory.setVehicleDirty then
+          career_modules_inventory.setVehicleDirty(inventoryId)
         end
       end
-    else
-      local pulledOutVehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
-      if pulledOutVehicle and (tonumber(pulledOutVehicle.vehicleId) == tonumber(vehicleId) or pulledOutVehicle.vehicleId == vehicleId) then
-        pulledOutVehicle.config = actualConfig
-        pulledOutVehicle.vars = actualConfig.vars
-        pulledOutVehicle.partList = partList
+    end
+    career_saveSystem.saveCurrent({inventoryId})
+  else
+    if career_modules_business_businessInventory then
+      career_modules_business_businessInventory.updateVehicle(businessId, vehicleId, {
+        config = actualConfig,
+        vars = actualConfig.vars,
+        partList = partList
+      })
+
+      if career_modules_business_businessInventory.getPulledOutVehicles then
+        local pulledVehicles = career_modules_business_businessInventory.getPulledOutVehicles(businessId) or {}
+        local targetId = tonumber(vehicleId) or vehicleId
+        for _, pulled in ipairs(pulledVehicles) do
+          local pulledId = tonumber(pulled.vehicleId) or pulled.vehicleId
+          if pulledId == targetId then
+            pulled.config = actualConfig
+            pulled.vars = actualConfig.vars
+            pulled.partList = partList
+            break
+          end
+        end
+      else
+        local pulledOutVehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
+        if pulledOutVehicle and (tonumber(pulledOutVehicle.vehicleId) == tonumber(vehicleId) or pulledOutVehicle.vehicleId == vehicleId) then
+          pulledOutVehicle.config = actualConfig
+          pulledOutVehicle.vars = actualConfig.vars
+          pulledOutVehicle.partList = partList
+        end
       end
     end
   end

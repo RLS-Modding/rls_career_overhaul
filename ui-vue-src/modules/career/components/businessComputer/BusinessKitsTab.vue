@@ -15,7 +15,7 @@
 
         <!-- Active Completable Jobs Section -->
         <div v-if="completableJobs.length > 0" class="section">
-            <h3 class="section-title">Pulled Out Vehicles</h3>
+            <h3 class="section-title">Business Vehicles</h3>
             <div class="jobs-grid">
                 <div v-for="job in completableJobs" :key="job.jobId" class="job-card">
                     <div class="job-header">
@@ -32,6 +32,30 @@
                         </div>
                     </div>
                     <button @click.stop="showCreateKitDialog(job)" @mousedown.stop class="btn-create-kit"
+                        :disabled="isAtMaxCapacity" :title="isAtMaxCapacity ? 'Kit storage is full' : ''" data-focusable>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M12 5v14M5 12h14" />
+                        </svg>
+                        {{ isAtMaxCapacity ? 'Storage Full' : 'Create Kit' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Personal Vehicles Section -->
+        <div v-if="personalVehiclesForKits.length > 0" class="section">
+            <h3 class="section-title">Personal Vehicles</h3>
+            <div class="jobs-grid">
+                <div v-for="vehicle in personalVehiclesForKits" :key="vehicle.vehicleId" class="job-card personal-card">
+                    <div class="job-header">
+                        <div class="job-info">
+                            <div class="job-title">{{ vehicle.vehicleName || vehicle.model_key }}</div>
+                            <div class="job-subtitle">Personal Vehicle</div>
+                        </div>
+                        <img v-if="vehicle.vehicleImage" :src="vehicle.vehicleImage" class="job-vehicle-image" />
+                    </div>
+                    <button @click.stop="showCreateKitDialogPersonal(vehicle)" @mousedown.stop class="btn-create-kit"
                         :disabled="isAtMaxCapacity" :title="isAtMaxCapacity ? 'Kit storage is full' : ''" data-focusable>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
@@ -86,13 +110,13 @@
         </div>
 
         <!-- Empty State -->
-        <div v-if="completableJobs.length === 0 && kits.length === 0" class="empty-state">
+        <div v-if="completableJobs.length === 0 && personalVehiclesForKits.length === 0 && kits.length === 0" class="empty-state">
             <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                 <path
                     d="M20.38 3.4a2 2 0 0 0-2.83 0L12 8.94 6.45 3.4a2 2 0 0 0-2.83 2.83L9.17 11.77 3.62 17.32a2 2 0 0 0 2.83 2.83L12 14.6l5.55 5.55a2 2 0 0 0 2.83-2.83L14.83 11.77l5.55-5.55a2 2 0 0 0 0-2.82z" />
             </svg>
             <h3>No Kits Available</h3>
-            <p>Accept jobs to create kits from their configurations</p>
+            <p>Accept jobs or bring personal vehicles to create kits</p>
         </div>
 
         <!-- Create Kit Dialog -->
@@ -109,7 +133,7 @@
                 </div>
                 <div class="dialog-body">
                     <p class="dialog-description">
-                        Create a kit from <strong>{{ selectedJob?.vehicleName }}</strong>
+                        Create a kit from <strong>{{ selectedJob?.vehicleName || selectedPersonalVehicle?.vehicleName || selectedPersonalVehicle?.model_key }}</strong>
                     </p>
                     <div class="form-group">
                         <label for="kit-name">Kit Name</label>
@@ -223,6 +247,10 @@ const completableJobs = computed(() => {
         return isPulledOut && !job.techAssigned
     })
 })
+const personalVehiclesForKits = computed(() => {
+    const pulledOutVehicles = store.pulledOutVehicles || []
+    return pulledOutVehicles.filter(v => v.isPersonal === true)
+})
 const kits = computed(() => store.kits || [])
 const capacityPercent = computed(() => {
     if (store.maxKitStorage === 0) return 0
@@ -296,22 +324,40 @@ const canApplyKit = (kit) => {
     return vehicleModel === kit.model_key
 }
 
+const selectedPersonalVehicle = ref(null)
+
 const showCreateKitDialog = (job) => {
     selectedJob.value = job
+    selectedPersonalVehicle.value = null
     kitName.value = `${job.vehicleName} - ${job.raceLabel || job.raceType}`
+    showDialog.value = true
+}
+
+const showCreateKitDialogPersonal = (vehicle) => {
+    selectedJob.value = null
+    selectedPersonalVehicle.value = vehicle
+    kitName.value = `${vehicle.vehicleName || vehicle.model_key} - Personal`
     showDialog.value = true
 }
 
 const closeDialog = () => {
     showDialog.value = false
     selectedJob.value = null
+    selectedPersonalVehicle.value = null
     kitName.value = ''
 }
 
 const handleCreateKit = async () => {
-    if (!kitName.value.trim() || !selectedJob.value) return
+    if (!kitName.value.trim()) return
+    if (!selectedJob.value && !selectedPersonalVehicle.value) return
 
-    const success = await store.createKit(selectedJob.value.jobId, kitName.value.trim())
+    let success = false
+    if (selectedPersonalVehicle.value) {
+        success = await store.createKit(selectedPersonalVehicle.value.vehicleId, kitName.value.trim())
+    } else if (selectedJob.value) {
+        success = await store.createKit(selectedJob.value.jobId, kitName.value.trim())
+    }
+    
     if (success) {
         closeDialog()
     }
@@ -501,6 +547,10 @@ watch(showApplyDialog, (isOpen) => {
     border-radius: 8px;
     padding: 1rem;
     transition: all 0.2s;
+}
+
+.job-card.personal-card {
+    border-color: #16a34a;
 }
 
 .job-card:hover {
