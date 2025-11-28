@@ -2169,7 +2169,11 @@ local function enterShoppingVehicle(businessId, vehicleId)
     return false
   end
   
-  be:enterVehicle(0, vehObj)
+  if gameplay_walk and gameplay_walk.isWalking() then
+    gameplay_walk.getInVehicle(vehObj)
+  else
+    be:enterVehicle(0, vehObj)
+  end
   return true
 end
 
