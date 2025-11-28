@@ -46,7 +46,7 @@
              </h4>
           </div>
 
-          <div class="stats-grid" v-if="currentVehicleJob">
+          <div class="stats-grid" v-if="currentVehicleJob && !isPersonalVehicle">
              <div class="stat-box">
                 <span class="label">Payment</span>
                 <span class="value money">${{ currentVehicleJob.reward.toLocaleString() }}</span>
@@ -57,11 +57,15 @@
                 <span class="value goal-text">{{ currentVehicleJob.goal }}</span>
              </div>
           </div>
+          <div class="personal-badge" v-else-if="isPersonalVehicle">
+             <span class="personal-label">Personal Vehicle</span>
+             <span class="personal-description">Tune your own vehicle</span>
+          </div>
         </div>
       </div>
 
       <!-- Bottom Actions Bar (Full Width) -->
-      <div class="actions-row">
+      <div class="actions-row" v-if="!isPersonalVehicle">
         <button class="btn-action" @click="$emit('put-away')" data-focusable>
           Put Away
         </button>
@@ -94,14 +98,32 @@ const normalizeJobId = (value) => {
   return String(value)
 }
 
+const isPersonalVehicle = computed(() => {
+  return store.pulledOutVehicle?.isPersonal === true
+})
+
 const currentVehicleJob = computed(() => {
   const vehicle = store.pulledOutVehicle
+  if (!vehicle) {
+    return null
+  }
+  if (vehicle.isPersonal) {
+    return {
+      vehicleName: vehicle.vehicleName || 'Unknown Vehicle',
+      vehicleYear: vehicle.vehicleYear || '',
+      vehicleImage: vehicle.vehicleImage,
+      vehicleType: vehicle.vehicleType,
+      reward: 0,
+      goal: null,
+      isPersonal: true
+    }
+  }
   const jobsSource = store.activeJobs
   const jobs = Array.isArray(jobsSource)
     ? jobsSource
     : (Array.isArray(jobsSource?.value) ? jobsSource.value : [])
     
-  if (!vehicle || !vehicle.jobId) {
+  if (!vehicle.jobId) {
     return null
   }
   const vehicleJobId = String(vehicle.jobId)
@@ -318,6 +340,27 @@ defineEmits(['put-away', 'abandon', 'go-to-jobs'])
   &:hover {
     background: rgba(239, 68, 68, 0.25);
   }
+}
+
+.personal-badge {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(99, 102, 241, 0.15);
+  border-radius: 0.375rem;
+  border: 1px solid rgba(99, 102, 241, 0.35);
+}
+
+.personal-label {
+  font-size: 0.85rem;
+  color: rgba(99, 102, 241, 1);
+  font-weight: 600;
+}
+
+.personal-description {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .btn-link {

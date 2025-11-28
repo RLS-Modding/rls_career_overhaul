@@ -15,7 +15,8 @@
         <div class="vehicle-image-section">
           <div class="vehicle-image">
             <img :src="vehicle.vehicleImage" :alt="vehicle.vehicleName" />
-            <span class="badge badge-green">In Garage</span>
+            <span v-if="vehicle.isPersonal" class="badge badge-personal">Personal</span>
+            <span v-else class="badge badge-green">In Garage</span>
           </div>
           <h3 class="vehicle-name">
             {{ vehicle.vehicleYear }} {{ vehicle.vehicleName }}
@@ -23,11 +24,15 @@
           </h3>
         </div>
         <div class="vehicle-info">
-          <div v-if="job" class="reward-container">
+          <div v-if="vehicle.isPersonal" class="personal-info">
+            <span class="personal-label">Personal Vehicle</span>
+            <span class="personal-description">Tune your own vehicle using shop equipment</span>
+          </div>
+          <div v-else-if="job" class="reward-container">
             <span class="reward-label">Payment</span>
             <span class="reward-value">${{ job.reward.toLocaleString() }}</span>
           </div>
-          <div v-if="job" class="job-metrics">
+          <div v-if="job && !vehicle.isPersonal" class="job-metrics">
             <div class="goal-chip">
               <div class="goal-chip-content">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -66,7 +71,7 @@
               </button>
             </template>
             <template v-else>
-              <button class="btn btn-secondary" @click.stop="$emit('put-away', vehicle?.vehicleId)">Put Away Vehicle</button>
+              <button v-if="!vehicle?.isPersonal" class="btn btn-secondary" @click.stop="$emit('put-away', vehicle?.vehicleId)">Put Away Vehicle</button>
               <button class="btn btn-primary" @click.stop="goToTuning">Go to Tuning</button>
             </template>
           </div>
@@ -235,6 +240,12 @@ const goalProgress = computed(() => {
     
     &.badge-green {
       background: rgba(34, 197, 94, 0.7);
+      color: white;
+      border: none;
+    }
+    
+    &.badge-personal {
+      background: rgba(99, 102, 241, 0.8);
       color: white;
       border: none;
     }
@@ -446,6 +457,28 @@ const goalProgress = computed(() => {
   font-size: 1.125rem;
   color: rgba(34, 197, 94, 1);
   font-weight: 600;
+}
+
+.personal-info {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(99, 102, 241, 0.15);
+  border-radius: 0.45rem;
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.personal-label {
+  font-size: 0.875rem;
+  color: rgba(99, 102, 241, 1);
+  font-weight: 600;
+}
+
+.personal-description {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
 }
 </style>
 

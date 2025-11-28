@@ -240,11 +240,13 @@ local function updateVehicleMaps()
   end
 end
 
--- TODO could even update once every time before removing a part
 local function updatePartConditionsInInventory()
   for partId, part in pairs(partInventory) do
-    if part.location > 0 and career_modules_inventory.getVehicles()[part.location].partConditions[part.partPath] then
-      part.partCondition = career_modules_inventory.getVehicles()[part.location].partConditions[part.partPath]
+    if part.location > 0 then
+      local vehicle = career_modules_inventory.getVehicles()[part.location]
+      if vehicle and type(vehicle.partConditions) == "table" and vehicle.partConditions[part.partPath] then
+        part.partCondition = vehicle.partConditions[part.partPath]
+      end
     end
   end
 end

@@ -44,8 +44,43 @@ local function getPartSupplierDiscountMultiplier(businessId)
   return 1.0 - (0.05 * level)
 end
 
+local function isPersonalVehicleId(vehicleId)
+  if not vehicleId then
+    return false
+  end
+  return tostring(vehicleId):sub(1, 9) == "personal_"
+end
+
+local function getSpawnedIdFromPersonalVehicleId(vehicleId)
+  if not isPersonalVehicleId(vehicleId) then
+    return nil
+  end
+  return tonumber(tostring(vehicleId):sub(10))
+end
+
+local function getInventoryIdFromPersonalVehicleId(vehicleId, businessId)
+  if not isPersonalVehicleId(vehicleId) then
+    return nil
+  end
+  if career_modules_business_tuningShop and career_modules_business_tuningShop.getActivePersonalVehicle and businessId then
+    local activePersonal = career_modules_business_tuningShop.getActivePersonalVehicle(businessId)
+    if activePersonal and activePersonal.vehicleId == vehicleId and activePersonal.inventoryId then
+      return activePersonal.inventoryId
+    end
+  end
+  return nil
+end
+
 local function getBusinessVehicleObject(businessId, vehicleId)
   if not businessId or not vehicleId then
+    return nil
+  end
+
+  if isPersonalVehicleId(vehicleId) then
+    local spawnedId = getSpawnedIdFromPersonalVehicleId(vehicleId)
+    if spawnedId then
+      return getObjectByID(spawnedId)
+    end
     return nil
   end
 
@@ -269,12 +304,35 @@ local function replaceVehicleWithFuelHandling(vehObj, modelKey, config, beforeRe
   end)
 end
 
+local function getPersonalVehicleData(vehicleId, businessId)
+  if not isPersonalVehicleId(vehicleId) then
+    return nil
+  end
+  
+  if career_modules_business_tuningShop and career_modules_business_tuningShop.getActivePersonalVehicle and businessId then
+    local activePersonal = career_modules_business_tuningShop.getActivePersonalVehicle(businessId)
+    if activePersonal and activePersonal.vehicleId == vehicleId then
+      return activePersonal
+    end
+  end
+  
+  return nil
+end
+
 local function initializePreviewVehicle(businessId, vehicleId)
   if not businessId or not vehicleId then
     return false
   end
 
-  local vehicle = career_modules_business_businessInventory.getVehicleById(businessId, vehicleId)
+  local vehicle = nil
+  local isPersonal = isPersonalVehicleId(vehicleId)
+
+  if isPersonal then
+    vehicle = getPersonalVehicleData(vehicleId, businessId)
+  else
+    vehicle = career_modules_business_businessInventory.getVehicleById(businessId, vehicleId)
+  end
+
   if not vehicle or not vehicle.vehicleConfig then
     return false
   end
@@ -292,15 +350,24 @@ local function initializePreviewVehicle(businessId, vehicleId)
     return false
   end
 
-  -- Store initial vehicle state from the stored vehicle config (baseline from inventory)
-  -- PRIORITIZE vehicle.config from storage as it contains the purchase result
   local originalConfig = nil
 
-  if vehicle.config and vehicle.config.partsTree then
-    originalConfig = vehicle.config
-  elseif vehicleData.config and vehicleData.config.partsTree then
-    originalConfig = vehicleData.config
+  if isPersonal then
+    if vehicleData.config and vehicleData.config.partsTree then
+      originalConfig = vehicleData.config
+    elseif vehicle.config and vehicle.config.partsTree then
+      originalConfig = vehicle.config
+    end
   else
+    -- For business vehicles, prioritize stored config
+    if vehicle.config and vehicle.config.partsTree then
+      originalConfig = vehicle.config
+    elseif vehicleData.config and vehicleData.config.partsTree then
+      originalConfig = vehicleData.config
+    end
+  end
+
+  if not originalConfig then
     return false
   end
 
@@ -313,7 +380,9 @@ local function initializePreviewVehicle(businessId, vehicleId)
     vars = deepcopy(vehicle.vars or {}),
     model = modelKey,
     vehicleId = vehicleId,
-    partsNiceName = {}
+    partsNiceName = {},
+    isPersonal = isPersonal,
+    inventoryId = isPersonal and vehicle.inventoryId or nil
   }
 
   local previewState = {
@@ -345,7 +414,9 @@ local function initializePreviewVehicle(businessId, vehicleId)
     preview = previewState,
     slotData = slotData,
     powerWeight = nil,
-    operationInProgress = false
+    operationInProgress = false,
+    isPersonal = isPersonal,
+    inventoryId = isPersonal and vehicle.inventoryId or nil
   }
 
   return true
@@ -980,6 +1051,15 @@ local function getPreviewVehicleConfig(businessId)
   return nil
 end
 
+local function updatePreviewVehicleConfig(businessId, newConfig)
+  local session = getActiveSession(businessId)
+  if session and session.preview then
+    session.preview.config = newConfig
+    return true
+  end
+  return false
+end
+
 local function getInitialVehicleState(businessId)
   local session = getActiveSession(businessId)
   if session and session.initial then
@@ -1400,6 +1480,7 @@ M.applyCartPartsToVehicle = applyCartPartsToVehicle
 M.installPartOnVehicle = installPartOnVehicle
 M.getVehiclePowerWeight = getVehiclePowerWeight
 M.getPreviewVehicleConfig = getPreviewVehicleConfig
+M.updatePreviewVehicleConfig = updatePreviewVehicleConfig
 M.getInitialVehicleState = getInitialVehicleState
 M.clearPreviewVehicle = clearPreviewVehicle
 M.getAllRequiredParts = getAllRequiredParts

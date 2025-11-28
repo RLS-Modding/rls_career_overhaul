@@ -122,8 +122,7 @@
               "type": "totalUpgrades",
               "min": 15
             }
-          ],
-          "commingSoon": true
+          ]
         },
         {
           "id": "i-give-up",

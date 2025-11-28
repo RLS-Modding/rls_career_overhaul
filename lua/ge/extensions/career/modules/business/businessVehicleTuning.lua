@@ -152,8 +152,48 @@ local function getPriceSubCategory(category, subCategory)
   return 0
 end
 
+local function isPersonalVehicleId(vehicleId)
+  if not vehicleId then
+    return false
+  end
+  local str = tostring(vehicleId)
+  return str:sub(1, 9) == "personal_"
+end
+
+local function getSpawnedIdFromPersonalVehicleId(vehicleId)
+  if not vehicleId then
+    return nil
+  end
+  local str = tostring(vehicleId)
+  if str:sub(1, 9) ~= "personal_" then
+    return nil
+  end
+  return tonumber(str:sub(10))
+end
+
+local function getInventoryIdFromPersonalVehicleId(vehicleId, businessId)
+  if not isPersonalVehicleId(vehicleId) then
+    return nil
+  end
+  if career_modules_business_tuningShop and career_modules_business_tuningShop.getActivePersonalVehicle and businessId then
+    local activePersonal = career_modules_business_tuningShop.getActivePersonalVehicle(businessId)
+    if activePersonal and activePersonal.vehicleId == vehicleId and activePersonal.inventoryId then
+      return activePersonal.inventoryId
+    end
+  end
+  return nil
+end
+
 local function getBusinessVehicleObject(businessId, vehicleId)
   if not businessId or not vehicleId then
+    return nil
+  end
+
+  if isPersonalVehicleId(vehicleId) then
+    local spawnedId = getSpawnedIdFromPersonalVehicleId(vehicleId)
+    if spawnedId then
+      return getObjectByID(spawnedId)
+    end
     return nil
   end
 
@@ -182,6 +222,21 @@ local function fetchVehicleTuningVariables(businessId, vehicleId)
   return deepcopy(vehicleData.vdata.variables)
 end
 
+local function getPersonalVehicleData(vehicleId, businessId)
+  if not isPersonalVehicleId(vehicleId) then
+    return nil
+  end
+  
+  if career_modules_business_tuningShop and career_modules_business_tuningShop.getActivePersonalVehicle and businessId then
+    local activePersonal = career_modules_business_tuningShop.getActivePersonalVehicle(businessId)
+    if activePersonal and activePersonal.vehicleId == vehicleId then
+      return activePersonal
+    end
+  end
+  
+  return nil
+end
+
 local function requestVehicleTuningData(businessId, vehicleId)
   if not businessId or not vehicleId then
     guihooks.trigger('businessComputer:onVehicleTuningData', {
@@ -191,7 +246,13 @@ local function requestVehicleTuningData(businessId, vehicleId)
     return
   end
 
-  local initialVehicle = career_modules_business_businessInventory.getVehicleById(businessId, vehicleId)
+  local isPersonal = isPersonalVehicleId(vehicleId)
+  local initialVehicle = nil
+  if isPersonal then
+    initialVehicle = getPersonalVehicleData(vehicleId, businessId)
+  else
+    initialVehicle = career_modules_business_businessInventory.getVehicleById(businessId, vehicleId)
+  end
   if not initialVehicle then
     guihooks.trigger('businessComputer:onVehicleTuningData', {
       success = false,
@@ -201,7 +262,12 @@ local function requestVehicleTuningData(businessId, vehicleId)
   end
 
   core_jobsystem.create(function(job)
-    local vehicle = career_modules_business_businessInventory.getVehicleById(businessId, vehicleId)
+    local vehicle = nil
+    if isPersonal then
+      vehicle = getPersonalVehicleData(vehicleId, businessId)
+    else
+      vehicle = career_modules_business_businessInventory.getVehicleById(businessId, vehicleId)
+    end
     if not vehicle or not vehicle.vehicleConfig then
       guihooks.trigger('businessComputer:onVehicleTuningData', {
         success = false,
@@ -250,6 +316,15 @@ local function requestVehicleTuningData(businessId, vehicleId)
     end
 
     local currentVars = vehicle.vars or {}
+    if isPersonal and vehicle.inventoryId and career_modules_inventory then
+      local inventoryVehicles = career_modules_inventory.getVehicles()
+      if inventoryVehicles and inventoryVehicles[vehicle.inventoryId] then
+        local invVeh = inventoryVehicles[vehicle.inventoryId]
+        if invVeh.config and invVeh.config.vars then
+          currentVars = invVeh.config.vars
+        end
+      end
+    end
     local tuningVariables = deepcopy(vehicleData.vdata.variables)
 
     for varName, varData in pairs(tuningVariables) do
@@ -328,7 +403,13 @@ local function applyTuningToVehicle(businessId, vehicleId, tuningVars)
     end
   end
 
-  local vehicle = career_modules_business_businessInventory.getVehicleById(businessId, vehicleId)
+  local isPersonal = isPersonalVehicleId(vehicleId)
+  local vehicle = nil
+  if isPersonal then
+    vehicle = getPersonalVehicleData(vehicleId, businessId)
+  else
+    vehicle = career_modules_business_businessInventory.getVehicleById(businessId, vehicleId)
+  end
   if not vehicle or not vehicle.vehicleConfig then
     return false
   end
@@ -343,6 +424,11 @@ local function applyTuningToVehicle(businessId, vehicleId, tuningVars)
   end
 
   updatedConfig.vars = tableMerge(deepcopy(updatedConfig.vars), tuningVars)
+
+  -- Update the preview session config so subsequent operations use the updated vars
+  if career_modules_business_businessPartCustomization.updatePreviewVehicleConfig then
+    career_modules_business_businessPartCustomization.updatePreviewVehicleConfig(businessId, updatedConfig)
+  end
 
   local vehId = vehObj:getID()
 
@@ -527,7 +613,15 @@ local function applyVehicleTuning(businessId, vehicleId, tuningVars, accountId)
     return false
   end
 
-  local vehicle = career_modules_business_businessInventory.getVehicleById(businessId, vehicleId)
+  local isPersonal = isPersonalVehicleId(vehicleId)
+  local vehicle = nil
+
+  if isPersonal then
+    vehicle = getPersonalVehicleData(vehicleId, businessId)
+  else
+    vehicle = career_modules_business_businessInventory.getVehicleById(businessId, vehicleId)
+  end
+
   if not vehicle then
     return false
   end
@@ -556,39 +650,62 @@ local function applyVehicleTuning(businessId, vehicleId, tuningVars, accountId)
   local vehicleVarsCurrent = vehicle.vars or {}
   vehicle.vars = tableMerge(vehicleVarsCurrent, tuningVars)
 
-  local pulledOutVehicle = nil
-  if career_modules_business_businessInventory.getActiveVehicle then
-    pulledOutVehicle = career_modules_business_businessInventory.getActiveVehicle(businessId)
-  else
-    pulledOutVehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
-  end
-  if pulledOutVehicle and pulledOutVehicle.vehicleId == vehicleId then
-    if not pulledOutVehicle.vars then
-      pulledOutVehicle.vars = {}
-    end
-    pulledOutVehicle.vars = tableMerge(pulledOutVehicle.vars, vehicle.vars)
-
-    if pulledOutVehicle.config then
-      if not pulledOutVehicle.config.vars then
-        pulledOutVehicle.config.vars = {}
+  if isPersonal then
+    local inventoryId = getInventoryIdFromPersonalVehicleId(vehicleId, businessId)
+    if inventoryId and career_modules_inventory then
+      local inventoryVehicles = career_modules_inventory.getVehicles()
+      if inventoryVehicles and inventoryVehicles[inventoryId] then
+        if not inventoryVehicles[inventoryId].config then
+          inventoryVehicles[inventoryId].config = {}
+        end
+        if not inventoryVehicles[inventoryId].config.vars then
+          inventoryVehicles[inventoryId].config.vars = {}
+        end
+        inventoryVehicles[inventoryId].config.vars = tableMerge(
+          inventoryVehicles[inventoryId].config.vars,
+          tuningVars
+        )
+        if career_modules_inventory.setVehicleDirty then
+          career_modules_inventory.setVehicleDirty(inventoryId)
+        end
       end
-      pulledOutVehicle.config.vars = tableMerge(pulledOutVehicle.config.vars, vehicle.vars)
     end
-  end
-
-  local updateData = {
-    vars = vehicle.vars
-  }
-
-  if vehicle.config then
-    if not vehicle.config.vars then
-      vehicle.config.vars = {}
+  else
+    -- For business vehicles, use existing logic
+    local pulledOutVehicle = nil
+    if career_modules_business_businessInventory.getActiveVehicle then
+      pulledOutVehicle = career_modules_business_businessInventory.getActiveVehicle(businessId)
+    else
+      pulledOutVehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
     end
-    vehicle.config.vars = tableMerge(vehicle.config.vars, vehicle.vars)
-    updateData.config = vehicle.config
-  end
+    if pulledOutVehicle and pulledOutVehicle.vehicleId == vehicleId then
+      if not pulledOutVehicle.vars then
+        pulledOutVehicle.vars = {}
+      end
+      pulledOutVehicle.vars = tableMerge(pulledOutVehicle.vars, vehicle.vars)
 
-  career_modules_business_businessInventory.updateVehicle(businessId, vehicleId, updateData)
+      if pulledOutVehicle.config then
+        if not pulledOutVehicle.config.vars then
+          pulledOutVehicle.config.vars = {}
+        end
+        pulledOutVehicle.config.vars = tableMerge(pulledOutVehicle.config.vars, vehicle.vars)
+      end
+    end
+
+    local updateData = {
+      vars = vehicle.vars
+    }
+
+    if vehicle.config then
+      if not vehicle.config.vars then
+        vehicle.config.vars = {}
+      end
+      vehicle.config.vars = tableMerge(vehicle.config.vars, vehicle.vars)
+      updateData.config = vehicle.config
+    end
+
+    career_modules_business_businessInventory.updateVehicle(businessId, vehicleId, updateData)
+  end
 
   return true
 end

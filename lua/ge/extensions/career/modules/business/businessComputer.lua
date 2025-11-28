@@ -109,9 +109,60 @@ local function clearCachesForJob(businessId, jobId)
 end
 
 local DAMAGE_LOCK_THRESHOLD = 1000
+local function isPersonalVehicleId(vehicleId)
+  if not vehicleId then
+    return false
+  end
+  local str = tostring(vehicleId)
+  return str:sub(1, 9) == "personal_"
+end
+
+local function getSpawnedIdFromPersonalVehicleId(vehicleId)
+  if not vehicleId then
+    return nil
+  end
+  local str = tostring(vehicleId)
+  if str:sub(1, 9) ~= "personal_" then
+    return nil
+  end
+  local spawnedIdStr = str:sub(10)
+  return tonumber(spawnedIdStr)
+end
+
+local function getInventoryIdFromPersonalVehicleId(vehicleId, businessId)
+  if not isPersonalVehicleId(vehicleId) then
+    return nil
+  end
+  if career_modules_business_tuningShop and career_modules_business_tuningShop.getActivePersonalVehicle then
+    if businessId then
+      local activePersonal = career_modules_business_tuningShop.getActivePersonalVehicle(businessId)
+      if activePersonal and activePersonal.vehicleId == vehicleId and activePersonal.inventoryId then
+        return activePersonal.inventoryId
+      end
+    else
+      -- Fallback: try all businesses
+      local businesses = career_modules_business_businessManager and career_modules_business_businessManager.getBusinesses("tuningShop") or {}
+      for bId, _ in pairs(businesses) do
+        local activePersonal = career_modules_business_tuningShop.getActivePersonalVehicle(bId)
+        if activePersonal and activePersonal.vehicleId == vehicleId and activePersonal.inventoryId then
+          return activePersonal.inventoryId
+        end
+      end
+    end
+  end
+  return nil
+end
 
 local function getBusinessVehicleObject(businessId, vehicleId)
   if not businessId or not vehicleId then
+    return nil
+  end
+
+  if isPersonalVehicleId(vehicleId) then
+    local spawnedId = getSpawnedIdFromPersonalVehicleId(vehicleId)
+    if spawnedId then
+      return getObjectByID(spawnedId)
+    end
     return nil
   end
 
@@ -164,6 +215,14 @@ local function getPulledOutVehiclesList(businessId)
 end
 
 local function getActiveBusinessVehicle(businessId)
+  -- Check for active personal vehicle first
+  if career_modules_business_tuningShop and career_modules_business_tuningShop.getActivePersonalVehicle then
+    local personalVehicle = career_modules_business_tuningShop.getActivePersonalVehicle(businessId)
+    if personalVehicle then
+      return personalVehicle
+    end
+  end
+
   if not career_modules_business_businessInventory then
     return nil
   end
@@ -1251,11 +1310,91 @@ local function formatPartsTreeForUI(node, slotName, slotInfo, availableParts, sl
   return result
 end
 
+local function getPersonalVehicleData(vehicleId, businessId)
+  if not isPersonalVehicleId(vehicleId) then
+    return nil
+  end
+  
+  local activePersonal = nil
+  if career_modules_business_tuningShop and career_modules_business_tuningShop.getActivePersonalVehicle then
+    if businessId then
+      activePersonal = career_modules_business_tuningShop.getActivePersonalVehicle(businessId)
+    else
+      -- Try all businesses if businessId not provided
+      local businesses = career_modules_business_businessManager and career_modules_business_businessManager.getBusinesses("tuningShop") or {}
+      for bId, _ in pairs(businesses) do
+        local entry = career_modules_business_tuningShop.getActivePersonalVehicle(bId)
+        if entry and entry.vehicleId == vehicleId then
+          activePersonal = entry
+          break
+        end
+      end
+    end
+  end
+  
+  if activePersonal and activePersonal.vehicleId == vehicleId then
+    return activePersonal
+  end
+  
+  return nil
+end
+
 local function requestVehiclePartsTree(businessId, vehicleId)
   if not businessId or not vehicleId then
     guihooks.trigger('businessComputer:onVehiclePartsTree', {
       success = false,
       error = "Missing parameters"
+    })
+    return
+  end
+
+  local isPersonal = isPersonalVehicleId(vehicleId)
+  
+  if isPersonal then
+    local spawnedId = getSpawnedIdFromPersonalVehicleId(vehicleId)
+    if not spawnedId then
+      guihooks.trigger('businessComputer:onVehiclePartsTree', {
+        success = false,
+        error = "Invalid personal vehicle ID"
+      })
+      return
+    end
+    
+    local vehicleData = extensions.core_vehicle_manager.getVehicleData(spawnedId)
+    
+    if not vehicleData or not vehicleData.config or not vehicleData.config.partsTree then
+      guihooks.trigger('businessComputer:onVehiclePartsTree', {
+        success = false,
+        error = "No parts tree found for personal vehicle"
+      })
+      return
+    end
+    
+    local availableParts = jbeamIO.getAvailableParts(vehicleData.ioCtx)
+    local slotsNiceName = {}
+    local partsNiceName = {}
+    
+    for partName, partInfo in pairs(availableParts) do
+      if partInfo.slotInfoUi then
+        for slotName, slotInfo in pairs(partInfo.slotInfoUi) do
+          slotsNiceName[slotName] = type(slotInfo.description) == "table" and slotInfo.description.description or slotInfo.description
+        end
+      end
+      local desc = partInfo.description
+      partsNiceName[partName] = type(desc) == "table" and desc.description or desc
+    end
+    
+    local partsTreeList = formatPartsTreeForUI(vehicleData.config.partsTree, "", nil, availableParts, slotsNiceName, partsNiceName, nil)
+    
+    guihooks.trigger('businessComputer:onVehiclePartsTree', {
+      success = true,
+      businessId = businessId,
+      vehicleId = vehicleId,
+      jobId = nil,
+      partsTree = partsTreeList,
+      slotsNiceName = slotsNiceName,
+      partsNiceName = partsNiceName,
+      isPersonal = true
     })
     return
   end
@@ -1288,6 +1427,7 @@ local function requestVehiclePartsTree(businessId, vehicleId)
     return
   end
 
+  -- Business vehicles need job system to spawn temporary vehicle
   core_jobsystem.create(function(job)
     local vehicle = career_modules_business_businessInventory.getVehicleById(businessId, vehicleId)
     if not vehicle or not vehicle.vehicleConfig then
@@ -1319,7 +1459,7 @@ local function requestVehiclePartsTree(businessId, vehicleId)
 
     local vehicleObj = core_vehicles.spawnNewVehicle(modelKey, {
       config = configToUse,
-      pos = vec3(0, 0, -1000), -- Spawn far away
+      pos = vec3(0, 0, -1000),
       rot = quat(0, 0, 0, 1),
       keepLoaded = true,
       autoEnterVehicle = false
@@ -1334,12 +1474,11 @@ local function requestVehiclePartsTree(businessId, vehicleId)
     end
 
     local vehId = vehicleObj:getID()
-
     local vehicleData = extensions.core_vehicle_manager.getVehicleData(vehId)
+
     if not vehicleData or not vehicleData.config or not vehicleData.config.partsTree then
-      if vehicleObj then
-        vehicleObj:delete()
-      end
+      log("W", "businessComputer", "requestVehiclePartsTree: No parts tree for business vehicle")
+      vehicleObj:delete()
       guihooks.trigger('businessComputer:onVehiclePartsTree', {
         success = false,
         error = "No parts tree found"
@@ -1348,28 +1487,20 @@ local function requestVehiclePartsTree(businessId, vehicleId)
     end
 
     local availableParts = jbeamIO.getAvailableParts(vehicleData.ioCtx)
-
     local slotsNiceName = {}
     local partsNiceName = {}
 
     for partName, partInfo in pairs(availableParts) do
       if partInfo.slotInfoUi then
         for slotName, slotInfo in pairs(partInfo.slotInfoUi) do
-          slotsNiceName[slotName] = type(slotInfo.description) == "table" and slotInfo.description.description or
-                                      slotInfo.description
+          slotsNiceName[slotName] = type(slotInfo.description) == "table" and slotInfo.description.description or slotInfo.description
         end
       end
-
       local desc = partInfo.description
       partsNiceName[partName] = type(desc) == "table" and desc.description or desc
     end
 
-    local vehicle = career_modules_business_businessInventory.getVehicleById(businessId, vehicleId)
-    local vehicleModel = nil
-    if vehicle and vehicle.vehicleConfig then
-      vehicleModel = vehicle.vehicleConfig.model_key or vehicle.model_key
-    end
-
+    local vehicleModel = vehicle.vehicleConfig.model_key or vehicle.model_key
     local ownedPartsLookup = nil
     if career_modules_business_businessPartInventory and vehicleModel then
       local inventoryParts = career_modules_business_businessPartInventory.getPartsByModel(vehicleModel)
@@ -1379,11 +1510,14 @@ local function requestVehiclePartsTree(businessId, vehicleId)
     local partsTreeList = formatPartsTreeForUI(vehicleData.config.partsTree, "", nil, availableParts, slotsNiceName,
       partsNiceName, "/", nil, vehicleData.ioCtx, businessId, vehicleData, vehicleModel, ownedPartsLookup)
 
-    if vehicleObj then
-      vehicleObj:delete()
-    end
+    -- Delete the temporary spawned vehicle
+    vehicleObj:delete()
 
-    setCachedPartsTree(businessId, vehicle.jobId, {
+    local cacheJobId = vehicle.jobId
+    if isPersonal then
+      cacheJobId = "personal_" .. tostring(vehicle.inventoryId or vehicleId)
+    end
+    setCachedPartsTree(businessId, cacheJobId, {
       vehicleId = vehicle.vehicleId,
       partsTree = partsTreeList,
       slotsNiceName = slotsNiceName,
@@ -1394,10 +1528,11 @@ local function requestVehiclePartsTree(businessId, vehicleId)
       success = true,
       businessId = businessId,
       vehicleId = vehicleId,
-      jobId = vehicle.jobId,
+      jobId = cacheJobId,
       partsTree = partsTreeList,
       slotsNiceName = slotsNiceName,
-      partsNiceName = partsNiceName
+      partsNiceName = partsNiceName,
+      isPersonal = isPersonal
     })
   end)
 end
@@ -1712,7 +1847,6 @@ local function purchaseCartItems(businessId, accountId, cartData)
 
   local hasItems = (#parts > 0) or (#tuning > 0)
   if not hasItems then
-    log("D", "businessComputer", "purchaseCartItems: No items in cart")
     return false
   end
 
@@ -1745,15 +1879,15 @@ local function purchaseCartItems(businessId, accountId, cartData)
         end
       end
     end
-  else
-    log("D", "businessComputer", "purchaseCartItems: Processing free purchase (subtotal=0, parts=" .. tostring(#parts) .. ", tuning=" .. tostring(#tuning) .. ")")
   end
 
   local vehicle = getActiveBusinessVehicle(businessId)
   if vehicle and vehicle.vehicleId then
+    local vehicleIdStr = tostring(vehicle.vehicleId)
+    local isPersonalVehicle = isPersonalVehicleId(vehicleIdStr)
+
     if #parts > 0 then
-      -- Handle inventory transactions
-      if career_modules_business_businessPartCustomization and career_modules_business_businessPartInventory then
+      if not isPersonalVehicle and career_modules_business_businessPartCustomization and career_modules_business_businessPartInventory then
         -- Track removed parts before applying changes
         local removedParts = career_modules_business_businessPartCustomization.findRemovedParts(businessId,
           vehicle.vehicleId)
@@ -1800,30 +1934,43 @@ local function purchaseCartItems(businessId, accountId, cartData)
 
         vehicle.partList = partList
 
-        career_modules_business_businessInventory.updateVehicle(businessId, vehicle.vehicleId, {
-          config = vehicle.config,
-          partList = vehicle.partList
-        })
-
-        if career_modules_business_businessInventory.getPulledOutVehicles then
-          local pulledVehicles = career_modules_business_businessInventory.getPulledOutVehicles(businessId) or {}
-          local targetId = normalizeVehicleIdValue(vehicle.vehicleId)
-          for _, pulled in ipairs(pulledVehicles) do
-            local pulledId = normalizeVehicleIdValue(pulled.vehicleId)
-            if pulledId == targetId then
-              pulled.config = vehicle.config
-              pulled.partList = vehicle.partList
-              break
+        if isPersonalVehicle then
+          local inventoryId = getInventoryIdFromPersonalVehicleId(vehicleIdStr, businessId)
+          if inventoryId and career_modules_inventory then
+            local inventoryVehicles = career_modules_inventory.getVehicles()
+            if inventoryVehicles and inventoryVehicles[inventoryId] then
+              inventoryVehicles[inventoryId].config = vehicle.config
+              if career_modules_inventory.setVehicleDirty then
+                career_modules_inventory.setVehicleDirty(inventoryId)
+              end
             end
           end
         else
-          local pulledOutVehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
-          if pulledOutVehicle and pulledOutVehicle.vehicleId == vehicle.vehicleId then
-            pulledOutVehicle.config = vehicle.config
-            pulledOutVehicle.partList = vehicle.partList
+          -- For business vehicles, save to business inventory
+          career_modules_business_businessInventory.updateVehicle(businessId, vehicle.vehicleId, {
+            config = vehicle.config,
+            partList = vehicle.partList
+          })
+
+          if career_modules_business_businessInventory.getPulledOutVehicles then
+            local pulledVehicles = career_modules_business_businessInventory.getPulledOutVehicles(businessId) or {}
+            local targetId = normalizeVehicleIdValue(vehicle.vehicleId)
+            for _, pulled in ipairs(pulledVehicles) do
+              local pulledId = normalizeVehicleIdValue(pulled.vehicleId)
+              if pulledId == targetId then
+                pulled.config = vehicle.config
+                pulled.partList = vehicle.partList
+                break
+              end
+            end
+          else
+            local pulledOutVehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
+            if pulledOutVehicle and pulledOutVehicle.vehicleId == vehicle.vehicleId then
+              pulledOutVehicle.config = vehicle.config
+              pulledOutVehicle.partList = vehicle.partList
+            end
           end
         end
-
       end
     end
 
@@ -1839,9 +1986,20 @@ local function purchaseCartItems(businessId, accountId, cartData)
 
     M.exitShoppingVehicle(businessId)
 
-    career_modules_business_businessVehicleModificationUtil.finalizePurchase(businessId, vehicle.vehicleId, nop)
-    
-    log("D", "businessComputer", "purchaseCartItems: Successfully processed purchase (parts=" .. tostring(#parts) .. ", tuning=" .. tostring(#tuning) .. ", cost=" .. tostring(totalCost) .. ")")
+    if isPersonalVehicle then
+      if career_modules_business_businessPartCustomization then
+        career_modules_business_businessPartCustomization.clearPreviewVehicle(businessId)
+      end
+      if career_modules_business_businessVehicleTuning then
+        career_modules_business_businessVehicleTuning.clearTuningDataCache()
+      end
+      local inventoryId = getInventoryIdFromPersonalVehicleId(vehicleIdStr, businessId)
+      if inventoryId then
+        career_saveSystem.saveCurrent({inventoryId})
+      end
+    else
+      career_modules_business_businessVehicleModificationUtil.finalizePurchase(businessId, vehicle.vehicleId, nop)
+    end
   else
     log("W", "businessComputer", "purchaseCartItems: No active vehicle found for businessId=" .. tostring(businessId))
   end
@@ -1952,24 +2110,27 @@ local function enterShoppingVehicle(businessId, vehicleId)
     return false
   end
   
-  if not career_modules_business_businessInventory then
-    log("W", "businessComputer", "enterShoppingVehicle: businessInventory module not available")
-    return false
+  local spawnedVehId = nil
+  
+  if isPersonalVehicleId(vehicleId) then
+    spawnedVehId = getSpawnedIdFromPersonalVehicleId(vehicleId)
+    else
+      if not career_modules_business_businessInventory then
+      log("W", "businessComputer", "enterShoppingVehicle: businessInventory module not available")
+      return false
+    end
+    spawnedVehId = career_modules_business_businessInventory.getSpawnedVehicleId(businessId, vehicleId)
   end
   
-  local spawnedVehId = career_modules_business_businessInventory.getSpawnedVehicleId(businessId, vehicleId)
-  if not spawnedVehId then
-    log("W", "businessComputer", "enterShoppingVehicle: No spawned vehicle found for vehicleId=" .. tostring(vehicleId))
+  if not spawnedVehId or spawnedVehId == 0 then
     return false
   end
   
   local vehObj = be:getObjectByID(spawnedVehId)
   if not vehObj then
-    log("W", "businessComputer", "enterShoppingVehicle: Could not get vehicle object for spawnedVehId=" .. tostring(spawnedVehId))
     return false
   end
   
-  log("D", "businessComputer", "enterShoppingVehicle: Entering vehicle " .. tostring(spawnedVehId))
   be:enterVehicle(0, vehObj)
   return true
 end
@@ -2275,10 +2436,28 @@ local function getManagerData(businessId)
   return nil
 end
 
+local function selectPersonalVehicle(businessId, inventoryId)
+  local module = resolveBusinessModule(businessId)
+  if module and module.selectPersonalVehicle then
+    return module.selectPersonalVehicle(businessId, inventoryId)
+  end
+  return { success = false, errorCode = "notSupported", message = "Personal vehicles not supported for this business type" }
+end
+
+local function isPersonalUseUnlocked(businessId)
+  local module = resolveBusinessModule(businessId)
+  if module and module.isPersonalUseUnlocked then
+    return module.isPersonalUseUnlocked(businessId)
+  end
+  return false
+end
+
 M.onExtensionLoaded = onExtensionLoaded
 M.getTechData = getTechData
 M.getManagerData = getManagerData
 M.enterShoppingVehicle = enterShoppingVehicle
 M.exitShoppingVehicle = exitShoppingVehicle
+M.selectPersonalVehicle = selectPersonalVehicle
+M.isPersonalUseUnlocked = isPersonalUseUnlocked
 
 return M

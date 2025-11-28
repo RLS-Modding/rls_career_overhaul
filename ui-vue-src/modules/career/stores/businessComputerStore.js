@@ -171,16 +171,24 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   const managerAssignmentInterval = computed(() => businessData.value?.managerAssignmentInterval || null)
   const managerReadyToAssign = computed(() => businessData.value?.managerReadyToAssign === true)
   const managerTimeRemaining = computed(() => businessData.value?.managerTimeRemaining || null)
+  const personalUseUnlocked = computed(() => businessData.value?.personalUseUnlocked === true)
+  const personalVehicles = computed(() => {
+    const list = pulledOutVehicles.value || []
+    return list.filter(v => v?.isPersonal === true)
+  })
 
   const setBusinessData = (data) => {
+    console.log('[BusinessStore] setBusinessData - pulledOutVehicles:', data?.pulledOutVehicles, 'pulledOutVehicle:', data?.pulledOutVehicle, 'personalUseUnlocked:', data?.personalUseUnlocked)
     const vehiclesFromData = Array.isArray(data?.pulledOutVehicles)
       ? data.pulledOutVehicles
       : (data?.pulledOutVehicle ? [data.pulledOutVehicle] : [])
+    console.log('[BusinessStore] vehiclesFromData:', vehiclesFromData)
     pulledOutVehicles.value = vehiclesFromData
     let nextActiveId = data?.activeVehicleId
     if (nextActiveId === undefined || nextActiveId === null) {
       nextActiveId = vehiclesFromData[0]?.vehicleId ?? data?.pulledOutVehicle?.vehicleId ?? null
     }
+    console.log('[BusinessStore] nextActiveId:', nextActiveId)
     activeVehicleId.value = nextActiveId ?? null
     const normalizedActiveId = normalizeVehicleIdValue(nextActiveId)
     let activeEntry = null
@@ -190,6 +198,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     if (!activeEntry && data?.pulledOutVehicle) {
       activeEntry = data.pulledOutVehicle
     }
+    console.log('[BusinessStore] activeEntry:', activeEntry)
     pulledOutVehicle.value = activeEntry || null
     const now = Date.now() / 1000
     const techsArray = Array.isArray(data.techs) ? data.techs : Object.values(data.techs || {})
@@ -403,6 +412,24 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     try {
       const success = normalizeLuaResult(await lua.career_modules_business_businessComputer.pullOutVehicle(businessId.value, vehicleId))
       return !!success
+    } catch (error) {
+      return false
+    }
+  }
+
+  const selectPersonalVehicle = async (inventoryId) => {
+    if (!businessId.value) {
+      return false
+    }
+    try {
+      const result = await lua.career_modules_business_businessComputer.selectPersonalVehicle(businessId.value, inventoryId)
+      if (result && result.success) {
+        return true
+      }
+      if (result && result.message) {
+        showErrorMessage(result.message)
+      }
+      return false
     } catch (error) {
       return false
     }
@@ -2082,7 +2109,10 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     kits,
     maxKitStorage,
     currentKitCount,
-    playerInZone
+    playerInZone,
+    personalUseUnlocked,
+    personalVehicles,
+    selectPersonalVehicle
   }
 })
 

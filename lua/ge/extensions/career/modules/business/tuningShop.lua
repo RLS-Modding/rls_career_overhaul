@@ -36,6 +36,7 @@ local EXPIRY_SECONDS = 300
 local DAMAGE_LOCK_THRESHOLD = 1750
 
 local cachedGarageZones = {}
+local activePersonalVehicle = {}
 
 local function getGarageZones(businessId)
   if cachedGarageZones[businessId] then
@@ -52,11 +53,8 @@ local function getGarageZones(businessId)
   if not garage then
     local business = freeroam_facilities.getFacility(businessType, businessId)
     if not business then
-      log("D", "tuningShop", "getGarageZones: Business not found for businessId=" .. tostring(businessId))
       return nil
     end
-    
-    log("D", "tuningShop", "getGarageZones: business.businessGarageId=" .. tostring(business.businessGarageId))
     
     local businessGarages = freeroam_facilities.getFacilitiesByType("businessGarage")
     if businessGarages then
@@ -70,29 +68,17 @@ local function getGarageZones(businessId)
   end
   
   if not garage then
-    log("D", "tuningShop", "getGarageZones: Garage not found for businessId=" .. tostring(businessId))
     return nil
   end
   
   if not garage.sitesFile then
-    log("D", "tuningShop", "getGarageZones: Garage has no sitesFile")
     return nil
   end
   
-  log("D", "tuningShop", "getGarageZones: Loading sites from " .. tostring(garage.sitesFile))
   local sites = gameplay_sites_sitesManager.loadSites(garage.sitesFile)
-  if not sites then
-    log("D", "tuningShop", "getGarageZones: Failed to load sites")
+  if not sites or not sites.zones then
     return nil
   end
-  
-  if not sites.zones then
-    log("D", "tuningShop", "getGarageZones: Sites have no zones")
-    return nil
-  end
-  
-  local zoneCount = sites.zones.sorted and #sites.zones.sorted or 0
-  log("D", "tuningShop", "getGarageZones: Loaded " .. tostring(zoneCount) .. " zones")
   
   cachedGarageZones[businessId] = sites.zones
   return sites.zones
@@ -100,64 +86,50 @@ end
 
 local function isPositionInGarageZone(businessId, pos)
   if not businessId or not pos then
-    log("D", "tuningShop", "isPositionInGarageZone: Missing businessId or pos")
     return false
   end
   
   local zones = getGarageZones(businessId)
   if not zones then
-    log("D", "tuningShop", "isPositionInGarageZone: No zones found for businessId=" .. tostring(businessId))
     return false
   end
   
-  local zoneCount = zones.sorted and #zones.sorted or 0
-  log("D", "tuningShop", "isPositionInGarageZone: Checking " .. tostring(zoneCount) .. " zones")
-  
   for _, zone in ipairs(zones.sorted or {}) do
-    if zone and zone.containsPoint2D then
-      local contains = zone:containsPoint2D(pos)
-      if contains then
-        log("D", "tuningShop", "isPositionInGarageZone: Position is in zone " .. tostring(zone.name or "unnamed"))
-        return true
-      end
+    if zone and zone.containsPoint2D and zone:containsPoint2D(pos) then
+      return true
     end
   end
   
-  log("D", "tuningShop", "isPositionInGarageZone: Position not in any zone")
   return false
 end
 
 local function isSpawnedVehicleInGarageZone(businessId, vehicleId)
   if not businessId or not vehicleId then
-    log("D", "tuningShop", "isSpawnedVehicleInGarageZone: Missing businessId or vehicleId")
     return false
   end
   
   local spawnedVehId = nil
-  if career_modules_business_businessInventory and career_modules_business_businessInventory.getSpawnedVehicleId then
+  if isPersonalVehicleId(vehicleId) then
+    spawnedVehId = getSpawnedIdFromPersonalVehicleId(vehicleId)
+  elseif career_modules_business_businessInventory and career_modules_business_businessInventory.getSpawnedVehicleId then
     spawnedVehId = career_modules_business_businessInventory.getSpawnedVehicleId(businessId, vehicleId)
   end
   
   if not spawnedVehId then
-    log("D", "tuningShop", "isSpawnedVehicleInGarageZone: No spawned vehicle ID found for vehicleId=" .. tostring(vehicleId))
     return false
   end
   
   local vehObj = be:getObjectByID(spawnedVehId)
   if not vehObj then
-    log("D", "tuningShop", "isSpawnedVehicleInGarageZone: Vehicle object not found for spawnedVehId=" .. tostring(spawnedVehId))
     return false
   end
   
   local vehPos = vehObj:getPosition()
   if not vehPos then
-    log("D", "tuningShop", "isSpawnedVehicleInGarageZone: Could not get vehicle position")
     return false
   end
   
-  local inZone = isPositionInGarageZone(businessId, vehPos)
-  log("D", "tuningShop", "isSpawnedVehicleInGarageZone: vehicleId=" .. tostring(vehicleId) .. ", pos=" .. tostring(vehPos) .. ", inZone=" .. tostring(inZone))
-  return inZone
+  return isPositionInGarageZone(businessId, vehPos)
 end
 
 local function isPlayerInTuningShopZone(businessId)
@@ -259,6 +231,106 @@ local function getSkillTreeLevel(businessId, treeId, nodeId)
   end
   local level = career_modules_business_businessSkillTree.getNodeProgress(businessId, treeId, nodeId)
   return tonumber(level) or 0
+end
+
+local function isPersonalUseUnlocked(businessId)
+  if not businessId or not career_modules_business_businessSkillTree then
+    return false
+  end
+  local level = career_modules_business_businessSkillTree.getNodeProgress(businessId, "quality-of-life", "personal-use")
+  return (tonumber(level) or 0) >= 1
+end
+
+local function getInventoryVehiclesInGarageZone(businessId)
+  if not businessId or not career_modules_inventory then
+    return {}
+  end
+  local zones = getGarageZones(businessId)
+  if not zones or not zones.sorted then
+    return {}
+  end
+  local inventoryVehicles = career_modules_inventory.getVehicles()
+  if not inventoryVehicles then
+    return {}
+  end
+  local results = {}
+  for inventoryId, vehInfo in pairs(inventoryVehicles) do
+    if vehInfo.loanType then
+      goto continue
+    end
+    if career_modules_testDrive and career_modules_testDrive.isActive and career_modules_testDrive.isActive() then
+      goto continue
+    end
+    local spawnedId = career_modules_inventory.getVehicleIdFromInventoryId(inventoryId)
+    if not spawnedId then
+      goto continue
+    end
+    local vehObj = be:getObjectByID(spawnedId)
+    if not vehObj then
+      goto continue
+    end
+    local vehPos = vehObj:getPosition()
+    if not vehPos then
+      goto continue
+    end
+    local inZone = false
+    for _, zone in ipairs(zones.sorted or {}) do
+      if zone and zone.containsPoint2D and zone:containsPoint2D(vehPos) then
+        inZone = true
+        break
+      end
+    end
+    if inZone then
+      table.insert(results, {
+        spawnedId = spawnedId,
+        inventoryId = inventoryId,
+        inventoryVehicleData = vehInfo
+      })
+    end
+    ::continue::
+  end
+  return results
+end
+
+local function createPersonalVehicleEntry(businessId, inventoryId, inventoryVehicleData, spawnedId)
+  if not inventoryId or not inventoryVehicleData or not spawnedId then
+    return nil
+  end
+  local vehicleId = "personal_" .. tostring(spawnedId)
+  local model = inventoryVehicleData.model
+  local config = inventoryVehicleData.config or {}
+  local configKey = config.partConfigFilename
+  if configKey then
+    local _, key = path.splitWithoutExt(configKey)
+    configKey = key
+  end
+  local niceName = nil
+  if model then
+    local vehicleData = core_vehicles.getModel(model)
+    if vehicleData and vehicleData.model then
+      niceName = vehicleData.model.Brand .. " " .. vehicleData.model.Name
+    end
+  end
+  return {
+    vehicleId = vehicleId,
+    jobId = nil,
+    model = model,
+    model_key = model,
+    config = config,
+    vehicleConfig = {
+      model_key = model,
+      key = configKey
+    },
+    vars = config.vars or {},
+    partConditions = inventoryVehicleData.partConditions or {},
+    mileage = inventoryVehicleData.mileage or 0,
+    niceName = niceName or model or "Unknown Vehicle",
+    isPersonal = true,
+    inventoryId = inventoryId,
+    spawnedVehicleId = spawnedId,
+    owned = inventoryVehicleData.owned,
+    storedTime = os.time()
+  }
 end
 
 local function getBusinessJobsPath(businessId)
@@ -1390,7 +1462,6 @@ local function getAvailableBrands()
   end
 
   table.sort(brands)
-  log("D", "tuningShop", "getAvailableBrands: Found " .. tostring(#brands) .. " brands")
   return brands
 end
 
@@ -1943,30 +2014,16 @@ local function canCompleteJob(businessId, jobId)
 
   jobId = tonumber(jobId) or jobId
   local job = getJobById(businessId, jobId)
-  if not job then
-    log("D", "tuningShop",
-      "canCompleteJob: Job not found. businessId=" .. tostring(businessId) .. ", jobId=" .. tostring(jobId))
-    return false
-  end
-
-  if job.status ~= "active" then
-    log("D", "tuningShop",
-      "canCompleteJob: Job not active. businessId=" .. tostring(businessId) .. ", jobId=" .. tostring(jobId) ..
-        ", status=" .. tostring(job.status))
+  if not job or job.status ~= "active" then
     return false
   end
 
   if not job.raceType or not job.targetTime then
-    log("D", "tuningShop",
-      "canCompleteJob: Job missing raceType or targetTime. businessId=" .. tostring(businessId) .. ", jobId=" ..
-        tostring(jobId))
     return false
   end
 
   local currentTime = getJobCurrentTime(businessId, jobId)
   if not currentTime then
-    log("D", "tuningShop", "canCompleteJob: Could not get current time. businessId=" .. tostring(businessId) ..
-      ", jobId=" .. tostring(jobId))
     return false
   end
 
@@ -1976,13 +2033,7 @@ local function canCompleteJob(businessId, jobId)
   end
 
   if job.raceType == "drag" or job.raceType == "track" or job.raceType == "trackAlt" then
-    local canComplete = currentTime <= targetTime
-    if not canComplete then
-      log("D", "tuningShop",
-        "canCompleteJob: Time not met. businessId=" .. tostring(businessId) .. ", jobId=" .. tostring(jobId) ..
-          ", currentTime=" .. tostring(currentTime) .. ", targetTime=" .. tostring(targetTime))
-    end
-    return canComplete
+    return currentTime <= targetTime
   end
 
   return false
@@ -2058,7 +2109,6 @@ local function completeJob(businessId, jobId)
   local xpReward = math.floor(baseXP * xpMultiplier)
 
   addBusinessXP(businessId, xpReward)
-  log("D", "tuningShop", "completeJob: Awarded " .. tostring(xpReward) .. " XP to business " .. tostring(businessId))
 
   local vehicleToRemove = getVehicleByJobId(businessId, jobId)
 
@@ -2100,8 +2150,6 @@ local function completeJob(businessId, jobId)
 
   career_saveSystem.saveCurrent()
 
-  log("D", "tuningShop",
-    "completeJob: Successfully completed job. businessId=" .. tostring(businessId) .. ", jobId=" .. tostring(jobId))
   return true
 end
 
@@ -2370,7 +2418,7 @@ local function formatVehicleForUI(vehicle, businessId)
     spawnedVehicleId = career_modules_business_businessInventory.getSpawnedVehicleId(businessId, vehicle.vehicleId)
   end
 
-  return {
+  local result = {
     id = tostring(vehicle.vehicleId),
     vehicleId = vehicle.vehicleId,
     vehicleName = vehicleName,
@@ -2383,6 +2431,15 @@ local function formatVehicleForUI(vehicle, businessId)
     model_key = modelKey,
     config_key = configKey
   }
+
+  if vehicle.isPersonal then
+    result.isPersonal = true
+    result.inventoryId = vehicle.inventoryId
+    result.spawnedVehicleId = vehicle.spawnedVehicleId
+    result.inGarageZone = true
+  end
+
+  return result
 end
 
 local function getBusinessVehicleObject(businessId, vehicleId)
@@ -2759,28 +2816,48 @@ local function getUIData(businessId)
   end
 
   local pulledOutVehiclesInZone = {}
-  log("D", "tuningShop", "getUIData: Checking " .. tostring(#pulledOutVehiclesRaw) .. " pulled out vehicles for zone")
   for _, vehicle in ipairs(pulledOutVehiclesRaw) do
-    local inZone = isSpawnedVehicleInGarageZone(businessId, vehicle.vehicleId)
-    log("D", "tuningShop", "getUIData: vehicleId=" .. tostring(vehicle.vehicleId) .. " inZone=" .. tostring(inZone))
-    if inZone then
+    if isSpawnedVehicleInGarageZone(businessId, vehicle.vehicleId) then
       table.insert(pulledOutVehiclesInZone, vehicle)
     end
   end
-  log("D", "tuningShop", "getUIData: " .. tostring(#pulledOutVehiclesInZone) .. " vehicles in zone")
+
+  local personalVehiclesInZone = {}
+  local personalUseUnlocked = isPersonalUseUnlocked(businessId)
+  if personalUseUnlocked and playerInZone then
+    local inventoryVehiclesInZone = getInventoryVehiclesInGarageZone(businessId)
+    for _, invVeh in ipairs(inventoryVehiclesInZone) do
+      local personalEntry = createPersonalVehicleEntry(businessId, invVeh.inventoryId, invVeh.inventoryVehicleData, invVeh.spawnedId)
+      if personalEntry then
+        table.insert(personalVehiclesInZone, personalEntry)
+      end
+    end
+  end
 
   local activeVehicle = nil
+  local selectedPersonalVehicle = false
   if career_modules_business_businessInventory.getActiveVehicle then
     local rawActive = career_modules_business_businessInventory.getActiveVehicle(businessId)
     if rawActive and isSpawnedVehicleInGarageZone(businessId, rawActive.vehicleId) then
       activeVehicle = rawActive
     elseif #pulledOutVehiclesInZone > 0 then
       activeVehicle = pulledOutVehiclesInZone[1]
+    elseif #personalVehiclesInZone > 0 then
+      activeVehicle = personalVehiclesInZone[1]
+      selectedPersonalVehicle = true
     end
   else
     if #pulledOutVehiclesInZone > 0 then
       activeVehicle = pulledOutVehiclesInZone[1]
+    elseif #personalVehiclesInZone > 0 then
+      activeVehicle = personalVehiclesInZone[1]
+      selectedPersonalVehicle = true
     end
+  end
+
+  -- Auto-store the active personal vehicle so enterShoppingVehicle can find it
+  if selectedPersonalVehicle and activeVehicle and activeVehicle.isPersonal then
+    activePersonalVehicle[businessId] = activeVehicle
   end
 
   local activeVehicleId = activeVehicle and (tonumber(activeVehicle.vehicleId) or activeVehicle.vehicleId)
@@ -2805,6 +2882,25 @@ local function getUIData(businessId)
       if activeVehicleId and (tonumber(formatted.vehicleId) or formatted.vehicleId) == activeVehicleId then
         formatted.isActive = true
         pulledOutDamageInfo = vehicleDamageInfo
+      else
+        formatted.isActive = false
+      end
+      table.insert(formattedPulledOutVehicles, formatted)
+    end
+  end
+
+  for _, personalVehicle in ipairs(personalVehiclesInZone) do
+    local formatted = formatVehicleForUI(personalVehicle, businessId)
+    if formatted then
+      formatted.damage = 0
+      formatted.damageLocked = false
+      formatted.damageThreshold = DAMAGE_LOCK_THRESHOLD
+      formatted.inGarageZone = true
+      formatted.isPersonal = true
+      formatted.inventoryId = personalVehicle.inventoryId
+      formatted.spawnedVehicleId = personalVehicle.spawnedVehicleId
+      if activeVehicleId and formatted.vehicleId == activeVehicleId then
+        formatted.isActive = true
       else
         formatted.isActive = false
       end
@@ -2837,6 +2933,11 @@ local function getUIData(businessId)
       pulledOutVehicleData.damage = pulledOutDamageInfo.damage
       pulledOutVehicleData.damageLocked = pulledOutDamageInfo.locked
       pulledOutVehicleData.damageThreshold = pulledOutDamageInfo.threshold
+      if activeVehicle.isPersonal then
+        pulledOutVehicleData.isPersonal = true
+        pulledOutVehicleData.inventoryId = activeVehicle.inventoryId
+        pulledOutVehicleData.spawnedVehicleId = activeVehicle.spawnedVehicleId
+      end
     end
   end
 
@@ -2855,9 +2956,6 @@ local function getUIData(businessId)
     end
     tabs = career_modules_business_businessTabRegistry.getTabs(businessType) or {}
     log("I", "tuningShop", "getUIData: Got " .. tostring(#tabs) .. " tabs from registry")
-    for i, tab in ipairs(tabs) do
-      log("D", "tuningShop", "Tab " .. tostring(i) .. ": id=" .. tostring(tab.id) .. ", label=" .. tostring(tab.label))
-    end
 
     if hasDamageLockedVehicle then
       local allowedTabs = {
@@ -2947,7 +3045,8 @@ local function getUIData(businessId)
       local timerState = getManagerTimerState(businessId)
       local interval = getManagerAssignmentInterval(businessId)
       return math.max(0, interval - timerState.elapsed)
-    end)()
+    end)(),
+    personalUseUnlocked = personalUseUnlocked
   }
 end
 
@@ -3115,7 +3214,6 @@ local function onUpdate(dtReal, dtSim, dtRaw)
 end
 
 local function openMenu(businessId)
-  log("D", "TuningShop", "Opening menu for business: " .. tostring(businessId))
   ensureTabsRegistered()
   guihooks.trigger('ChangeState', {
     state = 'business-computer',
@@ -3315,6 +3413,58 @@ local function getManagerData(businessId)
   }
 end
 
+local function selectPersonalVehicle(businessId, inventoryId)
+  if not businessId or not inventoryId then
+    return { success = false, errorCode = "missingParams" }
+  end
+  if not isPersonalUseUnlocked(businessId) then
+    return { success = false, errorCode = "personalUseNotUnlocked", message = "Personal Use upgrade is not unlocked" }
+  end
+  local inventoryVehiclesInZone = getInventoryVehiclesInGarageZone(businessId)
+  local found = nil
+  for _, invVeh in ipairs(inventoryVehiclesInZone) do
+    if invVeh.inventoryId == inventoryId then
+      found = invVeh
+      break
+    end
+  end
+  if not found then
+    return { success = false, errorCode = "vehicleNotInZone", message = "Vehicle is not in the garage zone" }
+  end
+  local personalEntry = createPersonalVehicleEntry(businessId, found.inventoryId, found.inventoryVehicleData, found.spawnedId)
+  if not personalEntry then
+    return { success = false, errorCode = "failedToCreate", message = "Failed to create personal vehicle entry" }
+  end
+  activePersonalVehicle[businessId] = personalEntry
+  if guihooks then
+    local formatted = formatVehicleForUI(personalEntry, businessId)
+    if formatted then
+      formatted.damage = 0
+      formatted.damageLocked = false
+      formatted.damageThreshold = DAMAGE_LOCK_THRESHOLD
+      formatted.inGarageZone = true
+      formatted.isPersonal = true
+      formatted.inventoryId = inventoryId
+      formatted.spawnedVehicleId = personalEntry.spawnedVehicleId
+      formatted.isActive = true
+    end
+    guihooks.trigger('businessComputer:onPersonalVehicleSelected', {
+      businessType = "tuningShop",
+      businessId = tostring(businessId),
+      vehicle = formatted
+    })
+  end
+  return { success = true, vehicle = personalEntry }
+end
+
+local function getActivePersonalVehicle(businessId)
+  return activePersonalVehicle[businessId]
+end
+
+local function clearActivePersonalVehicle(businessId)
+  activePersonalVehicle[businessId] = nil
+end
+
 M.onCareerActivated = onCareerActivated
 M.onUpdate = onUpdate
 M.powerToWeightToTime = powerToWeightToTime
@@ -3365,5 +3515,10 @@ end
 M.isPlayerInTuningShopZone = isPlayerInTuningShopZone
 M.isSpawnedVehicleInGarageZone = isSpawnedVehicleInGarageZone
 M.isPositionInGarageZone = isPositionInGarageZone
+M.isPersonalUseUnlocked = isPersonalUseUnlocked
+M.getInventoryVehiclesInGarageZone = getInventoryVehiclesInGarageZone
+M.selectPersonalVehicle = selectPersonalVehicle
+M.getActivePersonalVehicle = getActivePersonalVehicle
+M.clearActivePersonalVehicle = clearActivePersonalVehicle
 
 return M
