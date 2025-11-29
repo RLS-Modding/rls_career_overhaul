@@ -142,7 +142,6 @@ const damageLockWarning = () => {
   try {
     lua.ui_message(message, 5, "Business Computer", "error")
   } catch (error) {
-    console.warn("Failed to show damage lock warning", error)
   }
 }
 const isDamageLocked = computed(() => store.isDamageLocked)

@@ -79,7 +79,6 @@ const requestFinancesData = async () => {
       store.businessId
     )
   } catch (error) {
-    console.error('Error requesting finances data:', error)
     loading.value = false
   }
 }

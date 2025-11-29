@@ -1477,7 +1477,6 @@ local function getAvailableBrands()
   local brandSet = {}
 
   if not configs or #configs == 0 then
-    log("W", "tuningShop", "getAvailableBrands: No factory configs found")
     return brands
   end
 
@@ -1895,9 +1894,6 @@ local function acceptJob(businessId, jobId)
   local currentActiveCount = #(jobs.active or {})
 
   if currentActiveCount >= maxActiveJobs then
-    log("W", "tuningShop",
-      "Cannot accept job: active job limit reached. Current: " .. tostring(currentActiveCount) .. ", Max: " ..
-        tostring(maxActiveJobs))
     return false
   end
 
@@ -2097,8 +2093,6 @@ end
 
 local function completeJob(businessId, jobId)
   if not businessId or not jobId then
-    log("E", "tuningShop",
-      "completeJob: Missing parameters. businessId=" .. tostring(businessId) .. ", jobId=" .. tostring(jobId))
     return false
   end
 
@@ -2115,16 +2109,12 @@ local function completeJob(businessId, jobId)
   end
 
   if not jobIndex then
-    log("E", "tuningShop", "completeJob: Job not found in active jobs. businessId=" .. tostring(businessId) ..
-      ", jobId=" .. tostring(jobId))
     return false
   end
 
   local job = jobs.active[jobIndex]
 
   if not canCompleteJob(businessId, jobId) then
-    log("E", "tuningShop",
-      "completeJob: Job cannot be completed. businessId=" .. tostring(businessId) .. ", jobId=" .. tostring(jobId))
     return false
   end
 
@@ -2143,19 +2133,12 @@ local function completeJob(businessId, jobId)
         }
       }, accountId, "Job Reward", "Job #" .. tostring(jobId) .. " completed")
       if not success then
-        log("E", "tuningShop",
-          "completeJob: Failed to reward account. businessId=" .. tostring(businessId) .. ", jobId=" .. tostring(jobId) ..
-            ", accountId=" .. tostring(accountId) .. ", reward=" .. tostring(reward))
         return false
       end
     else
-      log("E", "tuningShop", "completeJob: Business account not found. businessId=" .. tostring(businessId) ..
-        ", jobId=" .. tostring(jobId))
       return false
     end
   else
-    log("E", "tuningShop", "completeJob: career_modules_bank not available. businessId=" .. tostring(businessId) ..
-      ", jobId=" .. tostring(jobId))
     return false
   end
 
@@ -2790,7 +2773,6 @@ end
 
 local function ensureTabsRegistered()
   if not career_modules_business_businessTabRegistry then
-    log("W", "TuningShop", "Tab registry not available")
     return false
   end
 
@@ -2798,8 +2780,6 @@ local function ensureTabsRegistered()
   if #existingTabs > 0 then
     return true
   end
-
-  log("I", "TuningShop", "Registering tabs for tuningShop")
 
   career_modules_business_businessTabRegistry.registerTab("tuningShop", {
     id = "home",
@@ -3037,7 +3017,6 @@ local function getUIData(businessId)
       end)
     end
     tabs = career_modules_business_businessTabRegistry.getTabs(businessType) or {}
-    log("I", "tuningShop", "getUIData: Got " .. tostring(#tabs) .. " tabs from registry")
 
     if hasDamageLockedVehicle then
       local allowedTabs = {
@@ -3065,8 +3044,6 @@ local function getUIData(businessId)
       end
       tabs = filteredTabs
     end
-  else
-    log('W', 'tuningShop', 'Tab registry not available')
   end
 
   local techEntries = {}
@@ -3322,8 +3299,6 @@ end
 local function onCareerActivated()
   career_modules_business_businessManager.registerBusinessCallback("tuningShop", {
     onPurchase = function(businessId)
-      log("I", "TuningShop", "Tuning shop purchased: " .. tostring(businessId))
-
       ensureTabsRegistered()
 
       if career_modules_bank then
@@ -3354,7 +3329,6 @@ local function onCareerActivated()
       end
 
       local newJobs = generateNewJobs(normalizedId, 3)
-      log("I", "TuningShop", "Generated " .. tostring(#newJobs) .. " initial jobs for business " .. tostring(normalizedId))
 
       for _, job in ipairs(newJobs) do
         table.insert(jobs.new, job)

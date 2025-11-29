@@ -415,7 +415,6 @@ const handleApplyKit = async (kit) => {
         )
         costBreakdown.value = breakdown
     } catch (error) {
-        console.error('Failed to get cost breakdown:', error)
     } finally {
         loadingCostBreakdown.value = false
     }
@@ -426,10 +425,8 @@ const confirmApplyKit = async () => {
 
     const result = await store.applyKit(pulledOutVehicle.value.vehicleId, selectedKit.value.id)
     if (result.success) {
-        console.log('Kit applied successfully, cost:', result.cost)
         closeApplyDialog()
     } else {
-        console.error('Failed to apply kit:', result.error)
         closeApplyDialog()
     }
 }

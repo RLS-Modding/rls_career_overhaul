@@ -341,8 +341,6 @@ local function applyPartConditionsForVehicle(vehicle, vehObj)
   end
 
   if vehicle.partConditions then
-    log("D", "businessInventory",
-      "applyPartConditionsForVehicle: Using stored partConditions for vehicleId=" .. tostring(vehicle.vehicleId))
     core_vehicleBridge.executeAction(vehObj, 'initPartConditions', vehicle.partConditions)
     return
   end
@@ -350,15 +348,11 @@ local function applyPartConditionsForVehicle(vehicle, vehObj)
   local mileage = tonumber(vehicle.mileage or 0)
   if mileage > 0 then
     local visualValue = getVisualValueFromMileage(mileage) or 1
-    print("applyPartConditionsForVehicle: mileage=" .. tostring(mileage) .. ", visualValue=" .. tostring(visualValue))
     vehObj:queueLuaCommand(string.format("partCondition.initConditions(nil, %d, nil, %f)", mileage, visualValue))
     requestAndStorePartConditions(vehicle, vehObj)
     return
   end
 
-  log("D", "businessInventory",
-    "applyPartConditionsForVehicle: No mileage or partConditions, requesting default for vehicleId=" ..
-      tostring(vehicle.vehicleId))
   requestAndStorePartConditions(vehicle, vehObj)
 end
 
@@ -368,16 +362,10 @@ local function spawnBusinessVehicle(businessId, vehicleId)
 
   local vehicle = getVehicleById(businessId, vehicleId)
   if not vehicle then
-    log("E", "businessInventory",
-      "spawnBusinessVehicle: Vehicle not found for businessId=" .. tostring(businessId) .. ", vehicleId=" ..
-        tostring(vehicleId))
     return nil
   end
 
   if not vehicle.vehicleConfig then
-    log("E", "businessInventory",
-      "spawnBusinessVehicle: Vehicle missing vehicleConfig for businessId=" .. tostring(businessId) .. ", vehicleId=" ..
-        tostring(vehicleId))
     return nil
   end
 
@@ -385,9 +373,6 @@ local function spawnBusinessVehicle(businessId, vehicleId)
   local configKey = vehicle.vehicleConfig.key or vehicle.config_key
 
   if not modelKey or not configKey then
-    log("E", "businessInventory",
-      "spawnBusinessVehicle: Vehicle missing modelKey or configKey. modelKey=" .. tostring(modelKey) .. ", configKey=" ..
-        tostring(configKey) .. ", businessId=" .. tostring(businessId) .. ", vehicleId=" .. tostring(vehicleId))
     return nil
   end
 
@@ -412,9 +397,6 @@ local function spawnBusinessVehicle(businessId, vehicleId)
   local vehObj = core_vehicles.spawnNewVehicle(modelKey, vehicleData)
 
   if not vehObj then
-    log("E", "businessInventory",
-      "spawnBusinessVehicle: Failed to spawn vehicle. modelKey=" .. tostring(modelKey) .. ", configKey=" ..
-        tostring(configKey) .. ", businessId=" .. tostring(businessId) .. ", vehicleId=" .. tostring(vehicleId))
     return nil
   end
 
@@ -559,7 +541,6 @@ local function teleportToBusinessGarage(businessType, businessId, veh, resetVeh,
     end
   end
 
-  log("W", "businessInventory", "teleportToBusinessGarage: All parking spots blocked for businessId=" .. tostring(businessId))
   return false
 end
 
@@ -604,9 +585,6 @@ end
 
 local function pullOutVehicle(businessType, businessId, vehicleId)
   if not businessType or not businessId or not vehicleId then
-    log("E", "businessInventory",
-      "pullOutVehicle: Missing parameters. businessType=" .. tostring(businessType) .. ", businessId=" ..
-        tostring(businessId) .. ", vehicleId=" .. tostring(vehicleId))
     return false
   end
 
@@ -618,16 +596,6 @@ local function pullOutVehicle(businessType, businessId, vehicleId)
 
   local vehicle = getVehicleById(businessId, normalizedVehicleId)
   if not vehicle then
-    log("E", "businessInventory", "pullOutVehicle: Vehicle not found. businessId=" .. tostring(businessId) ..
-      ", vehicleId=" .. tostring(vehicleId))
-    local vehicles = loadBusinessVehicles(businessId)
-    log("D", "businessInventory",
-      "pullOutVehicle: Available vehicles for businessId=" .. tostring(businessId) .. ": " .. tostring(#vehicles))
-    for i, v in ipairs(vehicles) do
-      log("D", "businessInventory",
-        "pullOutVehicle: Vehicle[" .. tostring(i) .. "] vehicleId=" .. tostring(v.vehicleId) .. " (type: " ..
-          type(v.vehicleId) .. ")")
-    end
     return false
   end
 
@@ -640,8 +608,6 @@ local function pullOutVehicle(businessType, businessId, vehicleId)
 
   local vehObj = spawnBusinessVehicle(businessId, normalizedVehicleId)
   if not vehObj then
-    log("E", "businessInventory", "pullOutVehicle: Failed to spawn vehicle. businessId=" .. tostring(businessId) ..
-      ", vehicleId=" .. tostring(vehicleId))
     if #state.vehicles == 0 then
       pulledOutVehicles[businessId] = nil
     end
@@ -653,8 +619,6 @@ local function pullOutVehicle(businessType, businessId, vehicleId)
   local teleportSuccess, actualSpotIndex = teleportToBusinessGarage(businessType, businessId, vehObj, true, preferredSpotIndex)
 
   if not teleportSuccess then
-    log("E", "businessInventory", "pullOutVehicle: All parking spots blocked. Removing spawned vehicle. businessId=" ..
-      tostring(businessId) .. ", vehicleId=" .. tostring(vehicleId))
     vehObj:delete()
     if spawnedBusinessVehicles[businessId] then
       spawnedBusinessVehicles[businessId][normalizedVehicleId] = nil
@@ -668,9 +632,6 @@ local function pullOutVehicle(businessType, businessId, vehicleId)
   table.insert(state.vehicles, vehicle)
   state.activeVehicleId = normalizedVehicleId
   state.spotAssignments[normalizedVehicleId] = actualSpotIndex
-  log("D", "businessInventory",
-    "pullOutVehicle: Successfully pulled out vehicle at spot " .. tostring(actualSpotIndex) ..
-      ". businessId=" .. tostring(businessId) .. ", vehicleId=" .. tostring(vehicleId))
 
   local callbackId = tostring(businessId) .. "_" .. tostring(normalizedVehicleId) .. "_" .. tostring(os.time())
   pendingConfigCallbacks[callbackId] = {
@@ -678,7 +639,6 @@ local function pullOutVehicle(businessType, businessId, vehicleId)
     vehicleId = normalizedVehicleId
   }
 
-  dump(vehicle)
   if not vehicle.config then
     vehObj:queueLuaCommand([[
         local configData = serialize(v.config)
@@ -835,7 +795,6 @@ local function onVehicleConfigReceived(callbackId, config)
     return
   end
 
-  log("D", "businessInventory", "onVehicleConfigReceived: Syncing config for vehicle " .. tostring(vehicleId))
   updateVehicle(businessId, vehicleId, {
     config = config,
     vars = config.vars

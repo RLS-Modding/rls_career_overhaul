@@ -4,7 +4,6 @@ local tabRegistry = {}
 
 local function registerTab(businessType, tabData)
   if not businessType or not tabData or not tabData.id then
-    log('W', 'businessTabRegistry', 'Invalid tab registration - missing businessType, tabData, or tabData.id')
     return false
   end
   
@@ -12,19 +11,16 @@ local function registerTab(businessType, tabData)
     tabRegistry[businessType] = {}
   end
   
-  log('I', 'businessTabRegistry', 'Registering tab: ' .. tostring(tabData.id) .. ' for businessType: ' .. tostring(businessType))
   tabRegistry[businessType][tabData.id] = tabData
   return true
 end
 
 local function getTabs(businessType)
   if not businessType then
-    log('W', 'businessTabRegistry', 'getTabs called without businessType')
     return {}
   end
   
   if not tabRegistry[businessType] then
-    log('I', 'businessTabRegistry', 'No tabs registered for businessType: ' .. tostring(businessType))
     return {}
   end
   
@@ -42,7 +38,6 @@ local function getTabs(businessType)
     return (a.label or "") < (b.label or "")
   end)
   
-  log('I', 'businessTabRegistry', 'Returning ' .. tostring(#tabs) .. ' tabs for businessType: ' .. tostring(businessType))
   return tabs
 end
 

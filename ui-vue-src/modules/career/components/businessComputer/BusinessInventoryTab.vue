@@ -212,7 +212,6 @@ const sellPart = async (partId) => {
       await store.requestPartInventory()
     }
   } catch (error) {
-    console.error("Failed to sell part", error)
   }
 }
 
@@ -224,7 +223,6 @@ const sellAllParts = async () => {
       await store.requestPartInventory()
     }
   } catch (error) {
-    console.error("Failed to sell all parts", error)
   }
 }
 
@@ -236,7 +234,6 @@ const sellAllVehicleParts = async (vehicleName) => {
       await store.requestPartInventory()
     }
   } catch (error) {
-    console.error("Failed to sell vehicle parts", error)
   }
 }
 

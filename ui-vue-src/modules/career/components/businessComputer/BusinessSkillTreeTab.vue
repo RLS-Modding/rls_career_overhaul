@@ -291,14 +291,12 @@ const pendingRequests = ref(new Map())
 const loadTrees = () => {
   const businessType = props.data?.businessType || store.businessType
   if (!businessType || !store.businessId) {
-    console.log('[SkillTreeTab] Cannot load trees - missing businessType or businessId', { businessType, businessId: store.businessId, propsData: props.data })
     return
   }
   
   const requestId = `trees_${Date.now()}_${Math.random()}`
   pendingRequests.value.set(requestId, { type: 'trees' })
   
-  console.log('[SkillTreeTab] Requesting trees', { requestId, businessType, businessId: store.businessId })
   lua.career_modules_business_businessSkillTree.requestSkillTrees(requestId, businessType, store.businessId)
 }
 
@@ -374,25 +372,20 @@ const measureNodeSize = () => {
     
     if (maxWidth > 0) {
       NODE_WIDTH.value = maxWidth
-      console.log('[SkillTreeTab] Measured max node width:', maxWidth)
     }
     if (maxHeight > 0) {
       NODE_HEIGHT.value = maxHeight
-      console.log('[SkillTreeTab] Measured max node height:', maxHeight)
     }
   })
 }
 
 const handleTreesResponse = (data) => {
-  console.log('[SkillTreeTab] Received trees response', data)
   if (!pendingRequests.value.has(data.requestId)) {
-    console.warn('[SkillTreeTab] Received response for unknown requestId:', data.requestId)
     return
   }
   pendingRequests.value.delete(data.requestId)
   
   if (data.success && data.trees) {
-    console.log('[SkillTreeTab] Successfully loaded', data.trees.length, 'trees')
     trees.value = data.trees || []
     nodeRefs.value.clear()
     nodeSizes.value.clear()
@@ -407,17 +400,14 @@ const handleTreesResponse = (data) => {
       })
     }
   } else {
-    console.warn('[SkillTreeTab] Failed to load trees or no trees returned', data)
     trees.value = []
   }
 }
 
 const handleTreesUpdated = (data) => {
-  console.log('[SkillTreeTab] Received trees update', data)
   const businessType = props.data?.businessType || store.businessType
   if (data.businessType === businessType && data.businessId === store.businessId) {
     if (data.trees) {
-      console.log('[SkillTreeTab] Updating trees:', data.trees.length)
       trees.value = data.trees || []
       nodeRefs.value.clear()
       nodeSizes.value.clear()
@@ -430,11 +420,6 @@ const handleTreesUpdated = (data) => {
         })
       })
     }
-  } else {
-    console.log('[SkillTreeTab] Ignoring update - businessType/businessId mismatch', {
-      received: { businessType: data.businessType, businessId: data.businessId },
-      expected: { businessType, businessId: store.businessId }
-    })
   }
 }
 
@@ -474,18 +459,10 @@ const confirmUpgrade = () => {
 }
 
 const handlePurchaseResponse = (data) => {
-  console.log('[SkillTreeTab] Received purchase response', data)
   if (!pendingRequests.value.has(data.requestId)) {
-    console.warn('[SkillTreeTab] Received purchase response for unknown requestId:', data.requestId)
     return
   }
   pendingRequests.value.delete(data.requestId)
-  
-  if (!data.success) {
-    console.error('[SkillTreeTab] Failed to purchase upgrade:', data)
-  } else {
-    console.log('[SkillTreeTab] Purchase successful')
-  }
 }
 
 const startPan = (event) => {
@@ -601,11 +578,8 @@ const autoLayoutAllTrees = () => {
 
 const autoLayoutTree = (tree) => {
   if (!tree || !tree.nodes || tree.nodes.length === 0) {
-    console.warn('[SkillTreeTab] autoLayoutTree called with invalid tree:', tree)
     return
   }
-  
-  console.log(`[SkillTreeTab] Starting auto-layout for tree: ${tree.treeId} with ${tree.nodes.length} nodes`)
   
   const nodeMap = new Map()
   const levels = {}
@@ -659,26 +633,12 @@ const autoLayoutTree = (tree) => {
   const maxNodesInLevel = Math.max(...Object.values(levels).map(nodes => nodes.length), 0)
   const maxLevel = Math.max(...Object.keys(levels).map(Number), 0)
   
-  console.log(`[SkillTreeTab] Tree layout: ${maxLevel + 1} levels, max ${maxNodesInLevel} nodes per level`)
-  
-  if (!canvasRef.value) {
-    console.warn('[SkillTreeTab] canvasRef not available, using fallback dimensions')
-  }
-  
   const rect = canvasRef.value?.getBoundingClientRect()
   const containerWidth = rect?.width > 0 ? rect.width : 2000
   const containerHeight = rect?.height > 0 ? rect.height : 1500
   
-  console.log(`[SkillTreeTab] Container dimensions: ${containerWidth}x${containerHeight}`)
-  
-  if (containerWidth <= 0 || containerHeight <= 0) {
-    console.error('[SkillTreeTab] Invalid container dimensions, using fallback')
-  }
-  
   const HORIZONTAL_SPACING = NODE_SPACING_X
   const VERTICAL_SPACING = NODE_SPACING_Y
-  
-  console.log(`[SkillTreeTab] Using fixed spacing: horizontal=${HORIZONTAL_SPACING}px, vertical=${VERTICAL_SPACING}px`)
   
   const START_Y = 100
   const START_X = 100
@@ -692,8 +652,6 @@ const autoLayoutTree = (tree) => {
     const levelTotalWidth = (nodes.length - 1) * HORIZONTAL_SPACING
     const levelStartX = START_X + Math.max(0, (containerWidth - levelTotalWidth - (nodes.length * NODE_WIDTH.value)) / 2)
     
-    console.log(`[SkillTreeTab] Level ${level}: positioning ${nodes.length} nodes at y=${y}, startX=${levelStartX.toFixed(0)}`)
-    
     nodes.forEach((node, idx) => {
       const x = levelStartX + (idx * HORIZONTAL_SPACING)
       
@@ -703,8 +661,6 @@ const autoLayoutTree = (tree) => {
       
       node.position.x = x
       node.position.y = y
-      
-      console.log(`[SkillTreeTab]   Node ${node.id}: position (${x.toFixed(0)}, ${y.toFixed(0)})`)
     })
   }
   
@@ -738,8 +694,6 @@ const autoLayoutTree = (tree) => {
     tree.bounds.width = maxX - minX
     tree.bounds.height = maxY - minY
   }
-  
-  console.log('[SkillTreeTab] Auto-layout completed for tree:', tree.treeId, `(${tree.nodes.length} nodes)`)
 }
 
 const DEFAULT_TREE_WIDTH = 400
@@ -847,7 +801,6 @@ const resetView = () => {
 }
 
 onMounted(() => {
-  console.log('[SkillTreeTab] Component mounted, registering event listeners')
   restorePersistedViewState()
   events.on('businessSkillTree:onTreesResponse', handleTreesResponse)
   events.on('businessSkillTree:onTreesUpdated', handleTreesUpdated)
@@ -855,7 +808,6 @@ onMounted(() => {
   window.addEventListener('mousemove', onPan)
   window.addEventListener('mouseup', stopPan)
   
-  // Set up watch for controller focus changes to auto-pan to focused skill nodes
   if (controllerNav) {
     focusWatchStop = watch(
       () => controllerNav.currentFocusedElement.value,
@@ -867,7 +819,6 @@ onMounted(() => {
     )
   }
   
-  console.log('[SkillTreeTab] Event listeners registered, loading trees')
   loadTrees()
 })
 

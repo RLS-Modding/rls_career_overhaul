@@ -85,7 +85,6 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     try {
       lua.ui_message(message, 5, "Business Computer", "error")
     } catch (error) {
-      console.warn("Failed to show damage lock warning", error)
     }
   }
   const showErrorMessage = (message) => {
@@ -93,7 +92,6 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     try {
       lua.ui_message(message, 5, "Business Computer", "error")
     } catch (error) {
-      console.warn("Failed to show error message", error)
     }
   }
   const normalizeLuaResult = (result) => {
@@ -178,17 +176,14 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   })
 
   const setBusinessData = (data) => {
-    console.log('[BusinessStore] setBusinessData - pulledOutVehicles:', data?.pulledOutVehicles, 'pulledOutVehicle:', data?.pulledOutVehicle, 'personalUseUnlocked:', data?.personalUseUnlocked)
     const vehiclesFromData = Array.isArray(data?.pulledOutVehicles)
       ? data.pulledOutVehicles
       : (data?.pulledOutVehicle ? [data.pulledOutVehicle] : [])
-    console.log('[BusinessStore] vehiclesFromData:', vehiclesFromData)
     pulledOutVehicles.value = vehiclesFromData
     let nextActiveId = data?.activeVehicleId
     if (nextActiveId === undefined || nextActiveId === null) {
       nextActiveId = vehiclesFromData[0]?.vehicleId ?? data?.pulledOutVehicle?.vehicleId ?? null
     }
-    console.log('[BusinessStore] nextActiveId:', nextActiveId)
     activeVehicleId.value = nextActiveId ?? null
     const normalizedActiveId = normalizeVehicleIdValue(nextActiveId)
     let activeEntry = null
@@ -198,7 +193,6 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     if (!activeEntry && data?.pulledOutVehicle) {
       activeEntry = data.pulledOutVehicle
     }
-    console.log('[BusinessStore] activeEntry:', activeEntry)
     pulledOutVehicle.value = activeEntry || null
     const now = Date.now() / 1000
     const techsArray = Array.isArray(data.techs) ? data.techs : Object.values(data.techs || {})
@@ -218,7 +212,6 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
       techs: processedTechs
     }
     businessData.value = payload
-    console.log('[BusinessStore] setBusinessData - payload.tabs:', payload.tabs, 'type:', typeof payload.tabs, 'isArray:', Array.isArray(payload.tabs))
     if (payload.tabs) {
       let tabsArray = []
       if (Array.isArray(payload.tabs)) {
@@ -226,10 +219,8 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
       } else if (typeof payload.tabs === 'object') {
         tabsArray = Object.values(payload.tabs)
       }
-      console.log('[BusinessStore] converted tabs:', tabsArray, 'length:', tabsArray.length)
       registeredTabs.value = tabsArray
     } else {
-      console.log('[BusinessStore] payload.tabs is falsy!')
       registeredTabs.value = []
     }
     if (payload.stats) {
@@ -323,18 +314,13 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
 
   const loadBusinessData = async (businessType, businessId) => {
     if (businessId === true || businessId === "true") {
-      console.error("loadBusinessData called with invalid businessId:", businessId)
       return
     }
     isMenuActive.value = true
     try {
-      console.log('[BusinessStore] loadBusinessData calling Lua with:', businessType, businessId)
       const data = await lua.career_modules_business_businessComputer.getBusinessComputerUIData(businessType, businessId)
-      console.log('[BusinessStore] loadBusinessData received data:', data)
-      console.log('[BusinessStore] data.tabs:', data?.tabs)
       setBusinessData(data)
     } catch (error) {
-      console.error('[BusinessStore] loadBusinessData error:', error)
     }
   }
 
@@ -571,17 +557,12 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
 
     if (isEnteringVehicleViews && businessId.value && pulledOutVehicle.value?.vehicleId) {
       try {
-        console.log('Entering shopping vehicle:', businessId.value, pulledOutVehicle.value.vehicleId)
-        const result = await lua.career_modules_business_businessComputer.enterShoppingVehicle(
+        await lua.career_modules_business_businessComputer.enterShoppingVehicle(
           businessId.value,
           pulledOutVehicle.value.vehicleId
         )
-        console.log('enterShoppingVehicle result:', result)
       } catch (error) {
-        console.error('enterShoppingVehicle error:', error)
       }
-    } else if (isEnteringVehicleViews) {
-      console.log('Not entering vehicle - businessId:', businessId.value, 'vehicleId:', pulledOutVehicle.value?.vehicleId)
     }
 
     const enteringPartsViewFromNonVehicle = view === 'parts' && previousView !== 'parts' && previousView !== 'tuning'
@@ -1066,33 +1047,26 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   }
 
   const handleJobsUpdated = async (data) => {
-    console.log('[BusinessStore] handleJobsUpdated received:', data, 'isMenuActive:', isMenuActive.value)
     if (!isMenuActive.value) return
     const currentBusinessId = businessId.value
     const currentBusinessType = businessType.value
 
     if (!currentBusinessId || !currentBusinessType) {
-      console.log('[BusinessStore] handleJobsUpdated - no businessId or businessType')
       return
     }
 
     const eventBusinessType = data?.businessType
     if (eventBusinessType && eventBusinessType !== currentBusinessType) {
-      console.log('[BusinessStore] handleJobsUpdated - businessType mismatch:', eventBusinessType, '!=', currentBusinessType)
       return
     }
 
     const eventBusinessId = data?.businessId
     if (eventBusinessId && String(eventBusinessId) !== String(currentBusinessId)) {
-      console.log('[BusinessStore] handleJobsUpdated - businessId mismatch:', eventBusinessId, '!=', currentBusinessId)
       return
     }
 
-    // Always fetch fresh data when jobs are updated, regardless of current view
-    console.log('[BusinessStore] handleJobsUpdated - fetching fresh job data for:', currentBusinessId)
     try {
       const jobsData = await lua.career_modules_business_businessComputer.getJobsOnly(currentBusinessId)
-      console.log('[BusinessStore] handleJobsUpdated - received jobsData:', jobsData)
       if (jobsData) {
         businessData.value = {
           ...businessData.value,
@@ -1100,10 +1074,8 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
           newJobs: jobsData.newJobs || [],
           maxActiveJobs: jobsData.maxActiveJobs ?? businessData.value.maxActiveJobs
         }
-        console.log('[BusinessStore] handleJobsUpdated - updated businessData with', (jobsData.activeJobs || []).length, 'active jobs and', (jobsData.newJobs || []).length, 'new jobs')
       }
     } catch (error) {
-      console.error('[BusinessStore] Error fetching jobs data:', error)
     }
   }
 
@@ -1959,7 +1931,6 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     try {
       lua.career_modules_business_businessComputer.requestAvailableBrands()
     } catch (error) {
-      console.error("Error requesting available brands:", error)
     }
   }
 
@@ -1967,7 +1938,6 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     try {
       lua.career_modules_business_businessComputer.requestAvailableRaceTypes()
     } catch (error) {
-      console.error("Error requesting available race types:", error)
     }
   }
 
@@ -2021,7 +1991,6 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
           }
         }
       } catch (error) {
-        console.error("Error refreshing vehicle data after kit install complete:", error)
       }
     }
   })

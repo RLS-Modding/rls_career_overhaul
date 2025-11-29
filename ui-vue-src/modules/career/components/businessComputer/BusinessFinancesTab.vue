@@ -293,7 +293,6 @@ const requestFinancesData = async () => {
       props.data.businessId
     )
   } catch (error) {
-    console.error('Error requesting finances data:', error)
     loading.value = false
   }
 }
@@ -340,7 +339,6 @@ const requestSimulationTime = async () => {
   try {
     await lua.career_modules_business_businessComputer.requestSimulationTime()
   } catch (error) {
-    console.error('Error requesting simulation time:', error)
   }
 }
 
