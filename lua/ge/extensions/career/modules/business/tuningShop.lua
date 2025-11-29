@@ -1685,6 +1685,10 @@ local function generateJob(businessId)
     return nil
   end
 
+  local year = 2000
+  if gameplay_events_freeroam_dataCollection and gameplay_events_freeroam_dataCollection.getYearFromModel then
+    year = gameplay_events_freeroam_dataCollection.getYearFromModel(selectedConfig.model_key)
+  end
   local powerToWeight = power / weight
 
   local races = loadRaceData(businessId)
@@ -1730,7 +1734,14 @@ local function generateJob(businessId)
     raceLabel = race and race.label or "Drag Strip"
   end
 
-  local baseTime = powerToWeightToTime(powerToWeight, raceType, businessId)
+  local baseTime = nil
+  if race and gameplay_events_freeroam_dataCollection and gameplay_events_freeroam_dataCollection.predictRaceTime then
+    baseTime = gameplay_events_freeroam_dataCollection.predictRaceTime(power, weight, year, race)
+  end
+  if not baseTime then
+    local powerToWeight = power / weight
+    baseTime = powerToWeightToTime(powerToWeight, raceType, businessId)
+  end
   if not baseTime then
     return nil
   end
@@ -1790,6 +1801,9 @@ local function generateJob(businessId)
     baseTime = baseTime,
     targetTime = targetTime,
     powerToWeight = powerToWeight,
+    power = power,
+    weight = weight,
+    year = year,
     reward = reward,
     decimalPlaces = decimalPlaces,
     commuteSeconds = commuteSeconds,

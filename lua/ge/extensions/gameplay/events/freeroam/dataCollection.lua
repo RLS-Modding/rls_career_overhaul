@@ -144,25 +144,45 @@ local function onVehicleRaceDataCollected(vehId, power, weight, year, raceName, 
   pendingDataEntries[key] = nil
 end
 
-local function onVehicleModelReceived(vehId, power, weight, model, raceName, time, isAltRoute)
-  local year = 2000
+local function getYear(data)
+  local year
+  local years = data.Years
+  if years then
+    if type(years) == "table" and years.min and years.max then
+      year = math.floor((years.min + years.max) / 2)
+    elseif type(years) == "number" then
+      year = years
+    end
+  elseif data.Year then
+    year = data.Year
+  end
+  return year
+end
+
+local function getYearFromModel(modelKey)
+  local year
   
-  if model and core_vehicles and core_vehicles.getModel then
-    local modelData = core_vehicles.getModel(model)
+  if modelKey and core_vehicles and core_vehicles.getModel then
+    local modelData = core_vehicles.getModel(modelKey)
     if modelData and modelData.model then
-      local years = modelData.model.Years
-      if years then
-        if type(years) == "table" and years.min and years.max then
-          year = math.floor((years.min + years.max) / 2)
-        elseif type(years) == "number" then
-          year = years
+      year = getYear(modelData.model)
+      if not year then
+        local configs = modelData.configs
+        for key, config in pairs(configs) do
+          year = getYear(config)
+          if year then
+            break
+          end
         end
-      elseif modelData.model.Year then
-        year = modelData.model.Year
       end
     end
   end
   
+  return year or 2000
+end
+
+local function onVehicleModelReceived(vehId, power, weight, model, raceName, time, isAltRoute)
+  local year = getYearFromModel(model)
   onVehicleRaceDataCollected(vehId, power, weight, year, raceName, time, isAltRoute)
 end
 
@@ -596,6 +616,36 @@ local function onExtensionLoaded()
   end
 end
 
+local function predictRaceTime(power, weight, year, coef)
+  if not coef then
+    return nil
+  end
+
+  if coef.predictCoefNew then
+    local coefNew = coef.predictCoefNew
+    local normalizePower = function(p) return (p - coefNew.powerMin) / (coefNew.powerMax - coefNew.powerMin) end
+    local normalizeWeight = function(w) return (w - coefNew.weightMin) / (coefNew.weightMax - coefNew.weightMin) end
+    local normalizeYear = function(y) return (y - coefNew.yearMin) / (coefNew.yearMax - coefNew.yearMin) end
+    
+    local p = normalizePower(power)
+    local w = normalizeWeight(weight)
+    local y = normalizeYear(year)
+    
+    local time = coefNew.a + coefNew.b * p + coefNew.c * w + coefNew.d * y + 
+                 coefNew.e * p * p + coefNew.f * w * w + coefNew.g * y * y
+    
+    return time
+  elseif coef.predictCoef then
+    local coefOld = coef.predictCoef
+    local powerToWeight = power / weight
+    local r = math.max(0.001, powerToWeight)
+    local time = coefOld.a + coefOld.b / (r ^ coefOld.c)
+    return time
+  end
+
+  return nil
+end
+
 M.onVehicleRaceDataCollected = onVehicleRaceDataCollected
 M.onVehicleModelReceived = onVehicleModelReceived
 M.collectDataFromEntry = collectDataFromEntry
@@ -604,5 +654,7 @@ M.isCollectingData = isCollectingData
 M.onWorldReadyState = onWorldReadyState
 M.onExtensionLoaded = onExtensionLoaded
 M.analyzeData = analyzeData
+M.getYearFromModel = getYearFromModel
+M.predictRaceTime = predictRaceTime
 
 return M
