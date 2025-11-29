@@ -5,6 +5,7 @@ M.dependencies = {'util_configListGenerator', 'career_career', 'career_saveSyste
 local raceData = nil
 local raceDataLevel = nil
 local factoryConfigs = nil
+local brandConfigsCache = {}
 local businessJobs = {}
 local businessXP = {}
 local cachedRaceDataByBusiness = {}
@@ -13,15 +14,13 @@ local managerTimers = {}
 local operatingCostTimers = {}
 local jobIdCounter = 0
 
-local UPDATE_INTERVAL_JOBS = 0.1
-local UPDATE_INTERVAL_TECHS = 0.15
-local UPDATE_INTERVAL_MANAGER = 0.2
-local UPDATE_INTERVAL_COSTS = 0.5
+local UPDATE_INTERVAL_TECHS = 1.0
+local UPDATE_INTERVAL_MANAGER = 2.0
+local UPDATE_INTERVAL_COSTS = 5.0
 
-local jobsAccumulator = 0
-local techsAccumulator = 0.15
-local managerAccumulator = 0.30
-local costsAccumulator = 0.45
+local techsAccumulator = 0
+local managerAccumulator = 0
+local costsAccumulator = 0
 
 local freeroamUtils = require('gameplay/events/freeroam/utils')
 local tuningShopTechs = require('ge/extensions/career/modules/business/tuningShopTechs')
@@ -1457,6 +1456,21 @@ local function getFactoryConfigs()
   return factoryConfigs
 end
 
+local function buildBrandConfigsCache()
+  local configs = getFactoryConfigs()
+  brandConfigsCache = {}
+  for _, config in ipairs(configs) do
+    local brand = config.Brand
+    if not brand and config.aggregates and config.aggregates.Brand then
+      brand = next(config.aggregates.Brand)
+    end
+    if brand and brand ~= "" then
+      brandConfigsCache[brand] = brandConfigsCache[brand] or {}
+      table.insert(brandConfigsCache[brand], config)
+    end
+  end
+end
+
 local function getAvailableBrands()
   local configs = getFactoryConfigs()
   local brands = {}
@@ -1645,13 +1659,7 @@ local function generateJob(businessId)
 
   if brandRecognitionUnlocked and brandSelection and brandSelection ~= "" then
     if math.random() < 0.75 then
-      local brandConfigs = {}
-      for _, config in ipairs(configs) do
-        local vehicleInfo = getVehicleInfo(config.model_key, config.key)
-        if vehicleInfo and vehicleInfo.Brand == brandSelection then
-          table.insert(brandConfigs, config)
-        end
-      end
+      local brandConfigs = brandConfigsCache[brandSelection] or {}
       if #brandConfigs > 0 then
         selectedConfig = brandConfigs[math.random(#brandConfigs)]
       end
@@ -1811,21 +1819,23 @@ local function generateNewJobs(businessId, count)
   return newJobs
 end
 
-local function processJobGeneration(businessId, jobs, dtSim)
+local function processJobGeneration(businessId, jobs, accumulatedTime)
+  if not jobs.new then
+    jobs.new = {}
+  end
+
   local interval = getGenerationIntervalSeconds(businessId)
   if interval <= 0 then
     return false
   end
 
-  local timer = generationTimers[businessId] or 0
-  timer = timer + dtSim
-
-  if not jobs.new then
-    jobs.new = {}
+  local jobsToGenerate = math.floor(accumulatedTime / interval)
+  if jobsToGenerate <= 0 then
+    return false
   end
 
   local changed = false
-  while timer >= interval do
+  for _ = 1, jobsToGenerate do
     local job = generateJob(businessId)
     if not job then
       break
@@ -1835,11 +1845,9 @@ local function processJobGeneration(businessId, jobs, dtSim)
     job.status = "new"
     job.remainingLifetime = getJobExpirySeconds(businessId)
     table.insert(jobs.new, job)
-    timer = timer - interval
     changed = true
   end
 
-  generationTimers[businessId] = timer
   return changed
 end
 
@@ -3182,19 +3190,13 @@ local function onUpdate(dtReal, dtSim, dtRaw)
     return
   end
 
-  jobsAccumulator = jobsAccumulator + deltaSim
   techsAccumulator = techsAccumulator + deltaSim
   managerAccumulator = managerAccumulator + deltaSim
   costsAccumulator = costsAccumulator + deltaSim
 
-  local shouldProcessJobs = jobsAccumulator >= UPDATE_INTERVAL_JOBS
   local shouldProcessTechs = techsAccumulator >= UPDATE_INTERVAL_TECHS
   local shouldProcessManager = managerAccumulator >= UPDATE_INTERVAL_MANAGER
   local shouldProcessCosts = costsAccumulator >= UPDATE_INTERVAL_COSTS
-
-  if not (shouldProcessJobs or shouldProcessTechs or shouldProcessManager or shouldProcessCosts) then
-    return
-  end
 
   if not career_modules_business_businessManager or not career_modules_business_businessManager.getPurchasedBusinesses then
     return
@@ -3203,14 +3205,10 @@ local function onUpdate(dtReal, dtSim, dtRaw)
   local purchased = career_modules_business_businessManager.getPurchasedBusinesses("tuningShop") or {}
   local ownedBusinesses = {}
 
-  local jobsTime = shouldProcessJobs and jobsAccumulator or 0
   local techsTime = shouldProcessTechs and techsAccumulator or 0
   local managerTime = shouldProcessManager and managerAccumulator or 0
   local costsTime = shouldProcessCosts and costsAccumulator or 0
 
-  if shouldProcessJobs then
-    jobsAccumulator = 0
-  end
   if shouldProcessTechs then
     techsAccumulator = 0
   end
@@ -3228,15 +3226,18 @@ local function onUpdate(dtReal, dtSim, dtRaw)
 
       local jobsChanged = false
 
-      if shouldProcessJobs then
+      generationTimers[id] = (generationTimers[id] or 0) + deltaSim
+      local genInterval = getGenerationIntervalSeconds(id)
+      if generationTimers[id] >= genInterval then
         local jobs = loadBusinessJobs(id)
         jobs.new = jobs.new or {}
-        if processJobGeneration(id, jobs, jobsTime) then
+        if processJobGeneration(id, jobs, generationTimers[id]) then
           jobsChanged = true
         end
-        if updateNewJobExpirations(id, jobs, jobsTime) then
+        if updateNewJobExpirations(id, jobs, generationTimers[id]) then
           jobsChanged = true
         end
+        generationTimers[id] = generationTimers[id] % genInterval
       end
 
       if shouldProcessTechs then
@@ -3266,11 +3267,9 @@ local function onUpdate(dtReal, dtSim, dtRaw)
     end
   end
 
-  if shouldProcessJobs then
-    for id in pairs(generationTimers) do
-      if not ownedBusinesses[id] then
-        generationTimers[id] = nil
-      end
+  for id in pairs(generationTimers) do
+    if not ownedBusinesses[id] then
+      generationTimers[id] = nil
     end
   end
 
@@ -3385,6 +3384,10 @@ local function onCareerActivated()
   generationTimers = {}
   businessSelections = {}
   cachedRaceDataByBusiness = {}
+  brandConfigsCache = {}
+
+  getFactoryConfigs()
+  buildBrandConfigsCache()
 
   tuningShopTechs.initialize({
     normalizeBusinessId = normalizeBusinessId,
