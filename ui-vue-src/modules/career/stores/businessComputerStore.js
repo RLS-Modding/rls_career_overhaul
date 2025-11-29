@@ -211,6 +211,13 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
       pulledOutVehicles: vehiclesFromData,
       techs: processedTechs
     }
+    // Preserve existing parts if new data doesn't include them or has empty parts
+    const hasValidParts = payload.parts && Array.isArray(payload.parts) && payload.parts.length > 0
+    const hasExistingParts = businessData.value?.parts && Array.isArray(businessData.value.parts) && businessData.value.parts.length > 0
+    
+    if (!hasValidParts && hasExistingParts) {
+      payload.parts = businessData.value.parts
+    }
     businessData.value = payload
     if (payload.tabs) {
       let tabsArray = []
@@ -1104,7 +1111,6 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   }
 
   const handlePartInventoryData = (data) => {
-    if (!isMenuActive.value) return
     const currentBusinessId = businessId.value
     if (!currentBusinessId) return
 
@@ -1273,11 +1279,14 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     }
 
     const partToAdd = {
-      partName: part.name,
-      partNiceName: part.niceName,
+      partName: part.name || part.partName,
+      partNiceName: part.niceName || part.partNiceName,
       slotPath: slot.path,
       slotNiceName: slot.slotNiceName || slot.slotName,
-      price: part.value || 0
+      price: part.value || 0,
+      fromInventory: part.fromInventory || false,
+      partId: part.partId || null,
+      partCondition: part.partCondition || null
     }
 
     try {

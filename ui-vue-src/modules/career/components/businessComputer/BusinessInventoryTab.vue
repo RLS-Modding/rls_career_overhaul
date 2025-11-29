@@ -122,11 +122,13 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue"
+import { ref, computed, onMounted, watch } from "vue"
 import { useBusinessComputerStore } from "../../stores/businessComputerStore"
 import { lua } from "@/bridge"
+import { useEvents } from "@/services/events"
 
 const store = useBusinessComputerStore()
+const events = useEvents()
 const searchQuery = ref('')
 const openSections = ref({})
 
@@ -237,10 +239,20 @@ const sellAllVehicleParts = async (vehicleName) => {
   }
 }
 
-onMounted(() => {
-  if (store.requestPartInventory) {
+const loadInventory = () => {
+  if (store.businessId && store.requestPartInventory) {
     store.requestPartInventory()
   }
+}
+
+watch(() => store.businessId, (newId) => {
+  if (newId) {
+    loadInventory()
+  }
+}, { immediate: false })
+
+onMounted(() => {
+  loadInventory()
 })
 
 </script>

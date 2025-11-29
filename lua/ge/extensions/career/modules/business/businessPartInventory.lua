@@ -49,11 +49,13 @@ local function addParts(partsList)
   for _, part in ipairs(partsList) do
     addPart(part)
   end
+  -- Cache is updated immediately, file will be saved on save hook
 end
 
 local function removePart(partId)
   if inventory[partId] then
     inventory[partId] = nil
+    -- Cache is updated immediately, file will be saved on save hook
     return true
   end
   return false
@@ -68,13 +70,25 @@ local function updatePartCondition(partId, condition)
 end
 
 local function loadInventory()
-  -- Load from save file
   local saveSlot, savePath = career_saveSystem.getCurrentSaveSlot()
   if not saveSlot or not savePath then return end
   
-  local data = jsonReadFile(savePath .. "/career/" .. businessPartInventoryPath)
+  local filePath = savePath .. "/career/" .. businessPartInventoryPath
+  local data = jsonReadFile(filePath)
+  inventory = {}
+  
   if data then
-    inventory = data
+    if type(data) == "table" then
+      for idx, part in pairs(data) do
+        if part and type(part) == "table" then
+          local partId = part.partId or tonumber(idx) or idx
+          inventory[partId] = part
+          if not part.partId then
+            part.partId = partId
+          end
+        end
+      end
+    end
   else
     inventory = {}
   end
@@ -84,7 +98,13 @@ local function saveInventory()
   local saveSlot, savePath = career_saveSystem.getCurrentSaveSlot()
   if not saveSlot or not savePath then return end
   
-  jsonWriteFile(savePath .. "/career/" .. businessPartInventoryPath, inventory, true)
+  local partsArray = {}
+  for _, part in pairs(inventory) do
+    if part then
+      table.insert(partsArray, part)
+    end
+  end
+  jsonWriteFile(savePath .. "/career/" .. businessPartInventoryPath, partsArray, true)
 end
 
 local function loadJBeamDataForParts(parts)
@@ -112,6 +132,12 @@ end
 local function getUIData(businessId)
   activeBusinessId = businessId
   
+  -- Use local cache (inventory variable) - cache is saved to file on save hook
+  -- Auto-load if empty (failsafe)
+  if next(inventory) == nil then
+    loadInventory()
+  end
+  
   local uiData = {}
   
   -- Group parts by model
@@ -120,7 +146,9 @@ local function getUIData(businessId)
   -- Cache ioContexts by vehicle model
   local ioContexts = {}
   
+  local partCount = 0
   for id, part in pairs(inventory) do
+    partCount = partCount + 1
     if not partsByModel[part.vehicleModel] then
       partsByModel[part.vehicleModel] = {}
     end
@@ -175,14 +203,21 @@ local function getUIData(businessId)
 
     -- Calculate value with condition
     if career_modules_valueCalculator then
-        local baseValue = career_modules_valueCalculator.getPartValue(expandedPart) * 0.9
-        expandedPart.finalValue = baseValue
+        local success, baseValue = pcall(function() 
+          return career_modules_valueCalculator.getPartValue(expandedPart) 
+        end)
+        if success and baseValue then
+          expandedPart.finalValue = baseValue * 0.9
+        else
+          expandedPart.finalValue = (expandedPart.value or 0) * 0.9
+        end
     end
 
     table.insert(partsByModel[part.vehicleModel], expandedPart)
   end
   
   uiData.partsByModel = partsByModel
+  uiData.partCount = partCount
   return uiData
 end
 
@@ -191,7 +226,11 @@ local function onExtensionLoaded()
   loadInventory()
 end
 
-local function onSaveFinished()
+local function onCareerActive(currentSavePath)
+  loadInventory()
+end
+
+local function onSaveCurrentSaveSlot(currentSavePath)
   saveInventory()
 end
 
@@ -230,6 +269,7 @@ local function sellPart(partId)
   price = price * 0.9
   
   inventory[partId] = nil
+  -- Cache is updated immediately, file will be saved on save hook
   return true, price
 end
 
@@ -273,6 +313,7 @@ local function sellAllParts()
     inventory[partId] = nil
   end
   
+  -- Cache is updated immediately, file will be saved on save hook
   return true, totalPrice
 end
 
@@ -316,6 +357,7 @@ local function sellPartsByVehicle(vehicleModel)
     inventory[partId] = nil
   end
   
+  -- Cache is updated immediately, file will be saved on save hook
   return true, totalPrice
 end
 
@@ -333,6 +375,7 @@ M.sellAllParts = sellAllParts
 M.sellPartsByVehicle = sellPartsByVehicle
 
 M.onExtensionLoaded = onExtensionLoaded
-M.onSaveFinished = onSaveFinished
+M.onCareerActive = onCareerActive
+M.onSaveCurrentSaveSlot = onSaveCurrentSaveSlot
 
 return M

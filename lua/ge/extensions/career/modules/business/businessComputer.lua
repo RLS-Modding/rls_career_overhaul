@@ -643,6 +643,10 @@ local function requestPartInventory(businessId)
     return
   end
 
+  if career_modules_business_businessPartInventory.loadInventory then
+    career_modules_business_businessPartInventory.loadInventory()
+  end
+
   local data = career_modules_business_businessPartInventory.getUIData(businessId) or {}
   data.businessId = businessId
   data.success = true
@@ -1188,6 +1192,98 @@ local function buildOwnedPartsLookup(inventoryParts, vehicleModel)
   return lookup
 end
 
+local function findRemovedPartsFromCart(businessId, vehicleId, cartParts)
+  if not businessId or not vehicleId or not cartParts then
+    return {}
+  end
+
+  local vehicle = career_modules_business_businessInventory.getVehicleById(businessId, vehicleId)
+  if not vehicle then
+    return {}
+  end
+
+  local vehicleModel = vehicle.vehicleConfig and vehicle.vehicleConfig.model_key or vehicle.model_key
+  
+  -- Get original part list - get from actual vehicle object (current state before cart is applied)
+  local originalPartList = {}
+  local partConditions = vehicle.partConditions or {}
+  
+  local vehObj = getBusinessVehicleObject(businessId, vehicleId)
+  if vehObj then
+    local vehId = vehObj:getID()
+    local vehicleData = extensions.core_vehicle_manager.getVehicleData(vehId)
+    if vehicleData and vehicleData.config and vehicleData.config.partsTree then
+      local function extractParts(tree, path)
+        path = path or "/"
+        if tree.chosenPartName and tree.path then
+          originalPartList[tree.path] = tree.chosenPartName
+        end
+        if tree.children then
+          for slotName, child in pairs(tree.children) do
+            local childPath = path .. slotName .. "/"
+            extractParts(child, childPath)
+          end
+        end
+      end
+      extractParts(vehicleData.config.partsTree)
+      
+      -- Also get part conditions from vehicle if available
+      if vehicleData.partConditions then
+        partConditions = vehicleData.partConditions
+      end
+    end
+  end
+  
+  -- Fallback to stored vehicle.partList if we couldn't get from vehicle object
+  if not originalPartList or next(originalPartList) == nil then
+    originalPartList = vehicle.partList or {}
+  end
+
+  local cartPartsBySlot = {}
+  for _, part in ipairs(cartParts) do
+    if part.slotPath and part.partName and part.partName ~= "" then
+      cartPartsBySlot[part.slotPath] = part.partName
+    elseif part.slotPath and part.emptyPlaceholder then
+      cartPartsBySlot[part.slotPath] = ""
+    end
+  end
+
+  local removedParts = {}
+  for slotPath, originalPartName in pairs(originalPartList) do
+    if originalPartName and originalPartName ~= "" then
+      local cartPartName = cartPartsBySlot[slotPath]
+      if cartPartName ~= nil and cartPartName ~= originalPartName then
+        local partCondition = partConditions[slotPath .. originalPartName]
+        if not partCondition then
+          partCondition = {
+            integrityValue = 1,
+            visualValue = 1,
+            odometer = 0
+          }
+        end
+
+        local partData = {
+          name = originalPartName,
+          containingSlot = slotPath,
+          slot = slotPath:match("/([^/]+)/$") or slotPath:match("/([^/]+)$") or "",
+          vehicleModel = vehicleModel,
+          partCondition = partCondition
+        }
+
+        if career_modules_valueCalculator then
+          partData.value = career_modules_valueCalculator.getPartValue(partData) or 0
+        else
+          partData.value = 100
+        end
+
+        table.insert(removedParts, partData)
+      end
+    end
+  end
+
+  return removedParts
+end
+
 local function formatPartsTreeForUI(node, slotName, slotInfo, availableParts, slotsNiceName, partsNiceName, pathPrefix,
   parentSlotName, ioCtx, businessId, vehicleData, vehicleModel, ownedPartsByName)
   if not node then
@@ -1241,15 +1337,32 @@ local function formatPartsTreeForUI(node, slotName, slotInfo, availableParts, sl
         local niceName = type(desc) == "table" and desc.description or desc or partName
 
         local value = 100
+        local baseValue = 100
         if ioCtx then
           local jbeamData = jbeamIO.getPart(ioCtx, partName)
           if jbeamData and jbeamData.information and jbeamData.information.value then
-            value = jbeamData.information.value
+            baseValue = jbeamData.information.value
           elseif partInfoData.information and partInfoData.information.value then
-            value = partInfoData.information.value
+            baseValue = partInfoData.information.value
           end
         elseif partInfoData.information and partInfoData.information.value then
-          value = partInfoData.information.value
+          baseValue = partInfoData.information.value
+        end
+
+        if career_modules_valueCalculator and vehicleModel then
+          local partForValueCalc = {
+            name = partName,
+            value = baseValue,
+            partCondition = {
+              integrityValue = 1,
+              odometer = 0,
+              visualValue = 1
+            },
+            vehicleModel = vehicleModel
+          }
+          value = math.max(roundNear(career_modules_valueCalculator.getPartValue(partForValueCalc), 5) - 0.01, 0)
+        else
+          value = baseValue
         end
 
         if businessId and value > 0 then
@@ -1418,7 +1531,9 @@ local function requestVehiclePartsTree(businessId, vehicleId)
       partsNiceName[partName] = type(desc) == "table" and desc.description or desc
     end
     
-    local partsTreeList = formatPartsTreeForUI(vehicleData.config.partsTree, "", nil, availableParts, slotsNiceName, partsNiceName, nil)
+    local vehObj = be:getObjectByID(spawnedId)
+    local personalVehicleModel = vehObj and vehObj:getJBeamFilename() or nil
+    local partsTreeList = formatPartsTreeForUI(vehicleData.config.partsTree, "", nil, availableParts, slotsNiceName, partsNiceName, "/", nil, vehicleData.ioCtx, businessId, vehicleData, personalVehicleModel, nil)
     
     guihooks.trigger('businessComputer:onVehiclePartsTree', {
       success = true,
@@ -1465,7 +1580,13 @@ local function requestVehiclePartsTree(businessId, vehicleId)
         partsNiceName[partName] = type(desc) == "table" and desc.description or desc
       end
       
-      local partsTreeList = formatPartsTreeForUI(vehicleData.config.partsTree, "", nil, availableParts, slotsNiceName, partsNiceName, nil)
+      local spawnedVehicleModel = initialVehicle.vehicleConfig and initialVehicle.vehicleConfig.model_key or initialVehicle.model_key
+      local ownedPartsLookup = nil
+      if career_modules_business_businessPartInventory and spawnedVehicleModel then
+        local inventoryParts = career_modules_business_businessPartInventory.getPartsByModel(spawnedVehicleModel)
+        ownedPartsLookup = buildOwnedPartsLookup(inventoryParts, spawnedVehicleModel)
+      end
+      local partsTreeList = formatPartsTreeForUI(vehicleData.config.partsTree, "", nil, availableParts, slotsNiceName, partsNiceName, "/", nil, vehicleData.ioCtx, businessId, vehicleData, spawnedVehicleModel, ownedPartsLookup)
       
       guihooks.trigger('businessComputer:onVehiclePartsTree', {
         success = true,
@@ -1959,21 +2080,31 @@ local function purchaseCartItems(businessId, accountId, cartData)
     local isPersonalVehicle = isPersonalVehicleId(vehicleIdStr)
 
     if #parts > 0 then
-      if not isPersonalVehicle and career_modules_business_businessPartCustomization and career_modules_business_businessPartInventory then
-        -- Track removed parts before applying changes
-        local removedParts = career_modules_business_businessPartCustomization.findRemovedParts(businessId,
-          vehicle.vehicleId)
+      if not isPersonalVehicle and career_modules_business_businessPartInventory then
+        local removedParts = {}
+        if career_modules_business_businessPartCustomization then
+          removedParts = career_modules_business_businessPartCustomization.findRemovedParts(businessId, vehicle.vehicleId) or {}
+        end
 
-        -- Add removed parts to inventory
-        if removedParts and #removedParts > 0 then
+        if #removedParts == 0 then
+          removedParts = findRemovedPartsFromCart(businessId, vehicle.vehicleId, parts) or {}
+        end
+
+        if #removedParts > 0 then
           career_modules_business_businessPartInventory.addParts(removedParts)
         end
 
-        -- Remove installed used parts from inventory
+        local partsRemovedFromInventory = false
         for _, part in ipairs(parts) do
           if part.fromInventory and part.partId then
             career_modules_business_businessPartInventory.removePart(part.partId)
+            partsRemovedFromInventory = true
           end
+        end
+        
+        -- Refresh inventory UI if parts were added or removed
+        if (#removedParts > 0) or partsRemovedFromInventory then
+          requestPartInventory(businessId)
         end
       end
 

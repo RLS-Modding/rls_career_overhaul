@@ -132,7 +132,7 @@
                   <h4>{{ part.niceName || part.name }}</h4>
                 </div>
                 <div class="option-actions">
-                  <span class="option-price">$ {{ (part.value || 0).toLocaleString() }}</span>
+                  <span class="option-price">$ {{ formatPrice(part.value) }}</span>
                   <div v-if="part.installed" class="installed-button-wrapper">
                     <button
                       class="btn btn-disabled"
@@ -173,13 +173,13 @@
                       <div v-if="installMenuVisible === `${result.slotPath}_${part.name}`" class="install-menu">
                         <button v-if="!part.fromInventory" class="install-menu-item-button" @click="installPart(part, result)" data-focusable>
                           <span>New</span>
-                          <span class="price-badge">$ {{ (part.value || 0).toLocaleString() }}</span>
+                          <span class="price-badge">$ {{ formatPrice(part.value) }}</span>
                         </button>
                         <div v-for="usedPart in getOwnedVariants(part)" :key="usedPart.partId" class="install-menu-item">
                           <button class="install-menu-item-button" @click="installUsedPart(usedPart, result)" data-focusable>
                             <span>Owned</span>
                             <span class="mileage-badge">{{ formatMileage(getUsedPartMileage(usedPart)) }}</span>
-                            <span class="price-badge">$ {{ (usedPart.finalValue || usedPart.value || 0).toLocaleString() }}</span>
+                            <span class="price-badge">$ {{ formatPrice(usedPart.finalValue || usedPart.value) }}</span>
                           </button>
                         </div>
                       </div>
@@ -238,7 +238,7 @@
                 <h4>{{ option.niceName || option.name }}</h4>
               </div>
               <div class="option-actions">
-                <span class="option-price">$ {{ (option.value || 0).toLocaleString() }}</span>
+                <span class="option-price">$ {{ formatPrice(option.value) }}</span>
                 <div v-if="option.installed" class="installed-button-wrapper">
                   <button
                     class="btn btn-disabled"
@@ -279,13 +279,13 @@
                     <div v-if="installMenuVisible === `${currentCategory.path}_${option.name}`" class="install-menu">
                       <button v-if="!option.fromInventory" class="install-menu-item-button" @click="installPart(option, currentCategory)" data-focusable>
                         <span>New</span>
-                        <span class="price-badge">$ {{ (option.value || 0).toLocaleString() }}</span>
+                        <span class="price-badge">$ {{ formatPrice(option.value) }}</span>
                       </button>
                       <div v-for="usedPart in getOwnedVariants(option)" :key="usedPart.partId" class="install-menu-item">
                         <button class="install-menu-item-button" @click="installUsedPart(usedPart, currentCategory)" data-focusable>
                           <span>Owned</span>
                           <span class="mileage-badge">{{ formatMileage(getUsedPartMileage(usedPart)) }}</span>
-                          <span class="price-badge">$ {{ (usedPart.finalValue || usedPart.value || 0).toLocaleString() }}</span>
+                          <span class="price-badge">$ {{ formatPrice(usedPart.finalValue || usedPart.value) }}</span>
                         </button>
                       </div>
                     </div>
@@ -578,6 +578,11 @@ const formatMileage = (miles) => {
   if (!miles || miles === 0) return "0 mi"
   if (miles < 1000) return `${Math.round(miles)} mi`
   return `${(miles / 1000).toFixed(1)}k mi`
+}
+
+const formatPrice = (value) => {
+  const num = value || 0
+  return num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 const getUsedPartMileage = (usedPart) => {

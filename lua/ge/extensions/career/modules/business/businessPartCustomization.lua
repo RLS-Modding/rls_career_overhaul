@@ -1333,6 +1333,15 @@ local function addPartToCart(businessId, vehicleId, currentCart, partToAdd)
           end
         end
 
+        -- Check if this part was from inventory (preserve fromInventory and partId flags)
+        local fromInventory = false
+        local partId = nil
+        if newPartItem.slotPath == slotPath and newPartItem.fromInventory then
+          fromInventory = true
+          partId = newPartItem.partId
+          partValue = 0  -- Parts from inventory are free
+        end
+
         local partData = {
           type = 'part',
           partName = partInfo.partName,
@@ -1342,6 +1351,11 @@ local function addPartToCart(businessId, vehicleId, currentCart, partToAdd)
           price = partValue,
           canRemove = canRemove
         }
+        
+        if fromInventory then
+          partData.fromInventory = true
+          partData.partId = partId
+        end
 
         if slotPath == partToAdd.slotPath then
           partData.partNiceName = partToAdd.partNiceName or partData.partNiceName
