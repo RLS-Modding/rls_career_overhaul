@@ -95,6 +95,37 @@ local function saveBusinessKits(businessId, currentSavePath)
   jsonWriteFile(filePath, data, true)
 end
 
+local function flattenKitTree(node, result)
+  result = result or {}
+  if not node then
+    return result
+  end
+
+  if node.chosenPartName and node.chosenPartName ~= "" then
+    table.insert(result, node.chosenPartName)
+  end
+
+  if node.children then
+    for _, child in pairs(node.children) do
+      flattenKitTree(child, result)
+    end
+  end
+
+  return result
+end
+
+local function countKitParts(kit)
+  if not kit or not kit.parts then
+    return 0
+  end
+  local count = 0
+  for _, partTree in pairs(kit.parts) do
+    local parts = flattenKitTree(partTree)
+    count = count + #parts
+  end
+  return count
+end
+
 local function isMechanicalPart(slotName, parentMap)
   if not slotName then
     return false
@@ -588,37 +619,6 @@ local function restoreFuelLevels(vehObj, storedFuelLevels)
       end
     end
   end, 'energyStorage')
-end
-
-local function flattenKitTree(node, result)
-  result = result or {}
-  if not node then
-    return result
-  end
-
-  if node.chosenPartName and node.chosenPartName ~= "" then
-    table.insert(result, node.chosenPartName)
-  end
-
-  if node.children then
-    for _, child in pairs(node.children) do
-      flattenKitTree(child, result)
-    end
-  end
-
-  return result
-end
-
-local function countKitParts(kit)
-  if not kit or not kit.parts then
-    return 0
-  end
-  local count = 0
-  for _, partTree in pairs(kit.parts) do
-    local parts = flattenKitTree(partTree)
-    count = count + #parts
-  end
-  return count
 end
 
 local function comparePartsTree(kitNode, currentNode, slotPath, differingParts)
