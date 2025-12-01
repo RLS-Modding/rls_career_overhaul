@@ -109,8 +109,12 @@ local function clearCachesForJob(businessId, jobId)
 end
 
 local function getDamageThreshold(businessId)
-  if career_modules_business_tuningShop and career_modules_business_tuningShop.getDamageThreshold then
-    return career_modules_business_tuningShop.getDamageThreshold(businessId)
+  local _, businessType = resolveBusinessModule(businessId)
+  if businessType then
+    local businessObj = career_modules_business_businessManager and career_modules_business_businessManager.getBusinessObject(businessType)
+    if businessObj and businessObj.getDamageThreshold then
+      return businessObj.getDamageThreshold(businessId)
+    end
   end
   return 1500
 end
@@ -139,19 +143,27 @@ local function getInventoryIdFromPersonalVehicleId(vehicleId, businessId)
   if not isPersonalVehicleId(vehicleId) then
     return nil
   end
-  if career_modules_business_tuningShop and career_modules_business_tuningShop.getActivePersonalVehicle then
-    if businessId then
-      local activePersonal = career_modules_business_tuningShop.getActivePersonalVehicle(businessId)
-      if activePersonal and tostring(activePersonal.vehicleId) == tostring(vehicleId) and activePersonal.inventoryId then
-        return activePersonal.inventoryId
-      end
-    else
-      -- Fallback: try all businesses
-      local businesses = career_modules_business_businessManager and career_modules_business_businessManager.getBusinesses("tuningShop") or {}
-      for bId, _ in pairs(businesses) do
-        local activePersonal = career_modules_business_tuningShop.getActivePersonalVehicle(bId)
+  if businessId then
+    local _, businessType = resolveBusinessModule(businessId)
+    if businessType then
+      local businessObj = career_modules_business_businessManager and career_modules_business_businessManager.getBusinessObject(businessType)
+      if businessObj and businessObj.getActivePersonalVehicle then
+        local activePersonal = businessObj.getActivePersonalVehicle(businessId)
         if activePersonal and tostring(activePersonal.vehicleId) == tostring(vehicleId) and activePersonal.inventoryId then
           return activePersonal.inventoryId
+        end
+      end
+    end
+  else
+    local allBusinessObjects = career_modules_business_businessManager and career_modules_business_businessManager.getAllBusinessObjects and career_modules_business_businessManager.getAllBusinessObjects() or {}
+    for businessType, businessObj in pairs(allBusinessObjects) do
+      if businessObj.getActivePersonalVehicle then
+        local purchased = career_modules_business_businessManager.getPurchasedBusinesses(businessType) or {}
+        for bId, _ in pairs(purchased) do
+          local activePersonal = businessObj.getActivePersonalVehicle(bId)
+          if activePersonal and tostring(activePersonal.vehicleId) == tostring(vehicleId) and activePersonal.inventoryId then
+            return activePersonal.inventoryId
+          end
         end
       end
     end
@@ -221,11 +233,14 @@ local function getPulledOutVehiclesList(businessId)
 end
 
 local function getActiveBusinessVehicle(businessId)
-  -- Check for active personal vehicle first
-  if career_modules_business_tuningShop and career_modules_business_tuningShop.getActivePersonalVehicle then
-    local personalVehicle = career_modules_business_tuningShop.getActivePersonalVehicle(businessId)
-    if personalVehicle then
-      return personalVehicle
+  local _, businessType = resolveBusinessModule(businessId)
+  if businessType then
+    local businessObj = career_modules_business_businessManager and career_modules_business_businessManager.getBusinessObject(businessType)
+    if businessObj and businessObj.getActivePersonalVehicle then
+      local personalVehicle = businessObj.getActivePersonalVehicle(businessId)
+      if personalVehicle then
+        return personalVehicle
+      end
     end
   end
 
@@ -549,16 +564,25 @@ local function formatVehicleForUI(vehicle, businessId)
     end
   end
 
-  local tuningShopKits = _G["career_modules_business_tuningShopKits"]
   local kitInstallLocked = false
   local kitInstallTimeRemaining = 0
   local kitInstallKitName = nil
-  if tuningShopKits and businessId then
-    kitInstallLocked = tuningShopKits.isVehicleKitLocked(businessId, vehicle.vehicleId) or false
-    kitInstallTimeRemaining = tuningShopKits.getKitInstallTimeRemaining(businessId, vehicle.vehicleId) or 0
-    local lockInfo = tuningShopKits.getKitInstallLock(businessId, vehicle.vehicleId)
-    if lockInfo then
-      kitInstallKitName = lockInfo.kitName
+  if businessId then
+    local _, businessType = resolveBusinessModule(businessId)
+    local businessObj = businessType and career_modules_business_businessManager and career_modules_business_businessManager.getBusinessObject(businessType)
+    if businessObj then
+      if businessObj.isVehicleKitLocked then
+        kitInstallLocked = businessObj.isVehicleKitLocked(businessId, vehicle.vehicleId) or false
+      end
+      if businessObj.getKitInstallTimeRemaining then
+        kitInstallTimeRemaining = businessObj.getKitInstallTimeRemaining(businessId, vehicle.vehicleId) or 0
+      end
+      if businessObj.getKitInstallLock then
+        local lockInfo = businessObj.getKitInstallLock(businessId, vehicle.vehicleId)
+        if lockInfo then
+          kitInstallKitName = lockInfo.kitName
+        end
+      end
     end
   end
 
@@ -975,9 +999,10 @@ local function pullOutVehicle(businessId, vehicleId)
     end
   end
 
-  if career_modules_business_tuningShopKits and career_modules_business_tuningShopKits.isVehicleKitLocked then
-    if career_modules_business_tuningShopKits.isVehicleKitLocked(businessId, normalizedVehicleId) then
-      local remaining = career_modules_business_tuningShopKits.getKitInstallTimeRemaining(businessId, normalizedVehicleId)
+  local businessObj = businessType and career_modules_business_businessManager and career_modules_business_businessManager.getBusinessObject(businessType)
+  if businessObj and businessObj.isVehicleKitLocked then
+    if businessObj.isVehicleKitLocked(businessId, normalizedVehicleId) then
+      local remaining = businessObj.getKitInstallTimeRemaining and businessObj.getKitInstallTimeRemaining(businessId, normalizedVehicleId) or 0
       return {
         success = false,
         errorCode = "kitInstallLocked",
@@ -1122,46 +1147,62 @@ local function setRaceSelection(businessId, raceType)
 end
 
 local function getAvailableBrands()
-  local module = getBusinessModule("tuningShop")
-  if module and module.getAvailableBrands then
-    return module.getAvailableBrands()
+  local allBusinessObjects = career_modules_business_businessManager and career_modules_business_businessManager.getAllBusinessObjects and career_modules_business_businessManager.getAllBusinessObjects() or {}
+  for _, businessObj in pairs(allBusinessObjects) do
+    if businessObj.getAvailableBrands then
+      return businessObj.getAvailableBrands()
+    end
   end
   return {}
 end
 
 local function getAvailableRaceTypes()
-  local module = getBusinessModule("tuningShop")
-  if module and module.getAvailableRaceTypes then
-    return module.getAvailableRaceTypes()
+  local allBusinessObjects = career_modules_business_businessManager and career_modules_business_businessManager.getAllBusinessObjects and career_modules_business_businessManager.getAllBusinessObjects() or {}
+  for _, businessObj in pairs(allBusinessObjects) do
+    if businessObj.getAvailableRaceTypes then
+      return businessObj.getAvailableRaceTypes()
+    end
   end
   return {}
 end
 
 local function requestAvailableBrands()
-  local module = getBusinessModule("tuningShop")
-  if module and module.requestAvailableBrands then
-    module.requestAvailableBrands()
+  local allBusinessObjects = career_modules_business_businessManager and career_modules_business_businessManager.getAllBusinessObjects and career_modules_business_businessManager.getAllBusinessObjects() or {}
+  for _, businessObj in pairs(allBusinessObjects) do
+    if businessObj.requestAvailableBrands then
+      businessObj.requestAvailableBrands()
+      return
+    end
   end
 end
 
-local function requestAvailableRaceTypes()
-  local module = getBusinessModule("tuningShop")
-  if module and module.requestAvailableRaceTypes then
-    module.requestAvailableRaceTypes()
+local function requestAvailableRaceTypes(businessId)
+  if not businessId then
+    return
+  end
+  local allBusinessObjects = career_modules_business_businessManager and career_modules_business_businessManager.getAllBusinessObjects and career_modules_business_businessManager.getAllBusinessObjects() or {}
+  for _, businessObj in pairs(allBusinessObjects) do
+    if businessObj.requestAvailableRaceTypes then
+      businessObj.requestAvailableRaceTypes(businessId)
+      return
+    end
   end
 end
 
 local function getPartSupplierDiscountMultiplier(businessId)
-  if not businessId or not career_modules_business_businessSkillTree then
+  if not businessId then
     return 1.0
   end
 
-  local businessType = "tuningShop"
-  local treeId = "shop-upgrades"
-  local nodeId = "part-suppliers"
+  local _, businessType = resolveBusinessModule(businessId)
+  if businessType then
+    local businessObj = career_modules_business_businessManager and career_modules_business_businessManager.getBusinessObject(businessType)
+    if businessObj and businessObj.getPartSupplierDiscountMultiplier then
+      return businessObj.getPartSupplierDiscountMultiplier(businessId)
+    end
+  end
 
-  local level = career_modules_business_businessSkillTree.getNodeProgress(businessId, treeId, nodeId) or 0
-  return 1.0 - (0.05 * level)
+  return 1.0
 end
 
 local function buildOwnedPartsLookup(inventoryParts, vehicleModel)
@@ -1463,18 +1504,27 @@ local function getPersonalVehicleData(vehicleId, businessId)
   end
   
   local activePersonal = nil
-  if career_modules_business_tuningShop and career_modules_business_tuningShop.getActivePersonalVehicle then
-    if businessId then
-      activePersonal = career_modules_business_tuningShop.getActivePersonalVehicle(businessId)
-    else
-      -- Try all businesses if businessId not provided
-      local businesses = career_modules_business_businessManager and career_modules_business_businessManager.getBusinesses("tuningShop") or {}
-      for bId, _ in pairs(businesses) do
-        local entry = career_modules_business_tuningShop.getActivePersonalVehicle(bId)
-        if entry and tostring(entry.vehicleId) == tostring(vehicleId) then
-          activePersonal = entry
-          break
+  if businessId then
+    local _, businessType = resolveBusinessModule(businessId)
+    if businessType then
+      local businessObj = career_modules_business_businessManager and career_modules_business_businessManager.getBusinessObject(businessType)
+      if businessObj and businessObj.getActivePersonalVehicle then
+        activePersonal = businessObj.getActivePersonalVehicle(businessId)
+      end
+    end
+  else
+    local allBusinessObjects = career_modules_business_businessManager and career_modules_business_businessManager.getAllBusinessObjects and career_modules_business_businessManager.getAllBusinessObjects() or {}
+    for businessType, businessObj in pairs(allBusinessObjects) do
+      if businessObj.getActivePersonalVehicle then
+        local purchased = career_modules_business_businessManager.getPurchasedBusinesses(businessType) or {}
+        for bId, _ in pairs(purchased) do
+          local entry = businessObj.getActivePersonalVehicle(bId)
+          if entry and tostring(entry.vehicleId) == tostring(vehicleId) then
+            activePersonal = entry
+            break
+          end
         end
+        if activePersonal then break end
       end
     end
   end
@@ -2185,6 +2235,50 @@ local function purchaseCartItems(businessId, accountId, cartData)
         end
       end
       applyVehicleTuning(businessId, vehicle.vehicleId, tuningVars, nil)
+      
+      -- Update vehicle vars and config for job vehicles
+      if not isPersonalVehicle then
+        -- Update vehicle.vars
+        vehicle.vars = tuningVars
+        
+        -- Update vehicle.config.vars if config exists
+        if vehicle.config then
+          vehicle.config.vars = deepcopy(tuningVars)
+        end
+        
+        -- Save updated config and vars to business inventory
+        local updateData = {
+          vars = tuningVars
+        }
+        if vehicle.config then
+          updateData.config = vehicle.config
+        end
+        career_modules_business_businessInventory.updateVehicle(businessId, vehicle.vehicleId, updateData)
+        
+        -- Update pulled out vehicle references
+        if career_modules_business_businessInventory.getPulledOutVehicles then
+          local pulledVehicles = career_modules_business_businessInventory.getPulledOutVehicles(businessId) or {}
+          local targetId = normalizeVehicleIdValue(vehicle.vehicleId)
+          for _, pulled in ipairs(pulledVehicles) do
+            local pulledId = normalizeVehicleIdValue(pulled.vehicleId)
+            if pulledId == targetId then
+              pulled.vars = tuningVars
+              if vehicle.config then
+                pulled.config = vehicle.config
+              end
+              break
+            end
+          end
+        else
+          local pulledOutVehicle = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
+          if pulledOutVehicle and pulledOutVehicle.vehicleId == vehicle.vehicleId then
+            pulledOutVehicle.vars = tuningVars
+            if vehicle.config then
+              pulledOutVehicle.config = vehicle.config
+            end
+          end
+        end
+      end
     end
 
     M.exitShoppingVehicle(businessId)
@@ -2201,6 +2295,11 @@ local function purchaseCartItems(businessId, accountId, cartData)
         career_saveSystem.saveCurrent({inventoryId})
       end
     else
+      -- Save the vehicle config changes before finalizing purchase
+      -- This ensures the updated config is persisted before finalizePurchase puts away and respawns the vehicle
+      if (#parts > 0) or (#tuning > 0) then
+        career_saveSystem.saveCurrent()
+      end
       career_modules_business_businessVehicleModificationUtil.finalizePurchase(businessId, vehicle.vehicleId, nop)
     end
   else
@@ -2352,10 +2451,14 @@ local function exitShoppingVehicle(businessId)
     local playerVehId = playerVeh:getID()
     local isValidVehicle = false
 
-    if career_modules_business_tuningShop and career_modules_business_tuningShop.getActivePersonalVehicle then
-      local activePersonal = career_modules_business_tuningShop.getActivePersonalVehicle(businessId)
-      if activePersonal and activePersonal.spawnedVehicleId == playerVehId then
-        isValidVehicle = true
+    local _, businessType = resolveBusinessModule(businessId)
+    if businessType then
+      local businessObj = career_modules_business_businessManager and career_modules_business_businessManager.getBusinessObject(businessType)
+      if businessObj and businessObj.getActivePersonalVehicle then
+        local activePersonal = businessObj.getActivePersonalVehicle(businessId)
+        if activePersonal and activePersonal.spawnedVehicleId == playerVehId then
+          isValidVehicle = true
+        end
       end
     end
 
@@ -2456,20 +2559,26 @@ local function getVehiclesOnly(businessId)
 end
 
 local function getTechsOnly(businessId)
-  local module = resolveBusinessModule(businessId)
+  local module, businessType = resolveBusinessModule(businessId)
   if not module then
     return { techs = {} }
   end
   local techs = {}
-  if module.getTechsForBusiness then
-    local rawTechs = module.getTechsForBusiness(businessId) or {}
-    local tuningShopTechs = require('ge/extensions/career/modules/business/tuningShopTechs')
-    for _, tech in ipairs(rawTechs) do
-      local formattedTech = tuningShopTechs.formatTechForUIEntry(businessId, tech)
-      if formattedTech then
-        table.insert(techs, formattedTech)
+  local businessObj = businessType and career_modules_business_businessManager and career_modules_business_businessManager.getBusinessObject(businessType)
+  if businessObj and businessObj.getTechsForBusiness then
+    local rawTechs = businessObj.getTechsForBusiness(businessId) or {}
+    if businessObj.formatTechForUIEntry then
+      for _, tech in ipairs(rawTechs) do
+        local formattedTech = businessObj.formatTechForUIEntry(businessId, tech)
+        if formattedTech then
+          table.insert(techs, formattedTech)
+        end
       end
+    else
+      techs = rawTechs
     end
+  elseif module.getTechsForBusiness then
+    techs = module.getTechsForBusiness(businessId) or {}
   end
   return {
     businessId = businessId,
@@ -2478,14 +2587,14 @@ local function getTechsOnly(businessId)
 end
 
 local function getStatsOnly(businessId)
-  local module = resolveBusinessModule(businessId)
+  local module, businessType = resolveBusinessModule(businessId)
   if not module then
     return { stats = {} }
   end
   local kits = {}
-  local tuningShopKits = _G["career_modules_business_tuningShopKits"]
-  if tuningShopKits and tuningShopKits.loadBusinessKits then
-    kits = tuningShopKits.loadBusinessKits(businessId) or {}
+  local businessObj = businessType and career_modules_business_businessManager and career_modules_business_businessManager.getBusinessObject(businessType)
+  if businessObj and businessObj.loadBusinessKits then
+    kits = businessObj.loadBusinessKits(businessId) or {}
   end
   local vehicles = {}
   if career_modules_business_businessInventory then
@@ -2577,16 +2686,18 @@ M.requestFinancesData = function(businessType, businessId)
   end
 end
 M.requestSimulationTime = function()
-  local module = getBusinessModule("tuningShop")
-  if module and module.requestSimulationTime then
-    module.requestSimulationTime()
-  else
-    if guihooks then
-      guihooks.trigger('businessComputer:onSimulationTime', {
-        success = true,
-        simulationTime = os.time()
-      })
+  local allBusinessObjects = career_modules_business_businessManager and career_modules_business_businessManager.getAllBusinessObjects and career_modules_business_businessManager.getAllBusinessObjects() or {}
+  for _, businessObj in pairs(allBusinessObjects) do
+    if businessObj.requestSimulationTime then
+      businessObj.requestSimulationTime()
+      return
     end
+  end
+  if guihooks then
+    guihooks.trigger('businessComputer:onSimulationTime', {
+      success = true,
+      simulationTime = os.time()
+    })
   end
 end
 M.sellPart = sellPart

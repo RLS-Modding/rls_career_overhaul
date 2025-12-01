@@ -1191,7 +1191,11 @@ local function setBrandSelection(businessId, brand)
     businessSelections[businessId] = {}
   end
 
-  businessSelections[businessId].brand = brand
+  if brand == "" or brand == nil then
+    businessSelections[businessId].brand = nil
+  else
+    businessSelections[businessId].brand = brand
+  end
   return true
 end
 
@@ -1210,7 +1214,11 @@ local function setRaceSelection(businessId, raceType)
     businessSelections[businessId] = {}
   end
 
-  businessSelections[businessId].raceType = raceType
+  if raceType == "" or raceType == nil then
+    businessSelections[businessId].raceType = nil
+  else
+    businessSelections[businessId].raceType = raceType
+  end
   return true
 end
 
@@ -3621,8 +3629,8 @@ local function requestAvailableBrands()
   end
 end
 
-local function requestAvailableRaceTypes()
-  local raceTypes = getAvailableRaceTypes()
+local function requestAvailableRaceTypes(businessId)
+  local raceTypes = getAvailableRaceTypes(businessId)
   if guihooks then
     guihooks.trigger('businessComputer:onAvailableRaceTypesReceived', {
       raceTypes = raceTypes
@@ -3630,7 +3638,178 @@ local function requestAvailableRaceTypes()
   end
 end
 
+
+local function getTechData(businessId)
+  if not businessId then
+    return nil
+  end
+  
+  local techs = tuningShopTechs.getTechsForBusiness(businessId)
+  local formattedTechs = {}
+  for _, tech in ipairs(techs) do
+    local formatted = tuningShopTechs.formatTechForUIEntry(businessId, tech)
+    if formatted then
+      table.insert(formattedTechs, formatted)
+    end
+  end
+  
+  return {
+    businessId = tostring(businessId),
+    techs = formattedTechs
+  }
+end
+
+local function getManagerData(businessId)
+  if not businessId or not hasManager(businessId) then
+    return nil
+  end
+  
+  local timerState = getManagerTimerState(businessId)
+  local interval = getManagerAssignmentInterval(businessId)
+  
+  return {
+    businessId = tostring(businessId),
+    elapsed = timerState.elapsed,
+    interval = interval,
+    available = timerState.flagActive or (timerState.elapsed >= interval),
+    nextAvailableIn = math.max(0, interval - timerState.elapsed),
+    hasGeneralManager = hasGeneralManager(businessId)
+  }
+end
+
+local function selectPersonalVehicle(businessId, inventoryId)
+  if not businessId or not inventoryId then
+    return { success = false, errorCode = "missingParams" }
+  end
+  if not isPersonalUseUnlocked(businessId) then
+    return { success = false, errorCode = "personalUseNotUnlocked", message = "Personal Use upgrade is not unlocked" }
+  end
+  local inventoryVehiclesInZone = getInventoryVehiclesInGarageZone(businessId)
+  local found = nil
+  for _, invVeh in ipairs(inventoryVehiclesInZone) do
+    if invVeh.inventoryId == inventoryId then
+      found = invVeh
+      break
+    end
+  end
+  if not found then
+    return { success = false, errorCode = "vehicleNotInZone", message = "Vehicle is not in the garage zone" }
+  end
+  local personalEntry = createPersonalVehicleEntry(businessId, found.inventoryId, found.inventoryVehicleData, found.spawnedId)
+  if not personalEntry then
+    return { success = false, errorCode = "failedToCreate", message = "Failed to create personal vehicle entry" }
+  end
+  activePersonalVehicle[normalizeBusinessId(businessId)] = personalEntry
+  if guihooks then
+    local formatted = formatVehicleForUI(personalEntry, businessId)
+    if formatted then
+      formatted.damage = 0
+      formatted.damageLocked = false
+      formatted.damageThreshold = getDamageThreshold(businessId)
+      formatted.inGarageZone = true
+      formatted.isPersonal = true
+      formatted.inventoryId = inventoryId
+      formatted.spawnedVehicleId = personalEntry.spawnedVehicleId
+      formatted.isActive = true
+    end
+    guihooks.trigger('businessComputer:onPersonalVehicleSelected', {
+      businessType = "tuningShop",
+      businessId = tostring(businessId),
+      vehicle = formatted
+    })
+  end
+  return { success = true, vehicle = personalEntry }
+end
+
+local function getActivePersonalVehicle(businessId)
+  local normalizedId = normalizeBusinessId(businessId)
+  return activePersonalVehicle[normalizedId]
+end
+
+local function clearActivePersonalVehicle(businessId)
+  local normalizedId = normalizeBusinessId(businessId)
+  activePersonalVehicle[normalizedId] = nil
+end
+
+local businessObject = {
+  businessType = "tuningShop",
+  features = {
+    bankAccount = true,
+    skillTrees = true,
+    inventory = true,
+    personalVehicle = true,
+    finances = true,
+    xpSystem = true,
+    operatingCosts = true
+  },
+  getDamageThreshold = function(businessId) return getDamageThreshold(businessId) end,
+  getActivePersonalVehicle = function(businessId) return getActivePersonalVehicle(businessId) end,
+  selectPersonalVehicle = function(businessId, inventoryId) return selectPersonalVehicle(businessId, inventoryId) end,
+  clearActivePersonalVehicle = function(businessId) return clearActivePersonalVehicle(businessId) end,
+  getFinancesData = function(businessId) return getFinancesData(businessId) end,
+  requestFinancesData = function(businessId) return requestFinancesData(businessId) end,
+  getBusinessXP = function(businessId) return getBusinessXP(businessId) end,
+  addBusinessXP = function(businessId, amount) return addBusinessXP(businessId, amount) end,
+  getOperatingCosts = function(businessId) return getOperatingCosts(businessId) end,
+  initializeBusinessData = function(businessId) return initializeBusinessData(businessId) end,
+  getUIData = function(businessId) return getUIData(businessId) end,
+  getManagerData = function(businessId) return getManagerData(businessId) end,
+  getMaxPulledOutVehicles = function(businessId) return getMaxPulledOutVehicles(businessId) end,
+  isPlayerInBusinessZone = function(businessId) return isPlayerInTuningShopZone(businessId) end,
+  isSpawnedVehicleInGarageZone = function(businessId, vehicleId) return isSpawnedVehicleInGarageZone(businessId, vehicleId) end,
+  isPositionInGarageZone = function(businessId, pos) return isPositionInGarageZone(businessId, pos) end,
+  getInventoryVehiclesInGarageZone = function(businessId) return getInventoryVehiclesInGarageZone(businessId) end,
+  getJobById = function(businessId, jobId) return getJobById(businessId, jobId) end,
+  getVehicleByJobId = function(businessId, jobId) return getVehicleByJobId(businessId, jobId) end,
+  getTechsForBusiness = function(businessId) return tuningShopTechs.loadBusinessTechs(businessId) end,
+  updateTechName = function(businessId, techId, name) return tuningShopTechs.updateTechName(businessId, techId, name) end,
+  assignJobToTech = function(businessId, techId, jobId) return tuningShopTechs.assignJobToTech(businessId, techId, jobId) end,
+  getAvailableBrands = function() return getAvailableBrands() end,
+  getAvailableRaceTypes = function() return getAvailableRaceTypes() end,
+  requestAvailableBrands = function() return requestAvailableBrands() end,
+  requestAvailableRaceTypes = function(businessId) return requestAvailableRaceTypes(businessId) end,
+  requestSimulationTime = function() return requestSimulationTime() end,
+  getBrandSelection = function(businessId) return getBrandSelection(businessId) end,
+  setBrandSelection = function(businessId, brand) return setBrandSelection(businessId, brand) end,
+  getRaceSelection = function(businessId) return getRaceSelection(businessId) end,
+  setRaceSelection = function(businessId, raceType) return setRaceSelection(businessId, raceType) end,
+  isJobLockedByTech = function(businessId, jobId) return tuningShopTechs.isJobLockedByTech(businessId, jobId) end,
+  formatTechForUIEntry = function(businessId, tech) return tuningShopTechs.formatTechForUIEntry(businessId, tech) end,
+  loadBusinessTechs = function(businessId) return tuningShopTechs.loadBusinessTechs(businessId) end,
+  isVehicleKitLocked = function(businessId, vehicleId)
+    local kits = getTuningShopKits()
+    return kits and kits.isVehicleKitLocked and kits.isVehicleKitLocked(businessId, vehicleId) or false
+  end,
+  getKitInstallTimeRemaining = function(businessId, vehicleId)
+    local kits = getTuningShopKits()
+    return kits and kits.getKitInstallTimeRemaining and kits.getKitInstallTimeRemaining(businessId, vehicleId) or 0
+  end,
+  getKitInstallLock = function(businessId, vehicleId)
+    local kits = getTuningShopKits()
+    return kits and kits.getKitInstallLock and kits.getKitInstallLock(businessId, vehicleId)
+  end,
+  loadBusinessKits = function(businessId)
+    local kits = getTuningShopKits()
+    return kits and kits.loadBusinessKits and kits.loadBusinessKits(businessId) or {}
+  end,
+  hasKitStorageUnlocked = function(businessId)
+    local kits = getTuningShopKits()
+    return kits and kits.hasKitStorageUnlocked and kits.hasKitStorageUnlocked(businessId) or false
+  end,
+  getPartSupplierDiscountMultiplier = function(businessId)
+    if not businessId or not career_modules_business_businessSkillTree then
+      return 1.0
+    end
+    local treeId = "shop-upgrades"
+    local nodeId = "part-suppliers"
+    local level = career_modules_business_businessSkillTree.getNodeProgress(businessId, treeId, nodeId) or 0
+    return 1.0 - (0.05 * level)
+  end
+}
+
 local function onCareerActivated()
+  career_modules_business_businessManager.registerBusiness("tuningShop", businessObject)
+
   career_modules_business_businessManager.registerBusinessCallback("tuningShop", {
     onPurchase = function(businessId)
       ensureTabsRegistered()
@@ -3783,98 +3962,6 @@ local function isShopAppUnlocked(businessId)
   return level and level > 0
 end
 
-local function getTechData(businessId)
-  if not businessId then
-    return nil
-  end
-  
-  local techs = tuningShopTechs.getTechsForBusiness(businessId)
-  local formattedTechs = {}
-  for _, tech in ipairs(techs) do
-    local formatted = tuningShopTechs.formatTechForUIEntry(businessId, tech)
-    if formatted then
-      table.insert(formattedTechs, formatted)
-    end
-  end
-  
-  return {
-    businessId = tostring(businessId),
-    techs = formattedTechs
-  }
-end
-
-local function getManagerData(businessId)
-  if not businessId or not hasManager(businessId) then
-    return nil
-  end
-  
-  local timerState = getManagerTimerState(businessId)
-  local interval = getManagerAssignmentInterval(businessId)
-  
-  return {
-    businessId = tostring(businessId),
-    elapsed = timerState.elapsed,
-    interval = interval,
-    available = timerState.flagActive or (timerState.elapsed >= interval),
-    nextAvailableIn = math.max(0, interval - timerState.elapsed),
-    hasGeneralManager = hasGeneralManager(businessId)
-  }
-end
-
-local function selectPersonalVehicle(businessId, inventoryId)
-  if not businessId or not inventoryId then
-    return { success = false, errorCode = "missingParams" }
-  end
-  if not isPersonalUseUnlocked(businessId) then
-    return { success = false, errorCode = "personalUseNotUnlocked", message = "Personal Use upgrade is not unlocked" }
-  end
-  local inventoryVehiclesInZone = getInventoryVehiclesInGarageZone(businessId)
-  local found = nil
-  for _, invVeh in ipairs(inventoryVehiclesInZone) do
-    if invVeh.inventoryId == inventoryId then
-      found = invVeh
-      break
-    end
-  end
-  if not found then
-    return { success = false, errorCode = "vehicleNotInZone", message = "Vehicle is not in the garage zone" }
-  end
-  local personalEntry = createPersonalVehicleEntry(businessId, found.inventoryId, found.inventoryVehicleData, found.spawnedId)
-  if not personalEntry then
-    return { success = false, errorCode = "failedToCreate", message = "Failed to create personal vehicle entry" }
-  end
-  activePersonalVehicle[normalizeBusinessId(businessId)] = personalEntry
-  if guihooks then
-    local formatted = formatVehicleForUI(personalEntry, businessId)
-    if formatted then
-      formatted.damage = 0
-      formatted.damageLocked = false
-      formatted.damageThreshold = getDamageThreshold(businessId)
-      formatted.inGarageZone = true
-      formatted.isPersonal = true
-      formatted.inventoryId = inventoryId
-      formatted.spawnedVehicleId = personalEntry.spawnedVehicleId
-      formatted.isActive = true
-    end
-    guihooks.trigger('businessComputer:onPersonalVehicleSelected', {
-      businessType = "tuningShop",
-      businessId = tostring(businessId),
-      vehicle = formatted
-    })
-  end
-  return { success = true, vehicle = personalEntry }
-end
-
-local function getActivePersonalVehicle(businessId)
-  local normalizedId = normalizeBusinessId(businessId)
-  return activePersonalVehicle[normalizedId]
-end
-
-local function clearActivePersonalVehicle(businessId)
-  local normalizedId = normalizeBusinessId(businessId)
-  activePersonalVehicle[normalizedId] = nil
-end
-
 M.onCareerActivated = onCareerActivated
 M.onUpdate = onUpdate
 M.powerToWeightToTime = powerToWeightToTime
@@ -3932,5 +4019,6 @@ M.selectPersonalVehicle = selectPersonalVehicle
 M.getActivePersonalVehicle = getActivePersonalVehicle
 M.clearActivePersonalVehicle = clearActivePersonalVehicle
 M.getDamageThreshold = getDamageThreshold
+M.getBusinessObject = function() return businessObject end
 
 return M

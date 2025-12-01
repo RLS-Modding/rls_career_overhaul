@@ -209,6 +209,7 @@
 <script setup>
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
 import { useBridge, lua } from '@/bridge'
+import { formatCurrency, formatTime } from "../../utils/businessUtils"
 
 const props = defineProps({
   data: {
@@ -264,22 +265,8 @@ const timeUntilNextPayment = computed(() => {
     return 'Calculating...'
   }
   
-  return formatTimeRemaining(Math.floor(currentRemaining))
+  return formatTime(Math.floor(currentRemaining))
 })
-
-const formatTimeRemaining = (seconds) => {
-  if (seconds < 60) {
-    return `${seconds}s`
-  }
-  const minutes = Math.floor(seconds / 60)
-  const remainingSeconds = seconds % 60
-  if (minutes < 60) {
-    return remainingSeconds > 0 ? `${minutes}m ${remainingSeconds}s` : `${minutes}m`
-  }
-  const hours = Math.floor(minutes / 60)
-  const remainingMinutes = minutes % 60
-  return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`
-}
 
 const requestFinancesData = async () => {
   if (!props.data?.businessId || !props.data?.businessType) {
@@ -288,10 +275,14 @@ const requestFinancesData = async () => {
   
   loading.value = true
   try {
-    await lua.career_modules_business_businessComputer.requestFinancesData(
-      props.data.businessType,
-      props.data.businessId
-    )
+    if (props.data.businessType === 'tuningShop') {
+      await lua.career_modules_business_tuningShop.requestFinancesData(props.data.businessId)
+    } else {
+      await lua.career_modules_business_businessComputer.requestFinancesData(
+        props.data.businessType,
+        props.data.businessId
+      )
+    }
   } catch (error) {
     loading.value = false
   }
@@ -337,7 +328,11 @@ const handleAccountUpdate = (data) => {
 
 const requestSimulationTime = async () => {
   try {
-    await lua.career_modules_business_businessComputer.requestSimulationTime()
+    if (props.data?.businessType === 'tuningShop') {
+      await lua.career_modules_business_tuningShop.requestSimulationTime()
+    } else {
+      await lua.career_modules_business_businessComputer.requestSimulationTime()
+    }
   } catch (error) {
   }
 }
@@ -640,18 +635,6 @@ const handleChartHover = (event) => {
 const hideTooltip = () => {
   tooltip.value.visible = false
   hoveredIndex.value = null
-}
-
-const formatCurrency = (amount) => {
-  if (amount === null || amount === undefined) return '$0'
-  const num = Math.abs(amount)
-  const sign = amount < 0 ? '-' : ''
-  if (num >= 1000000) {
-    return sign + '$' + (num / 1000000).toFixed(2) + 'M'
-  } else if (num >= 1000) {
-    return sign + '$' + (num / 1000).toFixed(1) + 'k'
-  }
-  return sign + '$' + Math.floor(num).toLocaleString()
 }
 </script>
 

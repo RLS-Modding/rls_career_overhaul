@@ -174,7 +174,7 @@
                   
                   <div v-if="tech.jobId" class="tech-working-info">
                     <div class="tech-job-label">{{ getJobLabel(tech.jobId) }}</div>
-                    <div class="tech-phase">{{ formatPhase(tech) }}</div>
+                    <div class="tech-phase">{{ formatPhase(tech, true) }}</div>
                     <div class="tech-progress-bar">
                       <div class="tech-progress-fill" :style="{ width: `${Math.min(100, Math.round((tech.progress || 0) * 100))}%` }"></div>
                     </div>
@@ -331,6 +331,7 @@ import { ref, computed, onMounted, onUnmounted, watch } from "vue"
 import PhoneWrapper from "./PhoneWrapper.vue"
 import { useBusinessComputerStore } from "../stores/businessComputerStore"
 import { useBridge, lua } from "@/bridge"
+import { formatCurrency, formatTime, formatPhase, formatExpiry } from "../utils/businessUtils"
 
 const store = useBusinessComputerStore()
 const { events } = useBridge()
@@ -387,26 +388,6 @@ const getTechProgress = (techId) => {
 const getJobLabel = (jobId) => {
   const job = store.activeJobs.find(j => String(j.jobId || j.id) === String(jobId))
   return job?.goal || `Job #${jobId}`
-}
-
-const formatPhase = (tech) => {
-  const map = { baseline: "Baseline", validation: "Validating", build: "Building", update: "Tuning", cooldown: "Cooldown", completed: "Done", failed: "Failed" }
-  return tech.label || map[tech.phase] || tech.action || "Working"
-}
-
-const formatExpiry = (seconds) => {
-  if (seconds <= 0) return "Expired"
-  if (seconds < 60) return `${Math.round(seconds)}s`
-  return `${Math.floor(seconds / 60)}m`
-}
-
-const formatCurrency = (amount) => {
-  if (amount === null || amount === undefined) return '$0'
-  const num = Math.abs(amount)
-  const sign = amount < 0 ? '-' : ''
-  if (num >= 1000000) return sign + '$' + (num / 1000000).toFixed(1) + 'M'
-  if (num >= 1000) return sign + '$' + (num / 1000).toFixed(1) + 'k'
-  return sign + '$' + Math.floor(num).toLocaleString()
 }
 
 const canCompleteJob = (job) => {
@@ -540,7 +521,7 @@ const chartLinePath = computed(() => {
 const requestFinancesData = async () => {
   if (!store.businessId || !store.businessType) return
   try {
-    await lua.career_modules_business_businessComputer.requestFinancesData(store.businessType, store.businessId)
+    await lua.career_modules_business_tuningShop.requestFinancesData(store.businessId)
   } catch (e) {}
 }
 

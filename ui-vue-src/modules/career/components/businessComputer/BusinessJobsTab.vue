@@ -150,6 +150,7 @@ import { computed, ref, Teleport, onMounted, onUnmounted, watch, inject, nextTic
 import { useBusinessComputerStore } from "../../stores/businessComputerStore"
 import { useBridge } from "@/bridge"
 import BusinessJobCard from "./BusinessJobCard.vue"
+import { normalizeId } from "../../utils/businessUtils"
 
 const store = useBusinessComputerStore()
 const controllerNav = inject('controllerNav', null)
@@ -157,12 +158,6 @@ const abandonModalRef = ref(null)
 const brandModalRef = ref(null)
 const raceModalRef = ref(null)
 const { events } = useBridge()
-
-const normalizeId = (id) => {
-  if (id === undefined || id === null) return null
-  const num = Number(id)
-  return isNaN(num) ? String(id) : num
-}
 
 const showAbandonModal = ref(false)
 const jobToAbandon = ref(null)
@@ -178,7 +173,11 @@ const showRecognitionBanner = computed(() => {
 })
 
 const brandSelectionDisplay = computed(() => {
-  return store.brandSelection || "Not Selected"
+  const selection = store.brandSelection
+  if (selection === null || selection === undefined || selection === "null" || selection === "") {
+    return "Not Selected"
+  }
+  return selection
 })
 
 const raceSelectionDisplay = computed(() => {

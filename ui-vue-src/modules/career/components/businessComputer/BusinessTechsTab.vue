@@ -113,11 +113,11 @@
             </div>
              <div class="stat-item" v-if="tech.jobReward !== undefined && tech.jobReward > 0">
               <span class="stat-label">Payment</span>
-              <span class="stat-value">${{ formatPayment(tech.jobReward) }}</span>
+              <span class="stat-value">{{ formatCurrency(tech.jobReward) }}</span>
             </div>
              <div class="stat-item" v-if="getBuildCost(tech) > 0">
               <span class="stat-label">Build Cost</span>
-              <span class="stat-value">${{ formatPayment(getBuildCost(tech)) }}</span>
+              <span class="stat-value">{{ formatCurrency(getBuildCost(tech)) }}</span>
             </div>
           </div>
 
@@ -203,6 +203,7 @@ import { computed, reactive, ref, Teleport, nextTick, onMounted, onUnmounted, wa
 import { useBusinessComputerStore } from "../../stores/businessComputerStore"
 import { useBridge, lua } from "@/bridge"
 import { vBngTextInput } from "@/common/directives"
+import { formatCurrency, formatTime, formatPhase } from "../../utils/businessUtils"
 import JobAssignCard from "./JobAssignCard.vue"
 
 const store = useBusinessComputerStore()
@@ -290,34 +291,11 @@ const getJobLabel = (jobId) => {
   return job?.goal || `Job #${jobId}`
 }
 
-const formatPhase = (tech) => {
-  const phaseMap = {
-    baseline: "Baseline Run",
-    validation: "Validation Run",
-    postUpdate: "Final Verification",
-    completed: "Completed",
-    failed: "Failed",
-    idle: "Idle",
-    build: "Building",
-    update: "Tuning",
-    cooldown: "Cooling Down"
-  }
-  return phaseMap[tech.phase] || tech.action || "Idle"
-}
-
 const getPhaseClass = (tech) => {
     if (!tech.jobId) return 'badge-idle'
     if (tech.phase === 'failed') return 'badge-failed'
     if (tech.phase === 'completed') return 'badge-success'
     return 'badge-working'
-}
-
-const formatTime = (seconds) => {
-    if (!seconds || seconds <= 0) return "0s"
-    if (seconds < 60) return `${Math.ceil(seconds)}s`
-    const m = Math.floor(seconds / 60)
-    const s = Math.ceil(seconds % 60)
-    return `${m}m ${s}s`
 }
 
 let animationFrameId = null
@@ -388,18 +366,24 @@ const handleTechsUpdated = (data) => {
   }
 }
 
-const refreshManagerTime = async () => {
-  if (!store.businessId) return
-  try {
-    const data = await lua.career_modules_business_businessComputer.getManagerData(store.businessId)
-    if (data) {
-      if (data.managerTimeRemaining !== undefined) {
-        localManagerTimeRemaining.value = data.managerTimeRemaining
+  const refreshManagerTime = async () => {
+    if (!store.businessId) return
+    try {
+      let data
+      if (store.businessType === 'tuningShop') {
+        data = await lua.career_modules_business_tuningShop.getManagerData(store.businessId)
+      } else {
+        data = await lua.career_modules_business_businessComputer.getManagerData(store.businessId)
       }
-      managerReadyToAssign.value = data.managerReadyToAssign
-    }
-  } catch (e) {}
-}
+      
+      if (data) {
+        if (data.managerTimeRemaining !== undefined) {
+          localManagerTimeRemaining.value = data.managerTimeRemaining
+        }
+        managerReadyToAssign.value = data.managerReadyToAssign
+      }
+    } catch (e) {}
+  }
 
 watch(managerTimeRemainingFromStore, (newValue) => {
   if (newValue !== null && newValue !== undefined) {
@@ -424,11 +408,20 @@ onMounted(() => {
   refreshManagerTime()
   
   // Request fresh tech data to sync progress
-  lua.career_modules_business_businessComputer.getTechsOnly(store.businessId).then(data => {
-    if (data && data.techs) {
-      handleTechsUpdated(data)
-    }
-  })
+  const fetchTechs = async () => {
+    try {
+      let data
+      if (store.businessType === 'tuningShop') {
+        data = await lua.career_modules_business_tuningShop.getTechData(store.businessId)
+      } else {
+        data = await lua.career_modules_business_businessComputer.getTechsOnly(store.businessId)
+      }
+      if (data && data.techs) {
+        handleTechsUpdated(data)
+      }
+    } catch (e) {}
+  }
+  fetchTechs()
 
   lastTime = performance.now()
   updateProgress()
@@ -465,11 +458,6 @@ const onRenameFocus = () => {
 
 const onRenameBlur = () => {
   try { lua.setCEFTyping(false) } catch (_) {}
-}
-
-const formatPayment = (amount) => {
-  if (typeof amount !== 'number') return '0'
-  return amount.toLocaleString()
 }
 
 const getBuildCost = (tech) => {

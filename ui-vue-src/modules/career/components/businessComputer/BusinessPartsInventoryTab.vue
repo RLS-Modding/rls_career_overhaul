@@ -37,7 +37,7 @@
                 <span class="part-id">ID: {{ item.partId }}</span>
               </div>
               <div class="part-details">
-                <span class="condition" :class="conditionClass(item.condition)">
+                <span class="condition" :class="getConditionClassFromText(item.condition)">
                   {{ item.condition }}
                 </span>
                 <span class="mileage">{{ item.mileage.toLocaleString() }} mi</span>
@@ -59,6 +59,7 @@
 <script setup>
 import { computed } from "vue"
 import { useBusinessComputerStore } from "../../stores/businessComputerStore"
+import { formatPrice, getConditionClassFromText } from "../../utils/businessUtils"
 
 const store = useBusinessComputerStore()
 
@@ -81,22 +82,6 @@ const groupedParts = computed(() => {
   })
   return Object.values(groups)
 })
-
-const formatPrice = (price) => {
-  const rounded = Math.round(price * 100) / 100
-  return rounded.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })
-}
-
-const conditionClass = (condition) => {
-  const classes = {
-    'Excellent': 'condition-excellent',
-    'Good': 'condition-good',
-    'Fair': 'condition-fair',
-    'Poor': 'condition-poor'
-  }
-  return classes[condition] || ''
-}
-
 </script>
 
 <style scoped lang="scss">

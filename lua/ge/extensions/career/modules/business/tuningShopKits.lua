@@ -22,11 +22,12 @@ local function getSpawnedIdFromPersonalVehicleId(vehicleId)
 end
 
 local function getPersonalVehicleData(vehicleId, businessId)
-  if not isPersonalVehicleId(vehicleId) then
+  if not isPersonalVehicleId(vehicleId) or not businessId then
     return nil
   end
-  if career_modules_business_tuningShop and career_modules_business_tuningShop.getActivePersonalVehicle and businessId then
-    local activePersonal = career_modules_business_tuningShop.getActivePersonalVehicle(businessId)
+  local businessObj = career_modules_business_businessManager and career_modules_business_businessManager.getBusinessObject("tuningShop")
+  if businessObj and businessObj.getActivePersonalVehicle then
+    local activePersonal = businessObj.getActivePersonalVehicle(businessId)
     if activePersonal and tostring(activePersonal.vehicleId) == tostring(vehicleId) then
       return activePersonal
     end
@@ -195,8 +196,8 @@ local function createKitFromConfig(businessId, jobId, kitName, config)
     return false
   end
 
-  local tuningShop = career_modules_business_tuningShop
-  local job = tuningShop and tuningShop.getJobById(businessId, jobId)
+  local businessObj = career_modules_business_businessManager and career_modules_business_businessManager.getBusinessObject("tuningShop")
+  local job = businessObj and businessObj.getJobById and businessObj.getJobById(businessId, jobId)
 
   if not job then
     return false
@@ -343,11 +344,11 @@ local function createKit(businessId, jobId, kitName, spawnedVehicleId)
     return false
   end
 
-  local tuningShop = career_modules_business_tuningShop
+  local businessObj = career_modules_business_businessManager and career_modules_business_businessManager.getBusinessObject("tuningShop")
 
   local vehicle = nil
-  if tuningShop and tuningShop.getVehicleByJobId then
-    vehicle = tuningShop.getVehicleByJobId(businessId, jobId)
+  if businessObj and businessObj.getVehicleByJobId then
+    vehicle = businessObj.getVehicleByJobId(businessId, jobId)
   end
 
   if not vehicle then
@@ -447,8 +448,9 @@ local function loadKitInstallLocks(businessId)
   if kitInstallLocks[businessId] then
     return kitInstallLocks[businessId]
   end
-  if career_modules_business_tuningShop and career_modules_business_tuningShop.initializeBusinessData then
-    career_modules_business_tuningShop.initializeBusinessData(businessId)
+  local businessObj = career_modules_business_businessManager and career_modules_business_businessManager.getBusinessObject("tuningShop")
+  if businessObj and businessObj.initializeBusinessData then
+    businessObj.initializeBusinessData(businessId)
   end
   return kitInstallLocks[businessId] or {}
 end

@@ -32,16 +32,21 @@ local function getActiveSession(businessId)
 end
 
 local function getPartSupplierDiscountMultiplier(businessId)
-  if not businessId or not career_modules_business_businessSkillTree then
+  if not businessId then
     return 1.0
   end
 
-  local businessType = "tuningShop"
-  local treeId = "shop-upgrades"
-  local nodeId = "part-suppliers"
+  local allBusinessObjects = career_modules_business_businessManager and career_modules_business_businessManager.getAllBusinessObjects and career_modules_business_businessManager.getAllBusinessObjects() or {}
+  for businessType, businessObj in pairs(allBusinessObjects) do
+    if businessObj.getPartSupplierDiscountMultiplier then
+      local purchased = career_modules_business_businessManager.getPurchasedBusinesses(businessType) or {}
+      if purchased[businessId] then
+        return businessObj.getPartSupplierDiscountMultiplier(businessId)
+      end
+    end
+  end
 
-  local level = career_modules_business_businessSkillTree.getNodeProgress(businessId, treeId, nodeId) or 0
-  return 1.0 - (0.05 * level)
+  return 1.0
 end
 
 local function isPersonalVehicleId(vehicleId)
@@ -59,13 +64,19 @@ local function getSpawnedIdFromPersonalVehicleId(vehicleId)
 end
 
 local function getInventoryIdFromPersonalVehicleId(vehicleId, businessId)
-  if not isPersonalVehicleId(vehicleId) then
+  if not isPersonalVehicleId(vehicleId) or not businessId then
     return nil
   end
-  if career_modules_business_tuningShop and career_modules_business_tuningShop.getActivePersonalVehicle and businessId then
-    local activePersonal = career_modules_business_tuningShop.getActivePersonalVehicle(businessId)
-    if activePersonal and tostring(activePersonal.vehicleId) == tostring(vehicleId) and activePersonal.inventoryId then
-      return activePersonal.inventoryId
+  local allBusinessObjects = career_modules_business_businessManager and career_modules_business_businessManager.getAllBusinessObjects and career_modules_business_businessManager.getAllBusinessObjects() or {}
+  for businessType, businessObj in pairs(allBusinessObjects) do
+    if businessObj.getActivePersonalVehicle then
+      local purchased = career_modules_business_businessManager.getPurchasedBusinesses(businessType) or {}
+      if purchased[businessId] then
+        local activePersonal = businessObj.getActivePersonalVehicle(businessId)
+        if activePersonal and tostring(activePersonal.vehicleId) == tostring(vehicleId) and activePersonal.inventoryId then
+          return activePersonal.inventoryId
+        end
+      end
     end
   end
   return nil
@@ -305,14 +316,20 @@ local function replaceVehicleWithFuelHandling(vehObj, modelKey, config, beforeRe
 end
 
 local function getPersonalVehicleData(vehicleId, businessId)
-  if not isPersonalVehicleId(vehicleId) then
+  if not isPersonalVehicleId(vehicleId) or not businessId then
     return nil
   end
   
-  if career_modules_business_tuningShop and career_modules_business_tuningShop.getActivePersonalVehicle and businessId then
-    local activePersonal = career_modules_business_tuningShop.getActivePersonalVehicle(businessId)
-    if activePersonal and tostring(activePersonal.vehicleId) == tostring(vehicleId) then
-      return activePersonal
+  local allBusinessObjects = career_modules_business_businessManager and career_modules_business_businessManager.getAllBusinessObjects and career_modules_business_businessManager.getAllBusinessObjects() or {}
+  for businessType, businessObj in pairs(allBusinessObjects) do
+    if businessObj.getActivePersonalVehicle then
+      local purchased = career_modules_business_businessManager.getPurchasedBusinesses(businessType) or {}
+      if purchased[businessId] then
+        local activePersonal = businessObj.getActivePersonalVehicle(businessId)
+        if activePersonal and tostring(activePersonal.vehicleId) == tostring(vehicleId) then
+          return activePersonal
+        end
+      end
     end
   end
   

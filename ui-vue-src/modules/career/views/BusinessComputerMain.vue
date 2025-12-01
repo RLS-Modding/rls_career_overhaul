@@ -221,6 +221,7 @@ import { lua } from "@/bridge"
 import { BngCard } from "@/common/components/base"
 import { vBngBlur } from "@/common/directives"
 import { useControllerNavigation } from "../composables/useControllerNavigation"
+import { normalizeId } from "../utils/businessUtils"
 
 const props = defineProps({
   businessType: String,
@@ -275,13 +276,8 @@ const controllerNav = useControllerNavigation({
 provide('controllerNav', controllerNav)
 
 const vehicleList = computed(() => Array.isArray(store.pulledOutVehicles) ? store.pulledOutVehicles : [])
-const normalizeVehicleId = (value) => {
-  if (value === undefined || value === null) return null
-  const numeric = Number(value)
-  return Number.isNaN(numeric) ? String(value) : numeric
-}
 const isActiveVehicle = (vehicleId) => {
-  return normalizeVehicleId(vehicleId) === normalizeVehicleId(store.activeVehicleId)
+  return normalizeId(vehicleId) === normalizeId(store.activeVehicleId)
 }
 const selectVehicle = async (vehicleId) => {
   await store.setActiveVehicleSelection(vehicleId)

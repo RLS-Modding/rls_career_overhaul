@@ -5,9 +5,37 @@ M.dependencies = {'career_career', 'freeroam_facilities', 'career_modules_paymen
 local purchasedBusinesses = {}
 local businessToPurchase = nil
 local businessCallbacks = {}
+local businessObjects = {}
 
 local function registerBusinessCallback(businessType, callbacks)
   businessCallbacks[businessType] = callbacks or {}
+end
+
+local function registerBusiness(businessType, businessObject)
+  if not businessType or not businessObject then
+    return false
+  end
+  businessObjects[businessType] = businessObject
+  return true
+end
+
+local function getBusinessObject(businessType)
+  if not businessType then
+    return nil
+  end
+  return businessObjects[businessType]
+end
+
+local function hasFeature(businessType, featureName)
+  local obj = businessObjects[businessType]
+  if not obj or not obj.features then
+    return false
+  end
+  return obj.features[featureName] == true
+end
+
+local function getAllBusinessObjects()
+  return businessObjects
 end
 
 local function loadPurchasedBusinesses()
@@ -240,6 +268,10 @@ end
 M.onCareerActivated = onCareerActivated
 M.onCareerModulesActivated = onCareerModulesActivated
 M.registerBusinessCallback = registerBusinessCallback
+M.registerBusiness = registerBusiness
+M.getBusinessObject = getBusinessObject
+M.hasFeature = hasFeature
+M.getAllBusinessObjects = getAllBusinessObjects
 M.isPurchasedBusiness = isPurchasedBusiness
 M.getBusinessInfo = getBusinessInfo
 M.showPurchaseBusinessPrompt = showPurchaseBusinessPrompt

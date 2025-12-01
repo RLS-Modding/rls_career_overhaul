@@ -59,6 +59,7 @@
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useBusinessComputerStore } from "../../../stores/businessComputerStore"
 import { useBridge, lua } from '@/bridge'
+import { formatCurrency } from "../../../utils/businessUtils"
 
 const store = useBusinessComputerStore()
 const { events } = useBridge()
@@ -74,10 +75,14 @@ const requestFinancesData = async () => {
   
   loading.value = true
   try {
-    await lua.career_modules_business_businessComputer.requestFinancesData(
-      store.businessType,
-      store.businessId
-    )
+    if (store.businessType === 'tuningShop') {
+      await lua.career_modules_business_tuningShop.requestFinancesData(store.businessId)
+    } else {
+      await lua.career_modules_business_businessComputer.requestFinancesData(
+        store.businessType,
+        store.businessId
+      )
+    }
   } catch (error) {
     loading.value = false
   }
@@ -114,15 +119,6 @@ onUnmounted(() => {
   events.off('businessComputer:onFinancesData', handleFinancesData)
   events.off('bank:onAccountUpdate', handleAccountUpdate)
 })
-
-const formatCurrency = (amount) => {
-  if (amount === null || amount === undefined) return '$0'
-  const num = Math.abs(amount)
-  const sign = amount < 0 ? '-' : ''
-  if (num >= 1000000) return sign + '$' + (num / 1000000).toFixed(2) + 'M'
-  if (num >= 1000) return sign + '$' + (num / 1000).toFixed(1) + 'k'
-  return sign + '$' + Math.floor(num).toLocaleString()
-}
 
 // Chart Logic (Simplified)
 const chartWidth = 400

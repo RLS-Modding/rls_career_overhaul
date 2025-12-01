@@ -20,7 +20,7 @@
 
         <div class="job-meta-row">
           <div class="reward-text">
-            <span class="currency">$</span>{{ job.reward.toLocaleString() }}
+            {{ formatCurrency(job.reward) }}
           </div>
           <div class="separator">•</div>
           <div class="goal-text">
@@ -46,8 +46,7 @@
           <div v-else class="goal-section-sleek">
             <div class="goal-row current">
               <span class="goal-label">Current</span>
-              <span class="goal-value highlight">{{ formatTimeWithUnit(job.currentTime ?? job.baselineTime,
-                job.timeUnit, job.decimalPlaces) }}</span>
+              <span class="goal-value highlight">{{ formatTime(job.currentTime ?? job.baselineTime, job.decimalPlaces) }}</span>
             </div>
             <div class="progress-bar-sleek">
               <div class="progress-fill" :style="{ width: progressPercent + '%' }"></div>
@@ -68,7 +67,7 @@
                     </svg>
                     <span>Installing {{ kitInstallKitName }}</span>
                   </div>
-                  <div class="kit-install-time">{{ formatKitInstallTime(kitInstallSecondsRemaining) }} remaining</div>
+                  <div class="kit-install-time">{{ formatTime(kitInstallSecondsRemaining) }} remaining</div>
                 </div>
               </template>
               <template v-else-if="!hasTechAssigned">
@@ -148,7 +147,7 @@
             {{ job.vehicleYear }} {{ job.vehicleName }}
           </h3>
           <div class="reward-text-sleek">
-            <span class="currency">$</span>{{ job.reward.toLocaleString() }}
+            {{ formatCurrency(job.reward) }}
           </div>
         </div>
       </div>
@@ -174,8 +173,7 @@
             </div>
             <div class="goal-row current">
               <span class="goal-label">Current</span>
-              <span class="goal-value highlight">{{ formatTimeWithUnit(job.currentTime ?? job.baselineTime,
-                job.timeUnit, job.decimalPlaces) }}</span>
+              <span class="goal-value highlight">{{ formatTime(job.currentTime ?? job.baselineTime, job.decimalPlaces) }}</span>
             </div>
             <div class="progress-bar-sleek">
               <div class="progress-fill" :style="{ width: progressPercent + '%' }"></div>
@@ -209,7 +207,7 @@
                 </svg>
                 <span>Installing {{ kitInstallKitName }}</span>
               </div>
-              <div class="kit-install-time">{{ formatKitInstallTime(kitInstallSecondsRemaining) }} remaining</div>
+              <div class="kit-install-time">{{ formatTime(kitInstallSecondsRemaining) }} remaining</div>
             </div>
           </template>
           <template v-else-if="!hasTechAssigned">
@@ -268,6 +266,7 @@
 import { computed, ref, onMounted, onUnmounted, watch } from "vue"
 import { useBusinessComputerStore } from "../../stores/businessComputerStore"
 import { lua } from "@/bridge"
+import { formatCurrency, formatTime, formatPhase, normalizeId } from "../../utils/businessUtils"
 
 const props = defineProps({
   job: Object,
@@ -287,13 +286,8 @@ const props = defineProps({
 const emit = defineEmits(['pull-out', 'put-away', 'abandon', 'accept', 'decline', 'complete', 'assign'])
 
 const store = useBusinessComputerStore()
-const normalizeJobId = (value) => {
-  if (value === undefined || value === null) {
-    return null
-  }
-  return String(value)
-}
-const jobIdentifier = computed(() => normalizeJobId(props.job?.jobId ?? props.job?.id))
+
+const jobIdentifier = computed(() => normalizeId(props.job?.jobId ?? props.job?.id))
 const techAssigned = computed(() => {
   if (!props.job?.techAssigned) return null
   return props.job.techAssigned
@@ -303,7 +297,7 @@ const assignedTech = computed(() => {
   const techs = store.techs || []
   const tech = techs.find(t => String(t.id) === String(techAssigned.value)) || null
   if (!tech) return null
-  const techJobId = normalizeJobId(tech.jobId)
+  const techJobId = normalizeId(tech.jobId)
   if (techJobId !== jobIdentifier.value) return null
   return tech
 })
@@ -318,30 +312,19 @@ const techProgress = computed(() => {
 })
 const techStatus = computed(() => {
   if (!assignedTech.value) return null
-  const phaseMap = {
-    baseline: "Baseline Run",
-    validation: "Validation Run",
-    postUpdate: "Verification",
-    completed: "Completed",
-    failed: "Failed",
-    idle: "Idle",
-    build: "Building",
-    update: "Tuning",
-    cooldown: "Cooling Down"
-  }
-  return assignedTech.value.label || phaseMap[assignedTech.value.phase] || assignedTech.value.action || "Working"
+  return formatPhase(assignedTech.value, false)
 })
 const pulledOutVehicleForJob = computed(() => {
   if (!Array.isArray(store.pulledOutVehicles)) {
     return null
   }
-  return store.pulledOutVehicles.find(vehicle => normalizeJobId(vehicle?.jobId) === jobIdentifier.value) || null
+  return store.pulledOutVehicles.find(vehicle => normalizeId(vehicle?.jobId) === jobIdentifier.value) || null
 })
 const vehicleForJob = computed(() => {
   if (!Array.isArray(store.vehicles)) {
     return null
   }
-  return store.vehicles.find(vehicle => normalizeJobId(vehicle?.jobId) === jobIdentifier.value) || null
+  return store.vehicles.find(vehicle => normalizeId(vehicle?.jobId) === jobIdentifier.value) || null
 })
 const damageLockApplies = computed(() => {
   if (!pulledOutVehicleForJob.value) {
@@ -444,48 +427,6 @@ const hasPulledOutVehicle = computed(() => {
   return liftsFull.value && !isPulledOut.value
 })
 
-const formatTime = (time, decimalPlaces) => {
-  if (typeof time !== 'number' || isNaN(time)) {
-    return time || '0'
-  }
-
-  if (time >= 60) {
-    const minutes = Math.floor(time / 60)
-    const seconds = Math.round(time % 60)
-    if (seconds >= 1) {
-      return `${minutes} min ${seconds} s`
-    } else {
-      return `${minutes} min`
-    }
-  }
-
-  const decimals = decimalPlaces || 0
-  if (decimals > 0) {
-    return time.toFixed(decimals) + ' s'
-  }
-
-  return Math.round(time) + ' s'
-}
-
-const formatTimeWithUnit = (time, timeUnit, decimalPlaces) => {
-  if (typeof time !== 'number' || isNaN(time)) {
-    return (time || '0') + (timeUnit || '')
-  }
-  const formatted = formatTime(time, decimalPlaces)
-  return formatted
-}
-
-const formatKitInstallTime = (seconds) => {
-  if (!seconds || seconds <= 0) return '0s'
-  const numSeconds = Number(seconds)
-  if (isNaN(numSeconds)) return '0s'
-  if (numSeconds < 60) return `${Math.round(numSeconds)}s`
-  const minutes = Math.floor(numSeconds / 60)
-  const remainingSeconds = Math.round(numSeconds % 60)
-  if (remainingSeconds === 0) return `${minutes}m`
-  return `${minutes}m ${remainingSeconds}s`
-}
-
 const stopCountdown = () => {
   if (countdownTimer.value) {
     clearInterval(countdownTimer.value)
@@ -558,7 +499,13 @@ const checkCanComplete = async () => {
   }
 
   try {
-    const result = await lua.career_modules_business_businessComputer.canCompleteJob(props.businessId, props.job.jobId)
+    let result
+    if (store.businessType === 'tuningShop') {
+      const response = await lua.career_modules_business_tuningShop.canCompleteJob(props.businessId, props.job.jobId)
+      result = response && response.success === true
+    } else {
+      result = await lua.career_modules_business_businessComputer.canCompleteJob(props.businessId, props.job.jobId)
+    }
     canComplete.value = result === true
   } catch (error) {
     canComplete.value = false
