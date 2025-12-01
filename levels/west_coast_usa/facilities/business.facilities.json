@@ -12,6 +12,11 @@
       "playModeIconName": "poi_laptop_round",
       "iconOffsetHeight": 0.15,
       "iconLift": 0.2,
+      "races" : [
+        "drag",
+        "track",
+        "track_alt"
+      ],
       
       "doors": [
         [

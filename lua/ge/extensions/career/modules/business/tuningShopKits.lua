@@ -437,6 +437,8 @@ local function getKitInstallLocksPath(businessId)
   return currentSavePath .. "/career/rls_career/businesses/" .. businessId .. "/kitInstallLocks.json"
 end
 
+M.getKitInstallLocksPath = getKitInstallLocksPath
+
 local function loadKitInstallLocks(businessId)
   businessId = normalizeBusinessId(businessId)
   if not businessId then
@@ -445,13 +447,23 @@ local function loadKitInstallLocks(businessId)
   if kitInstallLocks[businessId] then
     return kitInstallLocks[businessId]
   end
-  local filePath = getKitInstallLocksPath(businessId)
-  if not filePath then
-    return {}
+  if career_modules_business_tuningShop and career_modules_business_tuningShop.initializeBusinessData then
+    career_modules_business_tuningShop.initializeBusinessData(businessId)
   end
-  local data = jsonReadFile(filePath) or {}
-  kitInstallLocks[businessId] = data.locks or {}
-  return kitInstallLocks[businessId]
+  return kitInstallLocks[businessId] or {}
+end
+
+local function setKitInstallLocksFromData(businessId, locksData)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId then
+    return
+  end
+  kitInstallLocks[businessId] = locksData or {}
+end
+
+local function getKitInstallLocksForSave(businessId)
+  businessId = normalizeBusinessId(businessId)
+  return kitInstallLocks[businessId] or {}
 end
 
 local function saveKitInstallLocks(businessId, currentSavePath)
@@ -1496,6 +1508,8 @@ M.isVehicleKitLocked = isVehicleKitLocked
 M.getKitInstallTimeRemaining = getKitInstallTimeRemaining
 M.getKitInstallLock = getKitInstallLock
 M.processKitInstallLocks = processKitInstallLocks
+M.setKitInstallLocksFromData = setKitInstallLocksFromData
+M.getKitInstallLocksForSave = getKitInstallLocksForSave
 
 M.onSaveCurrentSaveSlot = onSaveCurrentSaveSlot
 
