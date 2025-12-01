@@ -126,7 +126,7 @@ angular.module('beamng.stuff')
     $scope.sailingTheHighSeas = val
   })
 
-  let AMOUNT_OF_LOADING_IMAGES = 7
+  let AMOUNT_OF_LOADING_IMAGES = 12
   let rnd = Utils.random(1, AMOUNT_OF_LOADING_IMAGES, true)
   let file = `/ui/modules/loading/drive/rls_drive_loading_${rnd}.jpg`
   if ($scope.sailingTheHighSeas === true) {
