@@ -322,7 +322,7 @@ onUnmounted(kill)
 
 .vehicle-select {
   display: inline-flex;
-  font-size: 1rem;
+  font-size: 1em;
   > * {
     flex: 0 0 auto;
     min-width: 3em !important;

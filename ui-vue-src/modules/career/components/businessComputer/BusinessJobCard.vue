@@ -566,8 +566,8 @@ watch(() => [vehicleForJob.value?.kitInstallTimeRemaining, pulledOutVehicleForJo
 .job-card {
   background: rgba(23, 23, 23, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0.5rem;
-  padding: 0.75rem;
+  border-radius: 0.5em;
+  padding: 0.75em;
   transition: border-color 0.2s;
 
   &:hover {
@@ -577,16 +577,16 @@ watch(() => [vehicleForJob.value?.kitInstallTimeRemaining, pulledOutVehicleForJo
 
 /* Common/Shared Styles */
 .btn {
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
+  padding: 0.5em 0.75em;
+  border-radius: 0.375em;
+  font-size: 0.875em;
   font-weight: 500;
   cursor: pointer;
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.5em;
   transition: all 0.2s;
 
   &.flex-grow {
@@ -598,8 +598,8 @@ watch(() => [vehicleForJob.value?.kitInstallTimeRemaining, pulledOutVehicleForJo
   }
 
   &.btn-icon {
-    padding: 0.5rem;
-    width: 2.25rem;
+    padding: 0.5em;
+    width: 2.25em;
     /* fixed width for icon buttons */
     flex-shrink: 0;
   }
@@ -646,14 +646,14 @@ watch(() => [vehicleForJob.value?.kitInstallTimeRemaining, pulledOutVehicleForJo
 .job-content-new {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.75em;
 }
 
 .job-image-new {
   position: relative;
   width: 100%;
   aspect-ratio: 16/9;
-  border-radius: 0.375rem;
+  border-radius: 0.375em;
   overflow: hidden;
   background: rgba(0, 0, 0, 0.5);
 
@@ -667,18 +667,18 @@ watch(() => [vehicleForJob.value?.kitInstallTimeRemaining, pulledOutVehicleForJo
 
 .expiration-overlay {
   position: absolute;
-  bottom: 0.5rem;
-  right: 0.5rem;
+  bottom: 0.5em;
+  right: 0.5em;
   background: rgba(0, 0, 0, 0.75);
   backdrop-filter: blur(4px);
   color: rgba(255, 255, 255, 0.9);
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.25rem;
-  font-size: 0.75rem;
+  padding: 0.25em 0.5em;
+  border-radius: 0.25em;
+  font-size: 0.75em;
   font-weight: 500;
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.35em;
 
   &.expired {
     background: rgba(239, 68, 68, 0.9);
@@ -693,13 +693,13 @@ watch(() => [vehicleForJob.value?.kitInstallTimeRemaining, pulledOutVehicleForJo
 .job-details-container {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.5em;
 }
 
 .vehicle-name-new {
   margin: 0;
   color: white;
-  font-size: 1rem;
+  font-size: 1em;
   font-weight: 600;
   line-height: 1.3;
   white-space: nowrap;
@@ -710,8 +710,8 @@ watch(() => [vehicleForJob.value?.kitInstallTimeRemaining, pulledOutVehicleForJo
 .job-meta-row {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
+  gap: 0.5em;
+  font-size: 0.875em;
 }
 
 .separator {
@@ -735,7 +735,7 @@ watch(() => [vehicleForJob.value?.kitInstallTimeRemaining, pulledOutVehicleForJo
   color: rgba(245, 73, 0, 1);
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.35em;
   font-weight: 500;
 
   svg {
@@ -745,8 +745,8 @@ watch(() => [vehicleForJob.value?.kitInstallTimeRemaining, pulledOutVehicleForJo
 
 .job-actions-new {
   display: flex;
-  gap: 0.5rem;
-  margin-top: 0.25rem;
+  gap: 0.5em;
+  margin-top: 0.25em;
   flex-direction: row;
 }
 
@@ -754,20 +754,20 @@ watch(() => [vehicleForJob.value?.kitInstallTimeRemaining, pulledOutVehicleForJo
 .job-content-active.sleek {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.75em;
 }
 
 .job-header-sleek {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.75em;
   align-items: center;
 }
 
 .job-image-sleek {
-  width: 4rem;
+  width: 4em;
   /* Compact thumbnail size */
-  height: 4rem;
-  border-radius: 0.375rem;
+  height: 4em;
+  border-radius: 0.375em;
   overflow: hidden;
   background: rgba(0, 0, 0, 0.5);
   flex-shrink: 0;
@@ -785,13 +785,13 @@ watch(() => [vehicleForJob.value?.kitInstallTimeRemaining, pulledOutVehicleForJo
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 0.25rem;
+  gap: 0.25em;
 }
 
 .vehicle-name-sleek {
   margin: 0;
   color: white;
-  font-size: 0.95rem;
+  font-size: 0.95em;
   font-weight: 600;
   line-height: 1.2;
   overflow: hidden;
@@ -804,18 +804,18 @@ watch(() => [vehicleForJob.value?.kitInstallTimeRemaining, pulledOutVehicleForJo
 .reward-text-sleek {
   color: #22c55e;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.9em;
 }
 
 /* Tech Status Sleek */
 .tech-status-sleek {
   background: rgba(245, 73, 0, 0.15);
   border: 1px solid rgba(245, 73, 0, 0.25);
-  border-radius: 0.375rem;
-  padding: 0.5rem 0.75rem;
+  border-radius: 0.375em;
+  padding: 0.5em 0.75em;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.35em;
 }
 
 .tech-info-row {
@@ -826,7 +826,7 @@ watch(() => [vehicleForJob.value?.kitInstallTimeRemaining, pulledOutVehicleForJo
 
 .tech-phase {
   color: #f97316;
-  font-size: 0.8rem;
+  font-size: 0.8em;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -834,7 +834,7 @@ watch(() => [vehicleForJob.value?.kitInstallTimeRemaining, pulledOutVehicleForJo
 
 .tech-name-small {
   color: rgba(255, 255, 255, 0.5);
-  font-size: 0.75rem;
+  font-size: 0.75em;
 }
 
 .tech-progress-bar {
@@ -854,23 +854,23 @@ watch(() => [vehicleForJob.value?.kitInstallTimeRemaining, pulledOutVehicleForJo
 .goal-section-sleek {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 0.375rem;
-  padding: 0.5rem 0.75rem;
+  border-radius: 0.375em;
+  padding: 0.5em 0.75em;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.35em;
 }
 
 .goal-row {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  font-size: 0.8rem;
+  font-size: 0.8em;
 
   .goal-label {
     color: rgba(255, 255, 255, 0.5);
     text-transform: uppercase;
-    font-size: 0.7rem;
+    font-size: 0.7em;
   }
 
   .goal-value {
@@ -889,7 +889,7 @@ watch(() => [vehicleForJob.value?.kitInstallTimeRemaining, pulledOutVehicleForJo
   background: rgba(255, 255, 255, 0.1);
   border-radius: 1.5px;
   overflow: hidden;
-  margin-top: 0.15rem;
+  margin-top: 0.15em;
 
   .progress-fill {
     height: 100%;
@@ -899,7 +899,7 @@ watch(() => [vehicleForJob.value?.kitInstallTimeRemaining, pulledOutVehicleForJo
 
 .job-actions-sleek {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.5em;
   margin-top: auto;
 
   &.full-layout-actions {
@@ -909,10 +909,10 @@ watch(() => [vehicleForJob.value?.kitInstallTimeRemaining, pulledOutVehicleForJo
 
 .lock-message {
   color: #ef4444;
-  font-size: 0.8rem;
+  font-size: 0.8em;
   font-weight: 600;
   text-align: center;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.25em;
   width: 100%;
 }
 
@@ -920,22 +920,22 @@ watch(() => [vehicleForJob.value?.kitInstallTimeRemaining, pulledOutVehicleForJo
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.25em;
 }
 
 .kit-install-message {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.5em;
   color: #3b82f6;
-  font-size: 0.8rem;
+  font-size: 0.8em;
   font-weight: 600;
   text-align: center;
   width: 100%;
-  padding: 0.5rem;
+  padding: 0.5em;
   background: rgba(59, 130, 246, 0.1);
-  border-radius: 0.375rem;
+  border-radius: 0.375em;
   border: 1px solid rgba(59, 130, 246, 0.3);
 
   svg {
@@ -945,7 +945,7 @@ watch(() => [vehicleForJob.value?.kitInstallTimeRemaining, pulledOutVehicleForJo
 
 .kit-install-time {
   color: rgba(59, 130, 246, 0.8);
-  font-size: 0.75rem;
+  font-size: 0.75em;
   text-align: center;
   width: 100%;
 }

@@ -52,7 +52,7 @@ defineEmits(['pull-out', 'put-away', 'abandon', 'complete', 'accept', 'decline']
 .home-widget {
   background: rgba(30, 30, 30, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 1rem;
+  border-radius: 1em;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -60,7 +60,7 @@ defineEmits(['pull-out', 'put-away', 'abandon', 'complete', 'accept', 'decline']
 }
 
 .widget-header {
-  padding: 1rem 1.25rem;
+  padding: 1em 1.25em;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;
   justify-content: space-between;
@@ -69,7 +69,7 @@ defineEmits(['pull-out', 'put-away', 'abandon', 'complete', 'accept', 'decline']
 
   h3 {
     margin: 0;
-    font-size: 1.1rem;
+    font-size: 1.1em;
     font-weight: 600;
     color: #fff;
   }
@@ -77,18 +77,18 @@ defineEmits(['pull-out', 'put-away', 'abandon', 'complete', 'accept', 'decline']
 
 .tabs {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.5em;
   background: rgba(0, 0, 0, 0.3);
-  padding: 0.25rem;
-  border-radius: 0.5rem;
+  padding: 0.25em;
+  border-radius: 0.5em;
 
   button {
     background: transparent;
     border: none;
     color: rgba(255, 255, 255, 0.6);
-    padding: 0.35rem 0.75rem;
-    border-radius: 0.25rem;
-    font-size: 0.8rem;
+    padding: 0.35em 0.75em;
+    border-radius: 0.25em;
+    font-size: 0.8em;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
@@ -106,7 +106,7 @@ defineEmits(['pull-out', 'put-away', 'abandon', 'complete', 'accept', 'decline']
 }
 
 .widget-content {
-  padding: 1rem;
+  padding: 1em;
   flex: 1;
   overflow-y: auto;
 
@@ -127,7 +127,7 @@ defineEmits(['pull-out', 'put-away', 'abandon', 'complete', 'accept', 'decline']
 .jobs-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 1rem;
+  gap: 1em;
 }
 
 .grid-item {
@@ -136,7 +136,7 @@ defineEmits(['pull-out', 'put-away', 'abandon', 'complete', 'accept', 'decline']
 
 .empty-state {
   text-align: center;
-  padding: 2rem;
+  padding: 2em;
   color: rgba(255, 255, 255, 0.4);
   font-style: italic;
 }

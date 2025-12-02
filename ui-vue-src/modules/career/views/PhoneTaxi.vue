@@ -369,9 +369,9 @@ onMounted(() => {
     right: 0;
     background: rgb(216, 224, 246);
     color: rgb(0, 0, 0);
-    padding: 0.75rem;
-    margin: 0.5rem;
-    margin-bottom: 2rem;
+    padding: 0.75em;
+    margin: 0.5em;
+    margin-bottom: 2em;
     border-radius: 15px;
 
     &.rider {
@@ -383,10 +383,10 @@ onMounted(() => {
 
 .capacity-display {
     display: flex;
-    gap: 2rem;
-    margin-bottom: 1.5rem;
+    gap: 2em;
+    margin-bottom: 1.5em;
     justify-content: space-between;
-    padding: 0.5rem 3rem 0 3rem;
+    padding: 0.5em 3em 0 3em;
     font-size: 1.25em;
     font-family: 'Overpass', sans-serif;
     font-weight: 600;
@@ -403,14 +403,14 @@ onMounted(() => {
     left: 50%;
     transform: translateX(-50%);
     background: rgba(0, 0, 0, 0.9);
-    padding: 0.5rem 1.0rem;
+    padding: 0.5em 1.0em;
     border-radius: 25px;
     color: white;
     font-weight: bold;
     font-size: 1.1em;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     display: inline-flex;
-    gap: 0.5rem;
+    gap: 0.5em;
     align-items: center;
 }
 
@@ -427,15 +427,15 @@ onMounted(() => {
 .rider-title {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
+    gap: 0.35em;
 }
 
 .info-button {
-    margin-left: 0.2rem;
+    margin-left: 0.2em;
     height: 1.4em;
     min-width: 1.4em;
     border: none;
-    border-radius: 0.4rem;
+    border-radius: 0.4em;
     background: rgb(196, 205, 230);
     color: rgb(0,0,0);
     font-weight: 800;
@@ -446,8 +446,8 @@ onMounted(() => {
     font-size: 1em;
     background: rgb(196, 205, 230);
     color: rgb(0, 0, 0);
-    padding: 0.25rem 0.5rem 0.15rem 0.5rem;
-    border-radius: 0.5rem;
+    padding: 0.25em 0.5em 0.15em 0.5em;
+    border-radius: 0.5em;
     font-weight: 600;
     align-items: center;
     justify-content: center;
@@ -457,8 +457,8 @@ onMounted(() => {
     font-size: 1.5em;
     font-weight: 700;
     color: #010101;
-    margin-top: 0.25rem;
-    margin-bottom: 0.25rem;
+    margin-top: 0.25em;
+    margin-bottom: 0.25em;
     font-family: 'Overpass', sans-serif;
 
     &.center {
@@ -470,8 +470,8 @@ onMounted(() => {
 .fare-display {
     font-size: 1.8em;
     color: #010101;
-    margin-top: 0.25rem;
-    margin-bottom: 0.25rem;
+    margin-top: 0.25em;
+    margin-bottom: 0.25em;
     font-family: 'Overpass', sans-serif;
 
     &.center {
@@ -491,7 +491,7 @@ onMounted(() => {
 
 .rider-details {
     display: flex;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.5em;
     font-family: 'Overpass', sans-serif;
 
     .rider-info {
@@ -499,10 +499,10 @@ onMounted(() => {
 
         background: rgb(196, 205, 230);
         color: rgb(0, 0, 0);
-        padding: 0.1rem 0.5rem 0.05rem 0.5rem;
+        padding: 0.1em 0.5em 0.05em 0.5em;
         margin-left: 0.25em;
         margin-right: 0.25em;
-        border-radius: 0.5rem;
+        border-radius: 0.5em;
     }
 
     &.center {
@@ -512,7 +512,7 @@ onMounted(() => {
 
 .state-button {
     width: 100%;
-    padding: 0.75rem 0rem 0.65rem 0rem;
+    padding: 0.75em 0em 0.65em 0em;
     background: #2f2bff;
     color: rgb(255, 255, 255);
     border: none;
@@ -549,27 +549,27 @@ onMounted(() => {
 
 .info-popover {
     position: absolute;
-    bottom: 8.5rem;
-    left: 0.75rem;
-    right: 0.75rem;
+    bottom: 8.5em;
+    left: 0.75em;
+    right: 0.75em;
     background: rgba(216, 224, 246, 0.98);
     color: rgb(0, 0, 0);
     border-radius: 12px;
-    padding: 0.75rem;
+    padding: 0.75em;
     box-shadow: 0 8px 18px rgba(0,0,0,0.25);
     border: 1px solid rgba(0,0,0,0.1);
 }
 .info-title {
     font-weight: 700;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.25em;
 }
 .info-body {
     font-weight: 500;
 }
 .info-close {
-    margin-top: 0.5rem;
+    margin-top: 0.5em;
     width: 100%;
-    padding: 0.5rem 0;
+    padding: 0.5em 0;
     background: #2f2bff;
     color: #fff;
     border: none;
@@ -579,10 +579,10 @@ onMounted(() => {
 .complete-modal {
     background: rgb(216, 224, 246);
     font-weight: 600;
-    padding: 1rem;
+    padding: 1em;
     border-radius: 20px;
     width: 90%;
-    column-gap: 5rem;
+    column-gap: 5em;
     max-height: 80vh;
     overflow-y: auto;
     color: rgb(0, 0, 0);
@@ -594,19 +594,19 @@ onMounted(() => {
     display: flex;
     align-items: baseline;
     justify-content: center;
-    gap: 0.75rem;
+    gap: 0.75em;
 }
 .fare-rating {
     font-size: 1em;
     font-weight: 700;
     background: rgba(196, 205, 230, 0.75);
-    padding: 0.2rem 0.5rem;
+    padding: 0.2em 0.5em;
     border-radius: 8px;
 }
 
 .fare-breakdown {
-    margin: 1rem 0;
-    padding: 0.5rem;
+    margin: 1em 0;
+    padding: 0.5em;
     background: rgba(196, 205, 230, 0.35);
     border-radius: 10px;
 }
@@ -615,7 +615,7 @@ onMounted(() => {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.25rem 0;
+    padding: 0.25em 0;
     border-bottom: none;
 }
 .breakdown-section.clickable { cursor: pointer; }
@@ -640,8 +640,8 @@ onMounted(() => {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.5rem;
-    margin-top: 0.5rem;
+    padding: 0.5em;
+    margin-top: 0.5em;
     cursor: pointer;
     font-weight: 600;
     color: rgb(0, 0, 0);
@@ -649,7 +649,7 @@ onMounted(() => {
     border-radius: 8px;
     transition: background-color 0.2s ease;
     user-select: none;
-    gap: 0.5rem;
+    gap: 0.5em;
 }
 
 .tip-breakdown-toggle:hover {
@@ -663,7 +663,7 @@ onMounted(() => {
 .toggle-right-group {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.4em;
 }
 
 .dropdown-icon {
@@ -681,7 +681,7 @@ onMounted(() => {
     background: #2f2bff;
     color: #ffffff;
     border-radius: 999px;
-    padding: 0.05rem 0.45rem 0.1rem 0.45rem;
+    padding: 0.05em 0.45em 0.1em 0.45em;
     font-size: 0.85em;
     line-height: 1.2;
 }
@@ -702,8 +702,8 @@ onMounted(() => {
 }
 
 .tip-breakdown {
-    margin-top: 0.5rem;
-    padding-top: 0.5rem;
+    margin-top: 0.5em;
+    padding-top: 0.5em;
     border-top: 1px solid rgba(0, 0, 0, 0.2);
 }
 
@@ -711,7 +711,7 @@ onMounted(() => {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.2rem 0;
+    padding: 0.2em 0;
     font-size: 0.9em;
 }
 
@@ -752,7 +752,7 @@ onMounted(() => {
     width: 1.75em;
     border: none;
     background: rgb(196, 205, 230);
-    border-radius: 0.5rem;
+    border-radius: 0.5em;
     float: right;
 
     &:hover {
@@ -778,7 +778,7 @@ onMounted(() => {
 .disabled-modal {
     background: rgba(255, 255, 255, 0.95);
     color: rgb(0, 0, 0);
-    padding: 3rem 2rem 2.5rem 2rem; /* Extra top padding for close button */
+    padding: 3em 2em 2.5em 2em; /* Extra top padding for close button */
     border-radius: 20px;
     text-align: center;
     font-weight: 600;
@@ -791,20 +791,20 @@ onMounted(() => {
 }
 
 .disabled-icon {
-    font-size: 3.5rem;
-    margin-bottom: 1rem;
+    font-size: 3.5em;
+    margin-bottom: 1em;
     opacity: 0.8;
 }
 
 .disabled-title {
-    font-size: 1.8rem;
+    font-size: 1.8em;
     font-weight: 700;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.75em;
     color: rgb(100, 100, 100);
 }
 
 .disabled-message {
-    font-size: 1.1rem;
+    font-size: 1.1em;
     font-weight: 500;
     line-height: 1.4;
     color: rgb(80, 80, 80);

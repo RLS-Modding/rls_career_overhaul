@@ -272,9 +272,9 @@ onMounted(() => {
     right: 0;
     background: rgb(216, 224, 246);
     color: rgb(0, 0, 0);
-    padding: 0.75rem;
-    margin: 0.5rem;
-    margin-bottom: 2rem;
+    padding: 0.75em;
+    margin: 0.5em;
+    margin-bottom: 2em;
     border-radius: 15px;
 }
 
@@ -285,7 +285,7 @@ onMounted(() => {
     font-family: 'Overpass', sans-serif;
     font-size: 1.2em;
     font-weight: 600;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.5em;
 }
 
 .reward-bubble {
@@ -294,7 +294,7 @@ onMounted(() => {
     left: 50%;
     transform: translateX(-50%);
     background: rgba(0, 0, 0, 0.9);
-    padding: 0.5rem 1.5rem;
+    padding: 0.5em 1.5em;
     border-radius: 25px;
     color: white;
     font-weight: bold;
@@ -306,8 +306,8 @@ onMounted(() => {
     font-size: 1em;
     background: rgba(30, 144, 255, 0.6);
     color: rgb(255, 255, 255);
-    padding: 0.25rem 0.5rem 0.15rem 0.5rem;
-    border-radius: 0.5rem;
+    padding: 0.25em 0.5em 0.15em 0.5em;
+    border-radius: 0.5em;
     font-weight: 600;
     align-items: center;
     justify-content: center;
@@ -317,31 +317,31 @@ onMounted(() => {
     font-size: 1.8em;
     font-weight: 700;
     color: #010101;
-    margin-top: 0.25rem;
-    margin-bottom: 0.25rem;
+    margin-top: 0.25em;
+    margin-bottom: 0.25em;
     font-family: 'Overpass', sans-serif;
 }
 
 .instruction-text {
     font-size: 1.2em;
     color: #333;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.5em;
     font-family: 'Overpass', sans-serif;
 }
 
 .vehicle-details {
     display: flex;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.5em;
     font-family: 'Overpass', sans-serif;
 
     .vehicle-info {
         font-size: 1.1em;
         background: rgba(196, 205, 230, 0.8);
         color: rgb(0, 0, 0);
-        padding: 0.1rem 0.5rem 0.05rem 0.5rem;
+        padding: 0.1em 0.5em 0.05em 0.5em;
         margin-left: 0.25em;
         margin-right: 0.25em;
-        border-radius: 0.5rem;
+        border-radius: 0.5em;
     }
 
     &.center {
@@ -351,7 +351,7 @@ onMounted(() => {
 
 .state-button {
     width: 100%;
-    padding: 0.75rem 0rem 0.65rem 0rem;
+    padding: 0.75em 0em 0.65em 0em;
     background: #1E90FF;
     color: rgb(255, 255, 255);
     border: none;
@@ -388,7 +388,7 @@ onMounted(() => {
 .complete-modal {
     background: rgb(216, 224, 246);
     font-weight: 600;
-    padding: 1rem;
+    padding: 1em;
     border-radius: 20px;
     width: 90%;
 }
@@ -396,7 +396,7 @@ onMounted(() => {
 .fare-display {
     font-size: 1.8em;
     color: #010101;
-    margin: 0.5rem 0;
+    margin: 0.5em 0;
     font-family: 'Overpass', sans-serif;
 
     &.center {
@@ -423,7 +423,7 @@ onMounted(() => {
     width: 1.75em;
     border: none;
     background: rgba(196, 205, 230, 0.8);
-    border-radius: 0.5rem;
+    border-radius: 0.5em;
     float: right;
 
     &:hover {
@@ -432,7 +432,7 @@ onMounted(() => {
 }
 
 .panel-content {
-    margin-bottom: 1rem;
+    margin-bottom: 1em;
 }
 
 .disabled-overlay {
@@ -453,7 +453,7 @@ onMounted(() => {
 .disabled-modal {
     background: rgba(255, 255, 255, 0.95);
     color: rgb(0, 0, 0);
-    padding: 3rem 2rem 2.5rem 2rem; /* Extra top padding for close button */
+    padding: 3em 2em 2.5em 2em; /* Extra top padding for close button */
     border-radius: 20px;
     text-align: center;
     font-weight: 600;
@@ -466,20 +466,20 @@ onMounted(() => {
 }
 
 .disabled-icon {
-    font-size: 3.5rem;
-    margin-bottom: 1rem;
+    font-size: 3.5em;
+    margin-bottom: 1em;
     opacity: 0.8;
 }
 
 .disabled-title {
-    font-size: 1.8rem;
+    font-size: 1.8em;
     font-weight: 700;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.75em;
     color: rgb(100, 100, 100);
 }
 
 .disabled-message {
-    font-size: 1.1rem;
+    font-size: 1.1em;
     font-weight: 500;
     line-height: 1.4;
     color: rgb(80, 80, 80);

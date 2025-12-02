@@ -388,14 +388,14 @@ const handleDecline = async (job) => {
 .jobs-tab {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.5em;
 }
 
 .tab-header {
   h2 {
-    margin: 0 0 0.5rem 0;
+    margin: 0 0 0.5em 0;
     color: rgba(245, 73, 0, 1);
-    font-size: 1.5rem;
+    font-size: 1.5em;
   }
 
   p {
@@ -407,9 +407,9 @@ const handleDecline = async (job) => {
 .recognition-banner {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
-  padding: 0.75rem 1.25rem;
-  border-radius: 0.75rem;
+  gap: 1.5em;
+  padding: 0.75em 1.25em;
+  border-radius: 0.75em;
   background: rgba(30, 30, 30, 0.75);
   border: 1px solid rgba(255, 255, 255, 0.08);
   flex-wrap: wrap;
@@ -417,7 +417,7 @@ const handleDecline = async (job) => {
   .recognition-section {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.75em;
     cursor: pointer;
     transition: opacity 0.2s;
 
@@ -428,7 +428,7 @@ const handleDecline = async (job) => {
 
   .banner-label {
     color: rgba(255, 255, 255, 0.55);
-    font-size: 0.85rem;
+    font-size: 0.85em;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     white-space: nowrap;
@@ -442,7 +442,7 @@ const handleDecline = async (job) => {
 
   .summary-divider {
     width: 1px;
-    height: 1.5rem;
+    height: 1.5em;
     background: rgba(255, 255, 255, 0.1);
   }
 }
@@ -450,14 +450,14 @@ const handleDecline = async (job) => {
 .jobs-content {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 2em;
 }
 
 .job-section {
   h3 {
-    margin: 0 0 1rem 0;
+    margin: 0 0 1em 0;
     color: rgba(245, 73, 0, 1);
-    font-size: 1.25rem;
+    font-size: 1.25em;
     font-weight: 600;
   }
 }
@@ -477,7 +477,7 @@ const handleDecline = async (job) => {
 }
 
 .empty-state {
-  padding: 3rem;
+  padding: 3em;
   text-align: center;
   color: rgba(255, 255, 255, 0.5);
 }
@@ -567,13 +567,13 @@ const handleDecline = async (job) => {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1rem 1.5rem;
+      padding: 1em 1.5em;
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       background: rgba(0, 0, 0, 0.2);
 
       h2 {
         margin: 0;
-        font-size: 1.1rem;
+        font-size: 1.1em;
         color: #fff;
         font-weight: 600;
       }
@@ -582,7 +582,7 @@ const handleDecline = async (job) => {
         background: none;
         border: none;
         color: rgba(255, 255, 255, 0.5);
-        font-size: 1.5rem;
+        font-size: 1.5em;
         line-height: 1;
         cursor: pointer;
         padding: 4px;
@@ -597,7 +597,7 @@ const handleDecline = async (job) => {
     }
 
     .modal-body {
-      padding: 1rem;
+      padding: 1em;
       max-height: 400px;
       overflow-y: auto;
 
@@ -620,7 +620,7 @@ const handleDecline = async (job) => {
 
       .modal-empty {
         text-align: center;
-        padding: 2rem 1rem;
+        padding: 2em 1em;
 
         p {
           color: rgba(255, 255, 255, 0.5);
@@ -631,16 +631,16 @@ const handleDecline = async (job) => {
       .selection-list {
         display: flex;
         flex-direction: column;
-        gap: 0.5rem;
+        gap: 0.5em;
 
         .selection-item {
           width: 100%;
-          padding: 0.75rem 1rem;
+          padding: 0.75em 1em;
           background: rgba(255, 255, 255, 0.05);
           border: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: 0.5rem;
+          border-radius: 0.5em;
           color: rgba(255, 255, 255, 0.9);
-          font-size: 0.9rem;
+          font-size: 0.9em;
           text-align: left;
           cursor: pointer;
           transition: all 0.2s;

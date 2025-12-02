@@ -471,22 +471,22 @@ const getBuildCost = (tech) => {
 .techs-tab {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
-  padding-bottom: 2rem;
+  gap: 2em;
+  padding-bottom: 2em;
 }
 
 .techs-info-banners {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.75em;
 }
 
 .techs-summary-banner {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
-  padding: 0.75rem 1.25rem;
-  border-radius: 0.75rem;
+  gap: 1.5em;
+  padding: 0.75em 1.25em;
+  border-radius: 0.75em;
   background: rgba(30, 30, 30, 0.75);
   border: 1px solid rgba(255, 255, 255, 0.08);
   flex-wrap: wrap;
@@ -494,12 +494,12 @@ const getBuildCost = (tech) => {
   .summary-section {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.75em;
   }
 
   .banner-label {
     color: rgba(255, 255, 255, 0.55);
-    font-size: 0.85rem;
+    font-size: 0.85em;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     white-space: nowrap;
@@ -510,7 +510,7 @@ const getBuildCost = (tech) => {
     font-weight: 600;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.5em;
     white-space: nowrap;
     
     .summary-separator {
@@ -524,7 +524,7 @@ const getBuildCost = (tech) => {
   
   .summary-divider {
     width: 1px;
-    height: 1.5rem;
+    height: 1.5em;
     background: rgba(255, 255, 255, 0.1);
   }
 }
@@ -533,32 +533,32 @@ const getBuildCost = (tech) => {
   h2 {
     margin: 0;
     color: #fff;
-    font-size: 1.75rem;
+    font-size: 1.75em;
     font-weight: 600;
     letter-spacing: -0.02em;
   }
 
   p {
-    margin: 0.5rem 0 0;
+    margin: 0.5em 0 0;
     color: rgba(255, 255, 255, 0.5);
-    font-size: 1rem;
+    font-size: 1em;
   }
 }
 
 .techs-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.5rem;
+  gap: 1.5em;
 }
 
 .tech-card {
   background: linear-gradient(145deg, rgba(30, 30, 30, 0.9), rgba(20, 20, 20, 0.95));
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 16px;
-  padding: 1.25rem;
+  padding: 1.25em;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1em;
   transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
 
@@ -581,25 +581,25 @@ const getBuildCost = (tech) => {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 0.75rem;
+  gap: 0.75em;
 }
 
 .tech-card__success-rate {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 0.15rem;
+  gap: 0.15em;
   min-width: 0;
   
   .success-rate-label {
-    font-size: 0.7rem;
+    font-size: 0.7em;
     color: rgba(255, 255, 255, 0.4);
     text-transform: uppercase;
     white-space: nowrap;
   }
   
   .success-rate-value {
-    font-size: 1rem;
+    font-size: 1em;
     font-weight: 600;
     color: #fff;
     white-space: nowrap;
@@ -609,13 +609,13 @@ const getBuildCost = (tech) => {
 .tech-card__title {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.75em;
   flex: 1;
   min-width: 0;
   
   h3 {
     margin: 0;
-    font-size: 1.1rem;
+    font-size: 1.1em;
     font-weight: 600;
     color: #fff;
     white-space: nowrap;
@@ -661,18 +661,18 @@ const getBuildCost = (tech) => {
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid #ff6600;
   border-radius: 4px;
-  padding: 0.25rem 0.5rem;
+  padding: 0.25em 0.5em;
   color: #fff;
-  font-size: 1.1rem;
+  font-size: 1.1em;
   width: 100%;
   max-width: 180px;
   outline: none;
 }
 
 .tech-card__state-badge {
-  font-size: 0.75rem;
+  font-size: 0.75em;
   font-weight: 600;
-  padding: 0.25rem 0.75rem;
+  padding: 0.25em 0.75em;
   border-radius: 6px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -705,13 +705,13 @@ const getBuildCost = (tech) => {
 .tech-card__progress-container {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.5em;
 }
 
 .tech-card__progress-info {
   display: flex;
   justify-content: space-between;
-  font-size: 0.85rem;
+  font-size: 0.85em;
   color: rgba(255, 255, 255, 0.6);
   font-weight: 500;
 }
@@ -733,20 +733,20 @@ const getBuildCost = (tech) => {
 .tech-card__divider {
   height: 1px;
   background: rgba(255, 255, 255, 0.05);
-  margin: 0.25rem 0;
+  margin: 0.25em 0;
 }
 
 .tech-card__body {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.75em;
 }
 
 .tech-card__row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.9rem;
+  font-size: 0.9em;
   
   .label {
     color: rgba(255, 255, 255, 0.4);
@@ -765,8 +765,8 @@ const getBuildCost = (tech) => {
 .tech-card__stats-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-top: 0.25rem;
+  gap: 1em;
+  margin-top: 0.25em;
   
   .stat-item:nth-child(3) {
     grid-column: 1 / -1;
@@ -774,26 +774,26 @@ const getBuildCost = (tech) => {
   
   .stat-item {
     background: rgba(0, 0, 0, 0.2);
-    padding: 0.5rem 0.75rem;
+    padding: 0.5em 0.75em;
     border-radius: 8px;
     display: flex;
     flex-direction: column;
-    gap: 0.15rem;
+    gap: 0.15em;
   }
   
   .stat-label {
-    font-size: 0.75rem;
+    font-size: 0.75em;
     color: rgba(255, 255, 255, 0.4);
     text-transform: uppercase;
   }
   
   .stat-value {
-    font-size: 1rem;
+    font-size: 1em;
     font-weight: 600;
     color: #fff;
     
     .stat-sub {
-      font-size: 0.8rem;
+      font-size: 0.8em;
       color: rgba(255, 255, 255, 0.3);
       font-weight: 400;
     }
@@ -802,7 +802,7 @@ const getBuildCost = (tech) => {
 
 .btn-assign {
   width: 100%;
-  padding: 0.75rem;
+  padding: 0.75em;
   background: rgba(255, 102, 0, 0.1);
   border: 1px dashed rgba(255, 102, 0, 0.4);
   border-radius: 8px;
@@ -813,7 +813,7 @@ const getBuildCost = (tech) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.5em;
   
   &:hover:not(:disabled) {
     background: rgba(255, 102, 0, 0.2);
@@ -833,7 +833,7 @@ const getBuildCost = (tech) => {
   }
   
   .btn-icon {
-    font-size: 1.2rem;
+    font-size: 1.2em;
     line-height: 1;
   }
 }
@@ -843,21 +843,21 @@ const getBuildCost = (tech) => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 4rem 2rem;
+  padding: 4em 2em;
   background: rgba(255, 255, 255, 0.02);
   border: 1px dashed rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   text-align: center;
   
   &__icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
+    font-size: 3em;
+    margin-bottom: 1em;
     opacity: 0.5;
   }
   
   h3 {
     color: #fff;
-    margin: 0 0 0.5rem 0;
+    margin: 0 0 0.5em 0;
   }
   
   p {
@@ -899,13 +899,13 @@ const getBuildCost = (tech) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 1.5rem;
+  padding: 1em 1.5em;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   background: rgba(0, 0, 0, 0.2);
 
   h3 {
     margin: 0;
-    font-size: 1.1rem;
+    font-size: 1.1em;
     color: #fff;
     font-weight: 600;
   }
@@ -915,7 +915,7 @@ const getBuildCost = (tech) => {
   background: none;
   border: none;
   color: rgba(255, 255, 255, 0.5);
-  font-size: 1.5rem;
+  font-size: 1.5em;
   line-height: 1;
   cursor: pointer;
   padding: 4px;
@@ -929,7 +929,7 @@ const getBuildCost = (tech) => {
 }
 
 .job-select-modal__content {
-  padding: 1.5rem;
+  padding: 1.5em;
   overflow-y: auto;
   flex: 1;
   
@@ -953,12 +953,12 @@ const getBuildCost = (tech) => {
 
 .job-select-modal__empty {
   text-align: center;
-  padding: 3rem 1rem;
+  padding: 3em 1em;
   
   p {
     color: rgba(255, 255, 255, 0.7);
-    margin: 0 0 0.5rem 0;
-    font-size: 1.1rem;
+    margin: 0 0 0.5em 0;
+    font-size: 1.1em;
   }
   
   small {
@@ -969,7 +969,7 @@ const getBuildCost = (tech) => {
 .job-select-modal__grid {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1em;
 }
 
 
@@ -978,8 +978,8 @@ const getBuildCost = (tech) => {
   align-items: center;
   justify-content: center;
   border-radius: 4px;
-  padding: 0.25rem 0.75rem;
-  font-size: 0.85rem;
+  padding: 0.25em 0.75em;
+  font-size: 0.85em;
   font-weight: 600;
   
   &.success {

@@ -836,7 +836,7 @@ defineExpose({
 .tuning-tab {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1em;
   height: 100%;
   overflow-y: auto;
 }
@@ -844,7 +844,7 @@ defineExpose({
 .no-vehicle,
 .loading,
 .no-tuning-data {
-  padding: 3rem;
+  padding: 3em;
   text-align: center;
   color: rgba(255, 255, 255, 0.5);
 }
@@ -854,7 +854,7 @@ defineExpose({
   flex-direction: column;
   height: 100%;
   overflow: hidden;
-  gap: 1rem;
+  gap: 1em;
 }
 
 .search-section {
@@ -925,7 +925,7 @@ defineExpose({
 .tuning-scrollable {
   flex: 1;
   overflow-y: auto;
-  padding-bottom: 1rem;
+  padding-bottom: 1em;
 
   /* Custom scrollbar matching business computer */
   &::-webkit-scrollbar {
@@ -950,9 +950,9 @@ defineExpose({
 .tuning-section {
   background: rgba(23, 23, 23, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0.5rem;
+  border-radius: 0.5em;
   overflow: hidden;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.5em;
 
   &:last-child {
     margin-bottom: 0;
@@ -964,7 +964,7 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 1.5rem;
+  padding: 1em 1.5em;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(23, 23, 23, 0.3);
   border: none;
@@ -978,7 +978,7 @@ defineExpose({
   h3 {
     margin: 0;
     color: rgba(245, 73, 0, 1);
-    font-size: 1.125rem;
+    font-size: 1.125em;
     font-weight: 600;
   }
 
@@ -994,7 +994,7 @@ defineExpose({
 }
 
 .section-content {
-  padding: 1.5rem;
+  padding: 1.5em;
   overflow: hidden;
 }
 
@@ -1025,7 +1025,7 @@ defineExpose({
 }
 
 .subcategory-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.5em;
 
   &:last-child {
     margin-bottom: 0;
@@ -1033,15 +1033,15 @@ defineExpose({
 }
 
 .subcategory-heading {
-  margin: 0 0 1rem 0;
+  margin: 0 0 1em 0;
   color: rgba(255, 255, 255, 0.6);
   font-style: italic;
-  font-size: 0.875rem;
+  font-size: 0.875em;
   font-weight: 500;
 }
 
 .slider-control {
-  margin-bottom: 1rem;
+  margin-bottom: 1em;
 
   &:last-child {
     margin-bottom: 0;
@@ -1051,18 +1051,18 @@ defineExpose({
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.5em;
 
     label {
       color: rgba(255, 255, 255, 0.7);
-      font-size: 0.875rem;
+      font-size: 0.875em;
       margin: 0;
     }
 
     .value-input-group {
       display: flex;
       align-items: center;
-      gap: 0.25rem;
+      gap: 0.25em;
     }
   }
 
@@ -1071,8 +1071,8 @@ defineExpose({
 
     .slider {
       width: 100%;
-      height: 0.5rem;
-      border-radius: 0.25rem;
+      height: 0.5em;
+      border-radius: 0.25em;
       outline: none;
       border: none;
       -webkit-appearance: none;
@@ -1081,16 +1081,16 @@ defineExpose({
 
       &::-webkit-slider-runnable-track {
         width: 100%;
-        height: 0.5rem;
-        border-radius: 0.25rem;
+        height: 0.5em;
+        border-radius: 0.25em;
         border: none;
         background: linear-gradient(to right, rgba(245, 73, 0, 1) 0%, rgba(245, 73, 0, 1) var(--slider-percentage, 0%), rgba(255, 255, 255, 0.1) var(--slider-percentage, 0%), rgba(255, 255, 255, 0.1) 100%);
       }
 
       &::-moz-range-track {
         width: 100%;
-        height: 0.5rem;
-        border-radius: 0.25rem;
+        height: 0.5em;
+        border-radius: 0.25em;
         border: none;
         background: linear-gradient(to right, rgba(245, 73, 0, 1) 0%, rgba(245, 73, 0, 1) var(--slider-percentage, 0%), rgba(255, 255, 255, 0.1) var(--slider-percentage, 0%), rgba(255, 255, 255, 0.1) 100%);
       }
@@ -1098,19 +1098,19 @@ defineExpose({
       &::-webkit-slider-thumb {
         -webkit-appearance: none;
         appearance: none;
-        width: 1rem;
-        height: 1rem;
+        width: 1em;
+        height: 1em;
         background: rgba(245, 73, 0, 1);
         border-radius: 50%;
         cursor: pointer;
-        margin-top: -0.25rem;
+        margin-top: -0.25em;
         border: none;
         box-shadow: none;
       }
 
       &::-moz-range-thumb {
-        width: 1rem;
-        height: 1rem;
+        width: 1em;
+        height: 1em;
         background: rgba(245, 73, 0, 1);
         border-radius: 50%;
         cursor: pointer;
@@ -1134,14 +1134,14 @@ defineExpose({
   }
 
   .value-input {
-    width: 5rem;
-    padding: 0.25rem 0.5rem;
+    width: 5em;
+    padding: 0.25em 0.5em;
     background: rgba(26, 26, 26, 1);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 0.25rem;
+    border-radius: 0.25em;
     text-align: center;
     color: white;
-    font-size: 0.875rem;
+    font-size: 0.875em;
     outline: none;
 
     appearance: textfield;
@@ -1165,20 +1165,20 @@ defineExpose({
 
   .value-unit {
     color: rgba(255, 255, 255, 0.7);
-    font-size: 0.875rem;
+    font-size: 0.875em;
   }
 }
 
 .tuning-controls {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  padding: 1rem;
+  gap: 0.5em;
+  padding: 1em;
   background: rgba(23, 23, 23, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0.5rem;
+  border-radius: 0.5em;
   flex-shrink: 0;
-  margin-top: 1rem;
+  margin-top: 1em;
 
   .wheel-data-section {
     width: 100%;
@@ -1188,12 +1188,12 @@ defineExpose({
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0.375rem 0.625rem;
+      padding: 0.375em 0.625em;
       background: transparent;
       border: none;
       cursor: pointer;
       transition: background 0.2s;
-      border-radius: 0.25rem;
+      border-radius: 0.25em;
 
       &:hover {
         background: rgba(255, 255, 255, 0.05);
@@ -1201,7 +1201,7 @@ defineExpose({
 
       .wheel-data-label {
         color: rgba(255, 255, 255, 0.6);
-        font-size: 0.8125rem;
+        font-size: 0.8125em;
         user-select: none;
         font-weight: 500;
       }
@@ -1218,7 +1218,7 @@ defineExpose({
     }
 
     .wheel-data-content {
-      margin-top: 0.25rem;
+      margin-top: 0.25em;
     }
   }
 
@@ -1227,16 +1227,16 @@ defineExpose({
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    gap: 1rem;
+    gap: 1em;
   }
 
   .switch-label {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.75em;
     color: rgba(255, 255, 255, 0.7);
     cursor: pointer;
-    font-size: 0.875rem;
+    font-size: 0.875em;
     position: relative;
     flex-shrink: 0;
 
@@ -1250,7 +1250,7 @@ defineExpose({
         background: rgba(245, 73, 0, 1);
 
         &::before {
-          transform: translateX(1.5rem) translateY(-50%);
+          transform: translateX(1.5em) translateY(-50%);
         }
       }
 
@@ -1262,19 +1262,19 @@ defineExpose({
     .switch-slider {
       position: relative;
       display: inline-block;
-      width: 3rem;
-      height: 1.5rem;
+      width: 3em;
+      height: 1.5em;
       background: rgba(255, 255, 255, 0.1);
-      border-radius: 0.75rem;
+      border-radius: 0.75em;
       transition: background 0.2s;
       flex-shrink: 0;
 
       &::before {
         content: '';
         position: absolute;
-        width: 1.25rem;
-        height: 1.25rem;
-        left: 0.125rem;
+        width: 1.25em;
+        height: 1.25em;
+        left: 0.125em;
         top: 50%;
         transform: translateY(-50%);
         background: white;
@@ -1290,15 +1290,15 @@ defineExpose({
 
   .control-buttons {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.5em;
     flex-shrink: 0;
   }
 }
 
 .btn {
-  padding: 0.5rem 1rem;
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
+  padding: 0.5em 1em;
+  border-radius: 0.375em;
+  font-size: 0.875em;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;

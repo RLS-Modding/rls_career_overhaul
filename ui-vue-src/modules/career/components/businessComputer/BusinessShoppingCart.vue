@@ -135,7 +135,7 @@
                       'cart-item-category': item.type === 'category',
                       'cart-item-subcategory': item.type === 'subCategory',
                       'cart-item-variable': item.type === 'variable'
-                    }" :style="{ paddingLeft: `${((item.level || 1) - 1) * 1.5}rem` }">
+                    }" :style="{ paddingLeft: `${((item.level || 1) - 1) * 1.5}em` }">
                     <button v-if="item.type === 'variable'" class="remove-button"
                       @click="store.removeTuningFromCart(item.varName)">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -1619,7 +1619,7 @@ onBeforeUnmount(() => {
           background: transparent;
           border: none;
           color: rgba(255, 255, 255, 0.5);
-          font-size: 0.75rem;
+          font-size: 0.75em;
           padding: 2px 8px;
           cursor: pointer;
           border-radius: 2px;

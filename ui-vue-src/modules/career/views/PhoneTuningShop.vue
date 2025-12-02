@@ -600,9 +600,9 @@ $negative: #ef4444;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
+  gap: 1em;
   color: $text-secondary;
-  padding: 2rem;
+  padding: 2em;
   text-align: center;
 }
 
@@ -617,19 +617,19 @@ $negative: #ef4444;
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.error-icon { font-size: 2.5rem; opacity: 0.5; }
+.error-icon { font-size: 2.5em; opacity: 0.5; }
 
 .tab-content {
   flex: 1;
   overflow: hidden;
-  padding-top: 3rem;
+  padding-top: 3em;
 }
 
 .tab-panel {
   height: 100%;
   overflow-y: auto;
-  padding: 0.75rem;
-  padding-bottom: 5rem;
+  padding: 0.75em;
+  padding-bottom: 5em;
   &::-webkit-scrollbar { display: none; }
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -642,19 +642,19 @@ $negative: #ef4444;
 .stats-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+  gap: 0.5em;
+  margin-bottom: 1em;
 }
 
 .stat-card {
   background: $bg-card;
   border: 1px solid $border;
-  border-radius: 0.75rem;
-  padding: 0.75rem 0.5rem;
+  border-radius: 0.75em;
+  padding: 0.75em 0.5em;
   text-align: center;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.25em;
   
   &.accent {
     border-color: rgba($accent, 0.3);
@@ -663,16 +663,16 @@ $negative: #ef4444;
   }
 }
 
-.stat-value { font-size: 1.1rem; font-weight: 700; color: $text-primary; }
-.stat-label { font-size: 0.65rem; color: $text-muted; text-transform: uppercase; letter-spacing: 0.05em; }
+.stat-value { font-size: 1.1em; font-weight: 700; color: $text-primary; }
+.stat-label { font-size: 0.65em; color: $text-muted; text-transform: uppercase; letter-spacing: 0.05em; }
 
-.section { margin-bottom: 1rem; }
+.section { margin-bottom: 1em; }
 .section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.5rem;
-  font-size: 0.8rem;
+  margin-bottom: 0.5em;
+  font-size: 0.8em;
   font-weight: 600;
   color: $text-secondary;
   
@@ -684,7 +684,7 @@ $negative: #ef4444;
   height: 6px;
   background: $accent;
   border-radius: 50%;
-  margin-right: 0.5rem;
+  margin-right: 0.5em;
   animation: pulse 1.5s infinite;
 }
 
@@ -692,14 +692,14 @@ $negative: #ef4444;
 
 .section-count {
   background: rgba(255, 255, 255, 0.1);
-  padding: 0.15rem 0.5rem;
-  border-radius: 0.25rem;
-  font-size: 0.7rem;
+  padding: 0.15em 0.5em;
+  border-radius: 0.25em;
+  font-size: 0.7em;
 }
 
 .idle-techs-row {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.5em;
   flex-wrap: wrap;
 }
 
@@ -707,14 +707,14 @@ $negative: #ef4444;
   background: rgba($accent, 0.15);
   border: 1px solid rgba($accent, 0.3);
   color: $accent-light;
-  padding: 0.4rem 0.75rem;
-  border-radius: 2rem;
-  font-size: 0.75rem;
+  padding: 0.4em 0.75em;
+  border-radius: 2em;
+  font-size: 0.75em;
   font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.35em;
   transition: all 0.2s;
   
   &:hover { background: rgba($accent, 0.25); }
@@ -723,29 +723,29 @@ $negative: #ef4444;
 
 .empty-mini {
   color: $text-muted;
-  font-size: 0.8rem;
+  font-size: 0.8em;
   text-align: center;
-  padding: 1rem;
+  padding: 1em;
   font-style: italic;
 }
 
-.jobs-mini-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.jobs-mini-list { display: flex; flex-direction: column; gap: 0.5em; }
 
 .job-mini-card {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.6em;
   background: $bg-card;
   border: 1px solid $border;
-  border-radius: 0.6rem;
-  padding: 0.5rem;
+  border-radius: 0.6em;
+  padding: 0.5em;
 }
 
 .job-mini-img {
   width: 44px;
   height: 32px;
   object-fit: cover;
-  border-radius: 0.3rem;
+  border-radius: 0.3em;
 }
 
 .job-mini-info {
@@ -756,7 +756,7 @@ $negative: #ef4444;
 }
 
 .job-mini-name {
-  font-size: 0.75rem;
+  font-size: 0.75em;
   font-weight: 600;
   color: $text-primary;
   white-space: nowrap;
@@ -765,7 +765,7 @@ $negative: #ef4444;
 }
 
 .job-mini-goal {
-  font-size: 0.65rem;
+  font-size: 0.65em;
   color: $text-muted;
   white-space: nowrap;
   overflow: hidden;
@@ -775,10 +775,10 @@ $negative: #ef4444;
 .job-mini-status { flex-shrink: 0; }
 
 .tech-badge, .unassigned-badge {
-  font-size: 0.6rem;
+  font-size: 0.6em;
   font-weight: 600;
-  padding: 0.2rem 0.5rem;
-  border-radius: 0.25rem;
+  padding: 0.2em 0.5em;
+  border-radius: 0.25em;
   text-transform: uppercase;
 }
 
@@ -788,21 +788,21 @@ $negative: #ef4444;
 .finance-mini {
   background: $bg-card;
   border: 1px solid $border;
-  border-radius: 0.6rem;
-  padding: 0.75rem;
+  border-radius: 0.6em;
+  padding: 0.75em;
   display: flex;
   align-items: baseline;
-  gap: 0.5rem;
+  gap: 0.5em;
 }
 
 .change-value {
-  font-size: 1.1rem;
+  font-size: 1.1em;
   font-weight: 700;
   &.positive { color: $positive; }
   &.negative { color: $negative; }
 }
 
-.change-label { font-size: 0.7rem; color: $text-muted; }
+.change-label { font-size: 0.7em; color: $text-muted; }
 
 /* Jobs Tab */
 .jobs-panel { padding-top: 0; }
@@ -810,9 +810,9 @@ $negative: #ef4444;
 .segment-control {
   display: flex;
   background: rgba(0, 0, 0, 0.3);
-  border-radius: 0.5rem;
-  padding: 0.25rem;
-  margin: 0.75rem 0.75rem 0.75rem 0.75rem;
+  border-radius: 0.5em;
+  padding: 0.25em;
+  margin: 0.75em 0.75em 0.75em 0.75em;
   position: sticky;
   top: 0;
   z-index: 5;
@@ -822,10 +822,10 @@ $negative: #ef4444;
     background: transparent;
     border: none;
     color: $text-secondary;
-    padding: 0.5rem;
-    font-size: 0.75rem;
+    padding: 0.5em;
+    font-size: 0.75em;
     font-weight: 600;
-    border-radius: 0.35rem;
+    border-radius: 0.35em;
     cursor: pointer;
     transition: all 0.2s;
     
@@ -836,26 +836,26 @@ $negative: #ef4444;
   }
 }
 
-.jobs-scroll { padding: 0 0.75rem; }
-.jobs-list { display: flex; flex-direction: column; gap: 0.75rem; }
+.jobs-scroll { padding: 0 0.75em; }
+.jobs-list { display: flex; flex-direction: column; gap: 0.75em; }
 
 .empty-state-mini {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 3rem 1rem;
+  padding: 3em 1em;
   color: $text-muted;
-  gap: 0.5rem;
+  gap: 0.5em;
   
-  .empty-icon { font-size: 2rem; opacity: 0.5; }
-  small { font-size: 0.7rem; }
+  .empty-icon { font-size: 2em; opacity: 0.5; }
+  small { font-size: 0.7em; }
 }
 
 .job-card {
   background: $bg-card;
   border: 1px solid $border;
-  border-radius: 0.75rem;
+  border-radius: 0.75em;
   overflow: hidden;
   transition: border-color 0.2s;
   
@@ -875,9 +875,9 @@ $negative: #ef4444;
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 0.35rem 0.6rem;
+  padding: 0.35em 0.6em;
   background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
-  font-size: 0.7rem;
+  font-size: 0.7em;
   font-weight: 600;
   color: $accent-light;
   
@@ -886,7 +886,7 @@ $negative: #ef4444;
     color: white;
     cursor: pointer;
     text-align: center;
-    padding: 0.5rem;
+    padding: 0.5em;
     transition: background 0.2s;
     
     &:hover { background: $accent; }
@@ -895,55 +895,55 @@ $negative: #ef4444;
 
 .expiry-badge {
   position: absolute;
-  top: 0.4rem;
-  right: 0.4rem;
+  top: 0.4em;
+  right: 0.4em;
   background: rgba(0, 0, 0, 0.75);
   color: white;
-  font-size: 0.65rem;
+  font-size: 0.65em;
   font-weight: 600;
-  padding: 0.2rem 0.5rem;
-  border-radius: 0.25rem;
+  padding: 0.2em 0.5em;
+  border-radius: 0.25em;
   
   &.urgent { background: $negative; }
 }
 
-.job-card-body { padding: 0.6rem; }
+.job-card-body { padding: 0.6em; }
 
 .job-card-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.25em;
 }
 
 .job-vehicle {
-  font-size: 0.8rem;
+  font-size: 0.8em;
   font-weight: 600;
   color: $text-primary;
   flex: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-right: 0.5rem;
+  margin-right: 0.5em;
 }
 
 .job-reward {
-  font-size: 0.85rem;
+  font-size: 0.85em;
   font-weight: 700;
   color: $positive;
   flex-shrink: 0;
 }
 
 .job-goal {
-  font-size: 0.7rem;
+  font-size: 0.7em;
   color: $text-secondary;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.5em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.job-progress { margin-bottom: 0.35rem; }
+.job-progress { margin-bottom: 0.35em; }
 
 .progress-bar {
   height: 4px;
@@ -960,7 +960,7 @@ $negative: #ef4444;
 
 .job-actions {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.5em;
   justify-content: flex-end;
 }
 
@@ -968,9 +968,9 @@ $negative: #ef4444;
   background: $positive;
   color: white;
   border: none;
-  padding: 0.4rem 1rem;
-  border-radius: 0.35rem;
-  font-size: 0.75rem;
+  padding: 0.4em 1em;
+  border-radius: 0.35em;
+  font-size: 0.75em;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
@@ -984,8 +984,8 @@ $negative: #ef4444;
   border: none;
   width: 28px;
   height: 28px;
-  border-radius: 0.35rem;
-  font-size: 0.9rem;
+  border-radius: 0.35em;
+  font-size: 0.9em;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1002,33 +1002,33 @@ $negative: #ef4444;
   align-items: center;
   background: rgba($accent, 0.1);
   border: 1px solid rgba($accent, 0.2);
-  border-radius: 0.6rem;
-  padding: 0.6rem 0.8rem;
-  margin-bottom: 0.75rem;
+  border-radius: 0.6em;
+  padding: 0.6em 0.8em;
+  margin-bottom: 0.75em;
 }
 
 .manager-label {
-  font-size: 0.75rem;
+  font-size: 0.75em;
   font-weight: 600;
   color: $text-secondary;
   text-transform: uppercase;
 }
 
 .manager-status {
-  font-size: 0.8rem;
+  font-size: 0.8em;
   font-weight: 600;
   color: $text-muted;
   
   &.ready { color: $positive; }
 }
 
-.techs-list { display: flex; flex-direction: column; gap: 0.6rem; }
+.techs-list { display: flex; flex-direction: column; gap: 0.6em; }
 
 .tech-card {
   background: $bg-card;
   border: 1px solid $border;
-  border-radius: 0.6rem;
-  padding: 0.75rem;
+  border-radius: 0.6em;
+  padding: 0.75em;
   
   &.working { border-left: 3px solid $accent; }
 }
@@ -1036,8 +1036,8 @@ $negative: #ef4444;
 .tech-card-header {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  margin-bottom: 0.5rem;
+  gap: 0.6em;
+  margin-bottom: 0.5em;
 }
 
 .tech-status-dot {
@@ -1055,19 +1055,19 @@ $negative: #ef4444;
 .tech-name {
   flex: 1;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.9em;
   color: $text-primary;
 }
 
 .tech-rate {
-  font-size: 0.75rem;
+  font-size: 0.75em;
   color: $text-muted;
 }
 
-.tech-working-info { display: flex; flex-direction: column; gap: 0.35rem; }
+.tech-working-info { display: flex; flex-direction: column; gap: 0.35em; }
 
 .tech-job-label {
-  font-size: 0.75rem;
+  font-size: 0.75em;
   color: $accent-light;
   white-space: nowrap;
   overflow: hidden;
@@ -1075,7 +1075,7 @@ $negative: #ef4444;
 }
 
 .tech-phase {
-  font-size: 0.65rem;
+  font-size: 0.65em;
   color: $text-muted;
   text-transform: uppercase;
 }
@@ -1100,7 +1100,7 @@ $negative: #ef4444;
 }
 
 .idle-label {
-  font-size: 0.75rem;
+  font-size: 0.75em;
   color: $text-muted;
 }
 
@@ -1108,9 +1108,9 @@ $negative: #ef4444;
   background: rgba($accent, 0.15);
   border: 1px dashed rgba($accent, 0.4);
   color: $accent;
-  padding: 0.4rem 0.8rem;
-  border-radius: 0.35rem;
-  font-size: 0.75rem;
+  padding: 0.4em 0.8em;
+  border-radius: 0.35em;
+  font-size: 0.75em;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
@@ -1130,23 +1130,23 @@ $negative: #ef4444;
 .balance-card {
   background: linear-gradient(135deg, rgba($accent, 0.15) 0%, rgba($accent, 0.05) 100%);
   border: 1px solid rgba($accent, 0.2);
-  border-radius: 0.75rem;
-  padding: 1.25rem;
+  border-radius: 0.75em;
+  padding: 1.25em;
   text-align: center;
-  margin-bottom: 1rem;
+  margin-bottom: 1em;
 }
 
 .balance-label {
   display: block;
-  font-size: 0.7rem;
+  font-size: 0.7em;
   color: $text-muted;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.35em;
 }
 
 .balance-value {
-  font-size: 1.75rem;
+  font-size: 1.75em;
   font-weight: 700;
   color: $positive;
   
@@ -1156,9 +1156,9 @@ $negative: #ef4444;
 .chart-section {
   background: $bg-card;
   border: 1px solid $border;
-  border-radius: 0.6rem;
+  border-radius: 0.6em;
   overflow: hidden;
-  margin-bottom: 1rem;
+  margin-bottom: 1em;
 }
 
 .chart-container {
@@ -1169,9 +1169,9 @@ $negative: #ef4444;
 .chart-svg { display: block; }
 
 .chart-label {
-  padding: 0.5rem;
+  padding: 0.5em;
   text-align: center;
-  font-size: 0.65rem;
+  font-size: 0.65em;
   color: $text-muted;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -1183,28 +1183,28 @@ $negative: #ef4444;
   align-items: stretch;
   background: $bg-card;
   border: 1px solid $border;
-  border-radius: 0.6rem;
+  border-radius: 0.6em;
   overflow: hidden;
 }
 
 .finance-stat {
   flex: 1;
-  padding: 0.75rem;
+  padding: 0.75em;
   text-align: center;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.25em;
 }
 
 .finance-stat-label {
-  font-size: 0.6rem;
+  font-size: 0.6em;
   color: $text-muted;
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
 
 .finance-stat-value {
-  font-size: 0.95rem;
+  font-size: 0.95em;
   font-weight: 700;
   color: $text-primary;
   
@@ -1227,7 +1227,7 @@ $negative: #ef4444;
   display: flex;
   background: rgba(8, 8, 8, 0.98);
   border-top: 1px solid $border;
-  padding: 0.35rem 0.25rem 0.5rem;
+  padding: 0.35em 0.25em 0.5em;
   z-index: 10;
   
   button {
@@ -1235,18 +1235,18 @@ $negative: #ef4444;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.2rem;
+    gap: 0.2em;
     background: transparent;
     border: none;
     color: $text-muted;
-    padding: 0.35rem;
+    padding: 0.35em;
     cursor: pointer;
     position: relative;
     transition: color 0.2s;
     
     svg { transition: transform 0.2s; }
     
-    span:not(.nav-badge) { font-size: 0.6rem; font-weight: 500; }
+    span:not(.nav-badge) { font-size: 0.6em; font-weight: 500; }
     
     &.active {
       color: $accent;
@@ -1264,7 +1264,7 @@ $negative: #ef4444;
   transform: translateX(100%);
   background: $accent;
   color: white;
-  font-size: 0.55rem !important;
+  font-size: 0.55em !important;
   font-weight: 700 !important;
   min-width: 14px;
   height: 14px;
@@ -1295,21 +1295,21 @@ $negative: #ef4444;
 .modal-content {
   background: rgba(18, 18, 18, 0.98);
   border: 1px solid rgba($accent, 0.3);
-  border-radius: 0.75rem;
-  padding: 1.25rem;
+  border-radius: 0.75em;
+  padding: 1.25em;
   width: 90%;
   max-width: 320px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   
   h2 {
-    margin: 0 0 0.75rem 0;
-    font-size: 1.1rem;
+    margin: 0 0 0.75em 0;
+    font-size: 1.1em;
     color: $text-primary;
   }
   
   p {
-    margin: 0 0 1.25rem 0;
-    font-size: 0.85rem;
+    margin: 0 0 1.25em 0;
+    font-size: 0.85em;
     color: $text-secondary;
     line-height: 1.4;
   }
@@ -1319,15 +1319,15 @@ $negative: #ef4444;
 
 .modal-buttons {
   display: flex;
-  gap: 0.6rem;
+  gap: 0.6em;
   justify-content: flex-end;
 }
 
 .btn {
-  padding: 0.6rem 1rem;
+  padding: 0.6em 1em;
   border: none;
-  border-radius: 0.35rem;
-  font-size: 0.8rem;
+  border-radius: 0.35em;
+  font-size: 0.8em;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
@@ -1356,17 +1356,17 @@ $negative: #ef4444;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem;
+  padding: 1em;
   border-bottom: 1px solid $border;
   
-  h3 { margin: 0; font-size: 1rem; color: $text-primary; }
+  h3 { margin: 0; font-size: 1em; color: $text-primary; }
 }
 
 .modal-close {
   background: none;
   border: none;
   color: $text-muted;
-  font-size: 1.5rem;
+  font-size: 1.5em;
   cursor: pointer;
   padding: 0;
   line-height: 1;
@@ -1375,27 +1375,27 @@ $negative: #ef4444;
 }
 
 .modal-body {
-  padding: 0.75rem;
+  padding: 0.75em;
   overflow-y: auto;
   flex: 1;
 }
 
 .modal-empty {
   text-align: center;
-  padding: 2rem 1rem;
+  padding: 2em 1em;
   color: $text-muted;
 }
 
-.assign-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.assign-list { display: flex; flex-direction: column; gap: 0.5em; }
 
 .assign-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.75rem;
+  padding: 0.75em;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid $border;
-  border-radius: 0.5rem;
+  border-radius: 0.5em;
   cursor: pointer;
   transition: all 0.2s;
   
@@ -1411,19 +1411,19 @@ $negative: #ef4444;
 }
 
 .assign-rate {
-  font-size: 0.8rem;
+  font-size: 0.8em;
   color: $text-muted;
 }
 
 .job-assign-item {
-  gap: 0.6rem;
+  gap: 0.6em;
 }
 
 .assign-job-img {
   width: 50px;
   height: 36px;
   object-fit: cover;
-  border-radius: 0.3rem;
+  border-radius: 0.3em;
 }
 
 .assign-job-info {
@@ -1434,7 +1434,7 @@ $negative: #ef4444;
 }
 
 .assign-job-name {
-  font-size: 0.8rem;
+  font-size: 0.8em;
   font-weight: 600;
   color: $text-primary;
   white-space: nowrap;
@@ -1443,7 +1443,7 @@ $negative: #ef4444;
 }
 
 .assign-job-goal {
-  font-size: 0.7rem;
+  font-size: 0.7em;
   color: $text-muted;
   white-space: nowrap;
   overflow: hidden;
@@ -1453,7 +1453,7 @@ $negative: #ef4444;
 .assign-job-reward {
   font-weight: 700;
   color: $positive;
-  font-size: 0.85rem;
+  font-size: 0.85em;
   flex-shrink: 0;
 }
 

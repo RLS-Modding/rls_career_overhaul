@@ -56,7 +56,7 @@ const formatValue = (value, unit) => {
 
 <style scoped lang="scss">
 .business-slider-control {
-  margin-bottom: 1rem;
+  margin-bottom: 1em;
   
   &:last-child {
     margin-bottom: 0;
@@ -66,35 +66,35 @@ const formatValue = (value, unit) => {
 .business-slider-label {
   display: block;
   color: rgba(255, 255, 255, 0.7);
-  margin-bottom: 0.5rem;
-  font-size: 0.875rem;
+  margin-bottom: 0.5em;
+  font-size: 0.875em;
 }
 
 .business-slider-wrapper {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1em;
 }
 
 .business-slider {
   flex: 1;
-  height: 0.5rem;
+  height: 0.5em;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 0.25rem;
+  border-radius: 0.25em;
   outline: none;
   
   &::-webkit-slider-thumb {
     appearance: none;
-    width: 1rem;
-    height: 1rem;
+    width: 1em;
+    height: 1em;
     background: rgba(245, 73, 0, 1);
     border-radius: 50%;
     cursor: pointer;
   }
   
   &::-moz-range-thumb {
-    width: 1rem;
-    height: 1rem;
+    width: 1em;
+    height: 1em;
     background: rgba(245, 73, 0, 1);
     border-radius: 50%;
     cursor: pointer;
@@ -103,13 +103,12 @@ const formatValue = (value, unit) => {
 }
 
 .business-slider-value {
-  min-width: 4rem;
-  padding: 0.25rem 0.5rem;
+  min-width: 4em;
+  padding: 0.25em 0.5em;
   background: rgba(26, 26, 26, 1);
-  border-radius: 0.25rem;
+  border-radius: 0.25em;
   text-align: center;
   color: white;
-  font-size: 0.875rem;
+  font-size: 0.875em;
 }
 </style>
-

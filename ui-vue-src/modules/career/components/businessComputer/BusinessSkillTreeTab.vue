@@ -847,7 +847,7 @@ onBeforeUnmount(() => {
 }
 
 .empty-state {
-  padding: 2rem;
+  padding: 2em;
   text-align: center;
   color: rgba(255, 255, 255, 0.5);
 }
@@ -873,7 +873,7 @@ onBeforeUnmount(() => {
 .tree-name-label {
   position: absolute;
   color: #F54900;
-  font-size: 5rem;
+  font-size: 5em;
   font-weight: 600;
   white-space: nowrap;
   pointer-events: none;
@@ -903,4 +903,3 @@ onBeforeUnmount(() => {
   height: 100%;
 }
 </style>
-

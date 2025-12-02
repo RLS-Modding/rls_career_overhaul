@@ -122,16 +122,16 @@ defineExpose({
 .awd-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.8125rem;
+  font-size: 0.8125em;
   color: #ffffff !important;
 
   thead>tr {
     th {
       text-align: left;
-      padding: 0.5rem 0.75rem;
+      padding: 0.5em 0.75em;
       color: #ffffff !important;
       font-weight: 600;
-      font-size: 0.75rem;
+      font-size: 0.75em;
       text-transform: uppercase;
 
       &:first-child {
@@ -142,7 +142,7 @@ defineExpose({
 
   tbody tr {
     td {
-      padding: 0.5rem 0.75rem;
+      padding: 0.5em 0.75em;
       color: #ffffff !important;
       text-align: left;
 
@@ -156,10 +156,10 @@ defineExpose({
 }
 
 .no-data {
-  padding: 1rem;
+  padding: 1em;
   text-align: center;
   color: #ffffff !important;
-  font-size: 0.875rem;
+  font-size: 0.875em;
 
   p {
     color: #ffffff !important;

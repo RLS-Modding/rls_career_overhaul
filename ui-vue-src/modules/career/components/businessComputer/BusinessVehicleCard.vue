@@ -227,12 +227,12 @@ const goalProgress = computed(() => {
 .vehicle-card {
   background: linear-gradient(to bottom right, rgba(245, 73, 0, 0.2), rgba(26, 26, 26, 0.5));
   border: 1px solid rgba(245, 73, 0, 0.5);
-  border-radius: 0.5rem;
+  border-radius: 0.5em;
   overflow: hidden;
 }
 
 .card-header {
-  padding: 1rem 1.5rem;
+  padding: 1em 1.5em;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(23, 23, 23, 0.3);
 }
@@ -240,8 +240,8 @@ const goalProgress = computed(() => {
 .card-header-content {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.5rem;
+  gap: 0.75em;
+  margin-bottom: 0.5em;
   
   svg {
     color: rgba(245, 73, 0, 1);
@@ -251,7 +251,7 @@ const goalProgress = computed(() => {
   h3 {
     margin: 0;
     color: rgba(245, 73, 0, 1);
-    font-size: 1.125rem;
+    font-size: 1.125em;
     font-weight: 600;
   }
 }
@@ -259,33 +259,33 @@ const goalProgress = computed(() => {
 .card-description {
   margin: 0;
   color: rgba(255, 255, 255, 0.6);
-  font-size: 0.875rem;
+  font-size: 0.875em;
 }
 
 .card-content {
-  padding: 1.5rem;
+  padding: 1.5em;
 }
 
 .vehicle-content {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 1.5rem;
+  gap: 1.5em;
   align-items: stretch;
 }
 
 .vehicle-image-section {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.75em;
   flex-shrink: 0;
-  width: 16rem;
-  max-width: 16rem;
+  width: 16em;
+  max-width: 16em;
 }
 
 .vehicle-image {
   position: relative;
-  width: 16rem;
-  border-radius: 0.5rem;
+  width: 16em;
+  border-radius: 0.5em;
   overflow: hidden;
   background: rgba(0, 0, 0, 0.5);
   
@@ -297,11 +297,11 @@ const goalProgress = computed(() => {
   
   .badge {
     position: absolute;
-    top: 0.5rem;
-    left: 0.5rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
+    top: 0.5em;
+    left: 0.5em;
+    padding: 0.25em 0.5em;
+    border-radius: 0.25em;
+    font-size: 0.75em;
     font-weight: 500;
     
     &.badge-green {
@@ -321,13 +321,13 @@ const goalProgress = computed(() => {
 .vehicle-info {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1em;
 }
 
 .vehicle-name {
   margin: 0;
   color: white;
-  font-size: 1.25rem;
+  font-size: 1.25em;
   font-weight: 600;
   word-wrap: break-word;
   overflow-wrap: break-word;
@@ -335,10 +335,10 @@ const goalProgress = computed(() => {
   
   .badge {
     display: inline-block;
-    margin-left: 0.5rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
+    margin-left: 0.5em;
+    padding: 0.25em 0.5em;
+    border-radius: 0.25em;
+    font-size: 0.75em;
     font-weight: 500;
     vertical-align: middle;
     
@@ -352,7 +352,7 @@ const goalProgress = computed(() => {
 
 .vehicle-actions {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.5em;
   margin-top: auto;
 
   &.locked {
@@ -367,21 +367,21 @@ const goalProgress = computed(() => {
 
 .lock-message {
   color: rgba(239, 68, 68, 1);
-  font-size: 0.875rem;
+  font-size: 0.875em;
   font-weight: 500;
   text-align: center;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.25em;
 }
 
 .tech-message {
   color: rgba(245, 73, 0, 1);
-  font-size: 0.875rem;
+  font-size: 0.875em;
   font-weight: 500;
   text-align: center;
   width: 100%;
-  padding: 0.5rem;
+  padding: 0.5em;
   background: rgba(245, 73, 0, 0.1);
-  border-radius: 0.375rem;
+  border-radius: 0.375em;
   border: 1px solid rgba(245, 73, 0, 0.3);
 }
 
@@ -389,15 +389,15 @@ const goalProgress = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.5em;
   color: rgba(59, 130, 246, 1);
-  font-size: 0.875rem;
+  font-size: 0.875em;
   font-weight: 500;
   text-align: center;
   width: 100%;
-  padding: 0.5rem;
+  padding: 0.5em;
   background: rgba(59, 130, 246, 0.1);
-  border-radius: 0.375rem;
+  border-radius: 0.375em;
   border: 1px solid rgba(59, 130, 246, 0.3);
 
   svg {
@@ -407,16 +407,16 @@ const goalProgress = computed(() => {
 
 .kit-install-time {
   color: rgba(59, 130, 246, 0.8);
-  font-size: 0.75rem;
+  font-size: 0.75em;
   text-align: center;
   width: 100%;
 }
 
 .btn {
-  flex: 0 0 calc(50% - 0.25rem);
-  padding: 0.5rem 1rem;
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
+  flex: 0 0 calc(50% - 0.25em);
+  padding: 0.5em 1em;
+  border-radius: 0.375em;
+  font-size: 0.875em;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
@@ -458,17 +458,17 @@ const goalProgress = computed(() => {
 .goal-chip {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
+  gap: 0.5em;
+  padding: 0.5em 0.75em;
   background: rgba(245, 73, 0, 0.15);
-  border-radius: 0.45rem;
+  border-radius: 0.45em;
   border: 1px solid rgba(245, 73, 0, 0.35);
 }
 
 .goal-chip-content {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.75em;
   justify-content: space-between;
   
   svg {
@@ -480,17 +480,17 @@ const goalProgress = computed(() => {
 .goal-chip-text {
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
+  gap: 0.1em;
   flex: 1;
 }
 
 .goal-chip-label {
-  font-size: 0.75rem;
+  font-size: 0.75em;
   color: rgba(255, 255, 255, 0.6);
 }
 
 .goal-chip-value {
-  font-size: 0.9rem;
+  font-size: 0.9em;
   color: rgba(255, 255, 255, 0.95);
   font-weight: 600;
 }
@@ -498,18 +498,18 @@ const goalProgress = computed(() => {
 .current-time-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
+  gap: 0.1em;
   align-items: flex-end;
   text-align: right;
 }
 
 .current-time-label {
-  font-size: 0.75rem;
+  font-size: 0.75em;
   color: rgba(255, 255, 255, 0.6);
 }
 
 .current-time-value {
-  font-size: 0.9rem;
+  font-size: 0.9em;
   color: rgba(255, 255, 255, 0.95);
   font-weight: 600;
   white-space: nowrap;
@@ -517,11 +517,11 @@ const goalProgress = computed(() => {
 
 .goal-chip .progress-bar {
   width: 100%;
-  height: 0.375rem;
+  height: 0.375em;
   background: rgba(0, 0, 0, 0.2);
-  border-radius: 0.1875rem;
+  border-radius: 0.1875em;
   overflow: hidden;
-  margin-top: 0.125rem;
+  margin-top: 0.125em;
 }
 
 .progress-fill {
@@ -532,46 +532,45 @@ const goalProgress = computed(() => {
 
 .reward-container {
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 0.75em 1em;
   background: rgba(34, 197, 94, 0.15);
-  border-radius: 0.45rem;
+  border-radius: 0.45em;
   border: 1px solid rgba(34, 197, 94, 0.35);
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.25em;
 }
 
 .reward-label {
-  font-size: 0.75rem;
+  font-size: 0.75em;
   color: rgba(255, 255, 255, 0.6);
 }
 
 .reward-value {
-  font-size: 1.125rem;
+  font-size: 1.125em;
   color: rgba(34, 197, 94, 1);
   font-weight: 600;
 }
 
 .personal-info {
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 0.75em 1em;
   background: rgba(99, 102, 241, 0.15);
-  border-radius: 0.45rem;
+  border-radius: 0.45em;
   border: 1px solid rgba(99, 102, 241, 0.35);
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.25em;
 }
 
 .personal-label {
-  font-size: 0.875rem;
+  font-size: 0.875em;
   color: rgba(99, 102, 241, 1);
   font-weight: 600;
 }
 
 .personal-description {
-  font-size: 0.75rem;
+  font-size: 0.75em;
   color: rgba(255, 255, 255, 0.6);
 }
 </style>
-

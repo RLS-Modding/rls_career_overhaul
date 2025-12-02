@@ -33,7 +33,7 @@ defineProps({
 .business-card {
   background: rgba(26, 26, 26, 0.5);
   border: 1px solid rgba(245, 73, 0, 0.3);
-  border-radius: 0.5rem;
+  border-radius: 0.5em;
   overflow: hidden;
   
   &.business-card-gradient {
@@ -43,7 +43,7 @@ defineProps({
 }
 
 .business-card-header {
-  padding: 1rem 1.5rem;
+  padding: 1em 1.5em;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(23, 23, 23, 0.3);
 }
@@ -51,8 +51,8 @@ defineProps({
 .business-card-header-content {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.5rem;
+  gap: 0.75em;
+  margin-bottom: 0.5em;
   
   svg {
     color: rgba(245, 73, 0, 1);
@@ -62,7 +62,7 @@ defineProps({
   h3 {
     margin: 0;
     color: rgba(245, 73, 0, 1);
-    font-size: 1.125rem;
+    font-size: 1.125em;
     font-weight: 600;
   }
 }
@@ -70,11 +70,10 @@ defineProps({
 .business-card-description {
   margin: 0;
   color: rgba(255, 255, 255, 0.6);
-  font-size: 0.875rem;
+  font-size: 0.875em;
 }
 
 .business-card-content {
-  padding: 1.5rem;
+  padding: 1.5em;
 }
 </style>
-

@@ -140,7 +140,7 @@ defineEmits(['put-away', 'abandon', 'go-to-jobs'])
 .home-widget {
   background: rgba(30, 30, 30, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 1rem;
+  border-radius: 1em;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -148,7 +148,7 @@ defineEmits(['put-away', 'abandon', 'go-to-jobs'])
 }
 
 .widget-header {
-  padding: 0.75rem 1rem;
+  padding: 0.75em 1em;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;
   justify-content: space-between;
@@ -157,7 +157,7 @@ defineEmits(['put-away', 'abandon', 'go-to-jobs'])
 
   h3 {
     margin: 0;
-    font-size: 1rem;
+    font-size: 1em;
     font-weight: 600;
     color: #fff;
   }
@@ -166,8 +166,8 @@ defineEmits(['put-away', 'abandon', 'go-to-jobs'])
 .status-indicator {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.8rem;
+  gap: 0.5em;
+  font-size: 0.8em;
   font-weight: 500;
   
   .dot {
@@ -188,24 +188,24 @@ defineEmits(['put-away', 'abandon', 'go-to-jobs'])
 }
 
 .widget-content {
-  padding: 0.75rem 1rem;
+  padding: 0.75em 1em;
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.75em;
   
   &.empty {
     align-items: center;
     justify-content: center;
     text-align: center;
-    gap: 1rem;
+    gap: 1em;
     color: rgba(255, 255, 255, 0.5);
   }
 }
 
 .garage-compact-layout {
   display: flex;
-  gap: 1rem;
+  gap: 1em;
   flex: 1;
 }
 
@@ -218,8 +218,8 @@ defineEmits(['put-away', 'abandon', 'go-to-jobs'])
 .vehicle-image-container {
   width: 100%;
   height: 100%;
-  min-height: 6rem;
-  border-radius: 0.375rem;
+  min-height: 6em;
+  border-radius: 0.375em;
   background: rgba(255, 255, 255, 0.05);
   display: flex;
   align-items: center;
@@ -242,18 +242,18 @@ defineEmits(['put-away', 'abandon', 'go-to-jobs'])
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.5em;
   justify-content: center;
 }
 
 .vehicle-header {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.25em;
   
   .vehicle-name {
     margin: 0;
-    font-size: 1rem;
+    font-size: 1em;
     font-weight: 600;
     color: #fff;
     line-height: 1.2;
@@ -264,23 +264,23 @@ defineEmits(['put-away', 'abandon', 'go-to-jobs'])
 .stats-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 0.5rem;
+  gap: 0.5em;
 }
 
 .stat-box {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.25em;
   
   .label {
-    font-size: 0.75rem;
+    font-size: 0.75em;
     color: rgba(255, 255, 255, 0.5);
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
   
   .value {
-    font-size: 1rem;
+    font-size: 1em;
     font-weight: 600;
     color: #fff;
     
@@ -291,13 +291,13 @@ defineEmits(['put-away', 'abandon', 'go-to-jobs'])
   
   &.goal-box {
     grid-column: 1 / -1; /* Span full width */
-    .goal-text { font-size: 0.9rem; }
+    .goal-text { font-size: 0.9em; }
   }
 }
 
 .actions-row {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.5em;
   margin-top: auto;
 }
 
@@ -306,10 +306,10 @@ defineEmits(['put-away', 'abandon', 'go-to-jobs'])
   background: rgba(245, 73, 0, 1);
   color: white;
   border: none;
-  padding: 0.375rem 0.5rem;
-  border-radius: 0.25rem;
+  padding: 0.375em 0.5em;
+  border-radius: 0.25em;
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 0.85em;
   cursor: pointer;
   transition: background 0.2s;
   
@@ -319,12 +319,12 @@ defineEmits(['put-away', 'abandon', 'go-to-jobs'])
 }
 
 .btn-icon {
-  width: 2rem;
-  height: 2rem;
+  width: 2em;
+  height: 2em;
   background: rgba(239, 68, 68, 0.15);
   color: #ef4444;
   border: none;
-  border-radius: 0.25rem;
+  border-radius: 0.25em;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -345,21 +345,21 @@ defineEmits(['put-away', 'abandon', 'go-to-jobs'])
 .personal-badge {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  padding: 0.5rem 0.75rem;
+  gap: 0.25em;
+  padding: 0.5em 0.75em;
   background: rgba(99, 102, 241, 0.15);
-  border-radius: 0.375rem;
+  border-radius: 0.375em;
   border: 1px solid rgba(99, 102, 241, 0.35);
 }
 
 .personal-label {
-  font-size: 0.85rem;
+  font-size: 0.85em;
   color: rgba(99, 102, 241, 1);
   font-weight: 600;
 }
 
 .personal-description {
-  font-size: 0.75rem;
+  font-size: 0.75em;
   color: rgba(255, 255, 255, 0.6);
 }
 

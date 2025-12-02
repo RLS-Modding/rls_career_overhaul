@@ -22,25 +22,24 @@ defineProps({
 .business-section {
   background: rgba(23, 23, 23, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0.5rem;
+  border-radius: 0.5em;
   overflow: hidden;
 }
 
 .business-section-header {
-  padding: 1rem 1.5rem;
+  padding: 1em 1.5em;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(23, 23, 23, 0.3);
   
   h3 {
     margin: 0;
     color: rgba(245, 73, 0, 1);
-    font-size: 1.125rem;
+    font-size: 1.125em;
     font-weight: 600;
   }
 }
 
 .business-section-content {
-  padding: 1.5rem;
+  padding: 1.5em;
 }
 </style>
-

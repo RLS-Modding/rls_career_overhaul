@@ -495,26 +495,26 @@ watch(showApplyDialog, (isOpen) => {
 })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .kits-tab {
-    padding: 2rem;
+    padding: 2em;
     max-width: 1400px;
     margin: 0 auto;
 }
 
 .kits-header {
-    margin-bottom: 2rem;
+    margin-bottom: 2em;
 }
 
 .kits-header-top {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.5em;
 }
 
 .kits-header h2 {
-    font-size: 2rem;
+    font-size: 2em;
     font-weight: 600;
     margin: 0;
     color: #fff;
@@ -523,11 +523,11 @@ watch(showApplyDialog, (isOpen) => {
 .kits-capacity {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.75em;
 }
 
 .capacity-text {
-    font-size: 0.9rem;
+    font-size: 0.9em;
     color: #999;
     font-weight: 500;
 }
@@ -553,23 +553,23 @@ watch(showApplyDialog, (isOpen) => {
 }
 
 .section {
-    margin-bottom: 3rem;
+    margin-bottom: 3em;
 }
 
 .section-title {
-    font-size: 1.25rem;
+    font-size: 1.25em;
     font-weight: 600;
-    margin: 0 0 1rem 0;
+    margin: 0 0 1em 0;
     color: #fff;
     border-bottom: 2px solid #333;
-    padding-bottom: 0.5rem;
+    padding-bottom: 0.5em;
 }
 
 .jobs-grid,
 .kits-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1rem;
+    gap: 1em;
 }
 
 .job-card,
@@ -577,7 +577,7 @@ watch(showApplyDialog, (isOpen) => {
     background: #1a1a1a;
     border: 1px solid #333;
     border-radius: 8px;
-    padding: 1rem;
+    padding: 1em;
     transition: all 0.2s;
 }
 
@@ -595,7 +595,7 @@ watch(showApplyDialog, (isOpen) => {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 1rem;
+    margin-bottom: 1em;
 }
 
 .job-info,
@@ -605,15 +605,15 @@ watch(showApplyDialog, (isOpen) => {
 
 .job-title,
 .kit-name {
-    font-size: 1rem;
+    font-size: 1em;
     font-weight: 600;
     color: #fff;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.25em;
 }
 
 .job-subtitle,
 .kit-subtitle {
-    font-size: 0.875rem;
+    font-size: 0.875em;
     color: #999;
 }
 
@@ -622,22 +622,22 @@ watch(showApplyDialog, (isOpen) => {
     height: 60px;
     object-fit: cover;
     border-radius: 4px;
-    margin-left: 1rem;
+    margin-left: 1em;
 }
 
 .job-stats,
 .kit-details {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
+    gap: 0.5em;
+    margin-bottom: 1em;
 }
 
 .stat,
 .detail {
     display: flex;
     justify-content: space-between;
-    font-size: 0.875rem;
+    font-size: 0.875em;
 }
 
 .stat-label,
@@ -653,18 +653,18 @@ watch(showApplyDialog, (isOpen) => {
 
 .btn-create-kit {
     width: 100%;
-    padding: 0.75rem;
+    padding: 0.75em;
     background: #2563eb;
     color: white;
     border: none;
     border-radius: 6px;
-    font-size: 0.875rem;
+    font-size: 0.875em;
     font-weight: 500;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
+    gap: 0.5em;
     transition: background 0.2s;
 }
 
@@ -680,17 +680,17 @@ watch(showApplyDialog, (isOpen) => {
 
 .kit-actions {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.5em;
 }
 
 .btn-apply {
     flex: 1;
-    padding: 0.75rem;
+    padding: 0.75em;
     background: #16a34a;
     color: white;
     border: none;
     border-radius: 6px;
-    font-size: 0.875rem;
+    font-size: 0.875em;
     font-weight: 500;
     cursor: pointer;
     transition: background 0.2s;
@@ -707,7 +707,7 @@ watch(showApplyDialog, (isOpen) => {
 }
 
 .btn-delete {
-    padding: 0.75rem;
+    padding: 0.75em;
     background: #dc2626;
     color: white;
     border: none;
@@ -725,18 +725,18 @@ watch(showApplyDialog, (isOpen) => {
 
 .empty-state {
     text-align: center;
-    padding: 4rem 2rem;
+    padding: 4em 2em;
     color: #666;
 }
 
 .empty-state svg {
-    margin: 0 auto 1rem;
+    margin: 0 auto 1em;
     opacity: 0.5;
 }
 
 .empty-state h3 {
-    font-size: 1.5rem;
-    margin: 0 0 0.5rem 0;
+    font-size: 1.5em;
+    margin: 0 0 0.5em 0;
     color: #999;
 }
 
@@ -772,13 +772,13 @@ watch(showApplyDialog, (isOpen) => {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem;
+    padding: 1em;
     border-bottom: 1px solid #333;
 }
 
 .dialog-header h3 {
     margin: 0;
-    font-size: 1.25rem;
+    font-size: 1.25em;
     color: #fff;
 }
 
@@ -787,7 +787,7 @@ watch(showApplyDialog, (isOpen) => {
     border: none;
     color: #999;
     cursor: pointer;
-    padding: 0.25rem;
+    padding: 0.25em;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -799,33 +799,33 @@ watch(showApplyDialog, (isOpen) => {
 }
 
 .dialog-body {
-    padding: 1rem;
+    padding: 1em;
 }
 
 .dialog-description {
-    margin: 0 0 1rem 0;
+    margin: 0 0 1em 0;
     color: #ccc;
 }
 
 .form-group {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.5em;
 }
 
 .form-group label {
-    font-size: 0.875rem;
+    font-size: 0.875em;
     font-weight: 500;
     color: #ccc;
 }
 
 .input-text {
-    padding: 0.75rem;
+    padding: 0.75em;
     background: #0a0a0a;
     border: 1px solid #333;
     border-radius: 6px;
     color: #fff;
-    font-size: 1rem;
+    font-size: 1em;
     transition: border-color 0.2s;
 }
 
@@ -837,17 +837,17 @@ watch(showApplyDialog, (isOpen) => {
 .dialog-footer {
     display: flex;
     justify-content: flex-end;
-    gap: 0.75rem;
-    padding: 1rem;
+    gap: 0.75em;
+    padding: 1em;
     border-top: 1px solid #333;
 }
 
 .btn-secondary,
 .btn-primary {
-    padding: 0.75rem 1.5rem;
+    padding: 0.75em 1.5em;
     border: none;
     border-radius: 6px;
-    font-size: 0.875rem;
+    font-size: 0.875em;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
@@ -878,10 +878,10 @@ watch(showApplyDialog, (isOpen) => {
 }
 
 .btn-danger {
-    padding: 0.75rem 1.5rem;
+    padding: 0.75em 1.5em;
     border: none;
     border-radius: 6px;
-    font-size: 0.875rem;
+    font-size: 0.875em;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
@@ -895,13 +895,13 @@ watch(showApplyDialog, (isOpen) => {
 
 .dialog-warning {
     color: #ef4444;
-    font-size: 0.875rem;
-    margin-top: 0.5rem;
+    font-size: 0.875em;
+    margin-top: 0.5em;
 }
 
 .cost-breakdown {
-    margin-top: 1rem;
-    padding: 1rem;
+    margin-top: 1em;
+    padding: 1em;
     background: rgba(0, 0, 0, 0.3);
     border-radius: 6px;
     border: 1px solid #333;
@@ -916,8 +916,8 @@ watch(showApplyDialog, (isOpen) => {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.5rem 0;
-    font-size: 0.9rem;
+    padding: 0.5em 0;
+    font-size: 0.9em;
 }
 
 .cost-row:not(:last-child) {
@@ -938,8 +938,8 @@ watch(showApplyDialog, (isOpen) => {
 }
 
 .cost-row.total {
-    margin-top: 0.5rem;
-    padding-top: 0.75rem;
+    margin-top: 0.5em;
+    padding-top: 0.75em;
     border-top: 2px solid #444;
 }
 
@@ -951,6 +951,6 @@ watch(showApplyDialog, (isOpen) => {
 .cost-row.total .total-value {
     color: #fbbf24;
     font-weight: 700;
-    font-size: 1.1rem;
+    font-size: 1.1em;
 }
 </style>

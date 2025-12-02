@@ -16,9 +16,9 @@ defineProps({
 
 <style scoped lang="scss">
 .business-badge {
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.25rem;
-  font-size: 0.75rem;
+  padding: 0.25em 0.5em;
+  border-radius: 0.25em;
+  font-size: 0.75em;
   font-weight: 500;
   display: inline-block;
   
@@ -53,4 +53,3 @@ defineProps({
   }
 }
 </style>
-

@@ -26,9 +26,9 @@ defineEmits(['click'])
 
 <style scoped lang="scss">
 .business-btn {
-  padding: 0.5rem 1rem;
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
+  padding: 0.5em 1em;
+  border-radius: 0.375em;
+  font-size: 0.875em;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
@@ -36,7 +36,7 @@ defineEmits(['click'])
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.5em;
   
   &:disabled,
   &.business-btn-disabled {
@@ -81,4 +81,3 @@ defineEmits(['click'])
   }
 }
 </style>
-

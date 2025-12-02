@@ -642,8 +642,8 @@ const hideTooltip = () => {
 .finances-tab {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
-  padding-bottom: 2rem;
+  gap: 2em;
+  padding-bottom: 2em;
   color: rgba(255, 255, 255, 0.9);
 }
 
@@ -651,8 +651,8 @@ const hideTooltip = () => {
   margin-bottom: 0.75em;
   
   h2 {
-    margin: 0 0 0.5rem 0;
-    font-size: 1.5rem;
+    margin: 0 0 0.5em 0;
+    font-size: 1.5em;
     font-weight: 600;
     color: #fff;
   }
@@ -660,36 +660,36 @@ const hideTooltip = () => {
   p {
     margin: 0;
     color: rgba(255, 255, 255, 0.6);
-    font-size: 0.9rem;
+    font-size: 0.9em;
   }
 }
 
 .finances-content {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 2em;
   
   > .operating-costs-section:first-child {
-    margin-top: -2rem;
+    margin-top: -2em;
   }
 }
 
 .finances-section {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0.5rem;
-  padding: 1.5rem;
+  border-radius: 0.5em;
+  padding: 1.5em;
   
   h3 {
-    margin: 0 0 1rem 0;
-    font-size: 1.1rem;
+    margin: 0 0 1em 0;
+    font-size: 1.1em;
     font-weight: 600;
     color: #F54900;
   }
 }
 
 .operating-costs-section {
-  padding: 1rem 1.25rem;
+  padding: 1em 1.25em;
   
   .operating-costs-header {
     display: flex;
@@ -698,13 +698,13 @@ const hideTooltip = () => {
     margin-bottom: 0;
     
     h3 {
-      margin: 0 0 0.25rem 0;
-      font-size: 1rem;
+      margin: 0 0 0.25em 0;
+      font-size: 1em;
     }
     
     .next-payment-text {
       margin: 0;
-      font-size: 0.8rem;
+      font-size: 0.8em;
       color: rgba(255, 255, 255, 0.6);
     }
   }
@@ -712,15 +712,15 @@ const hideTooltip = () => {
   .operating-cost-display {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.5em;
     
     .cost-label-small {
       color: rgba(255, 255, 255, 0.7);
-      font-size: 0.85rem;
+      font-size: 0.85em;
     }
     
     .cost-value-large {
-      font-size: 1.25rem;
+      font-size: 1.25em;
       font-weight: 600;
       color: #F54900;
       
@@ -764,9 +764,9 @@ const hideTooltip = () => {
   .operating-costs-breakdown {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    margin-top: 0.75rem;
-    padding-top: 0.75rem;
+    gap: 0.5em;
+    margin-top: 0.75em;
+    padding-top: 0.75em;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
   }
 }
@@ -774,14 +774,14 @@ const hideTooltip = () => {
 .operating-costs-panel {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.75em;
 }
 
 .cost-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.35rem 0;
+  padding: 0.35em 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   
   &:last-child {
@@ -790,8 +790,8 @@ const hideTooltip = () => {
   
   &.cost-total {
     border-top: 2px solid rgba(245, 73, 0, 0.3);
-    padding-top: 0.75rem;
-    margin-top: 0.25rem;
+    padding-top: 0.75em;
+    margin-top: 0.25em;
     font-weight: 600;
   }
   
@@ -813,12 +813,12 @@ const hideTooltip = () => {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 1.5rem;
-  padding: 1rem 1.5rem 0 1.5rem;
+  gap: 1.5em;
+  padding: 1em 1.5em 0 1.5em;
   
   h3 {
     margin: 0;
-    font-size: 1.5rem;
+    font-size: 1.5em;
     font-weight: 600;
   }
 }
@@ -826,11 +826,11 @@ const hideTooltip = () => {
 .account-balance {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.25em;
   align-items: flex-start;
-  padding: 1rem;
+  padding: 1em;
   background: rgba(0, 0, 0, 0.2);
-  border-radius: 0.5rem;
+  border-radius: 0.5em;
   
   &.merged {
     background: transparent;
@@ -840,11 +840,11 @@ const hideTooltip = () => {
   
   .balance-label {
     color: rgba(255, 255, 255, 0.7);
-    font-size: 0.95rem;
+    font-size: 0.95em;
   }
   
   .balance-value {
-    font-size: 1.75rem;
+    font-size: 1.75em;
     font-weight: 600;
     color: #2ecc71;
     
@@ -854,10 +854,10 @@ const hideTooltip = () => {
   }
 
   .balance-change {
-    font-size: 0.85rem;
+    font-size: 0.85em;
     font-weight: 500;
     color: #2ecc71;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.5em;
     
     &.negative {
       color: #e74c3c;
@@ -871,17 +871,17 @@ const hideTooltip = () => {
 
 .time-scale-buttons {
   position: absolute;
-  bottom: 0.75rem;
-  left: 1rem;
+  bottom: 0.75em;
+  left: 1em;
   display: flex;
   z-index: 10;
 
   button {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.15);
-    padding: 0.5rem 1.2rem;
+    padding: 0.5em 1.2em;
     color: rgba(255, 255, 255, 0.75);
-    font-size: 0.875rem;
+    font-size: 0.875em;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -889,8 +889,8 @@ const hideTooltip = () => {
     margin: 0;
 
     &.button-first {
-      border-top-left-radius: 0.375rem;
-      border-bottom-left-radius: 0.375rem;
+      border-top-left-radius: 0.375em;
+      border-bottom-left-radius: 0.375em;
       border-right: none;
     }
 
@@ -905,8 +905,8 @@ const hideTooltip = () => {
     }
 
     &.button-last {
-      border-top-right-radius: 0.375rem;
-      border-bottom-right-radius: 0.375rem;
+      border-top-right-radius: 0.375em;
+      border-bottom-right-radius: 0.375em;
       border-left: none;
     }
 
@@ -944,7 +944,7 @@ const hideTooltip = () => {
   height: 100%;
   min-height: 340px;
   background: rgba(0, 0, 0, 0.25);
-  border-radius: 0 0 0.5rem 0.5rem;
+  border-radius: 0 0 0.5em 0.5em;
   padding: 0;
   overflow: hidden;
   display: flex;
@@ -982,8 +982,8 @@ const hideTooltip = () => {
   position: absolute;
   background: rgba(15, 15, 15, 0.95);
   border: 1px solid rgba(245, 73, 0, 0.5);
-  border-radius: 0.25rem;
-  padding: 0.35rem 0.75rem;
+  border-radius: 0.25em;
+  padding: 0.35em 0.75em;
   pointer-events: none;
   z-index: 1000;
   transform: translateX(-50%) translateY(-100%);
@@ -992,13 +992,13 @@ const hideTooltip = () => {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
   
   .tooltip-balance {
-    font-size: 1rem;
+    font-size: 1em;
     font-weight: 600;
     color: #F54900;
   }
   
   .tooltip-date {
-    font-size: 0.7rem;
+    font-size: 0.7em;
     color: rgba(255, 255, 255, 0.7);
   }
 }
@@ -1006,22 +1006,22 @@ const hideTooltip = () => {
 .loans-list {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1em;
 }
 
 .loan-card {
   background: rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0.5rem;
-  padding: 1rem;
+  border-radius: 0.5em;
+  padding: 1em;
 }
 
 .loan-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.75rem;
-  padding-bottom: 0.75rem;
+  margin-bottom: 0.75em;
+  padding-bottom: 0.75em;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   
   .loan-org {
@@ -1038,7 +1038,7 @@ const hideTooltip = () => {
 .loan-details {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.5em;
 }
 
 .loan-row {
@@ -1057,8 +1057,7 @@ const hideTooltip = () => {
 
 .loading-state {
   text-align: center;
-  padding: 3rem;
+  padding: 3em;
   color: rgba(255, 255, 255, 0.6);
 }
 </style>
-

@@ -81,11 +81,11 @@ const formatPayment = (amount) => {
 .job-assign-card {
   background: rgba(23, 23, 23, 0.55);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0.75rem;
-  padding: 1rem;
+  border-radius: 0.75em;
+  padding: 1em;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.75em;
   transition: border-color 0.2s, transform 0.2s;
   
   &:hover {
@@ -97,7 +97,7 @@ const formatPayment = (amount) => {
 .job-assign-card__image {
   position: relative;
   width: 100%;
-  border-radius: 0.5rem;
+  border-radius: 0.5em;
   overflow: hidden;
   background: rgba(0, 0, 0, 0.35);
   
@@ -109,11 +109,11 @@ const formatPayment = (amount) => {
   
   .status-badge {
     position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
-    padding: 0.25rem 0.65rem;
+    top: 0.5em;
+    right: 0.5em;
+    padding: 0.25em 0.65em;
     border-radius: 999px;
-    font-size: 0.75rem;
+    font-size: 0.75em;
     font-weight: 500;
     background: rgba(59, 130, 246, 0.75);
     color: white;
@@ -124,7 +124,7 @@ const formatPayment = (amount) => {
 .job-assign-card__body {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.5em;
 }
 
 .job-assign-card__title-row {
@@ -137,14 +137,14 @@ const formatPayment = (amount) => {
   h3 {
     margin: 0;
     color: #fff;
-    font-size: 1rem;
+    font-size: 1em;
     font-weight: 600;
   }
 
   .vehicle-type {
-    margin-top: 0.15rem;
+    margin-top: 0.15em;
     display: inline-block;
-    font-size: 0.75rem;
+    font-size: 0.75em;
     color: rgba(255, 255, 255, 0.6);
   }
 }
@@ -152,7 +152,7 @@ const formatPayment = (amount) => {
 .job-assign-card__summary {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.35em;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.9);
 
@@ -170,22 +170,22 @@ const formatPayment = (amount) => {
 }
 
 .job-assign-card__goal-line {
-  font-size: 0.9rem;
+  font-size: 0.9em;
   color: rgba(255, 255, 255, 0.75);
 }
 
 .job-assign-card__button {
   width: 100%;
-  padding: 0.65rem 1rem;
+  padding: 0.65em 1em;
   background: rgba(245, 73, 0, 1);
   color: white;
   border: none;
-  border-radius: 0.4rem;
-  font-size: 0.9rem;
+  border-radius: 0.4em;
+  font-size: 0.9em;
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s, transform 0.2s;
-  margin-top: 0.25rem;
+  margin-top: 0.25em;
   
   &:hover {
     background: rgba(245, 73, 0, 0.9);
@@ -198,4 +198,3 @@ const formatPayment = (amount) => {
   }
 }
 </style>
-

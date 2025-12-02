@@ -140,7 +140,7 @@ defineEmits(['go-to-techs'])
 .home-widget {
   background: rgba(30, 30, 30, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 1rem;
+  border-radius: 1em;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -148,7 +148,7 @@ defineEmits(['go-to-techs'])
 }
 
 .widget-header {
-  padding: 1rem 1.25rem;
+  padding: 1em 1.25em;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;
   justify-content: space-between;
@@ -157,22 +157,22 @@ defineEmits(['go-to-techs'])
 
   h3 {
     margin: 0;
-    font-size: 1.1rem;
+    font-size: 1.1em;
     font-weight: 600;
     color: #fff;
   }
 }
 
 .tech-count-badge {
-    font-size: 0.75rem;
+    font-size: 0.75em;
     color: rgba(255, 255, 255, 0.5);
     background: rgba(255, 255, 255, 0.1);
-    padding: 0.2rem 0.5rem;
-    border-radius: 0.25rem;
+    padding: 0.2em 0.5em;
+    border-radius: 0.25em;
 }
 
 .widget-content {
-  padding: 1rem;
+  padding: 1em;
   flex: 1;
   overflow-y: auto;
   display: flex;
@@ -186,13 +186,13 @@ defineEmits(['go-to-techs'])
   align-items: center;
   justify-content: center;
   text-align: center;
-  gap: 1rem;
+  gap: 1em;
   color: rgba(255, 255, 255, 0.5);
 }
 
 .icon-circle {
-    width: 3rem;
-    height: 3rem;
+    width: 3em;
+    height: 3em;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.05);
     display: flex;
@@ -207,7 +207,7 @@ defineEmits(['go-to-techs'])
     color: #f97316;
     cursor: pointer;
     text-decoration: underline;
-    font-size: 0.9rem;
+    font-size: 0.9em;
     
     &:hover {
         color: #fff;
@@ -217,7 +217,7 @@ defineEmits(['go-to-techs'])
 .techs-list {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.5em;
     flex: 1;
 }
 
@@ -225,9 +225,9 @@ defineEmits(['go-to-techs'])
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.75rem;
+    padding: 0.75em;
     background: rgba(255, 255, 255, 0.03);
-    border-radius: 0.5rem;
+    border-radius: 0.5em;
     border: 1px solid rgba(255, 255, 255, 0.05);
     
     &.working {
@@ -238,7 +238,7 @@ defineEmits(['go-to-techs'])
 .tech-info {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.75em;
     flex-shrink: 0; /* Don't let name shrink */
 }
 
@@ -257,21 +257,21 @@ defineEmits(['go-to-techs'])
 .tech-name {
     font-weight: 500;
     color: rgba(255, 255, 255, 0.9);
-    font-size: 0.9rem;
+    font-size: 0.9em;
 }
 
 .tech-status {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 0.25rem;
+    gap: 0.25em;
     flex: 1; /* Take remaining space */
     min-width: 0; /* Allow shrinking */
-    padding-left: 1rem; /* Space from name */
+    padding-left: 1em; /* Space from name */
 }
 
 .status-text {
-    font-size: 0.65rem; /* Smaller text as requested */
+    font-size: 0.65em; /* Smaller text as requested */
     text-transform: uppercase;
     letter-spacing: 0.02em;
     text-align: right;
@@ -299,15 +299,15 @@ defineEmits(['go-to-techs'])
 }
 
 .manager-status {
-    margin-top: 1rem;
-    padding-top: 0.75rem;
+    margin-top: 1em;
+    padding-top: 0.75em;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .manager-info {
     display: flex;
     justify-content: space-between;
-    font-size: 0.8rem;
+    font-size: 0.8em;
     
     .label { color: rgba(255, 255, 255, 0.5); }
     .value { 

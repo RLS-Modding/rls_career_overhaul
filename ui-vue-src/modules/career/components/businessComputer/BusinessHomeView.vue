@@ -156,8 +156,8 @@ const handleComplete = async (job) => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  padding-bottom: 1rem; 
-  gap: 1.5rem;
+  padding-bottom: 1em; 
+  gap: 1.5em;
 }
 
 .top-row {
@@ -167,7 +167,7 @@ const handleComplete = async (job) => {
 .dashboard-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1.5rem;
+  gap: 1.5em;
   min-height: 0; /* Allow children to scroll */
   flex: 1;
   overflow-y: auto; /* Allow grid to scroll if needed on small screens */
@@ -181,7 +181,7 @@ const handleComplete = async (job) => {
 .dashboard-column {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.5em;
   min-height: 0;
   
   &.main-column {
@@ -199,7 +199,7 @@ const handleComplete = async (job) => {
 .side-stack {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.5em;
   height: 100%; /* Fill full height of side column */
   min-height: 0;
   

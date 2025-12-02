@@ -82,10 +82,10 @@ const handleClick = () => {
 .skill-node {
   position: absolute;
   width: 200px;
-  padding: 1rem;
+  padding: 1em;
   background: rgba(26, 26, 26, 0.9);
   border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 0.5rem;
+  border-radius: 0.5em;
   cursor: pointer;
   transition: all 0.2s;
   z-index: 10;
@@ -150,7 +150,7 @@ const handleClick = () => {
 
 .coming-soon-text {
   color: rgba(255, 255, 255, 0.5);
-  font-size: 1rem;
+  font-size: 1em;
   font-weight: 600;
   text-align: center;
   text-transform: uppercase;
@@ -161,35 +161,35 @@ const handleClick = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.5em;
 }
 
 .node-title {
   margin: 0;
   color: #F54900;
-  font-size: 1rem;
+  font-size: 1em;
   font-weight: 600;
 }
 
 .node-level {
   color: rgba(255, 255, 255, 0.6);
-  font-size: 0.875rem;
+  font-size: 0.875em;
 }
 
 .node-description {
-  margin: 0.5rem 0;
+  margin: 0.5em 0;
   color: rgba(255, 255, 255, 0.7);
-  font-size: 0.875rem;
+  font-size: 0.875em;
   line-height: 1.4;
 }
 
 .node-costs {
-  margin-top: 0.75rem;
-  padding-top: 0.75rem;
+  margin-top: 0.75em;
+  padding-top: 0.75em;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.25em;
 }
 
 .node-cost {
@@ -199,13 +199,13 @@ const handleClick = () => {
 
   .cost-label {
     color: rgba(255, 255, 255, 0.6);
-    font-size: 0.875rem;
+    font-size: 0.875em;
   }
 
   .cost-value {
     color: #4CAF50;
     font-weight: 600;
-    font-size: 0.875rem;
+    font-size: 0.875em;
     
     &.xp {
       color: #2196F3;
@@ -216,17 +216,16 @@ const handleClick = () => {
 .node-lock {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-top: 0.75rem;
-  padding: 0.5rem;
+  gap: 0.5em;
+  margin-top: 0.75em;
+  padding: 0.5em;
   background: rgba(255, 0, 0, 0.1);
-  border-radius: 0.25rem;
+  border-radius: 0.25em;
   color: rgba(255, 255, 255, 0.5);
-  font-size: 0.875rem;
+  font-size: 0.875em;
 
   svg {
     flex-shrink: 0;
   }
 }
 </style>
-
