@@ -705,6 +705,35 @@ local function sendCurrentSaveSlotName()
   guihooks.trigger("currentSaveSlotName", {saveSlot = career_saveSystem.getCurrentSaveSlot()})
 end
 
+local function launchMostRecentCareer()
+  local allSaveSlots = career_saveSystem.getAllSaveSlots()
+  if tableSize(allSaveSlots) == 0 then
+    log("W", "", "No career save slots found")
+    return false
+  end
+
+  local mostRecentSlot = nil
+  local mostRecentDate = "0"
+
+  for _, slotName in ipairs(allSaveSlots) do
+    local _, saveDate = career_saveSystem.getAutosave(slotName, false)
+    if saveDate and saveDate ~= "0" and saveDate ~= "A" then
+      if saveDate > mostRecentDate then
+        mostRecentDate = saveDate
+        mostRecentSlot = slotName
+      end
+    end
+  end
+
+  if not mostRecentSlot then
+    log("W", "", "No valid career saves found")
+    return false
+  end
+
+  log("I", "", "Launching most recent career: " .. mostRecentSlot)
+  return createOrLoadCareerAndStart(mostRecentSlot)
+end
+
 local function onAnyMissionChanged(state, mission)
   if not careerActive then return end
   if mission then
@@ -828,5 +857,6 @@ M.onGlobalCameraSet = onGlobalCameraSet
 M.onCheatsModeChanged = onCheatsModeChanged
 
 M.sendCurrentSaveSlotName = sendCurrentSaveSlotName
+M.launchMostRecentCareer = launchMostRecentCareer
 
 return M

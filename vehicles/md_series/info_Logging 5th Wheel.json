@@ -1,0 +1,76 @@
+{
+  "0-100 km/h":37,
+  "0-60 mph":33.5,
+  "Body Style":"Fifth Wheel Truck ",
+  "BoundingBox":[
+    [
+      -0.8854,
+      -1.316,
+      -0.9454
+    ],
+    [
+      1.7534,
+      4.749,
+      1.4896
+    ]
+  ],
+  "Config Type":"Loaner",
+  "Configuration":"Logging 5th Wheel",
+  "Drivetrain":"4WD",
+  "Fuel Type":"Diesel",
+  "Induction Type":"Turbo",
+  "Name":"MD-Series Logging 5th Wheel",
+  "Off-Road Score":50,
+  "Population":1000,
+  "Power":196,
+  "PowerPeakRPM":2400,
+  "Propulsion":"ICE",
+  "Source":"Custom",
+  "Top Speed":27.946035510241,
+  "Torque":625,
+  "TorquePeakRPM":"1150 - 1900",
+  "Transmission":"Manual",
+  "Value":120000,
+  "Weight":6630,
+  "Weight/Power":33.826530612245,
+  "aggregates":{
+    "Brand":{
+      "Gavril":true
+    },
+    "Country":{
+      "United States":true
+    },
+    "Derby Class":{
+      "Medium Truck":true
+    },
+    "Source":{
+      "BeamNG - Official":true,
+      "Custom":true
+    },
+    "Type":{
+      "Truck":true
+    }
+  },
+  "defaultPaint":{
+    "baseColor":[
+      0.83,
+      0.83,
+      0.83,
+      1.2
+    ],
+    "class":"factory",
+    "clearcoat":0,
+    "clearcoatRoughness":0,
+    "id":"white",
+    "metallic":0,
+    "name":"White",
+    "roughness":0.07
+  },
+  "defaultPaintName1":"White",
+  "defaultPaintName2":"White",
+  "defaultPaintName3":"White",
+  "is_default_config":false,
+  "paints":{},
+  "pcFilename":"/vehicles/md_series/Logging 5th Wheel.pc",
+  "preview":"/vehicles/md_series/Logging 5th Wheel.jpg"
+}

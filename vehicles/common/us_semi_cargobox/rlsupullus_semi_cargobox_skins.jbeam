@@ -1,0 +1,11 @@
+{
+"us_semi_cargobox_skin_rlsupull26ft": {
+    "information":{
+        "authors":"RamRod",
+        "name":"U-Pull",
+        "value":1337
+    },
+    "slotType" : "skin_us_semi_cargobox",
+    "skinName" : "rlsupull26ft"
+}
+}

@@ -1,0 +1,11 @@
+{
+"us_semi_skin_rlsupulllongnose": {
+    "information":{
+        "authors":"RamRod",
+        "name":"U-Pull",
+        "value":1337,
+    },
+    "slotType" : "paint_design",
+    "globalSkin" : "rlsupulllongnose",
+},
+}

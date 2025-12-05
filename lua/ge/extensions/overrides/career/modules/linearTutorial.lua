@@ -17,6 +17,47 @@ local tutorialsFolder ='/gameplay/tutorials/'
 local saveFile = "/career/tutorialData.json"
 local saveData
 
+local function makeDefaultSaveData()
+  local data = {
+    linearStep = career_career.tutorialEnabled and 1 or -1,
+    buyVehicleFlowgraphStarted = false,
+    flags = {
+      towToRoadEnabled = false,
+      towToGarageEnabled = false,
+      customTowHookEnabled = false,
+      completedTutorialMission = false,
+      arrivedAtFuelstation = false,
+      arrivedAtGarage = false,
+      purchasedFirstCar = false,
+      partShoppingComplete = false,
+      tuningComplete = false,
+      modifiedFirstCar = false,
+      spawnPointDiscoveryEnabled = false,
+      earnedFirstStar = false,
+    }
+  }
+
+  if not career_career.tutorialEnabled then
+    local tutorialPopups = {"welcome", "driving", "crashRecover", "bigmap", "refueling", "missions", "postMission", "dealership", "computer", "partShopping", "finishing", "logbook", "milestones", "progress"}
+    for _, key in ipairs(tutorialPopups) do
+      data.flags[key] = true
+    end
+  end
+
+  if data.linearStep == -1 then
+    for key, _ in pairs(data.flags) do
+      data.flags[key] = true
+    end
+  end
+
+  return data
+end
+
+local function ensureSaveData()
+  if saveData then return end
+  saveData = makeDefaultSaveData()
+end
+
 
 
 

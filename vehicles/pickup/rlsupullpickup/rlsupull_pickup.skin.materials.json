@@ -1,0 +1,50 @@
+{
+  "pickup.skin.rlspickupupull": {
+    "name": "pickup.skin.rlspickupupull",
+    "mapTo": "pickup.skin.rlspickupupull",
+    "class": "Material",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/vehicles/common/pickup/pickup_main_ao.data.png",
+        "baseColorMap": "/vehicles/common/pickup/pickup_main_b.color.png",
+        "clearCoatFactor": null,
+        "clearCoatRoughnessFactor": null,
+        "diffuseMapUseUV": null,
+        "metallicFactor": 1,
+        "metallicMap": "/vehicles/common/pickup/pickup_main_m.data.png",
+        "normalMap": "vehicles/common/pickup/pickup_main_n.normal.png",
+        "roughnessMap": "/vehicles/common/pickup/pickup_main_r.data.png"
+      },
+      {
+        "ambientOcclusionMap": "/vehicles/common/pickup/pickup_main_ao.data.png",
+        "baseColorMap": "vehicles/pickup/rlsupullpickup/pickup_skin_rlsupull_b.color.png",
+        "clearCoatFactor": 1,
+        "clearCoatMap": "/vehicles/common/pickup/pickup_main_cc.data.png",
+        "clearCoatRoughnessFactor": 0.0500000007,
+        "diffuseMapUseUV": 1,
+        "metallicFactor": 0.5,
+        "normalMap": "/vehicles/common/pickup/pickup_main_n.normal.png",
+        "opacityMap": "/vehicles/pickup/pickup_skin_o.data.png",
+        "roughnessMap": "vehicles/pickup/rlsupullpickup/pickup_skin_rlsupull_r.color.png",
+        "roughnessMapUseUV": 1
+      },
+      {
+        "clearCoatFactor": null,
+        "clearCoatRoughnessFactor": null,
+        "diffuseMapUseUV": null,
+        "metallicFactor": null
+      },
+      {
+        "clearCoatFactor": null,
+        "clearCoatRoughnessFactor": null,
+        "diffuseMapUseUV": null,
+        "metallicFactor": null
+      }
+    ],
+    "activeLayers": 2,
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "version": 1.5
+  }
+}

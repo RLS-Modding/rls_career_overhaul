@@ -27,6 +27,7 @@ import Loans from "./views/LoanMenu.vue"
 import RoleAssignment from "./views/RoleAssignment.vue"
 import CarMeets from "./views/CarMeetsMenu.vue"
 import PurchaseGarage from "./views/PurchaseGarage.vue"
+import PurchaseBusiness from "./views/PurchaseBusiness.vue"
 import PhoneMain from "./views/PhoneMain.vue"
 import PhoneMinimap from "./views/PhoneMinimap.vue"
 import PhoneMarketplace from "./views/PhoneMarketplace.vue"
@@ -36,8 +37,13 @@ import PhoneRepo from "./views/PhoneRepo.vue"
 import PhoneLoans from "./views/PhoneLoans.vue"
 import PhoneLoanDetails from "./views/PhoneLoanDetails.vue"
 import PhoneOfferDetails from "./views/PhoneOfferDetails.vue"
+import PhoneBank from "./views/PhoneBank.vue"
+import PhoneBankAccount from "./views/PhoneBankAccount.vue"
+import PhoneBankRename from "./views/PhoneBankRename.vue"
+import PhoneTuningShop from "./views/PhoneTuningShop.vue"
 import LevelSwitch from "./views/LevelSwitch.vue"
 import ChallengeComplete from "./views/ChallengeComplete.vue"
+import BusinessComputerMain from "./views/BusinessComputerMain.vue"
 
 export default [
   // Career Pause
@@ -339,6 +345,12 @@ export default [
       },
 
       {
+        path: "purchase-business",
+        name: "purchase-business",
+        component: PurchaseBusiness
+      },
+
+      {
         path: "phone-minimap",
         name: "phone-minimap",
         component: PhoneMinimap
@@ -393,6 +405,32 @@ export default [
       },
 
       {
+        path: "phone-bank",
+        name: "phone-bank",
+        component: PhoneBank
+      },
+
+      {
+        path: "phone-bank/:accountId",
+        name: "phone-bank-account",
+        component: PhoneBankAccount,
+        props: true
+      },
+
+      {
+        path: "phone-bank/:accountId/rename",
+        name: "phone-bank-rename",
+        component: PhoneBankRename,
+        props: true
+      },
+
+      {
+        path: "phone-tuning-shop",
+        name: "phone-tuning-shop",
+        component: PhoneTuningShop
+      },
+
+      {
         path: "level-switch",
         name: "level-switch",
         component: LevelSwitch
@@ -401,6 +439,18 @@ export default [
         path: "challenge-completed",
         name: "challenge-completed",
         component: ChallengeComplete
+      },
+
+      {
+        path: "business-computer/:businessType/:businessId",
+        name: "business-computer",
+        component: BusinessComputerMain,
+        props: true,
+        meta: {
+          uiApps: {
+            shown: false,
+          },
+        },
       }
 
     ],

@@ -1,0 +1,63 @@
+{
+  "tuningShops": [
+    {
+      "id": "fastAutoTuningShop",
+      "type": "tuningShop",
+      "name": "Tuning Shop",
+      "price": 500000,
+      "downPayment": 25000,
+      "description": "Professional vehicle tuning services. Accept tuning jobs and improve vehicle performance.",
+      
+      "icon": "poi_laptop_round",
+      "playModeIconName": "poi_laptop_round",
+      "iconOffsetHeight": 0.15,
+      "iconLift": 0.2,
+      "races" : [
+        "drag",
+        "track",
+        "track_alt"
+      ],
+      
+      "doors": [
+        [
+          "fastAutoTuningShop_area",
+          "fastAutoTuningShop_icon"
+        ],
+        [
+          "fastAutoTuningShop_area1",
+          "fastAutoTuningShop_icon1"
+        ]
+      ],
+      
+      "sitesFile": "tuningShops.sites.json",
+      
+      "businessGarageId": "fastAutoTuningShopGarage",
+      
+      "preview": "tuning_shop.jpg",
+      
+      "activityAcceptProps": [
+        {
+          "icon": "checkmark",
+          "keyLabel": "Tuning Services",
+          "valueLabel": "Available"
+        },
+        {
+          "icon": "checkmark",
+          "keyLabel": "Vehicle Storage",
+          "valueLabel": "Available"
+        }
+      ]
+    }
+  ],
+  "businessGarages": [
+    {
+      "id": "fastAutoTuningShopGarage",
+      "name": "Fast Auto Tuning Shop Garage",
+      "description": "Business garage for storing vehicles",
+      "sitesFile": "tuningShops.sites.json",
+      "parkingSpotNames": ["fastAutoTuningShopParking1", "fastAutoTuningShopParking2", "fastAutoTuningShopParking3", "fastAutoTuningShopParking4"],
+      "zoneNames": ["fastAutoTuningShopGarage1"],
+      "capacity": 5
+    }
+  ]
+}

@@ -2604,6 +2604,38 @@
       }
     ]
   },
+  "moneyGrabBusiness": {
+    "name": "MoneyGrab Business Banking",
+    "description": "Business loans",
+    "icon": "beamCurrency",
+    "reputationLevels": [
+      {
+        "loanerCut": {
+          "value": 0.75,
+          "icon": "boxPickUp03"
+        },
+        "requiredValue": -75,
+        "min": -200
+      },
+      {
+        "loanerCut": {
+          "value": 0.5,
+          "icon": "boxPickUp03"
+        },
+        "requiredValue": -25
+      },
+      {
+        "requiredValue": 100
+      },
+      {
+        "requiredValue": 250
+      },
+      {
+        "requiredValue": 750,
+        "max": 1000
+      }
+    ]
+  },
   "salmonBank": {
     "name": "Salmon's Private Bank",
     "description": "Sell your vehicles to the notorious Salmon the Negotiator to earn reputation. He's rolling in cash so you can get some crazy loans.",

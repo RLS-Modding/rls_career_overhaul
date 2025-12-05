@@ -1,0 +1,153 @@
+/**** utils, misc ****/
+.loadingBackground {
+  width:100%;
+  height:100%;
+  position:absolute;
+  top: 0;
+  left: 0;
+  z-index: var(--zorder_loading_background);
+  pointer-events: none;
+  /* box-shadow: inset 0 0 15em 1em black; */
+  background-color: white !important;
+  background-size: cover !important;
+  background-position: center center !important;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/**** left box ****/
+#progressBox {
+  position:absolute;
+  top: 35%;
+  width:32em;
+  height:20em;
+  max-height:20em;
+  padding: 2em 5em 3em 5em;
+}
+
+.iconGroup{
+  margin-left: -0.75em;
+  justify-content: start;
+}
+
+/**** ICON ****/
+.icon {
+  border: 2px solid #ff6600;
+  border-radius:10px;
+  background: linear-gradient(0deg, #ff6600 0%, #ff6600 50%, rgba(0,0,0,0) 50%);
+  background-size: 200% 200%;
+  margin: 0.75em;
+  padding: 0.25em;
+}
+@keyframes WiggleAnimation {
+  0%{margin-bottom:0}
+  50%{margin-bottom:5px}
+  100%{margin-bottom:0}
+}
+
+.icon-img {
+  width: 3em;
+  height: 3em;
+  /* margin:5%; */
+  background-size: cover;
+}
+
+/**** progress bar ****/
+.progressBarForeground {
+  position:absolute;
+  width:100%;
+  height:25px;
+  min-height:25px;
+  animation: ProgressBarAnimation 2s linear infinite;
+  background: linear-gradient(135deg, #ff6600 0%, #ff6600 30%,#fab905 50%, #ff6600 70%,  #ff6600 100%);
+  background-size: 200% 100%;
+  border-radius:0px;
+  left:0px;
+  clip-path: polygon(0% 0%, 100% 0%, 96% 100%, 0% 100%);
+  -webkit-clip-path: polygon(0% 0%, 100% 0%, 96% 100%, 0% 100%);
+}
+
+@keyframes ProgressBarAnimation {
+  0%{background-position:100% 0%}
+  50%{background-position:0 0}
+  100%{background-position:-100% 0%}
+}
+
+.progressBarBackground {
+  /* width:95%; */
+  height:25px;
+  margin-right: 1em;
+  min-height:25px;
+  background-color: #666;
+  /* margin-left:10px; */
+  clip-path: polygon(0% 0%, 100% 0%, 96% 100%, 0% 100%);
+  -webkit-clip-path: polygon(0% 0%, 100% 0%, 96% 100%, 0% 100%);
+  position:relative;
+}
+
+.progressBarPercentText{
+  position:absolute;
+  right:0;
+  font-family:'Overpass', var(--fnt-defs);
+  font-size:1em;
+  padding-right:20px;
+  color:white;
+  overflow: hidden;
+}
+
+/**** progress status ****/
+.progressStatus {
+  /* width:95%; */
+  min-height: 2em;
+  border-radius:0px;
+  font-family:'Overpass', var(--fnt-defs);
+  font-style: italic;
+  font-weight: 700;
+  color:white;
+  margin-top: 15px;
+  max-width: 40em;
+  word-wrap: normal;
+  font-size: 2em;
+  /* margin-left: 8px; */
+}
+
+.progressStatusHistory {
+  border-radius:0px;
+  /* font-size:16px; */
+  color:rgb(200, 200, 200);
+  text-shadow: #000 0 0 12px, #000 0 0 6px, #000 0 0 3px;
+  width:100%;
+  /* margin-left:10px; */
+  margin-top: 1em;
+  min-height: 5em;
+}
+
+/**** tips bar ****/
+.tipsBar {
+  /* background-color:rgba(0,0,0,0.3); */
+  background: linear-gradient(220deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.65) 100%);
+  position:absolute;
+  left:0;
+  right:0;
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-start;
+  padding: 2em 5em 3em 5em;
+  bottom:8%;
+}
+.tipsBarTitle {
+  font-family:'Overpass', var(--fnt-defs);
+  font-style: italic;
+  font-size: 1.75em;
+  font-weight:bold;
+  color:white;
+}
+
+.tipsBarTip {
+  font-size: 1.125em;
+  color:white;
+  margin-left: 0.5em;
+  max-width: 36em;
+}

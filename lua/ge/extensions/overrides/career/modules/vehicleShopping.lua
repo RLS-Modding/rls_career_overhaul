@@ -1250,39 +1250,27 @@ local function buySpawnedVehicle(buyVehicleOptions)
 end
 
 local function sendPurchaseDataToUi()
-  -- Use the stored vehicle info instead of looking up by potentially stale shopId
-  local vehicleShopInfo = deepcopy(purchaseData.vehicleInfo)
-  vehicleShopInfo.niceName = vehicleShopInfo.Brand .. " " .. vehicleShopInfo.Name
-  do
-    local distance = vehicleShopInfo.distance
-    if not distance or type(distance) ~= "number" then
-      if vehicleShopInfo.pos then
-        local qtPrice, dist = career_modules_quickTravel.getPriceForQuickTravel(vehicleShopInfo.pos)
-        vehicleShopInfo.quickTravelPrice = vehicleShopInfo.quickTravelPrice or qtPrice
-        distance = dist
-      else
-        distance = 0
-      end
-      vehicleShopInfo.distance = distance
-    end
-    vehicleShopInfo.deliveryDelay = getDeliveryDelay(distance)
-  end
-  -- Update vehicleInfo in purchaseData with the fresh copy
-  purchaseData.vehicleInfo = vehicleShopInfo
+  -- Use the stored vehicle info (already deep copied in openPurchaseMenu)
+  local vehicleShopInfo = purchaseData.vehicleInfo
 
+  -- Recalculate prices only if trade-in has changed (prices already calculated in openPurchaseMenu)
   local tradeInValue = purchaseData.tradeInVehicleInfo and purchaseData.tradeInVehicleInfo.Value or 0
-  local taxes = math.max((vehicleShopInfo.Value + vehicleShopInfo.fees - tradeInValue) *
-                           (vehicleShopInfo.tax or salesTax), 0)
-  if vehicleShopInfo.sellerId == "discountedDealership" or vehicleShopInfo.sellerId == "joesJunkDealership" then
-    taxes = 0
+  if tradeInValue > 0 or not purchaseData.prices then
+    -- Recalculate prices with trade-in value
+    local taxes = math.max((vehicleShopInfo.Value + vehicleShopInfo.fees - tradeInValue) *
+                             (vehicleShopInfo.tax or salesTax), 0)
+    if vehicleShopInfo.sellerId == "discountedDealership" or vehicleShopInfo.sellerId == "joesJunkDealership" then
+      taxes = 0
+    end
+    local finalPrice = vehicleShopInfo.Value + vehicleShopInfo.fees + taxes - tradeInValue
+    purchaseData.prices = {
+      fees = vehicleShopInfo.fees,
+      taxes = taxes,
+      finalPrice = finalPrice,
+      customLicensePlate = customLicensePlatePrice
+    }
   end
-  local finalPrice = vehicleShopInfo.Value + vehicleShopInfo.fees + taxes - tradeInValue
-  purchaseData.prices = {
-    fees = vehicleShopInfo.fees,
-    taxes = taxes,
-    finalPrice = finalPrice,
-    customLicensePlate = customLicensePlatePrice
-  }
+
   local spawnedVehicleInfo = career_modules_inspectVehicle.getSpawnedVehicleInfo()
   purchaseData.vehId = spawnedVehicleInfo and spawnedVehicleInfo.vehId
 
@@ -1525,11 +1513,44 @@ local function openPurchaseMenu(purchaseType, vehicleId)
   end
   vehicle.uid = uid -- Ensure UID is set
 
+  -- Deep copy vehicle info to make purchase independent of listing
+  local vehicleShopInfo = deepcopy(vehicle)
+  vehicleShopInfo.niceName = vehicleShopInfo.Brand .. " " .. vehicleShopInfo.Name
+
+  -- Calculate distance and delivery delay if position exists
+  local distance = vehicleShopInfo.distance
+  if not distance or type(distance) ~= "number" then
+    if vehicleShopInfo.pos then
+      local qtPrice, dist = career_modules_quickTravel.getPriceForQuickTravel(vehicleShopInfo.pos)
+      vehicleShopInfo.quickTravelPrice = vehicleShopInfo.quickTravelPrice or qtPrice
+      distance = dist
+    else
+      distance = 0
+    end
+    vehicleShopInfo.distance = distance
+  end
+  vehicleShopInfo.deliveryDelay = getDeliveryDelay(distance)
+
+  -- Calculate prices immediately (trade-in value will be 0 initially, updated later if trade-in selected)
+  local tradeInValue = 0
+  local taxes = math.max((vehicleShopInfo.Value + vehicleShopInfo.fees - tradeInValue) *
+                           (vehicleShopInfo.tax or salesTax), 0)
+  if vehicleShopInfo.sellerId == "discountedDealership" or vehicleShopInfo.sellerId == "joesJunkDealership" then
+    taxes = 0
+  end
+  local finalPrice = vehicleShopInfo.Value + vehicleShopInfo.fees + taxes - tradeInValue
+
   purchaseData = {
-    vehicleId = vehicleId, -- Store the vehicleId used for lookup
+    vehicleId = vehicleId,
     uid = uid,
     purchaseType = purchaseType,
-    vehicleInfo = vehicle -- Store the vehicle info directly to avoid lookup issues
+    vehicleInfo = vehicleShopInfo,
+    prices = {
+      fees = vehicleShopInfo.fees,
+      taxes = taxes,
+      finalPrice = finalPrice,
+      customLicensePlate = customLicensePlatePrice
+    }
   }
 
   purchaseMenuOpen = true
@@ -1541,6 +1562,33 @@ local function openPurchaseMenu(purchaseType, vehicleId)
 end
 
 local function buyFromPurchaseMenu(purchaseType, options)
+  -- Validate that purchaseData and prices exist
+  if not purchaseData then
+    log("E", "Career", "buyFromPurchaseMenu: purchaseData is nil")
+    return
+  end
+  if not purchaseData.vehicleInfo then
+    log("E", "Career", "buyFromPurchaseMenu: purchaseData.vehicleInfo is nil")
+    return
+  end
+  if not purchaseData.prices then
+    log("W", "Career", "buyFromPurchaseMenu: purchaseData.prices is nil, calculating prices as fallback")
+    local vehicleShopInfo = purchaseData.vehicleInfo
+    local tradeInValue = purchaseData.tradeInVehicleInfo and purchaseData.tradeInVehicleInfo.Value or 0
+    local taxes = math.max((vehicleShopInfo.Value + vehicleShopInfo.fees - tradeInValue) *
+                             (vehicleShopInfo.tax or salesTax), 0)
+    if vehicleShopInfo.sellerId == "discountedDealership" or vehicleShopInfo.sellerId == "joesJunkDealership" then
+      taxes = 0
+    end
+    local finalPrice = vehicleShopInfo.Value + vehicleShopInfo.fees + taxes - tradeInValue
+    purchaseData.prices = {
+      fees = vehicleShopInfo.fees,
+      taxes = taxes,
+      finalPrice = finalPrice,
+      customLicensePlate = customLicensePlatePrice
+    }
+  end
+
   if purchaseData.tradeInVehicleInfo then
     career_modules_inventory.removeVehicle(purchaseData.tradeInVehicleInfo.id)
   end

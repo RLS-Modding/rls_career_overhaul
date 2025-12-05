@@ -1,13 +1,28 @@
 <template>
-  <BngList layout-selector v-bng-disabled="!vehicleInventoryStore" @layout-change="onLayoutChange" :layout="LIST_LAYOUTS.TILES">
+  <BngList
+    layout-selector
+    v-bng-disabled="!vehicleInventoryStore"
+    @layout-change="onLayoutChange"
+    :layout="LIST_LAYOUTS.TILES"
+    :target-width="VehicleTile.width"
+    :target-margin="VehicleTile.margin"
+  >
     <VehicleTile v-if="listStatus" :data="{ _message: listStatus }" :layout="itemLayout" v-bng-disabled />
-    <VehicleTile v-else v-for="vehicle in listView" :key="vehicle.id"
-      :data="vehicle" :layout="itemLayout" :selected="vehSelected && vehSelected.id === vehicle.id"
-      :is-tutorial="vehicleInventoryStore && vehicleInventoryStore.vehicleInventoryData.tutorialActive"
-      :money="vehicleInventoryStore ? vehicleInventoryStore.vehicleInventoryData.playerMoney : 0"
-      v-bng-disabled="vehicle.disabled"
-      tabindex="0" bng-nav-item v-bng-on-ui-nav:ok.asMouse.focusRequired
-      v-bng-popover:right-start.click="popId" @click="select(vehicle, $event)" />
+    <template v-else v-for="group in groupedVehicles" :key="group.name">
+      <div class="group-header" @click.stop="toggleGroup(group.name)" tabindex="0" v-bng-on-ui-nav:ok.asMouse.focusRequired @keydown.enter="toggleGroup(group.name)" @keydown.space="toggleGroup(group.name)">
+        <span class="header-title">{{ group.name }}</span>
+      </div>
+      <VehicleTile
+        v-for="vehicle in group.vehicles"
+        :key="vehicle.id"
+        v-show="isExpanded(group.name)"
+        :data="vehicle" :layout="itemLayout" :selected="vehSelected && vehSelected.id === vehicle.id"
+        :is-tutorial="vehicleInventoryStore && vehicleInventoryStore.vehicleInventoryData.tutorialActive"
+        :money="vehicleInventoryStore ? vehicleInventoryStore.vehicleInventoryData.playerMoney : 0"
+        v-bng-disabled="vehicle.disabled"
+        tabindex="0" bng-nav-item v-bng-on-ui-nav:ok.asMouse.focusRequired
+        v-bng-popover:right-start.click="popId" @click="select(vehicle, $event)" />
+    </template>
 
     <BngPopoverMenu :name="popId" focus @hide="selectedVehId = null">
       <template v-for="(buttonData, index) in vehicleInventoryStore.vehicleInventoryData.chooseButtonsData" :key="index">
@@ -117,7 +132,7 @@
 <script setup>
 import { ref, computed, nextTick } from "vue"
 import { lua, useBridge } from "@/bridge"
-import { BngList, BngButton, BngPopoverMenu, BngUnit, ACCENTS, LIST_LAYOUTS } from "@/common/components/base"
+import { BngList, BngButton, BngPopoverMenu, BngUnit, BngIcon, icons, ACCENTS, LIST_LAYOUTS } from "@/common/components/base"
 import { vBngDisabled, vBngPopover, vBngOnUiNav } from "@/common/directives"
 import VehicleTile from "./VehicleTile.vue"
 import { useVehicleInventoryStore } from "../../stores/vehicleInventoryStore"
@@ -139,7 +154,11 @@ const selectedVehId = ref()
 
 const vehSelected = computed(() => {
   if (typeof selectedVehId.value !== "number") return undefined
-  return listView.value.find(v => v.id === selectedVehId.value)
+  for (const group of groupedVehicles.value) {
+    const found = group.vehicles.find(v => v.id === selectedVehId.value)
+    if (found) return found
+  }
+  return undefined
 })
 
 const careerStatusData = ref({})
@@ -158,17 +177,45 @@ const listStatus = computed(() =>
   : null
 )
 
-const listView = computed(() => {
+const expandedGroups = ref({})
+
+const isExpanded = (name) => {
+  return expandedGroups.value[name] !== false
+}
+
+const toggleGroup = (name) => {
+  if (expandedGroups.value[name] === undefined) {
+    expandedGroups.value[name] = false
+  } else {
+    expandedGroups.value[name] = !expandedGroups.value[name]
+  }
+}
+
+const groupedVehicles = computed(() => {
   if (!vehicleInventoryStore || !Array.isArray(vehicleInventoryStore.filteredVehicles) || vehicleInventoryStore.filteredVehicles.length === 0) return []
-  const res = vehicleInventoryStore.filteredVehicles
+  
+  const res = [...vehicleInventoryStore.filteredVehicles]
+  
   if (singleFunction.value) {
     for (const veh of res) {
       veh.disabled = !isFunctionAvailable(veh, singleFunction.value)
     }
   }
-  res.sort((a, b) => a.favorite ? -1 : b.favorite ? 1 : a.niceName.localeCompare(b.niceName))
-  return res
+  
+  const groups = {}
+  for (const veh of res) {
+    const loc = veh.niceLocation || "Unassigned"
+    if (!groups[loc]) groups[loc] = []
+    groups[loc].push(veh)
+  }
+  
+  return Object.keys(groups).sort().map(name => {
+    const vehicles = groups[name]
+    vehicles.sort((a, b) => a.favorite ? -1 : b.favorite ? 1 : a.niceName.localeCompare(b.niceName))
+    return { name, vehicles }
+  })
 })
+
 
 const itemLayout = ref("tile")
 const onLayoutChange = val => itemLayout.value = val === LIST_LAYOUTS.LIST ? "row" : "tile"
@@ -385,3 +432,31 @@ const renameVehicle = async () => {
   }
 }
 </script>
+
+<style scoped lang="scss">
+:deep(.list-content.list-layout-tiles) {
+  .group-header {
+    grid-column: 1 / -1;
+  }
+}
+
+.group-header {
+  padding: 0.5em 1em;
+  background-color: rgba(0, 0, 0, 0.4);
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  margin: 0.25em 0;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 1.1em;
+
+  &:hover,
+  &:focus {
+    background-color: rgba(255, 255, 255, 0.1);
+    outline: none;
+  }
+}
+</style>

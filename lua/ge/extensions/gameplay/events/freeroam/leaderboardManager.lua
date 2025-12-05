@@ -114,6 +114,9 @@ local function addLeaderboardEntry(entry)
     if career_career and career_career.isActive() then
         career_modules_inventory.saveFRETimeToVehicle(entry.raceLabel, entry.inventoryId, entry.time, entry.driftScore)
     end
+    
+    gameplay_events_freeroam_dataCollection.collectDataFromEntry(entry)
+    
     if not leaderboard then
         leaderboard = {}
     end
@@ -124,7 +127,10 @@ local function addLeaderboardEntry(entry)
         leaderboard[level][tostring(entry.inventoryId)] = {}
     end
     local leaderboardEntry = leaderboard[level][tostring(entry.inventoryId)]
-    if isBestTime(entry) then
+    
+    local isBest = isBestTime(entry)
+    
+    if isBest then
         local raceLabel = entry.raceLabel
         leaderboardEntry[raceLabel] = leaderboardEntry[raceLabel] or {}
         leaderboardEntry[raceLabel].time = entry.time
@@ -150,7 +156,6 @@ local function clearLeaderboardForVehicle(inventoryId)
 end
 
 local function onExtensionLoaded()
-    print("Initializing Leaderboard Manager")
     level = getCurrentLevelIdentifier()
     if level then
         loadLeaderboard()
@@ -176,7 +181,7 @@ local function getLeaderboardEntry(inventoryId, raceLabel)
     if not leaderboard[level] or not leaderboard[level][tostring(inventoryId)] then
         return {}
     end
-    return leaderboard[level][tostring(inventoryId)][raceLabel]
+    return leaderboard[level][tostring(inventoryId)][raceLabel] or {}
 end
 
 local function onCareerActive(active)
@@ -188,6 +193,7 @@ local function onCareerActive(active)
 end
 
 M.onVehicleRemoved = clearLeaderboardForVehicle
+M.clearLeaderboardForVehicle = clearLeaderboardForVehicle
 M.onCareerActive = onCareerActive
 
 M.onExtensionLoaded = onExtensionLoaded

@@ -1,0 +1,576 @@
+<template>
+  <div class="vehicle-card">
+    <div class="card-header">
+      <div class="card-header-content">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 6v6l4 2"/>
+        </svg>
+        <h3>Current Vehicle in Garage</h3>
+      </div>
+      <p class="card-description">This vehicle is currently pulled out and ready for work</p>
+    </div>
+    <div class="card-content">
+      <div class="vehicle-content">
+        <div class="vehicle-image-section">
+          <div class="vehicle-image">
+            <img :src="vehicle.vehicleImage" :alt="vehicle.vehicleName" />
+            <span v-if="vehicle.isPersonal" class="badge badge-personal">Personal</span>
+            <span v-else class="badge badge-green">In Garage</span>
+          </div>
+          <h3 class="vehicle-name">
+            {{ vehicle.vehicleYear }} {{ vehicle.vehicleName }}
+            <span class="badge badge-orange">{{ vehicle.vehicleType }}</span>
+          </h3>
+        </div>
+        <div class="vehicle-info">
+          <div v-if="vehicle.isPersonal" class="personal-info">
+            <span class="personal-label">Personal Vehicle</span>
+            <span class="personal-description">Tune your own vehicle using shop equipment</span>
+          </div>
+          <div v-else-if="job" class="reward-container">
+            <span class="reward-label">Payment</span>
+            <span class="reward-value">${{ job.reward.toLocaleString() }}</span>
+          </div>
+          <div v-if="job && !vehicle.isPersonal" class="job-metrics">
+            <div class="goal-chip">
+              <div class="goal-chip-content">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <circle cx="12" cy="12" r="6"/>
+                  <path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>
+                </svg>
+                <div class="goal-chip-text">
+                  <span class="goal-chip-label">Goal</span>
+                  <span class="goal-chip-value">{{ job.goal }}</span>
+                </div>
+                <div class="current-time-wrapper">
+                  <span class="current-time-label">Current</span>
+                  <span class="current-time-value">{{ formattedCurrentTime }}</span>
+                </div>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" :style="{ width: goalProgress + '%' }"></div>
+              </div>
+            </div>
+          </div>
+          <div class="vehicle-actions" :class="{ locked: store.isDamageLocked || kitInstallLocked }">
+            <template v-if="kitInstallLocked">
+              <div class="kit-install-message">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M12 6v6l4 2"/>
+                </svg>
+                <span>Installing {{ vehicle?.kitInstallKitName || 'kit' }}</span>
+              </div>
+              <div class="kit-install-time">{{ formatKitInstallTime(kitInstallSecondsRemaining) }} remaining</div>
+            </template>
+            <template v-else-if="hasTechAssigned">
+              <div class="tech-message">{{ techName || 'Tech' }} is working on this</div>
+            </template>
+            <template v-else-if="store.isDamageLocked">
+              <div class="lock-message">
+                Customer Vehicle Damaged
+              </div>
+              <button
+                class="btn btn-danger"
+                @mousedown.stop
+                @click.stop="$emit('abandon')"
+              >
+                Abandon Job
+              </button>
+            </template>
+            <template v-else>
+              <button v-if="!vehicle?.isPersonal" class="btn btn-secondary" @click.stop="$emit('put-away', vehicle?.vehicleId)">Put Away Vehicle</button>
+              <button class="btn btn-primary" @click.stop="goToTuning">Go to Tuning</button>
+            </template>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { computed, ref, onMounted, onUnmounted, watch } from "vue"
+import { useBusinessComputerStore } from "../../stores/businessComputerStore"
+
+const props = defineProps({
+  vehicle: Object,
+  job: {
+    type: Object,
+    default: null
+  }
+})
+
+const store = useBusinessComputerStore()
+defineEmits(['put-away', 'abandon'])
+
+const techAssigned = computed(() => {
+  if (!props.job?.techAssigned) return null
+  return props.job.techAssigned
+})
+const techName = computed(() => {
+  if (!techAssigned.value) return null
+  const techs = store.techs || []
+  const tech = techs.find(t => String(t.id) === String(techAssigned.value))
+  return tech?.name || null
+})
+const hasTechAssigned = computed(() => !!techAssigned.value)
+
+const kitInstallSecondsRemaining = ref(0)
+const kitInstallTimer = ref(null)
+
+const syncKitInstallTime = () => {
+  const serverTime = props.vehicle?.kitInstallTimeRemaining || 0
+  kitInstallSecondsRemaining.value = Math.max(0, Math.floor(serverTime))
+}
+
+const startKitInstallCountdown = () => {
+  stopKitInstallCountdown()
+  syncKitInstallTime()
+  if (kitInstallSecondsRemaining.value <= 0) return
+  kitInstallTimer.value = setInterval(() => {
+    if (kitInstallSecondsRemaining.value <= 0) {
+      stopKitInstallCountdown()
+      return
+    }
+    kitInstallSecondsRemaining.value = kitInstallSecondsRemaining.value - 1
+  }, 1000)
+}
+
+const stopKitInstallCountdown = () => {
+  if (kitInstallTimer.value) {
+    clearInterval(kitInstallTimer.value)
+    kitInstallTimer.value = null
+  }
+}
+
+const kitInstallLocked = computed(() => {
+  if (props.vehicle?.kitInstallLocked === true) return true
+  return kitInstallSecondsRemaining.value > 0
+})
+
+onMounted(() => {
+  startKitInstallCountdown()
+})
+
+onUnmounted(() => {
+  stopKitInstallCountdown()
+})
+
+watch(() => props.vehicle?.kitInstallTimeRemaining, () => {
+  startKitInstallCountdown()
+})
+
+const goToTuning = () => {
+  store.switchVehicleView('tuning')
+}
+
+const formatKitInstallTime = (seconds) => {
+  if (!seconds || seconds <= 0) return '0s'
+  const numSeconds = Number(seconds)
+  if (isNaN(numSeconds)) return '0s'
+  if (numSeconds < 60) return `${Math.round(numSeconds)}s`
+  const minutes = Math.floor(numSeconds / 60)
+  const remainingSeconds = Math.round(numSeconds % 60)
+  if (remainingSeconds === 0) return `${minutes}m`
+  return `${minutes}m ${remainingSeconds}s`
+}
+
+const formatTime = (time) => {
+  if (typeof time !== "number" || isNaN(time)) {
+    return time || "0"
+  }
+  if (time >= 60) {
+    const minutes = Math.floor(time / 60)
+    const seconds = Math.round(time % 60)
+    if (seconds >= 1) {
+      return `${minutes} min ${seconds} s`
+    }
+    return `${minutes} min`
+  }
+  return Math.round(time) + " s"
+}
+
+const formatTimeWithUnit = (time, timeUnit) => {
+  if (typeof time !== "number" || isNaN(time)) {
+    return (time || "0") + (timeUnit || "")
+  }
+  return formatTime(time)
+}
+
+const formattedCurrentTime = computed(() => {
+  if (!props.job) {
+    return "--"
+  }
+  const time = typeof props.job.currentTime === "number" ? props.job.currentTime : props.job.baselineTime
+  return formatTimeWithUnit(time, props.job.timeUnit)
+})
+
+const goalProgress = computed(() => {
+  if (!props.job || props.job.baselineTime === undefined || props.job.goalTime === undefined) {
+    return 0
+  }
+  const baseline = Number(props.job.baselineTime)
+  const goal = Number(props.job.goalTime)
+  const current = Number(props.job.currentTime ?? props.job.baselineTime)
+  if (!isFinite(baseline) || !isFinite(goal) || baseline === goal) {
+    return 0
+  }
+  const progress = ((baseline - current) / (baseline - goal)) * 100
+  return Math.max(0, Math.min(100, progress))
+})
+</script>
+
+<style scoped lang="scss">
+.vehicle-card {
+  background: linear-gradient(to bottom right, rgba(245, 73, 0, 0.2), rgba(26, 26, 26, 0.5));
+  border: 1px solid rgba(245, 73, 0, 0.5);
+  border-radius: 0.5em;
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 1em 1.5em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(23, 23, 23, 0.3);
+}
+
+.card-header-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75em;
+  margin-bottom: 0.5em;
+  
+  svg {
+    color: rgba(245, 73, 0, 1);
+    flex-shrink: 0;
+  }
+  
+  h3 {
+    margin: 0;
+    color: rgba(245, 73, 0, 1);
+    font-size: 1.125em;
+    font-weight: 600;
+  }
+}
+
+.card-description {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.875em;
+}
+
+.card-content {
+  padding: 1.5em;
+}
+
+.vehicle-content {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1.5em;
+  align-items: stretch;
+}
+
+.vehicle-image-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75em;
+  flex-shrink: 0;
+  width: 16em;
+  max-width: 16em;
+}
+
+.vehicle-image {
+  position: relative;
+  width: 16em;
+  border-radius: 0.5em;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.5);
+  
+  img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  
+  .badge {
+    position: absolute;
+    top: 0.5em;
+    left: 0.5em;
+    padding: 0.25em 0.5em;
+    border-radius: 0.25em;
+    font-size: 0.75em;
+    font-weight: 500;
+    
+    &.badge-green {
+      background: rgba(34, 197, 94, 0.7);
+      color: white;
+      border: none;
+    }
+    
+    &.badge-personal {
+      background: rgba(99, 102, 241, 0.8);
+      color: white;
+      border: none;
+    }
+  }
+}
+
+.vehicle-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+}
+
+.vehicle-name {
+  margin: 0;
+  color: white;
+  font-size: 1.25em;
+  font-weight: 600;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.5;
+  
+  .badge {
+    display: inline-block;
+    margin-left: 0.5em;
+    padding: 0.25em 0.5em;
+    border-radius: 0.25em;
+    font-size: 0.75em;
+    font-weight: 500;
+    vertical-align: middle;
+    
+    &.badge-orange {
+      background: rgba(245, 73, 0, 0.2);
+      color: rgba(245, 73, 0, 1);
+      border: 1px solid rgba(245, 73, 0, 0.5);
+    }
+  }
+}
+
+.vehicle-actions {
+  display: flex;
+  gap: 0.5em;
+  margin-top: auto;
+
+  &.locked {
+    flex-direction: column;
+
+    .btn {
+      flex: 1;
+      width: 100%;
+    }
+  }
+}
+
+.lock-message {
+  color: rgba(239, 68, 68, 1);
+  font-size: 0.875em;
+  font-weight: 500;
+  text-align: center;
+  margin-bottom: 0.25em;
+}
+
+.tech-message {
+  color: rgba(245, 73, 0, 1);
+  font-size: 0.875em;
+  font-weight: 500;
+  text-align: center;
+  width: 100%;
+  padding: 0.5em;
+  background: rgba(245, 73, 0, 0.1);
+  border-radius: 0.375em;
+  border: 1px solid rgba(245, 73, 0, 0.3);
+}
+
+.kit-install-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  color: rgba(59, 130, 246, 1);
+  font-size: 0.875em;
+  font-weight: 500;
+  text-align: center;
+  width: 100%;
+  padding: 0.5em;
+  background: rgba(59, 130, 246, 0.1);
+  border-radius: 0.375em;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+.kit-install-time {
+  color: rgba(59, 130, 246, 0.8);
+  font-size: 0.75em;
+  text-align: center;
+  width: 100%;
+}
+
+.btn {
+  flex: 0 0 calc(50% - 0.25em);
+  padding: 0.5em 1em;
+  border-radius: 0.375em;
+  font-size: 0.875em;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  
+  &.btn-primary {
+    background: rgba(245, 73, 0, 1);
+    color: white;
+    
+    &:hover {
+      background: rgba(245, 73, 0, 0.9);
+    }
+  }
+  
+  &.btn-secondary {
+    background: rgba(55, 55, 55, 1);
+    color: white;
+    
+    &:hover {
+      background: rgba(75, 75, 75, 1);
+    }
+  }
+
+  &.btn-danger {
+    background: rgba(239, 68, 68, 1);
+    color: white;
+
+    &:hover {
+      background: rgba(239, 68, 68, 0.9);
+    }
+  }
+}
+
+.job-metrics {
+  display: flex;
+  flex-direction: column;
+}
+
+.goal-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  padding: 0.5em 0.75em;
+  background: rgba(245, 73, 0, 0.15);
+  border-radius: 0.45em;
+  border: 1px solid rgba(245, 73, 0, 0.35);
+}
+
+.goal-chip-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75em;
+  justify-content: space-between;
+  
+  svg {
+    color: rgba(245, 73, 0, 1);
+    flex-shrink: 0;
+  }
+}
+
+.goal-chip-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1em;
+  flex: 1;
+}
+
+.goal-chip-label {
+  font-size: 0.75em;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.goal-chip-value {
+  font-size: 0.9em;
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 600;
+}
+
+.current-time-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1em;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.current-time-label {
+  font-size: 0.75em;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.current-time-value {
+  font-size: 0.9em;
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.goal-chip .progress-bar {
+  width: 100%;
+  height: 0.375em;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 0.1875em;
+  overflow: hidden;
+  margin-top: 0.125em;
+}
+
+.progress-fill {
+  height: 100%;
+  background: rgba(245, 73, 0, 1);
+  transition: width 0.3s;
+}
+
+.reward-container {
+  width: 100%;
+  padding: 0.75em 1em;
+  background: rgba(34, 197, 94, 0.15);
+  border-radius: 0.45em;
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+}
+
+.reward-label {
+  font-size: 0.75em;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.reward-value {
+  font-size: 1.125em;
+  color: rgba(34, 197, 94, 1);
+  font-weight: 600;
+}
+
+.personal-info {
+  width: 100%;
+  padding: 0.75em 1em;
+  background: rgba(99, 102, 241, 0.15);
+  border-radius: 0.45em;
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+}
+
+.personal-label {
+  font-size: 0.875em;
+  color: rgba(99, 102, 241, 1);
+  font-weight: 600;
+}
+
+.personal-description {
+  font-size: 0.75em;
+  color: rgba(255, 255, 255, 0.6);
+}
+</style>

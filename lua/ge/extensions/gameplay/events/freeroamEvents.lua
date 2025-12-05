@@ -91,6 +91,31 @@ local function getRaceLabel()
     return raceLabel
 end
 
+local function getBusinessAccountFromVehicle(spawnedVehicleId)
+    if not career_career.isActive() or not career_modules_business_businessInventory then
+        return nil
+    end
+    
+    local businessId, vehicleId = career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId(spawnedVehicleId)
+    if not businessId or not vehicleId then
+        return nil
+    end
+    
+    if not career_modules_bank then
+        return nil
+    end
+    
+    local businessTypes = {"tuningShop"}
+    for _, businessType in ipairs(businessTypes) do
+        local businessAccount = career_modules_bank.getBusinessAccount(businessType, businessId)
+        if businessAccount then
+            return businessAccount, businessType, businessId
+        end
+    end
+    
+    return nil
+end
+
 local function payoutRace()
     if not mActiveRace then
         return 0
@@ -146,10 +171,35 @@ local function payoutRace()
     else
         reward = utils.raceReward(time, reward, in_race_time, race.type)
     end
-    print("Adjusted reward: " .. reward)
 
     -- Handle leaderboard
-    local leaderboardEntry = leaderboardManager.getLeaderboardEntry(mInventoryId, raceLabel)
+    local inventoryIdToUse = mInventoryId
+    
+        -- If mInventoryId is already a business job identifier, use it directly
+        -- Otherwise, check if this is a business vehicle (check current player vehicle)
+        if mInventoryId and tostring(mInventoryId):match("^business_.+_job_") then
+            -- Already a business job identifier, use it as-is
+            inventoryIdToUse = mInventoryId
+        elseif career_modules_business_businessInventory then
+            local playerVehicleId = be:getPlayerVehicleID(0)
+            if playerVehicleId then
+                local businessId, vehicleId = career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId(playerVehicleId)
+                if businessId and vehicleId then
+                    local jobId = career_modules_business_businessInventory.getJobIdFromVehicle(businessId, vehicleId)
+                    if jobId then
+                        inventoryIdToUse = career_modules_business_businessInventory.getBusinessJobIdentifier(businessId, jobId)
+                    else
+                        inventoryIdToUse = career_modules_business_businessInventory.getBusinessVehicleIdentifier(businessId, vehicleId)
+                    end
+                elseif mInventoryId and not tostring(mInventoryId):match("^business_") then
+                    -- If mInventoryId is not already a business identifier, try to convert it
+                    -- This handles the case where the race started with a regular vehicle but we want to check business vehicles
+                    inventoryIdToUse = mInventoryId
+                end
+            end
+        end
+    
+    local leaderboardEntry = leaderboardManager.getLeaderboardEntry(inventoryIdToUse, raceLabel)
 
     local oldTime = leaderboardEntry and leaderboardEntry.time or 0
     local oldScore = leaderboardEntry and leaderboardEntry.driftScore or 0
@@ -162,7 +212,7 @@ local function payoutRace()
         time = in_race_time,
         splitTimes = mSplitTimes,
         driftScore = driftScore,
-        inventoryId = mInventoryId,
+        inventoryId = inventoryIdToUse,
         damagePercentage = damagePercentage,
         damageFactor = damageFactor,
         topSpeed = maxSpeed
@@ -260,29 +310,66 @@ local function payoutRace()
         reward = reward / (career_modules_hardcore.isHardcoreMode() and 2 or 1)
 
         if reward > 0 then
-            local xp = math.floor(reward / 20)
-            local totalReward = {
-                money = {
-                    amount = reward
-                },
-                beamXP = {
-                    amount = math.floor(xp / 10)
+            local playerVehicleId = be:getPlayerVehicleID(0)
+            local businessAccount, businessType, businessId = getBusinessAccountFromVehicle(playerVehicleId)
+            
+            if businessAccount then
+                local businessReward = math.floor(reward * 0.5)
+                local xp = math.floor(reward / 20)
+                
+                local xpReward = {
+                    beamXP = {
+                        amount = math.floor(xp / 10)
+                    }
                 }
-            }
-            for _, type in ipairs(race.type) do
-                totalReward[type] = {
-                    amount = xp
+                for _, type in ipairs(race.type) do
+                    xpReward[type] = {
+                        amount = xp
+                    }
+                end
+                
+                career_modules_payment.reward(xpReward, {
+                    label = rewardLabel(mActiveRace, newBest),
+                    tags = {"gameplay", "reward", "mission"}
+                }, true)
+                
+                if career_modules_bank then
+                    career_modules_bank.rewardToAccount({
+                        money = {
+                            amount = businessReward
+                        }
+                    }, businessAccount.id, "Event Reward", rewardLabel(mActiveRace, newBest))
+                end
+                
+                message = message .. string.format("\nXP: %d | Business Reward: $%.2f (50%% to business account)", xp, businessReward)
+                if career_modules_hardcore.isHardcoreMode() then
+                    message = message .. "\nHardcore mode is enabled, all rewards are halved."
+                end
+            else
+                local xp = math.floor(reward / 20)
+                local totalReward = {
+                    money = {
+                        amount = reward
+                    },
+                    beamXP = {
+                        amount = math.floor(xp / 10)
+                    }
                 }
-            end
+                for _, type in ipairs(race.type) do
+                    totalReward[type] = {
+                        amount = xp
+                    }
+                end
 
-            career_modules_payment.reward(totalReward, {
-                label = rewardLabel(mActiveRace, newBest),
-                tags = {"gameplay", "reward", "mission"}
-            }, true)
+                career_modules_payment.reward(totalReward, {
+                    label = rewardLabel(mActiveRace, newBest),
+                    tags = {"gameplay", "reward", "mission"}
+                }, true)
 
-            message = message .. string.format("\nXP: %d | Reward: $%.2f", xp, reward)
-            if career_modules_hardcore.isHardcoreMode() then
-                message = message .. "\nHardcore mode is enabled, all rewards are halved."
+                message = message .. string.format("\nXP: %d | Reward: $%.2f", xp, reward)
+                if career_modules_hardcore.isHardcoreMode() then
+                    message = message .. "\nHardcore mode is enabled, all rewards are halved."
+                end
             end
             career_saveSystem.saveCurrent()
         end
@@ -299,11 +386,28 @@ end
 -- Simplified payoutRace function for drag races
 local function payoutDragRace(raceName, finishTime, finishSpeed, vehId)
     -- Load the leaderboard
+    local inventoryIdToUse = vehId
+    
     if career_career.isActive() then
-        vehId = career_modules_inventory.getInventoryIdFromVehicleId(vehId) or vehId
+        -- Check if this is a business vehicle first
+        if career_modules_business_businessInventory then
+            local businessId, vehicleId = career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId(vehId)
+            if businessId and vehicleId then
+                local jobId = career_modules_business_businessInventory.getJobIdFromVehicle(businessId, vehicleId)
+                if jobId then
+                    inventoryIdToUse = career_modules_business_businessInventory.getBusinessJobIdentifier(businessId, jobId)
+                else
+                    inventoryIdToUse = career_modules_business_businessInventory.getBusinessVehicleIdentifier(businessId, vehicleId)
+                end
+            else
+                inventoryIdToUse = career_modules_inventory.getInventoryIdFromVehicleId(vehId) or vehId
+            end
+        else
+            inventoryIdToUse = career_modules_inventory.getInventoryIdFromVehicleId(vehId) or vehId
+        end
     end
 
-    local leaderboardEntry = leaderboardManager.getLeaderboardEntry(vehId, races["drag"].label)
+    local leaderboardEntry = leaderboardManager.getLeaderboardEntry(inventoryIdToUse, races["drag"].label)
     local oldTime = leaderboardEntry and leaderboardEntry.time or 0
 
     local newEntry = {
@@ -311,7 +415,7 @@ local function payoutDragRace(raceName, finishTime, finishSpeed, vehId)
         raceName = raceName,
         time = finishTime,
         splitTimes = mSplitTimes,
-        inventoryId = vehId
+        inventoryId = inventoryIdToUse
     }
 
     local newBestTime = leaderboardManager.addLeaderboardEntry(newEntry)
@@ -334,8 +438,6 @@ local function payoutDragRace(raceName, finishTime, finishSpeed, vehId)
         reward = baseReward / 2 -- Minimum reward for completion
     end
 
-    print("Adjusted drag reward: " .. reward)
-
     reward = reward / (career_modules_hardcore.isHardcoreMode() and 2 or 1)
 
     reward = newBestTime and reward or reward / 2
@@ -343,36 +445,74 @@ local function payoutDragRace(raceName, finishTime, finishSpeed, vehId)
     -- Calculate experience points
     local xp = math.floor(reward / 20)
 
-    -- Prepare total reward
-    local totalReward = {
-        money = {
-            amount = reward
-        },
-        beamXP = {
-            amount = math.floor(xp / 10)
+    -- Check if this is a business vehicle
+    local businessAccount, businessType, businessId = getBusinessAccountFromVehicle(vehId)
+    
+    if businessAccount then
+        local businessReward = math.floor(reward * 0.5)
+        
+        local xpReward = {
+            beamXP = {
+                amount = math.floor(xp / 10)
+            }
         }
-    }
+        
+        local reason = {
+            label = raceData.label .. (newBestTime and " - New Best Time!" or " - Completion"),
+            tags = {"gameplay", "reward", "drag"}
+        }
+        
+        career_modules_payment.reward(xpReward, reason, true)
+        
+        if career_modules_bank then
+            career_modules_bank.rewardToAccount({
+                money = {
+                    amount = businessReward
+                }
+            }, businessAccount.id, "Event Reward", raceData.label .. (newBestTime and " - New Best Time!" or " - Completion"))
+        end
+        
+        local message = string.format("%s\n%s\nTime: %s\nSpeed: %.2f mph\nXP: %d | Business Reward: $%.2f (50%% to business account)",
+            newBestTime and "Congratulations! New Best Time!" or "", raceData.label, utils.formatTime(finishTime), finishSpeed,
+            xp, businessReward)
+        
+        if career_modules_hardcore.isHardcoreMode() then
+            message = message .. "\nHardcore mode is enabled, all rewards are halved."
+        end
+        
+        ui_message(message, 20, "Reward")
+    else
+        -- Prepare total reward
+        local totalReward = {
+            money = {
+                amount = reward
+            },
+            beamXP = {
+                amount = math.floor(xp / 10)
+            }
+        }
 
-    -- Create reason for reward
-    local reason = {
-        label = raceData.label .. (newBestTime and " - New Best Time!" or " - Completion"),
-        tags = {"gameplay", "reward", "drag"}
-    }
+        -- Create reason for reward
+        local reason = {
+            label = raceData.label .. (newBestTime and " - New Best Time!" or " - Completion"),
+            tags = {"gameplay", "reward", "drag"}
+        }
 
-    -- Process the reward
-    career_modules_payment.reward(totalReward, reason, true)
+        -- Process the reward
+        career_modules_payment.reward(totalReward, reason, true)
 
-    -- Prepare the completion message
-    local message = string.format("%s\n%s\nTime: %s\nSpeed: %.2f mph\nXP: %d | Reward: $%.2f",
-        newBestTime and "Congratulations! New Best Time!" or "", raceData.label, utils.formatTime(finishTime), finishSpeed,
-        xp, reward)
+        -- Prepare the completion message
+        local message = string.format("%s\n%s\nTime: %s\nSpeed: %.2f mph\nXP: %d | Reward: $%.2f",
+            newBestTime and "Congratulations! New Best Time!" or "", raceData.label, utils.formatTime(finishTime), finishSpeed,
+            xp, reward)
 
-    if career_modules_hardcore.isHardcoreMode() then
-        message = message .. "\nHardcore mode is enabled, all rewards are halved."
+        if career_modules_hardcore.isHardcoreMode() then
+            message = message .. "\nHardcore mode is enabled, all rewards are halved."
+        end
+
+        -- Display the message
+        ui_message(message, 20, "Reward")
     end
-
-    -- Display the message
-    ui_message(message, 20, "Reward")
 
     -- Save the leaderboard and game state
     career_saveSystem.saveCurrent()
@@ -491,12 +631,24 @@ local function onBeamNGTrigger(data)
     end
     if gameplay_walk.isWalking() then return end
     if career_career.isActive() then
-        if not career_modules_inventory.getInventoryIdFromVehicleId(data.subjectID) then
-            return
+        -- Check if it's a business vehicle first
+        local isBusinessVehicle = false
+        if career_modules_business_businessInventory then
+            local businessId, vehicleId = career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId(data.subjectID)
+            if businessId and vehicleId then
+                isBusinessVehicle = true
+            end
         end
-        local vehicle = career_modules_inventory.getVehicles()[career_modules_inventory.getInventoryIdFromVehicleId(data.subjectID)]
-        if vehicle.loanType then
-            return
+        
+        -- If not a business vehicle, check if it's an inventory vehicle
+        if not isBusinessVehicle then
+            if not career_modules_inventory.getInventoryIdFromVehicleId(data.subjectID) then
+                return
+            end
+            local vehicle = career_modules_inventory.getVehicles()[career_modules_inventory.getInventoryIdFromVehicleId(data.subjectID)]
+            if vehicle.loanType then
+                return
+            end
         end
     end
 
@@ -614,7 +766,17 @@ local function onBeamNGTrigger(data)
             -- print("Staged race: " .. raceName)
             local vehId = data.subjectID
             if career_career.isActive() then
-                vehId = career_modules_inventory.getInventoryIdFromVehicleId(vehId) or vehId
+                -- Check if it's a business vehicle first
+                if career_modules_business_businessInventory then
+                    local businessId, vehicleId = career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId(data.subjectID)
+                    if businessId and vehicleId then
+                        vehId = career_modules_business_businessInventory.getBusinessVehicleIdentifier(businessId, vehicleId)
+                    else
+                        vehId = career_modules_inventory.getInventoryIdFromVehicleId(vehId) or vehId
+                    end
+                else
+                    vehId = career_modules_inventory.getInventoryIdFromVehicleId(vehId) or vehId
+                end
             end
             utils.displayStagedMessage(vehId, raceName)
             utils.setActiveLight(raceName, "yellow")
@@ -672,7 +834,24 @@ local function onBeamNGTrigger(data)
             maxSpeed = 0
             mActiveRace = raceName
             lapCount = 0
-            mInventoryId = career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId(data.subjectID) or data.subjectID
+            
+            -- Set mInventoryId - check for business vehicle first, then inventory vehicle
+            if career_modules_business_businessInventory then
+                local businessId, vehicleId = career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId(data.subjectID)
+                if businessId and vehicleId then
+                    local jobId = career_modules_business_businessInventory.getJobIdFromVehicle(businessId, vehicleId)
+                    if jobId then
+                        mInventoryId = career_modules_business_businessInventory.getBusinessJobIdentifier(businessId, jobId)
+                    else
+                        mInventoryId = career_modules_business_businessInventory.getBusinessVehicleIdentifier(businessId, vehicleId)
+                    end
+                else
+                    mInventoryId = career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId(data.subjectID) or data.subjectID
+                end
+            else
+                mInventoryId = career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId(data.subjectID) or data.subjectID
+            end
+            
             invalidLap = false
 
             utils.displayStartMessage(raceName)
@@ -810,8 +989,6 @@ local function onWorldReadyState(state)
 end
 
 local function loadExtensions()
-    print("Initializing Freeroam Events Modules")
-
     local freeroamPath = "/lua/ge/extensions/gameplay/events/freeroam/"
     local files = FS:findFiles(freeroamPath, "*.lua", -1, true, false)
     
@@ -824,7 +1001,6 @@ local function loadExtensions()
                 setExtensionUnloadMode(extensionName, "manual")
                 extensions.unload(extensionName)
                 table.insert(loadedExtensions, extensionName)
-                print("Loaded extension: " .. extensionName)
             end
         end
     end
@@ -838,15 +1014,9 @@ local function unloadExtensions()
 end
 
 local function onExtensionLoaded()
-    print("Initializing Freeroam Events Main")
     loadExtensions()
     if getCurrentLevelIdentifier() then
         races = utils.loadRaceData()
-        if races ~= {} then
-            print("Race data loaded for level: " .. getCurrentLevelIdentifier())
-        else
-            print("No race data found for level: " .. getCurrentLevelIdentifier())
-        end
     end
 end
 

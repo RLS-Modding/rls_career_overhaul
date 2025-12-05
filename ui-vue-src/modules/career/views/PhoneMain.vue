@@ -27,21 +27,57 @@
 import PhoneWrapper from "./PhoneWrapper.vue"
 import { BngIcon, icons } from "@/common/components/base"
 import { useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue'
+import { lua } from "@/bridge"
 
 const router = useRouter()
 
-const apps = [
+const apps = ref([
   { name: 'Loans', icon: icons.beamCurrency, route: '/career/phone-loans', color: '#5a8dee', iconColor: '#ffffff' },
+  { name: 'Bank', icon: icons.beamCurrency, route: '/career/phone-bank', color: '#10b981', iconColor: '#ffffff' },
   { name: 'Marketplace', icon: icons.shoppingCart, route: '/career/phone-marketplace', color: '#228B22', iconColor: '#ffffff' },
   { name: 'Car Meet', icon: icons.cars, route: '/career/car-meets-phone', color: '#696969', iconColor: '#ffffff' },
   { name: 'Repo', icon: icons.tow, route: '/career/phone-repo', color: '#1E90FF', iconColor: '#ffffff' },
   { name: 'Taxi', icon: icons.taxiCar3, route: '/career/phone-taxi', color: '#ffd700', iconColor: '#000000' }
-  // Add more apps using icons from the existing icon system
-]
+])
 
 const navigateTo = (route) => {
   router.push(route)
 }
+
+onMounted(async () => {
+  try {
+    const purchased = await lua.career_modules_business_businessManager.getPurchasedBusinesses("tuningShop")
+    if (purchased) {
+      let hasShopApp = false
+      for (const [id, owned] of Object.entries(purchased)) {
+        if (owned) {
+          // Check if the shop-app upgrade is unlocked
+          const level = await lua.career_modules_business_businessSkillTree.getNodeProgress(id, "quality-of-life", "shop-app")
+          if (level && level > 0) {
+            hasShopApp = true
+            break
+          }
+        }
+      }
+      
+      if (hasShopApp) {
+        // Add Tuning Shop app if not already present
+        if (!apps.value.find(app => app.name === 'Tuning Shop')) {
+          apps.value.push({
+            name: 'Tuning Shop',
+            icon: icons.cars, // Using existing icon
+            route: '/career/phone-tuning-shop',
+            color: '#F54900', // Tuning shop orange
+            iconColor: '#ffffff'
+          })
+        }
+      }
+    }
+  } catch (e) {
+    console.error("Failed to check tuning shop app availability", e)
+  }
+})
 </script>
 
 <style scoped lang="scss">
@@ -129,4 +165,4 @@ const navigateTo = (route) => {
 :deep(.phone-content) {
   background: linear-gradient(to bottom, #000000, #1509fb);
 }
-</style> 
+</style>
