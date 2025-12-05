@@ -667,10 +667,6 @@ local function requestPartInventory(businessId)
     return
   end
 
-  if career_modules_business_businessPartInventory.loadInventory then
-    career_modules_business_businessPartInventory.loadInventory()
-  end
-
   local data = career_modules_business_businessPartInventory.getUIData(businessId) or {}
   data.businessId = businessId
   data.success = true
@@ -1245,39 +1241,35 @@ local function findRemovedPartsFromCart(businessId, vehicleId, cartParts)
 
   local vehicleModel = vehicle.vehicleConfig and vehicle.vehicleConfig.model_key or vehicle.model_key
   
-  -- Get original part list - get from actual vehicle object (current state before cart is applied)
-  local originalPartList = {}
+  local originalPartList = vehicle.partList or {}
   local partConditions = vehicle.partConditions or {}
   
-  local vehObj = getBusinessVehicleObject(businessId, vehicleId)
-  if vehObj then
-    local vehId = vehObj:getID()
-    local vehicleData = extensions.core_vehicle_manager.getVehicleData(vehId)
-    if vehicleData and vehicleData.config and vehicleData.config.partsTree then
-      local function extractParts(tree, path)
-        path = path or "/"
-        if tree.chosenPartName and tree.path then
-          originalPartList[tree.path] = tree.chosenPartName
-        end
-        if tree.children then
-          for slotName, child in pairs(tree.children) do
-            local childPath = path .. slotName .. "/"
-            extractParts(child, childPath)
+  -- Only fall back to vehicle object's config if stored data is empty
+  if next(originalPartList) == nil then
+    local vehObj = getBusinessVehicleObject(businessId, vehicleId)
+    if vehObj then
+      local vehId = vehObj:getID()
+      local vehicleData = extensions.core_vehicle_manager.getVehicleData(vehId)
+      if vehicleData and vehicleData.config and vehicleData.config.partsTree then
+        local function extractParts(tree, path)
+          path = path or "/"
+          if tree.chosenPartName and tree.path then
+            originalPartList[tree.path] = tree.chosenPartName
+          end
+          if tree.children then
+            for slotName, child in pairs(tree.children) do
+              local childPath = path .. slotName .. "/"
+              extractParts(child, childPath)
+            end
           end
         end
-      end
-      extractParts(vehicleData.config.partsTree)
-      
-      -- Also get part conditions from vehicle if available
-      if vehicleData.partConditions then
-        partConditions = vehicleData.partConditions
+        extractParts(vehicleData.config.partsTree)
+        
+        if vehicleData.partConditions then
+          partConditions = vehicleData.partConditions
+        end
       end
     end
-  end
-  
-  -- Fallback to stored vehicle.partList if we couldn't get from vehicle object
-  if not originalPartList or next(originalPartList) == nil then
-    originalPartList = vehicle.partList or {}
   end
 
   local cartPartsBySlot = {}
