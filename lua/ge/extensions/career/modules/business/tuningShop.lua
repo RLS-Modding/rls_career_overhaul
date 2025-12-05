@@ -2065,12 +2065,9 @@ local function generateJob(businessId)
   local race = races.races[raceIdentifier]
   local raceLabel = race and race.label or ""
 
-  local baseTime = nil
-  if race and gameplay_events_freeroam_dataCollection and gameplay_events_freeroam_dataCollection.predictRaceTime then
-    baseTime = math.abs(gameplay_events_freeroam_dataCollection.predictRaceTime(power, weight, year, race) + 0.5)
-    if not baseTime then
-      return generateJob(businessId)
-    end
+  local baseTime = powerToWeightToTime(powerToWeight, raceType, businessId)
+  if not baseTime then
+    return generateJob(businessId)
   end
 
   local tuningShopConfig = race and race.tuningShop or {}
