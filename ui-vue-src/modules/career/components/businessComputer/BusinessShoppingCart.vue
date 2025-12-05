@@ -171,24 +171,23 @@
         <div class="cart-footer">
           <transition name="footer-collapse">
             <div v-if="!footerCollapsed" class="footer-details">
-              <div v-if="store.hasDynoUpgrade && store.originalPower !== null && store.currentPower !== null"
-                class="power-weight-stats">
+              <div v-if="store.hasDynoUpgrade" class="power-weight-stats">
 
                 <div class="performance-section-header">
                   <span class="section-title">Performance</span>
                   <div class="view-toggles">
                     <button class="toggle-btn" :class="{ active: performanceViewMode === 'stats' }"
-                      @click="performanceViewMode = 'stats'">
+                      :disabled="!hasDynoData" @click="performanceViewMode = 'stats'">
                       Stats
                     </button>
                     <button class="toggle-btn" :class="{ active: performanceViewMode === 'dyno' }"
-                      @click="performanceViewMode = 'dyno'">
+                      :disabled="!hasDynoData" @click="performanceViewMode = 'dyno'">
                       Dyno
                     </button>
                   </div>
                 </div>
 
-                <div v-if="performanceViewMode === 'stats'" class="stats-container">
+                <div v-if="hasDynoData && performanceViewMode === 'stats'" class="stats-container">
                   <div class="stat-row">
                     <div class="stat-label-col">Power:</div>
                     <div class="stat-value-col">{{ Math.round(store.originalPower || 0) }} PS</div>
@@ -226,7 +225,7 @@
                   </div>
                 </div>
 
-                <div v-else class="dyno-container">
+                <div v-else-if="hasDynoData && performanceViewMode === 'dyno'" class="dyno-container">
                   <svg class="dyno-graph" width="100%" height="100%" viewBox="0 0 300 140" preserveAspectRatio="none"
                     @mousemove="handleGraphMouseMove" @mouseleave="handleGraphLeave">
                     <defs>
@@ -311,6 +310,12 @@
                     <!-- Transparent interaction layer -->
                     <rect x="0" y="0" width="300" height="140" fill="transparent" />
                   </svg>
+                </div>
+                <div v-else class="dyno-placeholder">
+                  <p>Waiting for dyno data...</p>
+                  <button class="btn btn-secondary" @click.stop="requestDynoData" @mousedown.stop="requestDynoData">
+                    Refresh Dyno
+                  </button>
                 </div>
               </div>
               <div class="cart-summary-breakdown">
@@ -639,6 +644,15 @@ const originalTorquePath = computed(() => makePath(originalTorqueGraphPoints.val
 const originalPowerPath = computed(() => makePath(originalPowerGraphPoints.value, maxPower.value))
 
 const expanded = ref(true)
+const hasDynoData = computed(() => store.originalPower !== null && store.currentPower !== null)
+const requestDynoData = () => {
+  try {
+    if (store.updatePowerWeight) {
+      store.updatePowerWeight()
+    }
+  } catch (error) {
+  }
+}
 const businessBalance = ref(0)
 const tabMenuVisible = ref(false)
 const tabMenuTabId = ref(null)
@@ -1648,6 +1662,20 @@ onBeforeUnmount(() => {
       .dyno-graph {
         display: block;
         cursor: crosshair;
+      }
+    }
+
+    .dyno-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5em;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.875em;
+      padding: 0.5em 0.25em;
+
+      p {
+        margin: 0;
       }
     }
 

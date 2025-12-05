@@ -92,7 +92,8 @@
           >
             <button
               class="result-section-header"
-              @click="toggleSearchSection(result.slotPath)"
+              @click.stop="toggleSearchSection(result.slotPath)"
+              @mousedown.stop
               data-focusable
             >
               <h3>{{ result.slotNiceName || result.slotName }}</h3>
@@ -198,34 +199,40 @@
         <div v-if="currentCategoryOptions && currentCategoryOptions.length > 0" class="parts-options-section" :class="{ collapsed: !isPartsOpen }">
           <button
             class="options-header"
-            @click="isPartsOpen = !isPartsOpen"
+            @click.stop="isPartsOpen = !isPartsOpen"
+            @mousedown.stop
             data-focusable
           >
-            <h3>{{ currentCategory?.slotNiceName || currentCategory?.slotName }} Parts</h3>
-            <svg 
-              v-if="isPartsOpen"
-              class="chevron-icon" 
-              width="20" 
-              height="20" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              stroke-width="2"
-            >
-              <polyline points="18 15 12 9 6 15"/>
-            </svg>
-            <svg 
-              v-else
-              class="chevron-icon" 
-              width="20" 
-              height="20" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              stroke-width="2"
-            >
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
+            <div class="options-header-left">
+              <h3>{{ currentCategory?.slotNiceName || currentCategory?.slotName }} Parts</h3>
+            </div>
+            <div class="options-header-right">
+              <span class="installed-summary">{{ installedPartLabel }}</span>
+              <svg 
+                v-if="isPartsOpen"
+                class="chevron-icon" 
+                width="20" 
+                height="20" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                stroke-width="2"
+              >
+                <polyline points="18 15 12 9 6 15"/>
+              </svg>
+              <svg 
+                v-else
+                class="chevron-icon" 
+                width="20" 
+                height="20" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                stroke-width="2"
+              >
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
           </button>
           
           <div v-if="isPartsOpen" class="options-list">
@@ -301,7 +308,8 @@
           <button
             v-for="category in displayCategories"
             :key="category.id"
-            @click="navigateToCategory(category)"
+            @click.stop="navigateToCategory(category)"
+            @mousedown.stop
             class="category-item"
             data-focusable
           >
@@ -618,6 +626,42 @@ const hasOwnedVariants = (part) => {
   return getOwnedVariants(part).length > 0
 }
 
+const autoOpenSingleCategory = () => {
+  let categories = displayCategories.value
+  const targetPath = [...navigationPath.value]
+
+  while (categories && categories.length === 1) {
+    const node = categories[0]
+    if (targetPath[targetPath.length - 1] !== node.id) {
+      targetPath.push(node.id)
+    }
+    const hasParts = Array.isArray(node.availableParts) && node.availableParts.length > 0
+    if (hasParts) {
+      break
+    }
+    categories = node.children || []
+  }
+
+   if (targetPath.length > navigationPath.value.length) {
+     navigationPath.value = targetPath
+   }
+}
+
+const installedPartLabel = computed(() => {
+  const options = currentCategoryOptions.value
+  if (options && options.length > 0) {
+    const installedOption = options.find(opt => opt.installed)
+    if (installedOption) {
+      return installedOption.niceName || installedOption.name || '-'
+    }
+  }
+  const categoryPart = currentCategory.value?.partNiceName
+  if (categoryPart && categoryPart !== '-') {
+    return categoryPart
+  }
+  return '-'
+})
+
 const installUsedPart = async (usedPart, slot) => {
   installMenuVisible.value = null
   
@@ -858,6 +902,29 @@ watch(() => store.activeTabId, async (newTabId, oldTabId) => {
   }
 })
 
+watch(currentCategoryOptions, (options) => {
+  const noCategories = (displayCategories.value && displayCategories.value.length === 0)
+  if (options && (options.length === 1 || (noCategories && options.length > 0))) {
+    isPartsOpen.value = true
+  } else if (!options || options.length === 0) {
+    isPartsOpen.value = false
+  }
+}, { immediate: true })
+
+watch(navigationPath, () => {
+  const options = currentCategoryOptions.value
+  const noCategories = (displayCategories.value && displayCategories.value.length === 0)
+  if (options && (options.length === 1 || (noCategories && options.length > 0))) {
+    isPartsOpen.value = true
+  } else {
+    isPartsOpen.value = false
+  }
+}, { deep: true })
+
+watch(displayCategories, () => {
+  autoOpenSingleCategory()
+}, { immediate: true, deep: true })
+
 const handleClickOutside = (e) => {
   if (!e.target.closest('.installed-button-wrapper')) {
     removeMenuVisible.value = null
@@ -1047,16 +1114,50 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.5em 0.75em;
-  background: transparent;
-  border: none;
+  padding: 0.75em 0.9em;
+  background: rgba(18, 18, 18, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.5em;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s, box-shadow 0.15s;
   margin-bottom: 0.75em;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
   
   &:hover {
-    background: rgba(23, 23, 23, 0.5);
-    border-radius: 0.25em;
+    background: rgba(28, 28, 28, 0.95);
+    border-color: rgba(245, 73, 0, 0.6);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.45);
+  }
+
+  &:active {
+    transform: translateY(0);
+    border-color: rgba(245, 73, 0, 0.8);
+  }
+
+  .options-header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.35em;
+  }
+
+  .options-header-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+  }
+
+  .installed-summary {
+    padding: 0.35em 0.65em;
+    background: rgba(245, 73, 0, 0.12);
+    border: 1px solid rgba(245, 73, 0, 0.4);
+    border-radius: 0.375em;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.8em;
+    max-width: 12em;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
   }
   
   h3 {
@@ -1151,16 +1252,25 @@ onBeforeUnmount(() => {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.5em 0.75em;
-    background: transparent;
-    border: none;
+    padding: 0.75em 0.9em;
+    background: rgba(18, 18, 18, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     cursor: pointer;
-    transition: background 0.2s;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s, box-shadow 0.15s;
     margin-bottom: 0.75em;
+    border-radius: 0.5em;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.28);
     
     &:hover {
-      background: rgba(23, 23, 23, 0.5);
-      border-radius: 0.25em;
+      background: rgba(28, 28, 28, 0.95);
+      border-color: rgba(245, 73, 0, 0.5);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
+    }
+
+    &:active {
+      transform: translateY(0);
+      border-color: rgba(245, 73, 0, 0.75);
     }
     
     h3 {
@@ -1188,15 +1298,24 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.625em 0.75em;
-  background: transparent;
-  border: none;
+  padding: 0.75em 0.9em;
+  background: rgba(18, 18, 18, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   cursor: pointer;
-  transition: background 0.2s;
-  border-radius: 0.25em;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s, box-shadow 0.15s;
+  border-radius: 0.5em;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.28);
   
   &:hover {
-    background: rgba(23, 23, 23, 0.5);
+    background: rgba(28, 28, 28, 0.95);
+    border-color: rgba(245, 73, 0, 0.5);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
+  }
+
+  &:active {
+    transform: translateY(0);
+    border-color: rgba(245, 73, 0, 0.75);
   }
   
   .category-name {
