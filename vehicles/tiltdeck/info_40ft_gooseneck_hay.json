@@ -1,0 +1,10 @@
+{
+    "Configuration": "40ft Gooseneck (Hay Bales 9600KG)",
+    "Description": "40ft Hydraulic tilt gooseneck trailer with heavy duty suspension, loaded with 9600kg of haybales",
+    "Value": 31000,
+    "Weight": 13680,
+    "defaultPaintName1": "Bermuda Blue",
+    "defaultPaintName2": "Bermuda Blue",
+    "theLoad": "hay",
+    "hasLoad": true
+}
