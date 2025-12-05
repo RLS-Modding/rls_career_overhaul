@@ -1,0 +1,10 @@
+{
+    "Configuration": "40ft Gooseneck",
+    "Description": "40ft Hydraulic tilt gooseneck trailer with heavy duty suspension",
+    "Value": 30000,
+    "Weight": 4080,
+    "defaultPaintName1": "Fire Red",
+    "defaultPaintName2": "Fire Red",
+    "theLoad": "Empty",
+    "hasLoad": false
+}

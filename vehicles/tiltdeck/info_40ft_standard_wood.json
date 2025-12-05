@@ -1,0 +1,10 @@
+{
+    "Configuration": "40ft Bumperpull (Planks 7000kg)",
+    "Description": "40ft Hydraulic tilt bumperpull trailer loaded with 7000kg of wood planks",
+    "Value": 28000,
+    "Weight": 10600,
+    "defaultPaintName1": "Light Brown",
+    "defaultPaintName2": "Light Brown",
+    "theLoad": "40planks",
+    "hasLoad": true
+}
