@@ -270,6 +270,7 @@ local function setVehicleDirty(inventoryId)
 end
 
 local function updatePartConditionsOfSpawnedVehicles(callback)
+  local vehicleCount = tableSize(vehIdToInventoryId)
   local callbackCounter = 0
   for vehId, inventoryId in pairs(vehIdToInventoryId) do
     setVehicleDirty(inventoryId)
@@ -503,6 +504,13 @@ local function onPartConditionsUpdateFinished()
 end
 
 local function getPartConditionsCallback(partConditions, inventoryId)
+  local conditionsType = type(partConditions)
+  if conditionsType ~= "table" then
+    onPartConditionsUpdateFinished()
+    return
+  end
+  local count = 0
+  for _ in pairs(partConditions) do count = count + 1 end
   vehicles[inventoryId].partConditions = partConditions
   onPartConditionsUpdateFinished()
   career_modules_partInventory.updatePartConditionsInInventory()

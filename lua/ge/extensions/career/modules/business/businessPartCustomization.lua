@@ -360,6 +360,17 @@ local function initializePreviewVehicle(businessId, vehicleId)
   end
 
   local vehId = vehObj:getID()
+
+  if isPersonal then
+    local partConditions = vehicle.partConditions or {}
+    local conditionsType = type(partConditions)
+    local count = 0
+    if conditionsType == "table" then
+      for _ in pairs(partConditions) do count = count + 1 end
+    end
+    core_vehicleBridge.executeAction(vehObj, 'initPartConditions', partConditions, nil, nil, nil, nil)
+  end
+
   local vehicleData = extensions.core_vehicle_manager.getVehicleData(vehId)
 
   -- We need vehicleData for ioCtx later, but config should come from storage if possible

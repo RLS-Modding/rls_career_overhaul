@@ -382,11 +382,13 @@ local function spawnBusinessVehicle(businessId, vehicleId)
     keepLoaded = true
   }
 
+  local usingCustomConfig = false
   if vehicle.config and vehicle.config.partsTree then
     vehicleData.config = deepcopy(vehicle.config)
     if vehicle.vars then
       vehicleData.config.vars = deepcopy(vehicle.vars)
     end
+    usingCustomConfig = true
   elseif vehicle.vars then
     vehicleData.config = {
       key = configKey,
@@ -769,8 +771,10 @@ local function updateVehicle(businessId, vehicleId, vehicleData)
   for i, vehicle in ipairs(vehicles) do
     local vehId = tonumber(vehicle.vehicleId) or vehicle.vehicleId
     if vehId == vehicleId then
+      local updatedKeys = {}
       for key, value in pairs(vehicleData) do
         vehicle[key] = value
+        table.insert(updatedKeys, key)
       end
       businessVehicles[businessId] = vehicles
       return true
