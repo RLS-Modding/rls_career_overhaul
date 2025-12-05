@@ -2067,7 +2067,7 @@ local function generateJob(businessId)
 
   local baseTime = nil
   if race and gameplay_events_freeroam_dataCollection and gameplay_events_freeroam_dataCollection.predictRaceTime then
-    baseTime = gameplay_events_freeroam_dataCollection.predictRaceTime(power, weight, year, race)
+    baseTime = math.abs(gameplay_events_freeroam_dataCollection.predictRaceTime(power, weight, year, race) + 0.5)
   end
   if not baseTime then
     local powerToWeight = power / weight
