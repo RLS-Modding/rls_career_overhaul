@@ -233,24 +233,41 @@ local function getPulledOutVehiclesList(businessId)
 end
 
 local function getActiveBusinessVehicle(businessId)
+  if not businessId then
+    return nil
+  end
+
+  -- Prefer business vehicles first
+  if career_modules_business_businessInventory then
+    if career_modules_business_businessInventory.getActiveVehicle then
+      local active = career_modules_business_businessInventory.getActiveVehicle(businessId)
+      if active then
+        log("D", "businessComputer.getActiveBusinessVehicle", "Using active business vehicle for businessId=" .. tostring(businessId))
+        return active
+      end
+    end
+    local pulled = career_modules_business_businessInventory.getPulledOutVehicle(businessId)
+    if pulled then
+      log("D", "businessComputer.getActiveBusinessVehicle", "Using pulled-out business vehicle for businessId=" .. tostring(businessId))
+      return pulled
+    end
+  end
+
+  -- Fallback to personal vehicle
   local _, businessType = resolveBusinessModule(businessId)
   if businessType then
     local businessObj = career_modules_business_businessManager and career_modules_business_businessManager.getBusinessObject(businessType)
     if businessObj and businessObj.getActivePersonalVehicle then
       local personalVehicle = businessObj.getActivePersonalVehicle(businessId)
       if personalVehicle then
+        log("D", "businessComputer.getActiveBusinessVehicle", "Using personal vehicle for businessId=" .. tostring(businessId))
         return personalVehicle
       end
     end
   end
 
-  if not career_modules_business_businessInventory then
-    return nil
-  end
-  if career_modules_business_businessInventory.getActiveVehicle then
-    return career_modules_business_businessInventory.getActiveVehicle(businessId)
-  end
-  return career_modules_business_businessInventory.getPulledOutVehicle(businessId)
+  log("D", "businessComputer.getActiveBusinessVehicle", "No active vehicle found for businessId=" .. tostring(businessId))
+  return nil
 end
 
 local function isDamageLocked(businessId, vehicleId)
@@ -2471,6 +2488,17 @@ local function exitShoppingVehicle(businessId)
   end
   if gameplay_walk then
     gameplay_walk.setWalkingMode(true, nil, nil, true)
+  end
+
+  if businessId then
+    local _, businessType = resolveBusinessModule(businessId)
+    if businessType then
+      local businessObj = career_modules_business_businessManager and career_modules_business_businessManager.getBusinessObject(businessType)
+      if businessObj and businessObj.clearActivePersonalVehicle then
+        businessObj.clearActivePersonalVehicle(businessId)
+        log("D", "businessComputer.exitShoppingVehicle", "Cleared personal selection for businessId=" .. tostring(businessId))
+      end
+    end
   end
   return true
 end
