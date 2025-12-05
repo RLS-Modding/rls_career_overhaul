@@ -626,6 +626,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
             }
           }
           await requestVehicleTuningData(pulledOutVehicle.value.vehicleId)
+          await updatePowerWeight()
         }
       }, 600)
     }
@@ -1714,6 +1715,7 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
       } catch (error) {
       }
     }
+    await updatePowerWeight()
   }
 
   const updatePowerWeight = async () => {
