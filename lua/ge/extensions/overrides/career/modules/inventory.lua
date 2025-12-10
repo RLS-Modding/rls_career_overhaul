@@ -1277,7 +1277,7 @@ local function openMenu(_chooseButtonsData, header, _buttonsActive)
   chooseButtonsData = _chooseButtonsData or {{}}
   for _, buttonData in ipairs(chooseButtonsData) do
     buttonData.buttonText = buttonData.buttonText or "Choose Vehicle"
-    if buttonData.repairRequired == nil then buttonData.repairRequired = true end
+    if buttonData.repairRequired == nil then buttonData.repairRequired = false end
     if buttonData.insuranceRequired == nil then buttonData.insuranceRequired = false end
     if buttonData.ownedRequired == nil then buttonData.ownedRequired = false end
     buttonData.callback = buttonData.callback or function() end
