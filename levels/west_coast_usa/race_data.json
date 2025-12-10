@@ -1,9 +1,9 @@
 {
-  "races":{
-    "beachCircuit":{
-      "apexOffset":2,
-      "bestTime":32,
-      "checkpointIndexs":[
+  "races": {
+    "beachCircuit": {
+      "apexOffset": 2,
+      "bestTime": 32,
+      "checkpointIndexs": [
         9,
         16,
         25,
@@ -13,21 +13,21 @@
         56,
         63
       ],
-      "checkpointRoad":[
+      "checkpointRoad": [
         "beachCircuit"
       ],
-      "displaySpeed":true,
-      "hotlap":27,
-      "label":"Beach Circuit",
-      "minCheckpointDistance":45,
-      "reward":2000,
-      "type":[
+      "displaySpeed": true,
+      "hotlap": 27,
+      "label": "Beach Circuit",
+      "minCheckpointDistance": 45,
+      "reward": 2000,
+      "type": [
         "offroad"
       ]
     },
-    "dirtCircuit":{
-      "bestTime":65,
-      "checkpointIndexs":[
+    "dirtCircuit": {
+      "bestTime": 65,
+      "checkpointIndexs": [
         3,
         13,
         22,
@@ -37,136 +37,137 @@
         58,
         66
       ],
-      "checkpointRoad":[
+      "checkpointRoad": [
         "dirtloop"
       ],
-      "hotlap":60,
-      "label":"Dirt Circuit",
-      "reward":3000,
-      "type":[
+      "hotlap": 60,
+      "label": "Dirt Circuit",
+      "reward": 3000,
+      "type": [
         "offroad"
       ]
     },
-    "dirtOval":{
-      "bestTime":32,
-      "checkpointRoad":[
+    "dirtOval": {
+      "bestTime": 32,
+      "checkpointRoad": [
         "dirtOval"
       ],
-      "damageFactor":1,
-      "hotlap":29,
-      "label":"Dirt Oval",
-      "reward":350,
-      "type":[
+      "damageFactor": 1,
+      "hotlap": 29,
+      "label": "Dirt Oval",
+      "reward": 350,
+      "type": [
         "oval"
       ]
     },
-    "drag":{
-      "bestTime":11,
-      "checkpoints":2,
-      "displaySpeed":true,
-      "label":"Drag Strip",
-      "predictCoef":{
-        "a":4.0050901705661,
-        "b":4.6929807292723,
-        "c":0.43
+    "drag": {
+      "bestTime": 11,
+      "checkpoints": 2,
+      "displaySpeed": true,
+      "label": "Drag Strip",
+      "predictCoef": {
+        "a": 4.0050901705661,
+        "b": 4.6929807292723,
+        "c": 0.43
       },
-      "predictCoefNew":{
-        "a":15.106107357953,
-        "b":-28.564604718817,
-        "c":7.0472599367493,
-        "d":-2.8484621822449,
-        "e":20.499471283148,
-        "f":0.28942213562117,
-        "g":0.40637099566117,
-        "powerMax":6136.410422688,
-        "powerMin":31.213796039209,
-        "weightMax":5757.1787109375,
-        "weightMin":476.56079101563,
-        "yearMax":2022,
-        "yearMin":1933
+      "predictCoefNew": {
+        "a": 15.106107357953,
+        "b": -28.564604718817,
+        "c": 7.0472599367493,
+        "d": -2.8484621822449,
+        "e": 20.499471283148,
+        "f": 0.28942213562117,
+        "g": 0.40637099566117,
+        "powerMax": 6136.410422688,
+        "powerMin": 31.213796039209,
+        "weightMax": 5757.1787109375,
+        "weightMin": 476.56079101563,
+        "yearMax": 2022,
+        "yearMin": 1933
       },
-      "reward":1650,
-      "tuningShop":{
-        "commute":120,
-        "decimalPlaces":1,
-        "levels":[
+      "reward": 1650,
+      "tuningShop": {
+        "commute": 120,
+        "decimalPlaces": 1,
+        "levels": [
           {
-            "maxImprovement":1.2,
-            "maxPayout":30000,
-            "minImprovement":1.1,
-            "minPayout":20000
+            "maxImprovement": 1.2,
+            "maxPayout": 30000,
+            "minImprovement": 1.1,
+            "minPayout": 20000
           },
           {
-            "maxImprovement":1.8,
-            "maxPayout":50000,
-            "minImprovement":1.2,
-            "minPayout":30000
+            "maxImprovement": 1.8,
+            "maxPayout": 50000,
+            "minImprovement": 1.2,
+            "minPayout": 30000
           },
           {
-            "maxImprovement":2.4,
-            "maxPayout":80000,
-            "minImprovement":1.8,
-            "minPayout":50000
+            "maxImprovement": 2.4,
+            "maxPayout": 80000,
+            "minImprovement": 1.8,
+            "minPayout": 50000
           }
         ]
       },
-      "type":[
+      "type": [
         "drag"
       ]
     },
-    "dragHighway":{
-      "bestTime":18,
-      "checkpointIndexs":{},
-      "checkpointRoad":[
+    "dragHighway": {
+      "bestTime": 18,
+      "checkpointIndexs": {},
+      "checkpointRoad": [
         "dragHighway"
       ],
-      "displaySpeed":true,
-      "label":"No Prep Highway Drag",
-      "reward":1900,
-      "type":[
+      "displaySpeed": true,
+      "label": "No Prep Highway Drag",
+      "reward": 1900,
+      "type": [
         "drag"
       ]
     },
-    "hotrolledDrift":{
-      "bestTime":30,
-      "checkpointIndexs":[
+    "hotrolledDrift": {
+      "bestTime": 30,
+      "checkpointIndexs": [
         6,
         16,
         20,
         27,
         33
       ],
-      "checkpointRoad":[
+      "checkpointRoad": [
         "hotrolledDrift"
       ],
-      "driftGoal":3500,
-      "label":"Hotrolled Drift",
-      "reward":1500,
-      "type":[
+      "driftGoal": 3500,
+      "label": "Hotrolled Drift",
+      "reward": 1500,
+      "type": [
         "drift"
       ]
     },
-    "islandTouge":{
-      "bestTime":25,
-      "checkpointIndexs":[
+    "islandTouge": {
+      "bestTime": 25,
+      "checkpointIndexs": [
         7,
         16,
         27,
         41
       ],
-      "checkpointRoad":[
+      "checkpointRoad": [
         "islandTouge"
       ],
-      "driftGoal":3000,
-      "label":"Island Touge Drift",
-      "reward":3000,
-      "type":[
+      "driftGoal": 3000,
+      "label": "Island Touge Drift",
+      "reward": 3000,
+      "type": [
         "drift"
       ]
     },
-    "koh1":{
-      "bestTime":125,
-      "checkpointIndexs":[
+    "koh1": {
+      "bestTime": 125,
+      "timeout": 60,
+      "checkpointIndexs": [
         8,
         11,
         15,
@@ -191,19 +192,20 @@
         110,
         113
       ],
-      "checkpointRoad":[
+      "checkpointRoad": [
         "koh1"
       ],
-      "hotlap":115,
-      "label":"Ultra4 1",
-      "reward":2000,
-      "type":[
+      "hotlap": 115,
+      "label": "Ultra4 Race 1",
+      "reward": 2000,
+      "type": [
         "offroad"
       ]
     },
-    "koh2":{
-      "bestTime":185,
-      "checkpointIndexs":[
+    "koh2": {
+      "bestTime": 185,
+      "timeout": 60,
+      "checkpointIndexs": [
         6,
         15,
         23,
@@ -230,42 +232,42 @@
         112,
         119
       ],
-      "checkpointRoad":[
+      "checkpointRoad": [
         "koh2"
       ],
-      "hotlap":175,
-      "label":"Ultra4 2",
-      "reward":3000,
-      "type":[
+      "hotlap": 175,
+      "label": "Ultra4 Race 2",
+      "reward": 3000,
+      "type": [
         "offroad"
       ]
     },
-    "mudDrag1":{
-      "bestTime":10,
-      "checkpointRoad":[
+    "mudDrag1": {
+      "bestTime": 10,
+      "checkpointRoad": [
         "mudDrag1"
       ],
-      "label":"Mud Drag Easy",
-      "reward":1500,
-      "type":[
+      "label": "Mud Drag Easy",
+      "reward": 1500,
+      "type": [
         "mud"
       ]
     },
-    "mudDrag2":{
-      "bestTime":16,
-      "checkpointIndexs":{},
-      "checkpointRoad":[
+    "mudDrag2": {
+      "bestTime": 16,
+      "checkpointIndexs": {},
+      "checkpointRoad": [
         "mudDrag2"
       ],
-      "label":"Mud Drag Hard",
-      "reward":2700,
-      "type":[
+      "label": "Mud Drag Hard",
+      "reward": 2700,
+      "type": [
         "extremeMud"
       ]
     },
-    "quarryCircuit":{
-      "bestTime":29,
-      "checkpointIndexs":[
+    "quarryCircuit": {
+      "bestTime": 29,
+      "checkpointIndexs": [
         5,
         10,
         13,
@@ -274,19 +276,19 @@
         25,
         32
       ],
-      "checkpointRoad":[
+      "checkpointRoad": [
         "quarryCircuit"
       ],
-      "hotlap":25,
-      "label":"Quarry Circuit",
-      "reward":2000,
-      "type":[
+      "hotlap": 25,
+      "label": "Quarry Circuit",
+      "reward": 2000,
+      "type": [
         "rally"
       ]
     },
-    "raceTrackDrift":{
-      "bestTime":35,
-      "checkpointIndexs":[
+    "raceTrackDrift": {
+      "bestTime": 35,
+      "checkpointIndexs": [
         5,
         10,
         15,
@@ -296,22 +298,22 @@
         27,
         31
       ],
-      "checkpointRoad":[
+      "checkpointRoad": [
         "raceTrackDrift"
       ],
-      "driftGoal":4000,
-      "hotlap":30,
-      "label":"Parking Lot Drift",
-      "minCheckpointDistance":20,
-      "reward":1500,
-      "type":[
+      "driftGoal": 4000,
+      "hotlap": 30,
+      "label": "Parking Lot Drift",
+      "minCheckpointDistance": 20,
+      "reward": 1500,
+      "type": [
         "drift"
       ]
     },
-    "rally1":{
-      "apexOffset":2,
-      "bestTime":75,
-      "checkpointIndexs":[
+    "rally1": {
+      "apexOffset": 2,
+      "bestTime": 75,
+      "checkpointIndexs": [
         12,
         19,
         24,
@@ -324,19 +326,19 @@
         65,
         71
       ],
-      "checkpointRoad":[
+      "checkpointRoad": [
         "rally1"
       ],
-      "label":"Rally Stage 1",
-      "reward":2500,
-      "type":[
+      "label": "Rally Stage 1",
+      "reward": 2500,
+      "type": [
         "rally"
       ]
     },
-    "rally2":{
-      "apexOffset":2,
-      "bestTime":125,
-      "checkpointIndexs":[
+    "rally2": {
+      "apexOffset": 2,
+      "bestTime": 125,
+      "checkpointIndexs": [
         8,
         12,
         16,
@@ -356,19 +358,19 @@
         83,
         88
       ],
-      "checkpointRoad":[
+      "checkpointRoad": [
         "rally2"
       ],
-      "label":"Rally Stage 2",
-      "reward":3000,
-      "type":[
+      "label": "Rally Stage 2",
+      "reward": 3000,
+      "type": [
         "rally"
       ]
     },
-    "rally3":{
-      "apexOffset":1,
-      "bestTime":140,
-      "checkpointIndexs":[
+    "rally3": {
+      "apexOffset": 1,
+      "bestTime": 140,
+      "checkpointIndexs": [
         3,
         16,
         22,
@@ -396,18 +398,18 @@
         167,
         173
       ],
-      "checkpointRoad":[
+      "checkpointRoad": [
         "rally3"
       ],
-      "label":"Rally Stage 3",
-      "reward":3000,
-      "type":[
+      "label": "Rally Stage 3",
+      "reward": 3000,
+      "type": [
         "rally"
       ]
     },
-    "rally4":{
-      "bestTime":95,
-      "checkpointIndexs":[
+    "rally4": {
+      "bestTime": 95,
+      "checkpointIndexs": [
         4,
         6,
         10,
@@ -427,18 +429,18 @@
         73,
         79
       ],
-      "checkpointRoad":[
+      "checkpointRoad": [
         "rally4"
       ],
-      "label":"Rally Stage 4 - Final",
-      "reward":3000,
-      "type":[
+      "label": "Rally Stage 4 - Final",
+      "reward": 3000,
+      "type": [
         "rally"
       ]
     },
-    "redwoodDrift":{
-      "bestTime":60,
-      "checkpointIndexs":[
+    "redwoodDrift": {
+      "bestTime": 60,
+      "checkpointIndexs": [
         5,
         8,
         16,
@@ -448,19 +450,19 @@
         46,
         59
       ],
-      "checkpointRoad":[
+      "checkpointRoad": [
         "redwoodDrift"
       ],
-      "driftGoal":7000,
-      "label":"Redwood Drift",
-      "reward":1500,
-      "type":[
+      "driftGoal": 7000,
+      "label": "Redwood Drift",
+      "reward": 1500,
+      "type": [
         "drift"
       ]
     },
-    "redwoodDriftR":{
-      "bestTime":60,
-      "checkpointIndexs":[
+    "redwoodDriftR": {
+      "bestTime": 60,
+      "checkpointIndexs": [
         6,
         10,
         20,
@@ -471,49 +473,49 @@
         40,
         50
       ],
-      "checkpointRoad":[
+      "checkpointRoad": [
         "redwoodDriftR"
       ],
-      "driftGoal":7000,
-      "label":"Redwood Drift Reverse",
-      "reward":1500,
-      "type":[
+      "driftGoal": 7000,
+      "label": "Redwood Drift Reverse",
+      "reward": 1500,
+      "type": [
         "drift"
       ]
     },
-    "rockClimbL":{
-      "bestTime":12,
-      "checkpointIndexs":[
+    "rockClimbL": {
+      "bestTime": 12,
+      "checkpointIndexs": [
         4
       ],
-      "checkpointRoad":[
+      "checkpointRoad": [
         "rockClimbL"
       ],
-      "damageFactor":1,
-      "label":"Rock Crawl Long",
-      "reward":12000,
-      "timeout":60,
-      "type":[
+      "damageFactor": 1,
+      "label": "Rock Crawl Long",
+      "reward": 12000,
+      "timeout": 60,
+      "type": [
         "crawl"
       ]
     },
-    "rockClimbS":{
-      "bestTime":5,
-      "checkpointIndexs":{},
-      "checkpointRoad":[
+    "rockClimbS": {
+      "bestTime": 5,
+      "checkpointIndexs": {},
+      "checkpointRoad": [
         "rockClimbS"
       ],
-      "damageFactor":1,
-      "label":"Rock Crawl Short",
-      "reward":5000,
-      "timeout":60,
-      "type":[
+      "damageFactor": 1,
+      "label": "Rock Crawl Short",
+      "reward": 5000,
+      "timeout": 60,
+      "type": [
         "crawl"
       ]
     },
-    "rubberBand":{
-      "bestTime":70,
-      "checkpointIndexs":[
+    "rubberBand": {
+      "bestTime": 70,
+      "checkpointIndexs": [
         3,
         8,
         15,
@@ -521,141 +523,141 @@
         36,
         43
       ],
-      "checkpointRoad":[
+      "checkpointRoad": [
         "rubberBandMain"
       ],
-      "hotlap":55,
-      "label":"Rubberband Ridge",
-      "reward":2000,
-      "runningStart":true,
-      "type":[
+      "hotlap": 55,
+      "label": "Rubberband Ridge",
+      "reward": 2000,
+      "runningStart": true,
+      "type": [
         "offroad"
       ]
     },
-    "sealbrikDrift":{
-      "bestTime":30,
-      "checkpointRoad":[
+    "sealbrikDrift": {
+      "bestTime": 30,
+      "checkpointRoad": [
         "sealbrikDrift"
       ],
-      "driftGoal":4500,
-      "label":"Sealbrik Drift",
-      "reward":1500,
-      "type":[
+      "driftGoal": 4500,
+      "label": "Sealbrik Drift",
+      "reward": 1500,
+      "type": [
         "drift"
       ]
     },
-    "track":{
-      "altRoute":{
-        "altInfo":"**Continue Left for Standard Track\nHair Pin Right for Short Track**",
-        "bestTime":100,
-        "checkpointRoad":"trackalt",
-        "hotlap":85,
-        "label":"Short Track",
-        "mergeCheckpoints":[
+    "track": {
+      "altRoute": {
+        "altInfo": "**Continue Left for Standard Track\nHair Pin Right for Short Track**",
+        "bestTime": 100,
+        "checkpointRoad": "trackalt",
+        "hotlap": 85,
+        "label": "Short Track",
+        "mergeCheckpoints": [
           1,
           10
         ],
-        "predictCoef":{
-          "a":43.561627794035,
-          "b":19.980667546878,
-          "c":0.37
+        "predictCoef": {
+          "a": 43.561627794035,
+          "b": 19.980667546878,
+          "c": 0.37
         },
-        "predictCoefNew":{
-          "a":90.93953231776,
-          "b":-50.824045475588,
-          "c":31.802789907156,
-          "d":-18.201009904284,
-          "e":34.547243853034,
-          "f":-15.86085920319,
-          "g":2.8622826947625,
-          "powerMax":1057.3108431199,
-          "powerMin":53.307597038076,
-          "weightMax":2195.8974609375,
-          "weightMin":646.57501220703,
-          "yearMax":2022,
-          "yearMin":1970
+        "predictCoefNew": {
+          "a": 90.93953231776,
+          "b": -50.824045475588,
+          "c": 31.802789907156,
+          "d": -18.201009904284,
+          "e": 34.547243853034,
+          "f": -15.86085920319,
+          "g": 2.8622826947625,
+          "powerMax": 1057.3108431199,
+          "powerMin": 53.307597038076,
+          "weightMax": 2195.8974609375,
+          "weightMin": 646.57501220703,
+          "yearMax": 2022,
+          "yearMin": 1970
         },
-        "reward":1500,
-        "tuningShop":{
-          "commute":45,
-          "decimalPlaces":1,
-          "levels":[
+        "reward": 1500,
+        "tuningShop": {
+          "commute": 45,
+          "decimalPlaces": 1,
+          "levels": [
             {
-              "maxImprovement":1.1,
-              "maxPayout":30000,
-              "minImprovement":1.05,
-              "minPayout":20000
+              "maxImprovement": 1.1,
+              "maxPayout": 30000,
+              "minImprovement": 1.05,
+              "minPayout": 20000
             },
             {
-              "maxImprovement":1.15,
-              "maxPayout":40000,
-              "minImprovement":1.125,
-              "minPayout":30000
+              "maxImprovement": 1.15,
+              "maxPayout": 40000,
+              "minImprovement": 1.125,
+              "minPayout": 30000
             },
             {
-              "maxImprovement":1.2,
-              "maxPayout":50000,
-              "minImprovement":1.15,
-              "minPayout":40000
+              "maxImprovement": 1.2,
+              "maxPayout": 50000,
+              "minImprovement": 1.15,
+              "minPayout": 40000
             }
           ]
         }
       },
-      "apexOffset":1,
-      "bestTime":140,
-      "checkpointIndexs":{},
-      "checkpointRoad":[
+      "apexOffset": 1,
+      "bestTime": 140,
+      "checkpointIndexs": {},
+      "checkpointRoad": [
         "trackloop"
       ],
-      "hotlap":125,
-      "label":"Track",
-      "predictCoef":{
-        "a":97.766325905867,
-        "b":2.2121350753093,
-        "c":1.19
+      "hotlap": 125,
+      "label": "Track",
+      "predictCoef": {
+        "a": 97.766325905867,
+        "b": 2.2121350753093,
+        "c": 1.19
       },
-      "predictCoefNew":{
-        "a":153.11934637151,
-        "b":-189.59498189806,
-        "c":37.561657814555,
-        "d":-70.494030597032,
-        "e":150.3568452057,
-        "f":-24.01067045677,
-        "g":56.789307659436,
-        "powerMax":717.60879825815,
-        "powerMin":76.034369352468,
-        "weightMax":1882.9776611328,
-        "weightMin":641.88604736328,
-        "yearMax":2022,
-        "yearMin":1984
+      "predictCoefNew": {
+        "a": 153.11934637151,
+        "b": -189.59498189806,
+        "c": 37.561657814555,
+        "d": -70.494030597032,
+        "e": 150.3568452057,
+        "f": -24.01067045677,
+        "g": 56.789307659436,
+        "powerMax": 717.60879825815,
+        "powerMin": 76.034369352468,
+        "weightMax": 1882.9776611328,
+        "weightMin": 641.88604736328,
+        "yearMax": 2022,
+        "yearMin": 1984
       },
-      "reward":2000,
-      "runningStart":true,
-      "tuningShop":{
-        "commute":45,
-        "decimalPlaces":1,
-        "levels":[
+      "reward": 2000,
+      "runningStart": true,
+      "tuningShop": {
+        "commute": 45,
+        "decimalPlaces": 1,
+        "levels": [
           {
-            "maxImprovement":1.1,
-            "maxPayout":30000,
-            "minImprovement":1.05,
-            "minPayout":20000
+            "maxImprovement": 1.1,
+            "maxPayout": 30000,
+            "minImprovement": 1.05,
+            "minPayout": 20000
           },
           {
-            "maxImprovement":1.15,
-            "maxPayout":40000,
-            "minImprovement":1.125,
-            "minPayout":30000
+            "maxImprovement": 1.15,
+            "maxPayout": 40000,
+            "minImprovement": 1.125,
+            "minPayout": 30000
           },
           {
-            "maxImprovement":1.2,
-            "maxPayout":50000,
-            "minImprovement":1.15,
-            "minPayout":40000
+            "maxImprovement": 1.2,
+            "maxPayout": 50000,
+            "minImprovement": 1.15,
+            "minPayout": 40000
           }
         ]
       },
-      "type":[
+      "type": [
         "apexRacing"
       ]
     }
