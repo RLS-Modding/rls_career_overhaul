@@ -1,0 +1,136 @@
+import { ref, watch, computed } from "vue"
+import { defineStore } from "pinia"
+import { useBridge, lua } from "@/bridge"
+
+export const useVehiclePurchaseStore = defineStore("vehiclePurchase", () => {
+  const { events } = useBridge()
+
+  const purchaseType = ref("")
+  const vehicleInfo = ref({})
+  const playerMoney = ref(0)
+  const alreadyDidTestDrive = ref(false)
+  const inventoryHasFreeSlot = ref(false)
+  const tradeInVehicleInfo = ref({})
+  const tradeInEnabled = ref(false)
+  const forceTradeIn = ref(false)
+  const locationSelectionEnabled = ref(false)
+  const forceNoDelivery = ref(false)
+  const makeDelivery = ref(false)
+  const buyCustomLicensePlate = ref(false)
+  const customLicensePlateText = ref("")
+  const dealershipId = ref("")
+  const prices = ref({})
+  const insuranceOptions = ref({})
+
+  const finalPackagePrice = computed(() => {
+    let price = prices.value.finalPrice
+
+    if (buyCustomLicensePlate.value) {
+      price += prices.value.customLicensePlate
+    }
+
+    if (insuranceOptions.value.insuranceId > 0) {
+      price += insuranceOptions.value.priceMoney
+    }
+
+    return price
+  })
+
+  const handlePurchaseData = data => {
+    vehicleInfo.value = data.vehicleInfo
+    playerMoney.value = data.playerMoney
+    inventoryHasFreeSlot.value = data.inventoryHasFreeSlot
+    purchaseType.value = data.purchaseType
+    tradeInEnabled.value = data.tradeInEnabled
+    locationSelectionEnabled.value = data.locationSelectionEnabled
+    forceNoDelivery.value = data.forceNoDelivery
+    prices.value = data.prices
+    makeDelivery.value = false
+    buyCustomLicensePlate.value = false
+    customLicensePlateText.value = ""
+    dealershipId.value = data.dealershipId
+
+    forceTradeIn.value = data.forceTradeIn
+    insuranceOptions.value = data.insuranceOptions
+
+    if (data.tradeInVehicleInfo !== undefined) {
+      tradeInVehicleInfo.value = data.tradeInVehicleInfo
+    } else {
+      tradeInVehicleInfo.value = {}
+    }
+  }
+
+  function requestPurchaseData() {
+    lua.career_modules_vehicleShopping.sendPurchaseDataToUi()
+  }
+
+  function buyVehicle(makeDelivery) {
+    let options = {
+      makeDelivery: makeDelivery,
+      insuranceId: insuranceOptions.value.insuranceId
+    }
+    if (buyCustomLicensePlate.value) {
+      options.licensePlateText = customLicensePlateText.value
+    }
+    options.dealershipId = dealershipId.value
+    lua.career_modules_vehicleShopping.buyFromPurchaseMenu(purchaseType.value, options)
+  }
+
+  function inventoryIsEmpty() {
+    return lua.career_modules_inventory.isEmpty()
+  }
+
+  function chooseTradeInVehicle() {
+    lua.career_modules_vehicleShopping.openInventoryMenuForTradeIn()
+  }
+
+  function removeTradeInVehicle() {
+    lua.career_modules_vehicleShopping.removeTradeInVehicle()
+  }
+
+  function cancel() {
+    lua.career_modules_vehicleShopping.cancelPurchase(purchaseType.value)
+  }
+
+  function startTestDrive() {
+    lua.career_modules_inspectVehicle.startTestDrive()
+  }
+
+  function dispose() {
+    listen(false)
+  }
+
+  // Lua events
+  const listen = state => {
+    const method = state ? "on" : "off"
+    events[method]("vehiclePurchaseData", handlePurchaseData)
+  }
+  listen(true)
+
+  return {
+    buyVehicle,
+    cancel,
+    chooseTradeInVehicle,
+    purchaseType,
+    startTestDrive,
+    dispose,
+    forceNoDelivery,
+    forceTradeIn,
+    inventoryIsEmpty,
+    inventoryHasFreeSlot,
+    locationSelectionEnabled,
+    makeDelivery,
+    playerMoney,
+    prices,
+    finalPackagePrice,
+    removeTradeInVehicle,
+    requestPurchaseData,
+    tradeInEnabled,
+    tradeInVehicleInfo,
+    vehicleInfo,
+    buyCustomLicensePlate,
+    customLicensePlateText,
+    alreadyDidTestDrive,
+    insuranceOptions,
+  }
+})
