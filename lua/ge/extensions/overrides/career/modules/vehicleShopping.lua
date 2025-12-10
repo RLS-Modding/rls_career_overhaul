@@ -6,7 +6,7 @@ local M = {}
 M.dependencies =
   {'career_career', 'career_modules_inspectVehicle', 'util_configListGenerator', 'freeroam_organizations'}
 
-local moduleVersion = 61
+local moduleVersion = 62
 local jbeamIO = require('jbeam/io')
 
 -- Configuration constants
@@ -1780,8 +1780,10 @@ local function buyFromPurchaseMenu(purchaseType, options)
   end
 
   -- Remove the vehicle from the shop
+  local targetShopId = tonumber(purchaseData.shopId) or purchaseData.shopId
   for i, vehInfo in ipairs(vehiclesInShop) do
-    if vehInfo.shopId == purchaseData.shopId then
+    local vehShopId = tonumber(vehInfo.shopId) or vehInfo.shopId
+    if vehShopId == targetShopId then
       vehInfo.markedSold = true
       vehInfo.soldViewCounter = 1
       pendingSoldShopIds[purchaseData.shopId] = true
