@@ -25,13 +25,10 @@ local organizationInteraction = {}
 local switchLevel = nil
 local isNewSaveFlag = false
 
-local devActions = {"dropPlayerAtCameraNoReset"}
-local nodegrabberActions = {"nodegrabberGrab", "nodegrabberRender", "nodegrabberStrength", "nodegrabberAction"}
+local nodegrabberActions = {"nodegrabberGrab", "nodegrabberRender", "nodegrabberStrength"}
 
-
-local actionWhitelist = deepcopy(devActions)
-arrayConcat(actionWhitelist, nodegrabberActions)
-local blockedActions = core_input_actionFilter.createActionTemplate({"vehicleTeleporting", "vehicleMenues", "physicsControls", "aiControls", "vehicleSwitching", "funStuff"}, actionWhitelist)
+local actionWhitelist = deepcopy(nodegrabberActions)
+local blockedActions = core_input_actionFilter.createActionTemplate({"vehicleTeleporting", "vehicleMenues", "physicsControls", "aiControls", "vehicleSwitching", "funStuff", "dropPlayerAtCameraNoReset"}, actionWhitelist)
 
 local cheatblockedActions = core_input_actionFilter.createActionTemplate({"aiControls", "funStuff"})
 
@@ -53,11 +50,6 @@ local function updateNodegrabberBlocking()
 end
 
 local function blockInputActions(block)
-  if shipping_build and not (career_modules_cheats and career_modules_cheats.isCheatsMode()) then
-    core_input_actionFilter.setGroup('careerBlockedDevActions', devActions)
-    core_input_actionFilter.addAction(0, 'careerBlockedDevActions', block)
-  end
-
   local actionsToBlock = blockedActions
   if career_modules_cheats and career_modules_cheats.isCheatsMode() then
     actionsToBlock = cheatblockedActions
@@ -105,7 +97,7 @@ local function debugMenu()
       endCareerMode = true
     end
     if imgui.Selectable1("Open Save Folder") then
-      Engine.Platform.exploreFolder(currentSavePath)
+      Engine.Platform.exploreFolder(currentSavePath:lower())
     end
     imgui.EndMenu()
   end
@@ -248,6 +240,14 @@ local function removeNonTrafficVehicles()
   end
 end
 
+local function initAfterLevelLoad(newSave)
+  gameplay_rawPois.clear()
+  core_recoveryPrompt.setDefaultsForCareer()
+  guihooks.trigger('ClearTasklist')
+  core_gamestate.setGameState("career","career", nil)
+  extensions.hook("onCareerActive", true, newSave)
+end
+
 local function activateCareer(removeVehicles, levelToLoad)
   if careerActive then return end
   -- load career
@@ -276,8 +276,11 @@ local function activateCareer(removeVehicles, levelToLoad)
 
   if not getCurrentLevelIdentifier() or (getCurrentLevelIdentifier() ~= levelToLoad) then
     spawn.preventPlayerSpawning = true
-    freeroam_freeroam.startFreeroam(path.getPathLevelMain(levelToLoad))
-    toggleCareerModules(true)
+    freeroam_freeroam.startFreeroam(path.getPathLevelMain(levelToLoad), nil, false, nil, function()
+      toggleCareerModules(true)
+      initAfterLevelLoad(newSave)
+      server.fadeoutLoadingScreen()
+    end)
   else
     if removeVehicles then
       core_vehicles.removeAll()
@@ -287,19 +290,7 @@ local function activateCareer(removeVehicles, levelToLoad)
     toggleCareerModules(true, true)
     M.closeAllMenus()
     M.onUpdate = onUpdate
-  end
-
-  gameplay_rawPois.clear()
-  core_recoveryPrompt.setDefaultsForCareer()
-  extensions.hook("onCareerActive", true, newSave)
-  guihooks.trigger('ClearTasklist')
-  core_gamestate.setGameState("career","career", nil)
-
-  career_modules_playerDriving.ensureTraffic = true
-
-  if career_modules_linearTutorial.isLinearTutorialActive() then
-    M.setAutosaveEnabled(false)
-    print("Disabling autosave because we are in tutorial!")
+    initAfterLevelLoad(newSave)
   end
 end
 
@@ -571,6 +562,7 @@ local function formatSaveSlotForUi(saveSlot)
     data.money = career_modules_playerAttributes.getAttribute("money")
     data.beamXP = career_modules_playerAttributes.getAttribute("beamXP")
     data.vouchers = career_modules_playerAttributes.getAttribute("vouchers")
+    data.insuranceScore = {value = career_modules_insurance_insurance.getDriverScore()}
     data.beamXP.level, data.beamXP.curLvlProgress, data.beamXP.neededForNext = getBeamXPLevel(data.beamXP.value)
     data.branches = {}
 
@@ -590,15 +582,22 @@ local function formatSaveSlotForUi(saveSlot)
       end
     end
     data.currentVehicle = career_modules_inventory.getCurrentVehicle() and career_modules_inventory.getVehicles()[career_modules_inventory.getCurrentVehicle()]
+    data.vehicleCount = #career_modules_inventory.getVehicles()
   else
     -- save slot from file
     local attData = jsonReadFile(autosavePath .. "/career/playerAttributes.json")
     local inventoryData = jsonReadFile(autosavePath .. "/career/inventory.json")
+    local insuranceData = jsonReadFile(autosavePath .. "/career/insurance.json")
 
     if attData then
       data.money = deepcopy(attData.money) or {value=0}
       data.beamXP = deepcopy(attData.beamXP) or {value=0}
       data.vouchers = deepcopy(attData.vouchers) or {value=0}
+      if insuranceData and insuranceData.plDriverScore then
+        data.insuranceScore = {value = insuranceData.plDriverScore}
+      else
+        data.insuranceScore = {value = 0}
+      end
       data.beamXP.level, data.beamXP.curLvlProgress, data.beamXP.neededForNext = getBeamXPLevel(data.beamXP.value)
       data.branches = {}
       for _, br in ipairs(career_branches.getSortedBranches()) do
@@ -625,14 +624,16 @@ local function formatSaveSlotForUi(saveSlot)
       if vehicleData then
         data.currentVehicle = vehicleData.niceName
       end
+
     end
+    local files = FS:findFiles(autosavePath .. "/career/vehicles/", '*.json', 0, false, false)
+    data.vehicleCount = #files
   end
 
   -- add the infoData raw
   if infoData and infoData.version then
-    local currentVersion = tonumber(infoData.version) or 36
-    infoData.incompatibleVersion = career_saveSystem.getBackwardsCompVersion() > currentVersion
-    infoData.outdatedVersion = career_saveSystem.getSaveSystemVersion() > currentVersion
+    infoData.incompatibleVersion = career_saveSystem.getBackwardsCompVersion() > infoData.version
+    infoData.outdatedVersion = career_saveSystem.getSaveSystemVersion() > infoData.version
     tableMerge(data, infoData)
   end
 
@@ -792,7 +793,7 @@ local function getAdditionalMenuButtons()
   if career_modules_vehiclePerformance.isTestInProgress() then
     table.insert(ret, {label = "Cancel Certification", luaFun = "career_modules_vehiclePerformance.cancelTest()", showIndicator = true})
   end
-  
+
   if career_modules_testDrive.isActive() then
     table.insert(ret, {label = "Cancel Test Drive", luaFun = "career_modules_testDrive.stop()", showIndicator = true})
   end

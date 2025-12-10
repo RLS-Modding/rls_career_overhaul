@@ -68,7 +68,7 @@ function C:setup(cluster)
       if iconRendererObj then
         local iconId = iconRendererObj:addIcon(string.format("%s-gsIcon-%d",cluster.id, idx), cluster.icon, iconPos)
         local iconInfo = iconRendererObj:getIconById(iconId)
-        iconInfo.color = ColorI(255,255,255,255)
+        iconInfo.color = ColorI(255,255,255,0)
         iconInfo.customSize = iconWorldSize
         iconInfo.drawIconShadow = false
 
@@ -83,7 +83,7 @@ function C:setup(cluster)
 end
 
 function C:update(data)
-  if not self.visible or not data.veh then return end
+  if not self.visible then return end
 
   local anyOverlap = false
   for idx, area in ipairs(self.doors or {}) do

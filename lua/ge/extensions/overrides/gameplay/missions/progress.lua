@@ -1160,14 +1160,48 @@ local genericUiAggregateProgress = {
 -- formats text depending on formatFunction
 local function tryFormatValueForFunction(val, fun, m)
   if val == nil then
-    return { text = "-" }
+    if fun == 'rallyTimeFormatterWithDNF' then
+      return { text = "DNF" }
+    else
+      return { text = "-" }
+    end
   end
+
   -- add new formatFunctions here if needed
   if fun == 'distance' then
     local result, unit = translateDistance(val, 'auto')
     return { format = "distance", distance = val or 0, text = string.format("%.2f %s", result, unit) }
   elseif fun == 'detailledTime' then
     return { format = "detailledTime", detailledTime = val or 0, text = string.format("%d:%02d:%03d", math.floor(val / 60), val % 60, 1000 * (val % 1)) }
+  elseif fun == 'rallyTimeFormatter' or fun == 'rallyTimeFormatterWithDNF' then
+    -- Round to nearest tenth of a second
+    local roundedSeconds = math.floor((val or 0) * 10 + 0.5) / 10
+    local hours = math.floor(roundedSeconds / 3600)
+    local minutes = math.floor((roundedSeconds % 3600) / 60)
+    local secs = math.floor(roundedSeconds % 60)
+    local tenths = math.floor((roundedSeconds % 1) * 10 + 0.5) % 10
+
+    -- Build time string based on which components are non-zero
+    local timeStr
+    if hours > 0 then
+      -- Show hours: H:MM:SS.T or HH:MM:SS.T
+      timeStr = string.format("%d:%02d:%02d.%d", hours, minutes, secs, tenths)
+    elseif minutes > 0 then
+      -- Show minutes: M:SS.T or MM:SS.T (no leading zero for minutes)
+      timeStr = string.format("%d:%02d.%d", minutes, secs, tenths)
+    else
+      -- Show only seconds: S.T or SS.T (no leading zero for seconds)
+      timeStr = string.format("%d.%d", secs, tenths)
+    end
+
+    return { format = "rallyTimeFormatter", rallyTime = val or 0, text = timeStr }
+  elseif fun == 'rallyPenaltyFormatter' then
+    if not val or val == 0 then
+      return { format = "rallyPenaltyFormatter", penalty = 0, text = "0s" }
+    else
+      local roundedPenalty = math.floor(val + 0.5)
+      return { format = "rallyPenaltyFormatter", penalty = val, text = string.format("+%ds", roundedPenalty) }
+    end
   elseif fun == 'timespan' then
     return { format = 'timespan', timestamp = val or 0, text = "ts: " .. (val or 0) }
   elseif fun == 'stars' then
@@ -1341,6 +1375,55 @@ local function formatAttempts(mission, progressKey, limit, includeMostRecentAtte
   end
   --reverse(res.rows)
 
+  -- Filter out empty columns if mission type or individual columns request it
+  if #res.rows > 0 then
+    local columnsToKeep = {}
+    local genericColCount = #(genericUiAttemptProgress[leaderboardKey] or {})
+
+    -- Check each column
+    for colIndex = 1, #res.labels do
+      local autoColIndex = colIndex - genericColCount
+      local col = mission.autoUiAttemptProgress and mission.autoUiAttemptProgress[autoColIndex]
+      local shouldCheckEmpty = mission.hideEmptyAttemptColumns or (col and col.hideEmpty)
+
+      if shouldCheckEmpty then
+        -- Check if column has any non-empty values
+        local hasValue = false
+        for _, row in ipairs(res.rows) do
+          if row[colIndex] and row[colIndex].text ~= "-" and row[colIndex].text ~= "" then
+            hasValue = true
+            break
+          end
+        end
+        columnsToKeep[colIndex] = hasValue
+      else
+        -- Keep column regardless of content
+        columnsToKeep[colIndex] = true
+      end
+    end
+
+    -- Rebuild labels and rows with only kept columns (preserving order)
+    local newLabels = {}
+    for colIndex = 1, #res.labels do
+      if columnsToKeep[colIndex] then
+        table.insert(newLabels, res.labels[colIndex])
+      end
+    end
+
+    local newRows = {}
+    for _, row in ipairs(res.rows) do
+      local newRow = {}
+      for colIndex = 1, #row do
+        if columnsToKeep[colIndex] then
+          table.insert(newRow, row[colIndex])
+        end
+      end
+      table.insert(newRows, newRow)
+    end
+
+    res.labels = newLabels
+    res.rows = newRows
+  end
 
   return res
 end

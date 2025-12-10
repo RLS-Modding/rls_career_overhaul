@@ -12,30 +12,14 @@ local freeroamEvents = require("gameplay/events/freeroamEvents")
 local freeroamUtils = require("gameplay/events/freeroam/utils")
 local hasActivityStarted = false
 local function onExtensionLoaded()
-  --log("I", logTag, "dragRace extension loaded")
   dGeneral = gameplay_drag_general
   dUtils = gameplay_drag_utils
-
-
-  dragData = dGeneral.getData()
-  if dragData.prefabs.christmasTree.isUsed then
-    extensions.load('gameplay_drag_times')
-  end
-  if dragData.prefabs.displaySign.isUsed then
-    extensions.load('gameplay_drag_display')
-  end
-
-  if not dragData then
-    log('E', logTag, 'No drag race data found')
-  end
-  dragData.isStarted = true
-
-  hasActivityStarted = dragData.isStarted
 end
 
 local function resetDragRace()
   if not dragData then return end
-  extensions.hook("resetDragRaceValues")
+
+  gameplay_drag_general.resetDragRace()
 
   dGeneral.unloadRace()
 end
@@ -45,9 +29,13 @@ local function startActivity()
 
   if not dragData then
     log('E', logTag, 'No drag race data found')
+    return
   end
-  dragData.isStarted = true
 
+  -- Extensions (times, display, utils) are already loaded by general.lua
+  -- via ensureAllExtensionsLoaded() before startActivity() is called
+
+  dragData.isStarted = true
   hasActivityStarted = dragData.isStarted
 
   local dials = {}
@@ -74,11 +62,10 @@ local function onUpdate(dtReal, dtSim, dtRaw)
     for vehId, racer in pairs(dragData.racers) do
       if racer.isFinished then
         dragData.isCompleted = true
-        resetDragRace()
+        gameplay_drag_general.resetDragRace()
         hasActivityStarted = false
         return
       end
-
       dUtils.updateRacer(racer)
 
       local phase = racer.phases[racer.currentPhase]
@@ -104,14 +91,16 @@ local function onUpdate(dtReal, dtSim, dtRaw)
         dqTimer = dqTimer + dtSim
         if dqTimer > 3 then
           dqTimer = 0
-          resetDragRace()
+          gameplay_drag_general.resetDragRace()
           hasActivityStarted = false
           return
         end
       end
 
       if not dUtils.isRacerInsideBoundary(racer) then
-        resetDragRace()
+        gameplay_drag_general.resetDragRace()
+        hasActivityStarted = false
+        return
       end
     end
   end

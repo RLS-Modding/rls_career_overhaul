@@ -48,7 +48,7 @@ local function setMissionInfo(id, dirtyDate)
 end
 
 local function cacheMissionData(id, dirtyDate)
-  setMissionInfo(id, dirtyDate and dirtyDate or os.date("!%Y-%m-%dT%XZ"))
+  setMissionInfo(id, dirtyDate and dirtyDate or os.date("!%Y-%m-%dT%H:%M:%SZ"))
 end
 
 local function onMissionLoaded(id, dirtyDate)
@@ -84,14 +84,6 @@ local function preMissionHandling(step, task)
   end
   scenetree.tod.play = false
 
-  -- create a part condition snapshot
-  local vehId = career_modules_inventory.getCurrentVehicleId()
-  if vehId then
-    local veh = be:getObjectByID(vehId)
-    if veh then
-      core_vehicleBridge.executeAction(veh, 'createAndSetPartConditionResetSnapshotKey', "beforeMission")
-    end
-  end
   if career_career.isAutosaveEnabled() then
     career_saveSystem.saveCurrent()
   else

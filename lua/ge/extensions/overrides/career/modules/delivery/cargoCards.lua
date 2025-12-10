@@ -4,7 +4,7 @@
 
 local M = {}
 
-local dParcelManager, dCargoScreen, dGeneral, dGenerator, dProgress, dVehOfferManager, dParcelMods, dVehicleTasks
+local dParcelManager, dCargoScreen, dGeneral, dGenerator, dProgress, dVehOfferManager, dParcelMods, dVehicleTasks, dTutorial
 M.onCareerActivated = function()
   dParcelManager = career_modules_delivery_parcelManager
   dCargoScreen = career_modules_delivery_cargoScreen
@@ -14,6 +14,7 @@ M.onCareerActivated = function()
   dVehOfferManager = career_modules_delivery_vehicleOfferManager
   dParcelMods = career_modules_delivery_parcelMods
   dVehicleTasks = career_modules_delivery_vehicleTasks
+  dTutorial = career_modules_delivery_tutorial
 end
 
 local filterTags = {
@@ -443,6 +444,7 @@ local function getCardSortingSetsByKey(cardsById)
     limit = 0,
     noSpace = 1,
     locked = 2,
+    tutorial = 3,
     expired = 100
   }
   -- availablilty
@@ -502,24 +504,24 @@ local function getFilterSets(cardsById)
     filter.lockedInfo = nil
     local deliveryLevel = career_branches.getBranchLevel("logistics-delivery")
     if filter.value == "trailer" then
-      if deliveryLevel < 1 then
+      if deliveryLevel < 3 then
         filter.lockedInfo = {
           type = "minLevel",
           icon = "boxPickUp03",
-          longLabel = string.format("Requires 'Cargo Delivery' lvl 1", 1),
-          shortLabel = string.format("lvl %d", 1),
-          minLevel = 1
+          longLabel = string.format("Requires 'Cargo Delivery' lvl 3", 3),
+          shortLabel = string.format("lvl %d", 3),
+          minLevel = 3
         }
       end
     end
     if filter.value == "material" then
-      if deliveryLevel < 1 then
+      if deliveryLevel < 5 then
         filter.lockedInfo = {
           type = "minLevel",
           icon = "boxPickUp03",
-          longLabel = string.format("Requires 'Cargo Delivery' lvl 1", 1),
-          shortLabel = string.format("lvl %d", 1),
-          minLevel = 1
+          longLabel = string.format("Requires 'Cargo Delivery' lvl 3", 5),
+          shortLabel = string.format("lvl %d", 5),
+          minLevel = 5
         }
       end
     end

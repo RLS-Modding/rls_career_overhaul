@@ -466,53 +466,56 @@ local function resetVehicleToOriginal(businessId, vehicleId)
     return false
   end
 
+  local session = ensureActiveSession(businessId, vehicleId)
+  if not session or not session.initial or not session.initial.config then
+    return false
+  end
+  if session.operationInProgress then
+    return false
+  end
+
   local vehObj = getBusinessVehicleObject(businessId, vehicleId)
   if not vehObj then
     return false
   end
 
-  local session = ensureActiveSession(businessId, vehicleId)
-  if not session or not session.initial then
+  session.operationInProgress = true
+
+  local baselineConfig = deepcopy(session.initial.config)
+  local modelKey = session.initial.model
+  local vehicle = career_modules_business_businessInventory and
+                    career_modules_business_businessInventory.getVehicleById and
+                    career_modules_business_businessInventory.getVehicleById(businessId, vehicleId) or nil
+
+  if not modelKey and vehicle and vehicle.vehicleConfig then
+    modelKey = vehicle.vehicleConfig.model_key or vehicle.model_key
+  end
+  if not modelKey then
+    session.operationInProgress = false
     return false
+  end
+
+  local baselinePartConditions = deepcopy(session.initial.partConditions or {})
+  if (not next(baselinePartConditions)) and vehicle and vehicle.partConditions then
+    baselinePartConditions = deepcopy(vehicle.partConditions)
   end
 
   core_jobsystem.create(function(job)
     job.sleep(0.5)
 
-    local vehicle = career_modules_business_businessInventory.getVehicleById(businessId, vehicleId)
-    if not vehicle or not vehicle.vehicleConfig then
-      return
-    end
-
-    local modelKey = vehicle.vehicleConfig.model_key or vehicle.model_key
-    if not modelKey then
-      return
-    end
-
-    local originalConfig = nil
-    local baselineExists = session.initial ~= nil
-
-    if baselineExists then
-      originalConfig = deepcopy(session.initial.config)
-    else
-      return
-    end
-
-    local vehId = vehObj:getID()
-
-    replaceVehicleWithFuelHandling(vehObj, modelKey, originalConfig, function()
-      local partConditions = baselineExists and session.initial.partConditions or vehicle.partConditions
-      if partConditions then
-        core_vehicleBridge.executeAction(vehObj, 'initPartConditions', partConditions, nil, nil, nil, nil)
+    replaceVehicleWithFuelHandling(vehObj, modelKey, baselineConfig, function()
+      if baselinePartConditions and next(baselinePartConditions) then
+        core_vehicleBridge.executeAction(vehObj, 'initPartConditions', baselinePartConditions, nil, nil, nil, nil)
       end
     end, function()
       requestVehiclePowerWeight(vehObj, businessId, vehicleId)
+      session.operationInProgress = false
     end)
 
     session.preview = {
-      config = deepcopy(originalConfig),
-      partList = flattenPartsTree(originalConfig.partsTree or {}),
-      partConditions = deepcopy(baselineExists and session.initial.partConditions or vehicle.partConditions or {}),
+      config = deepcopy(baselineConfig),
+      partList = flattenPartsTree(baselineConfig.partsTree or {}),
+      partConditions = deepcopy(baselinePartConditions or {}),
       model = modelKey
     }
   end)

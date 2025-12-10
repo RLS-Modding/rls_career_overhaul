@@ -78,7 +78,7 @@ local function onSpeedTrapTriggered(speedTrapData, playerSpeed, overSpeed)
     if playerRole == "police" then
       message = string.format("Traffic Violation (Officer Misconduct): \n - %q | Fine %d$\n - {{%f | unit: \"speed\":0}} | ({{%f | unit: \"speed\":0}})\n - Abuse of power is not permitted", core_vehicles.getVehicleLicenseText(veh), fine.money.amount, playerSpeed, speedTrapData.speedLimit)
     else
-      message = string.format("Traffic Violation: \n - %q | Fine %d$\n - {{%f | unit: \"speed\":0}} | ({{%f | unit: \"speed\":0}})", core_vehicles.getVehicleLicenseText(veh), fine.money.amount, playerSpeed, speedTrapData.speedLimit)
+      ui_message({txt="ui.career.speedTrap.speedingMessage", context={licensePlate = core_vehicles.getVehicleLicenseText(veh), fine = fine.money.amount, recordedSpeed = playerSpeed, speedLimit = speedTrapData.speedLimit}}, 10, 'speedTrap')
     end
     
     career_modules_payment.pay(fine, {label="Fine for speeding", tags={"fine"}})
@@ -86,7 +86,7 @@ local function onSpeedTrapTriggered(speedTrapData, playerSpeed, overSpeed)
     Engine.Audio.playOnce('AudioGui','event:>UI>Career>Speedcam_Snapshot')
     career_modules_inventory.addTicket(inventoryId)
   elseif penaltyType == "noLicensePlate" then
-    ui_message(string.format("Traffic Violation: \n - No license plate detected | Fine could not be issued\n - {{%f | unit: \"speed\":0}} | ({{%f | unit: \"speed\":0}})", playerSpeed, speedTrapData.speedLimit), 10, "speedTrap")
+    ui_message({txt="ui.career.speedTrap.noLicensePlateMessage", context={recordedSpeed = playerSpeed, speedLimit = speedTrapData.speedLimit}}, 10, 'speedTrap')
     Engine.Audio.playOnce('AudioGui','event:>UI>Career>Speedcam_Snapshot')
 
   elseif penaltyType == "workVehicle" then

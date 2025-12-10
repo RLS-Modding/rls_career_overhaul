@@ -1,9 +1,9 @@
 -- This Source Code Form is subject to the terms of the bCDDL, v. 1.1.
--- This Source Code Form is subject to the terms of the bCDDL, v. 1.1.
 -- If a copy of the bCDDL was not distributed with this
 -- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
 
 local M = {}
+local translate = require("ge/extensions/ui/gridSelectorUtils/translateHelper").translate
 
 local function sortByStartable(m1, m2)
   if m1.unlocks.maxBranchlevel ~= m2.unlocks.maxBranchlevel then
@@ -36,10 +36,13 @@ local function getRewardIcons(rewards)
   return newRet
 end
 
+
+
 local comingSoonCard = {heading="(Not Implemented)", type="unlockCard", icon="roadblockL"}
 local function calculateUnlockInfo(skill, value, level)
   local unlockInfo = {}
   local unlocks = skill.levels
+  local hasUnlocks = false
 
   if unlocks then
     local prevTarget = 0
@@ -49,19 +52,40 @@ local function calculateUnlockInfo(skill, value, level)
       local nextLvlInfo = skill.levels[i+1]
       local requiredRelative = (curLvlInfo and curLvlInfo.requiredValue or -1) - prevTarget
 
+
+
       prevTarget = (curLvlInfo and curLvlInfo.requiredValue or -1)
       unlockInfo[i] = {
-        list = unlocks[i].unlocks,
         index = i,
         currentValue = prevLvlInfo and value - prevLvlInfo.requiredValue or -1,
         requiredValue = curLvlInfo and requiredRelative or -1,
+        xpCurrent = value,
+        xpRequired = curLvlInfo and curLvlInfo.requiredValue or -1,
         isInDevelopment = unlocks[i].isInDevelopment,
         isMaxLevel = unlocks[i].isMaxLevel,
         isBase = i == 1,
         unlocked = i >= level,
         description = unlocks[i].description,
-        rewardMultiplier = unlocks[i].rewardMultiplier,
       }
+      if (unlocks[i].unlocks and #unlocks[i].unlocks > 0) or unlocks[i].description then
+        hasUnlocks = true
+      end
+      local list = {}
+      for _, unlock in ipairs(unlocks[i].unlocks or {}) do
+        if unlock.type == "tasklist" then
+          local tasklistData = {}
+          extensions.hook("onCareerProgressPageGetTasklistData", tasklistData, unlock.tasklistId)
+          if tasklistData and next(tasklistData) then
+            unlock.tasklistData = tasklistData
+          end
+          table.insert(list, unlock)
+          unlock.type = "tasklist"
+        else
+          table.insert(list, unlock)
+          unlock.type = "unlockCard"
+        end
+      end
+      unlockInfo[i].list = list
 
     end
   end
@@ -71,7 +95,7 @@ local function calculateUnlockInfo(skill, value, level)
     maxRequiredValue = maxRequiredValue + value.requiredValue
   end
 
-  return unlockInfo, maxRequiredValue
+  return unlockInfo, maxRequiredValue, hasUnlocks
 end
 
 local function getSkillsProgressForUi(branchId)
@@ -111,7 +135,7 @@ local function getSkillsProgressForUi(branchId)
       end
 
       if skill.levels then
-        skData.unlockInfo, skData.maxRequiredValue = calculateUnlockInfo(skill, value, level)
+        skData.unlockInfo, skData.maxRequiredValue, skData.hasUnlocks = calculateUnlockInfo(skill, value, level)
       end
       --dumpz(skData.unlockInfo,2)
 
@@ -322,68 +346,6 @@ local function getFiltersForSkills(skills)
   return ret
 end
 
-local function getBranchPageData(branchId)
-  local branch = {}
-  career_branches.checkUnlocks()
-  local branchData = career_branches.getBranchById(branchId)
-  --Setup branch
-  local attKey = branchData.attributeKey
-  local value = career_modules_playerAttributes.getAttributeValue(attKey)
-  local level, _, _, min, max = career_branches.calcBranchLevelFromValue(value, branchData.id)
-  local levelLabel = career_branches.getLevelLabel(branchData.id, level)
-  branch.skillInfo = {
-    name = branchData.longName or branchData.name,
-    icon = branchData.icon,
-    glyphIcon = branchData.icon,
-    color = branchData.color,
-    accentColor = branchData.accentColor,
-    id = attKey,
-    levelLabel = levelLabel,
-    isMaxLevel = level >= #branchData.levels,
-    min = min,
-    value = value,
-    max = max,
-    level = level,
-    unlocked = branchData.unlocked,
-    hasLevels = branchData.hasLevels,
-    lockedReason = branchData.lockedReason,
-    showOrganizations = branchData.showOrganizations,
-    isInDevelopment = branchData.isInDevelopment,
-  }
-
-  if branchData.levels then
-    branch.skillInfo.unlockInfo, branch.skillInfo.maxRequiredValue = calculateUnlockInfo(branchData, value, level)
-  end
-
-  --branchData.milestones = career_modules_milestones_milestones.getMilestones({branchData.attributeKey})
-  branchData.skills = getSkillsProgressForUi(branchId)
-  branch.details = branchData
-
-  branch.leagues = career_modules_branches_leagues.getLeaguesForProgressBranchPage(branchId)
-
-
-  --Sort the misison tables and add them to the main table that will be send to the UI
-  for _, league in ipairs(branch.leagues) do
-    for i, mId in ipairs(league.missions) do
-      local m = gameplay_missions_missions.getMissionById(mId)
-      league.missions[i] = M.formatMission(m)
-      if league.isCertification then
-        league.missions[i].icon = "badgeRoundStar"
-      end
-    end
-  end
-
-
-  if branch.details.attributeKey == "logistics" then
-    branch.facilities = getFacilitiesData(branchData.color)
-    table.sort(branch.facilities, sortByFacId)
-  end
-
-  branch.filters = getFiltersForSkills(branch.details.skills)
-  branch.isBranch = true
-  return branch
-end
-
 
 local function getBranchSkillCardData(branchId)
   -- first get all branches. then get all skills
@@ -418,6 +380,13 @@ local function getBranchSkillCardData(branchId)
     unlockInfos = br.unlockInfos,
     isInDevelopment = br.isInDevelopment,
   }
+
+  if br.showProgressAsStars then
+    local total, unlocked = career_modules_branches_leagues.getStarsForSkill(br.id)
+    branchInfo.levelLabel = nil
+    branchInfo.min, branchInfo.value, branchInfo.max = 0, unlocked, total
+    branchInfo.showProgressAsStars = true
+  end
 
 
   -- certifications
@@ -482,7 +451,6 @@ local function openBigMapWithMissionSelected(missionId)
   freeroam_bigMapMode.enterBigMap({instant = true, missionId = missionId})
 end
 
-M.getBranchPageData = getBranchPageData
 M.getBranchSkillCardData = getBranchSkillCardData
 M.openBigMapWithMissionSelected = openBigMapWithMissionSelected
 
@@ -537,13 +505,14 @@ local function getLandingPageData(pathId)
     heading = "ui.career.landingPage.name",
     description = "ui.career.landingPage.description",
     branches = {},
-    showMilestones = true,
-    showOrganizations = true
+    breadcrumbs = {{label = "Career Pause", gotoAngularState = "menu.careerPause"}}
   }
+  table.insert(data.breadcrumbs, {label = translate("ui.career.landingPage.name"), gotoPath = {path = "domainSelection", props = {pathId = nil}}})
 
   local branches = career_branches.getSortedBranches()
 
   if not pathId or pathId == "" or pathId == "undefined" then
+    data.showMilestones = true
     -- Find all domains and determine their target type
     for _, branch in ipairs(branches) do
       if branch.isDomain then
@@ -579,6 +548,24 @@ local function getLandingPageData(pathId)
     -- Set heading/description based on domain
     local domainBranch = career_branches.getBranchById(pathId)
     if domainBranch then
+
+      local rewardMultiplier = career_branches.getLevelRewardMultiplier(domainBranch.id)
+      local rewardMultiplierSourceIcon = rewardMultiplier and domainBranch.icon
+
+      local parentBreadcrumbs = {}
+      local parentBranch = career_branches.getBranchById(domainBranch.parentId)
+      table.insert(parentBreadcrumbs, {label = translate(domainBranch.name), gotoPath = {path = "progressLanding", props = {pathId = domainBranch.id}}})
+      while parentBranch and not parentBranch.missing do
+        rewardMultiplier = rewardMultiplier or career_branches.getLevelRewardMultiplier(parentBranch.id)
+        rewardMultiplierSourceIcon = rewardMultiplierSourceIcon or (rewardMultiplier and parentBranch.icon)
+        table.insert(parentBreadcrumbs, {label = translate(parentBranch.name), gotoPath = {path = "progressLanding", props = {pathId = parentBranch.id}}})
+        parentBranch = career_branches.getBranchById(parentBranch.parentId)
+      end
+      arrayReverse(parentBreadcrumbs)
+      for _, breadcrumb in ipairs(parentBreadcrumbs) do
+        table.insert(data.breadcrumbs, breadcrumb)
+      end
+
       data.heading = domainBranch.name
       data.description = domainBranch.description
       data.branchHeading = domainBranch.branchHeading
@@ -600,7 +587,46 @@ local function getLandingPageData(pathId)
         max = max,
         level = level,
         hasLevels = domainBranch.hasLevels,
+        rewardMultiplier = rewardMultiplier,
+        rewardMultiplierSourceIcon = rewardMultiplierSourceIcon,
       }
+
+      if domainBranch.showProgressAsStars then
+        local total, unlocked = career_modules_branches_leagues.getStarsForSkill(domainBranch.id)
+        data.skillInfo.min, data.skillInfo.value, data.skillInfo.max = 0, unlocked, total
+        data.skillInfo.showProgressAsStars = true
+      end
+
+      if domainBranch.isBranch or domainBranch.isSkill then
+        if domainBranch.levels then
+          data.skillInfo.unlockInfo, data.skillInfo.maxRequiredValue, data.skillInfo.hasUnlocks = calculateUnlockInfo(domainBranch, value, level)
+        end
+        data.skillInfo.hasUnlocks = data.skillInfo.hasUnlocks or false
+
+        data.skills = getSkillsProgressForUi(domainBranch.id)
+
+        data.leagues = career_modules_branches_leagues.getLeaguesForProgressBranchPage(domainBranch.id, true  )
+
+
+        --Sort the misison tables and add them to the main table that will be send to the UI
+        for _, league in ipairs(data.leagues) do
+          for i, mId in ipairs(league.missions) do
+            local m = gameplay_missions_missions.getMissionById(mId)
+            league.missions[i] = M.formatMission(m)
+            if league.isCertification then
+              league.missions[i].icon = "badgeRoundStar"
+            end
+          end
+        end
+
+--[[
+        if domainBranch.attributeKey == "logistics" then
+          data.facilities = getFacilitiesData(data.color)
+          table.sort(data.facilities, sortByFacId)
+        end
+]]
+        data.isBranch = true
+      end
     end
 
   end

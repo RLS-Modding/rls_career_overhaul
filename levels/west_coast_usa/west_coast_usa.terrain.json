@@ -18,11 +18,10 @@
     "Asphalt",
     "gravel",
     "asphalt_prepped",
-    "RLS_MYMUD",
-    "RLS_MYMUDMID",
-    "RLS_MYMUDDEEP",
-    "RLS_MYMUDBOUNTY",
-    "RLS_SAND"
+    "RLS Mud",
+    "RLS Mud Mid",
+    "RLS Mud Deep",
+    "RLS Mud Bounty"
   ],
   "size": 2048,
   "version": 9

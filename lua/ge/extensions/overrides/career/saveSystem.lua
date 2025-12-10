@@ -4,7 +4,7 @@
 
 local M = {}
 local saveRoot = 'settings/cloud/saves/'
-local saveSystemVersion = 51
+local saveSystemVersion = 61
 local backwardsCompVersion = 36
 local numberOfAutosaves = 3
 local creationDateOfCurrentSaveSlot
@@ -223,7 +223,7 @@ end
 local function saveCurrent(vehiclesThumbnailUpdate)
   if not currentSaveSlot or career_modules_linearTutorial.isLinearTutorialActive() then return end
   oldestSave, oldSaveDate = getAutosave(currentSaveSlot, true) -- get oldest autosave to overwrite
-  saveDate = os.date("!%Y-%m-%dT%XZ") -- UTC time
+  saveDate = os.date("!%Y-%m-%dT%H:%M:%SZ") -- UTC time
 
   infoData = {}
   infoData.version = saveSystemVersion

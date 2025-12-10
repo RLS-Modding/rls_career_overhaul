@@ -108,7 +108,7 @@ local function start(_inventoryId, _originComputerId)
 
   local numberOfBrokenParts = career_modules_valueCalculator.getNumberOfBrokenParts(career_modules_inventory.getVehicles()[inventoryId].partConditions)
   if numberOfBrokenParts > 0 and numberOfBrokenParts < career_modules_valueCalculator.getBrokenPartsThreshold() then
-    career_modules_insurance.startRepair(inventoryId, nil, function() startActual(_originComputerId) end)
+    career_modules_insurance_insurance.startRepair(inventoryId, nil, function() startActual(_originComputerId) end)
   else
     core_jobsystem.create(function(job)
       career_modules_damageManager.saveDamageState(inventoryId)

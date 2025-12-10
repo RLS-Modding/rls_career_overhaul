@@ -28,7 +28,7 @@ local function getWIPWarningLabel()
       end
     end
   if career_career.isActive() then
-    return "RLS Career Overhaul v2.5.4 - WIP"
+    return "RLS Career Overhaul v2.6 Alpha - WIP"
   end
   return nil
 end

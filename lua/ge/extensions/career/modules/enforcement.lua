@@ -151,10 +151,6 @@ local function handleArrestReward(data, playerData)
 
   ui_message(message, 5, "Police")
   career_modules_inventory.addSuspectCaught(playerData.inventoryId)
-
-  if career_modules_insurance then
-    career_modules_insurance.incrementPoliceStop(playerData.inventoryId)
-  end
 end
 
 local function onPursuitAction(vehId, action, data)

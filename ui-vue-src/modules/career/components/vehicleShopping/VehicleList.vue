@@ -31,7 +31,7 @@
     </div>
 
     <!-- Main Content -->
-    <div class="main-content" bng-nav-scroll bng-nav-scroll-force>
+    <div ref="mainContentRef" class="main-content" bng-nav-scroll bng-nav-scroll-force>
 
       <!-- Show current seller vehicles when at specific dealer -->
       <div v-if="vehicleShoppingStore?.vehicleShoppingData?.currentSeller">
@@ -52,14 +52,13 @@
             <div v-if="getRepData(vehicleShoppingStore?.vehicleShoppingData?.currentSeller)" class="hero-rep">
               <div class="rep-bar">
                 <div class="rep-fill" :style="{ width: getRepData(vehicleShoppingStore?.vehicleShoppingData?.currentSeller).percentage + '%' }"></div>
-              </div>
-              <div class="rep-details">
-                <div class="rep-label">Level {{ getRepData(vehicleShoppingStore?.vehicleShoppingData?.currentSeller).level }}</div>
-                <div class="rep-percentage">{{ getRepData(vehicleShoppingStore?.vehicleShoppingData?.currentSeller).percentage }}%</div>
-                <div class="rep-purchases-needed" v-if="getRepData(vehicleShoppingStore?.vehicleShoppingData?.currentSeller).purchasesToNext > 0">
-                  {{ getRepData(vehicleShoppingStore?.vehicleShoppingData?.currentSeller).purchasesToNext }} purchase{{ getRepData(vehicleShoppingStore?.vehicleShoppingData?.currentSeller).purchasesToNext !== 1 ? 's' : '' }} to next level
+                <div class="rep-text-inside">
+                  <span class="rep-level">Level {{ getRepData(vehicleShoppingStore?.vehicleShoppingData?.currentSeller).level }}</span>
+                  <span class="rep-message" v-if="getRepData(vehicleShoppingStore?.vehicleShoppingData?.currentSeller).purchasesToNext > 0">
+                    {{ getRepData(vehicleShoppingStore?.vehicleShoppingData?.currentSeller).purchasesToNext }} more
+                  </span>
+                  <span class="rep-message" v-else>Max</span>
                 </div>
-                <div class="rep-max-level" v-else>Max level</div>
               </div>
             </div>
           </div>
@@ -73,7 +72,7 @@
         </div>
 
         <!-- No vehicles at this dealership -->
-        <div v-if="vehicleShoppingStore.filteredVehicles.length === 0" class="empty-state">
+        <div v-if="displayedVehicles.length === 0" class="empty-state">
           <BngIcon :type="icons.cars" class="empty-icon" />
           <h4 class="empty-title">No vehicles available</h4>
           <p class="empty-description">
@@ -90,7 +89,7 @@
             <BngButton :accent="ACCENTS.primary" class="page-btn" :disabled="currentPage >= totalPages" @click="currentPage = Math.min(totalPages, currentPage + 1)">Next</BngButton>
           </div>
           <div class="vehicle-listings">
-            <VehicleCard v-for="(vehicle, key) in pageSlice(vehicleShoppingStore.filteredVehicles)" :key="key"
+            <VehicleCard v-for="(vehicle, key) in pageSlice(displayedVehicles)" :key="key"
               :vehicleShoppingData="vehicleShoppingStore.vehicleShoppingData" :vehicle="vehicle" />
           </div>
           <div v-if="totalPages > 1" class="pagination-toolbar">
@@ -148,9 +147,9 @@
         </template>
       </div>
 
-      <!-- Show dealership selection and grouped vehicles -->
+      <!-- Show main vehicle list with collapsible dealership section -->
       <div v-else>
-        <!-- Dealership Selection -->
+        <!-- Dealership Selection (collapsed by default) -->
         <div class="dealership-section" :class="{ collapsed: !dealersOpen }">
           <div class="section-header" @click="dealersOpen = !dealersOpen">
             <div class="header-left">
@@ -159,11 +158,6 @@
               <span v-if="hiddenDealers.length > 0" class="hidden-count">
                 ({{ visibleDealers.length }} online{{ hiddenDealers.length > 0 ? `, ${hiddenDealers.length} offline` : '' }})
               </span>
-            </div>
-            <div class="dealer-controls">
-              <BngButton v-if="selectedDealership" :accent="ACCENTS.menu" @click.stop="selectedDealership = null" class="show-all-btn">
-                Show All Dealerships
-              </BngButton>
             </div>
           </div>
 
@@ -174,46 +168,62 @@
                 v-for="dealer in visibleDealers"
                 :key="dealer.id"
                 class="dealership-card"
-                :class="{ selected: selectedDealership === dealer.id, 'no-rep': !hasRep(dealer.id) }"
-                @click="handleDealershipSelect(dealer.id)"
+                :class="{ 
+                  'no-rep': !hasRep(dealer.id),
+                  'selected': selectedDealershipId === String(dealer.id)
+                }"
+                @click.stop="navigateToDealership(dealer.id)"
+                @mousedown.stop
               >
-                <div v-if="dealerMetadata[dealer.id]?.preview" class="dealership-preview"
-                  :style="{ backgroundImage: `url('${dealerMetadata[dealer.id].preview}')` }"></div>
-                <div v-else class="dealership-preview"></div>
+                <div
+                  class="dealership-background"
+                  :style="dealerMetadata[dealer.id]?.preview ? { backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0)), url('${dealerMetadata[dealer.id].preview}')` } : {}"
+                ></div>
+                <div class="dealership-overlay"></div>
 
-                <div class="dealership-content">
-                  <div class="dealership-header">
-                    <div class="dealership-icon">
-                      <BngIcon :type="icons.locationSource" />
-                    </div>
-                    <div class="dealership-info">
-                      <h4 class="dealership-name">{{ dealerMetadata[dealer.id]?.name || dealer.name }}</h4>
-                      <p class="dealership-description">
-                        {{ dealerMetadata[dealer.id]?.description || 'Vehicle dealership' }}
-                      </p>
+                <div class="dealership-body">
+                  <div class="top-section">
+                    <div class="dealership-header">
+                      <div class="dealership-info">
+                        <div class="dealership-name">
+                          <BngIcon :type="dealerMetadata[dealer.id]?.icon || icons.locationSource" />
+                          {{ dealerMetadata[dealer.id]?.name || dealer.name }}
+                        </div>
+                        <div v-if="dealerMetadata[dealer.id]?.description" class="dealership-description">
+                          {{ dealerMetadata[dealer.id].description }}
+                        </div>
+                      </div>
                     </div>
                   </div>
-
-                  <div class="dealership-stats">
-                    <span class="vehicle-count-badge">
-                      {{ dealer.vehicles.length > 0 ? `${dealer.vehicles.length} Available` : 'No vehicles' }}
-                    </span>
-                    <div v-if="selectedDealership === dealer.id" class="selected-badge">Selected</div>
-                  </div>
+                  
+                  <div class="bottom-section">
                   <div v-if="getRepData(dealer.id)" class="rep-progress">
                     <div class="rep-bar">
                       <div class="rep-fill" :style="{ width: getRepData(dealer.id).percentage + '%' }"></div>
-                    </div>
-                    <div class="rep-details">
-                      <div class="rep-label">Level {{ getRepData(dealer.id).level }}</div>
-                      <div class="rep-percentage">{{ getRepData(dealer.id).percentage }}%</div>
-                      <div class="rep-purchases-needed" v-if="getRepData(dealer.id).purchasesToNext > 0">
-                        {{ getRepData(dealer.id).purchasesToNext }} purchase{{ getRepData(dealer.id).purchasesToNext !== 1 ? 's' : '' }} to next level
+                      <div class="rep-text-inside">
+                        <span class="rep-level">Level {{ getRepData(dealer.id).level }}</span>
+                        <span class="rep-message" v-if="getRepData(dealer.id).purchasesToNext > 0">
+                          {{ getRepData(dealer.id).purchasesToNext }} more
+                        </span>
+                        <span class="rep-message" v-else>Max</span>
                       </div>
-                      <div class="rep-max-level" v-else>Max level</div>
                     </div>
                   </div>
-                  <div v-else class="rep-placeholder">Independent seller</div>
+                
+                  <!-- Vehicle Thumbnails -->
+                  <div v-if="dealer.vehicles.length > 0" class="vehicle-thumbnails">
+                    <template v-for="(vehicle, idx) in dealer.vehicles.slice(0, 5)" :key="vehicle.shopId || idx">
+                      <div
+                        class="vehicle-thumbnail"
+                        :style="vehicle.preview ? { backgroundImage: `url('${vehicle.preview}')` } : {}"
+                      >
+                        <div v-if="idx == 0 && dealer.vehicles.length > 5" class="more-label">
+                          +{{ dealer.vehicles.length - 4 }}
+                        </div>
+                      </div>
+                    </template>
+                  </div>
+                </div>
                 </div>
               </div>
             </div>
@@ -228,9 +238,6 @@
                     ({{ hiddenDealers.length }} dealer{{ hiddenDealers.length !== 1 ? 's' : '' }})
                   </span>
                 </div>
-                <div class="dealer-controls">
-                  <!-- Can add controls here if needed -->
-                </div>
               </div>
 
               <div class="dealership-grid" v-if="hiddenDealersOpen">
@@ -241,43 +248,59 @@
                   @click="confirmTaxi(dealer.id)"
                   :title="'Not available online. Click to take a taxi to ' + (dealerMetadata[dealer.id]?.name || dealer.name)"
                 >
-                  <div v-if="dealerMetadata[dealer.id]?.preview" class="dealership-preview"
-                    :style="{ backgroundImage: `url('${dealerMetadata[dealer.id].preview}')` }"></div>
-                  <div v-else class="dealership-preview"></div>
+                  <div
+                    class="dealership-background"
+                    :style="dealerMetadata[dealer.id]?.preview ? { backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0)), url('${dealerMetadata[dealer.id].preview}')` } : {}"
+                  ></div>
+                  <div class="dealership-overlay"></div>
 
-                  <div class="dealership-content">
-                    <div class="dealership-header">
-                      <div class="dealership-icon">
-                        <BngIcon :type="icons.locationSource" />
+                  <div class="dealership-body">
+                    <div class="top-section">
+                      <div class="dealership-header">
+                        <div class="dealership-info">
+                          <div class="dealership-name">
+                            <BngIcon :type="dealerMetadata[dealer.id]?.icon || icons.locationSource" />
+                            {{ dealerMetadata[dealer.id]?.name || dealer.name }}
+                          </div>
+                          <div v-if="dealerMetadata[dealer.id]?.description" class="dealership-description">
+                            {{ dealerMetadata[dealer.id].description }}
+                          </div>
+                        </div>
                       </div>
-                      <div class="dealership-info">
-                        <h4 class="dealership-name">{{ dealerMetadata[dealer.id]?.name || dealer.name }}</h4>
-                        <p class="dealership-description">
-                          {{ dealerMetadata[dealer.id]?.description || 'Vehicle dealership' }}
-                        </p>
+
+                      <div class="dealership-stats">
+                        <div class="route-badge">Taxi</div>
                       </div>
                     </div>
-
-                    <div class="dealership-stats">
-                      <span class="vehicle-count-badge offline">
-                        Visit location
-                      </span>
-                      <div class="route-badge">Taxi</div>
-                    </div>
+                    <div class="bottom-section">
                     <div v-if="getRepData(dealer.id)" class="rep-progress">
                       <div class="rep-bar">
                         <div class="rep-fill" :style="{ width: getRepData(dealer.id).percentage + '%' }"></div>
-                      </div>
-                      <div class="rep-details">
-                        <div class="rep-label">Level {{ getRepData(dealer.id).level }}</div>
-                        <div class="rep-percentage">{{ getRepData(dealer.id).percentage }}%</div>
-                        <div class="rep-purchases-needed" v-if="getRepData(dealer.id).purchasesToNext > 0">
-                          {{ getRepData(dealer.id).purchasesToNext }} purchase{{ getRepData(dealer.id).purchasesToNext !== 1 ? 's' : '' }} to next level
+                        <div class="rep-text-inside">
+                          <span class="rep-level">Level {{ getRepData(dealer.id).level }}</span>
+                          <span class="rep-message" v-if="getRepData(dealer.id).purchasesToNext > 0">
+                            {{ getRepData(dealer.id).purchasesToNext }} more
+                          </span>
+                          <span class="rep-message" v-else>Max</span>
                         </div>
-                        <div class="rep-max-level" v-else>Max level</div>
                       </div>
                     </div>
+                    
+                    <!-- Vehicle Thumbnails -->
+                    <div v-if="dealer.vehicles.length > 0" class="vehicle-thumbnails">
+                      <template v-for="(vehicle, idx) in dealer.vehicles.slice(0, 5)" :key="vehicle.shopId || idx">
+                        <div
+                          class="vehicle-thumbnail"
+                          :style="vehicle.preview ? { backgroundImage: `url('${vehicle.preview}')` } : {}"
+                        >
+                          <div v-if="idx == 0 && dealer.vehicles.length > 5" class="more-label">
+                            +{{ dealer.vehicles.length - 4 }}
+                          </div>
+                        </div>
+                      </template>
+                    </div>
                   </div>
+                </div>
                 </div>
               </div>
             </div>
@@ -286,15 +309,13 @@
 
         <!-- Vehicle Listings -->
         <div class="vehicles-section">
-          <div class="content-header">
-            <h3 class="content-title">
-              {{ selectedDealership ? `${(dealerMetadata[selectedDealership]?.name || selectedDealership)} - Vehicles` : 'All Vehicles' }}
-            </h3>
+          <div ref="vehicleListHeaderRef" class="content-header">
+            <h3 class="content-title">{{ selectedDealershipId ? (dealerMetadata[selectedDealershipId]?.name || 'Dealership') + ' Vehicles' : 'All Vehicles' }}</h3>
             <div class="header-right">
               <p class="vehicle-count">
-                {{ selectedDealership ? filteredVehicleCount : vehicleShoppingStore.filteredVehicles.length }} vehicle{{ (selectedDealership ? filteredVehicleCount : vehicleShoppingStore.filteredVehicles.length) !== 1 ? 's' : '' }} found
+                {{ displayedVehicles.length }} vehicle{{ displayedVehicles.length !== 1 ? 's' : '' }} found
               </p>
-              <div v-if="!selectedDealership" class="limit-control">
+              <div class="limit-control">
                 <BngSelect v-model.number="itemsPerPage" :options="pageSizeOptions" />
               </div>
             </div>
@@ -303,38 +324,22 @@
             <span>*&nbsp;</span>
             <span>Additional taxes and fees are applicable</span>
           </div>
-          <div v-if="selectedDealership" class="content-subtitle">
-            Showing vehicles from {{ dealerMetadata[selectedDealership]?.name || selectedDealership }}
-          </div>
 
-          <div v-if="filteredVehicleCount === 0" class="empty-state">
+          <div v-if="displayedVehicles.length === 0" class="empty-state">
             <BngIcon :type="icons.cars" class="empty-icon" />
             <h4 class="empty-title">No vehicles available</h4>
             <p class="empty-description">
-              {{ selectedDealership 
-                ? `${dealerMetadata[selectedDealership]?.name || selectedDealership} currently has no vehicles in stock.`
-                : 'No vehicles match your current filters.' 
-              }}
+              {{ selectedDealershipId ? (dealerMetadata[selectedDealershipId]?.name || 'This dealership') + ' currently has no vehicles in stock.' : 'No vehicles match your current filters.' }}
             </p>
           </div>
 
           <div v-else class="vehicle-listings">
-            <template v-if="selectedDealership">
-              <VehicleCard
-                v-for="(vehicle, key) in pageSlice(getSelectedDealerVehicles())"
-                :key="key"
-                :vehicleShoppingData="vehicleShoppingStore.vehicleShoppingData"
-                :vehicle="vehicle"
-              />
-            </template>
-            <template v-else>
-              <VehicleCard
-                v-for="(vehicle, key) in pageSlice(vehicleShoppingStore.filteredVehicles)"
-                :key="key"
-                :vehicleShoppingData="vehicleShoppingStore.vehicleShoppingData"
-                :vehicle="vehicle"
-              />
-            </template>
+            <VehicleCard
+              v-for="(vehicle, key) in pageSlice(displayedVehicles)"
+              :key="key"
+              :vehicleShoppingData="vehicleShoppingStore.vehicleShoppingData"
+              :vehicle="vehicle"
+            />
 
             <!-- Only show pagination when there are multiple pages -->
             <div v-if="totalPages > 1" class="pagination-toolbar">
@@ -344,6 +349,22 @@
               <BngButton :accent="ACCENTS.primary" class="page-btn" :disabled="currentPage >= totalPages" @click="currentPage = Math.min(totalPages, currentPage + 1)">Next</BngButton>
             </div>
           </div>
+
+          <!-- Recently Sold Section -->
+          <div v-if="relevantSoldVehicles.length > 0" class="sold-section">
+            <div class="sold-header">
+              <h4 class="sold-title">Recently Sold</h4>
+              <span class="sold-count">{{ relevantSoldVehicles.length }} vehicle{{ relevantSoldVehicles.length !== 1 ? 's' : '' }}</span>
+            </div>
+            <div class="vehicle-listings">
+              <VehicleCard
+                v-for="(vehicle, key) in relevantSoldVehicles"
+                :key="key"
+                :vehicleShoppingData="vehicleShoppingStore.vehicleShoppingData"
+                :vehicle="vehicle"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -351,7 +372,8 @@
 </template>
 
 <script setup>
-import { reactive, onMounted, onBeforeUnmount, ref, computed, watch } from "vue"
+import { reactive, onMounted, onBeforeUnmount, ref, computed, watch, nextTick } from "vue"
+import { useRouter, useRoute } from "vue-router"
 import VehicleCard from "./VehicleCard.vue"
 import FilterDropdown from "./FilterDropdown.vue"
 import SortDropdown from "./SortDropdown.vue"
@@ -368,16 +390,20 @@ useUINavScope("vehicleList")
 const vehicleShoppingStore = useVehicleShoppingStore()
 const events = useEvents()
 const { units } = useBridge()
+const router = useRouter()
+const route = useRoute()
 let onDeltaRef = null
 const dealerMetadata = ref({})
 const inputFocused = ref(false)
 const localSearchQuery = ref('')
 const activeSearchQuery = ref('')
-const selectedDealership = ref(null)
 const dealersOpen = ref(true)
 const itemsPerPage = ref(25)
 const pageSizeOptions = [10, 25, 50, 100]
 const currentPage = ref(1)
+const hiddenDealersOpen = ref(false)
+const mainContentRef = ref(null)
+const vehicleListHeaderRef = ref(null)
 
 const orgsById = computed(() => (vehicleShoppingStore?.vehicleShoppingData?.organizations) || {})
 
@@ -407,10 +433,22 @@ function getRepData(dealerId) {
   return { level, pct, percentage, vehiclesToNext, purchasesToNext }
 }
 
+const selectedDealershipId = computed(() => {
+  return route.params.selectedSellerId || vehicleShoppingStore.selectedSellerId || null
+})
+
+const displayedVehicles = computed(() => {
+  if (hasActiveSearch.value) return allFilteredVehicles.value
+  
+  if (selectedDealershipId.value && !vehicleShoppingStore.vehicleShoppingData.currentSeller) {
+    return vehicleShoppingStore.filteredVehicles.filter(v => v.sellerId === selectedDealershipId.value)
+  }
+  
+  return vehicleShoppingStore.filteredVehicles
+})
+
 const totalItems = computed(() => {
-  if (selectedDealership.value) return getSelectedDealerVehicles().length
-  if (hasActiveSearch.value) return allFilteredVehicles.value.length
-  return vehicleShoppingStore.filteredVehicles.length
+  return displayedVehicles.value.length
 })
 
 const totalPages = computed(() => {
@@ -489,6 +527,17 @@ const allFilteredVehicles = computed(() => {
   return vehicleShoppingStore.processVehicleList(allVehicles)
 })
 
+const relevantSoldVehicles = computed(() => {
+  let sold = vehicleShoppingStore.filteredSoldVehicles || []
+  
+  // Filter by current seller (physically at dealer)
+  if (vehicleShoppingStore.vehicleShoppingData?.currentSeller) {
+    sold = sold.filter(v => v.sellerId === vehicleShoppingStore.vehicleShoppingData.currentSeller)
+  }
+  
+  return sold
+})
+
 // Fetch dealership data on component mount
 onMounted(async () => {
   const shoppingData = await lua.career_modules_vehicleShopping.getShoppingData()
@@ -536,7 +585,6 @@ const getHeaderText = () => {
 
 
 const sortedDealers = computed(() => {
-  // Include all dealers (hidden ones are marked with hidden: true)
   return vehicleShoppingStore.vehiclesByDealer.slice().sort((a, b) => {
     const nameA = dealerMetadata.value[a.id]?.name || a.name;
     const nameB = dealerMetadata.value[b.id]?.name || b.name;
@@ -552,10 +600,8 @@ const hiddenDealers = computed(() => {
   return sortedDealers.value.filter(dealer => dealer.hidden);
 });
 
-const hiddenDealersOpen = ref(false);
-
 // Reset pagination when the list context changes
-watch([itemsPerPage, selectedDealership, hasActiveSearch], () => {
+watch([itemsPerPage, hasActiveSearch], () => {
   currentPage.value = 1
 })
 
@@ -639,26 +685,38 @@ function removeFilter(key) {
   }
 }
 
-
-// Handle dealership selection
-const handleDealershipSelect = (dealershipId) => {
-  selectedDealership.value = selectedDealership.value === dealershipId ? null : dealershipId
-}
-
-// Get vehicles for selected dealership
-const getSelectedDealerVehicles = () => {
-  if (!selectedDealership.value) return []
-  const dealer = sortedDealers.value.find(d => d.id === selectedDealership.value)
-  return dealer ? dealer.vehicles : []
-}
-
-// Count filtered vehicles
-const filteredVehicleCount = computed(() => {
-  if (selectedDealership.value) {
-    return getSelectedDealerVehicles().length
+async function navigateToDealership(dealershipId) {
+  const isDeselecting = selectedDealershipId.value === dealershipId
+  
+  if (isDeselecting) {
+    router.replace({
+      name: "vehicleShopping",
+      params: {
+        screenTag: route.params.screenTag || "buying",
+        buyingAvailable: route.params.buyingAvailable || "true",
+        marketplaceAvailable: route.params.marketplaceAvailable || "false",
+        selectedSellerId: "",
+      },
+    })
+  } else {
+    router.replace({
+      name: "vehicleShopping",
+      params: {
+        screenTag: route.params.screenTag || "buying",
+        buyingAvailable: route.params.buyingAvailable || "true",
+        marketplaceAvailable: route.params.marketplaceAvailable || "false",
+        selectedSellerId: dealershipId,
+      },
+    })
+    
+    await nextTick()
+    if (vehicleListHeaderRef.value) {
+      vehicleListHeaderRef.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
   }
-  return sortedDealers.value.reduce((total, dealer) => total + dealer.vehicles.length, 0)
-})
+}
+
+
 </script>
 
 <style scoped lang="scss">
@@ -1202,41 +1260,43 @@ const filteredVehicleCount = computed(() => {
         margin-top: 0.25rem;
         .rep-bar {
           position: relative;
-          height: 8px;
-          border-radius: 9999px;
+          height: 1.25rem;
+          border-radius: 0.25rem;
           background: rgba(255, 255, 255, 0.08);
           overflow: hidden;
+          display: flex;
+          align-items: center;
         }
         .rep-fill {
+          position: absolute;
+          top: 0;
+          left: 0;
           height: 100%;
           background: linear-gradient(90deg, var(--bng-orange) 0%, var(--bng-orange-b400) 100%);
+          transition: width 0.3s ease;
         }
-        .rep-details {
-          margin-top: 0.25rem;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          font-size: 0.8rem;
-        }
-        .rep-label {
-          color: var(--bng-cool-gray-200);
-          font-weight: 600;
-        }
-        .rep-percentage {
-          color: var(--bng-orange);
+        .rep-text-inside {
+          position: relative;
+          z-index: 2;
+          padding: 0 0.5rem;
+          font-size: 0.7rem;
           font-weight: 700;
-          font-size: 0.85rem;
-        }
-        .rep-purchases-needed {
-          color: var(--bng-cool-gray-300);
-          font-size: 0.75rem;
-          text-align: right;
-        }
-        .rep-max-level {
-          color: var(--bng-orange);
-          font-size: 0.75rem;
-          font-weight: 600;
-          text-align: right;
+          color: white;
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+          white-space: nowrap;
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          
+          .rep-level {
+            flex-shrink: 0;
+          }
+          
+          .rep-message {
+            flex-shrink: 0;
+            font-size: 0.65rem;
+          }
         }
       }
     }
@@ -1344,28 +1404,38 @@ const filteredVehicleCount = computed(() => {
 
   .dealership-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.25rem;
-    padding: 1.5rem;
-    padding-top: 0.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(20em, 1fr));
+    gap: 0.5em;
+    padding: 0.5em;
   }
 
   .dealership-card {
     position: relative;
-    min-height: 10rem;
-    background: var(--bng-cool-gray-900);
-    border: 1px solid var(--bng-cool-gray-700);
-    border-radius: 0.75rem;
+    height: 14em;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: var(--bng-corners-2);
+    padding: 0;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--bng-off-white-brighter);
+    background-color: rgba(0, 0, 0, 0.1);
+    background-blend-mode: multiply;
     overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    transition: all 0.2s ease;
 
     &:hover {
-      border-color: var(--bng-orange-b400);
-      transform: translateY(-3px);
+      background-color: rgba(0, 0, 0, 0.0);
+      border-color: var(--bng-orange);
+      transform: translateY(-2px);
       box-shadow: 
-        0 10px 25px rgba(0,0,0,0.4),
-        0 0 40px rgba(var(--bng-orange-rgb), 0.1);
+        0 4px 12px rgba(0, 0, 0, 0.3),
+        0 0 0 1px var(--bng-orange-alpha-30);
+    }
+
+    &:active {
+      transform: translateY(0);
     }
 
     &.selected {
@@ -1374,16 +1444,27 @@ const filteredVehicleCount = computed(() => {
         0 0 0 2px var(--bng-orange-alpha-50),
         0 8px 20px rgba(0,0,0,0.3);
     }
+    
+    &.selected:hover {
+      border-color: var(--bng-orange);
+      transform: translateY(-2px);
+      box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.3),
+        0 0 0 2px var(--bng-orange-alpha-50),
+        0 8px 20px rgba(0,0,0,0.3);
+    }
 
     &.hiddenOnline {
       opacity: 0.85;
+      filter: grayscale(100%);
       
-      .dealership-preview {
-        filter: grayscale(0.5);
+      &:hover {
+        opacity: 1;
+        filter: grayscale(0%);
       }
     }
 
-    .dealership-preview {
+    .dealership-background {
       position: absolute;
       top: 0;
       left: 0;
@@ -1395,91 +1476,65 @@ const filteredVehicleCount = computed(() => {
       background-position: center;
       background-repeat: no-repeat;
       z-index: 0;
-      
-      /* Default fallback gradient if no image */
       background-color: var(--bng-cool-gray-850);
       background-image: linear-gradient(135deg, var(--bng-cool-gray-800) 0%, var(--bng-cool-gray-850) 100%);
     }
 
-    /* Dark overlay gradient for text readability */
-    .dealership-preview::after {
-      content: '';
+    .dealership-overlay {
       position: absolute;
       inset: 0;
-      background: linear-gradient(
-        180deg,
-        rgba(0, 0, 0, 0.3) 0%,
-        rgba(0, 0, 0, 0.5) 50%,
-        rgba(0, 0, 0, 0.85) 100%
-      );
+      background: linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0));
       z-index: 1;
     }
 
     /* Content container with proper z-index */
-    .dealership-content {
+    .dealership-body {
       position: relative;
       z-index: 2;
       height: 100%;
-      min-height: 10rem;
-      padding: 1.25rem 1.25rem 0.5rem 1.25rem; // Reduced bottom padding from 1.25rem to 0.75rem
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      padding: 0.75rem 0 0 0; /* Remove side/bottom padding so thumbnails hit edges */
+    }
+
+    .top-section {
+      padding: 0 0.75rem; /* Move side padding here */
     }
 
     .dealership-header {
       display: flex;
+      flex-direction: column;
       align-items: flex-start;
-      gap: 0.75rem;
+      width: 100%;
     }
 
     .dealership-icon {
-      width: 2.5rem;
-      height: 2.5rem;
-      border-radius: 0.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0, 0, 0, 0.5);
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: var(--bng-orange);
-      flex-shrink: 0;
-    }
-
-    &.selected .dealership-icon {
-      background: var(--bng-orange);
-      color: var(--bng-off-black);
-      border-color: var(--bng-orange);
+      display: none; // Hide icon in seller grid style
     }
 
     .dealership-info {
-      flex: 1;
-      min-width: 0;
+      width: 100%;
     }
 
     .dealership-name {
-      font-size: 1.125rem;
       font-weight: 600;
-      margin: 0 0 0.25rem 0;
+      font-size: 1.05rem;
+      margin-bottom: 0.25rem;
       color: white;
       text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      
+      :deep(.icon-base) {
+        margin-right: 0.5rem;
+      }
     }
 
     .dealership-description {
-      font-size: 0.75rem;
-      color: rgba(255, 255, 255, 0.85);
-      margin: 0;
+      font-size: 0.8rem;
+      font-weight: 200;
+      padding-top: 0;
+      color: rgba(255, 255, 255, 0.9);
       text-shadow: 0 1px 3px rgba(0,0,0,0.5);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      line-height: 1.4;
     }
 
     .dealership-stats {
@@ -1528,16 +1583,69 @@ const filteredVehicleCount = computed(() => {
       }
     }
 
+    .bottom-section {
+      position: relative;
+      width: 100%;
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      margin-top: auto;
+    }
+
+    .vehicle-thumbnails {
+      position: relative;
+      display: flex;
+      flex-direction: row;
+      flex-flow: row-reverse nowrap;
+      align-items: flex-end;
+      justify-content: space-around;
+      width: 100%;
+      gap: 0;
+      padding: 0 0.25em;
+      background: linear-gradient(to top, rgba(0, 0, 0, 1) 0, rgba(0, 0, 0, 0.8) 2rem, rgba(0, 0, 0, 0) 100%);
+      overflow: hidden;
+      flex-shrink: 0;
+
+      .vehicle-thumbnail {
+        width: 4.8em;
+        gap: 5px;
+        height: auto;
+        aspect-ratio: 16 / 9;
+        border-radius: var(--bng-corners-1);
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-color: var(--bng-cool-gray-800);
+        overflow: hidden;
+        flex-shrink: 0;
+        position: relative;
+
+        .more-label {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background-color: rgba(0, 0, 0, 0.75);
+          color: white;
+          font-size: 1.25rem;
+          font-weight: 500;
+        }
+      }
+    }
+
     &.hidden-card {
       opacity: 0.85;
 
       &:hover {
         opacity: 1;
+        background-color: rgba(0, 0, 0, 0.0);
         border-color: var(--bng-orange);
-        transform: translateY(-3px);
-        box-shadow:
-          0 10px 25px rgba(0,0,0,0.4),
-          0 0 40px rgba(var(--bng-orange-rgb), 0.1);
+        transform: translateY(-2px);
+        box-shadow: 
+          0 4px 12px rgba(0, 0, 0, 0.3),
+          0 0 0 1px var(--bng-orange-alpha-30);
       }
 
       .dealership-preview {
@@ -1574,47 +1682,55 @@ const filteredVehicleCount = computed(() => {
     }
 
     .rep-progress {
-      margin-top: 0.25rem; // Reduced from 0.5rem to 0.25rem for more compact layout
+      position: relative;
+      width: 100%;
+      padding: 0 0.25rem;
+      height: 1.25rem;
+      z-index: 4;
+      margin-bottom: 5px;
+      flex-shrink: 0;
+      
       .rep-bar {
         position: relative;
-        height: 6px;
-        border-radius: 9999px;
+        height: 1.25rem;
+        border-radius: 0.25rem;
         background: rgba(255, 255, 255, 0.08);
         overflow: hidden;
+        display: flex;
+        align-items: center;
       }
+      
       .rep-fill {
+        position: absolute;
+        top: 0;
+        left: 0;
         height: 100%;
         background: linear-gradient(90deg, var(--bng-orange) 0%, var(--bng-orange-b400) 100%);
+        transition: width 0.3s ease;
       }
-      .rep-details {
-        margin-top: 0.2rem;
-        display: grid;
-        grid-template-columns: auto 1fr auto;
-        align-items: center;
-        column-gap: 0.5rem;
+      
+      .rep-text-inside {
+        position: relative;
+        z-index: 2;
+        padding: 0 0.5rem;
         font-size: 0.7rem;
-      }
-      .rep-label {
-        color: var(--bng-cool-gray-300);
-        font-weight: 600;
-      }
-      .rep-percentage {
-        color: var(--bng-orange);
         font-weight: 700;
-        font-size: 0.75rem;
+        color: white;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
         white-space: nowrap;
-      }
-      .rep-purchases-needed {
-        color: var(--bng-cool-gray-400);
-        font-size: 0.65rem;
-        text-align: right;
-      }
-      .rep-max-level {
-        color: var(--bng-orange);
-        font-size: 0.65rem;
-        font-weight: 600;
-        text-align: right;
-        white-space: nowrap;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        
+        .rep-level {
+          flex-shrink: 0;
+        }
+        
+        .rep-message {
+          flex-shrink: 0;
+          font-size: 0.65rem;
+        }
       }
     }
 
@@ -1634,7 +1750,8 @@ const filteredVehicleCount = computed(() => {
 .vehicle-listings {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 1rem;
+  padding: 0.5rem 0;
 }
 
 .pagination-bar {
@@ -1802,6 +1919,47 @@ const filteredVehicleCount = computed(() => {
 
     .dealership-grid {
       margin-top: 0.5rem;
+    }
+  }
+}
+
+// Sold Section
+.sold-section {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+
+  .sold-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .sold-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--bng-cool-gray-300);
+    margin: 0;
+  }
+
+  .sold-count {
+    font-size: 0.75rem;
+    color: var(--bng-cool-gray-500);
+    padding: 0.25rem 0.5rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 9999px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  
+  /* Make sold cards look a bit different/dimmed */
+  :deep(.vehicle-card) {
+    opacity: 0.85;
+    filter: grayscale(0.4);
+    
+    &:hover {
+      opacity: 1;
+      filter: grayscale(0);
     }
   }
 }

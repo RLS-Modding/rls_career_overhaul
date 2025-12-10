@@ -6,12 +6,13 @@ local M = {}
 M.dependencies =
   {'career_career', 'career_modules_inspectVehicle', 'util_configListGenerator', 'freeroam_organizations'}
 
-local moduleVersion = 42
+local moduleVersion = 61
 local jbeamIO = require('jbeam/io')
 
 -- Configuration constants
 local vehicleDeliveryDelay = 60
-local vehicleOfferTimeToLive = 15 * 60
+local vehicleOfferTimeToLive = 10 * 60
+local timeToRemoveSoldVehicle = 5 * 60
 local dealershipTimeBetweenOffers = 1 * 60
 local vehiclesPerDealership = vehicleOfferTimeToLive / dealershipTimeBetweenOffers
 local salesTax = 0.07
@@ -26,9 +27,11 @@ local sellersInfos = {}
 local currentSeller
 local purchaseData
 local tether
+local vehicleWatchlist = {}
+local currentUiState
 
 -- Delta tracking system
-local lastSnapshotByUid = {}
+local lastSnapshotByShopId = {}
 local lastDelta = {
   seq = 0,
   added = {},
@@ -37,8 +40,8 @@ local lastDelta = {
   updated = {}
 }
 local deltaSeq = 0
-local pendingSoldUids = {}
-local soldVehicles = {} -- vehicles sold but still visible for 2 minutes
+local pendingSoldShopIds = {}
+local soldVehicles = {}
 local uiOpen = false
 local refreshAccumulator = 0
 
@@ -52,38 +55,121 @@ local vehicleCache = {
 
 local partsValueCache = {}
 
--- State tracking for hold logic
+-- State tracking
 local purchaseMenuOpen = false
-local inspectingVehicleUid = nil
+local inspectingVehicleShopId = nil
 
 -- Utility functions
-local function makeUid(v)
-  local sid = v.sellerId or ""
-  local key = v.key or ""
-  local gen = v.generationTime or 0
-  return tostring(sid) .. "|" .. tostring(key) .. "|" .. tostring(gen)
+local function generateShopId()
+  local shopId = 0
+  while true do
+    shopId = math.floor(math.random() * 1000000)
+    local found = false
+    for _, vehInfo in ipairs(vehiclesInShop) do
+      if vehInfo.shopId == shopId then
+        found = true
+        break
+      end
+    end
+    if not found then
+      return shopId
+    end
+  end
 end
 
-local function findVehicleById(vehicleId)
-  -- Support both UID and legacy shopId for backwards compatibility
-  if type(vehicleId) == "number" then
-    -- Legacy shopId lookup
-    return vehiclesInShop[vehicleId]
-  elseif type(vehicleId) == "string" then
-    -- UID lookup
-    for _, vehicle in ipairs(vehiclesInShop) do
-      if vehicle.uid == vehicleId then
-        return vehicle
-      end
+local function getVehicleInfoByShopId(shopId)
+  if not shopId then
+    return nil
+  end
+  local numShopId = tonumber(shopId)
+  if not numShopId then
+    log("W", "Career", "getVehicleInfoByShopId: Invalid shopId type: " .. tostring(shopId))
+    return nil
+  end
+  for _, vehInfo in ipairs(vehiclesInShop) do
+    if vehInfo.shopId == numShopId then
+      return vehInfo
     end
   end
   return nil
 end
 
+local function generateSoldVehicleValue(shopId)
+  local vehicleInfo = getVehicleInfoByShopId(shopId)
+  if not vehicleInfo then return 0 end
+  local value = vehicleInfo.Value * (0.9 + math.random() * 0.1)
+  return round(value / 10) * 10
+end
+
+local function getRoundedPrice(value, priceRoundingType)
+  if priceRoundingType == "prestige" then
+    local thousands = math.floor(value / 1000)
+    local candidate495 = thousands * 1000 + 495
+    if value <= candidate495 then return candidate495 end
+    local candidate995 = thousands * 1000 + 995
+    if value <= candidate995 then return candidate995 end
+    return (thousands + 1) * 1000 + 495
+  elseif priceRoundingType == "private" then
+    return math.ceil(value / 100) * 100
+  elseif priceRoundingType == "dealer" then
+    return math.ceil(value / 20) * 20
+  else
+    return math.ceil(value / 10) * 10
+  end
+end
+
+local function getEligibleVehiclesWithoutDealershipVehicles(eligibleVehicles, seller)
+  local eligibleVehiclesWithoutDealershipVehicles = deepcopy(eligibleVehicles)
+  local configsInDealership = {}
+  for _, vehicleInfo in ipairs(vehiclesInShop) do
+    if vehicleInfo.sellerId == seller.id then
+      configsInDealership[vehicleInfo.model_key] = configsInDealership[vehicleInfo.model_key] or {}
+      configsInDealership[vehicleInfo.model_key][vehicleInfo.key] = true
+    end
+  end
+
+  for i = #eligibleVehiclesWithoutDealershipVehicles, 1, -1 do
+    local vehicleInfo = eligibleVehiclesWithoutDealershipVehicles[i]
+    if configsInDealership[vehicleInfo.model_key] and configsInDealership[vehicleInfo.model_key][vehicleInfo.key] then
+      table.remove(eligibleVehiclesWithoutDealershipVehicles, i)
+    end
+  end
+  return eligibleVehiclesWithoutDealershipVehicles
+end
+
+local privateSellersPreview = "/levels/west_coast_usa/facilities/privateSeller_dealership.jpg"
+local function getUiDealershipsData(unsoldVehicles)
+  local dealerships = freeroam_facilities.getFacilitiesByType("dealership")
+  local vehicleCountPerDealership = {}
+  for _, vehicle in ipairs(unsoldVehicles) do
+    vehicleCountPerDealership[vehicle.sellerId] = (vehicleCountPerDealership[vehicle.sellerId] or 0) + 1
+  end
+  local data = {}
+  if dealerships then
+    for _, dealership in ipairs(dealerships) do
+      table.insert(data, {
+        id = dealership.id,
+        name = dealership.name,
+        description = dealership.description,
+        vehicleCount = vehicleCountPerDealership[dealership.id] or 0,
+        preview = dealership.preview,
+        icon = "carDealer"
+      })
+    end
+  end
+  table.sort(data, function(a,b) return a.name < b.name end)
+  table.insert(data, {
+    id = "private",
+    name = "Private Sellers",
+    vehicleCount = vehicleCountPerDealership["private"] or 0,
+    preview = privateSellersPreview,
+    icon = "personSolid"
+  })
+  return data
+end
+
 local function sanitizeVehicleForUi(v)
   local t = {}
-  -- Ensure uid and shopId are preserved
-  t.uid = v.uid or makeUid(v)
   t.shopId = v.shopId
 
   for k, val in pairs(v) do
@@ -106,11 +192,16 @@ local function sanitizeVehicleForUi(v)
 end
 
 local function convertKeysToStrings(t)
-  local newTable = {}
-  for k, v in pairs(t) do
-    newTable[tostring(k)] = v
+  local unsoldVehicles = {}
+  local soldVehiclesResult = {}
+  for k, v in ipairs(t) do
+    if v.soldViewCounter and v.soldViewCounter > 0 then
+      table.insert(soldVehiclesResult, v)
+    else
+      table.insert(unsoldVehicles, v)
+    end
   end
-  return newTable
+  return unsoldVehicles, soldVehiclesResult
 end
 
 local function getVisualValueFromMileage(mileage)
@@ -158,58 +249,53 @@ end
 local function buildSnapshot()
   local snap = {}
   for _, veh in ipairs(vehiclesInShop) do
-    veh.uid = veh.uid or makeUid(veh)
-    snap[veh.uid] = veh
+    snap[veh.shopId] = veh
   end
   return snap
 end
 
-local function commitDelta(newSnap, justExpiredUids)
-  justExpiredUids = justExpiredUids or {}
+local function commitDelta(newSnap, justExpiredShopIds)
+  justExpiredShopIds = justExpiredShopIds or {}
   local added, removed, sold, updated = {}, {}, {}, {}
-  for uid, veh in pairs(newSnap) do
-    if not lastSnapshotByUid[uid] then
+  for shopId, veh in pairs(newSnap) do
+    if not lastSnapshotByShopId[shopId] then
       table.insert(added, sanitizeVehicleForUi(veh))
     end
   end
-  for uid, veh in pairs(newSnap) do
-    local prev = lastSnapshotByUid[uid]
+  for shopId, veh in pairs(newSnap) do
+    local prev = lastSnapshotByShopId[shopId]
     if prev and veh then
-      -- Check if vehicle was just marked as sold (either by expiration or purchase)
       local wasMarkedSold = prev.markedSold == true
       local isMarkedSold = veh.markedSold == true
       local prevSold = (prev.soldViewCounter or 0)
       local currSold = (veh.soldViewCounter or 0)
 
-      -- Always send update for vehicles that just expired
-      if justExpiredUids[uid] or (isMarkedSold and not wasMarkedSold) or (currSold > prevSold) then
+      if justExpiredShopIds[shopId] or (isMarkedSold and not wasMarkedSold) or (currSold > prevSold) then
         local soldVeh = sanitizeVehicleForUi(veh)
         soldVeh.__sold = true
         table.insert(updated, soldVeh)
-        if justExpiredUids[uid] then
-        end
       end
     end
   end
-  for uid, _ in pairs(lastSnapshotByUid) do
-    if not newSnap[uid] then
-      if pendingSoldUids[uid] then
-        local prevVeh = lastSnapshotByUid[uid]
+  for shopId, _ in pairs(lastSnapshotByShopId) do
+    if not newSnap[shopId] then
+      if pendingSoldShopIds[shopId] then
+        local prevVeh = lastSnapshotByShopId[shopId]
         if prevVeh then
           local soldVeh = sanitizeVehicleForUi(prevVeh)
-          soldVeh.uid = uid
+          soldVeh.shopId = shopId
           soldVeh.__sold = true
           table.insert(sold, soldVeh)
         else
-          table.insert(sold, uid)
+          table.insert(sold, shopId)
         end
-        pendingSoldUids[uid] = nil
+        pendingSoldShopIds[shopId] = nil
       else
-        table.insert(removed, uid)
+        table.insert(removed, shopId)
       end
     end
   end
-  lastSnapshotByUid = newSnap
+  lastSnapshotByShopId = newSnap
   deltaSeq = deltaSeq + 1
   lastDelta = {
     seq = deltaSeq,
@@ -224,25 +310,47 @@ end
 local function setShoppingUiOpen(isOpen)
   uiOpen = not not isOpen
   refreshAccumulator = 0
-  -- When UI opens, immediately refresh to ensure stock levels
   if uiOpen then
     M.updateVehicleList(false)
   end
 end
 
+local function onUiChangedState(toState)
+  currentUiState = toState
+end
+
 local function onUpdate(dt)
+  -- Watchlist expiration check
+  if not tableIsEmpty(vehicleWatchlist) and (not currentUiState or currentUiState == "play") then
+    local currentTime = os.time()
+    local inspectedVehicleInfo = career_modules_inspectVehicle.getSpawnedVehicleInfo()
+    for shopId, status in pairs(vehicleWatchlist) do
+      if status == "unsold" and (not inspectedVehicleInfo or inspectedVehicleInfo.shopId ~= shopId) then
+        local vehicleInfo = getVehicleInfoByShopId(shopId)
+        if vehicleInfo then
+          local offerTime = currentTime - vehicleInfo.generationTime
+          if offerTime > vehicleInfo.offerTTL then
+            vehicleInfo.soldFor = generateSoldVehicleValue(shopId)
+            vehicleWatchlist[shopId] = "sold"
+            guihooks.trigger("toastrMsg", {type="info", title="A vehicle you were interested in has been sold.", msg = vehicleInfo.Name .. " for $" .. string.format("%.2f", vehicleInfo.soldFor)})
+            break
+          end
+        end
+      end
+    end
+  end
+
+  -- UI refresh logic
   if not uiOpen then
     return
   end
   refreshAccumulator = refreshAccumulator + (dt or 0)
-  -- Use faster refresh interval when UI is open to maintain stock levels
   local currentRefreshInterval = uiOpen and (refreshInterval * 0.5) or refreshInterval
   if refreshAccumulator >= currentRefreshInterval then
     refreshAccumulator = 0
     M.updateVehicleList(false)
   end
 
-  -- Check and update spawned vehicle status
   M.checkSpawnedVehicleStatus()
 end
 
@@ -250,20 +358,16 @@ end
 local function getShoppingData()
   local data = {}
 
-  -- Ensure all vehicles have UIDs before sending to UI
-  for i, vehicle in ipairs(vehiclesInShop) do
-    if not vehicle.uid then
-      vehicle.uid = makeUid(vehicle)
-    end
-    -- Also ensure shopId is set for backwards compatibility
-    vehicle.shopId = i
-  end
-
-  data.vehiclesInShop = convertKeysToStrings(vehiclesInShop)
+  local unsoldVehicles, soldVehiclesResult = convertKeysToStrings(vehiclesInShop)
+  data.vehiclesInShop = unsoldVehicles
+  data.soldVehicles = soldVehiclesResult
+  data.uiDealershipsData = getUiDealershipsData(unsoldVehicles)
   data.currentSeller = currentSeller
   if currentSeller then
     local dealership = freeroam_facilities.getDealership(currentSeller)
-    data.currentSellerNiceName = dealership.name
+    if dealership then
+      data.currentSellerNiceName = dealership.name
+    end
   end
   data.playerAttributes = career_modules_playerAttributes.getAllAttributes()
   data.inventoryHasFreeSlot = career_modules_inventory.hasFreeSlot()
@@ -328,7 +432,6 @@ local function getShoppingData()
     end
   end
 
-  -- Also expose private sellers metadata so UI can show preview images and text
   if facilities and facilities.privateSellers then
     for _, d in ipairs(facilities.privateSellers) do
       table.insert(data.dealerships, {
@@ -339,7 +442,6 @@ local function getShoppingData()
         hiddenFromDealerList = d.hiddenFromDealerList,
         associatedOrganization = d.associatedOrganization
       })
-      -- private sellers usually have no associated organization; keep organizations map unchanged
     end
   end
 
@@ -378,7 +480,6 @@ local function getRandomizedPrice(price, range)
     finalPrice = (NH + slope * (rand - 0.99)) * price
   end
 
-  -- Ensure the final price is always an integer and at least 500
   local finalPriceInt = math.floor(finalPrice + 0.5)
   return math.max(finalPriceInt, 500)
 end
@@ -490,7 +591,6 @@ end
 
 -- Cache management functions
 local function cacheDealers()
-
   local startTime = os.clock()
   vehicleCache.cacheValid = false
   vehicleCache.dealershipCache = {}
@@ -654,19 +754,25 @@ end
 
 -- Vehicle list management functions
 local function updateVehicleList(fromScratch)
-  vehicleShopDirtyDate = os.date("!%Y-%m-%dT%XZ")
+  vehicleShopDirtyDate = os.date("!%Y-%m-%dT%H:%M:%SZ")
   local sellers = {}
   local currentMap = getCurrentLevelIdentifier()
+  local onlyStarterVehicles = not career_career.hasBoughtStarterVehicle()
 
   if fromScratch then
     vehiclesInShop = {}
     sellersInfos = {}
+    vehicleWatchlist = {}
+  end
+
+  -- If there are already vehicles in the shop, don't generate starter vehicles
+  if onlyStarterVehicles and not tableIsEmpty(vehiclesInShop) then
+    return
   end
 
   local filteredVehiclesInShop = {}
   for i, vehicleInfo in ipairs(vehiclesInShop) do
     if vehicleInfo.mapId == currentMap then
-      vehicleInfo.shopId = #filteredVehiclesInShop + 1
       table.insert(filteredVehiclesInShop, vehicleInfo)
     end
   end
@@ -693,11 +799,20 @@ local function updateVehicleList(fromScratch)
 
   if facilities.dealerships then
     for _, dealership in ipairs(facilities.dealerships) do
-      table.insert(sellers, dealership)
+      if onlyStarterVehicles then
+        if dealership.containsStarterVehicles then
+          dealership.filter = {whiteList = {careerStarterVehicle = {true}}}
+          dealership.subFilters = nil
+          table.insert(sellers, dealership)
+        end
+      else
+        dealership.filter = dealership.filter or {}
+        table.insert(sellers, dealership)
+      end
     end
   end
 
-  if facilities.privateSellers then
+  if not onlyStarterVehicles and facilities.privateSellers then
     for _, dealership in ipairs(facilities.privateSellers) do
       table.insert(sellers, dealership)
     end
@@ -709,50 +824,32 @@ local function updateVehicleList(fromScratch)
   local currentTime = os.time()
 
   -- Track which vehicles are being marked as sold this update
-  local justExpiredUids = {}
+  local justExpiredShopIds = {}
 
+  -- Remove vehicles that have expired using v38 watchlist logic
   for i = #vehiclesInShop, 1, -1 do
     local vehicleInfo = vehiclesInShop[i]
     local offerTime = currentTime - vehicleInfo.generationTime
     if offerTime > vehicleInfo.offerTTL then
-      -- Check if vehicle should be held from being sold
-      local spawnedVehicleInfo = career_modules_inspectVehicle.getSpawnedVehicleInfo()
-      local isVehicleSpawned = spawnedVehicleInfo and
-                                 (spawnedVehicleInfo.shopId == vehicleInfo.shopId or spawnedVehicleInfo.uid ==
-                                   vehicleInfo.uid or (inspectingVehicleUid and inspectingVehicleUid == vehicleInfo.uid))
-      local isVehicleInPurchase = purchaseData and purchaseData.vehicleInfo and
-                                    (purchaseData.vehicleInfo.uid == vehicleInfo.uid or
-                                      (purchaseData.uid and purchaseData.uid == vehicleInfo.uid))
-      local isVehicleBeingInspected = inspectingVehicleUid == vehicleInfo.uid
-      local isPurchaseMenuOpen = purchaseMenuOpen
-
-      if not vehicleInfo.markedSold and
-        (isVehicleSpawned or isVehicleInPurchase or isVehicleBeingInspected or isPurchaseMenuOpen) then
-        -- Vehicle is actively being used - don't mark as sold, extend its life
-        vehicleInfo.uid = vehicleInfo.uid or makeUid(vehicleInfo)
-        vehicleInfo.offerTTL = vehicleOfferTimeToLive -- Reset the timer
-        log("D", "Career",
-          "Vehicle hold logic extended life of " .. tostring(vehicleInfo.uid) .. " (actively being used)")
-      elseif not vehicleInfo.markedSold then
-        -- Vehicle is not being used and not already marked as sold - mark it as sold
-        vehicleInfo.uid = vehicleInfo.uid or makeUid(vehicleInfo)
+      if vehicleWatchlist[vehicleInfo.shopId] then
+        if type(vehicleWatchlist[vehicleInfo.shopId]) ~= "number" then
+          vehicleWatchlist[vehicleInfo.shopId] = currentTime + timeToRemoveSoldVehicle
+          if not vehicleInfo.soldFor then
+            vehicleInfo.soldFor = generateSoldVehicleValue(vehicleInfo.shopId)
+          end
+        end
+        vehicleInfo.soldViewCounter = vehicleInfo.soldViewCounter or 0
+        vehicleInfo.soldViewCounter = vehicleInfo.soldViewCounter + 1
         vehicleInfo.markedSold = true
-        vehicleInfo.soldViewCounter = 1
-        vehicleInfo.soldGraceUntil = currentTime + 120
-        justExpiredUids[vehicleInfo.uid] = true
-        log("D", "Career", "Vehicle marked as sold (hold logic check passed): " .. tostring(vehicleInfo.uid))
+        justExpiredShopIds[vehicleInfo.shopId] = true
+        if currentTime > vehicleWatchlist[vehicleInfo.shopId] then
+          vehicleWatchlist[vehicleInfo.shopId] = nil
+          table.remove(vehiclesInShop, i)
+        end
       else
-        -- Log why vehicle was not marked as sold (already marked)
-        log("D", "Career", "Vehicle already marked as sold: " .. tostring(vehicleInfo.uid))
+        table.remove(vehiclesInShop, i)
       end
-    elseif vehicleInfo.soldGraceUntil and currentTime >= vehicleInfo.soldGraceUntil then
-      -- Grace period expired - now remove it
-      table.remove(vehiclesInShop, i)
     end
-  end
-
-  for id, vehInfo in ipairs(vehiclesInShop) do
-    vehInfo.shopId = id
   end
 
   for _, seller in ipairs(sellers) do
@@ -786,55 +883,44 @@ local function updateVehicleList(fromScratch)
 
     local numberOfVehiclesToGenerate = 0
 
-    if fromScratch or sellersInfos[seller.id].lastGenerationTime == 0 then
-      numberOfVehiclesToGenerate = availableSlots
-      log("D", "Career",
-        string.format("Initial stock fill for %s: generating %d vehicles", seller.id, numberOfVehiclesToGenerate))
+    if onlyStarterVehicles then
+      -- Generate the starter vehicles
+      local eligibleVehiclesStarter = util_configListGenerator.getEligibleVehicles(onlyStarterVehicles)
+      randomVehicleInfos = util_configListGenerator.getRandomVehicleInfos(seller, 3, eligibleVehiclesStarter, "adjustedPopulation")
     else
-      local stockScalingFactor = math.max(1, maxStock / 10)
-      local scaledTimeBetweenOffers = dealershipTimeBetweenOffers / stockScalingFactor
+      -- vehicleGenerationMultiplier lowers the time between offers
+      local adjustedTimeBetweenOffers = dealershipTimeBetweenOffers / (seller.vehicleGenerationMultiplier or 1)
+      local maxVehicles = math.floor(vehicleOfferTimeToLive / adjustedTimeBetweenOffers)
+      numberOfVehiclesToGenerate = math.min(math.floor((currentTime - sellersInfos[seller.id].lastGenerationTime) / adjustedTimeBetweenOffers), maxVehicles)
 
-      -- If UI is open, be more aggressive with stock replenishment
-      if uiOpen then
-        scaledTimeBetweenOffers = scaledTimeBetweenOffers * 0.5 -- Generate twice as fast when UI is open
-      end
-
-      local timeBasedGeneration = math.floor((currentTime - sellersInfos[seller.id].lastGenerationTime) /
-                                               scaledTimeBetweenOffers)
-
-      local stockPercentage = currentVehicleCount / maxStock
-      local minGenerationRate
-      if stockPercentage < 0.5 then
-        minGenerationRate = availableSlots
-      elseif uiOpen and stockPercentage < 0.8 then
-        -- When UI is open, ensure we maintain higher stock levels
-        minGenerationRate = math.max(1, math.ceil(maxStock * 0.05))
-      else
-        minGenerationRate = 1
-      end
-
-      numberOfVehiclesToGenerate = math.min(math.max(timeBasedGeneration, minGenerationRate), availableSlots)
-
-      -- Additional check: if we have no vehicles in stock, generate at least some vehicles
-      if numberOfVehiclesToGenerate == 0 and currentVehicleCount == 0 and availableSlots > 0 then
-        numberOfVehiclesToGenerate = math.min(math.ceil(maxStock * 0.3), availableSlots)
+      if fromScratch or sellersInfos[seller.id].lastGenerationTime == 0 then
+        numberOfVehiclesToGenerate = availableSlots
         log("D", "Career",
-          string.format("No vehicles in stock for %s: generating %d vehicles", seller.id, numberOfVehiclesToGenerate))
+          string.format("Initial stock fill for %s: generating %d vehicles", seller.id, numberOfVehiclesToGenerate))
       end
 
-      -- Additional check: if UI is open and we have very low stock, generate at least 1 vehicle
-      if uiOpen and numberOfVehiclesToGenerate == 0 and currentVehicleCount < maxStock * 0.3 and availableSlots > 0 then
-        numberOfVehiclesToGenerate = 1
-        log("D", "Career",
-          string.format("UI open - emergency stock replenishment for %s: generating 1 vehicle", seller.id))
+      -- Generate the vehicles without duplicating vehicles that are already in the dealership
+      local eligibleVehiclesWithoutDealershipVehicles = getEligibleVehiclesWithoutDealershipVehicles(vehicleCache.regularVehicles, seller)
+      local newRandomVehicleInfos = getRandomVehicleFromCache(seller.id, numberOfVehiclesToGenerate)
+      arrayConcat(randomVehicleInfos, newRandomVehicleInfos)
+
+      -- Generate the remaining vehicles without a duplicate check
+      local numberOfMissingVehicles = numberOfVehiclesToGenerate - tableSize(newRandomVehicleInfos)
+      if numberOfMissingVehicles > 0 then
+        log("I", "Career", "Generating " .. numberOfMissingVehicles .. " more vehicles without duplicate check for " .. seller.id)
+        for i = 1, numberOfMissingVehicles do
+          local newVehicleInfos = getRandomVehicleFromCache(seller.id, 1)
+          arrayConcat(randomVehicleInfos, newVehicleInfos)
+        end
       end
     end
 
-    randomVehicleInfos = getRandomVehicleFromCache(seller.id, numberOfVehiclesToGenerate)
+    local starterVehicleMileages = {bx = 165746239, etki = 285817342, covet = 80174611}
+    local starterVehicleYears = {bx = 1990, etki = 1989, covet = 1989}
 
     for i, randomVehicleInfo in ipairs(randomVehicleInfos) do
       randomVehicleInfo.generationTime = currentTime - ((i - 1) * dealershipTimeBetweenOffers)
-      randomVehicleInfo.offerTTL = vehicleOfferTimeToLive
+      randomVehicleInfo.offerTTL = onlyStarterVehicles and math.huge or vehicleOfferTimeToLive
 
       randomVehicleInfo.sellerId = seller.id
       randomVehicleInfo.sellerName = seller.name
@@ -851,12 +937,28 @@ local function updateVehicleList(fromScratch)
 
       local years = randomVehicleInfo.Years or randomVehicleInfo.aggregates.Years
 
-      randomVehicleInfo.year = years and math.random(years.min, years.max) or 2023
-      if filter.whiteList and filter.whiteList.Mileage then
-        randomVehicleInfo.Mileage = randomGauss3() / 3 * (filter.whiteList.Mileage.max - filter.whiteList.Mileage.min) +
-                                      filter.whiteList.Mileage.min
+      if not onlyStarterVehicles then
+        -- Get a random year between the min and max year of the filter and the years of the vehicle
+        local minYear = (years and years.min) or 2023
+        if filter.whiteList and filter.whiteList.Years and filter.whiteList.Years.min then
+          minYear = math.max(minYear, filter.whiteList.Years.min)
+        end
+        local maxYear = (years and years.max) or 2023
+        if filter.whiteList and filter.whiteList.Years and filter.whiteList.Years.max then
+          maxYear = math.min(maxYear, filter.whiteList.Years.max)
+        end
+        randomVehicleInfo.year = math.random(minYear, maxYear)
+
+        -- Get a random mileage between the min and max mileage of the filter
+        if filter.whiteList and filter.whiteList.Mileage then
+          randomVehicleInfo.Mileage = randomGauss3()/3 * (filter.whiteList.Mileage.max - filter.whiteList.Mileage.min) + filter.whiteList.Mileage.min
+        else
+          randomVehicleInfo.Mileage = 0
+        end
       else
-        randomVehicleInfo.Mileage = 0
+        -- Values for the starter vehicles
+        randomVehicleInfo.year = starterVehicleYears[randomVehicleInfo.model_key] or (years and math.random(years.min, years.max) or 2023)
+        randomVehicleInfo.Mileage = starterVehicleMileages[randomVehicleInfo.model_key] or 100000000
       end
 
       local totalPartsValue = randomVehicleInfo.cachedPartsValue or
@@ -867,7 +969,7 @@ local function updateVehicleList(fromScratch)
         mileage = randomVehicleInfo.Mileage,
         age = 2025 - randomVehicleInfo.year
       })
-      local baseValue = math.floor(math.max(adjustedBaseValue, totalPartsValue) / 1000) * 1000 -- Round to nearest thousand
+      local baseValue = math.floor(math.max(adjustedBaseValue, totalPartsValue) / 1000) * 1000
 
       local range = seller.range
       if seller.associatedOrganization then
@@ -877,9 +979,29 @@ local function updateVehicleList(fromScratch)
           range = level.range
         end
       end
-      randomVehicleInfo.Value = getRandomizedPrice(baseValue, range)
-      randomVehicleInfo.shopId = tableSize(vehiclesInShop) + 1
-      randomVehicleInfo.uid = makeUid(randomVehicleInfo) -- Set UID immediately when vehicle is created
+
+      -- Generate negotiation personality
+      if seller.id == "private" then
+        if career_modules_marketplace and career_modules_marketplace.generatePersonality then
+          randomVehicleInfo.negotiationPersonality = career_modules_marketplace.generatePersonality(false)
+          randomVehicleInfo.sellerName = randomVehicleInfo.negotiationPersonality.name
+        end
+      else
+        if career_modules_marketplace and career_modules_marketplace.generatePersonality then
+          local personalityKey = seller.id
+          randomVehicleInfo.negotiationPersonality = career_modules_marketplace.generatePersonality(false, {personalityKey})
+        end
+      end
+
+      -- Store market value before markup
+      randomVehicleInfo.marketValue = getRandomizedPrice(baseValue, range)
+
+      -- Apply price multiplier from negotiation personality
+      local priceMultiplier = (randomVehicleInfo.negotiationPersonality and randomVehicleInfo.negotiationPersonality.priceMultiplier) or 1
+      randomVehicleInfo.Value = getRoundedPrice(randomVehicleInfo.marketValue * priceMultiplier, seller.priceRoundingType)
+
+      randomVehicleInfo.negotiationPossible = not onlyStarterVehicles
+      randomVehicleInfo.shopId = generateShopId()
 
       local fees = seller.fees or 0
       if seller.associatedOrganization then
@@ -900,6 +1022,7 @@ local function updateVehicleList(fromScratch)
         end
       end
       randomVehicleInfo.tax = tax
+
       if seller.id == "private" then
         local parkingData = gameplay_parking.getParkingSpots()
         local parkingSpots = parkingData and parkingData.byName or {}
@@ -932,30 +1055,42 @@ local function updateVehicleList(fromScratch)
           randomVehicleInfo.pos = chosen.spot.pos
         else
           log("W", "Career",
-            string.format("No parking spot available for private sale vehicle %s", tostring(randomVehicleInfo.uid)))
+            string.format("No parking spot available for private sale vehicle %s", tostring(randomVehicleInfo.shopId)))
         end
       else
         local dealership = freeroam_facilities.getDealership(seller.id)
         randomVehicleInfo.pos = freeroam_facilities.getAverageDoorPositionForFacility(dealership)
       end
 
-      local requiredInsurance =
-        career_modules_insurance.getMinApplicablePolicyFromVehicleShoppingData(randomVehicleInfo)
-      if requiredInsurance then
-        randomVehicleInfo.requiredInsurance = requiredInsurance
+      -- Get insurance class from v38 system
+      if career_modules_insurance_insurance and career_modules_insurance_insurance.getInsuranceClassFromVehicleShoppingData then
+        local vehicleInsuranceClass = career_modules_insurance_insurance.getInsuranceClassFromVehicleShoppingData(randomVehicleInfo)
+        if vehicleInsuranceClass then
+          randomVehicleInfo.insuranceClass = vehicleInsuranceClass
+        end
+      end
+
+      -- Also get required insurance from current system
+      if career_modules_insurance and career_modules_insurance.getMinApplicablePolicyFromVehicleShoppingData then
+        local requiredInsurance = career_modules_insurance.getMinApplicablePolicyFromVehicleShoppingData(randomVehicleInfo)
+        if requiredInsurance then
+          randomVehicleInfo.requiredInsurance = requiredInsurance
+        end
       end
 
       randomVehicleInfo.mapId = currentMap
 
-      vehiclesInShop[randomVehicleInfo.shopId] = randomVehicleInfo
+      table.insert(vehiclesInShop, randomVehicleInfo)
     end
     if not tableIsEmpty(randomVehicleInfos) then
       sellersInfos[seller.id].lastGenerationTime = currentTime
     end
   end
 
+  log("I", "Career", "Vehicles in shop: " .. tableSize(vehiclesInShop))
+
   local newSnap = buildSnapshot()
-  commitDelta(newSnap, justExpiredUids)
+  commitDelta(newSnap, justExpiredShopIds)
   guihooks.trigger("vehicleShopDelta", lastDelta)
 end
 
@@ -1024,6 +1159,7 @@ local function payForVehicle()
     label = label
   })
   Engine.Audio.playOnce('AudioGui', 'event:>UI>Career>Buy_01')
+  vehicleWatchlist[purchaseData.shopId] = nil
 end
 
 local deleteAddedVehicle
@@ -1108,7 +1244,6 @@ local function openShop(seller, _originComputerId, screenTag)
     if dealership then
       tetherPos = freeroam_facilities.getAverageDoorPositionForFacility(dealership)
     else
-      -- For private dealerships that aren't facilities, use position of first vehicle
       for _, vehicleInfo in ipairs(vehiclesInShop) do
         if vehicleInfo.sellerId == currentSeller and vehicleInfo.pos then
           tetherPos = vehicleInfo.pos
@@ -1128,8 +1263,8 @@ local function openShop(seller, _originComputerId, screenTag)
     state = 'vehicleShopping',
     params = {
       screenTag = screenTag,
-      buyingAvailable = not computer or not not computer.functions.vehicleShop,
-      marketplaceAvailable = not currentSeller
+      buyingAvailable = (not computer or computer.functions.vehicleShop) and "true" or "false",
+      marketplaceAvailable = (career_career.hasBoughtStarterVehicle() and not currentSeller) and "true" or "false"
     }
   })
   extensions.hook("onVehicleShoppingMenuOpened", {
@@ -1179,7 +1314,6 @@ local function getTaxiPriceToDealership(dealershipId)
 
   local price, calcDistance = career_modules_quickTravel.getPriceForQuickTravel(pos)
 
-  -- Fallback: if price is 0 but we have a distance, estimate using same constants as quickTravel
   if (not price or price <= 0) and (calcDistance and calcDistance > 0) then
     local basePrice = 5
     local pricePerM = 0.08
@@ -1211,8 +1345,7 @@ local function onShoppingMenuClosed()
     tether.remove = true
     tether = nil
   end
-  -- Clear inspection state when shopping menu closes
-  inspectingVehicleUid = nil
+  inspectingVehicleShopId = nil
   purchaseMenuOpen = false
 end
 
@@ -1250,29 +1383,54 @@ local function buySpawnedVehicle(buyVehicleOptions)
 end
 
 local function sendPurchaseDataToUi()
-  -- Use the stored vehicle info (already deep copied in openPurchaseMenu)
-  local vehicleShopInfo = purchaseData.vehicleInfo
-
-  -- Recalculate prices only if trade-in has changed (prices already calculated in openPurchaseMenu)
-  local tradeInValue = purchaseData.tradeInVehicleInfo and purchaseData.tradeInVehicleInfo.Value or 0
-  if tradeInValue > 0 or not purchaseData.prices then
-    -- Recalculate prices with trade-in value
-    local taxes = math.max((vehicleShopInfo.Value + vehicleShopInfo.fees - tradeInValue) *
-                             (vehicleShopInfo.tax or salesTax), 0)
-    if vehicleShopInfo.sellerId == "discountedDealership" or vehicleShopInfo.sellerId == "joesJunkDealership" then
-      taxes = 0
-    end
-    local finalPrice = vehicleShopInfo.Value + vehicleShopInfo.fees + taxes - tradeInValue
-    purchaseData.prices = {
-      fees = vehicleShopInfo.fees,
-      taxes = taxes,
-      finalPrice = finalPrice,
-      customLicensePlate = customLicensePlatePrice
-    }
+  local vehicleShopInfo = deepcopy(getVehicleInfoByShopId(purchaseData.shopId))
+  if not vehicleShopInfo then
+    log("E", "Career", "sendPurchaseDataToUi: Vehicle not found for shopId: " .. tostring(purchaseData.shopId))
+    return
   end
+  vehicleShopInfo.shopId = purchaseData.shopId
+  vehicleShopInfo.niceName = vehicleShopInfo.Brand .. " " .. vehicleShopInfo.Name
+  vehicleShopInfo.deliveryDelay = getDeliveryDelay(vehicleShopInfo.distance)
+  purchaseData.vehicleInfo = vehicleShopInfo
 
+  local tradeInValue = purchaseData.tradeInVehicleInfo and purchaseData.tradeInVehicleInfo.Value or 0
+  local taxes = math.max((vehicleShopInfo.Value + vehicleShopInfo.fees - tradeInValue) * (vehicleShopInfo.tax or salesTax), 0)
+  if vehicleShopInfo.sellerId == "discountedDealership" or vehicleShopInfo.sellerId == "joesJunkDealership" then
+    taxes = 0
+  end
+  local finalPrice = vehicleShopInfo.Value + vehicleShopInfo.fees + taxes - tradeInValue
+  purchaseData.prices = {fees = vehicleShopInfo.fees, taxes = taxes, finalPrice = finalPrice, customLicensePlate = customLicensePlatePrice}
   local spawnedVehicleInfo = career_modules_inspectVehicle.getSpawnedVehicleInfo()
   purchaseData.vehId = spawnedVehicleInfo and spawnedVehicleInfo.vehId
+
+  -- Insurance options from v38
+  if not purchaseData.insuranceId then
+    if vehicleShopInfo.insuranceClass and vehicleShopInfo.insuranceClass.id then
+      if career_modules_insurance_insurance and career_modules_insurance_insurance.getDefaultInsuranceForClassId then
+        local defaultInsurance = career_modules_insurance_insurance.getDefaultInsuranceForClassId(vehicleShopInfo.insuranceClass.id)
+        if defaultInsurance then
+          purchaseData.insuranceId = defaultInsurance.id
+        end
+      end
+    end
+  end
+
+  purchaseData.insuranceOptions = {
+    insuranceId = purchaseData.insuranceId,
+    shopId = purchaseData.shopId,
+  }
+
+  if purchaseData.insuranceId and purchaseData.insuranceId >= 0 then
+    if career_modules_insurance_insurance and career_modules_insurance_insurance.getInsuranceDataById then
+      local insuranceInfo = career_modules_insurance_insurance.getInsuranceDataById(purchaseData.insuranceId)
+      if insuranceInfo then
+        purchaseData.insuranceOptions.spendingReason = string.format("Insurance Policy: \"%s\"", insuranceInfo.name)
+        if career_modules_insurance_insurance.calculateAddVehiclePrice then
+          purchaseData.insuranceOptions.priceMoney = career_modules_insurance_insurance.calculateAddVehiclePrice(purchaseData.insuranceId, purchaseData.vehicleInfo.Value)
+        end
+      end
+    end
+  end
 
   local data = {
     vehicleInfo = purchaseData.vehicleInfo,
@@ -1285,15 +1443,20 @@ local function sendPurchaseDataToUi()
     dealershipId = vehicleShopInfo.sellerId,
     alreadyDidTestDrive = career_modules_inspectVehicle.getDidTestDrive() or false,
     vehId = purchaseData.vehId,
-    cheatsMode = career_modules_cheats and career_modules_cheats.isCheatsMode() or false
+    cheatsMode = career_modules_cheats and career_modules_cheats.isCheatsMode() or false,
+    insuranceOptions = purchaseData.insuranceOptions
   }
 
   if not data.vehicleInfo.requiredInsurance then
     data.ownsRequiredInsurance = false
   else
-    local playerInsuranceData = career_modules_insurance.getPlayerPolicyData()[data.vehicleInfo.requiredInsurance.id]
-    if playerInsuranceData then
-      data.ownsRequiredInsurance = playerInsuranceData.owned
+    if career_modules_insurance and career_modules_insurance.getPlayerPolicyData then
+      local playerInsuranceData = career_modules_insurance.getPlayerPolicyData()[data.vehicleInfo.requiredInsurance.id]
+      if playerInsuranceData then
+        data.ownsRequiredInsurance = playerInsuranceData.owned
+      else
+        data.ownsRequiredInsurance = false
+      end
     else
       data.ownsRequiredInsurance = false
     end
@@ -1302,17 +1465,26 @@ local function sendPurchaseDataToUi()
   local atDealership = (purchaseData.purchaseType == "instant" and currentSeller) or
                          (purchaseData.purchaseType == "inspect" and vehicleShopInfo.sellerId ~= "private")
 
-  -- allow trade in only when at a dealership
   if atDealership then
     data.tradeInEnabled = true
   end
 
-  -- allow location selection in all cases except when on the computer
   if (atDealership or vehicleShopInfo.sellerId == "private") then
     data.locationSelectionEnabled = true
   end
 
+  if not career_career.hasBoughtStarterVehicle() then
+    data.forceNoDelivery = true
+  end
+
   guihooks.trigger("vehiclePurchaseData", data)
+end
+
+local function updateInsuranceSelection(insuranceId)
+  if purchaseData then
+    purchaseData.insuranceId = insuranceId
+    sendPurchaseDataToUi()
+  end
 end
 
 local function onClientStartMission()
@@ -1320,11 +1492,8 @@ local function onClientStartMission()
 end
 
 local function onAddedVehiclePartsToInventory(inventoryId, newParts)
-
-  -- Update the vehicle parts with the actual parts that are installed (they differ from the pc file)
   local vehicle = career_modules_inventory.getVehicles()[inventoryId]
 
-  -- set the year of the vehicle
   vehicle.year = purchaseData and purchaseData.vehicleInfo.year or 1990
 
   vehicle.originalParts = {}
@@ -1334,7 +1503,6 @@ local function onAddedVehiclePartsToInventory(inventoryId, newParts)
 
   for partName, part in pairs(newParts) do
     part.year = vehicle.year
-    -- vehicle.config.parts[part.containingSlot] = part.name -- TODO removed with parts refactor. check if needed
     vehicle.originalParts[part.containingSlot] = {
       name = part.name,
       value = part.value
@@ -1345,34 +1513,11 @@ local function onAddedVehiclePartsToInventory(inventoryId, newParts)
         allSlotsInVehicle[slot] = true
       end
     end
-    -- Also check if we do the same for part shopping or part inventory or vehicle shopping
   end
-
-  -- TODO removed with parts refactor. check if this is needed. depends on if there are slots in the data missing that contain a default part or if there are slots with some weird name like "none"
-
-  -- remove old leftover slots that dont exist anymore
-  --[[ local slotsToRemove = {}
-  for slot, partName in pairs(vehicle.config.parts) do
-    if not allSlotsInVehicle[slot] then
-      slotsToRemove[slot] = true
-    end
-  end
-  for slot, _ in pairs(slotsToRemove) do
-    vehicle.config.parts[slot] = nil
-  end
-
-  -- every part that is now in "vehicle.config.parts", but not in "vehicle.originalParts" is either a part that no longer exists in the game or it is just some way to denote an empty slot (like "none")
-  -- in both cases we change the slot to a unified ""
-  for slot, partName in pairs(vehicle.config.parts) do
-    if not vehicle.originalParts[slot] then
-      vehicle.config.parts[slot] = ""
-    end
-  end ]]
 
   vehicle.changedSlots = {}
 
   if deleteAddedVehicle then
-    -- Move vehicle to garage before removing the object
     local vehicleName = vehicle.niceName or vehicle.Name or "Unknown Vehicle"
 
     local moveSuccess = career_modules_inventory.moveVehicleToGarage(inventoryId)
@@ -1381,7 +1526,6 @@ local function onAddedVehiclePartsToInventory(inventoryId, newParts)
       log("I", "Career", string.format("Vehicle '%s' successfully moved to garage", vehicleName))
     else
       log("W", "Career", string.format("Failed to move vehicle '%s' to garage - no available space found", vehicleName))
-      -- Still proceed with removing the vehicle object, but notify the player
       ui_message(string.format("Warning: %s could not be moved to a garage. Please check your garage space.",
         vehicleName), 5, "vehicleInventory")
     end
@@ -1406,7 +1550,6 @@ end
 
 local function onEnterVehicleFinished()
   if removeNonUsedPlayerVehicles then
-    -- removeUnusedPlayerVehicles()
     removeNonUsedPlayerVehicles = nil
   end
 end
@@ -1414,88 +1557,94 @@ end
 local function startInspectionWorkitem(job, vehicleInfo, teleportToVehicle)
   ui_fadeScreen.start(0.5)
   job.sleep(1.0)
+  guihooks.trigger("ChangeState","play")
   career_modules_inspectVehicle.startInspection(vehicleInfo, teleportToVehicle)
   job.sleep(0.5)
   ui_fadeScreen.stop(0.5)
   job.sleep(1.0)
 
-  -- Track that this vehicle is being inspected
-  inspectingVehicleUid = vehicleInfo.uid
+  inspectingVehicleShopId = vehicleInfo.shopId
 
-  -- notify other extensions
   extensions.hook("onVehicleShoppingVehicleShown", {
     vehicleInfo = vehicleInfo
   })
 end
 
 -- Navigation functions
-local function navigateToPos(pos, vehicleId)
+local function navigateToPos(pos, shopId)
   core_groundMarkers.setPath(vec3(pos.x, pos.y, pos.z))
   guihooks.trigger('ChangeState', {
     state = 'play',
     params = {}
   })
 
-  -- If vehicleId is provided, also spawn the vehicle for inspection
-  if vehicleId then
-    local vehicleInfo = findVehicleById(vehicleId)
+  if shopId then
+    local vehicleInfo = getVehicleInfoByShopId(shopId)
     if not vehicleInfo then
-      log("E", "Career", "Failed to find vehicle for inspection with vehicleId: " .. tostring(vehicleId))
+      log("E", "Career", "Failed to find vehicle for inspection with shopId: " .. tostring(shopId))
       return
     end
     core_jobsystem.create(startInspectionWorkitem, nil, vehicleInfo, false)
   end
 end
 
-local function showVehicle(vehicleId)
-  local vehicleInfo = findVehicleById(vehicleId)
+local function showVehicle(shopId)
+  local vehicleInfo = getVehicleInfoByShopId(shopId)
   if not vehicleInfo then
-    log("E", "Career", "Failed to find vehicle for inspection with vehicleId: " .. tostring(vehicleId))
+    log("E", "Career", "Failed to find vehicle for inspection with shopId: " .. tostring(shopId))
     return
   end
   core_jobsystem.create(startInspectionWorkitem, nil, vehicleInfo, true)
 end
 
-local function quickTravelToVehicle(vehicleId)
-  local vehicleInfo = findVehicleById(vehicleId)
+local function quickTravelToVehicle(shopId)
+  if not shopId then
+    log("E", "Career", "quickTravelToVehicle: shopId is nil")
+    return
+  end
+  log("D", "Career", "quickTravelToVehicle called with shopId: " .. tostring(shopId) .. " (type: " .. type(shopId) .. ")")
+  local vehicleInfo = getVehicleInfoByShopId(shopId)
   if not vehicleInfo then
-    log("E", "Career", "Failed to find vehicle for quick travel with vehicleId: " .. tostring(vehicleId))
+    log("E", "Career", "Failed to find vehicle for quick travel with shopId: " .. tostring(shopId))
+    log("D", "Career", "Vehicles in shop: " .. tableSize(vehiclesInShop))
+    if tableSize(vehiclesInShop) > 0 then
+      log("D", "Career", "Sample shopIds in vehiclesInShop:")
+      for i = 1, math.min(5, #vehiclesInShop) do
+        log("D", "Career", "  Vehicle " .. i .. ": shopId=" .. tostring(vehiclesInShop[i].shopId) .. " (type: " .. type(vehiclesInShop[i].shopId) .. ")")
+      end
+    end
     return
   end
   core_jobsystem.create(startInspectionWorkitem, nil, vehicleInfo, true)
 end
 
-local function openPurchaseMenu(purchaseType, vehicleId)
+local function openPurchaseMenu(purchaseType, shopId, insuranceId)
+  vehicleWatchlist[shopId] = "unsold"
   guihooks.trigger('ChangeState', {
     state = 'vehiclePurchase',
     params = {}
   })
 
-  -- Debug logging to see what's being passed
   log("D", "Career",
-    "openPurchaseMenu called with purchaseType: " .. tostring(purchaseType) .. ", vehicleId: " .. tostring(vehicleId))
+    "openPurchaseMenu called with purchaseType: " .. tostring(purchaseType) .. ", shopId: " .. tostring(shopId))
 
-  -- Validate inputs
   if not purchaseType then
     log("E", "Career", "openPurchaseMenu: purchaseType is nil")
     return
   end
 
-  if not vehicleId or vehicleId == "" then
-    log("E", "Career", "openPurchaseMenu: vehicleId is nil or empty")
+  if not shopId then
+    log("E", "Career", "openPurchaseMenu: shopId is nil")
     return
   end
 
-  -- Find the vehicle using the new lookup function
-  local vehicle = findVehicleById(vehicleId)
+  local vehicle = getVehicleInfoByShopId(shopId)
   if not vehicle then
-    log("E", "Career", "Failed to find vehicle for purchase with vehicleId: " .. tostring(vehicleId))
-    -- Try to find any vehicle as fallback (for debugging)
+    log("E", "Career", "Failed to find vehicle for purchase with shopId: " .. tostring(shopId))
     if #vehiclesInShop > 0 then
       log("D", "Career", "Available vehicles in shop:")
       for i, v in ipairs(vehiclesInShop) do
-        log("D", "Career", "  Vehicle " .. i .. ": uid=" .. tostring(v.uid) .. ", shopId=" .. tostring(v.shopId) ..
-          ", key=" .. tostring(v.key))
+        log("D", "Career", "  Vehicle " .. i .. ": shopId=" .. tostring(v.shopId) .. ", key=" .. tostring(v.key))
       end
     else
       log("E", "Career", "No vehicles available in shop")
@@ -1503,21 +1652,9 @@ local function openPurchaseMenu(purchaseType, vehicleId)
     return
   end
 
-  -- Always create/ensure UID exists
-  local uid = vehicle.uid
-  if not uid or uid == "" then
-    uid = makeUid(vehicle)
-    log("D", "Career", "Created new UID for vehicle: " .. tostring(uid))
-  else
-    log("D", "Career", "Using existing UID: " .. tostring(uid))
-  end
-  vehicle.uid = uid -- Ensure UID is set
-
-  -- Deep copy vehicle info to make purchase independent of listing
   local vehicleShopInfo = deepcopy(vehicle)
   vehicleShopInfo.niceName = vehicleShopInfo.Brand .. " " .. vehicleShopInfo.Name
 
-  -- Calculate distance and delivery delay if position exists
   local distance = vehicleShopInfo.distance
   if not distance or type(distance) ~= "number" then
     if vehicleShopInfo.pos then
@@ -1531,7 +1668,6 @@ local function openPurchaseMenu(purchaseType, vehicleId)
   end
   vehicleShopInfo.deliveryDelay = getDeliveryDelay(distance)
 
-  -- Calculate prices immediately (trade-in value will be 0 initially, updated later if trade-in selected)
   local tradeInValue = 0
   local taxes = math.max((vehicleShopInfo.Value + vehicleShopInfo.fees - tradeInValue) *
                            (vehicleShopInfo.tax or salesTax), 0)
@@ -1541,10 +1677,10 @@ local function openPurchaseMenu(purchaseType, vehicleId)
   local finalPrice = vehicleShopInfo.Value + vehicleShopInfo.fees + taxes - tradeInValue
 
   purchaseData = {
-    vehicleId = vehicleId,
-    uid = uid,
+    shopId = shopId,
     purchaseType = purchaseType,
     vehicleInfo = vehicleShopInfo,
+    insuranceId = insuranceId,
     prices = {
       fees = vehicleShopInfo.fees,
       taxes = taxes,
@@ -1554,15 +1690,14 @@ local function openPurchaseMenu(purchaseType, vehicleId)
   }
 
   purchaseMenuOpen = true
-  log("D", "Career", "Successfully opened purchase menu for vehicle: " .. tostring(uid))
+  log("D", "Career", "Successfully opened purchase menu for vehicle: " .. tostring(shopId))
   extensions.hook("onVehicleShoppingPurchaseMenuOpened", {
     purchaseType = purchaseType,
-    vehicleId = vehicleId
+    shopId = shopId
   })
 end
 
 local function buyFromPurchaseMenu(purchaseType, options)
-  -- Validate that purchaseData and prices exist
   if not purchaseData then
     log("E", "Career", "buyFromPurchaseMenu: purchaseData is nil")
     return
@@ -1604,21 +1739,17 @@ local function buyFromPurchaseMenu(purchaseType, options)
           tags = {"buying"},
           label = string.format("Bought vehicle from %s", orgId)
         })
-      else
       end
     end
   end
 
-  -- Handle insurance purchase if requested
   local selectedPolicyId = options.policyId or 0
   if options.purchaseInsurance and selectedPolicyId > 0 then
-    -- Purchase the insurance policy before buying the vehicle
     if career_modules_insurance and career_modules_insurance.purchasePolicy then
       career_modules_insurance.purchasePolicy(selectedPolicyId)
     end
   end
 
-  -- Store the selected policy ID in purchaseData for use when vehicle is added to inventory
   purchaseData.selectedPolicyId = selectedPolicyId
   local buyVehicleOptions = {
     licensePlateText = options.licensePlateText,
@@ -1648,63 +1779,19 @@ local function buyFromPurchaseMenu(purchaseType, options)
     })
   end
 
-  -- Mark the vehicle as sold first, then remove it
-  -- Find the vehicle by the stored vehicleId to ensure we remove the correct one
-  local vehicleToRemove = nil
-  local vehicleIndex = nil
-
-  -- First, try to find the vehicle using the stored vehicle info directly
-  if purchaseData.vehicleInfo and purchaseData.vehicleInfo.uid then
-    for i, vehicle in ipairs(vehiclesInShop) do
-      if vehicle.uid == purchaseData.vehicleInfo.uid then
-        vehicleToRemove = vehicle
-        vehicleIndex = i
-        break
-      end
+  -- Remove the vehicle from the shop
+  for i, vehInfo in ipairs(vehiclesInShop) do
+    if vehInfo.shopId == purchaseData.shopId then
+      vehInfo.markedSold = true
+      vehInfo.soldViewCounter = 1
+      pendingSoldShopIds[purchaseData.shopId] = true
+      table.remove(vehiclesInShop, i)
+      break
     end
   end
 
-  -- Fallback: search by UID from purchaseData if direct lookup failed
-  if not vehicleToRemove then
-    for i, vehicle in ipairs(vehiclesInShop) do
-      -- Check both UID and the original vehicleId for backwards compatibility
-      if vehicle.uid == purchaseData.uid or (purchaseData.vehicleId and vehicle.uid == purchaseData.vehicleId) then
-        vehicleToRemove = vehicle
-        vehicleIndex = i
-        break
-      end
-    end
-  end
-
-  if vehicleToRemove then
-    vehicleToRemove.markedSold = true
-    vehicleToRemove.soldViewCounter = 1
-    -- Mark both UID and vehicleId as sold for backwards compatibility
-    pendingSoldUids[purchaseData.uid] = true
-    if purchaseData.vehicleId and purchaseData.vehicleId ~= purchaseData.uid then
-      pendingSoldUids[purchaseData.vehicleId] = true
-    end
-
-    -- Remove the vehicle from the shop and update the other vehicles shopIds
-    table.remove(vehiclesInShop, vehicleIndex)
-    for id, vehInfo in ipairs(vehiclesInShop) do
-      vehInfo.shopId = id
-    end
-  else
-    -- Vehicle not found - this could happen if it was removed by updateVehicleList
-    -- Log the issue but don't fail the purchase since the vehicle was already processed
-    log("W", "Career", "Vehicle not found in shop during purchase completion (likely removed by update): " ..
-      tostring(purchaseData.vehicleId or purchaseData.uid) ..
-      ". Purchase will continue but vehicle removal from shop list was skipped.")
-
-    -- Still mark as sold in pendingSoldUids to maintain consistency
-    pendingSoldUids[purchaseData.uid] = true
-    if purchaseData.vehicleId and purchaseData.vehicleId ~= purchaseData.uid then
-      pendingSoldUids[purchaseData.vehicleId] = true
-    end
-  end
   purchaseMenuOpen = false
-  inspectingVehicleUid = nil
+  inspectingVehicleShopId = nil
 end
 
 local function cancelPurchase(purchaseType)
@@ -1730,12 +1817,9 @@ local function openInventoryMenuForTradeIn()
           id = inventoryId,
           niceName = vehicle.niceName,
           Value = career_modules_valueCalculator.getInventoryVehicleValue(inventoryId) *
-            (career_modules_hardcore.isHardcoreMode() and 0.33 or 0.66)
+            (career_modules_hardcore and career_modules_hardcore.isHardcoreMode and career_modules_hardcore.isHardcoreMode() and 0.33 or 0.66)
         }
-        guihooks.trigger('ChangeState', {
-          state = 'vehiclePurchase',
-          params = {}
-        })
+        guihooks.trigger('UINavigation', 'back', 1)
       end
     end,
     buttonText = "Trade-In",
@@ -1747,12 +1831,7 @@ local function openInventoryMenuForTradeIn()
     favoriteEnabled = false,
     storingEnabled = false,
     returnLoanerEnabled = false
-  }, function()
-    guihooks.trigger('ChangeState', {
-      state = 'vehiclePurchase',
-      params = {}
-    })
-  end)
+  })
 end
 
 local function onExtensionLoaded()
@@ -1760,14 +1839,11 @@ local function onExtensionLoaded()
     return false
   end
 
-  -- Initialize vehicle cache
   cacheDealers()
 
-  -- Initialize state tracking
   purchaseMenuOpen = false
-  inspectingVehicleUid = nil
+  inspectingVehicleShopId = nil
 
-  -- load from saveslot
   local saveSlot, savePath = career_saveSystem.getCurrentSaveSlot()
   if not saveSlot or not savePath then
     return
@@ -1782,33 +1858,25 @@ local function onExtensionLoaded()
     vehiclesInShop = data.vehiclesInShop or {}
     sellersInfos = data.sellersInfos or {}
     vehicleShopDirtyDate = data.dirtyDate
+    vehicleWatchlist = data.vehicleWatchlist or {}
 
-    -- Filter vehicles to only current map and fix missing mapId
     local filteredVehicles = {}
     for _, vehicleInfo in ipairs(vehiclesInShop) do
       vehicleInfo.pos = vec3(vehicleInfo.pos)
-      -- If mapId is missing (old save), assume it belongs to current map
       if not vehicleInfo.mapId then
         vehicleInfo.mapId = currentMap
       end
-      -- Only keep vehicles from current map
       if vehicleInfo.mapId == currentMap then
-        vehicleInfo.shopId = #filteredVehicles + 1
-        -- Ensure UID is set for loaded vehicles
-        vehicleInfo.uid = vehicleInfo.uid or makeUid(vehicleInfo)
         table.insert(filteredVehicles, vehicleInfo)
       end
     end
     vehiclesInShop = filteredVehicles
 
-    -- Filter sellers to only current map and fix missing mapId  
     local filteredSellers = {}
     for sellerId, sellerInfo in pairs(sellersInfos) do
-      -- If mapId is missing (old save), assume it belongs to current map
       if not sellerInfo.mapId then
         sellerInfo.mapId = currentMap
       end
-      -- Only keep sellers from current map
       if sellerInfo.mapId == currentMap then
         filteredSellers[sellerId] = sellerInfo
       end
@@ -1825,6 +1893,7 @@ local function onSaveCurrentSaveSlot(currentSavePath, oldSaveDate)
   data.vehiclesInShop = vehiclesInShop
   data.sellersInfos = sellersInfos
   data.dirtyDate = vehicleShopDirtyDate
+  data.vehicleWatchlist = vehicleWatchlist
   career_saveSystem.jsonWriteFileSafe(currentSavePath .. "/career/vehicleShop.json", data, true)
 end
 
@@ -1841,12 +1910,10 @@ local function onComputerAddFunctions(menuData, computerFunctions)
     end,
     order = 10
   }
-  -- tutorial active
   if menuData.tutorialPartShoppingActive or menuData.tutorialTuningActive then
     computerFunctionData.disabled = true
     computerFunctionData.reason = career_modules_computer.reasons.tutorialActive
   end
-  -- generic gameplay reason
   local reason = career_modules_permissions.getStatusForTag("vehicleShopping")
   if not reason.allow then
     computerFunctionData.disabled = true
@@ -1865,16 +1932,10 @@ end
 local function onWorldReadyState(state)
   if state == 2 then
     local currentMap = getCurrentLevelIdentifier()
-    local initialVehicleCount = #vehiclesInShop
-    local initialSellerCount = tableSize(sellersInfos)
 
-    -- Filter out vehicles and sellers from other maps when changing maps
     local filteredVehicles = {}
     for _, vehicleInfo in ipairs(vehiclesInShop) do
       if vehicleInfo.mapId == currentMap then
-        vehicleInfo.shopId = #filteredVehicles + 1
-        -- Ensure UID is set when filtering by map
-        vehicleInfo.uid = vehicleInfo.uid or makeUid(vehicleInfo)
         table.insert(filteredVehicles, vehicleInfo)
       end
     end
@@ -1948,9 +2009,6 @@ local function clearDataFromOtherMaps(targetMap)
   local filteredVehicles = {}
   for _, vehicleInfo in ipairs(vehiclesInShop) do
     if vehicleInfo.mapId == targetMap then
-      vehicleInfo.shopId = #filteredVehicles + 1
-      -- Ensure UID is set when clearing data from other maps
-      vehicleInfo.uid = vehicleInfo.uid or makeUid(vehicleInfo)
       table.insert(filteredVehicles, vehicleInfo)
     end
   end
@@ -1993,8 +2051,10 @@ M.getLastDelta = function()
   return lastDelta
 end
 M.setShoppingUiOpen = setShoppingUiOpen
+M.getVehicleInfoByShopId = getVehicleInfoByShopId
 
 M.openPurchaseMenu = openPurchaseMenu
+M.updateInsuranceSelection = updateInsuranceSelection
 M.buyFromPurchaseMenu = buyFromPurchaseMenu
 M.openInventoryMenuForTradeIn = openInventoryMenuForTradeIn
 M.removeTradeInVehicle = removeTradeInVehicle
@@ -2016,25 +2076,22 @@ M.onSaveCurrentSaveSlot = onSaveCurrentSaveSlot
 M.onShoppingMenuClosed = onShoppingMenuClosed
 M.onComputerAddFunctions = onComputerAddFunctions
 M.onUpdate = onUpdate
+M.onUiChangedState = onUiChangedState
 
--- Add callback for when inspection ends
-M.onVehicleInspectionFinished = function(vehicleUid)
-  if inspectingVehicleUid == vehicleUid then
-    inspectingVehicleUid = nil
-    log("D", "Career", "Inspection finished for vehicle: " .. tostring(vehicleUid))
+M.onVehicleInspectionFinished = function(shopId)
+  if inspectingVehicleShopId == shopId then
+    inspectingVehicleShopId = nil
+    log("D", "Career", "Inspection finished for vehicle: " .. tostring(shopId))
   end
 end
 
--- Function to check if spawned vehicle still exists
 M.checkSpawnedVehicleStatus = function()
   local spawnedVehicleInfo = career_modules_inspectVehicle.getSpawnedVehicleInfo()
-  if spawnedVehicleInfo and inspectingVehicleUid and spawnedVehicleInfo.uid == inspectingVehicleUid then
-    -- Vehicle is still spawned, keep tracking
+  if spawnedVehicleInfo and inspectingVehicleShopId and spawnedVehicleInfo.shopId == inspectingVehicleShopId then
     return true
-  elseif inspectingVehicleUid then
-    -- Vehicle is no longer spawned or inspection ended
-    log("D", "Career", "Clearing inspection state for vehicle: " .. tostring(inspectingVehicleUid))
-    inspectingVehicleUid = nil
+  elseif inspectingVehicleShopId then
+    log("D", "Career", "Clearing inspection state for vehicle: " .. tostring(inspectingVehicleShopId))
+    inspectingVehicleShopId = nil
     return false
   end
   return false
@@ -2045,5 +2102,6 @@ M.getRandomVehicleFromCache = getRandomVehicleFromCache
 M.getCacheStats = getCacheStats
 M.getMapStats = getMapStats
 M.clearDataFromOtherMaps = clearDataFromOtherMaps
+M.getEligibleVehiclesWithoutDealershipVehicles = getEligibleVehiclesWithoutDealershipVehicles
 
 return M

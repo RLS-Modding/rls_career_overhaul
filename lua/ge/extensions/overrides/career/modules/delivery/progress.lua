@@ -2,7 +2,7 @@
 -- If a copy of the bCDDL was not distributed with this
 -- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
 local M = {}
-local dParcelManager, dCargoScreen, dGeneral, dGenerator, dProgress, dParcelMods, dVehOfferManager, dVehicleTasks
+local dParcelManager, dCargoScreen, dGeneral, dGenerator, dProgress, dParcelMods, dVehOfferManager, dVehicleTasks, dTutorial
 local step
 M.onCareerActivated = function()
   dParcelManager = career_modules_delivery_parcelManager
@@ -13,6 +13,7 @@ M.onCareerActivated = function()
   dParcelMods = career_modules_delivery_parcelMods
   dVehOfferManager = career_modules_delivery_vehicleOfferManager
   dVehicleTasks = career_modules_delivery_vehicleTasks
+  dTutorial = career_modules_delivery_tutorial
   step = util_stepHandler
 end
 
@@ -513,7 +514,7 @@ M.confirmDropOffCheckComplete = function()
   guihooks.trigger("SetDeliveryDropOffRewardResult", rewardResult)
 
   Engine.Audio.playOnce('AudioGui', 'event:>UI>Career>Buy_02')
-  gameplay_markerInteraction.setForceReevaluateOpenPrompt()
+  gameplay_markerInteraction.setForceReevaluateOpenPrompt(true)
   gameplay_rawPois.clear()
 
   M.onVehicleTasksFinished(confirmedDropOffData.offers)
@@ -565,7 +566,14 @@ M.isFacilityUnlocked = function(facId)
   return true
 end
 
-M.isFacilityVisible = function(facId)
+M.isFacilityVisible = function(facId, isCargoDeliveryTutorialActive)
+  if isCargoDeliveryTutorialActive then
+    if not dGenerator.getFacilityById(facId) or dGenerator.getFacilityById(facId).isTutorialForCargoDelivery then
+      return false
+    end
+  end
+
+
   local fac = dGenerator.getFacilityById(facId)
   if not fac then
     return false

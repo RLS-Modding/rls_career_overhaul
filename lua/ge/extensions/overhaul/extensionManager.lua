@@ -12,7 +12,7 @@ local function checkVersion()
     if fileData.version then
         local version = fileData.version
         local versionParts = string.split(version, ".")
-        if versionParts[4] ~= "7" then
+        if versionParts[4] ~= "8" then
             guihooks.trigger("toastrMsg", {type="error", title="Update required", msg="RLS Career Overhaul is outdated. Please update to the latest version either from Patreon or Github."})
             return false
         end
@@ -41,6 +41,7 @@ local function loadExtensions()
     setExtensionUnloadMode("career_challengeModes", "manual")
     setExtensionUnloadMode("career_economyAdjuster", "manual")
     setExtensionUnloadMode("career_challengeSeedEncoder", "manual")
+    setExtensionUnloadMode("editor_freeroamEventEditor", "manual")
 
     extensions.unload("career_career")
     extensions.unload("career_saveSystem")

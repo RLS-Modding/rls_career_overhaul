@@ -6,6 +6,7 @@ local M = {}
 
 M.dependencies = {'career_career', "career_modules_log", "render_renderViews", "util_screenshotCreator"}
 
+local dateUtils = require('utils/dateUtils')
 local parking = require('gameplay/parking')
 local freeroam_facilities = require('freeroam/facilities')
 
@@ -14,9 +15,9 @@ local defaultVehicle = {model = "covet", config = "DXi_M"}
 
 local xVec, yVec, zVec = vec3(1,0,0), vec3(0,1,0), vec3(0,0,1)
 
-local saveAnyVehiclePosDEBUG = true
+local saveAnyVehiclePosDEBUG = false
 
-local slotAmount = 5
+local slotAmount = 20
 
 local vehicles = {}
 local dirtiedVehicles = {}
@@ -143,7 +144,7 @@ local function onExtensionLoaded()
     local vehicleData = jsonReadFile(files[i])
     vehicleData.partConditions = deserialize(vehicleData.partConditions)
     if vehicleData.timeToAccess then
-      vehicleData.timeToAccess = vehicleData.timeToAccess - time_since(saveInfo.date)
+      vehicleData.timeToAccess = vehicleData.timeToAccess - dateUtils.timeSince(saveInfo.date)
       if vehicleData.timeToAccess <= 0 then
         vehicleData.timeToAccess = nil
         vehicleData.delayReason = nil
@@ -313,7 +314,7 @@ end
 
 local function saveVehiclesData(currentSavePath, oldSaveDate, vehiclesThumbnailUpdate)
   local vehiclesCopy = deepcopy(vehicles)
-  local currentDate = os.date("!%Y-%m-%dT%XZ")
+  local currentDate = os.date("!%Y-%m-%dT%H:%M:%SZ")
 
   for id, vehicle in pairs(vehiclesCopy) do
     if dirtiedVehicles[id] or not vehicle.dirtyDate then
@@ -359,7 +360,6 @@ local function saveVehiclesData(currentSavePath, oldSaveDate, vehiclesThumbnailU
     if not vehicles[inventoryId] then
       FS:removeFile(dir .. filename)
       FS:removeFile(dir .. inventoryId .. ".png")
-      FS:removeFile(dir .. "damage/" .. inventoryId .. "_damageState.json")
     end
   end
 end
@@ -416,7 +416,6 @@ local inventoryIdAfterUpdatingPartConditions
 local function addVehicle(vehId, inventoryId, options)
   options = options or {}
   if options.owned == nil then options.owned = true end
-  if options.owned and (not hasFreeSlot() and not options.starter) then return end
 
   local vehicle = scenetree.findObjectById(vehId)
   local vehicleData = core_vehicle_manager.getVehicleData(vehId)
@@ -485,7 +484,6 @@ local function removeVehicleObject(inventoryId, skipPartConditions)
   inventoryIdToVehId[inventoryId] = nil
 end
 
-
 local function removeVehicle(inventoryId)
   removeVehicleObject(inventoryId)
   vehicles[inventoryId] = nil
@@ -525,7 +523,6 @@ local function updatePartConditions(vehId, inventoryId, callback)
   end
   if not veh then
     log("E", "", "Couldnt find vehicle object to get part conditions")
-    if callback then callback() end
     return
   end
 
@@ -1075,13 +1072,13 @@ local function getVehicleUiData(inventoryId, inventoryIdsInGarage)
   local garage = getClosestGarage()
   
   if not inventoryIdsInGarage then
-    inventoryIdsInGarage = getVehiclesInGarage(garage)
+    inventoryIdsInGarage = getVehiclesInGarage(getClosestGarage())
   end
 
   vehicleData.value = career_modules_valueCalculator.getInventoryVehicleValue(inventoryId)
   vehicleData.valueRepaired = career_modules_valueCalculator.getInventoryVehicleValue(inventoryId, true)
-  vehicleData.quickRepairExtraPrice = career_modules_insurance.getQuickRepairExtraPrice()
-  vehicleData.initialRepairTime = career_modules_insurance.getRepairTime(inventoryId)
+  vehicleData.quickRepairExtraPrice = career_modules_insurance_insurance.getQuickRepairExtraPrice()
+  vehicleData.initialRepairTime = career_modules_insurance_insurance.getInvVehRepairTime(inventoryId)
 
   if vehicleData.certifications then
     vehicleData.power = string.format("%d", vehicleData.certifications.power)
@@ -1115,17 +1112,19 @@ local function getVehicleUiData(inventoryId, inventoryIdsInGarage)
     end
   end
 
-  vehicleData.needsRepair = career_modules_insurance.inventoryVehNeedsRepair(vehicleData.id)
+  vehicleData.needsRepair = career_modules_insurance_insurance.inventoryVehNeedsRepair(vehicleData.id)
   vehicleData.onSite = isVehicleOnSite(inventoryId, garage)
   if inventoryId == favoriteVehicle then
     vehicleData.favorite = true
   end
 
-  local vehPolicyInfo = career_modules_insurance.getVehPolicyInfo(inventoryId)
-  vehicleData.policyInfo = vehPolicyInfo.policyInfo
-  vehicleData.ownsRequiredInsurance = vehPolicyInfo.policyOwned
-
-  vehicleData.thumbnail = getVehicleThumbnail(inventoryId)
+  local vehInsuranceInfo = career_modules_insurance_insurance.getVehInsuranceInfo(inventoryId)
+  if vehInsuranceInfo then
+    vehicleData.insuranceInfo = vehInsuranceInfo.insuranceInfo
+    vehicleData.isInsured = vehInsuranceInfo.isInsured
+    vehicleData.insuranceClass = vehInsuranceInfo.insuranceClass
+    vehicleData.thumbnail = getVehicleThumbnail(inventoryId)
+  end
 
   vehicleData.junkVehicle = career_modules_permissions.getStatusForTag("junkVehicle", {inventoryId = inventoryId})
   vehicleData.repairPermission = career_modules_permissions.getStatusForTag("vehicleRepair", {inventoryId = inventoryId})
@@ -1265,8 +1264,7 @@ local function onScreenFadeState(state)
   end
 end
 
-local closeMenuCallback
-local function openMenu(_chooseButtonsData, header, _buttonsActive, _closeMenuCallback)
+local function openMenu(_chooseButtonsData, header, _buttonsActive)
   buttonsActive = _buttonsActive or {}
   if buttonsActive.repairEnabled == nil then buttonsActive.repairEnabled = true end
   if buttonsActive.sellEnabled == nil then buttonsActive.sellEnabled = true end
@@ -1284,7 +1282,6 @@ local function openMenu(_chooseButtonsData, header, _buttonsActive, _closeMenuCa
     buttonData.callback = buttonData.callback or function() end
   end
 
-  closeMenuCallback = _closeMenuCallback
   guihooks.trigger('ChangeState', {state = 'vehicleInventory'})
   updatePartConditionsOfSpawnedVehicles()
 end
@@ -1327,6 +1324,7 @@ local function spawnVehicleAndTeleportToGarage(enterAfterSpawn, inventoryId, rep
         freeroam_facilities.teleportToGarage(closestGarage.id, vehObj, false)
         career_modules_fuel.minimumRefuelingCheck(vehObj:getId())
         setVehicleDirty(inventoryId)
+        guihooks.trigger('ChangeState', {state = 'play'})
         ui_fadeScreen.stop(0.5)
 
         local pos, _ = freeroam_facilities.getGaragePosRot(closestGarage, vehObj)
@@ -1377,11 +1375,7 @@ local function openMenuFromComputer(_originComputerId)
         repairRequired = false
       }
     },
-    "Spawn Vehicle", nil,
-    function()
-      local computer = freeroam_facilities.getFacility("computer", originComputerId)
-      career_modules_computer.openMenu(computer)
-    end
+    "Spawn Vehicle", nil
   )
   career_modules_log.addLog(string.format("Opened vehicle inventory from computer %s", originComputerId), "inventory")
 end
@@ -1390,22 +1384,44 @@ local function chooseVehicleFromMenu(inventoryId, buttonIndex, repairPrevVeh)
   chooseButtonsData[buttonIndex].callback(inventoryId, repairPrevVeh)
 end
 
+local function openInventoryMenuForChoosingListing()
+  openMenu(
+    {{
+      callback = function(inventoryId)
+        guihooks.trigger('addListing', {inventoryId = inventoryId})
+      end,
+      buttonText = "List for Sale",
+      repairRequired = true,
+      ownedRequired = true,
+      notForSaleRequired = true,
+    }}, "List for Sale",
+    {
+      repairEnabled = false,
+      sellEnabled = false,
+      favoriteEnabled = false,
+      storingEnabled = false,
+      returnLoanerEnabled = false
+    }
+  )
+end
+
 local function onExitVehicleInventory()
   menuIsOpen = false
-  chooseButtonsData = {}
-  originComputerId = nil
   menuHeader = nil
 end
 
 local function onEnterVehicleFinished(inventoryId)
   if inventoryId then
     lastVehicle = inventoryId
-    commands.setGameCamera(true)
   end
 end
 
 local function getVehicles()
   return vehicles
+end
+
+local function getVehicle(inventoryId)
+  return vehicles[inventoryId]
 end
 
 local function getVehicleTimeToAccess(inventoryId)
@@ -1449,7 +1465,7 @@ local function returnLoanedVehicleFromInventory(inventoryId)
 end
 
 local function expediteRepairFromInventory(inventoryId, price)
-  career_modules_insurance.expediteRepair(inventoryId, price)
+  career_modules_insurance_insurance.expediteRepair(inventoryId, price)
   career_saveSystem.saveCurrent()
   sendDataToUi()
 end
@@ -1465,7 +1481,7 @@ local function onAvailableMissionsSentToUi()
   if not currentVehicle then return end
   updatePartConditions(inventoryIdToVehId[currentVehicle], currentVehicle,
   function()
-    guihooks.trigger('gameContextPlayerVehicleDamageInfo', {needsRepair = career_modules_insurance.inventoryVehNeedsRepair(currentVehicle)})
+    guihooks.trigger('gameContextPlayerVehicleDamageInfo', {needsRepair = career_modules_insurance_insurance.inventoryVehNeedsRepair(currentVehicle)})
   end)
 end
 
@@ -1964,6 +1980,7 @@ M.onComputerAddFunctions = onComputerAddFunctions
 M.onSaveCurrentSaveSlotAsyncStart = onSaveCurrentSaveSlotAsyncStart
 M.onCheckPermission = onCheckPermission
 M.onGetRawPoiListForLevel = onGetRawPoiListForLevel
+M.openInventoryMenuForChoosingListing = openInventoryMenuForChoosingListing
 
 M.getPartConditionsCallback = getPartConditionsCallback
 M.applyPartConditions = applyPartConditions

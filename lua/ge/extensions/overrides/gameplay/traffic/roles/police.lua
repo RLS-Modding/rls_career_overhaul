@@ -185,7 +185,7 @@ function C:onTrafficTick(dt)
         self.driveInLane = false
       end
 
-      if self.validTargets[self.targetId] and self.validTargets[self.targetId].interDist <= 2500 then -- within 50 m of focus point of police vehicle
+      if self.validTargets[self.targetId].interDist <= 2500 then -- within 50 m of focus point of police vehicle
         self.avoidSpeed = self.avoidSpeed or 40
         if self.veh.speed >= 8 and targetVeh.speed >= 8 and self.veh.speed + targetVeh.speed >= self.avoidSpeed
         and targetVeh.driveVec:dot(self.veh.driveVec) <= -0.707 and (targetVeh.pos - self.veh.pos):normalized():dot(self.veh.driveVec) >= 0.707 then
@@ -270,7 +270,8 @@ function C:onUpdate(dt, dtSim)
 
     if self.flags.pursuit and self.state ~= 'none' and self.state ~= 'disabled' and self.veh.vars.aiMode == 'traffic' then
       if self.flags.roadblock then
-        if targetVeh.pursuit.timers.evadeValue >= 0.5 or targetVeh.vel:dot((targetVeh.pos - targetVeh.pursuit.roadblockPos):normalized()) >= 9 then
+        if targetVeh.pursuit.timers.evadeValue >= 0.5 or not targetVeh.pursuit.roadblockPos
+        or targetVeh.vel:dot((targetVeh.pos - targetVeh.pursuit.roadblockPos):normalized()) >= 9 then
           self:setAction('chaseTarget') -- exit roadblock mode
           self.flags.roadblock = nil
         end

@@ -1,5 +1,3 @@
-{"name":"p_fuel_pump_2015_nodeoline11","internalName":"p_fuel_pump_2015_nodeoline11","class":"Prefab","__parent":"MissionGroup","position":[-263.926575,-311.656311,118.756111],"filename":"/levels/west_coast_usa/art/prefabs/p_fuel_pump_2015_trilobite.prefab.json","rotationMatrix":[0.535364747,-0.844620883,0,0.844620883,0.535364747,0,0,0,1]}
-{"name":"rlsTireRack","internalName":"rlsTireRack","class":"Prefab","__parent":"MissionGroup","position":[288.051453,-125.604233,144.692429],"filename":"/levels/west_coast_usa/art/prefabs/rlsTireRack.prefab.json"}
 {"name":"CameraBookmarks","class":"SimGroup","persistentId":"297f5227-f013-45ed-beee-7022ee801c7f","__parent":"MissionGroup"}
 {"name":"Water","class":"SimGroup","persistentId":"47f9471e-541b-4fd6-a9ee-88867ce7f681","__parent":"MissionGroup"}
 {"name":"vegetation","class":"SimGroup","persistentId":"6aed09ea-f13a-4bd2-9fa5-6f99959ee058","__parent":"MissionGroup"}
@@ -52,8 +50,3 @@
 {"name":"RLS_EDITS","class":"SimGroup","__parent":"MissionGroup"}
 {"name":"night_light","class":"SimGroup","__parent":"MissionGroup"}
 {"name":"night_light_shadow","class":"SimGroup","__parent":"MissionGroup"}
-{"class":"TSStatic","__parent":"MissionGroup","position":[304.287415,-134.943939,148.119736],"isRenderEnabled":false,"rotationMatrix":[-8.74227695e-08,-0.999999881,0,0.999999881,-8.74227695e-08,0,0,0,0.999999881],"scale":[1,1.49757266,1.49757266],"shapeName":"/levels/west_coast_usa/art/shapes/buildings/garage_racetrack2.dae","useInstanceRenderData":true}
-{"class":"TSStatic","__parent":"MissionGroup","position":[296.884094,-134.592392,155.657715],"isRenderEnabled":false,"rotationMatrix":[-0.999999881,8.74227695e-08,0,-8.74227695e-08,-0.999999881,0,0,0,0.999999881],"shapeName":"/levels/west_coast_usa/art/shapes/objects/light_city.dae","useInstanceRenderData":true}
-{"class":"TSStatic","__parent":"MissionGroup","position":[312.208466,-134.592392,155.657715],"isRenderEnabled":false,"rotationMatrix":[-0.999999881,8.74227695e-08,0,-8.74227695e-08,-0.999999881,0,0,0,0.999999881],"shapeName":"/levels/west_coast_usa/art/shapes/objects/light_city.dae","useInstanceRenderData":true}
-{"class":"TSStatic","__parent":"MissionGroup","position":[304.739685,-134.592392,155.657715],"isRenderEnabled":false,"rotationMatrix":[-0.999999881,8.74227695e-08,0,-8.74227695e-08,-0.999999881,0,0,0,0.999999881],"shapeName":"/levels/west_coast_usa/art/shapes/objects/light_city.dae","useInstanceRenderData":true}
-{"name":"SFXSpace_1","class":"SFXSpace","__parent":"MissionGroup","position":[302.429565,-123.153313,147.116669],"rotationMatrix":[-1,0,0,0,-0.999999821,-1.00413963e-05,0,-1.02202102e-05,0.999999821],"scale":[30.140667,21.4068813,14.9040527],"soundAmbience":"Level_Tunnel_Closed_Dynamic"}

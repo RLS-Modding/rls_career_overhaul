@@ -72,7 +72,7 @@
               Distance: <span class="distance-value">{{ units.buildString('length', vehicle.distance, 1) }}</span>
             </span>
             <span class="insurance">
-              Required Insurance: <span class="insurance-value">{{ vehicle.requiredInsurance?.name }}</span>
+              Required Insurance: <span class="insurance-value">{{ vehicle.insuranceClass?.name || vehicle.requiredInsurance?.name || 'N/A' }}</span>
             </span>
           </div>
         </div>
@@ -212,17 +212,23 @@ const navigateToPos = (pos, vehicleId) => {
 }
 
 const quickTravelToVehicle = vehicleId => {
+  console.log('quickTravelToVehicle called with vehicleId:', vehicleId, 'type:', typeof vehicleId)
+  if (!vehicleId) {
+    console.error('quickTravelToVehicle: vehicleId is null or undefined!')
+    return
+  }
   lua.career_modules_vehicleShopping.quickTravelToVehicle(vehicleId)
 }
 
 const getVehicleId = () => {
-  // Try multiple ways to get the vehicle ID
-  const uid = props.vehicle.uid || props.vehicle.shopId || props.vehicle.id
-  console.log('VehicleCard: getVehicleId called, uid:', uid, 'vehicle:', props.vehicle)
-  if (!uid) {
+  // Use shopId as primary identifier (v38 system)
+  const shopId = props.vehicle.shopId || props.vehicle.id || props.vehicle.uid
+  if (!shopId) {
     console.error('VehicleCard: Unable to get vehicle ID from vehicle object:', props.vehicle)
+    return null
   }
-  return uid || null
+  console.log('getVehicleId returning shopId:', shopId, 'type:', typeof shopId, 'from vehicle:', props.vehicle)
+  return shopId
 }
 
 const openPurchaseMenu = (purchaseType, vehicleId) => {

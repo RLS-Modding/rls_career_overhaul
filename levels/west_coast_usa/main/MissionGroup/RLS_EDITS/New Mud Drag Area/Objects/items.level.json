@@ -1,0 +1,17 @@
+{"class":"TSStatic","__parent":"Objects","position":[703.054138,-385.134399,153.484863],"isRenderEnabled":false,"rotationMatrix":[0.523262858,-0.852171242,0,0.852171242,0.523262858,0,0,0,1],"scale":[0.75,0.75,0.75],"shapeName":"/art/shapes/race/sign_finish.dae","useInstanceRenderData":true}
+{"class":"TSStatic","__parent":"Objects","position":[708.293274,-398.368774,153.439636],"isRenderEnabled":false,"rotationMatrix":[0.223710299,-0.974655628,0,0.974655628,0.223710299,0,0,0,1],"scale":[0.75,0.75,0.75],"shapeName":"/art/shapes/race/sign_finish.dae","useInstanceRenderData":true}
+{"class":"TSStatic","__parent":"Objects","position":[676.463135,-426.655029,153.443634],"isRenderEnabled":false,"rotationMatrix":[0.223710299,-0.974655628,0,0.974655628,0.223710299,0,0,0,1],"scale":[0.75,0.75,0.75],"shapeName":"/art/shapes/race/sign_finish.dae","useInstanceRenderData":true}
+{"class":"TSStatic","__parent":"Objects","position":[671.488708,-413.914764,153.443634],"isRenderEnabled":false,"rotationMatrix":[0.523262858,-0.852171242,0,0.852171242,0.523262858,0,0,0,1],"scale":[0.75,0.75,0.75],"shapeName":"/art/shapes/race/sign_finish.dae","useInstanceRenderData":true}
+{"class":"TSStatic","__parent":"Objects","position":[633.133484,-453.197662,152.802139],"isRenderEnabled":false,"rotationMatrix":[-0.919801593,-0.39238292,0,0.39238292,-0.919801593,0,0,0,1],"shapeName":"/levels/west_coast_usa/art/shapes/buildings/seating1.dae","useInstanceRenderData":true}
+{"class":"TSStatic","__parent":"Objects","position":[573.539307,-478.620209,152.802139],"isRenderEnabled":false,"rotationMatrix":[-0.919801593,-0.39238292,0,0.39238292,-0.919801593,0,0,0,1],"shapeName":"/levels/west_coast_usa/art/shapes/buildings/seating1.dae","useInstanceRenderData":true}
+{"class":"TSStatic","__parent":"Objects","position":[553.755615,-487.059814,152.802139],"isRenderEnabled":false,"rotationMatrix":[-0.919801593,-0.39238292,0,0.39238292,-0.919801593,0,0,0,1],"shapeName":"/levels/west_coast_usa/art/shapes/buildings/seating1.dae","useInstanceRenderData":true}
+{"class":"TSStatic","__parent":"Objects","position":[593.353882,-470.16745,152.802139],"isRenderEnabled":false,"rotationMatrix":[-0.919801593,-0.39238292,0,0.39238292,-0.919801593,0,0,0,1],"shapeName":"/levels/west_coast_usa/art/shapes/buildings/seating1.dae","useInstanceRenderData":true}
+{"class":"TSStatic","__parent":"Objects","position":[613.256226,-461.677216,152.802139],"isRenderEnabled":false,"rotationMatrix":[-0.919801593,-0.39238292,0,0.39238292,-0.919801593,0,0,0,1],"shapeName":"/levels/west_coast_usa/art/shapes/buildings/seating1.dae","useInstanceRenderData":true}
+{"class":"TSStatic","__parent":"Objects","position":[653.08075,-444.688293,152.802139],"isRenderEnabled":false,"rotationMatrix":[-0.919801593,-0.39238292,0,0.39238292,-0.919801593,0,0,0,1],"shapeName":"/levels/west_coast_usa/art/shapes/buildings/seating1.dae","useInstanceRenderData":true}
+{"name":"Trees","class":"SimGroup","__parent":"Objects"}
+{"name":"Wall4s","class":"SimGroup","__parent":"Objects"}
+{"name":"Wall4","class":"SimGroup","__parent":"Objects"}
+{"name":"Wall2","class":"SimGroup","__parent":"Objects"}
+{"name":"Wall1","class":"SimGroup","__parent":"Objects"}
+{"name":"Wall3","class":"SimGroup","__parent":"Objects"}
+{"name":"Rockss","class":"SimGroup","__parent":"Objects"}

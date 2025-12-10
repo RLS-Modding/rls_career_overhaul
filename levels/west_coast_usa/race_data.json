@@ -167,25 +167,35 @@
     "koh1":{
       "bestTime":125,
       "checkpointIndexs":[
-        9,
-        19,
-        30,
-        36,
-        50,
+        8,
+        11,
+        15,
+        16,
+        18,
+        20,
+        23,
+        29,
+        35,
+        43,
+        49,
+        58,
         62,
-        71,
-        76,
-        82,
-        90,
-        98,
-        107,
-        111
+        66,
+        70,
+        75,
+        81,
+        89,
+        97,
+        101,
+        105,
+        110,
+        113
       ],
       "checkpointRoad":[
         "koh1"
       ],
       "hotlap":115,
-      "label":"King of the Hammer 1",
+      "label":"Ultra4 1",
       "reward":2000,
       "type":[
         "offroad"
@@ -209,35 +219,29 @@
         75,
         79,
         81,
-        85,
-        91,
+        83,
+        86,
+        87,
+        89,
         93,
-        96,
-        100,
+        98,
         103,
         107,
         112,
-        123,
-        130,
-        132,
-        133,
-        135,
-        141,
-        146,
-        152
+        119
       ],
       "checkpointRoad":[
         "koh2"
       ],
       "hotlap":175,
-      "label":"King of the Hammer 2",
+      "label":"Ultra4 2",
       "reward":3000,
       "type":[
         "offroad"
       ]
     },
     "mudDrag1":{
-      "bestTime":9,
+      "bestTime":10,
       "checkpointRoad":[
         "mudDrag1"
       ],
@@ -487,7 +491,7 @@
       ],
       "damageFactor":1,
       "label":"Rock Crawl Long",
-      "reward":3500,
+      "reward":12000,
       "timeout":60,
       "type":[
         "crawl"
@@ -501,32 +505,28 @@
       ],
       "damageFactor":1,
       "label":"Rock Crawl Short",
-      "reward":1500,
+      "reward":5000,
       "timeout":60,
       "type":[
         "crawl"
       ]
     },
     "rubberBand":{
-      "altRoute":{
-        "altInfo":"**Continue Right at the fork for the joker lap.",
-        "bestTime":41,
-        "checkpointRoad":"rubberBandJoker",
-        "hotlap":50,
-        "label":"Rubberband Ridge Joker",
-        "mergeCheckpoints":[
-          4,
-          5
-        ],
-        "reward":2550
-      },
-      "bestTime":50,
+      "bestTime":70,
+      "checkpointIndexs":[
+        3,
+        8,
+        15,
+        24,
+        36,
+        43
+      ],
       "checkpointRoad":[
         "rubberBandMain"
       ],
       "hotlap":55,
       "label":"Rubberband Ridge",
-      "reward":2550,
+      "reward":2000,
       "runningStart":true,
       "type":[
         "offroad"

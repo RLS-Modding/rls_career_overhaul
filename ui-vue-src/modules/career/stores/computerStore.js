@@ -18,7 +18,7 @@ export const useComputerStore = defineStore("computer", () => {
     if (!computerData.value.computerFunctions) return []
     let result = []
     result = Object.values(computerData.value.computerFunctions.general)
-    result.sort((a, b) => {
+    result.sort((a, b) =>  {
       if (a.order != undefined && b.order != undefined) return (a.order < b.order ? -1 : 1)
       return (a.label < b.label ? -1 : 1)
     })
@@ -30,7 +30,7 @@ export const useComputerStore = defineStore("computer", () => {
     let result = {}
     for (const [inventoryId, computerFunctions] of Object.entries(computerData.value.computerFunctions.vehicleSpecific)) {
       let sortedFunctions = Object.values(computerFunctions)
-      sortedFunctions.sort((a, b) => {
+      sortedFunctions.sort((a, b) =>  {
         if (a.order != undefined && b.order != undefined) return (a.order < b.order ? -1 : 1)
         return (a.label < b.label ? -1 : 1)
       })

@@ -1,48 +1,37 @@
 <template>
-  <ComputerWrapper :path="[computerStore.computerData.facilityName]" title="Home screen" close @close="close">
+  <ComputerWrapper :title="computerStore.computerData.facilityName + ' - Home screen'" close @back="close">
 
     <BngCard class="card-content" v-bng-blur="1" >
-      <BngCardHeading>
-        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-          <span>{{ computerLoading ? "Loading..." : "Vehicle management" }}</span>
-          <BngButton 
-            v-if="!computerLoading" 
-            :accent="ACCENTS.outlined" 
-            @click="sellGarage"
-            :icon="icons.home"
-            style="margin-left: 1em;">
-            Sell Garage
-          </BngButton>
-        </div>
+      <BngCardHeading v-if="computerLoading">
+        Loading...
       </BngCardHeading>
 
-      <div v-if="!computerLoading" class="vehicle-actions">
-        <template v-if="hasVehicles">
-          <h3>
-            <div class="vehicle-select" >
-              <BngButton style="height: 3em;" v-if="showVehicleSelectorButtons" :accent="ACCENTS.outlined" @click="switchActiveVehicle(-1)" v-bng-on-ui-nav:tab_l.asMouse :icon="icons.arrowLargeLeft">
-                <BngBinding ui-event="tab_l" deviceMask="xinput" />
-              </BngButton>
-              <BngList v-if="currentVehicleData" style="width: 20em;">
-                <VehicleTile
-                  style="height: 13em"
-                  :data="currentVehicleData"
-                  layout="tile"
-                  :enableHover="false"
-                />
+      <div v-if="!computerLoading" class="computer-actions">
+        <div class="action-header">
+          <div class="line left"></div>
+          <div class="title">Vehicle Management</div>
+          <div class="line right"></div>
+        </div>
+        <div v-if="hasVehicles" class="vehicle-select-container">
+          <div class="vehicle-select" >
+            <BngButton style="height: 3em;" v-if="showVehicleSelectorButtons" :accent="ACCENTS.ghost" @click="switchActiveVehicle(-1)" v-bng-on-ui-nav:tab_l.asMouse :icon="icons.arrowLargeLeft">
+              <BngBinding ui-event="tab_l" deviceMask="xinput" />
+            </BngButton>
+              <VehicleTileRow
+                class="vehicle-tile-row"
+                :class="{ 'hasButtons': showVehicleSelectorButtons }"
+                :data="currentVehicleData"
+                :enableHover="false"
+                :small="true"
+              />
 
-                <BngButton style="height: 2em;" @click="startPerformanceTest()" :disabled="isTutorialActive || !currentVehicleData || currentVehicleData.needsRepair || !currentVehicleData.owned">
-                  {{ startTestTitle }}
-                </BngButton>
-              </BngList>
-              <BngButton style="height: 3em;" v-if="showVehicleSelectorButtons" :accent="ACCENTS.outlined" @click="switchActiveVehicle(1)" v-bng-on-ui-nav:tab_r.asMouse :icon-right="icons.arrowLargeRight">
-                <BngBinding ui-event="tab_r" deviceMask="xinput" />
-              </BngButton>
-            </div>
-          </h3>
+            <BngButton style="height: 3em;" v-if="showVehicleSelectorButtons" :accent="ACCENTS.ghost" @click="switchActiveVehicle(1)" v-bng-on-ui-nav:tab_r.asMouse :icon="icons.arrowLargeRight">
+              <BngBinding ui-event="tab_r" deviceMask="xinput" />
+            </BngButton>
+          </div>
 
           <div class="actions-list" v-if="computerStore.activeInventoryId && computerStore.vehicleSpecificComputerFunctions[computerStore.activeInventoryId]">
-            <BngImageTile
+            <div class="computer-function-tile"
               v-for="(computerFunction, index) in computerStore.vehicleSpecificComputerFunctions[computerStore.activeInventoryId]"
               :key="computerFunction.id"
               :class="{ 'action-disabled': computerFunction.disabled }"
@@ -53,22 +42,27 @@
               @mouseleave="setReason(0)"
               @blur="setReason(0)"
               v-bng-ui-nav-focus="index == 0 ? 0 : undefined"
-              :icon="infoById[computerFunction.id].icon"
-              :label="infoById[computerFunction.id].label" />
+            >
+              <BngIcon class="icon" :type="infoById[computerFunction.id].icon" />
+              <span class="label">{{ infoById[computerFunction.id].label }}</span>
+            </div>
           </div>
-          <div class="disable-reason">
-            <BngIcon class="disable-icon" v-show="disableReason[0]" :type="icons.info" />
-            <span v-html="disableReason[0] || '&nbsp;'"></span>
-          </div>
-        </template>
+        </div>
 
-        <h3 v-else>No vehicle in garage</h3>
+        <div v-else class="no-vehicle-container">
+          <span>No vehicles in garage.</span>
+          <p> Place a vehicle in your garage to access modify and manage it.</p>
+        </div>
 
-        <div v-if="computerStore.generalComputerFunctions">
-          <h3>Inventory, Shopping, Insurance</h3>
+        <div class="action-header" v-if="computerStore.generalComputerFunctions">
+          <div class="line left"></div>
+          <div class="title">General Computer Functions</div>
+          <div class="line right"></div>
+        </div>
+        <div v-if="computerStore.generalComputerFunctions" class="general-functions-container">
           <div class="actions-list">
             <template v-for="(computerFunction, index) in computerStore.generalComputerFunctions" :key="computerFunction.id">
-              <BngImageTile
+              <div class="computer-function-tile"
                 v-if="!computerFunction.type"
                 :class="{ 'action-disabled': computerFunction.disabled }"
                 tabindex="0"
@@ -79,21 +73,31 @@
                 @mouseleave="setReason(1)"
                 @blur="setReason(1)"
                 v-bng-ui-nav-focus="!hasVehicles && index == 0 ? 0 : undefined"
-                :icon="infoById[computerFunction.id].icon"
-                :label="infoById[computerFunction.id].label" />
+                >
+                <BngIcon class="icon" :type="infoById[computerFunction.id].icon" />
+                <span class="label">{{ infoById[computerFunction.id].label }}</span>
+              </div>
             </template>
           </div>
-          <div class="disable-reason">
-            <BngIcon class="disable-icon" v-show="disableReason[1]" :type="icons.info" />
+          <div class="disable-reason" v-if="disableReason[0]">
+            <BngIcon class="disable-icon" v-show="disableReason[0]" :type="icons.info" />
+            <span v-html="disableReason[0] || '&nbsp;'"></span>
+          </div>
+          <div class="disable-reason" v-if="disableReason[1]">
+            <BngIcon class="disable-icon"  :type="icons.info" />
             <span v-html="disableReason[1] || '&nbsp;'"></span>
           </div>
         </div>
 
-        <div>
-          <h3>Activities & Events</h3>
+        <div class="action-header">
+          <div class="line left"></div>
+          <div class="title">Activities & Events</div>
+          <div class="line right"></div>
+        </div>
+        <div class="activities-container">
           <div class="actions-list">
-            <template v-for="(computerFunction, index) in computerStore.activityComputerFunctions">
-              <BngImageTile
+            <template v-for="(computerFunction, index) in computerStore.activityComputerFunctions" :key="computerFunction.id">
+              <div class="computer-function-tile"
                 v-if="!computerFunction.type"
                 :class="{ 'action-disabled': computerFunction.disabled }"
                 tabindex="0"
@@ -103,12 +107,14 @@
                 @focus="setReason(2, infoById[computerFunction.id].reason)"
                 @mouseleave="setReason(2)"
                 @blur="setReason(2)"
-                :icon="infoById[computerFunction.id].icon"
-                :label="infoById[computerFunction.id].label" />
+                >
+                <BngIcon class="icon" :type="infoById[computerFunction.id].icon" />
+                <span class="label">{{ infoById[computerFunction.id].label }}</span>
+              </div>
             </template>
           </div>
-          <div class="disable-reason">
-            <BngIcon class="disable-icon" v-show="disableReason[2]" :type="icons.info" />
+          <div class="disable-reason" v-if="disableReason[2]">
+            <BngIcon class="disable-icon" :type="icons.info" />
             <span v-html="disableReason[2] || '&nbsp;'"></span>
           </div>
         </div>
@@ -122,11 +128,11 @@ import { ref, computed, onMounted, onUnmounted, watch } from "vue"
 import { lua } from "@/bridge"
 import { useComputerStore } from "../stores/computerStore"
 import ComputerWrapper from "./ComputerWrapper.vue"
-import { BngButton, ACCENTS, BngCard, BngCardHeading, BngBinding, BngImageTile, BngIcon, icons, BngList } from "@/common/components/base"
-import { default as UINavEvents, UI_EVENT_GROUPS } from "@/bridge/libs/UINavEvents"
+import { BngButton, ACCENTS, BngCard, BngCardHeading, BngBinding, BngIcon, icons } from "@/common/components/base"
+// import { default as UINavEvents, UI_EVENT_GROUPS } from "@/bridge/libs/UINavEvents"
+import { getUINavServiceInstance, UI_EVENT_GROUPS } from "@/services/uiNav"
 import { vBngOnUiNav, vBngBlur, vBngUiNavFocus } from "@/common/directives"
-import VehicleTile from "../components/vehicleInventory/VehicleTile.vue"
-import { openConfirmation } from "@/services/popup"
+import VehicleTileRow from "../components/vehicleInventory/VehicleTileRow.vue"
 
 const computerStore = useComputerStore()
 const currentVehicleData = ref(null)
@@ -139,13 +145,9 @@ watch(() => computerStore.activeInventoryId, (newId) => {
   }
 })
 
-const showVehicleSelectorButtons = computed(() => computerStore.computerData.vehicles && computerStore.computerData.vehicles.length > 1)
+const showVehicleSelectorButtons = computed(() => computerStore.computerData.vehicles && computerStore.computerData.vehicles.length > 1 )
 
 const hasVehicles = computed(() => computerStore.computerData.vehicles && computerStore.computerData.vehicles.length)
-const currentVehicleName = computed(() => (hasVehicles.value ? computerStore.computerData.vehicles[computerStore.activeVehicleIndex].vehicleName : ""))
-const currentVehicleThumbnail = computed(() => (hasVehicles.value ? computerStore.computerData.vehicles[computerStore.activeVehicleIndex].thumbnail : ""))
-
-const startTestTitle = computed(() => hasVehicles.value ? (computerStore.computerData.vehicles[computerStore.activeVehicleIndex].needsRepair ? "Assess Performance (Repair Required)" : "Assess Performance") : "")
 
 // list of function IDs that are known to take some time, so we inform the user about loading
 const slowFunctions = ["vehicleShop", "partInventory"]
@@ -165,18 +167,18 @@ const switchActiveVehicle = computerStore.switchActiveVehicle
 
 const iconById = {
   painting: icons.sprayCan,
-  partShop: icons.cardboardBoxCoins,
+  partShop: icons.doorFrontCoins,
   repair: icons.wrench,
   tuning: icons.cogs,
-  insurancePolicies: icons.shieldHandCheckmark,
+  insurances: icons.shieldHandCheckmark,
+  playerAbstract: icons.personSolid,
   vehicleInventory: icons.keys1,
   partInventory: icons.engine,
   vehicleShop: icons.carCoins,
   performanceIndex: icons.raceFlag,
-  sleep: icons.night,
   carMeets: icons.cars,
-  marketplace: icons.shoppingCart,
-  loans: icons.beamCurrency
+  sleep: icons.night,
+  loans: icons.beamCurrency,
 }
 
 const infoById = computed(() => [
@@ -208,71 +210,14 @@ const setReason = (idx, reason = null) => {
   disableReason.value = disableReason.value.map((_, i) => i === idx ? reason : null)
 }
 
-const startPerformanceTest = function() {
-  lua.career_modules_vehiclePerformance.startDragTestFromOutsideMenu(computerStore.activeInventoryId, computerStore.computerData.computerId)
-}
-
-const sellGarage = async function() {
-  try {
-    // Check if the garage can be sold (must be empty)
-    const canSell = await lua.career_modules_garageManager.canSellGarage(computerStore.computerData.computerId)
-    
-    if (!canSell || !Array.isArray(canSell) || canSell.length < 2) {
-      console.error("Could not check garage sell status")
-      return
-    }
-    
-    const [isEmpty, vehicleCount] = canSell
-    
-    // If garage cannot be sold, show appropriate error message
-    if (!isEmpty) {
-      if (vehicleCount === 0) {
-        await openConfirmation("", `You cannot sell this garage. Starting garages cannot be sold.`, [
-          { label: "OK", value: true, extras: { default: true } },
-        ])
-      } else {
-        await openConfirmation("", `You have ${vehicleCount} vehicle${vehicleCount !== 1 ? 's' : ''} in this garage. Please move or sell your vehicles out of this garage to sell it.`, [
-          { label: "OK", value: true, extras: { default: true } },
-        ])
-      }
-      return
-    }
-    
-    // Get the garage price from Lua
-    const garagePrice = await lua.career_modules_garageManager.getGaragePrice(null, computerStore.computerData.computerId)
-    
-    if (!garagePrice) {
-      console.error("Could not get garage price")
-      await openConfirmation("", `You cannot sell this garage.`, [
-        { label: "OK", value: true, extras: { default: true } },
-      ])
-      return
-    }
-    
-    // Calculate 75% of the garage value
-    const sellPrice = Math.floor(garagePrice * 0.75)
-    
-    const res = await openConfirmation("", `Are you sure you want to sell this garage for ${sellPrice}? You will receive 75% of the original value. This action cannot be undone.`, [
-      { label: "Yes", value: true, extras: { default: true } },
-      { label: "No", value: false, extras: { accent: ACCENTS.secondary } },
-    ])
-    
-    if (res) {
-      console.log(`Garage sold for ${sellPrice} credits!`)
-      lua.career_modules_garageManager.sellGarage(computerStore.computerData.computerId, sellPrice)
-    }
-  } catch (error) {
-    console.error("Error selling garage:", error)
-  }
-}
-
 const close = () => {
   if (computerLoading.value) return
   lua.career_career.closeAllMenus()
 }
 
 const start = async () => {
-  UINavEvents.setFilteredEvents(UI_EVENT_GROUPS.focusMoveScalar)
+  // UINavEvents.setFilteredEvents(UI_EVENT_GROUPS.focusMoveScalar)
+  getUINavServiceInstance().setFilteredEvents(UI_EVENT_GROUPS.focusMoveScalar)
   computerStore.requestComputerData()
 
   if (Number(computerStore.activeInventoryId)) {
@@ -287,7 +232,8 @@ const start = async () => {
 
 const kill = () => {
   computerStore.onMenuClosed()
-  UINavEvents.clearFilteredEvents()
+  // UINavEvents.clearFilteredEvents()
+  getUINavServiceInstance().clearFilteredEvents()
   computerStore.$dispose()
 }
 
@@ -296,87 +242,143 @@ onUnmounted(kill)
 </script>
 
 <style scoped lang="scss">
+@use "@/styles/modules/mixins" as *;
+
 .card-content {
   width: max-content;
   max-width: 100%;
+  min-width: 50rem;
   height: 100%;
   color: white;
   background-color: var(--bng-black-8);
   & :deep(.card-cnt) {
     background-color: rgba(0, 0, 0, 0);
+    gap: 2rem;
   }
 }
 
-.vehicle-actions {
+.computer-actions {
   display: flex;
   flex-direction: column;
   overflow: auto;
-  padding: {
-    left: 2em;
-    right: 2em;
+  padding: 1rem;
+  gap: 1rem;
+}
+
+.vehicle-select-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-bottom: 1rem;
+}
+
+.general-functions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-bottom: 1rem;
+}
+
+.activities-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-bottom: 1rem;
+}
+
+.action-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  .title {
+    font-size: 1.25rem;
+    font-weight: 500;
   }
-  > :deep(.tile) {
-    display: inline-flex;
+  .line {
+    flex: 1;
+    height: 1px;
+    background-color: var(--bng-cool-gray-600);
+    &.left {
+      flex: 0 0 1rem;
+    }
+    &.right {
+    }
   }
 }
 
 .vehicle-select {
   display: inline-flex;
-  font-size: 1em;
-  > * {
-    flex: 0 0 auto;
+  justify-content: space-between;
+  align-items: stretch;
+  font-size: 1rem;
+  width: 100%;
+
+  background-color: var(--bng-black-6);
+  border-radius: var(--bng-corners-1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+
+  .vehicle-tile-row {
+    flex: 1;
+    background:none;
+    border:none;
+    border-radius: 0;
+    &.hasButtons{
+      border-left: 1px solid rgba(255, 255, 255, 0.1);
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
+    }
+  }
+
+  > button {
     min-width: 3em !important;
+    height: unset !important;
+    justify-content: center;
+    display: flex;
+    align-items: center;
+    flex-flow: column;
     // width: 3em;
   }
 }
 
-.veh-preview {
-  position: absolute;
-  top: 1em;
-  right: 2em;
-  width: 11em;
-  height: 6em;
-  background-color: #0008;
-  background-image: var(--veh-preview);
-  background-size: cover;
-  background-position: 50% 50%;
-  background-repeat: no-repeat;
 
-  // decoration
-  // &::before,
-  // &::after {
-  //   content: "";
-  //   position: absolute;
-  //   width: 40%;
-  //   height: 1em;
-  //   background-color: #f60;
-  //   transform: skewX(-23deg);
-  // }
-  // &::before {
-  //   top: -1em;
-  //   right: 20%;
-  //   transform-origin: 50% 100%;
-  // }
-  // &::after {
-  //   bottom: -1em;
-  //   left: 20%;
-  //   transform-origin: 50% 0%;
-  // }
-}
 
 .actions-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+  gap: 0.5rem;
+}
+
+.computer-function-tile {
+  // Setting round corners and focus frame offset for focusable tile
+  $f-offset: 0.25rem;
+  $rad: var(--bng-corners-1);
+
+  position: relative;
   display: flex;
-  flex-flow: row nowrap;
-  justify-content: space-between;
-  > * {
-    flex: 0 0 auto;
-    margin-bottom: 1em !important;
-    &:not(:last-child) {
-      margin-right: 2em !important;
-    }
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.5em;
+  width: 100%;
+  border-radius: $rad;
+  background-color: rgba(0, 0, 0, 0.6);
+  transition: background-color ease-in 75ms;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+
+  .icon {
+    font-size: 2.5em;
   }
-  & [bng-nav-item] {
-    cursor: pointer;
+  .label {
+    flex: 1 1 auto;
+    font-size: 1.3em;
+    font-weight: 400;
+    text-align: left;
+  }
+
+  // Modify the focus frame radius and offset based on tile corner radius
+  @include modify-focus($rad, $f-offset);
+
+  &:focus,
+  &:hover {
+    background-color: rgba(var(--bng-cool-gray-700-rgb), 0.8);
   }
 }
 
@@ -387,10 +389,14 @@ onUnmounted(kill)
 
 .disable-reason {
   display: flex;
-  align-items: baseline;
-  height: 1.2em;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(var(--bng-cool-gray-700-rgb), 0.8);
+  border-radius: var(--bng-corners-1);
+  padding: 0.5em;
   .disable-icon {
     margin-right: 0.1em;
+    margin-bottom: 0.2em;
   }
 }
 
@@ -459,4 +465,5 @@ onUnmounted(kill)
     color: #f0a500;
   }
 }
+
 </style>
