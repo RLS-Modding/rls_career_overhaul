@@ -815,9 +815,10 @@ end
 
 local function onSaveFinished()
   if switchLevel then
-    deactivateCareer()
     spawn.preventPlayerSpawning = true
-    activateCareer(true, switchLevel)
+    freeroam_freeroam.startFreeroam(path.getPathLevelMain(switchLevel), nil, false, nil, function()
+      server.fadeoutLoadingScreen()
+    end)
   end
 end
 

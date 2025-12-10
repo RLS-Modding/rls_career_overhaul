@@ -523,6 +523,7 @@ local function updatePartConditions(vehId, inventoryId, callback)
   end
   if not veh then
     log("E", "", "Couldnt find vehicle object to get part conditions")
+    if callback then callback() end
     return
   end
 
