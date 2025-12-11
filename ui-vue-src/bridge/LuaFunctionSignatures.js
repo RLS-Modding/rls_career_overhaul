@@ -1260,7 +1260,8 @@ export default {
     cancelGaragePurchase: () => {},
     getGaragePrice: () => {},
     canSellGarage: () => {},
-    sellGarage: () => {}
+    sellGarage: () => {},
+    getGarageCapacityData: () => {}
   },
 
   career_modules_business_businessManager: {

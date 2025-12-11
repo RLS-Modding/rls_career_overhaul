@@ -1,32 +1,47 @@
 <template>
   <div class="vehicle-list-container" v-bng-disabled="!vehicleInventoryStore">
     <VehicleTileRow class="vehicle-list-item" v-if="listStatus" :data="{ _message: listStatus }" :layout="itemLayout" v-bng-disabled />
-    <VehicleTileRow class="vehicle-list-item" v-else v-for="vehicle in listView" :key="vehicle.id"
-      :data="vehicle" :layout="itemLayout" :selected="vehSelected && vehSelected.id === vehicle.id"
-      :is-tutorial="vehicleInventoryStore && vehicleInventoryStore.vehicleInventoryData.tutorialActive"
-      :money="vehicleInventoryStore ? vehicleInventoryStore.vehicleInventoryData.playerMoney : 0"
-      v-bng-disabled="vehicle.disabled"
-      tabindex="0" bng-nav-item v-bng-on-ui-nav:ok.asMouse.focusRequired
-      v-bng-popover:right-start.click="popId" @click="!vehicle.disabled && select(vehicle, $event)" />
+
+    <template v-else>
+      <div v-for="group in groupedVehicles" :key="group.id || group.name" class="garage-group">
+        <div class="garage-header" role="button" tabindex="0"
+          @mousedown.stop.prevent="toggleGroup(group.id)"
+          @click.stop.prevent>
+          <div class="garage-title">{{ group.name }}</div>
+          <div class="garage-capacity">{{ group.count }} / {{ group.capacity || "N/A" }}</div>
+        </div>
+
+        <div v-if="!isCollapsed(group.id)" class="garage-vehicles">
+          <VehicleTileRow class="vehicle-list-item" v-for="vehicle in group.vehicles" :key="vehicle.id"
+            :data="vehicle" :layout="itemLayout" :selected="vehSelected && vehSelected.id === vehicle.id"
+            :is-tutorial="vehicleInventoryStore && vehicleInventoryStore.vehicleInventoryData.tutorialActive"
+            :money="vehicleInventoryStore ? vehicleInventoryStore.vehicleInventoryData.playerMoney : 0"
+            v-bng-disabled="vehicle.disabled"
+            tabindex="0" bng-nav-item v-bng-on-ui-nav:ok.asMouse.focusRequired
+            v-bng-popover:right-start.click="popId" @click="!vehicle.disabled && select(vehicle, $event)" />
+        </div>
+      </div>
+    </template>
 
     <BngPopoverMenu :name="popId" focus @hide="selectedVehId = null">
       <template v-for="(buttonData, index) in vehicleInventoryStore.vehicleInventoryData.chooseButtonsData" :key="index">
     <BngButton v-if="vehSelected && isFunctionAvailable(vehSelected, buttonData)"
           :accent="ACCENTS.menu"
+          :disabled="(buttonData.buttonText === 'Deliver' || buttonData.buttonText === 'Deliver and replace') && vehicleInventoryStore.vehicleInventoryData.playerMoney < 5000"
           v-bng-on-ui-nav:ok.focusRequired.asMouse
-          @click="vehicleInventoryStore.chooseVehicle(vehSelected.id, index)">
+          @click="handleButtonClick(buttonData, index)">
       {{ buttonData.buttonText }}<span v-if="buttonData.repairRequired && vehSelected?.needsRepair"> (Damaged)</span>
         </BngButton>
       </template>
       <BngButton
-        v-if="vehSelected && vehicleInventoryStore.vehicleInventoryData.buttonsActive.returnLoanerEnabled && vehSelected.returnLoanerPermission.allow"
+        v-if="vehSelected && vehSelected.atCurrentGarage && vehicleInventoryStore.vehicleInventoryData.buttonsActive.returnLoanerEnabled && vehSelected.returnLoanerPermission.allow"
         :accent="ACCENTS.menu"
         v-bng-on-ui-nav:ok.focusRequired.asMouse
         @click="confirmReturnVehicle()">
         Return loaned vehicle
       </BngButton>
       <BngButton
-        v-if="vehSelected && vehSelected.delayReason === 'repair'"
+        v-if="vehSelected && vehSelected.atCurrentGarage && vehSelected.delayReason === 'repair'"
         :accent="ACCENTS.menu"
         :disabled="vehSelected.expediteRepairCost > vehicleInventoryStore.vehicleInventoryData.playerMoney"
         v-bng-on-ui-nav:ok.focusRequired.asMouse
@@ -35,7 +50,7 @@
         <BngUnit :money="vehSelected.expediteRepairCost" />
       </BngButton>
       <BngButton
-        v-if="vehSelected && vehSelected.delayReason !== 'repair' && vehicleInventoryStore.vehicleInventoryData.buttonsActive.repairEnabled"
+        v-if="vehSelected && vehSelected.atCurrentGarage && vehSelected.delayReason !== 'repair' && vehicleInventoryStore.vehicleInventoryData.buttonsActive.repairEnabled"
         :accent="ACCENTS.menu"
         :disabled="!vehSelected.repairPermission.allow"
         v-bng-on-ui-nav:ok.focusRequired.asMouse
@@ -43,7 +58,7 @@
         Repair
       </BngButton>
       <BngButton
-        v-if="vehSelected && vehicleInventoryStore.vehicleInventoryData.buttonsActive.storingEnabled && !vehSelected.inStorage"
+        v-if="vehSelected && vehSelected.atCurrentGarage && vehicleInventoryStore.vehicleInventoryData.buttonsActive.storingEnabled && !vehSelected.inStorage"
         :accent="ACCENTS.menu"
         :disabled="!vehSelected.storePermission.allow"
         v-bng-on-ui-nav:ok.focusRequired.asMouse
@@ -51,7 +66,7 @@
         Put in storage
       </BngButton>
       <BngButton
-        v-if="vehSelected && vehicleInventoryStore.vehicleInventoryData.buttonsActive.favoriteEnabled"
+        v-if="vehSelected && vehSelected.atCurrentGarage && vehicleInventoryStore.vehicleInventoryData.buttonsActive.favoriteEnabled"
         :accent="ACCENTS.menu"
         :disabled="!vehSelected.favoritePermission.allow || vehSelected.favorite"
         v-bng-on-ui-nav:ok.focusRequired.asMouse
@@ -59,7 +74,7 @@
         Set as Favorite
       </BngButton>
       <BngButton
-        v-if="vehSelected"
+        v-if="vehSelected && vehSelected.atCurrentGarage"
         :accent="ACCENTS.menu"
         :disabled="!vehSelected.licensePlateChangePermission.allow"
         v-bng-on-ui-nav:ok.focusRequired.asMouse
@@ -67,14 +82,14 @@
         Personalize license plate
       </BngButton>
       <BngButton
-        v-if="vehSelected"
+        v-if="vehSelected && vehSelected.atCurrentGarage"
         :accent="ACCENTS.menu"
         v-bng-on-ui-nav:ok.focusRequired.asMouse
         @click="renameVehicle()">
         Rename vehicle
       </BngButton>
       <BngButton
-        v-if="vehSelected && vehicleInventoryStore.vehicleInventoryData.buttonsActive.sellEnabled && !vehSelected.listedForSale"
+        v-if="vehSelected && vehSelected.atCurrentGarage && vehicleInventoryStore.vehicleInventoryData.buttonsActive.sellEnabled && !vehSelected.listedForSale"
         :accent="ACCENTS.menu"
         :disabled="!vehSelected.sellPermission.allow"
         v-bng-on-ui-nav:ok.focusRequired.asMouse
@@ -82,7 +97,7 @@
         List vehicle for sale
       </BngButton>
       <BngButton
-        v-if="vehSelected && vehicleInventoryStore.vehicleInventoryData.buttonsActive.sellEnabled && vehSelected.listedForSale"
+        v-if="vehSelected && vehSelected.atCurrentGarage && vehicleInventoryStore.vehicleInventoryData.buttonsActive.sellEnabled && vehSelected.listedForSale"
         :accent="ACCENTS.menu"
         :disabled="!vehSelected.sellPermission.allow"
         v-bng-on-ui-nav:ok.focusRequired.asMouse
@@ -94,7 +109,7 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick, onUnmounted } from "vue"
+import { ref, computed, nextTick, onMounted, onUnmounted } from "vue"
 import { lua, useBridge } from "@/bridge"
 import { BngButton, BngPopoverMenu, BngUnit, ACCENTS } from "@/common/components/base"
 import { vBngDisabled, vBngPopover, vBngOnUiNav } from "@/common/directives"
@@ -116,9 +131,16 @@ const popId = uniqueId("veh_options")
 const popHide = () => popover.hide(popId)
 const licensePlateTextValid = ref(true)
 const vehicleNameValid = ref(true)
+const garageCapacities = ref({})
+const collapsedGroups = ref({})
 
 const vehicleInventoryStore = useVehicleInventoryStore()
 const selectedVehId = ref()
+const currentGarageHasSpace = computed(() => {
+  const data = vehicleInventoryStore?.vehicleInventoryData
+  if (!data || data.currentGarageHasSpace === undefined) return true
+  return !!data.currentGarageHasSpace
+})
 
 const vehSelected = computed(() => {
   if (typeof selectedVehId.value !== "number") return undefined
@@ -153,6 +175,44 @@ const listView = computed(() => {
   return res
 })
 
+const groupedVehicles = computed(() => {
+  const groups = []
+  const lookup = {}
+  let currentGarageId = null
+
+  for (const veh of listView.value) {
+    const garageId = veh.location ?? "unknown"
+    if (veh.atCurrentGarage && currentGarageId === null) {
+      currentGarageId = garageId
+    }
+    const garageKey = String(garageId)
+    const garageInfo = garageCapacities.value ? garageCapacities.value[garageKey] : null
+    const name = veh.niceLocation || garageInfo?.name || "Garage"
+    const capacity = garageInfo?.capacity
+
+    if (!lookup[garageKey]) {
+      lookup[garageKey] = { id: garageId, name, capacity, vehicles: [] }
+      groups.push(lookup[garageKey])
+    }
+    lookup[garageKey].vehicles.push(veh)
+  }
+
+  for (const group of groups) {
+    group.count = group.vehicles.length
+  }
+
+  if (currentGarageId !== null) {
+    const key = String(currentGarageId)
+    const idx = groups.findIndex(g => String(g.id) === key)
+    if (idx > 0) {
+      const [current] = groups.splice(idx, 1)
+      groups.unshift(current)
+    }
+  }
+
+  return groups
+})
+
 // Layout constants (replacing LIST_LAYOUTS)
 const LAYOUT_TYPES = {
   TILE: "tile",
@@ -175,7 +235,26 @@ const singleFunction = computed(() => {
   return data.chooseButtonsData[0]
 })
 
-
+const handleButtonClick = async (buttonData, index) => {
+  if (buttonData.buttonText === "Deliver" || buttonData.buttonText === "Deliver and replace") {
+    const cost = 5000
+    const message = buttonData.buttonText === "Deliver and replace" 
+      ? `Do you want to deliver this vehicle and replace your current one for ${units.beamBucks(cost)}?`
+      : `Do you want to deliver this vehicle to your garage for ${units.beamBucks(cost)}?`
+    
+    const res = await openConfirmation("", message, [
+      { label: $translate.instant("ui.common.yes"), value: true, extras: { default: true } },
+      { label: $translate.instant("ui.common.no"), value: false, extras: { accent: ACCENTS.secondary } },
+    ])
+    
+    if (res) {
+      popHide()
+      vehicleInventoryStore.chooseVehicle(vehSelected.value.id, index)
+    }
+  } else {
+    vehicleInventoryStore.chooseVehicle(vehSelected.value.id, index)
+  }
+}
 
 function select(vehicle, evt) {
   const show =
@@ -221,7 +300,10 @@ const isFunctionAvailable = (vehicle, buttonData) => !(
   (buttonData.requiredVehicleNotInGarage && vehicle.inGarage) ||
   (buttonData.requiredOtherVehicleInGarage && !vehicle.otherVehicleInGarage) ||
   (buttonData.ownedRequired && !vehicle.owned) ||
-  (buttonData.notForSaleRequired && vehicle.listedForSale)
+  (buttonData.notForSaleRequired && vehicle.listedForSale) ||
+  (buttonData.requireAtCurrentGarage && !vehicle.atCurrentGarage) ||
+  (buttonData.requireAtDifferentGarage && vehicle.atCurrentGarage) ||
+  (!vehicle.atCurrentGarage && !currentGarageHasSpace.value)
 )
 
 const lookAtVehicleListing = () => {
@@ -369,9 +451,30 @@ const listVehicleForSaleFromMarketplaceMenu = async (vehicle) => {
   router.back()
 }
 
+const loadGarageCapacities = async () => {
+  const data = await lua.career_modules_garageManager.getGarageCapacityData()
+  if (data) {
+    garageCapacities.value = data
+  }
+}
+
+const toggleGroup = (garageId) => {
+  const key = String(garageId)
+  collapsedGroups.value = {
+    ...collapsedGroups.value,
+    [key]: !collapsedGroups.value[key]
+  }
+}
+
+const isCollapsed = (garageId) => !!collapsedGroups.value[String(garageId)]
+
 $game.events.on('addListing', (data) => {
   const vehicle = listView.value.find(v => v.id === data.inventoryId)
   listVehicleForSaleFromMarketplaceMenu(vehicle)
+})
+
+onMounted(() => {
+  loadGarageCapacities()
 })
 
 onUnmounted(() => {
@@ -385,6 +488,9 @@ onUnmounted(() => {
 .vehicle-list-container {
   padding-top: 2rem;
   width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 100%;
   display: flex;
   flex-direction: column;
   background-color: var(--bng-black-8);
@@ -392,12 +498,81 @@ onUnmounted(() => {
   padding: 0.5rem;
   gap: 0.5rem;
   overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+  }
 }
 
 .vehicle-list-item {
   flex: 0 0 auto;
   max-height: 12rem;
   max-width: 100%;
+}
+
+.garage-group {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--bng-corners-1);
+  background: rgba(0, 0, 0, 0.4);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.garage-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  gap: 0.75rem;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
+  border-radius: var(--bng-corners-1);
+  overflow: hidden;
+}
+
+.garage-title {
+  font-weight: 700;
+  font-size: 1.1rem;
+  flex: 1 1 auto;
+  color: #fff;
+}
+
+.garage-capacity {
+  font-weight: 600;
+  color: #fff;
+}
+
+.garage-vehicles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  min-height: 0;
+}
+
+.garage-group + .garage-group {
+  margin-top: 0.5rem;
 }
 
 
