@@ -964,7 +964,12 @@
         }
       ],
       "filter": {
-        "whiteList": {},
+        "whiteList": {
+          "Mileage": {
+            "min": 355000000,
+            "max": 1216001971
+          }
+        },
         "blackList": {
           "Body Style": [
             "ATV",
@@ -979,10 +984,6 @@
         {
           "probability": 2,
           "whiteList": {
-            "Mileage": {
-              "min": 255000000,
-              "max": 916001971
-            },
             "Config Type": [
               "joesJunk"
             ]

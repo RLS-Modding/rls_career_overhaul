@@ -3038,7 +3038,6 @@
       },
       {
         "stock": 10,
-        "hiddenFromDealerList": true,
         "range": [
           0.7,
           0.90,
