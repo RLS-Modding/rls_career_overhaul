@@ -553,6 +553,12 @@ end
 local function getTreesForBusiness(businessType, businessId)
   local trees = loadSkillTreesForBusiness(businessType)
   local progress = loadSkillTreeProgress(businessId)
+  local balance = 0
+  local xp = 0
+  if businessType and career_modules_business_businessComputer then
+    balance = tonumber(career_modules_business_businessComputer.getBusinessAccountBalance(businessType, businessId)) or 0
+    xp = tonumber(career_modules_business_businessComputer.getBusinessXP(businessType, businessId)) or 0
+  end
 
   local result = {}
   for _, tree in ipairs(trees) do
@@ -578,6 +584,13 @@ local function getTreesForBusiness(businessType, businessId)
     local treeProgress = progress[tree.treeId] or {}
     for _, node in ipairs(tree.nodes) do
       local nodeLevel = treeProgress[node.id] or 0
+      local unlocked = checkPrerequisites(businessId, tree.treeId, node, trees)
+      local maxed = node.maxLevel and nodeLevel >= node.maxLevel
+      local nextMoneyCost = calculateUpgradeCost(node, nodeLevel)
+      local nextXPCost = calculateUpgradeXPCost(node, nodeLevel)
+      local affordableMoney = (nextMoneyCost <= 0) or (balance >= nextMoneyCost)
+      local affordableXP = (nextXPCost <= 0) or (xp >= nextXPCost)
+      local affordable = unlocked and (not maxed) and affordableMoney and affordableXP
       local nodeData = {
         id = node.id,
         title = node.title,
@@ -589,9 +602,13 @@ local function getTreesForBusiness(businessType, businessId)
         dependencies = node.dependencies,
         prerequisites = node.prerequisites,
         position = node.position,
-        unlocked = checkPrerequisites(businessId, tree.treeId, node, trees),
-        affordable = canAffordUpgrade(businessType, businessId, tree.treeId, node.id, trees),
-        maxed = node.maxLevel and nodeLevel >= node.maxLevel,
+        unlocked = unlocked,
+        affordable = affordable,
+        affordableMoney = affordableMoney,
+        affordableXP = affordableXP,
+        nextMoneyCost = nextMoneyCost,
+        nextXPCost = nextXPCost,
+        maxed = maxed,
         xpCost = node.xpCost,
         commingSoon = node.commingSoon
       }

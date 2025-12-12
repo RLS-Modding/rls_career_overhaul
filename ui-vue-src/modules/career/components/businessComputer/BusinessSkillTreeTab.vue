@@ -287,6 +287,7 @@ const allConnections = computed(() => {
 })
 
 const pendingRequests = ref(new Map())
+let bankRefreshTimeout = null
 
 const loadTrees = () => {
   const businessType = props.data?.businessType || store.businessType
@@ -298,6 +299,24 @@ const loadTrees = () => {
   pendingRequests.value.set(requestId, { type: 'trees' })
   
   lua.career_modules_business_businessSkillTree.requestSkillTrees(requestId, businessType, store.businessId)
+}
+
+const scheduleTreesRefresh = () => {
+  if (bankRefreshTimeout) return
+  bankRefreshTimeout = setTimeout(() => {
+    bankRefreshTimeout = null
+    loadTrees()
+  }, 100)
+}
+
+const handleAccountUpdate = (data) => {
+  const businessType = props.data?.businessType || store.businessType
+  const businessId = props.data?.businessId || store.businessId
+  if (!data || !businessType || !businessId) return
+  const accountId = "business_" + businessType + "_" + businessId
+  if (data.accountId === accountId) {
+    scheduleTreesRefresh()
+  }
 }
 
 const initializeNodePositions = (trees) => {
@@ -805,6 +824,7 @@ onMounted(() => {
   events.on('businessSkillTree:onTreesResponse', handleTreesResponse)
   events.on('businessSkillTree:onTreesUpdated', handleTreesUpdated)
   events.on('businessSkillTree:onPurchaseResponse', handlePurchaseResponse)
+  events.on('bank:onAccountUpdate', handleAccountUpdate)
   window.addEventListener('mousemove', onPan)
   window.addEventListener('mouseup', stopPan)
   
@@ -826,11 +846,16 @@ onBeforeUnmount(() => {
   events.off('businessSkillTree:onTreesResponse', handleTreesResponse)
   events.off('businessSkillTree:onTreesUpdated', handleTreesUpdated)
   events.off('businessSkillTree:onPurchaseResponse', handlePurchaseResponse)
+  events.off('bank:onAccountUpdate', handleAccountUpdate)
   window.removeEventListener('mousemove', onPan)
   window.removeEventListener('mouseup', stopPan)
   if (focusWatchStop) {
     focusWatchStop()
     focusWatchStop = null
+  }
+  if (bankRefreshTimeout) {
+    clearTimeout(bankRefreshTimeout)
+    bankRefreshTimeout = null
   }
   if (viewStateSaveTimeout) {
     clearTimeout(viewStateSaveTimeout)
