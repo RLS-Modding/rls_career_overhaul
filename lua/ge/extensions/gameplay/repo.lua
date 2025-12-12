@@ -17,6 +17,28 @@ local freeroam_facilities = require('freeroam.facilities')
 local gameplay_sites_sitesManager = require('gameplay.sites.sitesManager')
 local marker
 
+local completionFadeDuration = 0.5
+
+local function stopFadeSafe()
+  if ui_fadeScreen and ui_fadeScreen.stop then
+    pcall(function() ui_fadeScreen.stop(completionFadeDuration) end)
+  end
+end
+
+local function switchPlayerToRepoVehicle(repoVehicleId)
+  if not repoVehicleId then return false end
+
+  local vehObj = getObjectByID(repoVehicleId)
+  if vehObj then
+    be:enterVehicle(0, vehObj)
+    return true
+  end
+  ui_fadeScreen.stop(0.5)
+
+  -- Avoid spawning/entering via inventory here because it can trigger the global loading screen.
+  return false
+end
+
 
 -- Create a single repo job instance for the whole module
 local repoJobInstance = nil
@@ -51,6 +73,7 @@ function VehicleRepoJob:new()
     instance.totalDistanceTraveled = 0
     instance.spawnedVehicle = false
     instance.isCompleted = false
+    instance.isCompleting = false
     if core_groundMarkers then
         core_groundMarkers.resetAll()
     end
@@ -87,6 +110,7 @@ function VehicleRepoJob:resetToInitialState()
     self.totalDistanceTraveled = 0
     self.spawnedVehicle = false
     self.isCompleted = false
+    self.isCompleting = false
     self.reward = nil
     self.jobCoroutine = nil
     self.randomVehicleInfo = nil
@@ -632,52 +656,80 @@ function VehicleRepoJob:onUpdate(dtReal, dtSim, dtRaw)
         local velocity = vel
         
         if distanceFromDestination <= 3 and velocity <= 1 then
+            if self.isCompleting then return end
+            self.isCompleting = true
             core_jobsystem.create(function(job)
-                ui_fadeScreen.cycle(0.5, 0.5, 0.5)
-                job.sleep(0.5)
+              local self = job.args[1]
+              local ok = pcall(function()
+                if ui_fadeScreen and ui_fadeScreen.start then
+                  ui_fadeScreen.start(completionFadeDuration)
+                end
+
+                job.sleep(completionFadeDuration)
+
+                local deliveredId = self.vehicleId
+                local repoId = self.repoVehicleID
+
                 local reward = self:calculateReward()
                 local rewardText = "You've Dropped Off a " ..  self.vehInfo.Brand .. " " .. self.vehInfo.Name .. "."
                 if reward then
-                    rewardText = rewardText .. "\nYou have been paid $" .. tostring(reward)
+                  rewardText = rewardText .. "\nYou have been paid $" .. tostring(reward)
                 end
-                           
-                -- Add safety check for marker
+
+                if career_career and career_career.isActive and career_career.isActive() and reward then
+                  career_modules_payment.reward({
+                    money = { amount = reward },
+                    beamXP = { amount = math.floor(reward / 20) },
+                    labourer = { amount = math.floor(reward / 20) }
+                  }, {
+                    label = "You've Dropped Off a " .. self.vehInfo.Brand .. " " .. self.vehInfo.Name .. ".\nYou have been paid $" .. reward,
+                    tags = {"gameplay", "reward", "laborer"}
+                  }, true)
+                  career_saveSystem.saveCurrent()
+                  if career_modules_inventory and career_modules_inventory.addRepossession and career_modules_inventory.getInventoryIdFromVehicleId then
+                    career_modules_inventory.addRepossession(career_modules_inventory.getInventoryIdFromVehicleId(repoId))
+                  end
+                end
+
+                -- Try to switch out of delivered vehicle before deletion
+                if deliveredId and repoId and be:getPlayerVehicleID(0) == deliveredId then
+                  switchPlayerToRepoVehicle(repoId)
+                  job.sleep(0.1)
+                end
+
                 if marker then
-                    pcall(function() marker:delete() end)
-                    marker = nil
+                  pcall(function() marker:unregisterObject() end)
+                  pcall(function() marker:delete() end)
+                  marker = nil
                 end
-            
-                if career_career.isActive() then
-                    career_modules_payment.reward({
-                        money = { amount = reward },
-                        beamXP = { amount = math.floor(reward / 20) },
-                        labourer = { amount = math.floor(reward / 20) }
-                    }, {
-                        label = "You've Dropped Off a " .. self.vehInfo.Brand .. " " .. self.vehInfo.Name .. ".\nYou have been paid $" .. reward,
-                        tags = {"gameplay", "reward", "laborer"}
-                    }, true)
-                    career_saveSystem.saveCurrent()
-                    career_modules_inventory.addRepossession(career_modules_inventory.getInventoryIdFromVehicleId(self.repoVehicleID))
-                end
-            
+
                 self.isJobStarted = false
                 self.isMonitoring = false
-            
-                -- Add safety check for vehicle
-                local vehicle = getObjectByID(self.vehicleId)
-                if vehicle then
-                    core_vehicleBridge.executeAction(vehicle, 'setFreeze', true)
+
+                if deliveredId and be:getPlayerVehicleID(0) ~= deliveredId then
+                  if gameplay_traffic then
+                    pcall(function() gameplay_traffic.removeTraffic(deliveredId) end)
+                  end
+                  local v = getObjectByID(deliveredId)
+                  if v then
+                    pcall(function() core_vehicleBridge.executeAction(v, 'setFreeze', true) end)
+                    pcall(function() v:delete() end)
+                  end
+                  self.vehicleId = nil
+                else
+                  self.pendingDeliveredDeleteId = deliveredId
                 end
-                if self.vehicleId then
-                    local vehicle = getObjectByID(self.vehicleId)
-                    if vehicle then
-                        pcall(function() vehicle:delete() end)
-                    end
-                    self.vehicleId = nil
-                end
+
                 self.isCompleted = true
                 self.reward = reward
                 ui_message(rewardText, 15, "Job Completed", "info")
+              end)
+
+              self.isCompleting = false
+              stopFadeSafe()
+              if not ok then
+                log("E", "repo", "Repo completion failed; forced fade stop")
+              end
             end, 1, self)
         elseif distanceFromDestination <= 10 then
             ui_message("You've arrived at the dealership.\nPlease return the vehicle to the parking spot.", 10, "info", "info")
@@ -728,6 +780,28 @@ end
 
 function VehicleRepoJob:completeJob()
     self:destroy()
+end
+
+local function onVehicleSwitched(oldId, newId)
+  local instance = M.getRepoJobInstance()
+  if not instance then return end
+
+  -- If we finished a delivery while still inside the delivered vehicle, delete it once the player left it.
+  if instance.pendingDeliveredDeleteId and oldId == instance.pendingDeliveredDeleteId and newId ~= instance.pendingDeliveredDeleteId then
+    local deliveredId = instance.pendingDeliveredDeleteId
+    instance.pendingDeliveredDeleteId = nil
+    if gameplay_traffic then
+      pcall(function() gameplay_traffic.removeTraffic(deliveredId) end)
+    end
+    local v = getObjectByID(deliveredId)
+    if v then
+      pcall(function() core_vehicleBridge.executeAction(v, 'setFreeze', true) end)
+      pcall(function() v:delete() end)
+    end
+    if instance.vehicleId == deliveredId then
+      instance.vehicleId = nil
+    end
+  end
 end
 
 -- Get the current repo job instance
@@ -850,5 +924,6 @@ end
 
 -- Export the class
 M.VehicleRepoJob = VehicleRepoJob
+M.onVehicleSwitched = onVehicleSwitched
 
 return M
