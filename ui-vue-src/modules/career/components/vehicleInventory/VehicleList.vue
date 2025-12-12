@@ -294,17 +294,27 @@ function select(vehicle, evt) {
   })
 }
 
-const isFunctionAvailable = (vehicle, buttonData) => !(
-  vehicle.timeToAccess ||
-  vehicle.missingFile ||
-  (buttonData.requiredVehicleNotInGarage && vehicle.inGarage) ||
-  (buttonData.requiredOtherVehicleInGarage && !vehicle.otherVehicleInGarage) ||
-  (buttonData.ownedRequired && !vehicle.owned) ||
-  (buttonData.notForSaleRequired && vehicle.listedForSale) ||
-  (buttonData.requireAtCurrentGarage && !vehicle.atCurrentGarage) ||
-  (buttonData.requireAtDifferentGarage && vehicle.atCurrentGarage) ||
-  (!vehicle.atCurrentGarage && !currentGarageHasSpace.value)
-)
+const isFunctionAvailable = (vehicle, buttonData) => {
+  const isDeliverAction = buttonData && (buttonData.buttonText === "Deliver" || buttonData.buttonText === "Deliver and replace")
+  const deliverAllowed = !isDeliverAction
+    ? true
+    : (vehicle && vehicle.deliverPermission && typeof vehicle.deliverPermission.allow === "boolean")
+      ? vehicle.deliverPermission.allow
+      : (!vehicle.atCurrentGarage && currentGarageHasSpace.value)
+
+  return !(
+    vehicle.timeToAccess ||
+    vehicle.missingFile ||
+    (!deliverAllowed) ||
+    (!isDeliverAction && buttonData.requiredVehicleNotInGarage && vehicle.inGarage) ||
+    (buttonData.requiredOtherVehicleInGarage && !vehicle.otherVehicleInGarage) ||
+    (buttonData.ownedRequired && !vehicle.owned) ||
+    (buttonData.notForSaleRequired && vehicle.listedForSale) ||
+    (buttonData.requireAtCurrentGarage && !vehicle.atCurrentGarage) ||
+    (buttonData.requireAtDifferentGarage && vehicle.atCurrentGarage) ||
+    (!vehicle.atCurrentGarage && !currentGarageHasSpace.value)
+  )
+}
 
 const lookAtVehicleListing = () => {
   lua.career_modules_marketplace.openMenu(vehicleInventoryStore.vehicleInventoryData.originComputerId)
