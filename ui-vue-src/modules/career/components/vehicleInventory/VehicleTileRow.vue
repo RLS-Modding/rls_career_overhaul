@@ -10,7 +10,9 @@
             {{ data.certificationData && data.certificationData.vehicleClass ? data.certificationData.vehicleClass.performanceIndex.toFixed(0) : 'N/A' }}
           </div>
         </div>
-        <span class="lock-reason" v-if="locked">{{ locked.reason }}</span>
+        <span class="lock-reason" v-if="locked">
+          {{ locked.reason }}<template v-if="locked.eta">&nbsp;</template>
+        </span>
         <span class="lock-time" v-if="locked && locked.eta">{{ locked.eta }}</span>
       </AspectRatio>
       <span class="valueReduced" v-if="!(data.returnLoanerPermission && data.returnLoanerPermission.allow) && data.partConditionAvg < 1">Value reduced!</span>
