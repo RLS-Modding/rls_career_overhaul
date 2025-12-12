@@ -504,7 +504,7 @@ local function getFilterSets(cardsById)
     filter.lockedInfo = nil
     local deliveryLevel = career_branches.getBranchLevel("logistics-delivery")
     if filter.value == "trailer" then
-      if deliveryLevel < 3 then
+      if deliveryLevel < 1 then
         filter.lockedInfo = {
           type = "minLevel",
           icon = "boxPickUp03",
@@ -515,7 +515,7 @@ local function getFilterSets(cardsById)
       end
     end
     if filter.value == "material" then
-      if deliveryLevel < 5 then
+      if deliveryLevel < 1 then
         filter.lockedInfo = {
           type = "minLevel",
           icon = "boxPickUp03",
