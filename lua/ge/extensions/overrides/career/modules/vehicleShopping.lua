@@ -44,6 +44,7 @@ local pendingSoldShopIds = {}
 local soldVehicles = {}
 local uiOpen = false
 local refreshAccumulator = 0
+local nextShopUpdateTime = 0
 
 -- Vehicle cache system
 local vehicleCache = {
@@ -312,6 +313,7 @@ local function setShoppingUiOpen(isOpen)
   refreshAccumulator = 0
   if uiOpen then
     M.updateVehicleList(false)
+    nextShopUpdateTime = 0
   end
 end
 
@@ -344,10 +346,8 @@ local function onUpdate(dt)
   if not uiOpen then
     return
   end
-  refreshAccumulator = refreshAccumulator + (dt or 0)
-  local currentRefreshInterval = uiOpen and (refreshInterval * 0.5) or refreshInterval
-  if refreshAccumulator >= currentRefreshInterval then
-    refreshAccumulator = 0
+  local now = os.time()
+  if (nextShopUpdateTime == 0) or (now >= nextShopUpdateTime) then
     M.updateVehicleList(false)
   end
 
@@ -594,7 +594,6 @@ local function cacheDealers()
   local startTime = os.clock()
   vehicleCache.cacheValid = false
   vehicleCache.dealershipCache = {}
-  partsValueCache = {}
   local totalPartsCalculated = 0
 
   local regularEligibleVehicles = util_configListGenerator.getEligibleVehicles() or {}
@@ -754,19 +753,22 @@ end
 
 -- Vehicle list management functions
 local function updateVehicleList(fromScratch)
-  vehicleShopDirtyDate = os.date("!%Y-%m-%dT%H:%M:%SZ")
+  fromScratch = not not fromScratch
   local sellers = {}
   local currentMap = getCurrentLevelIdentifier()
   local onlyStarterVehicles = not career_career.hasBoughtStarterVehicle()
+  local changed = false
 
   if fromScratch then
     vehiclesInShop = {}
     sellersInfos = {}
     vehicleWatchlist = {}
+    changed = true
   end
 
   -- If there are already vehicles in the shop, don't generate starter vehicles
   if onlyStarterVehicles and not tableIsEmpty(vehiclesInShop) then
+    nextShopUpdateTime = os.time() + 3600
     return
   end
 
@@ -774,6 +776,8 @@ local function updateVehicleList(fromScratch)
   for i, vehicleInfo in ipairs(vehiclesInShop) do
     if vehicleInfo.mapId == currentMap then
       table.insert(filteredVehiclesInShop, vehicleInfo)
+    else
+      changed = true
     end
   end
   vehiclesInShop = filteredVehiclesInShop
@@ -782,39 +786,85 @@ local function updateVehicleList(fromScratch)
   for sellerId, sellerInfo in pairs(sellersInfos) do
     if sellerInfo.mapId == currentMap then
       filteredSellersInfos[sellerId] = sellerInfo
+    else
+      changed = true
     end
   end
   sellersInfos = filteredSellersInfos
 
   if not vehicleCache.cacheValid then
     cacheDealers()
+    changed = true
   end
 
   local facilitiesData = freeroam_facilities.getFacilities(getCurrentLevelIdentifier())
   if not facilitiesData then
     log("W", "Career", "No facilities data available for current map; skipping vehicle list update")
+    nextShopUpdateTime = os.time() + 60
     return
   end
-  local facilities = deepcopy(facilitiesData)
+  local facilities = facilitiesData
 
   if facilities.dealerships then
     for _, dealership in ipairs(facilities.dealerships) do
       if onlyStarterVehicles then
         if dealership.containsStarterVehicles then
-          dealership.filter = {whiteList = {careerStarterVehicle = {true}}}
-          dealership.subFilters = nil
-          table.insert(sellers, dealership)
+          table.insert(sellers, {
+            id = dealership.id,
+            name = dealership.name,
+            description = dealership.description,
+            preview = dealership.preview,
+            hiddenFromDealerList = dealership.hiddenFromDealerList,
+            associatedOrganization = dealership.associatedOrganization,
+            vehicleGenerationMultiplier = dealership.vehicleGenerationMultiplier,
+            stock = dealership.stock,
+            range = dealership.range,
+            fees = dealership.fees,
+            salesTax = dealership.salesTax,
+            priceRoundingType = dealership.priceRoundingType,
+            filter = {whiteList = {careerStarterVehicle = {true}}},
+            subFilters = nil
+          })
         end
       else
-        dealership.filter = dealership.filter or {}
-        table.insert(sellers, dealership)
+        table.insert(sellers, {
+          id = dealership.id,
+          name = dealership.name,
+          description = dealership.description,
+          preview = dealership.preview,
+          hiddenFromDealerList = dealership.hiddenFromDealerList,
+          associatedOrganization = dealership.associatedOrganization,
+          vehicleGenerationMultiplier = dealership.vehicleGenerationMultiplier,
+          stock = dealership.stock,
+          range = dealership.range,
+          fees = dealership.fees,
+          salesTax = dealership.salesTax,
+          priceRoundingType = dealership.priceRoundingType,
+          filter = dealership.filter or {},
+          subFilters = dealership.subFilters
+        })
       end
     end
   end
 
   if not onlyStarterVehicles and facilities.privateSellers then
     for _, dealership in ipairs(facilities.privateSellers) do
-      table.insert(sellers, dealership)
+      table.insert(sellers, {
+        id = dealership.id,
+        name = dealership.name,
+        description = dealership.description,
+        preview = dealership.preview,
+        hiddenFromDealerList = dealership.hiddenFromDealerList,
+        associatedOrganization = dealership.associatedOrganization,
+        vehicleGenerationMultiplier = dealership.vehicleGenerationMultiplier,
+        stock = dealership.stock,
+        range = dealership.range,
+        fees = dealership.fees,
+        salesTax = dealership.salesTax,
+        priceRoundingType = dealership.priceRoundingType,
+        filter = dealership.filter or {},
+        subFilters = dealership.subFilters
+      })
     end
   end
   table.sort(sellers, function(a, b)
@@ -842,15 +892,27 @@ local function updateVehicleList(fromScratch)
         vehicleInfo.soldViewCounter = vehicleInfo.soldViewCounter + 1
         vehicleInfo.markedSold = true
         justExpiredShopIds[vehicleInfo.shopId] = true
+        changed = true
         if currentTime > vehicleWatchlist[vehicleInfo.shopId] then
           vehicleWatchlist[vehicleInfo.shopId] = nil
           table.remove(vehiclesInShop, i)
+          changed = true
         end
       else
         table.remove(vehiclesInShop, i)
+        changed = true
       end
     end
   end
+
+  local unsoldCountBySellerId = {}
+  for _, vehicleInfo in ipairs(vehiclesInShop) do
+    if vehicleInfo.sellerId and not vehicleInfo.soldViewCounter then
+      unsoldCountBySellerId[vehicleInfo.sellerId] = (unsoldCountBySellerId[vehicleInfo.sellerId] or 0) + 1
+    end
+  end
+
+  local sellerMeta = {}
 
   for _, seller in ipairs(sellers) do
     if not sellersInfos[seller.id] then
@@ -858,18 +920,14 @@ local function updateVehicleList(fromScratch)
         lastGenerationTime = 0,
         mapId = currentMap
       }
+      changed = true
     end
     if fromScratch then
       sellersInfos[seller.id].lastGenerationTime = 0
     end
 
     local randomVehicleInfos = {}
-    local currentVehicleCount = 0
-    for _, vehicleInfo in ipairs(vehiclesInShop) do
-      if vehicleInfo.sellerId == seller.id and not vehicleInfo.soldViewCounter then
-        currentVehicleCount = currentVehicleCount + 1
-      end
-    end
+    local currentVehicleCount = unsoldCountBySellerId[seller.id] or 0
 
     local maxStock = seller.stock or 10
     if seller.associatedOrganization then
@@ -882,6 +940,7 @@ local function updateVehicleList(fromScratch)
     local availableSlots = math.max(0, maxStock - currentVehicleCount)
 
     local numberOfVehiclesToGenerate = 0
+    local adjustedTimeBetweenOffers = dealershipTimeBetweenOffers / (seller.vehicleGenerationMultiplier or 1)
 
     if onlyStarterVehicles then
       -- Generate the starter vehicles
@@ -889,7 +948,6 @@ local function updateVehicleList(fromScratch)
       randomVehicleInfos = util_configListGenerator.getRandomVehicleInfos(seller, 3, eligibleVehiclesStarter, "adjustedPopulation")
     else
       -- vehicleGenerationMultiplier lowers the time between offers
-      local adjustedTimeBetweenOffers = dealershipTimeBetweenOffers / (seller.vehicleGenerationMultiplier or 1)
       local maxVehicles = math.floor(vehicleOfferTimeToLive / adjustedTimeBetweenOffers)
       numberOfVehiclesToGenerate = math.min(math.floor((currentTime - sellersInfos[seller.id].lastGenerationTime) / adjustedTimeBetweenOffers), maxVehicles)
 
@@ -900,7 +958,6 @@ local function updateVehicleList(fromScratch)
       end
 
       -- Generate the vehicles without duplicating vehicles that are already in the dealership
-      local eligibleVehiclesWithoutDealershipVehicles = getEligibleVehiclesWithoutDealershipVehicles(vehicleCache.regularVehicles, seller)
       local newRandomVehicleInfos = getRandomVehicleFromCache(seller.id, numberOfVehiclesToGenerate)
       arrayConcat(randomVehicleInfos, newRandomVehicleInfos)
 
@@ -908,10 +965,8 @@ local function updateVehicleList(fromScratch)
       local numberOfMissingVehicles = numberOfVehiclesToGenerate - tableSize(newRandomVehicleInfos)
       if numberOfMissingVehicles > 0 then
         log("I", "Career", "Generating " .. numberOfMissingVehicles .. " more vehicles without duplicate check for " .. seller.id)
-        for i = 1, numberOfMissingVehicles do
-          local newVehicleInfos = getRandomVehicleFromCache(seller.id, 1)
-          arrayConcat(randomVehicleInfos, newVehicleInfos)
-        end
+        local newVehicleInfos = getRandomVehicleFromCache(seller.id, numberOfMissingVehicles)
+        arrayConcat(randomVehicleInfos, newVehicleInfos)
       end
     end
 
@@ -1081,12 +1136,55 @@ local function updateVehicleList(fromScratch)
       randomVehicleInfo.mapId = currentMap
 
       table.insert(vehiclesInShop, randomVehicleInfo)
+      if randomVehicleInfo.sellerId and not randomVehicleInfo.soldViewCounter then
+        unsoldCountBySellerId[randomVehicleInfo.sellerId] = (unsoldCountBySellerId[randomVehicleInfo.sellerId] or 0) + 1
+      end
+      changed = true
     end
     if not tableIsEmpty(randomVehicleInfos) then
       sellersInfos[seller.id].lastGenerationTime = currentTime
+      changed = true
     end
+
+    sellerMeta[seller.id] = {
+      maxStock = maxStock,
+      adjustedTimeBetweenOffers = adjustedTimeBetweenOffers
+    }
   end
 
+  local minNext = math.huge
+  for _, veh in ipairs(vehiclesInShop) do
+    if veh.generationTime and veh.offerTTL then
+      local expiryTime = veh.generationTime + veh.offerTTL
+      if expiryTime > currentTime and expiryTime < minNext then
+        minNext = expiryTime
+      end
+    end
+  end
+  for _, seller in ipairs(sellers) do
+    local meta = sellerMeta[seller.id]
+    local maxStock = meta and meta.maxStock or (seller.stock or 10)
+    local currentCount = unsoldCountBySellerId[seller.id] or 0
+    local availableSlotsAfter = math.max(0, maxStock - currentCount)
+    if availableSlotsAfter > 0 then
+      local lastGen = (sellersInfos[seller.id] and sellersInfos[seller.id].lastGenerationTime) or 0
+      local interval = meta and meta.adjustedTimeBetweenOffers or (dealershipTimeBetweenOffers / (seller.vehicleGenerationMultiplier or 1))
+      local nextGen = (lastGen > 0 and (lastGen + interval)) or currentTime
+      if nextGen < minNext then
+        minNext = nextGen
+      end
+    end
+  end
+  if minNext == math.huge then
+    minNext = currentTime + 60
+  end
+  nextShopUpdateTime = minNext
+
+  if not changed then
+    return
+  end
+
+  vehicleShopDirtyDate = os.date("!%Y-%m-%dT%H:%M:%SZ")
   log("I", "Career", "Vehicles in shop: " .. tableSize(vehiclesInShop))
 
   local newSnap = buildSnapshot()
