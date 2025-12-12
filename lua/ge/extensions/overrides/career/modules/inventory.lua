@@ -994,6 +994,9 @@ local function getVehicleThumbnail(inventoryId)
   local vehicle = vehicles[inventoryId]
   if not vehicle then return end
   local _, savePath = career_saveSystem.getCurrentSaveSlot()
+  if savePath and savePath:sub(1, 1) ~= "/" then
+    savePath = "/" .. savePath
+  end
   local thumbnailPath = savePath .. "/career/vehicles/" .. inventoryId .. ".png"
   if not vehicle.defaultThumbnail and FS:fileExists(thumbnailPath) then
     return thumbnailPath
