@@ -420,11 +420,7 @@ end
 local function formatVehicleOfferForUi(offers)
   local ret = {}
 
-  local hasSpawnWhenCommitingCargoOffer = false
   local isVehicleDeliveryTutorialActive = dTutorial.isVehicleDeliveryTutorialActive()
-  for _, offer in ipairs(offers) do
-    hasSpawnWhenCommitingCargoOffer = hasSpawnWhenCommitingCargoOffer or offer.spawnWhenCommitingCargo
-  end
 
   for _, offer in ipairs(offers) do
     dGenerator.finalizeVehicleOffer(offer)
@@ -492,12 +488,6 @@ local function formatVehicleOfferForUi(offers)
     if not enabled then
       item.enabled = false
       item.disableReason = flagDefinition and flagDefinition.lockedReason
-      goto continue
-    end
-
-    if next(dVehicleTasks.getVehicleTasks()) or hasSpawnWhenCommitingCargoOffer then
-      item.enabled = false
-      item.disableReason = {type="limit", limit=1, label ="You can deliver at most 1 vehicle at a time."}
       goto continue
     end
 
@@ -1466,17 +1456,21 @@ local function commitDeliveryConfiguration()
   end
   dGeneral.requestUpdateContainerWeights()
 
-  local doSpawning = function()
+  local function buildSpawnStepsForCommit()
+    local stepsList = {}
     local vehOffers = dVehOfferManager.getAllOfferUnexpired()
     for _, offer in ipairs(vehOffers) do
       if offer.spawnWhenCommitingCargo and offer.origin.facId == cargoScreenFacId then
-        offer.spawnWhenCommitingCargo = nil
-        dVehOfferManager.spawnOffer(offer.id)
+        local offerSteps = (dVehOfferManager.makeSpawnOfferSteps and dVehOfferManager.makeSpawnOfferSteps(offer.id, false, 0.5)) or {}
+        for _, st in ipairs(offerSteps) do
+          table.insert(stepsList, st)
+        end
       end
     end
-    career_modules_loanerVehicles.spawnAllOffers()
-
+    return stepsList
   end
+
+  local spawnSteps = buildSpawnStepsForCommit()
   dGeneral.updateContainerWeights(
     function(data)
       print(data)
@@ -1484,37 +1478,49 @@ local function commitDeliveryConfiguration()
       for _, delay in pairs(data) do
         maxDelay = math.max(delay, maxDelay)
       end
+      maxDelay = math.max(maxDelay, 0)
+      local sequence = {}
+
+      local hasVehicleOfferSpawns = spawnSteps and #spawnSteps > 0
+      if hasVehicleOfferSpawns then
+        table.insert(sequence, step.makeStepFadeToBlack(0.4))
+      end
+
       if maxDelay > 0 then
         maxDelay = math.max(maxDelay, 1)
-        -- make
-        local sequence = {
-          step.makeStepWait(maxDelay+0.5),
-          step.makeStepReturnTrueFunction(function()
-            for vehId, data in pairs(data) do
-              local veh = scenetree.findObjectById(vehId)
-              core_vehicleBridge.executeAction(veh, 'setFreeze', false)
-            end
-            gameplay_markerInteraction.setForceReevaluateOpenPrompt()
-          return true
-          end
-          ),
-          step.makeStepReturnTrueFunction(function()
-            doSpawning()
-            return true
-          end
-          )
-        }
-        step.startStepSequence(sequence, callback)
-        -- add loading progress bar
-        guihooks.trigger("OpenSimpleDelayPopup",{timer=maxDelay, heading="Loading Cargo..."})
-      else
-        -- no delay, no freeze
-        for vehId, data in pairs(data) do
+        table.insert(sequence, step.makeStepWait(maxDelay + 0.5))
+      end
+
+      table.insert(sequence, step.makeStepReturnTrueFunction(function()
+        for vehId, _ in pairs(data) do
           local veh = scenetree.findObjectById(vehId)
-          core_vehicleBridge.executeAction(veh, 'setFreeze', false)
+          if veh then
+            core_vehicleBridge.executeAction(veh, 'setFreeze', false)
+          end
         end
-        doSpawning()
         gameplay_markerInteraction.setForceReevaluateOpenPrompt()
+        return true
+      end))
+
+      for _, st in ipairs(spawnSteps) do
+        table.insert(sequence, st)
+      end
+
+      table.insert(sequence, step.makeStepReturnTrueFunction(function()
+        gameplay_markerInteraction.setForceReevaluateOpenPrompt()
+        return true
+      end))
+
+      if hasVehicleOfferSpawns then
+        table.insert(sequence, step.makeStepFadeFromBlack(0.4))
+      end
+
+      step.startStepSequence(sequence, function()
+        career_modules_loanerVehicles.spawnAllOffers()
+      end)
+
+      if maxDelay > 0 then
+        guihooks.trigger("OpenSimpleDelayPopup",{timer=maxDelay, heading="Loading Cargo..."})
       end
       log("I","",string.format("%0.2fs delay after adjusting weights for cargo.", maxDelay))
     end

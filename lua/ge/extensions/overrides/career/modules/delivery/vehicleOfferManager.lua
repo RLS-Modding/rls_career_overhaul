@@ -2,10 +2,12 @@
 -- If a copy of the bCDDL was not distributed with this
 -- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
 local M = {}
-M.dependencies = {"util_stepHandler"}
+
+local dependencies = {"util_stepHandler"}
 local dParcelManager, dCargoScreen, dGeneral, dGenerator, dProgress, dVehicleTasks, dTutorial
 local step
-M.onCareerActivated = function()
+
+local function onCareerActivated()
   dParcelManager = career_modules_delivery_parcelManager
   dCargoScreen = career_modules_delivery_cargoScreen
   dGeneral = career_modules_delivery_general
@@ -41,7 +43,6 @@ local function makeTaskLabel(task)
     return "Unknow Task"
   end
 end
-M.makeTaskLabel = makeTaskLabel
 
 local vehicleTags = {
   junkerVeh = {
@@ -116,8 +117,6 @@ local function isVehicleTagUnlocked(tag)
 
   return unlocked, flagDefinition
 end
-
-M.isVehicleTagUnlocked = isVehicleTagUnlocked
 local function getVehicleTagUnlockedSimple()
   local status = {}
   for tag, info in pairs(vehicleTags) do
@@ -125,18 +124,15 @@ local function getVehicleTagUnlockedSimple()
   end
   return status
 end
-M.getVehicleTagUnlockedSimple = getVehicleTagUnlockedSimple
 
 local function getVehicleTagLabelSingular(tag)
   if not vehicleTags[tag] then return "No Category" end
   return vehicleTags[tag].labelSingular
 end
-M.getVehicleTagLabelSingular = getVehicleTagLabelSingular
 local function getVehicleTagLabelPlural(tag)
   if not vehicleTags[tag] then return "No Category" end
   return vehicleTags[tag].labelPlural
 end
-M.getVehicleTagLabelPlural = getVehicleTagLabelPlural
 
 local function getDefaultVehicleModifiersForUI()
   return {
@@ -144,7 +140,6 @@ local function getDefaultVehicleModifiersForUI()
     {type = "damage", icon = "cogsDamaged", active = true, label = "Careful", description = "Large penalty if vehicle is damaged.", important = true}
   }
 end
-M.getDefaultVehicleModifiersForUI = getDefaultVehicleModifiersForUI
 
 
 --[[
@@ -208,7 +203,7 @@ local function addOffer(offer)
 end
 
 local function sameLocationOffer(offer, otherLoc)
-  return M.sameLocation(offer.origin, otherLoc)
+  return sameLocation(offer.origin, otherLoc)
 end
 
 local function sameLocation(a,b)
@@ -231,7 +226,7 @@ local function getAllOfferCustomFilter(filter, ...)
 end
 
 local function getAllOfferForLocation(loc)
-  return M.getAllOfferCustomFilter(M.sameLocationOffer, loc)
+  return getAllOfferCustomFilter(sameLocationOffer, loc)
 end
 
 local function getAllOfferUnexpired()
@@ -274,99 +269,199 @@ local function getOfferById(id)
   return nil
 end
 
-local function spawnOffer(offerId, fadeToBlack, callback)
+local spawnQueue = {}
+local spawnOfferInProgress = false
+
+local function makeSpawnOfferSteps(offerId, fadeToBlack, postDelay)
   local offer = getOfferById(offerId)
-  if not offer then log("E","","Could not find offer with it "..dumps(offerId)) return end
-  log("I","","Spawning offer " .. offerId)
-  offer.spawned = true
+  if not offer or offer.spawned or offer._spawning then return {} end
+
+  offer._spawning = true
+  local startedAt = dGeneral.time()
   if fadeToBlack == nil then fadeToBlack = true end
   local vehId = nil
+
   local options = {
     model = offer.vehicle.model,
     config = offer.vehicle.config,
     autoEnterVehicle = false,
   }
-  local sequence = {
-    step.makeStepSpawnVehicle(options, function(_, id)
-      vehId = id end),
+
+  local steps = {
+    step.makeStepSpawnVehicle(options, function(_, id) vehId = id end),
     step.makeStepReturnTrueFunction(function()
-      -- move vehicle to right spot
+      if not vehId then
+        if (dGeneral.time() - startedAt) > 15 then
+          offer._spawning = nil
+          return true
+        end
+        return false
+      end
       local ps = dGenerator.getParkingSpotByPath(offer.spawnLocation.psPath)
-      ps:moveResetVehicleTo(vehId, nil, false, nil, nil, true)
-      -- setup mileage
+      local ok = pcall(function()
+        ps:moveResetVehicleTo(vehId, nil, false, nil, nil, true)
+      end)
+      if not ok then
+        offer._spawning = nil
+        offer.vehicle.vehId = nil
+        return true
+      end
       local veh = getObjectByID(vehId)
+      if not veh then
+        offer._spawning = nil
+        offer.vehicle.vehId = nil
+        return true
+      end
       local mileage = offer.vehicle.mileage or 0
       offer.vehicle.vehId = vehId
       veh:queueLuaCommand(string.format("partCondition.initConditions(nil, %d, nil, %f)", mileage, career_modules_vehicleShopping.getVisualValueFromMileage(mileage)))
-      -- turn vehicle off
       core_vehicleBridge.executeAction(veh,'setIgnitionLevel', 0)
       gameplay_rawPois.clear()
       return true
     end),
-    step.makeStepReturnTrueFunction(function(step)
-      if not step.sentCommand then
-        step.sentCommand = true
+    step.makeStepReturnTrueFunction(function(stepState)
+      if not vehId then return true end
+      if not stepState.sentCommand then
+        stepState.sentCommand = true
         local veh = getObjectByID(vehId)
-        core_vehicleBridge.requestValue(veh, function(res)
-          step.pingComplete = true
-        end, 'ping')
+        if not veh then return true end
+        core_vehicleBridge.requestValue(veh, function() stepState.pingComplete = true end, 'ping')
       end
-      return step.pingComplete or false
+      return stepState.pingComplete or false
     end),
-    step.makeStepReturnTrueFunction(function(step)
-      if not step.sentCommand then
-        step.sentCommand = true
+    step.makeStepReturnTrueFunction(function(stepState)
+      if not vehId then return true end
+      if not stepState.sentCommand then
+        stepState.sentCommand = true
         local vehData = core_vehicle_manager.getVehicleData(vehId)
+        if not vehData or not vehData.config or not vehData.config.mainPartName then
+          stepState.odometerComplete = true
+          offer.startingOdometer = -1
+          return true
+        end
         local veh = getObjectByID(vehId)
+        if not veh then
+          stepState.odometerComplete = true
+          offer.startingOdometer = -1
+          return true
+        end
         core_vehicleBridge.requestValue(veh, function(res)
-          step.odometerComplete = true
+          stepState.odometerComplete = true
           local mainPartName = "/" .. vehData.config.mainPartName
           local part = res.result[mainPartName]
-          if not part then
-            log("W","","Could not find part "..dumps(mainPartName) .." - starting odometer will be -1")
-            offer.startingOdometer = -1
-          else
-            offer.startingOdometer = part.odometer
-          end
+          offer.startingOdometer = part and part.odometer or -1
         end, 'getPartConditions')
       end
-      return step.odometerComplete or false
+      return stepState.odometerComplete or false
     end),
     step.makeStepReturnTrueFunction(function()
+      if not vehId then
+        if (dGeneral.time() - startedAt) > 15 then
+          offer._spawning = nil
+          return true
+        end
+        return false
+      end
       if gameplay_walk.isWalking() then
         local veh = getObjectByID(vehId)
-        gameplay_walk.setRot(veh:getPosition() - getPlayerVehicle(0):getPosition())
+        if veh then
+          gameplay_walk.setRot(veh:getPosition() - getPlayerVehicle(0):getPosition())
+        end
       end
-
-      --career_modules_vehicleDeletionService.flagForDeletion(vehId)
       dVehicleTasks.addVehicleTask(vehId, offer)
       dGeneral.startDeliveryMode()
+      offer.spawned = true
+      offer._spawning = nil
+      offer.spawnWhenCommitingCargo = nil
       return true
     end),
     step.makeStepReturnTrueFunction(function()
       guihooks.trigger("updateCargoData")
       return true
     end),
-
     step.makeStepReturnTrueFunction(function()
+      if not vehId then return true end
       local veh = getObjectByID(vehId)
+      if not veh then return true end
       local camDir = veh:getPosition() - getPlayerVehicle(0):getPosition()
       if gameplay_walk.isWalking() then
         gameplay_walk.setRot(camDir)
       end
       return true
     end)
-   }
+  }
 
-   if fadeToBlack then
-    table.insert(sequence, 1, step.makeStepFadeToBlack(0.4))
-    table.insert(sequence, 1, step.makeStepWait(0.15))
-    table.insert(sequence, step.makeStepFadeFromBlack(0.4))
-   end
+  if fadeToBlack then
+    table.insert(steps, 1, step.makeStepFadeToBlack(0.4))
+    table.insert(steps, 1, step.makeStepWait(0.15))
+    table.insert(steps, step.makeStepFadeFromBlack(0.4))
+  end
 
-   step.startStepSequence(sequence, callback)
+  if postDelay and postDelay > 0 then
+    table.insert(steps, step.makeStepWait(postDelay))
+  end
+
+  return steps
 end
-M.spawnOffer = spawnOffer
+
+local function spawnOfferInternal(offerId, fadeToBlack, callback, postDelay)
+  local offer = getOfferById(offerId)
+  if not offer then
+    log("E","","Could not find offer with id "..dumps(offerId))
+    if callback then callback() end
+    return
+  end
+  if offer.spawned then
+    if callback then callback() end
+    return
+  end
+  if offer._spawning then
+    if callback then callback() end
+    return
+  end
+
+  log("I","","Spawning offer " .. offerId)
+  local sequence = makeSpawnOfferSteps(offerId, fadeToBlack, postDelay)
+  step.startStepSequence(sequence, callback)
+end
+
+local function tryStartNextSpawn()
+  if spawnOfferInProgress then return end
+  local req = table.remove(spawnQueue, 1)
+  if not req then return end
+
+  spawnOfferInProgress = true
+  spawnOfferInternal(req.offerId, req.fadeToBlack, function(...)
+    if req.callback then req.callback(...) end
+    spawnOfferInProgress = false
+    tryStartNextSpawn()
+  end, req.postDelay)
+end
+
+local function spawnOffer(offerId, fadeToBlack, callback)
+  local offer = getOfferById(offerId)
+  if not offer or offer.spawned or offer._spawning then
+    if callback then callback() end
+    return
+  end
+  for _, queued in ipairs(spawnQueue) do
+    if queued.offerId == offerId then
+      if callback then callback() end
+      return
+    end
+  end
+  local isQueued = spawnOfferInProgress or (#spawnQueue > 0)
+  if isQueued and fadeToBlack == nil then
+    fadeToBlack = false
+  end
+  table.insert(spawnQueue, {
+    offerId = offerId,
+    fadeToBlack = fadeToBlack,
+    callback = callback,
+    postDelay = 0.35
+  })
+  tryStartNextSpawn()
+end
 
 
 --[[
@@ -401,5 +496,15 @@ M.getAllOfferCustomFilter = getAllOfferCustomFilter
 M.getAllOfferUnexpired = getAllOfferUnexpired
 M.getAllOfferForLocation = getAllOfferForLocation
 M.getAllOfferAtFacilityUnexpired = getAllOfferAtFacilityUnexpired
+M.spawnOffer = spawnOffer
+M.makeSpawnOfferSteps = makeSpawnOfferSteps
+M.dependencies = dependencies
+M.onCareerActivated = onCareerActivated
+M.makeTaskLabel = makeTaskLabel
+M.isVehicleTagUnlocked = isVehicleTagUnlocked
+M.getVehicleTagUnlockedSimple = getVehicleTagUnlockedSimple
+M.getVehicleTagLabelSingular = getVehicleTagLabelSingular
+M.getVehicleTagLabelPlural = getVehicleTagLabelPlural
+M.getDefaultVehicleModifiersForUI = getDefaultVehicleModifiersForUI
 
 return M
