@@ -24,6 +24,8 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   const partsTreeCache = ref({})
   const isMenuActive = ref(false)
 
+  let menuCloseInProgress = false
+
   const cartTabs = ref([{ id: 'default', name: 'Build 1', parts: [], tuning: [], cartHash: null }])
   const activeTabId = ref('default')
   const originalVehicleState = ref(null)
@@ -658,14 +660,40 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   }
 
   const onMenuClosed = () => {
+    const closingBusinessId = businessId.value
+    const closingVehicleId = pulledOutVehicle.value?.vehicleId ?? null
+    const closingVehicleView = vehicleView.value
+
+    if (!menuCloseInProgress && closingBusinessId && (closingVehicleView === 'parts' || closingVehicleView === 'tuning') && closingVehicleId) {
+      menuCloseInProgress = true
+      try {
+        const p = lua.career_modules_business_businessComputer.resetVehicleToOriginal(closingBusinessId, closingVehicleId)
+        if (p && typeof p.finally === 'function') {
+          p.finally(() => { menuCloseInProgress = false })
+        } else {
+          menuCloseInProgress = false
+        }
+      } catch (error) {
+        menuCloseInProgress = false
+      }
+
+      try {
+        const p2 = lua.career_modules_business_businessPartCustomization.clearPreviewVehicle(closingBusinessId)
+        if (p2 && typeof p2.catch === 'function') {
+          p2.catch(() => {})
+        }
+      } catch (error) {
+      }
+    }
+
     isMenuActive.value = false
     clearCart()
     partsTreeCache.value = {}
     tuningDataCache.value = {}
 
-    if (businessId.value) {
+    if (closingBusinessId) {
       try {
-        lua.career_modules_business_businessPartCustomization.clearPreviewVehicle(businessId.value)
+        lua.career_modules_business_businessPartCustomization.clearPreviewVehicle(closingBusinessId)
       } catch (error) {
       }
     }

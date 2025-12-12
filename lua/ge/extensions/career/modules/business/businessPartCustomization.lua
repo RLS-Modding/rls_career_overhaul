@@ -1517,6 +1517,60 @@ local function clearPreviewVehicle(businessId)
   end
 end
 
+local rollbackOnUiCloseInProgress = false
+local function onUIPlayStateChanged(enteredPlay)
+  if not enteredPlay then
+    return
+  end
+  if rollbackOnUiCloseInProgress or not currentSession then
+    return
+  end
+  if currentSession.operationInProgress then
+    return
+  end
+
+  rollbackOnUiCloseInProgress = true
+  local bId = currentSession.businessId
+  local vId = currentSession.vehicleId
+  resetVehicleToOriginal(bId, vId)
+  clearPreviewVehicle(bId)
+  rollbackOnUiCloseInProgress = false
+end
+
+local function onUiChangedState(toState, fromState)
+  if rollbackOnUiCloseInProgress or not currentSession then
+    return
+  end
+  if currentSession.operationInProgress then
+    return
+  end
+
+  if fromState == 'business-computer' and toState ~= 'business-computer' then
+    rollbackOnUiCloseInProgress = true
+    local bId = currentSession.businessId
+    local vId = currentSession.vehicleId
+    resetVehicleToOriginal(bId, vId)
+    clearPreviewVehicle(bId)
+    rollbackOnUiCloseInProgress = false
+  end
+end
+
+local function onUIInitialised()
+  if rollbackOnUiCloseInProgress or not currentSession then
+    return
+  end
+  if currentSession.operationInProgress then
+    return
+  end
+
+  rollbackOnUiCloseInProgress = true
+  local bId = currentSession.businessId
+  local vId = currentSession.vehicleId
+  resetVehicleToOriginal(bId, vId)
+  clearPreviewVehicle(bId)
+  rollbackOnUiCloseInProgress = false
+end
+
 M.onPowerWeightReceived = onPowerWeightReceived
 M.initializePreviewVehicle = initializePreviewVehicle
 M.resetVehicleToOriginal = resetVehicleToOriginal
@@ -1531,6 +1585,9 @@ M.clearPreviewVehicle = clearPreviewVehicle
 M.getAllRequiredParts = getAllRequiredParts
 M.addPartToCart = addPartToCart
 M.findRemovedParts = findRemovedParts
+M.onUIPlayStateChanged = onUIPlayStateChanged
+M.onUiChangedState = onUiChangedState
+M.onUIInitialised = onUIInitialised
 
 return M
 

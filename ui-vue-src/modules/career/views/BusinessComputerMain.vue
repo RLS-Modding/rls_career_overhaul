@@ -515,6 +515,15 @@ const start = async () => {
 }
 
 const kill = () => {
+  if (store.vehicleView === 'parts' || store.vehicleView === 'tuning') {
+    try {
+      const p = store.closeVehicleView()
+      if (p && typeof p.catch === 'function') {
+        p.catch(() => {})
+      }
+    } catch (error) {
+    }
+  }
   store.onMenuClosed()
 }
 
