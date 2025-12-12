@@ -353,7 +353,7 @@ export default {
     unloadCargoPopupClosed: () => {},
     moveMaterialFromUi: () => {},
     requestDropOffData: () => {},
-    confirmDropOffData: (data, facId, psPath) => [Any, Any, Boolean],
+    confirmDropOffData: (data, facId, psPath) => [Any, Any, Any],
     dropOffPopupClosed: mode => String,
     clearTransientMoveForCargo: cargoId => Number,
     clearTransientMovesForStorage: materialType => String,
