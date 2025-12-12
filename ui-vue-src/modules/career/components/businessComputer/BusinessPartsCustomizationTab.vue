@@ -370,6 +370,7 @@ const loading = ref(true) // Start with loading = true to show loading message i
 const openSearchSections = ref({})
 const removeMenuVisible = ref(null)
 const installMenuVisible = ref(null)
+const lastAutoOpenedKey = ref(null)
 
 const hasActiveSearch = computed(() => activeSearchQuery.value.length > 0)
 
@@ -494,6 +495,27 @@ const currentCategoryOptions = computed(() => {
     return nameA.localeCompare(nameB)
   })
 })
+
+const shouldAutoOpenParts = () => {
+  const options = currentCategoryOptions.value
+  if (!options || options.length === 0) return false
+
+  const childCount = Array.isArray(displayCategories.value) ? displayCategories.value.length : 0
+  const noCategories = childCount === 0
+  const singleChild = childCount === 1
+
+  if (options.length === 1) return true
+  if (noCategories) return true
+  if (singleChild) return true
+
+  return false
+}
+
+const getAutoOpenKey = () => {
+  const nav = (navigationPath.value || []).join('>')
+  const path = currentCategory.value?.path || ''
+  return `${nav}|${path}`
+}
 
 const displayCategories = computed(() => {
   let categories = []
@@ -624,27 +646,6 @@ const getOwnedVariants = (part) => {
 
 const hasOwnedVariants = (part) => {
   return getOwnedVariants(part).length > 0
-}
-
-const autoOpenSingleCategory = () => {
-  let categories = displayCategories.value
-  const targetPath = [...navigationPath.value]
-
-  while (categories && categories.length === 1) {
-    const node = categories[0]
-    if (targetPath[targetPath.length - 1] !== node.id) {
-      targetPath.push(node.id)
-    }
-    const hasParts = Array.isArray(node.availableParts) && node.availableParts.length > 0
-    if (hasParts) {
-      break
-    }
-    categories = node.children || []
-  }
-
-   if (targetPath.length > navigationPath.value.length) {
-     navigationPath.value = targetPath
-   }
 }
 
 const installedPartLabel = computed(() => {
@@ -903,27 +904,33 @@ watch(() => store.activeTabId, async (newTabId, oldTabId) => {
 })
 
 watch(currentCategoryOptions, (options) => {
-  const noCategories = (displayCategories.value && displayCategories.value.length === 0)
-  if (options && (options.length === 1 || (noCategories && options.length > 0))) {
-    isPartsOpen.value = true
-  } else if (!options || options.length === 0) {
+  if (!options || options.length === 0) {
     isPartsOpen.value = false
+    return
+  }
+
+  const key = getAutoOpenKey()
+  if (shouldAutoOpenParts() && lastAutoOpenedKey.value !== key) {
+    isPartsOpen.value = true
+    lastAutoOpenedKey.value = key
   }
 }, { immediate: true })
 
 watch(navigationPath, () => {
   const options = currentCategoryOptions.value
-  const noCategories = (displayCategories.value && displayCategories.value.length === 0)
-  if (options && (options.length === 1 || (noCategories && options.length > 0))) {
+  if (!options || options.length === 0) {
+    isPartsOpen.value = false
+    return
+  }
+
+  const key = getAutoOpenKey()
+  if (shouldAutoOpenParts() && lastAutoOpenedKey.value !== key) {
     isPartsOpen.value = true
+    lastAutoOpenedKey.value = key
   } else {
     isPartsOpen.value = false
   }
 }, { deep: true })
-
-watch(displayCategories, () => {
-  autoOpenSingleCategory()
-}, { immediate: true, deep: true })
 
 const handleClickOutside = (e) => {
   if (!e.target.closest('.installed-button-wrapper')) {
