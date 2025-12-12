@@ -1,1 +1,1 @@
-{"name":"switchMaps","class":"BeamNGTrigger","__parent":"MapSwitcher","position":[522.122498,1840.41785,76.1327057],"luaFunction":"onBeamNGTrigger","rotationMatrix":[0.99999994,0,0,0,0.99999994,0,0,0,0.999999881],"scale":[5.99332571,9.36917973,9.00493431]}
+{"name":"switchMaps","class":"BeamNGTrigger","__parent":"MapSwitcher","position":[522.122498,1840.41785,76.1327057],"luaFunction":"onBeamNGTrigger","rotationMatrix":[0.99999994,0,0,0,0.99999994,0,0,0,0.999999881],"scale":[5.99332571,9.36917973,9.00493431],"triggerMode":"Overlaps"}

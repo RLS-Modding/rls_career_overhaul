@@ -3285,6 +3285,7 @@
     "reputationLevels": [
       {
         "stock": 5,
+        "hiddenFromDealerList": true,
         "range": [
           0.8,
           0.95,
@@ -3300,6 +3301,7 @@
       },
       {
         "stock": 10,
+        "hiddenFromDealerList": true,
         "range": [
           0.7,
           0.90,
