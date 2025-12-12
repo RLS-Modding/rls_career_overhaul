@@ -43,6 +43,64 @@ local plDriverScore
 local lastDriverScoreKmIncrease
 local totalDrivenDistance
 
+local function getInvVehDataById(invVehId)
+  if invVehId == nil then return end
+  local v = invVehs[invVehId]
+  if v then return v end
+  if type(invVehId) == "string" then
+    local n = tonumber(invVehId)
+    if n ~= nil then return invVehs[n] end
+  end
+  return invVehs[tostring(invVehId)]
+end
+
+local function normalizeInvVehsKeys()
+  if type(invVehs) ~= "table" then
+    invVehs = {}
+    return
+  end
+
+  local needsKeyFix = false
+  for k, _ in pairs(invVehs) do
+    if type(k) == "string" and tonumber(k) ~= nil then
+      needsKeyFix = true
+      break
+    end
+  end
+
+  if not needsKeyFix then
+    for _, v in pairs(invVehs) do
+      if type(v) == "table" and type(v.id) == "string" then
+        local n = tonumber(v.id)
+        if n ~= nil then v.id = n end
+      end
+    end
+    return
+  end
+
+  local newInvVehs = {}
+  for k, v in pairs(invVehs) do
+    local nk = k
+    if type(k) == "string" then
+      local n = tonumber(k)
+      if n ~= nil then nk = n end
+    end
+    if type(v) == "table" then
+      if v.id == nil then v.id = nk end
+      if type(v.id) == "string" then
+        local n = tonumber(v.id)
+        if n ~= nil then v.id = n end
+      end
+    end
+    if newInvVehs[nk] == nil then
+      newInvVehs[nk] = v
+    else
+      newInvVehs[k] = v
+    end
+  end
+  invVehs = newInvVehs
+end
+
 -- to calculate distance driven
 local vec3Zero = vec3(0,0,0)
 local lastPos = vec3(0,0,0)
@@ -303,6 +361,7 @@ local function loadInsurancesData(resetSomeData)
   local isFirstLoadEver = not savedPlInsuranceData.invVehs or saveInfo.version < career_saveSystem.getSaveSystemVersion()
   if isFirstLoadEver then -- first load ever
     invVehs = {}
+    normalizeInvVehsKeys()
     career_modules_insurance_history.initPlHistory()
     plDriverScore = 65
     lastDriverScoreKmIncrease = 0
@@ -339,6 +398,7 @@ local function loadInsurancesData(resetSomeData)
     lastDriverScoreKmIncrease = savedPlInsuranceData.lastDriverScoreKmIncrease or 0
     totalDrivenDistance = savedPlInsuranceData.totalDrivenDistance or 0
     invVehs = savedPlInsuranceData.invVehs
+    normalizeInvVehsKeys()
     career_modules_insurance_history.setPlHistory(savedPlInsuranceData.plHistory)
     plInsurancesData = savedPlInsuranceData.plInsurancesData
   end
@@ -687,11 +747,18 @@ local function getInvVehsUnderInsurance(insuranceId)
   local invVehList = {}
   for invVehId, data in pairs(invVehs) do
     if data.insuranceId == insuranceId then
-      dump(data)
       local vehData = deepcopy(data)
-      local vehInfo = career_modules_inventory.getVehicles()[vehData.id]
-      vehData.thumbnail = career_modules_inventory.getVehicleThumbnail(vehData.id) .. "?" .. (vehInfo and vehInfo.dirtyDate or "")
-      vehData.needsRepair = inventoryVehNeedsRepair(vehData.id)
+      local vehId = vehData.id or invVehId
+      if type(vehId) == "string" then vehId = tonumber(vehId) or vehId end
+
+      local vehInfo = career_modules_inventory.getVehicles()[vehId]
+      local thumb = career_modules_inventory.getVehicleThumbnail(vehId)
+      if thumb then
+        vehData.thumbnail = thumb .. "?" .. (vehInfo and vehInfo.dirtyDate or "")
+      else
+        vehData.thumbnail = ""
+      end
+      vehData.needsRepair = inventoryVehNeedsRepair(vehId)
       table.insert(invVehList, vehData)
     end
   end
@@ -739,9 +806,13 @@ local closeMenuAfterSaving
 local function updateEditInsuranceCoverageOptionsTimer(dtReal)
   local sendDataToUI = false
   for _, invVehInsuranceData in pairs(invVehs) do
-    if invVehInsuranceData.insuranceId > 0 then
-      if invVehInsuranceData.insuranceData.coverageOptionsData.nextInsuranceEditTimer > 0 then
-        invVehInsuranceData.insuranceData.coverageOptionsData.nextInsuranceEditTimer = invVehInsuranceData.insuranceData.coverageOptionsData.nextInsuranceEditTimer - dtReal
+    local insuranceId = invVehInsuranceData and invVehInsuranceData.insuranceId
+    if type(insuranceId) ~= "number" then insuranceId = tonumber(insuranceId) end
+    if (insuranceId or -1) > 0 then
+      local coverageOptionsData = invVehInsuranceData.insuranceData and invVehInsuranceData.insuranceData.coverageOptionsData
+      local timer = coverageOptionsData and coverageOptionsData.nextInsuranceEditTimer
+      if type(timer) == "number" and timer > 0 then
+        coverageOptionsData.nextInsuranceEditTimer = math.max(0, timer - dtReal)
         sendDataToUI = true
       end
     end
@@ -948,28 +1019,45 @@ local function calculateVehiclePremium(invVehId, nonInvVehInfo, potentialCoverag
       return data
     end
 
-    vehValue = nonInvVehInfo.vehValue
-    insuranceClass = availableInsurances[insuranceId].class
+    local insuranceInfo = availableInsurances[insuranceId]
+    if not insuranceInfo then return data end
 
-    for coverageOptionId, coverageOptionData in pairs(potentialCoverageOptions or availableInsurances[insuranceId].coverageOptions) do
-      if not availableCoverageOptions[coverageOptionId].isInsuranceWide then
-        totalDiscount = totalDiscount * coverageOptionData.choices[coverageOptionData.baseValueId].premiumInfluence
+    vehValue = nonInvVehInfo.vehValue
+    insuranceClass = insuranceInfo.class
+    if not vehValue or not insuranceClass or not availableClasses[insuranceClass] then return data end
+
+    for coverageOptionId, coverageOptionData in pairs(potentialCoverageOptions or insuranceInfo.coverageOptions) do
+      if availableCoverageOptions[coverageOptionId] and not availableCoverageOptions[coverageOptionId].isInsuranceWide then
+        if coverageOptionData and coverageOptionData.choices and coverageOptionData.baseValueId and coverageOptionData.choices[coverageOptionData.baseValueId] then
+          totalDiscount = totalDiscount * coverageOptionData.choices[coverageOptionData.baseValueId].premiumInfluence
+        end
       end
     end
   else
-    local invVeh = invVehs[invVehId]
-    insuranceId = invVeh.insuranceId
+    local invVeh = getInvVehDataById(invVehId)
+    if not invVeh then return data end
+
+    insuranceId = invVeh.insuranceId or -1
 
     if insuranceId == -1 then
       return data
     end
 
     vehValue = invVeh.initialValue
-    insuranceClass = invVeh.requiredInsuranceClass.id
+    insuranceClass = invVeh.requiredInsuranceClass and invVeh.requiredInsuranceClass.id
+    if not vehValue or not insuranceClass or not availableClasses[insuranceClass] then return data end
 
     -- Insured vehicle: use current coverage options
-    for coverageOptionId, coverageOptionValueId in pairs(potentialCoverageOptions or invVeh.insuranceData.coverageOptionsData.currentCoverageOptions) do
-      totalDiscount = totalDiscount * availableInsurances[insuranceId].coverageOptions[coverageOptionId].choices[coverageOptionValueId].premiumInfluence
+    local insuranceInfo = availableInsurances[insuranceId]
+    if not insuranceInfo then return data end
+    local currentCoverage = potentialCoverageOptions
+      or (invVeh.insuranceData and invVeh.insuranceData.coverageOptionsData and invVeh.insuranceData.coverageOptionsData.currentCoverageOptions)
+      or {}
+    for coverageOptionId, coverageOptionValueId in pairs(currentCoverage) do
+      local cov = insuranceInfo.coverageOptions and insuranceInfo.coverageOptions[coverageOptionId]
+      if cov and cov.choices and cov.choices[coverageOptionValueId] then
+        totalDiscount = totalDiscount * cov.choices[coverageOptionValueId].premiumInfluence
+      end
     end
   end
 
@@ -1202,7 +1290,11 @@ local function createNoInsuranceCard()
 end
 
 local function getCoverageRefundPrice(invVehId)
-  return calculateVehiclePremium(invVehId).cost * getRenewsIn(invVehs[invVehId].insuranceId) * 1000 / insuranceRenewalDistance
+  local invVeh = getInvVehDataById(invVehId)
+  if not invVeh then return 0 end
+  local insuranceId = invVeh.insuranceId or -1
+  if insuranceId == -1 then return 0 end
+  return calculateVehiclePremium(invVehId).cost * getRenewsIn(insuranceId) * 1000 / insuranceRenewalDistance
 end
 
 local function getEarlyTerminationPenalty(invVehId)
@@ -1214,12 +1306,16 @@ local function getNetRefundPrice(invVehId)
 end
 -- returns negative if ows money, positive if due money
 local function calculateInsuranceSwitchingCost(invVehId, newInsuranceId)
-  return getNetRefundPrice(invVehId) - calculateAddVehiclePrice(newInsuranceId, invVehs[invVehId].initialValue)
+  local invVeh = getInvVehDataById(invVehId)
+  if not invVeh then return 0 end
+  return getNetRefundPrice(invVehId) - calculateAddVehiclePrice(newInsuranceId, invVeh.initialValue)
 end
 
 local function buildLeavingInsuranceInfo(invVehId)
-  local currentInsuranceId = invVehs[invVehId].insuranceId
-  local vehicleValue = invVehs[invVehId].initialValue
+  local invVeh = getInvVehDataById(invVehId)
+  if not invVeh then return {} end
+  local currentInsuranceId = invVeh.insuranceId
+  local vehicleValue = invVeh.initialValue
 
   local data = {
     currentInsuranceName = availableInsurances[currentInsuranceId] and availableInsurances[currentInsuranceId].name or "No Insurance",
