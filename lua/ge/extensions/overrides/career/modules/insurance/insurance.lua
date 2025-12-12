@@ -175,9 +175,11 @@ local function getPlCoverageOptionValue(invVehId, coverageOptionName)
   if not invVehs[invVehId] then return end
 
   if invVehs[invVehId].insuranceId > 0 then -- if insured
+    local plInsuranceData = plInsurancesData and plInsurancesData[invVehs[invVehId].insuranceId]
+    if not plInsuranceData then return end
     local valueId = nil
     if availableCoverageOptions[coverageOptionName].isInsuranceWide then
-      valueId = plInsurancesData[invVehs[invVehId].insuranceId].coverageOptionsData.currentCoverageOptions[coverageOptionName]
+      valueId = plInsuranceData.coverageOptionsData.currentCoverageOptions[coverageOptionName]
     else
       valueId = invVehs[invVehId].insuranceData.coverageOptionsData.currentCoverageOptions[coverageOptionName]
     end
@@ -355,10 +357,77 @@ local function loadInsurancesData(resetSomeData)
     classInfo.description = translateLanguage(classInfo.description, classInfo.description, true)
   end
 
+  local function ensurePlInsurancesDataSchema()
+    if type(plInsurancesData) ~= "table" then
+      plInsurancesData = {}
+    end
+
+    for _, insuranceInfo in pairs(availableInsurances) do
+      local insuranceId = insuranceInfo.id
+      local plData = plInsurancesData[insuranceId]
+      local createdNew = false
+
+      if type(plData) ~= "table" then
+        plData = {}
+        plInsurancesData[insuranceId] = plData
+        createdNew = true
+      end
+
+      plData.metersDriven = plData.metersDriven or 0
+      plData.accidentForgiveness = plData.accidentForgiveness or 0
+      plData.roadsideAssistance = plData.roadsideAssistance or 0
+      plData.score = plData.score or 1
+      plData.loyalty = plData.loyalty or 0
+      plData.insuranceId = plData.insuranceId or insuranceId
+      plData.lastRenewedAt = plData.lastRenewedAt or 0
+      plData.nextInsuranceEditTimer = plData.nextInsuranceEditTimer or 0
+
+      if type(plData.gesturesData) ~= "table" then
+        plData.gesturesData = {}
+      end
+      if type(plData.coverageOptionsData) ~= "table" then
+        plData.coverageOptionsData = {}
+      end
+      if type(plData.coverageOptionsData.currentCoverageOptions) ~= "table" then
+        plData.coverageOptionsData.currentCoverageOptions = {}
+      end
+
+      if type(insuranceInfo.gestures) == "table" then
+        for gestureName, _ in pairs(insuranceInfo.gestures) do
+          if type(plData.gesturesData[gestureName]) ~= "table" then
+            plData.gesturesData[gestureName] = {lastHappenedAt = 0}
+          elseif plData.gesturesData[gestureName].lastHappenedAt == nil then
+            plData.gesturesData[gestureName].lastHappenedAt = 0
+          end
+        end
+      end
+
+      if type(insuranceInfo.coverageOptions) == "table" then
+        for coverageOptionName, coverageOptionInfo in pairs(insuranceInfo.coverageOptions) do
+          local optionDef = availableCoverageOptions and availableCoverageOptions[coverageOptionName]
+          if optionDef and optionDef.isInsuranceWide then
+            if plData.coverageOptionsData.currentCoverageOptions[coverageOptionName] == nil then
+              plData.coverageOptionsData.currentCoverageOptions[coverageOptionName] = coverageOptionInfo.baseValueId
+            end
+          end
+        end
+      end
+
+      if createdNew then
+        M.topUpRoadsideAssistance(insuranceId)
+      end
+    end
+  end
+
   -- load player data
   local savedPlInsuranceData = (savePath and jsonReadFile(savePath .. "/career/"..plInsuranceDataFileName..".json")) or {}
   local saveInfo = savePath and jsonReadFile(savePath .. "/info.json")
-  local isFirstLoadEver = not savedPlInsuranceData.invVehs or saveInfo.version < career_saveSystem.getSaveSystemVersion()
+  local saveSystemVersion = career_saveSystem.getSaveSystemVersion()
+  local saveVersion = (saveInfo and saveInfo.version) or 0
+  local isFirstLoadEver = type(savedPlInsuranceData.invVehs) ~= "table"
+    or type(savedPlInsuranceData.plInsurancesData) ~= "table"
+    or not saveInfo
+    or saveVersion < saveSystemVersion
   if isFirstLoadEver then -- first load ever
     invVehs = {}
     normalizeInvVehsKeys()
@@ -400,8 +469,10 @@ local function loadInsurancesData(resetSomeData)
     invVehs = savedPlInsuranceData.invVehs
     normalizeInvVehsKeys()
     career_modules_insurance_history.setPlHistory(savedPlInsuranceData.plHistory)
-    plInsurancesData = savedPlInsuranceData.plInsurancesData
+    plInsurancesData = savedPlInsuranceData.plInsurancesData or {}
   end
+
+  ensurePlInsurancesDataSchema()
 end
 
 local function inventoryVehNeedsRepair(vehInvId)
@@ -1115,7 +1186,8 @@ local function calculateInsurancePremium(insuranceId, potentialCoverageOptions, 
   details.groupDiscountSavings = details.items.vehsCoverage.priceWithoutGroupDiscount - details.items.vehsCoverage.price
 
   if hasVehicles then
-    for coverageOptionName, coverageOptionValueId in pairs(potentialCoverageOptions or plInsurancesData[insuranceId].coverageOptionsData.currentCoverageOptions) do
+    local plCoverage = (((plInsurancesData or {})[insuranceId] or {}).coverageOptionsData or {}).currentCoverageOptions or {}
+    for coverageOptionName, coverageOptionValueId in pairs(potentialCoverageOptions or plCoverage) do
       local coverageOption = availableInsurances[insuranceId].coverageOptions[coverageOptionName]
       if availableCoverageOptions[coverageOptionName].isInsuranceWide then --only add insurance wide coverage options
         details.items[coverageOptionName] = {
@@ -1174,6 +1246,7 @@ local function getInsuranceSanitizedData(insuranceId)
   local reduceDeductiblePerk = M.getPerkValueByInsuranceId(insuranceInfo.id, "reduceDeductible")
   local carsInsured = getInvVehsUnderInsurance(insuranceInfo.id)
   local currentTierData = getInsuranceGroupDiscountTierData(insuranceInfo.id)
+  local plCoverageOptions = (((plInsurancesData or {})[insuranceInfo.id] or {}).coverageOptionsData or {}).currentCoverageOptions or {}
 
   for _, invVehData in pairs(carsInsured) do
     invVehData.insuranceData.currentPremiumPrice = calculateVehiclePremium(invVehData.id).cost
@@ -1196,7 +1269,7 @@ local function getInsuranceSanitizedData(insuranceId)
     renewsEvery = insuranceRenewalDistance / 1000,
     proRatedPercentage = getRenewsIn(insuranceInfo.id) * 1000 / insuranceRenewalDistance * 100,
     currentPremiumDetails = calculateInsurancePremium(insuranceInfo.id),
-    coverageOptionsData = sanitizeCoverageOptions(insuranceInfo.id, plInsurancesData[insuranceInfo.id].coverageOptionsData.currentCoverageOptions),
+    coverageOptionsData = sanitizeCoverageOptions(insuranceInfo.id, plCoverageOptions),
     baseDeductibledData = {
       price = insuranceInfo.coverageOptions.deductible.choices[2].value,
       perkData = nil,
@@ -1624,11 +1697,15 @@ local function onVehicleAddedToInventory(data)
 end
 
 local function changeInvVehInsuranceCoverageOptions(invVehId, changedCoverageOptions)
+  if not invVehs[invVehId] then return end
+  if not plInsurancesData[invVehs[invVehId].insuranceId] then return end
   for coverageOptionName, coverageOptionValue in pairs(changedCoverageOptions) do
     local coverageOptionValueIndex = tableFindKey(availableInsurances[invVehs[invVehId].insuranceId].coverageOptions[coverageOptionName].changeability.changeParams.choices, coverageOptionValue)
 
-    if plInsurancesData[invVehs[invVehId].insuranceId].coverageOptions[coverageOptionName] ~= nil then
-      plInsurancesData[invVehs[invVehId].insuranceId].coverageOptions[coverageOptionName] = coverageOptionValueIndex
+    if availableCoverageOptions[coverageOptionName] and availableCoverageOptions[coverageOptionName].isInsuranceWide then
+      plInsurancesData[invVehs[invVehId].insuranceId].coverageOptionsData.currentCoverageOptions[coverageOptionName] = coverageOptionValueIndex
+    else
+      invVehs[invVehId].insuranceData.coverageOptionsData.currentCoverageOptions[coverageOptionName] = coverageOptionValueIndex
     end
   end
 
