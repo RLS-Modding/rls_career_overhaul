@@ -1078,7 +1078,7 @@ local function getVehicleUiData(inventoryId, inventoryIdsInGarage)
   local currentGarageSpace = currentGarageId and career_modules_garageManager.isGarageSpace(currentGarageId) or {false, 0}
   
   if not inventoryIdsInGarage then
-    inventoryIdsInGarage = getVehiclesInGarage(getClosestGarage())
+    inventoryIdsInGarage = getVehiclesInGarage(getClosestGarage(), true)
   end
 
   vehicleData.value = career_modules_valueCalculator.getInventoryVehicleValue(inventoryId)
@@ -1101,7 +1101,6 @@ local function getVehicleUiData(inventoryId, inventoryIdsInGarage)
   vehicleData.mileage = M.setMileage(inventoryId)
   vehicleData.location = vehicleData.location or currentGarageId
   vehicleData.niceLocation = vehicleData.niceLocation or (vehicleData.location and career_modules_garageManager.garageIdToName(vehicleData.location)) or "Storage"
-  vehicleData.atCurrentGarage = vehicleData.location == currentGarageId
 
   if inventoryIdToVehId[inventoryId] then
     local vehObj = getObjectByID(inventoryIdToVehId[inventoryId])
@@ -1113,6 +1112,8 @@ local function getVehicleUiData(inventoryId, inventoryIdsInGarage)
   else
     vehicleData.inStorage = true
   end
+
+  vehicleData.atCurrentGarage = (vehicleData.location == currentGarageId) or vehicleData.inGarage
 
   for otherInventoryId, _ in pairs(inventoryIdsInGarage) do
     if otherInventoryId ~= inventoryId then
@@ -1140,8 +1141,8 @@ local function getVehicleUiData(inventoryId, inventoryIdsInGarage)
   vehicleData.sellPermission = career_modules_permissions.getStatusForTag("vehicleSelling", {inventoryId = inventoryId})
   vehicleData.favoritePermission = career_modules_permissions.getStatusForTag("vehicleFavorite", {inventoryId = inventoryId})
   vehicleData.storePermission = career_modules_permissions.getStatusForTag("vehicleStoring", {inventoryId = inventoryId})
-  vehicleData.storePermission.allow = vehicleData.storePermission.allow and (career_modules_garageManager.isGarageSpace(garage.id)[1] or M.getVehicleLocation(inventoryId) == garage.id)
-  vehicleData.deliverPermission = { allow = (currentGarageSpace[1] and vehicleData.location ~= currentGarageId)}
+  vehicleData.storePermission.allow = vehicleData.storePermission.allow and (career_modules_garageManager.isGarageSpace(garage.id)[1] or M.getVehicleLocation(inventoryId) == garage.id or vehicleData.inGarage)
+  vehicleData.deliverPermission = { allow = (currentGarageSpace[1] and vehicleData.location ~= currentGarageId and not vehicleData.inGarage)}
   vehicleData.retrievePermission = { allow = (vehicleData.inStorage and vehicleData.location == garage.id)}
   vehicleData.licensePlateChangePermission = career_modules_permissions.getStatusForTag({"vehicleLicensePlate", "vehicleModification"}, {inventoryId = inventoryId})
   vehicleData.returnLoanerPermission = career_modules_permissions.getStatusForTag("returnLoanedVehicle", {inventoryId = inventoryId})
@@ -1168,7 +1169,7 @@ local function sendDataToUi()
 
   local closestGarage = getClosestGarage()
   local closestGarageId = closestGarage and closestGarage.id
-  local inventoryIdsInGarage = getVehiclesInGarage(closestGarage)
+  local inventoryIdsInGarage = getVehiclesInGarage(closestGarage, true)
 
   for inventoryId, vehicle in pairs(vehicles) do
     data.vehicles[tostring(inventoryId)] = getVehicleUiData(inventoryId, inventoryIdsInGarage)
@@ -1883,6 +1884,36 @@ local function getFRECompletions(raceName, inventoryId)
   return veh.FRECompletions and veh.FRECompletions[raceName] or nil
 end
 
+local function storeVehicleAtClosestGarage(inventoryId)
+  local veh = vehicles[inventoryId]
+  if not veh then return false end
+
+  local garage = getClosestGarage()
+  if not garage or not garage.id then return false end
+
+  local alreadyAssigned = veh.location == garage.id
+  if not alreadyAssigned then
+    local inGarage = getVehiclesInGarage(garage, true)[inventoryId]
+    if not inGarage then
+      ui_message("Vehicle must be in the current garage to store it.", nil, "vehicleInventory")
+      return false
+    end
+
+    local spaceInfo = career_modules_garageManager.isGarageSpace(garage.id)
+    if spaceInfo and spaceInfo[1] == false then
+      ui_message("This garage is full.", nil, "vehicleInventory")
+      return false
+    end
+
+    veh.location = garage.id
+    veh.niceLocation = career_modules_garageManager.garageIdToName(garage.id)
+  end
+
+  removeVehicleObject(inventoryId)
+  sendDataToUi()
+  return true
+end
+
 M.getAllFRETimes = function()
   local invId = career_modules_inventory.getInventoryIdFromVehicleId(be:getPlayerVehicleID(0))
   if not invId then return {} end
@@ -2020,6 +2051,7 @@ M.spawnVehicle = spawnVehicle
 M.getInventoryIdsInClosestGarage = getInventoryIdsInClosestGarage
 M.getClosestGarage = getClosestGarage
 M.isSeatedInsideOwnedVehicle = isSeatedInsideOwnedVehicle
+M.storeVehicleAtClosestGarage = storeVehicleAtClosestGarage
 
 -- Debug
 M.getCurrentVehicle = getCurrentVehicle

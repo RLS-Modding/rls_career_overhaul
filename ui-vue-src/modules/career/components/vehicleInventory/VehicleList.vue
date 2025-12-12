@@ -60,7 +60,7 @@
       <BngButton
         v-if="vehSelected && vehSelected.atCurrentGarage && vehicleInventoryStore.vehicleInventoryData.buttonsActive.storingEnabled && !vehSelected.inStorage"
         :accent="ACCENTS.menu"
-        :disabled="!vehSelected.storePermission.allow"
+        :disabled="isStoring || !vehSelected.storePermission.allow"
         v-bng-on-ui-nav:ok.focusRequired.asMouse
         @click="storeVehicle()">
         Put in storage
@@ -133,6 +133,7 @@ const licensePlateTextValid = ref(true)
 const vehicleNameValid = ref(true)
 const garageCapacities = ref({})
 const collapsedGroups = ref({})
+const isStoring = ref(false)
 
 const vehicleInventoryStore = useVehicleInventoryStore()
 const selectedVehId = ref()
@@ -384,11 +385,16 @@ const setFavoriteVehicle = () => {
   lua.career_modules_inventory.sendDataToUi()
 }
 
-const storeVehicle = () => {
+const storeVehicle = async () => {
   const vehicle = vehSelected.value
+  if (!vehicle || isStoring.value) return
+  isStoring.value = true
   popHide()
-  lua.career_modules_inventory.removeVehicleObject(vehicle.id)
-  lua.career_modules_inventory.sendDataToUi()
+  try {
+    await lua.career_modules_inventory.storeVehicleAtClosestGarage(vehicle.id)
+  } finally {
+    isStoring.value = false
+  }
 }
 
 const buyInsurance = (insuranceId) => {

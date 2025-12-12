@@ -242,6 +242,7 @@ export default {
     removeVehicle: id => Number,
     deliverVehicle: (id, money) => [Number, Number],
     storeVehicle: id => Number,
+    storeVehicleAtClosestGarage: id => Number,
   },
 
   career_modules_vehiclePerformance: {
