@@ -11,9 +11,22 @@ local logTag = ""
 local freeroamEvents = require("gameplay/events/freeroamEvents")
 local freeroamUtils = require("gameplay/events/freeroam/utils")
 local hasActivityStarted = false
+local dqTimer = 0
+local clearDelayTimer = 0
+local shouldClearAfterFinish = false
+
+local function clear()
+  dragData = nil
+  hasActivityStarted = false
+  dqTimer = 0
+  clearDelayTimer = 0
+  shouldClearAfterFinish = false
+end
+
 local function onExtensionLoaded()
   dGeneral = gameplay_drag_general
   dUtils = gameplay_drag_utils
+  clear()
 end
 
 local function resetDragRace()
@@ -21,7 +34,10 @@ local function resetDragRace()
 
   gameplay_drag_general.resetDragRace()
 
-  dGeneral.unloadRace()
+  hasActivityStarted = false
+  dqTimer = 0
+  -- Refresh dragData reference after reset
+  dragData = dGeneral.getData()
 end
 
 local function startActivity()
@@ -32,38 +48,66 @@ local function startActivity()
     return
   end
 
-  -- Extensions (times, display, utils) are already loaded by general.lua
-  -- via ensureAllExtensionsLoaded() before startActivity() is called
-
   dragData.isStarted = true
   hasActivityStarted = dragData.isStarted
 
   local dials = {}
   if dragData.racers then
-    for _,racer in pairs(dragData.racers) do
+    for _, racer in pairs(dragData.racers) do
       table.insert(dials, {vehId = racer.vehId, dial = 0})
     end
   end
   dUtils.setDialsData(dials)
 end
 
-local dqTimer = 0
 local function onUpdate(dtReal, dtSim, dtRaw)
+  if shouldClearAfterFinish then
+    clearDelayTimer = clearDelayTimer + dtSim
+    if clearDelayTimer >= 1.0 then
+      shouldClearAfterFinish = false
+      clearDelayTimer = 0
+      gameplay_drag_general.clearDragData()
+      return
+    end
+  end
+
   if hasActivityStarted then
     if not dragData then
       log('E', logTag, 'No drag data found!')
       return
-      end
+    end
     if not dragData.racers then
       log('E', logTag, 'There is no racers in the drag data.')
       return
     end
 
+    -- Check if any racer is disqualified first
+    local hasDisqualifiedRacer = false
+    for vehId, racer in pairs(dragData.racers) do
+      if racer.isDesqualified then
+        hasDisqualifiedRacer = true
+        break
+      end
+    end
+
+    -- Reset timer if no racer is disqualified
+    if not hasDisqualifiedRacer then
+      dqTimer = 0
+    end
+
     for vehId, racer in pairs(dragData.racers) do
       if racer.isFinished then
         dragData.isCompleted = true
+
         gameplay_drag_general.resetDragRace()
         hasActivityStarted = false
+        dqTimer = 0
+
+        local context = gameplay_drag_general.getGameplayContext()
+        if context == "freeroam" then
+          shouldClearAfterFinish = true
+          clearDelayTimer = 0
+        end
         return
       end
       dUtils.updateRacer(racer)
@@ -87,36 +131,41 @@ local function onUpdate(dtReal, dtSim, dtRaw)
         dUtils.changeRacerPhase(racer)
       end
 
-      if racer.isDesqualified then
-        dqTimer = dqTimer + dtSim
-        if dqTimer > 3 then
-          dqTimer = 0
-          gameplay_drag_general.resetDragRace()
-          hasActivityStarted = false
-          return
-        end
-      end
-
       if not dUtils.isRacerInsideBoundary(racer) then
         gameplay_drag_general.resetDragRace()
         hasActivityStarted = false
+        dqTimer = 0
+        return
+      end
+    end
+
+    -- Handle disqualification timer after processing all racers
+    if hasDisqualifiedRacer then
+      dqTimer = dqTimer + dtSim
+      if dqTimer > 3 then
+        dqTimer = 0
+        dragData.isCompleted = true
+
+        gameplay_drag_general.resetDragRace()
+        hasActivityStarted = false
+
+        local context = gameplay_drag_general.getGameplayContext()
+        if context == "freeroam" then
+          shouldClearAfterFinish = true
+          clearDelayTimer = 0
+        end
         return
       end
     end
   end
 end
 
-
-
-
---PUBLIC INTERFACE
 M.onExtensionLoaded = onExtensionLoaded
 M.onUpdate = onUpdate
 M.startActivity = startActivity
 M.resetDragRace = resetDragRace
 
-M.jumpDescualifiedDrag = function ()
-
+M.jumpDescualifiedDrag = function()
 end
 
 return M
