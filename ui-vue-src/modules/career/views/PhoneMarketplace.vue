@@ -267,7 +267,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, onBeforeMount, watch } from "vue"
+import { ref, onMounted, computed, onBeforeMount, onUnmounted, watch } from "vue"
 import PhoneWrapper from "./PhoneWrapper.vue"
 import { openConfirmation } from "@/services/popup"
 import { useVehicleInventoryStore } from "../stores/vehicleInventoryStore";
@@ -302,8 +302,13 @@ watch(notifications, (newValue, oldValue) => {
 
 onMounted(() => {
     getNewData()
+    events.on("marketplaceListingsUpdated", handleListings)
     lua.career_modules_marketplace.menuOpened(true)
 });
+
+onUnmounted(() => {
+    events.off("marketplaceListingsUpdated")
+})
 
 onBeforeMount(() => {
     vehicleInventoryStore.requestInitialData()

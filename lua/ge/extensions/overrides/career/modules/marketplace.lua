@@ -12,9 +12,10 @@ local timeBetweenOffersBase = 95
 local offerTTL = 500
 local offerTTLVariance = 0.5
 local valueLossLimit = 0.95
-local maximumExpiredOffers = 10
+local maximumExpiredOffers = 3
 
 local offerMenuOpen = false
+local getListings
 
 local function findVehicleListing(inventoryId)
   for _, listing in ipairs(listedVehicles) do
@@ -22,6 +23,11 @@ local function findVehicleListing(inventoryId)
       return listing
     end
   end
+end
+
+local function scheduleNextOffer(listing, timeNow)
+  local multiplier = listing.offerTimeMultiplier or 1
+  listing.timeOfNextOffer = timeNow + (timeBetweenOffersBase * multiplier) + (math.random(-60, 60) / 100 * timeBetweenOffersBase * multiplier)
 end
 
 local function listVehicles(vehicles)
@@ -39,11 +45,9 @@ local function listVehicles(vehicles)
       if marketRatio >= 0.98 and marketRatio <= 1.1 then
         offerTimeMultiplier = 1
       elseif marketRatio < 0.98 then
-        -- Lerp from 1 to 0.4 as ratio goes from 0.98 to 0.85
         local t = math.max(0, math.min(1, inverseLerp(0.98, 0.85, marketRatio)))
         offerTimeMultiplier = lerp(1, 0.4, t)
       elseif marketRatio > 1.1 then
-        -- Lerp from 1 to 4.0 as ratio goes from 1.1 to 1.5
         local t = math.max(0, math.min(1, inverseLerp(1.1, 1.5, marketRatio)))
         offerTimeMultiplier = lerp(1, 4.0, t)
       end
@@ -60,6 +64,7 @@ local function listVehicles(vehicles)
         niceName = veh.niceName,
         thumbnail = career_modules_inventory.getVehicleThumbnail(inventoryId),
       }
+      scheduleNextOffer(listingData, timestamp)
       table.insert(listedVehicles, listingData)
     end
   end
@@ -246,6 +251,10 @@ local function generateNewOffers()
         end
       end
     end
+  end
+
+  if offerMenuOpen and offerCountDiff ~= 0 then
+    guihooks.trigger("marketplaceListingsUpdated", getListings())
   end
 
   return offerCountDiff
@@ -832,7 +841,7 @@ end
 local myOfferValuePtr = im.IntPtr(0)
 local timeSinceUpdate = 0
 local function onUpdate(dtReal, dtSim, dtRaw)
-  if tableIsEmpty(listedVehicles) or offerMenuOpen then
+  if tableIsEmpty(listedVehicles) then
     return
   end
 
@@ -885,7 +894,7 @@ local function onVehicleRemoved(inventoryId)
   removeVehicleListing(inventoryId)
 end
 
-local function getListings()
+function getListings()
   local listingsCopy = deepcopy(listedVehicles)
   for i, listing in ipairs(listingsCopy) do
     local currentValue = career_modules_valueCalculator.getInventoryVehicleValue(listing.id)
@@ -958,6 +967,12 @@ local function onExtensionLoaded()
   local data = jsonReadFile(savePath .. "/career/marketplace.json")
   if data then
     listedVehicles = data.listedVehicles
+    local timeNow = os.time()
+    for _, listing in ipairs(listedVehicles) do
+      if not listing.timeOfNextOffer then
+        scheduleNextOffer(listing, timeNow)
+      end
+    end
   end
 end
 
