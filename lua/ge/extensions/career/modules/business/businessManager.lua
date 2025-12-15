@@ -226,6 +226,10 @@ local function financeBusiness()
     career_modules_loans.takeLoan("moneyGrabBusiness", remainingAmount, 72, 0, true, businessAccountId)
   end
   
+  if businessCallbacks[businessToPurchase.type] and businessCallbacks[businessToPurchase.type].onPurchase then
+    businessCallbacks[businessToPurchase.type].onPurchase(businessToPurchase.id)
+  end
+  
   if businessCallbacks[businessToPurchase.type] and businessCallbacks[businessToPurchase.type].onMenuOpen then
     businessCallbacks[businessToPurchase.type].onMenuOpen(businessToPurchase.id)
   end
