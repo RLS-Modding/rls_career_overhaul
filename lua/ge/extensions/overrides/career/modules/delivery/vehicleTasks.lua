@@ -512,6 +512,11 @@ M.finishTasks = function(offerIds)
     step.startStepSequence(sequence, function()
       dProgress.confirmDropOffCheckComplete()
     end)
+  else
+    for _, taskData in ipairs(affectedOffers) do
+      taskData.finished = true
+    end
+    dProgress.confirmDropOffCheckComplete()
   end
   return affectedOffers
 end
