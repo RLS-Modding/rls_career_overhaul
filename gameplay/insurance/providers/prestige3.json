@@ -1,0 +1,108 @@
+{
+  "id": 9,
+  "name": "insurance.policies.prestige3.name",
+  "class": "prestige",
+  "slogan": "insurance.policies.prestige3.slogan",
+  "image": "crownline",
+  "color": "#fed33c",
+  "paperworkFees": 70,
+  "resetInsuranceScore": {
+    "price": {
+      "vouchers": {
+        "amount": 2,
+        "canBeNegative": false
+      }
+    },
+    "conditions": {
+      "minScore": 1.15
+    }
+  },
+  "gestures": {
+    "freeRepair": {
+      "distance": 25000
+    }
+  },
+  "perks": {
+    "freeRepaintDuringRepair": {
+      "value": true
+    },
+    "reduceDeductible": {
+      "value": 0.25,
+      "isSignaturePerk": true
+    }
+  },
+  "coverageOptions": {
+    "paintRepair": {
+      "baseValueId": 1,
+      "choices": [
+        {
+          "value": true,
+          "premiumInfluence": 2500
+        },
+        {
+          "value": false,
+          "premiumInfluence": 0
+        }
+      ]
+    },
+    "repairTime": {
+      "baseValueId": 2,
+      "choices": [
+        {
+          "value": 120,
+          "premiumInfluence": 500
+        },
+        {
+          "value": 300,
+          "premiumInfluence": 350
+        },
+        {
+          "value": 600,
+          "premiumInfluence": 150
+        },
+        {
+          "value": 900,
+          "premiumInfluence": 50
+        }
+      ]
+    },
+    "roadsideAssistance": {
+      "baseValueId": 3,
+      "choices": [
+        {
+          "value": 0,
+          "premiumInfluence": 0
+        },
+        {
+          "value": 2,
+          "premiumInfluence": 1600
+        },
+        {
+          "value": 3,
+          "premiumInfluence": 2200
+        },
+        {
+          "value": 5,
+          "premiumInfluence": 2600
+        }
+      ]
+    },
+    "deductible": {
+      "baseValueId": 2,
+      "choices": [
+        {
+          "value": 6250,
+          "premiumInfluence": 0.8
+        },
+        {
+          "value": 8500,
+          "premiumInfluence": 0.5
+        },
+        {
+          "value": 15000,
+          "premiumInfluence": 0.25
+        }
+      ]
+    }
+  }
+}
