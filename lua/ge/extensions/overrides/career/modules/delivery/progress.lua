@@ -352,6 +352,7 @@ M.confirmDropOffData = function(confirmedDropOffs, facId, psPath)
   dGeneral.requestUpdateContainerWeights()
   confirmedDropOffData.onComplete = nop
   dGeneral.updateContainerWeights(function(data)
+    data = data or {}
     confirmedDropOffData.weightUpdateComplete = true
     local maxDelay = 0
     for _, delay in pairs(data) do
@@ -364,7 +365,7 @@ M.confirmDropOffData = function(confirmedDropOffs, facId, psPath)
         local sequence = {
           step.makeStepWait(maxDelay+0.5),
           step.makeStepReturnTrueFunction(function()
-            for vehId, data in pairs(data) do
+            for vehId, delay in pairs(data) do
               local veh = scenetree.findObjectById(vehId)
               core_vehicleBridge.executeAction(veh, 'setFreeze', false)
             end
@@ -377,7 +378,7 @@ M.confirmDropOffData = function(confirmedDropOffs, facId, psPath)
     else
       confirmedDropOffData.maxDelayForWeightUpdate = 0
       -- 1s delay, no freeze
-      for vehId, data in pairs(data) do
+      for vehId, delay in pairs(data) do
         local veh = scenetree.findObjectById(vehId)
         core_vehicleBridge.executeAction(veh, 'setFreeze', false)
       end
@@ -391,7 +392,7 @@ M.confirmDropOffCheckComplete = function()
   if not confirmedDropOffData then return end
 
     -- still waiting for vehicles to be finished
-  for _, data in pairs(confirmedDropOffData.offers) do
+  for _, data in ipairs(confirmedDropOffData.offers or {}) do
     if not data.finished then return end
   end
   if not confirmedDropOffData.weightUpdateComplete then
