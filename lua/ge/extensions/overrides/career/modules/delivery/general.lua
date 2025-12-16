@@ -900,14 +900,17 @@ local function onActivityAcceptGatherData(elemData, activityData)
 
       -- make actual poi elemens
 
+      local dropOffPoi = deepcopy(poiTemplate)
+      dropOffPoi.heading = "Delivery Drop Off"
+      dropOffPoi.buttonLabel = "Drop Off"
+      dropOffPoi.icon = "poi_dropoff_round"
       if anyCargoDropOffable then
-        local dropOffPoi = deepcopy(poiTemplate)
-        dropOffPoi.heading = "Delivery Drop Off"
-        dropOffPoi.buttonLabel = "Drop Off"
         dropOffPoi.buttonFun = function() guihooks.trigger('ChangeState', {state = 'cargoDropOff', params = {facilityId = elem.facId, parkingSpotPath = elem.psPath}}) end
-        dropOffPoi.icon = "poi_dropoff_round"
-        table.insert(activityData, dropOffPoi)
+      else
+        table.insert(dropOffPoi.props, {icon = "info", keyLabel = "No eligible deliveries to drop off"})
+        dropOffPoi.buttonFun = function() end
       end
+      table.insert(activityData, dropOffPoi)
 
       if anyCargoPickUpAble then
         local pickUpPoi = deepcopy(poiTemplate)

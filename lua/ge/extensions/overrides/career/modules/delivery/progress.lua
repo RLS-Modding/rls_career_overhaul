@@ -135,7 +135,10 @@ end
 
 local dropOffDataStatus = nil
 M.requestDropOffData = function(facId, psPath)
-  if dropOffDataStatus ~= nil then log("W","","Already unloading cargo...") end
+  if dropOffDataStatus ~= nil then
+    log("W","","Already unloading cargo...")
+    return
+  end
   dropOffDataStatus = {}
   dropOffDataStatus.affectedOfferIds = {}
   dropOffDataStatus.parcelData = {}
@@ -145,8 +148,6 @@ M.requestDropOffData = function(facId, psPath)
   dropOffDataStatus.location = {type="facilityParkingspot", facId=facId, psPath=psPath}
   local rewardKeys = {}
   local playerVehiclesById = {}
-  --M.aggregateBefore()
-  -- unload cargo
   dGeneral.getNearbyVehicleCargoContainers(function(playerCargoContainers)
     local playerDestinationParkingSpots = {}
     local playerVehIds = {}
@@ -171,9 +172,7 @@ M.requestDropOffData = function(facId, psPath)
               vehId = con.vehId,
               name = con.name,
               containerId = con.containerId,
-
               cargo = {},
-
               totalCargoSlots = con.totalCargoSlots,
               usedCargoSlots = con.usedCargoSlots,
               freeCargoSlots = con.freeCargoSlots,
@@ -184,10 +183,8 @@ M.requestDropOffData = function(facId, psPath)
       end
     end
 
-        -- convert vehicles table to list for UI
     dropOffDataStatus.playerVehicleData = {}
     for vehId, vehicleInfo in pairs(playerVehiclesById) do
-      --table.sort(vehicleInfo.containers, function(a,b) return a.name < b.name end)
       for _, id in ipairs(tableKeysSorted(vehicleInfo.containersById)) do
         vehicleInfo.containersById[id].cargo = dParcelManager.addParcelRewardsSummary(deepcopy(vehicleInfo.containersById[id].cargo))
         table.insert(vehicleInfo.containers, vehicleInfo.containersById[id])
@@ -197,9 +194,15 @@ M.requestDropOffData = function(facId, psPath)
     end
     table.sort(dropOffDataStatus.playerVehicleData, function(a,b) return a.vehId < b.vehId end)
     dropOffDataStatus.rewardKeyIcons = rewardKeys
-    dropOffDataStatus.vehicleData = dVehicleTasks.getVehicleDataWithRewardsSummary()
-    M.openDropOffScreenGatheringComplete()
-    -- try to re-open the prompt
+    dropOffDataStatus.vehicleData = dVehicleTasks.getVehicleDataWithRewardsSummary(psPath)
+    local gatherSequence = dVehicleTasks.makeGatherVehicleDataSteps(dropOffDataStatus.vehicleData)
+    if #gatherSequence > 0 then
+      step.startStepSequence(gatherSequence, function()
+        M.openDropOffScreenGatheringComplete()
+      end)
+    else
+      M.openDropOffScreenGatheringComplete()
+    end
   end)
 end
 

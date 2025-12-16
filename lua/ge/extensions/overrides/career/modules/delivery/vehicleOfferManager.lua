@@ -299,7 +299,7 @@ local function makeSpawnOfferSteps(offerId, fadeToBlack, postDelay)
       end
       local ps = dGenerator.getParkingSpotByPath(offer.spawnLocation.psPath)
       local ok = pcall(function()
-        ps:moveResetVehicleTo(vehId, nil, false, nil, nil, true)
+      ps:moveResetVehicleTo(vehId, nil, false, nil, nil, true)
       end)
       if not ok then
         offer._spawning = nil
@@ -365,8 +365,8 @@ local function makeSpawnOfferSteps(offerId, fadeToBlack, postDelay)
       if gameplay_walk.isWalking() then
         local veh = getObjectByID(vehId)
         if veh then
-          gameplay_walk.setRot(veh:getPosition() - getPlayerVehicle(0):getPosition())
-        end
+        gameplay_walk.setRot(veh:getPosition() - getPlayerVehicle(0):getPosition())
+      end
       end
       dVehicleTasks.addVehicleTask(vehId, offer)
       dGeneral.startDeliveryMode()
@@ -389,13 +389,13 @@ local function makeSpawnOfferSteps(offerId, fadeToBlack, postDelay)
       end
       return true
     end)
-  }
+   }
 
-  if fadeToBlack then
+   if fadeToBlack then
     table.insert(steps, 1, step.makeStepFadeToBlack(0.4))
     table.insert(steps, 1, step.makeStepWait(0.15))
     table.insert(steps, step.makeStepFadeFromBlack(0.4))
-  end
+   end
 
   if postDelay and postDelay > 0 then
     table.insert(steps, step.makeStepWait(postDelay))
@@ -422,7 +422,7 @@ local function spawnOfferInternal(offerId, fadeToBlack, callback, postDelay)
 
   log("I","","Spawning offer " .. offerId)
   local sequence = makeSpawnOfferSteps(offerId, fadeToBlack, postDelay)
-  step.startStepSequence(sequence, callback)
+   step.startStepSequence(sequence, callback)
 end
 
 local function tryStartNextSpawn()
