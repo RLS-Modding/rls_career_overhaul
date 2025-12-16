@@ -699,7 +699,7 @@ local function onActivityAcceptGatherData(elemData, activityData)
         end
       end
       local vehsClose, trailersClose = dVehicleTasks.canDropOffCargoAtPsPath(elem.psPath)
-      local anyCargoDropOffable = (dropOffableCargoByCargoType.parcel > 0 or dropOffableCargoByCargoType.fluid > 0 or dropOffableCargoByCargoType.dryBulk > 0) or vehsClose > 0 or trailersClose > 0
+      local anyCargoDropOffable = (dropOffableCargoByCargoType.parcel > 0 or dropOffableCargoByCargoType.fluid > 0 or dropOffableCargoByCargoType.dryBulk > 0 or dropOffableCargoByCargoType.cement > 0 or dropOffableCargoByCargoType.cash > 0) or vehsClose > 0 or trailersClose > 0
       -- dropoff props
       if dropOffableCargoByCargoType.parcel > 0 then
         table.insert(poiTemplate.props, {
@@ -900,17 +900,14 @@ local function onActivityAcceptGatherData(elemData, activityData)
 
       -- make actual poi elemens
 
-      local dropOffPoi = deepcopy(poiTemplate)
-      dropOffPoi.heading = "Delivery Drop Off"
-      dropOffPoi.buttonLabel = "Drop Off"
-      dropOffPoi.icon = "poi_dropoff_round"
       if anyCargoDropOffable then
+        local dropOffPoi = deepcopy(poiTemplate)
+        dropOffPoi.heading = "Delivery Drop Off"
+        dropOffPoi.buttonLabel = "Drop Off"
         dropOffPoi.buttonFun = function() guihooks.trigger('ChangeState', {state = 'cargoDropOff', params = {facilityId = elem.facId, parkingSpotPath = elem.psPath}}) end
-      else
-        table.insert(dropOffPoi.props, {icon = "info", keyLabel = "No eligible deliveries to drop off"})
-        dropOffPoi.buttonFun = function() end
+        dropOffPoi.icon = "poi_dropoff_round"
+        table.insert(activityData, dropOffPoi)
       end
-      table.insert(activityData, dropOffPoi)
 
       if anyCargoPickUpAble then
         local pickUpPoi = deepcopy(poiTemplate)

@@ -506,6 +506,11 @@ local function finalizeVehicleOffer(offer)
   if not offer.vehicle.model then
     local vehInfo, filterName = getRandomVehicleFromFilterByFilterId(offer.vehicle.filterId)
 
+    if not vehInfo then
+      log("E","","finalizeVehicleOffer: getRandomVehicleFromFilterByFilterId returned nil for filterId: " .. tostring(offer.vehicle.filterId))
+      return
+    end
+
     offer.vehicle.model = vehInfo.model_key
     offer.vehicle.config = vehInfo.key
     if vehInfo.filter.whiteList.Mileage then

@@ -213,12 +213,7 @@ end
 
 local showSystemPopup = {}
 M.openDropOffScreenGatheringComplete = function()
-  -- still waiting for vehicles to be finished
-  for _, data in pairs(dropOffDataStatus.vehicleData) do
-    if not data.finished then return end
-  end
-
-    -- patch in xp icons info
+  -- patch in xp icons info
   local branchInfo = {}
 
   -- already calc if we need it
@@ -250,11 +245,28 @@ M.openDropOffScreenGatheringComplete = function()
   end
 
   for _, vehData in ipairs(dropOffDataStatus.vehicleData or {}) do
-    table.insert(automaticDropOffItems, vehData)
-    table.insert(confirmedOfferIds, vehData.id)
-    for key, amount in pairs(vehData.adjustedRewards) do
-      branchInfo[key] = true
+    if vehData.finished then
+      table.insert(automaticDropOffItems, vehData)
+      table.insert(confirmedOfferIds, vehData.id)
+      for key, amount in pairs(vehData.adjustedRewards) do
+        branchInfo[key] = true
+      end
     end
+  end
+
+  -- still waiting for vehicles to be finished, but show UI if there's cargo
+  local hasPendingVehicles = false
+  for _, data in ipairs(dropOffDataStatus.vehicleData or {}) do
+    if not data.finished then
+      hasPendingVehicles = true
+      break
+    end
+  end
+
+  -- if we have cargo to show, display UI even if vehicles are still gathering
+  local hasCargoToShow = #manualDropOffItems > 0 or #automaticDropOffItems > 0
+  if hasPendingVehicles and not hasCargoToShow then
+    return
   end
 
   dropOffDataStatus.automaticDropOffItems = automaticDropOffItems
@@ -293,20 +305,16 @@ M.openDropOffScreenGatheringComplete = function()
     --dump(dropOffDataStatus)
     guihooks.trigger("SetDeliveryDropOffCargoSelection", dropOffDataStatus)
     dropOffDataStatus.branchInfo = branchInfo
-    --dumpz(dropOffDataStatus,2)
+    gameplay_markerInteraction.closeViewDetailPrompt(true)
+    Engine.Audio.playOnce('AudioGui', 'event:>UI>Missions>Info_Open')
+    gameplay_rawPois.clear()
   else
     local confirmedDropOffs = {
       confirmedCargoIds = confirmedCargoIds,
       confirmedOfferIds = confirmedOfferIds,
     }
     M.confirmDropOffData(confirmedDropOffs, dropOffDataStatus.location.facId, dropOffDataStatus.location.psPath)
-    return
   end
-
-  gameplay_markerInteraction.closeViewDetailPrompt(true)
-  Engine.Audio.playOnce('AudioGui', 'event:>UI>Missions>Info_Open')
-  gameplay_rawPois.clear()
-  dropOffDataStatus = nil
 end
 
 
@@ -525,6 +533,7 @@ M.confirmDropOffCheckComplete = function()
   confirmedDropOffData.onComplete()
   dGeneral.checkExitDeliveryMode()
   confirmedDropOffData = nil
+  dropOffDataStatus = nil
 
   if career_career.isAutosaveEnabled() then
     career_saveSystem.saveCurrent()
