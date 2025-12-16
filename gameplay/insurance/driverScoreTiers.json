@@ -1,0 +1,20 @@
+{
+  "tiers": [
+    {"min": 94, "max": 100, "risk": "Exceptional", "multiplier": 0.75, "color": "--bng-add-blue-400", "description": "Spotless record" },
+    {"min": 88, "max": 93, "risk": "Excellent", "multiplier": 0.80, "color": "--bng-add-blue-400", "description": "Trusted driver" },
+    {"min": 82, "max": 87, "risk": "Very Good", "multiplier": 0.85, "color": "--bng-add-blue-300", "description": "Clean record" },
+    {"min": 76, "max": 81, "risk": "Good", "multiplier": 0.90, "color": "--bng-add-green-400", "description": "Reliable driver" },
+    {"min": 70, "max": 75, "risk": "Above Average", "multiplier": 0.95, "color": "--bng-add-green-400", "description": "Few incidents" },
+    {"min": 64, "max": 69, "risk": "Average", "multiplier": 1.0, "color": "--bng-add-green-300", "description": "Standard rate" },
+    { "min": 58, "max": 63, "risk": "Below Average", "multiplier": 1.10, "color": "--bng-ter-yellow-400", "description": "Multiple claims" },
+    { "min": 52, "max": 57, "risk": "Mediocre", "multiplier": 1.20, "color": "--bng-ter-yellow-400", "description": "Needs improvement" },
+    { "min": 46, "max": 51, "risk": "Poor", "multiplier": 1.30, "color": "--bng-ter-yellow-300", "description": "Many incidents" },
+    { "min": 40, "max": 45, "risk": "High Risk", "multiplier": 1.40, "color": "--bng-orange-b400", "description": "Concerning pattern" },
+    {"min": 34, "max": 39, "risk": "High Risk", "multiplier": 1.50, "color": "--bng-orange-b400", "description": "Heavy penalties" },
+    {"min": 28, "max": 33, "risk": "Very High Risk", "multiplier": 1.60, "color": "--bng-orange-300", "description": "Major red flags" },
+    {"min": 22, "max": 27, "risk": "Severe Risk", "multiplier": 1.80, "color": "--bng-add-red-400", "description": "Extreme penalties" },
+    {"min": 16, "max": 21, "risk": "Critical Risk", "multiplier": 2.00, "color": "--bng-add-red-500", "description": "Near uninsurable" },
+    { "min": 10, "max": 15, "risk": "Extreme Risk", "multiplier": 2.25, "color": "--bng-add-red-600", "description": "Almost rejected" },
+    { "min": 0, "max": 9, "risk": "Maximum Risk", "multiplier": 2.50, "color": "--bng-add-red-700", "description": "Worst possible rate" }
+  ]
+}

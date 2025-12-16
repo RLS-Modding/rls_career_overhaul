@@ -9,7 +9,7 @@ M.dependencies = {'career_career', 'career_modules_payment', 'career_modules_pla
 local plInsuranceDataFileName = "insurance"
 
 -- static insurance information
-local insuranceRenewalDistance = 100000
+local insuranceRenewalDistance = 50000
 local maxAccidentForgiveness = 5
 local defaultDriverScore = 64
 local groupDiscountTiers = {

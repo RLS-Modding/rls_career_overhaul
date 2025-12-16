@@ -1,0 +1,35 @@
+{
+  "coverageOptions" :
+  {
+    "repairTime" : {
+      "niceName" : "insurance.perks.repairTime.name",
+      "desc" : "insurance.perks.repairTime.description",
+      "unit" : "time",
+      "isInsuranceWide": true,
+      "choiceType": "multiple",
+      "displayOrder": 1
+    },
+    "deductible" : {
+      "niceName" : "insurance.perks.deductible.name",
+      "desc" : "insurance.perks.deductible.description",
+      "unit" : "money",
+      "choiceType": "multiple",
+      "displayOrder": 2
+    },
+    "roadsideAssistance" : {
+      "niceName" : "insurance.perks.roadsideAssistance.name",
+      "desc" : "insurance.perks.roadsideAssistance.description",
+      "isInsuranceWide": true,
+      "choiceType": "multiple",
+      "displayOrder": 3
+    },
+    "paintRepair" : {
+      "niceName" : "insurance.perks.paintRepair.name",
+      "desc" : "insurance.perks.paintRepair.description",
+      "isInsuranceWide": true,
+      "choiceType": "toggle",
+      "displayOrder": 4
+    }
+  }
+}
+

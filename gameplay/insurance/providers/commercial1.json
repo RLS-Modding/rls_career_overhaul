@@ -1,0 +1,108 @@
+{
+  "id": 4,
+  "name": "insurance.policies.commercial1.name",
+  "class": "commercial",
+  "paperworkFees": 70,
+  "image": "fleetpro",
+  "color": "#00ccff",
+  "slogan": "insurance.policies.commercial1.slogan",
+  "resetInsuranceScore": {
+    "price": {
+      "vouchers": {
+        "amount": 2,
+        "canBeNegative": false
+      }
+    },
+    "conditions": {
+      "minScore": 1.15
+    }
+  },
+  "gestures": {
+    "freeRepair": {
+      "distance": 22000
+    }
+  },
+  "perks": {
+    "freeTowing": {
+      "value": 5,
+      "isSignaturePerk": true
+    },
+    "fuelDiscount": {
+      "value": 0.45
+    }
+  },
+  "coverageOptions": {
+    "paintRepair": {
+      "baseValueId": 1,
+      "choices": [
+        {
+          "value": true,
+          "premiumInfluence": 2500
+        },
+        {
+          "value": false,
+          "premiumInfluence": 0
+        }
+      ]
+    },
+    "repairTime": {
+      "baseValueId": 2,
+      "choices": [
+        {
+          "value": 0,
+          "premiumInfluence": 2500
+        },
+        {
+          "value": 120,
+          "premiumInfluence": 1350
+        },
+        {
+          "value": 300,
+          "premiumInfluence": 750
+        },
+        {
+          "value": 600,
+          "premiumInfluence": 250
+        }
+      ]
+    },
+    "roadsideAssistance": {
+      "baseValueId": 3,
+      "choices": [
+        {
+          "value": 5,
+          "premiumInfluence": 0
+        },
+        {
+          "value": 8,
+          "premiumInfluence": 560
+        },
+        {
+          "value": 10,
+          "premiumInfluence": 1120
+        },
+        {
+          "value": 12,
+          "premiumInfluence": 1860
+        }
+      ]
+    },
+    "deductible": {
+      "baseValueId": 2,
+      "choices": [
+        {
+          "value": 1000,
+          "premiumInfluence": 1.7
+        },
+        {
+          "value": 2000,
+          "premiumInfluence": 1.0
+        },
+        {
+          "value": 3500,
+          "premiumInfluence": 0.75
+        }
+      ]
+    }
+  }
+}
