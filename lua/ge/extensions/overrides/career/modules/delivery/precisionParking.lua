@@ -24,14 +24,14 @@ local PRECISION_PARKING_CONFIG = {
 
   -- Money rewards (always applied, positive or negative)
   PERFECT_MONEY_FLAT = 30,      -- Flat money bonus for perfect parking
-  PERFECT_MONEY_PERCENT = 0.15, -- 15% money bonus for perfect parking
+  PERFECT_MONEY_PERCENT = 0.25, -- 15% money bonus for perfect parking
   GREAT_MONEY_FLAT = 20,        -- Flat money bonus for great parking
-  GREAT_MONEY_PERCENT = 0.10,   -- 10% money bonus for great parking
+  GREAT_MONEY_PERCENT = 0.15,   -- 10% money bonus for great parking
   GOOD_MONEY_FLAT = 10,         -- Flat money bonus for good parking
-  GOOD_MONEY_PERCENT = 0.05,    -- 5% money bonus for good parking
-  BAD_MONEY_FLAT = -15,         -- Flat money penalty for bad parking
+  GOOD_MONEY_PERCENT = 0.10,    -- 5% money bonus for good parking
+  BAD_MONEY_FLAT = 0,         -- Flat money penalty for bad parking
   BAD_MONEY_PERCENT = -0.05,    -- 5% money penalty for bad parking
-  HORRIBLE_MONEY_FLAT = -40,    -- Flat money penalty for horrible parking
+  HORRIBLE_MONEY_FLAT = 0,    -- Flat money penalty for horrible parking
   HORRIBLE_MONEY_PERCENT = -0.10, -- 10% money penalty for horrible parking
 
   -- Logistics XP rewards (good, great, perfect only)
