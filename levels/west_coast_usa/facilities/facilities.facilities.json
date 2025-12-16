@@ -21,6 +21,7 @@
       ],
       "functions":{
         "insurances":true,
+        "playerAbstract":true,
         "painting":true,
         "partInventory":true,
         "partShop":true,
@@ -86,6 +87,7 @@
       ],
       "functions":{
         "insurances":true,
+        "playerAbstract":true,
         "painting":true,
         "partInventory":true,
         "partShop":true,
@@ -123,6 +125,7 @@
       ],
       "functions":{
         "insurances":true,
+        "playerAbstract":true,
         "painting":true,
         "partInventory":true,
         "partShop":true,
@@ -157,6 +160,7 @@
       ],
       "functions":{
         "insurances":true,
+        "playerAbstract":true,
         "painting":true,
         "partInventory":true,
         "partShop":true,
@@ -194,6 +198,7 @@
       ],
       "functions":{
         "insurances":true,
+        "playerAbstract":true,
         "painting":true,
         "partInventory":true,
         "partShop":true,
@@ -231,6 +236,7 @@
       ],
       "functions":{
         "insurances":true,
+        "playerAbstract":true,
         "partInventory":true,
         "vehicleInventory":true
       },
@@ -263,6 +269,7 @@
       ],
       "functions":{
         "insurances":true,
+        "playerAbstract":true,
         "partInventory":true,
         "tuning":true,
         "vehicleInventory":true
@@ -296,6 +303,7 @@
       ],
       "functions":{
         "insurances":true,
+        "playerAbstract":true,
         "painting":true,
         "partInventory":true,
         "partShop":true,
@@ -333,6 +341,7 @@
       ],
       "functions":{
         "insurances":true,
+        "playerAbstract":true,
         "painting":true,
         "partInventory":true,
         "partShop":true,
@@ -399,6 +408,7 @@
       ],
       "functions":{
         "insurances":true,
+        "playerAbstract":true,
         "painting":true,
         "partInventory":true,
         "partShop":true,
@@ -431,6 +441,7 @@
       ],
       "functions":{
         "insurances":true,
+        "playerAbstract":true,
         "painting":true,
         "partInventory":true,
         "partShop":true,
@@ -463,6 +474,7 @@
       ],
       "functions":{
         "insurances":true,
+        "playerAbstract":true,
         "painting":true,
         "partInventory":true,
         "partShop":true,
@@ -495,6 +507,7 @@
       ],
       "functions":{
         "insurances":true,
+        "playerAbstract":true,
         "partInventory":true,
         "sleep":true,
         "tuning":true,
