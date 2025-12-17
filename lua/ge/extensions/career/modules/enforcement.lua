@@ -83,7 +83,6 @@ local function handleCopEvadeReward(data)
   )
 
   ui_message("The suspect got away, Here is " .. pityAmount .. " for repairs", 5, "Police")
-  career_saveSystem.saveCurrent()
 end
 
 local function handleCriminalEvadeReward(vehId, data, inventoryId)
@@ -112,7 +111,6 @@ local function handleCriminalEvadeReward(vehId, data, inventoryId)
 
   ui_message("You sold your dashcam footage for $" .. rewardAmount, 5, "Criminal")
   career_modules_inventory.addEvade(inventoryId)
-  career_saveSystem.saveCurrent()
 end
 
 local function handleArrestReward(data, playerData)
@@ -221,8 +219,6 @@ local function onPursuitAction(vehId, action, data)
     if playerData.isCop then
       handleArrestReward(data, playerData)
     end
-
-    career_saveSystem.saveCurrent()
   end
 end
 
