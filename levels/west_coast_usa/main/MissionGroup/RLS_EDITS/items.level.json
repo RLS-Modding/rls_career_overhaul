@@ -48,6 +48,7 @@
 {"name":"p_fuel_pump_2015_nodeoline11","internalName":"p_fuel_pump_2015_nodeoline11","class":"Prefab","__parent":"RLS_EDITS","position":[-263.007263,-311.110992,118.817566],"filename":"/levels/west_coast_usa/art/prefabs/p_fuel_pump_2015_trilobite.prefab.json","rotationMatrix":[0.530212939,-0.847864449,0,0.847864449,0.530212939,0,0,0,1]}
 {"name":"Level Gate","class":"SpawnSphere","__parent":"RLS_EDITS","position":[494.269867,1870.35413,74.8965836],"dataBlock":"SpawnSphereMarker","radius":1,"rotationMatrix":[1,-5.19854875e-05,-1.15437444e-07,5.19573005e-05,0.999526143,-0.0307813622,1.71556712e-06,0.0307813622,0.999526143],"spawnClass":"Player","sphereWeight0":"1"}
 {"name":"lenflaircurb","class":"MeshRoad","__parent":"RLS_EDITS","position":[-888.7771,-676.593567,106.120529],"hidden":true,"nodes":[[-889.643311,-677.393494,105.098717,3,1,0,0,1],[-881.419983,-668.06073,105.295616,3,1,0,0,1]]}
+{"class":"TSStatic","__parent":"RLS_EDITS","position":[309.496124,-135.071411,148.0513],"isRenderEnabled":false,"rotationMatrix":[-8.74227695e-08,-0.999999881,0,0.999999881,-8.74227695e-08,0,0,0,0.999999881],"scale":[1.39999998,1.39999998,1.39999998],"shapeName":"/levels/west_coast_usa/art/shapes/buildings/garage_racetrack2.dae","useInstanceRenderData":true}
 {"name":"ParkingGarageRoads","class":"SimGroup","__parent":"RLS_EDITS"}
 {"name":"freakAdditions","class":"SimGroup","__parent":"RLS_EDITS"}
 {"name":"customDealerships","class":"SimGroup","__parent":"RLS_EDITS"}
