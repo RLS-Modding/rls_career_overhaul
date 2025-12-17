@@ -8,10 +8,10 @@ local leaderboardFolder = "/career/speedTrapLeaderboards/"
 
 M.dependencies = {'career_career', 'gameplay_speedTraps', 'gameplay_traffic'}
 local fines = {
-  {overSpeed = 6.7056, fine = {money = {amount = 35, canBeNegative = true}}},
-  {overSpeed = 11.176, fine = {money = {amount = 70, canBeNegative = true}}},
+  {overSpeed = 6.7056, fine = {money = {amount = 750, canBeNegative = true}}},
+  {overSpeed = 11.176, fine = {money = {amount = 2000, canBeNegative = true}}},
 }
-local maxFine = {money = {amount = 100, canBeNegative = true}}
+local maxFine = {money = {amount = 2000, canBeNegative = true}}
 local playerPursuiting = false
 
 local function getFineFromSpeed(overSpeed)
@@ -38,7 +38,9 @@ local function onSpeedTrapTriggered(speedTrapData, playerSpeed, overSpeed)
   if gameplay_cab and gameplay_cab.inCab() then
     return
   end
-  if not speedTrapData.speedLimit then return end
+  if not speedTrapData.speedLimit then 
+    return 
+  end
   local vehId = speedTrapData.subjectID
   if not vehId then
     return
@@ -75,10 +77,13 @@ local function onSpeedTrapTriggered(speedTrapData, playerSpeed, overSpeed)
     fine.money.amount = fine.money.amount * (career_modules_hardcore.isHardcoreMode() and 10 or 1)
     local message = ""
     
+    local speedStr = string.format("%.0f km/h (%.0f mph)", playerSpeed * 3.6, playerSpeed * 2.23694)
+    local limitStr = string.format("%.0f km/h (%.0f mph)", speedTrapData.speedLimit * 3.6, speedTrapData.speedLimit * 2.23694)
+
     if playerRole == "police" then
-      message = string.format("Traffic Violation (Officer Misconduct): \n - %q | Fine %d$\n - {{%f | unit: \"speed\":0}} | ({{%f | unit: \"speed\":0}})\n - Abuse of power is not permitted", core_vehicles.getVehicleLicenseText(veh), fine.money.amount, playerSpeed, speedTrapData.speedLimit)
+      message = string.format("Traffic Violation (Officer Misconduct): \n - %q | Fine %d$\n - %s | (Limit: %s)\n - Abuse of power is not permitted", core_vehicles.getVehicleLicenseText(veh), fine.money.amount, speedStr, limitStr)
     else
-      ui_message({txt="ui.career.speedTrap.speedingMessage", context={licensePlate = core_vehicles.getVehicleLicenseText(veh), fine = fine.money.amount, recordedSpeed = playerSpeed, speedLimit = speedTrapData.speedLimit}}, 10, 'speedTrap')
+      message = string.format("Traffic Violation (Speeding): \n - %q | Fine %d$\n - %s | (Limit: %s)", core_vehicles.getVehicleLicenseText(veh), fine.money.amount, speedStr, limitStr)
     end
     
     career_modules_payment.pay(fine, {label="Fine for speeding", tags={"fine"}})
@@ -94,6 +99,7 @@ local function onSpeedTrapTriggered(speedTrapData, playerSpeed, overSpeed)
       local fine = {}
       fine[vehInfo.owningOrganization .. "Reputation"] = {amount = 10, canBeNegative = true}
       career_modules_payment.pay(fine, {label="Reputation cost for speeding", tags={"fine"}})
+      ui_message(string.format("Traffic Violation (Speeding): \n - %q | Reputation Loss: 10 (%s)", core_vehicles.getVehicleLicenseText(veh), vehInfo.owningOrganization), 10, "speedTrap")
     end
   end
 
@@ -145,7 +151,7 @@ local function onRedLightCamTriggered(speedTrapData, playerSpeed)
     
     career_modules_payment.pay(fine, {label="Fine for driving over a red light", tags={"fine"}})
     Engine.Audio.playOnce('AudioGui','event:>UI>Career>Speedcam_Snapshot')
-    ui_message(string.format("Traffic Violation (Failure to stop at Red Light): \n - %q | Fine %d$", core_vehicles.getVehicleLicenseText(veh), fine.money.amount), 10, "speedTrap")
+    ui_message(message, 10, "speedTrap")
   else
     ui_message(string.format("Traffic Violation (Failure to stop at Red Light): \n - No license plate detected | Fine could not be issued"), 10, "speedTrap")
   end
