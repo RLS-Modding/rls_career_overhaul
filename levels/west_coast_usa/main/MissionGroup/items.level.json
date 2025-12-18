@@ -50,4 +50,3 @@
 {"name":"RLS_EDITS","class":"SimGroup","__parent":"MissionGroup"}
 {"name":"night_light","class":"SimGroup","__parent":"MissionGroup"}
 {"name":"night_light_shadow","class":"SimGroup","__parent":"MissionGroup"}
-{"class":"DecalRoad","persistentId":"78a8880d-f90f-4822-bf69-a4237c47a4e6","__parent":"MissionGroup","position":[817.384583,-339.797791,160.514664],"drivability":0.00100000005,"gatedRoad":true,"improvedSpline":true,"material":"road_dirt_02","nodes":[[817.384583,-339.797791,160.514664,8],[785.179688,-349.102448,157.64624,8],[754.210449,-361.197693,154.91835,8],[694.435303,-385.372375,152.386368,7],[593.8255,-428.274658,152.380508,8],[534.835388,-453.51889,152.386368,8],[518.795471,-460.883789,152.280731,8],[504.305176,-472.256958,152.076828,8],[486.681915,-476.554962,151.704544,8]],"startEndFade":[5,5]}

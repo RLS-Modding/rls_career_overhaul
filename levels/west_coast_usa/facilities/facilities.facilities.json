@@ -21,10 +21,10 @@
       ],
       "functions":{
         "insurances":true,
-        "playerAbstract":true,
         "painting":true,
         "partInventory":true,
         "partShop":true,
+        "playerAbstract":true,
         "sleep":true,
         "tuning":true,
         "vehicleInventory":true,
@@ -87,10 +87,10 @@
       ],
       "functions":{
         "insurances":true,
-        "playerAbstract":true,
         "painting":true,
         "partInventory":true,
         "partShop":true,
+        "playerAbstract":true,
         "sleep":true,
         "tuning":true,
         "vehicleInventory":true,
@@ -125,10 +125,10 @@
       ],
       "functions":{
         "insurances":true,
-        "playerAbstract":true,
         "painting":true,
         "partInventory":true,
         "partShop":true,
+        "playerAbstract":true,
         "sleep":true,
         "tuning":true,
         "vehicleInventory":true,
@@ -160,10 +160,10 @@
       ],
       "functions":{
         "insurances":true,
-        "playerAbstract":true,
         "painting":true,
         "partInventory":true,
         "partShop":true,
+        "playerAbstract":true,
         "sleep":true,
         "tuning":true,
         "vehicleInventory":true,
@@ -198,10 +198,10 @@
       ],
       "functions":{
         "insurances":true,
-        "playerAbstract":true,
         "painting":true,
         "partInventory":true,
         "partShop":true,
+        "playerAbstract":true,
         "sleep":true,
         "tuning":true,
         "vehicleInventory":true,
@@ -236,8 +236,8 @@
       ],
       "functions":{
         "insurances":true,
-        "playerAbstract":true,
         "partInventory":true,
+        "playerAbstract":true,
         "vehicleInventory":true
       },
       "garageId":"chinatownGarageOverflow",
@@ -269,8 +269,8 @@
       ],
       "functions":{
         "insurances":true,
-        "playerAbstract":true,
         "partInventory":true,
+        "playerAbstract":true,
         "tuning":true,
         "vehicleInventory":true
       },
@@ -303,10 +303,10 @@
       ],
       "functions":{
         "insurances":true,
-        "playerAbstract":true,
         "painting":true,
         "partInventory":true,
         "partShop":true,
+        "playerAbstract":true,
         "sleep":true,
         "tuning":true,
         "vehicleInventory":true,
@@ -341,10 +341,10 @@
       ],
       "functions":{
         "insurances":true,
-        "playerAbstract":true,
         "painting":true,
         "partInventory":true,
         "partShop":true,
+        "playerAbstract":true,
         "sleep":true,
         "tuning":true,
         "vehicleInventory":true,
@@ -408,10 +408,10 @@
       ],
       "functions":{
         "insurances":true,
-        "playerAbstract":true,
         "painting":true,
         "partInventory":true,
         "partShop":true,
+        "playerAbstract":true,
         "sleep":true,
         "tuning":true,
         "vehicleInventory":true,
@@ -441,10 +441,10 @@
       ],
       "functions":{
         "insurances":true,
-        "playerAbstract":true,
         "painting":true,
         "partInventory":true,
         "partShop":true,
+        "playerAbstract":true,
         "sleep":true,
         "tuning":true,
         "vehicleInventory":true,
@@ -474,10 +474,10 @@
       ],
       "functions":{
         "insurances":true,
-        "playerAbstract":true,
         "painting":true,
         "partInventory":true,
         "partShop":true,
+        "playerAbstract":true,
         "sleep":true,
         "tuning":true,
         "vehicleInventory":true,
@@ -507,8 +507,8 @@
       ],
       "functions":{
         "insurances":true,
-        "playerAbstract":true,
         "partInventory":true,
+        "playerAbstract":true,
         "sleep":true,
         "tuning":true,
         "vehicleInventory":true
@@ -519,6 +519,32 @@
       "iconOffsetHeight":0.15,
       "id":"alderDragwayStorage",
       "name":"Alder Dragway Storage",
+      "preview":"servicestationgaragecomputer.jpg",
+      "screens":{}
+    },
+    {
+      "activityAcceptProps":[
+        {
+          "keyLabel":"Vehicle & Parts Management"
+        }
+      ],
+      "description":"ui.career.computer.bigmapLabel.garage",
+      "doors":[
+        [
+          "mudDragTuningComputer_area",
+          "mudDragTuningComputer_icon"
+        ]
+      ],
+      "functions":{
+        "tuning":true,
+        "vehicleInventory":false
+      },
+      "garageId":"mudDragTuningTent",
+      "icon":"poi_laptop_round",
+      "iconLift":0.2,
+      "iconOffsetHeight":0.15,
+      "id":"mudDragTuningComputer",
+      "name":"Mud Drag Tuning Tent",
       "preview":"servicestationgaragecomputer.jpg",
       "screens":{}
     }
@@ -792,6 +818,22 @@
       "preview":"dragway_pit_garages.jpg",
       "zoneNames":[
         "alderDragwayStorage_1"
+      ]
+    },
+    {
+      "capacity":0,
+      "defaultPrice":0,
+      "description":"A place to tune your car before playing in the mud\n",
+      "icon":"poi_garage_2_round",
+      "id":"mudDragTuningTent",
+      "name":"Mud Drag Tuning Tent",
+      "parkingSpotNames":[
+        "spot_mudDragTuningTent_1"
+      ],
+      "preview":"garage_servicestation.jpg",
+      "tags":{},
+      "zoneNames":[
+        "mudDragTuningTent_1"
       ]
     }
   ],
