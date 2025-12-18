@@ -1,0 +1,11 @@
+{
+    "Configuration": "27ft with Headache Rack",
+    "Description": "Designed to be pulled behind another larger trailer, equipped with a headache rack",
+    "Weight": 4485,
+    "Value": 50000,
+    "defaultPaintName1": "Jet Black",
+    "defaultPaintName2": "Jet Black",
+    "defaultPaintName3": "white",
+    "theLoad": "27empty",
+    "hasLoad": false
+}

@@ -1,0 +1,11 @@
+{
+    "Configuration": "40ft with Headache Rack - 12 Logs",
+    "Description": "Equipped with a fifth wheel and headache rack, loaded with 8.5 tons of maplewood",
+    "Weight": 14615,
+    "Value": 60001,
+    "defaultPaintName1": "Fire Red",
+    "defaultPaintName2": "Fire Red",
+    "defaultPaintName3": "white",
+    "theLoad": "40logs12",
+    "hasLoad": true
+}

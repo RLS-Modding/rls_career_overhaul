@@ -1,0 +1,11 @@
+{
+    "Configuration": "40ft with Headache Rack",
+    "Description": "Equipped with a fifth wheel and a headache rack, designed to be pulled directly by a truck",
+    "Weight": 6070,
+    "Value": 60000,
+    "defaultPaintName1": "Jet Black",
+    "defaultPaintName2": "Jet Black",
+    "defaultPaintName3": "white",
+    "theLoad": "40empty",
+    "hasLoad": false
+}

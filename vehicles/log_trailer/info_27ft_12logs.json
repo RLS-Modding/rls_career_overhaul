@@ -1,0 +1,11 @@
+{
+    "Configuration": "27ft - 12 Logs",
+    "Description": "Designed to be pulled behind another larger trailer, loaded with 6.5 tons of alder logs",
+    "Weight": 10840,
+    "Value": 45002,
+    "defaultPaintName1": "Fire Red",
+    "defaultPaintName2": "Fire Red",
+    "defaultPaintName3": "white",
+    "theLoad": "27logs12",
+    "hasLoad": true
+}

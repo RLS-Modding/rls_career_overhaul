@@ -15,12 +15,12 @@
     ]
   ],
   "Config Type":"Loaner",
-  "Configuration":"uPullCareerBoxT82",
+  "Configuration":"U-Pull Moving Truck",
   "Description":"",
   "Drivetrain":"6x4",
   "Fuel Type":"Diesel",
   "Induction Type":"Turbo",
-  "Name":"U-Pull T-Series Box Truck",
+  "Name":"T-Series uPullCareerBoxT82",
   "Off-Road Score":34,
   "Population":1000,
   "Power":298,
@@ -67,12 +67,18 @@
     "Induction Type":{
       "Turbo":true
     },
+    "InsuranceClass":{
+      "commercial":true
+    },
     "Off-Road Score":{
       "max":34,
       "min":34
     },
     "Propulsion":{
       "ICE":true
+    },
+    "Region":{
+      "northAmerica":true
     },
     "Source":{
       "BeamNG - Official":true,
