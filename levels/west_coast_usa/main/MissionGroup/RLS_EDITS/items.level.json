@@ -1,3 +1,4 @@
+{"name":"STA Adds","class":"SimGroup","__parent":"RLS_EDITS"}
 {"name":"Fast Automotive","class":"SimGroup","__parent":"RLS_EDITS"}
 {"class":"TSStatic","__parent":"RLS_EDITS","position":[523.755981,-720.659973,201.136002],"isRenderEnabled":false,"rotationMatrix":[-0.478354603,0.878166616,0,-0.878166616,-0.478354603,0,0,0,0.999999881],"shapeName":"/levels/west_coast_usa/art/hilltopvilla/hilltopvilla.dae","useInstanceRenderData":true}
 {"class":"TSStatic","__parent":"RLS_EDITS","position":[927.941284,625.32312,135.960403],"isRenderEnabled":false,"shapeName":"/levels/west_coast_usa/art/shapes/objects/standing_signs/rlsstandingsign1.dae","useInstanceRenderData":true}
