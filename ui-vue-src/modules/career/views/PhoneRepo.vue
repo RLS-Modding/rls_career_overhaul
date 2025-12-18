@@ -17,7 +17,7 @@
                 <div class="panel-header">Vehicle Repo Service</div>
                 <div class="panel-content">
                     <div class="instruction-text" v-if="isInRepoVehicle">Generate a new repo mission to earn money by recovering vehicles.</div>
-                    <div class="instruction-text" v-if="!isInRepoVehicle">You need to be in a repo vehicle to start missions.</div>
+                    <div class="instruction-text" v-if="!isInRepoVehicle">Change license plate to "Repo" to start missions.</div>
                 </div>
                 <button class="state-button" @click.stop="generateMission()" v-if="isInRepoVehicle">
                     Generate Mission
