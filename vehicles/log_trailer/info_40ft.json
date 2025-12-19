@@ -1,0 +1,11 @@
+{
+    "Configuration": "40ft",
+    "Description": "3 axle trailer with a higher weight rating, equipped with a fifth wheel, designed to be pulled directly by a truck",
+    "Weight": 5900,
+    "Value": 55000,
+    "defaultPaintName1": "Jet Black",
+    "defaultPaintName2": "Jet Black",
+    "defaultPaintName3": "white",
+    "theLoad": "40empty",
+    "hasLoad": false
+}

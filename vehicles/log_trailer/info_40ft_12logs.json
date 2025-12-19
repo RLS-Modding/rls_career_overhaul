@@ -1,0 +1,11 @@
+{
+    "Configuration": "40ft - 12 Logs",
+    "Description": "Equipped with a fifth wheel, designed to be pulled directly by a truck, loaded with 7 tons of pinewood",
+    "Weight": 12835,
+    "Value": 55002,
+    "defaultPaintName1": "Fire Red",
+    "defaultPaintName2": "Fire Red",
+    "defaultPaintName3": "white",
+    "theLoad": "40logs12",
+    "hasLoad": true
+}

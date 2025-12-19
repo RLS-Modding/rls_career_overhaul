@@ -1,0 +1,10 @@
+{
+    "Configuration": "22ft Gooseneck",
+    "Description": "22ft Hydraulic tilt gooseneck trailer",
+    "Value": 18000,
+    "Weight": 2630,
+    "defaultPaintName1": "Army Green",
+    "defaultPaintName2": "Army Green",
+    "theLoad": "Empty",
+    "hasLoad": false
+}

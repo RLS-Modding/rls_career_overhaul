@@ -1,0 +1,10 @@
+{
+    "Configuration": "22ft Gooseneck (Wood Planks 4200kg)",
+    "Description": "22ft Hydraulic tilt gooseneck trailer, loaded with 4200kg of wood planks",
+    "Value": 19000,
+    "Weight": 6837,
+    "defaultPaintName1": "Navy Blue",
+    "defaultPaintName2": "Navy Blue",
+    "theLoad": "22planks",
+    "hasLoad": true
+}

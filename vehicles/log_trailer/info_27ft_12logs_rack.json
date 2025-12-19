@@ -1,0 +1,11 @@
+{
+    "Configuration": "27ft with Headache Rack - 12 Logs",
+    "Description": "Equipped with a headache rack, loaded with 7.5 tons of cypress logs",
+    "Weight": 11910,
+    "Value": 50001,
+    "defaultPaintName1": "Fire Red",
+    "defaultPaintName2": "Fire Red",
+    "defaultPaintName3": "white",
+    "theLoad": "27logs12",
+    "hasLoad": true
+}
