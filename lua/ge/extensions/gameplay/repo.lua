@@ -419,7 +419,7 @@ function VehicleRepoJob:spawnVehicle()
     self.pickupLocation = self.selectedSpot.pos
     self.isMonitoring = true
 
-    core_groundMarkers.setPath(self.selectedSpot.pos)
+    core_groundMarkers.setPath(self.selectedSpot.pos, {clearPathOnReachingTarget = true})
     self.totalDistanceTraveled = core_groundMarkers.getPathLength()
 
     self.vehInfo = self.randomVehicleInfo
@@ -571,7 +571,7 @@ function VehicleRepoJob:onUpdate(dtReal, dtSim, dtRaw)
                 print("No traffic vehicle found")
             end            
             createMarker(self.deliveryLocation.pos)
-            core_groundMarkers.setPath(self.deliveryLocation.pos)
+            core_groundMarkers.setPath(self.deliveryLocation.pos, {clearPathOnReachingTarget = true})
         end
         local repoDistance = (playerPos - repoPos):length()
         if repoDistance > 90 and repoDistance < 100 then
@@ -596,7 +596,7 @@ function VehicleRepoJob:onUpdate(dtReal, dtSim, dtRaw)
                 if vehicle then
                     local success, pos = pcall(function() return vehicle:getPosition() end)
                     if success and pos then
-                        core_groundMarkers.setPath(pos)
+                        core_groundMarkers.setPath(pos, {clearPathOnReachingTarget = true})
                     end
                 end
                 self.isJobStarted = false
@@ -625,7 +625,7 @@ function VehicleRepoJob:onUpdate(dtReal, dtSim, dtRaw)
                 if vehicle then
                     local success, pos = pcall(function() return vehicle:getPosition() end)
                     if success and pos then
-                        core_groundMarkers.setPath(pos)
+                        core_groundMarkers.setPath(pos, {clearPathOnReachingTarget = true})
                     end
                 end
                 self.isJobStarted = false
@@ -743,7 +743,7 @@ function VehicleRepoJob:onUpdate(dtReal, dtSim, dtRaw)
                 end
             end
             if self.deliveryLocation.pos ~= nil and (not core_groundMarkers.getTargetPos() or core_groundMarkers.getTargetPos() ~= self.deliveryLocation.pos) then
-                core_groundMarkers.setPath(self.deliveryLocation.pos)
+                core_groundMarkers.setPath(self.deliveryLocation.pos, {clearPathOnReachingTarget = true})
             end
         end
     end
@@ -771,7 +771,7 @@ function VehicleRepoJob:onUpdate(dtReal, dtSim, dtRaw)
             local velSuccess, vel = pcall(function() return vehicle:getVelocity():length() end)
             if velSuccess and vel and vel > 2 then
                 self.jobStartTime = os.time()
-                core_groundMarkers.setPath(self.deliveryLocation.pos)
+                core_groundMarkers.setPath(self.deliveryLocation.pos, {clearPathOnReachingTarget = true})
                 self.totalDistanceTraveled = self.totalDistanceTraveled + core_groundMarkers.getPathLength()
             end
         end
