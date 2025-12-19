@@ -129,12 +129,17 @@ M.reasons = {
   }
 }
 
+local function getComputerId()
+  return computerId
+end
+
 M.openMenu = openMenu
 M.openComputerMenuById = openComputerMenuById
 M.onMenuClosed = onMenuClosed
 M.closeMenu = closeMenu
 M.getComputerUIData = getComputerUIData
 M.computerButtonCallback = computerButtonCallback
+M.getComputerId = getComputerId
 
 return M
 

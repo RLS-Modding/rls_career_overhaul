@@ -134,6 +134,74 @@ local function getFacilitiesByType(type, levelName)
   return facilities[listName]
 end
 
+-- POI integration
+local function getZonesForFacility(facility)
+  if not facility.sitesFile then log("E","","Facility has not sites file: " .. dumpsz(facility,1)) return end
+  local zones = {}
+
+  local sites = {}
+  if type(facility.sitesFile) == "string" then
+    table.insert(sites, gameplay_sites_sitesManager.loadSites(facility.sitesFile))
+  else
+    for _, sitesFile in ipairs(facility.sitesFile) do
+      table.insert(sites, gameplay_sites_sitesManager.loadSites(sitesFile))
+    end
+  end
+
+  for _, zoneName in ipairs(facility.zoneNames) do
+    local psFound = false
+    for _, sitesFromFile in ipairs(sites) do
+      local zone = sitesFromFile.zones.byName[zoneName]
+      if zone and not zone.missing then
+        table.insert(zones, zone)
+        psFound = true
+        break
+      end
+    end
+    if not psFound then
+      log("W","","Missing Spot for facility" .. dumps(facility.id).."?: " .. dumps(v))
+    end
+  end
+
+  if tableIsEmpty(sites) then
+    log("W","","Could not find sites file for facility: " .. dumps(facility.sitesFile))
+  end
+  return zones
+end
+
+local function extractZoneData(facility)
+  local success = false
+  local zones = {}
+  local pos, radius = vec3(), 5
+  local zones = getZonesForFacility(facility)
+  if zones then
+    local aabb = {
+      xMin = math.huge, xMax = -math.huge,
+      yMin = math.huge, yMax = -math.huge,
+      zMin = math.huge, zMax = -math.huge,
+      invalid = true}
+    for _, zone in ipairs(zones) do
+      for i, v in ipairs(zone.vertices) do
+        aabb.xMin = math.min(aabb.xMin, v.pos.x)
+        aabb.xMax = math.max(aabb.xMax, v.pos.x)
+        aabb.yMin = math.min(aabb.yMin, v.pos.y)
+        aabb.yMax = math.max(aabb.yMax, v.pos.y)
+        aabb.zMin = math.min(aabb.zMin, v.pos.z)
+        aabb.zMax = math.max(aabb.zMax, v.pos.z)
+        aabb.invalid = false
+      end
+    end
+    if not aabb.invalid then
+      pos = vec3((aabb.xMin + aabb.xMax)/2, (aabb.yMin + aabb.yMax)/2, (aabb.zMin + aabb.zMax)/2)
+      pos.z = core_terrain.getTerrainHeight(pos) or pos.z
+      radius = math.sqrt(((aabb.xMax - aabb.xMin)/2) * ((aabb.xMax - aabb.xMin)/2) + ((aabb.yMax - aabb.yMin)/2) * ((aabb.yMax - aabb.yMin)/2))
+      success =true
+    else
+      log("E","","AABB is invalid: " .. dumps(aabb))
+    end
+  end
+  return success, pos, radius, zones
+end
 
 
 local function getGarage(id) return getFacility("garage", id) end
@@ -157,8 +225,12 @@ local function getAverageDoorPositionForFacility(facility)
   if count > 0 then
     return center / count
   else
-    log("E","","Dealership has no doors and thus no position! " .. facility.id)
-    return vec3()
+    local success, pos = extractZoneData(facility)
+    if success then
+      return pos
+    end
+    -- log("D","","Facility has no doors or zones and thus no position! " .. facility.id)
+    return nil
   end
 end
 
@@ -217,43 +289,6 @@ local function getParkingSpotsForFacility(facility)
   return spots
 end
 
-
-
--- POI integration
-local function getZonesForFacility(facility)
-  if not facility.sitesFile then log("E","","Facility has not sites file: " .. dumpsz(facility,1)) return end
-  local zones = {}
-
-  local sites = {}
-  if type(facility.sitesFile) == "string" then
-    table.insert(sites, gameplay_sites_sitesManager.loadSites(facility.sitesFile))
-  else
-    for _, sitesFile in ipairs(facility.sitesFile) do
-      table.insert(sites, gameplay_sites_sitesManager.loadSites(sitesFile))
-    end
-  end
-
-  for _, zoneName in ipairs(facility.zoneNames) do
-    local psFound = false
-    for _, sitesFromFile in ipairs(sites) do
-      local zone = sitesFromFile.zones.byName[zoneName]
-      if zone and not zone.missing then
-        table.insert(zones, zone)
-        psFound = true
-        break
-      end
-    end
-    if not psFound then
-      log("W","","Missing Spot for facility" .. dumps(facility.id).."?: " .. dumps(v))
-    end
-  end
-
-  if tableIsEmpty(sites) then
-    log("W","","Could not find sites file for facility: " .. dumps(facility.sitesFile))
-  end
-  return zones
-end
-
 local function getGaragePosRot(poi, veh)
   veh = veh or getPlayerVehicle(0)
   local garage = getGarage(poi.id) -- TODO: implement "default garage" property for level
@@ -278,40 +313,6 @@ local function teleportToGarage(garageId, veh, resetVeh)
   end
 end
 M.teleportToGarage = teleportToGarage
-
-local function extractZoneData(facility)
-  local success = false
-  local zones = {}
-  local pos, radius = vec3(), 5
-  local zones = getZonesForFacility(facility)
-  if zones then
-    local aabb = {
-      xMin = math.huge, xMax = -math.huge,
-      yMin = math.huge, yMax = -math.huge,
-      zMin = math.huge, zMax = -math.huge,
-      invalid = true}
-    for _, zone in ipairs(zones) do
-      for i, v in ipairs(zone.vertices) do
-        aabb.xMin = math.min(aabb.xMin, v.pos.x)
-        aabb.xMax = math.max(aabb.xMax, v.pos.x)
-        aabb.yMin = math.min(aabb.yMin, v.pos.y)
-        aabb.yMax = math.max(aabb.yMax, v.pos.y)
-        aabb.zMin = math.min(aabb.zMin, v.pos.z)
-        aabb.zMax = math.max(aabb.zMax, v.pos.z)
-        aabb.invalid = false
-      end
-    end
-    if not aabb.invalid then
-      pos = vec3((aabb.xMin + aabb.xMax)/2, (aabb.yMin + aabb.yMax)/2, (aabb.zMin + aabb.zMax)/2)
-      pos.z = core_terrain.getTerrainHeight(pos) or pos.z
-      radius = math.sqrt(((aabb.xMax - aabb.xMin)/2) * ((aabb.xMax - aabb.xMin)/2) + ((aabb.yMax - aabb.yMin)/2) * ((aabb.yMax - aabb.yMin)/2))
-      success =true
-    else
-      log("E","","AABB is invalid: " .. dumps(aabb))
-    end
-  end
-  return success, pos, radius, zones
-end
 
 local facilityPoiDefaults = {
   garage = {

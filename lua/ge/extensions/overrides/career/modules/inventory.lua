@@ -4,7 +4,7 @@
 
 local M = {}
 
-M.dependencies = {'career_career', "career_modules_log", "render_renderViews", "util_screenshotCreator"}
+M.dependencies = {'career_career', "career_modules_log", "render_renderViews", "util_screenshotCreator", "career_modules_garageManager", "career_modules_computer"}
 
 local dateUtils = require('utils/dateUtils')
 local parking = require('gameplay/parking')
@@ -38,13 +38,23 @@ local loanedVehicleReturned
 local function getClosestGarage(pos, levelName)
   levelName = levelName or getCurrentLevelIdentifier()
   local facilities = freeroam_facilities.getFacilities(levelName)
-  local playerPos = pos or getPlayerVehicle(0):getPosition()
+  if not facilities or not facilities.garages then return nil end
+
+  local playerPos = pos
+  if not playerPos then
+    local playerVeh = getPlayerVehicle(0)
+    if playerVeh then
+      playerPos = playerVeh:getPosition()
+    end
+  end
+  if not playerPos then return nil end
+
   local closestGarage
   local minDist = math.huge
-  for _, garage in ipairs(facilities.garages) do
-    local zones = freeroam_facilities.getZonesForFacility(garage)
-    if zones and not tableIsEmpty(zones) then
-      local dist = zones[1].center:distance(playerPos)
+  for _, garage in pairs(facilities.garages) do
+    local garagePos = freeroam_facilities.getAverageDoorPositionForFacility(garage)
+    if garagePos then
+      local dist = garagePos:distance(playerPos)
       if dist < minDist then
         closestGarage = garage
         minDist = dist
@@ -54,26 +64,56 @@ local function getClosestGarage(pos, levelName)
   return closestGarage
 end
 
+local function getClosestOwnedGarageWithSpace(pos, levelName)
+  local garageManager = career_modules_garageManager
+  if not garageManager then return nil end
 
-
-local function getClosestOwnedGarage(pos, levelName)
-  levelName = levelName or getCurrentLevelIdentifier()
-  local facilities = freeroam_facilities.getFacilities(levelName)
-  local playerPos = pos or getPlayerVehicle(0):getPosition()
-  local closestGarage
-  local minDist = math.huge
-  for _, garage in ipairs(facilities.garages) do
-    if career_modules_garageManager.isPurchasedGarage(garage.id) then
-      local zones = freeroam_facilities.getZonesForFacility(garage)
-      if zones and not tableIsEmpty(zones) then
-        local dist = zones[1].center:distance(playerPos)
-        if dist < minDist then
-          closestGarage = garage
-          minDist = dist
+  -- 1. Check computer link first - this is the highest priority
+  if career_modules_computer and career_modules_computer.getComputerId then
+    local currentCompId = career_modules_computer.getComputerId()
+    if currentCompId then
+      local currentGarageId = garageManager.computerIdToGarageId(currentCompId)
+      if currentGarageId and garageManager.isPurchasedGarage(currentGarageId) then
+        local spaceInfo = garageManager.isGarageSpace(currentGarageId)
+        if spaceInfo and spaceInfo[1] then
+          return freeroam_facilities.getFacility("garage", currentGarageId)
         end
       end
     end
   end
+
+  levelName = levelName or getCurrentLevelIdentifier()
+  local facilities = freeroam_facilities.getFacilities(levelName)
+  if not facilities or not facilities.garages then return nil end
+
+  local playerPos = pos
+  if not playerPos then
+    local playerVeh = getPlayerVehicle(0)
+    if playerVeh then
+      playerPos = playerVeh:getPosition()
+    end
+  end
+  if not playerPos then return nil end
+
+  -- 2. Find the closest owned garage with space
+  local closestGarage
+  local minDist = math.huge
+  for _, garage in pairs(facilities.garages) do
+    if garageManager.isPurchasedGarage(garage.id) then
+      local spaceInfo = garageManager.isGarageSpace(garage.id)
+      if spaceInfo and spaceInfo[1] then
+        local garagePos = freeroam_facilities.getAverageDoorPositionForFacility(garage)
+        if garagePos then
+          local dist = garagePos:distance(playerPos)
+          if dist < minDist then
+            closestGarage = garage
+            minDist = dist
+          end
+        end
+      end
+    end
+  end
+
   return closestGarage
 end
 
@@ -935,6 +975,7 @@ local function isSeatedInsideOwnedVehicle()
 end
 
 local function getVehiclesInGarage(garage, intersecting)
+  if not garage then return {} end
   local zones = freeroam_facilities.getZonesForFacility(garage)
   local spawnedVehicles = {}
   local res = {}
@@ -1076,9 +1117,9 @@ local function getVehicleUiData(inventoryId, inventoryIdsInGarage)
   local garage = getClosestGarage()
   local currentGarageId = garage and garage.id
   local currentGarageSpace = currentGarageId and career_modules_garageManager.isGarageSpace(currentGarageId) or {false, 0}
-  
+
   if not inventoryIdsInGarage then
-    inventoryIdsInGarage = getVehiclesInGarage(getClosestGarage(), true)
+    inventoryIdsInGarage = garage and getVehiclesInGarage(garage, true) or {}
   end
 
   vehicleData.value = career_modules_valueCalculator.getInventoryVehicleValue(inventoryId)
@@ -1113,7 +1154,7 @@ local function getVehicleUiData(inventoryId, inventoryIdsInGarage)
     vehicleData.inStorage = true
   end
 
-  vehicleData.atCurrentGarage = (vehicleData.location == currentGarageId) or vehicleData.inGarage
+  vehicleData.atCurrentGarage = (currentGarageId and vehicleData.location == currentGarageId) or vehicleData.inGarage
 
   for otherInventoryId, _ in pairs(inventoryIdsInGarage) do
     if otherInventoryId ~= inventoryId then
@@ -1123,7 +1164,7 @@ local function getVehicleUiData(inventoryId, inventoryIdsInGarage)
   end
 
   vehicleData.needsRepair = career_modules_insurance_insurance.inventoryVehNeedsRepair(vehicleData.id)
-  vehicleData.onSite = isVehicleOnSite(inventoryId, garage)
+  vehicleData.onSite = garage and isVehicleOnSite(inventoryId, garage) or false
   if inventoryId == favoriteVehicle then
     vehicleData.favorite = true
   end
@@ -1141,9 +1182,12 @@ local function getVehicleUiData(inventoryId, inventoryIdsInGarage)
   vehicleData.sellPermission = career_modules_permissions.getStatusForTag("vehicleSelling", {inventoryId = inventoryId})
   vehicleData.favoritePermission = career_modules_permissions.getStatusForTag("vehicleFavorite", {inventoryId = inventoryId})
   vehicleData.storePermission = career_modules_permissions.getStatusForTag("vehicleStoring", {inventoryId = inventoryId})
-  vehicleData.storePermission.allow = vehicleData.storePermission.allow and (career_modules_garageManager.isGarageSpace(garage.id)[1] or M.getVehicleLocation(inventoryId) == garage.id or vehicleData.inGarage)
+  local garageHasSpace = currentGarageId and career_modules_garageManager.isGarageSpace(currentGarageId)[1] or false
+  local vehicleAtGarageLocation = currentGarageId and M.getVehicleLocation(inventoryId) == currentGarageId or false
+  vehicleData.storePermission.allow = vehicleData.storePermission.allow and (garageHasSpace or vehicleAtGarageLocation or vehicleData.inGarage)
   vehicleData.deliverPermission = { allow = (currentGarageSpace[1] and vehicleData.location ~= currentGarageId and not vehicleData.inGarage)}
-  vehicleData.retrievePermission = { allow = (vehicleData.inStorage and vehicleData.location == garage.id)}
+  local retrieveGarageId = currentGarageId
+  vehicleData.retrievePermission = { allow = (vehicleData.inStorage and retrieveGarageId and vehicleData.location == retrieveGarageId) or false}
   vehicleData.licensePlateChangePermission = career_modules_permissions.getStatusForTag({"vehicleLicensePlate", "vehicleModification"}, {inventoryId = inventoryId})
   vehicleData.returnLoanerPermission = career_modules_permissions.getStatusForTag("returnLoanedVehicle", {inventoryId = inventoryId})
 
@@ -1929,8 +1973,27 @@ end
 -- Garage Localization
 
 M.moveVehicleToGarage = function(id, garage)
-  if not garage or not career_modules_garageManager.isGarageSpace(garage) then
-    garage = career_modules_garageManager.getNextAvailableSpace()
+  local garageManager = career_modules_garageManager
+  if not garageManager then return false end
+
+  -- If a garage is already assigned and it's valid, don't overwrite it if no new garage is specified
+  if not garage and vehicles[id] and vehicles[id].location then
+    local currentGarage = vehicles[id].location
+    local spaceInfo = garageManager.isGarageSpace(currentGarage)
+    if spaceInfo and spaceInfo[1] then
+      return true
+    end
+  end
+
+  if not garage or not (garageManager.isGarageSpace(garage) and garageManager.isGarageSpace(garage)[1]) then
+    local bestGarage = getClosestOwnedGarageWithSpace()
+    if bestGarage then
+      garage = bestGarage.id
+    end
+  end
+
+  if not garage then
+    garage = garageManager.getNextAvailableSpace()
   end
 
   if not garage then
@@ -1940,7 +2003,7 @@ M.moveVehicleToGarage = function(id, garage)
 
   if vehicles[id] then
     vehicles[id].location = garage
-    vehicles[id].niceLocation = career_modules_garageManager.garageIdToName(garage)
+    vehicles[id].niceLocation = garageManager.garageIdToName(garage)
     log("I", "Inventory", string.format("Vehicle ID %d moved to garage: %s", id, garage))
     return true
   else
@@ -1953,24 +2016,12 @@ M.deliverVehicle = function(id, money)
   local price = {money = {amount = money, canBeNegative = true}}
   career_modules_payment.pay(price, {label = string.format("Delivering vehicle to garage"), tags = {"delivery"}})
   delayVehicleAccess(id, 120, "delivery")
-  M.storeVehicle(id)
+  M.moveVehicleToGarage(id)
   sendDataToUi()
 end
 
 M.storeVehicle = function(id)
-  local closestOwned = getClosestOwnedGarage()
-  local targetGarageId
-
-  if closestOwned and career_modules_garageManager.isGarageSpace(closestOwned.id)[1] then
-    targetGarageId = closestOwned.id
-  else
-    targetGarageId = career_modules_garageManager.getNextAvailableSpace()
-  end
-
-  if vehicles[id] and targetGarageId then
-    vehicles[id].location = targetGarageId
-    vehicles[id].niceLocation = career_modules_garageManager.garageIdToName(targetGarageId)
-  end
+  M.moveVehicleToGarage(id)
 end
 
 M.switchGarageSpots = function(first, second)
@@ -2082,5 +2133,5 @@ M.addRepossession = addRepossession
 M.getRepossessions = getRepossessions
 M.addMovieRental = addMovieRental
 M.getMovieRentals = getMovieRentals
-M.getClosestOwnedGarage = getClosestOwnedGarage
+M.getClosestOwnedGarageWithSpace = getClosestOwnedGarageWithSpace
 return M

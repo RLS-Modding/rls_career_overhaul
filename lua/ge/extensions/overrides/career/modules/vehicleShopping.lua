@@ -1238,7 +1238,7 @@ local function onVehicleSpawnFinished(vehId)
         career_modules_insurance.changeVehPolicy(inventoryId, policyId)
       end
     end
-    career_modules_inventory.storeVehicle(inventoryId)
+    career_modules_inventory.moveVehicleToGarage(inventoryId, spawnFollowUpActions.targetGarageId)
     spawnFollowUpActions = nil
   end
 end
@@ -1268,11 +1268,17 @@ local function buyVehicleAndSendToGarage(options)
   end
   payForVehicle()
 
-  local closestGarage = career_modules_inventory.getClosestGarage()
-  local garagePos, _ = freeroam_facilities.getGaragePosRot(closestGarage)
+  -- Use the robust garage detection in inventory.lua which handles computer links and proximity
+  local targetGarage = career_modules_inventory.getClosestOwnedGarageWithSpace() or career_modules_inventory.getClosestGarage()
+  if not targetGarage then
+    return
+  end
+
+  local garagePos, _ = freeroam_facilities.getGaragePosRot(targetGarage)
   local delay = getDeliveryDelay(purchaseData.vehicleInfo.pos:distance(garagePos))
   spawnFollowUpActions = {
     delayAccess = delay,
+    targetGarageId = targetGarage.id,
     licensePlateText = options.licensePlateText,
     dealershipId = options.dealershipId,
     policyId = options.policyId
@@ -1287,7 +1293,11 @@ local function buyVehicleAndSpawnInParkingSpot(options)
     return
   end
   payForVehicle()
+
+  local targetGarage = career_modules_inventory.getClosestOwnedGarageWithSpace() or career_modules_inventory.getClosestGarage()
+
   spawnFollowUpActions = {
+    targetGarageId = targetGarage and targetGarage.id or nil,
     licensePlateText = options.licensePlateText,
     dealershipId = options.dealershipId,
     policyId = options.policyId
@@ -1616,18 +1626,6 @@ local function onAddedVehiclePartsToInventory(inventoryId, newParts)
   vehicle.changedSlots = {}
 
   if deleteAddedVehicle then
-    local vehicleName = vehicle.niceName or vehicle.Name or "Unknown Vehicle"
-
-    local moveSuccess = career_modules_inventory.moveVehicleToGarage(inventoryId)
-
-    if moveSuccess then
-      log("I", "Career", string.format("Vehicle '%s' successfully moved to garage", vehicleName))
-    else
-      log("W", "Career", string.format("Failed to move vehicle '%s' to garage - no available space found", vehicleName))
-      ui_message(string.format("Warning: %s could not be moved to a garage. Please check your garage space.",
-        vehicleName), 5, "vehicleInventory")
-    end
-
     career_modules_inventory.removeVehicleObject(inventoryId)
     deleteAddedVehicle = nil
   end
