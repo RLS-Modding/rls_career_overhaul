@@ -679,7 +679,7 @@ local function switchCareerLevel(nextLevel)
   if not nextLevel or nextLevel == getCurrentLevelIdentifier() then return end
 
   switchLevel = nextLevel
-  career_saveSystem.saveCurrent()
+  career_saveSystem.saveCurrent(nil, true)
 end
 
 local function onClientEndMission(levelPath)
