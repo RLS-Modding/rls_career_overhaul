@@ -248,8 +248,12 @@ local function saveCurrentActual(vehiclesThumbnailUpdate)
   end
 end
 
-local function saveCurrent(vehiclesThumbnailUpdate)
+local function saveCurrent(vehiclesThumbnailUpdate, force)
   queueSave = true
+  if force then
+    saveCurrentActual()
+    queueSave = false
+  end
 end
 
 local function onUpdate()
