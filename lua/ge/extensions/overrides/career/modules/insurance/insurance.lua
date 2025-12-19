@@ -708,13 +708,30 @@ end
 
 
 local function startRepairInGarage(invVehId, repairOptionData)
+  local garage = career_modules_inventory.getClosestGarage()
+  local spaceInfo = career_modules_garageManager.isGarageSpace(garage.id)
+  local hasStorage = spaceInfo and spaceInfo[1]
+
+  if hasStorage then
+    local invVeh = career_modules_inventory.getVehicle(invVehId)
+    if invVeh then
+      invVeh.location = garage.id
+      invVeh.niceLocation = career_modules_garageManager.garageIdToName(garage.id)
+      career_modules_inventory.setVehicleDirty(invVehId)
+    end
+  end
+
   local vehId = career_modules_inventory.getVehicleIdFromInventoryId(invVehId)
   extensions.hook("onRepairInGarage", invVehId)
   return startRepair(invVehId, repairOptionData, (vehId and repairOptionData.repairTime<= 0) and
     function(vehInfo)
-      local vehObj = getObjectByID(vehId)
-      if not vehObj then return end
-      freeroam_facilities.teleportToGarage(career_modules_inventory.getClosestGarage().id, vehObj, false)
+      if hasStorage then
+        career_modules_inventory.removeVehicleObject(invVehId)
+      else
+        local vehObj = getObjectByID(vehId)
+        if not vehObj then return end
+        freeroam_facilities.teleportToGarage(garage.id, vehObj, false)
+      end
     end)
 end
 
