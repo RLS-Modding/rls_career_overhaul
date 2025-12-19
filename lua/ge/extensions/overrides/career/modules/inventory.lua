@@ -1976,15 +1976,6 @@ M.moveVehicleToGarage = function(id, garage)
   local garageManager = career_modules_garageManager
   if not garageManager then return false end
 
-  -- If a garage is already assigned and it's valid, don't overwrite it if no new garage is specified
-  if not garage and vehicles[id] and vehicles[id].location then
-    local currentGarage = vehicles[id].location
-    local spaceInfo = garageManager.isGarageSpace(currentGarage)
-    if spaceInfo and spaceInfo[1] then
-      return true
-    end
-  end
-
   if not garage or not (garageManager.isGarageSpace(garage) and garageManager.isGarageSpace(garage)[1]) then
     local bestGarage = getClosestOwnedGarageWithSpace()
     if bestGarage then
