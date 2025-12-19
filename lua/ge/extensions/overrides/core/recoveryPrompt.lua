@@ -76,7 +76,7 @@ local conditions = {
     local vehInfo = career_modules_inventory.getVehicles()[favoriteVehicleId]
     if not vehInfo then return false, "No favourite vehicle set." end
     if vehInfo.timeToAccess
-    or not career_modules_inventory.getVehicleIdFromInventoryId(favoriteVehicleId) and career_modules_insurance.inventoryVehNeedsRepair(favoriteVehicleId) -- vehicle is not spawned and needs a repair
+    or not career_modules_inventory.getVehicleIdFromInventoryId(favoriteVehicleId) and career_modules_insurance_insurance.inventoryVehNeedsRepair(favoriteVehicleId) -- vehicle is not spawned and needs a repair
     then
       return false, "Favourite vehicle still in repair."
     end
@@ -124,20 +124,10 @@ local conditions = {
 local flipUpRightCost = 50
 local towToRoadCost = 75
 local baseTowToGarageCost = 250
-local favoriteVehicleCost = 1250
 
 local function getPriceFunction(basePrice)
   return function(target)
-    if career_modules_insurance.isRoadSideAssistanceFree(career_modules_inventory.getInventoryIdFromVehicleId(target.vehId)) then
-      return {money = {amount = 0, canBeNegative = true}}
-    end
-    return {money = {amount = basePrice, canBeNegative = true}}
-  end
-end
-
-local function getFavoriteVehiclePriceFunction(basePrice)
-  return function()
-    if career_modules_insurance.isRoadSideAssistanceFree(career_modules_inventory.getFavoriteVehicle()) then
+    if career_modules_insurance_insurance.isRoadSideAssistanceFree(career_modules_inventory.getInventoryIdFromVehicleId(target.vehId)) then
       return {money = {amount = 0, canBeNegative = true}}
     end
     return {money = {amount = basePrice, canBeNegative = true}}
@@ -147,7 +137,7 @@ end
 local buttonOptions = {
   -- available durign regular career gameplay
   towToRoad = {
-    label = "ui.career.towToRoad",
+    label = "Tow to Nearest Road",
     type = "vehicle",
     includeConditions = {},
     enableConditions = {conditions.outOfPursuit, conditions.vehicleSlow, conditions.notTestdriving, conditions.vehicleInInventory},
@@ -155,8 +145,11 @@ local buttonOptions = {
       local veh = scenetree.findObjectById(target.vehId)
       if veh then
         spawn.teleportToLastRoad(veh, {resetVehicle = false})
-        if not career_modules_insurance.isRoadSideAssistanceFree(career_modules_inventory.getInventoryIdFromVehicleId(target.vehId)) then
+        local invVehId = career_modules_inventory.getInventoryIdFromVehicleId(target.vehId)
+        if not career_modules_insurance_insurance.isRoadSideAssistanceFree(invVehId) then
           career_modules_payment.pay({money = {amount = towToRoadCost, canBeNegative = true}}, {label = string.format("Towed your vehicle to the road")})
+        else
+          career_modules_insurance_insurance.useRoadsideAssistance(invVehId)
         end
       end
     end,
@@ -167,6 +160,7 @@ local buttonOptions = {
     fadeActive = true,
     fadeStartSound = "event:>UI>Missions>Vehicle_Recover",
     icon = "road",
+    isRecoveryOption = true,
     confirmationText = "Do you want to tow your vehicle to the nearest road?",
     price = getPriceFunction(towToRoadCost)
   },
@@ -179,8 +173,11 @@ local buttonOptions = {
       local veh = scenetree.findObjectById(target.vehId)
       if veh then
         spawn.safeTeleport(veh, veh:getPosition(), quatFromDir(veh:getDirectionVector()), nil, nil, nil, nil, false )
-        if not career_modules_insurance.isRoadSideAssistanceFree(career_modules_inventory.getInventoryIdFromVehicleId(target.vehId)) then
+        local invVehId = career_modules_inventory.getInventoryIdFromVehicleId(target.vehId)
+        if not career_modules_insurance_insurance.isRoadSideAssistanceFree(invVehId) then
           career_modules_payment.pay({money = {amount = flipUpRightCost, canBeNegative = true}}, {label = string.format("Flipped your vehicle upright")})
+        else
+          career_modules_insurance_insurance.useRoadsideAssistance(invVehId)
         end
       end
     end,
@@ -189,6 +186,7 @@ local buttonOptions = {
     active = true,
     enabled = true,
     fadeActive = true,
+    isRecoveryOption = true,
     fadeStartSound = "event:>UI>Missions>Vehicle_Flip",
     icon = "carToWheels",
     confirmationText = "Do you want your vehicle to be flipped upright?",
@@ -199,21 +197,14 @@ local buttonOptions = {
     label = "Retrieve favorite vehicle",
     includeConditions = {},
     enableConditions = {conditions.outOfPursuit, conditions.favouriteSet, conditions.notTestdriving},
-    atFadeFunction = function() 
-      career_modules_playerDriving.retrieveFavoriteVehicle()
-      if not career_modules_insurance.isRoadSideAssistanceFree(career_modules_inventory.getFavoriteVehicle()) then
-        career_modules_payment.pay({money = {amount = favoriteVehicleCost, canBeNegative = true}}, {label = string.format("Retrieved your favorite vehicle")})
-      end
-      extensions.hook("useTow", career_modules_inventory.getFavoriteVehicle())
-    end,
+    atFadeFunction = function() career_modules_playerDriving.retrieveFavoriteVehicle() end,
 
     order = 11,
     active = false,
     enabled = true,
     fadeActive = true,
     icon = "carStarred",
-    confirmationText = "Do you want to retrieve your favorite vehicle?",
-    price = getFavoriteVehiclePriceFunction(favoriteVehicleCost)
+    confirmationText = "Do you want to retrieve your favorite vehicle?"
   },
   -- only during mission
   flipMission = {
@@ -281,7 +272,7 @@ local buttonOptions = {
       if veh then
         if career_career.isActive() then
           if career_modules_inventory.getCurrentVehicle() then
-            career_modules_inventory.updatePartConditions(nil, career_modules_inventory.getCurrentVehicle(), function() career_modules_insurance.startRepair(nil) end)
+            career_modules_inventory.updatePartConditions(nil, career_modules_inventory.getCurrentVehicle(), function() career_modules_insurance_insurance.startRepair(nil) end)
           end
         else
           spawn.safeTeleport(veh, veh:getPosition(), quatFromDir(veh:getDirectionVector()), nil, nil, nil, nil, true )
@@ -292,6 +283,7 @@ local buttonOptions = {
     enableConditions = {conditions.vehicleSlow},
     order = 10,
     active = true,
+    isRecoveryOption = true,
     enabled = true,
     fadeActive = true,
     fadeStartSound = "event:>UI>Missions>Vehicle_Recover",
@@ -420,8 +412,8 @@ local function addTowingButtons()
   for i, garage in ipairs(garages) do
     if not garage.noQuickTravel then
       local function getPrice(target)
-        if career_modules_insurance.isRoadSideAssistanceFree(career_modules_inventory.getInventoryIdFromVehicleId(target.vehId)) then
-          return nil
+        if career_modules_insurance_insurance.isRoadSideAssistanceFree(career_modules_inventory.getInventoryIdFromVehicleId(target.vehId)) then
+          return {}
         end
         local price = career_modules_quickTravel.getPriceForQuickTravelToGarage(garage) * 15
         if price > 0 then price = price + baseTowToGarageCost end
@@ -443,12 +435,6 @@ local function addTowingButtons()
             career_modules_playerDriving.teleportToGarage(garage.id, scenetree.findObjectById(target.vehId), false)
             if career_modules_quickTravel.getPriceForQuickTravelToGarage(garage) > 0 then
               local invId = career_modules_inventory.getInventoryIdFromVehicleId(target.vehId)
-              if career_modules_insurance and career_modules_insurance.useTow then
-                career_modules_insurance.useTow(invId)
-              else
-                -- Fallback: emit a hook so any loaded extension with useTow handles it
-                extensions.hook("useTow", invId)
-              end
             end
             local price = getPrice(target)
             if price then
@@ -519,6 +505,7 @@ local function addTaxiButtons()
       local price = career_modules_quickTravel.getPriceForQuickTravel(pos)
       return {money = {amount = price}}
     end
+    return {}
   end
 
   buttonOptions.taxiToVehicle =
@@ -623,7 +610,6 @@ local function setDefaultsForTutorial()
   buttonOptions.repairHere.active = true
   buttonOptions.flipUpright.active = true
   buttonOptions.getFavoriteVehicle.active = false
-  updateTuningShopTowButton()
 end
 
 local function setEverythingActive()
@@ -711,12 +697,10 @@ local function addButton(id, label, atFadeFunction, order, message, active, enab
     customButton = true,
     uniqueID = options.uniqueID or id,
   }
-  
   if buttonOptions[id] then
-    log("E","","Button for Id already exists and will be overwritten: " .. dumps(id) .. ": " .. dumps(buttonOptions[id]))
+    log("E","","Button for Id already exists and will be overwritten: " .. dumps(id) .. ": " .. dumps(buttonOptions[btn.id]))
   end
   buttonOptions[id] = btn
-  
   -- check if there's any collision for the orders
   local orders = {}
   for _, o in pairs(buttonOptions) do
@@ -902,6 +886,10 @@ local function getButtonsForTarget(target)
         end
 
         local price = type(option.price) == "function" and option.price(target) or option.price
+        if price and career_modules_payment and not career_modules_payment.canPay(price) then
+          enabled = false
+          reason = "Insufficient funds"
+        end
         local disableReason = reason or (not enabled and "Disabled")
         local uniqueID = "recovery_"..id .."_".. dumps(target)
         local btn = {
@@ -1047,6 +1035,21 @@ local function onQuickAccessLoaded()
   quickAccessInitialized = nil
 end
 
+-- returns a sanitized list of the custom recovery options, whether they are active or not
+local function getCustomRecoveryOptionsActiveState()
+  local recoveryOptions = {}
+  for recoveryOptionId, recoveryOptionData in pairs(buttonOptions) do
+    recoveryOptions[recoveryOptionId] = {
+      active = recoveryOptionData.active,
+      enabled = recoveryOptionData.enabled,
+      label = recoveryOptionData.label,
+      icon = recoveryOptionData.icon,
+      isRecoveryOption = recoveryOptionData.isRecoveryOption,
+    }
+  end
+  return recoveryOptions
+end
+
 local function onVehicleSwitched(oldId, newId, player)
   updateTuningShopTowButton(newId)
 end
@@ -1061,6 +1064,7 @@ M.onScreenFadeState = onScreenFadeState
 M.handleCurrRecoveryOption = handleCurrRecoveryOption
 M.uiPopupButtonPressed = uiPopupButtonPressed
 M.uiPopupCancelPressed = uiPopupCancelPressed
+M.getCustomRecoveryOptionsActiveState = getCustomRecoveryOptionsActiveState
 
 M.onCareerModulesActivated = onCareerModulesActivated
 M.onClientStartMission = onClientStartMission

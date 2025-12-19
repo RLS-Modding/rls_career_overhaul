@@ -6,6 +6,7 @@ export const useVehicleShoppingStore = defineStore("vehicleShopping", () => {
   // States
   const vehicleShoppingData = ref({})
   const searchQuery = ref('')
+  const selectedSellerId = ref(null)
   const filters = ref({}) // { field: { min, max } }
   const sortField = ref('Value')
   const sortDirection = ref('asc') // 'asc' | 'desc'
@@ -47,13 +48,17 @@ export const useVehicleShoppingStore = defineStore("vehicleShopping", () => {
     return hidden
   }
 
-    const filteredVehicles = computed(() => {
+  // Computed property for filtered UNSOLD vehicles
+  const filteredVehicles = computed(() => {
     const d = vehicleShoppingData.value
     if (!d.vehiclesInShop) return []
 
-    let filteredList = Object.keys(d.vehiclesInShop).reduce(function (result, key) {
-      const vehicle = d.vehiclesInShop[key]
+    // Convert object to array if needed (backend might return object with string keys)
+    const vehicleList = Array.isArray(d.vehiclesInShop) 
+      ? d.vehiclesInShop 
+      : Object.values(d.vehiclesInShop || {})
 
+    let filteredList = vehicleList.reduce(function (result, vehicle) {
       if (d.currentSeller) {
         // When at a specific dealer, only show vehicles from that dealer
         if (vehicle.sellerId === d.currentSeller) result.push(vehicle)
@@ -63,7 +68,6 @@ export const useVehicleShoppingStore = defineStore("vehicleShopping", () => {
           result.push(vehicle)
         }
       }
-
       return result
     }, [])
 
@@ -73,13 +77,50 @@ export const useVehicleShoppingStore = defineStore("vehicleShopping", () => {
     return filteredList
   })
 
+  // New computed property for filtered SOLD vehicles
+  const filteredSoldVehicles = computed(() => {
+    const d = vehicleShoppingData.value
+    if (!d.soldVehicles) return []
+
+    // Convert object to array if needed
+    const vehicleList = Array.isArray(d.soldVehicles) 
+      ? d.soldVehicles 
+      : Object.values(d.soldVehicles || {})
+
+    // Filter sold vehicles (usually we show all sold vehicles relevant to the player)
+    // We might want to apply search to sold vehicles too, but maybe not all filters
+    // For now, applying search and basic filtering
+    let filteredList = vehicleList
+
+    // Apply search query if present
+    if (searchQuery.value) {
+        const query = searchQuery.value.toLowerCase().trim()
+        filteredList = filteredList.filter(vehicle => {
+          const fields = [vehicle.Name, vehicle.Brand, vehicle.niceName, vehicle.model_key, vehicle.config_name]
+          return fields.some(f => f && f.toString().toLowerCase().includes(query))
+        })
+    }
+
+    // Apply sorting
+    if (filteredList.length) filteredList.sort((a, b) => {
+        // Sort sold vehicles by sold time if available, or default sort
+        return b.soldViewCounter - a.soldViewCounter || sortComparator(a, b)
+    })
+
+    return filteredList
+  })
+
   // Add a new computed property to group vehicles by dealer
   const vehiclesByDealer = computed(() => {
     const d = vehicleShoppingData.value
     if (!d.vehiclesInShop) return []
 
+    const vehicleList = Array.isArray(d.vehiclesInShop) 
+      ? d.vehiclesInShop 
+      : Object.values(d.vehiclesInShop || {})
+
     // Group vehicles by sellerId (include all dealers, hidden ones will be marked)
-    const grouped = Object.values(d.vehiclesInShop).reduce((acc, vehicle) => {
+    const grouped = vehicleList.reduce((acc, vehicle) => {
       if (!acc[vehicle.sellerId]) {
         acc[vehicle.sellerId] = {
           id: vehicle.sellerId,
@@ -119,7 +160,8 @@ export const useVehicleShoppingStore = defineStore("vehicleShopping", () => {
   const numericFields = computed(() => {
     const d = vehicleShoppingData.value
     if (!d.vehiclesInShop) return []
-    return getNumericFields(Object.values(d.vehiclesInShop))
+    const vehicleList = Array.isArray(d.vehiclesInShop) ? d.vehiclesInShop : Object.values(d.vehiclesInShop)
+    return getNumericFields(vehicleList)
   })
 
   const getCategoricalStats = (vehicles) => {
@@ -140,7 +182,7 @@ export const useVehicleShoppingStore = defineStore("vehicleShopping", () => {
   const categoricalFields = computed(() => {
     const d = vehicleShoppingData.value
     if (!d.vehiclesInShop) return []
-    const vehicles = Object.values(d.vehiclesInShop)
+    const vehicles = Array.isArray(d.vehiclesInShop) ? d.vehiclesInShop : Object.values(d.vehiclesInShop)
     const stats = getCategoricalStats(vehicles)
     const maxValues = 60
     const excluded = new Set(['niceName','Name','config_name','thumbnail','pos'])
@@ -152,7 +194,8 @@ export const useVehicleShoppingStore = defineStore("vehicleShopping", () => {
   const fieldValues = computed(() => {
     const d = vehicleShoppingData.value
     if (!d.vehiclesInShop) return {}
-    const stats = getCategoricalStats(Object.values(d.vehiclesInShop))
+    const vehicles = Array.isArray(d.vehiclesInShop) ? d.vehiclesInShop : Object.values(d.vehiclesInShop)
+    const stats = getCategoricalStats(vehicles)
     const map = {}
     Object.keys(stats).forEach(k => {
       map[k] = Array.from(stats[k]).sort((a,b) => String(a).localeCompare(String(b)))
@@ -181,17 +224,9 @@ export const useVehicleShoppingStore = defineStore("vehicleShopping", () => {
     let res = Array.isArray(list) ? list.slice() : []
     const activeFilters = filters.value
     res = res.filter(v => {
-      // Handle hideSold filter - check for boolean value or values array
-      if (activeFilters.hideSold) {
-        const shouldHide = activeFilters.hideSold.value === true || 
-                          (activeFilters.hideSold.values && (activeFilters.hideSold.values[0] === true || activeFilters.hideSold.values[0] === 'true'))
-        if (shouldHide && (v.__sold || v.markedSold || (v.soldViewCounter && v.soldViewCounter > 0))) {
-          return false
-        }
-      }
       
       for (const key in activeFilters) {
-        if (key === 'hideSold') continue // Already handled above
+        if (key === 'hideSold') continue // Already handled by separation of lists
         const range = activeFilters[key]
         if (!range) continue
         if (Array.isArray(range.values) && range.values.length) {
@@ -272,93 +307,102 @@ export const useVehicleShoppingStore = defineStore("vehicleShopping", () => {
   function applyShopDelta(delta) {
     if (!delta || typeof delta !== 'object') return
     const d = vehicleShoppingData.value
-    if (!d.vehiclesInShop) d.vehiclesInShop = {}
-    // additions
+    // Ensure arrays exist if not initialized
+    if (!d.vehiclesInShop) d.vehiclesInShop = []
+    if (!d.soldVehicles) d.soldVehicles = []
+
+    // Convert object to array if backend sends object (just in case)
+    let vehiclesArray = Array.isArray(d.vehiclesInShop) ? d.vehiclesInShop : Object.values(d.vehiclesInShop)
+    let soldVehiclesArray = Array.isArray(d.soldVehicles) ? d.soldVehicles : Object.values(d.soldVehicles)
+
+    // handle added
     if (Array.isArray(delta.added)) {
       delta.added.forEach(v => {
         if (!v || !v.shopId) return
-        d.vehiclesInShop[v.shopId] = v
-      })
-    }
-    // handle sold: keep visible for 2 minutes, then remove (accept either uid or full vehicle)
-    if (Array.isArray(delta.sold)) {
-      delta.sold.forEach(s => {
-        const uid = typeof s === 'string' ? s : s?.uid
-        if (!uid) return
-        let foundKey = null
-        Object.keys(d.vehiclesInShop || {}).some(k => {
-          const v = d.vehiclesInShop[k]
-          if (v && v.uid === uid) { foundKey = k; return true }
-          return false
-        })
-        if (foundKey != null) {
-          const v = d.vehiclesInShop[foundKey]
-          // enrich with incoming sold snapshot if present (preserve shopId)
-          if (s && typeof s === 'object') {
-            const keepShopId = v.shopId
-            d.vehiclesInShop[foundKey] = { ...v, ...s, shopId: keepShopId }
-          }
-          d.vehiclesInShop[foundKey].__soldAt = Date.now()
-          d.vehiclesInShop[foundKey].__sold = true
-          if (soldRemovalTimers.has(uid)) { clearTimeout(soldRemovalTimers.get(uid)) }
-          soldRemovalTimers.set(uid, setTimeout(() => {
-            try {
-              Object.keys(d.vehiclesInShop || {}).forEach(k => {
-                const vv = d.vehiclesInShop[k]
-                if (vv && vv.uid === uid) delete d.vehiclesInShop[k]
-              })
-            } finally {
-              soldRemovalTimers.delete(uid)
-            }
-          }, 120000))
+        // Check if exists
+        const existingIdx = vehiclesArray.findIndex(ex => ex.shopId === v.shopId)
+        if (existingIdx !== -1) {
+            vehiclesArray[existingIdx] = v
+        } else {
+            vehiclesArray.push(v)
         }
       })
     }
 
-    // handle removed (non-sold): remove immediately
-    if (Array.isArray(delta.removed)) {
-      delta.removed.forEach(uid => {
-        Object.keys(d.vehiclesInShop || {}).forEach(k => {
-          const v = d.vehiclesInShop[k]
-          if (v && v.uid === uid) delete d.vehiclesInShop[k]
+    // handle sold
+    if (Array.isArray(delta.sold)) {
+        delta.sold.forEach(s => {
+            // 's' can be a shopId (primitive) or a vehicle object with shopId (if backend sends full obj)
+            // The backend plan says it sends a vehicle object with __sold=true
+            const shopId = typeof s === 'object' ? s.shopId : s
+            
+            // Find in vehiclesInShop and move to soldVehicles
+            const idx = vehiclesArray.findIndex(v => v.shopId === shopId)
+            if (idx !== -1) {
+                const vehicle = vehiclesArray[idx]
+                // Update properties if 's' is an object with more data
+                if (typeof s === 'object') {
+                    Object.assign(vehicle, s)
+                }
+                vehicle.__sold = true
+                vehicle.__soldAt = Date.now()
+                
+                // Remove from unsold
+                vehiclesArray.splice(idx, 1)
+                
+                // Add to sold if not present
+                const soldIdx = soldVehiclesArray.findIndex(v => v.shopId === shopId)
+                if (soldIdx !== -1) {
+                    soldVehiclesArray[soldIdx] = vehicle
+                } else {
+                    soldVehiclesArray.push(vehicle)
+                }
+            }
         })
+    }
+
+    // handle removed (completely removed from shop)
+    if (Array.isArray(delta.removed)) {
+      delta.removed.forEach(shopId => {
+        // Remove from unsold
+        const idx = vehiclesArray.findIndex(v => v.shopId === shopId)
+        if (idx !== -1) vehiclesArray.splice(idx, 1)
+        
+        // Remove from sold
+        const soldIdx = soldVehiclesArray.findIndex(v => v.shopId === shopId)
+        if (soldIdx !== -1) soldVehiclesArray.splice(soldIdx, 1)
       })
     }
 
-    // handle updated: if soldViewCounter increased, mark as sold for display
+    // handle updated
     if (Array.isArray(delta.updated)) {
-      delta.updated.forEach(vu => {
-        const uid = vu && vu.uid
-        if (!uid) return
-        Object.keys(d.vehiclesInShop || {}).forEach(k => {
-          const v = d.vehiclesInShop[k]
-          if (v && v.uid === uid) {
-            // Merge updated data but preserve shopId
-            const keepShopId = v.shopId
-            Object.assign(v, vu)
-            v.shopId = keepShopId
-            v.__sold = vu.__sold || true
-            v.__soldAt = Date.now()
-            if (soldRemovalTimers.has(uid)) { clearTimeout(soldRemovalTimers.get(uid)) }
-            soldRemovalTimers.set(uid, setTimeout(() => {
-              try {
-                Object.keys(d.vehiclesInShop || {}).forEach(kk => {
-                  const vv = d.vehiclesInShop[kk]
-                  if (vv && vv.uid === uid) delete d.vehiclesInShop[kk]
-                })
-              } finally {
-                soldRemovalTimers.delete(uid)
-              }
-            }, 120000))
-          }
+        delta.updated.forEach(u => {
+            // Update in unsold
+            const idx = vehiclesArray.findIndex(v => v.shopId === u.shopId)
+            if (idx !== -1) {
+                Object.assign(vehiclesArray[idx], u)
+            }
+            
+            // Update in sold
+            const soldIdx = soldVehiclesArray.findIndex(v => v.shopId === u.shopId)
+            if (soldIdx !== -1) {
+                Object.assign(soldVehiclesArray[soldIdx], u)
+            }
         })
-      })
     }
+
+    // Update state refs
+    d.vehiclesInShop = vehiclesArray
+    d.soldVehicles = soldVehiclesArray
   }
   
   // Add a method to set the search query
   const setSearchQuery = (query) => {
     searchQuery.value = query
+  }
+
+  const setSelectedSellerId = (sellerId) => {
+    selectedSellerId.value = sellerId
   }
 
   const setFilterRange = (field, min, max) => {
@@ -409,11 +453,14 @@ export const useVehicleShoppingStore = defineStore("vehicleShopping", () => {
   return {
     vehicleShoppingData,
     filteredVehicles,
+    filteredSoldVehicles,
     vehiclesByDealer,
     requestVehicleShoppingData,
     updateFiltersOnOpen,
     searchQuery,
     setSearchQuery,
+    selectedSellerId,
+    setSelectedSellerId,
     // filters & sorting
     filters,
     numericFields,

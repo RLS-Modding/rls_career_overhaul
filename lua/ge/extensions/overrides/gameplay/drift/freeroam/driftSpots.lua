@@ -47,12 +47,10 @@ local improperEndReasons = {
 local lines = {}
 
 local activeLine -- this line is constantly checked to see if player is crossing it
-local finishLineName -- reckoned finish line depending on starting line
 
 local isInTheConcludingPhase = false
 local isInFreeroamChallenge = false
 local hasAlreadyShownNewRecord = false
-
 local plPos = vec3()
 
 local currStopTimeToAbort = 0
@@ -111,7 +109,7 @@ local function delayedUpdateTaskList(job)
   updateTaskList()
 end
 
-local function startFreeroamChallenge(line)
+local function startDriftSpot(line)
   hasAlreadyShownNewRecord = false
   log("I","","Started freeroam drift zone: " .. dumps(line.id))
   gameplay_drift_general.setContext("inFreeroamChallenge")
@@ -121,7 +119,7 @@ local function startFreeroamChallenge(line)
 
   isInFreeroamChallenge = true
   activeLine = line
-
+  extensions.hook("onDriftSpotStarted", {lineId = line.id})
   -- we need to delay the updateTaskList call otherwise it doesn't show
   core_jobsystem.create(delayedUpdateTaskList, 1)
 end
@@ -198,7 +196,7 @@ local function properEnd()
     local scoreGained = gameplay_drift_scoring.getScore().score
     local spot = gameplay_drift_saveLoad.getDriftSpotById(activeLine.spotName)
 
-    extensions.hook("onFreeroamChallengeCompleted",
+    extensions.hook("onDriftSpotCompleted",
     {
       duration = options.concludingPhaseDuration,
       score = scoreGained,
@@ -217,7 +215,7 @@ local function improperEnd(reason)
   core_jobsystem.create(function(job)
     isInTheConcludingPhase = true
 
-    extensions.hook("onFreeroamChallengeTerminated", reason, options.concludingPhaseDuration)
+    extensions.hook("onDriftSpotFailed", {reason = reason, concludingPhaseDuration = options.concludingPhaseDuration, lineId = activeLine.id})
     local spot = gameplay_drift_saveLoad.getDriftSpotById(activeLine.spotName)
     for _, obj in ipairs(spot.info.objectives or {}) do
       local completed = spot.saveData.objectivesCompleted[obj.id]
@@ -248,7 +246,7 @@ local function detectStart(lineId)
     local dot = plVel:dot(line.startDir)
     if dot > 0 then
       if gameplay_drift_drift.getIsDrifting() then
-        startFreeroamChallenge(line)
+        startDriftSpot(line)
       end
     end
   end
@@ -467,6 +465,7 @@ end
 
 local function onDeserialized(data)
   if data.isInFreeroamChallenge then
+    extensions.hook("onDriftSpotForcedEnd", {lineId = activeLine.id})
     end_()
   end
 end

@@ -151,32 +151,6 @@ end
 M.invalidateCache = invalidateCache
 
 local function sendMissionLocationsToMinimap()
-  --[[
-  local send = true
-  if not gameplay_markerInteraction.isStateFreeroam() or gameplay_missions_missionManager.getForegroundMissionId() then
-    send = false
-  end
-  if send then
-    local data = {
-      key = 'missions',
-      items = {}
-    }
-    local level = getCurrentLevelIdentifier()
-    local i = 1
-    for _, cluster in ipairs(gameplay_rawPois.getAllClusters({mergeRadius = 20, levelIdentifier = level})) do
-      if cluster.hasType['mission'] then
-        data.items[i] = cluster.pos.x
-        data.items[i+1] = cluster.pos.y
-        data.items[i+2] = cluster.containedIds
-        data.items[i+3] = gameplay_rawPois.getIconNamesForCluster(cluster)
-        i = i+4
-      end
-    end
-    guihooks.trigger("NavigationStaticMarkers", data)
-  else
-    M.clearMissionsFromMinimap()
-  end
-  ]]
   sendToMinimap = false
 end
 
@@ -739,7 +713,7 @@ end
 
 -- gets called only while career mode is enabled
 local function onPreRender(dtReal, dtSim)
-  if not gameplay_markerInteraction.isStateFreeroam() then
+  if not gameplay_playmodeMarkers.isStateWithPlaymodeMarkers() then
     return
   end
   -- check if we've switched level

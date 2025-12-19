@@ -399,10 +399,10 @@ function C:updateActiveRadius(tickTime) -- updates values that track if the vehi
   local extraRadius = self.focus.dist + max(0, (1 - self.focus.dist / 5) * 80) -- larger extra radius if player is at a low speed
   extraRadius = extraRadius + max(0, self.focus.dirVec:dot(tempDirVec)) * 150 -- larger extra radius if focus direction to vehicle is straight ahead
 
-  local visibilityValue = self.camVisible and 1 or -1
-  self.respawn.staticVisibility = clamp(self.respawn.staticVisibility + visibilityValue * tickTime * 0.2, 0, 1) -- 5 seconds of smoothing from 0 to 1
+  local visibilityValue = self.camVisible and tickTime * 2 or -tickTime
+  self.respawn.staticVisibility = clamp(self.respawn.staticVisibility + visibilityValue * 0.125, 0, 1) -- 4 seconds up, 8 seconds down
 
-  local decrement = tickTime * self.respawn.spawnValue * (2 - self.respawn.staticVisibility) * 40
+  local decrement = tickTime * self.respawn.spawnValue * (2 - self.respawn.staticVisibility) * 40 -- stronger if occluded for longer
   self.respawn.activeRadius = max(activeRadius, self.respawn.activeRadius - decrement) -- gradually reduces active radius
   self.respawn.finalRadius = self.respawn.activeRadius + extraRadius
 end
@@ -692,11 +692,12 @@ end
 function C:onRefresh() -- triggers whenever vehicle data needs to be refreshed (usually after respawning)
   if self.isAi then
     local obj = getObjectByID(self.id)
-    obj.uiState = settings.getValue('trafficMinimap') and 1 or 0
 
     self.vars = gameplay_traffic.getTrafficVars()
     self.policeVars = gameplay_police.getPoliceVars()
     self:resetAll()
+
+    obj.playerUsable = settings.getValue('trafficEnableSwitching') and true or false
 
     if self.vars.aiDebug == 'traffic' then
       obj:queueLuaCommand('ai.setVehicleDebugMode({debugMode = "off"})')
@@ -818,7 +819,6 @@ function C:onUpdate(dt, dtSim)
       if self.state == 'fadeOut' or self.state == 'fadeIn' then
         if self.state == 'fadeIn' then
           if self.respawnSpeed then
-
             local veh = getObjectByID(self.id)
             if veh then
               local speed = (self.respawnSpeed or 0) * (self.alpha or 1)

@@ -1,0 +1,11 @@
+{
+    "Configuration": "27ft",
+    "Description": "2 axle trailer with a lower weight rating, designed to be pulled behind another larger trailer",
+    "Weight": 4315,
+    "Value": 45000,
+    "defaultPaintName1": "Jet Black",
+    "defaultPaintName2": "Jet Black",
+    "defaultPaintName3": "white",
+    "theLoad": "27empty",
+    "hasLoad": false
+}

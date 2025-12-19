@@ -6,12 +6,12 @@
           <div class="modal-title">{{ modalTitle }}</div>
           <div class="upgrade-info">
             <div class="info-row cost-row" v-if="formatCost(node.cost, node.currentLevel) !== '0'">
-              <span class="value cost" :class="{ 'unaffordable': !node.affordable }">
+              <span class="value cost" :class="{ 'unaffordable': !affordableMoney }">
                 ${{ formatCost(node.cost, node.currentLevel) }}
               </span>
             </div>
-            <div class="info-row cost-row" v-if="node.xpCost !== undefined">
-              <span class="value cost xp" :class="{ 'unaffordable': !node.affordable }">
+            <div class="info-row cost-row" v-if="node.xpCost !== undefined && formatCost(node.xpCost, node.currentLevel) !== '0'">
+              <span class="value cost xp" :class="{ 'unaffordable': !affordableXP }">
                 {{ formatCost(node.xpCost, node.currentLevel) }} XP
               </span>
             </div>
@@ -115,14 +115,26 @@ const displayMaxLevel = computed(() => {
   return props.node.maxLevel ?? '∞'
 })
 
+const affordableMoney = computed(() => {
+  if (typeof props.node.affordableMoney === 'boolean') return props.node.affordableMoney
+  return !!props.node.affordable
+})
+
+const affordableXP = computed(() => {
+  if (typeof props.node.affordableXP === 'boolean') return props.node.affordableXP
+  return !!props.node.affordable
+})
+
 const canPurchase = computed(() => {
-  return props.node.unlocked && !props.node.maxed && props.node.affordable
+  return props.node.unlocked && !props.node.maxed && affordableMoney.value && affordableXP.value
 })
 
 const buttonText = computed(() => {
   if (props.node.maxed) return 'Maxed Out'
   if (!props.node.unlocked) return 'Locked'
-  if (!props.node.affordable) return 'Not Enough Money'
+  if (!affordableMoney.value && !affordableXP.value) return 'Not Enough Money or XP'
+  if (!affordableMoney.value) return 'Not Enough Money'
+  if (!affordableXP.value) return 'Not Enough XP'
   return 'Confirm Purchase'
 })
 

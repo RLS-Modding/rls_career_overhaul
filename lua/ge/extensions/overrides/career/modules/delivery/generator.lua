@@ -15,7 +15,8 @@ local blacklist = {
 
 M.dependencies = {"freeroam_facilities", "gameplay_sites_sitesManager", "util_configListGenerator"}
 local im = ui_imgui
-local dParcelManager, dCargoScreen, dGeneral, dGenerator, dProgress, dVehOfferManager, dParcelMods, dVehOfferManager
+local dParcelManager, dCargoScreen, dGeneral, dGenerator, dProgress, dVehOfferManager, dParcelMods, dVehicleTasks, dTutorial
+local step
 M.onCareerActivated = function()
   dParcelManager = career_modules_delivery_parcelManager
   dCargoScreen = career_modules_delivery_cargoScreen
@@ -23,8 +24,10 @@ M.onCareerActivated = function()
   dGenerator = career_modules_delivery_generator
   dProgress = career_modules_delivery_progress
   dVehOfferManager = career_modules_delivery_vehicleOfferManager
+  dTutorial = career_modules_delivery_tutorial
   dParcelMods = career_modules_delivery_parcelMods
-  dVehOfferManager = career_modules_delivery_vehicleOfferManager
+  dVehicleTasks = career_modules_delivery_vehicleTasks
+  step = util_stepHandler
 end
 
 -- data holders
@@ -160,6 +163,7 @@ local function finalizeParcelItemDistanceAndRewards(item)
 
   item.data.originalDistance = distance
   local template = deepcopy(M.getParcelTemplateById(item.templateId))
+
   item.modifiers = dParcelMods.generateModifiers(item, template, distance)
   item.rewards = {
     money = getMoneyRewardForParcelItem(item, distance) * hardcoreMultiplier,
@@ -322,6 +326,41 @@ local function generateItemWithDuplicates(template, origin, destination, timeOff
 end
 
 local function triggerParcelGenerator(fac, generator, timeOffset)
+  -- Check if this is a tutorial generator
+  local isCargoDeliveryTutorialActive = dTutorial.isCargoDeliveryTutorialActive()
+
+  -- Skip tutorial generator if tutorial is completed
+  if generator.isTutorialGenerator and not isCargoDeliveryTutorialActive then
+    return
+  end
+
+  -- Skip non-tutorial generators if tutorial is active and facility is tutorial facility
+  if not generator.isTutorialGenerator and isCargoDeliveryTutorialActive and fac.isTutorialForCargoDelivery then
+    return
+  end
+
+  -- If tutorial is active and this is the tutorial generator, check if tutorial parcel already exists
+  if generator.isTutorialGenerator and isCargoDeliveryTutorialActive then
+    -- Check if tutorial parcel already exists at facility or in player's vehicle
+    local existingTutorialParcels = dParcelManager.getAllCargoForFacilityUnexpiredUndelivered(fac.id)
+    local playerCargo = dParcelManager.getAllCargoInVehicles(true)
+
+    -- Check if any of these are tutorial parcels
+    for _, cargo in ipairs(existingTutorialParcels) do
+      local template = M.getParcelTemplateById(cargo.templateId)
+      if template and template.isTutorialParcel then
+        return -- Tutorial parcel already exists, don't generate another
+      end
+    end
+
+    for _, cargo in ipairs(playerCargo) do
+      local template = M.getParcelTemplateById(cargo.templateId)
+      if template and template.isTutorialParcel then
+        return -- Player already has tutorial parcel
+      end
+    end
+  end
+
   -- how many new items should be generated?
   local typeAmount = math.random(generator.min, generator.max)
   -- proceed only if items are to be generated.
@@ -467,6 +506,11 @@ local function finalizeVehicleOffer(offer)
   if not offer.vehicle.model then
     local vehInfo, filterName = getRandomVehicleFromFilterByFilterId(offer.vehicle.filterId)
 
+    if not vehInfo then
+      log("E","","finalizeVehicleOffer: getRandomVehicleFromFilterByFilterId returned nil for filterId: " .. tostring(offer.vehicle.filterId))
+      return
+    end
+
     offer.vehicle.model = vehInfo.model_key
     offer.vehicle.config = vehInfo.key
     if vehInfo.filter.whiteList.Mileage then
@@ -526,10 +570,53 @@ M.finalizeVehicleOffer = finalizeVehicleOffer
 
 local testVehicleList
 local function triggerVehicleOfferGenerator(fac, generator, timeOffset)
+  -- Check if this is a tutorial generator
+  local isVehicleDeliveryTutorialActive = dTutorial.isVehicleDeliveryTutorialActive()
+
+  -- Skip tutorial generator if tutorial is completed
+  if generator.isTutorialGenerator and not isVehicleDeliveryTutorialActive then
+    return
+  end
+
+  -- Skip non-tutorial generators if tutorial is active and facility is tutorial facility
+  if not generator.isTutorialGenerator and isVehicleDeliveryTutorialActive and fac.isTutorialForVehicleDelivery then
+    return
+  end
+
+  -- If tutorial is active and this is the tutorial generator, check if tutorial vehicle already exists
+  if generator.isTutorialGenerator and isVehicleDeliveryTutorialActive then
+    -- Check if tutorial vehicle already exists at facility or in player's vehicle
+    local existingTutorialVehicles = dVehOfferManager.getAllOfferAtFacilityUnexpired(fac.id)
+    local playerVehicleTasks = dVehicleTasks.getVehicleTasks()
+
+    -- Check if any of these are tutorial vehicles
+    for _, offer in ipairs(existingTutorialVehicles) do
+      if offer.data and offer.data.isTutorialVehicle then
+        return -- Tutorial vehicle already exists, don't generate another
+      end
+    end
+
+    for _, task in ipairs(playerVehicleTasks) do
+      if task.offer and task.offer.data and task.offer.data.isTutorialVehicle then
+        return -- Player already has tutorial vehicle
+      end
+    end
+  end
+
   local count = math.random(generator.min, generator.max)
+
+  -- For tutorial vehicles, only generate one
+  if generator.isTutorialGenerator and isVehicleDeliveryTutorialActive then
+    count = 1
+  end
 
   for  i = 1, count do
     local logisticType = randomFromList(generator.logisticTypes)
+
+
+    if generator.isTutorialGenerator and isVehicleDeliveryTutorialActive then
+      logisticType = "tutorialVehicleDelivery" -- Use vehicle delivery type for tutorial
+    end
 
     local originAp = selectAccessPointByLookupKeyByType(fac.accessPointsByName, logisticType, "logisticTypesProvidedLookup")
     if not originAp then
@@ -571,6 +658,9 @@ local function triggerVehicleOfferGenerator(fac, generator, timeOffset)
       }
       type = "vehicle"
       name = "Vehicle Transport"
+      if generator.isTutorialGenerator and isVehicleDeliveryTutorialActive then
+        name = "Tutorial Vehicle Transport: " .. name
+      end
     elseif vehType == "trailer" then
       task = {
         type = "trailerDropOff",
@@ -606,7 +696,8 @@ local function triggerVehicleOfferGenerator(fac, generator, timeOffset)
       origin = origin,
 
       data = {
-        type = type
+        type = type,
+        isTutorialVehicle = generator.isTutorialGenerator and isVehicleDeliveryTutorialActive
       },
 
       generatorLabel = generator.name,
@@ -1355,17 +1446,8 @@ local function setupFacilities(loadData)
       end
       fac.accessPointsByName = accessPointsByName
 
-      -- Setup dropOffSpots and pickUpSpots based on access points
-      fac.dropOffSpots = {}
-      fac.pickUpSpots = {}
-      for name, ap in pairs(accessPointsByName) do
-        if next(ap.logisticTypesReceivedLookup) then
-          table.insert(fac.dropOffSpots, ap.ps)
-        end
-        if next(ap.logisticTypesProvidedLookup) then
-          table.insert(fac.pickUpSpots, ap.ps)
-        end
-      end
+
+
 
       table.insert(facilities, fac)
       facilitiesById[fac.id] = fac
@@ -1543,5 +1625,4 @@ M.getDistanceBetweenFacilities = getDistanceBetweenFacilities
 M.getLocationCoordinates = getLocationCoordinates
 M.distanceBetween = distanceBetween
 M.triggerAllGenerators = triggerAllGenerators
-
 return M

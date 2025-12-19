@@ -1,0 +1,51 @@
+{
+  "name": "ui.career.logistics.materials.name",
+  "description": "ui.career.logistics.materials.description",
+  "order": 2300,
+  "isSkill": true,
+  "icon": "rocks",
+  "startLocked": false,
+  "parentBranch": "labourer",
+  "levels": [
+    {
+      // Level 1
+      "requiredValue": 0,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Dry Bulk",
+        "description": "Start with the essentials of delivering dry bulk materials, focusing on efficiency and reliability.",
+      },
+      "unlockFlags": [
+        "hazardousMaterialsDelivery"
+      ],
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "rocks",
+          "heading": "Sand and Gravel",
+          "description": "Deliver basic dry bulk materials.",
+        },
+      ],
+    },
+    {
+      // Level 2
+      "requiredValue": 100,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Fluids",
+        "description": "Deliver fluids with tanker trailers.",
+      },
+      //"unlockFlags":["largePackagesDelivery"],
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "droplet",
+          "heading": "Fluids",
+          "description": "Deliver fluids with tanker trailers.",
+        }
+      ],
+    },
+  ],
+}

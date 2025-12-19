@@ -6,7 +6,7 @@ local M = {}
 
 M.dependencies = {"core_vehicleBridge"}
 
-local dParcelManager, dCargoScreen, dGeneral, dGenerator, dProgress, dVehOfferManager, dParcelMods, dVehicleTasks
+local dParcelManager, dCargoScreen, dGeneral, dGenerator, dProgress, dVehOfferManager, dParcelMods, dVehicleTasks, dTutorial
 local step
 M.onCareerActivated = function()
   dParcelManager = career_modules_delivery_parcelManager
@@ -17,6 +17,7 @@ M.onCareerActivated = function()
   dVehOfferManager = career_modules_delivery_vehicleOfferManager
   dParcelMods = career_modules_delivery_parcelMods
   dVehicleTasks = career_modules_delivery_vehicleTasks
+  dTutorial = career_modules_delivery_tutorial
   step = util_stepHandler
 end
 
@@ -237,6 +238,17 @@ local function formatCargoGroup(group, playerCargoContainers, showFirstSeen)
     return ret
   end
 
+  -- if tutorial is active and this is not a tutorial parcel, disable it
+  local isCargoDeliveryTutorialActive = dTutorial.isCargoDeliveryTutorialActive()
+  if isCargoDeliveryTutorialActive then
+    local template = dGenerator.getParcelTemplateById(group[1].templateId)
+    if template and not template.isTutorialParcel then
+      ret.enabled = false
+      ret.disableReason = {type = "tutorial", label = "Disabled during tutorial"}
+      return ret
+    end
+  end
+
   -- if this item is locked because of progress, disable it.
   local lockedBecauseOfMods, flagDefinition = dParcelMods.lockedBecauseOfMods(modifierKeys)
   if flagDefinition then
@@ -408,10 +420,7 @@ end
 local function formatVehicleOfferForUi(offers)
   local ret = {}
 
-  local hasSpawnWhenCommitingCargoOffer = false
-  for _, offer in ipairs(offers) do
-    hasSpawnWhenCommitingCargoOffer = hasSpawnWhenCommitingCargoOffer or offer.spawnWhenCommitingCargo
-  end
+  local isVehicleDeliveryTutorialActive = dTutorial.isVehicleDeliveryTutorialActive()
 
   for _, offer in ipairs(offers) do
     dGenerator.finalizeVehicleOffer(offer)
@@ -447,6 +456,7 @@ local function formatVehicleOfferForUi(offers)
     }
 
     local enabled, flagDefinition = dVehOfferManager.isVehicleTagUnlocked(offer.vehicle.unlockTag)
+    local isCargoDeliveryTutorialActive = dTutorial.isCargoDeliveryTutorialActive()
     item.bigMapIds[string.format("delivery-parking-%s-%s", offer.task.destination.facId, offer.task.destination.psPath)] = true
 
     -- if this item is expired, return early.
@@ -454,6 +464,24 @@ local function formatVehicleOfferForUi(offers)
       item.enabled = false
       item.disableReason = {type = "expired"}
       goto continue
+    end
+
+    -- if tutorial is active, only allow tutorial vehicles
+    if isCargoDeliveryTutorialActive then
+      if not (offer.data and offer.data.isTutorialVehicle) then
+        item.enabled = false
+        item.disableReason = {type = "tutorial", label = "Disabled during tutorial"}
+        goto continue
+      end
+    end
+
+    -- if vehicle delivery tutorial is active, only allow tutorial vehicles
+    if isVehicleDeliveryTutorialActive then
+      if not (offer.data and offer.data.isTutorialVehicle) then
+        item.enabled = false
+        item.disableReason = {type = "tutorial", label = "Disabled during tutorial"}
+        goto continue
+      end
     end
 
     item.unlockInfo = flagDefinition and flagDefinition.unlockInfo
@@ -825,6 +853,13 @@ local function formatMaterialStorage(fac, facPsLocation, playerCargoContainers)
         fluidData.disableReason = flagDefinition.lockedReason
       end
 
+      -- if tutorial is active, disable material storage
+      local isCargoDeliveryTutorialActive = dTutorial.isCargoDeliveryTutorialActive()
+      if isCargoDeliveryTutorialActive then
+        fluidData.enabled = false
+        fluidData.disableReason = {type = "tutorial", label = "Disabled during tutorial"}
+      end
+
       local label, desc = dParcelMods.getLabelAndShortDescription(material.type)
       table.insert(fluidData.modifiers, {type = material.type, icon = dParcelMods.getModifierIcon(material.type), active = true, label = label, description = desc})
 
@@ -859,7 +894,7 @@ end
 local function formatMaterialDestinationsPlayer(con, materialType)
   local destinations = { }
   for _, fac in ipairs(dGenerator.getFacilities()) do
-    if fac.logisticTypesReceivedLookup[materialType] and fac.dropOffSpots and #fac.dropOffSpots > 0 then
+    if fac.logisticTypesReceivedLookup[materialType] then
 
       local distanceKey = string.format("%d-%s-%s", con.vehId, fac.facId, fac.dropOffSpots[1]:getPath())
       if vehToLocationDistanceCache[distanceKey] == nil then
@@ -925,6 +960,7 @@ local function requestCargoDataForUi(facId, psPath, updateMaxTimeTimestamp)
       },
       availableSystems = {},
       settings = dGeneral.getSettings(),
+      tutorialInfo = dTutorial.getTutorialInfo(),
       facilityPanels = {
         {
           type = "skill",
@@ -1340,6 +1376,31 @@ local function enterCargoOverviewScreen(facilityId, parkingSpotPath)
     cargoOverviewScreenOpenedTime = dGeneral.time() - pastDeliveryTimespan
     cargoOverviewMaxTimeTimestamp = dGeneral.time()
 
+    -- Trigger tutorial generator if this is the tutorial facility
+    if facilityId then
+      local isCargoDeliveryTutorialActive = dTutorial.isCargoDeliveryTutorialActive()
+      local isVehicleDeliveryTutorialActive = dTutorial.isVehicleDeliveryTutorialActive()
+      local fac = dGenerator.getFacilityById(facilityId)
+
+      if isCargoDeliveryTutorialActive and fac and fac.isTutorialForCargoDelivery then
+        -- Trigger all tutorial generators at this facility
+        for _, generator in ipairs(fac.logisticGenerators or {}) do
+          if generator.isTutorialGenerator then
+            dGenerator.triggerGenerator(fac, generator)
+          end
+        end
+      end
+
+      if isVehicleDeliveryTutorialActive and fac and fac.isTutorialForVehicleDelivery then
+        -- Trigger all tutorial vehicle generators at this facility
+        for _, generator in ipairs(fac.logisticGenerators or {}) do
+          if generator.isTutorialGenerator then
+            dGenerator.triggerGenerator(fac, generator)
+          end
+        end
+      end
+    end
+
     gameplay_rawPois.clear()
 
     local options = {
@@ -1395,17 +1456,21 @@ local function commitDeliveryConfiguration()
   end
   dGeneral.requestUpdateContainerWeights()
 
-  local doSpawning = function()
+  local function buildSpawnStepsForCommit()
+    local stepsList = {}
     local vehOffers = dVehOfferManager.getAllOfferUnexpired()
     for _, offer in ipairs(vehOffers) do
       if offer.spawnWhenCommitingCargo and offer.origin.facId == cargoScreenFacId then
-        offer.spawnWhenCommitingCargo = nil
-        dVehOfferManager.spawnOffer(offer.id)
+        local offerSteps = (dVehOfferManager.makeSpawnOfferSteps and dVehOfferManager.makeSpawnOfferSteps(offer.id, false, 0.5)) or {}
+        for _, st in ipairs(offerSteps) do
+          table.insert(stepsList, st)
+        end
       end
     end
-    career_modules_loanerVehicles.spawnAllOffers()
-
+    return stepsList
   end
+
+  local spawnSteps = buildSpawnStepsForCommit()
   dGeneral.updateContainerWeights(
     function(data)
       print(data)
@@ -1413,37 +1478,49 @@ local function commitDeliveryConfiguration()
       for _, delay in pairs(data) do
         maxDelay = math.max(delay, maxDelay)
       end
+      maxDelay = math.max(maxDelay, 0)
+      local sequence = {}
+
+      local hasVehicleOfferSpawns = spawnSteps and #spawnSteps > 0
+      if hasVehicleOfferSpawns then
+        table.insert(sequence, step.makeStepFadeToBlack(0.4))
+      end
+
       if maxDelay > 0 then
         maxDelay = math.max(maxDelay, 1)
-        -- make
-        local sequence = {
-          step.makeStepWait(maxDelay+0.5),
-          step.makeStepReturnTrueFunction(function()
-            for vehId, data in pairs(data) do
-              local veh = scenetree.findObjectById(vehId)
-              core_vehicleBridge.executeAction(veh, 'setFreeze', false)
-            end
-            gameplay_markerInteraction.setForceReevaluateOpenPrompt()
-          return true
-          end
-          ),
-          step.makeStepReturnTrueFunction(function()
-            doSpawning()
-            return true
-          end
-          )
-        }
-        step.startStepSequence(sequence, callback)
-        -- add loading progress bar
-        guihooks.trigger("OpenSimpleDelayPopup",{timer=maxDelay, heading="Loading Cargo..."})
-      else
-        -- no delay, no freeze
-        for vehId, data in pairs(data) do
+        table.insert(sequence, step.makeStepWait(maxDelay + 0.5))
+      end
+
+      table.insert(sequence, step.makeStepReturnTrueFunction(function()
+        for vehId, _ in pairs(data) do
           local veh = scenetree.findObjectById(vehId)
-          core_vehicleBridge.executeAction(veh, 'setFreeze', false)
+          if veh then
+            core_vehicleBridge.executeAction(veh, 'setFreeze', false)
+          end
         end
-        doSpawning()
         gameplay_markerInteraction.setForceReevaluateOpenPrompt()
+        return true
+      end))
+
+      for _, st in ipairs(spawnSteps) do
+        table.insert(sequence, st)
+      end
+
+      table.insert(sequence, step.makeStepReturnTrueFunction(function()
+        gameplay_markerInteraction.setForceReevaluateOpenPrompt()
+        return true
+      end))
+
+      if hasVehicleOfferSpawns then
+        table.insert(sequence, step.makeStepFadeFromBlack(0.4))
+      end
+
+      step.startStepSequence(sequence, function()
+        career_modules_loanerVehicles.spawnAllOffers()
+      end)
+
+      if maxDelay > 0 then
+        guihooks.trigger("OpenSimpleDelayPopup",{timer=maxDelay, heading="Loading Cargo..."})
       end
       log("I","",string.format("%0.2fs delay after adjusting weights for cargo.", maxDelay))
     end
@@ -1552,7 +1629,7 @@ local function setBestRoute(onlyClosestTarget)
 
   local result = {}
   getClosestNeighbor("player", deepcopy(targetsById), result, onlyClosestTarget)
-  core_groundMarkers.setPath(result, {clearPathOnReachingTarget = false})
+  core_groundMarkers.setPath(result, {clearPathOnReachingTarget = true})
   freeroam_bigMapMode.resetRoute()
 end
 

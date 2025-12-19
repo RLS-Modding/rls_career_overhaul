@@ -5,7 +5,7 @@
 local M = {}
 M.dependencies = {"core_vehicleBridge"}
 local moduleVersion = 42
-local dParcelManager, dCargoScreen, dGeneral, dGenerator, dProgress, dVehicleTasks, dTasklist, dParcelMods, dVehOfferManager
+local dParcelManager, dCargoScreen, dGeneral, dGenerator, dProgress, dVehicleTasks, dTasklist, dParcelMods, dVehOfferManager, dTutorial
 local step
 M.onCareerActivated = function()
   dParcelManager = career_modules_delivery_parcelManager
@@ -17,6 +17,7 @@ M.onCareerActivated = function()
   dTasklist = career_modules_delivery_tasklist
   dParcelMods = career_modules_delivery_parcelMods
   dVehOfferManager = career_modules_delivery_vehicleOfferManager
+  dTutorial = career_modules_delivery_tutorial
   step = util_stepHandler
 end
 
@@ -26,6 +27,8 @@ local deliveryGameTimePaused = false
 local deliveryModeActive = false
 local deliveryAbandonPenaltyFactor = 0.1
 M.getDeliveryAbandonPenaltyFactor = function() return deliveryAbandonPenaltyFactor end
+
+
 
 -- Career general systems interaction (save/load, level setup)
 
@@ -279,6 +282,7 @@ local function getNearbyVehicleCargoContainers(callback)
 
 end
 M.getNearbyVehicleCargoContainers = getNearbyVehicleCargoContainers
+M.getMostRecentCargoContainerData = function() return mostRecentCargoContainerData end
 
 
 local function defaultDelayCallback(data)
@@ -457,10 +461,13 @@ local function addInteractivePoi(list, id, field, elem)
 end
 local function getInteractivePois()
   local interactiveParkingSpots = {}
+  local targetFacilityIds = {}
   for _, cargo in ipairs(dParcelManager.getAllCargoInVehicles()) do
     if cargo.destination.type == "facilityParkingspot" then
       addInteractivePoi(interactiveParkingSpots, cargo.destination.psPath, "dropOffs", cargo)
-
+      if cargo.destination.facId then
+        targetFacilityIds[cargo.destination.facId] = true
+      end
     elseif cargo.destination.type == "multi" then
       for _, dest in ipairs(cargo.destination.destinations) do
         addInteractivePoi(interactiveParkingSpots, dest.psPath, "dropOffs", cargo)
@@ -475,11 +482,11 @@ local function getInteractivePois()
 
   -- figure out which facilities need to be active in order to drop of vehicles.
   local trailerTargetDestinations = dVehicleTasks.getTargetDestinationsForActiveTasks()
-  local targetFacilityIds = {}
   for _, destination in ipairs(trailerTargetDestinations) do
     targetFacilityIds[destination.facId] = true
     addInteractivePoi(interactiveParkingSpots, destination.psPath, "vehicles", "vehicle")
   end
+
   return interactiveParkingSpots, targetFacilityIds
 end
 -- poi list stuff
@@ -487,10 +494,11 @@ local function onGetRawPoiListForLevel(levelIdentifier, elements)
 
   --local nearbyVehicles = M.getNearbyVehicleCargoContainers()
   local interactiveParkingSpots, targetFacilityIds = getInteractivePois()
+  local isCargoDeliveryTutorialActive = dTutorial.isCargoDeliveryTutorialActive()
 
   for _, fac in ipairs(freeroam_facilities.getFacilitiesByType("deliveryProvider")) do
     -- only process facilities if the facility is visible
-    local includeFac = dProgress.isFacilityVisible(fac.id) or targetFacilityIds[fac.id]
+    local includeFac = dProgress.isFacilityVisible(fac.id, isCargoDeliveryTutorialActive) or targetFacilityIds[fac.id]
 
     if includeFac then
       local totalCargoCount = 0
@@ -682,14 +690,10 @@ local function onActivityAcceptGatherData(elemData, activityData)
             add = cargo.slots
           end
           if cargo.destination.type == "facilityParkingspot" then
-            local distance = (container.position - psPos):squaredLength()
-            local canDropOff = cargo.destination.psPath == elem.psPath and distance < 25*25
-            dropOffableCargoByCargoType[cargo.type]  = dropOffableCargoByCargoType[type] + (canDropOff and add or 0)
+            dropOffableCargoByCargoType[cargo.type]  = dropOffableCargoByCargoType[type] + ((cargo.destination.psPath == elem.psPath and (container.position - psPos):squaredLength() < 25*25) and add or 0)
           elseif cargo.destination.type == "multi" then
             for _, dest in ipairs(cargo.destination.destinations) do
-              local distance = (container.position - psPos):squaredLength()
-              local canDropOff = dest.psPath == elem.psPath and distance < 25*25
-              dropOffableCargoByCargoType[type]  = dropOffableCargoByCargoType[type] + (canDropOff and add or 0)
+              dropOffableCargoByCargoType[type]  = dropOffableCargoByCargoType[type] + ((dest.psPath == elem.psPath and (container.position - psPos):squaredLength() < 25*25) and add or 0)
             end
           end
         end
@@ -1081,6 +1085,7 @@ M.startDeliveryMode = startDeliveryMode
 M.exitDeliveryMode = exitDeliveryMode
 M.checkExitDeliveryMode = checkExitDeliveryMode
 M.isDeliveryModeActive = function() return deliveryModeActive end
+
 M.getDeliveryModePenalty = function(onlyVehIdsAsKeys)
   local cargoInVehicles = dParcelManager.getAllCargoInVehicles(true)
   local penalty = {money = 0}
@@ -1163,7 +1168,7 @@ local function checkEndDeliveryModeForVehicle(vehId)
       if cargo.location.type == "vehicle" and cargo.location.vehId == vehId then
         return true
       end
-      if cargo._transientMove and cargo._transientMove.targetLocation.vehId == vehId then
+      if cargo._transientMove and cargo.transientMove.targetLocation.vehId == vehId then
         return true
       end
     end)
@@ -1182,13 +1187,15 @@ local function checkEndDeliveryModeForVehicle(vehId)
   end
 end
 
-M.onRepairInGarage = function(vehInfo, repairOption)
-  local vehId = career_modules_inventory.getVehicleIdFromInventoryId(vehInfo.id)
+M.onRepairInGarage = function(invVehId)
+  local vehId = career_modules_inventory.getVehicleIdFromInventoryId(invVehId)
   checkEndDeliveryModeForVehicle(vehId)
 end
 
 M.onInventoryPreRemoveVehicleObject = function(inventoryId, vehId)
   checkEndDeliveryModeForVehicle(vehId)
 end
+
+
 
 return M

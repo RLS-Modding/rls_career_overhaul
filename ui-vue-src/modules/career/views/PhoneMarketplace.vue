@@ -74,21 +74,61 @@
                         </div>
                     </div>
                     <div v-if="showOffers === vehicle.id" class="offers-container">
+                        <div v-if="vehicle.disabled" class="offer-card disabled-card">
+                            {{ vehicle.disableReason }}
+                        </div>
                         <template v-if="vehicleOffers(vehicle.id).length">
-                            <div v-for="(offer, index) in vehicleOffers(vehicle.id)" :key="`offer-${vehicle.id}-${index}`" class="offer-row"
-                                 :style="{ opacity: offer.expiredViewCounter ? '0.6' : '1' }">
+                            <div
+                                v-for="(offer, index) in vehicleOffers(vehicle.id)"
+                                :key="`offer-${vehicle.id}-${index}`"
+                                class="offer-card"
+                                :class="{ expired: offer.expiredViewCounter }"
+                            >
                                 <div class="offer-info">
-                                    <span class="dealer-name">{{ offer.customer }}</span>
-                                    <span class="offer-amount">${{ formatValue(offer.value) }}
-                                        <span v-if="offer.expiredViewCounter" class="expired-label">EXPIRED</span>
-                                    </span>
+                                    <div class="offer-header">
+                                        <span class="buyer-name">{{ offer.buyerPersonality?.name || offer.customer || 'Anonymous Buyer' }}</span>
+                                        <span v-if="offer.expiredViewCounter" class="expired-badge">EXPIRED</span>
+                                    </div>
+                                    <div class="offer-details">
+                                        <div class="detail-row">
+                                            <span class="detail-label">Offer:</span>
+                                            <span class="offer-value">${{ formatValue(offer.value) }}</span>
+                                            <span
+                                                class="delta"
+                                                :class="{ up: offer.value > vehicle.value, down: offer.value < vehicle.value }"
+                                            >
+                                                ( {{ offer.value >= vehicle.value ? '+' : '-' }}${{ formatValue(Math.abs(offer.value - vehicle.value)) }} )
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="offer-actions">
-                                    <button class="accept-btn"
-                                        @click="acceptOffer(vehicle.id, index)" 
-                                        :disabled="vehicle.vehicleData?.needsRepair || offer.expiredViewCounter">Accept</button>
-                                    <button class="decline-btn"
-                                        @click="declineOffer(vehicle.id, index)">Decline</button>
+                                    <button
+                                        class="decline-btn"
+                                        @click.stop="declineOffer(vehicle.id, index)"
+                                        @mousedown.stop
+                                        :disabled="actionInProgress"
+                                    >
+                                        {{ offer.expiredViewCounter ? 'Discard' : 'Deny' }}
+                                    </button>
+                                    <button
+                                        v-if="!offer.expiredViewCounter"
+                                        class="negotiate-btn"
+                                        @click.stop="startNegotiateBuyingOffer(vehicle.id, index)"
+                                        @mousedown.stop
+                                        :disabled="actionInProgress || !offer.negotiationPossible || offer.value >= vehicle.value || vehicle.disabled"
+                                    >
+                                        Negotiate
+                                    </button>
+                                    <button
+                                        v-if="!offer.expiredViewCounter"
+                                        class="accept-btn"
+                                        @click.stop="acceptOffer(vehicle.id, index)"
+                                        @mousedown.stop
+                                        :disabled="actionInProgress || vehicle.vehicleData?.needsRepair || vehicle.disabled || offer.disabled"
+                                    >
+                                        Accept
+                                    </button>
                                 </div>
                             </div>
                         </template>
@@ -227,7 +267,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, onBeforeMount, watch } from "vue"
+import { ref, onMounted, computed, onBeforeMount, onUnmounted, watch } from "vue"
 import PhoneWrapper from "./PhoneWrapper.vue"
 import { openConfirmation } from "@/services/popup"
 import { useVehicleInventoryStore } from "../stores/vehicleInventoryStore";
@@ -237,6 +277,7 @@ import { useRouter } from 'vue-router'
 import { $translate } from "@/services/translation"
 
 const listings = ref([])
+const actionInProgress = ref(false)
 
 const { units, events } = useBridge()
 
@@ -253,9 +294,7 @@ const handleListings = (data) => {
   console.log('Received phone marketplace listings:', data)
 }
 
-const getNewData = () => {
-  lua.career_modules_marketplace.getListings().then(handleListings)
-}
+const getNewData = () => lua.career_modules_marketplace.getListings().then(handleListings)
 
 watch(notifications, (newValue, oldValue) => {
     lua.career_modules_marketplace.toggleNotifications(newValue)
@@ -263,8 +302,13 @@ watch(notifications, (newValue, oldValue) => {
 
 onMounted(() => {
     getNewData()
+    events.on("marketplaceListingsUpdated", handleListings)
     lua.career_modules_marketplace.menuOpened(true)
 });
+
+onUnmounted(() => {
+    events.off("marketplaceListingsUpdated")
+})
 
 onBeforeMount(() => {
     vehicleInventoryStore.requestInitialData()
@@ -314,32 +358,59 @@ const vehicleOffers = (vehicleId) => {
 }
 
 const acceptOffer = async (vehicleId, offerIndex) => {
-    const listing = listings.value.find(l => l.id === vehicleId)
-    const offer = listing.offers[offerIndex]
-    
-    const res = await openConfirmation("", 
-      `Do you want to accept this offer for $${formatValue(offer.value)} from ${offer.customer || 'Anonymous Buyer'}?`, [
-      { label: $translate.instant("ui.common.yes"), value: true, extras: { default: true } },
-      { label: $translate.instant("ui.common.no"), value: false, extras: { accent: ACCENTS.secondary } },
-    ])
-    
-    if (res) {
-      lua.career_modules_marketplace.acceptOffer(vehicleId, offerIndex + 1).then(getNewData)
+    if (actionInProgress.value) return
+    actionInProgress.value = true
+    try {
+        const listing = listings.value.find(l => l.id === vehicleId)
+        const offer = listing?.offers?.[offerIndex]
+        if (!offer) return
+
+        const res = await openConfirmation("", 
+          `Do you want to accept this offer for $${formatValue(offer.value)} from ${offer.customer || 'Anonymous Buyer'}?`, [
+          { label: $translate.instant("ui.common.yes"), value: true, extras: { default: true } },
+          { label: $translate.instant("ui.common.no"), value: false, extras: { accent: ACCENTS.secondary } },
+        ])
+        
+        if (res) {
+          await lua.career_modules_marketplace.acceptOffer(vehicleId, offerIndex + 1)
+          await getNewData()
+        }
+    } finally {
+        actionInProgress.value = false
     }
 }
 
 const declineOffer = async (vehicleId, offerIndex) => {
-    const listing = listings.value.find(l => l.id === vehicleId)
-    const offer = listing.offers[offerIndex]
-    
-    const res = await openConfirmation("", 
-      `Do you want to decline this offer for $${formatValue(offer.value)} from ${offer.customer || 'Anonymous Buyer'}?`, [
-      { label: $translate.instant("ui.common.yes"), value: true, extras: { default: true } },
-      { label: $translate.instant("ui.common.no"), value: false, extras: { accent: ACCENTS.secondary } },
-    ])
-    
-    if (res) {
-      lua.career_modules_marketplace.declineOffer(vehicleId, offerIndex + 1).then(getNewData)
+    if (actionInProgress.value) return
+    actionInProgress.value = true
+    try {
+        const listing = listings.value.find(l => l.id === vehicleId)
+        const offer = listing?.offers?.[offerIndex]
+        if (!offer) return
+        
+        const res = await openConfirmation("", 
+          `Do you want to decline this offer for $${formatValue(offer.value)} from ${offer.customer || 'Anonymous Buyer'}?`, [
+          { label: $translate.instant("ui.common.yes"), value: true, extras: { default: true } },
+          { label: $translate.instant("ui.common.no"), value: false, extras: { accent: ACCENTS.secondary } },
+        ])
+        
+        if (res) {
+          await lua.career_modules_marketplace.declineOffer(vehicleId, offerIndex + 1)
+          await getNewData()
+        }
+    } finally {
+        actionInProgress.value = false
+    }
+}
+
+const startNegotiateBuyingOffer = async (vehicleId, offerIndex) => {
+    if (actionInProgress.value) return
+    actionInProgress.value = true
+    try {
+        await lua.career_modules_marketplace.startNegotiateBuyingOffer(vehicleId, offerIndex + 1)
+        await getNewData()
+    } finally {
+        actionInProgress.value = false
     }
 }
 
@@ -615,7 +686,7 @@ const removeVehicleListing = (inventoryId) => {
     background-color: #1A1818;
     border-radius: 0 0 15px 15px;
     margin-top: -10px;
-    padding: 5px;
+    padding: 6px;
     position: relative;
     z-index: 10;
     width: 100%;
@@ -623,64 +694,119 @@ const removeVehicleListing = (inventoryId) => {
     overflow: visible;
 }
 
-.offer-row {
+.offer-card {
     display: flex;
     flex-direction: column;
-    padding: 6px 12px;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 10px;
     background-color: #2B2C28;
-    margin: 5px;
+    margin: 6px 5px;
     border-radius: 8px;
+    border: 1px solid #3b3b3b;
+}
+
+.offer-card.expired .offer-info {
+    opacity: 0.55;
+}
+
+.disabled-card {
+    background-color: rgba(244, 67, 54, 0.15);
+    color: #f44336;
+    border-color: #f44336;
 }
 
 .offer-info {
+    flex: 1;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 6px;
+    flex-direction: column;
+    gap: 6px;
 }
 
-.dealer-name {
-    font-weight: 500;
+.offer-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+}
+
+.buyer-name {
     color: white;
     font-size: 14px;
 }
 
-.offer-amount {
-    color: #4caf50;
+.expired-badge {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #f44336;
+    background-color: rgba(244, 67, 54, 0.15);
+    font-weight: 700;
+}
+
+.offer-details {
+    color: #dcdcdc;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.detail-row {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.detail-label {
+    color: #a9a9a9;
     font-weight: 600;
+}
+
+.offer-value {
+    color: #4caf50;
+    font-weight: 650;
     font-size: 14px;
 }
 
-.expired-label {
-    color: #ff4444;
-    font-size: 12px;
-    font-weight: 700;
-    margin-left: 8px;
+.delta {
+    margin-left: 4px;
+    font-weight: 650;
+}
+
+.delta.up {
+    color: #4caf50;
+}
+
+.delta.down {
+    color: #f44336;
 }
 
 .offer-actions {
     display: flex;
     gap: 8px;
-    justify-content: center;
+    justify-content: flex-start;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
 .accept-btn,
-.decline-btn {
+.decline-btn,
+.negotiate-btn {
     color: black !important;
-    padding: 6px 16px;
-    font-size: 14px;
+    padding: 6px 10px;
+    font-size: 12px;
     border: none;
     border-radius: 8px;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
-    min-width: 70px;
+    min-width: 66px;
     z-index: 15;
     position: relative;
 }
 
 .accept-btn {
     background-color: #4CAF50 !important;
-    margin-right: 10px;
     
     &:disabled {
         background-color: #2d5a2f !important;
@@ -691,6 +817,16 @@ const removeVehicleListing = (inventoryId) => {
 
 .decline-btn {
     background-color: #f44336 !important;
+}
+
+.negotiate-btn {
+    background-color: #6366f1 !important;
+    color: white !important;
+    
+    &:disabled {
+        background-color: #3b3c5d !important;
+        opacity: 0.6;
+    }
 }
 
 .no-times-message {

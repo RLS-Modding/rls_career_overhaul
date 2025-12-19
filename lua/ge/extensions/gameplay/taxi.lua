@@ -984,7 +984,7 @@ local function update(_, dt)
 
     if currentFare and state == "pickup" then
         if core_groundMarkers.getPathLength() == 0 then
-            core_groundMarkers.setPath(currentFare.pickup.pos)
+            core_groundMarkers.setPath(currentFare.pickup.pos, {clearPathOnReachingTarget = true})
             local pickupDistance = core_groundMarkers.getPathLength()
             currentFare.totalDistance = pickupDistance or 0
         end
@@ -994,7 +994,7 @@ local function update(_, dt)
 
         if distToPickup < 5 then
             state = "dropoff"
-            core_groundMarkers.setPath(currentFare.destination.pos)
+            core_groundMarkers.setPath(currentFare.destination.pos, {clearPathOnReachingTarget = true})
             local dropoffDistance = core_groundMarkers.getPathLength()
             currentFare.startTime = os.time()
             currentFare.totalDistance = currentFare.totalDistance + dropoffDistance

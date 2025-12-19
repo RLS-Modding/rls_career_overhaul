@@ -1,0 +1,11 @@
+{
+    "Configuration": "27ft - 8 Logs",
+    "Description": "Designed to be pulled behind another larger trailer, loaded with 4.5 tons of aspen logs",
+    "Weight": 8615,
+    "Value": 45001,
+    "defaultPaintName1": "Clay Red",
+    "defaultPaintName2": "Clay Red",
+    "defaultPaintName3": "white",
+    "theLoad": "27logs8",
+    "hasLoad": true
+}

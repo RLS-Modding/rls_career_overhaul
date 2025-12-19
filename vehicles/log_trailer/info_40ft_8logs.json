@@ -1,0 +1,11 @@
+{
+    "Configuration": "40ft - 8 Logs",
+    "Description": "Equipped with a fifth wheel, designed to be pulled directly by a truck, loaded with 4.5 tons of firwood",
+    "Weight": 10360,
+    "Value": 55001,
+    "defaultPaintName1": "Clay Red",
+    "defaultPaintName2": "Clay Red",
+    "defaultPaintName3": "white",
+    "theLoad": "40logs8",
+    "hasLoad": true
+}

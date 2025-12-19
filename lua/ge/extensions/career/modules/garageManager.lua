@@ -265,6 +265,33 @@ local function getStoredLocations()
   return storedLocation
 end
 
+local function getGarageCapacityData()
+  buildGarageSizes()
+  local storedLocation = getStoredLocations()
+  local data = {}
+
+  for garageId, owned in pairs(purchasedGarages) do
+    if owned then
+      local garage = freeroam_facilities.getFacility("garage", garageId)
+      local capacity = garageSize[tostring(garageId)]
+      if not capacity and garage and garage.capacity then
+        capacity = math.ceil(garage.capacity / (career_modules_hardcore.isHardcoreMode() and 2 or 1))
+      end
+      local vehiclesInGarage = storedLocation[garageId]
+      local count = vehiclesInGarage and #vehiclesInGarage or 0
+
+      data[tostring(garageId)] = {
+        id = garageId,
+        name = garage and garage.name or tostring(garageId),
+        capacity = capacity or 0,
+        count = count
+      }
+    end
+  end
+
+  return data
+end
+
 local function getPurchasedGarages()
   local result = {}
   for garageId, _ in pairs(purchasedGarages) do
@@ -474,5 +501,6 @@ M.getNextAvailableSpace = getNextAvailableSpace
 M.buildGarageSizes = buildGarageSizes
 M.fillGarages = fillGarages
 M.getStoredLocations = getStoredLocations
+M.getGarageCapacityData = getGarageCapacityData
 
 return M

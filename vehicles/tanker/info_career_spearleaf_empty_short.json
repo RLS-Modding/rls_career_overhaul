@@ -1,0 +1,26 @@
+{
+  "Configuration":"Spearleaf Short Trailer",
+  "Name":"Tanker Trailer career_spearleaf_empty_short",
+  "Population":4000,
+  "Source":"Custom",
+  "Value":60000,
+  "aggregates":{
+    "InsuranceClass":{
+      "commercial":true
+    },
+    "Region":{
+      "northAmerica":true
+    },
+    "Source":{
+      "BeamNG - Official":true,
+      "Custom":true
+    },
+    "Type":{
+      "Trailer":true
+    }
+  },
+  "is_default_config":false,
+  "paints":{},
+  "pcFilename":"/vehicles/tanker/career_spearleaf_empty_short.pc",
+  "preview":"/vehicles/tanker/career_spearleaf_empty_short.jpg"
+}

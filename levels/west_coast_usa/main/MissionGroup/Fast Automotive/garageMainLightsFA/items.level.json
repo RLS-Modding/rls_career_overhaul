@@ -1,3 +1,0 @@
-{"name":"garageOfficeLightsFAPropOn","class":"SimGroup","__parent":"garageMainLightsFA","hidden":true}
-{"name":"garageOfficeLightsFAPropOff","class":"SimGroup","__parent":"garageMainLightsFA"}
-{"name":"garageOfficeLightsFASources","class":"SimGroup","__parent":"garageMainLightsFA"}

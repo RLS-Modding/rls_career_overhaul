@@ -2,7 +2,7 @@
 -- If a copy of the bCDDL was not distributed with this
 -- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
 local M = {}
-local dParcelManager, dCargoScreen, dGeneral, dGenerator, dProgress, dParcelMods, dVehOfferManager, dVehicleTasks
+local dParcelManager, dCargoScreen, dGeneral, dGenerator, dProgress, dParcelMods, dVehOfferManager, dVehicleTasks, dTutorial
 local step
 M.onCareerActivated = function()
   dParcelManager = career_modules_delivery_parcelManager
@@ -13,6 +13,7 @@ M.onCareerActivated = function()
   dParcelMods = career_modules_delivery_parcelMods
   dVehOfferManager = career_modules_delivery_vehicleOfferManager
   dVehicleTasks = career_modules_delivery_vehicleTasks
+  dTutorial = career_modules_delivery_tutorial
   step = util_stepHandler
 end
 
@@ -134,7 +135,10 @@ end
 
 local dropOffDataStatus = nil
 M.requestDropOffData = function(facId, psPath)
-  if dropOffDataStatus ~= nil then log("W","","Already unloading cargo...") end
+  if dropOffDataStatus ~= nil then
+    log("W","","Already unloading cargo...")
+    return
+  end
   dropOffDataStatus = {}
   dropOffDataStatus.affectedOfferIds = {}
   dropOffDataStatus.parcelData = {}
@@ -144,8 +148,6 @@ M.requestDropOffData = function(facId, psPath)
   dropOffDataStatus.location = {type="facilityParkingspot", facId=facId, psPath=psPath}
   local rewardKeys = {}
   local playerVehiclesById = {}
-  --M.aggregateBefore()
-  -- unload cargo
   dGeneral.getNearbyVehicleCargoContainers(function(playerCargoContainers)
     local playerDestinationParkingSpots = {}
     local playerVehIds = {}
@@ -170,9 +172,7 @@ M.requestDropOffData = function(facId, psPath)
               vehId = con.vehId,
               name = con.name,
               containerId = con.containerId,
-
               cargo = {},
-
               totalCargoSlots = con.totalCargoSlots,
               usedCargoSlots = con.usedCargoSlots,
               freeCargoSlots = con.freeCargoSlots,
@@ -183,10 +183,8 @@ M.requestDropOffData = function(facId, psPath)
       end
     end
 
-        -- convert vehicles table to list for UI
     dropOffDataStatus.playerVehicleData = {}
     for vehId, vehicleInfo in pairs(playerVehiclesById) do
-      --table.sort(vehicleInfo.containers, function(a,b) return a.name < b.name end)
       for _, id in ipairs(tableKeysSorted(vehicleInfo.containersById)) do
         vehicleInfo.containersById[id].cargo = dParcelManager.addParcelRewardsSummary(deepcopy(vehicleInfo.containersById[id].cargo))
         table.insert(vehicleInfo.containers, vehicleInfo.containersById[id])
@@ -196,9 +194,15 @@ M.requestDropOffData = function(facId, psPath)
     end
     table.sort(dropOffDataStatus.playerVehicleData, function(a,b) return a.vehId < b.vehId end)
     dropOffDataStatus.rewardKeyIcons = rewardKeys
-    dropOffDataStatus.vehicleData = dVehicleTasks.getVehicleDataWithRewardsSummary()
-    M.openDropOffScreenGatheringComplete()
-    -- try to re-open the prompt
+    dropOffDataStatus.vehicleData = dVehicleTasks.getVehicleDataWithRewardsSummary(psPath)
+    local gatherSequence = dVehicleTasks.makeGatherVehicleDataSteps(dropOffDataStatus.vehicleData)
+    if #gatherSequence > 0 then
+      step.startStepSequence(gatherSequence, function()
+        M.openDropOffScreenGatheringComplete()
+      end)
+    else
+      M.openDropOffScreenGatheringComplete()
+    end
   end)
 end
 
@@ -209,12 +213,7 @@ end
 
 local showSystemPopup = {}
 M.openDropOffScreenGatheringComplete = function()
-  -- still waiting for vehicles to be finished
-  for _, data in pairs(dropOffDataStatus.vehicleData) do
-    if not data.finished then return end
-  end
-
-    -- patch in xp icons info
+  -- patch in xp icons info
   local branchInfo = {}
 
   -- already calc if we need it
@@ -246,11 +245,28 @@ M.openDropOffScreenGatheringComplete = function()
   end
 
   for _, vehData in ipairs(dropOffDataStatus.vehicleData or {}) do
-    table.insert(automaticDropOffItems, vehData)
-    table.insert(confirmedOfferIds, vehData.id)
-    for key, amount in pairs(vehData.adjustedRewards) do
-      branchInfo[key] = true
+    if vehData.finished then
+      table.insert(automaticDropOffItems, vehData)
+      table.insert(confirmedOfferIds, vehData.id)
+      for key, amount in pairs(vehData.adjustedRewards) do
+        branchInfo[key] = true
+      end
     end
+  end
+
+  -- still waiting for vehicles to be finished, but show UI if there's cargo
+  local hasPendingVehicles = false
+  for _, data in ipairs(dropOffDataStatus.vehicleData or {}) do
+    if not data.finished then
+      hasPendingVehicles = true
+      break
+    end
+  end
+
+  -- if we have cargo to show, display UI even if vehicles are still gathering
+  local hasCargoToShow = #manualDropOffItems > 0 or #automaticDropOffItems > 0
+  if hasPendingVehicles and not hasCargoToShow then
+    return
   end
 
   dropOffDataStatus.automaticDropOffItems = automaticDropOffItems
@@ -289,20 +305,16 @@ M.openDropOffScreenGatheringComplete = function()
     --dump(dropOffDataStatus)
     guihooks.trigger("SetDeliveryDropOffCargoSelection", dropOffDataStatus)
     dropOffDataStatus.branchInfo = branchInfo
-    --dumpz(dropOffDataStatus,2)
+    gameplay_markerInteraction.closeViewDetailPrompt(true)
+    Engine.Audio.playOnce('AudioGui', 'event:>UI>Missions>Info_Open')
+    gameplay_rawPois.clear()
   else
     local confirmedDropOffs = {
       confirmedCargoIds = confirmedCargoIds,
       confirmedOfferIds = confirmedOfferIds,
     }
     M.confirmDropOffData(confirmedDropOffs, dropOffDataStatus.location.facId, dropOffDataStatus.location.psPath)
-    return
   end
-
-  gameplay_markerInteraction.closeViewDetailPrompt(true)
-  Engine.Audio.playOnce('AudioGui', 'event:>UI>Missions>Info_Open')
-  gameplay_rawPois.clear()
-  dropOffDataStatus = nil
 end
 
 
@@ -340,6 +352,7 @@ M.confirmDropOffData = function(confirmedDropOffs, facId, psPath)
   dGeneral.requestUpdateContainerWeights()
   confirmedDropOffData.onComplete = nop
   dGeneral.updateContainerWeights(function(data)
+    data = data or {}
     confirmedDropOffData.weightUpdateComplete = true
     local maxDelay = 0
     for _, delay in pairs(data) do
@@ -352,7 +365,7 @@ M.confirmDropOffData = function(confirmedDropOffs, facId, psPath)
         local sequence = {
           step.makeStepWait(maxDelay+0.5),
           step.makeStepReturnTrueFunction(function()
-            for vehId, data in pairs(data) do
+            for vehId, delay in pairs(data) do
               local veh = scenetree.findObjectById(vehId)
               core_vehicleBridge.executeAction(veh, 'setFreeze', false)
             end
@@ -365,7 +378,7 @@ M.confirmDropOffData = function(confirmedDropOffs, facId, psPath)
     else
       confirmedDropOffData.maxDelayForWeightUpdate = 0
       -- 1s delay, no freeze
-      for vehId, data in pairs(data) do
+      for vehId, delay in pairs(data) do
         local veh = scenetree.findObjectById(vehId)
         core_vehicleBridge.executeAction(veh, 'setFreeze', false)
       end
@@ -379,7 +392,7 @@ M.confirmDropOffCheckComplete = function()
   if not confirmedDropOffData then return end
 
     -- still waiting for vehicles to be finished
-  for _, data in pairs(confirmedDropOffData.offers) do
+  for _, data in ipairs(confirmedDropOffData.offers or {}) do
     if not data.finished then return end
   end
   if not confirmedDropOffData.weightUpdateComplete then
@@ -513,7 +526,7 @@ M.confirmDropOffCheckComplete = function()
   guihooks.trigger("SetDeliveryDropOffRewardResult", rewardResult)
 
   Engine.Audio.playOnce('AudioGui', 'event:>UI>Career>Buy_02')
-  gameplay_markerInteraction.setForceReevaluateOpenPrompt()
+  gameplay_markerInteraction.setForceReevaluateOpenPrompt(true)
   gameplay_rawPois.clear()
 
   M.onVehicleTasksFinished(confirmedDropOffData.offers)
@@ -521,6 +534,7 @@ M.confirmDropOffCheckComplete = function()
   confirmedDropOffData.onComplete()
   dGeneral.checkExitDeliveryMode()
   confirmedDropOffData = nil
+  dropOffDataStatus = nil
 
   if career_career.isAutosaveEnabled() then
     career_saveSystem.saveCurrent()
@@ -565,7 +579,14 @@ M.isFacilityUnlocked = function(facId)
   return true
 end
 
-M.isFacilityVisible = function(facId)
+M.isFacilityVisible = function(facId, isCargoDeliveryTutorialActive)
+  if isCargoDeliveryTutorialActive then
+    if not dGenerator.getFacilityById(facId) or dGenerator.getFacilityById(facId).isTutorialForCargoDelivery then
+      return false
+    end
+  end
+
+
   local fac = dGenerator.getFacilityById(facId)
   if not fac then
     return false

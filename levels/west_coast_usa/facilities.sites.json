@@ -885,9 +885,9 @@
       "name":"chinatown_parking1",
       "oldId":2280,
       "pos":[
-        -736.3143921,
-        602.4072266,
-        115.6663055
+        -736.31439208984,
+        602.4072265625,
+        115.70634460449
       ],
       "rot":[
         0,
@@ -921,9 +921,9 @@
       "name":"chinatown_parking2",
       "oldId":2281,
       "pos":[
-        -733.5112305,
-        602.2235718,
-        115.662384
+        -733.51123046875,
+        602.22357177734,
+        115.69103240967
       ],
       "rot":[
         0,
@@ -957,9 +957,9 @@
       "name":"chinatown_parking3",
       "oldId":2282,
       "pos":[
-        -730.538269,
-        603.552063,
-        115.6229858
+        -730.53826904297,
+        603.55206298828,
+        115.68865966797
       ],
       "rot":[
         0,
@@ -3331,7 +3331,7 @@
       },
       "isMultiSpot":false,
       "name":"spot_alderDragwayStorage_2",
-      "oldId":2454,
+      "oldId":2348,
       "pos":[
         -219.43186950684,
         -314.87286376953,
@@ -3367,7 +3367,7 @@
       },
       "isMultiSpot":false,
       "name":"spot_alderDragwayStorage_3",
-      "oldId":2455,
+      "oldId":2349,
       "pos":[
         -225.62306213379,
         -318.64141845703,
@@ -3403,7 +3403,7 @@
       },
       "isMultiSpot":false,
       "name":"spot_alderDragwayStorage_4",
-      "oldId":2456,
+      "oldId":2350,
       "pos":[
         -230.17707824707,
         -321.33538818359,
@@ -3414,6 +3414,42 @@
         0,
         -0.25426832781303,
         0.96713369560973
+      ],
+      "scl":[
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount":1,
+      "spotDirection":"Left",
+      "spotOffset":0,
+      "spotRotation":0
+    },
+    {
+      "color":[
+        1,
+        1,
+        1
+      ],
+      "customFields":{
+        "names":{},
+        "tags":{},
+        "types":{},
+        "values":{}
+      },
+      "isMultiSpot":false,
+      "name":"spot_mudDragTuningTent_1",
+      "oldId":2352,
+      "pos":[
+        538.96502685547,
+        -489.7255859375,
+        152.37664794922
+      ],
+      "rot":[
+        0,
+        0,
+        0,
+        1
       ],
       "scl":[
         2.5,
@@ -3453,7 +3489,7 @@
         "values":{}
       },
       "name":"servicestationGarage1",
-      "oldId":2243,
+      "oldId":2242,
       "top":{
         "active":false,
         "normal":[
@@ -3521,7 +3557,7 @@
         "values":{}
       },
       "name":"servicestationGarage2",
-      "oldId":2244,
+      "oldId":2243,
       "top":{
         "active":false,
         "normal":[
@@ -3689,7 +3725,7 @@
         "values":{}
       },
       "name":"commercialGarage1",
-      "oldId":2245,
+      "oldId":2244,
       "top":{
         "active":false,
         "normal":[
@@ -3772,7 +3808,7 @@
         "values":{}
       },
       "name":"chinatownGarage",
-      "oldId":2246,
+      "oldId":2245,
       "top":{
         "active":false,
         "normal":[
@@ -3835,7 +3871,7 @@
         "values":{}
       },
       "name":"cul-de-sacGarage",
-      "oldId":2247,
+      "oldId":2246,
       "top":{
         "active":false,
         "normal":[
@@ -3898,7 +3934,7 @@
         "values":{}
       },
       "name":"Sealbrick1058Garage",
-      "oldId":2248,
+      "oldId":2247,
       "top":{
         "active":true,
         "normal":[
@@ -3971,7 +4007,7 @@
         "values":{}
       },
       "name":"chinatownGarageOverflow",
-      "oldId":2249,
+      "oldId":2248,
       "top":{
         "active":false,
         "normal":[
@@ -4034,7 +4070,7 @@
         "values":{}
       },
       "name":"racePaddockGarage",
-      "oldId":2250,
+      "oldId":2249,
       "top":{
         "active":false,
         "normal":[
@@ -4097,7 +4133,7 @@
         "values":{}
       },
       "name":"alderDragwayGarage1",
-      "oldId":2251,
+      "oldId":2250,
       "top":{
         "active":false,
         "normal":[
@@ -4160,7 +4196,7 @@
         "values":{}
       },
       "name":"dragTuningPits_1",
-      "oldId":2252,
+      "oldId":2251,
       "top":{
         "active":false,
         "normal":[
@@ -4223,7 +4259,7 @@
         "values":{}
       },
       "name":"cabinGarage_1",
-      "oldId":2253,
+      "oldId":2252,
       "top":{
         "active":false,
         "normal":[
@@ -4286,7 +4322,7 @@
         "values":{}
       },
       "name":"horizonEstate_1",
-      "oldId":2254,
+      "oldId":2253,
       "top":{
         "active":false,
         "normal":[
@@ -4349,7 +4385,7 @@
         "values":{}
       },
       "name":"hill_top_villa_1",
-      "oldId":2255,
+      "oldId":2254,
       "top":{
         "active":false,
         "normal":[
@@ -4412,7 +4448,7 @@
         "values":{}
       },
       "name":"alderDragwayStorage_1",
-      "oldId":2458,
+      "oldId":2255,
       "top":{
         "active":false,
         "normal":[
@@ -4446,6 +4482,69 @@
           -238.74227905273,
           -314.8645324707,
           118.78595733643
+        ]
+      ]
+    },
+    {
+      "bot":{
+        "active":false,
+        "normal":[
+          0,
+          0,
+          -1
+        ],
+        "pos":[
+          0,
+          0,
+          -10
+        ]
+      },
+      "color":[
+        1,
+        1,
+        1
+      ],
+      "customFields":{
+        "names":{},
+        "tags":{},
+        "types":{},
+        "values":{}
+      },
+      "name":"mudDragTuningTent_1",
+      "oldId":2351,
+      "top":{
+        "active":false,
+        "normal":[
+          0,
+          0,
+          1
+        ],
+        "pos":[
+          0,
+          0,
+          10
+        ]
+      },
+      "vertices":[
+        [
+          545.44549560547,
+          -496.47805786133,
+          152.38636779785
+        ],
+        [
+          540.60699462891,
+          -485.68780517578,
+          152.38084411621
+        ],
+        [
+          531.83654785156,
+          -489.20513916016,
+          152.35282897949
+        ],
+        [
+          535.07983398438,
+          -499.82202148438,
+          152.39756774902
         ]
       ]
     }

@@ -55,7 +55,12 @@ local blacklistedModels = {
   rockbouncer = true,
   us_semi = true,
   van = true,
-  utv = true
+  utv = true,
+  wl40 = true,
+  dumptruck = true,
+  midtruck = true,
+  PM_Pulling_Tractor = true,
+  YB_mini_mod_tractor = true
 }
 local vehicleInfoCache = nil
 local initializedBusinesses = {}
@@ -2065,9 +2070,16 @@ local function generateJob(businessId)
   local race = races.races[raceIdentifier]
   local raceLabel = race and race.label or ""
 
-  local baseTime = powerToWeightToTime(powerToWeight, raceType, businessId)
+  local baseTime = nil
+  if race and gameplay_events_freeroam_dataCollection and gameplay_events_freeroam_dataCollection.predictRaceTime then
+    baseTime = math.abs(gameplay_events_freeroam_dataCollection.predictRaceTime(power, weight, year, race) + 0.5)
+  end
   if not baseTime then
-    return generateJob(businessId)
+    local powerToWeight = power / weight
+    baseTime = powerToWeightToTime(powerToWeight, raceType, businessId)
+  end
+  if not baseTime then
+    return nil
   end
 
   local tuningShopConfig = race and race.tuningShop or {}

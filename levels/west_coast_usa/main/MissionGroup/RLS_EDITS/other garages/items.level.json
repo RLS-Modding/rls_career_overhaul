@@ -2,5 +2,7 @@
 {"name":"horizonEstate_area","class":"BeamNGGameplayArea","__parent":"other garages","position":[-523.339905,-449.963318,117.595299],"rotationMatrix":[0.672391891,0.740195394,0,-0.740195394,0.672391891,0,0,0,1],"scale":[2.28113627,1.41772461,2.80672598]}
 {"name":"dragTuningPits_area","class":"BeamNGGameplayArea","__parent":"other garages","position":[-221.585754,-228.857178,118.778564],"rotationMatrix":[0.863144636,0.504956901,0,-0.504956901,0.863144636,0,0,0,1],"scale":[9.5064106,30.0105782,1]}
 {"name":"cabinGarage_area","class":"BeamNGGameplayArea","__parent":"other garages","position":[-817.135071,-916.470581,157.567383],"rotationMatrix":[0.993330538,-0.115301408,0,0.115301408,0.993330538,0,0,0,1],"scale":[1,1.40194821,3.09606433]}
+{"name":"mudDragTuningComputer_area","class":"BeamNGGameplayArea","__parent":"other garages","position":[538.859924,-493.211792,152.386368],"rotationMatrix":[0.927728832,0.373254865,0,-0.373254865,0.927728832,0,0,0,1],"scale":[3.78927994,5.75497913,1]}
+{"name":"mudDragTuningComputer_icon","class":"BeamNGPointOfInterest","__parent":"other garages","position":[540.28656,-496.726196,153.459442]}
 {"name":"dragTuningPits_icon","class":"BeamNGPointOfInterest","__parent":"other garages","position":[-220.823288,-230.146515,120.16037]}
 {"name":"cabinGarage_icon","class":"BeamNGPointOfInterest","__parent":"other garages","position":[-817.172546,-916.470032,158.059662]}

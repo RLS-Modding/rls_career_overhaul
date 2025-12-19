@@ -4,10 +4,11 @@
 
 local M = {}
 local saveRoot = 'settings/cloud/saves/'
-local saveSystemVersion = 51
+local saveSystemVersion = 61
 local backwardsCompVersion = 36
 local numberOfAutosaves = 3
 local creationDateOfCurrentSaveSlot
+local queueSave = false
 
 local currentSaveSlot
 local currentSavePath
@@ -220,10 +221,10 @@ local function asyncSaveExtensionFinished(extName)
   end
 end
 
-local function saveCurrent(vehiclesThumbnailUpdate)
+local function saveCurrentActual(vehiclesThumbnailUpdate)
   if not currentSaveSlot or career_modules_linearTutorial.isLinearTutorialActive() then return end
   oldestSave, oldSaveDate = getAutosave(currentSaveSlot, true) -- get oldest autosave to overwrite
-  saveDate = os.date("!%Y-%m-%dT%XZ") -- UTC time
+  saveDate = os.date("!%Y-%m-%dT%H:%M:%SZ") -- UTC time
 
   infoData = {}
   infoData.version = saveSystemVersion
@@ -244,6 +245,24 @@ local function saveCurrent(vehiclesThumbnailUpdate)
   syncSaveExtensionsDone = true
   if tableIsEmpty(asyncSaveExtensions) then
     saveCompleted()
+  end
+end
+
+local function saveCurrent(vehiclesThumbnailUpdate, force)
+  queueSave = true
+  if force then
+    saveCurrentActual()
+    queueSave = false
+  end
+end
+
+local function onUpdate()
+  if queueSave then
+    local playerVeh = be:getPlayerVehicle(0)
+    if not playerVeh or playerVeh:getVelocity():length() < 2 then
+      saveCurrentActual()
+      queueSave = false
+    end
   end
 end
 
@@ -286,6 +305,7 @@ local function getBackwardsCompVersion()
   return backwardsCompVersion
 end
 
+M.onUpdate = onUpdate
 M.setSaveSlot = setSaveSlot
 M.removeSaveSlot = removeSaveSlot
 M.renameSaveSlot = renameSaveSlot

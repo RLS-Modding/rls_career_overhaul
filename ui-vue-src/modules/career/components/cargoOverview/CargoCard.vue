@@ -707,7 +707,8 @@ const cargoProps = computed(() => {
 </script>
 
 <style scoped lang="scss">
-@import "@/styles/modules/mixins";
+@use "@/styles/modules/mixins" as *;
+@use "@/styles/modules/density" as *;
 
 .card-item {
   :deep(.card-cnt){

@@ -14,7 +14,7 @@ local pricePerM = 0.08
 local function getDistanceToPoint(pos)
   routePlanner:setupPath(getPlayerVehicle(0):getPosition(), pos)
   if routePlanner.path and routePlanner.path[1] and routePlanner.path[1].distToTarget then
-    return routePlanner.path[1].distToTarget
+    return routePlanner.path[1].distToTarget or 0
   else
     -- Fallback: calculate straight-line distance if route planner fails
     local playerPos = getPlayerVehicle(0):getPosition()

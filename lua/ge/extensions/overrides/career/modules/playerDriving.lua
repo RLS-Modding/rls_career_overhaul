@@ -224,7 +224,7 @@ local function retrieveFavoriteVehicle()
     spawn.safeTeleport(getObjectByID(vehId), playerVehObj:getPosition(), quatFromDir(playerVehObj:getDirectionVector()),
       nil, nil, nil, nil, false)
     core_vehicleBridge.executeAction(getObjectByID(vehId), 'setIgnitionLevel', 0)
-  elseif not vehInfo.timeToAccess and not career_modules_insurance.inventoryVehNeedsRepair(favoriteVehicleInventoryId) then
+  elseif not vehInfo.timeToAccess and not career_modules_insurance_insurance.inventoryVehNeedsRepair(favoriteVehicleInventoryId) then
     inventory.spawnVehicle(favoriteVehicleInventoryId, nil, function()
       local playerVehObj = getPlayerVehicle(0)
       local vehId = inventory.getVehicleIdFromInventoryId(favoriteVehicleInventoryId)
@@ -372,6 +372,7 @@ local function onUpdate(dtReal, dtSim, dtRaw)
 end
 
 local function onCareerModulesActivated(alreadyInLevel)
+  M.ensureTraffic = true
   if alreadyInLevel then
     setupTraffic(true)
   end

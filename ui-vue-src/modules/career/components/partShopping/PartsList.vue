@@ -42,6 +42,7 @@
             <span v-if="partShoppingStore.category === 'cargo'">
               {{ partShoppingStore.partShoppingData.slotsNiceName[part.containingSlot] }}
             </span>
+            <span v-if="part.disabled && part.disabledReason" class="disabled-reason">{{ part.disabledReason }}</span>
             <span v-if="!part.partId && !part.emptyPlaceholder" class="right"><BngPropVal :iconType="icons.beamCurrency" :valueLabel="units.beamBucks(part.finalValue)" /></span>
           </div>
         </div>
@@ -127,7 +128,7 @@ onUnmounted(() => {
 .parts-list {
   width: 100%;
   height: auto;
-  max-height: 90%;
+  max-height: 100%;
   padding: 0 1em;
   overflow: hidden auto;
 }
@@ -154,19 +155,22 @@ onUnmounted(() => {
   &:not(:last-child) {
     border-bottom: 1px solid #666;
   }
+  &.disabled {
+    opacity: 0.5;
+  }
 }
 
 .part-info-col {
   display: flex;
   flex-direction: column;
   justify-content: stretch;
-  flex: 1 1 auto;
-  max-width: calc(100% - 120px);
-  overflow: auto;
+  flex: 1 1 auto; /* Allows it to grow but keeps it within bounds */
+  max-width: calc(100% - 100px); /* Adjust according to the button width */
+  overflow: hidden;
 
   > * {
     max-width: 100%;
-    overflow: auto;
+    overflow: hidden;
   }
 }
 
@@ -198,6 +202,15 @@ onUnmounted(() => {
   font-size: 0.9em;
   font-weight: normal;
   color: rgba(255, 255, 255, 0.8);
+}
+
+.disabled-reason {
+  font-size: 0.9em;
+  align-self: center;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  margin-right: 0.5em;
 }
 
 .center {

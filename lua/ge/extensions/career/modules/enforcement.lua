@@ -81,9 +81,9 @@ local function handleCopEvadeReward(data)
     "The suspect got away, Here is " .. pityAmount .. " for repairs",
     {"gameplay", "reward", "police"}
   )
-
-  ui_message("The suspect got away, Here is " .. pityAmount .. " for repairs", 5, "Police")
+  
   career_saveSystem.saveCurrent()
+  ui_message("The suspect got away, Here is " .. pityAmount .. " for repairs", 5, "Police")
 end
 
 local function handleCriminalEvadeReward(vehId, data, inventoryId)
@@ -151,10 +151,7 @@ local function handleArrestReward(data, playerData)
 
   ui_message(message, 5, "Police")
   career_modules_inventory.addSuspectCaught(playerData.inventoryId)
-
-  if career_modules_insurance then
-    career_modules_insurance.incrementPoliceStop(playerData.inventoryId)
-  end
+  career_saveSystem.saveCurrent()
 end
 
 local function onPursuitAction(vehId, action, data)
@@ -225,8 +222,6 @@ local function onPursuitAction(vehId, action, data)
     if playerData.isCop then
       handleArrestReward(data, playerData)
     end
-
-    career_saveSystem.saveCurrent()
   end
 end
 

@@ -1,7 +1,6 @@
 import { ref, watch, computed } from "vue"
 import { defineStore } from "pinia"
 import { useBridge, lua } from "@/bridge"
-import { useInsurancePoliciesStore } from "./insurancePoliciesStore"
 
 export const useVehiclePurchaseStore = defineStore("vehiclePurchase", () => {
   const { events } = useBridge()
@@ -16,33 +15,24 @@ export const useVehiclePurchaseStore = defineStore("vehiclePurchase", () => {
   const forceTradeIn = ref(false)
   const locationSelectionEnabled = ref(false)
   const forceNoDelivery = ref(false)
-  const ownsRequiredInsurance = ref(false)
   const makeDelivery = ref(false)
-  const buyRequiredInsurance = ref(false)
   const buyCustomLicensePlate = ref(false)
   const customLicensePlateText = ref("")
   const dealershipId = ref("")
   const prices = ref({})
-  const selectedPolicyId = ref(0)
-  const vehId = ref(null)
-  const cheatsMode = ref(false)
-  const insurancePoliciesStore = useInsurancePoliciesStore()
+  const insuranceOptions = ref({})
 
   const finalPackagePrice = computed(() => {
     let price = prices.value.finalPrice
 
-    // Always add first renewal price if a policy is selected (>0)
-    let insurancePrice = 0
-    const polId = selectedPolicyId.value
-    if (polId && polId > 0) {
-      const p = (insurancePoliciesStore.policiesData || []).find(p => p.id === polId)
-      insurancePrice = p ? (p.premium || p.initialBuyPrice || 0) : 0
-    }
-    price += insurancePrice
-
     if (buyCustomLicensePlate.value) {
       price += prices.value.customLicensePlate
     }
+
+    if (insuranceOptions.value.insuranceId > 0) {
+      price += insuranceOptions.value.priceMoney
+    }
+
     return price
   })
 
@@ -54,63 +44,36 @@ export const useVehiclePurchaseStore = defineStore("vehiclePurchase", () => {
     tradeInEnabled.value = data.tradeInEnabled
     locationSelectionEnabled.value = data.locationSelectionEnabled
     forceNoDelivery.value = data.forceNoDelivery
-    ownsRequiredInsurance.value = data.ownsRequiredInsurance
     prices.value = data.prices
     makeDelivery.value = false
-    buyRequiredInsurance.value = false
     buyCustomLicensePlate.value = false
     customLicensePlateText.value = ""
     dealershipId.value = data.dealershipId
-    vehId.value = data.vehId || null
-    cheatsMode.value = data.cheatsMode || false
 
     forceTradeIn.value = data.forceTradeIn
+    insuranceOptions.value = data.insuranceOptions
 
     if (data.tradeInVehicleInfo !== undefined) {
       tradeInVehicleInfo.value = data.tradeInVehicleInfo
     } else {
       tradeInVehicleInfo.value = {}
     }
-
-    if (!ownsRequiredInsurance.value) {
-      buyRequiredInsurance.value = true
-    }
-
-    // default selected policy to required insurance if present
-    if (vehicleInfo.value && vehicleInfo.value.requiredInsurance && typeof vehicleInfo.value.requiredInsurance.id === 'number') {
-      selectedPolicyId.value = vehicleInfo.value.requiredInsurance.id
-    } else {
-      selectedPolicyId.value = 0
-    }
-  }
-
-  watch(() => buyRequiredInsurance.value, updateInsurancePurchase)
-
-  function updateInsurancePurchase(newValue, oldValue) {
-    if (!ownsRequiredInsurance.value && !buyRequiredInsurance.value) makeDelivery.value = true
   }
 
   function requestPurchaseData() {
     lua.career_modules_vehicleShopping.sendPurchaseDataToUi()
   }
 
-  function buyVehicle(makeDelivery, policyId) {
-    // Don't purchase insurance separately - it will be handled in the backend
-    // This ensures proper synchronization with vehicle purchase
+  function buyVehicle(makeDelivery) {
     let options = {
-      makeDelivery: makeDelivery, 
-      policyId: policyId,
-      purchaseInsurance: buyRequiredInsurance.value && policyId > 0
+      makeDelivery: makeDelivery,
+      insuranceId: insuranceOptions.value.insuranceId
     }
     if (buyCustomLicensePlate.value) {
       options.licensePlateText = customLicensePlateText.value
     }
     options.dealershipId = dealershipId.value
     lua.career_modules_vehicleShopping.buyFromPurchaseMenu(purchaseType.value, options)
-  }
-
-  function setSelectedPolicyId(id) {
-    selectedPolicyId.value = id || 0
   }
 
   function inventoryIsEmpty() {
@@ -130,8 +93,6 @@ export const useVehiclePurchaseStore = defineStore("vehiclePurchase", () => {
   }
 
   function startTestDrive() {
-    if (alreadyDidTestDrive.value) return
-    alreadyDidTestDrive.value = true
     lua.career_modules_inspectVehicle.startTestDrive()
   }
 
@@ -147,10 +108,10 @@ export const useVehiclePurchaseStore = defineStore("vehiclePurchase", () => {
   listen(true)
 
   return {
-    buyRequiredInsurance,
     buyVehicle,
     cancel,
     chooseTradeInVehicle,
+    purchaseType,
     startTestDrive,
     dispose,
     forceNoDelivery,
@@ -159,12 +120,9 @@ export const useVehiclePurchaseStore = defineStore("vehiclePurchase", () => {
     inventoryHasFreeSlot,
     locationSelectionEnabled,
     makeDelivery,
-    ownsRequiredInsurance,
     playerMoney,
     prices,
     finalPackagePrice,
-    selectedPolicyId,
-    setSelectedPolicyId,
     removeTradeInVehicle,
     requestPurchaseData,
     tradeInEnabled,
@@ -172,7 +130,7 @@ export const useVehiclePurchaseStore = defineStore("vehiclePurchase", () => {
     vehicleInfo,
     buyCustomLicensePlate,
     customLicensePlateText,
-    vehId,
-    cheatsMode
+    alreadyDidTestDrive,
+    insuranceOptions,
   }
 })
