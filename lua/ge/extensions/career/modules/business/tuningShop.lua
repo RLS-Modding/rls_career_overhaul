@@ -55,7 +55,12 @@ local blacklistedModels = {
   rockbouncer = true,
   us_semi = true,
   van = true,
-  utv = true
+  utv = true,
+  wl40 = true,
+  dumptruck = true,
+  midtruck = true,
+  PM_Pulling_Tractor = true,
+  YB_mini_mod_tractor = true
 }
 local vehicleInfoCache = nil
 local initializedBusinesses = {}
