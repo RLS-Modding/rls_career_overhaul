@@ -343,7 +343,7 @@ end
 
 M.onUIInitialised = function()
   core_jobsystem.create(function(job)
-    job.sleep(0.25)
+    job.sleep(0.35)
     clearDirectory("/ui/")
   end)
 end
