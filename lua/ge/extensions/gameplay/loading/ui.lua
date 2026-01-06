@@ -4,6 +4,7 @@ local Config = nil
 local uiAnim = { opacity = 0, yOffset = 50, pulse = 0, targetOpacity = 0 }
 local uiHidden = false
 local markerAnim = { time = 0, pulseScale = 1.0, rotationAngle = 0, beamHeight = 0, ringExpand = 0 }
+local debugOBBEnabled = false
 
 local imgui = ui_imgui
 
@@ -628,16 +629,141 @@ local function drawUI(dt, currentState, configStates, playerMod, contractsMod, m
   imgui.End(); imgui.PopStyleColor(2); imgui.PopStyleVar(3)
 end
 
+-- Debug OBB Drawing
+local function drawDebugOBB()
+  if not debugOBBEnabled then return end
+  
+  local managerMod = extensions.gameplay_loading_manager
+  if not managerMod then return end
+  
+  -- Draw truck bed OBB
+  if managerMod.debugDrawCache and managerMod.debugDrawCache.bedData then
+    local bd = managerMod.debugDrawCache.bedData
+    local corners = {}
+    for dx = -1, 1, 2 do
+      for dy = -1, 1, 2 do
+        for dz = -1, 1, 2 do
+          local corner = bd.center 
+            + bd.axisX * (bd.halfWidth * dx) 
+            + bd.axisY * (bd.halfLength * dy) 
+            + bd.axisZ * (bd.halfHeight * dz)
+          table.insert(corners, corner)
+        end
+      end
+    end
+    
+    local green = ColorF(0, 1, 0, 0.8)
+    local greenFaded = ColorF(0, 1, 0, 0.2)
+    
+    -- Draw edges
+    local edges = {
+      {1,2}, {3,4}, {5,6}, {7,8},  -- Z edges
+      {1,3}, {2,4}, {5,7}, {6,8},  -- Y edges  
+      {1,5}, {2,6}, {3,7}, {4,8}   -- X edges
+    }
+    for _, e in ipairs(edges) do
+      debugDrawer:drawLine(corners[e[1]], corners[e[2]], green)
+    end
+    
+    -- Draw center sphere
+    debugDrawer:drawSphere(bd.center, 0.2, green)
+    
+    -- Draw floor plane
+    local floorCenter = bd.center - bd.axisZ * bd.halfHeight
+    debugDrawer:drawSquarePrism(
+      floorCenter - bd.axisY * bd.halfLength,
+      floorCenter + bd.axisY * bd.halfLength,
+      Point2F(bd.halfWidth * 2, 0.05),
+      Point2F(bd.halfWidth * 2, 0.05),
+      greenFaded
+    )
+  end
+  
+  -- Draw loading zone boundary
+  if managerMod.jobObjects and managerMod.jobObjects.activeGroup then
+    local zone = managerMod.jobObjects.activeGroup.loading
+    if zone and zone.vertices then
+      local yellow = ColorF(1, 1, 0, 0.6)
+      local verts = zone.vertices
+      for i = 1, #verts do
+        local v1 = verts[i]
+        local v2 = verts[(i % #verts) + 1]
+        -- Handle both array format [x,y,z] and vec3/table format
+        local x1, y1, z1 = v1[1] or v1.x or 0, v1[2] or v1.y or 0, v1[3] or v1.z or 0
+        local x2, y2, z2 = v2[1] or v2.x or 0, v2[2] or v2.y or 0, v2[3] or v2.z or 0
+        local p1 = vec3(x1, y1, z1 + 0.5)
+        local p2 = vec3(x2, y2, z2 + 0.5)
+        debugDrawer:drawLine(p1, p2, yellow)
+        debugDrawer:drawSphere(p1, 0.3, yellow)
+      end
+    end
+  end
+  
+  -- Draw props/rocks and their detection status
+  if managerMod.propQueue and #managerMod.propQueue > 0 then
+    local Config = extensions.gameplay_loading_config
+    local nodeStep = Config and Config.settings and Config.settings.payload and Config.settings.payload.nodeSamplingStep or 10
+    local bd = managerMod.debugDrawCache and managerMod.debugDrawCache.bedData
+    
+    for _, propEntry in ipairs(managerMod.propQueue) do
+      local obj = be:getObjectByID(propEntry.id)
+      if obj then
+        local objPos = obj:getPosition()
+        local tf = obj:getTransform()
+        local axisX = vec3(tf:getColumn(0))
+        local axisY = vec3(tf:getColumn(1))
+        local axisZ = vec3(tf:getColumn(2))
+        
+        -- Draw prop center
+        local cyan = ColorF(0, 1, 1, 0.8)
+        debugDrawer:drawSphere(objPos, 0.5, cyan)
+        
+        -- Draw sampled nodes if we have bed data
+        if bd then
+          local nodeCount = obj:getNodeCount() or 0
+          for i = 0, nodeCount - 1, nodeStep do
+            local nodeLocalPos = obj:getNodePosition(i)
+            local worldPoint = objPos - (axisX * nodeLocalPos.x) - (axisY * nodeLocalPos.y) + (axisZ * nodeLocalPos.z)
+            
+            -- Check if node is inside truck bed
+            local diff = worldPoint - bd.center
+            local localX = diff:dot(bd.axisX)
+            local localY = diff:dot(bd.axisY)
+            local localZ = diff:dot(bd.axisZ)
+            local isInside = (math.abs(localX) <= bd.halfWidth and math.abs(localY) <= bd.halfLength and math.abs(localZ) <= bd.halfHeight)
+            
+            local nodeColor = isInside and ColorF(0, 1, 0, 0.9) or ColorF(1, 0, 0, 0.5)
+            debugDrawer:drawSphere(worldPoint, 0.08, nodeColor)
+          end
+        end
+      end
+    end
+  end
+end
+
+local function toggleDebugOBB(enabled)
+  if enabled == nil then
+    debugOBBEnabled = not debugOBBEnabled
+  else
+    debugOBBEnabled = enabled
+  end
+  print("[Loading] Debug OBB visualization: " .. (debugOBBEnabled and "ENABLED" or "DISABLED"))
+  return debugOBBEnabled
+end
+
 -- API Exports
 M.uiAnim = uiAnim
 M.uiHidden = uiHidden
 M.markerAnim = markerAnim
+M.debugOBBEnabled = debugOBBEnabled
 
 M.drawWorkSiteMarker = drawWorkSiteMarker
 M.drawZoneChoiceMarkers = drawZoneChoiceMarkers
 M.getQuarryStateForUI = getQuarryStateForUI
 M.requestQuarryState = requestQuarryState
 M.drawUI = drawUI
+M.drawDebugOBB = drawDebugOBB
+M.toggleDebugOBB = toggleDebugOBB
 M.onExtensionLoaded = function()
   log("I", "Loading Extension: ui loaded")
 end

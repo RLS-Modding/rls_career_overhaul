@@ -1073,16 +1073,6 @@ function M.calculateTruckPayload()
     return 0
   end
   
-  local currentMass = truck:getMass()
-  if M.lastPayloadMass > 0 and math.abs(currentMass - M.lastPayloadMass) < 10 then
-    M.payloadStationaryCount = M.payloadStationaryCount + 1
-    if M.payloadStationaryCount > 10 then
-      return M.lastPayloadMass
-    end
-  else
-    M.payloadStationaryCount = 0
-  end
-  
   local bedData = M.getTruckBedData(truck)
   if not bedData then 
     M.lastPayloadMass = 0

@@ -659,6 +659,7 @@ local function onUpdate(dt)
   end
 
   UI.drawUI(dt, currentState, Config, nil, Contracts, Manager, Zones, uiCallbacks)
+  UI.drawDebugOBB()
 
   local function spawnOrMoveTruckToZone(zone, isZoneSwap)
     if not zone or not zone.loading or not zone.spawn or not zone.spawn.pos then
