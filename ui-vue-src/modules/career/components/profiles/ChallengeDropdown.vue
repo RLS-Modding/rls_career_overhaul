@@ -78,8 +78,11 @@
 <script setup>
 import { computed, ref, nextTick, onMounted, onBeforeUnmount, watch } from 'vue'
 import { lua } from '@/bridge'
+import { useEvents } from '@/services/events'
 import ChallengeDetailModal from './ChallengeDetailModal.vue'
 import ChallengeCreateModal from './ChallengeCreateModal.vue'
+
+const events = useEvents()
 
 const props = defineProps({
     modelValue: { type: String, default: null }
@@ -213,15 +216,36 @@ async function fetchChallenges() {
     }
 }
 
+function handleChallengeCreated(payload) {
+    if (!payload || !payload.id) return
+    
+    const existing = challenges.value.findIndex(c => c.id === payload.id)
+    const mapped = {
+        id: payload.id,
+        name: payload.name,
+        difficulty: payload.difficulty || 'Medium',
+        shortDescription: payload.description || '',
+        isLocal: payload.isLocal !== false
+    }
+    
+    if (existing >= 0) {
+        challenges.value[existing] = mapped
+    } else {
+        challenges.value.push(mapped)
+    }
+}
+
 onMounted(() => {
     document.addEventListener('mousedown', onDocClick)
     window.addEventListener('resize', position)
     window.addEventListener('scroll', position, true)
+    events.on('challengeCreated', handleChallengeCreated)
 })
 onBeforeUnmount(() => {
     document.removeEventListener('mousedown', onDocClick)
     window.removeEventListener('resize', position)
     window.removeEventListener('scroll', position, true)
+    events.off('challengeCreated', handleChallengeCreated)
     if (lua.setCEFTyping) {
         lua.setCEFTyping(false)
     }
@@ -263,35 +287,11 @@ function openCreate(e) {
     }
     createOpen.value = true
 }
-async function onCreated(challengeId) { 
+function onCreated(challengeId) { 
+    // The challengeCreated guihook handles adding to the list
+    // We just need to select the new challenge
     if (challengeId) {
         emit('update:modelValue', challengeId)
-        try {
-            const newChallenge = await lua.career_challengeModes.getSingleChallengeForUI(challengeId)
-            if (newChallenge) {
-                const existing = challenges.value.findIndex(c => c.id === challengeId)
-                const mapped = {
-                    id: newChallenge.id,
-                    name: newChallenge.name,
-                    difficulty: newChallenge.difficulty || 'Medium',
-                    shortDescription: newChallenge.description || '',
-                    startingCash: newChallenge.startingCapital ? ('$' + newChallenge.startingCapital) : undefined,
-                    loanAmount: newChallenge.loanAmount ? ('$' + newChallenge.loanAmount) : undefined,
-                    interestRate: (typeof newChallenge.loanInterest === 'number') ? ((newChallenge.loanInterest * 100).toFixed(0) + '%') : undefined,
-                    paymentSchedule: (typeof newChallenge.loanPayments === 'number') ? ((newChallenge.loanPayments * 5) + ' min total (' + newChallenge.loanPayments + ' payments)') : undefined,
-                    objective: newChallenge.winConditionName || newChallenge.winCondition || '',
-                    winCondition: newChallenge.winCondition,
-                    isLocal: newChallenge.isLocal || false
-                }
-                if (existing >= 0) {
-                    challenges.value[existing] = mapped
-                } else {
-                    challenges.value.push(mapped)
-                }
-            }
-        } catch (err) {
-            console.error('Failed to fetch new challenge:', err)
-        }
     }
     editChallengeData.value = null
     editChallengeId.value = null

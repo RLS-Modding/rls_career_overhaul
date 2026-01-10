@@ -882,7 +882,21 @@ local function createChallengeFromUI(challengeData)
   local success = jsonWriteFile(filePath, newChallenge, true)
 
   if success then
-    discoverChallenges(true)
+    -- Add directly to cache instead of re-scanning all challenges
+    newChallenge.filePath = filePath
+    newChallenge.isLocal = true
+    discoveredChallenges[challengeData.id] = newChallenge
+    challengesDiscovered = true
+    
+    -- Send the new challenge to UI via guihook for immediate list update
+    guihooks.trigger('challengeCreated', {
+      id = newChallenge.id,
+      name = newChallenge.name,
+      description = newChallenge.description or "",
+      difficulty = newChallenge.difficulty or "Medium",
+      isLocal = true
+    })
+    
     return true, "Challenge created successfully", challengeData.id
   else
     return false, "Failed to save challenge file", nil
@@ -1563,7 +1577,8 @@ local function deleteChallenge(challengeId)
     end
   end
   
-  discoverChallenges(true)
+  -- Remove from cache instead of re-scanning
+  discoveredChallenges[challengeId] = nil
   return true, "Challenge deleted successfully"
 end
 
@@ -1573,10 +1588,8 @@ local function createChallengeFromSeedUI(seed, name, description)
   end
   
   if career_challengeSeedEncoder then
+    -- The seed encoder calls createChallengeFromUI internally, which updates cache
     local success, message, challengeId = career_challengeSeedEncoder.createChallengeFromSeed(seed, name, description)
-    if success then
-      discoverChallenges(true)
-    end
     return success, message, challengeId
   end
   
