@@ -1,13 +1,12 @@
 <template>
-  <div v-show="open" class="ccm-overlay" @click.stop @mousedown.stop>
+  <div v-show="open" ref="overlayRef" class="ccm-overlay" tabindex="-1" @click.stop @mousedown.stop @keydown.stop>
     <!-- MODAL IS RENDERING -->
-    <div class="ccm-content" @click.stop @mousedown.stop>
+    <div class="ccm-content" @click.stop @mousedown.stop @keydown.stop>
       <div class="ccm-header">
         <div class="ccm-header-left">
           <div class="ccm-icon" />
           <div class="ccm-title">{{ editChallengeData ? 'Edit Challenge' : 'Create Challenge' }}</div>
         </div>
-        <button class="ccm-close" @click.stop="onRequestClose" @mousedown.stop>×</button>
       </div>
 
       <div class="ccm-body">
@@ -457,6 +456,7 @@ const multiselectModalOpen = ref(false)
 const currentMultiselectVariableId = ref('')
 let copyStatusTimer
 
+const overlayRef = ref(null)
 const difficultyDropdownRef = ref(null)
 const difficultyDropdownOpen = ref(false)
 const difficultyDropdownStyle = ref('')
@@ -537,6 +537,16 @@ function onMapDocClick(e) {
   if (dropdown && dropdown.contains(e.target)) return
   if (trigger && trigger.contains(e.target)) return
   mapDropdownOpen.value = false
+}
+
+function onKeyDown(e) {
+  if (!props.open) return
+  if (e.key === 'Escape') {
+    e.preventDefault()
+    e.stopPropagation()
+    return
+  }
+  e.stopPropagation()
 }
 
 const events = useEvents()
@@ -799,6 +809,10 @@ watch(() => props.open, async (isOpen, oldIsOpen) => {
     return
   }
 
+  if (lua.setCEFTyping) {
+    lua.setCEFTyping(true)
+  }
+
   try {
     if (props.editChallengeId) {
       try {
@@ -831,10 +845,10 @@ watch(() => props.open, async (isOpen, oldIsOpen) => {
     initialSnapshot.value = JSON.stringify(form.value)
 
     nextTick(() => {
-      if (lua.setCEFTyping) {
-        lua.setCEFTyping(true)
+      if (overlayRef.value) {
+        overlayRef.value.focus()
       }
-      const firstInput = document.querySelector('.ccm-input')
+      const firstInput = document.querySelector('.ccm-content .ccm-input')
       if (firstInput) {
         firstInput.focus()
       }
@@ -939,6 +953,7 @@ onMounted(async () => {
   events.on('challengeEditDataResponse', handleChallengeEditDataResponse)
   document.addEventListener('mousedown', onDifficultyDocClick)
   document.addEventListener('mousedown', onMapDocClick)
+  document.addEventListener('keydown', onKeyDown, true)
   window.addEventListener('resize', positionDifficultyDropdown)
   window.addEventListener('scroll', positionDifficultyDropdown, true)
   window.addEventListener('resize', positionMapDropdown)
@@ -972,6 +987,7 @@ onBeforeUnmount(() => {
   events.off('challengeEditDataResponse', handleChallengeEditDataResponse)
   document.removeEventListener('mousedown', onDifficultyDocClick)
   document.removeEventListener('mousedown', onMapDocClick)
+  document.removeEventListener('keydown', onKeyDown, true)
   window.removeEventListener('resize', positionDifficultyDropdown)
   window.removeEventListener('scroll', positionDifficultyDropdown, true)
   window.removeEventListener('resize', positionMapDropdown)
@@ -1460,22 +1476,6 @@ function closeMultiselectModal() {
   font-weight: 600;
   font-size: 1.25em;
   line-height: 1.3;
-}
-
-.ccm-close {
-  background: transparent;
-  border: 0;
-  color: #94a3b8;
-  font-size: 1.5em;
-  cursor: pointer;
-  padding: 0.25em;
-  line-height: 1;
-  transition: color 0.2s ease;
-  flex-shrink: 0;
-}
-
-.ccm-close:hover {
-  color: #e2e8f0;
 }
 
 .ccm-basic-section {

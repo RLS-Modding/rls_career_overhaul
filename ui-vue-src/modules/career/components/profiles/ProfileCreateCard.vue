@@ -6,7 +6,7 @@
     :hideFooter="true"
     class="profile-create-card"
     @activate="() => setActive(true)"
-    @deactivate="() => setActive(false)">
+    @deactivate="onDeactivate">
     <div v-bng-on-ui-nav:menu="onMenu" :class="{ 'create-active': isActive }" class="create-content-container">
       <div v-if="isActive" class="active-content">
         <div class="content-sections">
@@ -276,15 +276,24 @@ watch(challengeId, async (newVal) => {
 
 const load = () => emit("load", profileName.value, false, hardcoreMode.value, challengeId.value, cheatsMode.value, selectedMap.value)
 
-function setActive(value) {
-  if (value === false) {
-    const creator = document.querySelector('.ccm-overlay')
-    const detailer = document.querySelector('.cdm-overlay')
-    if (creator || detailer) {
-      return
-    }
+function isModalOpen() {
+  if (challengeDropdownRef.value && (challengeDropdownRef.value.createOpen || challengeDropdownRef.value.detailOpen)) {
+    return true
   }
-  // Only emit if value actually changed (avoid duplicate events when parent controls via model)
+  return false
+}
+
+function onDeactivate() {
+  if (isModalOpen()) {
+    return
+  }
+  setActive(false)
+}
+
+function setActive(value) {
+  if (value === false && isModalOpen()) {
+    return
+  }
   if (isActive.value !== value) {
     isActive.value = value
     emit("card:activate", value)
@@ -298,6 +307,9 @@ function onEnter(event) {
 }
 
 function onMenu() {
+  if (isModalOpen()) {
+    return
+  }
   setActive(false)
 }
 
