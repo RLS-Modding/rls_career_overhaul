@@ -26,7 +26,7 @@
                     <div class="cdm-overview-main">
                         <div class="cdm-starting-cash">
                             <div class="cdm-starting-cash-label">Starting Cash</div>
-                            <div class="cdm-starting-cash-value cdm-green">{{ challenge?.startingCash }}</div>
+                            <div class="cdm-starting-cash-value cdm-green">{{ startingCashDisplay }}</div>
                         </div>
                         <div v-if="hasDebt" class="cdm-debt-compact">
                             <span class="cdm-debt-label">Debt:</span>
@@ -60,7 +60,7 @@
                 <div class="cdm-objective">
                     <div class="cdm-objective-header">
                         <div class="cdm-objective-title">Objective</div>
-                        <div class="cdm-objective-text"><strong>{{ challenge?.objective }}</strong><template v-if="challenge?.objectiveDescription"> — {{ challenge?.objectiveDescription }}</template></div>
+                        <div class="cdm-objective-text"><strong>{{ objectiveDisplay }}</strong><template v-if="objectiveDescriptionDisplay"> — {{ objectiveDescriptionDisplay }}</template></div>
                     </div>
                     <div v-if="challengeVariables.length > 0" class="cdm-objective-settings">
                         <div v-for="variable in challengeVariables" :key="variable.name" class="cdm-setting-group">
@@ -391,6 +391,51 @@ onBeforeUnmount(() => {
 
 const displayChallenge = computed(() => {
     return fullChallengeData.value || props.challenge
+})
+
+const startingCashDisplay = computed(() => {
+    const challenge = fullChallengeData.value || props.challenge
+    if (!challenge) return null
+    
+    // Check multiple possible field names
+    const amount = challenge.startingCash || challenge.startingCapital
+    if (amount !== undefined && amount !== null) {
+        if (typeof amount === 'string') return amount
+        return '$' + Number(amount).toLocaleString()
+    }
+    return null
+})
+
+const objectiveDisplay = computed(() => {
+    const challenge = fullChallengeData.value || props.challenge
+    if (!challenge) return null
+    
+    // If we have a direct objective name, use it
+    if (challenge.objective) return challenge.objective
+    
+    // Otherwise look up the win condition name
+    if (challenge.winCondition && props.editorData?.winConditions) {
+        const wc = props.editorData.winConditions.find(w => w.id === challenge.winCondition)
+        if (wc) return wc.name
+    }
+    
+    return null
+})
+
+const objectiveDescriptionDisplay = computed(() => {
+    const challenge = fullChallengeData.value || props.challenge
+    if (!challenge) return null
+    
+    // If we have a direct description, use it
+    if (challenge.objectiveDescription) return challenge.objectiveDescription
+    
+    // Otherwise look up the win condition description
+    if (challenge.winCondition && props.editorData?.winConditions) {
+        const wc = props.editorData.winConditions.find(w => w.id === challenge.winCondition)
+        if (wc) return wc.description
+    }
+    
+    return null
 })
 
 const hasEconomy = computed(() => {

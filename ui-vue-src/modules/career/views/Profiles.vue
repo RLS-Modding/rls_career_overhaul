@@ -88,7 +88,22 @@ onBeforeUnmount(() => {
 
 provide("validateName", validateName)
 
+function isAnyModalOpen() {
+  const creator = document.querySelector('.ccm-overlay')
+  const detailer = document.querySelector('.cdm-overlay')
+  if (creator) {
+    const style = window.getComputedStyle(creator)
+    if (style.display !== 'none' && style.visibility !== 'hidden') return true
+  }
+  if (detailer) {
+    const style = window.getComputedStyle(detailer)
+    if (style.display !== 'none' && style.visibility !== 'hidden') return true
+  }
+  return false
+}
+
 const navigateToMainMenu = () => {
+  if (isAnyModalOpen()) return
   if (activeProfileId.value) {
     window.bngVue.gotoAngularState("menu.careerPause")
   } else {
@@ -97,8 +112,8 @@ const navigateToMainMenu = () => {
 }
 
 const onDeactivate = (event) => {
-  // Don't navigate if this is a forced deactivation (e.g., component unmounting)
   if (event?.detail?.force) return
+  if (isAnyModalOpen()) return
 
   if (isLoading) {
     isLoading = false
