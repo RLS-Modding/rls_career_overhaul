@@ -467,6 +467,14 @@ const mapDropdownOpen = ref(false)
 const mapDropdownStyle = ref('')
 const mapOptions = ref([])
 
+const fullEditorData = ref(null)
+const editorDataLoading = ref(false)
+
+const activeEditorData = computed(() => {
+  if (fullEditorData.value) return fullEditorData.value
+  return props.editorData || {}
+})
+
 function selectDifficulty(difficulty) {
   formDifficulty.value = difficulty
   difficultyDropdownOpen.value = false
@@ -598,7 +606,7 @@ const seedPayload = computed(() => {
 
 const winConditionOptions = computed(() => {
   try {
-    const raw = props.editorData && props.editorData.winConditions
+    const raw = activeEditorData.value && activeEditorData.value.winConditions
     const list = Array.isArray(raw) ? raw : []
     return list.map(w => ({
       id: w.id,
@@ -708,7 +716,7 @@ const activeVariables = computed(() => {
 })
 
 const availableGarages = computed(() => {
-  const raw = props.editorData && props.editorData.availableGarages
+  const raw = activeEditorData.value && activeEditorData.value.availableGarages
   return Array.isArray(raw) ? raw : []
 })
 
@@ -759,9 +767,9 @@ watch(() => formWinCondition.value, () => {
   initializeVariables()
   
   if (loansRequired.value && formLoanAmount.value === 0) {
-    formLoanAmount.value = props.editorData?.defaults?.loanAmount ?? 50000
-    formLoanInterest.value = props.editorData?.defaults?.loanInterest ?? 0.10
-    formLoanPayments.value = props.editorData?.defaults?.loanPayments ?? 12
+    formLoanAmount.value = activeEditorData.value?.defaults?.loanAmount ?? 50000
+    formLoanInterest.value = activeEditorData.value?.defaults?.loanInterest ?? 0.10
+    formLoanPayments.value = activeEditorData.value?.defaults?.loanPayments ?? 12
   }
   
   seedError.value = ''
@@ -770,7 +778,7 @@ watch(() => formWinCondition.value, () => {
 
 const filteredActivityTypes = computed(() => {
   const q = econQuery.value.trim().toLowerCase()
-  const raw = props.editorData && props.editorData.activityTypes
+  const raw = activeEditorData.value && activeEditorData.value.activityTypes
   const types = Array.isArray(raw) ? raw : []
   if (!q) return types
   return types.filter(t => ((t.name || t.id || '').toLowerCase().includes(q)))
@@ -811,6 +819,20 @@ watch(() => props.open, async (isOpen, oldIsOpen) => {
 
   if (lua.setCEFTyping) {
     lua.setCEFTyping(true)
+  }
+
+  if (!fullEditorData.value && !editorDataLoading.value) {
+    editorDataLoading.value = true
+    try {
+      const ed = await lua.career_challengeModes.getChallengeEditorData()
+      if (ed && typeof ed === 'object') {
+        fullEditorData.value = ed
+      }
+    } catch (err) {
+      console.error('[ChallengeCreateModal] Failed to load editor data:', err)
+    } finally {
+      editorDataLoading.value = false
+    }
   }
 
   try {
@@ -1053,19 +1075,19 @@ function resetFormDefaults() {
   formId.value = ''
   formName.value = ''
   formDescription.value = ''
-  formDifficulty.value = props.editorData?.defaults?.difficulty ?? 'Medium'
-  formStartingCapital.value = props.editorData?.defaults?.startingCapital ?? 10000
-  const rawWin = props.editorData?.winConditions
+  formDifficulty.value = activeEditorData.value?.defaults?.difficulty ?? 'Medium'
+  formStartingCapital.value = activeEditorData.value?.defaults?.startingCapital ?? 10000
+  const rawWin = activeEditorData.value?.winConditions
   const list = Array.isArray(rawWin) ? rawWin : []
   formWinCondition.value = list[0]?.id || 'payOffLoan'
-  formLoanAmount.value = props.editorData?.defaults?.loanAmount ?? 0
-  formLoanInterest.value = props.editorData?.defaults?.loanInterest ?? 0.10
-  formLoanPayments.value = props.editorData?.defaults?.loanPayments ?? 12
+  formLoanAmount.value = activeEditorData.value?.defaults?.loanAmount ?? 0
+  formLoanInterest.value = activeEditorData.value?.defaults?.loanInterest ?? 0.10
+  formLoanPayments.value = activeEditorData.value?.defaults?.loanPayments ?? 12
   formStartingGarages.value = []
   formMap.value = null
   
   Object.keys(formEconomyAdjuster).forEach(k => delete formEconomyAdjuster[k])
-  const rawTypes = props.editorData?.activityTypes
+  const rawTypes = activeEditorData.value?.activityTypes
   const types = Array.isArray(rawTypes) ? rawTypes : []
   for (const t of types) {
     if (t && t.id) {

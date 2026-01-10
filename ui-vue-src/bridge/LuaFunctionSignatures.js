@@ -84,6 +84,8 @@ export default {
     discoverChallenges: () => {},
     getChallengeOptionsForCareerCreation: () => {},
     getChallengeEditorData: () => {},
+    getChallengeDropdownDataLight: () => {},
+    getSingleChallengeForUI: id => String,
     createChallengeFromUI: data => Any,
     startChallenge: id => String,
     getActiveChallenge: () => {},
