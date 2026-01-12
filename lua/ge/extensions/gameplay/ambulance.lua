@@ -1,7 +1,6 @@
 -- ================================
 -- AMBULANCE MODULE 
 -- ================================
-
 local M = {}
 M.dependencies = {'gameplay_sites_sitesManager', 'freeroam_facilities'}
 
@@ -10,28 +9,30 @@ local core_groundMarkers = require('core/groundMarkers')
 
 -- Check if a vehicle has ambulance paint design
 local function isAmbulancePaintDesign(vehicleId)
-  local id = vehicleId
-  if not id then
-    local playerVehicle = be:getPlayerVehicle(0)
-    if not playerVehicle then return false end
-    id = playerVehicle:getId()
-  end
-  local vehData = core_vehicle_manager.getVehicleData(id)
-  local paintDesign = vehData and vehData.config and vehData.config.paint_design
-  return paintDesign and type(paintDesign) == "string" and paintDesign:lower():find("ambulance") ~= nil
+    local id = vehicleId
+    if not id then
+        local playerVehicle = be:getPlayerVehicle(0)
+        if not playerVehicle then
+            return false
+        end
+        id = playerVehicle:getId()
+    end
+    local vehData = core_vehicle_manager.getVehicleData(id)
+    local paintDesign = vehData and vehData.config and vehData.config.paint_design
+    return paintDesign and type(paintDesign) == "string" and paintDesign:lower():find("ambulance") ~= nil
 end
 
 -- STATE VARIABLES
 local currentFare = nil
-local state = "ready"         
+local state = "ready"
 local parkingSpots = nil
 local pickupTimer = nil
 local pickupMessageShown = false
 local missionTriggeredForVehicle = false
 -- Stop-settle state
-local stopMonitorActive       = false
-local stopSettleTimer         = 0
-local stopSettleDelay         = 2.5
+local stopMonitorActive = false
+local stopSettleTimer = 0
+local stopSettleDelay = 2.5
 
 -- Timers
 M.initDelay = nil
@@ -44,7 +45,7 @@ M.maxDelay = 90
 -- Track rough ride metrics
 local roughRide = 0
 local lastVehiclePos = nil
-local lastVelocity = nil  -- 
+local lastVelocity = nil -- 
 
 -- ================================
 -- FORWARD DECLARATIONS
@@ -58,7 +59,9 @@ local updateMarkers
 -- START RIDE
 -- ================================
 startRide = function(fare)
-    if not fare then return end
+    if not fare then
+        return
+    end
     currentFare = fare
     local playerVehicle = be:getPlayerVehicle(0)
     if not playerVehicle then
@@ -101,7 +104,9 @@ generateFare = function()
 
     local validPickups = {}
     local playerVehicle = be:getPlayerVehicle(0)
-    if not playerVehicle then return nil end
+    if not playerVehicle then
+        return nil
+    end
 
     for _, spot in pairs(parkingSpots.objects) do
         if spot.pos then
@@ -129,13 +134,19 @@ generateFare = function()
     end
 
     if not dropoffSpot then
-        log('W', 'ambulance', 'No "Hospital Entrance" found in site data. Path: ' .. tostring(hospitalSitePath) .. ' Pickup: ' .. (pickupSpot and pickupSpot.name or tostring(pickupSpot)))
+        log('W', 'ambulance',
+            'No "Hospital Entrance" found in site data. Path: ' .. tostring(hospitalSitePath) .. ' Pickup: ' ..
+                (pickupSpot and pickupSpot.name or tostring(pickupSpot)))
         return nil
     end
 
     return {
-        pickup = {pos = pickupSpot.pos},
-        destination = {pos = dropoffSpot.pos},
+        pickup = {
+            pos = pickupSpot.pos
+        },
+        destination = {
+            pos = dropoffSpot.pos
+        },
         baseFare = 2200,
         passengers = 1,
         passengerType = "STANDARD",
@@ -176,16 +187,20 @@ end
 -- UPDATE MARKERS & STATE
 -- ================================
 updateMarkers = function(dtReal, dtSim, dtRaw)
-    if not currentFare then return end
+    if not currentFare then
+        return
+    end
     local playerVehicle = be:getPlayerVehicle(0)
-    if not playerVehicle then return end
+    if not playerVehicle then
+        return
+    end
     local vehiclePos = playerVehicle:getPosition()
 
     local velocity = playerVehicle:getVelocity()
     local speed = velocity:length()
     if lastVelocity then
         local deltaVel = velocity - lastVelocity
-        local safeDt = (dtSim and dtSim > 0) and dtSim or 0.01  
+        local safeDt = (dtSim and dtSim > 0) and dtSim or 0.01
         local accel = deltaVel:length() / safeDt
 
         local accelThreshold = 2
@@ -226,9 +241,11 @@ updateMarkers = function(dtReal, dtSim, dtRaw)
                 pickupMessageShown = true
                 currentFare.startTime = os.time()
             end
-            if not pickupTimer then pickupTimer = 0 end
+            if not pickupTimer then
+                pickupTimer = 0
+            end
             pickupTimer = pickupTimer + (dtSim or 0)
-            if pickupTimer >= 12 then 
+            if pickupTimer >= 12 then
                 state = "enRoute"
                 core_groundMarkers.resetAll()
                 if currentFare.destination and currentFare.destination.pos then
@@ -279,7 +296,8 @@ updateMarkers = function(dtReal, dtSim, dtRaw)
         -- extra dropoff dwell after settling; adjust 6 to your desired seconds
         currentFare.dropoffTimer = (currentFare.dropoffTimer or 0) + (dtSim or 0)
         if currentFare.dropoffTimer < 6 then
-            ui_message(string.format("Stabilizing patient... %.1fs", math.max(0, 6 - currentFare.dropoffTimer)), 1, "info", "info")
+            ui_message(string.format("Stabilizing patient... %.1fs", math.max(0, 6 - currentFare.dropoffTimer)), 1,
+                "info", "info")
             return
         end
 
@@ -288,21 +306,27 @@ updateMarkers = function(dtReal, dtSim, dtRaw)
         local distToHospital = (currentFare.pickup.pos - currentFare.destination.pos):length()
         local distanceKM = (distToPickup + distToHospital) / 1000
         local basePayout = math.floor(2200 * distanceKM)
-        
+
         -- Apply economy adjuster multiplier if available
         if career_economyAdjuster then
             local multiplier = career_economyAdjuster.getSectionMultiplier("ambulance") or 1.0
             basePayout = math.floor(basePayout * multiplier + 0.5)
         end
-        
+
         local penalty = math.floor(roughRide * 0.1)
         local finalPayout = math.max(0, basePayout - penalty)
 
         if career_career and career_career.isActive() and career_modules_payment and career_modules_payment.reward then
             career_modules_payment.reward({
-                money = { amount = finalPayout },
-                beamXP = { amount = math.floor(finalPayout / 10) },
-                paramedicWorkReputation = { amount = math.floor(finalPayout / 100) }
+                money = {
+                    amount = finalPayout
+                },
+                beamXP = {
+                    amount = math.floor(finalPayout / 10)
+                },
+                paramedicWorkReputation = {
+                    amount = math.floor(finalPayout / 100)
+                }
             }, {
                 label = string.format("Ambulance fare: $%d | Rough ride penalty: $%d", finalPayout, penalty),
                 tags = {"transport", "ambulance", "gameplay"}
@@ -312,14 +336,12 @@ updateMarkers = function(dtReal, dtSim, dtRaw)
         local repGain = math.floor(finalPayout / 100)
 
         ui_message(string.format(
-            "Patient delivered!\nDistance: %.2f km\nBase: $%d\nPenalty: $%d\nEarned: $%d\nReputation +%d",
-            distanceKM, basePayout, penalty, finalPayout, repGain
-        ), 6, "info", "info")
+            "Patient delivered!\nDistance: %.2f km\nBase: $%d\nPenalty: $%d\nEarned: $%d\nReputation +%d", distanceKM,
+            basePayout, penalty, finalPayout, repGain), 6, "info", "info")
 
         print(string.format(
             "[ambulance] Patient delivered. Distance: %.2f km Base: $%d Penalty: $%d Earned: $%d Reputation +%d",
-            distanceKM, basePayout, penalty, finalPayout, repGain
-        ))
+            distanceKM, basePayout, penalty, finalPayout, repGain))
         currentFare.dropoffTimer = nil
         state = "completed"
         core_groundMarkers.resetAll()

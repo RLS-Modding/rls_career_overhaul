@@ -44,10 +44,12 @@ local function updateSensorData()
     if not currentOrder or state ~= "dropoff" then
         return
     end
-    
+
     local vehicle = be:getPlayerVehicle(0)
-    if not vehicle then return end
-    
+    if not vehicle then
+        return
+    end
+
     vehicle:queueLuaCommand([[
         local sensors = require('sensors')
         if sensors then
@@ -61,16 +63,20 @@ end
 local function processSensorData(gx, gy, gz, gx2, gy2, gz2)
     local grav = 9.81 -- Convert to G-force
     M.deliveryData.currentSensorData = {
-        gx = gx / grav, gy = gy / grav, gz = gz / grav,
-        gx2 = gx2 / grav, gy2 = gy2 / grav, gz2 = gz2 / grav,
+        gx = gx / grav,
+        gy = gy / grav,
+        gz = gz / grav,
+        gx2 = gx2 / grav,
+        gy2 = gy2 / grav,
+        gz2 = gz2 / grav,
         timestamp = os.time()
     }
-    
+
     -- Track rough driving events
     if not M.deliveryData.roughEvents then
         M.deliveryData.roughEvents = 0
     end
-    
+
     local peak = math.max(math.abs(gx2 / grav), math.abs(gy2 / grav), math.abs(gz2 / grav))
     if peak > 0.6 then
         M.deliveryData.roughEvents = M.deliveryData.roughEvents + 1
@@ -83,13 +89,13 @@ end
 local function findRestaurants()
     restaurants = {}
     local facilities = freeroam_facilities.getFacilitiesByType("deliveryProvider")
-    
+
     if not facilities then
         return
     end
-    
+
     local restaurantParkingSpotNames = {}
-    
+
     for _, fac in ipairs(facilities) do
         local isRestaurant = false
         for _, restaurantId in ipairs(restaurantIds) do
@@ -98,7 +104,7 @@ local function findRestaurants()
                 break
             end
         end
-        
+
         if isRestaurant then
             local pickupSpots = {}
             if fac.manualAccessPoints then
@@ -107,7 +113,7 @@ local function findRestaurants()
                         for _, logisticType in ipairs(accessPoint.logisticTypesProvided) do
                             if logisticType == "food" then
                                 table.insert(restaurantParkingSpotNames, accessPoint.psName)
-                                
+
                                 local sitesFile = fac.sitesFile
                                 if sitesFile then
                                     local siteData = gameplay_sites_sitesManager.loadSites(sitesFile)
@@ -129,7 +135,7 @@ local function findRestaurants()
                     end
                 end
             end
-            
+
             if #pickupSpots > 0 then
                 table.insert(restaurants, {
                     id = fac.id,
@@ -139,7 +145,7 @@ local function findRestaurants()
             end
         end
     end
-    
+
     M.restaurantParkingSpotNames = restaurantParkingSpotNames
 end
 
@@ -153,14 +159,14 @@ local function findAllDeliveryParkingSpots()
             return
         end
     end
-    
+
     local allParkingSpots = {}
     local restaurantSpotNames = M.restaurantParkingSpotNames or {}
     local restaurantSpotsLookup = {}
     for _, spotName in ipairs(restaurantSpotNames) do
         restaurantSpotsLookup[spotName] = true
     end
-    
+
     for _, sitesFilePath in ipairs(allSitesFiles) do
         if not string.find(sitesFilePath, "restaurants") then
             local siteData = gameplay_sites_sitesManager.loadSites(sitesFilePath, true, true)
@@ -175,7 +181,7 @@ local function findAllDeliveryParkingSpots()
             end
         end
     end
-    
+
     allDeliverySpots = {
         objects = allParkingSpots
     }
@@ -216,9 +222,15 @@ local function generateValueMultiplier()
     if not playerVehicle then
         return 0.1
     end
+    if not career_modules_inventory or not career_modules_inventory.getInventoryIdFromVehicleId then
+        return 0.1
+    end
     local inventoryId = career_modules_inventory.getInventoryIdFromVehicleId(playerVehicle:getID())
     if not inventoryId then
         return 0
+    end
+    if not career_modules_valueCalculator or not career_modules_valueCalculator.getInventoryVehicleValue then
+        return 0.1
     end
     vehicleMultiplier = (career_modules_valueCalculator.getInventoryVehicleValue(inventoryId) / 30000) ^ 0.5
     vehicleMultiplier = math.max(vehicleMultiplier, 0.1)
@@ -228,19 +240,19 @@ end
 local function calculateDrivingDistance(startPos, endPos)
     local startRoad, _, startDist = map.findClosestRoad(startPos)
     local endRoad, _, endDist = map.findClosestRoad(endPos)
-    
+
     if not startRoad or not endRoad then
         return startPos:distance(endPos)
     end
-    
+
     local path = map.getPath(startRoad, endRoad)
     if not path or #path == 0 then
         return startPos:distance(endPos)
     end
-    
+
     local totalDistance = 0
     local prevNodePos = startPos
-    
+
     for i = 1, #path do
         local nodePos = map.getMap().nodes[path[i]].pos
         if nodePos then
@@ -248,9 +260,9 @@ local function calculateDrivingDistance(startPos, endPos)
             prevNodePos = nodePos
         end
     end
-    
+
     totalDistance = totalDistance + prevNodePos:distance(endPos)
-    
+
     return totalDistance
 end
 
@@ -258,7 +270,8 @@ local function calculateBaseFare(totalDistance, orderValueMultiplier)
     local baseFare = 100 * orderValueMultiplier * distanceMultiplier
     baseFare = baseFare * (totalDistance / 1000)
 
-    if career_career and career_career.isActive() and career_modules_hardcore.isHardcoreMode() then
+    if career_career and career_career.isActive() and career_modules_hardcore and career_modules_hardcore.isHardcoreMode and
+        career_modules_hardcore.isHardcoreMode() then
         baseFare = baseFare * 0.66
     end
 
@@ -275,11 +288,11 @@ local function calculateTimeFactor()
     if not currentOrder or not currentOrder.startTime then
         return 0
     end
-    
+
     local elapsedTime = timer - currentOrder.startTime
     local expectedTime = currentOrder.expectedTime or 300
     local speedFactor = (expectedTime - elapsedTime) / expectedTime
-    
+
     return math.max(-1.0, math.min(1.0, speedFactor))
 end
 
@@ -312,7 +325,7 @@ local function generateOrder()
 
     local restaurant = restaurants[math.random(#restaurants)]
     local pickupSpot = restaurant.pickupSpots[math.random(#restaurant.pickupSpots)]
-    
+
     local deliverySpots = {}
     local minDistance = 600
     for _, spot in pairs(allDeliverySpots.objects) do
@@ -330,7 +343,7 @@ local function generateOrder()
     local valueMultiplier = generateValueMultiplier()
     local totalDistance = calculateDrivingDistance(pickupSpot.pos, deliverySpot.pos)
     local baseFare = calculateBaseFare(totalDistance, valueMultiplier)
-    
+
     local expectedTime = (totalDistance / suggestedSpeed) + 60
     local orderValue = 1.0 + (math.random() * 0.5)
 
@@ -366,23 +379,29 @@ local function completeDelivery()
     local elapsedTime = timer - currentOrder.startTime
     local speedFactor = calculateTimeFactor()
     local roughEvents = M.deliveryData.roughEvents or 0
-    
+
     local baseFare = currentOrder.baseFare
     local smoothDrivingTip = calculateSmoothDrivingTip(baseFare, roughEvents)
     local timeBonus = speedFactor > 0 and (speedFactor * baseFare * 0.3) or 0
     local timePenalty = speedFactor < 0 and (math.abs(speedFactor) * baseFare * 0.2) or 0
-    
+
     local finalPayment = baseFare + smoothDrivingTip + timeBonus - timePenalty
     cumulativeReward = cumulativeReward + finalPayment
     orderStreak = orderStreak + 1
 
-    currentOrder.totalPayment = string.format("%.2f", finalPayment)
-    currentOrder.baseFare = string.format("%.2f", baseFare)
-    currentOrder.smoothDrivingTip = string.format("%.2f", smoothDrivingTip)
-    currentOrder.timeBonus = string.format("%.2f", timeBonus)
-    currentOrder.timePenalty = string.format("%.2f", timePenalty)
-    currentOrder.totalDistance = string.format("%.2f", currentOrder.totalDistance / 1000)
+    currentOrder.totalPayment = finalPayment
+    currentOrder.smoothDrivingTip = smoothDrivingTip
+    currentOrder.timeBonus = timeBonus
+    currentOrder.timePenalty = timePenalty
     currentOrder.roughEvents = roughEvents
+
+    -- Display fields (string-formatted for UI)
+    currentOrder.totalPaymentDisplay = string.format("%.2f", finalPayment)
+    currentOrder.baseFareDisplay = string.format("%.2f", baseFare)
+    currentOrder.smoothDrivingTipDisplay = string.format("%.2f", smoothDrivingTip)
+    currentOrder.timeBonusDisplay = string.format("%.2f", timeBonus)
+    currentOrder.timePenaltyDisplay = string.format("%.2f", timePenalty)
+    currentOrder.totalDistanceDisplay = string.format("%.2f", currentOrder.totalDistance / 1000)
 
     state = "complete"
     if not gameplay_phone.isPhoneOpen() then
@@ -403,29 +422,32 @@ local function completeDelivery()
     }
     guihooks.trigger('updateBeamEatsState', dataToSend)
 
-    local label = string.format("BeamEats delivery: $%s\nDistance: %skm | Tip: $%s", 
-        currentOrder.totalPayment, currentOrder.totalDistance, currentOrder.smoothDrivingTip)
-    
+    local label = string.format("BeamEats delivery: $%s\nDistance: %skm | Tip: $%s", currentOrder.totalPaymentDisplay,
+        currentOrder.totalDistanceDisplay, currentOrder.smoothDrivingTipDisplay)
+
     if not career_career or not career_career.isActive() then
         return
     end
 
-    if career_modules_hardcore.isHardcoreMode() then
+    if career_modules_hardcore and career_modules_hardcore.isHardcoreMode and career_modules_hardcore.isHardcoreMode() then
         label = label .. "\nHardcore mode is enabled, all rewards lowered."
     end
 
-    career_modules_payment.reward({
-        money = {
-            amount = math.floor(finalPayment)
-        },
-        beamXP = {
-            amount = math.floor(finalPayment / 10)
-        }
-    }, {
-        label = label,
-        tags = {"transport", "beamEats"}
-    }, true)
-    
+    if career_modules_payment and type(career_modules_payment.reward) == "function" then
+        career_modules_payment.reward({
+            money = {
+                amount = math.floor(finalPayment)
+            },
+            beamXP = {
+                amount = math.floor(finalPayment / 10)
+            }
+        }, {
+            label = label,
+            tags = {"transport", "beamEats"}
+        }, true)
+    else
+        log('W', 'beamEats', 'career_modules_payment not available, skipping reward')
+    end
     core_groundMarkers.resetAll()
     M.deliveryData = {}
 end
@@ -476,9 +498,11 @@ local function prepareBeamEatsJob()
     if pickupDist < 5 then
         state = "dropoff"
         currentOrder.startTime = timer
-        M.deliveryData = {roughEvents = 0}
+        M.deliveryData = {
+            roughEvents = 0
+        }
         core_groundMarkers.setPath(currentOrder.destination.pos)
-        
+
         local beamEatsDisabled, disabledReason = isBeamEatsDisabled()
         local effectiveState = beamEatsDisabled and "disabled" or state
 
@@ -514,7 +538,7 @@ local function update(_, dt)
 
     if currentOrder and state == "dropoff" then
         updateSensorData()
-        
+
         local vehicle = be:getPlayerVehicle(0)
         if vehicle then
             local vehiclePos = vehicle:getPosition()
@@ -538,6 +562,7 @@ local function update(_, dt)
         if jobOfferTimer >= jobOfferInterval then
             local newOrder = generateOrder()
             if newOrder then
+                currentOrder = newOrder
                 state = "accept"
                 if not gameplay_phone.isPhoneOpen() then
                     gameplay_phone.togglePhone("You have a new delivery order! Open the phone to view the details.")
@@ -590,7 +615,7 @@ function startDelivery(order)
     if not order then
         order = currentOrder
     end
-    
+
     if not order then
         return
     end
@@ -598,7 +623,7 @@ function startDelivery(order)
     state = "pickup"
     currentOrder = order
     core_groundMarkers.setPath(order.pickup.pos)
-    
+
     local beamEatsDisabled, disabledReason = isBeamEatsDisabled()
     local effectiveState = beamEatsDisabled and "disabled" or state
 
@@ -623,6 +648,23 @@ local function onEnterVehicleFinished()
 end
 
 local function onVehicleSwitched()
+    -- Pay out any accumulated rewards before resetting
+    if cumulativeReward > 0 and career_career and career_career.isActive() then
+        if career_modules_payment and career_modules_payment.reward then
+            career_modules_payment.reward({
+                money = {
+                    amount = math.floor(cumulativeReward)
+                },
+                beamXP = {
+                    amount = math.floor(cumulativeReward / 10)
+                }
+            }, {
+                label = string.format("BeamEats partial payout: $%.0f", cumulativeReward),
+                tags = {"transport", "beamEats"}
+            }, true)
+        end
+    end
+
     state = "start"
     if currentOrder then
         core_groundMarkers.resetAll()
@@ -632,13 +674,13 @@ local function onVehicleSwitched()
     jobOfferInterval = math.random(5, 45)
     cumulativeReward = 0
     orderStreak = 0
-    
+
     vehicleMultiplier = 0.1
-    
+
     if be:getPlayerVehicle(0) and not gameplay_walk.isWalking() then
         generateValueMultiplier()
     end
-    
+
     local beamEatsDisabled, disabledReason = isBeamEatsDisabled()
     local effectiveState = beamEatsDisabled and "disabled" or state
 
