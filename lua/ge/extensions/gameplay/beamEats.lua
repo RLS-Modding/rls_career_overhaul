@@ -1,5 +1,5 @@
 local M = {}
-M.dependencies = {'gameplay_sites_sitesManager', 'freeroam_facilities', 'gameplay_walk'}
+M.dependencies = {'gameplay_sites_sitesManager', 'freeroam_facilities', 'gameplay_walk', 'gameplay_phone'}
 
 -- ================================
 -- MODULE DEPENDENCIES
