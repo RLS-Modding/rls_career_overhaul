@@ -52,8 +52,9 @@ local routeItems = {} -- Combined array: {type="stop"/"waypoint", trigger=trigge
 local stopMarkerObjects = {}
 local stopPerimeterTrigger = nil
 
--- forward declaration 
+-- forward declaration
 local isBus
+local initRoute
 
 -- ================================
 -- CAPACITY DETECTION
@@ -940,7 +941,7 @@ local function updateBusControllerDisplay()
     guihooks.trigger('BusDisplayUpdate', routeData)
 end
 
-local function initRoute()
+initRoute = function()
     -- Don't reinitialize if a route is already active
     if currentRouteActive and routeInitialized then
         print("[bus] Route already active, skipping reinitialization")
