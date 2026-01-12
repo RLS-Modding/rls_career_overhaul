@@ -11,11 +11,10 @@ M.dependencies = {'career_career', 'gameplay_speedTraps', 'gameplay_traffic'}
 
 -- Check if player vehicle has ambulance paint design
 local function isInAmbulance()
-  local playerVehicle = be:getPlayerVehicle(0)
-  if not playerVehicle then return false end
-  local vehData = core_vehicles.getVehicleData(playerVehicle:getId())
-  local paintDesign = vehData and vehData.config and vehData.config.paint_design
-  return paintDesign and type(paintDesign) == "string" and paintDesign:lower():find("ambulance")
+  if gameplay_ambulance and gameplay_ambulance.isAmbulancePaintDesign then
+    return gameplay_ambulance.isAmbulancePaintDesign()
+  end
+  return false
 end
 local fines = {
   {overSpeed = 6.7056, fine = {money = {amount = 750, canBeNegative = true}}},

@@ -4,8 +4,6 @@
 
 local C = {}
 
-local core_vehicles = require('core/vehicles')
-
 -- Returns true if the vehicle should be ignored; caches the decision on veh.ignorePolice
 local function shouldIgnoreVehicle(id, veh)
   if veh.ignorePolice then return true end
@@ -14,11 +12,11 @@ local function shouldIgnoreVehicle(id, veh)
   if not obj then return false end
 
   -- Check if vehicle has ambulance paint design
-  local vehData = core_vehicles.getVehicleData(id)
-  local paintDesign = vehData and vehData.config and vehData.config.paint_design
-  if paintDesign and type(paintDesign) == "string" and paintDesign:lower():find("ambulance") then
-    veh.ignorePolice = true
-    return true
+  if gameplay_ambulance and gameplay_ambulance.isAmbulancePaintDesign then
+    if gameplay_ambulance.isAmbulancePaintDesign(id) then
+      veh.ignorePolice = true
+      return true
+    end
   end
 
   return false
@@ -129,7 +127,7 @@ function C:checkTarget()
 
   for id, veh in pairs(traffic) do
     if shouldIgnoreVehicle(id, veh) then goto continue end
-    if id ~= self.veh.id and veh.role.name ~= 'police' and not veh.ignorePolice then
+    if id ~= self.veh.id and veh.role.name ~= 'police' then
       if veh.pursuit.mode >= 1 and veh.pursuit.score > bestScore then
         bestScore = veh.pursuit.score
         targetId = id
@@ -177,7 +175,7 @@ function C:onTrafficTick(dt)
       goto continue
     end
 
-    if id ~= self.veh.id and veh.role.name ~= 'police' and not veh.ignorePolice then
+    if id ~= self.veh.id and veh.role.name ~= 'police' then
       if not self.validTargets[id] then self.validTargets[id] = {} end
       local interDist = self.veh:getInteractiveDistance(veh.pos, true)
 

@@ -4,6 +4,9 @@ M.dependencies = {'gameplay_sites_sitesManager', 'freeroam_facilities'}
 local core_groundMarkers = require('core/groundMarkers')
 local core_vehicles      = require('core/vehicles')
 
+-- Debug flag: set to true to enable verbose debug logging
+local DEBUG = false
+
 -- ================================
 -- STATE
 -- ================================
@@ -280,8 +283,8 @@ local function createStopPerimeter(trigger)
     quatFromEuler(0, 0, 0)                -- BL
   }
   
-  -- Use timestamp to ensure unique marker names and avoid collisions
-  local uniqueId = os.time() * 1000 + (os.clock() * 1000 % 1000)  -- milliseconds precision
+  -- Use timestamp and random number to ensure unique marker names and avoid collisions
+  local uniqueId = os.time() .. "_" .. math.random(1000, 9999)
   for i, corner in ipairs(corners) do
     local markerName = string.format("busStopMarker_%s_%d_%d", trigger:getName() or "unknown", i, uniqueId)
     
@@ -370,13 +373,15 @@ local function buildPathToStop(targetStopIndex, startPos, fromStopIndex)
   
   -- Find current stop's position in routeItems
   local currentItemIndex = nil
-  print(string.format("[bus] DEBUG: Searching for current stop with stopIndex=%d in routeItems (total items: %d)", currentStopIdx, #routeItems))
+  if DEBUG then print(string.format("[bus] DEBUG: Searching for current stop with stopIndex=%d in routeItems (total items: %d)", currentStopIdx, #routeItems)) end
   for i, item in ipairs(routeItems) do
-    local itemName = item.waypointName or (item.trigger and item.trigger:getName()) or "unknown"
-    print(string.format("[bus] DEBUG: routeItems[%d]: type=%s, stopIndex=%s, name=%s", i, item.type, tostring(item.stopIndex), itemName))
+    if DEBUG then
+      local itemName = item.waypointName or (item.trigger and item.trigger:getName()) or "unknown"
+      print(string.format("[bus] DEBUG: routeItems[%d]: type=%s, stopIndex=%s, name=%s", i, item.type, tostring(item.stopIndex), itemName))
+    end
     if item.type == "stop" and item.stopIndex == currentStopIdx then
       currentItemIndex = i
-      print(string.format("[bus] DEBUG: Found current stop at routeItems index %d", i))
+      if DEBUG then print(string.format("[bus] DEBUG: Found current stop at routeItems index %d", i)) end
       break
     end
   end
@@ -397,38 +402,40 @@ local function buildPathToStop(targetStopIndex, startPos, fromStopIndex)
   -- Add waypoints and target stop (iterate forward from current stop)
   local waypointCount = 0
   if currentItemIndex then
-    print(string.format("[bus] DEBUG: Starting search from routeItems index %d, looking for waypoints before stop %d", currentItemIndex + 1, nextStopIndex))
+    if DEBUG then print(string.format("[bus] DEBUG: Starting search from routeItems index %d, looking for waypoints before stop %d", currentItemIndex + 1, nextStopIndex)) end
     for i = currentItemIndex + 1, #routeItems do
       local item = routeItems[i]
-      local itemName = item.waypointName or (item.trigger and item.trigger:getName()) or "unknown"
-      print(string.format("[bus] DEBUG: Checking routeItems[%d]: type=%s, stopIndex=%s, name=%s", i, item.type, tostring(item.stopIndex), itemName))
+      if DEBUG then
+        local itemName = item.waypointName or (item.trigger and item.trigger:getName()) or "unknown"
+        print(string.format("[bus] DEBUG: Checking routeItems[%d]: type=%s, stopIndex=%s, name=%s", i, item.type, tostring(item.stopIndex), itemName))
+      end
       if item.type == "waypoint" then
         local pos = getItemPosition(item)
-        if pos then 
+        if pos then
           table.insert(pathPoints, pos)
           waypointCount = waypointCount + 1
-          print(string.format("[bus] Added waypoint '%s' to path", item.waypointName or "unknown"))
-        else
+          if DEBUG then print(string.format("[bus] Added waypoint '%s' to path", item.waypointName or "unknown")) end
+        elseif DEBUG then
           print(string.format("[bus] DEBUG: Waypoint '%s' has no position!", item.waypointName or "unknown"))
         end
       elseif item.type == "stop" then
-        print(string.format("[bus] DEBUG: Found stop with stopIndex=%d, looking for stopIndex=%d", item.stopIndex, nextStopIndex))
+        if DEBUG then print(string.format("[bus] DEBUG: Found stop with stopIndex=%d, looking for stopIndex=%d", item.stopIndex, nextStopIndex)) end
         if item.stopIndex == nextStopIndex then
           local pos = getItemPosition(item)
           if pos then table.insert(pathPoints, pos) end
-          print(string.format("[bus] Path built: %d waypoints between stop %d and stop %d", waypointCount, currentStopIdx, nextStopIndex))
+          if DEBUG then print(string.format("[bus] Path built: %d waypoints between stop %d and stop %d", waypointCount, currentStopIdx, nextStopIndex)) end
           break
         elseif item.stopIndex > nextStopIndex then
-          print(string.format("[bus] DEBUG: Stop index %d > target %d, breaking search", item.stopIndex, nextStopIndex))
+          if DEBUG then print(string.format("[bus] DEBUG: Stop index %d > target %d, breaking search", item.stopIndex, nextStopIndex)) end
           break
         end
       end
     end
-  else
+  elseif DEBUG then
     print(string.format("[bus] DEBUG: Could not find current stop (stopIndex=%d) in routeItems!", currentStopIdx))
   end
-  
-  if waypointCount == 0 then
+
+  if DEBUG and waypointCount == 0 then
     print(string.format("[bus] No waypoints found between stop %d and stop %d", currentStopIdx, nextStopIndex))
   end
   
@@ -591,25 +598,35 @@ end
 local function loadRoutesFromJSON()
   local currentMap = getCurrentLevelIdentifier()
   print(string.format("[bus] Current map identifier: %s", tostring(currentMap)))
-  if not currentMap then 
+  if not currentMap then
     print("[bus] No current map identifier found")
-    return nil 
+    return nil
   end
 
-  local routeFiles = {
-    ["west_coast_usa"] = "/levels/west_coast_usa/wcuBusRoutes.json",
-    ["jungle_rock_island"] = "/levels/jungle_rock_island/jriBusRoutes.json"
+  -- Auto-discover route file based on map name pattern
+  -- Try multiple naming conventions: mapBusRoutes.json, map_bus_routes.json, busRoutes.json
+  local possibleFiles = {
+    string.format("/levels/%s/%sBusRoutes.json", currentMap, currentMap:gsub("_", "")),
+    string.format("/levels/%s/busRoutes.json", currentMap),
+    string.format("/levels/%s/%s_bus_routes.json", currentMap, currentMap),
   }
 
-  local routeFile = routeFiles[currentMap]
-  if not routeFile then 
-    print(string.format("[bus] No route file configured for map: %s", currentMap))
-    local availableMaps = {}
-    for k, _ in pairs(routeFiles) do
-      table.insert(availableMaps, k)
+  -- Also add short prefix variants (e.g., wcu for west_coast_usa, jri for jungle_rock_island)
+  local shortPrefix = currentMap:gsub("([^_])[^_]*_?", "%1")
+  table.insert(possibleFiles, 1, string.format("/levels/%s/%sBusRoutes.json", currentMap, shortPrefix))
+
+  local routeFile = nil
+  for _, path in ipairs(possibleFiles) do
+    if FS:fileExists(path) then
+      routeFile = path
+      break
     end
-    print(string.format("[bus] Available maps in routeFiles: %s", table.concat(availableMaps, ", ")))
-    return nil 
+  end
+
+  if not routeFile then
+    print(string.format("[bus] No route file found for map: %s", currentMap))
+    print(string.format("[bus] Searched paths: %s", table.concat(possibleFiles, ", ")))
+    return nil
   end
 
   print(string.format("[bus] Loading route file: %s", routeFile))
@@ -625,6 +642,178 @@ local function loadRoutesFromJSON()
 
   print(string.format("[bus] Successfully loaded routes from %s", routeFile))
   return routeData.routes
+end
+
+-- Collect all bus stop triggers and waypoints from scenetree
+local function collectScenetreeObjects()
+  local allTriggers = {}
+  local allWaypoints = {}
+
+  local function processObject(obj)
+    local objRef = type(obj) == "string" and scenetree.findObject(obj) or obj
+    if not objRef then return end
+    local name = objRef:getName() or ""
+    if name:match("_bs_%d+$") or name:match("_bs_%d+_b$") then
+      allTriggers[name] = objRef
+    elseif name:match("_wp_") or name:match("_waypoint_") then
+      allWaypoints[name] = objRef
+    end
+  end
+
+  -- Collect bus stops from triggers
+  for _, obj in ipairs(scenetree.findClassObjects("BeamNGTrigger") or {}) do
+    processObject(obj)
+  end
+
+  -- Collect waypoints from BeamNGWaypoint objects
+  for _, obj in ipairs(scenetree.findClassObjects("BeamNGWaypoint") or {}) do
+    processObject(obj)
+  end
+
+  -- Also check SimObject as fallback (in case waypoints are registered differently)
+  for _, obj in ipairs(scenetree.findClassObjects("SimObject") or {}) do
+    processObject(obj)
+  end
+
+  if DEBUG then
+    local waypointCount = 0
+    for _ in pairs(allWaypoints) do waypointCount = waypointCount + 1 end
+    print(string.format("[bus] DEBUG: Found %d waypoints in scenetree", waypointCount))
+    for name, _ in pairs(allWaypoints) do
+      print(string.format("[bus] DEBUG:   - %s", name))
+    end
+  end
+
+  return allTriggers, allWaypoints
+end
+
+-- Select a random route from available routes
+local function selectRandomRoute(routes)
+  local routeKeys = {}
+  for k in pairs(routes) do
+    table.insert(routeKeys, k)
+  end
+  if #routeKeys == 0 then
+    return nil, nil
+  end
+
+  local selectedRouteKey = routeKeys[math.random(#routeKeys)]
+  local selectedRoute = routes[selectedRouteKey]
+  return selectedRoute, selectedRouteKey
+end
+
+-- Build route items from config data
+local function buildRouteFromConfig(selectedRoute, allTriggers, allWaypoints)
+  local triggers = {}
+  local items = {}
+  local displayNames = {}
+  local missingStops = {}
+  local stopIndex = 0
+
+  for _, stopData in ipairs(selectedRoute.stops) do
+    local itemType = "stop"
+    local stopName, displayName
+
+    if type(stopData) == "table" then
+      if stopData[1] == "wp" then
+        itemType = "waypoint"
+        stopName = stopData[2]
+        displayName = stopData[3]
+      else
+        stopName = stopData[1]
+        displayName = stopData[2]
+        if stopName:match("_wp_") or stopName:match("_waypoint_") then
+          itemType = "waypoint"
+        end
+      end
+    end
+
+    if itemType == "waypoint" then
+      local waypointObj = allWaypoints[stopName]
+      if waypointObj then
+        local waypointPos = waypointObj:getPosition()
+        table.insert(items, {
+          type = "waypoint",
+          waypointName = stopName,
+          position = waypointPos,
+          stopIndex = stopIndex
+        })
+        if displayName then
+          displayNames[stopName] = displayName
+        end
+        print(string.format("[bus] Found waypoint '%s' at %s", stopName, tostring(waypointPos)))
+      else
+        table.insert(missingStops, stopName)
+        print(string.format("[bus] Warning: Waypoint '%s' not found in scenetree", stopName))
+      end
+    else
+      local trigger = allTriggers[stopName]
+      if trigger then
+        stopIndex = stopIndex + 1
+        table.insert(triggers, trigger)
+        table.insert(items, {
+          type = "stop",
+          trigger = trigger,
+          position = trigger:getPosition(),
+          stopIndex = stopIndex
+        })
+        if displayName then
+          displayNames[stopName] = displayName
+        end
+      else
+        table.insert(missingStops, stopName)
+      end
+    end
+  end
+
+  if #missingStops > 0 then
+    print(string.format("[bus] Warning: %d stops not found: %s", #missingStops, table.concat(missingStops, ", ")))
+  end
+
+  return triggers, items, displayNames
+end
+
+-- Set up navigation to target position with waypoint support
+local function setupRouteNavigation(vehicle, targetPos, targetStopIndex)
+  if not vehicle then
+    core_groundMarkers.setPath(targetPos)
+    return
+  end
+
+  local routePlanner = core_groundMarkers.routePlanner or require('gameplay/route/route')()
+  if not core_groundMarkers.routePlanner then
+    core_groundMarkers.routePlanner = routePlanner
+  end
+
+  local pathPoints = buildPathToStop(targetStopIndex, vehicle:getPosition())
+  if #pathPoints == 1 then
+    pathPoints[2] = targetPos
+  end
+
+  routePlanner:setupPathMulti(pathPoints)
+  print(string.format("[bus] Route planner initialized with %d path points (including waypoints)", #pathPoints))
+
+  if #pathPoints > 2 then
+    print(string.format("[bus] Multi-waypoint path detected (%d waypoints)", #pathPoints - 2))
+    if core_jobsystem and core_jobsystem.create then
+      core_jobsystem.create(function(job)
+        job.sleep(0.2)
+        if routePlanner.path and #routePlanner.path > 0 then
+          print(string.format("[bus] Route planner calculated path with %d segments", #routePlanner.path))
+          if not core_groundMarkers.endWP then
+            core_groundMarkers.endWP = {}
+          end
+          core_groundMarkers.endWP[1] = targetPos
+        else
+          print("[bus] Warning: Route planner path not ready, falling back to direct path")
+          core_groundMarkers.setPath(targetPos)
+        end
+      end)
+    end
+  else
+    print("[bus] No waypoints found, using direct path")
+    core_groundMarkers.setPath(targetPos)
+  end
 end
 
 -- Helper function to update bus controller display
@@ -675,7 +864,6 @@ local function initRoute()
     return
   end
 
-
   -- Check if bus multiplier is 0 (if economy adjuster supports it)
   if career_economyAdjuster then
     local busMultiplier = career_economyAdjuster.getSectionMultiplier("bus") or 1.0
@@ -686,9 +874,6 @@ local function initRoute()
     end
   end
 
-
-  stopTriggers = {}
-  
   -- Load routes from JSON
   local routes = loadRoutesFromJSON()
   if not routes then
@@ -697,137 +882,28 @@ local function initRoute()
   end
 
   -- Collect all bus stop triggers and waypoints on the map
-  local allTriggers = {}
-  local allWaypoints = {}
-  local function processObject(obj)
-    local objRef = type(obj) == "string" and scenetree.findObject(obj) or obj
-    if not objRef then return end
-    local name = objRef:getName() or ""
-    if name:match("_bs_%d+$") or name:match("_bs_%d+_b$") then
-      allTriggers[name] = objRef
-    elseif name:match("_wp_") or name:match("_waypoint_") then
-      allWaypoints[name] = objRef
-    end
-  end
-  
-  -- Collect bus stops from triggers
-  for _, obj in ipairs(scenetree.findClassObjects("BeamNGTrigger") or {}) do
-    processObject(obj)
-  end
-  
-  -- Collect waypoints from BeamNGWaypoint objects
-  for _, obj in ipairs(scenetree.findClassObjects("BeamNGWaypoint") or {}) do
-    processObject(obj)
-  end
-  
-  -- Also check SimObject as fallback (in case waypoints are registered differently)
-  for _, obj in ipairs(scenetree.findClassObjects("SimObject") or {}) do
-    processObject(obj)
-  end
-  
-  local waypointCount = 0
-  for _ in pairs(allWaypoints) do waypointCount = waypointCount + 1 end
-  print(string.format("[bus] DEBUG: Found %d waypoints in scenetree", waypointCount))
-  for name, _ in pairs(allWaypoints) do
-    print(string.format("[bus] DEBUG:   - %s", name))
-  end
-
+  local allTriggers, allWaypoints = collectScenetreeObjects()
   if not next(allTriggers) then
     ui_message("No bus stops found on this map.", 5, "error", "error")
     return
   end
+
   -- Select a random route
-  local routeKeys = {}
-  for k in pairs(routes) do
-    table.insert(routeKeys, k)
-  end
-  if #routeKeys == 0 then
+  local selectedRoute, selectedRouteKey = selectRandomRoute(routes)
+  if not selectedRoute then
     ui_message("No routes available in configuration.", 5, "error", "error")
     return
   end
 
-  local selectedRouteKey = routeKeys[math.random(#routeKeys)]
-  local selectedRoute = routes[selectedRouteKey]
   local routeName = selectedRoute.name or selectedRouteKey
   currentRouteName = routeName
-
   print(string.format("[bus] Selected route: %s (%s) with %d stops", routeName, selectedRouteKey, #selectedRoute.stops))
 
-  -- Build route from JSON stop names and waypoints
-  stopTriggers = {}
-  routeItems = {}
-  stopDisplayNames = {}
-  local missingStops = {}
-  local stopIndex = 0  -- Track actual stop index (waypoints don't count)
-  
-  for _, stopData in ipairs(selectedRoute.stops) do
-    local itemType = "stop"  -- Default to stop
-    local stopName, displayName
-    
-    if type(stopData) == "table" then
-      -- Check if first element is "waypoint" marker (explicit format)
-      if stopData[1] == "wp" then
-        itemType = "waypoint"
-        stopName = stopData[2]
-        displayName = stopData[3]  -- Optional display name
-      else
-        -- Format: ["triggerName", "Display Name"]
-        stopName = stopData[1]
-        displayName = stopData[2]
-        -- Auto-detect waypoints by name pattern (consistent with bus stop detection)
-        if stopName:match("_wp_") or stopName:match("_waypoint_") then
-          itemType = "waypoint"
-        end
-      end
-    end
-    if itemType == "waypoint" then
-      -- Use pre-collected waypoints instead of looking them up individually
-      local waypointObj = allWaypoints[stopName]
-      if waypointObj then
-        local waypointPos = waypointObj:getPosition()
-        table.insert(routeItems, {
-          type="waypoint", 
-          waypointName=stopName, 
-          position=waypointPos, 
-          stopIndex=stopIndex  -- Use current stopIndex (waypoint comes after this stop)
-        })
-        -- Display name stored but not used in UI (waypoints are hidden)
-        if displayName then
-          stopDisplayNames[stopName] = displayName
-        end
-        print(string.format("[bus] Found waypoint '%s' at %s", stopName, tostring(waypointPos)))
-      else
-        table.insert(missingStops, stopName)
-        print(string.format("[bus] Warning: Waypoint '%s' not found in scenetree", stopName))
-      end
-    else
-      -- Bus stop: must be a trigger
-      local trigger = allTriggers[stopName]
-      if trigger then
-        stopIndex = stopIndex + 1
-        table.insert(stopTriggers, trigger)
-        table.insert(routeItems, {
-          type="stop", 
-          trigger=trigger, 
-          position=trigger:getPosition(), 
-          stopIndex=stopIndex
-        })
-        -- Store display name by trigger name for reliable access
-        if displayName then
-          stopDisplayNames[stopName] = displayName
-        end
-      else
-        table.insert(missingStops, stopName)
-      end
-    end
-  end
+  -- Build route from config
+  stopTriggers, routeItems, stopDisplayNames = buildRouteFromConfig(selectedRoute, allTriggers, allWaypoints)
   if #stopTriggers == 0 then
     ui_message("No valid stops found for selected route.", 5, "error", "error")
     return
-  end
-
-  if #missingStops > 0 then
-    print(string.format("[bus] Warning: %d stops not found: %s", #missingStops, table.concat(missingStops, ", ")))
   end
 
   -- The final stop is the last stop in the route
@@ -836,7 +912,7 @@ local function initRoute()
   local vehicle = be:getPlayerVehicle(0)
   if not vehicle then return end
 
-  -- Always start from the first stop of the route
+  -- Initialize route state
   currentStopIndex = 1
   consecutiveStops, dwellTimer, accumulatedReward, totalStopsCompleted = 0, nil, 0, 0
   currentRouteActive, routeInitialized, passengersOnboard, routeCooldown = true, true, 0, 0
@@ -844,56 +920,9 @@ local function initRoute()
 
   local startStopName = stopTriggers[currentStopIndex]:getName() or "Unknown"
   local targetPos = stopTriggers[currentStopIndex]:getPosition()
-  
-  if vehicle then
-    -- Use the route planner that core_groundMarkers uses (shared instance)
-    local routePlanner = core_groundMarkers.routePlanner or require('gameplay/route/route')()
-    if not core_groundMarkers.routePlanner then
-      core_groundMarkers.routePlanner = routePlanner
-    end
-    
-    local pathPoints = buildPathToStop(1, vehicle:getPosition())
-    if #pathPoints == 1 then
-      pathPoints[2] = targetPos
-    end
-    
-    -- Set up multi-waypoint path on the shared route planner
-    routePlanner:setupPathMulti(pathPoints)
-    print(string.format("[bus] Route planner initialized with %d path points (including waypoints)", #pathPoints))
 
-    -- If we have waypoints, we need to activate ground markers but preserve the route planner's path
-    if #pathPoints > 2 then
-      print(string.format("[bus] Multi-waypoint path detected (%d waypoints)", #pathPoints - 2))
-      -- Wait for route planner to calculate, then manually activate ground markers WITHOUT setPath
-      if core_jobsystem and core_jobsystem.create then
-        core_jobsystem.create(function(job)
-          job.sleep(0.2)
-          if routePlanner.path and #routePlanner.path > 0 then
-            print(string.format("[bus] Route planner calculated path with %d segments", #routePlanner.path))
-            -- Manually initialize ground markers without calling setPath
-            if not core_groundMarkers.endWP then
-              core_groundMarkers.endWP = {}
-            end
-            -- Set the target position to the final destination
-            core_groundMarkers.endWP[1] = targetPos
-            -- DON'T call setPath - it calculates a direct path that conflicts with waypoints
-            -- The route planner's path should be used automatically by ground markers
-            -- (rely on the initial setupPathMulti call before this coroutine)
-          else
-            print("[bus] Warning: Route planner path not ready, falling back to direct path")
-            core_groundMarkers.setPath(targetPos)
-          end
-        end)
-      end
-    else
-      -- No waypoints, use direct path
-      print("[bus] No waypoints found, using direct path")
-      core_groundMarkers.setPath(targetPos)
-    end
-  else
-    -- No vehicle, fallback to direct path
-    core_groundMarkers.setPath(targetPos)
-  end
+  -- Set up navigation
+  setupRouteNavigation(vehicle, targetPos, 1)
 
   ui_message(
       string.format("Bus route '%s' started. Proceed to %s. Route has %d stops.", routeName, startStopName, #stopTriggers),
@@ -901,7 +930,7 @@ local function initRoute()
 
   -- Update bus controller display
   updateBusControllerDisplay()
-  
+
   -- Show markers for first stop
   showCurrentStopMarkers()
 end

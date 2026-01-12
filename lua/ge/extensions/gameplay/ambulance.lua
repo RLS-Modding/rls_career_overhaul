@@ -7,7 +7,19 @@ M.dependencies = {'gameplay_sites_sitesManager', 'freeroam_facilities'}
 
 -- MODULE DEPENDENCIES
 local core_groundMarkers = require('core/groundMarkers')
-local core_vehicles = require('core/vehicles')
+
+-- Check if a vehicle has ambulance paint design
+local function isAmbulancePaintDesign(vehicleId)
+  local id = vehicleId
+  if not id then
+    local playerVehicle = be:getPlayerVehicle(0)
+    if not playerVehicle then return false end
+    id = playerVehicle:getId()
+  end
+  local vehData = core_vehicle_manager.getVehicleData(id)
+  local paintDesign = vehData and vehData.config and vehData.config.paint_design
+  return paintDesign and type(paintDesign) == "string" and paintDesign:lower():find("ambulance") ~= nil
+end
 
 -- STATE VARIABLES
 local currentFare = nil
@@ -347,20 +359,44 @@ local function onExtensionLoaded()
 end
 
 -- ================================
+-- EXTENSION UNLOADED (cleanup)
+-- ================================
+local function onExtensionUnloaded()
+    -- Reset all state variables to prevent stale state on reload
+    currentFare = nil
+    state = "ready"
+    parkingSpots = nil
+    pickupTimer = nil
+    pickupMessageShown = false
+    missionTriggeredForVehicle = false
+    stopMonitorActive = false
+    stopSettleTimer = 0
+    roughRide = 0
+    lastVehiclePos = nil
+    lastVelocity = nil
+
+    -- Reset timers
+    M.initDelay = nil
+    M.initDelayDuration = nil
+    M.delayTimer = nil
+    M.delayDuration = nil
+
+    -- Clear any active markers
+    core_groundMarkers.resetAll()
+
+    print("[ambulance] extension unloaded, state cleaned up")
+end
+
+-- ================================
 -- EXPORTS
 -- ================================
 M.onExtensionLoaded = onExtensionLoaded
+M.onExtensionUnloaded = onExtensionUnloaded
+M.isAmbulancePaintDesign = isAmbulancePaintDesign
 
 function M.onUpdate(dtReal, dtSim, dtRaw)
     local playerVehicle = be:getPlayerVehicle(0)
-    local inAmbulance = false
-    if playerVehicle then
-        local vehData = core_vehicles.getVehicleData(playerVehicle:getId())
-        local paintDesign = vehData and vehData.config and vehData.config.paint_design
-        if paintDesign and type(paintDesign) == "string" and paintDesign:lower():find("ambulance") then
-            inAmbulance = true
-        end
-    end
+    local inAmbulance = isAmbulancePaintDesign()
 
     -- Trigger mission and assign EMT role
     if inAmbulance and not missionTriggeredForVehicle then

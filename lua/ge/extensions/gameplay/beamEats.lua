@@ -542,12 +542,7 @@ local function update(_, dt)
                 if not gameplay_phone.isPhoneOpen() then
                     gameplay_phone.togglePhone("You have a new delivery order! Open the phone to view the details.")
                 end
-            else
-                jobOfferTimer = 0
-                jobOfferInterval = math.random(5, 45)
-            end
 
-            if newOrder then
                 local beamEatsDisabled, disabledReason = isBeamEatsDisabled()
                 local effectiveState = beamEatsDisabled and "disabled" or state
 
@@ -561,6 +556,9 @@ local function update(_, dt)
                     disabledReason = disabledReason
                 }
                 guihooks.trigger('updateBeamEatsState', dataToSend)
+            else
+                jobOfferTimer = 0
+                jobOfferInterval = math.random(5, 45)
             end
         end
     end
