@@ -7,7 +7,9 @@ M.dependencies = {'gameplay_sites_sitesManager', 'freeroam_facilities'}
 -- MODULE DEPENDENCIES
 local core_groundMarkers = require('core/groundMarkers')
 
--- Check if a vehicle has ambulance paint design
+-- Determines whether a vehicle uses an ambulance paint design.
+-- @param vehicleId Optional vehicle id; if omitted the player's current vehicle is used.
+-- @return `true` if the vehicle's paint_design config is a string containing "ambulance" (case-insensitive), `false` otherwise.
 local function isAmbulancePaintDesign(vehicleId)
     local id = vehicleId
     if not id then
@@ -374,7 +376,8 @@ end
 
 -- ================================
 -- EXTENSION LOADED
--- ================================
+-- Handles extension load: notifies the player that the Ambulance module is active and logs readiness for vehicle-triggered missions.
+-- Displays a brief UI message and prints a diagnostic notice to the console.
 local function onExtensionLoaded()
     ui_message("Ambulance module loaded. Waiting for 911 vehicle...", 3, "info", "info")
     print("[ambulance] extension loaded and waiting for vehicle trigger")
@@ -382,7 +385,8 @@ end
 
 -- ================================
 -- EXTENSION UNLOADED (cleanup)
--- ================================
+-- Reset the Ambulance module to its initial state and clear any active markers when the extension is unloaded.
+-- This clears mission state and timers, resets tracking variables used during a ride, resets public init/delay timers, clears ground markers, and prints an unload notice.
 local function onExtensionUnloaded()
     -- Reset all state variables to prevent stale state on reload
     currentFare = nil
@@ -416,6 +420,11 @@ M.onExtensionLoaded = onExtensionLoaded
 M.onExtensionUnloaded = onExtensionUnloaded
 M.isAmbulancePaintDesign = isAmbulancePaintDesign
 
+-- Called each update tick to manage ambulance mission lifecycle and per-frame state.
+-- Handles triggering missions when entering an ambulance-design vehicle, assigning the EMT role via the traffic system when available, abandoning active missions on exit, managing the initial mission start delay, and delegating marker/state updates.
+-- @param dtReal Real-world frame time delta (seconds).
+-- @param dtSim Simulation time delta (seconds); used for mission timers and delays.
+-- @param dtRaw Raw frame delta (engine-specific, may be nil).
 function M.onUpdate(dtReal, dtSim, dtRaw)
     local playerVehicle = be:getPlayerVehicle(0)
     local inAmbulance = isAmbulancePaintDesign()

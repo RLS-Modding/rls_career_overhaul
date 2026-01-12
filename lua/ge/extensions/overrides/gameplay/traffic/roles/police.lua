@@ -4,7 +4,11 @@
 
 local C = {}
 
--- Returns true if the vehicle should be ignored; caches the decision on veh.ignorePolice
+-- Determines whether a vehicle should be ignored by police pursuit.
+-- Caches a positive decision on `veh.ignorePolice`.
+-- @param id The vehicle identifier.
+-- @param veh The vehicle state table (will receive `ignorePolice = true` when ignored).
+-- @return `true` if the vehicle should be ignored by police, `false` otherwise.
 local function shouldIgnoreVehicle(id, veh)
   if veh.ignorePolice then return true end
 
@@ -22,6 +26,8 @@ local function shouldIgnoreVehicle(id, veh)
   return false
 end
 
+-- Initialize the emergency (police) role state, default behavior, and action handlers.
+-- Sets up role properties (class, drivability, pursuit/avoidance timers, target tracking) and installs the core pursuit-related actions: `pursuitStart`, `pursuitEnd`, `chaseTarget`, `avoidTarget`, and `roadblock`. These actions manage pursuit mode, siren/lightbar behavior, AI driving mode, pursuit flags, cooldowns, and respawn tuning.
 function C:init()
   self.class = 'emergency'
   self.keepActionOnRefresh = false
@@ -120,6 +126,10 @@ function C:init()
   self.baseActions = nil
 end
 
+-- Selects the best pursuit target from current traffic.
+-- Considers only non-police vehicles that are not marked to be ignored and have `pursuit.mode >= 1`,
+-- choosing the vehicle with the highest `pursuit.score`.
+-- @return The ID of the selected target vehicle, or `nil` if no suitable target was found.
 function C:checkTarget()
   local traffic = gameplay_traffic.getTrafficData()
   local targetId
@@ -139,6 +149,11 @@ function C:checkTarget()
   return targetId
 end
 
+-- Refreshes the role's pursuit state, updates timers, and (re)evaluates whether to start or stop pursuing a target.
+-- If the role was disabled it is re-enabled to 'none'. Action and cooldown timers are reset.
+-- If the reset flag is set, the current action is cleared.
+-- The function selects the best available target; if one is found it becomes the active target and the role will begin pursuit unless the target has an existing roadblock position within 20 meters. Respawn delay is adjusted based on `targetPursuitMode`.
+-- If no target is found and a pursuit was active, the current action is reset. While a pursuit is active, respawn spawn randomization is set to 0.25.
 function C:onRefresh()
   if self.state == 'disabled' then self.state = 'none' end
   self.actionTimer = 0
@@ -168,6 +183,16 @@ function C:onRefresh()
   end
 end
 
+-- Update visibility, proximity, and pursuit-related state for surrounding traffic.
+-- 
+-- Iterates current traffic and maintains `self.validTargets` (distance, interactive distance, visibility),
+-- clearing entries for ignored or police vehicles. When pursuing, newly visible targets increment their
+-- `pursuit.policeCount` and set `self.flags.targetVisible`. The method can change this role's action to
+-- `avoidTarget` to avoid an oncoming collision, set the role to `disabled` if the police vehicle is wrecked
+-- (and increment the target's `pursuit.policeWrecks` when applicable), and toggle traffic-signal freezing
+-- based on the vehicle's lightbar state.
+-- 
+-- @param dt The frame timestep in seconds.
 function C:onTrafficTick(dt)
   for id, veh in pairs(gameplay_traffic.getTrafficData()) do
     if shouldIgnoreVehicle(id, veh) then

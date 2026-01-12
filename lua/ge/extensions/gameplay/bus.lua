@@ -58,7 +58,9 @@ local initRoute
 
 -- ================================
 -- CAPACITY DETECTION
--- ================================
+-- Map known part-name patterns to explicit seating capacities for special-case vehicle parts.
+-- @param partName The parts-tree node name to test (string).
+-- @return The seating capacity for matching special-case part names, or `nil` if no special case applies.
 local function specificCapacityCases(partName)
     if partName:find("capsule") and partName:find("seats") then
         if partName:find("sd12m") then
@@ -105,6 +107,10 @@ local function specificCapacityCases(partName)
     return nil
 end
 
+-- Recursively traverses a vehicle parts tree to accumulate seating capacity based on seat-related parts and special-case part names.
+-- @param partData Table representing a list/tree of part nodes; each node may contain `chosenPartName` and `children`.
+-- @param seatingCapacity Number initial seating capacity accumulator (use 0 to start counting from scratch).
+-- @return Number total seating capacity after processing `partData`.
 local function cyclePartsTree(partData, seatingCapacity)
     for _, part in pairs(partData) do
         local partName = part.chosenPartName or ""
@@ -135,6 +141,10 @@ local function cyclePartsTree(partData, seatingCapacity)
     return seatingCapacity
 end
 
+-- Determine seating capacity from the current vehicle parts tree.
+-- If the parts tree is unavailable or malformed, a fallback capacity of 20 is used.
+-- The result is clamped to be at least 1.
+-- @return The computed seating capacity (number), at least 1; uses 20 when parts data is missing or an error occurs.
 local function calculateSeatingCapacity()
     local fallbackCapacity = 20
     if not currentVehiclePartsTree then
@@ -154,6 +164,8 @@ local function calculateSeatingCapacity()
     return math.max(1, result or fallbackCapacity)
 end
 
+-- Requests the current player's vehicle parts tree from the game engine and clears any cached copy.
+-- After calling, if a player vehicle exists, an asynchronous request is queued; the retrieved parts tree is delivered back to the extension via gameplay_bus.returnPartsTree.
 local function retrievePartsTree()
     currentVehiclePartsTree = nil
     local vehicle = be:getPlayerVehicle(0)
@@ -165,6 +177,9 @@ local function retrievePartsTree()
     end
 end
 
+-- Processes a vehicle parts tree to determine and store the vehicle's passenger seating capacity.
+-- Updates module state with the detected parts tree and computed capacity, applies known overrides for specific vehicle types, logs and displays the detected capacity, and triggers deferred route initialization if pending.
+-- @param partsTree Table representing the vehicle parts tree (may be nested); used to compute seating capacity and to detect model-specific capacity overrides.
 function M.returnPartsTree(partsTree)
     currentVehiclePartsTree = partsTree
     local seats = calculateSeatingCapacity()
@@ -223,7 +238,10 @@ end
 -- ================================
 -- BUS STOP PERIMETER MARKERS
 -- ================================
--- Create a single corner marker
+-- Create and register a corner marker TSStatic used for stop-perimeter visualization.
+-- The marker is registered under the given name and added to scenetree.MissionGroup if present.
+-- @param markerName string The name used to register the marker in the scene.
+-- @return table The created TSStatic marker object.
 local function createCornerMarker(markerName)
     local marker = createObject('TSStatic')
     marker:setField('shapeName', 0, "art/shapes/interface/position_marker.dae")
@@ -250,7 +268,12 @@ local function createCornerMarker(markerName)
     return marker
 end
 
--- Helper to safely delete an object
+-- Safely deletes a scenetree object and any matching instance found by name.
+-- If an object with the same name exists in scenetree, that instance is removed first.
+-- Calls editor.onRemoveSceneTreeObjects with the object's id before deletion when the editor hook is available.
+-- Errors during deletion are suppressed; if `objName` is provided, a failure will be printed with that name.
+-- @param obj The scenetree object to delete (may be nil or invalid).
+-- @param objName Optional human-readable name used in error logging.
 local function safeDelete(obj, objName)
     if not obj then
         return
@@ -289,7 +312,8 @@ local function safeDelete(obj, objName)
     end
 end
 
--- Clear all stop markers
+-- Removes all stop marker objects and the active stop perimeter trigger.
+-- After this call the internal marker list is cleared and the stored perimeter trigger is set to nil.
 local function clearStopMarkers()
     for _, obj in ipairs(stopMarkerObjects) do
         safeDelete(obj, "marker")
@@ -299,7 +323,11 @@ local function clearStopMarkers()
     stopPerimeterTrigger = nil
 end
 
--- Create perimeter markers and box trigger for a stop
+-- Creates visual corner markers and a box-shaped perimeter trigger for a bus stop trigger.
+-- Clears any existing stop markers, computes corner positions from the trigger's transform (or uses defaults),
+-- raycasts to place markers on the ground, spawns corner TSStatic markers (stored in stopMarkerObjects)
+-- and a BeamNGTrigger box (stored in stopPerimeterTrigger). Marker and perimeter names include a unique id.
+-- @param trigger The scenetree trigger object representing the bus stop; if nil the function does nothing.
 local function createStopPerimeter(trigger)
     if not trigger then
         return
@@ -392,7 +420,9 @@ local function createStopPerimeter(trigger)
         trigger:getName() or "unknown", stopLength, stopWidth, stopHeight))
 end
 
--- Show markers for current stop (or specified stop index)
+-- Display perimeter markers for a bus stop.
+-- If `stopIndex` is omitted, uses the module's `currentStopIndex`.
+-- @param stopIndex? Optional index of the stop whose markers should be shown.
 local function showCurrentStopMarkers(stopIndex)
     local targetStopIndex = stopIndex or currentStopIndex
     if not targetStopIndex or not stopTriggers or not stopTriggers[targetStopIndex] then
@@ -418,6 +448,8 @@ isBus = function(vehicle)
     return vehicle and core_vehicles.getVehicleLicenseText(vehicle) == "BUS"
 end
 
+-- Get the trigger object for the currently active stop.
+-- @return The trigger object for the current stop, or `nil` if no current stop is set.
 local function getNextTrigger()
     if not currentStopIndex then
         return nil
@@ -425,12 +457,18 @@ local function getNextTrigger()
     return stopTriggers[currentStopIndex]
 end
 
--- Helper to get position from route item
+-- Get the world position for a route item.
+-- @param item Route item table which may contain a `position` vector or a `trigger` object.
+-- @return The position vector if present (from `item.position` or `item.trigger:getPosition()`), or `nil` if neither is available.
 local function getItemPosition(item)
     return item.position or (item.trigger and item.trigger:getPosition())
 end
 
--- Build path through waypoints to target stop
+-- Builds an ordered list of positions from a start position through route waypoints to a target stop.
+-- @param targetStopIndex The index of the destination stop within the route's stop list.
+-- @param startPos The starting position vector/table to begin the path from (placed at index 1 of the result).
+-- @param fromStopIndex Optional. If provided, use this stop index as the current stop when constructing the path; otherwise the module's currentStopIndex is used.
+-- @return An array of position vectors beginning with `startPos` and followed by any intermediate waypoint positions and the target stop position if found.
 local function buildPathToStop(targetStopIndex, startPos, fromStopIndex)
     local pathPoints = {startPos}
     if not routeItems or #routeItems == 0 then
@@ -542,7 +580,9 @@ local function buildPathToStop(targetStopIndex, startPos, fromStopIndex)
     return pathPoints
 end
 
--- Set up route planner with waypoint support (shared helper for navigation setup)
+-- Configure the route planner to follow the given sequence of path points and prepare the final destination.
+-- @param pathPoints table Array of ordered world positions that form the planned path (may include intermediate waypoints).
+-- @param targetPos table World position to use as the final endpoint if a direct path fallback is required.
 local function setupRoutePlannerWithWaypoints(pathPoints, targetPos)
     local routePlanner = core_groundMarkers.routePlanner or require('gameplay/route/route')()
     if not core_groundMarkers.routePlanner then
@@ -575,6 +615,11 @@ local function setupRoutePlannerWithWaypoints(pathPoints, targetPos)
     end
 end
 
+-- Display navigation markers guiding the player from their current position to the next bus stop.
+-- If `targetStopIndex` is provided, shows markers for that stop; otherwise uses the stop after `currentStopIndex` (wraps to the first stop).
+-- When in a vehicle, builds a waypoint path from the vehicle's position to the target stop and configures the route planner; when not in a vehicle, places a direct ground marker at the stop.
+-- Also updates the visual perimeter markers for the shown stop.
+-- @param targetStopIndex? Optional index of the stop to target; if omitted the next stop after `currentStopIndex` is used.
 local function showNextStopMarker(targetStopIndex)
     -- If targetStopIndex is provided, use it; otherwise calculate from currentStopIndex
     local nextStopIndex = targetStopIndex
@@ -617,7 +662,12 @@ end
 
 -- ================================
 -- ROUTE END 
--- ================================
+-- Ends the current bus route/shift and finalizes payouts, reputation, UI, and internal state.
+-- Displays a summary message (including stops, base pay, tips, bonus, total payout, and reputation gained when applicable),
+-- clears navigation and stop markers, resets route-related state and counters, and updates the vehicle's bus display to "Not in Service".
+-- If a positive `payout` is provided and the career payment module is active, grants money, XP (floor(payout/10)), and busWorkReputation (floor(payout/500)).
+-- @param reason Optional string explaining why the route ended (shown in the UI message).
+-- @param payout Optional numeric total payout to award; when omitted or non-positive, no rewards are granted.
 local function endRoute(reason, payout)
     currentRouteActive = false
     dwellTimer = nil
@@ -691,7 +741,9 @@ end
 
 -- ================================
 -- ROUTE INITIALIZATION
--- ================================
+-- Loads map-specific bus route configurations from disk by locating and parsing a JSON route file for the current level.
+-- Searches common map-based filenames and returns the parsed routes table when successful.
+-- @return A table mapping route identifiers to route definitions if a valid routes file is found and parsed, `nil` otherwise.
 local function loadRoutesFromJSON()
     local currentMap = getCurrentLevelIdentifier()
     print(string.format("[bus] Current map identifier: %s", tostring(currentMap)))
@@ -750,6 +802,11 @@ local function collectScenetreeObjects()
     local allTriggers = {}
     local allWaypoints = {}
 
+    -- Processes a scenetree object or its name and registers it as a bus stop trigger or waypoint when its name matches known patterns.
+    -- If `obj` is a string, resolves it with `scenetree.findObject`; if resolution fails the function exits silently.
+    -- Recognizes bus stop trigger names that end with `_bs_<number>` or `_bs_<number>_b` and stores them in `allTriggers`.
+    -- Recognizes waypoint names containing `_wp_` or `_waypoint_` and stores them in `allWaypoints`.
+    -- @param obj A scenetree object or the object's name as a string.
     local function processObject(obj)
         local objRef = type(obj) == "string" and scenetree.findObject(obj) or obj
         if not objRef then
@@ -792,7 +849,10 @@ local function collectScenetreeObjects()
     return allTriggers, allWaypoints
 end
 
--- Select a random route from available routes
+-- Selects a random route from a table of routes.
+-- @param routes Table mapping route keys to route definitions.
+-- @return selectedRoute The route value chosen at random, or `nil` if none exist.
+-- @return selectedKey The key corresponding to the chosen route, or `nil` if none exist.
 local function selectRandomRoute(routes)
     local routeKeys = {}
     for k in pairs(routes) do
@@ -807,7 +867,13 @@ local function selectRandomRoute(routes)
     return selectedRoute, selectedRouteKey
 end
 
--- Build route items from config data
+-- Constructs route stop and waypoint structures from a selected route configuration.
+-- @param selectedRoute Table describing the route; expected to contain a `stops` array where each entry is either a string stop name or a table. Table entries may be `{"wp", waypointName, displayName}` for explicit waypoints or `{stopName, displayName}`.
+-- @param allTriggers Map of scenetree trigger objects keyed by stop name; used to resolve stop entries.
+-- @param allWaypoints Map of waypoint objects keyed by waypoint name; used to resolve waypoint entries.
+-- @return triggers A list of resolved stop trigger objects in the order they appear in the route (waypoints are excluded).
+-- @return items An ordered list of route items where each item is either `{ type = "stop", trigger = <obj>, position = <vec>, precedingStopIndex = <int> }` or `{ type = "waypoint", waypointName = <string>, position = <vec>, precedingStopIndex = <int> }`.
+-- @return displayNames A map of item name -> display name for stops or waypoints that provided an explicit displayName in the route config.
 local function buildRouteFromConfig(selectedRoute, allTriggers, allWaypoints)
     local triggers = {}
     local items = {}
@@ -878,7 +944,10 @@ local function buildRouteFromConfig(selectedRoute, allTriggers, allWaypoints)
     return triggers, items, displayNames
 end
 
--- Set up navigation to target position with waypoint support
+-- Configure navigation toward a target stop position; when a vehicle is present, build and apply a waypoint path, otherwise set a direct path to the target position.
+-- @param vehicle The player's vehicle object, or nil to indicate no vehicle (causes a direct path to be set).
+-- @param targetPos Vector3 world position of the target stop.
+-- @param targetStopIndex Index of the target stop within the current route used to construct waypoint path.
 local function setupRouteNavigation(vehicle, targetPos, targetStopIndex)
     if not vehicle then
         core_groundMarkers.setPath(targetPos)
@@ -893,7 +962,10 @@ local function setupRouteNavigation(vehicle, targetPos, targetStopIndex)
     setupRoutePlannerWithWaypoints(pathPoints, targetPos)
 end
 
--- Helper function to update bus controller display
+-- Update in-vehicle bus controller and UI with the current route and remaining stops.
+-- Constructs a `routeData` object containing `direction` and an ordered `tasklist` of stop identifiers/labels starting from the current stop,
+-- sends it to the player's vehicle controller via the `bus_setLineInfo` gameplay event when a vehicle is present,
+-- and triggers the `BusDisplayUpdate` GUI hook with the same `routeData`.
 local function updateBusControllerDisplay()
     if not currentRouteActive or not currentStopIndex or not stopTriggers or #stopTriggers == 0 then
         return
@@ -912,7 +984,9 @@ local function updateBusControllerDisplay()
     local triggerName = currentStop:getName() or ""
     routeData.direction = stopDisplayNames[triggerName] or triggerName or string.format("Stop %02d", currentStopIndex)
 
-    -- Build tasklist (only stops, waypoints excluded)
+    -- Append the stop at the given index to the current route's tasklist (waypoints are excluded).
+    -- Inserts an entry containing the stop's internal name and display label into `routeData.tasklist`.
+    -- @param i The 1-based index of the stop within `stopTriggers`.
     local function addStopToList(i)
         local t = stopTriggers[i]
         local name = t:getName() or ""
@@ -1022,7 +1096,9 @@ initRoute = function()
 end
 -- ================================
 -- PROCESS STOP 
--- ================================
+-- Process the active route's current stop: verifies the correct stop trigger, enforces vehicle settling, manages dwell timing, runs boarding/deboarding animation and logic, updates passenger counts, calculates payouts and tips, handles loop completion, and advances navigation to the next stop.
+-- @param vehicle The vehicle object (expected player vehicle) used for speed checks and navigation context.
+-- @param dtSim Simulation delta time for this update step (may be nil; a default step is used internally).
 local function processStop(vehicle, dtSim)
     if not currentRouteActive or not currentStopIndex then
         return
@@ -1119,6 +1195,9 @@ local function processStop(vehicle, dtSim)
                 --------------------------------------------------------
                 -- PHASE 1 — DEBOARDING 
                 --------------------------------------------------------
+                -- Suspends the current coroutine until the given duration (in seconds) has elapsed.
+                -- @param duration Number of seconds to wait.
+                -- The coroutine advances using the delta time value yielded to it; if no delta is provided, 0.033 seconds is used per iteration.
                 local function waitForAnimation(duration)
                     local t = 0
                     while t < duration do
@@ -1284,7 +1363,11 @@ local function processStop(vehicle, dtSim)
 end
 -- ================================
 -- VEHICLE SWITCH 
--- ================================
+-- Handle player vehicle switches, updating the active bus and managing route start/stop.
+-- If the player leaves the currently active bus, ends the current route and grants the accumulated payout (capped).
+-- If the newly entered vehicle is a bus and no route is active, marks it as the active bus, shows a start message, and defers route initialization until vehicle seating capacity is retrieved; if a route is already active, updates the active bus reference without reinitializing.
+-- @param oldId The ID of the vehicle the player was previously in (may be nil).
+-- @param newId The ID of the vehicle the player has entered (may be nil).
 function M.onVehicleSwitched(oldId, newId)
     local newVeh = be:getObjectByID(newId)
 
@@ -1315,7 +1398,8 @@ end
 
 -- ================================
 -- EXTENSION LOADED
--- ================================
+-- Notify the player that the bus extension is ready and log the load event.
+-- Displays an on-screen message prompting the player to enter a BUS vehicle and prints a load message to the console.
 local function onExtensionLoaded()
     ui_message("Bus module loaded. Enter a BUS vehicle to begin your route.", 3, "info", "info")
     print("[bus] Extension loaded.")
@@ -1323,7 +1407,12 @@ end
 
 -- ================================
 -- UPDATE LOOP
--- ================================
+-- Perform per-frame bus-route updates: handle loop cooldown, advance boarding animation, track rough ride,
+-- and execute core stop processing when the player is driving an active bus route.
+-- @param dtReal Wall-clock delta time in seconds (unused by this function).
+-- @param dtSim Simulation delta time in seconds; used for route cooldown, boarding coroutine progression,
+-- and rough-ride acceleration calculations.
+-- @param dtRaw Raw frame delta time in seconds (unused by this function).
 function M.onUpdate(dtReal, dtSim, dtRaw)
     -- Route cooldown between loops
     if routeCooldown > 0 then
@@ -1372,6 +1461,15 @@ function M.onUpdate(dtReal, dtSim, dtRaw)
     processStop(vehicle, dtSim)
 end
 
+-- Handles BeamNG trigger enter/exit events for bus stops, tracking the active stop trigger and canceling dwell when the player leaves.
+-- @param data Table describing the trigger event; expected fields:
+--   - subjectID (number): vehicle ID associated with the event.
+--   - triggerName (string): name of the trigger object (bus stop triggers contain "_bs_").
+--   - event (string): either "enter" or "exit".
+-- Behavior:
+--   - Ignores events not originating from the player's current vehicle, any events while the player is walking, and triggers whose names do not contain "_bs_".
+--   - On "enter": records the trigger as the current active stop.
+--   - On "exit": if the exiting trigger matches the recorded active stop, clears the active stop and cancels any ongoing dwell/stop monitoring (resets dwellTimer, stopMonitorActive, and stopSettleTimer).
 local function onBeamNGTrigger(data)
     if be:getPlayerVehicleID(0) ~= data.subjectID then
         return
@@ -1398,7 +1496,9 @@ local function onBeamNGTrigger(data)
 end
 -- ================================
 -- EXTENSION UNLOADED (cleanup)
--- ================================
+-- Cleans up and resets the bus module when the extension is unloaded.
+-- Clears visual stop markers and navigation markers, cancels any active boarding coroutine,
+-- and resets all runtime state (route progress, timers, passenger counts, vehicle parts/capacity, and related flags).
 local function onExtensionUnloaded()
     print("[bus] Extension unloading, cleaning up...")
 
