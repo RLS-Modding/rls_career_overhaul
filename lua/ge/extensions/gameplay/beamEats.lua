@@ -404,7 +404,7 @@ local function completeDelivery()
     currentOrder.totalDistanceDisplay = string.format("%.2f", currentOrder.totalDistance / 1000)
 
     state = "complete"
-    if not gameplay_phone.isPhoneOpen() then
+    if gameplay_phone and not gameplay_phone.isPhoneOpen() then
         gameplay_phone.togglePhone("You completed a delivery! Open the phone to view your earnings.")
     end
 
@@ -648,22 +648,8 @@ local function onEnterVehicleFinished()
 end
 
 local function onVehicleSwitched()
-    -- Pay out any accumulated rewards before resetting
-    if cumulativeReward > 0 and career_career and career_career.isActive() then
-        if career_modules_payment and career_modules_payment.reward then
-            career_modules_payment.reward({
-                money = {
-                    amount = math.floor(cumulativeReward)
-                },
-                beamXP = {
-                    amount = math.floor(cumulativeReward / 10)
-                }
-            }, {
-                label = string.format("BeamEats partial payout: $%.0f", cumulativeReward),
-                tags = {"transport", "beamEats"}
-            }, true)
-        end
-    end
+    -- Note: Rewards are already paid per-delivery in completeDelivery()
+    -- cumulativeReward is only used for tracking/display purposes
 
     state = "start"
     if currentOrder then
