@@ -5,24 +5,26 @@
 local C = {}
 
 -- Determines whether a vehicle should be ignored by police pursuit.
--- Caches a positive decision on `veh.ignorePolice`.
+-- For non-player vehicles, caches a positive decision on `veh.ignorePolice`.
+-- For the player vehicle, always checks ambulance state dynamically (not cached).
 -- @param id The vehicle identifier.
--- @param veh The vehicle state table (will receive `ignorePolice = true` when ignored).
+-- @param veh The vehicle state table (may receive `ignorePolice = true` for non-player vehicles).
 -- @return `true` if the vehicle should be ignored by police, `false` otherwise.
 local function shouldIgnoreVehicle(id, veh)
-  if veh.ignorePolice then return true end
-
   local obj = getObjectByID(id)
   if not obj then return false end
 
-  -- Check if player vehicle has ambulance paint design (use cached state)
+  -- Check if player vehicle is in ambulance (checked each call, not cached)
   local playerVehicle = be:getPlayerVehicle(0)
   if playerVehicle and id == playerVehicle:getId() then
     if gameplay_ambulance and gameplay_ambulance.isInAmbulance and gameplay_ambulance.isInAmbulance() then
-      veh.ignorePolice = true
       return true
     end
+    return false
   end
+
+  -- For non-player vehicles, use cached ignorePolice flag
+  if veh.ignorePolice then return true end
 
   return false
 end

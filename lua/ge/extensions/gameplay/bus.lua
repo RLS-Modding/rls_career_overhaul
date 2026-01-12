@@ -580,38 +580,78 @@ local function buildPathToStop(targetStopIndex, startPos, fromStopIndex)
     return pathPoints
 end
 
--- Configure the route planner to follow the given sequence of path points and prepare the final destination.
+-- Configure navigation to follow a sequence of path points to the final destination.
+-- Uses core_groundMarkers.setPath for the final destination to ensure proper visualization,
+-- and optionally calculates a multi-waypoint path for display purposes.
+-- Avoids U-turn suggestions by using the vehicle's forward direction as the path start.
 -- @param pathPoints table Array of ordered world positions that form the planned path (may include intermediate waypoints).
--- @param targetPos table World position to use as the final endpoint if a direct path fallback is required.
+-- @param targetPos table World position of the final destination.
 local function setupRoutePlannerWithWaypoints(pathPoints, targetPos)
-    local routePlanner = core_groundMarkers.routePlanner or require('gameplay/route/route')()
-    if not core_groundMarkers.routePlanner then
-        core_groundMarkers.routePlanner = routePlanner
+    if not pathPoints or #pathPoints == 0 then
+        print("[bus] Warning: No path points provided, using direct path to target")
+        core_groundMarkers.setPath(targetPos)
+        return
     end
 
-    routePlanner:setupPathMulti(pathPoints)
-    print(string.format("[bus] Route planner set up with %d path points (including waypoints)", #pathPoints))
-
-    if #pathPoints > 2 then
-        print(string.format("[bus] Multi-waypoint path detected (%d waypoints)", #pathPoints - 2))
-        if core_jobsystem and core_jobsystem.create then
-            core_jobsystem.create(function(job)
-                job.sleep(0.2)
-                if routePlanner.path and #routePlanner.path > 0 then
-                    print(string.format("[bus] Route planner calculated path with %d segments", #routePlanner.path))
-                    if not core_groundMarkers.endWP then
-                        core_groundMarkers.endWP = {}
-                    end
-                    core_groundMarkers.endWP[1] = targetPos
-                else
-                    print("[bus] Warning: Route planner path not ready, falling back to direct path")
-                    core_groundMarkers.setPath(targetPos)
-                end
-            end)
-        end
-    else
-        print("[bus] No waypoints found, using direct path")
+    local vehicle = be:getPlayerVehicle(0)
+    if not vehicle then
         core_groundMarkers.setPath(targetPos)
+        return
+    end
+
+    local vehPos = vehicle:getPosition()
+    local vehDir = vehicle:getDirectionVector()
+
+    -- Check if target is generally behind the vehicle (dot product < 0 means behind)
+    local toTarget = (targetPos - vehPos):normalized()
+    local dotProduct = vehDir:dot(toTarget)
+
+    -- Build adjusted path points starting ahead of the vehicle
+    local adjustedPathPoints = {}
+
+    -- Add a point ahead of the vehicle as the starting point
+    -- Use a longer distance (25m) to ensure we're well past any potential U-turn point
+    local forwardDistance = 25
+    local forwardPoint = vehPos + vehDir * forwardDistance
+    table.insert(adjustedPathPoints, forwardPoint)
+
+    -- Add the rest of the path points (skip the first one if it's the vehicle position)
+    for i, point in ipairs(pathPoints) do
+        -- Skip the first point if it's very close to vehicle position (it's the start point)
+        if i == 1 and vehPos:distance(point) < 10 then
+            -- Skip this point, we've replaced it with forwardPoint
+        else
+            -- Only add if not too close to the last added point
+            local lastPoint = adjustedPathPoints[#adjustedPathPoints]
+            if lastPoint:distance(point) > 5 then
+                table.insert(adjustedPathPoints, point)
+            end
+        end
+    end
+
+    -- Ensure target is included at the end if not already close to last point
+    local lastPoint = adjustedPathPoints[#adjustedPathPoints]
+    if lastPoint:distance(targetPos) > 5 then
+        table.insert(adjustedPathPoints, targetPos)
+    end
+
+    -- Initialize ground markers first (this creates the internal routePlanner)
+    core_groundMarkers.setPath(targetPos)
+
+    -- Now use setupPathMulti directly on the ground markers' route planner
+    -- This properly sets up the path with our forward point as a waypoint
+    if core_groundMarkers.routePlanner then
+        -- Set high direction multiplier to heavily penalize wrong-way travel
+        core_groundMarkers.routePlanner:setRouteParams(nil, 1e6, nil, nil, nil, nil)
+        -- Calculate path through all our adjusted points (forward point -> waypoints -> target)
+        core_groundMarkers.routePlanner:setupPathMulti(adjustedPathPoints)
+
+        if DEBUG then
+            print(string.format("[bus] Direction-aware path set with %d nodes through %d waypoints (target %s vehicle, dot=%.2f)",
+                #core_groundMarkers.routePlanner.path, #adjustedPathPoints, dotProduct < 0 and "behind" or "ahead of", dotProduct))
+        end
+    elseif DEBUG then
+        print("[bus] Could not access ground markers routePlanner")
     end
 end
 

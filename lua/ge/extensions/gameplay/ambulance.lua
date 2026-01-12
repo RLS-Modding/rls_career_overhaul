@@ -7,6 +7,25 @@ M.dependencies = {'gameplay_sites_sitesManager', 'freeroam_facilities'}
 -- MODULE DEPENDENCIES
 local core_groundMarkers = require('core/groundMarkers')
 
+-- Recursively searches through a parts tree to find a child named "paint_design".
+-- @param node The current node in the parts tree to search.
+-- @return The paint_design node if found, nil otherwise.
+local function findPaintDesign(node)
+    if not node or not node.children then
+        return nil
+    end
+    if node.children.paint_design then
+        return node.children.paint_design
+    end
+    for _, child in pairs(node.children) do
+        local result = findPaintDesign(child)
+        if result then
+            return result
+        end
+    end
+    return nil
+end
+
 -- Determines whether a vehicle uses an ambulance paint design.
 -- @param vehicleId Optional vehicle id; if omitted the player's current vehicle is used.
 -- @return `true` if the vehicle's paint_design config is a string containing "ambulance" (case-insensitive), `false` otherwise.
@@ -21,10 +40,8 @@ local function isAmbulancePaintDesign(vehicleId)
     end
     local vehData = core_vehicle_manager.getVehicleData(id)
     local partsTree = vehData and vehData.config and vehData.config.partsTree
-    local paintDesign = partsTree and partsTree.children and partsTree.children.paint_design
-    dump(paintDesign)
+    local paintDesign = findPaintDesign(partsTree)
     local chosenPaintDesign = paintDesign and paintDesign.chosenPartName
-    dump(chosenPaintDesign)
     return chosenPaintDesign and type(chosenPaintDesign) == "string" and chosenPaintDesign:lower():find("ambulance") ~= nil
 end
 
@@ -333,7 +350,7 @@ updateMarkers = function(dtReal, dtSim, dtRaw)
                 beamXP = {
                     amount = math.floor(finalPayout / 10)
                 },
-                paramedicWorkReputation = {
+                wcuParamedicWorkReputation = {
                     amount = math.floor(finalPayout / 100)
                 }
             }, {
