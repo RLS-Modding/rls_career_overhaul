@@ -1395,6 +1395,59 @@ local function onBeamNGTrigger(data)
         end
     end
 end
+-- ================================
+-- EXTENSION UNLOADED (cleanup)
+-- ================================
+local function onExtensionUnloaded()
+    print("[bus] Extension unloading, cleaning up...")
+
+    -- Clear any active markers
+    clearStopMarkers()
+
+    -- Reset navigation markers
+    if core_groundMarkers then
+        core_groundMarkers.resetAll()
+    end
+
+    -- Cancel active coroutine
+    boardingCoroutine = nil
+
+    -- Reset all state variables to initial values
+    currentStopIndex = nil
+    stopTriggers = {}
+    dwellTimer = nil
+    dwellDuration = 10
+    consecutiveStops = 0
+    currentRouteActive = false
+    accumulatedReward = 0
+    passengersOnboard = 0
+    activeBusID = nil
+    routeInitialized = false
+    totalStopsCompleted = 0
+    routeCooldown = 0
+    currentVehiclePartsTree = nil
+    stopMonitorActive = false
+    stopSettleTimer = 0
+    currentTriggerName = nil
+    roughRide = 0
+    lastVelocity = nil
+    tipTotal = 0
+    trueBoarding = 0
+    trueDeboarding = 0
+    currentFinalStopName = nil
+    stopIndexWhereBoardingStarted = nil
+    pendingRouteInit = false
+    currentRouteName = nil
+    stopDisplayNames = {}
+    routeItems = {}
+
+    -- Reset vehicle capacity
+    M.vehicleCapacity = nil
+
+    print("[bus] Extension unloaded successfully.")
+end
+
 M.onBeamNGTrigger = onBeamNGTrigger
 M.onExtensionLoaded = onExtensionLoaded
+M.onExtensionUnloaded = onExtensionUnloaded
 return M
