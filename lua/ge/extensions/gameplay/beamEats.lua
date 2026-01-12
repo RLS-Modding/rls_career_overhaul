@@ -530,7 +530,7 @@ local function update(_, dt)
             return
         end
 
-        jobOfferTimer = jobOfferTimer + updateInterval
+        jobOfferTimer = jobOfferTimer + dt
         if jobOfferTimer >= jobOfferInterval then
             local newOrder = generateOrder()
             if newOrder then

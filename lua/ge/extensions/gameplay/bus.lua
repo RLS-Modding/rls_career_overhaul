@@ -474,7 +474,7 @@ local function showNextStopMarker(targetStopIndex)
     -- Set up multi-waypoint path on the shared route planner
     routePlanner:setupPathMulti(pathPoints)
     print(string.format("[bus] Route planner set up with %d path points (including waypoints)", #pathPoints))
-    
+
     -- If we have waypoints, we need to activate ground markers but preserve the route planner's path
     if #pathPoints > 2 then
       print(string.format("[bus] Multi-waypoint path detected (%d waypoints)", #pathPoints - 2))
@@ -492,8 +492,7 @@ local function showNextStopMarker(targetStopIndex)
             core_groundMarkers.endWP[1] = targetPos
             -- DON'T call setPath - it calculates a direct path that conflicts with waypoints
             -- The route planner's path should be used automatically by ground markers
-            -- Ensure route planner is properly set up
-            routePlanner:setupPathMulti(pathPoints)
+            -- (rely on the initial setupPathMulti call before this coroutine)
           else
             print("[bus] Warning: Route planner path not ready, falling back to direct path")
             core_groundMarkers.setPath(targetPos)
@@ -509,7 +508,7 @@ local function showNextStopMarker(targetStopIndex)
     -- No vehicle, fallback to direct path
     core_groundMarkers.setPath(targetPos)
   end
-  
+
   -- Show markers for the NEXT stop (not current)
   showCurrentStopMarkers(nextStopIndex)
 end
@@ -861,7 +860,7 @@ local function initRoute()
     -- Set up multi-waypoint path on the shared route planner
     routePlanner:setupPathMulti(pathPoints)
     print(string.format("[bus] Route planner initialized with %d path points (including waypoints)", #pathPoints))
-    
+
     -- If we have waypoints, we need to activate ground markers but preserve the route planner's path
     if #pathPoints > 2 then
       print(string.format("[bus] Multi-waypoint path detected (%d waypoints)", #pathPoints - 2))
@@ -879,8 +878,7 @@ local function initRoute()
             core_groundMarkers.endWP[1] = targetPos
             -- DON'T call setPath - it calculates a direct path that conflicts with waypoints
             -- The route planner's path should be used automatically by ground markers
-            -- Ensure route planner is properly set up
-            routePlanner:setupPathMulti(pathPoints)
+            -- (rely on the initial setupPathMulti call before this coroutine)
           else
             print("[bus] Warning: Route planner path not ready, falling back to direct path")
             core_groundMarkers.setPath(targetPos)
@@ -896,7 +894,7 @@ local function initRoute()
     -- No vehicle, fallback to direct path
     core_groundMarkers.setPath(targetPos)
   end
-  
+
   ui_message(
       string.format("Bus route '%s' started. Proceed to %s. Route has %d stops.", routeName, startStopName, #stopTriggers),
       6, "info", "info")

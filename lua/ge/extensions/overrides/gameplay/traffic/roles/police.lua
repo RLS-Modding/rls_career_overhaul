@@ -72,7 +72,7 @@ function C:init()
       self.flags.roadblock = nil
       self.flags.busy = 1
       self.cooldownTimer = -1
-      self.avoidSpeed = math.random(18, 24) * modeNum
+      self.avoidSpeed = math.max(40, math.random(18, 24) * modeNum)
 
       if not self.flags.pursuit then
         self.veh:modifyRespawnValues(500)
