@@ -5,8 +5,18 @@
 local M = {}
 
 local leaderboardFolder = "/career/speedTrapLeaderboards/"
+local core_vehicles = require('core/vehicles')
 
 M.dependencies = {'career_career', 'gameplay_speedTraps', 'gameplay_traffic'}
+
+-- Check if player vehicle has ambulance paint design
+local function isInAmbulance()
+  local playerVehicle = be:getPlayerVehicle(0)
+  if not playerVehicle then return false end
+  local vehData = core_vehicles.getVehicleData(playerVehicle:getId())
+  local paintDesign = vehData and vehData.config and vehData.config.paint_design
+  return paintDesign and type(paintDesign) == "string" and paintDesign:lower():find("ambulance")
+end
 local fines = {
   {overSpeed = 6.7056, fine = {money = {amount = 750, canBeNegative = true}}},
   {overSpeed = 11.176, fine = {money = {amount = 2000, canBeNegative = true}}},
@@ -36,6 +46,9 @@ end
 
 local function onSpeedTrapTriggered(speedTrapData, playerSpeed, overSpeed)
   if gameplay_cab and gameplay_cab.inCab() then
+    return
+  end
+  if isInAmbulance() then
     return
   end
   if not speedTrapData.speedLimit then 
@@ -121,6 +134,9 @@ end
 
 local function onRedLightCamTriggered(speedTrapData, playerSpeed)
   if gameplay_cab and gameplay_cab.inCab() then
+    return
+  end
+  if isInAmbulance() then
     return
   end
   local vehId = speedTrapData.subjectID
