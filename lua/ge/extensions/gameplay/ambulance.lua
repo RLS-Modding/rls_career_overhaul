@@ -353,10 +353,17 @@ M.onExtensionLoaded = onExtensionLoaded
 
 function M.onUpdate(dtReal, dtSim, dtRaw)
     local playerVehicle = be:getPlayerVehicle(0)
-    local in911 = playerVehicle and core_vehicles.getVehicleLicenseText(playerVehicle) == "911"
+    local inAmbulance = false
+    if playerVehicle then
+        local vehData = core_vehicles.getVehicleData(playerVehicle:getId())
+        local paintDesign = vehData and vehData.config and vehData.config.paint_design
+        if paintDesign and type(paintDesign) == "string" and paintDesign:lower():find("ambulance") then
+            inAmbulance = true
+        end
+    end
 
     -- Trigger mission and assign EMT role
-    if in911 and not missionTriggeredForVehicle then
+    if inAmbulance and not missionTriggeredForVehicle then
         missionTriggeredForVehicle = true
         M.initDelay = 0
         M.initDelayDuration = 0.1
@@ -373,8 +380,8 @@ function M.onUpdate(dtReal, dtSim, dtRaw)
         end
     end
 
-    -- Abandon mission when leaving 911 vehicle
-    if not in911 and missionTriggeredForVehicle then
+    -- Abandon mission when leaving ambulance vehicle
+    if not inAmbulance and missionTriggeredForVehicle then
         missionTriggeredForVehicle = false
 
         if currentFare then

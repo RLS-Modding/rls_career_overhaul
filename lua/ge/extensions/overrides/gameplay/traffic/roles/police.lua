@@ -4,8 +4,7 @@
 
 local C = {}
 
--- Plates that should never be pursued by AI
-local IGNORED_PLATES = { ["911"]=true }
+local core_vehicles = require('core/vehicles')
 
 -- Returns true if the vehicle should be ignored; caches the decision on veh.ignorePolice
 local function shouldIgnoreVehicle(id, veh)
@@ -14,9 +13,11 @@ local function shouldIgnoreVehicle(id, veh)
   local obj = getObjectByID(id)
   if not obj then return false end
 
-  local plate = core_vehicles.getVehicleLicenseText(obj)
-  if plate and IGNORED_PLATES[plate] then
-    veh.ignorePolice = true 
+  -- Check if vehicle has ambulance paint design
+  local vehData = core_vehicles.getVehicleData(id)
+  local paintDesign = vehData and vehData.config and vehData.config.paint_design
+  if paintDesign and type(paintDesign) == "string" and paintDesign:lower():find("ambulance") then
+    veh.ignorePolice = true
     return true
   end
 
