@@ -15,9 +15,10 @@ local function shouldIgnoreVehicle(id, veh)
   local obj = getObjectByID(id)
   if not obj then return false end
 
-  -- Check if vehicle has ambulance paint design
-  if gameplay_ambulance and gameplay_ambulance.isAmbulancePaintDesign then
-    if gameplay_ambulance.isAmbulancePaintDesign(id) then
+  -- Check if player vehicle has ambulance paint design (use cached state)
+  local playerVehicle = be:getPlayerVehicle(0)
+  if playerVehicle and id == playerVehicle:getId() then
+    if gameplay_ambulance and gameplay_ambulance.isInAmbulance and gameplay_ambulance.isInAmbulance() then
       veh.ignorePolice = true
       return true
     end

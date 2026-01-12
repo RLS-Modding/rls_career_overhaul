@@ -22,8 +22,10 @@ local function isAmbulancePaintDesign(vehicleId)
     local vehData = core_vehicle_manager.getVehicleData(id)
     local partsTree = vehData and vehData.config and vehData.config.partsTree
     local paintDesign = partsTree and partsTree.children and partsTree.children.paint_design
-    local choosenPaintDesign = paintDesign and paintDesign.choosenPartName
-    return choosenPaintDesign and type(choosenPaintDesign) == "string" and choosenPaintDesign:lower():find("ambulance") ~= nil
+    dump(paintDesign)
+    local chosenPaintDesign = paintDesign and paintDesign.chosenPartName
+    dump(chosenPaintDesign)
+    return chosenPaintDesign and type(chosenPaintDesign) == "string" and chosenPaintDesign:lower():find("ambulance") ~= nil
 end
 
 -- STATE VARIABLES
@@ -37,6 +39,9 @@ local missionTriggeredForVehicle = false
 local stopMonitorActive = false
 local stopSettleTimer = 0
 local stopSettleDelay = 2.5
+
+-- Cached ambulance state (updated on load and vehicle switch)
+local inAmbulance = false
 
 -- Timers
 M.initDelay = nil
@@ -381,6 +386,7 @@ end
 -- Handles extension load: notifies the player that the Ambulance module is active and logs readiness for vehicle-triggered missions.
 -- Displays a brief UI message and prints a diagnostic notice to the console.
 local function onExtensionLoaded()
+    inAmbulance = isAmbulancePaintDesign()
     ui_message("Ambulance module loaded. Waiting for 911 vehicle...", 3, "info", "info")
     print("[ambulance] extension loaded and waiting for vehicle trigger")
 end
@@ -402,6 +408,7 @@ local function onExtensionUnloaded()
     roughRide = 0
     lastVehiclePos = nil
     lastVelocity = nil
+    inAmbulance = false
 
     -- Reset timers
     M.initDelay = nil
@@ -416,11 +423,24 @@ local function onExtensionUnloaded()
 end
 
 -- ================================
+-- VEHICLE SWITCHED
+-- Updates the cached ambulance paint design state when the player switches vehicles.
+local function onVehicleSwitched(oldId, newId, player)
+    inAmbulance = isAmbulancePaintDesign(newId)
+end
+
+-- ================================
 -- EXPORTS
 -- ================================
 M.onExtensionLoaded = onExtensionLoaded
 M.onExtensionUnloaded = onExtensionUnloaded
+M.onVehicleSwitched = onVehicleSwitched
 M.isAmbulancePaintDesign = isAmbulancePaintDesign
+
+-- Returns the cached ambulance state (updated on load and vehicle switch)
+function M.isInAmbulance()
+    return inAmbulance
+end
 
 -- Called each update tick to manage ambulance mission lifecycle and per-frame state.
 -- Handles triggering missions when entering an ambulance-design vehicle, assigning the EMT role via the traffic system when available, abandoning active missions on exit, managing the initial mission start delay, and delegating marker/state updates.
@@ -429,7 +449,6 @@ M.isAmbulancePaintDesign = isAmbulancePaintDesign
 -- @param dtRaw Raw frame delta (engine-specific, may be nil).
 function M.onUpdate(dtReal, dtSim, dtRaw)
     local playerVehicle = be:getPlayerVehicle(0)
-    local inAmbulance = isAmbulancePaintDesign()
 
     -- Trigger mission and assign EMT role
     if inAmbulance and not missionTriggeredForVehicle then

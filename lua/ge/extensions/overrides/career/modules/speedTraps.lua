@@ -12,8 +12,8 @@ M.dependencies = {'career_career', 'gameplay_speedTraps', 'gameplay_traffic'}
 -- Determine whether the player's vehicle is using the ambulance paint design.
 -- @return `true` if the player's vehicle has the ambulance paint design, `false` otherwise.
 local function isInAmbulance()
-  if gameplay_ambulance and gameplay_ambulance.isAmbulancePaintDesign then
-    return gameplay_ambulance.isAmbulancePaintDesign()
+  if gameplay_ambulance and gameplay_ambulance.isInAmbulance then
+    return gameplay_ambulance.isInAmbulance()
   end
   return false
 end
