@@ -1,0 +1,64 @@
+{
+  "Brand":"Wentward",
+  "0-100 km/h":30.2,
+  "0-60 mph":28.5,
+  "Body Style":"Bus",
+  "BoundingBox":[
+    [
+      -1.077,
+      -1.406,
+      -0.6204
+    ],
+    [
+      2.003,
+      9.505,
+      2.4096
+    ]
+  ],
+  "Commercial Class":"Class 7 Truck",
+  "Config Type":"Service",
+  "Configuration":"busWork_long",
+  "Value":100000,
+  "Population":500,
+  "Weight":8640,
+  "Weight/Power":34.01574803,
+  "Power":254,
+  "PowerPeakRPM":2400,
+  "Torque":815,
+  "TorquePeakRPM":"1350 - 1900",
+  "Transmission":"Automatic",
+  "Description":"Late model type C school bus",
+  "Drag Times":{
+    "brakingG":0.512418021,
+    "time_0_60":0,
+    "time_1000":21.62650107,
+    "time_1_4":25.77150124,
+    "time_1_8":16.65400083,
+    "time_330":10.89850055,
+    "time_60":4.122500233,
+    "velAt_1_4":24.67376485,
+    "velAt_1_8":19.34009707
+  },
+  "Drivetrain":"RWD",
+  "Fuel Type":"Diesel",
+  "Induction Type":"Turbo",
+  "Off-Road Score":26,
+  "Population":8000,
+  "Power":254,
+  "PowerPeakRPM":2400,
+  "Propulsion":"ICE",
+  "Top Speed":30.49681091,
+  "Torque":815,
+  "TorquePeakRPM":"1350 - 1900",
+  "Transmission":"Automatic",
+  "Value":230000,
+  "Weight":8640,
+  "Weight/Power":34.01574803,
+  "Years":{
+    "max":1998,
+    "min":1992
+  },
+  "defaultPaintName1":"Black",
+  "defaultPaintName2":"Black",
+  "defaultPaintName3":"Black"
+}

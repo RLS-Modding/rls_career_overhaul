@@ -1,0 +1,61 @@
+{
+  "Brand":"Wentward",
+  "Body Style":"Bus",
+  "BoundingBox":[
+    [
+      -1.077,
+      -1.406,
+      -0.6153815327
+    ],
+    [
+      2.003,
+      6.457,
+      2.3126
+    ]
+  ],
+  "Commercial Class":"Class 6 Truck",
+  "Config Type":"Service",
+  "Configuration":"busWork_short",
+  "Value":80000,
+  "Population":500,
+  "Weight":7590,
+  "Weight/Power":38.7244898,
+  "Power":196,
+  "PowerPeakRPM":2400,
+  "Torque":625,
+  "TorquePeakRPM":"1150 - 1900",
+  "Description":"Early type B school bus",
+  "Drag Times":{
+    "brakingG":0.4950833458,
+    "time_0_60":0,
+    "time_1000":24.75650108,
+    "time_1_4":29.13200129,
+    "time_1_8":19.40550088,
+    "time_330":12.98750063,
+    "time_60":4.763000198,
+    "velAt_1_4":23.60879599,
+    "velAt_1_8":17.60146311
+  },
+  "Drivetrain":"RWD",
+  "Fuel Type":"Diesel",
+  "Induction Type":"Turbo",
+  "Off-Road Score":34,
+  "Population":6000,
+  "Power":196,
+  "PowerPeakRPM":2400,
+  "Propulsion":"ICE",
+  "Top Speed":25.62385941,
+  "Torque":625,
+  "TorquePeakRPM":"1150 - 1900",
+  "Transmission":"Manual",
+  "Value":210000,
+  "Weight":7590,
+  "Weight/Power":38.7244898,
+  "Years":{
+    "max":1992,
+    "min":1986
+  },
+  "defaultPaintName1":"Black",
+  "defaultPaintName2":"Black",
+  "defaultPaintName3":"Black"
+}
