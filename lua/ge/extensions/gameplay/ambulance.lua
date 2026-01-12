@@ -462,7 +462,7 @@ function M.onUpdate(dtReal, dtSim, dtRaw)
             local trafficData = gameplay_traffic.getTrafficData()
             for _, vehRole in pairs(trafficData) do
                 if vehRole.role and vehRole.role.name == "emt" then
-                    vehRole.role:assignRoleToVehicle(playerVehicle)
+                    playerVehicle:setRole("emt")
                 end
             end
         end
