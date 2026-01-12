@@ -74,7 +74,7 @@ jobs:
         id: version
         run: |
           PR_NUMBER="${{ github.event.number }}"
-          PREFIX="rls_career_overhaul_PR_${PR_NUMBER}."
+          PREFIX="${PR_NUMBER}."
 
           ARTIFACTS_JSON=$(gh api repos/${{ github.repository }}/actions/artifacts --jq "[.artifacts[] | select(.name | startswith(\"$PREFIX\")) | {id: .id, name: .name}]" 2>/dev/null || echo "[]")
 
@@ -86,7 +86,7 @@ jobs:
             echo "No existing artifacts found, starting at version $VERSION"
           else
             echo "Found $ARTIFACT_COUNT existing artifact(s), finding max version..."
-            MAX_MINOR=$(echo "$ARTIFACTS_JSON" | jq -r '.[].name' | sed "s/$PREFIX//" | sort -n | tail -1)
+            MAX_MINOR=$(echo "$ARTIFACTS_JSON" | jq -r '.[].name' | sed -e "s/$PREFIX//" -e "s/_overhaul$//" | sort -n | tail -1)
             if [ -z "$MAX_MINOR" ] || [ "$MAX_MINOR" = "null" ]; then
               MAX_MINOR=0
             fi
@@ -112,7 +112,7 @@ jobs:
       - name: Upload mod directories as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: rls_career_overhaul_PR_${{ steps.version.outputs.version }}
+          name: ${{ steps.version.outputs.version }}_overhaul
           path: |
             challenges/
             gameplay/
@@ -129,7 +129,7 @@ jobs:
         run: |
           sleep 2
           VERSION="${{ steps.version.outputs.version }}"
-          ARTIFACT_ID=$(gh api repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts --jq ".artifacts[] | select(.name == \"rls_career_overhaul_PR_${VERSION}\") | .id" || echo "")
+          ARTIFACT_ID=$(gh api repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts --jq ".artifacts[] | select(.name == \"${VERSION}_overhaul\") | .id" || echo "")
 
           if [ -n "$ARTIFACT_ID" ]; then
             DOWNLOAD_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/$ARTIFACT_ID"
