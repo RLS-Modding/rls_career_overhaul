@@ -511,11 +511,13 @@ local function update(_, dt)
         updateSensorData()
         
         local vehicle = be:getPlayerVehicle(0)
-        local vehiclePos = vehicle:getPosition()
-        local destDist = (vehiclePos - currentOrder.destination.pos):length()
+        if vehicle then
+            local vehiclePos = vehicle:getPosition()
+            local destDist = (vehiclePos - currentOrder.destination.pos):length()
 
-        if destDist < 5 then
-            completeDelivery()
+            if destDist < 5 then
+                completeDelivery()
+            end
         end
     end
 

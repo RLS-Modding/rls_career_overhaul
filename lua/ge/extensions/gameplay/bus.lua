@@ -726,7 +726,9 @@ local function initRoute()
     processObject(obj)
   end
   
-  print(string.format("[bus] DEBUG: Found %d waypoints in scenetree", table.getn(allWaypoints) or 0))
+  local waypointCount = 0
+  for _ in pairs(allWaypoints) do waypointCount = waypointCount + 1 end
+  print(string.format("[bus] DEBUG: Found %d waypoints in scenetree", waypointCount))
   for name, _ in pairs(allWaypoints) do
     print(string.format("[bus] DEBUG:   - %s", name))
   end
