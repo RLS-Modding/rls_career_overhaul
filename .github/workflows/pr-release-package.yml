@@ -10,9 +10,6 @@ permissions:
 jobs:
   build-and-package:
     runs-on: depot-ubuntu-24.04-16
-    outputs:
-      version: ${{ steps.version.outputs.version }}
-      artifact-id: ${{ steps.get-artifact-id.outputs.id }}
     steps:
       - name: Checkout with LFS
         uses: actions/checkout@v4
@@ -126,30 +123,11 @@ jobs:
           retention-days: 7
           if-no-files-found: error
 
-      - name: Get artifact ID
-        id: get-artifact-id
-        run: |
-          sleep 2
-          ARTIFACT_NAME="rls_career_overhaul_PR_${{ steps.version.outputs.version }}"
-          ARTIFACT_ID=$(gh api repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts --jq ".artifacts[] | select(.name == \"$ARTIFACT_NAME\") | .id" || echo "")
-          if [ -z "$ARTIFACT_ID" ]; then
-            echo "Warning: Could not find artifact ID, falling back to workflow run URL"
-            echo "id=" >> $GITHUB_OUTPUT
-          else
-            echo "id=$ARTIFACT_ID" >> $GITHUB_OUTPUT
-            echo "Found artifact ID: $ARTIFACT_ID"
-          fi
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  comment:
-    needs: build-and-package
-    runs-on: depot-ubuntu-24.04-4
-    steps:
       - name: Comment PR with download link
         run: |
-          VERSION="${{ needs.build-and-package.outputs.version }}"
-          ARTIFACT_ID="${{ needs.build-and-package.outputs.artifact-id }}"
+          sleep 2
+          VERSION="${{ steps.version.outputs.version }}"
+          ARTIFACT_ID=$(gh api repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts --jq ".artifacts[] | select(.name == \"rls_career_overhaul_PR_${VERSION}\") | .id" || echo "")
 
           if [ -n "$ARTIFACT_ID" ]; then
             DOWNLOAD_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/$ARTIFACT_ID"
