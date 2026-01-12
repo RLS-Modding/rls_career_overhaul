@@ -212,7 +212,11 @@ local function generateValueMultiplier()
     if not career_career or not career_career.isActive() then
         return 1
     end
-    local inventoryId = career_modules_inventory.getInventoryIdFromVehicleId(be:getPlayerVehicle(0):getID())
+    local playerVehicle = be:getPlayerVehicle(0)
+    if not playerVehicle then
+        return 0.1
+    end
+    local inventoryId = career_modules_inventory.getInventoryIdFromVehicleId(playerVehicle:getID())
     if not inventoryId then
         return 0
     end
