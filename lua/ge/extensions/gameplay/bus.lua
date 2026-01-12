@@ -1318,7 +1318,6 @@ end
 local function onExtensionLoaded()
     ui_message("Bus module loaded. Enter a BUS vehicle to begin your route.", 3, "info", "info")
     print("[bus] Extension loaded.")
-    extensions.load("gameplay_bus")
 end
 
 -- ================================
