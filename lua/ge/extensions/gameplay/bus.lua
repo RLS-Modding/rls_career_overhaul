@@ -1004,8 +1004,8 @@ local function processStop(vehicle, dtSim)
                 local function waitForAnimation(duration)
                     local t = 0
                     while t < duration do
-                        coroutine.yield()
-                        t = t + (dtSim or 0.033)
+                        local dt = coroutine.yield()
+                        t = t + (dt or 0.033)
                     end
                 end
 
@@ -1230,7 +1230,7 @@ function M.onUpdate(dtReal, dtSim, dtRaw)
     if boardingCoroutine
        and coroutine.status(boardingCoroutine) ~= "dead" then
 
-        local ok, err = coroutine.resume(boardingCoroutine)
+        local ok, err = coroutine.resume(boardingCoroutine, dtSim)
         if not ok then
             print("[bus] Boarding animation coroutine error: " .. tostring(err))
             boardingCoroutine = nil

@@ -21,7 +21,7 @@
   "Description":"Late model type C school bus",
   "Drag Times":{
     "brakingG":0.512418021,
-    "time_0_60":0,
+    "time_0_60":28.5,
     "time_1000":21.62650107,
     "time_1_4":25.77150124,
     "time_1_8":16.65400083,

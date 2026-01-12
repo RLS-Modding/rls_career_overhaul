@@ -217,8 +217,8 @@ local function generateValueMultiplier()
         return 0
     end
     vehicleMultiplier = (career_modules_valueCalculator.getInventoryVehicleValue(inventoryId) / 30000) ^ 0.5
-    vehicleMultiplier = string.format("%.1f", vehicleMultiplier)
-    return math.max(vehicleMultiplier, 0.1)
+    vehicleMultiplier = math.max(vehicleMultiplier, 0.1)
+    return vehicleMultiplier
 end
 
 local function calculateDrivingDistance(startPos, endPos)
@@ -391,7 +391,7 @@ local function completeDelivery()
     dataToSend = {
         state = effectiveState,
         currentOrder = currentOrder,
-        vehicleMultiplier = vehicleMultiplier,
+        vehicleMultiplier = string.format("%.1f", vehicleMultiplier),
         cumulativeReward = cumulativeReward,
         orderStreak = orderStreak,
         beamEatsDisabled = beamEatsDisabled,
@@ -481,7 +481,7 @@ local function prepareBeamEatsJob()
         dataToSend = {
             state = effectiveState,
             currentOrder = currentOrder,
-            vehicleMultiplier = vehicleMultiplier,
+            vehicleMultiplier = string.format("%.1f", vehicleMultiplier),
             cumulativeReward = cumulativeReward,
             orderStreak = orderStreak,
             beamEatsDisabled = beamEatsDisabled,
@@ -529,7 +529,7 @@ local function update(_, dt)
             return
         end
 
-        jobOfferTimer = jobOfferTimer + 1
+        jobOfferTimer = jobOfferTimer + dt
         if jobOfferTimer >= jobOfferInterval then
             local newOrder = generateOrder()
             if newOrder then
@@ -549,7 +549,7 @@ local function update(_, dt)
                 dataToSend = {
                     state = effectiveState,
                     currentOrder = newOrder,
-                    vehicleMultiplier = vehicleMultiplier,
+                    vehicleMultiplier = string.format("%.1f", vehicleMultiplier),
                     cumulativeReward = cumulativeReward,
                     orderStreak = orderStreak,
                     beamEatsDisabled = beamEatsDisabled,
@@ -571,7 +571,7 @@ function requestBeamEatsState()
     dataToSend = {
         state = effectiveState,
         currentOrder = currentOrder,
-        vehicleMultiplier = vehicleMultiplier,
+        vehicleMultiplier = string.format("%.1f", vehicleMultiplier),
         cumulativeReward = cumulativeReward,
         orderStreak = orderStreak,
         beamEatsDisabled = beamEatsDisabled,
@@ -602,7 +602,7 @@ function startDelivery(order)
     dataToSend = {
         state = effectiveState,
         currentOrder = currentOrder,
-        vehicleMultiplier = vehicleMultiplier,
+        vehicleMultiplier = string.format("%.1f", vehicleMultiplier),
         cumulativeReward = cumulativeReward,
         orderStreak = orderStreak,
         beamEatsDisabled = beamEatsDisabled,
@@ -642,7 +642,7 @@ local function onVehicleSwitched()
     dataToSend = {
         state = effectiveState,
         currentOrder = currentOrder,
-        vehicleMultiplier = vehicleMultiplier,
+        vehicleMultiplier = string.format("%.1f", vehicleMultiplier),
         cumulativeReward = cumulativeReward,
         orderStreak = orderStreak,
         beamEatsDisabled = beamEatsDisabled,
