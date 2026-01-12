@@ -20,8 +20,10 @@ local function isAmbulancePaintDesign(vehicleId)
         id = playerVehicle:getId()
     end
     local vehData = core_vehicle_manager.getVehicleData(id)
-    local paintDesign = vehData and vehData.config and vehData.config.paint_design
-    return paintDesign and type(paintDesign) == "string" and paintDesign:lower():find("ambulance") ~= nil
+    local partsTree = vehData and vehData.config and vehData.config.partsTree
+    local paintDesign = partsTree and partsTree.children and partsTree.children.paint_design
+    local choosenPaintDesign = paintDesign and paintDesign.choosenPartName
+    return choosenPaintDesign and type(choosenPaintDesign) == "string" and choosenPaintDesign:lower():find("ambulance") ~= nil
 end
 
 -- STATE VARIABLES
