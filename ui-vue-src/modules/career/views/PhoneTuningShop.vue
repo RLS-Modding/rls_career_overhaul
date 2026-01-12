@@ -165,14 +165,15 @@
                 <small>Unlock via skill tree</small>
               </div>
               <div v-else class="techs-list">
-                <div v-for="tech in store.techs" :key="tech.id" class="tech-card" :class="{ working: tech.jobId }">
+                <div v-for="tech in store.techs" :key="tech.id" class="tech-card" :class="{ working: tech.jobId && !tech.fired, fired: tech.fired }">
                   <div class="tech-card-header">
-                    <div class="tech-status-dot" :class="{ active: tech.jobId }"></div>
+                    <div class="tech-status-dot" :class="{ active: tech.jobId && !tech.fired, fired: tech.fired }"></div>
                     <span class="tech-name">{{ tech.name }}</span>
-                    <span v-if="tech.successRate !== undefined" class="tech-rate">{{ tech.successRate }}%</span>
+                    <span v-if="tech.fired" class="tech-fired-badge">Fired</span>
+                    <span v-else-if="tech.successRate !== undefined" class="tech-rate">{{ tech.successRate }}%</span>
                   </div>
                   
-                  <div v-if="tech.jobId" class="tech-working-info">
+                  <div v-if="tech.jobId && !tech.fired" class="tech-working-info">
                     <div class="tech-job-label">{{ getJobLabel(tech.jobId) }}</div>
                     <div class="tech-phase">{{ formatPhase(tech, true) }}</div>
                     <div class="tech-progress-bar">
@@ -180,11 +181,23 @@
                     </div>
                   </div>
                   
+                  <div v-else-if="tech.fired" class="tech-fired-info">
+                    <span class="fired-label">Fired</span>
+                    <button class="btn-hire-tech" @click.stop="handleHireTech(tech)">
+                      Hire Tech
+                    </button>
+                  </div>
+                  
                   <div v-else class="tech-idle-info">
                     <span class="idle-label">Idle</span>
-                    <button class="btn-assign-tech" :disabled="availableJobsForAssignment.length === 0" @click.stop="openAssignModalForTech(tech)">
-                      {{ availableJobsForAssignment.length > 0 ? 'Assign Job' : 'No Jobs' }}
-                    </button>
+                    <div class="tech-idle-actions">
+                      <button class="btn-assign-tech" :disabled="availableJobsForAssignment.length === 0" @click.stop="openAssignModalForTech(tech)">
+                        {{ availableJobsForAssignment.length > 0 ? 'Assign Job' : 'No Jobs' }}
+                      </button>
+                      <button class="btn-fire-tech" @click.stop="handleFireTech(tech)">
+                        Fire
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -359,8 +372,8 @@ const assignModalTitle = computed(() => {
   return `Assign Job to ${selectedTechForAssign.value?.name || 'Tech'}`
 })
 
-const workingTechsCount = computed(() => store.techs.filter(t => t.jobId).length)
-const idleTechs = computed(() => store.techs.filter(t => !t.jobId))
+const workingTechsCount = computed(() => store.techs.filter(t => t.jobId && !t.fired).length)
+const idleTechs = computed(() => store.techs.filter(t => !t.jobId && !t.fired))
 const jobsInProgress = computed(() => store.activeJobs)
 const availableJobsForAssignment = computed(() => store.activeJobs.filter(j => !j.techAssigned))
 
@@ -458,6 +471,22 @@ const confirmAssignTechToJob = async (techId, jobId) => {
   }
 }
 
+const handleFireTech = async (tech) => {
+  if (!tech || tech.fired) return
+  const success = await store.fireTech(tech.id)
+  if (success && store.businessId) {
+    await store.loadBusinessData("tuningShop", store.businessId)
+  }
+}
+
+const handleHireTech = async (tech) => {
+  if (!tech || !tech.fired) return
+  const success = await store.hireTech(tech.id)
+  if (success && store.businessId) {
+    await store.loadBusinessData("tuningShop", store.businessId)
+  }
+}
+
 const chartWidth = 320
 const chartHeight = 100
 const chartPadding = 8
@@ -541,6 +570,14 @@ onMounted(async () => {
   events.on('businessComputer:onTechsUpdated', handleTechsUpdated)
   
   try {
+    // Check if career is active before calling business manager
+    const isCareerActive = await lua.career_career.isActive()
+    if (!isCareerActive) {
+      hasBusiness.value = false
+      loading.value = false
+      return
+    }
+    
     const purchased = await lua.career_modules_business_businessManager.getPurchasedBusinesses("tuningShop")
     let targetBusinessId = null
     if (purchased) {
@@ -1031,6 +1068,10 @@ $negative: #ef4444;
   padding: 0.75em;
   
   &.working { border-left: 3px solid $accent; }
+  &.fired { 
+    opacity: 0.6;
+    border-left: 3px solid rgba(255, 255, 255, 0.1);
+  }
 }
 
 .tech-card-header {
@@ -1050,6 +1091,10 @@ $negative: #ef4444;
     background: $accent;
     box-shadow: 0 0 6px rgba($accent, 0.5);
   }
+  
+  &.fired {
+    background: rgba(255, 255, 255, 0.1);
+  }
 }
 
 .tech-name {
@@ -1062,6 +1107,16 @@ $negative: #ef4444;
 .tech-rate {
   font-size: 0.75em;
   color: $text-muted;
+}
+
+.tech-fired-badge {
+  font-size: 0.65em;
+  font-weight: 600;
+  color: $text-muted;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.2em 0.5em;
+  border-radius: 0.25em;
+  text-transform: uppercase;
 }
 
 .tech-working-info { display: flex; flex-direction: column; gap: 0.35em; }
@@ -1099,6 +1154,12 @@ $negative: #ef4444;
   align-items: center;
 }
 
+.tech-idle-actions {
+  display: flex;
+  gap: 0.4em;
+  align-items: center;
+}
+
 .idle-label {
   font-size: 0.75em;
   color: $text-muted;
@@ -1123,6 +1184,50 @@ $negative: #ef4444;
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+}
+
+.btn-fire-tech {
+  background: rgba($negative, 0.15);
+  border: 1px solid rgba($negative, 0.3);
+  color: $negative;
+  padding: 0.4em 0.8em;
+  border-radius: 0.35em;
+  font-size: 0.75em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  &:hover {
+    background: rgba($negative, 0.25);
+  }
+}
+
+.tech-fired-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fired-label {
+  font-size: 0.75em;
+  color: $text-muted;
+}
+
+.btn-hire-tech {
+  background: rgba($positive, 0.15);
+  border: 1px dashed rgba($positive, 0.4);
+  color: $positive;
+  padding: 0.4em 0.8em;
+  border-radius: 0.35em;
+  font-size: 0.75em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  &:hover {
+    background: rgba($positive, 0.25);
+    border-style: solid;
   }
 }
 

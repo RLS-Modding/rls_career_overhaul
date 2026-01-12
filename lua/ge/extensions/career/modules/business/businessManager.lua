@@ -92,6 +92,10 @@ local function addPurchasedBusiness(businessType, businessId, skipCallback)
     mapId = mapId
   }
   
+  if career_modules_business_businessComputer then
+    career_modules_business_businessComputer.setBusinessContext(businessType, businessId)
+  end
+  
   if career_modules_bank then
     career_modules_bank.createBusinessAccount(businessType, businessId, businessName)
   end
@@ -269,6 +273,10 @@ local function onSaveCurrentSaveSlot(currentSavePath)
   savePurchasedBusinesses(currentSavePath)
 end
 
+local function getAllPurchasedBusinesses()
+  return purchasedBusinesses
+end
+
 M.onCareerActivated = onCareerActivated
 M.onCareerModulesActivated = onCareerModulesActivated
 M.registerBusinessCallback = registerBusinessCallback
@@ -287,6 +295,7 @@ M.financeBusiness = financeBusiness
 M.cancelBusinessPurchase = cancelBusinessPurchase
 M.openBusinessMenu = openBusinessMenu
 M.getPurchasedBusinesses = getPurchasedBusinesses
+M.getAllPurchasedBusinesses = getAllPurchasedBusinesses
 M.getBusinessGarageId = getBusinessGarageId
 M.onSaveCurrentSaveSlot = onSaveCurrentSaveSlot
 

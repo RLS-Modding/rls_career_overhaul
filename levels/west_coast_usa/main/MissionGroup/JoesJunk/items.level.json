@@ -1,0 +1,2 @@
+{"name":"joesJunk_icon","class":"BeamNGPointOfInterest","__parent":"JoesJunk","position":[152.125992,775.694275,105.15844],"rotationMatrix":[-0.942321777,-0.334708244,0,0.334708244,-0.942321777,0,0,0,1]}
+{"name":"joesJunk_area","class":"BeamNGGameplayArea","__parent":"JoesJunk","position":[152.047394,775.37207,103.759254],"rotationMatrix":[-0.0103931427,-0.999945819,0,0.999945819,-0.0103931427,0,0,0,1],"scale":[1.13588154,1.11619401,2.05547523]}

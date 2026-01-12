@@ -6,6 +6,7 @@ M.dependencies = {'career_career'}
 local function switchMap(levelName)
     local currentLevel = getCurrentLevelIdentifier()
     if currentLevel == levelName then return end
+    core_gamestate.requestEnterLoadingScreen("careerLoading")
     gameplay_parking.resetAll()
     career_career.switchCareerLevel(levelName)
 end

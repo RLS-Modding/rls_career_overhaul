@@ -1,7 +1,7 @@
 <template>
   <ComputerWrapper :title="computerStore.computerData.facilityName + ' - Home screen'" close @back="close">
 
-    <BngCard class="card-content" v-bng-blur="1" >
+    <BngCard class="card-content" v-bng-blur="1">
       <BngCardHeading v-if="computerLoading">
         Loading...
       </BngCardHeading>
@@ -13,36 +13,30 @@
           <div class="line right"></div>
         </div>
         <div v-if="hasVehicles" class="vehicle-select-container">
-          <div class="vehicle-select" >
-            <BngButton style="height: 3em;" v-if="showVehicleSelectorButtons" :accent="ACCENTS.ghost" @click="switchActiveVehicle(-1)" v-bng-on-ui-nav:tab_l.asMouse :icon="icons.arrowLargeLeft">
+          <div class="vehicle-select">
+            <BngButton style="height: 3em;" v-if="showVehicleSelectorButtons" :accent="ACCENTS.ghost"
+              @click="switchActiveVehicle(-1)" v-bng-on-ui-nav:tab_l.asMouse :icon="icons.arrowLargeLeft">
               <BngBinding ui-event="tab_l" deviceMask="xinput" />
             </BngButton>
-              <VehicleTileRow
-                class="vehicle-tile-row"
-                :class="{ 'hasButtons': showVehicleSelectorButtons }"
-                :data="currentVehicleData"
-                :enableHover="false"
-                :small="true"
-              />
+            <VehicleTileRow class="vehicle-tile-row" :class="{ 'hasButtons': showVehicleSelectorButtons }"
+              :data="currentVehicleData" :enableHover="false" :small="true" />
 
-            <BngButton style="height: 3em;" v-if="showVehicleSelectorButtons" :accent="ACCENTS.ghost" @click="switchActiveVehicle(1)" v-bng-on-ui-nav:tab_r.asMouse :icon="icons.arrowLargeRight">
+            <BngButton style="height: 3em;" v-if="showVehicleSelectorButtons" :accent="ACCENTS.ghost"
+              @click="switchActiveVehicle(1)" v-bng-on-ui-nav:tab_r.asMouse :icon="icons.arrowLargeRight">
               <BngBinding ui-event="tab_r" deviceMask="xinput" />
             </BngButton>
           </div>
 
-          <div class="actions-list" v-if="computerStore.activeInventoryId && computerStore.vehicleSpecificComputerFunctions[computerStore.activeInventoryId]">
+          <div class="actions-list"
+            v-if="computerStore.activeInventoryId && computerStore.vehicleSpecificComputerFunctions[computerStore.activeInventoryId]">
             <div class="computer-function-tile"
               v-for="(computerFunction, index) in computerStore.vehicleSpecificComputerFunctions[computerStore.activeInventoryId]"
-              :key="computerFunction.id"
-              :class="{ 'action-disabled': computerFunction.disabled }"
-              tabindex="0" bng-nav-item v-bng-on-ui-nav:ok.asMouse.focusRequired
+              :key="computerFunction.id" :class="{ 'action-disabled': computerFunction.disabled }" tabindex="0"
+              bng-nav-item v-bng-on-ui-nav:ok.asMouse.focusRequired
               @click="computerButtonCallback(computerFunction, computerStore.activeInventoryId)"
               @mouseover="setReason(0, infoById[computerFunction.id].reason)"
-              @focus="setReason(0, infoById[computerFunction.id].reason)"
-              @mouseleave="setReason(0)"
-              @blur="setReason(0)"
-              v-bng-ui-nav-focus="index == 0 ? 0 : undefined"
-            >
+              @focus="setReason(0, infoById[computerFunction.id].reason)" @mouseleave="setReason(0)"
+              @blur="setReason(0)" v-bng-ui-nav-focus="index == 0 ? 0 : undefined">
               <BngIcon class="icon" :type="infoById[computerFunction.id].icon" />
               <span class="label">{{ infoById[computerFunction.id].label }}</span>
             </div>
@@ -61,30 +55,35 @@
         </div>
         <div v-if="computerStore.generalComputerFunctions" class="general-functions-container">
           <div class="actions-list">
-            <template v-for="(computerFunction, index) in computerStore.generalComputerFunctions" :key="computerFunction.id">
-              <div class="computer-function-tile"
-                v-if="!computerFunction.type"
-                :class="{ 'action-disabled': computerFunction.disabled }"
-                tabindex="0"
-                bng-nav-item v-bng-on-ui-nav:ok.asMouse.focusRequired
-                @click="computerButtonCallback(computerFunction)"
+            <template v-for="(computerFunction, index) in computerStore.generalComputerFunctions"
+              :key="computerFunction.id">
+              <div class="computer-function-tile" v-if="!computerFunction.type"
+                :class="{ 'action-disabled': computerFunction.disabled }" tabindex="0" bng-nav-item
+                v-bng-on-ui-nav:ok.asMouse.focusRequired @click="computerButtonCallback(computerFunction)"
                 @mouseover="setReason(1, infoById[computerFunction.id].reason)"
-                @focus="setReason(1, infoById[computerFunction.id].reason)"
-                @mouseleave="setReason(1)"
-                @blur="setReason(1)"
-                v-bng-ui-nav-focus="!hasVehicles && index == 0 ? 0 : undefined"
-                >
+                @focus="setReason(1, infoById[computerFunction.id].reason)" @mouseleave="setReason(1)"
+                @blur="setReason(1)" v-bng-ui-nav-focus="!hasVehicles && index == 0 ? 0 : undefined">
                 <BngIcon class="icon" :type="infoById[computerFunction.id].icon" />
                 <span class="label">{{ infoById[computerFunction.id].label }}</span>
               </div>
             </template>
+            <div class="computer-function-tile" :class="{ 'action-disabled': !canSellGarage }" tabindex="0" bng-nav-item
+              v-bng-on-ui-nav:ok.asMouse.focusRequired @click.stop="sellGarage" @mousedown.stop
+              @mouseover="setReason(1, !canSellGarage ? (vehicleCount > 0 ? `Garage must be empty to sell (${vehicleCount} vehicles inside)` : 'Cannot sell starter garage') : undefined)"
+              @focus="setReason(1, !canSellGarage ? (vehicleCount > 0 ? `Garage must be empty to sell (${vehicleCount} vehicles inside)` : 'Cannot sell starter garage') : undefined)"
+              @mouseleave="setReason(1)" @blur="setReason(1)">
+              <BngIcon class="icon" :type="icons.beamCurrency" />
+              <span class="label">Sell Garage ({{ sellPrice }}
+                <BngIcon style="font-size: 0.8em;" :type="icons.beamCurrency" />)
+              </span>
+            </div>
           </div>
           <div class="disable-reason" v-if="disableReason[0]">
             <BngIcon class="disable-icon" v-show="disableReason[0]" :type="icons.info" />
             <span v-html="disableReason[0] || '&nbsp;'"></span>
           </div>
           <div class="disable-reason" v-if="disableReason[1]">
-            <BngIcon class="disable-icon"  :type="icons.info" />
+            <BngIcon class="disable-icon" :type="icons.info" />
             <span v-html="disableReason[1] || '&nbsp;'"></span>
           </div>
         </div>
@@ -96,18 +95,14 @@
         </div>
         <div class="activities-container">
           <div class="actions-list">
-            <template v-for="(computerFunction, index) in computerStore.activityComputerFunctions" :key="computerFunction.id">
-              <div class="computer-function-tile"
-                v-if="!computerFunction.type"
-                :class="{ 'action-disabled': computerFunction.disabled }"
-                tabindex="0"
-                bng-nav-item v-bng-on-ui-nav:ok.asMouse.focusRequired
-                @click="computerButtonCallback(computerFunction)"
+            <template v-for="(computerFunction, index) in computerStore.activityComputerFunctions"
+              :key="computerFunction.id">
+              <div class="computer-function-tile" v-if="!computerFunction.type"
+                :class="{ 'action-disabled': computerFunction.disabled }" tabindex="0" bng-nav-item
+                v-bng-on-ui-nav:ok.asMouse.focusRequired @click="computerButtonCallback(computerFunction)"
                 @mouseover="setReason(2, infoById[computerFunction.id].reason)"
-                @focus="setReason(2, infoById[computerFunction.id].reason)"
-                @mouseleave="setReason(2)"
-                @blur="setReason(2)"
-                >
+                @focus="setReason(2, infoById[computerFunction.id].reason)" @mouseleave="setReason(2)"
+                @blur="setReason(2)">
                 <BngIcon class="icon" :type="infoById[computerFunction.id].icon" />
                 <span class="label">{{ infoById[computerFunction.id].label }}</span>
               </div>
@@ -136,6 +131,35 @@ import VehicleTileRow from "../components/vehicleInventory/VehicleTileRow.vue"
 
 const computerStore = useComputerStore()
 const currentVehicleData = ref(null)
+
+
+const canSellGarage = ref(false)
+const sellPrice = ref(0)
+const vehicleCount = ref(0)
+
+const updateSellData = async () => {
+  const computerId = computerStore.computerData.computerId
+  if (computerId) {
+    const sellInfo = await lua.career_modules_garageManager.canSellGarage(computerId)
+    if (sellInfo) {
+      canSellGarage.value = sellInfo[0]
+      vehicleCount.value = sellInfo[1]
+    }
+
+    const price = await lua.career_modules_garageManager.getGaragePrice(null, computerId)
+    sellPrice.value = price || 0
+  }
+}
+
+watch(() => computerStore.computerData, () => {
+  updateSellData()
+}, { deep: true })
+
+const sellGarage = async () => {
+  if (!canSellGarage.value) return
+  const computerId = computerStore.computerData.computerId
+  await lua.career_modules_garageManager.sellGarage(computerId, sellPrice.value)
+}
 
 watch(() => computerStore.activeInventoryId, (newId) => {
   if (Number(newId)) {
@@ -219,6 +243,7 @@ const start = async () => {
   // UINavEvents.setFilteredEvents(UI_EVENT_GROUPS.focusMoveScalar)
   getUINavServiceInstance().setFilteredEvents(UI_EVENT_GROUPS.focusMoveScalar)
   computerStore.requestComputerData()
+  updateSellData()
 
   if (Number(computerStore.activeInventoryId)) {
     lua.career_modules_inventory.getVehicleUiData(computerStore.activeInventoryId).then(data => {
@@ -236,6 +261,7 @@ const kill = () => {
   getUINavServiceInstance().clearFilteredEvents()
   computerStore.$dispose()
 }
+
 
 onMounted(start)
 onUnmounted(kill)

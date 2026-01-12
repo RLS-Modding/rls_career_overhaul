@@ -1,0 +1,45 @@
+{
+  "description":"Description of these Sites. Contains Locations, Zones, and Parking Spots.",
+  "dir":"/levels/west_coast_usa/",
+  "locations":{},
+  "name":"asotv.sites.json",
+  "parkingSpots":[
+    {
+      "color":[
+        1,
+        1,
+        1
+      ],
+      "customFields":{
+        "names":{},
+        "tags":{},
+        "types":{},
+        "values":{}
+      },
+      "isMultiSpot":false,
+      "name":"asotvParking2",
+      "oldId":7280,
+      "pos":[
+        49.040069580078,
+        673.00280761719,
+        74.720031738281
+      ],
+      "rot":[
+        0,
+        0,
+        0.88188842153761,
+        -0.47145805307239
+      ],
+      "scl":[
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount":1,
+      "spotDirection":"Left",
+      "spotOffset":0,
+      "spotRotation":0
+    }
+  ],
+  "zones":{}
+}

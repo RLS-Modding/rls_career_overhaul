@@ -6,7 +6,7 @@ local settingsFilePath = settingsRoot .. settingsFile
 
 local settings = {
     mapDevMode = false,
-    noPoliceMode = false,
+    noPoliceMode = true,
     noParkedMode = false
 }
 

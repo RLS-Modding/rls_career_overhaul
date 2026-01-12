@@ -1,4 +1,5 @@
 <template>
+  <div class="marketplace-container">
     <Accordion class="part-groups" :items="listings" >
       <template v-for="listing in listings" :key="listing.id">
         <AccordionItem :expanded="true" class="marketplace-listing" :class="{ 'disabled': listing.disabled }" >
@@ -94,6 +95,7 @@
     >
       <span class="add-listing-button-icon">+</span> Add Listing
     </BngButton>
+  </div>
 </template>
 
 <script setup>
@@ -174,6 +176,13 @@ onUnmounted(stop)
 
 <style scoped lang="scss">
 
+.marketplace-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+}
 
 .offer-card {
   display: flex;
@@ -342,6 +351,8 @@ onUnmounted(stop)
   background-color: rgba(var(--bng-cool-gray-900-rgb), 0.0);
   border-radius: var(--bng-corners-2);
   gap: 0.3em;
+  flex: 1;
+  min-height: 0;
   :deep(.bng-accitem) {
     margin: 0;
   }

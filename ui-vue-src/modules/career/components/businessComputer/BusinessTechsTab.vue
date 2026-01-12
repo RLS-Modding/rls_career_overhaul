@@ -24,7 +24,28 @@
               {{ managerStatusText }}
             </span>
           </span>
+          <button
+            class="manager-pause-btn"
+            :class="{ 'paused': managerPaused, 'toggling': isTogglingPause }"
+            :disabled="isTogglingPause"
+            @click.stop="handleToggleManagerPause"
+            @mousedown.stop
+            data-focusable
+            :title="managerPaused ? 'Resume Manager' : 'Pause Manager'"
+          >
+            <svg v-if="managerPaused" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="6" y="4" width="4" height="16"></rect>
+              <rect x="14" y="4" width="4" height="16"></rect>
+            </svg>
+          </button>
         </div>
+      </div>
+      <div v-if="managerCantAssignMessage" class="manager-warning-banner">
+        <span class="warning-icon">⚠</span>
+        <span class="warning-text">{{ managerCantAssignMessage }}</span>
       </div>
     </div>
 
@@ -33,17 +54,22 @@
         v-for="tech in techList"
         :key="`tech-${tech.id}`"
         class="tech-card"
-        :class="{ 'tech-card--working': tech.jobId, 'tech-card--idle': !tech.jobId }"
+        :class="{ 
+          'tech-card--working': tech.jobId && !tech.fired, 
+          'tech-card--idle': !tech.jobId && !tech.fired,
+          'tech-card--fired': tech.fired
+        }"
         @click.stop
         @mousedown.stop
       >
         <div class="tech-card__header">
           <div class="tech-card__title">
             <div class="tech-card__icon">
-              <div v-if="tech.jobId" class="status-dot active"></div>
+              <div v-if="tech.fired" class="status-dot fired"></div>
+              <div v-else-if="tech.jobId" class="status-dot active"></div>
               <div v-else class="status-dot idle"></div>
             </div>
-            <template v-if="editingTechId === tech.id">
+            <template v-if="editingTechId === tech.id && !tech.fired">
               <input
                 v-model="editedName"
                 class="tech-card__input"
@@ -60,6 +86,7 @@
               <h3>{{ tech.name }}</h3>
             </template>
             <button
+              v-if="!tech.fired"
               class="icon-button"
               @click.stop="toggleRename(tech)"
               @mousedown.stop
@@ -71,12 +98,15 @@
               </svg>
             </button>
           </div>
-          <div class="tech-card__success-rate" v-if="tech.successRate !== undefined">
+          <div class="tech-card__success-rate" v-if="tech.successRate !== undefined && !tech.fired">
             <span class="success-rate-value">{{ tech.successRate }}%</span>
+          </div>
+          <div v-if="tech.fired" class="tech-card__fired-badge">
+            <span>Fired</span>
           </div>
         </div>
 
-        <div class="tech-card__progress-container" v-if="tech.jobId">
+        <div class="tech-card__progress-container" v-if="tech.jobId && !tech.fired">
           <div class="tech-card__progress-info">
             <span>{{ formatPhase(tech) }}</span>
           </div>
@@ -94,7 +124,7 @@
         <div class="tech-card__divider"></div>
 
         <div class="tech-card__body">
-          <div class="tech-card__row">
+          <div class="tech-card__row" v-if="!tech.fired">
             <span class="label">Current Assignment</span>
             <span class="value" :class="{ 'highlight': tech.jobId }">
               <template v-if="tech.jobId">
@@ -106,7 +136,7 @@
             </span>
           </div>
           
-          <div class="tech-card__stats-grid">
+          <div class="tech-card__stats-grid" v-if="!tech.fired">
              <div class="stat-item" v-if="tech.jobId && tech.phase !== 'baseline' && !(tech.validationAttempts === 0 && tech.maxValidationAttempts === 0)">
               <span class="stat-label">Attempts</span>
               <span class="stat-value">{{ tech.validationAttempts }} <span class="stat-sub">/ {{ tech.maxValidationAttempts }}</span></span>
@@ -121,7 +151,7 @@
             </div>
           </div>
 
-          <div class="tech-card__row result-row" v-if="tech.latestResult">
+          <div class="tech-card__row result-row" v-if="tech.latestResult && !tech.fired">
             <span class="label">Last Result</span>
             <span class="value">
               <span :class="['pill', tech.latestResult.success ? 'success' : 'danger']">
@@ -130,7 +160,28 @@
             </span>
           </div>
 
-          <div v-if="!tech.jobId" class="assign-panel">
+          <div v-if="tech.fired" class="assign-panel">
+            <button
+              class="btn-hire"
+              @click.stop="handleHireTech(tech)"
+              @mousedown.stop
+              data-focusable
+            >
+              <span class="btn-icon">+</span>
+              Hire Tech
+            </button>
+          </div>
+          <div v-else-if="tech.jobId" class="assign-panel">
+            <button
+              class="btn-stop"
+              @click.stop="handleStopTech(tech)"
+              @mousedown.stop
+              data-focusable
+            >
+              Stop Job
+            </button>
+          </div>
+          <div v-else-if="!tech.jobId" class="assign-panel">
             <button
               class="btn-assign"
               :disabled="availableJobs.length === 0"
@@ -141,12 +192,20 @@
               <span class="btn-icon">+</span>
               {{ availableJobs.length === 0 ? "No Jobs Available" : "Assign New Job" }}
             </button>
+            <button
+              class="btn-fire"
+              @click.stop="handleFireTech(tech)"
+              @mousedown.stop
+              data-focusable
+            >
+              Fire Tech
+            </button>
           </div>
         </div>
       </div>
     </div>
 
-    <div v-else class="empty-state">
+    <div v-if="techList.length === 0" class="empty-state">
       <div class="empty-state__icon">🔧</div>
       <h3>No Technicians Hired</h3>
       <p>Purchase shop upgrades to hire technicians and automate your workflow.</p>
@@ -222,15 +281,21 @@ const availableJobs = computed(() => {
 
 const techList = computed(() => store.techs || [])
 const techCapabilityTier = computed(() => {
-  const firstWithTier = techList.value.find(t => typeof t.maxTier === "number")
+  const firstWithTier = techList.value.find(t => typeof t.maxTier === "number" && !t.fired)
   return firstWithTier ? firstWithTier.maxTier : null
 })
+
+const maxActiveJobs = computed(() => store.maxActiveJobs ?? 2)
+const activeJobsCount = computed(() => store.activeJobs?.length ?? 0)
+const idleTechsCount = computed(() => techList.value.filter(t => !t.jobId && !t.fired).length)
+const newJobsCount = computed(() => store.newJobs?.length ?? 0)
 
 const hasManager = computed(() => store.hasManager)
 const hasGeneralManager = computed(() => store.hasGeneralManager)
 const managerAssignmentInterval = computed(() => store.managerAssignmentInterval)
 const managerReadyToAssign = computed(() => store.managerReadyToAssign)
 const managerTimeRemainingFromStore = computed(() => store.managerTimeRemaining)
+const managerPaused = computed(() => store.managerPaused)
 const localManagerTimeRemaining = ref(null)
 
 const managerAssignmentFrequency = computed(() => {
@@ -261,6 +326,15 @@ const managerStatusText = computed(() => {
     return `Next in ${seconds}s`
   }
   return "Not ready"
+})
+
+const managerCantAssignMessage = computed(() => {
+  if (!hasManager.value || managerPaused.value) return null
+  if (!managerReadyToAssign.value && !hasGeneralManager.value) return null
+  if (idleTechsCount.value === 0) return null
+  if (newJobsCount.value === 0) return null
+  if (activeJobsCount.value < maxActiveJobs.value) return null
+  return "Manager can't assign: no free active job slots"
 })
 
 const editingTechId = ref(null)
@@ -465,6 +539,45 @@ const getBuildCost = (tech) => {
   const eventFunds = tech.eventFunds || 0
   return Math.max(0, totalSpent - eventFunds)
 }
+
+const handleFireTech = async (tech) => {
+  if (!tech || tech.fired) return
+  const success = await store.fireTech(tech.id)
+  if (success) {
+    closeJobModal()
+  }
+}
+
+const handleHireTech = async (tech) => {
+  if (!tech || !tech.fired) return
+  const success = await store.hireTech(tech.id)
+  if (success) {
+    closeJobModal()
+  }
+}
+
+const handleStopTech = async (tech) => {
+  if (!tech || !tech.jobId || tech.fired) return
+  const success = await store.stopTechFromJob(tech.id)
+  if (success) {
+    closeJobModal()
+  }
+}
+
+const isTogglingPause = ref(false)
+const handleToggleManagerPause = async () => {
+  if (!hasManager.value) return
+  if (isTogglingPause.value) return
+  
+  isTogglingPause.value = true
+  try {
+    await store.setManagerPaused(!managerPaused.value)
+  } catch (error) {
+    console.error('Error toggling manager pause:', error)
+  } finally {
+    isTogglingPause.value = false
+  }
+}
 </script>
 
 <style scoped lang="scss">
@@ -481,6 +594,33 @@ const getBuildCost = (tech) => {
   gap: 0.75em;
 }
 
+.manager-warning-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  padding: 0.5em 1em;
+  margin-top: 0.75em;
+  border-radius: 0.75em;
+  background: rgba(231, 76, 60, 0.15);
+  border: 1px solid rgba(231, 76, 60, 0.4);
+  color: #e74c3c;
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+.warning-icon {
+  font-size: 1.2em;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+}
+
+.warning-text {
+  display: flex;
+  align-items: center;
+}
+
 .techs-summary-banner {
   display: flex;
   align-items: center;
@@ -495,6 +635,7 @@ const getBuildCost = (tech) => {
     display: flex;
     align-items: center;
     gap: 0.75em;
+    flex: 1;
   }
 
   .banner-label {
@@ -515,6 +656,54 @@ const getBuildCost = (tech) => {
     
     .summary-separator {
       color: rgba(255, 255, 255, 0.3);
+    }
+  }
+
+  .manager-pause-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    padding: 0.4em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    color: rgba(255, 255, 255, 0.7);
+    min-width: 32px;
+    height: 32px;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.3);
+      color: #fff;
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+
+    &.paused {
+      background: rgba(241, 196, 15, 0.2);
+      border-color: rgba(241, 196, 15, 0.4);
+      color: #f1c40f;
+
+      &:hover {
+        background: rgba(241, 196, 15, 0.3);
+        border-color: rgba(241, 196, 15, 0.5);
+      }
+    }
+
+    &:disabled,
+    &.toggling {
+      opacity: 0.5;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    svg {
+      width: 16px;
+      height: 16px;
     }
     
     .ready {
@@ -575,6 +764,11 @@ const getBuildCost = (tech) => {
     border-left: 4px solid rgba(255, 255, 255, 0.2);
     opacity: 0.9;
   }
+  
+  &--fired {
+    border-left: 4px solid rgba(255, 255, 255, 0.1);
+    opacity: 0.6;
+  }
 }
 
 .tech-card__header {
@@ -604,6 +798,20 @@ const getBuildCost = (tech) => {
     color: #fff;
     white-space: nowrap;
   }
+}
+
+.tech-card__fired-badge {
+  display: flex;
+  align-items: center;
+  padding: 0.25em 0.75em;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  font-size: 0.75em;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .tech-card__title {
@@ -636,6 +844,10 @@ const getBuildCost = (tech) => {
   
   &.idle {
     background-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  &.fired {
+    background-color: rgba(255, 255, 255, 0.1);
   }
 }
 
@@ -800,6 +1012,12 @@ const getBuildCost = (tech) => {
   }
 }
 
+.assign-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
 .btn-assign {
   width: 100%;
   padding: 0.75em;
@@ -830,6 +1048,87 @@ const getBuildCost = (tech) => {
     cursor: not-allowed;
     border-color: rgba(255, 255, 255, 0.1);
     color: rgba(255, 255, 255, 0.3);
+  }
+  
+  .btn-icon {
+    font-size: 1.2em;
+    line-height: 1;
+  }
+}
+
+.btn-stop {
+  width: 100%;
+  padding: 0.75em;
+  background: rgba(241, 196, 15, 0.1);
+  border: 1px solid rgba(241, 196, 15, 0.3);
+  border-radius: 8px;
+  color: #f1c40f;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  
+  &:hover {
+    background: rgba(241, 196, 15, 0.2);
+    transform: translateY(-1px);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.btn-fire {
+  width: 100%;
+  padding: 0.75em;
+  background: rgba(231, 76, 60, 0.1);
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  border-radius: 8px;
+  color: #e74c3c;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  
+  &:hover {
+    background: rgba(231, 76, 60, 0.2);
+    transform: translateY(-1px);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.btn-hire {
+  width: 100%;
+  padding: 0.75em;
+  background: rgba(46, 204, 113, 0.1);
+  border: 1px dashed rgba(46, 204, 113, 0.4);
+  border-radius: 8px;
+  color: #2ecc71;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  
+  &:hover {
+    background: rgba(46, 204, 113, 0.2);
+    border-style: solid;
+    transform: translateY(-1px);
+  }
+  
+  &:active {
+    transform: translateY(0);
   }
   
   .btn-icon {

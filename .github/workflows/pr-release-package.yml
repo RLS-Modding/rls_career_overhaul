@@ -20,7 +20,16 @@ jobs:
           lfs: true
           fetch-depth: 0
       
+      - name: Check for UI source changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            ui:
+              - 'ui-vue-src/**'
+
       - name: Pull LFS
+        if: steps.filter.outputs.ui == 'true'
         run: |
           git lfs install
           git fetch --all
@@ -29,9 +38,11 @@ jobs:
           git lfs checkout
       
       - name: Pull LFS
+        if: steps.filter.outputs.ui == 'true'
         run: git lfs pull
       
       - name: Setup Node.js
+        if: steps.filter.outputs.ui == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -39,6 +50,7 @@ jobs:
           cache-dependency-path: baseUI/package-lock.json
       
       - name: Merge and build
+        if: steps.filter.outputs.ui == 'true'
         run: |
           cp -r ui-vue-src/* baseUI/src/
           cd baseUI
@@ -46,6 +58,7 @@ jobs:
           npm run build
       
       - name: Move to final location
+        if: steps.filter.outputs.ui == 'true'
         run: |
           mkdir -p ui/vue-dist
           cp -r baseUI/dist/* ui/vue-dist/
@@ -53,7 +66,10 @@ jobs:
       - name: Check for UI changes
         id: check-changes
         run: |
-          if git diff --quiet HEAD -- ui/vue-dist/ 2>/dev/null; then
+          if [ "${{ steps.filter.outputs.ui }}" == "false" ]; then
+            echo "has-changes=false" >> $GITHUB_OUTPUT
+            echo "No UI source changes, skipping commit check"
+          elif git diff --quiet HEAD -- ui/vue-dist/ 2>/dev/null; then
             echo "has-changes=false" >> $GITHUB_OUTPUT
             echo "No UI changes detected"
           else
@@ -108,6 +124,7 @@ jobs:
         with:
           commit_message: "chore: update built UI files"
           file_pattern: ui/vue-dist/*
+          add_options: '--force'
           branch: ${{ github.head_ref }}
   
   zip:

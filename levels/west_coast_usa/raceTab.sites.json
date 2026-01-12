@@ -1,0 +1,45 @@
+{
+  "description":"Description of these Sites. Contains Locations, Zones, and Parking Spots.",
+  "dir":"/levels/west_coast_usa/",
+  "locations":{},
+  "name":"raceTab.sites.json",
+  "parkingSpots":[
+    {
+      "color":[
+        1,
+        1,
+        1
+      ],
+      "customFields":{
+        "names":{},
+        "tags":{},
+        "types":{},
+        "values":{}
+      },
+      "isMultiSpot":false,
+      "name":"raceTabParking1",
+      "oldId":2367,
+      "pos":[
+        41.82925797,
+        658.5778198,
+        74.72003174
+      ],
+      "rot":[
+        0,
+        0,
+        -0.7080128193,
+        0.706199646
+      ],
+      "scl":[
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount":1,
+      "spotDirection":"Left",
+      "spotOffset":0,
+      "spotRotation":0
+    }
+  ],
+  "zones":{}
+}

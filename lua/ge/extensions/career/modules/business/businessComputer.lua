@@ -2405,8 +2405,80 @@ local function setActiveVehicle(businessId, vehicleId)
     }
   end
 
+  -- Handle personal vehicles
+  if isPersonalVehicleId(vehicleId) then
+    local normalizedVehicleId = normalizeVehicleIdValue(vehicleId)
+    local _, businessType = resolveBusinessModule(businessId)
+    if businessType then
+      local businessObj = career_modules_business_businessManager and career_modules_business_businessManager.getBusinessObject(businessType)
+      if businessObj and businessObj.selectPersonalVehicle then
+        -- Get inventory ID from personal vehicle ID
+        local spawnedId = getSpawnedIdFromPersonalVehicleId(vehicleId)
+        if spawnedId and businessObj.getInventoryVehiclesInGarageZone then
+          local inventoryVehiclesInZone = businessObj.getInventoryVehiclesInGarageZone(businessId) or {}
+          for _, invVeh in ipairs(inventoryVehiclesInZone) do
+            if invVeh.spawnedId == spawnedId then
+              local result = businessObj.selectPersonalVehicle(businessId, invVeh.inventoryId)
+              if result and result.success and guihooks then
+                -- selectPersonalVehicle already triggers onPersonalVehicleSelected event with formatted vehicle
+                -- Also trigger onVehiclePulledOut to update vehicle list, but with isPersonalVehicle flag
+                -- so the handler knows not to overwrite activeVehicleId
+                local vehiclesData = M.getVehiclesOnly(businessId)
+                -- Find the matching personal vehicle in pulledOutVehicles and use its exact vehicleId
+                local matchingVehicleId = nil
+                for _, veh in ipairs(vehiclesData.pulledOutVehicles) do
+                  if veh.isPersonal and normalizeVehicleIdValue(veh.vehicleId) == normalizedVehicleId then
+                    matchingVehicleId = veh.vehicleId
+                    break
+                  end
+                end
+                -- Only trigger if we found a match and pass a flag to indicate this is for a personal vehicle
+                if matchingVehicleId then
+                  guihooks.trigger('businessComputer:onVehiclePulledOut', {
+                    businessType = businessType,
+                    businessId = businessId,
+                    vehicleId = matchingVehicleId,
+                    vehicles = vehiclesData.vehicles,
+                    pulledOutVehicles = vehiclesData.pulledOutVehicles,
+                    maxPulledOutVehicles = vehiclesData.maxPulledOutVehicles,
+                    isPersonalVehicle = true
+                  })
+                end
+              end
+              return result and result.success or false
+            end
+          end
+        end
+      end
+    end
+    return false
+  end
+
   if career_modules_business_businessInventory and career_modules_business_businessInventory.setActiveVehicle then
-    return career_modules_business_businessInventory.setActiveVehicle(businessId, vehicleId)
+    local result = career_modules_business_businessInventory.setActiveVehicle(businessId, vehicleId)
+    -- Trigger onVehiclePulledOut to update UI with current vehicle selection
+    if result and guihooks then
+      local _, resolvedBusinessType = resolveBusinessModule(businessId)
+      local vehiclesData = M.getVehiclesOnly(businessId)
+      local normalizedVehicleId = normalizeVehicleIdValue(vehicleId)
+      -- Find the exact vehicleId from pulledOutVehicles to ensure it matches
+      local matchingVehicleId = normalizedVehicleId
+      for _, veh in ipairs(vehiclesData.pulledOutVehicles) do
+        if normalizeVehicleIdValue(veh.vehicleId) == normalizedVehicleId then
+          matchingVehicleId = veh.vehicleId
+          break
+        end
+      end
+      guihooks.trigger('businessComputer:onVehiclePulledOut', {
+        businessType = resolvedBusinessType,
+        businessId = businessId,
+        vehicleId = matchingVehicleId,
+        vehicles = vehiclesData.vehicles,
+        pulledOutVehicles = vehiclesData.pulledOutVehicles,
+        maxPulledOutVehicles = vehiclesData.maxPulledOutVehicles
+      })
+    end
+    return result
   end
 
   return false
@@ -2565,10 +2637,16 @@ local function getVehiclesOnly(businessId)
       table.insert(formattedPulledOut, formatted)
     end
   end
-  local module = resolveBusinessModule(businessId)
+  local module, businessType = resolveBusinessModule(businessId)
   local maxPulledOut = 1
   if module and module.getMaxPulledOutVehicles then
     maxPulledOut = module.getMaxPulledOutVehicles(businessId) or 1
+  end
+  if module and module.getFormattedPersonalVehiclesInZone then
+    local personalVehicles = module.getFormattedPersonalVehiclesInZone(businessId) or {}
+    for _, personalVehicle in ipairs(personalVehicles) do
+      table.insert(formattedPulledOut, personalVehicle)
+    end
   end
   return {
     businessId = businessId,
@@ -2765,6 +2843,17 @@ M.applyKit = function(businessId, vehicleId, kitId)
   }
 end
 
+local function onCareerModulesActivated()
+  if career_modules_business_businessManager then
+    local purchased = career_modules_business_businessManager.getAllPurchasedBusinesses()
+    for businessType, businesses in pairs(purchased) do
+      for businessId, _ in pairs(businesses) do
+        setBusinessContext(businessType, businessId)
+      end
+    end
+  end
+end
+
 local function onExtensionLoaded()
   businessContexts = {}
   return true
@@ -2803,6 +2892,8 @@ local function isPersonalUseUnlocked(businessId)
 end
 
 M.onExtensionLoaded = onExtensionLoaded
+M.onCareerModulesActivated = onCareerModulesActivated
+M.setBusinessContext = setBusinessContext
 M.getTechData = getTechData
 M.getManagerData = getManagerData
 M.enterShoppingVehicle = enterShoppingVehicle

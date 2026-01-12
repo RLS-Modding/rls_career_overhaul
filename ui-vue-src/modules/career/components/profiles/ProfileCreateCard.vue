@@ -1,12 +1,12 @@
 <template>
   <BngCard
-    v-bng-scoped-nav="{ activated: isActive }"
+    v-bng-scoped-nav="{ activated: isActive, autoFocusDelay: 0 }"
     v-bng-blur
     v-bng-sound-class="'bng_hover_generic'"
     :hideFooter="true"
     class="profile-create-card"
     @activate="() => setActive(true)"
-    @deactivate="() => setActive(false)">
+    @deactivate="onDeactivate">
     <div v-bng-on-ui-nav:menu="onMenu" :class="{ 'create-active': isActive }" class="create-content-container">
       <div v-if="isActive" class="active-content">
         <div class="content-sections">
@@ -104,7 +104,7 @@
           <button ref="cancelButton" class="modern-btn modern-cancel" @click="closeCard">Cancel</button>
         </div>
       </div>
-      <div v-if="!isActive" class="create-content-cover" @click="setActive(true)">
+      <div v-if="!isActive" bng-nav-item class="create-content-cover" @click.stop="setActive(true)">
         <div class="cover-plus-container">
           <div class="cover-plus-button">+</div>
         </div>
@@ -125,9 +125,9 @@ import ChallengeDropdown from "./ChallengeDropdown.vue"
 const emit = defineEmits(["card:activate", "load"])
 
 const profileName = defineModel("profileName", { required: true })
+const isActive = defineModel("active", { type: Boolean, default: false })
 const hardcoreMode = ref(false)
 const cheatsMode = ref(false)
-const isActive = ref(false)
 
 const validateName = inject("validateName")
 const nameError = ref(null)
@@ -276,16 +276,28 @@ watch(challengeId, async (newVal) => {
 
 const load = () => emit("load", profileName.value, false, hardcoreMode.value, challengeId.value, cheatsMode.value, selectedMap.value)
 
-function setActive(value) {
-  if (value === false) {
-    const creator = document.querySelector('.ccm-overlay')
-    const detailer = document.querySelector('.cdm-overlay')
-    if (creator || detailer) {
-      return
-    }
+function isModalOpen() {
+  if (challengeDropdownRef.value && (challengeDropdownRef.value.createOpen || challengeDropdownRef.value.detailOpen)) {
+    return true
   }
-  isActive.value = value
-  emit("card:activate", value)
+  return false
+}
+
+function onDeactivate() {
+  if (isModalOpen()) {
+    return
+  }
+  setActive(false)
+}
+
+function setActive(value) {
+  if (value === false && isModalOpen()) {
+    return
+  }
+  if (isActive.value !== value) {
+    isActive.value = value
+    emit("card:activate", value)
+  }
 }
 
 function onEnter(event) {
@@ -295,12 +307,17 @@ function onEnter(event) {
 }
 
 function onMenu() {
+  if (isModalOpen()) {
+    return
+  }
   setActive(false)
 }
 
 function closeCard() {
-  isActive.value = false
-  emit("card:activate", false)
+  if (isActive.value) {
+    isActive.value = false
+    emit("card:activate", false)
+  }
 }
 </script>
 

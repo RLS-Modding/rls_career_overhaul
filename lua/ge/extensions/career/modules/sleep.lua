@@ -8,6 +8,7 @@ local originComputerId
 local isSleeping = false
 local sleepTime = 0
 local careerActive = false
+local play
 
 local function saveTimeData(currentSavePath)
     if not currentSavePath then
@@ -111,23 +112,27 @@ local function onComputerAddFunctions(menuData, computerFunctions)
 end
 
 local function onScreenFadeState(state)
-    if state == 2 and isSleeping then
+    if state == 1 and isSleeping then
+        play = scenetree.tod.play
         if scenetree.tod then
             scenetree.tod.time = sleepTime
+            scenetree.tod.play = true
+            ui_fadeScreen.stop(0.5)
         end
         
         local closestGarage = career_modules_inventory.getClosestGarage()
         local pos, _ = freeroam_facilities.getGaragePosRot(closestGarage)
         career_modules_playerDriving.showPosition(pos)
-        
-        isSleeping = false
+    elseif state == 3 and isSleeping then
+        scenetree.tod.play = play or false
     end
 end
+
 
 local function sleep(time)
     isSleeping = true
     sleepTime = time
-    ui_fadeScreen.cycle(0.5, 0.5, 0.5)
+    ui_fadeScreen.start(0.5)
 end
 
 M.openMenuFromComputer = openMenuFromComputer

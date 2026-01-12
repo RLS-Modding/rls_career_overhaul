@@ -1,4 +1,4 @@
-# RLS Career Overhaul v2.5.3 (0.37.6)
+# RLS Career Overhaul v2.6.2 (0.38.3)
 
 Welcome to the **RLS Career Overhaul** mod for BeamNG.drive! This mod enhances various aspects of the game, including freeroam events, police interactions, the economy, deliveries, insurance, garage space, and dealerships. With Challenge Modes and Freeroam+, you can play career however you want - whether you prefer structured challenges, economic freedom, or the standard career experience. Dive into a more immersive and challenging career mode enriched with new features and improvements.
 
@@ -6,7 +6,7 @@ Welcome to the **RLS Career Overhaul** mod for BeamNG.drive! This mod enhances v
 
 ## Table of Contents
 
-- [RLS Career Overhaul v2.5.3 (0.37.6)](#rls-career-overhaul-v253-0376)
+- [RLS Career Overhaul v2.6.2 (0.38.3)](#rls-career-overhaul-v262-0383)
   - [Table of Contents](#table-of-contents)
   - [Installation](#installation)
   - [Settings Manager](#settings-manager)
@@ -58,6 +58,8 @@ Welcome to the **RLS Career Overhaul** mod for BeamNG.drive! This mod enhances v
     - [Phone UI](#phone-ui)
     - [Taxi Work](#taxi-work)
     - [Marketplace](#marketplace)
+    - [Businesses](#businesses)
+      - [Tuning Shop](#tuning-shop)
     - [Loans System](#loans-system)
       - [Features](#features-2)
   - [Game Modes](#game-modes)
@@ -797,8 +799,25 @@ List and sell your vehicles in-game:
   - Deliveries
   - Movie rentals
   - Taxi passengers dropped off
-- **Notifications** can be enabled to alert you of new offers.
 - Manage listings via a **Computer/Phone App**.
+- **Notifications** can be enabled to alert you of new offers.
+
+---
+
+### Businesses
+
+The **RLS Career Overhaul** introduces a business management system where you can purchase, manage, and grow various enterprises. Each business has its own progression, financial tracking, and specialized activities.
+
+#### Tuning Shop
+
+Become a professional vehicle tuner and manage your own performance workshop:
+
+- **Custom Computer UI**: A dedicated management interface to oversee all aspects of your business.
+- **Staff Management**: Hire and assign technicians (Techs) to handle tuning jobs.
+- **Tuning Kits**: Create, save, and apply custom tuning kits to vehicles.
+- **Skill Tree**: Unlock business-specific upgrades and efficiencies through a dedicated progression system.
+- **Finances & XP**: Independent business accounts and XP tracking for specialized growth.
+- **Personal Use**: Unlock the ability to use shop facilities for your own personal vehicle collection.
 
 ---
 

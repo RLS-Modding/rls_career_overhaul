@@ -1,13 +1,12 @@
 <template>
-  <div v-show="open" class="ccm-overlay" @click.stop @mousedown.stop>
+  <div v-show="open" ref="overlayRef" class="ccm-overlay" tabindex="-1" @click.stop @mousedown.stop @keydown.stop>
     <!-- MODAL IS RENDERING -->
-    <div class="ccm-content" @click.stop @mousedown.stop>
+    <div class="ccm-content" @click.stop @mousedown.stop @keydown.stop>
       <div class="ccm-header">
         <div class="ccm-header-left">
           <div class="ccm-icon" />
           <div class="ccm-title">{{ editChallengeData ? 'Edit Challenge' : 'Create Challenge' }}</div>
         </div>
-        <button class="ccm-close" @click.stop="onRequestClose" @mousedown.stop>×</button>
       </div>
 
       <div class="ccm-body">
@@ -457,6 +456,7 @@ const multiselectModalOpen = ref(false)
 const currentMultiselectVariableId = ref('')
 let copyStatusTimer
 
+const overlayRef = ref(null)
 const difficultyDropdownRef = ref(null)
 const difficultyDropdownOpen = ref(false)
 const difficultyDropdownStyle = ref('')
@@ -466,6 +466,14 @@ const mapDropdownRef = ref(null)
 const mapDropdownOpen = ref(false)
 const mapDropdownStyle = ref('')
 const mapOptions = ref([])
+
+const fullEditorData = ref(null)
+const editorDataLoading = ref(false)
+
+const activeEditorData = computed(() => {
+  if (fullEditorData.value) return fullEditorData.value
+  return props.editorData || {}
+})
 
 function selectDifficulty(difficulty) {
   formDifficulty.value = difficulty
@@ -539,6 +547,16 @@ function onMapDocClick(e) {
   mapDropdownOpen.value = false
 }
 
+function onKeyDown(e) {
+  if (!props.open) return
+  if (e.key === 'Escape') {
+    e.preventDefault()
+    e.stopPropagation()
+    return
+  }
+  e.stopPropagation()
+}
+
 const events = useEvents()
 const isApplyingSeed = ref(false)
 const pendingRequests = ref(new Set())
@@ -588,7 +606,7 @@ const seedPayload = computed(() => {
 
 const winConditionOptions = computed(() => {
   try {
-    const raw = props.editorData && props.editorData.winConditions
+    const raw = activeEditorData.value && activeEditorData.value.winConditions
     const list = Array.isArray(raw) ? raw : []
     return list.map(w => ({
       id: w.id,
@@ -698,7 +716,7 @@ const activeVariables = computed(() => {
 })
 
 const availableGarages = computed(() => {
-  const raw = props.editorData && props.editorData.availableGarages
+  const raw = activeEditorData.value && activeEditorData.value.availableGarages
   return Array.isArray(raw) ? raw : []
 })
 
@@ -749,9 +767,9 @@ watch(() => formWinCondition.value, () => {
   initializeVariables()
   
   if (loansRequired.value && formLoanAmount.value === 0) {
-    formLoanAmount.value = props.editorData?.defaults?.loanAmount ?? 50000
-    formLoanInterest.value = props.editorData?.defaults?.loanInterest ?? 0.10
-    formLoanPayments.value = props.editorData?.defaults?.loanPayments ?? 12
+    formLoanAmount.value = activeEditorData.value?.defaults?.loanAmount ?? 50000
+    formLoanInterest.value = activeEditorData.value?.defaults?.loanInterest ?? 0.10
+    formLoanPayments.value = activeEditorData.value?.defaults?.loanPayments ?? 12
   }
   
   seedError.value = ''
@@ -760,7 +778,7 @@ watch(() => formWinCondition.value, () => {
 
 const filteredActivityTypes = computed(() => {
   const q = econQuery.value.trim().toLowerCase()
-  const raw = props.editorData && props.editorData.activityTypes
+  const raw = activeEditorData.value && activeEditorData.value.activityTypes
   const types = Array.isArray(raw) ? raw : []
   if (!q) return types
   return types.filter(t => ((t.name || t.id || '').toLowerCase().includes(q)))
@@ -799,6 +817,24 @@ watch(() => props.open, async (isOpen, oldIsOpen) => {
     return
   }
 
+  if (lua.setCEFTyping) {
+    lua.setCEFTyping(true)
+  }
+
+  if (!fullEditorData.value && !editorDataLoading.value) {
+    editorDataLoading.value = true
+    try {
+      const ed = await lua.career_challengeModes.getChallengeEditorData()
+      if (ed && typeof ed === 'object') {
+        fullEditorData.value = ed
+      }
+    } catch (err) {
+      console.error('[ChallengeCreateModal] Failed to load editor data:', err)
+    } finally {
+      editorDataLoading.value = false
+    }
+  }
+
   try {
     if (props.editChallengeId) {
       try {
@@ -831,10 +867,10 @@ watch(() => props.open, async (isOpen, oldIsOpen) => {
     initialSnapshot.value = JSON.stringify(form.value)
 
     nextTick(() => {
-      if (lua.setCEFTyping) {
-        lua.setCEFTyping(true)
+      if (overlayRef.value) {
+        overlayRef.value.focus()
       }
-      const firstInput = document.querySelector('.ccm-input')
+      const firstInput = document.querySelector('.ccm-content .ccm-input')
       if (firstInput) {
         firstInput.focus()
       }
@@ -939,6 +975,7 @@ onMounted(async () => {
   events.on('challengeEditDataResponse', handleChallengeEditDataResponse)
   document.addEventListener('mousedown', onDifficultyDocClick)
   document.addEventListener('mousedown', onMapDocClick)
+  document.addEventListener('keydown', onKeyDown, true)
   window.addEventListener('resize', positionDifficultyDropdown)
   window.addEventListener('scroll', positionDifficultyDropdown, true)
   window.addEventListener('resize', positionMapDropdown)
@@ -972,6 +1009,7 @@ onBeforeUnmount(() => {
   events.off('challengeEditDataResponse', handleChallengeEditDataResponse)
   document.removeEventListener('mousedown', onDifficultyDocClick)
   document.removeEventListener('mousedown', onMapDocClick)
+  document.removeEventListener('keydown', onKeyDown, true)
   window.removeEventListener('resize', positionDifficultyDropdown)
   window.removeEventListener('scroll', positionDifficultyDropdown, true)
   window.removeEventListener('resize', positionMapDropdown)
@@ -1037,19 +1075,19 @@ function resetFormDefaults() {
   formId.value = ''
   formName.value = ''
   formDescription.value = ''
-  formDifficulty.value = props.editorData?.defaults?.difficulty ?? 'Medium'
-  formStartingCapital.value = props.editorData?.defaults?.startingCapital ?? 10000
-  const rawWin = props.editorData?.winConditions
+  formDifficulty.value = activeEditorData.value?.defaults?.difficulty ?? 'Medium'
+  formStartingCapital.value = activeEditorData.value?.defaults?.startingCapital ?? 10000
+  const rawWin = activeEditorData.value?.winConditions
   const list = Array.isArray(rawWin) ? rawWin : []
   formWinCondition.value = list[0]?.id || 'payOffLoan'
-  formLoanAmount.value = props.editorData?.defaults?.loanAmount ?? 0
-  formLoanInterest.value = props.editorData?.defaults?.loanInterest ?? 0.10
-  formLoanPayments.value = props.editorData?.defaults?.loanPayments ?? 12
+  formLoanAmount.value = activeEditorData.value?.defaults?.loanAmount ?? 0
+  formLoanInterest.value = activeEditorData.value?.defaults?.loanInterest ?? 0.10
+  formLoanPayments.value = activeEditorData.value?.defaults?.loanPayments ?? 12
   formStartingGarages.value = []
   formMap.value = null
   
   Object.keys(formEconomyAdjuster).forEach(k => delete formEconomyAdjuster[k])
-  const rawTypes = props.editorData?.activityTypes
+  const rawTypes = activeEditorData.value?.activityTypes
   const types = Array.isArray(rawTypes) ? rawTypes : []
   for (const t of types) {
     if (t && t.id) {
@@ -1460,22 +1498,6 @@ function closeMultiselectModal() {
   font-weight: 600;
   font-size: 1.25em;
   line-height: 1.3;
-}
-
-.ccm-close {
-  background: transparent;
-  border: 0;
-  color: #94a3b8;
-  font-size: 1.5em;
-  cursor: pointer;
-  padding: 0.25em;
-  line-height: 1;
-  transition: color 0.2s ease;
-  flex-shrink: 0;
-}
-
-.ccm-close:hover {
-  color: #e2e8f0;
 }
 
 .ccm-basic-section {

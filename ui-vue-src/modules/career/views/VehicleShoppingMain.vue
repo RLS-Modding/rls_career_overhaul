@@ -15,15 +15,14 @@
         <Tabs class="bng-tabs" :class="{ 'single-tab': tabs.length === 1 }" :selectedIndex="selectedTab" @change="onTabsChange">
           <TabList />
 
-          <div v-if="props.buyingAvailable === 'true'" :tab-heading="buyVehicleTitle" class="buying-tab-content">
-            <VehicleList v-if="loaded" />
-            <BngCard v-else>
-              <BngCardHeading style="color: #fff;">Please wait...</BngCardHeading>
-            </BngCard>
-          </div>
-
-          <div v-if="props.marketplaceAvailable === 'true'" :tab-heading="sellVehicleTitle" class="marketplace-tab-content">
-            <VehicleMarketplace />
+          <div v-for="tab in tabs" :key="tab" :tab-heading="tab" :class="tab === buyVehicleTitle ? 'buying-tab-content' : 'marketplace-tab-content'">
+            <template v-if="tab === buyVehicleTitle">
+              <VehicleList v-if="loaded" />
+              <BngCard v-else>
+                <BngCardHeading style="color: #fff;">Please wait...</BngCardHeading>
+              </BngCard>
+            </template>
+            <VehicleMarketplace v-else />
           </div>
         </Tabs>
       </div>
@@ -251,6 +250,11 @@ onUnmounted(kill)
 
 .marketplace-tab-content {
   padding: 0.5em;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Hide tab list when there's only one tab */

@@ -40,7 +40,7 @@ function M.deleteVehicleDelayed(vehId)
     core_jobsystem.create(function(job)
         job.sleep(0.5)
         local object = be:getObjectByID(vehId)
-        object:delete()
+        if object then object:delete() end
     end)
 end
 
@@ -55,6 +55,7 @@ function M.saveDamageState(inventoryId, saveFile, removeVehicle)
         if numberOfBrokenParts > 0 then
             local vehId = career_modules_inventory.getVehicleIdFromInventoryId(inventoryId)
             local object = be:getObjectByID(vehId)
+            if not object then return end
             local dir, _, _ = path.split(saveFile)
             if dir and not FS:directoryExists(dir) then
                 FS:directoryCreate(dir)
@@ -68,7 +69,7 @@ function M.saveDamageState(inventoryId, saveFile, removeVehicle)
             if removeVehicle then
                 local vehId = career_modules_inventory.getVehicleIdFromInventoryId(inventoryId)
                 local object = be:getObjectByID(vehId)
-                object:delete()
+                if object then object:delete() end
             end
             FS:removeFile(saveFile)
 

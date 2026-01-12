@@ -1553,6 +1553,7 @@ local function setupFacilities(loadData)
 end
 
 local function setup(loadData)
+  facilitiesSetup = false
   getMaterialsTemplates()
   getDeliveryVehicleTemplates()
   setupFacilities(loadData)

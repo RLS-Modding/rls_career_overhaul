@@ -673,13 +673,35 @@ local function acceptContract(contractIndex, getZonesByTypeName)
   contract.group = nil
   contract.loadingZoneTag = nil
   
+  local loanerCut = 0
+  if isCareerMode() then
+    local vehId = be:getPlayerVehicleID(0)
+    if vehId then
+      local inventoryId = career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId(vehId)
+      if inventoryId then
+        local vehicle = career_modules_inventory.getVehicle(inventoryId)
+        if vehicle and vehicle.owningOrganization then
+          local org = freeroam_organizations and freeroam_organizations.getOrganization(vehicle.owningOrganization)
+          if org and org.reputation and org.reputation.level ~= nil and org.reputationLevels then
+            local repLevel = org.reputation.level
+            local levelIndex = repLevel + 2
+            if org.reputationLevels[levelIndex] and org.reputationLevels[levelIndex].loanerCut then
+              loanerCut = org.reputationLevels[levelIndex].loanerCut.value or 0
+            end
+          end
+        end
+      end
+    end
+  end
+  
   ContractSystem.activeContract = contract
   ContractSystem.contractProgress = {
     deliveredTons = 0,
     totalPaidSoFar = 0,
     startTime = os.clock(),
     deliveryCount = 0,
-    deliveredItems = 0
+    deliveredItems = 0,
+    loanerCut = loanerCut
   }
   
   Engine.Audio.playOnce('AudioGui', 'event:>UI>Missions>Mission_Start_01')
@@ -771,25 +793,9 @@ local function completeContract(onCleanup, onClearProps)
   local facilityPayMultiplier = getFacilityPayMultiplier(zoneTag)
   local totalPay = math.floor((contract.totalPayout or 0) * facilityPayMultiplier)
 
-  if isCareerMode() then
-    local vehId = be:getPlayerVehicleID(0)
-    if vehId then
-      local inventoryId = career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId(vehId)
-      if inventoryId then
-        local vehicle = career_modules_inventory.getVehicle(inventoryId)
-        if vehicle and vehicle.owningOrganization then
-          local org = freeroam_organizations and freeroam_organizations.getOrganization(vehicle.owningOrganization)
-          if org and org.reputation and org.reputation.level ~= nil and org.reputationLevels then
-            local repLevel = org.reputation.level
-            local levelIndex = repLevel + 2
-            if org.reputationLevels[levelIndex] and org.reputationLevels[levelIndex].loanerCut then
-              local loanerCut = org.reputationLevels[levelIndex].loanerCut.value or 0
-              totalPay = math.floor(totalPay * (1 - loanerCut))
-            end
-          end
-        end
-      end
-    end
+  local loanerCut = ContractSystem.contractProgress.loanerCut or 0
+  if loanerCut > 0 then
+    totalPay = math.floor(totalPay * (1 - loanerCut))
   end
 
   local careerPaid = false

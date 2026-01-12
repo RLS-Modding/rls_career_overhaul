@@ -788,6 +788,10 @@ position: [popupPosition.center, popupPosition.center], // can be single w/o arr
 <style scoped lang="scss">
 @import "@/styles/modules/animations";
 
+.cargo-drop-off-wrapper {
+  color: white;
+}
+
 @keyframes pulsingProgressBar {
 50% {
   opacity: 0.4;
@@ -829,17 +833,15 @@ zoom: 0.85;
 max-height: 80vh;
 padding: 1rem;
 
-height: 100%;
-overflow-y:auto;
-
-.scroll-wrapper {
-}
+  height: 100%;
+  overflow-y:auto;
 }
 
 .reward-wrapper {
-max-width: 50em;
-min-width: 42em;
-.rewards-breakdown-container {
+  max-width: 50em;
+  min-width: 42em;
+  color: white;
+  .rewards-breakdown-container {
   display: flex;
   flex-flow: row wrap;
   align-items: stretch;
@@ -910,11 +912,12 @@ padding-bottom: 1rem;
 }
 
 .cargo-wrapper {
-display: flex;
-flex-flow:column;
-background-color:rgba(var(--bng-ter-blue-gray-700-rgb),1);
-border-radius: var(--bng-corners-2);
-.header {
+  display: flex;
+  flex-flow:column;
+  background-color:rgba(var(--bng-ter-blue-gray-700-rgb),1);
+  border-radius: var(--bng-corners-2);
+  color: white;
+  .header {
   padding: 0.5rem;
   display: flex;
   > * {

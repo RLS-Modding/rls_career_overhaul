@@ -340,6 +340,7 @@ local function applyChallengeConfig(cfg)
 end
 
 local function createOrLoadCareerAndStart(name, specificAutosave, tutorial, hardcore, challengeId, cheats, startingMap)
+  core_gamestate.requestEnterLoadingScreen("careerLoading")
   if careerActive then
     deactivateCareer()
   end
@@ -811,6 +812,16 @@ local function onWorldReadyState(state)
   end
 end
 
+local function onVehicleGroupSpawned()
+  if core_gamestate.getLoadingStatus("careerLoading") then
+    core_jobsystem.create(function(job)
+      job.sleep(6.7)
+      commands.setGameCamera(true)
+      core_gamestate.requestExitLoadingScreen("careerLoading")
+    end)
+  end
+end
+
 local function onSaveFinished()
   if switchLevel then
     spawn.preventPlayerSpawning = true
@@ -823,7 +834,7 @@ end
 M.onSaveFinished = onSaveFinished
 M.switchCareerLevel = switchCareerLevel
 M.onWorldReadyState = onWorldReadyState
-
+M.onVehicleGroupSpawned = onVehicleGroupSpawned
 M.getAdditionalMenuButtons = getAdditionalMenuButtons
 
 M.applyChallengeConfig = applyChallengeConfig

@@ -1,16 +1,18 @@
 <template>
   <BngCard
-    v-bng-scoped-nav="{ activated: isActivated, canActivate, canDeactivate }"
+    v-bng-scoped-nav="{ canDeactivate, canBubbleEvent }"
     v-bng-sound-class="'bng_hover_generic'"
     :backgroundImage="preview"
     :footerStyles="cardFooterStyles"
-    :hideFooter="!expanded"
+    :hideFooter="!expanded && !isManage"
     :class="{ 'profile-card-active': active, 'manage-active': isManage, 'profile-outdated': incompatibleVersion }"
-    animateFooterDelay="0.1s"
+    :animateFooterDelay="expanded ? '0s' : '0.1s'"
     animateFooterType="slide"
     class="profile-card"
-    @activate="onActivated"
-    @deactivate="onDeactivated"
+    @activate="onScopeChanged(true)"
+    @deactivate="onScopeChanged(false)"
+    @focusin.self="onFocused(true)"
+    @focusout.self="onFocused(false)"
     @mouseover="onHover(true)"
     @mouseleave="onHover(false)">
     <div class="profile-card-cover">
@@ -122,7 +124,7 @@ const MENU_ITEMS = {
 </script>
 
 <script setup>
-import { computed, inject, nextTick, ref, onMounted, watch } from "vue"
+import { computed, inject, nextTick, ref, onMounted, watch, reactive } from "vue"
 import { BngButton, BngCard, BngInput } from "@/common/components/base"
 import { vBngScopedNav, vBngSoundClass, vBngOnUiNav } from "@/common/directives"
 import { timeSpan } from "@/utils/datetime"
@@ -162,6 +164,7 @@ const props = defineProps({
   branches: Array,
   activeChallenge: Object,
   cheatsMode: Boolean,
+  forceCloseManage: Boolean,
 })
 
 const emit = defineEmits(["card:activate", "manage:change", "load"])
@@ -170,6 +173,22 @@ const isActivated = ref(false)
 const isManage = ref(false)
 const currentMenu = ref(null)
 const expanded = ref(false)
+const cardStates = reactive({
+  focused: false,
+  hovered: false,
+})
+
+// Watch for parent telling us to close manage mode (e.g., when create card opens)
+watch(() => props.forceCloseManage, (shouldClose) => {
+  if (shouldClose && isManage.value) {
+    isManage.value = false
+    currentMenu.value = null
+    isActivated.value = false
+    expanded.value = false
+    emit("card:activate", false)
+    emit("manage:change", false)
+  }
+})
 
 const validateName = inject("validateName")
 const nameError = ref(null)
@@ -209,38 +228,45 @@ const validateFn = name => {
   return !res
 }
 
-const canActivate = () => {
-  return true
-}
-
 const canDeactivate = () => {
   return !isManage.value
 }
 
-function onActivated(event) {
-  expanded.value = true
+// Allow menu event to bubble up to parent when not in manage mode
+const canBubbleEvent = e => {
+  return e.detail.name === "menu" && !isManage.value
+}
 
-  const detail = event.detail
-  if (detail.activationType === "full") {
-    isActivated.value = true
-    emit("card:activate", true)
+const onScopeChanged = value => {
+  isActivated.value = value
+  // Reset manage mode when scope deactivates to prevent mixed UI state
+  if (!value && isManage.value) {
+    isManage.value = false
+    currentMenu.value = null
+    emit("manage:change", false)
   }
 }
 
-function onDeactivated() {
-  expanded.value = false
-  isActivated.value = false
-  enableManage(false)
-  emit("card:activate", false)
+function onFocused(focused) {
+  cardStates.focused = focused
+  updatedExpanded()
 }
 
 function onHover(hover) {
-  if (isActivated.value) return
-  expanded.value = hover
+  cardStates.hovered = hover
+  updatedExpanded()
+}
+
+function updatedExpanded() {
+  const enable = cardStates.focused || cardStates.hovered
+  if (!enable && (isActivated.value || isManage.value)) return
+  expanded.value = enable
 }
 
 function enableManage(enable = true) {
-  isManage.value = enable
+  nextTick(() => (isManage.value = enable))
+  if (enable && !isActivated.value) isActivated.value = true
+  emit("card:activate", enable)
   emit("manage:change", enable)
 }
 

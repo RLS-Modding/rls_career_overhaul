@@ -1,0 +1,76 @@
+{
+    "dealerships": [
+        {
+            "id": "joesJunkDealership",
+            "name": "Joe's Junk",
+            "description": "Joe's Junk - You think you hate it now , wait till you drive it",
+            "preview": "Joes_Junk_Dealer_TB.png",
+            "sitesFile": "joesJunk.sites.json",
+            "stock": 7,
+            "range": [
+                0.6,
+                0.8,
+                1.1,
+                1.3
+            ],
+            "associatedOrganization": "joesJunkDealership",
+            "doors": [
+                [
+                    "joesJunk_area",
+                    "joesJunk_icon",
+                    30
+                ]
+            ],
+            "parkingSpotNames": [
+                "joesJunkCar",
+                "joesJunkBus"
+            ],
+            "activityAcceptProps": [
+                {
+                    "keyLabel": "Used Vehicles"
+                }
+            ],
+            "filter": {
+                "whiteList": {
+                    "Mileage": {
+                        "min": 355000000,
+                        "max": 1216001971
+                    }
+                },
+                "blackList": {
+                    "Body Style": [
+                        "ATV",
+                        "Buggy"
+                    ],
+                    "Config Type": [
+                        "Frame"
+                    ]
+                }
+            },
+            "subFilters": [
+                {
+                    "probability": 2,
+                    "whiteList": {
+                        "Config Type": [
+                            "joesJunk"
+                        ]
+                    }
+                }
+            ],
+            "subFilterNames": [
+                "Sub-Filter 1"
+            ],
+            "fees": 0,
+            "containsStarterVehicles": false,
+            "testDrive": {
+                "abandonFees": 250,
+                "timeLimit": 120,
+                "licencePlate": "Joe Junk"
+            },
+            "iconOffsetHeight": 1,
+            "iconLift": 0.25,
+            "playModeIconName": "poi_entrance_round",
+            "salesTax": 0
+        }
+    ]
+}

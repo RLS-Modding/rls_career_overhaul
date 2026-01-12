@@ -95,6 +95,7 @@ local function ensureTechIdentity(tech, index)
   tech.cooldownDuration = tech.cooldownDuration or 150
   tech.successfulJobs = tech.successfulJobs or 0
   tech.failedJobs = tech.failedJobs or 0
+  tech.fired = tech.fired or false
 end
 
 local function ensureTechSlots(businessId)
@@ -102,16 +103,31 @@ local function ensureTechSlots(businessId)
     return
   end
   local capacity = math.max(0, getTechCapacity(businessId))
-  if capacity <= 0 then
-    businessTechs[businessId] = {}
-    return
-  end
-
+  
   local techs = businessTechs[businessId] or {}
-  for index = 1, capacity do
-    techs[index] = techs[index] or {
-      id = index,
-      name = string.format("Tech #%d", index),
+  
+  for _, tech in ipairs(techs) do
+    ensureTechIdentity(tech, tech.id)
+  end
+  
+  local hiredCount = 0
+  local totalCount = #techs
+  local maxId = 0
+  for _, tech in ipairs(techs) do
+    if not tech.fired then
+      hiredCount = hiredCount + 1
+    end
+    if tech.id and tech.id > maxId then
+      maxId = tech.id
+    end
+  end
+  
+  local nextId = maxId + 1
+  
+  while totalCount < capacity do
+    local newTech = {
+      id = nextId,
+      name = string.format("Tech #%d", nextId),
       state = 0,
       stateElapsed = 0,
       stateDuration = 0,
@@ -120,15 +136,16 @@ local function ensureTechSlots(businessId)
       totalAttempts = 0,
       fundsHeld = 0,
       buildCost = 0,
-      eventFunds = 0
+      eventFunds = 0,
+      fired = false
     }
-    ensureTechIdentity(techs[index], index)
+    ensureTechIdentity(newTech, nextId)
+    table.insert(techs, newTech)
+    totalCount = totalCount + 1
+    hiredCount = hiredCount + 1
+    nextId = nextId + 1
   end
-
-  for i = capacity + 1, #techs do
-    techs[i] = nil
-  end
-
+  
   businessTechs[businessId] = techs
   return techs
 end
@@ -238,12 +255,13 @@ local function formatTechForUIEntry(businessId, tech)
     totalSpent = math.floor(tech.totalSpent or 0),
     latestResult = tech.latestResult,
     finishedJobInfo = tech.finishedJobInfo,
-    canAssign = not tech.jobId and (tech.currentAction == "idle"),
+    canAssign = not tech.fired and not tech.jobId and (tech.currentAction == "idle"),
     fundsHeld = tech.fundsHeld,
     successRate = successRate,
     successfulJobs = successfulJobs,
     failedJobs = failedJobs,
-    maxTier = M.getTechMaxTier(businessId)
+    maxTier = M.getTechMaxTier(businessId),
+    fired = tech.fired or false
   }
 end
 
@@ -898,7 +916,7 @@ local function getIdleTechs(businessId)
   local techs = loadBusinessTechs(businessId)
   local idleTechs = {}
   for _, tech in ipairs(techs) do
-    if not tech.jobId and (tech.currentAction == "idle" or not tech.currentAction) then
+    if not tech.fired and not tech.jobId and (tech.currentAction == "idle" or not tech.currentAction) then
       table.insert(idleTechs, tech)
     end
   end
@@ -934,6 +952,10 @@ local function assignJobToTech(businessId, techId, jobId)
   local tech = getTechById(businessId, techId)
   if not tech then
     return false, "techNotFound"
+  end
+
+  if tech.fired then
+    return false, "techFired"
   end
 
   if tech.jobId then
@@ -1011,6 +1033,160 @@ local function assignJobToTech(businessId, techId, jobId)
   return true
 end
 
+local function fireTech(businessId, techId)
+  businessId = normalizeBusinessId(businessId)
+  techId = tonumber(techId)
+  if not businessId or not techId then
+    return false, "invalidParameters"
+  end
+
+  local tech = getTechById(businessId, techId)
+  if not tech then
+    return false, "techNotFound"
+  end
+
+  if tech.fired then
+    return false, "alreadyFired"
+  end
+
+  if tech.jobId then
+    return false, "techHasJob"
+  end
+
+  tech.fired = true
+  notifyTechsUpdated(businessId)
+  if helpers.notifyJobsUpdated then
+    helpers.notifyJobsUpdated(businessId)
+  end
+  return true
+end
+
+local function hireTech(businessId, techId)
+  businessId = normalizeBusinessId(businessId)
+  techId = tonumber(techId)
+  if not businessId or not techId then
+    return false, "invalidParameters"
+  end
+
+  local tech = getTechById(businessId, techId)
+  if not tech then
+    return false, "techNotFound"
+  end
+
+  if not tech.fired then
+    return false, "alreadyHired"
+  end
+
+  local capacity = getTechCapacity(businessId)
+  local hiredCount = 0
+  local techs = loadBusinessTechs(businessId)
+  for _, t in ipairs(techs) do
+    if not t.fired then
+      hiredCount = hiredCount + 1
+    end
+  end
+
+  if hiredCount >= capacity then
+    return false, "capacityFull"
+  end
+
+  tech.fired = false
+  ensureTechSlots(businessId)
+  notifyTechsUpdated(businessId)
+  return true
+end
+
+local function stopTechFromJob(businessId, techId)
+  businessId = normalizeBusinessId(businessId)
+  techId = tonumber(techId)
+  if not businessId or not techId then
+    return false, "invalidParameters"
+  end
+
+  local tech = getTechById(businessId, techId)
+  if not tech then
+    return false, "techNotFound"
+  end
+
+  if tech.fired then
+    return false, "techFired"
+  end
+
+  if not tech.jobId then
+    return false, "noJobAssigned"
+  end
+
+  local jobId = tech.jobId
+  local job = helpers.getJobById and helpers.getJobById(businessId, jobId) or nil
+  if not job then
+    resetTechToIdle(tech)
+    notifyTechsUpdated(businessId)
+    return false, "jobNotFound"
+  end
+
+  resetTechToIdle(tech)
+  job.locked = false
+  job.techAssigned = nil
+
+  if helpers.loadBusinessJobs then
+    local jobs = helpers.loadBusinessJobs(businessId)
+    local isInActive = false
+    local activeJobIndex = nil
+
+    for i, activeJob in ipairs(jobs.active or {}) do
+      local jId = tonumber(activeJob.jobId) or activeJob.jobId
+      if jId == jobId then
+        isInActive = true
+        activeJobIndex = i
+        break
+      end
+    end
+
+    if not isInActive then
+      local maxActiveJobs = helpers.getMaxActiveJobs and helpers.getMaxActiveJobs(businessId) or 2
+      local currentActiveCount = #(jobs.active or {})
+
+      if currentActiveCount < maxActiveJobs then
+        if not jobs.active then
+          jobs.active = {}
+        end
+        table.insert(jobs.active, job)
+      else
+        if helpers.removeJobVehicle then
+          helpers.removeJobVehicle(businessId, jobId)
+        end
+
+        if helpers.clearJobLeaderboardEntry then
+          helpers.clearJobLeaderboardEntry(businessId, jobId)
+        end
+
+        for i, activeJob in ipairs(jobs.active or {}) do
+          local jId = tonumber(activeJob.jobId) or activeJob.jobId
+          if jId == jobId then
+            table.remove(jobs.active, i)
+            break
+          end
+        end
+
+        for i, newJob in ipairs(jobs.new or {}) do
+          local jId = tonumber(newJob.jobId) or newJob.jobId
+          if jId == jobId then
+            table.remove(jobs.new, i)
+            break
+          end
+        end
+      end
+    end
+  end
+
+  notifyTechsUpdated(businessId)
+  if helpers.notifyJobsUpdated then
+    helpers.notifyJobsUpdated(businessId)
+  end
+
+  return true
+end
+
 local function resetTechs()
   businessTechs = {}
 end
@@ -1030,6 +1206,9 @@ M.resetTechs = resetTechs
 M.getIdleTechs = getIdleTechs
 M.getTechMaxTier = getTechMaxTier
 M.canAssignTechToJob = canAssignTechToJob
+M.fireTech = fireTech
+M.hireTech = hireTech
+M.stopTechFromJob = stopTechFromJob
 
 return M
 

@@ -2,3 +2,5 @@ levels/west_coast_usa/main/MissionGroup/LevelObjects/items.level.json
 levels/west_coast_usa/main/MissionGroup/LevelObjects/sunSkyGroup/items.level.json
 node_modules/
 baseUI/node_modules/
+ui-build-temp/
+ui/vue-dist/

@@ -24,6 +24,8 @@ local tetherRange = 4
 local vehicleShopDirtyDate
 local vehiclesInShop = {}
 local sellersInfos = {}
+local otherMapsData = {}
+local lastMap
 local currentSeller
 local purchaseData
 local tether
@@ -322,6 +324,12 @@ local function onUiChangedState(toState)
 end
 
 local function onUpdate(dt)
+  refreshAccumulator = refreshAccumulator + dt
+  if refreshAccumulator < 5 then
+    return
+  end
+  refreshAccumulator = 0
+
   -- Watchlist expiration check
   if not tableIsEmpty(vehicleWatchlist) and (not currentUiState or currentUiState == "play") then
     local currentTime = os.time()
@@ -657,17 +665,8 @@ local function cacheDealers()
 
         vehicleCache.dealershipCache[dealershipId] = vehicleCache.dealershipCache[dealershipId] or {}
         if tableIsEmpty(filteredRegular) then
-          log("W", "Career", string.format("No vehicles matched filters for dealership %s; using fallback stock", dealershipId))
-          filteredRegular = {}
-          for _, vehicleInfo in ipairs(regularEligibleVehicles) do
-            local fallbackVehicle = deepcopy(vehicleInfo)
-            fallbackVehicle.precomputedFilter = nil
-            fallbackVehicle.subFilterProbability = 1
-            fallbackVehicle.cachedPartsValue = getVehiclePartsValue(fallbackVehicle.model_key, fallbackVehicle.key)
-            totalPartsCalculated = totalPartsCalculated + 1
-            table.insert(filteredRegular, fallbackVehicle)
-          end
-          filters = {}
+          log("I", "Career", string.format("Dealership not configured: %s", dealershipId))
+          vehicleCache.dealershipCache[dealershipId].notConfigured = true
         end
         vehicleCache.dealershipCache[dealershipId].regularVehicles = filteredRegular
         vehicleCache.dealershipCache[dealershipId].filters = filters
@@ -749,6 +748,97 @@ end
 
 local function invalidateVehicleCache()
   vehicleCache.cacheValid = false
+end
+
+local function rebuildDealershipCache(dealershipId)
+  if not vehicleCache.cacheValid then
+    cacheDealers()
+    return
+  end
+
+  local facilities = freeroam_facilities.getFacilities(getCurrentLevelIdentifier())
+  if not facilities or not facilities.dealerships then
+    return
+  end
+
+  local dealership = nil
+  for _, d in ipairs(facilities.dealerships) do
+    if d.id == dealershipId then
+      dealership = d
+      break
+    end
+  end
+
+  if not dealership then
+    return
+  end
+
+  local regularEligibleVehicles = vehicleCache.regularVehicles
+  if not regularEligibleVehicles or tableIsEmpty(regularEligibleVehicles) then
+    regularEligibleVehicles = util_configListGenerator.getEligibleVehicles() or {}
+    normalizePopulations(regularEligibleVehicles, 0.4)
+    vehicleCache.regularVehicles = regularEligibleVehicles
+  end
+
+  local filter = dealership.filter or {}
+  if dealership.associatedOrganization then
+    local org = freeroam_organizations.getOrganization(dealership.associatedOrganization)
+    local level = getOrgLevelData(org)
+    if level and level.filter then
+      filter = level.filter
+    end
+  end
+
+  local subFilters = dealership.subFilters or {}
+  if dealership.associatedOrganization then
+    local org = freeroam_organizations.getOrganization(dealership.associatedOrganization)
+    local level = getOrgLevelData(org)
+    if level and level.subFilters then
+      subFilters = level.subFilters
+    end
+  end
+
+  local filteredRegular = {}
+  local filters = {}
+
+  if subFilters and not tableIsEmpty(subFilters) then
+    for _, subFilter in ipairs(subFilters) do
+      local aggregateFilter = deepcopy(filter or {})
+      tableMergeRecursive(aggregateFilter, subFilter)
+      aggregateFilter._probability = (type(subFilter.probability) == "number" and subFilter.probability) or 1
+      table.insert(filters, aggregateFilter)
+    end
+  else
+    local aggregateFilter = deepcopy(filter or {})
+    aggregateFilter._probability = 1
+    table.insert(filters, aggregateFilter)
+  end
+
+  for _, f in ipairs(filters) do
+    local subProb = f._probability or f.probability or 1
+    for _, vehicleInfo in ipairs(regularEligibleVehicles) do
+      if doesVehiclePassFilter(vehicleInfo, f) then
+        local cachedVehicle = deepcopy(vehicleInfo)
+        cachedVehicle.precomputedFilter = f
+        cachedVehicle.subFilterProbability = subProb
+        cachedVehicle.cachedPartsValue = getVehiclePartsValue(vehicleInfo.model_key, vehicleInfo.key)
+        table.insert(filteredRegular, cachedVehicle)
+      end
+    end
+  end
+
+  local notConfigured = tableIsEmpty(filteredRegular)
+  if notConfigured then
+    log("I", "Career", string.format("Dealership not configured: %s", dealershipId))
+  end
+
+  vehicleCache.dealershipCache[dealershipId] = {
+    regularVehicles = filteredRegular,
+    filters = filters,
+    notConfigured = notConfigured
+  }
+
+  log("I", "Career", string.format("Rebuilt cache for dealership %s: %d vehicles", dealershipId, #filteredRegular))
 end
 
 -- Vehicle list management functions
@@ -915,10 +1005,16 @@ local function updateVehicleList(fromScratch)
   local sellerMeta = {}
 
   for _, seller in ipairs(sellers) do
+    local dealershipData = vehicleCache.dealershipCache[seller.id]
+    if dealershipData and dealershipData.notConfigured then
+      goto continue
+    end
+
     if not sellersInfos[seller.id] then
       sellersInfos[seller.id] = {
         lastGenerationTime = 0,
-        mapId = currentMap
+        mapId = currentMap,
+        lastOrgLevel = nil
       }
       changed = true
     end
@@ -928,6 +1024,17 @@ local function updateVehicleList(fromScratch)
 
     local randomVehicleInfos = {}
     local currentVehicleCount = unsoldCountBySellerId[seller.id] or 0
+
+    local currentOrgLevel = nil
+    if seller.associatedOrganization then
+      local org = freeroam_organizations.getOrganization(seller.associatedOrganization)
+      if org and org.reputation then
+        currentOrgLevel = org.reputation.level
+      end
+    end
+
+    local storedLevel = sellersInfos[seller.id].lastOrgLevel
+    local levelChanged = (currentOrgLevel ~= nil) and (storedLevel ~= nil) and (storedLevel ~= currentOrgLevel)
 
     local maxStock = seller.stock or 10
     if seller.associatedOrganization then
@@ -940,7 +1047,10 @@ local function updateVehicleList(fromScratch)
     local availableSlots = math.max(0, maxStock - currentVehicleCount)
 
     local numberOfVehiclesToGenerate = 0
-    local adjustedTimeBetweenOffers = dealershipTimeBetweenOffers / (seller.vehicleGenerationMultiplier or 1)
+    local adjustedTimeBetweenOffers = vehicleOfferTimeToLive / maxStock
+    if seller.vehicleGenerationMultiplier then
+      adjustedTimeBetweenOffers = adjustedTimeBetweenOffers / seller.vehicleGenerationMultiplier
+    end
 
     if onlyStarterVehicles then
       -- Generate the starter vehicles
@@ -951,10 +1061,20 @@ local function updateVehicleList(fromScratch)
       local maxVehicles = math.floor(vehicleOfferTimeToLive / adjustedTimeBetweenOffers)
       numberOfVehiclesToGenerate = math.min(math.floor((currentTime - sellersInfos[seller.id].lastGenerationTime) / adjustedTimeBetweenOffers), maxVehicles)
 
-      if fromScratch or sellersInfos[seller.id].lastGenerationTime == 0 then
+      if levelChanged then
+        rebuildDealershipCache(seller.id)
+        numberOfVehiclesToGenerate = availableSlots
+        sellersInfos[seller.id].lastGenerationTime = 0
+        log("I", "Career", string.format("Level changed for %s (from %d to %d), restocking to %d vehicles", 
+          seller.id, storedLevel, currentOrgLevel, availableSlots))
+      elseif fromScratch or sellersInfos[seller.id].lastGenerationTime == 0 then
         numberOfVehiclesToGenerate = availableSlots
         log("D", "Career",
           string.format("Initial stock fill for %s: generating %d vehicles", seller.id, numberOfVehiclesToGenerate))
+      elseif availableSlots > 0 and numberOfVehiclesToGenerate < availableSlots then
+        numberOfVehiclesToGenerate = availableSlots
+        log("D", "Career",
+          string.format("Stock below target for %s: generating %d vehicles to reach %d", seller.id, availableSlots, maxStock))
       end
 
       -- Generate the vehicles without duplicating vehicles that are already in the dealership
@@ -974,7 +1094,7 @@ local function updateVehicleList(fromScratch)
     local starterVehicleYears = {bx = 1990, etki = 1989, covet = 1989}
 
     for i, randomVehicleInfo in ipairs(randomVehicleInfos) do
-      randomVehicleInfo.generationTime = currentTime - ((i - 1) * dealershipTimeBetweenOffers)
+      randomVehicleInfo.generationTime = currentTime - ((i - 1) * adjustedTimeBetweenOffers)
       randomVehicleInfo.offerTTL = onlyStarterVehicles and math.huge or vehicleOfferTimeToLive
 
       randomVehicleInfo.sellerId = seller.id
@@ -1146,10 +1266,16 @@ local function updateVehicleList(fromScratch)
       changed = true
     end
 
+    if currentOrgLevel ~= nil then
+      sellersInfos[seller.id].lastOrgLevel = currentOrgLevel
+    end
+
     sellerMeta[seller.id] = {
       maxStock = maxStock,
       adjustedTimeBetweenOffers = adjustedTimeBetweenOffers
     }
+
+    ::continue::
   end
 
   local minNext = math.huge
@@ -1168,7 +1294,7 @@ local function updateVehicleList(fromScratch)
     local availableSlotsAfter = math.max(0, maxStock - currentCount)
     if availableSlotsAfter > 0 then
       local lastGen = (sellersInfos[seller.id] and sellersInfos[seller.id].lastGenerationTime) or 0
-      local interval = meta and meta.adjustedTimeBetweenOffers or (dealershipTimeBetweenOffers / (seller.vehicleGenerationMultiplier or 1))
+      local interval = meta and meta.adjustedTimeBetweenOffers or (vehicleOfferTimeToLive / maxStock)
       local nextGen = (lastGen > 0 and (lastGen + interval)) or currentTime
       if nextGen < minNext then
         minNext = nextGen
@@ -1956,45 +2082,68 @@ local function onExtensionLoaded()
   local data = not outdated and jsonReadFile(savePath .. "/career/vehicleShop.json")
   if data then
     local currentMap = getCurrentLevelIdentifier()
-    vehiclesInShop = data.vehiclesInShop or {}
-    sellersInfos = data.sellersInfos or {}
-    vehicleShopDirtyDate = data.dirtyDate
     vehicleWatchlist = data.vehicleWatchlist or {}
 
-    local filteredVehicles = {}
-    for _, vehicleInfo in ipairs(vehiclesInShop) do
-      vehicleInfo.pos = vec3(vehicleInfo.pos)
-      if not vehicleInfo.mapId then
-        vehicleInfo.mapId = currentMap
+    -- New format with 'maps' key
+    if data.maps then
+      otherMapsData = data.maps
+      -- Restore vec3 for positions in all maps
+      for _, mapData in pairs(otherMapsData) do
+        if mapData.vehiclesInShop then
+          for _, vehicleInfo in ipairs(mapData.vehiclesInShop) do
+            vehicleInfo.pos = vec3(vehicleInfo.pos)
+          end
+        end
       end
-      if vehicleInfo.mapId == currentMap then
-        table.insert(filteredVehicles, vehicleInfo)
-      end
-    end
-    vehiclesInShop = filteredVehicles
+    else
+      -- Migration from old flat format
+      local oldVehicles = data.vehiclesInShop or {}
+      local oldSellers = data.sellersInfos or {}
+      local oldDirtyDate = data.dirtyDate
 
-    local filteredSellers = {}
-    for sellerId, sellerInfo in pairs(sellersInfos) do
-      if not sellerInfo.mapId then
-        sellerInfo.mapId = currentMap
+      for _, vehicleInfo in ipairs(oldVehicles) do
+        vehicleInfo.pos = vec3(vehicleInfo.pos)
+        local mId = vehicleInfo.mapId or currentMap
+        if not otherMapsData[mId] then otherMapsData[mId] = {vehiclesInShop = {}, sellersInfos = {}} end
+        table.insert(otherMapsData[mId].vehiclesInShop, vehicleInfo)
       end
-      if sellerInfo.mapId == currentMap then
-        filteredSellers[sellerId] = sellerInfo
+
+      for sellerId, sellerInfo in pairs(oldSellers) do
+        local mId = sellerInfo.mapId or currentMap
+        if not otherMapsData[mId] then otherMapsData[mId] = {vehiclesInShop = {}, sellersInfos = {}} end
+        otherMapsData[mId].sellersInfos[sellerId] = sellerInfo
+      end
+      
+      -- Assign dirty date to the current map if it was migration
+      if otherMapsData[currentMap] then
+        otherMapsData[currentMap].dirtyDate = oldDirtyDate
       end
     end
-    sellersInfos = filteredSellers
+
+    -- Set current map data
+    local currentData = otherMapsData[currentMap] or {}
+    vehiclesInShop = currentData.vehiclesInShop or {}
+    sellersInfos = currentData.sellersInfos or {}
+    vehicleShopDirtyDate = currentData.dirtyDate
+    lastMap = currentMap
   end
 end
 
 local function onSaveCurrentSaveSlot(currentSavePath, oldSaveDate)
-  if vehicleShopDirtyDate and oldSaveDate >= vehicleShopDirtyDate then
-    return
-  end
+  local currentMap = getCurrentLevelIdentifier()
+  
+  -- Update the stash for the current map
+  otherMapsData[currentMap] = {
+    vehiclesInShop = vehiclesInShop,
+    sellersInfos = sellersInfos,
+    dirtyDate = vehicleShopDirtyDate
+  }
+
   local data = {}
-  data.vehiclesInShop = vehiclesInShop
-  data.sellersInfos = sellersInfos
-  data.dirtyDate = vehicleShopDirtyDate
+  data.maps = otherMapsData
   data.vehicleWatchlist = vehicleWatchlist
+  data.version = moduleVersion
+  
   career_saveSystem.jsonWriteFileSafe(currentSavePath .. "/career/vehicleShop.json", data, true)
 end
 
@@ -2034,22 +2183,29 @@ local function onWorldReadyState(state)
   if state == 2 then
     local currentMap = getCurrentLevelIdentifier()
 
-    local filteredVehicles = {}
-    for _, vehicleInfo in ipairs(vehiclesInShop) do
-      if vehicleInfo.mapId == currentMap then
-        table.insert(filteredVehicles, vehicleInfo)
-      end
+    -- Stash previous map data if it exists
+    if lastMap and lastMap ~= currentMap then
+      otherMapsData[lastMap] = {
+        vehiclesInShop = vehiclesInShop,
+        sellersInfos = sellersInfos,
+        dirtyDate = vehicleShopDirtyDate
+      }
     end
-    vehiclesInShop = filteredVehicles
 
-    local filteredSellers = {}
-    for sellerId, sellerInfo in pairs(sellersInfos) do
-      if sellerInfo.mapId == currentMap then
-        filteredSellers[sellerId] = sellerInfo
-      end
+    -- Load new map data
+    if otherMapsData[currentMap] then
+      local currentData = otherMapsData[currentMap]
+      vehiclesInShop = currentData.vehiclesInShop or {}
+      sellersInfos = currentData.sellersInfos or {}
+      vehicleShopDirtyDate = currentData.dirtyDate
+    else
+      -- If no data for this map, start fresh but keep watchlist
+      vehiclesInShop = {}
+      sellersInfos = {}
+      vehicleShopDirtyDate = nil
     end
-    sellersInfos = filteredSellers
 
+    lastMap = currentMap
     cacheDealers()
   end
 end
@@ -2199,6 +2355,7 @@ M.checkSpawnedVehicleStatus = function()
 end
 
 M.cacheDealers = cacheDealers
+M.rebuildDealershipCache = rebuildDealershipCache
 M.getRandomVehicleFromCache = getRandomVehicleFromCache
 M.getCacheStats = getCacheStats
 M.getMapStats = getMapStats

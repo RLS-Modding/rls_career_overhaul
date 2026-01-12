@@ -1,16 +1,17 @@
 <template>
-  <div v-bng-scoped-nav="{ activated: isActivated, canDeactivate }" class="profiles-container" @deactivate="onDeactivate">
+  <div v-bng-scoped-nav="{ activateOnMount: true }" class="profiles-container" @deactivate="onDeactivate">
     <BngScreenHeading class="profiles-title" :preheadings="[$ctx_t('ui.playmodes.career')]">{{ $ctx_t("ui.career.savedProgress") }} </BngScreenHeading>
-    <BackAside class="profiles-back" @click="onDeactivate()" />
+    <BackAside v-bng-on-ui-nav:back,menu="navigateToMainMenu" class="profiles-back" @click="navigateToMainMenu" />
     <BngList :layout="LIST_LAYOUTS.RIBBON" :targetWidth="22" :targetHeight="28" :targetMargin="1" noBackground class="profiles-modern-list">
-      <ProfileCreateCard v-model:profileName="newProfileName" class="profile-card" @card:activate="value => onCardActivated(value, -1)" @load="onCreateSave" />
+      <ProfileCreateCard v-model:profileName="newProfileName" v-model:active="createCardActive" class="profile-card" @card:activate="value => onCardActivated(value, -1)" @load="onCreateSave" />
       <ProfileCard
         v-for="(profile, index) of profiles"
         v-bng-popover="profile.incompatibleVersion ? 'tooltip-outdated-message' : null"
         v-bind="profile"
-        v-bng-disabled="(isManage || selectedCard === -1) && selectedCard !== index"
+        v-bng-disabled="isManage && selectedCard !== index"
         :key="profile.id"
         :active="activeProfileId === profile.id"
+        :forceCloseManage="selectedCard === -1"
         class="profile-card"
         @card:activate="value => onCardActivated(value, index)"
         @manage:change="value => onManageChange(value, index)"
@@ -41,12 +42,10 @@ const { events } = useBridge()
 const profiles = ref(null)
 const activeProfileId = ref(null)
 
-// screen scoped nav. should be automatically activated when the screen is loaded
-const isActivated = ref(true)
-
 const selectedCard = ref(null)
 const isManage = ref(false)
 const newProfileName = ref(null)
+const createCardActive = ref(false)
 
 let isLoading = false
 
@@ -63,7 +62,12 @@ const onCreateSave = async (profileName, tutorialChecked, hardcoreMode, challeng
 function onCardActivated(active, index) {
   if (active) {
     selectedCard.value = index
-    if (index === -1) newProfileName.value = getNewName()
+    if (index === -1) {
+      newProfileName.value = getNewName()
+    } else {
+      // Close the create card when a profile card is activated
+      createCardActive.value = false
+    }
   } else {
     selectedCard.value = null
   }
@@ -84,20 +88,38 @@ onBeforeUnmount(() => {
 
 provide("validateName", validateName)
 
-const onDeactivate = () => {
-  // if (store.isLoading) return
+function isAnyModalOpen() {
+  const creator = document.querySelector('.ccm-overlay')
+  const detailer = document.querySelector('.cdm-overlay')
+  if (creator) {
+    const style = window.getComputedStyle(creator)
+    if (style.display !== 'none' && style.visibility !== 'hidden') return true
+  }
+  if (detailer) {
+    const style = window.getComputedStyle(detailer)
+    if (style.display !== 'none' && style.visibility !== 'hidden') return true
+  }
+  return false
+}
 
-  if (isLoading) {
-    isLoading = false
-  } else if (activeProfileId.value) {
+const navigateToMainMenu = () => {
+  if (isAnyModalOpen()) return
+  if (activeProfileId.value) {
     window.bngVue.gotoAngularState("menu.careerPause")
   } else {
     window.bngVue.gotoGameState("menu.mainmenu")
   }
 }
 
-const canDeactivate = () => {
-  return false
+const onDeactivate = (event) => {
+  if (event?.detail?.force) return
+  if (isAnyModalOpen()) return
+
+  if (isLoading) {
+    isLoading = false
+  } else {
+    navigateToMainMenu()
+  }
 }
 
 async function onProfilesReceived(data) {
