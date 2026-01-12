@@ -103,7 +103,7 @@ generateFare = function()
     local pickupSpot = validPickups[math.random(#validPickups)]
 
     local hospitalSitePath = gameplay_sites_sitesManager.getCurrentLevelSitesFileByName('roleplay')
-    local dropoffSpot = pickupSpot
+    local dropoffSpot = nil
     if hospitalSitePath then
         local hospitalSiteData = gameplay_sites_sitesManager.loadSites(hospitalSitePath, true, true)
         if hospitalSiteData and hospitalSiteData.parkingSpots and hospitalSiteData.parkingSpots.objects then
@@ -114,6 +114,11 @@ generateFare = function()
                 end
             end
         end
+    end
+
+    if not dropoffSpot then
+        log('W', 'ambulance', 'No "Hospital Entrance" found in site data. Path: ' .. tostring(hospitalSitePath) .. ' Pickup: ' .. (pickupSpot and pickupSpot.name or tostring(pickupSpot)))
+        return nil
     end
 
     return {
@@ -321,7 +326,10 @@ updateMarkers = function(dtReal, dtSim, dtRaw)
         if M.delayTimer >= M.delayDuration then
             core_groundMarkers.resetAll()
             startNextMission()
-            state = "ready"
+            -- Only set state to ready if startNextMission didn't change it (e.g. early return)
+            if state == "completed" then
+                state = "ready"
+            end
             M.delayTimer = nil
             M.delayDuration = nil
             missionTriggeredForVehicle = false
