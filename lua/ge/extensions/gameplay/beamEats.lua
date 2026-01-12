@@ -494,11 +494,12 @@ end
 -- ================================
 -- MAIN UPDATE LOOP
 -- ================================
+local updateInterval = 1.0
 local function update(_, dt)
     timer = timer + dt
     updateTimer = updateTimer + dt
 
-    if updateTimer >= 1 then
+    if updateTimer >= updateInterval then
         updateTimer = 0
         requestBeamEatsState()
     end
@@ -529,7 +530,7 @@ local function update(_, dt)
             return
         end
 
-        jobOfferTimer = jobOfferTimer + dt
+        jobOfferTimer = jobOfferTimer + updateInterval
         if jobOfferTimer >= jobOfferInterval then
             local newOrder = generateOrder()
             if newOrder then
