@@ -1,0 +1,78 @@
+{
+  "routes": {
+    "residential_loop": {
+      "name": "Residential Loop",
+      "stops": [
+        ["wcu_bs_12", "Central Station"],
+        ["wcu_bs_06", "Commerce Park"],
+        ["wcu_bs_05", "Logan Park"],
+        ["wcu_bs_09_b", "Little China"],
+        ["wcu_bs_11_b", "Clinton Hotel"],
+        ["wcu_bs_18_b", "Winchester Rd"],
+        ["wcu_bs_22_b", "Canal St"],
+        ["wcu_bs_19", "Village"],
+        ["wcu_bs_14", "Church"],
+        ["wcu_bs_01", "Rich's Motor Co"],
+        ["wcu_bs_03_b", "Belasco Heights"],
+        ["wcu_wp_01", "Residential Loop Waypoint 1"],
+        ["wcu_wp_04", "Residential Loop Waypoint 2"],
+        ["wcu_bs_04_b", "Pier South"],
+        ["wcu_bs_17_b", "Riverway Plaza"],
+        ["wcu_wp_02", "Residential Loop Waypoint 3"],
+        ["wcu_bs_22", "Canal St"],
+        ["wcu_wp_03", "Residential Loop Waypoint 4"],
+        ["wcu_bs_15", "Money Grab Bank"],
+        ["wcu_bs_12_b", "Central Station"]
+      ]
+    },
+    "business_loop": {
+      "name": "Business Loop",
+      "stops": [
+        ["wcu_bs_12", "Central Station"],
+        ["wcu_bs_06", "Commerce Park"],
+        ["wcu_bs_03", "Belasco Heights"],
+        ["wcu_bs_01_b", "Rich's Motor Co"],
+        ["wcu_bs_04_b", "Pier South"],
+        ["wcu_bs_10_b", "Hospital"],
+        ["wcu_bs_08", "Industrial Park"],
+        ["wcu_bs_07_b", "Park Ave"],
+        ["wcu_bs_04", "Pier North"],
+        ["wcu_bs_06_b", "Commerce Park"],
+        ["wcu_bs_19_b", "Village"],
+        ["wcu_bs_20", "Star Diner"],
+        ["wcu_bs_16", "Snooze News"],
+        ["wcu_bs_17_b", "Riverway Plaza"],
+        ["wcu_wp_03", "Business Loop Waypoint 1"],
+        ["wcu_bs_15", "Money Grab Bank"],
+        ["wcu_bs_12_b", "Central Station"]
+      ]
+    },
+    "san_amaro_loop": {
+      "name": "San Amaro Loop",
+      "stops": [
+        ["wcu_bs_12", "Central Station"],
+        ["wcu_wp_05", "San Amaro Loop Waypoint 1"],
+        ["wcu_bs_13", "Highway Footbridge N"],
+        ["wcu_bs_02", "Belasco Beach"],
+        ["wcu_bs_26", "Mount Wallis"],
+        ["wcu_wp_06", "San Amaro Loop Waypoint 2"],
+        ["wcu_wp_07", "San Amaro Loop Waypoint 3"],
+        ["wcu_bs_27", "Brittlebush W"],
+        ["wcu_bs_28", "Redwood Forest"],
+        ["wcu_wp_08", "San Amaro Loop Waypoint 4"],
+        ["wcu_wp_09", "San Amaro Loop Waypoint 5"],
+        ["wcu_bs_25_b", "Lensflare"],
+        ["wcu_bs_24_b", "Suburbs"],
+        ["wcu_bs_27_b", "Brittlebush E"],
+        ["wcu_bs_23", "Race Track"],
+        ["wcu_bs_21", "Rec Center"],
+        ["wcu_wp_10", "San Amaro Loop Waypoint 6"],
+        ["wcu_bs_02_b", "Belasco Beach"],
+        ["wcu_bs_13_b", "Highway Footbridge S"],
+        ["wcu_wp_11", "San Amaro Loop Waypoint 7"],
+        ["wcu_bs_12_b", "Central Station"]
+      ]
+    }
+  }
+}
+
