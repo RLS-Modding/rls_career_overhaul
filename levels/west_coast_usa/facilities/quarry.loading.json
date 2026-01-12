@@ -17,12 +17,6 @@
                     "materials": {
                         "rocks": { "maxStock": 80, "startStock": 40, "regenRate": 4 }
                     }
-                },
-                "ZoneC": {
-                    "name": "Zone C",
-                    "materials": {
-                        "rocks": { "maxStock": 60, "startStock": 30, "regenRate": 3 }
-                    }
                 }
             },
             "contracts": {
