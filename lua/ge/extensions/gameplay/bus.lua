@@ -1268,27 +1268,6 @@ local function processStop(vehicle, dtSim)
                         "bus_anim")
                 end
 
-                --------------------------------------------------------
-                -- FINAL POST-BOARDING MESSAGE
-                --------------------------------------------------------
-                local newCount = math.min(math.max(0, passengersOnboard + trueBoarding - trueDeboarding),
-                    M.vehicleCapacity)
-
-                ui_message(string.format("Stop %d complete!\nPassengers onboard: %d", currentStopIndex, newCount), 4,
-                    "bus", "bus_done")
-
-                --------------------------------------------------------
-                -- SHOW EARNINGS / TIPS / REPUTATION 
-                --------------------------------------------------------
-                local base = 400
-                local bonusMultiplier = 1 + (consecutiveStops / #stopTriggers) * 3
-                local payout = math.floor(base * bonusMultiplier)
-                local reputationGain = math.floor(payout / 500)
-
-                ui_message(string.format("Earnings this stop:\n" .. "Base pay: $%d\n" .. "Reputation gained: +%d\n" ..
-                                             "Total tips so far: $%d", payout, reputationGain, tipTotal), 10, "info",
-                    "bus_payout")
-
             end)
 
         end -- dwell init
@@ -1298,7 +1277,7 @@ local function processStop(vehicle, dtSim)
         ------------------------------------------------------------
         dwellTimer = dwellTimer + (dtSim or 0.033)
 
-        if dwellTimer >= dwellDuration and (not boardingCoroutine or coroutine.status(boardingCoroutine) == "dead") then
+        if (boardingCoroutine and coroutine.status(boardingCoroutine) == "dead") or (not boardingCoroutine and dwellTimer >= dwellDuration) then
             print(string.format("[bus] Dwell complete at stop %d", currentStopIndex))
 
             --------------------------------------------------------
@@ -1341,15 +1320,14 @@ local function processStop(vehicle, dtSim)
             dwellTimer = nil
             stopMonitorActive = false
             stopSettleTimer = 0
-            stopIndexWhereBoardingStarted = nil -- Clear the flag when stop is completed
-            currentTriggerName = nil -- Clear trigger name to prevent re-entry issues
+            stopIndexWhereBoardingStarted = nil
+            currentTriggerName = nil
 
             --------------------------------------------------------
             -- MOVE TO NEXT STOP
             --------------------------------------------------------
             local triggerName = trigger:getName() or ""
             if triggerName == currentFinalStopName then
-                -- Loop bonus
                 local loopBonus = math.floor(accumulatedReward * 0.5)
                 accumulatedReward = accumulatedReward + loopBonus
                 local totalPotential = accumulatedReward + tipTotal
@@ -1363,30 +1341,27 @@ local function processStop(vehicle, dtSim)
                 trueDeboarding = 0
 
                 routeCooldown = 10
-                -- Update currentStopIndex BEFORE setting navigation
                 currentStopIndex = 1
-                -- Explicitly route to stop 1 (not stop 2)
                 showNextStopMarker(1)
-                -- Update controller display after loop completion
                 updateBusControllerDisplay()
 
-                -- Save the game after completing the loop
                 if career_saveSystem and career_saveSystem.saveCurrent then
                     career_saveSystem.saveCurrent()
                 end
 
             else
-                -- Calculate next stop index
                 local nextStopIndex = math.min((currentStopIndex or 1) + 1, #stopTriggers)
                 local nextStopName = stopTriggers[nextStopIndex]:getName() or "Unknown"
                 print(string.format("[bus] Moving to next stop: index %d, name %s", nextStopIndex, nextStopName))
-                -- Update currentStopIndex BEFORE setting navigation to prevent race conditions
-                currentStopIndex = nextStopIndex
                 
+                local reputationGain = math.floor(payout / 500)
+                
+                ui_message(string.format("Proceed to Stop %02d\nBase pay: $%d\nTips: $%d\nTotal tips: $%d\nReputation: +%d",
+                    nextStopIndex, payout, tipsEarned, tipTotal, reputationGain), 8, "info", "bus_next")
+                
+                currentStopIndex = nextStopIndex
                 isCalculatingRoute = true
                 routeCalcTimer = 0
-                ui_message("Calculating route...", 1, "info", "info")
-
                 updateBusControllerDisplay()
             end
         end
@@ -1461,24 +1436,18 @@ function M.onUpdate(dtReal, dtSim, dtRaw)
 
     if isCalculatingRoute then
         routeCalcTimer = routeCalcTimer + (dtSim or 0.033)
-        -- Wait 0.5s to ensure vehicle is fully stopped and UI updates before the lag spike
         if routeCalcTimer > 0.5 then
             local vehicle = be:getPlayerVehicle(0)
 
-            -- Perform the heavy path calculation
             showNextStopMarker(currentStopIndex)
 
-            -- Show the message
-            ui_message(string.format("Proceed to Stop %02d.", currentStopIndex), 4, "info", "bus_next")
-
-            -- Unfreeze
             if vehicle then
                 core_vehicleBridge.executeAction(vehicle, 'setFreeze', false)
             end
 
             isCalculatingRoute = false
         end
-        return -- Stop processing while calculating
+        return
     end
 
     local vehicle = be:getPlayerVehicle(0)
