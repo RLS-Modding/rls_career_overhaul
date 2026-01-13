@@ -1341,7 +1341,10 @@ local function processStop(vehicle, dtSim)
 
                 routeCooldown = 10
                 currentStopIndex = 1
-                showNextStopMarker(1)
+                
+                isCalculatingRoute = true
+                routeCalcTimer = 0
+                
                 updateBusControllerDisplay()
 
                 if career_saveSystem and career_saveSystem.saveCurrent then
@@ -1427,12 +1430,6 @@ end
 -- and rough-ride acceleration calculations.
 -- @param dtRaw Raw frame delta time in seconds (unused by this function).
 function M.onUpdate(dtReal, dtSim, dtRaw)
-    -- Route cooldown between loops
-    if routeCooldown > 0 then
-        routeCooldown = math.max(0, routeCooldown - (dtSim or 0))
-        return
-    end
-
     if isCalculatingRoute then
         routeCalcTimer = routeCalcTimer + (dtSim or 0.033)
         if routeCalcTimer > 0.5 then
@@ -1446,6 +1443,12 @@ function M.onUpdate(dtReal, dtSim, dtRaw)
 
             isCalculatingRoute = false
         end
+        return
+    end
+
+    -- Route cooldown between loops
+    if routeCooldown > 0 then
+        routeCooldown = math.max(0, routeCooldown - (dtSim or 0))
         return
     end
 

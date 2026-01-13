@@ -1,5 +1,11 @@
 {
   "routes": {
+    //"test loop": {
+      //"stops": [
+      //  ["wcu_bs_12", "Central Station"],
+      //  ["wcu_bs_06", "Commerce Park"],
+      //]  
+      //},
     "residential_loop": {
       "name": "Residential Loop",
       "stops": [
