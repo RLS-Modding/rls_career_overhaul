@@ -93,7 +93,6 @@ M.maxDelay = config.maxDelay
 
 -- Track rough ride metrics
 local roughRide = 0
-local lastVehiclePos = nil
 local lastVelocity = nil -- 
 
 -- ================================
@@ -503,7 +502,6 @@ local function onExtensionUnloaded()
     stopMonitorActive = false
     stopSettleTimer = 0
     roughRide = 0
-    lastVehiclePos = nil
     lastVelocity = nil
     inAmbulance = false
 
