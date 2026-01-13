@@ -1,0 +1,58 @@
+{
+  "deliveryProviders": [
+    {
+      "id": "wcuParamedicWork",
+      "name": "Belasco City Hospital",
+      "description": "Work as a paramedic to earn money. Try to return with no damage for bonus xp.",
+      "associatedOrganization": "wcuParamedicWork",
+      "preview": "wcusa_hospital.png",
+      "manualAccessPoints": [
+        {
+          "psName": "paramedicWorkParking",
+          "isInspectSpot": true,
+          "logisticTypesProvided": [],
+          "logisticTypesReceived": []
+        },
+        {
+          "psName": "ambulanceLoaner",
+          "isInspectSpot": false,
+          "logisticTypesProvided": [],
+          "logisticTypesReceived": [],
+          "loanerTrailerPriority": 1,
+          "loanerNonTrailerPriority": 1
+        }
+      ],
+      "sitesFile": "roleplay.sites.json",
+      "logisticTypesProvided": [],
+      "logisticTypesReceived": [],
+      "logisticGenerators": []
+    },
+    {
+      "id": "busWork",
+      "name": "Central Station",
+      "description": "Work as a bus driver to earn money. Try to return with no damage for bonus xp.",
+      "associatedOrganization": "busWork",
+      "preview": "central_station.png",
+      "manualAccessPoints": [
+        {
+          "psName": "busWork_parking",
+          "isInspectSpot": true,
+          "logisticTypesProvided": [],
+          "logisticTypesReceived": []
+        },
+        {
+          "psName": "busLoaner_parking",
+          "isInspectSpot": false,
+          "logisticTypesProvided": [],
+          "logisticTypesReceived": [],
+          "loanerTrailerPriority": 1,
+          "loanerNonTrailerPriority": 1
+        }
+      ],
+      "sitesFile": "roleplay.sites.json",
+      "logisticTypesProvided": [],
+      "logisticTypesReceived": [],
+      "logisticGenerators": []
+    }
+  ]
+}

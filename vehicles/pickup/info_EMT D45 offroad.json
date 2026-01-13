@@ -1,0 +1,60 @@
+{
+  "0-100 km/h": 11.2,
+  "0-100 mph": 67.3,
+  "0-60 mph": 10.5,
+  "100-0 km/h": 68.2,
+  "60-0 mph": 209.4,
+  "60-100 mph": 56.7,
+  "Body Style": "Ambulance",
+  "BoundingBox": [
+    [
+      -0.843,
+      -1.42,
+      -0.3733
+    ],
+    [
+      1.943,
+      5.63,
+      2.27
+    ]
+  ],
+  "Braking G": 0.577,
+  "Commercial Class": "Class 4 Truck",
+  "Config Type": "Service",
+  "Configuration": "EMT D45 offroad",
+  "Description": "Heavy duty variant equipped with an ambulance upfit",
+  "Name":"EMT D45 offroad",
+  "Drag Times": {
+    "brakingG": 0.5797240603,
+    "time_0_60": 11.16300068,
+    "time_1000": 15.05350087,
+    "time_1_4": 18.04900102,
+    "time_1_8": 11.50850069,
+    "time_330": 7.450000457,
+    "time_60": 2.566500155,
+    "velAt_1_4": 33.85231141,
+    "velAt_1_8": 27.23528677
+  },
+  "Drivetrain": "RWD",
+  "Fuel Type": "Gasoline",
+  "Induction Type": "NA",
+  "InsuranceClass": "commercial",
+  "Type": "Truck",
+  "Off-Road Score": 26,
+  "Population": 5000,
+  "Power": 298,
+  "PowerPeakRPM": 4400,
+  "Propulsion": "ICE",
+  "Top Speed": 44.99972559,
+  "Torque": 515,
+  "TorquePeakRPM": "2350 - 3950",
+  "Transmission": "Automatic",
+  "Value": 95600,
+  "Weight": 3565,
+  "Weight/Power": 11.96308725,
+  "Years": {
+    "max": 2003,
+    "min": 1998
+  },
+  "defaultPaintName1": "White"
+}

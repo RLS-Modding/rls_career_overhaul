@@ -5,8 +5,18 @@
 local M = {}
 
 local leaderboardFolder = "/career/speedTrapLeaderboards/"
+local core_vehicles = require('core/vehicles')
 
 M.dependencies = {'career_career', 'gameplay_speedTraps', 'gameplay_traffic'}
+
+-- Determine whether the player's vehicle is using the ambulance paint design.
+-- @return `true` if the player's vehicle has the ambulance paint design, `false` otherwise.
+local function isInAmbulance()
+  if gameplay_ambulance and gameplay_ambulance.isInAmbulance then
+    return gameplay_ambulance.isInAmbulance()
+  end
+  return false
+end
 local fines = {
   {overSpeed = 6.7056, fine = {money = {amount = 750, canBeNegative = true}}},
   {overSpeed = 11.176, fine = {money = {amount = 2000, canBeNegative = true}}},
@@ -34,8 +44,15 @@ local function hasLicensePlate(inventoryId)
   end
 end
 
+-- Handles a triggered speed trap: validates context and vehicle, then issues fines or reputation penalties, adds tickets, plays audio, shows UI messages, and updates speed-trap leaderboards.
+-- @param speedTrapData Table containing at least `speedLimit` (speed in meters per second) and `subjectID` (vehicle id) for the speed trap.
+-- @param playerSpeed Player vehicle speed in meters per second.
+-- @param overSpeed Amount by which `playerSpeed` exceeds the speed limit, in meters per second.
 local function onSpeedTrapTriggered(speedTrapData, playerSpeed, overSpeed)
   if gameplay_cab and gameplay_cab.inCab() then
+    return
+  end
+  if isInAmbulance() then
     return
   end
   if not speedTrapData.speedLimit then 
@@ -119,8 +136,15 @@ local function onSpeedTrapTriggered(speedTrapData, playerSpeed, overSpeed)
   ui_message(message, 10, 'speedTrapRecord')
 end
 
+-- Handles a red-light camera trigger for the player vehicle, applying fines or showing messages as appropriate.
+-- If the triggering vehicle is the player's, not in a cab or ambulance, and not a police officer evading pursuit, this will attempt to issue a fine (or report inability to issue if no license plate), charge payment, play the speedcam snapshot audio, and display the corresponding UI message.
+-- @param speedTrapData Table containing trigger information; expects `subjectID` identifying the triggering vehicle.
+-- @param playerSpeed Number representing the player's current speed.
 local function onRedLightCamTriggered(speedTrapData, playerSpeed)
   if gameplay_cab and gameplay_cab.inCab() then
+    return
+  end
+  if isInAmbulance() then
     return
   end
   local vehId = speedTrapData.subjectID
