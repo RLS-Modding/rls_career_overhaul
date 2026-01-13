@@ -1441,6 +1441,8 @@ local function onExtensionUnloaded()
     currentFinalStopName = nil
     stopIndexWhereBoardingStarted = nil
     pendingRouteInit = false
+    isCalculatingRoute = false
+    routeCalcTimer = 0
     currentRouteName = nil
     stopDisplayNames = {}
     routeItems = {}
