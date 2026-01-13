@@ -937,6 +937,12 @@ local function buildRouteFromConfig(selectedRoute, allTriggers, allWaypoints)
                     itemType = "waypoint"
                 end
             end
+        elseif type(stopData) == "string" then
+            stopName = stopData
+            displayName = stopData
+            if stopName:match("_wp_") or stopName:match("_waypoint_") then
+                itemType = "waypoint"
+            end
         end
 
         if itemType == "waypoint" then

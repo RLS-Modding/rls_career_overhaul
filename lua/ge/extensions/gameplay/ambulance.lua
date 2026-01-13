@@ -339,8 +339,20 @@ updateMarkers = function(dtReal, dtSim, dtRaw)
             basePayout = math.floor(basePayout * multiplier + 0.5)
         end
 
+        -- Time bonus for fast delivery (60 seconds expected per km)
+        local timeBonus = 0
+        if currentFare.startTime then
+            local elapsedTime = os.time() - currentFare.startTime
+            local expectedTime = math.max(60, distanceKM * 60) -- 60 sec/km, minimum 60 sec
+            if elapsedTime < expectedTime then
+                local timeSaved = expectedTime - elapsedTime
+                timeBonus = math.floor(timeSaved * 10) -- $10 per second saved
+                timeBonus = math.min(timeBonus, math.floor(basePayout * 0.5)) -- Cap at 50% of base
+            end
+        end
+
         local penalty = math.floor(roughRide * 0.1)
-        local finalPayout = math.max(0, basePayout - penalty)
+        local finalPayout = math.max(0, basePayout + timeBonus - penalty)
 
         if career_career and career_career.isActive() and career_modules_payment and career_modules_payment.reward then
             career_modules_payment.reward({
@@ -354,7 +366,7 @@ updateMarkers = function(dtReal, dtSim, dtRaw)
                     amount = math.floor(finalPayout / 100)
                 }
             }, {
-                label = string.format("Ambulance fare: $%d | Rough ride penalty: $%d", finalPayout, penalty),
+                label = string.format("Ambulance fare: $%d | Time bonus: $%d | Rough ride penalty: $%d", finalPayout, timeBonus, penalty),
                 tags = {"transport", "ambulance", "gameplay"}
             }, true)
         end
@@ -362,12 +374,12 @@ updateMarkers = function(dtReal, dtSim, dtRaw)
         local repGain = math.floor(finalPayout / 100)
 
         ui_message(string.format(
-            "Patient delivered!\nDistance: %.2f km\nBase: $%d\nPenalty: $%d\nEarned: $%d\nReputation +%d", distanceKM,
-            basePayout, penalty, finalPayout, repGain), 6, "info", "info")
+            "Patient delivered!\nDistance: %.2f km\nBase: $%d\nTime Bonus: $%d\nPenalty: $%d\nEarned: $%d\nReputation +%d", distanceKM,
+            basePayout, timeBonus, penalty, finalPayout, repGain), 6, "info", "info")
 
         print(string.format(
-            "[ambulance] Patient delivered. Distance: %.2f km Base: $%d Penalty: $%d Earned: $%d Reputation +%d",
-            distanceKM, basePayout, penalty, finalPayout, repGain))
+            "[ambulance] Patient delivered. Distance: %.2f km Base: $%d Time Bonus: $%d Penalty: $%d Earned: $%d Reputation +%d",
+            distanceKM, basePayout, timeBonus, penalty, finalPayout, repGain))
         currentFare.dropoffTimer = nil
         state = "completed"
         core_groundMarkers.resetAll()
@@ -474,15 +486,8 @@ function M.onUpdate(dtReal, dtSim, dtRaw)
         M.initDelayDuration = 0.1
         print("[ambulance] mission triggered by entering 911 vehicle, initializing...")
 
-        -- Assign EMT role through traffic system if possible
-        if gameplay_traffic and gameplay_traffic.getTrafficData then
-            local trafficData = gameplay_traffic.getTrafficData()
-            for _, vehRole in pairs(trafficData) do
-                if vehRole.role and vehRole.role.name == "emt" then
-                    playerVehicle:setRole("emt")
-                end
-            end
-        end
+        -- Assign EMT role (setRole validates via getRoleConstructor)
+        playerVehicle:setRole("emt")
     end
 
     -- Abandon mission when leaving ambulance vehicle
@@ -503,10 +508,6 @@ function M.onUpdate(dtReal, dtSim, dtRaw)
     -- Handle initial mission delay after vehicle enter
     if M.initDelay ~= nil then
         M.initDelay = M.initDelay + (dtSim or 0)
-        if M.initDelayDuration == nil then
-            M.initDelayDuration = math.random(M.minDelay, M.maxDelay)
-            print("[ambulance] mission trigger delay set to " .. M.initDelayDuration .. " seconds")
-        end
         if M.initDelay >= M.initDelayDuration then
             startNextMission()
             M.initDelay = nil
