@@ -658,7 +658,6 @@ local function onUpdate(dt)
     end
   end
 
-  UI.drawUI(dt, currentState, Config, nil, Contracts, Manager, Zones, uiCallbacks)
   UI.drawDebugOBB()
 
   local function spawnOrMoveTruckToZone(zone, isZoneSwap)
