@@ -5,7 +5,7 @@ local core_groundMarkers = require('core/groundMarkers')
 local core_vehicles = require('core/vehicles')
 
 -- Debug flag: set to true to enable verbose debug logging
-local DEBUG = true
+local DEBUG = false
 
 -- ================================
 -- STATE
