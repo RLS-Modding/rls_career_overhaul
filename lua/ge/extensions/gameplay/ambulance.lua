@@ -27,7 +27,8 @@ local config = {
     
     -- Physics
     maxStopSpeed = 0.5,
-    roughRideAccelThreshold = 12
+    roughRideAccelThreshold = 12,
+    roughRideAccelMultiplier = 5
 }
 
 -- Recursively searches through a parts tree to find a child named "paint_design".
@@ -78,7 +79,6 @@ local missionTriggeredForVehicle = false
 -- Stop-settle state
 local stopMonitorActive = false
 local stopSettleTimer = 0
-local stopSettleDelay = config.stopSettleDelay
 
 -- Cached ambulance state (updated on load and vehicle switch)
 local inAmbulance = false
@@ -236,9 +236,6 @@ end
 -- ================================
 -- UPDATE MARKERS & STATE
 -- ================================
--- ================================
--- UPDATE MARKERS & STATE
--- ================================
 
 -- Helper: Handle Rough Ride Metrics
 local function handleRoughRide(dtSim, velocity)
@@ -254,7 +251,7 @@ local function handleRoughRide(dtSim, velocity)
                 -- Accumulate penalty based on excess acceleration
                 -- Adjusted formula: (accel - threshold) * dt * multiplier
                 -- Increasing the multiplier makes it more sensitive
-                roughRide = roughRide + (accel - accelThreshold) * safeDt * 5
+                roughRide = roughRide + (accel - accelThreshold) * safeDt * config.roughRideAccelMultiplier
             end
         end
         lastVelocity = velocity
@@ -362,7 +359,7 @@ local function handleDropoff(dtSim, vehiclePos, speed)
         return
     else
         stopSettleTimer = stopSettleTimer + (dtSim or 0)
-        if stopSettleTimer < stopSettleDelay then
+        if stopSettleTimer < config.stopSettleDelay then
             return
         end
     end
@@ -394,7 +391,7 @@ local function handleDropoff(dtSim, vehiclePos, speed)
         local expectedTime = math.max(60, distanceKM * 60) -- 60 sec/km, minimum 60 sec
         if currentFare.elapsedTime < expectedTime then
             local timeSaved = expectedTime - currentFare.elapsedTime
-            timeBonus = math.floor(timeSaved * config.timeBonusPerSec) -- $10 per second saved
+            timeBonus = math.floor(timeSaved * config.timeBonusPerSec)
             timeBonus = math.min(timeBonus, math.floor(basePayout * 0.5)) -- Cap at 50% of base
         end
     end
@@ -443,7 +440,7 @@ local function handleDropoff(dtSim, vehiclePos, speed)
     end
 end
 
-updateMarkers = function(dtReal, dtSim, dtRaw)
+updateMarkers = function(_dtReal, dtSim, _dtRaw)
     if not currentFare then
         return
     end
