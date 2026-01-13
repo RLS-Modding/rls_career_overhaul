@@ -26,9 +26,7 @@ local config = {
     maxPenaltyFactor = 0.75,
     
     -- Physics
-    maxStopSpeed = 0.5,
-    roughRideAccelThreshold = 12,
-    roughRideAccelMultiplier = 5
+    maxStopSpeed = 0.5
 }
 
 -- Recursively searches through a parts tree to find a child named "paint_design".
@@ -91,9 +89,7 @@ M.delayDuration = nil
 M.minDelay = config.minDelay
 M.maxDelay = config.maxDelay
 
--- Track rough ride metrics
-local roughRide = 0
-local lastVelocity = nil -- 
+M.rideData = {}
 
 -- ================================
 -- FORWARD DECLARATIONS
@@ -123,9 +119,8 @@ startRide = function(fare)
 
     currentFare.playerStartPos = playerVehicle:getPosition()
     
-    -- Reset rough ride metrics
-    roughRide = 0
-    lastVelocity = nil
+    M.rideData = {}
+    M.rideData.roughEvents = 0
 
     if fare.pickup and fare.pickup.pos then
         core_groundMarkers.setPath(fare.pickup.pos)
@@ -236,26 +231,42 @@ end
 -- UPDATE MARKERS & STATE
 -- ================================
 
--- Helper: Handle Rough Ride Metrics
-local function handleRoughRide(dtSim, velocity)
-    -- Only track rough ride metrics when patient is on board (enRoute state)
-    if state == "enRoute" then
-        if lastVelocity then
-            local deltaVel = velocity - lastVelocity
-            local safeDt = (dtSim and dtSim > 0) and dtSim or 0.01
-            local accel = deltaVel:length() / safeDt
-
-            local accelThreshold = config.roughRideAccelThreshold
-            if accel > accelThreshold then
-                -- Accumulate penalty based on excess acceleration
-                -- Adjusted formula: (accel - threshold) * dt * multiplier
-                -- Increasing the multiplier makes it more sensitive
-                roughRide = roughRide + (accel - accelThreshold) * safeDt * config.roughRideAccelMultiplier
-            end
+-- ================================
+-- SENSOR DATA HANDLING
+-- ================================
+local function updateSensorData()
+    if not currentFare or state ~= "enRoute" then
+        return
+    end
+    
+    local vehicle = be:getPlayerVehicle(0)
+    if not vehicle then return end
+    
+    vehicle:queueLuaCommand([[
+        local sensors = require('sensors')
+        if sensors then
+            local gx, gy, gz = sensors.gx or 0, sensors.gy or 0, sensors.gz or 0
+            local gx2, gy2, gz2 = sensors.gx2 or 0, sensors.gy2 or 0, sensors.gz2 or 0
+            obj:queueGameEngineLua('gameplay_ambulance.receiveSensorData('..gx..','..gy..','..gz..','..gx2..','..gy2..','..gz2..')')
         end
-        lastVelocity = velocity
-    else
-        lastVelocity = nil
+    ]])
+end
+
+local function processSensorData(gx, gy, gz, gx2, gy2, gz2)
+    local grav = 9.81
+    M.rideData.currentSensorData = {
+        gx = gx / grav, gy = gy / grav, gz = gz / grav,
+        gx2 = gx2 / grav, gy2 = gy2 / grav, gz2 = gz2 / grav,
+        timestamp = os.time()
+    }
+    
+    if not M.rideData.roughEvents then
+        M.rideData.roughEvents = 0
+    end
+    
+    local peak = math.max(math.abs(gx2 / grav), math.abs(gy2 / grav), math.abs(gz2 / grav))
+    if peak > 1.2 then
+        M.rideData.roughEvents = M.rideData.roughEvents + 1
     end
 end
 
@@ -322,9 +333,7 @@ local function handlePickup(dtSim, vehiclePos, speed)
     pickupTimer = nil
     stopMonitorActive = false
     stopSettleTimer = 0
-    -- Reset rough ride tracking for the enRoute phase
-    roughRide = 0
-    lastVelocity = nil
+    M.rideData.roughEvents = 0
 end
 
 -- Helper: Handle Dropoff (EnRoute) State
@@ -395,7 +404,8 @@ local function handleDropoff(dtSim, vehiclePos, speed)
         end
     end
 
-    local penalty = math.floor(roughRide * config.roughRidePenaltyFactor)
+    local roughEvents = M.rideData.roughEvents or 0
+    local penalty = math.floor(roughEvents * config.roughRidePenaltyFactor * 100)
     -- Cap penalty at 75% of the total payout (base + time bonus)
     local maxPenalty = math.floor((basePayout + timeBonus) * config.maxPenaltyFactor)
     penalty = math.min(penalty, maxPenalty)
@@ -451,7 +461,9 @@ updateMarkers = function(_dtReal, dtSim, _dtRaw)
     local velocity = playerVehicle:getVelocity()
     local speed = velocity:length()
 
-    handleRoughRide(dtSim, velocity)
+    if state == "enRoute" then
+        updateSensorData()
+    end
 
     -- PICKUP PHASE
     if state == "pickup" then
@@ -501,8 +513,7 @@ local function onExtensionUnloaded()
     missionTriggeredForVehicle = false
     stopMonitorActive = false
     stopSettleTimer = 0
-    roughRide = 0
-    lastVelocity = nil
+    M.rideData = {}
     inAmbulance = false
 
     -- Reset timers
@@ -531,6 +542,8 @@ M.onExtensionLoaded = onExtensionLoaded
 M.onExtensionUnloaded = onExtensionUnloaded
 M.onVehicleSwitched = onVehicleSwitched
 M.isAmbulancePaintDesign = isAmbulancePaintDesign
+M.updateSensorData = updateSensorData
+M.receiveSensorData = processSensorData
 
 -- Returns the cached ambulance state (updated on load and vehicle switch)
 function M.isInAmbulance()
