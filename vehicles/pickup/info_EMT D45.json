@@ -23,7 +23,7 @@
   "Config Type": "Service",
   "Configuration": "EMT D45",
   "Description": "Heavy duty variant equipped with an ambulance upfit",
-  "Name":"EMT D45",
+  "Name": "EMT D45",
   "Drag Times": {
     "brakingG": 0.5797240603,
     "time_0_60": 11.16300068,

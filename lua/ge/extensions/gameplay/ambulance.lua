@@ -265,7 +265,7 @@ updateMarkers = function(dtReal, dtSim, dtRaw)
             if not pickupMessageShown then
                 ui_message("Securing patient!", 12, "info", "info")
                 pickupMessageShown = true
-                currentFare.startTime = os.time()
+                currentFare.elapsedTime = 0
             end
             if not pickupTimer then
                 pickupTimer = 0
@@ -290,6 +290,8 @@ updateMarkers = function(dtReal, dtSim, dtRaw)
     end
     -- DROPOFF PHASE
     if state == "enRoute" and currentFare.destination then
+        -- Accumulate elapsed time using dtSim for precision
+        currentFare.elapsedTime = (currentFare.elapsedTime or 0) + (dtSim or 0)
         local distToDropoff = (vehiclePos - currentFare.destination.pos):length()
         if distToDropoff > 3 then
             currentFare.dropoffTimer = nil
@@ -341,11 +343,10 @@ updateMarkers = function(dtReal, dtSim, dtRaw)
 
         -- Time bonus for fast delivery (60 seconds expected per km)
         local timeBonus = 0
-        if currentFare.startTime then
-            local elapsedTime = os.time() - currentFare.startTime
+        if currentFare.elapsedTime then
             local expectedTime = math.max(60, distanceKM * 60) -- 60 sec/km, minimum 60 sec
-            if elapsedTime < expectedTime then
-                local timeSaved = expectedTime - elapsedTime
+            if currentFare.elapsedTime < expectedTime then
+                local timeSaved = expectedTime - currentFare.elapsedTime
                 timeBonus = math.floor(timeSaved * 10) -- $10 per second saved
                 timeBonus = math.min(timeBonus, math.floor(basePayout * 0.5)) -- Cap at 50% of base
             end
@@ -480,7 +481,7 @@ function M.onUpdate(dtReal, dtSim, dtRaw)
     local playerVehicle = be:getPlayerVehicle(0)
 
     -- Trigger mission and assign EMT role
-    if inAmbulance and not missionTriggeredForVehicle then
+    if playerVehicle and inAmbulance and not missionTriggeredForVehicle then
         missionTriggeredForVehicle = true
         M.initDelay = 0
         M.initDelayDuration = 0.1

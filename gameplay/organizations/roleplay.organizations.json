@@ -1,5 +1,5 @@
 {
- "wcuParamedicWork": {
+  "wcuParamedicWork": {
     "name": "National EMT Association",
     "description": "",
     "icon": "beamCurrency",
@@ -34,7 +34,7 @@
           "5": 38221920
         }
       },
-	  {
+      {
         "model": "pickup",
         "config": "EMT D45 offroad",
         "reputationLvl": 0,
@@ -88,12 +88,12 @@
         // Level -1
         "label": "Recruit",
         "min": -200,
-		"hiddenFromDealerList": true
+        "hiddenFromDealerList": true
       },
       {
         // Level 0
         "label": "Rookie",
-		"hiddenFromDealerList": true
+        "hiddenFromDealerList": true
       },
       {
         // Level 1
@@ -101,7 +101,7 @@
           "value": 1.20
         },
         "label": "EMR",
-		"hiddenFromDealerList": true
+        "hiddenFromDealerList": true
       },
       {
         // Level 2
@@ -158,7 +158,7 @@
           "5": 40233600
         }
       },
-	  {
+      {
         "model": "citybus",
         "config": "busWork_city",
         "reputationLvl": 0,
@@ -173,7 +173,7 @@
           "5": 40233600
         }
       },
-	  {
+      {
         "model": "citybus",
         "config": "busWork_metro",
         "reputationLvl": 2,
@@ -188,7 +188,7 @@
           "5": 40233600
         }
       },
-	  {
+      {
         "model": "md_series",
         "config": "busWork_short",
         "reputationLvl": -1,
@@ -203,7 +203,7 @@
           "5": 40233600
         }
       },
-	  {
+      {
         "model": "md_series",
         "config": "busWork_long",
         "reputationLvl": 0,
@@ -227,12 +227,12 @@
         // Level -1
         "label": "Recruit",
         "min": -200,
-		"hiddenFromDealerList": true
+        "hiddenFromDealerList": true
       },
       {
         // Level 0
         "label": "Rookie",
-		"hiddenFromDealerList": true
+        "hiddenFromDealerList": true
       },
       {
         // Level 1
@@ -240,7 +240,7 @@
           "value": 1.20
         },
         "label": "Driver",
-		"hiddenFromDealerList": true
+        "hiddenFromDealerList": true
       },
       {
         // Level 2
@@ -277,4 +277,4 @@
       }
     ]
   }
-}  
+}

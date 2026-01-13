@@ -199,6 +199,7 @@ function M.returnPartsTree(partsTree)
 
     local capOverride = nil
     local function checkPartTreeForKeywords(tree)
+        if capOverride then return end
         for k, v in pairs(tree) do
             if type(k) == "string" then
                 local name = string.lower(k)
@@ -212,6 +213,7 @@ function M.returnPartsTree(partsTree)
             end
             if type(v) == "table" then
                 checkPartTreeForKeywords(v)
+                if capOverride then return end
             end
         end
     end
@@ -472,6 +474,11 @@ end
 local function buildPathToStop(targetStopIndex, startPos, fromStopIndex)
     local pathPoints = {startPos}
     if not routeItems or #routeItems == 0 then
+        return pathPoints
+    end
+
+    -- Guard against empty stopTriggers array
+    if not stopTriggers or #stopTriggers == 0 then
         return pathPoints
     end
 
@@ -1230,7 +1237,10 @@ local function processStop(vehicle, dtSim)
                 trueBoarding = math.random(3, math.min(12, availableSpace))
                 trueDeboarding = (passengersOnboard > 0) and math.random(1, math.min(passengersOnboard, 6)) or 0
 
-                dwellDuration = math.random(8, 12) + (trueBoarding * 0.8) + (trueDeboarding * 0.5)
+                local baseIdle = math.random(8, 12)
+                local existingDwellCalc = baseIdle + (trueBoarding * 0.8) + (trueDeboarding * 0.5)
+                local animationDuration = (trueDeboarding * 2) + (trueBoarding * 2) + baseIdle
+                dwellDuration = math.max(existingDwellCalc, animationDuration + 1)
             end
 
             ------------------------------------------------------------

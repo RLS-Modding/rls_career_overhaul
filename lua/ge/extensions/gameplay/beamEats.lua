@@ -357,7 +357,6 @@ end
 -- `baseFare` (number) — computed base fare for the delivery;
 -- `totalDistance` (number) — driving distance between pickup and destination (meters);
 -- `expectedTime` (number) — expected delivery duration (seconds);
--- `orderValue` (number) — random value multiplier for the order;
 -- `startTime` (nil|number) — delivery start timestamp (nil until started).
 -- Returns `nil` if BeamEats is disabled or no valid restaurants/delivery spots are available.
 local function generateOrder()
@@ -396,7 +395,6 @@ local function generateOrder()
     local baseFare = calculateBaseFare(totalDistance, valueMultiplier)
 
     local expectedTime = (totalDistance / suggestedSpeed) + 60
-    local orderValue = 1.0 + (math.random() * 0.5)
 
     local order = {
         restaurant = restaurant.name,
@@ -412,7 +410,6 @@ local function generateOrder()
         baseFare = baseFare,
         totalDistance = totalDistance,
         expectedTime = expectedTime,
-        orderValue = orderValue,
         startTime = nil
     }
 
@@ -446,7 +443,7 @@ local function completeDelivery()
     local timeBonus = speedFactor > 0 and (speedFactor * baseFare * 0.3) or 0
     local timePenalty = speedFactor < 0 and (math.abs(speedFactor) * baseFare * 0.2) or 0
 
-    local finalPayment = baseFare + smoothDrivingTip + timeBonus - timePenalty
+    local finalPayment = math.max(0, baseFare + smoothDrivingTip + timeBonus - timePenalty)
     cumulativeReward = cumulativeReward + finalPayment
     orderStreak = orderStreak + 1
 
@@ -649,11 +646,8 @@ local function update(_, dt)
                     gameplay_phone.togglePhone("You have a new delivery order! Open the phone to view the details.")
                 end
 
-                local beamEatsDisabled, disabledReason = isBeamEatsDisabled()
-                local effectiveState = beamEatsDisabled and "disabled" or state
-
                 dataToSend = {
-                    state = effectiveState,
+                    state = state,
                     currentOrder = newOrder,
                     vehicleMultiplier = string.format("%.1f", vehicleMultiplier),
                     cumulativeReward = cumulativeReward,
@@ -753,10 +747,9 @@ local function onVehicleSwitched()
 
     vehicleMultiplier = 0.1
 
-    if be:getPlayerVehicle(0) and not gameplay_walk.isWalking() then
+    if be:getPlayerVehicle(0) and (not gameplay_walk or not gameplay_walk.isWalking()) then
         generateValueMultiplier()
     end
-
     local beamEatsDisabled, disabledReason = isBeamEatsDisabled()
     local effectiveState = beamEatsDisabled and "disabled" or state
 
