@@ -447,7 +447,9 @@ end
 -- UTILITIES
 -- ================================
 isBus = function(vehicle)
-    return vehicle and core_vehicles.getVehicleLicenseText(vehicle) == "BUS"
+    if not vehicle then return false end
+    local plate = core_vehicles.getVehicleLicenseText(vehicle)
+    return plate and plate:upper() == "BUS"
 end
 
 -- Get the trigger object for the currently active stop.
@@ -926,6 +928,7 @@ local function buildRouteFromConfig(selectedRoute, allTriggers, allWaypoints)
     local items = {}
     local displayNames = {}
     local missingStops = {}
+    local missingWaypoints = {}
     local stopIndex = 0
 
     for _, stopData in ipairs(selectedRoute.stops) do
@@ -965,10 +968,13 @@ local function buildRouteFromConfig(selectedRoute, allTriggers, allWaypoints)
                 if displayName then
                     displayNames[stopName] = displayName
                 end
-                print(string.format("[bus] Found waypoint '%s' at %s", stopName, tostring(waypointPos)))
+                if DEBUG then
+                    print(string.format("[bus] Found waypoint '%s' at %s", stopName, tostring(waypointPos)))
+                end
             else
-                table.insert(missingStops, stopName)
-                print(string.format("[bus] Warning: Waypoint '%s' not found in scenetree", stopName))
+                -- Waypoint not found - skip it and navigation will go directly to next stop
+                table.insert(missingWaypoints, stopName)
+                print(string.format("[bus] Waypoint '%s' not found - skipping (will navigate directly to next stop)", stopName))
             end
         else
             local trigger = allTriggers[stopName]
@@ -990,6 +996,9 @@ local function buildRouteFromConfig(selectedRoute, allTriggers, allWaypoints)
         end
     end
 
+    if #missingWaypoints > 0 then
+        print(string.format("[bus] Skipped %d missing waypoints: %s", #missingWaypoints, table.concat(missingWaypoints, ", ")))
+    end
     if #missingStops > 0 then
         print(string.format("[bus] Warning: %d stops not found: %s", #missingStops, table.concat(missingStops, ", ")))
     end

@@ -100,9 +100,6 @@ startRide = function(fare)
     pickupMessageShown = false
 
     currentFare.playerStartPos = playerVehicle:getPosition()
-    lastVehiclePos = playerVehicle:getPosition()
-    roughRide = 0
-    lastVelocity = nil
 
     if fare.pickup and fare.pickup.pos then
         core_groundMarkers.setPath(fare.pickup.pos)
@@ -224,17 +221,21 @@ updateMarkers = function(dtReal, dtSim, dtRaw)
 
     local velocity = playerVehicle:getVelocity()
     local speed = velocity:length()
-    if lastVelocity then
-        local deltaVel = velocity - lastVelocity
-        local safeDt = (dtSim and dtSim > 0) and dtSim or 0.01
-        local accel = deltaVel:length() / safeDt
 
-        local accelThreshold = 2
-        if accel > accelThreshold then
-            roughRide = roughRide + (accel - accelThreshold) * safeDt * 10
+    -- Only track rough ride metrics when patient is on board (enRoute state)
+    if state == "enRoute" then
+        if lastVelocity then
+            local deltaVel = velocity - lastVelocity
+            local safeDt = (dtSim and dtSim > 0) and dtSim or 0.01
+            local accel = deltaVel:length() / safeDt
+
+            local accelThreshold = 2
+            if accel > accelThreshold then
+                roughRide = roughRide + (accel - accelThreshold) * safeDt * 10
+            end
         end
+        lastVelocity = velocity
     end
-    lastVelocity = velocity
 
     -- PICKUP PHASE
     if state == "pickup" and currentFare.pickup then
@@ -281,6 +282,9 @@ updateMarkers = function(dtReal, dtSim, dtRaw)
                 pickupTimer = nil
                 stopMonitorActive = false
                 stopSettleTimer = 0
+                -- Reset rough ride tracking for the enRoute phase
+                roughRide = 0
+                lastVelocity = nil
             end
         else
             pickupTimer = 0
@@ -353,6 +357,9 @@ updateMarkers = function(dtReal, dtSim, dtRaw)
         end
 
         local penalty = math.floor(roughRide * 0.1)
+        -- Cap penalty at 75% of the total payout (base + time bonus)
+        local maxPenalty = math.floor((basePayout + timeBonus) * 0.75)
+        penalty = math.min(penalty, maxPenalty)
         local finalPayout = math.max(0, basePayout + timeBonus - penalty)
 
         if career_career and career_career.isActive() and career_modules_payment and career_modules_payment.reward then
@@ -487,8 +494,11 @@ function M.onUpdate(dtReal, dtSim, dtRaw)
         M.initDelayDuration = 0.1
         print("[ambulance] mission triggered by entering 911 vehicle, initializing...")
 
-        -- Assign EMT role (setRole validates via getRoleConstructor)
-        playerVehicle:setRole("emt")
+        -- Assign EMT role via traffic vehicle wrapper
+        local trafficVehicle = gameplay_traffic.getTrafficData()[playerVehicle:getId()]
+        if trafficVehicle then
+            trafficVehicle:setRole("emt")
+        end
     end
 
     -- Abandon mission when leaving ambulance vehicle
