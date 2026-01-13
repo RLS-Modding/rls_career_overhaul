@@ -5,7 +5,7 @@ local core_groundMarkers = require('core/groundMarkers')
 local core_vehicles = require('core/vehicles')
 
 -- Debug flag: set to true to enable verbose debug logging
-local DEBUG = false
+local DEBUG = true
 
 -- ================================
 -- STATE
@@ -36,6 +36,8 @@ local boardingCoroutine = nil
 local currentFinalStopName = nil
 local stopIndexWhereBoardingStarted = nil -- Track which stop boarding was initiated at
 local pendingRouteInit = false -- Flag to defer initRoute() until after async capacity callback
+local isCalculatingRoute = false
+local routeCalcTimer = 0
 
 -- Current route info (to prevent route changes mid-route)
 local currentRouteName = nil
@@ -452,8 +454,6 @@ isBus = function(vehicle)
     return plate and plate:upper() == "BUS"
 end
 
--- Get the trigger object for the currently active stop.
--- @return The trigger object for the current stop, or `nil` if no current stop is set.
 local function getNextTrigger()
     if not currentStopIndex then
         return nil
@@ -461,18 +461,10 @@ local function getNextTrigger()
     return stopTriggers[currentStopIndex]
 end
 
--- Get the world position for a route item.
--- @param item Route item table which may contain a `position` vector or a `trigger` object.
--- @return The position vector if present (from `item.position` or `item.trigger:getPosition()`), or `nil` if neither is available.
 local function getItemPosition(item)
     return item.position or (item.trigger and item.trigger:getPosition())
 end
 
--- Builds an ordered list of positions from a start position through route waypoints to a target stop.
--- @param targetStopIndex The index of the destination stop within the route's stop list.
--- @param startPos The starting position vector/table to begin the path from (placed at index 1 of the result).
--- @param fromStopIndex Optional. If provided, use this stop index as the current stop when constructing the path; otherwise the module's currentStopIndex is used.
--- @return An array of position vectors beginning with `startPos` and followed by any intermediate waypoint positions and the target stop position if found.
 local function buildPathToStop(targetStopIndex, startPos, fromStopIndex)
     local pathPoints = {startPos}
     if not routeItems or #routeItems == 0 then
@@ -589,12 +581,6 @@ local function buildPathToStop(targetStopIndex, startPos, fromStopIndex)
     return pathPoints
 end
 
--- Configure navigation to follow a sequence of path points to the final destination.
--- Uses core_groundMarkers.setPath for the final destination to ensure proper visualization,
--- and optionally calculates a multi-waypoint path for display purposes.
--- Avoids U-turn suggestions by using the vehicle's forward direction as the path start.
--- @param pathPoints table Array of ordered world positions that form the planned path (may include intermediate waypoints).
--- @param targetPos table World position of the final destination.
 local function setupRoutePlannerWithWaypoints(pathPoints, targetPos)
     if not pathPoints or #pathPoints == 0 then
         print("[bus] Warning: No path points provided, using direct path to target")
@@ -647,12 +633,8 @@ local function setupRoutePlannerWithWaypoints(pathPoints, targetPos)
     -- Initialize ground markers first (this creates the internal routePlanner)
     core_groundMarkers.setPath(targetPos)
 
-    -- Now use setupPathMulti directly on the ground markers' route planner
-    -- This properly sets up the path with our forward point as a waypoint
     if core_groundMarkers.routePlanner then
-        -- Set high direction multiplier to heavily penalize wrong-way travel
         core_groundMarkers.routePlanner:setRouteParams(nil, 1e6, nil, nil, nil, nil)
-        -- Calculate path through all our adjusted points (forward point -> waypoints -> target)
         core_groundMarkers.routePlanner:setupPathMulti(adjustedPathPoints)
 
         if DEBUG then
@@ -664,11 +646,6 @@ local function setupRoutePlannerWithWaypoints(pathPoints, targetPos)
     end
 end
 
--- Display navigation markers guiding the player from their current position to the next bus stop.
--- If `targetStopIndex` is provided, shows markers for that stop; otherwise uses the stop after `currentStopIndex` (wraps to the first stop).
--- When in a vehicle, builds a waypoint path from the vehicle's position to the target stop and configures the route planner; when not in a vehicle, places a direct ground marker at the stop.
--- Also updates the visual perimeter markers for the shown stop.
--- @param targetStopIndex? Optional index of the stop to target; if omitted the next stop after `currentStopIndex` is used.
 local function showNextStopMarker(targetStopIndex)
     -- If targetStopIndex is provided, use it; otherwise calculate from currentStopIndex
     local nextStopIndex = targetStopIndex
@@ -710,13 +687,6 @@ local function showNextStopMarker(targetStopIndex)
 end
 
 -- ================================
--- ROUTE END 
--- Ends the current bus route/shift and finalizes payouts, reputation, UI, and internal state.
--- Displays a summary message (including stops, base pay, tips, bonus, total payout, and reputation gained when applicable),
--- clears navigation and stop markers, resets route-related state and counters, and updates the vehicle's bus display to "Not in Service".
--- If a positive `payout` is provided and the career payment module is active, grants money, XP (floor(payout/10)), and busWorkReputation (floor(payout/500)).
--- @param reason Optional string explaining why the route ended (shown in the UI message).
--- @param payout Optional numeric total payout to award; when omitted or non-positive, no rewards are granted.
 local function endRoute(reason, payout)
     currentRouteActive = false
     dwellTimer = nil
@@ -1211,7 +1181,9 @@ local function processStop(vehicle, dtSim)
             stopMonitorActive = true
             stopSettleTimer = 0
             ui_message("Please open doors to begin boarding", 2.5, "info", "bus")
+            core_vehicleBridge.executeAction(vehicle, 'setFreeze', true)
         else
+            
             stopSettleTimer = stopSettleTimer + (dtSim or 0.033)
         end
 
@@ -1410,9 +1382,11 @@ local function processStop(vehicle, dtSim)
                 print(string.format("[bus] Moving to next stop: index %d, name %s", nextStopIndex, nextStopName))
                 -- Update currentStopIndex BEFORE setting navigation to prevent race conditions
                 currentStopIndex = nextStopIndex
-                -- Show path to next stop (from current stop to next stop)
-                showNextStopMarker(nextStopIndex)
-                ui_message(string.format("Proceed to Stop %02d.", currentStopIndex), 4, "info", "bus_next")
+                
+                isCalculatingRoute = true
+                routeCalcTimer = 0
+                ui_message("Calculating route...", 1, "info", "info")
+
                 updateBusControllerDisplay()
             end
         end
@@ -1483,6 +1457,28 @@ function M.onUpdate(dtReal, dtSim, dtRaw)
     if routeCooldown > 0 then
         routeCooldown = math.max(0, routeCooldown - (dtSim or 0))
         return
+    end
+
+    if isCalculatingRoute then
+        routeCalcTimer = routeCalcTimer + (dtSim or 0.033)
+        -- Wait 0.5s to ensure vehicle is fully stopped and UI updates before the lag spike
+        if routeCalcTimer > 0.5 then
+            local vehicle = be:getPlayerVehicle(0)
+
+            -- Perform the heavy path calculation
+            showNextStopMarker(currentStopIndex)
+
+            -- Show the message
+            ui_message(string.format("Proceed to Stop %02d.", currentStopIndex), 4, "info", "bus_next")
+
+            -- Unfreeze
+            if vehicle then
+                core_vehicleBridge.executeAction(vehicle, 'setFreeze', false)
+            end
+
+            isCalculatingRoute = false
+        end
+        return -- Stop processing while calculating
     end
 
     local vehicle = be:getPlayerVehicle(0)

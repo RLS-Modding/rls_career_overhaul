@@ -51,3 +51,7 @@
 {"name":"quarry","class":"SimGroup","persistentId":"73e07564-bcdc-4d9f-87ce-a4bcba3fb33c","__parent":"MissionGroup"}
 {"name":"RLS_EDITS","class":"SimGroup","__parent":"MissionGroup"}
 {"name":"Mesh Spline 7","class":"SimGroup","__parent":"MissionGroup"}
+{"name":"ASOTV","class":"SimGroup","__parent":"MissionGroup"}
+{"name":"JoesJunk","class":"SimGroup","__parent":"MissionGroup"}
+{"name":"RaceTab","class":"SimGroup","__parent":"MissionGroup"}
+{"name":"BeamNGWaypoint_4","class":"BeamNGWaypoint","__parent":"MissionGroup","position":[-923.272583,623.669434,118.555946],"rotationMatrix":[0.999702036,-0.02440539,9.31322464e-10,0.023727661,0.971940577,-0.23402606,0.00571149774,0.233956382,0.972230136]}
