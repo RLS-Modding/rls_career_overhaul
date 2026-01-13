@@ -396,9 +396,8 @@ local function createStopPerimeter(trigger)
         local groundPos = hit and vec3(hit.pt) or (corner.pos + vecZ * 0.05)
         groundPos = groundPos + vecZ * 0.05
 
-        -- Calculate rotation
-        local hitNorm = hit and vec3(hit.norm) or vecZ
-        local finalRot = rotations[i] * qOff * quatFromDir(hitNorm, vecY)
+        -- Calculate rotation - always point up, ignore ground slope
+        local finalRot = rotations[i] * qOff * quatFromDir(vec3(0, 0, 1), vecY)
 
         -- Create and position marker
         local marker = createCornerMarker(markerName)
