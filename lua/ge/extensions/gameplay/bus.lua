@@ -39,6 +39,7 @@ local stopDisplayNames = {}
 local routeItems = {}
 local stopMarkerObjects = {}
 local stopPerimeterTrigger = nil
+local currentLoanerCut = 0
 
 local isBus
 local initRoute
@@ -411,6 +412,36 @@ isBus = function(vehicle)
     return plate and plate:upper() == "BUS"
 end
 
+local function calculateLoanerCut(vehId)
+    if not vehId then
+        return 0
+    end
+    
+    if not career_modules_loanerVehicles or not career_modules_loanerVehicles.getLoaningOrgsOfVehicle then
+        return 0
+    end
+    
+    local loaningOrgs = career_modules_loanerVehicles.getLoaningOrgsOfVehicle(vehId)
+    if not loaningOrgs or not next(loaningOrgs) then
+        return 0
+    end
+    
+    local totalCut = 0
+    for organizationId, _ in pairs(loaningOrgs) do
+        local organization = freeroam_organizations.getOrganization(organizationId)
+        if organization and organization.reputation and organization.reputationLevels then
+            local level = organization.reputation.level
+            local levelIndex = level + 2
+            if organization.reputationLevels[levelIndex] and organization.reputationLevels[levelIndex].loanerCut then
+                local orgCut = organization.reputationLevels[levelIndex].loanerCut.value or 0.5
+                totalCut = totalCut + orgCut
+            end
+        end
+    end
+    
+    return math.min(totalCut, 1.0)
+end
+
 local function getNextTrigger()
     if not currentStopIndex then
         return nil
@@ -640,6 +671,10 @@ local function endRoute(reason, payout)
     local reputationGain = 0
 
     if payout and payout > 0 then
+        if currentLoanerCut > 0 then
+            payout = math.floor(payout * (1 - currentLoanerCut))
+        end
+        
         local basePay = accumulatedReward
         local tipsEarned = tipTotal
         local bonusPay = math.max(0, payout - (basePay + tipsEarned))
@@ -689,6 +724,7 @@ local function endRoute(reason, payout)
 
     accumulatedReward, passengersOnboard, totalStopsCompleted, tipTotal = 0, 0, 0, 0
     roughRide, lastVelocity, activeBusID = 0, nil, nil
+    currentLoanerCut = 0
 end
 
 -- Loads map-specific bus route configurations from disk by locating and parsing a JSON route file for the current level.
@@ -1260,6 +1296,7 @@ local function onVehicleSwitched(oldId, newId)
     if newVeh and isBus(newVeh) then
         if not currentRouteActive or not routeInitialized then
             activeBusID = newId
+            currentLoanerCut = calculateLoanerCut(newId)
             ui_message("Shift started. Welcome in! Drive careful out there.", 10, "info", "info")
             pendingRouteInit = true
             retrievePartsTree()
@@ -1407,6 +1444,7 @@ local function onExtensionUnloaded()
     currentRouteName = nil
     stopDisplayNames = {}
     routeItems = {}
+    currentLoanerCut = 0
 
     M.vehicleCapacity = nil
 
