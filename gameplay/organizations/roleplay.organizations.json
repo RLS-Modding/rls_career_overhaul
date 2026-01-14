@@ -7,7 +7,7 @@
       {
         "model": "van",
         "config": "EMT H45",
-        "reputationLvl": 0,
+        "reputationLvl": 3,
         "deliveryLvl": 0,
         "mileages": {
           "-1": 804672000,
@@ -22,7 +22,7 @@
       {
         "model": "pickup",
         "config": "EMT D45",
-        "reputationLvl": 0,
+        "reputationLvl": 2,
         "deliveryLvl": 0,
         "mileages": {
           "-1": 764438400,
@@ -37,7 +37,7 @@
       {
         "model": "pickup",
         "config": "EMT D45 offroad",
-        "reputationLvl": 0,
+        "reputationLvl": 1,
         "deliveryLvl": 0,
         "mileages": {
           "-1": 804672000,
