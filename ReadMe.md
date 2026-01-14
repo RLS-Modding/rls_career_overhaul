@@ -1,6 +1,10 @@
 # RLS Career Overhaul v2.6.2 (0.38.3)
 
-Welcome to the **RLS Career Overhaul** mod for BeamNG.drive! This mod enhances various aspects of the game, including freeroam events, police interactions, the economy, deliveries, insurance, garage space, and dealerships. With Challenge Modes and Freeroam+, you can play career however you want - whether you prefer structured challenges, economic freedom, or the standard career experience. Dive into a more immersive and challenging career mode enriched with new features and improvements.
+Welcome to the **RLS Career Overhaul** mod for BeamNG.drive! This mod transforms career mode with extensive new work systems, freeroam events, police interactions, an overhauled economy, and much more.
+
+**Earn money your way** with multiple job types: deliveries, cargo loading, taxi service, bus operations, ambulance work, food delivery (BeamEats), repo missions, police enforcement, and vehicle rentals. Manage your finances with an improved insurance system, loans, and a marketplace to sell vehicles. Expand your empire with purchasable garages, 15+ dealership types, and business ownership.
+
+With **Challenge Modes** and **Freeroam+**, you can play career however you want - whether you prefer structured challenges, economic freedom, or the standard career experience. Dive into a more immersive and challenging career mode enriched with new features and improvements.
 
 ---
 
@@ -24,6 +28,10 @@ Welcome to the **RLS Career Overhaul** mod for BeamNG.drive! This mod enhances v
     - [Police](#police)
     - [Economy](#economy)
     - [Deliveries](#deliveries)
+    - [Loading Work](#loading-work)
+    - [Ambulance Work](#ambulance-work)
+    - [Bus Work](#bus-work)
+    - [BeamEats Delivery](#beameats-delivery)
     - [Insurance](#insurance)
       - [Insurance Policies](#insurance-policies)
       - [Policy Score](#policy-score)
@@ -131,7 +139,20 @@ All settings are automatically saved and persist between game sessions. The sett
 
 ## Overview
 
-The **RLS Career Overhaul** mod significantly enhances the career mode experience in BeamNG.drive. It introduces a variety of freeroam events, dynamic police interactions, an improved economy, revamped deliveries, a sophisticated insurance system, expanded garage space, reworked dealerships, loans system, and more.
+The **RLS Career Overhaul** mod significantly enhances the career mode experience in BeamNG.drive. It introduces a variety of freeroam events, dynamic police interactions, an improved economy, and multiple ways to earn money through diverse work systems.
+
+**Work Systems Available**:
+- **Deliveries** - Haul cargo, parcels, vehicles, and trailers across the map
+- **Loading Work** - Take cargo loading contracts at facilities and transport goods
+- **Taxi Work** - Pick up passengers with 9 different passenger types and fare tiers
+- **Bus Operations** - Run public transit routes with passenger boarding/deboarding
+- **Ambulance Work** - Emergency medical transport with smooth driving requirements
+- **BeamEats Delivery** - Food delivery service with handling quality tracking
+- **Repo Missions** - Repossess and tow vehicles back to dealerships
+- **Police Work** - Enforce the law and apprehend suspects
+- **Vehicle Rental** - Rent your high-value vehicles to movie studios
+
+The mod also features a sophisticated insurance system, expanded garage space, reworked dealerships with 15+ dealer types, a loans system, car meets, a marketplace to sell vehicles, and business ownership including a tuning shop.
 
 With **Challenge Modes** and **Freeroam+**, the mod offers multiple gameplay modes that allow you to play career however you want. Whether you prefer structured challenges with specific goals, economic freedom without constraints, or the standard career progression, there's a mode to suit your playstyle.
 
@@ -414,6 +435,74 @@ Rock crawls have been added as part of West Coast adjustments and additions to t
 - **Remote Delivery Modifier**: Special delivery modifier for Pepper Valley map
 - **Gooseneck Trailers**: Added gooseneck delivery trailers (22ft and 30ft variants) for Pepper Valley
 - **Pepper Valley Facilities**: New delivery facilities including warehouses and mixed delivery sites
+
+---
+
+### Loading Work
+
+Take on cargo loading contracts at various facilities across the map:
+
+- **Contract System**: Accept loading contracts from facilities that need cargo transported
+- **Loading Zones**: Park your vehicle in designated loading zones at warehouses, ports, and industrial sites
+- **Cargo Types**: Load various cargo including:
+  - Dry bulk materials (grain, cement, aggregates)
+  - Fluid cargo (fuel, oil, chemicals)
+  - General freight and palletized goods
+  - Construction materials
+- **Precision Parking**: Requires accurate positioning in loading bays for cargo to be loaded
+- **Weight Management**: Monitor your vehicle's weight capacity when accepting loads
+- **Facility Integration**: Works with the delivery system - load cargo at one facility and deliver to another
+- **Rewards**: Payment based on cargo type, weight, and delivery distance
+
+---
+
+### Ambulance Work
+
+Respond to emergency medical calls and transport patients to hospitals:
+
+- **Emergency Dispatch**: Receive emergency calls requiring patient transport
+- **Patient Pickup**: Navigate to the emergency location and pick up patients
+- **Hospital Delivery**: Transport patients safely to the nearest hospital
+- **Smooth Driving Required**: Patient condition is monitored during transport:
+  - Rough driving (hard braking, collisions, aggressive turns) results in penalties
+  - Smooth, careful driving maximizes your payout
+- **Time Pressure**: Faster response and delivery times improve rewards
+- **Vehicle Requirements**: Requires an ambulance or emergency medical vehicle
+- **Damage Penalties**: Vehicle damage during transport affects patient condition and payout
+
+---
+
+### Bus Work
+
+Operate public transit routes picking up and dropping off passengers:
+
+- **Route System**: Follow designated bus routes with multiple stops
+- **Passenger Management**:
+  - Passengers board at bus stops along your route
+  - Track passenger count against your bus capacity
+  - Passengers deboard at their destination stops
+- **Stop Navigation**: On-screen guidance to the next bus stop on your route
+- **Waypoint Flexibility**: Skip stops if no passengers are waiting (configurable)
+- **Capacity Awareness**: System detects your vehicle's seating capacity
+- **Route Variations**: Multiple bus routes available across different areas
+- **Payment**: Earn money per passenger transported, with bonuses for route completion
+
+---
+
+### BeamEats Delivery
+
+Deliver food orders from restaurants to hungry customers:
+
+- **Order Pickup**: Collect food orders from participating restaurants
+- **Customer Delivery**: Navigate to customer locations and complete deliveries
+- **Food Condition Monitoring**: Deliveries are tracked for handling quality:
+  - Sensor-based detection of rough handling
+  - Hard braking, collisions, and aggressive driving damage the food
+  - Damaged orders result in reduced tips and ratings
+- **Time-Based Modifiers**: Faster deliveries earn better tips
+- **Multiple Orders**: Pick up and deliver multiple orders in a single run
+- **Rating System**: Customer satisfaction affects future order availability
+- **Rewards**: Base pay plus tips based on speed and food condition
 
 ---
 
