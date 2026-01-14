@@ -1371,6 +1371,8 @@ M.moveCargoFromUi = moveCargoFromUi
 
 -- called by activity accept or from the career menu to enter the cargo screen.
 local function enterCargoOverviewScreen(facilityId, parkingSpotPath)
+  vehicleSpawnInProgress = false
+  pendingTransientMoves = false
   dGeneral.getNearbyVehicleCargoContainers(function(playerCargoContainers)
     cargoOverviewScreenOpen = true
     cargoOverviewTab = ""
@@ -1441,10 +1443,6 @@ end
 
 -- call this function to commit the configuration and clear all transient flags.
 local function commitDeliveryConfiguration()
-  local playerCargo = dParcelManager.getAllCargoInVehicles()
-  local transientCargo = dParcelManager.getTransientMoveCargo()
-  local countTotal, countTransient, countDeleted, deletedMoneySum = 0,0,0,0
-
   local function getOffersToSpawn()
     local offers = {}
     local vehOffers = dVehOfferManager.getAllOfferUnexpired()
@@ -1578,8 +1576,11 @@ local function commitDeliveryConfiguration()
 
     core_vehicleBridge.requestValue(veh, function(vehCargoContainerData)
       local maxForContainer = 0
-      for _, container in ipairs(vehCargoContainerData[1]) do
-        maxForContainer = math.max(maxForContainer, container.reachTargetTimeRemaining)
+      if vehCargoContainerData and vehCargoContainerData[1] then
+        for _, container in ipairs(vehCargoContainerData[1]) do
+          local rt = container.reachTargetTimeRemaining or 0
+          maxForContainer = math.max(maxForContainer, rt)
+        end
       end
 
       local delay = math.max(maxForContainer, 0)
@@ -1652,11 +1653,13 @@ local function commitDeliveryConfiguration()
 
     parcelLoadQueue = {}
     for vehId, containerData in pairs(updatePerVehicle) do
+      local vid = vehId
+      local cdata = containerData
       table.insert(parcelLoadQueue, {
-        vehId = vehId,
-        containerData = containerData,
+        vehId = vid,
+        containerData = cdata,
         callback = function()
-          log("I","",string.format("Finished loading parcels for vehicle %d", vehId))
+          log("I","",string.format("Finished loading parcels for vehicle %d", vid))
         end
       })
     end
@@ -1706,33 +1709,40 @@ local function commitDeliveryConfiguration()
     step.startStepSequence(vehicleSpawnSequence, function()
       career_modules_loanerVehicles.spawnAllOffers()
       applyValidDeferredCargo(deferredCargo)
+      deferredCargo = {} -- clear reference for GC
       
       local playerVehId = be:getPlayerVehicleID(0)
       if playerVehId then
         loadParcelsForVehicleGroup({playerVehId}, function()
           vehicleSpawnInProgress = false
-          pendingTransientMoves = false
+          local postCommitTransientCargo = dParcelManager.getTransientMoveCargo()
+          pendingTransientMoves = #postCommitTransientCargo > 0
           gameplay_markerInteraction.setForceReevaluateOpenPrompt()
         end)
       else
         vehicleSpawnInProgress = false
-        pendingTransientMoves = false
+        local postCommitTransientCargo = dParcelManager.getTransientMoveCargo()
+        pendingTransientMoves = #postCommitTransientCargo > 0
         gameplay_markerInteraction.setForceReevaluateOpenPrompt()
       end
     end)
   else
     applyValidDeferredCargo(deferredCargo)
+    deferredCargo = {} -- clear reference for GC
     
     local playerVehId = be:getPlayerVehicleID(0)
     if playerVehId then
+      vehicleSpawnInProgress = true
       loadParcelsForVehicleGroup({playerVehId}, function()
         vehicleSpawnInProgress = false
-        pendingTransientMoves = false
+        local postLoadTransientCargo = dParcelManager.getTransientMoveCargo()
+        pendingTransientMoves = #postLoadTransientCargo > 0
         gameplay_markerInteraction.setForceReevaluateOpenPrompt()
       end)
     else
       vehicleSpawnInProgress = false
-      pendingTransientMoves = false
+      local postLoadTransientCargo = dParcelManager.getTransientMoveCargo()
+      pendingTransientMoves = #postLoadTransientCargo > 0
       gameplay_markerInteraction.setForceReevaluateOpenPrompt()
     end
   end
@@ -1742,6 +1752,7 @@ end
 local function cancelDeliveryConfiguration()
   dParcelManager.clearAllTransientMoves()
   pendingTransientMoves = false
+  vehicleSpawnInProgress = false
   for _, offer in ipairs(dVehOfferManager.getAllOfferCustomFilter(function() return true end)) do
     offer.spawnWhenCommitingCargo = nil
   end
