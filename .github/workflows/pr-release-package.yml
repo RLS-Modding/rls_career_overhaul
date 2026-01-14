@@ -59,7 +59,8 @@ jobs:
       - name: Pull LFS files
         run: |
           git lfs install
-          git lfs pull --all
+          git lfs fetch --all
+          git lfs checkout
 
       - name: Create and save cache archive
         if: steps.lfs-cache.outputs.cache-hit != 'true'
