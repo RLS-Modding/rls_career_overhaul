@@ -716,7 +716,6 @@ local function setupInventory(levelPath)
 
     if career_modules_linearTutorial.getLinearStep() == -1 then
         if loadedVehiclesLocations then
-            local vehiclesToTeleportToGarage = {}
             for inventoryId, location in pairs(loadedVehiclesLocations) do
                 local vehInfo = vehicles[inventoryId]
                 if vehInfo.loanType == "work" then
@@ -736,10 +735,6 @@ local function setupInventory(levelPath)
                               location.rot = levelGate:getRotation()
                           end
                       end
-                      if not levelGate and location.option == "garage" then
-                          location.vehId = veh:getID()
-                          vehiclesToTeleportToGarage[inventoryId] = location
-                      end
                       spawn.safeTeleport(veh, location.pos, location.rot)
                       core_jobsystem.create(function(job)
                         job.sleep(2)
@@ -749,16 +744,6 @@ local function setupInventory(levelPath)
                 end
             end
             loadedVehiclesLocations = nil
-
-            -- The teleport to garage needs to happen with one frame delay because that's when the OOBBs get updated
-            extensions.core_jobsystem.create(function(job)
-                for inventoryId, location in pairs(vehiclesToTeleportToGarage) do
-                    local veh = getObjectByID(location.vehId)
-                    local garage = getClosestGarage(location.pos)
-                    freeroam_facilities.teleportToGarage(garage.id, veh)
-                    job.sleep(0.1)
-                end
-            end)
         end
 
         if vehicleToEnterId and inventoryIdToVehId[vehicleToEnterId] then
