@@ -231,41 +231,6 @@ local function onExtensionLoaded()
         if not saveAnyVehiclePosDEBUG then
           transform.option = "garage"
         end
-        -- change pos and rot to closest parking spot
-        local psList = parking.findParkingSpots(vec3(transform.pos))
-        local closestGarage, closestGarageSpot, garageDistance = getClosestGarageAndSpot(transform.pos, levelName)
-        
-        local closestParkingSpot
-        local closestParkingDist = math.huge
-
-        -- Find closest regular parking spot
-        if psList and #psList > 0 then
-          for _, psData in ipairs(psList) do
-            local spot = psData.ps
-            if not spot.vehicle and not spot:hasAnyVehicles() then
-              local dist = spot.pos:distance(transform.pos)
-              if dist < closestParkingDist then
-                closestParkingDist = dist
-                closestParkingSpot = spot
-              end
-            end
-          end
-        end
-
-        -- Compare distances and place vehicle accordingly
-        if closestGarageSpot and garageDistance < closestParkingDist then
-          transform.pos = closestGarageSpot.pos
-          transform.rot = quat(closestGarageSpot.rot)
-          closestGarageSpot.vehicle = true
-          transform.inGarage = true
-          transform.garageId = closestGarage.id
-        elseif closestParkingSpot then
-          transform.pos = closestParkingSpot.pos
-          transform.rot = quat(closestParkingSpot.rot)
-          closestParkingSpot.vehicle = true
-          transform.inGarage = false
-        end
-
         loadedVehiclesLocations[inventoryId] = transform
       end
     else
