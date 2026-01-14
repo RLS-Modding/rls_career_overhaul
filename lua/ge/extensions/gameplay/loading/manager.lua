@@ -1123,7 +1123,75 @@ end
 function M.getLoadingZoneTargetPos(group)
   if not group then return nil end
   if group.stopLocations and #group.stopLocations > 0 then
-    return vec3(group.stopLocations[1].pos)
+    local stopPos = vec3(group.stopLocations[1].pos)
+    
+    if map and map.findClosestRoad and map.getMap then
+      local stopRoadName, stopNodeIdx, stopDist = map.findClosestRoad(stopPos)
+      
+      if stopRoadName and stopNodeIdx then
+        local mapData = map.getMap()
+        if mapData and mapData.nodes and mapData.roads then
+          local loadingCenter = nil
+          if group.loading and group.loading.center then
+            loadingCenter = vec3(group.loading.center)
+          end
+          
+          local roadData = mapData.roads[stopRoadName]
+          if roadData and roadData.nodes then
+            local stopNodeInRoad = nil
+            for i, nodeIdx in ipairs(roadData.nodes) do
+              if nodeIdx == stopNodeIdx then
+                stopNodeInRoad = i
+                break
+              end
+            end
+            
+            if stopNodeInRoad then
+              local nextNodeIdx = nil
+              
+              if loadingCenter then
+                local loadingRoadName, loadingNodeIdx, loadingDist = map.findClosestRoad(loadingCenter)
+                
+                if loadingRoadName == stopRoadName and loadingNodeIdx then
+                  local loadingNodeInRoad = nil
+                  for i, nodeIdx in ipairs(roadData.nodes) do
+                    if nodeIdx == loadingNodeIdx then
+                      loadingNodeInRoad = i
+                      break
+                    end
+                  end
+                  
+                  if loadingNodeInRoad then
+                    if loadingNodeInRoad > stopNodeInRoad and stopNodeInRoad < #roadData.nodes then
+                      nextNodeIdx = roadData.nodes[stopNodeInRoad + 1]
+                    elseif loadingNodeInRoad < stopNodeInRoad and stopNodeInRoad > 1 then
+                      nextNodeIdx = roadData.nodes[stopNodeInRoad - 1]
+                    end
+                  end
+                end
+              end
+              
+              if not nextNodeIdx then
+                if stopNodeInRoad < #roadData.nodes then
+                  nextNodeIdx = roadData.nodes[stopNodeInRoad + 1]
+                elseif stopNodeInRoad > 1 then
+                  nextNodeIdx = roadData.nodes[stopNodeInRoad - 1]
+                end
+              end
+              
+              if nextNodeIdx then
+                local nextNode = mapData.nodes[nextNodeIdx]
+                if nextNode and nextNode.pos then
+                  return vec3(nextNode.pos)
+                end
+              end
+            end
+          end
+        end
+      end
+    end
+    
+    return stopPos
   elseif group.loading and group.loading.center then
     return vec3(group.loading.center)
   end
