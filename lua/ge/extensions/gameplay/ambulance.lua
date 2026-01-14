@@ -461,7 +461,7 @@ local function handleDropoff(dtSim, vehiclePos, speed)
                 amount = math.floor(finalPayout / 100)
             }
         }, {
-            label = string.format("Gross Earnings: $%d | Time bonus: $%d | Rough ride penalty: $%d | Loaner Cut: -$%d", finalPayout + loanerCutAmount, timeBonus, penalty, loanerCutAmount),
+            label = string.format("Gross Earnings: $%d | Time bonus: $%d | Rough ride penalty: -$%d | Loaner Cut: -$%d | Net: $%d", finalPayout + loanerCutAmount, timeBonus, penalty, loanerCutAmount, finalPayout),
             tags = {"transport", "ambulance", "gameplay"}
         }, true)
     end
