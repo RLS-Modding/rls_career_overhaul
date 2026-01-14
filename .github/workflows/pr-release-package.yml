@@ -38,10 +38,53 @@ jobs:
           lfs: false
           fetch-depth: 0
 
+      - name: Restore working directory from cache
+        uses: actions/cache@v4
+        id: lfs-cache
+        with:
+          path: |
+            challenges/
+            gameplay/
+            levels/
+            lua/
+            mod_info/
+            scripts/
+            ui/
+            vehicles/
+            baseUI/
+            ui-vue-src/
+            build_ui.bat
+            .gitattributes
+            .gitignore
+          key: lfs-${{ github.repository }}-${{ github.sha }}
+          restore-keys: |
+            lfs-${{ github.repository }}-${{ github.head_ref }}-
+            lfs-${{ github.repository }}-
+
       - name: Pull LFS files
         run: |
           git lfs install
           git lfs pull
+
+      - name: Save working directory to cache
+        if: steps.lfs-cache.outputs.cache-hit != 'true'
+        uses: actions/cache@v4
+        with:
+          path: |
+            challenges/
+            gameplay/
+            levels/
+            lua/
+            mod_info/
+            scripts/
+            ui/
+            vehicles/
+            baseUI/
+            ui-vue-src/
+            build_ui.bat
+            .gitattributes
+            .gitignore
+          key: lfs-${{ github.repository }}-${{ github.sha }}
 
       - name: Check for UI source changes
         uses: dorny/paths-filter@v3
