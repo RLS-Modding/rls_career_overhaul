@@ -211,7 +211,7 @@ local function setActiveInsurance()
     local invVehId = career_modules_inventory.getInventoryIdFromVehicleId(newVehId)
     if invVehId then
       if invVehs[invVehId] then
-        activeInsuranceId = invVehs[invVehId].insuranceId
+        activeInsuranceId = invVehs[invVehId].insuranceId or -1
         if activeInsuranceId > 0 then -- if the vehicle is insured ...
           local newVeh = scenetree.findObjectById(newVehId)
           if newVeh then
