@@ -158,13 +158,17 @@ local gestures = {
     if plInsuranceData.accidentForgiveness >= maxAccidentForgiveness then return false end
 
     plInsuranceData.accidentForgiveness = plInsuranceData.accidentForgiveness + 1
+    local insuranceName = "Unknown"
+    if plInsuranceData.insuranceId and availableInsurances[plInsuranceData.insuranceId] then
+      insuranceName = availableInsurances[plInsuranceData.insuranceId].name
+    end
     career_modules_insurance_history.addToPlHistory({
       type = "freeRepair",
       title = "Free repair",
       effects = {{type = "freeRepair", label = "Free repair", changedBy = 1, newValue = plInsuranceData.accidentForgiveness}},
-      concernedInsuranceName = availableInsurances[plInsuranceData.insuranceId].name
+      concernedInsuranceName = insuranceName
     })
-    ui_message(string.format("'%s' insurance has given you a repair forgiveness due to not having submitted any claim for a while", availableInsurances[plInsuranceData.insuranceId].name))
+    ui_message(string.format("'%s' insurance has given you a repair forgiveness due to not having submitted any claim for a while", insuranceName))
 
     return true
   end
@@ -174,8 +178,9 @@ local function getPlCoverageOptionValue(invVehId, coverageOptionName)
   if not invVehId then return end
   if not invVehs[invVehId] then return end
 
-  if invVehs[invVehId].insuranceId > 0 then -- if insured
-    local plInsuranceData = plInsurancesData and plInsurancesData[invVehs[invVehId].insuranceId]
+  local insuranceId = invVehs[invVehId].insuranceId or -1
+  if insuranceId > 0 then -- if insured
+    local plInsuranceData = plInsurancesData and plInsurancesData[insuranceId]
     if not plInsuranceData then return end
     local valueId = nil
     if availableCoverageOptions[coverageOptionName].isInsuranceWide then
@@ -183,7 +188,7 @@ local function getPlCoverageOptionValue(invVehId, coverageOptionName)
     else
       valueId = invVehs[invVehId].insuranceData.coverageOptionsData.currentCoverageOptions[coverageOptionName]
     end
-    return availableInsurances[invVehs[invVehId].insuranceId].coverageOptions[coverageOptionName].choices[valueId].value
+    return availableInsurances[insuranceId].coverageOptions[coverageOptionName].choices[valueId].value
   end
 end
 
@@ -468,6 +473,11 @@ local function loadInsurancesData(resetSomeData)
     totalDrivenDistance = savedPlInsuranceData.totalDrivenDistance or 0
     invVehs = savedPlInsuranceData.invVehs
     normalizeInvVehsKeys()
+    for _, invVehData in pairs(invVehs) do
+      if invVehData.insuranceId == nil then
+        invVehData.insuranceId = -1
+      end
+    end
     career_modules_insurance_history.setPlHistory(savedPlInsuranceData.plHistory)
     plInsurancesData = savedPlInsuranceData.plInsurancesData or {}
   end
@@ -565,10 +575,10 @@ local function makeRepairClaim(invVehId, costs, vehInfo)
     totalCost = totalCost + cost
   end
 
-  local insuranceId = invVehs[invVehId].insuranceId
+  local insuranceId = invVehs[invVehId].insuranceId or -1
   local hasUsedAccidentForgiveness = false
 
-  if plInsurancesData[insuranceId].accidentForgiveness > 0 then
+  if insuranceId > 0 and plInsurancesData[insuranceId] and plInsurancesData[insuranceId].accidentForgiveness > 0 then
     plInsurancesData[insuranceId].accidentForgiveness = plInsurancesData[insuranceId].accidentForgiveness - 1
     hasUsedAccidentForgiveness = true
   else
@@ -577,11 +587,16 @@ local function makeRepairClaim(invVehId, costs, vehInfo)
 
   lastDriverScoreKmIncrease = totalDrivenDistance
 
+  local insuranceName = "None"
+  if insuranceId > 0 and availableInsurances[insuranceId] then
+    insuranceName = availableInsurances[insuranceId].name
+  end
+
   career_modules_insurance_history.addToPlHistory({
     type = "insuranceRepairClaim",
     title = "Insurance repair claim",
     effects = {{type = "money", label = "Money", changedBy = -totalCost, newValue = career_modules_playerAttributes.getAttributeValue("money")}, {type = "driverScore", label = "Driver score", changedBy = -driverScoreIncrementAmount, newValue = plDriverScore}},
-    concernedInsuranceName = availableInsurances[insuranceId].name,
+    concernedInsuranceName = insuranceName,
     overrideText = hasUsedAccidentForgiveness and "Use accident forgiveness" or nil,
     other = {
       vehDamagePrice = career_modules_valueCalculator.getRepairDetails(vehInfo).price,
@@ -768,6 +783,7 @@ local function updateDistanceDriven(dtReal)
 end
 
 local function renewActiveInsurance(insuranceId)
+  if not availableInsurances[insuranceId] then return end
   local renewalPrice = M.calculateInsurancePremium(insuranceId).totalPriceWithDriverScore
   local logBookLabel = string.format("Insurance '%s' renewed!", availableInsurances[insuranceId].name)
   career_modules_payment.pay({money = { amount = renewalPrice, canBeNegative = true}}, {label=logBookLabel})
@@ -1101,7 +1117,7 @@ local function calculateVehiclePremium(invVehId, nonInvVehInfo, potentialCoverag
 
   if nonInvVehInfo and next(nonInvVehInfo) then
     -- Potential vehicle: use insurance defaults
-    insuranceId = nonInvVehInfo.insuranceId
+    insuranceId = nonInvVehInfo.insuranceId or -1
 
     if insuranceId == -1 then
       return data
@@ -1259,6 +1275,7 @@ end
 
 local function getInsuranceSanitizedData(insuranceId)
   local insuranceInfo = availableInsurances[insuranceId]
+  if not insuranceInfo then return end
   local sanitizedData = {}
   local reduceDeductiblePerk = M.getPerkValueByInsuranceId(insuranceInfo.id, "reduceDeductible")
   local carsInsured = getInvVehsUnderInsurance(insuranceInfo.id)
@@ -1425,7 +1442,8 @@ end
 local function getVehiclesInsuredCount()
   local count = 0
   for _, invVehData in pairs(invVehs) do
-    if invVehData.insuranceId > 0 then
+    local insuranceId = invVehData.insuranceId or -1
+    if insuranceId > 0 then
       count = count + 1
     end
   end
@@ -1698,7 +1716,7 @@ local function onVehicleAddedToInventory(data)
 
   -- initialize the invVehs entry with default data
   invVehs[data.inventoryId] = {
-    insuranceId = nil,
+    insuranceId = insuranceId,
     name = name,
     id = data.inventoryId,
     initialValue = initialValue,
@@ -1845,9 +1863,12 @@ end
 
 local function getVehInsuranceInfo(vehInvId)
   if not invVehs[vehInvId] then return end
+  local insuranceId = invVehs[vehInvId].insuranceId or -1
+  local insuranceInfo = availableInsurances[insuranceId]
+  local isInsured = insuranceId > 0 and insuranceInfo ~= nil
   return {
-    isInsured = invVehs[vehInvId].insuranceId > 0,
-    insuranceInfo = availableInsurances[invVehs[vehInvId].insuranceId],
+    isInsured = isInsured,
+    insuranceInfo = insuranceInfo,
     insuranceClass = invVehs[vehInvId].requiredInsuranceClass,
   }
 end
