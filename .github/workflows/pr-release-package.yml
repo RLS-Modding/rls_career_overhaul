@@ -42,42 +42,52 @@ jobs:
         uses: actions/cache@v4
         id: lfs-cache
         with:
-          path: /tmp/repo-cache.tar.gz
-          key: lfs-${{ github.repository }}-${{ github.sha }}
+          path: |
+            /tmp/repo-cache.tar.zst
+            /tmp/repo-cache.tar.gz
+          key: lfs-v2-${{ github.repository }}-${{ github.sha }}
           restore-keys: |
+            lfs-v2-${{ github.repository }}-${{ github.head_ref }}-
+            lfs-v2-${{ github.repository }}-
             lfs-${{ github.repository }}-${{ github.head_ref }}-
             lfs-${{ github.repository }}-
 
       - name: Extract cached files
         if: steps.lfs-cache.outputs.cache-hit == 'true'
         run: |
-          if [ -f /tmp/repo-cache.tar.gz ]; then
-            tar -xzf /tmp/repo-cache.tar.gz -C .
+          if [ -f /tmp/repo-cache.tar.zst ]; then
+            zstd -d -c /tmp/repo-cache.tar.zst | tar -xf - -C .
             echo "Cache extracted"
+          elif [ -f /tmp/repo-cache.tar.gz ]; then
+            tar -xzf /tmp/repo-cache.tar.gz -C .
+            echo "Cache extracted (legacy gzip)"
           fi
 
       - name: Pull LFS files
         run: |
           git lfs install
-          git lfs fetch --all
-          git lfs checkout
+          if [ "${{ steps.lfs-cache.outputs.cache-hit }}" == "true" ]; then
+            git lfs pull
+          else
+            git lfs fetch --all
+            git lfs checkout
+          fi
 
       - name: Create and save cache archive
         if: steps.lfs-cache.outputs.cache-hit != 'true'
         run: |
-          tar -czf /tmp/repo-cache.tar.gz \
-            --exclude='.git' \
-            --exclude='node_modules' \
-            --exclude='baseUI/node_modules' \
-            --exclude='.github' \
-            .
+          tar --exclude='.git' \
+              --exclude='node_modules' \
+              --exclude='baseUI/node_modules' \
+              --exclude='.github' \
+              -cf - . | zstd -T0 -3 -o /tmp/repo-cache.tar.zst
 
       - name: Save working directory to cache
         if: steps.lfs-cache.outputs.cache-hit != 'true'
         uses: actions/cache@v4
         with:
-          path: /tmp/repo-cache.tar.gz
-          key: lfs-${{ github.repository }}-${{ github.sha }}
+          path: /tmp/repo-cache.tar.zst
+          key: lfs-v2-${{ github.repository }}-${{ github.sha }}
 
       - name: Check for UI source changes
         uses: dorny/paths-filter@v3
@@ -146,14 +156,8 @@ jobs:
               MAX_MINOR=0
             fi
 
-            echo "Deleting old artifacts (max version was $MAX_MINOR)..."
-            echo "$ARTIFACTS_JSON" | jq -r '.[].id' | while read ARTIFACT_ID; do
-              if [ -n "$ARTIFACT_ID" ] && [ "$ARTIFACT_ID" != "null" ]; then
-                ARTIFACT_NAME=$(echo "$ARTIFACTS_JSON" | jq -r ".[] | select(.id == $ARTIFACT_ID) | .name")
-                echo "Deleting artifact: $ARTIFACT_NAME (ID: $ARTIFACT_ID)"
-                gh api repos/${{ github.repository }}/actions/artifacts/$ARTIFACT_ID -X DELETE || true
-              fi
-            done
+            echo "Deleting old artifacts in parallel (max version was $MAX_MINOR)..."
+            echo "$ARTIFACTS_JSON" | jq -r '.[].id' | xargs -P 4 -I {} sh -c 'gh api repos/${{ github.repository }}/actions/artifacts/{} -X DELETE 2>/dev/null || true'
 
             MINOR_VERSION=$((MAX_MINOR + 1))
             VERSION="${PR_NUMBER}.${MINOR_VERSION}"
@@ -179,10 +183,10 @@ jobs:
             vehicles/
           retention-days: 7
           if-no-files-found: error
+          compression-level: 1
 
       - name: Comment PR with download link
         run: |
-          sleep 2
           VERSION="${{ steps.version.outputs.version }}"
           ARTIFACT_ID=$(gh api repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts --jq ".artifacts[] | select(.name == \"${VERSION}_overhaul\") | .id" || echo "")
 
