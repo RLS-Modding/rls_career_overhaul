@@ -9,9 +9,28 @@ permissions:
 
 jobs:
   build-and-package:
-    runs-on: depot-ubuntu-24.04-16
+    runs-on: depot-ubuntu-24.04-8
     steps:
-      - name: Checkout with LFS
+      - name: Cache git repository
+        uses: actions/cache@v4
+        id: repo-cache
+        with:
+          path: |
+            .git
+            .git/lfs
+          key: repo-${{ github.repository }}-git
+
+      - name: Fetch latest (cache hit)
+        if: steps.repo-cache.outputs.cache-hit == 'true'
+        run: |
+          git remote set-url origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+          git fetch origin --prune
+          git checkout -f ${{ github.head_ref }} 2>/dev/null || git checkout -f -b ${{ github.head_ref }} origin/${{ github.head_ref }}
+          git reset --hard origin/${{ github.head_ref }}
+          git clean -ffd
+
+      - name: Full checkout (cache miss)
+        if: steps.repo-cache.outputs.cache-hit != 'true'
         uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
