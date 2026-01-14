@@ -15,7 +15,7 @@ local defaultVehicle = {model = "covet", config = "DXi_M"}
 
 local xVec, yVec, zVec = vec3(1,0,0), vec3(0,1,0), vec3(0,0,1)
 
-local saveAnyVehiclePosDEBUG = false
+local saveAnyVehiclePosDEBUG = true
 
 local slotAmount = 20
 
