@@ -9,13 +9,13 @@
                 "ZoneA": {
                     "name": "Zone A",
                     "materials": {
-                        "rocks": { "maxStock": 100, "startStock": 50, "regenRate": 5 }
+                        "rocks": { "maxStock": 300, "regenRate": 100 }
                     }
                 },
                 "ZoneB": {
                     "name": "Zone B",
                     "materials": {
-                        "rocks": { "maxStock": 80, "startStock": 40, "regenRate": 4 }
+                        "rocks": { "maxStock": 400, "regenRate": 100 }
                     }
                 }
             },
