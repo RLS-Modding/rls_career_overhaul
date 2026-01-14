@@ -227,12 +227,18 @@
         // Level -1
         "label": "Recruit",
         "min": -200,
-        "hiddenFromDealerList": true
+        "loanerCut": {
+          "value": 0.85,
+          "icon": "boxPickUp03"
+        }
       },
       {
         // Level 0
         "label": "Rookie",
-        "hiddenFromDealerList": true
+        "loanerCut": {
+          "value": 0.65,
+          "icon": "boxPickUp03"
+        }
       },
       {
         // Level 1
@@ -240,21 +246,32 @@
           "value": 1.20
         },
         "label": "Driver",
-        "hiddenFromDealerList": true
+        "loanerCut": {
+          "value": 0.5,
+          "icon": "boxPickUp03"
+        }
       },
       {
         // Level 2
         "deliveryBonus": {
           "value": 1.45
         },
-        "label": "Driver"
+        "label": "Driver",
+        "loanerCut": {
+          "value": 0.35,
+          "icon": "boxPickUp03"
+        }
       },
       {
         // Level 3
         "deliveryBonus": {
           "value": 1.75
         },
-        "label": "Driver"
+        "label": "Driver",
+        "loanerCut": {
+          "value": 0.25,
+          "icon": "boxPickUp03"
+        }
       },
       {
         // Level 4
@@ -263,7 +280,11 @@
         },
         "requiredValue": 1000,
         "levelLabel": "Reputation: Level 4",
-        "label": "Senior Driver"
+        "label": "Senior Driver",
+        "loanerCut": {
+          "value": 0.15,
+          "icon": "boxPickUp03"
+        }
       },
       {
         // Level 5
@@ -273,7 +294,11 @@
         "requiredValue": 5000,
         "max": 7500,
         "levelLabel": "Reputation: Level 5",
-        "label": "Working Supervisor"
+        "label": "Working Supervisor",
+        "loanerCut": {
+          "value": 0,
+          "icon": "boxPickUp03"
+        }
       }
     ]
   }

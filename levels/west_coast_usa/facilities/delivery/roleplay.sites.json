@@ -1,6 +1,6 @@
 {
   "description":"Description of these Sites. Contains Locations, Zones, and Parking Spots.",
-  "dir":"/levels/west_coast_usa/facilities/delivery/",
+  "dir":"/mods/unpacked/rls_career_overhaul/levels/west_coast_usa/facilities/delivery/",
   "filename":"roleplay.sites.json",
   "locations":{},
   "name":"roleplay.sites.json",
@@ -19,7 +19,7 @@
       },
       "isMultiSpot":false,
       "name":"Hospital Entrance",
-      "oldId":7032,
+      "oldId":70257,
       "pos":[
         -231.44441223145,
         437.36383056641,
@@ -55,7 +55,7 @@
       },
       "isMultiSpot":false,
       "name":"paramedicWorkParking",
-      "oldId":7033,
+      "oldId":70258,
       "pos":[
         -291.77017211914,
         461.49496459961,
@@ -91,7 +91,7 @@
       },
       "isMultiSpot":false,
       "name":"ambulanceLoaner",
-      "oldId":7034,
+      "oldId":70259,
       "pos":[
         -278.64749145508,
         451.42492675781,
@@ -127,17 +127,17 @@
       },
       "isMultiSpot":false,
       "name":"busWork_parking",
-      "oldId":7035,
+      "oldId":70260,
       "pos":[
-        -403.33541870117,
-        493.94677734375,
-        96.418762207031
+        -418.38681030273,
+        453.39505004883,
+        96.137870788574
       ],
       "rot":[
-        -0.0028528629904713,
-        0.0040133722838959,
-        0.38549600949908,
-        0.92269624780119
+        -0.0048493752256036,
+        0.00085413036867976,
+        0.92238509654999,
+        0.38624030351639
       ],
       "scl":[
         2.5,
@@ -163,7 +163,7 @@
       },
       "isMultiSpot":false,
       "name":"busLoaner_parking",
-      "oldId":7036,
+      "oldId":70261,
       "pos":[
         -402.74322509766,
         455.15872192383,

@@ -4,12 +4,8 @@ M.dependencies = {'gameplay_sites_sitesManager', 'freeroam_facilities'}
 local core_groundMarkers = require('core/groundMarkers')
 local core_vehicles = require('core/vehicles')
 
--- Debug flag: set to true to enable verbose debug logging
 local DEBUG = false
 
--- ================================
--- STATE
--- ================================
 local currentStopIndex = nil
 local stopTriggers = {}
 local dwellTimer = nil
@@ -34,30 +30,20 @@ local trueBoarding = 0
 local trueDeboarding = 0
 local boardingCoroutine = nil
 local currentFinalStopName = nil
-local stopIndexWhereBoardingStarted = nil -- Track which stop boarding was initiated at
-local pendingRouteInit = false -- Flag to defer initRoute() until after async capacity callback
-
--- Current route info (to prevent route changes mid-route)
+local stopIndexWhereBoardingStarted = nil
+local pendingRouteInit = false
+local isCalculatingRoute = false
+local routeCalcTimer = 0
 local currentRouteName = nil
-
--- Store display names by trigger name for reliable access
 local stopDisplayNames = {}
-
--- Waypoint tracking (waypoints are navigation points, not stops)
--- precedingStopIndex: For waypoints, this is the index of the stop before this waypoint.
---                     For stops, this equals the stop's own index.
-local routeItems = {} -- Combined array: {type="stop"/"waypoint", trigger=trigger/waypointName=name, position=vec3, precedingStopIndex=N}
-
--- Bus stop perimeter markers
+local routeItems = {}
 local stopMarkerObjects = {}
 local stopPerimeterTrigger = nil
+local currentLoanerCut = 0
 
--- forward declaration
 local isBus
 local initRoute
 
--- ================================
--- CAPACITY DETECTION
 -- Map known part-name patterns to explicit seating capacities for special-case vehicle parts.
 -- @param partName The parts-tree node name to test (string).
 -- @return The seating capacity for matching special-case part names, or `nil` if no special case applies.
@@ -150,12 +136,10 @@ local function calculateSeatingCapacity()
     if not currentVehiclePartsTree then
         return fallbackCapacity
     end
-    -- Validate that currentVehiclePartsTree is a table
     if type(currentVehiclePartsTree) ~= "table" then
         print("[bus] Warning: currentVehiclePartsTree is not a table, using fallback capacity")
         return fallbackCapacity
     end
-    -- Use pcall to safely handle malformed trees (missing chosenPartName, invalid structure, etc.)
     local success, result = pcall(cyclePartsTree, {currentVehiclePartsTree}, 0)
     if not success then
         print(string.format("[bus] Warning: Error calculating seating capacity: %s", tostring(result)))
@@ -180,7 +164,7 @@ end
 -- Processes a vehicle parts tree to determine and store the vehicle's passenger seating capacity.
 -- Updates module state with the detected parts tree and computed capacity, applies known overrides for specific vehicle types, logs and displays the detected capacity, and triggers deferred route initialization if pending.
 -- @param partsTree Table representing the vehicle parts tree (may be nested); used to compute seating capacity and to detect model-specific capacity overrides.
-function M.returnPartsTree(partsTree)
+local function returnPartsTree(partsTree)
     currentVehiclePartsTree = partsTree
     local seats = calculateSeatingCapacity()
     M.vehicleCapacity = math.max(1, seats)
@@ -230,16 +214,12 @@ function M.returnPartsTree(partsTree)
     print(string.format("[bus] Vehicle seating capacity detected: %d seats", M.vehicleCapacity))
     ui_message(string.format("Vehicle seating capacity detected: %d passengers.", M.vehicleCapacity), 5, "info", "info")
 
-    -- Initialize route now that capacity is known (deferred from onVehicleSwitched)
     if pendingRouteInit then
         pendingRouteInit = false
         initRoute()
     end
 end
 
--- ================================
--- BUS STOP PERIMETER MARKERS
--- ================================
 -- Create and register a corner marker TSStatic used for stop-perimeter visualization.
 -- The marker is registered under the given name and added to scenetree.MissionGroup if present.
 -- @param markerName string The name used to register the marker in the scene.
@@ -283,18 +263,14 @@ local function safeDelete(obj, objName)
     local success, err = pcall(function()
         local name = obj:getName()
         local found = name and scenetree.findObject(name) or nil
-
-        -- Check if found and obj are the same object
         local sameObject = found and (found == obj or found:getId() == obj:getId())
 
         if sameObject then
-            -- Same object - only delete once
             if editor and editor.onRemoveSceneTreeObjects then
                 editor.onRemoveSceneTreeObjects({obj:getId()})
             end
             obj:delete()
         else
-            -- Different objects or found is nil
             if found then
                 if editor and editor.onRemoveSceneTreeObjects then
                     editor.onRemoveSceneTreeObjects({found:getId()})
@@ -335,77 +311,65 @@ local function createStopPerimeter(trigger)
         return
     end
 
-    -- Clear any existing markers first
     clearStopMarkers()
 
-    -- Get trigger position, rotation, and scale
     local triggerPos = trigger:getPosition()
     local triggerRot = trigger:getRotation()
     local triggerScale = trigger:getScale()
 
-    -- Use trigger's scale if available, otherwise use reasonable defaults
-    local stopLength = triggerScale and triggerScale.x or 15 -- Length along road
-    local stopWidth = triggerScale and triggerScale.y or 8 -- Width perpendicular to road
-    local stopHeight = triggerScale and triggerScale.z or 5 -- Height for raycasting
+    local stopLength = triggerScale and triggerScale.x or 15
+    local stopWidth = triggerScale and triggerScale.y or 8
+    local stopHeight = triggerScale and triggerScale.z or 5
 
-    -- Convert rotation to quaternion for calculations
     local rot = quat(triggerRot)
-    local vecX = rot * vec3(1, 0, 0) -- Right vector
-    local vecY = rot * vec3(0, 1, 0) -- Forward vector
-    local vecZ = rot * vec3(0, 0, 1) -- Up vector
+    local vecX = rot * vec3(1, 0, 0)
+    local vecY = rot * vec3(0, 1, 0)
+    local vecZ = rot * vec3(0, 0, 1)
 
-    -- Calculate corner positions
     local halfLength = stopLength * 0.5
     local halfWidth = stopWidth * 0.5
 
     local corners = {{
         pos = triggerPos - vecX * halfLength + vecY * halfWidth,
         name = "TL"
-    }, -- Top Left
+    },
     {
         pos = triggerPos + vecX * halfLength + vecY * halfWidth,
         name = "TR"
-    }, -- Top Right
+    },
     {
         pos = triggerPos + vecX * halfLength - vecY * halfWidth,
         name = "BR"
-    }, -- Bottom Right
+    },
     {
         pos = triggerPos - vecX * halfLength - vecY * halfWidth,
         name = "BL"
-    } -- Bottom Left
+    }
     }
 
-    -- Create corner markers
     local qOff = quatFromEuler(0, 0, math.pi / 2) * quatFromEuler(0, math.pi / 2, math.pi / 2)
-    local rotations = {quatFromEuler(0, 0, math.rad(90)), -- TL
-    quatFromEuler(0, 0, math.rad(180)), -- TR
-    quatFromEuler(0, 0, math.rad(270)), -- BR
-    quatFromEuler(0, 0, 0) -- BL
+    local rotations = {quatFromEuler(0, 0, math.rad(90)),
+    quatFromEuler(0, 0, math.rad(180)),
+    quatFromEuler(0, 0, math.rad(270)),
+    quatFromEuler(0, 0, 0)
     }
 
-    -- Use timestamp and random number to ensure unique marker names and avoid collisions
     local uniqueId = os.time() .. "_" .. math.random(1000, 9999)
     for i, corner in ipairs(corners) do
         local markerName = string.format("busStopMarker_%s_%d_%s", trigger:getName() or "unknown", i, uniqueId)
 
-        -- Raycast to ground
         local hit = Engine.castRay(corner.pos + vecZ * 2, corner.pos - vecZ * 10, true, false)
         local groundPos = hit and vec3(hit.pt) or (corner.pos + vecZ * 0.05)
         groundPos = groundPos + vecZ * 0.05
 
-        -- Calculate rotation
-        local hitNorm = hit and vec3(hit.norm) or vecZ
-        local finalRot = rotations[i] * qOff * quatFromDir(hitNorm, vecY)
+        local finalRot = rotations[i] * qOff * quatFromDir(vec3(0, 0, 1), vecY)
 
-        -- Create and position marker
         local marker = createCornerMarker(markerName)
         marker:setPosRot(groundPos.x, groundPos.y, groundPos.z, finalRot.x, finalRot.y, finalRot.z, finalRot.w)
-        marker:setField('instanceColor', 0, "0.6 0.9 0.23 1") -- Green color for bus stops
+        marker:setField('instanceColor', 0, "0.6 0.9 0.23 1")
         table.insert(stopMarkerObjects, marker)
     end
 
-    -- Create box trigger for perimeter detection (optional - if you want to use it for validation)
     local perimeterName = string.format("busStopPerimeter_%s_%s", trigger:getName() or "unknown", uniqueId)
     local perimeterTrigger = createObject('BeamNGTrigger')
     perimeterTrigger.loadMode = 1
@@ -438,22 +402,46 @@ local function showCurrentStopMarkers(stopIndex)
     createStopPerimeter(currentTrigger)
 end
 
--- Hide markers (cleanup)
 local function hideStopMarkers()
     clearStopMarkers()
 end
 
--- ================================
--- UTILITIES
--- ================================
 isBus = function(vehicle)
     if not vehicle then return false end
     local plate = core_vehicles.getVehicleLicenseText(vehicle)
     return plate and plate:upper() == "BUS"
 end
 
--- Get the trigger object for the currently active stop.
--- @return The trigger object for the current stop, or `nil` if no current stop is set.
+local function calculateLoanerCut(vehId)
+    if not vehId then
+        return 0
+    end
+    
+    if not career_modules_loanerVehicles or not career_modules_loanerVehicles.getLoaningOrgsOfVehicle then
+        return 0
+    end
+    
+    local loaningOrgs = career_modules_loanerVehicles.getLoaningOrgsOfVehicle(vehId)
+    if not loaningOrgs or not next(loaningOrgs) then
+        return 0
+    end
+    
+    local totalCut = 0
+    for organizationId, _ in pairs(loaningOrgs) do
+        local organization = freeroam_organizations.getOrganization(organizationId)
+        if organization and organization.reputation and organization.reputationLevels then
+            local level = organization.reputation.level
+            local levelIndex = level + 2
+            if organization.reputationLevels[levelIndex] and organization.reputationLevels[levelIndex].loanerCut then
+                local orgCut = organization.reputationLevels[levelIndex].loanerCut.value or 0.5
+                totalCut = totalCut + orgCut
+            end
+        end
+    end
+    
+    return math.min(totalCut, 1.0)
+end
+
 local function getNextTrigger()
     if not currentStopIndex then
         return nil
@@ -461,38 +449,26 @@ local function getNextTrigger()
     return stopTriggers[currentStopIndex]
 end
 
--- Get the world position for a route item.
--- @param item Route item table which may contain a `position` vector or a `trigger` object.
--- @return The position vector if present (from `item.position` or `item.trigger:getPosition()`), or `nil` if neither is available.
 local function getItemPosition(item)
     return item.position or (item.trigger and item.trigger:getPosition())
 end
 
--- Builds an ordered list of positions from a start position through route waypoints to a target stop.
--- @param targetStopIndex The index of the destination stop within the route's stop list.
--- @param startPos The starting position vector/table to begin the path from (placed at index 1 of the result).
--- @param fromStopIndex Optional. If provided, use this stop index as the current stop when constructing the path; otherwise the module's currentStopIndex is used.
--- @return An array of position vectors beginning with `startPos` and followed by any intermediate waypoint positions and the target stop position if found.
 local function buildPathToStop(targetStopIndex, startPos, fromStopIndex)
     local pathPoints = {startPos}
     if not routeItems or #routeItems == 0 then
         return pathPoints
     end
 
-    -- Guard against empty stopTriggers array
     if not stopTriggers or #stopTriggers == 0 then
         return pathPoints
     end
 
-    -- Find the stop we're currently at (not the target)
-    -- Use fromStopIndex if provided, otherwise use currentStopIndex
     local currentStopIdx = fromStopIndex or currentStopIndex or 1
     local nextStopIndex = targetStopIndex
     if nextStopIndex > #stopTriggers then
         nextStopIndex = 1
     end
 
-    -- Find current stop's position in routeItems
     local currentItemIndex = nil
     if DEBUG then
         print(string.format("[bus] DEBUG: Searching for current stop with stopIndex=%d in routeItems (total items: %d)",
@@ -513,11 +489,9 @@ local function buildPathToStop(targetStopIndex, startPos, fromStopIndex)
         end
     end
 
-    -- If we couldn't find current stop, try to find target stop directly
     if not currentItemIndex then
         for i, item in ipairs(routeItems) do
             if item.type == "stop" and item.precedingStopIndex == nextStopIndex then
-                -- Found target stop, add it and return
                 local pos = getItemPosition(item)
                 if pos then
                     table.insert(pathPoints, pos)
@@ -525,10 +499,9 @@ local function buildPathToStop(targetStopIndex, startPos, fromStopIndex)
                 return pathPoints
             end
         end
-        return pathPoints -- No stops found
+        return pathPoints
     end
 
-    -- Add waypoints and target stop (iterate forward from current stop)
     local waypointCount = 0
     if currentItemIndex then
         if DEBUG then
@@ -589,12 +562,6 @@ local function buildPathToStop(targetStopIndex, startPos, fromStopIndex)
     return pathPoints
 end
 
--- Configure navigation to follow a sequence of path points to the final destination.
--- Uses core_groundMarkers.setPath for the final destination to ensure proper visualization,
--- and optionally calculates a multi-waypoint path for display purposes.
--- Avoids U-turn suggestions by using the vehicle's forward direction as the path start.
--- @param pathPoints table Array of ordered world positions that form the planned path (may include intermediate waypoints).
--- @param targetPos table World position of the final destination.
 local function setupRoutePlannerWithWaypoints(pathPoints, targetPos)
     if not pathPoints or #pathPoints == 0 then
         print("[bus] Warning: No path points provided, using direct path to target")
@@ -611,26 +578,18 @@ local function setupRoutePlannerWithWaypoints(pathPoints, targetPos)
     local vehPos = vehicle:getPosition()
     local vehDir = vehicle:getDirectionVector()
 
-    -- Check if target is generally behind the vehicle (dot product < 0 means behind)
     local toTarget = (targetPos - vehPos):normalized()
     local dotProduct = vehDir:dot(toTarget)
 
-    -- Build adjusted path points starting ahead of the vehicle
     local adjustedPathPoints = {}
 
-    -- Add a point ahead of the vehicle as the starting point
-    -- Use a longer distance (25m) to ensure we're well past any potential U-turn point
     local forwardDistance = 25
     local forwardPoint = vehPos + vehDir * forwardDistance
     table.insert(adjustedPathPoints, forwardPoint)
 
-    -- Add the rest of the path points (skip the first one if it's the vehicle position)
     for i, point in ipairs(pathPoints) do
-        -- Skip the first point if it's very close to vehicle position (it's the start point)
         if i == 1 and vehPos:distance(point) < 10 then
-            -- Skip this point, we've replaced it with forwardPoint
         else
-            -- Only add if not too close to the last added point
             local lastPoint = adjustedPathPoints[#adjustedPathPoints]
             if lastPoint:distance(point) > 5 then
                 table.insert(adjustedPathPoints, point)
@@ -638,21 +597,15 @@ local function setupRoutePlannerWithWaypoints(pathPoints, targetPos)
         end
     end
 
-    -- Ensure target is included at the end if not already close to last point
     local lastPoint = adjustedPathPoints[#adjustedPathPoints]
     if lastPoint:distance(targetPos) > 5 then
         table.insert(adjustedPathPoints, targetPos)
     end
 
-    -- Initialize ground markers first (this creates the internal routePlanner)
     core_groundMarkers.setPath(targetPos)
 
-    -- Now use setupPathMulti directly on the ground markers' route planner
-    -- This properly sets up the path with our forward point as a waypoint
     if core_groundMarkers.routePlanner then
-        -- Set high direction multiplier to heavily penalize wrong-way travel
         core_groundMarkers.routePlanner:setRouteParams(nil, 1e6, nil, nil, nil, nil)
-        -- Calculate path through all our adjusted points (forward point -> waypoints -> target)
         core_groundMarkers.routePlanner:setupPathMulti(adjustedPathPoints)
 
         if DEBUG then
@@ -664,13 +617,7 @@ local function setupRoutePlannerWithWaypoints(pathPoints, targetPos)
     end
 end
 
--- Display navigation markers guiding the player from their current position to the next bus stop.
--- If `targetStopIndex` is provided, shows markers for that stop; otherwise uses the stop after `currentStopIndex` (wraps to the first stop).
--- When in a vehicle, builds a waypoint path from the vehicle's position to the target stop and configures the route planner; when not in a vehicle, places a direct ground marker at the stop.
--- Also updates the visual perimeter markers for the shown stop.
--- @param targetStopIndex? Optional index of the stop to target; if omitted the next stop after `currentStopIndex` is used.
 local function showNextStopMarker(targetStopIndex)
-    -- If targetStopIndex is provided, use it; otherwise calculate from currentStopIndex
     local nextStopIndex = targetStopIndex
     if not nextStopIndex then
         nextStopIndex = (currentStopIndex or 1) + 1
@@ -689,7 +636,6 @@ local function showNextStopMarker(targetStopIndex)
     local targetPos = trigger:getPosition()
 
     if vehicle then
-        -- Calculate the stop we're coming FROM (target - 1, or wrap around)
         local fromStopIndex = nextStopIndex - 1
         if fromStopIndex < 1 then
             fromStopIndex = #stopTriggers
@@ -705,18 +651,9 @@ local function showNextStopMarker(targetStopIndex)
         core_groundMarkers.setPath(targetPos)
     end
 
-    -- Show markers for the NEXT stop (not current)
     showCurrentStopMarkers(nextStopIndex)
 end
 
--- ================================
--- ROUTE END 
--- Ends the current bus route/shift and finalizes payouts, reputation, UI, and internal state.
--- Displays a summary message (including stops, base pay, tips, bonus, total payout, and reputation gained when applicable),
--- clears navigation and stop markers, resets route-related state and counters, and updates the vehicle's bus display to "Not in Service".
--- If a positive `payout` is provided and the career payment module is active, grants money, XP (floor(payout/10)), and busWorkReputation (floor(payout/500)).
--- @param reason Optional string explaining why the route ended (shown in the UI message).
--- @param payout Optional numeric total payout to award; when omitted or non-positive, no rewards are granted.
 local function endRoute(reason, payout)
     currentRouteActive = false
     dwellTimer = nil
@@ -724,7 +661,6 @@ local function endRoute(reason, payout)
     currentFinalStopName = nil
     currentRouteName = nil
     core_groundMarkers.resetAll()
-    -- Clear any markers
     hideStopMarkers()
 
     local msg = "Shift ended."
@@ -735,17 +671,24 @@ local function endRoute(reason, payout)
     local reputationGain = 0
 
     if payout and payout > 0 then
+        local loanerCutAmount = 0
+        if currentLoanerCut > 0 then
+            loanerCutAmount = math.floor(payout * currentLoanerCut)
+            payout = payout - loanerCutAmount
+        end
+
         local basePay = accumulatedReward
         local tipsEarned = tipTotal
-        local bonusPay = math.max(0, payout - (basePay + tipsEarned))
 
         reputationGain = math.floor(payout / 500)
 
-        msg = msg ..
-                  string.format(
-                "\nStops completed: %d" .. "\nBase pay:   $%d" .. "\nTips:       $%d" .. "\nBonus:      $%d" ..
-                    "\n--------------------" .. "\nTotal payout: $%d" .. "\nReputation gained: +%d",
-                totalStopsCompleted, basePay, tipsEarned, bonusPay, payout, reputationGain)
+        msg = msg .. string.format("\nStops completed: %d\nBase pay:   $%d\nTips:       $%d",
+            totalStopsCompleted, basePay, tipsEarned)
+        if loanerCutAmount > 0 then
+            msg = msg .. string.format("\nLoaner cut: -$%d", loanerCutAmount)
+        end
+        msg = msg .. string.format("\n--------------------\nTotal payout: $%d\nReputation gained: +%d",
+            payout, reputationGain)
     else
         msg = msg .. "\nNo payout earned."
     end
@@ -753,7 +696,6 @@ local function endRoute(reason, payout)
     ui_message(msg, 8, "info", "info")
     print("[bus] " .. msg:gsub("\n", " "))
 
-    -- Reset displays
     local vehicle = be:getPlayerVehicle(0)
     if vehicle then
         vehicle:queueLuaCommand([[
@@ -765,7 +707,6 @@ local function endRoute(reason, payout)
     ]])
     end
 
-    -- Rewards
     if payout and payout > 0 and career_career and career_career.isActive() and career_modules_payment and
         career_modules_payment.reward then
         career_modules_payment.reward({
@@ -774,7 +715,7 @@ local function endRoute(reason, payout)
             },
             beamXP = {
                 amount = math.floor(payout / 10)
-            }, -- XP unchanged
+            },
             busWorkReputation = {
                 amount = reputationGain
             }
@@ -786,10 +727,9 @@ local function endRoute(reason, payout)
 
     accumulatedReward, passengersOnboard, totalStopsCompleted, tipTotal = 0, 0, 0, 0
     roughRide, lastVelocity, activeBusID = 0, nil, nil
+    currentLoanerCut = 0
 end
 
--- ================================
--- ROUTE INITIALIZATION
 -- Loads map-specific bus route configurations from disk by locating and parsing a JSON route file for the current level.
 -- Searches common map-based filenames and returns the parsed routes table when successful.
 -- @return A table mapping route identifiers to route definitions if a valid routes file is found and parsed, `nil` otherwise.
@@ -801,18 +741,14 @@ local function loadRoutesFromJSON()
         return nil
     end
 
-    -- Auto-discover route file based on map name pattern
-    -- Try multiple naming conventions: mapBusRoutes.json, map_bus_routes.json, busRoutes.json
     local possibleFiles = {string.format("/levels/%s/%sBusRoutes.json", currentMap, currentMap:gsub("_", "")),
                            string.format("/levels/%s/busRoutes.json", currentMap),
                            string.format("/levels/%s/%s_bus_routes.json", currentMap, currentMap)}
 
-    -- Also add short prefix variants (e.g., wcu for west_coast_usa, jri for jungle_rock_island)
     local shortPrefix = currentMap:gsub("([^_])[^_]*_?", "%1")
     if DEBUG then
         print(string.format("[bus] DEBUG: currentMap=%s, shortPrefix=%s", currentMap, shortPrefix))
     end
-    -- Only use short prefix if it's meaningfully different (length > 1 and not the same as the map name)
     if #shortPrefix > 1 and shortPrefix ~= currentMap then
         table.insert(possibleFiles, 1, string.format("/levels/%s/%sBusRoutes.json", currentMap, shortPrefix))
     end
@@ -846,7 +782,6 @@ local function loadRoutesFromJSON()
     return routeData.routes
 end
 
--- Collect all bus stop triggers and waypoints from scenetree
 local function collectScenetreeObjects()
     local allTriggers = {}
     local allWaypoints = {}
@@ -869,17 +804,14 @@ local function collectScenetreeObjects()
         end
     end
 
-    -- Collect bus stops from triggers
     for _, obj in ipairs(scenetree.findClassObjects("BeamNGTrigger") or {}) do
         processObject(obj)
     end
 
-    -- Collect waypoints from BeamNGWaypoint objects
     for _, obj in ipairs(scenetree.findClassObjects("BeamNGWaypoint") or {}) do
         processObject(obj)
     end
 
-    -- Also check SimObject as fallback (in case waypoints are registered differently)
     for _, obj in ipairs(scenetree.findClassObjects("SimObject") or {}) do
         processObject(obj)
     end
@@ -972,7 +904,6 @@ local function buildRouteFromConfig(selectedRoute, allTriggers, allWaypoints)
                     print(string.format("[bus] Found waypoint '%s' at %s", stopName, tostring(waypointPos)))
                 end
             else
-                -- Waypoint not found - skip it and navigation will go directly to next stop
                 table.insert(missingWaypoints, stopName)
                 print(string.format("[bus] Waypoint '%s' not found - skipping (will navigate directly to next stop)", stopName))
             end
@@ -1033,7 +964,6 @@ local function updateBusControllerDisplay()
         return
     end
 
-    -- Build route data for the bus controller 
     local routeData = {
         routeId = "RLS",
         routeID = "RLS",
@@ -1041,7 +971,6 @@ local function updateBusControllerDisplay()
         tasklist = {}
     }
 
-    -- Get current stop's display name
     local currentStop = stopTriggers[currentStopIndex]
     local triggerName = currentStop:getName() or ""
     routeData.direction = stopDisplayNames[triggerName] or triggerName or string.format("Stop %02d", currentStopIndex)
@@ -1063,7 +992,6 @@ local function updateBusControllerDisplay()
         addStopToList(i)
     end
 
-    -- Send to vehicle controller (for bus_setLineInfo)
     local vehicle = be:getPlayerVehicle(0)
     if vehicle then
         vehicle:queueLuaCommand(string.format([[
@@ -1073,18 +1001,15 @@ local function updateBusControllerDisplay()
     ]], dumps(routeData)))
     end
 
-    -- Also send BusDisplayUpdate for the UI
     guihooks.trigger('BusDisplayUpdate', routeData)
 end
 
 initRoute = function()
-    -- Don't reinitialize if a route is already active
     if currentRouteActive and routeInitialized then
         print("[bus] Route already active, skipping reinitialization")
         return
     end
 
-    -- Check if bus multiplier is 0 (if economy adjuster supports it)
     if career_economyAdjuster then
         local busMultiplier = career_economyAdjuster.getSectionMultiplier("bus") or 1.0
         if busMultiplier == 0 then
@@ -1094,21 +1019,18 @@ initRoute = function()
         end
     end
 
-    -- Load routes from JSON
     local routes = loadRoutesFromJSON()
     if not routes then
         ui_message("No route configuration found for this map.", 5, "error", "error")
         return
     end
 
-    -- Collect all bus stop triggers and waypoints on the map
     local allTriggers, allWaypoints = collectScenetreeObjects()
     if not next(allTriggers) then
         ui_message("No bus stops found on this map.", 5, "error", "error")
         return
     end
 
-    -- Select a random route
     local selectedRoute, selectedRouteKey = selectRandomRoute(routes)
     if not selectedRoute then
         ui_message("No routes available in configuration.", 5, "error", "error")
@@ -1120,14 +1042,12 @@ initRoute = function()
     print(
         string.format("[bus] Selected route: %s (%s) with %d stops", routeName, selectedRouteKey, #selectedRoute.stops))
 
-    -- Build route from config
     stopTriggers, routeItems, stopDisplayNames = buildRouteFromConfig(selectedRoute, allTriggers, allWaypoints)
     if #stopTriggers == 0 then
         ui_message("No valid stops found for selected route.", 5, "error", "error")
         return
     end
 
-    -- The final stop is the last stop in the route
     currentFinalStopName = stopTriggers[#stopTriggers]:getName() or ""
 
     local vehicle = be:getPlayerVehicle(0)
@@ -1135,7 +1055,6 @@ initRoute = function()
         return
     end
 
-    -- Initialize route state
     currentStopIndex = 1
     consecutiveStops, dwellTimer, accumulatedReward, totalStopsCompleted = 0, nil, 0, 0
     currentRouteActive, routeInitialized, passengersOnboard, routeCooldown = true, true, 0, 0
@@ -1144,20 +1063,16 @@ initRoute = function()
     local startStopName = stopTriggers[currentStopIndex]:getName() or "Unknown"
     local targetPos = stopTriggers[currentStopIndex]:getPosition()
 
-    -- Set up navigation
     setupRouteNavigation(vehicle, targetPos, 1)
 
     ui_message(string.format("Bus route '%s' started. Proceed to %s. Route has %d stops.", routeName, startStopName,
         #stopTriggers), 6, "info", "info")
 
-    -- Update bus controller display
     updateBusControllerDisplay()
 
-    -- Show markers for first stop
     showCurrentStopMarkers()
 end
--- ================================
--- PROCESS STOP 
+
 -- Process the active route's current stop: verifies the correct stop trigger, enforces vehicle settling, manages dwell timing, runs boarding/deboarding animation and logic, updates passenger counts, calculates payouts and tips, handles loop completion, and advances navigation to the next stop.
 -- @param vehicle The vehicle object (expected player vehicle) used for speed checks and navigation context.
 -- @param dtSim Simulation delta time for this update step (may be nil; a default step is used internally).
@@ -1180,24 +1095,18 @@ local function processStop(vehicle, dtSim)
         return
     end
 
-    -- Verify this is the correct stop
     local expectedStopName = stopTriggers[currentStopIndex]:getName()
     if expectedStopName and trigger:getName() ~= expectedStopName then
         return
     end
 
-    -- Check if player is actually inside the correct trigger
     if currentTriggerName == trigger:getName() then
-        -- Prevent re-boarding if player left and came back to the same stop
-        -- Only allow boarding if this stop hasn't had boarding initiated yet, or if it's a different stop
         if stopIndexWhereBoardingStarted and stopIndexWhereBoardingStarted == currentStopIndex and dwellTimer == nil then
-            -- Player already started boarding at this stop and left - don't allow re-boarding
             return
         end
 
         local velocity = vehicle:getVelocity():length()
 
-        -- Must be fully stopped
         if velocity > 0.5 then
             ui_message("Come to a complete stop before passengers can board.", 2, "info", "info")
             dwellTimer = nil
@@ -1206,33 +1115,27 @@ local function processStop(vehicle, dtSim)
             return
         end
 
-        -- Stop monitoring and settle
         if not stopMonitorActive then
             stopMonitorActive = true
             stopSettleTimer = 0
             ui_message("Please open doors to begin boarding", 2.5, "info", "bus")
+            core_vehicleBridge.executeAction(vehicle, 'setFreeze', true)
         else
             stopSettleTimer = stopSettleTimer + (dtSim or 0.033)
         end
 
-        -- Must remain still for settle delay
         if stopSettleTimer < stopSettleDelay then
             dwellTimer = nil
             return
         end
-        ------------------------------------------------------------
-        -- START DWELL (Initialize boarding + deboarding)
-        ------------------------------------------------------------
+
         if not dwellTimer then
             dwellTimer = 0
-            -- Track that boarding has started at this stop
             stopIndexWhereBoardingStarted = currentStopIndex
-            -- Hide stop perimeter markers once boarding starts
             hideStopMarkers()
             consecutiveStops = consecutiveStops + 1
             totalStopsCompleted = totalStopsCompleted + 1
 
-            -- Final stop? (Map-specific)
             local triggerName = trigger:getName() or ""
             local isFinalStop = (triggerName == currentFinalStopName)
 
@@ -1252,14 +1155,8 @@ local function processStop(vehicle, dtSim)
                 dwellDuration = math.max(existingDwellCalc, animationDuration + 1)
             end
 
-            ------------------------------------------------------------
-            -- Initialize animation coroutine (REALISTIC TIMING)
-            ------------------------------------------------------------
             boardingCoroutine = coroutine.create(function()
 
-                --------------------------------------------------------
-                -- PHASE 1 — DEBOARDING 
-                --------------------------------------------------------
                 -- Suspends the current coroutine until the given duration (in seconds) has elapsed.
                 -- @param duration Number of seconds to wait.
                 -- The coroutine advances using the delta time value yielded to it; if no delta is provided, 0.033 seconds is used per iteration.
@@ -1282,9 +1179,6 @@ local function processStop(vehicle, dtSim)
                         "bus_anim")
                 end
 
-                --------------------------------------------------------
-                -- PHASE 2 — BOARDING 
-                --------------------------------------------------------
                 if trueBoarding > 0 then
                     for i = 1, trueBoarding do
                         ui_message(string.format("Stop %d\nDeboarding: 0\nBoarding: %d", currentStopIndex, i), 2, "bus",
@@ -1296,48 +1190,18 @@ local function processStop(vehicle, dtSim)
                         "bus_anim")
                 end
 
-                --------------------------------------------------------
-                -- FINAL POST-BOARDING MESSAGE
-                --------------------------------------------------------
-                local newCount = math.min(math.max(0, passengersOnboard + trueBoarding - trueDeboarding),
-                    M.vehicleCapacity)
-
-                ui_message(string.format("Stop %d complete!\nPassengers onboard: %d", currentStopIndex, newCount), 4,
-                    "bus", "bus_done")
-
-                --------------------------------------------------------
-                -- SHOW EARNINGS / TIPS / REPUTATION 
-                --------------------------------------------------------
-                local base = 400
-                local bonusMultiplier = 1 + (consecutiveStops / #stopTriggers) * 3
-                local payout = math.floor(base * bonusMultiplier)
-                local reputationGain = math.floor(payout / 500)
-
-                ui_message(string.format("Earnings this stop:\n" .. "Base pay: $%d\n" .. "Reputation gained: +%d\n" ..
-                                             "Total tips so far: $%d", payout, reputationGain, tipTotal), 10, "info",
-                    "bus_payout")
-
             end)
 
-        end -- dwell init
+        end
 
-        ------------------------------------------------------------
-        -- DWELL TIMER (controls WHEN boarding finishes)
-        ------------------------------------------------------------
         dwellTimer = dwellTimer + (dtSim or 0.033)
 
-        if dwellTimer >= dwellDuration and (not boardingCoroutine or coroutine.status(boardingCoroutine) == "dead") then
+        if (boardingCoroutine and coroutine.status(boardingCoroutine) == "dead") or (not boardingCoroutine and dwellTimer >= dwellDuration) then
             print(string.format("[bus] Dwell complete at stop %d", currentStopIndex))
 
-            --------------------------------------------------------
-            -- FINALIZE passenger count
-            --------------------------------------------------------
             passengersOnboard = math.min(math.max(0, passengersOnboard + trueBoarding - trueDeboarding),
                 M.vehicleCapacity)
 
-            --------------------------------------------------------
-            -- PAYOUT CALCULATION
-            --------------------------------------------------------
             local base = 400
             local bonusMultiplier = 1 + (consecutiveStops / #stopTriggers) * 3
             local payout = math.floor(base * bonusMultiplier)
@@ -1349,9 +1213,6 @@ local function processStop(vehicle, dtSim)
 
             accumulatedReward = accumulatedReward + payout
 
-            --------------------------------------------------------
-            -- TIP CALCULATION (ONLY if deboarders)
-            --------------------------------------------------------
             local tipsEarned = 0
             if trueDeboarding > 0 then
                 local avgRough = math.max(0, roughRide / math.max(1, dwellDuration))
@@ -1363,21 +1224,14 @@ local function processStop(vehicle, dtSim)
 
             roughRide = 0
 
-            --------------------------------------------------------
-            -- RESET STOP STATE
-            --------------------------------------------------------
             dwellTimer = nil
             stopMonitorActive = false
             stopSettleTimer = 0
-            stopIndexWhereBoardingStarted = nil -- Clear the flag when stop is completed
-            currentTriggerName = nil -- Clear trigger name to prevent re-entry issues
+            stopIndexWhereBoardingStarted = nil
+            currentTriggerName = nil
 
-            --------------------------------------------------------
-            -- MOVE TO NEXT STOP
-            --------------------------------------------------------
             local triggerName = trigger:getName() or ""
             if triggerName == currentFinalStopName then
-                -- Loop bonus
                 local loopBonus = math.floor(accumulatedReward * 0.5)
                 accumulatedReward = accumulatedReward + loopBonus
                 local totalPotential = accumulatedReward + tipTotal
@@ -1391,52 +1245,49 @@ local function processStop(vehicle, dtSim)
                 trueDeboarding = 0
 
                 routeCooldown = 10
-                -- Update currentStopIndex BEFORE setting navigation
                 currentStopIndex = 1
-                -- Explicitly route to stop 1 (not stop 2)
-                showNextStopMarker(1)
-                -- Update controller display after loop completion
+                
+                isCalculatingRoute = true
+                routeCalcTimer = 0
+                
                 updateBusControllerDisplay()
 
-                -- Save the game after completing the loop
                 if career_saveSystem and career_saveSystem.saveCurrent then
                     career_saveSystem.saveCurrent()
                 end
 
             else
-                -- Calculate next stop index
                 local nextStopIndex = math.min((currentStopIndex or 1) + 1, #stopTriggers)
                 local nextStopName = stopTriggers[nextStopIndex]:getName() or "Unknown"
                 print(string.format("[bus] Moving to next stop: index %d, name %s", nextStopIndex, nextStopName))
-                -- Update currentStopIndex BEFORE setting navigation to prevent race conditions
+                
+                local reputationGain = math.floor(payout / 500)
+                
+                ui_message(string.format("Proceed to Stop %02d\nBase pay: $%d\nTips: $%d\nTotal tips: $%d\nReputation: +%d",
+                    nextStopIndex, payout, tipsEarned, tipTotal, reputationGain), 8, "info", "bus_next")
+                
                 currentStopIndex = nextStopIndex
-                -- Show path to next stop (from current stop to next stop)
-                showNextStopMarker(nextStopIndex)
-                ui_message(string.format("Proceed to Stop %02d.", currentStopIndex), 4, "info", "bus_next")
+                isCalculatingRoute = true
+                routeCalcTimer = 0
                 updateBusControllerDisplay()
             end
         end
 
-        ------------------------------------------------------------
-        -- PLAYER MOVED AWAY FROM STOP → CANCEL DWELL
-        ------------------------------------------------------------
     else
         dwellTimer = nil
         stopMonitorActive = false
         stopSettleTimer = 0
     end
 end
--- ================================
--- VEHICLE SWITCH 
+
 -- Handle player vehicle switches, updating the active bus and managing route start/stop.
 -- If the player leaves the currently active bus, ends the current route and grants the accumulated payout (capped).
 -- If the newly entered vehicle is a bus and no route is active, marks it as the active bus, shows a start message, and defers route initialization until vehicle seating capacity is retrieved; if a route is already active, updates the active bus reference without reinitializing.
 -- @param oldId The ID of the vehicle the player was previously in (may be nil).
 -- @param newId The ID of the vehicle the player has entered (may be nil).
-function M.onVehicleSwitched(oldId, newId)
+local function onVehicleSwitched(oldId, newId)
     local newVeh = be:getObjectByID(newId)
 
-    -- Leaving the active bus ends the route
     if currentRouteActive and activeBusID and oldId == activeBusID then
         local payout = accumulatedReward + tipTotal
         if payout > 100000 then
@@ -1446,23 +1297,19 @@ function M.onVehicleSwitched(oldId, newId)
     end
 
     if newVeh and isBus(newVeh) then
-        -- Only initialize route if we're not already in an active route
         if not currentRouteActive or not routeInitialized then
             activeBusID = newId
+            currentLoanerCut = calculateLoanerCut(newId)
             ui_message("Shift started. Welcome in! Drive careful out there.", 10, "info", "info")
-            -- Set flag to defer initRoute() until after async capacity callback completes
             pendingRouteInit = true
             retrievePartsTree()
         else
-            -- Route already active, just update the active bus ID
             activeBusID = newId
             print("[bus] Route already active, not reinitializing")
         end
     end
 end
 
--- ================================
--- EXTENSION LOADED
 -- Notify the player that the bus extension is ready and log the load event.
 -- Displays an on-screen message prompting the player to enter a BUS vehicle and prints a load message to the console.
 local function onExtensionLoaded()
@@ -1470,16 +1317,29 @@ local function onExtensionLoaded()
     print("[bus] Extension loaded.")
 end
 
--- ================================
--- UPDATE LOOP
 -- Perform per-frame bus-route updates: handle loop cooldown, advance boarding animation, track rough ride,
 -- and execute core stop processing when the player is driving an active bus route.
 -- @param dtReal Wall-clock delta time in seconds (unused by this function).
 -- @param dtSim Simulation delta time in seconds; used for route cooldown, boarding coroutine progression,
 -- and rough-ride acceleration calculations.
 -- @param dtRaw Raw frame delta time in seconds (unused by this function).
-function M.onUpdate(dtReal, dtSim, dtRaw)
-    -- Route cooldown between loops
+local function onUpdate(dtReal, dtSim, dtRaw)
+    if isCalculatingRoute then
+        routeCalcTimer = routeCalcTimer + (dtSim or 0.033)
+        if routeCalcTimer > 0.5 then
+            local vehicle = be:getPlayerVehicle(0)
+
+            showNextStopMarker(currentStopIndex)
+
+            if vehicle then
+                core_vehicleBridge.executeAction(vehicle, 'setFreeze', false)
+            end
+
+            isCalculatingRoute = false
+        end
+        return
+    end
+
     if routeCooldown > 0 then
         routeCooldown = math.max(0, routeCooldown - (dtSim or 0))
         return
@@ -1490,9 +1350,6 @@ function M.onUpdate(dtReal, dtSim, dtRaw)
         return
     end
 
-    ------------------------------------------------------------
-    -- Advance the REALISTIC BOARDING ANIMATION coroutine
-    ------------------------------------------------------------
     if boardingCoroutine and coroutine.status(boardingCoroutine) ~= "dead" then
         local ok, err = coroutine.resume(boardingCoroutine, dtSim)
         if not ok then
@@ -1502,9 +1359,6 @@ function M.onUpdate(dtReal, dtSim, dtRaw)
         end
     end
 
-    ------------------------------------------------------------
-    -- Rough ride tracking
-    ------------------------------------------------------------
     local velocity = vehicle:getVelocity()
 
     if lastVelocity then
@@ -1520,9 +1374,6 @@ function M.onUpdate(dtReal, dtSim, dtRaw)
 
     lastVelocity = velocity
 
-    ------------------------------------------------------------
-    -- Core stop logic
-    ------------------------------------------------------------
     processStop(vehicle, dtSim)
 end
 
@@ -1531,10 +1382,6 @@ end
 --   - subjectID (number): vehicle ID associated with the event.
 --   - triggerName (string): name of the trigger object (bus stop triggers contain "_bs_").
 --   - event (string): either "enter" or "exit".
--- Behavior:
---   - Ignores events not originating from the player's current vehicle, any events while the player is walking, and triggers whose names do not contain "_bs_".
---   - On "enter": records the trigger as the current active stop.
---   - On "exit": if the exiting trigger matches the recorded active stop, clears the active stop and cancels any ongoing dwell/stop monitoring (resets dwellTimer, stopMonitorActive, and stopSettleTimer).
 local function onBeamNGTrigger(data)
     if be:getPlayerVehicleID(0) ~= data.subjectID then
         return
@@ -1552,33 +1399,27 @@ local function onBeamNGTrigger(data)
     elseif data.event == "exit" then
         if currentTriggerName == data.triggerName then
             currentTriggerName = nil
-            -- Cancel dwell if player exits the stop
             dwellTimer = nil
             stopMonitorActive = false
             stopSettleTimer = 0
         end
     end
 end
--- ================================
--- EXTENSION UNLOADED (cleanup)
+
 -- Cleans up and resets the bus module when the extension is unloaded.
 -- Clears visual stop markers and navigation markers, cancels any active boarding coroutine,
 -- and resets all runtime state (route progress, timers, passenger counts, vehicle parts/capacity, and related flags).
 local function onExtensionUnloaded()
     print("[bus] Extension unloading, cleaning up...")
 
-    -- Clear any active markers
     clearStopMarkers()
 
-    -- Reset navigation markers
     if core_groundMarkers then
         core_groundMarkers.resetAll()
     end
 
-    -- Cancel active coroutine
     boardingCoroutine = nil
 
-    -- Reset all state variables to initial values
     currentStopIndex = nil
     stopTriggers = {}
     dwellTimer = nil
@@ -1603,17 +1444,23 @@ local function onExtensionUnloaded()
     currentFinalStopName = nil
     stopIndexWhereBoardingStarted = nil
     pendingRouteInit = false
+    isCalculatingRoute = false
+    routeCalcTimer = 0
     currentRouteName = nil
     stopDisplayNames = {}
     routeItems = {}
+    currentLoanerCut = 0
 
-    -- Reset vehicle capacity
     M.vehicleCapacity = nil
 
     print("[bus] Extension unloaded successfully.")
 end
 
+M.returnPartsTree = returnPartsTree
+M.onVehicleSwitched = onVehicleSwitched
+M.onUpdate = onUpdate
 M.onBeamNGTrigger = onBeamNGTrigger
 M.onExtensionLoaded = onExtensionLoaded
 M.onExtensionUnloaded = onExtensionUnloaded
+
 return M

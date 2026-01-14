@@ -1,11 +1,18 @@
 {
   "routes": {
+    //"test loop": {
+      //"stops": [
+      //  ["wcu_bs_12", "Central Station"],
+      //  ["wcu_bs_06", "Commerce Park"],
+      //]  
+      //},
     "residential_loop": {
       "name": "Residential Loop",
       "stops": [
         ["wcu_bs_12", "Central Station"],
         ["wcu_bs_06", "Commerce Park"],
         ["wcu_bs_05", "Logan Park"],
+        ["wcu_wp_13", "Residential Loop Waypoint 1"],
         ["wcu_bs_09_b", "Little China"],
         ["wcu_bs_11_b", "Clinton Hotel"],
         ["wcu_bs_18_b", "Winchester Rd"],
@@ -14,13 +21,13 @@
         ["wcu_bs_14", "Church"],
         ["wcu_bs_01", "Rich's Motor Co"],
         ["wcu_bs_03_b", "Belasco Heights"],
-        ["wcu_wp_01", "Residential Loop Waypoint 1"],
-        ["wcu_wp_04", "Residential Loop Waypoint 2"],
+        ["wcu_wp_01", "Residential Loop Waypoint 2"],
+        ["wcu_wp_04", "Residential Loop Waypoint 3"],
         ["wcu_bs_04_b", "Pier South"],
         ["wcu_bs_17_b", "Riverway Plaza"],
-        ["wcu_wp_02", "Residential Loop Waypoint 3"],
+        ["wcu_wp_02", "Residential Loop Waypoint 4"],
         ["wcu_bs_22", "Canal St"],
-        ["wcu_wp_03", "Residential Loop Waypoint 4"],
+        ["wcu_wp_03", "Residential Loop Waypoint 5"],
         ["wcu_bs_15", "Money Grab Bank"],
         ["wcu_bs_12_b", "Central Station"]
       ]
@@ -36,13 +43,14 @@
         ["wcu_bs_10_b", "Hospital"],
         ["wcu_bs_08", "Industrial Park"],
         ["wcu_bs_07_b", "Park Ave"],
+        ["wcu_wp_12", "Business Loop Waypoint 1"],
         ["wcu_bs_04", "Pier North"],
         ["wcu_bs_06_b", "Commerce Park"],
         ["wcu_bs_19_b", "Village"],
         ["wcu_bs_20", "Star Diner"],
         ["wcu_bs_16", "Snooze News"],
         ["wcu_bs_17_b", "Riverway Plaza"],
-        ["wcu_wp_03", "Business Loop Waypoint 1"],
+        ["wcu_wp_03", "Business Loop Waypoint 2"],
         ["wcu_bs_15", "Money Grab Bank"],
         ["wcu_bs_12_b", "Central Station"]
       ]
