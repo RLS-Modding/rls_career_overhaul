@@ -1122,11 +1122,11 @@ end
 
 function M.getLoadingZoneTargetPos(group)
   if not group then return nil end
-  if group.stopLocations and #group.stopLocations > 0 then
+  if group.stopLocations and #group.stopLocations > 0 and group.stopLocations[1] and group.stopLocations[1].pos then
     local stopPos = vec3(group.stopLocations[1].pos)
     
     if map and map.findClosestRoad and map.getMap then
-      local stopRoadName, stopNodeIdx, stopDist = map.findClosestRoad(stopPos)
+      local stopRoadName, stopNodeIdx, _stopDist = map.findClosestRoad(stopPos)
       
       if stopRoadName and stopNodeIdx then
         local mapData = map.getMap()
@@ -1150,7 +1150,7 @@ function M.getLoadingZoneTargetPos(group)
               local nextNodeIdx = nil
               
               if loadingCenter then
-                local loadingRoadName, loadingNodeIdx, loadingDist = map.findClosestRoad(loadingCenter)
+                local loadingRoadName, loadingNodeIdx, _loadingDist = map.findClosestRoad(loadingCenter)
                 
                 if loadingRoadName == stopRoadName and loadingNodeIdx then
                   local loadingNodeInRoad = nil
@@ -1192,7 +1192,8 @@ function M.getLoadingZoneTargetPos(group)
     end
     
     return stopPos
-  elseif group.loading and group.loading.center then
+  end
+  if group.loading and group.loading.center then
     return vec3(group.loading.center)
   end
   return nil

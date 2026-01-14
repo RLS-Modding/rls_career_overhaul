@@ -188,9 +188,9 @@ local function drawDebugOBB()
     for dx = -1, 1, 2 do
       for dy = -1, 1, 2 do
         for dz = -1, 1, 2 do
-          local corner = bd.center 
-            + bd.axisX * (bd.halfWidth * dx) 
-            + bd.axisY * (bd.halfLength * dy) 
+          local corner = bd.center
+            + bd.axisX * (bd.halfWidth * dx)
+            + bd.axisY * (bd.halfLength * dy)
             + bd.axisZ * (bd.halfHeight * dz)
           table.insert(corners, corner)
         end
@@ -203,7 +203,7 @@ local function drawDebugOBB()
     -- Draw edges
     local edges = {
       {1,2}, {3,4}, {5,6}, {7,8},  -- Z edges
-      {1,3}, {2,4}, {5,7}, {6,8},  -- Y edges  
+      {1,3}, {2,4}, {5,7}, {6,8},  -- Y edges
       {1,5}, {2,6}, {3,7}, {4,8}   -- X edges
     }
     for _, e in ipairs(edges) do
@@ -292,7 +292,12 @@ local function toggleDebugOBB(enabled)
   else
     debugOBBEnabled = enabled
   end
+  M.debugOBBEnabled = debugOBBEnabled
   print("[Loading] Debug OBB visualization: " .. (debugOBBEnabled and "ENABLED" or "DISABLED"))
+  return debugOBBEnabled
+end
+
+local function isDebugOBBEnabled()
   return debugOBBEnabled
 end
 
@@ -301,6 +306,7 @@ M.uiAnim = uiAnim
 M.uiHidden = uiHidden
 M.markerAnim = markerAnim
 M.debugOBBEnabled = debugOBBEnabled
+M.isDebugOBBEnabled = isDebugOBBEnabled
 
 M.drawWorkSiteMarker = drawWorkSiteMarker
 M.drawZoneChoiceMarkers = drawZoneChoiceMarkers

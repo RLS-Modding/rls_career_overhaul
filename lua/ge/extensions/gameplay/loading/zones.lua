@@ -184,10 +184,10 @@ local function updateZoneStocks(dt, getSimTime)
               
               if stock.current > oldStock then
                 if isMass then
-                  print(string.format("[Loading] Zone '%s' material '%s': Stock regenerated %.2f -> %.2f/%.2f tons (next regen in %.2f seconds)", 
+                  print(string.format("[Loading] Zone '%s' material '%s': Stock regenerated %.2f -> %.2f/%.2f tons (next regen in %.2f seconds)",
                     group.secondaryTag, matKey, oldStock, stock.current, stock.max, 3600 / stock.regenRate))
                 else
-                  print(string.format("[Loading] Zone '%s' material '%s': Stock regenerated %d -> %d/%d (next regen in %.2f seconds)", 
+                  print(string.format("[Loading] Zone '%s' material '%s': Stock regenerated %d -> %d/%d (next regen in %.2f seconds)",
                     group.secondaryTag, matKey, oldStock, stock.current, stock.max, 3600 / stock.regenRate))
                 end
               end
