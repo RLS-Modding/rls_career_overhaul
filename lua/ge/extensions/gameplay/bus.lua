@@ -671,21 +671,24 @@ local function endRoute(reason, payout)
     local reputationGain = 0
 
     if payout and payout > 0 then
+        local loanerCutAmount = 0
         if currentLoanerCut > 0 then
-            payout = math.floor(payout * (1 - currentLoanerCut))
+            loanerCutAmount = math.floor(payout * currentLoanerCut)
+            payout = payout - loanerCutAmount
         end
-        
+
         local basePay = accumulatedReward
         local tipsEarned = tipTotal
-        local bonusPay = math.max(0, payout - (basePay + tipsEarned))
 
         reputationGain = math.floor(payout / 500)
 
-        msg = msg ..
-                  string.format(
-                "\nStops completed: %d" .. "\nBase pay:   $%d" .. "\nTips:       $%d" .. "\nBonus:      $%d" ..
-                    "\n--------------------" .. "\nTotal payout: $%d" .. "\nReputation gained: +%d",
-                totalStopsCompleted, basePay, tipsEarned, bonusPay, payout, reputationGain)
+        msg = msg .. string.format("\nStops completed: %d\nBase pay:   $%d\nTips:       $%d",
+            totalStopsCompleted, basePay, tipsEarned)
+        if loanerCutAmount > 0 then
+            msg = msg .. string.format("\nLoaner cut: -$%d", loanerCutAmount)
+        end
+        msg = msg .. string.format("\n--------------------\nTotal payout: $%d\nReputation gained: +%d",
+            payout, reputationGain)
     else
         msg = msg .. "\nNo payout earned."
     end
