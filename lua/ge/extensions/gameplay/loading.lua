@@ -938,17 +938,19 @@ local function onUpdate(dt)
       end
       
       local hasDesignatedStop = group.stopLocations and #group.stopLocations > 0
-      local targetPos = Manager.getLoadingZoneTargetPos(group)
+      local routingTargetPos = Manager.getLoadingZoneTargetPos(group)
+      local stopLocationPos = hasDesignatedStop and group.stopLocations[1] and group.stopLocations[1].pos and vec3(group.stopLocations[1].pos) or nil
       local truckPos = truck:getPosition()
       local arrivalSpeed = settingsTruck and settingsTruck.arrivalSpeedThreshold or 2.0
       
-      if hasDesignatedStop and targetPos then
+      if hasDesignatedStop and routingTargetPos then
         local arrivalDist = settingsTruck and settingsTruck.arrivalDistanceThreshold or 10.0
-        local atTarget = (truckPos - targetPos):length() < arrivalDist
+        local arrivalTargetPos = stopLocationPos or routingTargetPos
+        local atTarget = (truckPos - arrivalTargetPos):length() < arrivalDist
         
-        if not Manager.jobObjects.loadingZoneTargetPos or (Manager.jobObjects.loadingZoneTargetPos - targetPos):length() > 0.1 then
-          Manager.jobObjects.loadingZoneTargetPos = targetPos
-          Manager.driveTruckToPoint(Manager.jobObjects.truckID, targetPos)
+        if not Manager.jobObjects.loadingZoneTargetPos or (Manager.jobObjects.loadingZoneTargetPos - routingTargetPos):length() > 0.1 then
+          Manager.jobObjects.loadingZoneTargetPos = routingTargetPos
+          Manager.driveTruckToPoint(Manager.jobObjects.truckID, routingTargetPos)
         end
         
         if atTarget and truck:getVelocity():length() < arrivalSpeed then
@@ -1002,14 +1004,16 @@ local function onUpdate(dt)
       end
       local arrivalSpeed = settingsTruck and settingsTruck.arrivalSpeedThreshold or 2.0
       local hasDesignatedStop = group.stopLocations and #group.stopLocations > 0
-      local targetPos = Manager.getLoadingZoneTargetPos(group)
+      local routingTargetPos = Manager.getLoadingZoneTargetPos(group)
+      local stopLocationPos = hasDesignatedStop and group.stopLocations[1] and group.stopLocations[1].pos and vec3(group.stopLocations[1].pos) or nil
       local truckPos = truck:getPosition()
-      local atTarget = targetPos and (truckPos - targetPos):length() < (settingsTruck and settingsTruck.arrivalDistanceThreshold or 10.0)
+      local arrivalTargetPos = stopLocationPos or routingTargetPos
+      local atTarget = arrivalTargetPos and (truckPos - arrivalTargetPos):length() < (settingsTruck and settingsTruck.arrivalDistanceThreshold or 10.0)
       
-      if hasDesignatedStop and targetPos then
-        if not Manager.jobObjects.loadingZoneTargetPos or (Manager.jobObjects.loadingZoneTargetPos - targetPos):length() > 0.1 then
-          Manager.jobObjects.loadingZoneTargetPos = targetPos
-          Manager.driveTruckToPoint(Manager.jobObjects.truckID, targetPos)
+      if hasDesignatedStop and routingTargetPos then
+        if not Manager.jobObjects.loadingZoneTargetPos or (Manager.jobObjects.loadingZoneTargetPos - routingTargetPos):length() > 0.1 then
+          Manager.jobObjects.loadingZoneTargetPos = routingTargetPos
+          Manager.driveTruckToPoint(Manager.jobObjects.truckID, routingTargetPos)
         end
         
         if atTarget and truck:getVelocity():length() < arrivalSpeed then
@@ -1092,7 +1096,7 @@ local function onUpdate(dt)
       Manager.teleportQueued = false
       
       if Manager.jobObjects.activeGroup and contract.unitType ~= "item" and deliveredMass > 0 then
-        Manager.respawnMassMaterials(Contracts, Zones, playerPos, deliveredMass)
+        Manager.respawnMassMaterials(Contracts, Zones, deliveredMass)
       end
       
       if Contracts.checkContractCompletion() then
@@ -1162,7 +1166,7 @@ local function onUpdate(dt)
       
       if Manager.jobObjects.activeGroup then
         if contract.unitType ~= "item" and deliveredMass > 0 then
-          Manager.respawnMassMaterials(Contracts, Zones, playerPos, deliveredMass)
+          Manager.respawnMassMaterials(Contracts, Zones, deliveredMass)
         end
         Manager.spawnJobMaterials(Contracts, Zones, playerPos)
       end
@@ -1180,7 +1184,7 @@ local function onUpdate(dt)
         Engine.Audio.playOnce('AudioGui', 'event:>UI>Missions>Mission_End_Success')
         if #Manager.propQueue == 0 then
           if contract.unitType ~= "item" and deliveredMass > 0 then
-            Manager.respawnMassMaterials(Contracts, Zones, playerPos, deliveredMass)
+            Manager.respawnMassMaterials(Contracts, Zones, deliveredMass)
           end
           Manager.spawnJobMaterials(Contracts, Zones, playerPos)
         end

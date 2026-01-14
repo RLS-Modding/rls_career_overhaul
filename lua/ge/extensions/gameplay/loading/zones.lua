@@ -213,20 +213,10 @@ local function getZoneStockInfo(group, getCurrentGameHour)
     totalMax = totalMax + stock.max
   end
   
-  local roundedMaterialStocks = {}
-  for matKey, stock in pairs(cache.materialStocks) do
-    roundedMaterialStocks[matKey] = {
-      current = math.floor(stock.current + 0.5),
-      max = math.floor(stock.max + 0.5),
-      regenRate = stock.regenRate,
-      nextRegenSimTime = stock.nextRegenSimTime
-    }
-  end
-  
   return {
     current = math.floor(totalCurrent + 0.5),
     max = math.floor(totalMax + 0.5),
-    materialStocks = roundedMaterialStocks,
+    materialStocks = cache.materialStocks,
     spawnedProps = cache.spawnedPropCounts or {},
     materials = group.materials or (group.materialType and {group.materialType} or {})
   }
@@ -309,11 +299,15 @@ local function discoverGroups(sites)
         else
           local materialSpawnLocations = {}
           local stopLocations = {}
+          local addedMaterialIds = {}
           
           for _, loc in ipairs(sites.tagsToLocations.spawn or {}) do
             if loc.customFields and loc.customFields.tags and loc.customFields.tags[secondaryTag] then
               if loc.customFields.tags.material then
-                table.insert(materialSpawnLocations, loc)
+                if not addedMaterialIds[loc.id] then
+                  table.insert(materialSpawnLocations, loc)
+                  addedMaterialIds[loc.id] = true
+                end
               end
             end
           end
@@ -327,7 +321,10 @@ local function discoverGroups(sites)
           for _, loc in ipairs(sites.tagsToLocations.material or {}) do
             if loc.customFields and loc.customFields.tags and loc.customFields.tags[secondaryTag] then
               if not loc.customFields.tags.stop then
-                table.insert(materialSpawnLocations, loc)
+                if not addedMaterialIds[loc.id] then
+                  table.insert(materialSpawnLocations, loc)
+                  addedMaterialIds[loc.id] = true
+                end
               end
             end
           end

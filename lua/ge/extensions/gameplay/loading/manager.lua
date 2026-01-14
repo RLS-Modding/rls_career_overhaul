@@ -530,7 +530,7 @@ function M.processPendingRespawns(dt, zonesMod, contractsMod)
   end
 end
 
-function M.respawnMassMaterials(contractsMod, zonesMod, playerPos, deliveredMassKg)
+function M.respawnMassMaterials(contractsMod, zonesMod, deliveredMassKg)
   if not M.jobObjects.activeGroup or not M.jobObjects.activeGroup.loading then return end
   if not deliveredMassKg or deliveredMassKg <= 0 then return end
   
@@ -571,13 +571,17 @@ function M.respawnMassMaterials(contractsMod, zonesMod, playerPos, deliveredMass
   
   local deliveredMassTons = deliveredMassKg / 1000
   
-  if stock.current < deliveredMassTons then
-    print(string.format("[Loading] Cannot respawn %.2f tons of %s - only %.2f tons available in stock", deliveredMassTons, materialType, stock.current))
+  if stock.current <= 0 then
+    print(string.format("[Loading] Cannot respawn %.2f tons of %s - no stock available", deliveredMassTons, materialType))
     return
   end
   
-  local propsToSpawn = 1
-  local massPerProp = deliveredMassTons / propsToSpawn
+  local actualSpawnAmount = math.min(deliveredMassTons, stock.current)
+  local actualSpawnAmountKg = actualSpawnAmount * 1000
+  
+  local massPerProp = matConfig.massPerProp or 41000
+  local propsToSpawn = math.max(1, math.floor(actualSpawnAmountKg / massPerProp))
+  local massPerPropKg = actualSpawnAmountKg / propsToSpawn
   
   local designatedSpawnLocs = group.materialSpawnLocations or {}
   local spawnPos = nil
@@ -617,14 +621,14 @@ function M.respawnMassMaterials(contractsMod, zonesMod, playerPos, deliveredMass
       if actualObj then
         local entry = { 
           id = propId, 
-          mass = massPerProp, 
+          mass = massPerPropKg, 
           materialType = materialType,
           blockType = nil
         }
         table.insert(M.propQueue, entry)
         M.propQueueById[propId] = entry
         actuallySpawned = actuallySpawned + 1
-        totalMassSpawned = totalMassSpawned + massPerProp
+        totalMassSpawned = totalMassSpawned + massPerPropKg
         M.managePropCapacity()
       else
         if obj then obj:delete() end
@@ -633,10 +637,10 @@ function M.respawnMassMaterials(contractsMod, zonesMod, playerPos, deliveredMass
   end
   
   if actuallySpawned > 0 then
-    stock.current = stock.current - deliveredMassTons
+    stock.current = stock.current - actualSpawnAmount
     
     print(string.format("[Loading] Respawned %d prop of %s at spawn spot, consumed %.2f tons from stock (%.2f tons remaining)", 
-      actuallySpawned, materialType, deliveredMassTons, stock.current))
+      actuallySpawned, materialType, actualSpawnAmount, stock.current))
   end
 end
 
@@ -810,7 +814,7 @@ function M.spawnJobMaterials(contractsMod, zonesMod, playerPos)
           local actuallySpawned = 0
           local totalMassSpawned = 0
           for _ = 1, propsToSpawn do
-            local spawnPos = nil
+            local spawnPos
             if useDesignatedSpawns then
               if #designatedSpawnLocs > 0 then
                 designatedSpawnIdx = designatedSpawnIdx + 1
