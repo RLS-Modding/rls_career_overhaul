@@ -80,6 +80,7 @@ local stopSettleTimer = 0
 
 -- Cached ambulance state (updated on load and vehicle switch)
 local inAmbulance = false
+local currentLoanerCut = 0
 
 -- Timers
 M.initDelay = nil
@@ -98,6 +99,36 @@ local startRide
 local startNextMission
 local generateFare
 local updateMarkers
+
+local function calculateLoanerCut(vehId)
+    if not vehId then return 0 end
+    
+    if not career_modules_loanerVehicles or not career_modules_loanerVehicles.getLoaningOrgsOfVehicle then
+        return 0
+    end
+    
+    local loaningOrgs = career_modules_loanerVehicles.getLoaningOrgsOfVehicle(vehId)
+    if not loaningOrgs or not next(loaningOrgs) then
+        return 0
+    end
+    
+    local totalCut = 0
+    for organizationId, _ in pairs(loaningOrgs) do
+        if freeroam_organizations and freeroam_organizations.getOrganization then
+            local organization = freeroam_organizations.getOrganization(organizationId)
+            if organization and organization.reputation and organization.reputationLevels then
+                local level = organization.reputation.level
+                local levelIndex = level + 2
+                if organization.reputationLevels[levelIndex] and organization.reputationLevels[levelIndex].loanerCut then
+                    local orgCut = organization.reputationLevels[levelIndex].loanerCut.value or 0.5
+                    totalCut = totalCut + orgCut
+                end
+            end
+        end
+    end
+    
+    return math.min(totalCut, 1.0)
+end
 
 -- ================================
 -- START RIDE
@@ -411,6 +442,13 @@ local function handleDropoff(dtSim, vehiclePos, speed)
     penalty = math.min(penalty, maxPenalty)
     local finalPayout = math.max(0, basePayout + timeBonus - penalty)
 
+    -- Apply Loaner Cut
+    local loanerCutAmount = 0
+    if currentLoanerCut > 0 then
+        loanerCutAmount = math.floor(finalPayout * currentLoanerCut)
+        finalPayout = finalPayout - loanerCutAmount
+    end
+
     if career_career and career_career.isActive() and career_modules_payment and career_modules_payment.reward then
         career_modules_payment.reward({
             money = {
@@ -423,20 +461,28 @@ local function handleDropoff(dtSim, vehiclePos, speed)
                 amount = math.floor(finalPayout / 100)
             }
         }, {
-            label = string.format("Ambulance fare: $%d | Time bonus: $%d | Rough ride penalty: $%d", finalPayout, timeBonus, penalty),
+            label = string.format("Gross Earnings: $%d | Time bonus: $%d | Rough ride penalty: -$%d | Loaner Cut: -$%d | Net: $%d", finalPayout + loanerCutAmount, timeBonus, penalty, loanerCutAmount, finalPayout),
             tags = {"transport", "ambulance", "gameplay"}
         }, true)
     end
 
     local repGain = math.floor(finalPayout / 100)
 
-    ui_message(string.format(
-        "Patient delivered!\nDistance: %.2f km\nBase: $%d\nTime Bonus: $%d\nPenalty: $%d\nEarned: $%d\nReputation +%d", distanceKM,
-        basePayout, timeBonus, penalty, finalPayout, repGain), 6, "info", "info")
+    local msg = string.format(
+        "Patient delivered!\nDistance: %.2f km\nBase: $%d\nTime Bonus: $%d\nPenalty: -$%d",
+        distanceKM, basePayout, timeBonus, penalty)
+    
+    if loanerCutAmount > 0 then
+        msg = msg .. string.format("\nLoaner cut: -$%d", loanerCutAmount)
+    end
+    
+    msg = msg .. string.format("\nEarned: $%d\nReputation +%d", finalPayout, repGain)
+
+    ui_message(msg, 6, "info", "info")
 
     print(string.format(
-        "[ambulance] Patient delivered. Distance: %.2f km Base: $%d Time Bonus: $%d Penalty: $%d Earned: $%d Reputation +%d",
-        distanceKM, basePayout, timeBonus, penalty, finalPayout, repGain))
+        "[ambulance] Patient delivered. Distance: %.2f km Base: $%d Time Bonus: $%d Penalty: $%d LoanerCut: $%d Earned: $%d Reputation +%d",
+        distanceKM, basePayout, timeBonus, penalty, loanerCutAmount, finalPayout, repGain))
     currentFare.dropoffTimer = nil
     state = "completed"
     core_groundMarkers.resetAll()
@@ -495,6 +541,12 @@ end
 -- Displays a brief UI message and prints a diagnostic notice to the console.
 local function onExtensionLoaded()
     inAmbulance = isAmbulancePaintDesign()
+    if inAmbulance then
+        local vehicle = be:getPlayerVehicle(0)
+        if vehicle then
+            currentLoanerCut = calculateLoanerCut(vehicle:getId())
+        end
+    end
     ui_message("Ambulance module loaded. Waiting for 911 vehicle...", 3, "info", "info")
     print("[ambulance] extension loaded and waiting for vehicle trigger")
 end
@@ -515,6 +567,7 @@ local function onExtensionUnloaded()
     stopSettleTimer = 0
     M.rideData = {}
     inAmbulance = false
+    currentLoanerCut = 0
 
     -- Reset timers
     M.initDelay = nil
@@ -533,6 +586,11 @@ end
 -- Updates the cached ambulance paint design state when the player switches vehicles.
 local function onVehicleSwitched(oldId, newId, player)
     inAmbulance = isAmbulancePaintDesign(newId)
+    if inAmbulance then
+        currentLoanerCut = calculateLoanerCut(newId)
+    else
+        currentLoanerCut = 0
+    end
 end
 
 -- ================================
