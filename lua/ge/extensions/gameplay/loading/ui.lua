@@ -149,13 +149,13 @@ local function getQuarryStateForUI(currentState, playerMod, contractsMod, manage
       deliveredBlocks = contractsMod.ContractSystem.contractProgress and contractsMod.ContractSystem.contractProgress.deliveredBlocks or { big = 0, small = 0, total = 0 },
       deliveryCount = contractsMod.ContractSystem.contractProgress and contractsMod.ContractSystem.contractProgress.deliveryCount or 0
     },
-    currentLoadMass = managerMod.jobObjects.currentLoadMass or 0,
+    currentLoadMass = (managerMod.jobObjects.currentLoadMass or 0) / 1000,
     targetLoad = (function()
       local matType = managerMod.jobObjects.materialType
       if matType and Config.materials and Config.materials[matType] then
         local matConfig = Config.materials[matType]
         if matConfig.unitType == "mass" then
-          return matConfig.targetLoad or 25000
+          return (matConfig.targetLoad or 25000) / 1000
         end
       end
       return nil
