@@ -1164,6 +1164,7 @@ function M.stopNudging(truckId)
   local truck = be:getObjectByID(truckId)
   if not truck then return end
   M.truckNudgeModeSet = false
+  M.truckNudging = false
   truck:queueLuaCommand("ai.setMode('stop')")
   truck:queueLuaCommand("input.event('throttle', 0, 1)")
   truck:queueLuaCommand("input.event('brake', 0, 1)")

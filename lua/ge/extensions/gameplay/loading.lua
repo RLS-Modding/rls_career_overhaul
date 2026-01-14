@@ -635,20 +635,16 @@ local function handleTruckNudging(truckId, truck, targetPos, arrivalDist, atTarg
   
   local throttle = 0
   local brake = 0
-  local steering = 0
   
   local dirToTarget = (targetPos - truckPos):normalized()
   local truckDir = truck:getDirectionVector():normalized()
   local truckRight = truck:getDirectionVectorUp():cross(truckDir):normalized()
   local steerDot = truckRight:dot(dirToTarget)
-  steering = math.max(-1, -math.min(1, steerDot * 2))
+  local steering = math.max(-1, -math.min(1, steerDot * 2))
   
   local approachZone = arrivalDist + 5
   local targetSpeed = 9.0
-  if distToTarget < approachZone then
-    local approachProgress = (distToTarget - arrivalDist) / 5
-    targetSpeed = 0.5 + (1.5 * approachProgress)
-  elseif distToTarget < 3 then
+  if distToTarget < 3 then
     targetSpeed = 1.8
   elseif distToTarget < 6 then
     targetSpeed = 3.0
@@ -656,6 +652,9 @@ local function handleTruckNudging(truckId, truck, targetPos, arrivalDist, atTarg
     targetSpeed = 4.8
   elseif distToTarget < 15 then
     targetSpeed = 6.0
+  elseif distToTarget <= approachZone and distToTarget > arrivalDist then
+    local approachProgress = math.max(0, math.min(1, (distToTarget - arrivalDist) / 5))
+    targetSpeed = 0.5 + (1.5 * approachProgress)
   end
   
   local speedError = targetSpeed - truckSpeed
