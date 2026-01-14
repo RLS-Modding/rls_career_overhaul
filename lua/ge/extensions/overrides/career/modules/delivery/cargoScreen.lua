@@ -43,6 +43,8 @@ end
 local cargoOverviewScreenOpen = false
 local cargoOverviewTab = ""
 local visibleBigMapIdsToCardIds = {}
+local vehicleSpawnInProgress = false
+local pendingTransientMoves = false
 M.isCargoScreenOpen = function() return cargoOverviewScreenOpen end
 M.setCargoScreenTab = function(tab)
     --print("cargo tab -> " .. dumps(tab))
@@ -1369,6 +1371,8 @@ M.moveCargoFromUi = moveCargoFromUi
 
 -- called by activity accept or from the career menu to enter the cargo screen.
 local function enterCargoOverviewScreen(facilityId, parkingSpotPath)
+  vehicleSpawnInProgress = false
+  pendingTransientMoves = false
   dGeneral.getNearbyVehicleCargoContainers(function(playerCargoContainers)
     cargoOverviewScreenOpen = true
     cargoOverviewTab = ""
@@ -1429,32 +1433,26 @@ local function exitCargoOverviewScreen(facilityId, parkingSpotPath)
   --career_career.closeAllMenus()
   freeroam_bigMapMode.exitBigMap(true)
   simTimeAuthority.pause(false) -- this is only necessary because the career pause menu doesnt unpause in time for the bigMap to start, so the bigMap will not unpause by itself
-  dGeneral.requestUpdateContainerWeights()
-  dGeneral.checkExitDeliveryMode()
+  if not vehicleSpawnInProgress then
+    dGeneral.requestUpdateContainerWeights()
+  end
+  if not vehicleSpawnInProgress and not pendingTransientMoves then
+    dGeneral.checkExitDeliveryMode()
+  end
 end
 
 -- call this function to commit the configuration and clear all transient flags.
 local function commitDeliveryConfiguration()
-  local playerCargo = dParcelManager.getAllCargoInVehicles()
-  local transientCargo = dParcelManager.getTransientMoveCargo()
-  local countTotal, countTransient, countDeleted, deletedMoneySum = 0,0,0,0
-
-  local movedCargo, remainingCargo = dParcelManager.applyTransientMoves({type="facilityParkingspot",facId=cargoScreenFacId, psPath=cargoScreenPsPath})
-
-
-  log("I","",string.format("Commited Delivery Configuration. (Cargo Added: %d. Remaining to be loaded: %d)",#movedCargo, #remainingCargo))
-
-  -- TODO: cleanup throwing away
-  --[[if countDeleted > 1 then
-
-    ui_message(string.format("Thrown away %d items. Penalty: %0.2f", countDeleted, deletedMoneySum * dGeneral.getDeliveryAbandonPenaltyFactor()))
-    career_modules_playerAttributes.addAttributes({money=-deletedMoneySum  * dGeneral.getDeliveryAbandonPenaltyFactor()}, {tags={"delivery","gameplay","fine"}, label="Penalty for throwing away cargo."})
-  end]]
-
-  if not career_modules_delivery_general.isDeliveryModeActive() and (#movedCargo > 0 or #remainingCargo > 0) then
-    dGeneral.startDeliveryMode()
+  local function getOffersToSpawn()
+    local offers = {}
+    local vehOffers = dVehOfferManager.getAllOfferUnexpired()
+    for _, offer in ipairs(vehOffers) do
+      if offer.spawnWhenCommitingCargo and offer.origin.facId == cargoScreenFacId then
+        table.insert(offers, offer)
+      end
+    end
+    return offers
   end
-  dGeneral.requestUpdateContainerWeights()
 
   local function buildSpawnStepsForCommit()
     local stepsList = {}
@@ -1470,66 +1468,291 @@ local function commitDeliveryConfiguration()
     return stepsList
   end
 
-  local spawnSteps = buildSpawnStepsForCommit()
-  dGeneral.updateContainerWeights(
-    function(data)
-      print(data)
-      local maxDelay = 0
-      for _, delay in pairs(data) do
-        maxDelay = math.max(delay, maxDelay)
+  local function deferVehicleTransientMovesIfNeeded()
+    local allTransientCargo = dParcelManager.getTransientMoveCargo()
+    local deferredCargo = {}
+    
+    local offersToSpawn = getOffersToSpawn()
+    local hasVehicleOfferSpawns = #offersToSpawn > 0
+    
+    local deletionsToApply = {}
+    
+    for _, cargo in ipairs(allTransientCargo) do
+      if cargo and cargo._transientMove and cargo._transientMove.targetLocation then
+        local targetLoc = cargo._transientMove.targetLocation
+        if targetLoc.type == "deleted" then
+          table.insert(deletionsToApply, cargo.id)
+          dParcelManager.clearTransientMoveForCargo(cargo.id)
+        end
       end
-      maxDelay = math.max(maxDelay, 0)
+    end
+    
+    for _, cargoId in ipairs(deletionsToApply) do
+      dParcelManager.changeCargoLocation(cargoId, {type="deleted"})
+    end
+    
+    for _, cargo in ipairs(allTransientCargo) do
+      if cargo and cargo._transientMove and cargo._transientMove.targetLocation then
+        local targetLoc = cargo._transientMove.targetLocation
+        if targetLoc.type ~= "deleted" then
+          if hasVehicleOfferSpawns then
+            local involvesVehicle = targetLoc.type == "vehicle" or (cargo.location and cargo.location.type == "vehicle")
+            if involvesVehicle then
+              local copiedTargetLoc = {}
+              for k, v in pairs(targetLoc) do
+                copiedTargetLoc[k] = v
+              end
+              table.insert(deferredCargo, {
+                cargoId = cargo.id,
+                targetLocation = copiedTargetLoc
+              })
+              dParcelManager.clearTransientMoveForCargo(cargo.id)
+            end
+          end
+        end
+      end
+    end
+
+    if hasVehicleOfferSpawns then
+      local remainingVehicleMoves = dParcelManager.getTransientMoveCargo()
+      for _, cargo in ipairs(remainingVehicleMoves) do
+        if cargo and cargo._transientMove and cargo._transientMove.targetLocation then
+          local targetLoc = cargo._transientMove.targetLocation
+          local involvesVehicle = targetLoc.type == "vehicle" or (cargo.location and cargo.location.type == "vehicle")
+          if involvesVehicle and targetLoc.type ~= "deleted" then
+            log("W","",string.format("Warning: Vehicle-related transient move for cargo %s was not deferred!", cargo.id))
+            dParcelManager.clearTransientMoveForCargo(cargo.id)
+          end
+        end
+      end
+    end
+
+    local movedCargo, remainingCargo = dParcelManager.applyTransientMoves({type="facilityParkingspot",facId=cargoScreenFacId, psPath=cargoScreenPsPath})
+
+    log("I","",string.format("Commited Delivery Configuration. (Cargo Added: %d. Remaining to be loaded: %d. Deferred vehicle moves: %d. Deletions applied: %d)",#movedCargo, #remainingCargo, #deferredCargo, #deletionsToApply))
+    return movedCargo, remainingCargo, deferredCargo
+  end
+
+  local function applyValidDeferredCargo(deferredCargo)
+    local validDeferredCargo = {}
+    for _, deferred in ipairs(deferredCargo) do
+      local cargo = dParcelManager.getCargoById(deferred.cargoId)
+      if cargo and cargo.location and cargo.location.type ~= "deleted" then
+        table.insert(validDeferredCargo, deferred)
+        dParcelManager.addTransientMoveCargo(deferred.cargoId, deferred.targetLocation)
+      end
+    end
+    if #validDeferredCargo > 0 then
+      dParcelManager.applyTransientMoves()
+      log("I","",string.format("Applied %d deferred transient moves (filtered %d invalid)", #validDeferredCargo, #deferredCargo - #validDeferredCargo))
+    end
+    return validDeferredCargo
+  end
+
+  local movedCargo, remainingCargo, deferredCargo = deferVehicleTransientMovesIfNeeded()
+
+  local allTransientCargo = dParcelManager.getTransientMoveCargo()
+  pendingTransientMoves = #allTransientCargo > 0 or #deferredCargo > 0
+
+  if not career_modules_delivery_general.isDeliveryModeActive() and (#movedCargo > 0 or #remainingCargo > 0) then
+    dGeneral.startDeliveryMode()
+  end
+
+  local spawnSteps = buildSpawnStepsForCommit()
+  local hasVehicleOfferSpawnsFromSteps = spawnSteps and #spawnSteps > 0
+
+  local parcelLoadQueue = {}
+  local parcelLoadInProgress = false
+
+  local function loadParcelsForVehicle(vehId, containerData, callback)
+    local veh = scenetree.findObjectById(vehId)
+    if not veh then
+      if callback then callback() end
+      return
+    end
+
+    core_vehicleBridge.executeAction(veh, "setCargoContainers", containerData or {}, "updateAll")
+    core_vehicleBridge.executeAction(veh, 'setFreeze', true)
+
+    core_vehicleBridge.requestValue(veh, function(vehCargoContainerData)
+      local maxForContainer = 0
+      if vehCargoContainerData and vehCargoContainerData[1] then
+        for _, container in ipairs(vehCargoContainerData[1]) do
+          local rt = container.reachTargetTimeRemaining or 0
+          maxForContainer = math.max(maxForContainer, rt)
+        end
+      end
+
+      local delay = math.max(maxForContainer, 0)
       local sequence = {}
 
-      local hasVehicleOfferSpawns = spawnSteps and #spawnSteps > 0
-      if hasVehicleOfferSpawns then
-        table.insert(sequence, step.makeStepFadeToBlack(0.4))
-      end
-
-      if maxDelay > 0 then
-        maxDelay = math.max(maxDelay, 1)
-        table.insert(sequence, step.makeStepWait(maxDelay + 0.5))
+      if delay > 0 then
+        delay = math.max(delay, 1)
+        table.insert(sequence, step.makeStepWait(delay + 0.5))
       end
 
       table.insert(sequence, step.makeStepReturnTrueFunction(function()
-        for vehId, _ in pairs(data) do
-          local veh = scenetree.findObjectById(vehId)
-          if veh then
-            core_vehicleBridge.executeAction(veh, 'setFreeze', false)
-          end
+        local v = scenetree.findObjectById(vehId)
+        if v then
+          core_vehicleBridge.executeAction(v, 'setFreeze', false)
         end
         gameplay_markerInteraction.setForceReevaluateOpenPrompt()
         return true
       end))
 
-      for _, st in ipairs(spawnSteps) do
-        table.insert(sequence, st)
-      end
-
-      table.insert(sequence, step.makeStepReturnTrueFunction(function()
-        gameplay_markerInteraction.setForceReevaluateOpenPrompt()
-        return true
-      end))
-
-      if hasVehicleOfferSpawns then
-        table.insert(sequence, step.makeStepFadeFromBlack(0.4))
-      end
-
       step.startStepSequence(sequence, function()
-        career_modules_loanerVehicles.spawnAllOffers()
+        gameplay_markerInteraction.setForceReevaluateOpenPrompt()
+        if callback then callback() end
       end)
 
-      if maxDelay > 0 then
-        guihooks.trigger("OpenSimpleDelayPopup",{timer=maxDelay, heading="Loading Cargo..."})
+      if delay > 0 then
+        guihooks.trigger("OpenSimpleDelayPopup",{timer=delay, heading="Loading Cargo..."})
       end
-      log("I","",string.format("%0.2fs delay after adjusting weights for cargo.", maxDelay))
+      log("I","",string.format("Vehicle %d: %0.2fs delay after adjusting weights for cargo.", vehId, delay))
+    end, "getCargoContainers")
+  end
+
+  local function tryStartNextParcelLoad()
+    if parcelLoadInProgress then return end
+    local req = table.remove(parcelLoadQueue, 1)
+    if not req then return end
+
+    parcelLoadInProgress = true
+    loadParcelsForVehicle(req.vehId, req.containerData, function()
+      parcelLoadInProgress = false
+      if req.callback then req.callback() end
+      tryStartNextParcelLoad()
+    end)
+  end
+
+  local function loadParcelsForVehicleGroup(vehIds, callback)
+    local updatePerVehicle = {}
+    for _, vehId in ipairs(vehIds) do
+      local veh = scenetree.findObjectById(vehId)
+      if veh and veh:getJBeamFilename() ~= "unicycle" and veh.playerUsable ~= false then
+        updatePerVehicle[vehId] = {}
+      end
     end
-    )
+
+    for _, cargo in ipairs(dParcelManager.getAllCargoInVehicles()) do
+      if cargo.location.vehId and updatePerVehicle[cargo.location.vehId] then
+        updatePerVehicle[cargo.location.vehId][cargo.location.containerId] = updatePerVehicle[cargo.location.vehId][cargo.location.containerId] or {
+          volume = 0,
+          density = 1,
+          containerId = cargo.location.containerId
+        }
+
+        if cargo.type == "parcel" then
+          updatePerVehicle[cargo.location.vehId][cargo.location.containerId].volume = updatePerVehicle[cargo.location.vehId][cargo.location.containerId].volume + (cargo.weight or 0)
+        elseif cargo.type == "fluid" or cargo.type == "dryBulk" or cargo.type == "cement" or cargo.type == "cash" then
+          updatePerVehicle[cargo.location.vehId][cargo.location.containerId].volume = updatePerVehicle[cargo.location.vehId][cargo.location.containerId].volume + (cargo.slots or 0)
+          updatePerVehicle[cargo.location.vehId][cargo.location.containerId].density = (cargo.weight/cargo.slots or 1)
+        end
+      end
+    end
+
+    parcelLoadQueue = {}
+    for vehId, containerData in pairs(updatePerVehicle) do
+      local vid = vehId
+      local cdata = containerData
+      table.insert(parcelLoadQueue, {
+        vehId = vid,
+        containerData = cdata,
+        callback = function()
+          log("I","",string.format("Finished loading parcels for vehicle %d", vid))
+        end
+      })
+    end
+
+    if #parcelLoadQueue > 0 then
+      log("I","",string.format("Queueing %d vehicles for parcel loading", #parcelLoadQueue))
+      local parcelsLoaded = 0
+      local totalParcels = #parcelLoadQueue
+      
+      local function onParcelLoadComplete()
+        parcelsLoaded = parcelsLoaded + 1
+        if parcelsLoaded >= totalParcels then
+          if callback then callback() end
+        end
+      end
+      
+      for _, req in ipairs(parcelLoadQueue) do
+        local originalCallback = req.callback
+        req.callback = function()
+          if originalCallback then originalCallback() end
+          onParcelLoadComplete()
+        end
+      end
+      
+      tryStartNextParcelLoad()
+    else
+      if callback then callback() end
+    end
+  end
+
+  if hasVehicleOfferSpawnsFromSteps or #deferredCargo > 0 then
+    vehicleSpawnInProgress = true
+    local vehicleSpawnSequence = {}
+    table.insert(vehicleSpawnSequence, step.makeStepFadeToBlack(0.4))
+    
+    for _, st in ipairs(spawnSteps) do
+      table.insert(vehicleSpawnSequence, st)
+    end
+
+    table.insert(vehicleSpawnSequence, step.makeStepReturnTrueFunction(function()
+      gameplay_markerInteraction.setForceReevaluateOpenPrompt()
+      return true
+    end))
+
+    table.insert(vehicleSpawnSequence, step.makeStepFadeFromBlack(0.4))
+
+    step.startStepSequence(vehicleSpawnSequence, function()
+      career_modules_loanerVehicles.spawnAllOffers()
+      applyValidDeferredCargo(deferredCargo)
+      deferredCargo = {} -- clear reference for GC
+      
+      local playerVehId = be:getPlayerVehicleID(0)
+      if playerVehId then
+        loadParcelsForVehicleGroup({playerVehId}, function()
+          vehicleSpawnInProgress = false
+          local postCommitTransientCargo = dParcelManager.getTransientMoveCargo()
+          pendingTransientMoves = #postCommitTransientCargo > 0
+          gameplay_markerInteraction.setForceReevaluateOpenPrompt()
+        end)
+      else
+        vehicleSpawnInProgress = false
+        local postCommitTransientCargo = dParcelManager.getTransientMoveCargo()
+        pendingTransientMoves = #postCommitTransientCargo > 0
+        gameplay_markerInteraction.setForceReevaluateOpenPrompt()
+      end
+    end)
+  else
+    applyValidDeferredCargo(deferredCargo)
+    deferredCargo = {} -- clear reference for GC
+    
+    local playerVehId = be:getPlayerVehicleID(0)
+    if playerVehId then
+      vehicleSpawnInProgress = true
+      loadParcelsForVehicleGroup({playerVehId}, function()
+        vehicleSpawnInProgress = false
+        local postLoadTransientCargo = dParcelManager.getTransientMoveCargo()
+        pendingTransientMoves = #postLoadTransientCargo > 0
+        gameplay_markerInteraction.setForceReevaluateOpenPrompt()
+      end)
+    else
+      vehicleSpawnInProgress = false
+      local postLoadTransientCargo = dParcelManager.getTransientMoveCargo()
+      pendingTransientMoves = #postLoadTransientCargo > 0
+      gameplay_markerInteraction.setForceReevaluateOpenPrompt()
+    end
+  end
 end
 
 -- call this function to cancel the delivery - all cargo will be placed back.
 local function cancelDeliveryConfiguration()
   dParcelManager.clearAllTransientMoves()
+  pendingTransientMoves = false
+  vehicleSpawnInProgress = false
   for _, offer in ipairs(dVehOfferManager.getAllOfferCustomFilter(function() return true end)) do
     offer.spawnWhenCommitingCargo = nil
   end
