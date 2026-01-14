@@ -461,7 +461,7 @@ local function handleDropoff(dtSim, vehiclePos, speed)
                 amount = math.floor(finalPayout / 100)
             }
         }, {
-            label = string.format("Ambulance fare: $%d | Time bonus: $%d | Rough ride penalty: $%d | Loaner Cut: -$%d", finalPayout + loanerCutAmount, timeBonus, penalty, loanerCutAmount),
+            label = string.format("Gross Earnings: $%d | Time bonus: $%d | Rough ride penalty: $%d | Loaner Cut: -$%d", finalPayout + loanerCutAmount, timeBonus, penalty, loanerCutAmount),
             tags = {"transport", "ambulance", "gameplay"}
         }, true)
     end
@@ -469,7 +469,7 @@ local function handleDropoff(dtSim, vehiclePos, speed)
     local repGain = math.floor(finalPayout / 100)
 
     local msg = string.format(
-        "Patient delivered!\nDistance: %.2f km\nBase: $%d\nTime Bonus: $%d\nPenalty: -$%d", 
+        "Patient delivered!\nDistance: %.2f km\nBase: $%d\nTime Bonus: $%d\nPenalty: -$%d",
         distanceKM, basePayout, timeBonus, penalty)
     
     if loanerCutAmount > 0 then
