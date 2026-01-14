@@ -246,8 +246,8 @@ local function drawDebugOBB()
   
   -- Draw props/rocks and their detection status
   if managerMod.propQueue and #managerMod.propQueue > 0 then
-    local Config = extensions.gameplay_loading_config
-    local nodeStep = Config and Config.settings and Config.settings.payload and Config.settings.payload.nodeSamplingStep or 10
+    local gameplayConfig = extensions.gameplay_loading_config
+    local nodeStep = gameplayConfig and gameplayConfig.settings and gameplayConfig.settings.payload and gameplayConfig.settings.payload.nodeSamplingStep or 10
     local bd = managerMod.debugDrawCache and managerMod.debugDrawCache.bedData
     
     for _, propEntry in ipairs(managerMod.propQueue) do

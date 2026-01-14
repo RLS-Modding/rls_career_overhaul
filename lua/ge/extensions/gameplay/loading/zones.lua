@@ -178,7 +178,7 @@ local function updateZoneStocks(dt, getSimTime)
               local oldStock = stock.current
               local matConfig = Config and Config.materials and Config.materials[matKey]
               local isMass = matConfig and matConfig.unitType == "mass"
-              local regenAmount = isMass and 1 or 1
+              local regenAmount = 1
               stock.current = math.min(stock.max, stock.current + regenAmount)
               stock.nextRegenSimTime = currentSimTime + (3600 / stock.regenRate)
               

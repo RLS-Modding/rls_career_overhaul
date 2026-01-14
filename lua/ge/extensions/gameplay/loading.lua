@@ -1155,7 +1155,6 @@ local function onUpdate(dt)
         Manager.despawnPropIds(Manager.jobObjects.deliveredPropIds, Zones, Contracts, true)
       end
       
-      local deliveredMass = Manager.jobObjects.lastDeliveredMass or 0
       Manager.jobObjects.deliveredPropIds, Manager.jobObjects.currentLoadMass, Manager.jobObjects.lastDeliveredMass = nil, 0, 0
       Manager.deliveryTimer = 0
       Manager.truckStoppedTimer = 0

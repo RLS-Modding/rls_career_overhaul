@@ -6,13 +6,13 @@
             "associatedOrganization": "sealbrik",
             "payMultiplier": 1.0,
             "sites": {
-                "ZoneA": {
+                "Zone A": {
                     "name": "Zone A",
                     "materials": {
                         "rocks": { "maxStock": 300, "regenRate": 100 }
                     }
                 },
-                "ZoneB": {
+                "Zone B": {
                     "name": "Zone B",
                     "materials": {
                         "rocks": { "maxStock": 400, "regenRate": 100 }

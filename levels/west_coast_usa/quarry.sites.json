@@ -12,7 +12,7 @@
       "customFields":{
         "names":{},
         "tags":[
-          "ZoneB",
+          "Zone B",
           "spawn"
         ],
         "types":{},
@@ -108,7 +108,7 @@
       "customFields":{
         "names":{},
         "tags":[
-          "ZoneB",
+          "Zone B",
           "destination"
         ],
         "types":{},
@@ -156,7 +156,7 @@
       "customFields":{
         "names":{},
         "tags":[
-          "ZoneB",
+          "Zone B",
           "material"
         ],
         "types":{},
@@ -180,7 +180,7 @@
       "customFields":{
         "names":{},
         "tags":[
-          "ZoneB",
+          "Zone B",
           "stop"
         ],
         "types":{},
@@ -221,7 +221,7 @@
       "customFields":{
         "names":{},
         "tags":[
-          "ZoneB",
+          "Zone B",
           "loading"
         ],
         "types":{},

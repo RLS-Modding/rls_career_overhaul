@@ -577,6 +577,7 @@ function M.respawnMassMaterials(contractsMod, zonesMod, playerPos, deliveredMass
   end
   
   local propsToSpawn = 1
+  local massPerProp = deliveredMassTons / propsToSpawn
   
   local designatedSpawnLocs = group.materialSpawnLocations or {}
   local spawnPos = nil
@@ -603,7 +604,7 @@ function M.respawnMassMaterials(contractsMod, zonesMod, playerPos, deliveredMass
   local actuallySpawned = 0
   local totalMassSpawned = 0
   
-  for i = 1, propsToSpawn do
+  for _ = 1, propsToSpawn do
     local obj = core_vehicles.spawnNewVehicle(matConfig.model, { 
       config = matConfig.config, 
       pos = spawnPos, 
@@ -808,7 +809,7 @@ function M.spawnJobMaterials(contractsMod, zonesMod, playerPos)
         if propsToSpawn > 0 then
           local actuallySpawned = 0
           local totalMassSpawned = 0
-          for i = 1, propsToSpawn do
+          for _ = 1, propsToSpawn do
             local spawnPos = nil
             if useDesignatedSpawns then
               if #designatedSpawnLocs > 0 then
