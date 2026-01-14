@@ -42,48 +42,40 @@ jobs:
         uses: actions/cache@v4
         id: lfs-cache
         with:
-          path: |
-            challenges/
-            gameplay/
-            levels/
-            lua/
-            mod_info/
-            scripts/
-            ui/
-            vehicles/
-            baseUI/
-            ui-vue-src/
-            build_ui.bat
-            .gitattributes
-            .gitignore
+          path: /tmp/repo-cache.tar.gz
           key: lfs-${{ github.repository }}-${{ github.sha }}
           restore-keys: |
             lfs-${{ github.repository }}-${{ github.head_ref }}-
             lfs-${{ github.repository }}-
 
+      - name: Extract cached files
+        if: steps.lfs-cache.outputs.cache-hit == 'true'
+        run: |
+          if [ -f /tmp/repo-cache.tar.gz ]; then
+            tar -xzf /tmp/repo-cache.tar.gz -C .
+            echo "Cache extracted"
+          fi
+
       - name: Pull LFS files
         run: |
           git lfs install
-          git lfs pull
+          git lfs pull --all
+
+      - name: Create and save cache archive
+        if: steps.lfs-cache.outputs.cache-hit != 'true'
+        run: |
+          tar -czf /tmp/repo-cache.tar.gz \
+            --exclude='.git' \
+            --exclude='node_modules' \
+            --exclude='baseUI/node_modules' \
+            --exclude='.github' \
+            .
 
       - name: Save working directory to cache
         if: steps.lfs-cache.outputs.cache-hit != 'true'
         uses: actions/cache@v4
         with:
-          path: |
-            challenges/
-            gameplay/
-            levels/
-            lua/
-            mod_info/
-            scripts/
-            ui/
-            vehicles/
-            baseUI/
-            ui-vue-src/
-            build_ui.bat
-            .gitattributes
-            .gitignore
+          path: /tmp/repo-cache.tar.gz
           key: lfs-${{ github.repository }}-${{ github.sha }}
 
       - name: Check for UI source changes
