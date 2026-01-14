@@ -15,16 +15,17 @@ jobs:
         uses: actions/cache@v4
         id: repo-cache
         with:
-          path: |
-            .git
-            .git/lfs
+          path: .git
           key: repo-${{ github.repository }}-git
+          restore-keys: |
+            repo-${{ github.repository }}-
+          enableCrossOsArchive: false
 
       - name: Fetch latest (cache hit)
         if: steps.repo-cache.outputs.cache-hit == 'true'
         run: |
           git remote set-url origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
-          git fetch origin --prune
+          git fetch origin --no-prune --no-tags refs/heads/${{ github.head_ref }}:refs/remotes/origin/${{ github.head_ref }}
           git checkout -f ${{ github.head_ref }} 2>/dev/null || git checkout -f -b ${{ github.head_ref }} origin/${{ github.head_ref }}
           git reset --hard origin/${{ github.head_ref }}
           git clean -ffd
