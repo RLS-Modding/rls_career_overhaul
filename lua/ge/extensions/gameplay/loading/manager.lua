@@ -37,6 +37,9 @@ M.debugDrawCache = {
 
 M.markerCleared = false
 M.truckStoppedInLoading = false
+M.truckNudging = false
+M.truckNudgeModeSet = false
+M.truckRouteStartTime = 0
 M.isDispatching = false
 M.payloadUpdateTimer = 0
 M.truckStoppedTimer = 0
@@ -1023,6 +1026,8 @@ function M.cleanupJob(deleteTruck, stateIdle)
   core_groundMarkers.setPath(nil)
   M.markerCleared = false
   M.truckStoppedInLoading = false
+  M.truckNudging = false
+  M.truckNudgeModeSet = false
   M.isDispatching = false
   M.payloadUpdateTimer = 0
 
@@ -1106,6 +1111,9 @@ end
 function M.driveTruckToPoint(truckId, targetPos)
   local truck = be:getObjectByID(truckId)
   if not truck then return end
+  M.truckNudging = false
+  M.truckNudgeModeSet = false
+  M.truckRouteStartTime = os.clock()
   truck:queueLuaCommand('if not driver then extensions.load("driver") end')
   truck:queueLuaCommand("input.event('parkingbrake', 0, 1)")
   setupTruckAI(truck)
@@ -1124,78 +1132,49 @@ function M.stopTruck(truckId)
   truck:queueLuaCommand("input.event('parkingbrake', 1, 1)")
 end
 
+function M.nudgeTruckForward(truckId, throttle)
+  local truck = be:getObjectByID(truckId)
+  if not truck then return end
+  throttle = throttle or 0.3
+  if not M.truckNudgeModeSet then
+    truck:queueLuaCommand("ai.setMode('manual')")
+    M.truckNudgeModeSet = true
+  end
+  truck:queueLuaCommand("input.event('parkingbrake', 0, 1)")
+  truck:queueLuaCommand("input.event('throttle', " .. throttle .. ", 1)")
+end
+
+function M.nudgeTruckWithControl(truckId, throttle, brake, steering)
+  local truck = be:getObjectByID(truckId)
+  if not truck then return end
+  throttle = throttle or 0
+  brake = brake or 0
+  steering = steering or 0
+  if not M.truckNudgeModeSet then
+    truck:queueLuaCommand("ai.setMode('manual')")
+    M.truckNudgeModeSet = true
+  end
+  truck:queueLuaCommand("input.event('parkingbrake', 0, 1)")
+  truck:queueLuaCommand("input.event('throttle', " .. throttle .. ", 1)")
+  truck:queueLuaCommand("input.event('brake', " .. brake .. ", 1)")
+  truck:queueLuaCommand("input.event('steering', " .. steering .. ", 2)")
+end
+
+function M.stopNudging(truckId)
+  local truck = be:getObjectByID(truckId)
+  if not truck then return end
+  M.truckNudgeModeSet = false
+  truck:queueLuaCommand("ai.setMode('stop')")
+  truck:queueLuaCommand("input.event('throttle', 0, 1)")
+  truck:queueLuaCommand("input.event('brake', 0, 1)")
+  truck:queueLuaCommand("input.event('steering', 0, 2)")
+  truck:queueLuaCommand("input.event('parkingbrake', 1, 1)")
+end
+
 function M.getLoadingZoneTargetPos(group)
   if not group then return nil end
   if group.stopLocations and #group.stopLocations > 0 and group.stopLocations[1] and group.stopLocations[1].pos then
-    local stopPos = vec3(group.stopLocations[1].pos)
-    
-    if map and map.findClosestRoad and map.getMap then
-      local stopRoadName, stopNodeIdx, _stopDist = map.findClosestRoad(stopPos)
-      
-      if stopRoadName and stopNodeIdx then
-        local mapData = map.getMap()
-        if mapData and mapData.nodes and mapData.roads then
-          local loadingCenter = nil
-          if group.loading and group.loading.center then
-            loadingCenter = vec3(group.loading.center)
-          end
-          
-          local roadData = mapData.roads[stopRoadName]
-          if roadData and roadData.nodes then
-            local stopNodeInRoad = nil
-            for i, nodeIdx in ipairs(roadData.nodes) do
-              if nodeIdx == stopNodeIdx then
-                stopNodeInRoad = i
-                break
-              end
-            end
-            
-            if stopNodeInRoad then
-              local nextNodeIdx = nil
-              
-              if loadingCenter then
-                local loadingRoadName, loadingNodeIdx, _loadingDist = map.findClosestRoad(loadingCenter)
-                
-                if loadingRoadName == stopRoadName and loadingNodeIdx then
-                  local loadingNodeInRoad = nil
-                  for i, nodeIdx in ipairs(roadData.nodes) do
-                    if nodeIdx == loadingNodeIdx then
-                      loadingNodeInRoad = i
-                      break
-                    end
-                  end
-                  
-                  if loadingNodeInRoad then
-                    if loadingNodeInRoad > stopNodeInRoad and stopNodeInRoad < #roadData.nodes then
-                      nextNodeIdx = roadData.nodes[stopNodeInRoad + 1]
-                    elseif loadingNodeInRoad < stopNodeInRoad and stopNodeInRoad > 1 then
-                      nextNodeIdx = roadData.nodes[stopNodeInRoad - 1]
-                    end
-                  end
-                end
-              end
-              
-              if not nextNodeIdx then
-                if stopNodeInRoad < #roadData.nodes then
-                  nextNodeIdx = roadData.nodes[stopNodeInRoad + 1]
-                elseif stopNodeInRoad > 1 then
-                  nextNodeIdx = roadData.nodes[stopNodeInRoad - 1]
-                end
-              end
-              
-              if nextNodeIdx then
-                local nextNode = mapData.nodes[nextNodeIdx]
-                if nextNode and nextNode.pos then
-                  return vec3(nextNode.pos)
-                end
-              end
-            end
-          end
-        end
-      end
-    end
-    
-    return stopPos
+    return vec3(group.stopLocations[1].pos)
   end
   if group.loading and group.loading.center then
     return vec3(group.loading.center)
@@ -1700,6 +1679,8 @@ function M.handleTruckMovement(dt, destPos, contractsMod)
                   M.truckStoppedTimer = 0
                   M.truckLastPosition = roadNodePos
                   M.teleportQueued = true
+                  M.truckNudging = false
+                  M.truckRouteStartTime = os.clock()
                 end
               end
             end
@@ -1737,6 +1718,7 @@ function M.beginActiveContractTrip(contractsMod, zonesMod, uiMod)
 
   M.markerCleared = false
   M.truckStoppedInLoading = false
+  M.truckNudging = false
   M.payloadUpdateTimer = 0
 
   local targetPos = M.getLoadingZoneTargetPos(M.jobObjects.activeGroup)

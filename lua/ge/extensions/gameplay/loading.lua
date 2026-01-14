@@ -614,6 +614,63 @@ local function updatePlayerCache(dt)
   end
 end
 
+local function handleTruckNudging(truckId, truck, targetPos, arrivalDist, atTarget)
+  if not truck or not targetPos or not Manager then return false end
+  
+  local truckPos = truck:getPosition()
+  local distToTarget = (truckPos - targetPos):length()
+  local timeSinceRoute = os.clock() - (Manager.truckRouteStartTime or 0)
+  local canNudge = timeSinceRoute > 5 and distToTarget < 30
+  
+  if atTarget or not canNudge then return false end
+  
+  local truckSpeed = truck:getVelocity():length()
+  if not Manager.truckNudging and truckSpeed >= 0.5 then return false end
+  
+  if distToTarget <= arrivalDist then
+    return false
+  end
+  
+  Manager.truckNudging = true
+  
+  local throttle = 0
+  local brake = 0
+  local steering = 0
+  
+  local dirToTarget = (targetPos - truckPos):normalized()
+  local truckDir = truck:getDirectionVector():normalized()
+  local truckRight = truck:getDirectionVectorUp():cross(truckDir):normalized()
+  local steerDot = truckRight:dot(dirToTarget)
+  steering = math.max(-1, -math.min(1, steerDot * 2))
+  
+  local approachZone = arrivalDist + 5
+  local targetSpeed = 9.0
+  if distToTarget < approachZone then
+    local approachProgress = (distToTarget - arrivalDist) / 5
+    targetSpeed = 0.5 + (1.5 * approachProgress)
+  elseif distToTarget < 3 then
+    targetSpeed = 1.8
+  elseif distToTarget < 6 then
+    targetSpeed = 3.0
+  elseif distToTarget < 10 then
+    targetSpeed = 4.8
+  elseif distToTarget < 15 then
+    targetSpeed = 6.0
+  end
+  
+  local speedError = targetSpeed - truckSpeed
+  local speedControlGain = 0.4
+  
+  if speedError > 0.1 then
+    throttle = math.min(1.0, speedError * speedControlGain)
+  elseif speedError < -0.1 then
+    brake = math.min(0.8, -speedError * speedControlGain * 0.8)
+  end
+  
+  Manager.nudgeTruckWithControl(truckId, throttle, brake, steering)
+  return true
+end
+
 local function onUpdate(dt)
   if not Config or not Contracts or not Zones or not Manager or not UI then return end
 
@@ -954,6 +1011,8 @@ local function onUpdate(dt)
         end
         
         if atTarget and truck:getVelocity():length() < arrivalSpeed then
+          Manager.truckNudging = false
+          Manager.stopNudging(Manager.jobObjects.truckID)
           Manager.stopTruck(Manager.jobObjects.truckID)
           Manager.truckStoppedInLoading = true
           if #Manager.propQueue == 0 then
@@ -966,6 +1025,8 @@ local function onUpdate(dt)
           Manager.truckLastPosition = nil
           core_groundMarkers.setPath(nil)
           Engine.Audio.playOnce('AudioGui', 'event:>UI>Countdown>3_seconds')
+        else
+          handleTruckNudging(Manager.jobObjects.truckID, truck, arrivalTargetPos, arrivalDist, atTarget)
         end
       elseif not hasDesignatedStop and group.loading:containsPoint2D(truckPos) and truck:getVelocity():length() < arrivalSpeed then
         Manager.stopTruck(Manager.jobObjects.truckID)
@@ -1015,8 +1076,10 @@ local function onUpdate(dt)
           Manager.jobObjects.loadingZoneTargetPos = routingTargetPos
           Manager.driveTruckToPoint(Manager.jobObjects.truckID, routingTargetPos)
         end
-        
+
         if atTarget and truck:getVelocity():length() < arrivalSpeed then
+          Manager.truckNudging = false
+          Manager.stopNudging(Manager.jobObjects.truckID)
           Manager.stopTruck(Manager.jobObjects.truckID)
           Manager.truckStoppedInLoading = true
           if #Manager.propQueue == 0 then
@@ -1025,6 +1088,8 @@ local function onUpdate(dt)
           ui_message("Truck arrived at loading zone.", 5, "success")
           core_groundMarkers.setPath(nil)
           Engine.Audio.playOnce('AudioGui', 'event:>UI>Countdown>3_seconds')
+        else
+          handleTruckNudging(Manager.jobObjects.truckID, truck, arrivalTargetPos, settingsTruck and settingsTruck.arrivalDistanceThreshold or 10.0, atTarget)
         end
       elseif not hasDesignatedStop and group.loading:containsPoint2D(truckPos) and truck:getVelocity():length() < arrivalSpeed then
         Manager.stopTruck(Manager.jobObjects.truckID)
@@ -1049,6 +1114,22 @@ local function onUpdate(dt)
     
     local destPos = Manager.jobObjects.deliveryDestination and vec3(Manager.jobObjects.deliveryDestination.pos) or (Manager.jobObjects.activeGroup and Manager.jobObjects.activeGroup.destination and vec3(Manager.jobObjects.activeGroup.destination.pos))
     local movementResult, deliveryTime = Manager.handleTruckMovement(dt, destPos, Contracts)
+
+    -- Nudging logic for delivery destination
+    if destPos and Manager.jobObjects.truckID then
+      local truck = be:getObjectByID(Manager.jobObjects.truckID)
+      if truck then
+        local arrivalDist = settingsTruck and settingsTruck.arrivalDistanceThreshold or 10.0
+        local truckPos = truck:getPosition()
+        local atTarget = (truckPos - destPos):length() < arrivalDist
+        
+        if not handleTruckNudging(Manager.jobObjects.truckID, truck, destPos, arrivalDist, atTarget) and atTarget and Manager.truckNudging then
+          Manager.truckNudging = false
+          Manager.stopNudging(Manager.jobObjects.truckID)
+        end
+      end
+    end
+
     if movementResult == "damaged" then
       local contract = Contracts.ContractSystem.activeContract
       if not contract then Manager.cleanupJob(true, Config.STATE_IDLE); currentState = Config.STATE_IDLE; return end
@@ -1223,7 +1304,18 @@ local function onExtensionLoaded()
 end
 
 local function onExtensionUnloaded()
+  if Manager then
+    Manager.cleanupJob(true, Config and Config.STATE_IDLE or nil)
+  end
   unloadSubModules()
+  Config, Contracts, Zones, Manager, UI = nil, nil, nil, nil, nil
+  currentState = nil
+  compatibleZones = {}
+  cachedPlayerVeh = nil
+  cachedPlayerPos = nil
+  playerCacheTimer = 0
+  uiUpdateTimer = 0
+  contractUpdateTimer = 0
 end
 
 local function onClientStartMission()

@@ -120,7 +120,7 @@
         },
         "truck": {
             "arrivalSpeedThreshold": 2.0,
-            "arrivalDistanceThreshold": 10.0
+            "arrivalDistanceThreshold": 5
         },
         "payload": {
             "updateInterval": 0.25,
