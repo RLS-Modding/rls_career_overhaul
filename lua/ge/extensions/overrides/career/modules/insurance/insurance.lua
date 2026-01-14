@@ -945,7 +945,7 @@ local function checkDriverScoreDecrease()
 end
 
 local function onUpdate(dtReal, dtSim, dtRaw)
-  if not gameplay_missions_missionManager.getForegroundMissionId() and not gameplay_walk.isWalking() and activeInsuranceId > 0 then -- we don't track when in a mission
+  if not gameplay_missions_missionManager.getForegroundMissionId() and not gameplay_walk.isWalking() and activeInsuranceId and activeInsuranceId > 0 then -- we don't track when in a mission
     checkRenewInsurance()
     checkInsuranceGestures()
     updateDistanceDriven(dtReal)
