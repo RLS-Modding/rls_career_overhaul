@@ -69,7 +69,7 @@
             "unitType": "mass",
             "massPerProp": 41000,
             "targetLoad": 25000,
-            "payPerUnit": 100,
+            "payPerUnit": 350,
             "contractChance": 0.5,
             "reputationGain": 0.5,
             "deliveryVehicle": {

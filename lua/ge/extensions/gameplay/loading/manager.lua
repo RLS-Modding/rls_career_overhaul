@@ -572,15 +572,13 @@ function M.respawnMassMaterials(contractsMod, zonesMod, deliveredMassKg)
   local stock = cache.materialStocks[materialType]
   if not stock then return end
   
-  local deliveredMassTons = deliveredMassKg / 1000
-  
   if stock.current <= 0 then
-    print(string.format("[Loading] Cannot respawn %.2f tons of %s - no stock available", deliveredMassTons, materialType))
+    print(string.format("[Loading] Cannot respawn %.2f kg of %s - no stock available", deliveredMassKg, materialType))
     return
   end
   
-  local actualSpawnAmount = math.min(deliveredMassTons, stock.current)
-  local actualSpawnAmountKg = actualSpawnAmount * 1000
+  local actualSpawnAmount = math.min(deliveredMassKg, stock.current)
+  local actualSpawnAmountKg = actualSpawnAmount
   
   local massPerProp = matConfig.massPerProp or 41000
   local propsToSpawn = math.max(1, math.floor(actualSpawnAmountKg / massPerProp))
@@ -642,7 +640,7 @@ function M.respawnMassMaterials(contractsMod, zonesMod, deliveredMassKg)
   if actuallySpawned > 0 then
     stock.current = stock.current - actualSpawnAmount
     
-    print(string.format("[Loading] Respawned %d prop of %s at spawn spot, consumed %.2f tons from stock (%.2f tons remaining)", 
+    print(string.format("[Loading] Respawned %d prop of %s at spawn spot, consumed %.2f kg from stock (%.2f kg remaining)", 
       actuallySpawned, materialType, actualSpawnAmount, stock.current))
   end
 end
@@ -774,15 +772,14 @@ function M.spawnJobMaterials(contractsMod, zonesMod, playerPos)
           end
           
           local massPerProp = matConfig.massPerProp or 41000
-          local massPerPropTons = massPerProp / 1000
-          local maxPropsFromStock = math.floor(stock.current / massPerPropTons)
+          local maxPropsFromStock = math.floor(stock.current / massPerProp)
           local maxSpawned = matConfig.maxSpawned or math.huge
           local materialMaxAllowed = math.max(0, maxSpawned - currentlyAlive)
           propsToSpawn = math.min(maxPropsFromStock, materialMaxAllowed, globalMaxAllowed)
           
           if propsToSpawn > 0 then
-            print(string.format("[Loading] Mass material '%s': Stock %.2f tons, %.2f tons/prop, %d max from stock, %d alive, spawning %d", 
-              materialType, stock.current, massPerPropTons, maxPropsFromStock, currentlyAlive, propsToSpawn))
+            print(string.format("[Loading] Mass material '%s': Stock %.2f kg, %.2f kg/prop, %d max from stock, %d alive, spawning %d", 
+              materialType, stock.current, massPerProp, maxPropsFromStock, currentlyAlive, propsToSpawn))
           end
         else
           local required = materialRequirements[materialType] or 0
@@ -864,7 +861,7 @@ function M.spawnJobMaterials(contractsMod, zonesMod, playerPos)
                 totalMassSpawned = totalMassSpawned + propMass
                 
                 if isMassContract then
-                  stock.current = stock.current - (propMass / 1000)
+                  stock.current = stock.current - propMass
                 else
                   stock.current = stock.current - 1
                 end
@@ -884,8 +881,8 @@ function M.spawnJobMaterials(contractsMod, zonesMod, playerPos)
             print(string.format("[Loading] Material '%s': Attempted to spawn %d but only %d succeeded", materialType, propsToSpawn, actuallySpawned))
           end
           if isMassContract and actuallySpawned > 0 then
-            print(string.format("[Loading] Mass material '%s': Spawned %d props, %.2f tons total, %.2f tons stock remaining", 
-              materialType, actuallySpawned, totalMassSpawned / 1000, stock.current))
+            print(string.format("[Loading] Mass material '%s': Spawned %d props, %.2f kg total, %.2f kg stock remaining", 
+              materialType, actuallySpawned, totalMassSpawned, stock.current))
           end
         end
       end
@@ -1520,8 +1517,8 @@ function M.consumeZoneStock(group, deliveredPropIds, zonesMod, contractsMod)
     if stock then
       local matConfig = M.getMaterialConfig(matKey)
       if matConfig and matConfig.unitType == "mass" then
-        local massTons = (materialMass[matKey] or 0) / 1000
-        stock.current = math.max(0, stock.current - massTons)
+        local massKg = (materialMass[matKey] or 0)
+        stock.current = math.max(0, stock.current - massKg)
       else
         stock.current = math.max(0, stock.current - count)
       end
@@ -1555,8 +1552,8 @@ function M.returnPropsToStock(propIds, zonesMod, contractsMod)
       if stock then
         local matConfig = M.getMaterialConfig(matKey)
         if matConfig and matConfig.unitType == "mass" then
-          local massTons = (materialMass[matKey] or 0) / 1000
-          stock.current = math.min(stock.current + massTons, stock.max)
+          local massKg = (materialMass[matKey] or 0)
+          stock.current = math.min(stock.current + massKg, stock.max)
         else
           stock.current = math.min(stock.current + count, stock.max)
         end
@@ -1604,8 +1601,8 @@ function M.despawnPropIds(propIds, zonesMod, contractsMod, skipStockConsumption)
         if stock then
           local matConfig = M.getMaterialConfig(matKey)
           if matConfig and matConfig.unitType == "mass" then
-            local massTons = (materialMass[matKey] or 0) / 1000
-            stock.current = math.max(0, stock.current - massTons)
+            local massKg = (materialMass[matKey] or 0)
+            stock.current = math.max(0, stock.current - massKg)
           else
             stock.current = math.max(0, stock.current - count)
           end

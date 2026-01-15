@@ -107,8 +107,14 @@ local function ensureGroupCache(group, getCurrentGameHour)
   end
   local currentSimTime = getSimTime and getSimTime() or 0
   for matKey, matData in pairs(materials) do
+    local matConfig = Config and Config.materials and Config.materials[matKey]
+    local isMass = matConfig and matConfig.unitType == "mass"
     local maxStock = matData.maxStock or 0
     local startStock = matData.startStock or maxStock
+    if isMass then
+      maxStock = maxStock * 1000
+      startStock = startStock * 1000
+    end
     local regenRate = matData.regenRate or 0
     local nextRegenSimTime = nil
     if regenRate > 0 then
@@ -134,7 +140,7 @@ local function ensureGroupCache(group, getCurrentGameHour)
     local matConfig = Config and Config.materials and Config.materials[matKey]
     local isMass = matConfig and matConfig.unitType == "mass"
     if isMass then
-      table.insert(stockSummary, string.format("%s: %.2f/%.2f tons", matKey, stock.current, stock.max))
+      table.insert(stockSummary, string.format("%s: %.2f/%.2f kg", matKey, stock.current, stock.max))
     else
       table.insert(stockSummary, string.format("%s: %d/%d", matKey, stock.current, stock.max))
     end
@@ -178,13 +184,13 @@ local function updateZoneStocks(dt, getSimTime)
               local oldStock = stock.current
               local matConfig = Config and Config.materials and Config.materials[matKey]
               local isMass = matConfig and matConfig.unitType == "mass"
-              local regenAmount = 1
+              local regenAmount = isMass and 1000 or 1
               stock.current = math.min(stock.max, stock.current + regenAmount)
               stock.nextRegenSimTime = currentSimTime + (3600 / stock.regenRate)
               
               if stock.current > oldStock then
                 if isMass then
-                  print(string.format("[Loading] Zone '%s' material '%s': Stock regenerated %.2f -> %.2f/%.2f tons (next regen in %.2f seconds)",
+                  print(string.format("[Loading] Zone '%s' material '%s': Stock regenerated %.2f -> %.2f/%.2f kg (next regen in %.2f seconds)",
                     group.secondaryTag, matKey, oldStock, stock.current, stock.max, 3600 / stock.regenRate))
                 else
                   print(string.format("[Loading] Zone '%s' material '%s': Stock regenerated %d -> %d/%d (next regen in %.2f seconds)",
@@ -531,12 +537,13 @@ local function getAllZonesStockInfo(getCurrentGameHour)
       }
       for matKey, stock in pairs(cache.materialStocks) do
         local matConfig = Config and Config.materials and Config.materials[matKey]
+        local isMass = matConfig and matConfig.unitType == "mass"
         table.insert(zoneStock.materials, {
           materialKey = matKey,
           materialName = matConfig and matConfig.name or matKey,
           typeName = matConfig and matConfig.typeName or nil,
-          current = math.floor(stock.current + 0.5),
-          max = math.floor(stock.max + 0.5),
+          current = isMass and math.floor((stock.current / 1000) + 0.5) or math.floor(stock.current + 0.5),
+          max = isMass and math.floor((stock.max / 1000) + 0.5) or math.floor(stock.max + 0.5),
           regenRate = stock.regenRate
         })
       end

@@ -194,9 +194,10 @@ local function getPhoneStateForUI()
         local enrichedMaterialStocks = {}
         for matKey, stockData in pairs(stockInfo.materialStocks) do
           local matConfig = Config.materials and Config.materials[matKey]
+          local isMass = matConfig and matConfig.unitType == "mass"
           enrichedMaterialStocks[matKey] = {
-            current = stockData.current,
-            max = stockData.max,
+            current = isMass and (stockData.current / 1000) or stockData.current,
+            max = isMass and (stockData.max / 1000) or stockData.max,
             regenRate = stockData.regenRate,
             materialName = matConfig and matConfig.name or matKey,
             units = matConfig and matConfig.units or "items"
@@ -259,9 +260,10 @@ local function getPhoneStateForUI()
       }
       for matKey, stock in pairs(rawZoneStock.materialStocks) do
         local matConfig = Config.materials and Config.materials[matKey]
+        local isMass = matConfig and matConfig.unitType == "mass"
         enrichedZoneStock.materialStocks[matKey] = {
-          current = math.floor(stock.current + 0.5),
-          max = math.floor(stock.max + 0.5),
+          current = isMass and math.floor((stock.current / 1000) + 0.5) or math.floor(stock.current + 0.5),
+          max = isMass and math.floor((stock.max / 1000) + 0.5) or math.floor(stock.max + 0.5),
           regenRate = stock.regenRate,
           materialName = matConfig and matConfig.name or matKey,
           units = matConfig and matConfig.units or "items"
