@@ -122,7 +122,6 @@ jobs:
             scripts/
             ui/
             vehicles/
-          compression-level: 9
           retention-days: 7
           if-no-files-found: error
 
