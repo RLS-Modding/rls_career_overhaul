@@ -510,8 +510,15 @@ function M.processPendingRespawns(dt, zonesMod, contractsMod)
                     local newId = newObj:getID()
                     local actualObj = be:getObjectByID(newId)
                     if actualObj then
-                      table.insert(M.propQueue, { id = newId, materialType = respawn.materialType })
-                      M.propQueueById[newId] = { id = newId, materialType = respawn.materialType }
+                      local propMass = matConfig.unitType == "mass" and (matConfig.massPerProp or 41000) or 0
+                      local entry = { 
+                        id = newId, 
+                        mass = propMass, 
+                        materialType = respawn.materialType,
+                        blockType = matConfig.unitType == "item" and matConfig.config or nil
+                      }
+                      table.insert(M.propQueue, entry)
+                      M.propQueueById[newId] = entry
                       
                       if stock.current > 0 then
                         stock.current = stock.current - 1
@@ -534,6 +541,7 @@ function M.processPendingRespawns(dt, zonesMod, contractsMod)
 end
 
 function M.respawnMassMaterials(contractsMod, zonesMod, deliveredMassKg)
+  M.cleanupStalePropEntries()
   if not M.jobObjects.activeGroup or not M.jobObjects.activeGroup.loading then return end
   if not deliveredMassKg or deliveredMassKg <= 0 then return end
   
@@ -581,8 +589,8 @@ function M.respawnMassMaterials(contractsMod, zonesMod, deliveredMassKg)
   local actualSpawnAmountKg = actualSpawnAmount
   
   local massPerProp = matConfig.massPerProp or 41000
-  local propsToSpawn = math.max(1, math.floor(actualSpawnAmountKg / massPerProp))
-  local massPerPropKg = actualSpawnAmountKg / propsToSpawn
+  local propsToSpawn = math.max(1, math.ceil(actualSpawnAmountKg / massPerProp))
+  local massPerPropKg = massPerProp
   
   local designatedSpawnLocs = group.materialSpawnLocations or {}
   local spawnPos = nil
@@ -640,12 +648,13 @@ function M.respawnMassMaterials(contractsMod, zonesMod, deliveredMassKg)
   if actuallySpawned > 0 then
     stock.current = stock.current - actualSpawnAmount
     
-    print(string.format("[Loading] Respawned %d prop of %s at spawn spot, consumed %.2f kg from stock (%.2f kg remaining)", 
-      actuallySpawned, materialType, actualSpawnAmount, stock.current))
+    print(string.format("[Loading] Respawned %d prop(s) of %s at spawn spot (%.2f kg each, %.2f kg total), consumed %.2f kg from stock (%.2f kg remaining)", 
+      actuallySpawned, materialType, massPerPropKg, totalMassSpawned, actualSpawnAmount, stock.current))
   end
 end
 
 function M.spawnJobMaterials(contractsMod, zonesMod, playerPos)
+  M.cleanupStalePropEntries()
   if not M.jobObjects.activeGroup or not M.jobObjects.activeGroup.loading then return end
 
   local group = M.jobObjects.activeGroup
@@ -1019,6 +1028,27 @@ function M.clearProps()
   end
 end
 
+function M.cleanupStalePropEntries()
+  local cleanedCount = 0
+  for i = #M.propQueue, 1, -1 do
+    local entry = M.propQueue[i]
+    if entry and entry.id then
+      local obj = be:getObjectByID(entry.id)
+      if not obj then
+        M.propQueueById[entry.id] = nil
+        M.itemInitialState[entry.id] = nil
+        M.itemDamageState[entry.id] = nil
+        table.remove(M.propQueue, i)
+        cleanedCount = cleanedCount + 1
+      end
+    end
+  end
+  if cleanedCount > 0 then
+    print(string.format("[Loading] Cleaned up %d stale prop entries", cleanedCount))
+  end
+  return cleanedCount
+end
+
 function M.cleanupJob(deleteTruck, stateIdle)
   core_groundMarkers.setPath(nil)
   M.markerCleared = false
@@ -1263,23 +1293,48 @@ local function calculatePayloadForProps(propEntries, bedData, materialType, incl
     else
       local obj = be:getObjectByID(rockEntry.id)
       if obj then
+        local entryMass = rockEntry.mass
+        if not entryMass and rockEntry.materialType then
+          local entryMatConfig = M.getMaterialConfig(rockEntry.materialType)
+          if entryMatConfig and entryMatConfig.unitType == "mass" then
+            entryMass = entryMatConfig.massPerProp or 41000
+          end
+        end
+        entryMass = entryMass or defaultMass
+        
         local tf = obj:getTransform()
         local axisX, axisY, axisZ = tf:getColumn(0), tf:getColumn(1), tf:getColumn(2)
         local objPos, nodeCount = obj:getPosition(), obj:getNodeCount()
         local nodesInside, nodesChecked = 0, 0
-        for i = 0, nodeCount - 1, nodeStep do
-          nodesChecked = nodesChecked + 1
-          local worldPoint = objPos - (axisX * obj:getNodePosition(i).x) - (axisY * obj:getNodePosition(i).y) + (axisZ * obj:getNodePosition(i).z)
-          if M.isPointInTruckBed(worldPoint, bedData) then nodesInside = nodesInside + 1 end
+        if nodeCount > 0 then
+          local lastChecked = -1
+          for i = 0, nodeCount - 1, nodeStep do
+            nodesChecked = nodesChecked + 1
+            lastChecked = i
+            local worldPoint = objPos - (axisX * obj:getNodePosition(i).x) - (axisY * obj:getNodePosition(i).y) + (axisZ * obj:getNodePosition(i).z)
+            if M.isPointInTruckBed(worldPoint, bedData) then nodesInside = nodesInside + 1 end
+          end
+          if lastChecked ~= nodeCount - 1 then
+            nodesChecked = nodesChecked + 1
+            local worldPoint = objPos - (axisX * obj:getNodePosition(nodeCount - 1).x) - (axisY * obj:getNodePosition(nodeCount - 1).y) + (axisZ * obj:getNodePosition(nodeCount - 1).z)
+            if M.isPointInTruckBed(worldPoint, bedData) then nodesInside = nodesInside + 1 end
+          end
         end
-        if nodesChecked > 0 then totalMass = totalMass + ((rockEntry.mass or defaultMass) * (nodesInside / nodesChecked)) end
+        if nodesChecked > 0 then 
+          local contribution = entryMass * (nodesInside / nodesChecked)
+          totalMass = totalMass + contribution
+          print(string.format("[Loading] Prop %s: mass=%d, nodes=%d/%d (%.1f%%), contribution=%.0f kg", 
+            tostring(rockEntry.id), entryMass, nodesInside, nodesChecked, (nodesInside/nodesChecked)*100, contribution))
+        end
       end
     end
   end
+  print(string.format("[Loading] Total payload mass: %.0f kg (%.1f tons)", totalMass, totalMass/1000))
   return totalMass
 end
 
 function M.calculateTruckPayload()
+  M.cleanupStalePropEntries()
   if #M.propQueue == 0 or not M.jobObjects.truckID then 
     M.lastPayloadMass = 0
     return 0 
@@ -1288,6 +1343,13 @@ function M.calculateTruckPayload()
   if not truck then 
     M.lastPayloadMass = 0
     return 0 
+  end
+  
+  print(string.format("[Loading] calculateTruckPayload: propQueue has %d entries", #M.propQueue))
+  for i, entry in ipairs(M.propQueue) do
+    local obj = be:getObjectByID(entry.id)
+    print(string.format("[Loading]   Entry %d: id=%s, mass=%s, materialType=%s, objExists=%s", 
+      i, tostring(entry.id), tostring(entry.mass), tostring(entry.materialType), tostring(obj ~= nil)))
   end
 
   local materialType = M.jobObjects.materialType
@@ -1451,9 +1513,17 @@ function M.getLoadedPropIdsInTruck(minRatio)
       local axisX, axisY, axisZ = tf:getColumn(0), tf:getColumn(1), tf:getColumn(2)
       local objPos, nodeCount = obj:getPosition(), obj:getNodeCount()
       local nodesInside, nodesChecked = 0, 0
-      for i = 0, nodeCount - 1, nodeStep do
-        nodesChecked = nodesChecked + 1
-        if M.isPointInTruckBed(objPos - (axisX * obj:getNodePosition(i).x) - (axisY * obj:getNodePosition(i).y) + (axisZ * obj:getNodePosition(i).z), bedData) then nodesInside = nodesInside + 1 end
+      if nodeCount > 0 then
+        local lastChecked = -1
+        for i = 0, nodeCount - 1, nodeStep do
+          nodesChecked = nodesChecked + 1
+          lastChecked = i
+          if M.isPointInTruckBed(objPos - (axisX * obj:getNodePosition(i).x) - (axisY * obj:getNodePosition(i).y) + (axisZ * obj:getNodePosition(i).z), bedData) then nodesInside = nodesInside + 1 end
+        end
+        if lastChecked ~= nodeCount - 1 then
+          nodesChecked = nodesChecked + 1
+          if M.isPointInTruckBed(objPos - (axisX * obj:getNodePosition(nodeCount - 1).x) - (axisY * obj:getNodePosition(nodeCount - 1).y) + (axisZ * obj:getNodePosition(nodeCount - 1).z), bedData) then nodesInside = nodesInside + 1 end
+        end
       end
       if nodesChecked > 0 and (nodesInside / nodesChecked) >= minRatio then table.insert(ids, rockEntry.id) end
     end
@@ -1474,9 +1544,17 @@ function M.getBlockLoadRatio(blockId)
   local objPos, nodeCount = obj:getPosition(), obj:getNodeCount()
   local nodeStep = Config.settings.payload and Config.settings.payload.nodeSamplingStep or 10
   local nodesInside, nodesChecked = 0, 0
-  for i = 0, nodeCount - 1, nodeStep do
-    nodesChecked = nodesChecked + 1
-    if M.isPointInTruckBed(objPos - (axisX * obj:getNodePosition(i).x) - (axisY * obj:getNodePosition(i).y) + (axisZ * obj:getNodePosition(i).z), bedData) then nodesInside = nodesInside + 1 end
+  if nodeCount > 0 then
+    local lastChecked = -1
+    for i = 0, nodeCount - 1, nodeStep do
+      nodesChecked = nodesChecked + 1
+      lastChecked = i
+      if M.isPointInTruckBed(objPos - (axisX * obj:getNodePosition(i).x) - (axisY * obj:getNodePosition(i).y) + (axisZ * obj:getNodePosition(i).z), bedData) then nodesInside = nodesInside + 1 end
+    end
+    if lastChecked ~= nodeCount - 1 then
+      nodesChecked = nodesChecked + 1
+      if M.isPointInTruckBed(objPos - (axisX * obj:getNodePosition(nodeCount - 1).x) - (axisY * obj:getNodePosition(nodeCount - 1).y) + (axisZ * obj:getNodePosition(nodeCount - 1).z), bedData) then nodesInside = nodesInside + 1 end
+    end
   end
   return nodesChecked > 0 and (nodesInside / nodesChecked) or 0
 end
