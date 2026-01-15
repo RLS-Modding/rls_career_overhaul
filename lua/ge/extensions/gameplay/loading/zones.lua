@@ -107,8 +107,14 @@ local function ensureGroupCache(group, getCurrentGameHour)
   end
   local currentSimTime = getSimTime and getSimTime() or 0
   for matKey, matData in pairs(materials) do
+    local matConfig = Config and Config.materials and Config.materials[matKey]
+    local isMass = matConfig and matConfig.unitType == "mass"
     local maxStock = matData.maxStock or 0
     local startStock = matData.startStock or maxStock
+    if isMass then
+      maxStock = maxStock * 1000
+      startStock = startStock * 1000
+    end
     local regenRate = matData.regenRate or 0
     local nextRegenSimTime = nil
     if regenRate > 0 then
@@ -131,7 +137,13 @@ local function ensureGroupCache(group, getCurrentGameHour)
   
   local stockSummary = {}
   for matKey, stock in pairs(materialStocks) do
-    table.insert(stockSummary, string.format("%s: %d/%d", matKey, stock.current, stock.max))
+    local matConfig = Config and Config.materials and Config.materials[matKey]
+    local isMass = matConfig and matConfig.unitType == "mass"
+    if isMass then
+      table.insert(stockSummary, string.format("%s: %.2f/%.2f kg", matKey, stock.current, stock.max))
+    else
+      table.insert(stockSummary, string.format("%s: %d/%d", matKey, stock.current, stock.max))
+    end
   end
   print(string.format("[Loading] Initialized stock for zone '%s' from JSON: %s", 
     key, table.concat(stockSummary, ", ")))
@@ -170,12 +182,20 @@ local function updateZoneStocks(dt, getSimTime)
           if secondsUntilRegen <= 0 then
             if stock.current < stock.max then
               local oldStock = stock.current
-              stock.current = math.min(stock.max, stock.current + 1)
+              local matConfig = Config and Config.materials and Config.materials[matKey]
+              local isMass = matConfig and matConfig.unitType == "mass"
+              local regenAmount = isMass and 1000 or 1
+              stock.current = math.min(stock.max, stock.current + regenAmount)
               stock.nextRegenSimTime = currentSimTime + (3600 / stock.regenRate)
               
               if stock.current > oldStock then
-                print(string.format("[Loading] Zone '%s' material '%s': Stock regenerated %d -> %d/%d (next regen in %.2f seconds)", 
-                  group.secondaryTag, matKey, oldStock, stock.current, stock.max, 3600 / stock.regenRate))
+                if isMass then
+                  print(string.format("[Loading] Zone '%s' material '%s': Stock regenerated %.2f -> %.2f/%.2f kg (next regen in %.2f seconds)",
+                    group.secondaryTag, matKey, oldStock, stock.current, stock.max, 3600 / stock.regenRate))
+                else
+                  print(string.format("[Loading] Zone '%s' material '%s': Stock regenerated %d -> %d/%d (next regen in %.2f seconds)",
+                    group.secondaryTag, matKey, oldStock, stock.current, stock.max, 3600 / stock.regenRate))
+                end
               end
             else
               stock.nextRegenSimTime = currentSimTime + (3600 / stock.regenRate)
@@ -200,8 +220,8 @@ local function getZoneStockInfo(group, getCurrentGameHour)
   end
   
   return {
-    current = totalCurrent,
-    max = totalMax,
+    current = math.floor(totalCurrent + 0.5),
+    max = math.floor(totalMax + 0.5),
     materialStocks = cache.materialStocks,
     spawnedProps = cache.spawnedPropCounts or {},
     materials = group.materials or (group.materialType and {group.materialType} or {})
@@ -283,6 +303,38 @@ local function discoverGroups(sites)
         if #materials == 0 then
           print(string.format("[Loading] Zone '%s' has no material configuration in JSON and no material tags; skipping.", secondaryTag))
         else
+          local materialSpawnLocations = {}
+          local stopLocations = {}
+          local addedMaterialIds = {}
+          
+          for _, loc in ipairs(sites.tagsToLocations.spawn or {}) do
+            if loc.customFields and loc.customFields.tags and loc.customFields.tags[secondaryTag] then
+              if loc.customFields.tags.material then
+                if not addedMaterialIds[loc.id] then
+                  table.insert(materialSpawnLocations, loc)
+                  addedMaterialIds[loc.id] = true
+                end
+              end
+            end
+          end
+          
+          for _, loc in ipairs(sites.tagsToLocations.stop or {}) do
+            if loc.customFields and loc.customFields.tags and loc.customFields.tags[secondaryTag] then
+              table.insert(stopLocations, loc)
+            end
+          end
+          
+          for _, loc in ipairs(sites.tagsToLocations.material or {}) do
+            if loc.customFields and loc.customFields.tags and loc.customFields.tags[secondaryTag] then
+              if not loc.customFields.tags.stop then
+                if not addedMaterialIds[loc.id] then
+                  table.insert(materialSpawnLocations, loc)
+                  addedMaterialIds[loc.id] = true
+                end
+              end
+            end
+          end
+          
           table.insert(groups, {
             secondaryTag = secondaryTag,
             spawn = spawnLoc,
@@ -290,7 +342,9 @@ local function discoverGroups(sites)
             loading = loadingZone,
             materials = materials,
             materialType = materialType,
-            associatedOrganization = associatedOrg
+            associatedOrganization = associatedOrg,
+            materialSpawnLocations = materialSpawnLocations,
+            stopLocations = stopLocations
           })
           
           local materialNames = {}
@@ -483,12 +537,13 @@ local function getAllZonesStockInfo(getCurrentGameHour)
       }
       for matKey, stock in pairs(cache.materialStocks) do
         local matConfig = Config and Config.materials and Config.materials[matKey]
+        local isMass = matConfig and matConfig.unitType == "mass"
         table.insert(zoneStock.materials, {
           materialKey = matKey,
           materialName = matConfig and matConfig.name or matKey,
           typeName = matConfig and matConfig.typeName or nil,
-          current = stock.current,
-          max = stock.max,
+          current = isMass and math.floor((stock.current / 1000) + 0.5) or math.floor(stock.current + 0.5),
+          max = isMass and math.floor((stock.max / 1000) + 0.5) or math.floor(stock.max + 0.5),
           regenRate = stock.regenRate
         })
       end

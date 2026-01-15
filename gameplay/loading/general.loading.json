@@ -69,19 +69,19 @@
             "unitType": "mass",
             "massPerProp": 41000,
             "targetLoad": 25000,
-            "payPerUnit": 100,
+            "payPerUnit": 650,
             "contractChance": 0.5,
             "reputationGain": 0.5,
             "deliveryVehicle": {
                 "model": "us_semi",
-                "config": "default",
+                "config": "tc84s_dump",
                 "bedSettings": "us_semi"
             },
             "tiers": {
-                "1": [30, 50],
-                "2": [60, 100],
-                "3": [100, 180],
-                "4": [200, 350]
+                "1": [10, 20],
+                "2": [20, 40],
+                "3": [40, 80],
+                "4": [80, 160]
             }
         }
     },
@@ -120,7 +120,7 @@
         },
         "truck": {
             "arrivalSpeedThreshold": 2.0,
-            "arrivalDistanceThreshold": 10.0
+            "arrivalDistanceThreshold": 5.0
         },
         "payload": {
             "updateInterval": 0.25,

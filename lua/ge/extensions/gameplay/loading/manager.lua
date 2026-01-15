@@ -37,6 +37,9 @@ M.debugDrawCache = {
 
 M.markerCleared = false
 M.truckStoppedInLoading = false
+M.truckNudging = false
+M.truckNudgeModeSet = false
+M.truckRouteStartTime = 0
 M.isDispatching = false
 M.payloadUpdateTimer = 0
 M.truckStoppedTimer = 0
@@ -443,43 +446,51 @@ function M.processPendingRespawns(dt, zonesMod, contractsMod)
               else
                 basePos = basePos + vec3(0, 0, 0.2)
                 
-                local bbox = M.getMaterialBoundingBox(respawn.materialType)
-                local maxBoundingBox = bbox and bbox.maxDim or 3
-                local gridSpacing = math.max(maxBoundingBox * 0.8, 0.5)
-                
-                local gridPositions = M.generateGridPositions(basePos, zone, 50, gridSpacing, 6, playerPos, 10)
-                
                 local spawnPos = nil
-                if #gridPositions > 0 then
-                  local minDistToExisting = gridSpacing * 0.5
-                  for _, gridPos in ipairs(gridPositions) do
-                    local tooClose = false
-                    for _, existingEntry in ipairs(M.propQueue) do
-                      if existingEntry.id ~= respawn.propId then
-                        local existingObj = be:getObjectByID(existingEntry.id)
-                        if existingObj then
-                          local existingPos = existingObj:getPosition()
-                          local dist = (gridPos - existingPos):length()
-                          if dist < minDistToExisting then
-                            tooClose = true
-                            break
+                local designatedSpawnLocs = group.materialSpawnLocations or {}
+                
+                if #designatedSpawnLocs > 0 then
+                  local spawnLocIdx = math.random(1, #designatedSpawnLocs)
+                  local designatedLoc = designatedSpawnLocs[spawnLocIdx]
+                  spawnPos = vec3(designatedLoc.pos)
+                else
+                  local bbox = M.getMaterialBoundingBox(respawn.materialType)
+                  local maxBoundingBox = bbox and bbox.maxDim or 3
+                  local gridSpacing = math.max(maxBoundingBox * 0.8, 0.5)
+                  
+                  local gridPositions = M.generateGridPositions(basePos, zone, 50, gridSpacing, 6, playerPos, 10)
+                  
+                  if #gridPositions > 0 then
+                    local minDistToExisting = gridSpacing * 0.5
+                    for _, gridPos in ipairs(gridPositions) do
+                      local tooClose = false
+                      for _, existingEntry in ipairs(M.propQueue) do
+                        if existingEntry.id ~= respawn.propId then
+                          local existingObj = be:getObjectByID(existingEntry.id)
+                          if existingObj then
+                            local existingPos = existingObj:getPosition()
+                            local dist = (gridPos - existingPos):length()
+                            if dist < minDistToExisting then
+                              tooClose = true
+                              break
+                            end
                           end
                         end
                       end
+                      if not tooClose then
+                        spawnPos = gridPos
+                        break
+                      end
                     end
-                    if not tooClose then
-                      spawnPos = gridPos
-                      break
+                    
+                    if not spawnPos and #gridPositions > 0 then
+                      spawnPos = gridPositions[1]
                     end
                   end
                   
-                  if not spawnPos and #gridPositions > 0 then
-                    spawnPos = gridPositions[1]
+                  if not spawnPos then
+                    spawnPos = basePos
                   end
-                end
-                
-                if not spawnPos then
-                  spawnPos = basePos
                 end
                 
                 if respawn.propId then
@@ -499,8 +510,15 @@ function M.processPendingRespawns(dt, zonesMod, contractsMod)
                     local newId = newObj:getID()
                     local actualObj = be:getObjectByID(newId)
                     if actualObj then
-                      table.insert(M.propQueue, { id = newId, materialType = respawn.materialType })
-                      M.propQueueById[newId] = { id = newId, materialType = respawn.materialType }
+                      local propMass = matConfig.unitType == "mass" and (matConfig.massPerProp or 41000) or 0
+                      local entry = { 
+                        id = newId, 
+                        mass = propMass, 
+                        materialType = respawn.materialType,
+                        blockType = matConfig.unitType == "item" and matConfig.config or nil
+                      }
+                      table.insert(M.propQueue, entry)
+                      M.propQueueById[newId] = entry
                       
                       if stock.current > 0 then
                         stock.current = stock.current - 1
@@ -522,7 +540,121 @@ function M.processPendingRespawns(dt, zonesMod, contractsMod)
   end
 end
 
+function M.respawnMassMaterials(contractsMod, zonesMod, deliveredMassKg)
+  M.cleanupStalePropEntries()
+  if not M.jobObjects.activeGroup or not M.jobObjects.activeGroup.loading then return end
+  if not deliveredMassKg or deliveredMassKg <= 0 then return end
+  
+  local group = M.jobObjects.activeGroup
+  local zone = group.loading
+  
+  local cache = zonesMod.ensureGroupCache(group, contractsMod.getCurrentGameHour)
+  if not cache or not cache.materialStocks then return end
+  
+  local contract = contractsMod.ContractSystem.activeContract
+  if not contract or not contract.materialTypeName then return end
+  
+  local contractTypeName = contract.materialTypeName
+  local materialType = nil
+  
+  if group.materials then
+    for _, matKey in ipairs(group.materials) do
+      local matConfig = M.getMaterialConfig(matKey)
+      if matConfig and matConfig.typeName == contractTypeName and matConfig.unitType == "mass" then
+        materialType = matKey
+        break
+      end
+    end
+  elseif group.materialType then
+    local matConfig = M.getMaterialConfig(group.materialType)
+    if matConfig and matConfig.typeName == contractTypeName and matConfig.unitType == "mass" then
+      materialType = group.materialType
+    end
+  end
+  
+  if not materialType then return end
+  
+  local matConfig = M.getMaterialConfig(materialType)
+  if not matConfig then return end
+  
+  local stock = cache.materialStocks[materialType]
+  if not stock then return end
+  
+  if stock.current <= 0 then
+    print(string.format("[Loading] Cannot respawn %.2f kg of %s - no stock available", deliveredMassKg, materialType))
+    return
+  end
+  
+  local actualSpawnAmount = math.min(deliveredMassKg, stock.current)
+  local actualSpawnAmountKg = actualSpawnAmount
+  
+  local massPerProp = matConfig.massPerProp or 41000
+  local propsToSpawn = math.max(1, math.ceil(actualSpawnAmountKg / massPerProp))
+  local massPerPropKg = massPerProp
+  
+  local designatedSpawnLocs = group.materialSpawnLocations or {}
+  local spawnPos = nil
+  
+  if #designatedSpawnLocs > 0 then
+    spawnPos = vec3(designatedSpawnLocs[1].pos)
+  else
+    zonesMod.ensureGroupOffRoadCentroid(group, contractsMod.getCurrentGameHour)
+    local basePos = cache.offRoadCentroid
+    if not basePos then
+      basePos = zonesMod.findOffRoadCentroid(zone, 5, 1000)
+      if basePos then cache.offRoadCentroid = basePos end
+    end
+    if basePos then
+      spawnPos = basePos + vec3(0, 0, 0.2)
+    end
+  end
+  
+  if not spawnPos then
+    print(string.format("[Loading] Cannot respawn %s - no valid spawn location", materialType))
+    return
+  end
+  
+  local actuallySpawned = 0
+  local totalMassSpawned = 0
+  
+  for _ = 1, propsToSpawn do
+    local obj = core_vehicles.spawnNewVehicle(matConfig.model, { 
+      config = matConfig.config, 
+      pos = spawnPos, 
+      rot = quatFromDir(vec3(0,1,0)), 
+      autoEnterVehicle = false 
+    })
+    if obj then
+      local propId = obj:getID()
+      local actualObj = be:getObjectByID(propId)
+      if actualObj then
+        local entry = { 
+          id = propId, 
+          mass = massPerPropKg, 
+          materialType = materialType,
+          blockType = nil
+        }
+        table.insert(M.propQueue, entry)
+        M.propQueueById[propId] = entry
+        actuallySpawned = actuallySpawned + 1
+        totalMassSpawned = totalMassSpawned + massPerPropKg
+        M.managePropCapacity()
+      else
+        if obj then obj:delete() end
+      end
+    end
+  end
+  
+  if actuallySpawned > 0 then
+    stock.current = stock.current - actualSpawnAmount
+    
+    print(string.format("[Loading] Respawned %d prop(s) of %s at spawn spot (%.2f kg each, %.2f kg total), consumed %.2f kg from stock (%.2f kg remaining)", 
+      actuallySpawned, materialType, massPerPropKg, totalMassSpawned, actualSpawnAmount, stock.current))
+  end
+end
+
 function M.spawnJobMaterials(contractsMod, zonesMod, playerPos)
+  M.cleanupStalePropEntries()
   if not M.jobObjects.activeGroup or not M.jobObjects.activeGroup.loading then return end
 
   local group = M.jobObjects.activeGroup
@@ -598,8 +730,14 @@ function M.spawnJobMaterials(contractsMod, zonesMod, playerPos)
   
   local gridSpacing = math.max(maxBoundingBox * 0.8, 0.5)
   local maxGridSize = globalMaxProps + 10
-  local gridPositions = M.generateGridPositions(basePos, zone, maxGridSize, gridSpacing, 6, playerPos, 10)
+  local designatedSpawnLocs = group.materialSpawnLocations or {}
+  local useDesignatedSpawns = #designatedSpawnLocs > 0
+  local gridPositions = {}
   local gridPosIdx = 1
+  if not useDesignatedSpawns then
+    gridPositions = M.generateGridPositions(basePos, zone, maxGridSize, gridSpacing, 6, playerPos, 10)
+  end
+  local designatedSpawnIdx = 0
   
   local loadedPropIds = {}
   local loadedSet = {}
@@ -634,82 +772,126 @@ function M.spawnJobMaterials(contractsMod, zonesMod, playerPos)
           end
         end
         
-        local originallySpawned = (cache.spawnedPropCounts and cache.spawnedPropCounts[materialType]) or 0
+        local propsToSpawn = 0
+        local isMassContract = contract.unitType ~= "item"
         
-        local required = materialRequirements[materialType] or 0
-        local delivered = 0
-        if contractsMod.ContractSystem.contractProgress and contractsMod.ContractSystem.contractProgress.deliveredItemsByMaterial then
-          delivered = contractsMod.ContractSystem.contractProgress.deliveredItemsByMaterial[materialType] or 0
-        end
-        
-        local loadedCount = 0
-        for _, entry in ipairs(M.propQueue) do
-          if entry.materialType == materialType and loadedSet[entry.id] then
-            loadedCount = loadedCount + 1
+        if isMassContract then
+          if contractsMod.checkContractCompletion and contractsMod.checkContractCompletion() then
+            return
+          end
+          
+          local massPerProp = matConfig.massPerProp or 41000
+          local maxPropsFromStock = math.floor(stock.current / massPerProp)
+          local maxSpawned = matConfig.maxSpawned or math.huge
+          local materialMaxAllowed = math.max(0, maxSpawned - currentlyAlive)
+          propsToSpawn = math.min(maxPropsFromStock, materialMaxAllowed, globalMaxAllowed)
+          
+          if propsToSpawn > 0 then
+            print(string.format("[Loading] Mass material '%s': Stock %.2f kg, %.2f kg/prop, %d max from stock, %d alive, spawning %d", 
+              materialType, stock.current, massPerProp, maxPropsFromStock, currentlyAlive, propsToSpawn))
+          end
+        else
+          local required = materialRequirements[materialType] or 0
+          local delivered = 0
+          if contractsMod.ContractSystem.contractProgress and contractsMod.ContractSystem.contractProgress.deliveredItemsByMaterial then
+            delivered = contractsMod.ContractSystem.contractProgress.deliveredItemsByMaterial[materialType] or 0
+          end
+          
+          local loadedCount = 0
+          for _, entry in ipairs(M.propQueue) do
+            if entry.materialType == materialType and loadedSet[entry.id] then
+              loadedCount = loadedCount + 1
+            end
+          end
+          
+          local totalNeededForContract = required - delivered
+          local totalStillNeeded = math.max(0, totalNeededForContract - currentlyAlive - loadedCount)
+          
+          if totalStillNeeded > 0 then
+            local maxSpawned = matConfig.maxSpawned or math.huge
+            local materialMaxAllowed = math.max(0, maxSpawned - currentlyAlive)
+            propsToSpawn = math.min(totalStillNeeded, stock.current, materialMaxAllowed, globalMaxAllowed)
+            
+            if propsToSpawn > 0 then
+              print(string.format("[Loading] Item material '%s': Contract needs %d total, %d delivered, %d alive, %d still needed, spawning %d", 
+                materialType, required, delivered, currentlyAlive, totalStillNeeded, propsToSpawn))
+            end
           end
         end
         
-        local totalNeededForContract = required - delivered
-        local totalStillNeeded = math.max(0, totalNeededForContract - currentlyAlive - loadedCount)
-        
-        local contractNeedsMore = totalStillNeeded > 0
-        
-        if contractNeedsMore then
-          local stockAvailable = stock.current
-          local maxSpawned = matConfig.maxSpawned or math.huge
-          local materialMaxAllowed = math.max(0, maxSpawned - currentlyAlive)
-          local propsToSpawn = math.min(totalStillNeeded, stockAvailable, materialMaxAllowed, globalMaxAllowed)
-          
-          if propsToSpawn > 0 then
-            print(string.format("[Loading] Material '%s': Contract needs %d total, %d delivered, %d currently alive, %d still needed, spawning %d", 
-              materialType, required, delivered, currentlyAlive, totalStillNeeded, propsToSpawn))
-            
-            local actuallySpawned = 0
-            for i = 1, propsToSpawn do
+        if propsToSpawn > 0 then
+          local actuallySpawned = 0
+          local totalMassSpawned = 0
+          for _ = 1, propsToSpawn do
+            local spawnPos
+            if useDesignatedSpawns then
+              if #designatedSpawnLocs > 0 then
+                designatedSpawnIdx = designatedSpawnIdx + 1
+                local spawnLocIdx = ((designatedSpawnIdx - 1) % #designatedSpawnLocs) + 1
+                local designatedLoc = designatedSpawnLocs[spawnLocIdx]
+                spawnPos = vec3(designatedLoc.pos)
+              else
+                print(string.format("[Loading] Warning: No designated spawn locations available. Spawned %d/%d", actuallySpawned, propsToSpawn))
+                break
+              end
+            else
               if gridPosIdx > #gridPositions then
                 print(string.format("[Loading] Warning: Not enough valid grid positions for all props. Spawned %d/%d", actuallySpawned, propsToSpawn))
                 break
               end
-              
-              local spawnPos = gridPositions[gridPosIdx]
+              spawnPos = gridPositions[gridPosIdx]
               gridPosIdx = gridPosIdx + 1
-              
-              local obj = core_vehicles.spawnNewVehicle(matConfig.model, { 
-                config = matConfig.config, 
-                pos = spawnPos, 
-                rot = quatFromDir(vec3(0,1,0)), 
-                autoEnterVehicle = false 
-              })
-              if obj then
-                local propId = obj:getID()
-                local actualObj = be:getObjectByID(propId)
-                if actualObj then
-                  local entry = { 
-                    id = propId, 
-                    mass = matConfig.unitType == "mass" and (matConfig.massPerProp or 41000) or 0, 
-                    materialType = materialType,
-                    blockType = matConfig.unitType == "item" and matConfig.config or nil
-                  }
-                  table.insert(M.propQueue, entry)
-                  M.propQueueById[propId] = entry
-                  totalPropsSpawned = totalPropsSpawned + 1
-                  globalMaxAllowed = globalMaxAllowed - 1
-                  actuallySpawned = actuallySpawned + 1
-                  stock.current = stock.current - 1
-                  if not cache.spawnedPropCounts[materialType] then
-                    cache.spawnedPropCounts[materialType] = 0
-                  end
-                  cache.spawnedPropCounts[materialType] = cache.spawnedPropCounts[materialType] + 1
-                  M.managePropCapacity()
-                else
-                  if obj then obj:delete() end
-                end
-              end
             end
             
-            if actuallySpawned ~= propsToSpawn then
-              print(string.format("[Loading] Material '%s': Attempted to spawn %d but only %d succeeded", materialType, propsToSpawn, actuallySpawned))
+            if not spawnPos then break end
+            
+            local obj = core_vehicles.spawnNewVehicle(matConfig.model, { 
+              config = matConfig.config, 
+              pos = spawnPos, 
+              rot = quatFromDir(vec3(0,1,0)), 
+              autoEnterVehicle = false 
+            })
+            if obj then
+              local propId = obj:getID()
+              local actualObj = be:getObjectByID(propId)
+              if actualObj then
+                local propMass = matConfig.unitType == "mass" and (matConfig.massPerProp or 41000) or 0
+                local entry = { 
+                  id = propId, 
+                  mass = propMass, 
+                  materialType = materialType,
+                  blockType = matConfig.unitType == "item" and matConfig.config or nil
+                }
+                table.insert(M.propQueue, entry)
+                M.propQueueById[propId] = entry
+                totalPropsSpawned = totalPropsSpawned + 1
+                globalMaxAllowed = globalMaxAllowed - 1
+                actuallySpawned = actuallySpawned + 1
+                totalMassSpawned = totalMassSpawned + propMass
+                
+                if isMassContract then
+                  stock.current = stock.current - propMass
+                else
+                  stock.current = stock.current - 1
+                end
+                
+                if not cache.spawnedPropCounts[materialType] then
+                  cache.spawnedPropCounts[materialType] = 0
+                end
+                cache.spawnedPropCounts[materialType] = cache.spawnedPropCounts[materialType] + 1
+                M.managePropCapacity()
+              else
+                if obj then obj:delete() end
+              end
             end
+          end
+          
+          if actuallySpawned ~= propsToSpawn then
+            print(string.format("[Loading] Material '%s': Attempted to spawn %d but only %d succeeded", materialType, propsToSpawn, actuallySpawned))
+          end
+          if isMassContract and actuallySpawned > 0 then
+            print(string.format("[Loading] Mass material '%s': Spawned %d props, %.2f kg total, %.2f kg stock remaining", 
+              materialType, actuallySpawned, totalMassSpawned, stock.current))
           end
         end
       end
@@ -846,10 +1028,33 @@ function M.clearProps()
   end
 end
 
+function M.cleanupStalePropEntries()
+  local cleanedCount = 0
+  for i = #M.propQueue, 1, -1 do
+    local entry = M.propQueue[i]
+    if entry and entry.id then
+      local obj = be:getObjectByID(entry.id)
+      if not obj then
+        M.propQueueById[entry.id] = nil
+        M.itemInitialState[entry.id] = nil
+        M.itemDamageState[entry.id] = nil
+        table.remove(M.propQueue, i)
+        cleanedCount = cleanedCount + 1
+      end
+    end
+  end
+  if cleanedCount > 0 then
+    print(string.format("[Loading] Cleaned up %d stale prop entries", cleanedCount))
+  end
+  return cleanedCount
+end
+
 function M.cleanupJob(deleteTruck, stateIdle)
   core_groundMarkers.setPath(nil)
   M.markerCleared = false
   M.truckStoppedInLoading = false
+  M.truckNudging = false
+  M.truckNudgeModeSet = false
   M.isDispatching = false
   M.payloadUpdateTimer = 0
 
@@ -933,8 +1138,11 @@ end
 function M.driveTruckToPoint(truckId, targetPos)
   local truck = be:getObjectByID(truckId)
   if not truck then return end
+  M.truckNudging = false
+  M.truckNudgeModeSet = false
+  M.truckRouteStartTime = os.clock()
   truck:queueLuaCommand('if not driver then extensions.load("driver") end')
-  truck:queueLuaCommand("input.toggleEvent('parkingbrake')")
+  truck:queueLuaCommand("input.event('parkingbrake', 0, 1)")
   setupTruckAI(truck)
   core_jobsystem.create(function(job)
     job.sleep(0.5)
@@ -948,7 +1156,58 @@ function M.stopTruck(truckId)
   local truck = be:getObjectByID(truckId)
   if not truck then return end
   truck:queueLuaCommand("ai.setMode('stop')")
-  truck:queueLuaCommand("input.toggleEvent('parkingbrake')")
+  truck:queueLuaCommand("input.event('parkingbrake', 1, 1)")
+end
+
+function M.nudgeTruckForward(truckId, throttle)
+  local truck = be:getObjectByID(truckId)
+  if not truck then return end
+  throttle = throttle or 0.3
+  if not M.truckNudgeModeSet then
+    truck:queueLuaCommand("ai.setMode('manual')")
+    M.truckNudgeModeSet = true
+  end
+  truck:queueLuaCommand("input.event('parkingbrake', 0, 1)")
+  truck:queueLuaCommand("input.event('throttle', " .. throttle .. ", 1)")
+end
+
+function M.nudgeTruckWithControl(truckId, throttle, brake, steering)
+  local truck = be:getObjectByID(truckId)
+  if not truck then return end
+  throttle = throttle or 0
+  brake = brake or 0
+  steering = steering or 0
+  if not M.truckNudgeModeSet then
+    truck:queueLuaCommand("ai.setMode('manual')")
+    M.truckNudgeModeSet = true
+  end
+  truck:queueLuaCommand("input.event('parkingbrake', 0, 1)")
+  truck:queueLuaCommand("input.event('throttle', " .. throttle .. ", 1)")
+  truck:queueLuaCommand("input.event('brake', " .. brake .. ", 1)")
+  truck:queueLuaCommand("input.event('steering', " .. steering .. ", 2)")
+end
+
+function M.stopNudging(truckId)
+  local truck = be:getObjectByID(truckId)
+  if not truck then return end
+  M.truckNudgeModeSet = false
+  M.truckNudging = false
+  truck:queueLuaCommand("ai.setMode('stop')")
+  truck:queueLuaCommand("input.event('throttle', 0, 1)")
+  truck:queueLuaCommand("input.event('brake', 0, 1)")
+  truck:queueLuaCommand("input.event('steering', 0, 2)")
+  truck:queueLuaCommand("input.event('parkingbrake', 1, 1)")
+end
+
+function M.getLoadingZoneTargetPos(group)
+  if not group then return nil end
+  if group.stopLocations and #group.stopLocations > 0 and group.stopLocations[1] and group.stopLocations[1].pos then
+    return vec3(group.stopLocations[1].pos)
+  end
+  if group.loading and group.loading.center then
+    return vec3(group.loading.center)
+  end
+  return nil
 end
 
 function M.getTruckBedData(obj)
@@ -1034,23 +1293,48 @@ local function calculatePayloadForProps(propEntries, bedData, materialType, incl
     else
       local obj = be:getObjectByID(rockEntry.id)
       if obj then
+        local entryMass = rockEntry.mass
+        if not entryMass and rockEntry.materialType then
+          local entryMatConfig = M.getMaterialConfig(rockEntry.materialType)
+          if entryMatConfig and entryMatConfig.unitType == "mass" then
+            entryMass = entryMatConfig.massPerProp or 41000
+          end
+        end
+        entryMass = entryMass or defaultMass
+        
         local tf = obj:getTransform()
         local axisX, axisY, axisZ = tf:getColumn(0), tf:getColumn(1), tf:getColumn(2)
         local objPos, nodeCount = obj:getPosition(), obj:getNodeCount()
         local nodesInside, nodesChecked = 0, 0
-        for i = 0, nodeCount - 1, nodeStep do
-          nodesChecked = nodesChecked + 1
-          local worldPoint = objPos - (axisX * obj:getNodePosition(i).x) - (axisY * obj:getNodePosition(i).y) + (axisZ * obj:getNodePosition(i).z)
-          if M.isPointInTruckBed(worldPoint, bedData) then nodesInside = nodesInside + 1 end
+        if nodeCount > 0 then
+          local lastChecked = -1
+          for i = 0, nodeCount - 1, nodeStep do
+            nodesChecked = nodesChecked + 1
+            lastChecked = i
+            local worldPoint = objPos - (axisX * obj:getNodePosition(i).x) - (axisY * obj:getNodePosition(i).y) + (axisZ * obj:getNodePosition(i).z)
+            if M.isPointInTruckBed(worldPoint, bedData) then nodesInside = nodesInside + 1 end
+          end
+          if lastChecked ~= nodeCount - 1 then
+            nodesChecked = nodesChecked + 1
+            local worldPoint = objPos - (axisX * obj:getNodePosition(nodeCount - 1).x) - (axisY * obj:getNodePosition(nodeCount - 1).y) + (axisZ * obj:getNodePosition(nodeCount - 1).z)
+            if M.isPointInTruckBed(worldPoint, bedData) then nodesInside = nodesInside + 1 end
+          end
         end
-        if nodesChecked > 0 then totalMass = totalMass + ((rockEntry.mass or defaultMass) * (nodesInside / nodesChecked)) end
+        if nodesChecked > 0 then 
+          local contribution = entryMass * (nodesInside / nodesChecked)
+          totalMass = totalMass + contribution
+          print(string.format("[Loading] Prop %s: mass=%d, nodes=%d/%d (%.1f%%), contribution=%.0f kg", 
+            tostring(rockEntry.id), entryMass, nodesInside, nodesChecked, (nodesInside/nodesChecked)*100, contribution))
+        end
       end
     end
   end
+  print(string.format("[Loading] Total payload mass: %.0f kg (%.1f tons)", totalMass, totalMass/1000))
   return totalMass
 end
 
 function M.calculateTruckPayload()
+  M.cleanupStalePropEntries()
   if #M.propQueue == 0 or not M.jobObjects.truckID then 
     M.lastPayloadMass = 0
     return 0 
@@ -1059,6 +1343,13 @@ function M.calculateTruckPayload()
   if not truck then 
     M.lastPayloadMass = 0
     return 0 
+  end
+  
+  print(string.format("[Loading] calculateTruckPayload: propQueue has %d entries", #M.propQueue))
+  for i, entry in ipairs(M.propQueue) do
+    local obj = be:getObjectByID(entry.id)
+    print(string.format("[Loading]   Entry %d: id=%s, mass=%s, materialType=%s, objExists=%s", 
+      i, tostring(entry.id), tostring(entry.mass), tostring(entry.materialType), tostring(obj ~= nil)))
   end
 
   local materialType = M.jobObjects.materialType
@@ -1071,16 +1362,6 @@ function M.calculateTruckPayload()
   if matConfig and matConfig.unitType == "item" then
     M.lastPayloadMass = 0
     return 0
-  end
-  
-  local currentMass = truck:getMass()
-  if M.lastPayloadMass > 0 and math.abs(currentMass - M.lastPayloadMass) < 10 then
-    M.payloadStationaryCount = M.payloadStationaryCount + 1
-    if M.payloadStationaryCount > 10 then
-      return M.lastPayloadMass
-    end
-  else
-    M.payloadStationaryCount = 0
   end
   
   local bedData = M.getTruckBedData(truck)
@@ -1232,9 +1513,17 @@ function M.getLoadedPropIdsInTruck(minRatio)
       local axisX, axisY, axisZ = tf:getColumn(0), tf:getColumn(1), tf:getColumn(2)
       local objPos, nodeCount = obj:getPosition(), obj:getNodeCount()
       local nodesInside, nodesChecked = 0, 0
-      for i = 0, nodeCount - 1, nodeStep do
-        nodesChecked = nodesChecked + 1
-        if M.isPointInTruckBed(objPos - (axisX * obj:getNodePosition(i).x) - (axisY * obj:getNodePosition(i).y) + (axisZ * obj:getNodePosition(i).z), bedData) then nodesInside = nodesInside + 1 end
+      if nodeCount > 0 then
+        local lastChecked = -1
+        for i = 0, nodeCount - 1, nodeStep do
+          nodesChecked = nodesChecked + 1
+          lastChecked = i
+          if M.isPointInTruckBed(objPos - (axisX * obj:getNodePosition(i).x) - (axisY * obj:getNodePosition(i).y) + (axisZ * obj:getNodePosition(i).z), bedData) then nodesInside = nodesInside + 1 end
+        end
+        if lastChecked ~= nodeCount - 1 then
+          nodesChecked = nodesChecked + 1
+          if M.isPointInTruckBed(objPos - (axisX * obj:getNodePosition(nodeCount - 1).x) - (axisY * obj:getNodePosition(nodeCount - 1).y) + (axisZ * obj:getNodePosition(nodeCount - 1).z), bedData) then nodesInside = nodesInside + 1 end
+        end
       end
       if nodesChecked > 0 and (nodesInside / nodesChecked) >= minRatio then table.insert(ids, rockEntry.id) end
     end
@@ -1255,9 +1544,17 @@ function M.getBlockLoadRatio(blockId)
   local objPos, nodeCount = obj:getPosition(), obj:getNodeCount()
   local nodeStep = Config.settings.payload and Config.settings.payload.nodeSamplingStep or 10
   local nodesInside, nodesChecked = 0, 0
-  for i = 0, nodeCount - 1, nodeStep do
-    nodesChecked = nodesChecked + 1
-    if M.isPointInTruckBed(objPos - (axisX * obj:getNodePosition(i).x) - (axisY * obj:getNodePosition(i).y) + (axisZ * obj:getNodePosition(i).z), bedData) then nodesInside = nodesInside + 1 end
+  if nodeCount > 0 then
+    local lastChecked = -1
+    for i = 0, nodeCount - 1, nodeStep do
+      nodesChecked = nodesChecked + 1
+      lastChecked = i
+      if M.isPointInTruckBed(objPos - (axisX * obj:getNodePosition(i).x) - (axisY * obj:getNodePosition(i).y) + (axisZ * obj:getNodePosition(i).z), bedData) then nodesInside = nodesInside + 1 end
+    end
+    if lastChecked ~= nodeCount - 1 then
+      nodesChecked = nodesChecked + 1
+      if M.isPointInTruckBed(objPos - (axisX * obj:getNodePosition(nodeCount - 1).x) - (axisY * obj:getNodePosition(nodeCount - 1).y) + (axisZ * obj:getNodePosition(nodeCount - 1).z), bedData) then nodesInside = nodesInside + 1 end
+    end
   end
   return nodesChecked > 0 and (nodesInside / nodesChecked) or 0
 end
@@ -1274,25 +1571,37 @@ function M.getItemBlocksStatus()
   return blocks
 end
 
-function M.consumeZoneStock(group, propsDelivered, zonesMod, contractsMod)
+function M.consumeZoneStock(group, deliveredPropIds, zonesMod, contractsMod)
   if not group then return end
   local cache = zonesMod.ensureGroupCache(group, contractsMod.getCurrentGameHour)
   if not cache or not cache.materialStocks then return end
   
+  local deliveredSet = {}
+  if type(deliveredPropIds) == "table" then
+    for _, id in ipairs(deliveredPropIds) do deliveredSet[id] = true end
+  end
+  
+  local materialMass = {}
   local materialCounts = {}
   for _, entry in ipairs(M.propQueue) do
-    if entry.materialType then
+    if entry.materialType and (next(deliveredSet) == nil or deliveredSet[entry.id]) then
       materialCounts[entry.materialType] = (materialCounts[entry.materialType] or 0) + 1
+      materialMass[entry.materialType] = (materialMass[entry.materialType] or 0) + (entry.mass or 0)
     end
   end
   
   for matKey, count in pairs(materialCounts) do
     local stock = cache.materialStocks[matKey]
     if stock then
-      local delivered = math.min(count, propsDelivered)
-      stock.current = math.max(0, stock.current - delivered)
+      local matConfig = M.getMaterialConfig(matKey)
+      if matConfig and matConfig.unitType == "mass" then
+        local massKg = (materialMass[matKey] or 0)
+        stock.current = math.max(0, stock.current - massKg)
+      else
+        stock.current = math.max(0, stock.current - count)
+      end
       if cache.spawnedPropCounts and cache.spawnedPropCounts[matKey] then
-        cache.spawnedPropCounts[matKey] = math.max(0, cache.spawnedPropCounts[matKey] - delivered)
+        cache.spawnedPropCounts[matKey] = math.max(0, cache.spawnedPropCounts[matKey] - count)
       end
     end
   end
@@ -1306,9 +1615,11 @@ function M.returnPropsToStock(propIds, zonesMod, contractsMod)
   for _, id in ipairs(propIds) do idSet[id] = true end
   
   local materialCounts = {}
+  local materialMass = {}
   for _, entry in ipairs(M.propQueue) do
     if entry.id and idSet[entry.id] and entry.materialType then
       materialCounts[entry.materialType] = (materialCounts[entry.materialType] or 0) + 1
+      materialMass[entry.materialType] = (materialMass[entry.materialType] or 0) + (entry.mass or 0)
     end
   end
   
@@ -1317,7 +1628,13 @@ function M.returnPropsToStock(propIds, zonesMod, contractsMod)
     for matKey, count in pairs(materialCounts) do
       local stock = cache.materialStocks[matKey]
       if stock then
-        stock.current = math.min(stock.current + count, stock.max)
+        local matConfig = M.getMaterialConfig(matKey)
+        if matConfig and matConfig.unitType == "mass" then
+          local massKg = (materialMass[matKey] or 0)
+          stock.current = math.min(stock.current + massKg, stock.max)
+        else
+          stock.current = math.min(stock.current + count, stock.max)
+        end
         if cache.spawnedPropCounts and cache.spawnedPropCounts[matKey] then
           cache.spawnedPropCounts[matKey] = math.max(0, cache.spawnedPropCounts[matKey] - count)
         end
@@ -1330,19 +1647,50 @@ function M.despawnPropIds(propIds, zonesMod, contractsMod, skipStockConsumption)
   if not propIds or #propIds == 0 then return end
   local idSet = {}
   for _, id in ipairs(propIds) do idSet[id] = true end
-  local propsRemoved = 0
+  
+  local removedEntries = {}
   for i = #M.propQueue, 1, -1 do
-    local id = M.propQueue[i].id
+    local entry = M.propQueue[i]
+    local id = entry.id
     if id and idSet[id] then
+      table.insert(removedEntries, { materialType = entry.materialType, mass = entry.mass or 0 })
       M.propQueueById[id] = nil
       M.itemInitialState[id], M.itemDamageState[id] = nil, nil
       local obj = be:getObjectByID(id)
       if obj then obj:delete() end
       table.remove(M.propQueue, i)
-      propsRemoved = propsRemoved + 1
     end
   end
-  if propsRemoved > 0 and M.jobObjects.activeGroup and not skipStockConsumption then M.consumeZoneStock(M.jobObjects.activeGroup, propsRemoved, zonesMod, contractsMod) end
+  
+  if #removedEntries > 0 and M.jobObjects.activeGroup and not skipStockConsumption then 
+    local cache = zonesMod.ensureGroupCache(M.jobObjects.activeGroup, contractsMod.getCurrentGameHour)
+    if cache and cache.materialStocks then
+      local materialMass = {}
+      local materialCounts = {}
+      for _, entry in ipairs(removedEntries) do
+        if entry.materialType then
+          materialCounts[entry.materialType] = (materialCounts[entry.materialType] or 0) + 1
+          materialMass[entry.materialType] = (materialMass[entry.materialType] or 0) + (entry.mass or 0)
+        end
+      end
+      
+      for matKey, count in pairs(materialCounts) do
+        local stock = cache.materialStocks[matKey]
+        if stock then
+          local matConfig = M.getMaterialConfig(matKey)
+          if matConfig and matConfig.unitType == "mass" then
+            local massKg = (materialMass[matKey] or 0)
+            stock.current = math.max(0, stock.current - massKg)
+          else
+            stock.current = math.max(0, stock.current - count)
+          end
+          if cache.spawnedPropCounts and cache.spawnedPropCounts[matKey] then
+            cache.spawnedPropCounts[matKey] = math.max(0, cache.spawnedPropCounts[matKey] - count)
+          end
+        end
+      end
+    end
+  end
 end
 
 function M.handleTruckMovement(dt, destPos, contractsMod)
@@ -1407,6 +1755,8 @@ function M.handleTruckMovement(dt, destPos, contractsMod)
                   M.truckStoppedTimer = 0
                   M.truckLastPosition = roadNodePos
                   M.teleportQueued = true
+                  M.truckNudging = false
+                  M.truckRouteStartTime = os.clock()
                 end
               end
             end
@@ -1444,11 +1794,13 @@ function M.beginActiveContractTrip(contractsMod, zonesMod, uiMod)
 
   M.markerCleared = false
   M.truckStoppedInLoading = false
+  M.truckNudging = false
   M.payloadUpdateTimer = 0
 
-  core_groundMarkers.setPath(vec3(M.jobObjects.activeGroup.loading.center))
-
-  local targetPos = vec3(M.jobObjects.activeGroup.loading.center)
+  local targetPos = M.getLoadingZoneTargetPos(M.jobObjects.activeGroup)
+  if targetPos then
+    core_groundMarkers.setPath(targetPos)
+  end
 
   if #M.propQueue == 0 then
     M.spawnJobMaterials(contractsMod, zonesMod)
