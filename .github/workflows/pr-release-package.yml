@@ -68,11 +68,12 @@ jobs:
       - name: Create and save cache archive
         if: steps.lfs-cache.outputs.cache-hit != 'true'
         run: |
+          rm -f /tmp/repo-cache.tar.zst
           tar --exclude='.git' \
               --exclude='node_modules' \
               --exclude='baseUI/node_modules' \
               --exclude='.github' \
-              -cf - . | zstd -T0 -3 -o /tmp/repo-cache.tar.zst
+              -cf - . | zstd -T0 -3 -f -o /tmp/repo-cache.tar.zst
 
       - name: Save working directory to cache
         if: steps.lfs-cache.outputs.cache-hit != 'true'
