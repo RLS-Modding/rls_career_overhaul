@@ -175,7 +175,7 @@ jobs:
             vehicles/
           retention-days: 7
           if-no-files-found: error
-          compression-level: 0
+          compression-level: 1
 
       - name: Comment PR with download link
         run: |
