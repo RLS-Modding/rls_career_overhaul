@@ -43,26 +43,17 @@ jobs:
         uses: actions/cache@v4
         id: lfs-cache
         with:
-          path: |
-            /tmp/repo-cache.tar.zst
-            /tmp/repo-cache.tar.gz
+          path: /tmp/repo-cache.tar.zst
           key: lfs-v2-${{ github.repository }}-${{ github.sha }}
           restore-keys: |
             lfs-v2-${{ github.repository }}-${{ github.head_ref }}-
             lfs-v2-${{ github.repository }}-
-            lfs-${{ github.repository }}-${{ github.head_ref }}-
-            lfs-${{ github.repository }}-
 
       - name: Extract cached files
         if: steps.lfs-cache.outputs.cache-hit == 'true'
         run: |
-          if [ -f /tmp/repo-cache.tar.zst ]; then
-            zstd -d -c /tmp/repo-cache.tar.zst | tar -xf - -C .
-            echo "Cache extracted"
-          elif [ -f /tmp/repo-cache.tar.gz ]; then
-            tar -xzf /tmp/repo-cache.tar.gz -C .
-            echo "Cache extracted (legacy gzip)"
-          fi
+          zstd -d -c /tmp/repo-cache.tar.zst | tar -xf - -C .
+          echo "Cache extracted"
 
       - name: Pull LFS files
         run: |
@@ -184,7 +175,7 @@ jobs:
             vehicles/
           retention-days: 7
           if-no-files-found: error
-          compression-level: 1
+          compression-level: 0
 
       - name: Comment PR with download link
         run: |
