@@ -17,7 +17,7 @@
   ],
   "Commercial Class":"Class 7 Truck",
   "Config Type":"Service",
-  "Configuration":"busWork_long",
+  "Configuration":"Long School Bus",
   "Description":"Late model type C school bus",
   "Drag Times":{
     "brakingG":0.512418021,
