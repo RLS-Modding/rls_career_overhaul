@@ -9,9 +9,29 @@ permissions:
 
 jobs:
   build-and-package:
-    runs-on: depot-ubuntu-24.04-16
+    runs-on: depot-ubuntu-24.04-8
     steps:
-      - name: Checkout with LFS
+      - name: Cache git repository
+        uses: actions/cache@v4
+        id: repo-cache
+        with:
+          path: .git
+          key: repo-${{ github.repository }}-git
+          restore-keys: |
+            repo-${{ github.repository }}-
+          enableCrossOsArchive: false
+
+      - name: Fetch latest (cache hit)
+        if: steps.repo-cache.outputs.cache-hit == 'true'
+        run: |
+          git remote set-url origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+          git fetch origin --no-prune --no-tags refs/heads/${{ github.head_ref }}:refs/remotes/origin/${{ github.head_ref }}
+          git checkout -f ${{ github.head_ref }} 2>/dev/null || git checkout -f -b ${{ github.head_ref }} origin/${{ github.head_ref }}
+          git reset --hard origin/${{ github.head_ref }}
+          git clean -ffd
+
+      - name: Full checkout (cache miss)
+        if: steps.repo-cache.outputs.cache-hit != 'true'
         uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
@@ -19,10 +39,55 @@ jobs:
           lfs: false
           fetch-depth: 0
 
+      - name: Optimize git repository for caching
+        if: steps.repo-cache.outputs.cache-hit != 'true'
+        run: |
+          rm -rf .git/logs .git/hooks
+          git reflog expire --expire=now --all 2>/dev/null || true
+          git gc --prune=now 2>/dev/null || true
+
+      - name: Restore working directory from cache
+        uses: actions/cache@v4
+        id: lfs-cache
+        with:
+          path: /tmp/repo-cache.tar.zst
+          key: lfs-v2-${{ github.repository }}-${{ github.sha }}
+          restore-keys: |
+            lfs-v2-${{ github.repository }}-${{ github.head_ref }}-
+            lfs-v2-${{ github.repository }}-
+
+      - name: Extract cached files
+        if: steps.lfs-cache.outputs.cache-hit == 'true'
+        run: |
+          zstd -d -c /tmp/repo-cache.tar.zst | tar -xf - -C .
+          echo "Cache extracted"
+
       - name: Pull LFS files
         run: |
           git lfs install
-          git lfs pull
+          if [ "${{ steps.lfs-cache.outputs.cache-hit }}" == "true" ]; then
+            git lfs pull
+          else
+            git lfs fetch --all
+            git lfs checkout
+          fi
+
+      - name: Create and save cache archive
+        if: steps.lfs-cache.outputs.cache-hit != 'true'
+        run: |
+          rm -f /tmp/repo-cache.tar.zst
+          tar --exclude='.git' \
+              --exclude='node_modules' \
+              --exclude='baseUI/node_modules' \
+              --exclude='.github' \
+              -cf - . | zstd -T0 -3 -f -o /tmp/repo-cache.tar.zst
+
+      - name: Save working directory to cache
+        if: steps.lfs-cache.outputs.cache-hit != 'true'
+        uses: actions/cache@v4
+        with:
+          path: /tmp/repo-cache.tar.zst
+          key: lfs-v2-${{ github.repository }}-${{ github.sha }}
 
       - name: Check for UI source changes
         uses: dorny/paths-filter@v3
@@ -91,14 +156,8 @@ jobs:
               MAX_MINOR=0
             fi
 
-            echo "Deleting old artifacts (max version was $MAX_MINOR)..."
-            echo "$ARTIFACTS_JSON" | jq -r '.[].id' | while read ARTIFACT_ID; do
-              if [ -n "$ARTIFACT_ID" ] && [ "$ARTIFACT_ID" != "null" ]; then
-                ARTIFACT_NAME=$(echo "$ARTIFACTS_JSON" | jq -r ".[] | select(.id == $ARTIFACT_ID) | .name")
-                echo "Deleting artifact: $ARTIFACT_NAME (ID: $ARTIFACT_ID)"
-                gh api repos/${{ github.repository }}/actions/artifacts/$ARTIFACT_ID -X DELETE || true
-              fi
-            done
+            echo "Deleting old artifacts in parallel (max version was $MAX_MINOR)..."
+            echo "$ARTIFACTS_JSON" | jq -r '.[].id' | xargs -P 4 -I {} sh -c 'gh api repos/${{ github.repository }}/actions/artifacts/{} -X DELETE 2>/dev/null || true'
 
             MINOR_VERSION=$((MAX_MINOR + 1))
             VERSION="${PR_NUMBER}.${MINOR_VERSION}"
@@ -124,10 +183,10 @@ jobs:
             vehicles/
           retention-days: 7
           if-no-files-found: error
+          compression-level: 2
 
       - name: Comment PR with download link
         run: |
-          sleep 2
           VERSION="${{ steps.version.outputs.version }}"
           ARTIFACT_ID=$(gh api repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts --jq ".artifacts[] | select(.name == \"${VERSION}_overhaul\") | .id" || echo "")
 
