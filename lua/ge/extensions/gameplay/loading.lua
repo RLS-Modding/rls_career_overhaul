@@ -616,6 +616,14 @@ local function updatePlayerCache(dt)
   end
 end
 
+local function forceBrakesAndDisableAI(truckId, truck)
+  if not truck or not truckId then return end
+  truck:queueLuaCommand("ai.setMode('disabled')")
+  truck:queueLuaCommand("input.event('brake', 1, 1)")
+  truck:queueLuaCommand("input.event('throttle', 0, 1)")
+  truck:queueLuaCommand("input.event('parkingbrake', 1, 1)")
+end
+
 local function handleTruckNudging(truckId, truck, targetPos, arrivalDist, atTarget)
   if not truck or not targetPos or not Manager then return false end
   
@@ -689,6 +697,36 @@ local function onUpdate(dt)
   if not cachedPlayerVeh or not cachedPlayerPos then return end
   local playerVeh = cachedPlayerVeh
   local playerPos = cachedPlayerPos
+
+  if Manager.jobObjects.truckID then
+    local truck = be:getObjectByID(Manager.jobObjects.truckID)
+    if truck then
+      local arrivalDist = settingsTruck and settingsTruck.arrivalDistanceThreshold or 10.0
+      local truckPos = truck:getPosition()
+      local targetPos = nil
+      
+      if currentState == Config.STATE_DELIVERING then
+        targetPos = Manager.jobObjects.deliveryDestination and vec3(Manager.jobObjects.deliveryDestination.pos) or (Manager.jobObjects.activeGroup and Manager.jobObjects.activeGroup.destination and vec3(Manager.jobObjects.activeGroup.destination.pos))
+      elseif Manager.jobObjects.zoneSwapPending then
+        targetPos = Manager.jobObjects.deliveryDestination and vec3(Manager.jobObjects.deliveryDestination.pos) or (Manager.jobObjects.activeGroup and Manager.jobObjects.activeGroup.destination and vec3(Manager.jobObjects.activeGroup.destination.pos))
+      elseif currentState == Config.STATE_TRUCK_ARRIVING or currentState == Config.STATE_LOADING then
+        local group = Manager.jobObjects.activeGroup
+        if group then
+          local hasDesignatedStop = group.stopLocations and #group.stopLocations > 0
+          local routingTargetPos = Manager.getLoadingZoneTargetPos(group)
+          local stopLocationPos = hasDesignatedStop and group.stopLocations[1] and group.stopLocations[1].pos and vec3(group.stopLocations[1].pos) or nil
+          targetPos = stopLocationPos or routingTargetPos
+        end
+      end
+      
+      if targetPos then
+        local distToTarget = (truckPos - targetPos):length()
+        if distToTarget < arrivalDist then
+          forceBrakesAndDisableAI(Manager.jobObjects.truckID, truck)
+        end
+      end
+    end
+  end
 
   if not Zones.sitesData then
     Zones.sitesLoadTimer = Zones.sitesLoadTimer + dt
