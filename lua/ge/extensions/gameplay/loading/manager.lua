@@ -499,12 +499,18 @@ function M.processPendingRespawns(dt, zonesMod, contractsMod)
                 
                 local matConfig = M.getMaterialConfig(respawn.materialType)
                 if matConfig and matConfig.model then
-                  local newObj = core_vehicles.spawnNewVehicle(matConfig.model, {
+                  local spawnOptions = {
                     pos = spawnPos,
                     rot = quat(0, 0, 0, 1),
                     config = matConfig.config or "default",
                     autoEnterVehicle = false
-                  })
+                  }
+                  
+                  if #designatedSpawnLocs > 0 then
+                    spawnOptions.cling = true
+                  end
+                  
+                  local newObj = core_vehicles.spawnNewVehicle(matConfig.model, spawnOptions)
                   
                   if newObj then
                     local newId = newObj:getID()
@@ -593,37 +599,49 @@ function M.respawnMassMaterials(contractsMod, zonesMod, deliveredMassKg)
   local massPerPropKg = massPerProp
   
   local designatedSpawnLocs = group.materialSpawnLocations or {}
-  local spawnPos = nil
-  
-  if #designatedSpawnLocs > 0 then
-    spawnPos = vec3(designatedSpawnLocs[1].pos)
-  else
-    zonesMod.ensureGroupOffRoadCentroid(group, contractsMod.getCurrentGameHour)
-    local basePos = cache.offRoadCentroid
-    if not basePos then
-      basePos = zonesMod.findOffRoadCentroid(zone, 5, 1000)
-      if basePos then cache.offRoadCentroid = basePos end
-    end
-    if basePos then
-      spawnPos = basePos + vec3(0, 0, 0.2)
-    end
-  end
-  
-  if not spawnPos then
-    print(string.format("[Loading] Cannot respawn %s - no valid spawn location", materialType))
-    return
-  end
+  local useDesignatedSpawns = #designatedSpawnLocs > 0
+  local designatedSpawnIdx = 0
   
   local actuallySpawned = 0
   local totalMassSpawned = 0
   
   for _ = 1, propsToSpawn do
-    local obj = core_vehicles.spawnNewVehicle(matConfig.model, { 
-      config = matConfig.config, 
-      pos = spawnPos, 
-      rot = quatFromDir(vec3(0,1,0)), 
-      autoEnterVehicle = false 
-    })
+    local spawnPos = nil
+    
+    if useDesignatedSpawns then
+      designatedSpawnIdx = designatedSpawnIdx + 1
+      local spawnLocIdx = ((designatedSpawnIdx - 1) % #designatedSpawnLocs) + 1
+      local designatedLoc = designatedSpawnLocs[spawnLocIdx]
+      spawnPos = vec3(designatedLoc.pos)
+    else
+      zonesMod.ensureGroupOffRoadCentroid(group, contractsMod.getCurrentGameHour)
+      local basePos = cache.offRoadCentroid
+      if not basePos then
+        basePos = zonesMod.findOffRoadCentroid(zone, 5, 1000)
+        if basePos then cache.offRoadCentroid = basePos end
+      end
+      if basePos then
+        spawnPos = basePos + vec3(0, 0, 0.2)
+      end
+    end
+    
+    if not spawnPos then
+      print(string.format("[Loading] Cannot respawn %s - no valid spawn location", materialType))
+      break
+    end
+    
+    local spawnOptions = {
+      config = matConfig.config,
+      pos = spawnPos,
+      rot = quatFromDir(vec3(0,1,0)),
+      autoEnterVehicle = false
+    }
+    
+    if useDesignatedSpawns then
+      spawnOptions.cling = true
+    end
+    
+    local obj = core_vehicles.spawnNewVehicle(matConfig.model, spawnOptions)
     if obj then
       local propId = obj:getID()
       local actualObj = be:getObjectByID(propId)
@@ -845,12 +863,18 @@ function M.spawnJobMaterials(contractsMod, zonesMod, playerPos)
             
             if not spawnPos then break end
             
-            local obj = core_vehicles.spawnNewVehicle(matConfig.model, { 
-              config = matConfig.config, 
-              pos = spawnPos, 
-              rot = quatFromDir(vec3(0,1,0)), 
-              autoEnterVehicle = false 
-            })
+            local spawnOptions = {
+              config = matConfig.config,
+              pos = spawnPos,
+              rot = quatFromDir(vec3(0,1,0)),
+              autoEnterVehicle = false
+            }
+            
+            if useDesignatedSpawns then
+              spawnOptions.cling = true
+            end
+            
+            local obj = core_vehicles.spawnNewVehicle(matConfig.model, spawnOptions)
             if obj then
               local propId = obj:getID()
               local actualObj = be:getObjectByID(propId)
