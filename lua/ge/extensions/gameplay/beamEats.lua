@@ -3,14 +3,14 @@ M.dependencies = {'gameplay_sites_sitesManager', 'freeroam_facilities', 'gamepla
 
 M.config = {
     -- Driving smoothness
-    roughEventThreshold = 1.9, 
+    roughEventThreshold = 1.6, 
     tipTiers = {
-        { maxEvents = 0, percent = 1.0 },
+        { maxEvents = 0, percent = .75 },
         { maxEvents = 5, percent = 0.10 }
         
     },
 
-    secondsPerMile = 80, 
+    secondsPerMile = 75, 
 
     bonusPerSecondEarly = 100,
     penaltyPerSecondLate = 20,
@@ -50,7 +50,7 @@ local vehicleMultiplier = 0.1
 
 -- Restaurant and parking spot data
 local restaurants = {}
-local restaurantIds = {"turboBurger", "diner", "chinatownRestaurant", "greenPier"}
+-- local restaurantIds = {"turboBurger", "diner", "chinatownRestaurant", "greenPier"} -- Removed hardcoded list
 local allDeliverySpots = nil
 
 local distanceMultiplier = config.distanceMultiplier
@@ -137,11 +137,19 @@ local function findRestaurants()
     local restaurantParkingSpotNames = {}
 
     for _, fac in ipairs(facilities) do
+        -- Check if facility provides food delivery, regardless of ID
         local isRestaurant = false
-        for _, restaurantId in ipairs(restaurantIds) do
-            if fac.id == restaurantId then
-                isRestaurant = true
-                break
+        if fac.manualAccessPoints then
+            for _, accessPoint in ipairs(fac.manualAccessPoints) do
+                if accessPoint.logisticTypesProvided then
+                    for _, logisticType in ipairs(accessPoint.logisticTypesProvided) do
+                        if logisticType == "food" then
+                            isRestaurant = true
+                            break
+                        end
+                    end
+                end
+                if isRestaurant then break end
             end
         end
 
@@ -158,14 +166,17 @@ local function findRestaurants()
                                 if sitesFile then
                                     local siteData = gameplay_sites_sitesManager.loadSites(sitesFile)
                                     if siteData and siteData.parkingSpots then
-                                        local ps = siteData.parkingSpots.byName[accessPoint.psName]
-                                        if ps and ps.pos then
-                                            table.insert(pickupSpots, {
-                                                pos = ps.pos,
-                                                name = accessPoint.psName,
-                                                restaurantId = fac.id,
-                                                restaurantName = fac.name
-                                            })
+                                        -- Check if byName exists before accessing
+                                        if siteData.parkingSpots.byName then
+                                            local ps = siteData.parkingSpots.byName[accessPoint.psName]
+                                            if ps and ps.pos then
+                                                table.insert(pickupSpots, {
+                                                    pos = ps.pos,
+                                                    name = accessPoint.psName,
+                                                    restaurantId = fac.id,
+                                                    restaurantName = fac.name
+                                                })
+                                            end
                                         end
                                     end
                                 end
@@ -394,7 +405,7 @@ local function generateOrder()
 
     local baseFare = calculateBaseFare(totalDistance, valueMultiplier)
 
-    -- Calculate expected time: 120 seconds per mile (based on total distance)
+    -- Calculate expected time: config.secondsPerMile per mile (based on total distance)
     local metersToMiles = 0.000621371
     local miles = totalDistance * metersToMiles
     local expectedTime = miles * config.secondsPerMile
