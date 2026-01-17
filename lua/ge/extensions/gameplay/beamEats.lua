@@ -500,6 +500,9 @@ local function completeDelivery()
 
     guihooks.trigger('toastrMsg', {type="success", title="BeamEats Earnings", msg=msg, config={time=15000}})
 
+    -- Clear Tasklist
+    guihooks.trigger('ClearTasklist')
+
     local beamEatsDisabled, disabledReason = isBeamEatsDisabled()
     local effectiveState = beamEatsDisabled and "disabled" or state
 
@@ -565,6 +568,7 @@ local function stopBeamEatsJob()
     cumulativeReward = 0
     orderStreak = 0
     M.deliveryData = {}
+    guihooks.trigger('ClearTasklist') -- Clear UI on stop
     requestBeamEatsState()
 end
 
@@ -672,23 +676,46 @@ local function update(_, dt)
             end
         end
 
-        -- Persistent UI: Timer and Destination (throttled)
-        if uiUpdateTimer >= 1.0 then
+        -- Persistent UI: Tasklist Update (throttled)
+        if uiUpdateTimer >= 0.5 then -- Faster update rate for smoother timer
             uiUpdateTimer = 0
             local elapsedTime = timer - currentOrder.startTime
             local timeLeft = math.max(0, currentOrder.expectedTime - elapsedTime)
-            local timeDiff = currentOrder.expectedTime - elapsedTime -- can be negative if late
+            local timeDiff = currentOrder.expectedTime - elapsedTime 
+            local totalTime = currentOrder.expectedTime
             
-            local phase = (state == "pickup") and "Pickup at: " .. currentOrder.restaurant or "Deliver to: Customer"
+            local phaseLabel = (state == "pickup") and "Pickup at: " .. currentOrder.restaurant or "Deliver to: Customer"
             
-            local timerMsg = string.format("%s\nTime Remaining: %0.0fs", phase, timeLeft)
-            local icon = "timer"
+            -- Progress bar logic: Full at start, empty at 0
+            local progressPercent = (timeLeft / totalTime) * 100
+            if timeDiff < 0 then progressPercent = 0 end
+
+            local timerText = string.format("%0.0fs", timeLeft)
             if timeDiff < 0 then
-                timerMsg = string.format("%s\nLATE: %0.0fs", phase, math.abs(timeDiff))
-                icon = "warning"
+                timerText = string.format("LATE: %0.0fs", math.abs(timeDiff))
             end
+
+            -- Ensure header is set every frame to prevent other mods/game logic from clearing it
+            guihooks.trigger('SetTasklistHeader', {label = "BeamEats Delivery"})
             
-            ui_message(timerMsg, 2, 'beamEats_timer', icon) 
+            guihooks.trigger('SetTasklistTask', {
+                id = "beamEats_phase",
+                label = phaseLabel,
+                done = false,
+                active = true,
+                type = "message",
+                clear = false
+            })
+            guihooks.trigger('SetTasklistTask', {
+                id = "beamEats_timer",
+                label = "Time Limit",
+                subtext = timerText,
+                percent = progressPercent,
+                done = false,
+                active = true,
+                type = "goal",
+                clear = false
+            })
         end
     end
 
