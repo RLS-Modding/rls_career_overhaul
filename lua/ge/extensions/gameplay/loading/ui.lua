@@ -293,7 +293,6 @@ local function toggleDebugOBB(enabled)
     debugOBBEnabled = enabled
   end
   M.debugOBBEnabled = debugOBBEnabled
-  print("[Loading] Debug OBB visualization: " .. (debugOBBEnabled and "ENABLED" or "DISABLED"))
   return debugOBBEnabled
 end
 
@@ -315,7 +314,6 @@ M.requestQuarryState = requestQuarryState
 M.drawDebugOBB = drawDebugOBB
 M.toggleDebugOBB = toggleDebugOBB
 M.onExtensionLoaded = function()
-  log("I", "Loading Extension: ui loaded")
 end
  
 return M

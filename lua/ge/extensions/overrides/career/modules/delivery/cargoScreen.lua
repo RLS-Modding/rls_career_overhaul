@@ -1561,6 +1561,28 @@ local function commitDeliveryConfiguration()
   local spawnSteps = buildSpawnStepsForCommit()
   local hasVehicleOfferSpawnsFromSteps = spawnSteps and #spawnSteps > 0
 
+  local function hasLoanersMarkedForSpawning()
+    if not career_modules_loanerVehicles or not career_modules_loanerVehicles.formatLoanerOfferForUi then
+      return false
+    end
+    if not cargoScreenFacId then
+      return false
+    end
+    local fac = dGenerator.getFacilityById(cargoScreenFacId)
+    if not fac or not fac.hasLoanerSpots then
+      return false
+    end
+    local loanersFormatted = career_modules_loanerVehicles.formatLoanerOfferForUi(fac) or {}
+    for _, item in ipairs(loanersFormatted) do
+      if item.spawnWhenCommitingCargo then
+        return true
+      end
+    end
+    return false
+  end
+
+  local hasLoanersToSpawn = hasLoanersMarkedForSpawning()
+
   local parcelLoadQueue = {}
   local parcelLoadInProgress = false
 
@@ -1704,6 +1726,32 @@ local function commitDeliveryConfiguration()
       return true
     end))
 
+    table.insert(vehicleSpawnSequence, step.makeStepFadeFromBlack(0.4))
+
+    step.startStepSequence(vehicleSpawnSequence, function()
+      career_modules_loanerVehicles.spawnAllOffers()
+      applyValidDeferredCargo(deferredCargo)
+      deferredCargo = {} -- clear reference for GC
+      
+      local playerVehId = be:getPlayerVehicleID(0)
+      if playerVehId then
+        loadParcelsForVehicleGroup({playerVehId}, function()
+          vehicleSpawnInProgress = false
+          local postCommitTransientCargo = dParcelManager.getTransientMoveCargo()
+          pendingTransientMoves = #postCommitTransientCargo > 0
+          gameplay_markerInteraction.setForceReevaluateOpenPrompt()
+        end)
+      else
+        vehicleSpawnInProgress = false
+        local postCommitTransientCargo = dParcelManager.getTransientMoveCargo()
+        pendingTransientMoves = #postCommitTransientCargo > 0
+        gameplay_markerInteraction.setForceReevaluateOpenPrompt()
+      end
+    end)
+  elseif hasLoanersToSpawn then
+    vehicleSpawnInProgress = true
+    local vehicleSpawnSequence = {}
+    table.insert(vehicleSpawnSequence, step.makeStepFadeToBlack(0.4))
     table.insert(vehicleSpawnSequence, step.makeStepFadeFromBlack(0.4))
 
     step.startStepSequence(vehicleSpawnSequence, function()

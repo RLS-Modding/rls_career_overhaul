@@ -397,7 +397,6 @@ function M.repairAndRespawnDamagedItem(propId, zonesMod, contractsMod)
     group = group
   }
   
-  print(string.format("[Loading] Damaged item %s will be replaced in 15 seconds", entry.materialType))
   return true
 end
 
@@ -429,7 +428,6 @@ function M.processPendingRespawns(dt, zonesMod, contractsMod)
           end
           
           if not stock or stock.current <= 0 then
-            print(string.format("[Loading] No stock available to respawn %s, item deleted", respawn.materialType))
             table.remove(M.pendingRespawns, i)
           else
             local zone = group.loading
@@ -499,12 +497,18 @@ function M.processPendingRespawns(dt, zonesMod, contractsMod)
                 
                 local matConfig = M.getMaterialConfig(respawn.materialType)
                 if matConfig and matConfig.model then
-                  local newObj = core_vehicles.spawnNewVehicle(matConfig.model, {
+                  local spawnOptions = {
                     pos = spawnPos,
                     rot = quat(0, 0, 0, 1),
                     config = matConfig.config or "default",
                     autoEnterVehicle = false
-                  })
+                  }
+                  
+                  if #designatedSpawnLocs > 0 then
+                    spawnOptions.cling = true
+                  end
+                  
+                  local newObj = core_vehicles.spawnNewVehicle(matConfig.model, spawnOptions)
                   
                   if newObj then
                     local newId = newObj:getID()
@@ -522,9 +526,6 @@ function M.processPendingRespawns(dt, zonesMod, contractsMod)
                       
                       if stock.current > 0 then
                         stock.current = stock.current - 1
-                        print(string.format("[Loading] Replaced damaged %s with new item (consumed 1 stock, now %d/%d). Note: This is a replacement, not counted in spawnedPropCounts.", respawn.materialType, stock.current, stock.max))
-                      else
-                        print(string.format("[Loading] Replaced damaged %s but no stock available - item spawned without consuming stock", respawn.materialType))
                       end
                     end
                   end
@@ -581,7 +582,6 @@ function M.respawnMassMaterials(contractsMod, zonesMod, deliveredMassKg)
   if not stock then return end
   
   if stock.current <= 0 then
-    print(string.format("[Loading] Cannot respawn %.2f kg of %s - no stock available", deliveredMassKg, materialType))
     return
   end
   
@@ -593,37 +593,48 @@ function M.respawnMassMaterials(contractsMod, zonesMod, deliveredMassKg)
   local massPerPropKg = massPerProp
   
   local designatedSpawnLocs = group.materialSpawnLocations or {}
-  local spawnPos = nil
-  
-  if #designatedSpawnLocs > 0 then
-    spawnPos = vec3(designatedSpawnLocs[1].pos)
-  else
-    zonesMod.ensureGroupOffRoadCentroid(group, contractsMod.getCurrentGameHour)
-    local basePos = cache.offRoadCentroid
-    if not basePos then
-      basePos = zonesMod.findOffRoadCentroid(zone, 5, 1000)
-      if basePos then cache.offRoadCentroid = basePos end
-    end
-    if basePos then
-      spawnPos = basePos + vec3(0, 0, 0.2)
-    end
-  end
-  
-  if not spawnPos then
-    print(string.format("[Loading] Cannot respawn %s - no valid spawn location", materialType))
-    return
-  end
+  local useDesignatedSpawns = #designatedSpawnLocs > 0
+  local designatedSpawnIdx = 0
   
   local actuallySpawned = 0
   local totalMassSpawned = 0
   
   for _ = 1, propsToSpawn do
-    local obj = core_vehicles.spawnNewVehicle(matConfig.model, { 
-      config = matConfig.config, 
-      pos = spawnPos, 
-      rot = quatFromDir(vec3(0,1,0)), 
-      autoEnterVehicle = false 
-    })
+    local spawnPos = nil
+    
+    if useDesignatedSpawns then
+      designatedSpawnIdx = designatedSpawnIdx + 1
+      local spawnLocIdx = ((designatedSpawnIdx - 1) % #designatedSpawnLocs) + 1
+      local designatedLoc = designatedSpawnLocs[spawnLocIdx]
+      spawnPos = vec3(designatedLoc.pos)
+    else
+      zonesMod.ensureGroupOffRoadCentroid(group, contractsMod.getCurrentGameHour)
+      local basePos = cache.offRoadCentroid
+      if not basePos then
+        basePos = zonesMod.findOffRoadCentroid(zone, 5, 1000)
+        if basePos then cache.offRoadCentroid = basePos end
+      end
+      if basePos then
+        spawnPos = basePos + vec3(0, 0, 0.2)
+      end
+    end
+    
+    if not spawnPos then
+      break
+    end
+    
+    local spawnOptions = {
+      config = matConfig.config,
+      pos = spawnPos,
+      rot = quatFromDir(vec3(0,1,0)),
+      autoEnterVehicle = false
+    }
+    
+    if useDesignatedSpawns then
+      spawnOptions.cling = true
+    end
+    
+    local obj = core_vehicles.spawnNewVehicle(matConfig.model, spawnOptions)
     if obj then
       local propId = obj:getID()
       local actualObj = be:getObjectByID(propId)
@@ -647,9 +658,6 @@ function M.respawnMassMaterials(contractsMod, zonesMod, deliveredMassKg)
   
   if actuallySpawned > 0 then
     stock.current = stock.current - actualSpawnAmount
-    
-    print(string.format("[Loading] Respawned %d prop(s) of %s at spawn spot (%.2f kg each, %.2f kg total), consumed %.2f kg from stock (%.2f kg remaining)", 
-      actuallySpawned, materialType, massPerPropKg, totalMassSpawned, actualSpawnAmount, stock.current))
   end
 end
 
@@ -667,7 +675,6 @@ function M.spawnJobMaterials(contractsMod, zonesMod, playerPos)
   
   local contract = contractsMod.ContractSystem.activeContract
   if not contract or not contract.materialTypeName then
-    print("[Loading] Error: No active contract with materialTypeName for spawn")
     return
   end
   
@@ -689,7 +696,6 @@ function M.spawnJobMaterials(contractsMod, zonesMod, playerPos)
   end
   
   if #compatibleMaterials == 0 then
-    print(string.format("[Loading] No compatible materials found for typeName '%s' in zone '%s'", contractTypeName, group.secondaryTag))
     return
   end
   
@@ -787,8 +793,6 @@ function M.spawnJobMaterials(contractsMod, zonesMod, playerPos)
           propsToSpawn = math.min(maxPropsFromStock, materialMaxAllowed, globalMaxAllowed)
           
           if propsToSpawn > 0 then
-            print(string.format("[Loading] Mass material '%s': Stock %.2f kg, %.2f kg/prop, %d max from stock, %d alive, spawning %d", 
-              materialType, stock.current, massPerProp, maxPropsFromStock, currentlyAlive, propsToSpawn))
           end
         else
           local required = materialRequirements[materialType] or 0
@@ -813,8 +817,6 @@ function M.spawnJobMaterials(contractsMod, zonesMod, playerPos)
             propsToSpawn = math.min(totalStillNeeded, stock.current, materialMaxAllowed, globalMaxAllowed)
             
             if propsToSpawn > 0 then
-              print(string.format("[Loading] Item material '%s': Contract needs %d total, %d delivered, %d alive, %d still needed, spawning %d", 
-                materialType, required, delivered, currentlyAlive, totalStillNeeded, propsToSpawn))
             end
           end
         end
@@ -831,12 +833,10 @@ function M.spawnJobMaterials(contractsMod, zonesMod, playerPos)
                 local designatedLoc = designatedSpawnLocs[spawnLocIdx]
                 spawnPos = vec3(designatedLoc.pos)
               else
-                print(string.format("[Loading] Warning: No designated spawn locations available. Spawned %d/%d", actuallySpawned, propsToSpawn))
                 break
               end
             else
               if gridPosIdx > #gridPositions then
-                print(string.format("[Loading] Warning: Not enough valid grid positions for all props. Spawned %d/%d", actuallySpawned, propsToSpawn))
                 break
               end
               spawnPos = gridPositions[gridPosIdx]
@@ -845,12 +845,18 @@ function M.spawnJobMaterials(contractsMod, zonesMod, playerPos)
             
             if not spawnPos then break end
             
-            local obj = core_vehicles.spawnNewVehicle(matConfig.model, { 
-              config = matConfig.config, 
-              pos = spawnPos, 
-              rot = quatFromDir(vec3(0,1,0)), 
-              autoEnterVehicle = false 
-            })
+            local spawnOptions = {
+              config = matConfig.config,
+              pos = spawnPos,
+              rot = quatFromDir(vec3(0,1,0)),
+              autoEnterVehicle = false
+            }
+            
+            if useDesignatedSpawns then
+              spawnOptions.cling = true
+            end
+            
+            local obj = core_vehicles.spawnNewVehicle(matConfig.model, spawnOptions)
             if obj then
               local propId = obj:getID()
               local actualObj = be:getObjectByID(propId)
@@ -887,34 +893,15 @@ function M.spawnJobMaterials(contractsMod, zonesMod, playerPos)
           end
           
           if actuallySpawned ~= propsToSpawn then
-            print(string.format("[Loading] Material '%s': Attempted to spawn %d but only %d succeeded", materialType, propsToSpawn, actuallySpawned))
           end
           if isMassContract and actuallySpawned > 0 then
-            print(string.format("[Loading] Mass material '%s': Spawned %d props, %.2f kg total, %.2f kg stock remaining", 
-              materialType, actuallySpawned, totalMassSpawned, stock.current))
           end
         end
       end
-    else
-      print(string.format("[Loading] Material type '%s' not found in config; skipping.", materialType))
     end
   end
   
   if totalPropsSpawned > 0 then
-    print(string.format("[Loading] Spawned %d props for contract typeName '%s'", totalPropsSpawned, contractTypeName))
-    for matKey, count in pairs(cache.spawnedPropCounts or {}) do
-      local stock = cache.materialStocks[matKey]
-      if stock then
-        print(string.format("[Loading] Material '%s': %d spawned total, %d currently alive, %d stock remaining", matKey, count, 
-          (function()
-            local alive = 0
-            for _, entry in ipairs(M.propQueue) do
-              if entry.materialType == matKey then alive = alive + 1 end
-            end
-            return alive
-          end)(), stock.current))
-      end
-    end
   end
 end
 
@@ -972,7 +959,6 @@ function M.clearUnloadedProps(oldActiveGroup)
           local stock = stockInfo.materialStocks[materialType]
           if stock then
             stock.current = math.min(stock.current + count, stock.max)
-            print(string.format("[Loading] Returned %d undamaged %s to zone stock (now %d/%d)", count, materialType, stock.current, stock.max))
           end
         end
       end
@@ -1020,7 +1006,6 @@ function M.clearProps()
           local stock = stockInfo.materialStocks[materialType]
           if stock then
             stock.current = math.min(stock.current + count, stock.max)
-            print(string.format("[Loading] Returned %d undamaged %s to zone stock (now %d/%d)", count, materialType, stock.current, stock.max))
           end
         end
       end
@@ -1042,9 +1027,6 @@ function M.cleanupStalePropEntries()
         cleanedCount = cleanedCount + 1
       end
     end
-  end
-  if cleanedCount > 0 then
-    print(string.format("[Loading] Cleaned up %d stale prop entries", cleanedCount))
   end
   return cleanedCount
 end
@@ -1117,7 +1099,6 @@ function M.spawnTruckForGroup(group, materialType, targetPos)
   
   local matConfig = M.getMaterialConfig(materialType)
   if not matConfig or not matConfig.deliveryVehicle then
-    print(string.format("[Loading] No delivery vehicle configured for material '%s'.", materialType))
     return nil
   end
 
@@ -1323,13 +1304,10 @@ local function calculatePayloadForProps(propEntries, bedData, materialType, incl
         if nodesChecked > 0 then 
           local contribution = entryMass * (nodesInside / nodesChecked)
           totalMass = totalMass + contribution
-          print(string.format("[Loading] Prop %s: mass=%d, nodes=%d/%d (%.1f%%), contribution=%.0f kg", 
-            tostring(rockEntry.id), entryMass, nodesInside, nodesChecked, (nodesInside/nodesChecked)*100, contribution))
         end
       end
     end
   end
-  print(string.format("[Loading] Total payload mass: %.0f kg (%.1f tons)", totalMass, totalMass/1000))
   return totalMass
 end
 
@@ -1345,16 +1323,8 @@ function M.calculateTruckPayload()
     return 0 
   end
   
-  print(string.format("[Loading] calculateTruckPayload: propQueue has %d entries", #M.propQueue))
-  for i, entry in ipairs(M.propQueue) do
-    local obj = be:getObjectByID(entry.id)
-    print(string.format("[Loading]   Entry %d: id=%s, mass=%s, materialType=%s, objExists=%s", 
-      i, tostring(entry.id), tostring(entry.mass), tostring(entry.materialType), tostring(obj ~= nil)))
-  end
-
   local materialType = M.jobObjects.materialType
   if not materialType then
-    print("[Loading] Error: No material type in jobObjects")
     return 0
   end
   
@@ -1383,7 +1353,6 @@ function M.calculateUndamagedTruckPayload()
 
   local materialType = M.jobObjects.materialType
   if not materialType then
-    print("[Loading] Error: No material type in jobObjects")
     return 0
   end
   
@@ -1408,7 +1377,6 @@ end
 function M.calculateItemDamage()
   local materialType = M.jobObjects.materialType
   if not materialType then
-    print("[Loading] Error: No material type in jobObjects")
     return 0
   end
   local matConfig = M.getMaterialConfig(materialType)
@@ -1787,7 +1755,6 @@ function M.beginActiveContractTrip(contractsMod, zonesMod, uiMod)
   M.jobObjects.activeGroup = contract.group
   M.jobObjects.materialType = contract.group.materialType or contract.material
   if not M.jobObjects.materialType then
-    print("[Loading] Error: Contract missing material type")
     return false
   end
   M.jobObjects.deliveryDestination = contract.destination
@@ -1819,7 +1786,6 @@ function M.onTruckDamageCallback(damage)
 end
 
 M.onExtensionLoaded = function()
-  log("I", "Loading Extension: manager loaded")
 end
 M.loadingConfigLoaded = function()
   Config = gameplay_loading_config

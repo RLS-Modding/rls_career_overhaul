@@ -5,7 +5,7 @@
   "Country": "United States",
   "Derby Class": "Heavy Truck",
   "Description": "City bus also used on highways and safari trips. Name stands for Diesel, Turbocharged, 40ft frame, Low floor. Famous for breaking the biggest ramp jump world record, using the rocket-boosted Hero configuration.",
-  "Name": "busWork_base",
+  "Name": "Base City Bus",
   "Value":250000,
   "Population":500,
   "Weight":8640,

@@ -15,7 +15,7 @@
   ],
   "Commercial Class":"Class 6 Truck",
   "Config Type":"Service",
-  "Configuration":"busWork_short",
+  "Configuration":"Short School Bus",
   "Description":"Early type B school bus",
   "Drag Times":{
     "brakingG":0.4950833458,

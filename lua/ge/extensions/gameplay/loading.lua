@@ -31,6 +31,7 @@ local function getPhoneStateForUI()
       if zone.loading and zone.loading.center then
         local zoneCenter = vec3(zone.loading.center)
         local dist = (cachedPlayerPos - zoneCenter):length()
+        dist = math.floor(dist + 0.5)
         
         local zoneTag = zone.secondaryTag
         local facilityId = Zones.getFacilityIdForZone and Zones.getFacilityIdForZone(zoneTag) or nil
@@ -196,8 +197,8 @@ local function getPhoneStateForUI()
           local matConfig = Config.materials and Config.materials[matKey]
           local isMass = matConfig and matConfig.unitType == "mass"
           enrichedMaterialStocks[matKey] = {
-            current = isMass and (stockData.current / 1000) or stockData.current,
-            max = isMass and (stockData.max / 1000) or stockData.max,
+            current = isMass and math.floor((stockData.current / 1000) + 0.5) or math.floor(stockData.current + 0.5),
+            max = isMass and math.floor((stockData.max / 1000) + 0.5) or math.floor(stockData.max + 0.5),
             regenRate = stockData.regenRate,
             materialName = matConfig and matConfig.name or matKey,
             units = matConfig and matConfig.units or "items"
@@ -333,7 +334,6 @@ local function loadSubModules()
         extensions.unload(extName)
         setExtensionUnloadMode(extName, "manual")
         table.insert(loadedExtensions, extName)
-        log("I", "Loading extension: " .. extName)
       end
     end
   end
@@ -460,19 +460,15 @@ local uiCallbacks = {
   end,
   onSelectZone = function(zoneIndex)
     if not zoneIndex or zoneIndex <= 0 then
-      log("E", "onSelectZone: Invalid zoneIndex: " .. tostring(zoneIndex))
       return
     end
     if #compatibleZones == 0 then
-      log("E", "onSelectZone: compatibleZones is empty")
       local contract = Contracts.ContractSystem.activeContract
       if contract and contract.materialTypeName then
         compatibleZones = Zones.getZonesByTypeName(contract.materialTypeName) or {}
-        log("I", "onSelectZone: Repopulated compatibleZones, count: " .. #compatibleZones)
       end
     end
     if zoneIndex > #compatibleZones then
-      log("E", string.format("onSelectZone: zoneIndex %d exceeds compatibleZones count %d", zoneIndex, #compatibleZones))
       return
     end
     local selectedZone = compatibleZones[zoneIndex]
@@ -616,6 +612,14 @@ local function updatePlayerCache(dt)
   end
 end
 
+local function forceBrakesAndDisableAI(truckId, truck)
+  if not truck or not truckId then return end
+  truck:queueLuaCommand("ai.setMode('disabled')")
+  truck:queueLuaCommand("input.event('brake', 1, 1)")
+  truck:queueLuaCommand("input.event('throttle', 0, 1)")
+  truck:queueLuaCommand("input.event('parkingbrake', 1, 1)")
+end
+
 local function handleTruckNudging(truckId, truck, targetPos, arrivalDist, atTarget)
   if not truck or not targetPos or not Manager then return false end
   
@@ -689,6 +693,36 @@ local function onUpdate(dt)
   if not cachedPlayerVeh or not cachedPlayerPos then return end
   local playerVeh = cachedPlayerVeh
   local playerPos = cachedPlayerPos
+
+  if Manager.jobObjects.truckID then
+    local truck = be:getObjectByID(Manager.jobObjects.truckID)
+    if truck then
+      local arrivalDist = settingsTruck and settingsTruck.arrivalDistanceThreshold or 10.0
+      local truckPos = truck:getPosition()
+      local targetPos = nil
+      
+      if currentState == Config.STATE_DELIVERING then
+        targetPos = Manager.jobObjects.deliveryDestination and vec3(Manager.jobObjects.deliveryDestination.pos) or (Manager.jobObjects.activeGroup and Manager.jobObjects.activeGroup.destination and vec3(Manager.jobObjects.activeGroup.destination.pos))
+      elseif Manager.jobObjects.zoneSwapPending then
+        targetPos = Manager.jobObjects.deliveryDestination and vec3(Manager.jobObjects.deliveryDestination.pos) or (Manager.jobObjects.activeGroup and Manager.jobObjects.activeGroup.destination and vec3(Manager.jobObjects.activeGroup.destination.pos))
+      elseif currentState == Config.STATE_TRUCK_ARRIVING or currentState == Config.STATE_LOADING then
+        local group = Manager.jobObjects.activeGroup
+        if group then
+          local hasDesignatedStop = group.stopLocations and #group.stopLocations > 0
+          local routingTargetPos = Manager.getLoadingZoneTargetPos(group)
+          local stopLocationPos = hasDesignatedStop and group.stopLocations[1] and group.stopLocations[1].pos and vec3(group.stopLocations[1].pos) or nil
+          targetPos = stopLocationPos or routingTargetPos
+        end
+      end
+      
+      if targetPos then
+        local distToTarget = (truckPos - targetPos):length()
+        if distToTarget < arrivalDist then
+          forceBrakesAndDisableAI(Manager.jobObjects.truckID, truck)
+        end
+      end
+    end
+  end
 
   if not Zones.sitesData then
     Zones.sitesLoadTimer = Zones.sitesLoadTimer + dt
@@ -1494,7 +1528,6 @@ local function loadLoadingData()
   
   for facilityId, facilityData in pairs(saveData) do
     if not Config.facilities or not Config.facilities[facilityId] then
-      print(string.format("[Loading] Skipping save data for facility '%s' - facility no longer exists", facilityId))
       goto continue
     end
     
@@ -1557,8 +1590,6 @@ local function loadLoadingData()
               cache.spawnedPropCounts = zoneStockData.spawnedPropCounts
             end
           end
-        else
-          print(string.format("[Loading] Skipping zone stock for zone '%s' - does not belong to facility '%s'", zoneTag, facilityId))
         end
       end
     end
