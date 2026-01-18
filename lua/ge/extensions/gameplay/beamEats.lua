@@ -10,12 +10,12 @@ M.config = {
         
     },
 
-    secondsPerMile = 80, 
+    secondsPerMile = 85, 
 
     bonusPerSecondEarly = 100,
     penaltyPerSecondLate = 20,
     
-    distanceMultiplier = 4.5,
+    distanceMultiplier = 2.5,
     baseFareScale = 100,
     
     vehicleMultiplierMin = 0.1,
@@ -143,7 +143,7 @@ local function findRestaurants()
             for _, accessPoint in ipairs(fac.manualAccessPoints) do
                 if accessPoint.logisticTypesProvided then
                     for _, logisticType in ipairs(accessPoint.logisticTypesProvided) do
-                        if logisticType == "food" then
+                        if logisticType == "food" or logisticType == "takeout" then
                             isRestaurant = true
                             break
                         end
@@ -159,7 +159,7 @@ local function findRestaurants()
                 for _, accessPoint in ipairs(fac.manualAccessPoints) do
                     if accessPoint.logisticTypesProvided then
                         for _, logisticType in ipairs(accessPoint.logisticTypesProvided) do
-                            if logisticType == "food" then
+                            if logisticType == "food" or logisticType == "takeout" then
                                 table.insert(restaurantParkingSpotNames, accessPoint.psName)
 
                                 local sitesFile = fac.sitesFile

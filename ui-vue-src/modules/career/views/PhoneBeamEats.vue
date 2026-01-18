@@ -152,6 +152,8 @@ onUnmounted(() => {
 <style scoped lang="scss">
 .beameats-container {
     padding: 1em;
+    padding-top: 3em;
+    padding-bottom: 3em;
     height: 100%;
     display: flex;
     flex-direction: column;
