@@ -10,7 +10,7 @@ M.config = {
         
     },
 
-    secondsPerMile = 75, 
+    secondsPerMile = 80, 
 
     bonusPerSecondEarly = 100,
     penaltyPerSecondLate = 20,

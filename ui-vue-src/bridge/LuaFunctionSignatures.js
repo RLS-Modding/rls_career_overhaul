@@ -1428,6 +1428,12 @@ export default {
     isRepoVehicle: () => {}
   },
 
+  gameplay_beamEats: {
+    setAvailable: () => {},
+    stopBeamEatsJob: () => {},
+    requestBeamEatsState: () => {}
+  },
+
   overhaul_maps: {
     getOtherAvailableMaps: () => {},
     getMapsExcludingWestCoast: () => {},
