@@ -719,20 +719,20 @@ local function update(_, dt)
                 local destDist = (vehiclePos - currentOrder.destination.pos):length()
 
                 if destDist < 5 then
-    if vehicle:getVelocity():length() < config.stopVelocityThreshold then
-        dwellTimer = dwellTimer + dt
-        if dwellTimer < dwellDuration then
-            ui_message(string.format("Dropping off order... %0.1fs", dwellDuration - dwellTimer), 0.1, 'beamEats_dwell', 'timer')
-        else
-            dwellTimer = 0
-            completeDelivery()
-        end
-    else
-        dwellTimer = 0
-        ui_message("Stop to drop off order", 0.1, 'beamEats_dwell', 'info')
-    end
+                    if vehicle:getVelocity():length() < config.stopVelocityThreshold then
+                        dwellTimer = dwellTimer + dt
+                        if dwellTimer < dwellDuration then
+                            ui_message(string.format("Dropping off order... %0.1fs", dwellDuration - dwellTimer), 0.1, 'beamEats_dwell', 'timer')
+                        else
+                            dwellTimer = 0
+                            completeDelivery()
+                        end
+                    else
+                        dwellTimer = 0
+                        ui_message("Stop to drop off order", 0.1, 'beamEats_dwell', 'info')
+                    end
                 else
-                    dwellTimer = 0 
+                    dwellTimer = 0
                 end
             end
         end
