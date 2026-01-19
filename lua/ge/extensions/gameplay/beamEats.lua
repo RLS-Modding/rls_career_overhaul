@@ -67,8 +67,8 @@ local allDeliverySpots = nil
 local ratingSaveFile = "beamEatsRating.json"
 local playerRating = 0.0 
 local ratingCount = 0
+local ratingSum = 0
 
-local suggestedSpeed = 18 
 M.deliveryData = {}
 
 local function savePlayerRating(currentSavePath)
@@ -731,20 +731,20 @@ local function update(_, dt)
                 local destDist = (vehiclePos - currentOrder.destination.pos):length()
 
                 if destDist < 5 then
-    if vehicle:getVelocity():length() < config.stopVelocityThreshold then
-        dwellTimer = dwellTimer + dt
-        if dwellTimer < dwellDuration then
-            ui_message(string.format("Dropping off order... %0.1fs", dwellDuration - dwellTimer), 0.1, 'beamEats_dwell', 'timer')
-        else
-            dwellTimer = 0
-            completeDelivery()
-        end
-    else
-        dwellTimer = 0
-        ui_message("Stop to drop off order", 0.1, 'beamEats_dwell', 'info')
-    end
+                    if vehicle:getVelocity():length() < config.stopVelocityThreshold then
+                        dwellTimer = dwellTimer + dt
+                        if dwellTimer < dwellDuration then
+                            ui_message(string.format("Dropping off order... %0.1fs", dwellDuration - dwellTimer), 0.1, 'beamEats_dwell', 'timer')
+                        else
+                            dwellTimer = 0
+                            completeDelivery()
+                        end
+                    else
+                        dwellTimer = 0
+                        ui_message("Stop to drop off order", 0.1, 'beamEats_dwell', 'info')
+                    end
                 else
-                    dwellTimer = 0 
+                    dwellTimer = 0
                 end
             end
         end
@@ -805,7 +805,7 @@ local function update(_, dt)
             local minInterval = config.intervalMinRating.min + (config.intervalMaxRating.min - config.intervalMinRating.min) * t
             local maxInterval = config.intervalMinRating.max + (config.intervalMaxRating.max - config.intervalMinRating.max) * t
             
-            jobOfferInterval = math.random(minInterval, maxInterval)
+            jobOfferInterval = math.random(math.floor(minInterval), math.floor(maxInterval))
 
             local newOrder = generateOrder()
             if newOrder then
@@ -937,6 +937,7 @@ local function onExtensionLoaded()
     if be:getPlayerVehicle(0) then
         findRestaurants()
         findAllDeliveryParkingSpots()
+        loadPlayerRating()
     end
 end
 
