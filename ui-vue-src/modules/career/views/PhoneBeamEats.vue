@@ -206,14 +206,12 @@ const updateState = (data) => {
     playerRating.value = data.playerRating || '0.0'
 }
 
-onMounted(() => {
+onMounted(async () => {
     // Ensure the extension is loaded when the app opens
-    if (!lua.gameplay_beamEats) {
-        lua.extensions.load('gameplay_beamEats')
-    }
-
+    await lua.extensions.load('gameplay_beamEats')
+    
     events.on('updateBeamEatsState', updateState)
-    lua.gameplay_beamEats.requestBeamEatsState()
+    await lua.gameplay_beamEats.requestBeamEatsState()
 })
 
 onUnmounted(() => {
