@@ -44,6 +44,52 @@ local function convertFormat(path)
   end
 end
 
+local function hotSwapModule(extName, convertedPath, overridePath)
+  local existingModule = rawget(_G, extName)
+  if not existingModule or type(existingModule) ~= 'table' then
+    return false
+  end
+
+  if existingModule.rlsOverride then
+    return false
+  end
+
+  local success, overrideModule = pcall(require, overridePath)
+  if not success or type(overrideModule) ~= 'table' then
+    log('E', logTag, 'Failed to load override module: ' .. overridePath)
+    return false
+  end
+
+  if overrideModule == existingModule then
+    return false
+  end
+
+  overrideModule.rlsOverride = true
+  overrideModule.__extensionName__ = existingModule.__extensionName__ or extName
+  overrideModule.__extensionPath__ = existingModule.__extensionPath__ or convertedPath
+  overrideModule.__manuallyLoaded__ = existingModule.__manuallyLoaded__
+
+  rawset(_G, extName, overrideModule)
+  if extensions[extName] then
+    extensions[extName] = overrideModule
+  end
+
+  package.loaded[convertedPath] = overrideModule
+  local absolutePath = '/lua/ge/extensions/' .. convertedPath
+  package.loaded[absolutePath] = overrideModule
+
+  local overrideExtName = overridePath:gsub('lua%.ge%.extensions%.', ''):gsub('%.', '_')
+  if overrideExtName ~= extName and rawget(_G, overrideExtName) == overrideModule then
+    rawset(_G, overrideExtName, nil)
+    if extensions[overrideExtName] == overrideModule then
+      extensions[overrideExtName] = nil
+    end
+  end
+
+  log('I', logTag, 'Hot swapped module: ' .. extName)
+  return true
+end
+
 local function setOverride(originalPath, overridePath, overrideType)
   if not originalPath or not overridePath then
     return false
@@ -79,11 +125,26 @@ local function setOverride(originalPath, overridePath, overrideType)
       return nil
     end
 
+    if result and type(result) == 'table' then
+      result.rlsOverride = true
+    end
+
     return result
   end
 
   local absolutePath = '/lua/ge/extensions/' .. convertedPath
   package.preload[absolutePath] = package.preload[convertedPath]
+
+  if isExtensionType then
+    local extName = originalPath
+    local existingModule = rawget(_G, extName)
+    if existingModule and type(existingModule) == 'table' then
+      if not existingModule.rlsOverride then
+        dump(existingModule)
+        hotSwapModule(extName, convertedPath, overridePath)
+      end
+    end
+  end
 
   return true
 end
@@ -249,8 +310,6 @@ local function installSystem()
   if originalReload then
     extensions.reload = overrideReload
   end
-
-  setOverrideInstalled(true)
 
   local overridesDir = '/lua/ge/extensions/overrides/'
   local luaFiles = FS:findFiles(overridesDir, '*.lua', -1, true, false)

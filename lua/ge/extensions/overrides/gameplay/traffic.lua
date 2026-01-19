@@ -419,40 +419,39 @@ local function setTrafficVars(data, reset) -- sets various traffic variables
 
   vars = tableMerge(vars, data)
 
-  for i, id in ipairs(trafficAiVehsList) do
+  for i = #trafficAiVehsList, 1, -1 do
+    local id = trafficAiVehsList[i]
     local veh = traffic[id]
     if not veh then
-      trafficAiVehsList = table.remove(trafficAiVehsList, i)
-      goto continue    
-    end
+      table.remove(trafficAiVehsList, i)
+    else
+      if data.aiMode then
+        veh:setAiMode(data.aiMode)
+      end
+      if data.aiAware or data.speedLimit or data.baseAggression then
+        veh:setAiParameters(data)
+      end
+      if data.spawnValue then
+        veh.respawn.spawnValue = data.spawnValue
+        auxiliaryData.dynamicSpawnDist = 0 -- resets distance scattering
+      end
+      if data.spawnDirBias then
+        veh.respawn.spawnDirBias = data.spawnDirBias
+        auxiliaryData.dynamicSpawnDir = 0 -- resets direction scattering
+      end
 
-    if data.aiMode then
-      veh:setAiMode(data.aiMode)
-    end
-    if data.aiAware or data.speedLimit or data.baseAggression then
-      veh:setAiParameters(data)
-    end
-    if data.spawnValue then
-      veh.respawn.spawnValue = data.spawnValue
-      auxiliaryData.dynamicSpawnDist = 0 -- resets distance scattering
-    end
-    if data.spawnDirBias then
-      veh.respawn.spawnDirBias = data.spawnDirBias
-      auxiliaryData.dynamicSpawnDir = 0 -- resets direction scattering
-    end
-
-    if data.aiMode then
-      -- here is special logic that sets or unsets roles if a different AI mode is set
-      -- in other words, this enables modes such as 'flee' or 'chase' to work seamlessly for all vehicles
-      if data.aiMode == 'traffic' and veh.roleName == 'empty' then
-        veh:setRole(veh._tempRole) -- restores the previous role (or auto role if no previous role was set)
-        veh._tempRole = nil
-      elseif data.aiMode ~= 'traffic' and veh.roleName ~= 'empty' then
-        veh._tempRole = veh.roleName
-        veh:setRole('empty') -- prevents role logic from changing AI mode internally
+      if data.aiMode then
+        -- here is special logic that sets or unsets roles if a different AI mode is set
+        -- in other words, this enables modes such as 'flee' or 'chase' to work seamlessly for all vehicles
+        if data.aiMode == 'traffic' and veh.roleName == 'empty' then
+          veh:setRole(veh._tempRole) -- restores the previous role (or auto role if no previous role was set)
+          veh._tempRole = nil
+        elseif data.aiMode ~= 'traffic' and veh.roleName ~= 'empty' then
+          veh._tempRole = veh.roleName
+          veh:setRole('empty') -- prevents role logic from changing AI mode internally
+        end
       end
     end
-    ::continue::
   end
 
   if data.aiDebug then
