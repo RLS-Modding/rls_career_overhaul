@@ -13,6 +13,25 @@ local mountedRoot = false
 
 local ourMod = nil
 
+local function getExtensionsMetatable()
+  local mt = getmetatable(extensions)
+  if not mt then
+    mt = {}
+    setmetatable(extensions, mt)
+  end
+  return mt
+end
+
+local function isOverrideInstalled()
+  local mt = getExtensionsMetatable()
+  return mt._rlsOverrideInstalled == true
+end
+
+local function setOverrideInstalled(value)
+  local mt = getExtensionsMetatable()
+  mt._rlsOverrideInstalled = value
+end
+
 local function isExtensionFormat(path)
   return path:find('_') and not path:find('/')
 end
@@ -206,7 +225,12 @@ end
 
 local function installSystem()
   if originalLoad or originalReload or originalReloadUI then
-    log('E', logTag, 'Override system already installed')
+    log('E', logTag, 'Override system already installed (local state)')
+    return false
+  end
+
+  if isOverrideInstalled() then
+    log('I', logTag, 'Override system already active, skipping reinstall')
     return false
   end
 
@@ -225,6 +249,8 @@ local function installSystem()
   if originalReload then
     extensions.reload = overrideReload
   end
+
+  setOverrideInstalled(true)
 
   local overridesDir = '/lua/ge/extensions/overrides/'
   local luaFiles = FS:findFiles(overridesDir, '*.lua', -1, true, false)
@@ -293,18 +319,26 @@ local function handleMapOverrides(newMapsWithOverrides)
 end
 
 local function unloadOverrides()
-  if not originalLoad then
+  if not originalLoad and not isOverrideInstalled() then
     return false
   end
 
-  reloadUI = originalReloadUI
-  originalReloadUI = nil
+  if originalReloadUI then
+    reloadUI = originalReloadUI
+    originalReloadUI = nil
+  end
 
-  extensions.load = originalLoad
-  originalLoad = nil
+  if originalLoad then
+    extensions.load = originalLoad
+    originalLoad = nil
+  end
 
-  extensions.reload = originalReload
-  originalReload = nil
+  if originalReload then
+    extensions.reload = originalReload
+    originalReload = nil
+  end
+
+  setOverrideInstalled(false)
 
   local pathsToClear = {}
   for path, _ in pairs(overrides) do

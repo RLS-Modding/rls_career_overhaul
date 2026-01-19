@@ -476,9 +476,11 @@ local function calculateCapacity(vehicleId)
         vehicleId = be:getPlayerVehicle(0):getID()
     end
     if career_career.isActive() then
-        local inventoryId = career_modules_inventory.getInventoryIdFromVehicleId(vehicleId)
-        if not inventoryId then
-            return 0
+        if career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId then
+            local inventoryId = career_modules_inventory.getInventoryIdFromVehicleId(vehicleId)
+            if not inventoryId then
+                return 0
+            end
         end
     end
     local seatingCapacity = calculateSeatingCapacity()
@@ -661,6 +663,9 @@ end
 
 local function generateValueMultiplier()
     if not career_career or not career_career.isActive() then
+        return 1
+    end
+    if not career_modules_inventory or not career_modules_inventory.getInventoryIdFromVehicleId then
         return 1
     end
     local inventoryId = career_modules_inventory.getInventoryIdFromVehicleId(be:getPlayerVehicle(0):getID())
@@ -904,7 +909,9 @@ local function completeRide()
         tags = {"transport", "taxi"}
     }, true)
     core_groundMarkers.resetAll()
-    career_modules_inventory.addTaxiDropoff(career_modules_inventory.getInventoryIdFromVehicleId(be:getPlayerVehicleID(0)), currentFare.passengers)
+    if career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId and career_modules_inventory.addTaxiDropoff then
+        career_modules_inventory.addTaxiDropoff(career_modules_inventory.getInventoryIdFromVehicleId(be:getPlayerVehicleID(0)), currentFare.passengers)
+    end
     core_groundMarkers.resetAll()
 end
 
