@@ -793,7 +793,7 @@ local function update(_, dt)
             local minInterval = config.intervalMinRating.min + (config.intervalMaxRating.min - config.intervalMinRating.min) * t
             local maxInterval = config.intervalMinRating.max + (config.intervalMaxRating.max - config.intervalMinRating.max) * t
             
-            jobOfferInterval = math.random(minInterval, maxInterval)
+            jobOfferInterval = math.random(math.floor(minInterval), math.floor(maxInterval))
 
             local newOrder = generateOrder()
             if newOrder then
