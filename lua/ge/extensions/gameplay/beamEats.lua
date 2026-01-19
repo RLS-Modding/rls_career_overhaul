@@ -57,7 +57,7 @@ local updateTimer = 1
 local uiUpdateTimer = 0
 local jobOfferTimer = 0
 
-local jobOfferInterval = math.random(3, 8)
+local jobOfferInterval = math.random(config.intervalMinRating.min, config.intervalMinRating.max)
 
 local vehicleMultiplier = 0.1
 
@@ -606,7 +606,11 @@ local function dismissSummary()
     state = "ready"
     currentOrder = nil
     jobOfferTimer = 0
-    jobOfferInterval = math.random(2, 5) 
+    -- Set interval based on reputation instead of fixed random
+    local t = math.min(1.0, math.max(0.0, playerRating / 5.0))
+    local minInterval = config.intervalMinRating.min + (config.intervalMaxRating.min - config.intervalMinRating.min) * t
+    local maxInterval = config.intervalMinRating.max + (config.intervalMaxRating.max - config.intervalMinRating.max) * t
+    jobOfferInterval = math.random(minInterval, maxInterval)
     core_groundMarkers.resetAll()
     M.deliveryData = {}
     requestBeamEatsState()
@@ -619,7 +623,11 @@ local function rejectOrder()
     state = "ready"
     currentOrder = nil
     jobOfferTimer = 0
-    jobOfferInterval = math.random(3, 8)
+    -- Set interval based on reputation
+    local t = math.min(1.0, math.max(0.0, playerRating / 5.0))
+    local minInterval = config.intervalMinRating.min + (config.intervalMaxRating.min - config.intervalMinRating.min) * t
+    local maxInterval = config.intervalMinRating.max + (config.intervalMaxRating.max - config.intervalMinRating.max) * t
+    jobOfferInterval = math.random(minInterval, maxInterval)
     requestBeamEatsState()
 end
 
@@ -630,7 +638,11 @@ local function stopBeamEatsJob()
     end
     currentOrder = nil
     jobOfferTimer = 0
-    jobOfferInterval = math.random(3, 8)
+    -- Set interval based on reputation
+    local t = math.min(1.0, math.max(0.0, playerRating / 5.0))
+    local minInterval = config.intervalMinRating.min + (config.intervalMaxRating.min - config.intervalMinRating.min) * t
+    local maxInterval = config.intervalMinRating.max + (config.intervalMaxRating.max - config.intervalMinRating.max) * t
+    jobOfferInterval = math.random(minInterval, maxInterval)
     cumulativeReward = 0
     orderStreak = 0
     M.deliveryData = {}
@@ -884,7 +896,10 @@ local function onVehicleSwitched()
     end
     currentOrder = nil
     jobOfferTimer = 0
-    jobOfferInterval = math.random(10, 20)
+    local t = math.min(1.0, math.max(0.0, playerRating / 5.0))
+    local minInterval = config.intervalMinRating.min + (config.intervalMaxRating.min - config.intervalMinRating.min) * t
+    local maxInterval = config.intervalMinRating.max + (config.intervalMaxRating.max - config.intervalMinRating.max) * t
+    jobOfferInterval = math.random(minInterval, maxInterval)
     cumulativeReward = 0
     orderStreak = 0
 
