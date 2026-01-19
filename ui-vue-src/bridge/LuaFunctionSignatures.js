@@ -1431,7 +1431,10 @@ export default {
   gameplay_beamEats: {
     setAvailable: () => {},
     stopBeamEatsJob: () => {},
-    requestBeamEatsState: () => {}
+    requestBeamEatsState: () => {},
+    acceptOrder: () => {},
+    rejectOrder: () => {},
+    dismissSummary: () => {}
   },
 
   overhaul_maps: {

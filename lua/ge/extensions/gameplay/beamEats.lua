@@ -3,22 +3,35 @@ M.dependencies = {'gameplay_sites_sitesManager', 'freeroam_facilities', 'gamepla
 
 M.config = {
     -- Driving smoothness
-    roughEventThreshold = 1.6, 
+    roughEventThreshold = 1.2, 
     tipTiers = {
         { maxEvents = 0, percent = .75 },
         { maxEvents = 5, percent = 0.10 }
         
     },
 
-    secondsPerMile = 85, 
+    averageSpeedMPS = 18,
 
     bonusPerSecondEarly = 100,
-    penaltyPerSecondLate = 20,
+    penaltyPerSecondLate = 0,
+    onTimeBonusPercent = 0.20,
     
-    distanceMultiplier = 2.5,
-    baseFareScale = 100,
+    baseFarePerKm = 125,
+    zeroTipChance = 0.03,
+    stopVelocityThreshold = 0.5,
+    pickupDropoffDuration = 3.0,
     
-    vehicleMultiplierMin = 0.1,
+    streakMultiplierPerLevel = 0.05, -- % increase per streak
+    streakMultiplierMax = 1.0,       
+
+    -- Reputation Scaling
+    reputationPayMultiplierPerStar = 1.0, 
+    
+    -- Job Interval (seconds)
+    intervalMinRating = {min = 40, max = 60}, 
+    intervalMaxRating = {min = 1, max = 3},   
+    
+    ratingDampeningCount = 20,
 }
 
 local config = M.config
@@ -38,24 +51,64 @@ local currentOrder = nil
 local state = "start"
 local timer = 0
 local dwellTimer = 0
-local dwellDuration = 3.0 
+local dwellDuration = config.pickupDropoffDuration 
 
 local updateTimer = 1
 local uiUpdateTimer = 0
 local jobOfferTimer = 0
 
-local jobOfferInterval = math.random(5, 45)
+local jobOfferInterval = math.random(3, 8)
 
 local vehicleMultiplier = 0.1
 
--- Restaurant and parking spot data
 local restaurants = {}
--- local restaurantIds = {"turboBurger", "diner", "chinatownRestaurant", "greenPier"} -- Removed hardcoded list
 local allDeliverySpots = nil
 
-local distanceMultiplier = config.distanceMultiplier
+local ratingSaveFile = "beamEatsRating.json"
+local playerRating = 0.0 
+local ratingCount = 0
+
 local suggestedSpeed = 18 
 M.deliveryData = {}
+
+local function savePlayerRating(currentSavePath)
+    if not career_career or not career_career.isActive() then return end
+    if not currentSavePath then
+        local slot, path = career_saveSystem.getCurrentSaveSlot()
+        currentSavePath = path
+        if not currentSavePath then return end
+    end
+
+    local dirPath = currentSavePath .. "/career/rls_career"
+    if not FS:directoryExists(dirPath) then
+        FS:directoryCreate(dirPath)
+    end
+
+    local data = {
+        sum = ratingSum,
+        count = ratingCount,
+        average = playerRating
+    }
+    career_saveSystem.jsonWriteFileSafe(dirPath .. "/" .. ratingSaveFile, data, true)
+end
+
+local function loadPlayerRating()
+    if not career_career or not career_career.isActive() then return end
+    local slot, path = career_saveSystem.getCurrentSaveSlot()
+    if not path then return end
+    local filePath = path .. "/career/rls_career/" .. ratingSaveFile
+    local data = jsonReadFile(filePath) or {}
+    ratingSum = tonumber(data.sum or 0) or 0
+    ratingCount = tonumber(data.count or 0) or 0
+    
+    local virtualStartCount = config.ratingDampeningCount or 20
+    local virtualStartRating = 0.0
+    
+    local effectiveSum = ratingSum + (virtualStartCount * virtualStartRating)
+    local effectiveCount = ratingCount + virtualStartCount
+    
+    playerRating = math.max(0.0, math.min(5.0, effectiveSum / effectiveCount))
+end
 
 -- ================================
 -- FORWARD DECLARATIONS
@@ -65,9 +118,6 @@ local startDelivery
 
 -- ================================
 -- SENSOR DATA HANDLING
--- Requests and forwards vehicle sensor readings while an active delivery is in the "dropoff" state.
--- If there is no current order, the state is not "dropoff", or the player is not in a vehicle, the function does nothing.
--- Queues a vehicle-side Lua command to read sensor values and deliver them to gameplay_beamEats.receiveSensorData.
 local function updateSensorData()
     if not currentOrder or state ~= "dropoff" then
         return
@@ -123,9 +173,6 @@ end
 
 -- ================================
 -- RESTAURANT AND LOCATION MANAGEMENT
--- Scans game facilities for configured restaurant delivery providers and builds the module's restaurant pickup data.
--- Populates the local `restaurants` table with entries `{ id, name, pickupSpots }`, where each `pickupSpots` entry contains `pos`, `name`, `restaurantId`, and `restaurantName`.
--- Also sets `M.restaurantParkingSpotNames` to a list of discovered pickup spot names.
 local function findRestaurants()
     restaurants = {}
     local facilities = freeroam_facilities.getFacilitiesByType("deliveryProvider")
@@ -200,9 +247,6 @@ local function findRestaurants()
     M.restaurantParkingSpotNames = restaurantParkingSpotNames
 end
 
--- Scans level site files and populates `allDeliverySpots` with delivery parking spots available for deliveries.
--- Filters out parking spots that belong to restaurant pickup spots, excludes site files whose path contains "restaurants", and ignores spots missing a position.
--- Uses the current level sites files from `gameplay_sites_sitesManager`, falling back to the level "city" sites file if necessary.
 local function findAllDeliveryParkingSpots()
     local allSitesFiles = gameplay_sites_sitesManager.getCurrentLevelSitesFiles()
     if not allSitesFiles then
@@ -294,20 +338,26 @@ local function calculateDrivingDistance(startPos, endPos)
     local endRoad, _, endDist = map.findClosestRoad(endPos)
 
     if not startRoad or not endRoad then
-        return startPos:distance(endPos)
+        return startPos:distance(endPos) * 2.0
     end
 
     local path = map.getPath(startRoad, endRoad)
     if not path or #path == 0 then
-        return startPos:distance(endPos)
+        return startPos:distance(endPos) * 2.0
     end
 
     local totalDistance = 0
     local prevNodePos = startPos
+    local mapData = map.getMap()
+    
+    if not mapData or not mapData.nodes then
+        return startPos:distance(endPos) * 2.0
+    end
 
     for i = 1, #path do
-        local nodePos = map.getMap().nodes[path[i]].pos
-        if nodePos then
+        local node = mapData.nodes[path[i]]
+        if node then
+            local nodePos = node.pos
             totalDistance = totalDistance + prevNodePos:distance(nodePos)
             prevNodePos = nodePos
         end
@@ -318,9 +368,8 @@ local function calculateDrivingDistance(startPos, endPos)
     return totalDistance
 end
 
-local function calculateBaseFare(totalDistance, orderValueMultiplier)
-    local baseFare = config.baseFareScale * orderValueMultiplier * config.distanceMultiplier
-    baseFare = baseFare * (totalDistance / 1000)
+local function calculateBaseFare(totalDistance)
+    local baseFare = config.baseFarePerKm * (totalDistance / 1000)
 
     if career_career and career_career.isActive() and career_modules_hardcore and career_modules_hardcore.isHardcoreMode and
         career_modules_hardcore.isHardcoreMode() then
@@ -349,6 +398,10 @@ local function calculateTimeFactor()
 end
 
 local function calculateSmoothDrivingTip(baseFare, roughEvents)
+    if math.random() < config.zeroTipChance then
+        return 0
+    end
+
     for _, tier in ipairs(config.tipTiers) do
         if roughEvents <= tier.maxEvents then
             return baseFare * tier.percent
@@ -398,17 +451,16 @@ local function generateOrder()
 
     local valueMultiplier = generateValueMultiplier()
     
-    -- Calculate distances
     local distToPickup = calculateDrivingDistance(vehiclePos, pickupSpot.pos)
     local distDelivery = calculateDrivingDistance(pickupSpot.pos, deliverySpot.pos)
     local totalDistance = distToPickup + distDelivery -- Total trip distance
 
-    local baseFare = calculateBaseFare(totalDistance, valueMultiplier)
+    local baseFare = calculateBaseFare(totalDistance)
 
-    -- Calculate expected time: config.secondsPerMile per mile (based on total distance)
-    local metersToMiles = 0.000621371
-    local miles = totalDistance * metersToMiles
-    local expectedTime = miles * config.secondsPerMile
+    local repMultiplier = 1.0 + (playerRating * config.reputationPayMultiplierPerStar)
+    baseFare = baseFare * repMultiplier
+
+    local expectedTime = totalDistance / config.averageSpeedMPS
     expectedTime = math.max(expectedTime, 60) -- Minimum 60 seconds for the whole trip
 
     local order = {
@@ -428,6 +480,11 @@ local function generateOrder()
         startTime = nil
     }
 
+    order.totalPaymentDisplay = string.format("%.2f", baseFare) -- Estimated, without tips/bonuses
+    order.baseFareDisplay = string.format("%.2f", baseFare)
+    order.totalDistanceDisplay = string.format("%.2f", totalDistance / 1000)
+    order.expectedTimeDisplay = string.format("%d min %d sec", math.floor(expectedTime / 60), math.floor(expectedTime % 60))
+
     return order
 end
 
@@ -440,67 +497,61 @@ local function completeDelivery()
 
     local elapsedTime = timer - currentOrder.startTime
     local expectedTime = currentOrder.expectedTime
-    local timeDiff = expectedTime - elapsedTime -- Positive = Early, Negative = Late
+    local timeDiff = expectedTime - elapsedTime 
 
     local roughEvents = M.deliveryData.roughEvents or 0
     local baseFare = currentOrder.baseFare
     local smoothDrivingTip = calculateSmoothDrivingTip(baseFare, roughEvents)
     
     local timeBonus = 0
-    local timePenalty = 0
-
-    if timeDiff > 0 then
-        timeBonus = timeDiff * config.bonusPerSecondEarly
-    else
-        timePenalty = math.abs(timeDiff) * config.penaltyPerSecondLate
+    if timeDiff >= 0 then
+        timeBonus = baseFare * config.onTimeBonusPercent
     end
 
-    local finalPayment = math.max(0, baseFare + smoothDrivingTip + timeBonus - timePenalty)
+    local streakMultiplier = math.min(orderStreak * config.streakMultiplierPerLevel, config.streakMultiplierMax)
+    local streakBonus = baseFare * streakMultiplier
+
+    local totalTips = smoothDrivingTip + timeBonus
+
+    local finalPayment = baseFare + streakBonus + totalTips
     cumulativeReward = cumulativeReward + finalPayment
     orderStreak = orderStreak + 1
 
     currentOrder.totalPayment = finalPayment
     currentOrder.smoothDrivingTip = smoothDrivingTip
     currentOrder.timeBonus = timeBonus
-    currentOrder.timePenalty = timePenalty
     currentOrder.roughEvents = roughEvents
+    currentOrder.totalTips = totalTips
+    currentOrder.streakBonus = streakBonus
 
-    -- Display fields (string-formatted for UI)
+    local rating = 5.0
+    rating = rating - (roughEvents * 0.5)
+    if timeDiff < 0 then -- Late
+        rating = rating - 1.0
+    end
+    rating = math.max(1.0, math.min(5.0, rating)) -- Clamp between 1 and 5
+
+    ratingSum = ratingSum + rating
+    ratingCount = ratingCount + 1
+    
+    
+    local virtualStartCount = config.ratingDampeningCount or 20
+    local virtualStartRating = 0.0
+    
+    local effectiveSum = ratingSum + (virtualStartCount * virtualStartRating)
+    local effectiveCount = ratingCount + virtualStartCount
+    
+    playerRating = math.max(0.0, math.min(5.0, effectiveSum / effectiveCount))
+    
+    savePlayerRating()
+
     currentOrder.totalPaymentDisplay = string.format("%.2f", finalPayment)
     currentOrder.baseFareDisplay = string.format("%.2f", baseFare)
-    currentOrder.smoothDrivingTipDisplay = string.format("%.2f", smoothDrivingTip)
-    currentOrder.timeBonusDisplay = string.format("%.2f", timeBonus)
-    currentOrder.timePenaltyDisplay = string.format("%.2f", timePenalty)
+    currentOrder.totalTipsDisplay = string.format("%.2f", totalTips)
     currentOrder.totalDistanceDisplay = string.format("%.2f", currentOrder.totalDistance / 1000)
 
-    state = "ready" -- Loop missions: Go back to ready state immediately
-    jobOfferTimer = 0 -- Reset offer timer to start looking for new orders soon
-    jobOfferInterval = math.random(5, 10) -- Quick turnaround for next offer
+    state = "completed" 
 
-    -- if gameplay_phone and not gameplay_phone.isPhoneOpen() then
-    --     gameplay_phone.togglePhone("You completed a delivery! Open the phone to view your earnings.")
-    -- end
-
-    local msg = string.format("Delivery Complete!\n\nPAYMENT BREAKDOWN:\nBase Fare: $%s\nTip (Smoothness): +$%s\nTime Bonus: +$%s\nTime Penalty: -$%s\n\nTOTAL: $%s", 
-        currentOrder.baseFareDisplay, 
-        currentOrder.smoothDrivingTipDisplay,
-        currentOrder.timeBonusDisplay,
-        currentOrder.timePenaltyDisplay,
-        currentOrder.totalPaymentDisplay)
-    
-    if currentOrder.roughEvents > 0 then
-        msg = msg .. string.format("\n\n(Rough driving events detected: %d)", currentOrder.roughEvents)
-    end
-    
-    if timeBonus > 0 then
-        msg = msg .. string.format("\n(Arrived %0.1fs early!)", math.abs(timeDiff))
-    elseif timePenalty > 0 then
-        msg = msg .. string.format("\n(Arrived %0.1fs late!)", math.abs(timeDiff))
-    end
-
-    guihooks.trigger('toastrMsg', {type="success", title="BeamEats Earnings", msg=msg, config={time=15000}})
-
-    -- Clear Tasklist
     guihooks.trigger('ClearTasklist')
 
     local beamEatsDisabled, disabledReason = isBeamEatsDisabled()
@@ -517,8 +568,12 @@ local function completeDelivery()
     }
     guihooks.trigger('updateBeamEatsState', dataToSend)
 
-    local label = string.format("BeamEats delivery: $%s\nDistance: %skm | Tip: $%s", currentOrder.totalPaymentDisplay,
-        currentOrder.totalDistanceDisplay, currentOrder.smoothDrivingTipDisplay)
+    if gameplay_phone and not gameplay_phone.isPhoneOpen() then
+        gameplay_phone.togglePhone("Delivery complete! Open BeamEats to view earnings.")
+    end
+    
+    local label = string.format("BeamEats delivery: $%s\nDistance: %skm | Tips: $%s", currentOrder.totalPaymentDisplay,
+        currentOrder.totalDistanceDisplay, currentOrder.totalTipsDisplay)
 
     if not career_career or not career_career.isActive() then
         return
@@ -547,13 +602,24 @@ local function completeDelivery()
     M.deliveryData = {}
 end
 
+local function dismissSummary()
+    state = "ready"
+    currentOrder = nil
+    jobOfferTimer = 0
+    jobOfferInterval = math.random(2, 5) 
+    core_groundMarkers.resetAll()
+    M.deliveryData = {}
+    requestBeamEatsState()
+end
+
 -- ================================
 -- ORDER MANAGEMENT
+-- ================================
 local function rejectOrder()
     state = "ready"
     currentOrder = nil
     jobOfferTimer = 0
-    jobOfferInterval = math.random(5, 45)
+    jobOfferInterval = math.random(3, 8)
     requestBeamEatsState()
 end
 
@@ -564,12 +630,11 @@ local function stopBeamEatsJob()
     end
     currentOrder = nil
     jobOfferTimer = 0
-    jobOfferInterval = math.random(5, 45)
+    jobOfferInterval = math.random(3, 8)
     cumulativeReward = 0
     orderStreak = 0
     M.deliveryData = {}
-    guihooks.trigger('ClearTasklist') -- Clear UI on stop
-    requestBeamEatsState()
+    guihooks.trigger('ClearTasklist') 
 end
 
 local function setAvailable()
@@ -591,30 +656,27 @@ local function prepareBeamEatsJob(dt)
     local pickupDist = (vehiclePos - currentOrder.pickup.pos):length()
 
     if pickupDist < 5 then
-        -- Check if vehicle is stopped
-        if vehicle:getVelocity():length() < 0.1 then
-            dwellTimer = dwellTimer + dt
-            if dwellTimer < dwellDuration then
-                ui_message(string.format("Picking up order... %0.1fs", dwellDuration - dwellTimer), 0.1, 'beamEats_dwell', 'timer')
-                return
-            end
-        else
-            dwellTimer = 0
-            ui_message("Stop to pick up order", 1, 'beamEats_dwell', 'info')
+    if vehicle:getVelocity():length() < config.stopVelocityThreshold then
+        dwellTimer = dwellTimer + dt
+        if dwellTimer < dwellDuration then
+            ui_message(string.format("Picking up order... %0.1fs", dwellDuration - dwellTimer), 0.1, 'beamEats_dwell', 'timer')
             return
         end
+    else
+        dwellTimer = 0
+        ui_message("Stop to pick up order", 1, 'beamEats_dwell', 'info')
+        return
+    end
         
         dwellTimer = 0
         state = "dropoff"
-        -- currentOrder.startTime is NOT reset here, it continues from acceptance
-        
-        -- Reset sensor data strictly on pickup
+
         M.deliveryData = {
             roughEvents = 0
         }
         core_groundMarkers.setPath(currentOrder.destination.pos)
         
-        ui_message("Order picked up! Drive carefully!", 3, 'beamEats_main', 'check')
+        ui_message("Order picked up! Don't spill it!", 6, 'beamEats_main', 'check')
 
         local beamEatsDisabled, disabledReason = isBeamEatsDisabled()
         local effectiveState = beamEatsDisabled and "disabled" or state
@@ -657,27 +719,25 @@ local function update(_, dt)
                 local destDist = (vehiclePos - currentOrder.destination.pos):length()
 
                 if destDist < 5 then
-                    -- Check if vehicle is stopped
-                    if vehicle:getVelocity():length() < 0.1 then
-                        dwellTimer = dwellTimer + dt
-                        if dwellTimer < dwellDuration then
-                            ui_message(string.format("Dropping off order... %0.1fs", dwellDuration - dwellTimer), 0.1, 'beamEats_dwell', 'timer')
-                        else
-                            dwellTimer = 0
-                            completeDelivery()
-                        end
-                    else
-                        dwellTimer = 0
-                        ui_message("Stop to drop off order", 0.1, 'beamEats_dwell', 'info')
-                    end
+    if vehicle:getVelocity():length() < config.stopVelocityThreshold then
+        dwellTimer = dwellTimer + dt
+        if dwellTimer < dwellDuration then
+            ui_message(string.format("Dropping off order... %0.1fs", dwellDuration - dwellTimer), 0.1, 'beamEats_dwell', 'timer')
+        else
+            dwellTimer = 0
+            completeDelivery()
+        end
+    else
+        dwellTimer = 0
+        ui_message("Stop to drop off order", 0.1, 'beamEats_dwell', 'info')
+    end
                 else
-                    dwellTimer = 0 -- Reset if they drive away
+                    dwellTimer = 0 
                 end
             end
         end
 
-        -- Persistent UI: Tasklist Update (throttled)
-        if uiUpdateTimer >= 0.5 then -- Faster update rate for smoother timer
+        if uiUpdateTimer >= 0.5 then 
             uiUpdateTimer = 0
             local elapsedTime = timer - currentOrder.startTime
             local timeLeft = math.max(0, currentOrder.expectedTime - elapsedTime)
@@ -686,7 +746,6 @@ local function update(_, dt)
             
             local phaseLabel = (state == "pickup") and "Pickup at: " .. currentOrder.restaurant or "Deliver to: Customer"
             
-            -- Progress bar logic: Full at start, empty at 0
             local progressPercent = (timeLeft / totalTime) * 100
             if timeDiff < 0 then progressPercent = 0 end
 
@@ -695,7 +754,6 @@ local function update(_, dt)
                 timerText = string.format("LATE: %0.0fs", math.abs(timeDiff))
             end
 
-            -- Ensure header is set every frame to prevent other mods/game logic from clearing it
             guihooks.trigger('SetTasklistHeader', {label = "BeamEats Delivery"})
             
             guihooks.trigger('SetTasklistTask', {
@@ -729,18 +787,28 @@ local function update(_, dt)
 
         jobOfferTimer = jobOfferTimer + dt
         if jobOfferTimer >= jobOfferInterval then
+
+            local t = math.min(1.0, math.max(0.0, playerRating / 5.0))
+            
+            local minInterval = config.intervalMinRating.min + (config.intervalMaxRating.min - config.intervalMinRating.min) * t
+            local maxInterval = config.intervalMinRating.max + (config.intervalMaxRating.max - config.intervalMinRating.max) * t
+            
+            jobOfferInterval = math.random(minInterval, maxInterval)
+
             local newOrder = generateOrder()
             if newOrder then
-                startDelivery(newOrder)
+                currentOrder = newOrder
+                state = "incoming"
+                requestBeamEatsState()
 
-                local msg = string.format("New Order Assigned!\nPickup: %s\nPay: $%0.2f | Dist: %0.1fkm", 
+                local msg = string.format("New Order Available!\nPickup: %s\nBase Pay: $%0.2f | Dist: %0.1fkm", 
                     newOrder.restaurant, 
                     newOrder.baseFare, 
                     newOrder.totalDistance/1000)
                 guihooks.trigger('toastrMsg', {type="info", title="BeamEats Job", msg=msg, config={time=5000}})
             else
                 jobOfferTimer = 0
-                jobOfferInterval = math.random(5, 45)
+                jobOfferInterval = math.random(10, 20)
             end
         end
     end
@@ -748,6 +816,7 @@ end
 
 -- ================================
 -- STATE REQUEST
+-- ================================
 function requestBeamEatsState()
     local beamEatsDisabled, disabledReason = isBeamEatsDisabled()
     local effectiveState = beamEatsDisabled and "disabled" or state
@@ -759,13 +828,15 @@ function requestBeamEatsState()
         cumulativeReward = cumulativeReward,
         orderStreak = orderStreak,
         beamEatsDisabled = beamEatsDisabled,
-        disabledReason = disabledReason
+        disabledReason = disabledReason,
+        playerRating = string.format("%.1f", playerRating)
     }
     guihooks.trigger('updateBeamEatsState', dataToSend)
 end
 
 -- ================================
 -- DELIVERY START
+-- ================================
 function startDelivery(order)
     if not order then
         order = currentOrder
@@ -777,7 +848,7 @@ function startDelivery(order)
 
     state = "pickup"
     currentOrder = order
-    currentOrder.startTime = timer -- Start timer immediately upon acceptance
+    currentOrder.startTime = timer
     core_groundMarkers.setPath(order.pickup.pos)
 
     local beamEatsDisabled, disabledReason = isBeamEatsDisabled()
@@ -790,16 +861,19 @@ function startDelivery(order)
         cumulativeReward = cumulativeReward,
         orderStreak = orderStreak,
         beamEatsDisabled = beamEatsDisabled,
-        disabledReason = disabledReason
+        disabledReason = disabledReason,
+        playerRating = string.format("%.1f", playerRating)
     }
     guihooks.trigger('updateBeamEatsState', dataToSend)
 end
 
 -- ================================
 -- EVENT HANDLERS
+-- ================================
 local function onEnterVehicleFinished()
     findRestaurants()
     findAllDeliveryParkingSpots()
+    loadPlayerRating()
 end
 
 local function onVehicleSwitched()
@@ -810,7 +884,7 @@ local function onVehicleSwitched()
     end
     currentOrder = nil
     jobOfferTimer = 0
-    jobOfferInterval = math.random(5, 45)
+    jobOfferInterval = math.random(10, 20)
     cumulativeReward = 0
     orderStreak = 0
 
@@ -829,7 +903,8 @@ local function onVehicleSwitched()
         cumulativeReward = cumulativeReward,
         orderStreak = orderStreak,
         beamEatsDisabled = beamEatsDisabled,
-        disabledReason = disabledReason
+        disabledReason = disabledReason,
+        playerRating = string.format("%.1f", playerRating)
     }
     guihooks.trigger('updateBeamEatsState', dataToSend)
 end
@@ -840,12 +915,22 @@ end
 
 -- ================================
 -- MODULE LOADING
+-- ================================
 local function onExtensionLoaded()
     print("BeamEats module loaded")
+    
+    if be:getPlayerVehicle(0) then
+        findRestaurants()
+        findAllDeliveryParkingSpots()
+    end
 end
 
 local function isBeamEatsJobActive()
     return state ~= "start" and state ~= "disabled"
+end
+
+local function onSaveCurrentSaveSlot(currentSavePath)
+    savePlayerRating(currentSavePath)
 end
 
 -- ================================
@@ -855,6 +940,7 @@ M.onExtensionLoaded = onExtensionLoaded
 M.onEnterVehicleFinished = onEnterVehicleFinished
 M.onUpdate = update
 M.onVehicleSwitched = onVehicleSwitched
+M.onSaveCurrentSaveSlot = onSaveCurrentSaveSlot
 
 M.acceptOrder = startDelivery
 M.rejectOrder = rejectOrder
@@ -864,6 +950,7 @@ M.generateOrder = generateOrder
 M.requestBeamEatsState = requestBeamEatsState
 M.isBeamEatsJobActive = isBeamEatsJobActive
 
+M.dismissSummary = dismissSummary
 M.receiveSensorData = receiveSensorData
 
 return M
