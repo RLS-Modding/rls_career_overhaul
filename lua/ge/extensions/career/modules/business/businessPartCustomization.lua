@@ -1020,7 +1020,7 @@ local function installPartOnVehicle(businessId, vehicleId, partName, slotPath)
 end
 
 local function onPowerWeightReceived(requestId, power, weight, torqueData)
-  local businessId, vehicleId = requestId:match("^(.+)_(.+)_")
+  local businessId, vehicleId = requestId:match("^([^_]+)_(.+)_[^_]+$")
   if businessId and vehicleId and power and weight and weight > 0 then
     local numericVehicleId = tonumber(vehicleId)
     local result = {
