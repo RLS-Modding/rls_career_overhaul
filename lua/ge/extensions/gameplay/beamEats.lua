@@ -69,7 +69,6 @@ local playerRating = 0.0
 local ratingCount = 0
 local ratingSum = 0
 
-local suggestedSpeed = 18 
 M.deliveryData = {}
 
 local function savePlayerRating(currentSavePath)
