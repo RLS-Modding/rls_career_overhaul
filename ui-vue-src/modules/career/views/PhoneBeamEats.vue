@@ -198,12 +198,12 @@ const dismissSummary = () => {
 // Event Handling
 const updateState = (data) => {
     if (!data) return
-    state.value = data.state
-    currentOrder.value = data.currentOrder
-    cumulativeReward.value = data.cumulativeReward
-    orderStreak.value = data.orderStreak
-    disabledReason.value = data.disabledReason
-    playerRating.value = data.playerRating
+    state.value = data.state || 'start'
+    currentOrder.value = data.currentOrder || null
+    cumulativeReward.value = data.cumulativeReward || 0
+    orderStreak.value = data.orderStreak || 0
+    disabledReason.value = data.disabledReason || ''
+    playerRating.value = data.playerRating || '0.0'
 }
 
 onMounted(() => {
