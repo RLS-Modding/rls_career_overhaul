@@ -922,6 +922,7 @@ local function onExtensionLoaded()
     if be:getPlayerVehicle(0) then
         findRestaurants()
         findAllDeliveryParkingSpots()
+        loadPlayerRating()
     end
 end
 
