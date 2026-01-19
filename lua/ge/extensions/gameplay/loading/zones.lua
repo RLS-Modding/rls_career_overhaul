@@ -89,14 +89,12 @@ local function ensureGroupCache(group, getCurrentGameHour)
 
   -- No JSON config = No stock logic for this zone
   if not siteConfig then
-    print(string.format("[Loading] Zone '%s' has no JSON configuration; skipping stock system.", key))
     return nil
   end
 
   local materials = siteConfig.materials or {}
   
   if not materials or next(materials) == nil then
-    print(string.format("[Loading] Zone '%s' has no material data in JSON; skipping stock system.", key))
     return nil
   end
 
@@ -134,19 +132,6 @@ local function ensureGroupCache(group, getCurrentGameHour)
     name = siteConfig.name or key,
   }
   M.groupCache[key] = cache
-  
-  local stockSummary = {}
-  for matKey, stock in pairs(materialStocks) do
-    local matConfig = Config and Config.materials and Config.materials[matKey]
-    local isMass = matConfig and matConfig.unitType == "mass"
-    if isMass then
-      table.insert(stockSummary, string.format("%s: %.2f/%.2f kg", matKey, stock.current, stock.max))
-    else
-      table.insert(stockSummary, string.format("%s: %d/%d", matKey, stock.current, stock.max))
-    end
-  end
-  print(string.format("[Loading] Initialized stock for zone '%s' from JSON: %s", 
-    key, table.concat(stockSummary, ", ")))
   
   return cache
 end
@@ -187,16 +172,6 @@ local function updateZoneStocks(dt, getSimTime)
               local regenAmount = isMass and 1000 or 1
               stock.current = math.min(stock.max, stock.current + regenAmount)
               stock.nextRegenSimTime = currentSimTime + (3600 / stock.regenRate)
-              
-              if stock.current > oldStock then
-                if isMass then
-                  print(string.format("[Loading] Zone '%s' material '%s': Stock regenerated %.2f -> %.2f/%.2f kg (next regen in %.2f seconds)",
-                    group.secondaryTag, matKey, oldStock, stock.current, stock.max, 3600 / stock.regenRate))
-                else
-                  print(string.format("[Loading] Zone '%s' material '%s': Stock regenerated %d -> %d/%d (next regen in %.2f seconds)",
-                    group.secondaryTag, matKey, oldStock, stock.current, stock.max, 3600 / stock.regenRate))
-                end
-              end
             else
               stock.nextRegenSimTime = currentSimTime + (3600 / stock.regenRate)
             end
@@ -300,9 +275,7 @@ local function discoverGroups(sites)
           end
         end
         
-        if #materials == 0 then
-          print(string.format("[Loading] Zone '%s' has no material configuration in JSON and no material tags; skipping.", secondaryTag))
-        else
+        if #materials > 0 then
           local materialSpawnLocations = {}
           local stopLocations = {}
           local addedMaterialIds = {}
@@ -347,13 +320,6 @@ local function discoverGroups(sites)
             stopLocations = stopLocations
           })
           
-          local materialNames = {}
-          for _, matKey in ipairs(materials) do
-            local matConfig = Config.materials[matKey]
-            local matName = matConfig and matConfig.name or matKey
-            table.insert(materialNames, matName)
-          end
-          print(string.format("[Loading] Discovered zone '%s' with materials: %s", secondaryTag, table.concat(materialNames, ", ")))
         end
       end
     end
@@ -453,21 +419,6 @@ local function loadQuarrySites(getCurrentGameHour)
   M.availableGroups = discoverGroups(M.sitesData)
   
   buildMaterialZoneMap()
-  
-  print("[Loading] Sites loaded. Checking loading zones:")
-  if M.sitesData.tagsToZones and M.sitesData.tagsToZones.loading then
-    for i, zone in ipairs(M.sitesData.tagsToZones.loading) do
-      local tagStr = ""
-      if zone.customFields and zone.customFields.tags then
-        for tag, _ in pairs(zone.customFields.tags) do
-          tagStr = tagStr .. tostring(tag) .. ", "
-        end
-      end
-      print(string.format("  Zone %d: name=%s, tags=[%s]", i, zone.name or "?", tagStr))
-    end
-  else
-    print("  No loading zones found in tagsToZones!")
-  end
 
   if not M.groupCachePrecomputeQueued and #M.availableGroups > 0 then
     M.groupCachePrecomputeQueued = true
@@ -593,7 +544,6 @@ M.getZonesByTypeName = getZonesByTypeName
 M.getFacilityIdForZone = getFacilityIdForZone
 M.validateZoneBelongsToFacility = validateZoneBelongsToFacility
 M.onExtensionLoaded = function()
-  log("I", "Loading Extension: zones loaded")
 end
 M.loadingConfigLoaded = function()
   Config = gameplay_loading_config

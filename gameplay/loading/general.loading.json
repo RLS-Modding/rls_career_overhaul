@@ -74,7 +74,7 @@
             "reputationGain": 0.5,
             "deliveryVehicle": {
                 "model": "us_semi",
-                "config": "tc84s_dump",
+                "config": "tc83s_dump",
                 "bedSettings": "us_semi"
             },
             "tiers": {
