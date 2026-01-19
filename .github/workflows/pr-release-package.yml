@@ -116,17 +116,17 @@ jobs:
       - name: Move built UI to final location
         if: steps.filter.outputs.ui == 'true'
         run: |
-          mkdir -p ui/vue-dist
-          cp -r baseUI/dist/* ui/vue-dist/
+          mkdir -p ui/ui-vue/dist
+          cp -r baseUI/dist/* ui/ui-vue/dist/
 
       - name: Check for UI changes and commit
         if: steps.filter.outputs.ui == 'true'
         run: |
-          if ! git diff --quiet HEAD -- ui/vue-dist/ 2>/dev/null; then
+          if ! git diff --quiet HEAD -- ui/ui-vue/dist/ 2>/dev/null; then
             echo "UI changes detected, committing..."
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add --force ui/vue-dist/
+            git add --force ui/ui-vue/dist/
             git commit -m "chore: update built UI files"
             git push origin HEAD:"$HEAD_REF"
           else
