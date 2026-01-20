@@ -65,7 +65,7 @@ local updateTimer = 1
 local uiUpdateTimer = 0
 local jobOfferTimer = 0
 
-local jobOfferInterval
+local jobOfferInterval = 60
 
 local vehicleMultiplier = 0.1
 
@@ -94,8 +94,6 @@ local function calculateJobOfferInterval()
     
     return math.random(floorMin, floorMax)
 end
-
-jobOfferInterval = calculateJobOfferInterval()
 
 local function savePlayerRating(currentSavePath)
     if not career_career or not career_career.isActive() then return end
@@ -1147,6 +1145,7 @@ local function onExtensionLoaded()
             findRestaurants()
             findAllDeliveryParkingSpots()
             loadPlayerRating()
+            jobOfferInterval = calculateJobOfferInterval()
         end)
         if not status then
             log('E', 'beamEats', "Error initializing BeamEats: " .. tostring(err))
