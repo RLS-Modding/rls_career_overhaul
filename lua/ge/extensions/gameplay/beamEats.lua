@@ -1140,7 +1140,7 @@ local function onVehicleSwitched()
     local t = math.min(1.0, math.max(0.0, playerRating / 5.0))
     local minInterval = config.intervalMinRating.min + (config.intervalMaxRating.min - config.intervalMinRating.min) * t
     local maxInterval = config.intervalMinRating.max + (config.intervalMaxRating.max - config.intervalMinRating.max) * t
-    jobOfferInterval = math.random(minInterval, maxInterval)
+    jobOfferInterval = math.random(math.floor(minInterval), math.floor(maxInterval))
     cumulativeReward = 0
     orderStreak = 0
 
