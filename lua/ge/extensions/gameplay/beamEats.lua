@@ -65,7 +65,7 @@ local updateTimer = 1
 local uiUpdateTimer = 0
 local jobOfferTimer = 0
 
-local jobOfferInterval = calculateJobOfferInterval()
+local jobOfferInterval
 
 local vehicleMultiplier = 0.1
 
@@ -94,6 +94,8 @@ local function calculateJobOfferInterval()
     
     return math.random(floorMin, floorMax)
 end
+
+jobOfferInterval = calculateJobOfferInterval()
 
 local function savePlayerRating(currentSavePath)
     if not career_career or not career_career.isActive() then return end
