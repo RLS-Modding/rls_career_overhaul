@@ -762,6 +762,7 @@ local function completeDelivery()
     guihooks.trigger('ClearTasklist')
     guihooks.trigger('SetTasklistHeader', {label = "BeamEats Delivery Complete"})
     
+    local xpMsg = ""
     if streakXP > 0 then
         -- Add to current order data for phone display
         currentOrder.streakXP = streakXP
