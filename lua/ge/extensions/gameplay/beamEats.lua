@@ -65,7 +65,7 @@ local updateTimer = 1
 local uiUpdateTimer = 0
 local jobOfferTimer = 0
 
-local jobOfferInterval = math.random(config.intervalMinRating.min, config.intervalMinRating.max)
+local jobOfferInterval = calculateJobOfferInterval()
 
 local vehicleMultiplier = 0.1
 
@@ -79,6 +79,21 @@ local ratingCount = 0
 local ratingSum = 0
 
 M.deliveryData = {}
+
+local function calculateJobOfferInterval()
+    -- Calculate interval based on player rating
+    local t = math.min(1.0, math.max(0.0, playerRating / 5.0))
+    local minInterval = config.intervalMinRating.min + (config.intervalMaxRating.min - config.intervalMinRating.min) * t
+    local maxInterval = config.intervalMinRating.max + (config.intervalMaxRating.max - config.intervalMinRating.max) * t
+    
+    local floorMin = math.floor(minInterval)
+    local floorMax = math.floor(maxInterval)
+    
+    -- Ensure floorMax >= floorMin to avoid math.random error
+    if floorMax < floorMin then floorMax = floorMin end
+    
+    return math.random(floorMin, floorMax)
+end
 
 local function savePlayerRating(currentSavePath)
     if not career_career or not career_career.isActive() then return end
@@ -176,7 +191,7 @@ local function buildBeamEatsStateData()
         vehicleMultiplier = string.format("%.1f", vehicleMultiplier),
         cumulativeReward = cumulativeReward,
         orderStreak = orderStreak,
-        streakXP = streakXP,
+        streakXP = currentOrder and currentOrder.streakXP or streakXP, -- Use saved value from order if available
         beamEatsDisabled = beamEatsDisabled,
         disabledReason = disabledReason,
         playerRating = ratingStr
@@ -318,39 +333,6 @@ local function findRestaurants()
     end
 
     M.restaurantParkingSpotNames = restaurantParkingSpotNames
-end
-
-local function getDeliveryLocationName(spot)
-    if not spot then return "Customer" end
-
-    -- Try to find zone name
-    local zoneName = nil
-    -- Since we don't have direct access to zone info from the spot object easily without more heavy logic,
-    -- we will try to infer it or use site data if we can efficiently. 
-    -- However, sites manager doesn't easily expose "get zone for spot". 
-    -- Let's try to use the spot name first as requested if no zone is found.
-    
-    -- Actually, we can try to look up the site file name or something if we stored it?
-    -- findAllDeliveryParkingSpots doesn't store the site info on the spot object currently.
-    
-    -- Let's update findAllDeliveryParkingSpots to store zone/site info if possible.
-    -- But for now, let's implement the fallback logic.
-    
-    -- 1. Zone Name (Not easily available yet)
-    
-    -- 2. Spot Name
-    local spotName = spot.name
-    
-    if spotName then
-        -- 3. Fallback if "parking" is in the name
-        if string.find(string.lower(spotName), "parking") then
-            return "Customer"
-        else
-            return spotName
-        end
-    end
-
-    return "Customer"
 end
 
 local function findAllDeliveryParkingSpots()
@@ -520,7 +502,12 @@ local function calculateSmoothDrivingTip(baseFare, roughEvents)
         return baseFare
     end
 
-    for _, tier in ipairs(config.tipTiers) do
+    -- Create a sorted local copy of tipTiers to avoid ordering issues
+    local tiers = {}
+    for _, t in ipairs(config.tipTiers) do table.insert(tiers, t) end
+    table.sort(tiers, function(a, b) return a.maxEvents < b.maxEvents end)
+
+    for _, tier in ipairs(tiers) do
         if roughEvents <= tier.maxEvents then
             return baseFare * tier.percent
         end
@@ -583,7 +570,6 @@ local function generateOrder()
     local restaurant = restaurants[math.random(#restaurants)]
     local pickupSpot = restaurant.pickupSpots[math.random(#restaurant.pickupSpots)]
 
-    local deliverySpots = {}
     local minDistance = 600
     
     local maxDistance = config.baseDeliveryRadius + (math.floor(playerRating / config.radiusStepRatingInterval) * config.radiusStep)
@@ -632,8 +618,8 @@ local function generateOrder()
         return nil
     end
 
-    local valueMultiplier = generateValueMultiplier()
-    
+    generateValueMultiplier()
+
     local distToPickup = calculateDrivingDistance(vehiclePos, pickupSpot.pos)
     -- Use the pre-calculated delivery distance if available, otherwise calculate it (should cover edge cases)
     local distDelivery = validDistDelivery or calculateDrivingDistance(pickupSpot.pos, deliverySpot.pos)
@@ -714,7 +700,7 @@ local function completeDelivery()
         local secondsLate = math.abs(timeDiff)
         local totalPenaltyPercent = 0
         
-        for i = 1, math.ceil(secondsLate) do
+        for _ = 1, math.ceil(secondsLate) do
              totalPenaltyPercent = totalPenaltyPercent + (math.random() * penaltyPerSecond)
         end
         
@@ -776,8 +762,9 @@ local function completeDelivery()
     guihooks.trigger('ClearTasklist')
     guihooks.trigger('SetTasklistHeader', {label = "BeamEats Delivery Complete"})
     
-    local xpMsg = ""
     if streakXP > 0 then
+        -- Add to current order data for phone display
+        currentOrder.streakXP = streakXP
         xpMsg = string.format(" | Logistics XP: +%d", streakXP)
     end
     
@@ -856,11 +843,7 @@ local function dismissSummary()
     state = "ready"
     currentOrder = nil
     jobOfferTimer = 0
-    -- Set interval based on reputation instead of fixed random
-    local t = math.min(1.0, math.max(0.0, playerRating / 5.0))
-    local minInterval = config.intervalMinRating.min + (config.intervalMaxRating.min - config.intervalMinRating.min) * t
-    local maxInterval = config.intervalMinRating.max + (config.intervalMaxRating.max - config.intervalMinRating.max) * t
-    jobOfferInterval = math.random(minInterval, maxInterval)
+    jobOfferInterval = calculateJobOfferInterval()
     core_groundMarkers.resetAll()
     M.deliveryData = {}
     requestBeamEatsState()
@@ -873,11 +856,7 @@ local function rejectOrder()
     state = "ready"
     currentOrder = nil
     jobOfferTimer = 0
-    -- Set interval based on reputation
-    local t = math.min(1.0, math.max(0.0, playerRating / 5.0))
-    local minInterval = config.intervalMinRating.min + (config.intervalMaxRating.min - config.intervalMinRating.min) * t
-    local maxInterval = config.intervalMinRating.max + (config.intervalMaxRating.max - config.intervalMinRating.max) * t
-    jobOfferInterval = math.random(minInterval, maxInterval)
+    jobOfferInterval = calculateJobOfferInterval()
     requestBeamEatsState()
 end
 
@@ -888,11 +867,7 @@ local function stopBeamEatsJob()
     end
     currentOrder = nil
     jobOfferTimer = 0
-    -- Set interval based on reputation
-    local t = math.min(1.0, math.max(0.0, playerRating / 5.0))
-    local minInterval = config.intervalMinRating.min + (config.intervalMaxRating.min - config.intervalMinRating.min) * t
-    local maxInterval = config.intervalMinRating.max + (config.intervalMaxRating.max - config.intervalMinRating.max) * t
-    jobOfferInterval = math.random(minInterval, maxInterval)
+    jobOfferInterval = calculateJobOfferInterval()
     cumulativeReward = 0
     orderStreak = 0
     M.deliveryData = {}
@@ -1048,12 +1023,7 @@ local function update(_, dt)
         jobOfferTimer = jobOfferTimer + dt
         if jobOfferTimer >= jobOfferInterval then
 
-            local t = math.min(1.0, math.max(0.0, playerRating / 5.0))
-            
-            local minInterval = config.intervalMinRating.min + (config.intervalMaxRating.min - config.intervalMinRating.min) * t
-            local maxInterval = config.intervalMinRating.max + (config.intervalMaxRating.max - config.intervalMinRating.max) * t
-            
-            jobOfferInterval = math.random(math.floor(minInterval), math.floor(maxInterval))
+            jobOfferInterval = calculateJobOfferInterval()
 
             local newOrder = generateOrder()
             if newOrder then
@@ -1137,10 +1107,7 @@ local function onVehicleSwitched()
     end
     currentOrder = nil
     jobOfferTimer = 0
-    local t = math.min(1.0, math.max(0.0, playerRating / 5.0))
-    local minInterval = config.intervalMinRating.min + (config.intervalMaxRating.min - config.intervalMinRating.min) * t
-    local maxInterval = config.intervalMinRating.max + (config.intervalMaxRating.max - config.intervalMinRating.max) * t
-    jobOfferInterval = math.random(minInterval, maxInterval)
+    jobOfferInterval = calculateJobOfferInterval()
     cumulativeReward = 0
     orderStreak = 0
 
