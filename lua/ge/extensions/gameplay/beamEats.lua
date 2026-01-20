@@ -354,16 +354,25 @@ local function calculateDrivingDistance(startPos, endPos)
         return startPos:distance(endPos) * 2.0
     end
 
+    local lastRoadNode = nil
     for i = 1, #path do
         local node = mapData.nodes[path[i]]
         if node then
             local nodePos = node.pos
-            totalDistance = totalDistance + prevNodePos:distance(nodePos)
+            if prevNodePos then
+                totalDistance = totalDistance + prevNodePos:distance(nodePos)
+            end
             prevNodePos = nodePos
+            lastRoadNode = nodePos
         end
     end
 
-    totalDistance = totalDistance + prevNodePos:distance(endPos)
+    -- Add distance from last path node to destination
+    if lastRoadNode then
+        totalDistance = totalDistance + lastRoadNode:distance(endPos)
+    else
+        totalDistance = totalDistance + prevNodePos:distance(endPos)
+    end
 
     return totalDistance
 end
