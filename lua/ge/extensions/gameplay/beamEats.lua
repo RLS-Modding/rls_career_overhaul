@@ -878,10 +878,10 @@ end
 local function setAvailable()
     -- Ensure initialization if it failed/was skipped during spawn
     if #restaurants == 0 then
-        findRestaurants()
+        pcall(findRestaurants)
     end
     if not allDeliverySpots or not allDeliverySpots.objects or #allDeliverySpots.objects == 0 then
-        findAllDeliveryParkingSpots()
+        pcall(findAllDeliveryParkingSpots)
     end
 
     state = "ready"
@@ -1140,9 +1140,15 @@ local function onExtensionLoaded()
     print("BeamEats module loaded")
     
     if be:getPlayerVehicle(0) then
-        findRestaurants()
-        findAllDeliveryParkingSpots()
-        loadPlayerRating()
+        -- Use pcall to prevent extension load failure if initialization fails
+        local status, err = pcall(function()
+            findRestaurants()
+            findAllDeliveryParkingSpots()
+            loadPlayerRating()
+        end)
+        if not status then
+            log('E', 'beamEats', "Error initializing BeamEats: " .. tostring(err))
+        end
     end
 end
 
