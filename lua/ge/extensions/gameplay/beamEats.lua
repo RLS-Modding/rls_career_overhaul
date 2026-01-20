@@ -6,11 +6,12 @@ M.config = {
     roughEventThreshold = 1.2, 
     tipTiers = {
         { maxEvents = 0, percent = .75 },
-        { maxEvents = 5, percent = 0.10 }
-        
+        { maxEvents = 5, percent = 0.50 },
+        { maxEvents = 10, percent = 0.25 },
+        { maxEvents = 20, percent = 0.10 }
     },
 
-    averageSpeedMPS = 18,
+    averageSpeedMPS = 16,
 
     bonusPerSecondEarly = 100,
     penaltyPerSecondLate = 0,
@@ -18,8 +19,10 @@ M.config = {
     
     baseFarePerKm = 125,
     zeroTipChance = 0.03,
+    hugeTipChance = 0.08,
     stopVelocityThreshold = 0.5,
     pickupDropoffDuration = 3.0,
+    pickupDropoffTimeBuffer = 6, -- Seconds added to expected time for pickup/dropoff actions
     
     streakMultiplierPerLevel = 0.05, -- % increase per streak
     streakMultiplierMax = 1.0,       
@@ -32,6 +35,11 @@ M.config = {
     intervalMaxRating = {min = 1, max = 3},   
     
     ratingDampeningCount = 20,
+
+    -- Radius Scaling
+    baseDeliveryRadius = 1000, -- meters at 0 stars
+    radiusStep = 100, -- meters increase per ratingStep
+    radiusStepRatingInterval = 0.3, -- rating interval for radius increase
 }
 
 local config = M.config
@@ -63,6 +71,7 @@ local vehicleMultiplier = 0.1
 
 local restaurants = {}
 local allDeliverySpots = nil
+local lastRatingDelta = nil
 
 local ratingSaveFile = "beamEatsRating.json"
 local playerRating = 0.0 
@@ -74,7 +83,7 @@ M.deliveryData = {}
 local function savePlayerRating(currentSavePath)
     if not career_career or not career_career.isActive() then return end
     if not currentSavePath then
-        local slot, path = career_saveSystem.getCurrentSaveSlot()
+        local _, path = career_saveSystem.getCurrentSaveSlot()
         currentSavePath = path
         if not currentSavePath then return end
     end
@@ -94,7 +103,7 @@ end
 
 local function loadPlayerRating()
     if not career_career or not career_career.isActive() then return end
-    local slot, path = career_saveSystem.getCurrentSaveSlot()
+    local _, path = career_saveSystem.getCurrentSaveSlot()
     if not path then return end
     local filePath = path .. "/career/rls_career/" .. ratingSaveFile
     local data = jsonReadFile(filePath) or {}
@@ -108,6 +117,70 @@ local function loadPlayerRating()
     local effectiveCount = ratingCount + virtualStartCount
     
     playerRating = math.max(0.0, math.min(5.0, effectiveSum / effectiveCount))
+end
+
+local function isBeamEatsDisabled()
+    local disabled = false
+    local reason = ""
+
+    if gameplay_walk and gameplay_walk.isWalking() then
+        disabled = true
+        reason = "BeamEats is not available while walking"
+        return disabled, reason
+    end
+
+    if career_economyAdjuster then
+        local beamEatsMultiplier = career_economyAdjuster.getSectionMultiplier("beamEats") or 1.0
+        if beamEatsMultiplier == 0 then
+            disabled = true
+            reason = "BeamEats multiplier is set to 0"
+        end
+    end
+
+    return disabled, reason
+end
+
+-- ================================
+-- HELPER FUNCTIONS
+-- ================================
+local function buildBeamEatsStateData()
+    local beamEatsDisabled, disabledReason = isBeamEatsDisabled()
+    local effectiveState = beamEatsDisabled and "disabled" or state
+
+    local ratingStr = string.format("%.1f", playerRating)
+    if state == "completed" and lastRatingDelta then
+        -- Force a small epsilon check or direct formatting to see if it's truly 0
+        if math.abs(lastRatingDelta) < 0.005 then
+             ratingStr = string.format("%.2f (0.00)", playerRating)
+        else
+             ratingStr = string.format("%.2f (%+.2f)", playerRating, lastRatingDelta)
+        end
+    end
+
+    local streakXP = 0
+    if orderStreak <= 5 then streakXP = 1
+    elseif orderStreak <= 15 then streakXP = 2
+    elseif orderStreak <= 20 then streakXP = 3
+    elseif orderStreak <= 30 then streakXP = 4
+    elseif orderStreak <= 40 then streakXP = 5
+    elseif orderStreak <= 45 then streakXP = 7
+    else streakXP = 10
+    end
+    
+    -- Debug print to verify calculation
+    -- print(string.format("BeamEats Debug: Streak=%d, XP=%d", orderStreak, streakXP))
+
+    return {
+        state = effectiveState,
+        currentOrder = currentOrder,
+        vehicleMultiplier = string.format("%.1f", vehicleMultiplier),
+        cumulativeReward = cumulativeReward,
+        orderStreak = orderStreak,
+        streakXP = streakXP,
+        beamEatsDisabled = beamEatsDisabled,
+        disabledReason = disabledReason,
+        playerRating = ratingStr
+    }
 end
 
 -- ================================
@@ -247,6 +320,39 @@ local function findRestaurants()
     M.restaurantParkingSpotNames = restaurantParkingSpotNames
 end
 
+local function getDeliveryLocationName(spot)
+    if not spot then return "Customer" end
+
+    -- Try to find zone name
+    local zoneName = nil
+    -- Since we don't have direct access to zone info from the spot object easily without more heavy logic,
+    -- we will try to infer it or use site data if we can efficiently. 
+    -- However, sites manager doesn't easily expose "get zone for spot". 
+    -- Let's try to use the spot name first as requested if no zone is found.
+    
+    -- Actually, we can try to look up the site file name or something if we stored it?
+    -- findAllDeliveryParkingSpots doesn't store the site info on the spot object currently.
+    
+    -- Let's update findAllDeliveryParkingSpots to store zone/site info if possible.
+    -- But for now, let's implement the fallback logic.
+    
+    -- 1. Zone Name (Not easily available yet)
+    
+    -- 2. Spot Name
+    local spotName = spot.name
+    
+    if spotName then
+        -- 3. Fallback if "parking" is in the name
+        if string.find(string.lower(spotName), "parking") then
+            return "Customer"
+        else
+            return spotName
+        end
+    end
+
+    return "Customer"
+end
+
 local function findAllDeliveryParkingSpots()
     local allSitesFiles = gameplay_sites_sitesManager.getCurrentLevelSitesFiles()
     if not allSitesFiles then
@@ -272,6 +378,20 @@ local function findAllDeliveryParkingSpots()
                 for _, spot in pairs(siteData.parkingSpots.objects) do
                     if spot.name and not restaurantSpotsLookup[spot.name] then
                         if spot.pos then
+                            -- Fallback to filename if no zone found or if zone name is generic
+                            -- We still calculate this as a backup, but getDeliveryLocationName checks spot.zones first
+                            if not spot.zoneName then
+                                local _, filename = string.match(sitesFilePath, "(.-)([^\\/]-%.?([^%.\\/]*))$")
+                                if filename then
+                                    local cleanName = string.gsub(filename, "%.sites%.json", "")
+                                    cleanName = string.gsub(cleanName, "%.json", "")
+                                    local lowerName = string.lower(cleanName)
+                                    if lowerName ~= "city" and lowerName ~= "facilities" then
+                                        spot.zoneName = cleanName:gsub("^%l", string.upper)
+                                    end
+                                end
+                            end
+
                             table.insert(allParkingSpots, spot)
                         end
                     end
@@ -287,26 +407,9 @@ end
 
 -- ================================
 -- DISABLED STATE CHECK
-local function isBeamEatsDisabled()
-    local disabled = false
-    local reason = ""
+-- (Moved to top of file)
+-- ================================
 
-    if gameplay_walk and gameplay_walk.isWalking() then
-        disabled = true
-        reason = "BeamEats is not available while walking"
-        return disabled, reason
-    end
-
-    if career_economyAdjuster then
-        local beamEatsMultiplier = career_economyAdjuster.getSectionMultiplier("beamEats") or 1.0
-        if beamEatsMultiplier == 0 then
-            disabled = true
-            reason = "BeamEats multiplier is set to 0"
-        end
-    end
-
-    return disabled, reason
-end
 
 -- ================================
 -- VALUE AND PAYMENT CALCULATIONS
@@ -407,8 +510,14 @@ local function calculateTimeFactor()
 end
 
 local function calculateSmoothDrivingTip(baseFare, roughEvents)
-    if math.random() < config.zeroTipChance then
+    local rand = math.random()
+
+    if rand < config.zeroTipChance then
         return 0
+    end
+
+    if rand < (config.zeroTipChance + config.hugeTipChance) then
+        return baseFare
     end
 
     for _, tier in ipairs(config.tipTiers) do
@@ -416,10 +525,40 @@ local function calculateSmoothDrivingTip(baseFare, roughEvents)
             return baseFare * tier.percent
         end
     end
+    
+    -- Fallback for > 20 events (very rough driving)
+    -- Generous customers (50% chance) will still give a small tip (5%)
+    if math.random() < 0.5 then
+        return baseFare * 0.05
+    end
+
     return 0
 end
 
 -- ================================
+local function getDeliveryLocationName(spot)
+    if not spot then return "Customer" end
+
+    -- 1. Zone Name (Pre-calculated by game sites manager)
+    if spot.zones then
+        -- spot.zones is a list/table of zones this spot belongs to
+        -- We just pick the first one's name, or look for a specific type if needed.
+        -- Usually zones are named nicely like "Downtown", "Industrial", etc.
+        for _, zone in pairs(spot.zones) do
+            if zone.name then
+                return zone.name
+            end
+        end
+    end
+    
+    -- 2. Zone Name (Fallback: manually attached in findAllDeliveryParkingSpots if native lookup fails)
+    if spot.zoneName then
+        return spot.zoneName
+    end
+    
+    return "Customer"
+end
+
 local function generateOrder()
     local beamEatsDisabled, disabledReason = isBeamEatsDisabled()
     if beamEatsDisabled then
@@ -446,22 +585,58 @@ local function generateOrder()
 
     local deliverySpots = {}
     local minDistance = 600
+    
+    local maxDistance = config.baseDeliveryRadius + (math.floor(playerRating / config.radiusStepRatingInterval) * config.radiusStep)
+    local potentialSpots = {}
+
     for _, spot in pairs(allDeliverySpots.objects) do
-        if spot.pos and pickupSpot.pos:distance(spot.pos) >= minDistance then
-            table.insert(deliverySpots, spot)
+        if spot.pos then
+            local dist = pickupSpot.pos:distance(spot.pos)
+            -- Pre-filter using air distance. 
+            -- Air distance is always <= road distance, so if air dist > maxDistance, it's definitely invalid.
+            if dist >= minDistance and dist <= maxDistance then
+                table.insert(potentialSpots, spot)
+            end
         end
     end
 
-    if #deliverySpots == 0 then
+    if #potentialSpots == 0 then
         return nil
     end
 
-    local deliverySpot = deliverySpots[math.random(#deliverySpots)]
+    -- Find a spot that satisfies road distance limit
+    local deliverySpot = nil
+    local validDistDelivery = nil
+    local attempts = 0
+    local maxAttempts = 15 -- Limit checks to prevent lag
+
+    while #potentialSpots > 0 and attempts < maxAttempts do
+        attempts = attempts + 1
+        local index = math.random(#potentialSpots)
+        local spot = potentialSpots[index]
+        
+        -- Check actual road distance
+        local distDelivery = calculateDrivingDistance(pickupSpot.pos, spot.pos)
+        
+        if distDelivery <= maxDistance then
+            deliverySpot = spot
+            validDistDelivery = distDelivery
+            break
+        end
+        
+        -- Remove failed spot
+        table.remove(potentialSpots, index)
+    end
+
+    if not deliverySpot then
+        return nil
+    end
 
     local valueMultiplier = generateValueMultiplier()
     
     local distToPickup = calculateDrivingDistance(vehiclePos, pickupSpot.pos)
-    local distDelivery = calculateDrivingDistance(pickupSpot.pos, deliverySpot.pos)
+    -- Use the pre-calculated delivery distance if available, otherwise calculate it (should cover edge cases)
+    local distDelivery = validDistDelivery or calculateDrivingDistance(pickupSpot.pos, deliverySpot.pos)
     local totalDistance = distToPickup + distDelivery -- Total trip distance
 
     local baseFare = calculateBaseFare(totalDistance)
@@ -469,7 +644,7 @@ local function generateOrder()
     local repMultiplier = 1.0 + (playerRating * config.reputationPayMultiplierPerStar)
     baseFare = baseFare * repMultiplier
 
-    local expectedTime = totalDistance / config.averageSpeedMPS
+    local expectedTime = (totalDistance / config.averageSpeedMPS) + config.pickupDropoffTimeBuffer
     expectedTime = math.max(expectedTime, 60) -- Minimum 60 seconds for the whole trip
 
     local order = {
@@ -481,7 +656,7 @@ local function generateOrder()
         },
         destination = {
             pos = deliverySpot.pos,
-            name = deliverySpot.name or "Delivery Location"
+            name = getDeliveryLocationName(deliverySpot)
         },
         baseFare = baseFare,
         totalDistance = totalDistance,
@@ -490,7 +665,7 @@ local function generateOrder()
     }
 
     order.totalPaymentDisplay = string.format("%.2f", baseFare) -- Estimated, without tips/bonuses
-    order.baseFareDisplay = string.format("%.2f", baseFare)
+    order.baseFareDisplay = string.format("%.2f (⭐%.2f)", baseFare, playerRating)
     order.totalDistanceDisplay = string.format("%.2f", totalDistance / 1000)
     order.expectedTimeDisplay = string.format("%d min %d sec", math.floor(expectedTime / 60), math.floor(expectedTime % 60))
 
@@ -508,6 +683,22 @@ local function completeDelivery()
     local expectedTime = currentOrder.expectedTime
     local timeDiff = expectedTime - elapsedTime 
 
+    -- Calculate streakXP first so we can use it in UI messages
+    local streakXP = 0
+    -- orderStreak is not incremented yet, so check current
+    -- Logic: if current streak is 0, next is 1. 1 <= 5, so +1 XP.
+    -- Wait, the logic in buildBeamEatsStateData uses the incremented streak.
+    -- Let's define it based on what the streak WILL be (current + 1)
+    local nextStreak = orderStreak + 1
+    if nextStreak <= 5 then streakXP = 1
+    elseif nextStreak <= 15 then streakXP = 2
+    elseif nextStreak <= 20 then streakXP = 3
+    elseif nextStreak <= 30 then streakXP = 4
+    elseif nextStreak <= 40 then streakXP = 5
+    elseif nextStreak <= 45 then streakXP = 7
+    else streakXP = 10
+    end
+
     local roughEvents = M.deliveryData.roughEvents or 0
     local baseFare = currentOrder.baseFare
     local smoothDrivingTip = calculateSmoothDrivingTip(baseFare, roughEvents)
@@ -515,6 +706,23 @@ local function completeDelivery()
     local timeBonus = 0
     if timeDiff >= 0 then
         timeBonus = baseFare * config.onTimeBonusPercent
+    else
+        -- Late penalty for tips
+        -- Calculate how much the tip should drop based on lateness
+        -- Random drop up to 5% per second late
+        local penaltyPerSecond = 0.05
+        local secondsLate = math.abs(timeDiff)
+        local totalPenaltyPercent = 0
+        
+        for i = 1, math.ceil(secondsLate) do
+             totalPenaltyPercent = totalPenaltyPercent + (math.random() * penaltyPerSecond)
+        end
+        
+        -- Cap penalty at 100% reduction
+        totalPenaltyPercent = math.min(1.0, totalPenaltyPercent)
+        
+        -- Apply penalty to the smooth driving tip
+        smoothDrivingTip = smoothDrivingTip * (1.0 - totalPenaltyPercent)
     end
 
     local streakMultiplier = math.min(orderStreak * config.streakMultiplierPerLevel, config.streakMultiplierMax)
@@ -539,6 +747,8 @@ local function completeDelivery()
         rating = rating - 1.0
     end
     rating = math.max(1.0, math.min(5.0, rating)) -- Clamp between 1 and 5
+    
+    local oldRating = playerRating
 
     ratingSum = ratingSum + rating
     ratingCount = ratingCount + 1
@@ -552,29 +762,40 @@ local function completeDelivery()
     
     playerRating = math.max(0.0, math.min(5.0, effectiveSum / effectiveCount))
     
+    lastRatingDelta = playerRating - oldRating
+
     savePlayerRating()
 
     currentOrder.totalPaymentDisplay = string.format("%.2f", finalPayment)
-    currentOrder.baseFareDisplay = string.format("%.2f", baseFare)
+    -- currentOrder.baseFareDisplay = string.format("%.2f", baseFare)
     currentOrder.totalTipsDisplay = string.format("%.2f", totalTips)
     currentOrder.totalDistanceDisplay = string.format("%.2f", currentOrder.totalDistance / 1000)
 
     state = "completed" 
 
     guihooks.trigger('ClearTasklist')
+    guihooks.trigger('SetTasklistHeader', {label = "BeamEats Delivery Complete"})
+    
+    local xpMsg = ""
+    if streakXP > 0 then
+        xpMsg = string.format(" | Logistics XP: +%d", streakXP)
+    end
+    
+    guihooks.trigger('SetTasklistTask', {
+        id = "beamEats_complete_msg",
+        label = string.format("Earned: $%s%s", currentOrder.totalPaymentDisplay, xpMsg),
+        done = true,
+        active = true,
+        type = "message",
+        clear = false
+    })
 
-    local beamEatsDisabled, disabledReason = isBeamEatsDisabled()
-    local effectiveState = beamEatsDisabled and "disabled" or state
-
-    dataToSend = {
-        state = effectiveState,
-        currentOrder = currentOrder,
-        vehicleMultiplier = string.format("%.1f", vehicleMultiplier),
-        cumulativeReward = cumulativeReward,
-        orderStreak = orderStreak,
-        beamEatsDisabled = beamEatsDisabled,
-        disabledReason = disabledReason
-    }
+    -- Schedule clearing of the tasklist after 8 seconds
+    -- We can't use simple 'sleep' here as we are in main thread update flow potentially
+    -- We will set a timer variable that the update loop checks to clear it
+    M.deliveryData.clearTasklistTimer = 8.0
+    
+    dataToSend = buildBeamEatsStateData()
     guihooks.trigger('updateBeamEatsState', dataToSend)
 
     if gameplay_phone and not gameplay_phone.isPhoneOpen() then
@@ -591,24 +812,44 @@ local function completeDelivery()
     if career_modules_hardcore and career_modules_hardcore.isHardcoreMode and career_modules_hardcore.isHardcoreMode() then
         label = label .. "\nHardcore mode is enabled, all rewards lowered."
     end
-
+    
     if career_modules_payment and type(career_modules_payment.reward) == "function" then
-        career_modules_payment.reward({
+        
+        -- Use pre-calculated streakXP
+        local logisticsXp = streakXP
+        local xpLabel = ""
+        
+        if logisticsXp > 0 then
+            xpLabel = string.format("\nStreak Bonus (%d): +%d Logistics XP", orderStreak, logisticsXp)
+        end
+
+        local rewardData = {
             money = {
                 amount = math.floor(finalPayment)
             },
             beamXP = {
                 amount = math.floor(finalPayment / 10)
             }
-        }, {
+        }
+        
+        if logisticsXp > 0 then
+            rewardData.logistics = { 
+                amount = logisticsXp
+            }
+        end
+
+        label = label .. xpLabel
+
+        career_modules_payment.reward(rewardData, {
             label = label,
             tags = {"transport", "beamEats"}
         }, true)
     else
         log('W', 'beamEats', 'career_modules_payment not available, skipping reward')
     end
-    core_groundMarkers.resetAll()
-    M.deliveryData = {}
+    if career_career.isAutosaveEnabled() then
+        career_saveSystem.saveCurrent()
+    end
 end
 
 local function dismissSummary()
@@ -699,18 +940,7 @@ local function prepareBeamEatsJob(dt)
         
         ui_message("Order picked up! Don't spill it!", 6, 'beamEats_main', 'check')
 
-        local beamEatsDisabled, disabledReason = isBeamEatsDisabled()
-        local effectiveState = beamEatsDisabled and "disabled" or state
-
-        dataToSend = {
-            state = effectiveState,
-            currentOrder = currentOrder,
-            vehicleMultiplier = string.format("%.1f", vehicleMultiplier),
-            cumulativeReward = cumulativeReward,
-            orderStreak = orderStreak,
-            beamEatsDisabled = beamEatsDisabled,
-            disabledReason = disabledReason
-        }
+        dataToSend = buildBeamEatsStateData()
         guihooks.trigger('updateBeamEatsState', dataToSend)
     end
 end
@@ -727,6 +957,15 @@ local function update(_, dt)
     if updateTimer >= updateInterval then
         updateTimer = 0
         requestBeamEatsState()
+    end
+
+    -- Clear tasklist timer logic
+    if M.deliveryData.clearTasklistTimer then
+        M.deliveryData.clearTasklistTimer = M.deliveryData.clearTasklistTimer - dt
+        if M.deliveryData.clearTasklistTimer <= 0 then
+            guihooks.trigger('ClearTasklist')
+            M.deliveryData.clearTasklistTimer = nil
+        end
     end
 
     if currentOrder and (state == "pickup" or state == "dropoff") then
@@ -765,7 +1004,7 @@ local function update(_, dt)
             local timeDiff = currentOrder.expectedTime - elapsedTime 
             local totalTime = currentOrder.expectedTime
             
-            local phaseLabel = (state == "pickup") and "Pickup at: " .. currentOrder.restaurant or "Deliver to: Customer"
+            local phaseLabel = (state == "pickup") and "Pickup at: " .. currentOrder.restaurant or "Deliver to: " .. (currentOrder.destination.name or "Customer")
             
             local progressPercent = (timeLeft / totalTime) * 100
             if timeDiff < 0 then progressPercent = 0 end
@@ -839,19 +1078,7 @@ end
 -- STATE REQUEST
 -- ================================
 function requestBeamEatsState()
-    local beamEatsDisabled, disabledReason = isBeamEatsDisabled()
-    local effectiveState = beamEatsDisabled and "disabled" or state
-
-    dataToSend = {
-        state = effectiveState,
-        currentOrder = currentOrder,
-        vehicleMultiplier = string.format("%.1f", vehicleMultiplier),
-        cumulativeReward = cumulativeReward,
-        orderStreak = orderStreak,
-        beamEatsDisabled = beamEatsDisabled,
-        disabledReason = disabledReason,
-        playerRating = string.format("%.1f", playerRating)
-    }
+    dataToSend = buildBeamEatsStateData()
     guihooks.trigger('updateBeamEatsState', dataToSend)
 end
 
@@ -867,24 +1094,29 @@ function startDelivery(order)
         return
     end
 
+    -- Recalculate route and time based on current position to prevent "travel before accept" exploit
+    local vehicle = be:getPlayerVehicle(0)
+    if vehicle then
+        local vehiclePos = vehicle:getPosition()
+        local distToPickup = calculateDrivingDistance(vehiclePos, order.pickup.pos)
+        local distDelivery = calculateDrivingDistance(order.pickup.pos, order.destination.pos)
+        
+        local totalDistance = distToPickup + distDelivery
+        local expectedTime = (totalDistance / config.averageSpeedMPS) + config.pickupDropoffTimeBuffer
+        expectedTime = math.max(expectedTime, 60)
+
+        order.totalDistance = totalDistance
+        order.expectedTime = expectedTime
+        order.totalDistanceDisplay = string.format("%.2f", totalDistance / 1000)
+        order.expectedTimeDisplay = string.format("%d min %d sec", math.floor(expectedTime / 60), math.floor(expectedTime % 60))
+    end
+
     state = "pickup"
     currentOrder = order
     currentOrder.startTime = timer
     core_groundMarkers.setPath(order.pickup.pos)
 
-    local beamEatsDisabled, disabledReason = isBeamEatsDisabled()
-    local effectiveState = beamEatsDisabled and "disabled" or state
-
-    dataToSend = {
-        state = effectiveState,
-        currentOrder = currentOrder,
-        vehicleMultiplier = string.format("%.1f", vehicleMultiplier),
-        cumulativeReward = cumulativeReward,
-        orderStreak = orderStreak,
-        beamEatsDisabled = beamEatsDisabled,
-        disabledReason = disabledReason,
-        playerRating = string.format("%.1f", playerRating)
-    }
+    dataToSend = buildBeamEatsStateData()
     guihooks.trigger('updateBeamEatsState', dataToSend)
 end
 
@@ -917,19 +1149,7 @@ local function onVehicleSwitched()
     if be:getPlayerVehicle(0) and (not gameplay_walk or not gameplay_walk.isWalking()) then
         generateValueMultiplier()
     end
-    local beamEatsDisabled, disabledReason = isBeamEatsDisabled()
-    local effectiveState = beamEatsDisabled and "disabled" or state
-
-    dataToSend = {
-        state = effectiveState,
-        currentOrder = currentOrder,
-        vehicleMultiplier = string.format("%.1f", vehicleMultiplier),
-        cumulativeReward = cumulativeReward,
-        orderStreak = orderStreak,
-        beamEatsDisabled = beamEatsDisabled,
-        disabledReason = disabledReason,
-        playerRating = string.format("%.1f", playerRating)
-    }
+    dataToSend = buildBeamEatsStateData()
     guihooks.trigger('updateBeamEatsState', dataToSend)
 end
 

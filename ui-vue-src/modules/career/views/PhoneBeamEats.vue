@@ -37,7 +37,7 @@
                     </div>
                     <div class="detail-row">
                         <span class="icon">📍</span>
-                        <span>Customer</span>
+                        <span>{{ currentOrder.destination.name || 'Customer' }}</span>
                     </div>
                     <div class="detail-row">
                         <span class="icon">💰</span>
@@ -69,6 +69,10 @@
                     <div class="detail-row streak" v-if="currentOrder.streakBonus > 0">
                         <span>Streak Bonus:</span>
                         <span class="value-right">+${{ currentOrder.streakBonus.toFixed(2) }}</span>
+                    </div>
+                    <div class="detail-row bonus">
+                        <span>Logistics XP:</span>
+                        <span class="value-right">+{{ streakXP }} XP</span>
                     </div>
                     
                     <hr class="summary-divider"/>
@@ -139,6 +143,7 @@ const state = ref('start')
 const currentOrder = ref(null)
 const cumulativeReward = ref(0)
 const orderStreak = ref(0)
+const streakXP = ref(0)
 const disabledReason = ref('')
 const playerRating = ref('0.0')
 
@@ -202,6 +207,10 @@ const updateState = (data) => {
     currentOrder.value = data.currentOrder || null
     cumulativeReward.value = data.cumulativeReward || 0
     orderStreak.value = data.orderStreak || 0
+    // Ensure streakXP is treated as a number
+    streakXP.value = (typeof data.streakXP === 'number') ? data.streakXP : 0
+    // Log for debugging
+    // console.log("BeamEats UpdateState:", data)
     disabledReason.value = data.disabledReason || ''
     playerRating.value = data.playerRating || '0.0'
 }
