@@ -876,6 +876,14 @@ local function stopBeamEatsJob()
 end
 
 local function setAvailable()
+    -- Ensure initialization if it failed/was skipped during spawn
+    if #restaurants == 0 then
+        findRestaurants()
+    end
+    if not allDeliverySpots or not allDeliverySpots.objects or #allDeliverySpots.objects == 0 then
+        findAllDeliveryParkingSpots()
+    end
+
     state = "ready"
     requestBeamEatsState()
 end
