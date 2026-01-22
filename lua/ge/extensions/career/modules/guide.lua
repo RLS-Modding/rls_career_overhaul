@@ -230,19 +230,9 @@ local function setPhoneBinding(controlString)
     return {success = false, binding = bindingName}
   end
   
-  -- Try using core_input_bindings first (simpler API)
-  if core_input_bindings and core_input_bindings.setBinding then
-    local success_result = pcall(function()
-      core_input_bindings.setBinding("openPhone", controlString)
-    end)
-    if success_result then
-      success = true
-      bindingName = formatControlName(controlString)
-      return {success = success, binding = bindingName}
-    end
-  end
+  -- Normalize control string to lowercase (like vanilla does)
+  controlString = string.lower(controlString)
   
-  -- Fallback to direct ActionMap binding
   -- Get action metadata to find the correct ActionMap
   local actionSuccess, actionMapName, actsOnChange, onChange, actsOnDown, onDown, actsOnUp, onUp, isRelative, ctx, isCentered
   
@@ -265,29 +255,66 @@ local function setPhoneBinding(controlString)
     ctx = ""
   end
   
-  -- Normalize control string to lowercase (like vanilla does)
-  controlString = string.lower(controlString)
-  
   -- Extract device name and control from the control string
-  -- controlString format: "keyboard_p" or "keyboard_backslash" or "mouse0"
-  -- actionMap:bind() expects: deviceName (like "keyboard0"), action, control (just the key part)
-  local deviceName = "keyboard0"  -- Default to keyboard0
+  local deviceName = "keyboard0"
   local control = controlString
   
   if controlString:find("^keyboard_") then
     deviceName = "keyboard0"
-    control = controlString:gsub("^keyboard_", "")  -- Extract control part (e.g., "p", "backslash")
+    control = controlString:gsub("^keyboard_", "")
   elseif controlString:find("^mouse") then
     deviceName = "mouse0"
-    control = controlString:gsub("^mouse", "")  -- Extract button number (e.g., "0", "1")
+    control = controlString:gsub("^mouse", "")
+  end
+  
+  -- Remove all existing bindings for openPhone first (before setting new one)
+  local actionMapsToCheck = {"VehicleCommon", "UI", "Camera", "Normal"}
+  if actionMapName then
+    table.insert(actionMapsToCheck, 1, actionMapName)
+  end
+  
+  -- Remove from all ActionMaps
+  for _, mapName in ipairs(actionMapsToCheck) do
+    pcall(function()
+      local mapToCheck = scenetree.findObject(mapName .. "ActionMap")
+      if mapToCheck and mapToCheck.getBinding then
+        local oldBind = mapToCheck:getBinding("openPhone")
+        if oldBind and oldBind ~= "" then
+          local oldDeviceName = "keyboard0"
+          local oldControl = oldBind
+          
+          if oldBind:find("^keyboard_") then
+            oldDeviceName = "keyboard0"
+            oldControl = oldBind:gsub("^keyboard_", "")
+          elseif oldBind:find("^mouse") then
+            oldDeviceName = "mouse0"
+            oldControl = oldBind:gsub("^mouse", "")
+          end
+          
+          if mapToCheck.unbind then
+            mapToCheck:unbind(oldDeviceName, "openPhone", oldControl)
+          end
+        end
+      end
+    end)
   end
   
   -- Find the correct ActionMap
   local actionMapFullName = actionMapName .. "ActionMap"
   local actionMap = scenetree.findObject(actionMapFullName)
   
+  -- Use core_input_bindings.setBinding first (it handles everything properly)
+  if core_input_bindings and core_input_bindings.setBinding then
+    local success_result = pcall(function()
+      core_input_bindings.setBinding("openPhone", controlString)
+    end)
+    if success_result then
+      success = true
+    end
+  end
+  
+  -- Also set binding in ActionMap directly to ensure it works immediately
   if actionMap then
-    -- Fill binding defaults (matching vanilla fillNormalizeBindingDefaults)
     local deadzoneResting = 0
     local deadzoneEnd = 0
     local linearity = 1
@@ -304,109 +331,20 @@ local function setPhoneBinding(controlString)
     local filterType = -1
     local player = 0
     
-    -- bind requires many arguments - matching vanilla signature exactly
-    -- deviceName should be like "keyboard0" or "mouse0", control should be just the key part (e.g., "p", "backslash", "0")
-    actionMap:bind(
-      deviceName, "openPhone", control, 
-      isCentered, deadzoneResting, deadzoneEnd, linearity, angle, lockType,
-      isInverted, isForceEnabled, isForceInverted, useLogitechSDK, 
-      logitechVibrotactileCoef, logitechVibrotactileFreqMax, ffbUpdateType, ffb_json,
-      actsOnChange, onChange, actsOnDown, onDown, actsOnUp, onUp,
-      filterType, isRelative, player, ctx
-    )
-    success = true
-    bindingName = formatControlName(controlString)
-    
-    -- Save the binding to disk using the bindings system's proper API
     pcall(function()
-      if core_input_bindings and core_input_bindings.devices and core_input_bindings.bindings and core_input_bindings.saveBindingsToDisk then
-        local deviceInfo = core_input_bindings.devices[deviceName]
-        
-        if deviceInfo then
-          local guid, productName, pidvid = deviceInfo[1], deviceInfo[2], deviceInfo[3]
-          -- Extract device type from deviceName (e.g., "keyboard0" -> "keyboard")
-          local devicetype = deviceName:gsub("%d+$", "") or deviceName
-          
-          -- Find the device data in the bindings structure
-          for _, deviceData in ipairs(core_input_bindings.bindings) do
-            if deviceData.devicename == deviceName and deviceData.contents then
-              -- Ensure required device metadata fields exist
-              if not deviceData.contents.devicetype then
-                deviceData.contents.devicetype = devicetype
-              end
-              if not deviceData.contents.guid then
-                deviceData.contents.guid = guid
-              end
-              if not deviceData.contents.name then
-                deviceData.contents.name = productName
-              end
-              if not deviceData.contents.vidpid then
-                deviceData.contents.vidpid = pidvid
-              end
-              
-              -- Ensure bindings array exists
-              if not deviceData.contents.bindings then
-                deviceData.contents.bindings = {}
-              end
-              
-              -- Find and update the openPhone binding, or add it if it doesn't exist
-              local found = false
-              for _, binding in ipairs(deviceData.contents.bindings) do
-                if binding.action == "openPhone" then
-                  binding.control = controlString
-                  -- Update other required fields
-                  binding.deadzoneResting = 0
-                  binding.deadzoneEnd = 0
-                  binding.linearity = 1
-                  binding.angle = 0
-                  binding.lockType = 3
-                  binding.isInverted = false
-                  binding.isForceEnabled = false
-                  binding.isForceInverted = false
-                  binding.useLogitechSDK = false
-                  binding.logitechVibrotactileCoef = 1
-                  binding.logitechVibrotactileFreqMax = 50
-                  binding.ffb = binding.ffb or {updateType = 0}
-                  binding.filterType = -1
-                  binding.isRelative = false
-                  found = true
-                  break
-                end
-              end
-              
-              if not found then
-                -- Add new binding with proper structure
-                table.insert(deviceData.contents.bindings, {
-                  action = "openPhone",
-                  control = controlString,
-                  deadzoneResting = 0,
-                  deadzoneEnd = 0,
-                  linearity = 1,
-                  angle = 0,
-                  lockType = 3,
-                  isInverted = false,
-                  isForceEnabled = false,
-                  isForceInverted = false,
-                  useLogitechSDK = false,
-                  logitechVibrotactileCoef = 1,
-                  logitechVibrotactileFreqMax = 50,
-                  ffb = {updateType = 0},
-                  filterType = -1,
-                  isRelative = false
-                })
-              end
-              
-              -- Save using the bindings system's save function
-              core_input_bindings.saveBindingsToDisk(deviceData.contents)
-              log("D", "guide", "Saved phone binding via bindings system")
-              break
-            end
-          end
-        end
-      end
+      actionMap:bind(
+        deviceName, "openPhone", control, 
+        isCentered, deadzoneResting, deadzoneEnd, linearity, angle, lockType,
+        isInverted, isForceEnabled, isForceInverted, useLogitechSDK, 
+        logitechVibrotactileCoef, logitechVibrotactileFreqMax, ffbUpdateType, ffb_json,
+        actsOnChange, onChange, actsOnDown, onDown, actsOnUp, onUp,
+        filterType, isRelative, player, ctx
+      )
     end)
+    success = true
   end
   
+  bindingName = formatControlName(controlString)
   return {success = success, binding = bindingName}
 end
 

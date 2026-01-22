@@ -66,18 +66,21 @@ angular.module('beamng.stuff')
     console.log('[Guide] stopBinding called')
     $scope.isBinding = false
     
-    // Disable input capturing
-    bngApi.engineLua("ActionMap.enableBindingCapturing(false)")
-    bngApi.engineLua("WinInput.setForwardRawEvents(false)")
-    bngApi.engineLua("setCEFTyping(false)")
-    
-    // Remove event listener
+    // Remove event listener first to prevent any more events
     if (stopListeningFn) {
       stopListeningFn()
       stopListeningFn = null
     }
     
     eventsRegister = {}
+    
+    // Disable input capturing in the correct order (reverse of start)
+    // Use try-catch style by wrapping in pcall on Lua side
+    bngApi.engineLua("pcall(function() WinInput.setForwardRawEvents(false) end)")
+    bngApi.engineLua("pcall(function() setCEFTyping(false) end)")
+    bngApi.engineLua("pcall(function() ActionMap.enableBindingCapturing(false) end)")
+    
+    console.log('[Guide] stopBinding complete')
   }
   
   $scope.startBinding = function(event) {
@@ -168,18 +171,18 @@ angular.module('beamng.stuff')
         var controlString = convertRawInputToControl(data)
         console.log('[Guide] Captured control:', controlString)
         
+        // Stop binding FIRST before calling Lua to ensure input is released
+        stopBinding()
+        
+        // Then set the binding
         bngApi.engineLua("extensions.career_modules_guide.setPhoneBinding('" + controlString + "')", function(result) {
           $scope.$evalAsync(function() {
-            if (result && result.success) {
+            if (result && result.binding) {
               $scope.phoneBinding = result.binding
               updatePhoneBound(result.binding)
-              // Don't reload immediately - the binding is already set and displayed
-              // Reloading might trigger a refresh that overwrites the new binding
             }
           })
         })
-        
-        stopBinding()
       }
     })
     
