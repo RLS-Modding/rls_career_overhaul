@@ -712,7 +712,9 @@
           "logisticTypesReceived": [
             "trailerDeliveryConstructionMaterials",
             "vehLargeTruck"
-          ]
+          ],
+          "loanerTrailerPriority": 1,
+          "loanerNonTrailerPriority": 1
         },
         {
           "psName": "quarry_water",
