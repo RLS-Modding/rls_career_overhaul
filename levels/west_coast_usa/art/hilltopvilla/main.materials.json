@@ -101,40 +101,7 @@
     "translucentBlendOp": "None",
     "version": 1.5
   },
-  "brick_painted1": {
-    "name": "brick_painted1",
-    "mapTo": "brick_painted1",
-    "class": "Material",
-    "persistentId": "6b47e50a-065f-4dea-b141-701480e67a05",
-    "Stages": [
-      {
-        "ambientOcclusionMap": "/levels/west_coast_usa/art/hilltopvilla/t_brick_plain_ao.data.dds",
-        "baseColorMap": "/levels/west_coast_usa/art/hilltopvilla/t_brick_painted_b.color.dds",
-        "normalMap": "/levels/west_coast_usa/art/hilltopvilla/t_brick_plain_nm.normal.dds",
-        "pixelSpecular": true,
-        "roughnessMap": "/levels/west_coast_usa/art/hilltopvilla/t_brick_plain_r.data.dds",
-        "vertColor": true
-      },
-      {
-        "pixelSpecular": null,
-        "vertColor": null
-      },
-      {
-        "pixelSpecular": null,
-        "vertColor": null
-      },
-      {
-        "pixelSpecular": null,
-        "vertColor": null
-      }
-    ],
-    "alphaRef": 0,
-    "annotation": "BUILDINGS",
-    "materialTag0": "beamng",
-    "materialTag1": "building",
-    "translucentBlendOp": "None",
-    "version": 1.5
-  },
+
   "corrugated_modern1": {
     "name": "corrugated_modern1",
     "mapTo": "corrugated_modern1",
@@ -656,7 +623,7 @@
     "specularStrength0": "0.05",
     "translucentBlendOp": "None"
   },
-  "slabs_large": {
+  "slabs_large1": {
     "name": "slabs_large1",
     "mapTo": "slabs_large1",
     "class": "Material",
@@ -675,7 +642,7 @@
         "pixelSpecular": true,
         "roughnessFactor": 0.98299998,
         "roughnessMap": "levels/west_coast_usa/art/hilltopvilla/t_slabs_large_r.data.dds",
-        "vertColor": true
+        "vertColor": false
       },
       {
         "baseColorFactor": null,
@@ -694,50 +661,6 @@
         "pixelSpecular": null,
         "roughnessFactor": null,
         "vertColor": null
-      }
-    ],
-    "alphaRef": 0,
-    "annotation": "SIDEWALK",
-    "materialTag0": "beamng",
-    "materialTag1": "vehicle",
-    "translucent": true,
-    "translucentBlendOp": "None",
-    "version": 1.5
-  },
-  "slabs_large1": {
-    "name": "slabs_large1",
-    "mapTo": "slabs_large1",
-    "class": "Material",
-    "persistentId": "11bccb9e-65d3-4e55-9b8c-3b37f75e4d02",
-    "Stages": [
-      {
-        "ambientOcclusionMap": "levels/west_coast_usa/art/hilltopvilla/t_slabs_large_ao.data.dds",
-        "baseColorFactor": [
-          0.667797029,
-          0.667797029,
-          0.667797029,
-          1
-        ],
-        "baseColorMap": "levels/west_coast_usa/art/hilltopvilla/t_slabs_large_b.color.dds",
-        "normalMap": "levels/west_coast_usa/art/hilltopvilla/t_slabs_large_nm.normal.dds",
-        "pixelSpecular": true,
-        "roughnessFactor": 0.98299998,
-        "roughnessMap": "levels/west_coast_usa/art/hilltopvilla/t_slabs_large_r.data.dds"
-      },
-      {
-        "baseColorFactor": null,
-        "pixelSpecular": null,
-        "roughnessFactor": null
-      },
-      {
-        "baseColorFactor": null,
-        "pixelSpecular": null,
-        "roughnessFactor": null
-      },
-      {
-        "baseColorFactor": null,
-        "pixelSpecular": null,
-        "roughnessFactor": null
       }
     ],
     "alphaRef": 0,
