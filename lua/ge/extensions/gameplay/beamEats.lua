@@ -149,7 +149,20 @@ local function isBeamEatsDisabled()
         if beamEatsMultiplier == 0 then
             disabled = true
             reason = "BeamEats multiplier is set to 0"
+            return disabled, reason
         end
+    end
+
+    if not restaurants or #restaurants == 0 then
+        disabled = true
+        reason = "Not available"
+        return disabled, reason
+    end
+
+    if not allDeliverySpots or not allDeliverySpots.objects or #allDeliverySpots.objects == 0 then
+        disabled = true
+        reason = "Not available"
+        return disabled, reason
     end
 
     return disabled, reason
