@@ -898,7 +898,6 @@ local function rejectJob()
     state = "ready"
     currentFare = nil
     core_groundMarkers.resetAll()
-    fareStreak = 0
     jobOfferTimer = 0
     jobOfferInterval = math.random(5, 45)
     dataToSend = {}
