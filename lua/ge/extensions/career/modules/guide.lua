@@ -174,8 +174,8 @@ end
 
 local function getPhoneBinding()
   local binding = "Not bound"
-  
-  -- Try to get binding from core_input_bindings first (more reliable)
+
+  -- Try the cached lookup first
   if core_input_bindings and core_input_bindings.getControlForAction then
     local success, control = pcall(function()
       return core_input_bindings.getControlForAction("openPhone")
@@ -185,171 +185,94 @@ local function getPhoneBinding()
       return {binding = binding}
     end
   end
-  
-  -- Fallback: try to read directly from ActionMap
-  -- Try common action maps since actionToCommands might return invalid values
-  local actionMapsToTry = {"VehicleCommon", "UI", "Camera", "Normal"}
-  
-  -- First try to get the action map from actionToCommands
-  local actionMapName = nil
-  local pcallSuccess, success, actionMap = pcall(function()
-    if core_input_actions and core_input_actions.actionToCommands then
-      return core_input_actions.actionToCommands("openPhone")
-    end
-    return false, "VehicleCommon"
-  end)
-  
-  if pcallSuccess and success and actionMap and type(actionMap) == "string" then
-    actionMapName = actionMap
-    -- Insert at the beginning of the list to try it first
-    table.insert(actionMapsToTry, 1, actionMapName)
-  end
-  
-  -- Try each action map until we find the binding
-  for _, mapName in ipairs(actionMapsToTry) do
-    local actionMapFullName = mapName .. "ActionMap"
-    local actionMap = scenetree.findObject(actionMapFullName)
-    
-    if actionMap then
-      local bind = actionMap:getBinding("openPhone")
-      if bind and bind ~= "" then
-        binding = formatControlName(bind)
-        break
+
+  -- Fallback: iterate all device bindings to find openPhone
+  if core_input_bindings and core_input_bindings.bindings then
+    for _, device in ipairs(core_input_bindings.bindings) do
+      if device.contents and device.contents.bindings then
+        for _, b in ipairs(device.contents.bindings) do
+          if b.action == "openPhone" and b.control and b.control ~= "" then
+            binding = formatControlName(b.control)
+            return {binding = binding}
+          end
+        end
       end
     end
   end
-  
+
   return {binding = binding}
 end
 
 local function setPhoneBinding(controlString)
-  local success = false
   local bindingName = "Not bound"
-  
+
   if not controlString or controlString == "" then
     return {success = false, binding = bindingName}
   end
-  
-  -- Normalize control string to lowercase (like vanilla does)
+
   controlString = string.lower(controlString)
-  
-  -- Get action metadata to find the correct ActionMap
-  local actionSuccess, actionMapName, actsOnChange, onChange, actsOnDown, onDown, actsOnUp, onUp, isRelative, ctx, isCentered
-  
-  if core_input_actions and core_input_actions.actionToCommands then
-    actionSuccess, actionMapName, actsOnChange, onChange, actsOnDown, onDown, actsOnUp, onUp, isRelative, ctx, isCentered = 
-      core_input_actions.actionToCommands("openPhone")
-  end
-  
-  -- Use defaults if actionToCommands fails
-  if not actionSuccess then
-    actionMapName = "VehicleCommon"
-    isCentered = 0
-    actsOnChange = false
-    onChange = ""
-    actsOnDown = false
-    onDown = ""
-    actsOnUp = false
-    onUp = ""
-    isRelative = false
-    ctx = ""
-  end
-  
-  -- Extract device name and control from the control string
+
+  -- Determine device name from control string
   local deviceName = "keyboard0"
-  local control = controlString
-  
-  if controlString:find("^keyboard_") then
-    deviceName = "keyboard0"
-    control = controlString:gsub("^keyboard_", "")
-  elseif controlString:find("^mouse") then
+  if controlString:find("^mouse") then
     deviceName = "mouse0"
-    control = controlString:gsub("^mouse", "")
   end
-  
-  -- Remove all existing bindings for openPhone first (before setting new one)
-  local actionMapsToCheck = {"VehicleCommon", "UI", "Camera", "Normal"}
-  if actionMapName then
-    table.insert(actionMapsToCheck, 1, actionMapName)
+
+  -- Find the keyboard/mouse device in core_input_bindings
+  if not core_input_bindings or not core_input_bindings.bindings then
+    log("E", "guide", "core_input_bindings not available")
+    return {success = false, binding = bindingName}
   end
-  
-  -- Remove from all ActionMaps
-  for _, mapName in ipairs(actionMapsToCheck) do
-    pcall(function()
-      local mapToCheck = scenetree.findObject(mapName .. "ActionMap")
-      if mapToCheck and mapToCheck.getBinding then
-        local oldBind = mapToCheck:getBinding("openPhone")
-        if oldBind and oldBind ~= "" then
-          local oldDeviceName = "keyboard0"
-          local oldControl = oldBind
-          
-          if oldBind:find("^keyboard_") then
-            oldDeviceName = "keyboard0"
-            oldControl = oldBind:gsub("^keyboard_", "")
-          elseif oldBind:find("^mouse") then
-            oldDeviceName = "mouse0"
-            oldControl = oldBind:gsub("^mouse", "")
-          end
-          
-          if mapToCheck.unbind then
-            mapToCheck:unbind(oldDeviceName, "openPhone", oldControl)
-          end
-        end
-      end
-    end)
-  end
-  
-  -- Find the correct ActionMap
-  local actionMapFullName = actionMapName .. "ActionMap"
-  local actionMap = scenetree.findObject(actionMapFullName)
-  
-  -- Use core_input_bindings.setBinding first (it handles everything properly)
-  if core_input_bindings and core_input_bindings.setBinding then
-    local success_result = pcall(function()
-      core_input_bindings.setBinding("openPhone", controlString)
-    end)
-    if success_result then
-      success = true
+
+  local targetDevice = nil
+  for _, device in ipairs(core_input_bindings.bindings) do
+    if device.devname == deviceName then
+      targetDevice = device
+      break
     end
   end
-  
-  -- Also set binding in ActionMap directly to ensure it works immediately
-  if actionMap then
-    local deadzoneResting = 0
-    local deadzoneEnd = 0
-    local linearity = 1
-    local angle = 0
-    local lockType = 3
-    local isInverted = false
-    local isForceEnabled = false
-    local isForceInverted = false
-    local useLogitechSDK = false
-    local logitechVibrotactileCoef = 1
-    local logitechVibrotactileFreqMax = 50
-    local ffbUpdateType = 0
-    local ffb_json = jsonEncode({updateType = 0})
-    local filterType = -1
-    local player = 0
-    
-    pcall(function()
-      actionMap:bind(
-        deviceName, "openPhone", control, 
-        isCentered, deadzoneResting, deadzoneEnd, linearity, angle, lockType,
-        isInverted, isForceEnabled, isForceInverted, useLogitechSDK, 
-        logitechVibrotactileCoef, logitechVibrotactileFreqMax, ffbUpdateType, ffb_json,
-        actsOnChange, onChange, actsOnDown, onDown, actsOnUp, onUp,
-        filterType, isRelative, player, ctx
-      )
-    end)
-    success = true
+
+  if not targetDevice or not targetDevice.contents then
+    log("E", "guide", "Could not find device: " .. deviceName)
+    return {success = false, binding = bindingName}
   end
-  
+
+  -- Remove any existing openPhone binding from this device
+  local bindings = targetDevice.contents.bindings
+  for i = #bindings, 1, -1 do
+    if bindings[i].action == "openPhone" then
+      table.remove(bindings, i)
+    end
+  end
+
+  -- Add the new binding
+  table.insert(bindings, {
+    action = "openPhone",
+    control = controlString,
+  })
+
+  -- Push bindings to the engine and save to disk
+  local ok, err = pcall(function()
+    core_input_bindings.sendBindingsToGE(deviceName, bindings, core_input_bindings.assignedPlayers and core_input_bindings.assignedPlayers[deviceName] or 0)
+  end)
+  if not ok then
+    log("E", "guide", "sendBindingsToGE failed: " .. tostring(err))
+  end
+
+  local saveOk, saveErr = pcall(function()
+    core_input_bindings.saveBindingsToDisk(targetDevice)
+  end)
+  if not saveOk then
+    log("E", "guide", "saveBindingsToDisk failed: " .. tostring(saveErr))
+  end
+
   bindingName = formatControlName(controlString)
-  return {success = success, binding = bindingName}
+  return {success = (ok == true), binding = bindingName}
 end
 
 M.getPhoneBinding = getPhoneBinding
 M.setPhoneBinding = setPhoneBinding
+M.onRecordingActionDown = function() end -- handler for guide_recording action
 
 M.onSaveCurrentSaveSlot = onSaveCurrentSaveSlot
 
