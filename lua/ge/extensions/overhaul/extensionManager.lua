@@ -58,7 +58,33 @@ end
 -- This forces removal of core game context, freeroam/events, gameplay modules (phone, repo, taxi, cab, ambulance, bus, beamEats),
 -- career subsystems (career, save system, challenge modes, economy adjuster, challenge seed encoder), and overhaul modules
 -- (settings, maps, clear levels, add map changes). No value is returned.
+-- Remove the openPhone binding from saved bindings so the vanilla
+-- bindingsLegend doesn't crash after the mod is deactivated.
+local function removePhoneBinding()
+    pcall(function()
+        if not core_input_bindings or not core_input_bindings.bindings then return end
+        for _, device in ipairs(core_input_bindings.bindings) do
+            if device.contents and device.contents.bindings then
+                local bindings = device.contents.bindings
+                for i = #bindings, 1, -1 do
+                    if bindings[i].action == "openPhone" then
+                        table.remove(bindings, i)
+                    end
+                end
+                pcall(function()
+                    core_input_bindings.saveBindingsToDisk(device)
+                end)
+            end
+        end
+        -- Reload actions so the engine drops the now-unmounted phone.json
+        if core_input_actions then
+            extensions.reload("core_input_actions")
+        end
+    end)
+end
+
 local function unloadAllExtensions()
+    removePhoneBinding()
     extensions.unload("core_gameContext")
     extensions.unload("gameplay_events_freeroamEvents")
     extensions.unload("career_career")
@@ -94,6 +120,17 @@ local function startup()
     if not core_gamestate.state or core_gamestate.state.state ~= "career" then
         loadExtensions()
     end
+
+    -- Force core_input_actions to rescan action JSON files so mod-provided
+    -- actions (e.g. openPhone from phone.json) are registered before the
+    -- bindings legend or any other system tries to look them up.
+    -- Without this, bindingsLegend.lua crashes with a nil actionInfo because
+    -- the action JSON may not have been loaded when the engine first scanned.
+    pcall(function()
+        if core_input_actions then
+            extensions.reload("core_input_actions")
+        end
+    end)
 
     core_jobsystem.create(function(job)
         job.sleep(5)

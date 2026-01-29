@@ -254,6 +254,20 @@ local function setPhoneBinding(controlString)
   -- Bind directly to the engine ActionMap so it works immediately
   local ok = false
   pcall(function()
+    -- Ensure the action JSON has been loaded before trying to bind.
+    -- If openPhone isn't registered yet, force a rescan of action JSON files
+    -- so phone.json is picked up. This prevents bindingsLegend.lua from
+    -- crashing with nil actionInfo later.
+    if core_input_actions then
+      local testOk, testActionSuccess = pcall(function()
+        local s = core_input_actions.actionToCommands("openPhone")
+        return s
+      end)
+      if not testOk or not testActionSuccess then
+        pcall(function() extensions.reload("core_input_actions") end)
+      end
+    end
+
     local actionSuccess, actionMapName, actsOnChange, onChange, actsOnDown, onDown, actsOnUp, onUp, isRelative, ctx, isCentered =
       core_input_actions.actionToCommands("openPhone")
 
