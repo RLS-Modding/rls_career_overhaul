@@ -251,23 +251,48 @@ local function setPhoneBinding(controlString)
     control = controlString,
   })
 
-  -- Push bindings to the engine and save to disk
-  local ok, err = pcall(function()
-    core_input_bindings.sendBindingsToGE(deviceName, bindings, core_input_bindings.assignedPlayers and core_input_bindings.assignedPlayers[deviceName] or 0)
+  -- Bind directly to the engine ActionMap so it works immediately
+  local ok = false
+  pcall(function()
+    local actionSuccess, actionMapName, actsOnChange, onChange, actsOnDown, onDown, actsOnUp, onUp, isRelative, ctx, isCentered =
+      core_input_actions.actionToCommands("openPhone")
+
+    if actionSuccess then
+      local amFullName = actionMapName .. "ActionMap"
+      local am = scenetree.findObject(amFullName)
+      if am then
+        local b = {action = "openPhone", control = controlString}
+        -- Fill in binding defaults so bind() gets all required params
+        if core_input_bindings.fillNormalizeBindingDefaults then
+          b = core_input_bindings.fillNormalizeBindingDefaults(b)
+        end
+        am:bind(
+          deviceName, b.action, b.control, isCentered,
+          b.deadzoneResting or 0, b.deadzoneEnd or 0, b.linearity or 1,
+          b.angle or 0, b.lockType or 3, b.isInverted or false,
+          b.isForceEnabled or false, b.isForceInverted or false,
+          b.useLogitechSDK or false, b.logitechVibrotactileCoef or 1,
+          b.logitechVibrotactileFreqMax or 50,
+          (b.ffb and b.ffb.updateType) or 0, jsonEncode(b.ffb or {updateType = 0}),
+          actsOnChange, onChange, actsOnDown, onDown, actsOnUp, onUp,
+          b.filterType or -1, isRelative, 0, ctx
+        )
+        ok = true
+      end
+    end
   end)
+
   if not ok then
-    log("E", "guide", "sendBindingsToGE failed: " .. tostring(err))
+    log("E", "guide", "Failed to bind openPhone to engine ActionMap")
   end
 
-  local saveOk, saveErr = pcall(function()
+  -- Also save to disk so binding persists across restarts
+  pcall(function()
     core_input_bindings.saveBindingsToDisk(targetDevice)
   end)
-  if not saveOk then
-    log("E", "guide", "saveBindingsToDisk failed: " .. tostring(saveErr))
-  end
 
   bindingName = formatControlName(controlString)
-  return {success = (ok == true), binding = bindingName}
+  return {success = ok, binding = bindingName}
 end
 
 M.getPhoneBinding = getPhoneBinding
