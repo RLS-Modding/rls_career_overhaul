@@ -40,7 +40,8 @@ const apps = ref([
   { name: 'Repo', icon: icons.tow, route: '/career/phone-repo', color: '#1E90FF', iconColor: '#ffffff' },
   { name: 'Taxi', icon: icons.taxiCar3, route: '/career/phone-taxi', color: '#ffd700', iconColor: '#000000' },
   { name: 'Quarry', icon: icons.cogs, route: '/career/phone-quarry', color: '#8B4513', iconColor: '#ffffff' },
-  { name: 'BeamEats', icon: icons.cityOutline, route: '/career/phone-beam-eats', color: '#ff4757', iconColor: '#ffffff' }
+  { name: 'BeamEats', icon: icons.cityOutline, route: '/career/phone-beam-eats', color: '#ff4757', iconColor: '#ffffff' },
+  { name: 'CarSwap', icon: icons.shoppingCart, route: '/career/phone-carswap', color: '#00d4aa', iconColor: '#000000' }
 ])
 
 const navigateTo = (route) => {
@@ -89,16 +90,17 @@ onMounted(async () => {
 <style scoped lang="scss">
 .home-screen {
   padding: 15px;
-  padding-top: 400px;
+  padding-bottom: 20px;
   display: flex;
   flex-direction: row;
-  flex-wrap: wrap-reverse;
+  flex-wrap: wrap;
   gap: 10px;
   max-width: 100%;
-  height: 100%;
+  min-height: 100%;
   align-content: flex-end;
   justify-content: flex-start;
   box-sizing: border-box;
+  overflow-y: auto;
 }
 
 .app-item {
