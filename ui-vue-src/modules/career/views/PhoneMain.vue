@@ -90,7 +90,7 @@ onMounted(async () => {
 .home-screen {
   padding: 15px;
   padding-top: 140px;
-  padding-bottom: 15px;
+  padding-bottom: 60px;
   display: flex;
   flex-direction: row;
   flex-wrap: wrap-reverse;
@@ -100,6 +100,7 @@ onMounted(async () => {
   align-content: flex-start;
   justify-content: flex-start;
   box-sizing: border-box;
+  overflow-y: auto;
 }
 
 .app-item {
