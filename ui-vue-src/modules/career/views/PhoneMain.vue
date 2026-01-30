@@ -106,6 +106,8 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: calc((100% - 30px) / 4);
+  flex: 0 0 calc((100% - 30px) / 4);
 }
 
 .app-container {
@@ -166,6 +168,7 @@ onMounted(async () => {
   margin-top: 8px;
   width: 100%;
   position: relative;
+  line-height: 1.1;
 }
 
 // Override phone wrapper's dark background
