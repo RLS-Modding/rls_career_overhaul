@@ -1,7 +1,8 @@
 -- ================================
--- FACILITY WORK MODULE (Jungle Rock Island)
+-- FACILITY WORK MODULE (any level)
 -- Standalone career module: forklift materials move; reward on forklift exit.
--- Trigger: name facilityWork_start, luaFunction onBeamNGTrigger (same pattern as freeroamEvents).
+-- Started from phone (no start trigger). Drop trigger: name facilityWork_drop, luaFunction onBeamNGTrigger.
+-- Per-level: facilityWorkMaterials.json in level dir; zone facilityWork_spawnZone in roleplay.sites.json.
 -- ================================
 local M = {}
 M.dependencies = {'gameplay_sites_sitesManager', 'freeroam_facilities'}
@@ -13,21 +14,20 @@ local utils = (function()
     return ok and mod or nil
 end)()
 
-local LEVEL_ID = "jungle_rock_island"
 local ZONE_LENIENCY_M = 3
 local PARTIAL_CREDIT_FACTOR = 0.5
 
--- Trigger naming (level editor)
-local ENTER_FORKLIFT_PREFIX = "facilityWork_start"
+-- Trigger naming (level editor; no start trigger - started from phone)
 local DROP_TRIGGER_PREFIX = "facilityWork_drop"
 local SPAWN_ZONE_NAME = "facilityWork_spawnZone"
 -- Explicit drop trigger names (add more if you place additional drop zones)
 local DROP_TRIGGER_NAMES = { "facilityWork_drop" }
 
--- Config (loaded from level)
+-- Config (loaded from current level; invalidated when level changes)
 local materialsById = {}
 local facilityConfigs = {}
 local configLoaded = false
+local configLoadedForLevel = nil
 
 -- Session state (persistent across batches in one "on duty" period)
 local sessionTotalPay = 0
@@ -50,14 +50,12 @@ local dropTriggersByName = {}
 -- Drop-zone corner markers (bus.lua-style)
 local dropMarkerObjects = {}
 
-local function isActiveLevel()
-    return getCurrentLevelIdentifier() == LEVEL_ID
-end
-
 local function loadConfig()
-    if configLoaded then return true end
     local levelId = getCurrentLevelIdentifier()
-    if levelId ~= LEVEL_ID then return false end
+    if not levelId then return false end
+    if configLoaded and configLoadedForLevel == levelId then return true end
+    configLoaded = false
+    configLoadedForLevel = nil
     local levelInfo = core_levels.getLevelByName(levelId)
     if not levelInfo or not levelInfo.dir then return false end
     local path = levelInfo.dir .. "/facilityWorkMaterials.json"
@@ -71,13 +69,14 @@ local function loadConfig()
         end
     end
     configLoaded = true
+    configLoadedForLevel = levelId
     return true
 end
 
 -- Get zone vertices from level sites (roleplay.sites.json). Use game's path resolution so mod level is found.
 local function getSpawnZoneVertices()
     local levelId = getCurrentLevelIdentifier()
-    if levelId ~= LEVEL_ID then return nil end
+    if not levelId then return nil end
     -- Prefer getCurrentLevelSitesFileByName so mod level's roleplay.sites.json is found (same as ambulance/taxi)
     local sitesPath = (gameplay_sites_sitesManager and gameplay_sites_sitesManager.getCurrentLevelSitesFileByName and gameplay_sites_sitesManager.getCurrentLevelSitesFileByName('roleplay')) or nil
     if not sitesPath and core_levels and core_levels.getLevelByName then
@@ -366,10 +365,35 @@ local function setTasklistOnDuty()
     guihooks.trigger('SetTasklistTask', { id = "facilityWork_materials", label = "Materials moved: 0", type = "message", clear = false })
 end
 
+-- Phone app: build state for UI (onDuty, session stats, available on this level)
+local function isFacilityWorkAvailable()
+    if not loadConfig() then return false end
+    local verts = getSpawnZoneVertices()
+    if not verts or #verts < 3 then return false end
+    collectDropTriggers()
+    for _ in pairs(dropTriggersByName) do return true end
+    return false
+end
+
+local function getFacilityWorkState()
+    return {
+        onDuty = (currentBatch ~= nil or currentForkliftId ~= nil),
+        sessionTotalPay = sessionTotalPay,
+        sessionTotalRep = sessionTotalRep,
+        sessionMaterialsMoved = sessionMaterialsMoved,
+        available = isFacilityWorkAvailable()
+    }
+end
+
+local function notifyPhoneState()
+    guihooks.trigger('updateFacilityWorkState', getFacilityWorkState())
+end
+
 local function updateTasklistValues()
     guihooks.trigger('SetTasklistTask', { id = "facilityWork_total_pay", label = "Total pay: $" .. sessionTotalPay, type = "message", clear = false })
     guihooks.trigger('SetTasklistTask', { id = "facilityWork_total_rep", label = "Total rep: " .. sessionTotalRep, type = "message", clear = false })
     guihooks.trigger('SetTasklistTask', { id = "facilityWork_materials", label = "Materials moved: " .. sessionMaterialsMoved, type = "message", clear = false })
+    notifyPhoneState()
 end
 
 local function spawnBatch(facilityId)
@@ -410,13 +434,16 @@ local function spawnBatch(facilityId)
     local positions = computeSpawnPositionsInZone(vertices, batchSize, spacing, stackHeight, stackLayers)
     local numToSpawn = math.min(batchSize, #positions)
     if numToSpawn == 0 then return false end
+    -- Spawn rotation Z (degrees) from facility config; default 0
+    local spawnRotationZDeg = tonumber(facCfg.spawnRotationZ)
+    if spawnRotationZDeg == nil then spawnRotationZDeg = 0 end
+    local rotZ = quatFromEuler(0, 0, math.rad(spawnRotationZDeg))
+    local baseRot = quatFromDir(vec3(0, 1, 0))
+
     for i = 1, numToSpawn do
         local pos = positions[i]
         if not pos then break end
-        -- Base facing Y; rotate 90° around Z so pallet fork opening faces away from wall
-        local baseRot = quatFromDir(vec3(0, 1, 0))
-        local rot90Z = quatFromEuler(0, 0, math.rad(90))
-        local rot = rot90Z * baseRot
+        local rot = rotZ * baseRot
         local obj = core_vehicles.spawnNewVehicle(mat.model_key, {
             pos = pos,
             rot = rot,
@@ -535,14 +562,78 @@ local function onForkliftExit()
 
     guihooks.trigger('ClearTasklist')
     currentForkliftId = nil
+    notifyPhoneState()
     if utils and utils.restoreTrafficAmount then
         utils.restoreTrafficAmount()
     end
 end
 
--- Enter forklift trigger: facilityWork_start; drop trigger: facilityWork_drop (credit when prop enters).
+-- Start facility work from phone (no start trigger). Sets currentForkliftId to player vehicle if in one, else when they enter a vehicle.
+local function doStartFacilityWork()
+    if not career_career or not career_career.isActive() then return false end
+    if not loadConfig() then
+        if utils and utils.displayMessage then
+            utils.displayMessage("Facility work: config not loaded (wrong level or missing facilityWorkMaterials.json).", 5)
+        end
+        return false
+    end
+    collectDropTriggers()
+    local facilityId = nil
+    for fid in pairs(facilityConfigs) do
+        facilityId = fid
+        break
+    end
+    if not facilityId then
+        if utils and utils.displayMessage then
+            utils.displayMessage("Facility work: no facility config found.", 5)
+        end
+        return false
+    end
+    local vertices = getSpawnZoneVertices()
+    if not vertices or #vertices < 3 then
+        if utils and utils.displayMessage then
+            utils.displayMessage("Facility work: spawn zone not found. In roleplay.sites.json (facilities/delivery) add a zone named 'facilityWork_spawnZone' with at least 3 vertices.", 8)
+        end
+        return false
+    end
+    local dropList = {}
+    for n in pairs(dropTriggersByName) do table.insert(dropList, n) end
+    if #dropList == 0 then
+        if utils and utils.displayMessage then
+            utils.displayMessage("Facility work: drop trigger not found. Place a BeamNGTrigger named 'facilityWork_drop' with luaFunction onBeamNGTrigger.", 8)
+        end
+        return false
+    end
+    if currentBatch then
+        despawnBatch()
+    end
+    table.clear(propsInDropZone)
+    batchReadyWaitingForkliftExit = false
+    if not spawnBatch(facilityId) then
+        if utils and utils.displayMessage then
+            utils.displayMessage("Facility work: could not spawn batch (check spawn zone and drop trigger).", 5)
+        end
+        return false
+    end
+    -- Use current player vehicle as forklift if in one; else set when they enter a vehicle (onVehicleSwitched)
+    currentForkliftId = be:getPlayerVehicleID(0)
+    if utils and utils.saveAndSetTrafficAmount then
+        utils.saveAndSetTrafficAmount(0)
+    end
+    setTasklistOnDuty()
+    updateTasklistValues()
+    if currentBatch and currentBatch.dropTrigger then
+        showDropMarkers(currentBatch.dropTrigger)
+    end
+    if utils and utils.displayMessage then
+        utils.displayMessage("On duty. Move materials to the drop zone.", 4)
+    end
+    return true
+end
+
+-- Drop trigger only (no start trigger); facility work is started from the phone.
 local function onBeamNGTrigger(data)
-    if not isActiveLevel() or not career_career or not career_career.isActive() then return end
+    if not career_career or not career_career.isActive() then return end
     local triggerName = data.triggerName
     local event = data.event
 
@@ -567,7 +658,6 @@ local function onBeamNGTrigger(data)
                 end
             end
         elseif event == "exit" then
-            -- Forklift left the drop zone after delivering all items → pay out and spawn next batch
             if batchReadyWaitingForkliftExit and currentBatch and currentForkliftId and data.subjectID == currentForkliftId then
                 batchReadyWaitingForkliftExit = false
                 payoutBatchAndSpawnNext()
@@ -575,86 +665,23 @@ local function onBeamNGTrigger(data)
         end
         return
     end
-
-    -- Start trigger: only when player vehicle enters (in forklift, not on foot).
-    if be:getPlayerVehicleID(0) ~= data.subjectID then return end
-    if gameplay_walk and gameplay_walk.isWalking and gameplay_walk.isWalking() then return end
-
-    if triggerName and triggerName:find(ENTER_FORKLIFT_PREFIX) then
-        if data.event == "enter" then
-            if not loadConfig() then
-                if utils and utils.displayMessage then
-                    utils.displayMessage("Facility work: config not loaded (wrong level or missing facilityWorkMaterials.json).", 5)
-                end
-                return
-            end
-            collectDropTriggers()
-            local facilityId = nil
-            for fid in pairs(facilityConfigs) do
-                facilityId = fid
-                break
-            end
-            if not facilityId then
-                if utils and utils.displayMessage then
-                    utils.displayMessage("Facility work: no facility config found.", 5)
-                end
-                return
-            end
-            -- Pre-check: spawn zone (roleplay.sites.json must have zone named facilityWork_spawnZone with vertices)
-            local vertices = getSpawnZoneVertices()
-            if not vertices or #vertices < 3 then
-                if utils and utils.displayMessage then
-                    utils.displayMessage("Facility work: spawn zone not found. In roleplay.sites.json (facilities/delivery) add a zone named 'facilityWork_spawnZone' with at least 3 vertices.", 8)
-                end
-                return
-            end
-            -- Pre-check: drop trigger (level must have a BeamNGTrigger named facilityWork_drop, luaFunction onBeamNGTrigger)
-            collectDropTriggers()
-            local dropList = {}
-            for n in pairs(dropTriggersByName) do table.insert(dropList, n) end
-            if #dropList == 0 then
-                if utils and utils.displayMessage then
-                    utils.displayMessage("Facility work: drop trigger not found. Place a BeamNGTrigger in the level named exactly 'facilityWork_drop' and set luaFunction to onBeamNGTrigger.", 8)
-                end
-                return
-            end
-            if currentBatch then
-                despawnBatch()
-            end
-            table.clear(propsInDropZone)
-            batchReadyWaitingForkliftExit = false
-            if spawnBatch(facilityId) then
-                currentForkliftId = data.subjectID
-                if utils and utils.saveAndSetTrafficAmount then
-                    utils.saveAndSetTrafficAmount(0)
-                end
-                setTasklistOnDuty()
-                updateTasklistValues()
-                if currentBatch and currentBatch.dropTrigger then
-                    showDropMarkers(currentBatch.dropTrigger)
-                end
-                if utils and utils.displayMessage then
-                    utils.displayMessage("On duty. Move materials to the drop zone.", 4)
-                end
-            else
-                if utils and utils.displayMessage then
-                    utils.displayMessage("Facility work: could not spawn batch (check spawn zone and drop trigger).", 5)
-                end
-            end
-        end
-        return
-    end
 end
 
 local function onVehicleSwitched(oldId, newId)
-    if not isActiveLevel() then return end
+    if not career_career or not career_career.isActive() then return end
     if currentForkliftId and oldId == currentForkliftId then
         onForkliftExit()
+        return
+    end
+    -- Started from phone without a vehicle: when player enters any vehicle, treat it as the forklift
+    if currentBatch and not currentForkliftId and newId then
+        currentForkliftId = newId
     end
 end
 
 local function onExtensionLoaded()
     configLoaded = false
+    configLoadedForLevel = nil
 end
 
 local function onExtensionUnloaded()
@@ -668,6 +695,20 @@ local function onExtensionUnloaded()
         utils.restoreTrafficAmount()
     end
     guihooks.trigger('ClearTasklist')
+end
+
+function M.requestFacilityWorkState()
+    notifyPhoneState()
+end
+
+function M.startFacilityWork()
+    return doStartFacilityWork()
+end
+
+function M.endFacilityWork()
+    if currentBatch or currentForkliftId then
+        onForkliftExit()
+    end
 end
 
 M.onBeamNGTrigger = onBeamNGTrigger

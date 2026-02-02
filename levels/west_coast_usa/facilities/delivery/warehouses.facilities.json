@@ -20,8 +20,14 @@
             "industrial",
             "trailerDeliveryConstructionMaterials",
             "vehLargeTruck"],
-          "loanerTrailerPriority": 0,
-		      "loanerNonTrailerPriority": 1
+        },
+        {
+          "psName": "forklift_loaner",
+          "isInspectSpot": true,
+          "logisticTypesProvided": [],
+          "logisticTypesReceived": [],
+        "loanerTrailerPriority": 0,
+		    "loanerNonTrailerPriority": 1
         },
         {
           "psName": "industrialWarehouse_parkingB",

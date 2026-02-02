@@ -1,0 +1,92 @@
+{
+  "materials": {
+    "largeLumber": {
+      "name": "Large Lumber",
+      "model_key": "TPUForkableLoads",
+      "config": "LargeLumber",
+      "money": 350,
+      "spawnGridSpacing": 2.0
+    },
+    "smallLumber": {
+      "name": "Small Lumber",
+      "model_key": "TPUForkableLoads",
+      "config": "SmallLumber",
+      "money": 200,
+      "spawnGridSpacing": 2.0
+    },
+    "crate": {
+      "name": "Crate",
+      "model_key": "TPUForkableLoads",
+      "config": "Crate",
+      "money": 200,
+      "spawnGridSpacing": 2.0
+    },
+    "boxes": {
+      "name": "Boxes",
+      "model_key": "TPUForkableLoads",
+      "config": "Boxes",
+      "money": 180,
+      "spawnGridSpacing": 2.0
+    },
+    "concrete": {
+      "name": "Concrete",
+      "model_key": "TPUForkableLoads",
+      "config": "Concrete",
+      "money": 280,
+      "spawnGridSpacing": 2.0
+    },
+    "emptyPallet": {
+      "name": "Empty Pallet",
+      "model_key": "TPUForkableLoads",
+      "config": "EmptyPallet",
+      "money": 120,
+      "spawnGridSpacing": 2.0
+    },
+    "adjustableBarrels": {
+      "name": "Barrels",
+      "model_key": "TPUForkableLoads",
+      "config": "AdjustableBarrels",
+      "money": 250,
+      "spawnGridSpacing": 2.0
+    },
+    "adjustableBox": {
+      "name": "Metal Box",
+      "model_key": "TPUForkableLoads",
+      "config": "AdjustableBox",
+      "money": 300,
+      "spawnGridSpacing": 2.0
+    },
+    "tastiCola": {
+      "name": "Tasti Cola",
+      "model_key": "TPUForkableLoads",
+      "config": "TastiCola",
+      "money": 220,
+      "spawnGridSpacing": 2.0
+    },
+    "cargoCrateXL": {
+      "name": "Cargo Crate XL",
+      "model_key": "TPUForkableLoads",
+      "config": "TPUCargoCrateXL",
+      "money": 320,
+      "spawnGridSpacing": 2.0
+    }
+  },
+  "logisticsWarehouse": {
+    "organizationId": "logisticsWarehouse",
+    "batchSize": 8,
+    "stackLayers": 2,
+    "stackHeight": 0.5,
+    "spawnRotationZ": 180,
+    "spawns": [
+      { "materialId": "largeLumber" },
+      { "materialId": "smallLumber" },
+      { "materialId": "crate" },
+      { "materialId": "boxes" },
+      { "materialId": "concrete" },
+      { "materialId": "adjustableBarrels" },
+      { "materialId": "adjustableBox" },
+      { "materialId": "tastiCola" },
+      { "materialId": "cargoCrateXL" }
+    ]
+  }
+}

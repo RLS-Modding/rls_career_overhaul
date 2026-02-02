@@ -1437,6 +1437,12 @@ export default {
     dismissSummary: () => {}
   },
 
+  gameplay_facilityWork: {
+    requestFacilityWorkState: () => {},
+    startFacilityWork: () => {},
+    endFacilityWork: () => {}
+  },
+
   overhaul_maps: {
     getOtherAvailableMaps: () => {},
     getMapsExcludingWestCoast: () => {},

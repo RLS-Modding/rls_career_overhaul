@@ -57,8 +57,8 @@ if %ERRORLEVEL% neq 0 (
     exit /b 1
 )
 
-echo   Running npm run build...
-call npm run build
+echo   Running npx vite build...
+call npx vite build
 if %ERRORLEVEL% neq 0 (
     echo Error: npm build failed.
     popd
