@@ -19,8 +19,9 @@
             "foodSupplies",
             "industrial",
             "trailerDeliveryConstructionMaterials",
-            "vehLargeTruck"
-          ]
+            "vehLargeTruck"],
+          "loanerTrailerPriority": 0,
+		      "loanerNonTrailerPriority": 1
         },
         {
           "psName": "industrialWarehouse_parkingB",

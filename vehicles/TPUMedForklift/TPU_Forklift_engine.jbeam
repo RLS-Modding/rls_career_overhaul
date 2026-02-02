@@ -1,0 +1,489 @@
+{
+"Forklift_engine": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"75hp I3 Diesel Engine",
+        "value":350
+    },
+    "slotType" : "Forklift_engine",
+    "slots": [
+        ["type", "default", "description"],
+        ["fotklift_revlimiter","fotklift_revlimiter", "Engine Management"],
+        ["forklift_transmission","forklift_transmission_2A", "Transmission"],
+        //["Forklift_engine_internals","Forklift_engine_internals", "Engine Long Block", {"coreSlot":true}],
+        //["Forklift_intake","Forklift_intake","Intake"{"coreSlot":true}],
+        ["forklift_exhaust","forklift_exhaust","Exhaust"]
+    ],
+    "powertrain": [
+        ["type", "name", "inputName", "inputIndex"],
+        ["combustionEngine", "mainEngine", "dummy", 0]
+    ],
+	//power curves based on kubota 07 series, V3300DI-E2B engine
+    "mainEngine": {
+        "torque":[
+            ["rpm", "torque"]
+            [0, 0],
+            [500, 180],
+            [1000, 235],
+            [1200, 245],
+            [1400, 245],
+            [1600, 240],
+            [1800, 235],
+            [2000, 230],
+            [2200, 220],
+            [2400, 210],
+            [2600, 200],
+            [3000, 150]
+        ],
+        "idleRPM":650,
+        "maxRPM":3000,
+        "revLimiterRPMDrop":0,
+        "inertia":0.08,
+        "friction":8,
+        "dynamicFriction":0.018,
+        "engineBrakeTorque":13,
+        //"burnEfficiency":0.3
+        "burnEfficiency":[
+            [0, 0.12],
+            [0.05, 0.32],
+            [0.4, 0.47],
+            [0.7, 0.41],
+            [1, 0.29]
+        ],
+        //fuel system
+        "energyStorage": "mainTank",
+        "requiredEnergyType":"diesel",
+
+        //exhaust
+        "particulates":0.1,
+        "instantAfterFireCoef": 0.0,
+        "sustainedAfterFireCoef": 0.0,
+
+        //cooling and oil system
+        "thermalsEnabled":true,
+        "engineBlockMaterial":"iron",
+        "oilVolume":2,
+
+        //engine durability
+        "cylinderWallTemperatureDamageThreshold":150,
+        "headGasketDamageThreshold":1500000,
+        "pistonRingDamageThreshold":1500000,
+        "connectingRodDamageThreshold":1500000,
+        "maxTorqueRating": 300,
+        "maxOverTorqueDamage": 450,
+
+        //node beam interface
+        "torqueReactionNodes:":["e1l","e2l","e4r"],
+        "waterDamage": {"[engineGroup]:":["engine_intake"]},
+        "radiator": {"[engineGroup]:":["radiator"]},
+        "engineBlock": {"[engineGroup]:":["engine_block"]},
+        "breakTriggerBeam":"engine",
+        "uiName":"Engine",
+        "soundConfig": "soundConfig",
+        "soundConfigExhaust": "soundConfigExhaust",
+
+        //starter motor
+        "starterSample":"event:>Engine>Starter>i4_2011_eng",
+        "starterSampleExhaust":"event:>Engine>Starter>i4_2011_exh",
+        "shutOffSampleEngine":"event:>Engine>Shutoff>v6_1995_eng",
+        "shutOffSampleExhaust":"event:>Engine>Shutoff>v6_1995_exh",
+        "starterVolume":0.63,
+        "starterVolumeExhaust":0.8,
+        "shutOffVolumeEngine":0.32,
+        "shutOffVolumeExhaust":0.42,
+        "starterThrottleKillTime":0.85,
+        "idleRPMStartRate":2,
+        "idleRPMStartCoef":1,
+    },
+    "soundConfig": {
+        "sampleName": "I3_engine",
+        "intakeMuffling": 1,
+
+        "mainGain": -13,
+        "onLoadGain":1.0,
+        "offLoadGain":0.55,
+
+        "maxLoadMix": 0.7,
+        "minLoadMix": 0,
+
+        "eqLowGain": 0,
+        "eqLowFreq": 250,
+        "eqLowWidth": 0.1,
+
+        "eqHighGain": 0,
+        "eqHighFreq": 6000,
+        "eqHighWidth": 0.1,
+
+        "lowShelfGain":2,
+        "lowShelfFreq":150,
+
+        "highShelfGain":10,
+        "highShelfFreq":7500,
+
+        "fundamentalFrequencyCylinderCount":3,
+        "eqFundamentalGain": -2,
+    },
+    "soundConfigExhaust": {
+        "sampleName": "I3_exhaust",
+
+        "mainGain": -4.5,
+        "onLoadGain":1.0,
+        "offLoadGain":0.43,
+
+        "maxLoadMix": 0.8,
+        "minLoadMix": 0,
+
+        "eqLowGain": -3,
+        "eqLowFreq": 450,
+        "eqLowWidth": 0.1,
+
+        "eqHighGain": -9,
+        "eqHighFreq": 1800,
+        "eqHighWidth": 0.1,
+
+        "lowShelfGain":-1,
+        "lowShelfFreq":100,
+
+        "highShelfGain":1,
+        "highShelfFreq":6000,
+
+        "fundamentalFrequencyCylinderCount":3,
+        "eqFundamentalGain": -2
+    },
+    "vehicleController": {
+        "clutchLaunchStartRPM":1200,
+        "clutchLaunchTargetRPM":1800,
+        //**highShiftDown can be overwritten by automatic transmissions**
+        "highShiftDownRPM":[0,0,0,1200,1200,1200,1200],
+        //**highShiftUp can be overwritten by intake modifications**
+        "highShiftUpRPM":2400
+    },
+    "nodes": [
+         ["id", "posX", "posY", "posZ"],
+         //--658cc I3 Diesel Engine--
+         {"selfCollision":false},
+         {"collision":true},
+         {"nodeMaterial":"|NM_METAL"},
+         {"frictionCoef":0.5},
+         {"group":"MFL_engine"},
+         {"nodeWeight":31},
+         {"engineGroup":"engine_block"},
+         {"chemEnergy":1000,"burnRate":0.39,"flashPoint":700,"specHeat": 0.2,"selfIgnitionCoef":false,"smokePoint":600,"baseTemp":"thermals","conductionRadius":0.15}
+		 
+		 
+         ["e1r", -0.18, -0.12, 0.0],
+         ["e1l", 0.18, -0.12, 0.0],
+         ["e2r", -0.18, 0.38, 0.0],
+         ["e2l", 0.18, 0.38, 0.0],
+         {"chemEnergy":false,"burnRate":false,"flashPoint":false, "specHeat": false,"selfIgnitionCoef":false,"smokePoint":false,"baseTemp":false,"conductionRadius":false}
+         {"nodeWeight":3.5},
+         {"engineGroup":["engine_intake","engine_block"]}
+         ["e3r", -0.22, -0.12, 0.35],
+         ["e3l", 0.22, -0.12, 0.35],
+         ["e4r", -0.22, 0.38, 0.35],
+         ["e4l", 0.22, 0.38, 0.35,{"isExhaust":"mainEngine"}],
+         {"engineGroup":""},
+         {"group":""}
+    ],
+    "flexbodies":[
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        {"rotation":{"x":0, "y":0, "z":0}, "translation":{"x":0, "y":0, "z":0}},
+        //body
+        {"deformGroup":""},
+        ["MFL_engine", ["MFL_engine"]],
+        ["MFL_transmission", ["MFL_engine"]]
+	],
+    "beams": [
+        ["id1:", "id2:"],
+        {"beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+        {"beamSpring":4001000,"beamDamp":150},
+        {"beamDeform":100000,"beamStrength":"FLT_MAX"},
+        //engine
+        ["e1r","e1l"],
+        ["e2r","e2l"],
+        ["e3r","e3l"],
+        ["e4r","e4l"],
+
+        ["e1r","e2r"],
+        ["e1l","e2l"],
+        ["e3r","e4r"],
+        ["e3l","e4l"],
+
+        ["e1r","e3r"],
+        ["e1l","e3l"],
+        ["e2r","e4r"],
+        ["e2l","e4l"],
+
+        ["e2r","e3r"],
+        ["e2l","e3l"],
+        ["e2r","e3l"],
+        ["e2l","e3r"],
+
+        ["e1r","e4r"],
+        ["e1l","e4l",{"isExhaust":"mainEngine"}],
+        ["e1r","e4l"],
+        ["e1l","e4r"],
+
+        ["e1r","e2l"],
+        ["e1l","e2r"],
+        ["e3r","e4l"],
+        ["e3l","e4r"],
+
+        ["e1r","e3l"],
+        ["e1l","e3r"],
+        ["e2r","e4l"],
+        ["e2l","e4r"],
+
+        //engine mounts
+        {"beamSpring":2001000,"beamDamp":350},
+        ["e2r", "b3tr"],
+        ["e2r", "b3tl"],
+        ["e2l", "b3tr"],
+        ["e2l", "b3tl"],
+
+        ["e2r", "b2tr"],
+        ["e2r", "b2tl"],
+        ["e2l", "b2tr"],
+        ["e2l", "b2tl"],
+
+        ["e1r", "b2tr"],
+        ["e1r", "b2tl"],
+        ["e1l", "b2tr"],
+        ["e1l", "b2tl"],
+
+        ["e1r", "b1tr"],
+        ["e1r", "b1tl"],
+        ["e1l", "b1tr"],
+        ["e1l", "b1tl"],
+
+        {"deformGroup":""},
+        {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0}
+    ],
+    "triangles": [
+		["id1:","id2:","id3:"],
+		{"triangleType":"NONCOLLIDABLE"},
+		["e2r", "e1r", "e1l"],
+		["e1l", "e2l", "e2r"],
+		{"triangleType":"NORMALTYPE"}
+    ]
+},
+"fotklift_revlimiter": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Engine Governor",
+        "value":450,
+    },
+    "slotType" : "fotklift_revlimiter",
+    "mainEngine":{
+        "hasRevLimiter":true,        
+        "revLimiterType":"soft",
+        "revLimiterRPM":2600,
+        "revLimiterCutTime":0.015
+    },
+    "vehicleController": {
+        "highShiftUpRPM":2200
+    }
+},
+"forklift_transmission_2A": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"2-Speed Automatic Transmission",
+    },
+    "slotType" : "forklift_transmission",
+    "slots": [
+        ["type", "default", "description"]
+        ["forklift_torqueConv","forklift_torqueConv","Torque Converter", {"coreSlot":true}],
+    ],
+    "powertrain": [
+        ["type", "name", "inputName", "inputIndex"],
+        ["torqueConverter", "torqueConverter", "mainEngine", 1],
+        ["automaticGearbox", "gearbox", "torqueConverter", 1],
+    ],
+    "gearbox": {
+        "uiName":"Gearbox",
+        "gearRatios":[-3.23,-5.735, 0, 5.735, 3.23],
+        "parkLockTorque":1500,
+        "oneWayViscousCoef":20,
+        "friction": 3,
+        "gearboxNode:":["tra1"],
+    },
+	"props": [
+        ["func"      , "mesh"              , "idRef:", "idX:", "idY:"            , "baseRotation"        , "rotation"                 , "translation"        , "min", "max", "offset", "multiplier"],
+        //shifter
+        ["gear_A"   ,        "MFL_ShiftLever", "b1t","b1tr","b2t", {"x":60, "y":0, "z":180}, {"x":0, "y":0, "z":-10}     , {"x":0, "y":0, "z":0.0}, -2, 2, 0, 1],
+    ],
+    "vehicleController": {
+        "automaticModes":"RND",
+        "useSmartAggressionCalculation":false,
+        "calculateOptimalLoadShiftPoints": true,
+        "shiftDownRPMOffsetCoef":1.5,
+        "transmissionGearChangeDelay":0.5,
+        "gearboxDecisionSmoothingDown":0.25,
+        "gearboxDecisionSmoothingUp":0.25,
+        "lowShiftDownRPM":800,
+        "lowShiftUpRPM":1800,
+        "wheelSlipUpThreshold":99999,
+    },
+    "nodes": [
+         ["id", "posX", "posY", "posZ"],
+         //--3 Speed Manual--
+         {"selfCollision":true},
+         {"collision":true}
+         {"nodeMaterial":"|NM_METAL"},
+         {"frictionCoef":0.5},
+         {"group":"Forklift_transmission"},
+         {"nodeWeight":13},
+         ["tra1", 0.0, -0.4, 0.2],
+         {"group":""},
+    ],
+    "beams": [
+          ["id1:", "id2:"],
+          {"beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+          {"beamSpring":4001000,"beamDamp":150},
+          {"beamDeform":100000,"beamStrength":"FLT_MAX"},
+          //transmission
+          ["tra1","e1r"],
+          ["tra1","e3r"],
+          ["tra1","e1l"],
+          ["tra1","e3l"],
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+    ],
+},
+"forklift_torqueConv": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Torque Converter",
+        "value":125
+    },
+    "slotType" : "forklift_torqueConv",
+    "torqueConverter": {
+        "uiName":"Torque Converter",
+        "converterDiameter": 0.285,
+        "converterStiffness":25,
+        "couplingAVRatio":0.87,
+        "stallTorqueRatio":3.2,
+        "additionalEngineInertia":0.11
+    },
+    "vehicleController": {
+        //"torqueConverterLockupRPM":500,
+        "torqueConverterLockupMinGear":1
+    }
+},
+"forklift_transmission_2M": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"2-Speed Manual Transmission"
+    },
+    "slotType" : "forklift_transmission",
+    "slots": [
+        ["type", "default", "description"],
+        ["Forklift_flywheel","Forklift_flywheel","Flywheel", {"coreSlot":true}]
+    ],
+    "powertrain": [
+        ["type", "name", "inputName", "inputIndex"],
+        ["frictionClutch", "clutch", "mainEngine", 1],
+        ["manualGearbox", "gearbox", "clutch", 1]
+    ],
+    "gearbox": {
+        "uiName":"Gearbox",
+        "gearRatios":[-3.6, -8.6, 0, 8.6, 3.6],
+        "friction": 3,
+        "gearboxNode:":["tra1"]
+    },
+	"props": [
+        ["func"      , "mesh"              , "idRef:", "idX:", "idY:"            , "baseRotation"        , "rotation"                 , "translation"        , "min", "max", "offset", "multiplier"],
+        ["clutch"     ,"MFL_clutchpedal", "b1t","b1tr","b2t",  {"x":-60, "y":180, "z":0} , {"x":30, "y":0, "z":0}    , {"x":0.0, "y":0, "z":0}, 0, 1, 0, 1],
+        //shifter
+        ["gear"   ,        "MFL_ShiftLever", "b1t","b1tr","b2t", {"x":60, "y":0, "z":180}, {"x":0, "y":0, "z":-10}     , {"x":0, "y":0, "z":0.0}, -2, 2, 0, 1]
+    ],
+    "vehicleController": {
+        //"lowShiftDownRPM":[0,0,0,1600,2100,2300,2300],
+        //"lowShiftUpRPM":3500,
+        "calculateOptimalLoadShiftPoints": true,
+        "shiftDownRPMOffsetCoef":1.3,
+        "lowShiftDownRPM":[0,0,0,900,900],
+        "lowShiftUpRPM":[0,0,2300,1800]
+    },
+    "nodes": [
+         ["id", "posX", "posY", "posZ"],
+         //--3 Speed Manual--
+         {"selfCollision":true},
+         {"collision":true}
+         {"nodeMaterial":"|NM_METAL"},
+         {"frictionCoef":0.5},
+         {"group":"Forklift_transmission"},
+         {"nodeWeight":13},
+         ["tra1", 0.0, -0.4, 0.2],
+         {"group":""}
+    ],
+    "beams": [
+          ["id1:", "id2:"],
+          {"beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+          {"beamSpring":4001000,"beamDamp":150},
+          {"beamDeform":100000,"beamStrength":"FLT_MAX"},
+          //transmission
+          ["tra1","e1r"],
+          ["tra1","e3r"],
+          ["tra1","e1l"],
+          ["tra1","e3l"],
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+    ]
+},
+"Forklift_flywheel": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Flywheel",
+        "value":125,
+    },
+    "slotType" : "Forklift_flywheel",
+    "clutch": {
+        "uiName":"Clutch",
+        "additionalEngineInertia":0.05
+    }
+},
+"forklift_exhaust": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Exhaust"
+    },
+    "slotType" : "forklift_exhaust",
+    "flexbodies":[
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        {"rotation":{"x":0, "y":0, "z":0}, "translation":{"x":0, "y":0, "z":0}},
+        //body
+        {"deformGroup":""},
+        ["MFL_exhaust", ["MFL_engine"]]
+	],
+    "nodes": [
+         ["id", "posX", "posY", "posZ"],
+         //--3 Speed Manual--
+         {"selfCollision":true},
+         {"collision":true},
+         {"nodeMaterial":"|NM_METAL"},
+         {"frictionCoef":0.5},
+         {"group":"MFL_engine"},
+         {"nodeWeight":1},         
+         ["ex1", -0.308, 1.0, 0.623],
+		 ["ex2", -0.308, 1.106, 0.623],
+		 //["ex2", -0.308, 1.106, 0.623,{"afterFireAudioCoef":0.0,"afterFireVisualCoef":0.0, "exhaustAudioMufflingCoef": 0.2, "exhaustAudioGainChange":-4}],
+         {"group":""}
+    ],
+    "beams": [
+          ["id1:", "id2:"],
+          {"beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+          {"beamSpring":201000,"beamDamp":50},
+          {"beamDeform":100000,"beamStrength":"FLT_MAX"},
+          ["ex1","e1l", {"isExhaust":"mainEngine"}],
+          ["ex1","ex2", {"isExhaust":"mainEngine"}],
+          ["ex1","w3ttr"],
+          ["ex1","w2ttr"],
+          ["ex1","w3tr"],
+          ["ex1","w2tr"],
+          ["ex2","w3ttr"],
+          ["ex2","w2ttr"],
+          ["ex2","w3tr"],
+          ["ex2","w2tr"],
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0}
+    ]
+}
+}

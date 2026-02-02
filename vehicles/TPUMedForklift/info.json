@@ -1,0 +1,63 @@
+{
+    "Name":"Medium Forklift",
+    "Brand":"Wolf Heavy Industries",
+    "Author":"TrackpadUser",
+    "Country":"United States",
+    "Type":"Truck",
+    "Body Style":"Forklift",
+    "default_color":"Construction Yellow",
+    "default_pc":"FL45D Simplex",
+    "Years":{"min":2010, "max":2020},
+    "Derby Class":"Compact Car",
+	"paints":{
+	"Construction Yellow":{
+		"baseColor":[0.949 0.625 0.0263 1.552],
+		"clearcoat":1.0,
+		"clearcoatRoughness":0.1,
+		"metallic":0,
+		"roughness":0.2
+    },
+		"Flashy Orange":{
+		"baseColor":[0.92 0.38 0.07 1.552],
+		"clearcoat":1.0,
+		"clearcoatRoughness":0.1,
+		"metallic":0,
+		"roughness":0.2
+    },
+	"Hot Red":{
+		"baseColor":[0.670 0.133 0.0115 1.552],
+		"clearcoat":1.0,
+		"clearcoatRoughness":0.1,
+		"metallic":0,
+		"roughness":0.2
+    },
+	"Boring White":{
+		"baseColor":[1 1 1 1.552],
+		"clearcoat":1.0,
+		"clearcoatRoughness":0.1,
+		"metallic":0,
+		"roughness":0.2
+    },
+	"Electric Blue":{
+		"baseColor":[0.009 0.4028 0.970 1.552],
+		"clearcoat":1.0,
+		"clearcoatRoughness":0.1,
+		"metallic":0,
+		"roughness":0.2
+    },
+	"Terrible Teal":{
+		"baseColor":[0.039 0.640 0.438 1.552],
+		"clearcoat":1.0,
+		"clearcoatRoughness":0.1,
+		"metallic":0,
+		"roughness":0.2
+    },
+	"Fluo Green":{
+		"baseColor":[0.152 0.645 0.03445 1.552],
+		"clearcoat":1.0,
+		"clearcoatRoughness":0.1,
+		"metallic":0,
+		"roughness":0.2
+    },
+    }
+}

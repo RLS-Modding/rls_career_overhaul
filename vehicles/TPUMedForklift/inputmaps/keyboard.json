@@ -1,0 +1,13 @@
+{
+  "name"              : "Keyboard"          , 
+  "version"           : 1                   , 
+  "devicetype"        : "keyboard"          , 
+  "vidpid"            : "6F1D2B61"          , 
+  "guid"              : "{6F1D2B61-D5A0-11CF-BFC7-444553540000}",
+"bindings" :   [
+    {"control":"ctrl pageup", "action":"tiltUp"},
+    {"control":"ctrl pagedown","action": "tiltDown"}, 
+    {"control":"pageup","action":"lift"},
+    {"control":"pagedown","action":"lower"}
+  ]
+}
