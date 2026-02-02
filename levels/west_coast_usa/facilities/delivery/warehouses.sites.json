@@ -1,6 +1,6 @@
 {
   "description":"Description of these Sites. Contains Locations and Zones.",
-  "dir":"/levels/west_coast_usa/facilities/delivery/",
+  "dir":"/mods/unpacked/rls_career_overhaul/levels/west_coast_usa/facilities/delivery/",
   "filename":"warehouses.sites.json",
   "locations":{},
   "name":"warehouses.sites.json",
@@ -25,7 +25,7 @@
       },
       "isMultiSpot":false,
       "name":"industrialWarehouse_hallA1",
-      "oldId":2469,
+      "oldId":18023,
       "pos":[
         -30.0194149,
         723.8527222,
@@ -67,7 +67,7 @@
       },
       "isMultiSpot":false,
       "name":"industrialWarehouse_hallA2",
-      "oldId":2470,
+      "oldId":18024,
       "pos":[
         -52.95642471,
         755.9277344,
@@ -109,7 +109,7 @@
       },
       "isMultiSpot":false,
       "name":"industrialWarehouse_hallA3",
-      "oldId":2471,
+      "oldId":18025,
       "pos":[
         -29.92707825,
         787.8922729,
@@ -151,7 +151,7 @@
       },
       "isMultiSpot":false,
       "name":"industrialWarehouse_hallA4",
-      "oldId":2472,
+      "oldId":18026,
       "pos":[
         -53.06416321,
         819.8842773,
@@ -193,7 +193,7 @@
       },
       "isMultiSpot":false,
       "name":"industrialWarehouse_hallA5",
-      "oldId":2473,
+      "oldId":18027,
       "pos":[
         -12.71256638,
         827.3823242,
@@ -235,7 +235,7 @@
       },
       "isMultiSpot":false,
       "name":"industrialWarehouse_hallA6",
-      "oldId":2474,
+      "oldId":18028,
       "pos":[
         34.85196686,
         771.918335,
@@ -277,7 +277,7 @@
       },
       "isMultiSpot":false,
       "name":"industrialWarehouse_hallA6",
-      "oldId":2475,
+      "oldId":18029,
       "pos":[
         11.68446159,
         787.8525391,
@@ -319,7 +319,7 @@
       },
       "isMultiSpot":false,
       "name":"industrialWarehouse_hallB1",
-      "oldId":2476,
+      "oldId":18030,
       "pos":[
         45.67246628,
         671.5197754,
@@ -361,7 +361,7 @@
       },
       "isMultiSpot":false,
       "name":"industrialWarehouse_hallB2",
-      "oldId":2477,
+      "oldId":18031,
       "pos":[
         54.8666687,
         659.7701416,
@@ -403,7 +403,7 @@
       },
       "isMultiSpot":false,
       "name":"industrialWarehouse_hallC",
-      "oldId":2478,
+      "oldId":18032,
       "pos":[
         34.65071869,
         655.649231,
@@ -443,9 +443,9 @@
           "name":"Parking A"
         }
       },
-      "isMultiSpot":false,
+      "isMultiSpot":true,
       "name":"industrialWarehouse_parkingA",
-      "oldId":2479,
+      "oldId":18033,
       "pos":[
         41.69952393,
         721.7822266,
@@ -462,9 +462,9 @@
         5.266505957,
         3
       ],
-      "spotAmount":1,
+      "spotAmount":2,
       "spotDirection":"Left",
-      "spotOffset":0,
+      "spotOffset":0.14399999380112,
       "spotRotation":0
     },
     {
@@ -487,7 +487,7 @@
       },
       "isMultiSpot":false,
       "name":"industrialWarehouse_parkingB",
-      "oldId":2480,
+      "oldId":18034,
       "pos":[
         -34.38026047,
         689.1856689,
@@ -523,7 +523,7 @@
       },
       "isMultiSpot":false,
       "name":"industrialWarehouse_trailer",
-      "oldId":2481,
+      "oldId":18035,
       "pos":[
         -58.02607346,
         679.8897705,
@@ -565,7 +565,7 @@
       },
       "isMultiSpot":false,
       "name":"rentabox_A",
-      "oldId":2482,
+      "oldId":18036,
       "pos":[
         -113.4453354,
         33.45206451,
@@ -607,7 +607,7 @@
       },
       "isMultiSpot":false,
       "name":"rentabox_B",
-      "oldId":2483,
+      "oldId":18037,
       "pos":[
         -88.56477356,
         50.86000443,
@@ -649,7 +649,7 @@
       },
       "isMultiSpot":false,
       "name":"rentabox_C",
-      "oldId":2484,
+      "oldId":18038,
       "pos":[
         -78.91312408,
         79.71422577,
@@ -691,7 +691,7 @@
       },
       "isMultiSpot":false,
       "name":"rentabox_D",
-      "oldId":2485,
+      "oldId":18039,
       "pos":[
         -75.23470306,
         70.93666077,
@@ -733,7 +733,7 @@
       },
       "isMultiSpot":false,
       "name":"rentabox_E",
-      "oldId":2486,
+      "oldId":18040,
       "pos":[
         -102.7438126,
         56.60450745,
@@ -775,7 +775,7 @@
       },
       "isMultiSpot":false,
       "name":"rentabox_parking",
-      "oldId":2487,
+      "oldId":18041,
       "pos":[
         -142.9997864,
         10.86316586,
@@ -811,7 +811,7 @@
       },
       "isMultiSpot":false,
       "name":"rentabox_trailer",
-      "oldId":2488,
+      "oldId":18042,
       "pos":[
         -121.5201263,
         32.93895721,
@@ -853,7 +853,7 @@
       },
       "isMultiSpot":false,
       "name":"spearleafLogistics_container03",
-      "oldId":2489,
+      "oldId":18043,
       "pos":[
         496.7047119,
         1709.725464,
@@ -895,7 +895,7 @@
       },
       "isMultiSpot":false,
       "name":"spearleafLogistics_container14",
-      "oldId":2490,
+      "oldId":18044,
       "pos":[
         533.065979,
         1674.17334,
@@ -937,7 +937,7 @@
       },
       "isMultiSpot":false,
       "name":"spearleafLogistics_container22",
-      "oldId":2491,
+      "oldId":18045,
       "pos":[
         558.2350464,
         1653.768921,
@@ -979,7 +979,7 @@
       },
       "isMultiSpot":false,
       "name":"spearleafLogistics_container34",
-      "oldId":2492,
+      "oldId":18046,
       "pos":[
         597.9694824,
         1689.731934,
@@ -1021,7 +1021,7 @@
       },
       "isMultiSpot":false,
       "name":"spearleafLogistics_hall7",
-      "oldId":2493,
+      "oldId":18047,
       "pos":[
         587.7435303,
         1598.921997,
@@ -1063,7 +1063,7 @@
       },
       "isMultiSpot":false,
       "name":"spearleafLogistics_hall5",
-      "oldId":2494,
+      "oldId":18048,
       "pos":[
         619.5303955,
         1600.158081,
@@ -1105,7 +1105,7 @@
       },
       "isMultiSpot":false,
       "name":"spearleafLogistics_parkingA",
-      "oldId":2495,
+      "oldId":18049,
       "pos":[
         469.7255249,
         1597.876831,
@@ -1147,7 +1147,7 @@
       },
       "isMultiSpot":false,
       "name":"spearleafLogistics_parkingB",
-      "oldId":2496,
+      "oldId":18050,
       "pos":[
         640.1349487,
         1704.549683,
@@ -1189,7 +1189,7 @@
       },
       "isMultiSpot":false,
       "name":"spearleafLogistics_yardA",
-      "oldId":2497,
+      "oldId":18051,
       "pos":[
         376.5289917,
         1712.670166,
@@ -1231,7 +1231,7 @@
       },
       "isMultiSpot":false,
       "name":"spearleafLogistics_yardB",
-      "oldId":2498,
+      "oldId":18052,
       "pos":[
         374.2244263,
         1740.227295,
@@ -1273,7 +1273,7 @@
       },
       "isMultiSpot":false,
       "name":"spearleafLogistics_yardC",
-      "oldId":2499,
+      "oldId":18053,
       "pos":[
         354.1263733,
         1809.479492,
@@ -1309,7 +1309,7 @@
       },
       "isMultiSpot":false,
       "name":"spearleafLogistics_trailer",
-      "oldId":2500,
+      "oldId":18054,
       "pos":[
         640.0494385,
         1689.988159,
@@ -1351,7 +1351,7 @@
       },
       "isMultiSpot":false,
       "name":"spearleafLogistics_gate1",
-      "oldId":2501,
+      "oldId":18055,
       "pos":[
         571.9473877,
         1629.44812,
@@ -1393,7 +1393,7 @@
       },
       "isMultiSpot":false,
       "name":"spearleafLogistics_gate2",
-      "oldId":2502,
+      "oldId":18056,
       "pos":[
         587.7838135,
         1629.029053,
@@ -1435,7 +1435,7 @@
       },
       "isMultiSpot":false,
       "name":"spearleafLogistics_crane1",
-      "oldId":2503,
+      "oldId":18057,
       "pos":[
         673.494812,
         1667.792725,
@@ -1477,7 +1477,7 @@
       },
       "isMultiSpot":false,
       "name":"spearleafLogistics_crane2",
-      "oldId":2504,
+      "oldId":18058,
       "pos":[
         673.196106,
         1699.759644,
@@ -1513,7 +1513,7 @@
       },
       "isMultiSpot":false,
       "name":"spearleafLogistics_hall8",
-      "oldId":2505,
+      "oldId":18059,
       "pos":[
         571.8771973,
         1598.656982,
@@ -1549,7 +1549,7 @@
       },
       "isMultiSpot":false,
       "name":"rentaboxLoaners",
-      "oldId":7268,
+      "oldId":18060,
       "pos":[
         -110.03644561768,
         21.816307067871,

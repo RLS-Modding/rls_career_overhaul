@@ -19,7 +19,7 @@
       },
       "isMultiSpot":false,
       "name":"Hospital Entrance",
-      "oldId":70257,
+      "oldId":18062,
       "pos":[
         -231.44441223145,
         437.36383056641,
@@ -55,7 +55,7 @@
       },
       "isMultiSpot":false,
       "name":"paramedicWorkParking",
-      "oldId":70258,
+      "oldId":18063,
       "pos":[
         -291.77017211914,
         461.49496459961,
@@ -91,7 +91,7 @@
       },
       "isMultiSpot":false,
       "name":"ambulanceLoaner",
-      "oldId":70259,
+      "oldId":18064,
       "pos":[
         -278.64749145508,
         451.42492675781,
@@ -127,7 +127,7 @@
       },
       "isMultiSpot":false,
       "name":"busWork_parking",
-      "oldId":70260,
+      "oldId":18065,
       "pos":[
         -418.38681030273,
         453.39505004883,
@@ -163,7 +163,7 @@
       },
       "isMultiSpot":false,
       "name":"busLoaner_parking",
-      "oldId":70261,
+      "oldId":18066,
       "pos":[
         -402.74322509766,
         455.15872192383,
@@ -186,5 +186,69 @@
       "spotRotation":0
     }
   ],
-  "zones":{}
+  "zones":[
+    {
+      "bot":{
+        "active":false,
+        "normal":[
+          0,
+          0,
+          -1
+        ],
+        "pos":[
+          0,
+          0,
+          -10
+        ]
+      },
+      "color":[
+        1,
+        1,
+        1
+      ],
+      "customFields":{
+        "names":{},
+        "tags":{},
+        "types":{},
+        "values":{}
+      },
+      "name":"facilityWork_spawnZone",
+      "oldId":18067,
+      "top":{
+        "active":false,
+        "normal":[
+          0,
+          0,
+          1
+        ],
+        "pos":[
+          0,
+          0,
+          10
+        ]
+      },
+      "vertices":[
+        [
+          37.895736694336,
+          759.32006835938,
+          74.724578857422
+        ],
+        [
+          37.729457855225,
+          744.14886474609,
+          74.724555969238
+        ],
+        [
+          30.178888320923,
+          744.14624023438,
+          75.391738891602
+        ],
+        [
+          30.666706085205,
+          759.33477783203,
+          75.073791503906
+        ]
+      ]
+    }
+  ]
 }
