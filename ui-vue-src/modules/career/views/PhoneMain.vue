@@ -90,13 +90,13 @@ onMounted(async () => {
 <style scoped lang="scss">
 .home-screen {
   padding: 15px;
-  padding-bottom: 20px;
+  padding-top: 400px;
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   gap: 10px;
   max-width: 100%;
-  min-height: 100%;
+  height: 100%;
   align-content: flex-end;
   justify-content: flex-start;
   box-sizing: border-box;
@@ -107,6 +107,8 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: calc((100% - 30px) / 4);
+  flex: 0 0 calc((100% - 30px) / 4);
 }
 
 .app-container {
@@ -167,6 +169,7 @@ onMounted(async () => {
   margin-top: 8px;
   width: 100%;
   position: relative;
+  line-height: 1.1;
 }
 
 // Override phone wrapper's dark background
