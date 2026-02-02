@@ -90,10 +90,11 @@ onMounted(async () => {
 <style scoped lang="scss">
 .home-screen {
   padding: 15px;
-  padding-top: 400px;
+  padding-top: 300px;
+  padding-bottom: 40px;
   display: flex;
   flex-direction: row;
-  flex-wrap: wrap;
+  flex-wrap: wrap-reverse;
   gap: 10px;
   max-width: 100%;
   height: 100%;
