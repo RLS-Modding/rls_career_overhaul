@@ -174,7 +174,22 @@ local function computeSpawnPositionsInZone(vertexList, count, spacing, stackHeig
     return positions
 end
 
--- Resolve drop triggers by explicit name (no scan of all level triggers)
+-- Resolve drop triggers by name list. Returns table name -> scenetree ref. Used per-facility when facCfg.triggers is set.
+local function resolveDropTriggers(triggerNames)
+    local out = {}
+    if not triggerNames or type(triggerNames) ~= "table" then return out end
+    for _, name in ipairs(triggerNames) do
+        if type(name) == "string" and name ~= "" then
+            local obj = scenetree.findObject(name)
+            if obj and obj.getId then
+                out[name] = obj
+            end
+        end
+    end
+    return out
+end
+
+-- Legacy: fill global dropTriggersByName from DROP_TRIGGER_NAMES (used when no facCfg.triggers)
 local function collectDropTriggers()
     dropTriggersByName = {}
     for _, name in ipairs(DROP_TRIGGER_NAMES) do
@@ -370,8 +385,13 @@ local function isFacilityWorkAvailable()
     if not loadConfig() then return false end
     local verts = getSpawnZoneVertices()
     if not verts or #verts < 3 then return false end
-    collectDropTriggers()
-    for _ in pairs(dropTriggersByName) do return true end
+    local facilityId = nil
+    for fid in pairs(facilityConfigs) do facilityId = fid break end
+    if not facilityId then return false end
+    local facCfg = facilityConfigs[facilityId]
+    local triggerNames = (facCfg.triggers and #facCfg.triggers > 0) and facCfg.triggers or DROP_TRIGGER_NAMES
+    local resolved = resolveDropTriggers(triggerNames)
+    for _ in pairs(resolved) do return true end
     return false
 end
 
@@ -404,17 +424,14 @@ local function spawnBatch(facilityId)
     local vertices = getSpawnZoneVertices()
     if not vertices then return false end
 
+    -- Use facility's "triggers" list from JSON, or fall back to global DROP_TRIGGER_NAMES
+    local triggerNames = (facCfg.triggers and #facCfg.triggers > 0) and facCfg.triggers or DROP_TRIGGER_NAMES
+    local resolved = resolveDropTriggers(triggerNames)
     local dropList = {}
-    for _ in pairs(dropTriggersByName) do
-        table.insert(dropList, _)
-    end
-    if #dropList == 0 then
-        collectDropTriggers()
-        for n in pairs(dropTriggersByName) do table.insert(dropList, n) end
-    end
+    for n in pairs(resolved) do table.insert(dropList, n) end
     if #dropList == 0 then return false end
     local dropName = dropList[math.random(1, #dropList)]
-    local dropTrigger = dropTriggersByName[dropName]
+    local dropTrigger = resolved[dropName]
     if not dropTrigger then return false end
 
     -- One material per batch: pick one from spawns, spawn batchSize of it.
@@ -577,7 +594,6 @@ local function doStartFacilityWork()
         end
         return false
     end
-    collectDropTriggers()
     local facilityId = nil
     for fid in pairs(facilityConfigs) do
         facilityId = fid
@@ -589,6 +605,7 @@ local function doStartFacilityWork()
         end
         return false
     end
+    local facCfg = facilityConfigs[facilityId]
     local vertices = getSpawnZoneVertices()
     if not vertices or #vertices < 3 then
         if utils and utils.displayMessage then
@@ -596,11 +613,13 @@ local function doStartFacilityWork()
         end
         return false
     end
+    local triggerNames = (facCfg.triggers and #facCfg.triggers > 0) and facCfg.triggers or DROP_TRIGGER_NAMES
+    local resolved = resolveDropTriggers(triggerNames)
     local dropList = {}
-    for n in pairs(dropTriggersByName) do table.insert(dropList, n) end
+    for n in pairs(resolved) do table.insert(dropList, n) end
     if #dropList == 0 then
         if utils and utils.displayMessage then
-            utils.displayMessage("Facility work: drop trigger not found. Place a BeamNGTrigger named 'facilityWork_drop' with luaFunction onBeamNGTrigger.", 8)
+            utils.displayMessage("Facility work: no drop trigger found. Add trigger names under \"triggers\" in facilityWorkMaterials.json for this facility, or place a BeamNGTrigger named 'facilityWork_drop' with luaFunction onBeamNGTrigger.", 8)
         end
         return false
     end
