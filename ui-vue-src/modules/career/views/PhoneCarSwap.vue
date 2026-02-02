@@ -31,6 +31,9 @@
             type="text" 
             placeholder="Search vehicles..."
             class="search-input"
+            @focus="onInputFocus"
+            @blur="onInputBlur"
+            v-bng-text-input
           />
           <button @click="toggleFilters" class="filter-btn">
             🔧 Filters
@@ -76,14 +79,26 @@
           <h3>List a Vehicle</h3>
           <p>Choose a vehicle from your inventory to sell</p>
         </div>
+
+        <div class="sell-subtabs">
+          <button
+            v-for="tab in sellTabs"
+            :key="tab.id"
+            class="sell-subtab-btn"
+            :class="{ active: activeSellTab === tab.id }"
+            @click="activeSellTab = tab.id"
+          >
+            {{ tab.label }}
+          </button>
+        </div>
         
-        <div v-if="myInventory.length === 0" class="empty-state">
+        <div v-if="activeSellTab === 'vehicles' && myInventory.length === 0" class="empty-state">
           <span class="empty-icon">🚙</span>
           <span>No vehicles to sell</span>
           <span class="empty-sub">Buy some vehicles first!</span>
         </div>
         
-        <div v-else class="inventory-list">
+        <div v-else-if="activeSellTab === 'vehicles'" class="inventory-list">
           <div 
             v-for="vehicle in myInventory" 
             :key="vehicle.inventoryId"
@@ -108,10 +123,16 @@
         </div>
         
         <!-- My Active Listings -->
-        <div v-if="myListings.length > 0" class="my-listings-section">
+        <div v-else class="my-listings-section">
           <h4>Your Active Listings</h4>
+          <div v-if="activeSellListings.length === 0" class="empty-state">
+            <span class="empty-icon">📦</span>
+            <span>No active listings</span>
+            <span class="empty-sub">Your current listings will appear here</span>
+          </div>
           <div 
-            v-for="listing in myListings" 
+            v-else
+            v-for="listing in activeSellListings" 
             :key="listing.id"
             class="my-listing-card"
           >
@@ -129,6 +150,14 @@
               class="cancel-btn"
             >
               Cancel
+            </button>
+            <button
+              v-else-if="listing.status === 'sold'"
+              @click="claimListing(listing)"
+              class="claim-btn"
+              :disabled="claimLoadingId === listing.id"
+            >
+              {{ claimLoadingId === listing.id ? 'Claiming...' : 'Claim' }}
             </button>
           </div>
         </div>
@@ -164,7 +193,10 @@
         <div class="profile-header">
           <div class="profile-avatar">👤</div>
           <div class="profile-info">
-            <h3>{{ playerName }}</h3>
+            <div class="profile-name-row">
+              <h3>{{ playerName }}</h3>
+              <button class="edit-name-btn" @click="showNameModal = true">✏️</button>
+            </div>
             <span class="profile-id">ID: {{ playerId?.substring(0, 12) }}...</span>
           </div>
         </div>
@@ -267,6 +299,9 @@
                   type="text" 
                   :placeholder="sellModalVehicle.name"
                   maxlength="50"
+                  @focus="onInputFocus"
+                  @blur="onInputBlur"
+                  v-bng-text-input
                 />
               </div>
               
@@ -278,6 +313,9 @@
                   :placeholder="sellModalVehicle.estimatedValue"
                   :min="100"
                   :max="50000000"
+                  @focus="onInputFocus"
+                  @blur="onInputBlur"
+                  v-bng-text-input
                 />
               </div>
               
@@ -288,6 +326,9 @@
                   placeholder="Describe your vehicle..."
                   maxlength="500"
                   rows="3"
+                  @focus="onInputFocus"
+                  @blur="onInputBlur"
+                  v-bng-text-input
                 ></textarea>
               </div>
               
@@ -305,6 +346,98 @@
           </div>
         </div>
       </Teleport>
+
+      <!-- Contact Seller Modal -->
+      <Teleport to="body">
+        <div v-if="messageListing" class="modal-overlay" @click.self="messageListing = null">
+          <div class="sell-modal">
+            <button class="modal-close" @click="messageListing = null">✕</button>
+
+            <h2>Message Seller</h2>
+            <div class="sell-vehicle-preview">
+              <span class="vehicle-name">{{ messageListing.title }}</span>
+              <span class="vehicle-est">Seller: {{ messageListing.seller_name }}</span>
+            </div>
+
+            <div class="sell-form">
+              <div class="form-group">
+                <label>Message</label>
+                <textarea
+                  v-model="messageText"
+                  placeholder="Write a message..."
+                  maxlength="500"
+                  rows="4"
+                  @focus="onInputFocus"
+                  @blur="onInputBlur"
+                  v-bng-text-input
+                ></textarea>
+              </div>
+
+              <div class="sell-actions">
+                <button @click="messageListing = null" class="cancel-btn">Cancel</button>
+                <button
+                  @click="sendMessageToSeller"
+                  class="list-btn"
+                  :disabled="isSendingMessage || !messageText.trim()"
+                >
+                  {{ isSendingMessage ? 'Sending...' : 'Send' }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Teleport>
+
+      <!-- Edit Profile Name Modal -->
+      <Teleport to="body">
+        <div v-if="showNameModal" class="modal-overlay" @click.self="showNameModal = false">
+          <div class="sell-modal">
+            <button class="modal-close" @click="showNameModal = false">✕</button>
+
+            <h2>Edit Display Name</h2>
+
+            <div class="sell-form">
+              <div class="form-group">
+                <label>Name</label>
+                <input
+                  v-model="editableName"
+                  type="text"
+                  maxlength="50"
+                  @focus="onInputFocus"
+                  @blur="onInputBlur"
+                  v-bng-text-input
+                />
+              </div>
+
+              <div class="sell-actions">
+                <button @click="showNameModal = false" class="cancel-btn">Cancel</button>
+                <button @click="saveProfileName" class="list-btn" :disabled="!editableName.trim()">
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Teleport>
+
+      <!-- Missing Vehicle Claim Modal -->
+      <Teleport to="body">
+        <div v-if="missingClaimListing" class="modal-overlay" @click.self="missingClaimListing = null">
+          <div class="sell-modal">
+            <button class="modal-close" @click="missingClaimListing = null">✕</button>
+
+            <h2>Vehicle Not Found</h2>
+            <p class="modal-description">
+              The vehicle for this listing is not available in your inventory.
+            </p>
+
+            <div class="sell-actions">
+              <button @click="missingClaimListing = null" class="cancel-btn">Close</button>
+              <button @click="removeListingFromMissing" class="list-btn">Remove Listing</button>
+            </div>
+          </div>
+        </div>
+      </Teleport>
     </div>
   </PhoneWrapper>
 </template>
@@ -312,6 +445,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { lua } from "@/bridge"
+import { vBngTextInput } from '@/common/directives'
 import PhoneWrapper from "./PhoneWrapper.vue"
 import CarSwapListingCard from "../components/carswap/CarSwapListingCard.vue"
 import { Teleport } from 'vue'
@@ -330,6 +464,19 @@ const unreadCount = ref(0)
 const playerId = ref('')
 const playerName = ref('')
 const profileStats = ref({})
+const editableName = ref('')
+const showNameModal = ref(false)
+const activeSellTab = ref('vehicles')
+const missingClaimListing = ref(null)
+const claimLoadingId = ref(null)
+
+const onInputFocus = () => {
+  try { lua.setCEFTyping(true) } catch (_) {}
+}
+
+const onInputBlur = () => {
+  try { lua.setCEFTyping(false) } catch (_) {}
+}
 
 // Filters
 const filters = ref({
@@ -343,6 +490,9 @@ const selectedListing = ref(null)
 const sellModalVehicle = ref(null)
 const isBuying = ref(false)
 const isCreatingListing = ref(false)
+const messageListing = ref(null)
+const messageText = ref('')
+const isSendingMessage = ref(false)
 
 // Sell form
 const sellForm = ref({
@@ -354,10 +504,15 @@ const sellForm = ref({
 // Tabs
 const tabs = computed(() => [
   { id: 'browse', label: 'Browse', icon: '🔍', badge: null },
-  { id: 'sell', label: 'Sell', icon: '💰', badge: myListings.value.length || null },
+  { id: 'sell', label: 'Sell', icon: '💰', badge: activeSellListings.value.length || null },
   { id: 'messages', label: 'Messages', icon: '💬', badge: unreadCount.value || null },
   { id: 'profile', label: 'Profile', icon: '👤', badge: null }
 ])
+
+const sellTabs = [
+  { id: 'vehicles', label: 'My Vehicles' },
+  { id: 'listings', label: 'My Listings' }
+]
 
 // Computed
 const filteredListings = computed(() => {
@@ -383,12 +538,14 @@ const filteredListings = computed(() => {
   return result
 })
 
+const activeSellListings = computed(() => {
+  return (myListings.value || []).filter(l => l.status !== 'cancelled' && l.status !== 'expired')
+})
+
 // Methods
 const formatPrice = (price) => {
   if (!price) return '0'
-  if (price >= 1000000) return (price / 1000000).toFixed(1) + 'M'
-  if (price >= 1000) return (price / 1000).toFixed(0) + 'K'
-  return price.toLocaleString()
+  return Number(price).toLocaleString()
 }
 
 const formatMileage = (miles) => {
@@ -415,11 +572,17 @@ const formatTimeAgo = (dateStr) => {
 const refreshData = async () => {
   isLoading.value = true
   try {
+    if (!lua.gameplay_carswap) {
+      console.warn('CarSwap extension (gameplay_carswap) not available')
+      isConnected.value = false
+      return
+    }
     const data = await lua.gameplay_carswap.getUIData()
     if (data) {
       isConnected.value = data.isConnected
       playerId.value = data.playerId
       playerName.value = data.playerName
+      editableName.value = data.playerName
       listings.value = data.listings || []
       myListings.value = data.myListings || []
       unreadCount.value = data.unreadMessages || 0
@@ -489,6 +652,37 @@ const cancelListing = async (listingId) => {
   }
 }
 
+const claimListing = async (listing) => {
+  if (!listing?.id) return
+  claimLoadingId.value = listing.id
+  try {
+    const result = await lua.gameplay_carswap.claimListing(listing.id)
+    if (result?.success) {
+      refreshData()
+    } else if (result?.reason === 'vehicle_missing') {
+      missingClaimListing.value = listing
+    } else {
+      alert('Claim failed: ' + (result?.reason || 'Unknown error'))
+    }
+  } catch (e) {
+    console.error('Failed to claim listing:', e)
+    alert('Claim failed')
+  } finally {
+    claimLoadingId.value = null
+  }
+}
+
+const removeListingFromMissing = async () => {
+  if (!missingClaimListing.value) return
+  try {
+    await lua.gameplay_carswap.cancelListing(missingClaimListing.value.id)
+    missingClaimListing.value = null
+    refreshData()
+  } catch (e) {
+    console.error('Failed to remove listing:', e)
+  }
+}
+
 const buyVehicle = async (listing) => {
   if (listing.seller_id === playerId.value) {
     alert("You can't buy your own listing!")
@@ -514,8 +708,34 @@ const buyVehicle = async (listing) => {
 }
 
 const contactSeller = (listing) => {
-  // TODO: Open message compose modal
-  alert('Messaging coming soon!')
+  messageListing.value = listing
+  messageText.value = ''
+}
+
+const sendMessageToSeller = async () => {
+  if (!messageListing.value || !messageText.value.trim()) return
+  isSendingMessage.value = true
+  try {
+    await lua.gameplay_carswap.sendMessage(messageListing.value.id, messageText.value.trim())
+    messageListing.value = null
+    messageText.value = ''
+  } catch (e) {
+    console.error('Failed to send message:', e)
+    alert('Failed to send message')
+  } finally {
+    isSendingMessage.value = false
+  }
+}
+
+const saveProfileName = async () => {
+  if (!editableName.value.trim()) return
+  try {
+    await lua.gameplay_carswap.setProfileName(editableName.value.trim())
+    playerName.value = editableName.value.trim()
+    showNameModal.value = false
+  } catch (e) {
+    console.error('Failed to save profile name:', e)
+  }
 }
 
 const openMessage = async (msg) => {
@@ -548,6 +768,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   height: 100%;
+  padding-top: 52px;
   background: linear-gradient(180deg, #0a0a0a 0%, #1a1a2e 100%);
   color: white;
 }
@@ -797,6 +1018,29 @@ onUnmounted(() => {
   }
 }
 
+.sell-subtabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.sell-subtab-btn {
+  flex: 1;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  font-size: 0.85em;
+
+  &.active {
+    color: #00d4aa;
+    border-color: rgba(0, 212, 170, 0.5);
+    background: rgba(0, 212, 170, 0.15);
+  }
+}
+
 .inventory-list {
   display: flex;
   flex-direction: column;
@@ -925,6 +1169,10 @@ onUnmounted(() => {
     .status-sold {
       color: #ef4444;
     }
+
+    .status-expired {
+      color: rgba(255, 255, 255, 0.4);
+    }
   }
   
   .cancel-btn {
@@ -938,6 +1186,25 @@ onUnmounted(() => {
     
     &:hover {
       background: rgba(239, 68, 68, 0.3);
+    }
+  }
+
+  .claim-btn {
+    padding: 6px 12px;
+    background: rgba(34, 197, 94, 0.2);
+    border: 1px solid rgba(34, 197, 94, 0.5);
+    border-radius: 4px;
+    color: #22c55e;
+    font-size: 0.8em;
+    cursor: pointer;
+
+    &:hover {
+      background: rgba(34, 197, 94, 0.3);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: default;
     }
   }
 }
@@ -1018,6 +1285,25 @@ onUnmounted(() => {
       color: rgba(255, 255, 255, 0.4);
       font-family: monospace;
     }
+  }
+}
+
+.profile-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.edit-name-btn {
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 0.9em;
+  opacity: 0.7;
+
+  &:hover {
+    opacity: 1;
   }
 }
 

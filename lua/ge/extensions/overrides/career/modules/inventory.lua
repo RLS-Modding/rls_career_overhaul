@@ -1141,7 +1141,9 @@ local function getVehicleUiData(inventoryId, inventoryIdsInGarage)
   vehicleData.licensePlateChangePermission = career_modules_permissions.getStatusForTag({"vehicleLicensePlate", "vehicleModification"}, {inventoryId = inventoryId})
   vehicleData.returnLoanerPermission = career_modules_permissions.getStatusForTag("returnLoanedVehicle", {inventoryId = inventoryId})
 
-  vehicleData.listedForSale = career_modules_marketplace.findVehicleListing(inventoryId) ~= nil
+  local marketplaceListed = career_modules_marketplace.findVehicleListing(inventoryId) ~= nil
+  local carswapListed = vehicleData.config and vehicleData.config.carswap_listed or false
+  vehicleData.listedForSale = marketplaceListed or carswapListed
 
   for _, performanceData in ipairs(vehicleData.performanceHistory or {}) do
     processPerformanceData(performanceData)
@@ -1591,6 +1593,9 @@ local function onCheckPermission(tags, permissions, additionalData)
       table.insert(permissions, {permission = "forbidden"})
     end
     if tag == "vehicleSelling" and vehData.timeToAccess then
+      table.insert(permissions, {permission = "forbidden"})
+    end
+    if tag == "vehicleSelling" and vehData.config and vehData.config.carswap_listed then
       table.insert(permissions, {permission = "forbidden"})
     end
     if tag == "vehicleFavorite" and (vehData.favorite or vehData.missingFile) then
