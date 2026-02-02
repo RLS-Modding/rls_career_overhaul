@@ -23,7 +23,7 @@
         },
         {
           "psName": "forklift_loaner",
-          "isInspectSpot": true,
+          "isInspectSpot": false,
           "logisticTypesProvided": [],
           "logisticTypesReceived": [],
         "loanerTrailerPriority": 0,
