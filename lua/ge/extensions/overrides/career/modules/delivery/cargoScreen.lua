@@ -896,7 +896,7 @@ end
 local function formatMaterialDestinationsPlayer(con, materialType)
   local destinations = { }
   for _, fac in ipairs(dGenerator.getFacilities()) do
-    if fac.logisticTypesReceivedLookup[materialType] then
+    if fac.logisticTypesReceivedLookup[materialType] and fac.dropOffSpots and fac.dropOffSpots[1] then
 
       local distanceKey = string.format("%d-%s-%s", con.vehId, fac.facId, fac.dropOffSpots[1]:getPath())
       if vehToLocationDistanceCache[distanceKey] == nil then
@@ -2061,7 +2061,10 @@ local function showLocationRoutePreview(locationId, asProvider)
   end
   local fromPos = dGenerator.getLocationCoordinates({type="facilityParkingspot",facId = cargoScreenFacId, psPath = cargoScreenPsPath})
   local fac = dGenerator.getFacilityById(locationId)
-  local toPos = dGenerator.getLocationCoordinates({type="facilityParkingspot", facId = fac.id, psPath=(asProvider and fac.pickUpSpots[1] or fac.dropOffSpots[1]):getPath()})
+  if not fac then return end
+  local spots = asProvider and fac.pickUpSpots or fac.dropOffSpots
+  if not spots or not spots[1] then return end
+  local toPos = dGenerator.getLocationCoordinates({type="facilityParkingspot", facId = fac.id, psPath=spots[1]:getPath()})
   if fromPos and toPos then
     freeroam_bigMapMode.setRoutePreviewSimple(fromPos, toPos)
   end
