@@ -19,7 +19,7 @@
       },
       "isMultiSpot":false,
       "name":"Hospital Entrance",
-      "oldId":12960,
+      "oldId":28518,
       "pos":[
         -231.44441223145,
         437.36383056641,
@@ -55,7 +55,7 @@
       },
       "isMultiSpot":false,
       "name":"paramedicWorkParking",
-      "oldId":12961,
+      "oldId":28519,
       "pos":[
         -291.77017211914,
         461.49496459961,
@@ -91,7 +91,7 @@
       },
       "isMultiSpot":false,
       "name":"ambulanceLoaner",
-      "oldId":12962,
+      "oldId":28520,
       "pos":[
         -278.64749145508,
         451.42492675781,
@@ -127,7 +127,7 @@
       },
       "isMultiSpot":false,
       "name":"busWork_parking",
-      "oldId":12963,
+      "oldId":28521,
       "pos":[
         -418.38681030273,
         453.39505004883,
@@ -163,7 +163,7 @@
       },
       "isMultiSpot":false,
       "name":"busLoaner_parking",
-      "oldId":12964,
+      "oldId":28522,
       "pos":[
         -402.74322509766,
         455.15872192383,
@@ -199,7 +199,7 @@
       },
       "isMultiSpot":false,
       "name":"facilityWork_vehicle",
-      "oldId":12965,
+      "oldId":28523,
       "pos":[
         32.913333892822,
         740.23822021484,
@@ -248,8 +248,8 @@
         "types":{},
         "values":{}
       },
-      "name":"facilityWork_spawnZone",
-      "oldId":12959,
+      "name":"industrialWarehouse_facilityWork",
+      "oldId":28517,
       "top":{
         "active":false,
         "normal":[
