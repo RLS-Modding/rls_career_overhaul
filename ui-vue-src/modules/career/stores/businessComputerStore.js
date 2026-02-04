@@ -818,6 +818,9 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     vehicleView.value = null
     pulledOutVehicle.value = null
     businessData.value = {}
+    blacklistData.value = null
+    notificationListData.value = null
+    managerBlacklistData.value = null
     try {
       lua.career_modules_business_businessComputer.clearVehicleDataCaches()
     } catch (error) {

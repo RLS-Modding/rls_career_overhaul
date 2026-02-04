@@ -276,7 +276,6 @@
 
 <script setup>
 import { computed, onMounted, ref, watch, nextTick, inject, onUnmounted } from "vue"
-import { Teleport } from "vue"
 import { useBusinessComputerStore } from "../../stores/businessComputerStore"
 import { vBngTextInput } from "@/common/directives"
 
@@ -319,6 +318,10 @@ watch(() => props.show, (isOpen) => {
   if (isOpen) {
     pushModalToController()
     refreshData()
+  } else {
+    if (controllerNav && modalContentRef.value) {
+      controllerNav.removeModal(modalContentRef.value)
+    }
   }
 })
 
