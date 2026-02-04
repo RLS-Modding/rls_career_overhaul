@@ -1222,6 +1222,54 @@ local function getBrandSelection(businessId)
   return selections.brand
 end
 
+local function cleanupInvalidVehiclesFromLists(businessId)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId then
+    return
+  end
+
+  local availableVehicles = getAvailableVehiclesForBlacklist(businessId)
+  local availableSet = {}
+  for _, modelKey in ipairs(availableVehicles) do
+    availableSet[modelKey] = true
+  end
+
+  local selections = loadBusinessSelections(businessId)
+  if not selections then
+    return
+  end
+
+  if selections.blacklist then
+    local cleanedBlacklist = {}
+    for modelKey, _ in pairs(selections.blacklist) do
+      if availableSet[modelKey] then
+        cleanedBlacklist[modelKey] = true
+      end
+    end
+    selections.blacklist = cleanedBlacklist
+  end
+
+  if selections.notificationList then
+    local cleanedNotificationList = {}
+    for _, entry in ipairs(selections.notificationList) do
+      if entry and entry.model_key and availableSet[entry.model_key] then
+        table.insert(cleanedNotificationList, entry)
+      end
+    end
+    selections.notificationList = cleanedNotificationList
+  end
+
+  if selections.managerBlacklist then
+    local cleanedManagerBlacklist = {}
+    for modelKey, _ in pairs(selections.managerBlacklist) do
+      if availableSet[modelKey] then
+        cleanedManagerBlacklist[modelKey] = true
+      end
+    end
+    selections.managerBlacklist = cleanedManagerBlacklist
+  end
+end
+
 local function setBrandSelection(businessId, brand)
   businessId = normalizeBusinessId(businessId)
   if not businessId then
@@ -1237,6 +1285,8 @@ local function setBrandSelection(businessId, brand)
   else
     businessSelections[businessId].brand = brand
   end
+
+  cleanupInvalidVehiclesFromLists(businessId)
   return true
 end
 
@@ -1269,6 +1319,38 @@ local function getBlacklist(businessId)
   return selections.blacklist or {}
 end
 
+local function removeBlacklistedFromOtherLists(businessId, blacklist)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId or not blacklist then
+    return
+  end
+
+  local selections = loadBusinessSelections(businessId)
+  if not selections then
+    return
+  end
+
+  if selections.notificationList then
+    local cleanedNotificationList = {}
+    for _, entry in ipairs(selections.notificationList) do
+      if entry and entry.model_key and not blacklist[entry.model_key] then
+        table.insert(cleanedNotificationList, entry)
+      end
+    end
+    selections.notificationList = cleanedNotificationList
+  end
+
+  if selections.managerBlacklist then
+    local cleanedManagerBlacklist = {}
+    for modelKey, _ in pairs(selections.managerBlacklist) do
+      if not blacklist[modelKey] then
+        cleanedManagerBlacklist[modelKey] = true
+      end
+    end
+    selections.managerBlacklist = cleanedManagerBlacklist
+  end
+end
+
 local function setBlacklist(businessId, modelKeys)
   businessId = normalizeBusinessId(businessId)
   if not businessId then
@@ -1289,6 +1371,7 @@ local function setBlacklist(businessId, modelKeys)
   end
 
   businessSelections[businessId].blacklist = blacklist
+  removeBlacklistedFromOtherLists(businessId, blacklist)
   return true
 end
 
@@ -1307,6 +1390,9 @@ local function addToBlacklist(businessId, modelKey)
   end
 
   businessSelections[businessId].blacklist[modelKey] = true
+  
+  local blacklist = businessSelections[businessId].blacklist
+  removeBlacklistedFromOtherLists(businessId, blacklist)
   return true
 end
 
