@@ -88,6 +88,8 @@ local configLoadedForLevel = nil
 local sessionTotalPay = 0
 local sessionTotalRep = 0
 local sessionMaterialsMoved = 0
+local selectedFacilityId = nil
+local preferredBatchSize = nil
 -- Delivered materials left in world until shift ends (persistent materials)
 local sessionDeliveredVehicles = {}
 local MAX_PERSISTENT_PROPS = 50
@@ -132,7 +134,8 @@ local function loadConfig()
 end
 
 -- Get spawn spot for forklift from roleplay.sites.json (parking spot named "facilityWork_vehicle")
-local function getForkliftSpawnPoint()
+local function getForkliftSpawnPoint(spotName)
+    local targetName = spotName or "facilityWork_vehicle"
     local levelId = getCurrentLevelIdentifier()
     if not levelId then return nil end
     local sitesPath = (gameplay_sites_sitesManager and gameplay_sites_sitesManager.getCurrentLevelSitesFileByName and gameplay_sites_sitesManager.getCurrentLevelSitesFileByName('roleplay')) or nil
@@ -151,7 +154,7 @@ local function getForkliftSpawnPoint()
     if parking then
         for _, spot in ipairs(parking) do
             local name = spot.name or (spot.objects and spot.objects[1] and spot.objects[1].name)
-            if name == "facilityWork_vehicle" then
+            if name == targetName then
                 local pos = spot.pos or (spot.vertices and spot.vertices[1])
                 local rot = spot.rot or spot.rotation
                 if pos then
@@ -166,7 +169,7 @@ local function getForkliftSpawnPoint()
     if raw and raw.parkingSpots then
         for _, spot in ipairs(raw.parkingSpots) do
             local name = spot.name or (spot.objects and spot.objects[1] and spot.objects[1].name)
-            if name == "facilityWork_vehicle" then
+            if name == targetName then
                 local pos = spot.pos or (spot.vertices and spot.vertices[1])
                 local rot = spot.rot or spot.rotation
                 if pos then
@@ -234,11 +237,9 @@ local function isPointInPolygon2D(px, py, vertexList)
 end
 
 -- Compute spawn positions inside zone: AABB of polygon, then grid points filtered by point-in-polygon.
--- spacing: grid step; stackHeight: optional Z offset per stack layer; stackLayers: 1 = no stacking.
-local function computeSpawnPositionsInZone(vertexList, count, spacing, stackHeight, stackLayers)
+-- spacing: grid step; reuses positions if count > grid spots.
+local function computeSpawnPositionsInZone(vertexList, count, spacing)
     spacing = spacing or 2
-    stackLayers = math.max(1, tonumber(stackLayers) or 1)
-    stackHeight = tonumber(stackHeight) or 0
     if not vertexList or #vertexList < 3 then return {} end
     local minX, maxX = math.huge, -math.huge
     local minY, maxY = math.huge, -math.huge
@@ -272,11 +273,11 @@ local function computeSpawnPositionsInZone(vertexList, count, spacing, stackHeig
         candidates[i], candidates[j] = candidates[j], candidates[i]
     end
     local positions = {}
-    for i = 1, math.min(count, #candidates) do
-        local c = candidates[i]
-        local layer = (i - 1) % stackLayers
-        local zOff = layer * stackHeight
-        table.insert(positions, vec3(c.x, c.y, baseZ + zOff))
+    -- Fill spots; if count > candidates, reuse spots (force spawn)
+    for i = 1, count do
+        if #candidates == 0 then break end
+        local c = candidates[(i - 1) % #candidates + 1]
+        table.insert(positions, vec3(c.x, c.y, baseZ))
     end
     return positions
 end
@@ -448,13 +449,29 @@ local function isFacilityWorkAvailable()
     return false
 end
 
+local function getAvailableFacilities()
+    if not loadConfig() then return {} end
+    local list = {}
+    for id, cfg in pairs(facilityConfigs) do
+        table.insert(list, {
+            id = id,
+            name = cfg.name or id, -- Fallback to ID if name not in config
+            batchSize = cfg.batchSize or 8
+        })
+    end
+    return list
+end
+
 local function getFacilityWorkState()
     return {
         onDuty = (currentBatch ~= nil or currentForkliftId ~= nil),
         sessionTotalPay = sessionTotalPay,
         sessionTotalRep = sessionTotalRep,
         sessionMaterialsMoved = sessionMaterialsMoved,
-        available = isFacilityWorkAvailable()
+        available = isFacilityWorkAvailable(),
+        facilities = getAvailableFacilities(),
+        selectedFacilityId = selectedFacilityId,
+        preferredBatchSize = preferredBatchSize
     }
 end
 
@@ -490,7 +507,12 @@ local function spawnBatch(facilityId)
     -- One material per batch: pick one from spawns, spawn batchSize of it.
     local spawns = facCfg.spawns or {}
     if #spawns == 0 then return false end
-    local batchSize = math.max(1, tonumber(facCfg.batchSize) or 8)
+    
+    -- Use player preference if set, otherwise config default, otherwise 8
+    local baseSize = tonumber(facCfg.batchSize) or 8
+    local batchSize = preferredBatchSize or baseSize
+    batchSize = math.max(1, batchSize) -- Minimum 1
+    
     local spawnDef = spawns[math.random(1, #spawns)]
     local mat = materialsById[spawnDef.materialId]
     if not mat or not mat.model_key or not mat.config then return false end
@@ -499,10 +521,9 @@ local function spawnBatch(facilityId)
     local moneyPerProp = {}
     local repPerProp = {}
     local spacing = mat.spawnGridSpacing or 2
-    local stackHeight = mat.stackHeight or facCfg.stackHeight or 0
-    local stackLayers = tonumber(facCfg.stackLayers) or tonumber(mat.stackLayers) or 1
-    local positions = computeSpawnPositionsInZone(vertices, batchSize, spacing, stackHeight, stackLayers)
-    local numToSpawn = math.min(batchSize, #positions)
+    local positions = computeSpawnPositionsInZone(vertices, batchSize, spacing)
+    local numToSpawn = batchSize -- Force spawn requested amount (computeSpawnPositionsInZone now handles this)
+    
     if numToSpawn == 0 then return false end
     -- Spawn rotation Z (degrees) from facility config; default 0
     local spawnRotationZDeg = tonumber(facCfg.spawnRotationZ)
@@ -657,7 +678,6 @@ local function endShiftCleanup()
     end
 end
 
--- Start facility work from phone (no start trigger). Sets currentForkliftId to player vehicle if in one, else when they enter a vehicle.
 local function doStartFacilityWork()
     if not career_career or not career_career.isActive() then return false end
     if not loadConfig() then
@@ -666,10 +686,14 @@ local function doStartFacilityWork()
         end
         return false
     end
-    local facilityId = nil
-    for fid in pairs(facilityConfigs) do
-        facilityId = fid
-        break
+    local facilityId = selectedFacilityId
+    
+    -- If no valid selection, pick the first available facility
+    if not facilityId or not facilityConfigs[facilityId] then
+        for fid in pairs(facilityConfigs) do
+            facilityId = fid
+            break
+        end
     end
     if not facilityId then
         if utils and utils.displayMessage then
@@ -717,10 +741,11 @@ local function doStartFacilityWork()
     -- currentForkliftId = be:getPlayerVehicleID(0)
     
     -- Spawn facility vehicle (forklift) at designated spot
-    local spawnData = getForkliftSpawnPoint()
+    local spawnData = getForkliftSpawnPoint(facCfg.parkingSpot)
     if not spawnData then
         if utils and utils.displayMessage then
-            utils.displayMessage("Facility work error: 'facilityWork_vehicle' parking spot not found in roleplay.sites.json.", 6)
+            local sName = facCfg.parkingSpot or "facilityWork_vehicle"
+            utils.displayMessage("Facility work error: '"..sName.."' parking spot not found in roleplay.sites.json.", 6)
         end
         -- Fallback? No, user requested fail if not found/strict spawn. But we can abort.
         -- Clean up the batch we just spawned since we can't work without a forklift
@@ -855,6 +880,21 @@ end
 
 function M.startFacilityWork()
     return doStartFacilityWork()
+end
+
+function M.selectFacility(id)
+    if facilityConfigs[id] then
+        selectedFacilityId = id
+        notifyPhoneState()
+    end
+end
+
+function M.setBatchSize(size)
+    local s = tonumber(size)
+    if s and s >= 1 then
+        preferredBatchSize = math.floor(s)
+        notifyPhoneState()
+    end
 end
 
 function M.endFacilityWork()

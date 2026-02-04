@@ -7,52 +7,93 @@
                 <h1>Facility Work</h1>
             </div>
 
-            <!-- Main Status Panel -->
-            <div class="status-panel">
-                <div class="status-row">
-                    <span class="label">Status:</span>
-                    <span class="value" :class="statusClass">{{ statusText }}</span>
-                </div>
-                <div class="status-row">
-                    <span class="label">Session Pay:</span>
-                    <span class="value">${{ formatCurrency(sessionTotalPay) }}</span>
-                </div>
-                <div class="status-row">
-                    <span class="label">Session Rep:</span>
-                    <span class="value">{{ sessionTotalRep }}</span>
-                </div>
-                <div class="status-row">
-                    <span class="label">Materials Moved:</span>
-                    <span class="value">{{ sessionMaterialsMoved }}</span>
+            <!-- Facility Selection List -->
+            <div class="facility-list" v-if="!onDuty && !selectedFacilityId && facilities.length > 0">
+                <div class="list-header">Select Facility</div>
+                <div 
+                    class="facility-card" 
+                    v-for="fac in facilities" 
+                    :key="fac.id"
+                    @click="selectFacility(fac.id)"
+                >
+                    <div class="fac-name">{{ formatName(fac.name) }}</div>
+                    <div class="fac-meta">Default batch: {{ fac.batchSize }}</div>
                 </div>
             </div>
 
-            <!-- Controls -->
-            <div class="controls-container">
-                <button
-                    class="action-button start-btn"
-                    v-if="!onDuty && available"
-                    @click="startShift"
-                >
-                    Start shift
-                </button>
-                <button
-                    class="action-button stop-btn"
-                    v-if="onDuty"
-                    @click="endShift"
-                >
-                    End shift
-                </button>
-            </div>
+            <!-- Dashboard (Start/End Shift) -->
+            <div class="dashboard-container" v-else-if="selectedFacilityId || onDuty || facilities.length === 1">
+                
+                <!-- Back Button -->
+                <div class="nav-bar" v-if="!onDuty && facilities.length > 1">
+                    <button class="back-btn" @click="clearSelection">
+                        &lt; Back to List
+                    </button>
+                    <div class="current-fac">{{ facilityName }}</div>
+                </div>
 
-            <!-- Info message when off duty -->
-            <div class="info-panel" v-if="!onDuty && available">
-                <p>Tap <strong>Start shift</strong> to begin. Get in a forklift and move materials to the drop zone to earn pay and rep.</p>
+                <!-- Main Status Panel -->
+                <div class="status-panel">
+                    <div class="status-row">
+                        <span class="label">Status:</span>
+                        <span class="value" :class="statusClass">{{ statusText }}</span>
+                    </div>
+                    <div class="status-row">
+                        <span class="label">Session Pay:</span>
+                        <span class="value">${{ formatCurrency(sessionTotalPay) }}</span>
+                    </div>
+                    <div class="status-row">
+                        <span class="label">Session Rep:</span>
+                        <span class="value">{{ sessionTotalRep }}</span>
+                    </div>
+                    <div class="status-row">
+                        <span class="label">Materials Moved:</span>
+                        <span class="value">{{ sessionMaterialsMoved }}</span>
+                    </div>
+                </div>
+
+                <!-- Batch Size Slider -->
+                <div class="settings-panel" v-if="!onDuty && available">
+                    <div class="setting-row">
+                        <span class="label">Batch Size: {{ batchSize }}</span>
+                        <input 
+                            type="range" 
+                            min="1" 
+                            max="20" 
+                            v-model.number="batchSize" 
+                            @change="updateBatchSize"
+                            class="slider"
+                        >
+                    </div>
+                </div>
+    
+                <!-- Controls -->
+                <div class="controls-container">
+                    <button
+                        class="action-button start-btn"
+                        v-if="!onDuty && available"
+                        @click="startShift"
+                    >
+                        Start shift
+                    </button>
+                    <button
+                        class="action-button stop-btn"
+                        v-if="onDuty"
+                        @click="endShift"
+                    >
+                        End shift
+                    </button>
+                </div>
+
+                <!-- Info message when off duty -->
+                <div class="info-panel" v-if="!onDuty && available">
+                    <p>Tap <strong>Start shift</strong> to begin. A forklift will spawn for you. Move materials to the drop zone to earn pay and rep.</p>
+                </div>
             </div>
 
             <!-- Unavailable message -->
-            <div class="disabled-msg" v-if="!available">
-                Facility work is not available on this map. This map may not have the required triggers and spawn zone configured.
+            <div class="disabled-msg" v-if="!available && facilities.length === 0">
+                Facility work is not available on this map.
             </div>
         </div>
     </PhoneWrapper>
@@ -72,16 +113,24 @@ const sessionTotalPay = ref(0)
 const sessionTotalRep = ref(0)
 const sessionMaterialsMoved = ref(0)
 const available = ref(false)
+const facilities = ref([])
+const selectedFacilityId = ref(null)
+const batchSize = ref(8)
 
 // Computed
 const statusText = computed(() => {
-    if (!available.value) return 'Unavailable'
+    if (!available.value && facilities.value.length === 0) return 'Unavailable'
     return onDuty.value ? 'On duty' : 'Off duty'
 })
 
 const statusClass = computed(() => {
-    if (!available.value) return 'text-red'
+    if (!available.value && facilities.value.length === 0) return 'text-red'
     return onDuty.value ? 'text-green' : 'text-grey'
+})
+
+const facilityName = computed(() => {
+    const f = facilities.value.find(x => x.id === selectedFacilityId.value)
+    return f ? formatName(f.name) : 'Unknown'
 })
 
 // Formatting
@@ -89,15 +138,51 @@ const formatCurrency = (val) => {
     return (val ?? 0).toFixed(2)
 }
 
+const formatName = (str) => {
+    // Simple CamelCase to Title Case if needed, or just return
+    return str.replace(/([A-Z])/g, ' $1').trim()
+}
+
 // Actions
+const selectFacility = (id) => {
+    selectedFacilityId.value = id
+    // Use raw engineLua to bypass bridge proxy cache
+    if (id) {
+        window.bngApi.engineLua(`gameplay_facilityWork.selectFacility("${id}")`)
+    } else {
+        window.bngApi.engineLua(`gameplay_facilityWork.selectFacility(nil)`)
+    }
+}
+
+const clearSelection = () => {
+    selectedFacilityId.value = null
+    window.bngApi.engineLua(`gameplay_facilityWork.selectFacility(nil)`)
+}
+
+const updateBatchSize = () => {
+    window.bngApi.engineLua(`gameplay_facilityWork.setBatchSize(${batchSize.value})`)
+}
+
 const startShift = async () => {
-    await lua.gameplay_facilityWork.startFacilityWork()
-    await lua.gameplay_facilityWork.requestFacilityWorkState()
+    try {
+        console.log("Starting shift with batch size:", batchSize.value)
+        // Use raw engineLua to ensure it works even if proxy is stale
+        window.bngApi.engineLua(`gameplay_facilityWork.setBatchSize(${batchSize.value})`)
+        
+        await lua.gameplay_facilityWork.startFacilityWork()
+        await lua.gameplay_facilityWork.requestFacilityWorkState()
+    } catch (e) {
+        console.error("Facility Work Error:", e)
+    }
 }
 
 const endShift = async () => {
-    lua.gameplay_facilityWork.endFacilityWork()
-    await lua.gameplay_facilityWork.requestFacilityWorkState()
+    try {
+        lua.gameplay_facilityWork.endFacilityWork()
+        await lua.gameplay_facilityWork.requestFacilityWorkState()
+    } catch (e) {
+        console.error("Facility Work Error:", e)
+    }
 }
 
 // Event Handling
@@ -108,6 +193,14 @@ const updateState = (data) => {
     sessionTotalRep.value = data.sessionTotalRep ?? 0
     sessionMaterialsMoved.value = data.sessionMaterialsMoved ?? 0
     available.value = !!data.available
+    facilities.value = data.facilities || []
+    selectedFacilityId.value = data.selectedFacilityId || null
+    if (data.preferredBatchSize) {
+        batchSize.value = data.preferredBatchSize
+    } else if (selectedFacilityId.value) {
+        const fac = facilities.value.find(x => x.id === selectedFacilityId.value)
+        if (fac) batchSize.value = fac.batchSize
+    }
 }
 
 onMounted(async () => {
@@ -152,6 +245,92 @@ onUnmounted(() => {
     .header-icon {
         color: #2d5a27;
         font-size: 1.5em;
+    }
+}
+
+.facility-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8em;
+}
+
+.list-header {
+    font-weight: 700;
+    font-size: 1.1em;
+    color: #444;
+    margin-bottom: 0.5em;
+}
+
+.facility-card {
+    background: white;
+    padding: 1em;
+    border-radius: 12px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.1s;
+
+    &:active {
+        transform: scale(0.98);
+        background: #f1f8e9;
+    }
+
+    .fac-name {
+        font-weight: 700;
+        font-size: 1.1em;
+        color: #2d5a27;
+        margin-bottom: 0.2em;
+    }
+
+    .fac-meta {
+        font-size: 0.9em;
+        color: #777;
+    }
+}
+
+.nav-bar {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1em;
+    gap: 1em;
+
+    .back-btn {
+        background: none;
+        border: none;
+        color: #2d5a27;
+        font-weight: 700;
+        cursor: pointer;
+        padding: 0;
+        font-size: 1em;
+    }
+
+    .current-fac {
+        font-weight: 700;
+        color: #444;
+        margin-left: auto;
+    }
+}
+
+.settings-panel {
+    background: white;
+    padding: 1em;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    margin-bottom: 1em;
+}
+
+.setting-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+
+    .label {
+        font-weight: 600;
+        color: #666;
+    }
+
+    .slider {
+        width: 100%;
+        accent-color: #2d5a27;
     }
 }
 

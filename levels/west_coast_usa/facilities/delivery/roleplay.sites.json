@@ -19,7 +19,7 @@
       },
       "isMultiSpot":false,
       "name":"Hospital Entrance",
-      "oldId":28518,
+      "oldId":2254,
       "pos":[
         -231.44441223145,
         437.36383056641,
@@ -55,7 +55,7 @@
       },
       "isMultiSpot":false,
       "name":"paramedicWorkParking",
-      "oldId":28519,
+      "oldId":2255,
       "pos":[
         -291.77017211914,
         461.49496459961,
@@ -91,7 +91,7 @@
       },
       "isMultiSpot":false,
       "name":"ambulanceLoaner",
-      "oldId":28520,
+      "oldId":2256,
       "pos":[
         -278.64749145508,
         451.42492675781,
@@ -127,7 +127,7 @@
       },
       "isMultiSpot":false,
       "name":"busWork_parking",
-      "oldId":28521,
+      "oldId":2257,
       "pos":[
         -418.38681030273,
         453.39505004883,
@@ -163,7 +163,7 @@
       },
       "isMultiSpot":false,
       "name":"busLoaner_parking",
-      "oldId":28522,
+      "oldId":2258,
       "pos":[
         -402.74322509766,
         455.15872192383,
@@ -198,8 +198,8 @@
         "values":{}
       },
       "isMultiSpot":false,
-      "name":"facilityWork_vehicle",
-      "oldId":28523,
+      "name":"facilityWork_industrialWarehouse",
+      "oldId":2259,
       "pos":[
         32.913333892822,
         740.23822021484,
@@ -210,6 +210,42 @@
         0,
         -0.00051971850127772,
         0.99999983724959
+      ],
+      "scl":[
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount":1,
+      "spotDirection":"Left",
+      "spotOffset":0,
+      "spotRotation":0
+    },
+    {
+      "color":[
+        1,
+        1,
+        1
+      ],
+      "customFields":{
+        "names":{},
+        "tags":{},
+        "types":{},
+        "values":{}
+      },
+      "isMultiSpot":false,
+      "name":"facilityWork_shuffleboard",
+      "oldId":2261,
+      "pos":[
+        -300.74145507813,
+        -150.15594482422,
+        120.55770874023
+      ],
+      "rot":[
+        0,
+        0,
+        0.38898810744286,
+        0.92124271392822
       ],
       "scl":[
         2.5,
@@ -249,7 +285,7 @@
         "values":{}
       },
       "name":"industrialWarehouse_facilityWork",
-      "oldId":28517,
+      "oldId":2253,
       "top":{
         "active":false,
         "normal":[
@@ -283,6 +319,69 @@
           38.295139312744,
           759.63348388672,
           74.724578857422
+        ]
+      ]
+    },
+    {
+      "bot":{
+        "active":false,
+        "normal":[
+          0,
+          0,
+          -1
+        ],
+        "pos":[
+          0,
+          0,
+          -10
+        ]
+      },
+      "color":[
+        1,
+        1,
+        1
+      ],
+      "customFields":{
+        "names":{},
+        "tags":{},
+        "types":{},
+        "values":{}
+      },
+      "name":"shuffleboard_facilityWork",
+      "oldId":2260,
+      "top":{
+        "active":false,
+        "normal":[
+          0,
+          0,
+          1
+        ],
+        "pos":[
+          0,
+          0,
+          10
+        ]
+      },
+      "vertices":[
+        [
+          -315.84564208984,
+          -145.78440856934,
+          120.54760742188
+        ],
+        [
+          -310.74905395508,
+          -142.20346069336,
+          120.54760742188
+        ],
+        [
+          -309.54238891602,
+          -145.94973754883,
+          119.39593505859
+        ],
+        [
+          -313.51196289063,
+          -148.87005615234,
+          119.31949615479
         ]
       ]
     }
