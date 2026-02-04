@@ -23,6 +23,61 @@ local SPAWN_ZONE_NAME = "facilityWork_spawnZone"
 -- Explicit drop trigger names (add more if you place additional drop zones)
 local DROP_TRIGGER_NAMES = { "facilityWork_drop" }
 
+-- Safe vec3 from engine getPosition() / table (avoids bad argument to _mul)
+local function toVec3(v)
+    if not v then return vec3(0, 0, 0) end
+    if type(v) == "table" then
+        local x = v.x or v[1] or 0
+        local y = v.y or v[2] or 0
+        local z = v.z or v[3] or 0
+        return vec3(x, y, z)
+    end
+    return vec3(v)
+end
+
+-- Safe quat from trigger getRotation() (engine may return table or userdata)
+local function triggerQuat(trigger)
+    local rot = trigger:getRotation()
+    if not rot then return quat(1, 0, 0, 0) end
+    if type(rot) == "table" then
+        local x = rot.x or rot[1] or 1
+        local y = rot.y or rot[2] or 0
+        local z = rot.z or rot[3] or 0
+        local w = rot.w or rot[4] or 0
+        return quat(x, y, z, w)
+    end
+    return quat(rot)
+end
+
+-- Distance from point to oriented box surface (trigger pos/rot/scale). Returns 0 if inside.
+local function distanceToTriggerBox(point, trigger)
+    local pos = toVec3(trigger:getPosition())
+    local scale = trigger:getScale()
+    local halfX = (scale and scale.x or 5) * 0.5
+    local halfY = (scale and scale.y or 5) * 0.5
+    local halfZ = (scale and scale.z or 3) * 0.5
+    local q = triggerQuat(trigger)
+    local toLocal = q:inverse()
+    local pLocal = toLocal * (toVec3(point) - pos)
+    local dx = math.max(-halfX, math.min(halfX, pLocal.x)) - pLocal.x
+    local dy = math.max(-halfY, math.min(halfY, pLocal.y)) - pLocal.y
+    local dz = math.max(-halfZ, math.min(halfZ, pLocal.z)) - pLocal.z
+    return math.sqrt(dx*dx + dy*dy + dz*dz)
+end
+
+-- Is point inside trigger box?
+local function isPointInsideTriggerBox(point, trigger)
+    local pos = toVec3(trigger:getPosition())
+    local scale = trigger:getScale()
+    local halfX = (scale and scale.x or 5) * 0.5
+    local halfY = (scale and scale.y or 5) * 0.5
+    local halfZ = (scale and scale.z or 3) * 0.5
+    local q = triggerQuat(trigger)
+    local toLocal = q:inverse()
+    local pLocal = toLocal * (toVec3(point) - pos)
+    return math.abs(pLocal.x) <= halfX and math.abs(pLocal.y) <= halfY and math.abs(pLocal.z) <= halfZ
+end
+
 -- Config (loaded from current level; invalidated when level changes)
 local materialsById = {}
 local facilityConfigs = {}
@@ -61,7 +116,7 @@ local function loadConfig()
     configLoadedForLevel = nil
     local levelInfo = core_levels.getLevelByName(levelId)
     if not levelInfo or not levelInfo.dir then return false end
-    local path = levelInfo.dir .. "/facilityWorkMaterials.json"
+    local path = levelInfo.dir .. "/facilityWorkConfig.json"
     local data = jsonReadFile(path)
     if not data or not data.materials then return false end
     materialsById = data.materials
@@ -74,6 +129,54 @@ local function loadConfig()
     configLoaded = true
     configLoadedForLevel = levelId
     return true
+end
+
+-- Get spawn spot for forklift from roleplay.sites.json (parking spot named "facilityWork_vehicle")
+local function getForkliftSpawnPoint()
+    local levelId = getCurrentLevelIdentifier()
+    if not levelId then return nil end
+    local sitesPath = (gameplay_sites_sitesManager and gameplay_sites_sitesManager.getCurrentLevelSitesFileByName and gameplay_sites_sitesManager.getCurrentLevelSitesFileByName('roleplay')) or nil
+    if not sitesPath and core_levels and core_levels.getLevelByName then
+        local levelInfo = core_levels.getLevelByName(levelId)
+        if levelInfo and levelInfo.dir then
+            sitesPath = levelInfo.dir .. "/facilities/delivery/roleplay.sites.json"
+        end
+    end
+    if not sitesPath then return nil end
+    local sites = (gameplay_sites_sitesManager and gameplay_sites_sitesManager.loadSites(sitesPath, true, true)) or jsonReadFile(sitesPath)
+    if not sites then return nil end
+    
+    -- Look in parkingSpots from sitesManager first
+    local parking = sites.parkingSpots
+    if parking then
+        for _, spot in ipairs(parking) do
+            local name = spot.name or (spot.objects and spot.objects[1] and spot.objects[1].name)
+            if name == "facilityWork_vehicle" then
+                local pos = spot.pos or (spot.vertices and spot.vertices[1])
+                local rot = spot.rot or spot.rotation
+                if pos then
+                    return { pos = toVec3(pos), rot = rot and quat(rot) or quat(0,0,0,1) }
+                end
+            end
+        end
+    end
+
+    -- If not found in manager, try raw file (in case of cache/stale data)
+    local raw = jsonReadFile(sitesPath)
+    if raw and raw.parkingSpots then
+        for _, spot in ipairs(raw.parkingSpots) do
+            local name = spot.name or (spot.objects and spot.objects[1] and spot.objects[1].name)
+            if name == "facilityWork_vehicle" then
+                local pos = spot.pos or (spot.vertices and spot.vertices[1])
+                local rot = spot.rot or spot.rotation
+                if pos then
+                    return { pos = toVec3(pos), rot = rot and quat(rot) or quat(0,0,0,1) }
+                end
+            end
+        end
+    end
+
+    return nil
 end
 
 -- Get zone vertices from level sites (roleplay.sites.json). Use game's path resolution so mod level is found.
@@ -202,61 +305,6 @@ local function collectDropTriggers()
         end
     end
     return dropTriggersByName
-end
-
--- Safe vec3 from engine getPosition() / table (avoids bad argument to _mul)
-local function toVec3(v)
-    if not v then return vec3(0, 0, 0) end
-    if type(v) == "table" then
-        local x = v.x or v[1] or 0
-        local y = v.y or v[2] or 0
-        local z = v.z or v[3] or 0
-        return vec3(x, y, z)
-    end
-    return vec3(v)
-end
-
--- Safe quat from trigger getRotation() (engine may return table or userdata)
-local function triggerQuat(trigger)
-    local rot = trigger:getRotation()
-    if not rot then return quat(1, 0, 0, 0) end
-    if type(rot) == "table" then
-        local x = rot.x or rot[1] or 1
-        local y = rot.y or rot[2] or 0
-        local z = rot.z or rot[3] or 0
-        local w = rot.w or rot[4] or 0
-        return quat(x, y, z, w)
-    end
-    return quat(rot)
-end
-
--- Distance from point to oriented box surface (trigger pos/rot/scale). Returns 0 if inside.
-local function distanceToTriggerBox(point, trigger)
-    local pos = toVec3(trigger:getPosition())
-    local scale = trigger:getScale()
-    local halfX = (scale and scale.x or 5) * 0.5
-    local halfY = (scale and scale.y or 5) * 0.5
-    local halfZ = (scale and scale.z or 3) * 0.5
-    local q = triggerQuat(trigger)
-    local toLocal = q:inverse()
-    local pLocal = toLocal * (toVec3(point) - pos)
-    local dx = math.max(-halfX, math.min(halfX, pLocal.x)) - pLocal.x
-    local dy = math.max(-halfY, math.min(halfY, pLocal.y)) - pLocal.y
-    local dz = math.max(-halfZ, math.min(halfZ, pLocal.z)) - pLocal.z
-    return math.sqrt(dx*dx + dy*dy + dz*dz)
-end
-
--- Is point inside trigger box?
-local function isPointInsideTriggerBox(point, trigger)
-    local pos = toVec3(trigger:getPosition())
-    local scale = trigger:getScale()
-    local halfX = (scale and scale.x or 5) * 0.5
-    local halfY = (scale and scale.y or 5) * 0.5
-    local halfZ = (scale and scale.z or 3) * 0.5
-    local q = triggerQuat(trigger)
-    local toLocal = q:inverse()
-    local pLocal = toLocal * (toVec3(point) - pos)
-    return math.abs(pLocal.x) <= halfX and math.abs(pLocal.y) <= halfY and math.abs(pLocal.z) <= halfZ
 end
 
 -- Create a corner marker TSStatic for drop-zone visualization.
@@ -564,8 +612,8 @@ local function payoutBatchAndSpawnNext()
     end
 end
 
--- Exit forklift: despawn remaining props, despawn all session-delivered materials, clear markers, show total earned, save, clear UI.
-local function onForkliftExit()
+-- End Shift: despawn forklift, props, session materials, markers, etc.
+local function endShiftCleanup()
     if currentBatch then
         for _, pid in ipairs(currentBatch.propIds) do
             local obj = be:getObjectByID(pid)
@@ -578,6 +626,13 @@ local function onForkliftExit()
         local obj = be:getObjectByID(pid)
         if obj then obj:delete() end
     end
+    -- Despawn the facility forklift if we're tracking one
+    if currentForkliftId then
+        local obj = be:getObjectByID(currentForkliftId)
+        if obj then obj:delete() end
+        currentForkliftId = nil
+    end
+
     table.clear(sessionDeliveredVehicles)
     table.clear(propsInDropZone)
     clearDropMarkers()
@@ -594,7 +649,6 @@ local function onForkliftExit()
     end
 
     guihooks.trigger('ClearTasklist')
-    currentForkliftId = nil
     notifyPhoneState()
     if utils and utils.restoreTrafficAmount then
         utils.restoreTrafficAmount()
@@ -657,7 +711,47 @@ local function doStartFacilityWork()
         return false
     end
     -- Use current player vehicle as forklift if in one; else set when they enter a vehicle (onVehicleSwitched)
-    currentForkliftId = be:getPlayerVehicleID(0)
+    -- currentForkliftId = be:getPlayerVehicleID(0)
+    
+    -- Spawn facility vehicle (forklift) at designated spot
+    local spawnData = getForkliftSpawnPoint()
+    if not spawnData then
+        if utils and utils.displayMessage then
+            utils.displayMessage("Facility work error: 'facilityWork_vehicle' parking spot not found in roleplay.sites.json.", 6)
+        end
+        -- Fallback? No, user requested fail if not found/strict spawn. But we can abort.
+        -- Clean up the batch we just spawned since we can't work without a forklift
+        despawnBatch()
+        return false
+    end
+
+    -- Get vehicle config from facility config or default
+    local vehInfo = facCfg.vehicle or {}
+    local model = vehInfo.model or "forklift"
+    local config = vehInfo.config or "standard"
+    -- Optional: color, etc.
+
+    local vehObj = core_vehicles.spawnNewVehicle(model, {
+        pos = spawnData.pos,
+        rot = spawnData.rot,
+        config = config,
+        autoEnterVehicle = false -- let player walk to it
+    })
+    
+    if vehObj then
+        currentForkliftId = vehObj:getID()
+        -- Apply paint if specified?
+        if vehInfo.color then
+            -- vehObj:setColor(parseColor(vehInfo.color))
+        end
+    else
+        if utils and utils.displayMessage then
+            utils.displayMessage("Facility work error: failed to spawn forklift.", 5)
+        end
+        despawnBatch()
+        return false
+    end
+
     if utils and utils.saveAndSetTrafficAmount then
         utils.saveAndSetTrafficAmount(0)
     end
@@ -667,7 +761,7 @@ local function doStartFacilityWork()
         showDropMarkers(currentBatch.dropTrigger)
     end
     if utils and utils.displayMessage then
-        utils.displayMessage("On duty. Move materials to the drop zone.", 4)
+        utils.displayMessage("On duty. Use the company forklift to move materials.", 4)
     end
     return true
 end
@@ -710,11 +804,15 @@ end
 
 local function onVehicleSwitched(oldId, newId)
     if not career_career or not career_career.isActive() then return end
-    if currentForkliftId and oldId == currentForkliftId then
-        onForkliftExit()
-        return
-    end
-    -- Started from phone without a vehicle: when player enters any vehicle, treat it as the forklift
+    
+    -- DISABLED: Do not end shift on vehicle exit. Player must use phone to end shift.
+    -- if currentForkliftId and oldId == currentForkliftId then
+    --    onForkliftExit()
+    --    return
+    -- end
+
+    -- Started from phone without a vehicle: if we somehow don't have a forklift ID yet (fallback), capture it.
+    -- But now we spawn it, so this shouldn't be needed usually.
     if currentBatch and not currentForkliftId and newId then
         currentForkliftId = newId
     end
@@ -731,11 +829,16 @@ local function onExtensionUnloaded()
         local obj = be:getObjectByID(pid)
         if obj then obj:delete() end
     end
+    if currentForkliftId then
+        local obj = be:getObjectByID(currentForkliftId)
+        if obj then obj:delete() end
+        currentForkliftId = nil
+    end
+
     table.clear(sessionDeliveredVehicles)
     table.clear(propsInDropZone)
     batchReadyWaitingForkliftExit = false
     clearDropMarkers()
-    currentForkliftId = nil
     dropTriggersByName = {}
     if utils and utils.restoreTrafficAmount then
         utils.restoreTrafficAmount()
@@ -752,9 +855,8 @@ function M.startFacilityWork()
 end
 
 function M.endFacilityWork()
-    if currentBatch or currentForkliftId then
-        onForkliftExit()
-    end
+    -- Explicit end shift from phone
+    endShiftCleanup()
 end
 
 M.onBeamNGTrigger = onBeamNGTrigger

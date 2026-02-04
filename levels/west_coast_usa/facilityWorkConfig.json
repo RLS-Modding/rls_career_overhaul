@@ -71,8 +71,9 @@
       "spawnGridSpacing": 2.0
     }
   },
-  "logisticsWarehouse": {
-    "organizationId": "logisticsWarehouse",
+  "industrialWarehouse": {
+    "organizationId": "industrialWarehouse",
+    "vehicle": {"model": "TPUMedForklift", "config": "FL55D Simplex"},
     "batchSize": 8,
     "stackLayers": 2,
     "triggers": ["facilityWork_drop1","facilityWork_drop2","facilityWork_drop3",

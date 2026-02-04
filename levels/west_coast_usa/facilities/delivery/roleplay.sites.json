@@ -19,7 +19,7 @@
       },
       "isMultiSpot":false,
       "name":"Hospital Entrance",
-      "oldId":18032,
+      "oldId":12960,
       "pos":[
         -231.44441223145,
         437.36383056641,
@@ -55,7 +55,7 @@
       },
       "isMultiSpot":false,
       "name":"paramedicWorkParking",
-      "oldId":18033,
+      "oldId":12961,
       "pos":[
         -291.77017211914,
         461.49496459961,
@@ -91,7 +91,7 @@
       },
       "isMultiSpot":false,
       "name":"ambulanceLoaner",
-      "oldId":18034,
+      "oldId":12962,
       "pos":[
         -278.64749145508,
         451.42492675781,
@@ -127,7 +127,7 @@
       },
       "isMultiSpot":false,
       "name":"busWork_parking",
-      "oldId":18035,
+      "oldId":12963,
       "pos":[
         -418.38681030273,
         453.39505004883,
@@ -163,7 +163,7 @@
       },
       "isMultiSpot":false,
       "name":"busLoaner_parking",
-      "oldId":18036,
+      "oldId":12964,
       "pos":[
         -402.74322509766,
         455.15872192383,
@@ -179,6 +179,42 @@
         4,
         14,
         8
+      ],
+      "spotAmount":1,
+      "spotDirection":"Left",
+      "spotOffset":0,
+      "spotRotation":0
+    },
+    {
+      "color":[
+        1,
+        1,
+        1
+      ],
+      "customFields":{
+        "names":{},
+        "tags":{},
+        "types":{},
+        "values":{}
+      },
+      "isMultiSpot":false,
+      "name":"facilityWork_vehicle",
+      "oldId":12965,
+      "pos":[
+        32.913333892822,
+        740.23822021484,
+        74.724548339844
+      ],
+      "rot":[
+        0,
+        0,
+        -0.00051971850127772,
+        0.99999983724959
+      ],
+      "scl":[
+        2.5,
+        6,
+        3
       ],
       "spotAmount":1,
       "spotDirection":"Left",
@@ -213,7 +249,7 @@
         "values":{}
       },
       "name":"facilityWork_spawnZone",
-      "oldId":18065,
+      "oldId":12959,
       "top":{
         "active":false,
         "normal":[
