@@ -33,6 +33,9 @@ local configLoadedForLevel = nil
 local sessionTotalPay = 0
 local sessionTotalRep = 0
 local sessionMaterialsMoved = 0
+-- Delivered materials left in world until shift ends (persistent materials)
+local sessionDeliveredVehicles = {}
+local MAX_PERSISTENT_PROPS = 50
 
 -- Current batch
 local currentForkliftId = nil
@@ -539,10 +542,17 @@ local function payoutBatchAndSpawnNext()
         career_saveSystem.saveCurrent()
     end
 
+    -- Persistent materials: keep delivered props in world until shift ends
     for _, pid in ipairs(propIds) do
+        table.insert(sessionDeliveredVehicles, pid)
+    end
+    -- Performance cap: remove oldest props if over limit
+    while #sessionDeliveredVehicles > MAX_PERSISTENT_PROPS do
+        local pid = table.remove(sessionDeliveredVehicles, 1)
         local obj = be:getObjectByID(pid)
         if obj then obj:delete() end
     end
+
     table.clear(propsInDropZone)
     currentBatch = nil
     updateTasklistValues()
@@ -554,7 +564,7 @@ local function payoutBatchAndSpawnNext()
     end
 end
 
--- Exit forklift: despawn remaining props, clear markers, show total earned, save, clear UI.
+-- Exit forklift: despawn remaining props, despawn all session-delivered materials, clear markers, show total earned, save, clear UI.
 local function onForkliftExit()
     if currentBatch then
         for _, pid in ipairs(currentBatch.propIds) do
@@ -563,6 +573,12 @@ local function onForkliftExit()
         end
         currentBatch = nil
     end
+    -- Remove all persistent (delivered) materials from the session
+    for _, pid in ipairs(sessionDeliveredVehicles) do
+        local obj = be:getObjectByID(pid)
+        if obj then obj:delete() end
+    end
+    table.clear(sessionDeliveredVehicles)
     table.clear(propsInDropZone)
     clearDropMarkers()
     batchReadyWaitingForkliftExit = false
@@ -626,6 +642,12 @@ local function doStartFacilityWork()
     if currentBatch then
         despawnBatch()
     end
+    -- New shift: clear any previous session's delivered materials (clean slate)
+    for _, pid in ipairs(sessionDeliveredVehicles) do
+        local obj = be:getObjectByID(pid)
+        if obj then obj:delete() end
+    end
+    table.clear(sessionDeliveredVehicles)
     table.clear(propsInDropZone)
     batchReadyWaitingForkliftExit = false
     if not spawnBatch(facilityId) then
@@ -705,6 +727,11 @@ end
 
 local function onExtensionUnloaded()
     if currentBatch then despawnBatch() end
+    for _, pid in ipairs(sessionDeliveredVehicles) do
+        local obj = be:getObjectByID(pid)
+        if obj then obj:delete() end
+    end
+    table.clear(sessionDeliveredVehicles)
     table.clear(propsInDropZone)
     batchReadyWaitingForkliftExit = false
     clearDropMarkers()
