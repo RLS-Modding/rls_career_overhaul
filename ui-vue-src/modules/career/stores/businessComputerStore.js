@@ -17,6 +17,9 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
   const kits = ref([])
   const maxKitStorage = ref(0)
   const currentKitCount = ref(0)
+  const blacklistData = ref(null)
+  const notificationListData = ref(null)
+  const managerBlacklistData = ref(null)
 
   const partsCart = ref([])
   const tuningCart = ref([])
@@ -2190,6 +2193,102 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     }
   }
 
+  const parseUpdateResult = (result) => {
+    if (Array.isArray(result)) {
+      const success = result[0] === true || result[0] === 'true' || result[0] === 1
+      return { success, message: result[1] }
+    }
+    const success = result === true || result === 'true' || result === 1
+    return { success, message: null }
+  }
+
+  const fetchBlacklistData = async () => {
+    if (!businessId.value || businessType.value !== 'tuningShop') {
+      blacklistData.value = null
+      return null
+    }
+    try {
+      const data = await lua.career_modules_business_tuningShop.getBlacklistData(businessId.value)
+      blacklistData.value = data && typeof data === 'object' ? data : null
+      return data
+    } catch (error) {
+      blacklistData.value = null
+      return null
+    }
+  }
+
+  const fetchNotificationListData = async () => {
+    if (!businessId.value || businessType.value !== 'tuningShop') {
+      notificationListData.value = null
+      return null
+    }
+    try {
+      const data = await lua.career_modules_business_tuningShop.getNotificationListData(businessId.value)
+      notificationListData.value = data && typeof data === 'object' ? data : null
+      return data
+    } catch (error) {
+      notificationListData.value = null
+      return null
+    }
+  }
+
+  const fetchManagerBlacklistData = async () => {
+    if (!businessId.value || businessType.value !== 'tuningShop') {
+      managerBlacklistData.value = null
+      return null
+    }
+    try {
+      const data = await lua.career_modules_business_tuningShop.getManagerBlacklistData(businessId.value)
+      managerBlacklistData.value = data && typeof data === 'object' ? data : null
+      return data
+    } catch (error) {
+      managerBlacklistData.value = null
+      return null
+    }
+  }
+
+  const updateBlacklist = async (modelKeys) => {
+    if (!businessId.value || businessType.value !== 'tuningShop') return false
+    try {
+      const result = await lua.career_modules_business_tuningShop.updateBlacklist(businessId.value, modelKeys || [])
+      const parsed = parseUpdateResult(result)
+      if (!parsed.success && parsed.message) {
+        showErrorMessage(parsed.message)
+      }
+      return parsed.success
+    } catch (error) {
+      return false
+    }
+  }
+
+  const updateNotificationList = async (entries) => {
+    if (!businessId.value || businessType.value !== 'tuningShop') return false
+    try {
+      const result = await lua.career_modules_business_tuningShop.updateNotificationList(businessId.value, entries || [])
+      const parsed = parseUpdateResult(result)
+      if (!parsed.success && parsed.message) {
+        showErrorMessage(parsed.message)
+      }
+      return parsed.success
+    } catch (error) {
+      return false
+    }
+  }
+
+  const updateManagerBlacklist = async (modelKeys) => {
+    if (!businessId.value || businessType.value !== 'tuningShop') return false
+    try {
+      const result = await lua.career_modules_business_tuningShop.updateManagerBlacklist(businessId.value, modelKeys || [])
+      const parsed = parseUpdateResult(result)
+      if (!parsed.success && parsed.message) {
+        showErrorMessage(parsed.message)
+      }
+      return parsed.success
+    } catch (error) {
+      return false
+    }
+  }
+
   watch(businessId, async () => {
     updateBrandRecognitionStatus()
     updateRaceRecognitionStatus()
@@ -2384,7 +2483,16 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     playerInZone,
     personalUseUnlocked,
     personalVehicles,
-    selectPersonalVehicle
+    selectPersonalVehicle,
+    blacklistData,
+    notificationListData,
+    managerBlacklistData,
+    fetchBlacklistData,
+    fetchNotificationListData,
+    fetchManagerBlacklistData,
+    updateBlacklist,
+    updateNotificationList,
+    updateManagerBlacklist
   }
 })
 

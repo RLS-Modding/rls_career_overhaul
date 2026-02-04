@@ -1371,6 +1371,12 @@ export default {
     stopTechFromJob: (businessId, techId) => [String, Integer],
     setManagerPaused: (businessId, paused) => [String, Boolean],
     getTechsForBusiness: (businessId) => String,
+    getBlacklistData: (businessId) => String,
+    getNotificationListData: (businessId) => String,
+    getManagerBlacklistData: (businessId) => String,
+    updateBlacklist: (businessId, modelKeys) => [String, Array],
+    updateNotificationList: (businessId, entries) => [String, Array],
+    updateManagerBlacklist: (businessId, modelKeys) => [String, Array],
   },
 
   career_modules_business_businessPartCustomization: {
