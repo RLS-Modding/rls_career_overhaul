@@ -73,6 +73,7 @@
   },
   "industrialWarehouse": {
     "organizationId": "industrialWarehouse",
+    "spawnZone": "industrialWarehouse_facilityWork",
     "vehicle": {"model": "TPUMedForklift", "config": "FL55D Simplex"},
     "batchSize": 8,
     "stackLayers": 2,

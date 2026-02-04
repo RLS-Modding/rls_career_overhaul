@@ -180,7 +180,8 @@ local function getForkliftSpawnPoint()
 end
 
 -- Get zone vertices from level sites (roleplay.sites.json). Use game's path resolution so mod level is found.
-local function getSpawnZoneVertices()
+local function getSpawnZoneVertices(zoneName)
+    local targetName = zoneName or SPAWN_ZONE_NAME
     local levelId = getCurrentLevelIdentifier()
     if not levelId then return nil end
     -- Prefer getCurrentLevelSitesFileByName so mod level's roleplay.sites.json is found (same as ambulance/taxi)
@@ -203,7 +204,7 @@ local function getSpawnZoneVertices()
     if not zones or #zones == 0 then return nil end
     for _, z in ipairs(zones) do
         local name = z.name or (z.objects and z.objects[1] and z.objects[1].name)
-        if name == SPAWN_ZONE_NAME and z.vertices and #z.vertices >= 3 then
+        if name == targetName and z.vertices and #z.vertices >= 3 then
             return z.vertices
         end
     end
@@ -434,15 +435,16 @@ end
 -- Phone app: build state for UI (onDuty, session stats, available on this level)
 local function isFacilityWorkAvailable()
     if not loadConfig() then return false end
-    local verts = getSpawnZoneVertices()
-    if not verts or #verts < 3 then return false end
-    local facilityId = nil
-    for fid in pairs(facilityConfigs) do facilityId = fid break end
-    if not facilityId then return false end
-    local facCfg = facilityConfigs[facilityId]
-    local triggerNames = (facCfg.triggers and #facCfg.triggers > 0) and facCfg.triggers or DROP_TRIGGER_NAMES
-    local resolved = resolveDropTriggers(triggerNames)
-    for _ in pairs(resolved) do return true end
+    -- Check if any facility has a valid spawn zone
+    for fid, cfg in pairs(facilityConfigs) do
+        local zoneName = cfg.spawnZone or SPAWN_ZONE_NAME
+        local verts = getSpawnZoneVertices(zoneName)
+        if verts and #verts >= 3 then
+            local triggerNames = (cfg.triggers and #cfg.triggers > 0) and cfg.triggers or DROP_TRIGGER_NAMES
+            local resolved = resolveDropTriggers(triggerNames)
+            for _ in pairs(resolved) do return true end
+        end
+    end
     return false
 end
 
@@ -472,7 +474,7 @@ local function spawnBatch(facilityId)
     local facCfg = facilityConfigs[facilityId]
     if not facCfg then return false end
 
-    local vertices = getSpawnZoneVertices()
+    local vertices = getSpawnZoneVertices(facCfg.spawnZone)
     if not vertices then return false end
 
     -- Use facility's "triggers" list from JSON, or fall back to global DROP_TRIGGER_NAMES
@@ -676,10 +678,11 @@ local function doStartFacilityWork()
         return false
     end
     local facCfg = facilityConfigs[facilityId]
-    local vertices = getSpawnZoneVertices()
+    local vertices = getSpawnZoneVertices(facCfg.spawnZone)
     if not vertices or #vertices < 3 then
         if utils and utils.displayMessage then
-            utils.displayMessage("Facility work: spawn zone not found. In roleplay.sites.json (facilities/delivery) add a zone named 'facilityWork_spawnZone' with at least 3 vertices.", 8)
+            local zName = facCfg.spawnZone or "facilityWork_spawnZone"
+            utils.displayMessage("Facility work: spawn zone '"..zName.."' not found in roleplay.sites.json.", 8)
         end
         return false
     end
