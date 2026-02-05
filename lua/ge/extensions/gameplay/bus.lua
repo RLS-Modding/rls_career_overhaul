@@ -1271,6 +1271,9 @@ local function processStop(vehicle, dtSim)
 
             roughRide = 0
 
+            core_vehicleBridge.executeAction(vehicle, 'setFreeze', false)
+            boardingCoroutine = nil
+
             dwellTimer = nil
             stopMonitorActive = false
             stopSettleTimer = 0
@@ -1342,6 +1345,14 @@ local function onVehicleSwitched(oldId, newId)
     local newVeh = be:getObjectByID(newId)
 
     if currentRouteActive and activeBusID and oldId == activeBusID then
+        if boardingCoroutine then
+            local oldBus = be:getObjectByID(activeBusID)
+            if oldBus then
+                core_vehicleBridge.executeAction(oldBus, 'setFreeze', false)
+            end
+            boardingCoroutine = nil
+        end
+
         local payout = accumulatedReward + tipTotal
         if payout > config.maxPayout then
             payout = config.maxPayout
