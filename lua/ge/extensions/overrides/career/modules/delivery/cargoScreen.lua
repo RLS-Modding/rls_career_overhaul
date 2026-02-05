@@ -1373,6 +1373,9 @@ M.moveCargoFromUi = moveCargoFromUi
 local function enterCargoOverviewScreen(facilityId, parkingSpotPath)
   vehicleSpawnInProgress = false
   pendingTransientMoves = false
+  if career_modules_loanerVehicles and career_modules_loanerVehicles.unmarkAllForSpawning then
+    career_modules_loanerVehicles.unmarkAllForSpawning()
+  end
   dGeneral.getNearbyVehicleCargoContainers(function(playerCargoContainers)
     cargoOverviewScreenOpen = true
     cargoOverviewTab = ""
@@ -1433,6 +1436,11 @@ local function exitCargoOverviewScreen(facilityId, parkingSpotPath)
   --career_career.closeAllMenus()
   freeroam_bigMapMode.exitBigMap(true)
   simTimeAuthority.pause(false) -- this is only necessary because the career pause menu doesnt unpause in time for the bigMap to start, so the bigMap will not unpause by itself
+  if not vehicleSpawnInProgress and not pendingTransientMoves then
+    if career_modules_loanerVehicles and career_modules_loanerVehicles.unmarkAllForSpawning then
+      career_modules_loanerVehicles.unmarkAllForSpawning()
+    end
+  end
   if not vehicleSpawnInProgress then
     dGeneral.requestUpdateContainerWeights()
   end
