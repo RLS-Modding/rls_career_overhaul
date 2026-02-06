@@ -1166,7 +1166,6 @@ local function processStop(vehicle, dtSim)
             stopMonitorActive = true
             stopSettleTimer = 0
             ui_message("Please open doors to begin boarding", 2.5, "info", "bus")
-            core_vehicleBridge.executeAction(vehicle, 'setFreeze', true)
         else
             stopSettleTimer = stopSettleTimer + (dtSim or 0.033)
         end
@@ -1203,6 +1202,7 @@ local function processStop(vehicle, dtSim)
             end
 
             boardingCoroutine = coroutine.create(function()
+                core_vehicleBridge.executeAction(vehicle, 'setFreeze', true)
 
                 -- Suspends the current coroutine until the given duration (in seconds) has elapsed.
                 -- @param duration Number of seconds to wait.
@@ -1271,6 +1271,9 @@ local function processStop(vehicle, dtSim)
 
             roughRide = 0
 
+            core_vehicleBridge.executeAction(vehicle, 'setFreeze', false)
+            boardingCoroutine = nil
+
             dwellTimer = nil
             stopMonitorActive = false
             stopSettleTimer = 0
@@ -1323,7 +1326,11 @@ local function processStop(vehicle, dtSim)
         end
 
     else
+        if dwellTimer then
+            core_vehicleBridge.executeAction(vehicle, 'setFreeze', false)
+        end
         dwellTimer = nil
+        boardingCoroutine = nil
         stopMonitorActive = false
         stopSettleTimer = 0
     end
@@ -1338,6 +1345,14 @@ local function onVehicleSwitched(oldId, newId)
     local newVeh = be:getObjectByID(newId)
 
     if currentRouteActive and activeBusID and oldId == activeBusID then
+        if boardingCoroutine then
+            local oldBus = be:getObjectByID(activeBusID)
+            if oldBus then
+                core_vehicleBridge.executeAction(oldBus, 'setFreeze', false)
+            end
+            boardingCoroutine = nil
+        end
+
         local payout = accumulatedReward + tipTotal
         if payout > config.maxPayout then
             payout = config.maxPayout
@@ -1455,8 +1470,15 @@ local function onBeamNGTrigger(data)
         currentTriggerName = data.triggerName
     elseif data.event == "exit" then
         if currentTriggerName == data.triggerName then
+            if dwellTimer then
+                local vehicle = be:getPlayerVehicle(0)
+                if vehicle then
+                    core_vehicleBridge.executeAction(vehicle, 'setFreeze', false)
+                end
+            end
             currentTriggerName = nil
             dwellTimer = nil
+            boardingCoroutine = nil
             stopMonitorActive = false
             stopSettleTimer = 0
         end
