@@ -6,7 +6,7 @@ set "ROOT_DIR=%~dp0"
 set "BASE_UI=%ROOT_DIR%baseUI"
 set "VUE_SRC=%ROOT_DIR%ui-vue-src"
 set "BUILD_DIR=%ROOT_DIR%ui-build-temp"
-set "DIST_TARGET=%ROOT_DIR%ui\vue-dist"
+set "DIST_TARGET=%ROOT_DIR%ui\ui-vue\dist"
 
 echo.
 echo ========================================

@@ -346,7 +346,7 @@
         <div class="payload-section compact" v-if="activeContract && activeContract.unitType !== 'item'">
           <div class="payload-header">
             <span class="payload-label">Payload</span>
-            <span class="payload-value">{{ formatNumber(currentLoadMass) }} / {{ formatNumber(targetLoad) }} kg</span>
+            <span class="payload-value">{{ formatNumber(currentLoadMass) }} / {{ formatNumber(targetLoad) }} tons</span>
           </div>
           <div class="payload-bar-container">
             <div 

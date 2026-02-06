@@ -5,7 +5,6 @@ local logTag = 'overrideManager'
 local overrides = {}
 local originalLoad = nil
 local originalReload = nil
-local originalReloadUI = nil
 
 local MOD_OVERRIDES_DIR = "/overrides/"
 local LOCAL_OVERRIDEN_ROOT = "/overriden/"
@@ -195,25 +194,10 @@ local function overrideReload(extPath)
   end
 end
 
-local function overrideReloadUI()
-  core_jobsystem.create(function(job)
-    copyFiles("/ui/vue-dist/", "/ui/ui-vue/dist/")
-    copyFiles("/ui/startScreen/", "/ui/modules/startScreen/")
-    job.sleep(1)
-    originalReloadUI()
-  end)
-end
-
 local function installSystem()
-  if originalLoad or originalReload or originalReloadUI then
+  if originalLoad or originalReload then
     log('E', logTag, 'Override system already installed')
     return false
-  end
-
-  originalReloadUI = reloadUI
-  if originalReloadUI then
-    reloadUI = overrideReloadUI
-    reloadUI()
   end
 
   originalLoad = extensions.load
@@ -245,6 +229,7 @@ local function installSystem()
 
   clearDirectory(LOCAL_OVERRIDEN_ROOT)
   mountCustomOverrides()
+  reloadUI()
 
   return true
 end
@@ -297,9 +282,6 @@ local function unloadOverrides()
     return false
   end
 
-  reloadUI = originalReloadUI
-  originalReloadUI = nil
-
   extensions.load = originalLoad
   originalLoad = nil
 
@@ -339,13 +321,6 @@ local function onExtensionLoaded()
   ourMod = overhaul_extensionManager.getModData()
   installSystem()
   extensions.unload("ui_console")
-end
-
-M.onUIInitialised = function()
-  core_jobsystem.create(function(job)
-    job.sleep(0.35)
-    clearDirectory("/ui/")
-  end)
 end
 
 M.onExtensionLoaded = onExtensionLoaded

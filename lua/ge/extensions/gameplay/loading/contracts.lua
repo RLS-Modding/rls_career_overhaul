@@ -128,11 +128,9 @@ end
 local function getFacilityPayMultiplier(zoneTag)
   local facility = getFacilityForZone(zoneTag)
   if not facility then
-    print(string.format("[Loading] No facility found for zone '%s'; cannot get pay multiplier.", zoneTag or "unknown"))
     return nil
   end
   if facility.payMultiplier == nil then
-    print(string.format("[Loading] Facility '%s' missing payMultiplier; cannot get pay multiplier.", facility.name or "unknown"))
     return nil
   end
   return facility.payMultiplier
@@ -192,39 +190,33 @@ end
 local function generateContract(availableGroups, expirationOffset)
   if not availableGroups or #availableGroups == 0 then return nil end
   if not Config.materials or next(Config.materials) == nil then
-    print("[Loading] No materials configured in JSON; cannot generate contract.")
     return nil
   end
 
   local contractsConfig = getContractsConfigFromGroups(availableGroups)
   if not contractsConfig or not contractsConfig.tiers or #contractsConfig.tiers == 0 then
-    print("[Loading] No contracts config or tiers defined; cannot generate contract.")
     return nil
   end
   
   expirationOffset = expirationOffset or 0
   local tier = pickTier(contractsConfig, availableGroups)
   if not tier then
-    print("[Loading] Failed to pick valid tier; cannot generate contract.")
     return nil
   end
   
   local tierData = contractsConfig.tiers[tier]
   if not tierData then
-    print(string.format("[Loading] Tier %d data not found; cannot generate contract.", tier))
     return nil
   end
   
   local tierStr = tostring(tier)
 
   if contractsConfig.bulkChance == nil then
-    print("[Loading] bulkChance not defined in contracts config; cannot generate contract.")
     return nil
   end
   local isBulk = math.random() < contractsConfig.bulkChance
   
   if tierData.mixChance == nil then
-    print(string.format("[Loading] mixChance not defined for tier %d; cannot generate contract.", tier))
     return nil
   end
   local mixChance = tierData.mixChance
@@ -245,9 +237,7 @@ local function generateContract(availableGroups, expirationOffset)
             if not validMaterialsByType[typeName] then
               validMaterialsByType[typeName] = {}
             end
-            if matConfig.contractChance == nil then
-              print(string.format("[Loading] Material '%s' missing contractChance; skipping.", matKey))
-            else
+            if matConfig.contractChance ~= nil then
               table.insert(validMaterialsByType[typeName], {
                 key = matKey,
                 config = matConfig,
@@ -267,7 +257,6 @@ local function generateContract(availableGroups, expirationOffset)
   end
   
   if #availableTypeNames == 0 then
-    print(string.format("[Loading] No materials with valid tier %s ranges available in zones", tierStr))
     return nil
   end
   
@@ -275,7 +264,6 @@ local function generateContract(availableGroups, expirationOffset)
   local validMaterials = validMaterialsByType[selectedTypeName]
   
   if #validMaterials == 0 then
-    print(string.format("[Loading] No valid materials for typeName '%s' tier %s", selectedTypeName, tierStr))
     return nil
   end
 
@@ -344,7 +332,6 @@ local function generateContract(availableGroups, expirationOffset)
   end
   
   if #selectedMaterials == 0 then
-    print(string.format("[Loading] Failed to select materials for typeName '%s' tier %s", selectedTypeName, tierStr))
     return nil
   end
   
@@ -371,7 +358,6 @@ local function generateContract(availableGroups, expirationOffset)
   end
   
   if #compatibleGroups == 0 then
-    print(string.format("[Loading] No groups available for typeName '%s'", selectedTypeName))
     return nil
   end
   
@@ -379,13 +365,11 @@ local function generateContract(availableGroups, expirationOffset)
   if not group then return nil end
 
   if not tierData.payMultiplier or not tierData.payMultiplier.min or not tierData.payMultiplier.max then
-    print(string.format("[Loading] payMultiplier not properly defined for tier %d; cannot generate contract.", tier))
     return nil
   end
   local payMultiplier = math.random(tierData.payMultiplier.min * 100, tierData.payMultiplier.max * 100) / 100
   
   if tierData.basePay == nil then
-    print(string.format("[Loading] basePay not defined for tier %d; cannot generate contract.", tier))
     return nil
   end
   local basePay = tierData.basePay
@@ -403,7 +387,6 @@ local function generateContract(availableGroups, expirationOffset)
     end
     
     if requiredItems == 0 then
-      print(string.format("[Loading] No valid material quantities generated for typeName '%s' tier %s", selectedTypeName, tierStr))
       return nil
     end
     
@@ -412,13 +395,11 @@ local function generateContract(availableGroups, expirationOffset)
   else
     local tierRange = matConfig.tiers and matConfig.tiers[tierStr]
     if not tierRange or type(tierRange) ~= "table" or #tierRange ~= 2 then
-      print("[Loading] Warning: No contract ranges for mass material " .. materialType .. " tier " .. tierStr)
       return nil
     end
     
     requiredTons = math.random(tierRange[1], tierRange[2])
     if not matConfig.targetLoad then
-      print(string.format("[Loading] Material '%s' missing targetLoad; cannot generate contract.", materialType))
       return nil
     end
     estimatedTrips = math.ceil(requiredTons / (matConfig.targetLoad / 1000))
@@ -430,7 +411,6 @@ local function generateContract(availableGroups, expirationOffset)
       local matConfigForPay = Config.materials[matKey]
       if matConfigForPay then
         if matConfigForPay.payPerUnit == nil then
-          print(string.format("[Loading] Material '%s' missing payPerUnit; cannot generate contract.", matKey))
           return nil
         end
         unitPay = unitPay + (matRequiredItems * matConfigForPay.payPerUnit)
@@ -438,7 +418,6 @@ local function generateContract(availableGroups, expirationOffset)
     end
   else
     if matConfig.payPerUnit == nil then
-      print(string.format("[Loading] Material '%s' missing payPerUnit; cannot generate contract.", materialType))
       return nil
     end
     unitPay = requiredTons * matConfig.payPerUnit
@@ -446,20 +425,17 @@ local function generateContract(availableGroups, expirationOffset)
   
   local facilityPayMultiplier = getFacilityPayMultiplier(group.secondaryTag)
   if not facilityPayMultiplier then
-    print(string.format("[Loading] Could not get facility pay multiplier for zone '%s'; cannot generate contract.", group.secondaryTag or "unknown"))
     return nil
   end
   local totalPayout = math.floor((basePay + (unitPay * payMultiplier)) * facilityPayMultiplier)
 
   if not selectedTypeName then
-    print(string.format("[Loading] Material '%s' missing typeName; cannot generate contract.", materialType))
     return nil
   end
   local name = selectedTypeName
   if isBulk then name = "Bulk " .. name end
 
   if contractsConfig.contractTTL == nil then
-    print("[Loading] contractTTL not specified in contracts config; cannot generate contract.")
     return nil
   end
   local contractTTL = contractsConfig.contractTTL
@@ -468,9 +444,6 @@ local function generateContract(availableGroups, expirationOffset)
   local expirationHours = contractTTL
 
   local facilityId = getFacilityIdForZone(group.secondaryTag)
-  if not facilityId then
-    print(string.format("[Loading] Warning: Could not find facility ID for zone '%s'; contract may not save correctly.", group.secondaryTag or "unknown"))
-  end
 
   return {
     id = os.time() + math.random(1000, 9999),
@@ -533,8 +506,6 @@ local function generateInitialContracts(availableGroups)
   ContractSystem.nextContractSpawnSimTime = ContractSystem.simTimeAccumulator + secondsPerContract
   ContractSystem.contractsGeneratedToday = initialCount
   ContractSystem.initialContractsGenerated = true
-  print(string.format("[Loading] Generated %d initial contracts. Next contract spawn in %.2f seconds", 
-    #ContractSystem.availableContracts, secondsPerContract))
 end
 
 local function trySpawnNewContract(availableGroups)
@@ -563,9 +534,6 @@ local function trySpawnNewContract(availableGroups)
       
       ui_message("New contract available: " .. contract.name, 4, "info")
       Engine.Audio.playOnce('AudioGui', 'event:>UI>Missions>Mission_Unlock_01')
-      
-      print(string.format("[Loading] Spawned new contract: %s (Tier %d). Next spawn in %.2f seconds", 
-        contract.name, contract.tier, secondsPerContract))
       return true
     end
   end
@@ -614,7 +582,6 @@ local function checkContractExpiration()
     if expiresAtSimTime and currentSimTime >= expiresAtSimTime then
       expiredCount = expiredCount + 1
       ContractSystem.expiredContractsTotal = (ContractSystem.expiredContractsTotal or 0) + 1
-      print("[Loading] Contract expired: " .. (contract.name or "Unknown"))
       table.insert(expiredContracts, contract.id)
       if guihooks then
         guihooks.trigger('contractExpired', {
@@ -658,7 +625,6 @@ local function acceptContract(contractIndex, getZonesByTypeName)
 
   local contractTypeName = contract.materialTypeName
   if not contractTypeName then
-    print("[Loading] Error: Contract missing materialTypeName field")
     return nil
   end
   local compatibleZones = getZonesByTypeName(contractTypeName)
@@ -714,9 +680,6 @@ local function acceptContract(contractIndex, getZonesByTypeName)
   ui_message(string.format("Contract accepted! Drive to any %s zone to load: %s", 
     contractTypeName:upper(), table.concat(zoneNames, ", ")), 8, "info")
   
-  print(string.format("[Loading] Contract accepted. TypeName: %s. Compatible zones: %s", 
-    contractTypeName, table.concat(zoneNames, ", ")))
-  
   return contract, compatibleZones
 end
 
@@ -744,9 +707,6 @@ local function abandonContract(onCleanup)
       end
     end
   end)
-  if not success then
-    print("[Loading] Warning: Could not apply abandonment penalty: " .. tostring(err))
-  end
 
   PlayerData.contractsFailed = (PlayerData.contractsFailed or 0) + 1
   ContractSystem.activeContract = nil
@@ -774,9 +734,6 @@ local function failContract(penalty, message, msgType, onCleanup)
       end
     end
   end)
-  if not success then
-    print("[Loading] Warning: Could not apply failure penalty: " .. tostring(err))
-  end
 
   PlayerData.contractsFailed = (PlayerData.contractsFailed or 0) + 1
   ContractSystem.activeContract = nil
@@ -861,10 +818,6 @@ local function completeContract(onCleanup, onClearProps)
       end
     end
   end)
-  
-  if not success then
-    print("[Loading] Warning: Could not apply contract reward: " .. tostring(err))
-  end
   
   if not careerPaid then
     Engine.Audio.playOnce('AudioGui', 'event:>UI>Missions>Mission_End_Success')
@@ -960,7 +913,6 @@ M.serializeContract = serializeContract
 M.deserializeContract = deserializeContract
 M.onExtensionLoaded = onExtensionLoaded
 local function onExtensionLoaded()
-  log("I", "Loading Extension: contracts loaded")
 end
 M.loadingConfigLoaded = function()
   Config = gameplay_loading_config

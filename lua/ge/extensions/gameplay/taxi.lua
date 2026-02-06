@@ -433,6 +433,20 @@ local function isTaxiDisabled()
         return disabled, reason
     end
 
+    -- Check if current vehicle is a loaner vehicle
+    local vehicle = be:getPlayerVehicle(0)
+    if vehicle then
+        local vehId = vehicle:getID()
+        if career_modules_loanerVehicles and career_modules_loanerVehicles.getLoaningOrgsOfVehicle then
+            local loaningOrgs = career_modules_loanerVehicles.getLoaningOrgsOfVehicle(vehId)
+            if loaningOrgs and next(loaningOrgs) then
+                disabled = true
+                reason = "Taxi service is not available in loaned vehicles"
+                return disabled, reason
+            end
+        end
+    end
+
     -- Check if taxi multiplier is 0
     if career_economyAdjuster then
         local taxiMultiplier = career_economyAdjuster.getSectionMultiplier("taxi") or 1.0

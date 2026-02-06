@@ -78,8 +78,11 @@
 <script setup>
 import { computed, ref, nextTick, onMounted, onBeforeUnmount, watch } from 'vue'
 import { lua } from '@/bridge'
+import { useEvents } from '@/services/events'
 import ChallengeDetailModal from './ChallengeDetailModal.vue'
 import ChallengeCreateModal from './ChallengeCreateModal.vue'
+
+const events = useEvents()
 
 const props = defineProps({
     modelValue: { type: String, default: null }
@@ -103,6 +106,7 @@ const editorData = ref({
 const challenges = ref([])
 const loading = ref(false)
 const error = ref(null)
+const hasFetched = ref(false)
 
 const difficultyOrder = { 'Easy': 0, 'Medium': 1, 'Hard': 2, 'Impossible': 3 }
 
@@ -122,6 +126,9 @@ const selectedChallenge = computed(() => challenges.value.find(c => c.id === pro
 function toggle() {
     open.value = !open.value
     if (open.value) {
+        if (!hasFetched.value) {
+            fetchChallenges()
+        }
         nextTick(position)
         if (lua.setCEFTyping) {
             lua.setCEFTyping(true)
@@ -167,35 +174,64 @@ async function fetchChallenges() {
     loading.value = true
     error.value = null
     try {
-        // ensure discovery is run then fetch compact options for the UI
-        await lua.career_challengeModes.discoverChallenges()
-        const ed = await lua.career_challengeModes.getChallengeEditorData()
-        editorData.value = (ed && typeof ed === 'object') ? ed : {}
-        const list = await lua.career_challengeModes.getChallengeOptionsForCareerCreation()
-        // Map to UI structure expected by this component
-        const safeList = Array.isArray(list) ? list : []
-        challenges.value = safeList.map(c => ({
-            id: c.id,
-            name: c.name,
-            difficulty: c.difficulty || 'Medium',
-            shortDescription: c.description || '',
-            startingCash: c.startingCapital ? ('$' + c.startingCapital) : undefined,
-            loanAmount: c.loanAmount ? ('$' + c.loanAmount) : (c.hasLoans ? '$' + (c.loanAmount || 0) : undefined),
-            interestRate: (typeof c.loanInterest === 'number') ? ((c.loanInterest * 100).toFixed(0) + '%') : undefined,
-            paymentSchedule: (typeof c.loanPayments === 'number') ? ((c.loanPayments * 5) + ' min total (' + c.loanPayments + ' payments)') : undefined,
-            objective: c.winConditionName || c.winCondition || '',
-            objectiveDescription: c.winConditionDescription || '',
-            winCondition: c.winCondition,
-            targetMoney: c.targetMoney,
-            targetGarages: c.targetGarages,
-            economyAdjuster: c.economyAdjuster || {},
-            estimatedTime: c.estimatedTime || '',
-            isLocal: c.isLocal || false
-        }))
+        let data = null
+        
+        if (lua.career_challengeModes.getChallengeDropdownDataLight) {
+            try {
+                data = await lua.career_challengeModes.getChallengeDropdownDataLight()
+            } catch (err) {
+                console.warn('[ChallengeDropdown] Light fetch failed, using fallback')
+            }
+        }
+        
+        if (data && data.challenges && data.challenges.length > 0) {
+            editorData.value = (data.editorData && typeof data.editorData === 'object') ? data.editorData : {}
+            challenges.value = data.challenges.map(c => ({
+                id: c.id,
+                name: c.name,
+                difficulty: c.difficulty || 'Medium',
+                shortDescription: c.description || '',
+                isLocal: c.isLocal || false
+            }))
+        } else {
+            await lua.career_challengeModes.discoverChallenges(true)
+            const ed = await lua.career_challengeModes.getChallengeEditorData()
+            editorData.value = (ed && typeof ed === 'object') ? ed : {}
+            const list = await lua.career_challengeModes.getChallengeOptionsForCareerCreation()
+            const safeList = Array.isArray(list) ? list : []
+            challenges.value = safeList.map(c => ({
+                id: c.id,
+                name: c.name,
+                difficulty: c.difficulty || 'Medium',
+                shortDescription: c.description || '',
+                isLocal: c.isLocal || false
+            }))
+        }
+        hasFetched.value = true
     } catch (e) {
+        console.error('[ChallengeDropdown] fetchChallenges error:', e)
         error.value = 'Failed to load challenges'
     } finally {
         loading.value = false
+    }
+}
+
+function handleChallengeCreated(payload) {
+    if (!payload || !payload.id) return
+    
+    const existing = challenges.value.findIndex(c => c.id === payload.id)
+    const mapped = {
+        id: payload.id,
+        name: payload.name,
+        difficulty: payload.difficulty || 'Medium',
+        shortDescription: payload.description || '',
+        isLocal: payload.isLocal !== false
+    }
+    
+    if (existing >= 0) {
+        challenges.value[existing] = mapped
+    } else {
+        challenges.value.push(mapped)
     }
 }
 
@@ -203,12 +239,13 @@ onMounted(() => {
     document.addEventListener('mousedown', onDocClick)
     window.addEventListener('resize', position)
     window.addEventListener('scroll', position, true)
-    fetchChallenges()
+    events.on('challengeCreated', handleChallengeCreated)
 })
 onBeforeUnmount(() => {
     document.removeEventListener('mousedown', onDocClick)
     window.removeEventListener('resize', position)
     window.removeEventListener('scroll', position, true)
+    events.off('challengeCreated', handleChallengeCreated)
     if (lua.setCEFTyping) {
         lua.setCEFTyping(false)
     }
@@ -250,8 +287,9 @@ function openCreate(e) {
     }
     createOpen.value = true
 }
-async function onCreated(challengeId) { 
-    await fetchChallenges()
+function onCreated(challengeId) { 
+    // The challengeCreated guihook handles adding to the list
+    // We just need to select the new challenge
     if (challengeId) {
         emit('update:modelValue', challengeId)
     }
@@ -265,9 +303,12 @@ async function onEditChallenge(challengeId) {
 }
 
 async function onDeleteChallenge(challengeId) {
-    await fetchChallenges()
     if (props.modelValue === challengeId) {
         emit('update:modelValue', null)
+    }
+    const idx = challenges.value.findIndex(c => c.id === challengeId)
+    if (idx >= 0) {
+        challenges.value.splice(idx, 1)
     }
 }
 
