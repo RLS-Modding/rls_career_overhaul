@@ -51,3 +51,7 @@
 {"name":"quarry","class":"SimGroup","persistentId":"73e07564-bcdc-4d9f-87ce-a4bcba3fb33c","__parent":"MissionGroup"}
 {"name":"RLS_EDITS","class":"SimGroup","__parent":"MissionGroup"}
 {"name":"Mesh Spline 7","class":"SimGroup","__parent":"MissionGroup"}
+{"name":"ASOTV","class":"SimGroup","__parent":"MissionGroup"}
+{"name":"JoesJunk","class":"SimGroup","__parent":"MissionGroup"}
+{"class":"TSStatic","__parent":"MissionGroup","position":[523.755981,-720.659973,201.136002],"isRenderEnabled":false,"rotationMatrix":[-0.478354603,0.878166616,0,-0.878166616,-0.478354603,0,0,0,0.999999881],"shapeName":"/levels/west_coast_usa/art/hilltopvilla/mk4villa.dae","useInstanceRenderData":true}
+{"name":"RaceTab","class":"SimGroup","__parent":"MissionGroup"}

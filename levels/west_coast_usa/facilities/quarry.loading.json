@@ -1,0 +1,39 @@
+{
+    "facilities": {
+        "westCoastQuarry": {
+            "name": "West Coast Quarry",
+            "description": "Rock extraction and loading facility",
+            "associatedOrganization": "sealbrik",
+            "payMultiplier": 1.0,
+            "sites": {
+                "Zone A": {
+                    "name": "Zone A",
+                    "materials": {
+                        "rocks": { "maxStock": 300, "regenRate": 100 }
+                    }
+                },
+                "Zone B": {
+                    "name": "Zone B",
+                    "materials": {
+                        "rocks": { "maxStock": 400, "regenRate": 100 }
+                    }
+                }
+            },
+            "contracts": {
+                "maxActiveContracts": 10,
+                "initialContracts": 5,
+                "generateInterval": 0.25,
+                "tiers": [
+                    { "name": "Easy", "basePay": 200, "weight": 0.30, "payMultiplier": {"min": 0.8, "max": 1.2}, "mixChance": 0 },
+                    { "name": "Standard", "basePay": 400, "weight": 0.40, "payMultiplier": {"min": 0.9, "max": 1.3}, "mixChance": 0 },
+                    { "name": "Hard", "basePay": 600, "weight": 0.20, "payMultiplier": {"min": 1.0, "max": 1.5}, "mixChance": 0 },
+                    { "name": "Expert", "basePay": 800, "weight": 0.10, "payMultiplier": {"min": 1.2, "max": 2.0}, "mixChance": 0 }
+                ],
+                "abandonPenalty": 0.15,
+                "bulkChance": 0.5,
+                "contractTTL": 0.5
+            }
+        }
+    }
+}
+

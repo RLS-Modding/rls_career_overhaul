@@ -27,6 +27,8 @@ local function deactivateBeamMP()
     end
 end
 
+-- Configures unload behavior for overhaul runtime: sets several gameplay, career and editor extensions to manual unload and unloads extensions that must remain disabled while the overhaul is active.
+-- This ensures freeroam, recovery prompt, drag practice race, career core and the career save system are unloaded and that selectable subsystems (events, phone, repo, taxi, cab, loading, ambulance, bus, beamEats, challenge modes, economy adjuster, challenge seed encoder and the freeroam event editor) are left in manual-unload mode.
 local function loadExtensions()
 
     extensions.unload("freeroam_freeroam")
@@ -39,6 +41,9 @@ local function loadExtensions()
     setExtensionUnloadMode("gameplay_taxi", "manual")
     setExtensionUnloadMode("gameplay_cab", "manual")
     setExtensionUnloadMode("gameplay_loading", "manual")
+    setExtensionUnloadMode("gameplay_ambulance", "manual")
+    setExtensionUnloadMode("gameplay_bus", "manual")
+    setExtensionUnloadMode("gameplay_beamEats", "manual")
     setExtensionUnloadMode("career_challengeModes", "manual")
     setExtensionUnloadMode("career_economyAdjuster", "manual")
     setExtensionUnloadMode("career_challengeSeedEncoder", "manual")
@@ -48,6 +53,11 @@ local function loadExtensions()
     extensions.unload("career_saveSystem")
 end
 
+-- Unloads all career, gameplay, freeroam, and overhaul-related extensions used by the mod.
+-- 
+-- This forces removal of core game context, freeroam/events, gameplay modules (phone, repo, taxi, cab, ambulance, bus, beamEats),
+-- career subsystems (career, save system, challenge modes, economy adjuster, challenge seed encoder), and overhaul modules
+-- (settings, maps, clear levels, add map changes). No value is returned.
 local function unloadAllExtensions()
     extensions.unload("core_gameContext")
     extensions.unload("gameplay_events_freeroamEvents")
@@ -58,6 +68,9 @@ local function unloadAllExtensions()
     extensions.unload("gameplay_repo")
     extensions.unload("gameplay_taxi")
     extensions.unload("gameplay_cab")
+    extensions.unload("gameplay_ambulance")
+    extensions.unload("gameplay_bus")
+    extensions.unload("gameplay_beamEats")
     extensions.unload("overhaul_settings")
     extensions.unload("overhaul_maps")
     extensions.unload("overhaul_clearLevels")

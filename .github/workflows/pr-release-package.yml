@@ -8,18 +8,87 @@ permissions:
   actions: write
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    outputs:
-      has-changes: ${{ steps.check-changes.outputs.has-changes }}
+  build-and-package:
+    runs-on: depot-ubuntu-24.04-8
     steps:
-      - uses: actions/checkout@v4
+      - name: Cache git repository
+        uses: actions/cache@v4
+        id: repo-cache
+        with:
+          path: .git
+          key: repo-${{ github.repository }}-git
+          restore-keys: |
+            repo-${{ github.repository }}-
+          enableCrossOsArchive: false
+
+      - name: Fetch latest (cache hit)
+        if: steps.repo-cache.outputs.cache-hit == 'true'
+        run: |
+          git remote set-url origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+          git fetch origin --no-prune --no-tags refs/heads/${{ github.head_ref }}:refs/remotes/origin/${{ github.head_ref }}
+          git checkout -f ${{ github.head_ref }} 2>/dev/null || git checkout -f -b ${{ github.head_ref }} origin/${{ github.head_ref }}
+          git reset --hard origin/${{ github.head_ref }}
+          git clean -ffd
+
+      - name: Full checkout (cache miss)
+        if: steps.repo-cache.outputs.cache-hit != 'true'
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          lfs: true
+          lfs: false
           fetch-depth: 0
-      
+
+      - name: Optimize git repository for caching
+        if: steps.repo-cache.outputs.cache-hit != 'true'
+        run: |
+          rm -rf .git/logs .git/hooks
+          git reflog expire --expire=now --all 2>/dev/null || true
+          git gc --prune=now 2>/dev/null || true
+
+      - name: Restore working directory from cache
+        uses: actions/cache@v4
+        id: lfs-cache
+        with:
+          path: /tmp/repo-cache.tar.zst
+          key: lfs-v2-${{ github.repository }}-${{ github.sha }}
+          restore-keys: |
+            lfs-v2-${{ github.repository }}-${{ github.head_ref }}-
+            lfs-v2-${{ github.repository }}-
+
+      - name: Extract cached files
+        if: steps.lfs-cache.outputs.cache-hit == 'true'
+        run: |
+          zstd -d -c /tmp/repo-cache.tar.zst | tar -xf - -C .
+          echo "Cache extracted"
+
+      - name: Pull LFS files
+        run: |
+          git lfs install
+          if [ "${{ steps.lfs-cache.outputs.cache-hit }}" == "true" ]; then
+            git lfs pull
+          else
+            git lfs fetch --all
+            git lfs checkout
+          fi
+
+      - name: Create and save cache archive
+        if: steps.lfs-cache.outputs.cache-hit != 'true'
+        run: |
+          rm -f /tmp/repo-cache.tar.zst
+          tar --exclude='.git' \
+              --exclude='node_modules' \
+              --exclude='baseUI/node_modules' \
+              --exclude='.github' \
+              -cf - . | zstd -T0 -3 -f -o /tmp/repo-cache.tar.zst
+
+      - name: Save working directory to cache
+        if: steps.lfs-cache.outputs.cache-hit != 'true'
+        uses: actions/cache@v4
+        with:
+          path: /tmp/repo-cache.tar.zst
+          key: lfs-v2-${{ github.repository }}-${{ github.sha }}
+
       - name: Check for UI source changes
         uses: dorny/paths-filter@v3
         id: filter
@@ -28,19 +97,6 @@ jobs:
             ui:
               - 'ui-vue-src/**'
 
-      - name: Pull LFS
-        if: steps.filter.outputs.ui == 'true'
-        run: |
-          git lfs install
-          git fetch --all
-          git lfs fetch --all
-          git lfs pull
-          git lfs checkout
-      
-      - name: Pull LFS
-        if: steps.filter.outputs.ui == 'true'
-        run: git lfs pull
-      
       - name: Setup Node.js
         if: steps.filter.outputs.ui == 'true'
         uses: actions/setup-node@v4
@@ -48,155 +104,74 @@ jobs:
           node-version: '20'
           cache: 'npm'
           cache-dependency-path: baseUI/package-lock.json
-      
-      - name: Merge and build
+
+      - name: Merge and build UI
         if: steps.filter.outputs.ui == 'true'
         run: |
           cp -r ui-vue-src/* baseUI/src/
           cd baseUI
           npm install
           npm run build
-      
-      - name: Move to final location
+
+      - name: Move built UI to final location
         if: steps.filter.outputs.ui == 'true'
         run: |
-          mkdir -p ui/vue-dist
-          cp -r baseUI/dist/* ui/vue-dist/
-      
-      - name: Check for UI changes
-        id: check-changes
+          mkdir -p ui/ui-vue/dist
+          cp -r baseUI/dist/* ui/ui-vue/dist/
+
+      - name: Check for UI changes and commit
+        if: steps.filter.outputs.ui == 'true'
         run: |
-          if [ "${{ steps.filter.outputs.ui }}" == "false" ]; then
-            echo "has-changes=false" >> $GITHUB_OUTPUT
-            echo "No UI source changes, skipping commit check"
-          elif git diff --quiet HEAD -- ui/vue-dist/ 2>/dev/null; then
-            echo "has-changes=false" >> $GITHUB_OUTPUT
-            echo "No UI changes detected"
+          if ! git diff --quiet HEAD -- ui/ui-vue/dist/ 2>/dev/null; then
+            echo "UI changes detected, committing..."
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add --force ui/ui-vue/dist/
+            git commit -m "chore: update built UI files"
+            git push origin HEAD:"$HEAD_REF"
           else
-            echo "has-changes=true" >> $GITHUB_OUTPUT
-            echo "UI changes detected"
+            echo "No UI changes to commit"
           fi
-  
-  commit:
-    needs: build
-    runs-on: ubuntu-latest
-    if: needs.build.outputs.has-changes == 'true'
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          lfs: true
-          fetch-depth: 0
-      
-      - name: Pull LFS
-        run: |
-          git lfs install
-          git fetch --all
-          git lfs fetch --all
-          git lfs pull
-          git lfs checkout
-      
-      - name: Pull LFS
-        run: git lfs pull
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: baseUI/package-lock.json
-      
-      - name: Merge and build
-        run: |
-          cp -r ui-vue-src/* baseUI/src/
-          cd baseUI
-          npm install
-          npm run build
-      
-      - name: Move to final location
-        run: |
-          mkdir -p ui/vue-dist
-          cp -r baseUI/dist/* ui/vue-dist/
-      
-      - name: Commit changes
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "chore: update built UI files"
-          file_pattern: ui/vue-dist/*
-          add_options: '--force'
-          branch: ${{ github.head_ref }}
-  
-  zip:
-    needs: [build, commit]
-    runs-on: ubuntu-latest
-    if: always() && (needs.build.result == 'success' && (needs.commit.result == 'success' || needs.commit.result == 'skipped'))
-    outputs:
-      version: ${{ steps.version.outputs.version }}
-      artifact-id: ${{ steps.get-artifact-id.outputs.id }}
-      commit-status: ${{ needs.commit.result }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          lfs: true
-          fetch-depth: 0
-      
-      - name: Pull LFS
-        run: |
-          git lfs install
-          git fetch --all
-          git lfs fetch --all
-          git lfs pull
-          git lfs checkout
-      
-      - name: Pull LFS
-        run: git lfs pull
-      
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+
       - name: Calculate version and delete old artifacts
         id: version
         run: |
           PR_NUMBER="${{ github.event.number }}"
-          PREFIX="rls_career_overhaul_PR_${PR_NUMBER}."
-          
+          PREFIX="${PR_NUMBER}."
+
           ARTIFACTS_JSON=$(gh api repos/${{ github.repository }}/actions/artifacts --jq "[.artifacts[] | select(.name | startswith(\"$PREFIX\")) | {id: .id, name: .name}]" 2>/dev/null || echo "[]")
-          
+
           ARTIFACT_COUNT=$(echo "$ARTIFACTS_JSON" | jq 'length')
-          
+
           if [ "$ARTIFACT_COUNT" = "0" ] || [ -z "$ARTIFACTS_JSON" ] || [ "$ARTIFACTS_JSON" = "[]" ]; then
             MINOR_VERSION=1
             VERSION="${PR_NUMBER}.${MINOR_VERSION}"
             echo "No existing artifacts found, starting at version $VERSION"
           else
             echo "Found $ARTIFACT_COUNT existing artifact(s), finding max version..."
-            MAX_MINOR=$(echo "$ARTIFACTS_JSON" | jq -r '.[].name' | sed "s/$PREFIX//" | sort -n | tail -1)
+            MAX_MINOR=$(echo "$ARTIFACTS_JSON" | jq -r '.[].name' | sed -e "s/$PREFIX//" -e "s/_overhaul$//" | sort -n | tail -1)
             if [ -z "$MAX_MINOR" ] || [ "$MAX_MINOR" = "null" ]; then
               MAX_MINOR=0
             fi
-            
-            echo "Deleting old artifacts (max version was $MAX_MINOR)..."
-            echo "$ARTIFACTS_JSON" | jq -r '.[].id' | while read ARTIFACT_ID; do
-              if [ -n "$ARTIFACT_ID" ] && [ "$ARTIFACT_ID" != "null" ]; then
-                ARTIFACT_NAME=$(echo "$ARTIFACTS_JSON" | jq -r ".[] | select(.id == $ARTIFACT_ID) | .name")
-                echo "Deleting artifact: $ARTIFACT_NAME (ID: $ARTIFACT_ID)"
-                gh api repos/${{ github.repository }}/actions/artifacts/$ARTIFACT_ID -X DELETE || true
-              fi
-            done
-            
+
+            echo "Deleting old artifacts in parallel (max version was $MAX_MINOR)..."
+            echo "$ARTIFACTS_JSON" | jq -r '.[].id' | xargs -P 4 -I {} sh -c 'gh api repos/${{ github.repository }}/actions/artifacts/{} -X DELETE 2>/dev/null || true'
+
             MINOR_VERSION=$((MAX_MINOR + 1))
             VERSION="${PR_NUMBER}.${MINOR_VERSION}"
             echo "Calculated new version: $VERSION"
           fi
-          
+
           echo "version=$VERSION" >> $GITHUB_OUTPUT
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
+
       - name: Upload mod directories as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: rls_career_overhaul_PR_${{ steps.version.outputs.version }}
+          name: ${{ steps.version.outputs.version }}_overhaul
           path: |
             challenges/
             gameplay/
@@ -208,45 +183,21 @@ jobs:
             vehicles/
           retention-days: 7
           if-no-files-found: error
-      
-      - name: Get artifact ID
-        id: get-artifact-id
-        run: |
-          sleep 2
-          ARTIFACT_NAME="rls_career_overhaul_PR_${{ steps.version.outputs.version }}"
-          ARTIFACT_ID=$(gh api repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts --jq ".artifacts[] | select(.name == \"$ARTIFACT_NAME\") | .id" || echo "")
-          if [ -z "$ARTIFACT_ID" ]; then
-            echo "Warning: Could not find artifact ID, falling back to workflow run URL"
-            echo "id=" >> $GITHUB_OUTPUT
-          else
-            echo "id=$ARTIFACT_ID" >> $GITHUB_OUTPUT
-            echo "Found artifact ID: $ARTIFACT_ID"
-          fi
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  
-  comment:
-    needs: zip
-    runs-on: ubuntu-latest
-    if: always() && needs.zip.result == 'success'
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-      
+          compression-level: 2
+
       - name: Comment PR with download link
         run: |
-          VERSION="${{ needs.zip.outputs.version }}"
-          ARTIFACT_ID="${{ needs.zip.outputs.artifact-id }}"
-          
+          VERSION="${{ steps.version.outputs.version }}"
+          ARTIFACT_ID=$(gh api repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts --jq ".artifacts[] | select(.name == \"${VERSION}_overhaul\") | .id" || echo "")
+
           if [ -n "$ARTIFACT_ID" ]; then
             DOWNLOAD_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/$ARTIFACT_ID"
           else
             DOWNLOAD_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           fi
-          
+
           MESSAGE="[Zipped Overhaul PR v$VERSION]($DOWNLOAD_URL)"
-          
+
           gh pr comment ${{ github.event.number }} --body "$MESSAGE"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

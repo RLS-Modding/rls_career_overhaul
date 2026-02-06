@@ -1,0 +1,60 @@
+{
+  "0-100 km/h":11.9,
+  "0-60 mph":11.2,
+  "100-0 km/h":63.2,
+  "60-0 mph":196,
+  "Body Style":"Ambulance",
+  "BoundingBox":[
+    [
+      -0.86,
+      -1.4,
+      -0.4103
+    ],
+    [
+      1.96,
+      5.28,
+      2.22
+    ]
+  ],
+  "Braking G":0.622,
+  "Commercial Class":"Class 4 Truck",
+  "Config Type":"Service",
+  "Configuration":"EMT H45",
+  "Description":"Heavy duty variant equipped with an ambulance upfit",
+  "Name":"EMT H45",
+  "Drag Times":{
+    "brakingG":0.5524377862,
+    "time_0_60":10.91500031,
+    "time_1000":14.92250045,
+    "time_1_4":17.91200055,
+    "time_1_8":11.41500033,
+    "time_330":7.351500183,
+    "time_60":2.536500058,
+    "velAt_1_4":33.58632384,
+    "velAt_1_8":27.46645677
+  },
+  "Drivetrain":"RWD",
+  "Fuel Type":"Gasoline",
+  "Induction Type":"NA",
+  "InsuranceClass": "commercial",
+  "Type": "Truck",
+  "Off-Road Score":34,
+  "Population":2000,
+  "Power":298,
+  "PowerPeakRPM":4400,
+  "Propulsion":"ICE",
+  "Tags":[
+    "ambulance"
+  ],
+  "Top Speed":43.30763444,
+  "Torque":515,
+  "TorquePeakRPM":"2350 - 3950",
+  "Transmission":"Automatic",
+  "Value":86000,
+  "Weight":3585,
+  "Weight/Power":12.03020134,
+  "Years":{
+    "max":2017,
+    "min":2006
+  }
+}

@@ -393,12 +393,19 @@ local function findChallengeFiles(basePath, foundFiles)
   return foundFiles
 end
 
-local function discoverChallenges()
+local challengesDiscovered = false
+
+local function discoverChallenges(forceRefresh)
+  if challengesDiscovered and not forceRefresh then
+    return discoveredChallenges
+  end
+  
   discoveredChallenges = {}
 
   local challengesPath = "challenges"
 
   if not FS:directoryExists(challengesPath) then
+    challengesDiscovered = true
     return {}
   end
 
@@ -407,7 +414,7 @@ local function discoverChallenges()
     FS:directoryCreate(customPath)
   end
 
-  local challengeFiles = findChallengeFiles(challengesPath)
+  local challengeFiles = FS:findFiles(challengesPath, "*.json", -1, false) or {}
 
   for _, jsonFile in ipairs(challengeFiles) do
     local challengeData = nil
@@ -429,6 +436,7 @@ local function discoverChallenges()
     end
   end
 
+  challengesDiscovered = true
   return discoveredChallenges
 end
 
@@ -874,7 +882,21 @@ local function createChallengeFromUI(challengeData)
   local success = jsonWriteFile(filePath, newChallenge, true)
 
   if success then
-    discoverChallenges()
+    -- Add directly to cache instead of re-scanning all challenges
+    newChallenge.filePath = filePath
+    newChallenge.isLocal = true
+    discoveredChallenges[challengeData.id] = newChallenge
+    challengesDiscovered = true
+    
+    -- Send the new challenge to UI via guihook for immediate list update
+    guihooks.trigger('challengeCreated', {
+      id = newChallenge.id,
+      name = newChallenge.name,
+      description = newChallenge.description or "",
+      difficulty = newChallenge.difficulty or "Medium",
+      isLocal = true
+    })
+    
     return true, "Challenge created successfully", challengeData.id
   else
     return false, "Failed to save challenge file", nil
@@ -1241,6 +1263,125 @@ local function getChallengeOptionsForCareerCreation()
   return options
 end
 
+local function getChallengeDropdownData()
+  discoverChallenges()
+  
+  local editorData = getChallengeEditorData()
+  local options = getChallengeOptionsForCareerCreation()
+  
+  return {
+    editorData = editorData,
+    challenges = options
+  }
+end
+
+local function getChallengeListLight()
+  discoverChallenges()
+  
+  local list = {}
+  for challengeId, challenge in pairs(discoveredChallenges) do
+    table.insert(list, {
+      id = challenge.id,
+      name = challenge.name,
+      difficulty = challenge.difficulty or "Medium",
+      description = challenge.description or "",
+      isLocal = challenge.isLocal or false
+    })
+  end
+  
+  table.sort(list, function(a, b)
+    return (a.name or "") < (b.name or "")
+  end)
+  
+  return list
+end
+
+local function getEditorDataLight()
+  local serializedWinConditions = {}
+  for _, condition in ipairs(winConditions) do
+    local entry = {
+      id = condition.id,
+      name = condition.name,
+      description = condition.description,
+      variables = {},
+      requiresLoans = condition.requiresLoans or false
+    }
+    if condition.variables then
+      for variableName, definition in pairs(condition.variables) do
+        entry.variables[variableName] = deepcopy(definition)
+        if entry.variables[variableName].options and type(entry.variables[variableName].options) == "function" then
+          entry.variables[variableName].options = entry.variables[variableName].options()
+        end
+      end
+    end
+    table.insert(serializedWinConditions, entry)
+  end
+  
+  -- Get activity types for economy display in detail modal
+  local activityTypes = {}
+  if career_economyAdjuster then
+    local availableTypes = career_economyAdjuster.getAvailableTypes()
+    if availableTypes and type(availableTypes) == "table" then
+      for _, activityType in ipairs(availableTypes) do
+        local activityInfo = getActivityTypeInfo(activityType)
+        table.insert(activityTypes, activityInfo)
+      end
+    end
+  end
+  
+  -- Get available garages for display in detail modal
+  local availableGarages = getAvailableGarages()
+  
+  return {
+    winConditions = serializedWinConditions,
+    activityTypes = activityTypes,
+    availableGarages = availableGarages,
+    defaults = {
+      startingCapital = 10000,
+      loanAmount = 50000,
+      loanInterest = 0.10,
+      loanPayments = 12,
+      difficulty = "Medium"
+    }
+  }
+end
+
+local function getChallengeDropdownDataLight()
+  discoverChallenges()
+  
+  return {
+    challenges = getChallengeListLight(),
+    editorData = getEditorDataLight()
+  }
+end
+
+local function getSingleChallengeForUI(challengeId)
+  if not challengeId then return nil end
+  
+  local challenge = discoveredChallenges[challengeId]
+  if not challenge then return nil end
+  
+  local winConditionInfo = getWinConditionInfo(challenge.winCondition)
+  
+  return {
+    id = challenge.id,
+    name = challenge.name,
+    description = challenge.description or "",
+    difficulty = challenge.difficulty or "Medium",
+    category = challenge.category or "",
+    startingCapital = challenge.startingCapital or 10000,
+    hasLoans = challenge.loans ~= nil,
+    loanAmount = challenge.loans and challenge.loans.amount or 0,
+    loanInterest = challenge.loans and challenge.loans.interest or nil,
+    loanPayments = challenge.loans and challenge.loans.payments or nil,
+    winCondition = challenge.winCondition,
+    winConditionName = winConditionInfo.name,
+    winConditionDescription = winConditionInfo.description,
+    isLocal = challenge.isLocal or false,
+    map = challenge.map
+  }
+end
+
 local function mergeVariableDefinition(variableId, definition)
   if not definition then return nil end
   local merged = {
@@ -1436,7 +1577,8 @@ local function deleteChallenge(challengeId)
     end
   end
   
-  discoverChallenges()
+  -- Remove from cache instead of re-scanning
+  discoveredChallenges[challengeId] = nil
   return true, "Challenge deleted successfully"
 end
 
@@ -1446,10 +1588,8 @@ local function createChallengeFromSeedUI(seed, name, description)
   end
   
   if career_challengeSeedEncoder then
+    -- The seed encoder calls createChallengeFromUI internally, which updates cache
     local success, message, challengeId = career_challengeSeedEncoder.createChallengeFromSeed(seed, name, description)
-    if success then
-      discoverChallenges()
-    end
     return success, message, challengeId
   end
   
@@ -1664,8 +1804,12 @@ M.getActiveChallenge = getActiveChallenge
 M.isChallengeActive = isChallengeActive
 M.discoverChallenges = discoverChallenges
 M.getChallengeEditorData = getChallengeEditorData
+M.getChallengeDropdownData = getChallengeDropdownData
+M.getChallengeDropdownDataLight = getChallengeDropdownDataLight
+M.getChallengeListLight = getChallengeListLight
 M.createChallengeFromUI = createChallengeFromUI
 M.getChallengeOptionsForCareerCreation = getChallengeOptionsForCareerCreation
+M.getSingleChallengeForUI = getSingleChallengeForUI
 M.requestChallengeCompleteData = requestChallengeCompleteData
 M.getChallengeSeeded = getChallengeSeeded
 M.getChallengeDataForEdit = getChallengeDataForEdit

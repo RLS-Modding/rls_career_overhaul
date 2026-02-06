@@ -634,9 +634,13 @@ function C:checkOffenses() -- tests for vechicle offenses for police
 
       if not coll.offense and validCollision then
         if veh.role.name == 'police' and coll.inArea then -- always triggers if police was hit
-          self:triggerOffense({key = 'hitPolice', value = id, score = 200})
-          pursuit.hitCount = pursuit.hitCount + 1
-          coll.offense = true
+          -- Skip if this police vehicle is owned by the player
+          local policeVehInventoryId = career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId(id)
+          if not policeVehInventoryId then
+            self:triggerOffense({key = 'hitPolice', value = id, score = 200})
+            pursuit.hitCount = pursuit.hitCount + 1
+            coll.offense = true
+          end
         elseif pursuit.mode > 0 or coll.state == 'abandoned' then -- fleeing in a pursuit, or abandoning an accident
           self:triggerOffense({key = 'hitTraffic', value = id, score = 100})
           pursuit.hitCount = pursuit.hitCount + 1

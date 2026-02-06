@@ -1,0 +1,39 @@
+name: PR Cleanup
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  cleanup-artifacts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete PR artifacts
+        run: |
+          PR_NUMBER="${{ github.event.number }}"
+          PREFIX="${PR_NUMBER}."
+
+          echo "Cleaning up artifacts for PR #${PR_NUMBER}..."
+
+          ARTIFACTS_JSON=$(gh api repos/${{ github.repository }}/actions/artifacts --jq "[.artifacts[] | select(.name | startswith(\"$PREFIX\")) | {id: .id, name: .name}]" 2>/dev/null || echo "[]")
+
+          ARTIFACT_COUNT=$(echo "$ARTIFACTS_JSON" | jq 'length')
+
+          if [ "$ARTIFACT_COUNT" = "0" ] || [ -z "$ARTIFACTS_JSON" ] || [ "$ARTIFACTS_JSON" = "[]" ]; then
+            echo "No artifacts found for PR #${PR_NUMBER}"
+          else
+            echo "Found $ARTIFACT_COUNT artifact(s) to delete for PR #${PR_NUMBER}..."
+            echo "$ARTIFACTS_JSON" | jq -r '.[].id' | while read ARTIFACT_ID; do
+              if [ -n "$ARTIFACT_ID" ] && [ "$ARTIFACT_ID" != "null" ]; then
+                ARTIFACT_NAME=$(echo "$ARTIFACTS_JSON" | jq -r ".[] | select(.id == $ARTIFACT_ID) | .name")
+                echo "Deleting artifact: $ARTIFACT_NAME (ID: $ARTIFACT_ID)"
+                gh api repos/${{ github.repository }}/actions/artifacts/$ARTIFACT_ID -X DELETE || true
+              fi
+            done
+            echo "Cleanup complete for PR #${PR_NUMBER}"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

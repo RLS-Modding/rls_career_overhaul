@@ -15,7 +15,7 @@ local defaultVehicle = {model = "covet", config = "DXi_M"}
 
 local xVec, yVec, zVec = vec3(1,0,0), vec3(0,1,0), vec3(0,0,1)
 
-local saveAnyVehiclePosDEBUG = false
+local saveAnyVehiclePosDEBUG = true
 
 local slotAmount = 20
 
@@ -231,41 +231,6 @@ local function onExtensionLoaded()
         if not saveAnyVehiclePosDEBUG then
           transform.option = "garage"
         end
-        -- change pos and rot to closest parking spot
-        local psList = parking.findParkingSpots(vec3(transform.pos))
-        local closestGarage, closestGarageSpot, garageDistance = getClosestGarageAndSpot(transform.pos, levelName)
-        
-        local closestParkingSpot
-        local closestParkingDist = math.huge
-
-        -- Find closest regular parking spot
-        if psList and #psList > 0 then
-          for _, psData in ipairs(psList) do
-            local spot = psData.ps
-            if not spot.vehicle and not spot:hasAnyVehicles() then
-              local dist = spot.pos:distance(transform.pos)
-              if dist < closestParkingDist then
-                closestParkingDist = dist
-                closestParkingSpot = spot
-              end
-            end
-          end
-        end
-
-        -- Compare distances and place vehicle accordingly
-        if closestGarageSpot and garageDistance < closestParkingDist then
-          transform.pos = closestGarageSpot.pos
-          transform.rot = quat(closestGarageSpot.rot)
-          closestGarageSpot.vehicle = true
-          transform.inGarage = true
-          transform.garageId = closestGarage.id
-        elseif closestParkingSpot then
-          transform.pos = closestParkingSpot.pos
-          transform.rot = quat(closestParkingSpot.rot)
-          closestParkingSpot.vehicle = true
-          transform.inGarage = false
-        end
-
         loadedVehiclesLocations[inventoryId] = transform
       end
     else
@@ -716,7 +681,6 @@ local function setupInventory(levelPath)
 
     if career_modules_linearTutorial.getLinearStep() == -1 then
         if loadedVehiclesLocations then
-            local vehiclesToTeleportToGarage = {}
             for inventoryId, location in pairs(loadedVehiclesLocations) do
                 local vehInfo = vehicles[inventoryId]
                 if vehInfo.loanType == "work" then
@@ -736,10 +700,6 @@ local function setupInventory(levelPath)
                               location.rot = levelGate:getRotation()
                           end
                       end
-                      if not levelGate and location.option == "garage" then
-                          location.vehId = veh:getID()
-                          vehiclesToTeleportToGarage[inventoryId] = location
-                      end
                       spawn.safeTeleport(veh, location.pos, location.rot)
                       core_jobsystem.create(function(job)
                         job.sleep(2)
@@ -749,16 +709,6 @@ local function setupInventory(levelPath)
                 end
             end
             loadedVehiclesLocations = nil
-
-            -- The teleport to garage needs to happen with one frame delay because that's when the OOBBs get updated
-            extensions.core_jobsystem.create(function(job)
-                for inventoryId, location in pairs(vehiclesToTeleportToGarage) do
-                    local veh = getObjectByID(location.vehId)
-                    local garage = getClosestGarage(location.pos)
-                    freeroam_facilities.teleportToGarage(garage.id, veh)
-                    job.sleep(0.1)
-                end
-            end)
         end
 
         if vehicleToEnterId and inventoryIdToVehId[vehicleToEnterId] then

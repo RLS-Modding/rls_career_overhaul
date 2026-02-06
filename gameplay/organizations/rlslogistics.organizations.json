@@ -2495,6 +2495,23 @@
     "name": "Sealbrik",
     "description": "Produces various concrete and dry bulk related products, and owns the quarry outside of belasco city.",
     "icon": "rocks",
+        "loanableVehicles": [
+      {
+        "model": "wl40",
+        "config": "arm_bucket_alt",
+        "reputationLvl": 3,
+        "deliveryLvl": 0,
+        "mileage": 10000
+      },
+      {
+        "model": "wl40",
+        "config": "arm_bucket",
+        "reputationLvl": -1,
+        "deliveryLvl": 0,
+        "mileage": 10000
+      }
+    ],
+
     "reputationLevels": [
       {},
       {},

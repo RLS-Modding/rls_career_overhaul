@@ -84,6 +84,8 @@ export default {
     discoverChallenges: () => {},
     getChallengeOptionsForCareerCreation: () => {},
     getChallengeEditorData: () => {},
+    getChallengeDropdownDataLight: () => {},
+    getSingleChallengeForUI: id => String,
     createChallengeFromUI: data => Any,
     startChallenge: id => String,
     getActiveChallenge: () => {},
@@ -1424,6 +1426,15 @@ export default {
     cancelJob: () => {},
     completeJob: () => {},
     isRepoVehicle: () => {}
+  },
+
+  gameplay_beamEats: {
+    setAvailable: () => {},
+    stopBeamEatsJob: () => {},
+    requestBeamEatsState: () => {},
+    acceptOrder: () => {},
+    rejectOrder: () => {},
+    dismissSummary: () => {}
   },
 
   overhaul_maps: {

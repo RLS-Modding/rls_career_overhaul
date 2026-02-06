@@ -26,20 +26,7 @@ local function validateMaterial(materialKey, materialData)
     end
   end
   if #missing > 0 then
-    print(string.format("[Loading] Warning: Material '%s' missing required fields: %s", materialKey, table.concat(missing, ", ")))
     return false
-  end
-  if materialData.unitType == "mass" and not materialData.massPerProp then
-    print(string.format("[Loading] Warning: Mass material '%s' missing massPerProp", materialKey))
-  end
-  if materialData.unitType == "mass" and not materialData.targetLoad then
-    print(string.format("[Loading] Warning: Mass material '%s' missing targetLoad", materialKey))
-  end
-  if not materialData.tiers then
-    print(string.format("[Loading] Warning: Material '%s' missing tiers", materialKey))
-  end
-  if materialData.deliveryVehicle and not materialData.deliveryVehicle.model then
-    print(string.format("[Loading] Warning: Material '%s' deliveryVehicle missing model", materialKey))
   end
   return true
 end
@@ -138,16 +125,11 @@ local function loadConfiguration()
   end
 
   applyDefaults()
-  
-  if next(M.materials) == nil then
-    print("[Loading] Warning: No materials loaded! System may not function correctly.")
-  end
   extensions.hook("loadingConfigLoaded")
 end
 
 local function onExtensionLoaded()
   loadConfiguration()
-  log("I", "Loading Extension: config loaded")
 end
 
 local function onWorldReadyState(state)
