@@ -1431,7 +1431,7 @@ export default {
   gameplay_carswap: {
     getUIData: () => {},
     getInventoryForListing: () => {},
-    createListing: (inventoryId, price, title, description) => [Number, Number, String, String],
+    createListing: (inventoryId, price, title, description, thumbnailBase64) => [Number, Number, String, String, String],
     cancelListing: listingId => String,
     purchaseVehicle: listingId => String,
     claimListing: listingId => String,
@@ -1453,9 +1453,12 @@ export default {
   },
 
   gameplay_phoneCamera: {
-    takePhoto: () => {},
+    takePhoto: orientation => {},
     getPhotoList: () => {},
-    getPhotoAsDataUrl: filename => String
+    getPhotoAsDataUrl: filename => String,
+    startPreview: () => {},
+    stopPreview: () => {},
+    setPreviewOrientation: orientation => String
   },
 
   overhaul_maps: {

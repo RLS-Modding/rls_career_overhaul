@@ -1,29 +1,49 @@
 <template>
   <PhoneWrapper app-name="Camera" status-font-color="#FFFFFF" status-blend-mode="normal">
     <div class="camera-container">
-      <div class="camera-header">
-        <BngIcon :type="icons.photo" class="header-icon" />
-        <h1>Camera</h1>
+      <!-- Full-screen viewfinder; in landscape the preview is a 4:3 box that fits the screen -->
+      <div class="camera-viewfinder" :class="orientation">
+        <div class="viewfinder-frame">
+          <img
+            v-if="previewSrc"
+            :src="previewSrc"
+            class="viewfinder-image"
+            alt="Live view"
+          />
+          <div v-else class="viewfinder-placeholder">
+            <span>Loading...</span>
+          </div>
+        </div>
       </div>
 
-      <div class="camera-hint">
-        <p>Point your view at your car or the scene you want, then tap <strong>Take Photo</strong>. The phone will close briefly and a clean screenshot will be saved.</p>
+      <!-- Top bar: overlay, black ~75% transparent -->
+      <div class="camera-top-bar">
+        <div class="orientation-toggle">
+          <button
+            class="orientation-btn"
+            :class="{ active: orientation === 'portrait' }"
+            @click="setOrientation('portrait')"
+          >
+            Portrait
+          </button>
+          <button
+            class="orientation-btn"
+            :class="{ active: orientation === 'landscape' }"
+            @click="setOrientation('landscape')"
+          >
+            Landscape
+          </button>
+        </div>
       </div>
 
-      <div class="camera-actions">
+      <!-- Bottom bar: overlay, black ~75% transparent, capture button centered -->
+      <div class="camera-bottom-bar">
         <button
-          class="take-photo-btn"
+          class="capture-btn"
           :disabled="taking"
+          :class="{ taking: taking }"
           @click="takePhoto"
-        >
-          <BngIcon v-if="!taking" :type="icons.photo" class="btn-icon" />
-          <span v-else class="btn-spinner">...</span>
-          <span>{{ taking ? 'Taking...' : 'Take Photo' }}</span>
-        </button>
-      </div>
-
-      <div class="camera-footer">
-        <small>Photos save to <strong>screenshots/phone/</strong></small>
+        />
       </div>
     </div>
   </PhoneWrapper>
@@ -31,17 +51,41 @@
 
 <script setup>
 import PhoneWrapper from './PhoneWrapper.vue'
-import { BngIcon, icons } from '@/common/components/base'
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { lua } from '@/bridge'
+import { useEvents } from '@/services/events'
 
+const events = useEvents()
 const taking = ref(false)
+const previewSrc = ref(null)
+const orientation = ref('portrait')
+
+function onPreviewFrame(dataUrl) {
+  if (dataUrl) previewSrc.value = dataUrl
+}
+
+function setOrientation(value) {
+  if (value !== 'landscape' && value !== 'portrait') return
+  orientation.value = value
+  lua.gameplay_phoneCamera.setPreviewOrientation(value)
+}
+
+onMounted(() => {
+  events.on('PhoneCameraPreviewFrame', onPreviewFrame)
+  lua.gameplay_phoneCamera.startPreview()
+  lua.gameplay_phoneCamera.setPreviewOrientation(orientation.value)
+})
+
+onUnmounted(() => {
+  events.off('PhoneCameraPreviewFrame', onPreviewFrame)
+  lua.gameplay_phoneCamera.stopPreview()
+})
 
 async function takePhoto() {
   if (taking.value) return
   taking.value = true
   try {
-    await lua.gameplay_phoneCamera.takePhoto()
+    await lua.gameplay_phoneCamera.takePhoto(orientation.value)
   } catch (e) {
     console.error('Camera takePhoto failed', e)
   } finally {
@@ -51,114 +95,157 @@ async function takePhoto() {
 </script>
 
 <style scoped lang="scss">
+$bar-bg: rgba(0, 0, 0, 0.75);
+$viewfinder-bg: #6b7a82;
+
 .camera-container {
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  position: relative;
+  width: 100%;
+  height: 100%;
   min-height: 100%;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
-.camera-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
-
-  .header-icon {
-    font-size: 2em;
-    color: #fff;
-  }
-
-  h1 {
-    margin: 0;
-    font-size: 1.4rem;
-    color: #fff;
-    font-weight: 600;
-  }
-}
-
-.camera-hint {
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 14px;
-  margin-bottom: 24px;
+/* Full-screen viewfinder */
+.camera-viewfinder {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  box-sizing: border-box;
+  height: 100%;
+  background: #0a0a0a;
 
-  p {
-    margin: 0;
-    font-size: 0.9rem;
-    line-height: 1.45;
-    color: rgba(255, 255, 255, 0.9);
+  /* Portrait: frame fills whole screen */
+  &.portrait .viewfinder-frame {
+    width: 100%;
+    height: 100%;
+  }
 
-    strong {
-      color: #fff;
-    }
+  /* Landscape: 4:3 wide frame centered, fits on screen (letterboxed on portrait phone) */
+  &.landscape {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &.landscape .viewfinder-frame {
+    width: 100%;
+    max-width: min(100%, 133.333vh); /* so 4:3 box never taller than viewport */
+    height: 0;
+    padding-bottom: 75%; /* 3/4 = 4:3 landscape */
+    position: relative;
+  }
+
+  &.landscape .viewfinder-image,
+  &.landscape .viewfinder-placeholder {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .viewfinder-frame {
+    overflow: hidden;
+    background: $viewfinder-bg;
+  }
+
+  .viewfinder-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  &.landscape .viewfinder-image {
+    object-fit: cover;
+  }
+
+  .viewfinder-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.85rem;
   }
 }
 
-.camera-actions {
-  flex: 1;
+/* Top bar: overlay, black 75% transparent */
+.camera-top-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  min-height: 44px;
+  background: $bar-bg;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
+  padding: 8px 12px;
 }
 
-.take-photo-btn {
+.orientation-toggle {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 140px;
-  height: 140px;
-  border-radius: 50%;
-  border: 3px solid rgba(255, 255, 255, 0.5);
-  background: rgba(0, 0, 0, 0.4);
-  color: #fff;
-  font-size: 0.95rem;
-  font-weight: 600;
+  gap: 6px;
+}
+
+.orientation-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.8rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, background 0.2s ease;
 
-  .btn-icon {
-    font-size: 2.5em;
+  &.active {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
   }
 
-  .btn-spinner {
-    font-size: 1.5em;
+  &:hover:not(.active) {
+    color: rgba(255, 255, 255, 0.8);
   }
+}
+
+/* Bottom bar: overlay, black 75% transparent, capture button centered */
+.camera-bottom-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  min-height: 72px;
+  background: $bar-bg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+}
+
+.capture-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  background: #fff;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.15s ease, opacity 0.2s ease;
 
   &:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.9);
-    transform: scale(1.03);
+    transform: scale(1.05);
   }
 
   &:active:not(:disabled) {
-    transform: scale(0.98);
+    transform: scale(0.96);
   }
 
-  &:disabled {
-    opacity: 0.7;
+  &:disabled,
+  &.taking {
+    opacity: 0.6;
     cursor: not-allowed;
-  }
-}
-
-.camera-footer {
-  margin-top: auto;
-  padding-top: 16px;
-
-  small {
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 0.75rem;
-
-    strong {
-      color: rgba(255, 255, 255, 0.8);
-    }
   }
 }
 </style>

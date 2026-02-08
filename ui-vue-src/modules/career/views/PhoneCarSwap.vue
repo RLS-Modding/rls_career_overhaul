@@ -290,6 +290,19 @@
               <span class="vehicle-name">{{ sellModalVehicle.name }}</span>
               <span class="vehicle-est">Est. Value: ${{ formatPrice(sellModalVehicle.estimatedValue) }}</span>
             </div>
+
+            <div class="listing-photo-row">
+              <label>Listing photo</label>
+              <div
+                class="listing-photo-slot"
+                :class="{ filled: sellForm.photoDataUrl }"
+                @click="sellForm.photoDataUrl ? clearListingPhoto() : openPhotoPicker()"
+              >
+                <img v-if="sellForm.photoDataUrl" :src="sellForm.photoDataUrl" alt="Listing" class="listing-photo-preview" />
+                <span v-else class="listing-photo-plus">+</span>
+              </div>
+              <span v-if="!sellForm.photoDataUrl" class="listing-photo-hint">Tap + to choose a photo from your Camera app</span>
+            </div>
             
             <div class="sell-form">
               <div class="form-group">
@@ -342,6 +355,32 @@
                   {{ isCreatingListing ? 'Listing...' : 'List for Sale' }}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      </Teleport>
+
+      <!-- Photo Picker Modal (phone camera photos for listing) -->
+      <Teleport to="body">
+        <div v-if="showPhotoPicker" class="modal-overlay" @click.self="showPhotoPicker = false">
+          <div class="photo-picker-modal">
+            <button class="modal-close" @click="showPhotoPicker = false">✕</button>
+            <h3>Choose a photo</h3>
+            <p class="photo-picker-sub">From your Camera app</p>
+            <div v-if="loadingPhotoPicker" class="photo-picker-loading">Loading photos...</div>
+            <div v-else-if="phonePhotosForPicker.length === 0" class="photo-picker-empty">
+              No photos yet. Take some with the Camera app first.
+            </div>
+            <div v-else class="photo-picker-grid">
+              <button
+                v-for="photo in phonePhotosForPicker"
+                :key="photo.filename"
+                type="button"
+                class="photo-picker-thumb"
+                @click="selectListingPhoto(photo)"
+              >
+                <img v-if="photo.dataUrl" :src="photo.dataUrl" alt="" />
+              </button>
             </div>
           </div>
         </div>
@@ -498,8 +537,15 @@ const isSendingMessage = ref(false)
 const sellForm = ref({
   title: '',
   price: 0,
-  description: ''
+  description: '',
+  photoFilename: null,
+  photoDataUrl: null
 })
+
+// Photo picker (phone camera photos for listing)
+const showPhotoPicker = ref(false)
+const phonePhotosForPicker = ref([])
+const loadingPhotoPicker = ref(false)
 
 // Tabs
 const tabs = computed(() => [
@@ -539,7 +585,9 @@ const filteredListings = computed(() => {
 })
 
 const activeSellListings = computed(() => {
-  return (myListings.value || []).filter(l => l.status !== 'cancelled' && l.status !== 'expired')
+  const raw = myListings.value
+  const list = Array.isArray(raw) ? raw : []
+  return list.filter(l => l.status !== 'cancelled' && l.status !== 'expired')
 })
 
 // Methods
@@ -584,7 +632,7 @@ const refreshData = async () => {
       playerName.value = data.playerName
       editableName.value = data.playerName
       listings.value = data.listings || []
-      myListings.value = data.myListings || []
+      myListings.value = Array.isArray(data.myListings) ? data.myListings : []
       unreadCount.value = data.unreadMessages || 0
     }
     
@@ -618,8 +666,46 @@ const openSellModal = (vehicle) => {
   sellForm.value = {
     title: vehicle.name,
     price: vehicle.estimatedValue || 10000,
-    description: ''
+    description: '',
+    photoFilename: null,
+    photoDataUrl: null
   }
+}
+
+const openPhotoPicker = async () => {
+  showPhotoPicker.value = true
+  phonePhotosForPicker.value = []
+  loadingPhotoPicker.value = true
+  try {
+    const list = (await lua.gameplay_phoneCamera?.getPhotoList()) || []
+    const items = Array.isArray(list) ? list : []
+    const withUrls = await Promise.all(
+      items.map(async (item) => {
+        const filename = item?.filename ?? item?.name ?? item
+        if (typeof filename !== 'string') return null
+        const dataUrl = await lua.gameplay_phoneCamera?.getPhotoAsDataUrl(filename)
+        return { filename, dataUrl }
+      })
+    )
+    phonePhotosForPicker.value = withUrls.filter(Boolean)
+  } catch (e) {
+    console.error('Failed to load phone photos', e)
+  } finally {
+    loadingPhotoPicker.value = false
+  }
+}
+
+const selectListingPhoto = (photo) => {
+  if (photo?.dataUrl) {
+    sellForm.value.photoDataUrl = photo.dataUrl
+    sellForm.value.photoFilename = photo.filename
+  }
+  showPhotoPicker.value = false
+}
+
+const clearListingPhoto = () => {
+  sellForm.value.photoFilename = null
+  sellForm.value.photoDataUrl = null
 }
 
 const createListing = async () => {
@@ -627,11 +713,17 @@ const createListing = async () => {
   
   isCreatingListing.value = true
   try {
+    let thumbnailBase64 = null
+    if (sellForm.value.photoDataUrl) {
+      const m = sellForm.value.photoDataUrl.match(/^data:image\/\w+;base64,(.+)$/)
+      thumbnailBase64 = m ? m[1] : null
+    }
     await lua.gameplay_carswap.createListing(
       sellModalVehicle.value.inventoryId,
       sellForm.value.price,
       sellForm.value.title,
-      sellForm.value.description
+      sellForm.value.description,
+      thumbnailBase64
     )
     sellModalVehicle.value = null
     refreshData()
@@ -1518,6 +1610,120 @@ onUnmounted(() => {
   .vehicle-est {
     font-size: 0.85em;
     color: #00d4aa;
+  }
+}
+
+.listing-photo-row {
+  margin-bottom: 16px;
+
+  label {
+    display: block;
+    font-size: 0.85em;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 8px;
+  }
+}
+
+.listing-photo-slot {
+  width: 88px;
+  height: 88px;
+  border-radius: 8px;
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.2s, background 0.2s;
+
+  &:hover {
+    border-color: #00d4aa;
+    background: rgba(0, 212, 170, 0.1);
+  }
+
+  &.filled {
+    border-style: solid;
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .listing-photo-plus {
+    font-size: 2rem;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1;
+  }
+
+  .listing-photo-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+.listing-photo-hint {
+  display: block;
+  font-size: 0.8em;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 6px;
+}
+
+.photo-picker-modal {
+  padding: 20px;
+  max-width: 320px;
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  h3 {
+    margin: 0 0 4px 0;
+    padding-right: 36px;
+  }
+}
+
+.photo-picker-sub {
+  font-size: 0.85em;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 0 16px 0;
+}
+
+.photo-picker-loading,
+.photo-picker-empty {
+  padding: 24px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9em;
+}
+
+.photo-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.photo-picker-thumb {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0;
+  cursor: pointer;
+  transition: border-color 0.2s;
+
+  &:hover {
+    border-color: #00d4aa;
+  }
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
   }
 }
 

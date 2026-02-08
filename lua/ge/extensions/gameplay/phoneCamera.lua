@@ -1,14 +1,27 @@
 -- Phone Camera app: take in-game photos (screenshots) from the career phone.
 -- Photos are saved to screenshots/phone/ and the UI is hidden briefly so the shot is clean.
 -- Gallery: list photos and serve as data URLs for the phone UI.
+-- Live preview: stream current camera view to the app via periodic capture.
 
 local M = {}
 
-M.dependencies = { 'ui_visibility' }
+M.dependencies = { 'ui_visibility', 'core_camera', 'render_renderViews' }
 
 local PHOTO_DIR = 'screenshots/phone/'
 local PHOTO_DIR_SLASH = '/screenshots/phone/'  -- leading slash for FS APIs (user path)
 local PHOTO_PREFIX = 'phone_'
+local PREVIEW_TEMP = PHOTO_DIR .. '_preview.jpg'
+local PREVIEW_INTERVAL = 0.1
+local PREVIEW_VIEW_NAME = 'phoneCameraPreview'
+local PREVIEW_LANDSCAPE = vec3(320, 240, 0)
+local PREVIEW_PORTRAIT = vec3(240, 320, 0)
+local PHOTO_LANDSCAPE = vec3(1280, 720, 0)
+local PHOTO_PORTRAIT = vec3(720, 1280, 0)
+
+local previewActive = false
+local previewBusy = false
+local previewTimer = 0
+local previewOrientation = 'landscape'  -- 'landscape' | 'portrait'
 
 local mime = nil
 local function getMime()
@@ -40,7 +53,7 @@ function M.getPhotoList()
     if raw then
       for _, filepath in ipairs(raw) do
         local name = (type(filepath) == 'string' and filepath:match('([^/\\]+)$')) or tostring(filepath)
-        if name and name ~= '' then
+        if name and name ~= '' and name ~= '_preview.jpg' and name ~= '_preview.jpeg' then
           list[#list + 1] = { filename = name, name = name:gsub('%.%w+$', '') }
         end
       end
@@ -75,45 +88,136 @@ function M.getPhotoAsDataUrl(filename)
   return 'data:' .. mimeType .. ';base64,' .. b64
 end
 
-local function takePhotoJob(job)
-  -- Close phone so the next frame shows the game world
-  guihooks.trigger('closePhone')
-  job.sleep(0.5)
-
+-- Take photo using render view so saved image matches orientation (landscape or portrait).
+local function takePhotoWithOrientationJob(job)
+  local orientation = (job.args[1] == 'portrait') and 'portrait' or 'landscape'
   ensurePhotoDir()
-
-  -- Hide all UI so the screenshot is clean (no HUD/phone)
-  local wasVisible = ui_visibility.get()
-  ui_visibility.set(false)
-  job.sleep(0.25)
-
-  -- Use game's screenshot module (global when career is running)
-  local screenshot = _G.screenshot or (function()
-    local ok, mod = pcall(require, 'screenshot')
-    return ok and mod or nil
-  end)()
-  if not screenshot or not screenshot.doScreenshot then
-    ui_visibility.set(wasVisible)
+  local pos = core_camera.getPosition()
+  local q = core_camera.getQuat()
+  if not pos or not q or not render_renderViews or not render_renderViews.takeScreenshot then
     guihooks.trigger('toastrMsg', { type = 'error', title = 'Camera', msg = 'Could not take photo.' })
     return
   end
-
+  local res = (orientation == 'portrait') and PHOTO_PORTRAIT or PHOTO_LANDSCAPE
   local timestamp = os.date('%Y%m%d_%H%M%S')
   local pathNoExt = PHOTO_DIR .. PHOTO_PREFIX .. timestamp
-  screenshot.doScreenshot(nil, nil, pathNoExt, 'jpg')
-
-  ui_visibility.set(wasVisible)
-
-  guihooks.trigger('toastrMsg', {
-    type = 'success',
-    title = 'Photo saved',
-    msg = 'Saved to ' .. PHOTO_DIR
-  })
+  local options = {
+    pos = pos,
+    rot = { x = q.x, y = q.y, z = q.z, w = q.w },
+    filename = pathNoExt .. '.jpg',
+    renderViewName = 'phoneCameraPhoto',
+    resolution = res,
+    fov = (core_camera.getFovDeg and core_camera.getFovDeg()) or 75,
+    nearPlane = 0.1,
+    screenshotDelay = 0.2
+  }
+  local function onSaved()
+    guihooks.trigger('toastrMsg', {
+      type = 'success',
+      title = 'Photo saved',
+      msg = 'Saved to ' .. PHOTO_DIR
+    })
+  end
+  render_renderViews.takeScreenshot(options, onSaved)
 end
 
--- Called from the phone UI (Vue) when the user taps "Take Photo".
-function M.takePhoto()
-  core_jobsystem.create(takePhotoJob)
+-- Called from the phone UI (Vue) when the user taps "Take Photo". orientation: 'landscape' | 'portrait'
+function M.takePhoto(orientation)
+  core_jobsystem.create(takePhotoWithOrientationJob, nil, orientation or 'landscape')
+end
+
+-- Live preview: capture current camera view and send as data URL to UI.
+-- Use our own job so we never hide the UI (no flicker/reload).
+local function sendPreviewFrameToUI()
+  local relPath = PREVIEW_TEMP
+  if not FS:fileExists(relPath) then relPath = PHOTO_DIR_SLASH .. '_preview.jpg' end
+  if not FS:fileExists(relPath) then previewBusy = false; return end
+  local fullPath = FS:expandFilename(relPath)
+  if not fullPath then previewBusy = false; return end
+  local f = io.open(fullPath, 'rb')
+  if not f then previewBusy = false; return end
+  local data = f:read('*a')
+  f:close()
+  if not data or #data == 0 then previewBusy = false; return end
+  local m = getMime()
+  if not m or not m.b64 then previewBusy = false; return end
+  local b64 = m.b64(data)
+  if b64 then
+    guihooks.trigger('PhoneCameraPreviewFrame', 'data:image/jpeg;base64,' .. b64)
+  end
+  previewBusy = false
+end
+
+-- Job that only saves the view to disk (no UI hide) then calls callback.
+local function previewSaveJob(job)
+  local renderView = job.args[1]
+  local filename = job.args[2]
+  local callback = job.args[3]
+  job.sleep(0.06)
+  if renderView and renderView.saveToDisk then
+    renderView:saveToDisk(filename)
+  end
+  if RenderViewManagerInstance and renderView then
+    RenderViewManagerInstance:destroyView(renderView)
+  end
+  if callback then callback() end
+end
+
+-- Create render view from current camera and run our no-UI-hide job.
+local function capturePreviewFrame()
+  if not previewActive or previewBusy then return end
+  if not RenderViewManagerInstance or not core_camera then return end
+  local pos = core_camera.getPosition()
+  local q = core_camera.getQuat()
+  if not pos or not q then return end
+  ensurePhotoDir()
+  previewBusy = true
+  local viewName = PREVIEW_VIEW_NAME
+  local renderView = RenderViewManagerInstance:getOrCreateView(viewName)
+  if not renderView then previewBusy = false; return end
+  renderView.luaOwned = true
+  local res = (previewOrientation == 'portrait') and PREVIEW_PORTRAIT or PREVIEW_LANDSCAPE
+  local rot = q
+  local mat = QuatF(rot.x, rot.y, rot.z, rot.w):getMatrix()
+  mat:setPosition(pos)
+  renderView.renderCubemap = false
+  renderView.cameraMatrix = mat
+  renderView.resolution = Point2I(res.x, res.y)
+  renderView.viewPort = RectI(0, 0, res.x, res.y)
+  renderView.namedTexTargetColor = viewName
+  local aspectRatio = res.x / res.y
+  local fov = (core_camera.getFovDeg and core_camera.getFovDeg()) or 75
+  local nearPlane = 0.1
+  local farClip = 2000
+  renderView.frustum = Frustum.construct(false, math.rad(fov), aspectRatio, nearPlane, farClip)
+  renderView.fov = fov
+  renderView.renderEditorIcons = false
+  core_jobsystem.create(previewSaveJob, nil, renderView, PREVIEW_TEMP, sendPreviewFrameToUI)
+end
+
+function M.startPreview()
+  previewActive = true
+  previewTimer = 0
+end
+
+function M.stopPreview()
+  previewActive = false
+  previewBusy = false
+end
+
+function M.setPreviewOrientation(orientation)
+  if orientation == 'portrait' or orientation == 'landscape' then
+    previewOrientation = orientation
+  end
+end
+
+function M.onUpdate(dt)
+  if not previewActive then return end
+  previewTimer = previewTimer + dt
+  if previewTimer >= PREVIEW_INTERVAL then
+    previewTimer = 0
+    capturePreviewFrame()
+  end
 end
 
 local function onExtensionLoaded()
@@ -121,6 +225,5 @@ local function onExtensionLoaded()
 end
 
 M.onExtensionLoaded = onExtensionLoaded
-
 
 return M

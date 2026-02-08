@@ -553,10 +553,18 @@ local function getMyListings(callback)
 end
 
 -- List a vehicle for sale
-local function createListing(invId, price, title, desc, callback)
+-- UI may pass optional thumbnailBase64 (string) as 5th arg; 6th arg is callback if used from Lua
+local function createListing(invId, price, title, desc, thumbnailBase64OrCallback, callback)
+    local thumbnailBase64 = nil
+    if type(thumbnailBase64OrCallback) == "string" and thumbnailBase64OrCallback ~= "" then
+        thumbnailBase64 = thumbnailBase64OrCallback
+    elseif type(thumbnailBase64OrCallback) == "function" then
+        callback = thumbnailBase64OrCallback
+    end
+
     -- Find vehicle in inventory
     -- Note: This assumes we can get vehicle data from inventory ID
-    -- UI calls createListing(invId, price, title, desc)
+    -- UI calls createListing(invId, price, title, desc, thumbnailBase64)
     
     local vehicle = nil
     if career_modules_inventory then
@@ -586,7 +594,7 @@ local function createListing(invId, price, title, desc, callback)
         vehicle_config = vehicle.config or {},
         vehicle_model = vehicle.model or "unknown",
         vehicle_year = safeYear and math.floor(safeYear) or nil,
-        thumbnail_base64 = nil,
+        thumbnail_base64 = thumbnailBase64,
         price = math.floor(safePrice),
         title = title,
         description = desc,

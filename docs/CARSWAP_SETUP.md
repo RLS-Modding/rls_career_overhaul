@@ -57,6 +57,23 @@ The schema already includes RLS policies, but verify:
 - Your anon key may have expired or been regenerated
 - Get fresh keys from Supabase dashboard
 
+### "new row violates row-level security policy for table listings" (401 / 42501)
+The game uses the **anon** key (no user login), so RLS must allow inserts without `auth.uid()`. If you see this when listing a vehicle for sale, run this in the Supabase **SQL Editor**:
+
+```sql
+-- Allow anon inserts (game has no auth.uid())
+DROP POLICY IF EXISTS "Users can insert their own listings" ON listings;
+CREATE POLICY "Users can insert their own listings" ON listings
+  FOR INSERT WITH CHECK (true);
+
+-- Optional: allow anon to update/delete if needed
+DROP POLICY IF EXISTS "Users can update their own listings" ON listings;
+CREATE POLICY "Users can update their own listings" ON listings
+  FOR UPDATE USING (true);
+```
+
+Then try listing again.
+
 ### "Network error"
 - BeamNG may be blocking HTTP requests
 - Check firewall/antivirus settings

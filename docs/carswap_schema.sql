@@ -194,7 +194,7 @@ ALTER TABLE ratings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE watchlist ENABLE ROW LEVEL SECURITY;
 
--- Policies for listings (public read, authenticated write)
+-- Policies for listings (game uses anon key; no auth.uid() - so allow with (true))
 CREATE POLICY "Listings are viewable by everyone" ON listings
   FOR SELECT USING (true);
 
