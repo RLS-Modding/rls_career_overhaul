@@ -1437,6 +1437,12 @@ export default {
     dismissSummary: () => {}
   },
 
+  gameplay_phoneCamera: {
+    takePhoto: () => {},
+    getPhotoList: () => {},
+    getPhotoAsDataUrl: filename => String
+  },
+
   overhaul_maps: {
     getOtherAvailableMaps: () => {},
     getMapsExcludingWestCoast: () => {},
