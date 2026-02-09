@@ -229,12 +229,32 @@
           <div class="listing-modal">
             <button class="modal-close" @click="selectedListing = null">✕</button>
             
-            <div class="modal-image">
-              <img 
-                v-if="selectedListing.thumbnail_base64" 
-                :src="'data:image/jpeg;base64,' + selectedListing.thumbnail_base64" 
-              />
-              <div v-else class="no-image">🚗</div>
+            <div class="modal-image-wrap">
+              <div class="modal-image">
+                <template v-if="getListingPhotos(selectedListing).length">
+                  <img :src="getListingPhotos(selectedListing)[listingModalPhotoIndex]" alt="" />
+                  <button
+                    v-if="getListingPhotos(selectedListing).length > 1"
+                    type="button"
+                    class="modal-photo-arrow modal-photo-prev"
+                    aria-label="Previous photo"
+                    @click.stop="listingModalPhotoIndex = (listingModalPhotoIndex - 1 + getListingPhotos(selectedListing).length) % getListingPhotos(selectedListing).length"
+                  >
+                    ‹
+                  </button>
+                  <button
+                    v-if="getListingPhotos(selectedListing).length > 1"
+                    type="button"
+                    class="modal-photo-arrow modal-photo-next"
+                    aria-label="Next photo"
+                    @click.stop="listingModalPhotoIndex = (listingModalPhotoIndex + 1) % getListingPhotos(selectedListing).length"
+                  >
+                    ›
+                  </button>
+                  <span v-if="getListingPhotos(selectedListing).length > 1" class="modal-photo-counter">{{ listingModalPhotoIndex + 1 }} / {{ getListingPhotos(selectedListing).length }}</span>
+                </template>
+                <div v-else class="no-image">🚗</div>
+              </div>
             </div>
             
             <div class="modal-content">
@@ -292,16 +312,20 @@
             </div>
 
             <div class="listing-photo-row">
-              <label>Listing photo</label>
-              <div
-                class="listing-photo-slot"
-                :class="{ filled: sellForm.photoDataUrl }"
-                @click="sellForm.photoDataUrl ? clearListingPhoto() : openPhotoPicker()"
-              >
-                <img v-if="sellForm.photoDataUrl" :src="sellForm.photoDataUrl" alt="Listing" class="listing-photo-preview" />
-                <span v-else class="listing-photo-plus">+</span>
+              <label>Listing photos (max {{ MAX_LISTING_PHOTOS }})</label>
+              <div class="listing-photo-slots">
+                <div
+                  v-for="(url, idx) in Array(MAX_LISTING_PHOTOS).fill(null)"
+                  :key="idx"
+                  class="listing-photo-slot"
+                  :class="{ filled: (sellForm.photoDataUrls || [])[idx] }"
+                  @click="(sellForm.photoDataUrls || [])[idx] ? removeListingPhoto(idx) : openPhotoPicker(idx)"
+                >
+                  <img v-if="(sellForm.photoDataUrls || [])[idx]" :src="(sellForm.photoDataUrls || [])[idx]" alt="" class="listing-photo-preview" />
+                  <span v-else class="listing-photo-plus">+</span>
+                </div>
               </div>
-              <span v-if="!sellForm.photoDataUrl" class="listing-photo-hint">Tap + to choose a photo from your Camera app</span>
+              <span class="listing-photo-hint">Tap + to add a photo from your Camera app (max {{ MAX_LISTING_PHOTOS }})</span>
             </div>
             
             <div class="sell-form">
@@ -533,17 +557,18 @@ const messageListing = ref(null)
 const messageText = ref('')
 const isSendingMessage = ref(false)
 
-// Sell form
+// Sell form (up to 4 photos)
+const MAX_LISTING_PHOTOS = 4
 const sellForm = ref({
   title: '',
   price: 0,
   description: '',
-  photoFilename: null,
-  photoDataUrl: null
+  photoDataUrls: []
 })
 
 // Photo picker (phone camera photos for listing)
 const showPhotoPicker = ref(false)
+const photoPickerTargetSlot = ref(0)
 const phonePhotosForPicker = ref([])
 const loadingPhotoPicker = ref(false)
 
@@ -657,8 +682,11 @@ const applyFilters = () => {
   refreshData()
 }
 
+const listingModalPhotoIndex = ref(0)
+
 const openListing = (listing) => {
   selectedListing.value = listing
+  listingModalPhotoIndex.value = 0
 }
 
 const openSellModal = (vehicle) => {
@@ -667,12 +695,55 @@ const openSellModal = (vehicle) => {
     title: vehicle.name,
     price: vehicle.estimatedValue || 10000,
     description: '',
-    photoFilename: null,
-    photoDataUrl: null
+    photoDataUrls: []
   }
 }
 
-const openPhotoPicker = async () => {
+// Listing photos for modal. Prefer separate columns (no JSON) then legacy thumbnail_base64_full / JSON string.
+function getListingPhotos(listing) {
+  const t2 = listing?.thumbnail_2_base64 ?? listing?.thumbnail2Base64
+  if (t2 != null && t2 !== '') {
+    const parts = [
+      listing?.thumbnail_base64 ?? listing?.thumbnailBase64,
+      t2,
+      listing?.thumbnail_3_base64 ?? listing?.thumbnail3Base64,
+      listing?.thumbnail_4_base64 ?? listing?.thumbnail4Base64
+    ].filter(b => typeof b === 'string' && b.trim())
+    if (parts.length > 0) return parts.map(b => `data:image/jpeg;base64,${b.trim()}`)
+  }
+  const full = listing?.thumbnail_base64_full ?? listing?.thumbnailBase64Full
+  if (full != null && full !== '') {
+    if (Array.isArray(full)) {
+      return full.filter(b => typeof b === 'string' && b).map(b => `data:image/jpeg;base64,${b}`)
+    }
+    if (typeof full === 'string' && full.startsWith('[')) {
+      try {
+        const arr = JSON.parse(full)
+        return (Array.isArray(arr) ? arr : []).filter(Boolean).map(b => `data:image/jpeg;base64,${b}`)
+      } catch {
+        return []
+      }
+    }
+  }
+  const t = listing?.thumbnail_base64 ?? listing?.thumbnailBase64
+  if (t == null || t === '') return []
+  if (Array.isArray(t)) {
+    return t.filter(b => typeof b === 'string' && b).map(b => `data:image/jpeg;base64,${b}`)
+  }
+  if (typeof t === 'string' && t.startsWith('[')) {
+    try {
+      const arr = JSON.parse(t)
+      return (Array.isArray(arr) ? arr : []).filter(Boolean).map(b => `data:image/jpeg;base64,${b}`)
+    } catch {
+      return []
+    }
+  }
+  if (typeof t === 'string') return [`data:image/jpeg;base64,${t}`]
+  return []
+}
+
+const openPhotoPicker = async (slotIndex) => {
+  photoPickerTargetSlot.value = slotIndex
   showPhotoPicker.value = true
   phonePhotosForPicker.value = []
   loadingPhotoPicker.value = true
@@ -697,15 +768,46 @@ const openPhotoPicker = async () => {
 
 const selectListingPhoto = (photo) => {
   if (photo?.dataUrl) {
-    sellForm.value.photoDataUrl = photo.dataUrl
-    sellForm.value.photoFilename = photo.filename
+    const urls = [...(sellForm.value.photoDataUrls || [])]
+    urls[photoPickerTargetSlot.value] = photo.dataUrl
+    sellForm.value.photoDataUrls = urls.slice(0, MAX_LISTING_PHOTOS)
   }
   showPhotoPicker.value = false
 }
 
-const clearListingPhoto = () => {
-  sellForm.value.photoFilename = null
-  sellForm.value.photoDataUrl = null
+const removeListingPhoto = (index) => {
+  const urls = [...(sellForm.value.photoDataUrls || [])]
+  urls.splice(index, 1)
+  sellForm.value.photoDataUrls = urls
+}
+
+// Resize/compress image to smaller base64 so we can send multiple photos without freezing
+const LISTING_PHOTO_MAX_SIZE = 480
+const LISTING_PHOTO_JPEG_QUALITY = 0.65
+
+function resizePhotoToBase64(dataUrl) {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+    img.onload = () => {
+      const w = img.naturalWidth || img.width
+      const h = img.naturalHeight || img.height
+      const scale = Math.min(1, LISTING_PHOTO_MAX_SIZE / Math.max(w, h))
+      const cw = Math.round(w * scale)
+      const ch = Math.round(h * scale)
+      const canvas = document.createElement('canvas')
+      canvas.width = cw
+      canvas.height = ch
+      const ctx = canvas.getContext('2d')
+      if (!ctx) { reject(new Error('No canvas context')); return }
+      ctx.drawImage(img, 0, 0, cw, ch)
+      const out = canvas.toDataURL('image/jpeg', LISTING_PHOTO_JPEG_QUALITY)
+      const m = out.match(/^data:image\/jpeg;base64,(.+)$/)
+      resolve(m ? m[1] : null)
+    }
+    img.onerror = () => reject(new Error('Image load failed'))
+    img.src = dataUrl
+  })
 }
 
 const createListing = async () => {
@@ -713,17 +815,24 @@ const createListing = async () => {
   
   isCreatingListing.value = true
   try {
-    let thumbnailBase64 = null
-    if (sellForm.value.photoDataUrl) {
-      const m = sellForm.value.photoDataUrl.match(/^data:image\/\w+;base64,(.+)$/)
-      thumbnailBase64 = m ? m[1] : null
+    const urls = (sellForm.value.photoDataUrls || []).slice(0, MAX_LISTING_PHOTOS).filter(Boolean)
+    const thumbnailBase64Array = []
+    for (const dataUrl of urls) {
+      try {
+        const b64 = await resizePhotoToBase64(dataUrl)
+        if (b64) thumbnailBase64Array.push(b64)
+      } catch (e) {
+        console.warn('Resize failed for one photo, skipping', e)
+      }
     }
+    // Send as JSON string so the Lua bridge (5th arg typed String) passes all photos through
+    const payload = thumbnailBase64Array.length ? JSON.stringify(thumbnailBase64Array) : null
     await lua.gameplay_carswap.createListing(
       sellModalVehicle.value.inventoryId,
       sellForm.value.price,
       sellForm.value.title,
       sellForm.value.description,
-      thumbnailBase64
+      payload
     )
     sellModalVehicle.value = null
     refreshData()
@@ -1486,7 +1595,12 @@ onUnmounted(() => {
   }
 }
 
+.modal-image-wrap {
+  position: relative;
+}
+
 .modal-image {
+  position: relative;
   width: 100%;
   height: 200px;
   background: #0a0a0a;
@@ -1506,6 +1620,53 @@ onUnmounted(() => {
     font-size: 4em;
     opacity: 0.2;
   }
+}
+
+.modal-photo-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  z-index: 2;
+  transition: background 0.2s;
+
+  &:hover {
+    background: rgba(0, 212, 170, 0.9);
+    color: #000;
+  }
+}
+
+.modal-photo-prev {
+  left: 8px;
+}
+
+.modal-photo-next {
+  right: 8px;
+}
+
+.modal-photo-counter {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.6);
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.9);
+  z-index: 2;
 }
 
 .modal-content {
@@ -1624,9 +1785,15 @@ onUnmounted(() => {
   }
 }
 
+.listing-photo-slots {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
 .listing-photo-slot {
-  width: 88px;
-  height: 88px;
+  width: 100%;
+  aspect-ratio: 1;
   border-radius: 8px;
   border: 2px dashed rgba(255, 255, 255, 0.3);
   background: rgba(0, 0, 0, 0.3);

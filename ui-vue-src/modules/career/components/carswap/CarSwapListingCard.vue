@@ -2,8 +2,8 @@
   <div class="listing-card" @click="$emit('click', listing)">
     <div class="listing-image">
       <img 
-        v-if="listing.thumbnail_base64" 
-        :src="'data:image/jpeg;base64,' + listing.thumbnail_base64" 
+        v-if="firstPhotoUrl" 
+        :src="firstPhotoUrl" 
         alt="Vehicle"
       />
       <div v-else class="no-image">
@@ -65,6 +65,38 @@ const props = defineProps({
 })
 
 defineEmits(['click'])
+
+// First photo for card: thumbnail_base64 (single or first), or first from separate columns / legacy JSON.
+const firstPhotoUrl = computed(() => {
+  const listing = props.listing
+  const t = listing?.thumbnail_base64 ?? listing?.thumbnailBase64
+  if (t == null || t === '') return null
+  if (typeof t === 'string') {
+    const s = t.trim()
+    if (!s) return null
+    if (s.charAt(0) !== '[' && s.charAt(0) !== '{') return `data:image/jpeg;base64,${s}`
+    try {
+      const arr = JSON.parse(s)
+      const first = Array.isArray(arr) ? (arr[0] ?? arr[1]) : null
+      if (typeof first === 'string' && first) return `data:image/jpeg;base64,${first}`
+    } catch {
+      const dq = s.indexOf('"', 1)
+      const sq = s.indexOf("'", 1)
+      const start = d > 0 ? (sq > 0 ? Math.min(d, sq) : d) : sq
+      if (start > 0) {
+        const q = s[start]
+        const end = s.indexOf(q, start + 1)
+        if (end > start) {
+          const b64 = s.slice(start + 1, end).replace(/\\"/g, '"')
+          if (b64.length > 0) return `data:image/jpeg;base64,${b64}`
+        }
+      }
+    }
+    return null
+  }
+  if (Array.isArray(t) && (t[0] || t[1])) return `data:image/jpeg;base64,${t[0] || t[1]}`
+  return null
+})
 
 const formatPrice = (price) => {
   if (price >= 1000000) return (price / 1000000).toFixed(1) + 'M'

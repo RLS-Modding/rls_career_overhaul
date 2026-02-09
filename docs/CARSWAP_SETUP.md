@@ -74,6 +74,15 @@ CREATE POLICY "Users can update their own listings" ON listings
 
 Then try listing again.
 
+### Multiple listing photos (thumbnail_2/3/4_base64)
+If you added the schema before these columns existed, run in SQL Editor:
+
+```sql
+ALTER TABLE listings ADD COLUMN IF NOT EXISTS thumbnail_2_base64 TEXT;
+ALTER TABLE listings ADD COLUMN IF NOT EXISTS thumbnail_3_base64 TEXT;
+ALTER TABLE listings ADD COLUMN IF NOT EXISTS thumbnail_4_base64 TEXT;
+```
+
 ### "Network error"
 - BeamNG may be blocking HTTP requests
 - Check firewall/antivirus settings

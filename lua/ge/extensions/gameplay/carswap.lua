@@ -553,13 +553,43 @@ local function getMyListings(callback)
 end
 
 -- List a vehicle for sale
--- UI may pass optional thumbnailBase64 (string) as 5th arg; 6th arg is callback if used from Lua
+-- UI may pass optional 5th arg: single base64 string, or array of base64 strings (up to 4).
+-- We store each photo in its own column (thumbnail_base64, thumbnail_2_base64, ...) so no JSON-in-string encoding issues.
 local function createListing(invId, price, title, desc, thumbnailBase64OrCallback, callback)
-    local thumbnailBase64 = nil
-    if type(thumbnailBase64OrCallback) == "string" and thumbnailBase64OrCallback ~= "" then
-        thumbnailBase64 = thumbnailBase64OrCallback
-    elseif type(thumbnailBase64OrCallback) == "function" then
+    local thumb1, thumb2, thumb3, thumb4 = nil, nil, nil, nil
+    if type(thumbnailBase64OrCallback) == "function" then
         callback = thumbnailBase64OrCallback
+    elseif type(thumbnailBase64OrCallback) == "string" and thumbnailBase64OrCallback ~= "" then
+        local s = thumbnailBase64OrCallback:gsub("^%s+", ""):gsub("%s+$", "")
+        if s:sub(1, 1) == "[" then
+            local ok, arr = pcall(jsonDecode, s)
+            if ok and type(arr) == "table" then
+                thumb1 = arr[1] or arr["1"] or arr[0]
+                thumb2 = arr[2] or arr["2"]
+                thumb3 = arr[3] or arr["3"]
+                thumb4 = arr[4] or arr["4"]
+            else
+                thumb1 = thumbnailBase64OrCallback
+            end
+        else
+            thumb1 = thumbnailBase64OrCallback
+        end
+    elseif type(thumbnailBase64OrCallback) == "table" then
+        local arr = {}
+        for i = 0, 3 do
+            local v = thumbnailBase64OrCallback[i]
+            if type(v) == "string" and v ~= "" then arr[#arr + 1] = v end
+        end
+        if #arr == 0 then
+            for i = 1, 4 do
+                local v = thumbnailBase64OrCallback[i] or thumbnailBase64OrCallback[tostring(i)]
+                if type(v) == "string" and v ~= "" then arr[#arr + 1] = v end
+            end
+        end
+        thumb1 = arr[1]
+        thumb2 = arr[2]
+        thumb3 = arr[3]
+        thumb4 = arr[4]
     end
 
     -- Find vehicle in inventory
@@ -594,7 +624,10 @@ local function createListing(invId, price, title, desc, thumbnailBase64OrCallbac
         vehicle_config = vehicle.config or {},
         vehicle_model = vehicle.model or "unknown",
         vehicle_year = safeYear and math.floor(safeYear) or nil,
-        thumbnail_base64 = thumbnailBase64,
+        thumbnail_base64 = thumb1,
+        thumbnail_2_base64 = thumb2,
+        thumbnail_3_base64 = thumb3,
+        thumbnail_4_base64 = thumb4,
         price = math.floor(safePrice),
         title = title,
         description = desc,
@@ -808,6 +841,42 @@ end
 -- UI Data Agreggation
 -- ============================================================================
 
+-- Normalize only legacy listings where thumbnail_base64 was stored as a JSON array string.
+-- New listings use separate columns (thumbnail_base64, thumbnail_2_base64, ...) and need no change.
+local function normalizeListingThumbnail(listing)
+    if not listing then return end
+    if listing.thumbnail_2_base64 then return end  -- new format: already separate columns
+    local t = listing.thumbnail_base64
+    if t == nil or t == "" then return end
+    if type(t) == "table" then
+        local first = t[1] or t[0]
+        if type(first) == "string" and first ~= "" then
+            listing.thumbnail_base64 = first
+            listing.thumbnail_base64_full = t
+        end
+        return
+    end
+    if type(t) ~= "string" then return end
+    local s = (t:gsub("^%s+", ""):gsub("%s+$", ""))
+    if s:sub(1, 1) == "[" then
+        local ok, arr = pcall(jsonDecode, s)
+        if ok and type(arr) == "table" and (arr[1] or arr[0]) then
+            local first = arr[1] or arr[0]
+            if type(first) == "string" and first ~= "" then
+                listing.thumbnail_base64_full = t
+                listing.thumbnail_base64 = first
+            end
+        end
+    end
+end
+
+local function normalizeListings(listings)
+    if not listings then return end
+    for i = 1, #listings do
+        normalizeListingThumbnail(listings[i])
+    end
+end
+
 local function getUIData(callback)
     local isConnected = checkHubConnection(nil)
     local data = {
@@ -822,6 +891,8 @@ local function getUIData(callback)
 
         data.listings = listings or {}
         data.myListings = myListings or {}
+        normalizeListings(data.listings)
+        normalizeListings(data.myListings)
     else
         data.listings = {}
         data.myListings = {}
