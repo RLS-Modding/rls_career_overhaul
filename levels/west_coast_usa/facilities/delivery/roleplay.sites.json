@@ -19,7 +19,7 @@
       },
       "isMultiSpot":false,
       "name":"Hospital Entrance",
-      "oldId":2254,
+      "oldId":18221,
       "pos":[
         -231.44441223145,
         437.36383056641,
@@ -55,7 +55,7 @@
       },
       "isMultiSpot":false,
       "name":"paramedicWorkParking",
-      "oldId":2255,
+      "oldId":18222,
       "pos":[
         -291.77017211914,
         461.49496459961,
@@ -91,7 +91,7 @@
       },
       "isMultiSpot":false,
       "name":"ambulanceLoaner",
-      "oldId":2256,
+      "oldId":18223,
       "pos":[
         -278.64749145508,
         451.42492675781,
@@ -127,7 +127,7 @@
       },
       "isMultiSpot":false,
       "name":"busWork_parking",
-      "oldId":2257,
+      "oldId":18224,
       "pos":[
         -418.38681030273,
         453.39505004883,
@@ -163,7 +163,7 @@
       },
       "isMultiSpot":false,
       "name":"busLoaner_parking",
-      "oldId":2258,
+      "oldId":18225,
       "pos":[
         -402.74322509766,
         455.15872192383,
@@ -199,7 +199,7 @@
       },
       "isMultiSpot":false,
       "name":"facilityWork_industrialWarehouse",
-      "oldId":2259,
+      "oldId":18226,
       "pos":[
         32.913333892822,
         740.23822021484,
@@ -235,7 +235,7 @@
       },
       "isMultiSpot":false,
       "name":"facilityWork_shuffleboard",
-      "oldId":2261,
+      "oldId":18227,
       "pos":[
         -300.74145507813,
         -150.15594482422,
@@ -285,7 +285,7 @@
         "values":{}
       },
       "name":"industrialWarehouse_facilityWork",
-      "oldId":2253,
+      "oldId":18219,
       "top":{
         "active":false,
         "normal":[
@@ -348,7 +348,7 @@
         "values":{}
       },
       "name":"shuffleboard_facilityWork",
-      "oldId":2260,
+      "oldId":18228,
       "top":{
         "active":false,
         "normal":[
@@ -364,24 +364,24 @@
       },
       "vertices":[
         [
-          -315.84564208984,
-          -145.78440856934,
-          120.54760742188
+          -293.66864013672,
+          -157.01544189453,
+          120.55833435059
         ],
         [
-          -310.74905395508,
-          -142.20346069336,
-          120.54760742188
+          -298.06448364258,
+          -151.97915649414,
+          120.55857849121
         ],
         [
-          -309.54238891602,
-          -145.94973754883,
-          119.39593505859
+          -304.10415649414,
+          -156.02163696289,
+          120.55770111084
         ],
         [
-          -313.51196289063,
-          -148.87005615234,
-          119.31949615479
+          -300.05987548828,
+          -161.09762573242,
+          116.93553924561
         ]
       ]
     }

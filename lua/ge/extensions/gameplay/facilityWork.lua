@@ -430,7 +430,6 @@ local function setTasklistOnDuty()
     guihooks.trigger('SetTasklistHeader', { label = "On duty" })
     guihooks.trigger('SetTasklistTask', { id = "facilityWork_total_pay", label = "Total pay: $0", type = "message", clear = false })
     guihooks.trigger('SetTasklistTask', { id = "facilityWork_total_rep", label = "Total rep: 0", type = "message", clear = false })
-    guihooks.trigger('SetTasklistTask', { id = "facilityWork_materials", label = "Materials moved: 0", type = "message", clear = false })
 end
 
 -- Phone app: build state for UI (onDuty, session stats, available on this level)
@@ -482,7 +481,6 @@ end
 local function updateTasklistValues()
     guihooks.trigger('SetTasklistTask', { id = "facilityWork_total_pay", label = "Total pay: $" .. sessionTotalPay, type = "message", clear = false })
     guihooks.trigger('SetTasklistTask', { id = "facilityWork_total_rep", label = "Total rep: " .. sessionTotalRep, type = "message", clear = false })
-    guihooks.trigger('SetTasklistTask', { id = "facilityWork_materials", label = "Materials moved: " .. sessionMaterialsMoved, type = "message", clear = false })
     notifyPhoneState()
 end
 
@@ -574,13 +572,13 @@ local function despawnBatch()
     currentBatch = nil
 end
 
--- Pay out entire batch (all props were in drop zone): sum money/rep, reward once, despawn all, spawn new batch.
+-- Complete batch (all props in drop zone): accumulate money/rep into session totals, despawn batch, spawn next.
+-- No payment or save here; payout and save happen once on end shift.
 local function payoutBatchAndSpawnNext()
     if not currentBatch then return end
     local propIds = currentBatch.propIds
     local moneyPerProp = currentBatch.moneyPerProp
     local repPerProp = currentBatch.repPerProp
-    local organizationId = currentBatch.organizationId
     local facilityId = currentBatch.facilityId
 
     local totalMoney = 0
@@ -597,21 +595,6 @@ local function payoutBatchAndSpawnNext()
     sessionTotalPay = sessionTotalPay + totalMoney
     sessionTotalRep = sessionTotalRep + totalRep
     sessionMaterialsMoved = sessionMaterialsMoved + #propIds
-
-    if career_career and career_career.isActive() and career_modules_payment and career_modules_payment.reward and (totalMoney ~= 0 or totalRep ~= 0) then
-        local rewardData = {
-            money = { amount = totalMoney },
-            beamXP = { amount = math.floor(totalMoney / 10) }
-        }
-        rewardData[organizationId .. "Reputation"] = { amount = totalRep }
-        career_modules_payment.reward(rewardData, {
-            label = string.format("Facility work: $%d | Rep +%d | %d materials", totalMoney, totalRep, #propIds),
-            tags = {"facilityWork", "gameplay"}
-        }, true)
-    end
-    if career_saveSystem and career_saveSystem.saveCurrent then
-        career_saveSystem.saveCurrent()
-    end
 
     -- Persistent materials: keep delivered props in world until shift ends
     for _, pid in ipairs(propIds) do
@@ -661,15 +644,40 @@ local function endShiftCleanup()
     clearDropMarkers()
     batchReadyWaitingForkliftExit = false
 
-    -- Show shift summary and save before clearing UI
+    -- Single payout and save at end of shift (avoids log spam and ensures reward is applied once)
+    if career_career and career_career.isActive() and (sessionTotalPay ~= 0 or sessionTotalRep ~= 0) then
+        local orgId = nil
+        if selectedFacilityId and facilityConfigs[selectedFacilityId] then
+            orgId = facilityConfigs[selectedFacilityId].organizationId
+        end
+        if career_modules_payment and career_modules_payment.reward then
+            local rewardData = {
+                money = { amount = sessionTotalPay },
+                beamXP = { amount = math.floor(sessionTotalPay / 10) }
+            }
+            if orgId and sessionTotalRep ~= 0 then
+                rewardData[orgId .. "Reputation"] = { amount = sessionTotalRep }
+            end
+            career_modules_payment.reward(rewardData, {
+                label = string.format("Facility work (shift): $%d | Rep +%d | %d materials", sessionTotalPay, sessionTotalRep, sessionMaterialsMoved),
+                tags = {"facilityWork", "gameplay"}
+            }, true)
+        end
+        if career_saveSystem and career_saveSystem.saveCurrent then
+            career_saveSystem.saveCurrent()
+        end
+    end
+
+    -- Show shift summary before clearing UI
     if utils and utils.displayMessage then
         local msg = string.format("Shift ended. Total earned: $%d | Rep: %d | Materials moved: %d",
             sessionTotalPay, sessionTotalRep, sessionMaterialsMoved)
         utils.displayMessage(msg, 6)
     end
-    if career_saveSystem and career_saveSystem.saveCurrent then
-        career_saveSystem.saveCurrent()
-    end
+
+    sessionTotalPay = 0
+    sessionTotalRep = 0
+    sessionMaterialsMoved = 0
 
     guihooks.trigger('ClearTasklist')
     notifyPhoneState()
