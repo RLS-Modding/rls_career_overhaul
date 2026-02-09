@@ -729,6 +729,38 @@ local function purchaseVehicle(listingId, callback)
     return nil, error or (data and data.error) or "Transaction failed"
 end
 
+-- Send a message to the seller of a listing (insert into messages table)
+local function sendMessage(listingId, content, callback)
+    if not listingId or not content or tostring(content):match("^%s*$") then
+        if callback then callback(false, "Invalid listing or message") end
+        return nil, "Invalid listing or message"
+    end
+    local query = "/rest/v1/listings?select=seller_id,seller_name&id=eq." .. listingId
+    local listingData, listErr = request(query, "GET", nil, nil)
+    if listErr or not listingData or not listingData[1] then
+        if callback then callback(false, listErr or "Listing not found") end
+        return nil, listErr or "Listing not found"
+    end
+    local listing = listingData[1]
+    local body = {
+        listing_id = listingId,
+        sender_id = getPlayerId(),
+        sender_name = getPlayerName(),
+        recipient_id = listing.seller_id,
+        content = tostring(content):sub(1, 500)
+    }
+    local endpoint = "/rest/v1/messages"
+    if callback then
+        request(endpoint, "POST", body, function(data, err)
+            callback(err == nil, err)
+        end)
+        return
+    end
+    local _, err = request(endpoint, "POST", body, nil)
+    if err then return nil, err end
+    return true, nil
+end
+
 -- Remove/Cancel a listing
 local function removeListing(listingId, callback)
     local endpoint = "/rest/v1/listings?id=eq." .. listingId
@@ -879,15 +911,34 @@ end
 
 local function getUIData(callback)
     local isConnected = checkHubConnection(nil)
+    local profileName = getProfileName()
     local data = {
         isConnected = isConnected,
         playerId = getPlayerId(),
-        playerName = getPlayerName()
+        playerName = getPlayerName(),
+        nameRequired = (profileName == nil or profileName == "")
     }
 
     if isConnected then
         local listings = getListings(nil)
         local myListings = getMyListings(nil)
+        local playerId = getPlayerId()
+        local messagesQuery = "/rest/v1/messages?recipient_id=eq." .. playerId .. "&order=created_at.desc&select=*"
+        local messagesList = request(messagesQuery, "GET", nil, nil)
+        if messagesList and type(messagesList) == "table" then
+            data.messages = messagesList
+            local unread = 0
+            for i = 1, #messagesList do
+                if not messagesList[i].read then unread = unread + 1 end
+            end
+            data.unreadMessages = unread
+        else
+            data.messages = {}
+            data.unreadMessages = 0
+        end
+        local sentQuery = "/rest/v1/messages?sender_id=eq." .. playerId .. "&order=created_at.desc&select=*"
+        local sentList = request(sentQuery, "GET", nil, nil)
+        data.sentMessages = (sentList and type(sentList) == "table") and sentList or {}
 
         data.listings = listings or {}
         data.myListings = myListings or {}
@@ -896,6 +947,9 @@ local function getUIData(callback)
     else
         data.listings = {}
         data.myListings = {}
+        data.messages = {}
+        data.sentMessages = {}
+        data.unreadMessages = 0
     end
 
     if callback then
@@ -933,8 +987,6 @@ M.getVehicleMileage = function(vid) return 0 end
 M.onExtensionLoaded = function()
     log("I", "carswap", "CarSwap Direct initialized. URL: " .. SUPABASE_URL)
 end
-
-M.sendMessage = sendMessage
 
 M.onSaveFinished = function()
     if not career_modules_inventory or not career_modules_inventory.removeVehicleObject then return end

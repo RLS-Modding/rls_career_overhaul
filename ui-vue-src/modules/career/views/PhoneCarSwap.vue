@@ -24,7 +24,8 @@
       </div>
       
       <!-- Browse Tab -->
-      <div v-if="activeTab === 'browse'" class="tab-content">
+      <Transition name="tab-fade" mode="out-in">
+      <div v-if="activeTab === 'browse'" key="browse" class="tab-content">
         <div class="search-bar">
           <input 
             v-model="searchQuery" 
@@ -40,6 +41,7 @@
           </button>
         </div>
         
+        <Transition name="expand">
         <div v-if="showFilters" class="filters-panel">
           <div class="filter-row">
             <label>Min Price:</label>
@@ -51,6 +53,7 @@
           </div>
           <button @click="applyFilters" class="apply-btn">Apply</button>
         </div>
+        </Transition>
         
         <div v-if="isLoading" class="loading">
           <div class="spinner"></div>
@@ -72,9 +75,11 @@
           />
         </div>
       </div>
+      </Transition>
       
       <!-- Sell Tab -->
-      <div v-if="activeTab === 'sell'" class="tab-content">
+      <Transition name="tab-fade" mode="out-in">
+      <div v-if="activeTab === 'sell'" key="sell" class="tab-content">
         <div class="sell-header">
           <h3>List a Vehicle</h3>
           <p>Choose a vehicle from your inventory to sell</p>
@@ -162,40 +167,80 @@
           </div>
         </div>
       </div>
+      </Transition>
       
       <!-- Messages Tab -->
-      <div v-if="activeTab === 'messages'" class="tab-content">
-        <div v-if="messages.length === 0" class="empty-state">
-          <span class="empty-icon">💬</span>
-          <span>No messages</span>
-          <span class="empty-sub">Messages from buyers will appear here</span>
-        </div>
-        
-        <div v-else class="messages-list">
-          <div 
-            v-for="msg in messages" 
-            :key="msg.id"
-            class="message-card"
-            :class="{ unread: !msg.read }"
-            @click="openMessage(msg)"
+      <Transition name="tab-fade" mode="out-in">
+      <div v-if="activeTab === 'messages'" key="messages" class="tab-content">
+        <div class="messages-subtabs">
+          <button
+            v-for="t in messageSubTabs"
+            :key="t.id"
+            class="sell-subtab-btn"
+            :class="{ active: activeMessagesTab === t.id }"
+            @click="activeMessagesTab = t.id"
           >
-            <div class="msg-header">
-              <span class="msg-sender">{{ msg.sender_name }}</span>
-              <span class="msg-time">{{ formatTimeAgo(msg.created_at) }}</span>
-            </div>
-            <div class="msg-preview">{{ msg.content.substring(0, 50) }}...</div>
-          </div>
+            {{ t.label }}
+          </button>
         </div>
+
+        <!-- Received -->
+        <template v-if="activeMessagesTab === 'received'">
+          <div v-if="messages.length === 0" class="empty-state">
+            <span class="empty-icon">📥</span>
+            <span>No received messages</span>
+            <span class="empty-sub">Messages from buyers will appear here</span>
+          </div>
+          <div v-else class="messages-list">
+            <div
+              v-for="msg in messages"
+              :key="msg.id"
+              class="message-card"
+              :class="{ unread: !msg.read }"
+              @click="openMessage(msg)"
+            >
+              <div class="msg-header">
+                <span class="msg-sender">From: {{ msg.sender_name }}</span>
+                <span class="msg-time">{{ formatTimeAgo(msg.created_at) }}</span>
+              </div>
+              <div class="msg-preview">{{ msg.content.length > 50 ? msg.content.substring(0, 50) + '...' : msg.content }}</div>
+            </div>
+          </div>
+        </template>
+
+        <!-- Sent -->
+        <template v-else>
+          <div v-if="sentMessages.length === 0" class="empty-state">
+            <span class="empty-icon">📤</span>
+            <span>No sent messages</span>
+            <span class="empty-sub">Messages you send to sellers will appear here</span>
+          </div>
+          <div v-else class="messages-list">
+            <div
+              v-for="msg in sentMessages"
+              :key="msg.id"
+              class="message-card sent"
+              @click="openMessage(msg)"
+            >
+              <div class="msg-header">
+                <span class="msg-sender">To: {{ msg.recipient_id ? String(msg.recipient_id).substring(0, 12) + '…' : '—' }}</span>
+                <span class="msg-time">{{ formatTimeAgo(msg.created_at) }}</span>
+              </div>
+              <div class="msg-preview">{{ msg.content.length > 50 ? msg.content.substring(0, 50) + '...' : msg.content }}</div>
+            </div>
+          </div>
+        </template>
       </div>
+      </Transition>
       
       <!-- Profile Tab -->
-      <div v-if="activeTab === 'profile'" class="tab-content">
+      <Transition name="tab-fade" mode="out-in">
+      <div v-if="activeTab === 'profile'" key="profile" class="tab-content">
         <div class="profile-header">
           <div class="profile-avatar">👤</div>
           <div class="profile-info">
             <div class="profile-name-row">
               <h3>{{ playerName }}</h3>
-              <button class="edit-name-btn" @click="showNameModal = true">✏️</button>
             </div>
             <span class="profile-id">ID: {{ playerId?.substring(0, 12) }}...</span>
           </div>
@@ -222,11 +267,13 @@
           </button>
         </div>
       </div>
+      </Transition>
       
       <!-- Listing Detail Modal -->
       <Teleport to="body">
+        <Transition name="modal">
         <div v-if="selectedListing" class="modal-overlay" @click.self="selectedListing = null">
-          <div class="listing-modal">
+          <div class="listing-modal modal-panel">
             <button class="modal-close" @click="selectedListing = null">✕</button>
             
             <div class="modal-image-wrap">
@@ -297,12 +344,14 @@
             </div>
           </div>
         </div>
+        </Transition>
       </Teleport>
       
       <!-- Sell Modal -->
       <Teleport to="body">
+        <Transition name="modal">
         <div v-if="sellModalVehicle" class="modal-overlay" @click.self="sellModalVehicle = null">
-          <div class="sell-modal">
+          <div class="sell-modal modal-panel">
             <button class="modal-close" @click="sellModalVehicle = null">✕</button>
             
             <h2>List for Sale</h2>
@@ -382,12 +431,14 @@
             </div>
           </div>
         </div>
+        </Transition>
       </Teleport>
 
       <!-- Photo Picker Modal (phone camera photos for listing) -->
       <Teleport to="body">
+        <Transition name="modal">
         <div v-if="showPhotoPicker" class="modal-overlay" @click.self="showPhotoPicker = false">
-          <div class="photo-picker-modal">
+          <div class="photo-picker-modal modal-panel">
             <button class="modal-close" @click="showPhotoPicker = false">✕</button>
             <h3>Choose a photo</h3>
             <p class="photo-picker-sub">From your Camera app</p>
@@ -408,12 +459,14 @@
             </div>
           </div>
         </div>
+        </Transition>
       </Teleport>
 
       <!-- Contact Seller Modal -->
       <Teleport to="body">
+        <Transition name="modal">
         <div v-if="messageListing" class="modal-overlay" @click.self="messageListing = null">
-          <div class="sell-modal">
+          <div class="sell-modal modal-panel">
             <button class="modal-close" @click="messageListing = null">✕</button>
 
             <h2>Message Seller</h2>
@@ -449,23 +502,25 @@
             </div>
           </div>
         </div>
+        </Transition>
       </Teleport>
 
-      <!-- Edit Profile Name Modal -->
+      <!-- First-time: Enter your name to use CarSwap (blocking) -->
       <Teleport to="body">
-        <div v-if="showNameModal" class="modal-overlay" @click.self="showNameModal = false">
-          <div class="sell-modal">
-            <button class="modal-close" @click="showNameModal = false">✕</button>
-
-            <h2>Edit Display Name</h2>
+        <Transition name="modal">
+        <div v-if="showNameRequiredModal" class="modal-overlay name-required-overlay">
+          <div class="sell-modal modal-panel name-required-panel">
+            <h2>Welcome to CarSwap</h2>
+            <p class="name-required-sub">Enter your display name to use the app. This name will be shown on your listings.</p>
 
             <div class="sell-form">
               <div class="form-group">
-                <label>Name</label>
+                <label>Your name</label>
                 <input
                   v-model="editableName"
                   type="text"
                   maxlength="50"
+                  placeholder="e.g. Driver Mike"
                   @focus="onInputFocus"
                   @blur="onInputBlur"
                   v-bng-text-input
@@ -473,20 +528,21 @@
               </div>
 
               <div class="sell-actions">
-                <button @click="showNameModal = false" class="cancel-btn">Cancel</button>
-                <button @click="saveProfileName" class="list-btn" :disabled="!editableName.trim()">
-                  Save
+                <button @click="submitNameAndContinue" class="list-btn name-required-btn" :disabled="!editableName.trim()">
+                  Continue
                 </button>
               </div>
             </div>
           </div>
         </div>
+        </Transition>
       </Teleport>
 
       <!-- Missing Vehicle Claim Modal -->
       <Teleport to="body">
+        <Transition name="modal">
         <div v-if="missingClaimListing" class="modal-overlay" @click.self="missingClaimListing = null">
-          <div class="sell-modal">
+          <div class="sell-modal modal-panel">
             <button class="modal-close" @click="missingClaimListing = null">✕</button>
 
             <h2>Vehicle Not Found</h2>
@@ -500,13 +556,14 @@
             </div>
           </div>
         </div>
+        </Transition>
       </Teleport>
     </div>
   </PhoneWrapper>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, Transition } from 'vue'
 import { lua } from "@/bridge"
 import { vBngTextInput } from '@/common/directives'
 import PhoneWrapper from "./PhoneWrapper.vue"
@@ -523,12 +580,18 @@ const listings = ref([])
 const myListings = ref([])
 const myInventory = ref([])
 const messages = ref([])
+const sentMessages = ref([])
 const unreadCount = ref(0)
+const activeMessagesTab = ref('received')
+const messageSubTabs = [
+  { id: 'received', label: 'Received' },
+  { id: 'sent', label: 'Sent' }
+]
 const playerId = ref('')
 const playerName = ref('')
 const profileStats = ref({})
 const editableName = ref('')
-const showNameModal = ref(false)
+const showNameRequiredModal = ref(false)
 const activeSellTab = ref('vehicles')
 const missingClaimListing = ref(null)
 const claimLoadingId = ref(null)
@@ -655,10 +718,13 @@ const refreshData = async () => {
       isConnected.value = data.isConnected
       playerId.value = data.playerId
       playerName.value = data.playerName
-      editableName.value = data.playerName
+      editableName.value = data.playerName || ''
       listings.value = data.listings || []
       myListings.value = Array.isArray(data.myListings) ? data.myListings : []
+      messages.value = Array.isArray(data.messages) ? data.messages : []
+      sentMessages.value = Array.isArray(data.sentMessages) ? data.sentMessages : []
       unreadCount.value = data.unreadMessages || 0
+      if (data.nameRequired) showNameRequiredModal.value = true
     }
     
     // Get inventory for selling
@@ -928,14 +994,14 @@ const sendMessageToSeller = async () => {
   }
 }
 
-const saveProfileName = async () => {
+const submitNameAndContinue = async () => {
   if (!editableName.value.trim()) return
   try {
     await lua.gameplay_carswap.setProfileName(editableName.value.trim())
     playerName.value = editableName.value.trim()
-    showNameModal.value = false
+    showNameRequiredModal.value = false
   } catch (e) {
-    console.error('Failed to save profile name:', e)
+    console.error('Failed to save display name:', e)
   }
 }
 
@@ -965,50 +1031,120 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
+@use "sass:color";
+// —— Theme (CarSwap) — BeamNG orange accent ——
+$primary: #f37f2a;
+$primary-dim: rgba(243, 127, 42, 0.2);
+$primary-glow: rgba(243, 127, 42, 0.35);
+$surface-0: #0c0e14;
+$surface-1: #12151d;
+$surface-2: #1a1e28;
+$surface-3: #232830;
+$text: #f0f2f5;
+$text-muted: rgba(255, 255, 255, 0.55);
+$text-dim: rgba(255, 255, 255, 0.4);
+$border: rgba(255, 255, 255, 0.08);
+$border-focus: rgba(243, 127, 42, 0.6);
+$radius-sm: 10px;
+$radius-md: 14px;
+$radius-lg: 20px;
+$radius-xl: 24px;
+$shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+$shadow-lg: 0 12px 48px rgba(0, 0, 0, 0.5);
+$ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+$ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+$danger: #f43f5e;
+$success: #22c55e;
+
 .carswap-container {
   display: flex;
   flex-direction: column;
   height: 100%;
   padding-top: 52px;
-  background: linear-gradient(180deg, #0a0a0a 0%, #1a1a2e 100%);
-  color: white;
+  background: linear-gradient(180deg, $surface-0 0%, $surface-1 50%, #0f1219 100%);
+  color: $text;
+}
+
+// —— Transitions (opacity only so tab content doesn’t jump) ——
+.tab-fade-enter-active,
+.tab-fade-leave-active {
+  transition: opacity 0.2s $ease-out;
+}
+.tab-fade-enter-from,
+.tab-fade-leave-to {
+  opacity: 0;
+}
+
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.3s $ease-out;
+  .modal-panel {
+    transition: transform 0.35s $ease-spring, opacity 0.3s $ease-out;
+  }
+}
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+  .modal-panel {
+    transform: scale(0.92);
+    opacity: 0;
+  }
+}
+
+.expand-enter-active,
+.expand-leave-active {
+  transition: opacity 0.25s $ease-out, transform 0.25s $ease-out;
+  transform-origin: top;
+}
+.expand-enter-from,
+.expand-leave-to {
+  opacity: 0;
+  transform: scaleY(0.9);
 }
 
 .connection-error {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 10px;
-  background: rgba(239, 68, 68, 0.2);
-  border-bottom: 1px solid rgba(239, 68, 68, 0.4);
+  gap: 10px;
+  padding: 12px 16px;
+  background: rgba($danger, 0.15);
+  border-bottom: 1px solid rgba($danger, 0.35);
   font-size: 0.85em;
-  
-  .error-icon {
-    font-size: 1.2em;
-  }
-  
+  animation: shake-in 0.4s $ease-out;
+  .error-icon { font-size: 1.2em; }
   .retry-btn {
-    padding: 4px 12px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 4px;
-    color: white;
+    padding: 6px 14px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid $border;
+    border-radius: $radius-sm;
+    color: $text;
     cursor: pointer;
     font-size: 0.9em;
-    
+    transition: all 0.2s $ease-out;
     &:hover {
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.15);
+      transform: scale(1.02);
     }
+    &:active { transform: scale(0.98); }
   }
+}
+
+@keyframes shake-in {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-2px); }
+  80% { transform: translateX(2px); }
 }
 
 .tabs {
   display: flex;
-  padding: 8px;
-  gap: 4px;
-  background: rgba(0, 0, 0, 0.3);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 10px;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid $border;
 }
 
 .tab-btn {
@@ -1016,137 +1152,135 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: 8px 4px;
+  gap: 4px;
+  padding: 10px 6px;
   background: transparent;
   border: none;
-  border-radius: 8px;
-  color: rgba(255, 255, 255, 0.5);
+  border-radius: $radius-md;
+  color: $text-muted;
   cursor: pointer;
   position: relative;
-  transition: all 0.2s;
-  
-  &.active {
-    background: rgba(0, 212, 170, 0.2);
-    color: #00d4aa;
-  }
-  
+  transition: color 0.25s $ease-out, background 0.25s $ease-out, transform 0.2s $ease-out;
   &:hover:not(.active) {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.06);
+    color: $text;
   }
-  
-  .tab-icon {
-    font-size: 1.3em;
+  &:active { transform: scale(0.98); }
+  &.active {
+    background: $primary-dim;
+    color: $primary;
+    box-shadow: 0 0 0 1px rgba($primary, 0.25);
   }
-  
-  .tab-label {
-    font-size: 0.7em;
-    font-weight: 500;
-  }
-  
+  .tab-icon { font-size: 1.35em; }
+  .tab-label { font-size: 0.7em; font-weight: 600; letter-spacing: 0.02em; }
   .tab-badge {
     position: absolute;
     top: 4px;
-    right: 4px;
-    min-width: 16px;
-    height: 16px;
-    padding: 0 4px;
-    background: #ef4444;
-    border-radius: 8px;
+    right: 6px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    background: $danger;
+    border-radius: 10px;
     font-size: 0.65em;
     font-weight: 700;
     display: flex;
     align-items: center;
     justify-content: center;
+    animation: pulse-badge 2s ease-in-out infinite;
   }
+}
+
+@keyframes pulse-badge {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.9; transform: scale(1.05); }
 }
 
 .tab-content {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
-  padding: 12px;
+  padding: 14px;
 }
 
 .search-bar {
   display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-  
+  gap: 10px;
+  margin-bottom: 14px;
   .search-input {
     flex: 1;
-    padding: 10px 12px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    color: white;
+    padding: 12px 14px;
+    background: $surface-2;
+    border: 1px solid $border;
+    border-radius: $radius-md;
+    color: $text;
     font-size: 0.9em;
-    
-    &::placeholder {
-      color: rgba(255, 255, 255, 0.3);
-    }
-    
+    transition: border-color 0.2s $ease-out, box-shadow 0.2s $ease-out;
+    &::placeholder { color: $text-dim; }
     &:focus {
       outline: none;
-      border-color: #00d4aa;
+      border-color: $border-focus;
+      box-shadow: 0 0 0 3px $primary-glow;
     }
   }
-  
   .filter-btn {
-    padding: 10px 12px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    color: white;
+    padding: 12px 14px;
+    background: $surface-2;
+    border: 1px solid $border;
+    border-radius: $radius-md;
+    color: $text;
     cursor: pointer;
     font-size: 0.85em;
-    
+    transition: all 0.2s $ease-out;
     &:hover {
-      background: rgba(255, 255, 255, 0.1);
+      background: $surface-3;
+      border-color: rgba(255, 255, 255, 0.12);
+      transform: scale(1.02);
     }
+    &:active { transform: scale(0.98); }
   }
 }
 
 .filters-panel {
-  padding: 12px;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 8px;
-  margin-bottom: 12px;
-  
+  padding: 16px;
+  background: $surface-2;
+  border: 1px solid $border;
+  border-radius: $radius-md;
+  margin-bottom: 14px;
   .filter-row {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
-    
-    label {
-      width: 80px;
-      font-size: 0.85em;
-      color: rgba(255, 255, 255, 0.7);
-    }
-    
+    gap: 10px;
+    margin-bottom: 10px;
+    label { width: 82px; font-size: 0.85em; color: $text-muted; }
     input {
       flex: 1;
-      padding: 6px 10px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 4px;
-      color: white;
+      padding: 8px 12px;
+      background: $surface-1;
+      border: 1px solid $border;
+      border-radius: $radius-sm;
+      color: $text;
+      transition: border-color 0.2s;
+      &:focus { outline: none; border-color: $border-focus; }
     }
   }
-  
   .apply-btn {
     width: 100%;
-    padding: 8px;
-    background: #00d4aa;
+    padding: 12px;
+    background: $primary;
     border: none;
-    border-radius: 4px;
-    color: #000;
-    font-weight: 600;
+    border-radius: $radius-sm;
+    color: #0a0e12;
+    font-weight: 700;
     cursor: pointer;
-    
+    margin-top: 4px;
+    transition: all 0.2s $ease-out;
     &:hover {
-      background: #00b894;
+      background: color.adjust($primary, $lightness: 6%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px $primary-glow;
     }
+    &:active { transform: translateY(0); }
   }
 }
 
@@ -1155,17 +1289,16 @@ onUnmounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px;
-  gap: 12px;
-  color: rgba(255, 255, 255, 0.5);
-  
+  padding: 48px;
+  gap: 16px;
+  color: $text-muted;
   .spinner {
-    width: 32px;
-    height: 32px;
-    border: 3px solid rgba(255, 255, 255, 0.1);
-    border-top-color: #00d4aa;
+    width: 36px;
+    height: 36px;
+    border: 3px solid $border;
+    border-top-color: $primary;
     border-radius: 50%;
-    animation: spin 1s linear infinite;
+    animation: spin 0.8s linear infinite;
   }
 }
 
@@ -1178,375 +1311,307 @@ onUnmounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px;
+  padding: 48px 24px;
   text-align: center;
-  
   .empty-icon {
-    font-size: 3em;
-    margin-bottom: 12px;
-    opacity: 0.3;
+    font-size: 3.5em;
+    margin-bottom: 14px;
+    opacity: 0.35;
+    animation: float 3s ease-in-out infinite;
   }
-  
-  span {
-    color: rgba(255, 255, 255, 0.5);
-  }
-  
-  .empty-sub {
-    font-size: 0.85em;
-    margin-top: 4px;
-  }
+  span { color: $text-muted; }
+  .empty-sub { font-size: 0.85em; margin-top: 6px; color: $text-dim; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
 }
 
 .listings-grid {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 // Sell Tab
 .sell-header {
-  margin-bottom: 16px;
-  
-  h3 {
-    margin: 0 0 4px 0;
-    color: #00d4aa;
-  }
-  
-  p {
-    margin: 0;
-    font-size: 0.85em;
-    color: rgba(255, 255, 255, 0.5);
-  }
+  margin-bottom: 20px;
+  h3 { margin: 0 0 6px 0; color: $primary; font-weight: 700; }
+  p { margin: 0; font-size: 0.85em; color: $text-muted; }
 }
 
 .sell-subtabs {
   display: flex;
-  gap: 6px;
-  margin-bottom: 12px;
+  gap: 8px;
+  margin-bottom: 16px;
 }
 
 .sell-subtab-btn {
   flex: 1;
-  padding: 6px 10px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 6px;
-  color: rgba(255, 255, 255, 0.7);
+  padding: 10px 14px;
+  background: $surface-2;
+  border: 1px solid $border;
+  border-radius: $radius-md;
+  color: $text-muted;
   cursor: pointer;
   font-size: 0.85em;
-
+  font-weight: 500;
+  transition: all 0.25s $ease-out;
+  &:hover { color: $text; background: $surface-3; }
   &.active {
-    color: #00d4aa;
-    border-color: rgba(0, 212, 170, 0.5);
-    background: rgba(0, 212, 170, 0.15);
+    color: $primary;
+    border-color: rgba($primary, 0.4);
+    background: $primary-dim;
   }
 }
 
 .inventory-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .inventory-card {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px;
-  background: rgba(30, 30, 30, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  gap: 14px;
+  padding: 14px;
+  background: $surface-2;
+  border: 1px solid $border;
+  border-radius: $radius-md;
   cursor: pointer;
-  
+  transition: all 0.25s $ease-out;
   &:hover {
-    border-color: #00d4aa;
+    border-color: rgba($primary, 0.4);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    transform: translateY(-2px);
   }
-  
+  &:active { transform: translateY(0); }
   .inv-image {
-    width: 60px;
-    height: 60px;
-    background: #1a1a1a;
-    border-radius: 6px;
+    width: 64px;
+    height: 64px;
+    background: $surface-1;
+    border-radius: $radius-sm;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    
-    span {
-      font-size: 1.5em;
-      opacity: 0.3;
-    }
+    img { width: 100%; height: 100%; object-fit: cover; }
+    span { font-size: 1.6em; opacity: 0.35; }
   }
-  
   .inv-info {
     flex: 1;
-    
-    .inv-name {
-      font-weight: 600;
-      margin-bottom: 2px;
-    }
-    
-    .inv-details {
-      font-size: 0.8em;
-      color: rgba(255, 255, 255, 0.5);
-    }
-    
-    .inv-value {
-      font-size: 0.85em;
-      color: #00d4aa;
-      margin-top: 4px;
-    }
+    .inv-name { font-weight: 600; margin-bottom: 4px; }
+    .inv-details { font-size: 0.8em; color: $text-muted; }
+    .inv-value { font-size: 0.85em; color: $primary; margin-top: 6px; }
   }
-  
   .sell-btn {
-    padding: 8px 16px;
-    background: #00d4aa;
+    padding: 10px 18px;
+    background: $primary;
     border: none;
-    border-radius: 4px;
-    color: #000;
-    font-weight: 600;
+    border-radius: $radius-sm;
+    color: #0a0e12;
+    font-weight: 700;
     cursor: pointer;
-    
+    transition: all 0.2s $ease-out;
     &:hover {
-      background: #00b894;
+      background: color.adjust($primary, $lightness: 6%);
+      transform: scale(1.03);
+      box-shadow: 0 4px 12px $primary-glow;
     }
+    &:active { transform: scale(0.98); }
   }
 }
 
 .my-listings-section {
-  margin-top: 24px;
-  padding-top: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  
-  h4 {
-    margin: 0 0 12px 0;
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.9em;
-  }
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid $border;
+  h4 { margin: 0 0 14px 0; color: $text-muted; font-size: 0.9em; font-weight: 600; }
 }
 
 .my-listing-card {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 6px;
-  margin-bottom: 8px;
-  
+  gap: 14px;
+  padding: 14px;
+  background: $surface-2;
+  border: 1px solid $border;
+  border-radius: $radius-md;
+  margin-bottom: 10px;
+  transition: all 0.2s $ease-out;
+  &:hover { border-color: rgba(255, 255, 255, 0.12); }
   .my-listing-info {
     flex: 1;
-    
-    .my-listing-title {
-      display: block;
-      font-weight: 500;
-      font-size: 0.9em;
-    }
-    
-    .my-listing-price {
-      font-size: 0.85em;
-      color: #00d4aa;
-    }
+    .my-listing-title { display: block; font-weight: 600; font-size: 0.9em; }
+    .my-listing-price { font-size: 0.85em; color: $primary; }
   }
-  
   .my-listing-stats {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 2px;
+    gap: 4px;
     font-size: 0.75em;
-    color: rgba(255, 255, 255, 0.5);
-    
-    .status-available {
-      color: #00d4aa;
-    }
-    
-    .status-sold {
-      color: #ef4444;
-    }
-
-    .status-expired {
-      color: rgba(255, 255, 255, 0.4);
-    }
+    color: $text-muted;
+    .status-available { color: $primary; }
+    .status-sold { color: $danger; }
+    .status-expired { color: $text-dim; }
   }
-  
   .cancel-btn {
-    padding: 6px 12px;
-    background: rgba(239, 68, 68, 0.2);
-    border: 1px solid rgba(239, 68, 68, 0.4);
-    border-radius: 4px;
-    color: #ef4444;
+    padding: 8px 14px;
+    background: rgba($danger, 0.15);
+    border: 1px solid rgba($danger, 0.35);
+    border-radius: $radius-sm;
+    color: $danger;
     font-size: 0.8em;
+    font-weight: 600;
     cursor: pointer;
-    
-    &:hover {
-      background: rgba(239, 68, 68, 0.3);
-    }
+    transition: all 0.2s $ease-out;
+    &:hover { background: rgba($danger, 0.25); transform: scale(1.02); }
+    &:active { transform: scale(0.98); }
   }
-
   .claim-btn {
-    padding: 6px 12px;
-    background: rgba(34, 197, 94, 0.2);
-    border: 1px solid rgba(34, 197, 94, 0.5);
-    border-radius: 4px;
-    color: #22c55e;
+    padding: 8px 14px;
+    background: rgba($success, 0.2);
+    border: 1px solid rgba($success, 0.4);
+    border-radius: $radius-sm;
+    color: $success;
     font-size: 0.8em;
+    font-weight: 600;
     cursor: pointer;
-
-    &:hover {
-      background: rgba(34, 197, 94, 0.3);
-    }
-
-    &:disabled {
-      opacity: 0.6;
-      cursor: default;
-    }
+    transition: all 0.2s $ease-out;
+    &:hover:not(:disabled) { background: rgba($success, 0.3); transform: scale(1.02); }
+    &:active { transform: scale(0.98); }
+    &:disabled { opacity: 0.6; cursor: default; }
   }
 }
 
 // Messages Tab
+.messages-subtabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
 .messages-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .message-card {
-  padding: 12px;
-  background: rgba(30, 30, 30, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  padding: 14px;
+  background: $surface-2;
+  border: 1px solid $border;
+  border-radius: $radius-md;
   cursor: pointer;
-  
+  transition: all 0.25s $ease-out;
   &.unread {
-    border-left: 3px solid #00d4aa;
-    background: rgba(0, 212, 170, 0.05);
+    border-left: 4px solid $primary;
+    background: $primary-dim;
   }
-  
+  &.sent {
+    border-left-color: $text-dim;
+  }
   &:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: $surface-3;
+    border-color: rgba(255, 255, 255, 0.1);
+    transform: translateX(4px);
   }
-  
   .msg-header {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 4px;
-    
-    .msg-sender {
-      font-weight: 600;
-      font-size: 0.9em;
-    }
-    
-    .msg-time {
-      font-size: 0.75em;
-      color: rgba(255, 255, 255, 0.4);
-    }
+    margin-bottom: 6px;
+    .msg-sender { font-weight: 600; font-size: 0.9em; }
+    .msg-time { font-size: 0.75em; color: $text-dim; }
   }
-  
-  .msg-preview {
-    font-size: 0.85em;
-    color: rgba(255, 255, 255, 0.6);
-  }
+  .msg-preview { font-size: 0.85em; color: $text-muted; }
 }
 
 // Profile Tab
 .profile-header {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 16px;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 12px;
-  margin-bottom: 16px;
-  
+  gap: 18px;
+  padding: 20px;
+  background: $surface-2;
+  border: 1px solid $border;
+  border-radius: $radius-lg;
+  margin-bottom: 20px;
   .profile-avatar {
-    width: 60px;
-    height: 60px;
-    background: rgba(0, 212, 170, 0.2);
+    width: 64px;
+    height: 64px;
+    background: $primary-dim;
+    border: 2px solid rgba($primary, 0.3);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2em;
+    font-size: 2.2em;
   }
-  
-  .profile-info {
-    h3 {
-      margin: 0 0 4px 0;
-    }
-    
-    .profile-id {
-      font-size: 0.8em;
-      color: rgba(255, 255, 255, 0.4);
-      font-family: monospace;
-    }
-  }
+  .profile-info h3 { margin: 0 0 6px 0; }
+  .profile-id { font-size: 0.8em; color: $text-dim; font-family: monospace; }
 }
 
 .profile-name-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
-.edit-name-btn {
-  background: transparent;
-  border: none;
-  color: white;
-  cursor: pointer;
-  font-size: 0.9em;
-  opacity: 0.7;
-
-  &:hover {
-    opacity: 1;
+.name-required-overlay {
+  pointer-events: auto;
+}
+.name-required-panel {
+  .name-required-sub {
+    margin: 0 0 20px 0;
+    font-size: 0.9em;
+    color: $text-muted;
+    line-height: 1.4;
   }
+  .name-required-btn { flex: none; width: 100%; }
 }
 
 .profile-stats {
   display: flex;
   gap: 12px;
-  margin-bottom: 16px;
-  
+  margin-bottom: 20px;
   .stat-card {
     flex: 1;
-    padding: 12px;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 8px;
+    padding: 16px;
+    background: $surface-2;
+    border: 1px solid $border;
+    border-radius: $radius-md;
     text-align: center;
-    
-    .stat-value {
-      display: block;
-      font-size: 1.3em;
-      font-weight: 700;
-      color: #00d4aa;
+    transition: all 0.25s $ease-out;
+    &:hover {
+      border-color: rgba($primary, 0.25);
+      transform: translateY(-2px);
+      box-shadow: $shadow;
     }
-    
-    .stat-label {
-      font-size: 0.75em;
-      color: rgba(255, 255, 255, 0.5);
-    }
+    .stat-value { display: block; font-size: 1.4em; font-weight: 700; color: $primary; }
+    .stat-label { font-size: 0.75em; color: $text-muted; margin-top: 4px; }
   }
 }
 
 .profile-actions {
   .action-btn {
     width: 100%;
-    padding: 12px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    color: white;
+    padding: 14px;
+    background: $surface-2;
+    border: 1px solid $border;
+    border-radius: $radius-md;
+    color: $text;
     cursor: pointer;
-    
+    font-weight: 500;
+    transition: all 0.2s $ease-out;
     &:hover {
-      background: rgba(255, 255, 255, 0.1);
+      background: $surface-3;
+      border-color: rgba($primary, 0.3);
+      color: $primary;
     }
+    &:active { transform: scale(0.99); }
   }
 }
 
@@ -1557,60 +1622,67 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 10000;
-  padding: 20px;
+  padding: 24px;
 }
 
-.listing-modal,
-.sell-modal {
-  background: #1a1a2e;
-  border-radius: 16px;
-  max-width: 400px;
+.modal-panel {
+  background: $surface-1;
+  border: 1px solid $border;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-lg;
+  max-width: 420px;
   width: 100%;
-  max-height: 80vh;
+  max-height: 85vh;
   overflow-y: auto;
   position: relative;
+  color: $text;
+}
+
+.listing-modal.modal-panel {
+  padding: 0;
+}
+
+.sell-modal.modal-panel {
+  padding: 24px;
 }
 
 .modal-close {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 32px;
-  height: 32px;
-  background: rgba(255, 255, 255, 0.1);
-  border: none;
+  top: 14px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  background: $surface-3;
+  border: 1px solid $border;
   border-radius: 50%;
-  color: white;
-  font-size: 1.2em;
+  color: $text;
+  font-size: 1.15em;
   cursor: pointer;
-  z-index: 1;
-  
+  z-index: 2;
+  transition: all 0.2s $ease-out;
   &:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: $danger;
+    border-color: $danger;
+    color: #fff;
+    transform: scale(1.08);
   }
+  &:active { transform: scale(0.95); }
 }
 
-.modal-image-wrap {
-  position: relative;
-}
+.modal-image-wrap { position: relative; }
 
 .modal-image {
   position: relative;
   width: 100%;
-  height: 200px;
-  background: #0a0a0a;
-  
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  
+  height: 220px;
+  background: $surface-0;
+  img { width: 100%; height: 100%; object-fit: cover; }
   .no-image {
     width: 100%;
     height: 100%;
@@ -1618,7 +1690,7 @@ onUnmounted(() => {
     align-items: center;
     justify-content: center;
     font-size: 4em;
-    opacity: 0.2;
+    opacity: 0.25;
   }
 }
 
@@ -1626,13 +1698,13 @@ onUnmounted(() => {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border: none;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.55);
   color: #fff;
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   line-height: 1;
   cursor: pointer;
   display: flex;
@@ -1640,233 +1712,185 @@ onUnmounted(() => {
   justify-content: center;
   padding: 0;
   z-index: 2;
-  transition: background 0.2s;
-
+  transition: all 0.25s $ease-out;
   &:hover {
-    background: rgba(0, 212, 170, 0.9);
-    color: #000;
+    background: $primary;
+    color: #0a0e12;
+    transform: translateY(-50%) scale(1.1);
   }
+  &:active { transform: translateY(-50%) scale(0.95); }
 }
 
-.modal-photo-prev {
-  left: 8px;
-}
-
-.modal-photo-next {
-  right: 8px;
-}
+.modal-photo-prev { left: 10px; }
+.modal-photo-next { right: 10px; }
 
 .modal-photo-counter {
   position: absolute;
-  bottom: 8px;
+  bottom: 10px;
   left: 50%;
   transform: translateX(-50%);
-  padding: 4px 10px;
-  border-radius: 6px;
+  padding: 6px 12px;
+  border-radius: $radius-sm;
   background: rgba(0, 0, 0, 0.6);
   font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
   z-index: 2;
 }
 
 .modal-content {
-  padding: 20px;
-  
-  h2 {
-    margin: 0 0 8px 0;
-    font-size: 1.3em;
-  }
-  
+  padding: 22px;
+  color: $text;
+  h2 { margin: 0 0 10px 0; font-size: 1.35em; color: $text; }
   .modal-price {
-    font-size: 1.5em;
+    font-size: 1.6em;
     font-weight: 700;
-    color: #00d4aa;
-    margin-bottom: 16px;
+    color: $primary;
+    margin-bottom: 18px;
   }
-  
   .modal-details {
-    margin-bottom: 16px;
-    
+    margin-bottom: 18px;
     .detail-row {
       display: flex;
       justify-content: space-between;
-      padding: 8px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 10px 0;
+      border-bottom: 1px solid $border;
       font-size: 0.9em;
-      
-      span:first-child {
-        color: rgba(255, 255, 255, 0.5);
-      }
+      color: $text;
+      span:first-child { color: $text-muted; }
+      span:last-child { color: $text; }
     }
   }
-  
   .modal-description {
     font-size: 0.9em;
-    color: rgba(255, 255, 255, 0.7);
-    line-height: 1.5;
-    margin-bottom: 20px;
+    color: $text-muted;
+    line-height: 1.55;
+    margin-bottom: 22px;
   }
-  
   .modal-actions {
     display: flex;
     gap: 12px;
-    
     button {
       flex: 1;
-      padding: 12px;
+      padding: 14px;
       border: none;
-      border-radius: 8px;
-      font-weight: 600;
+      border-radius: $radius-md;
+      font-weight: 700;
       cursor: pointer;
-      transition: all 0.2s;
-      
+      transition: all 0.2s $ease-out;
       &.contact-btn {
-        background: rgba(255, 255, 255, 0.1);
-        color: white;
-        
+        background: $surface-3;
+        border: 1px solid $border;
+        color: $text;
         &:hover {
-          background: rgba(255, 255, 255, 0.2);
+          border-color: $primary;
+          color: $primary;
+          transform: translateY(-1px);
         }
       }
-      
       &.buy-btn {
-        background: #00d4aa;
-        color: #000;
-        
+        background: $primary;
+        color: #0a0e12;
         &:hover:not(:disabled) {
-          background: #00b894;
+          background: color.adjust($primary, $lightness: 6%);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px $primary-glow;
         }
-        
-        &:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
+        &:disabled { opacity: 0.5; cursor: not-allowed; }
       }
+      &:active { transform: translateY(0); }
     }
   }
 }
 
-// Sell Modal Specific
 .sell-modal {
-  padding: 20px;
-  
-  h2 {
-    margin: 0 0 16px 0;
-    padding-right: 40px;
-  }
+  padding: 24px;
+  color: $text;
+  h2 { margin: 0 0 18px 0; padding-right: 44px; font-weight: 700; color: $text; }
 }
 
 .sell-vehicle-preview {
-  padding: 12px;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 8px;
-  margin-bottom: 16px;
-  
-  .vehicle-name {
-    display: block;
-    font-weight: 600;
-    margin-bottom: 4px;
-  }
-  
-  .vehicle-est {
-    font-size: 0.85em;
-    color: #00d4aa;
-  }
+  padding: 16px;
+  background: $surface-2;
+  border: 1px solid $border;
+  border-radius: $radius-md;
+  margin-bottom: 18px;
+  .vehicle-name { display: block; font-weight: 600; margin-bottom: 6px; color: $text; }
+  .vehicle-est { font-size: 0.85em; color: $primary; }
 }
 
 .listing-photo-row {
-  margin-bottom: 16px;
-
-  label {
-    display: block;
-    font-size: 0.85em;
-    color: rgba(255, 255, 255, 0.7);
-    margin-bottom: 8px;
-  }
+  margin-bottom: 18px;
+  label { display: block; font-size: 0.85em; color: $text-muted; margin-bottom: 10px; font-weight: 500; }
 }
 
 .listing-photo-slots {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+  gap: 12px;
 }
 
 .listing-photo-slot {
   width: 100%;
   aspect-ratio: 1;
-  border-radius: 8px;
-  border: 2px dashed rgba(255, 255, 255, 0.3);
-  background: rgba(0, 0, 0, 0.3);
+  border-radius: $radius-md;
+  border: 2px dashed $border;
+  background: $surface-2;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   overflow: hidden;
-  transition: border-color 0.2s, background 0.2s;
-
+  transition: all 0.25s $ease-out;
   &:hover {
-    border-color: #00d4aa;
-    background: rgba(0, 212, 170, 0.1);
+    border-color: $primary;
+    background: $primary-dim;
+    transform: scale(1.02);
   }
-
+  &:active { transform: scale(0.98); }
   &.filled {
     border-style: solid;
-    border-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba($primary, 0.4);
   }
-
-  .listing-photo-plus {
-    font-size: 2rem;
-    color: rgba(255, 255, 255, 0.6);
-    line-height: 1;
-  }
-
-  .listing-photo-preview {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
+  .listing-photo-plus { font-size: 2.2rem; color: $text-muted; line-height: 1; }
+  .listing-photo-preview { width: 100%; height: 100%; object-fit: cover; display: block; }
 }
 
 .listing-photo-hint {
   display: block;
   font-size: 0.8em;
-  color: rgba(255, 255, 255, 0.5);
-  margin-top: 6px;
+  color: $text-dim;
+  margin-top: 8px;
 }
 
 .photo-picker-modal {
-  padding: 20px;
-  max-width: 320px;
-  max-height: 80vh;
+  padding: 24px;
+  max-width: 340px;
+  max-height: 82vh;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-
-  h3 {
-    margin: 0 0 4px 0;
-    padding-right: 36px;
-  }
+  h3 { margin: 0 0 6px 0; padding-right: 40px; font-weight: 700; }
 }
 
 .photo-picker-sub {
   font-size: 0.85em;
-  color: rgba(255, 255, 255, 0.6);
-  margin: 0 0 16px 0;
+  color: $text-muted;
+  margin: 0 0 18px 0;
 }
 
 .photo-picker-loading,
 .photo-picker-empty {
-  padding: 24px;
+  padding: 28px;
   text-align: center;
-  color: rgba(255, 255, 255, 0.6);
+  color: $text-muted;
   font-size: 0.9em;
 }
 
 .photo-picker-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  gap: 12px;
   overflow-y: auto;
   flex: 1;
   min-height: 0;
@@ -1874,85 +1898,76 @@ onUnmounted(() => {
 
 .photo-picker-thumb {
   aspect-ratio: 1;
-  border-radius: 8px;
+  border-radius: $radius-md;
   overflow: hidden;
   border: 2px solid transparent;
-  background: rgba(0, 0, 0, 0.3);
+  background: $surface-2;
   padding: 0;
   cursor: pointer;
-  transition: border-color 0.2s;
-
+  transition: all 0.25s $ease-out;
   &:hover {
-    border-color: #00d4aa;
+    border-color: $primary;
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   }
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
+  &:active { transform: scale(0.98); }
+  img { width: 100%; height: 100%; object-fit: cover; display: block; }
 }
 
 .sell-form {
   .form-group {
-    margin-bottom: 16px;
-    
-    label {
-      display: block;
-      font-size: 0.85em;
-      color: rgba(255, 255, 255, 0.7);
-      margin-bottom: 6px;
-    }
-    
+    margin-bottom: 18px;
+    label { display: block; font-size: 0.85em; color: $text-muted; margin-bottom: 8px; font-weight: 500; }
     input,
     textarea {
       width: 100%;
-      padding: 10px 12px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 6px;
-      color: white;
+      padding: 12px 14px;
+      background: $surface-2;
+      border: 1px solid $border;
+      border-radius: $radius-md;
+      color: $text;
       font-size: 0.95em;
-      
+      transition: border-color 0.2s $ease-out, box-shadow 0.2s $ease-out;
       &:focus {
         outline: none;
-        border-color: #00d4aa;
+        border-color: $border-focus;
+        box-shadow: 0 0 0 3px $primary-glow;
       }
     }
-    
-    textarea {
-      resize: vertical;
-      min-height: 80px;
-    }
+    textarea { resize: vertical; min-height: 88px; }
   }
-  
   .sell-actions {
     display: flex;
     gap: 12px;
-    
+    margin-top: 22px;
     button {
       flex: 1;
-      padding: 12px;
+      padding: 14px;
       border: none;
-      border-radius: 8px;
-      font-weight: 600;
+      border-radius: $radius-md;
+      font-weight: 700;
       cursor: pointer;
-      
+      transition: all 0.2s $ease-out;
       &.cancel-btn {
-        background: rgba(255, 255, 255, 0.1);
-        color: white;
-      }
-      
-      &.list-btn {
-        background: #00d4aa;
-        color: #000;
-        
-        &:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
+        background: $surface-3;
+        border: 1px solid $border;
+        color: $text;
+        &:hover {
+          border-color: $text-dim;
+          background: rgba(255, 255, 255, 0.06);
         }
       }
+      &.list-btn {
+        background: $primary;
+        color: #0a0e12;
+        &:hover:not(:disabled) {
+          background: color.adjust($primary, $lightness: 6%);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 16px $primary-glow;
+        }
+        &:disabled { opacity: 0.5; cursor: not-allowed; }
+      }
+      &:active { transform: translateY(0); }
     }
   }
 }

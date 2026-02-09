@@ -128,113 +128,140 @@ const formatTimeAgo = (dateStr) => {
 </script>
 
 <style scoped lang="scss">
+$primary: #f37f2a;
+$primary-glow: rgba(243, 127, 42, 0.35);
+$surface-1: #12151d;
+$surface-2: #1a1e28;
+$text: #f0f2f5;
+$text-muted: rgba(255, 255, 255, 0.55);
+$text-dim: rgba(255, 255, 255, 0.4);
+$border: rgba(255, 255, 255, 0.08);
+$radius-sm: 10px;
+$radius-md: 14px;
+$ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+$danger: #f43f5e;
+$warn: #eab308;
+
 .listing-card {
-  background: rgba(30, 30, 30, 0.95);
-  border-radius: 12px;
+  background: $surface-2;
+  border-radius: $radius-md;
   overflow: hidden;
   cursor: pointer;
-  transition: all 0.2s ease;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  
+  transition: transform 0.3s $ease-out, border-color 0.25s $ease-out, box-shadow 0.3s $ease-out;
+  border: 1px solid $border;
+
   &:hover {
+    transform: translateY(-4px);
+    border-color: rgba($primary, 0.45);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba($primary, 0.15);
+  }
+  &:active {
     transform: translateY(-2px);
-    border-color: #00d4aa;
-    box-shadow: 0 4px 12px rgba(0, 212, 170, 0.2);
   }
 }
 
 .listing-image {
   position: relative;
   width: 100%;
-  height: 120px;
-  background: #1a1a1a;
-  
+  height: 124px;
+  background: $surface-1;
+  overflow: hidden;
+
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.4s $ease-out;
   }
-  
+
+  .listing-card:hover & img {
+    transform: scale(1.04);
+  }
+
   .no-image {
     width: 100%;
     height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2.5em;
-    opacity: 0.3;
+    font-size: 2.6em;
+    opacity: 0.32;
   }
-  
+
   .listing-status {
     position: absolute;
-    top: 8px;
-    right: 8px;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 0.7em;
-    font-weight: 600;
+    top: 10px;
+    right: 10px;
+    padding: 4px 10px;
+    border-radius: $radius-sm;
+    font-size: 0.68em;
+    font-weight: 700;
     text-transform: uppercase;
-    
+    letter-spacing: 0.04em;
+    transition: transform 0.2s $ease-out;
+
     &.available {
-      background: rgba(0, 212, 170, 0.9);
-      color: #000;
+      background: rgba($primary, 0.95);
+      color: #0a0e12;
     }
-    
+
     &.pending {
-      background: rgba(255, 193, 7, 0.9);
-      color: #000;
+      background: rgba($warn, 0.95);
+      color: #0a0e12;
     }
-    
+
     &.sold {
-      background: rgba(239, 68, 68, 0.9);
+      background: rgba($danger, 0.95);
       color: #fff;
     }
   }
 }
 
 .listing-info {
-  padding: 12px;
+  padding: 14px;
 }
 
 .listing-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 8px;
-  
+  margin-bottom: 10px;
+
   .listing-title {
     margin: 0;
     font-size: 1em;
     font-weight: 600;
-    color: #fff;
+    color: $text;
     flex: 1;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  
+
   .listing-price {
-    font-size: 1.1em;
+    font-size: 1.12em;
     font-weight: 700;
-    color: #00d4aa;
-    margin-left: 8px;
+    color: $primary;
+    margin-left: 10px;
+    flex-shrink: 0;
   }
 }
 
 .listing-meta {
   display: flex;
-  gap: 12px;
-  margin-bottom: 8px;
-  
+  gap: 14px;
+  margin-bottom: 10px;
+
   .meta-item {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 5px;
     font-size: 0.8em;
-    color: rgba(255, 255, 255, 0.7);
-    
+    color: $text-muted;
+
     .meta-icon {
       font-size: 0.9em;
+      opacity: 0.9;
     }
   }
 }
@@ -243,18 +270,18 @@ const formatTimeAgo = (dateStr) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 6px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  margin-top: 8px;
-  
+  padding: 8px 0;
+  border-top: 1px solid $border;
+  margin-top: 10px;
+
   .seller-name {
     font-size: 0.85em;
-    color: rgba(255, 255, 255, 0.6);
+    color: $text-muted;
   }
-  
+
   .seller-rating {
     font-size: 0.8em;
-    color: #ffd700;
+    color: #fbbf24;
   }
 }
 
@@ -262,8 +289,8 @@ const formatTimeAgo = (dateStr) => {
   display: flex;
   justify-content: space-between;
   font-size: 0.75em;
-  color: rgba(255, 255, 255, 0.4);
-  margin-top: 6px;
+  color: $text-dim;
+  margin-top: 8px;
 }
 </style>
 

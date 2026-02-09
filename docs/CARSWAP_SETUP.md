@@ -74,6 +74,28 @@ CREATE POLICY "Users can update their own listings" ON listings
 
 Then try listing again.
 
+### "new row violates row-level security policy for table \"messages\"" (401 / 42501)
+If you see this when sending a message to a seller, the `messages` table needs an INSERT policy for the anon key. Run this in the Supabase **SQL Editor**:
+
+```sql
+-- Allow anon to insert messages (Contact Seller)
+DROP POLICY IF EXISTS "Anyone can send messages" ON messages;
+CREATE POLICY "Anyone can send messages" ON messages
+  FOR INSERT WITH CHECK (true);
+
+-- Allow anon to read messages (Messages tab)
+DROP POLICY IF EXISTS "Users can view their messages" ON messages;
+CREATE POLICY "Users can view their messages" ON messages
+  FOR SELECT USING (true);
+
+-- Allow anon to update messages (e.g. mark as read)
+DROP POLICY IF EXISTS "Anyone can update messages" ON messages;
+CREATE POLICY "Anyone can update messages" ON messages
+  FOR UPDATE USING (true);
+```
+
+Then try sending a message again.
+
 ### Multiple listing photos (thumbnail_2/3/4_base64)
 If you added the schema before these columns existed, run in SQL Editor:
 
