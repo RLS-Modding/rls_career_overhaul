@@ -761,6 +761,24 @@ local function sendMessage(listingId, content, callback)
     return true, nil
 end
 
+-- Mark a message as read (PATCH messages set read = true)
+local function markMessageRead(messageId, callback)
+    if not messageId or tostring(messageId) == "" then
+        if callback then callback(false) end
+        return false
+    end
+    local endpoint = "/rest/v1/messages?id=eq." .. tostring(messageId)
+    local body = { read = true }
+    if callback then
+        request(endpoint, "PATCH", body, function(_, err)
+            callback(err == nil)
+        end)
+        return
+    end
+    local _, err = request(endpoint, "PATCH", body, nil)
+    return err == nil
+end
+
 -- Remove/Cancel a listing
 local function removeListing(listingId, callback)
     local endpoint = "/rest/v1/listings?id=eq." .. listingId
@@ -974,6 +992,7 @@ M.getUIData = getUIData
 M.getInventoryForListing = getInventoryForListing
 M.testConnection = testConnection
 M.sendMessage = sendMessage
+M.markMessageRead = markMessageRead
 M.claimListing = claimListing
 
 -- Legacy exports

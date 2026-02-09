@@ -1439,6 +1439,7 @@ export default {
     getMyListings: () => {},
     removeListing: listingId => String,
     sendMessage: (listingId, content) => [String, String],
+    markMessageRead: messageId => String,
     setProfileName: name => String,
     getProfileName: () => {}
   },
