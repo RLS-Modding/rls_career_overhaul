@@ -223,9 +223,11 @@ const back = () => {
 
   .phone-content {
     height: 100%;
+    padding-top: 2.8em; /* clear status bar so app content is not hidden under it */
     overflow-y: hidden;
     color: white;
     border-radius: 1.5em;
+    box-sizing: border-box;
   }
 }
 

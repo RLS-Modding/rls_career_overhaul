@@ -1441,6 +1441,7 @@ export default {
     takePhoto: orientation => {},
     getPhotoList: () => {},
     getPhotoAsDataUrl: filename => String,
+    deletePhotos: (filenames) => [Array], // param is array of filenames; bridge must pass array through (not Number)
     startPreview: () => {},
     stopPreview: () => {},
     setPreviewOrientation: orientation => String

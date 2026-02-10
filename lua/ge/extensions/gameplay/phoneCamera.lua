@@ -1,5 +1,7 @@
 -- Phone Camera app: take in-game photos (screenshots) from the career phone.
--- Photos are saved to screenshots/phone/ and the UI is hidden briefly so the shot is clean.
+-- Freeroam: photos saved to screenshots/phone/
+-- Career: photos saved in the save profile folder (not inside autosave slot): {profile}/Gallery/
+--   so they persist when the game rotates autosave1/2/3.
 -- Gallery: list photos and serve as data URLs for the phone UI.
 -- Live preview: stream current camera view to the app via periodic capture.
 
@@ -7,10 +9,7 @@ local M = {}
 
 M.dependencies = { 'ui_visibility', 'core_camera', 'render_renderViews' }
 
-local PHOTO_DIR = 'screenshots/phone/'
-local PHOTO_DIR_SLASH = '/screenshots/phone/'  -- leading slash for FS APIs (user path)
 local PHOTO_PREFIX = 'phone_'
-local PREVIEW_TEMP = PHOTO_DIR .. '_preview.jpg'
 local PREVIEW_INTERVAL = 0.1
 local PREVIEW_VIEW_NAME = 'phoneCameraPreview'
 local PREVIEW_LANDSCAPE = vec3(320, 240, 0)
@@ -23,6 +22,37 @@ local previewBusy = false
 local previewTimer = 0
 local previewOrientation = 'landscape'  -- 'landscape' | 'portrait'
 
+-- Returns the directory where photos are stored (with trailing slash).
+-- In career: save profile folder (parent of autosave1/2/3) + Gallery/, e.g. settings/cloud/saves/Profile/Gallery/
+--   so photos persist when the active autosave slot changes.
+-- In freeroam: screenshots/phone/
+local function getPhotoDir()
+  if career_career and career_career.isActive and career_career.isActive() and career_saveSystem and career_saveSystem.getCurrentSaveSlot then
+    local slot, savePath = career_saveSystem.getCurrentSaveSlot()
+    if savePath and savePath ~= '' then
+      -- savePath is e.g. settings/cloud/saves/Profile/autosave2; we want settings/cloud/saves/Profile/Gallery/
+      local profilePath = savePath:match('^(.+)/[^/]+$')
+      if profilePath and profilePath ~= '' then
+        return profilePath .. '/Gallery/'
+      end
+      -- fallback if no slash (unusual)
+      return savePath .. '/Gallery/'
+    end
+  end
+  return 'screenshots/phone/'
+end
+
+-- Path with leading slash for FS APIs that expect user path (freeroam only; career path usually has no leading slash).
+local function getPhotoDirSlash()
+  local d = getPhotoDir()
+  if d:sub(1, 1) == '/' then return d end
+  return '/' .. d
+end
+
+local function getPreviewTempPath()
+  return getPhotoDir() .. '_preview.jpg'
+end
+
 local mime = nil
 local function getMime()
   if not mime then
@@ -33,8 +63,9 @@ local function getMime()
 end
 
 local function ensurePhotoDir()
-  if not FS:directoryExists(PHOTO_DIR) then
-    FS:directoryCreate(PHOTO_DIR, true)
+  local dir = getPhotoDir()
+  if not FS:directoryExists(dir) then
+    FS:directoryCreate(dir, true)
   end
 end
 
@@ -43,12 +74,14 @@ end
 -- Try both path forms in case FS resolves user path with leading slash.
 function M.getPhotoList()
   ensurePhotoDir()
+  local photoDir = getPhotoDir()
+  local photoDirSlash = getPhotoDirSlash()
   local list = {}
   local patterns = { '*.jpg', '*.jpeg', '*.png' }
   for _, pat in ipairs(patterns) do
-    local raw = FS:findFiles(PHOTO_DIR, pat, 0, false, false)
+    local raw = FS:findFiles(photoDir, pat, 0, false, false)
     if not raw or #raw == 0 then
-      raw = FS:findFiles(PHOTO_DIR_SLASH, pat, 0, false, false)
+      raw = FS:findFiles(photoDirSlash, pat, 0, false, false)
     end
     if raw then
       for _, filepath in ipairs(raw) do
@@ -63,13 +96,56 @@ function M.getPhotoList()
   return list
 end
 
+-- Delete one or more photos by filename (removes files from disk in current photo dir).
+-- Returns the number of files successfully removed.
+-- Uses FS:removeFile(relPath); if that fails, tries os.remove(FS:expandFilename(relPath)).
+function M.deletePhotos(filenames)
+  if type(filenames) ~= 'table' then filenames = { filenames } end
+  local photoDir = getPhotoDir()
+  local photoDirSlash = getPhotoDirSlash()
+  local removed = 0
+  print('[PhoneCamera] deletePhotos: photoDir="' .. tostring(photoDir) .. '" photoDirSlash="' .. tostring(photoDirSlash) .. '" count=' .. #filenames)
+  for _, filename in ipairs(filenames) do
+    if type(filename) == 'string' and filename ~= '' then
+      filename = filename:gsub('^.*[/\\]', '')
+      if filename ~= '' and filename ~= '_preview.jpg' and filename ~= '_preview.jpeg' then
+        local relPath = photoDir .. filename
+        local exists = FS:fileExists(relPath)
+        if not exists then
+          relPath = photoDirSlash .. filename
+          exists = FS:fileExists(relPath)
+        end
+        print('[PhoneCamera] delete file: relPath="' .. tostring(relPath) .. '" fileExists=' .. tostring(exists))
+        if not exists then goto continue end
+        local ok = FS:removeFile(relPath)
+        print('[PhoneCamera] FS:removeFile(relPath) => ' .. tostring(ok))
+        if not ok then
+          local fullPath = FS:expandFilename(relPath)
+          print('[PhoneCamera] fallback: expandFilename => "' .. tostring(fullPath) .. '"')
+          if fullPath and fullPath ~= '' then
+            local suc, res = pcall(os.remove, fullPath)
+            ok = suc and res
+            print('[PhoneCamera] os.remove(fullPath) => pcall_ok=' .. tostring(suc) .. ' result=' .. tostring(res) .. ' ok=' .. tostring(ok))
+          end
+        end
+        if ok then removed = removed + 1 end
+        ::continue::
+      end
+    end
+  end
+  print('[PhoneCamera] deletePhotos done: removed=' .. removed)
+  return removed
+end
+
 -- Reads a photo file and returns a data URL for display in the UI (base64).
 function M.getPhotoAsDataUrl(filename)
   if not filename or filename == '' then return nil end
   filename = filename:gsub('^.*[/\\]', '')
-  local relPath = PHOTO_DIR .. filename
+  local photoDir = getPhotoDir()
+  local photoDirSlash = getPhotoDirSlash()
+  local relPath = photoDir .. filename
   if not FS:fileExists(relPath) then
-    relPath = PHOTO_DIR_SLASH .. filename
+    relPath = photoDirSlash .. filename
   end
   if not FS:fileExists(relPath) then return nil end
   local fullPath = FS:expandFilename(relPath)
@@ -92,6 +168,7 @@ end
 local function takePhotoWithOrientationJob(job)
   local orientation = (job.args[1] == 'portrait') and 'portrait' or 'landscape'
   ensurePhotoDir()
+  local photoDir = getPhotoDir()
   local pos = core_camera.getPosition()
   local q = core_camera.getQuat()
   if not pos or not q or not render_renderViews or not render_renderViews.takeScreenshot then
@@ -100,7 +177,7 @@ local function takePhotoWithOrientationJob(job)
   end
   local res = (orientation == 'portrait') and PHOTO_PORTRAIT or PHOTO_LANDSCAPE
   local timestamp = os.date('%Y%m%d_%H%M%S')
-  local pathNoExt = PHOTO_DIR .. PHOTO_PREFIX .. timestamp
+  local pathNoExt = photoDir .. PHOTO_PREFIX .. timestamp
   local options = {
     pos = pos,
     rot = { x = q.x, y = q.y, z = q.z, w = q.w },
@@ -115,7 +192,7 @@ local function takePhotoWithOrientationJob(job)
     guihooks.trigger('toastrMsg', {
       type = 'success',
       title = 'Photo saved',
-      msg = 'Saved to ' .. PHOTO_DIR
+      msg = 'Saved to ' .. photoDir
     })
   end
   render_renderViews.takeScreenshot(options, onSaved)
@@ -129,8 +206,8 @@ end
 -- Live preview: capture current camera view and send as data URL to UI.
 -- Use our own job so we never hide the UI (no flicker/reload).
 local function sendPreviewFrameToUI()
-  local relPath = PREVIEW_TEMP
-  if not FS:fileExists(relPath) then relPath = PHOTO_DIR_SLASH .. '_preview.jpg' end
+  local relPath = getPreviewTempPath()
+  if not FS:fileExists(relPath) then relPath = getPhotoDirSlash() .. '_preview.jpg' end
   if not FS:fileExists(relPath) then previewBusy = false; return end
   local fullPath = FS:expandFilename(relPath)
   if not fullPath then previewBusy = false; return end
@@ -192,7 +269,7 @@ local function capturePreviewFrame()
   renderView.frustum = Frustum.construct(false, math.rad(fov), aspectRatio, nearPlane, farClip)
   renderView.fov = fov
   renderView.renderEditorIcons = false
-  core_jobsystem.create(previewSaveJob, nil, renderView, PREVIEW_TEMP, sendPreviewFrameToUI)
+  core_jobsystem.create(previewSaveJob, nil, renderView, getPreviewTempPath(), sendPreviewFrameToUI)
 end
 
 function M.startPreview()
