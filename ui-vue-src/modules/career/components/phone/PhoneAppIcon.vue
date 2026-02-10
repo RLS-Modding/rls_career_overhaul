@@ -12,16 +12,25 @@
   >
     <div class="app-badge-new" v-if="isNew && !jiggleMode">NEW</div>
     <div class="app-delete-badge" v-if="jiggleMode" @click.stop="$emit('remove', app)">×</div>
-    <div class="app-icon-square" :style="{ backgroundColor: app.color }">
-      <div class="app-icon-overlay"></div>
-      <BngIcon class="app-icon-img" :type="app.icon" :style="{ color: app.iconColor }" />
+    <div class="app-icon-square" :class="{ 'app-icon-square-image': hasCustomImage }" :style="iconSquareStyle">
+      <div class="app-icon-overlay" v-if="showDefaultOverlay"></div>
+      <img
+        v-if="hasCustomImage"
+        class="app-icon-custom-image"
+        :src="app.iconImage"
+        :alt="app.name"
+        :style="{ objectFit: app.iconImageFit || 'cover' }"
+        draggable="false"
+        @error="onIconImageError"
+      />
+      <BngIcon v-else class="app-icon-img" :type="app.icon" :style="{ color: app.iconColor }" />
     </div>
     <span class="app-icon-label" v-if="showLabel">{{ app.name }}</span>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { BngIcon } from '@/common/components/base'
 
 const props = defineProps({
@@ -36,6 +45,11 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['launch', 'longpress', 'dragstart', 'remove'])
+const iconImageFailed = ref(false)
+
+watch(() => props.app?.iconImage, () => {
+  iconImageFailed.value = false
+})
 
 const iconStyle = computed(() => {
   const s = {}
@@ -48,6 +62,22 @@ const iconStyle = computed(() => {
   }
   return s
 })
+
+const hasCustomImage = computed(() => !!props.app?.iconImage && !iconImageFailed.value)
+const showDefaultOverlay = computed(() => {
+  if (!hasCustomImage.value) return true
+  return !!props.app?.iconImageOverlay
+})
+
+const iconSquareStyle = computed(() => {
+  return {
+    backgroundColor: hasCustomImage.value ? 'transparent' : (props.app?.color || '#222222'),
+  }
+})
+
+function onIconImageError() {
+  iconImageFailed.value = true
+}
 
 let pressTimer = null
 let pressStartPos = null
@@ -144,6 +174,14 @@ function onTap() {
 
 .app-icon-img {
   font-size: 2.8em;
+  position: relative;
+  z-index: 1;
+}
+
+.app-icon-custom-image {
+  width: 100%;
+  height: 100%;
+  display: block;
   position: relative;
   z-index: 1;
 }

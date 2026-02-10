@@ -21,8 +21,17 @@
         @pointerdown="onResultPointerDown($event, app)"
         @click="onResultClick(app)"
       >
-        <div class="search-result-icon" :style="{ backgroundColor: app.color }">
-          <BngIcon :type="app.icon" :style="{ color: app.iconColor }" />
+        <div class="search-result-icon" :style="{ backgroundColor: app.iconImage ? 'transparent' : app.color }">
+          <img
+            v-if="app.iconImage"
+            class="search-result-icon-image"
+            :src="app.iconImage"
+            :alt="app.name"
+            :style="{ objectFit: app.iconImageFit || 'cover' }"
+            draggable="false"
+          />
+          <div v-if="app.iconImage && app.iconImageOverlay" class="search-result-icon-overlay"></div>
+          <BngIcon v-else :type="app.icon" :style="{ color: app.iconColor }" />
         </div>
         <div class="search-result-info">
           <span class="search-result-name">{{ app.name }}</span>
@@ -201,13 +210,26 @@ onUnmounted(() => {
   position: relative;
   overflow: hidden;
 
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.35));
-    pointer-events: none;
-  }
+}
+
+.search-result-icon-image {
+  width: calc(100% + 1px);
+  height: calc(100% + 1px);
+  display: block;
+  position: absolute;
+  top: -0.5px;
+  left: -0.5px;
+  z-index: 1;
+  object-position: center;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.search-result-icon-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.35));
+  pointer-events: none;
 }
 
 .search-result-info {
