@@ -118,13 +118,8 @@ local function towToGarage(garageId)
   career_modules_quickTravel.quickTravelToGarage({ id = garageId })
 end
 
-local function purchaseGarage(garageId)
-  career_modules_garageManager.showPurchaseGaragePrompt(garageId)
-end
-
 M.requestGarageListings = requestGarageListings
 M.setRouteToGarage = setRouteToGarage
 M.towToGarage = towToGarage
-M.purchaseGarage = purchaseGarage
 
 return M

@@ -104,17 +104,7 @@
                 </svg>
                 Tow Here
               </button>
-              <button
-                v-if="!garage.owned"
-                class="action-btn buy-btn"
-                @click.stop="purchase(garage)"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="12" y1="1" x2="12" y2="23"/>
-                  <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
-                </svg>
-                Buy
-              </button>
+              <!-- Must visit in person to purchase -->
             </div>
           </div>
         </div>
@@ -165,10 +155,6 @@ function setRoute(garage) {
 
 function towTo(garage) {
   lua.ui_phone_realEstate.towToGarage(garage.id)
-}
-
-function purchase(garage) {
-  lua.ui_phone_realEstate.purchaseGarage(garage.id)
 }
 
 function onImgError(e) {
@@ -438,11 +424,6 @@ onMounted(() => {
 .tow-btn {
   background: rgba(59, 130, 246, 0.15);
   color: #3b82f6;
-}
-
-.buy-btn {
-  background: rgba(34, 197, 94, 0.15);
-  color: #22c55e;
 }
 
 @keyframes slideDown {
