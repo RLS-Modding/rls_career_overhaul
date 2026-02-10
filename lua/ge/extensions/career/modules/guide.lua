@@ -111,8 +111,10 @@ local function formatControlName(control)
   
   control = tostring(control)
   
-  if control:find("keyboard_") then
-    local key = control:gsub("keyboard_", "")
+  -- Strip keyboard_ prefix if present (legacy format), then format the key name
+  local key = control:gsub("^keyboard_", "")
+  -- If it doesn't look like a mouse control, treat it as a keyboard key
+  if not control:find("^mouse") and not control:find("^button") then
     local symbolMap = {
       backslash = "\\",
       slash = "/",
@@ -155,8 +157,8 @@ local function formatControlName(control)
     else
       return key:gsub("^%l", string.upper):gsub("_", " ")
     end
-  elseif control:find("^mouse%d+") then
-    local button = control:gsub("mouse", "")
+  elseif control:find("^mouse%d+") or control:find("^button%d+") then
+    local button = control:gsub("^mouse", ""):gsub("^button", "")
     local btnNum = tonumber(button)
     if btnNum == 0 then
       return "Mouse Left"
@@ -212,11 +214,23 @@ local function setPhoneBinding(controlString)
 
   controlString = string.lower(controlString)
 
-  -- Determine device name from control string
+  -- Determine device name from control string and extract the raw control name
+  -- The UI sends "keyboard_<key>" or "mouse<N>" format, but the engine expects
+  -- just the key name (e.g. "p", "space") with the device passed separately.
   local deviceName = "keyboard0"
-  if controlString:find("^mouse") then
+  local rawControl = controlString
+  if controlString:find("^keyboard_") then
+    deviceName = "keyboard0"
+    rawControl = controlString:gsub("^keyboard_", "")
+  elseif controlString:find("^mouse") then
     deviceName = "mouse0"
+    -- mouse controls like "mouse0" (button 0) → "button0"
+    local btnNum = controlString:match("^mouse(%d+)$")
+    if btnNum then
+      rawControl = "button" .. btnNum
+    end
   end
+  controlString = rawControl
 
   -- Find the keyboard/mouse device in core_input_bindings
   if not core_input_bindings or not core_input_bindings.bindings then
