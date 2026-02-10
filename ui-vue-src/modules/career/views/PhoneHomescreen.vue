@@ -263,7 +263,13 @@ function onViewportPointerMove(e) {
     isDraggingPage.value = true
   }
   if (isDraggingPage.value) {
-    pageDragDelta.value = dx
+    // Block dragging right when on search page (rightmost)
+    const onSearchPage = currentPageIndex.value === pages.value.length
+    if (onSearchPage && dx < 0) {
+      pageDragDelta.value = 0
+    } else {
+      pageDragDelta.value = dx
+    }
   }
 }
 
@@ -272,7 +278,8 @@ function onViewportPointerUp() {
   isPointerDown = false
   if (isDraggingPage.value) {
     const threshold = 40
-    if (pageDragDelta.value < -threshold) {
+    const onSearchPage = currentPageIndex.value === pages.value.length
+    if (pageDragDelta.value < -threshold && !onSearchPage) {
       goToPage(currentPageIndex.value + 1)
     } else if (pageDragDelta.value > threshold) {
       goToPage(currentPageIndex.value - 1)
