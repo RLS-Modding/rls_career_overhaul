@@ -1,6 +1,6 @@
 local M = {}
 
-M.dependencies = {'util_configListGenerator', 'career_career', 'career_saveSystem', 'freeroam_facilities'}
+M.dependencies = {}
 
 local raceData = nil
 local raceDataLevel = nil

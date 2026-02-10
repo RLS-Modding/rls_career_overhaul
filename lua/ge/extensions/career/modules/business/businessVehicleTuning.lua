@@ -1,6 +1,6 @@
 local M = {}
 
-M.dependencies = {'career_career', 'core_vehicles', 'core_jobsystem', 'career_modules_bank'}
+M.dependencies = {}
 
 local function normalizeJobId(jobId)
   if jobId == nil then
