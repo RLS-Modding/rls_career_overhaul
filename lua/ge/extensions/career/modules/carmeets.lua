@@ -1,6 +1,6 @@
 local M = {}
 
-M.dependencies = {}
+M.dependencies = {'career_career', 'gameplay_sites_sitesManager', 'util_configListGenerator', 'gameplay_traffic', 'career_saveSystem'}
 
 local carmeetLocations = {}
 local carMeetVehicles = {}
