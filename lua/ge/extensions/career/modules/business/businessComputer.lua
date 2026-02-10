@@ -1,6 +1,6 @@
 local M = {}
 
-M.dependencies = {'career_career', 'career_saveSystem', 'freeroam_facilities', 'core_vehicles', 'core_jobsystem'}
+M.dependencies = {}
 
 local jbeamIO = require('jbeam/io')
 local jbeamSlotSystem = require('jbeam/slotSystem')

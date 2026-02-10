@@ -1,6 +1,6 @@
 local M = {}
 
-M.dependencies = {'career_career', 'career_saveSystem'}
+M.dependencies = {}
 
 local skillTreeCache = {}
 local skillTreeProgress = {}

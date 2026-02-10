@@ -1,6 +1,6 @@
 local M = {}
 
-M.dependencies = {'career_career', 'freeroam_facilities', 'career_modules_payment', 'career_modules_playerAttributes', 'career_saveSystem', 'career_modules_bank', 'career_modules_loans'}
+M.dependencies = {}
 
 local purchasedBusinesses = {}
 local businessToPurchase = nil

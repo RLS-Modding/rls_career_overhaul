@@ -2,6 +2,8 @@ local M = {}
 
 local jbeamIO = require('jbeam/io')
 
+M.dependencies = {'career_career'}
+
 local inventory = {}
 local businessPartInventoryPath = "business/partInventory.json"
 local activeBusinessId = nil

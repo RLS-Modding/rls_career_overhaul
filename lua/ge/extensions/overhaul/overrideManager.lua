@@ -12,6 +12,25 @@ local mountedRoot = false
 
 local ourMod = nil
 
+local function getExtensionsMetatable()
+  local mt = getmetatable(extensions)
+  if not mt then
+    mt = {}
+    setmetatable(extensions, mt)
+  end
+  return mt
+end
+
+local function isOverrideInstalled()
+  local mt = getExtensionsMetatable()
+  return mt._rlsOverrideInstalled == true
+end
+
+local function setOverrideInstalled(value)
+  local mt = getExtensionsMetatable()
+  mt._rlsOverrideInstalled = value
+end
+
 local function isExtensionFormat(path)
   return path:find('_') and not path:find('/')
 end
@@ -22,6 +41,52 @@ local function convertFormat(path)
   else
     return path:gsub('/', '_')
   end
+end
+
+local function hotSwapModule(extName, convertedPath, overridePath)
+  local existingModule = rawget(_G, extName)
+  if not existingModule or type(existingModule) ~= 'table' then
+    return false
+  end
+
+  if existingModule.rlsOverride then
+    return false
+  end
+
+  local success, overrideModule = pcall(require, overridePath)
+  if not success or type(overrideModule) ~= 'table' then
+    log('E', logTag, 'Failed to load override module: ' .. overridePath)
+    return false
+  end
+
+  if overrideModule == existingModule then
+    return false
+  end
+
+  overrideModule.rlsOverride = true
+  overrideModule.__extensionName__ = existingModule.__extensionName__ or extName
+  overrideModule.__extensionPath__ = existingModule.__extensionPath__ or convertedPath
+  overrideModule.__manuallyLoaded__ = existingModule.__manuallyLoaded__
+
+  rawset(_G, extName, overrideModule)
+  if extensions[extName] then
+    extensions[extName] = overrideModule
+  end
+
+  package.loaded[convertedPath] = overrideModule
+  local absolutePath = '/lua/ge/extensions/' .. convertedPath
+  package.loaded[absolutePath] = overrideModule
+
+  local overrideExtName = overridePath:gsub('lua%.ge%.extensions%.', ''):gsub('%.', '_')
+  if overrideExtName ~= extName and rawget(_G, overrideExtName) == overrideModule then
+    rawset(_G, overrideExtName, nil)
+    if extensions[overrideExtName] == overrideModule then
+      extensions[overrideExtName] = nil
+    end
+  end
+
+  log('I', logTag, 'Hot swapped module: ' .. extName)
+  return true
 end
 
 local function setOverride(originalPath, overridePath, overrideType)
@@ -59,11 +124,26 @@ local function setOverride(originalPath, overridePath, overrideType)
       return nil
     end
 
+    if result and type(result) == 'table' then
+      result.rlsOverride = true
+    end
+
     return result
   end
 
   local absolutePath = '/lua/ge/extensions/' .. convertedPath
   package.preload[absolutePath] = package.preload[convertedPath]
+
+  if isExtensionType then
+    local extName = originalPath
+    local existingModule = rawget(_G, extName)
+    if existingModule and type(existingModule) == 'table' then
+      if not existingModule.rlsOverride then
+        dump(existingModule)
+        hotSwapModule(extName, convertedPath, overridePath)
+      end
+    end
+  end
 
   return true
 end
@@ -195,6 +275,16 @@ local function overrideReload(extPath)
 end
 
 local function installSystem()
+  if originalLoad or originalReload or originalReloadUI then
+    log('E', logTag, 'Override system already installed (local state)')
+    return false
+  end
+
+  if isOverrideInstalled() then
+    log('I', logTag, 'Override system already active, skipping reinstall')
+    return true
+  end
+
   if originalLoad or originalReload then
     log('E', logTag, 'Override system already installed')
     return false
@@ -278,15 +368,26 @@ local function handleMapOverrides(newMapsWithOverrides)
 end
 
 local function unloadOverrides()
-  if not originalLoad then
+  if not originalLoad and not isOverrideInstalled() then
     return false
   end
 
-  extensions.load = originalLoad
-  originalLoad = nil
+  if originalReloadUI then
+    reloadUI = originalReloadUI
+    originalReloadUI = nil
+  end
 
-  extensions.reload = originalReload
-  originalReload = nil
+  if originalLoad then
+    extensions.load = originalLoad
+    originalLoad = nil
+  end
+
+  if originalReload then
+    extensions.reload = originalReload
+    originalReload = nil
+  end
+
+  setOverrideInstalled(false)
 
   local pathsToClear = {}
   for path, _ in pairs(overrides) do

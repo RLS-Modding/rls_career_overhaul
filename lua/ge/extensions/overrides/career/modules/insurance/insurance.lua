@@ -4,7 +4,7 @@
 
 local M = {}
 
-M.dependencies = {'career_career', 'career_modules_payment', 'career_modules_playerAttributes'}
+M.dependencies = {'career_career'}
 
 local plInsuranceDataFileName = "insurance"
 
