@@ -896,7 +896,7 @@ end
 local function formatMaterialDestinationsPlayer(con, materialType)
   local destinations = { }
   for _, fac in ipairs(dGenerator.getFacilities()) do
-    if fac.logisticTypesReceivedLookup[materialType] then
+    if fac.logisticTypesReceivedLookup[materialType] and fac.dropOffSpots and fac.dropOffSpots[1] then
 
       local distanceKey = string.format("%d-%s-%s", con.vehId, fac.facId, fac.dropOffSpots[1]:getPath())
       if vehToLocationDistanceCache[distanceKey] == nil then
@@ -1373,6 +1373,9 @@ M.moveCargoFromUi = moveCargoFromUi
 local function enterCargoOverviewScreen(facilityId, parkingSpotPath)
   vehicleSpawnInProgress = false
   pendingTransientMoves = false
+  if career_modules_loanerVehicles and career_modules_loanerVehicles.unmarkAllForSpawning then
+    career_modules_loanerVehicles.unmarkAllForSpawning()
+  end
   dGeneral.getNearbyVehicleCargoContainers(function(playerCargoContainers)
     cargoOverviewScreenOpen = true
     cargoOverviewTab = ""
@@ -1433,6 +1436,11 @@ local function exitCargoOverviewScreen(facilityId, parkingSpotPath)
   --career_career.closeAllMenus()
   freeroam_bigMapMode.exitBigMap(true)
   simTimeAuthority.pause(false) -- this is only necessary because the career pause menu doesnt unpause in time for the bigMap to start, so the bigMap will not unpause by itself
+  if not vehicleSpawnInProgress and not pendingTransientMoves then
+    if career_modules_loanerVehicles and career_modules_loanerVehicles.unmarkAllForSpawning then
+      career_modules_loanerVehicles.unmarkAllForSpawning()
+    end
+  end
   if not vehicleSpawnInProgress then
     dGeneral.requestUpdateContainerWeights()
   end
@@ -2061,7 +2069,10 @@ local function showLocationRoutePreview(locationId, asProvider)
   end
   local fromPos = dGenerator.getLocationCoordinates({type="facilityParkingspot",facId = cargoScreenFacId, psPath = cargoScreenPsPath})
   local fac = dGenerator.getFacilityById(locationId)
-  local toPos = dGenerator.getLocationCoordinates({type="facilityParkingspot", facId = fac.id, psPath=(asProvider and fac.pickUpSpots[1] or fac.dropOffSpots[1]):getPath()})
+  if not fac then return end
+  local spots = asProvider and fac.pickUpSpots or fac.dropOffSpots
+  if not spots or not spots[1] then return end
+  local toPos = dGenerator.getLocationCoordinates({type="facilityParkingspot", facId = fac.id, psPath=spots[1]:getPath()})
   if fromPos and toPos then
     freeroam_bigMapMode.setRoutePreviewSimple(fromPos, toPos)
   end
