@@ -31,35 +31,8 @@ angular.module('beamng.stuff')
   }
   
   function convertRawInputToControl(data) {
-    const devName = data.devName
-    const control = data.control
-    
-    // Handle keyboard devices (may be "keyboard", "keyboard0", etc.)
-    if (devName && devName.startsWith('keyboard')) {
-      if (control.length === 1) {
-        return 'keyboard_' + control.toLowerCase()
-      } else if (control === 'space') {
-        return 'keyboard_space'
-      } else if (control === 'enter') {
-        return 'keyboard_enter'
-      } else if (control === 'tab') {
-        return 'keyboard_tab'
-      } else if (control === 'escape') {
-        return 'keyboard_escape'
-      } else if (control.startsWith('arrow')) {
-        return 'keyboard_' + control
-      } else {
-        return 'keyboard_' + control.toLowerCase()
-      }
-    } else if (devName && devName.startsWith('mouse')) {
-      if (control.startsWith('button')) {
-        const btnNum = control.replace('button', '')
-        return 'mouse' + btnNum
-      }
-      return 'mouse' + control
-    }
-    
-    return devName + '_' + control
+    // Vanilla uses raw control names — no device prefix
+    return data.control
   }
   
   function stopBinding() {
@@ -174,8 +147,9 @@ angular.module('beamng.stuff')
         // Stop binding FIRST before calling Lua to ensure input is released
         stopBinding()
         
-        // Then set the binding
-        bngApi.engineLua("extensions.career_modules_guide.setPhoneBinding('" + controlString + "')", function(result) {
+        // Then set the binding (pass raw control + device name)
+        var devName = data.devName || 'keyboard0'
+        bngApi.engineLua("extensions.career_modules_guide.setPhoneBinding('" + controlString + "', '" + devName + "')", function(result) {
           $scope.$evalAsync(function() {
             if (result && result.binding) {
               $scope.phoneBinding = result.binding

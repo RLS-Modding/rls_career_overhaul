@@ -104,138 +104,92 @@ M.onContinue = function()
   end
 end
 
-local function formatControlName(control)
+local function formatControlName(control, deviceName)
   if not control or control == "" then
     return "Not bound"
   end
-  
+
   control = tostring(control)
-  
-  -- Strip keyboard_ prefix if present (legacy format), then format the key name
-  local key = control:gsub("^keyboard_", "")
-  -- If it doesn't look like a mouse control, treat it as a keyboard key
-  if not control:find("^mouse") and not control:find("^button") then
-    local symbolMap = {
-      backslash = "\\",
-      slash = "/",
-      comma = ",",
-      period = ".",
-      semicolon = ";",
-      apostrophe = "'",
-      grave = "`",
-      minus = "-",
-      equals = "=",
-      leftbracket = "[",
-      rightbracket = "]"
-    }
-    if symbolMap[key] then
-      return symbolMap[key]
+
+  if deviceName and deviceName:find("mouse") then
+    -- Mouse controls: "button0", "button1", etc.
+    local btnNum = tonumber(control:match("button(%d+)"))
+    if btnNum then
+      if btnNum == 0 then return "Mouse Left"
+      elseif btnNum == 1 then return "Mouse Right"
+      elseif btnNum == 2 then return "Mouse Middle"
+      else return "Mouse Button " .. (btnNum + 1) end
     end
-    if key:len() == 1 then
-      return key:upper()
-    elseif key:match("^f%d+$") then
-      return key:upper()
-    elseif key == "space" then
-      return "Space"
-    elseif key == "enter" then
-      return "Enter"
-    elseif key == "tab" then
-      return "Tab"
-    elseif key:find("arrow") then
-      local direction = key:gsub("arrow", "")
-      if direction == "left" then
-        return "Arrow Left"
-      elseif direction == "right" then
-        return "Arrow Right"
-      elseif direction == "up" then
-        return "Arrow Up"
-      elseif direction == "down" then
-        return "Arrow Down"
-      else
-        return "Arrow " .. direction:gsub("^%l", string.upper)
-      end
-    else
-      return key:gsub("^%l", string.upper):gsub("_", " ")
-    end
-  elseif control:find("^mouse%d+") or control:find("^button%d+") then
-    local button = control:gsub("^mouse", ""):gsub("^button", "")
-    local btnNum = tonumber(button)
-    if btnNum == 0 then
-      return "Mouse Left"
-    elseif btnNum == 1 then
-      return "Mouse Right"
-    elseif btnNum == 2 then
-      return "Mouse Middle"
-    else
-      return "Mouse Button " .. (btnNum + 1)
-    end
+    return "Mouse " .. control
   end
-  
-  return control
+
+  -- Default: keyboard controls
+  local symbolMap = {
+    backslash = "\\", slash = "/", comma = ",", period = ".",
+    semicolon = ";", apostrophe = "'", grave = "`", minus = "-",
+    equals = "=", leftbracket = "[", rightbracket = "]"
+  }
+  if symbolMap[control] then
+    return symbolMap[control]
+  end
+  if control:len() == 1 then
+    return control:upper()
+  elseif control:match("^f%d+$") then
+    return control:upper()
+  elseif control == "space" then
+    return "Space"
+  elseif control == "enter" then
+    return "Enter"
+  elseif control == "tab" then
+    return "Tab"
+  elseif control:find("arrow") then
+    local direction = control:gsub("arrow", "")
+    if direction == "left" then return "Arrow Left"
+    elseif direction == "right" then return "Arrow Right"
+    elseif direction == "up" then return "Arrow Up"
+    elseif direction == "down" then return "Arrow Down"
+    else return "Arrow " .. direction:gsub("^%l", string.upper) end
+  end
+
+  return control:gsub("^%l", string.upper):gsub("_", " ")
 end
 
 local function getPhoneBinding()
-  local binding = "Not bound"
-
-  -- Try the cached lookup first
-  if core_input_bindings and core_input_bindings.getControlForAction then
-    local success, control = pcall(function()
-      return core_input_bindings.getControlForAction("openPhone")
-    end)
-    if success and control and control ~= "" then
-      binding = formatControlName(control)
-      return {binding = binding}
-    end
+  if not core_input_bindings then
+    return {binding = "Not bound"}
   end
 
-  -- Fallback: iterate all device bindings to find openPhone
-  if core_input_bindings and core_input_bindings.bindings then
+  -- Ensure bindings data is fresh
+  if core_input_bindings.notifyUI then
+    pcall(function() core_input_bindings.notifyUI("guide refresh") end)
+  end
+
+  if core_input_bindings.bindings then
     for _, device in ipairs(core_input_bindings.bindings) do
       if device.contents and device.contents.bindings then
         for _, b in ipairs(device.contents.bindings) do
           if b.action == "openPhone" and b.control and b.control ~= "" then
-            binding = formatControlName(b.control)
-            return {binding = binding}
+            return {binding = formatControlName(b.control, device.devname)}
           end
         end
       end
     end
   end
 
-  return {binding = binding}
+  return {binding = "Not bound"}
 end
 
-local function setPhoneBinding(controlString)
-  local bindingName = "Not bound"
-
+local function setPhoneBinding(controlString, deviceName)
   if not controlString or controlString == "" then
-    return {success = false, binding = bindingName}
+    return {success = false, binding = "Not bound"}
   end
 
-  controlString = string.lower(controlString)
+  if not deviceName then deviceName = "keyboard0" end
 
-  -- Determine device name from control string and extract the raw control name
-  -- The UI sends "keyboard_<key>" or "mouse<N>" format, but the engine expects
-  -- just the key name (e.g. "p", "space") with the device passed separately.
-  local deviceName = "keyboard0"
-  local rawControl = controlString
-  if controlString:find("^keyboard_") then
-    deviceName = "keyboard0"
-    rawControl = controlString:gsub("^keyboard_", "")
-  elseif controlString:find("^mouse") then
-    deviceName = "mouse0"
-    -- mouse controls like "mouse0" (button 0) → "button0"
-    local btnNum = controlString:match("^mouse(%d+)$")
-    if btnNum then
-      rawControl = "button" .. btnNum
-    end
-  end
-  controlString = rawControl
-
-  -- Find the keyboard/mouse device in core_input_bindings
+  -- Find the device in core_input_bindings
   if not core_input_bindings or not core_input_bindings.bindings then
     log("E", "guide", "core_input_bindings not available")
-    return {success = false, binding = bindingName}
+    return {success = false, binding = "Not bound"}
   end
 
   local targetDevice = nil
@@ -248,7 +202,7 @@ local function setPhoneBinding(controlString)
 
   if not targetDevice or not targetDevice.contents then
     log("E", "guide", "Could not find device: " .. deviceName)
-    return {success = false, binding = bindingName}
+    return {success = false, binding = "Not bound"}
   end
 
   -- Remove any existing openPhone binding from this device
@@ -259,67 +213,23 @@ local function setPhoneBinding(controlString)
     end
   end
 
-  -- Add the new binding
+  -- Add the new binding with raw control string
   table.insert(bindings, {
     action = "openPhone",
     control = controlString,
+    player = 0,
   })
 
-  -- Bind directly to the engine ActionMap so it works immediately
-  local ok = false
-  pcall(function()
-    -- Ensure the action JSON has been loaded before trying to bind.
-    -- If openPhone isn't registered yet, force a rescan of action JSON files
-    -- so phone.json is picked up. This prevents bindingsLegend.lua from
-    -- crashing with nil actionInfo later.
-    if core_input_actions then
-      local testOk, testActionSuccess = pcall(function()
-        local s = core_input_actions.actionToCommands("openPhone")
-        return s
-      end)
-      if not testOk or not testActionSuccess then
-        pcall(function() extensions.reload("core_input_actions") end)
-      end
-    end
-
-    local actionSuccess, actionMapName, actsOnChange, onChange, actsOnDown, onDown, actsOnUp, onUp, isRelative, ctx, isCentered =
-      core_input_actions.actionToCommands("openPhone")
-
-    if actionSuccess then
-      local amFullName = actionMapName .. "ActionMap"
-      local am = scenetree.findObject(amFullName)
-      if am then
-        local b = {action = "openPhone", control = controlString}
-        -- Fill in binding defaults so bind() gets all required params
-        if core_input_bindings.fillNormalizeBindingDefaults then
-          b = core_input_bindings.fillNormalizeBindingDefaults(b)
-        end
-        am:bind(
-          deviceName, b.action, b.control, isCentered,
-          b.deadzoneResting or 0, b.deadzoneEnd or 0, b.linearity or 1,
-          b.angle or 0, b.lockType or 3, b.isInverted or false,
-          b.isForceEnabled or false, b.isForceInverted or false,
-          b.useLogitechSDK or false, b.logitechVibrotactileCoef or 1,
-          b.logitechVibrotactileFreqMax or 50,
-          (b.ffb and b.ffb.updateType) or 0, jsonEncode(b.ffb or {updateType = 0}),
-          actsOnChange, onChange, actsOnDown, onDown, actsOnUp, onUp,
-          b.filterType or -1, isRelative, 0, ctx
-        )
-        ok = true
-      end
-    end
+  -- Save to disk — saveBindingsToDisk handles rebinding automatically
+  local ok = pcall(function()
+    core_input_bindings.saveBindingsToDisk(targetDevice.contents)
   end)
 
   if not ok then
-    log("E", "guide", "Failed to bind openPhone to engine ActionMap")
+    log("E", "guide", "Failed to save phone binding to disk")
   end
 
-  -- Also save to disk so binding persists across restarts
-  pcall(function()
-    core_input_bindings.saveBindingsToDisk(targetDevice)
-  end)
-
-  bindingName = formatControlName(controlString)
+  local bindingName = formatControlName(controlString, deviceName)
   return {success = ok, binding = bindingName}
 end
 
