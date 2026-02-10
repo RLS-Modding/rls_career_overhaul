@@ -143,61 +143,6 @@ function autoExport(srcDir, pattern, replace) {
   }
 }
 
-function syncPhoneAppTiles() {
-  const srcDir = path.resolve(__dirname, "../ui-vue-src/modules/career/apps/manifests/tiles")
-  const runtimeDir = path.resolve(__dirname, "../ui/entrypoints/main/tiles")
-  let outDir = path.resolve(__dirname, "dist")
-
-  const copyAll = () => {
-    if (!fs.existsSync(srcDir)) return
-    fs.ensureDirSync(runtimeDir)
-    fs.copySync(srcDir, runtimeDir, { overwrite: true })
-
-    const outTiles = path.resolve(outDir, "tiles")
-    fs.ensureDirSync(outTiles)
-    fs.copySync(srcDir, outTiles, { overwrite: true })
-  }
-
-  const copyOne = (file) => {
-    if (!file || !file.startsWith(srcDir)) return
-    const rel = path.relative(srcDir, file)
-    if (rel.startsWith("..")) return
-
-    const targets = [
-      path.resolve(runtimeDir, rel),
-      path.resolve(outDir, "tiles", rel),
-    ]
-
-    for (const target of targets) {
-      if (fs.existsSync(file)) {
-        fs.ensureDirSync(path.dirname(target))
-        fs.copySync(file, target, { overwrite: true })
-      } else {
-        fs.removeSync(target)
-      }
-    }
-  }
-
-  return {
-    name: "sync-phone-app-tiles",
-    configResolved(config) {
-      outDir = path.resolve(config.root, config.build.outDir)
-    },
-    buildStart() {
-      copyAll()
-    },
-    configureServer() {
-      copyAll()
-    },
-    handleHotUpdate(ctx) {
-      copyOne(ctx.file)
-    },
-    closeBundle() {
-      copyAll()
-    },
-  }
-}
-
 // https://vitejs.dev/config/
 export default defineConfig({
   publicDir: false,
@@ -257,7 +202,6 @@ export default defineConfig({
     autoExport("common/directives", /^Bng([a-z\d]+)\.(?:js|vue)$/i, "vBng$1"),
     // someThing.vue > SomeThing
     autoExport("common/layouts", /^([a-z\d])([a-z\d]+)\.vue$/i, (_, n, ame) => n.toUpperCase() + ame),
-    syncPhoneAppTiles(),
     vue(),
     viteCommonjs(),
     envCompatible(),

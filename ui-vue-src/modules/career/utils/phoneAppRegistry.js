@@ -54,9 +54,9 @@ function resolveManifestIconImage(def) {
 
 const APP_DEFINITIONS = loadAppDefinitions()
 
-const APPS_PER_PAGE = 20
+const APPS_PER_PAGE = 16
 const GRID_COLS = 4
-const GRID_ROWS = 5
+const GRID_ROWS = 4
 const DEFAULT_DOCK_IDS = (() => {
   const dock = new Array(4).fill(null)
   for (const app of APP_DEFINITIONS) {

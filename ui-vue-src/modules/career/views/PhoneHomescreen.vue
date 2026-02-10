@@ -1,8 +1,9 @@
 <template>
   <PhoneWrapper app-name="Home" :custom-back="handleBack">
-    <div class="homescreen" :style="wallpaperStyle">
+    <div ref="homescreenRef" class="homescreen" :style="wallpaperStyle">
       <!-- Pages container -->
       <div
+        ref="viewportRef"
         class="pages-viewport"
         @pointerdown="onViewportPointerDown"
         @pointermove="onViewportPointerMove"
@@ -56,6 +57,7 @@
 
       <!-- Dock (with integrated page dots) -->
       <PhoneDock
+        ref="dockRef"
         :class="{ 'no-transition': isDraggingPage || (isDraggingIcon && !isEdgePaging) }"
         :style="dockStyle"
         :dock-ids="dockIds"
@@ -88,7 +90,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch, reactive, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { lua } from '@/bridge'
 import { useEvents } from '@/services/events'
@@ -98,12 +100,11 @@ import PhoneDock from '../components/phone/PhoneDock.vue'
 import PhoneSearch from '../components/phone/PhoneSearch.vue'
 import { usePhoneApps } from '../utils/phoneAppRegistry'
 
-const APPS_PER_PAGE = 16
 const PAGE_WIDTH = 360
 
 const router = useRouter()
 const events = useEvents()
-const { availableApps, refreshApps, DEFAULT_DOCK_IDS } = usePhoneApps()
+const { availableApps, refreshApps, DEFAULT_DOCK_IDS, APPS_PER_PAGE } = usePhoneApps()
 
 // Layout state
 const dockIds = ref([...DEFAULT_DOCK_IDS])
@@ -133,6 +134,10 @@ let dragStartDockIds = null
 
 // Edge drag for cross-page
 let edgeTimer = null
+
+const homescreenRef = ref(null)
+const viewportRef = ref(null)
+const dockRef = ref(null)
 
 // Build app map
 const appMap = computed(() => {
@@ -466,8 +471,7 @@ function onIconDragMove(e) {
   if (!isDraggingIcon.value) return
   updateDragGhostPosition(e)
 
-  // Check dock zone using actual dock bounds (prevents lower grid from being treated as dock)
-  const dockEl = document.querySelector('.phone-dock')
+  const dockEl = dockRef.value?.$el?.querySelector('.phone-dock')
   if (dockEl) {
     const dockRect = dockEl.getBoundingClientRect()
     const overDock = e.clientX >= dockRect.left && e.clientX <= dockRect.right && e.clientY >= dockRect.top && e.clientY <= dockRect.bottom
@@ -487,8 +491,7 @@ function onIconDragMove(e) {
     if (target) moveDraggedAppToGridSlot(target)
   }
 
-  // Edge detection for cross-page drag
-  const phoneEl2 = document.querySelector('.pages-viewport')
+  const phoneEl2 = viewportRef.value
   if (phoneEl2) {
     const rect = phoneEl2.getBoundingClientRect()
     const relX = e.clientX - rect.left
@@ -577,6 +580,7 @@ function onIconDragEnd(e) {
   dockHighlightIdx.value = -1
   dragStartPageLayouts = null
   dragStartDockIds = null
+  saveLayout()
 }
 
 function findGridSlotAt(x, y) {
@@ -591,7 +595,7 @@ function findGridSlotAt(x, y) {
 }
 
 function updateDragGhostPosition(e) {
-  const homeEl = document.querySelector('.homescreen')
+  const homeEl = homescreenRef.value
   if (!homeEl) return
   const rect = homeEl.getBoundingClientRect()
   const scaleX = rect.width > 0 ? rect.width / homeEl.offsetWidth : 1

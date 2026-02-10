@@ -66,7 +66,7 @@ const props = defineProps({
   isSearchActive: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['launch', 'longpress', 'dragstart', 'dockdrop', 'goPage', 'remove'])
+const emit = defineEmits(['launch', 'longpress', 'dragstart', 'goPage', 'remove'])
 
 const dockApps = computed(() => {
   return props.dockIds.map(id => id ? props.appMap[id] || null : null)

@@ -133,7 +133,7 @@ onMounted(async () => {
   events.on("phone_time_update", data => updateTime(data))
   events.on("closePhone", close)
   refreshCareerStatus()
-  careerStatusInterval = setInterval(refreshCareerStatus, 2000)
+  careerStatusInterval = setInterval(refreshCareerStatus, 5000)
   lua.ui_phone_time?.requestTime?.()
 
   const wasPhoneVisible = sessionStorage.getItem('phoneVisible') === 'true'
