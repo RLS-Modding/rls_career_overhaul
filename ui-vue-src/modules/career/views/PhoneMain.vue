@@ -39,7 +39,8 @@ const apps = ref([
   { name: 'Car Meet', icon: icons.cars, route: '/career/car-meets-phone', color: '#696969', iconColor: '#ffffff' },
   { name: 'Repo', icon: icons.tow, route: '/career/phone-repo', color: '#1E90FF', iconColor: '#ffffff' },
   { name: 'Taxi', icon: icons.taxiCar3, route: '/career/phone-taxi', color: '#ffd700', iconColor: '#000000' },
-  { name: 'Quarry', icon: icons.cogs, route: '/career/phone-quarry', color: '#8B4513', iconColor: '#ffffff' }
+  { name: 'Quarry', icon: icons.cogs, route: '/career/phone-quarry', color: '#8B4513', iconColor: '#ffffff' },
+  { name: 'BeamEats', icon: icons.cityOutline, route: '/career/phone-beam-eats', color: '#ff4757', iconColor: '#ffffff' }
 ])
 
 const navigateTo = (route) => {
@@ -88,22 +89,26 @@ onMounted(async () => {
 <style scoped lang="scss">
 .home-screen {
   padding: 15px;
-  padding-top: 400px;
+  padding-top: 140px;
+  padding-bottom: 60px;
   display: flex;
   flex-direction: row;
   flex-wrap: wrap-reverse;
   gap: 10px;
   max-width: 100%;
   height: 100%;
-  align-content: flex-end;
+  align-content: flex-start;
   justify-content: flex-start;
   box-sizing: border-box;
+  overflow-y: auto;
 }
 
 .app-item {
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: calc((100% - 30px) / 4);
+  flex: 0 0 calc((100% - 30px) / 4);
 }
 
 .app-container {
@@ -164,6 +169,7 @@ onMounted(async () => {
   margin-top: 8px;
   width: 100%;
   position: relative;
+  line-height: 1.1;
 }
 
 // Override phone wrapper's dark background

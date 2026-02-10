@@ -6,7 +6,7 @@ local M = {}
 
 M.dependencies = {'career_career'}
 
-local lossPerKmRelative = 0.0000025
+local lossPerKmRelative = 0.0000050
 local scrapValueRelative = 0.5
 
 -- vehicle damage related variables
@@ -48,6 +48,8 @@ local function getDepreciation(year, power)
       depreciation = depreciation * (1 - 0.05 * (1 / powerFactor))  -- 15% depreciation for the first year
     elseif i == 2 then
       depreciation = depreciation * (1 - 0.10 * (1 / powerFactor))  -- 10% depreciation for the second year
+    elseif i <= 6 then
+      depreciation = depreciation * (1 - 0.03 * math.exp(-0.15 * (i - 2)) * (1 / powerFactor))  -- Adjusted exponential decay for the next 10 years
     elseif i <= 12 then
       depreciation = depreciation * (1 - 0.05 * math.exp(-0.15 * (i - 2)) * (1 / powerFactor))  -- Adjusted exponential decay for the next 10 years
     elseif i <= 20 then

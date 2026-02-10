@@ -4,12 +4,30 @@ M.dependencies = {'gameplay_sites_sitesManager', 'freeroam_facilities'}
 local core_groundMarkers = require('core/groundMarkers')
 local core_vehicles = require('core/vehicles')
 
+local config = {
+    baseFare = 600,
+    tipMultiplier = 20,
+    dwellDurationBase = 10,
+    stopSettleDelay = 2.5,
+    accelThreshold = 3.5,
+    routeCooldown = 10,
+    maxPayout = 100000,
+    reputationDivisor = 500,
+    bonusMultiplierBase = 1,
+    bonusMultiplierFactor = 3,
+    tipBaseScore = 8,
+    tipPerPassengerMultiplier = 2,
+    roughRidePenaltyMultiplier = 10,
+    loopBonusFactor = 0.5,
+    stopVelocityThreshold = 0.5
+}
+
 local DEBUG = false
 
 local currentStopIndex = nil
 local stopTriggers = {}
 local dwellTimer = nil
-local dwellDuration = 10
+local dwellDuration = config.dwellDurationBase
 local consecutiveStops = 0
 local currentRouteActive = false
 local accumulatedReward = 0
@@ -21,7 +39,7 @@ local routeCooldown = 0
 local currentVehiclePartsTree = nil
 local stopMonitorActive = false
 local stopSettleTimer = 0
-local stopSettleDelay = 2.5
+local stopSettleDelay = config.stopSettleDelay
 local currentTriggerName = nil
 local roughRide = 0
 local lastVelocity = nil
@@ -34,15 +52,23 @@ local stopIndexWhereBoardingStarted = nil
 local pendingRouteInit = false
 local isCalculatingRoute = false
 local routeCalcTimer = 0
+local uiUpdateTimer = 0
 local currentRouteName = nil
 local stopDisplayNames = {}
 local routeItems = {}
 local stopMarkerObjects = {}
 local stopPerimeterTrigger = nil
 local currentLoanerCut = 0
+local passengerDisplayTimer = 0
 
 local isBus
 local initRoute
+
+local function updatePassengerCountDisplay(countOverride)
+    if not currentRouteActive then return end
+    -- No longer using ui_message for this, relying on updateBusControllerDisplay to update the header
+    updateBusControllerDisplay()
+end
 
 -- Map known part-name patterns to explicit seating capacities for special-case vehicle parts.
 -- @param partName The parts-tree node name to test (string).
@@ -680,7 +706,7 @@ local function endRoute(reason, payout)
         local basePay = accumulatedReward
         local tipsEarned = tipTotal
 
-        reputationGain = math.floor(payout / 500)
+        reputationGain = math.floor(payout / config.reputationDivisor)
 
         msg = msg .. string.format("\nStops completed: %d\nBase pay:   $%d\nTips:       $%d",
             totalStopsCompleted, basePay, tipsEarned)
@@ -728,6 +754,8 @@ local function endRoute(reason, payout)
     accumulatedReward, passengersOnboard, totalStopsCompleted, tipTotal = 0, 0, 0, 0
     roughRide, lastVelocity, activeBusID = 0, nil, nil
     currentLoanerCut = 0
+    
+    guihooks.trigger('ClearTasklist')
 end
 
 -- Loads map-specific bus route configurations from disk by locating and parsing a JSON route file for the current level.
@@ -959,6 +987,24 @@ end
 -- Constructs a `routeData` object containing `direction` and an ordered `tasklist` of stop identifiers/labels starting from the current stop,
 -- sends it to the player's vehicle controller via the `bus_setLineInfo` gameplay event when a vehicle is present,
 -- and triggers the `BusDisplayUpdate` GUI hook with the same `routeData`.
+local function updateTasklist(paxOverride)
+    if not currentRouteActive then return end
+    local count = paxOverride or passengersOnboard
+    
+    local header = currentRouteName or "Bus Route"
+    guihooks.trigger('SetTasklistHeader', {label = header})
+    
+    local paxLabel = string.format("Passengers on Board: %d", count)
+    guihooks.trigger('SetTasklistTask', {
+        id = "bus_passenger_count",
+        label = paxLabel,
+        done = false,
+        active = true,
+        type = "message",
+        clear = false
+    })
+end
+
 local function updateBusControllerDisplay()
     if not currentRouteActive or not currentStopIndex or not stopTriggers or #stopTriggers == 0 then
         return
@@ -1069,6 +1115,7 @@ initRoute = function()
         #stopTriggers), 6, "info", "info")
 
     updateBusControllerDisplay()
+    updateTasklist()
 
     showCurrentStopMarkers()
 end
@@ -1107,7 +1154,7 @@ local function processStop(vehicle, dtSim)
 
         local velocity = vehicle:getVelocity():length()
 
-        if velocity > 0.5 then
+        if velocity > config.stopVelocityThreshold then
             ui_message("Come to a complete stop before passengers can board.", 2, "info", "info")
             dwellTimer = nil
             stopMonitorActive = false
@@ -1119,12 +1166,11 @@ local function processStop(vehicle, dtSim)
             stopMonitorActive = true
             stopSettleTimer = 0
             ui_message("Please open doors to begin boarding", 2.5, "info", "bus")
-            core_vehicleBridge.executeAction(vehicle, 'setFreeze', true)
         else
             stopSettleTimer = stopSettleTimer + (dtSim or 0.033)
         end
 
-        if stopSettleTimer < stopSettleDelay then
+        if stopSettleTimer < config.stopSettleDelay then
             dwellTimer = nil
             return
         end
@@ -1156,6 +1202,7 @@ local function processStop(vehicle, dtSim)
             end
 
             boardingCoroutine = coroutine.create(function()
+                core_vehicleBridge.executeAction(vehicle, 'setFreeze', true)
 
                 -- Suspends the current coroutine until the given duration (in seconds) has elapsed.
                 -- @param duration Number of seconds to wait.
@@ -1202,8 +1249,8 @@ local function processStop(vehicle, dtSim)
             passengersOnboard = math.min(math.max(0, passengersOnboard + trueBoarding - trueDeboarding),
                 M.vehicleCapacity)
 
-            local base = 400
-            local bonusMultiplier = 1 + (consecutiveStops / #stopTriggers) * 3
+            local base = config.baseFare
+            local bonusMultiplier = config.bonusMultiplierBase + (consecutiveStops / #stopTriggers) * config.bonusMultiplierFactor
             local payout = math.floor(base * bonusMultiplier)
 
             if career_economyAdjuster then
@@ -1216,13 +1263,16 @@ local function processStop(vehicle, dtSim)
             local tipsEarned = 0
             if trueDeboarding > 0 then
                 local avgRough = math.max(0, roughRide / math.max(1, dwellDuration))
-                local tipPerPassenger = math.max(0, 8 - avgRough) * 2
-                tipsEarned = math.floor(tipPerPassenger * trueDeboarding * 40)
+                local tipPerPassenger = math.max(0, config.tipBaseScore - avgRough) * config.tipPerPassengerMultiplier
+                tipsEarned = math.floor(tipPerPassenger * trueDeboarding * config.tipMultiplier)
                 tipTotal = tipTotal + tipsEarned
             end
             print(string.format("[bus] Tips: +%d   TotalTips=%d", tipsEarned, tipTotal))
 
             roughRide = 0
+
+            core_vehicleBridge.executeAction(vehicle, 'setFreeze', false)
+            boardingCoroutine = nil
 
             dwellTimer = nil
             stopMonitorActive = false
@@ -1232,7 +1282,7 @@ local function processStop(vehicle, dtSim)
 
             local triggerName = trigger:getName() or ""
             if triggerName == currentFinalStopName then
-                local loopBonus = math.floor(accumulatedReward * 0.5)
+                local loopBonus = math.floor(accumulatedReward * config.loopBonusFactor)
                 accumulatedReward = accumulatedReward + loopBonus
                 local totalPotential = accumulatedReward + tipTotal
 
@@ -1244,13 +1294,14 @@ local function processStop(vehicle, dtSim)
                 trueBoarding = 0
                 trueDeboarding = 0
 
-                routeCooldown = 10
+                routeCooldown = config.routeCooldown
                 currentStopIndex = 1
                 
                 isCalculatingRoute = true
                 routeCalcTimer = 0
                 
                 updateBusControllerDisplay()
+                updateTasklist()
 
                 if career_saveSystem and career_saveSystem.saveCurrent then
                     career_saveSystem.saveCurrent()
@@ -1261,7 +1312,7 @@ local function processStop(vehicle, dtSim)
                 local nextStopName = stopTriggers[nextStopIndex]:getName() or "Unknown"
                 print(string.format("[bus] Moving to next stop: index %d, name %s", nextStopIndex, nextStopName))
                 
-                local reputationGain = math.floor(payout / 500)
+                local reputationGain = math.floor(payout / config.reputationDivisor)
                 
                 ui_message(string.format("Proceed to Stop %02d\nBase pay: $%d\nTips: $%d\nTotal tips: $%d\nReputation: +%d",
                     nextStopIndex, payout, tipsEarned, tipTotal, reputationGain), 8, "info", "bus_next")
@@ -1270,11 +1321,16 @@ local function processStop(vehicle, dtSim)
                 isCalculatingRoute = true
                 routeCalcTimer = 0
                 updateBusControllerDisplay()
+                updateTasklist()
             end
         end
 
     else
+        if dwellTimer then
+            core_vehicleBridge.executeAction(vehicle, 'setFreeze', false)
+        end
         dwellTimer = nil
+        boardingCoroutine = nil
         stopMonitorActive = false
         stopSettleTimer = 0
     end
@@ -1289,9 +1345,17 @@ local function onVehicleSwitched(oldId, newId)
     local newVeh = be:getObjectByID(newId)
 
     if currentRouteActive and activeBusID and oldId == activeBusID then
+        if boardingCoroutine then
+            local oldBus = be:getObjectByID(activeBusID)
+            if oldBus then
+                core_vehicleBridge.executeAction(oldBus, 'setFreeze', false)
+            end
+            boardingCoroutine = nil
+        end
+
         local payout = accumulatedReward + tipTotal
-        if payout > 100000 then
-            payout = 100000
+        if payout > config.maxPayout then
+            payout = config.maxPayout
         end
         endRoute("player exited the bus", payout)
     end
@@ -1340,6 +1404,14 @@ local function onUpdate(dtReal, dtSim, dtRaw)
         return
     end
 
+    if currentRouteActive and routeInitialized then
+        uiUpdateTimer = uiUpdateTimer + (dtSim or 0.033)
+        if uiUpdateTimer > 0.5 then
+            uiUpdateTimer = 0
+            updateTasklist()
+        end
+    end
+
     if routeCooldown > 0 then
         routeCooldown = math.max(0, routeCooldown - (dtSim or 0))
         return
@@ -1365,10 +1437,10 @@ local function onUpdate(dtReal, dtSim, dtRaw)
         local deltaVel = velocity - lastVelocity
         local safeDt = (dtSim and dtSim > 0) and dtSim or 0.01
         local accel = deltaVel:length() / safeDt
-        local accelThreshold = 3.5
+        local accelThreshold = config.accelThreshold
 
         if accel > accelThreshold then
-            roughRide = roughRide + (accel - accelThreshold) * safeDt * 10
+            roughRide = roughRide + (accel - accelThreshold) * safeDt * config.roughRidePenaltyMultiplier
         end
     end
 
@@ -1398,8 +1470,15 @@ local function onBeamNGTrigger(data)
         currentTriggerName = data.triggerName
     elseif data.event == "exit" then
         if currentTriggerName == data.triggerName then
+            if dwellTimer then
+                local vehicle = be:getPlayerVehicle(0)
+                if vehicle then
+                    core_vehicleBridge.executeAction(vehicle, 'setFreeze', false)
+                end
+            end
             currentTriggerName = nil
             dwellTimer = nil
+            boardingCoroutine = nil
             stopMonitorActive = false
             stopSettleTimer = 0
         end
@@ -1423,7 +1502,7 @@ local function onExtensionUnloaded()
     currentStopIndex = nil
     stopTriggers = {}
     dwellTimer = nil
-    dwellDuration = 10
+    dwellDuration = config.dwellDurationBase
     consecutiveStops = 0
     currentRouteActive = false
     accumulatedReward = 0
@@ -1452,6 +1531,8 @@ local function onExtensionUnloaded()
     currentLoanerCut = 0
 
     M.vehicleCapacity = nil
+    
+    guihooks.trigger('ClearTasklist')
 
     print("[bus] Extension unloaded successfully.")
 end
