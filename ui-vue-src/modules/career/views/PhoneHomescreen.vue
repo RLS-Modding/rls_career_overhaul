@@ -509,7 +509,7 @@ onUnmounted(() => {
   overflow: hidden;
   position: relative;
   padding-top: 50px;
-  padding-bottom: 0;
+  padding-bottom: 100px;
 }
 
 .pages-track {
@@ -536,7 +536,8 @@ onUnmounted(() => {
   grid-template-rows: repeat(5, auto);
   gap: 14px 10px;
   justify-items: center;
-  align-content: start;
+  align-content: end;
+  height: 100%;
 }
 
 .grid-slot {

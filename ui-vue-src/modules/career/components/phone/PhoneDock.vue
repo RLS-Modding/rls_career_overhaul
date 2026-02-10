@@ -60,19 +60,19 @@ function onDockPointerUp() {
 <style scoped lang="scss">
 .phone-dock {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 88px;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  height: 84px;
   display: flex;
   align-items: center;
   justify-content: space-evenly;
   padding: 0 12px;
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(20, 20, 20, 0.55);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 0 0 2em 2em;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 22px;
   z-index: 20;
 }
 
