@@ -4,7 +4,7 @@
 
 local M = {}
 
-M.dependencies = {'career_career', "career_modules_log", "render_renderViews", "util_screenshotCreator", "career_modules_garageManager", "career_modules_computer"}
+M.dependencies = {'career_career', "render_renderViews", "util_screenshotCreator"}
 
 local dateUtils = require('utils/dateUtils')
 local parking = require('gameplay/parking')

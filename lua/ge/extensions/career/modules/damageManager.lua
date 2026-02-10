@@ -1,6 +1,6 @@
 local M = {}
 
-local dependencies = {'career_career', 'career_modules_inventory'}
+local dependencies = {}
 
 local function getSpawnedVehicles()
     local inventoryIdToVehId = career_modules_inventory.getMapInventoryIdToVehId()

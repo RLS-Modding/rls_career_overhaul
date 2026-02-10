@@ -4,7 +4,7 @@
 local M = {}
 
 M.dependencies =
-  {'career_career', 'career_modules_inspectVehicle', 'util_configListGenerator', 'freeroam_organizations'}
+  {'career_career', 'util_configListGenerator', 'freeroam_organizations'}
 
 local moduleVersion = 62
 local jbeamIO = require('jbeam/io')

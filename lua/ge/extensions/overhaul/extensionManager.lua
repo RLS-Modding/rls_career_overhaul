@@ -30,7 +30,6 @@ end
 -- Configures unload behavior for overhaul runtime: sets several gameplay, career and editor extensions to manual unload and unloads extensions that must remain disabled while the overhaul is active.
 -- This ensures freeroam, recovery prompt, drag practice race, career core and the career save system are unloaded and that selectable subsystems (events, phone, repo, taxi, cab, loading, ambulance, bus, beamEats, challenge modes, economy adjuster, challenge seed encoder and the freeroam event editor) are left in manual-unload mode.
 local function loadExtensions()
-
     extensions.unload("freeroam_freeroam")
     extensions.unload("core_recoveryPrompt")
     extensions.unload("gameplay_drag_dragTypes_dragPracticeRace")
