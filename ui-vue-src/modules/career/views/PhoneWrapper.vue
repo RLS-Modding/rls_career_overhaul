@@ -10,14 +10,27 @@
     }">
     <div class="phone-bevel"></div>
     <div class="phone-screen">
+      <!-- Dynamic Island -->
+      <div class="dynamic-island"></div>
+
       <!-- Status Bar -->
       <div class="phone-status-bar">
         <div class="phone-status-bar-left">
           <span>{{ timeString }}</span>
-          <button class="status-back" v-bng-on-ui-nav:back,menu.asMouse @click="back"> <- Back</button>
+          <button class="status-back" v-bng-on-ui-nav:back,menu.asMouse @click="back"> ← Back</button>
         </div>
         <div class="phone-status-bar-right">
-          <span>{{ appName }}</span>
+          <svg class="status-signal" width="16" height="12" viewBox="0 0 16 12" fill="currentColor">
+            <rect x="0" y="9" width="3" height="3" rx="0.5" opacity="1"/>
+            <rect x="4.5" y="6" width="3" height="6" rx="0.5" opacity="1"/>
+            <rect x="9" y="3" width="3" height="9" rx="0.5" opacity="1"/>
+            <rect x="13.5" y="0" width="3" height="12" rx="0.5" opacity="0.85"/>
+          </svg>
+          <svg class="status-battery" width="22" height="11" viewBox="0 0 22 11" fill="currentColor">
+            <rect x="0" y="0" width="19" height="11" rx="2" stroke="currentColor" stroke-width="1" fill="none"/>
+            <rect x="1.5" y="1.5" width="16" height="8" rx="1" fill="currentColor" opacity="0.9"/>
+            <rect x="19.5" y="3" width="2" height="5" rx="0.5"/>
+          </svg>
         </div>
       </div>
       
@@ -137,7 +150,7 @@ onBeforeRouteLeave((to, from) => {
         setTimeout(() => {
           sessionStorage.removeItem('phoneVisible')
           resolve(true)
-        }, 400)
+        }, 500)
       })
     }
     sessionStorage.removeItem('phoneVisible')
@@ -162,7 +175,7 @@ const close = async () => {
   if (phoneRef.value && isEntered.value) {
     isEntered.value = false
     // Wait for animation to complete
-    await new Promise(resolve => setTimeout(resolve, 400))
+    await new Promise(resolve => setTimeout(resolve, 500))
   }
   sessionStorage.removeItem('phoneVisible')
   lua.extensions.unload("ui_phone_time")
@@ -185,7 +198,7 @@ const back = () => {
   transform: scale(var(--scale)) translateY(100%);
   transform-origin: bottom right;
   opacity: 1;
-  transition: transform 0.4s ease;
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
   
   &.phone-entered {
     transform: scale(var(--scale)) translateY(0);
@@ -229,6 +242,18 @@ const back = () => {
   }
 }
 
+.dynamic-island {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 28px;
+  background: #000;
+  border-radius: 14px;
+  z-index: 15;
+}
+
 .phone-status-bar {
   position: absolute;
   top: 0.35em;
@@ -268,8 +293,13 @@ const back = () => {
 
 .phone-status-bar-right {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: flex-end;
+  gap: 4px;
+}
+
+.status-signal, .status-battery {
+  opacity: 0.9;
 }
 
 .status-back {
