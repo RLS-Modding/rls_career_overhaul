@@ -1437,6 +1437,11 @@ export default {
     dismissSummary: () => {}
   },
 
+  ui_phone_layout: {
+    requestLayout: () => {},
+    updateLayout: layoutData => Any,
+  },
+
   overhaul_maps: {
     getOtherAvailableMaps: () => {},
     getMapsExcludingWestCoast: () => {},

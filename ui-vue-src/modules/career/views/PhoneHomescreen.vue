@@ -18,7 +18,7 @@
           <div
             v-for="(page, pageIdx) in pages"
             :key="'page-' + pageIdx"
-            class="page"
+            class="page apps-page"
           >
             <div class="app-grid">
               <div
@@ -100,7 +100,7 @@ import PhonePageDots from '../components/phone/PhonePageDots.vue'
 import PhoneSearch from '../components/phone/PhoneSearch.vue'
 import { usePhoneApps } from '../utils/phoneAppRegistry'
 
-const APPS_PER_PAGE = 20
+const APPS_PER_PAGE = 16
 const PAGE_WIDTH = 360
 
 const router = useRouter()
@@ -130,6 +130,8 @@ const dragSourceLocation = reactive({ type: '', page: -1, slot: -1 })
 const dragGhostApp = ref(null)
 const dragGhostPos = reactive({ x: 0, y: 0 })
 const dockHighlightIdx = ref(-1)
+let dragStartPageLayouts = null
+let dragStartDockIds = null
 
 // Edge drag for cross-page
 let edgeTimer = null
@@ -171,10 +173,11 @@ function buildDefaultLayout() {
   const gridApps = availableApps.value.filter(a => !dockIds.value.includes(a.id))
   const pagesArr = []
   for (let i = 0; i < gridApps.length; i += APPS_PER_PAGE) {
-    const pageSlots = []
+    const pageSlots = new Array(APPS_PER_PAGE).fill(null)
     const chunk = gridApps.slice(i, i + APPS_PER_PAGE)
-    for (let j = 0; j < APPS_PER_PAGE; j++) {
-      pageSlots.push(chunk[j] ? chunk[j].id : null)
+    const startIdx = APPS_PER_PAGE - chunk.length
+    for (let j = 0; j < chunk.length; j++) {
+      pageSlots[startIdx + j] = chunk[j].id
     }
     pagesArr.push(pageSlots)
   }
@@ -182,14 +185,40 @@ function buildDefaultLayout() {
   return pagesArr
 }
 
+function normalizePageAppsToTrailingSlots(appIds) {
+  const pageSlots = new Array(APPS_PER_PAGE).fill(null)
+  const startIdx = APPS_PER_PAGE - appIds.length
+  for (let i = 0; i < appIds.length; i++) {
+    pageSlots[startIdx + i] = appIds[i]
+  }
+  return pageSlots
+}
+
 function applyLayout(data) {
   if (data && data.pages && data.pages.length > 0) {
-    dockIds.value = data.dock || [...DEFAULT_DOCK_IDS]
+    dockIds.value = [...(data.dock || [...DEFAULT_DOCK_IDS])]
+      .slice(0, 4)
+      .map(v => v || null)
+    while (dockIds.value.length < 4) dockIds.value.push(null)
+
+    const dockSet = new Set(dockIds.value.filter(Boolean))
+    const seen = new Set(dockSet)
     pageLayouts.value = data.pages.map(p => {
-      const slots = [...(p.apps || p)]
-      while (slots.length < APPS_PER_PAGE) slots.push(null)
-      return slots
+      const raw = [...(p.apps || p)].slice(0, APPS_PER_PAGE)
+      const pageApps = []
+      for (const id of raw) {
+        if (!id) continue
+        if (!appMap.value[id]) continue
+        if (seen.has(id)) continue
+        seen.add(id)
+        pageApps.push(id)
+      }
+      return normalizePageAppsToTrailingSlots(pageApps)
     })
+
+    if (pageLayouts.value.length === 0) {
+      pageLayouts.value = [new Array(APPS_PER_PAGE).fill(null)]
+    }
     seenApps.value = new Set(data.seenApps || [])
     wallpaper.value = data.wallpaper || 'default'
 
@@ -200,7 +229,7 @@ function applyLayout(data) {
     ])
     for (const app of availableApps.value) {
       if (!allLayoutIds.has(app.id)) {
-        addAppToFirstEmpty(app.id)
+        addAppToLastEmpty(app.id)
       }
     }
   } else {
@@ -208,9 +237,9 @@ function applyLayout(data) {
   }
 }
 
-function addAppToFirstEmpty(appId) {
+function addAppToLastEmpty(appId) {
   for (const page of pageLayouts.value) {
-    const emptyIdx = page.indexOf(null)
+    const emptyIdx = page.lastIndexOf(null)
     if (emptyIdx !== -1) {
       page[emptyIdx] = appId
       return
@@ -218,7 +247,7 @@ function addAppToFirstEmpty(appId) {
   }
   // All full, add new page
   const newPage = new Array(APPS_PER_PAGE).fill(null)
-  newPage[0] = appId
+  newPage[APPS_PER_PAGE - 1] = appId
   pageLayouts.value.push(newPage)
 }
 
@@ -233,8 +262,9 @@ function buildSaveData() {
 }
 
 function saveLayout() {
+  const data = buildSaveData()
   try {
-    lua.ui_phone_layout.updateLayout(buildSaveData())
+    lua.ui_phone_layout.updateLayout(data)
   } catch (e) {
     console.warn('Failed to save phone layout', e)
   }
@@ -342,8 +372,9 @@ function startIconDrag(e, app, source) {
   isDraggingIcon.value = true
   dragSourceApp.value = app
   dragGhostApp.value = app
-  dragGhostPos.x = e.clientX - 34
-  dragGhostPos.y = e.clientY - 34
+  updateDragGhostPosition(e)
+  dragStartPageLayouts = pageLayouts.value.map(page => [...page])
+  dragStartDockIds = [...dockIds.value]
 
   if (source === 'grid') {
     // Find which page/slot this app is in
@@ -367,8 +398,7 @@ function startIconDrag(e, app, source) {
 
 function onIconDragMove(e) {
   if (!isDraggingIcon.value) return
-  dragGhostPos.x = e.clientX - 34
-  dragGhostPos.y = e.clientY - 34
+  updateDragGhostPosition(e)
 
   // Check dock zone (bottom ~88px of phone screen)
   const phoneEl = document.querySelector('.homescreen')
@@ -383,6 +413,10 @@ function onIconDragMove(e) {
       dockHighlightIdx.value = idx
     } else {
       dockHighlightIdx.value = -1
+      const target = findGridSlotAt(e.clientX, e.clientY)
+      if (target) {
+        moveDraggedAppToGridSlot(target)
+      }
     }
   }
 
@@ -424,32 +458,32 @@ function onIconDragEnd(e) {
 
   if (dockHighlightIdx.value >= 0) {
     // Drop into dock
+    removeAppFromGrid(appId)
     const existingInDock = dockIds.value[dockHighlightIdx.value]
     dockIds.value[dockHighlightIdx.value] = appId
     if (existingInDock) {
       // Displace existing dock app to grid
-      addAppToFirstEmpty(existingInDock)
+      addAppToLastEmpty(existingInDock)
     }
   } else {
     // Drop into grid - find slot under cursor
     const target = findGridSlotAt(e.clientX, e.clientY)
     if (target) {
-      const existing = pageLayouts.value[target.page][target.slot]
-      pageLayouts.value[target.page][target.slot] = appId
-      if (existing) {
-        // Swap: put displaced app in original location
-        if (dragSourceLocation.type === 'grid') {
-          pageLayouts.value[dragSourceLocation.page][dragSourceLocation.slot] = existing
-        } else {
-          addAppToFirstEmpty(existing)
-        }
-      }
+      moveDraggedAppToGridSlot(target)
     } else {
-      // Return to original position
-      if (dragSourceLocation.type === 'grid') {
-        pageLayouts.value[dragSourceLocation.page][dragSourceLocation.slot] = appId
-      } else if (dragSourceLocation.type === 'dock') {
-        dockIds.value[dragSourceLocation.slot] = appId
+      // Invalid drop: restore exact pre-drag layout so preview shuffles are reverted.
+      if (dragStartPageLayouts && dragStartDockIds) {
+        pageLayouts.value = dragStartPageLayouts.map(page => [...page])
+        dockIds.value = [...dragStartDockIds]
+      } else {
+        const location = findAppLocation(appId)
+        if (!location) {
+          if (dragSourceLocation.type === 'grid') {
+            pageLayouts.value[dragSourceLocation.page][dragSourceLocation.slot] = appId
+          } else if (dragSourceLocation.type === 'dock') {
+            dockIds.value[dragSourceLocation.slot] = appId
+          }
+        }
       }
     }
   }
@@ -458,6 +492,8 @@ function onIconDragEnd(e) {
   dragSourceApp.value = null
   dragGhostApp.value = null
   dockHighlightIdx.value = -1
+  dragStartPageLayouts = null
+  dragStartDockIds = null
   saveLayout()
 }
 
@@ -470,6 +506,74 @@ function findGridSlotAt(x, y) {
   const slot = parseInt(slotEl.dataset.slot)
   if (isNaN(page) || isNaN(slot)) return null
   return { page, slot }
+}
+
+function updateDragGhostPosition(e) {
+  const homeEl = document.querySelector('.homescreen')
+  if (!homeEl) return
+  const rect = homeEl.getBoundingClientRect()
+  const scaleX = rect.width > 0 ? rect.width / homeEl.offsetWidth : 1
+  const scaleY = rect.height > 0 ? rect.height / homeEl.offsetHeight : 1
+  dragGhostPos.x = (e.clientX - rect.left) / scaleX - 34
+  dragGhostPos.y = (e.clientY - rect.top) / scaleY - 34
+}
+
+function findAppLocation(appId) {
+  const dockSlot = dockIds.value.indexOf(appId)
+  if (dockSlot !== -1) return { type: 'dock', slot: dockSlot }
+
+  for (let p = 0; p < pageLayouts.value.length; p++) {
+    const s = pageLayouts.value[p].indexOf(appId)
+    if (s !== -1) return { type: 'grid', page: p, slot: s }
+  }
+  return null
+}
+
+function removeAppFromGrid(appId) {
+  for (let p = 0; p < pageLayouts.value.length; p++) {
+    const s = pageLayouts.value[p].indexOf(appId)
+    if (s !== -1) {
+      pageLayouts.value[p][s] = null
+      return { page: p, slot: s }
+    }
+  }
+  return null
+}
+
+function moveDraggedAppToGridSlot(target) {
+  if (!dragSourceApp.value) return
+  const appId = dragSourceApp.value.id
+  const current = findAppLocation(appId)
+
+  // If app is in dock while hovering grid, free that dock slot first.
+  if (current && current.type === 'dock') {
+    dockIds.value[current.slot] = null
+  }
+
+  const targetPage = pageLayouts.value[target.page]
+  if (!targetPage) return
+
+  // iPhone-like behavior on the same page: shift apps out of the way.
+  const currentIdxOnTargetPage = targetPage.indexOf(appId)
+  if (currentIdxOnTargetPage !== -1) {
+    if (currentIdxOnTargetPage === target.slot) return
+    targetPage.splice(currentIdxOnTargetPage, 1)
+    targetPage.splice(target.slot, 0, appId)
+    return
+  }
+
+  // Cross-page / dock-to-grid: place into target and relocate displaced app.
+  const removedFromOtherPage = removeAppFromGrid(appId)
+  const displaced = targetPage[target.slot]
+  targetPage[target.slot] = appId
+
+  if (displaced && displaced !== appId) {
+    if (removedFromOtherPage) {
+      pageLayouts.value[removedFromOtherPage.page][removedFromOtherPage.slot] = displaced
+    } else {
+      addAppToLastEmpty(displaced)
+    }
+  }
 }
 
 // ─── Keyboard ───
@@ -507,7 +611,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   document.removeEventListener('keydown', onKeyDown)
-  if (jiggleMode.value) saveLayout()
+  saveLayout()
 })
 </script>
 
@@ -526,9 +630,9 @@ onUnmounted(() => {
   overflow: hidden;
   position: relative;
   padding-top: 0;
-  padding-bottom: 110px;
+  padding-bottom: 184px;
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
 }
 
 .pages-track {
@@ -549,16 +653,21 @@ onUnmounted(() => {
   box-sizing: border-box;
 }
 
+.apps-page {
+  padding-top: 88px;
+}
+
 .app-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-template-rows: repeat(5, auto);
-  gap: 14px 10px;
+  grid-template-columns: repeat(4, 68px);
+  grid-template-rows: repeat(4, auto);
+  gap: 16px;
+  justify-content: center;
   justify-items: center;
 }
 
 .grid-slot {
-  width: 78px;
+  width: 68px;
   height: 90px;
   display: flex;
   align-items: flex-start;
@@ -571,7 +680,9 @@ onUnmounted(() => {
 }
 
 .drag-ghost {
-  position: fixed;
+  position: absolute;
+  top: 0;
+  left: 0;
   z-index: 9999;
   pointer-events: none;
   opacity: 0.9;

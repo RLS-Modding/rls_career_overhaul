@@ -60,30 +60,34 @@ function onDockPointerUp() {
 <style scoped lang="scss">
 .phone-dock {
   position: absolute;
-  bottom: 18px;
-  left: 12px;
-  right: 12px;
-  height: 84px;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 350px;
   display: flex;
   align-items: center;
-  justify-content: space-evenly;
-  padding: 0 12px;
+  justify-content: center;
+  gap: 16px;
+  padding: 15px;
   background: rgba(20, 20, 20, 0.55);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 22px;
+  border-radius: 30px;
   z-index: 20;
+  box-sizing: border-box;
 }
 
 .dock-slot {
-  width: 72px;
-  height: 72px;
+  width: 68px;
+  height: 68px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 16px;
+  padding: 0;
+  border-radius: 18px;
   transition: background 0.15s ease;
+  flex: 0 0 auto;
 
   &.dock-slot-highlight {
     background: rgba(255, 255, 255, 0.15);
@@ -94,10 +98,12 @@ function onDockPointerUp() {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 68px;
+  height: 68px;
 }
 
 :deep(.app-icon-square) {
-  width: 60px;
-  height: 60px;
+  width: 68px;
+  height: 68px;
 }
 </style>

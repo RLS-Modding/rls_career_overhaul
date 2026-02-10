@@ -206,10 +206,10 @@ const back = () => {
   
   .phone-bevel {
     position: absolute;
-    top: -0.6em;
-    left: -0.6em;
-    right: -0.6em;
-    bottom: -0.6em;
+    top: -0.35em;
+    left: -0.35em;
+    right: -0.35em;
+    bottom: -0.35em;
     border-radius: 2.5em;
     background: linear-gradient(160deg, #2a2a2a 0%, #0a0a0a 40%, #000 100%);
     border: 1px solid rgba(120, 120, 120, 0.35);
@@ -244,7 +244,7 @@ const back = () => {
 
 .dynamic-island {
   position: absolute;
-  top: 6px;
+  top: 10px;
   left: 50%;
   transform: translateX(-50%);
   width: 120px;

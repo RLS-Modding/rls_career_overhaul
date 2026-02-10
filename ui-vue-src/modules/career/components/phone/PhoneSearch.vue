@@ -66,16 +66,18 @@ const filteredApps = computed(() => {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 8px 0;
+  padding: 52px 0 8px;
 }
 
 .search-input-wrap {
   display: flex;
   align-items: center;
   background: rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
-  padding: 8px 12px;
-  margin-bottom: 12px;
+  border-radius: 999px;
+  width: min(100%, 300px);
+  align-self: center;
+  padding: 7px 12px;
+  margin: 0 auto 12px;
 }
 
 .search-icon-svg {
