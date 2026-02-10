@@ -1428,22 +1428,6 @@ export default {
     isRepoVehicle: () => {}
   },
 
-  gameplay_carswap: {
-    getUIData: () => {},
-    getInventoryForListing: () => {},
-    createListing: (inventoryId, price, title, description, thumbnailBase64) => [Number, Number, String, String, String],
-    cancelListing: listingId => String,
-    purchaseVehicle: listingId => String,
-    claimListing: listingId => String,
-    getListings: () => {},
-    getMyListings: () => {},
-    removeListing: listingId => String,
-    sendMessage: (listingId, content) => [String, String],
-    markMessageRead: messageId => String,
-    setProfileName: name => String,
-    getProfileName: () => {}
-  },
-
   gameplay_beamEats: {
     setAvailable: () => {},
     stopBeamEatsJob: () => {},

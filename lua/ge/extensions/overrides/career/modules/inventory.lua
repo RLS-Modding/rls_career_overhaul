@@ -1142,8 +1142,7 @@ local function getVehicleUiData(inventoryId, inventoryIdsInGarage)
   vehicleData.returnLoanerPermission = career_modules_permissions.getStatusForTag("returnLoanedVehicle", {inventoryId = inventoryId})
 
   local marketplaceListed = career_modules_marketplace.findVehicleListing(inventoryId) ~= nil
-  local carswapListed = vehicleData.config and vehicleData.config.carswap_listed or false
-  vehicleData.listedForSale = marketplaceListed or carswapListed
+  vehicleData.listedForSale = marketplaceListed
 
   for _, performanceData in ipairs(vehicleData.performanceHistory or {}) do
     processPerformanceData(performanceData)
@@ -1593,9 +1592,6 @@ local function onCheckPermission(tags, permissions, additionalData)
       table.insert(permissions, {permission = "forbidden"})
     end
     if tag == "vehicleSelling" and vehData.timeToAccess then
-      table.insert(permissions, {permission = "forbidden"})
-    end
-    if tag == "vehicleSelling" and vehData.config and vehData.config.carswap_listed then
       table.insert(permissions, {permission = "forbidden"})
     end
     if tag == "vehicleFavorite" and (vehData.favorite or vehData.missingFile) then

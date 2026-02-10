@@ -45,7 +45,6 @@ import PhoneBankRename from "./views/PhoneBankRename.vue"
 import PhoneTuningShop from "./views/PhoneTuningShop.vue"
 import PhoneQuarry from "./views/PhoneQuarry.vue"
 import PhoneBeamEats from "./views/PhoneBeamEats.vue"
-import PhoneCarSwap from "./views/PhoneCarSwap.vue"
 import PhoneCamera from "./views/PhoneCamera.vue"
 import PhoneGallery from "./views/PhoneGallery.vue"
 import LevelSwitch from "./views/LevelSwitch.vue"
@@ -454,12 +453,6 @@ export default [
         path: "phone-beam-eats",
         name: "phone-beam-eats",
         component: PhoneBeamEats
-      },
-
-      {
-        path: "phone-carswap",
-        name: "phone-carswap",
-        component: PhoneCarSwap
       },
 
       {
