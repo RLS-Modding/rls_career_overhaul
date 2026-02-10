@@ -273,7 +273,8 @@ function onViewportPointerMove(e) {
     if (onSearchPage && dx < 0) {
       pageDragDelta.value = 0
     } else {
-      pageDragDelta.value = dx
+      // Clamp to one page width max so you can't visually skip pages
+      pageDragDelta.value = Math.max(-PAGE_WIDTH, Math.min(PAGE_WIDTH, dx))
     }
   }
 }
@@ -524,8 +525,10 @@ onUnmounted(() => {
   flex: 1;
   overflow: hidden;
   position: relative;
-  padding-top: 50px;
-  padding-bottom: 100px;
+  padding-top: 0;
+  padding-bottom: 110px;
+  display: flex;
+  align-items: flex-end;
 }
 
 .pages-track {
@@ -541,7 +544,7 @@ onUnmounted(() => {
 .page {
   flex: 0 0 360px;
   width: 360px;
-  height: 100%;
+  height: auto;
   padding: 8px 14px;
   box-sizing: border-box;
 }
@@ -552,8 +555,6 @@ onUnmounted(() => {
   grid-template-rows: repeat(5, auto);
   gap: 14px 10px;
   justify-items: center;
-  align-content: end;
-  height: 100%;
 }
 
 .grid-slot {

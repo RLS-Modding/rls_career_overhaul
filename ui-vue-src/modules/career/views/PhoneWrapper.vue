@@ -206,17 +206,17 @@ const back = () => {
   
   .phone-bevel {
     position: absolute;
-    top: -0.7em;
-    left: -0.7em;
-    right: -0.7em;
-    bottom: -0.7em;
+    top: -0.6em;
+    left: -0.6em;
+    right: -0.6em;
+    bottom: -0.6em;
     border-radius: 2.5em;
-    background: linear-gradient(145deg,
-    rgba(0,0,0,1) 100%,
-      rgb(0, 0, 0) 100%
-      
-    );
-    border: 0.15em solid rgba(168, 168, 168, 0.5)
+    background: linear-gradient(160deg, #2a2a2a 0%, #0a0a0a 40%, #000 100%);
+    border: 1px solid rgba(120, 120, 120, 0.35);
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, 0.8),
+      0 4px 20px rgba(0, 0, 0, 0.6),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
   }
 
   .phone-screen {

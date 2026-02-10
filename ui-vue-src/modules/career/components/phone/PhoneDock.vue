@@ -60,7 +60,7 @@ function onDockPointerUp() {
 <style scoped lang="scss">
 .phone-dock {
   position: absolute;
-  bottom: 12px;
+  bottom: 18px;
   left: 12px;
   right: 12px;
   height: 84px;
