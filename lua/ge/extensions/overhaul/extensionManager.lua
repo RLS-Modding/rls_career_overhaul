@@ -72,7 +72,7 @@ local function removePhoneBinding()
                     end
                 end
                 pcall(function()
-                    core_input_bindings.saveBindingsToDisk(device)
+                    core_input_bindings.saveBindingsToDisk(device.contents)
                 end)
             end
         end
@@ -120,17 +120,6 @@ local function startup()
     if not core_gamestate.state or core_gamestate.state.state ~= "career" then
         loadExtensions()
     end
-
-    -- Force core_input_actions to rescan action JSON files so mod-provided
-    -- actions (e.g. openPhone from phone.json) are registered before the
-    -- bindings legend or any other system tries to look them up.
-    -- Without this, bindingsLegend.lua crashes with a nil actionInfo because
-    -- the action JSON may not have been loaded when the engine first scanned.
-    pcall(function()
-        if core_input_actions then
-            extensions.reload("core_input_actions")
-        end
-    end)
 
     core_jobsystem.create(function(job)
         job.sleep(5)

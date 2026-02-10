@@ -159,14 +159,13 @@ local function getPhoneBinding()
     return {binding = "Not bound"}
   end
 
-  -- Ensure bindings data is fresh
   if core_input_bindings.notifyUI then
     pcall(function() core_input_bindings.notifyUI("guide refresh") end)
   end
 
   if core_input_bindings.bindings then
     for _, device in ipairs(core_input_bindings.bindings) do
-      if device.contents and device.contents.bindings then
+      if device.contents and device.contents.bindings and type(device.contents.bindings) == "table" then
         for _, b in ipairs(device.contents.bindings) do
           if b.action == "openPhone" and b.control and b.control ~= "" then
             return {binding = formatControlName(b.control, device.devname)}
@@ -186,7 +185,6 @@ local function setPhoneBinding(controlString, deviceName)
 
   if not deviceName then deviceName = "keyboard0" end
 
-  -- Find the device in core_input_bindings
   if not core_input_bindings or not core_input_bindings.bindings then
     log("E", "guide", "core_input_bindings not available")
     return {success = false, binding = "Not bound"}
@@ -201,28 +199,40 @@ local function setPhoneBinding(controlString, deviceName)
   end
 
   if not targetDevice or not targetDevice.contents then
-    log("E", "guide", "Could not find device: " .. deviceName)
+    log("E", "guide", "Could not find device: " .. tostring(deviceName))
     return {success = false, binding = "Not bound"}
   end
 
-  -- Remove any existing openPhone binding from this device
-  local bindings = targetDevice.contents.bindings
+  local deviceContents = targetDevice.contents
+  if not deviceContents.bindings or type(deviceContents.bindings) ~= "table" then
+    log("E", "guide", "Device has no bindings table")
+    return {success = false, binding = "Not bound"}
+  end
+
+  local bindings = deviceContents.bindings
   for i = #bindings, 1, -1 do
     if bindings[i].action == "openPhone" then
       table.remove(bindings, i)
     end
   end
 
-  -- Add the new binding with raw control string
-  table.insert(bindings, {
+  local newBinding = {
     action = "openPhone",
     control = controlString,
     player = 0,
-  })
+  }
+  local bindingTemplate = core_input_bindings.bindingTemplate
+  if type(bindingTemplate) == "table" then
+    for k, v in pairs(bindingTemplate) do
+      if newBinding[k] == nil then
+        newBinding[k] = v
+      end
+    end
+  end
+  table.insert(bindings, newBinding)
 
-  -- Save to disk — saveBindingsToDisk handles rebinding automatically
   local ok = pcall(function()
-    core_input_bindings.saveBindingsToDisk(targetDevice.contents)
+    core_input_bindings.saveBindingsToDisk(deviceContents)
   end)
 
   if not ok then

@@ -2,7 +2,12 @@
 
 let guideScope = null
 let stopListeningFn = null
+let bridgeListenerOff = null
 let eventsRegister = {}
+
+function getBridge() {
+  return window.bridge || (window.$game && window.$game.events && { events: window.$game.events }) || null
+}
 
 angular.module('beamng.stuff')
 .controller('GuideController', ['$scope', '$rootScope', function($scope, $rootScope) {
@@ -13,143 +18,94 @@ angular.module('beamng.stuff')
   $scope.isPhoneBound = false
   $scope.bindingAction = 'openPhone'
 
-  console.log('[Guide] Controller initialized')
-
   function updatePhoneBound(binding) {
     $scope.isPhoneBound = binding && binding !== 'Not bound'
   }
-  
-  function loadPhoneBinding() {
+
+  function loadPhoneBinding(retryCount) {
+    retryCount = retryCount || 0
     bngApi.engineLua("extensions.career_modules_guide.getPhoneBinding()", function(result) {
-      if (result && result.binding) {
-        $scope.$evalAsync(function() {
-          $scope.phoneBinding = result.binding
-          updatePhoneBound(result.binding)
-        })
-      }
+      $scope.$evalAsync(function() {
+        var binding = (result && result.binding) ? result.binding : 'Not bound'
+        $scope.phoneBinding = binding
+        updatePhoneBound(binding)
+        if (binding === 'Not bound' && retryCount < 3) {
+          setTimeout(function() { loadPhoneBinding(retryCount + 1) }, 150)
+        }
+      })
     })
   }
-  
-  function convertRawInputToControl(data) {
-    // Vanilla uses raw control names — no device prefix
-    return data.control
-  }
-  
+
   function stopBinding() {
-    console.log('[Guide] stopBinding called')
     $scope.isBinding = false
-    
-    // Remove event listener first to prevent any more events
     if (stopListeningFn) {
       stopListeningFn()
       stopListeningFn = null
     }
-    
+    if (bridgeListenerOff) {
+      bridgeListenerOff()
+      bridgeListenerOff = null
+    }
     eventsRegister = {}
-    
-    // Disable input capturing in the correct order (reverse of start)
-    // Use try-catch style by wrapping in pcall on Lua side
     bngApi.engineLua("pcall(function() WinInput.setForwardRawEvents(false) end)")
     bngApi.engineLua("pcall(function() setCEFTyping(false) end)")
     bngApi.engineLua("pcall(function() ActionMap.enableBindingCapturing(false) end)")
-    
-    console.log('[Guide] stopBinding complete')
   }
-  
-  $scope.startBinding = function(event) {
-    if ($scope.isBinding) return
-    
-    console.log('[Guide] startBinding called')
-    
-    if (event) {
-      event.preventDefault()
-      event.stopPropagation()
-    }
-    
-    $scope.isBinding = true
-    eventsRegister = {}
-    
-    var controlCaptured = false
-    
-    // Enable input capturing (order matches vanilla)
-    bngApi.engineLua("ActionMap.enableBindingCapturing(true)")
-    bngApi.engineLua("setCEFTyping(true)")
-    
-    console.log('[Guide] Registering RawInputChanged listener')
-    
-    // Use the global Angular rootScope directly (matches how hooks are broadcast)
-    var angularRootScope = window.globalAngularRootScope || $rootScope
-    console.log('[Guide] Using rootScope:', angularRootScope ? 'found' : 'not found')
-    
-    // Register event listener using Angular's $on
-    stopListeningFn = angularRootScope.$on('RawInputChanged', function(event, data) {
-      console.log('[Guide] RawInputChanged received:', data)
-      
+
+  function createRawInputListener(controlCapturedRef) {
+    return function(eventOrData, dataArg) {
+      var data = dataArg !== undefined ? dataArg : eventOrData
+      if (!data || !data.control) return
       if (!$scope.isBinding) return
-      if (controlCaptured) return
-      
+      if (controlCapturedRef.current) return
+
       var devName = data.devName
       if (!eventsRegister[devName]) {
         eventsRegister[devName] = { axis: {}, key: [null, null] }
       }
-      
+      var eventData = eventsRegister[devName]
       var valid = false
-      
-      // Register the received input (matches vanilla logic)
+
       switch (data.controlType) {
         case 'axis':
-          var detectionThreshold = devName.startsWith('mouse') ? 1 : 0.5
-          if (!eventsRegister[devName].axis[data.control]) {
-            eventsRegister[devName].axis[data.control] = { first: data.value, last: data.value, accumulated: 0 }
+          if (!eventData.axis[data.control]) {
+            eventData.axis[data.control] = { first: data.value, last: data.value, accumulated: 0 }
           } else {
-            eventsRegister[devName].axis[data.control].accumulated += 
-              Math.abs(eventsRegister[devName].axis[data.control].last - data.value) / detectionThreshold
-            eventsRegister[devName].axis[data.control].last = data.value
+            var detectionThreshold = devName.startsWith('mouse') ? 1 : 0.5
+            eventData.axis[data.control].accumulated +=
+              Math.abs(eventData.axis[data.control].last - data.value) / detectionThreshold
+            eventData.axis[data.control].last = data.value
           }
-          valid = eventsRegister[devName].axis[data.control].accumulated >= 1
+          valid = eventData.axis[data.control].accumulated >= 1
           break
-          
+
         case 'button':
         case 'pov':
         case 'key':
-          // Accumulate events like vanilla does
-          eventsRegister[devName].key.push(data.control)
-          eventsRegister[devName].key = eventsRegister[devName].key.slice(-2)
-          
-          var key0 = eventsRegister[devName].key[0]
-          var key1 = eventsRegister[devName].key[1]
-          
-          console.log('[Guide] Key state:', key0, key1)
-          
+          eventData.key = [eventData.key[eventData.key.length - 1], data.control]
+          var key0 = eventData.key[0]
+          var key1 = eventData.key[1]
           if (key0 && key1) {
             valid = (key0 === key1)
-            
-            // Reset on button release
             if (data.value === 0) {
-              eventsRegister[devName].key = [null, null]
+              eventData.key = [null, null]
             }
           }
           break
       }
-      
-      // Blacklist right mouse click
+
       if (valid && devName.startsWith('mouse') && data.control === 'button1') {
         valid = false
       }
-      
-      console.log('[Guide] Valid input:', valid)
-      
+
       if (valid) {
-        controlCaptured = true
-        var controlString = convertRawInputToControl(data)
-        console.log('[Guide] Captured control:', controlString)
-        
-        // Stop binding FIRST before calling Lua to ensure input is released
+        controlCapturedRef.current = true
         stopBinding()
-        
-        // Then set the binding (pass raw control + device name)
-        var devName = data.devName || 'keyboard0'
-        bngApi.engineLua("extensions.career_modules_guide.setPhoneBinding('" + controlString + "', '" + devName + "')", function(result) {
+        var controlString = data.control || ''
+        var devNameVal = data.devName || 'keyboard0'
+        var escapedControl = (controlString + '').replace(/\\/g, '\\\\').replace(/'/g, "\\'")
+        var escapedDev = (devNameVal + '').replace(/\\/g, '\\\\').replace(/'/g, "\\'")
+        bngApi.engineLua("extensions.career_modules_guide.setPhoneBinding('" + escapedControl + "', '" + escapedDev + "')", function(result) {
           $scope.$evalAsync(function() {
             if (result && result.binding) {
               $scope.phoneBinding = result.binding
@@ -158,10 +114,35 @@ angular.module('beamng.stuff')
           })
         })
       }
-    })
-    
-    // Forward raw events after listener is registered
-    console.log('[Guide] Enabling WinInput.setForwardRawEvents')
+    }
+  }
+
+  $scope.startBinding = function(event) {
+    if ($scope.isBinding) return
+    if (event) {
+      event.preventDefault()
+      event.stopPropagation()
+    }
+
+    $scope.isBinding = true
+    eventsRegister = {}
+    var controlCapturedRef = { current: false }
+
+    bngApi.engineLua("ActionMap.enableBindingCapturing(true)")
+    bngApi.engineLua("setCEFTyping(true)")
+
+    var listener = createRawInputListener(controlCapturedRef)
+    var angularRootScope = window.globalAngularRootScope || $rootScope
+    stopListeningFn = angularRootScope.$on('RawInputChanged', listener)
+
+    var bridge = getBridge()
+    if (bridge && bridge.events && bridge.events.on) {
+      bridge.events.on('RawInputChanged', listener)
+      bridgeListenerOff = function() {
+        bridge.events.off('RawInputChanged', listener)
+      }
+    }
+
     bngApi.engineLua("WinInput.setForwardRawEvents(true)")
   }
   

@@ -22,7 +22,7 @@
         </span>
       </div>
       <button class="guide-binding-button" ng-click="startBinding()" ng-disabled="isBinding">
-        <span ng-if="!isBinding">Set shortcut</span>
+        <span ng-if="!isBinding">{{phoneBinding && phoneBinding !== 'Not bound' ? 'Change (' + phoneBinding + ')' : 'Set shortcut'}}</span>
         <span ng-if="isBinding">Binding...</span>
       </button>
     </div>
