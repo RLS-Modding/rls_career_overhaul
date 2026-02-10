@@ -1256,6 +1256,18 @@ export default {
     updateAttendance: attendanceLevel => {}
   },
 
+  career_modules_usedCarAuction: {
+    requestAuctionState: () => {},
+    startAuction: () => {},
+    cancelTravelPrompt: () => {},
+    placeBid: amount => {},
+    passCurrentLot: () => {},
+    closeMenu: () => {},
+    setAutoBidEnabled: enabled => {},
+    setAutoBidMax: maxBid => {},
+    exitAuctionArea: () => {}
+  },
+
   career_modules_garageManager: {
     requestGarageData: () => {},
     canPay: () => {},

@@ -40,7 +40,8 @@ const apps = ref([
   { name: 'Repo', icon: icons.tow, route: '/career/phone-repo', color: '#1E90FF', iconColor: '#ffffff' },
   { name: 'Taxi', icon: icons.taxiCar3, route: '/career/phone-taxi', color: '#ffd700', iconColor: '#000000' },
   { name: 'Quarry', icon: icons.cogs, route: '/career/phone-quarry', color: '#8B4513', iconColor: '#ffffff' },
-  { name: 'BeamEats', icon: icons.cityOutline, route: '/career/phone-beam-eats', color: '#ff4757', iconColor: '#ffffff' }
+  { name: 'BeamEats', icon: icons.cityOutline, route: '/career/phone-beam-eats', color: '#ff4757', iconColor: '#ffffff' },
+  { name: 'Auction', icon: icons.cars, route: '/career/phone-auction', color: '#f97316', iconColor: '#ffffff' }
 ])
 
 const navigateTo = (route) => {
