@@ -11,7 +11,12 @@
       class="page-dot search-dot"
       :class="{ active: isSearchActive }"
       @click="$emit('go', totalPages)"
-    >🔍</span>
+    >
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+    </span>
   </div>
 </template>
 
@@ -53,10 +58,13 @@ defineEmits(['go'])
   width: auto;
   height: auto;
   background: none;
-  font-size: 10px;
   line-height: 1;
   opacity: 0.5;
   transition: opacity 0.2s ease;
+  color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   &.active {
     opacity: 1;

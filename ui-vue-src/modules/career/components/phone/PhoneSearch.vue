@@ -1,14 +1,16 @@
 <template>
   <div class="phone-search">
     <div class="search-input-wrap">
-      <span class="search-icon">🔍</span>
+      <svg class="search-icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
       <input
         ref="searchInputRef"
         v-model="query"
+        v-bng-text-input
         class="search-input"
         placeholder="Search apps..."
-        @focus="onFocus"
-        @blur="onBlur"
       />
     </div>
     <div class="search-results">
@@ -34,6 +36,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { BngIcon } from '@/common/components/base'
+import { vBngTextInput } from '@/common/directives'
 
 const props = defineProps({
   apps: { type: Array, required: true },
@@ -55,13 +58,7 @@ const filteredApps = computed(() => {
   )
 })
 
-function onFocus() {
-  // CEF typing mode would be handled by vBngTextInput if needed
-}
-
-function onBlur() {
-  // noop
-}
+// Input handled by v-bng-text-input directive
 </script>
 
 <style scoped lang="scss">
@@ -81,10 +78,11 @@ function onBlur() {
   margin-bottom: 12px;
 }
 
-.search-icon {
-  font-size: 14px;
+.search-icon-svg {
   margin-right: 8px;
-  opacity: 0.7;
+  opacity: 0.6;
+  color: rgba(255, 255, 255, 0.8);
+  flex-shrink: 0;
 }
 
 .search-input {
@@ -107,6 +105,20 @@ function onBlur() {
   display: flex;
   flex-direction: column;
   gap: 2px;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 2px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4);
+  }
 }
 
 .search-result-item {

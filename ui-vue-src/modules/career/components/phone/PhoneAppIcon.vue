@@ -51,22 +51,26 @@ const iconStyle = computed(() => {
 
 let pressTimer = null
 let pressStartPos = null
+let didDrag = false
 
 function onPointerDown(e) {
   if (props.jiggleMode) {
     emit('dragstart', e, props.app)
     return
   }
+  didDrag = false
   pressStartPos = { x: e.clientX, y: e.clientY }
   pressTimer = setTimeout(() => {
     emit('longpress', props.app)
     pressTimer = null
+    didDrag = true // Treat longpress as a "drag" to prevent launch
   }, 500)
 
   const onMove = (ev) => {
-    if (pressStartPos && (Math.abs(ev.clientX - pressStartPos.x) > 5 || Math.abs(ev.clientY - pressStartPos.y) > 5)) {
+    if (pressStartPos && (Math.abs(ev.clientX - pressStartPos.x) > 8 || Math.abs(ev.clientY - pressStartPos.y) > 8)) {
       clearTimeout(pressTimer)
       pressTimer = null
+      didDrag = true
     }
   }
   const onUp = () => {
@@ -81,6 +85,10 @@ function onPointerDown(e) {
 
 function onTap() {
   if (props.jiggleMode) return
+  if (didDrag) {
+    didDrag = false
+    return
+  }
   emit('launch', props.app)
 }
 </script>
