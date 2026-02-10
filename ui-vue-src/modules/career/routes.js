@@ -31,6 +31,7 @@ import CarMeets from "./views/CarMeetsMenu.vue"
 import PurchaseGarage from "./views/PurchaseGarage.vue"
 import PurchaseBusiness from "./views/PurchaseBusiness.vue"
 import PhoneMain from "./views/PhoneMain.vue"
+import PhoneHomescreen from "./views/PhoneHomescreen.vue"
 import PhoneMinimap from "./views/PhoneMinimap.vue"
 import PhoneMarketplace from "./views/PhoneMarketplace.vue"
 import PhoneTaxi from "./views/PhoneTaxi.vue"
@@ -371,7 +372,7 @@ export default [
       {
         path: "phone-main",
         name: "phone-main",
-        component: PhoneMain
+        component: PhoneHomescreen
       },
 
       {

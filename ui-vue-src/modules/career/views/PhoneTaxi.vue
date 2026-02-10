@@ -1,5 +1,5 @@
 <template>
-    <PhoneWrapper app-name="Taxi" status-font-color="#FFFFFF" status-blend-mode="normal">
+    <PhoneWrapper app-name="Taxi">
         <div class="taxi-container" ref="container" @click="handleBackgroundClick">
             <!-- Minimap Background -->
             <div class="map-container">
