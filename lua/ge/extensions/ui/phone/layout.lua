@@ -48,6 +48,19 @@ local function clone(data)
   return out
 end
 
+-- Sanitize data from JS: empty strings become nil, ensure arrays stay arrays
+local function sanitizeFromJS(data)
+  if type(data) ~= "table" then
+    if data == "" then return nil end
+    return data
+  end
+  local out = {}
+  for k, v in pairs(data) do
+    out[k] = sanitizeFromJS(v)
+  end
+  return out
+end
+
 local function loadLayout()
   local currentSavePath = getCurrentSavePath()
 
@@ -74,6 +87,7 @@ end
 
 local function saveLayout(data)
   if not data then return end
+  data = sanitizeFromJS(data)
   local currentSavePath = getCurrentSavePath()
 
   if currentSavePath then

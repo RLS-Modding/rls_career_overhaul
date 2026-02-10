@@ -1,30 +1,52 @@
 <template>
-  <div class="phone-dock" @pointerup="onDockPointerUp">
-    <div
-      v-for="(app, idx) in dockApps"
-      :key="app ? app.id : 'empty-' + idx"
-      class="dock-slot"
-      :class="{ 'dock-slot-highlight': highlightIndex === idx }"
-      :data-dock-index="idx"
-    >
-      <template v-if="app">
-        <div
-          class="dock-icon-wrap"
-          :title="app.name"
-          @click.stop="!jiggleMode && $emit('launch', app)"
-          @pointerdown.stop="onIconPointerDown($event, app, idx)"
-        >
-          <PhoneAppIcon
-            :app="app"
-            :jiggle-mode="jiggleMode"
-            :jiggle-offset="idx"
-            :show-label="false"
-            @launch="$emit('launch', $event)"
-            @longpress="$emit('longpress', $event)"
-            @dragstart="(e, a) => $emit('dragstart', e, a, 'dock', idx)"
-          />
-        </div>
-      </template>
+  <div class="phone-dock-area">
+    <!-- Page dots above dock -->
+    <div class="dock-page-dots" v-if="totalPages > 0">
+      <span
+        v-for="i in totalPages"
+        :key="'dot-' + i"
+        class="dock-dot"
+        :class="{ active: currentPage === i - 1 }"
+        @click="$emit('goPage', i - 1)"
+      ></span>
+      <span
+        class="dock-dot search-dot"
+        :class="{ active: isSearchActive }"
+        @click="$emit('goPage', totalPages)"
+      >
+        <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </span>
+    </div>
+    <div class="phone-dock" @pointerup="onDockPointerUp">
+      <div
+        v-for="(app, idx) in dockApps"
+        :key="app ? app.id : 'empty-' + idx"
+        class="dock-slot"
+        :class="{ 'dock-slot-highlight': highlightIndex === idx }"
+        :data-dock-index="idx"
+      >
+        <template v-if="app">
+          <div
+            class="dock-icon-wrap"
+            :title="app.name"
+            @click.stop="!jiggleMode && $emit('launch', app)"
+            @pointerdown.stop="onIconPointerDown($event, app, idx)"
+          >
+            <PhoneAppIcon
+              :app="app"
+              :jiggle-mode="jiggleMode"
+              :jiggle-offset="idx"
+              :show-label="false"
+              @launch="$emit('launch', $event)"
+              @longpress="$emit('longpress', $event)"
+              @dragstart="(e, a) => $emit('dragstart', e, a, 'dock', idx)"
+            />
+          </div>
+        </template>
+      </div>
     </div>
   </div>
 </template>
@@ -38,9 +60,12 @@ const props = defineProps({
   appMap: { type: Object, required: true },
   jiggleMode: { type: Boolean, default: false },
   highlightIndex: { type: Number, default: -1 },
+  totalPages: { type: Number, default: 0 },
+  currentPage: { type: Number, default: 0 },
+  isSearchActive: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['launch', 'longpress', 'dragstart', 'dockdrop'])
+const emit = defineEmits(['launch', 'longpress', 'dragstart', 'dockdrop', 'goPage'])
 
 const dockApps = computed(() => {
   return props.dockIds.map(id => id ? props.appMap[id] || null : null)
@@ -58,11 +83,58 @@ function onDockPointerUp() {
 </script>
 
 <style scoped lang="scss">
-.phone-dock {
+.phone-dock-area {
   position: absolute;
-  bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%);
+  bottom: 24px;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.dock-page-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.dock-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+
+  &.active {
+    background: rgba(255, 255, 255, 0.9);
+    transform: scale(1.2);
+  }
+}
+
+.search-dot {
+  width: auto;
+  height: auto;
+  background: none;
+  opacity: 0.4;
+  color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease;
+
+  &.active {
+    opacity: 1;
+    transform: scale(1.15);
+    background: none;
+  }
+}
+
+.phone-dock {
   width: 350px;
   display: flex;
   align-items: center;
@@ -74,7 +146,6 @@ function onDockPointerUp() {
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 30px;
-  z-index: 20;
   box-sizing: border-box;
 }
 

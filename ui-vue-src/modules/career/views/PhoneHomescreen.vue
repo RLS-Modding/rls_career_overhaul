@@ -54,23 +54,19 @@
         </div>
       </div>
 
-      <!-- Page dots -->
-      <PhonePageDots
-        :total-pages="pages.length"
-        :current-page="currentPageIndex"
-        :is-search-active="currentPageIndex === pages.length"
-        @go="goToPage"
-      />
-
-      <!-- Dock -->
+      <!-- Dock (with integrated page dots) -->
       <PhoneDock
         :dock-ids="dockIds"
         :app-map="appMap"
         :jiggle-mode="jiggleMode"
         :highlight-index="dockHighlightIdx"
+        :total-pages="pages.length"
+        :current-page="currentPageIndex"
+        :is-search-active="currentPageIndex === pages.length"
         @launch="launchApp"
         @longpress="enterJiggleMode"
         @dragstart="onDockDragStart"
+        @go-page="goToPage"
       />
 
       <!-- Drag ghost -->
@@ -96,7 +92,6 @@ import { useEvents } from '@/services/events'
 import PhoneWrapper from './PhoneWrapper.vue'
 import PhoneAppIcon from '../components/phone/PhoneAppIcon.vue'
 import PhoneDock from '../components/phone/PhoneDock.vue'
-import PhonePageDots from '../components/phone/PhonePageDots.vue'
 import PhoneSearch from '../components/phone/PhoneSearch.vue'
 import { usePhoneApps } from '../utils/phoneAppRegistry'
 
@@ -198,13 +193,13 @@ function applyLayout(data) {
   if (data && data.pages && data.pages.length > 0) {
     dockIds.value = [...(data.dock || [...DEFAULT_DOCK_IDS])]
       .slice(0, 4)
-      .map(v => v || null)
+      .map(v => (v && v !== '') ? v : null)
     while (dockIds.value.length < 4) dockIds.value.push(null)
 
     const dockSet = new Set(dockIds.value.filter(Boolean))
     const seen = new Set(dockSet)
     pageLayouts.value = data.pages.map(p => {
-      const raw = [...(p.apps || p)].slice(0, APPS_PER_PAGE)
+      const raw = [...(p.apps || p)].slice(0, APPS_PER_PAGE).map(v => (v && v !== '') ? v : null)
       const pageApps = []
       for (const id of raw) {
         if (!id) continue
@@ -252,11 +247,13 @@ function addAppToLastEmpty(appId) {
 }
 
 function buildSaveData() {
+  // Use empty string instead of null for empty slots — null in JS arrays
+  // gets lost when serialized through the CEF bridge to Lua
   return {
     version: 1,
     wallpaper: wallpaper.value,
-    pages: pageLayouts.value.map(p => ({ apps: [...p] })),
-    dock: [...dockIds.value],
+    pages: pageLayouts.value.map(p => ({ apps: p.map(id => id || '') })),
+    dock: dockIds.value.map(id => id || ''),
     seenApps: [...seenApps.value],
   }
 }
@@ -339,6 +336,14 @@ function exitJiggleMode() {
   isDraggingIcon.value = false
   dragSourceApp.value = null
   dragGhostApp.value = null
+  // Remove empty trailing pages
+  while (pageLayouts.value.length > 1 && pageLayouts.value[pageLayouts.value.length - 1].every(id => !id)) {
+    pageLayouts.value.pop()
+  }
+  // Clamp current page if we removed pages
+  if (currentPageIndex.value >= pages.value.length) {
+    currentPageIndex.value = Math.max(0, pages.value.length - 1)
+  }
   saveLayout()
 }
 
@@ -428,14 +433,24 @@ function onIconDragMove(e) {
     if (relX < 30) {
       if (!edgeTimer) {
         edgeTimer = setTimeout(() => {
-          goToPage(currentPageIndex.value - 1)
+          if (currentPageIndex.value > 0) {
+            goToPage(currentPageIndex.value - 1)
+          }
           edgeTimer = null
         }, 300)
       }
     } else if (relX > rect.width - 30) {
       if (!edgeTimer) {
         edgeTimer = setTimeout(() => {
-          goToPage(currentPageIndex.value + 1)
+          const lastAppPage = pages.value.length - 1
+          // Don't allow dragging into search page
+          if (currentPageIndex.value < lastAppPage) {
+            goToPage(currentPageIndex.value + 1)
+          } else if (currentPageIndex.value === lastAppPage) {
+            // Create a new page if we're on the last app page
+            pageLayouts.value.push(new Array(APPS_PER_PAGE).fill(null))
+            goToPage(currentPageIndex.value + 1)
+          }
           edgeTimer = null
         }, 300)
       }
