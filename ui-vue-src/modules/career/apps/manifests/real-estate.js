@@ -8,6 +8,6 @@ export default {
   color: '#f97316',
   iconColor: '#ffffff',
   category: 'Finance',
-  defaultPage: 1,
+  defaultPage: 0,
   defaultPosition: 1,
 }

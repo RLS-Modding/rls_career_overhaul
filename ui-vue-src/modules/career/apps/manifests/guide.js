@@ -8,6 +8,6 @@ export default {
   color: '#6366f1',
   iconColor: '#ffffff',
   category: 'Tools',
-  defaultPage: 1,
+  defaultPage: 0,
   defaultPosition: 0,
 }
