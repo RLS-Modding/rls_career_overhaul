@@ -1,5 +1,5 @@
 <template>
-  <PhoneWrapper app-name="Home" status-font-color="#FFFFFF" status-blend-mode="">
+  <PhoneWrapper app-name="Home" :custom-back="handleBack">
     <div class="homescreen" :style="wallpaperStyle">
       <!-- Pages container -->
       <div
@@ -34,7 +34,6 @@
                   :jiggle-mode="jiggleMode"
                   :jiggle-offset="(pageIdx * 20 + slotIdx) % 7"
                   :is-new="!seenApps.has(app.id)"
-                  :is-launching="launchingAppId === app.id"
                   @launch="launchApp"
                   @longpress="enterJiggleMode"
                   @dragstart="onGridDragStart"
@@ -108,11 +107,10 @@ const { availableApps, refreshApps, DEFAULT_DOCK_IDS } = usePhoneApps()
 
 // Layout state
 const dockIds = ref([...DEFAULT_DOCK_IDS])
-const pageLayouts = ref([]) // array of arrays of app IDs (with nulls for empty slots)
+const pageLayouts = ref([])
 const seenApps = ref(new Set())
 const wallpaper = ref('default')
 const currentPageIndex = ref(0)
-const launchingAppId = ref(null)
 
 // Jiggle mode
 const jiggleMode = ref(false)
@@ -308,6 +306,19 @@ function saveLayout() {
   }
 }
 
+// ─── Back handler ───
+function handleBack() {
+  if (jiggleMode.value) {
+    exitJiggleMode()
+    return true
+  }
+  if (currentPageIndex.value > 0) {
+    goToPage(0)
+    return true
+  }
+  return false
+}
+
 // ─── Page navigation ───
 function goToPage(idx) {
   const maxPage = pages.value.length // includes search
@@ -391,15 +402,9 @@ function exitJiggleMode() {
 // ─── App launch ───
 function launchApp(app) {
   if (jiggleMode.value) return
-  // Mark as seen
   seenApps.value.add(app.id)
-  // Persist non-layout state (e.g. NEW badges) even when not in jiggle mode.
   saveLayout()
-  launchingAppId.value = app.id
-  setTimeout(() => {
-    launchingAppId.value = null
-    router.push(app.route)
-  }, 250)
+  router.push(app.route)
 }
 
 function onRemoveApp(app) {
@@ -731,7 +736,7 @@ onUnmounted(() => {
 }
 
 .apps-page {
-  padding-top: 88px;
+  padding-top: 64px;
 }
 
 .app-grid {

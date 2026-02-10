@@ -1,5 +1,5 @@
 <template>
-    <PhoneWrapper app-name="Loans" status-font-color="#FFFFFF" status-blend-mode="">
+    <PhoneWrapper app-name="Loans">
         <div class="phone-loans">
             <div class="section">
                 <div class="section-title">Settings</div>

@@ -3,34 +3,28 @@
     ref="phoneRef"
     class="phone-wrapper" 
     :class="{ 'phone-entered': isEntered }"
-    :style="{ 
-      '--scale': scale,
-      '--status-font-color': statusFontColor,
-      '--status-blend-mode': statusBlendMode
-    }">
+    :style="{ '--scale': scale }">
     <div class="phone-bevel"></div>
     <div class="phone-screen">
-      <!-- Dynamic Island -->
-      <div class="dynamic-island"></div>
-
       <!-- Status Bar -->
       <div class="phone-status-bar">
-        <div class="phone-status-bar-left">
-          <span>{{ timeString }}</span>
-          <button class="status-back" v-bng-on-ui-nav:back,menu.asMouse @click="back"> ← Back</button>
+        <div class="status-bar-cell status-bar-left">
+          <button class="status-back" v-bng-on-ui-nav:back,menu.asMouse @click="back">
+            <span class="status-back-icon" aria-hidden="true">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M8 2L4 6l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+            </span>
+            <span class="status-time">{{ timeParts.main }}<span class="status-time-period" v-if="timeParts.period">{{ timeParts.period }}</span></span>
+          </button>
         </div>
-        <div class="phone-status-bar-right">
-          <svg class="status-signal" width="16" height="12" viewBox="0 0 16 12" fill="currentColor">
-            <rect x="0" y="9" width="3" height="3" rx="0.5" opacity="1"/>
-            <rect x="4.5" y="6" width="3" height="6" rx="0.5" opacity="1"/>
-            <rect x="9" y="3" width="3" height="9" rx="0.5" opacity="1"/>
-            <rect x="13.5" y="0" width="3" height="12" rx="0.5" opacity="0.85"/>
-          </svg>
-          <svg class="status-battery" width="22" height="11" viewBox="0 0 22 11" fill="currentColor">
-            <rect x="0" y="0" width="19" height="11" rx="2" stroke="currentColor" stroke-width="1" fill="none"/>
-            <rect x="1.5" y="1.5" width="16" height="8" rx="1" fill="currentColor" opacity="0.9"/>
-            <rect x="19.5" y="3" width="2" height="5" rx="0.5"/>
-          </svg>
+        <div class="status-bar-cell status-bar-center">
+          <div class="dynamic-island">
+            <span v-if="appName" class="dynamic-island-label">{{ appName }}</span>
+          </div>
+        </div>
+        <div class="status-bar-cell status-bar-right" v-if="cashDisplay">
+          <div class="status-right-pill">
+            <span class="status-cash">{{ cashDisplay }}</span>
+          </div>
         </div>
       </div>
       
@@ -40,7 +34,7 @@
       </template>
       
       <!-- Main Content -->
-      <div class="phone-content">
+      <div class="phone-content" :class="{ 'content-fade-in': contentFadeIn }">
         <slot></slot>
       </div>
     </div>
@@ -49,10 +43,19 @@
 
 <script setup>
 import { useEvents } from '@/services/events'
-import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick, computed } from 'vue'
 import { vBngOnUiNav } from "@/common/directives"
 import { useRouter, useRoute, onBeforeRouteUpdate, onBeforeRouteLeave } from 'vue-router'
 import { lua } from "@/bridge"
+
+function formatCash(m) {
+  if (m == null || typeof m !== 'number') return '$0'
+  if (m >= 1e12) return `$${(m / 1e12).toFixed(1)}T`
+  if (m >= 1e9) return `$${(m / 1e9).toFixed(1)}B`
+  if (m >= 1e6) return `$${(m / 1e6).toFixed(1)}M`
+  if (m >= 1000) return `$${Math.round(m).toLocaleString()}`
+  return `$${Math.round(m)}`
+}
 
 const props = defineProps({
   scale: {
@@ -63,22 +66,54 @@ const props = defineProps({
     type: String,
     default: ''
   },
-  statusFontColor: {
-    type: String,
-    default: '#ffffff'
-  },
-  statusBlendMode: {
-    type: String,
-    default: 'difference'
+  customBack: {
+    type: Function
   }
 })
 
+const PHONE_TIME_KEY = 'phone_last_time'
+const PHONE_MONEY_KEY = 'phone_last_money'
+const PHONE_IS_CAREER_KEY = 'phone_is_career'
 const events = useEvents()
-const timeString = ref('9:10')
+const timeString = ref(sessionStorage.getItem(PHONE_TIME_KEY) || '9:10')
 const router = useRouter()
 const route = useRoute()
 const phoneRef = ref(null)
 const isEntered = ref(false)
+const contentFadeIn = ref(false)
+const cachedMoney = sessionStorage.getItem(PHONE_MONEY_KEY)
+const careerMoney = ref(cachedMoney !== null && cachedMoney !== '' ? Number(cachedMoney) : null)
+const isCareer = ref(sessionStorage.getItem(PHONE_IS_CAREER_KEY) === 'true')
+let careerStatusInterval = null
+
+function refreshCareerStatus() {
+  if (!lua.career_career?.isActive) return
+  lua.career_career.isActive().then(active => {
+    isCareer.value = !!active
+    sessionStorage.setItem(PHONE_IS_CAREER_KEY, String(active))
+    if (!active || !lua.career_modules_uiUtils?.getCareerStatusData) return
+    return lua.career_modules_uiUtils.getCareerStatusData()
+  }).then(data => {
+    const money = data != null ? data?.money ?? null : null
+    careerMoney.value = money
+    sessionStorage.setItem(PHONE_MONEY_KEY, money != null ? String(money) : '')
+  }).catch(() => {
+    careerMoney.value = null
+    sessionStorage.setItem(PHONE_MONEY_KEY, '')
+  })
+}
+
+const cashDisplay = computed(() => {
+  if (!isCareer.value || careerMoney.value == null) return null
+  return formatCash(careerMoney.value)
+})
+
+const timeParts = computed(() => {
+  const s = timeString.value || ''
+  const m = s.match(/^(.+?)\s+(AM|PM)$/i)
+  if (m) return { main: m[1], period: ` ${m[2]}` }
+  return { main: s, period: '' }
+})
 
 // Check if a route name is a phone route
 const isPhoneRoute = (routeName) => {
@@ -89,6 +124,7 @@ const isPhoneRoute = (routeName) => {
 const updateTime = (data) => {
   if (data) {
     timeString.value = data
+    sessionStorage.setItem(PHONE_TIME_KEY, data)
   }
 }
 
@@ -96,10 +132,13 @@ onMounted(async () => {
   lua.extensions.load("ui_phone_time")
   events.on("phone_time_update", data => updateTime(data))
   events.on("closePhone", close)
-  
-  // Check if phone was already visible (navigating between phone routes)
+  refreshCareerStatus()
+  careerStatusInterval = setInterval(refreshCareerStatus, 2000)
+  lua.ui_phone_time?.requestTime?.()
+
   const wasPhoneVisible = sessionStorage.getItem('phoneVisible') === 'true'
-  
+  if (wasPhoneVisible) contentFadeIn.value = true
+
   if (phoneRef.value) {
     await nextTick()
     
@@ -159,13 +198,13 @@ onBeforeRouteLeave((to, from) => {
 })
 
 onUnmounted(async () => {
-  // Cleanup - animation is handled by onBeforeRouteLeave
-  // Only clean up if we're actually leaving phone routes (not navigating between them)
+  if (careerStatusInterval) {
+    clearInterval(careerStatusInterval)
+    careerStatusInterval = null
+  }
   const nextRoute = router.currentRoute.value
   const isNavigatingToPhoneRoute = isPhoneRoute(nextRoute.name)
-  
   if (!isNavigatingToPhoneRoute) {
-    // Already handled by onBeforeRouteLeave, but ensure cleanup
     sessionStorage.removeItem('phoneVisible')
   }
 })
@@ -183,7 +222,7 @@ const close = async () => {
 }
 
 const back = () => {
-  // Just navigate back - let onBeforeRouteLeave handle the animation logic
+  if (props.customBack && props.customBack()) return
   router.back()
 }
 
@@ -239,78 +278,153 @@ const back = () => {
     overflow-y: hidden;
     color: white;
     border-radius: 1.5em;
+
+    &.content-fade-in {
+      animation: phoneContentFadeIn 0.25s ease-out;
+    }
   }
 }
 
-.dynamic-island {
-  position: absolute;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 120px;
-  height: 28px;
-  background: #000;
-  border-radius: 14px;
-  z-index: 15;
+@keyframes phoneContentFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .phone-status-bar {
   position: absolute;
-  top: 0.35em;
-  left: 1em;
-  right: 1em;
+  top: 0;
+  left: 0;
+  right: 0;
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  font-size: 1.35em;
-  font-weight: bold;
-  color: var(--status-font-color);
-  background-color: transparent;
+  padding: 0.5em 1em 0.6em;
+  min-height: 36px;
   z-index: 10;
-  mix-blend-mode: var(--status-blend-mode);
-  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
   pointer-events: none;
 
   &::before {
     content: '';
     position: absolute;
-    top: -0.6em;
-    left: -1em;
-    right: -1em;
-    height: calc(0.5em + 1.7em);
-    background: linear-gradient(to bottom, var(--status-font-color), rgba(0,0,0,0) 100%);
-    filter: invert(1);
-    opacity: 1;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0) 100%);
+    pointer-events: none;
     z-index: -1;
   }
 }
 
-.phone-status-bar-left {
+.status-bar-cell {
   display: flex;
-  flex-direction: column;
   align-items: center;
+  min-height: 28px;
+}
+
+.status-bar-left {
   justify-content: flex-start;
+  flex: 1;
+  min-width: 0;
 }
 
-.phone-status-bar-right {
+.status-bar-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  flex-shrink: 0;
+}
+
+.status-bar-right {
+  justify-content: flex-end;
+  flex: 1;
+  min-width: 0;
+}
+
+.status-right-pill {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 4px;
+  height: 24px;
+  padding: 0 0.6em;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
 }
 
-.status-signal, .status-battery {
-  opacity: 0.9;
+.dynamic-island {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 80px;
+  max-width: 140px;
+  height: 24px;
+  padding: 0 0.75em;
+  background: #000;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.dynamic-island-label {
+  font-size: 0.8em;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.65);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.status-time {
+  display: inline-flex;
+  align-items: flex-end;
+  font-size: 1.2em;
+  font-weight: 500;
+  line-height: 1;
+  margin-left: 0.5em;
+}
+
+.status-time-period {
+  font-size: 0.6em;
+  font-weight: 400;
+  margin-left: 0.25em;
+}
+
+.status-cash {
+  font-size: 0.95em;
+  font-weight: 500;
+  color: #fff;
 }
 
 .status-back {
-  background-color: transparent;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  height: 24px;
+  padding: 0 0.75em;
+  line-height: 1;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
   outline: none;
-  border: none;
-  z-index: -1;
   cursor: pointer;
   pointer-events: auto;
-  font-size: 13px;
-  font-weight: bold;
-  color: var(--status-font-color);
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+  transition: background 0.15s ease, transform 0.12s ease;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.7);
+  }
+
+  &:active {
+    background: rgba(0, 0, 0, 0.8);
+    transform: scale(0.96);
+  }
+}
+
+.status-back-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 </style>

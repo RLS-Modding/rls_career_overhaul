@@ -4,7 +4,6 @@
     :class="{
       jiggling: jiggleMode,
       dragging: isDragGhost,
-      launching: isLaunching,
     }"
     :style="iconStyle"
     @pointerdown.stop="onPointerDown"
@@ -39,9 +38,7 @@ const props = defineProps({
   jiggleOffset: { type: Number, default: 0 },
   isDragGhost: { type: Boolean, default: false },
   isNew: { type: Boolean, default: false },
-  isLaunching: { type: Boolean, default: false },
   showLabel: { type: Boolean, default: true },
-  launchOrigin: { type: Object, default: null },
 })
 
 const emit = defineEmits(['launch', 'longpress', 'dragstart', 'remove'])
@@ -56,10 +53,6 @@ const iconStyle = computed(() => {
   if (props.jiggleMode) {
     s['--jiggle-offset'] = props.jiggleOffset
   }
-  if (props.launchOrigin) {
-    s['--launch-x'] = props.launchOrigin.x + 'px'
-    s['--launch-y'] = props.launchOrigin.y + 'px'
-  }
   return s
 })
 
@@ -69,11 +62,9 @@ const showDefaultOverlay = computed(() => {
   return !!props.app?.iconImageOverlay
 })
 
-const iconSquareStyle = computed(() => {
-  return {
-    backgroundColor: hasCustomImage.value ? 'transparent' : (props.app?.color || '#222222'),
-  }
-})
+const iconSquareStyle = computed(() => ({
+  backgroundColor: hasCustomImage.value ? 'transparent' : (props.app?.color || '#222222'),
+}))
 
 function onIconImageError() {
   iconImageFailed.value = true
@@ -143,9 +134,6 @@ function onTap() {
     pointer-events: none;
   }
 
-  &.launching .app-icon-square {
-    animation: appOpen 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-  }
 }
 
 .app-icon-square {
@@ -241,16 +229,5 @@ function onTap() {
   50%  { transform: rotate(-1deg) scale(1.02); }
   75%  { transform: rotate(1deg) scale(1.02); }
   100% { transform: rotate(-1.5deg) scale(1.02); }
-}
-
-@keyframes appOpen {
-  from {
-    transform: scale(1);
-    opacity: 1;
-  }
-  to {
-    transform: scale(8);
-    opacity: 0;
-  }
 }
 </style>
