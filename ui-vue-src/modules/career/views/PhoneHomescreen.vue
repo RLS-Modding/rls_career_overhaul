@@ -11,7 +11,7 @@
       >
         <div
           class="pages-track"
-          :class="{ 'no-transition': isDraggingPage || isDraggingIcon }"
+          :class="{ 'no-transition': isDraggingPage || (isDraggingIcon && !isEdgePaging) }"
           :style="{ transform: `translateX(${pageOffset}px)` }"
         >
           <!-- App pages -->
@@ -56,13 +56,15 @@
 
       <!-- Dock (with integrated page dots) -->
       <PhoneDock
+        :class="{ 'no-transition': isDraggingPage || (isDraggingIcon && !isEdgePaging) }"
+        :style="dockStyle"
         :dock-ids="dockIds"
         :app-map="appMap"
         :jiggle-mode="jiggleMode"
         :highlight-index="dockHighlightIdx"
         :total-pages="pages.length"
         :current-page="currentPageIndex"
-        :is-search-active="currentPageIndex === pages.length"
+        :is-search-active="isSearchPageActive"
         @launch="launchApp"
         @longpress="enterJiggleMode"
         @dragstart="onDockDragStart"
@@ -120,6 +122,7 @@ const pageDragDelta = ref(0)
 
 // Icon dragging
 const isDraggingIcon = ref(false)
+const isEdgePaging = ref(false)
 const dragSourceApp = ref(null)
 const dragSourceLocation = reactive({ type: '', page: -1, slot: -1 })
 const dragGhostApp = ref(null)
@@ -149,6 +152,23 @@ const pages = computed(() => {
 })
 
 const totalPagesWithSearch = computed(() => pages.value.length + 1)
+const isSearchPageActive = computed(() => currentPageIndex.value === pages.value.length)
+const searchPageProgress = computed(() => {
+  const lastAppPageIndex = Math.max(0, pages.value.length - 1)
+  return Math.max(
+    0,
+    Math.min(1, ((-pageOffset.value) - (lastAppPageIndex * PAGE_WIDTH)) / PAGE_WIDTH)
+  )
+})
+const dockStyle = computed(() => {
+  const progress = searchPageProgress.value
+  const slideX = Math.round(-progress * PAGE_WIDTH)
+  return {
+    transform: `translateX(${slideX}px)`,
+    opacity: '1',
+    pointerEvents: 'auto',
+  }
+})
 
 // Page offset
 const pageOffset = computed(() => {
@@ -180,35 +200,54 @@ function buildDefaultLayout() {
   return pagesArr
 }
 
-function normalizePageAppsToTrailingSlots(appIds) {
-  const pageSlots = new Array(APPS_PER_PAGE).fill(null)
-  const startIdx = APPS_PER_PAGE - appIds.length
-  for (let i = 0; i < appIds.length; i++) {
-    pageSlots[startIdx + i] = appIds[i]
+function toSlotArray(value) {
+  if (Array.isArray(value)) return [...value]
+  if (value && typeof value === 'object') {
+    const numericKeys = Object.keys(value)
+      .filter(k => /^\d+$/.test(k))
+      .sort((a, b) => Number(a) - Number(b))
+    if (numericKeys.length > 0) return numericKeys.map(k => value[k])
+    return Object.values(value)
   }
-  return pageSlots
+  return []
 }
 
 function applyLayout(data) {
-  if (data && data.pages && data.pages.length > 0) {
-    dockIds.value = [...(data.dock || [...DEFAULT_DOCK_IDS])]
+  const pagesSource = toSlotArray(data && data.pages)
+  if (data && pagesSource.length > 0) {
+    dockIds.value = toSlotArray(data.dock || DEFAULT_DOCK_IDS)
       .slice(0, 4)
       .map(v => (v && v !== '') ? v : null)
     while (dockIds.value.length < 4) dockIds.value.push(null)
 
     const dockSet = new Set(dockIds.value.filter(Boolean))
     const seen = new Set(dockSet)
-    pageLayouts.value = data.pages.map(p => {
-      const raw = [...(p.apps || p)].slice(0, APPS_PER_PAGE).map(v => (v && v !== '') ? v : null)
-      const pageApps = []
-      for (const id of raw) {
-        if (!id) continue
-        if (!appMap.value[id]) continue
-        if (seen.has(id)) continue
-        seen.add(id)
-        pageApps.push(id)
+    pageLayouts.value = pagesSource.map(p => {
+      const raw = toSlotArray(p && typeof p === 'object' && 'apps' in p ? p.apps : p)
+        .slice(0, APPS_PER_PAGE)
+        .map(v => (v && v !== '') ? v : null)
+      const hasExplicitEmptySlots = raw.some(v => v == null)
+      const isCompactList = !hasExplicitEmptySlots && raw.length < APPS_PER_PAGE
+      while (raw.length < APPS_PER_PAGE) raw.push(null)
+      const slots = new Array(APPS_PER_PAGE).fill(null)
+      if (isCompactList) {
+        const compactIds = raw.filter(id => id && appMap.value[id] && !seen.has(id))
+        const start = APPS_PER_PAGE - compactIds.length
+        compactIds.forEach((id, idx) => {
+          seen.add(id)
+          slots[start + idx] = id
+        })
+      } else {
+        for (let i = 0; i < APPS_PER_PAGE; i++) {
+          const id = raw[i]
+          if (!id) continue
+          if (!appMap.value[id]) continue
+          if (seen.has(id)) continue
+          seen.add(id)
+          slots[i] = id
+        }
       }
-      return normalizePageAppsToTrailingSlots(pageApps)
+      return slots
     })
 
     if (pageLayouts.value.length === 0) {
@@ -352,8 +391,9 @@ function launchApp(app) {
   if (jiggleMode.value) return
   // Mark as seen
   seenApps.value.add(app.id)
-  launchingAppId.value = app.id
+  // Persist non-layout state (e.g. NEW badges) even when not in jiggle mode.
   saveLayout()
+  launchingAppId.value = app.id
   setTimeout(() => {
     launchingAppId.value = null
     router.push(app.route)
@@ -405,24 +445,25 @@ function onIconDragMove(e) {
   if (!isDraggingIcon.value) return
   updateDragGhostPosition(e)
 
-  // Check dock zone (bottom ~88px of phone screen)
-  const phoneEl = document.querySelector('.homescreen')
-  if (phoneEl) {
-    const rect = phoneEl.getBoundingClientRect()
-    const relY = e.clientY - rect.top
-    if (relY > rect.height - 88) {
-      // Over dock
-      const relX = e.clientX - rect.left
-      const slotWidth = rect.width / 4
+  // Check dock zone using actual dock bounds (prevents lower grid from being treated as dock)
+  const dockEl = document.querySelector('.phone-dock')
+  if (dockEl) {
+    const dockRect = dockEl.getBoundingClientRect()
+    const overDock = e.clientX >= dockRect.left && e.clientX <= dockRect.right && e.clientY >= dockRect.top && e.clientY <= dockRect.bottom
+    if (overDock) {
+      const relX = e.clientX - dockRect.left
+      const slotWidth = dockRect.width / 4
       const idx = Math.min(3, Math.max(0, Math.floor(relX / slotWidth)))
       dockHighlightIdx.value = idx
     } else {
       dockHighlightIdx.value = -1
       const target = findGridSlotAt(e.clientX, e.clientY)
-      if (target) {
-        moveDraggedAppToGridSlot(target)
-      }
+      if (target) moveDraggedAppToGridSlot(target)
     }
+  } else {
+    dockHighlightIdx.value = -1
+    const target = findGridSlotAt(e.clientX, e.clientY)
+    if (target) moveDraggedAppToGridSlot(target)
   }
 
   // Edge detection for cross-page drag
@@ -434,7 +475,9 @@ function onIconDragMove(e) {
       if (!edgeTimer) {
         edgeTimer = setTimeout(() => {
           if (currentPageIndex.value > 0) {
+            isEdgePaging.value = true
             goToPage(currentPageIndex.value - 1)
+            setTimeout(() => { isEdgePaging.value = false }, 380)
           }
           edgeTimer = null
         }, 300)
@@ -445,11 +488,15 @@ function onIconDragMove(e) {
           const lastAppPage = pages.value.length - 1
           // Don't allow dragging into search page
           if (currentPageIndex.value < lastAppPage) {
+            isEdgePaging.value = true
             goToPage(currentPageIndex.value + 1)
+            setTimeout(() => { isEdgePaging.value = false }, 380)
           } else if (currentPageIndex.value === lastAppPage) {
             // Create a new page if we're on the last app page
             pageLayouts.value.push(new Array(APPS_PER_PAGE).fill(null))
+            isEdgePaging.value = true
             goToPage(currentPageIndex.value + 1)
+            setTimeout(() => { isEdgePaging.value = false }, 380)
           }
           edgeTimer = null
         }, 300)
@@ -466,6 +513,7 @@ function onIconDragEnd(e) {
   document.removeEventListener('pointerup', onIconDragEnd)
   clearTimeout(edgeTimer)
   edgeTimer = null
+  isEdgePaging.value = false
 
   if (!isDraggingIcon.value || !dragSourceApp.value) return
 
@@ -486,18 +534,17 @@ function onIconDragEnd(e) {
     if (target) {
       moveDraggedAppToGridSlot(target)
     } else {
-      // Invalid drop: restore exact pre-drag layout so preview shuffles are reverted.
-      if (dragStartPageLayouts && dragStartDockIds) {
-        pageLayouts.value = dragStartPageLayouts.map(page => [...page])
-        dockIds.value = [...dragStartDockIds]
-      } else {
-        const location = findAppLocation(appId)
-        if (!location) {
-          if (dragSourceLocation.type === 'grid') {
-            pageLayouts.value[dragSourceLocation.page][dragSourceLocation.slot] = appId
-          } else if (dragSourceLocation.type === 'dock') {
-            dockIds.value[dragSourceLocation.slot] = appId
-          }
+      // If app already has a valid placement from live drag, keep it.
+      const location = findAppLocation(appId)
+      if (!location) {
+        // Invalid drop with no current placement: restore exact pre-drag layout.
+        if (dragStartPageLayouts && dragStartDockIds) {
+          pageLayouts.value = dragStartPageLayouts.map(page => [...page])
+          dockIds.value = [...dragStartDockIds]
+        } else if (dragSourceLocation.type === 'grid') {
+          pageLayouts.value[dragSourceLocation.page][dragSourceLocation.slot] = appId
+        } else if (dragSourceLocation.type === 'dock') {
+          dockIds.value[dragSourceLocation.slot] = appId
         }
       }
     }
@@ -509,7 +556,6 @@ function onIconDragEnd(e) {
   dockHighlightIdx.value = -1
   dragStartPageLayouts = null
   dragStartDockIds = null
-  saveLayout()
 }
 
 function findGridSlotAt(x, y) {
@@ -568,12 +614,13 @@ function moveDraggedAppToGridSlot(target) {
   const targetPage = pageLayouts.value[target.page]
   if (!targetPage) return
 
-  // iPhone-like behavior on the same page: shift apps out of the way.
+  // Same page: place directly into slot. Empty slot = move, occupied = swap.
   const currentIdxOnTargetPage = targetPage.indexOf(appId)
   if (currentIdxOnTargetPage !== -1) {
     if (currentIdxOnTargetPage === target.slot) return
-    targetPage.splice(currentIdxOnTargetPage, 1)
-    targetPage.splice(target.slot, 0, appId)
+    const displaced = targetPage[target.slot]
+    targetPage[target.slot] = appId
+    targetPage[currentIdxOnTargetPage] = displaced || null
     return
   }
 
@@ -626,7 +673,6 @@ onMounted(async () => {
 
 onUnmounted(() => {
   document.removeEventListener('keydown', onKeyDown)
-  saveLayout()
 })
 </script>
 
@@ -645,7 +691,7 @@ onUnmounted(() => {
   overflow: hidden;
   position: relative;
   padding-top: 0;
-  padding-bottom: 184px;
+  padding-bottom: 16px;
   display: flex;
   align-items: flex-start;
 }
@@ -692,6 +738,7 @@ onUnmounted(() => {
 .search-page {
   display: flex;
   flex-direction: column;
+  height: 100%;
 }
 
 .drag-ghost {

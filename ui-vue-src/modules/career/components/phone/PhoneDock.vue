@@ -93,6 +93,11 @@ function onDockPointerUp() {
   flex-direction: column;
   align-items: center;
   gap: 6px;
+  transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.phone-dock-area.no-transition {
+  transition: none;
 }
 
 .dock-page-dots {

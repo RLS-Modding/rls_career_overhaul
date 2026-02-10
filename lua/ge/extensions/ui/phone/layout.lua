@@ -39,19 +39,9 @@ local function getCurrentSavePath()
   return currentSavePath
 end
 
-local function clone(data)
-  if type(data) ~= "table" then return data end
-  local out = {}
-  for k, v in pairs(data) do
-    out[k] = clone(v)
-  end
-  return out
-end
-
--- Sanitize data from JS: empty strings become nil, ensure arrays stay arrays
+-- Sanitize data from JS while preserving empty-string slot placeholders.
 local function sanitizeFromJS(data)
   if type(data) ~= "table" then
-    if data == "" then return nil end
     return data
   end
   local out = {}
@@ -59,6 +49,19 @@ local function sanitizeFromJS(data)
     out[k] = sanitizeFromJS(v)
   end
   return out
+end
+
+local function writeLayoutFile(path, data)
+  if career_saveSystem and career_saveSystem.jsonWriteFileSafe then
+    return career_saveSystem.jsonWriteFileSafe(path, data, true)
+  end
+  if jsonWriteFileSafe then
+    return jsonWriteFileSafe(path, data, true)
+  end
+  if jsonWriteFile then
+    return jsonWriteFile(path, data, true)
+  end
+  return false
 end
 
 local function loadLayout()
@@ -69,7 +72,7 @@ local function loadLayout()
     local careerData = jsonReadFile(currentSavePath .. saveFile)
     if careerData then
       layoutData = careerData
-      return clone(careerData)
+      return careerData
     end
   end
 
@@ -77,30 +80,40 @@ local function loadLayout()
   local globalData = jsonReadFile(globalFile)
   if globalData then
     layoutData = globalData
-    return clone(globalData)
+    return globalData
   end
 
   -- 3) Hardcoded default layout
   layoutData = getDefaultLayout()
-  return clone(layoutData)
+  return layoutData
 end
 
 local function saveLayout(data)
   if not data then return end
   data = sanitizeFromJS(data)
   local currentSavePath = getCurrentSavePath()
+  local writePath = nil
+  local ok = false
 
   if currentSavePath then
     -- Career mode: write per-save layout
     ensureSaveDir(currentSavePath)
-    jsonWriteFileSafe(currentSavePath .. saveFile, data, true)
+    writePath = currentSavePath .. saveFile
+    ok = writeLayoutFile(writePath, data)
   else
     -- Freeroam/no active save: write global layout
     ensureSettingsDir()
-    jsonWriteFileSafe(globalFile, data, true)
+    writePath = globalFile
+    ok = writeLayoutFile(writePath, data)
   end
 
-  layoutData = clone(data)
+  if not ok then
+    log('E', 'ui_phone_layout', string.format("Failed to write phone layout to '%s'", tostring(writePath)))
+    return false
+  end
+
+  layoutData = data
+  return true
 end
 
 local function requestLayout()
@@ -108,14 +121,16 @@ local function requestLayout()
 end
 
 local function updateLayout(data)
-  saveLayout(data)
-  guihooks.trigger('phoneLayoutData', clone(layoutData))
+  return saveLayout(data)
 end
 
 M.onSaveCurrentSaveSlot = function(currentSavePath)
   if layoutData then
     ensureSaveDir(currentSavePath)
-    jsonWriteFileSafe(currentSavePath .. saveFile, layoutData, true)
+    local ok = writeLayoutFile(currentSavePath .. saveFile, layoutData)
+    if not ok then
+      log('E', 'ui_phone_layout', string.format("Failed to write phone layout on save-slot commit to '%s'", tostring(currentSavePath .. saveFile)))
+    end
   end
 end
 

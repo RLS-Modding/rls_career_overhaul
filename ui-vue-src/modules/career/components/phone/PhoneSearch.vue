@@ -18,7 +18,8 @@
         v-for="app in filteredApps"
         :key="app.id"
         class="search-result-item"
-        @click="$emit('launch', app)"
+        @pointerdown="onResultPointerDown($event, app)"
+        @click="onResultClick(app)"
       >
         <div class="search-result-icon" :style="{ backgroundColor: app.color }">
           <BngIcon :type="app.icon" :style="{ color: app.iconColor }" />
@@ -34,7 +35,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onUnmounted } from 'vue'
 import { BngIcon } from '@/common/components/base'
 import { vBngTextInput } from '@/common/directives'
 
@@ -43,10 +44,12 @@ const props = defineProps({
   seenApps: { type: Set, default: () => new Set() },
 })
 
-defineEmits(['launch'])
+const emit = defineEmits(['launch'])
 
 const query = ref('')
 const searchInputRef = ref(null)
+let suppressNextLaunch = false
+let cleanupPointerTracking = null
 
 const filteredApps = computed(() => {
   const sorted = [...props.apps].sort((a, b) => a.name.localeCompare(b.name))
@@ -56,6 +59,56 @@ const filteredApps = computed(() => {
     a.name.toLowerCase().includes(q) ||
     (a.category && a.category.toLowerCase().includes(q))
   )
+})
+
+function onResultPointerDown(e, app) {
+  if (cleanupPointerTracking) {
+    cleanupPointerTracking()
+    cleanupPointerTracking = null
+  }
+
+  let moved = false
+  const startX = e.clientX
+  const startY = e.clientY
+
+  const onMove = (ev) => {
+    if (Math.abs(ev.clientX - startX) > 8 || Math.abs(ev.clientY - startY) > 8) {
+      moved = true
+    }
+  }
+
+  const onUp = () => {
+    suppressNextLaunch = moved
+    if (cleanupPointerTracking) {
+      cleanupPointerTracking()
+      cleanupPointerTracking = null
+    }
+  }
+
+  cleanupPointerTracking = () => {
+    document.removeEventListener('pointermove', onMove)
+    document.removeEventListener('pointerup', onUp)
+    document.removeEventListener('pointercancel', onUp)
+  }
+
+  document.addEventListener('pointermove', onMove)
+  document.addEventListener('pointerup', onUp)
+  document.addEventListener('pointercancel', onUp)
+}
+
+function onResultClick(app) {
+  if (suppressNextLaunch) {
+    suppressNextLaunch = false
+    return
+  }
+  emit('launch', app)
+}
+
+onUnmounted(() => {
+  if (cleanupPointerTracking) {
+    cleanupPointerTracking()
+    cleanupPointerTracking = null
+  }
 })
 
 // Input handled by v-bng-text-input directive
