@@ -11,7 +11,7 @@
     @click.stop="onTap"
   >
     <div class="app-badge-new" v-if="isNew && !jiggleMode">NEW</div>
-    <div class="app-delete-badge" v-if="jiggleMode" @click.stop="$emit('remove', app)">×</div>
+    <div class="app-delete-badge" v-if="jiggleMode" @pointerdown.stop @click.stop="$emit('remove', app)">×</div>
     <div class="app-icon-square" :class="{ 'app-icon-square-image': hasCustomImage }" :style="iconSquareStyle">
       <div class="app-icon-overlay" v-if="showDefaultOverlay"></div>
       <img

@@ -43,6 +43,7 @@
               @launch="$emit('launch', $event)"
               @longpress="$emit('longpress', $event)"
               @dragstart="(e, a) => $emit('dragstart', e, a, 'dock', idx)"
+              @remove="$emit('remove', $event)"
             />
           </div>
         </template>
@@ -65,7 +66,7 @@ const props = defineProps({
   isSearchActive: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['launch', 'longpress', 'dragstart', 'dockdrop', 'goPage'])
+const emit = defineEmits(['launch', 'longpress', 'dragstart', 'dockdrop', 'goPage', 'remove'])
 
 const dockApps = computed(() => {
   return props.dockIds.map(id => id ? props.appMap[id] || null : null)

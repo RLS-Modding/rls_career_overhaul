@@ -38,6 +38,7 @@
                   @launch="launchApp"
                   @longpress="enterJiggleMode"
                   @dragstart="onGridDragStart"
+                  @remove="onRemoveApp"
                 />
               </div>
             </div>
@@ -69,6 +70,7 @@
         @longpress="enterJiggleMode"
         @dragstart="onDockDragStart"
         @go-page="goToPage"
+        @remove="onRemoveApp"
       />
 
       <!-- Drag ghost -->
@@ -398,6 +400,20 @@ function launchApp(app) {
     launchingAppId.value = null
     router.push(app.route)
   }, 250)
+}
+
+function onRemoveApp(app) {
+  if (!app || !app.id) return
+  if (!jiggleMode.value) return
+
+  const appId = app.id
+  const dockIdx = dockIds.value.indexOf(appId)
+  if (dockIdx !== -1) {
+    dockIds.value[dockIdx] = null
+  }
+  while (removeAppFromGrid(appId)) {
+    // Remove any duplicate placements defensively.
+  }
 }
 
 // ─── Icon drag ───
