@@ -7,6 +7,7 @@
         @pointerdown="onViewportPointerDown"
         @pointermove="onViewportPointerMove"
         @pointerup="onViewportPointerUp"
+        @pointercancel="onViewportPointerUp"
       >
         <div
           class="pages-track"
@@ -254,6 +255,10 @@ function onViewportPointerDown(e) {
   pagePointerStart.y = e.clientY
   pageDragDelta.value = 0
   isDraggingPage.value = false
+  // Capture pointer so we get events even if cursor leaves the phone
+  if (e.target && e.target.setPointerCapture) {
+    try { e.target.setPointerCapture(e.pointerId) } catch (_) {}
+  }
 }
 
 function onViewportPointerMove(e) {
@@ -273,9 +278,13 @@ function onViewportPointerMove(e) {
   }
 }
 
-function onViewportPointerUp() {
+function onViewportPointerUp(e) {
   if (!isPointerDown) return
   isPointerDown = false
+  // Release pointer capture
+  if (e && e.target && e.target.releasePointerCapture) {
+    try { e.target.releasePointerCapture(e.pointerId) } catch (_) {}
+  }
   if (isDraggingPage.value) {
     const threshold = 40
     const onSearchPage = currentPageIndex.value === pages.value.length
