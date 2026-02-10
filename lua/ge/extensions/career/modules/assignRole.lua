@@ -1,6 +1,6 @@
 local M = {}
 
-local dependencies = {}
+local dependencies = {'career_career', 'career_modules_inventory'}
 
 local assignmentData = nil
 local vehiclePresent = nil
