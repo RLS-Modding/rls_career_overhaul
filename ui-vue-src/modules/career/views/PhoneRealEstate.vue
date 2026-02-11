@@ -1,20 +1,6 @@
 <template>
   <PhoneWrapper app-name="Real Estate" status-font-color="#FFFFFF" status-blend-mode="normal">
-    <div class="real-estate-app">
-      <!-- Header -->
-      <div class="app-header">
-        <div class="header-icon-wrap">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
-            <polyline points="9 22 9 12 15 12 15 22"/>
-          </svg>
-        </div>
-        <div class="header-text">
-          <h1>Real Estate</h1>
-          <span class="header-subtitle">{{ ownedCount }} owned · {{ garages.length }} properties</span>
-        </div>
-      </div>
-
+    <div class="re-app">
       <!-- Not in career -->
       <div v-if="!careerActive && loaded" class="empty-state">
         <p>Start a career to browse properties.</p>
@@ -25,107 +11,429 @@
         <p>Loading properties...</p>
       </div>
 
-      <!-- Garage list -->
-      <div class="garage-list" v-if="careerActive && loaded">
-        <div
-          v-for="garage in garages"
-          :key="garage.id"
-          class="garage-card"
-          :class="{ owned: garage.owned }"
-          @click="toggleExpand(garage.id)"
-        >
-          <!-- Preview image -->
-          <div class="card-image">
-            <img v-if="garage.preview" :src="garage.preview" alt="" @error="onImgError" />
-            <div v-else class="card-image-placeholder">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.5">
-                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
-                <polyline points="9 22 9 12 15 12 15 22"/>
-              </svg>
-            </div>
-            <!-- Overlays on image -->
-            <div class="card-image-overlay"></div>
-            <div class="card-badges">
-              <span v-if="garage.owned" class="badge badge-owned">OWNED</span>
-              <span v-else-if="garage.starterGarage" class="badge badge-starter">FREE</span>
-            </div>
-            <div class="card-price" v-if="!garage.owned">
-              ${{ formatPrice(garage.price) }}
-            </div>
+      <template v-if="careerActive && loaded">
+        <!-- Toolbar -->
+        <div class="toolbar">
+          <div class="view-toggle">
+            <button :class="{ active: viewMode === 'list' }" @click="viewMode = 'list'">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+              List
+            </button>
+            <button :class="{ active: viewMode === 'map' }" @click="viewMode = 'map'">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+              Map
+            </button>
           </div>
-
-          <!-- Card info -->
-          <div class="card-body">
-            <div class="card-main">
-              <span class="card-name">{{ garage.name }}</span>
-              <div class="card-meta">
-                <span class="meta-slots">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="1" y="3" width="15" height="13" rx="2"/>
-                    <path d="M16 8h2a2 2 0 012 2v6a2 2 0 01-2 2H6"/>
-                    <circle cx="5.5" cy="18.5" r="2.5"/>
-                    <circle cx="18.5" cy="18.5" r="2.5"/>
-                  </svg>
-                  <template v-if="garage.owned">{{ garage.vehicleCount }}/{{ garage.capacity }}</template>
-                  <template v-else>{{ garage.capacity }} slots</template>
-                </span>
-                <span class="meta-distance" v-if="garage.distance >= 0">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <circle cx="12" cy="10" r="3"/>
-                    <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 10-16 0c0 3 2.7 7 8 11.7z"/>
-                  </svg>
-                  {{ formatDistance(garage.distance) }}
-                </span>
+          <div v-if="viewMode === 'list'" class="toolbar-row-2">
+            <div class="dropdown-wrap">
+              <button class="dropdown-btn" :class="{ active: filterOpen }" @click="filterOpen = !filterOpen; sortOpen = false">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                Filter
+                <svg class="dropdown-chevron" :class="{ open: filterOpen }" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div v-if="filterOpen" class="dropdown-panel filter-panel" ref="filterPanelRef" tabindex="-1" @mousedown.stop>
+                <label class="filter-opt">
+                  <span class="custom-checkbox" :class="{ checked: filterForm.affordable }"><span class="custom-checkbox-dot"></span></span>
+                  <input type="checkbox" v-model="filterForm.affordable" class="sr-only" />
+                  Affordable only
+                </label>
+                <label class="filter-opt">
+                  <span class="custom-checkbox" :class="{ checked: filterForm.notOwned }"><span class="custom-checkbox-dot"></span></span>
+                  <input type="checkbox" v-model="filterForm.notOwned" class="sr-only" />
+                  Not Owned
+                </label>
+                <div class="filter-row">
+                  <label>Price</label>
+                  <div class="filter-inputs-stacked">
+                    <input ref="firstFilterInputRef" type="number" v-model.number="filterForm.priceMin" placeholder="Min" min="0" inputmode="numeric" v-bng-text-input />
+                    <input type="number" v-model.number="filterForm.priceMax" placeholder="Max" min="0" inputmode="numeric" v-bng-text-input />
+                  </div>
+                </div>
+                <div class="filter-row">
+                  <label>Slots</label>
+                  <div class="filter-inputs-stacked">
+                    <input type="number" v-model.number="filterForm.slotsMin" placeholder="Min" min="0" inputmode="numeric" v-bng-text-input />
+                    <input type="number" v-model.number="filterForm.slotsMax" placeholder="Max" min="0" inputmode="numeric" v-bng-text-input />
+                  </div>
+                </div>
+                <div class="filter-row">
+                  <label>Dist (m)</label>
+                  <div class="filter-inputs-stacked">
+                    <input type="number" v-model.number="filterForm.distMin" placeholder="Min" min="0" inputmode="numeric" v-bng-text-input />
+                    <input type="number" v-model.number="filterForm.distMax" placeholder="Max" min="0" inputmode="numeric" v-bng-text-input />
+                  </div>
+                </div>
+                <button class="filter-clear" @click="clearFilters">Clear</button>
               </div>
             </div>
-            <svg class="card-chevron" :class="{ expanded: expandedId === garage.id }" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
+            <div class="dropdown-wrap">
+              <button class="dropdown-btn" :class="{ active: sortOpen }" @click="sortOpen = !sortOpen; filterOpen = false">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="9" y2="18"/></svg>
+                Sort
+                <svg class="dropdown-chevron" :class="{ open: sortOpen }" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div v-if="sortOpen" class="dropdown-panel sort-panel">
+                <div class="sort-grid">
+                  <span class="sort-label">By</span>
+                  <div class="sort-options">
+                    <button v-for="f in sortFields" :key="f.key" class="sort-opt" :class="{ active: sortBy === f.key }" @click="sortBy = f.key">{{ f.label }}</button>
+                  </div>
+                  <span class="sort-label">Order</span>
+                  <div class="sort-options">
+                    <button class="sort-opt" :class="{ active: sortAsc }" @click="sortAsc = true">Asc</button>
+                    <button class="sort-opt" :class="{ active: !sortAsc }" @click="sortAsc = false">Desc</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <span class="toolbar-count">{{ listFilteredGarages.length }} shown</span>
           </div>
+        </div>
 
-          <!-- Expanded actions -->
-          <div class="card-actions" v-if="expandedId === garage.id">
-            <p class="card-description" v-if="garage.description">{{ cleanDescription(garage.description) }}</p>
-            <div class="action-buttons">
-              <button class="action-btn route-btn" @click.stop="setRoute(garage)">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <polygon points="3 11 22 2 13 21 11 13 3 11"/>
-                </svg>
-                Set Route
-              </button>
-              <button
-                v-if="garage.owned || garage.discovered"
-                class="action-btn tow-btn"
-                @click.stop="towTo(garage)"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"/>
-                  <polyline points="12 6 12 12 16 14"/>
-                </svg>
-                Tow Here
-              </button>
-              <!-- Must visit in person to purchase -->
+        <!-- LIST VIEW -->
+        <div class="list-view" v-if="viewMode === 'list'">
+          <div v-if="listFilteredGarages.length === 0" class="empty-state small">No properties match filters.</div>
+          <div
+            v-for="garage in listFilteredGarages"
+            :key="garage.id"
+            class="card"
+            :class="{ owned: garage.owned }"
+            @click="toggleExpand(garage.id)"
+          >
+            <div class="card-img">
+              <img v-if="garage.preview && !imgFailed(garage.id)" :src="garage.preview" alt="" @error="onImgError(garage)" />
+              <div v-else class="card-img-ph">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                <span>No preview</span>
+              </div>
+              <div class="card-img-fade"></div>
+              <div class="card-badges">
+                <span v-if="garage.owned" class="badge owned">OWNED</span>
+                <span v-else-if="garage.starterGarage" class="badge free">FREE</span>
+              </div>
+              <div class="card-price" v-if="!garage.owned">${{ formatPrice(garage.price) }}</div>
+            </div>
+            <div class="card-body">
+              <div class="card-info">
+                <span class="card-name">{{ garage.name }}</span>
+                <div class="card-meta">
+                  <span class="meta-item">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h2a2 2 0 012 2v6a2 2 0 01-2 2H6"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                    <template v-if="garage.owned">{{ garage.vehicleCount }}/{{ garage.capacity }}</template>
+                    <template v-else>{{ garage.capacity }} slots</template>
+                  </span>
+                  <span class="meta-item" v-if="garage.distance >= 0">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="10" r="3"/><path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 10-16 0c0 3 2.7 7 8 11.7z"/></svg>
+                    {{ formatDistance(garage.distance) }}
+                  </span>
+                </div>
+              </div>
+              <svg class="chevron" :class="{ open: expandedId === garage.id }" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="card-expand" v-if="expandedId === garage.id">
+              <p class="card-desc" v-if="garage.description && cleanDescription(garage.description)">{{ cleanDescription(garage.description) }}</p>
+              <div class="card-actions">
+                <button class="act-btn route" @click.stop="setRoute(garage)">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+                  Set Route
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+
+        <!-- MAP VIEW -->
+        <div class="map-view" v-if="viewMode === 'map'" ref="mapContainer">
+          <div
+            class="map-layers"
+            @pointerdown="onMapPointerDown"
+            @pointermove="onMapPointerMove"
+            @pointerup="onMapPointerUp"
+            @pointercancel="onMapPointerUp"
+            @pointerleave="onMapPointerUp"
+            @wheel.prevent="onMapWheel"
+          >
+            <svg class="map-layer terrain-layer"></svg>
+            <svg class="map-layer vehicle-layer"></svg>
+            <svg class="map-layer marker-layer" :viewBox="markerViewBox">
+              <g v-for="item in clusteredMarkers" :key="'m-'+item.cluster[0].id"
+                :transform="'translate(' + (-item.posX) + ',' + item.posY + ') scale(' + zoomFactor + ')'"
+                class="garage-marker"
+                :class="{ selected: selectedGarage && item.cluster.some(g => g.id === selectedGarage.id), cluster: item.count > 1 }"
+                @click.stop="selectMarker(item.cluster[0])"
+              >
+                <circle r="18" class="marker-bg" />
+                <circle r="12" class="marker-dot" :class="{ owned: item.count === 1 && item.cluster[0].owned }" />
+                <template v-if="item.count > 1">
+                  <text y="0" text-anchor="middle" dominant-baseline="middle" class="marker-label marker-count">{{ item.count }}</text>
+                </template>
+                <template v-else>
+                  <svg x="-7.5" y="-7.5" width="15" height="15" viewBox="0 0 24 24" fill="white" stroke="none"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+                  <text y="28" text-anchor="middle" class="marker-label">{{ item.cluster[0].owned ? 'OWNED' : '$' + formatPrice(item.cluster[0].price) }}</text>
+                </template>
+              </g>
+            </svg>
+          </div>
+
+          <div class="map-carousel-wrap">
+            <div
+              class="map-carousel-viewport"
+              ref="carouselViewportRef"
+              @pointerdown.capture="onCarouselPointerDown"
+              @click="onCarouselViewportClick"
+            >
+              <div
+                class="map-carousel-track"
+                :class="{ 'no-transition': isDraggingCarousel || isWrappingCarousel }"
+                :style="{ '--carousel-duration': carouselTransitionDuration + 's', '--carousel-slide-width': carouselSlideWidth + 'px', transform: `translateX(${carouselOffset}px)` }"
+              >
+                <article
+                  v-for="(garage, idx) in carouselGarages"
+                  :key="'c-' + garage.id + '-' + idx"
+                  class="map-slide"
+                  :class="{ selected: selectedGarage && selectedGarage.id === garage.id }"
+                  :style="{ flex: '0 0 ' + carouselSlideWidth + 'px', width: carouselSlideWidth + 'px' }"
+                >
+                <div class="map-slide-img">
+                  <img v-if="garage.preview && !imgFailed(garage.id)" :src="garage.preview" alt="" draggable="false" @error="onImgError(garage)" />
+                  <div v-else class="card-img-ph small">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                  </div>
+                  <div class="map-slide-img-fade"></div>
+                  <div class="map-slide-badges">
+                    <span v-if="garage.owned" class="badge owned">OWNED</span>
+                    <span v-else-if="garage.starterGarage" class="badge free">FREE</span>
+                  </div>
+                  <div class="map-slide-price-overlay" v-if="!garage.owned">${{ formatPrice(garage.price) }}</div>
+                </div>
+                <div class="map-slide-body">
+                  <div class="map-slide-top">
+                    <span class="map-slide-name">{{ garage.name }}</span>
+                  </div>
+                  <div class="map-slide-meta-row">
+                    <div class="map-slide-meta">
+                      <span>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h2a2 2 0 012 2v6a2 2 0 01-2 2H6"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                        <template v-if="garage.owned">{{ garage.vehicleCount }}/{{ garage.capacity }}</template>
+                        <template v-else>{{ garage.capacity }} slots</template>
+                      </span>
+                      <span v-if="garage.distance >= 0">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="10" r="3"/><path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 10-16 0c0 3 2.7 7 8 11.7z"/></svg>
+                        {{ formatDistance(garage.distance) }}
+                      </span>
+                    </div>
+                    <button class="act-btn route" @click.stop="setRoute(garage)">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+                      Route
+                    </button>
+                  </div>
+                </div>
+                </article>
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
     </div>
   </PhoneWrapper>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { lua } from '@/bridge'
 import { useEvents } from '@/services/events'
+import { useMinimapStore } from '../stores/minimapStore'
+import { vBngTextInput } from '@/common/directives'
 import PhoneWrapper from './PhoneWrapper.vue'
 
+defineOptions({ directives: { BngTextInput: vBngTextInput } })
+
 const events = useEvents()
+const minimapStore = useMinimapStore()
+
 const garages = ref([])
+const playerBalance = ref(0)
 const careerActive = ref(true)
 const loaded = ref(false)
-const expandedId = ref(null)
 
-const ownedCount = computed(() => garages.value.filter(g => g.owned).length)
+const filterOpen = ref(false)
+const sortOpen = ref(false)
+const filterForm = reactive({
+  affordable: false,
+  notOwned: false,
+  priceMin: null,
+  priceMax: null,
+  slotsMin: null,
+  slotsMax: null,
+  distMin: null,
+  distMax: null,
+})
+const sortBy = ref('distance')
+const sortAsc = ref(true)
+const sortFields = [
+  { key: 'price', label: 'Price' },
+  { key: 'capacity', label: 'Slots' },
+  { key: 'distance', label: 'Distance' },
+]
+const failedImages = reactive(new Set())
+
+const viewMode = ref('map')
+const expandedId = ref(null)
+const selectedGarage = ref(null)
+const mapContainer = ref(null)
+const markerViewBox = ref('0 0 1000 1000')
+const realEstateBaseViewBox = ref('0 0 1000 1000')
+const panOffset = reactive({ x: 0, y: 0 })
+const zoomFactor = ref(1)
+const panState = reactive({
+  active: false,
+  moved: false,
+  lastX: 0,
+  lastY: 0,
+  pointerId: null,
+})
+const suppressMarkerClickUntil = ref(0)
+const filterPanelRef = ref(null)
+const firstFilterInputRef = ref(null)
+let resizeObserver = null
+let carouselResizeObserver = null
+let mapFocusAnimationFrame = null
+
+const filteredGarages = computed(() => garages.value)
+
+const listFilteredGarages = computed(() => {
+  let list = garages.value
+  const balance = playerBalance.value
+  const f = filterForm
+
+  if (f.affordable) {
+    list = list.filter(g => g.owned || g.price <= balance)
+  }
+  if (f.notOwned) {
+    list = list.filter(g => !g.owned)
+  }
+  if (f.priceMin != null && f.priceMin !== '') {
+    const v = Number(f.priceMin)
+    if (!isNaN(v)) list = list.filter(g => g.owned || g.price >= v)
+  }
+  if (f.priceMax != null && f.priceMax !== '') {
+    const v = Number(f.priceMax)
+    if (!isNaN(v)) list = list.filter(g => g.owned || g.price <= v)
+  }
+  if (f.slotsMin != null && f.slotsMin !== '') {
+    const v = Number(f.slotsMin)
+    if (!isNaN(v)) list = list.filter(g => g.capacity >= v)
+  }
+  if (f.slotsMax != null && f.slotsMax !== '') {
+    const v = Number(f.slotsMax)
+    if (!isNaN(v)) list = list.filter(g => g.capacity <= v)
+  }
+  if (f.distMin != null && f.distMin !== '') {
+    const v = Number(f.distMin)
+    if (!isNaN(v)) list = list.filter(g => g.distance < 0 || g.distance >= v)
+  }
+  if (f.distMax != null && f.distMax !== '') {
+    const v = Number(f.distMax)
+    if (!isNaN(v)) list = list.filter(g => g.distance < 0 || g.distance <= v)
+  }
+
+  const arr = [...list]
+  const key = sortBy.value
+  const asc = sortAsc.value
+  arr.sort((a, b) => {
+    let va = key === 'price' ? (a.owned ? 0 : a.price) : key === 'capacity' ? a.capacity : (a.distance < 0 ? 1e9 : a.distance)
+    let vb = key === 'price' ? (b.owned ? 0 : b.price) : key === 'capacity' ? b.capacity : (b.distance < 0 ? 1e9 : b.distance)
+    if (va < vb) return asc ? -1 : 1
+    if (va > vb) return asc ? 1 : -1
+    return 0
+  })
+  return arr
+})
+
+function clearFilters() {
+  filterForm.affordable = false
+  filterForm.notOwned = false
+  filterForm.priceMin = null
+  filterForm.priceMax = null
+  filterForm.slotsMin = null
+  filterForm.slotsMax = null
+  filterForm.distMin = null
+  filterForm.distMax = null
+}
+
+const carouselGarages = computed(() => {
+  const list = filteredGarages.value
+  if (list.length < 2) return list
+  return [...list, ...list, ...list]
+})
+
+const carouselCycleLen = computed(() => filteredGarages.value.length)
+
+const carouselViewportRef = ref(null)
+const carouselWidth = ref(340)
+const carouselSlideIndex = ref(0)
+const carouselDragDelta = ref(0)
+const carouselTransitionDuration = ref(0.35)
+const isDraggingCarousel = ref(false)
+const isWrappingCarousel = ref(false)
+const carouselPointerStart = reactive({ x: 0 })
+let carouselPointerId = null
+
+const carouselSlideWidth = computed(() => Math.max(292, carouselWidth.value - 28))
+const carouselSlideStep = computed(() => carouselSlideWidth.value + 10)
+
+const carouselOffset = computed(() => {
+  return -carouselSlideIndex.value * carouselSlideStep.value + carouselDragDelta.value
+})
+
+const suppressCarouselClickUntil = ref(0)
+
+const CLUSTER_RADIUS_PX = 50
+const mapContainerSize = ref({ width: 400, height: 400 })
+
+function worldToPixelDist(dxWorld, dyWorld, viewBox, containerW, containerH) {
+  const scaleX = containerW / viewBox.w
+  const scaleY = containerH / viewBox.h
+  return Math.hypot(dxWorld * scaleX, dyWorld * scaleY)
+}
+
+function clusterGarages(garages, viewBoxStr, containerSize) {
+  const result = []
+  const assigned = new Set()
+  const box = parseViewBox(viewBoxStr)
+  const cw = Math.max(1, containerSize.width)
+  const ch = Math.max(1, containerSize.height)
+
+  for (const g of garages) {
+    if (assigned.has(g.id)) continue
+    const cluster = [g]
+    assigned.add(g.id)
+    let changed = true
+    while (changed) {
+      changed = false
+      for (const other of garages) {
+        if (assigned.has(other.id)) continue
+        for (const c of cluster) {
+          const distPx = worldToPixelDist(other.posX - c.posX, other.posY - c.posY, box, cw, ch)
+          if (distPx <= CLUSTER_RADIUS_PX) {
+            cluster.push(other)
+            assigned.add(other.id)
+            changed = true
+            break
+          }
+        }
+      }
+    }
+    const posX = cluster.reduce((s, x) => s + x.posX, 0) / cluster.length
+    const posY = cluster.reduce((s, x) => s + x.posY, 0) / cluster.length
+    result.push({ cluster, posX, posY, count: cluster.length })
+  }
+  return result
+}
+
+const clusteredMarkers = computed(() =>
+  clusterGarages(filteredGarages.value, markerViewBox.value, mapContainerSize.value)
+)
 
 function formatPrice(price) {
   if (price >= 1000000) return (price / 1000000).toFixed(1) + 'M'
@@ -134,13 +442,27 @@ function formatPrice(price) {
 }
 
 function formatDistance(meters) {
-  if (meters < 0) return '—'
+  if (meters < 0) return '--'
   if (meters >= 1000) return (meters / 1000).toFixed(1) + ' km'
   return Math.round(meters) + ' m'
 }
 
+function getNearestGarage(list) {
+  if (!Array.isArray(list) || !list.length) return null
+  let nearest = null
+  let nearestDistance = Infinity
+  for (const garage of list) {
+    const distance = Number(garage?.distance)
+    const normalizedDistance = Number.isFinite(distance) && distance >= 0 ? distance : Infinity
+    if (normalizedDistance < nearestDistance) {
+      nearestDistance = normalizedDistance
+      nearest = garage
+    }
+  }
+  return nearest || list[0]
+}
+
 function cleanDescription(desc) {
-  // Strip translation keys
   if (desc.startsWith('levels.')) return ''
   return desc
 }
@@ -149,130 +471,771 @@ function toggleExpand(id) {
   expandedId.value = expandedId.value === id ? null : id
 }
 
+function selectMarker(garage) {
+  if (Date.now() < suppressMarkerClickUntil.value) return
+  focusGarage(garage, { centerMap: true, animateCenterMap: true })
+}
+
 function setRoute(garage) {
   lua.ui_phone_realEstate.setRouteToGarage(garage.id)
 }
 
-function towTo(garage) {
-  lua.ui_phone_realEstate.towToGarage(garage.id)
+function imgFailed(garageId) {
+  return failedImages.has(garageId)
 }
 
-function onImgError(e) {
-  e.target.style.display = 'none'
+function onImgError(garage) {
+  failedImages.add(garage.id)
 }
 
-onMounted(() => {
-  lua.extensions.load('ui_phone_realEstate')
-  events.on('phoneRealEstateData', (data) => {
-    garages.value = data.garages || []
-    careerActive.value = data.careerActive !== false
-    loaded.value = true
+function parseViewBox(viewBoxString) {
+  const raw = (viewBoxString || '0 0 1000 1000').split(' ').map(Number)
+  if (raw.length !== 4 || raw.some(Number.isNaN)) {
+    return { x: 0, y: 0, w: 1000, h: 1000 }
+  }
+  return { x: raw[0], y: raw[1], w: raw[2], h: raw[3] }
+}
+
+function buildWalkingZoomBaseViewBox() {
+  const current = parseViewBox(minimapStore.viewBox)
+  const centerX = current.x + current.w / 2
+  const centerY = current.y + current.h / 2
+  const minimapZoomFactor = Number(minimapStore.zoomFactor)
+  const zoomFactorValue = Number.isFinite(minimapZoomFactor) && minimapZoomFactor > 0 ? minimapZoomFactor : 3
+  const walkingZoomRadius = 50 * zoomFactorValue
+  const width = walkingZoomRadius * 2
+  const height = walkingZoomRadius * 2
+  return `${centerX - width / 2} ${centerY - height / 2} ${width} ${height}`
+}
+
+function getMapBaseViewBox() {
+  if (minimapStore.viewControlledBy === 'realEstate') return parseViewBox(realEstateBaseViewBox.value)
+  return parseViewBox(minimapStore.viewBox)
+}
+
+function applyEffectiveViewBox() {
+  const base = getMapBaseViewBox()
+  const z = Math.max(0.25, Math.min(4, zoomFactor.value))
+  const cx = base.x + panOffset.x + base.w / 2
+  const cy = base.y + panOffset.y + base.h / 2
+  const w = base.w * z
+  const h = base.h * z
+  const effective = `${cx - w / 2} ${cy - h / 2} ${w} ${h}`
+  markerViewBox.value = effective
+  if (minimapStore.svgLayers?.terrain) minimapStore.svgLayers.terrain.setAttribute('viewBox', effective)
+  if (minimapStore.svgLayers?.vehicles) minimapStore.svgLayers.vehicles.setAttribute('viewBox', effective)
+  if (minimapStore.svgLayers?.aux) minimapStore.svgLayers.aux.setAttribute('viewBox', effective)
+}
+
+function stopMapFocusAnimation() {
+  if (mapFocusAnimationFrame != null) {
+    cancelAnimationFrame(mapFocusAnimationFrame)
+    mapFocusAnimationFrame = null
+  }
+}
+
+function animateMapPanTo(targetX, targetY, durationMs = 320) {
+  stopMapFocusAnimation()
+  const startX = panOffset.x
+  const startY = panOffset.y
+  const dx = targetX - startX
+  const dy = targetY - startY
+  if (Math.abs(dx) < 0.001 && Math.abs(dy) < 0.001) {
+    panOffset.x = targetX
+    panOffset.y = targetY
+    applyEffectiveViewBox()
+    return
+  }
+  const startTime = performance.now()
+  const step = (now) => {
+    const t = Math.min(1, (now - startTime) / durationMs)
+    const eased = 1 - Math.pow(1 - t, 3)
+    panOffset.x = startX + dx * eased
+    panOffset.y = startY + dy * eased
+    applyEffectiveViewBox()
+    if (t < 1) {
+      mapFocusAnimationFrame = requestAnimationFrame(step)
+    } else {
+      mapFocusAnimationFrame = null
+    }
+  }
+  mapFocusAnimationFrame = requestAnimationFrame(step)
+}
+
+function onMapWheel(event) {
+  if (!mapContainer.value) return
+  stopMapFocusAnimation()
+  const delta = event.deltaY * 0.002
+  zoomFactor.value = Math.max(0.25, Math.min(4, zoomFactor.value * (1 + delta)))
+  applyEffectiveViewBox()
+}
+
+function onMapPointerDown(event) {
+  stopMapFocusAnimation()
+  panState.active = true
+  panState.moved = false
+  panState.lastX = event.clientX
+  panState.lastY = event.clientY
+  panState.pointerId = event.pointerId
+}
+
+function onMapPointerMove(event) {
+  if (!panState.active || panState.pointerId !== event.pointerId || !mapContainer.value) return
+  const dx = event.clientX - panState.lastX
+  const dy = event.clientY - panState.lastY
+  if (Math.abs(dx) > 2 || Math.abs(dy) > 2) panState.moved = true
+  panState.lastX = event.clientX
+  panState.lastY = event.clientY
+
+  const rect = mapContainer.value.getBoundingClientRect()
+  if (rect.width <= 0 || rect.height <= 0) return
+  const box = parseViewBox(markerViewBox.value)
+  const worldPerPixelX = box.w / rect.width
+  const worldPerPixelY = box.h / rect.height
+  panOffset.x -= dx * worldPerPixelX
+  panOffset.y -= dy * worldPerPixelY
+  applyEffectiveViewBox()
+}
+
+function onMapPointerUp(event) {
+  if (panState.pointerId !== event.pointerId) return
+  if (panState.moved) suppressMarkerClickUntil.value = Date.now() + 120
+  panState.active = false
+  panState.moved = false
+  panState.pointerId = null
+}
+
+function scrollToGarageCard(garageId) {
+  if (!garageId) return
+  const list = filteredGarages.value
+  const index = list.findIndex(g => g.id === garageId)
+  if (index < 0) return
+  const targetIdx = list.length >= 2 ? carouselCycleLen.value + index : index
+  const delta = Math.abs(targetIdx - carouselSlideIndex.value)
+  carouselTransitionDuration.value = delta > 1 ? Math.min(0.7, 0.3 + delta * 0.025) : 0.35
+  carouselSlideIndex.value = targetIdx
+}
+
+function onCarouselPointerDown(event) {
+  const viewport = event.currentTarget
+  if (!viewport) return
+  carouselPointerId = event.pointerId
+  carouselPointerStart.x = event.clientX
+  carouselDragDelta.value = 0
+  isDraggingCarousel.value = false
+  document.addEventListener('pointermove', onCarouselDocMove)
+  document.addEventListener('pointerup', onCarouselDocUp)
+  document.addEventListener('pointercancel', onCarouselDocUp)
+}
+
+function onCarouselDocMove(event) {
+  if (event.pointerId !== carouselPointerId) return
+  const dx = event.clientX - carouselPointerStart.x
+  if (!isDraggingCarousel.value && Math.abs(dx) > 8) {
+    isDraggingCarousel.value = true
+    const viewport = carouselViewportRef.value
+    if (viewport?.setPointerCapture) {
+      try { viewport.setPointerCapture(event.pointerId) } catch (_) {}
+    }
+  }
+  if (isDraggingCarousel.value) {
+    event.preventDefault()
+    carouselDragDelta.value = Math.max(-carouselSlideStep.value, Math.min(carouselSlideStep.value, dx))
+  }
+}
+
+function onCarouselDocUp(event) {
+  if (event.pointerId !== carouselPointerId) return
+  const viewport = carouselViewportRef.value
+  if (viewport?.releasePointerCapture) {
+    try { viewport.releasePointerCapture(event.pointerId) } catch (_) {}
+  }
+  document.removeEventListener('pointermove', onCarouselDocMove)
+  document.removeEventListener('pointerup', onCarouselDocUp)
+  document.removeEventListener('pointercancel', onCarouselDocUp)
+  if (isDraggingCarousel.value) {
+    const threshold = carouselSlideStep.value * 0.25
+    const cycleLen = carouselCycleLen.value
+    const garages = carouselGarages.value
+    const WRAP_ANIM_MS = 350
+    if (carouselDragDelta.value < -threshold) {
+      const next = carouselSlideIndex.value + 1
+      const willWrap = cycleLen >= 2 && next >= 2 * cycleLen
+      if (willWrap) {
+        isDraggingCarousel.value = false
+        carouselDragDelta.value = 0
+        carouselTransitionDuration.value = 0.35
+        carouselSlideIndex.value = next
+        if (garages[next]) selectedGarage.value = garages[next]
+        setTimeout(() => {
+          isWrappingCarousel.value = true
+          carouselSlideIndex.value = cycleLen
+          nextTick(() => requestAnimationFrame(() => {
+            isWrappingCarousel.value = false
+          }))
+        }, WRAP_ANIM_MS)
+      } else {
+        carouselSlideIndex.value = cycleLen >= 2 ? next : Math.min(next, garages.length - 1)
+        if (garages[carouselSlideIndex.value]) selectedGarage.value = garages[carouselSlideIndex.value]
+      }
+    } else if (carouselDragDelta.value > threshold) {
+      const prev = carouselSlideIndex.value - 1
+      const willWrap = cycleLen >= 2 && prev < cycleLen
+      if (willWrap) {
+        isDraggingCarousel.value = false
+        carouselDragDelta.value = 0
+        carouselTransitionDuration.value = 0.35
+        carouselSlideIndex.value = prev
+        if (garages[prev]) selectedGarage.value = garages[prev]
+        setTimeout(() => {
+          isWrappingCarousel.value = true
+          carouselSlideIndex.value = 2 * cycleLen - 1
+          nextTick(() => requestAnimationFrame(() => {
+            isWrappingCarousel.value = false
+          }))
+        }, WRAP_ANIM_MS)
+      } else {
+        carouselSlideIndex.value = cycleLen >= 2 ? prev : Math.max(0, prev)
+        if (garages[carouselSlideIndex.value]) selectedGarage.value = garages[carouselSlideIndex.value]
+      }
+    }
+    suppressCarouselClickUntil.value = Date.now() + 150
+  }
+  isDraggingCarousel.value = false
+  carouselDragDelta.value = 0
+}
+
+function onCarouselViewportClick(event) {
+  if (Date.now() < suppressCarouselClickUntil.value) return
+  const viewport = carouselViewportRef.value
+  if (!viewport) return
+  const track = viewport.querySelector('.map-carousel-track')
+  const rect = viewport.getBoundingClientRect()
+  const trackPadding = track ? parseFloat(getComputedStyle(track).paddingLeft) || 0 : 0
+  const x = event.clientX - rect.left - trackPadding - carouselOffset.value
+  const step = carouselSlideStep.value
+  if (step <= 0) return
+  const idx = Math.floor(x / step)
+  const garage = carouselGarages.value[Math.max(0, Math.min(idx, carouselGarages.value.length - 1))]
+  if (garage) focusGarage(garage, { centerMap: true, animateCenterMap: true })
+}
+
+function initCarouselScroll() {
+  const list = filteredGarages.value
+  if (list.length < 2) {
+    carouselSlideIndex.value = 0
+    return
+  }
+  carouselSlideIndex.value = carouselCycleLen.value
+  if (selectedGarage.value) {
+    const idx = list.findIndex(g => g.id === selectedGarage.value.id)
+    if (idx >= 0) carouselSlideIndex.value = carouselCycleLen.value + idx
+  }
+}
+
+function centerMapOnGarage(garage, animate = false) {
+  if (!garage) return
+  const posX = Number(garage.posX)
+  const posY = Number(garage.posY)
+  if (!Number.isFinite(posX) || !Number.isFinite(posY)) return
+  const base = getMapBaseViewBox()
+  const targetPanX = -posX - (base.x + base.w / 2)
+  const targetPanY = posY - (base.y + base.h / 2)
+  if (animate) {
+    animateMapPanTo(targetPanX, targetPanY)
+    return
+  }
+  stopMapFocusAnimation()
+  panOffset.x = targetPanX
+  panOffset.y = targetPanY
+  applyEffectiveViewBox()
+}
+
+function focusGarage(garage, options = {}) {
+  selectedGarage.value = garage
+  scrollToGarageCard(garage.id)
+  if (options.centerMap) centerMapOnGarage(garage, options.animateCenterMap)
+}
+
+function updateContainerSize() {
+  if (!mapContainer.value) return
+  const r = mapContainer.value.getBoundingClientRect()
+  if (r.width > 0 && r.height > 0) {
+    mapContainerSize.value = { width: r.width, height: r.height }
+  }
+}
+
+function updateCarouselWidth() {
+  const el = carouselViewportRef.value
+  if (el) {
+    const w = el.getBoundingClientRect().width
+    if (w > 0) carouselWidth.value = w
+  }
+}
+
+function initMap() {
+  if (!mapContainer.value) return
+  const terrainLayer = mapContainer.value.querySelector('.terrain-layer')
+  const vehicleLayer = mapContainer.value.querySelector('.vehicle-layer')
+  if (terrainLayer && vehicleLayer) {
+    terrainLayer.appendChild(minimapStore.svgLayers.terrain)
+    vehicleLayer.appendChild(minimapStore.svgLayers.vehicles)
+    updateContainerSize()
+    applyEffectiveViewBox()
+    updateCarouselWidth()
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver?.disconnect()
+      resizeObserver = new ResizeObserver(() => updateContainerSize())
+      resizeObserver.observe(mapContainer.value)
+      carouselResizeObserver?.disconnect()
+      carouselResizeObserver = new ResizeObserver(() => updateCarouselWidth())
+      nextTick(() => {
+        if (carouselViewportRef.value) carouselResizeObserver.observe(carouselViewportRef.value)
+      })
+    }
+  }
+}
+
+async function mountMapIfVisible() {
+  if (viewMode.value !== 'map' || !careerActive.value || !loaded.value) return
+  await nextTick()
+  initMap()
+}
+
+watch([viewMode, careerActive, loaded], async ([newViewMode], [oldViewMode]) => {
+  let shouldCenterNearestOnOpen = false
+  if (viewMode.value !== 'map') {
+    selectedGarage.value = null
+    minimapStore.viewControlledBy = null
+  } else {
+    filterOpen.value = false
+    sortOpen.value = false
+    if (oldViewMode !== 'map') {
+      realEstateBaseViewBox.value = buildWalkingZoomBaseViewBox()
+    }
+    minimapStore.viewControlledBy = 'realEstate'
+    if (oldViewMode !== 'map') {
+      const nearest = getNearestGarage(filteredGarages.value)
+      if (nearest) {
+        selectedGarage.value = nearest
+        shouldCenterNearestOnOpen = true
+      }
+    }
+  }
+  await mountMapIfVisible()
+  nextTick(() => {
+    initCarouselScroll()
+    if (newViewMode === 'map' && shouldCenterNearestOnOpen && selectedGarage.value) {
+      focusGarage(selectedGarage.value, { centerMap: true, animateCenterMap: true })
+    }
   })
-  lua.ui_phone_realEstate.requestGarageListings()
+}, { immediate: true })
 
-  // Fallback
+watch(filterOpen, (open) => {
+  if (open) {
+    nextTick(() => {
+      filterPanelRef.value?.focus()
+      firstFilterInputRef.value?.focus()
+    })
+  }
+})
+
+watch(() => minimapStore.viewBox, () => {
+  if (minimapStore.viewControlledBy === 'realEstate') return
+  applyEffectiveViewBox()
+})
+
+watch(filteredGarages, (list) => {
+  if (viewMode.value !== 'map') return
+  if (!list.length) {
+    selectedGarage.value = null
+    return
+  }
+  const shouldAutoSelectNearest = !selectedGarage.value || !list.find(g => g.id === selectedGarage.value.id)
+  if (shouldAutoSelectNearest) {
+    selectedGarage.value = getNearestGarage(list)
+  }
+  nextTick(() => {
+    initCarouselScroll()
+    if (!selectedGarage.value) return
+    if (shouldAutoSelectNearest) {
+      focusGarage(selectedGarage.value, { centerMap: true, animateCenterMap: true })
+    } else {
+      scrollToGarageCard(selectedGarage.value.id)
+    }
+  })
+})
+
+onMounted(async () => {
+  minimapStore.init()
+  events.on('phoneRealEstateData', (data) => {
+    failedImages.clear()
+    garages.value = data.garages || []
+    playerBalance.value = data.playerBalance ?? 0
+    loaded.value = true
+    mountMapIfVisible()
+  })
+  await lua.extensions.load('ui_phone_layout')
+  careerActive.value = await lua.ui_phone_layout.getCareerActive()
+  if (careerActive.value) {
+    await lua.extensions.load('ui_phone_realEstate')
+    if (lua.ui_phone_realEstate?.requestGarageListings) {
+      lua.ui_phone_realEstate.requestGarageListings()
+    } else {
+      loaded.value = true
+    }
+  } else {
+    loaded.value = true
+  }
   setTimeout(() => { if (!loaded.value) loaded.value = true }, 1000)
+
+  await mountMapIfVisible()
+})
+
+onUnmounted(() => {
+  stopMapFocusAnimation()
+  minimapStore.viewControlledBy = null
+  resizeObserver?.disconnect()
+  resizeObserver = null
+  carouselResizeObserver?.disconnect()
+  carouselResizeObserver = null
+  minimapStore.cleanup()
 })
 </script>
 
 <style scoped lang="scss">
-.real-estate-app {
+.re-app {
   height: 100%;
-  display: flex;
-  flex-direction: column;
+  position: relative;
   background: #111;
   color: white;
   overflow: hidden;
+  border-radius: 0 0 16px 16px;
 }
 
-.app-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 52px 16px 12px;
-  background: linear-gradient(to bottom, rgba(249, 115, 22, 0.15), transparent);
-  flex-shrink: 0;
-}
-
-.header-icon-wrap {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: rgba(249, 115, 22, 0.15);
+.empty-state {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
+  color: rgba(255,255,255,0.4);
+  font-size: 14px;
+  &.small { position: relative; inset: auto; font-size: 13px; padding: 40px 20px; flex: 0; }
 }
 
-.header-text {
+/* ── TOOLBAR ── */
+.toolbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  padding: 44px 10px 8px;
+  border-radius: 0 0 24px 24px;
+  background: #111;
   display: flex;
   flex-direction: column;
+  gap: 8px;
+}
 
-  h1 {
-    font-size: 18px;
-    font-weight: 700;
-    margin: 0;
+.view-toggle {
+  display: flex;
+  background: #1a1a1a;
+  border-radius: 8px;
+  padding: 2px;
+  gap: 2px;
+
+  button {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: inherit;
+    color: rgba(255,255,255,0.45);
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &.active {
+      background: #2a2a2a;
+      color: white;
+    }
+  }
+}
+
+.toolbar-row-2 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dropdown-wrap {
+  position: relative;
+}
+
+.dropdown-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: transparent;
+  color: rgba(255,255,255,0.7);
+  font-size: 11px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &.active {
+    background: #f97316;
+    border-color: #f97316;
     color: white;
   }
 }
 
-.header-subtitle {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.45);
-  margin-top: 1px;
+.dropdown-chevron {
+  transition: transform 0.15s ease;
+  &.open { transform: rotate(180deg); }
 }
 
-.empty-state {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 14px;
-}
-
-.garage-list {
-  flex: 1;
+.dropdown-panel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  z-index: 100;
+  min-width: 220px;
+  max-height: 70vh;
   overflow-y: auto;
-  padding: 8px 12px 120px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  outline: none;
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.toolbar-count {
+  margin-left: auto;
+  font-size: 10px;
+  color: rgba(255,255,255,0.4);
+}
+
+/* ── LIST VIEW ── */
+.list-view {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  padding: 130px 10px 80px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 
-  &::-webkit-scrollbar {
-    width: 3px;
+  &::-webkit-scrollbar { width: 3px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+}
+
+.filter-panel,
+.sort-panel {
+  padding: 14px;
+  background: #1a1a1a;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+
+.filter-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  border: 0;
+}
+
+.custom-checkbox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.35);
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+
+  .custom-checkbox-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #f97316;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: opacity 0.15s ease, transform 0.15s ease;
   }
-  &::-webkit-scrollbar-track {
-    background: transparent;
+
+  &.checked .custom-checkbox-dot {
+    opacity: 1;
+    transform: scale(1);
   }
-  &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 2px;
+
+  &.checked { border-color: rgba(249,115,22,0.5); }
+}
+
+.filter-opt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.8);
+  cursor: pointer;
+}
+
+.filter-row {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 6px;
+  align-items: start;
+
+  > label {
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+    padding-top: 6px;
   }
 }
 
-.garage-card {
+.filter-inputs-stacked {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  input {
+    width: 100%;
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: #0d0d0d;
+    color: white;
+    font-size: 12px;
+    font-family: inherit;
+    box-sizing: border-box;
+
+    &::placeholder {
+      color: rgba(255,255,255,0.3);
+    }
+
+    &[type="number"] {
+      -moz-appearance: textfield;
+      appearance: textfield;
+
+      &::-webkit-inner-spin-button,
+      &::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        appearance: none;
+        margin: 0;
+      }
+    }
+  }
+}
+
+.filter-clear {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: transparent;
+  color: rgba(255,255,255,0.6);
+  font-size: 11px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.sort-panel {
+  min-width: 200px;
+}
+
+.sort-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 12px;
+  align-items: center;
+}
+
+.sort-label {
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+}
+
+.sort-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+
+.sort-options:last-of-type {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.sort-opt {
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: transparent;
+  color: rgba(255,255,255,0.7);
+  font-size: 11px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &.active {
+    background: #f97316;
+    border-color: #f97316;
+    color: white;
+  }
+}
+
+.card {
+  flex-shrink: 0;
+  min-height: 200px;
   background: #1a1a1a;
-  border-radius: 14px;
+  border-radius: 16px;
   overflow: hidden;
   cursor: pointer;
-  transition: background 0.15s ease;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255,255,255,0.05);
+  transition: border-color 0.15s ease;
 
-  &:hover {
-    background: #1e1e1e;
-  }
-
-  &.owned {
-    border-color: rgba(249, 115, 22, 0.2);
-  }
+  &.owned { border-color: rgba(249,115,22,0.2); }
+  &:active { background: #1e1e1e; }
 }
 
-.card-image {
+.card-img {
   position: relative;
   width: 100%;
-  height: 100px;
+  height: 160px;
+  flex-shrink: 0;
   background: #0d0d0d;
   overflow: hidden;
 
@@ -280,29 +1243,44 @@ onMounted(() => {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    display: block;
   }
 }
 
-.card-image-placeholder {
+.card-img-ph {
   width: 100%;
   height: 100%;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 6px;
   background: linear-gradient(135deg, #1a1a1a, #0d0d0d);
+
+  span {
+    font-size: 10px;
+    color: rgba(255,255,255,0.18);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  &.small {
+    height: 80px;
+    span { display: none; }
+  }
 }
 
-.card-image-overlay {
+.card-img-fade {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, transparent 60%);
+  background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 50%);
   pointer-events: none;
 }
 
 .card-badges {
   position: absolute;
   top: 8px;
-  right: 8px;
+  left: 10px;
   display: flex;
   gap: 4px;
 }
@@ -310,42 +1288,32 @@ onMounted(() => {
 .badge {
   font-size: 9px;
   font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
   letter-spacing: 0.5px;
-}
 
-.badge-owned {
-  background: #f97316;
-  color: white;
-}
-
-.badge-starter {
-  background: #22c55e;
-  color: white;
+  &.owned { background: #f97316; color: white; }
+  &.free { background: #22c55e; color: white; }
 }
 
 .card-price {
   position: absolute;
-  bottom: 8px;
-  left: 10px;
-  font-size: 16px;
+  bottom: 10px;
+  left: 12px;
+  font-size: 18px;
   font-weight: 700;
   color: white;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+  text-shadow: 0 1px 6px rgba(0,0,0,0.9);
 }
 
 .card-body {
   display: flex;
   align-items: center;
-  padding: 10px 12px;
+  padding: 10px 14px;
   gap: 8px;
 }
 
-.card-main {
-  flex: 1;
-  min-width: 0;
-}
+.card-info { flex: 1; min-width: 0; }
 
 .card-name {
   font-size: 14px;
@@ -359,81 +1327,284 @@ onMounted(() => {
 .card-meta {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   margin-top: 3px;
 }
 
-.meta-slots, .meta-distance {
+.meta-item {
   display: flex;
   align-items: center;
   gap: 4px;
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255,255,255,0.45);
 }
 
-.card-chevron {
+.chevron {
   flex-shrink: 0;
   transition: transform 0.2s ease;
-
-  &.expanded {
-    transform: rotate(180deg);
-  }
+  &.open { transform: rotate(180deg); }
 }
 
-.card-actions {
-  padding: 0 12px 12px;
+.card-expand {
+  padding: 0 14px 14px;
   animation: slideDown 0.2s ease;
 }
 
-.card-description {
+.card-desc {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255,255,255,0.35);
   margin: 0 0 10px;
   line-height: 1.4;
 }
 
-.action-buttons {
+.card-actions, .map-card-actions {
   display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.action-btn {
+.act-btn {
   display: flex;
   align-items: center;
   gap: 5px;
-  padding: 7px 12px;
+  padding: 8px 14px;
   border-radius: 10px;
   border: none;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.15s ease;
   font-family: inherit;
+  transition: opacity 0.15s ease;
+  &:hover { opacity: 0.85; }
 
-  &:hover {
-    opacity: 0.85;
+  &.route { background: rgba(249,115,22,0.15); color: #f97316; }
+}
+
+/* ── MAP VIEW ── */
+.map-view {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.map-layers {
+  position: absolute;
+  inset: 0;
+  background: rgba(30,30,30,0.95);
+  touch-action: none;
+}
+
+.map-layer {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.marker-layer {
+  pointer-events: all;
+}
+
+.garage-marker {
+  cursor: pointer;
+
+  .marker-bg {
+    fill: rgba(0,0,0,0.5);
+    stroke: none;
+    transition: all 0.15s ease;
+  }
+
+  .marker-dot {
+    fill: #f97316;
+    stroke: white;
+    stroke-width: 1.5;
+    transition: all 0.15s ease;
+
+    &.owned { fill: #22c55e; }
+  }
+
+  .marker-label {
+    fill: white;
+    font-size: 14px;
+    font-weight: 700;
+    paint-order: stroke;
+    stroke: rgba(0,0,0,0.8);
+    stroke-width: 4px;
+  }
+
+  .marker-count {
+    font-size: 16px;
+  }
+
+  &.selected {
+    .marker-bg {
+      fill: rgba(249,115,22,0.3);
+      r: 24;
+    }
+    .marker-dot {
+      stroke: #f97316;
+      stroke-width: 2.5;
+    }
   }
 }
 
-.route-btn {
-  background: rgba(249, 115, 22, 0.15);
+/* ── MAP CAROUSEL ── */
+.map-carousel-wrap {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  z-index: 5;
+  pointer-events: auto;
+}
+
+.map-carousel-viewport {
+  overflow: hidden;
+  padding: 0 0 30px;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+
+  &:active { cursor: grabbing; }
+}
+
+.map-carousel-track {
+  display: flex;
+  gap: 10px;
+  padding-left: max(0px, calc((100% - var(--carousel-slide-width, 292px)) / 2));
+  padding-right: max(0px, calc((100% - var(--carousel-slide-width, 292px)) / 2));
+  transition: transform var(--carousel-duration, 0.35s) cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  &.no-transition { transition: none; }
+}
+
+.map-slide {
+  flex-shrink: 0;
+  pointer-events: none;
+  background: rgba(24, 24, 24, 0.96);
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.45);
+  pointer-events: auto;
+
+  &.selected {
+    border-color: rgba(249,115,22,0.6);
+  }
+
+  .act-btn {
+    pointer-events: auto;
+  }
+}
+
+.map-slide-img {
+  position: relative;
+  width: 100%;
+  height: 118px;
+  background: #0d0d0d;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.map-slide-img-fade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.map-slide-badges {
+  position: absolute;
+  top: 6px;
+  left: 8px;
+  display: flex;
+  gap: 4px;
+}
+
+.map-slide-price-overlay {
+  position: absolute;
+  bottom: 8px;
+  left: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.9);
+}
+
+.map-slide-body {
+  padding: 10px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.map-slide-top {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.map-slide-name {
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+
+.map-slide-price {
+  font-size: 15px;
+  font-weight: 700;
   color: #f97316;
+  white-space: nowrap;
 }
 
-.tow-btn {
-  background: rgba(59, 130, 246, 0.15);
-  color: #3b82f6;
+.map-slide-owned {
+  font-size: 10px;
+  font-weight: 700;
+  background: #f97316;
+  color: white;
+  padding: 2px 7px;
+  border-radius: 5px;
+  white-space: nowrap;
 }
 
+.map-slide-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.map-slide-meta {
+  display: flex;
+  gap: 12px;
+
+  span {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+  }
+}
+
+.map-slide-meta-row .act-btn {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  font-size: 11px;
+}
+
+/* ── TRANSITIONS ── */
 @keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 </style>

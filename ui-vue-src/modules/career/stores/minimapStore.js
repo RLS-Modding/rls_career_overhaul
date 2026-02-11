@@ -12,6 +12,7 @@ export const useMinimapStore = defineStore("minimap", () => {
     const isFreeCam = ref(false)
     const playerPos = ref({ x: 0, y: 0 })
     const playerId = ref(0)
+    const viewControlledBy = ref(null)
 
     const svgLayers = ref({
         terrain: document.createElementNS("http://www.w3.org/2000/svg", "svg"),
@@ -115,9 +116,11 @@ export const useMinimapStore = defineStore("minimap", () => {
         }
 
         viewBox.value = parts.join(' ');
-        [svgLayers.value.terrain, svgLayers.value.vehicles, svgLayers.value.aux].forEach(layer => {
-            layer.setAttribute('viewBox', viewBox.value);
-        });
+        if (!viewControlledBy.value) {
+            [svgLayers.value.terrain, svgLayers.value.vehicles, svgLayers.value.aux].forEach(layer => {
+                layer.setAttribute('viewBox', viewBox.value);
+            });
+        }
     }
 
     function updateVehicleMarkers(objects) {
@@ -160,6 +163,7 @@ export const useMinimapStore = defineStore("minimap", () => {
     return {
         svgLayers,
         viewBox,
+        viewControlledBy,
         zoomFactor,
         processMapData,
         processMapUpdate,

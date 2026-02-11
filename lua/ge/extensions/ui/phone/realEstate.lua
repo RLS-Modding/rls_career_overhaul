@@ -1,6 +1,17 @@
 local M = {}
+M.dependencies = { 'freeroam_facilities', 'career_modules_garageManager', 'career_modules_hardcore', 'career_modules_playerAttributes' }
 
 local routePlanner = require('gameplay/route/route')()
+
+local function getCurrentLevel()
+  if getCurrentLevelIdentifier and getCurrentLevelIdentifier() then
+    return getCurrentLevelIdentifier()
+  end
+  if core_levels and getMissionFilename and getMissionFilename() ~= '' then
+    return core_levels.getLevelName(getMissionFilename())
+  end
+  return nil
+end
 
 local function getPlayerPos()
   local veh = getPlayerVehicle(0)
@@ -20,16 +31,37 @@ local function getDistanceTo(pos)
   return (pos - playerPos):length()
 end
 
+local function isCareerActive()
+  local state = core_gamestate and core_gamestate.state and core_gamestate.state.state
+  if state == 'freeroam' then return false end
+  if state == 'career' then return true end
+  return career_career and career_career.isActive()
+end
+
 local function requestGarageListings()
-  if not career_career or not career_career.isActive() then
-    guihooks.trigger('phoneRealEstateData', { garages = {}, careerActive = false })
+  if not isCareerActive() then
+    guihooks.trigger('phoneRealEstateData', { garages = {}, careerActive = false, playerBalance = 0 })
     return
   end
 
-  local garages = freeroam_facilities.getFacilitiesByType("garage")
-  if not garages then
-    guihooks.trigger('phoneRealEstateData', { garages = {}, careerActive = true })
+  local levelName = getCurrentLevel()
+  if not levelName or levelName == '' then
+    guihooks.trigger('phoneRealEstateData', { garages = {}, careerActive = true, playerBalance = 0 })
     return
+  end
+
+  local garages = freeroam_facilities.getFacilitiesByType("garage", levelName)
+  if not garages then
+    guihooks.trigger('phoneRealEstateData', { garages = {}, careerActive = true, playerBalance = 0 })
+    return
+  end
+
+  local computers = freeroam_facilities.getFacilitiesByType("computer", levelName) or {}
+  local garagePreviewByComputer = {}
+  for _, comp in ipairs(computers) do
+    if comp.garageId and comp.preview and not garagePreviewByComputer[comp.garageId] then
+      garagePreviewByComputer[comp.garageId] = comp.preview
+    end
   end
 
   local storedLocations = career_modules_garageManager.getStoredLocations()
@@ -51,19 +83,10 @@ local function requestGarageListings()
       distance = getDistanceTo(pos)
     end
 
-    -- Get price (accounts for hardcore, starter, etc)
-    local price = career_modules_garageManager.getGaragePrice(garage.id)
+    local price = career_modules_garageManager.getGaragePurchasePrice(garage.id)
     if not price then price = garage.defaultPrice end
 
-    -- Resolve preview image path
-    local preview = garage.preview or ""
-    if preview ~= "" then
-      -- Build full path relative to current level
-      local levelDir = core_levels.getLevelName()
-      if levelDir then
-        preview = "/levels/" .. levelDir .. "/facilities/" .. preview
-      end
-    end
+    local preview = garagePreviewByComputer[garage.id] or garage.preview or ""
 
     -- Translate name if needed
     local name = garage.name
@@ -96,7 +119,11 @@ local function requestGarageListings()
     return a.distance < b.distance
   end)
 
-  guihooks.trigger('phoneRealEstateData', { garages = result, careerActive = true })
+  local playerBalance = 0
+  if career_modules_playerAttributes and career_modules_playerAttributes.getAttributeValue then
+    playerBalance = tonumber(career_modules_playerAttributes.getAttributeValue("money")) or 0
+  end
+  guihooks.trigger('phoneRealEstateData', { garages = result, careerActive = true, playerBalance = playerBalance })
 end
 
 local function setRouteToGarage(garageId)
@@ -104,7 +131,7 @@ local function setRouteToGarage(garageId)
   if not garage then return end
   local pos, _ = freeroam_facilities.getGaragePosRot(garage)
   if pos then
-    core_groundMarkers.setPath(pos)
+    core_groundMarkers.setPath(pos, { clearPathOnReachingTarget = true })
   end
 end
 

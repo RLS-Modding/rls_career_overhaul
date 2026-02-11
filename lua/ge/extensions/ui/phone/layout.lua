@@ -1,5 +1,12 @@
 local M = {}
 
+local function isCareerActive()
+  local state = core_gamestate and core_gamestate.state and core_gamestate.state.state
+  if state == 'freeroam' then return false end
+  if state == 'career' then return true end
+  return career_career and career_career.isActive()
+end
+
 local saveDir = "/career/rls_career"
 local saveFile = saveDir .. "/phoneLayout.json"
 local settingsRoot = "settings/RLS/"
@@ -140,5 +147,6 @@ end
 
 M.requestLayout = requestLayout
 M.updateLayout = updateLayout
+M.getCareerActive = isCareerActive
 
 return M
