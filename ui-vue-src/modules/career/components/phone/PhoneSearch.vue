@@ -38,31 +38,14 @@
           <span class="search-result-category" v-if="app.category">{{ app.category }}</span>
         </div>
         <span class="search-result-new" v-if="!seenApps.has(app.id)">NEW</span>
-        <span class="search-result-add-hint" v-if="jiggleMode && !appIdsOnHome.has(app.id)">Hold to add</span>
+        <span class="search-result-add-hint" v-if="jiggleMode && !appIdsOnHome.has(app.id)">Drag to add</span>
       </div>
     </div>
-    <Teleport to="body">
-      <div
-        v-if="contextMenu.app"
-        class="search-context-modal"
-        @click.self="contextMenu.app = null"
-        ref="contextMenuRef"
-      >
-        <div
-          class="search-context-menu"
-          :style="{ left: contextMenu.x + 'px', top: contextMenu.y + 'px' }"
-        >
-          <button class="context-menu-btn" @click="onPutOnHome">
-            Put on Home Screen
-          </button>
-        </div>
-      </div>
-    </Teleport>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, reactive, onUnmounted, onMounted } from 'vue'
+import { ref, computed, onUnmounted } from 'vue'
 import { BngIcon } from '@/common/components/base'
 import { vBngTextInput } from '@/common/directives'
 
@@ -73,12 +56,10 @@ const props = defineProps({
   appIdsOnHome: { type: Set, default: () => new Set() },
 })
 
-const emit = defineEmits(['launch', 'addToHome', 'dragstart'])
+const emit = defineEmits(['launch', 'dragstart'])
 
 const query = ref('')
 const searchInputRef = ref(null)
-const contextMenuRef = ref(null)
-const contextMenu = reactive({ app: null, x: 0, y: 0 })
 let suppressNextLaunch = false
 let cleanupPointerTracking = null
 
@@ -92,8 +73,6 @@ const filteredApps = computed(() => {
   )
 })
 
-let longPressTimer = null
-
 function onResultPointerDown(e, app) {
   if (cleanupPointerTracking) {
     cleanupPointerTracking()
@@ -104,25 +83,9 @@ function onResultPointerDown(e, app) {
   const startX = e.clientX
   const startY = e.clientY
 
-  if (props.jiggleMode) {
-    longPressTimer = setTimeout(() => {
-      longPressTimer = null
-      if (!moved) {
-        suppressNextLaunch = true
-        showContextMenu(app, startX, startY)
-      }
-      cleanupPointerTracking?.()
-      cleanupPointerTracking = null
-    }, 600)
-  }
-
   const onMove = (ev) => {
     if (Math.abs(ev.clientX - startX) > 8 || Math.abs(ev.clientY - startY) > 8) {
       moved = true
-      if (longPressTimer) {
-        clearTimeout(longPressTimer)
-        longPressTimer = null
-      }
       if (props.jiggleMode) {
         emit('dragstart', ev, app)
         cleanupPointerTracking?.()
@@ -132,10 +95,6 @@ function onResultPointerDown(e, app) {
   }
 
   const onUp = () => {
-    if (longPressTimer) {
-      clearTimeout(longPressTimer)
-      longPressTimer = null
-    }
     suppressNextLaunch = moved
     if (cleanupPointerTracking) {
       cleanupPointerTracking()
@@ -154,26 +113,6 @@ function onResultPointerDown(e, app) {
   document.addEventListener('pointercancel', onUp)
 }
 
-function showContextMenu(app, x, y) {
-  if (props.appIdsOnHome.has(app.id)) return
-  contextMenu.app = app
-  contextMenu.x = x
-  contextMenu.y = y
-}
-
-function onPutOnHome() {
-  if (contextMenu.app) {
-    emit('addToHome', contextMenu.app)
-    contextMenu.app = null
-  }
-}
-
-function closeContextMenu(e) {
-  if (contextMenu.app && contextMenuRef.value && !contextMenuRef.value.contains(e.target)) {
-    contextMenu.app = null
-  }
-}
-
 function onResultClick(app) {
   if (suppressNextLaunch) {
     suppressNextLaunch = false
@@ -182,16 +121,7 @@ function onResultClick(app) {
   emit('launch', app)
 }
 
-onMounted(() => {
-  document.addEventListener('click', closeContextMenu)
-})
-
 onUnmounted(() => {
-  document.removeEventListener('click', closeContextMenu)
-  if (longPressTimer) {
-    clearTimeout(longPressTimer)
-    longPressTimer = null
-  }
   if (cleanupPointerTracking) {
     cleanupPointerTracking()
     cleanupPointerTracking = null
@@ -344,42 +274,5 @@ onUnmounted(() => {
   color: rgba(255, 255, 255, 0.5);
   font-size: 9px;
   margin-left: auto;
-}
-
-.search-context-modal {
-  position: fixed;
-  inset: 0;
-  z-index: 12000;
-  background: rgba(0, 0, 0, 0.4);
-}
-
-.search-context-menu {
-  position: fixed;
-  z-index: 12001;
-  background: rgba(40, 40, 40, 0.98);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 10px;
-  padding: 4px;
-  min-width: 140px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-}
-
-.context-menu-btn {
-  display: block;
-  width: 100%;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 6px;
-  background: none;
-  color: white;
-  font-size: 13px;
-  text-align: left;
-  cursor: pointer;
-  transition: background 0.15s ease;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.15);
-  }
 }
 </style>
