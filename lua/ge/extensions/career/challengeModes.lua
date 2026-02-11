@@ -796,7 +796,7 @@ end
 
 local function createChallengeFromUI(challengeData)
   if not challengeData or not challengeData.id or not challengeData.name then
-    return false, "Challenge must have a valid ID and name", nil
+    return { ok = false, msg = "Challenge must have a valid ID and name", id = nil }
   end
 
   applyVariableDefaults(challengeData)
@@ -820,7 +820,7 @@ local function createChallengeFromUI(challengeData)
 
   local valid, message = validateChallenge(challengeData)
   if not valid then
-    return false, message, nil
+    return { ok = false, msg = message, id = nil }
   end
 
   local customPath = "challenges/custom"
@@ -879,16 +879,16 @@ local function createChallengeFromUI(challengeData)
   end
 
   local filePath = customPath .. "/" .. challengeData.id .. ".json"
-  local success = jsonWriteFile(filePath, newChallenge, true)
+  local pcallOk, writeResult = pcall(function()
+    return jsonWriteFile(filePath, newChallenge, true)
+  end)
+  local writeOk = pcallOk and writeResult
 
-  if success then
-    -- Add directly to cache instead of re-scanning all challenges
+  if writeOk then
     newChallenge.filePath = filePath
     newChallenge.isLocal = true
     discoveredChallenges[challengeData.id] = newChallenge
     challengesDiscovered = true
-    
-    -- Send the new challenge to UI via guihook for immediate list update
     guihooks.trigger('challengeCreated', {
       id = newChallenge.id,
       name = newChallenge.name,
@@ -896,10 +896,15 @@ local function createChallengeFromUI(challengeData)
       difficulty = newChallenge.difficulty or "Medium",
       isLocal = true
     })
-    
-    return true, "Challenge created successfully", challengeData.id
+    return { ok = true, msg = "Challenge created successfully", id = challengeData.id }
   else
-    return false, "Failed to save challenge file", nil
+    local errMsg = "Failed to save challenge file"
+    if not pcallOk and writeResult then
+      errMsg = tostring(writeResult)
+    elseif FS and not FS:directoryExists(customPath) then
+      errMsg = "Directory " .. tostring(customPath) .. " does not exist or cannot be created"
+    end
+    return { ok = false, msg = errMsg, id = nil }
   end
 end
 

@@ -1,0 +1,32 @@
+<link rel="stylesheet" type="text/css" href="/ui/modModules/guide/guide.css" />
+
+<div class="guide-overlay" ng-if="showSplash" tabindex="-1">
+  <div class="guide-content">
+    <div class="guide-image-container">
+      <img src="/ui/modModules/guide/overhaul.jpg" alt="RLS Career Overhaul" class="guide-image" />
+    </div>
+    
+    <div class="guide-welcome-text">
+      <p>Welcome to <strong>RLS Career Overhaul</strong>! This mod transforms career mode with new work systems, freeroam events, police interactions, and an overhauled economy. Earn money your way with multiple job types including deliveries, taxi service, bus operations, and more.</p>
+    </div>
+    
+    <div class="guide-binding-section">
+      <h3 class="guide-binding-header">Phone shortcut</h3>
+      <div class="guide-binding-info">
+        <span class="guide-binding-action">Toggle phone</span>
+        <span class="guide-binding-current" ng-if="!isBinding">
+          Current: <strong>{{phoneBinding || 'Not bound'}}</strong>
+        </span>
+        <span class="guide-binding-waiting" ng-if="isBinding">
+          Press a key or mouse button...
+        </span>
+      </div>
+      <button class="guide-binding-button" ng-click="startBinding()" ng-disabled="isBinding">
+        <span ng-if="!isBinding">{{phoneBinding && phoneBinding !== 'Not bound' ? 'Change (' + phoneBinding + ')' : 'Set shortcut'}}</span>
+        <span ng-if="isBinding">Binding...</span>
+      </button>
+    </div>
+    
+    <button class="guide-button" ng-click="onContinue()" ng-disabled="!isPhoneBound || isBinding">Continue</button>
+  </div>
+</div>
