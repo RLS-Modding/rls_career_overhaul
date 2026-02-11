@@ -161,7 +161,7 @@ const arcOffset = computed(() => {
 })
 
 const scoreColor = computed(() => {
-    const s = creditData.value.score || 0
+    const s = creditData.value.score || 300
     if (s >= 750) return '#22c55e'
     if (s >= 550) return '#eab308'
     if (s >= 450) return '#f97316'
@@ -178,7 +178,7 @@ function barColor(pct) {
 function ageDays(ts) {
     if (!ts) return 'No history'
     const now = Date.now() / 1000
-    const days = Math.max(0, Math.floor((now - ts) / 86400))
+    const days = Math.max(0, Math.floor((now - ts) / 3600))
     return `${days} day${days !== 1 ? 's' : ''} since first loan`
 }
 
@@ -196,9 +196,9 @@ const factorCards = computed(() => {
         },
         {
             label: 'Credit Utilization', weight: 30,
-            percent: Math.min(100, 100 - (f.utilization || 0) * 100),
-            color: barColor(100 - (f.utilization || 0) * 100),
-            detail: `${((f.utilization || 0) * 100).toFixed(0)}% utilized`
+            percent: Math.min(100, (f.utilization || 0) * 100),
+            color: barColor((f.utilization || 0) * 100),
+            detail: `${((1 - (f.utilization || 0)) * 100).toFixed(0)}% utilized`
         },
         {
             label: 'Credit Age', weight: 15,
@@ -210,13 +210,13 @@ const factorCards = computed(() => {
             label: 'New Credit', weight: 10,
             percent: Math.min(100, (f.newCredit || 0) * 100),
             color: barColor((f.newCredit || 0) * 100),
-            detail: `${h.recentInquiries || 0} recent inquiries`
+            detail: `${(h.recentInquiries?.length || 0)} recent inquiries`
         },
         {
             label: 'Credit Mix', weight: 10,
             percent: Math.min(100, (f.creditMix || 0) * 100),
             color: barColor((f.creditMix || 0) * 100),
-            detail: `${h.uniqueOrgs || 0} unique lenders`
+            detail: `${Object.keys(h.uniqueOrgs || {}).length} unique lenders`
         }
     ]
 })

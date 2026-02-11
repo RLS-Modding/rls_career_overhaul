@@ -84,9 +84,11 @@ local function getLoanOffers()
   local outstandingByOrg = getOutstandingPrincipalByOrg()
 
   local creditMod = career_modules_credit
-  local rateMultiplier = creditMod and creditMod.getRateMultiplier() or 1.0
-  local maxMultiplier = creditMod and creditMod.getMaxMultiplier() or 1.0
-  local availableTerms = creditMod and creditMod.getAvailableTerms() or TERM_OPTIONS
+  local creditInfo = creditMod and creditMod.getScore() or nil
+  local creditTier = creditInfo and creditInfo.tier or nil
+  local rateMultiplier = creditTier and creditTier.rateMultiplier or 1.0
+  local maxMultiplier = creditTier and creditTier.maxMultiplier or 1.0
+  local availableTerms = creditTier and creditTier.termsAvailable or TERM_OPTIONS
 
   for orgId, org in pairs(freeroam_organizations.getOrganizations()) do
     local level = org.reputationLevels[org.reputation.level + 2]
@@ -109,8 +111,8 @@ local function getLoanOffers()
           max = adjustedMax,
           rate = adjustedRate,
           terms = availableTerms,
-          creditScore = creditMod and creditMod.getScore().score or nil,
-          creditTier = creditMod and creditMod.getTier().label or nil,
+          creditScore = creditInfo and creditInfo.score or nil,
+          creditTier = creditTier and creditTier.label or nil,
           baseRate = l.rate,
           adjustedRate = adjustedRate,
           baseMax = available,

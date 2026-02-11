@@ -95,7 +95,7 @@ local function factorUtilization()
     end
   end
   for orgId, org in pairs(freeroam_organizations.getOrganizations()) do
-    local level = org.reputationLevels and org.reputation.level and org.reputationLevels[org.reputation.level + 2]
+    local level = org.reputation and org.reputationLevels and org.reputation.level and org.reputationLevels[org.reputation.level + 2]
     if level and level.loans and level.loans.max then
       availableTotal = availableTotal + (level.loans.max or 0)
     end
