@@ -1,5 +1,5 @@
 <template>
-  <PhoneWrapper app-name="New Loan" status-font-color="#FFFFFF" status-blend-mode="">
+  <PhoneWrapper app-name="New Loan">
     <div class="phone-offer-details" v-if="offer">
       <div class="title">{{ offer.name }}</div>
       <div class="subtitle">New Loan</div>
