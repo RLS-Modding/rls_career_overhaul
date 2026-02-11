@@ -5,10 +5,11 @@ M.dependencies = {}
 local saveDir = "/career/rls_career"
 local saveFile = saveDir .. "/credit.json"
 
--- 1 game day = 3600 real seconds (1 hour of play)
-local SECONDS_PER_GAME_DAY = 3600
+-- 1 game day = 1200 sim-seconds (20 real minutes at 1x speed)
+local SIM_SECONDS_PER_GAME_DAY = 1200
 local RECENT_INQUIRY_DAYS = 5
 local MAX_SCORE_HISTORY = 50
+local accumulatedSimTime = 0
 
 local TIERS = {
   {min = 750, label = "Excellent", rateMultiplier = 0.80, maxMultiplier = 1.25, termsAvailable = {12, 24, 36, 48}},
@@ -20,6 +21,7 @@ local TIERS = {
 
 local creditData = {
   score = 500,
+  simTime = 0,
   history = {
     onTimePayments = 0,
     missedPayments = 0,
@@ -30,6 +32,10 @@ local creditData = {
     uniqueOrgs = {}
   }
 }
+
+local function getSimTime()
+  return creditData.simTime or 0
+end
 
 local function ensureSaveDir(currentSavePath)
   local dirPath = currentSavePath .. saveDir
@@ -45,6 +51,8 @@ local function loadCredit()
   if data.score then
     creditData.score = data.score
   end
+  creditData.simTime = data.simTime or 0
+  accumulatedSimTime = creditData.simTime
   if data.history then
     creditData.history.onTimePayments = data.history.onTimePayments or 0
     creditData.history.missedPayments = data.history.missedPayments or 0
@@ -68,7 +76,7 @@ end
 
 local function pushScoreHistory(score)
   local history = creditData.history.scoreHistory
-  table.insert(history, {timestamp = os.time(), score = score})
+  table.insert(history, {timestamp = getSimTime(), score = score})
   while #history > MAX_SCORE_HISTORY do
     table.remove(history, 1)
   end
@@ -109,14 +117,14 @@ end
 local function factorCreditAge()
   local firstTs = creditData.history.firstLoanTimestamp
   if not firstTs then return 0.0 end
-  local elapsed = os.time() - firstTs
-  local days = elapsed / SECONDS_PER_GAME_DAY
+  local elapsed = getSimTime() - firstTs
+  local days = elapsed / SIM_SECONDS_PER_GAME_DAY
   return math.min(1.0, days / 30)
 end
 
 -- Factor 4: New Credit (10%)
 local function factorNewCredit()
-  local cutoff = os.time() - (RECENT_INQUIRY_DAYS * SECONDS_PER_GAME_DAY)
+  local cutoff = getSimTime() - (RECENT_INQUIRY_DAYS * SIM_SECONDS_PER_GAME_DAY)
   -- Prune expired inquiries
   for i = #creditData.history.recentInquiries, 1, -1 do
     if creditData.history.recentInquiries[i] < cutoff then
@@ -170,6 +178,7 @@ function M.getScore()
   local tier = getTierForScore(creditData.score)
   return {
     score = creditData.score,
+    simTime = getSimTime(),
     tier = tier,
     factors = {
       paymentHistory = factorPaymentHistory(),
@@ -215,8 +224,8 @@ end
 function M.recordLoanTaken(orgId)
   if orgId then
     creditData.history.uniqueOrgs[orgId] = true
-    table.insert(creditData.history.recentInquiries, os.time())
-    local cutoff = os.time() - (RECENT_INQUIRY_DAYS * SECONDS_PER_GAME_DAY)
+    table.insert(creditData.history.recentInquiries, getSimTime())
+    local cutoff = getSimTime() - (RECENT_INQUIRY_DAYS * SIM_SECONDS_PER_GAME_DAY)
     for i = #creditData.history.recentInquiries, 1, -1 do
       if creditData.history.recentInquiries[i] < cutoff then
         table.remove(creditData.history.recentInquiries, i)
@@ -224,7 +233,7 @@ function M.recordLoanTaken(orgId)
     end
   end
   if not creditData.history.firstLoanTimestamp then
-    creditData.history.firstLoanTimestamp = os.time()
+    creditData.history.firstLoanTimestamp = getSimTime()
   end
   recalcAndSave()
 end
@@ -266,6 +275,7 @@ local function onCareerActivated()
   else
     creditData = {
       score = 500,
+      simTime = 0,
       history = {
         onTimePayments = 0,
         missedPayments = 0,
@@ -280,6 +290,12 @@ local function onCareerActivated()
   end
 end
 
+local function onUpdate(dtReal, dtSim, dtRaw)
+  accumulatedSimTime = accumulatedSimTime + dtSim
+  creditData.simTime = accumulatedSimTime
+end
+
+M.onUpdate = onUpdate
 M.onSaveCurrentSaveSlot = onSaveCurrentSaveSlot
 M.onExtensionLoaded = onExtensionLoaded
 M.onCareerActivated = onCareerActivated

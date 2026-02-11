@@ -177,8 +177,8 @@ function barColor(pct) {
 
 function ageDays(ts) {
     if (!ts) return 'No history'
-    const now = Date.now() / 1000
-    const days = Math.max(0, Math.floor((now - ts) / 3600))
+    const now = creditData.value.simTime || 0
+    const days = Math.max(0, Math.floor((now - ts) / 1200))
     return `${days} day${days !== 1 ? 's' : ''} since first loan`
 }
 
