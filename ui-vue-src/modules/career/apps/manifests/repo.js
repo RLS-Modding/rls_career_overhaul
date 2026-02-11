@@ -10,5 +10,4 @@ export default {
   category: 'Services',
   defaultPage: 0,
   defaultPosition: 4,
-  defaultDock: 0,
 }

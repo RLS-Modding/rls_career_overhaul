@@ -10,4 +10,5 @@ export default {
   category: 'Tools',
   defaultPage: 0,
   defaultPosition: 0,
+  defaultDock: 0,
 }

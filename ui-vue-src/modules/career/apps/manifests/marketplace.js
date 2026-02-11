@@ -10,5 +10,4 @@ export default {
   category: 'Shopping',
   defaultPage: 0,
   defaultPosition: 2,
-  defaultDock: 2,
 }

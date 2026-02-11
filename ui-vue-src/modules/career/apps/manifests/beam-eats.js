@@ -10,4 +10,5 @@ export default {
   category: 'Food',
   defaultPage: 0,
   defaultPosition: 7,
+  defaultDock: 1,
 }

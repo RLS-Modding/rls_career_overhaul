@@ -64,7 +64,7 @@ const DEFAULT_DOCK_IDS = (() => {
     if (app.defaultDock < 0 || app.defaultDock >= 4) continue
     if (!dock[app.defaultDock]) dock[app.defaultDock] = app.id
   }
-  return dock.map((id, idx) => id || ['repo', 'bank', 'marketplace', 'taxi'][idx]).filter(Boolean)
+  return dock.map((id, idx) => id || ['guide', 'beam-eats', 'taxi', 'bank'][idx]).filter(Boolean)
 })()
 
 export function usePhoneApps() {
