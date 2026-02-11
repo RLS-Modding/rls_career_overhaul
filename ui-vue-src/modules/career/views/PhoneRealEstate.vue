@@ -566,7 +566,7 @@ function onMapWheel(event) {
   if (!mapContainer.value) return
   stopMapFocusAnimation()
   const delta = event.deltaY * 0.002
-  zoomFactor.value = Math.max(0.25, Math.min(4, zoomFactor.value * (1 + delta)))
+  zoomFactor.value = Math.max(0.1, Math.min(4, zoomFactor.value * (1 + delta)))
   applyEffectiveViewBox()
 }
 

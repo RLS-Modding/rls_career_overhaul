@@ -21,7 +21,11 @@ export const useMinimapStore = defineStore("minimap", () => {
     })
 
     function processMapData(data) {
-        if (data.terrainTiles) {
+        while (svgLayers.value.terrain.firstChild) {
+            svgLayers.value.terrain.removeChild(svgLayers.value.terrain.firstChild);
+        }
+        nodes.value = data.nodes || {};
+        if (Array.isArray(data.terrainTiles) && data.terrainTiles.length > 0) {
             data.terrainTiles.forEach(tile => {
                 const image = document.createElementNS(svgLayers.value.terrain.namespaceURI, "image");
                 image.setAttribute("x", tile.offset[0]);
@@ -36,9 +40,7 @@ export const useMinimapStore = defineStore("minimap", () => {
                 svgLayers.value.terrain.appendChild(image);
             });
         }
-
-        if (data.nodes) {
-            nodes.value = data.nodes;
+        if (data.nodes && Object.keys(data.nodes).length > 0) {
             drawRoadNetwork();
         }
     }
