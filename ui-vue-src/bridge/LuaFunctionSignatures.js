@@ -1457,6 +1457,13 @@ export default {
   ui_phone_layout: {
     requestLayout: () => {},
     updateLayout: layoutData => Any,
+    getCareerActive: () => {},
+  },
+
+  ui_phone_realEstate: {
+    requestGarageListings: () => {},
+    setRouteToGarage: garageId => String,
+    towToGarage: garageId => String,
   },
 
   ui_phone_time: {

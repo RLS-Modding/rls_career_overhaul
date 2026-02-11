@@ -93,7 +93,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, reactive } from 'vue'
+import { ref, computed, onMounted, onActivated, onUnmounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { lua } from '@/bridge'
 import { useEvents } from '@/services/events'
@@ -693,8 +693,12 @@ function onKeyDown(e) {
 }
 
 // ─── Lifecycle ───
-onMounted(async () => {
+async function initPhone() {
   await refreshApps(lua)
+}
+
+onMounted(async () => {
+  await initPhone()
 
   // Load layout from Lua
   try {
@@ -716,6 +720,10 @@ onMounted(async () => {
   }, 500)
 
   document.addEventListener('keydown', onKeyDown)
+})
+
+onActivated(() => {
+  initPhone()
 })
 
 onUnmounted(() => {
