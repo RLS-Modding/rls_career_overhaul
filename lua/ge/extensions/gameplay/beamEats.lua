@@ -28,13 +28,19 @@ M.config = {
     streakMultiplierMax = 1.0,       
 
     -- Reputation Scaling
-    reputationPayMultiplierPerStar = 1.0, 
+    reputationPayMultiplierPerStar = 1.6, 
     
     -- Job Interval (seconds)
     intervalMinRating = {min = 40, max = 60}, 
     intervalMaxRating = {min = 1, max = 3},   
     
     ratingDampeningCount = 20,
+
+    -- Star (rating) gain per delivery
+    roughEventRatingPenalty = 0.35,   -- per rough driving event (lower = easier to keep stars)
+    lateDeliveryRatingPenalty = 0.6,  -- if delivered late (lower = less harsh)
+    onTimeRatingBonus = 0.25,         -- bonus when delivered on time
+    ratingPullTowardFive = 0.2,       -- each delivery's rating is pulled 20% toward 5.0 before averaging
 
     -- Radius Scaling
     baseDeliveryRadius = 1000, -- meters at 0 stars
@@ -741,11 +747,19 @@ local function completeDelivery()
     currentOrder.streakBonus = streakBonus
 
     local rating = 5.0
-    rating = rating - (roughEvents * 0.5)
+    rating = rating - (roughEvents * (config.roughEventRatingPenalty or 0.35))
     if timeDiff < 0 then -- Late
-        rating = rating - 1.0
+        rating = rating - (config.lateDeliveryRatingPenalty or 0.6)
+    else
+        rating = rating + (config.onTimeRatingBonus or 0.25) -- bonus for on-time delivery
     end
     rating = math.max(1.0, math.min(5.0, rating)) -- Clamp between 1 and 5
+    -- Pull rating toward 5 so star average climbs faster with good deliveries
+    local pull = config.ratingPullTowardFive or 0.2
+    if pull > 0 then
+        rating = rating + (5.0 - rating) * pull
+        rating = math.max(1.0, math.min(5.0, rating))
+    end
     
     local oldRating = playerRating
 
