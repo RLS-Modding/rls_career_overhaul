@@ -818,6 +818,9 @@ local function onVehicleGroupSpawned()
       job.sleep(6.7)
       commands.setGameCamera(true)
       core_gamestate.requestExitLoadingScreen("careerLoading")
+      if career_modules_guide and career_modules_guide.showSplashIfNeeded then
+        career_modules_guide.showSplashIfNeeded()
+      end
     end)
   end
 end
@@ -869,6 +872,5 @@ M.onCheatsModeChanged = onCheatsModeChanged
 
 M.sendCurrentSaveSlotName = sendCurrentSaveSlotName
 M.launchMostRecentCareer = launchMostRecentCareer
-M.isOverride = true
 
 return M

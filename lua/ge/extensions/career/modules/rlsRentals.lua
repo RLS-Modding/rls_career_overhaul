@@ -1,6 +1,7 @@
 local M = {}
 
-M.dependencies = {'career_career'}
+M.dependencies = {'career_career', 'career_modules_inventory', 'career_modules_payment',
+                  'career_modules_valueCalculator'}
 
 local stagedRental = nil
 local vehicleValue = 0

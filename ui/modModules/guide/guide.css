@@ -1,0 +1,242 @@
+.guide-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease-in;
+  outline: none;
+  pointer-events: auto;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.guide-overlay:focus {
+  outline: none;
+}
+
+.guide-overlay * {
+  pointer-events: auto;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.guide-content {
+  background: rgba(16, 16, 16, 0.96);
+  border-radius: 16px;
+  padding: 2.5rem 3rem;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  max-width: 900px;
+  width: 90%;
+  animation: slideUp 0.4s ease-out;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.guide-image-container {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.guide-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.guide-welcome-text {
+  color: #e6e6e6;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  text-align: left;
+  padding: 0 0.5rem;
+}
+
+.guide-welcome-text p {
+  margin: 0;
+}
+
+.guide-welcome-text strong {
+  color: #fff;
+  font-weight: 600;
+}
+
+.guide-binding-section {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  border: 1px solid rgba(255, 140, 0, 0.25);
+  text-align: left;
+}
+
+.guide-binding-header {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ff9f43;
+  margin: 0 0 0.75rem 0;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.guide-binding-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+  align-items: flex-start;
+}
+
+.guide-binding-action {
+  font-size: 0.95rem;
+  color: #d0d0d0;
+  font-weight: 600;
+}
+
+.guide-binding-current {
+  font-size: 0.9rem;
+  color: #bdbdbd;
+}
+
+.guide-binding-current strong {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.guide-binding-waiting {
+  font-size: 0.95rem;
+  color: #ffb347;
+  font-weight: 600;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.guide-binding-button {
+  width: 100%;
+  background: linear-gradient(145deg, #ff8c00, #ffb347);
+  border: none;
+  color: #1b1b1b;
+  padding: 9px 18px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(255, 140, 0, 0.3);
+}
+
+.guide-binding-button:hover:not(:disabled) {
+  background: linear-gradient(145deg, #ff9f1a, #ffc36b);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 140, 0, 0.4);
+}
+
+.guide-binding-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(255, 140, 0, 0.3);
+}
+
+.guide-binding-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.guide-button {
+  background: linear-gradient(145deg, #ff7a00, #ff9f43);
+  border: none;
+  color: #1b1b1b;
+  padding: 14px 32px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(255, 122, 0, 0.35);
+  min-width: 150px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin-top: 0.5rem;
+}
+
+.guide-button:hover {
+  background: linear-gradient(145deg, #ff8a1a, #ffb15c);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 122, 0, 0.5);
+}
+
+.guide-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(255, 122, 0, 0.35);
+}
+
+.guide-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(0.2);
+  box-shadow: none;
+}
+
+@media (max-width: 768px) {
+  .guide-content {
+    padding: 2rem 2rem;
+    width: 95%;
+    gap: 1.25rem;
+  }
+  
+  .guide-welcome-text {
+    font-size: 1rem;
+  }
+  
+  .guide-binding-section {
+    padding: 1rem;
+  }
+  
+  .guide-binding-header {
+    font-size: 0.95rem;
+  }
+  
+  .guide-button {
+    padding: 12px 28px;
+    font-size: 1rem;
+  }
+}

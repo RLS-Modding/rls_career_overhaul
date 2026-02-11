@@ -52,7 +52,6 @@
               :jiggle-mode="jiggleMode"
               :app-ids-on-home="appIdsOnHome"
               @launch="launchApp"
-              @add-to-home="onAddToHome"
               @dragstart="onSearchDragStart"
             />
           </div>
@@ -114,6 +113,7 @@ const { availableApps, refreshApps, DEFAULT_DOCK_IDS, APPS_PER_PAGE } = usePhone
 const dockIds = ref([...DEFAULT_DOCK_IDS])
 const pageLayouts = ref([])
 const seenApps = ref(new Set())
+const removedAppIds = ref(new Set())
 const wallpaper = ref('default')
 const currentPageIndex = ref(0)
 
@@ -270,15 +270,15 @@ function applyLayout(data) {
       pageLayouts.value = [new Array(APPS_PER_PAGE).fill(null)]
     }
     seenApps.value = new Set(data.seenApps || [])
+    removedAppIds.value = new Set(data.removedAppIds || [])
     wallpaper.value = data.wallpaper || 'default'
 
-    // Add any new apps not in layout
     const allLayoutIds = new Set([
       ...dockIds.value.filter(Boolean),
       ...pageLayouts.value.flat().filter(Boolean),
     ])
     for (const app of availableApps.value) {
-      if (!allLayoutIds.has(app.id)) {
+      if (!allLayoutIds.has(app.id) && !removedAppIds.value.has(app.id)) {
         addAppToLastEmpty(app.id)
       }
     }
@@ -288,6 +288,7 @@ function applyLayout(data) {
 }
 
 function addAppToLastEmpty(appId) {
+  removedAppIds.value.delete(appId)
   for (const page of pageLayouts.value) {
     const emptyIdx = page.lastIndexOf(null)
     if (emptyIdx !== -1) {
@@ -295,7 +296,6 @@ function addAppToLastEmpty(appId) {
       return
     }
   }
-  // All full, add new page
   const newPage = new Array(APPS_PER_PAGE).fill(null)
   newPage[APPS_PER_PAGE - 1] = appId
   pageLayouts.value.push(newPage)
@@ -310,6 +310,7 @@ function buildSaveData() {
     pages: pageLayouts.value.map(p => ({ apps: p.map(id => id || '') })),
     dock: dockIds.value.map(id => id || ''),
     seenApps: [...seenApps.value],
+    removedAppIds: [...removedAppIds.value],
   }
 }
 
@@ -428,6 +429,7 @@ function onRemoveApp(app) {
   if (!jiggleMode.value) return
 
   const appId = app.id
+  removedAppIds.value.add(appId)
   const dockIdx = dockIds.value.indexOf(appId)
   if (dockIdx !== -1) {
     dockIds.value[dockIdx] = null
@@ -435,12 +437,6 @@ function onRemoveApp(app) {
   while (removeAppFromGrid(appId)) {
     // Remove any duplicate placements defensively.
   }
-}
-
-function onAddToHome(app) {
-  if (!app || !app.id) return
-  addAppToLastEmpty(app.id)
-  saveLayout()
 }
 
 function onSearchDragStart(e, app) {
@@ -570,7 +566,7 @@ function onIconDragEnd(e) {
   const appId = dragSourceApp.value.id
 
   if (dockHighlightIdx.value >= 0) {
-    // Drop into dock
+    removedAppIds.value.delete(appId)
     removeAppFromGrid(appId)
     const existingInDock = dockIds.value[dockHighlightIdx.value]
     dockIds.value[dockHighlightIdx.value] = appId
@@ -654,6 +650,7 @@ function removeAppFromGrid(appId) {
 function moveDraggedAppToGridSlot(target) {
   if (!dragSourceApp.value) return
   const appId = dragSourceApp.value.id
+  removedAppIds.value.delete(appId)
   const current = findAppLocation(appId)
 
   // If app is in dock while hovering grid, free that dock slot first.

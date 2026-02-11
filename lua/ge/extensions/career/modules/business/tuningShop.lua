@@ -1,6 +1,6 @@
 local M = {}
 
-M.dependencies = {}
+M.dependencies = {'util_configListGenerator', 'career_career', 'career_saveSystem', 'freeroam_facilities'}
 
 local raceData = nil
 local raceDataLevel = nil
@@ -26,6 +26,9 @@ local totalSimTime = 0
 
 local notifyJobsUpdated -- forward declaration
 local getJobsOnly -- forward declaration
+local checkAndNotifyJob -- forward declaration
+local getAvailableVehiclesForBlacklist -- forward declaration
+local acceptJob -- forward declaration
 
 local freeroamUtils = require('gameplay/events/freeroam/utils')
 local tuningShopTechs = require('ge/extensions/career/modules/business/tuningShopTechs')
@@ -605,6 +608,27 @@ local function getVehicleInfo(modelKey, configKey)
   return nil
 end
 
+local function getModelInfo(modelKey)
+  if not modelKey then
+    return nil
+  end
+  
+  if core_vehicles and core_vehicles.getModel then
+    local modelData = core_vehicles.getModel(modelKey)
+    if modelData and modelData.model then
+      return {
+        name = modelData.model.Name or modelKey,
+        brand = modelData.model.Brand or ""
+      }
+    end
+  end
+  
+  return {
+    name = modelKey,
+    brand = ""
+  }
+end
+
 local function convertRaceIdentifierToType(raceIdentifier)
   if not raceIdentifier then
     return nil
@@ -705,12 +729,27 @@ local function initializeBusinessData(businessId)
     local selectionsData = jsonReadFile(selectionsPath) or {}
     info.selections = {
       brand = selectionsData.brand,
-      raceType = selectionsData.raceType
+      raceType = selectionsData.raceType,
+      blacklist = selectionsData.blacklist,
+      notificationList = selectionsData.notificationList,
+      managerBlacklist = selectionsData.managerBlacklist
     }
     FS:remove(selectionsPath)
     needsSave = true
   elseif not info.selections then
     info.selections = {}
+  end
+  
+  if not info.selections.blacklist then
+    info.selections.blacklist = {}
+  end
+  
+  if not info.selections.notificationList then
+    info.selections.notificationList = {}
+  end
+  
+  if not info.selections.managerBlacklist then
+    info.selections.managerBlacklist = {}
   end
 
   local operatingCostPath = getOperatingCostTimerPath(businessId)
@@ -1180,6 +1219,96 @@ local function getBrandSelection(businessId)
   return selections.brand
 end
 
+local function getFactoryConfigs()
+  if factoryConfigs then
+    return factoryConfigs
+  end
+
+  local eligibleVehicles = util_configListGenerator.getEligibleVehicles(false, false) or {}
+  factoryConfigs = {}
+
+  for _, vehicleInfo in ipairs(eligibleVehicles) do
+    local configType = vehicleInfo["Config Type"]
+    if not configType and vehicleInfo.aggregates and vehicleInfo.aggregates["Config Type"] then
+      configType = next(vehicleInfo.aggregates["Config Type"])
+    end
+    if configType == "Factory" and not blacklistedModels[vehicleInfo.model_key] then
+      table.insert(factoryConfigs, vehicleInfo)
+    end
+  end
+
+  return factoryConfigs
+end
+
+getAvailableVehiclesForBlacklist = function(businessId)
+  local configs = getFactoryConfigs()
+  if not configs or #configs == 0 then
+    return {}
+  end
+
+  local modelKeys = {}
+  local seen = {}
+  for _, config in ipairs(configs) do
+    if config and config.model_key then
+      local modelKey = config.model_key
+      if not seen[modelKey] then
+        seen[modelKey] = true
+        table.insert(modelKeys, modelKey)
+      end
+    end
+  end
+
+  return modelKeys
+end
+
+local function cleanupInvalidVehiclesFromLists(businessId)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId then
+    return
+  end
+
+  local availableVehicles = getAvailableVehiclesForBlacklist(businessId)
+  local availableSet = {}
+  for _, modelKey in ipairs(availableVehicles) do
+    availableSet[modelKey] = true
+  end
+
+  local selections = loadBusinessSelections(businessId)
+  if not selections then
+    return
+  end
+
+  if selections.blacklist then
+    local cleanedBlacklist = {}
+    for modelKey, _ in pairs(selections.blacklist) do
+      if availableSet[modelKey] then
+        cleanedBlacklist[modelKey] = true
+      end
+    end
+    selections.blacklist = cleanedBlacklist
+  end
+
+  if selections.notificationList then
+    local cleanedNotificationList = {}
+    for _, entry in ipairs(selections.notificationList) do
+      if entry and entry.model_key and availableSet[entry.model_key] then
+        table.insert(cleanedNotificationList, entry)
+      end
+    end
+    selections.notificationList = cleanedNotificationList
+  end
+
+  if selections.managerBlacklist then
+    local cleanedManagerBlacklist = {}
+    for modelKey, _ in pairs(selections.managerBlacklist) do
+      if availableSet[modelKey] then
+        cleanedManagerBlacklist[modelKey] = true
+      end
+    end
+    selections.managerBlacklist = cleanedManagerBlacklist
+  end
+end
+
 local function setBrandSelection(businessId, brand)
   businessId = normalizeBusinessId(businessId)
   if not businessId then
@@ -1195,6 +1324,8 @@ local function setBrandSelection(businessId, brand)
   else
     businessSelections[businessId].brand = brand
   end
+
+  cleanupInvalidVehiclesFromLists(businessId)
   return true
 end
 
@@ -1218,6 +1349,230 @@ local function setRaceSelection(businessId, raceType)
   else
     businessSelections[businessId].raceType = raceType
   end
+  return true
+end
+
+-- Blacklist Functions
+local function getBlacklist(businessId)
+  local selections = loadBusinessSelections(businessId)
+  return selections.blacklist or {}
+end
+
+local function removeBlacklistedFromOtherLists(businessId, blacklist)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId or not blacklist then
+    return
+  end
+
+  local selections = loadBusinessSelections(businessId)
+  if not selections then
+    return
+  end
+
+  if selections.notificationList then
+    local cleanedNotificationList = {}
+    for _, entry in ipairs(selections.notificationList) do
+      if entry and entry.model_key and not blacklist[entry.model_key] then
+        table.insert(cleanedNotificationList, entry)
+      end
+    end
+    selections.notificationList = cleanedNotificationList
+  end
+
+  if selections.managerBlacklist then
+    local cleanedManagerBlacklist = {}
+    for modelKey, _ in pairs(selections.managerBlacklist) do
+      if not blacklist[modelKey] then
+        cleanedManagerBlacklist[modelKey] = true
+      end
+    end
+    selections.managerBlacklist = cleanedManagerBlacklist
+  end
+end
+
+local function setBlacklist(businessId, modelKeys)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId then
+    return false
+  end
+
+  if not businessSelections[businessId] then
+    businessSelections[businessId] = {}
+  end
+
+  local blacklist = {}
+  if modelKeys and type(modelKeys) == "table" then
+    for _, modelKey in ipairs(modelKeys) do
+      if modelKey and modelKey ~= "" then
+        blacklist[modelKey] = true
+      end
+    end
+  end
+
+  businessSelections[businessId].blacklist = blacklist
+  removeBlacklistedFromOtherLists(businessId, blacklist)
+  return true
+end
+
+local function addToBlacklist(businessId, modelKey)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId or not modelKey or modelKey == "" then
+    return false
+  end
+
+  if not businessSelections[businessId] then
+    businessSelections[businessId] = {}
+  end
+
+  if not businessSelections[businessId].blacklist then
+    businessSelections[businessId].blacklist = {}
+  end
+
+  businessSelections[businessId].blacklist[modelKey] = true
+  
+  local blacklist = businessSelections[businessId].blacklist
+  removeBlacklistedFromOtherLists(businessId, blacklist)
+  return true
+end
+
+local function removeFromBlacklist(businessId, modelKey)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId or not modelKey then
+    return false
+  end
+
+  local selections = loadBusinessSelections(businessId)
+  if not businessSelections[businessId] then
+    businessSelections[businessId] = selections
+  end
+  
+  if not businessSelections[businessId].blacklist then
+    businessSelections[businessId].blacklist = {}
+  end
+  
+  if businessSelections[businessId].blacklist then
+    businessSelections[businessId].blacklist[modelKey] = nil
+  end
+
+  return true
+end
+
+-- Notification List Functions
+local function getNotificationList(businessId)
+  local selections = loadBusinessSelections(businessId)
+  return selections.notificationList or {}
+end
+
+local function addToNotificationList(businessId, modelKey, autoAccept)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId or not modelKey or modelKey == "" then
+    return false
+  end
+
+  if not businessSelections[businessId] then
+    businessSelections[businessId] = {}
+  end
+
+  if not businessSelections[businessId].notificationList then
+    businessSelections[businessId].notificationList = {}
+  end
+
+  for i, entry in ipairs(businessSelections[businessId].notificationList) do
+    if entry.model_key == modelKey then
+      businessSelections[businessId].notificationList[i].autoAccept = autoAccept == true
+      return true
+    end
+  end
+
+  table.insert(businessSelections[businessId].notificationList, {
+    model_key = modelKey,
+    autoAccept = autoAccept == true
+  })
+
+  return true
+end
+
+local function removeFromNotificationList(businessId, modelKey)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId or not modelKey then
+    return false
+  end
+
+  local selections = loadBusinessSelections(businessId)
+  if selections.notificationList then
+    for i = #selections.notificationList, 1, -1 do
+      if selections.notificationList[i].model_key == modelKey then
+        table.remove(selections.notificationList, i)
+        break
+      end
+    end
+  end
+
+  return true
+end
+
+local function updateNotificationAutoAccept(businessId, modelKey, autoAccept)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId or not modelKey then
+    return false
+  end
+
+  local selections = loadBusinessSelections(businessId)
+  if selections.notificationList then
+    for _, entry in ipairs(selections.notificationList) do
+      if entry.model_key == modelKey then
+        entry.autoAccept = autoAccept == true
+        return true
+      end
+    end
+  end
+
+  return false
+end
+
+-- Manager Blacklist Functions
+local function getManagerBlacklist(businessId)
+  local selections = loadBusinessSelections(businessId)
+  return selections.managerBlacklist or {}
+end
+
+local function addToManagerBlacklist(businessId, modelKey)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId or not modelKey or modelKey == "" then
+    return false
+  end
+
+  if not businessSelections[businessId] then
+    businessSelections[businessId] = {}
+  end
+
+  if not businessSelections[businessId].managerBlacklist then
+    businessSelections[businessId].managerBlacklist = {}
+  end
+
+  businessSelections[businessId].managerBlacklist[modelKey] = true
+  return true
+end
+
+local function removeFromManagerBlacklist(businessId, modelKey)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId or not modelKey then
+    return false
+  end
+
+  local selections = loadBusinessSelections(businessId)
+  if not businessSelections[businessId] then
+    businessSelections[businessId] = selections
+  end
+  
+  if not businessSelections[businessId].managerBlacklist then
+    businessSelections[businessId].managerBlacklist = {}
+  end
+  
+  if businessSelections[businessId].managerBlacklist then
+    businessSelections[businessId].managerBlacklist[modelKey] = nil
+  end
+
   return true
 end
 
@@ -1720,6 +2075,28 @@ local function calculateActualEventPayment(businessId, job, predictedTime)
   return math.max(0, math.floor(reward + 0.5))
 end
 
+local function getBlacklistLevel(businessId)
+  return getSkillTreeLevel(businessId, "quality-of-life", "blacklist")
+end
+
+local function getNotificationListLevel(businessId)
+  return getSkillTreeLevel(businessId, "quality-of-life", "notified-jobs")
+end
+
+local function getManagerBlacklistLevel(businessId)
+  return getSkillTreeLevel(businessId, "automation", "manager-blacklist")
+end
+
+local function getMaxNotificationSlots(businessId)
+  local level = getNotificationListLevel(businessId)
+  return level
+end
+
+local function getMaxManagerBlacklistSlots(businessId)
+  local level = getManagerBlacklistLevel(businessId)
+  return level * 2
+end
+
 local function calculateBuildCost(businessId, job)
   if not job then
     return 0
@@ -1863,27 +2240,6 @@ local function saveBusinessJobs(businessId, currentSavePath)
   jsonWriteFile(filePath, saveData, true)
 end
 
-local function getFactoryConfigs()
-  if factoryConfigs then
-    return factoryConfigs
-  end
-
-  local eligibleVehicles = util_configListGenerator.getEligibleVehicles(false, false) or {}
-  factoryConfigs = {}
-
-  for _, vehicleInfo in ipairs(eligibleVehicles) do
-    local configType = vehicleInfo["Config Type"]
-    if not configType and vehicleInfo.aggregates and vehicleInfo.aggregates["Config Type"] then
-      configType = next(vehicleInfo.aggregates["Config Type"])
-    end
-    if configType == "Factory" and not blacklistedModels[vehicleInfo.model_key] then
-      table.insert(factoryConfigs, vehicleInfo)
-    end
-  end
-
-  return factoryConfigs
-end
-
 local function buildBrandConfigsCache()
   local configs = getFactoryConfigs()
   brandConfigsCache = {}
@@ -1897,6 +2253,31 @@ local function buildBrandConfigsCache()
       table.insert(brandConfigsCache[brand], config)
     end
   end
+end
+
+local function calculateJobGenerationMultiplier(businessId)
+  local availableVehicles = getAvailableVehiclesForBlacklist(businessId)
+  local totalAvailable = #availableVehicles
+  
+  if totalAvailable == 0 then
+    return 1.0
+  end
+
+  local blacklist = getBlacklist(businessId)
+  local availableSet = {}
+  for _, availableKey in ipairs(availableVehicles) do
+    availableSet[availableKey] = true
+  end
+  
+  local blacklistedCount = 0
+  for modelKey, _ in pairs(blacklist) do
+    if availableSet[modelKey] then
+      blacklistedCount = blacklistedCount + 1
+    end
+  end
+
+  local multiplier = (totalAvailable - blacklistedCount) / totalAvailable
+  return math.max(0.0, math.min(1.0, multiplier))
 end
 
 local function getAvailableBrands()
@@ -2038,13 +2419,35 @@ local function generateJob(businessId)
     return nil
   end
 
+  local blacklist = getBlacklist(businessId)
+  local availableConfigs = {}
+  
+  for _, config in ipairs(configs) do
+    if config and config.model_key and not blacklist[config.model_key] then
+      table.insert(availableConfigs, config)
+    end
+  end
+
+  if #availableConfigs == 0 then
+    return nil
+  end
+
   local selectedConfig = nil
   local brandSelection = getBrandSelection(businessId)
   local brandRecognitionUnlocked = getSkillTreeLevel(businessId, "quality-of-life", "brand-recognition") > 0
 
   if brandRecognitionUnlocked and brandSelection and brandSelection ~= "" then
     if math.random() < 0.75 then
-      local brandConfigs = brandConfigsCache[brandSelection] or {}
+      local brandConfigs = {}
+      for _, config in ipairs(availableConfigs) do
+        local brand = config.Brand
+        if not brand and config.aggregates and config.aggregates.Brand then
+          brand = next(config.aggregates.Brand)
+        end
+        if brand == brandSelection then
+          table.insert(brandConfigs, config)
+        end
+      end
       if #brandConfigs > 0 then
         selectedConfig = brandConfigs[math.random(#brandConfigs)]
       end
@@ -2052,7 +2455,7 @@ local function generateJob(businessId)
   end
 
   if not selectedConfig then
-    selectedConfig = configs[math.random(#configs)]
+    selectedConfig = availableConfigs[math.random(#availableConfigs)]
   end
 
   local power = selectedConfig.Power
@@ -2213,6 +2616,70 @@ local function generateNewJobs(businessId, count)
   return newJobs
 end
 
+checkAndNotifyJob = function(businessId, job)
+  if not businessId or not job or not job.vehicleConfig or not job.vehicleConfig.model_key then
+    return
+  end
+
+  local notificationList = getNotificationList(businessId)
+  if not notificationList or #notificationList == 0 then
+    return
+  end
+
+  local jobModelKey = job.vehicleConfig.model_key
+  local matchedEntry = nil
+
+  for _, entry in ipairs(notificationList) do
+    if entry.model_key == jobModelKey then
+      matchedEntry = entry
+      break
+    end
+  end
+
+  if not matchedEntry then
+    return
+  end
+
+  local modelInfo = getModelInfo(jobModelKey)
+  local modelName = modelInfo and modelInfo.name or jobModelKey
+
+  if matchedEntry.autoAccept then
+    local jobId = tonumber(job.jobId) or job.jobId
+    if jobId then
+      local acceptSuccess = acceptJob(businessId, jobId)
+      if acceptSuccess then
+        job.autoAccepted = true
+        guihooks.trigger('toastrMsg', {
+          type = "success",
+          title = "Tuning Shop",
+          msg = "Auto-accepted job: " .. modelName,
+          config = {
+            time = 5000
+          }
+        })
+      else
+        guihooks.trigger('toastrMsg', {
+          type = "info",
+          title = "Tuning Shop",
+          msg = "Job available: " .. modelName .. " (auto-accept failed)",
+          config = {
+            time = 5000
+          }
+        })
+      end
+    end
+  else
+    guihooks.trigger('toastrMsg', {
+      type = "info",
+      title = "Tuning Shop",
+      msg = "Job available: " .. modelName,
+      config = {
+        time = 5000
+      }
+    })
+  end
+end
+
 local function processJobGeneration(businessId, jobs, accumulatedTime)
   if not jobs.new then
     jobs.new = {}
@@ -2223,7 +2690,13 @@ local function processJobGeneration(businessId, jobs, accumulatedTime)
     return false
   end
 
-  local jobsToGenerate = math.floor(accumulatedTime / interval)
+  local multiplier = calculateJobGenerationMultiplier(businessId)
+  if multiplier <= 0 then
+    return false
+  end
+  
+  local effectiveInterval = interval / math.max(multiplier, 1e-6)
+  local jobsToGenerate = math.floor(accumulatedTime / effectiveInterval)
   if jobsToGenerate <= 0 then
     return false
   end
@@ -2240,6 +2713,8 @@ local function processJobGeneration(businessId, jobs, accumulatedTime)
     job.remainingLifetime = getJobExpirySeconds(businessId)
     table.insert(jobs.new, job)
     changed = true
+    
+    checkAndNotifyJob(businessId, job)
   end
 
   return changed
@@ -2283,11 +2758,8 @@ local function refreshJobs(businessId, forced)
   generationTimers[id] = (generationTimers[id] or 0) + dt
   local genInterval = getGenerationIntervalSeconds(id)
   
-  if generationTimers[id] >= genInterval or (forced and #(jobs.new or {}) == 0) then
+  if generationTimers[id] >= genInterval then
     local timeToProcess = generationTimers[id]
-    if forced and #(jobs.new or {}) == 0 and timeToProcess < genInterval then
-      timeToProcess = genInterval
-    end
 
     if processJobGeneration(id, jobs, timeToProcess) then
       changed = true
@@ -2315,7 +2787,7 @@ local function getJobsForBusiness(businessId)
   }
 end
 
-local function acceptJob(businessId, jobId)
+acceptJob = function(businessId, jobId)
   if not businessId or not jobId then
     return false
   end
@@ -2409,16 +2881,20 @@ local function processManagerAssignments(businessId)
   end
 
   local techMaxTier = tuningShopTechs.getTechMaxTier(businessId)
+  local managerBlacklist = getManagerBlacklist(businessId)
   local suitableJob = nil
-  local suitableJobIndex = nil
 
   for i, newJob in ipairs(jobs.new) do
     local jobTier = tonumber(newJob.tier) or 1
     if jobTier <= techMaxTier then
+      local jobModelKey = newJob.vehicleConfig and newJob.vehicleConfig.model_key
+      if jobModelKey and managerBlacklist[jobModelKey] then
+        goto continue
+      end
       suitableJob = newJob
-      suitableJobIndex = i
       break
     end
+    ::continue::
   end
 
   if not suitableJob then
@@ -3797,6 +4273,164 @@ local function requestAvailableRaceTypes(businessId)
   end
 end
 
+local function getBlacklistData(businessId)
+  local blacklist = getBlacklist(businessId)
+  local availableVehicles = getAvailableVehiclesForBlacklist(businessId)
+  local level = getBlacklistLevel(businessId)
+  local maxSlots = level
+  local multiplier = calculateJobGenerationMultiplier(businessId)
+  
+  local blacklistArray = {}
+  for modelKey, _ in pairs(blacklist) do
+    table.insert(blacklistArray, modelKey)
+  end
+  
+  local vehicleData = {}
+  for _, modelKey in ipairs(availableVehicles) do
+    local modelInfo = getModelInfo(modelKey)
+    if modelInfo then
+      table.insert(vehicleData, {
+        modelKey = modelKey,
+        name = modelInfo.name or modelKey,
+        brand = modelInfo.brand or ""
+      })
+    end
+  end
+  
+  return {
+    blacklist = blacklistArray,
+    availableVehicles = vehicleData,
+    level = level,
+    maxSlots = maxSlots,
+    unlocked = level > 0,
+    generationMultiplier = multiplier
+  }
+end
+
+local function getNotificationListData(businessId)
+  local notificationList = getNotificationList(businessId)
+  local availableVehicles = getAvailableVehiclesForBlacklist(businessId)
+  local blacklist = getBlacklist(businessId)
+  local level = getNotificationListLevel(businessId)
+  local maxSlots = getMaxNotificationSlots(businessId)
+  
+  local vehicleData = {}
+  for _, modelKey in ipairs(availableVehicles) do
+    if not blacklist[modelKey] then
+      local modelInfo = getModelInfo(modelKey)
+      if modelInfo then
+        table.insert(vehicleData, {
+          modelKey = modelKey,
+          name = modelInfo.name or modelKey,
+          brand = modelInfo.brand or ""
+        })
+      end
+    end
+  end
+  
+  return {
+    notificationList = notificationList,
+    availableVehicles = vehicleData,
+    level = level,
+    maxSlots = maxSlots
+  }
+end
+
+local function getManagerBlacklistData(businessId)
+  local managerBlacklist = getManagerBlacklist(businessId)
+  local availableVehicles = getAvailableVehiclesForBlacklist(businessId)
+  local blacklist = getBlacklist(businessId)
+  local level = getManagerBlacklistLevel(businessId)
+  local maxSlots = getMaxManagerBlacklistSlots(businessId)
+  
+  local blacklistArray = {}
+  for modelKey, _ in pairs(managerBlacklist) do
+    table.insert(blacklistArray, modelKey)
+  end
+  
+  local vehicleData = {}
+  for _, modelKey in ipairs(availableVehicles) do
+    if not blacklist[modelKey] then
+      local modelInfo = getModelInfo(modelKey)
+      if modelInfo then
+        table.insert(vehicleData, {
+          modelKey = modelKey,
+          name = modelInfo.name or modelKey,
+          brand = modelInfo.brand or ""
+        })
+      end
+    end
+  end
+  
+  return {
+    managerBlacklist = blacklistArray,
+    availableVehicles = vehicleData,
+    level = level,
+    maxSlots = maxSlots
+  }
+end
+
+local function updateBlacklist(businessId, modelKeys)
+  local level = getBlacklistLevel(businessId)
+  local maxSlots = level
+  
+  if level <= 0 then
+    return false, "Blacklist skill not unlocked"
+  end
+  
+  if modelKeys and #modelKeys > maxSlots then
+    return false, "Maximum " .. maxSlots .. " vehicles allowed"
+  end
+  
+  return setBlacklist(businessId, modelKeys)
+end
+
+local function updateNotificationList(businessId, entries)
+  local maxSlots = getMaxNotificationSlots(businessId)
+  
+  if entries and #entries > maxSlots then
+    return false, "Maximum " .. maxSlots .. " vehicles allowed"
+  end
+  
+  if not entries then
+    entries = {}
+  end
+  
+  local selections = loadBusinessSelections(businessId)
+  if not businessSelections[businessId] then
+    businessSelections[businessId] = selections
+  end
+  
+  businessSelections[businessId].notificationList = entries
+  return true
+end
+
+local function updateManagerBlacklist(businessId, modelKeys)
+  local maxSlots = getMaxManagerBlacklistSlots(businessId)
+  
+  if modelKeys and #modelKeys > maxSlots then
+    return false, "Maximum " .. maxSlots .. " vehicles allowed"
+  end
+  
+  if not modelKeys then
+    modelKeys = {}
+  end
+  
+  local blacklist = {}
+  for _, modelKey in ipairs(modelKeys) do
+    if modelKey and modelKey ~= "" then
+      blacklist[modelKey] = true
+    end
+  end
+  
+  if not businessSelections[businessId] then
+    businessSelections[businessId] = {}
+  end
+  
+  businessSelections[businessId].managerBlacklist = blacklist
+  return true
+end
+
 
 local function getTechData(businessId)
   if not businessId then
@@ -3964,7 +4598,23 @@ local businessObject = {
     local nodeId = "part-suppliers"
     local level = career_modules_business_businessSkillTree.getNodeProgress(businessId, treeId, nodeId) or 0
     return 1.0 - (0.05 * level)
-  end
+  end,
+  getBlacklistData = function(businessId) return getBlacklistData(businessId) end,
+  getNotificationListData = function(businessId) return getNotificationListData(businessId) end,
+  getManagerBlacklistData = function(businessId) return getManagerBlacklistData(businessId) end,
+  updateBlacklist = function(businessId, modelKeys) return updateBlacklist(businessId, modelKeys) end,
+  updateNotificationList = function(businessId, entries) return updateNotificationList(businessId, entries) end,
+  updateManagerBlacklist = function(businessId, modelKeys) return updateManagerBlacklist(businessId, modelKeys) end,
+  getBlacklist = function(businessId) return getBlacklist(businessId) end,
+  getNotificationList = function(businessId) return getNotificationList(businessId) end,
+  getManagerBlacklist = function(businessId) return getManagerBlacklist(businessId) end,
+  addToBlacklist = function(businessId, modelKey) return addToBlacklist(businessId, modelKey) end,
+  removeFromBlacklist = function(businessId, modelKey) return removeFromBlacklist(businessId, modelKey) end,
+  addToNotificationList = function(businessId, modelKey, autoAccept) return addToNotificationList(businessId, modelKey, autoAccept) end,
+  removeFromNotificationList = function(businessId, modelKey) return removeFromNotificationList(businessId, modelKey) end,
+  updateNotificationAutoAccept = function(businessId, modelKey, autoAccept) return updateNotificationAutoAccept(businessId, modelKey, autoAccept) end,
+  addToManagerBlacklist = function(businessId, modelKey) return addToManagerBlacklist(businessId, modelKey) end,
+  removeFromManagerBlacklist = function(businessId, modelKey) return removeFromManagerBlacklist(businessId, modelKey) end
 }
 
 local function onCareerActivated()
@@ -4174,6 +4824,12 @@ M.requestFinancesData = requestFinancesData
 M.requestSimulationTime = requestSimulationTime
 M.getJobById = getJobById
 M.getVehicleByJobId = getVehicleByJobId
+M.getBlacklistData = getBlacklistData
+M.getNotificationListData = getNotificationListData
+M.getManagerBlacklistData = getManagerBlacklistData
+M.updateBlacklist = updateBlacklist
+M.updateNotificationList = updateNotificationList
+M.updateManagerBlacklist = updateManagerBlacklist
 
 M.getTechsForBusiness = function(businessId)
   return tuningShopTechs.loadBusinessTechs(businessId)
