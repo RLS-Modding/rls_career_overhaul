@@ -1,5 +1,5 @@
 <template>
-    <PhoneWrapper app-name="Minimap" status-font-color="#FFFFFF" status-blend-mode="">
+    <PhoneWrapper app-name="Minimap">
       <div class="minimap-container" ref="container">
         
         <div class="map-base" :style="mapTransform">

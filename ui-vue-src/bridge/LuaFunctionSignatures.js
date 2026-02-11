@@ -1443,6 +1443,15 @@ export default {
     dismissSummary: () => {}
   },
 
+  ui_phone_layout: {
+    requestLayout: () => {},
+    updateLayout: layoutData => Any,
+  },
+
+  ui_phone_time: {
+    requestTime: () => {},
+  },
+
   overhaul_maps: {
     getOtherAvailableMaps: () => {},
     getMapsExcludingWestCoast: () => {},
