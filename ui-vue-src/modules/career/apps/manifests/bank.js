@@ -12,5 +12,5 @@ export default {
   category: 'Finance',
   defaultPage: 0,
   defaultPosition: 1,
-  defaultDock: 1,
+  defaultDock: 3,
 }
