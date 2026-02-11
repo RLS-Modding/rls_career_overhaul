@@ -40,6 +40,8 @@ import PhoneRepo from "./views/PhoneRepo.vue"
 import PhoneLoans from "./views/PhoneLoans.vue"
 import PhoneLoanDetails from "./views/PhoneLoanDetails.vue"
 import PhoneOfferDetails from "./views/PhoneOfferDetails.vue"
+import PhoneCredit from "./views/PhoneCredit.vue"
+import PhoneLoanSettings from "./views/PhoneLoanSettings.vue"
 import PhoneBank from "./views/PhoneBank.vue"
 import PhoneBankAccount from "./views/PhoneBankAccount.vue"
 import PhoneBankRename from "./views/PhoneBankRename.vue"
@@ -405,6 +407,11 @@ export default [
         component: PhoneLoans
       },
       {
+        path: "phone-credit",
+        name: "phone-credit",
+        component: PhoneCredit
+      },
+      {
         path: "phone-loan/:loanId",
         name: "phone-loan-details",
         component: PhoneLoanDetails,
@@ -415,6 +422,11 @@ export default [
         name: "phone-offer-details",
         component: PhoneOfferDetails,
         props: true
+      },
+      {
+        path: "phone-loan-settings",
+        name: "phone-loan-settings",
+        component: PhoneLoanSettings
       },
 
       {

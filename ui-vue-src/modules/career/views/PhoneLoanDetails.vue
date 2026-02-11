@@ -30,9 +30,11 @@
             v-bng-text-input v-model.number="prepay" @keydown.stop @keypress.stop @keyup.stop @focus="pauseTicks = true"
             @blur="onAmountBlur" />
         </div>
+        <button class="pay-full-btn" @click="prepay = maxPrepay(loan)" v-if="maxPrepay(loan) > 0">Pay full amount</button>
 
+        <div v-if="prepayError" class="prepay-error">{{ prepayError }}</div>
         <div class="actions">
-          <button class="prepay-btn" :disabled="!(prepay > 0)" @click="prepayLoan">Prepay</button>
+          <button class="prepay-btn" :disabled="!(prepay > 0) || prepaying" @click="prepayLoan">{{ prepaying ? 'Processing…' : 'Prepay' }}</button>
           <button class="cancel-btn" @click="cancel">Cancel</button>
         </div>
       </div>
@@ -41,7 +43,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import PhoneWrapper from './PhoneWrapper.vue'
 import { BngUnit, BngIcon, icons } from '@/common/components/base'
 import { vBngTextInput } from '@/common/directives'
@@ -57,6 +59,8 @@ const loan = ref(null)
 const prepay = ref(0)
 const pauseTicks = ref(false)
 const availableFunds = ref(0)
+const prepayError = ref('')
+const prepaying = ref(false)
 
 const formatDue = (secondsUntilNextPayment) => {
   if (secondsUntilNextPayment == null) return 'soon'
@@ -84,24 +88,52 @@ const maxPrepay = (l) => Math.min(
 
 const setPayMax = (l) => { prepay.value = maxPrepay(l) }
 
+const errorMessages = {
+  invalid_amount: 'Please enter a valid amount.',
+  nothing_owed: 'Nothing owed on this payment.',
+  insufficient_funds: 'Insufficient funds.',
+  pay_failed: 'Payment failed. Make sure you have enough money.',
+  loan_not_found: 'Loan not found.'
+}
+
 const prepayLoan = async () => {
   const amt = Math.max(0, Math.floor(prepay.value || 0))
   if (!amt || !loan.value) return
+  prepayError.value = ''
+  prepaying.value = true
   try {
-    await lua.career_modules_loans.prepayLoan(loan.value.id, amt)
+    const result = await lua.career_modules_loans.prepayLoan(loan.value.id, amt)
+    const isSuccess = result && !result.error && (result.id != null || result.status === 'paid_off')
+    if (!isSuccess) {
+      prepayError.value = result?.error ? (errorMessages[result.error] || result.error) : 'Payment failed.'
+      return
+    }
     prepay.value = 0
     await loadLoan()
     router.push({ name: 'phone-loans' })
-  } catch { }
+  } catch (e) {
+    prepayError.value = 'Payment failed.'
+  } finally {
+    prepaying.value = false
+  }
 }
 
 const cancel = () => { router.back() }
 
+const onFunds = (money) => { if (typeof money === 'number') availableFunds.value = money }
+
 onMounted(async () => {
   await loadLoan()
+  try { availableFunds.value = await lua.career_modules_loans.getAvailableFunds() } catch { }
   events.on('loans:activeUpdated', loadLoan)
   events.on('loans:tick', loadLoan)
-  try { availableFunds.value = await lua.career_modules_loans.getAvailableFunds() } catch { }
+  events.on('loans:funds', onFunds)
+})
+
+onBeforeUnmount(() => {
+  events.off('loans:activeUpdated', loadLoan)
+  events.off('loans:tick', loadLoan)
+  events.off('loans:funds', onFunds)
 })
 </script>
 
@@ -180,6 +212,28 @@ onMounted(async () => {
   color: #0f172a;
   border: none;
   outline: none;
+}
+
+.pay-full-btn {
+  background: #eef2f7;
+  color: #475569;
+  border: none;
+  padding: 6px 0;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.pay-full-btn:hover { background: #e2e8f0; }
+
+.prepay-error {
+  color: #ef4444;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 8px;
+  background: #fef2f2;
+  border-radius: 8px;
 }
 
 .actions {

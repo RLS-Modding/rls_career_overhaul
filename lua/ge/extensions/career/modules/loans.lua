@@ -198,9 +198,11 @@ end
 local function processDuePayments(elapsedSimSeconds)
   local now = os.time()
   local loansModified = false
+  log("D", "loans", string.format("processDuePayments: elapsed=%.1fs, activeLoans=%d", elapsedSimSeconds, #activeLoans))
   for i = #activeLoans, 1, -1 do
     local loan = activeLoans[i]
     loan.secondsUntilNextPayment = (loan.secondsUntilNextPayment or PAYMENT_INTERVAL_S) - elapsedSimSeconds
+    log("D", "loans", string.format("  loan %s: principalOutstanding=%.2f, secondsUntilNext=%.1f, nextInterestPaid=%.2f, nextPrincipalPaid=%.2f", loan.id, loan.principalOutstanding or 0, loan.secondsUntilNextPayment or 0, loan.nextInterestPaid or 0, loan.nextPrincipalPaid or 0))
 
     while paymentsRemainingFor(loan) > 0 and loan.secondsUntilNextPayment <= 0 do
       local base = loan.basePayment or 0
@@ -208,25 +210,33 @@ local function processDuePayments(elapsedSimSeconds)
       local interestDue = r2(math.max(0, interest - (loan.nextInterestPaid or 0)))
       local principalDue = r2(math.max(0, base - (loan.nextPrincipalPaid or 0)))
       local needed = r2(interestDue + principalDue)
+      log("D", "loans", string.format("    payment due: interestDue=%.2f principalDue=%.2f needed=%.2f", interestDue, principalDue, needed))
       if needed <= 1e-6 then
-        -- installment already fully covered earlier by prepay; do not change outstanding again
+        log("D", "loans", "    covered by prepay, applying installment (no money transfer)")
         loan.paymentsSent = (loan.paymentsSent or 0) + 1
         loan.nextInterestPaid = 0
         loan.nextPrincipalPaid = 0
         loan.secondsUntilNextPayment = loan.secondsUntilNextPayment + PAYMENT_INTERVAL_S
         awardOrgReputation(loan.orgId, 1, loan.orgName)
+        if career_modules_credit then career_modules_credit.recordOnTimePayment() end
         loansModified = true
       else
         local price = { money = { amount = needed } }
         local paymentSuccess = false
-        
-        if loan.businessAccountId and career_modules_bank then
+        if loan.businessAccountId and loan.businessAccountId ~= "null" and career_modules_bank then
+          local account = career_modules_bank.getAccountBalance(loan.businessAccountId)
+          log("D", "loans", string.format("    bank balance=%.2f needed=%.2f", account or 0, needed))
           paymentSuccess = career_modules_bank.payFromAccount(price, loan.businessAccountId, "Loan Payment", "Payment to " .. (loan.orgName or loan.orgId))
+          log("D", "loans", string.format("    bank payFromAccount: success=%s", tostring(paymentSuccess)))
         elseif career_modules_payment then
+          local playerFunds = career_modules_playerAttributes and career_modules_playerAttributes.getAttributeValue('money') or 0
+          log("D", "loans", string.format("    player funds=%.2f needed=%.2f canPay=%s", playerFunds, needed, tostring(career_modules_payment.canPay(price))))
           paymentSuccess = career_modules_payment.canPay(price) and career_modules_payment.pay(price, { label = "Loan Payment", description = "Payment to " .. (loan.orgName or loan.orgId) })
+          log("D", "loans", string.format("    player pay: success=%s", tostring(paymentSuccess)))
         end
         
         if paymentSuccess then
+          log("D", "loans", string.format("    payment success: principalOutstanding %.2f -> %.2f", loan.principalOutstanding or 0, r2(math.max(0, (loan.principalOutstanding or 0) - principalDue))))
           loan.principalOutstanding = r2(math.max(0, (loan.principalOutstanding or 0) - principalDue))
           loan.paymentsSent = (loan.paymentsSent or 0) + 1
           loan.amountPaid = r2((loan.amountPaid or 0) + needed)
@@ -238,12 +248,12 @@ local function processDuePayments(elapsedSimSeconds)
           awardOrgReputation(loan.orgId, 1, loan.orgName)
           if career_modules_credit then career_modules_credit.recordOnTimePayment() end
           loansModified = true
-          -- Show payment success message
           if notificationsEnabled then
             guihooks.trigger("toastrMsg", {type="success", title="Loan Payment Made", msg="Successfully paid $" .. string.format("%.2f", needed) .. " to " .. (loan.orgName or loan.orgId)})
           end
         else
-          -- Capitalize the missed interest by adding it to principal outstanding
+          log("D", "loans", string.format("    payment MISSED: needed=%.2f, adding interest to principal", needed))
+          if career_modules_credit then career_modules_credit.recordMissedPayment() end
           local currentPrincipal = loan.principalOutstanding or 0
           loan.principalOutstanding = r2(currentPrincipal + interestDue)
 
@@ -252,7 +262,6 @@ local function processDuePayments(elapsedSimSeconds)
           loan.missed = (loan.missed or 0) + 1
           loan.secondsUntilNextPayment = loan.secondsUntilNextPayment + PAYMENT_INTERVAL_S
           awardOrgReputation(loan.orgId, -5, loan.orgName)
-          if career_modules_credit then career_modules_credit.recordMissedPayment() end
           loansModified = true
           -- Show payment missed message
           if notificationsEnabled then
@@ -267,11 +276,12 @@ local function processDuePayments(elapsedSimSeconds)
     end
 
     if (loan.principalOutstanding or 0) <= 1e-6 then
+      log("D", "loans", string.format("  loan %s: paid off in processDuePayments", loan.id))
       loan.completedAt = now
       local completedId = loan.id
       local completedOrg = loan.orgName or loan.orgId
-      if career_modules_credit then career_modules_credit.recordLoanCompleted() end
       table.remove(activeLoans, i)
+      if career_modules_credit then career_modules_credit.recordLoanCompleted() end
       loansModified = true
       guihooks.trigger('loans:completed', { id = completedId, orgName = completedOrg })
       if notificationsEnabled then
@@ -291,6 +301,7 @@ end
 local function onUpdate(dtReal, dtSim, dtRaw)
   updateTimer = updateTimer + dtSim
   if updateTimer >= updateInterval then
+    log("D", "loans", string.format("onUpdate: triggering processDuePayments (dtSim=%.2f)", dtSim))
     local elapsed = updateTimer
     updateTimer = 0
     processDuePayments(elapsed)
@@ -310,17 +321,14 @@ local function takeLoan(orgId, amount, payments, rate, uncapped, businessAccount
     -- For regular loans, check organization level and loan limits
     local level = org.reputationLevels[org.reputation.level + 2]
     if not level or not level.loans then return {error = "no_offer"} end
-    local max = level.loans.max or 0
+    local orgMax = level.loans.max or 0
     baseRate = rate or (level.loans.rate or 0)
 
-    -- Apply credit score multipliers
     local creditMod = career_modules_credit
     local creditInfo = creditMod and creditMod.getScore() or nil
     local creditTier = creditInfo and creditInfo.tier or nil
     if creditTier then
-      max = math.floor(max * (creditTier.maxMultiplier or 1.0))
       baseRate = baseRate * (creditTier.rateMultiplier or 1.0)
-      -- Enforce term restrictions
       if creditTier.termsAvailable then
         local termAllowed = false
         for _, t in ipairs(creditTier.termsAvailable) do
@@ -331,7 +339,9 @@ local function takeLoan(orgId, amount, payments, rate, uncapped, businessAccount
     end
 
     local outstandingByOrg = getOutstandingPrincipalByOrg()
-    local available = math.max(0, max - (outstandingByOrg[orgId] or 0))
+    local available = math.max(0, orgMax - (outstandingByOrg[orgId] or 0))
+    local maxMultiplier = creditTier and (creditTier.maxMultiplier or 1.0) or 1.0
+    available = math.floor(available * maxMultiplier)
     if amount <= 0 or amount > available then return {error = "invalid_amount", max = available} end
   end
 
@@ -382,31 +392,36 @@ local function takeLoan(orgId, amount, payments, rate, uncapped, businessAccount
 end
 
 local function prepayLoan(loanId, amount)
-  if not amount or amount <= 0 then return { error = "invalid_amount" } end
+  log("D", "loans", string.format("prepayLoan: loanId=%s amount=%.2f", tostring(loanId), amount or 0))
+  if not amount or amount <= 0 then log("D", "loans", "  reject: invalid_amount"); return { error = "invalid_amount" } end
   for index, loan in ipairs(activeLoans) do
     if loan.id == loanId then
+      log("D", "loans", string.format("  found loan: principalOutstanding=%.2f basePayment=%.2f rate=%.2f businessAccountId=%s", loan.principalOutstanding or 0, loan.basePayment or 0, loan.rate or 0, tostring(loan.businessAccountId)))
+      local price = { money = { amount = amount } }
+      local paymentSuccess = false
+      if loan.businessAccountId and loan.businessAccountId ~= "null" and career_modules_bank then
+        local account = career_modules_bank.getAccountBalance(loan.businessAccountId)
+        log("D", "loans", string.format("  bank balance=%.2f amountNeeded=%.2f", account or 0, amount))
+        if (account or 0) >= amount then
+          paymentSuccess = career_modules_bank.payFromAccount(price, loan.businessAccountId, "Loan Prepayment", "Prepayment to " .. (loan.orgName or loan.orgId))
+        end
+        if not paymentSuccess then log("D", "loans", "  reject: insufficient_funds (bank)"); return { error = "insufficient_funds" } end
+      elseif career_modules_payment then
+        local playerFunds = career_modules_playerAttributes and career_modules_playerAttributes.getAttributeValue('money') or 0
+        log("D", "loans", string.format("  player funds=%.2f amountNeeded=%.2f canPay=%s", playerFunds, amount, tostring(career_modules_payment.canPay(price))))
+        if not career_modules_payment.canPay(price) then log("D", "loans", "  reject: insufficient_funds (player)"); return { error = "insufficient_funds" } end
+        paymentSuccess = career_modules_payment.pay(price, { label = "Loan Prepayment", description = "Prepayment to " .. (loan.orgName or loan.orgId) })
+        if not paymentSuccess then return { error = "pay_failed" } end
+        log("D", "loans", string.format("  player pay: success=%s", tostring(paymentSuccess)))
+      end
+
       local base = loan.basePayment or 0
       local interest = r2(base * (loan.rate or 0))
       local interestDue = r2(math.max(0, interest - (loan.nextInterestPaid or 0)))
       local principalDue = r2(math.max(0, base - (loan.nextPrincipalPaid or 0)))
-      -- Cap prepay BEFORE charging so player is never overcharged
       local maxApplicable = r2((loan.principalOutstanding or 0) + interestDue)
       amount = math.min(amount, maxApplicable)
-      if amount <= 0 then return { error = "nothing_owed" } end
-
-      local price = { money = { amount = amount } }
-      local paymentSuccess = false
-      
-      if loan.businessAccountId and career_modules_bank then
-        local account = career_modules_bank.getAccountBalance(loan.businessAccountId)
-        if (account or 0) < amount then return { error = "insufficient_funds" } end
-        paymentSuccess = career_modules_bank.payFromAccount(price, loan.businessAccountId, "Loan Prepayment", "Prepayment to " .. (loan.orgName or loan.orgId))
-      elseif career_modules_payment then
-        if not career_modules_payment.canPay(price) then return { error = "insufficient_funds" } end
-        paymentSuccess = career_modules_payment.pay(price, { label = "Loan Prepayment", description = "Prepayment to " .. (loan.orgName or loan.orgId) })
-      end
-      
-      if not paymentSuccess then return { error = "pay_failed" } end
+      log("D", "loans", string.format("  interestDue=%.2f principalDue=%.2f maxApplicable=%.2f amountApplied=%.2f", interestDue, principalDue, maxApplicable, amount))
 
       local coverInterest = math.min(amount, interestDue)
       loan.nextInterestPaid = r2((loan.nextInterestPaid or 0) + coverInterest)
@@ -424,7 +439,10 @@ local function prepayLoan(loanId, amount)
       if remain > 0 then
         local before = loan.principalOutstanding or 0
         loan.principalOutstanding = r2(math.max(0, before - remain))
+        log("D", "loans", string.format("  extra principal: %.2f -> %.2f", before, loan.principalOutstanding))
       end
+
+      log("D", "loans", string.format("  prepay complete: principalOutstanding=%.2f nextInterestPaid=%.2f nextPrincipalPaid=%.2f", loan.principalOutstanding or 0, loan.nextInterestPaid or 0, loan.nextPrincipalPaid or 0))
 
       -- track money spent now
       loan.amountPaid = r2((loan.amountPaid or 0) + amount)
@@ -434,13 +452,14 @@ local function prepayLoan(loanId, amount)
         guihooks.trigger("toastrMsg", {type="success", title="Prepayment Applied", msg="Applied $" .. string.format("%.2f", amount) .. " prepayment to loan with " .. (loan.orgName or loan.orgId)})
       end
 
-      -- if fully paid off, close out immediately
-      if (loan.principalOutstanding or 0) <= 1e-6 then
+      local fullyPaidOff = (loan.principalOutstanding or 0) <= 1e-6
+      if fullyPaidOff then
+        log("D", "loans", "  loan fully paid off via prepay")
         loan.completedAt = os.time()
         local completedId = loan.id
         local completedOrg = loan.orgName or loan.orgId
-        if career_modules_credit then career_modules_credit.recordLoanCompleted() end
         table.remove(activeLoans, index)
+        if career_modules_credit then career_modules_credit.recordLoanCompleted() end
         career_saveSystem.saveCurrent()
         if guihooks and guihooks.trigger then
           guihooks.trigger('loans:completed', { id = completedId, orgName = completedOrg })
@@ -462,9 +481,12 @@ local function prepayLoan(loanId, amount)
           guihooks.trigger('loans:funds', career_modules_playerAttributes.getAttributeValue('money'))
         end
       end
-      return buildUiLoan(loan)
+      local result = buildUiLoan(loan)
+      log("D", "loans", string.format("  prepay complete, returning loan state (principalOutstanding=%.2f)", result.principalOutstanding or 0))
+      return result
     end
   end
+  log("D", "loans", "  reject: loan_not_found")
   return { error = "loan_not_found" }
 end
 
