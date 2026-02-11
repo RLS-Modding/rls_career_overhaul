@@ -11,9 +11,9 @@ local function getDefaultLayout()
     version = 1,
     wallpaper = "default",
     pages = {
-      { apps = {"loans", "bank", "marketplace", "car-meet", "repo", "taxi", "quarry", "beam-eats"} }
+      { apps = {"loans", "repo", "marketplace", "car-meet", "quarry", "tuning-shop"} }
     },
-    dock = {"repo", "bank", "marketplace", "taxi"},
+    dock = {"guide", "beam-eats", "taxi", "bank"},
     seenApps = {}
   }
 end
@@ -72,7 +72,7 @@ local function loadLayout()
     local careerData = jsonReadFile(currentSavePath .. saveFile)
     if careerData then
       layoutData = careerData
-      return careerData
+      return layoutData
     end
   end
 
@@ -80,7 +80,7 @@ local function loadLayout()
   local globalData = jsonReadFile(globalFile)
   if globalData then
     layoutData = globalData
-    return globalData
+    return layoutData
   end
 
   -- 3) Hardcoded default layout
