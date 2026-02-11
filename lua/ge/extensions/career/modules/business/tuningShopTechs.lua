@@ -1,6 +1,6 @@
 local M = {}
 
-M.dependencies = {}
+M.dependencies = {'career_career', 'career_saveSystem'}
 
 local businessTechs = {}
 local helpers = {}

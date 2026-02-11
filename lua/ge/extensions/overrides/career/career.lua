@@ -869,6 +869,5 @@ M.onCheatsModeChanged = onCheatsModeChanged
 
 M.sendCurrentSaveSlotName = sendCurrentSaveSlotName
 M.launchMostRecentCareer = launchMostRecentCareer
-M.isOverride = true
 
 return M

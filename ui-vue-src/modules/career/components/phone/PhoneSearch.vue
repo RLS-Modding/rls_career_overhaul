@@ -38,6 +38,7 @@
           <span class="search-result-category" v-if="app.category">{{ app.category }}</span>
         </div>
         <span class="search-result-new" v-if="!seenApps.has(app.id)">NEW</span>
+        <span class="search-result-add-hint" v-if="jiggleMode && !appIdsOnHome.has(app.id)">Drag to add</span>
       </div>
     </div>
   </div>
@@ -51,9 +52,11 @@ import { vBngTextInput } from '@/common/directives'
 const props = defineProps({
   apps: { type: Array, required: true },
   seenApps: { type: Set, default: () => new Set() },
+  jiggleMode: { type: Boolean, default: false },
+  appIdsOnHome: { type: Set, default: () => new Set() },
 })
 
-const emit = defineEmits(['launch'])
+const emit = defineEmits(['launch', 'dragstart'])
 
 const query = ref('')
 const searchInputRef = ref(null)
@@ -83,6 +86,11 @@ function onResultPointerDown(e, app) {
   const onMove = (ev) => {
     if (Math.abs(ev.clientX - startX) > 8 || Math.abs(ev.clientY - startY) > 8) {
       moved = true
+      if (props.jiggleMode) {
+        emit('dragstart', ev, app)
+        cleanupPointerTracking?.()
+        cleanupPointerTracking = null
+      }
     }
   }
 
@@ -260,5 +268,11 @@ onUnmounted(() => {
   padding: 2px 5px;
   border-radius: 6px;
   letter-spacing: 0.5px;
+}
+
+.search-result-add-hint {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 9px;
+  margin-left: auto;
 }
 </style>
