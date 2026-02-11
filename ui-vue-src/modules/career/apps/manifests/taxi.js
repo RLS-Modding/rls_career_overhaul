@@ -12,5 +12,5 @@ export default {
   category: 'Transport',
   defaultPage: 0,
   defaultPosition: 5,
-  defaultDock: 3,
+  defaultDock: 2,
 }

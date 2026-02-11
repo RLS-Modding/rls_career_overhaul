@@ -47,6 +47,7 @@ import PhoneTuningShop from "./views/PhoneTuningShop.vue"
 import PhoneQuarry from "./views/PhoneQuarry.vue"
 import PhoneBeamEats from "./views/PhoneBeamEats.vue"
 import PhoneRealEstate from "./views/PhoneRealEstate.vue"
+import PhoneGuide from "./views/PhoneGuide.vue"
 import LevelSwitch from "./views/LevelSwitch.vue"
 import ChallengeComplete from "./views/ChallengeComplete.vue"
 import BusinessComputerMain from "./views/BusinessComputerMain.vue"
@@ -459,6 +460,12 @@ export default [
         path: "phone-real-estate",
         name: "phone-real-estate",
         component: PhoneRealEstate
+      },
+      
+      {
+        path: "phone-guide",
+        name: "phone-guide",
+        component: PhoneGuide
       },
 
       {

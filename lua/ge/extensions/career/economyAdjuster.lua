@@ -84,6 +84,27 @@ local function discoverActivityTypes()
         typeSources["repo"]["repo_module"] = true
     end
 
+    -- BeamEats
+    if gameplay_beamEats then
+        activityTypesFound["beamEats"] = true
+        typeSources["beamEats"] = typeSources["beamEats"] or {}
+        typeSources["beamEats"]["beamEats_module"] = true
+    end
+
+    -- Bus
+    if gameplay_bus then
+        activityTypesFound["bus"] = true
+        typeSources["bus"] = typeSources["bus"] or {}
+        typeSources["bus"]["bus_module"] = true
+    end
+
+    -- Ambulance
+    if gameplay_ambulance then
+        activityTypesFound["ambulance"] = true
+        typeSources["ambulance"] = typeSources["ambulance"] or {}
+        typeSources["ambulance"]["ambulance_module"] = true
+    end
+
     local deliveryTypes = {"parcel", "vehicle", "trailer", "fluid", "dryBulk", "cement", "cash"}
     for _, deliveryType in ipairs(deliveryTypes) do
         activityTypesFound[string.format("delivery_%s", deliveryType)] = true

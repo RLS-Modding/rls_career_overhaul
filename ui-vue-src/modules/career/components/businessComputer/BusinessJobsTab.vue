@@ -1,8 +1,23 @@
 <template>
   <div class="jobs-tab">
     <div class="tab-header">
-      <h2>Jobs</h2>
-      <p>Manage active work and available opportunities in one place</p>
+      <div class="header-content">
+        <div>
+          <h2>Jobs</h2>
+          <p>Manage active work and available opportunities in one place</p>
+        </div>
+        <button 
+          v-if="store.businessType === 'tuningShop'"
+          class="filters-button"
+          @click.stop="openFiltersModal"
+          @mousedown.stop="openFiltersModal"
+          data-focusable
+          title="Manage filters, notifications, and blacklists"
+        >
+          <span class="filters-icon">⚙</span>
+          <span>Filters</span>
+        </button>
+      </div>
     </div>
 
     <div v-if="showRecognitionBanner" class="recognition-banner">
@@ -142,6 +157,8 @@
         </div>
       </transition>
     </Teleport>
+
+    <FiltersModal :show="showFiltersModal" @close="closeFiltersModal" />
   </div>
 </template>
 
@@ -150,6 +167,7 @@ import { computed, ref, Teleport, onMounted, onUnmounted, watch, inject, nextTic
 import { useBusinessComputerStore } from "../../stores/businessComputerStore"
 import { useBridge } from "@/bridge"
 import BusinessJobCard from "./BusinessJobCard.vue"
+import FiltersModal from "./FiltersModal.vue"
 import { normalizeId } from "../../utils/businessUtils"
 
 const store = useBusinessComputerStore()
@@ -165,6 +183,7 @@ const interceptEvent = () => { }
 
 const showBrandModal = ref(false)
 const showRaceModal = ref(false)
+const showFiltersModal = ref(false)
 const isLoadingBrands = ref(false)
 const isLoadingRaceTypes = ref(false)
 
@@ -231,6 +250,14 @@ const openRaceModal = async () => {
 
 const closeRaceModal = () => {
   showRaceModal.value = false
+}
+
+const openFiltersModal = () => {
+  showFiltersModal.value = true
+}
+
+const closeFiltersModal = () => {
+  showFiltersModal.value = false
 }
 
 watch(showAbandonModal, (isOpen) => {
@@ -392,15 +419,50 @@ const handleDecline = async (job) => {
 }
 
 .tab-header {
-  h2 {
-    margin: 0 0 0.5em 0;
-    color: rgba(245, 73, 0, 1);
-    font-size: 1.5em;
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1em;
+    flex-wrap: wrap;
+
+    h2 {
+      margin: 0 0 0.5em 0;
+      color: rgba(245, 73, 0, 1);
+      font-size: 1.5em;
+    }
+
+    p {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.6);
+    }
   }
 
-  p {
-    margin: 0;
-    color: rgba(255, 255, 255, 0.6);
+  .filters-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0.6em 1.2em;
+    background: rgba(255, 153, 51, 0.15);
+    border: 1px solid rgba(255, 153, 51, 0.3);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.9em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    margin-top: 0.5em;
+
+    .filters-icon {
+      font-size: 1.1em;
+    }
+
+    &:hover {
+      background: rgba(255, 153, 51, 0.25);
+      border-color: rgba(255, 153, 51, 0.5);
+      color: #fff;
+    }
   }
 }
 
