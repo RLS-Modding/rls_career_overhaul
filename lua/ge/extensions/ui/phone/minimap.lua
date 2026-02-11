@@ -98,4 +98,12 @@ M.onExtensionLoaded = function()
   requestPhoneMap()
 end
 
+M.onClientStartMission = function()
+  requestPhoneMap()
+end
+
+M.onClientEndMission = function()
+  guihooks.trigger('PhoneMinimapData', { nodes = {}, terrainTiles = {} })
+end
+
 return M
