@@ -8,7 +8,7 @@ local PROXIMITY_BLOCK_DISTANCE = 50
 
 local state = {
   enabled = true,
-  timerSeconds = 60,
+  timerSeconds = 1800,
   elapsed = 0,
   rootFound = false,
   missingRootWarned = false,
@@ -18,7 +18,8 @@ local state = {
   configPath = nil,
   warnings = {},
   lastTriggerTime = nil,
-  lastMapResetTime = nil
+  lastMapResetTime = nil,
+  pendingQueue = false
 }
 
 local function addWarning(message)
@@ -347,7 +348,7 @@ local function defaultConfigFromScene()
   return {
     version = CONFIG_VERSION,
     enabled = true,
-    timerSeconds = 60,
+    timerSeconds = 1800,
     groups = groups
   }
 end
@@ -812,7 +813,7 @@ local function reloadConfigAndRescan()
 
   state.config = mergeConfig(generated, existingConfig)
   state.enabled = state.config.enabled ~= false
-  state.timerSeconds = math.max(0.1, tonumber(state.config.timerSeconds) or 60)
+  state.timerSeconds = math.max(0.1, tonumber(state.config.timerSeconds) or 1800)
 
   if foundRoot then
     resolveInitialActiveOptions()
@@ -1024,6 +1025,23 @@ local function onExtensionLoaded()
   reloadConfigAndRescan()
 end
 
+local function applyPendingQueue()
+  if not state.pendingQueue then
+    return
+  end
+  state.pendingQueue = false
+
+  core_gamestate.requestEnterLoadingScreen("dynamicRoutes")
+  triggerAllWeighted()
+  core_gamestate.requestExitLoadingScreen("dynamicRoutes")
+end
+
+local function onScreenFadeState(fadeState)
+  if fadeState == 2 and state.pendingQueue then
+    applyPendingQueue()
+  end
+end
+
 local function onUpdate(dt)
   if not state.enabled or not state.rootFound or #state.groupOrder == 0 then
     return
@@ -1034,7 +1052,7 @@ local function onUpdate(dt)
     return
   end
   state.elapsed = 0
-  triggerAllWeighted()
+  state.pendingQueue = true
 end
 
 M.reloadConfigAndRescan = reloadConfigAndRescan
@@ -1054,6 +1072,7 @@ M.onLevelLoaded = onLevelLoaded
 M.onReset = onReset
 M.onInit = onInit
 M.onExtensionLoaded = onExtensionLoaded
+M.onScreenFadeState = onScreenFadeState
 M.onUpdate = onUpdate
 M.updateGFX = onUpdate
 
