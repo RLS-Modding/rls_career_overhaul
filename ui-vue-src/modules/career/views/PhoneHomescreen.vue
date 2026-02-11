@@ -49,7 +49,11 @@
             <PhoneSearch
               :apps="availableApps"
               :seen-apps="seenApps"
+              :jiggle-mode="jiggleMode"
+              :app-ids-on-home="appIdsOnHome"
               @launch="launchApp"
+              @add-to-home="onAddToHome"
+              @dragstart="onSearchDragStart"
             />
           </div>
         </div>
@@ -165,6 +169,13 @@ const searchPageProgress = computed(() => {
     Math.min(1, ((-pageOffset.value) - (lastAppPageIndex * PAGE_WIDTH)) / PAGE_WIDTH)
   )
 })
+const appIdsOnHome = computed(() => {
+  const ids = new Set()
+  dockIds.value.filter(Boolean).forEach(id => ids.add(id))
+  pageLayouts.value.flat().filter(Boolean).forEach(id => ids.add(id))
+  return ids
+})
+
 const dockStyle = computed(() => {
   const progress = searchPageProgress.value
   const slideX = Math.round(-progress * PAGE_WIDTH)
@@ -426,6 +437,17 @@ function onRemoveApp(app) {
   }
 }
 
+function onAddToHome(app) {
+  if (!app || !app.id) return
+  addAppToLastEmpty(app.id)
+  saveLayout()
+}
+
+function onSearchDragStart(e, app) {
+  if (!jiggleMode.value) return
+  startIconDrag(e, app, 'search')
+}
+
 // ─── Icon drag ───
 function onGridDragStart(e, app) {
   if (!jiggleMode.value) return
@@ -447,7 +469,11 @@ function startIconDrag(e, app, source) {
   dragStartPageLayouts = pageLayouts.value.map(page => [...page])
   dragStartDockIds = [...dockIds.value]
 
-  if (source === 'grid') {
+  if (source === 'search') {
+    dragSourceLocation.type = 'search'
+    dragSourceLocation.page = -1
+    dragSourceLocation.slot = -1
+  } else if (source === 'grid') {
     // Find which page/slot this app is in
     for (let p = 0; p < pageLayouts.value.length; p++) {
       const s = pageLayouts.value[p].indexOf(app.id)
@@ -553,16 +579,15 @@ function onIconDragEnd(e) {
       addAppToLastEmpty(existingInDock)
     }
   } else {
-    // Drop into grid - find slot under cursor
     const target = findGridSlotAt(e.clientX, e.clientY)
     if (target) {
       moveDraggedAppToGridSlot(target)
     } else {
-      // If app already has a valid placement from live drag, keep it.
       const location = findAppLocation(appId)
       if (!location) {
-        // Invalid drop with no current placement: restore exact pre-drag layout.
-        if (dragStartPageLayouts && dragStartDockIds) {
+        if (dragSourceLocation.type === 'search') {
+          addAppToLastEmpty(appId)
+        } else if (dragStartPageLayouts && dragStartDockIds) {
           pageLayouts.value = dragStartPageLayouts.map(page => [...page])
           dockIds.value = [...dragStartDockIds]
         } else if (dragSourceLocation.type === 'grid') {
