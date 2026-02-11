@@ -74,9 +74,7 @@ local auctionState = {
   nextLiveStatusAt = 0,
   transitionActive = false,
   entryCooldownUntil = 0,
-  uiOpen = false,
-  autoBidEnabled = false,
-  autoBidMax = 0
+  uiOpen = false
 }
 
 local usedConfigKeys = {}
@@ -529,6 +527,23 @@ local function isRollerLikeInfo(info)
   return a:find('roller', 1, true) or b:find('roller', 1, true) or c:find('roller', 1, true)
 end
 
+local function getMileageFromInfo(info)
+  if not info then return nil end
+  local mileage = tonumber(info.Mileage) or tonumber(info.mileage) or tonumber(info['Mileage'])
+  if not mileage then return nil end
+  -- config-list mileage is often in meters; normalize to miles for UI display
+  if mileage > 2000000 then
+    mileage = mileage / 1609.344
+  end
+  mileage = math.max(0, math.floor(mileage))
+  if mileage <= 0 then return nil end
+  return mileage
+end
+
+local function getFallbackMileage()
+  return math.random(5000, 180000)
+end
+
 local function getRandomVehicleDefWithFilter(filter)
   local eligibleVehicles = util_configListGenerator.getEligibleVehicles(false, false)
   local infos = util_configListGenerator.getRandomVehicleInfos({filter = filter or {}}, 40, eligibleVehicles, 'Population')
@@ -546,7 +561,8 @@ local function getRandomVehicleDefWithFilter(filter)
         model = info.model_key,
         config = configPath,
         title = title,
-        basePrice = math.max(1500, math.floor(tonumber(info.Value or 4500)))
+        basePrice = math.max(1500, math.floor(tonumber(info.Value or 4500))),
+        mileage = getMileageFromInfo(info) or getFallbackMileage()
       }
     end
   end
@@ -589,7 +605,8 @@ local function getRandomVehicleDefNoFilter()
         model = info.model_key,
         config = configPath,
         title = title,
-        basePrice = math.max(1500, math.floor(tonumber(info.Value or 4500)))
+        basePrice = math.max(1500, math.floor(tonumber(info.Value or 4500))),
+        mileage = getMileageFromInfo(info) or getFallbackMileage()
       }
     end
   end
@@ -633,6 +650,7 @@ local function prepareLots(spawnSpots, blockSpots)
       model = vehicleDef.model,
       config = vehicleDef.config,
       title = vehicleDef.title,
+      mileage = vehicleDef.mileage or getFallbackMileage(),
       minStep = 250,
       currentBid = startBid,
       highestBidder = 'npc',
@@ -677,6 +695,59 @@ local function maybeExtendLotTimer(lot, bidderLabel)
   return true
 end
 
+local function getConfigKeyFromPath(configPath)
+  if type(configPath) ~= 'string' then return nil end
+  local normalized = configPath:gsub('\\', '/')
+  local key = normalized:match('/configurations/([^/]+)%.pc$')
+  if key then
+    return key
+  end
+  return normalized:match('/([^/]+)%.pc$')
+end
+
+local function applyRandomPaintToSpawnOptions(options, modelKey, configPath)
+  if not options or not modelKey then return end
+  if not core_vehiclePaints or not core_vehiclePaints.getRandomPaints then return end
+
+  local paintResult = core_vehiclePaints.getRandomPaints(modelKey, getConfigKeyFromPath(configPath))
+  if type(paintResult) ~= 'table' then return end
+
+  local modelData = core_vehicles.getModel(modelKey)
+  local modelPaints = modelData and modelData.model and modelData.model.paints
+  if type(modelPaints) ~= 'table' then return end
+
+  local paintNames = {paintResult.paintName1, paintResult.paintName2, paintResult.paintName3}
+  local paint1 = paintNames[1] and modelPaints[paintNames[1]]
+  local paint2 = paintNames[2] and modelPaints[paintNames[2]]
+  local paint3 = paintNames[3] and modelPaints[paintNames[3]]
+  if not paint1 then
+    return
+  end
+
+  options.paintName = paintNames[1]
+  options.paintName2 = paintNames[2]
+  options.paintName3 = paintNames[3]
+  options.paint = deepCopy(paint1)
+  options.paint2 = deepCopy(paint2 or paint1)
+  options.paint3 = deepCopy(paint3 or paint1)
+
+  -- Also embed paints into config data before spawn so loaded config keeps auction paint.
+  if type(configPath) == 'string' then
+    local cfg = jsonReadFile(configPath)
+    if type(cfg) == 'table' and cfg.format ~= 4 then
+      cfg = deepCopy(cfg)
+      cfg.partConfigFilename = configPath
+      cfg.colors = nil
+      cfg.paints = {
+        deepCopy(options.paint),
+        deepCopy(options.paint2),
+        deepCopy(options.paint3)
+      }
+      options.config = cfg
+    end
+  end
+end
+
 local function spawnLotVehicle(lot, spot, startApproach)
   if not lot then return false end
   local spawnSpot = spot or lot.spawnSpot
@@ -687,6 +758,11 @@ local function spawnLotVehicle(lot, spot, startApproach)
     pos = vec3(spawnSpot.pos),
     rot = quat(spawnSpot.rot)
   }
+
+  -- Pick and inject random paint before spawn so it becomes part of spawn config.
+  pcall(function()
+    applyRandomPaintToSpawnOptions(options, lot.model, lot.config)
+  end)
 
   local veh = core_vehicles.spawnNewVehicle(lot.model, options)
   if not veh then
@@ -915,6 +991,7 @@ local function requestAuctionState()
     local lotOut = {
       lotIndex = lot.lotIndex,
       title = lot.title,
+      mileage = lot.mileage,
       state = lot.state,
       currentBid = lot.currentBid or 0,
       minStep = lot.minStep or 250,
@@ -956,18 +1033,8 @@ local function requestAuctionState()
     currentLot = derivedCurrentLot,
     statusMessage = status,
     purchasedCount = #(auctionState.purchasedInventoryIds or {}),
-    lots = lotsOut,
-    autoBidEnabled = auctionState.autoBidEnabled and true or false,
-    autoBidMax = tonumber(auctionState.autoBidMax) or 0
+    lots = lotsOut
   }
-end
-
-local function setAutoBidEnabled(enabled)
-  auctionState.autoBidEnabled = enabled and true or false
-end
-
-local function setAutoBidMax(maxBid)
-  auctionState.autoBidMax = math.max(0, math.floor(tonumber(maxBid) or 0))
 end
 
 local function placeBid(amount)
@@ -1076,8 +1143,6 @@ local function resetAuction(keepPurchases)
   auctionState.nextPlayerBidCheckAt = 0
   auctionState.nextLiveStatusAt = 0
   auctionState.noSpaceWarnCooldownUntil = 0
-  auctionState.autoBidEnabled = false
-  auctionState.autoBidMax = 0
 
   if not keepPurchases then
     auctionState.purchasedInventoryIds = {}
@@ -1178,7 +1243,6 @@ local function startAuctionImmediate()
     auctionState.phase = 'bidding'
 
     ui_message('Auction started. Cars will follow authored path spots.', 8, 'Used Auction', 'info')
-    openMenu()
   end)
 
   return true
@@ -1361,12 +1425,6 @@ local function onUpdate()
   showLiveAuctionStatus(false)
 
   if now >= auctionState.nextPlayerBidCheckAt then
-    if auctionState.autoBidEnabled and (tonumber(auctionState.autoBidMax) or 0) > 0 and lot.highestBidder ~= 'player' then
-      local nextAutoBid = lot.currentBid + (lot.minStep or 250)
-      if nextAutoBid <= auctionState.autoBidMax then
-        placePlayerBidIfPossible()
-      end
-    end
     auctionState.nextPlayerBidCheckAt = now + PLAYER_BID_CHECK_INTERVAL
   end
 
@@ -1411,7 +1469,5 @@ M.cancelTravelPrompt = cancelTravelPrompt
 M.placeBid = placeBid
 M.passCurrentLot = passCurrentLot
 M.closeMenu = closeMenu
-M.setAutoBidEnabled = setAutoBidEnabled
-M.setAutoBidMax = setAutoBidMax
 
 return M
