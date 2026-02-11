@@ -83,6 +83,11 @@ local function getLoanOffers()
   local offers = {}
   local outstandingByOrg = getOutstandingPrincipalByOrg()
 
+  local creditMod = career_modules_credit
+  local rateMultiplier = creditMod and creditMod.getRateMultiplier() or 1.0
+  local maxMultiplier = creditMod and creditMod.getMaxMultiplier() or 1.0
+  local availableTerms = creditMod and creditMod.getAvailableTerms() or TERM_OPTIONS
+
   for orgId, org in pairs(freeroam_organizations.getOrganizations()) do
     local level = org.reputationLevels[org.reputation.level + 2]
     if level and level.loans then
@@ -96,12 +101,20 @@ local function getLoanOffers()
       if minLoanLevel and org.reputation.level >= minLoanLevel then
         local l = level.loans
         local available = math.max(0, (l.max or 0) - (outstandingByOrg[orgId] or 0))
+        local adjustedMax = math.floor(available * maxMultiplier)
+        local adjustedRate = (l.rate or 0) * rateMultiplier
         table.insert(offers, {
           id = orgId,
           name = org.name or orgId,
-          max = available,
-          rate = l.rate,
-          terms = TERM_OPTIONS
+          max = adjustedMax,
+          rate = adjustedRate,
+          terms = availableTerms,
+          creditScore = creditMod and creditMod.getScore().score or nil,
+          creditTier = creditMod and creditMod.getTier().label or nil,
+          baseRate = l.rate,
+          adjustedRate = adjustedRate,
+          baseMax = available,
+          adjustedMax = adjustedMax,
         })
       end
     else
@@ -221,6 +234,7 @@ local function processDuePayments(elapsedSimSeconds)
 
           loan.secondsUntilNextPayment = loan.secondsUntilNextPayment + PAYMENT_INTERVAL_S
           awardOrgReputation(loan.orgId, 1, loan.orgName)
+          if career_modules_credit then career_modules_credit.recordOnTimePayment() end
           loansModified = true
           -- Show payment success message
           if notificationsEnabled then
@@ -236,6 +250,7 @@ local function processDuePayments(elapsedSimSeconds)
           loan.missed = (loan.missed or 0) + 1
           loan.secondsUntilNextPayment = loan.secondsUntilNextPayment + PAYMENT_INTERVAL_S
           awardOrgReputation(loan.orgId, -5, loan.orgName)
+          if career_modules_credit then career_modules_credit.recordMissedPayment() end
           loansModified = true
           -- Show payment missed message
           if notificationsEnabled then
@@ -253,6 +268,7 @@ local function processDuePayments(elapsedSimSeconds)
       loan.completedAt = now
       local completedId = loan.id
       local completedOrg = loan.orgName or loan.orgId
+      if career_modules_credit then career_modules_credit.recordLoanCompleted() end
       table.remove(activeLoans, i)
       loansModified = true
       guihooks.trigger('loans:completed', { id = completedId, orgName = completedOrg })
@@ -320,6 +336,7 @@ local function takeLoan(orgId, amount, payments, rate, uncapped, businessAccount
     businessAccountId = businessAccountId,
   }
   table.insert(activeLoans, loan)
+  if career_modules_credit then career_modules_credit.recordLoanTaken(orgId) end
 
   if businessAccountId then
     -- For business loans, the loan amount is debt, not cash - don't reward anything
@@ -401,6 +418,7 @@ local function prepayLoan(loanId, amount)
         loan.completedAt = os.time()
         local completedId = loan.id
         local completedOrg = loan.orgName or loan.orgId
+        if career_modules_credit then career_modules_credit.recordLoanCompleted() end
         table.remove(activeLoans, index)
         career_saveSystem.saveCurrent()
         if guihooks and guihooks.trigger then
@@ -526,6 +544,7 @@ M.onUpdate = onUpdate
 M.onComputerAddFunctions = onComputerAddFunctions
 
 M.getLoanOrganizations = getLoanOrganizations
+M.getOutstandingPrincipalByOrg = getOutstandingPrincipalByOrg
 M.getLoanOffers = getLoanOffers
 M.getActiveLoans = getActiveLoans
 M.takeLoan = takeLoan
