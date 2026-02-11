@@ -46,7 +46,6 @@ import PhoneBankRename from "./views/PhoneBankRename.vue"
 import PhoneTuningShop from "./views/PhoneTuningShop.vue"
 import PhoneQuarry from "./views/PhoneQuarry.vue"
 import PhoneBeamEats from "./views/PhoneBeamEats.vue"
-import PhoneCreditScore from "./views/PhoneCreditScore.vue"
 import LevelSwitch from "./views/LevelSwitch.vue"
 import ChallengeComplete from "./views/ChallengeComplete.vue"
 import BusinessComputerMain from "./views/BusinessComputerMain.vue"
@@ -456,9 +455,6 @@ export default [
       },
 
       {
-        path: "phone-credit-score",
-        name: "phone-credit-score",
-        component: PhoneCreditScore
       },
 
       {
