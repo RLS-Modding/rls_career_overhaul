@@ -1,5 +1,5 @@
 <template>
-  <PhoneWrapper app-name="Rename Account" status-font-color="#000000" status-blend-mode="">
+  <PhoneWrapper app-name="Rename Account">
     <div class="phone-rename">
       <div class="content-card">
         <form @submit.prevent="handleSubmit" class="form">

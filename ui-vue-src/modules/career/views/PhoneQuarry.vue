@@ -1,5 +1,5 @@
 <template>
-  <PhoneWrapper app-name="Loading" status-font-color="#FFFFFF" status-blend-mode="normal">
+  <PhoneWrapper app-name="Loading">
     <div class="quarry-container">
       <!-- IDLE State -->
       <div class="state-panel idle-compact" v-if="currentState === 'idle'">

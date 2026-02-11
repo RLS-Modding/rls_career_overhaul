@@ -1,5 +1,5 @@
 <template>
-    <PhoneWrapper app-name="Marketplace" status-font-color="#ffffff" status-blend-mode="non">
+    <PhoneWrapper app-name="Marketplace">
         <div class="marketplace-container">
             <div class="header">
                 <h2>Vehicles Listed</h2>
