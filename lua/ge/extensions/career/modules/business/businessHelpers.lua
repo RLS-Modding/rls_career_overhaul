@@ -1,6 +1,6 @@
 local M = {}
 
-M.dependencies = {}
+M.dependencies = {'career_modules_business_businessInventory', 'gameplay_events_freeroam_leaderboardManager'}
 
 local function getRaceLabelVariations(raceType, raceLabel)
   if not raceType or not raceLabel then

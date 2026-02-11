@@ -1,5 +1,5 @@
 <template>
-  <PhoneWrapper app-name="Bank" status-font-color="#000000" status-blend-mode="">
+  <PhoneWrapper app-name="Bank">
     <div class="phone-bank">
       <div class="section">
         <div class="total-balance-card">
