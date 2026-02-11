@@ -1232,7 +1232,7 @@ export default {
     getActiveLoans: () => {},
     getOutstandingPrincipalByOrg: () => {},
     calculatePayment: (amount, rate, payments) => [Number, Number],
-    takeLoan: (orgId, amount, payments) => [String, Number, Number],
+    takeLoan: (orgId, amount, payments, rate, uncapped, businessAccountId) => [String, Number, Number, Number, Boolean, String],
     prepayLoan: (loanId, amount) => [String, Number],
     getNotificationsEnabled: () => Boolean,
     setNotificationsEnabled: enabled => Boolean,

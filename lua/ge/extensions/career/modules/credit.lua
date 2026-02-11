@@ -117,10 +117,13 @@ end
 -- Factor 4: New Credit (10%)
 local function factorNewCredit()
   local cutoff = os.time() - (RECENT_INQUIRY_DAYS * SECONDS_PER_GAME_DAY)
-  local count = 0
-  for _, ts in ipairs(creditData.history.recentInquiries) do
-    if ts >= cutoff then count = count + 1 end
+  -- Prune expired inquiries
+  for i = #creditData.history.recentInquiries, 1, -1 do
+    if creditData.history.recentInquiries[i] < cutoff then
+      table.remove(creditData.history.recentInquiries, i)
+    end
   end
+  local count = #creditData.history.recentInquiries
   return math.max(0, 1.0 - (count * 0.25))
 end
 

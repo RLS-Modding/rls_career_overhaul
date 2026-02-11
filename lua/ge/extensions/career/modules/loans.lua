@@ -312,6 +312,24 @@ local function takeLoan(orgId, amount, payments, rate, uncapped, businessAccount
     if not level or not level.loans then return {error = "no_offer"} end
     local max = level.loans.max or 0
     baseRate = rate or (level.loans.rate or 0)
+
+    -- Apply credit score multipliers
+    local creditMod = career_modules_credit
+    local creditInfo = creditMod and creditMod.getScore() or nil
+    local creditTier = creditInfo and creditInfo.tier or nil
+    if creditTier then
+      max = math.floor(max * (creditTier.maxMultiplier or 1.0))
+      baseRate = baseRate * (creditTier.rateMultiplier or 1.0)
+      -- Enforce term restrictions
+      if creditTier.termsAvailable then
+        local termAllowed = false
+        for _, t in ipairs(creditTier.termsAvailable) do
+          if t == payments then termAllowed = true; break end
+        end
+        if not termAllowed then return {error = "term_not_available"} end
+      end
+    end
+
     local outstandingByOrg = getOutstandingPrincipalByOrg()
     local available = math.max(0, max - (outstandingByOrg[orgId] or 0))
     if amount <= 0 or amount > available then return {error = "invalid_amount", max = available} end
@@ -367,6 +385,15 @@ local function prepayLoan(loanId, amount)
   if not amount or amount <= 0 then return { error = "invalid_amount" } end
   for index, loan in ipairs(activeLoans) do
     if loan.id == loanId then
+      local base = loan.basePayment or 0
+      local interest = r2(base * (loan.rate or 0))
+      local interestDue = r2(math.max(0, interest - (loan.nextInterestPaid or 0)))
+      local principalDue = r2(math.max(0, base - (loan.nextPrincipalPaid or 0)))
+      -- Cap prepay BEFORE charging so player is never overcharged
+      local maxApplicable = r2((loan.principalOutstanding or 0) + interestDue)
+      amount = math.min(amount, maxApplicable)
+      if amount <= 0 then return { error = "nothing_owed" } end
+
       local price = { money = { amount = amount } }
       local paymentSuccess = false
       
@@ -380,14 +407,6 @@ local function prepayLoan(loanId, amount)
       end
       
       if not paymentSuccess then return { error = "pay_failed" } end
-
-      local base = loan.basePayment or 0
-      local interest = r2(base * (loan.rate or 0))
-      local interestDue = r2(math.max(0, interest - (loan.nextInterestPaid or 0)))
-      local principalDue = r2(math.max(0, base - (loan.nextPrincipalPaid or 0)))
-      -- Cap prepay so it never exceeds principal + remaining interest for next installment
-      local maxApplicable = r2((loan.principalOutstanding or 0) + interestDue)
-      amount = math.min(amount, maxApplicable)
 
       local coverInterest = math.min(amount, interestDue)
       loan.nextInterestPaid = r2((loan.nextInterestPaid or 0) + coverInterest)
