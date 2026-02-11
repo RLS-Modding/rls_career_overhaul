@@ -1061,14 +1061,16 @@ async function onSave() {
     ok = resp[0]; msg = resp[1]; challengeId = resp[2]
   } else if (resp && typeof resp === 'object') {
     ok = resp.ok; msg = resp.msg || resp.message; challengeId = resp.challengeId || resp.id
-  }
-  if (ok === false) {
-    console.warn('CreateChallenge failed', msg)
-    emit('close')
   } else {
-    emit('saved', challengeId)
-    emit('close')
+    ok = resp
   }
+  if (ok !== true) {
+    console.warn('[ChallengeCreateModal] CreateChallenge failed:', msg)
+    seedError.value = msg || 'Failed to save challenge'
+    return
+  }
+  emit('saved', challengeId)
+  emit('close')
 }
 
 function resetFormDefaults() {
