@@ -2758,11 +2758,8 @@ local function refreshJobs(businessId, forced)
   generationTimers[id] = (generationTimers[id] or 0) + dt
   local genInterval = getGenerationIntervalSeconds(id)
   
-  if generationTimers[id] >= genInterval or (forced and #(jobs.new or {}) == 0) then
+  if generationTimers[id] >= genInterval then
     local timeToProcess = generationTimers[id]
-    if forced and #(jobs.new or {}) == 0 and timeToProcess < genInterval then
-      timeToProcess = genInterval
-    end
 
     if processJobGeneration(id, jobs, timeToProcess) then
       changed = true
