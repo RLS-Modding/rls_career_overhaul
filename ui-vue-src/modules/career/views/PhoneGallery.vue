@@ -1,5 +1,5 @@
 <template>
-  <PhoneWrapper app-name="Gallery" status-font-color="#FFFFFF" status-blend-mode="normal">
+  <PhoneWrapper app-name="Gallery">
     <!-- Full-screen photo view -->
     <Transition name="fullscreen">
       <div v-if="selectedPhoto" class="gallery-fullscreen" @click="closeFullScreen">

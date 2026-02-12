@@ -1,5 +1,5 @@
 <template>
-  <PhoneWrapper app-name="Camera" status-font-color="#FFFFFF" status-blend-mode="normal">
+  <PhoneWrapper app-name="Camera">
     <div class="camera-container">
       <!-- Viewfinder with lens feel -->
       <div class="camera-viewfinder" :class="orientation">
