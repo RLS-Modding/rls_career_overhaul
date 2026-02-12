@@ -399,7 +399,12 @@ local function onUpdate(dtReal, dtSim, dtRaw)
     rollEvents(economyData.vehicleMarket.activeEvents, VEHICLE_EVENTS)
     rollEvents(economyData.housingMarket.activeEvents, HOUSING_EVENTS)
 
-    -- 4. Auto-save
+    -- 4. Refresh fuel price displays
+    if freeroam_facilities_fuelPrice and freeroam_facilities_fuelPrice.onEconomyUpdated then
+      freeroam_facilities_fuelPrice.onEconomyUpdated()
+    end
+
+    -- 5. Auto-save
     saveEconomy()
   end
 end
