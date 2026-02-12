@@ -8,7 +8,7 @@ local PROXIMITY_BLOCK_DISTANCE = 50
 
 local state = {
   enabled = true,
-  timerSeconds = 1800,
+  timerSeconds = 60,
   elapsed = 0,
   rootFound = false,
   missingRootWarned = false,
@@ -815,6 +815,19 @@ local function reloadConfigAndRescan()
   state.enabled = state.config.enabled ~= false
   state.timerSeconds = math.max(0.1, tonumber(state.config.timerSeconds) or 1800)
 
+  local careerActive = false
+  if core_gamestate and core_gamestate.state and core_gamestate.state.state == "career" then
+    careerActive = true
+  end
+  if not careerActive and career_career and career_career.isActive then
+    local ok, active = pcall(function() return career_career.isActive() end)
+    careerActive = ok and active
+  end
+  if careerActive then
+    state.enabled = true
+    state.config.enabled = true
+  end
+
   if foundRoot then
     resolveInitialActiveOptions()
     applyAllGroups()
@@ -1034,6 +1047,7 @@ local function applyPendingQueue()
   core_gamestate.requestEnterLoadingScreen("dynamicRoutes")
   triggerAllWeighted()
   core_gamestate.requestExitLoadingScreen("dynamicRoutes")
+  guihooks.trigger("toastrMsg", {type = "info", msg = "Dynamic routes reloaded"})
 end
 
 local function onScreenFadeState(fadeState)
