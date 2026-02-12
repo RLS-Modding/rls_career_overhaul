@@ -1025,6 +1025,12 @@ local function onLevelLoaded()
   reloadConfigAndRescan()
 end
 
+local function onWorldReadyState(state)
+  if state == 2 then
+    reloadConfigAndRescan()
+  end
+end
+
 local function onReset()
   reloadConfigAndRescan()
 end
@@ -1087,6 +1093,7 @@ M.onReset = onReset
 M.onInit = onInit
 M.onExtensionLoaded = onExtensionLoaded
 M.onScreenFadeState = onScreenFadeState
+M.onWorldReadyState = onWorldReadyState
 M.onUpdate = onUpdate
 M.updateGFX = onUpdate
 
