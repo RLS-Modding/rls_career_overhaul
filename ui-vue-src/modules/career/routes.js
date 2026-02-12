@@ -31,6 +31,7 @@ import CarMeets from "./views/CarMeetsMenu.vue"
 import PurchaseGarage from "./views/PurchaseGarage.vue"
 import PurchaseBusiness from "./views/PurchaseBusiness.vue"
 import PhoneMain from "./views/PhoneMain.vue"
+import PhoneHomescreen from "./views/PhoneHomescreen.vue"
 import PhoneMinimap from "./views/PhoneMinimap.vue"
 import PhoneMarketplace from "./views/PhoneMarketplace.vue"
 import PhoneTaxi from "./views/PhoneTaxi.vue"
@@ -45,6 +46,8 @@ import PhoneBankRename from "./views/PhoneBankRename.vue"
 import PhoneTuningShop from "./views/PhoneTuningShop.vue"
 import PhoneQuarry from "./views/PhoneQuarry.vue"
 import PhoneBeamEats from "./views/PhoneBeamEats.vue"
+import PhoneRealEstate from "./views/PhoneRealEstate.vue"
+import PhoneGuide from "./views/PhoneGuide.vue"
 import PhoneCamera from "./views/PhoneCamera.vue"
 import PhoneGallery from "./views/PhoneGallery.vue"
 import LevelSwitch from "./views/LevelSwitch.vue"
@@ -372,7 +375,7 @@ export default [
       {
         path: "phone-main",
         name: "phone-main",
-        component: PhoneMain
+        component: PhoneHomescreen
       },
 
       {
@@ -453,6 +456,18 @@ export default [
         path: "phone-beam-eats",
         name: "phone-beam-eats",
         component: PhoneBeamEats
+      },
+
+      {
+        path: "phone-real-estate",
+        name: "phone-real-estate",
+        component: PhoneRealEstate
+      },
+      
+      {
+        path: "phone-guide",
+        name: "phone-guide",
+        component: PhoneGuide
       },
 
       {

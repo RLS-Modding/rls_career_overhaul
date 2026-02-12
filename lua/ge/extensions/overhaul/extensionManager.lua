@@ -30,6 +30,7 @@ end
 -- Configures unload behavior for overhaul runtime: sets several gameplay, career and editor extensions to manual unload and unloads extensions that must remain disabled while the overhaul is active.
 -- This ensures freeroam, recovery prompt, drag practice race, career core and the career save system are unloaded and that selectable subsystems (events, phone, repo, taxi, cab, loading, ambulance, bus, beamEats, challenge modes, economy adjuster, challenge seed encoder and the freeroam event editor) are left in manual-unload mode.
 local function loadExtensions()
+
     extensions.unload("freeroam_freeroam")
     extensions.unload("core_recoveryPrompt")
     extensions.unload("gameplay_drag_dragTypes_dragPracticeRace")
@@ -58,7 +59,33 @@ end
 -- This forces removal of core game context, freeroam/events, gameplay modules (phone, repo, taxi, cab, ambulance, bus, beamEats),
 -- career subsystems (career, save system, challenge modes, economy adjuster, challenge seed encoder), and overhaul modules
 -- (settings, maps, clear levels, add map changes). No value is returned.
+-- Remove the openPhone binding from saved bindings so the vanilla
+-- bindingsLegend doesn't crash after the mod is deactivated.
+local function removePhoneBinding()
+    pcall(function()
+        if not core_input_bindings or not core_input_bindings.bindings then return end
+        for _, device in ipairs(core_input_bindings.bindings) do
+            if device.contents and device.contents.bindings then
+                local bindings = device.contents.bindings
+                for i = #bindings, 1, -1 do
+                    if bindings[i].action == "openPhone" then
+                        table.remove(bindings, i)
+                    end
+                end
+                pcall(function()
+                    core_input_bindings.saveBindingsToDisk(device.contents)
+                end)
+            end
+        end
+        -- Reload actions so the engine drops the now-unmounted phone.json
+        if core_input_actions then
+            extensions.reload("core_input_actions")
+        end
+    end)
+end
+
 local function unloadAllExtensions()
+    removePhoneBinding()
     extensions.unload("core_gameContext")
     extensions.unload("gameplay_events_freeroamEvents")
     extensions.unload("career_career")

@@ -1,6 +1,6 @@
 local M = {}
 
-M.dependencies = {}
+M.dependencies = {'career_career', 'career_saveSystem'}
 
 local saveDir = "/career/rls_career"
 local saveFile = saveDir .. "/bank.json"

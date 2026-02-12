@@ -1,6 +1,10 @@
 local M = {}
 
-M.dependencies = {}
+M.dependencies = {
+  'career_career',
+  'career_saveSystem',
+  'core_jobsystem'
+}
 
 local function finalizePurchase(businessId, vehicleId, callback)
   if not businessId or not vehicleId then
