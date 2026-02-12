@@ -1,5 +1,5 @@
 <template>
-  <PhoneWrapper app-name="Events" status-font-color="#FFFFFF" status-blend-mode="normal">
+  <PhoneWrapper app-name="Events" status-font-color="#1f2328" status-blend-mode="normal">
     <div class="fre-app">
       <div v-if="!careerActive && loaded" class="empty-state">
         <p>Start a career to view events.</p>
@@ -84,7 +84,7 @@
             <div class="card-img">
               <img v-if="!imgFailed(ev.raceName)" :src="ev.thumbnail" alt="" @error="onImgError(ev.raceName)" />
               <div v-else class="card-img-ph">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(31,35,40,0.35)" stroke-width="1.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
                 <span>No preview</span>
               </div>
               <div class="card-img-fade"></div>
@@ -113,7 +113,7 @@
                   </span>
                 </div>
               </div>
-              <svg class="chevron" :class="{ open: expandedId === ev.raceName }" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              <svg class="chevron" :class="{ open: expandedId === ev.raceName }" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(31,35,40,0.45)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
             </div>
             <div class="card-expand" v-if="expandedId === ev.raceName" @click.stop>
               <div class="card-actions">
@@ -194,6 +194,7 @@
             @wheel.prevent="onMapWheel"
           >
             <svg class="map-layer terrain-layer"></svg>
+            <svg class="map-layer roads-layer"></svg>
             <svg class="map-layer vehicle-layer"></svg>
             <svg class="map-layer marker-layer" :viewBox="markerViewBox">
               <g v-for="item in clusteredMarkers" :key="'m-' + item.cluster[0].raceName"
@@ -238,7 +239,7 @@
                   <div class="map-slide-img">
                     <img v-if="!imgFailed(ev.raceName)" :src="ev.thumbnail" alt="" draggable="false" @error="onImgError(ev.raceName)" />
                     <div v-else class="card-img-ph small">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(31,35,40,0.35)" stroke-width="1.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
                     </div>
                     <div class="map-slide-img-fade"></div>
                     <div class="map-slide-badges">
@@ -600,6 +601,7 @@ function applyEffectiveViewBox() {
   const effective = `${cx - w / 2} ${cy - h / 2} ${w} ${h}`
   markerViewBox.value = effective
   if (minimapStore.svgLayers?.terrain) minimapStore.svgLayers.terrain.setAttribute('viewBox', effective)
+  if (minimapStore.svgLayers?.roads) minimapStore.svgLayers.roads.setAttribute('viewBox', effective)
   if (minimapStore.svgLayers?.vehicles) minimapStore.svgLayers.vehicles.setAttribute('viewBox', effective)
   if (minimapStore.svgLayers?.aux) minimapStore.svgLayers.aux.setAttribute('viewBox', effective)
 }
@@ -836,9 +838,17 @@ function updateCarouselWidth() {
 function initMap() {
   if (!mapContainer.value) return
   const terrainLayer = mapContainer.value.querySelector('.terrain-layer')
+  const roadsLayer = mapContainer.value.querySelector('.roads-layer')
   const vehicleLayer = mapContainer.value.querySelector('.vehicle-layer')
-  if (terrainLayer && vehicleLayer) {
-    terrainLayer.appendChild(minimapStore.svgLayers.terrain)
+  if (vehicleLayer) {
+    if (terrainLayer) {
+      if (!minimapStore.showTerrainImage) {
+        const images = Array.from(minimapStore.svgLayers.terrain.children).filter(child => child.tagName === 'image')
+        images.forEach(img => minimapStore.svgLayers.terrain.removeChild(img))
+      }
+      terrainLayer.appendChild(minimapStore.svgLayers.terrain)
+    }
+    if (roadsLayer) roadsLayer.appendChild(minimapStore.svgLayers.roads)
     vehicleLayer.appendChild(minimapStore.svgLayers.vehicles)
     updateContainerSize()
     applyEffectiveViewBox()
@@ -867,6 +877,7 @@ watch([viewMode, careerActive, loaded], async ([newViewMode], [oldViewMode]) => 
   if (viewMode.value !== 'map') {
     selectedEvent.value = null
     minimapStore.viewControlledBy = null
+    minimapStore.showTerrainImage = true
   } else {
     filterOpen.value = false
     sortOpen.value = false
@@ -874,6 +885,7 @@ watch([viewMode, careerActive, loaded], async ([newViewMode], [oldViewMode]) => 
       freBaseViewBox.value = buildWalkingZoomBaseViewBox()
     }
     minimapStore.viewControlledBy = 'freeroamEvents'
+    minimapStore.showTerrainImage = false
     if (oldViewMode !== 'map') {
       const nearest = getNearestEvent(filteredEvents.value)
       if (nearest) {
@@ -959,6 +971,7 @@ onMounted(async () => {
 onUnmounted(() => {
   stopMapFocusAnimation()
   minimapStore.viewControlledBy = null
+  minimapStore.showTerrainImage = true
   resizeObserver?.disconnect()
   resizeObserver = null
   carouselResizeObserver?.disconnect()
@@ -971,8 +984,8 @@ onUnmounted(() => {
 .fre-app {
   height: 100%;
   position: relative;
-  background: #111;
-  color: white;
+  background: #f6f4ef;
+  color: #1f2328;
   overflow: hidden;
   border-radius: 0 0 16px 16px;
 }
@@ -983,7 +996,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(255,255,255,0.4);
+  color: rgba(31,35,40,0.55);
   font-size: 14px;
   &.small { position: relative; inset: auto; font-size: 13px; padding: 40px 20px; flex: 0; }
 }
@@ -996,7 +1009,7 @@ onUnmounted(() => {
   z-index: 1;
   padding: 44px 10px 8px;
   border-radius: 0 0 24px 24px;
-  background: #111;
+  background: #f6f4ef;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -1004,7 +1017,7 @@ onUnmounted(() => {
 
 .view-toggle {
   display: flex;
-  background: #1a1a1a;
+  background: #e7e2d7;
   border-radius: 8px;
   padding: 2px;
   gap: 2px;
@@ -1020,13 +1033,13 @@ onUnmounted(() => {
     font-size: 12px;
     font-weight: 600;
     font-family: inherit;
-    color: rgba(255,255,255,0.45);
+    color: rgba(31,35,40,0.55);
     background: transparent;
     cursor: pointer;
     transition: all 0.15s ease;
     &.active {
-      background: #2a2a2a;
-      color: white;
+      background: #ffffff;
+      color: #1f2328;
     }
   }
 }
@@ -1040,7 +1053,7 @@ onUnmounted(() => {
 .toolbar-count {
   margin-left: auto;
   font-size: 10px;
-  color: rgba(255,255,255,0.4);
+  color: rgba(31,35,40,0.55);
 }
 
 .dropdown-wrap { position: relative; }
@@ -1051,9 +1064,9 @@ onUnmounted(() => {
   gap: 4px;
   padding: 5px 10px;
   border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: transparent;
-  color: rgba(255,255,255,0.7);
+  border: 1px solid rgba(31,35,40,0.16);
+  background: #ffffff;
+  color: rgba(31,35,40,0.8);
   font-size: 11px;
   font-weight: 600;
   font-family: inherit;
@@ -1081,17 +1094,17 @@ onUnmounted(() => {
   max-height: 70vh;
   overflow-y: auto;
   border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.12);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  border: 1px solid rgba(31,35,40,0.14);
+  box-shadow: 0 8px 24px rgba(31,35,40,0.12);
 }
 
 .filter-panel,
 .sort-panel {
   padding: 14px;
-  background: #1a1a1a;
+  background: #ffffff;
   border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.12);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  border: 1px solid rgba(31,35,40,0.14);
+  box-shadow: 0 8px 32px rgba(31,35,40,0.12);
 }
 
 .filter-panel {
@@ -1146,7 +1159,7 @@ onUnmounted(() => {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  border: 1.5px solid rgba(255,255,255,0.35);
+  border: 1.5px solid rgba(31,35,40,0.3);
   flex-shrink: 0;
   cursor: pointer;
   transition: border-color 0.15s ease;
@@ -1171,16 +1184,16 @@ onUnmounted(() => {
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  color: rgba(255,255,255,0.8);
+  color: rgba(31,35,40,0.8);
   cursor: pointer;
 }
 
 .filter-clear {
   padding: 6px 12px;
   border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.2);
-  background: transparent;
-  color: rgba(255,255,255,0.6);
+  border: 1px solid rgba(31,35,40,0.2);
+  background: #f7f5f0;
+  color: rgba(31,35,40,0.72);
   font-size: 11px;
   font-weight: 600;
   font-family: inherit;
@@ -1199,7 +1212,7 @@ onUnmounted(() => {
 
 .sort-label {
   font-size: 11px;
-  color: rgba(255,255,255,0.5);
+  color: rgba(31,35,40,0.6);
 }
 
 .sort-options {
@@ -1211,9 +1224,9 @@ onUnmounted(() => {
 .sort-opt {
   padding: 5px 10px;
   border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: transparent;
-  color: rgba(255,255,255,0.7);
+  border: 1px solid rgba(31,35,40,0.14);
+  background: #ffffff;
+  color: rgba(31,35,40,0.82);
   font-size: 11px;
   font-weight: 600;
   font-family: inherit;
@@ -1237,19 +1250,19 @@ onUnmounted(() => {
   gap: 8px;
   &::-webkit-scrollbar { width: 3px; }
   &::-webkit-scrollbar-track { background: transparent; }
-  &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+  &::-webkit-scrollbar-thumb { background: rgba(31,35,40,0.22); border-radius: 2px; }
 }
 
 .card {
   flex-shrink: 0;
   min-height: 200px;
-  background: #1a1a1a;
+  background: #ffffff;
   border-radius: 16px;
   overflow: hidden;
   cursor: pointer;
-  border: 1px solid rgba(255,255,255,0.05);
+  border: 1px solid rgba(31,35,40,0.12);
   transition: border-color 0.15s ease;
-  &:active { background: #1e1e1e; }
+  &:active { background: #f2efe8; }
 }
 
 .card-img {
@@ -1257,7 +1270,7 @@ onUnmounted(() => {
   width: 100%;
   height: 160px;
   flex-shrink: 0;
-  background: #0d0d0d;
+  background: #ece7dc;
   overflow: hidden;
   img {
     width: 100%;
@@ -1275,10 +1288,10 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  background: linear-gradient(135deg, #1a1a1a, #0d0d0d);
+  background: linear-gradient(135deg, #f3efe6, #e7dfd0);
   span {
     font-size: 10px;
-    color: rgba(255,255,255,0.18);
+    color: rgba(31,35,40,0.48);
     letter-spacing: 0.5px;
     text-transform: uppercase;
   }
@@ -1291,7 +1304,7 @@ onUnmounted(() => {
 .card-img-fade {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 50%);
+  background: linear-gradient(to top, rgba(31,35,40,0.38) 0%, rgba(31,35,40,0.08) 52%, transparent 75%);
   pointer-events: none;
 }
 
@@ -1341,6 +1354,7 @@ onUnmounted(() => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: #1f2328;
 }
 
 .card-meta {
@@ -1357,10 +1371,10 @@ onUnmounted(() => {
   align-items: center;
   gap: 4px;
   font-size: 11px;
-  color: rgba(255,255,255,0.45);
+  color: rgba(31,35,40,0.65);
   min-width: 0;
   &.no-time {
-    color: rgba(255,255,255,0.25);
+    color: rgba(31,35,40,0.45);
     font-style: italic;
   }
 }
@@ -1381,7 +1395,7 @@ onUnmounted(() => {
 .card-actions {
   display: flex;
   padding: 10px 16px 12px;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(31,35,40,0.12);
   width: 100%;
   box-sizing: border-box;
 }
@@ -1398,7 +1412,7 @@ onUnmounted(() => {
   width: 100%;
   box-sizing: border-box;
   & + .detail-section {
-    border-top: 1px solid rgba(255,255,255,0.06);
+    border-top: 1px solid rgba(31,35,40,0.12);
   }
 }
 
@@ -1407,7 +1421,7 @@ onUnmounted(() => {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: rgba(255,255,255,0.35);
+  color: rgba(31,35,40,0.55);
   margin-bottom: 8px;
 }
 
@@ -1425,7 +1439,7 @@ onUnmounted(() => {
   align-items: flex-start;
   gap: 2px;
   padding: 8px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
+  border-bottom: 1px solid rgba(31,35,40,0.1);
   min-width: 0;
 }
 
@@ -1433,7 +1447,7 @@ onUnmounted(() => {
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.3px;
-  color: rgba(255,255,255,0.4);
+  color: rgba(31,35,40,0.62);
 }
 
 .detail-grid .detail-value {
@@ -1452,13 +1466,13 @@ onUnmounted(() => {
 
 .detail-label {
   font-size: 12px;
-  color: rgba(255,255,255,0.6);
+  color: rgba(31,35,40,0.72);
 }
 
 .detail-value {
   font-size: 12px;
   font-weight: 600;
-  color: #fff;
+  color: #1f2328;
 }
 
 .records-list {
@@ -1473,13 +1487,13 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 7px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
+  border-bottom: 1px solid rgba(31,35,40,0.1);
   &:last-child { border-bottom: none; }
 }
 
 .record-name {
   font-size: 12px;
-  color: rgba(255,255,255,0.6);
+  color: rgba(31,35,40,0.74);
   flex: 1;
   white-space: nowrap;
   overflow: hidden;
@@ -1490,7 +1504,7 @@ onUnmounted(() => {
 .record-time {
   font-size: 12px;
   font-weight: 600;
-  color: rgba(255,255,255,0.85);
+  color: rgba(31,35,40,0.9);
   white-space: nowrap;
 }
 
@@ -1520,7 +1534,7 @@ onUnmounted(() => {
 .map-layers {
   position: absolute;
   inset: 0;
-  background: rgba(30,30,30,0.95);
+  background: #ffffff;
   touch-action: none;
 }
 
@@ -1599,11 +1613,11 @@ onUnmounted(() => {
 
 .map-slide {
   flex-shrink: 0;
-  background: rgba(24, 24, 24, 0.96);
+  background: rgba(255, 255, 255, 0.96);
   border-radius: 18px;
   overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.08);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.45);
+  border: 1px solid rgba(31,35,40,0.14);
+  box-shadow: 0 8px 20px rgba(31,35,40,0.18);
   pointer-events: auto;
   &.selected {
     border-color: rgba(230,57,70,0.6);
@@ -1615,7 +1629,7 @@ onUnmounted(() => {
   position: relative;
   width: 100%;
   height: 118px;
-  background: #0d0d0d;
+  background: #ece7dc;
   overflow: hidden;
   img {
     width: 100%;
@@ -1627,7 +1641,7 @@ onUnmounted(() => {
 .map-slide-img-fade {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 50%);
+  background: linear-gradient(to top, rgba(31,35,40,0.38) 0%, rgba(31,35,40,0.08) 52%, transparent 75%);
   pointer-events: none;
 }
 
@@ -1655,6 +1669,7 @@ onUnmounted(() => {
 .map-slide-name {
   font-size: 14px;
   font-weight: 600;
+  color: #1f2328;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1677,9 +1692,9 @@ onUnmounted(() => {
     align-items: center;
     gap: 3px;
     font-size: 11px;
-    color: rgba(255,255,255,0.4);
+    color: rgba(31,35,40,0.62);
     &.no-time {
-      color: rgba(255,255,255,0.25);
+      color: rgba(31,35,40,0.42);
       font-style: italic;
     }
   }
