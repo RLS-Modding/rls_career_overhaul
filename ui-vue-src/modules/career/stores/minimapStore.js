@@ -12,6 +12,7 @@ export const useMinimapStore = defineStore("minimap", () => {
     const isFreeCam = ref(false)
     const playerPos = ref({ x: 0, y: 0 })
     const playerId = ref(0)
+    const viewControlledBy = ref(null)
 
     const svgLayers = ref({
         terrain: document.createElementNS("http://www.w3.org/2000/svg", "svg"),
@@ -20,7 +21,11 @@ export const useMinimapStore = defineStore("minimap", () => {
     })
 
     function processMapData(data) {
-        if (data.terrainTiles) {
+        while (svgLayers.value.terrain.firstChild) {
+            svgLayers.value.terrain.removeChild(svgLayers.value.terrain.firstChild);
+        }
+        nodes.value = data.nodes || {};
+        if (Array.isArray(data.terrainTiles) && data.terrainTiles.length > 0) {
             data.terrainTiles.forEach(tile => {
                 const image = document.createElementNS(svgLayers.value.terrain.namespaceURI, "image");
                 image.setAttribute("x", tile.offset[0]);
@@ -35,9 +40,7 @@ export const useMinimapStore = defineStore("minimap", () => {
                 svgLayers.value.terrain.appendChild(image);
             });
         }
-
-        if (data.nodes) {
-            nodes.value = data.nodes;
+        if (data.nodes && Object.keys(data.nodes).length > 0) {
             drawRoadNetwork();
         }
     }
@@ -115,9 +118,11 @@ export const useMinimapStore = defineStore("minimap", () => {
         }
 
         viewBox.value = parts.join(' ');
-        [svgLayers.value.terrain, svgLayers.value.vehicles, svgLayers.value.aux].forEach(layer => {
-            layer.setAttribute('viewBox', viewBox.value);
-        });
+        if (!viewControlledBy.value) {
+            [svgLayers.value.terrain, svgLayers.value.vehicles, svgLayers.value.aux].forEach(layer => {
+                layer.setAttribute('viewBox', viewBox.value);
+            });
+        }
     }
 
     function updateVehicleMarkers(objects) {
@@ -160,6 +165,7 @@ export const useMinimapStore = defineStore("minimap", () => {
     return {
         svgLayers,
         viewBox,
+        viewControlledBy,
         zoomFactor,
         processMapData,
         processMapUpdate,

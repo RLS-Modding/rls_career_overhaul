@@ -345,6 +345,23 @@ local function computerIdToGarageId(computerId)
   return nil
 end
 
+local function getGaragePurchasePrice(garageId)
+  if not garageId then return nil end
+  local garage = freeroam_facilities.getFacility("garage", garageId)
+  if not garage then return nil end
+  if career_modules_hardcore.isHardcoreMode() then
+    return garage.defaultPrice
+  else
+    if career_challengeModes and career_challengeModes.isChallengeActive() then
+      local activeChallenge = career_challengeModes.getActiveChallenge()
+      if activeChallenge and activeChallenge.startingGarages then
+        return garage.defaultPrice
+      end
+    end
+    return garage.starterGarage and 0 or garage.defaultPrice
+  end
+end
+
 local function getGaragePrice(garageId, computerId)
   if not garageId and not computerId then
     return nil
@@ -478,6 +495,7 @@ M.canPay = canPay
 M.buyGarage = buyGarage
 M.cancelGaragePurchase = cancelGaragePurchase
 M.getGaragePrice = getGaragePrice
+M.getGaragePurchasePrice = getGaragePurchasePrice
 M.canSellGarage = canSellGarage
 M.sellGarage = sellGarage
 

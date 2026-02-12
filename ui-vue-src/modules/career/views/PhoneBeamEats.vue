@@ -1,5 +1,5 @@
 <template>
-    <PhoneWrapper app-name="BeamEats" status-font-color="#FFFFFF" status-blend-mode="normal">
+    <PhoneWrapper app-name="BeamEats">
         <div class="beameats-container">
             <!-- Header / Status -->
             <div class="app-header">

@@ -1,5 +1,5 @@
 <template>
-  <PhoneWrapper app-name="Prepay Loan" status-font-color="#FFFFFF" status-blend-mode="">
+  <PhoneWrapper app-name="Prepay Loan">
     <div class="phone-loan-details">
       <div v-if="!loan" class="none">Loading…</div>
       <div v-else class="content">

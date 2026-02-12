@@ -18,6 +18,19 @@
           "dependencies": []
         },
         {
+          "id": "blacklist",
+          "title": "Blacklist",
+          "description": "Choose vehicles to exclude from job generation",
+          "detailedDescription": "Filter out unwanted vehicles from your job pool.\n\n**Per Level**\n- Select specific vehicles to exclude from job listings\n- Job generation percentage reduced based on blacklisted vehicles\n- Example: Blacklisting 5 of 10 vehicles reduces generation to 50%",
+          "cost": {
+            "base": 10000,
+            "increment": 5000
+          },
+          "xpCost": 10,
+          "maxLevel": 5,
+          "dependencies": ["shop-app"]
+        },
+        {
           "id": "kit-storage",
           "title": "Kit Storage",
           "description": "+2 savable tuning kits",
@@ -39,6 +52,19 @@
           "xpCost": 10,
           "maxLevel": 1,
           "dependencies": ["shop-app"]
+        },
+        {
+          "id": "notified-jobs",
+          "title": "Notification List",
+          "description": "Get notified when specific vehicles or models become available",
+          "detailedDescription": "Stay alert for your preferred jobs.\n\n**Effect**\n- Receive notifications when a specific vehicle or model appears as an available job\n- Optional auto-accept feature for specific models\n- Auto-accepted jobs must be completed or abandoned",
+          "cost": {
+            "base": 10000,
+            "increment": 5000
+          },
+          "xpCost": 10,
+          "maxLevel": 5,
+          "dependencies": ["blacklist"]
         },
         {
           "id": "thatll-buff-out",
@@ -77,7 +103,7 @@
           },
           "xpCost": 10,
           "maxLevel": 5,
-          "dependencies": ["quick-installs", "thatll-buff-out"]
+          "dependencies": ["quick-installs", "thatll-buff-out", "notified-jobs"]
         },
         {
           "id": "brand-recognition",
@@ -256,6 +282,19 @@
           "dependencies": ["manager"]
         },
         {
+          "id": "manager-blacklist",
+          "title": "Manager Blacklist",
+          "description": "Prevent manager from auto-assigning specific jobs to techs",
+          "detailedDescription": "Reserve certain jobs for yourself.\n\n**Per Level**\n- Block manager from taking and assigning specific jobs to techs\n- Keep preferred vehicles or models for manual handling\n- Manager will skip blacklisted jobs and assign others instead",
+          "cost": {
+            "base": 25000,
+            "increment": 25000
+          },
+          "xpCost": 10,
+          "maxLevel": 5,
+          "dependencies": ["manager"]
+        },
+        {
           "id": "faster-techs-ii",
           "title": "Faster Techs II",
           "description": "Tech build time 5% faster",
@@ -266,7 +305,7 @@
           },
           "xpCost": 10,
           "maxLevel": 7,
-          "dependencies": ["manager-speed"]
+          "dependencies": ["manager-speed", "manager-blacklist"]
         },
         {
           "id": "smart-techs",
@@ -279,7 +318,7 @@
           },
           "xpCost": 10,
           "maxLevel": 5,
-          "dependencies": ["manager-speed"]
+          "dependencies": ["manager-speed", "manager-blacklist"]
         },
         {
           "id": "skilled-techs",
@@ -292,7 +331,7 @@
           },
           "xpCost": 10,
           "maxLevel": 2,
-          "dependencies": ["manager-speed"]
+          "dependencies": ["manager-speed", "manager-blacklist"]
         },
         {
           "id": "general-manager",

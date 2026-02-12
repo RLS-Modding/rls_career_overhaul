@@ -1371,6 +1371,12 @@ export default {
     stopTechFromJob: (businessId, techId) => [String, Integer],
     setManagerPaused: (businessId, paused) => [String, Boolean],
     getTechsForBusiness: (businessId) => String,
+    getBlacklistData: (businessId) => String,
+    getNotificationListData: (businessId) => String,
+    getManagerBlacklistData: (businessId) => String,
+    updateBlacklist: (businessId, modelKeys) => [String, Array],
+    updateNotificationList: (businessId, entries) => [String, Array],
+    updateManagerBlacklist: (businessId, modelKeys) => [String, Array],
   },
 
   career_modules_business_businessPartCustomization: {
@@ -1441,6 +1447,22 @@ export default {
     requestFacilityWorkState: () => {},
     startFacilityWork: () => {},
     endFacilityWork: () => {}
+  },
+
+  ui_phone_layout: {
+    requestLayout: () => {},
+    updateLayout: layoutData => Any,
+    getCareerActive: () => {},
+  },
+
+  ui_phone_realEstate: {
+    requestGarageListings: () => {},
+    setRouteToGarage: garageId => String,
+    towToGarage: garageId => String,
+  },
+
+  ui_phone_time: {
+    requestTime: () => {},
   },
 
   overhaul_maps: {

@@ -1,5 +1,5 @@
 <template>
-  <PhoneWrapper app-name="Tuning Shop" status-font-color="#FFFFFF" status-blend-mode="">
+  <PhoneWrapper app-name="Tuning Shop">
     <div class="phone-tuning-shop">
       <div v-if="loading" class="loading-state">
         <div class="loading-spinner"></div>

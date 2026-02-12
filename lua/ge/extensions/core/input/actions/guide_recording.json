@@ -1,0 +1,10 @@
+{
+    "guide_recording_action": {
+        "cat": "gameplay",
+        "order": 999,
+        "ctx": "tlua",
+        "onDown": "if extensions.career_modules_guide then extensions.career_modules_guide.onRecordingActionDown() end",
+        "title": "Guide Recording",
+        "desc": "Temporary action for binding recording"
+    }
+}

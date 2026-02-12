@@ -1,5 +1,5 @@
 <template>
-    <PhoneWrapper app-name="Repo" status-font-color="#FFFFFF" status-blend-mode="normal">
+    <PhoneWrapper app-name="Repo">
         <div class="repo-container" ref="container" @click="handleBackgroundClick">
             <!-- Minimap Background -->
             <div class="map-container">
