@@ -8,7 +8,7 @@ local PROXIMITY_BLOCK_DISTANCE = 50
 
 local state = {
   enabled = true,
-  timerSeconds = 60,
+  timerSeconds = 1800,
   elapsed = 0,
   rootFound = false,
   missingRootWarned = false,
