@@ -358,7 +358,13 @@ local function getGaragePurchasePrice(garageId)
         return garage.defaultPrice
       end
     end
-    return garage.starterGarage and 0 or garage.defaultPrice
+    if garage.starterGarage then return 0 end
+    local price = garage.defaultPrice
+    -- Apply housing market index if available
+    if career_modules_globalEconomy and career_modules_globalEconomy.getHousingMarketIndex then
+      price = math.floor(price * career_modules_globalEconomy.getHousingMarketIndex() + 0.5)
+    end
+    return price
   end
 end
 
@@ -391,8 +397,12 @@ local function getGaragePrice(garageId, computerId)
       end
       
       local price = garage.starterGarage and 0 or garage.defaultPrice
+      -- Apply housing market index if available
+      if career_modules_globalEconomy and career_modules_globalEconomy.getHousingMarketIndex then
+        price = price * career_modules_globalEconomy.getHousingMarketIndex()
+      end
       log("D", "garageManager", "getGaragePrice: Garage " .. garageId .. " price: " .. price .. " (starterGarage: " .. tostring(garage.starterGarage) .. ")")
-      return tonumber(price) * 0.75
+      return math.floor(tonumber(price) * 0.75 + 0.5)
     end
   end
   return nil
