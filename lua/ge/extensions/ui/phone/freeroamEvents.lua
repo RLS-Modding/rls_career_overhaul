@@ -1,8 +1,8 @@
 local M = {}
-M.dependencies = { 'career_modules_inventory' }
+M.dependencies = { 'career_modules_inventory', 'gameplay_events_freeroamEvents' }
 
+local logTag = 'ui_phone_freeroamEvents'
 local leaderboardManager = require('gameplay/events/freeroam/leaderboardManager')
-local utils = require('gameplay/events/freeroam/utils')
 
 local function getCurrentLevel()
   if getCurrentLevelIdentifier and getCurrentLevelIdentifier() then
@@ -12,6 +12,23 @@ local function getCurrentLevel()
     return core_levels.getLevelName(getMissionFilename())
   end
   return nil
+end
+
+local function loadRaceData()
+  local level = getCurrentLevel()
+  if not level or level == '' then
+    log('D', logTag, "loadRaceData: no level identifier")
+    return {}
+  end
+  local filePath = "levels/" .. level .. "/race_data.json"
+  local raceData = jsonReadFile(filePath)
+  local fromFile = raceData ~= nil
+  raceData = raceData or { races = {} }
+  local races = raceData.races or {}
+  local count = 0
+  for _ in pairs(races) do count = count + 1 end
+  log('D', logTag, string.format("loadRaceData: path=%s, fileRead=%s, races=%d", filePath, tostring(fromFile), count))
+  return races
 end
 
 local function getPlayerPos()
@@ -42,19 +59,25 @@ local function getVehicleDisplayName(vehData)
 end
 
 local function getEventsData()
+  log('D', logTag, "getEventsData: called")
   if not isCareerActive() then
+    log('D', logTag, "getEventsData: career not active, returning empty")
     guihooks.trigger('phoneFreeroamEventsData', { events = {}, careerActive = false })
     return
   end
 
   local levelId = getCurrentLevel()
   if not levelId or levelId == '' then
+    local missionFilename = getMissionFilename and getMissionFilename() or ''
+    log('D', logTag, string.format("getEventsData: no levelId (mission=%s)", tostring(missionFilename)))
     guihooks.trigger('phoneFreeroamEventsData', { events = {}, careerActive = true, levelId = '' })
     return
   end
+  log('D', logTag, string.format("getEventsData: levelId=%s", levelId))
 
-  local races = utils.loadRaceData()
+  local races = loadRaceData()
   if not races or not next(races) then
+    log('D', logTag, "getEventsData: no races found")
     guihooks.trigger('phoneFreeroamEventsData', { events = {}, careerActive = true, levelId = levelId })
     return
   end
@@ -155,6 +178,9 @@ local function getEventsData()
     }
   end
 
+  local eventCount = 0
+  for _ in pairs(events) do eventCount = eventCount + 1 end
+  log('D', logTag, string.format("getEventsData: sending %d events", eventCount))
   guihooks.trigger('phoneFreeroamEventsData', {
     events = events,
     careerActive = true,

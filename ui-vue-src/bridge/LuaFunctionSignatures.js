@@ -1455,6 +1455,11 @@ export default {
     towToGarage: garageId => String,
   },
 
+  ui_phone_freeroamEvents: {
+    getEventsData: () => {},
+    navigateToEvent: raceName => String,
+  },
+
   ui_phone_time: {
     requestTime: () => {},
   },
