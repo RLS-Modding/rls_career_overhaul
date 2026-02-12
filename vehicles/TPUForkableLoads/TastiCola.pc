@@ -4,7 +4,7 @@
 },
 "parts":{
   "TPUPalletLoadType":"TPUUSPallet",
-  "TPUUSPalletLoad":"TPUUSPalletLoad_TastiCola"
+  "TPUUSPalletLoad":"TPUUSPalletLoad_TastiCola",
   "paint_design":"skin_cola"
 },
 "model":"TPUForkableLoads",

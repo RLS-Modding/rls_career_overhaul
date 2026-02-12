@@ -1832,9 +1832,9 @@
     "information":{
         "authors":"BeamNG",
         "name":"TastiCola Livery",
-        "value":50,
+        "value":50
     },
     "slotType" : "paint_design",
-    "globalSkin" : "cola",
+    "globalSkin" : "cola"
 },
 }

@@ -15,7 +15,6 @@ local utils = (function()
 end)()
 
 local ZONE_LENIENCY_M = 3
-local PARTIAL_CREDIT_FACTOR = 0.5
 
 -- Trigger naming (level editor; no start trigger - started from phone)
 local DROP_TRIGGER_PREFIX = "facilityWork_drop"
@@ -38,12 +37,12 @@ end
 -- Safe quat from trigger getRotation() (engine may return table or userdata)
 local function triggerQuat(trigger)
     local rot = trigger:getRotation()
-    if not rot then return quat(1, 0, 0, 0) end
+    if not rot then return quat(0, 0, 0, 1) end
     if type(rot) == "table" then
-        local x = rot.x or rot[1] or 1
+        local x = rot.x or rot[1] or 0
         local y = rot.y or rot[2] or 0
         local z = rot.z or rot[3] or 0
-        local w = rot.w or rot[4] or 0
+        local w = rot.w or rot[4] or 1
         return quat(x, y, z, w)
     end
     return quat(rot)
@@ -297,18 +296,6 @@ local function resolveDropTriggers(triggerNames)
     return out
 end
 
--- Legacy: fill global dropTriggersByName from DROP_TRIGGER_NAMES (used when no facCfg.triggers)
-local function collectDropTriggers()
-    dropTriggersByName = {}
-    for _, name in ipairs(DROP_TRIGGER_NAMES) do
-        local obj = scenetree.findObject(name)
-        if obj and obj.getId then
-            dropTriggersByName[name] = obj
-        end
-    end
-    return dropTriggersByName
-end
-
 -- Create a corner marker TSStatic for drop-zone visualization.
 local function createCornerMarker(markerName)
     local marker = createObject('TSStatic')
@@ -412,18 +399,6 @@ local function showDropMarkers(trigger)
         marker:setField('instanceColor', 0, "0.6 0.9 0.23 1")
         table.insert(dropMarkerObjects, marker)
     end
-end
-
--- Zone band: "full", "partial", "none"
-local function getPropZoneBand(propPos, dropTrigger)
-    if isPointInsideTriggerBox(propPos, dropTrigger) then
-        return "full"
-    end
-    local dist = distanceToTriggerBox(propPos, dropTrigger)
-    if dist <= ZONE_LENIENCY_M then
-        return "partial"
-    end
-    return "none"
 end
 
 local function setTasklistOnDuty()
@@ -698,10 +673,7 @@ local function doStartFacilityWork()
     
     -- If no valid selection, pick the first available facility
     if not facilityId or not facilityConfigs[facilityId] then
-        for fid in pairs(facilityConfigs) do
-            facilityId = fid
-            break
-        end
+        facilityId = next(facilityConfigs)
     end
     if not facilityId then
         if utils and utils.displayMessage then
@@ -776,10 +748,6 @@ local function doStartFacilityWork()
     
     if vehObj then
         currentForkliftId = vehObj:getID()
-        -- Apply paint if specified?
-        if vehInfo.color then
-            -- vehObj:setColor(parseColor(vehInfo.color))
-        end
     else
         if utils and utils.displayMessage then
             utils.displayMessage("Facility work error: failed to spawn forklift.", 5)
@@ -838,11 +806,11 @@ local function onBeamNGTrigger(data)
     end
 end
 
-local function onVehicleSwitched(oldId, newId)
+local function onVehicleSwitched(_oldId, newId)
     if not career_career or not career_career.isActive() then return end
     
     -- DISABLED: Do not end shift on vehicle exit. Player must use phone to end shift.
-    -- if currentForkliftId and oldId == currentForkliftId then
+    -- if currentForkliftId and _oldId == currentForkliftId then
     --    onForkliftExit()
     --    return
     -- end

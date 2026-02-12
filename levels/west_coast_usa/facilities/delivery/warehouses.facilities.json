@@ -22,14 +22,6 @@
             "vehLargeTruck"],
         },
         {
-          "psName": "forklift_loaner",
-          "isInspectSpot": false,
-          "logisticTypesProvided": [],
-          "logisticTypesReceived": [],
-        "loanerTrailerPriority": 0,
-		    "loanerNonTrailerPriority": 1
-        },
-        {
           "psName": "industrialWarehouse_parkingB",
           "isInspectSpot": true,
           "logisticTypesProvided": [],

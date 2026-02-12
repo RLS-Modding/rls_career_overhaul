@@ -4,7 +4,7 @@
 },
 "parts":{
   "TPUPalletLoadType":"TPUStackStickLoad",
-  "TPUStackStickLoad":"TPUStackSticklargeLumber"
+  "TPUStackStickLoad":"TPUStackStickLargeLumber"
 },
 "model":"TPUForkableLoads",
 "colors":[

@@ -143,12 +143,16 @@ const formatName = (str) => {
     return str.replace(/([A-Z])/g, ' $1').trim()
 }
 
+// Escape for use inside a double-quoted Lua string (prevents injection)
+const escapeLuaString = (s) => String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+
 // Actions
 const selectFacility = (id) => {
     selectedFacilityId.value = id
-    // Use raw engineLua to bypass bridge proxy cache
+    // Use raw engineLua to bypass bridge proxy cache; escape id to prevent Lua injection
     if (id) {
-        window.bngApi.engineLua(`gameplay_facilityWork.selectFacility("${id}")`)
+        const safeId = escapeLuaString(id)
+        window.bngApi.engineLua(`gameplay_facilityWork.selectFacility("${safeId}")`)
     } else {
         window.bngApi.engineLua(`gameplay_facilityWork.selectFacility(nil)`)
     }
@@ -178,7 +182,7 @@ const startShift = async () => {
 
 const endShift = async () => {
     try {
-        lua.gameplay_facilityWork.endFacilityWork()
+        await lua.gameplay_facilityWork.endFacilityWork()
         await lua.gameplay_facilityWork.requestFacilityWorkState()
     } catch (e) {
         console.error("Facility Work Error:", e)

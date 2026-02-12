@@ -2079,22 +2079,7 @@
     "name": "Belasco City Warehouse",
     "description": "A large warehouse near the harbour area of belasco city.",
     "icon": "semiTruckUS",
-    "loanableVehicles": [
-    {
-      "model": "TPUMedForklift",
-      "config": "FL45D Simplex",
-      "reputationLvl": 0,
-      "deliveryLvl": 0,
-      "mileages": {
-        "-1": 804672000,
-        "0": 321868800,
-        "1": 160934400,
-        "2": 160934400,
-        "3": 80467200,
-        "4": 80467200,
-        "5": 40233600}
-      }
-     ]
+    "loanableVehicles": []
     "reputationLevels": [
       {},
       {},

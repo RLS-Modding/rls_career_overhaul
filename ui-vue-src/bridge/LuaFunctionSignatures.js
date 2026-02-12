@@ -1444,6 +1444,8 @@ export default {
   },
 
   gameplay_facilityWork: {
+    selectFacility: (id) => {},
+    setBatchSize: (size) => {},
     requestFacilityWorkState: () => {},
     startFacilityWork: () => {},
     endFacilityWork: () => {}
