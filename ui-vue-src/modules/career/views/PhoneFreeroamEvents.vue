@@ -526,7 +526,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  // Extension cleanup handled by phone system
+  // Event listeners cleaned up automatically when component is destroyed
 })
 </script>
 
