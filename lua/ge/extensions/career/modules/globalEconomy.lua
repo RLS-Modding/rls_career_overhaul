@@ -217,6 +217,8 @@ local function hasActiveEvent(events, eventId)
   return false
 end
 
+local generateEventArticle -- forward declaration
+
 local function rollEvents(targetEvents, eventDefs)
   for _, def in ipairs(eventDefs) do
     if not hasActiveEvent(targetEvents, def.id) and math.random() < def.probability then
@@ -343,7 +345,7 @@ local function generateThresholdArticles()
   end
 end
 
-local function generateEventArticle(eventId)
+generateEventArticle = function(eventId)
   local article = EVENT_ARTICLES[eventId]
   if article then
     addArticle(article.headline, article.body, article.sector)
