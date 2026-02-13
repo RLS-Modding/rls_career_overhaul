@@ -34,10 +34,15 @@ local SUB_MARKET_DEFAULTS = {
   vehicleMarket = { sensitivity = 0.8, lagDays = 3,  noiseRange = 0.02 },
 }
 
+-- History & News
+local MAX_HISTORY = 10
+local MAX_ARTICLES = 20
+
 -- Runtime state
 local economyData = nil
 local accumulatedSimTime = 0
 local timeSinceLastUpdate = 0
+local previousIndices = nil  -- snapshot of indices before tick for change detection
 
 -- ── Helpers ──
 
@@ -221,17 +226,155 @@ local function rollEvents(targetEvents, eventDefs)
         modifier = def.modifier,
         durationSim = durationDays * SIM_SECONDS_PER_GAME_DAY,
       })
-      -- Phone notification
-      if guihooks and guihooks.trigger then
-        local displayName = EVENT_DISPLAY_NAMES[def.id] or def.id:gsub("_", " ")
-        guihooks.trigger("toastrMsg", {
-          type = def.modifier > 0 and "info" or "warning",
-          title = "Economy News",
-          msg = displayName,
-        })
-      end
+      -- Generate news article for this event
+      generateEventArticle(def.id)
     end
   end
+end
+
+-- ── History Tracking ──
+
+local function recordHistory()
+  if not economyData then return end
+  if not economyData.history then economyData.history = { global = {}, jobs = {}, housing = {}, vehicles = {} } end
+  local h = economyData.history
+  table.insert(h.global, economyData.index)
+  table.insert(h.jobs, economyData.jobMarket.index)
+  table.insert(h.housing, economyData.housingMarket.index)
+  table.insert(h.vehicles, economyData.vehicleMarket.index)
+  -- Trim to MAX_HISTORY
+  for _, key in ipairs({"global", "jobs", "housing", "vehicles"}) do
+    while #h[key] > MAX_HISTORY do table.remove(h[key], 1) end
+  end
+end
+
+-- ── News Article Generation ──
+
+local PHASE_TRANSITION_ARTICLES = {
+  growth = {
+    { headline = "Economy Showing Signs of Recovery", body = "Market conditions are improving across the board. Businesses are cautiously optimistic as spending picks up.", sector = "global" },
+    { headline = "Growth Returns to Local Economy", body = "After a period of stagnation, economic activity is picking up again. Expect gradual improvements in wages and job availability.", sector = "global" },
+  },
+  peak = {
+    { headline = "Economy Reaches New Heights", body = "The local economy is booming. Jobs are plentiful, businesses are thriving, and consumer confidence is at an all-time high.", sector = "global" },
+    { headline = "Markets Hit Peak Performance", body = "Economic indicators suggest we're at the top of the cycle. Enjoy the good times while they last.", sector = "global" },
+  },
+  decline = {
+    { headline = "Economic Outlook Turns Cautious", body = "Growth is slowing as the economy enters a cooling period. Some businesses may tighten their belts in the coming weeks.", sector = "global" },
+    { headline = "Markets Begin to Cool Off", body = "After a strong run, the economy is showing signs of slowing down. Prices may become more favorable for buyers.", sector = "global" },
+  },
+  trough = {
+    { headline = "Economy Hits a Rough Patch", body = "Times are tough. Jobs are harder to find and pay rates have dropped. Budget carefully until conditions improve.", sector = "global" },
+    { headline = "Economic Downturn Deepens", body = "The economy continues to struggle. Look for bargains on vehicles and property while prices are low.", sector = "global" },
+  },
+}
+
+local BOOM_ARTICLES = {
+  { headline = "Job Market on Fire", body = "Employers are hiring again as economic conditions improve. Expect better pay for delivery and transport work.", sector = "jobs" },
+  { headline = "Property Values Soar", body = "A strong economy has driven housing prices to new highs. Homeowners are sitting pretty, but buyers may want to wait.", sector = "housing" },
+  { headline = "Vehicle Demand Surges", body = "A hot economy means car prices are climbing. If you're looking to sell, now's the time.", sector = "vehicles" },
+  { headline = "Fuel Costs Surge", body = "Rising demand and economic growth have pushed fuel prices higher across all stations.", sector = "global" },
+}
+
+local RECESSION_ARTICLES = {
+  { headline = "Job Market Shows Signs of Strain", body = "Fewer jobs are available and wages are down. Consider diversifying your income sources.", sector = "jobs" },
+  { headline = "Property Prices Drop", body = "A weak economy has pushed housing prices down. It might be a good time to invest in real estate.", sector = "housing" },
+  { headline = "Vehicle Prices Plummet", body = "A sluggish economy has driven car prices to new lows. Now might be the time to buy.", sector = "vehicles" },
+  { headline = "Fuel Prices Ease", body = "Reduced economic activity has brought fuel costs down. Enjoy cheaper fill-ups while they last.", sector = "global" },
+}
+
+local EVENT_ARTICLES = {
+  economic_stimulus  = { headline = "Government Announces Economic Stimulus", body = "New stimulus measures are expected to boost spending and help local businesses recover.", sector = "global" },
+  recession_warning  = { headline = "Economists Issue Recession Warning", body = "Analysts are concerned about a potential downturn. Consider saving more and spending less.", sector = "global" },
+  trade_deal         = { headline = "New Trade Agreement Signed", body = "A new trade deal promises to bring more business opportunities and lower costs for consumers.", sector = "global" },
+  market_panic       = { headline = "Markets in Turmoil", body = "Sudden market volatility has investors worried. Hold steady and avoid panic selling.", sector = "global" },
+  tech_boom          = { headline = "Tech Sector Drives Growth", body = "A surge in technology spending is lifting the entire economy. Good times ahead for workers.", sector = "global" },
+  hiring_boom        = { headline = "Hiring Spree Underway", body = "Companies are adding staff at a rapid pace. Now is a great time to look for better-paying work.", sector = "jobs" },
+  layoff_wave        = { headline = "Layoffs Sweep Through Businesses", body = "Several employers have announced cutbacks. Job seekers may face stiff competition for a while.", sector = "jobs" },
+  gig_surge          = { headline = "Gig Work Demand Explodes", body = "Delivery and freelance jobs are booming. Independent drivers can expect more work and better tips.", sector = "jobs" },
+  fuel_spike         = { headline = "Fuel Prices Jump Sharply", body = "A sudden spike in fuel costs is hitting drivers hard. Plan your routes carefully to save money.", sector = "jobs" },
+  racing_season      = { headline = "Racing Season Kicks Off", body = "Motorsport fever is driving demand for performance parts and skilled drivers. Exciting times on the track!", sector = "jobs" },
+  new_model_year     = { headline = "New Vehicle Models Hit the Market", body = "Fresh inventory means dealers are clearing out last year's stock at steep discounts.", sector = "vehicles" },
+  parts_shortage     = { headline = "Auto Parts in Short Supply", body = "A shortage of key components has driven up repair and modification costs across the board.", sector = "vehicles" },
+  insurance_hike     = { headline = "Insurance Rates Climb", body = "Higher premiums are making vehicle ownership more expensive. Shop around for better coverage.", sector = "vehicles" },
+  car_show           = { headline = "Big Car Show Coming to Town", body = "Auto enthusiasts are flocking to the area. Expect increased interest in buying and selling vehicles.", sector = "vehicles" },
+  fleet_sale         = { headline = "Fleet Vehicles Going Cheap", body = "A major fleet operator is liquidating vehicles at rock-bottom prices. Great deals for budget buyers.", sector = "vehicles" },
+  road_construction  = { headline = "Road Construction Disrupts Area", body = "Major roadwork is causing headaches for commuters and temporarily hurting nearby property values.", sector = "housing" },
+  new_business_opens = { headline = "New Businesses Open Nearby", body = "Several new shops and services are opening in the area, boosting property appeal.", sector = "housing" },
+  crime_wave         = { headline = "Rise in Local Crime Reported", body = "A recent uptick in crime is making some neighborhoods less desirable. Stay alert out there.", sector = "housing" },
+  housing_boom       = { headline = "Housing Market Heats Up", body = "Strong demand and limited supply are pushing property prices higher. Sellers are in the driver's seat.", sector = "housing" },
+  market_correction  = { headline = "Housing Market Corrects", body = "Overheated property prices are coming back to earth. Buyers may find better deals soon.", sector = "housing" },
+  zoning_change      = { headline = "Zoning Changes Approved", body = "New zoning regulations are opening up areas for development, potentially increasing property values.", sector = "housing" },
+}
+
+local function addArticle(headline, body, sector)
+  if not economyData then return end
+  if not economyData.articles then economyData.articles = {} end
+  table.insert(economyData.articles, {
+    timestamp = accumulatedSimTime,
+    headline = headline,
+    body = body,
+    sector = sector or "global",
+  })
+  -- Trim to MAX_ARTICLES
+  while #economyData.articles > MAX_ARTICLES do
+    table.remove(economyData.articles, 1)
+  end
+end
+
+local function generatePhaseTransitionArticle(newPhase)
+  local pool = PHASE_TRANSITION_ARTICLES[newPhase]
+  if not pool then return end
+  local article = pool[math.random(#pool)]
+  addArticle(article.headline, article.body, article.sector)
+end
+
+local function generateThresholdArticles()
+  if not economyData then return end
+  -- Check for boom conditions (index > 1.2)
+  if economyData.index > 1.2 and previousIndices and previousIndices.global <= 1.2 then
+    local article = BOOM_ARTICLES[math.random(#BOOM_ARTICLES)]
+    addArticle(article.headline, article.body, article.sector)
+  end
+  -- Check for recession conditions (index < 0.8)
+  if economyData.index < 0.8 and previousIndices and previousIndices.global >= 0.8 then
+    local article = RECESSION_ARTICLES[math.random(#RECESSION_ARTICLES)]
+    addArticle(article.headline, article.body, article.sector)
+  end
+end
+
+local function generateEventArticle(eventId)
+  local article = EVENT_ARTICLES[eventId]
+  if article then
+    addArticle(article.headline, article.body, article.sector)
+  end
+end
+
+local function generateStartingArticle()
+  if not economyData then return end
+  local idx = economyData.index
+  local condition
+  if idx > 1.2 then condition = "booming"
+  elseif idx > 1.05 then condition = "healthy"
+  elseif idx > 0.95 then condition = "stable"
+  elseif idx > 0.8 then condition = "sluggish"
+  else condition = "struggling" end
+
+  local headlines = {
+    booming = "State of the Economy: Boom Times",
+    healthy = "State of the Economy: Looking Good",
+    stable = "State of the Economy: Steady as She Goes",
+    sluggish = "State of the Economy: Slow Going",
+    struggling = "State of the Economy: Tough Times Ahead",
+  }
+  local bodies = {
+    booming = "Welcome! The economy is running hot right now. Jobs pay well, but expect higher prices on vehicles and property. A good time to earn and save.",
+    healthy = "Welcome! Economic conditions are favorable. Jobs are available, prices are fair, and there are opportunities for those willing to work hard.",
+    stable = "Welcome! The economy is in a neutral state — nothing spectacular, but nothing to worry about either. A balanced time to start building your career.",
+    sluggish = "Welcome! The economy is a bit slow right now. Jobs may pay less, but you'll find better deals on vehicles and property. Every cloud has a silver lining.",
+    struggling = "Welcome! Times are tough out there. Work pays less and jobs are scarce, but vehicle and property prices are rock bottom. Buy low, sell high later.",
+  }
+  addArticle(headlines[condition], bodies[condition], "global")
 end
 
 -- ── Initialization ──
@@ -284,6 +427,8 @@ local function loadEconomy()
   if data and data.index then
     economyData = data
     -- Migration: add missing fields
+    if not economyData.history then economyData.history = { global = {}, jobs = {}, housing = {}, vehicles = {} } end
+    if not economyData.articles then economyData.articles = {} end
     if not economyData.globalEvents then economyData.globalEvents = {} end
     if not economyData.housingMarket then
       economyData.housingMarket = { index = economyData.index, sensitivity = 0.7, lagDays = 5, noiseRange = 0.02, noise = 0, activeEvents = {}, lastUpdate = 0 }
@@ -367,6 +512,35 @@ local function getEconomySummary()
   }
 end
 
+local function getMarketHistory()
+  if not economyData or not economyData.history then return { global = {}, jobs = {}, housing = {}, vehicles = {} } end
+  return economyData.history
+end
+
+local function getNewsArticles()
+  if not economyData or not economyData.articles then return {} end
+  return economyData.articles
+end
+
+local function requestMarketWatchData()
+  if not economyData then return end
+  local data = {
+    history = getMarketHistory(),
+    articles = getNewsArticles(),
+    currentIndices = {
+      global = economyData.index,
+      jobs = economyData.jobMarket.index,
+      housing = economyData.housingMarket.index,
+      vehicles = economyData.vehicleMarket.index,
+    },
+    cyclePhase = economyData.cyclePhase,
+    simTime = accumulatedSimTime,
+  }
+  if guihooks and guihooks.trigger then
+    guihooks.trigger("MarketWatchData", data)
+  end
+end
+
 local function setStartingIndex(idx)
   idx = clamp(idx, MIN_INDEX, MAX_INDEX)
   economyData = getDefaultEconomyData(idx)
@@ -385,6 +559,15 @@ local function onUpdate(dtReal, dtSim, dtRaw)
     local elapsed = timeSinceLastUpdate
     timeSinceLastUpdate = 0
 
+    -- Snapshot indices before update for change detection
+    previousIndices = {
+      global = economyData.index,
+      jobs = economyData.jobMarket.index,
+      housing = economyData.housingMarket.index,
+      vehicles = economyData.vehicleMarket.index,
+    }
+    local previousPhase = economyData.cyclePhase
+
     -- 1. Update global index
     updateGlobalIndex(elapsed)
 
@@ -399,12 +582,21 @@ local function onUpdate(dtReal, dtSim, dtRaw)
     rollEvents(economyData.vehicleMarket.activeEvents, VEHICLE_EVENTS)
     rollEvents(economyData.housingMarket.activeEvents, HOUSING_EVENTS)
 
-    -- 4. Refresh fuel price displays
+    -- 4. Generate articles for phase transitions and threshold crossings
+    if economyData.cyclePhase ~= previousPhase then
+      generatePhaseTransitionArticle(economyData.cyclePhase)
+    end
+    generateThresholdArticles()
+
+    -- 5. Record history
+    recordHistory()
+
+    -- 6. Refresh fuel price displays
     if freeroam_facilities_fuelPrice and freeroam_facilities_fuelPrice.onEconomyUpdated then
       freeroam_facilities_fuelPrice.onEconomyUpdated()
     end
 
-    -- 5. Auto-save
+    -- 7. Auto-save
     saveEconomy()
   end
 end
@@ -424,6 +616,8 @@ local function onCareerActivated()
     loadEconomy()
   else
     economyData = getDefaultEconomyData()
+    generateStartingArticle()
+    recordHistory()
     saveEconomy(currentSavePath)
   end
 end
@@ -441,6 +635,9 @@ M.getMomentum = getMomentum
 M.getEconomySummary = getEconomySummary
 M.setStartingIndex = setStartingIndex
 M.getDefaultEconomyData = getDefaultEconomyData
+M.getMarketHistory = getMarketHistory
+M.getNewsArticles = getNewsArticles
+M.requestMarketWatchData = requestMarketWatchData
 
 M.onUpdate = onUpdate
 M.onSaveCurrentSaveSlot = onSaveCurrentSaveSlot
