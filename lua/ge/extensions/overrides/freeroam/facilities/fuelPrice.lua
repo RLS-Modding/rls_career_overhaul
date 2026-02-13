@@ -214,6 +214,8 @@ end
 local function onDeserialized(data)
   if data and data.cachedPrices then
     cachedPrices = data.cachedPrices
+    -- Refresh physical sign meshes so they reflect cached prices immediately
+    setDisplayPrices()
   else
     setDisplayPrices()
   end
