@@ -20,8 +20,8 @@ local function getHrMin(seconds)
 end
 
 local function rentalReward()
-    local housingIndex = career_modules_globalEconomy and career_modules_globalEconomy.getHousingMarketIndex() or 1.0
-    local reward = math.floor((vehicleValue * 0.25) * (rentalTime / (480 * 60)) * housingIndex)
+    local vehicleIndex = career_modules_globalEconomy and career_modules_globalEconomy.getVehicleMarketIndex() or 1.0
+    local reward = math.floor((vehicleValue * 0.25) * (rentalTime / (480 * 60)) * vehicleIndex)
     return reward
 end
 
