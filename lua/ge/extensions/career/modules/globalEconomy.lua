@@ -448,6 +448,7 @@ local function loadEconomy()
       economyData.vehicleMarket = { index = economyData.index, sensitivity = 0.8, lagDays = 3, noiseRange = 0.02, noise = 0, activeEvents = {}, lastUpdate = 0 }
     end
     accumulatedSimTime = economyData.lastUpdate or 0
+    timeSinceLastUpdate = economyData.timeSinceLastUpdate or 0
   else
     economyData = getDefaultEconomyData()
   end
@@ -461,6 +462,7 @@ local function saveEconomy(currentSavePath)
     if not currentSavePath then return end
   end
   ensureSaveDir(currentSavePath)
+  economyData.timeSinceLastUpdate = timeSinceLastUpdate
   career_saveSystem.jsonWriteFileSafe(currentSavePath .. saveFile, economyData, true)
 end
 
