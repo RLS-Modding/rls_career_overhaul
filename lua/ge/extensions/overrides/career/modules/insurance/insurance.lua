@@ -1237,7 +1237,7 @@ local function calculateInsurancePremium(insuranceId, potentialCoverageOptions, 
   -- Scale insurance premium by global economy index
   local globalIndex = career_modules_globalEconomy and career_modules_globalEconomy.getGlobalIndex() or 1.0
   details.totalPrice = math.floor(details.totalPrice * globalIndex + 0.5)
-  details.totalPriceWithDriverScore = details.totalPrice * getDriverScoreTierData(plDriverScore).multiplier
+  details.totalPriceWithDriverScore = math.floor(details.totalPrice * getDriverScoreTierData(plDriverScore).multiplier + 0.5)
   return details
 end
 
