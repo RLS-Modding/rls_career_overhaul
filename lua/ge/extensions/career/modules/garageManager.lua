@@ -399,7 +399,7 @@ local function getGaragePrice(garageId, computerId)
       local price = garage.starterGarage and 0 or garage.defaultPrice
       -- Apply housing market index if available
       if career_modules_globalEconomy and career_modules_globalEconomy.getHousingMarketIndex then
-        price = price * career_modules_globalEconomy.getHousingMarketIndex()
+        price = math.floor(price * career_modules_globalEconomy.getHousingMarketIndex() + 0.5)
       end
       log("D", "garageManager", "getGaragePrice: Garage " .. garageId .. " price: " .. price .. " (starterGarage: " .. tostring(garage.starterGarage) .. ")")
       return math.floor(tonumber(price) * 0.75 + 0.5)
