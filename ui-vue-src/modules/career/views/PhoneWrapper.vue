@@ -275,7 +275,6 @@ const back = () => {
 
   .phone-content {
     height: 100%;
-    padding-top: 2.8em; /* clear status bar so app content is not hidden under it */
     overflow-y: hidden;
     color: white;
     border-radius: 1.5em;
@@ -283,7 +282,6 @@ const back = () => {
     &.content-fade-in {
       animation: phoneContentFadeIn 0.25s ease-out;
     }
-    box-sizing: border-box;
   }
 }
 
