@@ -432,6 +432,12 @@ local function loadEconomy()
     if not economyData.history then economyData.history = { global = {}, jobs = {}, housing = {}, vehicles = {} } end
     if not economyData.articles then economyData.articles = {} end
     if not economyData.globalEvents then economyData.globalEvents = {} end
+    -- Ensure activeEvents exists on pre-existing sub-markets
+    for _, key in ipairs({"housingMarket", "jobMarket", "vehicleMarket"}) do
+      if economyData[key] then
+        economyData[key].activeEvents = economyData[key].activeEvents or {}
+      end
+    end
     if not economyData.housingMarket then
       economyData.housingMarket = { index = economyData.index, sensitivity = 0.7, lagDays = 5, noiseRange = 0.02, noise = 0, activeEvents = {}, lastUpdate = 0 }
     end
