@@ -28,7 +28,7 @@ M.config = {
     streakMultiplierMax = 1.0,       
 
     -- Reputation Scaling
-    reputationPayMultiplierPerStar = 1.0, 
+    reputationPayMultiplierPerStar = 1.6, 
     
     -- Job Interval (seconds)
     intervalMinRating = {min = 40, max = 60}, 
