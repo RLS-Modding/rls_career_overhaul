@@ -226,7 +226,13 @@ M.getFuelPrice = getFuelPrice
 M.restoreSign = restoreSign
 M.onEconomyUpdated = onEconomyUpdated
 
+local function onClientEndMission()
+  restoreSign(false)
+  cachedPrices = {}
+end
+
 M.onClientStartMission = onClientStartMission
+M.onClientEndMission = onClientEndMission
 M.onSerialize = onSerialize
 M.onDeserialized = onDeserialized
 
