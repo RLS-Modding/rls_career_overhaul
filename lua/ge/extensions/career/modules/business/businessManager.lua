@@ -152,7 +152,8 @@ local function canPayBusiness()
     return true
   end
   if not businessToPurchase then return false end
-  local price = { money = { amount = businessToPurchase.facility.price or 0, canBeNegative = false } }
+  local affordGlobalIndex = career_modules_globalEconomy and career_modules_globalEconomy.getGlobalIndex() or 1.0
+  local price = { money = { amount = math.floor((businessToPurchase.facility.price or 0) * affordGlobalIndex), canBeNegative = false } }
   for currency, info in pairs(price) do
     if not info.canBeNegative and career_modules_playerAttributes.getAttributeValue(currency) < info.amount then
       return false
@@ -164,7 +165,8 @@ end
 local function buyBusiness()
   if businessToPurchase then
     local business = businessToPurchase.facility
-    local price = { money = { amount = business.price or 0, canBeNegative = false } }
+    local businessGlobalIndex = career_modules_globalEconomy and career_modules_globalEconomy.getGlobalIndex() or 1.0
+    local price = { money = { amount = math.floor((business.price or 0) * businessGlobalIndex), canBeNegative = false } }
     local success = career_modules_payment.pay(price, { label = "Purchased " .. business.name })
     if success then
       addPurchasedBusiness(businessToPurchase.type, businessToPurchase.id)
@@ -186,7 +188,8 @@ local function canAffordDownPayment()
     return true
   end
   if not businessToPurchase then return false end
-  local downPaymentAmount = businessToPurchase.facility.downPayment or 0
+  local downPayGlobalIndex = career_modules_globalEconomy and career_modules_globalEconomy.getGlobalIndex() or 1.0
+  local downPaymentAmount = math.floor((businessToPurchase.facility.downPayment or 0) * downPayGlobalIndex)
   if downPaymentAmount <= 0 then return false end
   local price = { money = { amount = downPaymentAmount, canBeNegative = false } }
   for currency, info in pairs(price) do
@@ -200,8 +203,9 @@ end
 local function financeBusiness()
   if not businessToPurchase then return false end
   local business = businessToPurchase.facility
-  local downPaymentAmount = business.downPayment or 0
-  local totalPrice = business.price or 0
+  local financeGlobalIndex = career_modules_globalEconomy and career_modules_globalEconomy.getGlobalIndex() or 1.0
+  local downPaymentAmount = math.floor((business.downPayment or 0) * financeGlobalIndex)
+  local totalPrice = math.floor((business.price or 0) * financeGlobalIndex)
   
   if not canAffordDownPayment() then
     return false

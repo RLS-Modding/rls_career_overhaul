@@ -294,6 +294,9 @@ local function takeLoan(orgId, amount, payments, rate, uncapped, businessAccount
     if not level or not level.loans then return {error = "no_offer"} end
     local max = level.loans.max or 0
     baseRate = rate or (level.loans.rate or 0)
+    -- Scale interest rate by global economy index (boom = higher rates, recession = lower)
+    local loanGlobalIndex = career_modules_globalEconomy and career_modules_globalEconomy.getGlobalIndex() or 1.0
+    baseRate = baseRate * loanGlobalIndex
     local outstandingByOrg = getOutstandingPrincipalByOrg()
     local available = math.max(0, max - (outstandingByOrg[orgId] or 0))
     if amount <= 0 or amount > available then return {error = "invalid_amount", max = available} end

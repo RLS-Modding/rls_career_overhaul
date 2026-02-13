@@ -227,6 +227,10 @@ local function createShoppingCart()
     end
   end
 
+  -- Scale part prices by vehicle market index
+  local vehicleMarketIndex = career_modules_globalEconomy and career_modules_globalEconomy.getVehicleMarketIndex() or 1.0
+  total = total * vehicleMarketIndex
+
   shoppingCart.taxes = total * 0.07
   shoppingCart.total = total + shoppingCart.taxes
   shoppingCartUI.taxes = shoppingCart.taxes

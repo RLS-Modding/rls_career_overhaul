@@ -92,6 +92,9 @@ local function onSpeedTrapTriggered(speedTrapData, playerSpeed, overSpeed)
   if penaltyType == "default" then
     local fine = getFineFromSpeed(overSpeed)
     fine.money.amount = fine.money.amount * (career_modules_hardcore.isHardcoreMode() and 10 or 1)
+    -- Scale fine by global economy index
+    local globalIndex = career_modules_globalEconomy and career_modules_globalEconomy.getGlobalIndex() or 1.0
+    fine.money.amount = math.floor(fine.money.amount * globalIndex)
     local message = ""
     
     local speedStr = string.format("%.0f km/h (%.0f mph)", playerSpeed * 3.6, playerSpeed * 2.23694)
@@ -164,7 +167,8 @@ local function onRedLightCamTriggered(speedTrapData, playerSpeed)
 
   local veh = getPlayerVehicle(0)
   if not inventoryId or hasLicensePlate(inventoryId) then
-    local fine = {money = {amount = 500 * (career_modules_hardcore.isHardcoreMode() and 2 or 1), canBeNegative = true}}
+    local redLightGlobalIndex = career_modules_globalEconomy and career_modules_globalEconomy.getGlobalIndex() or 1.0
+    local fine = {money = {amount = math.floor(500 * (career_modules_hardcore.isHardcoreMode() and 2 or 1) * redLightGlobalIndex), canBeNegative = true}}
     local message = ""
     
     if playerRole == "police" then

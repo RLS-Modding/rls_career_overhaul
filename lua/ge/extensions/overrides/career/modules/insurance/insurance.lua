@@ -1234,6 +1234,9 @@ local function calculateInsurancePremium(insuranceId, potentialCoverageOptions, 
   for detailName, detailPrice in pairs(details.items) do
     details.totalPrice = details.totalPrice + detailPrice.price
   end
+  -- Scale insurance premium by global economy index
+  local globalIndex = career_modules_globalEconomy and career_modules_globalEconomy.getGlobalIndex() or 1.0
+  details.totalPrice = details.totalPrice * globalIndex
   details.totalPriceWithDriverScore = details.totalPrice * getDriverScoreTierData(plDriverScore).multiplier
   return details
 end
