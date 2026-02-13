@@ -22,6 +22,15 @@ local digitShapes = {
   ["-"] = "art/shapes/props/gas_station_signs/gas_dash.dae",
 }
 
+-- Simple string hash for deterministic per-station randomness
+local function stableHash(str)
+  local h = 5381
+  for i = 1, #str do
+    h = (h * 33 + string.byte(str, i)) % 2147483647
+  end
+  return h
+end
+
 local function getEconomyMultiplier()
   if career_modules_globalEconomy and career_modules_globalEconomy.getGlobalIndex then
     return career_modules_globalEconomy.getGlobalIndex()
@@ -122,8 +131,10 @@ local function setDisplayPrices()
       local randomGain = fuelData.priceRandomnessGain or 0
       local randomBias = fuelData.priceRandomnessBias or 0.5
 
-      -- Vanilla price calculation
-      local basePrice = baseline + randomGain * (math.random() - randomBias)
+      -- Seeded random per station+fuelType so prices don't jump every tick
+      local seed = stableHash(tostring(stationId) .. "_" .. tostring(fuelType))
+      local stableRandom = (seed % 10000) / 10000  -- 0..1 deterministic value
+      local basePrice = baseline + randomGain * (stableRandom - randomBias)
 
       -- Apply economy multiplier AFTER base calculation
       local adjustedPrice = basePrice * economyMult
