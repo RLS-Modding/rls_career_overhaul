@@ -385,7 +385,7 @@ local function getDefaultEconomyData(startingIndex)
   local idx = startingIndex or (0.5 + math.random() * 1.0)
   local phase
   if idx > 1.2 then phase = "peak"
-  elseif idx > 1.0 then phase = "growth"
+  elseif idx >= 1.0 then phase = "growth"
   elseif idx > 0.8 then phase = "decline"
   else phase = "trough" end
 
