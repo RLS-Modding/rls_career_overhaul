@@ -50,6 +50,9 @@ local function loadExtensions()
     setExtensionUnloadMode("career_challengeSeedEncoder", "manual")
     setExtensionUnloadMode("editor_freeroamEventEditor", "manual")
 
+    setExtensionUnloadMode("dynamicRoutes", "manual")
+    setExtensionUnloadMode("editor_dynamicRoutesEditor", "manual")
+
     extensions.unload("career_career")
     extensions.unload("career_saveSystem")
 end
@@ -106,6 +109,8 @@ local function unloadAllExtensions()
     extensions.unload("career_challengeModes")
     extensions.unload("career_economyAdjuster")
     extensions.unload("career_challengeSeedEncoder")
+    extensions.unload("dynamicRoutes")
+    extensions.unload("editor_dynamicRoutesEditor")
 end
 
 local function startup()

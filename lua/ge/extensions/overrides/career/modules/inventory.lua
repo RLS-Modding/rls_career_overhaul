@@ -514,6 +514,10 @@ local function getPartConditionsCallback(partConditions, inventoryId)
   end
   local count = 0
   for _ in pairs(partConditions) do count = count + 1 end
+  if not vehicles[inventoryId] then
+    onPartConditionsUpdateFinished()
+    return
+  end
   vehicles[inventoryId].partConditions = partConditions
   onPartConditionsUpdateFinished()
   career_modules_partInventory.updatePartConditionsInInventory()
