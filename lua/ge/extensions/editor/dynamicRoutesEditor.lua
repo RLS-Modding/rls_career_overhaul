@@ -336,6 +336,15 @@ local function onEditorGui()
 
     if im.BeginMenuBar() then
       if im.BeginMenu("Actions") then
+        if not debugState.configFileExists and im.MenuItem1("Generate routes file") then
+          local ok, err = getRuntime().generateRoutesFile()
+          if ok then
+            getRuntime().reloadConfigAndRescan()
+            editor.showNotification("Dynamic Routes: Routes file generated", 3, 0)
+          else
+            editor.showNotification("Dynamic Routes: " .. tostring(err), 5, 1)
+          end
+        end
         if im.MenuItem1("Reload / Rescan") then getRuntime().reloadConfigAndRescan() end
         if im.MenuItem1("Trigger All Now") then getRuntime().triggerAllWeighted() end
         if im.MenuItem1("Apply Current State") then getRuntime().applyAllGroups() end
@@ -348,6 +357,23 @@ local function onEditorGui()
     end
 
     drawStatusBar(debugState)
+
+    if not debugState.configFileExists then
+      im.Spacing()
+      im.TextColored(colYellow, "No routes file found.")
+      im.Spacing()
+      if primaryButton("Generate routes file", im.ImVec2(-1, 28), "Create dynamicRoute.json from current scene") then
+        local ok, err = getRuntime().generateRoutesFile()
+        if ok then
+          getRuntime().reloadConfigAndRescan()
+          editor.showNotification("Dynamic Routes: Routes file generated", 3, 0)
+        else
+          editor.showNotification("Dynamic Routes: " .. tostring(err), 5, 1)
+        end
+      end
+      im.Separator()
+    end
+
     drawTimerSection(debugState)
     drawActions(debugState)
     drawWarnings(debugState)
