@@ -269,13 +269,17 @@ $ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   }
 }
 
-/* Top bar – glass */
+/* Top bar – glass; extra top padding clears status bar, buttons sit in the space below */
 .camera-top-bar {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   min-height: 48px;
+  padding-top: calc(36px + 0.5em + 0.6em);
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-bottom: 10px;
   background: $glass-bg;
   backdrop-filter: blur($glass-blur);
   -webkit-backdrop-filter: blur($glass-blur);
@@ -283,7 +287,6 @@ $ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 16px;
   animation: barSlideDown 0.35s $ease-out;
 }
 

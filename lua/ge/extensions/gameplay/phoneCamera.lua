@@ -22,13 +22,26 @@ local previewBusy = false
 local previewTimer = 0
 local previewOrientation = 'landscape'  -- 'landscape' | 'portrait'
 
+local lastPhotoStamp = ''
+local photoSeq = 0
+local function nextPhotoStamp()
+  local ts = os.date('%Y%m%d_%H%M%S')
+  if ts == lastPhotoStamp then
+    photoSeq = photoSeq + 1
+  else
+    lastPhotoStamp = ts
+    photoSeq = 0
+  end
+  return string.format('%s_%02d', ts, photoSeq)
+end
+
 -- Returns the directory where photos are stored (with trailing slash).
 -- In career: save profile folder (parent of autosave1/2/3) + Gallery/, e.g. settings/cloud/saves/Profile/Gallery/
 --   so photos persist when the active autosave slot changes.
 -- In freeroam: screenshots/phone/
 local function getPhotoDir()
   if career_career and career_career.isActive and career_career.isActive() and career_saveSystem and career_saveSystem.getCurrentSaveSlot then
-    local slot, savePath = career_saveSystem.getCurrentSaveSlot()
+    local _, savePath = career_saveSystem.getCurrentSaveSlot()
     if savePath and savePath ~= '' then
       -- savePath is e.g. settings/cloud/saves/Profile/autosave2; we want settings/cloud/saves/Profile/Gallery/
       local profilePath = savePath:match('^(.+)/[^/]+$')
@@ -176,7 +189,7 @@ local function takePhotoWithOrientationJob(job)
     return
   end
   local res = (orientation == 'portrait') and PHOTO_PORTRAIT or PHOTO_LANDSCAPE
-  local timestamp = os.date('%Y%m%d_%H%M%S')
+  local timestamp = nextPhotoStamp()
   local pathNoExt = photoDir .. PHOTO_PREFIX .. timestamp
   local options = {
     pos = pos,

@@ -32,12 +32,13 @@ echo "[1/4] Preparing build directory..."
 rm -rf "$BUILD_DIR"
 mkdir -p "$BUILD_DIR"
 
-# Copy baseUI to temp build directory
-cp -r "$BASE_UI"/* "$BUILD_DIR/"
+# Copy baseUI to temp build directory (include dotfiles)
+cp -a "$BASE_UI"/. "$BUILD_DIR"/
 
 # 2. Overwrite with custom source
 echo "[2/4] Merging ui-vue-src into build directory..."
-cp -r "$VUE_SRC"/* "$BUILD_DIR/src/"
+mkdir -p "$BUILD_DIR/src"
+cp -a "$VUE_SRC"/. "$BUILD_DIR/src/"
 
 # 3. Build
 echo "[3/4] Building UI..."

@@ -138,7 +138,7 @@
 <script setup>
 import PhoneWrapper from './PhoneWrapper.vue'
 import { BngIcon, icons } from '@/common/components/base'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { lua } from '@/bridge'
 
 const photos = ref([])
@@ -148,6 +148,8 @@ const fullScreenDataUrl = ref(null)
 const deleteMode = ref(false)
 const selectedForDelete = ref(new Set())
 const showDeleteConfirm = ref(false)
+let thumbnailBatchTimer = null
+let thumbnailsCancelled = false
 
 const BATCH_SIZE = 8
 const BATCH_DELAY_MS = 100
@@ -200,16 +202,20 @@ function loadThumbnailsInBatches() {
   const items = photos.value.filter(p => !p.dataUrl)
   let index = 0
   function runBatch() {
+    if (thumbnailsCancelled) return
     const batch = items.slice(index, index + BATCH_SIZE)
     index += BATCH_SIZE
     batch.forEach(async (photo) => {
       try {
         const url = await lua.gameplay_phoneCamera.getPhotoAsDataUrl(photo.filename)
+        if (thumbnailsCancelled) return
         const p = photos.value.find(x => x.filename === photo.filename)
         if (p && url) p.dataUrl = url
       } catch (_) {}
     })
-    if (index < items.length) setTimeout(runBatch, BATCH_DELAY_MS)
+    if (index < items.length) {
+      thumbnailBatchTimer = setTimeout(runBatch, BATCH_DELAY_MS)
+    }
   }
   if (items.length) runBatch()
 }
@@ -217,15 +223,17 @@ function loadThumbnailsInBatches() {
 async function openPhoto(photo) {
   if (deleteMode.value) return
   selectedPhoto.value = photo
+  const targetFilename = photo.filename
   if (photo.dataUrl) {
     fullScreenDataUrl.value = photo.dataUrl
     return
   }
   fullScreenDataUrl.value = null
   try {
-    const url = await lua.gameplay_phoneCamera.getPhotoAsDataUrl(photo.filename)
+    const url = await lua.gameplay_phoneCamera.getPhotoAsDataUrl(targetFilename)
+    if (!selectedPhoto.value || selectedPhoto.value.filename !== targetFilename) return
     fullScreenDataUrl.value = url
-    const p = photos.value.find(x => x.filename === photo.filename)
+    const p = photos.value.find(x => x.filename === targetFilename)
     if (p) p.dataUrl = url
   } catch (e) {
     console.error('getPhotoAsDataUrl failed', e)
@@ -239,6 +247,11 @@ function closeFullScreen() {
 
 onMounted(() => {
   loadList()
+})
+
+onUnmounted(() => {
+  thumbnailsCancelled = true
+  if (thumbnailBatchTimer) clearTimeout(thumbnailBatchTimer)
 })
 </script>
 
@@ -254,10 +267,13 @@ $accent-dim: rgba(255, 255, 255, 0.5);
 $ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 $ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
 
+/* Match PhoneWrapper status bar height so content sits below it */
+$status-bar-height: calc(36px + 0.5em + 0.6em);
+
 .gallery-container {
   position: relative;
   padding: 14px;
-  padding-top: 10px;
+  padding-top: calc(10px + #{$status-bar-height});
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -691,6 +707,8 @@ $ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   display: flex;
   flex-direction: column;
   align-items: stretch;
+  box-sizing: border-box;
+  padding-top: $status-bar-height;
 }
 
 .fullscreen-bar {
