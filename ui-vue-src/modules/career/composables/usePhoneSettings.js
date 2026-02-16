@@ -24,7 +24,7 @@ export const PHONE_BACKGROUND_OPTIONS = Object.freeze([
 const PHONE_SIZE_SCALE = Object.freeze({
   small: 0.72,
   normal: 0.8,
-  large: 0.88,
+  large: 0.9,
 })
 
 const PHONE_SETTINGS_SESSION_KEY = 'phone_settings'
