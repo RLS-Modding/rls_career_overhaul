@@ -2,75 +2,115 @@
   <PhoneWrapper app-name="Settings">
     <div class="phone-settings">
       <div class="settings-card">
-        <div class="setting-group">
-          <div class="setting-label">Phone Size</div>
-          <div class="option-row">
-            <button
-              v-for="option in PHONE_SIZE_OPTIONS"
-              :key="option.value"
-              class="option-button"
-              :class="{ active: phoneSettings.phoneSize === option.value }"
-              @click="setPhoneSize(option.value)"
-            >
-              {{ option.label }}
-            </button>
-          </div>
-        </div>
-
-        <div class="setting-group">
-          <div class="setting-row">
-            <div class="setting-label">Background Picture (Folder)</div>
-            <div class="setting-actions">
-              <button class="small-action" @click="openFolderInExplorer">Open Folder</button>
-              <button class="small-action" @click="loadFolderImages">Refresh</button>
+        <details class="settings-dropdown">
+          <summary class="dropdown-summary">
+            <span class="dropdown-title">Phone Size</span>
+            <span class="dropdown-meta">{{ selectedPhoneSizeLabel }}</span>
+          </summary>
+          <div class="dropdown-content">
+            <div class="option-row">
+              <button
+                v-for="option in PHONE_SIZE_OPTIONS"
+                :key="option.value"
+                class="option-button"
+                :class="{ active: phoneSettings.phoneSize === option.value }"
+                @click="setPhoneSize(option.value)"
+              >
+                {{ option.label }}
+              </button>
             </div>
           </div>
-          <div class="folder-hint">
-            Folder: <code>{{ folderPath }}</code>
-          </div>
-          <div class="image-grid" v-if="folderImages.length">
-            <button
-              v-for="entry in folderImages"
-              :key="entry.path"
-              class="image-tile"
-              :class="{ active: phoneSettings.backgroundImage === entry.path }"
-              @click="selectFolderImage(entry.path)"
-              :title="entry.name"
-            >
-              <img :src="entry.path" :alt="entry.name" />
-              <span>{{ entry.name }}</span>
-            </button>
-          </div>
-          <div class="empty-folder" v-else>
-            No images found in the folder yet.
-          </div>
-          <div class="picture-actions">
-            <button class="option-button" @click="clearBackgroundImage">Use Color Instead</button>
-          </div>
-        </div>
+        </details>
 
-        <div class="setting-group">
-          <div class="setting-label">Background Color</div>
-          <div class="color-row">
-            <button
-              v-for="color in PHONE_BACKGROUND_OPTIONS"
-              :key="color"
-              class="color-swatch"
-              :class="{ active: phoneSettings.backgroundColor === color }"
-              :style="{ backgroundColor: color }"
-              @click="setBackgroundColor(color)"
-              :title="color"
-            ></button>
-            <label class="custom-color">
-              <span>Custom</span>
-              <input
-                type="color"
-                :value="phoneSettings.backgroundColor"
-                @input="setBackgroundColor($event.target.value)"
-              />
-            </label>
+        <details class="settings-dropdown">
+          <summary class="dropdown-summary">
+            <span class="dropdown-title">Wallpaper Image</span>
+            <span class="dropdown-meta">{{ wallpaperSelectionLabel }}</span>
+          </summary>
+          <div class="dropdown-content">
+            <div class="setting-row">
+              <div class="setting-label">Background Picture (Folder)</div>
+              <div class="setting-actions">
+                <button class="small-action" @click="openFolderInExplorer">Open Folder</button>
+                <button class="small-action" @click="loadFolderImages">Refresh</button>
+              </div>
+            </div>
+            <div class="folder-hint">
+              Folder: <code>{{ folderPath }}</code>
+            </div>
+            <div class="wallpaper-hint">
+              Suggested wallpaper aspect ratio: <strong>{{ wallpaperAspectRatioLabel }}</strong>
+              <span class="wallpaper-hint-muted">(portrait)</span>
+            </div>
+            <div class="image-grid" v-if="folderImages.length">
+              <button
+                v-for="entry in folderImages"
+                :key="entry.path"
+                class="image-tile"
+                :class="{ active: phoneSettings.backgroundImage === entry.path }"
+                @click="selectFolderImage(entry.path)"
+                :title="entry.name"
+              >
+                <img :src="entry.path" :alt="entry.name" />
+                <span>{{ entry.name }}</span>
+              </button>
+            </div>
+            <div class="empty-folder" v-else>
+              No images found in the folder yet.
+            </div>
+            <div class="picture-actions">
+              <button class="option-button" @click="clearBackgroundImage">Use Color Instead</button>
+            </div>
           </div>
-        </div>
+        </details>
+
+        <details class="settings-dropdown">
+          <summary class="dropdown-summary">
+            <span class="dropdown-title">Background Color</span>
+            <span class="dropdown-meta">{{ phoneSettings.backgroundColor }}</span>
+          </summary>
+          <div class="dropdown-content">
+            <div class="color-row">
+              <button
+                v-for="color in PHONE_BACKGROUND_OPTIONS"
+                :key="color"
+                class="color-swatch"
+                :class="{ active: phoneSettings.backgroundColor === color }"
+                :style="{ backgroundColor: color }"
+                @click="setBackgroundColor(color)"
+                :title="color"
+              ></button>
+              <label class="custom-color-picker">
+                <span>Picker</span>
+                <input
+                  type="color"
+                  :value="phoneSettings.backgroundColor"
+                  @input="onCustomColorPickerInput($event.target.value)"
+                />
+              </label>
+            </div>
+            <div class="custom-color-manual">
+              <span class="custom-color-prefix">Hex</span>
+              <input
+                class="custom-color-text-input"
+                type="text"
+                :value="customColorValue"
+                maxlength="7"
+                spellcheck="false"
+                placeholder="#RRGGBB"
+                @input="onCustomColorTextInput($event.target.value)"
+                @keydown.enter.prevent="applyCustomColor"
+              />
+              <button
+                class="small-action"
+                :disabled="!canApplyCustomColor"
+                @click="applyCustomColor"
+              >
+                Apply
+              </button>
+            </div>
+          </div>
+        </details>
 
         <div class="settings-footer">
           <button class="reset-button" @click="resetDefaults">Reset Defaults</button>
@@ -82,7 +122,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import { lua } from '@/bridge'
 import PhoneWrapper from './PhoneWrapper.vue'
 import {
@@ -103,9 +143,27 @@ const saveStateText = ref('')
 const saveError = ref(false)
 const folderImages = ref([])
 const folderPath = ref('/phone-backgrounds/')
+const wallpaperAspectRatioLabel = '9:16'
+const customColorValue = ref(phoneSettings.backgroundColor)
+const HEX_COLOR_PATTERN = /^#[0-9a-fA-F]{6}$/
 
 let saveTimer = null
 let clearStateTimer = null
+
+const selectedPhoneSizeLabel = computed(() => {
+  const selected = PHONE_SIZE_OPTIONS.find(option => option.value === phoneSettings.phoneSize)
+  return selected?.label || phoneSettings.phoneSize
+})
+
+const wallpaperSelectionLabel = computed(() => {
+  return phoneSettings.backgroundImage ? 'Custom image' : 'Using color'
+})
+
+const normalizedCustomColor = computed(() => customColorValue.value.trim().toLowerCase())
+
+const canApplyCustomColor = computed(() => {
+  return HEX_COLOR_PATTERN.test(normalizedCustomColor.value) && normalizedCustomColor.value !== phoneSettings.backgroundColor
+})
 
 function setSaveState(text, isError = false) {
   saveStateText.value = text
@@ -148,6 +206,23 @@ function setBackgroundColor(value) {
   if (phoneSettings.backgroundColor === value) return
   setPhoneSettings({ backgroundColor: value })
   queueSave()
+}
+
+function onCustomColorPickerInput(value) {
+  customColorValue.value = value
+  setBackgroundColor(value)
+}
+
+function onCustomColorTextInput(value) {
+  customColorValue.value = value
+}
+
+function applyCustomColor() {
+  if (!HEX_COLOR_PATTERN.test(normalizedCustomColor.value)) {
+    setSaveState('Use format #RRGGBB', true)
+    return
+  }
+  setBackgroundColor(normalizedCustomColor.value)
 }
 
 function selectFolderImage(path) {
@@ -210,6 +285,16 @@ onMounted(async () => {
   await loadFolderImages()
 })
 
+watch(
+  () => phoneSettings.backgroundColor,
+  (nextValue) => {
+    if (customColorValue.value !== nextValue) {
+      customColorValue.value = nextValue
+    }
+  },
+  { immediate: true }
+)
+
 onUnmounted(() => {
   if (saveTimer) {
     clearTimeout(saveTimer)
@@ -239,13 +324,71 @@ onUnmounted(() => {
   padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
+  max-height: 100%;
+  overflow-y: auto;
 }
 
-.setting-group {
+.settings-dropdown {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+
+  &[open] {
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  }
+}
+
+.dropdown-summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  color: rgba(255, 255, 255, 0.9);
+  user-select: none;
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  &::after {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-right: 2px solid rgba(255, 255, 255, 0.75);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.75);
+    transform: rotate(45deg);
+    margin-left: 2px;
+    transition: transform 0.16s ease;
+  }
+}
+
+.settings-dropdown[open] .dropdown-summary::after {
+  transform: rotate(-135deg) translateY(-1px);
+}
+
+.dropdown-title {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.dropdown-meta {
+  margin-left: auto;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.dropdown-content {
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 10px 12px 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  animation: dropdown-content-in 0.16s ease;
 }
 
 .setting-row {
@@ -284,6 +427,23 @@ onUnmounted(() => {
   code {
     color: rgba(255, 255, 255, 0.95);
   }
+}
+
+.wallpaper-hint {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.84);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+
+  strong {
+    color: rgba(255, 255, 255, 0.98);
+  }
+}
+
+.wallpaper-hint-muted {
+  color: rgba(255, 255, 255, 0.64);
 }
 
 .option-row {
@@ -387,7 +547,7 @@ onUnmounted(() => {
   }
 }
 
-.custom-color {
+.custom-color-picker {
   margin-left: auto;
   display: inline-flex;
   align-items: center;
@@ -396,13 +556,42 @@ onUnmounted(() => {
   color: rgba(255, 255, 255, 0.72);
 
   input {
-    width: 26px;
-    height: 22px;
+    width: 30px;
+    height: 24px;
     border: 0;
-    background: transparent;
+    border-radius: 6px;
+    background: none;
     padding: 0;
     cursor: pointer;
   }
+}
+
+.custom-color-manual {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.custom-color-prefix {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.custom-color-text-input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.92);
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+
+.small-action:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .settings-footer {
@@ -430,6 +619,17 @@ onUnmounted(() => {
 
   &.error {
     color: rgba(239, 68, 68, 0.95);
+  }
+}
+
+@keyframes dropdown-content-in {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 </style>
