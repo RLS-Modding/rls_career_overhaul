@@ -13,12 +13,29 @@ export const PHONE_SIZE_OPTIONS = Object.freeze([
 ])
 
 export const PHONE_BACKGROUND_OPTIONS = Object.freeze([
+  '#111827',
+  '#374151',
+  '#6b7280',
+  '#9ca3af',
+  '#e5e7eb',
+  '#ef4444',
+  '#f97316',
+  '#f59e0b',
+  '#eab308',
+  '#84cc16',
+  '#22c55e',
   '#1509fb',
+  '#1d4ed8',
   '#2563eb',
+  '#06b6d4',
+  '#14b8a6',
   '#059669',
+  '#6366f1',
+  '#a855f7',
+  '#d946ef',
+  '#ec4899',
   '#be123c',
   '#6d28d9',
-  '#374151',
 ])
 
 const PHONE_SIZE_SCALE = Object.freeze({

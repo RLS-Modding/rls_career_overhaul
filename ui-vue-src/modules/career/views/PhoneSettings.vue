@@ -80,34 +80,6 @@
                 @click="setBackgroundColor(color)"
                 :title="color"
               ></button>
-              <label class="custom-color-picker">
-                <span>Picker</span>
-                <input
-                  type="color"
-                  :value="phoneSettings.backgroundColor"
-                  @input="onCustomColorPickerInput($event.target.value)"
-                />
-              </label>
-            </div>
-            <div class="custom-color-manual">
-              <span class="custom-color-prefix">Hex</span>
-              <input
-                class="custom-color-text-input"
-                type="text"
-                :value="customColorValue"
-                maxlength="7"
-                spellcheck="false"
-                placeholder="#RRGGBB"
-                @input="onCustomColorTextInput($event.target.value)"
-                @keydown.enter.prevent="applyCustomColor"
-              />
-              <button
-                class="small-action"
-                :disabled="!canApplyCustomColor"
-                @click="applyCustomColor"
-              >
-                Apply
-              </button>
             </div>
           </div>
         </details>
@@ -122,7 +94,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { lua } from '@/bridge'
 import PhoneWrapper from './PhoneWrapper.vue'
 import {
@@ -144,8 +116,6 @@ const saveError = ref(false)
 const folderImages = ref([])
 const folderPath = ref('/phone-backgrounds/')
 const wallpaperAspectRatioLabel = '9:16'
-const customColorValue = ref(phoneSettings.backgroundColor)
-const HEX_COLOR_PATTERN = /^#[0-9a-fA-F]{6}$/
 
 let saveTimer = null
 let clearStateTimer = null
@@ -157,12 +127,6 @@ const selectedPhoneSizeLabel = computed(() => {
 
 const wallpaperSelectionLabel = computed(() => {
   return phoneSettings.backgroundImage ? 'Custom image' : 'Using color'
-})
-
-const normalizedCustomColor = computed(() => customColorValue.value.trim().toLowerCase())
-
-const canApplyCustomColor = computed(() => {
-  return HEX_COLOR_PATTERN.test(normalizedCustomColor.value) && normalizedCustomColor.value !== phoneSettings.backgroundColor
 })
 
 function setSaveState(text, isError = false) {
@@ -206,23 +170,6 @@ function setBackgroundColor(value) {
   if (phoneSettings.backgroundColor === value) return
   setPhoneSettings({ backgroundColor: value })
   queueSave()
-}
-
-function onCustomColorPickerInput(value) {
-  customColorValue.value = value
-  setBackgroundColor(value)
-}
-
-function onCustomColorTextInput(value) {
-  customColorValue.value = value
-}
-
-function applyCustomColor() {
-  if (!HEX_COLOR_PATTERN.test(normalizedCustomColor.value)) {
-    setSaveState('Use format #RRGGBB', true)
-    return
-  }
-  setBackgroundColor(normalizedCustomColor.value)
 }
 
 function selectFolderImage(path) {
@@ -284,16 +231,6 @@ onMounted(async () => {
 
   await loadFolderImages()
 })
-
-watch(
-  () => phoneSettings.backgroundColor,
-  (nextValue) => {
-    if (customColorValue.value !== nextValue) {
-      customColorValue.value = nextValue
-    }
-  },
-  { immediate: true }
-)
 
 onUnmounted(() => {
   if (saveTimer) {
@@ -545,53 +482,6 @@ onUnmounted(() => {
     border-radius: 4px;
     background: rgba(255, 255, 255, 0.9);
   }
-}
-
-.custom-color-picker {
-  margin-left: auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.72);
-
-  input {
-    width: 30px;
-    height: 24px;
-    border: 0;
-    border-radius: 6px;
-    background: none;
-    padding: 0;
-    cursor: pointer;
-  }
-}
-
-.custom-color-manual {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.custom-color-prefix {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.custom-color-text-input {
-  flex: 1;
-  min-width: 0;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.92);
-  border-radius: 8px;
-  padding: 6px 8px;
-  font-size: 12px;
-  letter-spacing: 0.02em;
-}
-
-.small-action:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
 }
 
 .settings-footer {
