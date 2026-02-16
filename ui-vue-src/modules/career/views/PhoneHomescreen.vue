@@ -1,6 +1,6 @@
 <template>
   <PhoneWrapper app-name="Home" :custom-back="handleBack">
-    <div ref="homescreenRef" class="homescreen" :style="wallpaperStyle">
+    <div ref="homescreenRef" class="homescreen" :style="baseBackgroundStyle">
       <!-- Pages container -->
       <div
         ref="viewportRef"
@@ -20,6 +20,7 @@
             v-for="(page, pageIdx) in pages"
             :key="'page-' + pageIdx"
             class="page apps-page"
+            :style="appsPageStyle"
           >
             <div class="app-grid">
               <div
@@ -45,7 +46,7 @@
           </div>
 
           <!-- Search page -->
-          <div class="page search-page">
+          <div class="page search-page" :style="listScreenStyle">
             <PhoneSearch
               :apps="availableApps"
               :seen-apps="seenApps"
@@ -194,13 +195,26 @@ const pageOffset = computed(() => {
   return base + pageDragDelta.value
 })
 
-const wallpaperStyle = computed(() => {
+const baseBackgroundStyle = computed(() => ({
+  background: `linear-gradient(to bottom, #000000, ${phoneSettings.backgroundColor})`,
+}))
+
+const appsPageStyle = computed(() => {
   const bgImage = phoneSettings.backgroundImage
   if (bgImage) {
-    return { backgroundImage: `url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+    return {
+      backgroundImage: `url(${bgImage})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+    }
   }
-  return { background: `linear-gradient(to bottom, #000000, ${phoneSettings.backgroundColor})` }
+  return {}
 })
+
+const listScreenStyle = computed(() => ({
+  background: `linear-gradient(to bottom, #000000, ${phoneSettings.backgroundColor})`,
+}))
 
 // ─── Layout building ───
 function buildDefaultLayout() {
@@ -776,7 +790,7 @@ onUnmounted(() => {
 .page {
   flex: 0 0 360px;
   width: 360px;
-  height: auto;
+  height: 100%;
   padding: 8px 14px;
   box-sizing: border-box;
 }
