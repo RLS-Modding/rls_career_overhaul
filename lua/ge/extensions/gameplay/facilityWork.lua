@@ -13,6 +13,10 @@ local utils = (function()
     local ok, mod = pcall(require, 'gameplay/events/freeroam/utils')
     return ok and mod or nil
 end)()
+local core_groundMarkers = (function()
+    local ok, mod = pcall(require, 'core/groundMarkers')
+    return ok and mod or nil
+end)()
 
 local ZONE_LENIENCY_M = 3
 
@@ -95,10 +99,25 @@ local MAX_PERSISTENT_PROPS = 50
 
 -- Current batch
 local currentForkliftId = nil
-local currentBatch = nil  -- { facilityId, dropTrigger, propIds = {}, moneyPerProp = {}, organizationId, repPerProp }
+local currentBatch = nil  -- { facilityId, dropTrigger, propIds = {}, moneyPerProp = {}, organizationId, repPerProp, materialName }
 
 -- Props that have entered the drop zone this batch (all must be in before we credit/despawn)
 local propsInDropZone = {}
+
+-- AI truck: spawn at facilityWork_truckSpawn, drive to node 18 of road, wait for "Complete loading", then drive to last node and despawn
+local TRUCK_SPAWN_SPOT_NAME = "facilityWork_truckSpawn"
+local TRUCK_ARRIVAL_RADIUS_M = 10
+local TRUCK_LOAD_COUNT = 4
+local TRUCK_LOADING_BONUS_DEFAULT = 500   -- bonus pay when player completes loading and truck departs
+local TRUCK_SPAWN_INTERVAL_REAL_SEC = 300 -- next truck spawns 5 minutes (real time) after previous departs
+local truckVehicleId = nil
+local truckNextSpawnTime = nil            -- os.clock() when to spawn next truck (nil = no timer)
+local truckState = nil  -- "driving_to_pickup" | "waiting_for_load" | "driving_to_end"
+local truckRoadNodes = nil  -- { {x,y,z}, ... }
+local truckTargetNodeIndex = nil  -- 0-based index of current waypoint
+local truckLoadPropIds = {}  -- up to 4 prop IDs reserved for this truck (despawn with truck)
+local truckMaterialName = nil  -- for notification "Load 4 of [name]"
+local truckFacilityId = nil
 
 -- All items in zone; wait for forklift to exit drop zone before paying out (so player "puts down" and leaves the bay)
 local batchReadyWaitingForkliftExit = false
@@ -108,6 +127,9 @@ local dropTriggersByName = {}
 
 -- Drop-zone corner markers (bus.lua-style)
 local dropMarkerObjects = {}
+
+-- Fallback level ID to load facilityWorkConfig.json when current level has no config (e.g. custom maps with same zone names).
+local CONFIG_FALLBACK_LEVEL = "west_coast_usa"
 
 local function loadConfig()
     local levelId = getCurrentLevelIdentifier()
@@ -119,6 +141,24 @@ local function loadConfig()
     if not levelInfo or not levelInfo.dir then return false end
     local path = levelInfo.dir .. "/facilityWorkConfig.json"
     local data = jsonReadFile(path)
+    -- If current level has no config, try fallback level then FS search (mod levels may live under different path)
+    if (not data or not data.materials) and core_levels and core_levels.getLevelByName then
+        local fallbackInfo = core_levels.getLevelByName(CONFIG_FALLBACK_LEVEL)
+        if fallbackInfo and fallbackInfo.dir then
+            local fallbackPath = fallbackInfo.dir .. "/facilityWorkConfig.json"
+            data = jsonReadFile(fallbackPath)
+        end
+    end
+    if (not data or not data.materials) and FS and FS.findFiles then
+        local candidates = FS:findFiles("levels/", "facilityWorkConfig.json", -1, true, false) or {}
+        for _, p in ipairs(candidates) do
+            local d = jsonReadFile(p)
+            if d and d.materials then
+                data = d
+                break
+            end
+        end
+    end
     if not data or not data.materials then return false end
     materialsById = data.materials
     facilityConfigs = {}
@@ -296,6 +336,69 @@ local function resolveDropTriggers(triggerNames)
     return out
 end
 
+-- Get road nodes from a DecalRoad by scenetree name. Returns { {x,y,z}, ... } or nil. Node index in config is 1-based (node 18 = index 18).
+local function getRoadNodes(roadName)
+    if not roadName or roadName == "" then return nil end
+    local road = scenetree.findObject(roadName)
+    if not road or (road.getClassName and road:getClassName() ~= "DecalRoad") then return nil end
+    local nodeCount = (road.getNodeCount and road:getNodeCount()) or 0
+    if not nodeCount or nodeCount < 1 then return nil end
+    local nodes = {}
+    for i = 0, nodeCount - 1 do
+        local pos = road:getNodePosition(i)
+        if pos then
+            table.insert(nodes, { x = pos.x, y = pos.y, z = pos.z })
+        end
+    end
+    return #nodes > 0 and nodes or nil
+end
+
+-- Build script array for ai.driveUsingPath({ script = ... }). Nodes are 1-based table of {x,y,z}. fromIdx, toIdx are 1-based inclusive.
+local function buildScriptPath(nodes, fromIdx, toIdx)
+    if not nodes or fromIdx < 1 or toIdx > #nodes or fromIdx > toIdx then return nil end
+    local script = {}
+    for i = fromIdx, toIdx do
+        local n = nodes[i]
+        if n then
+            local x = n.x or n[1] or 0
+            local y = n.y or n[2] or 0
+            local z = n.z or n[3] or 0
+            table.insert(script, { x = x, y = y, z = z })
+        end
+    end
+    return #script > 0 and script or nil
+end
+
+-- Serialize script path to Lua table string for vehicle queueLuaCommand.
+local function serializeScriptPath(script)
+    if not script or #script == 0 then return "{}" end
+    local parts = {}
+    for _, p in ipairs(script) do
+        local x = p.x or p[1] or 0
+        local y = p.y or p[2] or 0
+        local z = p.z or p[3] or 0
+        table.insert(parts, string.format("{x=%s,y=%s,z=%s}", x, y, z))
+    end
+    return "{" .. table.concat(parts, ",") .. "}"
+end
+
+-- Send AI drive using waypoint script: vehicle is teleported to first node then drives along path (ai.driveUsingPath(script)).
+local function sendTruckDriveScript(vehObj, scriptPath)
+    if not vehObj or not scriptPath or #scriptPath == 0 then return end
+    local serialized = (type(serialize) == "function" and serialize(scriptPath)) or serializeScriptPath(scriptPath)
+    vehObj:queueLuaCommand("if not ai then extensions.load('ai') end")
+    vehObj:queueLuaCommand("input.event('parkingbrake', 0, 1)")
+    vehObj:queueLuaCommand("if ai.setAvoidCars then ai.setAvoidCars('off') end")
+    vehObj:queueLuaCommand("ai.driveUsingPath({ script = " .. serialized .. ", avoidCars = 'off', routeSpeedMode = 'limit', routeSpeed = 14 })")
+end
+
+-- Stop truck AI (parking brake, stop mode).
+local function sendTruckStop(vehObj)
+    if not vehObj then return end
+    vehObj:queueLuaCommand("if ai and ai.setMode then ai.setMode('stop') end")
+    vehObj:queueLuaCommand("input.event('parkingbrake', 1, 1)")
+end
+
 -- Create a corner marker TSStatic for drop-zone visualization.
 local function createCornerMarker(markerName)
     local marker = createObject('TSStatic')
@@ -408,17 +511,13 @@ local function setTasklistOnDuty()
 end
 
 -- Phone app: build state for UI (onDuty, session stats, available on this level)
+-- Available if config loads and at least one facility has a valid spawn zone. Drop trigger is checked when starting shift.
 local function isFacilityWorkAvailable()
     if not loadConfig() then return false end
-    -- Check if any facility has a valid spawn zone
     for fid, cfg in pairs(facilityConfigs) do
         local zoneName = cfg.spawnZone or SPAWN_ZONE_NAME
         local verts = getSpawnZoneVertices(zoneName)
-        if verts and #verts >= 3 then
-            local triggerNames = (cfg.triggers and #cfg.triggers > 0) and cfg.triggers or DROP_TRIGGER_NAMES
-            local resolved = resolveDropTriggers(triggerNames)
-            for _ in pairs(resolved) do return true end
-        end
+        if verts and #verts >= 3 then return true end
     end
     return false
 end
@@ -445,7 +544,8 @@ local function getFacilityWorkState()
         available = isFacilityWorkAvailable(),
         facilities = getAvailableFacilities(),
         selectedFacilityId = selectedFacilityId,
-        preferredBatchSize = preferredBatchSize
+        preferredBatchSize = preferredBatchSize,
+        truckWaitingForLoad = (truckState == "waiting_for_load")
     }
 end
 
@@ -530,7 +630,8 @@ local function spawnBatch(facilityId)
         propIds = propIds,
         moneyPerProp = moneyPerProp,
         repPerProp = repPerProp,
-        organizationId = facCfg.organizationId
+        organizationId = facCfg.organizationId,
+        materialName = mat.name or spawnDef.materialId or "materials"
     }
     return true
 end
@@ -545,6 +646,76 @@ local function despawnBatch()
         end
     end
     currentBatch = nil
+end
+
+-- Clear AI truck state and despawn truck + reserved load props (no path references; vehicle from config).
+local function clearTruckState()
+    if truckVehicleId then
+        local obj = be:getObjectByID(truckVehicleId)
+        if obj then obj:delete() end
+        truckVehicleId = nil
+    end
+    for _, pid in ipairs(truckLoadPropIds) do
+        local obj = be:getObjectByID(pid)
+        if obj then obj:delete() end
+    end
+    table.clear(truckLoadPropIds)
+    truckState = nil
+    truckRoadNodes = nil
+    truckTargetNodeIndex = nil
+    truckMaterialName = nil
+    truckFacilityId = nil
+end
+
+-- Spawn truck at facilityWork_truckSpawn, drive to pickup node (e.g. node 18). Config: facCfg.truck (model/config), facCfg.aiPickupRoadName, facCfg.aiPickupNodeIndex (1-based), facCfg.truckSpawnSpot.
+local function spawnTruckAndDriveToPickup(facilityId)
+    if truckState then return false end
+    if not loadConfig() then return false end
+    local facCfg = facilityConfigs[facilityId]
+    if not facCfg then return false end
+    local roadName = facCfg.aiPickupRoadName or "industrialWarehouse_aiPickup"
+    local nodes = getRoadNodes(roadName)
+    if not nodes or #nodes == 0 then return false end
+    -- aiPickupNodeIndex in config is 1-based (node 18); convert to 0-based
+    local pickupIndex1 = tonumber(facCfg.aiPickupNodeIndex) or 18
+    local pickupIndex0 = math.max(0, math.min(pickupIndex1 - 1, #nodes - 1))
+    local spotName = facCfg.truckSpawnSpot or TRUCK_SPAWN_SPOT_NAME
+    local spawnData = getForkliftSpawnPoint(spotName)
+    if not spawnData then
+        spawnData = getForkliftSpawnPoint("facilityWork_vehicle")
+    end
+    if not spawnData then return false end
+    local truckCfg = facCfg.truck or {}
+    local model = truckCfg.model or "md_series"
+    local config = truckCfg.config or "md_60_flatbed"
+    local vehObj = core_vehicles.spawnNewVehicle(model, {
+        pos = spawnData.pos,
+        rot = spawnData.rot,
+        config = config,
+        autoEnterVehicle = false
+    })
+    if not vehObj then return false end
+    truckVehicleId = vehObj:getID()
+    truckState = "driving_to_pickup"
+    truckRoadNodes = nodes
+    truckTargetNodeIndex = pickupIndex0
+    truckFacilityId = facilityId
+    -- Path from first road node to pickup node (script teleports truck to first node then drives)
+    local scriptToPickup = buildScriptPath(nodes, 1, pickupIndex0 + 1)
+    if scriptToPickup then
+        if core_jobsystem and core_jobsystem.create then
+            core_jobsystem.create(function(job)
+                job.sleep(0.5)
+                local v = be:getObjectByID(truckVehicleId)
+                if v and truckState == "driving_to_pickup" then
+                    sendTruckDriveScript(v, scriptToPickup)
+                end
+            end)
+        else
+            sendTruckDriveScript(vehObj, scriptToPickup)
+        end
+    end
+    return true
 end
 
 -- Complete batch (all props in drop zone): accumulate money/rep into session totals, despawn batch, spawn next.
@@ -593,7 +764,7 @@ local function payoutBatchAndSpawnNext()
     end
 end
 
--- End Shift: despawn forklift, props, session materials, markers, etc.
+-- End Shift: despawn forklift, props, session materials, markers, truck, etc.
 local function endShiftCleanup()
     if currentBatch then
         for _, pid in ipairs(currentBatch.propIds) do
@@ -613,6 +784,8 @@ local function endShiftCleanup()
         if obj then obj:delete() end
         currentForkliftId = nil
     end
+    clearTruckState()
+    truckNextSpawnTime = nil
 
     table.clear(sessionDeliveredVehicles)
     table.clear(propsInDropZone)
@@ -767,6 +940,10 @@ local function doStartFacilityWork()
     if utils and utils.displayMessage then
         utils.displayMessage("On duty. Use the company forklift to move materials.", 4)
     end
+    -- Spawn AI truck at facilityWork_truckSpawn if this facility has truck/road config (e.g. industrialWarehouse)
+    if facCfg.aiPickupRoadName and getRoadNodes(facCfg.aiPickupRoadName) and #(getRoadNodes(facCfg.aiPickupRoadName) or {}) > 0 then
+        spawnTruckAndDriveToPickup(facilityId)
+    end
     return true
 end
 
@@ -838,6 +1015,7 @@ local function onExtensionUnloaded()
         if obj then obj:delete() end
         currentForkliftId = nil
     end
+    clearTruckState()
 
     table.clear(sessionDeliveredVehicles)
     table.clear(propsInDropZone)
@@ -848,6 +1026,94 @@ local function onExtensionUnloaded()
         utils.restoreTrafficAmount()
     end
     guihooks.trigger('ClearTasklist')
+end
+
+-- Update truck AI: check arrival at pickup node or at end node, then stop or despawn. Also spawn next truck when interval timer fires.
+local function onUpdate(dtReal, dtSim, dtRaw)
+    if not career_career or not career_career.isActive() then return end
+    -- On duty with no truck and interval timer expired: spawn next truck (every 5 min real time)
+    if currentForkliftId and not truckState and truckNextSpawnTime and os.clock() >= truckNextSpawnTime then
+        truckNextSpawnTime = nil
+        local facilityId = selectedFacilityId
+        if facilityId and facilityConfigs[facilityId] then
+            local facCfg = facilityConfigs[facilityId]
+            if facCfg.aiPickupRoadName and getRoadNodes(facCfg.aiPickupRoadName) and #(getRoadNodes(facCfg.aiPickupRoadName) or {}) > 0 then
+                spawnTruckAndDriveToPickup(facilityId)
+                if utils and utils.displayMessage then
+                    utils.displayMessage("Next truck arriving.", 3)
+                end
+            end
+        end
+    end
+    if not truckState or not truckRoadNodes or not truckVehicleId then return end
+    local vehObj = be:getObjectByID(truckVehicleId)
+    if not vehObj then
+        clearTruckState()
+        notifyPhoneState()
+        return
+    end
+    local pos = vehObj:getPosition()
+    local targetNode = truckRoadNodes[truckTargetNodeIndex + 1]
+    if not targetNode then return end
+    local dx = (targetNode.x or 0) - pos.x
+    local dy = (targetNode.y or 0) - pos.y
+    local dz = (targetNode.z or 0) - pos.z
+    local dist = math.sqrt(dx * dx + dy * dy + dz * dz)
+
+    if truckState == "driving_to_pickup" then
+        if dist < TRUCK_ARRIVAL_RADIUS_M then
+            sendTruckStop(vehObj)
+            truckState = "waiting_for_load"
+            -- Reserve 4 props from current batch for this truck (remove from batch so they won't be paid on drop)
+            local materialName = "materials"
+            if currentBatch and #currentBatch.propIds >= 1 then
+                materialName = currentBatch.materialName or materialName
+                local nTake = math.min(TRUCK_LOAD_COUNT, #currentBatch.propIds)
+                for i = 1, nTake do
+                    table.insert(truckLoadPropIds, currentBatch.propIds[i])
+                end
+                -- Remove first nTake from batch (rebuild arrays)
+                local newPropIds, newMoney, newRep = {}, {}, {}
+                for i = nTake + 1, #currentBatch.propIds do
+                    table.insert(newPropIds, currentBatch.propIds[i])
+                    table.insert(newMoney, currentBatch.moneyPerProp[i])
+                    table.insert(newRep, currentBatch.repPerProp[i])
+                end
+                currentBatch.propIds = newPropIds
+                currentBatch.moneyPerProp = newMoney
+                currentBatch.repPerProp = newRep
+            end
+            truckMaterialName = materialName
+            -- Set navigation to truck position
+            if core_groundMarkers and core_groundMarkers.setPath then
+                core_groundMarkers.setPath(pos, { clearPathOnReachingTarget = false })
+            end
+            if utils and utils.displayMessage then
+                utils.displayMessage("Load 4 of " .. materialName .. " onto the truck. Navigation set to truck. When done, tap Complete loading in Facility Work.", 8)
+            end
+            notifyPhoneState()
+        end
+    elseif truckState == "driving_to_end" then
+        if dist < TRUCK_ARRIVAL_RADIUS_M then
+            -- Bonus pay for completing truck loading
+            local facId = truckFacilityId
+            local bonus = TRUCK_LOADING_BONUS_DEFAULT
+            if facId and facilityConfigs[facId] and facilityConfigs[facId].truckLoadingBonus then
+                bonus = tonumber(facilityConfigs[facId].truckLoadingBonus) or bonus
+            end
+            if career_economyAdjuster and career_economyAdjuster.getSectionMultiplier then
+                bonus = math.floor(bonus * (career_economyAdjuster.getSectionMultiplier("facilityWork") or 1))
+            end
+            sessionTotalPay = sessionTotalPay + bonus
+            updateTasklistValues()
+            clearTruckState()
+            truckNextSpawnTime = os.clock() + TRUCK_SPAWN_INTERVAL_REAL_SEC
+            if utils and utils.displayMessage then
+                utils.displayMessage("Truck departed with load. Loading bonus: $" .. tostring(bonus) .. ". Next truck in 5 min.", 5)
+            end
+            notifyPhoneState()
+        end
+    end
 end
 
 function M.requestFacilityWorkState()
@@ -876,6 +1142,34 @@ end
 function M.endFacilityWork()
     -- Explicit end shift from phone
     endShiftCleanup()
+end
+
+-- Called from phone when player taps "Complete loading": truck drives to last node then despawns with reserved materials.
+function M.completeTruckLoading()
+    if truckState ~= "waiting_for_load" or not truckRoadNodes or #truckRoadNodes == 0 or not truckVehicleId then return end
+    local vehObj = be:getObjectByID(truckVehicleId)
+    if not vehObj then
+        clearTruckState()
+        notifyPhoneState()
+        return
+    end
+    -- Path from current (pickup) node to last node. truckTargetNodeIndex is 0-based pickup index.
+    local fromIdx = truckTargetNodeIndex + 1  -- 1-based
+    local toIdx = #truckRoadNodes
+    local scriptToEnd = buildScriptPath(truckRoadNodes, fromIdx, toIdx)
+    truckTargetNodeIndex = toIdx - 1  -- 0-based last index for arrival check
+    truckState = "driving_to_end"
+    if scriptToEnd then
+        sendTruckDriveScript(vehObj, scriptToEnd)
+    end
+    if core_groundMarkers and core_groundMarkers.setPath then
+        core_groundMarkers.setPath(nil)
+    end
+    notifyPhoneState()
+end
+
+function M.onUpdate(dtReal, dtSim, dtRaw)
+    onUpdate(dtReal, dtSim, dtRaw)
 end
 
 M.onBeamNGTrigger = onBeamNGTrigger

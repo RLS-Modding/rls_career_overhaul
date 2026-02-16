@@ -84,6 +84,10 @@
     "facilityWork_drop12","facilityWork_drop13"],
     "stackHeight": 0.5,
     "spawnRotationZ": 180,
+    "truck": {"model": "md_series", "config": "md_60_flatbed"},
+    "aiPickupRoadName": "industrialWarehouse_aiPickup",
+    "aiPickupNodeIndex": 18,
+    "truckSpawnSpot": "facilityWork_truckSpawn",
     "spawns": [
       { "materialId": "largeLumber"},
       { "materialId": "smallLumber"},

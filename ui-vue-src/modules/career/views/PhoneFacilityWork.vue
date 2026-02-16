@@ -83,17 +83,29 @@
                     >
                         End shift
                     </button>
+                    <button
+                        class="action-button complete-loading-btn"
+                        v-if="onDuty && truckWaitingForLoad"
+                        @click="completeLoading"
+                    >
+                        Complete loading
+                    </button>
                 </div>
 
                 <!-- Info message when off duty -->
                 <div class="info-panel" v-if="!onDuty && available">
                     <p>Tap <strong>Start shift</strong> to begin. A forklift will spawn for you. Move materials to the drop zone to earn pay and rep.</p>
                 </div>
+                <!-- Hint when facilities exist but Start shift not available (e.g. missing drop trigger) -->
+                <div class="info-panel disabled-msg" v-if="!onDuty && !available && facilities.length > 0">
+                    <p>Start shift is not available on this map. Add a drop trigger (e.g. <strong>facilityWork_drop</strong>) and ensure the spawn zone exists in the level.</p>
+                </div>
             </div>
 
-            <!-- Unavailable message -->
-            <div class="disabled-msg" v-if="!available && facilities.length === 0">
-                Facility work is not available on this map.
+            <!-- Unavailable message only when no facilities at all (config not loaded or no facilities for this level) -->
+            <div class="disabled-msg" v-if="facilities.length === 0">
+                <p>Facility work is not available on this map.</p>
+                <p class="hint">Ensure this level has <code>facilityWorkConfig.json</code> and at least one facility with a spawn zone.</p>
             </div>
         </div>
     </PhoneWrapper>
@@ -116,6 +128,7 @@ const available = ref(false)
 const facilities = ref([])
 const selectedFacilityId = ref(null)
 const batchSize = ref(8)
+const truckWaitingForLoad = ref(false)
 
 // Computed
 const statusText = computed(() => {
@@ -189,6 +202,15 @@ const endShift = async () => {
     }
 }
 
+const completeLoading = async () => {
+    try {
+        window.bngApi.engineLua('gameplay_facilityWork.completeTruckLoading()')
+        await lua.gameplay_facilityWork.requestFacilityWorkState()
+    } catch (e) {
+        console.error("Facility Work Error:", e)
+    }
+}
+
 // Event Handling
 const updateState = (data) => {
     if (!data) return
@@ -205,6 +227,7 @@ const updateState = (data) => {
         const fac = facilities.value.find(x => x.id === selectedFacilityId.value)
         if (fac) batchSize.value = fac.batchSize
     }
+    truckWaitingForLoad.value = !!data.truckWaitingForLoad
 }
 
 onMounted(async () => {
@@ -393,6 +416,12 @@ onUnmounted(() => {
         background: #1b3d16;
         color: white;
     }
+
+    &.complete-loading-btn {
+        background: #c17a0a;
+        color: white;
+        margin-top: 0.5em;
+    }
 }
 
 .info-panel {
@@ -416,6 +445,19 @@ onUnmounted(() => {
     margin-top: 0.5em;
     font-weight: 600;
     padding: 0.5em;
+
+    .hint {
+        font-size: 0.9em;
+        font-weight: 500;
+        color: #666;
+        margin-top: 0.5em;
+    }
+    code {
+        font-family: monospace;
+        background: rgba(0,0,0,0.06);
+        padding: 0.1em 0.3em;
+        border-radius: 4px;
+    }
 }
 
 .text-grey { color: #999; }
