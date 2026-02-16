@@ -18,17 +18,34 @@
         </div>
 
         <div class="setting-group">
-          <div class="setting-label">Background Picture URL</div>
-          <input
-            v-model.trim="backgroundImageInput"
-            class="picture-input"
-            type="text"
-            placeholder="https://example.com/phone-bg.jpg"
-            @change="applyBackgroundImage"
-          />
+          <div class="setting-row">
+            <div class="setting-label">Background Picture (Folder)</div>
+            <div class="setting-actions">
+              <button class="small-action" @click="openFolderInExplorer">Open Folder</button>
+              <button class="small-action" @click="loadFolderImages">Refresh</button>
+            </div>
+          </div>
+          <div class="folder-hint">
+            Folder: <code>{{ folderPath }}</code>
+          </div>
+          <div class="image-grid" v-if="folderImages.length">
+            <button
+              v-for="entry in folderImages"
+              :key="entry.path"
+              class="image-tile"
+              :class="{ active: phoneSettings.backgroundImage === entry.path }"
+              @click="selectFolderImage(entry.path)"
+              :title="entry.name"
+            >
+              <img :src="entry.path" :alt="entry.name" />
+              <span>{{ entry.name }}</span>
+            </button>
+          </div>
+          <div class="empty-folder" v-else>
+            No images found in the folder yet.
+          </div>
           <div class="picture-actions">
-            <button class="option-button" @click="applyBackgroundImage">Apply Picture</button>
-            <button class="option-button" @click="clearBackgroundImage">Use Color</button>
+            <button class="option-button" @click="clearBackgroundImage">Use Color Instead</button>
           </div>
         </div>
 
@@ -84,10 +101,11 @@ const {
 
 const saveStateText = ref('')
 const saveError = ref(false)
+const folderImages = ref([])
+const folderPath = ref('/phone-backgrounds/')
 
 let saveTimer = null
 let clearStateTimer = null
-const backgroundImageInput = ref(phoneSettings.backgroundImage || '')
 
 function setSaveState(text, isError = false) {
   saveStateText.value = text
@@ -132,16 +150,14 @@ function setBackgroundColor(value) {
   queueSave()
 }
 
-function applyBackgroundImage() {
-  const next = (backgroundImageInput.value || '').trim()
-  if (phoneSettings.backgroundImage === next) return
-  setPhoneSettings({ backgroundImage: next })
+function selectFolderImage(path) {
+  if (phoneSettings.backgroundImage === path) return
+  setPhoneSettings({ backgroundImage: path })
   queueSave()
 }
 
 function clearBackgroundImage() {
   if (!phoneSettings.backgroundImage) return
-  backgroundImageInput.value = ''
   setPhoneSettings({ backgroundImage: '' })
   queueSave()
 }
@@ -151,17 +167,47 @@ function resetDefaults() {
   queueSave()
 }
 
+async function loadFolderImages() {
+  try {
+    await lua.extensions.load('ui_phone_layout')
+    const folder = await lua.ui_phone_layout?.getBackgroundFolder?.()
+    if (typeof folder === 'string' && folder.trim()) {
+      folderPath.value = folder
+    }
+    const images = await lua.ui_phone_layout?.listBackgroundImages?.()
+    folderImages.value = Array.isArray(images) ? images : []
+  } catch (e) {
+    console.warn('Failed to list phone background images', e)
+    folderImages.value = []
+  }
+}
+
+async function openFolderInExplorer() {
+  try {
+    await lua.extensions.load('ui_phone_layout')
+    const ok = await lua.ui_phone_layout?.openBackgroundFolder?.()
+    if (ok === false) {
+      setSaveState('Could not open folder', true)
+      return
+    }
+  } catch (e) {
+    console.warn('Failed to open phone backgrounds folder', e)
+    setSaveState('Could not open folder', true)
+  }
+}
+
 onMounted(async () => {
   try {
     await lua.extensions.load('ui_phone_layout')
     const fromLua = await lua.ui_phone_layout?.getSettings?.()
     if (fromLua) {
       replacePhoneSettings(fromLua)
-      backgroundImageInput.value = fromLua.backgroundImage || ''
     }
   } catch (e) {
     console.warn('Failed to load phone settings', e)
   }
+
+  await loadFolderImages()
 })
 
 onUnmounted(() => {
@@ -202,6 +248,18 @@ onUnmounted(() => {
   gap: 8px;
 }
 
+.setting-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.setting-actions {
+  display: flex;
+  gap: 6px;
+}
+
 .setting-label {
   color: rgba(255, 255, 255, 0.88);
   font-size: 12px;
@@ -209,20 +267,28 @@ onUnmounted(() => {
   letter-spacing: 0.02em;
 }
 
+.small-action {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.9);
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.folder-hint {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 11px;
+
+  code {
+    color: rgba(255, 255, 255, 0.95);
+  }
+}
+
 .option-row {
   display: flex;
   gap: 8px;
-}
-
-.picture-input {
-  width: 100%;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.92);
-  border-radius: 10px;
-  padding: 8px 10px;
-  font-size: 12px;
-  outline: none;
 }
 
 .picture-actions {
@@ -246,6 +312,55 @@ onUnmounted(() => {
     background: rgba(37, 99, 235, 0.35);
     border-color: rgba(96, 165, 250, 0.9);
   }
+}
+
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  max-height: 170px;
+  overflow-y: auto;
+}
+
+.image-tile {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+
+  &.active {
+    border-color: rgba(96, 165, 250, 0.9);
+    box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.6) inset;
+  }
+
+  img {
+    width: 100%;
+    height: 58px;
+    object-fit: cover;
+    display: block;
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+  span {
+    display: block;
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.85);
+    padding: 4px 6px 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.empty-folder {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.65);
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 10px;
 }
 
 .color-row {

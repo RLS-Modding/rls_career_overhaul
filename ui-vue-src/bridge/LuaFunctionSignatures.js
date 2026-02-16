@@ -1448,6 +1448,9 @@ export default {
     updateLayout: layoutData => Any,
     getSettings: () => {},
     updateSettings: settingsData => Any,
+    listBackgroundImages: () => {},
+    getBackgroundFolder: () => {},
+    openBackgroundFolder: () => {},
     getCareerActive: () => {},
   },
 
