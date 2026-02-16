@@ -3,7 +3,7 @@
     ref="phoneRef"
     class="phone-wrapper" 
     :class="{ 'phone-entered': isEntered }"
-    :style="{ '--scale': scale }">
+    :style="wrapperStyle">
     <div class="phone-bevel"></div>
     <div class="phone-screen">
       <!-- Status Bar -->
@@ -47,6 +47,7 @@ import { ref, onMounted, onUnmounted, nextTick, computed } from 'vue'
 import { vBngOnUiNav } from "@/common/directives"
 import { useRouter, useRoute, onBeforeRouteUpdate, onBeforeRouteLeave } from 'vue-router'
 import { lua } from "@/bridge"
+import { usePhoneSettings, getPhoneScale } from '../composables/usePhoneSettings'
 
 function formatCash(m) {
   if (m == null || typeof m !== 'number') return '$0'
@@ -60,7 +61,7 @@ function formatCash(m) {
 const props = defineProps({
   scale: {
     type: Number,
-    default: 0.8
+    default: null
   },
   appName: {
     type: String,
@@ -74,6 +75,7 @@ const props = defineProps({
 const PHONE_TIME_KEY = 'phone_last_time'
 const PHONE_MONEY_KEY = 'phone_last_money'
 const PHONE_IS_CAREER_KEY = 'phone_is_career'
+const { phoneSettings } = usePhoneSettings()
 const events = useEvents()
 const timeString = ref(sessionStorage.getItem(PHONE_TIME_KEY) || '9:10')
 const router = useRouter()
@@ -107,6 +109,10 @@ const cashDisplay = computed(() => {
   if (!isCareer.value || careerMoney.value == null) return null
   return formatCash(careerMoney.value)
 })
+
+const wrapperStyle = computed(() => ({
+  '--scale': String(props.scale ?? getPhoneScale(phoneSettings)),
+}))
 
 const timeParts = computed(() => {
   const s = timeString.value || ''

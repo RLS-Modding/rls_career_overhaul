@@ -102,12 +102,14 @@ import PhoneAppIcon from '../components/phone/PhoneAppIcon.vue'
 import PhoneDock from '../components/phone/PhoneDock.vue'
 import PhoneSearch from '../components/phone/PhoneSearch.vue'
 import { usePhoneApps } from '../utils/phoneAppRegistry'
+import { usePhoneSettings } from '../composables/usePhoneSettings'
 
 const PAGE_WIDTH = 360
 
 const router = useRouter()
 const events = useEvents()
 const { availableApps, refreshApps, DEFAULT_DOCK_IDS, APPS_PER_PAGE } = usePhoneApps()
+const { phoneSettings, replacePhoneSettings, getPhoneSettingsSnapshot } = usePhoneSettings()
 
 // Layout state
 const dockIds = ref([...DEFAULT_DOCK_IDS])
@@ -193,10 +195,11 @@ const pageOffset = computed(() => {
 })
 
 const wallpaperStyle = computed(() => {
-  if (wallpaper.value === 'default') {
-    return { background: 'linear-gradient(to bottom, #000000, #1509fb)' }
+  const bgImage = phoneSettings.backgroundImage
+  if (bgImage) {
+    return { backgroundImage: `url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }
   }
-  return { backgroundImage: `url(${wallpaper.value})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+  return { background: `linear-gradient(to bottom, #000000, ${phoneSettings.backgroundColor})` }
 })
 
 // ─── Layout building ───
@@ -272,6 +275,14 @@ function applyLayout(data) {
     seenApps.value = new Set(data.seenApps || [])
     removedAppIds.value = new Set(data.removedAppIds || [])
     wallpaper.value = data.wallpaper || 'default'
+    if (data.settings) {
+      replacePhoneSettings(data.settings)
+    } else if (wallpaper.value !== 'default') {
+      replacePhoneSettings({
+        ...getPhoneSettingsSnapshot(),
+        backgroundImage: wallpaper.value,
+      })
+    }
 
     const allLayoutIds = new Set([
       ...dockIds.value.filter(Boolean),
@@ -311,6 +322,7 @@ function buildSaveData() {
     dock: dockIds.value.map(id => id || ''),
     seenApps: [...seenApps.value],
     removedAppIds: [...removedAppIds.value],
+    settings: getPhoneSettingsSnapshot(),
   }
 }
 

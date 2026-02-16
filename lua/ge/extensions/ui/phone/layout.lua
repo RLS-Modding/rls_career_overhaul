@@ -12,6 +12,39 @@ local saveFile = saveDir .. "/phoneLayout.json"
 local settingsRoot = "settings/RLS/"
 local globalFile = settingsRoot .. "phoneLayout.json"
 local layoutData = nil
+local validPhoneSizes = { small = true, normal = true, large = true }
+
+local function getDefaultSettings()
+  return {
+    phoneSize = "normal",
+    backgroundColor = "#1509fb",
+    backgroundImage = "",
+  }
+end
+
+local function normalizeSettings(rawSettings)
+  local defaults = getDefaultSettings()
+  local settings = type(rawSettings) == "table" and rawSettings or {}
+
+  local phoneSize = validPhoneSizes[settings.phoneSize] and settings.phoneSize or defaults.phoneSize
+  local backgroundColor = settings.backgroundColor
+  if type(backgroundColor) ~= "string" or not string.match(backgroundColor, "^#%x%x%x%x%x%x$") then
+    backgroundColor = defaults.backgroundColor
+  else
+    backgroundColor = string.lower(backgroundColor)
+  end
+
+  local backgroundImage = settings.backgroundImage
+  if type(backgroundImage) ~= "string" then
+    backgroundImage = defaults.backgroundImage
+  end
+
+  return {
+    phoneSize = phoneSize,
+    backgroundColor = backgroundColor,
+    backgroundImage = backgroundImage,
+  }
+end
 
 local function getDefaultLayout()
   return {
@@ -21,8 +54,15 @@ local function getDefaultLayout()
       { apps = {"loans", "repo", "marketplace", "car-meet", "quarry", "tuning-shop"} }
     },
     dock = {"guide", "beam-eats", "taxi", "bank"},
-    seenApps = {}
+    seenApps = {},
+    settings = getDefaultSettings(),
   }
+end
+
+local function normalizeLayoutData(data)
+  local normalized = type(data) == "table" and data or getDefaultLayout()
+  normalized.settings = normalizeSettings(normalized.settings)
+  return normalized
 end
 
 local function ensureSaveDir(currentSavePath)
@@ -78,7 +118,7 @@ local function loadLayout()
   if currentSavePath then
     local careerData = jsonReadFile(currentSavePath .. saveFile)
     if careerData then
-      layoutData = careerData
+      layoutData = normalizeLayoutData(careerData)
       return layoutData
     end
   end
@@ -86,18 +126,18 @@ local function loadLayout()
   -- 2) Global freeroam/default layout in settings
   local globalData = jsonReadFile(globalFile)
   if globalData then
-    layoutData = globalData
+    layoutData = normalizeLayoutData(globalData)
     return layoutData
   end
 
   -- 3) Hardcoded default layout
-  layoutData = getDefaultLayout()
+  layoutData = normalizeLayoutData(getDefaultLayout())
   return layoutData
 end
 
 local function saveLayout(data)
   if not data then return end
-  data = sanitizeFromJS(data)
+  data = normalizeLayoutData(sanitizeFromJS(data))
   local currentSavePath = getCurrentSavePath()
   local writePath = nil
   local ok = false
@@ -131,6 +171,26 @@ local function updateLayout(data)
   return saveLayout(data)
 end
 
+local function getSettings()
+  local data = loadLayout()
+  if type(data) ~= "table" then
+    return getDefaultSettings()
+  end
+  return normalizeSettings(data.settings)
+end
+
+local function updateSettings(settings)
+  local data = loadLayout() or getDefaultLayout()
+  local merged = normalizeSettings(data.settings)
+  if type(settings) == "table" then
+    for key, value in pairs(settings) do
+      merged[key] = value
+    end
+  end
+  data.settings = normalizeSettings(merged)
+  return saveLayout(data)
+end
+
 M.onSaveCurrentSaveSlot = function(currentSavePath)
   if layoutData then
     ensureSaveDir(currentSavePath)
@@ -147,6 +207,8 @@ end
 
 M.requestLayout = requestLayout
 M.updateLayout = updateLayout
+M.getSettings = getSettings
+M.updateSettings = updateSettings
 M.getCareerActive = isCareerActive
 
 return M
