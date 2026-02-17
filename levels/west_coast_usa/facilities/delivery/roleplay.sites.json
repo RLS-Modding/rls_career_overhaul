@@ -19,7 +19,7 @@
       },
       "isMultiSpot":false,
       "name":"Hospital Entrance",
-      "oldId":12920,
+      "oldId":49680,
       "pos":[
         -231.44441223145,
         437.36383056641,
@@ -55,7 +55,7 @@
       },
       "isMultiSpot":false,
       "name":"paramedicWorkParking",
-      "oldId":12921,
+      "oldId":49681,
       "pos":[
         -291.77017211914,
         461.49496459961,
@@ -91,7 +91,7 @@
       },
       "isMultiSpot":false,
       "name":"ambulanceLoaner",
-      "oldId":12922,
+      "oldId":49682,
       "pos":[
         -278.64749145508,
         451.42492675781,
@@ -127,7 +127,7 @@
       },
       "isMultiSpot":false,
       "name":"busWork_parking",
-      "oldId":12923,
+      "oldId":49683,
       "pos":[
         -418.38681030273,
         453.39505004883,
@@ -163,7 +163,7 @@
       },
       "isMultiSpot":false,
       "name":"busLoaner_parking",
-      "oldId":12924,
+      "oldId":49684,
       "pos":[
         -402.74322509766,
         455.15872192383,
@@ -199,7 +199,7 @@
       },
       "isMultiSpot":false,
       "name":"facilityWork_industrialWarehouse",
-      "oldId":12925,
+      "oldId":49685,
       "pos":[
         32.913333892822,
         740.23822021484,
@@ -235,7 +235,7 @@
       },
       "isMultiSpot":false,
       "name":"facilityWork_shuffleboard",
-      "oldId":12926,
+      "oldId":49686,
       "pos":[
         -300.74145507813,
         -150.15594482422,
@@ -270,8 +270,8 @@
         "values":{}
       },
       "isMultiSpot":false,
-      "name":"facilityWork_truckSpawn",
-      "oldId":12927,
+      "name":"facilityWork_truckSpawn_industrialWarehouse",
+      "oldId":49687,
       "pos":[
         8.662935256958,
         854.79992675781,
@@ -282,6 +282,42 @@
         0,
         -0.7092364759331,
         -0.70497057951485
+      ],
+      "scl":[
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount":1,
+      "spotDirection":"Left",
+      "spotOffset":0,
+      "spotRotation":0
+    },
+    {
+      "color":[
+        1,
+        1,
+        1
+      ],
+      "customFields":{
+        "names":{},
+        "tags":{},
+        "types":{},
+        "values":{}
+      },
+      "isMultiSpot":false,
+      "name":"facilityWork_truckSpawn_shuffleboard",
+      "oldId":49688,
+      "pos":[
+        -313.9892578125,
+        -140.58044433594,
+        119.40605163574
+      ],
+      "rot":[
+        0,
+        0,
+        -0.30223247408867,
+        0.95323419570923
       ],
       "scl":[
         2.5,
@@ -321,7 +357,7 @@
         "values":{}
       },
       "name":"industrialWarehouse_facilityWork",
-      "oldId":12918,
+      "oldId":49678,
       "top":{
         "active":false,
         "normal":[
@@ -384,7 +420,7 @@
         "values":{}
       },
       "name":"shuffleboard_facilityWork",
-      "oldId":12919,
+      "oldId":49679,
       "top":{
         "active":false,
         "normal":[

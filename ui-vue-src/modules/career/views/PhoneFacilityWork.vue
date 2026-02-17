@@ -90,6 +90,13 @@
                     >
                         Complete loading
                     </button>
+                    <button
+                        class="action-button repair-btn"
+                        v-if="onDuty"
+                        @click="repairForklift"
+                    >
+                        Repair forklift
+                    </button>
                 </div>
 
                 <!-- Info message when off duty -->
@@ -205,6 +212,15 @@ const endShift = async () => {
 const completeLoading = async () => {
     try {
         window.bngApi.engineLua('gameplay_facilityWork.completeTruckLoading()')
+        await lua.gameplay_facilityWork.requestFacilityWorkState()
+    } catch (e) {
+        console.error("Facility Work Error:", e)
+    }
+}
+
+const repairForklift = async () => {
+    try {
+        window.bngApi.engineLua('gameplay_facilityWork.repairForklift()')
         await lua.gameplay_facilityWork.requestFacilityWorkState()
     } catch (e) {
         console.error("Facility Work Error:", e)
@@ -419,6 +435,12 @@ onUnmounted(() => {
 
     &.complete-loading-btn {
         background: #c17a0a;
+        color: white;
+        margin-top: 0.5em;
+    }
+
+    &.repair-btn {
+        background: #5c4a2a;
         color: white;
         margin-top: 0.5em;
     }

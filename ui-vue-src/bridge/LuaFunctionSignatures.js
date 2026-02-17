@@ -1448,7 +1448,8 @@ export default {
     setBatchSize: (size) => {},
     requestFacilityWorkState: () => {},
     startFacilityWork: () => {},
-    endFacilityWork: () => {}
+    endFacilityWork: () => {},
+    repairForklift: () => {}
   },
 
   ui_phone_layout: {
