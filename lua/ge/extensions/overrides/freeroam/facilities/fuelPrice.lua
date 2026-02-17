@@ -32,10 +32,10 @@ local function stableHash(str)
 end
 
 local function getEconomyMultiplier()
-  if career_modules_globalEconomy and career_modules_globalEconomy.getGlobalIndex then
-    return career_modules_globalEconomy.getGlobalIndex()
+  if career_modules_globalEconomy and career_modules_globalEconomy.getFuelPriceMultiplier then
+    return career_modules_globalEconomy.getFuelPriceMultiplier()
   end
-  return 1.0
+  return career_modules_globalEconomy and career_modules_globalEconomy.getGlobalIndex and career_modules_globalEconomy.getGlobalIndex() or 1.0
 end
 
 local function getOrCreateSimGroup()

@@ -3,9 +3,9 @@ M.dependencies = { 'career_career', 'career_saveSystem' }
 
 -- Constants
 local SIM_SECONDS_PER_GAME_DAY = 1200
-local UPDATE_INTERVAL_SIM = 1200          -- Update every 1 game day (1200 sim-seconds)
+local UPDATE_INTERVAL_SIM = 300           -- Update every 5 minutes (sim-seconds)
 local MIN_INDEX = 0.5
-local MAX_INDEX = 1.5
+local MAX_INDEX = math.huge
 
 local saveDir = "/career/rls_career"
 local saveFile = saveDir .. "/globalEconomy.json"
@@ -88,29 +88,45 @@ end
 local function updateGlobalIndex(dtSim)
   local d = economyData
   if not d then return end
+  local cycleDays = dtSim / SIM_SECONDS_PER_GAME_DAY
+  local deviation = d.index - 1.0
+  local absDeviation = math.abs(deviation)
 
   -- Advance phase progress
   d.phaseProgress = d.phaseProgress + (dtSim / d.phaseDuration)
 
   -- Momentum adjustment based on phase
   if d.cyclePhase == "peak" then
-    d.momentum = d.momentum * (1 - 0.1 * (dtSim / SIM_SECONDS_PER_GAME_DAY))
-    if d.momentum < 0.0002 then d.momentum = 0 end
+    d.momentum = d.momentum * (1 - 0.12 * cycleDays)
+    -- Force rollover pressure when overheated so booms can actually break.
+    if d.index > 1.2 then
+      d.momentum = d.momentum - (0.0008 + (d.index - 1.2) * 0.0012) * cycleDays
+    end
+    if math.abs(d.momentum) < 0.0002 then d.momentum = 0 end
   elseif d.cyclePhase == "trough" then
-    d.momentum = d.momentum * (1 - 0.1 * (dtSim / SIM_SECONDS_PER_GAME_DAY))
+    d.momentum = d.momentum * (1 - 0.10 * cycleDays)
     if math.abs(d.momentum) < 0.0002 then d.momentum = 0 end
   else
     local baseMomentum = PHASE_MOMENTUM[d.cyclePhase] or 0
+    if d.cyclePhase == "growth" and deviation > 0 then
+      baseMomentum = baseMomentum * (1 - math.min(deviation, 1.5) * 0.7)
+    elseif d.cyclePhase == "decline" and deviation > 0 then
+      baseMomentum = baseMomentum - math.min(deviation, 2.0) * 0.0025
+    end
     local noise = (math.random() - 0.5) * 0.001
     d.momentum = d.momentum + (baseMomentum - d.momentum) * 0.05 + noise
   end
 
+  -- Mean reversion keeps long-term drift in check without hard-capping highs.
+  local reversion = -deviation * (0.001 + math.min(absDeviation, 2.0) * 0.0015)
+  d.momentum = d.momentum + reversion * cycleDays
+
   -- Apply momentum to index
-  d.index = clamp(d.index + d.momentum * (dtSim / SIM_SECONDS_PER_GAME_DAY), MIN_INDEX, MAX_INDEX)
+  d.index = clamp(d.index + d.momentum * cycleDays, MIN_INDEX, MAX_INDEX)
 
   -- Apply global events
   local eventMod = getActiveEventModifier(d.globalEvents, "modifier")
-  d.index = clamp(d.index + eventMod * (dtSim / SIM_SECONDS_PER_GAME_DAY), MIN_INDEX, MAX_INDEX)
+  d.index = clamp(d.index + eventMod * cycleDays, MIN_INDEX, MAX_INDEX)
 
   -- Phase transition check
   if d.phaseProgress >= 1.0 or
@@ -497,6 +513,48 @@ local function getVehicleSellMultiplier()
   end
 end
 
+local function getPartPriceMultiplier()
+  local mult = 1.0
+  if not economyData then return mult end
+  local function hasEvent(events, id)
+    for _, e in ipairs(events or {}) do
+      if e.id == id and accumulatedSimTime <= (e.startTime or 0) + (e.durationSim or 0) then
+        return true
+      end
+    end
+    return false
+  end
+  if hasEvent(economyData.vehicleMarket.activeEvents, "parts_shortage") then
+    mult = mult * 1.15
+  end
+  if hasEvent(economyData.jobMarket.activeEvents, "racing_season") then
+    mult = mult * 1.10
+  end
+  return mult
+end
+
+local function getFuelPriceMultiplier()
+  local mult = getGlobalIndex()
+  if not economyData then return mult end
+  for _, e in ipairs(economyData.jobMarket.activeEvents or {}) do
+    if e.id == "fuel_spike" and accumulatedSimTime <= (e.startTime or 0) + (e.durationSim or 0) then
+      return mult * 1.15
+    end
+  end
+  return mult
+end
+
+local function getInsurancePriceMultiplier()
+  local mult = getGlobalIndex()
+  if not economyData then return mult end
+  for _, e in ipairs(economyData.vehicleMarket.activeEvents or {}) do
+    if e.id == "insurance_hike" and accumulatedSimTime <= (e.startTime or 0) + (e.durationSim or 0) then
+      return mult * 1.10
+    end
+  end
+  return mult
+end
+
 local function getCyclePhase()
   return economyData and economyData.cyclePhase or "growth"
 end
@@ -556,6 +614,50 @@ local function setStartingIndex(idx)
   economyData = getDefaultEconomyData(idx)
 end
 
+local function performEconomyTick()
+  if not career_career or not career_career.isActive() then return false end
+  if not economyData then return false end
+
+  local elapsed = UPDATE_INTERVAL_SIM
+  accumulatedSimTime = accumulatedSimTime + elapsed
+  timeSinceLastUpdate = 0
+
+  previousIndices = {
+    global = economyData.index,
+    jobs = economyData.jobMarket.index,
+    housing = economyData.housingMarket.index,
+    vehicles = economyData.vehicleMarket.index,
+  }
+  local previousPhase = economyData.cyclePhase
+
+  updateGlobalIndex(elapsed)
+
+  updateSubMarket(economyData.housingMarket, SUB_MARKET_DEFAULTS.housingMarket)
+  updateSubMarket(economyData.jobMarket, SUB_MARKET_DEFAULTS.jobMarket)
+  updateSubMarket(economyData.vehicleMarket, SUB_MARKET_DEFAULTS.vehicleMarket)
+
+  rollEvents(economyData.globalEvents, GLOBAL_EVENTS)
+  rollEvents(economyData.jobMarket.activeEvents, JOB_EVENTS)
+  rollEvents(economyData.vehicleMarket.activeEvents, VEHICLE_EVENTS)
+  rollEvents(economyData.housingMarket.activeEvents, HOUSING_EVENTS)
+
+  if economyData.cyclePhase ~= previousPhase then
+    generatePhaseTransitionArticle(economyData.cyclePhase)
+  end
+  generateThresholdArticles()
+
+  recordHistory()
+
+  if freeroam_facilities_fuelPrice and freeroam_facilities_fuelPrice.onEconomyUpdated then
+    freeroam_facilities_fuelPrice.onEconomyUpdated()
+  end
+
+  saveEconomy()
+  
+  requestMarketWatchData()
+  return true
+end
+
 -- ── Hooks ──
 
 local function onUpdate(dtReal, dtSim, dtRaw)
@@ -569,7 +671,6 @@ local function onUpdate(dtReal, dtSim, dtRaw)
     local elapsed = timeSinceLastUpdate
     timeSinceLastUpdate = 0
 
-    -- Snapshot indices before update for change detection
     previousIndices = {
       global = economyData.index,
       jobs = economyData.jobMarket.index,
@@ -578,35 +679,28 @@ local function onUpdate(dtReal, dtSim, dtRaw)
     }
     local previousPhase = economyData.cyclePhase
 
-    -- 1. Update global index
     updateGlobalIndex(elapsed)
 
-    -- 2. Update sub-markets
     updateSubMarket(economyData.housingMarket, SUB_MARKET_DEFAULTS.housingMarket)
     updateSubMarket(economyData.jobMarket, SUB_MARKET_DEFAULTS.jobMarket)
     updateSubMarket(economyData.vehicleMarket, SUB_MARKET_DEFAULTS.vehicleMarket)
 
-    -- 3. Roll for new events
     rollEvents(economyData.globalEvents, GLOBAL_EVENTS)
     rollEvents(economyData.jobMarket.activeEvents, JOB_EVENTS)
     rollEvents(economyData.vehicleMarket.activeEvents, VEHICLE_EVENTS)
     rollEvents(economyData.housingMarket.activeEvents, HOUSING_EVENTS)
 
-    -- 4. Generate articles for phase transitions and threshold crossings
     if economyData.cyclePhase ~= previousPhase then
       generatePhaseTransitionArticle(economyData.cyclePhase)
     end
     generateThresholdArticles()
 
-    -- 5. Record history
     recordHistory()
 
-    -- 6. Refresh fuel price displays
     if freeroam_facilities_fuelPrice and freeroam_facilities_fuelPrice.onEconomyUpdated then
       freeroam_facilities_fuelPrice.onEconomyUpdated()
     end
 
-    -- 7. Auto-save
     saveEconomy()
   end
 end
@@ -640,6 +734,9 @@ M.getVehicleMarketIndex = getVehicleMarketIndex
 M.getHousingMarketIndex = getHousingMarketIndex
 M.getVehicleBuyMultiplier = getVehicleBuyMultiplier
 M.getVehicleSellMultiplier = getVehicleSellMultiplier
+M.getPartPriceMultiplier = getPartPriceMultiplier
+M.getFuelPriceMultiplier = getFuelPriceMultiplier
+M.getInsurancePriceMultiplier = getInsurancePriceMultiplier
 M.getCyclePhase = getCyclePhase
 M.getMomentum = getMomentum
 M.getEconomySummary = getEconomySummary
@@ -648,6 +745,7 @@ M.getDefaultEconomyData = getDefaultEconomyData
 M.getMarketHistory = getMarketHistory
 M.getNewsArticles = getNewsArticles
 M.requestMarketWatchData = requestMarketWatchData
+M.performEconomyTick = performEconomyTick
 
 M.onUpdate = onUpdate
 M.onSaveCurrentSaveSlot = onSaveCurrentSaveSlot

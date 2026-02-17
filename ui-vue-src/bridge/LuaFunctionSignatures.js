@@ -125,11 +125,14 @@ export default {
     getJobMarketIndex: () => {},
     getVehicleMarketIndex: () => {},
     getHousingMarketIndex: () => {},
+    getVehicleBuyMultiplier: () => {},
+    getVehicleSellMultiplier: () => {},
     getEconomySummary: () => {},
     getCyclePhase: () => {},
     getMomentum: () => {},
     getMarketHistory: () => {},
     getNewsArticles: () => {},
+    performEconomyTick: () => {},
   },
 
   career_modules_fuel: {

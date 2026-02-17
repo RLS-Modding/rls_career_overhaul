@@ -1321,7 +1321,7 @@ local function findRemovedPartsFromCart(businessId, vehicleId, cartParts)
         }
 
         if career_modules_valueCalculator then
-          partData.value = career_modules_valueCalculator.getPartValue(partData) or 0
+          partData.value = career_modules_valueCalculator.getPartValue(partData, true) or 0
         else
           partData.value = 100
         end
