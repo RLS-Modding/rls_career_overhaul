@@ -114,7 +114,7 @@ const {
 const saveStateText = ref('')
 const saveError = ref(false)
 const folderImages = ref([])
-const folderPath = ref('/phone-backgrounds/')
+const folderPath = ref('/Phone/Backgrounds/')
 const wallpaperAspectRatioLabel = '9:16'
 
 let saveTimer = null

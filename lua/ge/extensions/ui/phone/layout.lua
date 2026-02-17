@@ -11,7 +11,7 @@ local saveDir = "/career/rls_career"
 local saveFile = saveDir .. "/phoneLayout.json"
 local settingsRoot = "settings/RLS/"
 local globalFile = settingsRoot .. "phoneLayout.json"
-local backgroundsDir = "/phone-backgrounds/"
+local backgroundsDir = "/Phone/Backgrounds/"
 local layoutData = nil
 local validPhoneSizes = { small = true, normal = true, large = true }
 local imagePatterns = { "*.png", "*.jpg", "*.jpeg", "*.webp" }
@@ -270,7 +270,7 @@ local function getBackgroundFolder(_)
     if okInfo and type(fsInfo) == "table" then
       for _, key in ipairs({ "userPath", "userpath", "workingDir", "workingDirectory", "cwd", "homePath" }) do
         if type(fsInfo[key]) == "string" and fsInfo[key] ~= "" then
-          return joinPath(fsInfo[key], "phone-backgrounds/")
+          return joinPath(fsInfo[key], "Phone/Backgrounds/")
         end
       end
     end
@@ -304,7 +304,7 @@ local function openBackgroundFolder(_)
     if okInfo and type(fsInfo) == "table" then
       for _, key in ipairs({ "userPath", "userpath", "workingDir", "workingDirectory", "cwd", "homePath" }) do
         if type(fsInfo[key]) == "string" and fsInfo[key] ~= "" then
-          addCandidate(candidates, seen, joinPath(fsInfo[key], "phone-backgrounds/"))
+          addCandidate(candidates, seen, joinPath(fsInfo[key], "Phone/Backgrounds/"))
         end
       end
     end
