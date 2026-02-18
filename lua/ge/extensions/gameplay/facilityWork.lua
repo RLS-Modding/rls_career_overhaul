@@ -110,11 +110,18 @@ local truckArrivedAtNodeIndex = nil  -- node index where truck stopped for loadi
 local truckLoadPropIds = {}
 local truckFacilityId = nil
 local truckLoadingDropTrigger = nil
+local TRUCK_BED_LOAD_RADIUS_M = 8  -- semi flatbed extends far behind cab; adjust if too lenient
+local propsEligibleForTruckLoad = {}  -- pid -> true, props in zone that can be loaded (from deliveredPropsByZone)
+local truckLoadMaterialName = nil  -- material name for UI message, e.g. "TastiCola"
+local truckLoadTargetCount = nil   -- number to load (for tasklist), e.g. 4
+local selectedZoneNameForTruckLoad = nil  -- zone picked at dispatch so we show "Load N X" before truck arrives
 
 local batchReadyWaitingForkliftExit = false
 local truckDispatchedForCurrentBatch = false
 local sessionBatchesCompleted = 0  -- truck only spawns after >= firstTruckAfterBatch (release)
-local firstTruckAfterBatch = 2     -- random 2-4 at shift start
+local firstTruckAfterBatch = 2     -- set in doStartFacilityWork; dev: 1; release: math.random(2, 4)
+local lastDeliveredZoneName = nil  -- zone we just added props to (for excluding from truck load pick)
+local excludeLastZoneForTruckLoad = true  -- dev: false (allow load from last zone); release: true (exclude it)
 
 local dropMarkerObjects = {}
 
@@ -561,9 +568,17 @@ local function updateTasklistValues()
     guihooks.trigger('SetTasklistTask', { id = "facilityWork_total_pay", label = "Total pay: $" .. sessionTotalPay, type = "message", clear = false })
     guihooks.trigger('SetTasklistTask', { id = "facilityWork_total_rep", label = "Total rep: " .. sessionTotalRep, type = "message", clear = false })
     if truckState == "driving_to_pickup" or truckState == "waiting_for_load" then
-        guihooks.trigger('SetTasklistTask', { id = "facilityWork_truck_incoming", label = "Finish your current batch, then load the truck.", type = "message", clear = false })
+        if truckLoadMaterialName and truckLoadTargetCount then
+            local loadLabel = string.format("Load %d %s onto the truck", truckLoadTargetCount, truckLoadMaterialName)
+            if currentBatch then
+                loadLabel = "Finish your current batch, then " .. loadLabel
+            end
+            guihooks.trigger('SetTasklistTask', { id = "facilityWork_truck_load", label = loadLabel, type = "message", clear = false })
+        else
+            guihooks.trigger('SetTasklistTask', { id = "facilityWork_truck_load", label = "", type = "message", clear = true })
+        end
     else
-        guihooks.trigger('SetTasklistTask', { id = "facilityWork_truck_incoming", label = "", type = "message", clear = true })
+        guihooks.trigger('SetTasklistTask', { id = "facilityWork_truck_load", label = "", type = "message", clear = true })
     end
     notifyPhoneState()
 end
@@ -661,6 +676,10 @@ local function clearTruckState()
         if obj then obj:delete() end
     end
     table.clear(truckLoadPropIds)
+    table.clear(propsEligibleForTruckLoad)
+    truckLoadMaterialName = nil
+    truckLoadTargetCount = nil
+    selectedZoneNameForTruckLoad = nil
     truckState = nil
     truckRoadNodes = nil
     truckTargetNodeIndex = nil
@@ -669,31 +688,60 @@ local function clearTruckState()
     truckLoadingDropTrigger = nil
 end
 
-local function applyWaitingForLoadState()
+local function pickTruckLoadZone()
     local candidateZones = {}
     for zName, data in pairs(deliveredPropsByZone) do
         if data.trigger and #data.propIds > 0 then
             table.insert(candidateZones, { name = zName, data = data })
         end
     end
+    -- Exclude last delivered zone when picking (release); dev: set excludeLastZoneForTruckLoad = false
+    local pickFrom = candidateZones
+    if excludeLastZoneForTruckLoad and lastDeliveredZoneName and #candidateZones > 1 then
+        local filtered = {}
+        for _, c in ipairs(candidateZones) do
+            if c.name ~= lastDeliveredZoneName then
+                table.insert(filtered, c)
+            end
+        end
+        if #filtered > 0 then pickFrom = filtered end
+    end
     local selectedZoneName = nil
     local selectedZoneData = nil
-    if #candidateZones > 0 then
-        local chosen = candidateZones[math.random(1, #candidateZones)]
+    if #pickFrom > 0 then
+        local chosen = pickFrom[math.random(1, #pickFrom)]
         selectedZoneName = chosen.name
         selectedZoneData = chosen.data
     end
-    local materialName = "materials"
-    local nTake = 0
+    return selectedZoneName, selectedZoneData
+end
+
+local function applyWaitingForLoadState()
+    table.clear(truckLoadPropIds)
+    table.clear(propsEligibleForTruckLoad)
+    local selectedZoneData = nil
+    if selectedZoneNameForTruckLoad and deliveredPropsByZone[selectedZoneNameForTruckLoad] then
+        selectedZoneData = deliveredPropsByZone[selectedZoneNameForTruckLoad]
+        -- truckLoadMaterialName, truckLoadTargetCount already set at dispatch
+    else
+        truckLoadMaterialName = nil
+        truckLoadTargetCount = nil
+        local zoneName, zoneData = pickTruckLoadZone()
+        if zoneData then
+            selectedZoneNameForTruckLoad = zoneName
+            selectedZoneData = zoneData
+            truckLoadingDropTrigger = zoneData.trigger
+            truckLoadMaterialName = zoneData.materialName or "materials"
+            truckLoadTargetCount = math.min(TRUCK_LOAD_COUNT, #zoneData.propIds)
+        end
+    end
     if selectedZoneData then
         truckLoadingDropTrigger = selectedZoneData.trigger
-        nTake = math.min(TRUCK_LOAD_COUNT, #selectedZoneData.propIds)
-        for i = 1, nTake do
-            table.insert(truckLoadPropIds, selectedZoneData.propIds[1])
-            table.remove(selectedZoneData.propIds, 1)
+        for _, pid in ipairs(selectedZoneData.propIds) do
+            propsEligibleForTruckLoad[pid] = true
         end
-        if #selectedZoneData.propIds == 0 then
-            deliveredPropsByZone[selectedZoneName] = nil
+        if utils and utils.displayMessage then
+            utils.displayMessage(string.format("Load %d %s onto the truck.", truckLoadTargetCount, truckLoadMaterialName), 5)
         end
     end
     if truckLoadingDropTrigger then
@@ -702,6 +750,7 @@ local function applyWaitingForLoadState()
     if truckLoadingDropTrigger and core_groundMarkers and core_groundMarkers.setPath then
         core_groundMarkers.setPath(toVec3(truckLoadingDropTrigger:getPosition()), { clearPathOnReachingTarget = false })
     end
+    updateTasklistValues()
     notifyPhoneState()
 end
 
@@ -742,6 +791,14 @@ local function spawnTruckAndDriveToPickup(facilityId)
 
     if driveToPickup then
         truckState = "driving_to_pickup"
+        local zoneName, zoneData = pickTruckLoadZone()
+        if zoneData then
+            selectedZoneNameForTruckLoad = zoneName
+            truckLoadingDropTrigger = zoneData.trigger
+            truckLoadMaterialName = zoneData.materialName or "materials"
+            truckLoadTargetCount = math.min(TRUCK_LOAD_COUNT, #zoneData.propIds)
+            updateTasklistValues()
+        end
         local scriptToPickup = buildScriptPath(nodes, 1, pickupIndex0 + 1)
         if scriptToPickup then
             if core_jobsystem and core_jobsystem.create then
@@ -787,12 +844,15 @@ local function payoutBatchAndSpawnNext()
 
     if currentBatch.dropTrigger then
         local zoneName = currentBatch.dropTrigger:getName()
+        local matName = currentBatch.materialName or "materials"
         if not deliveredPropsByZone[zoneName] then
-            deliveredPropsByZone[zoneName] = { trigger = currentBatch.dropTrigger, propIds = {} }
+            deliveredPropsByZone[zoneName] = { trigger = currentBatch.dropTrigger, propIds = {}, materialName = matName }
         end
+        deliveredPropsByZone[zoneName].materialName = matName
         for _, pid in ipairs(propIds) do
             table.insert(deliveredPropsByZone[zoneName].propIds, pid)
         end
+        lastDeliveredZoneName = zoneName
     end
 
     -- Future: optional LRU/oldest-zone culling when over MAX_PERSISTENT_PROPS.
@@ -890,6 +950,7 @@ local function endShiftCleanup()
     sessionBatchesCompleted = 0
 
     deliveredPropsByZone = {}
+    lastDeliveredZoneName = nil
     table.clear(propsInDropZone)
     clearDropMarkers()
     batchReadyWaitingForkliftExit = false
@@ -986,6 +1047,7 @@ local function doStartFacilityWork()
         end
     end
     deliveredPropsByZone = {}
+    lastDeliveredZoneName = nil
     table.clear(propsInDropZone)
     batchReadyWaitingForkliftExit = false
     pendingBatchFacilityId = nil
@@ -1183,6 +1245,7 @@ local function onExtensionUnloaded()
     clearTruckState()
 
     deliveredPropsByZone = {}
+    lastDeliveredZoneName = nil
     table.clear(propsInDropZone)
     batchReadyWaitingForkliftExit = false
     clearDropMarkers()
@@ -1222,6 +1285,43 @@ local function onUpdate(_dtReal, _dtSim, _dtRaw)
                 end
             else
                 applyWaitingForLoadState()
+            end
+            updateTasklistValues()
+        end
+    elseif truckState == "waiting_for_load" then
+        -- Position-only: any eligible prop near the truck counts as loaded (no exit event required)
+        local targetCount = truckLoadTargetCount or TRUCK_LOAD_COUNT
+        if #truckLoadPropIds < targetCount then
+            local truckPos = toVec3(pos)
+            local zoneName = truckLoadingDropTrigger and truckLoadingDropTrigger:getName()
+            local zoneData = zoneName and deliveredPropsByZone[zoneName]
+            for pid, _ in pairs(propsEligibleForTruckLoad) do
+                if #truckLoadPropIds >= targetCount then break end
+                local propObj = be:getObjectByID(pid)
+                if propObj and propObj.getPosition then
+                    local propPos = toVec3(propObj:getPosition())
+                    local pdx = propPos.x - truckPos.x
+                    local pdy = propPos.y - truckPos.y
+                    local pdz = propPos.z - truckPos.z
+                    local propDist = math.sqrt(pdx * pdx + pdy * pdy + pdz * pdz)
+                    if propDist < TRUCK_BED_LOAD_RADIUS_M then
+                        table.insert(truckLoadPropIds, pid)
+                        propsEligibleForTruckLoad[pid] = nil
+                        if zoneData and zoneData.propIds then
+                            for i = #zoneData.propIds, 1, -1 do
+                                if zoneData.propIds[i] == pid then
+                                    table.remove(zoneData.propIds, i)
+                                    break
+                                end
+                            end
+                            if #zoneData.propIds == 0 then
+                                deliveredPropsByZone[zoneName] = nil
+                            end
+                        end
+                    end
+                else
+                    propsEligibleForTruckLoad[pid] = nil
+                end
             end
         end
     elseif truckState == "driving_to_end" then
@@ -1267,6 +1367,7 @@ function M.requestFacilityWorkState()
             core_groundMarkers.setPath(toVec3(truckLoadingDropTrigger:getPosition()), { clearPathOnReachingTarget = false })
         end
     end
+    updateTasklistValues()
     notifyPhoneState()
 end
 
@@ -1299,6 +1400,13 @@ end
 
 function M.completeTruckLoading()
     if truckState ~= "waiting_for_load" or not truckRoadNodes or #truckRoadNodes == 0 or not truckVehicleId then return end
+    local required = truckLoadTargetCount or TRUCK_LOAD_COUNT
+    if #truckLoadPropIds < required then
+        if utils and utils.displayMessage then
+            utils.displayMessage(string.format("Load all %d %s onto the truck first.", required, truckLoadMaterialName or "items"), 4)
+        end
+        return
+    end
     local vehObj = be:getObjectByID(truckVehicleId)
     if not vehObj then
         clearTruckState()
