@@ -106,11 +106,15 @@ local truckNextSpawnTime = nil
 local truckState = nil
 local truckRoadNodes = nil
 local truckTargetNodeIndex = nil
+local truckArrivedAtNodeIndex = nil  -- node index where truck stopped for loading (used for drive-to-end path)
 local truckLoadPropIds = {}
 local truckFacilityId = nil
 local truckLoadingDropTrigger = nil
 
 local batchReadyWaitingForkliftExit = false
+local truckDispatchedForCurrentBatch = false
+local sessionBatchesCompleted = 0  -- truck only spawns after >= firstTruckAfterBatch (release)
+local firstTruckAfterBatch = 2     -- random 2-4 at shift start
 
 local dropMarkerObjects = {}
 
@@ -366,13 +370,41 @@ local function sendTruckDriveScript(vehObj, scriptPath, opts)
     vehObj:queueLuaCommand("if not ai then extensions.load('ai') end")
     vehObj:queueLuaCommand("input.event('parkingbrake', 0, 1)")
     vehObj:queueLuaCommand("if ai.setAvoidCars then ai.setAvoidCars('off') end")
-    vehObj:queueLuaCommand("ai.driveUsingPath({ script = " .. serialized .. ", avoidCars = 'off', routeSpeedMode = 'limit', routeSpeed = 14" .. optStr .. " })")
+    vehObj:queueLuaCommand("ai.driveUsingPath({ script = " .. serialized .. ", avoidCars = 'off', routeSpeedMode = 'limit', routeSpeed = 14, aggression = 0.2" .. optStr .. " })")
 end
 
 local function sendTruckStop(vehObj)
     if not vehObj then return end
     vehObj:queueLuaCommand("if ai and ai.setMode then ai.setMode('stop') end")
     vehObj:queueLuaCommand("input.event('parkingbrake', 1, 1)")
+end
+
+-- Drive from current position to target (no teleport). Used for exit leg to avoid script-path jump.
+local function sendTruckDriveToPosition(vehObj, targetPos)
+    if not vehObj or not targetPos then return end
+    local x = targetPos.x or targetPos[1] or 0
+    local y = targetPos.y or targetPos[2] or 0
+    local z = targetPos.z or targetPos[3] or 0
+    -- Pass vec3(...) so driver gets same type as loading (getPointToPointPath expects vec3, not table)
+    local posStr = string.format("vec3(%s,%s,%s)", x, y, z)
+    print("[facilityWork] truck AI: sendTruckDriveToPosition exit target " .. string.format("%.1f, %.1f, %.1f", x, y, z))
+    vehObj:queueLuaCommand('if not driver then extensions.load("driver") end')
+    vehObj:queueLuaCommand("input.event('parkingbrake', 0, 1)")
+    vehObj:queueLuaCommand("if ai and ai.setPullOver then ai.setPullOver(false) end")
+    -- Leave stop mode so driver's path is followed (overrideAI in stop mode never applies throttle)
+    vehObj:queueLuaCommand("if ai and ai.setMode then ai.setMode('manual') end")
+    if core_jobsystem and core_jobsystem.create then
+        core_jobsystem.create(function(job)
+            job.sleep(0.5)
+            print("[facilityWork] truck AI: queueing setAvoidCars off and driver.returnTargetPosition")
+            vehObj:queueLuaCommand("if ai.setAvoidCars then ai.setAvoidCars('off') end")
+            job.sleep(0.1)
+            vehObj:queueLuaCommand('driver.returnTargetPosition(' .. posStr .. ', false, "limit", true)')  -- posStr is vec3(x,y,z)
+        end)
+    else
+        vehObj:queueLuaCommand("if ai.setAvoidCars then ai.setAvoidCars('off') end")
+        vehObj:queueLuaCommand('driver.returnTargetPosition(' .. posStr .. ', false, "limit", true)')
+    end
 end
 
 local function createCornerMarker(markerName)
@@ -528,6 +560,11 @@ end
 local function updateTasklistValues()
     guihooks.trigger('SetTasklistTask', { id = "facilityWork_total_pay", label = "Total pay: $" .. sessionTotalPay, type = "message", clear = false })
     guihooks.trigger('SetTasklistTask', { id = "facilityWork_total_rep", label = "Total rep: " .. sessionTotalRep, type = "message", clear = false })
+    if truckState == "driving_to_pickup" or truckState == "waiting_for_load" then
+        guihooks.trigger('SetTasklistTask', { id = "facilityWork_truck_incoming", label = "Finish your current batch, then load the truck.", type = "message", clear = false })
+    else
+        guihooks.trigger('SetTasklistTask', { id = "facilityWork_truck_incoming", label = "", type = "message", clear = true })
+    end
     notifyPhoneState()
 end
 
@@ -588,6 +625,7 @@ local function spawnBatch(facilityId)
 
     if #propIds == 0 then return false end
 
+    truckDispatchedForCurrentBatch = false
     currentBatch = {
         facilityId = facilityId,
         dropTrigger = dropTrigger,
@@ -626,22 +664,24 @@ local function clearTruckState()
     truckState = nil
     truckRoadNodes = nil
     truckTargetNodeIndex = nil
+    truckArrivedAtNodeIndex = nil
     truckFacilityId = nil
     truckLoadingDropTrigger = nil
 end
 
 local function applyWaitingForLoadState()
-    local selectedZoneName = nil
-    local selectedZoneData = nil
+    local candidateZones = {}
     for zName, data in pairs(deliveredPropsByZone) do
-        if #data.propIds >= TRUCK_LOAD_COUNT then
-            selectedZoneName = zName
-            selectedZoneData = data
-            break
+        if data.trigger and #data.propIds > 0 then
+            table.insert(candidateZones, { name = zName, data = data })
         end
     end
-    if not selectedZoneData then
-        selectedZoneName, selectedZoneData = next(deliveredPropsByZone)
+    local selectedZoneName = nil
+    local selectedZoneData = nil
+    if #candidateZones > 0 then
+        local chosen = candidateZones[math.random(1, #candidateZones)]
+        selectedZoneName = chosen.name
+        selectedZoneData = chosen.data
     end
     local materialName = "materials"
     local nTake = 0
@@ -661,9 +701,6 @@ local function applyWaitingForLoadState()
     end
     if truckLoadingDropTrigger and core_groundMarkers and core_groundMarkers.setPath then
         core_groundMarkers.setPath(toVec3(truckLoadingDropTrigger:getPosition()), { clearPathOnReachingTarget = false })
-    end
-    if utils and utils.displayMessage then
-        utils.displayMessage("Load " .. tostring(nTake) .. " of " .. materialName .. " onto the truck from the marked area. When done, tap Complete loading in Facility Work.", 8)
     end
     notifyPhoneState()
 end
@@ -775,14 +812,22 @@ local function payoutBatchAndSpawnNext()
     truckLoadingDropTrigger = nil
     table.clear(propsInDropZone)
     currentBatch = nil
+    clearDropMarkers()
     updateTasklistValues()
+
+    sessionBatchesCompleted = sessionBatchesCompleted + 1
 
     local truckSpawned = false
     local facCfg = facilityId and facilityConfigs[facilityId]
     if facCfg and facCfg.aiPickupRoadName and getRoadNodes(facCfg.aiPickupRoadName) and #(getRoadNodes(facCfg.aiPickupRoadName) or {}) > 0 then
-        if not truckState and getTotalDeliveredPropsCount() >= TRUCK_LOAD_COUNT then
+        if not truckState and sessionBatchesCompleted >= firstTruckAfterBatch and getTotalDeliveredPropsCount() >= TRUCK_LOAD_COUNT then
             spawnTruckAndDriveToPickup(facilityId)
             truckSpawned = true
+            -- Only apply loading zone here: batch is already cleared above, so we never overwrite current drop zone/path.
+            -- (Early dispatch does not call applyWaitingForLoadState; zone/path apply when truck arrives.)
+            if not currentBatch then
+                applyWaitingForLoadState()
+            end
             if utils and utils.displayMessage then
                 utils.displayMessage("Truck arriving. Load from the marked area.", 4)
             end
@@ -791,7 +836,8 @@ local function payoutBatchAndSpawnNext()
 
     if truckState or truckSpawned then
         pendingBatchFacilityId = facilityId
-        if core_groundMarkers and core_groundMarkers.setPath then
+        -- only clear path when we have no loading zone to show (avoid clearing path we just set)
+        if not truckLoadingDropTrigger and core_groundMarkers and core_groundMarkers.setPath then
             core_groundMarkers.setPath(nil)
         end
     else
@@ -840,6 +886,8 @@ local function endShiftCleanup()
     clearTruckState()
     truckNextSpawnTime = nil
     pendingBatchFacilityId = nil
+    truckDispatchedForCurrentBatch = false
+    sessionBatchesCompleted = 0
 
     deliveredPropsByZone = {}
     table.clear(propsInDropZone)
@@ -907,6 +955,8 @@ local function doStartFacilityWork()
         end
         return false
     end
+    sessionBatchesCompleted = 0
+    firstTruckAfterBatch = math.random(2, 4)
     local facCfg = facilityConfigs[facilityId]
     local vertices = getSpawnZoneVertices(facCfg.spawnZone)
     if not vertices or #vertices < 3 then
@@ -992,8 +1042,10 @@ local function doStartFacilityWork()
     -- comment out for dev mode (release: truck only after first batch)
     -- Truck spawns after first batch is delivered (payoutBatchAndSpawnNext).
 
-    -- comment out for release mode (dev: truck spawns on start shift)
-    -- spawnTruckAndDriveToPickup(facilityId)
+    -- comment out for dev mode (release: truck only after firstTruckAfterBatch completions)
+    -- if facCfg and facCfg.aiPickupRoadName then
+    --     spawnTruckAndDriveToPickup(facilityId)
+    -- end
 
     return true
 end
@@ -1075,6 +1127,19 @@ local function onBeamNGTrigger(data)
                                 utils.displayMessage("All items delivered. Drive out of the drop zone to complete.", 4)
                             end
                         end
+                        local facilityId = currentBatch.facilityId
+                        local threshold = math.max(1, #currentBatch.propIds - 1)
+                        if not truckDispatchedForCurrentBatch and not truckState and sessionBatchesCompleted >= firstTruckAfterBatch and countIn >= threshold and facilityId then
+                            local facCfg = facilityConfigs[facilityId]
+                            if facCfg and facCfg.aiPickupRoadName and getRoadNodes(facCfg.aiPickupRoadName) and #(getRoadNodes(facCfg.aiPickupRoadName) or {}) > 0 then
+                                if getTotalDeliveredPropsCount() + #currentBatch.propIds >= TRUCK_LOAD_COUNT then
+                                    if spawnTruckAndDriveToPickup(facilityId) then
+                                        truckDispatchedForCurrentBatch = true
+                                        updateTasklistValues()
+                                    end
+                                end
+                            end
+                        end
                         break
                     end
                 end
@@ -1147,8 +1212,17 @@ local function onUpdate(_dtReal, _dtSim, _dtRaw)
     if truckState == "driving_to_pickup" then
         if dist < TRUCK_ARRIVAL_RADIUS_M then
             sendTruckStop(vehObj)
+            truckArrivedAtNodeIndex = truckTargetNodeIndex + 1  -- store node for drive-to-end path
             truckState = "waiting_for_load"
-            applyWaitingForLoadState()
+            -- zone/path already set at dispatch; only apply if they weren't (e.g. phone reopened)
+            if truckLoadingDropTrigger then
+                showDropMarkers(truckLoadingDropTrigger)
+                if core_groundMarkers and core_groundMarkers.setPath then
+                    core_groundMarkers.setPath(toVec3(truckLoadingDropTrigger:getPosition()), { clearPathOnReachingTarget = false })
+                end
+            else
+                applyWaitingForLoadState()
+            end
         end
     elseif truckState == "driving_to_end" then
         if dist < TRUCK_ARRIVAL_RADIUS_M then
@@ -1186,6 +1260,13 @@ local function onUpdate(_dtReal, _dtSim, _dtRaw)
 end
 
 function M.requestFacilityWorkState()
+    -- Re-apply truck loading zone highlight and path when opening phone (payout can clear them)
+    if truckState == "waiting_for_load" and truckLoadingDropTrigger then
+        showDropMarkers(truckLoadingDropTrigger)
+        if core_groundMarkers and core_groundMarkers.setPath then
+            core_groundMarkers.setPath(toVec3(truckLoadingDropTrigger:getPosition()), { clearPathOnReachingTarget = false })
+        end
+    end
     notifyPhoneState()
 end
 
@@ -1224,46 +1305,20 @@ function M.completeTruckLoading()
         notifyPhoneState()
         return
     end
-    local pos = toVec3(vehObj:getPosition())
+    print("[facilityWork] completeTruckLoading: starting drive-to-end (driver.returnTargetPosition)")
     local toIdx = #truckRoadNodes
-    local fromIdx = truckTargetNodeIndex + 1
     local lastNode = truckRoadNodes[toIdx]
-    if lastNode then
-        local lx = lastNode.x or lastNode[1] or 0
-        local ly = lastNode.y or lastNode[2] or 0
-        local lz = lastNode.z or lastNode[3] or 0
-        local toExitX = lx - pos.x
-        local toExitY = ly - pos.y
-        local toExitZ = lz - pos.z
-        local len = math.sqrt(toExitX * toExitX + toExitY * toExitY + toExitZ * toExitZ)
-        if len > 0.01 then
-            for i = fromIdx, toIdx do
-                local n = truckRoadNodes[i]
-                if n then
-                    local nx = n.x or n[1] or 0
-                    local ny = n.y or n[2] or 0
-                    local nz = n.z or n[3] or 0
-                    local toNodeX = nx - pos.x
-                    local toNodeY = ny - pos.y
-                    local toNodeZ = nz - pos.z
-                    if toNodeX * toExitX + toNodeY * toExitY + toNodeZ * toExitZ > 0 then
-                        fromIdx = i
-                        break
-                    end
-                end
-            end
-        end
-    end
-    local scriptToEnd = buildScriptPath(truckRoadNodes, fromIdx, toIdx)
+    if not lastNode then return end
     truckTargetNodeIndex = toIdx - 1
     truckState = "driving_to_end"
-    if scriptToEnd and #scriptToEnd > 0 then
-        local pathFromCurrent = { { x = pos.x, y = pos.y, z = pos.z } }
-        for _, pt in ipairs(scriptToEnd) do
-            table.insert(pathFromCurrent, pt)
-        end
-        sendTruckDriveScript(vehObj, pathFromCurrent, { startFromCurrentPosition = true })
-    end
+    updateTasklistValues()
+    -- Use driver.returnTargetPosition (like quarry/loading) so truck drives from current position with no teleport/jump
+    local exitPos = {
+        x = lastNode.x or lastNode[1] or 0,
+        y = lastNode.y or lastNode[2] or 0,
+        z = lastNode.z or lastNode[3] or 0
+    }
+    sendTruckDriveToPosition(vehObj, exitPos)
     if currentBatch and currentBatch.dropTrigger then
         showDropMarkers(currentBatch.dropTrigger)
         if core_groundMarkers and core_groundMarkers.setPath then

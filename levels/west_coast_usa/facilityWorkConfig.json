@@ -62,13 +62,6 @@
       "config": "TastiCola",
       "money": 220,
       "spawnGridSpacing": 2.0
-    },
-    "cargoCrateXL": {
-      "name": "Cargo Crate XL",
-      "model_key": "TPUForkableLoads",
-      "config": "TPUCargoCrateXL",
-      "money": 320,
-      "spawnGridSpacing": 2.0
     }
   },
   "industrialWarehouse": {
@@ -86,7 +79,7 @@
     "spawnRotationZ": 180,
     "truck": {"model": "md_series", "config": "md_60_flatbed"},
     "aiPickupRoadName": "industrialWarehouse_aiPickup",
-    "aiPickupNodeIndex": 12,
+    "aiPickupNodeIndex": 14,
     "truckSpawnSpot": "facilityWork_truckSpawn_industrialWarehouse",
     "spawns": [
       { "materialId": "largeLumber"},
@@ -96,8 +89,7 @@
       { "materialId": "concrete"},
       { "materialId": "adjustableBarrels"},
       { "materialId": "adjustableBox"},
-      { "materialId": "tastiCola"},
-      { "materialId": "cargoCrateXL"}
+      { "materialId": "tastiCola"}
     ]
   },
   "shuffleboardLogistics": {
@@ -122,8 +114,7 @@
       { "materialId": "concrete"},
       { "materialId": "adjustableBarrels"},
       { "materialId": "adjustableBox"},
-      { "materialId": "tastiCola"},
-      { "materialId": "cargoCrateXL"}
+      { "materialId": "tastiCola"}
     ]
   }
 }

@@ -3397,9 +3397,6 @@ local function planAhead(route, baseRoute)
     plan.planLen = 0
     plan.egoXnormOnSeg = 0
     plan.egoDeviation = 0
-    if route.startFromCurrentPosition and route.path and route.path[1] then
-      plan[1].pathidx = 1
-    end
   end
 
   local minPlanLen
@@ -4509,9 +4506,6 @@ local function setScriptedPath(arg)
   end
 
   currentRoute = createNewRoute(arg.path) -- {path = arg.path, plan = {}}
-  if arg.startFromCurrentPosition then
-    currentRoute.startFromCurrentPosition = true
-  end
 
   stateChanged()
 end
@@ -6802,10 +6796,8 @@ local function driveUsingPath(arg)
   end
 
   if arg.script then
-    -- When startFromCurrentPosition is true, skip teleport and start path from current pose (opt-in only; default unchanged).
     local script = arg.script
     local dir, up, pos
-    if not arg.startFromCurrentPosition then
     -- Set vehicle position and orientation at the start of the path
     if script[1].dir then
       -- vehicle initial orientation vectors exist
@@ -6850,7 +6842,6 @@ local function driveUsingPath(arg)
         pos:setAdd(dH * up)
       end
     end
-    end
 
     if dir then
       local rot = quatFromDir(dir:cross(up):cross(up), up)
@@ -6860,7 +6851,7 @@ local function driveUsingPath(arg)
       )
     end
 
-    if dir or arg.startFromCurrentPosition then
+    if dir then
       mapmgr.setCustomMap() -- nils mapmgr.mapData
       M.mode = 'manual'
       stateChanged()
