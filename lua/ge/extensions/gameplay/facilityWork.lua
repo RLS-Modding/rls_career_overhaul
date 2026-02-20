@@ -699,11 +699,9 @@ local function showLoadZoneMarkers(facilityId, opts)
         localToWorld(minX, minY)
     }
 
-    local markerYDir = corners[2] and corners[1] and (corners[2] - corners[1]) or vec3(0, 1, 0)
+    local markerYDir = vecY
     local markerOpts = {}
     for k, v in pairs(opts) do markerOpts[k] = v end
-    markerOpts.faceCenter = true
-    markerOpts.centerPos = vec3(center.x, center.y, avgZ)
     placeCornerMarkers(corners, markerYDir, markerOpts, tostring(facilityId or "fac"))
 end
 
