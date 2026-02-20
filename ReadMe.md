@@ -1,4 +1,4 @@
-# RLS Career Overhaul v2.6.2 (0.38.3)
+# RLS Career Overhaul v2.6.3.1 (0.38.3)
 
 Welcome to the **RLS Career Overhaul** mod for BeamNG.drive! This mod transforms career mode with extensive new work systems, freeroam events, police interactions, an overhauled economy, and much more.
 
@@ -88,25 +88,17 @@ With **Challenge Modes** and **Freeroam+**, you can play career however you want
 ## Installation
 
 1. **Download the Mod**:
-
-   - Navigate to the [Releases](https://github.com/Raceless-RLS/rls_career_overhaul/releases) section of the mod's GitHub page.
-   - Select the latest release.
-   - Scroll to the bottom and download `rls_career_overhaul_v2.X.X.zip`.
-
+  - Navigate to the [Releases](https://github.com/Raceless-RLS/rls_career_overhaul/releases) section of the mod's GitHub page.
+  - Select the latest release.
+  - Scroll to the bottom and download `rls_career_overhaul_v2.X.X.zip`.
 2. **Move to Mods Folder**:
-
-   - Locate your BeamNG.drive `mods` folder. The default path is:
-     ```
-     %AppData%\BeamNG.drive\"Latest"\mods
-     ```
+  - Locate your BeamNG.drive `mods` folder. The default path is:
      *Note: Replace **************************************************`Latest`************************************************** with your current game version.*
-   - Copy the downloaded ZIP file into the `mods` folder.
-
+  - Copy the downloaded ZIP file into the `mods` folder.
 3. **Enable the Mod**:
-
-   - Launch **BeamNG.drive**.
-   - Go to **Mods Manager** in the game's settings.
-   - Enable the **RLS Career Overhaul** mod.
+  - Launch **BeamNG.drive**.
+  - Go to **Mods Manager** in the game's settings.
+  - Enable the **RLS Career Overhaul** mod.
 
 ---
 
@@ -123,12 +115,10 @@ The **RLS Career Overhaul** includes a convenient settings manager accessible fr
   - **Purpose**: Enable developer mode for map editing and testing
   - **Important**: When disabled, this setting clears the levels folder for all associated maps unless it's enabled
   - **Use Case**: For modders and advanced users working with map modifications
-
 - **No Police Mode**:
   - **Purpose**: Disable police enforcement in career mode
   - **Effect**: Prevents police from spawning and pursuing players
   - **Note**: Useful for peaceful gameplay sessions
-
 - **No Parked Mode**:
   - **Purpose**: Remove parked vehicles from the world
   - **Effect**: Clears static parked cars from maps for better performance or cleaner environments
@@ -142,6 +132,7 @@ All settings are automatically saved and persist between game sessions. The sett
 The **RLS Career Overhaul** mod significantly enhances the career mode experience in BeamNG.drive. It introduces a variety of freeroam events, dynamic police interactions, an improved economy, and multiple ways to earn money through diverse work systems.
 
 **Work Systems Available**:
+
 - **Deliveries** - Haul cargo, parcels, vehicles, and trailers across the map
 - **Loading Work** - Take cargo loading contracts at facilities and transport goods
 - **Taxi Work** - Pick up passengers with 9 different passenger types and fare tiers
@@ -167,192 +158,149 @@ Experience an array of new racing events designed to challenge and entertain you
 #### Drag Events
 
 - **No Prep Highway Drag**:
-
   - **Description**: A high-speed drag race along the highway. Test your vehicle's top speed and acceleration on an unprepped surface.
   - **Requirements**:
     - **Target Time**: **17 seconds**
-    - **Reward**: **\$1,700**
-
+    - **Reward**: **1,700**
 - **Drag Strip**:
-
   - **Description**: A classic quarter-mile drag race at the official drag strip. Perfect for those who crave pure acceleration.
   - **Requirements**:
     - **Target Time**: **11 seconds**
-    - **Reward**: **\$1,000**
-
+    - **Reward**: **1,000**
 - **Shallow Mud Drag**:
-
   - **Description**: A high-speed drag race along the mud track. Test your vehicle's capabilities in the shallow mud.
   - **Requirements**:
     - **Target Time**: **8 seconds**
-    - **Reward**: **\$1,500**
-
+    - **Reward**: **1,500**
 - **Deep Mud Drag**:
-
   - **Description**: A high-speed drag race along the mud track. Test your vehicle's capabilities in the deep mud. Can you make it through?
   - **Requirements**:
     - **Target Time**: **12 seconds**
-    - **Reward**: **\$2,700**
+    - **Reward**: **2,700**
 
 #### Rally Events
 
 - **Rally Event #1**:
-
   - **Description**: A timed rally event with a mix of dirt and paved roads.
   - **Requirements**:
     - **Target Time**: **70 seconds**
-    - **Reward**: **\$2,000**
-
+    - **Reward**: **2,000**
 - **Rally Event #2**:
-
   - **Description**: A timed rally event with a mix of dirt and paved roads.
   - **Requirements**:
     - **Target Time**: **120 seconds**
-    - **Reward**: **\$2,500**
-
+    - **Reward**: **2,500**
 - **Rally Event #3**:
-
   - **Description**: A timed rally event with a mix of dirt and paved roads.
   - **Requirements**:
     - **Target Time**: **185 seconds**
-    - **Reward**: **\$3,000**
-
+    - **Reward**: **3,000**
 - **Rally Event #4**:
-
   - **Description**: A timed rally event with a mix of dirt and paved roads.
   - **Requirements**:
     - **Target Time**: **90 seconds**
-    - **Reward**: **\$2,000**
-
+    - **Reward**: **2,000**
 - **Commercial Rally**:
-
   - **Description**: Navigate through commercial areas in a timed rally event. Sharp turns and urban obstacles await.
   - **Requirements**:
     - **Target Time**: **90 seconds**
-    - **Reward**: **\$2,000**
+    - **Reward**: **2,000**
 
 #### Circuit Events
 
 - **Quarry Circuit**:
-
   - **Description**: A challenging circuit around the quarry with elevation changes and tight corners.
   - **Requirements**:
     - **Target Time**: **27 seconds**
-    - **Reward**: **\$1,000**
+    - **Reward**: **1,000**
   - **Note**: This circuit has been rebalanced ("Nerfed") to adjust difficulty and rewards.
-
 - **Beach Circuit**:
-
   - **Description**: Race along the scenic beachside track under the bridge.
   - **Requirements**:
     - **Target Time**: **30 seconds**
-    - **Reward**: **\$1,500**
+    - **Reward**: **1,500**
   - **Note**: Updated in this release.
-
 - **Dirt Circuit**:
-
   - **Description**: Conquer the dirt track with off-road vehicles.
   - **Requirements**:
     - **Target Time**: **65 seconds**
-    - **Reward**: **\$2,000**
-
+    - **Reward**: **2,000**
 - **Dirt Oval**:
-
   - **Description**: A classic oval dirt track race, emphasizing consistent speed and smooth turns.
   - **Requirements**:
     - **Target Time**: **30 seconds**
-    - **Reward**: **\$350**
-
+    - **Reward**: **350**
 - **Paved Oval**:
-
   - **Description**: Race on an oval asphalt track, focusing on high-speed cornering and vehicle stability.
   - **Requirements**:
     - **Target Time**: **30 seconds**
-    - **Reward**: **\$350**
-
+    - **Reward**: **350**
 - **West Coast Circuit**:
-
   - **Description**: Race on the standard or short versions of the West Coast track. Ideal for testing your vehicle's handling and your driving skills.
   - **Requirements**:
     - **Standard Track**:
       - **Target Time**: **140 seconds**
-      - **Reward**: **\$2,250**
+      - **Reward**: **2,250**
     - **Short Track**:
       - **Target Time**: **100 seconds**
-      - **Reward**: **\$1,750**
-
+      - **Reward**: **1,750**
 - **Rubberband Ridge**:
-
   - **Description**: A challenging circuit with elevation changes and tight corners.
   - **Requirements**:
     - **Standard Lap**:
       - **Target Time**: **60 seconds**
-      - **Reward**: **\$1,250**
+      - **Reward**: **1,250**
     - **Joker Lap**:
       - **Target Time**: **65 seconds**
-      - **Reward**: **\$1,250**
-
+      - **Reward**: **1,250**
 - **King of the Hammer #1**:
-
   - **Description**: A timed rally event with a mix of dirt and paved roads.
   - **Requirements**:
     - **Target Time**: **120 seconds**
-    - **Reward**: **\$2,000**
+    - **Reward**: **2,000**
   - **Note**: Added back in this release (previously removed).
-
 - **King of the Hammer #2**:
-
   - **Description**: A timed rally event with a mix of dirt and paved roads.
   - **Requirements**:
     - **Target Time**: **180 seconds**
-    - **Reward**: **\$3,000**
+    - **Reward**: **3,000**
 
 #### Drift Events
 
 - **Hotrolled Drift**:
-
   - **Description**: Slide through a series of challenging corners designed for drifting enthusiasts.
   - **Requirements**:
     - **Target Time**: **30 seconds**
     - **Drift Score**: **3,500**
-    - **Reward**: **\$1,500**
-
+    - **Reward**: **1,500**
 - **Sealbrik Drift**:
-
   - **Description**: A drift event set in an industrial area with tight spaces and sharp turns.
   - **Requirements**:
     - **Target Time**: **30 seconds**
     - **Drift Score**: **4,500**
-    - **Reward**: **\$1,500**
-
+    - **Reward**: **1,500**
 - **Island Touge Drift**:
-
   - **Description**: Navigate a winding mountain pass inspired by classic touge races on the Island. Ideal for skilled drivers.
   - **Requirements**:
     - **Target Time**: **25 seconds**
     - **Drift Score**: **3,500**
-    - **Reward**: **\$3,000**
+    - **Reward**: **3,000**
 
 #### Rock Crawl Events
 
 Rock crawls have been added as part of West Coast adjustments and additions to the map.
 
 - **Small Rock Crawl**:
-
   - **Description**: A timed rock crawl event with a mix of dirt and rocks.
   - **Requirements**:
     - **Target Time**: **5 seconds**
-    - **Reward**: **\$1,200**
-
+    - **Reward**: **1,200**
 - **Large Rock Crawl**:
-
   - **Description**: A timed rock crawl event with a mix of dirt and rocks.
   - **Requirements**:
     - **Target Time**: **12 seconds**
-    - **Reward**: **\$1,500**
-
+    - **Reward**: **1,500**
 - **Top Speed FRE**:
-
   - **Description**: A freeroam event focused on achieving top speeds. Test your vehicle's maximum speed capabilities.
   - **Requirements**: Reach the target speed to complete the event.
 
@@ -361,7 +309,7 @@ Rock crawls have been added as part of West Coast adjustments and additions to t
 - Removed the 2× reward bonus for best lap time.
 - Introduced a new function for lap multipliers:
   - **Best Time Session Bonus**: Once you achieve a best time on a hot lap, you get a 20% bonus for all subsequent laps.
-  - **Best Time Range Bonus**: If you finish within \~2.5% of your best time, you get a 5% bonus for that lap.
+  - **Best Time Range Bonus**: If you finish within 2.5% of your best time, you get a 5% bonus for that lap.
 - Some track checkpoints have been moved or resized.
 
 ### Vehicle Rental
@@ -369,7 +317,7 @@ Rock crawls have been added as part of West Coast adjustments and additions to t
 - **Movie Rental**:
   - Lens Flare Studio will pay you for renting your vehicle to them.
   - **Requirements**:
-    - **Vehicle**: Any vehicle valued over \$100,000
+    - **Vehicle**: Any vehicle valued over 100,000
     - **Location**: Lens Flare Studio (Next to Residential Area)
     - **Time**: 1 - 8 hours
     - **Reward**: Variable based on the vehicle value and time rented.
@@ -390,17 +338,12 @@ Rock crawls have been added as part of West Coast adjustments and additions to t
 ### Police
 
 - **Dynamic Police Interactions**:
-
   - **Roaming Police**: Police patrol the roads and attempt to pull you over for traffic violations.
   - **Play as Police**: Purchase a police vehicle and enforce the law.
   - **Earn Money**: Evade police or apprehend suspects if you’re an officer.
-
 - **Troubleshooting**:
-
   - If police are not spawning, disable the "Start traffic in freeroam" setting.
-
 - **Role Notification**:
-
   - A message indicates your role if playing as police.
 
 ---
@@ -546,10 +489,10 @@ Customize your insurance coverage with specific perks:
     - 150,000 km - Premium x2.5
 - **Roadside Assistance**:
   - **Options**:
-    -  0 Free Tows - Premium +\$0
-    -  2 Free Tows - Premium +\$150
-    -  5 Free Tows - Premium +\$450
-    -  10 Free Tows - Premium +\$1500
+    -  0 Free Tows - Premium +0
+    -  2 Free Tows - Premium +150
+    -  5 Free Tows - Premium +450
+    -  10 Free Tows - Premium +1500
 
 #### Policy Score
 
@@ -569,21 +512,18 @@ Your **Policy Score** affects your insurance rates:
 ### Garage Space
 
 - **Discover and Purchase Garages**:
-
   - **Discover**: Drive to the garage and walk up to the computer.
   - **Purchase**: Tow to the garage to buy it.
   - Garages show up in taxi/towing menus once discovered.
-
 - **Garage Pricing and Capacity**:
-
-  - **Belasco Auto Garage**: (\$550,000, 8 Slots)
-  - **Commercial Garage**: (\$1,000,000, 15 Slots)
-  - **Drag Paddock**: (\$115,000, 2 Slots)
+  - **Belasco Auto Garage**: (550,000, 8 Slots)
+  - **Commercial Garage**: (1,000,000, 15 Slots)
+  - **Drag Paddock**: (115,000, 2 Slots)
   - **Chinatown Garage**: (FREE, 2 Slots)
-  - **Chinatown Overflow**: (\$75,000, 2 Slots)
-  - **Cul-de-Sac Garage**: (\$425,000, 5 Slots)
-  - **Sealbrick 1058 Garage**: (\$180,000, 3 Slots)
-  - **Race Paddock Garage**: (\$155,000, 1 Slot)
+  - **Chinatown Overflow**: (75,000, 2 Slots)
+  - **Cul-de-Sac Garage**: (425,000, 5 Slots)
+  - **Sealbrick 1058 Garage**: (180,000, 3 Slots)
+  - **Race Paddock Garage**: (155,000, 1 Slot)
   - **Alder Drag Way Storage Garage**: New garage location with storage capacity
   - **Drag Strip Fuel Station**: Fuel station located at the drag strip
 
@@ -602,8 +542,8 @@ Experience a diverse range of dealerships, each with unique specialties and inve
   - Factory configurations only
   - Years 2002-2025
   - Various mileage tiers
-  - Max value \$65,000
-- **Dealer Fees**: \$749
+  - Max value 65,000
+- **Dealer Fees**: 749
 
 #### Jefferson Motors
 
@@ -612,17 +552,17 @@ Experience a diverse range of dealerships, each with unique specialties and inve
 - **Specialization**: Custom configurations
 - **Brands**: Bruckell, Burnside, Gavril, Soliad, and others
 - **Vehicle Types**: High mileage (5.5-164 miles / 8.8-264 km)
-- **Dealer Fees**: \$649
+- **Dealer Fees**: 649
 
 #### Rich's Motor Company
 
 - **Description**: Prestige auto sales
 - **Stock**: 15 vehicles
-- **Specialization**: High-end vehicles (\$120,000+)
+- **Specialization**: High-end vehicles (120,000+)
 - **Vehicle Types**:
   - Years from 1950-present
   - Pristine/low mileage cars (1.5-82 miles / 2.5-132 km)
-- **Dealer Fees**: \$1,250
+- **Dealer Fees**: 1,250
 
 #### Quarryside Auto Sales
 
@@ -632,7 +572,7 @@ Experience a diverse range of dealerships, each with unique specialties and inve
 - **Vehicle Types**:
   - Factory configurations
   - High mileage vehicles
-- **Dealer Fees**: \$249
+- **Dealer Fees**: 249
 
 #### Smash Rollers
 
@@ -647,32 +587,25 @@ Experience a diverse range of dealerships, each with unique specialties and inve
 Brand-specific new vehicle dealers:
 
 - **Bruckell Online Dealership**:
-
   - Stock: 10 vehicles
   - New vehicles only
   - Factory configurations
-  - Dealer Fees: \$2,500
-
+  - Dealer Fees: 2,500
 - **Gavril-Car Online Dealership**:
-
   - Stock: 10 vehicles
   - New vehicles only (cars only)
   - Factory configurations
-  - Dealer Fees: \$2,500
-
+  - Dealer Fees: 2,500
 - **Gavril-Truck Online Dealership**:
-
   - Stock: 10 vehicles
   - New vehicles only (trucks and pickups)
   - Factory configurations
-  - Dealer Fees: \$2,500
-
+  - Dealer Fees: 2,500
 - **Soliad Online Dealership**:
-
   - Stock: 10 vehicles
   - New vehicles only
   - Factory configurations
-  - Dealer Fees: \$2,500
+  - Dealer Fees: 2,500
 
 All online dealerships feature:
 
@@ -691,7 +624,7 @@ All online dealerships feature:
   - Buses
   - Commercial vehicles
 - **Vehicle Types**: High mileage (1,093-602,700 miles / 1,760-970,000 km)
-- **Dealer Fees**: \$1,449
+- **Dealer Fees**: 1,449
 
 #### Trailer Dealer
 
@@ -699,21 +632,21 @@ All online dealerships feature:
 - **Stock**: 10 vehicles
 - **Specialization**: All types of trailers
 - **Vehicle Types**: Mixed mileage
-- **Dealer Fees**: \$449
+- **Dealer Fees**: 449
 
 #### Service Dealership
 
 - **Description**: Purchase Service Vehicles here
 - **Stock**: 7 vehicles
 - **Specialization**: Service vehicles (non-commercial)
-- **Dealer Fees**: \$500
+- **Dealer Fees**: 500
 
 #### Private Sellers
 
 - **Stock**: 30 vehicles
 - **Requirements**:
   - Mileage: 15,534-236,121 miles / 25,000-380,000 km
-  - Minimum value: \$950
+  - Minimum value: 950
   - No trailers or semi trucks
 - **Features**: No dealer fees
 
@@ -741,14 +674,14 @@ All online dealerships feature:
 - **Stock**: 20 vehicles
 - **Specialization**: Race configurations, ATVs, Buggies, and specialty vehicles
 - **Vehicle Types**: Low-medium mileage (6.8-10.9 miles / 11-17.6 km)
-- **Dealer Fees**: \$2,000
+- **Dealer Fees**: 2,000
 
 #### Police Dealership
 
 - **Description**: Purchase police vehicles here
 - **Stock**: 8 vehicles
 - **Specialization**: Police vehicles
-- **Dealer Fees**: \$500
+- **Dealer Fees**: 500
 
 #### Loaner Vehicles Dealership
 
@@ -818,7 +751,7 @@ A new certification system for non-police vehicles:
 
 #### Details
 
-- **Cost**: \$10,000
+- **Cost**: 10,000
 - **Processing Time**: 4 hours
 - **Location**: Police Station parking
 
@@ -874,7 +807,7 @@ List and sell your vehicles in-game:
 
 - Receive offers from 300+ different customers.
 - Offers arrive every 2–10 minutes based on overall customer interest.
-- Offline generation is slower (\~5× the normal time).
+- Offline generation is slower (5× the normal time).
 - **Pricing** influenced by:
   - Free-roam event performance
   - Consecutive laps
@@ -935,11 +868,11 @@ The mod offers several gameplay modes to suit different playstyles and preferenc
 
 A challenging gameplay setting for players seeking a more difficult experience:
 
-- Start with **\$0** and one of 6 random hardcore starter vehicles.
+- Start with **0** and one of 6 random hardcore starter vehicles.
 - No initial garage; capacities halved (rounded up).
 - All rewards are halved.
-- Instant sell / trade-in yields \~50–66% of base value.
-- Marketplace offers \~33% lower.
+- Instant sell / trade-in yields 50–66% of base value.
+- Marketplace offers 33% lower.
 - Police fines tripled.
 - No Police mod is disabled.
 - No voucher rewards.
