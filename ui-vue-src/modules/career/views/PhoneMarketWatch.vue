@@ -6,11 +6,6 @@
       </div>
 
       <template v-if="loaded">
-        <!-- Testing Controls -->
-        <div class="test-controls">
-          <button @click="tickEconomy" class="tick-button">Tick Economy</button>
-        </div>
-
         <!-- Trend Charts Section -->
         <div class="section-header">Market Trends</div>
         <div class="charts-section">
@@ -165,16 +160,6 @@ function onMarketData(data) {
   loaded.value = true
 }
 
-async function tickEconomy() {
-  await lua.extensions.load('career_modules_globalEconomy')
-  const success = lua.career_modules_globalEconomy.performEconomyTick()
-  if (success) {
-    setTimeout(() => {
-      lua.career_modules_globalEconomy.requestMarketWatchData()
-    }, 100)
-  }
-}
-
 onMounted(async () => {
   events.on('MarketWatchData', onMarketData)
   await lua.extensions.load('career_modules_globalEconomy')
@@ -211,32 +196,6 @@ onUnmounted(() => {
   justify-content: center;
   color: rgba(255,255,255,0.4);
   font-size: 14px;
-}
-
-.test-controls {
-  padding: 12px 16px;
-  display: flex;
-  justify-content: center;
-}
-
-.tick-button {
-  background: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 10px 20px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-
-  &:hover {
-    background: #2563eb;
-  }
-
-  &:active {
-    background: #1d4ed8;
-  }
 }
 
 .section-header {
