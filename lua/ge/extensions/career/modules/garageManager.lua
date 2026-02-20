@@ -166,20 +166,38 @@ local function onExtensionLoaded()
   buildGarageSizes()
 end
 
-local function getGaragePrice(garage)
+local function calculateGaragePurchasePrice(garageId)
+  if not garageId then
+    return nil
+  end
+
+  local garage = freeroam_facilities.getFacility("garage", garageId)
+  if not garage then
+    return nil
+  end
+
   if career_modules_hardcore.isHardcoreMode() then
     return garage.defaultPrice
   else
-    -- Check if this garage is a starting garage in an active challenge FIRST
     if career_challengeModes and career_challengeModes.isChallengeActive() then
       local activeChallenge = career_challengeModes.getActiveChallenge()
       if activeChallenge and activeChallenge.startingGarages then
         return garage.defaultPrice
       end
     end
-    
-    return garage.starterGarage and 0 or garage.defaultPrice
+
+    if garage.starterGarage then return 0 end
+    local price = garage.defaultPrice
+    if career_modules_globalEconomy and career_modules_globalEconomy.getHousingMarketIndex then
+      price = math.floor(price * career_modules_globalEconomy.getHousingMarketIndex() + 0.5)
+    end
+    return price
   end
+end
+
+local function getGaragePrice(garage)
+  local garageId = type(garage) == "table" and garage.id or garage
+  return calculateGaragePurchasePrice(garageId)
 end
 
 local function showPurchaseGaragePrompt(garageId)
@@ -346,26 +364,7 @@ local function computerIdToGarageId(computerId)
 end
 
 local function getGaragePurchasePrice(garageId)
-  if not garageId then return nil end
-  local garage = freeroam_facilities.getFacility("garage", garageId)
-  if not garage then return nil end
-  if career_modules_hardcore.isHardcoreMode() then
-    return garage.defaultPrice
-  else
-    if career_challengeModes and career_challengeModes.isChallengeActive() then
-      local activeChallenge = career_challengeModes.getActiveChallenge()
-      if activeChallenge and activeChallenge.startingGarages then
-        return garage.defaultPrice
-      end
-    end
-    if garage.starterGarage then return 0 end
-    local price = garage.defaultPrice
-    -- Apply housing market index if available
-    if career_modules_globalEconomy and career_modules_globalEconomy.getHousingMarketIndex then
-      price = math.floor(price * career_modules_globalEconomy.getHousingMarketIndex() + 0.5)
-    end
-    return price
-  end
+  return calculateGaragePurchasePrice(garageId)
 end
 
 local function getGaragePrice(garageId, computerId)
