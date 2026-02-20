@@ -22,11 +22,19 @@ local r2 = function(n) return (n and math.floor(n * 100 + 0.5) / 100) or 0 end
 -- Storage
 -- =============================================================================
 
+local function normalizeBusinessAccountId(id)
+  if not id or id == "" or id == "null" then return nil end
+  return id
+end
+
 local function loadLoans()
   local _, currentSavePath = career_saveSystem.getCurrentSaveSlot()
   if not currentSavePath then return end
   local data = jsonReadFile(currentSavePath .. saveFile) or {}
   activeLoans = data.activeLoans or {}
+  for _, loan in ipairs(activeLoans) do
+    loan.businessAccountId = normalizeBusinessAccountId(loan.businessAccountId)
+  end
   notificationsEnabled = data.notificationsEnabled
   if notificationsEnabled == nil then notificationsEnabled = true end
 end
@@ -209,7 +217,7 @@ end
 -- =============================================================================
 
 local function tryPayFromBank(loan, needed)
-  if not loan.businessAccountId or loan.businessAccountId == "null" or not career_modules_bank then return false end
+  if not loan.businessAccountId or not career_modules_bank then return false end
   local price = { money = { amount = needed } }
   local ok = career_modules_bank.payFromAccount(price, loan.businessAccountId, "Loan Payment", "Payment to " .. (loan.orgName or loan.orgId))
   log("D", "loans", string.format("    bank payFromAccount: success=%s", tostring(ok)))
@@ -289,7 +297,7 @@ local function processSingleLoanPayment(loan, i)
     return true
   end
 
-  local paymentSuccess = (loan.businessAccountId and loan.businessAccountId ~= "null" and career_modules_bank)
+  local paymentSuccess = (loan.businessAccountId and career_modules_bank)
     and tryPayFromBank(loan, needed) or tryPayFromPlayer(loan, needed)
   if paymentSuccess then
     applyPaymentSuccess(loan, needed, principalDue)
@@ -319,7 +327,7 @@ local function processDuePayments(elapsedSimSeconds)
       if needed <= 1e-6 then
         log("D", "loans", "    covered by prepay, applying installment (no money transfer)")
       else
-        if loan.businessAccountId and loan.businessAccountId ~= "null" and career_modules_bank then
+        if loan.businessAccountId and career_modules_bank then
           log("D", "loans", string.format("    bank balance=%.2f needed=%.2f", career_modules_bank.getAccountBalance(loan.businessAccountId) or 0, needed))
         elseif career_modules_payment then
           log("D", "loans", string.format("    player funds=%.2f needed=%.2f canPay=%s", career_modules_playerAttributes and career_modules_playerAttributes.getAttributeValue('money') or 0, needed, tostring(career_modules_payment.canPay({ money = { amount = needed } }))))
@@ -394,7 +402,7 @@ local function createLoanRecord(orgId, org, amount, baseRate, payments, business
     secondsUntilNextPayment = PAYMENT_INTERVAL_S,
     prepaidCredit = 0,
     amountPaid = 0,
-    businessAccountId = businessAccountId,
+    businessAccountId = normalizeBusinessAccountId(businessAccountId),
   }
 end
 
@@ -480,7 +488,7 @@ end
 --- Attempts to pay amount from loan's source (bank account or player funds). Returns ok, errorCode.
 local function attemptPrepayFromSource(loan, amount)
   local price = { money = { amount = amount } }
-  if loan.businessAccountId and loan.businessAccountId ~= "null" and career_modules_bank then
+  if loan.businessAccountId and career_modules_bank then
     if (career_modules_bank.getAccountBalance(loan.businessAccountId) or 0) < amount then return false, "insufficient_funds" end
     local ok = career_modules_bank.payFromAccount(price, loan.businessAccountId, "Loan Prepayment", "Prepayment to " .. (loan.orgName or loan.orgId))
     return ok, ok and nil or "insufficient_funds"
@@ -535,7 +543,7 @@ local function prepayLoan(loanId, amount)
 
   local payOk, payErr = attemptPrepayFromSource(loan, amount)
   if not payOk then
-    log("D", "loans", payErr == "pay_failed" and "  reject: pay_failed" or "  reject: insufficient_funds (" .. (loan.businessAccountId and loan.businessAccountId ~= "null" and "bank" or "player") .. ")")
+    log("D", "loans", payErr == "pay_failed" and "  reject: pay_failed" or "  reject: insufficient_funds (" .. (loan.businessAccountId and "bank" or "player") .. ")")
     return { error = payErr or "insufficient_funds" }
   end
 

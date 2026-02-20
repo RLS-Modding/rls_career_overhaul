@@ -1,17 +1,14 @@
 <template>
     <PhoneWrapper app-name="Loans">
         <div class="phone-loans">
-            <!-- Gear icon -->
-            <button class="settings-gear" @click="openSettings">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#475569" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="10" cy="10" r="3" />
-                    <path d="M16.5 12.3a1.2 1.2 0 0 0 .2 1.3l.1.1a1.5 1.5 0 1 1-2.1 2.1l-.1-.1a1.2 1.2 0 0 0-1.3-.2 1.2 1.2 0 0 0-.7 1.1v.1a1.5 1.5 0 1 1-3 0v-.1a1.2 1.2 0 0 0-.8-1.1 1.2 1.2 0 0 0-1.3.2l-.1.1a1.5 1.5 0 1 1-2.1-2.1l.1-.1a1.2 1.2 0 0 0 .2-1.3 1.2 1.2 0 0 0-1.1-.7h-.1a1.5 1.5 0 0 1 0-3h.1a1.2 1.2 0 0 0 1.1-.8 1.2 1.2 0 0 0-.2-1.3l-.1-.1a1.5 1.5 0 1 1 2.1-2.1l.1.1a1.2 1.2 0 0 0 1.3.2h.1a1.2 1.2 0 0 0 .7-1.1v-.1a1.5 1.5 0 0 1 3 0v.1a1.2 1.2 0 0 0 .7 1.1 1.2 1.2 0 0 0 1.3-.2l.1-.1a1.5 1.5 0 0 1 2.1 2.1l-.1.1a1.2 1.2 0 0 0-.2 1.3v.1a1.2 1.2 0 0 0 1.1.7h.1a1.5 1.5 0 0 1 0 3h-.1a1.2 1.2 0 0 0-1.1.7z" />
-                </svg>
-            </button>
-
             <!-- My Loans (always at top) -->
             <div class="section" v-if="activeLoans.length > 0">
-                <div class="section-title">My Loans</div>
+                <div class="section-header">
+                    <div class="section-title">My Loans</div>
+                    <button class="settings-gear" @click="openSettings">
+                        <BngIcon class="settings-icon" :type="icons.cogs" />
+                    </button>
+                </div>
 
                 <!-- Single loan: show directly -->
                 <div v-if="activeLoans.length === 1" class="section-card">
@@ -21,7 +18,7 @@
                             <div class="rate">{{ fmtRate(activeLoans[0]) }}</div>
                         </div>
                         <div class="amount">
-                            <BngIcon class="amount-icon" :type="icons.beamCurrency" />
+                            <span class="currency-symbol">$</span>
                             <BngUnit :money="activeLoans[0].principalOutstanding" no-icon />
                         </div>
                         <div class="chips">
@@ -36,7 +33,7 @@
                     <div class="summary-row">
                         <div class="summary-label">Total Outstanding</div>
                         <div class="summary-amount">
-                            <BngIcon class="summary-icon" :type="icons.beamCurrency" />
+                            <span class="currency-symbol">$</span>
                             <BngUnit :money="totalOutstanding" no-icon />
                         </div>
                         <div class="summary-meta">
@@ -57,7 +54,7 @@
                                     <div class="rate">{{ fmtRate(l) }}</div>
                                 </div>
                                 <div class="amount">
-                                    <BngIcon class="amount-icon" :type="icons.beamCurrency" />
+                                    <span class="currency-symbol">$</span>
                                     <BngUnit :money="l.principalOutstanding" no-icon />
                                 </div>
                                 <div class="chips">
@@ -71,7 +68,12 @@
             </div>
 
             <div class="section" v-else>
-                <div class="section-title">My Loans</div>
+                <div class="section-header">
+                    <div class="section-title">My Loans</div>
+                    <button class="settings-gear" @click="openSettings">
+                        <BngIcon class="settings-icon" :type="icons.cogs" />
+                    </button>
+                </div>
                 <div class="section-card">
                     <div class="none">No active loans</div>
                 </div>
@@ -81,7 +83,7 @@
             <button class="credit-widget" @click="openCredit">
                 <div class="credit-left">
                     <div class="credit-label">Credit Score</div>
-                    <div class="credit-score" :style="{ color: scoreColor }">{{ creditData.score || '—' }}</div>
+                    <div class="credit-score" :style="{ color: scoreColor }">{{ creditData.score || '--' }}</div>
                 </div>
                 <div class="credit-right">
                     <div class="credit-tier" :style="{ color: scoreColor }">{{ creditData.tier?.label || '' }}</div>
@@ -97,7 +99,7 @@
                         <button class="offer" v-for="o in offers" :key="o.id" @click="openOffer(o.id)">
                             <div class="offer-left">
                                 <div class="symbol" :style="{ background: getColorForOrg(o.id) }">
-                                    <BngIcon :type="icons.beamCurrency" :style="{ color: '#fff' }" />
+                                    <span class="currency-symbol symbol-text">$</span>
                                 </div>
                                 <div class="name">{{ o.name }}</div>
                             </div>
@@ -221,79 +223,113 @@ const getColorForOrg = (id) => orgColors[Math.abs(String(id).split('').reduce((a
 
 <style scoped lang="scss">
 :deep(.phone-content) {
-    background: linear-gradient(180deg, #ffffff 0%, #f0f6ff 100%);
+    background:
+        radial-gradient(110% 80% at 50% -10%, rgba(99, 102, 241, 0.35) 0%, rgba(99, 102, 241, 0) 70%),
+        linear-gradient(180deg, #030712 0%, #0b1227 56%, #0f172a 100%);
 }
 
 .phone-loans {
-    padding: 10px;
-    padding-top: 60px;
-    color: #0f172a;
+    padding: 12px;
+    padding-top: 58px;
+    color: #e2e8f0;
     height: 95%;
     overflow-y: auto;
     overflow-x: hidden;
     box-sizing: border-box;
-    background: linear-gradient(180deg, #ffffff 0%, #f7f8fb 100%);
+    background: transparent;
     position: relative;
 
-    &::-webkit-scrollbar { width: 8px; }
-    &::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); border-radius: 4px; }
-    &::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 4px; &:hover { background: rgba(0,0,0,0.3); } }
+    &::-webkit-scrollbar { width: 7px; }
+    &::-webkit-scrollbar-track { background: rgba(148, 163, 184, 0.12); border-radius: 999px; }
+    &::-webkit-scrollbar-thumb {
+        background: rgba(148, 163, 184, 0.4);
+        border-radius: 999px;
+        &:hover { background: rgba(148, 163, 184, 0.55); }
+    }
 }
 
 .settings-gear {
-    position: absolute;
-    top: 64px;
-    right: 12px;
-    width: 34px;
-    height: 34px;
+    width: 28px;
+    height: 28px;
     display: grid;
     place-items: center;
-    background: #ffffff;
-    border: 1px solid #d4e2ff;
-    border-radius: 10px;
+    background: rgba(15, 23, 42, 0.62);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    border-radius: 12px;
     cursor: pointer;
     z-index: 5;
-    box-shadow: 0 1px 3px rgba(16, 24, 40, .06);
-    transition: transform 0.12s ease, box-shadow 0.2s ease;
+    padding: 0;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 22px rgba(2, 6, 23, 0.3);
+    transition: transform 0.12s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 
-    &:hover { transform: scale(1.08); box-shadow: 0 2px 6px rgba(16, 24, 40, .12); }
+    &:hover {
+        transform: translateY(-1px);
+        border-color: rgba(125, 211, 252, 0.48);
+        box-shadow: 0 10px 24px rgba(2, 6, 23, 0.42);
+    }
     &:active { transform: scale(0.95); }
 }
 
-.section { margin-bottom: 14px; }
+.settings-icon {
+    color: #dbeafe;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+.section { margin-bottom: 12px; }
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 2px 3px 8px;
+}
 
 .section-title {
-    font-weight: 800;
-    font-size: 1.4rem;
-    margin: 6px 2px;
+    font-size: 0.75rem;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin: 2px 3px 8px;
+    color: #93c5fd;
+    opacity: 0.95;
 }
+
+.section-header .section-title { margin: 0; }
 
 .section-card {
-    background: #ffffff;
-    border: 1px solid #d4e2ff;
+    background: linear-gradient(180deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.8) 100%);
+    border: 1px solid rgba(148, 163, 184, 0.3);
     border-radius: 14px;
     padding: 10px;
-    box-shadow: 0 1px 2px rgba(16, 24, 40, .04), 0 4px 12px rgba(16, 24, 40, .05);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 10px 30px rgba(2, 6, 23, 0.35);
 }
 
-/* Summary */
 .summary-row { padding: 4px 2px 8px; }
-.summary-label { font-size: 0.8rem; color: #64748b; font-weight: 600; }
+.summary-label {
+    font-size: 0.72rem;
+    color: #93c5fd;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
 
 .summary-amount {
     display: flex;
     align-items: baseline;
-    font-size: 2rem;
+    font-size: 1.85rem;
     font-weight: 800;
-    gap: 6px;
+    gap: 4px;
     margin: 2px 0;
+    color: #f8fafc;
 }
 
-.summary-icon { color: #000; font-size: 1.6rem; }
-
 .summary-meta {
-    font-size: 0.8rem;
-    color: #64748b;
+    font-size: 0.76rem;
+    color: #cbd5e1;
     font-weight: 600;
     display: flex;
     align-items: center;
@@ -304,10 +340,9 @@ const getColorForOrg = (id) => orgColors[Math.abs(String(id).split('').reduce((a
     width: 3px;
     height: 3px;
     border-radius: 50%;
-    background: #94a3b8;
+    background: #7dd3fc;
 }
 
-/* Expand toggle */
 .expand-toggle {
     display: flex;
     align-items: center;
@@ -315,14 +350,14 @@ const getColorForOrg = (id) => orgColors[Math.abs(String(id).split('').reduce((a
     width: 100%;
     padding: 8px 4px;
     border: 0;
-    border-top: 1px solid #e8edf5;
+    border-top: 1px solid rgba(148, 163, 184, 0.24);
     background: none;
-    color: #475569;
-    font-size: 0.85rem;
+    color: #cbd5e1;
+    font-size: 0.78rem;
     font-weight: 600;
     cursor: pointer;
 
-    &:hover { color: #1e293b; }
+    &:hover { color: #e2e8f0; }
 }
 
 .expand-chevron {
@@ -344,7 +379,6 @@ const getColorForOrg = (id) => orgColors[Math.abs(String(id).split('').reduce((a
     max-height: 600px;
 }
 
-/* Loan cards */
 .loan-cards {
     display: flex;
     flex-direction: column;
@@ -353,20 +387,22 @@ const getColorForOrg = (id) => orgColors[Math.abs(String(id).split('').reduce((a
 }
 
 .loan-card {
-    background: #eef4ff;
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.72) 0%, rgba(15, 23, 42, 0.92) 100%);
+    border: 1px solid rgba(125, 211, 252, 0.22);
     border-radius: 12px;
-    padding: 12px;
+    padding: 11px;
     text-align: left;
     width: 100%;
-    border: 0;
+    min-height: 88px;
     color: inherit;
+    font-family: inherit;
     transition: transform .08s ease, box-shadow .2s ease;
     cursor: pointer;
 }
 
 .loan-card:hover {
     transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(16, 24, 40, .07);
+    box-shadow: 0 8px 18px rgba(2, 6, 23, 0.35);
 }
 
 .loan-card .header {
@@ -375,78 +411,100 @@ const getColorForOrg = (id) => orgColors[Math.abs(String(id).split('').reduce((a
     align-items: center;
 }
 
-.loan-card .name { font-weight: 700; }
-.loan-card .rate { color: #475569; font-weight: 700; }
+.loan-card .name { font-weight: 700; color: #f8fafc; }
+.loan-card .rate { color: #93c5fd; font-weight: 700; }
 
 .loan-card .amount {
-    margin: 6px 0;
+    margin: 4px 0 7px;
     display: flex;
     align-items: baseline;
-    font-size: 2.25rem;
-    gap: 8px;
+    font-size: 1.85rem;
+    font-weight: 800;
+    gap: 4px;
+    color: #f8fafc;
 }
 
-.amount-icon { color: #000; font-size: 2rem; }
+.currency-symbol {
+    color: #fde68a;
+    font-weight: 800;
+    line-height: 1;
+    font-size: 1.18rem;
+    display: inline-block;
+    font-style: normal;
+    font-stretch: normal;
+    letter-spacing: normal;
+    transform: translateY(-0.03em);
+}
 
 .chips { display: flex; gap: 6px; flex-wrap: wrap; }
 
 .chip {
-    background: #e2ecff;
-    color: #334155;
-    padding: 4px 10px;
+    background: rgba(59, 130, 246, 0.15);
+    color: #dbeafe;
+    padding: 3px 10px;
     border-radius: 999px;
-    border: 1px solid #c9d8ff;
+    border: 1px solid rgba(125, 211, 252, 0.3);
+    font-size: 0.72rem;
+    font-weight: 600;
 }
 
-/* Credit widget */
 .credit-widget {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: #ffffff;
-    border: 1px solid #d4e2ff;
+    background: linear-gradient(180deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.84) 100%);
+    border: 1px solid rgba(148, 163, 184, 0.3);
     border-radius: 14px;
     padding: 14px 16px;
     width: 100%;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
     cursor: pointer;
     transition: transform 0.08s ease, box-shadow 0.2s ease;
-    box-shadow: 0 1px 2px rgba(16, 24, 40, .04), 0 4px 12px rgba(16, 24, 40, .05);
+    box-shadow: 0 10px 30px rgba(2, 6, 23, 0.35);
+    backdrop-filter: blur(12px);
 
     &:hover {
         transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(16, 24, 40, .1);
+        box-shadow: 0 12px 28px rgba(2, 6, 23, .45);
     }
 
     border: 0;
     color: inherit;
     text-align: left;
+    overflow: hidden;
+    position: relative;
 }
 
-.credit-label { font-size: 0.85rem; color: #64748b; font-weight: 600; margin-bottom: 2px; }
-.credit-score { font-size: 2rem; font-weight: 800; }
+.credit-label {
+    font-size: 0.72rem;
+    color: #93c5fd;
+    font-weight: 700;
+    margin-bottom: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+.credit-score { font-size: 1.9rem; font-weight: 800; }
 .credit-right { display: flex; align-items: center; gap: 8px; }
-.credit-tier { font-size: 0.9rem; font-weight: 700; }
-.credit-arrow { color: #94a3b8; font-size: 1.4rem; font-weight: 600; line-height: 1; }
+.credit-tier { font-size: 0.88rem; font-weight: 700; color: #dbeafe; }
+.credit-arrow { color: #7dd3fc; font-size: 1.4rem; font-weight: 600; line-height: 1; }
 
-/* Offers */
 .offers { display: flex; flex-direction: column; gap: 6px; }
 
 .offer {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: #eef4ff;
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.72) 0%, rgba(15, 23, 42, 0.92) 100%);
+    border: 1px solid rgba(125, 211, 252, 0.22);
     padding: 10px;
     border-radius: 12px;
     width: 100%;
-    border: 0;
     color: inherit;
     text-align: left;
     transition: transform .12s ease, box-shadow .2s ease;
 }
 
-.offer:hover { transform: translateY(-1px) scale(1.02); box-shadow: 0 4px 12px rgba(16,24,40,.12); }
+.offer:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(2, 6, 23, 0.38); }
 .offer:active { transform: scale(0.98); }
 
 .offer-left { display: flex; align-items: center; gap: 10px; }
@@ -459,11 +517,17 @@ const getColorForOrg = (id) => orgColors[Math.abs(String(id).split('').reduce((a
     place-items: center;
     font-weight: 800;
     color: #ffffff;
-    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .15);
+    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .2), 0 4px 10px rgba(2, 6, 23, 0.35);
+}
+
+.symbol-text {
+    color: #ffffff;
+    font-size: 1.15rem;
+    font-weight: 800;
 }
 
 .offer-right { display: grid; gap: 2px; justify-items: end; }
 .percent { font-weight: 800; }
-.max { color: #475569; }
-.none { color: #475569; }
+.max { color: #cbd5e1; font-size: 0.83rem; }
+.none { color: #cbd5e1; font-size: 0.85rem; }
 </style>

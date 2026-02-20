@@ -1,10 +1,12 @@
-<template>
+﻿<template>
   <PhoneWrapper app-name="New Loan">
     <div class="phone-offer-details" v-if="offer">
+      <div class="section">
+        <div class="section-card">
       <div class="credit-summary" v-if="creditData.score">
         <span class="credit-label">Credit</span>
         <span class="credit-value" :style="{ color: scoreColor }">{{ creditData.score }}</span>
-        <span class="credit-tier" :style="{ color: scoreColor }">({{ creditData.tier?.label || '—' }})</span>
+        <span class="credit-tier" :style="{ color: scoreColor }">({{ creditData.tier?.label || '-' }})</span>
       </div>
 
       <div class="title">{{ offer.name }}</div>
@@ -15,7 +17,7 @@
       </div>
 
       <div class="amount-box">
-        <BngIcon class="currency" :type="icons.beamCurrency" />
+        <span class="currency">$</span>
         <input class="amount-input" type="number" :min="0" :max="offer.max" :step="500" inputmode="numeric"
           v-bng-text-input v-model.number="amount" @keydown.stop @keypress.stop @keyup.stop @blur="onAmountBlur" />
       </div>
@@ -31,29 +33,31 @@
       <div class="summary">
         <div class="row"><span>Rate</span><strong>{{ rateDisplay }}</strong></div>
         <div class="row"><span>Per payment</span><strong class="pill">
-            <BngUnit :money="perPayment" />
+            <BngUnit :money="perPayment" no-icon />
           </strong></div>
         <div class="row"><span>Total repay</span><strong>
-            <BngUnit :money="totalRepay" />
+            <BngUnit :money="totalRepay" no-icon />
           </strong></div>
         <div class="row"><span>Fees</span><strong>
-            <BngUnit :money="0" />
+            <BngUnit :money="0" no-icon />
           </strong></div>
       </div>
 
       <div v-if="loanError" class="loan-error">{{ loanError }}</div>
-      <button class="take-loan" :disabled="!canTakeLoan || taking" @click="takeLoan">{{ taking ? 'Taking…' : 'Take Loan' }}</button>
+      <button class="take-loan" :disabled="!canTakeLoan || taking" @click="takeLoan">{{ taking ? 'Taking...' : 'Take Loan' }}</button>
 
       <div v-if="offer.max <= 0" class="no-loans-msg">No loans available. Improve your credit or pay off existing loans.</div>
+        </div>
+      </div>
     </div>
-    <div v-else class="none">Loading…</div>
+    <div v-else class="none">Loading...</div>
   </PhoneWrapper>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import PhoneWrapper from './PhoneWrapper.vue'
-import { BngUnit, BngIcon, icons } from '@/common/components/base'
+import { BngUnit } from '@/common/components/base'
 import { vBngTextInput } from '@/common/directives'
 import { lua } from '@/bridge'
 import { useRoute, useRouter } from 'vue-router'
@@ -169,193 +173,247 @@ onMounted(loadOffer)
 </script>
 
 <style scoped lang="scss">
-:deep(.phone-content) {
-  background: linear-gradient(180deg, #ffffff 0%, #f0f6ff 100%);
-}
+  :deep(.phone-content) {
+    background:
+      radial-gradient(110% 80% at 50% -10%, rgba(99, 102, 241, 0.35) 0%, rgba(99, 102, 241, 0) 70%),
+      linear-gradient(180deg, #030712 0%, #0b1227 56%, #0f172a 100%);
+  }
 
 .phone-offer-details {
-  padding: 10px;
-  padding-top: 60px;
-  color: #0f172a;
-  height: 95%;
-  overflow-y: auto;
-  box-sizing: border-box;
+    padding: 12px;
+    padding-top: 58px;
+    color: #e2e8f0;
+    height: 95%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
+    background: transparent;
+
+    &::-webkit-scrollbar { width: 7px; }
+    &::-webkit-scrollbar-track { background: rgba(148, 163, 184, 0.12); border-radius: 999px; }
+    &::-webkit-scrollbar-thumb {
+        background: rgba(148, 163, 184, 0.4);
+        border-radius: 999px;
+        &:hover { background: rgba(148, 163, 184, 0.55); }
+    }
 }
 
-.title {
-  font-weight: 800;
-  font-size: 1.8rem;
-  line-height: 1.2;
-  margin-bottom: 4px;
-}
+  .section {
+    margin-bottom: 12px;
+  }
 
-.subtitle {
-  color: #475569;
-  font-weight: 700;
-  margin-bottom: 10px;
-}
+  .section-title {
+    font-size: 0.75rem;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin: 2px 3px 8px;
+    color: #93c5fd;
+    opacity: 0.95;
+  }
 
-.credit-summary {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  margin-bottom: 12px;
-  font-size: 0.9rem;
-}
-.credit-label { color: #64748b; font-weight: 600; }
-.credit-value { font-weight: 800; font-size: 1.1rem; }
-.credit-tier { font-weight: 700; font-size: 0.85rem; }
+  .section-card {
+    background: linear-gradient(180deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.8) 100%);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    border-radius: 14px;
+    padding: 12px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 10px 30px rgba(2, 6, 23, 0.35);
+  }
 
-.max-amount {
-  color: #475569;
-  font-size: 0.9rem;
-  font-weight: 600;
-  margin-bottom: 8px;
-}
+  .title {
+    font-weight: 800;
+    font-size: 1.5rem;
+    line-height: 1.2;
+    margin-bottom: 4px;
+    color: #f8fafc;
+  }
 
-.amount-box {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: #ffffff;
-  border: 1px solid #c9d8ff; /* blue border */
-  border-radius: 12px;
-  padding: 6px 7px;
-  box-shadow: 0 1px 2px rgba(16, 24, 40, .04);
-}
+  .subtitle {
+    color: #93c5fd;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.76rem;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+  }
 
-.currency {
-  font-size: 2rem;
-  color: #0f172a;
-}
+  .credit-summary {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 12px;
+    font-size: 0.9rem;
+  }
 
-.amount-input {
-  width: 100%;
-  font-size: 1.8rem;
-  background: transparent;
-  border: none;
-  outline: none;
-  color: #0f172a;
-}
+  .credit-label { color: #93c5fd; font-weight: 700; text-transform: uppercase; font-size: 0.76rem; letter-spacing: 0.08em; }
+  .credit-value { font-weight: 800; font-size: 1.1rem; }
+  .credit-tier { font-weight: 700; font-size: 0.85rem; }
 
-.amount-slider {
-  width: 100%;
-  margin: 12px 0 6px;
-  height: 6px;
-  background: linear-gradient(90deg, #ffb37a 0%, #cc4c00 100%);
-  border-radius: 999px;
-  appearance: none;
-}
+  .max-amount {
+    color: #cbd5e1;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
 
-.amount-slider::-webkit-slider-thumb {
-  appearance: none;
-  height: 18px;
-  width: 18px;
-  border-radius: 50%;
-  background: #cc4c00;
-  border: 2px solid #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, .25);
-}
+  .amount-box {
+    display: flex;
+    align-items: center;
+    font-size: 1.8rem;
+    gap: 6px;
+    background: rgba(15, 23, 42, 0.72);
+    border: 1px solid rgba(125, 211, 252, 0.24);
+    border-radius: 12px;
+    padding: 6px 7px;
+    box-shadow: 0 1px 2px rgba(2, 6, 23, 0.2);
+  }
 
-.amount-slider::-moz-range-thumb {
-  height: 18px;
-  width: 18px;
-  border-radius: 50%;
-  background: #cc4c00;
-  border: 2px solid #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, .25);
-}
+  .currency {
+    font-size: 1.05rem;
+    color: #fde68a;
+    line-height: 1;
+    font-weight: 800;
+    transform: translateY(-0.03em);
+  }
 
-.term-label {
-  font-weight: 700;
-  margin: 6px 2px;
-}
+  .amount-input {
+    width: 100%;
+    font-size: 1em;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #f8fafc;
+  }
 
-.terms {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  margin-bottom: 6px;
-}
+  .amount-slider {
+    width: 100%;
+    margin: 12px 0 6px;
+    height: 6px;
+    background: linear-gradient(90deg, #38bdf8 0%, #818cf8 100%);
+    border-radius: 999px;
+    appearance: none;
+  }
 
-.term-choice {
-  width: 100%;
-  padding: 6px 0; /* thinner */
-  border-radius: 18px; /* extra round */
-  font-weight: 700; /* stronger label */
-  border: none;
-  background: #576176; /* deeper slate */
-  color: #fff;
-  transition: transform .12s ease, background-color .12s ease, box-shadow .2s ease;
-}
+  .amount-slider::-webkit-slider-thumb {
+    appearance: none;
+    height: 18px;
+    width: 18px;
+    border-radius: 50%;
+    background: #22d3ee;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .25);
+  }
 
-.term-choice.active { background: #cc4c00; }
+  .amount-slider::-moz-range-thumb {
+    height: 18px;
+    width: 18px;
+    border-radius: 50%;
+    background: #22d3ee;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .25);
+  }
 
-.term-choice:hover { transform: translateY(-1px) scale(1.03); box-shadow: 0 2px 8px rgba(16,24,40,.12); }
-.term-choice:active { background: #b54500; transform: scale(0.98); }
+  .term-label {
+    font-weight: 700;
+    margin: 10px 2px 8px;
+    color: #cbd5e1;
+  }
 
-.summary {
-  font-weight: 600;
-  display: grid;
-  gap: 10px;
-  margin: 10px 0 14px;
-}
+  .terms {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 6px;
+  }
 
-.row {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  align-items: center;
-  column-gap: 8px;
-}
+  .term-choice {
+    width: 100%;
+    padding: 6px 0;
+    border-radius: 18px;
+    font-weight: 700;
+    border: none;
+    background: rgba(30, 41, 59, 0.88);
+    color: #fff;
+    border: 1px solid rgba(125, 211, 252, 0.2);
+    transition: transform .12s ease, background-color .12s ease, box-shadow .2s ease;
+  }
 
-.row strong {
-  justify-self: end;
-}
+  .term-choice.active { background: #7dd3fc; color: #0f172a; }
+  .term-choice:hover { transform: translateY(-1px) scale(1.03); box-shadow: 0 2px 8px rgba(16,24,40,.12); }
+  .term-choice:active { transform: scale(0.98); }
 
-.pill {
-  background: #cc4c00;
-  color: #fff;
-  padding: 4px 10px;
-  border-radius: 999px;
-}
+  .summary {
+    font-weight: 600;
+    display: grid;
+    gap: 10px;
+    margin: 10px 0 14px;
+    color: #cbd5e1;
+  }
 
-.take-loan {
-  background: #cc4c00; /* accent orange retained */
-  color: #fff;
-  padding: 8px 0; /* thinner */
-  border-radius: 18px; /* very round */
-  width: 100%;
-  display: block;
-  font-weight: 700;
-  border: none;
-  transition: transform .12s ease, background-color .12s ease, box-shadow .2s ease;
-}
+  .row {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    column-gap: 8px;
+  }
 
-.take-loan:hover { transform: translateY(-1px) scale(1.02); box-shadow: 0 4px 12px rgba(204,76,0,.3); }
-.take-loan:active { background: #b54500; transform: scale(0.98); }
-.take-loan:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .row strong {
+    justify-self: end;
+    color: #f8fafc;
+  }
 
-.loan-error {
-  color: #ef4444;
-  font-size: 0.9rem;
-  font-weight: 600;
-  margin-bottom: 10px;
-  padding: 8px;
-  background: #fef2f2;
-  border-radius: 8px;
-}
+  .pill {
+    background: #0ea5e9;
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
 
-.no-loans-msg {
-  color: #64748b;
-  font-size: 0.9rem;
-  margin-top: 12px;
-  padding: 8px;
-}
+  .take-loan {
+    background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
+    color: #fff;
+    padding: 8px 0;
+    border-radius: 18px;
+    width: 100%;
+    display: block;
+    font-weight: 700;
+    border: none;
+    border: 1px solid rgba(125, 211, 252, 0.5);
+    transition: transform .12s ease, background-color .12s ease, box-shadow .2s ease;
+  }
 
-.none {
-  color: #0f172a;
-  opacity: .6;
-  padding-top: 40px;
-  text-align: center;
-}
+  .take-loan:hover { transform: translateY(-1px) scale(1.02); box-shadow: 0 4px 12px rgba(14, 165, 233,.35); }
+  .take-loan:active { background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); transform: scale(0.98); }
+  .take-loan:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+  .loan-error {
+    color: #ef4444;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    padding: 8px;
+    background: rgba(239, 68, 68, 0.18);
+    border-radius: 8px;
+  }
+
+  .no-loans-msg {
+    color: #cbd5e1;
+    font-size: 0.9rem;
+    margin-top: 12px;
+    padding: 8px;
+  }
+
+  .none {
+    color: #94a3b8;
+    opacity: .6;
+    padding-top: 40px;
+    text-align: center;
+  }
 </style>
+
+
+
+
+
+

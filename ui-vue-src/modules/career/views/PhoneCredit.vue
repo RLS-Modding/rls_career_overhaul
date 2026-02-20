@@ -1,7 +1,7 @@
-<template>
+﻿<template>
     <PhoneWrapper app-name="Credit">
         <div class="phone-credit">
-            <div class="section score-section">
+        <div class="section score-section">
                 <div class="score-circle-wrap">
                     <svg viewBox="0 0 200 200" class="score-svg">
                         <circle
@@ -24,16 +24,16 @@
                             stroke-dashoffset="0"
                             transform="rotate(135 100 100)"
                         />
-                        <text x="100" y="90" text-anchor="middle" class="score-number" fill="#0f172a">{{ creditData.score || '—' }}</text>
+                        <text x="100" y="90" text-anchor="middle" class="score-number" fill="#0f172a">{{ creditData.score || '-' }}</text>
                         <text x="100" y="115" text-anchor="middle" class="score-tier" :fill="scoreColor">{{ creditData.tier?.label || '' }}</text>
-                        <text x="100" y="135" text-anchor="middle" class="score-range" fill="#94a3b8">300 – 850</text>
+                        <text x="100" y="135" text-anchor="middle" class="score-range" fill="#94a3b8">300 - 850</text>
                     </svg>
                 </div>
             </div>
 
-            <div class="section">
+            <div class="section section-card">
                 <div class="section-title">Credit Factors</div>
-                <div class="factor-cards">
+                <div class="factor-list">
                     <div class="factor-card" v-for="f in factorCards" :key="f.label">
                         <div class="factor-header">
                             <span class="factor-name">{{ f.label }}</span>
@@ -195,52 +195,67 @@ onBeforeUnmount(() => {
 
 <style scoped lang="scss">
 :deep(.phone-content) {
-    background: linear-gradient(180deg, #ffffff 0%, #f0f6ff 100%);
+    background:
+        radial-gradient(110% 80% at 50% -10%, rgba(99, 102, 241, 0.35) 0%, rgba(99, 102, 241, 0) 70%),
+        linear-gradient(180deg, #030712 0%, #0b1227 56%, #0f172a 100%);
 }
 
 .phone-credit {
-    padding: 10px;
-    padding-top: 60px;
-    color: #0f172a;
+    padding: 12px;
+    padding-top: 58px;
+    color: #e2e8f0;
     height: 95%;
     overflow-y: auto;
     overflow-x: hidden;
     box-sizing: border-box;
-    background: linear-gradient(180deg, #ffffff 0%, #f7f8fb 100%);
+    background: transparent;
 
-    &::-webkit-scrollbar { width: 8px; }
-    &::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); border-radius: 4px; }
-    &::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 4px; &:hover { background: rgba(0,0,0,0.3); } }
+    &::-webkit-scrollbar { width: 7px; }
+    &::-webkit-scrollbar-track { background: rgba(148, 163, 184, 0.12); border-radius: 999px; }
+    &::-webkit-scrollbar-thumb {
+        background: rgba(148, 163, 184, 0.4);
+        border-radius: 999px;
+        &:hover { background: rgba(148, 163, 184, 0.55); }
+    }
 }
 
 .section { margin-bottom: 14px; }
 
 .section-title {
-    font-weight: 800;
-    font-size: 1.4rem;
-    margin: 6px 2px;
+    font-size: 0.75rem;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin: 2px 3px 8px;
+    color: #93c5fd;
+    opacity: 0.95;
 }
 
 .section-card {
-    background: #ffffff;
-    border: 1px solid #d4e2ff;
+    background: linear-gradient(180deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.8) 100%);
+    border: 1px solid rgba(148, 163, 184, 0.3);
     border-radius: 14px;
-    padding: 10px;
-    box-shadow: 0 1px 2px rgba(16, 24, 40, .04), 0 4px 12px rgba(16, 24, 40, .05);
+    padding: 12px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 10px 30px rgba(2, 6, 23, 0.35);
 }
 
 .score-section { display: flex; justify-content: center; }
 .score-circle-wrap { width: 200px; height: 200px; }
 .score-svg { width: 100%; height: 100%; }
-.score-number { font-size: 3rem; font-weight: 800; }
+.score-number { font-size: 3rem; font-weight: 800; fill: #f8fafc; }
 .score-tier { font-size: 1.1rem; font-weight: 700; }
 .score-range { font-size: 0.7rem; }
 
-.factor-cards { display: flex; flex-direction: column; gap: 8px; }
+.factor-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
 
 .factor-card {
-    background: #eef4ff;
-    border-radius: 12px;
+    background: transparent;
+    border: 0;
     padding: 10px 12px;
 }
 
@@ -251,12 +266,12 @@ onBeforeUnmount(() => {
     margin-bottom: 6px;
 }
 
-.factor-name { font-weight: 700; font-size: 0.95rem; }
-.factor-weight { font-size: 0.8rem; color: #64748b; font-weight: 600; }
+.factor-name { font-weight: 700; font-size: 0.95rem; color: #f8fafc; }
+.factor-weight { font-size: 0.8rem; color: #94a3b8; font-weight: 600; }
 
 .factor-bar-track {
     height: 8px;
-    background: rgba(0,0,0,0.08);
+    background: rgba(15, 23, 42, 0.8);
     border-radius: 4px;
     overflow: hidden;
     margin-bottom: 4px;
@@ -280,3 +295,6 @@ onBeforeUnmount(() => {
     margin-top: 4px;
 }
 </style>
+
+
+
