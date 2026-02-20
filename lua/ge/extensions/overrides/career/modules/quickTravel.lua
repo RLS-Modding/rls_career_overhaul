@@ -31,14 +31,18 @@ local function getPriceForQuickTravel(pos)
 
   log("D", "QuickTravel", string.format("Distance to target: %.2f, basePrice: %.2f, pricePerM: %.2f", distance, basePrice, pricePerM))
 
+  local price
   if distance < 300 then
-    local price = math.max(0, basePrice + round(distance * pricePerM * 100) / 100) -- Ensure minimum price even for short distances
-    log("D", "QuickTravel", string.format("Short distance price: %.2f", price))
-    return price, distance
+    price = math.max(0, basePrice + round(distance * pricePerM * 100) / 100) -- Ensure minimum price even for short distances
+  else
+    price = basePrice + round(distance * pricePerM * 100) / 100
   end
 
-  local price = basePrice + round(distance * pricePerM * 100) / 100
-  log("D", "QuickTravel", string.format("Long distance price: %.2f", price))
+  -- Scale fast travel cost by global economy index
+  local globalIndex = career_modules_globalEconomy and career_modules_globalEconomy.getGlobalIndex() or 1.0
+  price = math.floor(price * globalIndex * 100 + 0.5) / 100
+
+  log("D", "QuickTravel", string.format("Price: %.2f (distance: %.2f)", price, distance))
   return price, distance
 end
 

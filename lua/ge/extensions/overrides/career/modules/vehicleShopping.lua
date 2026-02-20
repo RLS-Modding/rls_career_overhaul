@@ -1173,7 +1173,14 @@ local function updateVehicleList(fromScratch)
 
       -- Apply price multiplier from negotiation personality
       local priceMultiplier = (randomVehicleInfo.negotiationPersonality and randomVehicleInfo.negotiationPersonality.priceMultiplier) or 1
-      randomVehicleInfo.Value = getRoundedPrice(randomVehicleInfo.marketValue * priceMultiplier, seller.priceRoundingType)
+      
+      -- Apply vehicle market buy multiplier from economy
+      local vehicleBuyMult = 1.0
+      if career_modules_globalEconomy and career_modules_globalEconomy.getVehicleBuyMultiplier then
+        vehicleBuyMult = career_modules_globalEconomy.getVehicleBuyMultiplier()
+      end
+      
+      randomVehicleInfo.Value = getRoundedPrice(randomVehicleInfo.marketValue * priceMultiplier * vehicleBuyMult, seller.priceRoundingType)
 
       randomVehicleInfo.negotiationPossible = not onlyStarterVehicles
       randomVehicleInfo.shopId = generateShopId()

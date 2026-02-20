@@ -155,6 +155,13 @@ local function generateOffer(inventoryId)
 
   local baseOffer = listing.marketValue
 
+  -- Apply vehicle market sell multiplier (buyers offer less in downturns)
+  local vehicleSellMult = 1.0
+  if career_modules_globalEconomy and career_modules_globalEconomy.getVehicleSellMultiplier then
+    vehicleSellMult = career_modules_globalEconomy.getVehicleSellMultiplier()
+  end
+  baseOffer = baseOffer * vehicleSellMult
+
   local personalityMult = buyerPersonality.priceMultiplier or 1.0
   local noise = (biasGainFun(math.random(), 0.5, 0.03) * 0.5) + 0.73
   local finalOfferValue = baseOffer * personalityMult * noise
@@ -451,7 +458,15 @@ local function startNegotiateSellingOffer(_shopId)
   vehicleThumbnail = vehicleInfo.preview
   vehicleMileage = vehicleInfo.Mileage
   actualVehicleValue = vehicleInfo.marketValue or vehicleInfo.Value
-  startingPrice = vehicleInfo.Value
+
+  -- Apply vehicle market buy multiplier to starting price
+  local vehicleBuyMult = 1.0
+  if career_modules_globalEconomy and career_modules_globalEconomy.getVehicleBuyMultiplier then
+    vehicleBuyMult = career_modules_globalEconomy.getVehicleBuyMultiplier()
+  end
+  startingPrice = math.floor(vehicleInfo.Value * vehicleBuyMult + 0.5)
+  actualVehicleValue = math.floor(actualVehicleValue * vehicleBuyMult + 0.5)
+
   negotiationActive = true
   theirOffer = startingPrice
   isInsulted = false
