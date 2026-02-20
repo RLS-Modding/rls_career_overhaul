@@ -30,7 +30,7 @@
                                     v-model.number="amount" @input="onAmountSlide" />
                             </div>
                             <div class="amount-edit">
-                                <BngIcon :type="icons.beamCurrency" />
+                                <span class="currency-symbol">$</span>
                                 <input class="amount-number" type="number" :min="0" :step="500" inputmode="numeric"
                                     v-bng-text-input v-model.number="amount" @keydown.stop @keypress.stop @keyup.stop
                                     @focus="pauseTicks = true" @blur="onAmountBlur" @input="onAmountInput" />
@@ -128,7 +128,7 @@
                                 </div>
                                 <div class="row prepay-row">
                                     <div class="amount-edit inline">
-                                        <BngIcon :type="icons.beamCurrency" />
+                                        <span class="currency-symbol">$</span>
                                         <input class="amount-number" type="number" :min="0"
                                             :max="Math.min(availableFunds, (l.principalOutstanding || 0) + ((l.nextPaymentInterest === 0 || l.nextPaymentInterest) ? l.nextPaymentInterest : Math.max(0, (l.perPayment - (l.basePayment || 0)))))"
                                             step="100" inputmode="numeric" v-bng-text-input
@@ -152,7 +152,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { BngButton, BngCard, BngCardHeading, BngUnit, BngIcon, icons, ACCENTS } from "@/common/components/base"
+import { BngButton, BngCard, BngCardHeading, BngUnit, ACCENTS } from "@/common/components/base"
 import { vBngTextInput } from "@/common/directives"
 import ComputerWrapper from "./ComputerWrapper.vue"
 import { useComputerStore } from "../stores/computerStore"
@@ -176,7 +176,7 @@ const notificationsEnabled = ref(true)
 
 const canTakeLoan = computed(() => selectedOffer.value && amount.value > 0 && term.value)
 
-const formatCurrency = (v) => `${Math.round(v).toLocaleString()} ` + ''
+const formatCurrency = (v) => `${Math.round(v).toLocaleString()} $`
 
 const formatDue = (secondsUntilNextPayment) => {
     if (secondsUntilNextPayment == null) return 'soon'
@@ -457,6 +457,14 @@ const termBtnCustomStyle = {
     align-items: center;
     gap: 8px;
     margin-top: 6px;
+}
+
+.amount-edit .currency-symbol {
+    color: #fde68a;
+    font-weight: 800;
+    font-size: 0.72em;
+    line-height: 1;
+    transform: translateY(-0.03em);
 }
 
 .amount-number::-webkit-outer-spin-button,
