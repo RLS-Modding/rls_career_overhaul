@@ -6796,10 +6796,9 @@ local function driveUsingPath(arg)
   end
 
   if arg.script then
-    -- Set vehicle position and orientation at the start of the path
-    -- Get initial position and orientation of vehicle at start of path (possibly time offset and/or time delayed)
     local script = arg.script
     local dir, up, pos
+    -- Set vehicle position and orientation at the start of the path
     if script[1].dir then
       -- vehicle initial orientation vectors exist
 
@@ -6850,7 +6849,9 @@ local function driveUsingPath(arg)
         "getObjectByID(" .. objectId .. "):resetBrokenFlexMesh();" ..
         "vehicleSetPositionRotation(" .. objectId .. "," .. pos.x .. "," .. pos.y .. "," .. pos.z .. "," .. rot.x .. "," .. rot.y .. "," .. rot.z .. "," .. rot.w .. ")"
       )
+    end
 
+    if dir then
       mapmgr.setCustomMap() -- nils mapmgr.mapData
       M.mode = 'manual'
       stateChanged()

@@ -1470,6 +1470,15 @@ export default {
     dismissSummary: () => {}
   },
 
+  gameplay_facilityWork: {
+    selectFacility: (id) => {},
+    setBatchSize: (size) => {},
+    requestFacilityWorkState: () => {},
+    startFacilityWork: () => {},
+    endFacilityWork: () => {},
+    repairForklift: () => {}
+  },
+
   ui_phone_layout: {
     requestLayout: () => {},
     updateLayout: layoutData => Any,

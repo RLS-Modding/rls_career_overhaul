@@ -24,6 +24,7 @@ local function goToTarget(speedMode, noTraffic)
         penaltyBelowCutoff,
         wZ
     )
+    print("[driver] goToTarget: path=" .. tostring(path) .. " len=" .. (path and #path or 0))
     table.remove(path, 1)
     ai.setPath(path)
     if noTraffic then
@@ -74,7 +75,6 @@ local function raceToTarget()
 end
 
 local function returnTargetPosition(target, race, speedMode, noTraffic)
-    print("returnTargetPosition: " .. tostring(target))
     destination = target
     if race then
         raceToTarget()
