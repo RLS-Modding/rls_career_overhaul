@@ -29,7 +29,7 @@ local function getLiveListingValue(listing)
   if not listing or not listing.id then
     return nil
   end
-  return career_modules_valueCalculator.getInventoryVehicleValue(listing.id)
+  return career_modules_valueCalculator.getInventoryVehicleSellValue(listing.id)
 end
 
 local function scheduleNextOffer(listing, timeNow)
@@ -44,8 +44,8 @@ local function listVehicles(vehicles)
     local customValue = entry.value
     local veh = career_modules_inventory.getVehicles()[inventoryId]
     if veh and not findVehicleListing(inventoryId) then
-      local value = customValue or career_modules_valueCalculator.getInventoryVehicleValue(inventoryId)
-      local marketValue = career_modules_valueCalculator.getInventoryVehicleValue(inventoryId)
+      local value = customValue or career_modules_valueCalculator.getInventoryVehicleSellValue(inventoryId)
+      local marketValue = career_modules_valueCalculator.getInventoryVehicleSellValue(inventoryId)
       local marketRatio = value / (marketValue or 1)
 
       local offerTimeMultiplier = 1
@@ -165,13 +165,6 @@ local function generateOffer(inventoryId)
   local marketRatio = listing.value / (listingMarketValue or 1)
 
   local baseOffer = listingMarketValue
-
-  -- Apply vehicle market sell multiplier (buyers offer less in downturns)
-  local vehicleSellMult = 1.0
-  if career_modules_globalEconomy and career_modules_globalEconomy.getVehicleSellMultiplier then
-    vehicleSellMult = career_modules_globalEconomy.getVehicleSellMultiplier()
-  end
-  baseOffer = baseOffer * vehicleSellMult
 
   local personalityMult = buyerPersonality.priceMultiplier or 1.0
   local noise = (biasGainFun(math.random(), 0.5, 0.03) * 0.5) + 0.73
@@ -416,7 +409,7 @@ local function startNegotiateBuyingOffer(inventoryId, offerIndex)
   vehicleNiceName = listing.niceName
   vehicleThumbnail = listing.thumbnail
   vehicleMileage = career_modules_valueCalculator.getVehicleMileageById(inventoryId)
-  actualVehicleValue = career_modules_valueCalculator.getInventoryVehicleValue(inventoryId)
+  actualVehicleValue = career_modules_valueCalculator.getInventoryVehicleSellValue(inventoryId)
   startingPrice = listing.value
   negotiationActive = true
   patience = 1
@@ -923,7 +916,7 @@ end
 function getListings()
   local listingsCopy = deepcopy(listedVehicles)
   for i, listing in ipairs(listingsCopy) do
-    local currentValue = career_modules_valueCalculator.getInventoryVehicleValue(listing.id)
+    local currentValue = career_modules_valueCalculator.getInventoryVehicleSellValue(listing.id)
     if listing.marketValue and currentValue < listing.marketValue * valueLossLimit then
       listing.disabled = true
       listing.disableReason = "Cant sell the vehicle because value has dropped below " .. valueLossLimit * 100 .. "% of the market value when the vehicle was listed."
@@ -995,9 +988,7 @@ local function onExtensionLoaded()
     listedVehicles = data.listedVehicles
     local timeNow = os.time()
     for _, listing in ipairs(listedVehicles) do
-      if not listing.marketValue then
-        listing.marketValue = career_modules_valueCalculator.getInventoryVehicleValue(listing.id) or 1
-      end
+      listing.marketValue = career_modules_valueCalculator.getInventoryVehicleSellValue(listing.id) or listing.marketValue or 1
       if not listing.timeOfNextOffer then
         scheduleNextOffer(listing, timeNow)
       end

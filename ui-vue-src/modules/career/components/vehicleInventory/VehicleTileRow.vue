@@ -35,7 +35,7 @@
         <div class="value-section" v-if="!data.returnLoanerPermission?.allow">
           <span v-if="partConditionAvg < 1" class="value-label reduced">Current Value:</span>
           <span v-else class="value-label">Value:</span>
-          <BngUnit :money="data.value" />
+          <BngUnit :money="data.marketSellValue || data.value" />
           <div v-if="partConditionAvg < 1" class="total-value">
             Total Value: <BngUnit :money="data.valueRepaired" />
           </div>

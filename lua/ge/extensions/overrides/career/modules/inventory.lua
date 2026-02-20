@@ -1077,6 +1077,7 @@ local function getVehicleUiData(inventoryId, inventoryIdsInGarage)
   end
 
   vehicleData.value = career_modules_valueCalculator.getInventoryVehicleValue(inventoryId)
+  vehicleData.marketSellValue = career_modules_valueCalculator.getInventoryVehicleSellValue(inventoryId)
   vehicleData.valueRepaired = career_modules_valueCalculator.getInventoryVehicleValue(inventoryId, true)
   vehicleData.quickRepairExtraPrice = career_modules_insurance_insurance.getQuickRepairExtraPrice()
   vehicleData.initialRepairTime = career_modules_insurance_insurance.getInvVehRepairTime(inventoryId)
