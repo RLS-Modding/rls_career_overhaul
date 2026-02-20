@@ -7,19 +7,19 @@ local cachedPrices = {}       -- [stationId][fuelType] = metricPrice (economy-ad
 local clonedObjects = {}      -- tracking created display clones
 local simGroupName = "fuelPrice_localCopies"
 
--- DAE shape paths for 7-segment digits and dash
+local periodShape = "art/shapes/quarter_mile_display/display_period.dae"
+
 local digitShapes = {
-  ["0"] = "art/shapes/props/gas_station_signs/gas_0.dae",
-  ["1"] = "art/shapes/props/gas_station_signs/gas_1.dae",
-  ["2"] = "art/shapes/props/gas_station_signs/gas_2.dae",
-  ["3"] = "art/shapes/props/gas_station_signs/gas_3.dae",
-  ["4"] = "art/shapes/props/gas_station_signs/gas_4.dae",
-  ["5"] = "art/shapes/props/gas_station_signs/gas_5.dae",
-  ["6"] = "art/shapes/props/gas_station_signs/gas_6.dae",
-  ["7"] = "art/shapes/props/gas_station_signs/gas_7.dae",
-  ["8"] = "art/shapes/props/gas_station_signs/gas_8.dae",
-  ["9"] = "art/shapes/props/gas_station_signs/gas_9.dae",
-  ["-"] = "art/shapes/props/gas_station_signs/gas_dash.dae",
+  ["0"] = "art/shapes/quarter_mile_display/display_0.dae",
+  ["1"] = "art/shapes/quarter_mile_display/display_1.dae",
+  ["2"] = "art/shapes/quarter_mile_display/display_2.dae",
+  ["3"] = "art/shapes/quarter_mile_display/display_3.dae",
+  ["4"] = "art/shapes/quarter_mile_display/display_4.dae",
+  ["5"] = "art/shapes/quarter_mile_display/display_5.dae",
+  ["6"] = "art/shapes/quarter_mile_display/display_6.dae",
+  ["7"] = "art/shapes/quarter_mile_display/display_7.dae",
+  ["8"] = "art/shapes/quarter_mile_display/display_8.dae",
+  ["9"] = "art/shapes/quarter_mile_display/display_9.dae",
 }
 
 -- Simple string hash for deterministic per-station randomness
@@ -60,23 +60,45 @@ local function setDigitShape(objName, digit, group)
   local obj = scenetree.findObject(objName)
   if not obj then return end
 
-  local shapePath = digitShapes[tostring(digit)] or digitShapes["-"]
-  if not shapePath then return end
-
-  -- Hide original
+  obj:preApply()
   obj:setHidden(true)
+  obj:postApply()
 
-  -- Create clone with the correct shape
+  local shapePath = digitShapes[tostring(digit)]
+  if not shapePath then
+    table.insert(clonedObjects, {original = objName})
+    return
+  end
+
   local clone = createObject("TSStatic")
-  clone.shapeName = shapePath
-  clone:setPosition(obj:getPosition())
+  clone:setField("shapeName", 0, shapePath)
+  clone:setTransform(obj:getTransform())
   clone:setScale(obj:getScale())
-  local rot = obj:getRotation()
-  clone:setField("rotation", 0, rot.x .. " " .. rot.y .. " " .. rot.z .. " " .. rot.w)
-  clone.canSave = false
-  clone:registerObject("")
+  clone:setCanSave(false)
+  clone:registerObject(tostring(objName) .. "_localCopy")
   group:addObject(clone)
-  table.insert(clonedObjects, {original = objName, clone = clone})
+  table.insert(clonedObjects, {original = objName})
+end
+
+local function createPeriodAtPosition(objBeforeName, objAfterName, group)
+  local objBefore = scenetree.findObject(objBeforeName)
+  local objAfter = scenetree.findObject(objAfterName)
+  if not objBefore or not objAfter then return end
+
+  local p1 = objBefore:getPosition()
+  local p2 = objAfter:getPosition()
+  local t = 1.05
+  local pos = vec3(lerp(p1.x, p2.x, t), lerp(p1.y, p2.y, t), lerp(p1.z, p2.z, t))
+
+  local clone = createObject("TSStatic")
+  clone:setField("shapeName", 0, periodShape)
+  clone:setTransform(objBefore:getTransform())
+  clone:setScale(objBefore:getScale())
+  clone:setPosition(pos)
+  clone:setCanSave(false)
+  clone:registerObject(tostring(objBeforeName) .. "_period_localCopy")
+  group:addObject(clone)
+  table.insert(clonedObjects, {original = objBeforeName .. "_period_synthetic"})
 end
 
 local function formatPrice(price)
@@ -91,10 +113,21 @@ end
 
 local function setDisplayPrices()
   if not freeroam_facilities then return false end
+  local levelUnits = nil
+  local levelName = getCurrentLevelIdentifier()
+  if levelName and levelName ~= "" then
+    local levelInfoData = core_levels.getLevelByName(levelName)
+    if levelInfoData then
+      levelUnits = levelInfoData.localUnits
+    end
+  end
 
-  local facilities = freeroam_facilities.getCurrentLevelFacilities and freeroam_facilities.getCurrentLevelFacilities()
-  if not facilities then
-    facilities = freeroam_facilities.getFacilities and freeroam_facilities.getFacilities()
+  local facilities = nil
+  if freeroam_facilities.getFacilities and levelName and levelName ~= "" then
+    facilities = freeroam_facilities.getFacilities(levelName)
+  end
+  if not facilities and freeroam_facilities.getCurrentLevelFacilities then
+    facilities = freeroam_facilities.getCurrentLevelFacilities()
   end
   if not facilities then return false end
 
@@ -118,14 +151,17 @@ local function setDisplayPrices()
     local prices = station.prices
     if not prices then goto continueStation end
 
-    -- Check if this level uses gallons
-    local useGallons = false
-    if station.unitSystem == "gallonUS" or (facilities.unitSystem and facilities.unitSystem == "gallonUS") then
-      useGallons = true
-    end
-
     for fuelType, fuelData in pairs(prices) do
-      if not fuelData or not fuelData.priceBaseline then goto continueFuel end
+      if not fuelData then goto continueFuel end
+      if fuelData.disabled and fuelData.displayObjects then
+        for _, objNames in ipairs(fuelData.displayObjects) do
+          for _, objName in ipairs(objNames) do
+            setDigitShape(objName, "-", group)
+          end
+        end
+        goto continueFuel
+      end
+      if not fuelData.priceBaseline then goto continueFuel end
 
       local baseline = fuelData.priceBaseline or 0
       local randomGain = fuelData.priceRandomnessGain or 0
@@ -139,6 +175,7 @@ local function setDisplayPrices()
       -- Apply economy multiplier AFTER base calculation
       local adjustedPrice = basePrice * economyMult
 
+      local useGallons = levelUnits and levelUnits[fuelType] == "gallonUS"
       -- Convert to gallons if needed (1 gallon = 3.78541 liters)
       if useGallons then
         adjustedPrice = adjustedPrice * 3.78541
@@ -152,6 +189,20 @@ local function setDisplayPrices()
       if displayObjects and #displayObjects > 0 then
         hasAnyPrices = true
         local priceStr = formatPrice(adjustedPrice)
+
+        -- Determine decimal position from integer digit count (e.g. 6.48->1, 64.9->2, 123.4->3)
+        local intPart = math.floor(adjustedPrice + 0.001)
+        local decimalIdx = (intPart == 0) and 1 or math.min(#tostring(intPart), 3)
+        if decimalIdx + 1 <= #displayObjects then
+          local beforeObjs = displayObjects[decimalIdx]
+          local afterObjs = displayObjects[decimalIdx + 1]
+          for i, objBefore in ipairs(beforeObjs) do
+            local objAfter = afterObjs[i]
+            if objAfter then
+              createPeriodAtPosition(objBefore, objAfter, group)
+            end
+          end
+        end
 
         for digitIdx, objNames in ipairs(displayObjects) do
           local digit = priceStr:sub(digitIdx, digitIdx)
