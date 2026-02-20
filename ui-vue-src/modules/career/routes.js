@@ -30,7 +30,6 @@ import RoleAssignment from "./views/RoleAssignment.vue"
 import CarMeets from "./views/CarMeetsMenu.vue"
 import PurchaseGarage from "./views/PurchaseGarage.vue"
 import PurchaseBusiness from "./views/PurchaseBusiness.vue"
-import PhoneMain from "./views/PhoneMain.vue"
 import PhoneHomescreen from "./views/PhoneHomescreen.vue"
 import PhoneMinimap from "./views/PhoneMinimap.vue"
 import PhoneMarketplace from "./views/PhoneMarketplace.vue"
@@ -50,6 +49,7 @@ import PhoneQuarry from "./views/PhoneQuarry.vue"
 import PhoneBeamEats from "./views/PhoneBeamEats.vue"
 import PhoneRealEstate from "./views/PhoneRealEstate.vue"
 import PhoneGuide from "./views/PhoneGuide.vue"
+import PhoneMarketWatch from "./views/PhoneMarketWatch.vue"
 import PhoneFreeroamEvents from "./views/PhoneFreeroamEvents.vue"
 import LevelSwitch from "./views/LevelSwitch.vue"
 import ChallengeComplete from "./views/ChallengeComplete.vue"
@@ -482,9 +482,15 @@ export default [
       },
 
       {
+        path: "phone-market-watch",
+        name: "phone-market-watch",
+        component: PhoneMarketWatch
+      },
+      {
         path: "phone-events",
         name: "phone-events",
         component: PhoneFreeroamEvents
+
       },
 
       {

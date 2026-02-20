@@ -374,6 +374,8 @@ local function getBaseRateForRegularLoan(org, rate, payments, creditTier)
   local level = org.reputationLevels[org.reputation.level + 2]
   if not level or not level.loans then return nil, nil, {error = "no_offer"} end
   local baseRate = rate or (level.loans.rate or 0)
+  local loanGlobalIndex = career_modules_globalEconomy and career_modules_globalEconomy.getGlobalIndex() or 1.0
+  baseRate = baseRate * loanGlobalIndex
   if creditTier then
     baseRate = baseRate * (creditTier.rateMultiplier or 1.0)
     if creditTier.termsAvailable then

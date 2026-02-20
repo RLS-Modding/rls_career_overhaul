@@ -119,6 +119,22 @@ export default {
     getCareerCurrentLevelName: () => {},
   },
 
+  career_modules_globalEconomy: {
+    requestMarketWatchData: () => {},
+    getGlobalIndex: () => {},
+    getJobMarketIndex: () => {},
+    getVehicleMarketIndex: () => {},
+    getHousingMarketIndex: () => {},
+    getVehicleBuyMultiplier: () => {},
+    getVehicleSellMultiplier: () => {},
+    getEconomySummary: () => {},
+    getCyclePhase: () => {},
+    getMomentum: () => {},
+    getMarketHistory: () => {},
+    getNewsArticles: () => {},
+    performEconomyTick: () => {},
+  },
+
   career_modules_fuel: {
     requestRefuelingTransactionData: () => {},
     sendUpdateDataToUI: () => {},
