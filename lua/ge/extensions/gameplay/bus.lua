@@ -1258,7 +1258,7 @@ local function processStop(vehicle, dtSim)
                 payout = math.floor(payout * multiplier + 0.5)
             end
 
-            accumulatedReward = accumulatedReward + payout
+            accumulatedReward = math.min(accumulatedReward + payout, config.maxPayout)
 
             local tipsEarned = 0
             if trueDeboarding > 0 then
@@ -1283,7 +1283,7 @@ local function processStop(vehicle, dtSim)
             local triggerName = trigger:getName() or ""
             if triggerName == currentFinalStopName then
                 local loopBonus = math.floor(accumulatedReward * config.loopBonusFactor)
-                accumulatedReward = accumulatedReward + loopBonus
+                accumulatedReward = math.min(accumulatedReward + loopBonus, config.maxPayout)
                 local totalPotential = accumulatedReward + tipTotal
 
                 ui_message(string.format(
@@ -1354,9 +1354,6 @@ local function onVehicleSwitched(oldId, newId)
         end
 
         local payout = accumulatedReward + tipTotal
-        if payout > config.maxPayout then
-            payout = config.maxPayout
-        end
         endRoute("player exited the bus", payout)
     end
 
