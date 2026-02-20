@@ -688,11 +688,20 @@ local function clearTruckState()
     truckLoadingDropTrigger = nil
 end
 
+local function getCurrentBatchZoneName()
+    if not currentBatch or not currentBatch.dropTrigger then return nil end
+    return currentBatch.dropTrigger:getName()
+end
+
 local function pickTruckLoadZone()
     local candidateZones = {}
+    local currentZoneName = getCurrentBatchZoneName()
     for zName, data in pairs(deliveredPropsByZone) do
         if data.trigger and #data.propIds > 0 then
-            table.insert(candidateZones, { name = zName, data = data })
+            -- Exclude zone that is current batch's drop target (not cleared until batch is finished)
+            if zName ~= currentZoneName then
+                table.insert(candidateZones, { name = zName, data = data })
+            end
         end
     end
     -- Exclude last delivered zone when picking (release); dev: set excludeLastZoneForTruckLoad = false
@@ -720,12 +729,15 @@ local function applyWaitingForLoadState()
     table.clear(truckLoadPropIds)
     table.clear(propsEligibleForTruckLoad)
     local selectedZoneData = nil
-    if selectedZoneNameForTruckLoad and deliveredPropsByZone[selectedZoneNameForTruckLoad] then
+    local currentZoneName = getCurrentBatchZoneName()
+    -- Only use pre-selected zone if it exists and is cleared (not the current batch's drop zone)
+    if selectedZoneNameForTruckLoad and selectedZoneNameForTruckLoad ~= currentZoneName and deliveredPropsByZone[selectedZoneNameForTruckLoad] then
         selectedZoneData = deliveredPropsByZone[selectedZoneNameForTruckLoad]
         -- truckLoadMaterialName, truckLoadTargetCount already set at dispatch
     else
         truckLoadMaterialName = nil
         truckLoadTargetCount = nil
+        selectedZoneNameForTruckLoad = nil
         local zoneName, zoneData = pickTruckLoadZone()
         if zoneData then
             selectedZoneNameForTruckLoad = zoneName
@@ -733,6 +745,15 @@ local function applyWaitingForLoadState()
             truckLoadingDropTrigger = zoneData.trigger
             truckLoadMaterialName = zoneData.materialName or "materials"
             truckLoadTargetCount = math.min(TRUCK_LOAD_COUNT, #zoneData.propIds)
+        else
+            -- Fallback: current drop zone is the only zone (shouldn't happen with 2–4 batch rule; handle BeamNG edge cases)
+            if currentZoneName and deliveredPropsByZone[currentZoneName] and #deliveredPropsByZone[currentZoneName].propIds > 0 then
+                selectedZoneNameForTruckLoad = currentZoneName
+                selectedZoneData = deliveredPropsByZone[currentZoneName]
+                truckLoadingDropTrigger = selectedZoneData.trigger
+                truckLoadMaterialName = selectedZoneData.materialName or "materials"
+                truckLoadTargetCount = math.min(TRUCK_LOAD_COUNT, #selectedZoneData.propIds)
+            end
         end
     end
     if selectedZoneData then
@@ -896,6 +917,10 @@ local function payoutBatchAndSpawnNext()
 
     if truckState or truckSpawned then
         pendingBatchFacilityId = facilityId
+        -- Batch just cleared; re-apply load zone so previously "current" zone can now be used (highlight + propsEligibleForTruckLoad)
+        if truckState == "waiting_for_load" or truckState == "driving_to_pickup" then
+            applyWaitingForLoadState()
+        end
         -- only clear path when we have no loading zone to show (avoid clearing path we just set)
         if not truckLoadingDropTrigger and core_groundMarkers and core_groundMarkers.setPath then
             core_groundMarkers.setPath(nil)
@@ -1277,15 +1302,8 @@ local function onUpdate(_dtReal, _dtSim, _dtRaw)
             sendTruckStop(vehObj)
             truckArrivedAtNodeIndex = truckTargetNodeIndex + 1  -- store node for drive-to-end path
             truckState = "waiting_for_load"
-            -- zone/path already set at dispatch; only apply if they weren't (e.g. phone reopened)
-            if truckLoadingDropTrigger then
-                showDropMarkers(truckLoadingDropTrigger)
-                if core_groundMarkers and core_groundMarkers.setPath then
-                    core_groundMarkers.setPath(toVec3(truckLoadingDropTrigger:getPosition()), { clearPathOnReachingTarget = false })
-                end
-            else
-                applyWaitingForLoadState()
-            end
+            -- Always apply: populate propsEligibleForTruckLoad, show zone markers, set path (uses pre-selected zone if still valid)
+            applyWaitingForLoadState()
             updateTasklistValues()
         end
     elseif truckState == "waiting_for_load" then
