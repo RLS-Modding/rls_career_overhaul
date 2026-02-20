@@ -126,6 +126,7 @@ local selectedZoneNameForTruckLoad = nil  -- zone picked at dispatch so we show 
 
 local batchReadyWaitingForkliftExit = false
 local truckDispatchedForCurrentBatch = false
+local shiftEnded = false  -- true after end shift so requestFacilityWorkState does not re-apply nav/markers/tasklist
 local sessionBatchesCompleted = 0  -- truck only spawns after >= firstTruckAfterBatch (release)
 local firstTruckAfterBatch = 2     -- set in doStartFacilityWork; dev: 1; release: math.random(2, 4)
 local lastDeliveredZoneName = nil  -- zone we just added props to (for excluding from truck load pick)
@@ -1321,6 +1322,7 @@ local function endShiftCleanup()
     sessionTotalRep = 0
     sessionMaterialsMoved = 0
 
+    shiftEnded = true
     guihooks.trigger('ClearTasklist')
     notifyPhoneState()
     if utils and utils.restoreTrafficAmount then
@@ -1330,6 +1332,7 @@ end
 
 local function doStartFacilityWork()
     if not career_career or not career_career.isActive() then return false end
+    shiftEnded = false
     configLoaded = false
     configLoadedForLevel = nil
     if not loadConfig() then
@@ -1554,6 +1557,7 @@ end
 local function onExtensionLoaded()
     configLoaded = false
     configLoadedForLevel = nil
+    shiftEnded = false
     currentBatchWaypointPhase = nil
     truckWaypointPhase = nil
 end
@@ -1698,6 +1702,12 @@ local function onUpdate(_dtReal, _dtSim, _dtRaw)
 end
 
 function M.requestFacilityWorkState()
+    if shiftEnded then
+        setNavigationPath(nil)
+        clearDropMarkers()
+        notifyPhoneState()
+        return
+    end
     refreshGuidanceMarkers()
     if selectedFacilityId and not currentForkliftId and not currentBatch and not truckState then
         setWaypointToFacilityForklift(selectedFacilityId)
