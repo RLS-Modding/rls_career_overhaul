@@ -22,8 +22,8 @@
           </div>
           <div class="vehicle-price">
             <div class="price-amount" :class="{ 'insufficient': hasInsufficientFunds, 'sold': vehicle.__sold || vehicle.soldViewCounter > 0 }">
-              <BngUnit :money="vehicle.Value" />
-            </div>
+            <BngUnit :money="vehiclePrice" />
+          </div>
             <div v-if="hasInsufficientFunds" class="insufficient-text">Insufficient Funds</div>
           </div>
         </div>
@@ -174,8 +174,10 @@ const props = defineProps({
 
 const hasInsufficientFunds = computed(() => {
   if (props.vehicleShoppingData.cheatsMode) return false
-  return props.vehicle.Value > props.vehicleShoppingData.playerAttributes.money.value
+  return vehiclePrice.value > props.vehicleShoppingData.playerAttributes.money.value
 })
+
+const vehiclePrice = computed(() => props.vehicle?.valueAdjusted || props.vehicle?.Value || 0)
 
 const hasInsufficientTaxiFunds = computed(() => {
   if (props.vehicleShoppingData.cheatsMode) return false
