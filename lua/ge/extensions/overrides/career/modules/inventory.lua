@@ -1463,7 +1463,7 @@ local function sellVehicle(inventoryId, price)
     return false
   end
 
-  local value = price or career_modules_valueCalculator.getInventoryVehicleValue(inventoryId)
+  local value = price or career_modules_valueCalculator.getInventoryVehicleSellValue(inventoryId)
   extensions.hook("onBeforeVehicleSell", {inventoryId = inventoryId, price = value})
   career_modules_playerAttributes.addAttributes({money=value}, {tags={"vehicleSold","selling"},label="Sold a vehicle: "..(vehicle.niceName or "(Unnamed Vehicle)")}, true)
   removeVehicle(inventoryId)
