@@ -1040,7 +1040,6 @@ local function applyWaitingForLoadState()
     -- Only use pre-selected zone if it exists and is cleared (not the current batch's drop zone)
     if selectedZoneNameForTruckLoad and selectedZoneNameForTruckLoad ~= currentZoneName and deliveredPropsByZone[selectedZoneNameForTruckLoad] then
         selectedZoneData = deliveredPropsByZone[selectedZoneNameForTruckLoad]
-        -- truckLoadMaterialName, truckLoadTargetCount already set at dispatch
     else
         truckLoadMaterialName = nil
         truckLoadTargetCount = nil
@@ -1050,20 +1049,18 @@ local function applyWaitingForLoadState()
             selectedZoneNameForTruckLoad = zoneName
             selectedZoneData = zoneData
             truckLoadingDropTrigger = zoneData.trigger
-            truckLoadMaterialName = zoneData.materialName or "materials"
-            truckLoadTargetCount = math.min(TRUCK_LOAD_COUNT, #zoneData.propIds)
         else
             -- Fallback: current drop zone is the only zone (shouldn't happen with 2–4 batch rule; handle BeamNG edge cases)
             if currentZoneName and deliveredPropsByZone[currentZoneName] and #deliveredPropsByZone[currentZoneName].propIds > 0 then
                 selectedZoneNameForTruckLoad = currentZoneName
                 selectedZoneData = deliveredPropsByZone[currentZoneName]
                 truckLoadingDropTrigger = selectedZoneData.trigger
-                truckLoadMaterialName = selectedZoneData.materialName or "materials"
-                truckLoadTargetCount = math.min(TRUCK_LOAD_COUNT, #selectedZoneData.propIds)
             end
         end
     end
     if selectedZoneData then
+        truckLoadMaterialName = selectedZoneData.materialName or "materials"
+        truckLoadTargetCount = math.min(TRUCK_LOAD_COUNT, #selectedZoneData.propIds)
         truckLoadingDropTrigger = selectedZoneData.trigger
         for _, pid in ipairs(selectedZoneData.propIds) do
             propsEligibleForTruckLoad[pid] = true
