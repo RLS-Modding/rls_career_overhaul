@@ -74,6 +74,7 @@
                             <BngButton class="take-loan" :disabled="!canTakeLoan" @click="takeLoan">Take Loan
                             </BngButton>
                         </div>
+                        <div v-if="loanError" class="loan-error">{{ loanError }}</div>
 
                         <!-- Notification Settings -->
                         <div class="field">
@@ -151,7 +152,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { BngButton, BngCard, BngCardHeading, BngUnit, ACCENTS } from "@/common/components/base"
 import { vBngTextInput } from "@/common/directives"
 import ComputerWrapper from "./ComputerWrapper.vue"
@@ -173,6 +174,13 @@ const prepayAmounts = ref({})
 const pauseTicks = ref(false)
 const availableFunds = ref(0)
 const notificationsEnabled = ref(true)
+const loanError = ref('')
+let loansUpdatedHandler
+let offersTickHandler
+let creditUpdatedHandler
+let loansCompletedHandler
+let loansFundsHandler
+let notificationsUpdatedHandler
 
 const canTakeLoan = computed(() => selectedOffer.value && amount.value > 0 && term.value)
 
@@ -242,13 +250,40 @@ const selectOffer = (id) => { selectedOrgId.value = id; onOrgChange() }
 
 const takeLoan = async () => {
     if (!canTakeLoan.value) return
+    loanError.value = ''
     try {
-        await lua.career_modules_loans.takeLoan(selectedOrgId.value, Math.floor(amount.value), term.value, adjustedRate.value)
+        const result = await lua.career_modules_loans.takeLoan(selectedOrgId.value, Math.floor(amount.value), term.value, adjustedRate.value, false, null)
+        if (result && result.error) {
+            if (result.error === 'invalid_amount') {
+                const maxVal = result.max ?? selectedOffer.value?.max ?? 0
+                loanError.value = `Amount must be between 1 and $${maxVal.toLocaleString()}`
+            }
+            else if (result.error === 'term_not_available') loanError.value = 'This term is not available for your credit'
+            else if (result.error === 'no_offer') loanError.value = 'Loan offer no longer available'
+            else loanError.value = 'Loan failed: ' + (result.error || 'unknown')
+            return
+        }
         await refreshActiveLoans()
         await refreshOffers()
     } catch (e) {
-        // noop
+        loanError.value = 'Failed to take loan'
     }
+}
+
+const syncCurrentOfferLimits = () => {
+    if (!selectedOffer.value) {
+        amount.value = 0
+        term.value = null
+        computePayment()
+        return
+    }
+    if (selectedOffer.value.terms && !selectedOffer.value.terms.includes(term.value)) {
+        term.value = selectedOffer.value.terms[0] || null
+    }
+    if (amount.value > selectedOffer.value.max) {
+        amount.value = selectedOffer.value.max
+    }
+    computePayment()
 }
 
 const refreshActiveLoans = async () => {
@@ -271,8 +306,10 @@ const refreshOffers = async () => {
         offers.value = Array.isArray(res) ? res : []
         if (!offers.value.find(o => o.id === prev)) {
             selectedOrgId.value = offers.value[0]?.id || null
+            onOrgChange()
+            return
         }
-        onOrgChange()
+        syncCurrentOfferLimits()
     } catch (e) { }
 }
 
@@ -282,17 +319,34 @@ onMounted(async () => {
     await refreshActiveLoans()
     await loadNotificationSetting()
     // subscribe to live loan events
-    events.on('loans:activeUpdated', async () => { await refreshActiveLoans(); await refreshOffers() })
-    events.on('loans:tick', (data) => {
+    loansUpdatedHandler = async () => { await refreshActiveLoans(); await refreshOffers() }
+    offersTickHandler = (data) => {
         if (pauseTicks.value) return
         if (!Array.isArray(data)) return
         activeLoans.value = data
-    })
-    events.on('loans:funds', (money) => { if (typeof money === 'number') availableFunds.value = money })
-    events.on('loans:completed', async () => { await refreshActiveLoans(); await refreshOffers() })
-    events.on('loans:notificationsUpdated', (enabled) => { notificationsEnabled.value = enabled })
+        void refreshOffers()
+    }
+    loansCompletedHandler = async () => { await refreshActiveLoans(); await refreshOffers() }
+    creditUpdatedHandler = () => { void refreshOffers() }
+    events.on('loans:activeUpdated', loansUpdatedHandler)
+    events.on('loans:tick', offersTickHandler)
+    loansFundsHandler = (money) => { if (typeof money === 'number') availableFunds.value = money }
+    events.on('loans:funds', loansFundsHandler)
+    events.on('loans:completed', loansCompletedHandler)
+    notificationsUpdatedHandler = (enabled) => { notificationsEnabled.value = enabled }
+    events.on('loans:notificationsUpdated', notificationsUpdatedHandler)
+    events.on('credit:updated', creditUpdatedHandler)
     // fetch funds initially
     try { availableFunds.value = await lua.career_modules_loans.getAvailableFunds() } catch { }
+})
+
+onBeforeUnmount(() => {
+    if (loansUpdatedHandler) events.off('loans:activeUpdated', loansUpdatedHandler)
+    if (offersTickHandler) events.off('loans:tick', offersTickHandler)
+    if (loansCompletedHandler) events.off('loans:completed', loansCompletedHandler)
+    if (loansFundsHandler) events.off('loans:funds', loansFundsHandler)
+    if (notificationsUpdatedHandler) events.off('loans:notificationsUpdated', notificationsUpdatedHandler)
+    if (creditUpdatedHandler) events.off('credit:updated', creditUpdatedHandler)
 })
 
 const close = () => { lua.career_modules_loans.closeMenu() }
@@ -525,10 +579,20 @@ const termBtnCustomStyle = {
     margin-top: 10px;
 }
 
-.take-loan {
+  .take-loan {
     background-color: #cc4c00;
     padding: 8px 20px;
-}
+  }
+
+  .loan-error {
+    color: #ef4444;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-top: 8px;
+    padding: 8px;
+    background: rgba(239, 68, 68, 0.18);
+    border-radius: 8px;
+  }
 
 .active-loans h3 {
     margin-top: 0;

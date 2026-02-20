@@ -162,12 +162,31 @@ local function getTierForScore(score)
   return TIERS[#TIERS]
 end
 
+local function notifyScoreUpdated()
+  if not (guihooks and guihooks.trigger) then return end
+  local tier = getTierForScore(creditData.score)
+  guihooks.trigger("credit:updated", {
+    score = creditData.score,
+    simTime = getSimTime(),
+    tier = tier,
+    factors = {
+      paymentHistory = factorPaymentHistory(),
+      utilization = factorUtilization(),
+      creditAge = factorCreditAge(),
+      newCredit = factorNewCredit(),
+      creditMix = factorCreditMix()
+    },
+    history = creditData.history
+  })
+end
+
 local function recalcAndSave()
   local newScore = calculateScore()
   local oldScore = creditData.score
   creditData.score = newScore
   if newScore ~= oldScore then
     pushScoreHistory(newScore)
+    notifyScoreUpdated()
   end
   saveCredit()
   return newScore
