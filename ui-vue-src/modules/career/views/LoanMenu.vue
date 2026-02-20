@@ -74,6 +74,7 @@
                             <BngButton class="take-loan" :disabled="!canTakeLoan" @click="takeLoan">Take Loan
                             </BngButton>
                         </div>
+                        <div v-if="loanError" class="loan-error">{{ loanError }}</div>
 
                         <!-- Notification Settings -->
                         <div class="field">
@@ -173,6 +174,7 @@ const prepayAmounts = ref({})
 const pauseTicks = ref(false)
 const availableFunds = ref(0)
 const notificationsEnabled = ref(true)
+const loanError = ref('')
 
 const canTakeLoan = computed(() => selectedOffer.value && amount.value > 0 && term.value)
 
@@ -242,12 +244,23 @@ const selectOffer = (id) => { selectedOrgId.value = id; onOrgChange() }
 
 const takeLoan = async () => {
     if (!canTakeLoan.value) return
+    loanError.value = ''
     try {
-        await lua.career_modules_loans.takeLoan(selectedOrgId.value, Math.floor(amount.value), term.value, adjustedRate.value)
+        const result = await lua.career_modules_loans.takeLoan(selectedOrgId.value, Math.floor(amount.value), term.value, adjustedRate.value, false, null)
+        if (result && result.error) {
+            if (result.error === 'invalid_amount') {
+                const maxVal = result.max ?? selectedOffer.value?.max ?? 0
+                loanError.value = `Amount must be between 1 and $${maxVal.toLocaleString()}`
+            }
+            else if (result.error === 'term_not_available') loanError.value = 'This term is not available for your credit'
+            else if (result.error === 'no_offer') loanError.value = 'Loan offer no longer available'
+            else loanError.value = 'Loan failed: ' + (result.error || 'unknown')
+            return
+        }
         await refreshActiveLoans()
         await refreshOffers()
     } catch (e) {
-        // noop
+        loanError.value = 'Failed to take loan'
     }
 }
 
@@ -525,10 +538,20 @@ const termBtnCustomStyle = {
     margin-top: 10px;
 }
 
-.take-loan {
+  .take-loan {
     background-color: #cc4c00;
     padding: 8px 20px;
-}
+  }
+
+  .loan-error {
+    color: #ef4444;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-top: 8px;
+    padding: 8px;
+    background: rgba(239, 68, 68, 0.18);
+    border-radius: 8px;
+  }
 
 .active-loans h3 {
     margin-top: 0;
