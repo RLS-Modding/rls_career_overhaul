@@ -1325,10 +1325,7 @@
     "icon": "carDealer",
     "reputationLevels": [
       {
-        "loans": {
-          "max": 75000,
-          "rate": 0.40
-        },
+
         "stock": 5,
         "range": [
           0.8,
@@ -1427,10 +1424,7 @@
         ]
       },
       {
-        "loans": {
-          "max": 75000,
-          "rate": 0.35
-        },
+
         "stock": 10,
         "range": [
           0.7,
@@ -1530,7 +1524,7 @@
       },
       {
         "loans": {
-          "max": 200000,
+          "max": 100000,
           "rate": 0.30
         },
         "stock": 15,
