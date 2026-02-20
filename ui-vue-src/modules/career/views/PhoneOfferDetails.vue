@@ -55,11 +55,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import PhoneWrapper from './PhoneWrapper.vue'
 import { BngUnit } from '@/common/components/base'
 import { vBngTextInput } from '@/common/directives'
-import { lua } from '@/bridge'
+import { lua, useBridge } from '@/bridge'
 import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
@@ -74,6 +74,9 @@ const totalRepay = ref(0)
 const loanError = ref('')
 const taking = ref(false)
 const creditData = ref({ score: 0, tier: {} })
+const { events } = useBridge()
+let creditUpdatedHandler
+let loansTickHandler
 
 const scoreColor = computed(() => {
   const s = creditData.value.score || 300
@@ -118,6 +121,29 @@ const compute = async () => {
   } catch { const total = amount.value * (1 + rate.value); perPayment.value = total / term.value; totalRepay.value = total }
 }
 
+const applyOfferFromList = (offerList) => {
+    const nextOffer = offerList.find(o => String(o.id) === String(orgId.value)) || null
+    const current = offer.value
+    const isSameOffer = current && nextOffer && String(current.id) === String(nextOffer.id)
+    if (!nextOffer) {
+        offer.value = null
+        amount.value = 0
+        term.value = null
+        return
+    }
+    offer.value = nextOffer
+    if (!isSameOffer) {
+        term.value = offer.value?.terms?.[0] || null
+        amount.value = 0
+        return
+    }
+    if (offer.value.terms && !offer.value.terms.includes(term.value)) {
+        term.value = offer.value.terms[0] || null
+    }
+    const clamped = Math.min(Math.max(0, amount.value), offer.value.max)
+    amount.value = Math.round(clamped / 500) * 500
+}
+
 const loadOffer = async () => {
   loanError.value = ''
   try {
@@ -128,14 +154,12 @@ const loadOffer = async () => {
     const res = loansResult.status === 'fulfilled' ? loansResult.value : []
     const cred = creditResult.status === 'fulfilled' ? creditResult.value : null
     const list = Array.isArray(res) ? res : []
-    offer.value = list.find(o => String(o.id) === String(orgId.value)) || null
+    applyOfferFromList(list)
     if (cred && cred.score) {
       creditData.value = { score: cred.score, tier: cred.tier || {} }
     } else if (offer.value?.creditScore != null) {
       creditData.value = { score: offer.value.creditScore, tier: offer.value.creditTier ? { label: offer.value.creditTier } : {} }
     }
-    amount.value = 0
-    term.value = offer.value?.terms?.[0] || null
     await compute()
   } catch { }
 }
@@ -167,7 +191,23 @@ const takeLoan = async () => {
   }
 }
 
-onMounted(loadOffer)
+onMounted(() => {
+  loadOffer()
+  creditUpdatedHandler = () => {
+    if (!offer.value) return
+    void loadOffer()
+  }
+  loansTickHandler = () => {
+    void loadOffer()
+  }
+  events.on('credit:updated', creditUpdatedHandler)
+  events.on('loans:tick', loansTickHandler)
+})
+
+onBeforeUnmount(() => {
+  if (creditUpdatedHandler) events.off('credit:updated', creditUpdatedHandler)
+  if (loansTickHandler) events.off('loans:tick', loansTickHandler)
+})
 
 // no custom style needed for native buttons
 </script>
@@ -411,8 +451,6 @@ onMounted(loadOffer)
     text-align: center;
   }
 </style>
-
-
 
 
 

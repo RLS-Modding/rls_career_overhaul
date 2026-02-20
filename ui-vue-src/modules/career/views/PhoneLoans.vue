@@ -127,7 +127,11 @@ const { events } = useBridge()
 const router = useRouter()
 
 const creditData = ref({ score: 0, tier: {}, factors: {}, history: {} })
-let creditRefreshInterval = null
+let creditUpdatedHandler
+let loansUpdatedHandler
+let loansTickHandler
+let loansFundsHandler
+let loansCompletedHandler
 const loansExpanded = ref(false)
 
 const scoreColor = computed(() => {
@@ -192,18 +196,27 @@ const refreshOffers = async () => {
 
 onMounted(async () => {
     await refreshCredit()
-    creditRefreshInterval = setInterval(refreshCredit, 5000)
     await refreshOffers()
     await refreshActiveLoans()
-    events.on('loans:activeUpdated', async () => { await refreshActiveLoans(); await refreshOffers() })
-    events.on('loans:tick', (data) => { if (!pauseTicks.value && Array.isArray(data)) activeLoans.value = data })
-    events.on('loans:funds', (money) => { if (typeof money === 'number') availableFunds.value = money })
-    events.on('loans:completed', async () => { await refreshActiveLoans(); await refreshOffers() })
+    loansUpdatedHandler = async () => { await refreshActiveLoans(); await refreshOffers() }
+    loansTickHandler = (data) => { if (!pauseTicks.value && Array.isArray(data)) activeLoans.value = data }
+    loansFundsHandler = (money) => { if (typeof money === 'number') availableFunds.value = money }
+    loansCompletedHandler = async () => { await refreshActiveLoans(); await refreshOffers() }
+    events.on('loans:activeUpdated', loansUpdatedHandler)
+    events.on('loans:tick', loansTickHandler)
+    events.on('loans:funds', loansFundsHandler)
+    events.on('loans:completed', loansCompletedHandler)
+    creditUpdatedHandler = () => { void refreshCredit() }
+    events.on('credit:updated', creditUpdatedHandler)
     try { availableFunds.value = await lua.career_modules_loans.getAvailableFunds() } catch { }
 })
 
 onBeforeUnmount(() => {
-    if (creditRefreshInterval) { clearInterval(creditRefreshInterval); creditRefreshInterval = null }
+    if (loansUpdatedHandler) events.off('loans:activeUpdated', loansUpdatedHandler)
+    if (loansTickHandler) events.off('loans:tick', loansTickHandler)
+    if (loansFundsHandler) events.off('loans:funds', loansFundsHandler)
+    if (loansCompletedHandler) events.off('loans:completed', loansCompletedHandler)
+    if (creditUpdatedHandler) events.off('credit:updated', creditUpdatedHandler)
 })
 
 const openLoan = (id) => { router.push({ name: 'phone-loan-details', params: { loanId: String(id) } }) }

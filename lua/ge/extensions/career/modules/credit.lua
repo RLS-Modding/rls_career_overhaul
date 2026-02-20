@@ -74,6 +74,24 @@ local function saveCredit(currentSavePath)
   career_saveSystem.jsonWriteFileSafe(currentSavePath .. saveFile, creditData, true)
 end
 
+local function notifyScoreUpdated()
+  if not (guihooks and guihooks.trigger) then return end
+  local tier = getTierForScore(creditData.score)
+  guihooks.trigger("credit:updated", {
+    score = creditData.score,
+    simTime = getSimTime(),
+    tier = tier,
+    factors = {
+      paymentHistory = factorPaymentHistory(),
+      utilization = factorUtilization(),
+      creditAge = factorCreditAge(),
+      newCredit = factorNewCredit(),
+      creditMix = factorCreditMix()
+    },
+    history = creditData.history
+  })
+end
+
 local function pushScoreHistory(score)
   local history = creditData.history.scoreHistory
   table.insert(history, {timestamp = getSimTime(), score = score})
@@ -168,6 +186,7 @@ local function recalcAndSave()
   creditData.score = newScore
   if newScore ~= oldScore then
     pushScoreHistory(newScore)
+    notifyScoreUpdated()
   end
   saveCredit()
   return newScore

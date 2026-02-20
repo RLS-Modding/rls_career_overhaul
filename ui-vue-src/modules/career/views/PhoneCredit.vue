@@ -78,10 +78,11 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import PhoneWrapper from './PhoneWrapper.vue'
-import { lua } from '@/bridge'
+import { lua, useBridge } from '@/bridge'
 
 const creditData = ref({ score: 0, tier: {}, factors: {}, history: {} })
-let creditRefreshInterval = null
+const { events } = useBridge()
+let creditUpdatedHandler
 
 const circumference = 2 * Math.PI * 85 * 0.75
 const arcDasharray = computed(() => {
@@ -184,12 +185,19 @@ const refreshCredit = async () => {
 }
 
 onMounted(async () => {
+    creditUpdatedHandler = (payload = {}) => {
+        if (payload && typeof payload === 'object' && payload.score !== undefined) {
+            creditData.value = payload
+            return
+        }
+        void refreshCredit()
+    }
+    events.on('credit:updated', creditUpdatedHandler)
     await refreshCredit()
-    creditRefreshInterval = setInterval(refreshCredit, 5000)
 })
 
 onBeforeUnmount(() => {
-    if (creditRefreshInterval) { clearInterval(creditRefreshInterval); creditRefreshInterval = null }
+    if (creditUpdatedHandler) events.off('credit:updated', creditUpdatedHandler)
 })
 </script>
 
@@ -295,6 +303,5 @@ onBeforeUnmount(() => {
     margin-top: 4px;
 }
 </style>
-
 
 

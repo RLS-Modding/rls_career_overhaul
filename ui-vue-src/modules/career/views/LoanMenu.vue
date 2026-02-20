@@ -152,7 +152,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { BngButton, BngCard, BngCardHeading, BngUnit, ACCENTS } from "@/common/components/base"
 import { vBngTextInput } from "@/common/directives"
 import ComputerWrapper from "./ComputerWrapper.vue"
@@ -175,6 +175,12 @@ const pauseTicks = ref(false)
 const availableFunds = ref(0)
 const notificationsEnabled = ref(true)
 const loanError = ref('')
+let loansUpdatedHandler
+let offersTickHandler
+let creditUpdatedHandler
+let loansCompletedHandler
+let loansFundsHandler
+let notificationsUpdatedHandler
 
 const canTakeLoan = computed(() => selectedOffer.value && amount.value > 0 && term.value)
 
@@ -264,6 +270,22 @@ const takeLoan = async () => {
     }
 }
 
+const syncCurrentOfferLimits = () => {
+    if (!selectedOffer.value) {
+        amount.value = 0
+        term.value = null
+        computePayment()
+        return
+    }
+    if (selectedOffer.value.terms && !selectedOffer.value.terms.includes(term.value)) {
+        term.value = selectedOffer.value.terms[0] || null
+    }
+    if (amount.value > selectedOffer.value.max) {
+        amount.value = selectedOffer.value.max
+    }
+    computePayment()
+}
+
 const refreshActiveLoans = async () => {
     try {
         const loans = await lua.career_modules_loans.getActiveLoans()
@@ -284,8 +306,10 @@ const refreshOffers = async () => {
         offers.value = Array.isArray(res) ? res : []
         if (!offers.value.find(o => o.id === prev)) {
             selectedOrgId.value = offers.value[0]?.id || null
+            onOrgChange()
+            return
         }
-        onOrgChange()
+        syncCurrentOfferLimits()
     } catch (e) { }
 }
 
@@ -295,17 +319,34 @@ onMounted(async () => {
     await refreshActiveLoans()
     await loadNotificationSetting()
     // subscribe to live loan events
-    events.on('loans:activeUpdated', async () => { await refreshActiveLoans(); await refreshOffers() })
-    events.on('loans:tick', (data) => {
+    loansUpdatedHandler = async () => { await refreshActiveLoans(); await refreshOffers() }
+    offersTickHandler = (data) => {
         if (pauseTicks.value) return
         if (!Array.isArray(data)) return
         activeLoans.value = data
-    })
-    events.on('loans:funds', (money) => { if (typeof money === 'number') availableFunds.value = money })
-    events.on('loans:completed', async () => { await refreshActiveLoans(); await refreshOffers() })
-    events.on('loans:notificationsUpdated', (enabled) => { notificationsEnabled.value = enabled })
+        void refreshOffers()
+    }
+    loansCompletedHandler = async () => { await refreshActiveLoans(); await refreshOffers() }
+    creditUpdatedHandler = () => { void refreshOffers() }
+    events.on('loans:activeUpdated', loansUpdatedHandler)
+    events.on('loans:tick', offersTickHandler)
+    loansFundsHandler = (money) => { if (typeof money === 'number') availableFunds.value = money }
+    events.on('loans:funds', loansFundsHandler)
+    events.on('loans:completed', loansCompletedHandler)
+    notificationsUpdatedHandler = (enabled) => { notificationsEnabled.value = enabled }
+    events.on('loans:notificationsUpdated', notificationsUpdatedHandler)
+    events.on('credit:updated', creditUpdatedHandler)
     // fetch funds initially
     try { availableFunds.value = await lua.career_modules_loans.getAvailableFunds() } catch { }
+})
+
+onBeforeUnmount(() => {
+    if (loansUpdatedHandler) events.off('loans:activeUpdated', loansUpdatedHandler)
+    if (offersTickHandler) events.off('loans:tick', offersTickHandler)
+    if (loansCompletedHandler) events.off('loans:completed', loansCompletedHandler)
+    if (loansFundsHandler) events.off('loans:funds', loansFundsHandler)
+    if (notificationsUpdatedHandler) events.off('loans:notificationsUpdated', notificationsUpdatedHandler)
+    if (creditUpdatedHandler) events.off('credit:updated', creditUpdatedHandler)
 })
 
 const close = () => { lua.career_modules_loans.closeMenu() }
