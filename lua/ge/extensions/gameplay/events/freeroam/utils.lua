@@ -153,9 +153,22 @@ local function tableContains(tbl, val)
   return false
 end
 
+local function getCareerJobMarketMultiplier()
+  if not career_modules_globalEconomy or not career_modules_globalEconomy.getJobMarketIndex then
+    return 1.0
+  end
+
+  local ok, jobMarketIndex = pcall(career_modules_globalEconomy.getJobMarketIndex)
+  if not ok or type(jobMarketIndex) ~= "number" then
+    return 1.0
+  end
+
+  return jobMarketIndex
+end
+
 -- Helper function to calculate average multiplier from non-zero race types
 local function calculateAverageMultiplier(raceTypes)
-  if not career_economyAdjuster or not raceTypes or #raceTypes == 0 then
+  if not career_career.isActive() or not career_economyAdjuster or not raceTypes or #raceTypes == 0 then
     return 1.0
   end
 
@@ -171,7 +184,12 @@ local function calculateAverageMultiplier(raceTypes)
   end
 
   -- Return average of non-zero multipliers, or 0 if all are disabled
-  return nonZeroCount > 0 and (totalMultiplier / nonZeroCount) or 0
+  local activityMultiplier = nonZeroCount > 0 and (totalMultiplier / nonZeroCount) or 0
+  if activityMultiplier == 0 then
+    return 0
+  end
+
+  return activityMultiplier * getCareerJobMarketMultiplier()
 end
 
 local function raceReward(goal, reward, time, raceTypes)
@@ -222,7 +240,12 @@ local function driftReward(race, time, driftScore)
   local goalDrift = race.driftGoal
   local timeFactor = (goalTime / time) ^ 1.2
   local driftFactor = (driftScore / goalDrift) ^ 1.2
-  return race.reward * timeFactor * driftFactor
+  local reward = race.reward * timeFactor * driftFactor
+  if race and race.type and career_career.isActive() and career_economyAdjuster then
+    local multiplier = calculateAverageMultiplier(race.type)
+    reward = reward * multiplier
+  end
+  return reward
 end
 
 local function topSpeedReward(goalSpeed, baseReward, actualSpeed, raceTypes)
@@ -469,13 +492,15 @@ local function displayStagedMessage(vehId, raceName, getMessage)
     local bestTime = leaderboardEntry.time
     local targetScore = race.driftGoal
     local targetTime = race.driftTargetTime or race.bestTime
+    local adjustedTargetReward = driftReward(race, targetTime, targetScore)
+    local adjustedBestReward = bestScore and bestTime and driftReward(race, bestTime, bestScore) or nil
 
     if bestScore and bestTime then
       -- Show player's best score and time
       if careerMode then
         message = message .. string.format(
-          "Your Best Drift Score: %d | Target Drift Score: %d\nYour Best Time: %s | Target Time: %s\n(Achieve targets to earn a reward of $%.2f and 1 Bonus Star)",
-          bestScore, targetScore, formatTime(bestTime), formatTime(targetTime), race.reward)
+          "Your Best Drift Score: %d | Target Drift Score: %d\nYour Best Time: %s | Target Time: %s\n(Improve targets to earn at least $%.2f)",
+          bestScore, targetScore, formatTime(bestTime), formatTime(targetTime), adjustedBestReward or adjustedTargetReward)
       else
         message = message ..
                     string.format(
@@ -488,7 +513,7 @@ local function displayStagedMessage(vehId, raceName, getMessage)
         message = message ..
                     string.format(
             "Target Drift Score: %d\nTarget Time: %s\n(Achieve these to earn a reward of $%.2f and 1 Bonus Star)",
-            targetScore, formatTime(targetTime), race.reward)
+            targetScore, formatTime(targetTime), adjustedTargetReward)
       else
         message = message ..
                     string.format("Target Drift Score: %d\nTarget Time: %s", targetScore, formatTime(targetTime))
