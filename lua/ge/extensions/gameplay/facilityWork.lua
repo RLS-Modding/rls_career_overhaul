@@ -44,6 +44,12 @@ local function triggerQuat(trigger)
     return quat(rot)
 end
 
+local function inverseQuat(q)
+    local inv = quat(q)
+    inv:inverse()
+    return inv
+end
+
 -- Future: drop-zone distance/containment (leniency, alternate delivery validation).
 local function distanceToTriggerBox(point, trigger)
     local pos = toVec3(trigger:getPosition())
@@ -52,7 +58,7 @@ local function distanceToTriggerBox(point, trigger)
     local halfY = (scale and scale.y or 5) * 0.5
     local halfZ = (scale and scale.z or 3) * 0.5
     local q = triggerQuat(trigger)
-    local toLocal = q:inverse()
+    local toLocal = inverseQuat(q)
     local pLocal = toLocal * (toVec3(point) - pos)
     local dx = math.max(-halfX, math.min(halfX, pLocal.x)) - pLocal.x
     local dy = math.max(-halfY, math.min(halfY, pLocal.y)) - pLocal.y
@@ -67,7 +73,7 @@ local function isPointInsideTriggerBox(point, trigger)
     local halfY = (scale and scale.y or 5) * 0.5
     local halfZ = (scale and scale.z or 3) * 0.5
     local q = triggerQuat(trigger)
-    local toLocal = q:inverse()
+    local toLocal = inverseQuat(q)
     local pLocal = toLocal * (toVec3(point) - pos)
     return math.abs(pLocal.x) <= halfX and math.abs(pLocal.y) <= halfY and math.abs(pLocal.z) <= halfZ
 end
@@ -98,9 +104,11 @@ local propsInDropZone = {}
 local TRUCK_SPAWN_SPOT_NAME = "facilityWork_truckSpawn"
 local TRUCK_ARRIVAL_RADIUS_M = 10
 local TRUCK_LOAD_COUNT = 4
-local TRUCK_LOADING_BONUS_DEFAULT = 500
+local TRUCK_LOADING_BONUS_DEFAULT = 2500
 local TRUCK_SPAWN_INTERVAL_REAL_SEC = 300
 local FORKLIFT_REPAIR_PENALTY = 500
+local BATCH_LOAD_ARRIVAL_RADIUS_M = 12
+local TRUCK_PICKUP_ARRIVAL_RADIUS_M = 12
 local truckVehicleId = nil
 local truckNextSpawnTime = nil
 local truckState = nil
@@ -124,6 +132,9 @@ local lastDeliveredZoneName = nil  -- zone we just added props to (for excluding
 local excludeLastZoneForTruckLoad = true  -- dev: false (allow load from last zone); release: true (exclude it)
 
 local dropMarkerObjects = {}
+local loadZoneMarkerObjects = {}
+local currentBatchWaypointPhase = nil -- "to_loading" | "to_delivery"
+local truckWaypointPhase = nil -- "to_pickup" | "to_truck"
 
 -- Fallback level when current level has no config.
 local CONFIG_FALLBACK_LEVEL = "west_coast_usa"
@@ -313,6 +324,68 @@ local function computeSpawnPositionsInZone(vertexList, count, spacing)
     return positions
 end
 
+local function getZoneCenter(vertexList)
+    if not vertexList or #vertexList == 0 then return nil end
+    local sx, sy, sz = 0, 0, 0
+    local c = 0
+    for _, v in ipairs(vertexList) do
+        local x = v[1] or v.x
+        local y = v[2] or v.y
+        local z = v[3] or v.z or 0
+        if x and y then
+            sx = sx + x
+            sy = sy + y
+            sz = sz + z
+            c = c + 1
+        end
+    end
+    if c == 0 then return nil end
+    return vec3(sx / c, sy / c, sz / c)
+end
+
+local function getFacilityLoadZoneVertices(facilityId)
+    if not facilityId then return nil end
+    local cfg = facilityConfigs[facilityId]
+    if not cfg then return nil end
+    return getSpawnZoneVertices(cfg.spawnZone)
+end
+
+local function getFacilityLoadZoneCenter(facilityId)
+    return getZoneCenter(getFacilityLoadZoneVertices(facilityId))
+end
+
+local function getForkliftPosition()
+    if not currentForkliftId then return nil end
+    local obj = be:getObjectByID(currentForkliftId)
+    if not obj or not obj.getPosition then return nil end
+    return toVec3(obj:getPosition())
+end
+
+local function isPointNear(pointA, pointB, radius)
+    if not pointA or not pointB then return false end
+    local r = radius or 5
+    local dx = pointA.x - pointB.x
+    local dy = pointA.y - pointB.y
+    local dz = pointA.z - pointB.z
+    return (dx * dx + dy * dy + dz * dz) <= (r * r)
+end
+
+local function isForkliftInLoadZone(facilityId)
+    local verts = getFacilityLoadZoneVertices(facilityId)
+    local pos = getForkliftPosition()
+    if not verts or not pos then return false end
+    return isPointInPolygon2D(pos.x, pos.y, verts)
+end
+
+local function setNavigationPath(targetPos)
+    if not core_groundMarkers or not core_groundMarkers.setPath then return end
+    if targetPos then
+        core_groundMarkers.setPath(toVec3(targetPos), { clearPathOnReachingTarget = false })
+    else
+        core_groundMarkers.setPath(nil)
+    end
+end
+
 local function resolveDropTriggers(triggerNames)
     local out = {}
     if not triggerNames or type(triggerNames) ~= "table" then return out end
@@ -471,16 +544,79 @@ local function safeDelete(obj, objName)
     end
 end
 
-local function clearDropMarkers()
-    for _, obj in ipairs(dropMarkerObjects) do
-        safeDelete(obj, "drop marker")
+local function clearMarkerList(markerList, markerLabel)
+    for _, obj in ipairs(markerList) do
+        safeDelete(obj, markerLabel)
     end
-    table.clear(dropMarkerObjects)
+    table.clear(markerList)
 end
 
-local function showDropMarkers(trigger)
+local function clearDropMarkers()
+    clearMarkerList(dropMarkerObjects, "drop marker")
+    clearMarkerList(loadZoneMarkerObjects, "loading marker")
+end
+
+local cornerMarkerQOff = quatFromEuler(0, 0, math.pi / 2) * quatFromEuler(0, math.pi / 2, math.pi / 2)
+local cornerMarkerRotations = {
+    quatFromEuler(0, 0, math.rad(90)),
+    quatFromEuler(0, 0, math.rad(180)),
+    quatFromEuler(0, 0, math.rad(270)),
+    quatFromEuler(0, 0, 0)
+}
+
+local function placeCornerMarkers(corners, markerYDir, opts, nameSeed)
+    if not corners or #corners == 0 then return end
+    opts = opts or {}
+    local markerList = opts.markerList or dropMarkerObjects
+    if opts.clear ~= false then
+        clearMarkerList(markerList, opts.label or "drop marker")
+    end
+    local color = opts.color or "0.6 0.9 0.23 1"
+    local markerPrefix = opts.prefix or "dropMarker"
+    local rayUp = opts.upVec or vec3(0, 0, 1)
+    local faceCenter = opts.faceCenter == true
+    local centerPos = opts.centerPos and toVec3(opts.centerPos) or nil
+
+    local dir = markerYDir and vec3(markerYDir.x, markerYDir.y, markerYDir.z or 0) or vec3(0, 1, 0)
+    if dir:squaredLength() < 1e-6 then
+        dir = vec3(0, 1, 0)
+    else
+        dir:normalize()
+    end
+
+    local uniqueId = os.time() .. "_" .. math.random(1000, 9999)
+    for i, p in ipairs(corners) do
+        local markerName = string.format("facilityWork_%s_%s_%d_%s", markerPrefix, nameSeed or "marker", i, uniqueId)
+        local hit = Engine.castRay(p + rayUp * 2, p - rayUp * 10, true, false)
+        local groundPos = hit and vec3(hit.pt) or (p + rayUp * 0.05)
+        groundPos = groundPos + rayUp * 0.05
+        local dirForMarker = dir
+        if faceCenter and centerPos then
+            local toCenter = centerPos - p
+            toCenter.z = 0
+            if toCenter:squaredLength() > 1e-6 then
+                toCenter:normalize()
+                dirForMarker = toCenter
+            end
+        end
+
+        local finalRot
+        if faceCenter then
+            -- For inward-facing mode, each corner directly faces the center.
+            finalRot = cornerMarkerQOff * quatFromDir(dirForMarker, vec3(0, 0, 1))
+        else
+            finalRot = cornerMarkerRotations[((i - 1) % 4) + 1] * cornerMarkerQOff * quatFromDir(vec3(0, 0, 1), dirForMarker)
+        end
+        local marker = createCornerMarker(markerName)
+        marker:setPosRot(groundPos.x, groundPos.y, groundPos.z, finalRot.x, finalRot.y, finalRot.z, finalRot.w)
+        marker:setField('instanceColor', 0, color)
+        table.insert(markerList, marker)
+    end
+end
+
+local function showDropMarkers(trigger, opts)
     if not trigger then return end
-    clearDropMarkers()
+    opts = opts or {}
     local triggerPos = trigger:getPosition()
     local triggerRot = trigger:getRotation()
     local triggerScale = trigger:getScale()
@@ -491,29 +627,99 @@ local function showDropMarkers(trigger)
     local vecY = rot * vec3(0, 1, 0)
     local vecZ = rot * vec3(0, 0, 1)
     local corners = {
-        { pos = triggerPos - vecX * length + vecY * width },
-        { pos = triggerPos + vecX * length + vecY * width },
-        { pos = triggerPos + vecX * length - vecY * width },
-        { pos = triggerPos - vecX * length - vecY * width }
+        triggerPos - vecX * length + vecY * width,
+        triggerPos + vecX * length + vecY * width,
+        triggerPos + vecX * length - vecY * width,
+        triggerPos - vecX * length - vecY * width
     }
-    local qOff = quatFromEuler(0, 0, math.pi / 2) * quatFromEuler(0, math.pi / 2, math.pi / 2)
-    local rotations = {
-        quatFromEuler(0, 0, math.rad(90)),
-        quatFromEuler(0, 0, math.rad(180)),
-        quatFromEuler(0, 0, math.rad(270)),
-        quatFromEuler(0, 0, 0)
+    local markerOpts = {}
+    for k, v in pairs(opts) do markerOpts[k] = v end
+    markerOpts.upVec = vecZ
+    placeCornerMarkers(corners, vecY, markerOpts, trigger:getName() or "drop")
+end
+
+local function showLoadZoneMarkers(facilityId, opts)
+    local vertices = getFacilityLoadZoneVertices(facilityId)
+    if not vertices or #vertices < 3 then return end
+    opts = opts or {}
+    local pts = {}
+    local center = vec3(0, 0, 0)
+    for _, v in ipairs(vertices) do
+        local p = toVec3(v)
+        table.insert(pts, p)
+        center = center + p
+    end
+    if #pts < 3 then return end
+    center = center / #pts
+
+    -- Match drop-off marker style with a clean oriented box.
+    local bestLenSq = -1
+    local edgeDir = vec3(1, 0, 0)
+    for i = 1, #pts do
+        local j = (i % #pts) + 1
+        local d = pts[j] - pts[i]
+        d.z = 0
+        local lenSq = d:squaredLength()
+        if lenSq > bestLenSq and lenSq > 1e-6 then
+            bestLenSq = lenSq
+            d:normalize()
+            edgeDir = d
+        end
+    end
+    local vecX = vec3(edgeDir.x, edgeDir.y, 0)
+    local vecY = vec3(-vecX.y, vecX.x, 0)
+
+    local minX, maxX = math.huge, -math.huge
+    local minY, maxY = math.huge, -math.huge
+    local avgZ = 0
+    for _, p in ipairs(pts) do
+        local rel = p - center
+        local lx = rel:dot(vecX)
+        local ly = rel:dot(vecY)
+        minX = math.min(minX, lx)
+        maxX = math.max(maxX, lx)
+        minY = math.min(minY, ly)
+        maxY = math.max(maxY, ly)
+        avgZ = avgZ + p.z
+    end
+    avgZ = avgZ / #pts
+
+    local function localToWorld(lx, ly)
+        return vec3(
+            center.x + vecX.x * lx + vecY.x * ly,
+            center.y + vecX.y * lx + vecY.y * ly,
+            avgZ
+        )
+    end
+
+    local corners = {
+        localToWorld(minX, maxY),
+        localToWorld(maxX, maxY),
+        localToWorld(maxX, minY),
+        localToWorld(minX, minY)
     }
-    local uniqueId = os.time() .. "_" .. math.random(1000, 9999)
-    for i, corner in ipairs(corners) do
-        local markerName = string.format("facilityWork_dropMarker_%s_%d_%s", trigger:getName() or "drop", i, uniqueId)
-        local hit = Engine.castRay(corner.pos + vecZ * 2, corner.pos - vecZ * 10, true, false)
-        local groundPos = hit and vec3(hit.pt) or (corner.pos + vecZ * 0.05)
-        groundPos = groundPos + vecZ * 0.05
-        local finalRot = rotations[i] * qOff * quatFromDir(vec3(0, 0, 1), vecY)
-        local marker = createCornerMarker(markerName)
-        marker:setPosRot(groundPos.x, groundPos.y, groundPos.z, finalRot.x, finalRot.y, finalRot.z, finalRot.w)
-        marker:setField('instanceColor', 0, "0.6 0.9 0.23 1")
-        table.insert(dropMarkerObjects, marker)
+
+    local markerYDir = corners[2] and corners[1] and (corners[2] - corners[1]) or vec3(0, 1, 0)
+    local markerOpts = {}
+    for k, v in pairs(opts) do markerOpts[k] = v end
+    markerOpts.faceCenter = true
+    markerOpts.centerPos = vec3(center.x, center.y, avgZ)
+    placeCornerMarkers(corners, markerYDir, markerOpts, tostring(facilityId or "fac"))
+end
+
+local function refreshGuidanceMarkers()
+    clearDropMarkers()
+    if currentBatch then
+        showLoadZoneMarkers(currentBatch.facilityId, { clear = true, color = "0.23 0.72 1.00 1", prefix = "loadingMarker", markerList = loadZoneMarkerObjects })
+        if currentBatch.dropTrigger then
+            showDropMarkers(currentBatch.dropTrigger, { clear = false, color = "0.6 0.9 0.23 1", prefix = "deliveryMarker", markerList = dropMarkerObjects, label = "delivery marker" })
+        end
+    end
+
+    if truckState == "waiting_for_load" then
+        if truckLoadingDropTrigger then
+            showDropMarkers(truckLoadingDropTrigger, { clear = false, color = "1.00 0.80 0.16 1", prefix = "truckPickupMarker", markerList = dropMarkerObjects, label = "truck pickup marker" })
+        end
     end
 end
 
@@ -567,6 +773,27 @@ end
 local function updateTasklistValues()
     guihooks.trigger('SetTasklistTask', { id = "facilityWork_total_pay", label = "Total pay: $" .. sessionTotalPay, type = "message", clear = false })
     guihooks.trigger('SetTasklistTask', { id = "facilityWork_total_rep", label = "Total rep: " .. sessionTotalRep, type = "message", clear = false })
+
+    local nextStopLabel = nil
+    if truckState == "waiting_for_load" then
+        if truckWaypointPhase == "to_pickup" then
+            nextStopLabel = "Next stop: pickup area"
+        elseif truckWaypointPhase == "to_truck" then
+            nextStopLabel = "Next stop: truck loading point"
+        end
+    elseif currentBatch then
+        if currentBatchWaypointPhase == "to_loading" then
+            nextStopLabel = "Next stop: loading area"
+        elseif currentBatchWaypointPhase == "to_delivery" then
+            nextStopLabel = "Next stop: delivery area"
+        end
+    end
+    if nextStopLabel then
+        guihooks.trigger('SetTasklistTask', { id = "facilityWork_next_stop", label = nextStopLabel, type = "message", clear = false })
+    else
+        guihooks.trigger('SetTasklistTask', { id = "facilityWork_next_stop", label = "", type = "message", clear = true })
+    end
+
     if truckState == "driving_to_pickup" or truckState == "waiting_for_load" then
         if truckLoadMaterialName and truckLoadTargetCount then
             local loadLabel = string.format("Load %d %s onto the truck", truckLoadTargetCount, truckLoadMaterialName)
@@ -581,6 +808,84 @@ local function updateTasklistValues()
         guihooks.trigger('SetTasklistTask', { id = "facilityWork_truck_load", label = "", type = "message", clear = true })
     end
     notifyPhoneState()
+end
+
+local function setBatchWaypointPhase(phase, opts)
+    opts = opts or {}
+    if not currentBatch then
+        currentBatchWaypointPhase = nil
+        return
+    end
+
+    if phase == "to_loading" then
+        local loadCenter = getFacilityLoadZoneCenter(currentBatch.facilityId)
+        if loadCenter then
+            currentBatchWaypointPhase = "to_loading"
+            setNavigationPath(loadCenter)
+        end
+    elseif phase == "to_delivery" then
+        if currentBatch.dropTrigger then
+            currentBatchWaypointPhase = "to_delivery"
+            setNavigationPath(currentBatch.dropTrigger:getPosition())
+        end
+    else
+        currentBatchWaypointPhase = nil
+    end
+
+    refreshGuidanceMarkers()
+    updateTasklistValues()
+
+    if not opts.silent and utils and utils.displayMessage then
+        if phase == "to_loading" then
+            utils.displayMessage("Waypoint updated: go to loading area first.", 3)
+        elseif phase == "to_delivery" then
+            utils.displayMessage("Waypoint updated: deliver to the drop area.", 3)
+        end
+    end
+end
+
+local function setTruckWaypointPhase(phase, opts)
+    opts = opts or {}
+    if phase == "to_pickup" then
+        if truckLoadingDropTrigger then
+            truckWaypointPhase = "to_pickup"
+            setNavigationPath(truckLoadingDropTrigger:getPosition())
+        end
+    elseif phase == "to_truck" then
+        local truckObj = truckVehicleId and be:getObjectByID(truckVehicleId) or nil
+        if truckObj then
+            truckWaypointPhase = "to_truck"
+            setNavigationPath(truckObj:getPosition())
+        end
+    else
+        truckWaypointPhase = nil
+    end
+
+    refreshGuidanceMarkers()
+    updateTasklistValues()
+
+    if not opts.silent and utils and utils.displayMessage then
+        if phase == "to_pickup" then
+            utils.displayMessage("Waypoint updated: pick up materials first.", 3)
+        elseif phase == "to_truck" then
+            utils.displayMessage("Waypoint updated: load materials onto the truck.", 3)
+        end
+    end
+end
+
+local function setWaypointToFacilityForklift(facilityId)
+    if not loadConfig() then return false end
+    local facCfg = facilityConfigs[facilityId]
+    if not facCfg then return false end
+    local spawnData = getForkliftSpawnPoint(facCfg.parkingSpot)
+    if not spawnData then
+        spawnData = getForkliftSpawnPoint("facilityWork_vehicle")
+    end
+    if not spawnData then return false end
+    setNavigationPath(spawnData.pos)
+    clearDropMarkers()
+    showLoadZoneMarkers(facilityId, { clear = true, color = "0.23 0.72 1.00 1", prefix = "loadingMarker", markerList = loadZoneMarkerObjects })
+    return true
 end
 
 local function spawnBatch(facilityId)
@@ -641,6 +946,7 @@ local function spawnBatch(facilityId)
     if #propIds == 0 then return false end
 
     truckDispatchedForCurrentBatch = false
+    currentBatchWaypointPhase = nil
     currentBatch = {
         facilityId = facilityId,
         dropTrigger = dropTrigger,
@@ -662,6 +968,7 @@ local function despawnBatch()
             obj:delete()
         end
     end
+    currentBatchWaypointPhase = nil
     currentBatch = nil
 end
 
@@ -680,6 +987,7 @@ local function clearTruckState()
     truckLoadMaterialName = nil
     truckLoadTargetCount = nil
     selectedZoneNameForTruckLoad = nil
+    truckWaypointPhase = nil
     truckState = nil
     truckRoadNodes = nil
     truckTargetNodeIndex = nil
@@ -728,6 +1036,7 @@ end
 local function applyWaitingForLoadState()
     table.clear(truckLoadPropIds)
     table.clear(propsEligibleForTruckLoad)
+    truckLoadingDropTrigger = nil
     local selectedZoneData = nil
     local currentZoneName = getCurrentBatchZoneName()
     -- Only use pre-selected zone if it exists and is cleared (not the current batch's drop zone)
@@ -766,13 +1075,13 @@ local function applyWaitingForLoadState()
         end
     end
     if truckLoadingDropTrigger then
-        showDropMarkers(truckLoadingDropTrigger)
+        setTruckWaypointPhase("to_pickup", { silent = true })
+    else
+        truckWaypointPhase = nil
+        setNavigationPath(nil)
+        refreshGuidanceMarkers()
+        updateTasklistValues()
     end
-    if truckLoadingDropTrigger and core_groundMarkers and core_groundMarkers.setPath then
-        core_groundMarkers.setPath(toVec3(truckLoadingDropTrigger:getPosition()), { clearPathOnReachingTarget = false })
-    end
-    updateTasklistValues()
-    notifyPhoneState()
 end
 
 local function spawnTruckAndDriveToPickup(facilityId)
@@ -812,6 +1121,7 @@ local function spawnTruckAndDriveToPickup(facilityId)
 
     if driveToPickup then
         truckState = "driving_to_pickup"
+        truckWaypointPhase = nil
         local zoneName, zoneData = pickTruckLoadZone()
         if zoneData then
             selectedZoneNameForTruckLoad = zoneName
@@ -820,6 +1130,7 @@ local function spawnTruckAndDriveToPickup(facilityId)
             truckLoadTargetCount = math.min(TRUCK_LOAD_COUNT, #zoneData.propIds)
             updateTasklistValues()
         end
+        refreshGuidanceMarkers()
         local scriptToPickup = buildScriptPath(nodes, 1, pickupIndex0 + 1)
         if scriptToPickup then
             if core_jobsystem and core_jobsystem.create then
@@ -892,6 +1203,7 @@ local function payoutBatchAndSpawnNext()
 
     truckLoadingDropTrigger = nil
     table.clear(propsInDropZone)
+    currentBatchWaypointPhase = nil
     currentBatch = nil
     clearDropMarkers()
     updateTasklistValues()
@@ -922,26 +1234,19 @@ local function payoutBatchAndSpawnNext()
             applyWaitingForLoadState()
         end
         -- only clear path when we have no loading zone to show (avoid clearing path we just set)
-        if not truckLoadingDropTrigger and core_groundMarkers and core_groundMarkers.setPath then
-            core_groundMarkers.setPath(nil)
+        if not truckLoadingDropTrigger then
+            setNavigationPath(nil)
         end
     else
         if facilityId and spawnBatch(facilityId) then
-            if currentBatch and currentBatch.dropTrigger then
-                showDropMarkers(currentBatch.dropTrigger)
-                if core_groundMarkers and core_groundMarkers.setPath then
-                    core_groundMarkers.setPath(toVec3(currentBatch.dropTrigger:getPosition()), { clearPathOnReachingTarget = false })
-                end
-            end
+            setBatchWaypointPhase("to_loading", { silent = true })
         end
     end
 end
 
 -- End shift
 local function endShiftCleanup()
-    if core_groundMarkers and core_groundMarkers.setPath then
-        core_groundMarkers.setPath(nil)
-    end
+    setNavigationPath(nil)
     if currentBatch then
         for _, pid in ipairs(currentBatch.propIds) do
             local obj = be:getObjectByID(pid)
@@ -977,6 +1282,8 @@ local function endShiftCleanup()
     deliveredPropsByZone = {}
     lastDeliveredZoneName = nil
     table.clear(propsInDropZone)
+    currentBatchWaypointPhase = nil
+    truckWaypointPhase = nil
     clearDropMarkers()
     batchReadyWaitingForkliftExit = false
 
@@ -1074,6 +1381,8 @@ local function doStartFacilityWork()
     deliveredPropsByZone = {}
     lastDeliveredZoneName = nil
     table.clear(propsInDropZone)
+    currentBatchWaypointPhase = nil
+    truckWaypointPhase = nil
     batchReadyWaitingForkliftExit = false
     pendingBatchFacilityId = nil
     if not spawnBatch(facilityId) then
@@ -1115,15 +1424,9 @@ local function doStartFacilityWork()
         utils.saveAndSetTrafficAmount(0)
     end
     setTasklistOnDuty()
-    updateTasklistValues()
-    if currentBatch and currentBatch.dropTrigger then
-        showDropMarkers(currentBatch.dropTrigger)
-        if core_groundMarkers and core_groundMarkers.setPath then
-            core_groundMarkers.setPath(toVec3(currentBatch.dropTrigger:getPosition()), { clearPathOnReachingTarget = false })
-        end
-    end
+    setBatchWaypointPhase("to_loading", { silent = true })
     if utils and utils.displayMessage then
-        utils.displayMessage("On duty. Use the company forklift to move materials. Deliver to the marked drop zone. Trucks arrive after you complete a batch.", 6)
+        utils.displayMessage("On duty. Waypoint set to loading area first, then delivery. Trucks arrive after you complete a batch.", 6)
     end
 
     -- comment out for dev mode (release: truck only after first batch)
@@ -1179,17 +1482,15 @@ local function repairForklift()
         utils.displayMessage("Forklift repaired. $" .. tostring(penalty) .. " deducted from session pay.", 4)
     end
     if truckState == "waiting_for_load" then
-        if truckLoadingDropTrigger then
-            showDropMarkers(truckLoadingDropTrigger)
-            if core_groundMarkers and core_groundMarkers.setPath then
-                core_groundMarkers.setPath(toVec3(truckLoadingDropTrigger:getPosition()), { clearPathOnReachingTarget = false })
-            end
+        setTruckWaypointPhase(truckWaypointPhase or "to_pickup", { silent = true })
+    elseif currentBatch then
+        if currentBatchWaypointPhase == "to_delivery" then
+            setBatchWaypointPhase("to_delivery", { silent = true })
+        else
+            setBatchWaypointPhase("to_loading", { silent = true })
         end
-    elseif currentBatch and currentBatch.dropTrigger then
-        showDropMarkers(currentBatch.dropTrigger)
-        if core_groundMarkers and core_groundMarkers.setPath then
-            core_groundMarkers.setPath(toVec3(currentBatch.dropTrigger:getPosition()), { clearPathOnReachingTarget = false })
-        end
+    else
+        refreshGuidanceMarkers()
     end
 
     return true
@@ -1252,6 +1553,8 @@ end
 local function onExtensionLoaded()
     configLoaded = false
     configLoadedForLevel = nil
+    currentBatchWaypointPhase = nil
+    truckWaypointPhase = nil
 end
 
 local function onExtensionUnloaded()
@@ -1272,6 +1575,8 @@ local function onExtensionUnloaded()
     deliveredPropsByZone = {}
     lastDeliveredZoneName = nil
     table.clear(propsInDropZone)
+    currentBatchWaypointPhase = nil
+    truckWaypointPhase = nil
     batchReadyWaitingForkliftExit = false
     clearDropMarkers()
     if utils and utils.restoreTrafficAmount then
@@ -1282,10 +1587,29 @@ end
 
 local function onUpdate(_dtReal, _dtSim, _dtRaw)
     if not career_career or not career_career.isActive() then return end
+
+    if currentBatch and currentBatchWaypointPhase == "to_loading" then
+        local loadCenter = getFacilityLoadZoneCenter(currentBatch.facilityId)
+        local inLoadZone = isForkliftInLoadZone(currentBatch.facilityId)
+        if inLoadZone or (loadCenter and isPointNear(getForkliftPosition(), loadCenter, BATCH_LOAD_ARRIVAL_RADIUS_M)) then
+            setBatchWaypointPhase("to_delivery")
+        end
+    end
+
+    if truckState == "waiting_for_load" and truckWaypointPhase == "to_pickup" and truckLoadingDropTrigger then
+        local pickupPos = toVec3(truckLoadingDropTrigger:getPosition())
+        local forkliftPos = getForkliftPosition()
+        local reachedPickup = forkliftPos and (isPointInsideTriggerBox(forkliftPos, truckLoadingDropTrigger) or isPointNear(forkliftPos, pickupPos, TRUCK_PICKUP_ARRIVAL_RADIUS_M))
+        if reachedPickup then
+            setTruckWaypointPhase("to_truck")
+        end
+    end
+
     if not truckState or not truckRoadNodes or not truckVehicleId then return end
     local vehObj = be:getObjectByID(truckVehicleId)
     if not vehObj then
         clearTruckState()
+        refreshGuidanceMarkers()
         notifyPhoneState()
         return
     end
@@ -1362,12 +1686,7 @@ local function onUpdate(_dtReal, _dtSim, _dtRaw)
             end
             if pendingBatchFacilityId then
                 if spawnBatch(pendingBatchFacilityId) then
-                    if currentBatch and currentBatch.dropTrigger then
-                        showDropMarkers(currentBatch.dropTrigger)
-                        if core_groundMarkers and core_groundMarkers.setPath then
-                            core_groundMarkers.setPath(toVec3(currentBatch.dropTrigger:getPosition()), { clearPathOnReachingTarget = false })
-                        end
-                    end
+                    setBatchWaypointPhase("to_loading", { silent = true })
                 end
                 pendingBatchFacilityId = nil
             end
@@ -1378,12 +1697,9 @@ local function onUpdate(_dtReal, _dtSim, _dtRaw)
 end
 
 function M.requestFacilityWorkState()
-    -- Re-apply truck loading zone highlight and path when opening phone (payout can clear them)
-    if truckState == "waiting_for_load" and truckLoadingDropTrigger then
-        showDropMarkers(truckLoadingDropTrigger)
-        if core_groundMarkers and core_groundMarkers.setPath then
-            core_groundMarkers.setPath(toVec3(truckLoadingDropTrigger:getPosition()), { clearPathOnReachingTarget = false })
-        end
+    refreshGuidanceMarkers()
+    if selectedFacilityId and not currentForkliftId and not currentBatch and not truckState then
+        setWaypointToFacilityForklift(selectedFacilityId)
     end
     updateTasklistValues()
     notifyPhoneState()
@@ -1394,10 +1710,22 @@ function M.startFacilityWork()
 end
 
 function M.selectFacility(id)
-    if facilityConfigs[id] then
+    loadConfig()
+    if id and facilityConfigs[id] then
         selectedFacilityId = id
-        notifyPhoneState()
+        if not currentBatch and not currentForkliftId then
+            if setWaypointToFacilityForklift(id) and utils and utils.displayMessage then
+                utils.displayMessage("Waypoint set to the loaner forklift.", 4)
+            end
+        end
+    else
+        selectedFacilityId = nil
+        if not currentBatch and not currentForkliftId and not truckState then
+            setNavigationPath(nil)
+            clearDropMarkers()
+        end
     end
+    notifyPhoneState()
 end
 
 function M.setBatchSize(size)
@@ -1437,6 +1765,7 @@ function M.completeTruckLoading()
     if not lastNode then return end
     truckTargetNodeIndex = toIdx - 1
     truckState = "driving_to_end"
+    truckWaypointPhase = nil
     updateTasklistValues()
     -- Use driver.returnTargetPosition (like quarry/loading) so truck drives from current position with no teleport/jump
     local exitPos = {
@@ -1445,15 +1774,10 @@ function M.completeTruckLoading()
         z = lastNode.z or lastNode[3] or 0
     }
     sendTruckDriveToPosition(vehObj, exitPos)
-    if currentBatch and currentBatch.dropTrigger then
-        showDropMarkers(currentBatch.dropTrigger)
-        if core_groundMarkers and core_groundMarkers.setPath then
-            core_groundMarkers.setPath(toVec3(currentBatch.dropTrigger:getPosition()), { clearPathOnReachingTarget = false })
-        end
-    else
-        if core_groundMarkers and core_groundMarkers.setPath then
-            core_groundMarkers.setPath(nil)
-        end
+    if not currentBatch then
+        setNavigationPath(nil)
+        refreshGuidanceMarkers()
+        updateTasklistValues()
     end
     notifyPhoneState()
 end

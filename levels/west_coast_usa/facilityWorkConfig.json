@@ -4,63 +4,63 @@
       "name": "Large Lumber",
       "model_key": "TPUForkableLoads",
       "config": "LargeLumber",
-      "money": 350,
+      "money": 1050,
       "spawnGridSpacing": 2.0
     },
     "smallLumber": {
       "name": "Small Lumber",
       "model_key": "TPUForkableLoads",
       "config": "SmallLumber",
-      "money": 200,
+      "money": 600,
       "spawnGridSpacing": 2.0
     },
     "crate": {
       "name": "Crate",
       "model_key": "TPUForkableLoads",
       "config": "Crate",
-      "money": 200,
+      "money": 600,
       "spawnGridSpacing": 2.0
     },
     "boxes": {
       "name": "Boxes",
       "model_key": "TPUForkableLoads",
       "config": "Boxes",
-      "money": 180,
+      "money": 540,
       "spawnGridSpacing": 2.0
     },
     "concrete": {
       "name": "Concrete",
       "model_key": "TPUForkableLoads",
       "config": "Concrete",
-      "money": 280,
+      "money": 840,
       "spawnGridSpacing": 2.0
     },
     "emptyPallet": {
       "name": "Empty Pallet",
       "model_key": "TPUForkableLoads",
       "config": "EmptyPallet",
-      "money": 120,
+      "money": 360,
       "spawnGridSpacing": 2.0
     },
     "adjustableBarrels": {
       "name": "Barrels",
       "model_key": "TPUForkableLoads",
       "config": "AdjustableBarrels",
-      "money": 250,
+      "money": 750,
       "spawnGridSpacing": 2.0
     },
     "adjustableBox": {
       "name": "Metal Box",
       "model_key": "TPUForkableLoads",
       "config": "AdjustableBox",
-      "money": 300,
+      "money": 900,
       "spawnGridSpacing": 2.0
     },
     "tastiCola": {
       "name": "Tasti Cola",
       "model_key": "TPUForkableLoads",
       "config": "TastiCola",
-      "money": 220,
+      "money": 660,
       "spawnGridSpacing": 2.0
     }
   },
