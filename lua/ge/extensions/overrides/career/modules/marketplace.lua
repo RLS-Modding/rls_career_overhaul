@@ -25,6 +25,13 @@ local function findVehicleListing(inventoryId)
   end
 end
 
+local function getLiveListingValue(listing)
+  if not listing or not listing.id then
+    return nil
+  end
+  return career_modules_valueCalculator.getInventoryVehicleValue(listing.id)
+end
+
 local function scheduleNextOffer(listing, timeNow)
   local multiplier = listing.offerTimeMultiplier or 1
   listing.timeOfNextOffer = timeNow + (timeBetweenOffersBase * multiplier) + (math.random(-60, 60) / 100 * timeBetweenOffersBase * multiplier)
@@ -151,9 +158,13 @@ end
 local function generateOffer(inventoryId)
   local listing = inventoryId and findVehicleListing(inventoryId) or listedVehicles[math.random(1, #listedVehicles)]
   local buyerPersonality = generatePersonality(true)
-  local marketRatio = listing.marketRatio or (listing.value / (listing.marketValue or 1))
+  local listingMarketValue = getLiveListingValue(listing)
+  if not listingMarketValue then
+    listingMarketValue = listing.marketValue or 1
+  end
+  local marketRatio = listing.value / (listingMarketValue or 1)
 
-  local baseOffer = listing.marketValue
+  local baseOffer = listingMarketValue
 
   -- Apply vehicle market sell multiplier (buyers offer less in downturns)
   local vehicleSellMult = 1.0
@@ -177,7 +188,7 @@ local function generateOffer(inventoryId)
       --log("I","","  clamp to cap")
     --end
   elseif marketRatio > 1.1 then
-    local cap = listing.marketValue * (0.95 + (math.random() * 0.1))
+    local cap = listingMarketValue * (0.95 + (math.random() * 0.1))
     finalOfferValue = math.min(finalOfferValue, cap)
     --log("I","",string.format(" Market ratio is greater than 1.1, capping offer at %.2f", cap))
     --if finalOfferValue == cap then
@@ -913,7 +924,7 @@ function getListings()
   local listingsCopy = deepcopy(listedVehicles)
   for i, listing in ipairs(listingsCopy) do
     local currentValue = career_modules_valueCalculator.getInventoryVehicleValue(listing.id)
-    if currentValue < listing.marketValue * valueLossLimit then
+    if listing.marketValue and currentValue < listing.marketValue * valueLossLimit then
       listing.disabled = true
       listing.disableReason = "Cant sell the vehicle because value has dropped below " .. valueLossLimit * 100 .. "% of the market value when the vehicle was listed."
     end
@@ -984,6 +995,9 @@ local function onExtensionLoaded()
     listedVehicles = data.listedVehicles
     local timeNow = os.time()
     for _, listing in ipairs(listedVehicles) do
+      if not listing.marketValue then
+        listing.marketValue = career_modules_valueCalculator.getInventoryVehicleValue(listing.id) or 1
+      end
       if not listing.timeOfNextOffer then
         scheduleNextOffer(listing, timeNow)
       end
