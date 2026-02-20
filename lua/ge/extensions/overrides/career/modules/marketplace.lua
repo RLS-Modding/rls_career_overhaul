@@ -17,6 +17,38 @@ local maximumExpiredOffers = 3
 local offerMenuOpen = false
 local getListings
 
+local function isListingValueManual(listing)
+  return listing and listing.isManualValue == true
+end
+
+local function refreshLiveListingValues(listing)
+  if not listing or not listing.id then
+    return
+  end
+
+  local currentMarketValue = career_modules_valueCalculator.getInventoryVehicleSellValue(listing.id)
+  if not currentMarketValue then
+    return
+  end
+
+  if listing.isManualValue == nil then
+    listing.isManualValue = listing.value ~= (listing.marketValueAtListing or listing.marketValue)
+  end
+
+  listing.marketValue = currentMarketValue
+  listing.marketValueCurrent = currentMarketValue
+  if not isListingValueManual(listing) then
+    listing.value = currentMarketValue
+  end
+end
+
+local function getVehicleBuyMultiplier()
+  if career_modules_globalEconomy and career_modules_globalEconomy.getVehicleBuyMultiplier then
+    return career_modules_globalEconomy.getVehicleBuyMultiplier()
+  end
+  return 1.0
+end
+
 local function findVehicleListing(inventoryId)
   for _, listing in ipairs(listedVehicles) do
     if listing.id == inventoryId then
@@ -65,6 +97,8 @@ local function listVehicles(vehicles)
         offers = {},
         value = value,
         marketValue = marketValue,
+        marketValueAtListing = marketValue,
+        isManualValue = customValue ~= nil,
         marketRatio = marketRatio,
         timeOfNextOffer = nil,
         offerTimeMultiplier = offerTimeMultiplier,
@@ -157,6 +191,7 @@ end
 
 local function generateOffer(inventoryId)
   local listing = inventoryId and findVehicleListing(inventoryId) or listedVehicles[math.random(1, #listedVehicles)]
+  refreshLiveListingValues(listing)
   local buyerPersonality = generatePersonality(true)
   local listingMarketValue = getLiveListingValue(listing)
   if not listingMarketValue then
@@ -383,6 +418,7 @@ end
 
 local function startNegotiateBuyingOffer(inventoryId, offerIndex)
   local listing = findVehicleListing(inventoryId)
+  refreshLiveListingValues(listing)
   local offer = listing.offers[offerIndex]
   local buyerPersonality = offer.buyerPersonality
 
@@ -454,22 +490,41 @@ local function startNegotiateSellingOffer(_shopId)
   end
 
   -- select quote based on personality and vehicle value
-  opponentQuote = selectQuoteForPersonality(opponentPersonality, vehicleInfo.Value, false)
+  local vehicleBuyMult = getVehicleBuyMultiplier()
+  local valueBase = vehicleInfo.valueBase
+  if not valueBase then
+    if vehicleInfo.marketValue then
+      local priceMultiplier = 1
+      if vehicleInfo.negotiationPersonality and vehicleInfo.negotiationPersonality.priceMultiplier then
+        priceMultiplier = vehicleInfo.negotiationPersonality.priceMultiplier
+      end
+      valueBase = vehicleInfo.marketValue * priceMultiplier
+    else
+      valueBase = vehicleInfo.Value
+    end
+  end
+  local roundedVehicleValue = math.floor((valueBase or vehicleInfo.Value or 0) * vehicleBuyMult + 0.5)
+  opponentQuote = selectQuoteForPersonality(opponentPersonality, roundedVehicleValue, false)
 
   negotiationInventoryId = nil
   negotiationOfferIndex = nil
   vehicleNiceName = vehicleInfo.Name
   vehicleThumbnail = vehicleInfo.preview
   vehicleMileage = vehicleInfo.Mileage
-  actualVehicleValue = vehicleInfo.marketValue or vehicleInfo.Value
-
-  -- Apply vehicle market buy multiplier to starting price
-  local vehicleBuyMult = 1.0
-  if career_modules_globalEconomy and career_modules_globalEconomy.getVehicleBuyMultiplier then
-    vehicleBuyMult = career_modules_globalEconomy.getVehicleBuyMultiplier()
+  local marketValueBase = vehicleInfo.marketValueBase or vehicleInfo.marketValue
+  if not marketValueBase then
+    if vehicleInfo.marketValue then
+      local invPriceMultiplier = 1
+      if vehicleInfo.negotiationPersonality and vehicleInfo.negotiationPersonality.priceMultiplier then
+        invPriceMultiplier = vehicleInfo.negotiationPersonality.priceMultiplier
+      end
+      marketValueBase = valueBase / invPriceMultiplier
+    else
+      marketValueBase = valueBase
+    end
   end
-  startingPrice = math.floor(vehicleInfo.Value * vehicleBuyMult + 0.5)
-  actualVehicleValue = math.floor(actualVehicleValue * vehicleBuyMult + 0.5)
+  actualVehicleValue = math.floor((marketValueBase or roundedVehicleValue) * vehicleBuyMult + 0.5)
+  startingPrice = roundedVehicleValue
 
   negotiationActive = true
   theirOffer = startingPrice
@@ -914,12 +969,20 @@ local function onVehicleRemoved(inventoryId)
 end
 
 function getListings()
+  for _, listing in ipairs(listedVehicles) do
+    refreshLiveListingValues(listing)
+  end
   local listingsCopy = deepcopy(listedVehicles)
   for i, listing in ipairs(listingsCopy) do
     local currentValue = career_modules_valueCalculator.getInventoryVehicleSellValue(listing.id)
-    if listing.marketValue and currentValue < listing.marketValue * valueLossLimit then
+    local originalMarketValue = listing.marketValueAtListing or listing.marketValue
+    if currentValue and originalMarketValue and currentValue < originalMarketValue * valueLossLimit then
       listing.disabled = true
       listing.disableReason = "Cant sell the vehicle because value has dropped below " .. valueLossLimit * 100 .. "% of the market value when the vehicle was listed."
+    end
+    listing.marketValue = currentValue or listing.marketValue
+    if not listing.isManualValue and currentValue then
+      listing.value = currentValue
     end
 
     for _, offer in ipairs(listing.offers) do
@@ -988,7 +1051,9 @@ local function onExtensionLoaded()
     listedVehicles = data.listedVehicles
     local timeNow = os.time()
     for _, listing in ipairs(listedVehicles) do
-      listing.marketValue = career_modules_valueCalculator.getInventoryVehicleSellValue(listing.id) or listing.marketValue or 1
+      listing.marketValueAtListing = listing.marketValueAtListing or listing.marketValue or career_modules_valueCalculator.getInventoryVehicleSellValue(listing.id) or 1
+      listing.isManualValue = listing.isManualValue == nil and listing.value ~= (listing.marketValueAtListing or listing.marketValue) or listing.isManualValue
+      listing.marketValue = listing.marketValueAtListing
       if not listing.timeOfNextOffer then
         scheduleNextOffer(listing, timeNow)
       end

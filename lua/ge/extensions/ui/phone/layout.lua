@@ -18,7 +18,18 @@ local function getDefaultLayout()
     version = 1,
     wallpaper = "default",
     pages = {
-      { apps = {"loans", "repo", "marketplace", "car-meet", "quarry", "tuning-shop", "freeroam-events"} }
+      { apps = {
+        "loans",
+        "repo",
+        "marketplace",
+        "car-meet",
+        "quarry",
+        "tuning-shop",
+        "freeroam-events",
+        "facility-work",
+        "market-watch",
+        "real-estate",
+      } }
     },
     dock = {"guide", "beam-eats", "taxi", "bank"},
     seenApps = {}
