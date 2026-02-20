@@ -1073,7 +1073,13 @@ local function applyWaitingForLoadState()
         end
     end
     if truckLoadingDropTrigger then
-        setTruckWaypointPhase("to_pickup", { silent = true })
+        if not currentBatch then
+            setTruckWaypointPhase("to_pickup", { silent = true })
+        else
+            -- Player still has a batch: keep batch drop zone waypoint; only show truck pickup markers (no path change)
+            refreshGuidanceMarkers()
+            updateTasklistValues()
+        end
     else
         truckWaypointPhase = nil
         setNavigationPath(nil)
