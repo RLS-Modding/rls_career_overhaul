@@ -1480,13 +1480,14 @@ export default {
   },
 
   gameplay_phoneCamera: {
-    takePhoto: orientation => {},
+    takePhoto: (orientation, useFlash) => {},
     getPhotoList: () => {},
     getPhotoAsDataUrl: filename => String,
     deletePhotos: (filenames) => [Array], // param is array of filenames; bridge must pass array through (not Number)
     startPreview: () => {},
     stopPreview: () => {},
-    setPreviewOrientation: orientation => String
+    setPreviewOrientation: orientation => String,
+    setTorchMode: enabled => Boolean
   },
 
   ui_phone_layout: {

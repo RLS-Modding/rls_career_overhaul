@@ -1,78 +1,101 @@
 <template>
-  <PhoneWrapper app-name="Camera">
-    <div class="camera-container">
-      <!-- Viewfinder with lens feel -->
-      <div class="camera-viewfinder" :class="orientation">
-        <div class="viewfinder-frame">
-          <Transition name="preview-fade" mode="out-in">
-            <img
-              v-if="previewSrc"
-              key="preview"
-              :src="previewSrc"
-              class="viewfinder-image"
-              alt="Live view"
-            />
-            <div v-else key="loading" class="viewfinder-placeholder">
-              <div class="loading-dots">
-                <span></span><span></span><span></span>
-              </div>
-              <span class="loading-label">Camera starting...</span>
-            </div>
-          </Transition>
-        </div>
-        <!-- Viewfinder overlay: corner guides + subtle vignette -->
-        <div class="viewfinder-overlay" aria-hidden="true">
-          <div class="corner tl"></div>
-          <div class="corner tr"></div>
-          <div class="corner bl"></div>
-          <div class="corner br"></div>
-        </div>
-        <!-- Shutter flash (brief full-screen white on capture) -->
-        <div class="shutter-flash" :class="{ active: taking }" aria-hidden="true"></div>
-      </div>
+  <PhoneWrapper app-name="Camera" :hide-status-bar-gradient="true">
+    <div class="camera-app" :class="orientation">
+      <!-- Viewfinder -->
+      <div class="viewfinder" @click="triggerFocus">
+        <Transition name="fade" mode="out-in">
+          <img
+            v-if="previewSrc"
+            key="preview"
+            :src="previewSrc"
+            class="viewfinder-feed"
+            alt="Live view"
+          />
+          <div v-else key="loading" class="viewfinder-loading">
+            <div class="spinner"></div>
+          </div>
+        </Transition>
 
-      <!-- Top bar: glass -->
-      <div class="camera-top-bar">
-        <div class="orientation-toggle" role="tablist">
-          <button
-            type="button"
-            role="tab"
-            class="orientation-btn"
-            :class="{ active: orientation === 'portrait' }"
-            :aria-selected="orientation === 'portrait'"
-            @click="setOrientation('portrait')"
-          >
-            <span class="orientation-icon">▯</span>
-            Portrait
-          </button>
-          <button
-            type="button"
-            role="tab"
-            class="orientation-btn"
-            :class="{ active: orientation === 'landscape' }"
-            :aria-selected="orientation === 'landscape'"
-            @click="setOrientation('landscape')"
-          >
-            <span class="orientation-icon">▭</span>
-            Landscape
-          </button>
+        <!-- Focus Ring Animation -->
+        <div
+          v-if="focusing"
+          class="focus-ring"
+          :style="{ top: focusPos.y + 'px', left: focusPos.x + 'px' }"
+        ></div>
+
+        <!-- Grid Overlay (Rule of Thirds) -->
+        <div class="grid-overlay" v-if="showGrid">
+          <div class="grid-line h-line top"></div>
+          <div class="grid-line h-line bottom"></div>
+          <div class="grid-line v-line left"></div>
+          <div class="grid-line v-line right"></div>
         </div>
       </div>
 
-      <!-- Bottom bar: glass + capture -->
-      <div class="camera-bottom-bar">
-        <button
-          type="button"
-          class="capture-btn"
-          :disabled="taking"
-          :class="{ taking: taking }"
-          aria-label="Take photo"
-          @click="takePhoto"
-        >
-          <span class="capture-ring"></span>
-          <span class="capture-inner"></span>
+      <!-- Top Controls -->
+      <div class="top-controls">
+        <button class="icon-btn" @click="toggleFlash">
+          <!-- Flash Off -->
+          <svg v-if="flashMode === 'off'" viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+          <!-- Flash On (Only when taking picture) -->
+          <svg v-else-if="flashMode === 'on'" viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          <!-- Torch (Always on) -->
+          <svg v-else-if="flashMode === 'torch'" viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </button>
+        <button class="icon-btn" @click="toggleGrid">
+          <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+        </button>
+        <button class="icon-btn" @click="toggleTimer">
+          <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span v-if="timer > 0" class="timer-badge">{{ timer }}s</span>
         </button>
       </div>
+
+      <!-- Orientation Toggle -->
+      <div class="orientation-pill">
+        <button
+          class="pill-btn"
+          :class="{ active: orientation === 'portrait' }"
+          @click="setOrientation('portrait')"
+        >
+          Portrait
+        </button>
+        <button
+          class="pill-btn"
+          :class="{ active: orientation === 'landscape' }"
+          @click="setOrientation('landscape')"
+        >
+          Landscape
+        </button>
+      </div>
+
+      <!-- Bottom Controls -->
+      <div class="bottom-controls">
+        <!-- Gallery Thumbnail -->
+        <button class="gallery-thumb" @click="openGallery">
+          <img v-if="latestPhoto" :src="latestPhoto" alt="Gallery" />
+          <div v-else class="empty-thumb"></div>
+        </button>
+
+        <!-- Shutter Button -->
+        <button
+          class="shutter-btn"
+          :class="{ taking: taking || countdown > 0 }"
+          @click="takePhoto"
+          :disabled="taking || countdown > 0"
+        >
+          <div class="shutter-ring"></div>
+          <div class="shutter-inner">
+            <span v-if="countdown > 0" class="countdown-text">{{ countdown }}</span>
+          </div>
+        </button>
+
+        <!-- Empty spacer to keep shutter centered -->
+        <div class="spacer" style="width: 56px;"></div>
+      </div>
+
+      <!-- Shutter Flash -->
+      <div class="shutter-flash" :class="{ active: flashActive }"></div>
     </div>
   </PhoneWrapper>
 </template>
@@ -80,13 +103,26 @@
 <script setup>
 import PhoneWrapper from './PhoneWrapper.vue'
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { lua } from '@/bridge'
 import { useEvents } from '@/services/events'
 
+const router = useRouter()
 const events = useEvents()
+
 const taking = ref(false)
 const previewSrc = ref(null)
 const orientation = ref('portrait')
+const latestPhoto = ref(null)
+const flashActive = ref(false)
+const countdown = ref(0)
+
+// UI State
+const flashMode = ref('off') // off, on, torch
+const showGrid = ref(false)
+const timer = ref(0) // 0, 3, 10
+const focusing = ref(false)
+const focusPos = ref({ x: 0, y: 0 })
 
 function onPreviewFrame(dataUrl) {
   if (dataUrl) previewSrc.value = dataUrl
@@ -98,22 +134,132 @@ function setOrientation(value) {
   lua.gameplay_phoneCamera.setPreviewOrientation(value)
 }
 
+function toggleFlash() {
+  const modes = ['off', 'on', 'torch']
+  flashMode.value = modes[(modes.indexOf(flashMode.value) + 1) % modes.length]
+  
+  // Tell Lua to turn the persistent torch on or off
+  lua.gameplay_phoneCamera.setTorchMode(flashMode.value === 'torch')
+}
+
+function toggleGrid() {
+  showGrid.value = !showGrid.value
+}
+
+function toggleTimer() {
+  const times = [0, 3, 10]
+  timer.value = times[(times.indexOf(timer.value) + 1) % times.length]
+}
+
+function triggerFocus(e) {
+  if (focusing.value) return
+  const rect = e.currentTarget.getBoundingClientRect()
+  focusPos.value = {
+    x: e.clientX - rect.left,
+    y: e.clientY - rect.top
+  }
+  focusing.value = true
+  setTimeout(() => {
+    focusing.value = false
+  }, 1000)
+}
+
+function flipCamera(e) {
+  const btn = e.currentTarget
+  btn.style.transform = 'rotate(180deg)'
+  setTimeout(() => {
+    btn.style.transition = 'none'
+    btn.style.transform = 'rotate(0deg)'
+    setTimeout(() => {
+      btn.style.transition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+    }, 50)
+  }, 400)
+}
+
+function openGallery() {
+  router.push({ name: 'phone-gallery' })
+}
+
+async function fetchLatestPhoto() {
+  try {
+    const list = await lua.gameplay_phoneCamera.getPhotoList()
+    if (list && list.length > 0) {
+      // The list is sorted newest first, so we take the first one
+      const latest = list[0]
+      latestPhoto.value = await lua.gameplay_phoneCamera.getPhotoAsDataUrl(latest.filename)
+    }
+  } catch (e) {
+    console.error('Failed to fetch latest photo', e)
+  }
+}
+
 onMounted(() => {
   events.on('PhoneCameraPreviewFrame', onPreviewFrame)
   lua.gameplay_phoneCamera.startPreview()
   lua.gameplay_phoneCamera.setPreviewOrientation(orientation.value)
+  fetchLatestPhoto()
+  
+  // Ensure torch state matches UI state on mount
+  if (flashMode.value === 'torch') {
+    lua.gameplay_phoneCamera.setTorchMode(true)
+  }
+  
+  // Initial focus animation in center
+  setTimeout(() => {
+    const viewfinder = document.querySelector('.viewfinder')
+    if (viewfinder) {
+      focusPos.value = {
+        x: viewfinder.clientWidth / 2,
+        y: viewfinder.clientHeight / 2
+      }
+      focusing.value = true
+      setTimeout(() => { focusing.value = false }, 1000)
+    }
+  }, 500)
 })
 
 onUnmounted(() => {
   events.off('PhoneCameraPreviewFrame', onPreviewFrame)
   lua.gameplay_phoneCamera.stopPreview()
+  
+  // Ensure torch is turned off when leaving the app
+  if (flashMode.value === 'torch') {
+    lua.gameplay_phoneCamera.setTorchMode(false)
+  }
 })
 
 async function takePhoto() {
-  if (taking.value) return
+  if (taking.value || countdown.value > 0) return
+  
+  if (timer.value > 0) {
+    countdown.value = timer.value
+    
+    // Simple countdown loop
+    while (countdown.value > 0) {
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      countdown.value--
+    }
+  }
+
   taking.value = true
+  
+  // Determine if flash should be used
+  let useFlash = false
+  if (flashMode.value === 'on') {
+    useFlash = true
+  } else if (flashMode.value === 'torch') {
+    // If torch is on, we don't need to spawn a temporary flash, the torch is already lighting the scene
+    useFlash = false 
+  }
+
+  // Trigger UI flash effect
+  flashActive.value = true
+  setTimeout(() => { flashActive.value = false }, 150)
+
   try {
-    await lua.gameplay_phoneCamera.takePhoto(orientation.value)
+    await lua.gameplay_phoneCamera.takePhoto(orientation.value, useFlash)
+    // Refresh thumbnail after taking photo
+    setTimeout(fetchLatestPhoto, 500)
   } catch (e) {
     console.error('Camera takePhoto failed', e)
   } finally {
@@ -123,323 +269,336 @@ async function takePhoto() {
 </script>
 
 <style scoped lang="scss">
-/* Design tokens – in-game phone camera feel */
-$glass-bg: rgba(12, 12, 18, 0.82);
-$glass-border: rgba(255, 255, 255, 0.08);
-$glass-blur: 12px;
-$accent: rgba(255, 255, 255, 0.95);
-$accent-dim: rgba(255, 255, 255, 0.5);
-$viewfinder-bg: #0c0e12;
-$corner-color: rgba(255, 255, 255, 0.35);
 $ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 $ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+$glass-bg: rgba(0, 0, 0, 0.4);
+$glass-blur: 20px;
 
-.camera-container {
+.camera-app {
   position: relative;
   width: 100%;
   height: 100%;
-  min-height: 100%;
-  box-sizing: border-box;
+  background: #000;
+  color: #fff;
   overflow: hidden;
-  background: $viewfinder-bg;
+  display: flex;
+  flex-direction: column;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 /* Viewfinder */
-.camera-viewfinder {
+.viewfinder {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  background: $viewfinder-bg;
-
-  &.portrait .viewfinder-frame {
-    width: 100%;
-    height: 100%;
-  }
-
-  &.landscape {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  &.landscape .viewfinder-frame {
-    width: 100%;
-    max-width: min(100%, 133.333vh);
-    height: 0;
-    padding-bottom: 75%;
-    position: relative;
-  }
-
-  &.landscape .viewfinder-image,
-  &.landscape .viewfinder-placeholder {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-  }
-
-  .viewfinder-frame {
-    overflow: hidden;
-    background: $viewfinder-bg;
-    position: relative;
-    box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.4);
-  }
-
-  .viewfinder-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-
-  &.landscape .viewfinder-image {
-    object-fit: cover;
-  }
-
-  .viewfinder-placeholder {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    color: $accent-dim;
-    font-size: 0.8rem;
-  }
-
-  .loading-dots {
-    display: flex;
-    gap: 6px;
-    span {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: $accent-dim;
-      animation: dotPulse 1.2s $ease-in-out infinite;
-      &:nth-child(2) { animation-delay: 0.15s; }
-      &:nth-child(3) { animation-delay: 0.3s; }
-    }
-  }
-
-  .loading-label {
-    letter-spacing: 0.02em;
-    opacity: 0.9;
-  }
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  z-index: 1;
 }
 
-/* Corner guides + vignette overlay */
-.viewfinder-overlay {
+.viewfinder-feed {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s $ease-out;
+}
+
+.camera-app.landscape .viewfinder-feed {
+  /* In landscape mode, we might want to show a letterboxed view or just keep it cover */
+  object-fit: contain;
+  background: #000;
+}
+
+.viewfinder-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #111;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Grid Overlay */
+.grid-overlay {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(
-    ellipse 80% 80% at 50% 50%,
-    transparent 60%,
-    rgba(0, 0, 0, 0.25) 100%
-  );
-
-  .corner {
-    position: absolute;
-    width: 24px;
-    height: 24px;
-    border-color: $corner-color;
-    border-style: solid;
-    border-width: 0;
-    opacity: 0.9;
-  }
-  .tl { top: 12px; left: 12px; border-top-width: 2px; border-left-width: 2px; border-radius: 4px 0 0 0; }
-  .tr { top: 12px; right: 12px; border-top-width: 2px; border-right-width: 2px; border-radius: 0 4px 0 0; }
-  .bl { bottom: 12px; left: 12px; border-bottom-width: 2px; border-left-width: 2px; border-radius: 0 0 0 4px; }
-  .br { bottom: 12px; right: 12px; border-bottom-width: 2px; border-right-width: 2px; border-radius: 0 0 4px 0; }
+  z-index: 2;
 }
 
-/* Shutter flash */
-.shutter-flash {
+.grid-line {
   position: absolute;
-  inset: 0;
-  background: rgba(255, 255, 255, 0.9);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.08s ease-out;
-
-  &.active {
-    animation: shutterFlash 0.25s $ease-out forwards;
-  }
+  background: rgba(255, 255, 255, 0.3);
 }
 
-/* Top bar – glass; extra top padding clears status bar, buttons sit in the space below */
-.camera-top-bar {
+.h-line { width: 100%; height: 1px; left: 0; }
+.h-line.top { top: 33.33%; }
+.h-line.bottom { top: 66.66%; }
+
+.v-line { height: 100%; width: 1px; top: 0; }
+.v-line.left { left: 33.33%; }
+.v-line.right { left: 66.66%; }
+
+/* Focus Ring */
+.focus-ring {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  margin-top: -30px;
+  margin-left: -30px;
+  border: 2px solid #ffd700;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 3;
+  animation: focusPulse 1s $ease-out forwards;
+  box-shadow: 0 0 4px rgba(0,0,0,0.5);
+}
+
+/* Top Controls */
+.top-controls {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  min-height: 48px;
-  padding-top: calc(36px + 0.5em + 0.6em);
-  padding-left: 16px;
-  padding-right: 16px;
-  padding-bottom: 10px;
-  background: $glass-bg;
-  backdrop-filter: blur($glass-blur);
-  -webkit-backdrop-filter: blur($glass-blur);
-  border-bottom: 1px solid $glass-border;
+  padding: 64px 24px 16px; /* Increased top padding to clear the phone's back button */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 10;
+  pointer-events: none; /* Let clicks pass through the empty space */
+}
+
+.icon-btn {
+  pointer-events: auto; /* Re-enable clicks on the actual buttons */
+  background: rgba(0, 0, 0, 0.3);
+  border: none;
+  color: #fff;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: barSlideDown 0.35s $ease-out;
-}
-
-.orientation-toggle {
-  display: flex;
-  gap: 4px;
-  padding: 4px;
-  background: rgba(0, 0, 0, 0.35);
-  border-radius: 12px;
-  border: 1px solid $glass-border;
-}
-
-.orientation-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  border-radius: 8px;
-  border: none;
-  background: transparent;
-  color: $accent-dim;
-  font-size: 0.8rem;
-  font-weight: 500;
-  letter-spacing: 0.02em;
   cursor: pointer;
-  transition: color 0.2s $ease-out, background 0.2s $ease-out, transform 0.15s $ease-out;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: background 0.2s, transform 0.2s;
+  position: relative;
 
-  .orientation-icon {
-    font-size: 0.9em;
-    opacity: 0.8;
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
   }
+  &:active {
+    transform: scale(0.9);
+  }
+}
+
+.timer-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #ffd700;
+  color: #000;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 2px 4px;
+  border-radius: 8px;
+}
+
+/* Orientation Pill */
+.orientation-pill {
+  position: absolute;
+  bottom: 140px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 4px;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.pill-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 6px 16px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s $ease-out;
 
   &.active {
-    background: rgba(255, 255, 255, 0.18);
-    color: $accent;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  }
-
-  &:hover:not(.active) {
-    color: rgba(255, 255, 255, 0.85);
-    background: rgba(255, 255, 255, 0.06);
-  }
-
-  &:active {
-    transform: scale(0.98);
+    background: #fff;
+    color: #000;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
   }
 }
 
-/* Bottom bar – glass */
-.camera-bottom-bar {
+/* Bottom Controls */
+.bottom-controls {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  min-height: 88px;
-  background: $glass-bg;
-  backdrop-filter: blur($glass-blur);
-  -webkit-backdrop-filter: blur($glass-blur);
-  border-top: 1px solid $glass-border;
+  height: 120px;
+  background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 16px;
-  animation: barSlideUp 0.35s $ease-out;
+  justify-content: space-around;
+  padding: 0 24px 24px;
+  z-index: 10;
 }
 
-.capture-btn {
+.gallery-thumb {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.2s, border-color 0.2s;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &:hover {
+    transform: scale(1.05);
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.empty-thumb {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, #333, #555);
+}
+
+.shutter-btn {
   position: relative;
-  width: 64px;
-  height: 64px;
+  width: 80px;
+  height: 80px;
   border: none;
   background: transparent;
   cursor: pointer;
   padding: 0;
-  transition: transform 0.2s $ease-out, opacity 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-  .capture-ring {
+  .shutter-ring {
     position: absolute;
-    inset: -4px;
+    inset: 0;
     border-radius: 50%;
-    border: 3px solid rgba(255, 255, 255, 0.5);
-    background: transparent;
-    transition: border-color 0.2s ease, transform 0.2s $ease-out;
+    border: 4px solid #fff;
+    transition: transform 0.2s $ease-out;
   }
 
-  .capture-inner {
-    position: absolute;
-    inset: 6px;
+  .shutter-inner {
+    width: 64px;
+    height: 64px;
     border-radius: 50%;
     background: #fff;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
-    transition: transform 0.2s $ease-out, box-shadow 0.2s ease;
+    transition: all 0.2s $ease-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
-  &:hover:not(:disabled):not(.taking) {
-    transform: scale(1.06);
-    .capture-ring { border-color: rgba(255, 255, 255, 0.8); }
-    .capture-inner { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4); }
+  .countdown-text {
+    color: #000;
+    font-size: 24px;
+    font-weight: bold;
+    animation: popIn 0.3s $ease-out;
   }
 
-  &:active:not(:disabled):not(.taking) {
-    transform: scale(0.94);
-    .capture-inner { transform: scale(0.92); box-shadow: 0 1px 6px rgba(0, 0, 0, 0.4); }
+  &:hover:not(:disabled) {
+    .shutter-inner {
+      transform: scale(0.95);
+    }
   }
 
-  &:disabled,
-  &.taking {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: scale(0.98);
+  &:active:not(:disabled), &.taking {
+    .shutter-inner {
+      transform: scale(0.85);
+      background: #e0e0e0;
+    }
+    .shutter-ring {
+      transform: scale(1.05);
+    }
   }
 }
 
-/* Transitions */
-.preview-fade-enter-active,
-.preview-fade-leave-active {
-  transition: opacity 0.2s $ease-out;
+.flip-btn {
+  width: 56px;
+  height: 56px;
+  background: rgba(255, 255, 255, 0.15);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), background 0.2s;
 }
-.preview-fade-enter-from,
-.preview-fade-leave-to {
+
+/* Shutter Flash */
+.shutter-flash {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 100;
+  transition: opacity 0.15s ease-out;
+
+  &.active {
+    opacity: 1;
+    transition: none;
+  }
+}
+
+/* Animations */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
 }
 
-@keyframes dotPulse {
-  0%, 100% { opacity: 0.4; transform: scale(0.9); }
-  50% { opacity: 1; transform: scale(1.1); }
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
-@keyframes shutterFlash {
-  0% { opacity: 0.9; }
-  40% { opacity: 0.9; }
-  100% { opacity: 0; }
+@keyframes focusPulse {
+  0% { transform: scale(1.5); opacity: 0; }
+  20% { transform: scale(1); opacity: 1; }
+  80% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1.1); opacity: 0; }
 }
 
-@keyframes barSlideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes barSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+@keyframes popIn {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
 }
 </style>

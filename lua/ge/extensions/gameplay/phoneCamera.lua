@@ -177,9 +177,48 @@ function M.getPhotoAsDataUrl(filename)
   return 'data:' .. mimeType .. ';base64,' .. b64
 end
 
+local persistentFlashLight = nil
+
+local function destroyPersistentFlash()
+  if persistentFlashLight then
+    persistentFlashLight:delete()
+    persistentFlashLight = nil
+  end
+end
+
+local function updatePersistentFlash()
+  if persistentFlashLight and core_camera then
+    local pos = core_camera.getPosition()
+    if pos then
+      persistentFlashLight:setPosition(pos)
+    end
+  end
+end
+
+function M.setTorchMode(enabled)
+  if enabled then
+    if not persistentFlashLight then
+      persistentFlashLight = createObject('PointLight')
+      if persistentFlashLight then
+        local pos = core_camera.getPosition()
+        if pos then persistentFlashLight:setPosition(pos) end
+        persistentFlashLight.radius = 50
+        persistentFlashLight.brightness = 0.55 -- Slightly dimmer for continuous torch
+        persistentFlashLight.color = Point4F(1, 1, 1, 1)
+        persistentFlashLight.castShadows = true
+        persistentFlashLight:registerObject('phoneCameraTorch')
+      end
+    end
+  else
+    destroyPersistentFlash()
+  end
+end
+
 -- Take photo using render view so saved image matches orientation (landscape or portrait).
 local function takePhotoWithOrientationJob(job)
   local orientation = (job.args[1] == 'portrait') and 'portrait' or 'landscape'
+  local useFlash = job.args[2] == true
+  
   ensurePhotoDir()
   local photoDir = getPhotoDir()
   local pos = core_camera.getPosition()
@@ -188,6 +227,25 @@ local function takePhotoWithOrientationJob(job)
     guihooks.trigger('toastrMsg', { type = 'error', title = 'Camera', msg = 'Could not take photo.' })
     return
   end
+
+  local tempFlashLight = nil
+  -- Only create a temporary flash if the persistent torch isn't already on
+  if useFlash and not persistentFlashLight then
+    -- Create a temporary point light for the flash
+    tempFlashLight = createObject('PointLight')
+    if tempFlashLight then
+      tempFlashLight:setPosition(pos)
+      tempFlashLight.radius = 50
+      tempFlashLight.brightness = 0.3
+      tempFlashLight.color = Point4F(1, 1, 1, 1)
+      tempFlashLight.castShadows = true
+      tempFlashLight:registerObject('phoneCameraFlash')
+      
+      -- Wait a tiny bit for the light to render
+      job.sleep(0.05)
+    end
+  end
+
   local res = (orientation == 'portrait') and PHOTO_PORTRAIT or PHOTO_LANDSCAPE
   local timestamp = nextPhotoStamp()
   local pathNoExt = photoDir .. PHOTO_PREFIX .. timestamp
@@ -202,6 +260,9 @@ local function takePhotoWithOrientationJob(job)
     screenshotDelay = 0.2
   }
   local function onSaved()
+    if tempFlashLight then
+      tempFlashLight:delete()
+    end
     guihooks.trigger('toastrMsg', {
       type = 'success',
       title = 'Photo saved',
@@ -212,8 +273,8 @@ local function takePhotoWithOrientationJob(job)
 end
 
 -- Called from the phone UI (Vue) when the user taps "Take Photo". orientation: 'landscape' | 'portrait'
-function M.takePhoto(orientation)
-  core_jobsystem.create(takePhotoWithOrientationJob, nil, orientation or 'landscape')
+function M.takePhoto(orientation, useFlash)
+  core_jobsystem.create(takePhotoWithOrientationJob, nil, orientation or 'landscape', useFlash)
 end
 
 -- Live preview: capture current camera view and send as data URL to UI.
@@ -293,6 +354,7 @@ end
 function M.stopPreview()
   previewActive = false
   previewBusy = false
+  destroyPersistentFlash()
 end
 
 function M.setPreviewOrientation(orientation)
@@ -308,6 +370,9 @@ function M.onUpdate(dt)
     previewTimer = 0
     capturePreviewFrame()
   end
+  
+  -- Keep the persistent torch attached to the camera
+  updatePersistentFlash()
 end
 
 local function onExtensionLoaded()

@@ -1,19 +1,8 @@
 <template>
-  <PhoneWrapper app-name="Gallery">
+  <PhoneWrapper app-name="Gallery" :custom-back="handleBack">
     <!-- Full-screen photo view -->
     <Transition name="fullscreen">
       <div v-if="selectedPhoto" class="gallery-fullscreen" @click="closeFullScreen">
-        <div class="fullscreen-bar">
-          <button
-            type="button"
-            class="fullscreen-back"
-            @click.stop="closeFullScreen"
-            aria-label="Back to gallery"
-          >
-            <BngIcon :type="icons.general?.arrow_small_left || 'general/arrow_small-left'" class="back-icon" />
-            <span>Back</span>
-          </button>
-        </div>
         <div class="fullscreen-image-wrap" @click.stop>
           <Transition name="photo-fade" mode="out-in">
             <img
@@ -35,7 +24,7 @@
 
     <!-- Grid view -->
     <Transition name="grid-fade" mode="out-in">
-      <div v-if="!selectedPhoto" class="gallery-container">
+      <div v-show="!selectedPhoto" class="gallery-container">
         <header class="gallery-header">
           <div class="header-content">
             <div class="header-icon-wrap">
@@ -76,7 +65,7 @@
           <p class="empty-hint">Take photos with the Camera app</p>
         </div>
 
-        <div v-else class="gallery-grid">
+        <div v-else class="gallery-grid" ref="gridRef">
           <button
             v-for="(photo, index) in photos"
             :key="photo.filename"
@@ -138,7 +127,7 @@
 <script setup>
 import PhoneWrapper from './PhoneWrapper.vue'
 import { BngIcon, icons } from '@/common/components/base'
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { lua } from '@/bridge'
 
 const photos = ref([])
@@ -148,8 +137,22 @@ const fullScreenDataUrl = ref(null)
 const deleteMode = ref(false)
 const selectedForDelete = ref(new Set())
 const showDeleteConfirm = ref(false)
+const gridRef = ref(null)
+let savedScrollTop = 0
 let thumbnailBatchTimer = null
 let thumbnailsCancelled = false
+
+const handleBack = () => {
+  if (selectedPhoto.value) {
+    closeFullScreen()
+    return true
+  }
+  if (deleteMode.value) {
+    exitDeleteMode()
+    return true
+  }
+  return false
+}
 
 const BATCH_SIZE = 8
 const BATCH_DELAY_MS = 100
@@ -222,6 +225,9 @@ function loadThumbnailsInBatches() {
 
 async function openPhoto(photo) {
   if (deleteMode.value) return
+  if (gridRef.value) {
+    savedScrollTop = gridRef.value.scrollTop
+  }
   selectedPhoto.value = photo
   const targetFilename = photo.filename
   if (photo.dataUrl) {
@@ -243,6 +249,11 @@ async function openPhoto(photo) {
 function closeFullScreen() {
   selectedPhoto.value = null
   fullScreenDataUrl.value = null
+  nextTick(() => {
+    if (gridRef.value) {
+      gridRef.value.scrollTop = savedScrollTop
+    }
+  })
 }
 
 onMounted(() => {
@@ -703,53 +714,12 @@ $status-bar-height: calc(36px + 0.5em + 0.6em);
   position: absolute;
   inset: 0;
   background: #060608;
-  z-index: 10;
+  z-index: 5;
   display: flex;
   flex-direction: column;
   align-items: stretch;
   box-sizing: border-box;
   padding-top: $status-bar-height;
-}
-
-.fullscreen-bar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  min-height: 48px;
-  padding: 10px 14px;
-  background: $glass-bg;
-  backdrop-filter: blur($glass-blur);
-  -webkit-backdrop-filter: blur($glass-blur);
-  border-bottom: 1px solid $glass-border;
-  z-index: 2;
-}
-
-.fullscreen-back {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-  background: $surface;
-  border: 1px solid $glass-border;
-  border-radius: 10px;
-  color: $accent;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s $ease-out, transform 0.15s $ease-out;
-
-  .back-icon {
-    font-size: 1.1em;
-  }
-
-  &:hover {
-    background: $surface-hover;
-  }
-
-  &:active {
-    transform: scale(0.98);
-  }
 }
 
 .fullscreen-image-wrap {
@@ -758,7 +728,7 @@ $status-bar-height: calc(36px + 0.5em + 0.6em);
   align-items: center;
   justify-content: center;
   min-height: 0;
-  padding: 56px 12px 12px;
+  padding: 12px;
 }
 
 .fullscreen-image {
