@@ -232,6 +232,34 @@ local function getDeliveryDelay(distance)
   return vehicleDeliveryDelay
 end
 
+local function getVehicleBuyMultiplier()
+  if career_modules_globalEconomy and career_modules_globalEconomy.getVehicleBuyMultiplier then
+    return career_modules_globalEconomy.getVehicleBuyMultiplier()
+  end
+  return 1.0
+end
+
+local function applyPurchaseAdjustedMarketValue(vehicleInfo)
+  if not vehicleInfo then return end
+  local vehicleBuyMult = getVehicleBuyMultiplier()
+  local marketValue = vehicleInfo.marketValueBase or vehicleInfo.marketValue or vehicleInfo.Value
+  vehicleInfo.marketValueAdjusted = math.floor((marketValue or 0) * vehicleBuyMult + 0.5)
+
+  local valueBase = vehicleInfo.valueBase
+  if not valueBase then
+    if vehicleInfo.marketValue and vehicleInfo.negotiationPersonality and vehicleInfo.negotiationPersonality.priceMultiplier then
+      valueBase = vehicleInfo.marketValue * vehicleInfo.negotiationPersonality.priceMultiplier
+    else
+      valueBase = vehicleInfo.Value
+    end
+  end
+  if valueBase then
+    vehicleInfo.valueAdjusted = getRoundedPrice(valueBase * vehicleBuyMult, vehicleInfo.priceRoundingType or "default")
+  else
+    vehicleInfo.valueAdjusted = vehicleInfo.Value
+  end
+end
+
 local function getOrgLevelData(org, offset)
   if not org then
     return nil
@@ -367,6 +395,12 @@ local function getShoppingData()
   local data = {}
 
   local unsoldVehicles, soldVehiclesResult = convertKeysToStrings(vehiclesInShop)
+  for _, vehicleInfo in ipairs(unsoldVehicles) do
+    applyPurchaseAdjustedMarketValue(vehicleInfo)
+  end
+  for _, vehicleInfo in ipairs(soldVehiclesResult) do
+    applyPurchaseAdjustedMarketValue(vehicleInfo)
+  end
   data.vehiclesInShop = unsoldVehicles
   data.soldVehicles = soldVehiclesResult
   data.uiDealershipsData = getUiDealershipsData(unsoldVehicles)
@@ -1170,10 +1204,21 @@ local function updateVehicleList(fromScratch)
 
       -- Store market value before markup
       randomVehicleInfo.marketValue = getRandomizedPrice(baseValue, range)
+      randomVehicleInfo.marketValueBase = randomVehicleInfo.marketValue
+      randomVehicleInfo.priceRoundingType = seller.priceRoundingType
 
       -- Apply price multiplier from negotiation personality
       local priceMultiplier = (randomVehicleInfo.negotiationPersonality and randomVehicleInfo.negotiationPersonality.priceMultiplier) or 1
-      randomVehicleInfo.Value = getRoundedPrice(randomVehicleInfo.marketValue * priceMultiplier, seller.priceRoundingType)
+      randomVehicleInfo.valueBase = randomVehicleInfo.marketValue * priceMultiplier
+      randomVehicleInfo.priceMultiplier = priceMultiplier
+      
+      -- Apply vehicle market buy multiplier from economy
+      local vehicleBuyMult = 1.0
+      if career_modules_globalEconomy and career_modules_globalEconomy.getVehicleBuyMultiplier then
+        vehicleBuyMult = career_modules_globalEconomy.getVehicleBuyMultiplier()
+      end
+      
+      randomVehicleInfo.Value = getRoundedPrice(randomVehicleInfo.valueBase * vehicleBuyMult, seller.priceRoundingType)
 
       randomVehicleInfo.negotiationPossible = not onlyStarterVehicles
       randomVehicleInfo.shopId = generateShopId()
@@ -1628,6 +1673,8 @@ local function sendPurchaseDataToUi()
   vehicleShopInfo.shopId = purchaseData.shopId
   vehicleShopInfo.niceName = vehicleShopInfo.Brand .. " " .. vehicleShopInfo.Name
   vehicleShopInfo.deliveryDelay = getDeliveryDelay(vehicleShopInfo.distance)
+  applyPurchaseAdjustedMarketValue(vehicleShopInfo)
+  vehicleShopInfo.Value = vehicleShopInfo.valueAdjusted or vehicleShopInfo.Value
   purchaseData.vehicleInfo = vehicleShopInfo
 
   local tradeInValue = purchaseData.tradeInVehicleInfo and purchaseData.tradeInVehicleInfo.Value or 0

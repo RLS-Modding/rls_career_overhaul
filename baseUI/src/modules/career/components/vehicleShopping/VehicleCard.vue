@@ -23,17 +23,17 @@
             :iconType="icons.bus"
             :valueLabel="vehicle.Drivetrain" />
           <div v-if="vehicle.soldFor" class="price">
-            <div class="was">Was: <BngUnit :money="vehicle.Value" /></div>
+            <div class="was">Was: <BngUnit :money="adjustedValue" /></div>
             <div class="sold">Sold for: <BngUnit class="car-price" :money="vehicle.soldFor" /></div>
             <div class="delta" :class="soldDeltaClass">{{ soldDeltaPrefix }}{{ soldPercent.toFixed(1) }}% from asking</div>
-            <div v-if="vehicle.marketValue" class="market">Market: <BngUnit :money="vehicle.marketValue" /></div>
+              <div v-if="vehicle.marketValue" class="market">Market: <BngUnit :money="vehicle.marketValueAdjusted || vehicle.marketValue" /></div>
           </div>
           <div v-else class="price">
-            <div v-if="vehicle.Value <= vehicleShoppingData.playerAttributes.money.value"><BngUnit class="car-price" :money="vehicle.Value" />*</div>
-            <div v-else style="color: rgb(245, 29, 29)"><BngUnit class="car-price" :money="vehicle.Value" />* Insufficient Funds</div>
-            <div v-if="vehicle.marketValue" class="market">Market: <BngUnit :money="vehicle.marketValue" /></div>
+            <div v-if="!hasInsufficientFunds"><BngUnit class="car-price" :money="adjustedValue" />*</div>
+            <div v-else style="color: rgb(245, 29, 29)"><BngUnit class="car-price" :money="adjustedValue" />* Insufficient Funds</div>
+              <div v-if="vehicle.marketValue" class="market">Market: <BngUnit :money="vehicle.marketValueAdjusted || vehicle.marketValue" /></div>
+            </div>
           </div>
-        </div>
       </div>
       <div class="car-data">
         <BngPropVal v-if="vehicle.Power != undefined" :iconType="icons.powerGauge04" :keyLabel="'Power:'" :valueLabel="units.buildString('power', vehicle.Power, 0)" />
@@ -138,8 +138,15 @@ const props = defineProps({
   vehicle: Object,
 })
 
+const adjustedValue = computed(() => props.vehicle?.valueAdjusted || props.vehicle?.Value || 0)
+
+const hasInsufficientFunds = computed(() => {
+  if (props.vehicleShoppingData.cheatsMode) return false
+  return adjustedValue.value > props.vehicleShoppingData.playerAttributes.money.value
+})
+
 const soldPercent = computed(() => {
-  const asking = props.vehicle?.Value
+  const asking = adjustedValue.value
   const sold = props.vehicle?.soldFor
   if (!asking || !sold) return 0
   return ((sold - asking) / asking) * 100

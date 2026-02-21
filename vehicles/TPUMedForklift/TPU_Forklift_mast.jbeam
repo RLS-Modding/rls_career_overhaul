@@ -1,0 +1,1155 @@
+{
+"WHE_ForkliftMast": {
+    "information":{
+        "authors":"TrackpadUser",
+        "name":"2500mm Simplex Mast",
+        "value":10000
+    },
+    "slotType":"WHE_ForkliftMast",
+    "flexbodies":[
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        {"rotation":{"x":0, "y":0, "z":0}, "translation":{"x":0, "y":0, "z":0}},
+        //body
+        {"deformGroup":""},
+        ["MFL_OuterMast", ["OuterMast"]],
+        ["MFL_OuterMastTopRoller", ["OuterMast"]],
+        ["MFL_MastStickers", ["OuterMast"]],
+		
+        ["MFL_InnerMast", ["InnerMast"]],
+        ["MFL_Pulley", ["InnerMast"]],
+        ["MFL_OuterMastLowerRoller", ["InnerMast"]],
+				
+        ["MFL_LiftCylOuter", ["OuterMast"]],
+        ["MFL_LiftCylInner", ["InnerMast"]],
+		
+        ["MFL_TiltCylInner", ["TiltInnerCyl"]],
+        ["MFL_TiltCylOuter", ["TiltOuterCyl"]]
+	],
+    "slots":[
+        ["type", "default", "description"],
+		//Front wheels
+        ["ForkLift_ForkFrame","ForkLift_ForkFrame", "Forks"]
+		],
+    "nodes":[
+        ["id", "posX", "posY", "posZ"],
+        {"selfCollision":true},
+        {"collision":true},
+        {"nodeMaterial":"|NM_METAL"},
+        {"frictionCoef":0.6},
+		
+        {"nodeWeight":25},
+		//OuterMast Main structure
+        {"group":"OuterMast"},
+        ["oma1r", -0.37, -1.18, -0.08],
+        ["oma1l", 0.37, -1.18,  -0.08],
+        ["oma2r", -0.37, -0.85,  -0.08],
+        ["oma2l", 0.37, -0.85,  -0.08],
+        {"selfCollision":false},
+
+        ["oma1tr", -0.37, -1.18, 1.91],
+        ["oma1tl", 0.37, -1.18, 1.91],
+        ["oma2tr", -0.37, -0.85, 1.91],
+        ["oma2tl", 0.37, -0.85, 1.91],
+		
+		//OuterMast attachements
+        ["omatiltr", -0.37, -1.18, 0.61],
+        ["omatiltl", 0.37, -1.18, 0.61],
+		
+		//Inner Mast Main structure
+        {"nodeWeight":10},
+        {"group":"InnerMast"},
+        ["ima1r", -0.37, -1.18, 0.21],
+        ["ima1l", 0.37, -1.18,  0.21],
+        ["ima2r", -0.37, -0.85,  0.21],
+        ["ima2l", 0.37, -0.85,  0.21],
+        {"selfCollision":true},
+		
+        ["ima1tr", -0.37, -1.18, 1.93],
+        ["ima1tl", 0.37, -1.18, 1.93],
+        ["ima2tr", -0.37, -0.85, 1.93],
+        ["ima2tl", 0.37, -0.85, 1.93],
+        {"selfCollision":false},
+
+		
+		//Fork frame slider
+        {"group":"ForkFrame"},
+        {"nodeWeight":15},
+        {"selfCollision":false},
+        ["fma1r", -0.37, -1.18, -0.04],
+        ["fma1l", 0.37, -1.18,  -0.04],
+        ["fma2r", -0.37, -0.85,  -0.04],
+        ["fma2l", 0.37, -0.85,  -0.04],
+        ["fma1tr", -0.37, -1.18, 0.5],
+        ["fma1tl", 0.37, -1.18,  0.5],
+        ["fma2tr", -0.37, -0.85,  0.5],
+        ["fma2tl", 0.37, -0.85,  0.5],
+
+		//compass mechanism thingy for the lift to animate properly
+        {"selfCollision":false},
+        {"collision":false},
+        {"nodeWeight":10},
+		["forkcomp1l", 2.0, -1.18, 0.21],
+		["forkcomp1r", -2.0, -1.18, 0.21],
+		["forkcomp2l", 2.0,  -0.85, 0.21],
+		["forkcomp2r", -2.0,  -0.85, 0.21],
+
+		//dummy tilt cylinder
+        {"collision":true},
+        {"nodeWeight":2},
+        {"group":"TiltInnerCyl"},
+		["tilt1l", 0.39, -1.096, 0.632],
+		["tilt1r", -0.39, -1.096, 0.632],
+		
+        {"group":"TiltOuterCyl"},
+		["tilt2l", 0.39, -0.828, 0.566],
+		["tilt2r", -0.39, -0.828, 0.566],
+		
+        {"group":"TiltInnerCyl"},
+		["tilt4l", 0.39, -0.705, 0.536],
+		["tilt4r", -0.39, -0.705, 0.536],
+		
+        {"group":"TiltOuterCyl"},
+		["tilt3l", 0.39, -0.558, 0.5],
+		["tilt3r", -0.39, -0.558, 0.5],
+		//lift chain flexbody nodes
+        {"nodeWeight":2},
+        {"group":"LiftChain"},
+		["LCFixedBaseL", 0.186, -0.96, 1.636],
+		["LCFixedBaseR", -0.186, -0.96, 1.636],
+		["LCFixedPul1L", 0.186, -0.96, 1.802],
+		["LCFixedPul1R", -0.186, -0.96, 1.802],
+		["LCFixedPul2L", 0.186, -1.058, 1.89],
+		["LCFixedPul2R", -0.186, -1.058, 1.89],
+		["LCFixedPul3L", 0.186, -1.15, 1.8],
+		["LCFixedPul3R", -0.186, -1.15, 1.8],
+        {"group":""},
+        {"selfCollision":true}
+	],    
+	"rails": {
+		//main structural rails
+		"Mast1R":{"links:":["oma1r", "ima1tr"], "looped":false, "capped":true},
+		"Mast1L":{"links:":["oma1l", "ima1tl"], "looped":false, "capped":true},
+		"Mast2R":{"links:":["oma2r", "ima2tr"], "looped":false, "capped":true},
+		"Mast2L":{"links:":["oma2l", "ima2tl"], "looped":false, "capped":true},
+		//tilt cylinders
+		"TiltCylr":{"links:":["tilt1r", "tilt3r"], "looped":false, "capped":true},
+		"TiltCyll":{"links:":["tilt1l", "tilt3l"], "looped":false, "capped":true},
+
+		//Compass structure to lift the inner mast
+		"CompassFront":{"links:":["forkcomp1l", "forkcomp1r"], "looped":false, "capped":true},
+		"CompassRear":{"links:":["forkcomp2l", "forkcomp2r"], "looped":false, "capped":true}
+	},
+	"slidenodes": [ 
+		["id:", "railName", "attached", "fixToRail", "tolerance", "spring", "strength", "capStrength"],
+		//main structural rail connections
+		["ima1r", "Mast1R", true, true, 0, 5000000, 100000000, 345435],
+		["ima1l", "Mast1L", true, true, 0, 5000000, 100000000, 345435],
+		["ima2r", "Mast2R", true, true, 0, 5000000, 100000000, 345435],
+		["ima2l", "Mast2L", true, true, 0, 5000000, 100000000, 345435],
+		
+		["oma1tl", "Mast1L", true, true, 0, 5000000, 100000000, 345435],
+		["oma2tr", "Mast2R", true, true, 0, 5000000, 100000000, 345435],
+		["oma1tr", "Mast1R", true, true, 0, 5000000, 100000000, 345435],
+		["oma2tl", "Mast2L", true, true, 0, 5000000, 100000000, 345435],
+
+		["fma1r", "Mast1R", true, true, 0, 50000000, 100000000, 345435],
+		["fma1l", "Mast1L", true, true, 0, 50000000, 100000000, 345435],
+		["fma2r", "Mast2R", true, true, 0, 50000000, 100000000, 345435],
+		["fma2l", "Mast2L", true, true, 0, 50000000, 100000000, 345435],
+
+		["fma1tr", "Mast1R", true, true, 0, 50000000, 100000000, 345435],
+		["fma1tl", "Mast1L", true, true, 0, 50000000, 100000000, 345435],
+		["fma2tr", "Mast2R", true, true, 0, 50000000, 100000000, 345435],
+		["fma2tl", "Mast2L", true, true, 0, 50000000, 100000000, 345435],
+		
+		["omatiltr", "Mast1R", true, true, 0, 50000000, 100000000, 345435],
+		["omatiltl", "Mast1L", true, true, 0, 50000000, 100000000, 345435],
+		
+		//inner mast compass mechanism	
+		["ima1l","CompassFront", true, true, 0, 10000000, 100000000, 345435],
+		["ima1r","CompassFront", true, true, 0, 10000000, 100000000, 345435],
+		["ima2l","CompassRear", true, true, 0, 10000000, 100000000, 345435],
+		["ima2r","CompassRear", true, true, 0, 10000000, 100000000, 345435],
+
+		//dummy tilt cylinder
+		["tilt2r", "TiltCylr", true, true, 0, 5000000, 10000000, 345435],
+		["tilt2l", "TiltCyll", true, true, 0, 5000000, 10000000, 345435],
+		["tilt4r", "TiltCylr", true, true, 0, 5000000, 10000000, 345435],
+		["tilt4l", "TiltCyll", true, true, 0, 5000000, 10000000, 345435]
+	],
+	"controller": [
+	   ["fileName"],
+	   ["hydraulics/hydraulicsCombustionEngineControl", {"mode":"electricsRaiseAndConnect", "relevantElectrics":["tilt_input","lift_input"], "raisedIdleRPM": 700}]
+   ],
+   "powertrainHydros": [
+	   ["type",                "name",     "connectedPump",    "valveType",    "pistonDiameter", "shaftDiameter",  "maxSpeed", "minExtend",    "maxExtend",    "directionElectricsName",   "beamTags"],
+	   ["hydraulicCylinder",   "ram1",     "pump1",            "closed",         0.1,             0,                5.5,        0.53,          0.7,            "tilt_input",             ["tiltBeam"], {"dropInputThreshold":-0.001,"cylinderReliefPressure":30000000, "minimumDragCoef":10000000, "maximumDragCoef":100000000,"frictionCoef":1500}],
+	   ["hydraulicCylinder",   "ram3",     "pump1",            "drop",         0.07,             0,                1.5,        0.56,           3.00,            "lift_input",             ["forkBeam"], {"dropInputThreshold":-0.001,"cylinderReliefPressure":30000000, "minimumDragCoef":1000000, "maximumDragCoef":100000000,"frictionCoef":500,"cylinderReliefSlipSpeedLimit":1.0}]
+   ],
+    "beams":[
+        ["id1:", "id2:"],
+        {"breakGroupType":0},
+        {"deformLimitExpansion":1.2},
+        {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+        {"beamSpring":8001000,"beamDamp":350},
+        {"beamDeform":"FLT_MAX","beamStrength":"FLT_MAX"},
+
+		//outer mast main shape
+		["oma1r","oma2r"],
+		["oma1tr","oma2tr"],
+		["oma1l","oma2l"],
+		["oma1tl","oma2tl"],
+		
+		["oma1r","oma1l"],
+		["oma1tr","oma1tl"],
+		["oma2r","oma2l"],
+		["oma2tr","oma2tl"],
+		
+		["oma1r","oma1tr"],
+		["oma1l","oma1tl"],
+		["oma2r","oma2tr"],
+		["oma2l","oma2tl"],
+		
+		["oma1r","oma1tl"],
+		["oma1tr","oma1l"],
+		["oma2r","oma2tl"],
+		["oma2tr","oma2l"],
+		
+		["oma1r","oma2l"],
+		["oma1l","oma2r"],
+		["oma1tr","oma2tl"],
+		["oma1tl","oma2tr"],
+		
+		["oma1r","oma2tr"],
+		["oma1tr","oma2r"],
+		["oma1l","oma2tl"],
+		["oma1tl","oma2l"],
+		
+		//inner mast
+        {"beamSpring":2001000,"beamDamp":150},
+		["ima1r","ima2r"],
+		["ima1tr","ima2tr"],
+		["ima1l","ima2l"],
+		["ima1tl","ima2tl"],
+		
+		["ima1r","ima1l"],
+		["ima1tr","ima1tl"],
+		["ima2r","ima2l"],
+		["ima2tr","ima2tl"],
+		
+		["ima1r","ima1tr"],
+		["ima1l","ima1tl"],
+		["ima2r","ima2tr"],
+		["ima2l","ima2tl"],
+		
+		["ima1r","ima1tl"],
+		["ima1tr","ima1l"],
+		["ima2r","ima2tl"],
+		["ima2tr","ima2l"],
+		
+		["ima1r","ima2l"],
+		["ima1l","ima2r"],
+		["ima1tr","ima2tl"],
+		["ima1tl","ima2tr"],
+		
+		["ima1r","ima2tr"],
+		["ima1tr","ima2r"],
+		["ima1l","ima2tl"],
+		["ima1tl","ima2l"],
+		
+		//fork slider
+        {"beamSpring":5001000,"beamDamp":350},
+		["fma1r","fma2r"],
+		["fma1tr","fma2tr"],
+		["fma1l","fma2l"],
+		["fma1tl","fma2tl"],
+		
+		["fma1r","fma1l"],
+		["fma1tr","fma1tl"],
+		["fma2r","fma2l"],
+		["fma2tr","fma2tl"],
+		
+		["fma1r","fma1tr"],
+		["fma1l","fma1tl"],
+		["fma2r","fma2tr"],
+		["fma2l","fma2tl"],
+		
+		["fma1r","fma1tl"],
+		["fma1tr","fma1l"],
+		["fma2r","fma2tl"],
+		["fma2tr","fma2l"],
+		
+		["fma1r","fma2l"],
+		["fma1l","fma2r"],
+		["fma1tr","fma2tl"],
+		["fma1tl","fma2tr"],
+		
+		["fma1r","fma2tr"],
+		["fma1tr","fma2r"],
+		["fma1l","fma2tl"],
+		["fma1tl","fma2l"],
+		
+        {"beamSpring":12001000,"beamDamp":550},
+		//attachment between mast and chassis
+		["oma2l","b0tl"],
+		["oma2l","b0t"],
+		["oma2l","b1l"],
+		["oma2l","b1"],
+		["oma2l","b2l"],
+		["oma2l","b2"],
+		["oma2l","b1tl"],
+		["oma2l","b1t"],
+		["oma2l","fh2l"],
+		["oma2l","fh3l"],
+		["oma2l","fh4l"],
+		
+		["oma2r","b0tr"],
+		["oma2r","b0t"],
+		["oma2r","b1r"],
+		["oma2r","b1"],
+		["oma2r","b2r"],
+		["oma2r","b2"],
+		["oma2r","b1tr"],
+		["oma2r","b1t"],
+		["oma2r","fh2r"],
+		["oma2r","fh3r"],
+		["oma2r","fh4r"],
+		
+		//tilt cylinder node to mast structure
+        {"beamSpring":8001000,"beamDamp":150},
+		["omatiltl","oma1l"],
+		["omatiltl","oma1r"],
+		["omatiltl","oma1tl"],
+		["omatiltl","oma1tr"],
+		
+		["omatiltr","oma1r"],
+		["omatiltr","oma1l"],
+		["omatiltr","oma1tr"],
+		["omatiltr","oma1tl"],
+
+		["omatiltl","omatiltr"],
+	
+
+        {"beamSpring":7001000,"beamDamp":150},
+		//Animation compass thing
+		["forkcomp1l","forkcomp2l"],
+		["forkcomp1l","oma1l"],
+		["forkcomp1l","oma2l"],
+		["forkcomp2l","oma1l"],
+		["forkcomp2l","oma2l"],
+		["forkcomp1l","fma1tl"],
+		["forkcomp1l","fma2tl"],
+		["forkcomp2l","fma1tl"],
+		["forkcomp2l","fma2tl"],
+		
+		["forkcomp1r","forkcomp2r"],
+		["forkcomp1r","oma1r"],
+		["forkcomp1r","oma2r"],
+		["forkcomp2r","oma1r"],
+		["forkcomp2r","oma2r"],
+		["forkcomp1r","fma1tr"],
+		["forkcomp1r","fma2tr"],
+		["forkcomp2r","fma1tr"],
+		["forkcomp2r","fma2tr"],
+
+        {"beamSpring":501000,"beamDamp":50},
+		["oma1l","tilt1l"],
+		["oma1r","tilt1l"],
+		["omatiltl","tilt1l"],
+		["omatiltr","tilt1l"],
+		
+		["oma1r","tilt1r"],
+		["oma1l","tilt1r"],
+		["omatiltr","tilt1r"],
+		["omatiltl","tilt1r"],
+	
+		["tilt1l","tilt1r"],
+		
+		["tilt1l","tilt4l"],
+		["tilt2l","tilt3l"],
+		["tilt1r","tilt4r"],
+		["tilt2r","tilt3r"],
+		
+		["tilt3l","b1l"],
+		["tilt3l","b0l"],
+		["tilt3l","b1r"],
+		["tilt3l","b2tl"],
+		["tilt3l","b2tr"],
+		
+		["tilt3r","b1l"],
+		["tilt3r","b0l"],
+		["tilt3r","b1r"],
+		["tilt3r","b2tl"],
+		["tilt3r","b2tr"],
+		
+		["tilt3r","tilt3l"],
+		
+		
+        {"beamSpring":101000,"beamDamp":50},
+		["LCFixedBaseL", "oma1tr"],
+		["LCFixedBaseL", "oma1tl"],
+		["LCFixedBaseL", "oma2tr"],
+		["LCFixedBaseL", "oma2tl"],
+		
+		["LCFixedBaseR", "oma1tr"],
+		["LCFixedBaseR", "oma1tl"],
+		["LCFixedBaseR", "oma2tr"],
+		["LCFixedBaseR", "oma2tl"],
+		
+		["LCFixedPul1L", "ima1tr"],
+		["LCFixedPul1L", "ima1tl"],
+		["LCFixedPul1L", "ima2tr"],
+		["LCFixedPul1L", "ima2tl"],
+		
+		["LCFixedPul2L", "ima1tr"],
+		["LCFixedPul2L", "ima1tl"],
+		["LCFixedPul2L", "ima2tr"],
+		["LCFixedPul2L", "ima2tl"],
+		
+		["LCFixedPul3L", "ima1tr"],
+		["LCFixedPul3L", "ima1tl"],
+		["LCFixedPul3L", "ima2tr"],
+		["LCFixedPul3L", "ima2tl"],
+		
+		["LCFixedPul1R", "ima1tr"],
+		["LCFixedPul1R", "ima1tl"],
+		["LCFixedPul1R", "ima2tr"],
+		["LCFixedPul1R", "ima2tl"],
+		
+		["LCFixedPul2R", "ima1tr"],
+		["LCFixedPul2R", "ima1tl"],
+		["LCFixedPul2R", "ima2tr"],
+		["LCFixedPul2R", "ima2tl"],
+		
+		["LCFixedPul3R", "ima1tr"],
+		["LCFixedPul3R", "ima1tl"],
+		["LCFixedPul3R", "ima2tr"],
+		["LCFixedPul3R", "ima2tl"],
+		
+		["LCFixedPul1L", "LCFixedPul2L"],
+		["LCFixedPul1L", "LCFixedPul3L"],
+		["LCFixedPul2L", "LCFixedPul3L"],
+		["LCFixedPul1R", "LCFixedPul2R"],
+		["LCFixedPul1R", "LCFixedPul3R"],
+		["LCFixedPul2R", "LCFixedPul3R"],
+		
+		//support
+		{"beamPrecompression":1, "beamType":"|SUPPORT","beamLongBound":100.0},
+        {"deformLimitExpansion":100},
+        {"beamSpring":2001000,"beamDamp":50},
+		["ima1l","oma1l"],
+		["ima1r","oma1r"],
+		["ima2l","oma2l"],
+		["ima2r","oma2r"],
+
+		["fma1l","oma1l"],
+		["fma1r","oma1r"],
+		["fma2l","oma2l"],
+		["fma2r","oma2r"],
+
+		//mast damper
+		{"deformLimitExpansion":""},
+		{"beamPrecompression":1.0, "beamType":"|BOUNDED", "beamLongBound":1.0, "beamShortBound":1.0},
+		{"beamLimitSpring":0,"beamLimitDamp":0},
+		{"beamSpring":0,"beamDamp":500},
+		["oma2tr","r3tr", {"beamDampVelocitySplit":1.0,"beamDampFast":8000,"beamDampReboundFast":8000,"dampCutoffHz":1000}],
+		["oma2tl","r3tl", {"beamDampVelocitySplit":1.0,"beamDampFast":8000,"beamDampReboundFast":8000,"dampCutoffHz":1000}],
+		["ima2tr","r3tr", {"beamDampVelocitySplit":1.0,"beamDampFast":8000,"beamDampReboundFast":8000,"dampCutoffHz":1000}],
+		["ima2tl","r3tl", {"beamDampVelocitySplit":1.0,"beamDampFast":8000,"beamDampReboundFast":8000,"dampCutoffHz":1000}],
+		["fma2tr","r3tr", {"beamDampVelocitySplit":1.0,"beamDampFast":8000,"beamDampReboundFast":8000,"dampCutoffHz":1000}],
+		["fma2tl","r3tl", {"beamDampVelocitySplit":1.0,"beamDampFast":8000,"beamDampReboundFast":8000,"dampCutoffHz":1000}],
+		["fma2r","r3tr", {"beamDampVelocitySplit":1.0,"beamDampFast":8000,"beamDampReboundFast":8000,"dampCutoffHz":1000}],
+		["fma2l","r3tl", {"beamDampVelocitySplit":1.0,"beamDampFast":8000,"beamDampReboundFast":8000,"dampCutoffHz":1000}],
+
+        {"deformLimitExpansion":1.2},
+        {"beamPrecompression":1, "beamType":"|NORMAL"},
+        {"beamDeform":"FLT_MAX","beamStrength":"FLT_MAX"},
+        {"beamSpring":10001000,"beamDamp":1000},
+		//Tilt Hydros		
+        ["omatiltl","btiltl",  {"tag":"tiltBeam", "dampCutoffHz":750}],
+        ["omatiltr","btiltr",  {"tag":"tiltBeam", "dampCutoffHz":750}],
+		
+		//Lift Hydros		
+        {"beamSpring":10001000,"beamDamp":500},
+        ["fma2tl","oma2l",  {"tag":"forkBeam", "dampCutoffHz":750}],
+        ["fma2tr","oma2r",  {"tag":"forkBeam", "dampCutoffHz":750}]
+    ],
+    "triangles": [
+		["id1:","id2:","id3:"],
+		{"dragCoef":10},        
+		["ima1tl","oma1l","oma2l"],
+		["ima1tl","oma2l","ima2tl"],
+		
+		["ima1tr","oma2r","oma1r"],
+		["ima1tr","ima2tr","oma2r"],
+		
+		["ima2tr","ima2tl","oma2l"],
+		["ima2tr","oma2l","oma2r"],
+		
+		["ima1tr","oma1l","ima1tl"],
+		["ima1tr","oma1r","oma1l"],
+		
+		["ima2tr","ima1tr","ima1tl"],
+		["ima2tr","ima1tl","ima2tl"],
+		
+		["oma2r","oma1l","oma1r"],
+		["oma2r","oma2l","oma1l"]
+	]
+},
+"WHE_ForkliftMastTriplex": {
+    "information":{
+        "authors":"TrackpadUser",
+        "name":"3900mm Triplex Mast",
+        "value":10000
+    },
+    "slotType":"WHE_ForkliftMast",
+    "flexbodies":[
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        {"rotation":{"x":0, "y":0, "z":0}, "translation":{"x":0, "y":0, "z":0}},
+        //body
+        {"deformGroup":""},
+        ["MFL_OuterMast", ["OuterMast"]],
+        ["MFL_OuterMastBraces", ["OuterMast"]],
+        ["MFL_OuterMastMount", ["OuterMast"]],
+        ["MFL_OuterMastTopRoller", ["OuterMast"]],
+        ["MFL_MastStickers", ["OuterMast"]],
+		
+        ["MFL_TriplexMidMast", ["MidMast"]],
+        ["MFL_TriplexMidMastTopRoller", ["MidMast"]],
+        ["MFL_LiftCylInner", ["MidMast"]],
+        ["MFL_TripleInnerMastTopBraceBracket", ["MidMast"]],
+		
+        ["MFL_TriplexMidMastLowerRoller", ["InnerMast"]],
+        ["MFL_TriplexInnerMast", ["InnerMast"]],
+        ["MFL_TripleInnerMastTopBrace", ["InnerMast"]],
+		
+        ["MFL_LiftCylOuter", ["OuterMast"]],
+		
+        ["MFL_TiltCylMount", ["OuterMast"]],
+        ["MFL_TiltCylInner", ["TiltInnerCyl"]],
+        ["MFL_TiltCylOuter", ["TiltOuterCyl"]]
+	],
+	"controller": [
+	   ["fileName"],
+	   ["hydraulics/hydraulicsCombustionEngineControl", {"mode":"electricsRaiseAndConnect", "relevantElectrics":["tilt_input","lift_input","freelift_input"], "raisedIdleRPM": 700}]
+   ],
+   "powertrainHydros": [
+	   ["type",                "name",     "connectedPump",    "valveType",    "pistonDiameter", "shaftDiameter",  "maxSpeed", "minExtend",    "maxExtend",    "directionElectricsName",   "beamTags"],
+	   ["hydraulicCylinder",   "ram1",     "pump1",            "closed",         0.1,             0,                5.5,        0.53,          0.7,            "tilt_input",             ["tiltBeam"], {"dropInputThreshold":-0.001,"cylinderReliefPressure":30000000, "minimumDragCoef":10000000, "maximumDragCoef":100000000,"frictionCoef":1500}],
+	   ["hydraulicCylinder",   "ram2",     "pump1",            "drop",         0.07,             0,                2.5,        0.2,          1.1,            "lift_input",             ["freeliftBeam"], {"dropInputThreshold":-0.001,"cylinderReliefPressure":30000000, "minimumDragCoef":1000000, "maximumDragCoef":100000000,"frictionCoef":500,"cylinderReliefSlipSpeedLimit":1.5}],
+       ["hydraulicCylinder",   "ram3",     "pump1",            "drop",         0.07,             0,                2.5,        0.56,           4.80,            "lift_input",             ["forkBeam"], {"dropInputThreshold":-0.001,"cylinderReliefPressure":30000000, "minimumDragCoef":1000000, "maximumDragCoef":100000000,"frictionCoef":500,"cylinderReliefSlipSpeedLimit":1.5}]
+   ],
+    "slots":[
+        ["type", "default", "description"],
+		//Front wheels
+        ["ForkLift_ForkFrameTriplex","ForkLift_ForkFrameTriplexFreeLift", "Forks"]
+	],
+    "nodes":[
+        ["id", "posX", "posY", "posZ"],
+        {"selfCollision":true},
+        {"collision":true},
+        {"nodeMaterial":"|NM_METAL"},
+        {"frictionCoef":0.6},
+		
+        {"nodeWeight":25},
+		//OuterMast Main structure
+        {"group":"OuterMast"},
+        ["oma1r", -0.37, -1.18, -0.08],
+        ["oma1l", 0.37, -1.18,  -0.08],
+        ["oma2r", -0.37, -0.85,  -0.08],
+        ["oma2l", 0.37, -0.85,  -0.08],
+		
+        ["oma1tr", -0.37, -1.18, 1.89],
+        ["oma1tl", 0.37, -1.18, 1.89],
+        ["oma2tr", -0.37, -0.85, 1.89],
+        ["oma2tl", 0.37, -0.85, 1.89],
+		
+		//OuterMast attachements
+        {"selfCollision":false},
+        ["omatiltr", -0.37, -1.18, 0.61],
+        ["omatiltl", 0.37, -1.18, 0.61],
+		
+		//MidMast Main structure
+        {"group":"MidMast"},
+        ["mma1r", -0.37, -1.18, 0.21],
+        ["mma1l", 0.37, -1.18,  0.21],
+        ["mma2r", -0.37, -0.85,  0.21],
+        ["mma2l", 0.37, -0.85,  0.21],
+		
+        ["mma1tr", -0.37, -1.18, 1.91],
+        ["mma1tl", 0.37, -1.18, 1.91],
+        ["mma2tr", -0.37, -0.85, 1.91],
+        ["mma2tl", 0.37, -0.85, 1.91],
+		
+		//Inner Mast Main structure
+        {"group":"InnerMast"},
+        ["ima1r", -0.37, -1.18, 0.5],
+        ["ima1l", 0.37, -1.18,  0.5],
+        ["ima2r", -0.37, -0.85,  0.5],
+        ["ima2l", 0.37, -0.85,  0.5],
+		
+        ["ima1tr", -0.37, -1.18, 1.93],
+        ["ima1tl", 0.37, -1.18, 1.93],
+        ["ima2tr", -0.37, -0.85, 1.93],
+        ["ima2tl", 0.37, -0.85, 1.93],
+		
+		//Fork frame slider
+        {"group":"ForkFrame"},
+        {"nodeWeight":15},
+        {"selfCollision":false},
+        ["fma1r", -0.37, -1.18, -0.04],
+        ["fma1l", 0.37, -1.18,  -0.04],
+        ["fma2r", -0.37, -0.85,  -0.04],
+        ["fma2l", 0.37, -0.85,  -0.04],
+        ["fma1tr", -0.37, -1.18, 0.7],
+        ["fma1tl", 0.37, -1.18,  0.7],
+        ["fma2tr", -0.37, -0.85,  0.7],
+        ["fma2tl", 0.37, -0.85,  0.7],
+		
+		//compass mechanism thingy for the lift to animate properly
+        {"selfCollision":false},
+        {"collision":false},
+        {"nodeWeight":10},
+        {"group":""},
+		["forkcomp1l", 2.2, -1.18, 0.21],
+		["forkcomp1r", -2.2, -1.18, 0.21],
+		["forkcomp2l", 2.2,  -0.85, 0.21],
+		["forkcomp2r", -2.2,  -0.85, 0.21],
+
+		["freeliftSlider1r", -0.37, -1.18, 0.6],
+		["freeliftSlider2r", -0.37, -0.85, 0.6],
+		["freeliftSlider1l", 0.37, -1.18, 0.6],
+		["freeliftSlider2l", 0.37, -0.85, 0.6],
+		
+		["freeliftcomp1r", -1.1, -1.18, 0.6],
+		["freeliftcomp1l", 1.1, -1.18, 0.6],
+		["freeliftcomp2r", -1.1,  -0.85, 0.6],
+		["freeliftcomp2l", 1.1,  -0.85, 0.6],
+		
+        {"nodeWeight":10},
+        {"group":"InnerMast"},
+		["LCCylBaseR", -0.1, -1.09, 0.061],
+		["LCCylEndR", -0.1, -1.09, 0.5],
+		["LCCylBaseL", 0.1, -1.09, 0.061],
+		["LCCylEndL", 0.1, -1.09, 0.5],
+		
+        {"group":"LiftCyl"},
+		["LCCylHeadL", 0.1, -1.09, 0.940,{"group":["LiftCyl","LiftChain"]}],
+		["LCCylHead3L", 0.1, -1.09, 0.90,{"group":["LiftCyl","LiftChain"]}],
+		["LCCylHead2L", 0.1, -1.09, 0.1],
+		["LCCylHeadR", -0.1, -1.09, 0.940,{"group":["LiftCyl","LiftChain"]}],
+		["LCCylHead3R", -0.1, -1.09, 0.90,{"group":["LiftCyl","LiftChain"]}],
+		["LCCylHead2R", -0.1, -1.09, 0.1],
+		
+        {"selfCollision":false},
+        {"collision":false},
+        {"group":""},
+		["LCCylHeadReinf", 0.0, -0.5, 0.8],
+        {"collision":true},
+		
+        {"group":"LiftChain"},
+		["LCForkFrameL", 0.056, -1.145, -0.05],
+		["LCForkFrameR", -0.056, -1.145, -0.05],
+		["LCInnerMast", -0.0, -1.04, 0.77],
+		
+        {"selfCollision":false},
+		//dummy tilt cylinder
+        {"nodeWeight":8},
+        {"group":"TiltInnerCyl"},
+		["tilt1l", 0.39, -1.096, 0.632],
+		["tilt1r", -0.39, -1.096, 0.632],
+		
+        {"group":"TiltOuterCyl"},
+		["tilt2l", 0.39, -0.828, 0.566],
+		["tilt2r", -0.39, -0.828, 0.566],
+		
+        {"group":"TiltInnerCyl"},
+		["tilt4l", 0.39, -0.705, 0.536],
+		["tilt4r", -0.39, -0.705, 0.536],
+		
+        {"group":"TiltOuterCyl"},
+		["tilt3l", 0.39, -0.558, 0.5],
+		["tilt3r", -0.39, -0.558, 0.5],
+		
+        {"group":""},
+        {"selfCollision":true}
+	],    
+    "torsionbars": [ 
+        ["id1:", "id2:", "id3:", "id4:"],
+        {"spring":10000000, "damp":100, "deform":25000, "strength":100000},
+        ["oma1tl", "oma1l", "oma1r", "omatiltr"],
+        ["oma1tr", "oma1r", "oma1l", "omatiltl"]
+    ],
+	"rails": {
+		//main structural rails
+		"Mast1R":{"links:":["oma1r", "ima1tr"], "looped":false, "capped":true},
+		"Mast1L":{"links:":["oma1l", "ima1tl"], "looped":false, "capped":true},
+		"Mast2R":{"links:":["oma2r", "ima2tr"], "looped":false, "capped":true},
+		"Mast2L":{"links:":["oma2l", "ima2tl"], "looped":false, "capped":true},
+		//tilt cylinders
+		"TiltCylr":{"links:":["tilt1r", "tilt3r"], "looped":false, "capped":true},
+		"TiltCyll":{"links:":["tilt1l", "tilt3l"], "looped":false, "capped":true},
+	
+		//Compass structure to lift the inner mast
+		"CompassFront":{"links:":["forkcomp1l", "forkcomp1r"], "looped":false, "capped":true},
+		"CompassRear":{"links:":["forkcomp2l", "forkcomp2r"], "looped":false, "capped":true},
+		
+		//Compass structure to lift the inner mast
+		"CompassFreeliftFront":{"links:":["freeliftcomp1l", "freeliftcomp1r"], "looped":false, "capped":true},
+		"CompassFreeliftRear":{"links:":["freeliftcomp2l", "freeliftcomp2r"], "looped":false, "capped":true},
+		
+		"LiftCylinderR":{"links:":["LCCylBaseR", "LCCylHeadR"], "looped":false, "capped":true},
+		"LiftCylinderL":{"links:":["LCCylBaseL", "LCCylHeadL"], "looped":false, "capped":true}
+	},
+	"slidenodes": [ 
+		["id:", "railName", "attached", "fixToRail", "tolerance", "spring", "strength", "capStrength"],
+		//inner mast to outer mast connection
+		["ima1r", "Mast1R", true, true, 0, 50000000, 100000000, 345435],
+		["ima1l", "Mast1L", true, true, 0, 50000000, 100000000, 345435],
+		["ima2r", "Mast2R", true, true, 0, 50000000, 100000000, 345435],
+		["ima2l", "Mast2L", true, true, 0, 50000000, 100000000, 345435],
+		
+		["mma1l", "Mast1L", true, true, 0, 50000000, 100000000, 345435],
+		["mma2r", "Mast2R", true, true, 0, 50000000, 100000000, 345435],
+		["mma1r", "Mast1R", true, true, 0, 50000000, 100000000, 345435],
+		["mma2l", "Mast2L", true, true, 0, 50000000, 100000000, 345435],
+		
+		["mma1tl", "Mast1L", true, true, 0, 50000000, 100000000, 345435],
+		["mma2tr", "Mast2R", true, true, 0, 50000000, 100000000, 345435],
+		["mma1tr", "Mast1R", true, true, 0, 50000000, 100000000, 345435],
+		["mma2tl", "Mast2L", true, true, 0, 50000000, 100000000, 345435],
+		
+		["oma1tl", "Mast1L", true, true, 0, 50000000, 100000000, 345435],
+		["oma2tr", "Mast2R", true, true, 0, 50000000, 100000000, 345435],
+		["oma1tr", "Mast1R", true, true, 0, 50000000, 100000000, 345435],
+		["oma2tl", "Mast2L", true, true, 0, 50000000, 100000000, 345435],
+		
+		["fma1r", "Mast1R", true, true, 0, 50000000, 100000000, 345435],
+		["fma1l", "Mast1L", true, true, 0, 50000000, 100000000, 345435],
+		["fma2r", "Mast2R", true, true, 0, 50000000, 100000000, 345435],
+		["fma2l", "Mast2L", true, true, 0, 50000000, 100000000, 345435],
+
+		["fma1tr", "Mast1R", true, true, 0, 50000000, 100000000, 345435],
+		["fma1tl", "Mast1L", true, true, 0, 50000000, 100000000, 345435],
+		["fma2tr", "Mast2R", true, true, 0, 50000000, 100000000, 345435],
+		["fma2tl", "Mast2L", true, true, 0, 50000000, 100000000, 345435],
+
+		["omatiltr", "Mast1R", true, true, 0, 50000000, 100000000, 345435],
+		["omatiltl", "Mast1L", true, true, 0, 50000000, 100000000, 345435],
+		
+		["freeliftSlider1r", "Mast1R", true, true, 0, 50000000, 100000000, 345435],
+		["freeliftSlider2r", "Mast2R", true, true, 0, 50000000, 100000000, 345435],
+		["freeliftSlider1l", "Mast1L", true, true, 0, 50000000, 100000000, 345435],
+		["freeliftSlider2l", "Mast2L", true, true, 0, 50000000, 100000000, 345435],
+		
+		["tilt2r", "TiltCylr", true, true, 0, 50000000, 100000000, 345435],
+		["tilt2l", "TiltCyll", true, true, 0, 50000000, 100000000, 345435],
+		["tilt4r", "TiltCylr", true, true, 0, 50000000, 100000000, 345435],
+		["tilt4l", "TiltCyll", true, true, 0, 50000000, 100000000, 345435],
+
+		["mma1r", "CompassFront", true, true, 0, 50000000, 100000000, 345435],
+		["mma1l", "CompassFront", true, true, 0, 50000000, 100000000, 345435],
+		["mma2r", "CompassRear", true, true, 0, 50000000, 100000000, 345435],
+		["mma2l", "CompassRear", true, true, 0, 50000000, 100000000, 345435],
+		
+		["freeliftSlider1r", "CompassFreeliftFront", true, true, 0, 50000000, 100000000, 345435],
+		["freeliftSlider1l", "CompassFreeliftFront", true, true, 0, 50000000, 100000000, 345435],
+
+		["freeliftSlider2r", "CompassFreeliftRear", true, true, 0, 50000000, 100000000, 345435],
+		["freeliftSlider2l", "CompassFreeliftRear", true, true, 0, 50000000, 100000000, 345435],
+		
+		["LCCylEndR", "LiftCylinderR", true, true, 0, 10000000, 100000000, 345435],
+		["LCCylHead2R", "LiftCylinderR", true, true, 0, 10000000, 100000000, 345435],
+		["LCCylHead3R", "LiftCylinderR", true, true, 0, 10000000, 100000000, 345435],
+		["LCCylEndL", "LiftCylinderL", true, true, 0, 10000000, 100000000, 345435],
+		["LCCylHead2L", "LiftCylinderL", true, true, 0, 10000000, 100000000, 345435],
+		["LCCylHead3L", "LiftCylinderL", true, true, 0, 10000000, 100000000, 345435]
+	],
+    "beams":[
+        ["id1:", "id2:"],
+        {"breakGroupType":0},
+        {"deformLimitExpansion":1.2},
+        {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+        //refnode
+		
+        {"deformLimitExpansion":1.2},
+        {"beamPrecompression":1, "beamType":"|NORMAL"},
+        {"beamSpring":8001000,"beamDamp":350},
+        {"beamDeform":"FLT_MAX","beamStrength":"FLT_MAX"},
+
+		//outer mast main shape
+		["oma1r","oma2r"],
+		["oma1tr","oma2tr"],
+		["oma1l","oma2l"],
+		["oma1tl","oma2tl"],
+		
+		["oma1r","oma1l"],
+		["oma1tr","oma1tl"],
+		["oma2r","oma2l"],
+		["oma2tr","oma2tl"],
+		
+		["oma1r","oma1tr"],
+		["oma1l","oma1tl"],
+		["oma2r","oma2tr"],
+		["oma2l","oma2tl"],
+		
+		["oma1r","oma1tl"],
+		["oma1tr","oma1l"],
+		["oma2r","oma2tl"],
+		["oma2tr","oma2l"],
+		
+		["oma1r","oma2l"],
+		["oma1l","oma2r"],
+		["oma1tr","oma2tl"],
+		["oma1tl","oma2tr"],
+		
+		["oma1r","oma2tr"],
+		["oma1tr","oma2r"],
+		["oma1l","oma2tl"],
+		["oma1tl","oma2l"],
+		
+		//mid mast main shape
+		["mma1r","mma2r"],
+		["mma1tr","mma2tr"],
+		["mma1l","mma2l"],
+		["mma1tl","mma2tl"],
+		
+		["mma1r","mma1l"],
+		["mma1tr","mma1tl"],
+		["mma2r","mma2l"],
+		["mma2tr","mma2tl"],
+		
+		["mma1r","mma1tr"],
+		["mma1l","mma1tl"],
+		["mma2r","mma2tr"],
+		["mma2l","mma2tl"],
+		
+		["mma1r","mma1tl"],
+		["mma1tr","mma1l"],
+		["mma2r","mma2tl"],
+		["mma2tr","mma2l"],
+		
+		["mma1r","mma2l"],
+		["mma1l","mma2r"],
+		["mma1tr","mma2tl"],
+		["mma1tl","mma2tr"],
+		
+		["mma1r","mma2tr"],
+		["mma1tr","mma2r"],
+		["mma1l","mma2tl"],
+		["mma1tl","mma2l"],
+		
+		
+		//inner mast main shape
+		["ima1r","ima2r"],
+		["ima1tr","ima2tr"],
+		["ima1l","ima2l"],
+		["ima1tl","ima2tl"],
+		
+		["ima1r","ima1l"],
+		["ima1tr","ima1tl"],
+		["ima2r","ima2l"],
+		["ima2tr","ima2tl"],
+		
+		["ima1r","ima1tr"],
+		["ima1l","ima1tl"],
+		["ima2r","ima2tr"],
+		["ima2l","ima2tl"],
+		
+		["ima1r","ima1tl"],
+		["ima1tr","ima1l"],
+		["ima2r","ima2tl"],
+		["ima2tr","ima2l"],
+		
+		["ima1r","ima2l"],
+		["ima1l","ima2r"],
+		["ima1tr","ima2tl"],
+		["ima1tl","ima2tr"],
+		
+		["ima1r","ima2tr"],
+		["ima1tr","ima2r"],
+		["ima1l","ima2tl"],
+		["ima1tl","ima2l"],
+		
+        {"beamSpring":12001000,"beamDamp":550},
+		//attachements
+		["oma2l","b0tl"],
+		["oma2l","b0t"],
+		["oma2l","b1l"],
+		["oma2l","b1"],
+		["oma2l","b2l"],
+		["oma2l","b2"],
+		["oma2l","b1tl"],
+		["oma2l","b1t"],
+		["oma2l","fh2l"],
+		["oma2l","fh3l"],
+		["oma2l","fh4l"],
+		
+		["oma2r","b0tr"],
+		["oma2r","b0t"],
+		["oma2r","b1r"],
+		["oma2r","b1"],
+		["oma2r","b2r"],
+		["oma2r","b2"],
+		["oma2r","b1tr"],
+		["oma2r","b1t"],
+		["oma2r","fh2r"],
+		["oma2r","fh3r"],
+		["oma2r","fh4r"],
+		
+        {"beamSpring":8001000,"beamDamp":150},
+		["omatiltl","oma1l"],
+		["omatiltl","oma1r"],
+		["omatiltl","oma1tl"],
+		["omatiltl","oma1tr"],
+		
+		["omatiltr","oma1r"],
+		["omatiltr","oma1l"],
+		["omatiltr","oma1tr"],
+		["omatiltr","oma1tl"],
+
+		["omatiltl","omatiltr"],
+	
+        {"beamSpring":5001000,"beamDamp":50},
+		["oma1l","tilt1l"],
+		["oma1r","tilt1l"],
+		["omatiltl","tilt1l"],
+		["omatiltr","tilt1l"],
+		
+		["oma1r","tilt1r"],
+		["oma1l","tilt1r"],
+		["omatiltr","tilt1r"],
+		["omatiltl","tilt1r"],
+	
+		["tilt1l","tilt1r"],
+		
+		["tilt1l","tilt4l"],
+		["tilt2l","tilt3l"],
+		["tilt1r","tilt4r"],
+		["tilt2r","tilt3r"],
+		
+		["tilt3l","b1l"],
+		["tilt3l","b0l"],
+		["tilt3l","b1r"],
+		["tilt3l","b2tl"],
+		["tilt3l","b2tr"],
+		
+		["tilt3r","b1l"],
+		["tilt3r","b0l"],
+		["tilt3r","b1r"],
+		["tilt3r","b2tl"],
+		["tilt3r","b2tr"],
+		
+		["tilt3r","tilt3l"],
+
+        {"beamSpring":7001000,"beamDamp":150},
+		//Animation compass thing
+		["forkcomp1l","forkcomp2l"],
+		["forkcomp1l","oma1l"],
+		["forkcomp1l","oma2l"],
+		["forkcomp2l","oma1l"],
+		["forkcomp2l","oma2l"],
+		["forkcomp1l","ima1l"],
+		["forkcomp1l","ima2l"],
+		["forkcomp2l","ima1l"],
+		["forkcomp2l","ima2l"],
+		
+		["forkcomp1r","forkcomp2r"],
+		["forkcomp1r","oma1r"],
+		["forkcomp1r","oma2r"],
+		["forkcomp2r","oma1r"],
+		["forkcomp2r","oma2r"],
+		["forkcomp1r","ima1r"],
+		["forkcomp1r","ima2r"],
+		["forkcomp2r","ima1r"],
+		["forkcomp2r","ima2r"],
+		
+		["freeliftcomp1l","freeliftcomp2l"],
+		["freeliftcomp1l","fma2tl"],
+		["freeliftcomp1l","fma1tl"],
+		["freeliftcomp2l","fma2tl"],
+		["freeliftcomp2l","fma1tl"],
+		["freeliftcomp1l","ima1l"],
+		["freeliftcomp1l","ima2l"],
+		["freeliftcomp2l","ima1l"],
+		["freeliftcomp2l","ima2l"],
+		
+		["freeliftcomp1r","freeliftcomp2r"],
+		["freeliftcomp1r","fma2tr"],
+		["freeliftcomp1r","fma1tr"],
+		["freeliftcomp2r","fma2tr"],
+		["freeliftcomp2r","fma1tr"],
+		["freeliftcomp1r","ima1r"],
+		["freeliftcomp1r","ima2r"],
+		["freeliftcomp2r","ima1r"],
+		["freeliftcomp2r","ima2r"],
+		
+		
+
+		//lift cyl nodes
+        {"beamPrecompression":1.0},
+		
+        {"beamSpring":1001000,"beamDamp":50},
+		["LCCylBaseR", "ima1l"],
+		["LCCylBaseR", "ima2l"],
+		["LCCylBaseR", "ima1r"],
+		["LCCylBaseR", "ima2r"],
+		["LCCylBaseL", "ima1l"],
+		["LCCylBaseL", "ima2l"],
+		["LCCylBaseL", "ima1r"],
+		["LCCylBaseL", "ima2r"],
+		
+		["LCCylEndR", "ima1l"],
+		["LCCylEndR", "ima2l"],
+		["LCCylEndR", "ima1r"],
+		["LCCylEndR", "ima2r"],
+		["LCCylEndL", "ima1l"],
+		["LCCylEndL", "ima2l"],
+		["LCCylEndL", "ima1r"],
+		["LCCylEndL", "ima2r"],
+		
+		["LCCylEndR", "LCCylBaseL"],
+		["LCCylEndR", "LCCylBaseR"],
+		["LCCylEndL", "LCCylBaseL"],
+		["LCCylEndL", "LCCylBaseR"],
+
+		["LCCylHeadR", "LCCylHead2L"],
+		["LCCylHeadR", "LCCylHead2R"],
+		["LCCylHeadL", "LCCylHead2L"],
+		["LCCylHeadL", "LCCylHead2R"],
+		["LCCylHeadR", "LCCylHead3L"],
+		["LCCylHeadR", "LCCylHead3R"],
+		["LCCylHeadL", "LCCylHead3L"],
+		["LCCylHeadL", "LCCylHead3R"],
+		
+		["LCCylEndR", "LCCylHeadReinf"],
+		["LCCylBaseR", "LCCylHeadReinf"],
+		["LCCylEndL", "LCCylHeadReinf"],
+		["LCCylBaseL", "LCCylHeadReinf"],
+
+		["LCCylHeadReinf", "ima1r"],
+		["LCCylHeadReinf", "ima1tr"],
+		["LCCylHeadReinf", "ima1l"],
+		["LCCylHeadReinf", "ima1tl"],
+		["LCCylHeadReinf", "ima2r"],
+		["LCCylHeadReinf", "ima2tr"],
+		["LCCylHeadReinf", "ima2l"],
+		["LCCylHeadReinf", "ima2tl"],
+
+		["LCForkFrameL", "forkftl"],
+		["LCForkFrameL", "forkfl"],
+		["LCForkFrameL", "forkft"],
+		["LCForkFrameL", "forkf"],
+
+		["LCForkFrameR", "forkftr"],
+		["LCForkFrameR", "forkfr"],
+		["LCForkFrameR", "forkft"],
+		["LCForkFrameR", "forkf"],
+
+		["LCInnerMast", "LCCylHeadReinf"],
+		["LCInnerMast", "ima1l"],
+		["LCInnerMast", "ima2l"],
+		["LCInnerMast", "ima1r"],
+		["LCInnerMast", "ima2r"],
+		["LCInnerMast", "ima1l"],
+		["LCInnerMast", "ima2l"],
+		["LCInnerMast", "ima1r"],
+		["LCInnerMast", "ima2r"],
+		
+        {"beamSpring":1001000,"beamDamp":150},
+		["freeliftSlider1l","LCCylHeadR"],
+		["freeliftSlider2l","LCCylHeadR"],
+		["freeliftSlider1r","LCCylHeadR"],
+		["freeliftSlider2r","LCCylHeadR"],
+		["freeliftSlider1l","LCCylHeadL"],
+		["freeliftSlider2l","LCCylHeadL"],
+		["freeliftSlider1r","LCCylHeadL"],
+		["freeliftSlider2r","LCCylHeadL"],
+		
+        {"beamSpring":1001000,"beamDamp":50},
+		["freeliftSlider1l","LCCylHead2R"],
+		["freeliftSlider2l","LCCylHead2R"],
+		["freeliftSlider1r","LCCylHead2R"],
+		["freeliftSlider2r","LCCylHead2R"],
+		["freeliftSlider1l","LCCylHead2L"],
+		["freeliftSlider2l","LCCylHead2L"],
+		["freeliftSlider1r","LCCylHead2L"],
+		["freeliftSlider2r","LCCylHead2L"],
+		
+        {"beamSpring":1001000,"beamDamp":50},
+		["freeliftSlider1l","freeliftSlider1r"],
+		["freeliftSlider2l","freeliftSlider2r"],
+		["freeliftSlider1l","freeliftSlider2l"],
+		["freeliftSlider1r","freeliftSlider2r"],
+		["freeliftSlider1l","freeliftSlider2r"],
+		["freeliftSlider1r","freeliftSlider2l"],
+
+		//support
+		{"beamPrecompression":1, "beamType":"|SUPPORT","beamLongBound":100.0},
+        {"deformLimitExpansion":100},
+        {"beamSpring":2001000,"beamDamp":50},
+		["ima1l","oma1l"],
+		["ima1r","oma1r"],
+		["ima2l","oma2l"],
+		["ima2r","oma2r"],
+
+		["fma1l","oma1l"],
+		["fma1r","oma1r"],
+		["fma2l","oma2l"],
+		["fma2r","oma2r"],
+
+		//mast damper
+		{"deformLimitExpansion":""},
+		{"beamPrecompression":1.0, "beamType":"|BOUNDED", "beamLongBound":1.0, "beamShortBound":1.0},
+		{"beamLimitSpring":0,"beamLimitDamp":0},
+		{"beamSpring":0,"beamDamp":500},
+		["oma2tr","r3tr", {"beamDampVelocitySplit":1.0,"beamDampFast":8000,"beamDampReboundFast":8000,"dampCutoffHz":1000}],
+		["oma2tl","r3tl", {"beamDampVelocitySplit":1.0,"beamDampFast":8000,"beamDampReboundFast":8000,"dampCutoffHz":1000}],
+		["ima2tr","r3tr", {"beamDampVelocitySplit":1.0,"beamDampFast":8000,"beamDampReboundFast":8000,"dampCutoffHz":1000}],
+		["ima2tl","r3tl", {"beamDampVelocitySplit":1.0,"beamDampFast":8000,"beamDampReboundFast":8000,"dampCutoffHz":1000}],
+		["fma2tr","r3tr", {"beamDampVelocitySplit":1.0,"beamDampFast":8000,"beamDampReboundFast":8000,"dampCutoffHz":1000}],
+		["fma2tl","r3tl", {"beamDampVelocitySplit":1.0,"beamDampFast":8000,"beamDampReboundFast":8000,"dampCutoffHz":1000}],
+		["fma2r","r3tr", {"beamDampVelocitySplit":1.0,"beamDampFast":8000,"beamDampReboundFast":8000,"dampCutoffHz":1000}],
+		["fma2l","r3tl", {"beamDampVelocitySplit":1.0,"beamDampFast":8000,"beamDampReboundFast":8000,"dampCutoffHz":1000}],
+
+        {"deformLimitExpansion":1.2},
+        {"beamPrecompression":1, "beamType":"|NORMAL"},
+        {"beamDeform":"FLT_MAX","beamStrength":"FLT_MAX"},
+        {"beamSpring":10001000,"beamDamp":1000},
+		//Tilt Hydros		
+        ["omatiltl","btiltl",  {"tag":"tiltBeam", "dampCutoffHz":750}],
+        ["omatiltr","btiltr",  {"tag":"tiltBeam", "dampCutoffHz":750}],
+		
+		//Free Lift Hydros		
+        {"beamSpring":10001000,"beamDamp":500},
+        ["fma2tl","ima2l",  {"tag":"freeliftBeam", "dampCutoffHz":750}],
+        ["fma2tr","ima2r",  {"tag":"freeliftBeam", "dampCutoffHz":750}],
+		
+		//Lift Hydros		
+        {"beamSpring":10001000,"beamDamp":500},
+        ["oma2l","ima2tl",  {"tag":"forkBeam", "dampCutoffHz":750}],
+        ["oma2r","ima2tr",  {"tag":"forkBeam", "dampCutoffHz":750}]
+    ],
+    "triangles": [
+		["id1:","id2:","id3:"],
+		{"dragCoef":10},        
+		["ima1tl","oma1l","oma2l"],
+		["ima1tl","oma2l","ima2tl"],
+		
+		["ima1tr","oma2r","oma1r"],
+		["ima1tr","ima2tr","oma2r"],
+		
+		["ima2tr","ima2tl","oma2l"],
+		["ima2tr","oma2l","oma2r"],
+		
+		["ima1tr","oma1l","ima1tl"],
+		["ima1tr","oma1r","oma1l"],
+		
+		["ima2tr","ima1tr","ima1tl"],
+		["ima2tr","ima1tl","ima2tl"],
+		
+		["oma2r","oma1l","oma1r"],
+		["oma2r","oma2l","oma1l"]
+	]
+}
+}

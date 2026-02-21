@@ -154,6 +154,7 @@
             @wheel.prevent="onMapWheel"
           >
             <svg class="map-layer terrain-layer"></svg>
+            <svg class="map-layer roads-layer"></svg>
             <svg class="map-layer vehicle-layer"></svg>
             <svg class="map-layer marker-layer" :viewBox="markerViewBox">
               <g v-for="item in clusteredMarkers" :key="'m-'+item.cluster[0].id"
@@ -523,6 +524,7 @@ function applyEffectiveViewBox() {
   const effective = `${cx - w / 2} ${cy - h / 2} ${w} ${h}`
   markerViewBox.value = effective
   if (minimapStore.svgLayers?.terrain) minimapStore.svgLayers.terrain.setAttribute('viewBox', effective)
+  if (minimapStore.svgLayers?.roads) minimapStore.svgLayers.roads.setAttribute('viewBox', effective)
   if (minimapStore.svgLayers?.vehicles) minimapStore.svgLayers.vehicles.setAttribute('viewBox', effective)
   if (minimapStore.svgLayers?.aux) minimapStore.svgLayers.aux.setAttribute('viewBox', effective)
 }
@@ -776,9 +778,17 @@ function updateCarouselWidth() {
 function initMap() {
   if (!mapContainer.value) return
   const terrainLayer = mapContainer.value.querySelector('.terrain-layer')
+  const roadsLayer = mapContainer.value.querySelector('.roads-layer')
   const vehicleLayer = mapContainer.value.querySelector('.vehicle-layer')
-  if (terrainLayer && vehicleLayer) {
-    terrainLayer.appendChild(minimapStore.svgLayers.terrain)
+  if (vehicleLayer) {
+    if (terrainLayer) {
+      if (!minimapStore.showTerrainImage) {
+        const images = Array.from(minimapStore.svgLayers.terrain.children).filter(child => child.tagName === 'image')
+        images.forEach(img => minimapStore.svgLayers.terrain.removeChild(img))
+      }
+      terrainLayer.appendChild(minimapStore.svgLayers.terrain)
+    }
+    if (roadsLayer) roadsLayer.appendChild(minimapStore.svgLayers.roads)
     vehicleLayer.appendChild(minimapStore.svgLayers.vehicles)
     updateContainerSize()
     applyEffectiveViewBox()
@@ -807,6 +817,7 @@ watch([viewMode, careerActive, loaded], async ([newViewMode], [oldViewMode]) => 
   if (viewMode.value !== 'map') {
     selectedGarage.value = null
     minimapStore.viewControlledBy = null
+    minimapStore.showTerrainImage = true
   } else {
     filterOpen.value = false
     sortOpen.value = false
@@ -814,6 +825,7 @@ watch([viewMode, careerActive, loaded], async ([newViewMode], [oldViewMode]) => 
       realEstateBaseViewBox.value = buildWalkingZoomBaseViewBox()
     }
     minimapStore.viewControlledBy = 'realEstate'
+    minimapStore.showTerrainImage = false
     if (oldViewMode !== 'map') {
       const nearest = getNearestGarage(filteredGarages.value)
       if (nearest) {
@@ -895,6 +907,7 @@ onMounted(async () => {
 onUnmounted(() => {
   stopMapFocusAnimation()
   minimapStore.viewControlledBy = null
+  minimapStore.showTerrainImage = true
   resizeObserver?.disconnect()
   resizeObserver = null
   carouselResizeObserver?.disconnect()

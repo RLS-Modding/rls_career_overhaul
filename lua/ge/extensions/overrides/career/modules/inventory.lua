@@ -1077,6 +1077,7 @@ local function getVehicleUiData(inventoryId, inventoryIdsInGarage)
   end
 
   vehicleData.value = career_modules_valueCalculator.getInventoryVehicleValue(inventoryId)
+  vehicleData.marketSellValue = career_modules_valueCalculator.getInventoryVehicleSellValue(inventoryId)
   vehicleData.valueRepaired = career_modules_valueCalculator.getInventoryVehicleValue(inventoryId, true)
   vehicleData.quickRepairExtraPrice = career_modules_insurance_insurance.getQuickRepairExtraPrice()
   vehicleData.initialRepairTime = career_modules_insurance_insurance.getInvVehRepairTime(inventoryId)
@@ -1464,7 +1465,7 @@ local function sellVehicle(inventoryId, price)
     return false
   end
 
-  local value = price or career_modules_valueCalculator.getInventoryVehicleValue(inventoryId)
+  local value = price or career_modules_valueCalculator.getInventoryVehicleSellValue(inventoryId)
   extensions.hook("onBeforeVehicleSell", {inventoryId = inventoryId, price = value})
   career_modules_playerAttributes.addAttributes({money=value}, {tags={"vehicleSold","selling"},label="Sold a vehicle: "..(vehicle.niceName or "(Unnamed Vehicle)")}, true)
   removeVehicle(inventoryId)

@@ -12,6 +12,7 @@ local state = {
   elapsed = 0,
   rootFound = false,
   missingRootWarned = false,
+  configFileExists = false,
   groups = {},
   groupOrder = {},
   config = nil,
@@ -802,15 +803,21 @@ local function reloadConfigAndRescan()
   local generated = defaultConfigFromScene()
 
   local existingConfig = nil
+  local hasValidConfig = false
   if state.configPath then
-    existingConfig = jsonReadFile(state.configPath)
-    if existingConfig == nil and fileExists and fileExists(state.configPath) then
-      addWarning("Failed to parse existing dynamicRoute.json. Regenerating defaults.")
+    if FS and FS.fileExists and FS:fileExists(state.configPath) then
+      existingConfig = jsonReadFile(state.configPath)
+      if existingConfig == nil then
+        addWarning("Failed to parse existing dynamicRoute.json.")
+      else
+        hasValidConfig = true
+      end
     end
   else
     addWarning("Cannot resolve current level identifier. Config path unavailable.")
   end
 
+  state.configFileExists = hasValidConfig
   state.config = mergeConfig(generated, existingConfig)
   state.enabled = state.config.enabled ~= false
   state.timerSeconds = math.max(0.1, tonumber(state.config.timerSeconds) or 1800)
@@ -828,22 +835,33 @@ local function reloadConfigAndRescan()
     state.config.enabled = true
   end
 
-  if foundRoot then
+  if foundRoot and hasValidConfig then
     resolveInitialActiveOptions()
     applyAllGroups()
   end
 
-  if state.configPath then
-    local shouldWrite = existingConfig == nil or not deepEqual(existingConfig, state.config)
-    if shouldWrite then
-      local ok, err = saveConfig()
-      if not ok then
-        addWarning("Failed to write config file: " .. tostring(err))
-      end
-    end
-  end
-
   return foundRoot
+end
+
+local function generateRoutesFile()
+  state.configPath = getConfigPath()
+  if not state.configPath then
+    return false, "No config path (level not resolved)"
+  end
+  local foundRoot = scanSceneTree()
+  if not foundRoot then
+    return false, "Scene group 'dynamicRoutes' not found"
+  end
+  local generated = defaultConfigFromScene()
+  state.config = mergeConfig(generated, nil)
+  state.configFileExists = true
+  resolveInitialActiveOptions()
+  applyAllGroups()
+  local ok, err = saveConfig()
+  if not ok then
+    return false, tostring(err)
+  end
+  return true
 end
 
 local function triggerGroupWeighted(groupName)
@@ -1007,6 +1025,7 @@ local function getDebugState()
 
   return {
     rootFound = state.rootFound,
+    configFileExists = state.configFileExists,
     enabled = state.enabled,
     timerSeconds = state.timerSeconds,
     elapsed = state.elapsed,
@@ -1076,6 +1095,7 @@ local function onUpdate(dt)
 end
 
 M.reloadConfigAndRescan = reloadConfigAndRescan
+M.generateRoutesFile = generateRoutesFile
 M.applyAllGroups = applyAllGroups
 M.triggerAllWeighted = triggerAllWeighted
 M.triggerGroupWeighted = triggerGroupWeighted

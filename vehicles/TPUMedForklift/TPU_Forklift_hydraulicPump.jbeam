@@ -1,0 +1,27 @@
+{
+"WHE_Forklift_hydraulic_pump_0018": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Hydraulic Pump (60mL/rev)",
+        "value":4100
+    },
+    "slotType" : "WHE_Forklift_hydraulic_pump",
+    "powertrain": [
+        ["type", "name", "inputName", "inputIndex"],
+        ["hydraulicPump", "pump1", "mainEngine", 2]
+    ],
+    "pump1":{
+        "pumpType":"fixedDisplacement",
+        "pumpMaxDisplacement":0.00006,
+        "pumpWorkingPressure":20000000,
+        "reliefOpeningPressure":20000000,
+        "reliefPressureRange": 500000,
+        "gearRatio":1,
+        "accumulatorMaxVolume":0.0001,
+        "reliefValveArea":0.002
+    },
+    "mainEngine": {
+        "numberOfOutputPorts":2
+    }
+}
+}

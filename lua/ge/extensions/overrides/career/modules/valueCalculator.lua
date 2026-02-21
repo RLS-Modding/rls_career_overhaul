@@ -152,7 +152,14 @@ local function getDepreciatedPartValue(value, mileage)
   return result
 end
 
-local function getPartValue(part)
+local function getPartMarketMultiplier()
+  if career_modules_globalEconomy and career_modules_globalEconomy.getPartPriceMultiplier then
+    return career_modules_globalEconomy.getPartPriceMultiplier()
+  end
+  return 1.0
+end
+
+local function getPartValue(part, sell)
   local mileage   = part.partCondition and part.partCondition.odometer or 0 -- convert to miles
   local baseValue = part.value or 0
   local value = getDepreciatedPartValue(baseValue, mileage)
@@ -164,14 +171,10 @@ local function getPartValue(part)
   if part.repairCount then
     value = value - value * (part.repairCount/(part.repairCount + 1)) * 0.2
   end
-  return value
-end
 
-local function getPartValue(part)
-  local mileage   = part.partCondition and part.partCondition.odometer or 0 -- convert to miles
-  local baseValue = part.value or 0
-  
-  return getDepreciatedPartValue(baseValue, mileage)
+  value = value * getPartMarketMultiplier()
+
+  return value
 end
 
 -- for now every damaged part needs to be replaced
@@ -218,7 +221,7 @@ local function getRepairDetails(invVehInfo)
 
   local damagedParts = getDamagedParts(invVehInfo)
   for _, part in pairs(damagedParts.partsToBeReplaced) do
-    local price = part.value or 700
+    local price = (part.value or 700) * getPartMarketMultiplier()
     if career_modules_hardcore.isHardcoreMode() then
       details.price = math.floor((details.price + price * 1.25) * 100) / 100
     else
@@ -308,6 +311,18 @@ local function getInventoryVehicleValue(inventoryId, ignoreDamage)
   return value * (1 + meetReputation * 0.01) * (accidentMultiplier ^ accidents)
 end
 
+local function getInventoryVehicleSellValue(inventoryId, options)
+  local value = getInventoryVehicleValue(inventoryId, options and options.ignoreDamage)
+  if not value then return end
+
+  local vehicleSellMult = 1.0
+  if career_modules_globalEconomy and career_modules_globalEconomy.getVehicleSellMultiplier then
+    vehicleSellMult = career_modules_globalEconomy.getVehicleSellMultiplier()
+  end
+
+  return value * vehicleSellMult
+end
+
 local function getNumberOfBrokenParts(partConditions)
   if not partConditions then return 0 end
   local counter = 0
@@ -348,6 +363,7 @@ M.getPartValue = getPartValue
 M.getDepreciatedPartValue = getDepreciatedPartValue
 M.getAdjustedVehicleBaseValue = getAdjustedVehicleBaseValue
 M.getVehicleMileageById = getVehicleMileageById
+M.getInventoryVehicleSellValue = getInventoryVehicleSellValue
 M.getBrokenPartsThreshold = getBrokenPartsThreshold
 
 -- Vehicle damage related API

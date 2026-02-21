@@ -1,0 +1,71 @@
+{
+"ForkLift_fueltank": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Diesel Fuel Tank",
+        "value":60
+    },
+    "slotType" : "ForkLift_fueltank",
+    "variables": [
+        ["name", "type", "unit", "category", "default", "min", "max", "title", "description"],
+        ["$fuel", "range", "L", "Chassis", 30, 0, 30, "Fuel Volume", "Initial fuel volume", {"stepDis":0.5}]
+    ],
+    "energyStorage": [
+        ["type", "name"],
+        ["fuelTank", "mainTank"]
+    ],
+    "mainTank": {
+        "energyType":"diesel",
+        "fuelCapacity": 30,
+        "startingFuelCapacity": "$fuel",
+        "fuel": {"[engineGroup]:":["fuel"]},
+        "breakTriggerBeam": "fuelTank"
+    },
+    "nodes": [
+        ["id", "posX", "posY", "posZ"],
+        //fuel tank particles
+        {"frictionCoef":1},
+        {"collision":true},
+        {"selfCollision":false},
+        {"group":""},
+        {"nodeWeight":0.48},
+        {"engineGroup":["fuel"]},
+        {"nodeMaterial":"|NM_PLASTIC"},
+        {"chemEnergy":50,"burnRate":0.3,"flashPoint":220,"vaporPoint":90,"specHeat":0.03,"selfIgnitionCoef":0.06,"smokePoint":220,"containerBeam":"fuelTank"},
+        
+        ["ft1l", 0.42, 0.05, 0.22],
+        ["ft1r", 0.42, 0.48, 0.22],
+        {"engineGroup":""},
+        {"group":""},
+        {"chemEnergy":false,"burnRate":false,"flashPoint":false,"vaporPoint":false,"specHeat":false,"selfIgnitionCoef":false,"smokePoint":false,"containerBeam":false}
+    ],
+    "beams": [
+          ["id1:", "id2:"],
+          //fuel tank beams
+          {"beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+          {"disableMeshBreaking":true,"disableTriangleBreaking":true},
+          //connect fuel particles to tank
+          {"beamSpring":500000,"beamDamp":200},
+          {"beamDeform":5000,"beamStrength":"FLT_MAX"},
+          {"breakGroupType":1},
+          ["ft1l","ft1r",{"name":"fuelTank","containerBeam": "fuelTank"}],
+          {"optional":false},
+          {"deformLimitExpansion":1.1},
+          {"breakGroup":""},
+		  
+		  ["ft1l","b2tl"],
+		  ["ft1l","b2l"],
+		  ["ft1l","b2tr"],
+		  ["ft1l","b2r"],
+		  
+		  ["ft1r","b3tl"],
+		  ["ft1r","b3l"],
+		  ["ft1r","b3tr"],
+		  ["ft1r","b3r"],
+		  ["ft1r","b2l"],
+		  ["ft1r","b2tl"],
+		  
+          {"disableMeshBreaking":false,"disableTriangleBreaking":false}
+    ]
+}
+}

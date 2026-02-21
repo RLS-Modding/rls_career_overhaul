@@ -1,3 +1,6 @@
+# Normalize line endings to LF for all text files (cross-platform consistency)
+* text=auto eol=lf
+
 *.dds filter=lfs diff=lfs merge=lfs -text
 *.DDS filter=lfs diff=lfs merge=lfs -text
 *.dae filter=lfs diff=lfs merge=lfs -text

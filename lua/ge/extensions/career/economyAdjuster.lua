@@ -220,7 +220,14 @@ local function calculateAdjustedReward(raceData, baseReward)
     end
 
     local multiplier = getEffectiveSectionMultiplier(raceData.type or {})
-    local adjustedReward = (baseReward or raceData.reward or 0) * multiplier
+
+    -- Layer job market index on top of per-activity multiplier
+    local jobIndex = 1.0
+    if career_modules_globalEconomy and career_modules_globalEconomy.getJobMarketIndex then
+        jobIndex = career_modules_globalEconomy.getJobMarketIndex()
+    end
+
+    local adjustedReward = (baseReward or raceData.reward or 0) * multiplier * jobIndex
 
     return math.floor(adjustedReward + 0.5)
 end

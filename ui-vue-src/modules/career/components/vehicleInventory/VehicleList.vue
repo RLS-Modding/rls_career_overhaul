@@ -436,8 +436,8 @@ const listVehicleForSale = async (vehicle) => {
   const formModel = {
     vehicleName: vehicle.niceName,
     odometer: vehicle.odometer,
-    marketValue: vehicle.value,
-    price: Math.max(50, Math.round((vehicle.value || 0) / 50) * 50),
+    marketValue: vehicle.marketSellValue || vehicle.value,
+    price: Math.max(50, Math.round(((vehicle.marketSellValue || vehicle.value) || 0) / 50) * 50),
   }
   const formValidator = model => {
     if (!Number.isFinite(model.price) || model.price <= 0) return { error: true, message: "Enter a valid positive price" }

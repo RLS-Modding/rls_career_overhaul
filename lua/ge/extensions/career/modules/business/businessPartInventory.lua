@@ -204,7 +204,7 @@ local function getUIData(businessId)
     -- Calculate value with condition
     if career_modules_valueCalculator then
         local success, baseValue = pcall(function() 
-          return career_modules_valueCalculator.getPartValue(expandedPart) 
+          return career_modules_valueCalculator.getPartValue(expandedPart, true) 
         end)
         if success and baseValue then
           expandedPart.finalValue = baseValue * 0.9
@@ -261,7 +261,7 @@ local function sellPart(partId)
       expandedPart.niceName = part.name
     end
     
-    price = career_modules_valueCalculator.getPartValue(expandedPart) or 0
+    price = career_modules_valueCalculator.getPartValue(expandedPart, true) or 0
   else
     price = 100
   end
@@ -302,7 +302,7 @@ local function sellAllParts()
         expandedPart.niceName = part.name
       end
       
-      local price = career_modules_valueCalculator.getPartValue(expandedPart) or 0
+      local price = career_modules_valueCalculator.getPartValue(expandedPart, true) or 0
       price = price * 0.9
       totalPrice = totalPrice + price
       table.insert(partsToRemove, partId)
@@ -346,7 +346,7 @@ local function sellPartsByVehicle(vehicleModel)
         expandedPart.niceName = part.name
       end
       
-      local price = career_modules_valueCalculator.getPartValue(expandedPart) or 0
+      local price = career_modules_valueCalculator.getPartValue(expandedPart, true) or 0
       price = price * 0.9
       totalPrice = totalPrice + price
       table.insert(partsToRemove, partId)
