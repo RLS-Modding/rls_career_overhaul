@@ -1,0 +1,554 @@
+-- Real Estate Negotiation Module
+-- Handles buying/selling property with AI negotiation
+
+local M = {}
+M.dependencies = { 'career_career', 'career_saveSystem', 'freeroam_facilities', 'career_modules_garageManager' }
+
+-- Negotiation state (in-memory, persisted to save file)
+local negotiationActive = false
+local amISelling = false              -- false = buying, true = selling
+local startingPrice = 0
+local patience = 1.0
+local isInsulted = false
+local myOffer = nil
+local theirOffer = 0
+local offerHistory = {}
+local negotiationStatus = "initial"
+local opponentPersonality = nil
+local opponentQuote = ""
+
+-- Property-specific data
+local propertyId = nil                -- garageId being negotiated
+local propertyName = ""
+local propertyPreview = ""
+local propertyMarketValue = 0
+local propertyCapacity = 0
+local propertyParkingSpots = 0
+local propertyNeighborhood = ""
+
+-- Selling-side data (Phase 2)
+local listingIndex = nil              -- Index into listedProperties[propertyId].offers
+local listedProperties = {}           -- [garageId] = { listingTimestamp, askingPrice, offers, ... }
+
+-- Constants
+local SIM_SECONDS_PER_GAME_DAY = 1200
+local timeBetweenOffersBase = 5 * SIM_SECONDS_PER_GAME_DAY  -- 5 game days
+local offerTTL = 10 * SIM_SECONDS_PER_GAME_DAY              -- 10 game days
+
+-- ────────────────────────────────────────────────────────────────────────────
+-- PERSONALITY GENERATION
+-- ────────────────────────────────────────────────────────────────────────────
+
+local function getDefaultSellerPersonality()
+  return {
+    archetype = "default_private_seller",
+    name = "Property Seller",
+    isDealership = false,
+    startingPatience = 0.8,
+    patienceVariance = 0.1,
+    isDesperate = false,
+    desperation = 0.05,
+    desperationMaxDiscount = 0.05,
+    insultThresholdBase = 0.85,
+    priceMultiplier = 0,
+    counterOfferReadiness = 0.5,
+    quotesByPriceTier = {
+      low = {"Let's discuss the price."},
+      mid = {"I'm open to reasonable offers."},
+      high = {"This is a valuable property."}
+    },
+    insultQuotes = {"That's way too low."},
+    happyQuotes = {"Deal."},
+    minimumOverMarket = 0,
+  }
+end
+
+local function generateSellerPersonality()
+  local data = jsonReadFile("levels/west_coast_usa/facilities/realEstatePersonalities.json")
+  if not data or not data.randomSellerArchetypes or not data.archetypes then
+    log("W", "realEstateNegotiation", "Could not load realEstatePersonalities.json, using default")
+    return getDefaultSellerPersonality()
+  end
+  
+  local archetypeKeys = data.randomSellerArchetypes or {}
+  if #archetypeKeys == 0 then
+    log("W", "realEstateNegotiation", "No seller archetypes found, using default")
+    return getDefaultSellerPersonality()
+  end
+  
+  local chosenKey = archetypeKeys[math.random(1, #archetypeKeys)]
+  local archetype = data.archetypes[chosenKey]
+  if not archetype then
+    log("W", "realEstateNegotiation", "Archetype not found: " .. chosenKey .. ", using default")
+    return getDefaultSellerPersonality()
+  end
+  
+  -- Roll desperation once per negotiation
+  local isDesperate = math.random() < (archetype.desperation or 0.05)
+  
+  -- Roll insult threshold once per negotiation
+  local baseThreshold = archetype.insultThresholdBase or 0.85
+  local variance = archetype.insultThresholdVariance or 0.03
+  local insultThreshold = baseThreshold + (math.random() * variance * 2 - variance)
+  
+  -- Roll patience with variance
+  local basePatience = archetype.startingPatience or 0.8
+  local patienceVariance = archetype.patienceVariance or 0.1
+  local patienceRoll = math.max(0.3, math.min(1.0, basePatience + (math.random() * patienceVariance * 2 - patienceVariance)))
+  
+  -- Generate name
+  local name
+  if archetype.isDealership then
+    if archetype.names and #archetype.names > 0 then
+      name = archetype.names[math.random(1, #archetype.names)]
+    else
+      name = "Property Manager"
+    end
+  else
+    -- Use first name pool from marketplace if available
+    if career_modules_marketplace and career_modules_marketplace.firstNames and #career_modules_marketplace.firstNames > 0 then
+      name = career_modules_marketplace.firstNames[math.random(1, #career_modules_marketplace.firstNames)]
+      if career_modules_marketplace.initials and #career_modules_marketplace.initials > 0 then
+        name = name .. " " .. career_modules_marketplace.initials[math.random(1, #career_modules_marketplace.initials)] .. "."
+      end
+    else
+      name = "Private Seller"
+    end
+  end
+  
+  return {
+    archetype = chosenKey,
+    name = name,
+    isDealership = archetype.isDealership or false,
+    startingPatience = patienceRoll,
+    patienceVariance = archetype.patienceVariance or 0.1,
+    isDesperate = isDesperate,
+    desperation = archetype.desperation or 0.05,
+    desperationMaxDiscount = archetype.desperationMaxDiscount or 0.05,
+    insultThresholdBase = insultThreshold,
+    priceMultiplier = archetype.priceMultiplier or 0,
+    counterOfferReadiness = archetype.counterOfferReadiness or 0.5,
+    quotesByPriceTier = archetype.quotesByPriceTier,
+    insultQuotes = archetype.insultQuotes or {"That's too low."},
+    happyQuotes = archetype.happyQuotes or {"Deal."},
+    minimumOverMarket = archetype.minimumOverMarket or 0,
+  }
+end
+
+-- ────────────────────────────────────────────────────────────────────────────
+-- QUOTE SELECTION
+-- ────────────────────────────────────────────────────────────────────────────
+
+local function selectQuoteForPersonality(personality, propertyValue, isBuyer)
+  if not personality then
+    return ""
+  end
+
+  -- Determine price tier for real estate (higher thresholds than vehicles)
+  local priceTier = "low"
+  if propertyValue >= 800000 then
+    priceTier = "high"
+  elseif propertyValue >= 400000 then
+    priceTier = "mid"
+  end
+
+  local quotes = nil
+  if personality.quotesByPriceTier and type(personality.quotesByPriceTier) == "table" then
+    quotes = personality.quotesByPriceTier[priceTier]
+  end
+
+  if quotes and type(quotes) == "table" and #quotes > 0 then
+    return quotes[math.random(1, #quotes)]
+  end
+
+  return "Let's discuss the price."
+end
+
+-- ────────────────────────────────────────────────────────────────────────────
+-- UI BRIDGE
+-- ────────────────────────────────────────────────────────────────────────────
+
+local function getNegotiationState()
+  return {
+    active = negotiationActive,
+    amISelling = amISelling,
+    propertyId = propertyId,
+    propertyName = propertyName,
+    propertyPreview = propertyPreview,
+    propertyCapacity = propertyCapacity,
+    propertyParkingSpots = propertyParkingSpots,
+    propertyNeighborhood = propertyNeighborhood,
+    startingPrice = startingPrice,
+    patience = patience,
+    myOffer = myOffer,
+    theirOffer = theirOffer,
+    status = negotiationStatus,
+    opponentName = opponentPersonality and opponentPersonality.name or "Seller",
+    opponentQuote = opponentQuote,
+    propertyMarketValue = propertyMarketValue,
+    negotiationStatus = negotiationStatus,
+    offerHistory = offerHistory,
+    isInsulted = isInsulted,
+  }
+end
+
+-- ────────────────────────────────────────────────────────────────────────────
+-- NEGOTIATION LOGIC (BUYING SIDE)
+-- ────────────────────────────────────────────────────────────────────────────
+
+local function calculatePatienceDrop(myOfferAmount, theirOfferAmount, marketValue, personality)
+  local gapFromTheirOffer = math.abs(myOfferAmount - theirOfferAmount)
+  local gapPct = (gapFromTheirOffer / theirOfferAmount) * 100
+  
+  -- Real estate: slower patience decay than vehicles
+  local percentagePatienceDrop = gapPct * 1.5  -- vs 2.5-3 for vehicles
+  local absolutePatienceDrop = (gapFromTheirOffer / 1000) * 4  -- vs 6-8 for vehicles
+  
+  -- Price scaling: high-value properties use percentage more
+  local priceScale = math.min(1, marketValue / 100000)
+  local percentageWeight = priceScale
+  local absoluteWeight = 1 - priceScale
+  
+  -- Institutional sellers (banks, property managers) lose patience even slower
+  local institutionalModifier = personality.isDealership and 0.5 or 1.0
+  
+  local patienceDrop = ((percentagePatienceDrop * percentageWeight + absolutePatienceDrop * absoluteWeight) * institutionalModifier) + math.random() * 8
+  
+  return patienceDrop / 100  -- Convert to 0–1 scale
+end
+
+local function generateCounterOffer(myOfferAmount, theirOfferAmount, currentPatience, personality)
+  local diff = theirOfferAmount - myOfferAmount
+  
+  -- High patience = smaller moves (dragging out negotiation, maximizing price)
+  -- Low patience = bigger jumps (trying to close faster)
+  local baseMovePercent = (1 - currentPatience) * 0.3 + 0.20  -- High patience = 20%, low = 50%
+  local movePercent = baseMovePercent + (math.random() * 0.1 - 0.05)  -- ±5% randomness
+  movePercent = math.max(0.15, math.min(0.50, movePercent))  -- Clamp to 15–50%
+  
+  local counterAmount = myOfferAmount + (math.abs(diff) * movePercent)
+  return math.max(myOfferAmount, math.floor(counterAmount / 100 + 0.5) * 100)  -- Round to nearest $100
+end
+
+local function isOfferAllowed(price)
+  if not negotiationActive then return false end
+  if negotiationStatus == "accepted" or negotiationStatus == "failed" then return false end
+  if not price or price <= 0 then return false end
+  
+  -- For buying: can't offer more than their current offer
+  if not amISelling then
+    if price > theirOffer then return false end
+    if myOffer and price >= myOffer then return false end  -- Can't go backwards (higher)
+  end
+  
+  return true
+end
+
+local function makeOffer(price)
+  if not isOfferAllowed(price) then
+    log("W", "realEstateNegotiation", "Offer not allowed: " .. tostring(price))
+    return false
+  end
+  
+  myOffer = price
+  table.insert(offerHistory, { myOffer = myOffer })
+  
+  -- Check for insult
+  local minimumAcceptableOffer = math.max(
+    startingPrice * opponentPersonality.insultThresholdBase,
+    propertyMarketValue * 0.80
+  )
+  
+  if myOffer < minimumAcceptableOffer then
+    isInsulted = true
+    opponentQuote = opponentPersonality.insultQuotes[math.random(1, #opponentPersonality.insultQuotes)]
+    patience = 0
+    negotiationStatus = "failed"
+    guihooks.trigger('realEstateNegotiationData', getNegotiationState())
+    return true
+  end
+  
+  negotiationStatus = "thinking"
+  guihooks.trigger('realEstateNegotiationData', getNegotiationState())
+  
+  core_jobsystem.create(function(job)
+    -- Thinking delay
+    local thinkingTime = 2.5 + math.random() * 2.0
+    job.sleep(thinkingTime)
+    
+    negotiationStatus = "typing"
+    guihooks.trigger('realEstateNegotiationData', getNegotiationState())
+    job.sleep(thinkingTime)
+    
+    -- Calculate patience drop
+    local patienceChange = calculatePatienceDrop(myOffer, theirOffer, propertyMarketValue, opponentPersonality)
+    patience = math.max(0, patience - patienceChange)
+    
+    -- Determine acceptance/counter
+    local absoluteMinimum
+    if opponentPersonality.isDesperate then
+      absoluteMinimum = propertyMarketValue * (1 - (opponentPersonality.desperationMaxDiscount or 0.05))
+    else
+      -- Normal seller: minimum is based on patience
+      -- High patience = holds firm near asking price
+      -- Low patience = willing to go lower
+      local negotiationRange = startingPrice - propertyMarketValue * 0.95  -- Willing to drop 5% below market at most
+      local patienceMultiplier = patience * 0.7  -- High patience = 70% of range, low = smaller range
+      local willingToNegotiate = negotiationRange * patienceMultiplier
+      absoluteMinimum = startingPrice - willingToNegotiate
+    end
+    
+    if patience <= 0 then
+      negotiationStatus = "failed"
+      opponentQuote = "I'm not interested in continuing this negotiation."
+      theirOffer = startingPrice
+    elseif myOffer >= absoluteMinimum then
+      theirOffer = myOffer
+      negotiationStatus = "accepted"
+      if myOffer > (absoluteMinimum * 1.05) then
+        opponentQuote = opponentPersonality.happyQuotes[math.random(1, #opponentPersonality.happyQuotes)]
+      else
+        opponentQuote = "Alright, we have a deal."
+      end
+    else
+      -- Generate counter-offer
+      local counter = generateCounterOffer(myOffer, theirOffer, patience, opponentPersonality)
+      if counter <= myOffer then
+        -- Can't counter lower than player's offer → accept
+        theirOffer = myOffer
+        negotiationStatus = "accepted"
+        opponentQuote = "That works for me."
+      else
+        theirOffer = counter
+        if patience <= 0.05 then
+          negotiationStatus = "counterOfferLastChance"
+          opponentQuote = "This is my final offer. Take it or leave it."
+        else
+          negotiationStatus = "counterOffer"
+          opponentQuote = selectQuoteForPersonality(opponentPersonality, propertyMarketValue, false)
+        end
+      end
+    end
+    
+    table.insert(offerHistory, { theirOffer = theirOffer, negotiationStatus = negotiationStatus })
+    guihooks.trigger('realEstateNegotiationData', getNegotiationState())
+  end)
+  
+  return true
+end
+
+local function takeTheirOffer()
+  if not negotiationActive then return false end
+  if not theirOffer or theirOffer <= 0 then return false end
+  
+  myOffer = theirOffer
+  negotiationStatus = "accepted"
+  opponentQuote = opponentPersonality.happyQuotes[math.random(1, #opponentPersonality.happyQuotes)]
+  
+  guihooks.trigger('realEstateNegotiationData', getNegotiationState())
+  
+  -- Complete the purchase
+  if not amISelling then
+    completePurchase(propertyId, theirOffer)
+  end
+  
+  return true
+end
+
+local function cancelNegotiation()
+  if not negotiationActive then return false end
+  
+  negotiationStatus = "cancelled"
+  negotiationActive = false
+  
+  guihooks.trigger('realEstateNegotiationData', getNegotiationState())
+  guihooks.trigger('ChangeState', {state = 'menu.career', params = {}})
+  
+  return true
+end
+
+local function completePurchase(garageId, finalPrice)
+  -- Call garageManager to complete the purchase
+  if career_modules_garageManager and career_modules_garageManager.completePurchaseWithNegotiatedPrice then
+    career_modules_garageManager.completePurchaseWithNegotiatedPrice(garageId, finalPrice)
+  end
+  
+  -- Calculate savings
+  local saved = startingPrice - finalPrice
+  local savingsPercent = (saved / startingPrice) * 100
+  
+  local message = string.format("Property purchased for $%s! You saved $%s (%.1f%% off)", 
+    tostring(math.floor(finalPrice)),
+    tostring(math.floor(saved)),
+    savingsPercent
+  )
+  
+  if savingsPercent >= 8 then
+    guihooks.trigger('toastrMsg', {type="success", title="🎉 Excellent Negotiation!", msg=message})
+  elseif savingsPercent >= 5 then
+    guihooks.trigger('toastrMsg', {type="success", title="👍 Good Deal!", msg=message})
+  elseif savingsPercent >= 2 then
+    guihooks.trigger('toastrMsg', {type="success", title="Fair Price", msg=message})
+  else
+    guihooks.trigger('toastrMsg', {type="info", title="Property Purchased", msg=message})
+  end
+  
+  negotiationActive = false
+  guihooks.trigger('ChangeState', {state = 'menu.career', params = {}})
+end
+
+local function startNegotiateBuying(garageId)
+  local garage = freeroam_facilities.getFacility("garage", garageId)
+  if not garage then
+    log("E", "realEstateNegotiation", "Garage not found: " .. tostring(garageId))
+    return false
+  end
+  
+  -- Get the current market price
+  local listedPrice = 0
+  if career_modules_garageManager and career_modules_garageManager.getGaragePurchasePrice then
+    listedPrice = career_modules_garageManager.getGaragePurchasePrice(garageId)
+  end
+  if not listedPrice or listedPrice == 0 then
+    listedPrice = garage.defaultPrice or 0
+  end
+  
+  local marketValue = listedPrice  -- In Phase 1, listed price = market value
+  
+  -- Generate seller personality
+  opponentPersonality = generateSellerPersonality()
+  
+  -- Initialize negotiation state
+  propertyId = garageId
+  propertyName = garage.name or "Property"
+  propertyPreview = garage.preview or ""
+  propertyMarketValue = marketValue
+  propertyCapacity = garage.capacity or 0
+  propertyParkingSpots = (garage.parkingSpotNames and #garage.parkingSpotNames) or 0
+  propertyNeighborhood = "West Coast"  -- TODO: Get from propertyMarket when available
+  
+  startingPrice = listedPrice
+  negotiationActive = true
+  patience = opponentPersonality.startingPatience
+  isInsulted = false
+  theirOffer = listedPrice
+  myOffer = nil
+  amISelling = false
+  negotiationStatus = "initial"
+  offerHistory = {
+    { theirOffer = listedPrice, negotiationStatus = "initial" }
+  }
+  
+  -- Select opening quote
+  opponentQuote = selectQuoteForPersonality(opponentPersonality, marketValue, false)
+  
+  log("I", "realEstateNegotiation", "Started negotiation for " .. propertyName .. " at $" .. tostring(listedPrice))
+  
+  guihooks.trigger('ChangeState', {state = 'realEstateNegotiation', params = {}})
+  guihooks.trigger('realEstateNegotiationData', getNegotiationState())
+  
+  return true
+end
+
+-- ────────────────────────────────────────────────────────────────────────────
+-- NEGOTIATION LOGIC (SELLING SIDE) — Stub for Phase 2
+-- ────────────────────────────────────────────────────────────────────────────
+
+local function startNegotiateSelling(garageId, offerIdx)
+  log("W", "realEstateNegotiation", "Selling-side negotiation not yet implemented (Phase 2)")
+  return false
+end
+
+-- ────────────────────────────────────────────────────────────────────────────
+-- SAVE/LOAD
+-- ────────────────────────────────────────────────────────────────────────────
+
+local function onSaveCurrentSaveSlot(currentSavePath)
+  -- Save negotiation state if active
+  if negotiationActive then
+    local dirPath = currentSavePath .. "/career/rls_career"
+    if not FS:directoryExists(dirPath) then
+      FS:directoryCreate(dirPath)
+    end
+    
+    local data = {
+      negotiationActive = negotiationActive,
+      amISelling = amISelling,
+      propertyId = propertyId,
+      startingPrice = startingPrice,
+      patience = patience,
+      myOffer = myOffer,
+      theirOffer = theirOffer,
+      negotiationStatus = negotiationStatus,
+      offerHistory = offerHistory,
+      opponentPersonality = opponentPersonality,
+      opponentQuote = opponentQuote,
+    }
+    
+    career_saveSystem.jsonWriteFileSafe(dirPath .. "/realEstateNegotiationState.json", data, true)
+  end
+  
+  -- Save listings (Phase 2)
+  if next(listedProperties) then
+    local dirPath = currentSavePath .. "/career/rls_career"
+    if not FS:directoryExists(dirPath) then
+      FS:directoryCreate(dirPath)
+    end
+    career_saveSystem.jsonWriteFileSafe(dirPath .. "/realEstateListings.json", listedProperties, true)
+  end
+end
+
+local function loadNegotiationState()
+  if not career_career.isActive() then return end
+  local _, currentSavePath = career_saveSystem.getCurrentSaveSlot()
+  if not currentSavePath then return end
+  
+  local filePath = currentSavePath .. "/career/rls_career/realEstateNegotiationState.json"
+  local data = jsonReadFile(filePath)
+  if data and data.negotiationActive then
+    negotiationActive = data.negotiationActive
+    amISelling = data.amISelling or false
+    propertyId = data.propertyId
+    startingPrice = data.startingPrice or 0
+    patience = data.patience or 1.0
+    myOffer = data.myOffer
+    theirOffer = data.theirOffer or 0
+    negotiationStatus = data.negotiationStatus or "initial"
+    offerHistory = data.offerHistory or {}
+    opponentPersonality = data.opponentPersonality
+    opponentQuote = data.opponentQuote or ""
+  end
+  
+  -- Load listings (Phase 2)
+  local listingsPath = currentSavePath .. "/career/rls_career/realEstateListings.json"
+  local listingsData = jsonReadFile(listingsPath)
+  if listingsData then
+    listedProperties = listingsData
+  end
+end
+
+local function onCareerActivated()
+  loadNegotiationState()
+end
+
+local function onExtensionLoaded()
+  loadNegotiationState()
+end
+
+-- ────────────────────────────────────────────────────────────────────────────
+-- PUBLIC API
+-- ────────────────────────────────────────────────────────────────────────────
+
+M.startNegotiateBuying = startNegotiateBuying
+M.startNegotiateSelling = startNegotiateSelling
+M.makeOffer = makeOffer
+M.takeTheirOffer = takeTheirOffer
+M.cancelNegotiation = cancelNegotiation
+M.getNegotiationState = getNegotiationState
+
+-- Save/load hooks
+M.onSaveCurrentSaveSlot = onSaveCurrentSaveSlot
+M.onCareerActivated = onCareerActivated
+M.onExtensionLoaded = onExtensionLoaded
+
+return M

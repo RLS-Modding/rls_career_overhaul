@@ -1,5 +1,5 @@
 local M = {}
-M.dependencies = { 'career_career', 'career_saveSystem', 'freeroam_facilities' }
+M.dependencies = { 'career_career', 'career_saveSystem', 'freeroam_facilities', 'career_modules_realEstateNegotiation' }
 
 local purchasedGarages = {}
 local discoveredGarages = {}
@@ -200,9 +200,143 @@ local function getGaragePrice(garage)
   return calculateGaragePurchasePrice(garageId)
 end
 
+-- Complete purchase with negotiated price (called from realEstateNegotiation module)
+local function completePurchaseWithNegotiatedPrice(garageId, finalPrice)
+  if not career_career.isActive() then return false end
+  
+  local garage = freeroam_facilities.getFacility("garage", garageId)
+  if not garage then
+    log("E", "garageManager", "completePurchaseWithNegotiatedPrice: Garage not found: " .. tostring(garageId))
+    return false
+  end
+  
+  local price = { money = { amount = finalPrice, canBeNegative = false } }
+  local success = career_modules_payment.pay(price, { label = "Purchased " .. garage.name })
+  if success then
+    addPurchasedGarage(garage.id)
+    career_saveSystem.saveCurrent()
+    
+    -- Open the garage computer if available
+    local computers = freeroam_facilities.getFacilitiesByType("computer")
+    if computers then
+      for _, computer in pairs(computers) do
+        if computer.garageId == garageId then
+          career_modules_computer.openComputerMenuById(computer.id)
+          break
+        end
+      end
+    end
+    
+    return true
+  end
+  
+  return false
+end
+
+-- Request garage listing data for UI (with negotiation support)
+local function requestGarageListing(garageId)
+  if not career_career.isActive() then return nil end
+  
+  local garage = freeroam_facilities.getFacility("garage", garageId)
+  if not garage then return nil end
+  
+  local listedPrice = getGaragePrice(garage)
+  local canNegotiate = not garage.starterGarage and listedPrice > 0
+  
+  -- Get garage preview from computer preview if available
+  local preview = garage.preview or ""
+  local computers = freeroam_facilities.getFacilitiesByType("computer")
+  if computers then
+    for _, comp in pairs(computers) do
+      if comp.garageId == garageId and comp.preview then
+        preview = comp.preview
+        break
+      end
+    end
+  end
+  
+  -- Translate name if needed
+  local name = garage.name
+  if translateLanguage then
+    local translated = translateLanguage(garage.name, garage.name, true)
+    if translated then name = translated end
+  end
+  
+  local data = {
+    garageId = garage.id,
+    name = name,
+    preview = preview,
+    listedPrice = listedPrice,
+    capacity = math.ceil(garage.capacity / (career_modules_hardcore.isHardcoreMode() and 2 or 1)),
+    parkingSpots = (garage.parkingSpotNames and #garage.parkingSpotNames) or 0,
+    neighborhood = "West Coast",  -- TODO: Get from propertyMarket when available
+    canNegotiate = canNegotiate,
+    starterGarage = garage.starterGarage or false,
+  }
+  
+  return data
+end
+
+-- Start negotiation for a garage purchase
+local function startGarageNegotiation(garageId)
+  if not career_career.isActive() then return false end
+  if not career_modules_realEstateNegotiation then
+    log("E", "garageManager", "realEstateNegotiation module not loaded")
+    return false
+  end
+  
+  return career_modules_realEstateNegotiation.startNegotiateBuying(garageId)
+end
+
+-- Purchase garage at listed price (no negotiation)
+local function purchaseGarageAtListedPrice(garageId)
+  if not career_career.isActive() then return false end
+  
+  local garage = freeroam_facilities.getFacility("garage", garageId)
+  if not garage then
+    log("E", "garageManager", "purchaseGarageAtListedPrice: Garage not found: " .. tostring(garageId))
+    return false
+  end
+  
+  local price = getGaragePrice(garage)
+  
+  -- Free garages (starter garages)
+  if price == 0 then
+    addPurchasedGarage(garage.id)
+    career_saveSystem.saveCurrent()
+    
+    local computers = freeroam_facilities.getFacilitiesByType("computer")
+    if computers then
+      for _, computer in pairs(computers) do
+        if computer.garageId == garageId then
+          career_modules_computer.openComputerMenuById(computer.id)
+          break
+        end
+      end
+    end
+    
+    return true
+  end
+  
+  -- Paid garages
+  local priceTable = { money = { amount = price, canBeNegative = false } }
+  local success = career_modules_payment.pay(priceTable, { label = "Purchased " .. garage.name })
+  if success then
+    addPurchasedGarage(garage.id)
+    career_saveSystem.saveCurrent()
+    guihooks.trigger('toastrMsg', {type="success", title="Property Purchased", msg="Welcome to your new garage!"})
+    guihooks.trigger('ChangeState', {state = 'menu.career', params = {}})
+    return true
+  end
+  
+  return false
+end
+
 local function showPurchaseGaragePrompt(garageId)
   if not career_career.isActive() then return end
   garageToPurchase = freeroam_facilities.getFacility("garage", garageId)
+  
+  -- Free garages (starter garages) - purchase immediately
   if getGaragePrice(garageToPurchase) == 0 then
     addPurchasedGarage(garageToPurchase.id)
     local computers = freeroam_facilities.getFacilitiesByType("computer")
@@ -219,7 +353,16 @@ local function showPurchaseGaragePrompt(garageId)
     career_saveSystem.saveCurrent()
     return
   end
-  guihooks.trigger('ChangeState', {state = 'purchase-garage'})
+  
+  -- Paid garages - show listing view with negotiation option
+  local listingData = requestGarageListing(garageId)
+  if listingData then
+    guihooks.trigger('openGarageListing', listingData)
+    guihooks.trigger('ChangeState', {state = 'garage-listing'})
+  else
+    -- Fallback to old purchase flow if listing data unavailable
+    guihooks.trigger('ChangeState', {state = 'purchase-garage'})
+  end
 end
 
 local function requestGarageData()
@@ -505,6 +648,12 @@ M.buyGarage = buyGarage
 M.cancelGaragePurchase = cancelGaragePurchase
 M.getGaragePrice = getGaragePrice
 M.getGaragePurchasePrice = getGaragePurchasePrice
+
+-- Real estate negotiation integration
+M.completePurchaseWithNegotiatedPrice = completePurchaseWithNegotiatedPrice
+M.requestGarageListing = requestGarageListing
+M.startGarageNegotiation = startGarageNegotiation
+M.purchaseGarageAtListedPrice = purchaseGarageAtListedPrice
 M.canSellGarage = canSellGarage
 M.sellGarage = sellGarage
 
