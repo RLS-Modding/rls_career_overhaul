@@ -195,6 +195,7 @@ local function calculateGaragePurchasePrice(garageId)
   end
 end
 
+-- Wrapper for backward compatibility
 local function getGaragePrice(garage)
   local garageId = type(garage) == "table" and garage.id or garage
   return calculateGaragePurchasePrice(garageId)
@@ -202,11 +203,24 @@ end
 
 -- Complete purchase with negotiated price (called from realEstateNegotiation module)
 local function completePurchaseWithNegotiatedPrice(garageId, finalPrice)
-  if not career_career.isActive() then return false end
+  if not career_career.isActive() then 
+    log("E", "garageManager", "completePurchaseWithNegotiatedPrice: Career not active")
+    return false 
+  end
+  
+  if not garageId or not finalPrice then
+    log("E", "garageManager", "completePurchaseWithNegotiatedPrice: Missing garageId or finalPrice")
+    return false
+  end
   
   local garage = freeroam_facilities.getFacility("garage", garageId)
   if not garage then
     log("E", "garageManager", "completePurchaseWithNegotiatedPrice: Garage not found: " .. tostring(garageId))
+    return false
+  end
+  
+  if not career_modules_payment then
+    log("E", "garageManager", "completePurchaseWithNegotiatedPrice: Payment module not loaded")
     return false
   end
   
@@ -290,7 +304,15 @@ end
 
 -- Purchase garage at listed price (no negotiation)
 local function purchaseGarageAtListedPrice(garageId)
-  if not career_career.isActive() then return false end
+  if not career_career.isActive() then 
+    log("E", "garageManager", "purchaseGarageAtListedPrice: Career not active")
+    return false 
+  end
+  
+  if not garageId then
+    log("E", "garageManager", "purchaseGarageAtListedPrice: Missing garageId")
+    return false
+  end
   
   local garage = freeroam_facilities.getFacility("garage", garageId)
   if not garage then
@@ -299,6 +321,10 @@ local function purchaseGarageAtListedPrice(garageId)
   end
   
   local price = getGaragePrice(garage)
+  if not price then
+    log("E", "garageManager", "purchaseGarageAtListedPrice: Could not determine price for garage: " .. tostring(garageId))
+    return false
+  end
   
   -- Free garages (starter garages)
   if price == 0 then
@@ -319,6 +345,11 @@ local function purchaseGarageAtListedPrice(garageId)
   end
   
   -- Paid garages
+  if not career_modules_payment then
+    log("E", "garageManager", "purchaseGarageAtListedPrice: Payment module not loaded")
+    return false
+  end
+  
   local priceTable = { money = { amount = price, canBeNegative = false } }
   local success = career_modules_payment.pay(priceTable, { label = "Purchased " .. garage.name })
   if success then
@@ -510,7 +541,9 @@ local function getGaragePurchasePrice(garageId)
   return calculateGaragePurchasePrice(garageId)
 end
 
-local function getGaragePrice(garageId, computerId)
+-- Legacy function for garage selling (applies 0.75 multiplier for sell-back price)
+-- DO NOT use for purchase price - use getGaragePurchasePrice instead
+local function getGarageSellPrice(garageId, computerId)
   if not garageId and not computerId then
     return nil
   elseif not garageId and computerId then
@@ -531,7 +564,7 @@ local function getGaragePrice(garageId, computerId)
           for _, startingGarageId in ipairs(activeChallenge.startingGarages) do
             if startingGarageId == garageId then
               -- This garage is selected as a starting garage, charge full price
-              log("D", "garageManager", "getGaragePrice: Garage " .. garageId .. " is challenge starting garage, charging full price: " .. garage.defaultPrice)
+              log("D", "garageManager", "getGarageSellPrice: Garage " .. garageId .. " is challenge starting garage, sell price: " .. garage.defaultPrice)
               return tonumber(garage.defaultPrice)
             end
           end
@@ -543,7 +576,7 @@ local function getGaragePrice(garageId, computerId)
       if career_modules_globalEconomy and career_modules_globalEconomy.getHousingMarketIndex then
         price = math.floor(price * career_modules_globalEconomy.getHousingMarketIndex() + 0.5)
       end
-      log("D", "garageManager", "getGaragePrice: Garage " .. garageId .. " price: " .. price .. " (starterGarage: " .. tostring(garage.starterGarage) .. ")")
+      log("D", "garageManager", "getGarageSellPrice: Garage " .. garageId .. " sell price: " .. price .. " (starterGarage: " .. tostring(garage.starterGarage) .. ")")
       return math.floor(tonumber(price) * 0.75 + 0.5)
     end
   end

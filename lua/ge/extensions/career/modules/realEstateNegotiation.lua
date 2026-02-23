@@ -106,10 +106,16 @@ local function generateSellerPersonality()
     end
   else
     -- Use first name pool from marketplace if available
-    if career_modules_marketplace and career_modules_marketplace.firstNames and #career_modules_marketplace.firstNames > 0 then
-      name = career_modules_marketplace.firstNames[math.random(1, #career_modules_marketplace.firstNames)]
-      if career_modules_marketplace.initials and #career_modules_marketplace.initials > 0 then
-        name = name .. " " .. career_modules_marketplace.initials[math.random(1, #career_modules_marketplace.initials)] .. "."
+    if career_modules_marketplace then
+      local firstNames = career_modules_marketplace.firstNames
+      local initials = career_modules_marketplace.initials
+      if firstNames and #firstNames > 0 then
+        name = firstNames[math.random(1, #firstNames)]
+        if initials and #initials > 0 then
+          name = name .. " " .. initials[math.random(1, #initials)] .. "."
+        end
+      else
+        name = "Private Seller"
       end
     else
       name = "Private Seller"
@@ -141,7 +147,13 @@ end
 
 local function selectQuoteForPersonality(personality, propertyValue, isBuyer)
   if not personality then
-    return ""
+    log("W", "realEstateNegotiation", "selectQuoteForPersonality: personality is nil")
+    return "Let's discuss the price."
+  end
+
+  if not propertyValue or propertyValue <= 0 then
+    log("W", "realEstateNegotiation", "selectQuoteForPersonality: invalid property value")
+    return "Let's discuss the price."
   end
 
   -- Determine price tier for real estate (higher thresholds than vehicles)
@@ -161,6 +173,8 @@ local function selectQuoteForPersonality(personality, propertyValue, isBuyer)
     return quotes[math.random(1, #quotes)]
   end
 
+  -- Fallback if no quotes found for tier
+  log("W", "realEstateNegotiation", "No quotes found for tier: " .. priceTier)
   return "Let's discuss the price."
 end
 
@@ -287,16 +301,24 @@ local function makeOffer(price)
     -- Determine acceptance/counter
     local absoluteMinimum
     if opponentPersonality.isDesperate then
-      absoluteMinimum = propertyMarketValue * (1 - (opponentPersonality.desperationMaxDiscount or 0.05))
+      -- Desperate sellers can go up to desperationMaxDiscount (max 10%)
+      local maxDiscount = math.min(opponentPersonality.desperationMaxDiscount or 0.05, 0.10)
+      absoluteMinimum = propertyMarketValue * (1 - maxDiscount)
     else
       -- Normal seller: minimum is based on patience
       -- High patience = holds firm near asking price
       -- Low patience = willing to go lower
-      local negotiationRange = startingPrice - propertyMarketValue * 0.95  -- Willing to drop 5% below market at most
+      -- Maximum discount is capped at 10% below asking price
+      local maxPossibleDiscount = startingPrice * 0.10  -- Hard cap at 10%
+      local negotiationRange = math.min(startingPrice - propertyMarketValue * 0.95, maxPossibleDiscount)
       local patienceMultiplier = patience * 0.7  -- High patience = 70% of range, low = smaller range
       local willingToNegotiate = negotiationRange * patienceMultiplier
       absoluteMinimum = startingPrice - willingToNegotiate
     end
+    
+    -- Final safety check: never go below 90% of market value (10% max discount)
+    local hardFloor = propertyMarketValue * 0.90
+    absoluteMinimum = math.max(absoluteMinimum, hardFloor)
     
     if patience <= 0 then
       negotiationStatus = "failed"
@@ -355,22 +377,61 @@ local function takeTheirOffer()
   return true
 end
 
+local function resetNegotiationState()
+  negotiationActive = false
+  amISelling = false
+  startingPrice = 0
+  patience = 1.0
+  isInsulted = false
+  myOffer = nil
+  theirOffer = 0
+  offerHistory = {}
+  negotiationStatus = "initial"
+  opponentPersonality = nil
+  opponentQuote = ""
+  propertyId = nil
+  propertyName = ""
+  propertyPreview = ""
+  propertyMarketValue = 0
+  propertyCapacity = 0
+  propertyParkingSpots = 0
+  propertyNeighborhood = ""
+end
+
 local function cancelNegotiation()
   if not negotiationActive then return false end
   
   negotiationStatus = "cancelled"
-  negotiationActive = false
   
   guihooks.trigger('realEstateNegotiationData', getNegotiationState())
   guihooks.trigger('ChangeState', {state = 'menu.career', params = {}})
+  
+  resetNegotiationState()
   
   return true
 end
 
 local function completePurchase(garageId, finalPrice)
+  if not garageId or not finalPrice then
+    log("E", "realEstateNegotiation", "completePurchase: missing garageId or finalPrice")
+    return
+  end
+  
   -- Call garageManager to complete the purchase
-  if career_modules_garageManager and career_modules_garageManager.completePurchaseWithNegotiatedPrice then
-    career_modules_garageManager.completePurchaseWithNegotiatedPrice(garageId, finalPrice)
+  if not career_modules_garageManager then
+    log("E", "realEstateNegotiation", "completePurchase: garageManager module not loaded")
+    return
+  end
+  
+  if not career_modules_garageManager.completePurchaseWithNegotiatedPrice then
+    log("E", "realEstateNegotiation", "completePurchaseWithNegotiatedPrice not available")
+    return
+  end
+  
+  local success = career_modules_garageManager.completePurchaseWithNegotiatedPrice(garageId, finalPrice)
+  if not success then
+    log("E", "realEstateNegotiation", "Purchase failed")
+    return
   end
   
   -- Calculate savings
@@ -393,8 +454,8 @@ local function completePurchase(garageId, finalPrice)
     guihooks.trigger('toastrMsg', {type="info", title="Property Purchased", msg=message})
   end
   
-  negotiationActive = false
   guihooks.trigger('ChangeState', {state = 'menu.career', params = {}})
+  resetNegotiationState()
 end
 
 local function startNegotiateBuying(garageId)

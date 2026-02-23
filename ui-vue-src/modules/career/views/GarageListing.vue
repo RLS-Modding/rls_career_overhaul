@@ -101,7 +101,12 @@ onMounted(async () => {
   events.on('openGarageListing', handleGarageListingData)
   
   // Check if player can afford
-  cantPay.value = !(await lua.career_modules_garageManager.canPay())
+  try {
+    cantPay.value = !(await lua.career_modules_garageManager.canPay())
+  } catch (error) {
+    console.error('Error checking if player can pay:', error)
+    cantPay.value = true  // Assume can't pay if error
+  }
 })
 
 const formatPrice = (value) => {
