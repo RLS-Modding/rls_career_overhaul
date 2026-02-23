@@ -7,6 +7,14 @@ local garageToPurchase = nil
 local saveFile = "purchasedGarages.json"
 
 local garageSize = {}
+local CLOSING_FEE_RATE = 0.03
+local PROPERTY_TAX_RATE = 0.012
+local requestGarageListing
+local pendingGarageListingData = nil
+
+local NEGOTIATION_COOLDOWN_SECONDS = 30 * 60
+local negotiationCooldowns = {}
+local frozenPrices = {}
 
 local function savePurchasedGarages(currentSavePath)
   if not currentSavePath then
@@ -28,10 +36,108 @@ local function savePurchasedGarages(currentSavePath)
   print("Saved Garage Data to: " .. dirPath .. "/" .. saveFile)
 end
 
+local function saveNegotiationCooldowns(currentSavePath)
+  if not currentSavePath then
+    local slot, path = career_saveSystem.getCurrentSaveSlot()
+    currentSavePath = path
+    if not currentSavePath then return end
+  end
+
+  local dirPath = currentSavePath .. "/career/rls_career"
+  if not FS:directoryExists(dirPath) then
+    FS:directoryCreate(dirPath)
+  end
+  
+  local data = {
+    cooldowns = negotiationCooldowns,
+    frozenPrices = frozenPrices
+  }
+  career_saveSystem.jsonWriteFileSafe(dirPath .. "/negotiationCooldowns.json", data, true)
+end
+
+local function loadNegotiationCooldowns()
+  if not career_career.isActive() then return end
+  local _, currentSavePath = career_saveSystem.getCurrentSaveSlot()
+  if not currentSavePath then return end
+  
+  local filePath = currentSavePath .. "/career/rls_career/negotiationCooldowns.json"
+  local data = jsonReadFile(filePath)
+  if data then
+    negotiationCooldowns = data.cooldowns or {}
+    frozenPrices = data.frozenPrices or {}
+    
+    local currentTime = career_modules_playerAttributes and career_modules_playerAttributes.getAttributeValue("simTime") or 0
+    for garageId, cooldownTime in pairs(negotiationCooldowns) do
+      if currentTime - cooldownTime > NEGOTIATION_COOLDOWN_SECONDS then
+        negotiationCooldowns[garageId] = nil
+        if not frozenPrices[garageId] then
+          frozenPrices[garageId] = nil
+        end
+      end
+    end
+  end
+end
+
+local function getCurrentSimTime()
+  return os.time()
+end
+
+local function canNegotiateGarage(garageId)
+  if not garageId then return false, 0 end
+  
+  local currentTime = getCurrentSimTime()
+  local lastNegotiationTime = negotiationCooldowns[garageId]
+  
+  if not lastNegotiationTime then
+    return true, 0
+  end
+  
+  local timeSinceNegotiation = currentTime - lastNegotiationTime
+  local cooldownRemaining = math.max(0, NEGOTIATION_COOLDOWN_SECONDS - timeSinceNegotiation)
+  
+  return cooldownRemaining == 0, cooldownRemaining
+end
+
+local function setNegotiationCooldown(garageId)
+  if not garageId then return end
+  negotiationCooldowns[garageId] = getCurrentSimTime()
+end
+
+local function freezeNegotiatedPrice(garageId, price)
+  if not garageId or not price then return end
+  frozenPrices[garageId] = {
+    price = price,
+    timestamp = getCurrentSimTime()
+  }
+end
+
+local function getFrozenPrice(garageId)
+  if not garageId then return nil end
+  local frozen = frozenPrices[garageId]
+  if not frozen then return nil end
+  
+  local currentTime = getCurrentSimTime()
+  local timeSinceFreeze = currentTime - frozen.timestamp
+  
+  if timeSinceFreeze > NEGOTIATION_COOLDOWN_SECONDS then
+    frozenPrices[garageId] = nil
+    return nil
+  end
+  
+  return frozen.price
+end
+
+local function clearFrozenPrice(garageId)
+  if garageId then
+    frozenPrices[garageId] = nil
+  end
+end
+
 local function onSaveCurrentSaveSlot(currentSavePath)
   -- This is the correct handler that will save to the new autosave
   print("Saving Garage Data to: " .. currentSavePath .. "/career/rls_career/" .. saveFile)
   savePurchasedGarages(currentSavePath)
+  saveNegotiationCooldowns(currentSavePath)
 end
 
 local function isPurchasedGarage(garageId)
@@ -163,6 +269,7 @@ end
 
 local function onExtensionLoaded()
   loadPurchasedGarages()
+  loadNegotiationCooldowns()
   buildGarageSizes()
 end
 
@@ -195,6 +302,16 @@ local function calculateGaragePurchasePrice(garageId)
   end
 end
 
+local function calculateClosingFee(price)
+  if not price or price <= 0 then return 0 end
+  return math.floor((price * CLOSING_FEE_RATE) + 0.5)
+end
+
+local function calculateAnnualPropertyTax(price)
+  if not price or price <= 0 then return 0 end
+  return math.floor((price * PROPERTY_TAX_RATE) + 0.5)
+end
+
 -- Wrapper for backward compatibility
 local function getGaragePrice(garage)
   local garageId = type(garage) == "table" and garage.id or garage
@@ -202,7 +319,7 @@ local function getGaragePrice(garage)
 end
 
 -- Complete purchase with negotiated price (called from realEstateNegotiation module)
-local function completePurchaseWithNegotiatedPrice(garageId, finalPrice)
+local function completePurchaseWithNegotiatedPrice(garageId, finalPrice, freezePrice)
   if not career_career.isActive() then 
     log("E", "garageManager", "completePurchaseWithNegotiatedPrice: Career not active")
     return false 
@@ -219,18 +336,71 @@ local function completePurchaseWithNegotiatedPrice(garageId, finalPrice)
     return false
   end
   
-  if not career_modules_payment then
-    log("E", "garageManager", "completePurchaseWithNegotiatedPrice: Payment module not loaded")
+  setNegotiationCooldown(garageId)
+  
+  if freezePrice then
+    freezeNegotiatedPrice(garageId, finalPrice)
+  end
+  
+  local listingData = requestGarageListing(garageId)
+  
+  -- Always show the negotiated price on the listing, even if not frozen
+  listingData.negotiatedPrice = finalPrice
+  listingData.isFrozen = freezePrice == true
+  local closingFee = calculateClosingFee(finalPrice)
+  local propertyTax = calculateAnnualPropertyTax(finalPrice)
+  listingData.closingFee = closingFee
+  listingData.propertyTax = propertyTax
+  listingData.estimatedTotal = finalPrice + closingFee + propertyTax
+  
+  pendingGarageListingData = listingData
+  
+  -- Send data and change state with a small delay to ensure negotiation UI updates first
+  guihooks.trigger('openGarageListing', listingData)
+  
+  core_jobsystem.create(function(job)
+    job.sleep(0.2)
+    guihooks.trigger('ChangeState', {state = 'garage-listing', params = {}})
+  end)
+  
+  return true
+end
+
+local function purchaseGarageAtNegotiatedPrice(garageId)
+  if not career_career.isActive() then 
+    log("E", "garageManager", "purchaseGarageAtNegotiatedPrice: Career not active")
+    return false 
+  end
+  
+  if not garageId then
+    log("E", "garageManager", "purchaseGarageAtNegotiatedPrice: Missing garageId")
     return false
   end
   
-  local price = { money = { amount = finalPrice, canBeNegative = false } }
+  local garage = freeroam_facilities.getFacility("garage", garageId)
+  if not garage then
+    log("E", "garageManager", "purchaseGarageAtNegotiatedPrice: Garage not found: " .. tostring(garageId))
+    return false
+  end
+  
+  local negotiatedPrice = getFrozenPrice(garageId)
+  if not negotiatedPrice then
+    log("E", "garageManager", "purchaseGarageAtNegotiatedPrice: No negotiated price found")
+    return false
+  end
+  
+  if not career_modules_payment then
+    log("E", "garageManager", "purchaseGarageAtNegotiatedPrice: Payment module not loaded")
+    return false
+  end
+  
+  local price = { money = { amount = negotiatedPrice, canBeNegative = false } }
   local success = career_modules_payment.pay(price, { label = "Purchased " .. garage.name })
   if success then
     addPurchasedGarage(garage.id)
+    clearFrozenPrice(garageId)
     career_saveSystem.saveCurrent()
     
-    -- Open the garage computer if available
     local computers = freeroam_facilities.getFacilitiesByType("computer")
     if computers then
       for _, computer in pairs(computers) do
@@ -248,7 +418,7 @@ local function completePurchaseWithNegotiatedPrice(garageId, finalPrice)
 end
 
 -- Request garage listing data for UI (with negotiation support)
-local function requestGarageListing(garageId)
+requestGarageListing = function(garageId)
   if not career_career.isActive() then return nil end
   
   local garage = freeroam_facilities.getFacility("garage", garageId)
@@ -276,15 +446,31 @@ local function requestGarageListing(garageId)
     if translated then name = translated end
   end
   
+  local negotiatedPrice = getFrozenPrice(garageId)
+  local effectivePrice = negotiatedPrice or listedPrice
+  
+  local closingFee = calculateClosingFee(effectivePrice)
+  local propertyTax = calculateAnnualPropertyTax(effectivePrice)
+  local estimatedTotal = effectivePrice + closingFee + propertyTax
+  
+  local canNegotiateNow, cooldownRemaining = canNegotiateGarage(garageId)
+  canNegotiate = canNegotiate and canNegotiateNow
+
   local data = {
     garageId = garage.id,
     name = name,
     preview = preview,
     listedPrice = listedPrice,
+    negotiatedPrice = negotiatedPrice,
+    closingFee = closingFee,
+    propertyTax = propertyTax,
+    estimatedTotal = estimatedTotal,
     capacity = math.ceil(garage.capacity / (career_modules_hardcore.isHardcoreMode() and 2 or 1)),
     parkingSpots = (garage.parkingSpotNames and #garage.parkingSpotNames) or 0,
     neighborhood = "West Coast",  -- TODO: Get from propertyMarket when available
     canNegotiate = canNegotiate,
+    cooldownRemaining = cooldownRemaining,
+    isFrozen = negotiatedPrice ~= nil,
     starterGarage = garage.starterGarage or false,
   }
   
@@ -296,6 +482,12 @@ local function startGarageNegotiation(garageId)
   if not career_career.isActive() then return false end
   if not career_modules_realEstateNegotiation then
     log("E", "garageManager", "realEstateNegotiation module not loaded")
+    return false
+  end
+  
+  local canNegotiateNow, cooldownRemaining = canNegotiateGarage(garageId)
+  if not canNegotiateNow then
+    log("W", "garageManager", "Negotiation on cooldown for garage: " .. tostring(garageId))
     return false
   end
   
@@ -363,8 +555,15 @@ local function purchaseGarageAtListedPrice(garageId)
   return false
 end
 
+local function getPendingGarageListing()
+  local data = pendingGarageListingData
+  pendingGarageListingData = nil
+  return data
+end
+
 local function showPurchaseGaragePrompt(garageId)
   if not career_career.isActive() then return end
+  if not garageId or garageId == "" then return end
   garageToPurchase = freeroam_facilities.getFacility("garage", garageId)
   
   -- Free garages (starter garages) - purchase immediately
@@ -386,14 +585,9 @@ local function showPurchaseGaragePrompt(garageId)
   end
   
   -- Paid garages - show listing view with negotiation option
-  local listingData = requestGarageListing(garageId)
-  if listingData then
-    guihooks.trigger('openGarageListing', listingData)
-    guihooks.trigger('ChangeState', {state = 'garage-listing'})
-  else
-    -- Fallback to old purchase flow if listing data unavailable
-    guihooks.trigger('ChangeState', {state = 'purchase-garage'})
-  end
+  pendingGarageListingData = requestGarageListing(garageId)
+  guihooks.trigger('openGarageListing', pendingGarageListingData)
+  guihooks.trigger('ChangeState', {state = 'garage-listing'})
 end
 
 local function requestGarageData()
@@ -402,10 +596,18 @@ local function requestGarageData()
     if translateLanguage(garage.name, garage.name, true) then
       garage.name = translateLanguage(garage.name, garage.name, true)
     end
+    local price = getGaragePrice(garage)
+    local closingFee = calculateClosingFee(price)
+    local propertyTax = calculateAnnualPropertyTax(price)
     local garageData = {
       name = garage.name,
-      price = getGaragePrice(garage),
-      capacity = math.ceil(garage.capacity / (career_modules_hardcore.isHardcoreMode() and 2 or 1))
+      price = price,
+      capacity = math.ceil(garage.capacity / (career_modules_hardcore.isHardcoreMode() and 2 or 1)),
+      closingFeeRate = CLOSING_FEE_RATE,
+      propertyTaxRate = PROPERTY_TAX_RATE,
+      closingFee = closingFee,
+      propertyTax = propertyTax,
+      estimatedTotal = price + closingFee + propertyTax
     }
     return garageData
   end
@@ -684,9 +886,14 @@ M.getGaragePurchasePrice = getGaragePurchasePrice
 
 -- Real estate negotiation integration
 M.completePurchaseWithNegotiatedPrice = completePurchaseWithNegotiatedPrice
+M.purchaseGarageAtNegotiatedPrice = purchaseGarageAtNegotiatedPrice
+M.freezeNegotiatedPrice = freezeNegotiatedPrice
 M.requestGarageListing = requestGarageListing
+M.getPendingGarageListing = getPendingGarageListing
 M.startGarageNegotiation = startGarageNegotiation
 M.purchaseGarageAtListedPrice = purchaseGarageAtListedPrice
+M.canNegotiateGarage = canNegotiateGarage
+M.setNegotiationCooldown = setNegotiationCooldown
 M.canSellGarage = canSellGarage
 M.sellGarage = sellGarage
 

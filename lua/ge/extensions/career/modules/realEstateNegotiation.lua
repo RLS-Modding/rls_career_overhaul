@@ -29,11 +29,14 @@ local propertyNeighborhood = ""
 -- Selling-side data (Phase 2)
 local listingIndex = nil              -- Index into listedProperties[propertyId].offers
 local listedProperties = {}           -- [garageId] = { listingTimestamp, askingPrice, offers, ... }
+local completePurchase
 
 -- Constants
 local SIM_SECONDS_PER_GAME_DAY = 1200
 local timeBetweenOffersBase = 5 * SIM_SECONDS_PER_GAME_DAY  -- 5 game days
 local offerTTL = 10 * SIM_SECONDS_PER_GAME_DAY              -- 10 game days
+local CLOSING_FEE_RATE = 0.03      -- 3%
+local PROPERTY_TAX_RATE = 0.012     -- 1.2% annualized estimate
 
 -- ────────────────────────────────────────────────────────────────────────────
 -- PERSONALITY GENERATION
@@ -203,7 +206,19 @@ local function getNegotiationState()
     negotiationStatus = negotiationStatus,
     offerHistory = offerHistory,
     isInsulted = isInsulted,
+    closingFeeRate = CLOSING_FEE_RATE,
+    propertyTaxRate = PROPERTY_TAX_RATE,
   }
+end
+
+local function calculateClosingFee(price)
+  if not price or price <= 0 then return 0 end
+  return math.floor((price * CLOSING_FEE_RATE) + 0.5)
+end
+
+local function calculateAnnualPropertyTax(price)
+  if not price or price <= 0 then return 0 end
+  return math.floor((price * PROPERTY_TAX_RATE) + 0.5)
 end
 
 -- ────────────────────────────────────────────────────────────────────────────
@@ -252,7 +267,7 @@ local function isOfferAllowed(price)
   -- For buying: can't offer more than their current offer
   if not amISelling then
     if price > theirOffer then return false end
-    if myOffer and price >= myOffer then return false end  -- Can't go backwards (higher)
+    if myOffer and price <= myOffer then return false end  -- Can't go backwards (lower)
   end
   
   return true
@@ -278,6 +293,9 @@ local function makeOffer(price)
     opponentQuote = opponentPersonality.insultQuotes[math.random(1, #opponentPersonality.insultQuotes)]
     patience = 0
     negotiationStatus = "failed"
+    if career_modules_garageManager and career_modules_garageManager.setNegotiationCooldown then
+      career_modules_garageManager.setNegotiationCooldown(propertyId)
+    end
     guihooks.trigger('realEstateNegotiationData', getNegotiationState())
     return true
   end
@@ -301,29 +319,27 @@ local function makeOffer(price)
     -- Determine acceptance/counter
     local absoluteMinimum
     if opponentPersonality.isDesperate then
-      -- Desperate sellers can go up to desperationMaxDiscount (max 10%)
-      local maxDiscount = math.min(opponentPersonality.desperationMaxDiscount or 0.05, 0.10)
+      -- Desperate sellers can go up to desperationMaxDiscount (no fixed 10% hard cap)
+      local maxDiscount = opponentPersonality.desperationMaxDiscount or 0.05
       absoluteMinimum = propertyMarketValue * (1 - maxDiscount)
     else
       -- Normal seller: minimum is based on patience
       -- High patience = holds firm near asking price
       -- Low patience = willing to go lower
-      -- Maximum discount is capped at 10% below asking price
-      local maxPossibleDiscount = startingPrice * 0.10  -- Hard cap at 10%
-      local negotiationRange = math.min(startingPrice - propertyMarketValue * 0.95, maxPossibleDiscount)
+      local maxPossibleDiscount = startingPrice
+      local negotiationRange = math.min(math.max(0, startingPrice - propertyMarketValue), maxPossibleDiscount)
       local patienceMultiplier = patience * 0.7  -- High patience = 70% of range, low = smaller range
       local willingToNegotiate = negotiationRange * patienceMultiplier
       absoluteMinimum = startingPrice - willingToNegotiate
     end
-    
-    -- Final safety check: never go below 90% of market value (10% max discount)
-    local hardFloor = propertyMarketValue * 0.90
-    absoluteMinimum = math.max(absoluteMinimum, hardFloor)
-    
+
     if patience <= 0 then
       negotiationStatus = "failed"
       opponentQuote = "I'm not interested in continuing this negotiation."
       theirOffer = startingPrice
+      if career_modules_garageManager and career_modules_garageManager.setNegotiationCooldown then
+        career_modules_garageManager.setNegotiationCooldown(propertyId)
+      end
     elseif myOffer >= absoluteMinimum then
       theirOffer = myOffer
       negotiationStatus = "accepted"
@@ -369,9 +385,20 @@ local function takeTheirOffer()
   
   guihooks.trigger('realEstateNegotiationData', getNegotiationState())
   
-  -- Complete the purchase
   if not amISelling then
-    completePurchase(propertyId, theirOffer)
+    completePurchase(propertyId, theirOffer, false)
+  end
+  
+  return true
+end
+
+local function freezeCurrentOffer()
+  if not negotiationActive then return false end
+  if not theirOffer or theirOffer <= 0 then return false end
+  
+  -- Freeze current offer without accepting (for later purchase)
+  if not amISelling then
+    completePurchase(propertyId, theirOffer, true)
   end
   
   return true
@@ -404,20 +431,20 @@ local function cancelNegotiation()
   negotiationStatus = "cancelled"
   
   guihooks.trigger('realEstateNegotiationData', getNegotiationState())
-  guihooks.trigger('ChangeState', {state = 'menu.career', params = {}})
+  guihooks.trigger('ChangeState', {state = 'play', params = {}})
   
   resetNegotiationState()
   
   return true
 end
 
-local function completePurchase(garageId, finalPrice)
+function completePurchase(garageId, finalPrice, freezePrice)
   if not garageId or not finalPrice then
     log("E", "realEstateNegotiation", "completePurchase: missing garageId or finalPrice")
     return
   end
   
-  -- Call garageManager to complete the purchase
+  -- Call garageManager to store the negotiated price and return to listing
   if not career_modules_garageManager then
     log("E", "realEstateNegotiation", "completePurchase: garageManager module not loaded")
     return
@@ -428,34 +455,17 @@ local function completePurchase(garageId, finalPrice)
     return
   end
   
-  local success = career_modules_garageManager.completePurchaseWithNegotiatedPrice(garageId, finalPrice)
+  local success = career_modules_garageManager.completePurchaseWithNegotiatedPrice(garageId, finalPrice, freezePrice == true)
   if not success then
-    log("E", "realEstateNegotiation", "Purchase failed")
+    log("E", "realEstateNegotiation", "Failed to store negotiated price")
     return
   end
   
-  -- Calculate savings
-  local saved = startingPrice - finalPrice
-  local savingsPercent = (saved / startingPrice) * 100
-  
-  local message = string.format("Property purchased for $%s! You saved $%s (%.1f%% off)", 
-    tostring(math.floor(finalPrice)),
-    tostring(math.floor(saved)),
-    savingsPercent
-  )
-  
-  if savingsPercent >= 8 then
-    guihooks.trigger('toastrMsg', {type="success", title="🎉 Excellent Negotiation!", msg=message})
-  elseif savingsPercent >= 5 then
-    guihooks.trigger('toastrMsg', {type="success", title="👍 Good Deal!", msg=message})
-  elseif savingsPercent >= 2 then
-    guihooks.trigger('toastrMsg', {type="success", title="Fair Price", msg=message})
-  else
-    guihooks.trigger('toastrMsg', {type="info", title="Property Purchased", msg=message})
-  end
-  
-  guihooks.trigger('ChangeState', {state = 'menu.career', params = {}})
-  resetNegotiationState()
+  -- Delay reset to ensure state change completes
+  core_jobsystem.create(function(job)
+    job.sleep(0.1)
+    resetNegotiationState()
+  end)
 end
 
 local function startNegotiateBuying(garageId)
@@ -604,6 +614,7 @@ M.startNegotiateBuying = startNegotiateBuying
 M.startNegotiateSelling = startNegotiateSelling
 M.makeOffer = makeOffer
 M.takeTheirOffer = takeTheirOffer
+M.freezeCurrentOffer = freezeCurrentOffer
 M.cancelNegotiation = cancelNegotiation
 M.getNegotiationState = getNegotiationState
 

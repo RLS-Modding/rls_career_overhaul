@@ -133,6 +133,9 @@
             <div class="card-expand" v-if="expandedId === garage.id">
               <p class="card-desc" v-if="garage.description && cleanDescription(garage.description)">{{ cleanDescription(garage.description) }}</p>
               <div class="card-actions">
+                <button v-if="!garage.owned && garage.canNegotiate" class="act-btn negotiate" @click.stop="openGarageListing(garage)">
+                  Negotiate
+                </button>
                 <button class="act-btn route" @click.stop="setRoute(garage)">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
                   Set Route
@@ -223,6 +226,7 @@
                         {{ formatDistance(garage.distance) }}
                       </span>
                     </div>
+                    <button v-if="!garage.owned && garage.canNegotiate" class="act-btn negotiate" @click.stop="openGarageListing(garage)">Negotiate</button>
                     <button class="act-btn route" @click.stop="setRoute(garage)">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
                       Route
@@ -479,6 +483,10 @@ function selectMarker(garage) {
 
 function setRoute(garage) {
   lua.ui_phone_realEstate.setRouteToGarage(garage.id)
+}
+
+function openGarageListing(garage) {
+  if (garage?.id) lua.career_modules_garageManager.showPurchaseGaragePrompt(garage.id)
 }
 
 function imgFailed(garageId) {
@@ -1390,6 +1398,7 @@ onUnmounted(() => {
   &:hover { opacity: 0.85; }
 
   &.route { background: rgba(249,115,22,0.15); color: #f97316; }
+  &.negotiate { background: #f97316; color: white; }
 }
 
 /* ── MAP VIEW ── */
