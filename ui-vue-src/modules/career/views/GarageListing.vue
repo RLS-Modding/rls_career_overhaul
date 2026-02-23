@@ -195,7 +195,7 @@ let cooldownTimer = null
 
 onMounted(async () => {
   events.on('openGarageListing', handleGarageListingData)
-  const pending = await lua.career_modules_garageManager.getPendingGarageListing(null)
+  const pending = await lua.career_modules_garageManager.getPendingGarageListing()
   if (pending) await handleGarageListingData(pending)
   try {
     cantPay.value = !(await lua.career_modules_garageManager.canPay())
@@ -214,6 +214,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+  events.off('openGarageListing', handleGarageListingData)
   if (cooldownTimer) clearInterval(cooldownTimer)
 })
 

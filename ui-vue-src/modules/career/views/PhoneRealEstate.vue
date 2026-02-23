@@ -886,15 +886,17 @@ watch(filteredGarages, (list) => {
   })
 })
 
+const handlePhoneRealEstateData = (data) => {
+  failedImages.clear()
+  garages.value = data.garages || []
+  playerBalance.value = data.playerBalance ?? 0
+  loaded.value = true
+  mountMapIfVisible()
+}
+
 onMounted(async () => {
   minimapStore.init()
-  events.on('phoneRealEstateData', (data) => {
-    failedImages.clear()
-    garages.value = data.garages || []
-    playerBalance.value = data.playerBalance ?? 0
-    loaded.value = true
-    mountMapIfVisible()
-  })
+  events.on('phoneRealEstateData', handlePhoneRealEstateData)
   await lua.extensions.load('ui_phone_layout')
   careerActive.value = await lua.ui_phone_layout.getCareerActive()
   if (careerActive.value) {
@@ -913,6 +915,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+  events.off('phoneRealEstateData', handlePhoneRealEstateData)
   stopMapFocusAnimation()
   minimapStore.viewControlledBy = null
   minimapStore.showTerrainImage = true

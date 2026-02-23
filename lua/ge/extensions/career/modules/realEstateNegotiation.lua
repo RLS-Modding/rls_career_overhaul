@@ -516,7 +516,7 @@ local function cancelNegotiation()
   return true
 end
 
-function completePurchase(garageId, finalPrice, freezePrice)
+completePurchase = function(garageId, finalPrice, freezePrice)
   if not garageId or not finalPrice then
     log("E", "realEstateNegotiation", "completePurchase: missing garageId or finalPrice")
     return
@@ -574,7 +574,7 @@ local function startNegotiateBuying(garageId)
   propertyMarketValue = marketValue
   propertyCapacity = garage.capacity or 0
   propertyParkingSpots = (garage.parkingSpotNames and #garage.parkingSpotNames) or 0
-  propertyNeighborhood = "West Coast"  -- TODO: Get from propertyMarket when available
+  propertyNeighborhood = "West Coast"  -- placeholder until propertyMarket module
   
   startingPrice = listedPrice
   negotiationActive = true
@@ -829,14 +829,22 @@ local function onSaveCurrentSaveSlot(currentSavePath)
       negotiationActive = negotiationActive,
       amISelling = amISelling,
       propertyId = propertyId,
+      propertyName = propertyName,
+      propertyPreview = propertyPreview,
+      propertyMarketValue = propertyMarketValue,
+      propertyCapacity = propertyCapacity,
+      propertyParkingSpots = propertyParkingSpots,
+      propertyNeighborhood = propertyNeighborhood,
       startingPrice = startingPrice,
       patience = patience,
+      isInsulted = isInsulted,
       myOffer = myOffer,
       theirOffer = theirOffer,
       negotiationStatus = negotiationStatus,
       offerHistory = offerHistory,
       opponentPersonality = opponentPersonality,
       opponentQuote = opponentQuote,
+      listingIndex = listingIndex,
     }
     
     career_saveSystem.jsonWriteFileSafe(dirPath .. "/realEstateNegotiationState.json", data, true)
@@ -863,14 +871,22 @@ local function loadNegotiationState()
     negotiationActive = data.negotiationActive
     amISelling = data.amISelling or false
     propertyId = data.propertyId
+    propertyName = data.propertyName or ""
+    propertyPreview = data.propertyPreview or ""
+    propertyMarketValue = data.propertyMarketValue or 0
+    propertyCapacity = data.propertyCapacity or 0
+    propertyParkingSpots = data.propertyParkingSpots or 0
+    propertyNeighborhood = data.propertyNeighborhood or ""
     startingPrice = data.startingPrice or 0
     patience = data.patience or 1.0
+    isInsulted = data.isInsulted or false
     myOffer = data.myOffer
     theirOffer = data.theirOffer or 0
     negotiationStatus = data.negotiationStatus or "initial"
     offerHistory = data.offerHistory or {}
     opponentPersonality = data.opponentPersonality
     opponentQuote = data.opponentQuote or ""
+    listingIndex = data.listingIndex
   end
   
   -- Load listings (Phase 2)

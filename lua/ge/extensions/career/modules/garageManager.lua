@@ -33,7 +33,6 @@ local function savePurchasedGarages(currentSavePath)
     discovered = discoveredGarages
   }
   career_saveSystem.jsonWriteFileSafe(dirPath .. "/" .. saveFile, data, true)
-  print("Saved Garage Data to: " .. dirPath .. "/" .. saveFile)
 end
 
 local function saveNegotiationCooldowns(currentSavePath)
@@ -134,8 +133,7 @@ local function clearFrozenPrice(garageId)
 end
 
 local function onSaveCurrentSaveSlot(currentSavePath)
-  -- This is the correct handler that will save to the new autosave
-  print("Saving Garage Data to: " .. currentSavePath .. "/career/rls_career/" .. saveFile)
+  log("D", "garageManager", "Saving garage data to: " .. currentSavePath .. "/career/rls_career/" .. saveFile)
   savePurchasedGarages(currentSavePath)
   saveNegotiationCooldowns(currentSavePath)
 end
@@ -168,11 +166,11 @@ local function buildGarageSizes()
 end
 
 local function addPurchasedGarage(garageId)
-  if purchasedGarages == {} then
-    print("Showing non-tutorial welcome splashscreen")
+  if not next(purchasedGarages) then
+    log("I", "garageManager", "Showing non-tutorial welcome splashscreen")
     career_modules_linearTutorial.showNonTutorialWelcomeSplashscreen()
   end
-  print("Adding purchased garage: " .. garageId)
+  log("I", "garageManager", "Adding purchased garage: " .. garageId)
   purchasedGarages[garageId] = true
   discoveredGarages[garageId] = true
   reloadRecoveryPrompt()
@@ -313,8 +311,14 @@ local function calculateAnnualPropertyTax(price)
 end
 
 -- Wrapper for backward compatibility
-local function getGaragePrice(garage)
-  local garageId = type(garage) == "table" and garage.id or garage
+local function getGaragePrice(garage, computerId)
+  local garageId
+  if garage then
+    garageId = type(garage) == "table" and garage.id or garage
+  elseif computerId then
+    local computer = freeroam_facilities.getFacility("computer", computerId)
+    if computer then garageId = computer.garageId end
+  end
   return calculateGaragePurchasePrice(garageId)
 end
 
@@ -467,7 +471,7 @@ requestGarageListing = function(garageId)
     estimatedTotal = estimatedTotal,
     capacity = math.ceil(garage.capacity / (career_modules_hardcore.isHardcoreMode() and 2 or 1)),
     parkingSpots = (garage.parkingSpotNames and #garage.parkingSpotNames) or 0,
-    neighborhood = "West Coast",  -- TODO: Get from propertyMarket when available
+    neighborhood = "West Coast",  -- placeholder until propertyMarket module
     canNegotiate = canNegotiate,
     cooldownRemaining = cooldownRemaining,
     isFrozen = negotiatedPrice ~= nil,
