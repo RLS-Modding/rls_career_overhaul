@@ -8,17 +8,17 @@ local im = ui_imgui
 
 local listedVehicles = {}
 
-local timeBetweenOffersBase = 95
-local offerTTL = 500
-local offerTTLVariance = 0.5
-local valueLossLimit = 0.95
-local maximumExpiredOffers = 3
+local TIME_BETWEEN_OFFERS_BASE = 95
+local OFFER_TTL = 500
+local OFFER_TTL_VARIANCE = 0.5
+local VALUE_LOSS_LIMIT = 0.95
+local MAXIMUM_EXPIRED_OFFERS = 3
 
 local offerMenuOpen = false
 local getListings
 
 local function isListingValueManual(listing)
-  return listing and listing.isManualValue == true
+  return listing and listing.isManualValue
 end
 
 local function refreshLiveListingValues(listing)
@@ -66,7 +66,7 @@ end
 
 local function scheduleNextOffer(listing, timeNow)
   local multiplier = listing.offerTimeMultiplier or 1
-  listing.timeOfNextOffer = timeNow + (timeBetweenOffersBase * multiplier) + (math.random(-60, 60) / 100 * timeBetweenOffersBase * multiplier)
+  listing.timeOfNextOffer = timeNow + (TIME_BETWEEN_OFFERS_BASE * multiplier) + (math.random(-60, 60) / 100 * TIME_BETWEEN_OFFERS_BASE * multiplier)
 end
 
 local function listVehicles(vehicles)
@@ -80,7 +80,7 @@ local function listVehicles(vehicles)
       local marketValue = career_modules_valueCalculator.getInventoryVehicleSellValue(inventoryId)
       local marketRatio = value / (marketValue or 1)
 
-      local offerTimeMultiplier = 1
+      local offerTimeMultiplier
       if marketRatio >= 0.98 and marketRatio <= 1.1 then
         offerTimeMultiplier = 1
       elseif marketRatio < 0.98 then
@@ -123,10 +123,7 @@ local function generatePersonality(buyer, _archetypes)
   local data = jsonReadFile("levels/west_coast_usa/facilities/negotiationPersonalities.json")
   if not data then return end
 
-  local archetypeKeys = _archetypes
-  if not archetypeKeys then
-    archetypeKeys = buyer and data.randomBuyerArchetypes or data.randomSellerArchetypes
-  end
+  local archetypeKeys = _archetypes or (buyer and data.randomBuyerArchetypes or data.randomSellerArchetypes)
   if #archetypeKeys == 0 then return end
 
   local chosenKey = archetypeKeys[math.random(1, #archetypeKeys)]
@@ -205,33 +202,21 @@ local function generateOffer(inventoryId)
   local noise = (biasGainFun(math.random(), 0.5, 0.03) * 0.5) + 0.73
   local finalOfferValue = baseOffer * personalityMult * noise
 
-  --log("I","",string.format("Generating offer for %s with market ratio %0.2f (%.2f / %.2f)", listing.niceName, marketRatio, listing.value, listing.marketValue))
-  --log("I","",string.format(" Base offer: %.2f. Personality multiplier: %.2f. Noise: %.4f. Final offer: %.2f.", baseOffer, personalityMult, noise, finalOfferValue))
-
   if marketRatio < 0.9 then
     local cap = listing.value * (1.05 + (math.random() * 0.1))
     finalOfferValue = math.min(finalOfferValue, cap)
-    --log("I","",string.format(" Market ratio is less than 0.9, capping offer at %.2f", cap))
-    --if finalOfferValue == cap then
-      --log("I","","  clamp to cap")
-    --end
   elseif marketRatio > 1.1 then
     local cap = listingMarketValue * (0.95 + (math.random() * 0.1))
     finalOfferValue = math.min(finalOfferValue, cap)
-    --log("I","",string.format(" Market ratio is greater than 1.1, capping offer at %.2f", cap))
-    --if finalOfferValue == cap then
-      --log("I","","  clamp to cap")
-    --end
   end
 
   local offer = {
     timestamp = os.time(),
     value = math.max(50, math.floor((finalOfferValue + 25) / 50) * 50),
-    ttl = offerTTL + ((math.random() * offerTTLVariance*2) - offerTTLVariance) * offerTTL,
+    ttl = OFFER_TTL + ((math.random() * OFFER_TTL_VARIANCE * 2) - OFFER_TTL_VARIANCE) * OFFER_TTL,
     negotiationPossible = true,
     buyerPersonality = buyerPersonality
   }
-  --log("I","",string.format(" Final offer: %.2f", offer.value))
   table.insert(listing.offers, offer)
   return offer
 end
@@ -271,7 +256,7 @@ local function generateNewOffers()
   for _, listing in ipairs(listedVehicles) do
     if not listing.timeOfNextOffer then
       local multiplier = listing.offerTimeMultiplier or 1
-      listing.timeOfNextOffer = timeNow + (timeBetweenOffersBase * multiplier) + (math.random(-60, 60) / 100 * timeBetweenOffersBase * multiplier)
+      listing.timeOfNextOffer = timeNow + (TIME_BETWEEN_OFFERS_BASE * multiplier) + (math.random(-60, 60) / 100 * TIME_BETWEEN_OFFERS_BASE * multiplier)
     end
 
     if timeNow >= listing.timeOfNextOffer then
@@ -285,14 +270,14 @@ local function generateNewOffers()
     local expiredOffersCount = 0
     for offerIndex = #listing.offers, 1, -1 do
       local offer = listing.offers[offerIndex]
-      if not offer.expiredViewCounter and timeNow - offer.timestamp > (offer.ttl or offerTTL) then
+      if not offer.expiredViewCounter and timeNow - offer.timestamp > (offer.ttl or OFFER_TTL) then
         offer.expiredViewCounter = 0
         offerCountDiff = offerCountDiff - 1
       end
 
       if offer.expiredViewCounter then
         expiredOffersCount = expiredOffersCount + 1
-        if expiredOffersCount > maximumExpiredOffers then
+        if expiredOffersCount > MAXIMUM_EXPIRED_OFFERS then
           table.remove(listing.offers, offerIndex)
         end
       end
@@ -306,7 +291,6 @@ local function generateNewOffers()
   return offerCountDiff
 end
 
--- negotiation variables
 local negotiationActive = false
 local startingPrice
 local patience = 1
@@ -320,21 +304,16 @@ local vehicleNiceName
 local vehicleThumbnail
 local vehicleMileage
 local actualVehicleValue
-local isDesperate = false  -- Determined once at negotiation start (for dealerships)
-local insultThreshold = 0.75  -- Determined once at negotiation start (varies per negotiation)
+local isDesperate = false
+local insultThreshold = 0.75
 local opponentQuote = ""
 
--- selling
 local negotiationInventoryId
 local negotiationOfferIndex
 
--- buying
 local shopId
+local opponentPersonality
 
--- opponent variables
-local opponentPersonality = nil  -- Store the full personality object
-
--- UI bridge helpers for negotiation -----------------------------------------
 local function getNegotiationState()
   return {
     active = negotiationActive,
@@ -360,18 +339,14 @@ local function selectQuoteForPersonality(personality, vehicleValue, isBuyer)
     return ""
   end
 
-  -- Determine price tier based on dealership-specific thresholds or fallback to defaults
   local priceTier = "low"
-
   if personality.priceTierThresholds then
-    -- Use dealership-specific thresholds
     if vehicleValue >= personality.priceTierThresholds.mid then
       priceTier = "high"
     elseif vehicleValue >= personality.priceTierThresholds.low then
       priceTier = "mid"
     end
   else
-    -- Fallback to static thresholds for private sellers
     if vehicleValue >= 15000 then
       priceTier = "high"
     elseif vehicleValue >= 5000 then
@@ -379,24 +354,14 @@ local function selectQuoteForPersonality(personality, vehicleValue, isBuyer)
     end
   end
 
-  -- Get appropriate quotes
-  -- default quotes are from personality, but private is always buyer and dealership is always seller
-  local quotes = nil
-  if personality.quotesByPriceTier and type(personality.quotesByPriceTier) == "table" then
-    quotes = personality.quotesByPriceTier[priceTier]
-  end
-
-  -- override quotes for private sellers and dealership buyers
+  local quotes = personality.quotesByPriceTier and personality.quotesByPriceTier[priceTier]
   if not isBuyer and not personality.isDealership then
     quotes = M.privateSellerQuotes
   end
   if isBuyer and personality.isDealership then
     quotes = M.dealershipBuyerQuotes
   end
-
-  -- Fallback for dealership sellers when quotesByPriceTier is missing
   if not quotes and not isBuyer and personality.isDealership then
-    -- Use generic dealership seller quotes as fallback
     quotes = {
       "We're here to work with you on this vehicle.",
       "Let me see what I can do for you.",
@@ -405,14 +370,9 @@ local function selectQuoteForPersonality(personality, vehicleValue, isBuyer)
       "Let's see if we can reach an agreement."
     }
   end
-
-  -- Return random quote from pool
-  if quotes and type(quotes) == "table" and #quotes > 0 then
-    local selectedQuote = quotes[math.random(1, #quotes)]
-    return selectedQuote
+  if quotes and #quotes > 0 then
+    return quotes[math.random(1, #quotes)]
   end
-
-  -- Final fallback
   return isBuyer and "I'm interested in this vehicle." or "Thanks for your interest."
 end
 
@@ -422,13 +382,11 @@ local function startNegotiateBuyingOffer(inventoryId, offerIndex)
   local offer = listing.offers[offerIndex]
   local buyerPersonality = offer.buyerPersonality
 
-  opponentPersonality = buyerPersonality  -- Store full personality object
-
+  opponentPersonality = buyerPersonality
   if opponentPersonality.isDealership then
     local desperation = opponentPersonality.desperation or 0.15
     isDesperate = math.random() < desperation
 
-    -- Roll insult threshold once per negotiation (varies per negotiation)
     local baseThreshold = opponentPersonality.insultThresholdBase or 0.75
     local variance = opponentPersonality.insultThresholdVariance or 0.05
     insultThreshold = baseThreshold + (math.random() * variance * 2 - variance)
@@ -436,8 +394,6 @@ local function startNegotiateBuyingOffer(inventoryId, offerIndex)
     isDesperate = false
     insultThreshold = 0.75
   end
-
-  -- select quote based on personality and vehicle value
   opponentQuote = selectQuoteForPersonality(opponentPersonality, listing.value, true)
 
   negotiationInventoryId = inventoryId
@@ -473,14 +429,11 @@ local function startNegotiateSellingOffer(_shopId)
   local vehicleInfo = career_modules_vehicleShopping.getVehicleInfoByShopId(shopId)
   local sellerPersonality = vehicleInfo.negotiationPersonality
 
-  opponentPersonality = sellerPersonality  -- Store full personality object
-
-  -- Determine desperation once at negotiation start (for dealerships only)
+  opponentPersonality = sellerPersonality
   if opponentPersonality.isDealership then
     local desperation = opponentPersonality.desperation or 0.15
     isDesperate = math.random() < desperation
 
-    -- Roll insult threshold once per negotiation (varies per negotiation)
     local baseThreshold = opponentPersonality.insultThresholdBase or 0.75
     local variance = opponentPersonality.insultThresholdVariance or 0.05
     insultThreshold = baseThreshold + (math.random() * variance * 2 - variance)
@@ -488,21 +441,8 @@ local function startNegotiateSellingOffer(_shopId)
     isDesperate = false
     insultThreshold = 0.75
   end
-
-  -- select quote based on personality and vehicle value
   local vehicleBuyMult = getVehicleBuyMultiplier()
-  local valueBase = vehicleInfo.valueBase
-  if not valueBase then
-    if vehicleInfo.marketValue then
-      local priceMultiplier = 1
-      if vehicleInfo.negotiationPersonality and vehicleInfo.negotiationPersonality.priceMultiplier then
-        priceMultiplier = vehicleInfo.negotiationPersonality.priceMultiplier
-      end
-      valueBase = vehicleInfo.marketValue * priceMultiplier
-    else
-      valueBase = vehicleInfo.Value
-    end
-  end
+  local valueBase = vehicleInfo.valueBase or (vehicleInfo.marketValue and vehicleInfo.marketValue * (vehicleInfo.negotiationPersonality and vehicleInfo.negotiationPersonality.priceMultiplier or 1)) or vehicleInfo.Value
   local roundedVehicleValue = math.floor((valueBase or vehicleInfo.Value or 0) * vehicleBuyMult + 0.5)
   opponentQuote = selectQuoteForPersonality(opponentPersonality, roundedVehicleValue, false)
 
@@ -511,18 +451,7 @@ local function startNegotiateSellingOffer(_shopId)
   vehicleNiceName = vehicleInfo.Name
   vehicleThumbnail = vehicleInfo.preview
   vehicleMileage = vehicleInfo.Mileage
-  local marketValueBase = vehicleInfo.marketValueBase or vehicleInfo.marketValue
-  if not marketValueBase then
-    if vehicleInfo.marketValue then
-      local invPriceMultiplier = 1
-      if vehicleInfo.negotiationPersonality and vehicleInfo.negotiationPersonality.priceMultiplier then
-        invPriceMultiplier = vehicleInfo.negotiationPersonality.priceMultiplier
-      end
-      marketValueBase = valueBase / invPriceMultiplier
-    else
-      marketValueBase = valueBase
-    end
-  end
+  local marketValueBase = vehicleInfo.marketValueBase or vehicleInfo.marketValue or valueBase
   actualVehicleValue = math.floor((marketValueBase or roundedVehicleValue) * vehicleBuyMult + 0.5)
   startingPrice = roundedVehicleValue
 
@@ -539,7 +468,6 @@ local function startNegotiateSellingOffer(_shopId)
     }
   }
 
-  -- Initialize patience based on personality (with some randomness)
   local basePatience = opponentPersonality.startingPatience or 1.0
   local patienceVariance = opponentPersonality.patienceVariance or 0.1
   patience = math.max(0.2, math.min(1.0, basePatience + (math.random() * patienceVariance * 2 - patienceVariance)))
@@ -551,7 +479,6 @@ local function cancelNegotiation()
   negotiationActive = false
   negotiationStatus = "failed"
 
-  -- mark the offer as not negotiable if we made an offer and cancelled
   if myOffer then
     if amISelling then
       local listing = findVehicleListing(negotiationInventoryId)
@@ -575,32 +502,23 @@ local function calculatePatienceDrop(baseValue)
   local patienceDrop = 0
 
   if amISelling then
-    -- When you're selling TO them
-
     local theirOfferAmount = theirOffer or baseValue
     local gapFromTheirOffer = math.abs(myOffer - theirOfferAmount)
     local gapFromMarket = math.abs(myOffer - baseValue)
-
-    -- Dealerships focus on their offer, individuals consider market value
     local referenceGap = opponentPersonality.isDealership and gapFromTheirOffer or gapFromMarket
     local referenceValue = opponentPersonality.isDealership and theirOfferAmount or baseValue
     local gapPct = (referenceGap / referenceValue) * 100
-
-    -- Price scaling: expensive items use percentage more, cheap items use absolute more
     local priceScale = math.min(1, referenceValue / 1000)
     local percentageWeight = priceScale
     local absoluteWeight = 1 - priceScale
 
     local percentagePatienceDrop = gapPct * 3
     local absolutePatienceDrop = (referenceGap / 100) * 8
-
-    -- Dealerships lose patience slower (they're professionals)
     local dealershipModifier = opponentPersonality.isDealership and 0.6 or 1.0
 
     patienceDrop = ((percentagePatienceDrop * percentageWeight + absolutePatienceDrop * absoluteWeight) * dealershipModifier) + math.random() * 12
 
   else
-    -- When you're buying FROM them
     local theirAskingPrice = theirOffer or baseValue
     local gapFromTheirPrice = math.abs(myOffer - theirAskingPrice)
     local gapFromMarket = math.abs(myOffer - baseValue)
@@ -608,19 +526,16 @@ local function calculatePatienceDrop(baseValue)
     local referenceGap, referenceValue
     if opponentPersonality.isDealership then
 
-      local minimumAcceptableOffer = math.min(startingPrice * insultThreshold, baseValue * 0.9)-- Only insult if: below threshold AND not near market value
+      local minimumAcceptableOffer = math.min(startingPrice * insultThreshold, baseValue * 0.9)
       if myOffer < minimumAcceptableOffer then
         isInsulted = true
-        return 1 --insulted
+        return 1
       end
-
-      -- Dealerships: gap from their asking price matters most
       referenceGap = gapFromTheirPrice
       referenceValue = theirAskingPrice
     else
-      -- Individuals: if your offer is near/above market, they shouldn't lose patience as quickly
       if myOffer >= baseValue * 0.9 then
-        referenceGap = gapFromTheirPrice * 0.5  -- 50% less patience penalty
+        referenceGap = gapFromTheirPrice * 0.5
         referenceValue = theirAskingPrice
       else
         referenceGap = gapFromMarket
@@ -629,40 +544,34 @@ local function calculatePatienceDrop(baseValue)
     end
 
     local gapPct = (referenceGap / referenceValue) * 100
-
-    -- Price scaling
     local priceScale = math.min(1, referenceValue / 1000)
     local percentageWeight = priceScale
     local absoluteWeight = 1 - priceScale
 
     local percentagePatienceDrop = gapPct * 2.5
     local absolutePatienceDrop = (referenceGap / 100) * 6
-
-    -- Dealerships lose patience slower
     local dealershipModifier = opponentPersonality.isDealership and 0.6 or 1.0
 
     patienceDrop = ((percentagePatienceDrop * percentageWeight + absolutePatienceDrop * absoluteWeight) * dealershipModifier) + math.random() * 10
   end
 
-  return patienceDrop / 100  -- Convert to 0-1 scale for patience
+  return patienceDrop / 100
 end
 
 local function generateCounterOffer()
   local diff = theirOffer - myOffer
-  local weight = 0.3 + math.random() * 0.4  -- 30-70% of gap
+  local weight = 0.3 + math.random() * 0.4
 
   if amISelling then
-    -- Player is selling, opponent (buyer) moves their offer up
     local currentBuyerPosition = theirOffer
     local movement = math.abs(diff) * weight
     local result = currentBuyerPosition + movement
-    return math.max(theirOffer, math.floor(result / 50 + 0.5) * 50)  -- Round to nearest $50
+    return math.max(theirOffer, math.floor(result / 50 + 0.5) * 50)
   else
-    -- Player is buying, opponent (seller) moves their price down
     local currentSellerPosition = theirOffer
     local movement = math.abs(diff) * weight
     local result = currentSellerPosition - movement
-    return math.max(myOffer, math.floor(result / 50 + 0.5) * 50)  -- Round to nearest $50
+    return math.max(myOffer, math.floor(result / 50 + 0.5) * 50)
   end
 end
 
@@ -678,31 +587,22 @@ local function makeOffer(price)
   negotiationStatus = "thinking"
   guihooks.trigger('negotiationData', getNegotiationState())
   core_jobsystem.create(function(job)
-    -- Use advanced patience calculation
     local patienceChange = calculatePatienceDrop(baseValue)
-
-    -- Smart delay: dealer thinks longer about offers far from their expectations
-    local thinkingTime = 5.5  -- Base delay
-
+    local thinkingTime = 5.5
     if opponentPersonality.isDealership then
-      -- Compare player offer to both market value AND asking price
-      local marketGap = math.abs(myOffer - baseValue) / baseValue  -- How far from market value
-      local askingGap = math.abs(myOffer - startingPrice) / startingPrice  -- How far from asking price
-
-      -- If offer is close to market (good for player) but far from asking (bad for dealer)
-      -- = dealer needs to think about this carefully
+      local marketGap = math.abs(myOffer - baseValue) / baseValue
+      local askingGap = math.abs(myOffer - startingPrice) / startingPrice
       if marketGap < 0.15 and askingGap > 0.20 then
-        thinkingTime = 2.5 + math.random() * 1.5  -- 2.5-4 seconds (considering it)
+        thinkingTime = 2.5 + math.random() * 1.5
       elseif askingGap > 0.30 then
-        thinkingTime = 1.0 + math.random() * 0.8  -- 1-1.8 seconds (quick rejection/counter)
+        thinkingTime = 1.0 + math.random() * 0.8
       elseif marketGap < 0.10 then
-        thinkingTime = 2.0 + math.random() * 1.0  -- 2-3 seconds (fair offer, calculating)
+        thinkingTime = 2.0 + math.random() * 1.0
       else
-        thinkingTime = 1.5 + math.random() * 1.0  -- 1.5-2.5 seconds (normal)
+        thinkingTime = 1.5 + math.random() * 1.0
       end
     else
-      -- Private individuals are less calculating
-      thinkingTime = 2.0 + math.random() * 2.0  -- 2-4 seconds
+      thinkingTime = 2.0 + math.random() * 2.0
     end
     if patience <= 0 then
       thinkingTime = 0.5
@@ -717,76 +617,46 @@ local function makeOffer(price)
     log('I', 'marketplace', string.format('typing for %0.1fs...', thinkingTime))
 
 
-    job.sleep(thinkingTime) -- typing time
+    job.sleep(thinkingTime)
     patience = math.max(0, patience - patienceChange)
 
-    -- ========================================================================
-    -- DEALERSHIP BEHAVIOR: Each dealer has their own minimum over market value
-    -- Dealerships ALWAYS negotiate - they never accept first offer, even if it's good!
-    -- They only give "final offer" when patience is low, but they NEVER walk away
-    -- 15% chance they'll go lower (desperation - need to move the car)
-    -- ========================================================================
     if opponentPersonality.isDealership then
-      -- Get personality-specific minimum over market value (use opponentPersonality which works for both buy/sell)
-      local minimumOverMarket = opponentPersonality.minimumOverMarket or 200  -- Default $200
-      local desperationMaxDiscount = opponentPersonality.desperationMaxDiscount or 0.35  -- Default 35% below market
+      local minimumOverMarket = opponentPersonality.minimumOverMarket or 200
+      local desperationMaxDiscount = opponentPersonality.desperationMaxDiscount or 0.35
 
-      -- Calculate absolute floor (won't go below this no matter what)
-      local absoluteMinimum
-      if isDesperate then
-        -- Desperate - absolute floor can be up to 35% below market
-        absoluteMinimum = baseValue * (1 - desperationMaxDiscount)
-      else
-        -- Normal - absolute floor is minimum over market
-        absoluteMinimum = baseValue + minimumOverMarket
-      end
-
-      -- Patience affects acceptable range:
-      -- High patience = willing to negotiate, can move far from asking (wide range)
-      -- Low patience = stubborn, won't move far from asking (narrow range)
+      local absoluteMinimum = isDesperate and baseValue * (1 - desperationMaxDiscount) or baseValue + minimumOverMarket
       local negotiationRange = startingPrice - absoluteMinimum
-      local patienceMultiplier = patience * 0.8  -- High patience = 80% of range, low = small range
+      local patienceMultiplier = patience * 0.8
       local willingToNegotiate = negotiationRange * patienceMultiplier
       local minAcceptable = startingPrice - willingToNegotiate
       local theirOfferCandidate
 
       if not amISelling then
-        -- Dealership selling to player
         if isInsulted then
-          -- they are insulted
           local insultQuotes = opponentPersonality.insultQuotes
-          if insultQuotes and type(insultQuotes) == "table" and #insultQuotes > 0 then
+          if insultQuotes and #insultQuotes > 0 then
             opponentQuote = insultQuotes[math.random(1, #insultQuotes)]
           else
             opponentQuote = "That's funny, do you have a real offer?"
           end
 
         elseif patience <= 0.40 then
-          -- Low patience - jump straight to floor
           theirOfferCandidate = math.floor(minAcceptable / 50 + 0.5) * 50
         elseif myOffer >= minAcceptable then
-          -- Within acceptable range - but dealerships ALWAYS try to counter first!
           local gapToClose = theirOffer - myOffer
-
-          -- Make sure gap is positive (we're above their last position)
           if gapToClose > 0 then
-            -- High patience = willing to negotiate slowly (small moves, trying to maximize)
-            -- Low patience = make bigger jumps (less interested in drawn-out negotiation)
-            local baseMovePercent = (1 - patience) * 0.4 + 0.25  -- High patience (1.0) = 25%, low (0.2) = 57%
-            local movePercent = baseMovePercent + (math.random() * 0.15 - 0.075)  -- ±7.5% randomness
-            movePercent = math.max(0.15, math.min(0.75, movePercent))  -- Clamp to reasonable range
+            local baseMovePercent = (1 - patience) * 0.4 + 0.25
+            local movePercent = baseMovePercent + (math.random() * 0.15 - 0.075)
+            movePercent = math.max(0.15, math.min(0.75, movePercent))
             local counterAmount = myOffer + (gapToClose * movePercent)
             theirOfferCandidate = math.min(math.max(myOffer, math.floor(counterAmount / 50 + 0.5) * 50), theirOffer)
           else
-            -- Player's offer is already at or above our position - accept!
             theirOfferCandidate = myOffer
           end
         else
-          -- Below acceptable range, but still negotiating
           local gapToClose = theirOffer - myOffer
-          -- High patience = smaller moves (dragging it out), low patience = bigger jumps
-          local baseMovePercent = (1 - patience) * 0.4 + 0.25  -- High patience = 25%, low = 57%
-          local movePercent = baseMovePercent + (math.random() * 0.15 - 0.075)  -- ±7.5% randomness
+          local baseMovePercent = (1 - patience) * 0.4 + 0.25
+          local movePercent = baseMovePercent + (math.random() * 0.15 - 0.075)
           movePercent = math.max(0.15, math.min(0.75, movePercent))
           local counterAmount = myOffer + (gapToClose * movePercent)
           theirOfferCandidate = math.max(minAcceptable, math.floor(counterAmount / 50 + 0.5) * 50)
@@ -799,10 +669,9 @@ local function makeOffer(price)
           theirOffer = myOffer
           negotiationStatus = "accepted"
 
-          -- Check if player paid more than dealer expected (happy dealer!)
           if myOffer > (minAcceptable * 1.10) then
             local happyQuotes = opponentPersonality.happyQuotes
-            if happyQuotes and type(happyQuotes) == "table" and #happyQuotes > 0 then
+            if happyQuotes and #happyQuotes > 0 then
               opponentQuote = happyQuotes[math.random(1, #happyQuotes)]
             end
           end
@@ -820,27 +689,21 @@ local function makeOffer(price)
           end
         end
       else
-        -- Dealership buying from player
-        -- When buying, they're more conservative - only willing to pay 5% more per negotiation round
-        local maxAcceptable = startingPrice * 1.05  -- Willing to go up to 5% higher
+        local maxAcceptable = startingPrice * 1.05
 
         if patience <= 0.40 then
           theirOfferCandidate = math.floor(maxAcceptable / 50 + 0.5) * 50
         elseif myOffer <= maxAcceptable then
-          -- Within acceptable range for this round
           local gapToClose = myOffer - theirOffer
-          -- High patience = smaller moves (trying to pay less), low patience = bigger jumps
-          local baseMovePercent = (1 - patience) * 0.4 + 0.25  -- High patience = 25%, low = 57%
-          local movePercent = baseMovePercent + (math.random() * 0.15 - 0.075)  -- ±7.5% randomness
+          local baseMovePercent = (1 - patience) * 0.4 + 0.25
+          local movePercent = baseMovePercent + (math.random() * 0.15 - 0.075)
           movePercent = math.max(0.15, math.min(0.75, movePercent))
           local counterAmount = theirOffer + (gapToClose * movePercent)
           theirOfferCandidate = math.min(myOffer, math.floor(counterAmount / 50 + 0.5) * 50)
         else
-          -- Ask is too high, but still willing to negotiate
           local gapToClose = myOffer - theirOffer
-          -- Move slower when ask is above acceptable range
-          local baseMovePercent = ((1 - patience) * 0.4 + 0.25) * 0.5  -- Half speed when asking too much
-          local movePercent = baseMovePercent + (math.random() * 0.1 - 0.05)  -- ±5% randomness (smaller here)
+          local baseMovePercent = ((1 - patience) * 0.4 + 0.25) * 0.5
+          local movePercent = baseMovePercent + (math.random() * 0.1 - 0.05)
           movePercent = math.max(0.10, math.min(0.50, movePercent))
           local counterAmount = theirOffer + (gapToClose * movePercent)
           theirOfferCandidate = math.min(maxAcceptable, math.floor(counterAmount / 50 + 0.5) * 50)
@@ -848,7 +711,6 @@ local function makeOffer(price)
 
         theirOfferCandidate = math.max(theirOfferCandidate, theirOffer)
         if theirOfferCandidate >= myOffer then
-          -- Our counter would be at/above their ask - accept it
           theirOffer = myOffer
           negotiationStatus = "accepted"
         else
@@ -861,16 +723,10 @@ local function makeOffer(price)
         end
       end
     else
-      -- ========================================================================
-      -- PRIVATE INDIVIDUAL BEHAVIOR: Emotional, can walk away
-      -- ========================================================================
-
       if patience <= 0 then
         negotiationStatus = "failed"
       else
         local counter = generateCounterOffer()
-
-        -- Check if they accept
         if (not amISelling and counter <= myOffer) or (amISelling and counter >= myOffer) then
           theirOffer = myOffer
           negotiationStatus = "accepted"
@@ -880,11 +736,7 @@ local function makeOffer(price)
         end
       end
     end
-    local theirOfferElement = {
-      theirOffer = theirOffer,
-      negotiationStatus = negotiationStatus
-    }
-    table.insert(offerHistory, theirOfferElement)
+    table.insert(offerHistory, { theirOffer = theirOffer, negotiationStatus = negotiationStatus })
     guihooks.trigger('negotiationData', getNegotiationState())
   end)
   return true
@@ -908,27 +760,20 @@ local function takeTheirOffer()
     end
     vehicleInfo.Value = theirOffer
     vehicleInfo.negotiationPossible = false
-    
-    -- Fix: Update valueBase so the negotiated price persists through UI refreshes
-    -- When applyPurchaseAdjustedMarketValue() recalculates valueAdjusted,
-    -- it will use this negotiated price as the base
-    local vehicleBuyMult = 1.0
-    if career_modules_globalEconomy and career_modules_globalEconomy.getVehicleBuyMultiplier then
-      vehicleBuyMult = career_modules_globalEconomy.getVehicleBuyMultiplier()
-    end
-    vehicleInfo.valueBase = theirOffer / vehicleBuyMult
+    vehicleInfo.valueBase = theirOffer / getVehicleBuyMultiplier()
   end
   myOffer = nil
 end
 
 local myOfferValuePtr = im.IntPtr(0)
 local timeSinceUpdate = 0
+local DEBUG_NEGOTIATION_IMGUI = false
 local function onUpdate(dtReal, dtSim, dtRaw)
   if tableIsEmpty(listedVehicles) then
     return
   end
 
-  if negotiationActive then
+  if negotiationActive and DEBUG_NEGOTIATION_IMGUI then
     im.Begin("Negotiation Buying")
       if negotiationStatus == "thinking" then
         im.Text("Thinking...")
@@ -977,7 +822,7 @@ local function onVehicleRemoved(inventoryId)
   removeVehicleListing(inventoryId)
 end
 
-function getListings()
+getListings = function()
   for _, listing in ipairs(listedVehicles) do
     refreshLiveListingValues(listing)
   end
@@ -985,9 +830,9 @@ function getListings()
   for i, listing in ipairs(listingsCopy) do
     local currentValue = career_modules_valueCalculator.getInventoryVehicleSellValue(listing.id)
     local originalMarketValue = listing.marketValueAtListing or listing.marketValue
-    if currentValue and originalMarketValue and currentValue < originalMarketValue * valueLossLimit then
+    if currentValue and originalMarketValue and currentValue < originalMarketValue * VALUE_LOSS_LIMIT then
       listing.disabled = true
-      listing.disableReason = "Cant sell the vehicle because value has dropped below " .. valueLossLimit * 100 .. "% of the market value when the vehicle was listed."
+      listing.disableReason = "Cant sell the vehicle because value has dropped below " .. VALUE_LOSS_LIMIT * 100 .. "% of the market value when the vehicle was listed."
     end
     listing.marketValue = currentValue or listing.marketValue
     if not listing.isManualValue and currentValue then
@@ -1013,27 +858,25 @@ local function updateListings()
         if offer.expiredViewCounter then
           expiredOffersCount = expiredOffersCount + 1
           offer.expiredViewCounter = offer.expiredViewCounter + 1
-          if offer.expiredViewCounter > 1 or expiredOffersCount > maximumExpiredOffers then
+          if offer.expiredViewCounter > 1 or expiredOffersCount > MAXIMUM_EXPIRED_OFFERS then
             table.remove(listing.offers, offerIndex)
           end
         end
       end
     end
   else
-    -- generate offers as if they have been generated while the menu was open
     local offerCountDiff = generateNewOffers()
     if offerCountDiff < 0 then
       for i = 1, math.abs(offerCountDiff) do
         local offer = generateOffer()
-        -- randomize the offer timestamp
-        offer.timestamp = offer.timestamp + math.random(1, offerTTL)
+        offer.timestamp = offer.timestamp + math.random(1, OFFER_TTL)
       end
     end
   end
 end
 
 local function menuOpened(open)
-  local newOfferMenuOpen = open or negotiationActive -- count the negotiation as part of the menu
+  local newOfferMenuOpen = open or negotiationActive
   if newOfferMenuOpen == offerMenuOpen then return end
   offerMenuOpen = newOfferMenuOpen
   updateListings()
@@ -1044,7 +887,11 @@ local function openMenu(computerId)
 end
 
 local function onSaveCurrentSaveSlot(currentSavePath, oldSaveDate, vehiclesThumbnailUpdate)
-  career_saveSystem.jsonWriteFileSafe(currentSavePath .. "/career/marketplace.json", {
+  local dirPath = currentSavePath .. "/career"
+  if not FS:directoryExists(dirPath) then
+    FS:directoryCreate(dirPath)
+  end
+  career_saveSystem.jsonWriteFileSafe(dirPath .. "/marketplace.json", {
     listedVehicles = listedVehicles
   }, true)
 end
