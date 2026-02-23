@@ -908,6 +908,15 @@ local function takeTheirOffer()
     end
     vehicleInfo.Value = theirOffer
     vehicleInfo.negotiationPossible = false
+    
+    -- Fix: Update valueBase so the negotiated price persists through UI refreshes
+    -- When applyPurchaseAdjustedMarketValue() recalculates valueAdjusted,
+    -- it will use this negotiated price as the base
+    local vehicleBuyMult = 1.0
+    if career_modules_globalEconomy and career_modules_globalEconomy.getVehicleBuyMultiplier then
+      vehicleBuyMult = career_modules_globalEconomy.getVehicleBuyMultiplier()
+    end
+    vehicleInfo.valueBase = theirOffer / vehicleBuyMult
   end
   myOffer = nil
 end
