@@ -956,6 +956,173 @@ M.getGarageActiveListing = getGarageActiveListing
 M.removeGarageListing = removeGarageListing
 M.startGarageSellingNegotiation = startGarageSellingNegotiation
 
+local function getOwnedGaragesListingData()
+  local result = {}
+  local storedLocation = getStoredLocations()
+
+  for garageId, owned in pairs(purchasedGarages) do
+    if owned then
+      local garage = freeroam_facilities.getFacility("garage", garageId)
+      if not garage then goto continue end
+
+      local capacity = math.ceil((garage.capacity or 0) / (career_modules_hardcore.isHardcoreMode() and 2 or 1))
+      local vehiclesInGarage = storedLocation[garageId]
+      local vehicleCount = vehiclesInGarage and #vehiclesInGarage or 0
+
+      local preview = garage.preview or ""
+      local computers = freeroam_facilities.getFacilitiesByType("computer")
+      if computers then
+        for _, comp in pairs(computers) do
+          if comp.garageId == garageId and comp.preview then
+            preview = comp.preview
+            break
+          end
+        end
+      end
+
+      local name = garage.name or tostring(garageId)
+      if translateLanguage then
+        local translated = translateLanguage(garage.name, garage.name, true)
+        if translated then name = translated end
+      end
+
+      local marketValue = calculateGaragePurchasePrice(garageId) or 0
+      local isStarter = garage.starterGarage or false
+      local canSell = not isStarter and vehicleCount == 0
+
+      local listing = nil
+      local offerCount = 0
+      local askingPrice = nil
+      if career_modules_realEstateNegotiation and career_modules_realEstateNegotiation.getPropertyListing then
+        listing = career_modules_realEstateNegotiation.getPropertyListing(garageId)
+        if listing then
+          askingPrice = listing.askingPrice
+          offerCount = listing.offers and #listing.offers or 0
+        end
+      end
+
+      -- Find computerId for this garage
+      local computerId = nil
+      if computers then
+        for _, comp in pairs(computers) do
+          if comp.garageId == garageId then
+            computerId = comp.id
+            break
+          end
+        end
+      end
+
+      table.insert(result, {
+        garageId = garageId,
+        computerId = computerId,
+        name = name,
+        preview = preview,
+        capacity = capacity,
+        vehicleCount = vehicleCount,
+        marketValue = marketValue,
+        isStarter = isStarter,
+        canSell = canSell,
+        isListed = listing ~= nil,
+        askingPrice = askingPrice,
+        offerCount = offerCount,
+        neighborhood = "West Coast",
+      })
+      ::continue::
+    end
+  end
+
+  return result
+end
+
+local function getGarageOffersData(garageId)
+  if not garageId then return nil end
+  if not career_modules_realEstateNegotiation or not career_modules_realEstateNegotiation.getPropertyListing then
+    return nil
+  end
+
+  local listing = career_modules_realEstateNegotiation.getPropertyListing(garageId)
+  if not listing then return nil end
+
+  local garage = freeroam_facilities.getFacility("garage", garageId)
+  if not garage then return nil end
+
+  local preview = garage.preview or ""
+  local computers = freeroam_facilities.getFacilitiesByType("computer")
+  if computers then
+    for _, comp in pairs(computers) do
+      if comp.garageId == garageId and comp.preview then
+        preview = comp.preview
+        break
+      end
+    end
+  end
+
+  local name = garage.name or tostring(garageId)
+  if translateLanguage then
+    local translated = translateLanguage(garage.name, garage.name, true)
+    if translated then name = translated end
+  end
+
+  local marketValue = calculateGaragePurchasePrice(garageId) or 0
+
+  local offers = {}
+  if listing.offers then
+    for i, offer in ipairs(listing.offers) do
+      table.insert(offers, {
+        index = i,
+        value = offer.value,
+        buyerName = offer.buyerPersonality and offer.buyerPersonality.name or "Buyer",
+        timestamp = offer.timestamp,
+        negotiationPossible = offer.negotiationPossible ~= false,
+      })
+    end
+  end
+
+  return {
+    garageId = garageId,
+    name = name,
+    preview = preview,
+    askingPrice = listing.askingPrice,
+    marketValue = marketValue,
+    offers = offers,
+  }
+end
+
+local function acceptOffer(garageId, offerIndex)
+  if not garageId or not offerIndex then return false end
+  if not career_modules_realEstateNegotiation then return false end
+
+  local listing = career_modules_realEstateNegotiation.getPropertyListing(garageId)
+  if not listing or not listing.offers then return false end
+
+  local idx = tonumber(offerIndex)
+  if not idx or idx < 1 or idx > #listing.offers then return false end
+
+  local offer = listing.offers[idx]
+  if not offer then return false end
+
+  return completePropertySaleFromListing(garageId, offer.value)
+end
+
+local function declineOffer(garageId, offerIndex)
+  if not garageId or not offerIndex then return false end
+  if not career_modules_realEstateNegotiation then return false end
+
+  local listing = career_modules_realEstateNegotiation.getPropertyListing(garageId)
+  if not listing or not listing.offers then return false end
+
+  local idx = tonumber(offerIndex)
+  if not idx or idx < 1 or idx > #listing.offers then return false end
+
+  table.remove(listing.offers, idx)
+  return true
+end
+
+M.getOwnedGaragesListingData = getOwnedGaragesListingData
+M.getGarageOffersData = getGarageOffersData
+M.acceptOffer = acceptOffer
+M.declineOffer = declineOffer
+
 M.getFreeSlots = getFreeSlots
 M.onCareerModulesActivated = onCareerModulesActivated
 M.onExtensionLoaded = onExtensionLoaded

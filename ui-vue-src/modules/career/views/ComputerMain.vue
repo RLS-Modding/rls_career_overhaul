@@ -67,15 +67,11 @@
                 <span class="label">{{ infoById[computerFunction.id].label }}</span>
               </div>
             </template>
-            <div class="computer-function-tile" :class="{ 'action-disabled': !canSellGarage }" tabindex="0" bng-nav-item
-              v-bng-on-ui-nav:ok.asMouse.focusRequired @click.stop="sellGarage" @mousedown.stop
-              @mouseover="setReason(1, !canSellGarage ? (vehicleCount > 0 ? `Garage must be empty to sell (${vehicleCount} vehicles inside)` : 'Cannot sell starter garage') : undefined)"
-              @focus="setReason(1, !canSellGarage ? (vehicleCount > 0 ? `Garage must be empty to sell (${vehicleCount} vehicles inside)` : 'Cannot sell starter garage') : undefined)"
+            <div class="computer-function-tile" tabindex="0" bng-nav-item
+              v-bng-on-ui-nav:ok.asMouse.focusRequired @click.stop="openGarageListings" @mousedown.stop
               @mouseleave="setReason(1)" @blur="setReason(1)">
               <BngIcon class="icon" :type="icons.beamCurrency" />
-              <span class="label">Garage Listings ({{ sellPrice }}
-                <BngIcon style="font-size: 0.8em;" :type="icons.beamCurrency" />)
-              </span>
+              <span class="label">Garage Listings</span>
             </div>
           </div>
           <div class="disable-reason" v-if="disableReason[0]">
@@ -128,7 +124,9 @@ import { BngButton, ACCENTS, BngCard, BngCardHeading, BngBinding, BngIcon, icons
 import { getUINavServiceInstance, UI_EVENT_GROUPS } from "@/services/uiNav"
 import { vBngOnUiNav, vBngBlur, vBngUiNavFocus } from "@/common/directives"
 import VehicleTileRow from "../components/vehicleInventory/VehicleTileRow.vue"
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const computerStore = useComputerStore()
 const currentVehicleData = ref(null)
 
@@ -154,6 +152,10 @@ const updateSellData = async () => {
 watch(() => computerStore.computerData, () => {
   updateSellData()
 }, { deep: true })
+
+const openGarageListings = () => {
+  router.push({ name: 'garage-listings' })
+}
 
 const sellGarage = async () => {
   if (!canSellGarage.value) return

@@ -31,6 +31,8 @@ import CarMeets from "./views/CarMeetsMenu.vue"
 import PurchaseGarage from "./views/PurchaseGarage.vue"
 import GarageListing from "./views/GarageListing.vue"
 import RealEstateNegotiation from "./views/RealEstateNegotiation.vue"
+import GarageListings from "./views/GarageListings.vue"
+import GarageOffers from "./views/GarageOffers.vue"
 import PurchaseBusiness from "./views/PurchaseBusiness.vue"
 import PhoneHomescreen from "./views/PhoneHomescreen.vue"
 import PhoneMinimap from "./views/PhoneMinimap.vue"
@@ -374,6 +376,29 @@ export default [
         path: "realEstateNegotiation",
         name: "realEstateNegotiation",
         component: RealEstateNegotiation
+      },
+
+      {
+        path: "garage-listings",
+        name: "garage-listings",
+        component: GarageListings,
+        meta: {
+          uiApps: {
+            shown: false,
+          },
+        },
+      },
+
+      {
+        path: "garage-offers/:garageId",
+        name: "garage-offers",
+        component: GarageOffers,
+        props: true,
+        meta: {
+          uiApps: {
+            shown: false,
+          },
+        },
       },
 
       {
