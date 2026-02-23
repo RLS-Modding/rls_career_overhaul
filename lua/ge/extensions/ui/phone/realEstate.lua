@@ -95,6 +95,8 @@ local function requestGarageListings()
       if translated then name = translated end
     end
 
+    local canNegotiate = not garage.starterGarage and price > 0 and not owned
+    
     table.insert(result, {
       id = garage.id,
       name = name,
@@ -110,6 +112,7 @@ local function requestGarageListings()
       posX = pos and pos.x or 0,
       posY = pos and pos.y or 0,
       posZ = pos and pos.z or 0,
+      canNegotiate = canNegotiate,
     })
   end
 
