@@ -73,7 +73,7 @@
               @focus="setReason(1, !canSellGarage ? (vehicleCount > 0 ? `Garage must be empty to sell (${vehicleCount} vehicles inside)` : 'Cannot sell starter garage') : undefined)"
               @mouseleave="setReason(1)" @blur="setReason(1)">
               <BngIcon class="icon" :type="icons.beamCurrency" />
-              <span class="label">Sell Garage ({{ sellPrice }}
+              <span class="label">Garage Listings ({{ sellPrice }}
                 <BngIcon style="font-size: 0.8em;" :type="icons.beamCurrency" />)
               </span>
             </div>
