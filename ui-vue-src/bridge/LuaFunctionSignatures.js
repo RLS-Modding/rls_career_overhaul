@@ -1290,7 +1290,13 @@ export default {
     cancelGaragePurchase: () => {},
     getGaragePrice: () => {},
     canSellGarage: () => {},
+    listGarageForSale: (computerId, askingPrice) => [String, Number],
     sellGarage: () => {},
+    completePropertySaleFromListing: (garageId, finalPrice) => [String, Number],
+    getGarageListingPriceGuidance: (computerId, askingPrice) => [String, Number],
+    getGarageActiveListing: computerId => String,
+    removeGarageListing: computerId => String,
+    startGarageSellingNegotiation: (computerId, offerIndex) => [String, Number],
     getGarageCapacityData: () => {},
     requestGarageListing: garageId => String,
     getPendingGarageListing: () => Object,
@@ -1305,11 +1311,17 @@ export default {
 
   career_modules_realEstateNegotiation: {
     startNegotiateBuying: garageId => String,
+    startNegotiateSelling: (garageId, offerIndex) => [String, Number],
     makeOffer: price => Number,
     takeTheirOffer: () => {},
     freezeCurrentOffer: () => {},
     cancelNegotiation: () => {},
     getNegotiationState: () => {},
+    listPropertyForSale: (garageId, askingPrice) => [String, Number],
+    removePropertyListing: garageId => String,
+    getPropertyListing: garageId => String,
+    getPriceGuidanceForListing: (garageId, askingPrice) => [String, Number],
+    generateNewPropertyOffers: () => {},
   },
 
   career_modules_business_businessManager: {

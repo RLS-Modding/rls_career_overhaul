@@ -815,42 +815,95 @@ local function canSellGarage(computerId)
   return {space[2] == capacity, capacity - space[2]}
 end
 
-local function sellGarage(computerId, sellPrice)
+local function listGarageForSale(computerId, askingPrice)
+  if not career_career.isActive() then return false end
+
   local garageId = computerIdToGarageId(computerId)
   if not garageId then
     return false
   end
+
+  local canSellInfo = canSellGarage(computerId)
+  if not canSellInfo or not canSellInfo[1] then
+    return false
+  end
+
+  if not career_modules_realEstateNegotiation or not career_modules_realEstateNegotiation.listPropertyForSale then
+    log("E", "garageManager", "listPropertyForSale is not available")
+    return false
+  end
+
+  local marketPrice = getGaragePurchasePrice(garageId) or 0
+  local desiredPrice = tonumber(askingPrice) or marketPrice
+  if desiredPrice <= 0 then
+    return false
+  end
+
+  return career_modules_realEstateNegotiation.listPropertyForSale(garageId, desiredPrice)
+end
+
+local function sellGarage(computerId, sellPrice)
+  -- Legacy API kept for compatibility: now routes to listing flow.
+  return listGarageForSale(computerId, sellPrice)
+end
+
+local function completePropertySaleFromListing(garageId, finalPrice)
+  if not career_career.isActive() then return false end
+  if not garageId or not finalPrice then return false end
+
   local garage = freeroam_facilities.getFacility("garage", garageId)
-  if not garage then
-    return false
-  end
-  
-  if garage.starterGarage then
-    return false
-  end
-  
-  if career_challengeModes and career_challengeModes.isChallengeActive() then
-    local activeChallenge = career_challengeModes.getActiveChallenge()
-    if activeChallenge and activeChallenge.startingGarages then
-      for _, startingGarageId in ipairs(activeChallenge.startingGarages) do
-        if startingGarageId == garageId then
-          return false
-        end
-      end
-    end
-  end
-  
-  guihooks.trigger('ChangeState', {state = 'play'})
+  if not garage then return false end
+  if not purchasedGarages[garageId] then return false end
+
   purchasedGarages[garageId] = nil
   reloadRecoveryPrompt()
   buildGarageSizes()
-  local soldMessage = "Sold "
-  if garage then
-    soldMessage = soldMessage .. garage.name
-  else
-    soldMessage = soldMessage .. garageId
+
+  local soldMessage = "Sold " .. (garage.name or tostring(garageId))
+  career_modules_payment.reward({ money = { amount = finalPrice } }, { label = soldMessage }, true)
+
+  if career_modules_realEstateNegotiation and career_modules_realEstateNegotiation.removePropertyListing then
+    career_modules_realEstateNegotiation.removePropertyListing(garageId)
   end
-  career_modules_payment.reward({ money = { amount = sellPrice } }, { label = soldMessage }, true)
+
+  career_saveSystem.saveCurrent()
+  return true
+end
+
+local function getGarageListingPriceGuidance(computerId, askingPrice)
+  local garageId = computerIdToGarageId(computerId)
+  if not garageId then return nil end
+  if not career_modules_realEstateNegotiation or not career_modules_realEstateNegotiation.getPriceGuidanceForListing then
+    return nil
+  end
+  return career_modules_realEstateNegotiation.getPriceGuidanceForListing(garageId, askingPrice)
+end
+
+local function getGarageActiveListing(computerId)
+  local garageId = computerIdToGarageId(computerId)
+  if not garageId then return nil end
+  if not career_modules_realEstateNegotiation or not career_modules_realEstateNegotiation.getPropertyListing then
+    return nil
+  end
+  return career_modules_realEstateNegotiation.getPropertyListing(garageId)
+end
+
+local function removeGarageListing(computerId)
+  local garageId = computerIdToGarageId(computerId)
+  if not garageId then return false end
+  if not career_modules_realEstateNegotiation or not career_modules_realEstateNegotiation.removePropertyListing then
+    return false
+  end
+  return career_modules_realEstateNegotiation.removePropertyListing(garageId)
+end
+
+local function startGarageSellingNegotiation(computerId, offerIndex)
+  local garageId = computerIdToGarageId(computerId)
+  if not garageId then return false end
+  if not career_modules_realEstateNegotiation or not career_modules_realEstateNegotiation.startNegotiateSelling then
+    return false
+  end
+  return career_modules_realEstateNegotiation.startNegotiateSelling(garageId, offerIndex)
 end
 
 local function getNextAvailableSpace()
@@ -895,7 +948,13 @@ M.purchaseGarageAtListedPrice = purchaseGarageAtListedPrice
 M.canNegotiateGarage = canNegotiateGarage
 M.setNegotiationCooldown = setNegotiationCooldown
 M.canSellGarage = canSellGarage
+M.listGarageForSale = listGarageForSale
 M.sellGarage = sellGarage
+M.completePropertySaleFromListing = completePropertySaleFromListing
+M.getGarageListingPriceGuidance = getGarageListingPriceGuidance
+M.getGarageActiveListing = getGarageActiveListing
+M.removeGarageListing = removeGarageListing
+M.startGarageSellingNegotiation = startGarageSellingNegotiation
 
 M.getFreeSlots = getFreeSlots
 M.onCareerModulesActivated = onCareerModulesActivated
