@@ -29,6 +29,8 @@ import Loans from "./views/LoanMenu.vue"
 import RoleAssignment from "./views/RoleAssignment.vue"
 import CarMeets from "./views/CarMeetsMenu.vue"
 import PurchaseGarage from "./views/PurchaseGarage.vue"
+import GarageListing from "./views/GarageListing.vue"
+import RealEstateNegotiation from "./views/RealEstateNegotiation.vue"
 import PurchaseBusiness from "./views/PurchaseBusiness.vue"
 import PhoneHomescreen from "./views/PhoneHomescreen.vue"
 import PhoneMinimap from "./views/PhoneMinimap.vue"
@@ -360,6 +362,18 @@ export default [
         path: "purchase-garage",
         name: "purchase-garage",
         component: PurchaseGarage
+      },
+
+      {
+        path: "garage-listing",
+        name: "garage-listing",
+        component: GarageListing
+      },
+
+      {
+        path: "realEstateNegotiation",
+        name: "realEstateNegotiation",
+        component: RealEstateNegotiation
       },
 
       {

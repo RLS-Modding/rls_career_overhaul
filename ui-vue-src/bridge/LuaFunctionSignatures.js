@@ -1291,7 +1291,19 @@ export default {
     getGaragePrice: () => {},
     canSellGarage: () => {},
     sellGarage: () => {},
-    getGarageCapacityData: () => {}
+    getGarageCapacityData: () => {},
+    requestGarageListing: garageId => String,
+    startGarageNegotiation: garageId => String,
+    purchaseGarageAtListedPrice: garageId => String,
+    completePurchaseWithNegotiatedPrice: (garageId, finalPrice) => [String, Number],
+  },
+
+  career_modules_realEstateNegotiation: {
+    startNegotiateBuying: garageId => String,
+    makeOffer: price => Number,
+    takeTheirOffer: () => {},
+    cancelNegotiation: () => {},
+    getNegotiationState: () => {},
   },
 
   career_modules_business_businessManager: {
