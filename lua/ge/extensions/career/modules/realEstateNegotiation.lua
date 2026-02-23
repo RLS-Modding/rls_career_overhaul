@@ -30,6 +30,7 @@ local propertyNeighborhood = ""
 local listingIndex = nil              -- Index into listedProperties[propertyId].offers
 local listedProperties = {}           -- [garageId] = { listingTimestamp, askingPrice, offers, ... }
 local completePurchase
+local resetNegotiationState
 
 -- Constants
 local SIM_SECONDS_PER_GAME_DAY = 1200
@@ -72,59 +73,47 @@ local function generateSellerPersonality()
     log("W", "realEstateNegotiation", "Could not load realEstatePersonalities.json, using default")
     return getDefaultSellerPersonality()
   end
-  
+
   local archetypeKeys = data.randomSellerArchetypes or {}
   if #archetypeKeys == 0 then
     log("W", "realEstateNegotiation", "No seller archetypes found, using default")
     return getDefaultSellerPersonality()
   end
-  
+
   local chosenKey = archetypeKeys[math.random(1, #archetypeKeys)]
   local archetype = data.archetypes[chosenKey]
   if not archetype then
     log("W", "realEstateNegotiation", "Archetype not found: " .. chosenKey .. ", using default")
     return getDefaultSellerPersonality()
   end
-  
-  -- Roll desperation once per negotiation
+
   local isDesperate = math.random() < (archetype.desperation or 0.05)
-  
-  -- Roll insult threshold once per negotiation
   local baseThreshold = archetype.insultThresholdBase or 0.85
   local variance = archetype.insultThresholdVariance or 0.03
   local insultThreshold = baseThreshold + (math.random() * variance * 2 - variance)
-  
-  -- Roll patience with variance
+
   local basePatience = archetype.startingPatience or 0.8
   local patienceVariance = archetype.patienceVariance or 0.1
   local patienceRoll = math.max(0.3, math.min(1.0, basePatience + (math.random() * patienceVariance * 2 - patienceVariance)))
-  
-  -- Generate name
-  local name
+
+  local name = "Private Seller"
   if archetype.isDealership then
     if archetype.names and #archetype.names > 0 then
       name = archetype.names[math.random(1, #archetype.names)]
     else
       name = "Property Manager"
     end
-  else
-    -- Use first name pool from marketplace if available
-    if career_modules_marketplace then
-      local firstNames = career_modules_marketplace.firstNames
-      local initials = career_modules_marketplace.initials
-      if firstNames and #firstNames > 0 then
-        name = firstNames[math.random(1, #firstNames)]
-        if initials and #initials > 0 then
-          name = name .. " " .. initials[math.random(1, #initials)] .. "."
-        end
-      else
-        name = "Private Seller"
+  elseif career_modules_marketplace then
+    local firstNames = career_modules_marketplace.firstNames
+    local initials = career_modules_marketplace.initials
+    if firstNames and #firstNames > 0 then
+      name = firstNames[math.random(1, #firstNames)]
+      if initials and #initials > 0 then
+        name = name .. " " .. initials[math.random(1, #initials)] .. "."
       end
-    else
-      name = "Private Seller"
     end
   end
-  
+
   return {
     archetype = chosenKey,
     name = name,
@@ -141,6 +130,55 @@ local function generateSellerPersonality()
     insultQuotes = archetype.insultQuotes or {"That's too low."},
     happyQuotes = archetype.happyQuotes or {"Deal."},
     minimumOverMarket = archetype.minimumOverMarket or 0,
+    maxOverMarket = archetype.maxOverMarket or 0,
+  }
+end
+
+local function generateBuyerPersonality()
+  local data = jsonReadFile("levels/west_coast_usa/facilities/realEstatePersonalities.json")
+  if not data or not data.randomBuyerArchetypes or not data.archetypes then
+    return getDefaultSellerPersonality()
+  end
+
+  local archetypeKeys = data.randomBuyerArchetypes or {}
+  if #archetypeKeys == 0 then
+    return getDefaultSellerPersonality()
+  end
+
+  local chosenKey = archetypeKeys[math.random(1, #archetypeKeys)]
+  local archetype = data.archetypes[chosenKey] or {}
+
+  local name = "Buyer"
+  if archetype.names and #archetype.names > 0 then
+    name = archetype.names[math.random(1, #archetype.names)]
+  elseif career_modules_marketplace and career_modules_marketplace.firstNames then
+    local firstNames = career_modules_marketplace.firstNames
+    local initials = career_modules_marketplace.initials
+    if firstNames and #firstNames > 0 then
+      name = firstNames[math.random(1, #firstNames)]
+      if initials and #initials > 0 then
+        name = name .. " " .. initials[math.random(1, #initials)] .. "."
+      end
+    end
+  end
+
+  local basePatience = archetype.startingPatience or 0.7
+  local patienceVariance = archetype.patienceVariance or 0.1
+  local patienceRoll = math.max(0.3, math.min(1.0, basePatience + (math.random() * patienceVariance * 2 - patienceVariance)))
+
+  return {
+    archetype = chosenKey,
+    name = name,
+    isDealership = archetype.isDealership or false,
+    startingPatience = patienceRoll,
+    patienceVariance = archetype.patienceVariance or 0.1,
+    isDesperate = math.random() < (archetype.desperation or 0.05),
+    priceMultiplier = archetype.priceMultiplier or 0.9,
+    counterOfferReadiness = archetype.counterOfferReadiness or 0.5,
+    maxOverMarket = archetype.maxOverMarket or 0,
+    quotesByPriceTier = archetype.quotesByPriceTier,
+    insultQuotes = archetype.insultQuotes or {"That's too high for me."},
+    happyQuotes = archetype.happyQuotes or {"Deal."},
   }
 end
 
@@ -263,13 +301,15 @@ local function isOfferAllowed(price)
   if not negotiationActive then return false end
   if negotiationStatus == "accepted" or negotiationStatus == "failed" then return false end
   if not price or price <= 0 then return false end
-  
-  -- For buying: can't offer more than their current offer
-  if not amISelling then
+
+  if amISelling then
+    if price <= theirOffer then return false end
+    if myOffer and price > myOffer then return false end
+  else
     if price > theirOffer then return false end
-    if myOffer and price <= myOffer then return false end  -- Can't go backwards (lower)
+    if myOffer and price <= myOffer then return false end
   end
-  
+
   return true
 end
 
@@ -278,117 +318,154 @@ local function makeOffer(price)
     log("W", "realEstateNegotiation", "Offer not allowed: " .. tostring(price))
     return false
   end
-  
+
   myOffer = price
   table.insert(offerHistory, { myOffer = myOffer })
-  
-  -- Check for insult
-  local minimumAcceptableOffer = math.max(
-    startingPrice * opponentPersonality.insultThresholdBase,
-    propertyMarketValue * 0.80
-  )
-  
-  if myOffer < minimumAcceptableOffer then
-    isInsulted = true
-    opponentQuote = opponentPersonality.insultQuotes[math.random(1, #opponentPersonality.insultQuotes)]
-    patience = 0
-    negotiationStatus = "failed"
-    if career_modules_garageManager and career_modules_garageManager.setNegotiationCooldown then
-      career_modules_garageManager.setNegotiationCooldown(propertyId)
-    end
-    guihooks.trigger('realEstateNegotiationData', getNegotiationState())
-    return true
-  end
-  
   negotiationStatus = "thinking"
   guihooks.trigger('realEstateNegotiationData', getNegotiationState())
-  
+
   core_jobsystem.create(function(job)
-    -- Thinking delay
     local thinkingTime = 2.5 + math.random() * 2.0
     job.sleep(thinkingTime)
-    
     negotiationStatus = "typing"
     guihooks.trigger('realEstateNegotiationData', getNegotiationState())
     job.sleep(thinkingTime)
-    
-    -- Calculate patience drop
-    local patienceChange = calculatePatienceDrop(myOffer, theirOffer, propertyMarketValue, opponentPersonality)
-    patience = math.max(0, patience - patienceChange)
-    
-    -- Determine acceptance/counter
-    local absoluteMinimum
-    if opponentPersonality.isDesperate then
-      -- Desperate sellers can go up to desperationMaxDiscount (no fixed 10% hard cap)
-      local maxDiscount = opponentPersonality.desperationMaxDiscount or 0.05
-      absoluteMinimum = propertyMarketValue * (1 - maxDiscount)
-    else
-      -- Normal seller: minimum is based on patience
-      -- High patience = holds firm near asking price
-      -- Low patience = willing to go lower
-      local maxPossibleDiscount = startingPrice
-      local negotiationRange = math.min(math.max(0, startingPrice - propertyMarketValue), maxPossibleDiscount)
-      local patienceMultiplier = patience * 0.7  -- High patience = 70% of range, low = smaller range
-      local willingToNegotiate = negotiationRange * patienceMultiplier
-      absoluteMinimum = startingPrice - willingToNegotiate
-    end
 
-    if patience <= 0 then
-      negotiationStatus = "failed"
-      opponentQuote = "I'm not interested in continuing this negotiation."
-      theirOffer = startingPrice
-      if career_modules_garageManager and career_modules_garageManager.setNegotiationCooldown then
-        career_modules_garageManager.setNegotiationCooldown(propertyId)
-      end
-    elseif myOffer >= absoluteMinimum then
-      theirOffer = myOffer
-      negotiationStatus = "accepted"
-      if myOffer > (absoluteMinimum * 1.05) then
-        opponentQuote = opponentPersonality.happyQuotes[math.random(1, #opponentPersonality.happyQuotes)]
-      else
-        opponentQuote = "Alright, we have a deal."
-      end
-    else
-      -- Generate counter-offer
-      local counter = generateCounterOffer(myOffer, theirOffer, patience, opponentPersonality)
-      if counter <= myOffer then
-        -- Can't counter lower than player's offer → accept
+    if amISelling then
+      local askGap = math.abs(myOffer - theirOffer)
+      local askGapPct = (askGap / math.max(1, theirOffer)) * 100
+      local patienceDrop = ((askGapPct * 1.2) + (askGap / 1000) * 3 + math.random() * 6) / 100
+      patience = math.max(0, patience - patienceDrop)
+
+      local maxOver = opponentPersonality.maxOverMarket or 0
+      local desperationBonus = opponentPersonality.isDesperate and 0.03 or 0
+      local maxWillingToPay = propertyMarketValue * (1 + maxOver + desperationBonus)
+
+      if myOffer <= maxWillingToPay then
         theirOffer = myOffer
         negotiationStatus = "accepted"
-        opponentQuote = "That works for me."
+        opponentQuote = opponentPersonality.happyQuotes[math.random(1, #opponentPersonality.happyQuotes)]
+      elseif patience <= 0 then
+        negotiationStatus = "failed"
+        opponentQuote = "I can't go that high."
       else
-        theirOffer = counter
-        if patience <= 0.05 then
-          negotiationStatus = "counterOfferLastChance"
-          opponentQuote = "This is my final offer. Take it or leave it."
+        local diff = myOffer - theirOffer
+        local movePercent = math.max(0.10, math.min(0.40, ((1 - patience) * 0.25 + 0.15) + (math.random() * 0.1 - 0.05)))
+        local counter = theirOffer + (diff * movePercent)
+        counter = math.min(maxWillingToPay, math.floor(counter / 100 + 0.5) * 100)
+
+        if counter >= myOffer then
+          theirOffer = myOffer
+          negotiationStatus = "accepted"
+          opponentQuote = "That works for me."
+        elseif counter <= theirOffer then
+          negotiationStatus = "failed"
+          opponentQuote = "That's my final number."
         else
-          negotiationStatus = "counterOffer"
-          opponentQuote = selectQuoteForPersonality(opponentPersonality, propertyMarketValue, false)
+          theirOffer = counter
+          negotiationStatus = patience <= 0.05 and "counterOfferLastChance" or "counterOffer"
+          opponentQuote = selectQuoteForPersonality(opponentPersonality, propertyMarketValue, true)
+        end
+      end
+    else
+      local minimumAcceptableOffer = math.max(startingPrice * opponentPersonality.insultThresholdBase, propertyMarketValue * 0.80)
+      if myOffer < minimumAcceptableOffer then
+        isInsulted = true
+        opponentQuote = opponentPersonality.insultQuotes[math.random(1, #opponentPersonality.insultQuotes)]
+        patience = 0
+        negotiationStatus = "failed"
+        if career_modules_garageManager and career_modules_garageManager.setNegotiationCooldown then
+          career_modules_garageManager.setNegotiationCooldown(propertyId)
+        end
+        table.insert(offerHistory, { theirOffer = theirOffer, negotiationStatus = negotiationStatus })
+        guihooks.trigger('realEstateNegotiationData', getNegotiationState())
+        return
+      end
+
+      local patienceChange = calculatePatienceDrop(myOffer, theirOffer, propertyMarketValue, opponentPersonality)
+      patience = math.max(0, patience - patienceChange)
+
+      local absoluteMinimum
+      if opponentPersonality.isDesperate then
+        local maxDiscount = opponentPersonality.desperationMaxDiscount or 0.05
+        absoluteMinimum = propertyMarketValue * (1 - maxDiscount)
+      else
+        local maxPossibleDiscount = startingPrice
+        local negotiationRange = math.min(math.max(0, startingPrice - propertyMarketValue), maxPossibleDiscount)
+        local patienceMultiplier = patience * 0.7
+        local willingToNegotiate = negotiationRange * patienceMultiplier
+        absoluteMinimum = startingPrice - willingToNegotiate
+      end
+
+      if patience <= 0 then
+        negotiationStatus = "failed"
+        opponentQuote = "I'm not interested in continuing this negotiation."
+        theirOffer = startingPrice
+        if career_modules_garageManager and career_modules_garageManager.setNegotiationCooldown then
+          career_modules_garageManager.setNegotiationCooldown(propertyId)
+        end
+      elseif myOffer >= absoluteMinimum then
+        theirOffer = myOffer
+        negotiationStatus = "accepted"
+        if myOffer > (absoluteMinimum * 1.05) then
+          opponentQuote = opponentPersonality.happyQuotes[math.random(1, #opponentPersonality.happyQuotes)]
+        else
+          opponentQuote = "Alright, we have a deal."
+        end
+      else
+        local counter = generateCounterOffer(myOffer, theirOffer, patience, opponentPersonality)
+        if counter <= myOffer then
+          theirOffer = myOffer
+          negotiationStatus = "accepted"
+          opponentQuote = "That works for me."
+        else
+          theirOffer = counter
+          if patience <= 0.05 then
+            negotiationStatus = "counterOfferLastChance"
+            opponentQuote = "This is my final offer. Take it or leave it."
+          else
+            negotiationStatus = "counterOffer"
+            opponentQuote = selectQuoteForPersonality(opponentPersonality, propertyMarketValue, false)
+          end
         end
       end
     end
-    
+
     table.insert(offerHistory, { theirOffer = theirOffer, negotiationStatus = negotiationStatus })
     guihooks.trigger('realEstateNegotiationData', getNegotiationState())
   end)
-  
+
   return true
 end
 
 local function takeTheirOffer()
   if not negotiationActive then return false end
   if not theirOffer or theirOffer <= 0 then return false end
-  
+
   myOffer = theirOffer
   negotiationStatus = "accepted"
   opponentQuote = opponentPersonality.happyQuotes[math.random(1, #opponentPersonality.happyQuotes)]
-  
+
   guihooks.trigger('realEstateNegotiationData', getNegotiationState())
-  
-  if not amISelling then
+
+  if amISelling then
+    local sold = false
+    if career_modules_garageManager and career_modules_garageManager.completePropertySaleFromListing then
+      sold = career_modules_garageManager.completePropertySaleFromListing(propertyId, theirOffer)
+    end
+
+    if sold and listedProperties[propertyId] and listingIndex then
+      table.remove(listedProperties[propertyId].offers, listingIndex)
+      if listedProperties[propertyId].offers and #listedProperties[propertyId].offers == 0 then
+        listedProperties[propertyId].timeOfNextOffer = os.time() + timeBetweenOffersBase
+      end
+    end
+
+    resetNegotiationState()
+  else
     completePurchase(propertyId, theirOffer, false)
   end
-  
+
   return true
 end
 
@@ -404,7 +481,7 @@ local function freezeCurrentOffer()
   return true
 end
 
-local function resetNegotiationState()
+resetNegotiationState = function()
   negotiationActive = false
   amISelling = false
   startingPrice = 0
@@ -423,6 +500,7 @@ local function resetNegotiationState()
   propertyCapacity = 0
   propertyParkingSpots = 0
   propertyNeighborhood = ""
+  listingIndex = nil
 end
 
 local function cancelNegotiation()
@@ -522,12 +600,217 @@ local function startNegotiateBuying(garageId)
 end
 
 -- ────────────────────────────────────────────────────────────────────────────
--- NEGOTIATION LOGIC (SELLING SIDE) — Stub for Phase 2
+-- NEGOTIATION LOGIC (SELLING SIDE)
 -- ────────────────────────────────────────────────────────────────────────────
 
+local function getMarketValue(garageId)
+  if career_modules_garageManager and career_modules_garageManager.getGaragePurchasePrice then
+    local v = career_modules_garageManager.getGaragePurchasePrice(garageId)
+    if v and v > 0 then return v end
+  end
+  local garage = freeroam_facilities.getFacility("garage", garageId)
+  return garage and garage.defaultPrice or 0
+end
+
+local function calculateOfferTimeMultiplier(marketRatio)
+  if marketRatio >= 0.98 and marketRatio <= 1.1 then
+    return 1.0
+  elseif marketRatio < 0.98 then
+    local t = math.max(0, math.min(1, inverseLerp(0.98, 0.85, marketRatio)))
+    return lerp(1.0, 0.4, t)
+  else
+    local t = math.max(0, math.min(1, inverseLerp(1.1, 1.5, marketRatio)))
+    return lerp(1.0, 4.0, t)
+  end
+end
+
+local function scheduleNextPropertyOffer(listing, timeNow)
+  if not listing then return end
+  local mult = listing.offerTimeMultiplier or 1
+  listing.timeOfNextOffer = timeNow + (timeBetweenOffersBase * mult) + (math.random(-60, 60) / 100 * timeBetweenOffersBase * mult)
+end
+
+local function getPriceGuidanceForListing(garageId, askingPrice)
+  local marketValue = getMarketValue(garageId)
+  local price = tonumber(askingPrice) or 0
+  if marketValue <= 0 or price <= 0 then return nil end
+
+  local ratio = price / marketValue
+  local tier = "fair"
+  local label = "Fair"
+  local description = "Should receive normal offer flow."
+
+  if ratio < 0.98 then
+    tier = "low"
+    label = "Below market"
+    description = "Likely to get faster/more offers, but buyers still won't overpay."
+  elseif ratio > 1.10 then
+    tier = "high"
+    label = "Over market"
+    description = "Expect fewer offers and more lowball attempts."
+  end
+
+  return {
+    marketValue = marketValue,
+    askingPrice = price,
+    marketRatio = ratio,
+    tier = tier,
+    label = label,
+    description = description,
+    offerTimeMultiplier = calculateOfferTimeMultiplier(ratio),
+  }
+end
+
+local function listPropertyForSale(garageId, askingPrice)
+  if not garageId or not askingPrice then return false end
+
+  local marketValue = getMarketValue(garageId)
+  local price = tonumber(askingPrice)
+  if not price or price <= 0 or marketValue <= 0 then return false end
+
+  local garage = freeroam_facilities.getFacility("garage", garageId)
+  if not garage then return false end
+
+  local guidance = getPriceGuidanceForListing(garageId, price)
+  if not guidance then return false end
+
+  local now = os.time()
+  listedProperties[garageId] = {
+    listingTimestamp = now,
+    askingPrice = price,
+    marketValueAtListing = marketValue,
+    marketRatio = guidance.marketRatio,
+    offerTimeMultiplier = guidance.offerTimeMultiplier,
+    timeOfNextOffer = nil,
+    offers = {},
+    garageName = garage.name or tostring(garageId),
+    preview = garage.preview or "",
+  }
+
+  scheduleNextPropertyOffer(listedProperties[garageId], now)
+  return true
+end
+
+local function removePropertyListing(garageId)
+  if not garageId then return false end
+  listedProperties[garageId] = nil
+  return true
+end
+
+local function getPropertyListing(garageId)
+  if not garageId then return nil end
+  return listedProperties[garageId]
+end
+
+local function generateBuyerOffer(garageId)
+  local listing = listedProperties[garageId]
+  if not listing then return nil end
+
+  local marketValue = getMarketValue(garageId)
+  if marketValue <= 0 then marketValue = listing.marketValueAtListing or listing.askingPrice end
+
+  local buyer = generateBuyerPersonality()
+  local baseOffer = marketValue
+  local personalityMult = buyer.priceMultiplier or 0.9
+  local noise = (math.random() * 0.1) + 0.92
+  local finalOffer = baseOffer * personalityMult * noise
+
+  local ratio = listing.marketRatio or 1.0
+  if ratio < 0.98 then
+    finalOffer = math.min(finalOffer, listing.askingPrice)
+  elseif ratio > 1.1 then
+    local cap = marketValue * (0.90 + math.random() * 0.08)
+    finalOffer = math.min(finalOffer, cap)
+  else
+    finalOffer = math.min(finalOffer, listing.askingPrice * 1.01)
+  end
+
+  finalOffer = math.max(1000, math.floor((finalOffer + 500) / 1000) * 1000)
+
+  local offer = {
+    timestamp = os.time(),
+    value = finalOffer,
+    ttl = offerTTL,
+    negotiationPossible = true,
+    buyerPersonality = buyer,
+  }
+  table.insert(listing.offers, offer)
+  return offer
+end
+
+local function generateNewPropertyOffers()
+  local now = os.time()
+  for garageId, listing in pairs(listedProperties) do
+    if not listing.timeOfNextOffer then
+      scheduleNextPropertyOffer(listing, now)
+    end
+
+    if listing.timeOfNextOffer and now >= listing.timeOfNextOffer then
+      listing.timeOfNextOffer = nil
+      local offer = generateBuyerOffer(garageId)
+      if offer then
+        guihooks.trigger("toastrMsg", { type = "info", title = "New property offer", msg = (listing.garageName or "Property") .. ": $" .. tostring(offer.value) })
+      end
+    end
+
+    for i = #listing.offers, 1, -1 do
+      local offer = listing.offers[i]
+      if offer and now - (offer.timestamp or now) > (offer.ttl or offerTTL) then
+        table.remove(listing.offers, i)
+      end
+    end
+  end
+end
+
+local offerUpdateAccumulator = 0
+local function onUpdate(dtReal, dtSim)
+  offerUpdateAccumulator = offerUpdateAccumulator + (dtSim or 0)
+  if offerUpdateAccumulator < 5 then return end
+  offerUpdateAccumulator = 0
+  generateNewPropertyOffers()
+end
+
 local function startNegotiateSelling(garageId, offerIdx)
-  log("W", "realEstateNegotiation", "Selling-side negotiation not yet implemented (Phase 2)")
-  return false
+  if not garageId or not offerIdx then return false end
+  local listing = listedProperties[garageId]
+  if not listing or not listing.offers then return false end
+
+  local idx = tonumber(offerIdx)
+  if not idx or idx < 1 or idx > #listing.offers then return false end
+
+  local offer = listing.offers[idx]
+  if not offer then return false end
+
+  local garage = freeroam_facilities.getFacility("garage", garageId)
+  if not garage then return false end
+
+  opponentPersonality = offer.buyerPersonality or generateBuyerPersonality()
+  propertyId = garageId
+  propertyName = garage.name or "Property"
+  propertyPreview = garage.preview or ""
+  propertyMarketValue = getMarketValue(garageId)
+  propertyCapacity = garage.capacity or 0
+  propertyParkingSpots = (garage.parkingSpotNames and #garage.parkingSpotNames) or 0
+  propertyNeighborhood = "West Coast"
+
+  listingIndex = idx
+  startingPrice = listing.askingPrice or propertyMarketValue
+  negotiationActive = true
+  amISelling = true
+  patience = opponentPersonality.startingPatience or 0.7
+  isInsulted = false
+  theirOffer = offer.value
+  myOffer = startingPrice
+  negotiationStatus = "initial"
+  offerHistory = {
+    { myOffer = myOffer, negotiationStatus = "initial" },
+    { theirOffer = theirOffer, negotiationStatus = "initial" },
+  }
+  opponentQuote = selectQuoteForPersonality(opponentPersonality, propertyMarketValue, true)
+
+  guihooks.trigger('ChangeState', {state = 'realEstateNegotiation', params = {}})
+  guihooks.trigger('realEstateNegotiationData', getNegotiationState())
+  return true
 end
 
 -- ────────────────────────────────────────────────────────────────────────────
@@ -617,6 +900,14 @@ M.takeTheirOffer = takeTheirOffer
 M.freezeCurrentOffer = freezeCurrentOffer
 M.cancelNegotiation = cancelNegotiation
 M.getNegotiationState = getNegotiationState
+
+-- Selling-side listing API
+M.listPropertyForSale = listPropertyForSale
+M.removePropertyListing = removePropertyListing
+M.getPropertyListing = getPropertyListing
+M.getPriceGuidanceForListing = getPriceGuidanceForListing
+M.generateNewPropertyOffers = generateNewPropertyOffers
+M.onUpdate = onUpdate
 
 -- Save/load hooks
 M.onSaveCurrentSaveSlot = onSaveCurrentSaveSlot
