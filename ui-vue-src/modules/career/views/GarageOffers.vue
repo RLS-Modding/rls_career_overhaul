@@ -33,9 +33,11 @@
 
         <!-- No Offers -->
         <div v-else-if="!offers || offers.length === 0" class="empty-offers">
-          <div class="empty-icon">📭</div>
-          <div class="empty-text">No offers yet</div>
-          <div class="empty-desc">AI buyers will send offers over time. Check back later!</div>
+          <div class="empty-card">
+            <div class="empty-icon">📭</div>
+            <div class="empty-text">No Offers Yet</div>
+            <div class="empty-desc">Buyers are reviewing your listing. Offers will come in over time based on your asking price and market conditions.</div>
+          </div>
         </div>
 
         <!-- Offers List -->
@@ -381,21 +383,31 @@ onMounted(loadOffers)
   color: rgba(255, 255, 255, 0.5);
 }
 
+.empty-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 40px 32px;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
 .empty-icon {
-  font-size: 32px;
-  margin-bottom: 8px;
+  font-size: 40px;
+  margin-bottom: 12px;
 }
 
 .empty-text {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.6);
-  margin-bottom: 4px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 8px;
 }
 
 .empty-desc {
   font-size: 13px;
   color: rgba(255, 255, 255, 0.35);
+  line-height: 1.5;
 }
 
 // Buttons

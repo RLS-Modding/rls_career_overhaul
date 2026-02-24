@@ -609,16 +609,44 @@ local function getMarketValue(garageId)
   return garage and garage.defaultPrice or 0
 end
 
-local function calculateOfferTimeMultiplier(marketRatio)
-  if marketRatio >= 0.98 and marketRatio <= 1.1 then
-    return 1.0
-  elseif marketRatio < 0.98 then
-    local t = math.max(0, math.min(1, inverseLerp(0.98, 0.85, marketRatio)))
-    return lerp(1.0, 0.4, t)
-  else
-    local t = math.max(0, math.min(1, inverseLerp(1.1, 1.5, marketRatio)))
-    return lerp(1.0, 4.0, t)
+local function getHousingMarketHealth()
+  -- Hook point for dynamic housing market (globalEconomy.housingMarket.index)
+  -- Returns 0.5 (bad market) to 1.5 (hot market), 1.0 = normal
+  -- TODO: integrate with career_modules_propertyMarket when available
+  if career_modules_propertyMarket and career_modules_propertyMarket.getMarketIndex then
+    return career_modules_propertyMarket.getMarketIndex() or 1.0
   end
+  return 1.0
+end
+
+local function calculateOfferTimeMultiplier(marketRatio)
+  -- Price-based: how the listing price compares to market value
+  local priceMult
+  if marketRatio <= 0.50 then
+    priceMult = 0.05  -- 50%+ below market: offers almost instant
+  elseif marketRatio < 0.80 then
+    local t = inverseLerp(0.80, 0.50, marketRatio)
+    priceMult = lerp(0.2, 0.05, math.max(0, math.min(1, t)))
+  elseif marketRatio < 0.90 then
+    local t = inverseLerp(0.90, 0.80, marketRatio)
+    priceMult = lerp(0.5, 0.2, math.max(0, math.min(1, t)))
+  elseif marketRatio >= 0.90 and marketRatio <= 1.1 then
+    priceMult = 1.0  -- Fair price: normal offer speed
+  elseif marketRatio <= 1.3 then
+    local t = inverseLerp(1.1, 1.3, marketRatio)
+    priceMult = lerp(1.0, 2.5, math.max(0, math.min(1, t)))
+  elseif marketRatio <= 1.5 then
+    local t = inverseLerp(1.3, 1.5, marketRatio)
+    priceMult = lerp(2.5, 5.0, math.max(0, math.min(1, t)))
+  else
+    priceMult = 6.0  -- 50%+ above market: very slow offers
+  end
+
+  -- Market health: hot market = faster offers, bad market = slower
+  local marketHealth = getHousingMarketHealth()
+  local marketMult = 1.0 / math.max(0.3, marketHealth)  -- hot market (1.5) → 0.67x time, bad market (0.5) → 2x time
+
+  return priceMult * marketMult
 end
 
 local function scheduleNextPropertyOffer(listing, timeNow)
