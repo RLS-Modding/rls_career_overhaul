@@ -88,17 +88,31 @@
                 <div v-if="expandedGarage === garage.garageId" class="listing-form">
                   <div class="form-row">
                     <label class="form-label">Asking Price</label>
-                    <div class="price-input-wrap">
-                      <span class="currency-sign">$</span>
-                      <input
-                        type="number"
-                        class="price-input"
-                        v-model.number="listingPrice"
-                        :placeholder="garage.marketValue"
-                        min="1000"
-                        step="1000"
-                        @input="updateGuidance(garage)"
-                      />
+                    <div class="price-stepper">
+                      <div class="step-buttons left">
+                        <button class="step-btn" @click="adjustPrice(-10000, garage)">-10,000</button>
+                        <button class="step-btn" @click="adjustPrice(-1000, garage)">-1,000</button>
+                        <button class="step-btn" @click="adjustPrice(-100, garage)">-100</button>
+                      </div>
+                      <div class="price-input-wrap">
+                        <span class="currency-sign">$</span>
+                        <input
+                          ref="priceInputRef"
+                          type="number"
+                          class="price-input"
+                          v-model.number="listingPrice"
+                          v-bng-text-input
+                          :placeholder="garage.marketValue"
+                          min="1000"
+                          @keydown.stop @keyup.stop @keypress.stop
+                          @input="updateGuidance(garage)"
+                        />
+                      </div>
+                      <div class="step-buttons right">
+                        <button class="step-btn" @click="adjustPrice(100, garage)">+100</button>
+                        <button class="step-btn" @click="adjustPrice(1000, garage)">+1,000</button>
+                        <button class="step-btn" @click="adjustPrice(10000, garage)">+10,000</button>
+                      </div>
                     </div>
                   </div>
 
@@ -153,9 +167,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, nextTick, onMounted } from 'vue'
 import { lua } from '@/bridge'
 import { useRouter } from 'vue-router'
+import { vBngTextInput } from '@/common/directives'
 import ComputerWrapper from './ComputerWrapper.vue'
 
 const router = useRouter()
@@ -165,6 +180,7 @@ const loading = ref(true)
 const expandedGarage = ref(null)
 const listingPrice = ref(null)
 const priceGuidance = ref(null)
+const priceInputRef = ref(null)
 
 const formatPrice = (value) => {
   if (value === null || value === undefined) return '0'
@@ -189,6 +205,15 @@ const startListing = (garage) => {
   expandedGarage.value = garage.garageId
   listingPrice.value = garage.marketValue
   priceGuidance.value = null
+  updateGuidance(garage)
+  nextTick(() => {
+    if (priceInputRef.value) priceInputRef.value.focus()
+  })
+}
+
+const adjustPrice = (amount, garage) => {
+  const newPrice = Math.max(1000, (listingPrice.value || 0) + amount)
+  listingPrice.value = newPrice
   updateGuidance(garage)
 }
 
@@ -455,6 +480,43 @@ onMounted(loadGarages)
   font-weight: 700;
 }
 
+.price-stepper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.step-buttons {
+  display: flex;
+  gap: 4px;
+
+  &.left { flex-direction: row; }
+  &.right { flex-direction: row; }
+}
+
+.step-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.14);
+    color: white;
+  }
+
+  &:active {
+    background: rgba(249, 115, 22, 0.3);
+    border-color: rgba(249, 115, 22, 0.5);
+  }
+}
+
 .price-input-wrap {
   display: flex;
   align-items: center;
@@ -462,6 +524,8 @@ onMounted(loadGarages)
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   padding: 0 12px;
+  flex: 1;
+  min-width: 140px;
   transition: border-color 0.2s;
 
   &:focus-within {
