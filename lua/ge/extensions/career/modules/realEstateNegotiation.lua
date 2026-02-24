@@ -367,21 +367,19 @@ local function makeOffer(price)
         end
       end
     else
-      local minimumAcceptableOffer = math.max(startingPrice * opponentPersonality.insultThresholdBase, propertyMarketValue * 0.80)
-      if myOffer < minimumAcceptableOffer then
-        isInsulted = true
-        opponentQuote = opponentPersonality.insultQuotes[math.random(1, #opponentPersonality.insultQuotes)]
-        patience = 0
-        negotiationStatus = "failed"
-        if career_modules_garageManager and career_modules_garageManager.setNegotiationCooldown then
-          career_modules_garageManager.setNegotiationCooldown(propertyId)
-        end
-        table.insert(offerHistory, { theirOffer = theirOffer, negotiationStatus = negotiationStatus })
-        guihooks.trigger('realEstateNegotiationData', getNegotiationState())
-        return
-      end
-
+      -- No hard rejection — lowball offers just cause bigger patience hits
+      -- The further below their threshold, the angrier they get
+      local thresholdPrice = startingPrice * (opponentPersonality.insultThresholdBase or 0.85)
       local patienceChange = calculatePatienceDrop(myOffer, theirOffer, propertyMarketValue, opponentPersonality)
+      
+      if myOffer < thresholdPrice then
+        -- Extra patience penalty for offers below their comfort zone
+        local howFarBelow = (thresholdPrice - myOffer) / thresholdPrice
+        local extraPenalty = howFarBelow * 0.4  -- up to 40% extra patience loss for extreme lowballs
+        patienceChange = patienceChange + extraPenalty
+        -- Use an annoyed quote but don't instantly fail
+        opponentQuote = opponentPersonality.insultQuotes[math.random(1, #opponentPersonality.insultQuotes)]
+      end
       patience = math.max(0, patience - patienceChange)
 
       local absoluteMinimum
