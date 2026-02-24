@@ -1,7 +1,6 @@
 <template>
-  <LayoutSingle class="garage-offers-layout">
-    <div class="offers-backdrop" @click="goBack">
-      <div class="offers-panel" @click.stop>
+  <ComputerWrapper title="Property Offers" back @back="goBack">
+    <div class="offers-panel">
         <!-- Property Header -->
         <div class="property-header" v-if="property">
           <div class="header-preview">
@@ -80,22 +79,18 @@
           </div>
         </div>
 
-        <!-- Footer -->
-        <div class="panel-footer">
-          <button class="btn btn-back" @click="goBack">Back</button>
-        </div>
-      </div>
     </div>
-  </LayoutSingle>
+  </ComputerWrapper>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { lua } from '@/bridge'
-import { LayoutSingle } from '@/common/layouts'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import ComputerWrapper from './ComputerWrapper.vue'
 
 const route = useRoute()
+const router = useRouter()
 const garageId = route.params.garageId
 
 const property = ref(null)
@@ -164,44 +159,15 @@ const negotiateOffer = async (offer) => {
 }
 
 const goBack = () => {
-  lua.career_career.closeAllMenus()
+  router.back()
 }
 
 onMounted(loadOffers)
 </script>
 
 <style scoped lang="scss">
-.garage-offers-layout {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: white;
-}
-
-.offers-backdrop {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.6);
-  z-index: 100;
-}
-
 .offers-panel {
-  width: 640px;
-  max-width: calc(100vw - 40px);
-  max-height: calc(100vh - 60px);
-  overflow-y: auto;
-  background: #0e0e0e;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
-
-  &::-webkit-scrollbar { width: 4px; }
-  &::-webkit-scrollbar-track { background: transparent; }
-  &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+  color: white;
 }
 
 // Property Header
@@ -474,19 +440,5 @@ onMounted(loadOffers)
   }
 }
 
-.btn-back {
-  width: 100%;
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-
-  &:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.7);
-  }
-}
-
-.panel-footer {
-  padding: 16px 20px 20px;
-}
+/* footer removed - ComputerWrapper handles back */
 </style>

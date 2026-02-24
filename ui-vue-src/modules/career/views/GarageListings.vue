@@ -1,12 +1,10 @@
 <template>
-  <LayoutSingle class="garage-listings-layout">
-    <div class="listings-backdrop" @click="goBack">
-      <div class="listings-panel" @click.stop>
-        <!-- Header -->
-        <div class="panel-header">
-          <h1 class="panel-title">Garage Listings</h1>
-          <p class="panel-subtitle">Manage your properties and listings</p>
-        </div>
+  <ComputerWrapper title="Garage Listings" back @back="goBack">
+    <div class="listings-panel">
+      <!-- Subtitle -->
+      <div class="panel-header">
+        <p class="panel-subtitle">Manage your properties and listings</p>
+      </div>
 
         <!-- Loading -->
         <div v-if="loading" class="loading-state">
@@ -150,20 +148,15 @@
           </div>
         </div>
 
-        <!-- Close Button -->
-        <div class="panel-footer">
-          <button class="btn btn-back" @click="goBack">Back</button>
-        </div>
-      </div>
     </div>
-  </LayoutSingle>
+  </ComputerWrapper>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { lua } from '@/bridge'
-import { LayoutSingle } from '@/common/layouts'
 import { useRouter } from 'vue-router'
+import ComputerWrapper from './ComputerWrapper.vue'
 
 const router = useRouter()
 
@@ -247,57 +240,19 @@ const viewOffers = (garage) => {
 }
 
 const goBack = () => {
-  lua.career_career.closeAllMenus()
+  router.back()
 }
 
 onMounted(loadGarages)
 </script>
 
 <style scoped lang="scss">
-.garage-listings-layout {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
+.listings-panel {
   color: white;
 }
 
-.listings-backdrop {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.6);
-  z-index: 100;
-}
-
-.listings-panel {
-  width: 780px;
-  max-width: calc(100vw - 40px);
-  max-height: calc(100vh - 60px);
-  overflow-y: auto;
-  background: #0e0e0e;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
-  display: flex;
-  flex-direction: column;
-
-  &::-webkit-scrollbar { width: 4px; }
-  &::-webkit-scrollbar-track { background: transparent; }
-  &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
-}
-
 .panel-header {
-  padding: 24px 24px 0;
-}
-
-.panel-title {
-  font-size: 22px;
-  font-weight: 700;
-  margin: 0;
-  line-height: 1.2;
+  padding: 4px 24px 0;
 }
 
 .panel-subtitle {
@@ -691,19 +646,5 @@ onMounted(loadGarages)
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.btn-back {
-  width: 100%;
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-
-  &:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.7);
-  }
-}
-
-.panel-footer {
-  padding: 0 24px 20px;
-}
+/* footer removed - ComputerWrapper handles back */
 </style>
