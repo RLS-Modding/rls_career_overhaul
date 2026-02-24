@@ -2,7 +2,7 @@
 -- Handles buying/selling property with AI negotiation
 
 local M = {}
-M.dependencies = { 'career_career', 'career_saveSystem', 'freeroam_facilities', 'career_modules_garageManager' }
+M.dependencies = { 'career_career', 'career_saveSystem', 'freeroam_facilities', 'career_modules_garageManager', 'career_modules_propertyOwners' }
 
 -- Negotiation state (in-memory, persisted to save file)
 local negotiationActive = false
@@ -448,7 +448,7 @@ local function takeTheirOffer()
   if amISelling then
     local sold = false
     if career_modules_garageManager and career_modules_garageManager.completePropertySaleFromListing then
-      sold = career_modules_garageManager.completePropertySaleFromListing(propertyId, theirOffer)
+      sold = career_modules_garageManager.completePropertySaleFromListing(propertyId, theirOffer, opponentPersonality)
     end
 
     if sold and listedProperties[propertyId] and listingIndex then
@@ -561,9 +561,72 @@ local function startNegotiateBuying(garageId)
   
   local marketValue = listedPrice  -- In Phase 1, listed price = market value
   
-  -- Generate seller personality
-  opponentPersonality = generateSellerPersonality()
-  
+  local sellerProfile = nil
+  if career_modules_propertyOwners and career_modules_propertyOwners.getSellerProfileForNegotiation then
+    sellerProfile = career_modules_propertyOwners.getSellerProfileForNegotiation(garageId, listedPrice)
+  end
+  if sellerProfile and sellerProfile.isDelisted then
+    log("W", "realEstateNegotiation", "Seller has delisted this property: " .. tostring(garageId))
+    return false
+  end
+
+  -- Generate seller personality / persistent owner profile
+  if sellerProfile and sellerProfile.isPersistentOwner then
+    opponentPersonality = {
+      archetype = sellerProfile.archetype,
+      name = sellerProfile.name,
+      isDealership = false,
+      startingPatience = sellerProfile.patience or 0.6,
+      patienceVariance = 0.05,
+      isDesperate = (sellerProfile.archetype == "cash_strapped" and (sellerProfile.willingnessToSell or 0) > 0.65) or false,
+      desperation = 0.1,
+      desperationMaxDiscount = 0.12,
+      insultThresholdBase = 0.9,
+      priceMultiplier = 0,
+      counterOfferReadiness = 0.55,
+      quotesByPriceTier = {
+        low = {"I own this place now, so let's keep this realistic."},
+        mid = {"I've had this property for a while — make me a fair offer."},
+        high = {"This is prime real estate. The price reflects that."}
+      },
+      insultQuotes = {"I just bought this. That offer doesn't work for me.", "No chance at that price."},
+      happyQuotes = {"Deal.", "Alright, we can close at that number."},
+      minimumOverMarket = 0,
+      maxOverMarket = 0.25,
+    }
+    if sellerProfile.startingPrice and sellerProfile.startingPrice > 0 then
+      listedPrice = sellerProfile.startingPrice
+      marketValue = listedPrice
+    end
+  elseif sellerProfile then
+    opponentPersonality = {
+      archetype = sellerProfile.archetype or "default_private_seller",
+      name = sellerProfile.name or "Property Seller",
+      isDealership = sellerProfile.sellerType == "bank",
+      startingPatience = sellerProfile.patience or 0.7,
+      patienceVariance = 0.08,
+      isDesperate = false,
+      desperation = 0.05,
+      desperationMaxDiscount = 0.05,
+      insultThresholdBase = 0.87,
+      priceMultiplier = 0,
+      counterOfferReadiness = 0.5,
+      quotesByPriceTier = {
+        low = {"Let's discuss the offer."},
+        mid = {"I'm open to a reasonable deal."},
+        high = {"This property is priced for its value."}
+      },
+      insultQuotes = {"That's too low."},
+      happyQuotes = {"Deal."},
+      minimumOverMarket = 0,
+      maxOverMarket = 0.2,
+    }
+    listedPrice = sellerProfile.startingPrice or listedPrice
+    marketValue = listedPrice
+  else
+    opponentPersonality = generateSellerPersonality()
+  end
+
   -- Initialize negotiation state
   propertyId = garageId
   propertyName = garage.name or "Property"

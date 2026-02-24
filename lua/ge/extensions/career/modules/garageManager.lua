@@ -1,5 +1,5 @@
 local M = {}
-M.dependencies = { 'career_career', 'career_saveSystem', 'freeroam_facilities', 'career_modules_realEstateNegotiation' }
+M.dependencies = { 'career_career', 'career_saveSystem', 'freeroam_facilities', 'career_modules_realEstateNegotiation', 'career_modules_propertyOwners' }
 
 local purchasedGarages = {}
 local discoveredGarages = {}
@@ -173,6 +173,9 @@ local function addPurchasedGarage(garageId)
   log("I", "garageManager", "Adding purchased garage: " .. garageId)
   purchasedGarages[garageId] = true
   discoveredGarages[garageId] = true
+  if career_modules_propertyOwners and career_modules_propertyOwners.clearOwner then
+    career_modules_propertyOwners.clearOwner(garageId)
+  end
   reloadRecoveryPrompt()
   buildGarageSizes()
 end
@@ -430,6 +433,13 @@ requestGarageListing = function(garageId)
   
   local listedPrice = getGaragePrice(garage)
   local canNegotiate = not garage.starterGarage and listedPrice > 0
+  local ownerInfo = nil
+  if career_modules_propertyOwners and career_modules_propertyOwners.getOwnerForListing then
+    ownerInfo = career_modules_propertyOwners.getOwnerForListing(garageId, listedPrice)
+    if ownerInfo and ownerInfo.currentAskingPrice then
+      listedPrice = ownerInfo.currentAskingPrice
+    end
+  end
   
   -- Get garage preview from computer preview if available
   local preview = garage.preview or ""
@@ -476,7 +486,12 @@ requestGarageListing = function(garageId)
     cooldownRemaining = cooldownRemaining,
     isFrozen = negotiatedPrice ~= nil,
     starterGarage = garage.starterGarage or false,
+    ownerInfo = ownerInfo,
   }
+
+  if ownerInfo and ownerInfo.isDelisted then
+    data.canNegotiate = false
+  end
   
   return data
 end
@@ -851,7 +866,7 @@ local function sellGarage(computerId, sellPrice)
   return listGarageForSale(computerId, sellPrice)
 end
 
-local function completePropertySaleFromListing(garageId, finalPrice)
+local function completePropertySaleFromListing(garageId, finalPrice, buyerPersonality)
   if not career_career.isActive() then return false end
   if not garageId or not finalPrice then return false end
 
@@ -865,6 +880,10 @@ local function completePropertySaleFromListing(garageId, finalPrice)
 
   local soldMessage = "Sold " .. (garage.name or tostring(garageId))
   career_modules_payment.reward({ money = { amount = finalPrice } }, { label = soldMessage }, true)
+
+  if career_modules_propertyOwners and career_modules_propertyOwners.registerOwnerFromSale then
+    career_modules_propertyOwners.registerOwnerFromSale(garageId, finalPrice, buyerPersonality)
+  end
 
   if career_modules_realEstateNegotiation and career_modules_realEstateNegotiation.removePropertyListing then
     career_modules_realEstateNegotiation.removePropertyListing(garageId)
@@ -1105,7 +1124,7 @@ local function acceptOffer(garageId, offerIndex)
   local offer = listing.offers[idx]
   if not offer then return false end
 
-  return completePropertySaleFromListing(garageId, offer.value)
+  return completePropertySaleFromListing(garageId, offer.value, offer.buyerPersonality)
 end
 
 local function declineOffer(garageId, offerIndex)
