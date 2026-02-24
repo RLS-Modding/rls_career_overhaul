@@ -249,6 +249,8 @@ onMounted(loadGarages)
 <style scoped lang="scss">
 .listings-panel {
   color: white;
+  background: #0e0e0e;
+  min-height: 100%;
 }
 
 .panel-header {

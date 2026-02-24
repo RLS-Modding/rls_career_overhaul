@@ -168,6 +168,8 @@ onMounted(loadOffers)
 <style scoped lang="scss">
 .offers-panel {
   color: white;
+  background: #0e0e0e;
+  min-height: 100%;
 }
 
 // Property Header
