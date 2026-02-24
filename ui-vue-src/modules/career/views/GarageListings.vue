@@ -251,6 +251,8 @@ onMounted(loadGarages)
   color: white;
   background: #0e0e0e;
   min-height: 100%;
+  border-radius: 14px;
+  overflow: hidden;
 }
 
 .panel-header {
