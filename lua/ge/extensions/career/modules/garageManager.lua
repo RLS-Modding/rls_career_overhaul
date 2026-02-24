@@ -173,9 +173,6 @@ local function addPurchasedGarage(garageId)
   log("I", "garageManager", "Adding purchased garage: " .. garageId)
   purchasedGarages[garageId] = true
   discoveredGarages[garageId] = true
-  if career_modules_propertyOwners and career_modules_propertyOwners.clearOwner then
-    career_modules_propertyOwners.clearOwner(garageId)
-  end
   reloadRecoveryPrompt()
   buildGarageSizes()
 end
@@ -362,13 +359,8 @@ local function completePurchaseWithNegotiatedPrice(garageId, finalPrice, freezeP
   
   pendingGarageListingData = listingData
   
-  -- Send data and change state with a small delay to ensure negotiation UI updates first
   guihooks.trigger('openGarageListing', listingData)
-  
-  core_jobsystem.create(function(job)
-    job.sleep(0.2)
-    guihooks.trigger('ChangeState', {state = 'garage-listing', params = {}})
-  end)
+  guihooks.trigger('ChangeState', {state = 'garage-listing', params = {}})
   
   return true
 end
@@ -379,8 +371,8 @@ local function purchaseGarageAtNegotiatedPrice(garageId)
     return false 
   end
   
-  if not garageId then
-    log("E", "garageManager", "purchaseGarageAtNegotiatedPrice: Missing garageId")
+  if not garageId or type(garageId) ~= "string" or garageId == "" then
+    log("E", "garageManager", "purchaseGarageAtNegotiatedPrice: Invalid garageId (expected non-empty string)")
     return false
   end
   
@@ -400,24 +392,15 @@ local function purchaseGarageAtNegotiatedPrice(garageId)
     log("E", "garageManager", "purchaseGarageAtNegotiatedPrice: Payment module not loaded")
     return false
   end
-  
+
   local price = { money = { amount = negotiatedPrice, canBeNegative = false } }
   local success = career_modules_payment.pay(price, { label = "Purchased " .. garage.name })
   if success then
     addPurchasedGarage(garage.id)
     clearFrozenPrice(garageId)
     career_saveSystem.saveCurrent()
-    
-    local computers = freeroam_facilities.getFacilitiesByType("computer")
-    if computers then
-      for _, computer in pairs(computers) do
-        if computer.garageId == garageId then
-          career_modules_computer.openComputerMenuById(computer.id)
-          break
-        end
-      end
-    end
-    
+    guihooks.trigger('toastrMsg', {type="success", title="Property Purchased", msg="Welcome to your new garage!"})
+    guihooks.trigger('ChangeState', {state = 'menu.career', params = {}})
     return true
   end
   
@@ -487,6 +470,8 @@ requestGarageListing = function(garageId)
     isFrozen = negotiatedPrice ~= nil,
     starterGarage = garage.starterGarage or false,
     ownerInfo = ownerInfo,
+    ownerName = ownerInfo and ownerInfo.name or nil,
+    ownerArchetype = ownerInfo and ownerInfo.archetype or nil,
   }
 
   if ownerInfo and ownerInfo.isDelisted then
@@ -520,8 +505,8 @@ local function purchaseGarageAtListedPrice(garageId)
     return false 
   end
   
-  if not garageId then
-    log("E", "garageManager", "purchaseGarageAtListedPrice: Missing garageId")
+  if not garageId or type(garageId) ~= "string" or garageId == "" then
+    log("E", "garageManager", "purchaseGarageAtListedPrice: Invalid garageId (expected non-empty string)")
     return false
   end
   
@@ -560,7 +545,7 @@ local function purchaseGarageAtListedPrice(garageId)
     log("E", "garageManager", "purchaseGarageAtListedPrice: Payment module not loaded")
     return false
   end
-  
+
   local priceTable = { money = { amount = price, canBeNegative = false } }
   local success = career_modules_payment.pay(priceTable, { label = "Purchased " .. garage.name })
   if success then
@@ -582,7 +567,7 @@ end
 
 local function showPurchaseGaragePrompt(garageId)
   if not career_career.isActive() then return end
-  if not garageId or garageId == "" then return end
+  if not garageId or type(garageId) ~= "string" or garageId == "" then return end
   garageToPurchase = freeroam_facilities.getFacility("garage", garageId)
   
   -- Free garages (starter garages) - purchase immediately

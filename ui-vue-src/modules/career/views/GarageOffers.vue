@@ -171,14 +171,20 @@ onMounted(loadOffers)
 .offers-panel {
   color: white;
   background: #0e0e0e;
-  min-height: 100%;
+  height: 100%;
+  max-height: calc(100vh - 120px);
   border-radius: 14px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 16px;
+  box-sizing: border-box;
 }
 
 // Property Header
 .property-header {
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .header-preview {
@@ -276,7 +282,25 @@ onMounted(loadOffers)
 
 // Offers List
 .offers-list {
-  padding: 0 20px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 12px 16px 20px;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
 }
 
 .offers-heading {
@@ -378,6 +402,7 @@ onMounted(loadOffers)
 
 // Empty state
 .loading-state, .empty-offers {
+  flex-shrink: 0;
   padding: 40px 24px;
   text-align: center;
   color: rgba(255, 255, 255, 0.5);

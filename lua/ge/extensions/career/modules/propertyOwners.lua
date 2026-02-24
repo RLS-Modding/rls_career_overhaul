@@ -90,10 +90,43 @@ local function getDurationBucket(purchaseTime)
   return "long", ownedSeconds
 end
 
-local function generateName()
-  local first = FIRST_NAMES[math.random(1, #FIRST_NAMES)]
-  local last = LAST_INITIALS[math.random(1, #LAST_INITIALS)]
-  return string.format("%s %s.", first, last)
+local OWNER_GROUPS = {
+  investor = {
+    "Pinnacle Property Group",
+    "Summit Capital Partners",
+    "Northbridge Real Estate Holdings",
+    "Meridian Equity Group",
+    "Ridgeview Asset Management",
+  },
+  homeowner = {
+    "Thompson Family",
+    "Miller Family",
+    "Carter Family",
+    "Harrington Family",
+    "Bennett Family",
+  },
+  cash_strapped = {
+    "Riverside Property Trust",
+    "Harborline Recovery Holdings",
+    "Northline Distressed Assets",
+    "Cobalt Family Estates",
+    "Cedar Street Investors",
+  },
+  developer = {
+    "Hawthorne Development Group",
+    "Crosswind Developers",
+    "Stonebridge Development",
+    "Urban Crest Developers",
+    "Evergreen Property Builders",
+  },
+}
+
+local function generateOwnerName(archetype)
+  local names = OWNER_GROUPS[archetype] or OWNER_GROUPS.investor
+  if not names or #names == 0 then
+    names = OWNER_GROUPS.investor
+  end
+  return names[math.random(1, #names)]
 end
 
 local function chooseArchetype()
@@ -106,7 +139,7 @@ local function createNpcRecord(name, archetype)
   local npcId = string.format("npc_%d_%d", getCurrentTime(), math.random(1000, 9999))
   local record = {
     npcId = npcId,
-    name = name or generateName(),
+    name = name or generateOwnerName(archetype),
     archetype = archetype,
     traits = {
       buyingTendency = randomBetween(0.4, 0.9),
@@ -127,11 +160,12 @@ local function findOrCreateNpcFromBuyer(buyerPersonality)
     return createNpcRecord(nil, chooseArchetype())
   end
 
-  local name = buyerPersonality.name or generateName()
+  local name = buyerPersonality.name or generateOwnerName(buyerPersonality.archetype)
   local archetype = buyerPersonality.archetype
   if archetype == "cash-strapped" then archetype = "cash_strapped" end
   if not ARCHETYPES[archetype] then
     archetype = chooseArchetype()
+    name = buyerPersonality.name or generateOwnerName(archetype)
   end
 
   for npcId, record in pairs(npcRoster) do
@@ -247,6 +281,27 @@ local function getOwner(garageId)
   return ownersByGarageId[garageId]
 end
 
+local function ensureOwnerForGarage(garageId, fallbackPrice)
+  if not garageId then return nil end
+
+  local owner = getOwner(garageId)
+  if owner then
+    return owner
+  end
+
+  local purchasePrice = tonumber(fallbackPrice) or 0
+  if purchasePrice <= 0 then
+    purchasePrice = 100000
+  end
+
+  local npc = findOrCreateNpcFromBuyer()
+  if not npc then return nil end
+
+  local newOwner = buildOwnerDataFromNpc(npc, garageId, purchasePrice)
+  ownersByGarageId[garageId] = newOwner
+  return newOwner
+end
+
 local function shouldDelist(ownerData)
   if not ownerData then return false end
   local marketIndex = getHousingMarketIndex()
@@ -256,7 +311,7 @@ local function shouldDelist(ownerData)
 end
 
 local function getOwnerForListing(garageId, fallbackPrice)
-  local owner = getOwner(garageId)
+  local owner = ensureOwnerForGarage(garageId, fallbackPrice)
   if not owner then return nil end
 
   owner.willingnessToSell = calculateWillingness(owner)
@@ -293,7 +348,7 @@ local function buildFallbackSellerProfile(fallbackMarketPrice)
 end
 
 local function getSellerProfileForNegotiation(garageId, fallbackMarketPrice)
-  local owner = getOwnerForListing(garageId, fallbackMarketPrice)
+  local owner = ensureOwnerForGarage(garageId, fallbackMarketPrice)
   if not owner then
     return buildFallbackSellerProfile(fallbackMarketPrice)
   end

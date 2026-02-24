@@ -94,7 +94,7 @@
           <div class="btn-row">
             <button 
               class="btn btn-buy" 
-              :disabled="cantPay || starterGarage" 
+              :disabled="!garageId || cantPay || starterGarage" 
               @click="negotiatedPrice ? purchaseAtNegotiatedPrice() : purchaseAtListedPrice()"
             >
               {{ negotiatedPrice ? 'Buy at Negotiated Price' : 'Buy at Listed Price' }}
@@ -142,7 +142,8 @@ const cantPay = ref(true)
 
 const applyListingData = (data) => {
   if (!data) return
-  garageId.value = data.garageId || data.id || ''
+  const raw = data.garageId ?? data.id ?? ''
+  garageId.value = (typeof raw === 'string' && raw) ? raw : ''
   name.value = data.name || 'Property'
   preview.value = data.preview || ''
   listedPrice.value = data.listedPrice || 0
@@ -233,22 +234,23 @@ const formatCooldown = (seconds) => {
   return `${secs}s`
 }
 
-const purchaseAtListedPrice = () => {
-  lua.career_modules_garageManager.purchaseGarageAtListedPrice(garageId.value)
-  lua.career_career.closeAllMenus()
+const purchaseAtListedPrice = async () => {
+  if (!garageId.value || typeof garageId.value !== 'string') return
+  await lua.career_modules_garageManager.purchaseGarageAtListedPrice(garageId.value)
 }
 
-const purchaseAtNegotiatedPrice = () => {
-  lua.career_modules_garageManager.purchaseGarageAtNegotiatedPrice(garageId.value)
-  lua.career_career.closeAllMenus()
+const purchaseAtNegotiatedPrice = async () => {
+  if (!garageId.value || typeof garageId.value !== 'string') return
+  await lua.career_modules_garageManager.purchaseGarageAtNegotiatedPrice(garageId.value)
 }
 
 const startNegotiation = () => {
+  if (!garageId.value || typeof garageId.value !== 'string') return
   lua.career_modules_garageManager.startGarageNegotiation(garageId.value)
 }
 
 const freezeNegotiatedPrice = () => {
-  if (!garageId.value || !negotiatedPrice.value) return
+  if (!garageId.value || typeof garageId.value !== 'string' || !negotiatedPrice.value) return
   lua.career_modules_garageManager.freezeNegotiatedPrice(garageId.value, negotiatedPrice.value)
   isFrozen.value = true
 }
