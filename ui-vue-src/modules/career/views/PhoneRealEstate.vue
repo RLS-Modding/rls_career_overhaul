@@ -136,9 +136,6 @@
             <div class="card-expand" v-if="expandedId === garage.id">
               <p class="card-desc" v-if="garage.description && cleanDescription(garage.description)">{{ cleanDescription(garage.description) }}</p>
               <div class="card-actions">
-                <button v-if="!garage.owned && garage.canNegotiate" class="act-btn negotiate" @click.stop="openGarageListing(garage)">
-                  Negotiate
-                </button>
                 <button class="act-btn route" @click.stop="setRoute(garage)">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
                   Set Route
@@ -217,7 +214,7 @@
                   <div class="map-slide-top">
                     <span class="map-slide-name">{{ garage.name }}</span>
                   </div>
-                  <div class="map-slide-meta-row">
+                    <div class="map-slide-meta-row">
                     <div class="map-slide-meta">
                       <span>
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h2a2 2 0 012 2v6a2 2 0 01-2 2H6"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
@@ -229,7 +226,6 @@
                         {{ formatDistance(garage.distance) }}
                       </span>
                     </div>
-                    <button v-if="!garage.owned && garage.canNegotiate" class="act-btn negotiate" @click.stop="openGarageListing(garage)">Negotiate</button>
                     <button class="act-btn route" @click.stop="setRoute(garage)">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
                       Route
