@@ -85,12 +85,13 @@ local function requestGarageListings()
 
     local price = career_modules_garageManager.getGaragePurchasePrice(garage.id)
     if not price then price = garage.defaultPrice end
-    if career_modules_propertyOwners and career_modules_propertyOwners.getOwnerForListing then
+    if price and price > 0 and career_modules_propertyOwners and career_modules_propertyOwners.getOwnerForListing then
       local ownerInfo = career_modules_propertyOwners.getOwnerForListing(garage.id, price)
       if ownerInfo and ownerInfo.currentAskingPrice then
         price = ownerInfo.currentAskingPrice
       end
     end
+    if garage.starterGarage then price = 0 end
 
     local preview = garagePreviewByComputer[garage.id] or garage.preview or ""
 

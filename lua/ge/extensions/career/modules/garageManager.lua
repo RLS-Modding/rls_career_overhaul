@@ -370,6 +370,7 @@ local function completePurchaseWithNegotiatedPrice(garageId, finalPrice, freezeP
     return false
   end
   
+  garageToPurchase = garage
   setNegotiationCooldown(garageId)
   setPendingNegotiatedPrice(garageId, finalPrice)
   
@@ -735,6 +736,9 @@ local function buyGarage(overriddenTotal)
 end
 
 local function cancelGaragePurchase()
+  if garageToPurchase then
+    clearPendingNegotiatedPrice(garageToPurchase.id)
+  end
   guihooks.trigger('ChangeState', {state = 'play'})
   garageToPurchase = nil
 end

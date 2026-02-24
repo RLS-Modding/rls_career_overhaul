@@ -313,7 +313,7 @@ const takeOffer = async () => {
   })
 }
 
-const goBack = (event) => {
+const goBack = async (event) => {
   if (state.value.negotiationStatus !== 'accepted' && state.value.negotiationStatus !== 'failed') {
     lua.career_modules_realEstateNegotiation.cancelNegotiation()
     lua.career_career.closeAllMenus()
@@ -331,6 +331,10 @@ const goBack = (event) => {
     return
   }
 
+  if (state.value.negotiationStatus === 'accepted') {
+    await lua.career_modules_realEstateNegotiation.takeTheirOffer()
+    return
+  }
   lua.career_modules_garageManager.showPurchaseGaragePrompt(state.value.propertyId)
   if (event && event.stopPropagation) event.stopPropagation()
 }

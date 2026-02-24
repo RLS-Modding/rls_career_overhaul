@@ -114,7 +114,7 @@
                 <span v-if="garage.owned" class="badge owned">OWNED</span>
                 <span v-else-if="garage.starterGarage" class="badge free">FREE</span>
               </div>
-              <div class="card-price" v-if="!garage.owned">${{ formatPrice(garage.price) }}</div>
+              <div class="card-price" v-if="!garage.owned">{{ garage.starterGarage ? 'FREE' : '$' + formatPrice(garage.price) }}</div>
             </div>
             <div class="card-body">
               <div class="card-info">
@@ -173,7 +173,7 @@
                 </template>
                 <template v-else>
                   <svg x="-7.5" y="-7.5" width="15" height="15" viewBox="0 0 24 24" fill="white" stroke="none"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
-                  <text y="28" text-anchor="middle" class="marker-label">{{ item.cluster[0].owned ? 'OWNED' : '$' + formatPrice(item.cluster[0].price) }}</text>
+                  <text y="28" text-anchor="middle" class="marker-label">{{ item.cluster[0].owned ? 'OWNED' : (item.cluster[0].starterGarage ? 'FREE' : '$' + formatPrice(item.cluster[0].price)) }}</text>
                 </template>
               </g>
             </svg>
@@ -208,7 +208,7 @@
                     <span v-if="garage.owned" class="badge owned">OWNED</span>
                     <span v-else-if="garage.starterGarage" class="badge free">FREE</span>
                   </div>
-                  <div class="map-slide-price-overlay" v-if="!garage.owned">${{ formatPrice(garage.price) }}</div>
+                  <div class="map-slide-price-overlay" v-if="!garage.owned">{{ garage.starterGarage ? 'FREE' : '$' + formatPrice(garage.price) }}</div>
                 </div>
                 <div class="map-slide-body">
                   <div class="map-slide-top">

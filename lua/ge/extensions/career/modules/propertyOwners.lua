@@ -284,14 +284,14 @@ end
 local function ensureOwnerForGarage(garageId, fallbackPrice)
   if not garageId then return nil end
 
+  local purchasePrice = tonumber(fallbackPrice) or 0
+  if purchasePrice <= 0 then
+    return nil
+  end
+
   local owner = getOwner(garageId)
   if owner then
     return owner
-  end
-
-  local purchasePrice = tonumber(fallbackPrice) or 0
-  if purchasePrice <= 0 then
-    purchasePrice = 100000
   end
 
   local npc = findOrCreateNpcFromBuyer()
