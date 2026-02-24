@@ -33,6 +33,7 @@ local completePurchase
 local resetNegotiationState
 local markOfferAsNoDeal
 local markOfferAsAccepted
+local negotiationOrigin = "computer"
 
 -- Constants
 local timeBetweenOffersBase = 190  -- ~2x vehicle offer timing (vehicles = 95s)
@@ -247,6 +248,7 @@ local function getNegotiationState()
     isInsulted = isInsulted,
     closingFeeRate = CLOSING_FEE_RATE,
     propertyTaxRate = PROPERTY_TAX_RATE,
+    origin = negotiationOrigin,
   }
 end
 
@@ -567,6 +569,7 @@ resetNegotiationState = function()
   propertyParkingSpots = 0
   propertyNeighborhood = ""
   listingIndex = nil
+  negotiationOrigin = "computer"
 end
 
 local function cancelNegotiation()
@@ -925,7 +928,7 @@ local function onUpdate(dtReal, dtSim)
   generateNewPropertyOffers()
 end
 
-local function startNegotiateSelling(garageId, offerIdx)
+local function startNegotiateSelling(garageId, offerIdx, origin)
   if not garageId or not offerIdx then return false end
   local listing = listedProperties[garageId]
   if not listing or not listing.offers then return false end
@@ -955,6 +958,7 @@ local function startNegotiateSelling(garageId, offerIdx)
   startingPrice = listing.askingPrice or propertyMarketValue
   negotiationActive = true
   amISelling = true
+  negotiationOrigin = origin or "computer"
   patience = opponentPersonality.startingPatience or 0.7
   isInsulted = false
   theirOffer = offer.value
@@ -1003,6 +1007,7 @@ local function onSaveCurrentSaveSlot(currentSavePath)
       opponentPersonality = opponentPersonality,
       opponentQuote = opponentQuote,
       listingIndex = listingIndex,
+    negotiationOrigin = negotiationOrigin,
     }
     
     career_saveSystem.jsonWriteFileSafe(dirPath .. "/realEstateNegotiationState.json", data, true)
@@ -1053,6 +1058,7 @@ local function loadNegotiationState()
   if listingsData then
     listedProperties = listingsData
   end
+  negotiationOrigin = (data and data.negotiationOrigin) and data.negotiationOrigin or "computer"
 end
 
 local function onCareerActivated()

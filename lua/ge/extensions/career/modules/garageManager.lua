@@ -879,8 +879,7 @@ local function getGarageSellPrice(garageId, computerId)
   return nil
 end
 
-local function canSellGarage(computerId)
-  local garageId = computerIdToGarageId(computerId)
+local function canSellGarageByGarageId(garageId)
   if not garageId then
     return false
   end
@@ -909,6 +908,14 @@ local function canSellGarage(computerId)
   return {space[2] == capacity, capacity - space[2]}
 end
 
+local function canSellGarage(computerId)
+  local garageId = computerIdToGarageId(computerId)
+  if not garageId then
+    return false
+  end
+  return canSellGarageByGarageId(garageId)
+end
+
 local function listGarageForSale(computerId, askingPrice)
   if not career_career.isActive() then return false end
 
@@ -918,6 +925,29 @@ local function listGarageForSale(computerId, askingPrice)
   end
 
   local canSellInfo = canSellGarage(computerId)
+  if not canSellInfo or not canSellInfo[1] then
+    return false
+  end
+
+  if not career_modules_realEstateNegotiation or not career_modules_realEstateNegotiation.listPropertyForSale then
+    log("E", "garageManager", "listPropertyForSale is not available")
+    return false
+  end
+
+  local marketPrice = getGaragePurchasePrice(garageId) or 0
+  local desiredPrice = tonumber(askingPrice) or marketPrice
+  if desiredPrice <= 0 then
+    return false
+  end
+
+  return career_modules_realEstateNegotiation.listPropertyForSale(garageId, desiredPrice)
+end
+
+local function listGarageForSaleByGarageId(garageId, askingPrice)
+  if not career_career.isActive() then return false end
+  if not garageId then return false end
+
+  local canSellInfo = canSellGarageByGarageId(garageId)
   if not canSellInfo or not canSellInfo[1] then
     return false
   end
@@ -970,6 +1000,14 @@ end
 
 local function getGarageListingPriceGuidance(computerId, askingPrice)
   local garageId = computerIdToGarageId(computerId)
+  if not garageId then return nil end
+  if not career_modules_realEstateNegotiation or not career_modules_realEstateNegotiation.getPriceGuidanceForListing then
+    return nil
+  end
+  return career_modules_realEstateNegotiation.getPriceGuidanceForListing(garageId, askingPrice)
+end
+
+local function getGarageListingPriceGuidanceByGarageId(garageId, askingPrice)
   if not garageId then return nil end
   if not career_modules_realEstateNegotiation or not career_modules_realEstateNegotiation.getPriceGuidanceForListing then
     return nil
@@ -1047,9 +1085,11 @@ M.canNegotiateGarage = canNegotiateGarage
 M.setNegotiationCooldown = setNegotiationCooldown
 M.canSellGarage = canSellGarage
 M.listGarageForSale = listGarageForSale
+M.listGarageForSaleByGarageId = listGarageForSaleByGarageId
 M.sellGarage = sellGarage
 M.completePropertySaleFromListing = completePropertySaleFromListing
 M.getGarageListingPriceGuidance = getGarageListingPriceGuidance
+M.getGarageListingPriceGuidanceByGarageId = getGarageListingPriceGuidanceByGarageId
 M.getGarageActiveListing = getGarageActiveListing
 M.removeGarageListing = removeGarageListing
 M.startGarageSellingNegotiation = startGarageSellingNegotiation

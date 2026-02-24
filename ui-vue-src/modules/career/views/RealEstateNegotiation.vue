@@ -183,6 +183,7 @@ const state = ref({
   offerHistory: [],
   amISelling: false,
   isInsulted: false,
+  origin: 'computer',
 })
 
 const opponent = computed(() => state.value.amISelling ? "Buyer" : "Seller")
@@ -321,7 +322,11 @@ const goBack = (event) => {
   }
 
   if (state.value.amISelling && state.value.propertyId) {
-    router.push({ name: 'garage-offers', params: { garageId: state.value.propertyId } })
+    if (state.value.origin === 'phone') {
+      router.push({ name: 'phone-real-estate', query: { tab: 'listings' } })
+    } else {
+      router.push({ name: 'garage-offers', params: { garageId: state.value.propertyId } })
+    }
     if (event && event.stopPropagation) event.stopPropagation()
     return
   }

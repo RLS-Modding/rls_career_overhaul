@@ -1,5 +1,5 @@
 local M = {}
-M.dependencies = { 'freeroam_facilities', 'career_modules_garageManager', 'career_modules_hardcore', 'career_modules_playerAttributes' }
+M.dependencies = { 'freeroam_facilities', 'career_modules_garageManager', 'career_modules_hardcore', 'career_modules_playerAttributes', 'career_modules_propertyOwners' }
 
 local routePlanner = require('gameplay/route/route')()
 
@@ -85,6 +85,12 @@ local function requestGarageListings()
 
     local price = career_modules_garageManager.getGaragePurchasePrice(garage.id)
     if not price then price = garage.defaultPrice end
+    if career_modules_propertyOwners and career_modules_propertyOwners.getOwnerForListing then
+      local ownerInfo = career_modules_propertyOwners.getOwnerForListing(garage.id, price)
+      if ownerInfo and ownerInfo.currentAskingPrice then
+        price = ownerInfo.currentAskingPrice
+      end
+    end
 
     local preview = garagePreviewByComputer[garage.id] or garage.preview or ""
 
