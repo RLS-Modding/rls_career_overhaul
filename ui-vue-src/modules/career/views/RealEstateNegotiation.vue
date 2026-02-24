@@ -125,7 +125,7 @@
           <BngButton
             v-if="state.negotiationStatus !== 'accepted' && state.negotiationStatus !== 'failed'"
             class="submit-offer"
-            :disabled="state.negotiationStatus === 'counterOfferLastChance' || offerDisabled"
+            :disabled="offerDisabled"
             show-hold
             v-bng-click="{ holdCallback: takeOffer, holdDelay: 1000, repeatInterval: 0 }"
           >
@@ -137,7 +137,7 @@
             :accent="ACCENTS.primary"
             @click="goBack"
           >
-            {{ state.amISelling ? 'Continue' : 'Go to Garage Menu' }}
+            {{ state.amISelling ? 'Continue' : 'Go to Purchase Menu' }}
           </BngButton>
         </div>
       </template>
@@ -147,6 +147,7 @@
 
 <script setup>
 import { computed, onMounted, onUnmounted, ref, nextTick } from "vue"
+import { useRouter } from "vue-router"
 import { BngButton, ACCENTS, BngCard, BngCardHeading, BngBinding, BngUnit, BngIcon } from "@/common/components/base"
 import { lua, useBridge } from "@/bridge"
 import { vBngBlur, vBngClick } from "@/common/directives"
@@ -160,6 +161,7 @@ useUINavScope("realEstateNegotiation")
 
 const { units } = useBridge()
 const events = useEvents()
+const router = useRouter()
 
 const state = ref({
   active: false,
@@ -313,8 +315,18 @@ const takeOffer = async () => {
 const goBack = (event) => {
   if (state.value.negotiationStatus !== 'accepted' && state.value.negotiationStatus !== 'failed') {
     lua.career_modules_realEstateNegotiation.cancelNegotiation()
+    lua.career_career.closeAllMenus()
+    if (event && event.stopPropagation) event.stopPropagation()
+    return
   }
-  lua.career_career.closeAllMenus()
+
+  if (state.value.amISelling && state.value.propertyId) {
+    router.push({ name: 'garage-offers', params: { garageId: state.value.propertyId } })
+    if (event && event.stopPropagation) event.stopPropagation()
+    return
+  }
+
+  lua.career_modules_garageManager.showPurchaseGaragePrompt(state.value.propertyId)
   if (event && event.stopPropagation) event.stopPropagation()
 }
 

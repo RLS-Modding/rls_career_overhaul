@@ -199,7 +199,7 @@ onMounted(async () => {
   const pending = await lua.career_modules_garageManager.getPendingGarageListing()
   if (pending) await handleGarageListingData(pending)
   try {
-    cantPay.value = !(await lua.career_modules_garageManager.canPay())
+    cantPay.value = !(await lua.career_modules_garageManager.canPay(estimatedTotal.value))
   } catch (error) {
     cantPay.value = true
   }

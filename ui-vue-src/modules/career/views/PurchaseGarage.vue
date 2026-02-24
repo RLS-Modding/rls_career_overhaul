@@ -100,14 +100,12 @@ onMounted(async () => {
     closingFee.value = garageData.closingFee ?? Math.round(price.value * closingFeeRate.value)
     propertyTax.value = garageData.propertyTax ?? Math.round(price.value * propertyTaxRate.value)
     estimatedTotalOverride.value = garageData.estimatedTotal ?? null
-    cantPay.value = !(await lua.career_modules_garageManager.canPay())
+    cantPay.value = !(await lua.career_modules_garageManager.canPay(estimatedTotal.value))
   }
 })
 
-function confirmPurchase() {
-  lua.career_modules_garageManager.buyGarage()
-  lua.career_career.closeAllMenus()
-
+async function confirmPurchase() {
+  await lua.career_modules_garageManager.buyGarage(estimatedTotal.value)
 }
 
 function cancelPurchase() {

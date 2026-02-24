@@ -439,7 +439,7 @@ local function purchaseGarageAtNegotiatedPrice(garageId)
     clearPendingNegotiatedPrice(garageId)
     career_saveSystem.saveCurrent()
     guihooks.trigger('toastrMsg', {type="success", title="Property Purchased", msg="Welcome to your new garage!"})
-    guihooks.trigger('ChangeState', {state = 'menu.career', params = {}})
+    guihooks.trigger('ChangeState', {state = 'play'})
     return true
   end
   
@@ -605,7 +605,7 @@ local function purchaseGarageAtListedPrice(garageId)
     addPurchasedGarage(garage.id)
     career_saveSystem.saveCurrent()
     guihooks.trigger('toastrMsg', {type="success", title="Property Purchased", msg="Welcome to your new garage!"})
-    guihooks.trigger('ChangeState', {state = 'menu.career', params = {}})
+    guihooks.trigger('ChangeState', {state = 'play'})
     return true
   end
   
@@ -671,14 +671,29 @@ local function requestGarageData()
   return nil
 end
 
-local function canPay()
+local function canPay(overriddenTotal)
   if career_modules_cheats and career_modules_cheats.isCheatsMode() then
     return true
   end
-  if not garageToPurchase then return false end
-  
+  local totalPrice = tonumber(overriddenTotal)
+  if not totalPrice or totalPrice <= 0 then
+    return false
+  end
+  totalPrice = math.floor(totalPrice + 0.5)
+  local currentMoney = career_modules_playerAttributes.getAttributeValue("money")
+  return currentMoney >= totalPrice
+end
+
+local function buyGarage(overriddenTotal)
+  if not garageToPurchase then
+    return false
+  end
+
   local listedPrice = getGaragePrice(garageToPurchase)
-  if not listedPrice then return false end
+  if not listedPrice then
+    garageToPurchase = nil
+    return false
+  end
   
   if career_modules_propertyOwners and career_modules_propertyOwners.getOwnerForListing then
     local ownerInfo = career_modules_propertyOwners.getOwnerForListing(garageToPurchase.id, listedPrice)
@@ -686,7 +701,7 @@ local function canPay()
       listedPrice = ownerInfo.currentAskingPrice
     end
   end
-  
+
   local negotiatedPrice = getFrozenPrice(garageToPurchase.id)
   if not negotiatedPrice then
     negotiatedPrice = getPendingNegotiatedPrice(garageToPurchase.id)
@@ -696,53 +711,27 @@ local function canPay()
   local closingFee = calculateClosingFee(effectivePrice)
   local propertyTax = calculateAnnualPropertyTax(effectivePrice)
   local totalPrice = effectivePrice + closingFee + propertyTax
-  
-  local price = { money = { amount = totalPrice, canBeNegative = false } }
-  for currency, info in pairs(price) do
-    if not info.canBeNegative and career_modules_playerAttributes.getAttributeValue(currency) < info.amount then
-      return false
-    end
+  local overrideAmount = tonumber(overriddenTotal)
+  if overrideAmount and overrideAmount > 0 then
+    totalPrice = math.floor(overrideAmount + 0.5)
   end
-  return true
-end
 
-local function buyGarage()
-  if garageToPurchase then
-    local listedPrice = getGaragePrice(garageToPurchase)
-    if not listedPrice then
-      garageToPurchase = nil
-      return
-    end
-    
-    if career_modules_propertyOwners and career_modules_propertyOwners.getOwnerForListing then
-      local ownerInfo = career_modules_propertyOwners.getOwnerForListing(garageToPurchase.id, listedPrice)
-      if ownerInfo and ownerInfo.currentAskingPrice then
-        listedPrice = ownerInfo.currentAskingPrice
-      end
-    end
-    
-  local negotiatedPrice = getFrozenPrice(garageToPurchase.id)
-  if not negotiatedPrice then
-    negotiatedPrice = getPendingNegotiatedPrice(garageToPurchase.id)
-  end
-    local effectivePrice = negotiatedPrice or listedPrice
-    
-    local closingFee = calculateClosingFee(effectivePrice)
-    local propertyTax = calculateAnnualPropertyTax(effectivePrice)
-    local totalPrice = effectivePrice + closingFee + propertyTax
-    
-    local price = { money = { amount = totalPrice, canBeNegative = false } }
-    local success = career_modules_payment.pay(price, { label = "Purchased " .. garageToPurchase.name })
-    if success then
-      addPurchasedGarage(garageToPurchase.id)
+  local price = { money = { amount = totalPrice, canBeNegative = false } }
+  local success = career_modules_payment.pay(price, { label = "Purchased " .. garageToPurchase.name })
+  if success then
+    addPurchasedGarage(garageToPurchase.id)
     if negotiatedPrice then
       clearFrozenPrice(garageToPurchase.id)
       clearPendingNegotiatedPrice(garageToPurchase.id)
     end
-      career_saveSystem.saveCurrent()
-    end
+    career_saveSystem.saveCurrent()
+    guihooks.trigger('ChangeState', {state = 'play'})
     garageToPurchase = nil
+    return true
   end
+
+  garageToPurchase = nil
+  return false
 end
 
 local function cancelGaragePurchase()
@@ -1180,6 +1169,7 @@ local function getGarageOffersData(garageId)
       table.insert(offers, {
         index = i,
         value = offer.value,
+        negotiatedPrice = offer.negotiatedPrice,
         buyerName = offer.buyerPersonality and offer.buyerPersonality.name or "Buyer",
         timestamp = offer.timestamp,
         negotiationPossible = offer.negotiationPossible ~= false,
@@ -1210,7 +1200,8 @@ local function acceptOffer(garageId, offerIndex)
   local offer = listing.offers[idx]
   if not offer then return false end
 
-  return completePropertySaleFromListing(garageId, offer.value, offer.buyerPersonality)
+  local salePrice = offer.negotiatedPrice or offer.value
+  return completePropertySaleFromListing(garageId, salePrice, offer.buyerPersonality)
 end
 
 local function declineOffer(garageId, offerIndex)

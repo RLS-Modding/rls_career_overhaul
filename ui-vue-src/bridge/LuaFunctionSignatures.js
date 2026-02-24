@@ -1285,8 +1285,8 @@ export default {
 
   career_modules_garageManager: {
     requestGarageData: () => {},
-    canPay: () => {},
-    buyGarage: () => {},
+    canPay: estimatedTotal => Number,
+    buyGarage: totalToCharge => Number,
     cancelGaragePurchase: () => {},
     getGaragePrice: (garage, computerId) => [String, String],
     canSellGarage: () => {},

@@ -31,6 +31,8 @@ local listingIndex = nil              -- Index into listedProperties[propertyId]
 local listedProperties = {}           -- [garageId] = { listingTimestamp, askingPrice, offers, ... }
 local completePurchase
 local resetNegotiationState
+local markOfferAsNoDeal
+local markOfferAsAccepted
 
 -- Constants
 local timeBetweenOffersBase = 190  -- ~2x vehicle offer timing (vehicles = 95s)
@@ -248,6 +250,49 @@ local function getNegotiationState()
   }
 end
 
+local function markOfferAsNoDeal()
+  if not amISelling or not propertyId or not listingIndex then
+    return false
+  end
+
+  local listing = listedProperties[propertyId]
+  if not listing or not listing.offers then
+    return false
+  end
+
+  local idx = tonumber(listingIndex)
+  if not idx or idx < 1 or idx > #listing.offers then
+    return false
+  end
+
+  local offer = listing.offers[idx]
+  if not offer then
+    return false
+  end
+
+  offer.negotiationPossible = false
+  if myOffer and myOffer > 0 then
+    offer.negotiatedPrice = myOffer
+  elseif theirOffer and theirOffer > 0 then
+    offer.negotiatedPrice = theirOffer
+  end
+
+  return true
+end
+
+markOfferAsAccepted = function()
+  if not amISelling or not propertyId or not listingIndex then return false end
+  local listing = listedProperties[propertyId]
+  if not listing or not listing.offers then return false end
+  local idx = tonumber(listingIndex)
+  if not idx or idx < 1 or idx > #listing.offers then return false end
+  local offer = listing.offers[idx]
+  if not offer then return false end
+  offer.negotiatedPrice = theirOffer
+  offer.negotiationPossible = false
+  return true
+end
+
 local function calculateClosingFee(price)
   if not price or price <= 0 then return 0 end
   return math.floor((price * CLOSING_FEE_RATE) + 0.5)
@@ -289,7 +334,9 @@ local function generateCounterOffer(myOfferAmount, theirOfferAmount, currentPati
   -- High patience = smaller moves (dragging out negotiation, maximizing price)
   -- Low patience = bigger jumps (trying to close faster)
   local baseMovePercent = (1 - currentPatience) * 0.3 + 0.20  -- High patience = 20%, low = 50%
-  local movePercent = baseMovePercent + (math.random() * 0.1 - 0.05)  -- ±5% randomness
+  local randomBoost = (math.random() * 0.12 - 0.06)  -- ±6% randomness
+  local noisePercent = (math.random() * 0.15 - 0.075)  -- ±7.5% randomness
+  local movePercent = baseMovePercent + randomBoost + noisePercent
   movePercent = math.max(0.15, math.min(0.50, movePercent))  -- Clamp to 15–50%
   
   local counterAmount = myOfferAmount + (math.abs(diff) * movePercent)
@@ -339,30 +386,53 @@ local function makeOffer(price)
       local maxOver = opponentPersonality.maxOverMarket or 0
       local desperationBonus = opponentPersonality.isDesperate and 0.03 or 0
       local maxWillingToPay = propertyMarketValue * (1 + maxOver + desperationBonus)
+      local acceptanceBuffer = 0.04 + ((1 - patience) * 0.05)
+      local acceptanceThreshold = maxWillingToPay * (1 - (acceptanceBuffer * (0.96 + math.random() * 0.08)))
 
-      if myOffer <= maxWillingToPay then
+      if myOffer > maxWillingToPay then
+        if patience <= 0 then
+          negotiationStatus = "failed"
+          opponentQuote = "I can't go that high."
+          markOfferAsNoDeal()
+        else
+          local diff = myOffer - theirOffer
+          local movePercent = math.max(0.20, math.min(0.55, ((1 - patience) * 0.30 + 0.20) + (math.random() * 0.1 - 0.05)))
+          local counter = theirOffer + (diff * movePercent) + (diff * (math.random() * 0.14 - 0.07))
+          counter = math.min(maxWillingToPay, math.floor(counter / 100 + 0.5) * 100)
+
+          if counter <= theirOffer then
+            negotiationStatus = "failed"
+            opponentQuote = "I can't go that high."
+            markOfferAsNoDeal()
+          else
+            theirOffer = counter
+            negotiationStatus = patience <= 0.12 and "counterOfferLastChance" or "counterOffer"
+            opponentQuote = selectQuoteForPersonality(opponentPersonality, propertyMarketValue, true)
+          end
+        end
+      elseif myOffer >= acceptanceThreshold then
         theirOffer = myOffer
         negotiationStatus = "accepted"
         opponentQuote = opponentPersonality.happyQuotes[math.random(1, #opponentPersonality.happyQuotes)]
-      elseif patience <= 0 then
-        negotiationStatus = "failed"
-        opponentQuote = "I can't go that high."
+        markOfferAsAccepted()
       else
         local diff = myOffer - theirOffer
-        local movePercent = math.max(0.10, math.min(0.40, ((1 - patience) * 0.25 + 0.15) + (math.random() * 0.1 - 0.05)))
-        local counter = theirOffer + (diff * movePercent)
+        local movePercent = math.max(0.15, math.min(0.45, ((1 - patience) * 0.30 + 0.20) + (math.random() * 0.1 - 0.05)))
+        local counter = theirOffer + (diff * movePercent) + (diff * (math.random() * 0.14 - 0.07))
         counter = math.min(maxWillingToPay, math.floor(counter / 100 + 0.5) * 100)
 
         if counter >= myOffer then
           theirOffer = myOffer
           negotiationStatus = "accepted"
           opponentQuote = "That works for me."
+          markOfferAsAccepted()
         elseif counter <= theirOffer then
           negotiationStatus = "failed"
           opponentQuote = "That's my final number."
+          markOfferAsNoDeal()
         else
           theirOffer = counter
-          negotiationStatus = patience <= 0.05 and "counterOfferLastChance" or "counterOffer"
+          negotiationStatus = patience <= 0.12 and "counterOfferLastChance" or "counterOffer"
           opponentQuote = selectQuoteForPersonality(opponentPersonality, propertyMarketValue, true)
         end
       end
@@ -401,6 +471,7 @@ local function makeOffer(price)
         if career_modules_garageManager and career_modules_garageManager.setNegotiationCooldown then
           career_modules_garageManager.setNegotiationCooldown(propertyId)
         end
+        markOfferAsNoDeal()
       elseif myOffer >= absoluteMinimum then
         theirOffer = myOffer
         negotiationStatus = "accepted"
@@ -457,8 +528,6 @@ local function takeTheirOffer()
         listedProperties[propertyId].timeOfNextOffer = os.time() + timeBetweenOffersBase
       end
     end
-
-    resetNegotiationState()
   else
     completePurchase(propertyId, theirOffer, false)
   end
@@ -536,11 +605,9 @@ completePurchase = function(garageId, finalPrice, freezePrice)
     return
   end
   
-  -- Delay reset to ensure state change completes
-  core_jobsystem.create(function(job)
-    job.sleep(0.1)
+  if freezePrice then
     resetNegotiationState()
-  end)
+  end
 end
 
 local function startNegotiateBuying(garageId)
@@ -868,6 +935,9 @@ local function startNegotiateSelling(garageId, offerIdx)
 
   local offer = listing.offers[idx]
   if not offer then return false end
+  if offer.negotiationPossible == false then
+    return false
+  end
 
   local garage = freeroam_facilities.getFacility("garage", garageId)
   if not garage then return false end

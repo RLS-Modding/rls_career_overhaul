@@ -275,9 +275,26 @@ onMounted(loadGarages)
 .listings-panel {
   color: white;
   background: #0e0e0e;
-  min-height: 100%;
+  height: 100%;
+  max-height: calc(100vh - 120px);
   border-radius: 14px;
-  overflow: hidden;
+  overflow-y: auto;
+  box-sizing: border-box;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
 }
 
 .panel-header {

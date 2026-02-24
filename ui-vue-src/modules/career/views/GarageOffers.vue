@@ -59,10 +59,16 @@
                   <span class="offer-time">{{ formatTimeSince(offer.timestamp) }}</span>
                 </div>
               </div>
-              <div class="offer-amount" :class="offerColorClass(offer.value)">
-                ${{ formatPrice(offer.value) }}
-                <span class="offer-diff" :class="offerColorClass(offer.value)">
-                  {{ offerDiffText(offer.value) }}
+              <div class="offer-amount" :class="offerColorClass(offer.negotiatedPrice || offer.value)">
+                <template v-if="offer.negotiatedPrice">
+                  <span class="original-price">${{ formatPrice(offer.value) }}</span>
+                  <span class="negotiated-price">${{ formatPrice(offer.negotiatedPrice) }}</span>
+                </template>
+                <template v-else>
+                  ${{ formatPrice(offer.value) }}
+                </template>
+                <span class="offer-diff" :class="offerColorClass(offer.negotiatedPrice || offer.value)">
+                  {{ offerDiffText(offer.negotiatedPrice || offer.value) }}
                 </span>
               </div>
             </div>
@@ -375,6 +381,18 @@ onMounted(loadOffers)
   font-size: 18px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
+}
+
+.original-price {
+  text-decoration: line-through;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 13px;
+  font-weight: 600;
+  display: block;
+}
+
+.negotiated-price {
+  display: block;
 }
 
 .offer-diff {
