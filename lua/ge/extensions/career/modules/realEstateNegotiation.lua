@@ -33,9 +33,8 @@ local completePurchase
 local resetNegotiationState
 
 -- Constants
-local SIM_SECONDS_PER_GAME_DAY = 1200
-local timeBetweenOffersBase = 5 * SIM_SECONDS_PER_GAME_DAY  -- 5 game days
-local offerTTL = 10 * SIM_SECONDS_PER_GAME_DAY              -- 10 game days
+local timeBetweenOffersBase = 190  -- ~2x vehicle offer timing (vehicles = 95s)
+local offerTTL = 1000              -- ~2x vehicle TTL (vehicles = 500s)
 local CLOSING_FEE_RATE = 0.03      -- 3%
 local PROPERTY_TAX_RATE = 0.012     -- 1.2% annualized estimate
 
