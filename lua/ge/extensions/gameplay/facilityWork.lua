@@ -289,7 +289,8 @@ local function computeSpawnPositionsInZone(vertexList, count, spacing)
     if not vertexList or #vertexList < 3 then return {} end
     local minX, maxX = math.huge, -math.huge
     local minY, maxY = math.huge, -math.huge
-    local sumZ = 0
+    local sumX, sumY, sumZ = 0, 0, 0
+    local nV = 0
     for _, v in ipairs(vertexList) do
         local x = v[1] or v.x
         local y = v[2] or v.y
@@ -298,9 +299,14 @@ local function computeSpawnPositionsInZone(vertexList, count, spacing)
         maxX = math.max(maxX, x)
         minY = math.min(minY, y)
         maxY = math.max(maxY, y)
+        sumX = sumX + x
+        sumY = sumY + y
         sumZ = sumZ + z
+        nV = nV + 1
     end
-    local baseZ = sumZ / #vertexList
+    local baseZ = sumZ / nV
+    local centerX = sumX / nV
+    local centerY = sumY / nV
     local candidates = {}
     local x = minX
     while x <= maxX do
@@ -313,14 +319,25 @@ local function computeSpawnPositionsInZone(vertexList, count, spacing)
         end
         x = x + spacing
     end
-    for i = #candidates, 2, -1 do
+    if #candidates == 0 then return {} end
+    -- Keep props clustered: sort by distance to zone center and take nearest positions
+    local cx, cy = centerX, centerY
+    table.sort(candidates, function(a, b)
+        local da = (a.x - cx) * (a.x - cx) + (a.y - cy) * (a.y - cy)
+        local db = (b.x - cx) * (b.x - cx) + (b.y - cy) * (b.y - cy)
+        return da < db
+    end)
+    local chosen = {}
+    for i = 1, math.min(count, #candidates) do
+        chosen[i] = candidates[i]
+    end
+    for i = #chosen, 2, -1 do
         local j = math.random(1, i)
-        candidates[i], candidates[j] = candidates[j], candidates[i]
+        chosen[i], chosen[j] = chosen[j], chosen[i]
     end
     local positions = {}
-    for i = 1, count do
-        if #candidates == 0 then break end
-        local c = candidates[(i - 1) % #candidates + 1]
+    for i = 1, #chosen do
+        local c = chosen[i]
         table.insert(positions, vec3(c.x, c.y, baseZ))
     end
     return positions
@@ -345,11 +362,23 @@ local function getZoneCenter(vertexList)
     return vec3(sx / c, sy / c, sz / c)
 end
 
+-- Returns list of spawn zone names for a facility (spawnZones array or single spawnZone)
+local function getFacilitySpawnZoneNames(cfg)
+    if not cfg then return {} end
+    if cfg.spawnZones and type(cfg.spawnZones) == "table" and #cfg.spawnZones > 0 then
+        return cfg.spawnZones
+    end
+    local single = cfg.spawnZone or SPAWN_ZONE_NAME
+    return single and { single } or {}
+end
+
 local function getFacilityLoadZoneVertices(facilityId)
     if not facilityId then return nil end
     local cfg = facilityConfigs[facilityId]
     if not cfg then return nil end
-    return getSpawnZoneVertices(cfg.spawnZone)
+    local names = getFacilitySpawnZoneNames(cfg)
+    if #names == 0 then return nil end
+    return getSpawnZoneVertices(names[1])
 end
 
 local function getFacilityLoadZoneCenter(facilityId)
@@ -641,70 +670,81 @@ local function showDropMarkers(trigger, opts)
 end
 
 local function showLoadZoneMarkers(facilityId, opts)
-    local vertices = getFacilityLoadZoneVertices(facilityId)
-    if not vertices or #vertices < 3 then return end
+    local cfg = facilityId and facilityConfigs[facilityId]
+    if not cfg then return end
+    local zoneNames = getFacilitySpawnZoneNames(cfg)
+    if #zoneNames == 0 then return end
     opts = opts or {}
-    local pts = {}
-    local center = vec3(0, 0, 0)
-    for _, v in ipairs(vertices) do
-        local p = toVec3(v)
-        table.insert(pts, p)
-        center = center + p
-    end
-    if #pts < 3 then return end
-    center = center / #pts
+    local markerOptsBase = {}
+    for k, v in pairs(opts) do markerOptsBase[k] = v end
 
-    -- Match drop-off marker style with a clean oriented box.
-    local bestLenSq = -1
-    local edgeDir = vec3(1, 0, 0)
-    for i = 1, #pts do
-        local j = (i % #pts) + 1
-        local d = pts[j] - pts[i]
-        d.z = 0
-        local lenSq = d:squaredLength()
-        if lenSq > bestLenSq and lenSq > 1e-6 then
-            bestLenSq = lenSq
-            d:normalize()
-            edgeDir = d
+    for zoneIndex, zoneName in ipairs(zoneNames) do
+        local vertices = getSpawnZoneVertices(zoneName)
+        if vertices and #vertices >= 3 then
+            local pts = {}
+            local center = vec3(0, 0, 0)
+            for _, v in ipairs(vertices) do
+                local p = toVec3(v)
+                table.insert(pts, p)
+                center = center + p
+            end
+            if #pts >= 3 then
+                center = center / #pts
+
+                -- Match drop-off marker style with a clean oriented box.
+                local bestLenSq = -1
+                local edgeDir = vec3(1, 0, 0)
+                for i = 1, #pts do
+                    local j = (i % #pts) + 1
+                    local d = pts[j] - pts[i]
+                    d.z = 0
+                    local lenSq = d:squaredLength()
+                    if lenSq > bestLenSq and lenSq > 1e-6 then
+                        bestLenSq = lenSq
+                        d:normalize()
+                        edgeDir = d
+                    end
+                end
+                local vecX = vec3(edgeDir.x, edgeDir.y, 0)
+                local vecY = vec3(-vecX.y, vecX.x, 0)
+
+                local minX, maxX = math.huge, -math.huge
+                local minY, maxY = math.huge, -math.huge
+                local avgZ = 0
+                for _, p in ipairs(pts) do
+                    local rel = p - center
+                    local lx = rel:dot(vecX)
+                    local ly = rel:dot(vecY)
+                    minX = math.min(minX, lx)
+                    maxX = math.max(maxX, lx)
+                    minY = math.min(minY, ly)
+                    maxY = math.max(maxY, ly)
+                    avgZ = avgZ + p.z
+                end
+                avgZ = avgZ / #pts
+
+                local function localToWorld(lx, ly)
+                    return vec3(
+                        center.x + vecX.x * lx + vecY.x * ly,
+                        center.y + vecX.y * lx + vecY.y * ly,
+                        avgZ
+                    )
+                end
+
+                local corners = {
+                    localToWorld(minX, maxY),
+                    localToWorld(maxX, maxY),
+                    localToWorld(maxX, minY),
+                    localToWorld(minX, minY)
+                }
+
+                local markerOpts = {}
+                for k, v in pairs(markerOptsBase) do markerOpts[k] = v end
+                markerOpts.clear = (zoneIndex == 1)
+                placeCornerMarkers(corners, vecY, markerOpts, tostring(facilityId or "fac") .. "_" .. tostring(zoneName))
+            end
         end
     end
-    local vecX = vec3(edgeDir.x, edgeDir.y, 0)
-    local vecY = vec3(-vecX.y, vecX.x, 0)
-
-    local minX, maxX = math.huge, -math.huge
-    local minY, maxY = math.huge, -math.huge
-    local avgZ = 0
-    for _, p in ipairs(pts) do
-        local rel = p - center
-        local lx = rel:dot(vecX)
-        local ly = rel:dot(vecY)
-        minX = math.min(minX, lx)
-        maxX = math.max(maxX, lx)
-        minY = math.min(minY, ly)
-        maxY = math.max(maxY, ly)
-        avgZ = avgZ + p.z
-    end
-    avgZ = avgZ / #pts
-
-    local function localToWorld(lx, ly)
-        return vec3(
-            center.x + vecX.x * lx + vecY.x * ly,
-            center.y + vecX.y * lx + vecY.y * ly,
-            avgZ
-        )
-    end
-
-    local corners = {
-        localToWorld(minX, maxY),
-        localToWorld(maxX, maxY),
-        localToWorld(maxX, minY),
-        localToWorld(minX, minY)
-    }
-
-    local markerYDir = vecY
-    local markerOpts = {}
-    for k, v in pairs(opts) do markerOpts[k] = v end
-    placeCornerMarkers(corners, markerYDir, markerOpts, tostring(facilityId or "fac"))
 end
 
 local function refreshGuidanceMarkers()
@@ -738,9 +778,11 @@ end
 local function isFacilityWorkAvailable()
     if not loadConfig() then return false end
     for fid, cfg in pairs(facilityConfigs) do
-        local zoneName = cfg.spawnZone or SPAWN_ZONE_NAME
-        local verts = getSpawnZoneVertices(zoneName)
-        if verts and #verts >= 3 then return true end
+        local names = getFacilitySpawnZoneNames(cfg)
+        for _, zoneName in ipairs(names) do
+            local verts = getSpawnZoneVertices(zoneName)
+            if verts and #verts >= 3 then return true end
+        end
     end
     return false
 end
@@ -781,25 +823,8 @@ local function updateTasklistValues()
     guihooks.trigger('SetTasklistTask', { id = "facilityWork_total_pay", label = "Total pay: $" .. sessionTotalPay, type = "message", clear = false })
     guihooks.trigger('SetTasklistTask', { id = "facilityWork_total_rep", label = "Total rep: " .. sessionTotalRep, type = "message", clear = false })
 
-    local nextStopLabel = nil
-    if truckState == "waiting_for_load" then
-        if truckWaypointPhase == "to_pickup" then
-            nextStopLabel = "Next stop: pickup area"
-        elseif truckWaypointPhase == "to_truck" then
-            nextStopLabel = "Next stop: truck loading point"
-        end
-    elseif currentBatch then
-        if currentBatchWaypointPhase == "to_loading" then
-            nextStopLabel = "Next stop: loading area"
-        elseif currentBatchWaypointPhase == "to_delivery" then
-            nextStopLabel = "Next stop: delivery area"
-        end
-    end
-    if nextStopLabel then
-        guihooks.trigger('SetTasklistTask', { id = "facilityWork_next_stop", label = nextStopLabel, type = "message", clear = false })
-    else
-        guihooks.trigger('SetTasklistTask', { id = "facilityWork_next_stop", label = "", type = "message", clear = true })
-    end
+    -- Next-stop line removed; multiplier is shown in task list header instead.
+    guihooks.trigger('SetTasklistTask', { id = "facilityWork_next_stop", label = "", type = "message", clear = true })
 
     if truckState == "driving_to_pickup" or truckState == "waiting_for_load" then
         if truckLoadMaterialName and truckLoadTargetCount then
@@ -900,8 +925,8 @@ local function spawnBatch(facilityId)
     local facCfg = facilityConfigs[facilityId]
     if not facCfg then return false end
 
-    local vertices = getSpawnZoneVertices(facCfg.spawnZone)
-    if not vertices then return false end
+    local zoneNames = getFacilitySpawnZoneNames(facCfg)
+    if #zoneNames == 0 then return false end
     local triggerNames = (facCfg.triggers and #facCfg.triggers > 0) and facCfg.triggers or DROP_TRIGGER_NAMES
     local resolved = resolveDropTriggers(triggerNames)
     local dropList = {}
@@ -924,8 +949,27 @@ local function spawnBatch(facilityId)
     local moneyPerProp = {}
     local repPerProp = {}
     local spacing = mat.spawnGridSpacing or 2
-    local positions = computeSpawnPositionsInZone(vertices, batchSize, spacing)
-    local numToSpawn = batchSize
+    -- Collect spawn positions from all configured zones
+    local allPositions = {}
+    local perZone = math.ceil(batchSize / #zoneNames)
+    for _, zoneName in ipairs(zoneNames) do
+        local vertices = getSpawnZoneVertices(zoneName)
+        if vertices and #vertices >= 3 then
+            local zonePositions = computeSpawnPositionsInZone(vertices, perZone, spacing)
+            for _, p in ipairs(zonePositions) do
+                table.insert(allPositions, p)
+            end
+        end
+    end
+    for i = #allPositions, 2, -1 do
+        local j = math.random(1, i)
+        allPositions[i], allPositions[j] = allPositions[j], allPositions[i]
+    end
+    local positions = {}
+    for i = 1, math.min(batchSize, #allPositions) do
+        positions[i] = allPositions[i]
+    end
+    local numToSpawn = #positions
     if numToSpawn == 0 then return false end
     local spawnRotationZDeg = tonumber(facCfg.spawnRotationZ)
     if spawnRotationZDeg == nil then spawnRotationZDeg = 0 end
@@ -947,6 +991,27 @@ local function spawnBatch(facilityId)
             table.insert(propIds, pid)
             table.insert(moneyPerProp, mat.money or 0)
             table.insert(repPerProp, math.floor((mat.money or 0) / 100))
+            -- Apply rotation after a short delay so spawn/init scripts don't overwrite it
+            local applyPos, applyRot = pos, rot
+            if core_jobsystem and core_jobsystem.create then
+                core_jobsystem.create(function(job)
+                    job.sleep(0.05)
+                    local o = be:getObjectByID(pid)
+                    if o then
+                        if o.setPositionRotation then
+                            o:setPositionRotation(applyPos.x, applyPos.y, applyPos.z, applyRot.x, applyRot.y, applyRot.z, applyRot.w)
+                        elseif o.setPosRot then
+                            o:setPosRot(applyPos.x, applyPos.y, applyPos.z, applyRot.x, applyRot.y, applyRot.z, applyRot.w)
+                        end
+                    end
+                end)
+            else
+                if obj.setPositionRotation then
+                    obj:setPositionRotation(applyPos.x, applyPos.y, applyPos.z, applyRot.x, applyRot.y, applyRot.z, applyRot.w)
+                elseif obj.setPosRot then
+                    obj:setPosRot(applyPos.x, applyPos.y, applyPos.z, applyRot.x, applyRot.y, applyRot.z, applyRot.w)
+                end
+            end
         end
     end
 
@@ -1371,11 +1436,21 @@ local function doStartFacilityWork()
     sessionBatchesCompleted = 0
     firstTruckAfterBatch = math.random(2, 4)
     local facCfg = facilityConfigs[facilityId]
-    local vertices = getSpawnZoneVertices(facCfg.spawnZone)
-    if not vertices or #vertices < 3 then
+    local zoneNames = getFacilitySpawnZoneNames(facCfg)
+    if #zoneNames == 0 then
         if utils and utils.displayMessage then
-            local zName = facCfg.spawnZone or "facilityWork_spawnZone"
-            utils.displayMessage("Facility work: spawn zone '"..zName.."' not found in roleplay.sites.json.", 8)
+            utils.displayMessage("Facility work: no spawn zone(s) configured.", 8)
+        end
+        return false
+    end
+    local hasValidZone = false
+    for _, zName in ipairs(zoneNames) do
+        local vertices = getSpawnZoneVertices(zName)
+        if vertices and #vertices >= 3 then hasValidZone = true; break end
+    end
+    if not hasValidZone then
+        if utils and utils.displayMessage then
+            utils.displayMessage("Facility work: spawn zone(s) '"..table.concat(zoneNames, "', '").."' not found in roleplay.sites.json.", 8)
         end
         return false
     end
@@ -1730,7 +1805,10 @@ function M.requestFacilityWorkState()
     if selectedFacilityId and not currentForkliftId and not currentBatch and not truckState then
         setWaypointToFacilityForklift(selectedFacilityId)
     end
-    updateTasklistValues()
+    -- Only show facility work task list when shift has started (on duty)
+    if currentBatch or currentForkliftId or truckState then
+        updateTasklistValues()
+    end
     notifyPhoneState()
 end
 
