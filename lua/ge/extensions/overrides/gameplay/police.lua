@@ -105,12 +105,18 @@ local function placeRoadblock(vehIds, pos, rot, placeData) -- places a roadblock
 end
 
 local function setPropsActive(active, reset)
+  local validPropIds = {}
   for _, v in ipairs(policePropIds) do
-    getObjectByID(v):setActive(active and 1 or 0)
-    if reset then
-      getObjectByID(v):queueLuaCommand("recovery.loadHome()")
+    local veh = getObjectByID(v)
+    if veh then
+      veh:setActive(active and 1 or 0)
+      if reset then
+        veh:queueLuaCommand("recovery.loadHome()")
+      end
+      table.insert(validPropIds, v)
     end
   end
+  policePropIds = validPropIds
 end
 
 local function insertProp(propId) -- adds a prop to use for roadblocks
@@ -160,7 +166,7 @@ local function getNearestPoliceVehicle(targetId, isVisible, isUsable) -- returns
   local bestDist, bestInterDist = math.huge, math.huge -- best distance, best interactive distance (police driver looking ahead)
 
   for id, veh in pairs(policeVehs) do
-    if getObjectByID(id):getActive() then
+    if getObjectByID(id) and getObjectByID(id):getActive() then
       local target = veh.role.validTargets[targetId or 0] -- gets cached data
       if target then
         if (not vars.useVisibility or not isVisible or target.visible) and (not isUsable or veh.role.state ~= 'disabled') then
@@ -673,13 +679,19 @@ local function onUpdate(dt, dtSim)
               if not pursuit.roadblockPos or (pursuit.roadblockPos and veh.pos:squaredDistance(pursuit.roadblockPos) > 400) then
                 local minDist = 40 + 60 / max(0.001, gameplay_traffic.getTrafficVars().spawnValue)
 
-                for otherId, otherVeh in pairs(policeVehs) do -- first, check for police vehicles that are out of sight
-                  if getObjectByID(otherId):getActive() and otherVeh.role.validTargets[id] and otherVeh.role.validTargets[id].dist > 10000
-                  and otherVeh.focusDist > minDist and veh.focus.dirVec:dot(otherVeh.pos - veh.focus.pos) < 0 then
-                    table.insert(vehIds, otherId)
+                local validPoliceVehs = {}
+                for otherId, otherVeh in pairs(policeVehs) do
+                  local otherObj = getObjectByID(otherId)
+                  if otherObj then
+                    validPoliceVehs[otherId] = otherVeh
+                    count = count + 1
+                    if otherObj:getActive() and otherVeh.role.validTargets[id] and otherVeh.role.validTargets[id].dist > 10000
+                    and otherVeh.focusDist > minDist and veh.focus.dirVec:dot(otherVeh.pos - veh.focus.pos) < 0 then
+                      table.insert(vehIds, otherId)
+                    end
                   end
-                  count = count + 1
                 end
+                policeVehs = validPoliceVehs
               end
 
               if vehIds[min(2, count)] then -- at least 2 vehicles, or 1 if it is the only one
@@ -692,15 +704,20 @@ local function onUpdate(dt, dtSim)
                   local newPropIds
 
                   if policePropIds[1] then
-                    for i = #policePropIds, 1, -1 do -- validation
-                      if not getObjectByID(policePropIds[i]) then
-                        removeProp(policePropIds[i])
+                    local validPropIds = {}
+                    for _, pid in ipairs(policePropIds) do
+                      if getObjectByID(pid) then
+                        table.insert(validPropIds, pid)
                       end
                     end
+                    policePropIds = validPropIds
 
                     newPropIds = checkRoadblock(policePropIds, rbWidth, false)
                     for _, pid in ipairs(newPropIds) do
-                      maxPropLength = max(maxPropLength, getObjectByID(pid).initialNodePosBB:getExtents().y)
+                      local propObj = getObjectByID(pid)
+                      if not propObj then goto continue end
+                      maxPropLength = max(maxPropLength, propObj.initialNodePosBB:getExtents().y)
+                      ::continue::
                     end
                   end
 
@@ -711,10 +728,13 @@ local function onUpdate(dt, dtSim)
                   for _, vid in ipairs(newVehIds) do
                     local vehData = policeVehs[vid]
                     if vehData.state == 'fadeIn' or vehData.state == 'fadeOut' then -- ensures that vehicles have full mesh alpha
-                      getObjectByID(vid):setMeshAlpha(1, '')
+                      local vehObj = getObjectByID(vid)
+                      if not vehObj then goto continue end
+                      vehObj:setMeshAlpha(1, '')
                       vehData.alpha = 1
                       vehData.state = 'active'
                     end
+                    ::continue::
                     vehData:modifyRespawnValues(500) -- prevents the vehicles from respawning too quickly
                     vehData.role:setAction('roadblock')
                   end
