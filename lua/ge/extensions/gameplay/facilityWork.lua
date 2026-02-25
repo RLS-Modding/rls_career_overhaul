@@ -377,8 +377,11 @@ local function getFacilityLoadZoneVertices(facilityId)
     local cfg = facilityConfigs[facilityId]
     if not cfg then return nil end
     local names = getFacilitySpawnZoneNames(cfg)
-    if #names == 0 then return nil end
-    return getSpawnZoneVertices(names[1])
+    for _, name in ipairs(names) do
+        local verts = getSpawnZoneVertices(name)
+        if verts then return verts end
+    end
+    return nil
 end
 
 local function getFacilityLoadZoneCenter(facilityId)
@@ -402,10 +405,16 @@ local function isPointNear(pointA, pointB, radius)
 end
 
 local function isForkliftInLoadZone(facilityId)
-    local verts = getFacilityLoadZoneVertices(facilityId)
     local pos = getForkliftPosition()
-    if not verts or not pos then return false end
-    return isPointInPolygon2D(pos.x, pos.y, verts)
+    if not pos then return false end
+    local cfg = facilityId and facilityConfigs[facilityId]
+    if not cfg then return false end
+    local names = getFacilitySpawnZoneNames(cfg)
+    for _, name in ipairs(names) do
+        local verts = getSpawnZoneVertices(name)
+        if verts and isPointInPolygon2D(pos.x, pos.y, verts) then return true end
+    end
+    return false
 end
 
 local function setNavigationPath(targetPos)
