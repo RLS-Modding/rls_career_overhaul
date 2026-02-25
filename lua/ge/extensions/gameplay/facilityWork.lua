@@ -88,6 +88,7 @@ local configLoadedForLevel = nil
 local sessionTotalPay = 0
 local sessionTotalRep = 0
 local sessionMaterialsMoved = 0
+local sessionMultiplier = 1  -- increases per batch (configurable per facility); applied to batch pay
 local selectedFacilityId = nil
 local preferredBatchSize = nil
 local deliveredPropsByZone = {}
@@ -722,8 +723,14 @@ local function refreshGuidanceMarkers()
     end
 end
 
+local function getSessionMultiplierHeaderLabel()
+    local mult = sessionMultiplier
+    local multStr = (mult == math.floor(mult)) and tostring(mult) or string.format("%.1f", mult)
+    return "On duty: x" .. multStr
+end
+
 local function setTasklistOnDuty()
-    guihooks.trigger('SetTasklistHeader', { label = "On duty" })
+    guihooks.trigger('SetTasklistHeader', { label = getSessionMultiplierHeaderLabel() })
     guihooks.trigger('SetTasklistTask', { id = "facilityWork_total_pay", label = "Total pay: $0", type = "message", clear = false })
     guihooks.trigger('SetTasklistTask', { id = "facilityWork_total_rep", label = "Total rep: 0", type = "message", clear = false })
 end
@@ -770,6 +777,7 @@ local function notifyPhoneState()
 end
 
 local function updateTasklistValues()
+    guihooks.trigger('SetTasklistHeader', { label = getSessionMultiplierHeaderLabel() })
     guihooks.trigger('SetTasklistTask', { id = "facilityWork_total_pay", label = "Total pay: $" .. sessionTotalPay, type = "message", clear = false })
     guihooks.trigger('SetTasklistTask', { id = "facilityWork_total_rep", label = "Total rep: " .. sessionTotalRep, type = "message", clear = false })
 
@@ -1167,6 +1175,8 @@ local function payoutBatchAndSpawnNext()
         totalMoney = totalMoney + (moneyPerProp[i] or 0)
         totalRep = totalRep + (repPerProp[i] or 0)
     end
+    -- Session multiplier (increases per batch; configurable per facility)
+    totalMoney = math.floor(totalMoney * sessionMultiplier)
     local mult = 1
     if career_economyAdjuster and career_economyAdjuster.getSectionMultiplier then
         mult = career_economyAdjuster.getSectionMultiplier("facilityWork") or 1
@@ -1208,6 +1218,12 @@ local function payoutBatchAndSpawnNext()
     currentBatchWaypointPhase = nil
     currentBatch = nil
     clearDropMarkers()
+
+    -- Increase session multiplier for next batch (per-facility config)
+    local facCfg = facilityId and facilityConfigs[facilityId]
+    local perBatch = (facCfg and (tonumber(facCfg.sessionMultiplierPerBatch) or 0)) or 0.5
+    sessionMultiplier = sessionMultiplier + perBatch
+
     updateTasklistValues()
 
     sessionBatchesCompleted = sessionBatchesCompleted + 1
@@ -1427,6 +1443,8 @@ local function doStartFacilityWork()
     if utils and utils.saveAndSetTrafficAmount then
         utils.saveAndSetTrafficAmount(0)
     end
+    -- Session multiplier: start at facility's base, increases per batch
+    sessionMultiplier = (tonumber(facCfg.sessionMultiplierBase) or 1)
     setTasklistOnDuty()
     setBatchWaypointPhase("to_loading", { silent = true })
     if utils and utils.displayMessage then

@@ -81,6 +81,8 @@
     "aiPickupRoadName": "industrialWarehouse_aiPickup",
     "aiPickupNodeIndex": 14,
     "truckSpawnSpot": "facilityWork_truckSpawn_industrialWarehouse",
+    "sessionMultiplierBase": 1,
+    "sessionMultiplierPerBatch": 0.5,
     "spawns": [
       { "materialId": "largeLumber"},
       { "materialId": "smallLumber"},
@@ -103,6 +105,8 @@
     "stackHeight": 0.5,
     "spawnRotationZ": 40,
     "truck": {"model": "us_semi", "config": "tc83s_flatbed"},
+    "sessionMultiplierBase": 0.5,
+    "sessionMultiplierPerBatch": 0.2,
     "// aiPickupRoadName": "shuffleboard_aiPickup",
     "// aiPickupNodeIndex": 2,
     "// driveToPickup": false,
