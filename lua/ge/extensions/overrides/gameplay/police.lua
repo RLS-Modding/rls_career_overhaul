@@ -166,7 +166,8 @@ local function getNearestPoliceVehicle(targetId, isVisible, isUsable) -- returns
   local bestDist, bestInterDist = math.huge, math.huge -- best distance, best interactive distance (police driver looking ahead)
 
   for id, veh in pairs(policeVehs) do
-    if getObjectByID(id) and getObjectByID(id):getActive() then
+    local obj = getObjectByID(id)
+    if obj and obj:getActive() then
       local target = veh.role.validTargets[targetId or 0] -- gets cached data
       if target then
         if (not vars.useVisibility or not isVisible or target.visible) and (not isUsable or veh.role.state ~= 'disabled') then
