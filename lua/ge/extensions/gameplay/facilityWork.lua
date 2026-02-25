@@ -777,7 +777,7 @@ end
 
 local function isFacilityWorkAvailable()
     if not loadConfig() then return false end
-    for fid, cfg in pairs(facilityConfigs) do
+    for _, cfg in pairs(facilityConfigs) do
         local names = getFacilitySpawnZoneNames(cfg)
         for _, zoneName in ipairs(names) do
             local verts = getSpawnZoneVertices(zoneName)
