@@ -138,9 +138,6 @@ local loadZoneMarkerObjects = {}
 local currentBatchWaypointPhase = nil -- "to_loading" | "to_delivery"
 local truckWaypointPhase = nil -- "to_pickup" | "to_truck"
 
--- Fallback level when current level has no config.
-local CONFIG_FALLBACK_LEVEL = "west_coast_usa"
-
 local function getTotalDeliveredPropsCount()
     local count = 0
     for _, zoneData in pairs(deliveredPropsByZone) do
@@ -159,23 +156,6 @@ local function loadConfig()
     if not levelInfo or not levelInfo.dir then return false end
     local path = levelInfo.dir .. "/facilityWorkConfig.json"
     local data = jsonReadFile(path)
-    if (not data or not data.materials) and core_levels and core_levels.getLevelByName then
-        local fallbackInfo = core_levels.getLevelByName(CONFIG_FALLBACK_LEVEL)
-        if fallbackInfo and fallbackInfo.dir then
-            local fallbackPath = fallbackInfo.dir .. "/facilityWorkConfig.json"
-            data = jsonReadFile(fallbackPath)
-        end
-    end
-    if (not data or not data.materials) and FS and FS.findFiles then
-        local candidates = FS:findFiles("levels/", "facilityWorkConfig.json", -1, true, false) or {}
-        for _, p in ipairs(candidates) do
-            local d = jsonReadFile(p)
-            if d and d.materials then
-                data = d
-                break
-            end
-        end
-    end
     if not data or not data.materials then return false end
     materialsById = data.materials
     facilityConfigs = {}
@@ -958,13 +938,12 @@ local function spawnBatch(facilityId)
     local moneyPerProp = {}
     local repPerProp = {}
     local spacing = mat.spawnGridSpacing or 2
-    -- Collect spawn positions from all configured zones
+    -- Collect spawn positions from all configured zones (each zone can contribute up to batchSize)
     local allPositions = {}
-    local perZone = math.ceil(batchSize / #zoneNames)
     for _, zoneName in ipairs(zoneNames) do
         local vertices = getSpawnZoneVertices(zoneName)
         if vertices and #vertices >= 3 then
-            local zonePositions = computeSpawnPositionsInZone(vertices, perZone, spacing)
+            local zonePositions = computeSpawnPositionsInZone(vertices, batchSize, spacing)
             for _, p in ipairs(zonePositions) do
                 table.insert(allPositions, p)
             end
@@ -1295,7 +1274,12 @@ local function payoutBatchAndSpawnNext()
 
     -- Increase session multiplier for next batch (per-facility config)
     local facCfg = facilityId and facilityConfigs[facilityId]
-    local perBatch = (facCfg and (tonumber(facCfg.sessionMultiplierPerBatch) or 0)) or 0.5
+    local perBatch
+    if facCfg then
+        perBatch = tonumber(facCfg.sessionMultiplierPerBatch) or 0.5
+    else
+        perBatch = 0.5
+    end
     sessionMultiplier = sessionMultiplier + perBatch
 
     updateTasklistValues()
@@ -1303,8 +1287,8 @@ local function payoutBatchAndSpawnNext()
     sessionBatchesCompleted = sessionBatchesCompleted + 1
 
     local truckSpawned = false
-    local facCfg = facilityId and facilityConfigs[facilityId]
-    if facCfg and facCfg.aiPickupRoadName and getRoadNodes(facCfg.aiPickupRoadName) and #(getRoadNodes(facCfg.aiPickupRoadName) or {}) > 0 then
+    local roadNodes = facCfg and facCfg.aiPickupRoadName and getRoadNodes(facCfg.aiPickupRoadName)
+    if facCfg and facCfg.aiPickupRoadName and roadNodes and #roadNodes > 0 then
         if not truckState and sessionBatchesCompleted >= firstTruckAfterBatch and getTotalDeliveredPropsCount() >= TRUCK_LOAD_COUNT then
             spawnTruckAndDriveToPickup(facilityId)
             truckSpawned = true
