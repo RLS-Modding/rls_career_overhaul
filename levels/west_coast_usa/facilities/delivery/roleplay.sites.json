@@ -1,6 +1,6 @@
 {
   "description":"Description of these Sites. Contains Locations, Zones, and Parking Spots.",
-  "dir":"/mods/unpacked/rls_career_overhaul/levels/west_coast_usa/facilities/delivery/",
+  "dir":"/levels/west_coast_usa/facilities/delivery/",
   "filename":"roleplay.sites.json",
   "locations":{},
   "name":"roleplay.sites.json",
@@ -19,7 +19,7 @@
       },
       "isMultiSpot":false,
       "name":"Hospital Entrance",
-      "oldId":49680,
+      "oldId":2477,
       "pos":[
         -231.44441223145,
         437.36383056641,
@@ -55,7 +55,7 @@
       },
       "isMultiSpot":false,
       "name":"paramedicWorkParking",
-      "oldId":49681,
+      "oldId":2478,
       "pos":[
         -291.77017211914,
         461.49496459961,
@@ -91,7 +91,7 @@
       },
       "isMultiSpot":false,
       "name":"ambulanceLoaner",
-      "oldId":49682,
+      "oldId":2479,
       "pos":[
         -278.64749145508,
         451.42492675781,
@@ -127,7 +127,7 @@
       },
       "isMultiSpot":false,
       "name":"busWork_parking",
-      "oldId":49683,
+      "oldId":2480,
       "pos":[
         -418.38681030273,
         453.39505004883,
@@ -163,7 +163,7 @@
       },
       "isMultiSpot":false,
       "name":"busLoaner_parking",
-      "oldId":49684,
+      "oldId":2481,
       "pos":[
         -402.74322509766,
         455.15872192383,
@@ -199,7 +199,7 @@
       },
       "isMultiSpot":false,
       "name":"facilityWork_industrialWarehouse",
-      "oldId":49685,
+      "oldId":2482,
       "pos":[
         32.913333892822,
         740.23822021484,
@@ -235,7 +235,7 @@
       },
       "isMultiSpot":false,
       "name":"facilityWork_shuffleboard",
-      "oldId":49686,
+      "oldId":2483,
       "pos":[
         -300.74145507813,
         -150.15594482422,
@@ -271,7 +271,7 @@
       },
       "isMultiSpot":false,
       "name":"facilityWork_truckSpawn_industrialWarehouse",
-      "oldId":49687,
+      "oldId":2484,
       "pos":[
         8.662935256958,
         854.79992675781,
@@ -307,7 +307,7 @@
       },
       "isMultiSpot":false,
       "name":"facilityWork_truckSpawn_shuffleboard",
-      "oldId":49688,
+      "oldId":2485,
       "pos":[
         -313.9892578125,
         -140.58044433594,
@@ -356,8 +356,8 @@
         "types":{},
         "values":{}
       },
-      "name":"industrialWarehouse_facilityWork",
-      "oldId":49678,
+      "name":"shuffleboard_facilityWork1",
+      "oldId":96671,
       "top":{
         "active":false,
         "normal":[
@@ -373,24 +373,24 @@
       },
       "vertices":[
         [
-          38.516784667969,
-          752.16711425781,
-          74.756713867188
+          -315.64562988281,
+          -145.45474243164,
+          120.54760742188
         ],
         [
-          31.531677246094,
-          752.36096191406,
-          74.724578857422
+          -313.60137939453,
+          -148.29093933105,
+          120.54761505127
         ],
         [
-          31.17279624939,
-          759.60510253906,
-          74.724571228027
+          -309.61868286133,
+          -145.82400512695,
+          120.54761505127
         ],
         [
-          38.295139312744,
-          759.63348388672,
-          74.724578857422
+          -311.70172119141,
+          -142.9228515625,
+          120.54760742188
         ]
       ]
     },
@@ -419,8 +419,8 @@
         "types":{},
         "values":{}
       },
-      "name":"shuffleboard_facilityWork",
-      "oldId":49679,
+      "name":"shuffleboard_facilityWork2",
+      "oldId":96672,
       "top":{
         "active":false,
         "normal":[
@@ -436,24 +436,150 @@
       },
       "vertices":[
         [
-          -293.98043823242,
-          -157.00607299805,
-          120.55883026123
+          -310.2255859375,
+          -141.6357421875,
+          120.54760742188
         ],
         [
-          -300.13491821289,
-          -161.68276977539,
-          120.55840301514
+          -307.80221557617,
+          -144.8568572998,
+          120.54761505127
         ],
         [
-          -304.45401000977,
-          -156.03700256348,
-          120.55770874023
+          -304.13278198242,
+          -142.22088623047,
+          120.54760742188
         ],
         [
-          -298.13101196289,
-          -151.71160888672,
-          120.55853271484
+          -307.04293823242,
+          -139.45513916016,
+          120.54760742188
+        ]
+      ]
+    },
+    {
+      "bot":{
+        "active":false,
+        "normal":[
+          0,
+          0,
+          -1
+        ],
+        "pos":[
+          0,
+          0,
+          -10
+        ]
+      },
+      "color":[
+        1,
+        1,
+        1
+      ],
+      "customFields":{
+        "names":{},
+        "tags":{},
+        "types":{},
+        "values":{}
+      },
+      "name":"shuffleboard_facilityWork3",
+      "oldId":96673,
+      "top":{
+        "active":false,
+        "normal":[
+          0,
+          0,
+          1
+        ],
+        "pos":[
+          0,
+          0,
+          10
+        ]
+      },
+      "vertices":[
+        [
+          -305.03884887695,
+          -137.97793579102,
+          120.54760742188
+        ],
+        [
+          -302.80877685547,
+          -141.07301330566,
+          120.54760742188
+        ],
+        [
+          -299.33346557617,
+          -138.65272521973,
+          120.54761505127
+        ],
+        [
+          -301.75827026367,
+          -135.57652282715,
+          120.54760742188
+        ]
+      ]
+    },
+    {
+      "bot":{
+        "active":false,
+        "normal":[
+          0,
+          0,
+          -1
+        ],
+        "pos":[
+          0,
+          0,
+          -10
+        ]
+      },
+      "color":[
+        1,
+        1,
+        1
+      ],
+      "customFields":{
+        "names":{},
+        "tags":{},
+        "types":{},
+        "values":{}
+      },
+      "name":"industrialWarehouse_facilityWork",
+      "oldId":485244,
+      "top":{
+        "active":false,
+        "normal":[
+          0,
+          0,
+          1
+        ],
+        "pos":[
+          0,
+          0,
+          10
+        ]
+      },
+      "vertices":[
+        [
+          37.740951538086,
+          767.91284179688,
+          74.724578857422
+        ],
+        [
+          37.784378051758,
+          759.92541503906,
+          74.724578857422
+        ],
+        [
+          32.247447967529,
+          759.86993408203,
+          74.724571228027
+        ],
+        [
+          32.282493591309,
+          767.93041992188,
+          74.724563598633
         ]
       ]
     }
