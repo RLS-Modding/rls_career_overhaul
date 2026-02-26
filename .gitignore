@@ -4,3 +4,5 @@ node_modules/
 baseUI/node_modules/
 ui-build-temp/
 ui/vue-dist/
+# Built Vue UI
+ui/ui-vue/dist/

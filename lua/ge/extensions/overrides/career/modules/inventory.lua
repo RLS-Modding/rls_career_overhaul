@@ -1146,7 +1146,8 @@ local function getVehicleUiData(inventoryId, inventoryIdsInGarage)
   vehicleData.licensePlateChangePermission = career_modules_permissions.getStatusForTag({"vehicleLicensePlate", "vehicleModification"}, {inventoryId = inventoryId})
   vehicleData.returnLoanerPermission = career_modules_permissions.getStatusForTag("returnLoanedVehicle", {inventoryId = inventoryId})
 
-  vehicleData.listedForSale = career_modules_marketplace.findVehicleListing(inventoryId) ~= nil
+  local marketplaceListed = career_modules_marketplace.findVehicleListing(inventoryId) ~= nil
+  vehicleData.listedForSale = marketplaceListed
 
   for _, performanceData in ipairs(vehicleData.performanceHistory or {}) do
     processPerformanceData(performanceData)

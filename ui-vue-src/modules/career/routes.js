@@ -56,6 +56,8 @@ import PhoneRealEstate from "./views/PhoneRealEstate.vue"
 import PhoneGuide from "./views/PhoneGuide.vue"
 import PhoneMarketWatch from "./views/PhoneMarketWatch.vue"
 import PhoneFreeroamEvents from "./views/PhoneFreeroamEvents.vue"
+import PhoneCamera from "./views/PhoneCamera.vue"
+import PhoneGallery from "./views/PhoneGallery.vue"
 import LevelSwitch from "./views/LevelSwitch.vue"
 import ChallengeComplete from "./views/ChallengeComplete.vue"
 import BusinessComputerMain from "./views/BusinessComputerMain.vue"
@@ -537,6 +539,18 @@ export default [
         name: "phone-events",
         component: PhoneFreeroamEvents
 
+      },
+
+      {
+        path: "phone-camera",
+        name: "phone-camera",
+        component: PhoneCamera
+      },
+
+      {
+        path: "phone-gallery",
+        name: "phone-gallery",
+        component: PhoneGallery
       },
 
       {

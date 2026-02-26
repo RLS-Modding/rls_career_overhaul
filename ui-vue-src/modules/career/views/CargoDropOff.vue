@@ -786,7 +786,7 @@ position: [popupPosition.center, popupPosition.center], // can be single w/o arr
 </script>
 
 <style scoped lang="scss">
-@import "@/styles/modules/animations";
+@use "@/styles/modules/animations" as animations;
 
 .cargo-drop-off-wrapper {
   color: white;
