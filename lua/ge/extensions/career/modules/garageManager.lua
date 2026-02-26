@@ -194,7 +194,8 @@ local function buildGarageSizes()
   
   if garages then
     for _, garage in pairs(garages) do
-      if purchasedGarages[garage.id] then
+      local isRented = career_modules_propertyRentals and career_modules_propertyRentals.isRentedGarage(garage.id)
+      if purchasedGarages[garage.id] or isRented then
         garageSize[tostring(garage.id)] = (math.ceil(garage.capacity / (career_modules_hardcore.isHardcoreMode() and 2 or 1)) or 0)
       end
     end
@@ -516,6 +517,35 @@ requestGarageListing = function(garageId)
   local canNegotiateNow, cooldownRemaining = canNegotiateGarage(garageId)
   canNegotiate = canNegotiate and canNegotiateNow
 
+  local mortgageAvailableFlag = false
+  local mortgageInfo = nil
+  local creditTier = ""
+  if career_modules_propertyMortgage and career_modules_propertyMortgage.isMortgageAvailable then
+    mortgageAvailableFlag = career_modules_propertyMortgage.isMortgageAvailable()
+    if mortgageAvailableFlag and career_modules_propertyMortgage.getMortgageOfferDetails then
+      local details = career_modules_propertyMortgage.getMortgageOfferDetails()
+      if details then
+        local dpPct = details.downPaymentPercent or 0.2
+        mortgageInfo = {
+          creditTier = details.tier or "",
+          downPaymentPct = math.floor(dpPct * 100),
+          downPayment = math.floor(effectivePrice * dpPct),
+          interestRate = details.rate or 0,
+          availableTerms = details.termsAvailable or {12, 24, 36, 48},
+        }
+      end
+    end
+  end
+  if career_modules_credit and career_modules_credit.getTier then
+    local tier = career_modules_credit.getTier()
+    if tier then creditTier = tier.label end
+  end
+
+  local rentalBreakdown = nil
+  if career_modules_propertyRentals and career_modules_propertyRentals.getRentalBreakdown then
+    rentalBreakdown = career_modules_propertyRentals.getRentalBreakdown(garageId)
+  end
+
   local data = {
     garageId = garage.id,
     name = name,
@@ -527,7 +557,7 @@ requestGarageListing = function(garageId)
     estimatedTotal = estimatedTotal,
     capacity = math.ceil(garage.capacity / (career_modules_hardcore.isHardcoreMode() and 2 or 1)),
     parkingSpots = (garage.parkingSpotNames and #garage.parkingSpotNames) or 0,
-    neighborhood = "West Coast",  -- placeholder until propertyMarket module
+    neighborhood = "West Coast",
     canNegotiate = canNegotiate,
     cooldownRemaining = cooldownRemaining,
     isFrozen = getFrozenPrice(garageId) ~= nil,
@@ -535,6 +565,10 @@ requestGarageListing = function(garageId)
     ownerInfo = ownerInfo,
     ownerName = ownerInfo and ownerInfo.name or nil,
     ownerArchetype = ownerInfo and ownerInfo.archetype or nil,
+    mortgageAvailable = mortgageAvailableFlag,
+    mortgageInfo = mortgageInfo,
+    creditTier = creditTier,
+    rentalBreakdown = rentalBreakdown,
   }
   
   return data
@@ -654,6 +688,23 @@ end
 local function showPurchaseGaragePrompt(garageId)
   if not career_career.isActive() then return end
   if not garageId or type(garageId) ~= "string" or garageId == "" then return end
+
+  -- Rented garages: treat as accessible, open computer directly
+  if career_modules_propertyRentals and career_modules_propertyRentals.isRentedGarage(garageId) then
+    local computers = freeroam_facilities.getFacilitiesByType("computer")
+    local computerId = nil
+    for _, computer in pairs(computers) do
+      if computer.garageId == garageId then
+        computerId = computer.id
+        break
+      end
+    end
+    if computerId then
+      career_modules_computer.openComputerMenuById(computerId)
+    end
+    return
+  end
+
   garageToPurchase = freeroam_facilities.getFacility("garage", garageId)
   
   -- Free garages (starter garages) - purchase immediately
@@ -883,7 +934,17 @@ local function getFreeSlots()
       totalCapacity = totalCapacity + space[2]
     end
     ::continue::
-  end  
+  end
+  if career_modules_propertyRentals and career_modules_propertyRentals.getActiveRentals then
+    for garageId, _ in pairs(career_modules_propertyRentals.getActiveRentals()) do
+      if not purchasedGarages[garageId] then
+        local space = isGarageSpace(garageId)
+        if space[1] then
+          totalCapacity = totalCapacity + space[2]
+        end
+      end
+    end
+  end
   return totalCapacity
 end
 
@@ -1147,6 +1208,13 @@ local function getNextAvailableSpace()
       return garage
     end
     ::continue::
+  end
+  if career_modules_propertyRentals and career_modules_propertyRentals.getActiveRentals then
+    for garageId, _ in pairs(career_modules_propertyRentals.getActiveRentals()) do
+      if not purchasedGarages[garageId] and isGarageSpace(garageId)[1] then
+        return garageId
+      end
+    end
   end
   return nil
 end

@@ -148,7 +148,7 @@ local function setRouteToGarage(garageId)
 end
 
 local function towToGarage(garageId)
-  if not career_modules_garageManager.isPurchasedGarage(garageId) and
+  if not career_modules_garageManager.isAccessibleGarage(garageId) and
      not career_modules_garageManager.isDiscoveredGarage(garageId) then
     return
   end

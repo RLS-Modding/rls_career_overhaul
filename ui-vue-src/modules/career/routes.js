@@ -53,6 +53,7 @@ import PhoneQuarry from "./views/PhoneQuarry.vue"
 import PhoneBeamEats from "./views/PhoneBeamEats.vue"
 import PhoneFacilityWork from "./views/PhoneFacilityWork.vue"
 import PhoneRealEstate from "./views/PhoneRealEstate.vue"
+import PhoneRentals from "./views/PhoneRentals.vue"
 import PhoneGuide from "./views/PhoneGuide.vue"
 import PhoneMarketWatch from "./views/PhoneMarketWatch.vue"
 import PhoneFreeroamEvents from "./views/PhoneFreeroamEvents.vue"
@@ -521,6 +522,12 @@ export default [
         path: "phone-real-estate",
         name: "phone-real-estate",
         component: PhoneRealEstate
+      },
+
+      {
+        path: "phone-rentals",
+        name: "phone-rentals",
+        component: PhoneRentals
       },
 
       {

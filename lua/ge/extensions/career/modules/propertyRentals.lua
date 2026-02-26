@@ -41,16 +41,28 @@ end
 
 local function canAfford(amount)
   if amount <= 0 then return true end
+  if career_modules_payment and career_modules_payment.canPay then
+    return career_modules_payment.canPay({money = {amount = amount, canBeNegative = false}})
+  end
   local money = (career_modules_playerAttributes and career_modules_playerAttributes.getAttributeValue and career_modules_playerAttributes.getAttributeValue("money")) or 0
   return money >= amount
 end
 
 local function applyMoneyDelta(amount)
-  if not career_modules_playerAttributes or not career_modules_playerAttributes.addAttribute then
-    return false
+  if amount < 0 then
+    if career_modules_payment and career_modules_payment.pay then
+      return career_modules_payment.pay({money = {amount = math.abs(amount), canBeNegative = false}}, {label = "Rent", description = "Rental payment"})
+    end
+  elseif amount > 0 then
+    if career_modules_payment and career_modules_payment.reward then
+      return career_modules_payment.reward({money = {amount = amount, canBeNegative = false}}, {label = "Rent", description = "Rental deposit return"})
+    end
   end
-  career_modules_playerAttributes.addAttribute("money", amount)
-  return true
+  if career_modules_playerAttributes and career_modules_playerAttributes.addAttributes then
+    career_modules_playerAttributes.addAttributes({money = amount}, {label = "Rent"})
+    return true
+  end
+  return false
 end
 
 -- ── Rental History Evaluation ──
@@ -186,6 +198,13 @@ local function signLease(garageId, rentalType, leaseTerm)
 
   if career_modules_credit and career_modules_credit.recordOnTimePayment then
     career_modules_credit.recordOnTimePayment()
+  end
+
+  career_modules_garageManager.addDiscoveredGarage(garageId)
+  career_modules_garageManager.buildGarageSizes()
+  if core_recoveryPrompt then
+    core_recoveryPrompt.addTowingButtons()
+    core_recoveryPrompt.addTaxiButtons()
   end
 
   career_saveSystem.saveCurrent()
@@ -406,6 +425,15 @@ local function getAllRentals()
     local facility = freeroam_facilities and freeroam_facilities.getFacility("garage", garageId)
     entry.garageName = facility and facility.name or ("Garage " .. tostring(garageId))
     entry.garageId = garageId
+    if rental.type == "upfront" then
+      local totalDuration = rental.leaseTerm * PAYMENT_INTERVAL_S
+      local elapsed = accumulatedSimTime - (rental.leaseStart or 0)
+      entry.leaseTimeRemaining = math.max(0, totalDuration - elapsed)
+    else
+      local nextPay = rental.secondsUntilNextPayment or 0
+      local remaining = math.max(0, (rental.paymentsRemaining or 1) - 1)
+      entry.leaseTimeRemaining = nextPay + remaining * PAYMENT_INTERVAL_S
+    end
     result[garageId] = entry
   end
   return result
@@ -490,7 +518,26 @@ local function onUpdate(dtReal, dtSim, dtRaw)
     end
     for _, garageId in ipairs(garageIds) do
       local rental = rentalData.activeRentals[garageId]
-      if rental and rental.type ~= "upfront" and rental.paymentsRemaining > 0 then
+      if rental and rental.type == "upfront" then
+        local totalDuration = rental.leaseTerm * PAYMENT_INTERVAL_S
+        local elapsed = accumulatedSimTime - (rental.leaseStart or 0)
+        if elapsed >= totalDuration then
+          relocateVehicles(garageId)
+          table.insert(rentalData.rentalHistory, {
+            garageId = garageId,
+            type = rental.type,
+            leaseStart = rental.leaseStart,
+            leaseEnd = accumulatedSimTime,
+            paymentsMade = rental.paymentsMade,
+            missedPayments = 0,
+            evicted = false,
+          })
+          applyMoneyDelta(rental.securityDeposit)
+          notify("success", "Lease Complete", "Prepaid lease for " .. garageId .. " has expired. Deposit returned.")
+          rentalData.activeRentals[garageId] = nil
+          career_saveSystem.saveCurrent()
+        end
+      elseif rental and rental.paymentsRemaining > 0 then
         rental.secondsUntilNextPayment = (rental.secondsUntilNextPayment or PAYMENT_INTERVAL_S) - 5
         if rental.secondsUntilNextPayment <= 0 then
           rental.secondsUntilNextPayment = PAYMENT_INTERVAL_S

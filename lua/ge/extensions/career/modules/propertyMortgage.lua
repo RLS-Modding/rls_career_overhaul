@@ -10,7 +10,7 @@ M.dependencies = {
 local saveDir = "/career/rls_career"
 local saveFile = saveDir .. "/mortgages.json"
 
-local SIM_SECONDS_PER_GAME_DAY = 1200
+local SIM_SECONDS_PER_GAME_DAY = 300
 local BASE_INTEREST_RATE = 0.05
 local FORECLOSURE_VEHICLE_MULTIPLIER = 0.75
 local accumulatedSimTime = 0
@@ -82,16 +82,28 @@ end
 
 local function canAfford(amount)
   if amount <= 0 then return true end
+  if career_modules_payment and career_modules_payment.canPay then
+    return career_modules_payment.canPay({money = {amount = amount, canBeNegative = false}})
+  end
   local money = (career_modules_playerAttributes and career_modules_playerAttributes.getAttributeValue and career_modules_playerAttributes.getAttributeValue("money")) or 0
   return money >= amount
 end
 
 local function applyMoneyDelta(amount)
-  if not career_modules_playerAttributes or not career_modules_playerAttributes.addAttribute then
-    return false
+  if amount < 0 then
+    if career_modules_payment and career_modules_payment.pay then
+      return career_modules_payment.pay({money = {amount = math.abs(amount), canBeNegative = false}}, {label = "Mortgage", description = "Mortgage payment"})
+    end
+  elseif amount > 0 then
+    if career_modules_payment and career_modules_payment.reward then
+      return career_modules_payment.reward({money = {amount = amount, canBeNegative = false}}, {label = "Mortgage", description = "Mortgage payout"})
+    end
   end
-  career_modules_playerAttributes.addAttribute("money", amount)
-  return true
+  if career_modules_playerAttributes and career_modules_playerAttributes.addAttributes then
+    career_modules_playerAttributes.addAttributes({money = amount}, {label = "Mortgage"})
+    return true
+  end
+  return false
 end
 
 local function clearMortgage(garageId)

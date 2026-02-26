@@ -2,7 +2,7 @@
     <PhoneWrapper app-name="Loans">
         <div class="phone-loans">
             <!-- My Loans (always at top) -->
-            <div class="section" v-if="activeLoans.length > 0">
+            <div class="section" v-if="allLoans.length > 0">
                 <div class="section-header">
                     <div class="section-title">My Loans</div>
                     <button class="settings-gear" @click="openSettings">
@@ -11,19 +11,20 @@
                 </div>
 
                 <!-- Single loan: show directly -->
-                <div v-if="activeLoans.length === 1" class="section-card">
-                    <button class="loan-card" @click="openLoan(activeLoans[0].id)">
+                <div v-if="allLoans.length === 1" class="section-card">
+                    <button class="loan-card" :class="{ 'mortgage-loan': allLoans[0].isMortgage }" @click="!allLoans[0].isMortgage && openLoan(allLoans[0].id)">
                         <div class="header">
-                            <div class="name">{{ activeLoans[0].orgName || activeLoans[0].orgId }}</div>
-                            <div class="rate">{{ fmtRate(activeLoans[0]) }}</div>
+                            <div class="name">{{ allLoans[0].orgName || allLoans[0].orgId }}</div>
+                            <div class="rate">{{ fmtRate(allLoans[0]) }}</div>
                         </div>
                         <div class="amount">
                             <span class="currency-symbol">$</span>
-                            <BngUnit :money="activeLoans[0].principalOutstanding" no-icon />
+                            <BngUnit :money="allLoans[0].principalOutstanding" no-icon />
                         </div>
                         <div class="chips">
-                            <span class="chip">{{ activeLoans[0].paymentsRemaining }} left</span>
-                            <span class="chip">Next {{ formatDue(activeLoans[0].secondsUntilNextPayment) }}</span>
+                            <span class="chip" v-if="allLoans[0].isMortgage">Mortgage</span>
+                            <span class="chip">{{ allLoans[0].paymentsRemaining }} left</span>
+                            <span class="chip" v-if="!allLoans[0].isMortgage">Next {{ formatDue(allLoans[0].secondsUntilNextPayment) }}</span>
                         </div>
                     </button>
                 </div>
@@ -37,7 +38,7 @@
                             <BngUnit :money="totalOutstanding" no-icon />
                         </div>
                         <div class="summary-meta">
-                            {{ activeLoans.length }} loans
+                            {{ allLoans.length }} loans
                             <span class="summary-dot"></span>
                             Avg {{ avgRate }}
                         </div>
@@ -48,7 +49,7 @@
                     </button>
                     <transition name="expand">
                         <div v-if="loansExpanded" class="loan-cards">
-                            <button class="loan-card" v-for="l in activeLoans" :key="l.id" @click="openLoan(l.id)">
+                            <button class="loan-card" :class="{ 'mortgage-loan': l.isMortgage }" v-for="l in allLoans" :key="l.id" @click="!l.isMortgage && openLoan(l.id)">
                                 <div class="header">
                                     <div class="name">{{ l.orgName || l.orgId }}</div>
                                     <div class="rate">{{ fmtRate(l) }}</div>
@@ -58,8 +59,9 @@
                                     <BngUnit :money="l.principalOutstanding" no-icon />
                                 </div>
                                 <div class="chips">
+                                    <span class="chip" v-if="l.isMortgage">Mortgage</span>
                                     <span class="chip">{{ l.paymentsRemaining }} left</span>
-                                    <span class="chip">Next {{ formatDue(l.secondsUntilNextPayment) }}</span>
+                                    <span class="chip" v-if="!l.isMortgage">Next {{ formatDue(l.secondsUntilNextPayment) }}</span>
                                 </div>
                             </button>
                         </div>
@@ -153,14 +155,33 @@ const refreshCredit = async () => {
 const offers = ref([])
 const selectedOrgId = ref(null)
 const activeLoans = ref([])
+const activeMortgages = ref([])
 const prepayAmounts = ref({})
 const pauseTicks = ref(false)
 const availableFunds = ref(0)
 
-const totalOutstanding = computed(() => activeLoans.value.reduce((sum, l) => sum + (l.principalOutstanding || 0), 0))
+const allLoans = computed(() => {
+    const mortgageLoans = activeMortgages.value.map(m => ({
+        id: 'mortgage-' + m.garageId,
+        orgName: m.garageName || 'Property Mortgage',
+        orgId: 'mortgage',
+        principalOutstanding: m.remainingBalance || 0,
+        currentRate: m.interestRate || 0,
+        rate: m.interestRate || 0,
+        paymentsRemaining: m.remainingPayments || 0,
+        secondsUntilNextPayment: null,
+        isMortgage: true,
+        garageId: m.garageId,
+        monthlyPayment: m.monthlyPayment || 0,
+        missedPayments: m.missedPayments || 0,
+    }))
+    return [...activeLoans.value, ...mortgageLoans]
+})
+
+const totalOutstanding = computed(() => allLoans.value.reduce((sum, l) => sum + (l.principalOutstanding || 0), 0))
 const avgRate = computed(() => {
-    if (activeLoans.value.length === 0) return '0%'
-    const avg = activeLoans.value.reduce((sum, l) => sum + ((l.currentRate ?? l.rate) || 0), 0) / activeLoans.value.length
+    if (allLoans.value.length === 0) return '0%'
+    const avg = allLoans.value.reduce((sum, l) => sum + ((l.currentRate ?? l.rate) || 0), 0) / allLoans.value.length
     return (avg * 100).toFixed(1).replace(/\.0$/, '') + '%'
 })
 
@@ -185,6 +206,25 @@ const refreshActiveLoans = async () => {
     } catch { activeLoans.value = [] }
 }
 
+const refreshMortgages = async () => {
+    try {
+        const data = await lua.career_modules_propertyMortgage.getAllMortgages()
+        if (data && typeof data === 'object' && !Array.isArray(data)) {
+            activeMortgages.value = Object.entries(data).map(([gId, m]) => ({
+                garageId: gId,
+                garageName: m.garageName || gId,
+                monthlyPayment: m.monthlyPayment || 0,
+                remainingBalance: m.remainingBalance || 0,
+                remainingPayments: m.remainingPayments || 0,
+                interestRate: m.interestRate || 0,
+                missedPayments: m.missedPayments || 0,
+            }))
+        } else {
+            activeMortgages.value = []
+        }
+    } catch { activeMortgages.value = [] }
+}
+
 const refreshOffers = async () => {
     try {
         const res = await lua.career_modules_loans.getLoanOffers()
@@ -198,6 +238,7 @@ onMounted(async () => {
     await refreshCredit()
     await refreshOffers()
     await refreshActiveLoans()
+    await refreshMortgages()
     loansUpdatedHandler = async () => { await refreshActiveLoans(); await refreshOffers() }
     loansTickHandler = (data) => { if (!pauseTicks.value && Array.isArray(data)) activeLoans.value = data }
     loansFundsHandler = (money) => { if (typeof money === 'number') availableFunds.value = money }
@@ -543,4 +584,9 @@ const getColorForOrg = (id) => orgColors[Math.abs(String(id).split('').reduce((a
 .percent { font-weight: 800; }
 .max { color: #cbd5e1; font-size: 0.83rem; }
 .none { color: #cbd5e1; font-size: 0.85rem; }
+
+.mortgage-loan {
+    border-color: rgba(249, 115, 22, 0.35);
+    cursor: default;
+}
 </style>
