@@ -313,7 +313,14 @@ function M.getMortgage(garageId)
 end
 
 function M.getAllMortgages()
-  return mortgages
+  local result = {}
+  for garageId, mortgage in pairs(mortgages) do
+    local entry = deepcopy(mortgage)
+    local facility = freeroam_facilities.getFacility("garage", garageId)
+    entry.garageName = facility and facility.name or ("Garage " .. tostring(garageId))
+    result[garageId] = entry
+  end
+  return result
 end
 
 function M.hasMortgage(garageId)
@@ -324,12 +331,14 @@ function M.getMortgagePaymentInfo(garageId)
   local mortgage = M.getMortgage(garageId)
   if not mortgage then return nil end
 
+  local facility = freeroam_facilities.getFacility("garage", garageId)
   return {
     monthlyPayment = mortgage.monthlyPayment,
     remainingPayments = mortgage.remainingPayments,
     remainingBalance = getRemainingBalance(mortgage),
     interestRate = mortgage.interestRate,
-    missedPayments = mortgage.missedPayments
+    missedPayments = mortgage.missedPayments,
+    garageName = facility and facility.name or ("Garage " .. tostring(garageId))
   }
 end
 

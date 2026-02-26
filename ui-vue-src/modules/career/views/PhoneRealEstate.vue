@@ -635,7 +635,7 @@ const refreshMortgages = async () => {
     if (data && typeof data === 'object' && !Array.isArray(data)) {
       mortgages.value = Object.entries(data).map(([gId, m]) => ({
         garageId: gId,
-        propertyName: m.garageId || gId,
+        propertyName: m.garageName || m.garageId || gId,
         monthlyPayment: m.monthlyPayment || 0,
         remainingBalance: m.remainingBalance || 0,
         remainingPayments: m.remainingPayments || 0,

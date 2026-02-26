@@ -391,7 +391,8 @@ const toggleMortgagePanel = async () => {
   showMortgagePanel.value = !showMortgagePanel.value
   if (showMortgagePanel.value) {
     try {
-      canAffordDownPayment.value = await lua.career_modules_garageManager.canPay(mortgageData.value.downPayment)
+      const playerMoney = await lua.career_modules_playerAttributes.getAttributeValue("money")
+      canAffordDownPayment.value = playerMoney >= mortgageData.value.downPayment
     } catch (e) {
       canAffordDownPayment.value = false
     }
