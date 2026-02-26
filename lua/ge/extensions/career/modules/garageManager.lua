@@ -196,10 +196,6 @@ local function buildGarageSizes()
 end
 
 local function addPurchasedGarage(garageId)
-  if not next(purchasedGarages) then
-    log("I", "garageManager", "Showing non-tutorial welcome splashscreen")
-    career_modules_linearTutorial.showNonTutorialWelcomeSplashscreen()
-  end
   log("I", "garageManager", "Adding purchased garage: " .. garageId)
   purchasedGarages[garageId] = true
   discoveredGarages[garageId] = true
