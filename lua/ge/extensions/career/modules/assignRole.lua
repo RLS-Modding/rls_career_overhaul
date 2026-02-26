@@ -81,8 +81,10 @@ end
 
 local function onUpdate()
     if vehiclePresent then
+        local playerVeh = be:getPlayerVehicle(0)
+        if not playerVeh then return end
         local vehiclePosition = vehiclePresent:getPosition()
-        local playerPosition = be:getPlayerVehicle(0):getPosition()
+        local playerPosition = playerVeh:getPosition()
         if (playerPosition - vehiclePosition):length() >= 25 then
             career_modules_inventory.removeVehicleObject(career_modules_inventory.getInventoryIdFromVehicleId(
                 vehiclePresent:getID()))
