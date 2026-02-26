@@ -979,25 +979,27 @@ local function spawnBatch(facilityId)
             table.insert(propIds, pid)
             table.insert(moneyPerProp, mat.money or 0)
             table.insert(repPerProp, math.floor((mat.money or 0) / 100))
-            -- Apply rotation after a short delay so spawn/init scripts don't overwrite it
-            local applyPos, applyRot = pos, rot
+            -- Apply rotation after a delay so spawn/init scripts don't overwrite it. Use current position
+            -- (where physics put the prop) so overlapping props can spread out and land instead of being snapped back.
+            local applyRot = rot
             if core_jobsystem and core_jobsystem.create then
                 core_jobsystem.create(function(job)
-                    job.sleep(0.05)
+                    job.sleep(0.18)
                     local o = be:getObjectByID(pid)
                     if o then
+                        local currentPos = o.getPosition and toVec3(o:getPosition()) or pos
                         if o.setPositionRotation then
-                            o:setPositionRotation(applyPos.x, applyPos.y, applyPos.z, applyRot.x, applyRot.y, applyRot.z, applyRot.w)
+                            o:setPositionRotation(currentPos.x, currentPos.y, currentPos.z, applyRot.x, applyRot.y, applyRot.z, applyRot.w)
                         elseif o.setPosRot then
-                            o:setPosRot(applyPos.x, applyPos.y, applyPos.z, applyRot.x, applyRot.y, applyRot.z, applyRot.w)
+                            o:setPosRot(currentPos.x, currentPos.y, currentPos.z, applyRot.x, applyRot.y, applyRot.z, applyRot.w)
                         end
                     end
                 end)
             else
                 if obj.setPositionRotation then
-                    obj:setPositionRotation(applyPos.x, applyPos.y, applyPos.z, applyRot.x, applyRot.y, applyRot.z, applyRot.w)
+                    obj:setPositionRotation(pos.x, pos.y, pos.z, applyRot.x, applyRot.y, applyRot.z, applyRot.w)
                 elseif obj.setPosRot then
-                    obj:setPosRot(applyPos.x, applyPos.y, applyPos.z, applyRot.x, applyRot.y, applyRot.z, applyRot.w)
+                    obj:setPosRot(pos.x, pos.y, pos.z, applyRot.x, applyRot.y, applyRot.z, applyRot.w)
                 end
             end
         end
