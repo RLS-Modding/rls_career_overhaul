@@ -1,5 +1,5 @@
 local M = {}
-M.dependencies = { 'career_career', 'career_saveSystem', 'freeroam_facilities', 'career_modules_realEstateNegotiation', 'career_modules_propertyOwners' }
+M.dependencies = { 'career_career', 'career_saveSystem', 'freeroam_facilities', 'career_modules_realEstateNegotiation', 'career_modules_propertyOwners', 'career_modules_propertyMortgage' }
 
 local purchasedGarages = {}
 local discoveredGarages = {}
@@ -353,7 +353,7 @@ local function getGaragePrice(garage, computerId)
 end
 
 -- Complete purchase with negotiated price (called from realEstateNegotiation module)
-local function completePurchaseWithNegotiatedPrice(garageId, finalPrice, freezePrice)
+local function completePurchaseWithNegotiatedPrice(garageId, finalPrice, freezePrice, useFinancing, selectedTerm)
   if not career_career.isActive() then 
     log("E", "garageManager", "completePurchaseWithNegotiatedPrice: Career not active")
     return false 
@@ -389,6 +389,8 @@ local function completePurchaseWithNegotiatedPrice(garageId, finalPrice, freezeP
   listingData.propertyTax = propertyTax
   listingData.estimatedTotal = finalPrice + closingFee + propertyTax
   
+  listingData.useFinancing = useFinancing == true
+  listingData.selectedTerm = selectedTerm
   pendingGarageListingData = listingData
   
   guihooks.trigger('openGarageListing', listingData)
@@ -397,7 +399,7 @@ local function completePurchaseWithNegotiatedPrice(garageId, finalPrice, freezeP
   return true
 end
 
-local function purchaseGarageAtNegotiatedPrice(garageId)
+local function purchaseGarageAtNegotiatedPrice(garageId, useFinancing, selectedTerm)
   if not career_career.isActive() then 
     log("E", "garageManager", "purchaseGarageAtNegotiatedPrice: Career not active")
     return false 
@@ -430,10 +432,26 @@ local function purchaseGarageAtNegotiatedPrice(garageId)
 
   local closingFee = calculateClosingFee(negotiatedPrice)
   local propertyTax = calculateAnnualPropertyTax(negotiatedPrice)
-  local totalPrice = negotiatedPrice + closingFee + propertyTax
 
-  local price = { money = { amount = totalPrice, canBeNegative = false } }
-  local success = career_modules_payment.pay(price, { label = "Purchased " .. garage.name })
+  local success = false
+  if useFinancing and career_modules_propertyMortgage and career_modules_propertyMortgage.isMortgageAvailable and career_modules_propertyMortgage.isMortgageAvailable() then
+    local feesOnly = closingFee + propertyTax
+    local feesPaid = true
+    if feesOnly > 0 then
+      local feesPrice = { money = { amount = feesOnly, canBeNegative = false } }
+      feesPaid = career_modules_payment.pay(feesPrice, { label = "Closing costs for " .. garage.name })
+    end
+
+    if feesPaid then
+      local mortgage = career_modules_propertyMortgage.createMortgage(garage.id, negotiatedPrice, selectedTerm)
+      success = mortgage ~= nil
+    end
+  else
+    local totalPrice = negotiatedPrice + closingFee + propertyTax
+    local price = { money = { amount = totalPrice, canBeNegative = false } }
+    success = career_modules_payment.pay(price, { label = "Purchased " .. garage.name })
+  end
+
   if success then
     addPurchasedGarage(garage.id)
     clearFrozenPrice(garageId)
@@ -443,7 +461,7 @@ local function purchaseGarageAtNegotiatedPrice(garageId)
     guihooks.trigger('ChangeState', {state = 'play'})
     return true
   end
-  
+
   return false
 end
 
@@ -538,7 +556,7 @@ local function startGarageNegotiation(garageId)
 end
 
 -- Purchase garage at listed price (no negotiation)
-local function purchaseGarageAtListedPrice(garageId)
+local function purchaseGarageAtListedPrice(garageId, useFinancing, selectedTerm)
   if not career_career.isActive() then 
     log("E", "garageManager", "purchaseGarageAtListedPrice: Career not active")
     return false 
@@ -594,10 +612,26 @@ local function purchaseGarageAtListedPrice(garageId)
 
   local closingFee = calculateClosingFee(listedPrice)
   local propertyTax = calculateAnnualPropertyTax(listedPrice)
-  local totalPrice = listedPrice + closingFee + propertyTax
 
-  local priceTable = { money = { amount = totalPrice, canBeNegative = false } }
-  local success = career_modules_payment.pay(priceTable, { label = "Purchased " .. garage.name })
+  local success = false
+  if useFinancing and career_modules_propertyMortgage and career_modules_propertyMortgage.isMortgageAvailable and career_modules_propertyMortgage.isMortgageAvailable() then
+    local feesOnly = closingFee + propertyTax
+    local feesPaid = true
+    if feesOnly > 0 then
+      local feesPrice = { money = { amount = feesOnly, canBeNegative = false } }
+      feesPaid = career_modules_payment.pay(feesPrice, { label = "Closing costs for " .. garage.name })
+    end
+
+    if feesPaid then
+      local mortgage = career_modules_propertyMortgage.createMortgage(garage.id, listedPrice, selectedTerm)
+      success = mortgage ~= nil
+    end
+  else
+    local totalPrice = listedPrice + closingFee + propertyTax
+    local priceTable = { money = { amount = totalPrice, canBeNegative = false } }
+    success = career_modules_payment.pay(priceTable, { label = "Purchased " .. garage.name })
+  end
+
   if success then
     addPurchasedGarage(garage.id)
     career_saveSystem.saveCurrent()
@@ -605,7 +639,7 @@ local function purchaseGarageAtListedPrice(garageId)
     guihooks.trigger('ChangeState', {state = 'play'})
     return true
   end
-  
+
   return false
 end
 
@@ -681,7 +715,7 @@ local function canPay(overriddenTotal)
   return currentMoney >= totalPrice
 end
 
-local function buyGarage(overriddenTotal)
+local function buyGarage(overriddenTotal, useFinancing, selectedTerm)
   if not garageToPurchase then
     return false
   end
@@ -713,8 +747,24 @@ local function buyGarage(overriddenTotal)
     totalPrice = math.floor(overrideAmount + 0.5)
   end
 
-  local price = { money = { amount = totalPrice, canBeNegative = false } }
-  local success = career_modules_payment.pay(price, { label = "Purchased " .. garageToPurchase.name })
+  local success = false
+  if useFinancing and career_modules_propertyMortgage and career_modules_propertyMortgage.isMortgageAvailable and career_modules_propertyMortgage.isMortgageAvailable() then
+    local feesOnly = closingFee + propertyTax
+    local feesPaid = true
+    if feesOnly > 0 then
+      local feesPrice = { money = { amount = feesOnly, canBeNegative = false } }
+      feesPaid = career_modules_payment.pay(feesPrice, { label = "Closing costs for " .. garageToPurchase.name })
+    end
+
+    if feesPaid then
+      local mortgage = career_modules_propertyMortgage.createMortgage(garageToPurchase.id, effectivePrice, selectedTerm)
+      success = mortgage ~= nil
+    end
+  else
+    local price = { money = { amount = totalPrice, canBeNegative = false } }
+    success = career_modules_payment.pay(price, { label = "Purchased " .. garageToPurchase.name })
+  end
+
   if success then
     addPurchasedGarage(garageToPurchase.id)
     if negotiatedPrice then
@@ -751,6 +801,24 @@ local function getStoredLocations()
       end
   end
   return storedLocation
+end
+
+local function getVehiclesInGarage(garageId)
+  if not garageId then return {} end
+  local storedLocation = getStoredLocations()
+  return storedLocation[garageId] or {}
+end
+
+local function removePurchasedGarage(garageId)
+  if not garageId then return false end
+  if not purchasedGarages[garageId] then return false end
+
+  purchasedGarages[garageId] = nil
+  discoveredGarages[garageId] = nil
+  reloadRecoveryPrompt()
+  buildGarageSizes()
+  career_saveSystem.saveCurrent()
+  return true
 end
 
 local function getGarageCapacityData()
@@ -979,12 +1047,26 @@ local function completePropertySaleFromListing(garageId, finalPrice, buyerPerson
   if not garage then return false end
   if not purchasedGarages[garageId] then return false end
 
+  local payoutAmount = finalPrice
+  if career_modules_propertyMortgage and career_modules_propertyMortgage.hasMortgage and career_modules_propertyMortgage.hasMortgage(garageId) then
+    if not career_modules_propertyMortgage.canSellMortgagedProperty(garageId, finalPrice) then
+      guihooks.trigger('toastrMsg', {type="error", title="Sale Blocked", msg="Sale price does not cover remaining mortgage balance."})
+      return false
+    end
+
+    local processed, netProceeds = career_modules_propertyMortgage.processMortgageSale(garageId, finalPrice)
+    if not processed then
+      return false
+    end
+    payoutAmount = netProceeds or 0
+  end
+
   purchasedGarages[garageId] = nil
   reloadRecoveryPrompt()
   buildGarageSizes()
 
   local soldMessage = "Sold " .. (garage.name or tostring(garageId))
-  career_modules_payment.reward({ money = { amount = finalPrice } }, { label = soldMessage }, true)
+  career_modules_payment.reward({ money = { amount = payoutAmount } }, { label = soldMessage }, true)
 
   if career_modules_propertyOwners and career_modules_propertyOwners.registerOwnerFromSale then
     career_modules_propertyOwners.registerOwnerFromSale(garageId, finalPrice, buyerPersonality)
@@ -1284,5 +1366,7 @@ M.buildGarageSizes = buildGarageSizes
 M.fillGarages = fillGarages
 M.getStoredLocations = getStoredLocations
 M.getGarageCapacityData = getGarageCapacityData
+M.getVehiclesInGarage = getVehiclesInGarage
+M.removePurchasedGarage = removePurchasedGarage
 
 return M

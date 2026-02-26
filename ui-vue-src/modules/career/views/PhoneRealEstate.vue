@@ -26,6 +26,9 @@
           <button :class="{ active: viewMode === 'listings' }" @click="viewMode = 'listings'">
             Listings
           </button>
+          <button :class="{ active: viewMode === 'mortgages' }" @click="viewMode = 'mortgages'">
+            Mortgages
+          </button>
           </div>
           <div v-if="viewMode === 'list'" class="toolbar-row-2">
             <div class="dropdown-wrap">
@@ -238,6 +241,53 @@
           </div>
         </div>
 
+        <!-- MORTGAGES VIEW -->
+        <div class="listings-view" v-if="viewMode === 'mortgages'">
+          <div v-if="mortgagesLoading" class="empty-state small">Loading mortgages...</div>
+          <div v-else-if="mortgages.length === 0" class="empty-state small">No active mortgages.</div>
+          <div
+            v-for="mortgage in mortgages"
+            :key="mortgage.garageId"
+            class="mortgage-card"
+            :class="mortgageStatusClass(mortgage)"
+          >
+            <div class="mortgage-card-header">
+              <div class="mortgage-card-info">
+                <span class="mortgage-prop-name">{{ mortgage.propertyName }}</span>
+                <span class="mortgage-card-meta">{{ mortgage.remainingPayments }} payments left</span>
+              </div>
+              <div class="mortgage-strike-dots" v-if="mortgage.strikes > 0">
+                <span class="strike-dot" v-for="s in mortgage.strikes" :key="s"></span>
+              </div>
+            </div>
+            <div class="mortgage-card-body">
+              <div class="mortgage-stat">
+                <span class="mortgage-stat-label">Monthly</span>
+                <span class="mortgage-stat-val">${{ formatPrice(mortgage.monthlyPayment) }}</span>
+              </div>
+              <div class="mortgage-stat">
+                <span class="mortgage-stat-label">Remaining</span>
+                <span class="mortgage-stat-val">${{ formatPrice(mortgage.remainingBalance) }}</span>
+              </div>
+              <div class="mortgage-stat">
+                <span class="mortgage-stat-label">Rate</span>
+                <span class="mortgage-stat-val">{{ mortgage.interestRate ? mortgage.interestRate.toFixed(1) : '0' }}%</span>
+              </div>
+            </div>
+            <div class="mortgage-card-warning" v-if="mortgage.strikes === 1">
+              ⚠ 1 missed payment — next miss may increase penalties.
+            </div>
+            <div class="mortgage-card-warning danger" v-if="mortgage.strikes >= 2">
+              ⛔ {{ mortgage.strikes }} missed payments — property at risk of repossession!
+            </div>
+            <div class="mortgage-card-actions">
+              <button class="act-btn route" @click="payoffMortgage(mortgage.garageId)">
+                Early Payoff (${{ formatPrice(mortgage.remainingBalance) }})
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- LISTINGS VIEW -->
         <div class="listings-view" v-if="viewMode === 'listings'">
           <button v-if="listingsSubView === 'offers'" class="listings-back-bar" @click="setListingsSubView('owned')">
@@ -417,6 +467,9 @@ const listingPrices = reactive({})
 const listingGuidance = reactive({})
 const selectedOwnedGarage = ref(null)
 const selectedOwnedOffers = ref([])
+const mortgages = ref([])
+const mortgagesLoading = ref(false)
+
 const expandedId = ref(null)
 const selectedGarage = ref(null)
 const mapContainer = ref(null)
@@ -573,6 +626,28 @@ function clusterGarages(garages, viewBoxStr, containerSize) {
 const clusteredMarkers = computed(() =>
   clusterGarages(filteredGarages.value, markerViewBox.value, mapContainerSize.value)
 )
+
+const refreshMortgages = async () => {
+  mortgagesLoading.value = true
+  try {
+    const data = await lua.career_modules_propertyMortgage.getAllMortgages()
+    mortgages.value = Array.isArray(data) ? data : []
+  } catch (e) {
+    mortgages.value = []
+  }
+  mortgagesLoading.value = false
+}
+
+const payoffMortgage = async (garageId) => {
+  await lua.career_modules_propertyMortgage.payoffMortgage(garageId)
+  await refreshMortgages()
+}
+
+const mortgageStatusClass = (mortgage) => {
+  if (mortgage.strikes >= 2) return 'mortgage-danger'
+  if (mortgage.strikes === 1) return 'mortgage-warning'
+  return 'mortgage-ok'
+}
 
 function formatPrice(price) {
   if (price >= 1000000) return (price / 1000000).toFixed(1) + 'M'
@@ -1079,6 +1154,10 @@ watch([viewMode, careerActive, loaded], async ([newViewMode], [oldViewMode]) => 
 }, { immediate: true })
 
 watch(viewMode, (mode) => {
+  if (mode === 'mortgages') {
+    refreshMortgages()
+    return
+  }
   if (mode !== 'listings') return
   refreshOwnedListings()
   if (listingsSubView.value === 'offers' && !selectedOwnedGarage.value) {
@@ -2134,6 +2213,105 @@ onUnmounted(() => {
   flex-shrink: 0;
   padding: 6px 12px;
   font-size: 11px;
+}
+
+/* ── MORTGAGES VIEW ── */
+.mortgage-card {
+  background: #1a1a1a;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  &.mortgage-ok { border-left: 3px solid #22c55e; }
+  &.mortgage-warning { border-left: 3px solid #eab308; }
+  &.mortgage-danger { border-left: 3px solid #ef4444; }
+}
+
+.mortgage-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mortgage-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mortgage-prop-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.mortgage-card-meta {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.mortgage-strike-dots {
+  display: flex;
+  gap: 4px;
+}
+
+.strike-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ef4444;
+}
+
+.mortgage-card-body {
+  display: flex;
+  gap: 12px;
+}
+
+.mortgage-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.mortgage-stat-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: rgba(255, 255, 255, 0.35);
+  font-weight: 700;
+}
+
+.mortgage-stat-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: white;
+  font-variant-numeric: tabular-nums;
+}
+
+.mortgage-card-warning {
+  font-size: 11px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(234, 179, 8, 0.1);
+  color: rgba(234, 179, 8, 0.9);
+
+  &.danger {
+    background: rgba(239, 68, 68, 0.1);
+    color: rgba(239, 68, 68, 0.9);
+  }
+}
+
+.mortgage-card-actions {
+  display: flex;
+  gap: 8px;
+
+  .act-btn { flex: 1; justify-content: center; }
 }
 
 /* ── TRANSITIONS ── */

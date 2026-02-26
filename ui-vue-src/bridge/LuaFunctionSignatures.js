@@ -1283,6 +1283,16 @@ export default {
     updateAttendance: attendanceLevel => {}
   },
 
+  career_modules_propertyMortgage: {
+    getAllMortgages: () => {},
+    getMortgagePaymentInfo: garageId => String,
+    payoffMortgage: garageId => String,
+    isMortgageAvailable: () => {},
+    applyForMortgage: (garageId, termDays) => [String, Number],
+    getMortgageForProperty: garageId => String,
+    getRemainingBalance: garageId => String,
+  },
+
   career_modules_garageManager: {
     requestGarageData: () => {},
     canPay: estimatedTotal => Number,

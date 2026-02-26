@@ -2,7 +2,7 @@
 -- Handles buying/selling property with AI negotiation
 
 local M = {}
-M.dependencies = { 'career_career', 'career_saveSystem', 'freeroam_facilities', 'career_modules_garageManager', 'career_modules_propertyOwners' }
+M.dependencies = { 'career_career', 'career_saveSystem', 'freeroam_facilities', 'career_modules_garageManager', 'career_modules_propertyOwners', 'career_modules_propertyMortgage' }
 
 -- Negotiation state (in-memory, persisted to save file)
 local negotiationActive = false
@@ -226,6 +226,9 @@ end
 -- ────────────────────────────────────────────────────────────────────────────
 
 local function getNegotiationState()
+  local mortgageAvailable = (career_modules_propertyMortgage and career_modules_propertyMortgage.isMortgageAvailable and career_modules_propertyMortgage.isMortgageAvailable()) or false
+  local mortgageDetails = (career_modules_propertyMortgage and career_modules_propertyMortgage.getMortgageOfferDetails and career_modules_propertyMortgage.getMortgageOfferDetails()) or nil
+
   return {
     active = negotiationActive,
     amISelling = amISelling,
@@ -248,6 +251,8 @@ local function getNegotiationState()
     isInsulted = isInsulted,
     closingFeeRate = CLOSING_FEE_RATE,
     propertyTaxRate = PROPERTY_TAX_RATE,
+    mortgageAvailable = mortgageAvailable,
+    mortgageDetails = mortgageDetails,
     origin = negotiationOrigin,
   }
 end
@@ -531,7 +536,7 @@ local function takeTheirOffer()
       end
     end
   else
-    completePurchase(propertyId, theirOffer, false)
+    completePurchase(propertyId, theirOffer, false, false, nil)
   end
 
   return true
@@ -585,7 +590,7 @@ local function cancelNegotiation()
   return true
 end
 
-completePurchase = function(garageId, finalPrice, freezePrice)
+completePurchase = function(garageId, finalPrice, freezePrice, useFinancing, selectedTerm)
   if not garageId or not finalPrice then
     log("E", "realEstateNegotiation", "completePurchase: missing garageId or finalPrice")
     return
@@ -602,7 +607,7 @@ completePurchase = function(garageId, finalPrice, freezePrice)
     return
   end
   
-  local success = career_modules_garageManager.completePurchaseWithNegotiatedPrice(garageId, finalPrice, freezePrice == true)
+  local success = career_modules_garageManager.completePurchaseWithNegotiatedPrice(garageId, finalPrice, freezePrice == true, useFinancing == true, selectedTerm)
   if not success then
     log("E", "realEstateNegotiation", "Failed to store negotiated price")
     return
@@ -1076,6 +1081,7 @@ M.takeTheirOffer = takeTheirOffer
 M.freezeCurrentOffer = freezeCurrentOffer
 M.cancelNegotiation = cancelNegotiation
 M.getNegotiationState = getNegotiationState
+M.completePurchase = completePurchase
 
 -- Selling-side listing API
 M.listPropertyForSale = listPropertyForSale
