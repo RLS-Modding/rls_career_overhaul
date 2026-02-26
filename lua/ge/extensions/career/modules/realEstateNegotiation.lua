@@ -635,10 +635,6 @@ local function startNegotiateBuying(garageId)
   if career_modules_propertyOwners and career_modules_propertyOwners.getSellerProfileForNegotiation then
     sellerProfile = career_modules_propertyOwners.getSellerProfileForNegotiation(garageId, listedPrice)
   end
-  if sellerProfile and sellerProfile.isDelisted then
-    log("W", "realEstateNegotiation", "Seller has delisted this property: " .. tostring(garageId))
-    return false
-  end
 
   -- Generate seller personality / persistent owner profile
   if sellerProfile and sellerProfile.isPersistentOwner then

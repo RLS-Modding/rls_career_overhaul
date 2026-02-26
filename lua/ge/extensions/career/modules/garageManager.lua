@@ -516,10 +516,6 @@ requestGarageListing = function(garageId)
     ownerName = ownerInfo and ownerInfo.name or nil,
     ownerArchetype = ownerInfo and ownerInfo.archetype or nil,
   }
-
-  if ownerInfo and ownerInfo.isDelisted then
-    data.canNegotiate = false
-  end
   
   return data
 end

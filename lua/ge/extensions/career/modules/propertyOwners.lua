@@ -252,7 +252,6 @@ local function buildOwnerDataFromNpc(npc, garageId, purchasePrice)
     patienceProfile = npc.traits and npc.traits.patienceProfile or 0.5,
     priceSensitivity = npc.traits and npc.traits.priceSensitivity or 1,
     traits = npc.traits or {},
-    isDelisted = false,
     lastAdjustmentTime = now,
   }
 
@@ -302,21 +301,12 @@ local function ensureOwnerForGarage(garageId, fallbackPrice)
   return newOwner
 end
 
-local function shouldDelist(ownerData)
-  if not ownerData then return false end
-  local marketIndex = getHousingMarketIndex()
-  if marketIndex > 0.75 then return false end
-  if ownerData.archetype ~= "developer" and ownerData.archetype ~= "homeowner" then return false end
-  return ownerData.currentAskingPrice < (ownerData.purchasePrice or ownerData.currentAskingPrice)
-end
-
 local function getOwnerForListing(garageId, fallbackPrice)
   local owner = ensureOwnerForGarage(garageId, fallbackPrice)
   if not owner then return nil end
 
   owner.willingnessToSell = calculateWillingness(owner)
   owner.currentAskingPrice = calculateAskingPrice(owner, fallbackPrice or owner.purchasePrice)
-  owner.isDelisted = shouldDelist(owner)
 
   return {
     garageId = garageId,
@@ -328,7 +318,6 @@ local function getOwnerForListing(garageId, fallbackPrice)
     purchaseTime = owner.purchaseTime,
     patienceProfile = owner.patienceProfile,
     traits = owner.traits,
-    isDelisted = owner.isDelisted,
   }
 end
 
@@ -362,7 +351,6 @@ local function getSellerProfileForNegotiation(garageId, fallbackMarketPrice)
     willingnessToSell = owner.willingnessToSell,
     patience = owner.patienceProfile,
     traits = owner.traits,
-    isDelisted = owner.isDelisted,
     isPersistentOwner = true,
   }
 end
@@ -378,7 +366,6 @@ local function refreshOwner(ownerData)
   ownerData.lastAdjustmentTime = now
   ownerData.willingnessToSell = calculateWillingness(ownerData)
   ownerData.currentAskingPrice = calculateAskingPrice(ownerData, ownerData.purchasePrice)
-  ownerData.isDelisted = shouldDelist(ownerData)
 end
 
 local function onUpdate(dtReal, dtSim)
