@@ -1008,6 +1008,13 @@ local function listGarageForSale(computerId, askingPrice)
     return false
   end
 
+  if career_modules_propertyMortgage and career_modules_propertyMortgage.hasMortgage and career_modules_propertyMortgage.hasMortgage(garageId) then
+    if not career_modules_propertyMortgage.canSellMortgagedProperty(garageId, desiredPrice) then
+      guihooks.trigger('toastrMsg', {type="error", title="Sale Blocked", msg="Asking price must exceed remaining mortgage balance."})
+      return false
+    end
+  end
+
   return career_modules_realEstateNegotiation.listPropertyForSale(garageId, desiredPrice)
 end
 
@@ -1029,6 +1036,13 @@ local function listGarageForSaleByGarageId(garageId, askingPrice)
   local desiredPrice = tonumber(askingPrice) or marketPrice
   if desiredPrice <= 0 then
     return false
+  end
+
+  if career_modules_propertyMortgage and career_modules_propertyMortgage.hasMortgage and career_modules_propertyMortgage.hasMortgage(garageId) then
+    if not career_modules_propertyMortgage.canSellMortgagedProperty(garageId, desiredPrice) then
+      guihooks.trigger('toastrMsg', {type="error", title="Sale Blocked", msg="Asking price must exceed remaining mortgage balance."})
+      return false
+    end
   end
 
   return career_modules_realEstateNegotiation.listPropertyForSale(garageId, desiredPrice)
