@@ -67,9 +67,11 @@ local function calculatePayment(principal, annualRate, term)
     return math.floor((principal / term) + 0.5)
   end
 
-  local monthlyRate = annualRate / 12
-  local powVal = math.pow(1 + monthlyRate, term)
-  local payment = principal * ((monthlyRate * powVal) / (powVal - 1))
+  -- term is in game-days; rate is annual but payments are daily
+  -- Use per-period rate = annualRate / term (spread over loan life)
+  local periodRate = annualRate / term
+  local powVal = math.pow(1 + periodRate, term)
+  local payment = principal * ((periodRate * powVal) / (powVal - 1))
   return math.floor(payment + 0.5)
 end
 
@@ -98,7 +100,7 @@ end
 
 local function recalcPaymentForMortgage(mortgage)
   local remainingBalance = getRemainingBalance(mortgage)
-  mortgage.monthlyPayment = calculatePayment(remainingBalance, mortgage.interestRate or 0, mortgage.remainingPayments or 1)
+  mortgage.monthlyPayment = calculatePayment(remainingBalance, (mortgage.interestRate or 0), mortgage.remainingPayments or 1)
 end
 
 local function liquidateGarageVehicles(garageId)
@@ -195,8 +197,8 @@ local function processDailyPayment(garageId, mortgage)
   if canAfford(payment) then
     applyMoneyDelta(-payment)
 
-    local monthlyRate = (mortgage.interestRate or 0) / 12
-    local interestPortion = math.floor((getRemainingBalance(mortgage) * monthlyRate) + 0.5)
+    local periodRate = (mortgage.interestRate or 0) / (mortgage.term or 1)
+    local interestPortion = math.floor((getRemainingBalance(mortgage) * periodRate) + 0.5)
     local principalPortion = math.max(0, payment - interestPortion)
 
     mortgage.remainingBalance = math.max(0, getRemainingBalance(mortgage) - principalPortion)

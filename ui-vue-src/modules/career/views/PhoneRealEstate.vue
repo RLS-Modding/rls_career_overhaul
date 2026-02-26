@@ -631,7 +631,20 @@ const refreshMortgages = async () => {
   mortgagesLoading.value = true
   try {
     const data = await lua.career_modules_propertyMortgage.getAllMortgages()
-    mortgages.value = Array.isArray(data) ? data : []
+    // Lua returns {garageId: mortgageObj, ...} — convert to array
+    if (data && typeof data === 'object' && !Array.isArray(data)) {
+      mortgages.value = Object.entries(data).map(([gId, m]) => ({
+        garageId: gId,
+        propertyName: m.garageId || gId,
+        monthlyPayment: m.monthlyPayment || 0,
+        remainingBalance: m.remainingBalance || 0,
+        remainingPayments: m.remainingPayments || 0,
+        interestRate: (m.interestRate || 0) * 100,
+        strikes: m.missedPayments || 0,
+      }))
+    } else {
+      mortgages.value = []
+    }
   } catch (e) {
     mortgages.value = []
   }

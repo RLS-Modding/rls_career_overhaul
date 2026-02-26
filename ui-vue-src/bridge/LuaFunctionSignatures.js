@@ -1288,9 +1288,11 @@ export default {
     getMortgagePaymentInfo: garageId => String,
     payoffMortgage: garageId => String,
     isMortgageAvailable: () => {},
-    applyForMortgage: (garageId, termDays) => [String, Number],
-    getMortgageForProperty: garageId => String,
-    getRemainingBalance: garageId => String,
+    createMortgage: (garageId, purchasePrice, selectedTerm) => [String, Number, Number],
+    getMortgage: garageId => String,
+    hasMortgage: garageId => String,
+    canSellMortgagedProperty: (garageId, salePrice) => [String, Number],
+    getMortgageOfferDetails: () => {},
   },
 
   career_modules_garageManager: {

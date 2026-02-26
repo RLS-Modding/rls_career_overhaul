@@ -156,7 +156,7 @@ const loadOffers = async () => {
   loading.value = false
   // Check for mortgage balance
   try {
-    const mortgageInfo = await lua.career_modules_propertyMortgage.getMortgageForProperty(garageId)
+    const mortgageInfo = await lua.career_modules_propertyMortgage.getMortgagePaymentInfo(garageId)
     if (mortgageInfo && mortgageInfo.remainingBalance) {
       mortgageBalance.value = mortgageInfo.remainingBalance
     }

@@ -112,7 +112,7 @@
               </div>
               <div class="mortgage-row">
                 <span class="mortgage-label">Interest Rate</span>
-                <span class="mortgage-val money">{{ mortgageData.interestRate.toFixed(2) }}%</span>
+                <span class="mortgage-val money">{{ mortgageData.interestRate.toFixed(1) }}%</span>
               </div>
 
               <div class="mortgage-term-selector">
@@ -240,9 +240,11 @@ const loanAmount = computed(() => {
 
 const monthlyPayment = computed(() => {
   const P = loanAmount.value
-  const r = (mortgageData.value.interestRate / 100) / 12
+  const annualRate = mortgageData.value.interestRate / 100
   const n = selectedTerm.value
-  if (r === 0 || n === 0) return P / (n || 1)
+  if (n === 0) return P
+  const r = annualRate / n
+  if (r === 0) return P / n
   return (P * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1)
 })
 
@@ -281,7 +283,7 @@ const applyListingData = (data) => {
       creditTier: data.mortgageInfo.creditTier || '',
       downPaymentPct: data.mortgageInfo.downPaymentPct || 0,
       downPayment: data.mortgageInfo.downPayment || 0,
-      interestRate: data.mortgageInfo.interestRate || 0,
+      interestRate: (data.mortgageInfo.interestRate || 0) * 100,
       availableTerms: data.mortgageInfo.availableTerms || [12, 24, 36, 48],
     }
     if (data.mortgageInfo.availableTerms && data.mortgageInfo.availableTerms.length) {
@@ -398,7 +400,7 @@ const toggleMortgagePanel = async () => {
 
 const applyForMortgage = async () => {
   if (!garageId.value || typeof garageId.value !== 'string') return
-  await lua.career_modules_propertyMortgage.applyForMortgage(garageId.value, selectedTerm.value)
+  await lua.career_modules_garageManager.buyGarage(null, true, selectedTerm.value)
 }
 
 const cancel = () => {
