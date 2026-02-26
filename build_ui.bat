@@ -74,6 +74,21 @@ if not exist "%DIST_TARGET%" mkdir "%DIST_TARGET%"
 del /q /s "%DIST_TARGET%\*" 2>nul
 robocopy "%BUILD_DIR%\dist" "%DIST_TARGET%" /E /MT /NFL /NDL /NJH /NJS /nc /ns /np >nul
 
+if %ERRORLEVEL% geq 8 (
+    echo Error: Copy to dist failed.
+    pause
+    exit /b 1
+)
+
+:: 6. Remove temp build directory
+echo [5/5] Removing temp build directory...
+rmdir /s /q "%BUILD_DIR%" 2>nul
+if exist "%BUILD_DIR%" (
+    echo Warning: Could not delete %BUILD_DIR% - you may remove it manually.
+) else (
+    echo   Temp directory removed.
+)
+
 echo.
 echo ========================================
 echo   Build Successful!

@@ -80,6 +80,7 @@ end
 function C:applyModelConfigData() -- sets data that depends on the vehicle model & config, and returns the generated vehicle role
   local role = 'standard'
   local obj = getObjectByID(self.id)
+  if not obj then return end
   local modelData = core_vehicles.getModel(obj.jbeam).model
   local _, configKey = path.splitWithoutExt(obj.partConfig)
   local configData = core_vehicles.getModel(obj.jbeam).configs[configKey]
@@ -152,7 +153,8 @@ function C:resetTracking()
 end
 
 function C:resetValues()
-  self.pos = self.pos or getObjectByID(self.id):getPosition()
+  local obj = getObjectByID(self.id)
+  self.pos = self.pos or (obj and obj:getPosition() or vec3())
   self.respawn = {
     spawnValue = self.vars.spawnValue, -- respawnability coefficient, from 0 (slow) to 3 (rapid); exactly 0 disables respawning
     spawnDirBias = self.vars.spawnDirBias, -- probability of direction of next respawn, from -1 (away from you) to 1 (towards you)
@@ -167,6 +169,7 @@ end
 
 function C:resetElectrics()
   local obj = getObjectByID(self.id)
+  if not obj then return end
   obj:queueLuaCommand('electrics.set_lightbar_signal(0)')
   obj:queueLuaCommand('electrics.set_warn_signal(0)')
   obj:queueLuaCommand('electrics.horn(false)')
@@ -180,13 +183,16 @@ function C:resetAll() -- resets everything
 end
 
 function C:honkHorn(duration) -- set horn with duration
-  getObjectByID(self.id):queueLuaCommand('electrics.horn(true)')
+  local obj = getObjectByID(self.id)
+  if not obj then return end
+  obj:queueLuaCommand('electrics.horn(true)')
   self.queuedFuncs.horn = {timer = duration or 1, vLua = 'electrics.horn(false)'}
 end
 
 function C:useSiren(duration, disableAfterUse) -- set siren with duration
-  -- assumes that vehicle has a lightbar...
-  getObjectByID(self.id):queueLuaCommand('electrics.set_lightbar_signal(2)')
+  local obj = getObjectByID(self.id)
+  if not obj then return end
+  obj:queueLuaCommand('electrics.set_lightbar_signal(2)')
   local cmd = disableAfterUse and 'electrics.set_lightbar_signal(0)' or 'electrics.set_lightbar_signal(1)'
   self.queuedFuncs.horn = {timer = duration or 1, vLua = cmd}
 end
@@ -196,6 +202,7 @@ function C:setAiMode(mode, ignoreParams) -- sets the AI mode and a few automatic
   self.isAi = mode ~= 'disabled'
 
   local obj = getObjectByID(self.id)
+  if not obj then return end
   obj:queueLuaCommand(string.format('ai.setMode("%s")', mode))
 
   if ignoreParams then return end -- ignoreParams can be used to prevent auto setting of parameters such as aggression
@@ -222,6 +229,7 @@ function C:setAiParameters(params) -- sets a few AI parameters
   params = params or self.vars -- uses the traffic variables by default
 
   local obj = getObjectByID(self.id)
+  if not obj then return end
   if params.aggression or params.baseAggression then
     local aggression = params.aggression or params.baseAggression
     obj:queueLuaCommand(string.format('ai.setAggression(%.3f)', aggression))
@@ -294,9 +302,11 @@ function C:checkCollisions() -- checks for contact with other tracked vehicles
     if self.id ~= id then
       local isCurrentCollision = map.objects[id] and map.objects[id].objectCollisions[self.id] == 1
 
-      if not self.collisions[id] and isCurrentCollision then -- checks bounding boxes and creates a collision table
-        local bb1 = getObjectByID(self.id):getSpawnWorldOOBB()
-        local bb2 = getObjectByID(id):getSpawnWorldOOBB()
+      if not self.collisions[id] and isCurrentCollision then
+        local obj1, obj2 = getObjectByID(self.id), getObjectByID(id)
+        if not obj1 or not obj2 then goto continue end
+        local bb1 = obj1:getSpawnWorldOOBB()
+        local bb2 = obj2:getSpawnWorldOOBB()
 
         if overlapsOBB_OBB(bb1:getCenter(), bb1:getAxis(0) * bb1:getHalfExtents().x, bb1:getAxis(1) * bb1:getHalfExtents().y, bb1:getAxis(2) * bb1:getHalfExtents().z, bb2:getCenter(), bb2:getAxis(0) * bb2:getHalfExtents().x, bb2:getAxis(1) * bb2:getHalfExtents().y, bb2:getAxis(2) * bb2:getHalfExtents().z) then
           self.collisions[id] = {state = 'active', inArea = false, speed = self.speed, vehDist = 0, damage = 0, dot = 0, count = 0, stop = 0}
@@ -343,6 +353,7 @@ function C:checkCollisions() -- checks for contact with other tracked vehicles
     else
       self.collisions[id] = nil
     end
+    ::continue::
   end
 end
 
@@ -371,7 +382,8 @@ end
 
 function C:fade(rate, isFadeOut) -- fades vehicle mesh
   self.alpha = clamp(self.alpha + (rate or 0.1) * (isFadeOut and -1 or 1), 0, 1)
-  getObjectByID(self.id):setMeshAlpha(self.alpha, '')
+  local obj = getObjectByID(self.id)
+  if obj then obj:setMeshAlpha(self.alpha, '') end
 
   if isFadeOut and self.alpha == 0 then
     self.state = 'queued'
@@ -432,7 +444,8 @@ function C:tryRespawn() -- tests if the vehicle is out of sight and ready to res
 
     if valid or self.ignoreInnerRadius then
       table.clear(self.queuedFuncs)
-      getObjectByID(self.id):queueLuaCommand('electrics.setLightsState(0)') -- always turn off headlights
+      local obj = getObjectByID(self.id)
+      if obj then obj:queueLuaCommand('electrics.setLightsState(0)') end
       self.headlights = false
       self.state = 'fadeOut'
     end
@@ -667,7 +680,8 @@ end
 
 function C:onVehicleResetted() -- triggers whenever vehicle resets (automatically or manually)
   if self.role.flags.freeze then
-    getObjectByID(self.id):queueLuaCommand('controller.setFreeze(0)')
+    local obj = getObjectByID(self.id)
+    if obj then obj:queueLuaCommand('controller.setFreeze(0)') end
     self.role.flags.freeze = false
   end
   self:resetTracking()
@@ -696,6 +710,7 @@ end
 function C:onRefresh() -- triggers whenever vehicle data needs to be refreshed (usually after respawning)
   if self.isAi then
     local obj = getObjectByID(self.id)
+    if not obj then return end
 
     self.vars = gameplay_traffic.getTrafficVars()
     self.policeVars = gameplay_police.getPoliceVars()
@@ -751,11 +766,13 @@ function C:onTrafficTick(tickTime)
       local terrainHeight = core_terrain.getTerrain() and core_terrain.getTerrainHeight(self.pos) or 0
       local terrainHeightDefault = core_terrain.getTerrain() and core_terrain.getTerrain():getPosition().z or 0
       local isTunnel = self.pos.z < terrainHeight
-      if terrainHeight == terrainHeightDefault then -- no terrain, or out of terrain bounds
-        -- the following check can be inaccurate sometimes, but it's good enough
-        local raisedPos = self.pos + vecUp * 10
-        local sideVec = map.objects[self.id].dirVec:cross(map.objects[self.id].dirVecUp) * 5
-        isTunnel = not self:checkRayCast(nil, raisedPos) and not self:checkRayCast(nil, raisedPos - sideVec) and not self:checkRayCast(nil, raisedPos + sideVec)
+      if terrainHeight == terrainHeightDefault then
+        local mapObj = map.objects[self.id]
+        if mapObj then
+          local raisedPos = self.pos + vecUp * 10
+          local sideVec = mapObj.dirVec:cross(mapObj.dirVecUp) * 5
+          isTunnel = not self:checkRayCast(nil, raisedPos) and not self:checkRayCast(nil, raisedPos - sideVec) and not self:checkRayCast(nil, raisedPos + sideVec)
+        end
       end
       if (isTunnel or not isDaytime) and not self.headlights then
         local coef = min(4, 200 / self.focusDist) -- larger value (more random) if the vehicle is nearer
@@ -763,7 +780,8 @@ function C:onTrafficTick(tickTime)
         self.headlights = true
       elseif (not isTunnel and isDaytime) and self.headlights then
         self.queuedFuncs.headlights = nil
-        getObjectByID(self.id):queueLuaCommand('electrics.setLightsState(0)')
+        local obj = getObjectByID(self.id)
+        if obj then obj:queueLuaCommand('electrics.setLightsState(0)') end
         self.headlights = false
       end
     end
@@ -876,7 +894,8 @@ function C:onUpdate(dt, dtSim)
         if not v.vLua then
           v.func(unpack(v.args))
         else
-          getObjectByID(self.id):queueLuaCommand(v.vLua)
+          local obj = getObjectByID(self.id)
+          if obj then obj:queueLuaCommand(v.vLua) end
         end
         self.queuedFuncs[k] = nil
       end

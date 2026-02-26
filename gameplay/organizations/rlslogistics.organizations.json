@@ -1325,7 +1325,6 @@
     "icon": "carDealer",
     "reputationLevels": [
       {
-
         "stock": 5,
         "range": [
           0.8,
@@ -1424,7 +1423,6 @@
         ]
       },
       {
-
         "stock": 10,
         "range": [
           0.7,
@@ -3885,6 +3883,59 @@
       {
         "stock": 30,
         "fees": 0,
+        "testDrive": {
+          "abandonFees": 150,
+          "timeLimit": 180,
+          "licencePlate": ""
+        }
+      }
+    ]
+  },
+  "slopGearDealership": {
+    "name": "Slop Gear Garage",
+    "description": "A dealership showcasing vehicles from Slop Gear Specials and other questionably engineered, low-budget creations by the trio.",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": 20
+    },
+    "reputationLevels": [
+      {
+        "stock": 5,
+        "hiddenFromDealerList": true,
+        "testDrive": {
+          "abandonFees": 500,
+          "timeLimit": 60,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 7,
+        "hiddenFromDealerList": true,
+        "testDrive": {
+          "abandonFees": 500,
+          "timeLimit": 90,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 15,
+        "testDrive": {
+          "abandonFees": 350,
+          "timeLimit": 120,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 20,
+        "testDrive": {
+          "abandonFees": 250,
+          "timeLimit": 150,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 30,
         "testDrive": {
           "abandonFees": 150,
           "timeLimit": 180,
