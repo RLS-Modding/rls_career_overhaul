@@ -1287,6 +1287,7 @@ export default {
     getAllMortgages: () => {},
     getMortgagePaymentInfo: garageId => String,
     payoffMortgage: garageId => String,
+    prepayMortgage: (garageId, amount) => [String, Number],
     isMortgageAvailable: () => {},
     createMortgage: (garageId, purchasePrice, selectedTerm) => [String, Number, Number],
     getMortgage: garageId => String,

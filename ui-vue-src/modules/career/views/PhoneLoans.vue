@@ -12,7 +12,7 @@
 
                 <!-- Single loan: show directly -->
                 <div v-if="allLoans.length === 1" class="section-card">
-                    <button class="loan-card" :class="{ 'mortgage-loan': allLoans[0].isMortgage }" @click="!allLoans[0].isMortgage && openLoan(allLoans[0].id)">
+                    <button class="loan-card" :class="{ 'mortgage-loan': allLoans[0].isMortgage }" @click="handleLoanClick(allLoans[0])">
                         <div class="header">
                             <div class="name">{{ allLoans[0].orgName || allLoans[0].orgId }}</div>
                             <div class="rate">{{ fmtRate(allLoans[0]) }}</div>
@@ -49,7 +49,7 @@
                     </button>
                     <transition name="expand">
                         <div v-if="loansExpanded" class="loan-cards">
-                            <button class="loan-card" :class="{ 'mortgage-loan': l.isMortgage }" v-for="l in allLoans" :key="l.id" @click="!l.isMortgage && openLoan(l.id)">
+                            <button class="loan-card" :class="{ 'mortgage-loan': l.isMortgage }" v-for="l in allLoans" :key="l.id" @click="handleLoanClick(l)">
                                 <div class="header">
                                     <div class="name">{{ l.orgName || l.orgId }}</div>
                                     <div class="rate">{{ fmtRate(l) }}</div>
@@ -115,6 +115,7 @@
                 </div>
             </div>
         </div>
+
     </PhoneWrapper>
 </template>
 
@@ -259,6 +260,10 @@ onBeforeUnmount(() => {
     if (loansCompletedHandler) events.off('loans:completed', loansCompletedHandler)
     if (creditUpdatedHandler) events.off('credit:updated', creditUpdatedHandler)
 })
+
+const handleLoanClick = (loan) => {
+    openLoan(loan.id)
+}
 
 const openLoan = (id) => { router.push({ name: 'phone-loan-details', params: { loanId: String(id) } }) }
 const openOffer = (id) => { router.push({ name: 'phone-offer-details', params: { orgId: String(id) } }) }
@@ -587,6 +592,6 @@ const getColorForOrg = (id) => orgColors[Math.abs(String(id).split('').reduce((a
 
 .mortgage-loan {
     border-color: rgba(249, 115, 22, 0.35);
-    cursor: default;
 }
+
 </style>

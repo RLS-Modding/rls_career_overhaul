@@ -350,7 +350,8 @@ function M.getMortgagePaymentInfo(garageId)
     remainingBalance = getRemainingBalance(mortgage),
     interestRate = mortgage.interestRate,
     missedPayments = mortgage.missedPayments,
-    garageName = facility and facility.name or ("Garage " .. tostring(garageId))
+    garageName = facility and facility.name or ("Garage " .. tostring(garageId)),
+    secondsUntilNextPayment = math.max(0, SIM_SECONDS_PER_GAME_DAY - accumulatedSimTime)
   }
 end
 
@@ -409,6 +410,46 @@ function M.payoffMortgage(garageId)
   saveMortgages()
   notify("success", "Mortgage Paid Off", "You paid off the remaining mortgage balance.")
   return true
+end
+
+function M.prepayMortgage(garageId, amount)
+  garageId = tostring(garageId or "")
+  local mortgage = M.getMortgage(garageId)
+  if not mortgage then return { error = "loan_not_found" } end
+
+  amount = tonumber(amount) or 0
+  if amount <= 0 then return { error = "invalid_amount" } end
+
+  local remaining = getRemainingBalance(mortgage)
+  if remaining <= 0 then
+    clearMortgage(garageId)
+    saveMortgages()
+    return { id = garageId, status = "paid_off" }
+  end
+
+  amount = math.min(amount, remaining)
+  if not canAfford(amount) then return { error = "insufficient_funds" } end
+
+  applyMoneyDelta(-amount)
+  mortgage.remainingBalance = math.max(0, remaining - amount)
+
+  if mortgage.remainingBalance <= 0 then
+    clearMortgage(garageId)
+    if career_modules_credit and career_modules_credit.recordLoanCompleted then
+      career_modules_credit.recordLoanCompleted()
+    end
+    saveMortgages()
+    notify("success", "Mortgage Paid Off", "You paid off the remaining mortgage balance.")
+    return { id = garageId, status = "paid_off" }
+  end
+
+  mortgage.remainingPayments = math.ceil(mortgage.remainingBalance / mortgage.monthlyPayment)
+  if career_modules_credit and career_modules_credit.recordOnTimePayment then
+    career_modules_credit.recordOnTimePayment()
+  end
+  saveMortgages()
+  notify("success", "Mortgage Prepayment", "Applied $" .. tostring(amount) .. " to your mortgage.")
+  return { id = garageId, status = "prepaid" }
 end
 
 local function onSaveCurrentSaveSlot(currentSavePath)
