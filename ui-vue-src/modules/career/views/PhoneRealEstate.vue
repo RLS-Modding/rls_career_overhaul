@@ -29,6 +29,9 @@
           <button :class="{ active: viewMode === 'mortgages' }" @click="viewMode = 'mortgages'">
             Mortgages
           </button>
+          <button :class="{ active: viewMode === 'rentals' }" @click="viewMode = 'rentals'">
+            Rentals
+          </button>
           </div>
           <div v-if="viewMode === 'list'" class="toolbar-row-2">
             <div class="dropdown-wrap">
@@ -115,9 +118,10 @@
               <div class="card-img-fade"></div>
               <div class="card-badges">
                 <span v-if="garage.owned" class="badge owned">OWNED</span>
+                <span v-else-if="garage.rented" class="badge rented">RENTED</span>
                 <span v-else-if="garage.starterGarage" class="badge free">FREE</span>
               </div>
-              <div class="card-price" v-if="!garage.owned">{{ garage.starterGarage ? 'FREE' : '$' + formatPrice(garage.price) }}</div>
+              <div class="card-price" v-if="!garage.owned && !garage.rented">{{ garage.starterGarage ? 'FREE' : '$' + formatPrice(garage.price) }}</div>
             </div>
             <div class="card-body">
               <div class="card-info">
@@ -143,6 +147,141 @@
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
                   Set Route
                 </button>
+                <template v-if="!garage.owned && !garage.starterGarage && !garage.rented">
+                  <button class="act-btn negotiate" @click.stop="showMortgageInfo(garage)">
+                    Mortgage Info
+                  </button>
+                  <button class="act-btn rental" @click.stop="showRentalInfo(garage)">
+                    Rental Info
+                  </button>
+                </template>
+                <template v-if="garage.rented">
+                  <button class="act-btn danger" @click.stop="endLease(garage)">
+                    End Lease Early
+                  </button>
+                </template>
+              </div>
+
+              <!-- Mortgage Info Overlay -->
+              <div v-if="mortgageInfoPanel === garage.id && mortgageInfoData" class="info-panel">
+                <div class="info-panel-header">
+                  <span class="info-panel-title">Mortgage Breakdown</span>
+                  <button class="info-panel-close" @click.stop="mortgageInfoPanel = null">&times;</button>
+                </div>
+                <div v-if="!mortgageInfoData.available" class="info-panel-body">
+                  <p class="info-empty">Mortgage not available. Build your credit score to unlock financing.</p>
+                </div>
+                <div v-else class="info-panel-body">
+                  <div class="info-row">
+                    <span class="info-label">Credit Tier</span>
+                    <span class="info-value">{{ mortgageInfoData.tier }}</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="info-label">Property Price</span>
+                    <span class="info-value money">${{ formatPrice(mortgageInfoData.propertyPrice) }}</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="info-label">Down Payment ({{ Math.round(mortgageInfoData.downPaymentPercent * 100) }}%)</span>
+                    <span class="info-value money">${{ formatPrice(mortgageInfoData.downPayment) }}</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="info-label">Interest Rate</span>
+                    <span class="info-value">{{ (mortgageInfoData.interestRate * 100).toFixed(1) }}%</span>
+                  </div>
+                  <div class="info-divider"></div>
+                  <div class="info-subtitle">Payment Terms</div>
+                  <div v-for="term in mortgageInfoData.terms" :key="term.termLength" class="term-option">
+                    <div class="term-header">
+                      <span class="term-length">{{ term.termLength }} payments</span>
+                      <span class="term-total">${{ formatPrice(term.totalCost) }} total</span>
+                    </div>
+                    <div class="term-detail">${{ formatPrice(term.monthlyPayment) }}/payment</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Rental Info Overlay -->
+              <div v-if="rentalInfoPanel === garage.id && rentalInfoData" class="info-panel">
+                <div class="info-panel-header">
+                  <span class="info-panel-title">Rental Breakdown</span>
+                  <button class="info-panel-close" @click.stop="rentalInfoPanel = null">&times;</button>
+                </div>
+                <div class="info-panel-body">
+                  <div class="info-row">
+                    <span class="info-label">Rental Tier</span>
+                    <span class="info-value" :class="'tier-' + rentalInfoData.tierId">{{ rentalInfoData.tier }}</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="info-label">Security Deposit</span>
+                    <span class="info-value money">${{ formatPrice(rentalInfoData.deposit) }}</span>
+                  </div>
+                  <div class="info-row" v-if="rentalInfoData.creditEnhanced">
+                    <span class="info-label">Credit Discount</span>
+                    <span class="info-value">Applied</span>
+                  </div>
+                  <div v-if="!rentalInfoData.canRent" class="info-warning">
+                    Maximum rental properties reached.
+                  </div>
+                  <div v-if="rentalInfoData.cooldownActive" class="info-warning">
+                    Eviction cooldown active for this property.
+                  </div>
+                  <div class="info-divider"></div>
+                  <div class="info-subtitle">Lease Options</div>
+
+                  <!-- Fixed Rent -->
+                  <div v-if="rentalInfoData.availableTypes.includes('fixed')" class="lease-option">
+                    <div class="lease-header">
+                      <span class="lease-type">Fixed Rent</span>
+                      <span class="lease-price">${{ formatPrice(rentalInfoData.fixedRent) }}/period</span>
+                    </div>
+                    <p class="lease-desc">Stable payments regardless of market changes.</p>
+                    <div class="lease-actions">
+                      <select v-model="selectedLeaseTerm" class="lease-term-select">
+                        <option :value="6">6 payments</option>
+                        <option :value="12">12 payments</option>
+                      </select>
+                      <button class="act-btn route" :disabled="!rentalInfoData.canRent || rentalInfoData.cooldownActive" @click.stop="doSignLease(garage, 'fixed')">
+                        Sign Lease
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Dynamic Rent -->
+                  <div v-if="rentalInfoData.availableTypes.includes('dynamic')" class="lease-option">
+                    <div class="lease-header">
+                      <span class="lease-type">Dynamic Rent</span>
+                      <span class="lease-price">${{ formatPrice(rentalInfoData.dynamicRent) }}/period</span>
+                    </div>
+                    <p class="lease-desc">Tracks market value — cheaper during downturns, pricier during booms.</p>
+                    <div class="lease-actions">
+                      <select v-model="selectedLeaseTerm" class="lease-term-select">
+                        <option :value="6">6 payments</option>
+                        <option :value="12">12 payments</option>
+                      </select>
+                      <button class="act-btn route" :disabled="!rentalInfoData.canRent || rentalInfoData.cooldownActive" @click.stop="doSignLease(garage, 'dynamic')">
+                        Sign Lease
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Upfront Lease -->
+                  <div v-if="rentalInfoData.availableTypes.includes('upfront')" class="lease-option">
+                    <div class="lease-header">
+                      <span class="lease-type">Upfront Lease</span>
+                      <span class="lease-price">${{ formatPrice(rentalInfoData.upfrontTotal12) }} (12 periods)</span>
+                    </div>
+                    <p class="lease-desc">Pay everything up front for a 13% discount. No monthly payments.</p>
+                    <div class="lease-actions">
+                      <select v-model="selectedLeaseTerm" class="lease-term-select">
+                        <option :value="6">6 payments (${{ formatPrice(rentalInfoData.upfrontTotal6) }})</option>
+                        <option :value="12">12 payments (${{ formatPrice(rentalInfoData.upfrontTotal12) }})</option>
+                      </select>
+                      <button class="act-btn route" :disabled="!rentalInfoData.canRent || rentalInfoData.cooldownActive" @click.stop="doSignLease(garage, 'upfront')">
+                        Sign Lease
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -209,9 +348,10 @@
                   <div class="map-slide-img-fade"></div>
                   <div class="map-slide-badges">
                     <span v-if="garage.owned" class="badge owned">OWNED</span>
+                    <span v-else-if="garage.rented" class="badge rented">RENTED</span>
                     <span v-else-if="garage.starterGarage" class="badge free">FREE</span>
                   </div>
-                  <div class="map-slide-price-overlay" v-if="!garage.owned">{{ garage.starterGarage ? 'FREE' : '$' + formatPrice(garage.price) }}</div>
+                  <div class="map-slide-price-overlay" v-if="!garage.owned && !garage.rented">{{ garage.starterGarage ? 'FREE' : '$' + formatPrice(garage.price) }}</div>
                 </div>
                 <div class="map-slide-body">
                   <div class="map-slide-top">
@@ -283,6 +423,56 @@
             <div class="mortgage-card-actions">
               <button class="act-btn route" @click="payoffMortgage(mortgage.garageId)">
                 Early Payoff (${{ formatPrice(mortgage.remainingBalance) }})
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- RENTALS VIEW -->
+        <div class="listings-view" v-if="viewMode === 'rentals'">
+          <div v-if="rentalsLoading" class="empty-state small">Loading rentals...</div>
+          <div v-else-if="rentals.length === 0" class="empty-state small">No active rentals.</div>
+          <div
+            v-for="rental in rentals"
+            :key="rental.garageId"
+            class="mortgage-card"
+            :class="rentalStatusClass(rental)"
+          >
+            <div class="mortgage-card-header">
+              <div class="mortgage-card-info">
+                <span class="mortgage-prop-name">{{ rental.garageName }}</span>
+                <span class="mortgage-card-meta">
+                  {{ rental.type === 'upfront' ? 'Upfront lease' : rental.paymentsRemaining + ' payments left' }}
+                  · {{ rental.type.charAt(0).toUpperCase() + rental.type.slice(1) }}
+                </span>
+              </div>
+              <div class="mortgage-strike-dots" v-if="rental.warningLevel > 0">
+                <span class="strike-dot" v-for="s in rental.warningLevel" :key="s"></span>
+              </div>
+            </div>
+            <div class="mortgage-card-body">
+              <div class="mortgage-stat">
+                <span class="mortgage-stat-label">Rent</span>
+                <span class="mortgage-stat-val">${{ formatPrice(rental.monthlyRent) }}</span>
+              </div>
+              <div class="mortgage-stat">
+                <span class="mortgage-stat-label">Deposit</span>
+                <span class="mortgage-stat-val">${{ formatPrice(rental.securityDeposit) }}</span>
+              </div>
+              <div class="mortgage-stat">
+                <span class="mortgage-stat-label">Paid</span>
+                <span class="mortgage-stat-val">{{ rental.paymentsMade }}/{{ rental.leaseTerm }}</span>
+              </div>
+            </div>
+            <div class="mortgage-card-warning" v-if="rental.warningLevel === 1">
+              ⚠ Late payment warning — pay rent to avoid escalation.
+            </div>
+            <div class="mortgage-card-warning danger" v-if="rental.warningLevel >= 2">
+              ⛔ Final notice — eviction imminent if rent is not paid!
+            </div>
+            <div class="mortgage-card-actions">
+              <button class="act-btn danger" @click="endLeaseFromView(rental.garageId)">
+                End Lease Early
               </button>
             </div>
           </div>
@@ -469,6 +659,13 @@ const selectedOwnedGarage = ref(null)
 const selectedOwnedOffers = ref([])
 const mortgages = ref([])
 const mortgagesLoading = ref(false)
+const rentals = ref([])
+const rentalsLoading = ref(false)
+const mortgageInfoPanel = ref(null)
+const mortgageInfoData = ref(null)
+const rentalInfoPanel = ref(null)
+const rentalInfoData = ref(null)
+const selectedLeaseTerm = ref(12)
 
 const expandedId = ref(null)
 const selectedGarage = ref(null)
@@ -660,6 +857,92 @@ const mortgageStatusClass = (mortgage) => {
   if (mortgage.strikes >= 2) return 'mortgage-danger'
   if (mortgage.strikes === 1) return 'mortgage-warning'
   return 'mortgage-ok'
+}
+
+const rentalStatusClass = (rental) => {
+  if (rental.warningLevel >= 2) return 'mortgage-danger'
+  if (rental.warningLevel === 1) return 'mortgage-warning'
+  return 'mortgage-ok'
+}
+
+const refreshRentals = async () => {
+  rentalsLoading.value = true
+  try {
+    const data = await lua.career_modules_propertyRentals.getAllRentals()
+    if (data && typeof data === 'object' && !Array.isArray(data)) {
+      rentals.value = Object.entries(data).map(([gId, r]) => ({
+        garageId: gId,
+        garageName: r.garageName || gId,
+        type: r.type || 'fixed',
+        monthlyRent: r.monthlyRent || 0,
+        paymentsRemaining: r.paymentsRemaining || 0,
+        paymentsMade: r.paymentsMade || 0,
+        leaseTerm: r.leaseTerm || 12,
+        securityDeposit: r.securityDeposit || 0,
+        warningLevel: r.warningLevel || 0,
+        missedPayments: r.missedPayments || 0,
+      }))
+    } else {
+      rentals.value = []
+    }
+  } catch (e) {
+    rentals.value = []
+  }
+  rentalsLoading.value = false
+}
+
+const showMortgageInfo = async (garage) => {
+  rentalInfoPanel.value = null
+  mortgageInfoPanel.value = garage.id
+  mortgageInfoData.value = null
+  try {
+    const data = await lua.ui_phone_realEstate.getMortgageInfo(garage.id)
+    mortgageInfoData.value = data
+  } catch (e) {
+    mortgageInfoData.value = { available: false }
+  }
+}
+
+const showRentalInfo = async (garage) => {
+  mortgageInfoPanel.value = null
+  rentalInfoPanel.value = garage.id
+  rentalInfoData.value = null
+  try {
+    const data = await lua.ui_phone_realEstate.getRentalInfo(garage.id)
+    rentalInfoData.value = data
+  } catch (e) {
+    rentalInfoData.value = null
+  }
+}
+
+const doSignLease = async (garage, rentalType) => {
+  try {
+    const result = await lua.ui_phone_realEstate.signLease(garage.id, rentalType, selectedLeaseTerm.value)
+    if (result && result.success) {
+      rentalInfoPanel.value = null
+      rentalInfoData.value = null
+      lua.ui_phone_realEstate.requestGarageListings()
+      refreshRentals()
+    }
+  } catch (e) {
+    // error handled by Lua toastr
+  }
+}
+
+const endLease = async (garage) => {
+  try {
+    await lua.ui_phone_realEstate.endLeaseEarly(garage.id)
+    lua.ui_phone_realEstate.requestGarageListings()
+    refreshRentals()
+  } catch (e) {}
+}
+
+const endLeaseFromView = async (garageId) => {
+  try {
+    await lua.ui_phone_realEstate.endLeaseEarly(garageId)
+    lua.ui_phone_realEstate.requestGarageListings()
+    refreshRentals()
+  } catch (e) {}
 }
 
 function formatPrice(price) {
@@ -1171,6 +1454,10 @@ watch(viewMode, (mode) => {
     refreshMortgages()
     return
   }
+  if (mode === 'rentals') {
+    refreshRentals()
+    return
+  }
   if (mode !== 'listings') return
   refreshOwnedListings()
   if (listingsSubView.value === 'offers' && !selectedOwnedGarage.value) {
@@ -1477,6 +1764,11 @@ onUnmounted(() => {
 
 .badge.listed {
   background: rgba(249, 115, 22, 0.85);
+  color: white;
+}
+
+.badge.rented {
+  background: rgba(59, 130, 246, 0.85);
   color: white;
 }
 
@@ -1997,6 +2289,8 @@ onUnmounted(() => {
 
   &.route { background: rgba(249,115,22,0.15); color: #f97316; }
   &.negotiate { background: #f97316; color: white; }
+  &.rental { background: #3b82f6; color: white; }
+  &.danger { background: rgba(239,68,68,0.85); color: white; }
   &.decline { background: rgba(239,68,68,0.15); color: #ef4444; }
 
   &:disabled {
@@ -2332,4 +2626,176 @@ onUnmounted(() => {
   from { opacity: 0; transform: translateY(-6px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* ── INFO PANELS (Mortgage/Rental Breakdown) ── */
+.info-panel {
+  margin-top: 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  overflow: hidden;
+  animation: slideDown 0.2s ease;
+}
+
+.info-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.03);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.info-panel-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.9);
+}
+
+.info-panel-close {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.4);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0 4px;
+  &:hover { color: rgba(255,255,255,0.7); }
+}
+
+.info-panel-body {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.info-label {
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+}
+
+.info-value {
+  font-size: 12px;
+  color: rgba(255,255,255,0.85);
+  font-weight: 500;
+  &.money { color: #4ade80; }
+}
+
+.info-empty {
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+  text-align: center;
+  padding: 12px 0;
+}
+
+.info-warning {
+  font-size: 11px;
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.1);
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+
+.info-divider {
+  height: 1px;
+  background: rgba(255,255,255,0.06);
+  margin: 4px 0;
+}
+
+.info-subtitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.7);
+  margin-bottom: 2px;
+}
+
+.term-option {
+  background: rgba(255,255,255,0.03);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.term-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.term-length {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.8);
+}
+
+.term-total {
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+}
+
+.term-detail {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4ade80;
+  margin-top: 2px;
+}
+
+/* ── LEASE OPTIONS ── */
+.lease-option {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.lease-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.lease-type {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.85);
+}
+
+.lease-price {
+  font-size: 12px;
+  color: #4ade80;
+  font-weight: 500;
+}
+
+.lease-desc {
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  margin: 4px 0 8px;
+}
+
+.lease-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.lease-term-select {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  color: white;
+  font-size: 11px;
+  padding: 4px 8px;
+  flex: 1;
+  option { background: #222; }
+}
+
+.tier-veteran { color: #4ade80; }
+.tier-experienced { color: #60a5fa; }
+.tier-new { color: rgba(255,255,255,0.7); }
+.tier-risky { color: #f87171; }
 </style>

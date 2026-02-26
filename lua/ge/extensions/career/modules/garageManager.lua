@@ -172,6 +172,12 @@ local function isPurchasedGarage(garageId)
   return purchasedGarages[garageId] or false
 end
 
+local function isAccessibleGarage(garageId)
+  if purchasedGarages[garageId] then return true end
+  if career_modules_propertyRentals and career_modules_propertyRentals.isRentedGarage(garageId) then return true end
+  return false
+end
+
 local function isDiscoveredGarage(garageId)
   return discoveredGarages[garageId] or false
 end
@@ -1363,6 +1369,7 @@ M.getFreeSlots = getFreeSlots
 M.onCareerModulesActivated = onCareerModulesActivated
 M.onExtensionLoaded = onExtensionLoaded
 M.isPurchasedGarage = isPurchasedGarage
+M.isAccessibleGarage = isAccessibleGarage
 M.getPurchasedGarages = getPurchasedGarages
 M.addPurchasedGarage = addPurchasedGarage
 M.addDiscoveredGarage = addDiscoveredGarage
