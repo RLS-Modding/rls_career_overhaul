@@ -182,6 +182,12 @@ local function isDiscoveredGarage(garageId)
   return discoveredGarages[garageId] or false
 end
 
+local function isGarageForSale(garageId)
+  if not garageId then return false end
+  if not career_modules_realEstateNegotiation or not career_modules_realEstateNegotiation.getPropertyListing then return false end
+  return career_modules_realEstateNegotiation.getPropertyListing(garageId) ~= nil
+end
+
 local function reloadRecoveryPrompt()
   if core_recoveryPrompt then
     core_recoveryPrompt.addTowingButtons()
@@ -194,10 +200,15 @@ local function buildGarageSizes()
   
   if garages then
     for _, garage in pairs(garages) do
+      if isGarageForSale(garage.id) then
+        garageSize[tostring(garage.id)] = nil
+        goto continue
+      end
       local isRented = career_modules_propertyRentals and career_modules_propertyRentals.isRentedGarage(garage.id)
       if purchasedGarages[garage.id] or isRented then
         garageSize[tostring(garage.id)] = (math.ceil(garage.capacity / (career_modules_hardcore.isHardcoreMode() and 2 or 1)) or 0)
       end
+      ::continue::
     end
   end
 end
@@ -880,7 +891,7 @@ local function getGarageCapacityData()
   local data = {}
 
   for garageId, owned in pairs(purchasedGarages) do
-    if owned then
+    if owned and not isGarageForSale(garageId) then
       local garage = freeroam_facilities.getFacility("garage", garageId)
       local capacity = garageSize[tostring(garageId)]
       if not capacity and garage and garage.capacity then
@@ -910,10 +921,11 @@ local function getPurchasedGarages()
 end
 
 local function isGarageSpace(garage)
+  if isGarageForSale(garage) then return {false, 0} end
   if not garageSize[garage] then
     buildGarageSizes()
     if not garageSize[garage] then return {false, 0} end
-  end -- No size for garage
+  end
   local storedLocation = getStoredLocations()
 
   local carsInGarage
@@ -929,6 +941,7 @@ local function getFreeSlots()
   local totalCapacity = 0
   for garage, owned in pairs(purchasedGarages) do
     if not owned then goto continue end
+    if isGarageForSale(garage) then goto continue end
     local space = isGarageSpace(garage)
     if space[1] then 
       totalCapacity = totalCapacity + space[2]
@@ -1204,6 +1217,7 @@ end
 local function getNextAvailableSpace()
   for garage, owned in pairs(purchasedGarages) do
     if not owned then goto continue end
+    if isGarageForSale(garage) then goto continue end
     if isGarageSpace(garage)[1] then 
       return garage
     end
@@ -1453,5 +1467,6 @@ M.getStoredLocations = getStoredLocations
 M.getGarageCapacityData = getGarageCapacityData
 M.getVehiclesInGarage = getVehiclesInGarage
 M.removePurchasedGarage = removePurchasedGarage
+M.isGarageForSale = isGarageForSale
 
 return M
