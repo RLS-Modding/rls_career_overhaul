@@ -284,7 +284,10 @@ const negotiationChat = ref(null)
 
 const refresh = async () => {
   const s = await lua.career_modules_realEstateNegotiation.getNegotiationState()
-  if (!s) return
+  if (!s) {
+    router.replace({ name: 'phone-main' })
+    return
+  }
   state.value = { ...state.value, ...s }
 
   const base = state.value.myOffer != null ? state.value.myOffer : state.value.startingPrice
@@ -323,9 +326,9 @@ const goBack = async (event) => {
 
   if (state.value.amISelling && state.value.propertyId) {
     if (state.value.origin === 'phone') {
-      router.push({ name: 'phone-real-estate', query: { tab: 'listings' } })
+      router.replace({ name: 'phone-real-estate', query: { tab: 'listings' } })
     } else {
-      router.push({ name: 'garage-offers', params: { garageId: state.value.propertyId } })
+      router.replace({ name: 'garage-offers', params: { garageId: state.value.propertyId } })
     }
     if (event && event.stopPropagation) event.stopPropagation()
     return
