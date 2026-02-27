@@ -103,6 +103,7 @@ local function requestGarageListings()
     end
 
     local canNegotiate = not garage.starterGarage and price > 0 and not owned
+    local rented = career_modules_propertyRentals and career_modules_propertyRentals.isRentedGarage(garage.id) or false
     
     table.insert(result, {
       id = garage.id,
@@ -112,6 +113,7 @@ local function requestGarageListings()
       capacity = capacity,
       vehicleCount = vehicleCount,
       owned = owned or false,
+      rented = rented,
       discovered = discovered or false,
       starterGarage = garage.starterGarage or false,
       preview = preview,
@@ -146,7 +148,7 @@ local function setRouteToGarage(garageId)
 end
 
 local function towToGarage(garageId)
-  if not career_modules_garageManager.isPurchasedGarage(garageId) and
+  if not career_modules_garageManager.isAccessibleGarage(garageId) and
      not career_modules_garageManager.isDiscoveredGarage(garageId) then
     return
   end
@@ -155,8 +157,77 @@ local function towToGarage(garageId)
   career_modules_quickTravel.quickTravelToGarage({ id = garageId })
 end
 
+-- ── Mortgage Info API ──
+
+local function getMortgageInfo(garageId)
+  if not career_modules_propertyMortgage then return nil end
+  local offer = career_modules_propertyMortgage.getMortgageOfferDetails()
+  if not offer then return { available = false } end
+
+  local price = career_modules_garageManager.getGaragePurchasePrice(garageId) or 0
+  local result = {
+    available = offer.available or false,
+    tier = offer.tier or "Unknown",
+    downPaymentPercent = offer.downPaymentPercent or 0,
+    downPayment = math.floor(price * (offer.downPaymentPercent or 0) + 0.5),
+    interestRate = offer.rate or 0,
+    propertyPrice = price,
+    terms = {},
+  }
+
+  -- Calculate payment for each available term
+  local termsAvailable = offer.termsAvailable or {12}
+  for _, term in ipairs(termsAvailable) do
+    local principal = price - result.downPayment
+    local periodRate = result.interestRate / term
+    local monthlyPayment
+    if term <= 0 then
+      monthlyPayment = principal
+    elseif result.interestRate <= 0 then
+      monthlyPayment = math.floor(principal / term + 0.5)
+    else
+      local powVal = math.pow(1 + periodRate, term)
+      monthlyPayment = math.floor(principal * ((periodRate * powVal) / (powVal - 1)) + 0.5)
+    end
+    table.insert(result.terms, {
+      termLength = term,
+      monthlyPayment = monthlyPayment,
+      totalCost = monthlyPayment * term + result.downPayment,
+    })
+  end
+
+  return result
+end
+
+-- ── Rental Info API ──
+
+local function getRentalInfo(garageId)
+  if not career_modules_propertyRentals then return nil end
+  return career_modules_propertyRentals.getRentalBreakdown(garageId)
+end
+
+local function signLease(garageId, rentalType, leaseTerm)
+  if not career_modules_propertyRentals then return { error = "rental_system_unavailable" } end
+  return career_modules_propertyRentals.signLease(garageId, rentalType, leaseTerm)
+end
+
+local function getRentalStatus(garageId)
+  if not career_modules_propertyRentals then return nil end
+  return career_modules_propertyRentals.getRentalInfo(garageId)
+end
+
+local function endLeaseEarly(garageId)
+  if not career_modules_propertyRentals then return { error = "rental_system_unavailable" } end
+  return career_modules_propertyRentals.endLeaseEarly(garageId)
+end
+
 M.requestGarageListings = requestGarageListings
 M.setRouteToGarage = setRouteToGarage
 M.towToGarage = towToGarage
+M.getMortgageInfo = getMortgageInfo
+M.getRentalInfo = getRentalInfo
+M.signLease = signLease
+M.getRentalStatus = getRentalStatus
+M.endLeaseEarly = endLeaseEarly
 
 return M

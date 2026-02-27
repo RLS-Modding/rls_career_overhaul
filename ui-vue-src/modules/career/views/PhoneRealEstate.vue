@@ -112,9 +112,10 @@
               <div class="card-img-fade"></div>
               <div class="card-badges">
                 <span v-if="garage.owned" class="badge owned">OWNED</span>
+                <span v-else-if="garage.rented" class="badge rented">RENTED</span>
                 <span v-else-if="garage.starterGarage" class="badge free">FREE</span>
               </div>
-              <div class="card-price" v-if="!garage.owned">{{ garage.starterGarage ? 'FREE' : '$' + formatPrice(garage.price) }}</div>
+              <div class="card-price" v-if="!garage.owned && !garage.rented">{{ garage.starterGarage ? 'FREE' : '$' + formatPrice(garage.price) }}</div>
             </div>
             <div class="card-body">
               <div class="card-info">
@@ -140,7 +141,13 @@
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
                   Set Route
                 </button>
+                <template v-if="garage.rented">
+                  <button class="act-btn danger" @click.stop="endLease(garage)">
+                    End Lease Early
+                  </button>
+                </template>
               </div>
+
             </div>
           </div>
         </div>
@@ -206,9 +213,10 @@
                   <div class="map-slide-img-fade"></div>
                   <div class="map-slide-badges">
                     <span v-if="garage.owned" class="badge owned">OWNED</span>
+                    <span v-else-if="garage.rented" class="badge rented">RENTED</span>
                     <span v-else-if="garage.starterGarage" class="badge free">FREE</span>
                   </div>
-                  <div class="map-slide-price-overlay" v-if="!garage.owned">{{ garage.starterGarage ? 'FREE' : '$' + formatPrice(garage.price) }}</div>
+                  <div class="map-slide-price-overlay" v-if="!garage.owned && !garage.rented">{{ garage.starterGarage ? 'FREE' : '$' + formatPrice(garage.price) }}</div>
                 </div>
                 <div class="map-slide-body">
                   <div class="map-slide-top">
@@ -365,6 +373,35 @@
           </template>
         </div>
       </template>
+
+      <Transition name="modal-fade">
+        <div v-if="showEndLeaseConfirm && endLeaseTarget" class="end-lease-overlay" @click.self="showEndLeaseConfirm = false">
+          <div class="end-lease-modal">
+            <p class="end-lease-title">End Lease Early?</p>
+            <p class="end-lease-property">{{ endLeaseTarget.name }}</p>
+            <div class="end-lease-fees">
+              <div class="fee-row">
+                <span>Deposit forfeited</span>
+                <span class="fee-val">${{ formatPrice(endLeaseTarget.securityDeposit) }}</span>
+              </div>
+              <div class="fee-row">
+                <span>Termination fee</span>
+                <span class="fee-val">${{ formatPrice(endLeaseTarget.monthlyRent) }}</span>
+              </div>
+              <div class="fee-divider"></div>
+              <div class="fee-row total">
+                <span>Total cost</span>
+                <span class="fee-val">${{ formatPrice(endLeaseTarget.securityDeposit + endLeaseTarget.monthlyRent) }}</span>
+              </div>
+            </div>
+            <p class="end-lease-note">Vehicles in this garage will be relocated.</p>
+            <div class="end-lease-actions">
+              <button class="modal-btn cancel-btn" @click="showEndLeaseConfirm = false">Cancel</button>
+              <button class="modal-btn confirm-btn" @click="confirmEndLease">End Lease</button>
+            </div>
+          </div>
+        </div>
+      </Transition>
     </div>
   </PhoneWrapper>
 </template>
@@ -419,6 +456,8 @@ const selectedOwnedGarage = ref(null)
 const selectedOwnedOffers = ref([])
 const expandedId = ref(null)
 const selectedGarage = ref(null)
+const showEndLeaseConfirm = ref(false)
+const endLeaseTarget = ref(null)
 const mapContainer = ref(null)
 const markerViewBox = ref('0 0 1000 1000')
 const realEstateBaseViewBox = ref('0 0 1000 1000')
@@ -573,6 +612,30 @@ function clusterGarages(garages, viewBoxStr, containerSize) {
 const clusteredMarkers = computed(() =>
   clusterGarages(filteredGarages.value, markerViewBox.value, mapContainerSize.value)
 )
+
+const endLease = async (garage) => {
+  try {
+    const info = await lua.career_modules_propertyRentals.getRentalInfo(garage.id)
+    endLeaseTarget.value = {
+      id: garage.id,
+      name: garage.name,
+      monthlyRent: info?.monthlyRent || 0,
+      securityDeposit: info?.securityDeposit || 0,
+    }
+    showEndLeaseConfirm.value = true
+  } catch (e) {}
+}
+
+const confirmEndLease = async () => {
+  if (!endLeaseTarget.value) return
+  const garageId = endLeaseTarget.value.id
+  showEndLeaseConfirm.value = false
+  endLeaseTarget.value = null
+  try {
+    await lua.ui_phone_realEstate.endLeaseEarly(garageId)
+    lua.ui_phone_realEstate.requestGarageListings()
+  } catch (e) {}
+}
 
 function formatPrice(price) {
   if (price >= 1000000) return (price / 1000000).toFixed(1) + 'M'
@@ -1388,6 +1451,11 @@ onUnmounted(() => {
   color: white;
 }
 
+.badge.rented {
+  background: rgba(59, 130, 246, 0.85);
+  color: white;
+}
+
 .badge.starter {
   background: rgba(255,255,255,0.15);
   color: rgba(255,255,255,0.7);
@@ -1905,6 +1973,8 @@ onUnmounted(() => {
 
   &.route { background: rgba(249,115,22,0.15); color: #f97316; }
   &.negotiate { background: #f97316; color: white; }
+  &.rental { background: #3b82f6; color: white; }
+  &.danger { background: rgba(239,68,68,0.85); color: white; }
   &.decline { background: rgba(239,68,68,0.15); color: #ef4444; }
 
   &:disabled {
@@ -2141,4 +2211,126 @@ onUnmounted(() => {
   from { opacity: 0; transform: translateY(-6px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* ── END LEASE MODAL ── */
+.end-lease-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.end-lease-modal {
+  background: linear-gradient(180deg, rgba(26, 26, 26, 0.97) 0%, rgba(13, 13, 13, 0.97) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 20px;
+  width: 100%;
+  max-width: 320px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+}
+
+.end-lease-title {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+}
+
+.end-lease-property {
+  margin: 0 0 14px;
+  font-size: 13px;
+  color: #f97316;
+  font-weight: 600;
+}
+
+.end-lease-fees {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+}
+
+.fee-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.fee-row .fee-val {
+  font-weight: 700;
+  color: #fca5a5;
+  font-variant-numeric: tabular-nums;
+}
+
+.fee-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.fee-row.total {
+  font-weight: 700;
+  color: white;
+}
+
+.fee-row.total .fee-val {
+  color: #ef4444;
+  font-size: 13px;
+}
+
+.end-lease-note {
+  margin: 0 0 16px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.35);
+  line-height: 1.4;
+}
+
+.end-lease-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.modal-btn {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: none;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.15s ease;
+  &:hover { opacity: 0.85; }
+}
+
+.cancel-btn {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.confirm-btn {
+  background: rgba(239, 68, 68, 0.85);
+  color: #fff;
+}
+
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+
 </style>

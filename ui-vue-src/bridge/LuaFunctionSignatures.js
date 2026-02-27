@@ -1283,6 +1283,32 @@ export default {
     updateAttendance: attendanceLevel => {}
   },
 
+  career_modules_propertyMortgage: {
+    getAllMortgages: () => {},
+    getMortgagePaymentInfo: garageId => String,
+    payoffMortgage: garageId => String,
+    prepayMortgage: (garageId, amount) => [String, Number],
+    isMortgageAvailable: () => {},
+    createMortgage: (garageId, purchasePrice, selectedTerm) => [String, Number, Number],
+    getMortgage: garageId => String,
+    hasMortgage: garageId => String,
+    canSellMortgagedProperty: (garageId, salePrice) => [String, Number],
+    getMortgageOfferDetails: () => {},
+  },
+
+  career_modules_propertyRentals: {
+    signLease: (garageId, rentalType, leaseTerm) => [String, String, Number],
+    endLeaseEarly: garageId => String,
+    isRentedGarage: garageId => String,
+    getActiveRentals: () => {},
+    getRentalInfo: garageId => String,
+    getRentalEligibility: garageId => String,
+    getRentalBreakdown: garageId => String,
+    getAllRentals: () => {},
+    calculateRent: (garageId, rentalType) => [String, String],
+    calculateDeposit: (garageId, rentalType) => [String, String],
+  },
+
   career_modules_garageManager: {
     requestGarageData: () => {},
     canPay: estimatedTotal => Number,
@@ -1536,6 +1562,11 @@ export default {
     requestGarageListings: () => {},
     setRouteToGarage: garageId => String,
     towToGarage: garageId => String,
+    getMortgageInfo: garageId => String,
+    getRentalInfo: garageId => String,
+    signLease: (garageId, rentalType, leaseTerm) => [String, String, Number],
+    getRentalStatus: garageId => String,
+    endLeaseEarly: garageId => String,
   },
 
   ui_phone_freeroamEvents: {

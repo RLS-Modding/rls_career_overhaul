@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <PhoneWrapper app-name="Prepay Loan">
     <div class="phone-loan-details">
       <div v-if="!loan" class="none">Loading...</div>
@@ -60,6 +60,8 @@ const route = useRoute()
 const { events } = useBridge()
 
 const loanId = ref(route.params.loanId)
+const isMortgage = String(loanId.value).startsWith('mortgage-')
+const mortgageGarageId = isMortgage ? String(loanId.value).replace('mortgage-', '') : null
 const loan = ref(null)
 const prepay = ref(0)
 const pauseTicks = ref(false)
@@ -78,9 +80,30 @@ const formatDue = (secondsUntilNextPayment) => {
 
 const loadLoan = async () => {
   try {
-    const loans = await lua.career_modules_loans.getActiveLoans()
-    const list = Array.isArray(loans) ? loans : []
-    loan.value = list.find(l => String(l.id) === String(loanId.value)) || null
+    if (isMortgage) {
+      const m = await lua.career_modules_propertyMortgage.getMortgagePaymentInfo(mortgageGarageId)
+      if (m) {
+        loan.value = {
+          id: loanId.value,
+          orgName: m.garageName || 'Property Mortgage',
+          orgId: 'mortgage',
+          principalOutstanding: m.remainingBalance || 0,
+          perPayment: m.monthlyPayment || 0,
+          nextPaymentDue: m.monthlyPayment || 0,
+          paymentsRemaining: m.remainingPayments || 0,
+          secondsUntilNextPayment: m.secondsUntilNextPayment ?? null,
+          currentRate: m.interestRate || 0,
+          isMortgage: true,
+          garageId: mortgageGarageId,
+        }
+      } else {
+        loan.value = null
+      }
+    } else {
+      const loans = await lua.career_modules_loans.getActiveLoans()
+      const list = Array.isArray(loans) ? loans : []
+      loan.value = list.find(l => String(l.id) === String(loanId.value)) || null
+    }
   } catch { }
 }
 
@@ -88,7 +111,7 @@ const onAmountBlur = () => { pauseTicks.value = false }
 
 const maxPrepay = (l) => Math.min(
   availableFunds.value,
-  Math.ceil(((l.principalOutstanding || 0) + Math.max(0, (l.nextPaymentInterest ?? Math.max(0, (l.perPayment - (l.basePayment || 0)))))) + 1e-6)
+  Math.ceil((l.principalOutstanding || 0) + 1e-6)
 )
 
 const setPayMax = (l) => { prepay.value = maxPrepay(l) }
@@ -107,7 +130,12 @@ const prepayLoan = async () => {
   prepayError.value = ''
   prepaying.value = true
   try {
-    const result = await lua.career_modules_loans.prepayLoan(loan.value.id, amt)
+    let result
+    if (isMortgage) {
+      result = await lua.career_modules_propertyMortgage.prepayMortgage(mortgageGarageId, amt)
+    } else {
+      result = await lua.career_modules_loans.prepayLoan(loan.value.id, amt)
+    }
     const isSuccess = result && !result.error && (result.id != null || result.status === 'paid_off')
     if (!isSuccess) {
       prepayError.value = result?.error ? (errorMessages[result.error] || result.error) : 'Payment failed.'
@@ -115,7 +143,9 @@ const prepayLoan = async () => {
     }
     prepay.value = 0
     await loadLoan()
-    router.push({ name: 'phone-loans' })
+    if (result.status === 'paid_off') {
+      router.push({ name: 'phone-loans' })
+    }
   } catch (e) {
     prepayError.value = 'Payment failed.'
   } finally {
@@ -130,14 +160,18 @@ const onFunds = (money) => { if (typeof money === 'number') availableFunds.value
 onMounted(async () => {
   await loadLoan()
   try { availableFunds.value = await lua.career_modules_loans.getAvailableFunds() } catch { }
-  events.on('loans:activeUpdated', loadLoan)
-  events.on('loans:tick', loadLoan)
+  if (!isMortgage) {
+    events.on('loans:activeUpdated', loadLoan)
+    events.on('loans:tick', loadLoan)
+  }
   events.on('loans:funds', onFunds)
 })
 
 onBeforeUnmount(() => {
-  events.off('loans:activeUpdated', loadLoan)
-  events.off('loans:tick', loadLoan)
+  if (!isMortgage) {
+    events.off('loans:activeUpdated', loadLoan)
+    events.off('loans:tick', loadLoan)
+  }
   events.off('loans:funds', onFunds)
 })
 </script>

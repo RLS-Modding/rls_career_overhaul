@@ -73,8 +73,11 @@
               </div>
             </div>
 
+            <div class="offer-underwater" v-if="mortgageBalance > 0 && (offer.negotiatedPrice || offer.value) < mortgageBalance">
+              Cannot sell — offer (${{ formatPrice(offer.negotiatedPrice || offer.value) }}) is less than remaining mortgage balance (${{ formatPrice(mortgageBalance) }}).
+            </div>
             <div class="offer-actions">
-              <button class="btn btn-accept" @click="acceptOffer(offer)">
+              <button class="btn btn-accept" @click="acceptOffer(offer)" :disabled="mortgageBalance > 0 && (offer.negotiatedPrice || offer.value) < mortgageBalance">
                 Accept
               </button>
               <button class="btn btn-negotiate" @click="negotiateOffer(offer)" :disabled="!offer.negotiationPossible">
@@ -104,6 +107,7 @@ const garageId = route.params.garageId
 const property = ref(null)
 const offers = ref([])
 const loading = ref(true)
+const mortgageBalance = ref(0)
 
 const formatPrice = (value) => {
   if (value === null || value === undefined) return '0'
@@ -150,6 +154,15 @@ const loadOffers = async () => {
     // ignore
   }
   loading.value = false
+  // Check for mortgage balance
+  try {
+    const mortgageInfo = await lua.career_modules_propertyMortgage.getMortgagePaymentInfo(garageId)
+    if (mortgageInfo && mortgageInfo.remainingBalance) {
+      mortgageBalance.value = mortgageInfo.remainingBalance
+    }
+  } catch (e) {
+    mortgageBalance.value = 0
+  }
 }
 
 const acceptOffer = async (offer) => {
@@ -411,6 +424,17 @@ onMounted(loadOffers)
 
 .offer-red {
   color: #ef4444;
+}
+
+.offer-underwater {
+  padding: 8px 12px;
+  background: rgba(239, 68, 68, 0.08);
+  border-left: 3px solid rgba(239, 68, 68, 0.5);
+  border-radius: 4px;
+  color: rgba(239, 68, 68, 0.85);
+  font-size: 12px;
+  margin-bottom: 8px;
+  font-variant-numeric: tabular-nums;
 }
 
 .offer-actions {
