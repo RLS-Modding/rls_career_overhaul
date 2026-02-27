@@ -52,6 +52,35 @@
                 </div>
             </div>
         </div>
+
+        <Transition name="modal-fade">
+            <div v-if="showEndLeaseConfirm && endLeaseTarget" class="end-lease-overlay" @click.self="showEndLeaseConfirm = false">
+                <div class="end-lease-modal">
+                    <p class="end-lease-title">End Lease Early?</p>
+                    <p class="end-lease-property">{{ endLeaseTarget.garageName }}</p>
+                    <div class="end-lease-fees">
+                        <div class="fee-row">
+                            <span>Deposit forfeited</span>
+                            <span class="fee-val">${{ fmtPrice(endLeaseTarget.securityDeposit) }}</span>
+                        </div>
+                        <div class="fee-row">
+                            <span>Termination fee</span>
+                            <span class="fee-val">${{ fmtPrice(endLeaseTarget.monthlyRent) }}</span>
+                        </div>
+                        <div class="fee-divider"></div>
+                        <div class="fee-row total">
+                            <span>Total cost</span>
+                            <span class="fee-val">${{ fmtPrice(endLeaseTarget.securityDeposit + endLeaseTarget.monthlyRent) }}</span>
+                        </div>
+                    </div>
+                    <p class="end-lease-note">Vehicles in this garage will be relocated.</p>
+                    <div class="end-lease-actions">
+                        <button class="modal-btn cancel-btn" @click="showEndLeaseConfirm = false">Cancel</button>
+                        <button class="modal-btn confirm-btn" @click="confirmEndLease">End Lease</button>
+                    </div>
+                </div>
+            </div>
+        </Transition>
     </PhoneWrapper>
 </template>
 
@@ -63,6 +92,8 @@ import { lua, useBridge } from '@/bridge'
 const { events } = useBridge()
 const loading = ref(true)
 const rentals = ref([])
+const showEndLeaseConfirm = ref(false)
+const endLeaseTarget = ref(null)
 
 const fmtPrice = (price) => {
     if (price >= 1000000) return (price / 1000000).toFixed(1) + 'M'
@@ -119,7 +150,18 @@ const setRoute = async (garageId) => {
     lua.ui_phone_realEstate.setRouteToGarage(garageId)
 }
 
-const endLease = async (garageId) => {
+const endLease = (garageId) => {
+    const rental = rentals.value.find(r => r.garageId === garageId)
+    if (!rental) return
+    endLeaseTarget.value = rental
+    showEndLeaseConfirm.value = true
+}
+
+const confirmEndLease = async () => {
+    if (!endLeaseTarget.value) return
+    const garageId = endLeaseTarget.value.garageId
+    showEndLeaseConfirm.value = false
+    endLeaseTarget.value = null
     await lua.career_modules_propertyRentals.endLeaseEarly(garageId)
     await refreshRentals()
 }
@@ -313,5 +355,125 @@ onBeforeUnmount(() => {
     background: rgba(239, 68, 68, 0.15);
     color: #fca5a5;
     border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.end-lease-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.end-lease-modal {
+    background: linear-gradient(180deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%);
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    border-radius: 16px;
+    padding: 20px;
+    width: 100%;
+    max-width: 320px;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+}
+
+.end-lease-title {
+    margin: 0 0 4px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #f8fafc;
+}
+
+.end-lease-property {
+    margin: 0 0 14px;
+    font-size: 13px;
+    color: #93c5fd;
+    font-weight: 600;
+}
+
+.end-lease-fees {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+}
+
+.fee-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: rgba(148, 163, 184, 0.85);
+}
+
+.fee-row .fee-val {
+    font-weight: 700;
+    color: #fca5a5;
+    font-variant-numeric: tabular-nums;
+}
+
+.fee-divider {
+    height: 1px;
+    background: rgba(148, 163, 184, 0.15);
+}
+
+.fee-row.total {
+    font-weight: 700;
+    color: #f8fafc;
+}
+
+.fee-row.total .fee-val {
+    color: #ef4444;
+    font-size: 13px;
+}
+
+.end-lease-note {
+    margin: 0 0 16px;
+    font-size: 11px;
+    color: rgba(148, 163, 184, 0.6);
+    line-height: 1.4;
+}
+
+.end-lease-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.modal-btn {
+    flex: 1;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: none;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: opacity 0.15s ease;
+    &:hover { opacity: 0.85; }
+}
+
+.cancel-btn {
+    background: rgba(148, 163, 184, 0.12);
+    color: #cbd5e1;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.confirm-btn {
+    background: rgba(239, 68, 68, 0.85);
+    color: #fff;
+}
+
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+    transition: opacity 0.2s ease;
+}
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+    opacity: 0;
 }
 </style>
