@@ -731,12 +731,12 @@ end
 -- ────────────────────────────────────────────────────────────────────────────
 
 local function getMarketValue(garageId)
-  if career_modules_garageManager and career_modules_garageManager.getGaragePurchasePrice then
-    local v = career_modules_garageManager.getGaragePurchasePrice(garageId)
-    if v and v > 0 then return v end
-  end
   local garage = freeroam_facilities.getFacility("garage", garageId)
-  return garage and garage.defaultPrice or 0
+  local base = garage and garage.defaultPrice or 0
+  if base > 0 and career_modules_globalEconomy and career_modules_globalEconomy.getHousingMarketIndex then
+    return math.floor(base * career_modules_globalEconomy.getHousingMarketIndex() + 0.5)
+  end
+  return base
 end
 
 local function getHousingMarketHealth()
@@ -843,12 +843,14 @@ local function listPropertyForSale(garageId, askingPrice)
   }
 
   scheduleNextPropertyOffer(listedProperties[garageId], now)
+  guihooks.trigger('garageListingsUpdated')
   return true
 end
 
 local function removePropertyListing(garageId)
   if not garageId then return false end
   listedProperties[garageId] = nil
+  guihooks.trigger('garageListingsUpdated')
   return true
 end
 
@@ -905,6 +907,7 @@ local function generateNewPropertyOffers()
       local offer = generateBuyerOffer(garageId)
       if offer then
         guihooks.trigger("toastrMsg", { type = "info", title = "New property offer", msg = (listing.garageName or "Property") .. ": $" .. tostring(offer.value) })
+        guihooks.trigger('garageListingsUpdated')
       end
     end
 
