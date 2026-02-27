@@ -330,6 +330,7 @@ function M.getAllMortgages()
     local entry = deepcopy(mortgage)
     local facility = freeroam_facilities.getFacility("garage", garageId)
     entry.garageName = facility and facility.name or ("Garage " .. tostring(garageId))
+    entry.secondsUntilNextPayment = math.max(0, SIM_SECONDS_PER_GAME_DAY - accumulatedSimTime)
     result[garageId] = entry
   end
   return result
