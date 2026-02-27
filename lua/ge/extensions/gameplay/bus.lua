@@ -11,7 +11,6 @@ local config = {
     stopSettleDelay = 2.5,
     accelThreshold = 3.5,
     routeCooldown = 10,
-    maxPayout = 100000,
     reputationDivisor = 500,
     bonusMultiplierBase = 1,
     bonusMultiplierFactor = 3,
@@ -1258,7 +1257,7 @@ local function processStop(vehicle, dtSim)
                 payout = math.floor(payout * multiplier + 0.5)
             end
 
-            accumulatedReward = math.min(accumulatedReward + payout, config.maxPayout)
+            accumulatedReward = accumulatedReward + payout
 
             local tipsEarned = 0
             if trueDeboarding > 0 then
@@ -1283,7 +1282,7 @@ local function processStop(vehicle, dtSim)
             local triggerName = trigger:getName() or ""
             if triggerName == currentFinalStopName then
                 local loopBonus = math.floor(accumulatedReward * config.loopBonusFactor)
-                accumulatedReward = math.min(accumulatedReward + loopBonus, config.maxPayout)
+                accumulatedReward = accumulatedReward + loopBonus
                 local totalPotential = accumulatedReward + tipTotal
 
                 ui_message(string.format(
