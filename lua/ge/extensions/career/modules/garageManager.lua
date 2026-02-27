@@ -1019,19 +1019,20 @@ local function canSellGarageByGarageId(garageId)
     return false
   end
   
-  if garage.starterGarage then
-    return {false, 0}
-  end
-  
   if career_challengeModes and career_challengeModes.isChallengeActive() then
     local activeChallenge = career_challengeModes.getActiveChallenge()
     if activeChallenge and activeChallenge.startingGarages then
+      -- In challenges, only block selling garages that were given for free as starting garages
       for _, startingGarageId in ipairs(activeChallenge.startingGarages) do
         if startingGarageId == garageId then
           return {false, 0}
         end
       end
+      -- Starter garages purchased in a challenge (not given for free) can be sold
     end
+  elseif garage.starterGarage then
+    -- Outside of challenges, starter garages given at career start can't be sold
+    return {false, 0}
   end
   
   local space = isGarageSpace(garageId)
@@ -1292,7 +1293,20 @@ local function getOwnedGaragesListingData()
 
       local marketValue = calculateGaragePurchasePrice(garageId) or 0
       local isStarter = garage.starterGarage or false
-      local canSell = not isStarter and vehicleCount == 0
+      local givenForFree = false
+      if isStarter then
+        if career_challengeModes and career_challengeModes.isChallengeActive() then
+          local activeChallenge = career_challengeModes.getActiveChallenge()
+          if activeChallenge and activeChallenge.startingGarages then
+            for _, startingGarageId in ipairs(activeChallenge.startingGarages) do
+              if startingGarageId == garageId then givenForFree = true break end
+            end
+          end
+        else
+          givenForFree = true -- starter garage given at career start
+        end
+      end
+      local canSell = not givenForFree and vehicleCount == 0
 
       local listing = nil
       local offerCount = 0
