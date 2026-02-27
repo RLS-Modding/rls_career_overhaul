@@ -1339,8 +1339,24 @@ local function getOwnedGaragesListingData()
         if translated then name = translated end
       end
 
-      local marketValue = calculateGaragePurchasePrice(garageId) or 0
-      local isStarter = garage.starterGarage or false
+      local marketValue = garage.defaultPrice or 0
+      if career_modules_globalEconomy and career_modules_globalEconomy.getHousingMarketIndex then
+        marketValue = math.floor(marketValue * career_modules_globalEconomy.getHousingMarketIndex() + 0.5)
+      end
+      local isStarter = false
+      if career_challengeModes and career_challengeModes.isChallengeActive() then
+        local activeChallenge = career_challengeModes.getActiveChallenge()
+        if activeChallenge and activeChallenge.startingGarages then
+          for _, sgId in ipairs(activeChallenge.startingGarages) do
+            if sgId == garageId then
+              isStarter = true
+              break
+            end
+          end
+        end
+      elseif garage.starterGarage then
+        isStarter = true
+      end
       local canSellInfo = canSellGarageByGarageId(garageId)
       local canSell = canSellInfo and canSellInfo[1] or false
 
