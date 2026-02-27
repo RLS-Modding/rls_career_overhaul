@@ -543,6 +543,22 @@ local function onUpdate(dtReal, dtSim, dtRaw)
           rental.secondsUntilNextPayment = PAYMENT_INTERVAL_S
           processRentPayment(garageId, rental)
         end
+      elseif rental and rental.type ~= "upfront" and rental.paymentsRemaining <= 0 then
+        -- Lease term complete for fixed/dynamic rentals
+        relocateVehicles(garageId)
+        table.insert(rentalData.rentalHistory, {
+          garageId = garageId,
+          type = rental.type,
+          leaseStart = rental.leaseStart,
+          leaseEnd = accumulatedSimTime,
+          paymentsMade = rental.paymentsMade,
+          missedPayments = rental.missedPayments,
+          evicted = false,
+        })
+        applyMoneyDelta(rental.securityDeposit)
+        notify("success", "Lease Complete", "Lease for " .. garageId .. " complete. Deposit returned.")
+        rentalData.activeRentals[garageId] = nil
+        career_saveSystem.saveCurrent()
       end
     end
   end

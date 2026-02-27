@@ -1066,32 +1066,20 @@ local function canSellGarageByGarageId(garageId)
     return false
   end
   
-  if garage.starterGarage then
-    local challengeWithDifferentStart = false
-    if career_challengeModes and career_challengeModes.isChallengeActive() then
-      local activeChallenge = career_challengeModes.getActiveChallenge()
-      if activeChallenge and activeChallenge.startingGarages and #activeChallenge.startingGarages > 0 then
-        local isStartingGarage = false
-        for _, sgId in ipairs(activeChallenge.startingGarages) do
-          if sgId == garageId then isStartingGarage = true break end
-        end
-        if not isStartingGarage then challengeWithDifferentStart = true end
-      end
-    end
-    if not challengeWithDifferentStart then
-      return {false, 0}
-    end
-  end
-  
   if career_challengeModes and career_challengeModes.isChallengeActive() then
     local activeChallenge = career_challengeModes.getActiveChallenge()
     if activeChallenge and activeChallenge.startingGarages then
+      -- In challenges, only block selling garages that were given for free as starting garages
       for _, startingGarageId in ipairs(activeChallenge.startingGarages) do
         if startingGarageId == garageId then
           return {false, 0}
         end
       end
+      -- Starter garages purchased in a challenge (not given for free) can be sold
     end
+  elseif garage.starterGarage then
+    -- Outside of challenges, starter garages given at career start can't be sold
+    return {false, 0}
   end
   
   local space = isGarageSpace(garageId)
