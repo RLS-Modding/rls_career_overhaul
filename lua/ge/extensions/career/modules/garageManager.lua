@@ -188,6 +188,20 @@ local function isGarageForSale(garageId)
   return career_modules_realEstateNegotiation.getPropertyListing(garageId) ~= nil
 end
 
+local function isStarterGaragePurchasable(garageId)
+  if not garageId then return false end
+  local garage = freeroam_facilities.getFacility("garage", garageId)
+  if not garage or not garage.starterGarage then return false end
+  if purchasedGarages[garageId] then return false end
+  if not career_challengeModes or not career_challengeModes.isChallengeActive() then return false end
+  local activeChallenge = career_challengeModes.getActiveChallenge()
+  if not activeChallenge or not activeChallenge.startingGarages or #activeChallenge.startingGarages == 0 then return false end
+  for _, startingGarageId in ipairs(activeChallenge.startingGarages) do
+    if startingGarageId == garageId then return false end
+  end
+  return true
+end
+
 local function reloadRecoveryPrompt()
   if core_recoveryPrompt then
     core_recoveryPrompt.addTowingButtons()
@@ -335,7 +349,16 @@ local function calculateGaragePurchasePrice(garageId)
       end
     end
 
-    if garage.starterGarage then return 0 end
+    if garage.starterGarage then
+      if isStarterGaragePurchasable(garageId) then
+        local price = garage.defaultPrice
+        if career_modules_globalEconomy and career_modules_globalEconomy.getHousingMarketIndex then
+          price = math.floor(price * career_modules_globalEconomy.getHousingMarketIndex() + 0.5)
+        end
+        return price
+      end
+      return 0
+    end
     local price = garage.defaultPrice
     if career_modules_globalEconomy and career_modules_globalEconomy.getHousingMarketIndex then
       price = math.floor(price * career_modules_globalEconomy.getHousingMarketIndex() + 0.5)
@@ -487,7 +510,7 @@ requestGarageListing = function(garageId)
   if not garage then return nil end
   
   local listedPrice = getGaragePrice(garage)
-  local canNegotiate = not garage.starterGarage and listedPrice > 0
+  local canNegotiate = (not garage.starterGarage or isStarterGaragePurchasable(garageId)) and listedPrice > 0
   local ownerInfo = nil
   if career_modules_propertyOwners and career_modules_propertyOwners.getOwnerForListing then
     ownerInfo = career_modules_propertyOwners.getOwnerForListing(garageId, listedPrice)
@@ -572,7 +595,7 @@ requestGarageListing = function(garageId)
     canNegotiate = canNegotiate,
     cooldownRemaining = cooldownRemaining,
     isFrozen = getFrozenPrice(garageId) ~= nil,
-    starterGarage = garage.starterGarage or false,
+    starterGarage = (garage.starterGarage and not isStarterGaragePurchasable(garageId)) or false,
     ownerInfo = ownerInfo,
     ownerName = ownerInfo and ownerInfo.name or nil,
     ownerArchetype = ownerInfo and ownerInfo.archetype or nil,
@@ -1011,7 +1034,18 @@ local function getGarageSellPrice(garageId, computerId)
         end
       end
       
-      local price = garage.starterGarage and 0 or garage.defaultPrice
+      local starterWasPurchased = false
+      if garage.starterGarage and career_challengeModes and career_challengeModes.isChallengeActive() then
+        local ac = career_challengeModes.getActiveChallenge()
+        if ac and ac.startingGarages and #ac.startingGarages > 0 then
+          local isStart = false
+          for _, sgId in ipairs(ac.startingGarages) do
+            if sgId == garageId then isStart = true break end
+          end
+          if not isStart then starterWasPurchased = true end
+        end
+      end
+      local price = (garage.starterGarage and not starterWasPurchased) and 0 or garage.defaultPrice
       -- Apply housing market index if available
       if career_modules_globalEconomy and career_modules_globalEconomy.getHousingMarketIndex then
         price = math.floor(price * career_modules_globalEconomy.getHousingMarketIndex() + 0.5)
@@ -1033,7 +1067,20 @@ local function canSellGarageByGarageId(garageId)
   end
   
   if garage.starterGarage then
-    return {false, 0}
+    local challengeWithDifferentStart = false
+    if career_challengeModes and career_challengeModes.isChallengeActive() then
+      local activeChallenge = career_challengeModes.getActiveChallenge()
+      if activeChallenge and activeChallenge.startingGarages and #activeChallenge.startingGarages > 0 then
+        local isStartingGarage = false
+        for _, sgId in ipairs(activeChallenge.startingGarages) do
+          if sgId == garageId then isStartingGarage = true break end
+        end
+        if not isStartingGarage then challengeWithDifferentStart = true end
+      end
+    end
+    if not challengeWithDifferentStart then
+      return {false, 0}
+    end
   end
   
   if career_challengeModes and career_challengeModes.isChallengeActive() then
@@ -1306,7 +1353,8 @@ local function getOwnedGaragesListingData()
 
       local marketValue = calculateGaragePurchasePrice(garageId) or 0
       local isStarter = garage.starterGarage or false
-      local canSell = not isStarter and vehicleCount == 0
+      local canSellInfo = canSellGarageByGarageId(garageId)
+      local canSell = canSellInfo and canSellInfo[1] or false
 
       local listing = nil
       local offerCount = 0
@@ -1468,5 +1516,6 @@ M.getGarageCapacityData = getGarageCapacityData
 M.getVehiclesInGarage = getVehiclesInGarage
 M.removePurchasedGarage = removePurchasedGarage
 M.isGarageForSale = isGarageForSale
+M.isStarterGaragePurchasable = isStarterGaragePurchasable
 
 return M

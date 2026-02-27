@@ -91,7 +91,8 @@ local function requestGarageListings()
         price = ownerInfo.currentAskingPrice
       end
     end
-    if garage.starterGarage then price = 0 end
+    local starterPurchasable = garage.starterGarage and not owned and career_modules_garageManager.isStarterGaragePurchasable and career_modules_garageManager.isStarterGaragePurchasable(garage.id)
+    if garage.starterGarage and not starterPurchasable then price = 0 end
 
     local preview = garagePreviewByComputer[garage.id] or garage.preview or ""
 
@@ -102,7 +103,7 @@ local function requestGarageListings()
       if translated then name = translated end
     end
 
-    local canNegotiate = not garage.starterGarage and price > 0 and not owned
+    local canNegotiate = (not garage.starterGarage or starterPurchasable) and price > 0 and not owned
     local rented = career_modules_propertyRentals and career_modules_propertyRentals.isRentedGarage(garage.id) or false
     
     table.insert(result, {
@@ -115,7 +116,7 @@ local function requestGarageListings()
       owned = owned or false,
       rented = rented,
       discovered = discovered or false,
-      starterGarage = garage.starterGarage or false,
+      starterGarage = (garage.starterGarage and not starterPurchasable) or false,
       preview = preview,
       distance = math.floor(distance),
       posX = pos and pos.x or 0,
