@@ -1202,6 +1202,7 @@ local function completePropertySaleFromListing(garageId, finalPrice, buyerPerson
   end
 
   career_saveSystem.saveCurrent()
+  guihooks.trigger('garageListingsUpdated')
   return true
 end
 
@@ -1433,7 +1434,10 @@ local function getGarageOffersData(garageId)
     if translated then name = translated end
   end
 
-  local marketValue = calculateGaragePurchasePrice(garageId) or 0
+  local marketValue = garage.defaultPrice or 0
+  if career_modules_globalEconomy and career_modules_globalEconomy.getHousingMarketIndex then
+    marketValue = math.floor(marketValue * career_modules_globalEconomy.getHousingMarketIndex() + 0.5)
+  end
 
   local offers = {}
   if listing.offers then

@@ -167,13 +167,15 @@
 </template>
 
 <script setup>
-import { ref, nextTick, onMounted } from 'vue'
+import { ref, nextTick, onMounted, onUnmounted } from 'vue'
 import { lua } from '@/bridge'
+import { useEvents } from '@/services/events'
 import { useRouter } from 'vue-router'
 import { vBngTextInput } from '@/common/directives'
 import ComputerWrapper from './ComputerWrapper.vue'
 
 const router = useRouter()
+const events = useEvents()
 
 const garages = ref([])
 const loading = ref(true)
@@ -268,7 +270,14 @@ const goBack = () => {
   router.back()
 }
 
-onMounted(loadGarages)
+onMounted(() => {
+  events.on('garageListingsUpdated', loadGarages)
+  loadGarages()
+})
+
+onUnmounted(() => {
+  events.off('garageListingsUpdated', loadGarages)
+})
 </script>
 
 <style scoped lang="scss">

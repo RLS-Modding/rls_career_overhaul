@@ -1206,6 +1206,7 @@ const handlePhoneRealEstateData = (data) => {
 onMounted(async () => {
   minimapStore.init()
   events.on('phoneRealEstateData', handlePhoneRealEstateData)
+  events.on('garageListingsUpdated', refreshOwnedListings)
   await lua.extensions.load('ui_phone_layout')
   careerActive.value = await lua.ui_phone_layout.getCareerActive()
   if (route.query?.tab === 'listings') {
@@ -1229,6 +1230,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   events.off('phoneRealEstateData', handlePhoneRealEstateData)
+  events.off('garageListingsUpdated', refreshOwnedListings)
   stopMapFocusAnimation()
   minimapStore.viewControlledBy = null
   minimapStore.showTerrainImage = true
