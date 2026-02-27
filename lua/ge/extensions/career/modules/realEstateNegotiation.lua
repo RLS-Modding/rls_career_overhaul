@@ -278,11 +278,7 @@ local function markOfferAsNoDeal()
   end
 
   offer.negotiationPossible = false
-  if myOffer and myOffer > 0 then
-    offer.negotiatedPrice = myOffer
-  elseif theirOffer and theirOffer > 0 then
-    offer.negotiatedPrice = theirOffer
-  end
+  offer.negotiatedPrice = nil
 
   return true
 end
