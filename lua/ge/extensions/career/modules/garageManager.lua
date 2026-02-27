@@ -339,32 +339,17 @@ local function calculateGaragePurchasePrice(garageId)
     return nil
   end
 
-  if career_modules_hardcore.isHardcoreMode() then
-    return garage.defaultPrice
-  else
-    if career_challengeModes and career_challengeModes.isChallengeActive() then
-      local activeChallenge = career_challengeModes.getActiveChallenge()
-      if activeChallenge and activeChallenge.startingGarages then
-        return garage.defaultPrice
-      end
-    end
-
-    if garage.starterGarage then
-      if isStarterGaragePurchasable(garageId) then
-        local price = garage.defaultPrice
-        if career_modules_globalEconomy and career_modules_globalEconomy.getHousingMarketIndex then
-          price = math.floor(price * career_modules_globalEconomy.getHousingMarketIndex() + 0.5)
-        end
-        return price
-      end
+  if not career_modules_hardcore.isHardcoreMode() and garage.starterGarage then
+    if not isStarterGaragePurchasable(garageId) then
       return 0
     end
-    local price = garage.defaultPrice
-    if career_modules_globalEconomy and career_modules_globalEconomy.getHousingMarketIndex then
-      price = math.floor(price * career_modules_globalEconomy.getHousingMarketIndex() + 0.5)
-    end
-    return price
   end
+
+  local price = garage.defaultPrice
+  if career_modules_globalEconomy and career_modules_globalEconomy.getHousingMarketIndex then
+    price = math.floor(price * career_modules_globalEconomy.getHousingMarketIndex() + 0.5)
+  end
+  return price
 end
 
 local function calculateClosingFee(price)

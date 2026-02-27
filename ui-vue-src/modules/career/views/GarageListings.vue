@@ -123,9 +123,6 @@
                     </div>
                     <div class="guidance-label">{{ priceGuidance.label }}</div>
                     <div class="guidance-desc">{{ priceGuidance.description }}</div>
-                    <div class="guidance-market">
-                      Market value: <strong>${{ formatPrice(priceGuidance.marketValue) }}</strong>
-                    </div>
                   </div>
 
                   <div class="form-buttons">
@@ -641,16 +638,6 @@ onUnmounted(() => {
 .guidance-desc {
   font-size: 11px;
   color: rgba(255, 255, 255, 0.45);
-}
-
-.guidance-market {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.35);
-  margin-top: 4px;
-
-  strong {
-    color: rgba(255, 255, 255, 0.6);
-  }
 }
 
 .form-buttons {
