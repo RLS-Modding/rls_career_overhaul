@@ -123,6 +123,7 @@ local TRUCK_BED_LOAD_RADIUS_M = 8  -- semi flatbed extends far behind cab; adjus
 local propsEligibleForTruckLoad = {}  -- pid -> true, props in zone that can be loaded (from deliveredPropsByZone)
 local truckLoadMaterialName = nil  -- material name for UI message, e.g. "TastiCola"
 local truckLoadTargetCount = nil   -- number to load (for tasklist), e.g. 4
+local truckLoadPropPay = {}        -- pid -> base pay (for 1.5x loading bonus, same as batch pay per prop)
 local selectedZoneNameForTruckLoad = nil  -- zone picked at dispatch so we show "Load N X" before truck arrives
 
 local batchReadyWaitingForkliftExit = false
@@ -1045,6 +1046,7 @@ local function clearTruckState()
         if obj then obj:delete() end
     end
     table.clear(truckLoadPropIds)
+    table.clear(truckLoadPropPay)
     table.clear(propsEligibleForTruckLoad)
     truckLoadMaterialName = nil
     truckLoadTargetCount = nil
@@ -1248,8 +1250,10 @@ local function payoutBatchAndSpawnNext()
             deliveredPropsByZone[zoneName] = { trigger = currentBatch.dropTrigger, propIds = {}, materialName = matName }
         end
         deliveredPropsByZone[zoneName].materialName = matName
-        for _, pid in ipairs(propIds) do
+        deliveredPropsByZone[zoneName].moneyPerPropId = deliveredPropsByZone[zoneName].moneyPerPropId or {}
+        for i, pid in ipairs(propIds) do
             table.insert(deliveredPropsByZone[zoneName].propIds, pid)
+            deliveredPropsByZone[zoneName].moneyPerPropId[pid] = moneyPerProp[i] or 0
         end
         lastDeliveredZoneName = zoneName
     end
@@ -1260,6 +1264,7 @@ local function payoutBatchAndSpawnNext()
         for zName, data in pairs(deliveredPropsByZone) do
             while #data.propIds > 0 and currentTotal > MAX_PERSISTENT_PROPS do
                 local pid = table.remove(data.propIds, 1)
+                if data.moneyPerPropId then data.moneyPerPropId[pid] = nil end
                 local obj = be:getObjectByID(pid)
                 if obj then obj:delete() end
                 currentTotal = currentTotal - 1
@@ -1741,6 +1746,8 @@ local function onUpdate(_dtReal, _dtSim, _dtRaw)
                     local propDist = math.sqrt(pdx * pdx + pdy * pdy + pdz * pdz)
                     if propDist < TRUCK_BED_LOAD_RADIUS_M then
                         table.insert(truckLoadPropIds, pid)
+                        truckLoadPropPay[pid] = (zoneData and zoneData.moneyPerPropId and zoneData.moneyPerPropId[pid]) or 0
+                        if zoneData and zoneData.moneyPerPropId then zoneData.moneyPerPropId[pid] = nil end
                         propsEligibleForTruckLoad[pid] = nil
                         if zoneData and zoneData.propIds then
                             for i = #zoneData.propIds, 1, -1 do
@@ -1762,10 +1769,16 @@ local function onUpdate(_dtReal, _dtSim, _dtRaw)
     elseif truckState == "driving_to_end" then
         if dist < TRUCK_ARRIVAL_RADIUS_M then
             local facId = truckFacilityId
-            local bonus = TRUCK_LOADING_BONUS_DEFAULT
+            local flatBonus = TRUCK_LOADING_BONUS_DEFAULT
             if facId and facilityConfigs[facId] and facilityConfigs[facId].truckLoadingBonus then
-                bonus = tonumber(facilityConfigs[facId].truckLoadingBonus) or bonus
+                flatBonus = tonumber(facilityConfigs[facId].truckLoadingBonus) or flatBonus
             end
+            local perPropSum = 0
+            for _, pid in ipairs(truckLoadPropIds) do
+                perPropSum = perPropSum + (truckLoadPropPay[pid] or 0)
+            end
+            local bonus = flatBonus + math.floor(perPropSum * 1.5)
+            bonus = math.floor(bonus * sessionMultiplier)
             if career_economyAdjuster and career_economyAdjuster.getSectionMultiplier then
                 bonus = math.floor(bonus * (career_economyAdjuster.getSectionMultiplier("facilityWork") or 1))
             end
