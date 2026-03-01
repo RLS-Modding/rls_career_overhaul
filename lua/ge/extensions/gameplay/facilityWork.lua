@@ -1412,7 +1412,6 @@ local function endShiftCleanup()
 end
 
 local function doStartFacilityWork()
-    if not career_career or not career_career.isActive() then return false end
     shiftEnded = false
     configLoaded = false
     configLoadedForLevel = nil
@@ -1594,7 +1593,6 @@ local function repairForklift()
 end
 
 local function onBeamNGTrigger(data)
-    if not career_career or not career_career.isActive() then return end
     local triggerName = data.triggerName
     local event = data.event
     if triggerName and triggerName:find(DROP_TRIGGER_PREFIX) then
@@ -1640,7 +1638,6 @@ local function onBeamNGTrigger(data)
 end
 
 local function onVehicleSwitched(_oldId, newId)
-    if not career_career or not career_career.isActive() then return end
     -- Future: optional end shift on forklift exit (currently player must use phone).
     if currentBatch and not currentForkliftId and newId then
         currentForkliftId = newId
@@ -1684,8 +1681,6 @@ local function onExtensionUnloaded()
 end
 
 local function onUpdate(_dtReal, _dtSim, _dtRaw)
-    if not career_career or not career_career.isActive() then return end
-
     if currentBatch and currentBatchWaypointPhase == "to_loading" then
         local loadCenter = getFacilityLoadZoneCenter(currentBatch.facilityId)
         local inLoadZone = isForkliftInLoadZone(currentBatch.facilityId)

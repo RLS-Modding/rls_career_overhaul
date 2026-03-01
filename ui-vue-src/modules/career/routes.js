@@ -29,6 +29,10 @@ import Loans from "./views/LoanMenu.vue"
 import RoleAssignment from "./views/RoleAssignment.vue"
 import CarMeets from "./views/CarMeetsMenu.vue"
 import PurchaseGarage from "./views/PurchaseGarage.vue"
+import GarageListing from "./views/GarageListing.vue"
+import RealEstateNegotiation from "./views/RealEstateNegotiation.vue"
+import GarageListings from "./views/GarageListings.vue"
+import GarageOffers from "./views/GarageOffers.vue"
 import PurchaseBusiness from "./views/PurchaseBusiness.vue"
 import PhoneHomescreen from "./views/PhoneHomescreen.vue"
 import PhoneMinimap from "./views/PhoneMinimap.vue"
@@ -49,9 +53,12 @@ import PhoneQuarry from "./views/PhoneQuarry.vue"
 import PhoneBeamEats from "./views/PhoneBeamEats.vue"
 import PhoneFacilityWork from "./views/PhoneFacilityWork.vue"
 import PhoneRealEstate from "./views/PhoneRealEstate.vue"
+import PhoneRentals from "./views/PhoneRentals.vue"
 import PhoneGuide from "./views/PhoneGuide.vue"
 import PhoneMarketWatch from "./views/PhoneMarketWatch.vue"
 import PhoneFreeroamEvents from "./views/PhoneFreeroamEvents.vue"
+import PhoneCamera from "./views/PhoneCamera.vue"
+import PhoneGallery from "./views/PhoneGallery.vue"
 import LevelSwitch from "./views/LevelSwitch.vue"
 import ChallengeComplete from "./views/ChallengeComplete.vue"
 import BusinessComputerMain from "./views/BusinessComputerMain.vue"
@@ -363,6 +370,41 @@ export default [
       },
 
       {
+        path: "garage-listing",
+        name: "garage-listing",
+        component: GarageListing
+      },
+
+      {
+        path: "realEstateNegotiation",
+        name: "realEstateNegotiation",
+        component: RealEstateNegotiation
+      },
+
+      {
+        path: "garage-listings",
+        name: "garage-listings",
+        component: GarageListings,
+        meta: {
+          uiApps: {
+            shown: false,
+          },
+        },
+      },
+
+      {
+        path: "garage-offers/:garageId",
+        name: "garage-offers",
+        component: GarageOffers,
+        props: true,
+        meta: {
+          uiApps: {
+            shown: false,
+          },
+        },
+      },
+
+      {
         path: "purchase-business",
         name: "purchase-business",
         component: PurchaseBusiness
@@ -483,6 +525,12 @@ export default [
       },
 
       {
+        path: "phone-rentals",
+        name: "phone-rentals",
+        component: PhoneRentals
+      },
+
+      {
         path: "phone-guide",
         name: "phone-guide",
         component: PhoneGuide
@@ -498,6 +546,18 @@ export default [
         name: "phone-events",
         component: PhoneFreeroamEvents
 
+      },
+
+      {
+        path: "phone-camera",
+        name: "phone-camera",
+        component: PhoneCamera
+      },
+
+      {
+        path: "phone-gallery",
+        name: "phone-gallery",
+        component: PhoneGallery
       },
 
       {

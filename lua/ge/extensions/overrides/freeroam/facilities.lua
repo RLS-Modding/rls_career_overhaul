@@ -505,10 +505,10 @@ local function onActivityAcceptGatherData(elemData, activityData)
             valueLabel = prop.valueLabel,
           })
         end
-        data.buttonLabel = career_modules_garageManager.isPurchasedGarage(elem.facility.garageId) and "Use Computer" or "Purchase Garage"
+        data.buttonLabel = career_modules_garageManager.isAccessibleGarage(elem.facility.garageId) and "Use Computer" or "Purchase Garage"
         data.buttonFun = function()
           if career_career.isActive() then
-            if not career_modules_garageManager.isPurchasedGarage(elem.facility.garageId) then
+            if not career_modules_garageManager.isAccessibleGarage(elem.facility.garageId) then
               career_modules_garageManager.showPurchaseGaragePrompt(elem.facility.garageId)
             else
               career_modules_computer.openMenu(elem.facility, false)

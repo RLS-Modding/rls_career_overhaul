@@ -14,52 +14,28 @@
             type="xmarkBold"
             :color="'var(--bng-cool-gray-100)'"
           />
-
         </BngButton>
       </div>
-
       <div class="main-content">
-        <!-- Top summary could show vehicle info when available -->
         <div class="summary">
-          <div class="vehicle-info" v-if="state.vehicleNiceName || state.vehicleThumbnail">
-            <!--
-            <img
-              v-if="state.vehicleThumbnail"
-              class="vehicle-thumb"
-              :src="state.vehicleThumbnail"
-              :alt="state.vehicleNiceName || 'Vehicle thumbnail'"
-            >
-          -->
+          <div class="vehicle-info" v-if="state.propertyName || state.propertyPreview">
             <div class="purchase-row">
               <div class="label">
-                <div>{{ state.vehicleNiceName || 'Vehicle' }}</div>
-                <div class="sub-info">{{ units.buildString("length", state.vehicleMileage, 0) }}</div>
+                <div>{{ state.propertyName || 'Property' }}</div>
+                <div v-if="state.propertyNeighborhood" class="sub-info">{{ state.propertyNeighborhood }}</div>
+                <div v-if="state.propertyCapacity" class="sub-info">
+                  {{ state.propertyCapacity }} slots / {{ state.propertyParkingSpots }} parking spots
+                </div>
               </div>
               <div class="price">
-                <!--<BngUnit class="money" :money="state.startingPrice || 0" />-->
                 Est. Market:
                 <div>
-                  <BngUnit class="money" :money="state.actualVehicleValue || 0" />
+                  <BngUnit class="money" :money="state.propertyMarketValue || 0" />
                 </div>
               </div>
             </div>
           </div>
         </div>
-
-        <!-- Two column panels - ->
-        <div class="columns">
-          <div class="panel left">
-            <div class="panel-title">Your offer</div>
-            <div class="info-row"><span class="row-label">Your Current Offer</span><span class="row-value">{{ state.myOffer != null ? units.beamBucks(state.myOffer) : "(Not set)" }}</span></div>
-          </div>
-          <div class="panel right">
-            <div class="panel-title">{{ opponent }}'s offer</div>
-            <div class="info-row"><span class="row-label">Their current offer</span><span class="row-value highlight">{{ units.beamBucks(state.theirOffer || 0) }}</span></div>
-            <div class="info-row small"><span class="row-label">Difference From Starting Price</span><span class="row-value" :class="{pos: isDiffTheirOfferToStartingGood, neg: !isDiffTheirOfferToStartingGood  }">{{ units.beamBucks(diffTheirOfferToStarting) }}</span></div>
-          </div>
-        </div>
-        -->
-
         <div class="offer-container">
           <NegotiationChat
             ref="negotiationChat"
@@ -68,19 +44,16 @@
             :starting-price="state.startingPrice || 0"
             :am-i-selling="state.amISelling"
           />
-
           <PriceFinder
             :offer-history="state.offerHistory || []"
             :negotiation-status="state.negotiationStatus"
             :starting-price="state.startingPrice || 0"
             :offer-preview="offerPreview || 0"
-            :actual-vehicle-value="state.actualVehicleValue"
+            :actual-vehicle-value="state.propertyMarketValue"
             :am-i-selling="state.amISelling"
           />
         </div>
-
         <div class="patience">
-
           <div class="bar" :class="patienceClass">
             <div class="separator" style="left: 33.0%"></div>
             <div class="separator" style="left: 66.0%"></div>
@@ -90,62 +63,54 @@
             <span>{{ opponent }}'s Patience</span>
           </div>
         </div>
-
-
-        <!-- Big price offer-controls -->
         <div class="offer-controls">
           <div class="offer-controls-row" v-if="state.negotiationStatus !== 'failed' && state.negotiationStatus !== 'accepted'">
             <div class="step-buttons-group">
-              <BngButton class="step step-large" :disabled="offerDisabled || decreaseOfferDisabled" @click="nudgeOffer(-5000)">-5000</BngButton>
-              <BngButton class="step step-medium" :disabled="offerDisabled || decreaseOfferDisabled" @click="nudgeOffer(-500)">-500</BngButton>
-              <BngButton class="step" :disabled="offerDisabled || decreaseOfferDisabled" @click="nudgeOffer(-50)">-50</BngButton>
-
-              <BngButton class="step" :disabled="offerDisabled || increaseOfferDisabled" @click="nudgeOffer(50)">+50</BngButton>
-              <BngButton class="step step-medium" :disabled="offerDisabled || increaseOfferDisabled" @click="nudgeOffer(500)">+500</BngButton>
-              <BngButton class="step step-large" :disabled="offerDisabled || increaseOfferDisabled" @click="nudgeOffer(5000)">+5000</BngButton>
+              <BngButton class="step step-large" :disabled="offerDisabled || decreaseOfferDisabled" @click="nudgeOffer(-10000)">-10000</BngButton>
+              <BngButton class="step step-medium" :disabled="offerDisabled || decreaseOfferDisabled" @click="nudgeOffer(-5000)">-5000</BngButton>
+              <BngButton class="step" :disabled="offerDisabled || decreaseOfferDisabled" @click="nudgeOffer(-1000)">-1000</BngButton>
+              <BngButton class="step" :disabled="offerDisabled || increaseOfferDisabled" @click="nudgeOffer(1000)">+1000</BngButton>
+              <BngButton class="step step-medium" :disabled="offerDisabled || increaseOfferDisabled" @click="nudgeOffer(5000)">+5000</BngButton>
+              <BngButton class="step step-large" :disabled="offerDisabled || increaseOfferDisabled" @click="nudgeOffer(10000)">+10000</BngButton>
             </div>
           </div>
-
-          <div class="offer-controls-row" v-if="state.negotiationStatus === 'failed' || state.negotiationStatus === 'accepted'" :class="{ accepted: state.negotiationStatus === 'accepted', failed: state.negotiationStatus === 'failed' }">
-            <BngIcon :type="state.negotiationStatus === 'accepted' ? 'checkmark' : 'abandon'" class="resolved-negotiation-icon" />
-
-            <div class="resolved-negotiation-message" >{{resolvedStatusText}}</div>
+          <div
+            class="offer-controls-row"
+            v-if="state.negotiationStatus === 'failed' || state.negotiationStatus === 'accepted'"
+            :class="{ accepted: state.negotiationStatus === 'accepted', failed: state.negotiationStatus === 'failed' }"
+          >
+            <BngIcon
+              :type="state.negotiationStatus === 'accepted' ? 'checkmark' : 'abandon'"
+              class="resolved-negotiation-icon"
+            />
+            <div class="resolved-negotiation-message">{{ resolvedStatusText }}</div>
           </div>
-
-          <div class="price-column" >
-            <div class="price" v-if="noDeal">
-              NO DEAL
+          <div class="price-column">
+            <div class="price" v-if="noDeal">NO DEAL</div>
+            <div v-else class="price">{{ units.beamBucks(offerPreview || 0) }}</div>
+            <div
+              v-if="diffOfferPreviewToStarting !== null"
+              class="diff-percent-offer-preview-to-starting"
+              :class="{ positive: isDiffOfferPreviewToStartingGood && diffOfferPreviewToStarting !== 0, negative: !isDiffOfferPreviewToStartingGood && diffOfferPreviewToStarting !== 0, zero: diffOfferPreviewToStarting === 0, 'hidden': noDeal }"
+            >
+              <BngUnit
+                v-if="diffOfferPreviewToStarting !== 0"
+                class="money"
+                :money="Math.abs(diffOfferPreviewToStarting)"
+              />
+              {{ diffOfferPreviewToStarting < 0 ? 'under' : diffOfferPreviewToStarting > 0 ? 'over' : 'Same as' }}
+              starting price
             </div>
-            <div v-else class="price">
-              {{ units.beamBucks(offerPreview || 0) }}
-            </div>
-            <div v-if="diffOfferPreviewToStarting !== null" class="diff-percent-offer-preview-to-starting" :class="{ positive: isDiffOfferPreviewToStartingGood && diffOfferPreviewToStarting !== 0, negative: !isDiffOfferPreviewToStartingGood && diffOfferPreviewToStarting !== 0, zero: diffOfferPreviewToStarting === 0, 'hidden': noDeal }">
-              <BngUnit v-if="diffOfferPreviewToStarting !== 0" class="money" :money="Math.abs(diffOfferPreviewToStarting)" /> {{ diffOfferPreviewToStarting < 0 ? 'under' : diffOfferPreviewToStarting > 0 ? 'over' : 'Same as' }} starting price
-            </div>
-            <div v-if="diffPercentOfferPreviewToMarket !== null" class="diff-percent-offer-preview-to-market" :class="{ positive: isDiffPercentOfferPreviewToMarketGood, negative: !isDiffPercentOfferPreviewToMarketGood, 'hidden': noDeal }">
+            <div
+              v-if="diffPercentOfferPreviewToMarket !== null"
+              class="diff-percent-offer-preview-to-market"
+              :class="{ positive: isDiffPercentOfferPreviewToMarketGood, negative: !isDiffPercentOfferPreviewToMarketGood, 'hidden': noDeal }"
+            >
               {{ Math.abs(diffPercentOfferPreviewToMarket) }}% {{ diffPercentOfferPreviewToMarket < 0 ? 'under' : 'over' }} Est. Market value
             </div>
           </div>
         </div>
-
-        <!-- Status + primary action box -->
-        <!--
-        <div class="decision-box" :class="{ accepted: state.negotiationStatus === 'accepted', rejected: isRejected }">
-          <div class="status-line">
-            <span class="label">Status: </span>
-            <span class="value">{{ statusText }}</span>
-            <span v-if="state.negotiationStatus === 'thinking'" class="spinner" aria-label="Thinking"></span>
-          </div>
-          <div class="actions">
-            <div v-if="state.negotiationStatus === 'accepted' || state.negotiationStatus === 'counterOffer' || state.negotiationStatus === 'counterOfferLastChance'">
-              {{ units.beamBucks(state.theirOffer || 0) }}
-              <BngButton :accent="ACCENTS.secondary" @click="takeOffer">Accept</BngButton>
-            </div>
-          </div>
-        </div>
-        -->
       </div>
-
       <template #buttons>
         <div class="action-buttons wide">
           <BngButton
@@ -160,34 +125,39 @@
           <BngButton
             v-if="state.negotiationStatus !== 'accepted' && state.negotiationStatus !== 'failed'"
             class="submit-offer"
-            :disabled="state.negotiationStatus === 'counterOfferLastChance' || offerDisabled"
+            :disabled="offerDisabled"
             show-hold
             v-bng-click="{ holdCallback: takeOffer, holdDelay: 1000, repeatInterval: 0 }"
           >
             Agree to their Price
           </BngButton>
-
-          <BngButton v-if="state.negotiationStatus === 'failed' || state.negotiationStatus === 'accepted'" class="go-back" :accent="ACCENTS.primary" @click="goBack">
-            {{ state.amISelling ? 'Continue' : 'Go to Purchase Screen' }}
+          <BngButton
+            v-if="state.negotiationStatus === 'failed' || state.negotiationStatus === 'accepted'"
+            class="go-back"
+            :accent="ACCENTS.primary"
+            @click="goBack"
+          >
+            {{ state.amISelling ? 'Continue' : 'Go to Purchase Menu' }}
           </BngButton>
         </div>
       </template>
     </BngCard>
   </div>
-
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, ref, watch, nextTick } from "vue"
+import { computed, onMounted, onUnmounted, ref, nextTick } from "vue"
 import { useRouter } from "vue-router"
 import { BngButton, ACCENTS, BngCard, BngCardHeading, BngBinding, BngUnit, BngIcon } from "@/common/components/base"
 import { lua, useBridge } from "@/bridge"
-import { vBngOnUiNav, vBngBlur, vBngClick } from "@/common/directives"
+import { vBngBlur, vBngClick } from "@/common/directives"
 import { useUINavScope } from "@/services/uiNav"
 import { useEvents } from '@/services/events'
+
 import NegotiationChat from "@/modules/career/components/vehicleShopping/NegotiationChat.vue"
 import PriceFinder from "@/modules/career/components/vehicleShopping/PriceFinder.vue"
-useUINavScope("vehicleNegotiation")
+
+useUINavScope("realEstateNegotiation")
 
 const { units } = useBridge()
 const events = useEvents()
@@ -195,17 +165,25 @@ const router = useRouter()
 
 const state = ref({
   active: false,
+  propertyId: null,
+  propertyName: 'Property',
+  propertyPreview: '',
+  propertyCapacity: 0,
+  propertyParkingSpots: 0,
+  propertyNeighborhood: '',
   startingPrice: 0,
   patience: 0,
   myOffer: null,
   theirOffer: 0,
-  thinking: false,
   status: "",
   negotiationStatus: "",
-  opponentName: "",
-  vehicleNiceName: "",
-  vehicleThumbnail: "",
-  amISelling: false
+  opponentName: "Seller",
+  opponentQuote: '',
+  propertyMarketValue: 0,
+  offerHistory: [],
+  amISelling: false,
+  isInsulted: false,
+  origin: 'computer',
 })
 
 const opponent = computed(() => state.value.amISelling ? "Buyer" : "Seller")
@@ -214,27 +192,21 @@ const biggerIsBetter = computed(() => state.value.amISelling ? true : false)
 const increaseOfferDisabled = computed(() => {
   if (state.value.amISelling) {
     return (state.value.myOffer != null && (offerPreview.value >= state.value.myOffer))
-  } else {
-    return offerPreview.value >= state.value.theirOffer
   }
+  return offerPreview.value >= state.value.theirOffer
 })
 
 const decreaseOfferDisabled = computed(() => {
   if (state.value.amISelling) {
-    console.log("decreaseOfferDisabled", offerPreview.value, state.value.theirOffer)
     return offerPreview.value <= state.value.theirOffer
-  } else {
-    return (state.value.myOffer != null && (offerPreview.value <= state.value.myOffer))
   }
+  return (state.value.myOffer != null && (offerPreview.value <= state.value.myOffer))
 })
 
 const offerPreview = ref(0)
-const stepSize = computed(() => {
-  const baseStep = state.value.startingPrice / 500
-  return Math.round(baseStep / 5) * 5
-})
 
 const diffPercentOfferPreviewToStarting = computed(() => {
+  if (state.value.startingPrice === 0) return 0
   const diff = ((offerPreview.value - state.value.startingPrice) / state.value.startingPrice) * 100
   return Math.round(diff)
 })
@@ -248,8 +220,8 @@ const isDiffOfferPreviewToStartingGood = computed(() => {
 })
 
 const diffPercentOfferPreviewToMarket = computed(() => {
-  if (!state.value.actualVehicleValue || state.value.actualVehicleValue === 0) return null
-  const diff = ((offerPreview.value - state.value.actualVehicleValue) / state.value.actualVehicleValue) * 100
+  if (!state.value.propertyMarketValue || state.value.propertyMarketValue === 0) return null
+  const diff = ((offerPreview.value - state.value.propertyMarketValue) / state.value.propertyMarketValue) * 100
   return Math.round(diff)
 })
 
@@ -258,35 +230,26 @@ const isDiffPercentOfferPreviewToMarketGood = computed(() => {
   return biggerIsBetter.value ? diffPercentOfferPreviewToMarket.value >= 0 : diffPercentOfferPreviewToMarket.value <= 0
 })
 
-const diffTheirOfferToStarting = computed(() => {
-  const diff = state.value.theirOffer - state.value.startingPrice
-  return diff
-})
-
-const isDiffTheirOfferToStartingGood = computed(() => {
-  return biggerIsBetter.value ? diffTheirOfferToStarting.value >= 0 : diffTheirOfferToStarting.value <= 0
-})
-
 const nudgeOffer = (delta) => {
-  const roundedOfferPreview = Math.max(0, Math.round((offerPreview.value + delta) / 50) * 50)
-
+  const roundedOfferPreview = Math.max(0, Math.round((offerPreview.value + delta) / 1000) * 1000)
   let min = 0
   let max = Number.POSITIVE_INFINITY
 
   if (state.value.amISelling) {
     min = state.value.theirOffer
-    if ( state.value.myOffer != null ) {
+    if (state.value.myOffer != null) {
       max = state.value.myOffer
     }
   } else {
     max = state.value.theirOffer
-    if ( state.value.myOffer != null ) {
+    if (state.value.myOffer != null) {
       min = state.value.myOffer
     }
   }
 
   offerPreview.value = Math.min(max, Math.max(min, roundedOfferPreview))
 }
+
 const offerDisabled = computed(() => {
   if (state.value.negotiationStatus === 'thinking' || state.value.negotiationStatus === 'typing' || state.value.negotiationStatus === 'accepted' || state.value.negotiationStatus === 'failed') {
     return true
@@ -305,102 +268,84 @@ const noDeal = computed(() => {
   return state.value.negotiationStatus === 'failed' && state.value.amISelling
 })
 
-// Derived status helpers for clearer UI logic (use negotiationStatus from Lua)
-const isRejected = computed(() => state.value.negotiationStatus === 'failed')
-
-// Human-readable status label from negotiationStatus
-const statusText = computed(() => {
-  switch (String(state.value.negotiationStatus || '')) {
-    case 'counterOffer':
-      return 'Counter offer'
-    case 'counterOfferLastChance':
-      return 'Last chance counter offer'
-    case 'accepted':
-      return 'Accepted'
-    case 'failed':
-      return 'Negotiation failed'
-    case 'refused':
-      return 'Offer refused'
-    case 'initial':
-      return 'Initial offer'
-    case 'thinking':
-      return 'Thinking'
-    case 'typing':
-      return 'Typing...'
-    default:
-      return ''
-  }
-})
-
 const resolvedStatusText = computed(() => {
   if (state.value.negotiationStatus === 'failed') {
     if (state.value.amISelling) {
-      return 'The other party ran out of patience and does not want to buy this vehicle.'
-    } else {
-      return 'The other party ran out of patience. You can still buy the vehicle at the starting price: '
+      return 'The other party ran out of patience and does not want to buy this property.'
     }
+    return 'The seller ran out of patience. You can still buy at the starting price: '
   } else if (state.value.negotiationStatus === 'accepted') {
-    return 'Congratulations! You\'ve successfully negotiatied a deal with ' + state.value.opponentName +'.'
+    return 'Congratulations! You\'ve successfully negotiated a deal for ' + (state.value.propertyName || 'this property') + '.'
   }
   return ''
 })
 
 const negotiationChat = ref(null)
 
-
 const refresh = async () => {
-  const s = await lua.career_modules_marketplace.getNegotiationState()
+  const s = await lua.career_modules_realEstateNegotiation.getNegotiationState()
   if (!s) {
-    lua.career_career.closeAllMenus()
+    router.replace({ name: 'phone-main' })
     return
   }
-  state.value = s
+  state.value = { ...state.value, ...s }
+
   const base = state.value.myOffer != null ? state.value.myOffer : state.value.startingPrice
   if (!Number.isNaN(Number(base))) offerPreview.value = Number(base)
 
   if (state.value.negotiationStatus === 'failed') {
     offerPreview.value = state.value.startingPrice
   }
-
 }
 
 const submitOffer = async () => {
   const price = Number(offerPreview.value)
   if (!Number.isFinite(price)) return
-  await lua.career_modules_marketplace.makeNegotiationOffer(price)
+  await lua.career_modules_realEstateNegotiation.makeOffer(price)
 }
 
 const takeOffer = async () => {
-  //if (state.value.amISelling) {
-    await lua.career_modules_marketplace.takeTheirOffer()
-  //}
+  await lua.career_modules_realEstateNegotiation.takeTheirOffer()
   state.value.negotiationStatus = 'accepted'
   state.value.status = 'accepted'
   offerPreview.value = state.value.theirOffer
   state.value.iAccepted = true
-
-  //insert a new offer history item with the their offer and the negotiation status 'accepted'
   state.value.offerHistory.push({
     myOffer: state.value.theirOffer,
     negotiationStatus: 'accepted'
   })
 }
 
-const cancel = async () => {
-  if(state.value.negotiationStatus !== 'accepted')
-    await lua.career_modules_marketplace.cancelNegotiation()
-}
+const goBack = async (event) => {
+  if (state.value.negotiationStatus !== 'accepted' && state.value.negotiationStatus !== 'failed') {
+    lua.career_modules_realEstateNegotiation.cancelNegotiation()
+    lua.career_career.closeAllMenus()
+    if (event && event.stopPropagation) event.stopPropagation()
+    return
+  }
 
-const goBack = (event) => {
-  router.back()
-  if(state.value.negotiationStatus === 'accepted' && !state.value.iAccepted)
-    lua.career_modules_marketplace.takeTheirOffer()
-  cancel()
+  if (state.value.amISelling && state.value.propertyId) {
+    if (state.value.origin === 'phone') {
+      router.replace({ name: 'phone-real-estate', query: { tab: 'listings' } })
+    } else {
+      router.replace({ name: 'garage-offers', params: { garageId: state.value.propertyId } })
+    }
+    if (event && event.stopPropagation) event.stopPropagation()
+    return
+  }
+
+  if (state.value.negotiationStatus === 'accepted') {
+    await lua.career_modules_realEstateNegotiation.takeTheirOffer()
+    return
+  }
+  lua.career_modules_garageManager.showPurchaseGaragePrompt(state.value.propertyId)
   if (event && event.stopPropagation) event.stopPropagation()
 }
 
 const start = async () => {
+  events.on('realEstateNegotiationData', handleNegotiationData)
   await refresh()
+
   nextTick(() => {
     if (negotiationChat.value) {
       negotiationChat.value.reset()
@@ -409,15 +354,13 @@ const start = async () => {
   })
 }
 
-const kill = async () => {
-  events.off("negotiationData")
+const handleNegotiationData = async () => {
+  await refresh()
 }
 
-// Lua events
-events.on("negotiationData", data => {
-  refresh()
-})
-
+const kill = () => {
+  events.off('realEstateNegotiationData', handleNegotiationData)
+}
 
 onMounted(start)
 onUnmounted(kill)
@@ -483,29 +426,6 @@ onUnmounted(kill)
   padding: 5rem;
 }
 
-.thinking {
-  font-size: 1.2rem;
-  padding: 1rem 0;
-}
-
-.spinner {
-  display: inline-block;
-  width: 1rem;
-  height: 1rem;
-  margin-left: 0.5rem;
-  border: 0.13rem solid rgba(255, 255, 255, 0.3);
-  border-top-color: #ffffff;
-  border-radius: 50%;
-  animation: spinner-rotate 0.8s linear infinite;
-  vertical-align: middle;
-}
-
-@keyframes spinner-rotate {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 .main-content {
   display: flex;
   flex-direction: column;
@@ -513,15 +433,9 @@ onUnmounted(kill)
   padding: 1rem;
 }
 
-
 .summary {
   display: flex;
   flex-direction: column;
-
-  .title {
-    font-weight: 800;
-    letter-spacing: 0.03rem;
-  }
 }
 
 .vehicle-info {
@@ -541,6 +455,7 @@ onUnmounted(kill)
       font-weight: 600;
       margin-top: 0.25rem;
     }
+
     .green-dot {
       width: 0.5rem;
       height: 0.5rem;
@@ -577,63 +492,12 @@ onUnmounted(kill)
   }
 }
 
-.columns {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-.panel {
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(13, 21, 31, 0.6);
-  border-radius: 0.63rem;
-  padding: 1rem 1rem;
-}
-
-.panel-title {
-  color: #ff9b3a;
-  font-weight: 700;
-  margin-bottom: 0.63rem;
-}
-
-.info-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 0.38rem 0;
-
-  &.small {
-    font-size: 0.9rem;
-    opacity: 0.9;
-  }
-}
-
-.row-label {
-  color: #9fb0c0;
-}
-
-.row-value {
-  font-weight: 700;
-
-  &.highlight {
-    color: #ffb25e;
-  }
-
-  &.pos {
-    color: #6ce17a;
-  }
-
-  &.neg {
-    color: #ff6b6b;
-  }
-}
-
 .offer-container {
   display: flex;
   flex-direction: row;
   gap: 0.5rem;
   height: 20rem;
 }
-
 
 .offer-controls {
   display: flex;
@@ -660,11 +524,12 @@ onUnmounted(kill)
     --bng-button-max-width: 5rem;
   }
 
-  .price-column {
+    .price-column {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 0.25rem;
+
     &.disabled {
       opacity: 0.5;
       pointer-events: none;
@@ -701,6 +566,7 @@ onUnmounted(kill)
       color: rgba(255, 255, 255, 0.6);
       --bng-icon-color: rgba(255, 255, 255, 0.6);
     }
+
     &.hidden {
       opacity: 0;
     }
@@ -717,12 +583,12 @@ onUnmounted(kill)
     &.negative {
       color: #ff6b6b;
     }
+
     &.hidden {
       opacity: 0;
     }
   }
 }
-
 
 .patience {
   display: flex;
@@ -742,12 +608,15 @@ onUnmounted(kill)
     border-radius: 0.5rem;
     overflow: hidden;
     position: relative;
+
     &.patience-good {
       border: 1px solid rgba(var(--bng-add-green-400-rgb), 0.3);
     }
+
     &.patience-mid {
       border: 1px solid rgba(var(--bng-ter-yellow-300-rgb), 0.5);
     }
+
     &.patience-bad {
       border: 1px solid rgba(var(--bng-add-red-500-rgb), 0.4);
     }
@@ -767,7 +636,6 @@ onUnmounted(kill)
     position: relative;
     z-index: 1;
     transition: width 1s ease-in-out, background-color 1s ease-out;
-    ;
 
     &.patience-good {
       background-color: var(--bng-add-green-400);
@@ -788,6 +656,7 @@ onUnmounted(kill)
   text-align: center;
   padding: 0.5rem 0;
 }
+
 .accepted {
   padding: 0.5rem 5rem;
   color: var(--bng-add-green-400);
@@ -795,6 +664,7 @@ onUnmounted(kill)
   border-radius: 1rem;
   background: rgba(var(--bng-add-green-400-rgb), 0.2);
 }
+
 .failed {
   padding: 0.5rem 5rem;
   color: var(--bng-add-red-400);
@@ -825,50 +695,14 @@ onUnmounted(kill)
     border-color: #ff7a1a;
     font-weight: 800;
   }
+
   &.wide {
     width: 100%;
+
     > * {
       flex: 1;
       max-width: none;
     }
-  }
-}
-
-.decision-box {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.88rem 1rem;
-  border: 0.13rem solid rgba(255, 255, 255, 0.18);
-  background: rgba(13, 21, 31, 0.85);
-  border-radius: 0.75rem;
-  margin-top: 0.5rem;
-
-  &.accepted {
-    border-color: #6ce17a;
-    box-shadow: 0 0 0 0.13rem rgba(108, 225, 122, 0.2) inset;
-  }
-
-  &.rejected {
-    border-color: #ff6b6b;
-    box-shadow: 0 0 0 0.13rem rgba(255, 107, 107, 0.15) inset;
-  }
-
-  .status-line {
-    font-size: 1.05rem;
-  }
-
-  .actions {
-    display: flex;
-    gap: 0.63rem;
-  }
-
-  .accept-offer {
-    background: #6ce17a;
-    border-color: #6ce17a;
-    color: #0b1b10;
-    font-weight: 900;
   }
 }
 
@@ -884,5 +718,3 @@ onUnmounted(kill)
   color: rgb(255, 51, 51);
 }
 </style>
-
-
