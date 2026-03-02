@@ -839,8 +839,11 @@ local function onActivityAcceptGatherData(elemData, activityData)
         local fac = dGenerator.getFacilityById(elem.facId)
         for materialType, storage in pairs(fac.materialStorages) do
           if storage.isProvider then
-            local type = dGenerator.getMaterialsTemplatesById(materialType).type
-            availableCargoCountByCargoType[type] = availableCargoCountByCargoType[type] + storage.storedVolume
+            local template = dGenerator.getMaterialsTemplatesById(materialType)
+            if template then
+              local type = template.type
+              availableCargoCountByCargoType[type] = availableCargoCountByCargoType[type] + storage.storedVolume
+            end
           end
         end
 
