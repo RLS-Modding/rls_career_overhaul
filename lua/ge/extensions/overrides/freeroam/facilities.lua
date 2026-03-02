@@ -423,6 +423,34 @@ M.walkingMarkerFormatFacility = function(f, elements)
 end
 
 
+-- Get position for a delivery provider from its sites file (first inspect manualAccessPoint).
+local function getDeliveryProviderPosition(f)
+  if not f or not f.sitesFile or not f.manualAccessPoints or #f.manualAccessPoints == 0 then
+    return nil
+  end
+  local psName = nil
+  for _, ap in ipairs(f.manualAccessPoints) do
+    if ap.isInspectSpot and ap.psName then
+      psName = ap.psName
+      break
+    end
+  end
+  if not psName then
+    psName = f.manualAccessPoints[1].psName
+  end
+  local path = type(f.sitesFile) == "table" and f.sitesFile[1] or f.sitesFile
+  local data = jsonReadFile(path)
+  if not data or not data.parkingSpots then
+    return nil
+  end
+  for _, spot in ipairs(data.parkingSpots) do
+    if spot.name == psName and spot.pos and #spot.pos >= 3 then
+      return vec3(spot.pos[1], spot.pos[2], spot.pos[3])
+    end
+  end
+  return nil
+end
+
 local function formatFacilityToRawPoi(f, elements)
   if not f then return end
   local e = M[facilityPoiDefaults[f.type].clusterType.."FormatFacility"](f, elements)
@@ -458,6 +486,36 @@ local function onGetRawPoiListForLevel(levelIdentifier, elements)
   if career_career.isActive() then
     for i, tuningShop in ipairs(facilities.tuningShops or {}) do
       M.walkingMarkerFormatFacility(tuningShop, elements)
+    end
+  end
+  -- Roleplay POIs (bus work, paramedic work): use map icons and ensure they appear in the list
+  local roleplayProviderIds = { busWork = true, wcuParamedicWork = true }
+  local roleplayTypeToPoi = {
+    busWork = { type = "busWork", icon = "poi_pickup_round" },
+    wcuParamedicWork = { type = "paramedicWork", icon = "poi_fast_delivery_round" },
+  }
+  for _, f in ipairs(facilities.deliveryProviders or {}) do
+    local cfg = roleplayTypeToPoi[f.id]
+    if cfg and roleplayProviderIds[f.id] then
+      local pos = getDeliveryProviderPosition(f)
+      if pos then
+        table.insert(elements, {
+          id = f.id,
+          data = { type = cfg.type, missionId = f.id },
+          clusterType = "walkingMarker",
+          markerInfo = {
+            bigmapMarker = {
+              pos = pos,
+              icon = cfg.icon,
+              name = f.name or f.id,
+              description = f.description or "",
+              thumbnail = f.preview,
+              previews = f.preview and { f.preview } or {},
+              cardIcon = cfg.icon,
+            },
+          },
+        })
+      end
     end
   end
 end
