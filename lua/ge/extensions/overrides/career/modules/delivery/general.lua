@@ -835,10 +835,10 @@ local function onActivityAcceptGatherData(elemData, activityData)
           end
           availableCargoCountByCargoType[type] = availableCargoCountByCargoType[type] + add
         end
-        -- add storages
+        -- add storages (skip shared/invalid storages with no id or nil material template)
         local fac = dGenerator.getFacilityById(elem.facId)
-        for materialType, storage in pairs(fac.materialStorages) do
-          if storage.isProvider then
+        for materialType, storage in pairs(fac.materialStorages or {}) do
+          if materialType and storage and storage.id and storage.isProvider then
             local template = dGenerator.getMaterialsTemplatesById(materialType)
             if template then
               local type = template.type
