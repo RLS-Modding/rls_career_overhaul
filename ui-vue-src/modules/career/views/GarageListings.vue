@@ -123,9 +123,6 @@
                     </div>
                     <div class="guidance-label">{{ priceGuidance.label }}</div>
                     <div class="guidance-desc">{{ priceGuidance.description }}</div>
-                    <div class="guidance-market">
-                      Market value: <strong>${{ formatPrice(priceGuidance.marketValue) }}</strong>
-                    </div>
                   </div>
 
                   <div class="form-buttons">
@@ -167,13 +164,15 @@
 </template>
 
 <script setup>
-import { ref, nextTick, onMounted } from 'vue'
+import { ref, nextTick, onMounted, onUnmounted } from 'vue'
 import { lua } from '@/bridge'
+import { useEvents } from '@/services/events'
 import { useRouter } from 'vue-router'
 import { vBngTextInput } from '@/common/directives'
 import ComputerWrapper from './ComputerWrapper.vue'
 
 const router = useRouter()
+const events = useEvents()
 
 const garages = ref([])
 const loading = ref(true)
@@ -268,7 +267,14 @@ const goBack = () => {
   router.back()
 }
 
-onMounted(loadGarages)
+onMounted(() => {
+  events.on('garageListingsUpdated', loadGarages)
+  loadGarages()
+})
+
+onUnmounted(() => {
+  events.off('garageListingsUpdated', loadGarages)
+})
 </script>
 
 <style scoped lang="scss">
@@ -632,16 +638,6 @@ onMounted(loadGarages)
 .guidance-desc {
   font-size: 11px;
   color: rgba(255, 255, 255, 0.45);
-}
-
-.guidance-market {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.35);
-  margin-top: 4px;
-
-  strong {
-    color: rgba(255, 255, 255, 0.6);
-  }
 }
 
 .form-buttons {

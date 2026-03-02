@@ -339,32 +339,17 @@ local function calculateGaragePurchasePrice(garageId)
     return nil
   end
 
-  if career_modules_hardcore.isHardcoreMode() then
-    return garage.defaultPrice
-  else
-    if career_challengeModes and career_challengeModes.isChallengeActive() then
-      local activeChallenge = career_challengeModes.getActiveChallenge()
-      if activeChallenge and activeChallenge.startingGarages then
-        return garage.defaultPrice
-      end
-    end
-
-    if garage.starterGarage then
-      if isStarterGaragePurchasable(garageId) then
-        local price = garage.defaultPrice
-        if career_modules_globalEconomy and career_modules_globalEconomy.getHousingMarketIndex then
-          price = math.floor(price * career_modules_globalEconomy.getHousingMarketIndex() + 0.5)
-        end
-        return price
-      end
+  if not career_modules_hardcore.isHardcoreMode() and garage.starterGarage then
+    if not isStarterGaragePurchasable(garageId) then
       return 0
     end
-    local price = garage.defaultPrice
-    if career_modules_globalEconomy and career_modules_globalEconomy.getHousingMarketIndex then
-      price = math.floor(price * career_modules_globalEconomy.getHousingMarketIndex() + 0.5)
-    end
-    return price
   end
+
+  local price = garage.defaultPrice
+  if career_modules_globalEconomy and career_modules_globalEconomy.getHousingMarketIndex then
+    price = math.floor(price * career_modules_globalEconomy.getHousingMarketIndex() + 0.5)
+  end
+  return price
 end
 
 local function calculateClosingFee(price)
@@ -1202,6 +1187,7 @@ local function completePropertySaleFromListing(garageId, finalPrice, buyerPerson
   end
 
   career_saveSystem.saveCurrent()
+  guihooks.trigger('garageListingsUpdated')
   return true
 end
 
@@ -1339,8 +1325,24 @@ local function getOwnedGaragesListingData()
         if translated then name = translated end
       end
 
-      local marketValue = calculateGaragePurchasePrice(garageId) or 0
-      local isStarter = garage.starterGarage or false
+      local marketValue = garage.defaultPrice or 0
+      if career_modules_globalEconomy and career_modules_globalEconomy.getHousingMarketIndex then
+        marketValue = math.floor(marketValue * career_modules_globalEconomy.getHousingMarketIndex() + 0.5)
+      end
+      local isStarter = false
+      if career_challengeModes and career_challengeModes.isChallengeActive() then
+        local activeChallenge = career_challengeModes.getActiveChallenge()
+        if activeChallenge and activeChallenge.startingGarages then
+          for _, sgId in ipairs(activeChallenge.startingGarages) do
+            if sgId == garageId then
+              isStarter = true
+              break
+            end
+          end
+        end
+      elseif garage.starterGarage then
+        isStarter = true
+      end
       local canSellInfo = canSellGarageByGarageId(garageId)
       local canSell = canSellInfo and canSellInfo[1] or false
 
@@ -1417,7 +1419,10 @@ local function getGarageOffersData(garageId)
     if translated then name = translated end
   end
 
-  local marketValue = calculateGaragePurchasePrice(garageId) or 0
+  local marketValue = garage.defaultPrice or 0
+  if career_modules_globalEconomy and career_modules_globalEconomy.getHousingMarketIndex then
+    marketValue = math.floor(marketValue * career_modules_globalEconomy.getHousingMarketIndex() + 0.5)
+  end
 
   local offers = {}
   if listing.offers then

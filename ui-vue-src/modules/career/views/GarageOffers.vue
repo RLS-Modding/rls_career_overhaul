@@ -95,13 +95,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { lua } from '@/bridge'
+import { useEvents } from '@/services/events'
 import { useRoute, useRouter } from 'vue-router'
 import ComputerWrapper from './ComputerWrapper.vue'
 
 const route = useRoute()
 const router = useRouter()
+const events = useEvents()
 const garageId = route.params.garageId
 
 const property = ref(null)
@@ -183,7 +185,14 @@ const goBack = () => {
   router.back()
 }
 
-onMounted(loadOffers)
+onMounted(() => {
+  events.on('garageListingsUpdated', loadOffers)
+  loadOffers()
+})
+
+onUnmounted(() => {
+  events.off('garageListingsUpdated', loadOffers)
+})
 </script>
 
 <style scoped lang="scss">
