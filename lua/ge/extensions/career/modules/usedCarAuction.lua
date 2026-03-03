@@ -455,7 +455,7 @@ local function driveVehicleToSpot(veh, fromSpot, toSpot, aggression)
     return false
   end
 
-  local pathStr = '{wpTargetList = ' .. serialize(path)
+  local pathStr = '{path = ' .. serialize(path)
   pathStr = pathStr .. string.format(', noOfLaps = 1, aggression = %.2f, avoidCars = "on"}', aggression or 0.4)
   veh:queueLuaCommand('ai.driveUsingPath(' .. pathStr .. ')')
   veh:queueLuaCommand('ai.setRacing(false)')
@@ -488,7 +488,7 @@ local function driveVehicleAlongRouteSpots(veh, routeSpots, aggression)
     return false
   end
 
-  local pathStr = '{wpTargetList = ' .. serialize(combinedPath)
+  local pathStr = '{path = ' .. serialize(combinedPath)
   pathStr = pathStr .. string.format(', noOfLaps = 1, aggression = %.2f, avoidCars = "on"}', aggression or 0.4)
   veh:queueLuaCommand('ai.driveUsingPath(' .. pathStr .. ')')
   veh:queueLuaCommand('ai.setRacing(false)')
