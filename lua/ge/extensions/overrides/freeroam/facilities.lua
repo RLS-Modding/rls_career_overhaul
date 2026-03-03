@@ -489,14 +489,13 @@ local function onGetRawPoiListForLevel(levelIdentifier, elements)
     end
   end
   -- Roleplay POIs (bus work, paramedic work): use map icons and ensure they appear in the list
-  local roleplayProviderIds = { busWork = true, wcuParamedicWork = true }
   local roleplayTypeToPoi = {
     busWork = { type = "busWork", icon = "poi_pickup_round" },
     wcuParamedicWork = { type = "paramedicWork", icon = "poi_fast_delivery_round" },
   }
   for _, f in ipairs(facilities.deliveryProviders or {}) do
     local cfg = roleplayTypeToPoi[f.id]
-    if cfg and roleplayProviderIds[f.id] then
+    if cfg then
       local pos = getDeliveryProviderPosition(f)
       if pos then
         table.insert(elements, {
