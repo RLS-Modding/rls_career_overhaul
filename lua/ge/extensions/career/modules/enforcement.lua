@@ -57,7 +57,8 @@ local function hasLicensePlate(inventoryId)
 end
 
 local function calculateRewardAmount(baseAmount, multiplier)
-  return math.floor(baseAmount * multiplier) / 100
+  local jobMarketIndex = career_modules_globalEconomy and career_modules_globalEconomy.getJobMarketIndex() or 1.0
+  return math.floor(baseAmount * multiplier * jobMarketIndex) / 100
 end
 
 local function createRewardPayment(rewardData, label, tags)

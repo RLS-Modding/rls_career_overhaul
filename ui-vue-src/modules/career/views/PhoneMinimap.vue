@@ -1,9 +1,10 @@
 <template>
-    <PhoneWrapper app-name="Minimap" status-font-color="#FFFFFF" status-blend-mode="">
+    <PhoneWrapper app-name="Minimap">
       <div class="minimap-container" ref="container">
         
         <div class="map-base" :style="mapTransform">
           <svg class="minimap-layer terrain-layer"></svg>
+          <svg class="minimap-layer roads-layer"></svg>
           <svg class="minimap-layer vehicle-layer"></svg>
         </div>
       </div>
@@ -23,9 +24,11 @@ onMounted(() => {
   
   // Attach layers to correct containers
   const terrainLayer = container.value.querySelector('.terrain-layer')
+  const roadsLayer = container.value.querySelector('.roads-layer')
   const vehicleLayer = container.value.querySelector('.vehicle-layer')
   
   terrainLayer.appendChild(store.svgLayers.terrain)
+  roadsLayer.appendChild(store.svgLayers.roads)
   vehicleLayer.appendChild(store.svgLayers.vehicles)
 })
 

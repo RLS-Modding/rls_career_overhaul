@@ -1,0 +1,209 @@
+{
+"MFL_RearView": {
+    "information":{
+        "authors":"TrackpadUser",
+        "name":"Mirrors",
+        "value":100
+    },
+    "slotType":"MFL_RearView",
+    "flexbodies":[
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        {"rotation":{"x":0, "y":0, "z":0}, "translation":{"x":0, "y":0, "z":0}},
+        //body
+        {"deformGroup":""},
+        ["MFL_SideMirrorLeft", ["body"]],
+        ["MFL_SideMirrorRight", ["body"]]
+	]
+},
+"WHE_ForliftRollHoop": {
+    "information":{
+        "authors":"TrackpadUser",
+        "name":"Roll Hoop",
+        "value":10000
+    },
+    "slotType":"WHE_ForliftRollHoop",
+    "slots":[
+        ["type", "default", "description"],
+        ["MFL_RearLamps", "MFL_RearLamps", "Tail Lamps"],
+        ["MFL_HeadLamps", "MFL_HeadLamps", "Head Lamps"],
+        ["MFL_Bacon", "MFL_Bacon", "Beacon"],
+        ["MFL_RearView", "MFL_RearView", "Mirrors"]
+	],
+    "flexbodies":[
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        {"rotation":{"x":0, "y":0, "z":0}, "translation":{"x":0, "y":0, "z":0}},
+        //body
+        {"deformGroup":""},
+        ["MFL_RollHoop", ["body"]],
+        ["MFL_CageStickers", ["body"]]
+        ["MFL_Handles", ["body"]]
+        ["MFL_HandlesScrews", ["body"]]
+
+        
+	],
+    "nodes":[
+        ["id", "posX", "posY", "posZ"],
+        {"selfCollision":true},
+        {"collision":true},
+        {"nodeMaterial":"|NM_METAL"},
+        {"frictionCoef":0.6},
+        {"group":"body"},
+		
+        {"nodeWeight":30},
+		//main chassis structure
+        ["r1r", -0.52, -0.53, 1.15],
+        ["r1", 0, -0.53, 1.15],
+        ["r1l", 0.52, -0.53, 1.15],
+        ["r1tr", -0.52, -0.24, 1.81],
+        ["r1t", 0, -0.24, 1.81],
+        ["r1tl", 0.52, -0.24, 1.81],
+		
+        ["r2tr", -0.52, 0.14,1.81],
+        ["r2t",0, 0.14, 1.81],
+        ["r2tl", 0.52, 0.14, 1.81],
+		
+        ["r3r", -0.52, 0.57, 1.15],
+        ["r3",0, 0.57, 1.15],
+        ["r3l", 0.52, 0.57, 1.15],
+        ["r3tr", -0.52, 0.57, 1.81],
+        ["r3t", 0, 0.57, 1.81],
+        ["r3tl", 0.52, 0.57, 1.81]
+	],
+    "beams":[
+        ["id1:", "id2:"],
+        {"breakGroupType":0},
+        {"deformLimitExpansion":1.2},
+        {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+        //refnode
+
+        {"deformLimitExpansion":1.2},
+        {"beamPrecompression":1, "beamType":"|NORMAL"},
+        {"beamSpring":8501000,"beamDamp":750},
+        //{"beamDeform":30000,"beamStrength":"FLT_MAX"},
+        {"beamDeform":"FLT_MAX","beamStrength":"FLT_MAX"},
+
+        //main hoops
+        ["b0tl","r1l"],
+        ["r1l","r1tl"],
+        ["r1tl","r2tl"],
+        ["r2tl","r3tl"],
+        ["r3tl","r3l"],
+        ["r3l","b3tl"],
+
+        ["b0t","r1"],
+        ["r1","r1t"],
+        ["r1t","r2t"],
+        ["r2t","r3t"],
+        ["r3t","r3"],
+        ["r3","b3t"],
+
+        ["b0tr","r1r"],
+        ["r1r","r1tr"],
+        ["r1tr","r2tr"],
+        ["r2tr","r3tr"],
+        ["r3tr","r3r"],
+        ["r3r","b3tr"],
+
+        //main hoops width
+        ["r1l","r1"],
+        ["r1","r1r"],
+
+        ["r1tl","r1t"],
+        ["r1t","r1tr"],
+
+        ["r2tl","r2t"],
+        ["r2t","r2tr"],
+
+        ["r3tl","r3t"],
+        ["r3t","r3tr"],
+
+        ["r3l","r3"],
+        ["r3","r3r"],
+
+        //main hoop crosses
+        ["b0tl","r1"],
+        ["b0t","r1l"],
+        ["r1l","r1t"],
+        ["r1","r1tl"],
+        ["r1tl","r2t"],
+        ["r1t","r2tl"],
+        ["r2tl","r3t"],
+        ["r2t","r3tl"],
+        ["r3tl","r3"],
+        ["r3t","r3l"],
+        ["r3l","b3t"],
+        ["r3","b3tl"],
+
+        ["b0tr","r1"],
+        ["b0t","r1r"],
+        ["r1r","r1t"],
+        ["r1","r1tr"],
+        ["r1tr","r2t"],
+        ["r1t","r2tr"],
+        ["r2tr","r3t"],
+        ["r2t","r3tr"],
+        ["r3tr","r3"],
+        ["r3t","r3r"],
+        ["r3r","b3t"],
+        ["r3","b3tr"],
+
+        //main hoop long crosses
+        ["b1tl","r1l"],
+        ["b2tl","r1l"],
+        ["b4tl","r3l"],
+        ["b2tl","r3l"],
+        ["r1l","r2tl"],
+        ["r1l","r3tl"],
+        ["r3l","r1tl"],
+        ["r3l","r2tl"],
+
+        ["b1t","r1"],
+        ["b2t","r1"],
+        ["b4t","r3"],
+        ["b2t","r3"],
+        ["r1","r2t"],
+        ["r1","r3t"],
+        ["r3","r1t"],
+        ["r3","r2t"],
+
+        ["b1tr","r1r"],
+        ["b2tr","r1r"],
+        ["b4tr","r3r"],
+        ["b2tr","r3r"],
+        ["r1r","r2tr"],
+        ["r1r","r3tr"],
+        ["r3r","r1tr"],
+        ["r3r","r2tr"]  
+    ],
+    "triangles": [
+        ["id1:","id2:","id3:"],
+        {"dragCoef":10},   
+        ["r1tr", "r1r", "r1"],
+        ["r1tr", "r1", "r1t"],
+        ["r1", "r1l", "r1t"],
+        ["r1t", "r1l", "r1tl"],
+        ["r2t", "r1t", "r1tl"],
+        ["r2t", "r1tl", "r2tl"],
+        ["r3t", "r2t", "r2tl"],
+        ["r3t", "r2tl", "r3tl"],
+        ["r3tr", "r2tr", "r2t"],
+        ["r3tr", "r2t", "r3t"],
+        ["r2tr", "r1tr", "r1t"],
+        ["r2tr", "r1t", "r2t"],      
+        ["r3tl", "r3l", "r3"],
+        ["r3tl", "r3", "r3t"],
+        ["r3t", "r3", "r3tr"],
+        ["r3tr", "r3", "r3r"],
+
+        ["b0tr","b0t","r1r"],
+        ["r1r","b0t","r1"],
+        ["r1","b0t","r1l"],
+        ["b0t","r1l","b0tl"],
+
+        ["r3","b3ttr","r3r"],
+        ["r3","b3tt","b3ttr"],
+        ["r3l","b3ttl","b3tt"],
+        ["r3l","b3tt","r3"]		
+	]
+}
+}

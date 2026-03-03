@@ -17,7 +17,7 @@
                 </div>
                 <div>
                   Estimated Market Value:
-                <BngUnit :money="listing.marketValue" />
+                <BngUnit :money="listing.marketValue || listing.marketSellValue || listing.value" />
                 </div>
               </span>
 

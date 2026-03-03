@@ -1,0 +1,140 @@
+{
+"Forklift_Drive_Wheels": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Drive Wheels",
+        "value":450
+    },
+    "slotType" : "Forklift_Drive_Wheels",
+    "slots": [
+        ["type", "default", "description"]
+        ["Forklift_Drive_Tires","Forklift_Drive_Tires","Tires"]
+    ],
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        //rear wheels
+        ["MFL_FrontWheel", ["wheel_FL","wheelhub_FL"], [], {"pos":{"x":0.44, "y":0.0, "z":0.0}, "rot":{"x":0, "y":0, "z":0}, "scale":{"x":1, "y":1, "z":1}}],
+        ["MFL_FrontWheel", ["wheel_FR","wheelhub_FR"], [], {"pos":{"x":-0.44, "y":0.0, "z":0.0}, "rot":{"x":0, "y":0, "z":180}, "scale":{"x":1, "y":1, "z":1}}]
+    ],
+    "nodes": [
+        ["id", "posX", "posY", "posZ"],
+        //--REAR WHEELS--
+        {"frictionCoef":0.5},
+        {"nodeMaterial":"|NM_METAL"},
+        {"chemEnergy":200,"burnRate":0.5,"flashPoint":300,"smokePoint":200,"selfIgnition":0,"specHeat":1},
+        {"nodeWeight":20.0},
+        {"selfCollision":true}
+        {"collision":true}
+        {"group":"wheelhub_FR"},
+        ["fw1r", -0.36, 0.0, 0.0,{"staticCollision":false}],
+        {"group":"wheelhub_FL"},
+        ["fw1l", 0.36, 0.0, 0.0,{"staticCollision":false}],
+        {"collision":true}
+        //wheel nodes
+        {"group":"wheelhub_FR"},
+        ["fw1rr", -0.65, 0.0, 0.0,{"staticCollision":false}],
+        {"group":"wheelhub_FL"},
+        ["fw1ll", 0.65, 0.0, 0.0,{"staticCollision":false}],
+        {"chemEnergy":false,"burnRate":false,"flashPoint":false},
+        {"group":""}
+    ],
+    "beams": [
+        ["id1:", "id2:"],
+        //--REAR WHEELS--
+          {"beamSpring":2501000,"beamDamp":25},
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1, "beamShortBound":1},
+          {"beamDeform":200000,"beamStrength":"FLT_MAX"},
+        ["fw1r","fw1rr"],
+        ["fw1l","fw1ll"],
+        {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+    ],
+    "pressureWheels": [
+        ["name","hubGroup","group","node1:","node2:","nodeS","nodeArm:","wheelDir"],
+        {"disableMeshBreaking":false,"disableHubMeshBreaking":false,"hasTire":true},,
+
+        //general settings
+        {"hubRadius":0.19},
+        {"wheelOffset":-0.035},
+        {"hubWidth":0.22},
+        {"numRays":30},
+
+        //hub options
+        {"hubTreadBeamSpring":4251000, "hubTreadBeamDamp":80},
+        {"hubPeripheryBeamSpring":4251000, "hubPeripheryBeamDamp":80},
+        {"hubSideBeamSpring":4251000, "hubSideBeamDamp":80},
+        {"hubBeamDeform":110000, "hubBeamStrength":420000},
+        {"hubNodeWeight":2},
+        {"hubNodeMaterial":"|NM_METAL","hasTire":false},
+        {"hubFrictionCoef":0.5}
+    ]
+},
+"Forklift_Steer_Wheels": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Steer Wheels",
+        "value":450
+    },
+    "slotType" : "Forklift_Steer_Wheels",
+    "slots": [
+        ["type", "default", "description"]
+        ["Forklift_Steer_Tires","Forklift_Steer_Tires","Tires"],
+    ],
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        //rear wheels
+        ["MFL_RearWheel", ["wheel_RL","wheelhub_RL"], [], {"pos":{"x":0.47, "y":0.0, "z":0.0}, "rot":{"x":0, "y":0, "z":0}, "scale":{"x":1, "y":1, "z":1}}],
+        ["MFL_RearWheel", ["wheel_RR","wheelhub_RR"], [], {"pos":{"x":-0.47, "y":0.0, "z":0.0}, "rot":{"x":0, "y":0, "z":180}, "scale":{"x":1, "y":1, "z":1}}],
+    ],
+    "nodes": [
+        ["id", "posX", "posY", "posZ"],
+        //--REAR WHEELS--
+        {"frictionCoef":0.5},
+        {"nodeMaterial":"|NM_METAL"},
+        {"chemEnergy":200,"burnRate":0.5,"flashPoint":300,"smokePoint":200,"selfIgnition":0,"specHeat":1},
+        {"nodeWeight":5.0},
+        {"selfCollision":true}
+        {"collision":true}
+        {"group":"wheelhub_RR"},
+        ["rw1r", -0.36, 0.0, 0.0{"staticCollision":false}],
+        {"group":"wheelhub_RL"},
+        ["rw1l", 0.36, 0.0, 0.0{"staticCollision":false}],
+        {"collision":true}
+        //wheel nodes
+        {"group":"wheelhub_RR"},
+        ["rw1rr", -0.65, 0.0, 0.0{"staticCollision":false}],
+        {"group":"wheelhub_RL"},
+        ["rw1ll", 0.65, 0.0, 0.0{"staticCollision":false}],
+        {"chemEnergy":false,"burnRate":false,"flashPoint":false},
+        {"group":""},
+    ],
+    "beams": [
+        ["id1:", "id2:"],
+        //--REAR WHEELS--
+        {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+        {"beamSpring":1501000,"beamDamp":25},
+        {"beamDeform":110000,"beamStrength":1400000},
+        ["rw1r","rw1rr"],
+        ["rw1l","rw1ll"],
+        {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+    ],
+    "pressureWheels": [
+        ["name","hubGroup","group","node1:","node2:","nodeS","nodeArm:","wheelDir"],
+        {"disableMeshBreaking":false,"disableHubMeshBreaking":false,"hasTire":false},,
+
+        //general settings
+        {"hubRadius":0.16},
+        {"wheelOffset":-0.035},
+        {"hubWidth":0.16},
+        {"numRays":26},
+
+        //hub options
+        {"hubTreadBeamSpring":1620900, "hubTreadBeamDamp":10},
+        {"hubPeripheryBeamSpring":1620900, "hubPeripheryBeamDamp":10},
+        {"hubSideBeamSpring":1501000, "hubSideBeamDamp":10}
+        {"hubBeamDeform":27000, "hubBeamStrength":85000},
+        {"hubNodeWeight":1.5},
+        {"hubNodeMaterial":"|NM_METAL"},
+        {"hubFrictionCoef":0.5},
+    ],
+},
+}

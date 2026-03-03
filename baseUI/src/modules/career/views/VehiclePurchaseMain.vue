@@ -34,12 +34,12 @@
               <span v-if="vehiclePurchaseStore.vehicleInfo.originalSellValue" class="old-price">
                 <BngUnit :money="vehiclePurchaseStore.vehicleInfo.originalSellValue" />
               </span>
-              <BngUnit class="money" :money="vehiclePurchaseStore.vehicleInfo.Value" />
+              <BngUnit class="money" :money="vehiclePurchaseStore.vehicleInfo.valueAdjusted || vehiclePurchaseStore.vehicleInfo.Value" />
             </div>
             <div class="sub-info">
               <div>
                 Est. Market:
-                <BngUnit class="money" :money="vehiclePurchaseStore.vehicleInfo.marketValue" />
+                <BngUnit class="money" :money="vehiclePurchaseStore.vehicleInfo.marketValueAdjusted || vehiclePurchaseStore.vehicleInfo.marketValue" />
               </div>
             </div>
           </div>

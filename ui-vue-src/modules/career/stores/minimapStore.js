@@ -12,15 +12,25 @@ export const useMinimapStore = defineStore("minimap", () => {
     const isFreeCam = ref(false)
     const playerPos = ref({ x: 0, y: 0 })
     const playerId = ref(0)
+    const viewControlledBy = ref(null)
+    const showTerrainImage = ref(true)
+    const darkMode = ref(false)
 
     const svgLayers = ref({
         terrain: document.createElementNS("http://www.w3.org/2000/svg", "svg"),
+        roads: document.createElementNS("http://www.w3.org/2000/svg", "svg"),
         vehicles: document.createElementNS("http://www.w3.org/2000/svg", "svg"),
         aux: document.createElementNS("http://www.w3.org/2000/svg", "svg")
     })
 
     function processMapData(data) {
-        if (data.terrainTiles) {
+        while (svgLayers.value.terrain.firstChild) {
+            svgLayers.value.terrain.removeChild(svgLayers.value.terrain.firstChild);
+        }
+        
+        nodes.value = data.nodes || {};
+        
+        if (showTerrainImage.value && Array.isArray(data.terrainTiles) && data.terrainTiles.length > 0) {
             data.terrainTiles.forEach(tile => {
                 const image = document.createElementNS(svgLayers.value.terrain.namespaceURI, "image");
                 image.setAttribute("x", tile.offset[0]);
@@ -35,11 +45,8 @@ export const useMinimapStore = defineStore("minimap", () => {
                 svgLayers.value.terrain.appendChild(image);
             });
         }
-
-        if (data.nodes) {
-            nodes.value = data.nodes;
-            drawRoadNetwork();
-        }
+        
+        drawRoadNetwork();
     }
 
     function processMapUpdate(data) {
@@ -62,30 +69,44 @@ export const useMinimapStore = defineStore("minimap", () => {
     }
 
     function drawRoadNetwork() {
-        const drawRoads = (min, max, color) => {
+        const roadsLayer = svgLayers.value.roads;
+        while (roadsLayer.firstChild) {
+            roadsLayer.removeChild(roadsLayer.firstChild);
+        }
+        
+        if (!nodes.value || Object.keys(nodes.value).length === 0) return;
+        
+        const drawRoads = (min, max) => {
             Object.values(nodes.value).forEach(node => {
+                if (!node.links) return;
                 Object.entries(node.links).forEach(([targetId, link]) => {
                     if (link.drivability >= min && link.drivability <= max) {
                         const targetNode = nodes.value[targetId];
-                        const line = document.createElementNS(svgLayers.value.terrain.namespaceURI, "line");
+                        if (!targetNode) return;
+                        const line = document.createElementNS(roadsLayer.namespaceURI, "line");
                         line.setAttribute("x1", -node.pos[0]);
                         line.setAttribute("y1", node.pos[1]);
                         line.setAttribute("x2", -targetNode.pos[0]);
                         line.setAttribute("y2", targetNode.pos[1]);
                         line.setAttribute("stroke", getDrivabilityColor(link.drivability));
-                        line.setAttribute("stroke-width", Math.max(node.radius, targetNode.radius));
-                        svgLayers.value.terrain.appendChild(line);
+                        line.setAttribute("stroke-width", Math.max(node.radius || 1, targetNode.radius || 1));
+                        roadsLayer.appendChild(line);
                     }
                 });
             });
         };
 
-        drawRoads(0, 0.1, '#967864');
-        drawRoads(0.1, 0.9, '#969678');
-        drawRoads(0.9, 1, '#DCDCDC');
+        drawRoads(0, 0.1);
+        drawRoads(0.1, 0.9);
+        drawRoads(0.9, 1);
     }
 
     function getDrivabilityColor(d) {
+        if (darkMode.value) {
+            if (d <= 0.1) return '#5C4A3A';
+            if (d < 0.9) return '#5C5C4A';
+            return '#6B6B6B';
+        }
         if (d <= 0.1) return '#967864';
         if (d < 0.9) return '#969678';
         return '#DCDCDC';
@@ -115,9 +136,11 @@ export const useMinimapStore = defineStore("minimap", () => {
         }
 
         viewBox.value = parts.join(' ');
-        [svgLayers.value.terrain, svgLayers.value.vehicles, svgLayers.value.aux].forEach(layer => {
-            layer.setAttribute('viewBox', viewBox.value);
-        });
+        if (!viewControlledBy.value) {
+            [svgLayers.value.terrain, svgLayers.value.roads, svgLayers.value.vehicles, svgLayers.value.aux].forEach(layer => {
+                layer.setAttribute('viewBox', viewBox.value);
+            });
+        }
     }
 
     function updateVehicleMarkers(objects) {
@@ -151,6 +174,12 @@ export const useMinimapStore = defineStore("minimap", () => {
         lua.extensions.load("ui_phone_minimap")
     }
 
+    function refreshRoadNetwork() {
+        if (nodes.value && Object.keys(nodes.value).length > 0) {
+            drawRoadNetwork();
+        }
+    }
+
     function cleanup() {
         events.off('PhoneMinimapData')
         events.off('PhoneMinimapUpdate')
@@ -160,9 +189,13 @@ export const useMinimapStore = defineStore("minimap", () => {
     return {
         svgLayers,
         viewBox,
+        viewControlledBy,
         zoomFactor,
+        showTerrainImage,
+        darkMode,
         processMapData,
         processMapUpdate,
+        refreshRoadNetwork,
         init,
         cleanup
     }

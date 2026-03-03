@@ -4,14 +4,9 @@
 
 local M = {}
 
-local blacklist = {
-  ["/gameplay/delivery/materials.deliveryMaterials.json"] = true,
-  ["/gameplay/delivery/materials.deliveryParcels.json"] = true,
-  ["/gameplay/delivery/mechanics.deliveryParcels.json"] = true,
-  ["/gameplay/delivery/restaurants.deliveryParcels.json"] = true,
-  ["/gameplay/delivery/vehicles.deliveryVehicles.json"] = true,
-  ["/gameplay/delivery/warehouses.deliveryParcels.json"] = true,
-}
+local sharedCalc = require('gameplay/delivery/calculators')
+local sharedTemplates = require('gameplay/delivery/templates')
+local sharedFacilityScanner = require('gameplay/delivery/facilityScanner')
 
 M.dependencies = {"freeroam_facilities", "gameplay_sites_sitesManager", "util_configListGenerator"}
 local im = ui_imgui
@@ -83,21 +78,7 @@ local function selectAccessPointByLookupKeyByType(accessPointsByName, logisticTy
 end
 M.selectAccessPointByLookupKeyByType = selectAccessPointByLookupKeyByType
 
-local tmpVec = vec3()
-local function distanceBetween(posA, posB)
-  local name_a,_,distance_a = map.findClosestRoad(posA)
-  local name_b,_,distance_b = map.findClosestRoad(posB)
-  if not name_a or not name_b then return 1 end
-  local path = map.getPath(name_a, name_b)
-  local d = 0
-  for i = 1, #path-1 do
-    tmpVec:set(   map.getMap().nodes[path[i  ]].pos)
-    tmpVec:setSub(map.getMap().nodes[path[i+1]].pos)
-    d = d + tmpVec:length()
-  end
-  d = d + distance_a + distance_b
-  return d
-end
+local distanceBetween = sharedFacilityScanner.getDistanceBetweenLocations
 
 local function getLocationCoordinates(loc)
   if loc.type == "facilityParkingspot" then
@@ -137,119 +118,27 @@ end
 -- Parcel Finalizing, Templates and Generation --
 -------------------------------------------------
 
-local parcelItemMoneyMultiplier = 1
-local function getMoneyRewardForParcelItem(item, distance)
-  local basePrice = math.sqrt(item.slots) / 4
-  local distanceExp = 1.3 + math.sqrt(item.slots)/100
-  local pricePerM = 5 + math.pow(item.weight, 0.9)
-  local modMultiplier = 1---0.9 + 0.1 * #item.modifiers
-  for _, mod in ipairs(item.modifiers) do
-    modMultiplier = modMultiplier * (mod.moneyMultipler or 1)
-  end
-
-  -- cleanup
-  return ((basePrice) + math.pow(distance/1000, distanceExp) * pricePerM) * hardcoreMultiplier * parcelItemMoneyMultiplier * modMultiplier, basePrice, pricePerM
-
-end
+local getMoneyRewardForParcelItem = sharedCalc.getMoneyRewardForParcelItem
 
 local function finalizeParcelItemDistanceAndRewards(item)
   if item.rewards then return end
   local distance = getDistanceBetweenFacilities(item.origin, item.destination)
 
-  local baseXP = 2
-  if item.slots >= 16 then baseXP = baseXP + 1 end
-  if item.slots >= 32 then baseXP = baseXP + 1 end
-  if item.slots >= 64 then baseXP = baseXP + 1 end
-
   item.data.originalDistance = distance
   local template = deepcopy(M.getParcelTemplateById(item.templateId))
 
   item.modifiers = dParcelMods.generateModifiers(item, template, distance)
-  item.rewards = {
-    money = getMoneyRewardForParcelItem(item, distance) * hardcoreMultiplier,
-    logistics = baseXP + round(distance/800) * hardcoreMultiplier,
-    ["logistics-delivery"] = baseXP + round(distance/800) * hardcoreMultiplier
-  }
-  if item.organization then
-    local organizationData = freeroam_organizations.getOrganization(item.organization)
-    if organizationData then
-      item.rewards[item.organization .. "Reputation"] = baseXP + round(distance/1000)
-      item.rewards.money = item.rewards.money * organizationData.reputationLevels[organizationData.reputation.level+2].deliveryBonus.value
-    end
-  end
-
-  -- Apply economy adjuster if available
-  if career_economyAdjuster then
-    local baseMoneyReward = item.rewards.money
-    local multiplier = career_economyAdjuster.getSectionMultiplier("delivery_parcel")
-    item.rewards.money = item.rewards.money * multiplier
-    item.rewards.money = math.floor(item.rewards.money + 0.5) -- Round to nearest integer
-    print(string.format("Delivery parcel reward adjusted: %.2f -> %.2f (multiplier: %.2f)",
-      baseMoneyReward, item.rewards.money, multiplier))
-  end
+  item.rewards = sharedCalc.getParcelReward(item, distance, item.organization)
 end
 M.finalizeParcelItemDistanceAndRewards = finalizeParcelItemDistanceAndRewards
 
 
-local parcelItemTemplates = nil
-local parcelTemplatesById = {}
--- only contains true parcels!
-local parcelTemplateIdsByLogisticType = {}
 local function getDeliveryParcelTemplates()
-  if not parcelItemTemplates then
-    parcelItemTemplates = {}
-    local levelInfo = core_levels.getLevelByName(getCurrentLevelIdentifier())
-    local Allfiles = FS:findFiles("gameplay/delivery/", '*.deliveryParcels.json', -1, false, true)
-    local files = {}
-    for _, file in ipairs(Allfiles) do
-      if not blacklist[file] then
-        table.insert(files, file)
-      end
-    end
-    for _,file in ipairs(files) do
-      for k, v in pairs(jsonReadFile(file) or {}) do
-        local item = v
-        item.id = k
-        item.type = item.cargoType
-        --item.logisticTypesLookup = tableValuesAsLookupDict(item.logisticTypes)
-        item.logisticType = item.logisticTypes[1] -- fix from table to one elem!
-        if not item.materialType then
-          parcelTemplateIdsByLogisticType[item.logisticType] = parcelTemplateIdsByLogisticType[item.logisticType] or {}
-          table.insert(parcelTemplateIdsByLogisticType[item.logisticType], item.id)
-        end
-        --item.generationChance = 1
-        item.duplicationChanceSum = 0
-        item.duplicationChance = item.duplicationChance or {1}
-        for _, chance in ipairs(item.duplicationChance or {}) do
-          item.duplicationChanceSum = item.duplicationChanceSum + chance
-        end
-
-        item.weight = item.weight or 0
-        -- make weight into a table to pick random ones later
-        if type(item.weight) ~= "table" then
-          item.weight = {item.weight}
-        end
-
-        if type(item.slots) ~= "table" then
-          item.slots = {item.slots}
-        end
-        table.sort(item.slots)
-        item.minSlots = item.slots[1]
-        item.maxSlots = item.slots[#item.slots]
-
-        table.insert(parcelItemTemplates, item)
-        parcelTemplatesById[item.id] = item
-        item.modChance = item.modChance or {}
-        item.modChance.timed = item.modChance.timed or 0.2
-      end
-    end
-    log("I","",string.format("Loaded %d item templates from %d files.", #tableKeys(parcelItemTemplates), #files))
-  end
-  return parcelItemTemplates
+  return sharedTemplates.loadParcelTemplates()
 end
 
 local function getParcelTemplateById(templateId)
-  return parcelTemplatesById[templateId]
+  return sharedTemplates.getTemplateById(templateId)
 end
 M.getParcelTemplateById = getParcelTemplateById
 
@@ -465,35 +354,17 @@ end
 --------------------------------------------------
 
 local eligibleVehicles
-local vehicleFilterTemplates = nil
-local vehicleFilterTemplatesById = {}
 local function getDeliveryVehicleTemplates()
-  if not vehicleFilterTemplates then
-    vehicleFilterTemplates = {}
-    local Allfiles = FS:findFiles("gameplay/delivery/", '*.deliveryVehicles.json', -1, false, true)
+  local templates = sharedTemplates.loadVehicleFilters()
+  if not eligibleVehicles then
     eligibleVehicles = util_configListGenerator.getEligibleVehicles(false, true)
-    local files = {}
-    for _, file in ipairs(Allfiles) do
-      if not blacklist[file] then
-        table.insert(files, file)
-      end
-    end
-    for _,file in ipairs(files) do
-      for id, filter in pairs(jsonReadFile(file) or {}) do
-        filter.id = id
-
-        filter.unlockTag = filter.unlockTag or nil
-        table.insert(vehicleFilterTemplates, filter)
-        vehicleFilterTemplatesById[id] = filter
-      end
-    end
   end
-  return vehicleFilterTemplates
+  return templates
 end
 
 local function getRandomVehicleFromFilterByFilterId(filterId)
   getDeliveryVehicleTemplates()
-  local filter = vehicleFilterTemplatesById[filterId]
+  local filter = sharedTemplates.getVehicleFilterById(filterId)
   local infos = util_configListGenerator.getRandomVehicleInfos(filter, 1, eligibleVehicles)
   if next(infos) then
     return infos[1], (filter.filterName or "Vehicle")
@@ -536,33 +407,9 @@ local function finalizeVehicleOffer(offer)
 
     offer.data.originalDistance = distance
 
-    local filter = vehicleFilterTemplatesById[offer.vehicle.filterId]
+    local filter = sharedTemplates.getVehicleFilterById(offer.vehicle.filterId)
 
-    offer.rewards = {
-      money = (filter.baseReward + round(filter.rewardPerKm * distance/1000)) * hardcoreMultiplier,
-      logistics = (5 + round(distance/400)) * hardcoreMultiplier
-    }
-    if offer.data.type == "vehicle" then
-      offer.rewards.money = offer.rewards.money * hardcoreMultiplier
-      offer.rewards["logistics-vehicleDelivery"] = (5 + round(distance/400)) * hardcoreMultiplier
-    elseif offer.data.type == "trailer" then
-      offer.rewards.money = offer.rewards.money * hardcoreMultiplier
-      offer.rewards["logistics-delivery"] = (5 + round(distance/400)) * hardcoreMultiplier
-    end
-    if offer.organization then
-      offer.rewards[offer.organization .. "Reputation"] = (5 + round(distance/4000)) * hardcoreMultiplier
-    end
-
-    -- Apply economy adjuster if available
-    if career_economyAdjuster then
-      local baseMoneyReward = offer.rewards.money
-      local deliveryType = offer.data.type == "vehicle" and "delivery_vehicle" or "delivery_trailer"
-      local multiplier = career_economyAdjuster.getSectionMultiplier(deliveryType)
-      offer.rewards.money = offer.rewards.money * multiplier
-      offer.rewards.money = math.floor(offer.rewards.money + 0.5) -- Round to nearest integer
-      print(string.format("Delivery vehicle/trailer reward adjusted: %.2f -> %.2f (multiplier: %.2f)",
-        baseMoneyReward, offer.rewards.money, multiplier))
-    end
+    offer.rewards = sharedCalc.getVehicleOfferReward(filter, distance, offer.data.type, offer.organization)
   end
 end
 M.finalizeVehicleOffer = finalizeVehicleOffer
@@ -646,7 +493,7 @@ local function triggerVehicleOfferGenerator(fac, generator, timeOffset)
       goto continue
     end
 
-    local vehType = vehicleFilterTemplatesById[generator.filter].type
+    local vehType = sharedTemplates.getVehicleFilterById(generator.filter).type
 
     local task, type, name
     if vehType == "vehicle" then
@@ -686,7 +533,7 @@ local function triggerVehicleOfferGenerator(fac, generator, timeOffset)
 
       vehicle = {
         filterId = generator.filter,
-        unlockTag = vehicleFilterTemplatesById[generator.filter].unlockTag,
+        unlockTag = sharedTemplates.getVehicleFilterById(generator.filter).unlockTag,
       },
       locations = {origin, dropOff},
       dropOffFacId = dropOff.facId,
@@ -712,29 +559,10 @@ end
 ----------------------
 -- Material generation --
 ----------------------
-local materialTemplates = nil
-local materialTemplatesById = {}
 local function getMaterialsTemplates()
-  if not materialTemplates then
-    materialTemplates = {}
-    local Allfiles = FS:findFiles("gameplay/delivery/", '*.deliveryMaterials.json', -1, false, true)
-    local files = {}
-    for _, file in ipairs(Allfiles) do
-      if not blacklist[file] then
-        table.insert(files, file)
-      end
-    end
-    for _,file in ipairs(files) do
-      for id, data in pairs(jsonReadFile(file) or {}) do
-        data.id = id
-        table.insert(materialTemplates, data)
-        materialTemplatesById[id] = data
-      end
-    end
-  end
-  return materialTemplates
+  return sharedTemplates.loadMaterialTemplates()
 end
-M.getMaterialsTemplatesById = function(id) return materialTemplatesById[id] end
+M.getMaterialsTemplatesById = function(id) return sharedTemplates.getMaterialTemplateById(id) end
 
 local function setupMaterialStorage(fac, generator)
   local vol = generator.capacity/2
@@ -912,9 +740,7 @@ local function addMaterialAsParcelToContainer(con, storage, amount, sourceFacId,
       sourceFacId = sourceFacId
     },
 
-    rewards = {
-      money = amount * materialData.money,
-    },
+    rewards = sharedCalc.getMaterialReward(materialData, amount),
     modifiers = {},
     location = deepcopy(origin),
     origin = deepcopy(origin),
@@ -930,15 +756,7 @@ local function addMaterialAsParcelToContainer(con, storage, amount, sourceFacId,
   }
 
   -- Apply economy adjuster if available
-  if career_economyAdjuster then
-    local materialType = materialData and materialData.type or "fluid"
-    local deliveryType = "delivery_" .. materialType
-    local multiplier = career_economyAdjuster.getSectionMultiplier(deliveryType)
-    item.rewards.money = item.rewards.money * multiplier
-    item.rewards.money = math.floor(item.rewards.money + 0.5) -- Round to nearest integer
-    print(string.format("New material parcel reward adjusted: %d -> %d (multiplier: %.2f)",
-      amount * materialData.money, item.rewards.money, multiplier))
-  end
+  item.rewards.money = sharedCalc.applyEconomyAdjuster(item.rewards.money, "delivery_" .. (materialData.type or "fluid"))
 
   local label, desc = dParcelMods.getLabelAndShortDescription(materialData.type)
   table.insert(item.modifiers, {type = materialData.type, icon = dParcelMods.getModifierIcon(materialData.type), active = true, label = label, description = desc})
@@ -967,27 +785,17 @@ local function splitOffPartsFromMaterialCargo(cargo, otherPartSizes)
     -- copy slots/weight get set to what goes into storage
     copy.slots = size
     copy.weight = materialData.density * copy.slots
-    copy.rewards.money = copy.slots * materialData.money * hardcoreMultiplier
+    copy.rewards.money = sharedCalc.applyHardcoreMultiplier(copy.slots * materialData.money)
     table.insert(ret, copy)
 
     cargo.slots = cargo.slots - size
     cargo.weight = materialData.density * cargo.slots
-    cargo.rewards.money = cargo.slots * materialData.money * hardcoreMultiplier
+    cargo.rewards.money = sharedCalc.applyHardcoreMultiplier(cargo.slots * materialData.money)
 
-    -- Apply economy adjuster to both copy and cargo rewards if available
-    if career_economyAdjuster then
-      local materialType = materialData and materialData.type or "fluid"
-      local deliveryType = "delivery_" .. materialType
-      local multiplier = career_economyAdjuster.getSectionMultiplier(deliveryType)
-
-      copy.rewards.money = copy.rewards.money * multiplier
-      copy.rewards.money = math.floor(copy.rewards.money + 0.5)
-
-      cargo.rewards.money = cargo.rewards.money * multiplier
-      cargo.rewards.money = math.floor(cargo.rewards.money + 0.5)
-
-      print(string.format("Material split rewards adjusted (multiplier: %.2f)", multiplier))
-    end
+    -- Apply economy adjuster to both
+    local ecoSection = "delivery_" .. (materialData.type or "fluid")
+    copy.rewards.money = sharedCalc.applyEconomyAdjuster(copy.rewards.money, ecoSection)
+    cargo.rewards.money = sharedCalc.applyEconomyAdjuster(cargo.rewards.money, ecoSection)
   end
   return ret
 end
@@ -1016,27 +824,17 @@ local function moveMaterialToDestination(cargo, destination)
     -- cargo slots/weight get reduced
     cargo.slots = cargo.slots - amountForTank
     cargo.weight = materialData.density * cargo.slots
-    cargo.rewards.money = cargo.slots * materialData.money * hardcoreMultiplier
+    cargo.rewards.money = sharedCalc.applyHardcoreMultiplier(cargo.slots * materialData.money)
 
     -- copy slots/weight get set to what goes into storage
     copy.slots = amountForTank
     copy.weight = materialData.density * copy.slots
-    copy.rewards.money = copy.slots * materialData.money * hardcoreMultiplier
+    copy.rewards.money = sharedCalc.applyHardcoreMultiplier(copy.slots * materialData.money)
 
-    -- Apply economy adjuster to both cargo and copy rewards if available
-    if career_economyAdjuster then
-      local materialType = materialData and materialData.type or "fluid"
-      local deliveryType = "delivery_" .. materialType
-      local multiplier = career_economyAdjuster.getSectionMultiplier(deliveryType)
-
-      cargo.rewards.money = cargo.rewards.money * multiplier
-      cargo.rewards.money = math.floor(cargo.rewards.money + 0.5)
-
-      copy.rewards.money = copy.rewards.money * multiplier
-      copy.rewards.money = math.floor(copy.rewards.money + 0.5)
-
-      print(string.format("Material move rewards adjusted (multiplier: %.2f)", multiplier))
-    end
+    -- Apply economy adjuster to both
+    local ecoSection = "delivery_" .. (materialData.type or "fluid")
+    cargo.rewards.money = sharedCalc.applyEconomyAdjuster(cargo.rewards.money, ecoSection)
+    copy.rewards.money = sharedCalc.applyEconomyAdjuster(copy.rewards.money, ecoSection)
 
     -- move copy to the destination
     dParcelManager.changeCargoLocation(cargo.id, destination)
@@ -1072,31 +870,12 @@ M.addMaterialAsParcelToContainer = addMaterialAsParcelToContainer
 M.finalizeMaterialDistances = finalizeMaterialDistances
 
 local function finalizeMaterialDistanceRewards(item, destination)
-  --(3+(max(0,($D24/2000)-1))) * (E$23/400)
   local distance = getDistanceBetweenFacilities(item.origin, destination)
-  local xpAmount = round((3+math.max(0,(distance/2000)-1)) * (item.slots / 400)) * hardcoreMultiplier
-  item.rewards.logistics = xpAmount
-  item.rewards["logistics-delivery"] = xpAmount
-
-  if item.organization then
-    local organizationData = freeroam_organizations.getOrganization(item.organization)
-    if organizationData then
-      item.rewards[item.organization .. "Reputation"] = xpAmount
-      item.rewards.money = item.rewards.money * organizationData.reputationLevels[organizationData.reputation.level+2].deliveryBonus.value * hardcoreMultiplier
-    end
-  end
-
-  -- Apply economy adjuster if available
-  if career_economyAdjuster then
-    local baseMoneyReward = item.rewards.money
-    local materialData = M.getMaterialsTemplatesById(item.materialType)
-    local materialType = materialData and materialData.type or "fluid"
-    local deliveryType = "delivery_" .. materialType
-    local multiplier = career_economyAdjuster.getSectionMultiplier(deliveryType)
-    item.rewards.money = item.rewards.money * multiplier
-    item.rewards.money = math.floor(item.rewards.money + 0.5) -- Round to nearest integer
-    print(string.format("Delivery material reward adjusted: %.2f -> %.2f (multiplier: %.2f)",
-      baseMoneyReward, item.rewards.money, multiplier))
+  local materialData = M.getMaterialsTemplatesById(item.materialType)
+  local materialType = materialData and materialData.type or "fluid"
+  local rewards = sharedCalc.getMaterialXPReward(distance, item.slots, item.organization, nil, nil, item.rewards.money, materialType)
+  for k, v in pairs(rewards) do
+    item.rewards[k] = v
   end
 end
 M.finalizeMaterialDistanceRewards = finalizeMaterialDistanceRewards
@@ -1199,6 +978,7 @@ local generatorTypeToDirection = {
 }
 
 local function logisticTypeToSystem(type, fac)
+  local parcelTemplateIdsByLogisticType = sharedTemplates.getTemplateIdsByLogisticType()
   if parcelTemplateIdsByLogisticType[type] and next(parcelTemplateIdsByLogisticType[type]) then
     return {parcelDelivery = true}
   end

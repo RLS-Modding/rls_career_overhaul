@@ -19,8 +19,7 @@
             "foodSupplies",
             "industrial",
             "trailerDeliveryConstructionMaterials",
-            "vehLargeTruck"
-          ]
+            "vehLargeTruck"],
         },
         {
           "psName": "industrialWarehouse_parkingB",

@@ -1,0 +1,14 @@
+{
+"TPUPallet": {
+    "information":{
+        "authors":"TrackpadUser",
+        "name":"PalletCompatibleLoads",
+        "value":100
+    },
+    "slotType":"main",
+    "slots":[
+        ["type", "default", "description"],
+        ["TPUPalletLoadType","TPUUSPallet","Load Type",{"coreSlot":true}]
+	]
+}
+}

@@ -175,6 +175,10 @@
     "icon": "carDealer",
     "reputationLevels": [
       {
+        "loans": {
+          "max": 50000,
+          "rate": 0.4
+        },
         "stock": 5,
         "range": [
           0.8,
@@ -262,6 +266,10 @@
         ]
       },
       {
+        "loans": {
+          "max": 50000,
+          "rate": 0.4
+        },
         "stock": 10,
         "range": [
           0.7,
@@ -350,7 +358,7 @@
       },
       {
         "loans": {
-          "max": 30000,
+          "max": 150000,
           "rate": 0.4
         },
         "stock": 15,
@@ -441,7 +449,7 @@
       },
       {
         "loans": {
-          "max": 45000,
+          "max": 200000,
           "rate": 0.3
         },
         "stock": 20,
@@ -545,7 +553,7 @@
           "licencePlate": ""
         },
         "loans": {
-          "max": 65000,
+          "max": 25000,
           "rate": 0.20
         },
         "subFilters": [
@@ -629,6 +637,10 @@
     "icon": "carDealer",
     "reputationLevels": [
       {
+        "loans": {
+          "max": 150000,
+          "rate": 0.9
+        },
         "hiddenFromDealerList": true,
         "stock": 5,
         "range": [
@@ -702,6 +714,10 @@
         ]
       },
       {
+        "loans": {
+          "max": 150000,
+          "rate": 0.8
+        },
         "hiddenFromDealerList": true,
         "stock": 5,
         "range": [
@@ -776,8 +792,8 @@
       },
       {
         "loans": {
-          "max": 80000,
-          "rate": 0.5
+          "max": 500000,
+          "rate": 0.4
         },
         "stock": 10,
         "range": [
@@ -852,7 +868,7 @@
       },
       {
         "loans": {
-          "max": 200000,
+          "max": 1000000,
           "rate": 0.35
         },
         "stock": 20,
@@ -928,7 +944,7 @@
       },
       {
         "loans": {
-          "max": 1000000,
+          "max": 2000000,
           "rate": 0.2
         },
         "stock": 30,
@@ -1309,6 +1325,7 @@
     "icon": "carDealer",
     "reputationLevels": [
       {
+
         "stock": 5,
         "range": [
           0.8,
@@ -1407,6 +1424,7 @@
         ]
       },
       {
+
         "stock": 10,
         "range": [
           0.7,
@@ -1505,6 +1523,10 @@
         ]
       },
       {
+        "loans": {
+          "max": 100000,
+          "rate": 0.30
+        },
         "stock": 15,
         "range": [
           0.6,
@@ -1603,6 +1625,10 @@
         ]
       },
       {
+        "loans": {
+          "max": 250000,
+          "rate": 0.25
+        },
         "stock": 20,
         "range": [
           0.6,
@@ -1715,7 +1741,7 @@
           "licencePlate": ""
         },
         "loans": {
-          "max": 65000,
+          "max": 300000,
           "rate": 0.20
         },
         "subFilters": [
@@ -2079,6 +2105,7 @@
     "name": "Belasco City Warehouse",
     "description": "A large warehouse near the harbour area of belasco city.",
     "icon": "semiTruckUS",
+    "loanableVehicles": []
     "reputationLevels": [
       {},
       {},
@@ -2495,7 +2522,7 @@
     "name": "Sealbrik",
     "description": "Produces various concrete and dry bulk related products, and owns the quarry outside of belasco city.",
     "icon": "rocks",
-        "loanableVehicles": [
+    "loanableVehicles": [
       {
         "model": "wl40",
         "config": "arm_bucket_alt",
@@ -2511,7 +2538,6 @@
         "mileage": 10000
       }
     ],
-
     "reputationLevels": [
       {},
       {},
@@ -2576,7 +2602,7 @@
           "icon": "boxPickUp03"
         },
         "loans": {
-          "max": 50000,
+          "max": 100000,
           "rate": 0.50
         },
         "requiredValue": -75,
@@ -2589,7 +2615,7 @@
           "icon": "boxPickUp03"
         },
         "loans": {
-          "max": 50000,
+          "max": 100000,
           "rate": 0.25
         },
         "requiredValue": -25
@@ -2597,7 +2623,7 @@
       {
         // Level 1
         "loans": {
-          "max": 100000,
+          "max": 350000,
           "rate": 0.20
         },
         "requiredValue": 100
@@ -2605,7 +2631,7 @@
       {
         // Level 2
         "loans": {
-          "max": 250000,
+          "max": 600000,
           "rate": 0.15
         },
         "requiredValue": 250
@@ -2613,7 +2639,7 @@
       {
         // Level 3
         "loans": {
-          "max": 500000,
+          "max": 1000000,
           "rate": 0.10
         },
         "requiredValue": 750,
@@ -2665,7 +2691,7 @@
       },
       {
         // Level 0
-        "requiredValue": -25
+        "requiredValue": -25,
       },
       {
         // Level 1

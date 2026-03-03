@@ -9,9 +9,10 @@ local roleAssignments = {
 }
 
 local function canPay()
+    local canPayJobIndex = career_modules_globalEconomy and career_modules_globalEconomy.getJobMarketIndex() or 1.0
     local certificationPrice = {
         money = {
-            amount = assignmentData.cost,
+            amount = math.floor(assignmentData.cost * canPayJobIndex),
             canBeNegative = false
         }
     }
@@ -29,8 +30,9 @@ local function startCertification()
             ui_message("You do not have enough funds to certify your vehicle", 10, "error", "info")
             return
         end
+        local jobMarketIndex = career_modules_globalEconomy and career_modules_globalEconomy.getJobMarketIndex() or 1.0
         local certificationPrice = {
-            money = {amount = assignmentData.cost, canBeNegative = false}
+            money = {amount = math.floor(assignmentData.cost * jobMarketIndex), canBeNegative = false}
         }
         career_modules_payment.pay(certificationPrice, {
             label = "Certification fee",

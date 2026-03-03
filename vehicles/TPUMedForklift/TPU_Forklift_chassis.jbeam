@@ -1,0 +1,624 @@
+{
+"WHE_ForliftChassis": {
+    "information":{
+        "authors":"TrackpadUser",
+        "name":"Chassis",
+        "value":10000
+    },
+    "slotType":"WHE_ForliftChassis",
+    "slots":[
+		["type", "default", "description"],
+		//Front wheels
+		["ForkLift_fueltank","ForkLift_fueltank", "Fuel Tank"],
+		["Forklift_engine","Forklift_engine", "Engine"],
+		["WHE_Forklift_FrontAxle", "WHE_Forklift_FrontAxle", "Front Axle"],
+		["WHE_ForkliftRHubs","WHE_ForkliftRHubs", "Rear Steering Beam"],
+		["WHE_ForkliftMast","WHE_ForkliftMast", "Mast"],
+		["WHE_ForliftRollHoop","WHE_ForliftRollHoop", "Roll Hoop"],
+		["WHE_ForliftRearWeight","WHE_ForliftRearWeight", "Counterweight",{"coreSlot":true}],
+		["WHE_ForkliftSteerWheel","WHE_ForkliftSteerWheel", "Steering Wheel"],
+		["WHE_Radiator","WHE_Radiator", "Radiator"],
+        
+		["WHE_Forklift_hydraulic_pump", "WHE_Forklift_hydraulic_pump_0018", "Hydraulic Pump"],
+		
+		["soundscape_horn", "soundscape_horn_10", "Horn"]
+	],
+    "soundscape": [
+        ["name", "src"],
+        {"node:":"r1"},
+        ["indicatorStart", "event:>Vehicle>Interior>Indicator>AU5_On"],
+        ["indicatorStop", "event:>Vehicle>Interior>Indicator>AU5_Off"],
+        ["indLoop1", "event:>Vehicle>Interior>Indicator>AU5_Click"],
+        ["indLoop2", "event:>Vehicle>Interior>Indicator>AU5_Clack"],
+        //lights15
+        ["LightOn", "event:>Vehicle>Interior>Light>PEU_On"],
+        ["LightOff", "event:>Vehicle>Interior>Light>PEU_Off"],
+        //handbrake5
+        {"node:":"r1"},
+        ["handbrakeEngaging","event:>Vehicle>Interior>Handbrake_Ratchet>Ratchet_05_Ratchet"],
+        ["handbrakeDisengaging","event:>Vehicle>Interior>Handbrake_Ratchet>Ratchet_05_Button"],
+        ["handbrakeDisengaged","event:>Vehicle>Interior>Handbrake_Ratchet>Ratchet_05_Thump"],
+        //affects horn location because horn soundscape is loaded after
+        {"node:":"b0t"},
+    ],
+	"sounds": {
+		"cabinFilterCoef": 0.0
+	},
+	"controller": [
+        ["fileName"],       
+        ["forkliftScreen", {"materialName": "@FL_DashScreen", "textureWidth":256, "textureHeight":256, "htmlPath": "local://local/vehicles/TPUMedForklift/dash/racetec.html"}],
+        ["reverseWarn", {"beepLoopName":"event:>Vehicle>Electrics>Reverse>Beep_04"}]
+    ],
+    "refNodes":[
+		["ref:", "back:", "left:", "up:", "leftCorner:", "rightCorner:"],	
+		["b1", "b2", "b1l", "b1t", "b0l", "b0r"]
+    ],
+    "cameraExternal":{
+        "distance":4.5,
+        "distanceMin":1.5,
+        "offset":{"x":0.0, "y":-0.2, "z":0.9},
+        "fov":65
+    },
+    "cameraChase":{
+        "distance":4.5,
+        "distanceMin":1.5,
+        "defaultRotation":{"x":0, "y":-11.2, "z":0},
+        "offset":{"x":0.0, "y":0.2, "z":0.7},
+        "fov":65
+    },
+    "camerasInternal":[
+        ["type", "x", "y", "z", "fov", "id1:", "id2:", "id3:", "id4:", "id5:", "id6:"],
+        {"nodeWeight":0.5},
+        {"selfCollision":false},
+        {"collision":false},
+		
+        //dash cam
+        {"beamDeform":5000000,"beamStrength":"FLT_MAX"},
+        {"beamSpring":200000,"beamDamp":100},
+        {"selfCollision":true},
+        {"collision":true},
+        ["dash",0.0, 0.25, 1.36, 60,"b1tl","b1t","b1tr","b3tl", "b3t", "b3tr"]
+    ],
+    "props": [
+        ["func"      , "mesh"              , "idRef:", "idX:", "idY:"            , "baseRotation"        , "rotation"                 , "translation"        , "min", "max", "offset", "multiplier"],
+
+        //pedals
+        ["brake"     ,"MFL_brakepedal", "b1t","b1tr","b2t",  {"x":-60, "y":180, "z":0} , {"x":30, "y":0, "z":0}    , {"x":0.0, "y":0, "z":0}, 0, 1, 0, 1],
+        ["throttle"     ,"MFL_gaspedal", "b1t","b1tr","b2t",  {"x":-60, "y":180, "z":0} , {"x":30, "y":0, "z":0}    , {"x":0.0, "y":0, "z":0}, 0, 1, 0, 1],
+        //["clutch"     ,"MFL_clutchpedal", "b1t","b1tr","b2t",  {"x":-60, "y":180, "z":0} , {"x":30, "y":0, "z":0}    , {"x":0.0, "y":0, "z":0}, 0, 1, 0, 1],
+    ],
+    "flexbodies":[
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        {"rotation":{"x":0, "y":0, "z":0}, "translation":{"x":0, "y":0, "z":0}},
+        //body
+        {"deformGroup":""},
+        ["MFL_ChassisMain", ["body"]],
+        ["MFL_SeatBox", ["body"]],
+        ["MFL_Seat", ["body"]],
+        ["MFL_SeatBracket", ["body"]],
+		
+        ["MFL_ChassisPanels", ["body"]],
+        ["MFL_ChassisUpperPanel", ["body"]],
+        ["MFL_ChassisFrontPlate", ["body"]],
+        ["MFL_FrontFender", ["body"]],
+        ["MFL_TiltCylBackGeo", ["body"]],
+		
+		["MFL_Dash", ["body"]],
+		["MFL_InteriorFootplate", ["body"]],
+        ["MFL_DashSteer", ["body"]],
+        ["MFL_DashLevelBase", ["body"]],
+        ["MFL_Dashboard", ["body"]],
+        ["MFL_ControlLevers", ["body"]],
+        ["MFL_DashTray", ["body"]]
+	],
+    "nodes":[
+        ["id", "posX", "posY", "posZ"],
+        {"selfCollision":true},
+        {"collision":true},
+        {"nodeMaterial":"|NM_METAL"},
+        {"frictionCoef":0.6},
+        {"group":"body"},
+		
+        {"nodeWeight":40},
+		//main chassis structure
+        {"selfCollision":false},
+        ["b0t", 0.000, -0.8, 0.440],
+        {"selfCollision":true},
+        ["b0tr", -0.42, -0.8, 0.440],
+        ["b0tl", 0.42, -0.8, 0.440],
+        ["b0", 0.000, -0.90000, 0.0],
+        ["b0r", -0.42, -0.90000, 0.0],
+        ["b0l", 0.42, -0.9000, 0.0],
+		
+        ["b1t", 0.0,-0.400, 0.44],
+        ["b1", 0.0, -0.4, 0.0],
+        ["b1tr", -0.42, -0.4, 0.440],
+        ["b1r", -0.42, -0.40, 0.0],
+        ["b1tl", 0.42, -0.400, 0.440],
+        ["b1l", 0.42, -0.4000, 0.0],
+        ["b1trr", -0.65, -0.4, 0.440],
+        ["b1rr", -0.65, -0.40, 0.0],
+        ["b1tll", 0.65, -0.400, 0.440],
+        ["b1ll", 0.65, -0.4000, 0.0],
+		
+        ["b2tl", 0.42, 0.05, 0.440],
+        ["b2t", 0.0, 0.05, 0.44],
+        ["b2tr", -0.42, 0.05, 0.440],
+        ["b2l", 0.42, 0.05, 0.0],
+        ["b2", 0.0, 0.05, 0.0],
+        ["b2r", -0.42, 0.05, 0.0],
+        ["b2trr", -0.65, 0.05, 0.440],
+        ["b2rr", -0.65, 0.05, 0.0],
+        ["b2tll", 0.65, 0.05, 0.440],
+        ["b2ll", 0.65, 0.05, 0.0],
+		
+        ["b3tl", 0.42, 0.6, 0.440],
+        ["b3t", 0.0, 0.6, 0.44],
+        ["b3tr", -0.42, 0.6, 0.440],
+        ["b3l", 0.42, 0.48, 0.0],
+        ["b3", 0.0, 0.48, 0.0],
+        ["b3r", -0.42, 0.48, 0.0],
+        ["b3trr", -0.65, 0.6, 0.440],
+        ["b3rr", -0.65, 0.48, 0.0],
+        ["b3tll", 0.65, 0.6, 0.440],
+        ["b3ll", 0.65, 0.48, 0.0],
+		
+        ["b4tl", 0.42, 0.9, 0.440],
+        ["b4t", 0.0, 0.9, 0.44],
+        ["b4tr", -0.42, 0.9, 0.440],
+		
+		["btiltr", -0.38,-0.55,0.54],
+		["btiltl", 0.38,-0.55,0.54],
+
+        {"nodeWeight":5},
+        ["b2ttl", 0.42, 0.05, 0.7],
+        ["b2tt", 0.0, 0.05, 0.7],
+        ["b2ttr", -0.42, 0.05, 0.7],
+        ["b2ttrr", -0.65, 0.05, 0.6],
+        ["b2ttll", 0.65, 0.05, 0.6],
+
+        ["b3ttl", 0.42, 0.6, 0.85],
+        ["b3tt", 0.0, 0.6, 0.85],
+        ["b3ttr", -0.42, 0.6, 0.85],
+        ["b3ttrr", -0.65, 0.6, 0.85],
+        ["b3ttll", 0.65, 0.6, 0.85],
+	],
+    "beams":[
+        ["id1:", "id2:"],
+        {"breakGroupType":0},
+        {"deformLimitExpansion":1.2},
+        {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+        //refnode
+		
+        {"deformLimitExpansion":1.2},
+        {"beamPrecompression":1, "beamType":"|NORMAL"},
+        {"beamSpring":45001000,"beamDamp":750},
+        //{"beamDeform":30000,"beamStrength":"FLT_MAX"},
+          {"beamDeform":"FLT_MAX","beamStrength":"FLT_MAX"},
+
+	//tub lenght floor
+        ["b0", "b1"],
+        ["b0r", "b1r"],
+        ["b0l", "b1l"],
+		
+        ["b0r", "b1rr"],
+        ["b0l", "b1ll"],
+		
+        ["b1", "b2"],
+        ["b1r", "b2r"],
+        ["b1l", "b2l"],
+        ["b1rr", "b2rr"],
+        ["b1ll", "b2ll"],
+		
+        ["b2", "b3"],
+        ["b2r", "b3r"],
+        ["b2l", "b3l"],
+        ["b2rr", "b3rr"],
+        ["b2ll", "b3ll"],
+		
+		
+	//tub lenght top
+        ["b0tr", "b1tr"],
+        ["b0t", "b1t"],
+        ["b0tl", "b1tl"],
+		
+        ["b0tl", "b1tll"],
+        ["b0tr", "b1trr"],
+		
+        ["b1tr", "b2tr"],
+        ["b1trr", "b2trr"],
+        ["b1t", "b2t"],
+        ["b1tl", "b2tl"],
+        ["b1tll", "b2tll"],
+		
+        ["b2tr", "b3tr"],
+        ["b2t", "b3t"],
+        ["b2tl", "b3tl"],
+        ["b2tll", "b3tll"],
+        ["b2trr", "b3trr"],
+		
+        ["b3trr", "b4tr"],
+        ["b3tll", "b4tl"],
+		
+        ["b3tr", "b4tr"],
+        ["b3t", "b4t"],
+        ["b3tl", "b4tl"],
+		
+		
+        //tub width floor
+	["b0l","b0"],
+	["b0","b0r"],
+	
+	["b1ll","b1"],
+	["b1l","b1"],
+	["b1","b1r"],
+	["b1","b1rr"],
+	
+	["b2ll","b2l"],
+	["b2l","b2"],
+	["b2","b2r"],
+	["b2r","b2rr"],
+	
+	["b3ll","b3l"],
+	["b3l","b3"],
+	["b3","b3r"],
+	["b3r","b3rr"],
+	
+	
+        //tub width top
+	["b0tl","b0t"],
+	["b0t","b0tr"],
+	
+	["b1tll","b1tl"],
+	["b1tl","b1t"],
+	["b1t","b1tr"],
+	["b1tr","b1trr"],
+	
+	["b2tll","b2tl"],
+	["b2tl","b2t"],
+	["b2t","b2tr"],
+	["b2tr","b2trr"],
+	
+	["b3tll","b3tl"],
+	["b3tl","b3t"],
+	["b3t","b3tr"],
+	["b3tr","b3trr"],
+	
+	["b4tl","b4t"],
+	["b4t","b4tr"],
+		
+	//tub vert
+        ["b0", "b0t"],
+        ["b0r", "b0tr"],
+        ["b0l", "b0tl"],
+		
+        ["b1", "b1t"],
+        ["b1r", "b1tr"],
+        ["b1l", "b1tl"],
+        ["b1rr", "b1trr"],
+        ["b1ll", "b1tll"],
+		
+        ["b2", "b2t"],
+        ["b2r", "b2tr"],
+        ["b2l", "b2tl"],
+        ["b2rr", "b2trr"],
+        ["b2ll", "b2tll"],
+		
+        ["b3", "b3t"],
+        ["b3r", "b3tr"],
+        ["b3l", "b3tl"],
+        ["b3rr", "b3trr"],
+        ["b3ll", "b3tll"],
+		
+		//tub bottom cross
+		
+		["b0","b1r"],
+		["b0","b1l"],
+		["b0r","b1"],
+		["b0l","b1"],
+		
+		["b1","b2r"],
+		["b1","b2l"],
+		["b1r","b2"],
+		["b1l","b2"],
+		["b1r","b2rr"],
+		["b1l","b2ll"],
+		["b1rr","b2r"],
+		["b1ll","b2l"],
+		
+		["b2","b3r"],
+		["b2","b3l"],
+		["b2r","b3"],
+		["b2l","b3"],
+		["b2r","b3rr"],
+		["b2l","b3ll"],
+		["b2rr","b3r"],
+		["b2ll","b3l"],
+		
+
+
+		//tub top cross		
+		["b0t","b1tr"],
+		["b0t","b1tl"],
+		["b0tr","b1t"],
+		["b0tl","b1t"],
+		
+		["b1t","b2tr"],
+		["b1t","b2tl"],
+		["b1tr","b2t"],
+		["b1tl","b2t"],
+		["b1trr","b2tr"],
+		["b1tll","b2tl"],
+		["b1tr","b2trr"],
+		["b1tl","b2tll"],
+		
+		["b2t","b3tr"],
+		["b2t","b3tl"],
+		["b2tr","b3t"],
+		["b2tl","b3t"],
+		["b2trr","b3tr"],
+		["b2tll","b3tl"],
+		["b2tr","b3trr"],
+		["b2tl","b3tll"],
+		
+		["b3t","b4tr"],
+		["b3t","b4tl"],
+		["b3tr","b4t"],
+		["b3tl","b4t"],
+		
+		//tub bulkhead cross
+		
+		["b0tr","b0"],
+		["b0tl","b0"],
+		["b0r","b0t"],
+		["b0l","b0t"],
+		
+		["b1tr","b1"],
+		["b1tl","b1"],
+		["b1r","b1t"],
+		["b1l","b1t"],
+		["b1r","b1trr"],
+		["b1tr","b1rr"],
+		["b1l","b1tll"],
+		["b1tl","b1ll"],
+		
+		["b2tr","b2"],
+		["b2tl","b2"],
+		["b2r","b2t"],
+		["b2l","b2t"],
+		["b2r","b2trr"],
+		["b2tr","b2rr"],
+		["b2l","b2tll"],
+		["b2tl","b2ll"],
+		
+		["b3tr","b3"],
+		["b3tl","b3"],
+		["b3r","b3t"],
+		["b3l","b3t"],
+		["b3r","b3trr"],
+		["b3tr","b3rr"],
+		["b3l","b3tll"],
+		["b3tl","b3ll"],
+		
+
+		
+		
+		//tub side cross
+		
+		["b0l","b1tl"],
+		["b0tl","b1l"],
+		["b0r","b1tr"],
+		["b0tr","b1r"],
+        
+		["b1l","b2tl"],
+		["b1tl","b2l"],
+		["b1r","b2tr"],
+		["b1tr","b2r"],
+		["b1rr","b2trr"],
+		["b1trr","b2rr"],
+		["b1ll","b2tll"],
+		["b1tll","b2ll"],
+		
+		["b2l","b3tl"],
+		["b2tl","b3l"],
+		["b2r","b3tr"],
+		["b2tr","b3r"],
+		["b2rr","b3trr"],
+		["b2trr","b3rr"],
+		["b2ll","b3tll"],
+		["b2tll","b3ll"],
+		
+		["b3l","b4tl"],
+		["b3r","b4tr"],
+
+		
+        //tub center cross
+        ["b1", "b0t"],
+        ["b1t", "b0"], 
+		
+        ["b2", "b1t"],
+        ["b2t", "b1"], 
+		
+        ["b3", "b2t"],
+        ["b3t", "b2"], 
+		
+        ["b4t", "b3"], 
+		
+		//Tilt cylinder mounts
+        ["btiltl", "b0tl"],
+        ["btiltl", "b1tl"],
+        ["btiltl", "b0t"],
+        ["btiltl", "b1t"],
+        ["btiltl", "b0l"],
+        ["btiltl", "b1l"],
+        ["btiltl", "b2l"],
+        ["btiltl", "b2tl"],
+		
+        ["btiltr", "b0tr"],
+        ["btiltr", "b1tr"],
+        ["btiltr", "b0t"],
+        ["btiltr", "b1t"],
+        ["btiltr", "b0r"],
+        ["btiltr", "b1r"],
+        ["btiltr", "b2r"],
+        ["btiltr", "b2tr"],
+		
+        ["btiltl", "btiltr"],
+		
+		//Rear hood thing
+        {"beamSpring":501000,"beamDamp":150},
+		["b3ttrr","b3ttr"],
+		["b3ttr","b3tt"],
+		["b3tt","b3ttl"],
+		["b3ttl","b3ttll"],
+		
+		["b2ttrr","b2ttr"],
+		["b2ttr","b2tt"],
+		["b2tt","b2ttl"],
+		["b2ttl","b2ttll"],
+		
+		
+		["b3ttrr","b2ttrr"],
+		["b3ttr","b2ttr"],
+		["b3tt","b2tt"],
+		["b3ttl","b2ttl"],
+		["b3ttll","b2ttll"],
+		
+		["b3ttrr","b3trr"],
+		["b3ttr","b3tr"],
+		["b3tt","b3t"],
+		["b3ttl","b3tl"],
+		["b3ttll","b3tll"],
+		
+		
+		["b2ttrr","b2trr"],
+		["b2ttr","b2tr"],
+		["b2tt","b2t"],
+		["b2ttl","b2tl"],
+		["b2ttll","b2tll"],
+		
+		["b3ttrr","b3tr"],
+		["b3ttr","b3trr"],
+		["b3ttr","b3t"],
+		["b3tt","b3tr"],
+		["b3tt","b3tl"],
+		["b3ttl","b3t"],
+		["b3ttl","b3tll"],
+		["b3ttll","b3tl"],
+		
+		["b2ttrr","b2tr"],
+		["b2ttr","b2trr"],
+		["b2ttr","b2t"],
+		["b2tt","b2tr"],
+		["b2tt","b2tl"],
+		["b2ttl","b2t"],
+		["b2ttl","b2tll"],
+		["b2ttll","b2tl"],
+		
+		["b2ttrr","b3trr"],
+		["b3ttrr","b2trr"],
+		
+		["b2ttr","b3tr"],
+		["b3ttr","b2tr"],
+		
+		["b2tt","b3t"],
+		["b3tt","b2t"],
+		
+		["b2ttl","b3tl"],
+		["b3ttl","b2tl"],
+		
+		["b2ttll","b3tll"],
+		["b3ttll","b2tll"],
+		
+		["b3ttrr","b2ttr"],
+		["b3ttr","b2ttrr"],
+		["b3ttr","b2tt"],
+		["b3tt","b2ttr"],
+		["b3tt","b2ttl"],
+		["b3ttl","b2tt"],
+		["b3ttl","b2ttll"],
+		["b3ttll","b2ttl"]
+		
+    ],
+    "triangles": [
+    ["id1:","id2:","id3:"],
+    {"dragCoef":10},              
+
+ ["b3ttr", "b3ttrr", "b2ttrr"],
+            ["b3ttr", "b2ttrr", "b2ttr"],
+            ["b3tt", "b3ttr", "b2ttr"],
+            ["b3tt", "b2ttr", "b2tt"],
+            ["b3ttl", "b3tt", "b2tt"],
+            ["b3ttl", "b2tt", "b2ttl"],
+            ["b3ttll", "b3ttl", "b2ttl"],
+            ["b3ttll", "b2ttl", "b2ttll"],
+            ["b3ttll", "b2ttll", "b3tll"],
+            ["b3tll", "b2ttll", "b2tll"],
+            ["b2ttrr", "b3ttrr", "b3trr"],
+            ["b3trr", "b2trr", "b2ttrr"],
+            ["b2ttr", "b2ttrr", "b2trr"],
+            ["b2ttr", "b2trr", "b2tr"],
+            ["b2tt", "b2ttr", "b2tr"],
+
+            ["b2tt", "b2tr", "b2t"],
+            ["b2ttl", "b2tt", "b2t"],
+            ["b2ttl", "b2t", "b2tl"],
+            ["b2ttll", "b2ttl", "b2tl"],
+            ["b2ttll", "b2tl", "b2tll"],
+            ["b2tll", "b2tl", "b1tl"],
+            ["b1tll", "b2tll", "b1tl"], 
+            ["b2tl", "b2t", "b1t"],
+            ["b2tl", "b1t", "b1tl"],
+            ["b2t", "b2tr", "b1tr"],
+            ["b2t", "b1tr", "b1t"],
+            ["b2tr", "b2trr", "b1trr"],
+            ["b2tr", "b1trr", "b1tr"],
+            ["b1tr", "b1trr", "b1rr"],
+            ["b1tr", "b1rr", "b1r"],     
+       
+            ["b0t", "b0tr", "b0r"],
+            ["b0t", "b0r", "b0"],
+            ["b0tl", "b0t", "b0"],
+            ["b0tl", "b0", "b0l"],
+            ["b1tl", "b1t", "b0t"],
+            ["b0t", "b0tl", "b1tl"],
+            ["b1tr", "b0tr", "b0t"],
+            ["b1tr", "b0t", "b1t"],
+            ["b1tll", "b1tl", "b1l"],
+
+            ["b1tll", "b1l", "b1ll"],
+            ["b2tll", "b1tll", "b1ll"],
+            ["b2tll", "b1ll", "b2ll"],
+            ["b3tll", "b2tll", "b2ll"],
+            ["b3tll", "b2ll", "b3ll"],
+            ["b0l", "b0", "b1l"],
+            ["b1l", "b0", "b1"],
+            ["b1", "b0", "b0r"],
+            ["b1", "b0r", "b1r"],
+            ["b2r", "b1r", "b1rr"],
+            ["b2r", "b1rr", "b2rr"],
+
+            ["b1trr", "b2trr", "b2rr"],
+            ["b1trr", "b2rr", "b1rr"],
+            ["b2trr", "b3trr", "b3rr"],
+            ["b2trr", "b3rr", "b2rr"],
+            ["b2ll", "b1ll", "b1l"],
+            ["b2ll", "b1l", "b2l"],
+            ["b2l", "b1", "b2"],
+            ["b2l", "b1l", "b1"],
+            ["b1r", "b2r", "b2"],
+            ["b2", "b1", "b1r"],
+            ["b3ll", "b2ll", "b2l"],
+            ["b3ll", "b2l", "b3l"],
+            ["b3l", "b2l", "b2"],
+            ["b3l", "b2", "b3"],
+            ["b3", "b2", "b2r"],
+            ["b3", "b2r", "b3r"],
+            ["b3r", "b2r", "b2rr"],
+            ["b3r", "b2rr", "b3rr"],
+
+
+	],
+},
+
+}

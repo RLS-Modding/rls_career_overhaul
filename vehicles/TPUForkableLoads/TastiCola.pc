@@ -1,0 +1,33 @@
+{
+"vars":{
+  "$weightTotal":520
+},
+"parts":{
+  "TPUPalletLoadType":"TPUUSPallet",
+  "TPUUSPalletLoad":"TPUUSPalletLoad_TastiCola",
+  "paint_design":"skin_cola"
+},
+"model":"TPUForkableLoads",
+"colors":[
+  [
+    1,
+    1,
+    1,
+    1
+  ],
+  [
+    1,
+    1,
+    1,
+    1
+  ],
+  [
+    1,
+    1,
+    1,
+    1
+  ]
+],
+"format":2,
+"licenseName":"8779-vivace"
+}

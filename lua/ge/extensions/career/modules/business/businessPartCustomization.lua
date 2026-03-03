@@ -1497,7 +1497,7 @@ local function findRemovedParts(businessId, vehicleId)
         }
 
         if career_modules_valueCalculator then
-          partData.value = career_modules_valueCalculator.getPartValue(partData) or 0
+          partData.value = career_modules_valueCalculator.getPartValue(partData, true) or 0
         else
           local jbeamData = jbeamIO.getPart(vehicleData.ioCtx, partName)
           partData.value = (jbeamData and jbeamData.information and jbeamData.information.value) or 100

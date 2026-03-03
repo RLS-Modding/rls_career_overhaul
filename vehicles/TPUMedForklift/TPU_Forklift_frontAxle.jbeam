@@ -1,0 +1,185 @@
+{
+"WHE_Forklift_FrontAxle": {
+    "information":{
+        "authors":"TrackpadUser",
+        "name":"Front Axle",
+        "value":500
+    },
+    "slotType":"WHE_Forklift_FrontAxle",
+	"slots":[
+        ["type", "default", "description"],
+		//Front wheels
+        ["ForkLift_differential_R","ForkLift_differential_R", "Differential"],
+        ["ForkLift_FrontBrakes","ForkLift_FrontBrakes", "Front Brakes"],
+        ["Forklift_Drive_Wheels","Forklift_Drive_Wheels", "Front Wheels", {"nodeOffset":{"x":0.05, "y":-0.8, "z":0.12}}],
+        ["WHE_Forklift_fwheeldata", "WHE_Forklift_fwheeldata", "Front Spindles",{"coreSlot":true}]
+	],
+    "flexbodies":[
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        {"rotation":{"x":0, "y":0, "z":0}, "translation":{"x":0, "y":0, "z":0}},
+        //body
+        {"deformGroup":""},
+        ["MFL_FrontAxle", ["FAxle"]],
+	],
+    "nodes":[
+        ["id", "posX", "posY", "posZ"],
+        {"selfCollision":true},
+        {"collision":true},
+        {"nodeMaterial":"|NM_METAL"},
+        {"group":"FAxle"},
+		
+        {"nodeWeight":50},
+		//Front axle
+		
+		//Front of axle
+		["fh1r",  -0.5, -1.0, 0.1],
+		["fh1l",  0.5, -1.0, 0.1],
+		
+		//rear of axle
+		["fh2r",  -0.5, -0.6, 0.1],
+		["fh2l",  0.5, -0.6, 0.1],
+		
+		//top of axle
+		["fh3r",  -0.5, -0.8000, 0.3],
+		["fh3l",  0.5, -0.800, 0.3],
+		
+		//bottom of axle
+		["fh4r",  -0.5, -0.8000, -0.1],
+		["fh4l",  0.5, -0.800, -0.1],
+		
+	],
+    "beams":[
+        ["id1:", "id2:"],
+        {"breakGroupType":0},
+        {"deformLimitExpansion":1.2},
+        {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+        //refnode
+		
+        {"deformLimitExpansion":1.2},
+        {"beamPrecompression":1, "beamType":"|NORMAL"},
+        {"beamSpring":85001000,"beamDamp":750},
+        //{"beamDeform":30000,"beamStrength":"FLT_MAX"},
+          {"beamDeform":"FLT_MAX","beamStrength":"FLT_MAX"},
+
+
+		
+		//Axle ends
+		["fh1r","fh3r"],
+		["fh3r","fh2r"],
+		["fh2r","fh4r"],
+		["fh4r","fh1r"],
+		
+		["fh1l","fh3l"],
+		["fh3l","fh2l"],
+		["fh2l","fh4l"],
+		["fh4l","fh1l"],
+		
+		//axle end crosses
+		["fh1r","fh2r"],
+		["fh3r","fh4r"],
+		["fh1l","fh2l"],
+		["fh3l","fh4l"],
+		
+		//axle width
+		["fh1r","fh1l"],
+		["fh2r","fh2l"],
+		["fh3r","fh3l"],
+		["fh4r","fh4l"],
+		
+		//Axle width crosses
+		["fh1r","fh3l"],
+		["fh1l","fh3r"],
+		["fh3r","fh2l"],
+		["fh3l","fh2r"],
+		["fh2r","fh4l"],
+		["fh2l","fh4r"],
+		["fh4r","fh1l"],
+		["fh4l","fh1r"],
+		
+		//supports
+		["fh1r","b0r"],
+		["fh1r","b0tr"],
+		["fh2r","b0r"],
+		["fh2r","b0tr"],
+		["fh2r","b1r"],
+		["fh2r","b1tr"],
+		
+		["fh1l","b0l"],
+		["fh1l","b0tl"],
+		["fh2l","b0l"],
+		["fh2l","b0tl"],
+		["fh2l","b1l"],
+		["fh2l","b1tl"],
+		
+
+
+		
+		//Front wheel axle beams
+        {"selfCollision":true},
+          {"optional":true},
+          {"beamDeform":"FLT_MAX","beamStrength":"FLT_MAX"},
+          //{"beamDeform":50000,"beamStrength":155000},
+          {"beamSpring":58001000,"beamDamp":500},
+          //attach to wheel
+          {"breakGroup":"wheel_FR"},
+          ["fh1r","fw1r",{"name":"axle_FR"}],
+          ["fh2r","fw1r"],
+          ["fh3r","fw1r",{"beamSpring":12001000,"beamDamp":25}],
+          ["fh4r","fw1r",{"beamSpring":6001000,"beamDamp":70}],
+          ["fh1r","fw1rr"],
+          ["fh2r","fw1rr"],
+          ["fh3r","fw1rr",{"beamSpring":12001000,"beamDamp":25}],
+          ["fh4r","fw1rr",{"beamSpring":6001000,"beamDamp":70}],
+          {"breakGroup":"wheel_FL"},
+          ["fh1l","fw1l",{"name":"axle_FL"}],
+          ["fh2l","fw1l"],
+          ["fh3l","fw1l",{"beamSpring":12001000,"beamDamp":25}],
+          ["fh4l","fw1l",{"beamSpring":6001000,"beamDamp":70}],
+          ["fh1l","fw1ll"],
+          ["fh2l","fw1ll"],
+          ["fh3l","fw1ll",{"beamSpring":12001000,"beamDamp":25}],
+          ["fh4l","fw1ll",{"beamSpring":6001000,"beamDamp":70}],
+          {"breakGroup":""},
+          {"optional":false},
+		
+    ],
+},
+"WHE_Forklift_fwheeldata": {
+    "information":{
+        "authors":"TrackpadUser",
+        "name":"Front Spindles",
+        "value":500,
+    },
+    "slotType":"WHE_Forklift_fwheeldata",
+    "pressureWheels":[
+        ["name","hubGroup","group","node1:","node2:","nodeS","nodeArm:","wheelDir"],
+        //front
+        {"selfCollision":false},
+        {"collision":true},
+        {"hubcapBreakGroup":"hubcap_FR"},
+        {"hubcapGroup":"hubcap_FR"},
+        {"axleBeams":["axle_FR"]},
+        ["FR", "wheel_FR", "tire_FR", "fw1rr", "fw1r", 9999,  "fh2r", 1,{"torqueCoupling:":"fh3r", "torqueArm:":"fh4r", "torqueArm2:":"fh1r", "steerAxisUp:":"fh3r","steerAxisDown:":"fh4r"}],
+        {"hubcapBreakGroup":"hubcap_FL"},
+        {"hubcapGroup":"hubcap_FL"},
+        {"axleBeams":["axle_FL"]},
+        ["FL", "wheel_FL", "tire_FL", "fw1ll", "fw1l", 9999,  "fh2l", -1,{"torqueCoupling:":"fh3l", "torqueArm:":"fh4l", "torqueArm2:":"fh1l", "steerAxisUp:":"fh3l","steerAxisDown:":"fh4l"}],
+        {"selfCollision":true},
+        {"axleBeams":[]},{"disableMeshBreaking":false,"disableTriangleBreaking":false},
+        {"hubcapBreakGroup":""},
+        {"hubcapGroup":""},
+        {"enableHubcaps":false},
+        {"enableTireLbeams":false},
+        {"enableTireSideReinfBeams":false},
+        {"enableTireReinfBeams":false},
+        {"enableTreadReinfBeams":false},
+        {"enableTirePeripheryReinfBeams":false},
+        {"propulsed":0},
+    ],
+    "powertrain" : [
+        ["type", "name", "inputName", "inputIndex"],
+        ["shaft", "wheelaxleFL", "differential_F", 1, {"connectedWheel":"FL", "breakTriggerBeam":"axle_FL", "uiName":"Front Left Axle", "friction":2}],
+        ["shaft", "wheelaxleFR", "differential_F", 2, {"connectedWheel":"FR", "breakTriggerBeam":"axle_FR", "uiName":"Front Right Axle", "friction":2}],
+    ],
+},
+}

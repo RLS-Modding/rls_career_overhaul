@@ -119,6 +119,22 @@ export default {
     getCareerCurrentLevelName: () => {},
   },
 
+  career_modules_globalEconomy: {
+    requestMarketWatchData: () => {},
+    getGlobalIndex: () => {},
+    getJobMarketIndex: () => {},
+    getVehicleMarketIndex: () => {},
+    getHousingMarketIndex: () => {},
+    getVehicleBuyMultiplier: () => {},
+    getVehicleSellMultiplier: () => {},
+    getEconomySummary: () => {},
+    getCyclePhase: () => {},
+    getMomentum: () => {},
+    getMarketHistory: () => {},
+    getNewsArticles: () => {},
+    performEconomyTick: () => {},
+  },
+
   career_modules_fuel: {
     requestRefuelingTransactionData: () => {},
     sendUpdateDataToUI: () => {},
@@ -1230,12 +1246,23 @@ export default {
     closeAllMenus: () => {},
     getLoanOffers: () => {},
     getActiveLoans: () => {},
+    getOutstandingPrincipalByOrg: () => {},
     calculatePayment: (amount, rate, payments) => [Number, Number],
-    takeLoan: (orgId, amount, payments) => [String, Number, Number],
+    takeLoan: (orgId, amount, payments, rate, uncapped, businessAccountId) => [String, Number, Number, Number, Boolean, String],
     prepayLoan: (loanId, amount) => [String, Number],
-    getNotificationsEnabled: () => Boolean,
+    getNotificationsEnabled: () => {},
     setNotificationsEnabled: enabled => Boolean,
     clearAllLoans: () => Number,
+  },
+
+  career_modules_credit: {
+    getScore: () => {},
+    getTier: () => {},
+    getRateMultiplier: () => {},
+    getMaxMultiplier: () => {},
+    getAvailableTerms: () => {},
+    getFactorBreakdown: () => {},
+    getScoreHistory: () => {},
   },
 
   career_modules_assignRole: {
@@ -1383,6 +1410,12 @@ export default {
     stopTechFromJob: (businessId, techId) => [String, Integer],
     setManagerPaused: (businessId, paused) => [String, Boolean],
     getTechsForBusiness: (businessId) => String,
+    getBlacklistData: (businessId) => String,
+    getNotificationListData: (businessId) => String,
+    getManagerBlacklistData: (businessId) => String,
+    updateBlacklist: (businessId, modelKeys) => [String, Array],
+    updateNotificationList: (businessId, entries) => [String, Array],
+    updateManagerBlacklist: (businessId, modelKeys) => [String, Array],
   },
 
   career_modules_business_businessPartCustomization: {
@@ -1447,6 +1480,36 @@ export default {
     acceptOrder: () => {},
     rejectOrder: () => {},
     dismissSummary: () => {}
+  },
+
+  gameplay_facilityWork: {
+    selectFacility: (id) => {},
+    setBatchSize: (size) => {},
+    requestFacilityWorkState: () => {},
+    startFacilityWork: () => {},
+    endFacilityWork: () => {},
+    repairForklift: () => {}
+  },
+
+  ui_phone_layout: {
+    requestLayout: () => {},
+    updateLayout: layoutData => Any,
+    getCareerActive: () => {},
+  },
+
+  ui_phone_realEstate: {
+    requestGarageListings: () => {},
+    setRouteToGarage: garageId => String,
+    towToGarage: garageId => String,
+  },
+
+  ui_phone_freeroamEvents: {
+    getEventsData: () => {},
+    navigateToEvent: raceName => String,
+  },
+
+  ui_phone_time: {
+    requestTime: () => {},
   },
 
   overhaul_maps: {

@@ -1234,7 +1234,9 @@ local function calculateInsurancePremium(insuranceId, potentialCoverageOptions, 
   for detailName, detailPrice in pairs(details.items) do
     details.totalPrice = details.totalPrice + detailPrice.price
   end
-  details.totalPriceWithDriverScore = details.totalPrice * getDriverScoreTierData(plDriverScore).multiplier
+  local insuranceMult = career_modules_globalEconomy and career_modules_globalEconomy.getInsurancePriceMultiplier and career_modules_globalEconomy.getInsurancePriceMultiplier() or 1.0
+  details.totalPrice = math.floor(details.totalPrice * insuranceMult + 0.5)
+  details.totalPriceWithDriverScore = math.floor(details.totalPrice * getDriverScoreTierData(plDriverScore).multiplier + 0.5)
   return details
 end
 
@@ -1251,11 +1253,12 @@ local function calculateAddOnVehicleProRatedPrice(insuranceId, vehValue, tierDat
 
   local metersRemaining = getRenewsIn(insuranceId) * 1000
   local proRatedRatio = metersRemaining / insuranceRenewalDistance
-  return fullPrice * proRatedRatio * (tierData and (1 - tierData.discount or 0) or 1)
+  local price = fullPrice * proRatedRatio * (tierData and (1 - tierData.discount or 0) or 1)
+  local insuranceMult = career_modules_globalEconomy and career_modules_globalEconomy.getInsurancePriceMultiplier and career_modules_globalEconomy.getInsurancePriceMultiplier() or 1.0
+  return math.floor(price * insuranceMult + 0.5)
 end
 
 local function calculateAddVehiclePrice(insuranceId, vehValue)
-  print(insuranceId)
   if #getInvVehsUnderInsurance(insuranceId) == 0 then
     return calculateInsurancePremium(insuranceId, nil, nil, vehValue).totalPriceWithDriverScore
   else

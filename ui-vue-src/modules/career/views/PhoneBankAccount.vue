@@ -1,5 +1,5 @@
 <template>
-  <PhoneWrapper app-name="Account" status-font-color="#000000" status-blend-mode="">
+  <PhoneWrapper app-name="Account">
     <div class="phone-account-details">
       <div v-if="!account" class="none">Loading…</div>
       <div v-else class="content">

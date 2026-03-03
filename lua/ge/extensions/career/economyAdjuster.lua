@@ -84,6 +84,27 @@ local function discoverActivityTypes()
         typeSources["repo"]["repo_module"] = true
     end
 
+    -- BeamEats
+    if gameplay_beamEats then
+        activityTypesFound["beamEats"] = true
+        typeSources["beamEats"] = typeSources["beamEats"] or {}
+        typeSources["beamEats"]["beamEats_module"] = true
+    end
+
+    -- Bus
+    if gameplay_bus then
+        activityTypesFound["bus"] = true
+        typeSources["bus"] = typeSources["bus"] or {}
+        typeSources["bus"]["bus_module"] = true
+    end
+
+    -- Ambulance
+    if gameplay_ambulance then
+        activityTypesFound["ambulance"] = true
+        typeSources["ambulance"] = typeSources["ambulance"] or {}
+        typeSources["ambulance"]["ambulance_module"] = true
+    end
+
     local deliveryTypes = {"parcel", "vehicle", "trailer", "fluid", "dryBulk", "cement", "cash"}
     for _, deliveryType in ipairs(deliveryTypes) do
         activityTypesFound[string.format("delivery_%s", deliveryType)] = true
@@ -199,7 +220,14 @@ local function calculateAdjustedReward(raceData, baseReward)
     end
 
     local multiplier = getEffectiveSectionMultiplier(raceData.type or {})
-    local adjustedReward = (baseReward or raceData.reward or 0) * multiplier
+
+    -- Layer job market index on top of per-activity multiplier
+    local jobIndex = 1.0
+    if career_modules_globalEconomy and career_modules_globalEconomy.getJobMarketIndex then
+        jobIndex = career_modules_globalEconomy.getJobMarketIndex()
+    end
+
+    local adjustedReward = (baseReward or raceData.reward or 0) * multiplier * jobIndex
 
     return math.floor(adjustedReward + 0.5)
 end

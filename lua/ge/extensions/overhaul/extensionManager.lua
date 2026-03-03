@@ -44,10 +44,14 @@ local function loadExtensions()
     setExtensionUnloadMode("gameplay_ambulance", "manual")
     setExtensionUnloadMode("gameplay_bus", "manual")
     setExtensionUnloadMode("gameplay_beamEats", "manual")
+    setExtensionUnloadMode("gameplay_facilityWork", "manual")
     setExtensionUnloadMode("career_challengeModes", "manual")
     setExtensionUnloadMode("career_economyAdjuster", "manual")
     setExtensionUnloadMode("career_challengeSeedEncoder", "manual")
     setExtensionUnloadMode("editor_freeroamEventEditor", "manual")
+
+    setExtensionUnloadMode("dynamicRoutes", "manual")
+    setExtensionUnloadMode("editor_dynamicRoutesEditor", "manual")
 
     extensions.unload("career_career")
     extensions.unload("career_saveSystem")
@@ -58,7 +62,33 @@ end
 -- This forces removal of core game context, freeroam/events, gameplay modules (phone, repo, taxi, cab, ambulance, bus, beamEats),
 -- career subsystems (career, save system, challenge modes, economy adjuster, challenge seed encoder), and overhaul modules
 -- (settings, maps, clear levels, add map changes). No value is returned.
+-- Remove the openPhone binding from saved bindings so the vanilla
+-- bindingsLegend doesn't crash after the mod is deactivated.
+local function removePhoneBinding()
+    pcall(function()
+        if not core_input_bindings or not core_input_bindings.bindings then return end
+        for _, device in ipairs(core_input_bindings.bindings) do
+            if device.contents and device.contents.bindings then
+                local bindings = device.contents.bindings
+                for i = #bindings, 1, -1 do
+                    if bindings[i].action == "openPhone" then
+                        table.remove(bindings, i)
+                    end
+                end
+                pcall(function()
+                    core_input_bindings.saveBindingsToDisk(device.contents)
+                end)
+            end
+        end
+        -- Reload actions so the engine drops the now-unmounted phone.json
+        if core_input_actions then
+            extensions.reload("core_input_actions")
+        end
+    end)
+end
+
 local function unloadAllExtensions()
+    removePhoneBinding()
     extensions.unload("core_gameContext")
     extensions.unload("gameplay_events_freeroamEvents")
     extensions.unload("career_career")
@@ -71,6 +101,7 @@ local function unloadAllExtensions()
     extensions.unload("gameplay_ambulance")
     extensions.unload("gameplay_bus")
     extensions.unload("gameplay_beamEats")
+    extensions.unload("gameplay_facilityWork")
     extensions.unload("overhaul_settings")
     extensions.unload("overhaul_maps")
     extensions.unload("overhaul_clearLevels")
@@ -78,6 +109,8 @@ local function unloadAllExtensions()
     extensions.unload("career_challengeModes")
     extensions.unload("career_economyAdjuster")
     extensions.unload("career_challengeSeedEncoder")
+    extensions.unload("dynamicRoutes")
+    extensions.unload("editor_dynamicRoutesEditor")
 end
 
 local function startup()

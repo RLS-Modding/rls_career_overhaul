@@ -1,0 +1,33 @@
+{
+    "ForkLift_FrontBrakes":{
+        "information":{
+            "authors":"BeamNG",
+            "name":"Front Brakes",
+            "value":200
+        },
+        "slotType":"ForkLift_FrontBrakes",
+        "flexbodies": [
+            ["mesh", "[group]:", "nonFlexMaterials"]
+            //brake discs
+        ],
+        "slots": [
+            ["type", "default", "description"],
+            ["brakepad_F","brakepad_F", "Front Brake Pads",{"coreSlot":true}]
+        ],
+        "pressureWheels": [
+            ["name","hubGroup","group","node1:","node2:","nodeS","nodeArm:","wheelDir"],
+            //brake properties
+            {"brakeTorque":12000},
+            {"parkingTorque":12000},
+            {"brakeSpring":150},
+
+            //brake thermals
+            {"enableBrakeThermals":true},
+            {"brakeDiameter":0.42},
+            {"brakeMass":45.0},
+            {"brakeType":"drum"},
+            {"rotorMaterial":"steel"},
+            {"brakeVentingCoef":1.0}
+        ]
+    }
+}
