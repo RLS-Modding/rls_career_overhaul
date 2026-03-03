@@ -438,14 +438,15 @@ local function getDeliveryProviderPosition(f)
   if not psName then
     psName = f.manualAccessPoints[1].psName
   end
-  local path = type(f.sitesFile) == "table" and f.sitesFile[1] or f.sitesFile
-  local data = jsonReadFile(path)
-  if not data or not data.parkingSpots then
-    return nil
-  end
-  for _, spot in ipairs(data.parkingSpots) do
-    if spot.name == psName and spot.pos and #spot.pos >= 3 then
-      return vec3(spot.pos[1], spot.pos[2], spot.pos[3])
+  local paths = type(f.sitesFile) == "table" and f.sitesFile or { f.sitesFile }
+  for _, path in ipairs(paths) do
+    local data = jsonReadFile(path)
+    if data and data.parkingSpots then
+      for _, spot in ipairs(data.parkingSpots) do
+        if spot.name == psName and spot.pos and #spot.pos >= 3 then
+          return vec3(spot.pos[1], spot.pos[2], spot.pos[3])
+        end
+      end
     end
   end
   return nil
