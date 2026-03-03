@@ -31,6 +31,7 @@ local LOT_PROGRESS_DISTANCE = 0.35
 local ANTI_SNIPE_WINDOW = 10.0
 local ANTI_SNIPE_EXTEND = 8.0
 local ANTI_SNIPE_MAX_EXTENSIONS = 6
+local DEFAULT_LOT_COUNT = 3
 
 local fallbackPool = {
   { model = 'covet', config = 'vehicles/covet/roller_covet.pc', title = 'Ibishu Covet', basePrice = 2600 },
@@ -74,7 +75,8 @@ local auctionState = {
   nextLiveStatusAt = 0,
   transitionActive = false,
   entryCooldownUntil = 0,
-  uiOpen = false
+  uiOpen = false,
+  awaitingFinalExit = false
 }
 
 local usedConfigKeys = {}
@@ -614,14 +616,26 @@ local function getRandomVehicleDefNoFilter()
   return nil
 end
 
-local function prepareLots(spawnSpots, blockSpots)
+local function prepareLots(spawnSpots, blockSpots, lotCount)
   local lots = {}
-  local lotCount = math.min(3, #(spawnSpots or {}))
+  local spawnCount = #(spawnSpots or {})
+  if spawnCount <= 0 then
+    return lots
+  end
+
+  lotCount = math.max(1, tonumber(lotCount) or DEFAULT_LOT_COUNT)
+  local blockCount = #(blockSpots or {})
   local weightedFilters = buildWeightedFilters()
 
   table.clear(usedConfigKeys)
 
   for i = 1, lotCount do
+    local spawnSpot = spawnSpots[((i - 1) % spawnCount) + 1]
+    local blockSpot = spawnSpot
+    if blockCount > 0 then
+      blockSpot = blockSpots[((i - 1) % blockCount) + 1]
+    end
+
     local lotFilter = pickWeightedFilter(weightedFilters)
     local vehicleDef = getRandomVehicleDefWithFilter(lotFilter)
     if not vehicleDef then
@@ -645,8 +659,8 @@ local function prepareLots(spawnSpots, blockSpots)
 
     table.insert(lots, {
       lotIndex = i,
-      spawnSpot = spawnSpots[i],
-      blockSpot = (blockSpots and blockSpots[math.min(i, #blockSpots)]) or spawnSpots[i],
+      spawnSpot = spawnSpot,
+      blockSpot = blockSpot,
       model = vehicleDef.model,
       config = vehicleDef.config,
       title = vehicleDef.title,
@@ -838,17 +852,14 @@ local function beginLotApproach(lot)
   return false
 end
 
-local startOrCompleteNextLot
-
 local function beginLotExit(lot)
-  if not lot then return end
+  if not lot then return false end
 
   local veh = lot.vehId and getObjectByID(lot.vehId)
   if not veh then
     lot.state = 'finished'
     lot.driveState = 'done'
-    startOrCompleteNextLot()
-    return
+    return false
   end
 
   lot.state = 'exiting'
@@ -867,35 +878,62 @@ local function beginLotExit(lot)
   end
 
   if driveVehicleAlongRouteSpots(veh, routeSpots, 0.45) then
-    return
+    return true
   end
 
   if auctionState.siteLayout and auctionState.siteLayout.despawnSpot and driveVehicleToSpot(veh, lot.blockSpot or lot.spawnSpot, auctionState.siteLayout.despawnSpot, 0.45) then
-    return
+    return true
   end
 
   despawnLotVehicle(lot)
+  lot.state = 'finished'
   lot.driveState = 'done'
+  return false
 end
 
-startOrCompleteNextLot = function()
-  auctionState.activeLotIndex = auctionState.activeLotIndex + 1
-  local nextLot = auctionState.lots[auctionState.activeLotIndex]
-  if not nextLot then
-    auctionState.phase = 'complete'
-    setAuctionFinishedTriggerState()
-    ui_message('Auction complete. Enter exit trigger to return.', 7, 'Used Auction', 'info')
-    return
+local function setAuctionComplete()
+  if auctionState.phase == 'complete' then return end
+  auctionState.phase = 'complete'
+  auctionState.awaitingFinalExit = false
+  setAuctionFinishedTriggerState()
+  ui_message('Auction complete. Enter exit trigger to return.', 7, 'Used Auction', 'info')
+end
+
+local function startLotByIndex(idx)
+  local lot = auctionState.lots[idx]
+  if not lot then
+    return false
   end
 
-  if nextLot.vehId and getObjectByID(nextLot.vehId) then
-    beginLotApproach(nextLot)
-  else
-    if spawnLotVehicle(nextLot, nextLot.spawnSpot, true) then
-      beginLotApproach(nextLot)
-    else
-      startOrCompleteNextLot()
+  if lot.vehId and getObjectByID(lot.vehId) then
+    beginLotApproach(lot)
+    return true
+  end
+
+  if spawnLotVehicle(lot, lot.spawnSpot, true) then
+    beginLotApproach(lot)
+    return true
+  end
+
+  lot.state = 'failed'
+  return false
+end
+
+local function startNextLotAfter(currentLotIndex)
+  local idx = (tonumber(currentLotIndex) or 0) + 1
+  while true do
+    local nextLot = auctionState.lots[idx]
+    if not nextLot then
+      auctionState.awaitingFinalExit = true
+      return false
     end
+
+    auctionState.activeLotIndex = idx
+    if startLotByIndex(idx) then
+      return true
+    end
+
+    idx = idx + 1
   end
 end
 
@@ -914,8 +952,9 @@ showLiveAuctionStatus = function(force)
 
   local remaining = math.max(0, math.ceil((lot.endTime or 0) - now))
   local bidder = (lot.highestBidder == 'player') and 'YOU' or 'NPC'
-  local msg = string.format('Auction Active | Lot %d/3 | %s | Bid $%d | %ds left | Leader %s',
-    lot.lotIndex, lot.title, lot.currentBid, remaining, bidder)
+  local totalLots = #auctionState.lots
+  local msg = string.format('Auction Active | Lot %d/%d | %s | Bid $%d | %ds left | Leader %s',
+    lot.lotIndex, totalLots, lot.title, lot.currentBid, remaining, bidder)
 
   guihooks.trigger('Message', {
     ttl = 1.1,
@@ -1093,6 +1132,7 @@ local function finishCurrentLot()
           career_modules_inventory.removeVehicle(inventoryId)
           ui_message(string.format('No garage space for %s at close.', lot.title), 6, 'Used Auction', 'warning')
           beginLotExit(lot)
+          startNextLotAfter(lot.lotIndex)
           return
         end
         lot.wonByPlayer = true
@@ -1110,6 +1150,7 @@ local function finishCurrentLot()
   end
 
   beginLotExit(lot)
+  startNextLotAfter(lot.lotIndex)
 end
 
 local function resetAuction(keepPurchases)
@@ -1143,6 +1184,7 @@ local function resetAuction(keepPurchases)
   auctionState.nextPlayerBidCheckAt = 0
   auctionState.nextLiveStatusAt = 0
   auctionState.noSpaceWarnCooldownUntil = 0
+  auctionState.awaitingFinalExit = false
 
   if not keepPurchases then
     auctionState.purchasedInventoryIds = {}
@@ -1191,58 +1233,28 @@ local function startAuctionImmediate()
       resetAuction(false)
       return
     end
-    if #layout.spawnSpots < 3 then
-      ui_message('Need at least 3 auctionSpawn spots for 3-lot auctions.', 8, 'Used Auction', 'warning')
-      resetAuction(false)
-      return
-    end
-    if #layout.blockSpots < 1 then
-      ui_message('Missing spot tag: auctionBlock.', 8, 'Used Auction', 'warning')
-      resetAuction(false)
-      return
-    end
     if not layout.despawnSpot then
       ui_message('Missing spot tag: auctionDespawn.', 8, 'Used Auction', 'warning')
-      resetAuction(false)
-      return
-    end
-    if #layout.returnSpots < 1 then
-      ui_message('Missing spot tag: auctionReturn.', 8, 'Used Auction', 'warning')
       resetAuction(false)
       return
     end
 
     teleportVehicleToSpot(playerVeh, auctionState.auctionSpot)
 
-    auctionState.lots = prepareLots(layout.spawnSpots, layout.blockSpots)
-    auctionState.activeLotIndex = 1
+    auctionState.lots = prepareLots(layout.spawnSpots, layout.blockSpots, DEFAULT_LOT_COUNT)
+    auctionState.activeLotIndex = 0
+    auctionState.awaitingFinalExit = false
 
-    local spawnOkCount = 0
-    for i, lot in ipairs(auctionState.lots) do
-      local startApproach = (i == auctionState.activeLotIndex)
-      if spawnLotVehicle(lot, lot.spawnSpot, startApproach) then
-        spawnOkCount = spawnOkCount + 1
-      else
-        lot.state = 'failed'
-      end
-    end
-
-    if spawnOkCount <= 0 then
-      auctionState.phase = 'complete'
-      setAuctionFinishedTriggerState()
+    local started = startNextLotAfter(0)
+    if not started then
+      setAuctionComplete()
       ui_message('Auction failed to start (no spawnable lots).', 7, 'Used Auction', 'warning')
       return
-    end
-    local firstLot = auctionState.lots[auctionState.activeLotIndex]
-    if not firstLot or firstLot.state == 'failed' then
-      startOrCompleteNextLot()
-    else
-      beginLotApproach(firstLot)
     end
 
     auctionState.phase = 'bidding'
 
-    ui_message('Auction started. Cars will follow authored path spots.', 8, 'Used Auction', 'info')
+    ui_message('Auction started. Vehicles now spawn sequentially: next lot drives in while previous exits.', 8, 'Used Auction', 'info')
   end)
 
   return true
@@ -1348,74 +1360,79 @@ local function onUpdate()
     return
   end
 
-  local lot = auctionState.lots[auctionState.activeLotIndex]
-  if not lot then
-    return
-  end
+  local now = os.clock()
 
-  local function refreshMotionProgress(veh, now)
+  local function refreshMotionProgress(lot, veh, tNow)
     if not veh then return end
     local currentPos = vec3(veh:getPosition())
     local prevPos = lot.lastMotionPos
     if not prevPos then
       lot.lastMotionPos = currentPos
-      lot.lastMotionAt = now
+      lot.lastMotionAt = tNow
       return
     end
 
     if (currentPos - prevPos):length() >= LOT_PROGRESS_DISTANCE then
       lot.lastMotionPos = currentPos
-      lot.lastMotionAt = now
+      lot.lastMotionAt = tNow
     end
   end
 
-  if lot.state == 'approaching' then
-    local now = os.clock()
-    local lotVeh = lot.vehId and getObjectByID(lot.vehId)
-    refreshMotionProgress(lotVeh, now)
-    local arrived = false
-    if lotVeh then
-      local blockSpot = lot.blockSpot or lot.spawnSpot
-      if blockSpot then
-        arrived = (lotVeh:getPosition() - vec3(blockSpot.pos)):length() <= LOT_ARRIVE_DISTANCE
+  local function hasLiveTransitionLots()
+    for _, checkLot in ipairs(auctionState.lots or {}) do
+      if checkLot.state == 'approaching' or checkLot.state == 'active' or checkLot.state == 'exiting' then
+        return true
       end
     end
-    if arrived then
-      beginLotBidding(lot, false)
-    elseif (now - (lot.lastMotionAt or now) >= LOT_STUCK_TIMEOUT) then
-      beginLotBidding(lot, true)
-    end
-    return
+    return false
   end
 
-  if lot.state == 'exiting' then
-    local now = os.clock()
-    local lotVeh = lot.vehId and getObjectByID(lot.vehId)
-    refreshMotionProgress(lotVeh, now)
-    local done = false
-    if not lotVeh then
-      done = true
-    elseif auctionState.siteLayout and auctionState.siteLayout.despawnSpot then
-      local dist = (lotVeh:getPosition() - vec3(auctionState.siteLayout.despawnSpot.pos)):length()
-      done = dist <= LOT_EXIT_DESPAWN_DISTANCE
-    end
-
-    if done or (now - (lot.lastMotionAt or now) >= LOT_STUCK_TIMEOUT) then
+  for _, lot in ipairs(auctionState.lots or {}) do
+    if lot.state == 'approaching' then
+      local lotVeh = lot.vehId and getObjectByID(lot.vehId)
+      refreshMotionProgress(lot, lotVeh, now)
+      local arrived = false
       if lotVeh then
-        despawnLotVehicle(lot)
+        local blockSpot = lot.blockSpot or lot.spawnSpot
+        if blockSpot then
+          arrived = (lotVeh:getPosition() - vec3(blockSpot.pos)):length() <= LOT_ARRIVE_DISTANCE
+        end
       end
-      lot.state = 'finished'
-      lot.driveState = 'done'
-      startOrCompleteNextLot()
+      if arrived then
+        beginLotBidding(lot, false)
+      elseif (now - (lot.lastMotionAt or now) >= LOT_STUCK_TIMEOUT) then
+        beginLotBidding(lot, true)
+      end
+    elseif lot.state == 'exiting' then
+      local lotVeh = lot.vehId and getObjectByID(lot.vehId)
+      refreshMotionProgress(lot, lotVeh, now)
+      local done = false
+      if not lotVeh then
+        done = true
+      elseif auctionState.siteLayout and auctionState.siteLayout.despawnSpot then
+        local dist = (lotVeh:getPosition() - vec3(auctionState.siteLayout.despawnSpot.pos)):length()
+        done = dist <= LOT_EXIT_DESPAWN_DISTANCE
+      end
+
+      if done or (now - (lot.lastMotionAt or now) >= LOT_STUCK_TIMEOUT) then
+        if lotVeh then
+          despawnLotVehicle(lot)
+        end
+        lot.state = 'finished'
+        lot.driveState = 'done'
+      end
     end
+  end
+
+  if auctionState.awaitingFinalExit and not hasLiveTransitionLots() then
+    setAuctionComplete()
     return
   end
 
-  if lot.state ~= 'active' then
+  local lot = auctionState.lots[auctionState.activeLotIndex]
+  if not lot or lot.state ~= 'active' then
     return
   end
-
-  local now = os.clock()
 
   if now >= lot.endTime then
     finishCurrentLot()
