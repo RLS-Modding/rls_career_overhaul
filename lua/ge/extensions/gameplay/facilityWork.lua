@@ -1116,6 +1116,7 @@ end
 
 local function applyWaitingForLoadState()
     table.clear(truckLoadPropIds)
+    table.clear(truckLoadPropPay)
     table.clear(propsEligibleForTruckLoad)
     truckLoadingDropTrigger = nil
     truckFullyLoadedNotified = false
