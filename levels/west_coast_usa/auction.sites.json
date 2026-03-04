@@ -21,7 +21,7 @@
       },
       "isMultiSpot":false,
       "name":"auctionPlayerStart",
-      "oldId":7914,
+      "oldId":2253,
       "pos":[
         -1550.8383789063,
         75.74878692627,
@@ -60,7 +60,7 @@
       },
       "isMultiSpot":false,
       "name":"Auction Lot 1",
-      "oldId":7915,
+      "oldId":2254,
       "pos":[
         -1497.1021728516,
         41.099609375,
@@ -98,7 +98,7 @@
       },
       "isMultiSpot":false,
       "name":"auctionBlock",
-      "oldId":7918,
+      "oldId":2255,
       "pos":[
         -1523.2150878906,
         38.787761688232,
@@ -136,7 +136,7 @@
       },
       "isMultiSpot":false,
       "name":"auctionPathIn",
-      "oldId":7919,
+      "oldId":2256,
       "pos":[
         -1497.0223388672,
         57.742076873779,
@@ -174,7 +174,7 @@
       },
       "isMultiSpot":false,
       "name":"auctionPathOut",
-      "oldId":7920,
+      "oldId":2257,
       "pos":[
         -1522.9978027344,
         15.339017868042,
@@ -212,7 +212,7 @@
       },
       "isMultiSpot":false,
       "name":"auctionDespawn",
-      "oldId":7921,
+      "oldId":2258,
       "pos":[
         -1506.0939941406,
         34.166618347168,
@@ -250,22 +250,22 @@
       },
       "isMultiSpot":false,
       "name":"auctionReturn1",
-      "oldId":7922,
+      "oldId":2259,
       "pos":[
-        -728.33715820313,
-        612.73364257813,
-        115.1703338623
+        -444.14743041992,
+        648.27233886719,
+        74.921340942383
       ],
       "rot":[
         0,
         0,
-        0.96588253974915,
-        -0.25898036360741
+        0.92620000255944,
+        0.37703194595366
       ],
       "scl":[
-        4,
-        14,
-        8
+        2.5,
+        6,
+        3
       ],
       "spotAmount":1,
       "spotDirection":"Left",
@@ -288,22 +288,22 @@
       },
       "isMultiSpot":false,
       "name":"auctionReturn2",
-      "oldId":7923,
+      "oldId":2260,
       "pos":[
-        -720.39721679688,
-        626.22271728516,
-        114.45880126953
+        -440.37478637695,
+        652.00952148438,
+        74.920394897461
       ],
       "rot":[
         0,
         0,
-        0.93907427787781,
-        -0.34371411800385
+        0.92431247234344,
+        0.38163661956787
       ],
       "scl":[
-        4,
-        14,
-        8
+        2.5,
+        6,
+        3
       ],
       "spotAmount":1,
       "spotDirection":"Left",
@@ -326,17 +326,169 @@
       },
       "isMultiSpot":false,
       "name":"auctionReturn3",
-      "oldId":7924,
+      "oldId":2261,
       "pos":[
-        -707.55139160156,
-        625.03778076172,
-        113.08654785156
+        -436.66558837891,
+        656.03936767578,
+        74.943855285645
       ],
       "rot":[
         0,
         0,
-        -0.39662107825279,
-        0.91798233985901
+        0.92425346374512,
+        0.38177928328514
+      ],
+      "scl":[
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount":1,
+      "spotDirection":"Left",
+      "spotOffset":0,
+      "spotRotation":0
+    },
+    {
+      "color":[
+        1,
+        1,
+        1
+      ],
+      "customFields":{
+        "names":{},
+        "tags":[
+          "auctionReturn"
+        ],
+        "types":{},
+        "values":{}
+      },
+      "isMultiSpot":false,
+      "name":"auctionReturn4",
+      "oldId":2262,
+      "pos":[
+        -437.67755126953,
+        637.88977050781,
+        74.951286315918
+      ],
+      "rot":[
+        0,
+        0,
+        -0.38994777202606,
+        0.92083704471588
+      ],
+      "scl":[
+        3.25,
+        8,
+        4
+      ],
+      "spotAmount":1,
+      "spotDirection":"Left",
+      "spotOffset":0,
+      "spotRotation":0
+    },
+    {
+      "color":[
+        1,
+        1,
+        1
+      ],
+      "customFields":{
+        "names":{},
+        "tags":[
+          "auctionReturn"
+        ],
+        "types":{},
+        "values":{}
+      },
+      "isMultiSpot":false,
+      "name":"auctionReturn5",
+      "oldId":2263,
+      "pos":[
+        -433.79446411133,
+        641.67584228516,
+        74.929618835449
+      ],
+      "rot":[
+        0,
+        0,
+        -0.38577917218208,
+        0.92259109020233
+      ],
+      "scl":[
+        3.25,
+        8,
+        4
+      ],
+      "spotAmount":1,
+      "spotDirection":"Left",
+      "spotOffset":0,
+      "spotRotation":0
+    },
+    {
+      "color":[
+        1,
+        1,
+        1
+      ],
+      "customFields":{
+        "names":{},
+        "tags":[
+          "auctionReturn"
+        ],
+        "types":{},
+        "values":{}
+      },
+      "isMultiSpot":false,
+      "name":"auctionReturn6",
+      "oldId":2264,
+      "pos":[
+        -429.97161865234,
+        645.53088378906,
+        74.932510375977
+      ],
+      "rot":[
+        0,
+        0,
+        -0.38464248180389,
+        0.92306554317474
+      ],
+      "scl":[
+        3.25,
+        8,
+        4
+      ],
+      "spotAmount":1,
+      "spotDirection":"Left",
+      "spotOffset":0,
+      "spotRotation":0
+    },
+    {
+      "color":[
+        1,
+        1,
+        1
+      ],
+      "customFields":{
+        "names":{},
+        "tags":[
+          "auctionReturn"
+        ],
+        "types":{},
+        "values":{}
+      },
+      "isMultiSpot":false,
+      "name":"auctionReturn7",
+      "oldId":2265,
+      "pos":[
+        -438.82376098633,
+        645.75573730469,
+        74.885688781738
+      ],
+      "rot":[
+        0,
+        0,
+        0.38230729103088,
+        0.92403519153595
       ],
       "scl":[
         4,
