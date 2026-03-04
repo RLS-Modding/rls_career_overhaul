@@ -1458,7 +1458,7 @@ local function doStartFacilityWork()
         return false
     end
     sessionBatchesCompleted = 0
-    firstTruckAfterBatch = 1 -- dev mode: truck after first batch
+    firstTruckAfterBatch = math.random(2, 4)
     local facCfg = facilityConfigs[facilityId]
     local zoneNames = getFacilitySpawnZoneNames(facCfg)
     if #zoneNames == 0 then
