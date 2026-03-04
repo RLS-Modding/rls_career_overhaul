@@ -82,7 +82,7 @@
     "aiPickupNodeIndex": 14,
     "truckSpawnSpot": "facilityWork_truckSpawn_industrialWarehouse",
     "sessionMultiplierBase": 1,
-    "sessionMultiplierPerBatch": 0.5,
+    "sessionMultiplierPerBatch": 0.15,
     "spawns": [
       { "materialId": "largeLumber"},
       { "materialId": "smallLumber"},

@@ -758,7 +758,12 @@ end
 
 local function getSessionMultiplierHeaderLabel()
     local mult = sessionMultiplier
-    local multStr = (mult == math.floor(mult)) and tostring(mult) or string.format("%.1f", mult)
+    local multStr
+    if mult == math.floor(mult) then
+        multStr = tostring(mult)
+    else
+        multStr = string.format("%.2f", mult)
+    end
     return "On duty: x" .. multStr
 end
 
@@ -1299,13 +1304,13 @@ local function payoutBatchAndSpawnNext()
     currentBatch = nil
     clearDropMarkers()
 
-    -- Increase session multiplier for next batch (per-facility config)
+    -- Increase session multiplier for next batch (per-facility config; kept low to avoid excessive earnings)
     local facCfg = facilityId and facilityConfigs[facilityId]
     local perBatch
     if facCfg then
-        perBatch = tonumber(facCfg.sessionMultiplierPerBatch) or 0.5
+        perBatch = tonumber(facCfg.sessionMultiplierPerBatch) or 0.15
     else
-        perBatch = 0.5
+        perBatch = 0.15
     end
     sessionMultiplier = sessionMultiplier + perBatch
 
@@ -1453,7 +1458,7 @@ local function doStartFacilityWork()
         return false
     end
     sessionBatchesCompleted = 0
-    firstTruckAfterBatch = math.random(2, 4)
+    firstTruckAfterBatch = 1 -- dev mode: truck after first batch
     local facCfg = facilityConfigs[facilityId]
     local zoneNames = getFacilitySpawnZoneNames(facCfg)
     if #zoneNames == 0 then
@@ -1636,9 +1641,23 @@ local function onBeamNGTrigger(data)
                 end
             end
         elseif event == "exit" then
-            if batchReadyWaitingForkliftExit and currentBatch and currentForkliftId and data.subjectID == currentForkliftId then
-                batchReadyWaitingForkliftExit = false
-                payoutBatchAndSpawnNext()
+            -- Only complete when the forklift has left the zone and all props are actually inside (count on forklift exit, not prop enter)
+            if currentBatch and currentForkliftId and data.subjectID == currentForkliftId and currentBatch.dropTrigger then
+                local trigger = currentBatch.dropTrigger
+                local countInside = 0
+                for _, pid in ipairs(currentBatch.propIds) do
+                    local obj = be:getObjectByID(pid)
+                    if obj and obj.getPosition then
+                        local pos = toVec3(obj:getPosition())
+                        if isPointInsideTriggerBox(pos, trigger) then
+                            countInside = countInside + 1
+                        end
+                    end
+                end
+                if countInside >= #currentBatch.propIds then
+                    batchReadyWaitingForkliftExit = false
+                    payoutBatchAndSpawnNext()
+                end
             end
         end
         return
