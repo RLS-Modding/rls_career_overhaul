@@ -265,7 +265,7 @@ const back = () => {
     border-radius: 2em;
     overflow: hidden;
     background: transparent;
-    
+
     :deep(.card-cnt) {
       height: 100%;
       border-radius: 2em;

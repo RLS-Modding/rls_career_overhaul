@@ -91,6 +91,36 @@
             </div>
 
             <div class="right-col">
+                <BngCard class="active-card mortgage-card" v-if="activeMortgages.length > 0">
+                    <BngCardHeading type="ribbon">Mortgages</BngCardHeading>
+                    <div class="card-content">
+                        <div class="loan-list">
+                            <div class="loan-item mortgage-item" v-for="m in activeMortgages" :key="m.garageId">
+                                <div class="row header">
+                                    <div class="org org-title">{{ m.garageName }}</div>
+                                    <div class="chip">{{ m.remainingPayments }} payments left</div>
+                                </div>
+                                <div class="two-col-grid">
+                                    <div class="kv"><span>Per payment</span><strong>
+                                            <BngUnit :money="m.monthlyPayment" />
+                                        </strong></div>
+                                    <div class="kv"><span>Outstanding</span><strong>
+                                            <BngUnit :money="m.remainingBalance" />
+                                        </strong></div>
+                                    <div class="kv"><span>Principal</span><strong>
+                                            <BngUnit :money="m.principal" />
+                                        </strong></div>
+                                    <div class="kv"><span>Rate</span><strong>{{ ((m.interestRate || 0) *
+                                            100).toFixed(1).replace(/\.0$/, '') }}%</strong></div>
+                                    <div class="kv" v-if="m.missedPayments > 0"><span>Missed</span><strong class="missed">{{
+                                            m.missedPayments }}</strong></div>
+                                    <div class="kv" v-if="m.secondsUntilNextPayment != null"><span>Next due</span><strong>{{ formatDue(m.secondsUntilNextPayment) }}</strong></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </BngCard>
+
                 <BngCard class="active-card">
                     <BngCardHeading type="ribbon">Active Loans</BngCardHeading>
                     <div class="card-content">
@@ -170,6 +200,7 @@ const term = ref(null)
 const perPayment = ref(0)
 const totalRepay = ref(0)
 const activeLoans = ref([])
+const activeMortgages = ref([])
 const prepayAmounts = ref({})
 const pauseTicks = ref(false)
 const availableFunds = ref(0)
@@ -299,6 +330,27 @@ const refreshActiveLoans = async () => {
     }
 }
 
+const refreshMortgages = async () => {
+    try {
+        const data = await lua.career_modules_propertyMortgage.getAllMortgages()
+        if (data && typeof data === 'object' && !Array.isArray(data)) {
+            activeMortgages.value = Object.entries(data).map(([gId, m]) => ({
+                garageId: gId,
+                garageName: m.garageName || gId,
+                monthlyPayment: m.monthlyPayment || 0,
+                remainingBalance: m.remainingBalance || 0,
+                remainingPayments: m.remainingPayments || 0,
+                interestRate: m.interestRate || 0,
+                missedPayments: m.missedPayments || 0,
+                secondsUntilNextPayment: m.secondsUntilNextPayment || null,
+                principal: m.principal || 0,
+            }))
+        } else {
+            activeMortgages.value = []
+        }
+    } catch { activeMortgages.value = [] }
+}
+
 const refreshOffers = async () => {
     try {
         const res = await lua.career_modules_loans.getLoanOffers()
@@ -317,9 +369,10 @@ onMounted(async () => {
     await refreshOffers()
     await computePayment()
     await refreshActiveLoans()
+    await refreshMortgages()
     await loadNotificationSetting()
     // subscribe to live loan events
-    loansUpdatedHandler = async () => { await refreshActiveLoans(); await refreshOffers() }
+    loansUpdatedHandler = async () => { await refreshActiveLoans(); await refreshMortgages(); await refreshOffers() }
     offersTickHandler = (data) => {
         if (pauseTicks.value) return
         if (!Array.isArray(data)) return
@@ -746,5 +799,17 @@ const termBtnCustomStyle = {
 .toggle-text {
     color: white;
     opacity: 0.9;
+}
+
+.mortgage-item {
+    border-left: 3px solid #f59e0b;
+}
+
+.mortgage-card :deep(.bng-card-heading) {
+    background: linear-gradient(135deg, #92400e, #b45309);
+}
+
+.missed {
+    color: #ef4444;
 }
 </style>

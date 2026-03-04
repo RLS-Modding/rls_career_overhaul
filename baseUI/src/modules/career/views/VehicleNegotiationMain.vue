@@ -350,7 +350,11 @@ const negotiationChat = ref(null)
 
 const refresh = async () => {
   const s = await lua.career_modules_marketplace.getNegotiationState()
-  state.value = s || state.value
+  if (!s) {
+    lua.career_career.closeAllMenus()
+    return
+  }
+  state.value = s
   const base = state.value.myOffer != null ? state.value.myOffer : state.value.startingPrice
   if (!Number.isNaN(Number(base))) offerPreview.value = Number(base)
 

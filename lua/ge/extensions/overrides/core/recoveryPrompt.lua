@@ -423,7 +423,7 @@ local function addTowingButtons()
         return {money = {amount = price, canBeNegative = true}}
       end
 
-      if career_modules_garageManager.isDiscoveredGarage(garage.id) then
+      if career_modules_garageManager.isDiscoveredGarage(garage.id) or career_modules_garageManager.isAccessibleGarage(garage.id) then
         discoveredGarages = discoveredGarages + 1
         buttonOptions[string.format("towTo%s", garage.id)] =
         {
@@ -470,7 +470,7 @@ local function addTaxiButtons()
   for i, garage in ipairs(garages) do
     if not garage.noQuickTravel then
 
-      if career_modules_garageManager.isDiscoveredGarage(garage.id) then
+      if career_modules_garageManager.isDiscoveredGarage(garage.id) or career_modules_garageManager.isAccessibleGarage(garage.id) then
         discoveredGarages = discoveredGarages + 1
         buttonOptions[string.format("taxiTo%s", garage.id)] =
         {
