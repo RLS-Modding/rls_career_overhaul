@@ -23,7 +23,11 @@ local PLAYER_BID_DISTANCE = 18
 local FADE_DURATION = 0.35
 local ENTRY_RETRIGGER_COOLDOWN = 4.0
 local LIVE_STATUS_INTERVAL = 1.0
-local LOT_ARRIVE_DISTANCE = 1.5
+local LOT_ARRIVE_DISTANCE = 2.5
+local LOT_ARRIVE_SPEED_MPS = 1.4
+local LOT_APPROACH_BRAKE_DISTANCE = 10.0
+local LOT_APPROACH_SLOW_SPEED_MPS = 1.8
+local LOT_APPROACH_CONTROL_INTERVAL = 0.2
 local LOT_EXIT_DESPAWN_DISTANCE = 5.0
 local AI_MAX_SPEED_MPS = 4.4352 -- 5 mph
 local LOT_STUCK_TIMEOUT = 5.0
@@ -500,6 +504,27 @@ local function driveVehicleAlongRouteSpots(veh, routeSpots, aggression)
   return true
 end
 
+local function applyApproachStopControl(lot, veh, distToBlock, speed, now)
+  if not lot or not veh or not distToBlock then return end
+  if distToBlock > LOT_APPROACH_BRAKE_DISTANCE then return end
+  if now < (lot.nextApproachControlAt or 0) then return end
+  lot.nextApproachControlAt = now + LOT_APPROACH_CONTROL_INTERVAL
+
+  -- Quarry-style settle: require low speed at the target and actively brake when close.
+  if distToBlock <= LOT_ARRIVE_DISTANCE and speed > LOT_ARRIVE_SPEED_MPS then
+    veh:queueLuaCommand('input.event("throttle", 0, 1)')
+    veh:queueLuaCommand('input.event("brake", 1, 1)')
+    veh:queueLuaCommand('input.event("parkingbrake", 1, 1)')
+    return
+  end
+
+  -- As we approach the block spot, keep AI path-following but force a much lower approach speed.
+  veh:queueLuaCommand('input.event("brake", 0, 1)')
+  veh:queueLuaCommand('input.event("parkingbrake", 0, 1)')
+  veh:queueLuaCommand('ai.setSpeedMode("set")')
+  veh:queueLuaCommand(string.format('ai.setSpeed(%.4f)', LOT_APPROACH_SLOW_SPEED_MPS))
+end
+
 local function getVehicleConfigPath(info)
   if not info or not info.model_key or not info.key then
     return nil
@@ -679,7 +704,8 @@ local function prepareLots(spawnSpots, blockSpots, lotCount)
       driveState = nil,
       driveStartedAt = 0,
       lastMotionPos = nil,
-      lastMotionAt = 0
+      lastMotionAt = 0,
+      nextApproachControlAt = 0
     })
   end
 
@@ -832,6 +858,7 @@ local function beginLotApproach(lot)
   lot.driveStartedAt = os.clock()
   lot.lastMotionPos = vec3(veh:getPosition())
   lot.lastMotionAt = lot.driveStartedAt
+  lot.nextApproachControlAt = 0
 
   local routeSpots = {}
   table.insert(routeSpots, lot.spawnSpot)
@@ -1395,7 +1422,10 @@ local function onUpdate()
       if lotVeh then
         local blockSpot = lot.blockSpot or lot.spawnSpot
         if blockSpot then
-          arrived = (lotVeh:getPosition() - vec3(blockSpot.pos)):length() <= LOT_ARRIVE_DISTANCE
+          local distToBlock = (lotVeh:getPosition() - vec3(blockSpot.pos)):length()
+          local speed = lotVeh:getVelocity():length()
+          applyApproachStopControl(lot, lotVeh, distToBlock, speed, now)
+          arrived = distToBlock <= LOT_ARRIVE_DISTANCE and speed <= LOT_ARRIVE_SPEED_MPS
         end
       end
       if arrived then
