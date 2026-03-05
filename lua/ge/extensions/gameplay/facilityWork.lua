@@ -1789,7 +1789,6 @@ local function onUpdate(_dtReal, _dtSim, _dtRaw)
             end
         end
         -- Only open phone when truck is full AND forklift was near the truck (so player actually delivered) then moved away (avoids trigger when prop alone enters 8m range before forklift)
-        if `#truckLoadPropIds` >= targetCount then
         if #truckLoadPropIds >= targetCount then
             local forkliftPos = getForkliftPosition()
             local truckPos = pos and toVec3(pos) or nil
