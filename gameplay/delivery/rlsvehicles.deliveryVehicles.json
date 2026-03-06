@@ -91,18 +91,9 @@
           "md_series",
           "midtruck"
         ],
-        "Brand": [
-          "Gavril",
-          "Wentward"
-        ],
-        "Value": {
-          "min": 50000
-        },
-        "hasLoad": [
-          false
-        ],
-        "Config Type": [
-          "Factory"
+        "Type": [
+          "Truck",
+          "Bus"
         ]
       },
       "blackList": {

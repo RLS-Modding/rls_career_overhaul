@@ -9,7 +9,7 @@
     "generationChance":0.5,
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":300,
-    "weight":[11,12,13,14,15],
+    "weight":[1.2,1.8,2.2],
     "modChance":{"timed":0.0}
   },
   "smallMechanicalParts": {
@@ -22,7 +22,7 @@
     "generationChance":0.5,
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":300,
-    "weight":[11,12,13,14,15],
+    "weight":[1.2,1.8,2.2],
     "modChance":{"timed":0.0}
   },
   "mechanicalToolbox": {
@@ -35,7 +35,7 @@
     "generationChance":0.3,
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":300,
-    "weight":[11,12,13,14,15]
+    "weight":[1.4,1.8,2.2]
   },
   "mechanicalToolboxBig": {
     "names":["Tool Shelf","Engine Parts", "Suspension Kit"],
@@ -47,7 +47,7 @@
     "generationChance":0.15,
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":300,
-    "weight":[45,60,75]
+    "weight":[3.0,3.8,4.5]
   },
   "bigMechanicalParts": {
     "names":["Multi-Set of Brakes","Special Vehicle Parts"],
@@ -59,7 +59,7 @@
     "generationChance":0.6,
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":300,
-    "weight":[50],
+    "weight":[3.2,3.8,4.5],
     "modChance":{"timed":0.1}
   },
   "biggerMechanicalParts": {
@@ -72,7 +72,20 @@
     "generationChance":0.4,
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":300,
-    "weight":[45,55],
+    "weight":[6.0,7.5,9.0],
+    "modChance":{"timed":0.1}
+  },
+  "mediumMechanicalPallet": {
+    "names":["Bulk Mechanical Parts Pallet","Fleet Service Parts Crate","Workshop Refit Shipment"],
+    "logisticTypes":["mechanicalParts"],
+    "slots":64,
+    "cargoType":"parcel",
+    "rarity":2.5,
+    "worth":1.3,
+    "generationChance":0.15,
+    "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
+    "offerDuration":300,
+    "weight":[5,6,7],
     "modChance":{"timed":0.1}
   },
   "rareMechanicalBigParts": {
@@ -85,7 +98,7 @@
     "generationChance":0.2,
     "duplicationChance":[0,0,0,0,0,0,0,1,0,0,0,0.75,0,0,0,0.5],
     "offerDuration":300,
-    "weight":[400,650],
+    "weight":[24,30],
     "modChance":{"timed":0.1}
   },
   "rareMechanicalSmallParts": {
@@ -98,7 +111,7 @@
     "generationChance":0.3,
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":300,
-    "weight":[11,12,13,14,15]
+    "weight":[1.2,1.8,2.2]
   }
 
 }

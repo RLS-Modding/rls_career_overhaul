@@ -9,7 +9,7 @@
     "generationChance":0.3,
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":360,
-    "weight":[11,12,13,14,15],
+    "weight":[1.0,1.4,1.8,2.2],
     "modChance":{"post":1, "precious":0.25}
   },
   "mediumPostParcel": {
@@ -22,7 +22,7 @@
     "generationChance":0.25,
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":360,
-    "weight":[18,20,22],
+    "weight":[2.2,3.2,4.2],
     "modChance":{"post":1, "precious":0.25}
   },
   "bigPostParcel": {
@@ -35,7 +35,7 @@
     "generationChance":0.2,
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":360,
-    "weight":[20,25,30],
+    "weight":[3.0,3.8,4.5],
     "modChance":{"post":1, "precious":0.25}
   },
   "specialPostParcel": {
@@ -48,7 +48,7 @@
     "generationChance":0.02,
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":360,
-    "weight":[14,16,18,20],
+    "weight":[2.2,3.2,4.2],
     "modChance":{"post":1, "precious":0.5}
   },
   "smallOfficeWares": {
@@ -61,7 +61,7 @@
     "generationChance":0.3,
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":360,
-    "weight":[15,15,25],
+    "weight":[1.4,1.8,2.2],
     "modChance":{"supplies":1}
   },
   "medOfficeWares": {
@@ -74,7 +74,7 @@
     "generationChance":0.25,
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":180,
-    "weight":[22,25,28],
+    "weight":[3.0,3.8,4.5],
     "modChance":{"supplies":1}
   },
   "bigOfficeWares": {
@@ -87,7 +87,20 @@
     "generationChance":0.1,
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":360,
-    "weight":[50,70,100],
+    "weight":[6.0,7.5,9.0],
+    "modChance":{"supplies":1}
+  },
+  "bulkOfficeWares": {
+    "names":["Server Rack Crate","Office Move Pallet","Bulk Office Shipment"],
+    "logisticTypes":["officeSupplies"],
+    "slots":64,
+    "cargoType":"parcel",
+    "rarity":2.2,
+    "worth":1.4,
+    "generationChance":0.06,
+    "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
+    "offerDuration":360,
+    "weight":[5,6,7],
     "modChance":{"supplies":1}
   },
   "drivingSimulator": {
@@ -100,7 +113,7 @@
     "generationChance":0.02,
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":360,
-    "weight":[250,500],
+    "weight":[4,6],
     "modChance":{"timed":0.0, "large":1, "precious":1}
   },
   "smallShopSupplies": {
@@ -113,7 +126,7 @@
     "generationChance":0.4,
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":360,
-    "weight":[16,19,22],
+    "weight":[1.6,2.0,2.2],
     "modChance":{"supplies":1}
   },
   "medShopSupplies": {
@@ -126,7 +139,7 @@
     "generationChance":0.15,
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":180,
-    "weight":[25,27,29],
+    "weight":[3.0,3.8,4.5],
     "modChance":{"supplies":1}
   },
   "medFragileShopSupplies": {
@@ -139,7 +152,7 @@
     "generationChance":0.1,
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":180,
-    "weight":[50,75,81],
+    "weight":[3.2,3.8,4.5],
     "modChance":{"supplies":1}
   },
   "bigShopSupplies": {
@@ -152,8 +165,34 @@
     "generationChance":0.15,
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":180,
-    "weight":[45,60,75],
+    "weight":[6.0,7.5,9.0],
     "modChance":{"supplies":1}
+  },
+  "bulkShopSupplies": {
+    "names":["Bulk Shop Restock","Retail Fixture Pallet","Store Renovation Crate"],
+    "logisticTypes":["shopSupplies"],
+    "slots":64,
+    "cargoType":"parcel",
+    "rarity":2.0,
+    "worth":1.2,
+    "generationChance":0.08,
+    "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
+    "offerDuration":180,
+    "weight":[5,6,7],
+    "modChance":{"supplies":1}
+  },
+  "mediumIndustrialGoods": {
+    "names":["Medium Industrial Goods","Industrial Components Pallet","Industrial Equipment Crate"],
+    "logisticTypes":["industrial"],
+    "slots":64,
+    "cargoType":"parcel",
+    "rarity":1,
+    "worth":0.8,
+    "generationChance":0.25,
+    "duplicationChance":[1,0,0,0.25,0,0,0,0.1],
+    "offerDuration":360,
+    "weight":[4,5,6],
+    "modChance":{"timed":0.1}
   },
   "bigIndustrialGoods": {
     "names":["Industrial Goods","Industrial Wares","Industrial Pallet","Industrial Box"],
@@ -165,7 +204,7 @@
     "generationChance":0.4,
     "duplicationChance":[0,0,0,0,0,0,0,1,0,0,0,0.75,0,0,0,0.5],
     "offerDuration":360,
-    "weight":[200,300,500],
+    "weight":[20,24,28],
     "modChance":{"timed":0.2}
   },
   "hugeIndustrialGoods": {
@@ -178,7 +217,7 @@
     "generationChance":0.4,
     "duplicationChance":[1,0,0,0.25,0,0,0,0.1],
     "offerDuration":360,
-    "weight":[600,700,800],
+    "weight":[28,32,36],
     "modChance":{"timed":0.2}
   }
 }
