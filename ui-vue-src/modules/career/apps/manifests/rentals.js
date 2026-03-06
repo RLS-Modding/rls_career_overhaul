@@ -4,6 +4,7 @@ export default {
   id: 'rentals',
   name: 'Rentals',
   icon: icons.doorFrontCoins,
+  iconTile: 'rentals.png',
   route: '/career/phone-rentals',
   color: '#3b82f6',
   iconColor: '#ffffff',
@@ -15,7 +16,7 @@ export default {
       await luaBridge.extensions.load('ui_phone_layout')
       const fromLayout = await luaBridge.ui_phone_layout.getCareerActive()
       if (fromLayout) return true
-    } catch {}
+    } catch { }
     try {
       return await luaBridge.career_career.isActive()
     } catch {

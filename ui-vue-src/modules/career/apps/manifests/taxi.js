@@ -3,7 +3,7 @@ import { icons } from '@/common/components/base'
 export default {
   id: 'taxi',
   name: 'Taxi',
-  //iconTile: 'taxi.png',
+  iconTile: 'taxi.png',
   //iconImageFit: 'cover',
   icon: icons.taxiCar3,
   route: '/career/phone-taxi',
