@@ -13,12 +13,19 @@ local settingsRoot = "settings/RLS/"
 local globalFile = settingsRoot .. "phoneLayout.json"
 local backgroundsDir = "/Phone/Backgrounds/"
 local layoutData = nil
-local validPhoneSizes = { small = true, normal = true, large = true }
+local SCALE_MIN, SCALE_MAX, SCALE_STEP = 0.5, 2, 0.1
+
+local function clampScale(value)
+  local n = tonumber(value)
+  if not n then return 1 end
+  local stepped = math.floor((n + SCALE_STEP * 0.5) / SCALE_STEP) * SCALE_STEP
+  return math.max(SCALE_MIN, math.min(SCALE_MAX, stepped))
+end
 local imagePatterns = { "*.png", "*.jpg", "*.jpeg", "*.webp" }
 
 local function getDefaultSettings()
   return {
-    phoneSize = "normal",
+    phoneSize = 1,
     backgroundColor = "#1509fb",
     backgroundImage = "",
   }
@@ -28,7 +35,7 @@ local function normalizeSettings(rawSettings)
   local defaults = getDefaultSettings()
   local settings = type(rawSettings) == "table" and rawSettings or {}
 
-  local phoneSize = validPhoneSizes[settings.phoneSize] and settings.phoneSize or defaults.phoneSize
+  local phoneSize = clampScale(settings.phoneSize)
   local backgroundColor = settings.backgroundColor
   if type(backgroundColor) ~= "string" or not string.match(backgroundColor, "^#%x%x%x%x%x%x$") then
     backgroundColor = defaults.backgroundColor

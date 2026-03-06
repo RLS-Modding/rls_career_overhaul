@@ -11,7 +11,7 @@
             <div class="preview-screen" :style="previewScreenStyle">
               <div class="preview-shade"></div>
               <div class="preview-topline">
-                <span>{{ selectedPhoneSizeLabel }}</span>
+                <span>{{ scaleDisplayValue }}x</span>
                 <span>{{ wallpaperModeLabel }}</span>
               </div>
               <div class="preview-stack">
@@ -39,20 +39,30 @@
               <span class="dropdown-title">Phone Size</span>
             </div>
             <div class="summary-meta-wrap">
-              <span class="dropdown-meta">{{ selectedPhoneSizeLabel }}</span>
+              <span class="dropdown-meta">{{ scaleDisplayValue }}x</span>
             </div>
           </summary>
           <div class="dropdown-content">
-            <div class="option-row option-row-size">
-              <button
-                v-for="option in PHONE_SIZE_OPTIONS"
-                :key="option.value"
-                class="option-button option-card"
-                :class="{ active: phoneSettings.phoneSize === option.value }"
-                @click="setPhoneSize(option.value)"
-              >
-                <span class="option-title">{{ option.label }}</span>
-              </button>
+            <div class="scale-slider-wrap">
+              <div class="scale-slider-track" :style="{ '--base-percent': baseMarkerPercent }">
+                <span class="scale-base-marker" aria-hidden="true">1x</span>
+                <input
+                  type="range"
+                  v-model.number="scaleSliderValue"
+                  :min="PHONE_SCALE_MIN"
+                  :max="PHONE_SCALE_MAX"
+                  :step="PHONE_SCALE_STEP"
+                  class="scale-slider"
+                />
+              </div>
+              <div class="scale-value-row">
+                <span class="scale-min">{{ PHONE_SCALE_MIN }}x</span>
+                <span class="scale-current">{{ scaleDisplayValue }}x</span>
+                <span class="scale-max">{{ PHONE_SCALE_MAX }}x</span>
+              </div>
+            </div>
+            <div class="picture-actions">
+              <button class="option-button ghost-button" @click="applyScale">Update Scale</button>
             </div>
           </div>
         </details>
@@ -99,7 +109,7 @@
               <span class="empty-folder-title">No wallpapers found</span>
               <span>Add `.png`, `.jpg`, `.jpeg`, or `.webp` images to the folder and refresh.</span>
             </div>
-            <div class="picture-actions">
+            <div class="picture-actions" v-if="phoneSettings.backgroundImage">
               <button class="option-button ghost-button" @click="clearBackgroundImage">Use Color Instead</button>
             </div>
           </div>
@@ -147,11 +157,14 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted, onUnmounted } from 'vue'
+import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import { lua } from '@/bridge'
 import PhoneWrapper from './PhoneWrapper.vue'
 import {
-  PHONE_SIZE_OPTIONS,
+  PHONE_SCALE_MIN,
+  PHONE_SCALE_MAX,
+  PHONE_SCALE_STEP,
+  PHONE_SCALE_BASE,
   PHONE_BACKGROUND_OPTIONS,
   usePhoneSettings,
 } from '../composables/usePhoneSettings'
@@ -169,6 +182,14 @@ const saveError = ref(false)
 const folderImages = ref([])
 const folderPath = ref('/Phone/Backgrounds/')
 const wallpaperAspectRatioLabel = '9:16'
+function snapScale(v) {
+  const n = Number(v)
+  if (Number.isNaN(n)) return 1
+  const stepped = Math.round(n / PHONE_SCALE_STEP) * PHONE_SCALE_STEP
+  return Math.max(PHONE_SCALE_MIN, Math.min(PHONE_SCALE_MAX, stepped))
+}
+const scaleSliderValue = ref(snapScale(phoneSettings.phoneSize))
+watch(() => phoneSettings.phoneSize, (v) => { scaleSliderValue.value = snapScale(v) })
 
 let saveTimer = null
 let clearStateTimer = null
@@ -205,9 +226,16 @@ const previewScreenStyle = computed(() => {
   }
 })
 
-const selectedPhoneSizeLabel = computed(() => {
-  const selected = PHONE_SIZE_OPTIONS.find(option => option.value === phoneSettings.phoneSize)
-  return selected?.label || phoneSettings.phoneSize
+const baseMarkerPercent = computed(() => {
+  return ((PHONE_SCALE_BASE - PHONE_SCALE_MIN) / (PHONE_SCALE_MAX - PHONE_SCALE_MIN)) * 100
+})
+
+const scaleDisplayValue = computed(() => {
+  const v = Number(scaleSliderValue.value)
+  if (Number.isNaN(v)) return '1'
+  const stepped = Math.round(v / PHONE_SCALE_STEP) * PHONE_SCALE_STEP
+  const clamped = Math.max(PHONE_SCALE_MIN, Math.min(PHONE_SCALE_MAX, stepped))
+  return clamped % 1 === 0 ? String(Math.round(clamped)) : clamped.toFixed(1)
 })
 
 const wallpaperSelectionLabel = computed(() => {
@@ -258,10 +286,14 @@ function queueSave() {
   }, 180)
 }
 
-function setPhoneSize(value) {
-  if (phoneSettings.phoneSize === value) return
-  setPhoneSettings({ phoneSize: value })
-  queueSave()
+async function applyScale() {
+  const raw = Number(scaleSliderValue.value)
+  if (Number.isNaN(raw)) return
+  const value = Math.round(raw / PHONE_SCALE_STEP) * PHONE_SCALE_STEP
+  const clamped = Math.max(PHONE_SCALE_MIN, Math.min(PHONE_SCALE_MAX, value))
+  if (phoneSettings.phoneSize === clamped) return
+  setPhoneSettings({ phoneSize: clamped })
+  await persistSettings()
 }
 
 function setBackgroundColor(value) {
@@ -321,7 +353,9 @@ onMounted(async () => {
     await lua.extensions.load('ui_phone_layout')
     const fromLua = await lua.ui_phone_layout?.getSettings?.()
     if (fromLua) {
-      replacePhoneSettings(fromLua)
+      const needsRepair = fromLua.phoneSize !== phoneSettings.phoneSize
+      replacePhoneSettings({ ...fromLua, phoneSize: phoneSettings.phoneSize })
+      if (needsRepair) await persistSettings()
     }
   } catch (e) {
     console.warn('Failed to load phone settings', e)
@@ -706,6 +740,80 @@ onUnmounted(() => {
 .option-row {
   display: flex;
   gap: 8px;
+}
+
+.scale-slider-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.scale-slider-track {
+  position: relative;
+  padding: 4px 0;
+}
+
+.scale-base-marker {
+  position: absolute;
+  bottom: 100%;
+  left: var(--base-percent, 11.11%);
+  transform: translateX(-50%);
+  font-size: 9px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.04em;
+  pointer-events: none;
+  margin-bottom: 2px;
+}
+
+.scale-slider {
+  width: 100%;
+  height: 8px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.2));
+  border-radius: 999px;
+  outline: none;
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    border: 2px solid rgba(255, 255, 255, 0.9);
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+    transition: transform 0.12s ease;
+  }
+
+  &::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+  }
+
+  &::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    border: 2px solid rgba(255, 255, 255, 0.9);
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  }
+}
+
+.scale-value-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.scale-current {
+  color: #f8fafc;
+  font-size: 12px;
 }
 
 .option-row-size {

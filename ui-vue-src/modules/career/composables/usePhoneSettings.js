@@ -1,16 +1,19 @@
 import { reactive } from 'vue'
 
+const SCALE_MIN = 0.5
+const SCALE_MAX = 2
+const SCALE_STEP = 0.1
+
 export const DEFAULT_PHONE_SETTINGS = Object.freeze({
-  phoneSize: 'normal',
+  phoneSize: 1,
   backgroundColor: '#1509fb',
   backgroundImage: '',
 })
 
-export const PHONE_SIZE_OPTIONS = Object.freeze([
-  { value: 'small', label: 'Small' },
-  { value: 'normal', label: 'Normal' },
-  { value: 'large', label: 'Large' },
-])
+export const PHONE_SCALE_MIN = SCALE_MIN
+export const PHONE_SCALE_MAX = SCALE_MAX
+export const PHONE_SCALE_STEP = SCALE_STEP
+export const PHONE_SCALE_BASE = 1
 
 export const PHONE_BACKGROUND_OPTIONS = Object.freeze([
   { value: '#111827', name: 'Charcoal' },
@@ -38,11 +41,12 @@ export const PHONE_BACKGROUND_OPTIONS = Object.freeze([
   { value: '#6d28d9', name: 'Violet' },
 ])
 
-const PHONE_SIZE_SCALE = Object.freeze({
-  small: 0.72,
-  normal: 0.8,
-  large: 0.9,
-})
+function clampScale(value) {
+  const n = Number(value)
+  if (Number.isNaN(n)) return DEFAULT_PHONE_SETTINGS.phoneSize
+  const stepped = Math.round(n / SCALE_STEP) * SCALE_STEP
+  return Math.max(SCALE_MIN, Math.min(SCALE_MAX, stepped))
+}
 
 const PHONE_SETTINGS_SESSION_KEY = 'phone_settings'
 const HEX_COLOR_PATTERN = /^#[0-9a-fA-F]{6}$/
@@ -59,11 +63,9 @@ function normalizeHexColor(value) {
 
 export function normalizePhoneSettings(value) {
   const src = value && typeof value === 'object' ? value : {}
-
-  const phoneSize = PHONE_SIZE_SCALE[src.phoneSize] ? src.phoneSize : DEFAULT_PHONE_SETTINGS.phoneSize
+  const phoneSize = clampScale(src.phoneSize)
   const backgroundColor = normalizeHexColor(src.backgroundColor)
   const backgroundImage = typeof src.backgroundImage === 'string' ? src.backgroundImage.trim() : ''
-
   return { phoneSize, backgroundColor, backgroundImage }
 }
 
@@ -114,7 +116,7 @@ export function resetPhoneSettings() {
 
 export function getPhoneScale(settings = phoneSettings) {
   const normalized = normalizePhoneSettings(settings)
-  return PHONE_SIZE_SCALE[normalized.phoneSize] || PHONE_SIZE_SCALE.normal
+  return normalized.phoneSize
 }
 
 export function usePhoneSettings() {
