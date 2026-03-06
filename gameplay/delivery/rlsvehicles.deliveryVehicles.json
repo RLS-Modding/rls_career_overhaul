@@ -401,5 +401,2330 @@
         ]
       }
     }
+  },
+
+  // BEGIN RLS VANILLA TRAILER TEMPLATE FILTERS
+  "vanillaTrailer_boxutility_loaded_200": {
+    "type": "trailer",
+    "unlockTag": "loadedSmallTrailers",
+    "filterName": "200kg Crate",
+    "connector": "towhitch",
+    "baseReward": 305,
+    "rewardPerKm": 175,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "boxutility"
+        ],
+        "key": [
+          "loaded_200"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_boxutility_loaded_400": {
+    "type": "trailer",
+    "unlockTag": "loadedSmallTrailers",
+    "filterName": "400kg Crate",
+    "connector": "towhitch",
+    "baseReward": 305,
+    "rewardPerKm": 175,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "boxutility"
+        ],
+        "key": [
+          "loaded_400"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_boxutility_loaded_600": {
+    "type": "trailer",
+    "unlockTag": "loadedSmallTrailers",
+    "filterName": "600kg Crate",
+    "connector": "towhitch",
+    "baseReward": 305,
+    "rewardPerKm": 175,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "boxutility"
+        ],
+        "key": [
+          "loaded_600"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_boxutility_loaded_armchairs": {
+    "type": "trailer",
+    "unlockTag": "loadedSmallTrailers",
+    "filterName": "Armchairs",
+    "connector": "towhitch",
+    "baseReward": 305,
+    "rewardPerKm": 175,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "boxutility"
+        ],
+        "key": [
+          "loaded_armchairs"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_boxutility_loaded_couch": {
+    "type": "trailer",
+    "unlockTag": "loadedSmallTrailers",
+    "filterName": "Couch",
+    "connector": "towhitch",
+    "baseReward": 305,
+    "rewardPerKm": 175,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "boxutility"
+        ],
+        "key": [
+          "loaded_couch"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_boxutility_loaded_planks": {
+    "type": "trailer",
+    "unlockTag": "loadedSmallTrailers",
+    "filterName": "1400kg Planks",
+    "connector": "towhitch",
+    "baseReward": 305,
+    "rewardPerKm": 175,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "boxutility"
+        ],
+        "key": [
+          "loaded_planks"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_boxutility_unloaded": {
+    "type": "trailer",
+    "unlockTag": "emptySmallTrailers",
+    "filterName": "Unloaded",
+    "connector": "towhitch",
+    "baseReward": 200,
+    "rewardPerKm": 150,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "boxutility"
+        ],
+        "key": [
+          "unloaded"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_boxutility_large_loaded_400": {
+    "type": "trailer",
+    "unlockTag": "loadedSmallTrailers",
+    "filterName": "400kg Crate",
+    "connector": "towhitch",
+    "baseReward": 305,
+    "rewardPerKm": 175,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "boxutility_large"
+        ],
+        "key": [
+          "loaded_400"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_boxutility_large_loaded_800": {
+    "type": "trailer",
+    "unlockTag": "loadedSmallTrailers",
+    "filterName": "800kg Crate",
+    "connector": "towhitch",
+    "baseReward": 305,
+    "rewardPerKm": 175,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "boxutility_large"
+        ],
+        "key": [
+          "loaded_800"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_boxutility_large_loaded_armchairs": {
+    "type": "trailer",
+    "unlockTag": "loadedSmallTrailers",
+    "filterName": "Armchairs",
+    "connector": "towhitch",
+    "baseReward": 305,
+    "rewardPerKm": 175,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "boxutility_large"
+        ],
+        "key": [
+          "loaded_armchairs"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_boxutility_large_loaded_couch": {
+    "type": "trailer",
+    "unlockTag": "loadedSmallTrailers",
+    "filterName": "Couch",
+    "connector": "towhitch",
+    "baseReward": 305,
+    "rewardPerKm": 175,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "boxutility_large"
+        ],
+        "key": [
+          "loaded_couch"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_boxutility_large_loaded_planks": {
+    "type": "trailer",
+    "unlockTag": "loadedSmallTrailers",
+    "filterName": "1400kg Planks",
+    "connector": "towhitch",
+    "baseReward": 305,
+    "rewardPerKm": 175,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "boxutility_large"
+        ],
+        "key": [
+          "loaded_planks"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_boxutility_large_loaded_planks_long": {
+    "type": "trailer",
+    "unlockTag": "loadedSmallTrailers",
+    "filterName": "2100kg Planks",
+    "connector": "towhitch",
+    "baseReward": 305,
+    "rewardPerKm": 175,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "boxutility_large"
+        ],
+        "key": [
+          "loaded_planks_long"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_boxutility_large_unloaded": {
+    "type": "trailer",
+    "unlockTag": "emptySmallTrailers",
+    "filterName": "Unloaded",
+    "connector": "towhitch",
+    "baseReward": 200,
+    "rewardPerKm": 150,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "boxutility_large"
+        ],
+        "key": [
+          "unloaded"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_boxutility_large_unsafe": {
+    "type": "trailer",
+    "unlockTag": "emptySmallTrailers",
+    "filterName": "Dangerous",
+    "connector": "towhitch",
+    "baseReward": 200,
+    "rewardPerKm": 150,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "boxutility_large"
+        ],
+        "key": [
+          "unsafe"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_caravan_default": {
+    "type": "trailer",
+    "unlockTag": "emptySmallTrailers",
+    "filterName": "Standard",
+    "connector": "towhitch",
+    "baseReward": 200,
+    "rewardPerKm": 150,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "caravan"
+        ],
+        "key": [
+          "default"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_caravan_empty": {
+    "type": "trailer",
+    "unlockTag": "emptySmallTrailers",
+    "filterName": "Empty",
+    "connector": "towhitch",
+    "baseReward": 200,
+    "rewardPerKm": 150,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "caravan"
+        ],
+        "key": [
+          "empty"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_cargotrailer_default": {
+    "type": "trailer",
+    "unlockTag": "emptyMediumTrailers",
+    "filterName": "Unloaded",
+    "connector": "towhitch",
+    "baseReward": 250,
+    "rewardPerKm": 200,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "cargotrailer"
+        ],
+        "key": [
+          "default"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_cargotrailer_loaded_400": {
+    "type": "trailer",
+    "unlockTag": "loadedMediumTrailers",
+    "filterName": "400kg Crate",
+    "connector": "towhitch",
+    "baseReward": 600,
+    "rewardPerKm": 250,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "cargotrailer"
+        ],
+        "key": [
+          "loaded_400"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_cargotrailer_loaded_800": {
+    "type": "trailer",
+    "unlockTag": "loadedMediumTrailers",
+    "filterName": "800kg Crate",
+    "connector": "towhitch",
+    "baseReward": 600,
+    "rewardPerKm": 250,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "cargotrailer"
+        ],
+        "key": [
+          "loaded_800"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_cargotrailer_loaded_armchairs": {
+    "type": "trailer",
+    "unlockTag": "loadedMediumTrailers",
+    "filterName": "Armchairs",
+    "connector": "towhitch",
+    "baseReward": 600,
+    "rewardPerKm": 250,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "cargotrailer"
+        ],
+        "key": [
+          "loaded_armchairs"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_cargotrailer_loaded_couch": {
+    "type": "trailer",
+    "unlockTag": "loadedMediumTrailers",
+    "filterName": "Couch",
+    "connector": "towhitch",
+    "baseReward": 600,
+    "rewardPerKm": 250,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "cargotrailer"
+        ],
+        "key": [
+          "loaded_couch"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_cargotrailer_loaded_planks": {
+    "type": "trailer",
+    "unlockTag": "loadedMediumTrailers",
+    "filterName": "1400kg Planks",
+    "connector": "towhitch",
+    "baseReward": 600,
+    "rewardPerKm": 250,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "cargotrailer"
+        ],
+        "key": [
+          "loaded_planks"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_cargotrailer_loaded_planks_long": {
+    "type": "trailer",
+    "unlockTag": "loadedMediumTrailers",
+    "filterName": "2100kg Planks",
+    "connector": "towhitch",
+    "baseReward": 600,
+    "rewardPerKm": 250,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "cargotrailer"
+        ],
+        "key": [
+          "loaded_planks_long"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_containerTrailer_20ft_2axle_20ft": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "20ft - 20ft Container (2100kg)",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "containerTrailer"
+        ],
+        "key": [
+          "20ft_2axle_20ft"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_containerTrailer_20ft_2axle_tank": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "20ft - Tank Container (21600kg Water)",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "containerTrailer"
+        ],
+        "key": [
+          "20ft_2axle_tank"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_containerTrailer_20ft_2axle_tank_empty": {
+    "type": "trailer",
+    "unlockTag": "emptyLargeTrailer",
+    "filterName": "20ft - Tank Container (3650kg Empty)",
+    "connector": "towhitch",
+    "baseReward": 350,
+    "rewardPerKm": 1000,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "containerTrailer"
+        ],
+        "key": [
+          "20ft_2axle_tank_empty"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_containerTrailer_20ft_2axle_transport": {
+    "type": "trailer",
+    "unlockTag": "emptyLargeTrailer",
+    "filterName": "20ft - Transport",
+    "connector": "towhitch",
+    "baseReward": 350,
+    "rewardPerKm": 1000,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "containerTrailer"
+        ],
+        "key": [
+          "20ft_2axle_transport"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_containerTrailer_40ft_3axle_20ft": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "40ft - 20ft Container (2100kg)",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "containerTrailer"
+        ],
+        "key": [
+          "40ft_3axle_20ft"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_containerTrailer_40ft_3axle_20ft_double": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "40ft - Double 20ft Container (4200kg)",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "containerTrailer"
+        ],
+        "key": [
+          "40ft_3axle_20ft_double"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_containerTrailer_40ft_3axle_20ft_short": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "40ft - 20ft Container Retracted (2100kg)",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "containerTrailer"
+        ],
+        "key": [
+          "40ft_3axle_20ft_short"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_containerTrailer_40ft_3axle_40ft": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "40ft - 40ft Container (3740kg)",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "containerTrailer"
+        ],
+        "key": [
+          "40ft_3axle_40ft"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_containerTrailer_40ft_3axle_tank": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "40ft - Tank Container (22300kg Milk)",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "containerTrailer"
+        ],
+        "key": [
+          "40ft_3axle_tank"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_containerTrailer_40ft_3axle_tank_double": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "40ft - Double Tank Container (7300kg Empty)",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "containerTrailer"
+        ],
+        "key": [
+          "40ft_3axle_tank_double"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_containerTrailer_40ft_3axle_transport": {
+    "type": "trailer",
+    "unlockTag": "emptyLargeTrailer",
+    "filterName": "40ft - Transport",
+    "connector": "towhitch",
+    "baseReward": 350,
+    "rewardPerKm": 1000,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "containerTrailer"
+        ],
+        "key": [
+          "40ft_3axle_transport"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_dolly_double": {
+    "type": "trailer",
+    "unlockTag": "emptySmallTrailers",
+    "filterName": "Double Axle",
+    "connector": "towhitch",
+    "baseReward": 200,
+    "rewardPerKm": 150,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "dolly"
+        ],
+        "key": [
+          "double"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_dolly_single": {
+    "type": "trailer",
+    "unlockTag": "emptySmallTrailers",
+    "filterName": "Single Axle",
+    "connector": "towhitch",
+    "baseReward": 200,
+    "rewardPerKm": 150,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "dolly"
+        ],
+        "key": [
+          "single"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_dryvan_28ft": {
+    "type": "trailer",
+    "unlockTag": "emptyLargeTrailer",
+    "filterName": "28ft Empty",
+    "connector": "towhitch",
+    "baseReward": 350,
+    "rewardPerKm": 1000,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "dryvan"
+        ],
+        "key": [
+          "28ft"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_dryvan_28ft_4500kg": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "28ft 4500kg Boxes",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "dryvan"
+        ],
+        "key": [
+          "28ft_4500kg"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_dryvan_28ft_9600kg": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "28ft 9600kg TastiCola",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "dryvan"
+        ],
+        "key": [
+          "28ft_9600kg"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_dryvan_48ft": {
+    "type": "trailer",
+    "unlockTag": "emptyLargeTrailer",
+    "filterName": "48ft Tandem Axle Empty",
+    "connector": "towhitch",
+    "baseReward": 350,
+    "rewardPerKm": 1000,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "dryvan"
+        ],
+        "key": [
+          "48ft"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_dryvan_48ft_19200kg": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "48ft Tandem Axle 19200kg TastiCola",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "dryvan"
+        ],
+        "key": [
+          "48ft_19200kg"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_dryvan_48ft_loadingramp": {
+    "type": "trailer",
+    "unlockTag": "emptyLargeTrailer",
+    "filterName": "48ft Tandem Axle Loading Ramp",
+    "connector": "towhitch",
+    "baseReward": 350,
+    "rewardPerKm": 1000,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "dryvan"
+        ],
+        "key": [
+          "48ft_loadingramp"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_dryvan_48ft_loadingramp_offset": {
+    "type": "trailer",
+    "unlockTag": "emptyLargeTrailer",
+    "filterName": "48ft Offset Tandem Axle Loading Ramp",
+    "connector": "towhitch",
+    "baseReward": 350,
+    "rewardPerKm": 1000,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "dryvan"
+        ],
+        "key": [
+          "48ft_loadingramp_offset"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_dryvan_48ft_spreadaxle": {
+    "type": "trailer",
+    "unlockTag": "emptyLargeTrailer",
+    "filterName": "48ft Spread Axle Empty",
+    "connector": "towhitch",
+    "baseReward": 350,
+    "rewardPerKm": 1000,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "dryvan"
+        ],
+        "key": [
+          "48ft_spreadaxle"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_dryvan_48ft_spreadaxle_6750kg": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "48ft Spread Axle 6750kg Boxes",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "dryvan"
+        ],
+        "key": [
+          "48ft_spreadaxle_6750kg"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_dryvan_53ft": {
+    "type": "trailer",
+    "unlockTag": "emptyLargeTrailer",
+    "filterName": "53ft Offset Tandem Axle Empty",
+    "connector": "towhitch",
+    "baseReward": 350,
+    "rewardPerKm": 1000,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "dryvan"
+        ],
+        "key": [
+          "53ft"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_dryvan_53ft_13500kg": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "53ft Offset Tandem Axle 13500kg Boxes",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "dryvan"
+        ],
+        "key": [
+          "53ft_13500kg"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_dryvan_53ft_22400kg": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "53ft Spread Axle 22400kg TastiCola",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "dryvan"
+        ],
+        "key": [
+          "53ft_22400kg"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_dryvan_53ft_spreadaxle": {
+    "type": "trailer",
+    "unlockTag": "emptyLargeTrailer",
+    "filterName": "53ft Spread Axle Empty",
+    "connector": "towhitch",
+    "baseReward": 350,
+    "rewardPerKm": 1000,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "dryvan"
+        ],
+        "key": [
+          "53ft_spreadaxle"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_flatbed_28ft_double": {
+    "type": "trailer",
+    "unlockTag": "emptyLargeTrailer",
+    "filterName": "28ft Tandem Axle",
+    "connector": "towhitch",
+    "baseReward": 350,
+    "rewardPerKm": 1000,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "flatbed"
+        ],
+        "key": [
+          "28ft_double"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_flatbed_28ft_double_coil": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "28ft Tandem Axle (20T Steel Coil)",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "flatbed"
+        ],
+        "key": [
+          "28ft_double_coil"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_flatbed_28ft_double_marble": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "28ft Tandem Axle (19T Marble Block)",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "flatbed"
+        ],
+        "key": [
+          "28ft_double_marble"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_flatbed_28ft_double_pipes": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "28ft Tandem Axle (10T Pipes)",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "flatbed"
+        ],
+        "key": [
+          "28ft_double_pipes"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_flatbed_28ft_single": {
+    "type": "trailer",
+    "unlockTag": "emptyLargeTrailer",
+    "filterName": "28ft Single Axle",
+    "connector": "towhitch",
+    "baseReward": 350,
+    "rewardPerKm": 1000,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "flatbed"
+        ],
+        "key": [
+          "28ft_single"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_flatbed_28ft_single_wood": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "28ft Single Axle (8.4T Planks )",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "flatbed"
+        ],
+        "key": [
+          "28ft_single_wood"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_flatbed_32ft": {
+    "type": "trailer",
+    "unlockTag": "emptyLargeTrailer",
+    "filterName": "32ft Tri Axle B-Train Lead",
+    "connector": "towhitch",
+    "baseReward": 350,
+    "rewardPerKm": 1000,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "flatbed"
+        ],
+        "key": [
+          "32ft"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_flatbed_32ft_coil": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "32ft Tri Axle B-Train Lead (20T Steel Coil)",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "flatbed"
+        ],
+        "key": [
+          "32ft_coil"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_flatbed_32ft_marble": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "32ft Tri Axle B-Train Lead (19T Marble Block)",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "flatbed"
+        ],
+        "key": [
+          "32ft_marble"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_flatbed_32ft_pipes": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "32ft Tri Axle B-Train Lead (10T Pipes)",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "flatbed"
+        ],
+        "key": [
+          "32ft_pipes"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_flatbed_32ft_wood": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "32ft Tri Axle B-Train Lead (8.4T Planks)",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "flatbed"
+        ],
+        "key": [
+          "32ft_wood"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_flatbed_48ft_coil": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "48ft Tandem Axle (15T Triple Steel Coils)",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "flatbed"
+        ],
+        "key": [
+          "48ft_coil"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_flatbed_48ft_coils_double": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "48ft Tridem Axle (20T Dual Steel Coils)",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "flatbed"
+        ],
+        "key": [
+          "48ft_coils_double"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_flatbed_48ft_double": {
+    "type": "trailer",
+    "unlockTag": "emptyLargeTrailer",
+    "filterName": "48ft Tandem Axle",
+    "connector": "towhitch",
+    "baseReward": 350,
+    "rewardPerKm": 1000,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "flatbed"
+        ],
+        "key": [
+          "48ft_double"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_flatbed_48ft_pipes": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "48ft Tandem Axle (20T Pipes)",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "flatbed"
+        ],
+        "key": [
+          "48ft_pipes"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_flatbed_48ft_tires": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "48ft Spread Axle (4.5T Big Tires)",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "flatbed"
+        ],
+        "key": [
+          "48ft_tires"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_flatbed_48ft_tires_double": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "48ft Tandem Axle (9T Big Tires)",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "flatbed"
+        ],
+        "key": [
+          "48ft_tires_double"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_flatbed_48ft_wood": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "48ft Spread Axle (12.6T Planks)",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "flatbed"
+        ],
+        "key": [
+          "48ft_wood"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_flatbed_53ft_coils_double": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "53ft Spread Axle (20T Dual Steel Coils)",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "flatbed"
+        ],
+        "key": [
+          "53ft_coils_double"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_flatbed_53ft_pipes": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "53ft Spread Tri Axle (20T Pipes)",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "flatbed"
+        ],
+        "key": [
+          "53ft_pipes"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_flatbed_53ft_triple": {
+    "type": "trailer",
+    "unlockTag": "emptyLargeTrailer",
+    "filterName": "53ft Tridem Axle",
+    "connector": "towhitch",
+    "baseReward": 350,
+    "rewardPerKm": 1000,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "flatbed"
+        ],
+        "key": [
+          "53ft_triple"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_flatbed_53ft_wood": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "53ft Tandem Axle (16.8T Planks)",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "flatbed"
+        ],
+        "key": [
+          "53ft_wood"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_frameless_dump_double": {
+    "type": "trailer",
+    "unlockTag": "emptyLargeTrailer",
+    "filterName": "Double Axle",
+    "connector": "towhitch",
+    "baseReward": 350,
+    "rewardPerKm": 1000,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "frameless_dump"
+        ],
+        "key": [
+          "double"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_frameless_dump_triple": {
+    "type": "trailer",
+    "unlockTag": "emptyLargeTrailer",
+    "filterName": "Triple Axle",
+    "connector": "towhitch",
+    "baseReward": 350,
+    "rewardPerKm": 1000,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "frameless_dump"
+        ],
+        "key": [
+          "triple"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_frameless_dump_wide_double": {
+    "type": "trailer",
+    "unlockTag": "emptyLargeTrailer",
+    "filterName": "Wide Spread Double Axle",
+    "connector": "towhitch",
+    "baseReward": 350,
+    "rewardPerKm": 1000,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "frameless_dump"
+        ],
+        "key": [
+          "wide_double"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_log_trailer_27ft": {
+    "type": "trailer",
+    "unlockTag": "emptyLargeTrailer",
+    "filterName": "27ft Dual",
+    "connector": "towhitch",
+    "baseReward": 350,
+    "rewardPerKm": 1000,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "log_trailer"
+        ],
+        "key": [
+          "27ft"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_log_trailer_27ft_12logs": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "27ft Dual - 12 Logs",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "log_trailer"
+        ],
+        "key": [
+          "27ft_12logs"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_log_trailer_27ft_12logs_rack": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "27ft Dual with Headache Rack - 12 Logs",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "log_trailer"
+        ],
+        "key": [
+          "27ft_12logs_rack"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_log_trailer_27ft_8logs": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "27ft Dual - 8 Logs",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "log_trailer"
+        ],
+        "key": [
+          "27ft_8logs"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_log_trailer_27ft_rack": {
+    "type": "trailer",
+    "unlockTag": "emptyLargeTrailer",
+    "filterName": "27ft Dual with Headache Rack",
+    "connector": "towhitch",
+    "baseReward": 350,
+    "rewardPerKm": 1000,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "log_trailer"
+        ],
+        "key": [
+          "27ft_rack"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_log_trailer_40ft": {
+    "type": "trailer",
+    "unlockTag": "emptyLargeTrailer",
+    "filterName": "40ft Dual",
+    "connector": "towhitch",
+    "baseReward": 350,
+    "rewardPerKm": 1000,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "log_trailer"
+        ],
+        "key": [
+          "40ft"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_log_trailer_40ft_12logs": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "40ft Dual - 12 Logs",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "log_trailer"
+        ],
+        "key": [
+          "40ft_12logs"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_log_trailer_40ft_12logs_rack": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "40ft Dual with Headache Rack - 12 Logs",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "log_trailer"
+        ],
+        "key": [
+          "40ft_12logs_rack"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_log_trailer_40ft_8logs": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "40ft Dual - 8 Logs",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "log_trailer"
+        ],
+        "key": [
+          "40ft_8logs"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_log_trailer_40ft_rack": {
+    "type": "trailer",
+    "unlockTag": "emptyLargeTrailer",
+    "filterName": "40ft Dual with Headache Rack",
+    "connector": "towhitch",
+    "baseReward": 350,
+    "rewardPerKm": 1000,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "log_trailer"
+        ],
+        "key": [
+          "40ft_rack"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_log_trailer_40ft_single": {
+    "type": "trailer",
+    "unlockTag": "emptyLargeTrailer",
+    "filterName": "40ft Single",
+    "connector": "towhitch",
+    "baseReward": 350,
+    "rewardPerKm": 1000,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "log_trailer"
+        ],
+        "key": [
+          "40ft_single"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_log_trailer_40ft_single_6logs_rack": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "40ft Single with Headache Rack - 6 Logs",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "log_trailer"
+        ],
+        "key": [
+          "40ft_single_6logs_rack"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_log_trailer_40ft_single_8logs": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "40ft Single - 8 logs",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "log_trailer"
+        ],
+        "key": [
+          "40ft_single_8logs"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_log_trailer_40ft_single_rack": {
+    "type": "trailer",
+    "unlockTag": "emptyLargeTrailer",
+    "filterName": "40ft Single with Headache Rack",
+    "connector": "towhitch",
+    "baseReward": 350,
+    "rewardPerKm": 1000,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "log_trailer"
+        ],
+        "key": [
+          "40ft_single_rack"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tanker_career_shuffleboard_empty_long": {
+    "type": "trailer",
+    "unlockTag": "emptyLargeTrailer",
+    "filterName": "Long",
+    "connector": "towhitch",
+    "baseReward": 350,
+    "rewardPerKm": 1000,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tanker"
+        ],
+        "key": [
+          "career_shuffleboard_empty_long"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tanker_career_shuffleboard_empty_short": {
+    "type": "trailer",
+    "unlockTag": "emptyLargeTrailer",
+    "filterName": "Short",
+    "connector": "towhitch",
+    "baseReward": 350,
+    "rewardPerKm": 1000,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tanker"
+        ],
+        "key": [
+          "career_shuffleboard_empty_short"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tanker_diesel_2": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "17000L Diesel",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tanker"
+        ],
+        "key": [
+          "diesel_2"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tanker_diesel_3": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "34000L Diesel",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tanker"
+        ],
+        "key": [
+          "diesel_3"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tanker_diesel_short_2": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "8850L Diesel",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tanker"
+        ],
+        "key": [
+          "diesel_short_2"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tanker_diesel_short_3": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "17400L Diesel",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tanker"
+        ],
+        "key": [
+          "diesel_short_3"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tanker_empty": {
+    "type": "trailer",
+    "unlockTag": "emptyLargeTrailer",
+    "filterName": "Empty",
+    "connector": "towhitch",
+    "baseReward": 350,
+    "rewardPerKm": 1000,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tanker"
+        ],
+        "key": [
+          "empty"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tanker_empty_short": {
+    "type": "trailer",
+    "unlockTag": "emptyLargeTrailer",
+    "filterName": "Empty Short",
+    "connector": "towhitch",
+    "baseReward": 350,
+    "rewardPerKm": 1000,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tanker"
+        ],
+        "key": [
+          "empty_short"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tanker_milk_2": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "17000L Milk",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tanker"
+        ],
+        "key": [
+          "milk_2"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tanker_milk_3": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "34000L Milk",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tanker"
+        ],
+        "key": [
+          "milk_3"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tanker_milk_short_2": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "8850L Milk",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tanker"
+        ],
+        "key": [
+          "milk_short_2"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tanker_milk_short_3": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "17400L Milk",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tanker"
+        ],
+        "key": [
+          "milk_short_3"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tanker_petroleum_2": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "17000L Petroleum",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tanker"
+        ],
+        "key": [
+          "petroleum_2"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tanker_petroleum_3": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "34000L Petroleum",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tanker"
+        ],
+        "key": [
+          "petroleum_3"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tanker_petroleum_short_2": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "8850L Petroleum",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tanker"
+        ],
+        "key": [
+          "petroleum_short_2"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tanker_petroleum_short_3": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "17400L Petroleum",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tanker"
+        ],
+        "key": [
+          "petroleum_short_3"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tanker_water_2": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "17000L Water",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tanker"
+        ],
+        "key": [
+          "water_2"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tanker_water_3": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "34000L Water",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tanker"
+        ],
+        "key": [
+          "water_3"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tanker_water_short_2": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "8850L Water",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tanker"
+        ],
+        "key": [
+          "water_short_2"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tanker_water_short_3": {
+    "type": "trailer",
+    "unlockTag": "loadedLargeTrailers",
+    "filterName": "17400L Water",
+    "connector": "towhitch",
+    "baseReward": 750,
+    "rewardPerKm": 1500,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tanker"
+        ],
+        "key": [
+          "water_short_3"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tiltdeck_22ft_gooseneck": {
+    "type": "trailer",
+    "unlockTag": "emptyMediumTrailers",
+    "filterName": "22ft Gooseneck",
+    "connector": "towhitch",
+    "baseReward": 250,
+    "rewardPerKm": 200,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tiltdeck"
+        ],
+        "key": [
+          "22ft_gooseneck"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tiltdeck_22ft_gooseneck_wood": {
+    "type": "trailer",
+    "unlockTag": "loadedMediumTrailers",
+    "filterName": "22ft Gooseneck (Wood Planks 4200kg)",
+    "connector": "towhitch",
+    "baseReward": 600,
+    "rewardPerKm": 250,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tiltdeck"
+        ],
+        "key": [
+          "22ft_gooseneck_wood"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tiltdeck_22ft_standard": {
+    "type": "trailer",
+    "unlockTag": "emptyMediumTrailers",
+    "filterName": "22ft Bumperpull",
+    "connector": "towhitch",
+    "baseReward": 250,
+    "rewardPerKm": 200,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tiltdeck"
+        ],
+        "key": [
+          "22ft_standard"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tiltdeck_22ft_standard_hay": {
+    "type": "trailer",
+    "unlockTag": "loadedMediumTrailers",
+    "filterName": "22ft Bumperpull (Hay Bales 2880kg)",
+    "connector": "towhitch",
+    "baseReward": 600,
+    "rewardPerKm": 250,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tiltdeck"
+        ],
+        "key": [
+          "22ft_standard_hay"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tiltdeck_30ft_gooseneck": {
+    "type": "trailer",
+    "unlockTag": "emptyMediumTrailers",
+    "filterName": "30ft Gooseneck",
+    "connector": "towhitch",
+    "baseReward": 250,
+    "rewardPerKm": 200,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tiltdeck"
+        ],
+        "key": [
+          "30ft_gooseneck"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tiltdeck_30ft_gooseneck_wood": {
+    "type": "trailer",
+    "unlockTag": "loadedMediumTrailers",
+    "filterName": "30ft Gooseneck (Wood Planks 5600kg)",
+    "connector": "towhitch",
+    "baseReward": 600,
+    "rewardPerKm": 250,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tiltdeck"
+        ],
+        "key": [
+          "30ft_gooseneck_wood"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tiltdeck_30ft_pintle": {
+    "type": "trailer",
+    "unlockTag": "emptyMediumTrailers",
+    "filterName": "30ft Pintle ",
+    "connector": "towhitch",
+    "baseReward": 250,
+    "rewardPerKm": 200,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tiltdeck"
+        ],
+        "key": [
+          "30ft_pintle"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tiltdeck_30ft_standard": {
+    "type": "trailer",
+    "unlockTag": "emptyMediumTrailers",
+    "filterName": "30ft Bumperpull",
+    "connector": "towhitch",
+    "baseReward": 250,
+    "rewardPerKm": 200,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tiltdeck"
+        ],
+        "key": [
+          "30ft_standard"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tiltdeck_30ft_standard_hay": {
+    "type": "trailer",
+    "unlockTag": "loadedMediumTrailers",
+    "filterName": "30ft Bumperpull (Hay Bales 3840kg)",
+    "connector": "towhitch",
+    "baseReward": 600,
+    "rewardPerKm": 250,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tiltdeck"
+        ],
+        "key": [
+          "30ft_standard_hay"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tiltdeck_40ft_gooseneck": {
+    "type": "trailer",
+    "unlockTag": "emptyMediumTrailers",
+    "filterName": "40ft Gooseneck",
+    "connector": "towhitch",
+    "baseReward": 250,
+    "rewardPerKm": 200,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tiltdeck"
+        ],
+        "key": [
+          "40ft_gooseneck"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tiltdeck_40ft_gooseneck_hay": {
+    "type": "trailer",
+    "unlockTag": "loadedMediumTrailers",
+    "filterName": "40ft Gooseneck (Hay Bales 9600KG)",
+    "connector": "towhitch",
+    "baseReward": 600,
+    "rewardPerKm": 250,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tiltdeck"
+        ],
+        "key": [
+          "40ft_gooseneck_hay"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tiltdeck_40ft_standard": {
+    "type": "trailer",
+    "unlockTag": "emptyMediumTrailers",
+    "filterName": "40ft Bumperpull",
+    "connector": "towhitch",
+    "baseReward": 250,
+    "rewardPerKm": 200,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tiltdeck"
+        ],
+        "key": [
+          "40ft_standard"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tiltdeck_40ft_standard_wood": {
+    "type": "trailer",
+    "unlockTag": "loadedMediumTrailers",
+    "filterName": "40ft Bumperpull (Planks 7000kg)",
+    "connector": "towhitch",
+    "baseReward": 600,
+    "rewardPerKm": 250,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tiltdeck"
+        ],
+        "key": [
+          "40ft_standard_wood"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tsfb_loaded_400": {
+    "type": "trailer",
+    "unlockTag": "loadedSmallTrailers",
+    "filterName": "400kg Crate",
+    "connector": "towhitch",
+    "baseReward": 305,
+    "rewardPerKm": 175,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tsfb"
+        ],
+        "key": [
+          "loaded_400"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tsfb_loaded_800": {
+    "type": "trailer",
+    "unlockTag": "loadedSmallTrailers",
+    "filterName": "800kg Crate",
+    "connector": "towhitch",
+    "baseReward": 305,
+    "rewardPerKm": 175,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tsfb"
+        ],
+        "key": [
+          "loaded_800"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tsfb_loaded_armchairs": {
+    "type": "trailer",
+    "unlockTag": "loadedSmallTrailers",
+    "filterName": "Armchairs",
+    "connector": "towhitch",
+    "baseReward": 305,
+    "rewardPerKm": 175,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tsfb"
+        ],
+        "key": [
+          "loaded_armchairs"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tsfb_loaded_couch": {
+    "type": "trailer",
+    "unlockTag": "loadedSmallTrailers",
+    "filterName": "Couch",
+    "connector": "towhitch",
+    "baseReward": 305,
+    "rewardPerKm": 175,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tsfb"
+        ],
+        "key": [
+          "loaded_couch"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tsfb_loaded_planks": {
+    "type": "trailer",
+    "unlockTag": "loadedSmallTrailers",
+    "filterName": "1400kg Planks",
+    "connector": "towhitch",
+    "baseReward": 305,
+    "rewardPerKm": 175,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tsfb"
+        ],
+        "key": [
+          "loaded_planks"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tsfb_loaded_planks_long": {
+    "type": "trailer",
+    "unlockTag": "loadedSmallTrailers",
+    "filterName": "2100kg Planks",
+    "connector": "towhitch",
+    "baseReward": 305,
+    "rewardPerKm": 175,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tsfb"
+        ],
+        "key": [
+          "loaded_planks_long"
+        ]
+      }
+    },
+  },
+  "vanillaTrailer_tsfb_unloaded": {
+    "type": "trailer",
+    "unlockTag": "emptySmallTrailers",
+    "filterName": "Unloaded",
+    "connector": "towhitch",
+    "baseReward": 200,
+    "rewardPerKm": 150,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tsfb"
+        ],
+        "key": [
+          "unloaded"
+        ]
+      }
+    },
   }
+  // END RLS VANILLA TRAILER TEMPLATE FILTERS
 }
