@@ -39,7 +39,8 @@ local modifiers = {
     hidden = true
   },
   precious = {
-    unlockFlag = "largePackagesDelivery",
+    -- Keep medium parcel variants aligned with the 32-slot gate.
+    unlockFlag = "logisticsParcel32Slots",
     penalty = 3,
     makeTemplate = function(g, p, distance)
       return {
@@ -56,7 +57,8 @@ local modifiers = {
     important = true
   },
   supplies = {
-    unlockFlag = "largePackagesDelivery",
+    -- Keep medium parcel variants aligned with the 32-slot gate.
+    unlockFlag = "logisticsParcel32Slots",
     makeTemplate = function(g, p, distance)
       return {
         type = "supplies",
@@ -71,7 +73,8 @@ local modifiers = {
     hidden = true
   },
   large = {
-    unlockFlag = "largePackagesDelivery",
+    -- Large/heavy modifier can appear on different slot sizes; slot gates will handle exact tier.
+    unlockFlag = "logisticsParcel32Slots",
     makeTemplate = function(g, p, distance)
       return {
         type = "large",
@@ -281,11 +284,13 @@ local function generateModifiers(item, parcelTemplate, distance)
   end
 
   -- Gate parcel size tiers by skill unlocks.
-  if item.slots > 64 then
+  -- Round slot values to avoid floating-point edge cases (e.g., 32.000001).
+  local slotCount = math.floor((item.slots or 0) + 0.5)
+  if slotCount > 64 then
     table.insert(mods, modifiers.slot128.makeTemplate())
-  elseif item.slots > 32 then
+  elseif slotCount > 32 then
     table.insert(mods, modifiers.slot64.makeTemplate())
-  elseif item.slots > 16 then
+  elseif slotCount > 16 then
     table.insert(mods, modifiers.slot32.makeTemplate())
   end
 
