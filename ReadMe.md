@@ -1,8 +1,8 @@
-# RLS Career Overhaul v2.6.3.2 (0.38.4)
+# RLS Career Overhaul v2.6.4 (0.38.4)
 
-Welcome to the **RLS Career Overhaul** mod for BeamNG.drive! This mod transforms career mode with extensive new work systems, freeroam events, police interactions, an overhauled economy, and much more.
+Welcome to the **RLS Career Overhaul** mod for BeamNG.drive! This mod transforms career mode with a living economy, new work systems, freeroam events, police interactions, loans and rentals, and much more.
 
-**Earn money your way** with multiple job types: deliveries, cargo loading, taxi service, bus operations, ambulance work, food delivery (BeamEats), repo missions, police enforcement, and vehicle rentals. Manage your finances with an improved insurance system, loans, and a marketplace to sell vehicles. Expand your empire with purchasable garages, 15+ dealership types, and business ownership.
+**Earn money your way** with multiple job types: deliveries, cargo loading, facility work (forklifts), taxi service, bus operations, ambulance work, food delivery (BeamEats), repo missions, police enforcement, and vehicle rentals. Manage your finances with a credit system, loans, mortgages, rentals, insurance, and a marketplace to sell vehicles. Expand your empire with purchasable garages (owned, mortgaged, or rented), 15+ dealership types, and business ownership.
 
 With **Challenge Modes** and **Freeroam+**, you can play career however you want - whether you prefer structured challenges, economic freedom, or the standard career experience. Dive into a more immersive and challenging career mode enriched with new features and improvements.
 
@@ -10,7 +10,7 @@ With **Challenge Modes** and **Freeroam+**, you can play career however you want
 
 ## Table of Contents
 
-- [RLS Career Overhaul v2.6.3.2 (0.38.4)](#rls-career-overhaul-v2632-0384)
+- [RLS Career Overhaul v2.6.4 (0.38.4)](#rls-career-overhaul-v264-0384)
   - [Table of Contents](#table-of-contents)
   - [Installation](#installation)
   - [Settings Manager](#settings-manager)
@@ -28,6 +28,7 @@ With **Challenge Modes** and **Freeroam+**, you can play career however you want
     - [Police](#police)
     - [Economy](#economy)
     - [Deliveries](#deliveries)
+    - [Facility Work \& Forklifts](#facility-work--forklifts)
     - [Loading Work](#loading-work)
     - [Ambulance Work](#ambulance-work)
     - [Bus Work](#bus-work)
@@ -35,7 +36,7 @@ With **Challenge Modes** and **Freeroam+**, you can play career however you want
     - [Insurance](#insurance)
       - [Insurance Policies](#insurance-policies)
       - [Policy Score](#policy-score)
-    - [Garage Space](#garage-space)
+    - [Garage Space \& Real Estate](#garage-space--real-estate)
     - [Dealerships](#dealerships)
       - [Belasco Auto](#belasco-auto)
       - [Jefferson Motors](#jefferson-motors)
@@ -79,7 +80,7 @@ With **Challenge Modes** and **Freeroam+**, you can play career however you want
       - [Challenge Customization](#challenge-customization)
       - [API Support](#api-support)
     - [New Vehicles](#new-vehicles)
-    - [General Adjustments](#general-adjustments)
+  - [A variety of new custom career-focused vehicles have been added, including MD Series variants, US Semi configurations, repo vehicles, delivery trailers, and other specialized vehicles for various career activities.](#a-variety-of-new-custom-career-focused-vehicles-have-been-added-including-md-series-variants-us-semi-configurations-repo-vehicles-delivery-trailers-and-other-specialized-vehicles-for-various-career-activities)
   - [Conclusion](#conclusion)
   - [Notes](#notes)
 
@@ -135,6 +136,7 @@ The **RLS Career Overhaul** mod significantly enhances the career mode experienc
 
 - **Deliveries** - Haul cargo, parcels, vehicles, and trailers across the map
 - **Loading Work** - Take cargo loading contracts at facilities and transport goods
+- **Facility Work** - Drive forklifts at the Industrial Warehouse and Shuffleboard; move materials in batches and earn variable pay
 - **Taxi Work** - Pick up passengers with 9 different passenger types and fare tiers
 - **Bus Operations** - Run public transit routes with passenger boarding/deboarding
 - **Ambulance Work** - Emergency medical transport with smooth driving requirements
@@ -143,7 +145,7 @@ The **RLS Career Overhaul** mod significantly enhances the career mode experienc
 - **Police Work** - Enforce the law and apprehend suspects
 - **Vehicle Rental** - Rent your high-value vehicles to movie studios
 
-The mod also features a sophisticated insurance system, expanded garage space, reworked dealerships with 15+ dealer types, a loans system, car meets, a marketplace to sell vehicles, and business ownership including a tuning shop.
+The mod also features a living economy (prices change with market conditions), a credit system with mortgages and rentals, a sophisticated insurance system, an overhauled real estate app for garages, reworked dealerships with 15+ dealer types, a loans system, car meets, a marketplace to sell vehicles, and business ownership including a tuning shop.
 
 With **Challenge Modes** and **Freeroam+**, the mod offers multiple gameplay modes that allow you to play career however you want. Whether you prefer structured challenges with specific goals, economic freedom without constraints, or the standard career progression, there's a mode to suit your playstyle.
 
@@ -350,7 +352,9 @@ Rock crawls have been added as part of West Coast adjustments and additions to t
 
 ### Economy
 
-- **Economy Adjuster System**: New system that allows adjusting economy multipliers for different activities
+- **Living Economy**: Prices for jobs, vehicles, housing, and parts change over time based on market conditions. Job pay, loan rates, insurance, and service fees all follow the economy.
+- **Market Watch App**: New phone app shows economy trends, news, and history in real time.
+- **Economy Adjuster System**: Adjust economy multipliers for different activities
 - **Fuel Consistency**: Fuel consistency when buying fuel tanks
 - **N2O and Unknown Fuels**: Support for N2O and unknown fuel types
 - **Insurance Threshold Changes**: Updated insurance threshold calculations
@@ -378,6 +382,17 @@ Rock crawls have been added as part of West Coast adjustments and additions to t
 - **Remote Delivery Modifier**: Special delivery modifier for Pepper Valley map
 - **Gooseneck Trailers**: Added gooseneck delivery trailers (22ft and 30ft variants) for Pepper Valley
 - **Pepper Valley Facilities**: New delivery facilities including warehouses and mixed delivery sites
+
+---
+
+### Facility Work & Forklifts
+
+New facility work at the Industrial Warehouse and Shuffleboard:
+
+- **Forklift Operation**: Drive forklifts, move materials in batches, and earn variable pay
+- **Multi-Batch Shifts**: Session stats and payouts persist until the end of your shift
+- **Phone App**: Choose batch size, see status, and get clear instructions
+- **Improved Work Zones**: Better prop clustering and forklift maneuverability
 
 ---
 
@@ -509,9 +524,12 @@ Your **Policy Score** affects your insurance rates:
 
 ---
 
-### Garage Space
+### Garage Space & Real Estate
 
-- **Discover and Purchase Garages**:
+- **Real Estate App**: Browse garages by price, slots, and distance. Map and list views stay in sync; garage prices follow the housing market.
+- **Property Options**: Own, mortgage, rent, or lease garages. Property status is shown everywhere and affects usage and travel.
+- **Listing & Negotiation**: List properties, negotiate offers, and accept or decline. Supports automated buyer/seller offers.
+- **Discover and Purchase**:
   - **Discover**: Drive to the garage and walk up to the computer.
   - **Purchase**: Tow to the garage to buy it.
   - Garages show up in taxi/towing menus once discovered.
@@ -769,14 +787,14 @@ Rewritten vehicle valuation system:
 
 ### Phone UI
 
-A brand-new **Phone UI** has been added:
+A redesigned **Phone UI** with a customizable homescreen:
 
+- **Homescreen**: Multiple pages, drag-and-drop layout (jiggle mode), and persistent dock. Apps and dock arrangement can be freely edited.
 - Cannot be opened while driving; auto-closes at higher speeds.
-- **Current Apps**:
-  - **Taxi App** for quick taxi jobs
-  - **Car Meets App** to view meet schedules and manage RSVPs
-  - **Marketplace App** for listing or checking offers on vehicles
-  - **Repo App** Access repo missions from your phone
+- **First-Time Setup**: Prompts you to bind a phone shortcut on first career load.
+- **Apps**: Facility work, marketplace, bank, loans, credit score, rentals, market watch, real estate, guide, camera/gallery, events, tuning shop, taxi, repo, car meets, business apps, and more.
+- **Guide App**: Onboarding, "Try it Out" steps, and help for all career features.
+- **Camera & Gallery**: Take screenshots with live preview, full-screen viewing, multi-select deletion, torch/flash/timer support.
 
 ---
 
@@ -805,6 +823,8 @@ Offers a new way to earn money with a deeper, modular taxi system:
 
 List and sell your vehicles in-game:
 
+- **Market-Based Pricing**: Vehicle and part prices update with the economy. Listings, offers, and negotiations use current market values. Dealership, repair, and customization costs follow the economy.
+- Clear price breakdowns in inventory, listings, and purchase flows.
 - Receive offers from 300+ different customers.
 - Offers arrive every 2–10 minutes based on overall customer interest.
 - Offline generation is slower (5× the normal time).
@@ -849,6 +869,10 @@ The loans system allows you to borrow money from various organizations to help f
 
 #### Features
 
+- **Credit System**: Your credit score affects loan terms and rates. Pay on time to improve it. Missed payments and debt mix affect future offers and rates.
+- **Loans App**: View your credit tier, history, and how it affects your offers. Credit widget on the phone shows real-time tier and factor.
+- **Mortgages & Rentals**: Finance garages and property with monthly payments. Lease signing, prepay/payoff, evictions, and foreclosure are supported.
+- **Rentals App**: Manage leases, track payments, and handle early termination.
 - **Multiple Loan Sources**: Borrow from different organizations based on your reputation level
 - **Loaner Vehicles**: Access to loaner vehicles including:
   - Van loaners
@@ -929,13 +953,6 @@ Mods can add win conditions or challenges without editing the base game, enablin
 ### New Vehicles
 
 A variety of new custom career-focused vehicles have been added, including MD Series variants, US Semi configurations, repo vehicles, delivery trailers, and other specialized vehicles for various career activities.
-
----
-
-### General Adjustments
-
-- **Fuel Price** multiplied by 10×.
-
 ---
 
 ## Conclusion
