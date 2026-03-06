@@ -4,6 +4,7 @@ export default {
   id: 'freeroam-events',
   name: 'Events',
   icon: icons.raceFlag,
+  iconTile: 'events.png',
   route: '/career/phone-events',
   color: '#e63946',
   iconColor: '#ffffff',

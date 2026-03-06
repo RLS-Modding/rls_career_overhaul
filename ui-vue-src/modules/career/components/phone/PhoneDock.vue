@@ -1,5 +1,6 @@
 <template>
   <div
+    ref="dockAreaRef"
     class="phone-dock-area"
     :class="{ 'no-transition': noTransition }"
     :style="dockStyle"
@@ -25,9 +26,15 @@
       </span>
     </div>
     <div
+      ref="dockRef"
       class="phone-dock"
       @pointerup="onDockPointerUp"
     >
+      <div
+        v-if="showDockBackground"
+        class="dock-bg-image"
+        :style="dockBackgroundStyle"
+      ></div>
       <div
         v-for="(app, idx) in dockApps"
         :key="app ? app.id : 'empty-' + idx"
@@ -60,7 +67,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import PhoneAppIcon from './PhoneAppIcon.vue'
 
 const props = defineProps({
@@ -77,19 +84,98 @@ const props = defineProps({
 })
 
 const dockStyle = computed(() => {
-  const style = { transform: `translateX(${props.slideOffset}px)` }
-  if (props.backgroundImage) {
-    style['--dock-bg-image'] = `url(${props.backgroundImage})`
-    style['--dock-blur-offset'] = `${-props.slideOffset}px`
-  }
-  return style
+  return { transform: `translateX(${props.slideOffset}px)` }
 })
 
 const emit = defineEmits(['launch', 'longpress', 'dragstart', 'goPage', 'remove'])
+const dockAreaRef = ref(null)
+const dockRef = ref(null)
+const imageMetrics = reactive({ width: 0, height: 0 })
+const dockBgMetrics = reactive({ left: 0, top: 0, width: 0, height: 0, ready: false })
+let resizeHandler = null
 
 const dockApps = computed(() => {
   return props.dockIds.map(id => id ? props.appMap[id] || null : null)
 })
+
+const showDockBackground = computed(() => {
+  return !!props.backgroundImage && dockBgMetrics.ready
+})
+
+const dockBackgroundStyle = computed(() => ({
+  width: `${dockBgMetrics.width}px`,
+  height: `${dockBgMetrics.height}px`,
+  left: `${dockBgMetrics.left}px`,
+  top: `${dockBgMetrics.top}px`,
+  backgroundImage: `url(${props.backgroundImage})`,
+}))
+
+function resetDockBackground() {
+  dockBgMetrics.left = 0
+  dockBgMetrics.top = 0
+  dockBgMetrics.width = 0
+  dockBgMetrics.height = 0
+  dockBgMetrics.ready = false
+}
+
+function updateDockBackground() {
+  if (!dockRef.value || !dockAreaRef.value || !props.backgroundImage || !imageMetrics.width || !imageMetrics.height) {
+    resetDockBackground()
+    return
+  }
+
+  const homescreenEl = dockAreaRef.value.closest('.homescreen')
+  if (!homescreenEl) {
+    resetDockBackground()
+    return
+  }
+
+  const homescreenRect = homescreenEl.getBoundingClientRect()
+  const dockRect = dockRef.value.getBoundingClientRect()
+  if (!homescreenRect.width || !homescreenRect.height || !dockRect.width || !dockRect.height) {
+    resetDockBackground()
+    return
+  }
+
+  const coverScale = Math.max(
+    homescreenRect.width / imageMetrics.width,
+    homescreenRect.height / imageMetrics.height,
+  )
+  const renderedWidth = imageMetrics.width * coverScale
+  const renderedHeight = imageMetrics.height * coverScale
+  const imageLeft = (homescreenRect.width - renderedWidth) * 0.5
+  const imageTop = (homescreenRect.height - renderedHeight) * 0.5
+  const dockLeft = dockRect.left - homescreenRect.left
+  const dockTop = dockRect.top - homescreenRect.top
+
+  dockBgMetrics.left = imageLeft - dockLeft
+  dockBgMetrics.top = imageTop - dockTop
+  dockBgMetrics.width = renderedWidth
+  dockBgMetrics.height = renderedHeight
+  dockBgMetrics.ready = true
+}
+
+function loadBackgroundImage() {
+  if (!props.backgroundImage) {
+    imageMetrics.width = 0
+    imageMetrics.height = 0
+    resetDockBackground()
+    return
+  }
+
+  const img = new Image()
+  img.onload = () => {
+    imageMetrics.width = img.naturalWidth
+    imageMetrics.height = img.naturalHeight
+    nextTick(updateDockBackground)
+  }
+  img.onerror = () => {
+    imageMetrics.width = 0
+    imageMetrics.height = 0
+    resetDockBackground()
+  }
+  img.src = props.backgroundImage
+}
 
 function onIconPointerDown(e, app, idx) {
   if (props.jiggleMode) {
@@ -100,6 +186,28 @@ function onIconPointerDown(e, app, idx) {
 function onDockPointerUp() {
   // handled by parent drag system
 }
+
+watch(() => props.backgroundImage, () => {
+  loadBackgroundImage()
+})
+
+watch(() => props.slideOffset, () => {
+  nextTick(updateDockBackground)
+})
+
+onMounted(() => {
+  resizeHandler = () => updateDockBackground()
+  window.addEventListener('resize', resizeHandler)
+  loadBackgroundImage()
+  nextTick(updateDockBackground)
+})
+
+onUnmounted(() => {
+  if (resizeHandler) {
+    window.removeEventListener('resize', resizeHandler)
+    resizeHandler = null
+  }
+})
 </script>
 
 <style scoped lang="scss">
@@ -180,18 +288,6 @@ function onDockPointerUp() {
     0 0 0 1px rgba(var(--bng-add-blue-500-rgb), 0.08),
     0 10px 28px rgba(0, 0, 0, 0.28);
 
-  &::before {
-    content: '';
-    position: absolute;
-    inset: -30px;
-    background-image: var(--dock-bg-image, none);
-    background-size: cover;
-    background-position: center bottom;
-    filter: blur(5px) saturate(1.15);
-    transform: translateX(var(--dock-blur-offset, 0px));
-    transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  }
-
   &::after {
     content: '';
     position: absolute;
@@ -203,6 +299,13 @@ function onDockPointerUp() {
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
     pointer-events: none;
   }
+}
+
+.dock-bg-image {
+  position: absolute;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  filter: blur(5px) saturate(1.15);
 }
 
 .dock-slot {
