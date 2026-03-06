@@ -83,12 +83,12 @@ local vehicleTags = {
     labelSingular = "Small Loaded Trailer",
   },
   emptyMediumTrailers = {
-    unlockFlag = "smallTrailersDelivery",
+    unlockFlag = "logisticsTrailerMedium",
     labelPlural = "Medium Empty Trailers",
     labelSingular = "Medium Empty Trailer",
   },
   loadedMediumTrailers = {
-    unlockFlag = "smallTrailersDelivery",
+    unlockFlag = "logisticsTrailerMedium",
     labelPlural = "Medium Loaded Trailers",
     labelSingular = "Medium Loaded Trailer",
   },
@@ -101,6 +101,72 @@ local vehicleTags = {
     unlockFlag = "largeTrailersDelivery",
     labelPlural = "Large Loaded Trailers",
     labelSingular = "Large Loaded Trailer",
+  },
+
+  trailerBoxutility = {
+    unlockFlag = "smallTrailersDelivery",
+    labelPlural = "Box Utility Trailers",
+    labelSingular = "Box Utility Trailer",
+  },
+  trailerBoxutilityLarge = {
+    unlockFlag = "smallTrailersDelivery",
+    labelPlural = "Large Box Utility Trailers",
+    labelSingular = "Large Box Utility Trailer",
+  },
+  trailerTsfb = {
+    unlockFlag = "smallTrailersDelivery",
+    labelPlural = "Small Flatbed Trailers",
+    labelSingular = "Small Flatbed Trailer",
+  },
+  trailerCaravan = {
+    unlockFlag = "smallTrailersDelivery",
+    labelPlural = "Caravans",
+    labelSingular = "Caravan",
+  },
+  trailerDolly = {
+    unlockFlag = "smallTrailersDelivery",
+    labelPlural = "Dollies",
+    labelSingular = "Dolly",
+  },
+  trailerCargotrailer = {
+    unlockFlag = "logisticsTrailerMedium",
+    labelPlural = "Cargo Trailers",
+    labelSingular = "Cargo Trailer",
+  },
+  trailerTiltdeck = {
+    unlockFlag = "logisticsTrailerMedium",
+    labelPlural = "Tiltdeck Trailers",
+    labelSingular = "Tiltdeck Trailer",
+  },
+  trailerFlatbed = {
+    unlockFlag = "largeTrailersDelivery",
+    labelPlural = "Flatbed Trailers",
+    labelSingular = "Flatbed Trailer",
+  },
+  trailerContainer = {
+    unlockFlag = "largeTrailersDelivery",
+    labelPlural = "Container Trailers",
+    labelSingular = "Container Trailer",
+  },
+  trailerDryvan = {
+    unlockFlag = "largeTrailersDelivery",
+    labelPlural = "Dry Van Trailers",
+    labelSingular = "Dry Van Trailer",
+  },
+  trailerTanker = {
+    unlockFlag = "largeTrailersDelivery",
+    labelPlural = "Tanker Trailers",
+    labelSingular = "Tanker Trailer",
+  },
+  trailerLogTrailer = {
+    unlockFlag = "largeTrailersDelivery",
+    labelPlural = "Log Trailers",
+    labelSingular = "Log Trailer",
+  },
+  trailerFramelessDump = {
+    unlockFlag = "largeTrailersDelivery",
+    labelPlural = "Frameless Dump Trailers",
+    labelSingular = "Frameless Dump Trailer",
   }
 }
 

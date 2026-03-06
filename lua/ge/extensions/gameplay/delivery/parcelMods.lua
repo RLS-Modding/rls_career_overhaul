@@ -85,7 +85,7 @@ local modifiers = {
     shortDescription = "Drive carefully and beware of momentum!"
   },
   fluid = {
-    unlockFlag = "hazardousMaterialsDelivery",
+    unlockFlag = "logisticsFluidDelivery",
     makeTemplate = function(g, p, distance)
       return {
         type = "fluid"
@@ -98,7 +98,7 @@ local modifiers = {
     shortDescription = "Requires a fluid-capable container or tank to transport."
   },
   dryBulk = {
-    unlockFlag = "hazardousMaterialsDelivery",
+    unlockFlag = "logisticsAggregateDelivery",
     makeTemplate = function(g, p, distance)
       return {
         type = "dryBulk"
@@ -111,7 +111,7 @@ local modifiers = {
     shortDescription = "Requires a drybulk-capable container to transport."
   },
   cement = {
-    unlockFlag = "hazardousMaterialsDelivery",
+    unlockFlag = "logisticsCementDelivery",
     makeTemplate = function(g, p, distance)
       return {
         type = "cement"
@@ -124,7 +124,7 @@ local modifiers = {
     shortDescription = "Requires a cement-capable container to transport."
   },
   cash = {
-    unlockFlag = "smallPackagesDelivery",
+    unlockFlag = "logisticsCashDelivery",
     makeTemplate = function(g, p, distance)
       return {
         type = "cash"
@@ -148,6 +148,48 @@ local modifiers = {
     icon = "cardboardBox",
     label = "Parcel",
     shortDescription = "Requires a parcel-capable container transport.",
+    hidden = true
+  },
+  slot32 = {
+    unlockFlag = "logisticsParcel32Slots",
+    makeTemplate = function(g, p, distance)
+      return {
+        type = "slot32"
+      }
+    end,
+    unlockLabel = "32 Slot Parcels",
+    priority = 6,
+    icon = "cardboardBox",
+    label = "32 Slot Parcels",
+    shortDescription = "Allows handling parcels above 16 slots.",
+    hidden = true
+  },
+  slot64 = {
+    unlockFlag = "logisticsParcel64Slots",
+    makeTemplate = function(g, p, distance)
+      return {
+        type = "slot64"
+      }
+    end,
+    unlockLabel = "64 Slot Parcels",
+    priority = 6,
+    icon = "cardboardBox",
+    label = "64 Slot Parcels",
+    shortDescription = "Allows handling parcels above 32 slots.",
+    hidden = true
+  },
+  slot128 = {
+    unlockFlag = "logisticsParcel128Slots",
+    makeTemplate = function(g, p, distance)
+      return {
+        type = "slot128"
+      }
+    end,
+    unlockLabel = "128 Slot Parcels",
+    priority = 6,
+    icon = "cardboardBox",
+    label = "128 Slot Parcels",
+    shortDescription = "Allows handling parcels above 64 slots.",
     hidden = true
   },
   hazardous = {
@@ -236,6 +278,15 @@ local function generateModifiers(item, parcelTemplate, distance)
 
   if item.slots >= largeSlotThreshold or item.weight >= heavyWeightThreshold and not parcelTemplate.modChance.large then
     table.insert(mods, modifiers.large.makeTemplate())
+  end
+
+  -- Gate parcel size tiers by skill unlocks.
+  if item.slots > 64 then
+    table.insert(mods, modifiers.slot128.makeTemplate())
+  elseif item.slots > 32 then
+    table.insert(mods, modifiers.slot64.makeTemplate())
+  elseif item.slots > 16 then
+    table.insert(mods, modifiers.slot32.makeTemplate())
   end
 
   table.sort(mods, sortByPrio)

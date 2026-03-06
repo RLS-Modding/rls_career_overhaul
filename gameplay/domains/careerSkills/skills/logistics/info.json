@@ -1,8 +1,9 @@
 {
     "name": "Logistics Skill",
-    "description": "Progress a dedicated 1-50 logistics mastery track with a reward at every level.",
+    "description": "Progress a dedicated 1-50 logistics mastery track with milestone unlock rewards.",
     "order": 1000,
     "isSkill": true,
+    "attributeKey": "logistics-delivery",
     "icon": "deliveryTruck",
     "levels": [
         {
@@ -11,14 +12,24 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 1",
-                "description": "Reach level 1 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 1 to unlock new Logistics rewards."
             },
+            "unlockFlags": [
+                "smallPackagesDelivery",
+                "junkerVeh"
+            ],
             "unlocks": [
                 {
                     "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +0.6%",
-                    "description": "Total skill bonus is now +0.6% for logistics contracts."
+                    "icon": "boxPickUp03",
+                    "heading": "\u003c16 Slot Parcels",
+                    "description": "Unlock parcel jobs up to 16-slot capacity."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "keys1",
+                    "heading": "Lowest Car Jockey",
+                    "description": "Unlock the entry Car Jockey tier."
                 }
             ]
         },
@@ -28,16 +39,9 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 2",
-                "description": "Reach level 2 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 2 to continue progressing your Logistics mastery."
             },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +1.2%",
-                    "description": "Total skill bonus is now +1.2% for logistics contracts."
-                }
-            ]
+            "unlocks": []
         },
         {
             "requiredValue": 550,
@@ -45,14 +49,17 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 3",
-                "description": "Reach level 3 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 3 to unlock new Logistics rewards."
             },
+            "unlockFlags": [
+                "logisticsParcel32Slots"
+            ],
             "unlocks": [
                 {
                     "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +1.8%",
-                    "description": "Total skill bonus is now +1.8% for logistics contracts."
+                    "icon": "boxPickUp03",
+                    "heading": "32 Slot Parcels",
+                    "description": "Unlock parcel jobs up to 32-slot capacity."
                 }
             ]
         },
@@ -62,16 +69,9 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 4",
-                "description": "Reach level 4 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 4 to continue progressing your Logistics mastery."
             },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +2.4%",
-                    "description": "Total skill bonus is now +2.4% for logistics contracts."
-                }
-            ]
+            "unlocks": []
         },
         {
             "requiredValue": 1380,
@@ -79,20 +79,17 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 5",
-                "description": "Reach level 5 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 5 to unlock new Logistics rewards."
             },
+            "unlockFlags": [
+                "smallTrailersDelivery"
+            ],
             "unlocks": [
                 {
                     "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +3%",
-                    "description": "Total skill bonus is now +3% for logistics contracts."
-                },
-                {
-                    "type": "unlockCard",
-                    "icon": "badgeRoundStar",
-                    "heading": "Milestone Tier 1",
-                    "description": "Reached level 5 in Logistics Skill."
+                    "icon": "smallTrailer",
+                    "heading": "Small Trailer",
+                    "description": "Unlock small trailer deliveries."
                 }
             ]
         },
@@ -102,16 +99,9 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 6",
-                "description": "Reach level 6 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 6 to continue progressing your Logistics mastery."
             },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +3.6%",
-                    "description": "Total skill bonus is now +3.6% for logistics contracts."
-                }
-            ]
+            "unlocks": []
         },
         {
             "requiredValue": 2586,
@@ -119,14 +109,17 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 7",
-                "description": "Reach level 7 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 7 to unlock new Logistics rewards."
             },
+            "unlockFlags": [
+                "smallVeh"
+            ],
             "unlocks": [
                 {
                     "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +4.2%",
-                    "description": "Total skill bonus is now +4.2% for logistics contracts."
+                    "icon": "keys1",
+                    "heading": "Low Car Jockey",
+                    "description": "Unlock the low Car Jockey tier."
                 }
             ]
         },
@@ -136,16 +129,9 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 8",
-                "description": "Reach level 8 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 8 to continue progressing your Logistics mastery."
             },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +4.8%",
-                    "description": "Total skill bonus is now +4.8% for logistics contracts."
-                }
-            ]
+            "unlocks": []
         },
         {
             "requiredValue": 4264,
@@ -153,16 +139,9 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 9",
-                "description": "Reach level 9 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 9 to continue progressing your Logistics mastery."
             },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +5.4%",
-                    "description": "Total skill bonus is now +5.4% for logistics contracts."
-                }
-            ]
+            "unlocks": []
         },
         {
             "requiredValue": 5310,
@@ -170,20 +149,18 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 10",
-                "description": "Reach level 10 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 10 to unlock new Logistics rewards."
             },
+            "unlockFlags": [
+                "logisticsFluidDelivery",
+                "hazardousMaterialsDelivery"
+            ],
             "unlocks": [
                 {
                     "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +6%",
-                    "description": "Total skill bonus is now +6% for logistics contracts."
-                },
-                {
-                    "type": "unlockCard",
-                    "icon": "badgeRoundStar",
-                    "heading": "Milestone Tier 2",
-                    "description": "Reached level 10 in Logistics Skill."
+                    "icon": "droplet",
+                    "heading": "Fluid Delivery",
+                    "description": "Unlock fluid delivery jobs."
                 }
             ]
         },
@@ -193,16 +170,9 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 11",
-                "description": "Reach level 11 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 11 to continue progressing your Logistics mastery."
             },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +6.6%",
-                    "description": "Total skill bonus is now +6.6% for logistics contracts."
-                }
-            ]
+            "unlocks": []
         },
         {
             "requiredValue": 7876,
@@ -210,14 +180,18 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 12",
-                "description": "Reach level 12 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 12 to unlock new Logistics rewards."
             },
+            "unlockFlags": [
+                "logisticsParcel64Slots",
+                "largePackagesDelivery"
+            ],
             "unlocks": [
                 {
                     "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +7.2%",
-                    "description": "Total skill bonus is now +7.2% for logistics contracts."
+                    "icon": "boxPickUp03",
+                    "heading": "64 Slot Parcels",
+                    "description": "Unlock parcel jobs up to 64-slot capacity."
                 }
             ]
         },
@@ -227,16 +201,9 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 13",
-                "description": "Reach level 13 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 13 to continue progressing your Logistics mastery."
             },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +7.8%",
-                    "description": "Total skill bonus is now +7.8% for logistics contracts."
-                }
-            ]
+            "unlocks": []
         },
         {
             "requiredValue": 11154,
@@ -244,16 +211,9 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 14",
-                "description": "Reach level 14 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 14 to continue progressing your Logistics mastery."
             },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +8.4%",
-                    "description": "Total skill bonus is now +8.4% for logistics contracts."
-                }
-            ]
+            "unlocks": []
         },
         {
             "requiredValue": 13090,
@@ -261,20 +221,17 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 15",
-                "description": "Reach level 15 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 15 to unlock new Logistics rewards."
             },
+            "unlockFlags": [
+                "fleetVeh"
+            ],
             "unlocks": [
                 {
                     "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +9%",
-                    "description": "Total skill bonus is now +9% for logistics contracts."
-                },
-                {
-                    "type": "unlockCard",
-                    "icon": "badgeRoundStar",
-                    "heading": "Milestone Tier 3",
-                    "description": "Reached level 15 in Logistics Skill."
+                    "icon": "keys1",
+                    "heading": "Mid Car Jockey",
+                    "description": "Unlock the mid Car Jockey tier."
                 }
             ]
         },
@@ -284,16 +241,9 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 16",
-                "description": "Reach level 16 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 16 to continue progressing your Logistics mastery."
             },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +9.6%",
-                    "description": "Total skill bonus is now +9.6% for logistics contracts."
-                }
-            ]
+            "unlocks": []
         },
         {
             "requiredValue": 17616,
@@ -301,14 +251,17 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 17",
-                "description": "Reach level 17 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 17 to unlock new Logistics rewards."
             },
+            "unlockFlags": [
+                "logisticsTrailerMedium"
+            ],
             "unlocks": [
                 {
                     "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +10.2%",
-                    "description": "Total skill bonus is now +10.2% for logistics contracts."
+                    "icon": "smallTrailer",
+                    "heading": "Medium Trailer",
+                    "description": "Unlock medium trailer deliveries."
                 }
             ]
         },
@@ -318,16 +271,9 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 18",
-                "description": "Reach level 18 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 18 to continue progressing your Logistics mastery."
             },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +10.8%",
-                    "description": "Total skill bonus is now +10.8% for logistics contracts."
-                }
-            ]
+            "unlocks": []
         },
         {
             "requiredValue": 23094,
@@ -335,16 +281,9 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 19",
-                "description": "Reach level 19 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 19 to continue progressing your Logistics mastery."
             },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +11.4%",
-                    "description": "Total skill bonus is now +11.4% for logistics contracts."
-                }
-            ]
+            "unlocks": []
         },
         {
             "requiredValue": 26220,
@@ -352,20 +291,17 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 20",
-                "description": "Reach level 20 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 20 to unlock new Logistics rewards."
             },
+            "unlockFlags": [
+                "logisticsAggregateDelivery"
+            ],
             "unlocks": [
                 {
                     "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +12%",
-                    "description": "Total skill bonus is now +12% for logistics contracts."
-                },
-                {
-                    "type": "unlockCard",
-                    "icon": "badgeRoundStar",
-                    "heading": "Milestone Tier 4",
-                    "description": "Reached level 20 in Logistics Skill."
+                    "icon": "rocks",
+                    "heading": "Aggregate Delivery",
+                    "description": "Unlock aggregate material delivery jobs."
                 }
             ]
         },
@@ -375,16 +311,9 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 21",
-                "description": "Reach level 21 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 21 to continue progressing your Logistics mastery."
             },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +12.6%",
-                    "description": "Total skill bonus is now +12.6% for logistics contracts."
-                }
-            ]
+            "unlocks": []
         },
         {
             "requiredValue": 33306,
@@ -392,14 +321,17 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 22",
-                "description": "Reach level 22 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 22 to unlock new Logistics rewards."
             },
+            "unlockFlags": [
+                "largeVeh"
+            ],
             "unlocks": [
                 {
                     "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +13.2%",
-                    "description": "Total skill bonus is now +13.2% for logistics contracts."
+                    "icon": "keys1",
+                    "heading": "Higher Car Jockey",
+                    "description": "Unlock the higher Car Jockey tier."
                 }
             ]
         },
@@ -409,16 +341,9 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 23",
-                "description": "Reach level 23 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 23 to continue progressing your Logistics mastery."
             },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +13.8%",
-                    "description": "Total skill bonus is now +13.8% for logistics contracts."
-                }
-            ]
+            "unlocks": []
         },
         {
             "requiredValue": 41584,
@@ -426,16 +351,9 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 24",
-                "description": "Reach level 24 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 24 to continue progressing your Logistics mastery."
             },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +14.4%",
-                    "description": "Total skill bonus is now +14.4% for logistics contracts."
-                }
-            ]
+            "unlocks": []
         },
         {
             "requiredValue": 46200,
@@ -443,20 +361,14 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 25",
-                "description": "Reach level 25 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 25 to unlock new Logistics rewards."
             },
             "unlocks": [
                 {
                     "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +15%",
-                    "description": "Total skill bonus is now +15% for logistics contracts."
-                },
-                {
-                    "type": "unlockCard",
-                    "icon": "badgeRoundStar",
-                    "heading": "Milestone Tier 5",
-                    "description": "Reached level 25 in Logistics Skill."
+                    "icon": "roadblockL",
+                    "heading": "Contracts Small (Coming Soon)",
+                    "description": "Small contracts are planned but not implemented yet."
                 }
             ]
         },
@@ -466,16 +378,9 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 26",
-                "description": "Reach level 26 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 26 to continue progressing your Logistics mastery."
             },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +15.6%",
-                    "description": "Total skill bonus is now +15.6% for logistics contracts."
-                }
-            ]
+            "unlocks": []
         },
         {
             "requiredValue": 56446,
@@ -483,14 +388,17 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 27",
-                "description": "Reach level 27 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 27 to unlock new Logistics rewards."
             },
+            "unlockFlags": [
+                "logisticsCementDelivery"
+            ],
             "unlocks": [
                 {
                     "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +16.2%",
-                    "description": "Total skill bonus is now +16.2% for logistics contracts."
+                    "icon": "rocks",
+                    "heading": "Cement Delivery",
+                    "description": "Unlock cement delivery jobs."
                 }
             ]
         },
@@ -500,16 +408,9 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 28",
-                "description": "Reach level 28 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 28 to continue progressing your Logistics mastery."
             },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +16.8%",
-                    "description": "Total skill bonus is now +16.8% for logistics contracts."
-                }
-            ]
+            "unlocks": []
         },
         {
             "requiredValue": 68124,
@@ -517,16 +418,9 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 29",
-                "description": "Reach level 29 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 29 to continue progressing your Logistics mastery."
             },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +17.4%",
-                    "description": "Total skill bonus is now +17.4% for logistics contracts."
-                }
-            ]
+            "unlocks": []
         },
         {
             "requiredValue": 74530,
@@ -534,20 +428,17 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 30",
-                "description": "Reach level 30 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 30 to unlock new Logistics rewards."
             },
+            "unlockFlags": [
+                "largeTrailersDelivery"
+            ],
             "unlocks": [
                 {
                     "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +18%",
-                    "description": "Total skill bonus is now +18% for logistics contracts."
-                },
-                {
-                    "type": "unlockCard",
-                    "icon": "badgeRoundStar",
-                    "heading": "Milestone Tier 6",
-                    "description": "Reached level 30 in Logistics Skill."
+                    "icon": "semiTrailer",
+                    "heading": "Large Trailer",
+                    "description": "Unlock large trailer deliveries."
                 }
             ]
         },
@@ -557,16 +448,9 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 31",
-                "description": "Reach level 31 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 31 to continue progressing your Logistics mastery."
             },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +18.6%",
-                    "description": "Total skill bonus is now +18.6% for logistics contracts."
-                }
-            ]
+            "unlocks": []
         },
         {
             "requiredValue": 88536,
@@ -574,14 +458,17 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 32",
-                "description": "Reach level 32 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 32 to unlock new Logistics rewards."
             },
+            "unlockFlags": [
+                "exoticVeh"
+            ],
             "unlocks": [
                 {
                     "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +19.2%",
-                    "description": "Total skill bonus is now +19.2% for logistics contracts."
+                    "icon": "keys1",
+                    "heading": "Highest Car Jockey",
+                    "description": "Unlock the highest current Car Jockey tier."
                 }
             ]
         },
@@ -591,16 +478,9 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 33",
-                "description": "Reach level 33 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 33 to continue progressing your Logistics mastery."
             },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +19.8%",
-                    "description": "Total skill bonus is now +19.8% for logistics contracts."
-                }
-            ]
+            "unlocks": []
         },
         {
             "requiredValue": 104214,
@@ -608,16 +488,9 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 34",
-                "description": "Reach level 34 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 34 to continue progressing your Logistics mastery."
             },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +20.4%",
-                    "description": "Total skill bonus is now +20.4% for logistics contracts."
-                }
-            ]
+            "unlocks": []
         },
         {
             "requiredValue": 112710,
@@ -625,20 +498,17 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 35",
-                "description": "Reach level 35 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 35 to unlock new Logistics rewards."
             },
+            "unlockFlags": [
+                "logisticsParcel128Slots"
+            ],
             "unlocks": [
                 {
                     "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +21%",
-                    "description": "Total skill bonus is now +21% for logistics contracts."
-                },
-                {
-                    "type": "unlockCard",
-                    "icon": "badgeRoundStar",
-                    "heading": "Milestone Tier 7",
-                    "description": "Reached level 35 in Logistics Skill."
+                    "icon": "boxPickUp03",
+                    "heading": "128 Slot Parcels",
+                    "description": "Unlock parcel jobs up to 128-slot capacity."
                 }
             ]
         },
@@ -648,16 +518,9 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 36",
-                "description": "Reach level 36 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 36 to continue progressing your Logistics mastery."
             },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +21.6%",
-                    "description": "Total skill bonus is now +21.6% for logistics contracts."
-                }
-            ]
+            "unlocks": []
         },
         {
             "requiredValue": 131076,
@@ -665,14 +528,14 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 37",
-                "description": "Reach level 37 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 37 to unlock new Logistics rewards."
             },
             "unlocks": [
                 {
                     "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +22.2%",
-                    "description": "Total skill bonus is now +22.2% for logistics contracts."
+                    "icon": "roadblockL",
+                    "heading": "Contracts Med (Coming Soon)",
+                    "description": "Medium contracts are planned but not implemented yet."
                 }
             ]
         },
@@ -682,16 +545,9 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 38",
-                "description": "Reach level 38 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 38 to continue progressing your Logistics mastery."
             },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +22.8%",
-                    "description": "Total skill bonus is now +22.8% for logistics contracts."
-                }
-            ]
+            "unlocks": []
         },
         {
             "requiredValue": 151354,
@@ -699,16 +555,9 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 39",
-                "description": "Reach level 39 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 39 to continue progressing your Logistics mastery."
             },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +23.4%",
-                    "description": "Total skill bonus is now +23.4% for logistics contracts."
-                }
-            ]
+            "unlocks": []
         },
         {
             "requiredValue": 162240,
@@ -716,20 +565,17 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 40",
-                "description": "Reach level 40 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 40 to unlock new Logistics rewards."
             },
+            "unlockFlags": [
+                "logisticsCashDelivery"
+            ],
             "unlocks": [
                 {
                     "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +24%",
-                    "description": "Total skill bonus is now +24% for logistics contracts."
-                },
-                {
-                    "type": "unlockCard",
-                    "icon": "badgeRoundStar",
-                    "heading": "Milestone Tier 8",
-                    "description": "Reached level 40 in Logistics Skill."
+                    "icon": "beamCurrency",
+                    "heading": "Cash Delivery",
+                    "description": "Unlock cash delivery jobs."
                 }
             ]
         },
@@ -739,16 +585,9 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 41",
-                "description": "Reach level 41 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 41 to continue progressing your Logistics mastery."
             },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +24.6%",
-                    "description": "Total skill bonus is now +24.6% for logistics contracts."
-                }
-            ]
+            "unlocks": []
         },
         {
             "requiredValue": 185566,
@@ -756,14 +595,14 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 42",
-                "description": "Reach level 42 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 42 to unlock new Logistics rewards."
             },
             "unlocks": [
                 {
                     "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +25.2%",
-                    "description": "Total skill bonus is now +25.2% for logistics contracts."
+                    "icon": "roadblockL",
+                    "heading": "Specialized Trailer (Coming Soon)",
+                    "description": "Specialized trailer tier is planned but not implemented yet."
                 }
             ]
         },
@@ -773,16 +612,9 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 43",
-                "description": "Reach level 43 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 43 to continue progressing your Logistics mastery."
             },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +25.8%",
-                    "description": "Total skill bonus is now +25.8% for logistics contracts."
-                }
-            ]
+            "unlocks": []
         },
         {
             "requiredValue": 211044,
@@ -790,16 +622,9 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 44",
-                "description": "Reach level 44 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 44 to continue progressing your Logistics mastery."
             },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +26.4%",
-                    "description": "Total skill bonus is now +26.4% for logistics contracts."
-                }
-            ]
+            "unlocks": []
         },
         {
             "requiredValue": 224620,
@@ -807,20 +632,14 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 45",
-                "description": "Reach level 45 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 45 to unlock new Logistics rewards."
             },
             "unlocks": [
                 {
                     "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +27%",
-                    "description": "Total skill bonus is now +27% for logistics contracts."
-                },
-                {
-                    "type": "unlockCard",
-                    "icon": "badgeRoundStar",
-                    "heading": "Milestone Tier 9",
-                    "description": "Reached level 45 in Logistics Skill."
+                    "icon": "roadblockL",
+                    "heading": "Heavy Car Jockey (Coming Soon)",
+                    "description": "Heavy Car Jockey tier is planned but not implemented yet."
                 }
             ]
         },
@@ -830,16 +649,9 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 46",
-                "description": "Reach level 46 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 46 to continue progressing your Logistics mastery."
             },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +27.6%",
-                    "description": "Total skill bonus is now +27.6% for logistics contracts."
-                }
-            ]
+            "unlocks": []
         },
         {
             "requiredValue": 253506,
@@ -847,16 +659,9 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 47",
-                "description": "Reach level 47 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 47 to continue progressing your Logistics mastery."
             },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +28.2%",
-                    "description": "Total skill bonus is now +28.2% for logistics contracts."
-                }
-            ]
+            "unlocks": []
         },
         {
             "requiredValue": 268840,
@@ -864,16 +669,9 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 48",
-                "description": "Reach level 48 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 48 to continue progressing your Logistics mastery."
             },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +28.8%",
-                    "description": "Total skill bonus is now +28.8% for logistics contracts."
-                }
-            ]
+            "unlocks": []
         },
         {
             "requiredValue": 284784,
@@ -881,16 +679,9 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 49",
-                "description": "Reach level 49 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 49 to continue progressing your Logistics mastery."
             },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +29.4%",
-                    "description": "Total skill bonus is now +29.4% for logistics contracts."
-                }
-            ]
+            "unlocks": []
         },
         {
             "requiredValue": 301350,
@@ -898,20 +689,14 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 50",
-                "description": "Reach level 50 in Logistics Skill to claim this reward tier."
+                "description": "Reach level 50 to unlock new Logistics rewards."
             },
             "unlocks": [
                 {
                     "type": "unlockCard",
-                    "icon": "deliveryTruck",
-                    "heading": "Payout Bonus +30%",
-                    "description": "Total skill bonus is now +30% for logistics contracts."
-                },
-                {
-                    "type": "unlockCard",
-                    "icon": "badgeRoundStar",
-                    "heading": "Milestone Tier 10",
-                    "description": "Reached level 50 in Logistics Skill."
+                    "icon": "roadblockL",
+                    "heading": "Contracts Large (Coming Soon)",
+                    "description": "Large contracts are planned but not implemented yet."
                 }
             ]
         }

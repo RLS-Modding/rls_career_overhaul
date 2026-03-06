@@ -406,7 +406,7 @@
   // BEGIN RLS VANILLA TRAILER TEMPLATE FILTERS
   "vanillaTrailer_boxutility_loaded_200": {
     "type": "trailer",
-    "unlockTag": "loadedSmallTrailers",
+    "unlockTag": "trailerBoxutility",
     "filterName": "200kg Crate",
     "connector": "towhitch",
     "baseReward": 305,
@@ -424,7 +424,7 @@
   },
   "vanillaTrailer_boxutility_loaded_400": {
     "type": "trailer",
-    "unlockTag": "loadedSmallTrailers",
+    "unlockTag": "trailerBoxutility",
     "filterName": "400kg Crate",
     "connector": "towhitch",
     "baseReward": 305,
@@ -442,7 +442,7 @@
   },
   "vanillaTrailer_boxutility_loaded_600": {
     "type": "trailer",
-    "unlockTag": "loadedSmallTrailers",
+    "unlockTag": "trailerBoxutility",
     "filterName": "600kg Crate",
     "connector": "towhitch",
     "baseReward": 305,
@@ -460,7 +460,7 @@
   },
   "vanillaTrailer_boxutility_loaded_armchairs": {
     "type": "trailer",
-    "unlockTag": "loadedSmallTrailers",
+    "unlockTag": "trailerBoxutility",
     "filterName": "Armchairs",
     "connector": "towhitch",
     "baseReward": 305,
@@ -478,7 +478,7 @@
   },
   "vanillaTrailer_boxutility_loaded_couch": {
     "type": "trailer",
-    "unlockTag": "loadedSmallTrailers",
+    "unlockTag": "trailerBoxutility",
     "filterName": "Couch",
     "connector": "towhitch",
     "baseReward": 305,
@@ -496,7 +496,7 @@
   },
   "vanillaTrailer_boxutility_loaded_planks": {
     "type": "trailer",
-    "unlockTag": "loadedSmallTrailers",
+    "unlockTag": "trailerBoxutility",
     "filterName": "1400kg Planks",
     "connector": "towhitch",
     "baseReward": 305,
@@ -514,7 +514,7 @@
   },
   "vanillaTrailer_boxutility_unloaded": {
     "type": "trailer",
-    "unlockTag": "emptySmallTrailers",
+    "unlockTag": "trailerBoxutility",
     "filterName": "Unloaded",
     "connector": "towhitch",
     "baseReward": 200,
@@ -532,7 +532,7 @@
   },
   "vanillaTrailer_boxutility_large_loaded_400": {
     "type": "trailer",
-    "unlockTag": "loadedSmallTrailers",
+    "unlockTag": "trailerBoxutilityLarge",
     "filterName": "400kg Crate",
     "connector": "towhitch",
     "baseReward": 305,
@@ -550,7 +550,7 @@
   },
   "vanillaTrailer_boxutility_large_loaded_800": {
     "type": "trailer",
-    "unlockTag": "loadedSmallTrailers",
+    "unlockTag": "trailerBoxutilityLarge",
     "filterName": "800kg Crate",
     "connector": "towhitch",
     "baseReward": 305,
@@ -568,7 +568,7 @@
   },
   "vanillaTrailer_boxutility_large_loaded_armchairs": {
     "type": "trailer",
-    "unlockTag": "loadedSmallTrailers",
+    "unlockTag": "trailerBoxutilityLarge",
     "filterName": "Armchairs",
     "connector": "towhitch",
     "baseReward": 305,
@@ -586,7 +586,7 @@
   },
   "vanillaTrailer_boxutility_large_loaded_couch": {
     "type": "trailer",
-    "unlockTag": "loadedSmallTrailers",
+    "unlockTag": "trailerBoxutilityLarge",
     "filterName": "Couch",
     "connector": "towhitch",
     "baseReward": 305,
@@ -604,7 +604,7 @@
   },
   "vanillaTrailer_boxutility_large_loaded_planks": {
     "type": "trailer",
-    "unlockTag": "loadedSmallTrailers",
+    "unlockTag": "trailerBoxutilityLarge",
     "filterName": "1400kg Planks",
     "connector": "towhitch",
     "baseReward": 305,
@@ -622,7 +622,7 @@
   },
   "vanillaTrailer_boxutility_large_loaded_planks_long": {
     "type": "trailer",
-    "unlockTag": "loadedSmallTrailers",
+    "unlockTag": "trailerBoxutilityLarge",
     "filterName": "2100kg Planks",
     "connector": "towhitch",
     "baseReward": 305,
@@ -640,7 +640,7 @@
   },
   "vanillaTrailer_boxutility_large_unloaded": {
     "type": "trailer",
-    "unlockTag": "emptySmallTrailers",
+    "unlockTag": "trailerBoxutilityLarge",
     "filterName": "Unloaded",
     "connector": "towhitch",
     "baseReward": 200,
@@ -658,7 +658,7 @@
   },
   "vanillaTrailer_boxutility_large_unsafe": {
     "type": "trailer",
-    "unlockTag": "emptySmallTrailers",
+    "unlockTag": "trailerBoxutilityLarge",
     "filterName": "Dangerous",
     "connector": "towhitch",
     "baseReward": 200,
@@ -676,7 +676,7 @@
   },
   "vanillaTrailer_caravan_default": {
     "type": "trailer",
-    "unlockTag": "emptySmallTrailers",
+    "unlockTag": "trailerCaravan",
     "filterName": "Standard",
     "connector": "towhitch",
     "baseReward": 200,
@@ -694,7 +694,7 @@
   },
   "vanillaTrailer_caravan_empty": {
     "type": "trailer",
-    "unlockTag": "emptySmallTrailers",
+    "unlockTag": "trailerCaravan",
     "filterName": "Empty",
     "connector": "towhitch",
     "baseReward": 200,
@@ -712,7 +712,7 @@
   },
   "vanillaTrailer_cargotrailer_default": {
     "type": "trailer",
-    "unlockTag": "emptyMediumTrailers",
+    "unlockTag": "trailerCargotrailer",
     "filterName": "Unloaded",
     "connector": "towhitch",
     "baseReward": 250,
@@ -730,7 +730,7 @@
   },
   "vanillaTrailer_cargotrailer_loaded_400": {
     "type": "trailer",
-    "unlockTag": "loadedMediumTrailers",
+    "unlockTag": "trailerCargotrailer",
     "filterName": "400kg Crate",
     "connector": "towhitch",
     "baseReward": 600,
@@ -748,7 +748,7 @@
   },
   "vanillaTrailer_cargotrailer_loaded_800": {
     "type": "trailer",
-    "unlockTag": "loadedMediumTrailers",
+    "unlockTag": "trailerCargotrailer",
     "filterName": "800kg Crate",
     "connector": "towhitch",
     "baseReward": 600,
@@ -766,7 +766,7 @@
   },
   "vanillaTrailer_cargotrailer_loaded_armchairs": {
     "type": "trailer",
-    "unlockTag": "loadedMediumTrailers",
+    "unlockTag": "trailerCargotrailer",
     "filterName": "Armchairs",
     "connector": "towhitch",
     "baseReward": 600,
@@ -784,7 +784,7 @@
   },
   "vanillaTrailer_cargotrailer_loaded_couch": {
     "type": "trailer",
-    "unlockTag": "loadedMediumTrailers",
+    "unlockTag": "trailerCargotrailer",
     "filterName": "Couch",
     "connector": "towhitch",
     "baseReward": 600,
@@ -802,7 +802,7 @@
   },
   "vanillaTrailer_cargotrailer_loaded_planks": {
     "type": "trailer",
-    "unlockTag": "loadedMediumTrailers",
+    "unlockTag": "trailerCargotrailer",
     "filterName": "1400kg Planks",
     "connector": "towhitch",
     "baseReward": 600,
@@ -820,7 +820,7 @@
   },
   "vanillaTrailer_cargotrailer_loaded_planks_long": {
     "type": "trailer",
-    "unlockTag": "loadedMediumTrailers",
+    "unlockTag": "trailerCargotrailer",
     "filterName": "2100kg Planks",
     "connector": "towhitch",
     "baseReward": 600,
@@ -838,7 +838,7 @@
   },
   "vanillaTrailer_containerTrailer_20ft_2axle_20ft": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerContainer",
     "filterName": "20ft - 20ft Container (2100kg)",
     "connector": "towhitch",
     "baseReward": 750,
@@ -856,7 +856,7 @@
   },
   "vanillaTrailer_containerTrailer_20ft_2axle_tank": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerContainer",
     "filterName": "20ft - Tank Container (21600kg Water)",
     "connector": "towhitch",
     "baseReward": 750,
@@ -874,7 +874,7 @@
   },
   "vanillaTrailer_containerTrailer_20ft_2axle_tank_empty": {
     "type": "trailer",
-    "unlockTag": "emptyLargeTrailer",
+    "unlockTag": "trailerContainer",
     "filterName": "20ft - Tank Container (3650kg Empty)",
     "connector": "towhitch",
     "baseReward": 350,
@@ -892,7 +892,7 @@
   },
   "vanillaTrailer_containerTrailer_20ft_2axle_transport": {
     "type": "trailer",
-    "unlockTag": "emptyLargeTrailer",
+    "unlockTag": "trailerContainer",
     "filterName": "20ft - Transport",
     "connector": "towhitch",
     "baseReward": 350,
@@ -910,7 +910,7 @@
   },
   "vanillaTrailer_containerTrailer_40ft_3axle_20ft": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerContainer",
     "filterName": "40ft - 20ft Container (2100kg)",
     "connector": "towhitch",
     "baseReward": 750,
@@ -928,7 +928,7 @@
   },
   "vanillaTrailer_containerTrailer_40ft_3axle_20ft_double": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerContainer",
     "filterName": "40ft - Double 20ft Container (4200kg)",
     "connector": "towhitch",
     "baseReward": 750,
@@ -946,7 +946,7 @@
   },
   "vanillaTrailer_containerTrailer_40ft_3axle_20ft_short": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerContainer",
     "filterName": "40ft - 20ft Container Retracted (2100kg)",
     "connector": "towhitch",
     "baseReward": 750,
@@ -964,7 +964,7 @@
   },
   "vanillaTrailer_containerTrailer_40ft_3axle_40ft": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerContainer",
     "filterName": "40ft - 40ft Container (3740kg)",
     "connector": "towhitch",
     "baseReward": 750,
@@ -982,7 +982,7 @@
   },
   "vanillaTrailer_containerTrailer_40ft_3axle_tank": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerContainer",
     "filterName": "40ft - Tank Container (22300kg Milk)",
     "connector": "towhitch",
     "baseReward": 750,
@@ -1000,7 +1000,7 @@
   },
   "vanillaTrailer_containerTrailer_40ft_3axle_tank_double": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerContainer",
     "filterName": "40ft - Double Tank Container (7300kg Empty)",
     "connector": "towhitch",
     "baseReward": 750,
@@ -1018,7 +1018,7 @@
   },
   "vanillaTrailer_containerTrailer_40ft_3axle_transport": {
     "type": "trailer",
-    "unlockTag": "emptyLargeTrailer",
+    "unlockTag": "trailerContainer",
     "filterName": "40ft - Transport",
     "connector": "towhitch",
     "baseReward": 350,
@@ -1036,7 +1036,7 @@
   },
   "vanillaTrailer_dolly_double": {
     "type": "trailer",
-    "unlockTag": "emptySmallTrailers",
+    "unlockTag": "trailerDolly",
     "filterName": "Double Axle",
     "connector": "towhitch",
     "baseReward": 200,
@@ -1054,7 +1054,7 @@
   },
   "vanillaTrailer_dolly_single": {
     "type": "trailer",
-    "unlockTag": "emptySmallTrailers",
+    "unlockTag": "trailerDolly",
     "filterName": "Single Axle",
     "connector": "towhitch",
     "baseReward": 200,
@@ -1072,7 +1072,7 @@
   },
   "vanillaTrailer_dryvan_28ft": {
     "type": "trailer",
-    "unlockTag": "emptyLargeTrailer",
+    "unlockTag": "trailerDryvan",
     "filterName": "28ft Empty",
     "connector": "towhitch",
     "baseReward": 350,
@@ -1090,7 +1090,7 @@
   },
   "vanillaTrailer_dryvan_28ft_4500kg": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerDryvan",
     "filterName": "28ft 4500kg Boxes",
     "connector": "towhitch",
     "baseReward": 750,
@@ -1108,7 +1108,7 @@
   },
   "vanillaTrailer_dryvan_28ft_9600kg": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerDryvan",
     "filterName": "28ft 9600kg TastiCola",
     "connector": "towhitch",
     "baseReward": 750,
@@ -1126,7 +1126,7 @@
   },
   "vanillaTrailer_dryvan_48ft": {
     "type": "trailer",
-    "unlockTag": "emptyLargeTrailer",
+    "unlockTag": "trailerDryvan",
     "filterName": "48ft Tandem Axle Empty",
     "connector": "towhitch",
     "baseReward": 350,
@@ -1144,7 +1144,7 @@
   },
   "vanillaTrailer_dryvan_48ft_19200kg": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerDryvan",
     "filterName": "48ft Tandem Axle 19200kg TastiCola",
     "connector": "towhitch",
     "baseReward": 750,
@@ -1162,7 +1162,7 @@
   },
   "vanillaTrailer_dryvan_48ft_loadingramp": {
     "type": "trailer",
-    "unlockTag": "emptyLargeTrailer",
+    "unlockTag": "trailerDryvan",
     "filterName": "48ft Tandem Axle Loading Ramp",
     "connector": "towhitch",
     "baseReward": 350,
@@ -1180,7 +1180,7 @@
   },
   "vanillaTrailer_dryvan_48ft_loadingramp_offset": {
     "type": "trailer",
-    "unlockTag": "emptyLargeTrailer",
+    "unlockTag": "trailerDryvan",
     "filterName": "48ft Offset Tandem Axle Loading Ramp",
     "connector": "towhitch",
     "baseReward": 350,
@@ -1198,7 +1198,7 @@
   },
   "vanillaTrailer_dryvan_48ft_spreadaxle": {
     "type": "trailer",
-    "unlockTag": "emptyLargeTrailer",
+    "unlockTag": "trailerDryvan",
     "filterName": "48ft Spread Axle Empty",
     "connector": "towhitch",
     "baseReward": 350,
@@ -1216,7 +1216,7 @@
   },
   "vanillaTrailer_dryvan_48ft_spreadaxle_6750kg": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerDryvan",
     "filterName": "48ft Spread Axle 6750kg Boxes",
     "connector": "towhitch",
     "baseReward": 750,
@@ -1234,7 +1234,7 @@
   },
   "vanillaTrailer_dryvan_53ft": {
     "type": "trailer",
-    "unlockTag": "emptyLargeTrailer",
+    "unlockTag": "trailerDryvan",
     "filterName": "53ft Offset Tandem Axle Empty",
     "connector": "towhitch",
     "baseReward": 350,
@@ -1252,7 +1252,7 @@
   },
   "vanillaTrailer_dryvan_53ft_13500kg": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerDryvan",
     "filterName": "53ft Offset Tandem Axle 13500kg Boxes",
     "connector": "towhitch",
     "baseReward": 750,
@@ -1270,7 +1270,7 @@
   },
   "vanillaTrailer_dryvan_53ft_22400kg": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerDryvan",
     "filterName": "53ft Spread Axle 22400kg TastiCola",
     "connector": "towhitch",
     "baseReward": 750,
@@ -1288,7 +1288,7 @@
   },
   "vanillaTrailer_dryvan_53ft_spreadaxle": {
     "type": "trailer",
-    "unlockTag": "emptyLargeTrailer",
+    "unlockTag": "trailerDryvan",
     "filterName": "53ft Spread Axle Empty",
     "connector": "towhitch",
     "baseReward": 350,
@@ -1306,7 +1306,7 @@
   },
   "vanillaTrailer_flatbed_28ft_double": {
     "type": "trailer",
-    "unlockTag": "emptyLargeTrailer",
+    "unlockTag": "trailerFlatbed",
     "filterName": "28ft Tandem Axle",
     "connector": "towhitch",
     "baseReward": 350,
@@ -1324,7 +1324,7 @@
   },
   "vanillaTrailer_flatbed_28ft_double_coil": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerFlatbed",
     "filterName": "28ft Tandem Axle (20T Steel Coil)",
     "connector": "towhitch",
     "baseReward": 750,
@@ -1342,7 +1342,7 @@
   },
   "vanillaTrailer_flatbed_28ft_double_marble": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerFlatbed",
     "filterName": "28ft Tandem Axle (19T Marble Block)",
     "connector": "towhitch",
     "baseReward": 750,
@@ -1360,7 +1360,7 @@
   },
   "vanillaTrailer_flatbed_28ft_double_pipes": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerFlatbed",
     "filterName": "28ft Tandem Axle (10T Pipes)",
     "connector": "towhitch",
     "baseReward": 750,
@@ -1378,7 +1378,7 @@
   },
   "vanillaTrailer_flatbed_28ft_single": {
     "type": "trailer",
-    "unlockTag": "emptyLargeTrailer",
+    "unlockTag": "trailerFlatbed",
     "filterName": "28ft Single Axle",
     "connector": "towhitch",
     "baseReward": 350,
@@ -1396,7 +1396,7 @@
   },
   "vanillaTrailer_flatbed_28ft_single_wood": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerFlatbed",
     "filterName": "28ft Single Axle (8.4T Planks )",
     "connector": "towhitch",
     "baseReward": 750,
@@ -1414,7 +1414,7 @@
   },
   "vanillaTrailer_flatbed_32ft": {
     "type": "trailer",
-    "unlockTag": "emptyLargeTrailer",
+    "unlockTag": "trailerFlatbed",
     "filterName": "32ft Tri Axle B-Train Lead",
     "connector": "towhitch",
     "baseReward": 350,
@@ -1432,7 +1432,7 @@
   },
   "vanillaTrailer_flatbed_32ft_coil": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerFlatbed",
     "filterName": "32ft Tri Axle B-Train Lead (20T Steel Coil)",
     "connector": "towhitch",
     "baseReward": 750,
@@ -1450,7 +1450,7 @@
   },
   "vanillaTrailer_flatbed_32ft_marble": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerFlatbed",
     "filterName": "32ft Tri Axle B-Train Lead (19T Marble Block)",
     "connector": "towhitch",
     "baseReward": 750,
@@ -1468,7 +1468,7 @@
   },
   "vanillaTrailer_flatbed_32ft_pipes": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerFlatbed",
     "filterName": "32ft Tri Axle B-Train Lead (10T Pipes)",
     "connector": "towhitch",
     "baseReward": 750,
@@ -1486,7 +1486,7 @@
   },
   "vanillaTrailer_flatbed_32ft_wood": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerFlatbed",
     "filterName": "32ft Tri Axle B-Train Lead (8.4T Planks)",
     "connector": "towhitch",
     "baseReward": 750,
@@ -1504,7 +1504,7 @@
   },
   "vanillaTrailer_flatbed_48ft_coil": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerFlatbed",
     "filterName": "48ft Tandem Axle (15T Triple Steel Coils)",
     "connector": "towhitch",
     "baseReward": 750,
@@ -1522,7 +1522,7 @@
   },
   "vanillaTrailer_flatbed_48ft_coils_double": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerFlatbed",
     "filterName": "48ft Tridem Axle (20T Dual Steel Coils)",
     "connector": "towhitch",
     "baseReward": 750,
@@ -1540,7 +1540,7 @@
   },
   "vanillaTrailer_flatbed_48ft_double": {
     "type": "trailer",
-    "unlockTag": "emptyLargeTrailer",
+    "unlockTag": "trailerFlatbed",
     "filterName": "48ft Tandem Axle",
     "connector": "towhitch",
     "baseReward": 350,
@@ -1558,7 +1558,7 @@
   },
   "vanillaTrailer_flatbed_48ft_pipes": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerFlatbed",
     "filterName": "48ft Tandem Axle (20T Pipes)",
     "connector": "towhitch",
     "baseReward": 750,
@@ -1576,7 +1576,7 @@
   },
   "vanillaTrailer_flatbed_48ft_tires": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerFlatbed",
     "filterName": "48ft Spread Axle (4.5T Big Tires)",
     "connector": "towhitch",
     "baseReward": 750,
@@ -1594,7 +1594,7 @@
   },
   "vanillaTrailer_flatbed_48ft_tires_double": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerFlatbed",
     "filterName": "48ft Tandem Axle (9T Big Tires)",
     "connector": "towhitch",
     "baseReward": 750,
@@ -1612,7 +1612,7 @@
   },
   "vanillaTrailer_flatbed_48ft_wood": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerFlatbed",
     "filterName": "48ft Spread Axle (12.6T Planks)",
     "connector": "towhitch",
     "baseReward": 750,
@@ -1630,7 +1630,7 @@
   },
   "vanillaTrailer_flatbed_53ft_coils_double": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerFlatbed",
     "filterName": "53ft Spread Axle (20T Dual Steel Coils)",
     "connector": "towhitch",
     "baseReward": 750,
@@ -1648,7 +1648,7 @@
   },
   "vanillaTrailer_flatbed_53ft_pipes": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerFlatbed",
     "filterName": "53ft Spread Tri Axle (20T Pipes)",
     "connector": "towhitch",
     "baseReward": 750,
@@ -1666,7 +1666,7 @@
   },
   "vanillaTrailer_flatbed_53ft_triple": {
     "type": "trailer",
-    "unlockTag": "emptyLargeTrailer",
+    "unlockTag": "trailerFlatbed",
     "filterName": "53ft Tridem Axle",
     "connector": "towhitch",
     "baseReward": 350,
@@ -1684,7 +1684,7 @@
   },
   "vanillaTrailer_flatbed_53ft_wood": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerFlatbed",
     "filterName": "53ft Tandem Axle (16.8T Planks)",
     "connector": "towhitch",
     "baseReward": 750,
@@ -1702,7 +1702,7 @@
   },
   "vanillaTrailer_frameless_dump_double": {
     "type": "trailer",
-    "unlockTag": "emptyLargeTrailer",
+    "unlockTag": "trailerFramelessDump",
     "filterName": "Double Axle",
     "connector": "towhitch",
     "baseReward": 350,
@@ -1720,7 +1720,7 @@
   },
   "vanillaTrailer_frameless_dump_triple": {
     "type": "trailer",
-    "unlockTag": "emptyLargeTrailer",
+    "unlockTag": "trailerFramelessDump",
     "filterName": "Triple Axle",
     "connector": "towhitch",
     "baseReward": 350,
@@ -1738,7 +1738,7 @@
   },
   "vanillaTrailer_frameless_dump_wide_double": {
     "type": "trailer",
-    "unlockTag": "emptyLargeTrailer",
+    "unlockTag": "trailerFramelessDump",
     "filterName": "Wide Spread Double Axle",
     "connector": "towhitch",
     "baseReward": 350,
@@ -1756,7 +1756,7 @@
   },
   "vanillaTrailer_log_trailer_27ft": {
     "type": "trailer",
-    "unlockTag": "emptyLargeTrailer",
+    "unlockTag": "trailerLogTrailer",
     "filterName": "27ft Dual",
     "connector": "towhitch",
     "baseReward": 350,
@@ -1774,7 +1774,7 @@
   },
   "vanillaTrailer_log_trailer_27ft_12logs": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerLogTrailer",
     "filterName": "27ft Dual - 12 Logs",
     "connector": "towhitch",
     "baseReward": 750,
@@ -1792,7 +1792,7 @@
   },
   "vanillaTrailer_log_trailer_27ft_12logs_rack": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerLogTrailer",
     "filterName": "27ft Dual with Headache Rack - 12 Logs",
     "connector": "towhitch",
     "baseReward": 750,
@@ -1810,7 +1810,7 @@
   },
   "vanillaTrailer_log_trailer_27ft_8logs": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerLogTrailer",
     "filterName": "27ft Dual - 8 Logs",
     "connector": "towhitch",
     "baseReward": 750,
@@ -1828,7 +1828,7 @@
   },
   "vanillaTrailer_log_trailer_27ft_rack": {
     "type": "trailer",
-    "unlockTag": "emptyLargeTrailer",
+    "unlockTag": "trailerLogTrailer",
     "filterName": "27ft Dual with Headache Rack",
     "connector": "towhitch",
     "baseReward": 350,
@@ -1846,7 +1846,7 @@
   },
   "vanillaTrailer_log_trailer_40ft": {
     "type": "trailer",
-    "unlockTag": "emptyLargeTrailer",
+    "unlockTag": "trailerLogTrailer",
     "filterName": "40ft Dual",
     "connector": "towhitch",
     "baseReward": 350,
@@ -1864,7 +1864,7 @@
   },
   "vanillaTrailer_log_trailer_40ft_12logs": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerLogTrailer",
     "filterName": "40ft Dual - 12 Logs",
     "connector": "towhitch",
     "baseReward": 750,
@@ -1882,7 +1882,7 @@
   },
   "vanillaTrailer_log_trailer_40ft_12logs_rack": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerLogTrailer",
     "filterName": "40ft Dual with Headache Rack - 12 Logs",
     "connector": "towhitch",
     "baseReward": 750,
@@ -1900,7 +1900,7 @@
   },
   "vanillaTrailer_log_trailer_40ft_8logs": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerLogTrailer",
     "filterName": "40ft Dual - 8 Logs",
     "connector": "towhitch",
     "baseReward": 750,
@@ -1918,7 +1918,7 @@
   },
   "vanillaTrailer_log_trailer_40ft_rack": {
     "type": "trailer",
-    "unlockTag": "emptyLargeTrailer",
+    "unlockTag": "trailerLogTrailer",
     "filterName": "40ft Dual with Headache Rack",
     "connector": "towhitch",
     "baseReward": 350,
@@ -1936,7 +1936,7 @@
   },
   "vanillaTrailer_log_trailer_40ft_single": {
     "type": "trailer",
-    "unlockTag": "emptyLargeTrailer",
+    "unlockTag": "trailerLogTrailer",
     "filterName": "40ft Single",
     "connector": "towhitch",
     "baseReward": 350,
@@ -1954,7 +1954,7 @@
   },
   "vanillaTrailer_log_trailer_40ft_single_6logs_rack": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerLogTrailer",
     "filterName": "40ft Single with Headache Rack - 6 Logs",
     "connector": "towhitch",
     "baseReward": 750,
@@ -1972,7 +1972,7 @@
   },
   "vanillaTrailer_log_trailer_40ft_single_8logs": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerLogTrailer",
     "filterName": "40ft Single - 8 logs",
     "connector": "towhitch",
     "baseReward": 750,
@@ -1990,7 +1990,7 @@
   },
   "vanillaTrailer_log_trailer_40ft_single_rack": {
     "type": "trailer",
-    "unlockTag": "emptyLargeTrailer",
+    "unlockTag": "trailerLogTrailer",
     "filterName": "40ft Single with Headache Rack",
     "connector": "towhitch",
     "baseReward": 350,
@@ -2008,7 +2008,7 @@
   },
   "vanillaTrailer_tanker_career_shuffleboard_empty_long": {
     "type": "trailer",
-    "unlockTag": "emptyLargeTrailer",
+    "unlockTag": "trailerTanker",
     "filterName": "Long",
     "connector": "towhitch",
     "baseReward": 350,
@@ -2026,7 +2026,7 @@
   },
   "vanillaTrailer_tanker_career_shuffleboard_empty_short": {
     "type": "trailer",
-    "unlockTag": "emptyLargeTrailer",
+    "unlockTag": "trailerTanker",
     "filterName": "Short",
     "connector": "towhitch",
     "baseReward": 350,
@@ -2044,7 +2044,7 @@
   },
   "vanillaTrailer_tanker_diesel_2": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerTanker",
     "filterName": "17000L Diesel",
     "connector": "towhitch",
     "baseReward": 750,
@@ -2062,7 +2062,7 @@
   },
   "vanillaTrailer_tanker_diesel_3": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerTanker",
     "filterName": "34000L Diesel",
     "connector": "towhitch",
     "baseReward": 750,
@@ -2080,7 +2080,7 @@
   },
   "vanillaTrailer_tanker_diesel_short_2": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerTanker",
     "filterName": "8850L Diesel",
     "connector": "towhitch",
     "baseReward": 750,
@@ -2098,7 +2098,7 @@
   },
   "vanillaTrailer_tanker_diesel_short_3": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerTanker",
     "filterName": "17400L Diesel",
     "connector": "towhitch",
     "baseReward": 750,
@@ -2116,7 +2116,7 @@
   },
   "vanillaTrailer_tanker_empty": {
     "type": "trailer",
-    "unlockTag": "emptyLargeTrailer",
+    "unlockTag": "trailerTanker",
     "filterName": "Empty",
     "connector": "towhitch",
     "baseReward": 350,
@@ -2134,7 +2134,7 @@
   },
   "vanillaTrailer_tanker_empty_short": {
     "type": "trailer",
-    "unlockTag": "emptyLargeTrailer",
+    "unlockTag": "trailerTanker",
     "filterName": "Empty Short",
     "connector": "towhitch",
     "baseReward": 350,
@@ -2152,7 +2152,7 @@
   },
   "vanillaTrailer_tanker_milk_2": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerTanker",
     "filterName": "17000L Milk",
     "connector": "towhitch",
     "baseReward": 750,
@@ -2170,7 +2170,7 @@
   },
   "vanillaTrailer_tanker_milk_3": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerTanker",
     "filterName": "34000L Milk",
     "connector": "towhitch",
     "baseReward": 750,
@@ -2188,7 +2188,7 @@
   },
   "vanillaTrailer_tanker_milk_short_2": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerTanker",
     "filterName": "8850L Milk",
     "connector": "towhitch",
     "baseReward": 750,
@@ -2206,7 +2206,7 @@
   },
   "vanillaTrailer_tanker_milk_short_3": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerTanker",
     "filterName": "17400L Milk",
     "connector": "towhitch",
     "baseReward": 750,
@@ -2224,7 +2224,7 @@
   },
   "vanillaTrailer_tanker_petroleum_2": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerTanker",
     "filterName": "17000L Petroleum",
     "connector": "towhitch",
     "baseReward": 750,
@@ -2242,7 +2242,7 @@
   },
   "vanillaTrailer_tanker_petroleum_3": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerTanker",
     "filterName": "34000L Petroleum",
     "connector": "towhitch",
     "baseReward": 750,
@@ -2260,7 +2260,7 @@
   },
   "vanillaTrailer_tanker_petroleum_short_2": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerTanker",
     "filterName": "8850L Petroleum",
     "connector": "towhitch",
     "baseReward": 750,
@@ -2278,7 +2278,7 @@
   },
   "vanillaTrailer_tanker_petroleum_short_3": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerTanker",
     "filterName": "17400L Petroleum",
     "connector": "towhitch",
     "baseReward": 750,
@@ -2296,7 +2296,7 @@
   },
   "vanillaTrailer_tanker_water_2": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerTanker",
     "filterName": "17000L Water",
     "connector": "towhitch",
     "baseReward": 750,
@@ -2314,7 +2314,7 @@
   },
   "vanillaTrailer_tanker_water_3": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerTanker",
     "filterName": "34000L Water",
     "connector": "towhitch",
     "baseReward": 750,
@@ -2332,7 +2332,7 @@
   },
   "vanillaTrailer_tanker_water_short_2": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerTanker",
     "filterName": "8850L Water",
     "connector": "towhitch",
     "baseReward": 750,
@@ -2350,7 +2350,7 @@
   },
   "vanillaTrailer_tanker_water_short_3": {
     "type": "trailer",
-    "unlockTag": "loadedLargeTrailers",
+    "unlockTag": "trailerTanker",
     "filterName": "17400L Water",
     "connector": "towhitch",
     "baseReward": 750,
@@ -2368,7 +2368,7 @@
   },
   "vanillaTrailer_tiltdeck_22ft_gooseneck": {
     "type": "trailer",
-    "unlockTag": "emptyMediumTrailers",
+    "unlockTag": "trailerTiltdeck",
     "filterName": "22ft Gooseneck",
     "connector": "towhitch",
     "baseReward": 250,
@@ -2386,7 +2386,7 @@
   },
   "vanillaTrailer_tiltdeck_22ft_gooseneck_wood": {
     "type": "trailer",
-    "unlockTag": "loadedMediumTrailers",
+    "unlockTag": "trailerTiltdeck",
     "filterName": "22ft Gooseneck (Wood Planks 4200kg)",
     "connector": "towhitch",
     "baseReward": 600,
@@ -2404,7 +2404,7 @@
   },
   "vanillaTrailer_tiltdeck_22ft_standard": {
     "type": "trailer",
-    "unlockTag": "emptyMediumTrailers",
+    "unlockTag": "trailerTiltdeck",
     "filterName": "22ft Bumperpull",
     "connector": "towhitch",
     "baseReward": 250,
@@ -2422,7 +2422,7 @@
   },
   "vanillaTrailer_tiltdeck_22ft_standard_hay": {
     "type": "trailer",
-    "unlockTag": "loadedMediumTrailers",
+    "unlockTag": "trailerTiltdeck",
     "filterName": "22ft Bumperpull (Hay Bales 2880kg)",
     "connector": "towhitch",
     "baseReward": 600,
@@ -2440,7 +2440,7 @@
   },
   "vanillaTrailer_tiltdeck_30ft_gooseneck": {
     "type": "trailer",
-    "unlockTag": "emptyMediumTrailers",
+    "unlockTag": "trailerTiltdeck",
     "filterName": "30ft Gooseneck",
     "connector": "towhitch",
     "baseReward": 250,
@@ -2458,7 +2458,7 @@
   },
   "vanillaTrailer_tiltdeck_30ft_gooseneck_wood": {
     "type": "trailer",
-    "unlockTag": "loadedMediumTrailers",
+    "unlockTag": "trailerTiltdeck",
     "filterName": "30ft Gooseneck (Wood Planks 5600kg)",
     "connector": "towhitch",
     "baseReward": 600,
@@ -2476,7 +2476,7 @@
   },
   "vanillaTrailer_tiltdeck_30ft_pintle": {
     "type": "trailer",
-    "unlockTag": "emptyMediumTrailers",
+    "unlockTag": "trailerTiltdeck",
     "filterName": "30ft Pintle ",
     "connector": "towhitch",
     "baseReward": 250,
@@ -2494,7 +2494,7 @@
   },
   "vanillaTrailer_tiltdeck_30ft_standard": {
     "type": "trailer",
-    "unlockTag": "emptyMediumTrailers",
+    "unlockTag": "trailerTiltdeck",
     "filterName": "30ft Bumperpull",
     "connector": "towhitch",
     "baseReward": 250,
@@ -2512,7 +2512,7 @@
   },
   "vanillaTrailer_tiltdeck_30ft_standard_hay": {
     "type": "trailer",
-    "unlockTag": "loadedMediumTrailers",
+    "unlockTag": "trailerTiltdeck",
     "filterName": "30ft Bumperpull (Hay Bales 3840kg)",
     "connector": "towhitch",
     "baseReward": 600,
@@ -2530,7 +2530,7 @@
   },
   "vanillaTrailer_tiltdeck_40ft_gooseneck": {
     "type": "trailer",
-    "unlockTag": "emptyMediumTrailers",
+    "unlockTag": "trailerTiltdeck",
     "filterName": "40ft Gooseneck",
     "connector": "towhitch",
     "baseReward": 250,
@@ -2548,7 +2548,7 @@
   },
   "vanillaTrailer_tiltdeck_40ft_gooseneck_hay": {
     "type": "trailer",
-    "unlockTag": "loadedMediumTrailers",
+    "unlockTag": "trailerTiltdeck",
     "filterName": "40ft Gooseneck (Hay Bales 9600KG)",
     "connector": "towhitch",
     "baseReward": 600,
@@ -2566,7 +2566,7 @@
   },
   "vanillaTrailer_tiltdeck_40ft_standard": {
     "type": "trailer",
-    "unlockTag": "emptyMediumTrailers",
+    "unlockTag": "trailerTiltdeck",
     "filterName": "40ft Bumperpull",
     "connector": "towhitch",
     "baseReward": 250,
@@ -2584,7 +2584,7 @@
   },
   "vanillaTrailer_tiltdeck_40ft_standard_wood": {
     "type": "trailer",
-    "unlockTag": "loadedMediumTrailers",
+    "unlockTag": "trailerTiltdeck",
     "filterName": "40ft Bumperpull (Planks 7000kg)",
     "connector": "towhitch",
     "baseReward": 600,
@@ -2602,7 +2602,7 @@
   },
   "vanillaTrailer_tsfb_loaded_400": {
     "type": "trailer",
-    "unlockTag": "loadedSmallTrailers",
+    "unlockTag": "trailerTsfb",
     "filterName": "400kg Crate",
     "connector": "towhitch",
     "baseReward": 305,
@@ -2620,7 +2620,7 @@
   },
   "vanillaTrailer_tsfb_loaded_800": {
     "type": "trailer",
-    "unlockTag": "loadedSmallTrailers",
+    "unlockTag": "trailerTsfb",
     "filterName": "800kg Crate",
     "connector": "towhitch",
     "baseReward": 305,
@@ -2638,7 +2638,7 @@
   },
   "vanillaTrailer_tsfb_loaded_armchairs": {
     "type": "trailer",
-    "unlockTag": "loadedSmallTrailers",
+    "unlockTag": "trailerTsfb",
     "filterName": "Armchairs",
     "connector": "towhitch",
     "baseReward": 305,
@@ -2656,7 +2656,7 @@
   },
   "vanillaTrailer_tsfb_loaded_couch": {
     "type": "trailer",
-    "unlockTag": "loadedSmallTrailers",
+    "unlockTag": "trailerTsfb",
     "filterName": "Couch",
     "connector": "towhitch",
     "baseReward": 305,
@@ -2674,7 +2674,7 @@
   },
   "vanillaTrailer_tsfb_loaded_planks": {
     "type": "trailer",
-    "unlockTag": "loadedSmallTrailers",
+    "unlockTag": "trailerTsfb",
     "filterName": "1400kg Planks",
     "connector": "towhitch",
     "baseReward": 305,
@@ -2692,7 +2692,7 @@
   },
   "vanillaTrailer_tsfb_loaded_planks_long": {
     "type": "trailer",
-    "unlockTag": "loadedSmallTrailers",
+    "unlockTag": "trailerTsfb",
     "filterName": "2100kg Planks",
     "connector": "towhitch",
     "baseReward": 305,
@@ -2710,7 +2710,7 @@
   },
   "vanillaTrailer_tsfb_unloaded": {
     "type": "trailer",
-    "unlockTag": "emptySmallTrailers",
+    "unlockTag": "trailerTsfb",
     "filterName": "Unloaded",
     "connector": "towhitch",
     "baseReward": 200,
