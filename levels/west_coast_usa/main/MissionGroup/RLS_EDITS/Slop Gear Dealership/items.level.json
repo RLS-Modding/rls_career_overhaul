@@ -1,0 +1,6 @@
+{"class":"TSStatic","__parent":"Slop Gear Dealership","position":[871.352478,671.599182,147.3405],"isRenderEnabled":false,"rotationMatrix":[0.967967272,0.25107646,0,-0.25107646,0.967967272,0,0,0,1],"shapeName":"/levels/west_coast_usa/art/shapes/buildings/s_workshop.dae","useInstanceRenderData":true}
+{"name":"NewMeshRoad17","class":"MeshRoad","__parent":"Slop Gear Dealership","position":[874.73468,669.347351,154.082977],"bottomMaterial":"BlankWhite","nodes":[[874.675293,668.167542,152.787231,1,1.39999998,0,0,1],[871.038757,682.191284,152.812286,1,1.39999998,0,0,1]],"rotationMatrix":[0.967967272,0.25107646,0,-0.25107646,0.967967272,0,0,0,1],"sideMaterial":"BlankWhite","topMaterial":"BlankWhite"}
+{"name":"NewMeshRoad18","class":"MeshRoad","__parent":"Slop Gear Dealership","position":[876.137573,708.603577,148.887772],"hidden":true,"nodes":[[877.374451,708.603577,146.611679,10,5,0,0,1],[894.705994,716.859558,147.971817,10,5,0,0,1]]}
+{"name":"NewMeshRoad16","class":"MeshRoad","__parent":"Slop Gear Dealership","position":[896.578064,766.547974,147.994537],"hidden":true,"nodes":[[878.815063,651.531433,146.888153,40,1,0,0,1],[862.375488,710.691345,146.887741,40,1,0,0,1]]}
+{"name":"Slop gear Decals","class":"SimGroup","__parent":"Slop Gear Dealership"}
+{"name":"Slop Gear Clutter","class":"SimGroup","__parent":"Slop Gear Dealership"}

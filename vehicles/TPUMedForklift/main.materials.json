@@ -1,0 +1,748 @@
+{
+  "FL_Dash": {
+    "name": "FL_Dash",
+    "mapTo": "FL_Dash",
+    "class": "Material",
+    "persistentId": "53d873e6-6382-4371-9c56-64c7c69471bc",
+    "Stages": [
+      {
+        "opacityFactor": 0.061999999,
+        "pixelSpecular": true
+      },
+      {
+        "opacityFactor": null,
+        "pixelSpecular": null
+      },
+      {
+        "opacityFactor": null,
+        "pixelSpecular": null
+      },
+      {
+        "opacityFactor": null,
+        "pixelSpecular": null
+      }
+    ],
+    "alphaRef": 0,
+    "castShadows": false,
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "translucent": true,
+    "translucentBlendOp": "PreMulAlpha",
+    "translucentRecvShadows": true,
+    "version": 1.5
+  },
+  "FL_DashScreen": {
+    "name": "FL_DashScreen",
+    "mapTo": "FL_DashScreen",
+    "class": "Material",
+    "persistentId": "77d93c213ew128f-adwa1c6e-488d-a98d-b454b99635a2",
+    "Stages": [
+      {
+        "colorMap": "@FL_DashScreen",
+        "emissive": true,
+        "specularMap": "vehicles/common/null.dds",
+        "specularPower": 32,
+        "useAnisotropic": true
+      },
+      {},
+      {},
+      {}
+    ],
+    "alphaRef": 0,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "translucent": true,
+    "translucentBlendOp": "None"
+  },
+  "FL_Interior": {
+    "name": "FL_Interior",
+    "mapTo": "FL_Interior",
+    "class": "Material",
+    "persistentId": "c4caf9a1-a4b1-4379-9cef-1b36f119eb97",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/vehicles/TPUMedForklift/TPUMFL_Interior_ao.data.png",
+        "baseColorMap": "/vehicles/TPUMedForklift/TPUMFL_Interior_c.color.png",
+        "metallicFactor": 1,
+        "metallicMap": "/vehicles/TPUMedForklift/TPUMFL_Interior_m.data.png",
+        "normalMap": "/vehicles/TPUMedForklift/TPUMFL_Interior_n.normal.png",
+        "pixelSpecular": true,
+        "roughnessMap": "/vehicles/TPUMedForklift/TPUMFL_Interior_r.data.png"
+      },
+      {
+        "metallicFactor": null,
+        "pixelSpecular": null
+      },
+      {
+        "metallicFactor": null,
+        "pixelSpecular": null
+      },
+      {
+        "metallicFactor": null,
+        "pixelSpecular": null
+      }
+    ],
+    "alphaRef": 0,
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "translucentBlendOp": "None",
+    "version": 1.5
+  },
+  "FL_MainColor": {
+    "name": "FL_MainColor",
+    "mapTo": "FL_MainColor",
+    "class": "Material",
+    "persistentId": "77d93c213ew128f-1c6e-488d-a98d-b454b99635a2",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/vehicles/TPUMedForklift/TPUMFL_MainColor_ao.data.png",
+        "baseColorMap": "/vehicles/TPUMedForklift/TPUMFL_MainColor_c.color.png",
+        "clearCoatRoughnessFactor": null,
+        "colorPaletteMapUseUV": null,
+        "instanceDiffuse": null,
+        "metallicFactor": 1,
+        "metallicMap": "/vehicles/TPUMedForklift/TPUMFL_MainColor_m.data.png",
+        "normalMap": "/vehicles/TPUMedForklift/TPUMFL_MainColor_n.normal.png",
+        "roughnessMap": "/vehicles/TPUMedForklift/TPUMFL_MainColor_r.data.png"
+      },
+      {
+        "ambientOcclusionMap": "/vehicles/TPUMedForklift/TPUMFL_MainColor_ao.data.png",
+        "baseColorMap": "/vehicles/common/null.dds",
+        "clearCoatRoughnessFactor": 0,
+        "colorPaletteMap": "/vehicles/common/nullcolormaskR.dds",
+        "colorPaletteMapUseUV": 1,
+        "instanceDiffuse": true,
+        "metallicFactor": 1,
+        "normalMap": "/vehicles/TPUMedForklift/TPUMFL_MainColor_n.normal.png",
+        "opacityMap": "/vehicles/TPUMedForklift/TPUMFL_MainColor_o.data.png"
+      },
+      {
+        "clearCoatRoughnessFactor": null,
+        "colorPaletteMapUseUV": null,
+        "instanceDiffuse": null,
+        "metallicFactor": null
+      },
+      {
+        "clearCoatRoughnessFactor": null,
+        "colorPaletteMapUseUV": null,
+        "instanceDiffuse": null,
+        "metallicFactor": null
+      }
+    ],
+    "activeLayers": 2,
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "version": 1.5
+  },
+  "FL_Mast": {
+    "name": "FL_Mast",
+    "mapTo": "FL_Mast",
+    "class": "Material",
+    "persistentId": "3a061b0f-230c-4eea-8dcf-a57ec09708f5",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/vehicles/TPUMedForklift/TPUMFL_Mast_ao.data.png",
+        "baseColorMap": "/vehicles/TPUMedForklift/TPUMFL_Mast_c.color.png",
+        "metallicFactor": 1,
+        "metallicMap": "/vehicles/TPUMedForklift/TPUMFL_Mast_m.data.png",
+        "normalMap": "/vehicles/TPUMedForklift/TPUMFL_Mast_n.normal.png",
+        "roughnessMap": "/vehicles/TPUMedForklift/TPUMFL_Mast_r.data.png",
+        "useAnisotropicFilter": false
+      },
+      {
+        "metallicFactor": null,
+        "useAnisotropicFilter": null
+      },
+      {
+        "metallicFactor": null,
+        "useAnisotropicFilter": null
+      },
+      {
+        "metallicFactor": null,
+        "useAnisotropicFilter": null
+      }
+    ],
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "translucentBlendOp": "None",
+    "version": 1.5
+  },
+  "FL_Stickers": {
+    "name": "FL_Stickers",
+    "mapTo": "FL_Stickers",
+    "class": "Material",
+    "persistentId": "c4483219-5781-4a6f-8643-46932e09adf8",
+    "Stages": [
+      {
+        "baseColorFactor": [
+          0.832175016,
+          0.832167029,
+          0.832167029,
+          1
+        ],
+        "baseColorMap": "/vehicles/TPUMedForklift/TPUMFL_sickers_c.color.png",
+        "metallicFactor": 1,
+        "normalMap": "vehicles/common/null_n.dds",
+        "pixelSpecular": true
+      },
+      {
+        "baseColorFactor": null,
+        "metallicFactor": null,
+        "pixelSpecular": null
+      },
+      {
+        "baseColorFactor": null,
+        "metallicFactor": null,
+        "pixelSpecular": null
+      },
+      {
+        "baseColorFactor": null,
+        "metallicFactor": null,
+        "pixelSpecular": null
+      }
+    ],
+    "alphaRef": 0,
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "translucentBlendOp": "None",
+    "version": 1.5
+  },
+  "FL_Stuff": {
+    "name": "FL_Stuff",
+    "mapTo": "FL_Stuff",
+    "class": "Material",
+    "persistentId": "8db465f3-19e6-431a-a527-d9bc55486c74",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/vehicles/TPUMedForklift/TPUMFL_Stuff_ao.data.png",
+        "baseColorMap": "/vehicles/TPUMedForklift/TPUMFL_Stuff_c.color.png",
+        "metallicFactor": 1,
+        "metallicMap": "/vehicles/TPUMedForklift/TPUMFL_Stuff_m.data.png",
+        "normalMap": "/vehicles/TPUMedForklift/TPUMFL_Stuff_n.normal.png",
+        "pixelSpecular": true,
+        "roughnessMap": "/vehicles/TPUMedForklift/TPUMFL_Stuff_r.data.png"
+      },
+      {
+        "metallicFactor": null,
+        "pixelSpecular": null
+      },
+      {
+        "metallicFactor": null,
+        "pixelSpecular": null
+      },
+      {
+        "metallicFactor": null,
+        "pixelSpecular": null
+      }
+    ],
+    "alphaRef": 0,
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "translucent": true,
+    "translucentBlendOp": "None",
+    "version": 1.5
+  },
+  "FL_TractionTire": {
+    "name": "FL_TractionTire",
+    "mapTo": "FL_TractionTire",
+    "class": "Material",
+    "persistentId": "07b6b7d1-8c50-4a0d-b4de-c6cef231bbcb",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/vehicles/TPUMedForklift/TPUMFL_TractionTire_ao.data.png",
+        "baseColorMap": "/vehicles/TPUMedForklift/TPUMFL_TractionTire_c.color.png",
+        "metallicFactor": 1,
+        "metallicMap": "/vehicles/TPUMedForklift/TPUMFL_TractionTire_m.data.png",
+        "normalMap": "/vehicles/TPUMedForklift/TPUMFL_TractionTire_n.normal.png",
+        "pixelSpecular": true,
+        "roughnessMap": "/vehicles/TPUMedForklift/TPUMFL_TractionTire_r.data.png"
+      },
+      {
+        "metallicFactor": null,
+        "pixelSpecular": null
+      },
+      {
+        "metallicFactor": null,
+        "pixelSpecular": null
+      },
+      {
+        "metallicFactor": null,
+        "pixelSpecular": null
+      }
+    ],
+    "alphaRef": 0,
+    "dynamicCubemap": true,
+    "materialTag0": "test12",
+    "materialTag1": "vehicle",
+    "translucentBlendOp": "None",
+    "version": 1.5
+  },
+  "FL_pigeon": {
+    "name": "FL_pigeon",
+    "mapTo": "FL_pigeon",
+    "class": "Material",
+    "persistentId": "d4b5b9cd-5c12-4608-b22d-83264ba51d1b",
+    "Stages": [
+      {
+        "colorMap": "vehicles/common/null.dds",
+        "normalMap": "vehicles/TPUMedForklift/pigeon_n.dds",
+        "pixelSpecular": true,
+        "specularMap": "vehicles/common/null.dds",
+        "specularPower": 128,
+        "useAnisotropic": true
+      },
+      {
+        "colorMap": "vehicles/TPUMedForklift/pigeon_d.dds",
+        "normalMap": "vehicles/TPUMedForklift/pigeon_n.dds",
+        "pixelSpecular": true,
+        "specularMap": "vehicles/TPUMedForklift/pigeon_s.dds",
+        "specularPower": 32,
+        "useAnisotropic": true
+      },
+      {
+        "colorMap": "vehicles/TPUMedForklift/pigeon_c.dds",
+        "instanceDiffuse": true,
+        "normalMap": "vehicles/TPUMedForklift/pigeon_n.dds",
+        "pixelSpecular": true,
+        "specularMap": "vehicles/TPUMedForklift/pigeon_s.dds",
+        "specularPower": 128,
+        "useAnisotropic": true
+      },
+      {}
+    ],
+    "alphaRef": 0,
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "translucent": true,
+    "translucentBlendOp": "None"
+  },
+  "FL_pigeon_interior": {
+    "name": "FL_pigeon_interior",
+    "mapTo": "FL_pigeon_interior",
+    "class": "Material",
+    "persistentId": "67b202d4-637a-42e2-a593-6c2d9149124b",
+    "Stages": [
+      {
+        "baseColorFactor": [
+          0.134682998,
+          0.134682998,
+          0.134682998,
+          1
+        ],
+        "normalMap": "vehicles/TPUMedForklift/pigeon_interior_n.dds",
+        "pixelSpecular": true,
+        "roughnessFactor": 0.681999981
+      },
+      {
+        "baseColorFactor": null,
+        "pixelSpecular": null,
+        "roughnessFactor": null
+      },
+      {
+        "baseColorFactor": null,
+        "pixelSpecular": null,
+        "roughnessFactor": null
+      },
+      {
+        "baseColorFactor": null,
+        "pixelSpecular": null,
+        "roughnessFactor": null
+      }
+    ],
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "version": 1.5
+  },
+  "FT_Wheel": {
+    "name": "FT_Wheel",
+    "mapTo": "FT_Wheel",
+    "class": "Material",
+    "persistentId": "7bd82e62-fd13-4ef4-af78-ae3107640859",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/vehicles/TPUMedForklift/TPUMFL_Wheel_ao.data.png",
+        "baseColorMap": "/vehicles/TPUMedForklift/TPUMFL_Wheel_c.color.png",
+        "metallicFactor": 1,
+        "metallicMap": "/vehicles/TPUMedForklift/TPUMFL_Wheel_m.data.png",
+        "normalMap": "/vehicles/TPUMedForklift/TPUMFL_Wheel_n.normal.png",
+        "pixelSpecular": true,
+        "roughnessMap": "/vehicles/TPUMedForklift/TPUMFL_Wheel_r.data.png"
+      },
+      {
+        "metallicFactor": null,
+        "pixelSpecular": null
+      },
+      {
+        "metallicFactor": null,
+        "pixelSpecular": null
+      },
+      {
+        "metallicFactor": null,
+        "pixelSpecular": null
+      }
+    ],
+    "alphaRef": 0,
+    "dynamicCubemap": true,
+    "materialTag0": "test12",
+    "materialTag1": "vehicle",
+    "translucent": true,
+    "translucentBlendOp": "None",
+    "version": 1.5
+  },
+  "MFL_v8": {
+    "name": "MFL_v8",
+    "mapTo": "MFL_v8",
+    "class": "Material",
+    "persistentId": "7b498d7e-2d9f-4ec0-95e7-6f96be3f989c",
+    "Stages": [
+      {
+        "colorMap": "vehicles/TPUMedForklift/gavril_v8_d.color.png",
+        "normalMap": "vehicles/TPUMedForklift/gavril_v8_n.normal.png",
+        "pixelSpecular": true,
+        "reflectivityMap": "vehicles/TPUMedForklift/gavril_v8_r.color.png",
+        "specularMap": "vehicles/TPUMedForklift/gavril_v8_s.color.png",
+        "specularPower": 19,
+        "useAnisotropic": true
+      },
+      {},
+      {},
+      {}
+    ],
+    "alphaRef": 0,
+    "cubemap": "global_cubemap_metalblurred",
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "translucentBlendOp": "None"
+  },
+  "fork_lightbar": {
+    "name": "fork_lightbar",
+    "mapTo": "fork_lightbar",
+    "class": "Material",
+    "persistentId": "1b9fecae-55b1-41eb-b883-805dd48d59fd",
+    "Stages": [
+      {
+        "colorMap": "vehicles/common/null.dds",
+        "normalMap": "vehicles/common/lightbars/eur_lightbar_n.dds",
+        "pixelSpecular": true,
+        "specularMap": "vehicles/common/null.dds",
+        "specularPower": 128,
+        "useAnisotropic": true
+      },
+      {
+        "colorMap": "vehicles/TPUMedForklift/beacon_d.png",
+        "diffuseColor": [
+          0.600000024,
+          0.600000024,
+          0.600000024,
+          1
+        ],
+        "normalMap": "vehicles/common/lightbars/eur_lightbar_n.dds",
+        "pixelSpecular": true,
+        "specularMap": "vehicles/common/lightbars/eur_lightbar_s.dds",
+        "specularPower": 32,
+        "useAnisotropic": true
+      },
+      {},
+      {}
+    ],
+    "alphaRef": 0,
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "translucentBlendOp": "None"
+  },
+  "fork_lightbar": {
+    "name": "fork_lightbar",
+    "mapTo": "fork_lightbar",
+    "class": "Material",
+    "persistentId": "1b9fecae-55b1-41eb-b883-805dd48d59fd",
+    "Stages": [
+      {
+        "colorMap": "vehicles/common/null.dds",
+        "normalMap": "vehicles/common/lightbars/eur_lightbar_n.dds",
+        "pixelSpecular": true,
+        "specularMap": "vehicles/common/null.dds",
+        "specularPower": 128,
+        "useAnisotropic": true
+      },
+      {
+        "colorMap": "vehicles/TPUMedForklift/beacon_d.png",
+        "diffuseColor": [
+          0.600000024,
+          0.600000024,
+          0.600000024,
+          1
+        ],
+        "normalMap": "vehicles/common/lightbars/eur_lightbar_n.dds",
+        "pixelSpecular": true,
+        "specularMap": "vehicles/common/lightbars/eur_lightbar_s.dds",
+        "specularPower": 32,
+        "useAnisotropic": true
+      },
+      {},
+      {}
+    ],
+    "alphaRef": 0,
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "translucentBlendOp": "None"
+  },
+  "fork_lightbar_blueglass_l": {
+    "name": "fork_lightbar_blueglass_l",
+    "mapTo": "fork_lightbar_blueglass_l",
+    "class": "Material",
+    "persistentId": "dcf1718f-c124-40aa-a732-7f9411415be5",
+    "Stages": [
+      {
+        "colorMap": "vehicles/common/null.dds",
+        "diffuseColor": [
+          0.674221992,
+          0.674215019,
+          0.674215019,
+          0.600181997
+        ],
+        "normalMap": "vehicles/common/lightbars/eur_lightbar_n.dds",
+        "pixelSpecular": true,
+        "specularMap": "vehicles/common/null.dds",
+        "specularPower": 128,
+        "useAnisotropic": true
+      },
+      {
+        "colorMap": "vehicles/TPUMedForklift/beacon_d.png",
+        "diffuseColor": [
+          1.5,
+          1.5,
+          1.5,
+          0.550000012
+        ],
+        "normalMap": "vehicles/common/lightbars/eur_lightbar_n.dds",
+        "pixelSpecular": true,
+        "specularMap": "vehicles/common/lightbars/eur_lightbar_s.dds",
+        "specularPower": 32,
+        "useAnisotropic": true
+      },
+      {},
+      {}
+    ],
+    "alphaRef": 0,
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "translucent": true
+  },
+  "fork_lightbar_blueglass_l": {
+    "name": "fork_lightbar_blueglass_l",
+    "mapTo": "fork_lightbar_blueglass_l",
+    "class": "Material",
+    "persistentId": "dcf1718f-c124-40aa-a732-7f9411415be5",
+    "Stages": [
+      {
+        "colorMap": "vehicles/common/null.dds",
+        "diffuseColor": [
+          0.674221992,
+          0.674215019,
+          0.674215019,
+          0.600181997
+        ],
+        "normalMap": "vehicles/common/lightbars/eur_lightbar_n.dds",
+        "pixelSpecular": true,
+        "specularMap": "vehicles/common/null.dds",
+        "specularPower": 128,
+        "useAnisotropic": true
+      },
+      {
+        "colorMap": "vehicles/TPUMedForklift/beacon_d.png",
+        "diffuseColor": [
+          1.5,
+          1.5,
+          1.5,
+          0.550000012
+        ],
+        "normalMap": "vehicles/common/lightbars/eur_lightbar_n.dds",
+        "pixelSpecular": true,
+        "specularMap": "vehicles/common/lightbars/eur_lightbar_s.dds",
+        "specularPower": 32,
+        "useAnisotropic": true
+      },
+      {},
+      {}
+    ],
+    "alphaRef": 0,
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "translucent": true
+  },
+  "fork_lightbar_blueglass_on": {
+    "name": "fork_lightbar_blueglass_on",
+    "mapTo": "fork_lightbar_blueglass_on",
+    "class": "Material",
+    "persistentId": "45d6e297-0f2f-4ee9-9e1a-36dea74196dd",
+    "Stages": [
+      {
+        "colorMap": "vehicles/common/null.dds",
+        "diffuseColor": [
+          1,
+          1,
+          1,
+          0.600000024
+        ],
+        "normalMap": "vehicles/common/lightbars/eur_lightbar_n.dds",
+        "pixelSpecular": true,
+        "specularMap": "vehicles/common/null.dds",
+        "specularPower": 128,
+        "useAnisotropic": true
+      },
+      {
+        "colorMap": "vehicles/TPUMedForklift/beacon_d.png",
+        "diffuseColor": [
+          0.600000024,
+          0.600000024,
+          0.600000024,
+          0.600000024
+        ],
+        "emissive": true,
+        "glow": true,
+        "normalMap": "vehicles/common/lightbars/eur_lightbar_n.dds",
+        "pixelSpecular": true,
+        "specularMap": "vehicles/common/lightbars/eur_lightbar_s.dds",
+        "specularPower": 32,
+        "useAnisotropic": true
+      },
+      {
+        "colorMap": "vehicles/TPUMedForklift/beacon_d.png",
+        "diffuseColor": [
+          1.5,
+          1.5,
+          1.5,
+          0.119999997317791
+        ],
+        "emissive": true,
+        "glow": true,
+        "normalMap": "vehicles/common/lightbars/eur_lightbar_n.dds",
+        "pixelSpecular": true,
+        "specularMap": "vehicles/common/lightbars/eur_lightbar_s.dds",
+        "specularPower": 32,
+        "useAnisotropic": true
+      },
+      {}
+    ],
+    "alphaTest": true,
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "translucent": true
+  },
+  "fork_lightbar_on": {
+    "name": "fork_lightbar_on",
+    "mapTo": "fork_lightbar_on",
+    "class": "Material",
+    "persistentId": "8b5d7ad8-5345-41a9-848c-ea9f78af6af4",
+    "Stages": [
+      {
+        "colorMap": "vehicles/common/null.dds",
+        "normalMap": "vehicles/common/lightbars/eur_lightbar_n.dds",
+        "pixelSpecular": true,
+        "specularMap": "vehicles/common/null.dds",
+        "specularPower": 128,
+        "useAnisotropic": true
+      },
+      {
+        "colorMap": "vehicles/TPUMedForklift/beacon_d.png",
+        "diffuseColor": [
+          1.5,
+          1.5,
+          1.5,
+          1
+        ],
+        "emissive": true,
+        "glow": true,
+        "normalMap": "vehicles/common/lightbars/eur_lightbar_n.dds",
+        "pixelSpecular": true,
+        "specularMap": "vehicles/common/lightbars/eur_lightbar_s.dds",
+        "specularPower": 32,
+        "useAnisotropic": true
+      },
+      {
+        "colorMap": "vehicles/TPUMedForklift/beacon_d.png",
+        "diffuseColor": [
+          1.5,
+          1.5,
+          1.5,
+          0.300000011920929
+        ],
+        "emissive": true,
+        "glow": true,
+        "normalMap": "vehicles/common/lightbars/eur_lightbar_n.dds",
+        "specularMap": "vehicles/common/lightbars/eur_lightbar_s.dds",
+        "useAnisotropic": true
+      },
+      {}
+    ],
+    "alphaRef": 0,
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "translucentBlendOp": "None"
+  },
+  "fork_lightbar_on": {
+    "name": "fork_lightbar_on",
+    "mapTo": "fork_lightbar_on",
+    "class": "Material",
+    "persistentId": "8b5d7ad8-5345-41a9-848c-ea9f78af6af4",
+    "Stages": [
+      {
+        "colorMap": "vehicles/common/null.dds",
+        "normalMap": "vehicles/common/lightbars/eur_lightbar_n.dds",
+        "pixelSpecular": true,
+        "specularMap": "vehicles/common/null.dds",
+        "specularPower": 128,
+        "useAnisotropic": true
+      },
+      {
+        "colorMap": "vehicles/TPUMedForklift/beacon_d.png",
+        "diffuseColor": [
+          1.5,
+          1.5,
+          1.5,
+          1
+        ],
+        "emissive": true,
+        "glow": true,
+        "normalMap": "vehicles/common/lightbars/eur_lightbar_n.dds",
+        "pixelSpecular": true,
+        "specularMap": "vehicles/common/lightbars/eur_lightbar_s.dds",
+        "specularPower": 32,
+        "useAnisotropic": true
+      },
+      {
+        "colorMap": "vehicles/TPUMedForklift/beacon_d.png",
+        "diffuseColor": [
+          1.5,
+          1.5,
+          1.5,
+          0.300000011920929
+        ],
+        "emissive": true,
+        "glow": true,
+        "normalMap": "vehicles/common/lightbars/eur_lightbar_n.dds",
+        "specularMap": "vehicles/common/lightbars/eur_lightbar_s.dds",
+        "useAnisotropic": true
+      },
+      {}
+    ],
+    "alphaRef": 0,
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "translucentBlendOp": "None"
+  }
+}

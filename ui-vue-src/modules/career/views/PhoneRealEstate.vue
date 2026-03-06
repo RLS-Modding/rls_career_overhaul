@@ -23,6 +23,9 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
               Map
             </button>
+          <button :class="{ active: viewMode === 'listings' }" @click="viewMode = 'listings'">
+            Listings
+          </button>
           </div>
           <div v-if="viewMode === 'list'" class="toolbar-row-2">
             <div class="dropdown-wrap">
@@ -109,9 +112,10 @@
               <div class="card-img-fade"></div>
               <div class="card-badges">
                 <span v-if="garage.owned" class="badge owned">OWNED</span>
+                <span v-else-if="garage.rented" class="badge rented">RENTED</span>
                 <span v-else-if="garage.starterGarage" class="badge free">FREE</span>
               </div>
-              <div class="card-price" v-if="!garage.owned">${{ formatPrice(garage.price) }}</div>
+              <div class="card-price" v-if="!garage.owned && !garage.rented">{{ garage.starterGarage ? 'FREE' : '$' + formatPrice(garage.price) }}</div>
             </div>
             <div class="card-body">
               <div class="card-info">
@@ -137,7 +141,13 @@
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
                   Set Route
                 </button>
+                <template v-if="garage.rented">
+                  <button class="act-btn danger" @click.stop="endLease(garage)">
+                    End Lease Early
+                  </button>
+                </template>
               </div>
+
             </div>
           </div>
         </div>
@@ -154,6 +164,7 @@
             @wheel.prevent="onMapWheel"
           >
             <svg class="map-layer terrain-layer"></svg>
+            <svg class="map-layer roads-layer"></svg>
             <svg class="map-layer vehicle-layer"></svg>
             <svg class="map-layer marker-layer" :viewBox="markerViewBox">
               <g v-for="item in clusteredMarkers" :key="'m-'+item.cluster[0].id"
@@ -169,7 +180,7 @@
                 </template>
                 <template v-else>
                   <svg x="-7.5" y="-7.5" width="15" height="15" viewBox="0 0 24 24" fill="white" stroke="none"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
-                  <text y="28" text-anchor="middle" class="marker-label">{{ item.cluster[0].owned ? 'OWNED' : '$' + formatPrice(item.cluster[0].price) }}</text>
+                  <text y="28" text-anchor="middle" class="marker-label">{{ item.cluster[0].owned ? 'OWNED' : (item.cluster[0].starterGarage ? 'FREE' : '$' + formatPrice(item.cluster[0].price)) }}</text>
                 </template>
               </g>
             </svg>
@@ -202,15 +213,16 @@
                   <div class="map-slide-img-fade"></div>
                   <div class="map-slide-badges">
                     <span v-if="garage.owned" class="badge owned">OWNED</span>
+                    <span v-else-if="garage.rented" class="badge rented">RENTED</span>
                     <span v-else-if="garage.starterGarage" class="badge free">FREE</span>
                   </div>
-                  <div class="map-slide-price-overlay" v-if="!garage.owned">${{ formatPrice(garage.price) }}</div>
+                  <div class="map-slide-price-overlay" v-if="!garage.owned && !garage.rented">{{ garage.starterGarage ? 'FREE' : '$' + formatPrice(garage.price) }}</div>
                 </div>
                 <div class="map-slide-body">
                   <div class="map-slide-top">
                     <span class="map-slide-name">{{ garage.name }}</span>
                   </div>
-                  <div class="map-slide-meta-row">
+                    <div class="map-slide-meta-row">
                     <div class="map-slide-meta">
                       <span>
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h2a2 2 0 012 2v6a2 2 0 01-2 2H6"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
@@ -233,13 +245,170 @@
             </div>
           </div>
         </div>
+
+        <!-- LISTINGS VIEW -->
+        <div class="listings-view" v-if="viewMode === 'listings'">
+          <button v-if="listingsSubView === 'offers'" class="listings-back-bar" @click="setListingsSubView('owned')">
+            &larr; Back to properties
+          </button>
+
+          <template v-if="listingsSubView === 'owned'">
+            <div v-if="ownedListings.length === 0" class="empty-state small">No properties owned.</div>
+            <div
+              v-for="garage in ownedListings"
+              :key="garage.garageId"
+              class="listings-card"
+            >
+              <div class="listings-card-img">
+                <img v-if="garage.preview && !imgFailed(garage.garageId)" :src="garage.preview" alt="" @error="onImgError({ id: garage.garageId })" />
+                <div v-else class="card-img-ph">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                  <span>No preview</span>
+                </div>
+                <div class="card-img-fade"></div>
+                <div class="card-badges">
+                  <span v-if="garage.isListed" class="badge listed">LISTED</span>
+                  <span v-if="garage.isStarter" class="badge starter">STARTER</span>
+                </div>
+                <div class="listings-card-price">${{ formatPrice(garage.marketValue) }}</div>
+              </div>
+
+              <div class="listings-card-body">
+                <div class="listings-card-info">
+                  <span class="listings-name">{{ garage.name }}</span>
+                  <div class="listings-card-meta">
+                    <span class="meta-item">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h2a2 2 0 012 2v6a2 2 0 01-2 2H6"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                      {{ garage.vehicleCount }}/{{ garage.capacity }}
+                    </span>
+                    <span v-if="garage.offerCount" class="meta-item offer-count">{{ garage.offerCount }} offer(s)</span>
+                    <span v-if="garage.isListed" class="meta-item listing-active">Listed: ${{ formatPrice(garage.askingPrice) }}</span>
+                    <span v-else class="meta-item">Not listed</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="listings-actions" v-if="!garage.isListed">
+                <div class="listing-price-row">
+                  <input
+                    v-model.number="listingPrices[garage.garageId]"
+                    type="number"
+                    min="0"
+                    placeholder="Asking price"
+                    class="listing-price-input"
+                    v-bng-text-input
+                  />
+                  <button class="act-btn route" @click="getGuidance(garage)">Check Price</button>
+                </div>
+                <p v-if="listingGuidance[garage.garageId]" class="listing-guidance" :class="`guidance-${listingGuidance[garage.garageId].tier || 'fair'}`">
+                  {{ listingGuidance[garage.garageId].label || 'Price check' }}: {{ listingGuidance[garage.garageId].description || '' }}
+                </p>
+                <button
+                  class="act-btn negotiate listings-full-btn"
+                  :disabled="!garage.canSell"
+                  @click="listGarageForSale(garage)"
+                >
+                  List for Sale
+                </button>
+              </div>
+
+              <div class="listings-actions" v-else>
+                <div class="listings-listed-row">
+                  <button class="act-btn negotiate" @click="openOwnedOffers(garage)">
+                    View Offers<span v-if="garage.offerCount"> ({{ garage.offerCount }})</span>
+                  </button>
+                  <button class="act-btn route" @click="removeOwnedListing(garage)">
+                    Remove Listing
+                  </button>
+                </div>
+              </div>
+            </div>
+          </template>
+
+          <template v-else-if="listingsSubView === 'offers'">
+            <div class="offer-shell">
+              <div v-if="!selectedOwnedGarage" class="empty-state small">No selected listing.</div>
+              <template v-else>
+                <div class="listings-offers-header">
+                  <div class="offers-header-info">
+                    <span class="listings-name">{{ selectedOwnedGarage.name }}</span>
+                    <span class="listings-meta">Asking: ${{ formatPrice(selectedOwnedGarage.askingPrice || 0) }}</span>
+                    <span class="listings-meta">Market: ${{ formatPrice(selectedOwnedGarage.marketValue || 0) }}</span>
+                  </div>
+                  <span class="offers-count-badge" v-if="selectedOwnedOffers.length">{{ selectedOwnedOffers.length }}</span>
+                </div>
+                <div v-if="!selectedOwnedOffers.length" class="empty-state small">No offers yet.</div>
+                <div
+                  v-for="offer in selectedOwnedOffers"
+                  :key="offer.index"
+                  class="offers-card"
+                >
+                  <div class="offer-head">
+                    <span class="offer-buyer">{{ offer.buyerName }}</span>
+                    <span v-if="offer.negotiationPossible" class="offer-status status-open">Open</span>
+                    <span v-else class="offer-status status-closed">Closed</span>
+                  </div>
+                  <div class="offer-price">
+                    <span class="price-label">Offer:</span>
+                    <span v-if="offer.negotiatedPrice">
+                      <s>${{ formatPrice(offer.value) }}</s>
+                      <strong>${{ formatPrice(offer.negotiatedPrice) }}</strong>
+                    </span>
+                    <span v-else>${{ formatPrice(offer.value) }}</span>
+                  </div>
+                  <div class="offer-actions">
+                    <button class="act-btn negotiate" @click="acceptOwnedOffer(offer)">Accept</button>
+                    <button
+                      class="act-btn route"
+                      :disabled="!offer.negotiationPossible"
+                      @click="negotiateOwnedOffer(offer)"
+                    >
+                      Negotiate
+                    </button>
+                    <button class="act-btn decline" @click="declineOwnedOffer(offer)">Decline</button>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </template>
+        </div>
       </template>
+
+      <Transition name="modal-fade">
+        <div v-if="showEndLeaseConfirm && endLeaseTarget" class="end-lease-overlay" @click.self="showEndLeaseConfirm = false">
+          <div class="end-lease-modal">
+            <p class="end-lease-title">End Lease Early?</p>
+            <p class="end-lease-property">{{ endLeaseTarget.name }}</p>
+            <div class="end-lease-fees">
+              <div class="fee-row">
+                <span>Deposit forfeited</span>
+                <span class="fee-val">${{ formatPrice(endLeaseTarget.securityDeposit) }}</span>
+              </div>
+              <div class="fee-row">
+                <span>Termination fee</span>
+                <span class="fee-val">${{ formatPrice(endLeaseTarget.monthlyRent) }}</span>
+              </div>
+              <div class="fee-divider"></div>
+              <div class="fee-row total">
+                <span>Total cost</span>
+                <span class="fee-val">${{ formatPrice(endLeaseTarget.securityDeposit + endLeaseTarget.monthlyRent) }}</span>
+              </div>
+            </div>
+            <p class="end-lease-note">Vehicles in this garage will be relocated.</p>
+            <div class="end-lease-actions">
+              <button class="modal-btn cancel-btn" @click="showEndLeaseConfirm = false">Cancel</button>
+              <button class="modal-btn confirm-btn" @click="confirmEndLease">End Lease</button>
+            </div>
+          </div>
+        </div>
+      </Transition>
     </div>
   </PhoneWrapper>
 </template>
 
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { useRoute } from 'vue-router'
 import { lua } from '@/bridge'
 import { useEvents } from '@/services/events'
 import { useMinimapStore } from '../stores/minimapStore'
@@ -250,6 +419,7 @@ defineOptions({ directives: { BngTextInput: vBngTextInput } })
 
 const events = useEvents()
 const minimapStore = useMinimapStore()
+const route = useRoute()
 
 const garages = ref([])
 const playerBalance = ref(0)
@@ -278,8 +448,16 @@ const sortFields = [
 const failedImages = reactive(new Set())
 
 const viewMode = ref('map')
+const listingsSubView = ref('owned')
+const ownedListings = ref([])
+const listingPrices = reactive({})
+const listingGuidance = reactive({})
+const selectedOwnedGarage = ref(null)
+const selectedOwnedOffers = ref([])
 const expandedId = ref(null)
 const selectedGarage = ref(null)
+const showEndLeaseConfirm = ref(false)
+const endLeaseTarget = ref(null)
 const mapContainer = ref(null)
 const markerViewBox = ref('0 0 1000 1000')
 const realEstateBaseViewBox = ref('0 0 1000 1000')
@@ -435,6 +613,30 @@ const clusteredMarkers = computed(() =>
   clusterGarages(filteredGarages.value, markerViewBox.value, mapContainerSize.value)
 )
 
+const endLease = async (garage) => {
+  try {
+    const info = await lua.career_modules_propertyRentals.getRentalInfo(garage.id)
+    endLeaseTarget.value = {
+      id: garage.id,
+      name: garage.name,
+      monthlyRent: info?.monthlyRent || 0,
+      securityDeposit: info?.securityDeposit || 0,
+    }
+    showEndLeaseConfirm.value = true
+  } catch (e) {}
+}
+
+const confirmEndLease = async () => {
+  if (!endLeaseTarget.value) return
+  const garageId = endLeaseTarget.value.id
+  showEndLeaseConfirm.value = false
+  endLeaseTarget.value = null
+  try {
+    await lua.ui_phone_realEstate.endLeaseEarly(garageId)
+    lua.ui_phone_realEstate.requestGarageListings()
+  } catch (e) {}
+}
+
 function formatPrice(price) {
   if (price >= 1000000) return (price / 1000000).toFixed(1) + 'M'
   if (price >= 1000) return (price / 1000).toFixed(0) + 'K'
@@ -445,6 +647,28 @@ function formatDistance(meters) {
   if (meters < 0) return '--'
   if (meters >= 1000) return (meters / 1000).toFixed(1) + ' km'
   return Math.round(meters) + ' m'
+}
+
+const defaultListingPrice = (garage) => {
+  return Number(garage?.askingPrice) > 0 ? Number(garage.askingPrice) : Math.max(0, Number(garage?.marketValue) || 0)
+}
+
+const syncListingInputs = () => {
+  for (const garage of ownedListings.value) {
+    if (!garage) continue
+    const id = garage.garageId
+    if (listingPrices[id] == null) {
+      listingPrices[id] = defaultListingPrice(garage)
+    }
+  }
+}
+
+const setListingsSubView = (view) => {
+  if (view === 'owned') {
+    selectedOwnedOffers.value = []
+    selectedOwnedGarage.value = null
+  }
+  listingsSubView.value = view
 }
 
 function getNearestGarage(list) {
@@ -480,12 +704,87 @@ function setRoute(garage) {
   lua.ui_phone_realEstate.setRouteToGarage(garage.id)
 }
 
+function openGarageListing(garage) {
+  if (garage?.id) lua.career_modules_garageManager.showPurchaseGaragePrompt(garage.id)
+}
+
 function imgFailed(garageId) {
   return failedImages.has(garageId)
 }
 
 function onImgError(garage) {
   failedImages.add(garage.id)
+}
+
+const refreshOwnedListings = async () => {
+  if (!lua.career_modules_garageManager?.getOwnedGaragesListingData) return
+  const data = await lua.career_modules_garageManager.getOwnedGaragesListingData()
+  ownedListings.value = Array.isArray(data) ? data : []
+  syncListingInputs()
+}
+
+const openOwnedOffers = async (garage) => {
+  if (!garage?.garageId) return
+  const data = await lua.career_modules_garageManager.getGarageOffersData(garage.garageId)
+  if (!data) {
+    selectedOwnedGarage.value = { ...garage, garageId: garage.garageId }
+    selectedOwnedOffers.value = []
+  } else {
+    selectedOwnedGarage.value = data
+    selectedOwnedOffers.value = data.offers || []
+  }
+  listingsSubView.value = 'offers'
+}
+
+const getGuidance = async (garage) => {
+  const askingPrice = Number(listingPrices[garage.garageId])
+  const value = Number.isFinite(askingPrice) && askingPrice > 0 ? askingPrice : defaultListingPrice(garage)
+  const data = await lua.career_modules_garageManager.getGarageListingPriceGuidanceByGarageId(garage.garageId, value)
+  listingGuidance[garage.garageId] = data || null
+}
+
+const listGarageForSale = async (garage) => {
+  if (!garage?.garageId) return
+  const askingPrice = Number(listingPrices[garage.garageId])
+  const value = Number.isFinite(askingPrice) && askingPrice > 0 ? askingPrice : defaultListingPrice(garage)
+  await lua.career_modules_garageManager.listGarageForSaleByGarageId(garage.garageId, value)
+  await refreshOwnedListings()
+}
+
+const removeOwnedListing = async (garage) => {
+  if (!garage?.computerId) return
+  await lua.career_modules_garageManager.removeGarageListing(garage.computerId)
+  if (selectedOwnedGarage.value && selectedOwnedGarage.value.garageId === garage.garageId && listingsSubView.value === 'offers') {
+    listingsSubView.value = 'owned'
+    selectedOwnedGarage.value = null
+    selectedOwnedOffers.value = []
+  }
+  await refreshOwnedListings()
+}
+
+const acceptOwnedOffer = async (offer) => {
+  const garageId = selectedOwnedGarage.value?.garageId
+  if (!garageId || !offer?.index) return
+  await lua.career_modules_garageManager.acceptOffer(garageId, offer.index)
+  await refreshOwnedListings()
+  if (listingsSubView.value === 'offers') {
+    listingsSubView.value = 'owned'
+    selectedOwnedGarage.value = null
+    selectedOwnedOffers.value = []
+  }
+}
+
+const declineOwnedOffer = async (offer) => {
+  const garageId = selectedOwnedGarage.value?.garageId
+  if (!garageId || !offer?.index) return
+  await lua.career_modules_garageManager.declineOffer(garageId, offer.index)
+  await openOwnedOffers(selectedOwnedGarage.value)
+}
+
+const negotiateOwnedOffer = async (offer) => {
+  const garageId = selectedOwnedGarage.value?.garageId
+  if (!garageId || !offer?.index) return
+  await lua.career_modules_realEstateNegotiation.startNegotiateSelling(garageId, offer.index, 'phone')
 }
 
 function parseViewBox(viewBoxString) {
@@ -523,6 +822,7 @@ function applyEffectiveViewBox() {
   const effective = `${cx - w / 2} ${cy - h / 2} ${w} ${h}`
   markerViewBox.value = effective
   if (minimapStore.svgLayers?.terrain) minimapStore.svgLayers.terrain.setAttribute('viewBox', effective)
+  if (minimapStore.svgLayers?.roads) minimapStore.svgLayers.roads.setAttribute('viewBox', effective)
   if (minimapStore.svgLayers?.vehicles) minimapStore.svgLayers.vehicles.setAttribute('viewBox', effective)
   if (minimapStore.svgLayers?.aux) minimapStore.svgLayers.aux.setAttribute('viewBox', effective)
 }
@@ -776,9 +1076,17 @@ function updateCarouselWidth() {
 function initMap() {
   if (!mapContainer.value) return
   const terrainLayer = mapContainer.value.querySelector('.terrain-layer')
+  const roadsLayer = mapContainer.value.querySelector('.roads-layer')
   const vehicleLayer = mapContainer.value.querySelector('.vehicle-layer')
-  if (terrainLayer && vehicleLayer) {
-    terrainLayer.appendChild(minimapStore.svgLayers.terrain)
+  if (vehicleLayer) {
+    if (terrainLayer) {
+      if (!minimapStore.showTerrainImage) {
+        const images = Array.from(minimapStore.svgLayers.terrain.children).filter(child => child.tagName === 'image')
+        images.forEach(img => minimapStore.svgLayers.terrain.removeChild(img))
+      }
+      terrainLayer.appendChild(minimapStore.svgLayers.terrain)
+    }
+    if (roadsLayer) roadsLayer.appendChild(minimapStore.svgLayers.roads)
     vehicleLayer.appendChild(minimapStore.svgLayers.vehicles)
     updateContainerSize()
     applyEffectiveViewBox()
@@ -807,6 +1115,7 @@ watch([viewMode, careerActive, loaded], async ([newViewMode], [oldViewMode]) => 
   if (viewMode.value !== 'map') {
     selectedGarage.value = null
     minimapStore.viewControlledBy = null
+    minimapStore.showTerrainImage = true
   } else {
     filterOpen.value = false
     sortOpen.value = false
@@ -814,6 +1123,7 @@ watch([viewMode, careerActive, loaded], async ([newViewMode], [oldViewMode]) => 
       realEstateBaseViewBox.value = buildWalkingZoomBaseViewBox()
     }
     minimapStore.viewControlledBy = 'realEstate'
+    minimapStore.showTerrainImage = false
     if (oldViewMode !== 'map') {
       const nearest = getNearestGarage(filteredGarages.value)
       if (nearest) {
@@ -830,6 +1140,14 @@ watch([viewMode, careerActive, loaded], async ([newViewMode], [oldViewMode]) => 
     }
   })
 }, { immediate: true })
+
+watch(viewMode, (mode) => {
+  if (mode !== 'listings') return
+  refreshOwnedListings()
+  if (listingsSubView.value === 'offers' && !selectedOwnedGarage.value) {
+    listingsSubView.value = 'owned'
+  }
+})
 
 watch(filterOpen, (open) => {
   if (open) {
@@ -866,17 +1184,35 @@ watch(filteredGarages, (list) => {
   })
 })
 
+watch(() => route.query.tab, (tab) => {
+  if (tab === 'listings') {
+    viewMode.value = 'listings'
+    setListingsSubView('owned')
+    refreshOwnedListings()
+  }
+}, { deep: true })
+
+const handlePhoneRealEstateData = (data) => {
+  failedImages.clear()
+  garages.value = data.garages || []
+  playerBalance.value = data.playerBalance ?? 0
+  loaded.value = true
+  if (viewMode.value === 'listings') {
+    refreshOwnedListings()
+  }
+  mountMapIfVisible()
+}
+
 onMounted(async () => {
   minimapStore.init()
-  events.on('phoneRealEstateData', (data) => {
-    failedImages.clear()
-    garages.value = data.garages || []
-    playerBalance.value = data.playerBalance ?? 0
-    loaded.value = true
-    mountMapIfVisible()
-  })
+  events.on('phoneRealEstateData', handlePhoneRealEstateData)
+  events.on('garageListingsUpdated', refreshOwnedListings)
   await lua.extensions.load('ui_phone_layout')
   careerActive.value = await lua.ui_phone_layout.getCareerActive()
+  if (route.query?.tab === 'listings') {
+    viewMode.value = 'listings'
+    listingsSubView.value = 'owned'
+  }
   if (careerActive.value) {
     await lua.extensions.load('ui_phone_realEstate')
     if (lua.ui_phone_realEstate?.requestGarageListings) {
@@ -893,8 +1229,11 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+  events.off('phoneRealEstateData', handlePhoneRealEstateData)
+  events.off('garageListingsUpdated', refreshOwnedListings)
   stopMapFocusAnimation()
   minimapStore.viewControlledBy = null
+  minimapStore.showTerrainImage = true
   resizeObserver?.disconnect()
   resizeObserver = null
   carouselResizeObserver?.disconnect()
@@ -1045,6 +1384,264 @@ onUnmounted(() => {
   &::-webkit-scrollbar { width: 3px; }
   &::-webkit-scrollbar-track { background: transparent; }
   &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+}
+
+.listings-view {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  padding: 96px 10px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  &::-webkit-scrollbar { width: 3px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+}
+
+.listings-back-bar {
+  display: block;
+  width: 100%;
+  padding: 8px 0;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.6);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+
+  &:hover { color: white; }
+}
+
+.listings-card {
+  background: #1a1a1a;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.listings-card-img {
+  position: relative;
+  width: 100%;
+  height: 150px;
+  background: #0d0d0d;
+  overflow: hidden;
+  border-radius: 16px 16px 0 0;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+.listings-card-price {
+  position: absolute;
+  bottom: 10px;
+  left: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.9);
+}
+
+.badge.listed {
+  background: rgba(249, 115, 22, 0.85);
+  color: white;
+}
+
+.badge.rented {
+  background: rgba(59, 130, 246, 0.85);
+  color: white;
+}
+
+.badge.starter {
+  background: rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.7);
+}
+
+.listings-card-body {
+  padding: 10px 14px;
+}
+
+.listings-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.listings-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.listings-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.listings-meta {
+  color: rgba(255,255,255,0.6);
+  font-size: 11px;
+}
+
+.listing-active {
+  color: #34d399 !important;
+}
+
+.offer-count {
+  color: #f97316 !important;
+}
+
+.listings-actions {
+  padding: 0 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.listing-price-row {
+  display: flex;
+  gap: 6px;
+}
+
+.listing-price-input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: #0d0d0d;
+  color: #fff;
+  font-size: 12px;
+  font-family: inherit;
+}
+
+.listings-full-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.listing-guidance {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.3;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #101010;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.guidance-high { color: #34d399; }
+.guidance-fair { color: #f97316; }
+.guidance-low { color: #ef4444; }
+
+.listings-listed-row {
+  display: flex;
+  gap: 8px;
+
+  .act-btn { flex: 1; justify-content: center; }
+}
+
+.offer-actions-row,
+.offer-actions {
+  display: flex;
+  gap: 8px;
+
+  .act-btn { flex: 1; justify-content: center; }
+}
+
+.offer-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.listings-offers-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  background: #1a1a1a;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.offers-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.offers-count-badge {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #f97316;
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.offers-card {
+  background: #1a1a1a;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.05);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.offer-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+}
+
+.offer-buyer {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.offer-status {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.status-open { color: #f97316; border-color: rgba(249,115,22,0.45); }
+.status-closed { color: rgba(255,255,255,0.45); border-color: rgba(255,255,255,0.2); }
+
+.offer-price {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: rgba(255,255,255,0.9);
+  font-size: 13px;
+  gap: 8px;
+  padding: 6px 0;
+  border-top: 1px solid rgba(255,255,255,0.06);
+
+  .price-label { color: rgba(255,255,255,0.5); }
+
+  s { color: rgba(255,255,255,0.35); margin-right: 6px; }
+  strong { color: #34d399; }
 }
 
 .filter-panel,
@@ -1377,6 +1974,15 @@ onUnmounted(() => {
   &:hover { opacity: 0.85; }
 
   &.route { background: rgba(249,115,22,0.15); color: #f97316; }
+  &.negotiate { background: #f97316; color: white; }
+  &.rental { background: #3b82f6; color: white; }
+  &.danger { background: rgba(239,68,68,0.85); color: white; }
+  &.decline { background: rgba(239,68,68,0.15); color: #ef4444; }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
 }
 
 /* ── MAP VIEW ── */
@@ -1607,4 +2213,126 @@ onUnmounted(() => {
   from { opacity: 0; transform: translateY(-6px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* ── END LEASE MODAL ── */
+.end-lease-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.end-lease-modal {
+  background: linear-gradient(180deg, rgba(26, 26, 26, 0.97) 0%, rgba(13, 13, 13, 0.97) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 20px;
+  width: 100%;
+  max-width: 320px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+}
+
+.end-lease-title {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+}
+
+.end-lease-property {
+  margin: 0 0 14px;
+  font-size: 13px;
+  color: #f97316;
+  font-weight: 600;
+}
+
+.end-lease-fees {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+}
+
+.fee-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.fee-row .fee-val {
+  font-weight: 700;
+  color: #fca5a5;
+  font-variant-numeric: tabular-nums;
+}
+
+.fee-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.fee-row.total {
+  font-weight: 700;
+  color: white;
+}
+
+.fee-row.total .fee-val {
+  color: #ef4444;
+  font-size: 13px;
+}
+
+.end-lease-note {
+  margin: 0 0 16px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.35);
+  line-height: 1.4;
+}
+
+.end-lease-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.modal-btn {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: none;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.15s ease;
+  &:hover { opacity: 0.85; }
+}
+
+.cancel-btn {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.confirm-btn {
+  background: rgba(239, 68, 68, 0.85);
+  color: #fff;
+}
+
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+
 </style>

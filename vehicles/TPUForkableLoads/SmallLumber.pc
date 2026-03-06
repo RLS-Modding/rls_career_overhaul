@@ -1,0 +1,30 @@
+{
+"vars":{
+  "$weightTotal":780
+},
+"parts":{
+  "TPUPalletLoadType":"TPUStackStickLoad"
+},
+"model":"TPUForkableLoads",
+"colors":[
+  [
+    1,
+    1,
+    1,
+    1
+  ],
+  [
+    1,
+    1,
+    1,
+    1
+  ],
+  [
+    1,
+    1,
+    1,
+    1
+  ]
+],
+"format":2
+}

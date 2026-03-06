@@ -1,6 +1,6 @@
 {
   "description":"Description of these Sites. Contains Locations, Zones, and Parking Spots.",
-  "dir":"/mods/unpacked/rls_career_overhaul/levels/west_coast_usa/facilities/delivery/",
+  "dir":"/levels/west_coast_usa/facilities/delivery/",
   "filename":"roleplay.sites.json",
   "locations":{},
   "name":"roleplay.sites.json",
@@ -19,7 +19,7 @@
       },
       "isMultiSpot":false,
       "name":"Hospital Entrance",
-      "oldId":70257,
+      "oldId":2477,
       "pos":[
         -231.44441223145,
         437.36383056641,
@@ -55,7 +55,7 @@
       },
       "isMultiSpot":false,
       "name":"paramedicWorkParking",
-      "oldId":70258,
+      "oldId":2478,
       "pos":[
         -291.77017211914,
         461.49496459961,
@@ -91,7 +91,7 @@
       },
       "isMultiSpot":false,
       "name":"ambulanceLoaner",
-      "oldId":70259,
+      "oldId":2479,
       "pos":[
         -278.64749145508,
         451.42492675781,
@@ -127,7 +127,7 @@
       },
       "isMultiSpot":false,
       "name":"busWork_parking",
-      "oldId":70260,
+      "oldId":2480,
       "pos":[
         -418.38681030273,
         453.39505004883,
@@ -163,7 +163,7 @@
       },
       "isMultiSpot":false,
       "name":"busLoaner_parking",
-      "oldId":70261,
+      "oldId":2481,
       "pos":[
         -402.74322509766,
         455.15872192383,
@@ -184,7 +184,404 @@
       "spotDirection":"Left",
       "spotOffset":0,
       "spotRotation":0
+    },
+    {
+      "color":[
+        1,
+        1,
+        1
+      ],
+      "customFields":{
+        "names":{},
+        "tags":{},
+        "types":{},
+        "values":{}
+      },
+      "isMultiSpot":false,
+      "name":"facilityWork_industrialWarehouse",
+      "oldId":2482,
+      "pos":[
+        32.913333892822,
+        740.23822021484,
+        74.724548339844
+      ],
+      "rot":[
+        0,
+        0,
+        -0.00051971850127772,
+        0.99999983724959
+      ],
+      "scl":[
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount":1,
+      "spotDirection":"Left",
+      "spotOffset":0,
+      "spotRotation":0
+    },
+    {
+      "color":[
+        1,
+        1,
+        1
+      ],
+      "customFields":{
+        "names":{},
+        "tags":{},
+        "types":{},
+        "values":{}
+      },
+      "isMultiSpot":false,
+      "name":"facilityWork_shuffleboard",
+      "oldId":2483,
+      "pos":[
+        -300.74145507813,
+        -150.15594482422,
+        120.55770874023
+      ],
+      "rot":[
+        0,
+        0,
+        0.38898810744286,
+        0.92124271392822
+      ],
+      "scl":[
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount":1,
+      "spotDirection":"Left",
+      "spotOffset":0,
+      "spotRotation":0
+    },
+    {
+      "color":[
+        1,
+        1,
+        1
+      ],
+      "customFields":{
+        "names":{},
+        "tags":{},
+        "types":{},
+        "values":{}
+      },
+      "isMultiSpot":false,
+      "name":"facilityWork_truckSpawn_industrialWarehouse",
+      "oldId":2484,
+      "pos":[
+        8.662935256958,
+        854.79992675781,
+        74.724555969238
+      ],
+      "rot":[
+        0,
+        0,
+        -0.7092364759331,
+        -0.70497057951485
+      ],
+      "scl":[
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount":1,
+      "spotDirection":"Left",
+      "spotOffset":0,
+      "spotRotation":0
+    },
+    {
+      "color":[
+        1,
+        1,
+        1
+      ],
+      "customFields":{
+        "names":{},
+        "tags":{},
+        "types":{},
+        "values":{}
+      },
+      "isMultiSpot":false,
+      "name":"facilityWork_truckSpawn_shuffleboard",
+      "oldId":2485,
+      "pos":[
+        -313.9892578125,
+        -140.58044433594,
+        119.40605163574
+      ],
+      "rot":[
+        0,
+        0,
+        -0.30223247408867,
+        0.95323419570923
+      ],
+      "scl":[
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount":1,
+      "spotDirection":"Left",
+      "spotOffset":0,
+      "spotRotation":0
     }
   ],
-  "zones":{}
+  "zones":[
+    {
+      "bot":{
+        "active":false,
+        "normal":[
+          0,
+          0,
+          -1
+        ],
+        "pos":[
+          0,
+          0,
+          -10
+        ]
+      },
+      "color":[
+        1,
+        1,
+        1
+      ],
+      "customFields":{
+        "names":{},
+        "tags":{},
+        "types":{},
+        "values":{}
+      },
+      "name":"shuffleboard_facilityWork1",
+      "oldId":96671,
+      "top":{
+        "active":false,
+        "normal":[
+          0,
+          0,
+          1
+        ],
+        "pos":[
+          0,
+          0,
+          10
+        ]
+      },
+      "vertices":[
+        [
+          -315.64562988281,
+          -145.45474243164,
+          120.54760742188
+        ],
+        [
+          -313.60137939453,
+          -148.29093933105,
+          120.54761505127
+        ],
+        [
+          -309.61868286133,
+          -145.82400512695,
+          120.54761505127
+        ],
+        [
+          -311.70172119141,
+          -142.9228515625,
+          120.54760742188
+        ]
+      ]
+    },
+    {
+      "bot":{
+        "active":false,
+        "normal":[
+          0,
+          0,
+          -1
+        ],
+        "pos":[
+          0,
+          0,
+          -10
+        ]
+      },
+      "color":[
+        1,
+        1,
+        1
+      ],
+      "customFields":{
+        "names":{},
+        "tags":{},
+        "types":{},
+        "values":{}
+      },
+      "name":"shuffleboard_facilityWork2",
+      "oldId":96672,
+      "top":{
+        "active":false,
+        "normal":[
+          0,
+          0,
+          1
+        ],
+        "pos":[
+          0,
+          0,
+          10
+        ]
+      },
+      "vertices":[
+        [
+          -310.2255859375,
+          -141.6357421875,
+          120.54760742188
+        ],
+        [
+          -307.80221557617,
+          -144.8568572998,
+          120.54761505127
+        ],
+        [
+          -304.13278198242,
+          -142.22088623047,
+          120.54760742188
+        ],
+        [
+          -307.04293823242,
+          -139.45513916016,
+          120.54760742188
+        ]
+      ]
+    },
+    {
+      "bot":{
+        "active":false,
+        "normal":[
+          0,
+          0,
+          -1
+        ],
+        "pos":[
+          0,
+          0,
+          -10
+        ]
+      },
+      "color":[
+        1,
+        1,
+        1
+      ],
+      "customFields":{
+        "names":{},
+        "tags":{},
+        "types":{},
+        "values":{}
+      },
+      "name":"shuffleboard_facilityWork3",
+      "oldId":96673,
+      "top":{
+        "active":false,
+        "normal":[
+          0,
+          0,
+          1
+        ],
+        "pos":[
+          0,
+          0,
+          10
+        ]
+      },
+      "vertices":[
+        [
+          -305.03884887695,
+          -137.97793579102,
+          120.54760742188
+        ],
+        [
+          -302.80877685547,
+          -141.07301330566,
+          120.54760742188
+        ],
+        [
+          -299.33346557617,
+          -138.65272521973,
+          120.54761505127
+        ],
+        [
+          -301.75827026367,
+          -135.57652282715,
+          120.54760742188
+        ]
+      ]
+    },
+    {
+      "bot":{
+        "active":false,
+        "normal":[
+          0,
+          0,
+          -1
+        ],
+        "pos":[
+          0,
+          0,
+          -10
+        ]
+      },
+      "color":[
+        1,
+        1,
+        1
+      ],
+      "customFields":{
+        "names":{},
+        "tags":{},
+        "types":{},
+        "values":{}
+      },
+      "name":"industrialWarehouse_facilityWork",
+      "oldId":485244,
+      "top":{
+        "active":false,
+        "normal":[
+          0,
+          0,
+          1
+        ],
+        "pos":[
+          0,
+          0,
+          10
+        ]
+      },
+      "vertices":[
+        [
+          37.740951538086,
+          767.91284179688,
+          74.724578857422
+        ],
+        [
+          37.784378051758,
+          759.92541503906,
+          74.724578857422
+        ],
+        [
+          32.247447967529,
+          759.86993408203,
+          74.724571228027
+        ],
+        [
+          32.282493591309,
+          767.93041992188,
+          74.724563598633
+        ]
+      ]
+    }
+  ]
 }

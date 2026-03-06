@@ -769,6 +769,10 @@ local function completeContract(onCleanup, onClearProps)
           xpReward = math.floor((contract.requiredTons or 0) * xpMultiplier)
         end
         
+        -- Scale contract payout by job market index
+        local contractJobIndex = career_modules_globalEconomy and career_modules_globalEconomy.getJobMarketIndex() or 1.0
+        totalPay = math.floor(totalPay * contractJobIndex)
+
         local rewardData = {
           money = { amount = totalPay, canBeNegative = false },
           labor = { amount = xpReward, canBeNegative = false }

@@ -1,0 +1,6 @@
+{
+"vars":{},
+"format":2,
+"model":"TPUMedForklift",
+"parts":{}
+}

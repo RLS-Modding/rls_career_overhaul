@@ -1,0 +1,22 @@
+// this file holds all the actions that only this specific vehicle can perform
+// ===========================================================================
+// the non self-descriptive fields are:
+// "onChange":   code to run when the controller position changes     (applies to: buttons, keys, pov hat, axes)
+// "onDown":     code to run when the controller becomes pressed down (applies to: buttons, keys, pov hat)
+// "onUp":       code to run when the controller is lifted up         (applies to: buttons, keys, pov hat)
+// "onRelative": code to run when the controller position changes     (applies to: mouse axis when holding right mouse button)
+// "ctx" (defaults to 'vlua'): where the code above ^ must be run. it can be:
+//    - vlua for vehicle lua async
+//    - elua for engine  lua async
+//    - tlua for engine  lua  sync
+//    - ui for javascript    async
+//    - ts for torquescript   sync
+// "isBasic" (defaults to true): whether the binding must show always (true), or only when 'advanced bindings' checkbox is marked (false)
+// "isCentered" (defaults to false): whether the axis values will be reported from -1 to +1 (true) or from 0 to +1 (false)
+// "order":      helps set the display order in the Controls menu
+{
+"lift"   :{"order":  1, "onChange":"forkLiftControl.liftMast( 1* VALUE)", "title": "Lift Forks", "desc": "Tilts the mast up" },
+"lower"		:{"order":  2, "onChange":"forkLiftControl.liftMast(-1* VALUE)", "title": "Lower Forks", "desc": "Tilts the mast down" },
+"tiltUp"   :{"order":  3, "onChange":"forkLiftControl.tiltMast( 1* VALUE)", "title": "Tilt up", "desc": "Tilts the mast up" },
+"tiltDown":{"order":  4, "onChange":"forkLiftControl.tiltMast(-1* VALUE)", "title": "Tilt down", "desc": "Tilts the mast down" },
+}

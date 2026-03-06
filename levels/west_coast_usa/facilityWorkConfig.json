@@ -1,0 +1,122 @@
+{
+  "materials": {
+    "largeLumber": {
+      "name": "Large Lumber",
+      "model_key": "TPUForkableLoads",
+      "config": "LargeLumber",
+      "money": 1050,
+      "spawnGridSpacing": 2.0
+    },
+    "smallLumber": {
+      "name": "Small Lumber",
+      "model_key": "TPUForkableLoads",
+      "config": "SmallLumber",
+      "money": 600,
+      "spawnGridSpacing": 2.0
+    },
+    "crate": {
+      "name": "Crate",
+      "model_key": "TPUForkableLoads",
+      "config": "Crate",
+      "money": 600,
+      "spawnGridSpacing": 2.0
+    },
+    "boxes": {
+      "name": "Boxes",
+      "model_key": "TPUForkableLoads",
+      "config": "Boxes",
+      "money": 540,
+      "spawnGridSpacing": 2.0
+    },
+    "concrete": {
+      "name": "Concrete",
+      "model_key": "TPUForkableLoads",
+      "config": "Concrete",
+      "money": 840,
+      "spawnGridSpacing": 2.0
+    },
+    "emptyPallet": {
+      "name": "Empty Pallet",
+      "model_key": "TPUForkableLoads",
+      "config": "EmptyPallet",
+      "money": 360,
+      "spawnGridSpacing": 2.0
+    },
+    "adjustableBarrels": {
+      "name": "Barrels",
+      "model_key": "TPUForkableLoads",
+      "config": "AdjustableBarrels",
+      "money": 750,
+      "spawnGridSpacing": 2.0
+    },
+    "adjustableBox": {
+      "name": "Metal Box",
+      "model_key": "TPUForkableLoads",
+      "config": "AdjustableBox",
+      "money": 900,
+      "spawnGridSpacing": 2.0
+    },
+    "tastiCola": {
+      "name": "Tasti Cola",
+      "model_key": "TPUForkableLoads",
+      "config": "TastiCola",
+      "money": 660,
+      "spawnGridSpacing": 2.0
+    }
+  },
+  "industrialWarehouse": {
+    "organizationId": "industrialWarehouse",
+    "parkingSpot": "facilityWork_industrialWarehouse",
+    "spawnZone": "industrialWarehouse_facilityWork",
+    "vehicle": {"model": "TPUMedForklift", "config": "FL55D Simplex"},
+    "batchSize": 8,
+    "stackLayers": 2,
+    "triggers": ["facilityWork_drop1","facilityWork_drop2","facilityWork_drop3",
+    "facilityWork_drop4","facilityWork_drop5","facilityWork_drop6","facilityWork_drop7",
+    "facilityWork_drop8","facilityWork_drop9","facilityWork_drop10","facilityWork_drop11",
+    "facilityWork_drop12","facilityWork_drop13"],
+    "stackHeight": 0.5,
+    "spawnRotationZ": 180,
+    "truck": {"model": "md_series", "config": "md_60_flatbed"},
+    "aiPickupRoadName": "industrialWarehouse_aiPickup",
+    "aiPickupNodeIndex": 14,
+    "truckSpawnSpot": "facilityWork_truckSpawn_industrialWarehouse",
+    "sessionMultiplierBase": 1,
+    "sessionMultiplierPerBatch": 0.5,
+    "spawns": [
+      { "materialId": "largeLumber"},
+      { "materialId": "smallLumber"},
+      { "materialId": "crate"},
+      { "materialId": "boxes"},
+      { "materialId": "concrete"},
+      { "materialId": "adjustableBarrels"},
+      { "materialId": "adjustableBox"},
+      { "materialId": "tastiCola"}
+    ]
+  },
+  "shuffleboardLogistics": {
+    "organizationId": "shuffleboardLogistics",
+    "parkingSpot": "facilityWork_shuffleboard",
+    "spawnZones": ["shuffleboard_facilityWork1", "shuffleboard_facilityWork2", "shuffleboard_facilityWork3"],
+    "vehicle": {"model": "TPUMedForklift", "config": "FL55D Simplex"},
+    "batchSize": 4,
+    "stackLayers": 2,
+    "triggers": ["facilityWork_drop15", "facilityWork_drop16","facilityWork_drop17","facilityWork_drop18","facilityWork_drop19"],
+    "stackHeight": 0.5,
+    "spawnRotationZ": 60,
+    "truck": {"model": "us_semi", "config": "tc83s_flatbed"},
+    "sessionMultiplierBase": 0.5,
+    "sessionMultiplierPerBatch": 0.2,
+    "// aiPickupRoadName": "shuffleboard_aiPickup",
+    "// aiPickupNodeIndex": 2,
+    "// driveToPickup": false,
+    "spawns": [
+      { "materialId": "smallLumber"},
+      { "materialId": "boxes"},
+      { "materialId": "concrete"},
+      { "materialId": "adjustableBarrels"},
+      { "materialId": "adjustableBox"},
+      { "materialId": "tastiCola"}
+    ]
+  }
+}

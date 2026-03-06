@@ -216,6 +216,37 @@ local function createShoppingCart()
     total = total + varPrice
   end
 
+  -- Scale all prices by vehicle market index before building UI
+  local vehicleMarketIndex = career_modules_globalEconomy and career_modules_globalEconomy.getVehicleMarketIndex() or 1.0
+  if vehicleMarketIndex ~= 1.0 then
+    total = 0
+    for name, info in pairs(shoppingCart.items) do
+      if info.price then
+        info.price = math.floor(info.price * vehicleMarketIndex + 0.5)
+      end
+      for subName, subInfo in pairs(info.items or {}) do
+        if subInfo.price then
+          subInfo.price = math.floor(subInfo.price * vehicleMarketIndex + 0.5)
+        end
+        for itemName, itemInfo in pairs(subInfo.items or {}) do
+          if itemInfo.price then
+            itemInfo.price = math.floor(itemInfo.price * vehicleMarketIndex + 0.5)
+          end
+        end
+      end
+    end
+    -- Recalculate total from scaled items
+    for name, info in pairs(shoppingCart.items) do
+      total = total + (info.price or 0)
+      for subName, subInfo in pairs(info.items or {}) do
+        total = total + (subInfo.price or 0)
+        for itemName, itemInfo in pairs(subInfo.items or {}) do
+          total = total + (itemInfo.price or 0)
+        end
+      end
+    end
+  end
+
   local shoppingCartUI = {items = {}}
   for name, info in pairs(shoppingCart.items) do
     table.insert(shoppingCartUI.items, {varName = info.name, level = 1, title = info.title, price = info.price, type = info.type})
@@ -227,7 +258,7 @@ local function createShoppingCart()
     end
   end
 
-  shoppingCart.taxes = total * 0.07
+  shoppingCart.taxes = math.floor(total * 0.07 + 0.5)
   shoppingCart.total = total + shoppingCart.taxes
   shoppingCartUI.taxes = shoppingCart.taxes
   shoppingCartUI.total = shoppingCart.total

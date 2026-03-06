@@ -1030,7 +1030,7 @@ local function getKitCostBreakdown(businessId, vehicleId, kitId)
             },
             vehicleModel = vehicleModel
           }
-          oldPartPrice = math.max(roundNear(career_modules_valueCalculator.getPartValue(partForValueCalc), 5) - 0.01, 0)
+          oldPartPrice = math.max(roundNear(career_modules_valueCalculator.getPartValue(partForValueCalc, true), 5) - 0.01, 0)
         end
 
         oldPartsValue = oldPartsValue + oldPartPrice

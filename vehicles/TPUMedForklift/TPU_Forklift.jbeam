@@ -1,0 +1,18 @@
+{
+"WHE_Forklift": {
+    "information":{
+        "authors":"TrackpadUser",
+        "name":"WHE_Forklift",
+    },
+    "slotType" : "main",
+    "slots": [
+        ["type", "default", "description"]
+        //bodywork
+        ["WHE_ForliftChassis","WHE_ForliftChassis", "Body",{"coreSlot":true}],
+    ],
+    "controller": [
+        ["fileName"],
+        ["vehicleController", {}],
+		    ],
+}
+}

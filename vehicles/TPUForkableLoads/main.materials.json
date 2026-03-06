@@ -1,0 +1,83 @@
+{
+  "metal_boxTPU" : {
+    "name" : "metal_boxTPU",
+    "class" : "Material",  
+    "mapTo" : "metal_boxTPU",  
+    "persistentId" : "ee57f996-bb36-48c5-a9bb-f491aa74ce6e",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/vehicles/metal_box/metal_box_r.data.png",
+        "baseColorMap": "/vehicles/metal_box/metal_box_b.data.png",
+        "metallicFactor": 1,
+        "metallicMap": "/vehicles/metal_box/metal_box_m.data.png",
+        "normalMap": "/vehicles/metal_box/metal_box_nm.normal.png",
+        "roughnessMap": "/vehicles/metal_box/metal_box_r.data.png"
+      },
+      {},
+      {},
+      {}
+    ],
+    "dynamicCubemap": true,
+    "doubleSided": false,
+    "invertBackFaceNormals": true,
+    "materialTag0": "beamng",
+    "materialTag1": "object",
+    "order_simset": 0,
+    "version": 1.5
+  },
+  "ut_con_site_addon" : {
+    "name" : "ut_con_site_addon",
+    "mapTo" : "ut_con_site_addon",
+    "class" : "Material",
+    "persistentId" : "491ec2a3-679f-467c-88a5-a446b94194c2",
+    "Stages" : [
+      {
+        "colorMap" : "levels/Utah/art/shapes/buildings/construction_site_addon_d.dds",
+        "normalMap" : "levels/Utah/art/shapes/buildings/construction_site_addon_n.dds",
+        "specularMap" : "levels/Utah/art/shapes/buildings/construction_site_addon_s.dds",
+        "specularPower" : 1,
+        "useAnisotropic" : true,
+        "vertColor" : true
+      },
+      {},
+      {},
+      {}
+    ],
+    "materialTag0" : "beamng",
+    "materialTag1" : "building",
+    "materialTag2" : "utah",
+    "translucentBlendOp" : "None"
+  },
+  "barrel_01aTPU" : {
+    "name" : "barrel_01aTPU",
+    "class" : "Material",
+    "persistentId" : "e701fda1-9fbb-480d-9ae0-825a3322aaeb",
+    "Stages" : [
+      {
+        "colorMap" : "vehicles/common/null.dds",
+        "normalMap" : "vehicles/barrels/barrel_01a_n.dds",
+        "pixelSpecular" : true,
+        "specularMap" : "vehicles/common/null.dds",
+        "specularPower" : 32,
+        "useAnisotropic" : true
+      },
+      {
+        "colorMap" : "vehicles/barrels/barrel_01a_d.dds",
+        "normalMap" : "vehicles/barrels/barrel_01a_n.dds",
+        "pixelSpecular" : true,
+        "specularMap" : "vehicles/barrels/barrel_01a_s.dds",
+        "specularPower" : 32,
+        "useAnisotropic" : true
+      },
+      {},
+      {}
+    ],
+    "alphaRef" : 0,
+    "dynamicCubemap" : true,
+    "mapTo" : "barrel_01aTPU",
+    "materialTag0" : "beamng",
+    "materialTag1" : "object",
+    "translucent" : true,
+    "translucentBlendOp" : "None"
+  }
+}

@@ -1,0 +1,32 @@
+{
+"vars":{
+  "$weightTotal":80
+},
+"parts":{
+  "TPUPalletLoadType":"TPUUSPallet",
+  "TPUUSPalletLoad":"TPUUSPalletLoad_AdjustableBox"
+},
+"model":"TPUForkableLoads",
+"colors":[
+  [
+    1,
+    1,
+    1,
+    1
+  ],
+  [
+    1,
+    1,
+    1,
+    1
+  ],
+  [
+    1,
+    1,
+    1,
+    1
+  ]
+],
+"format":2,
+"licenseName":"8779-vivace"
+}

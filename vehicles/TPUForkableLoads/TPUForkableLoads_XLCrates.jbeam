@@ -1,0 +1,470 @@
+{
+"TPUCargoCrateXL": {
+    "information":{
+        "authors":"TrackpadUser",
+        "name":"Cargo Crate XL (70-870kg)",
+        "value":100
+    },
+    "slotType":"TPUPalletLoadType",   
+	"cargoStorage":[
+        ["name","cargoTypes", "capacity","weightNodes:"],
+        ["Roofbar Cargo Box A",["parcel"], 128, ["m2"]]
+    ],
+	"variables": [
+        ["name", "type", "unit", "category", "default", "min", "max", "title", "description"],
+        ["$rbcweight", "range", "Kg", "Cargo", 0.0, 0.0, 800, "Mass", "Adjust the weight of the Large Cargo box roof",{"minDis":0, "maxDis":800, "stepDis":1}]
+    ],
+    "cameraExternal":{
+        "distance":5.0,
+        "distanceMin":5.0,
+        "offset":{"x":0.0, "y":0.5, "z":0.6},
+        "fov":65
+    },
+    "flexbodies":[
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        ["cargo_load_box_xl", ["load"]]
+	],
+    "refNodes":[
+       ["ref:", "back:", "left:", "up:", "leftCorner:", "rightCorner:"],	
+       ["p2", "p3", "p2ll", "p2t", "p1ll", "p1rr"]
+    ],
+    "nodes":[
+        ["id", "posX", "posY", "posZ"],
+        {"selfCollision":true},
+        {"collision":true},
+        {"nodeMaterial":"|NM_WOOD"},
+        {"frictionCoef":0.6},
+        {"group":"load"},
+		
+		//41 node total
+		{"nodeWeight":1.7},
+		//main chassis structure
+		["l3r", -0.59, 0.5, 1.034],
+		["l3", 0, 0.5, 1.034],
+		["l3l", 0.59, 0.5, 1.034],
+		["l2r", -0.59, 0, 1.034],
+		["l2", 0, 0, 1.034],
+		["l2l", 0.59, 0, 1.034],
+		["l1r", -0.59, -0.5, 1.034],
+		["l1", 0, -0.5, 1.034],
+		["l1l", 0.59, -0.5, 1.034],
+
+		//mid collider nodes
+		["m3r", -0.59, 0.5, 0.615],
+		["m3", 0, 0.5, 0.615],
+		["m3l", 0.59, 0.5, 0.615],
+		["m2r", -0.59, 0, 0.615],
+		["m2", 0.0, 0, 0.615,{"group":"","nodeWeight":"$=1+$rbcweight","selfCollision":false, "collision":false}],
+		["m2l", 0.59, 0, 0.615],
+		["m1r", -0.59, -0.5, 0.615],
+		["m1", 0, -0.5, 0.615],
+		["m1l", 0.59, -0.5, 0.615],
+
+        {"group":["pallet","load"]},
+        {"selfCollision":false},
+		
+        ["p1t", 0.0, -0.5, 0.115],
+		["p1trr", -0.59, -0.5, 0.115],
+        ["p1tll", 0.59, -0.5, 0.115],
+		
+        ["p2t", 0.0, 0.0, 0.115],
+        ["p2trr", -0.59, 0.0, 0.115],
+        ["p2tll", 0.59, 0.0, 0.115],
+		
+        ["p3t", 0.0, 0.5, 0.115],
+        ["p3trr", -0.59, 0.5, 0.115],
+        ["p3tll", 0.59, 0.5, 0.115],
+		
+		//pallet skid
+		
+        ["p1", 0.0, -0.5, 0.0],
+        ["p1r", -0.3, -0.5, 0.0],
+        ["p1rr", -0.59, -0.5, 0.0],
+        ["p1l", 0.3, -0.5, 0.0],
+        ["p1ll", 0.59, -0.5, 0.0],
+		
+        ["p2", 0.0, 0.0, 0.0],
+        ["p2r", -0.3, 0.0, 0.0],
+        ["p2rr", -0.59, 0.0, 0.0],
+        ["p2l", 0.3, 0.0, 0.0],
+		["p2ll", 0.59, 0.0, 0.0],
+		
+        ["p3", 0.0, 0.5, 0.0],
+        ["p3r", -0.3, 0.5, 0.0],
+        ["p3rr", -0.59, 0.5, 0.0],
+        ["p3l", 0.3, 0.5, 0.0],
+		["p3ll", 0.59, 0.5, 0.0],
+		
+        {"selfCollision":true}
+	],
+    "beams":[
+        ["id1:", "id2:"],
+        {"breakGroupType":0},
+        {"deformLimitExpansion":1.2},
+        {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+        {"beamDeform":35000,"beamStrength":"FLT_MAX"},
+		{"beamSpring":391000,"beamDamp":400},
+		//pallet top
+		["l3r","l3"],
+		["l3","l3l"],
+		["l2r","l2"],
+		["l2","l2l"],
+		["l1r","l1"],
+		["l1","l1l"],
+		
+		["l3r","l2r"],
+		["l2r","l1r"],
+		["l3","l2"],
+		["l2","l1"],
+		["l3l","l2l"],
+		["l2l","l1l"],
+		
+		["l3r","l2"],
+		["l2r","l3"],
+		["l3l","l2"],
+		["l2l","l3"],
+		
+		["l2r","l1"],
+		["l1r","l2"],
+		["l2l","l1"],
+		["l1l","l2"],
+		
+		//pallet middle
+		["m3r","m3"],
+		["m3","m3l"],
+		["m1r","m1"],
+		["m1","m1l"],
+		
+		["m3r","m2r"],
+		["m2r","m1r"],
+		["m3l","m2l"],
+		["m2l","m1l"],
+		
+		["m2r","m3"],
+		["m2l","m3"],
+		
+		["m2r","m1"],
+		["m2l","m1"],
+		
+		//load verts
+		["l1r","m1r"],
+		["m1r","p1trr"],
+		
+		["l1","m1"],
+		["m1","p1t"],
+		
+		["l1l","m1l"],
+		["m1l","p1tll"],
+		
+		["l2r","m2r"],
+		["m2r","p2trr"],
+		
+		["l2","p2t"],
+		
+		["l2l","m2l"],
+		["m2l","p2tll"],
+		
+		["l3r","m3r"],
+		["m3r","p3trr"],
+		
+		["l3","m3"],
+		["m3","p3t"],
+		
+		["l3l","m3l"],
+		["m3l","p3tll"],
+		
+		//side crosses
+		["l1r","m1"],
+		["m1r","l1"],
+		["l1l","m1"],
+		["m1l","l1"],
+		
+		["p1trr","m1"],
+		["m1r","p1t"],
+		["p1tll","m1"],
+		["m1l","p1t"],
+		
+		["m2r","l2"],
+		["m2l","l2"],
+		
+		["m2r","p2t"],
+		["m2l","p2t"],
+		
+		["l3r","m3"],
+		["m3r","l3"],
+		["l3l","m3"],
+		["m3l","l3"],
+		
+		["p3trr","m3"],
+		["m3r","p3t"],
+		["p3tll","m3"],
+		["m3l","p3t"],
+		
+		["l1r","m2r"],
+		["l2r","m1r"],
+		["l2r","m3r"],
+		["l3r","m2r"],
+		
+		["p1trr","m2r"],
+		["p2trr","m1r"],
+		["p2trr","m3r"],
+		["p3trr","m2r"],
+		
+		["l2","m1"],
+		["l2","m3"],
+		
+		["p2t","m1"],
+		["p2t","m3"],
+		
+		["l1l","m2l"],
+		["l2l","m1l"],
+		["l2l","m3l"],
+		["l3l","m2l"],
+		
+		["p1tll","m2l"],
+		["p2tll","m1l"],
+		["p2tll","m3l"],
+		["p3tll","m2l"],
+		
+		//load node
+		{"beamSpring":191000,"beamDamp":400},
+		["m2","m3r"],
+		["m2","m2r"],
+		["m2","m1r"],
+		["m2","m3"],
+		["m2","m1"],
+		["m2","m3l"],
+		["m2","m2l"],
+		["m2","m1l"],
+
+		["m2","p1trr"],
+		["m2","p1t"],
+		["m2","p1tl"],
+		["m2","p2trr"],
+		["m2","p2t"],
+		["m2","p2tl"],
+		["m2","p3trr"],
+		["m2","p3t"],
+		["m2","p3tl"],
+		
+		["m2","p1r"],
+		["m2","p1"],
+		["m2","p1l"],
+		["m2","p2r"],
+		["m2","p2"],
+		["m2","p2l"],
+		["m2","p3r"],
+		["m2","p3"],
+		["m2","p3l"],
+
+		//pallet jbeam copy
+		//Sides	
+		["p1ll","p1l"],
+		["p1l","p1"],
+		["p1","p1r"],
+		["p1r","p1rr"],
+		
+		["p2ll","p2l"],
+		["p2l","p2"],
+		["p2","p2r"],
+		["p2r","p2rr"],
+		
+		["p3ll","p3l"],
+		["p3l","p3"],
+		["p3","p3r"],
+		["p3r","p3rr"],
+		
+		["p1tll","p1t"],
+		["p1t","p1trr"],
+		
+		["p2tll","p2t"],
+		["p2t","p2trr"],
+		
+		["p3tll","p3t"],
+		["p3t","p3trr"],
+		
+		//latteral
+		
+		["p1tll","p2tll"],
+		["p2tll","p3tll"],
+		["p1t","p2t"],
+		["p2t","p3t"],
+		["p1trr","p2trr"],
+		["p2trr","p3trr"],
+		
+		["p1ll","p2ll"],
+		["p2ll","p3ll"],
+		["p1l","p2l"],
+		["p2l","p3l"],
+		["p1","p2"],
+		["p2","p3"],
+		["p1r","p2r"],
+		["p2r","p3r"],
+		["p1rr","p2rr"],
+		["p2rr","p3rr"],
+		
+		//verticals
+		["p3ll","p3tll"],
+		["p3l","p3tll"],
+		["p3l","p3t"],
+		["p3","p3t"],
+		["p3r","p3t"],
+		["p3r","p3trr"],
+		["p3rr","p3trr"],
+		
+		["p2ll","p2tll"],
+		["p2l","p2tll"],
+		["p2l","p2t"],
+		["p2","p2t"],
+		["p2r","p2t"],
+		["p2r","p2trr"],
+		["p2rr","p2trr"],
+		
+		["p1ll","p1tll"],
+		["p1l","p1tll"],
+		["p1l","p1t"],
+		["p1","p1t"],
+		["p1r","p1t"],
+		["p1r","p1trr"],
+		["p1rr","p1trr"],
+		
+		//side crosses
+		["p3trr","p2rr"],
+		["p3rr","p2trr"],
+		["p2trr","p1rr"],
+		["p2rr","p1trr"],
+		
+		["p3t","p2"],
+		["p3","p2t"],
+		["p2t","p1"],
+		["p2","p1t"],
+		
+		["p3tll","p2ll"],
+		["p3ll","p2tll"],
+		["p2tll","p1ll"],
+		["p2ll","p1tll"],
+		
+		//bottom crosses
+		["p3rr","p2r"],
+		["p3r","p2rr"],
+		["p2rr","p1r"],
+		["p2r","p1rr"],
+		
+		["p3r","p2"],
+		["p3","p2r"],
+		["p2r","p1"],
+		["p2","p1r"],
+		
+		["p3ll","p2l"],
+		["p3l","p2ll"],
+		["p2ll","p1l"],
+		["p2l","p1ll"],
+		
+		["p3l","p2"],
+		["p3","p2l"],
+		["p2l","p1"],
+		["p2","p1l"],
+		
+		//top crosses
+		["p3trr","p2t"],
+		["p3t","p2trr"],
+		["p2trr","p1t"],
+		["p2t","p1trr"],
+		
+		["p3tll","p2t"],
+		["p3t","p2tll"],
+		["p2tll","p1t"],
+		["p2t","p1tll"],
+		//bottom corner rigids
+		["p3ll","m3l"],
+		["p3ll","m3"],
+		["p3ll","m2l"],
+		
+		["p3l","m3l"],
+		["p3l","m3"],
+		["p3l","m2l"],
+		["p3l","m2r"],
+		
+		["p3","m3l"],
+		["p3","m3r"],
+		["p3","m2l"],
+		["p3","m2r"],
+		
+		["p3r","m3r"],
+		["p3r","m3"],
+		["p3r","m2l"],
+		["p3r","m2r"],
+		
+		["p3rr","m3r"],
+		["p3rr","m3"],
+		["p3rr","m2r"],
+		
+		
+		["p1ll","m1l"],
+		["p1ll","m1"],
+		["p1ll","m2l"],
+		
+		["p1l","m1l"],
+		["p1l","m1"],
+		["p1l","m2l"],
+		["p1l","m2r"],
+		
+		["p1","m1l"],
+		["p1","m1r"],
+		["p1","m2l"],
+		["p1","m2r"],
+		
+		["p1r","m1r"],
+		["p1r","m1"],
+		["p1r","m2l"],
+		["p1r","m2r"],
+		
+		["p1rr","m1r"],
+		["p1rr","m1"],
+		["p1rr","m2r"]
+    ],
+    "triangles": [
+		["id1:","id2:","id3:"],
+		{"dragCoef":10},     
+		["l3l", "p3tll", "p3trr"],
+		["l3l", "p3trr", "l3r"],
+		["l3r", "p3trr", "p1trr"],
+		["l3r", "p1trr", "l1r"],
+		["l1r", "p1trr", "p1tll"],
+		["l1r", "p1tll", "l1l"],
+		["l1l", "p1tll", "p3tll"],
+		["l1l", "p3tll", "l3l"],
+		["l3r", "l1r", "l1l"],
+		["l3r", "l1l", "l3l"],
+
+		
+		["p3trr","p3t","p2trr"],   
+		["p3t","p2t","p2trr"],   
+		["p2t","p1trr","p2trr"],  
+		["p2t","p1t","p1trr"],   
+		["p3t","p3tll","p2t"],   
+		["p3tll","p2tll","p2t"],   
+		["p2tll","p1t","p2t"],  
+		["p2tll","p1tll","p1t"],   
+		
+		
+		//floor
+		["p3ll", "p2ll", "p2l"],
+		["p3ll", "p2l", "p3l"],
+		["p3l", "p2l", "p2"],
+		["p2", "p3", "p3l"],
+		["p3", "p2", "p2r"],
+		["p3", "p2r", "p3r"],
+		["p3r", "p2r", "p2rr"],
+		["p2rr", "p3rr", "p3r"],
+		["p2ll", "p1ll", "p1l"],
+		["p2ll", "p1l", "p2l"],
+		["p2l", "p1l", "p1"],
+		["p1", "p2", "p2l"],
+		["p2", "p1", "p1r"],
+		["p1r", "p2r", "p2"],
+		["p2r", "p1r", "p1rr"],
+		["p2r", "p1rr", "p2rr"]
+	]
+}
+}

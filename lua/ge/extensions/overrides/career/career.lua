@@ -25,7 +25,7 @@ local organizationInteraction = {}
 local switchLevel = nil
 local isNewSaveFlag = false
 
-local nodegrabberActions = {"nodegrabberGrab", "nodegrabberRender", "nodegrabberStrength"}
+local nodegrabberActions = {"nodegrabberGrab", "nodegrabberRender", "nodegrabberStrength", "nodegrabberAction"}
 
 local actionWhitelist = deepcopy(nodegrabberActions)
 local blockedActions = core_input_actionFilter.createActionTemplate({"vehicleTeleporting", "vehicleMenues", "physicsControls", "aiControls", "vehicleSwitching", "funStuff", "dropPlayerAtCameraNoReset"}, actionWhitelist)

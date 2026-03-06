@@ -4,6 +4,7 @@
             <!-- Minimap Background -->
             <div class="map-container">
                 <svg class="minimap-layer terrain-layer"></svg>
+                <svg class="minimap-layer roads-layer"></svg>
                 <svg class="minimap-layer vehicle-layer"></svg>
             </div>
 
@@ -232,8 +233,10 @@ onMounted(() => {
     // Initialize minimap
     store.init()
     const terrainLayer = container.value.querySelector('.terrain-layer')
+    const roadsLayer = container.value.querySelector('.roads-layer')
     const vehicleLayer = container.value.querySelector('.vehicle-layer')
     terrainLayer.appendChild(store.svgLayers.terrain)
+    roadsLayer.appendChild(store.svgLayers.roads)
     vehicleLayer.appendChild(store.svgLayers.vehicles)
     
     // Request initial state

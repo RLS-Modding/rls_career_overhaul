@@ -119,6 +119,22 @@ export default {
     getCareerCurrentLevelName: () => {},
   },
 
+  career_modules_globalEconomy: {
+    requestMarketWatchData: () => {},
+    getGlobalIndex: () => {},
+    getJobMarketIndex: () => {},
+    getVehicleMarketIndex: () => {},
+    getHousingMarketIndex: () => {},
+    getVehicleBuyMultiplier: () => {},
+    getVehicleSellMultiplier: () => {},
+    getEconomySummary: () => {},
+    getCyclePhase: () => {},
+    getMomentum: () => {},
+    getMarketHistory: () => {},
+    getNewsArticles: () => {},
+    performEconomyTick: () => {},
+  },
+
   career_modules_fuel: {
     requestRefuelingTransactionData: () => {},
     sendUpdateDataToUI: () => {},
@@ -1230,12 +1246,23 @@ export default {
     closeAllMenus: () => {},
     getLoanOffers: () => {},
     getActiveLoans: () => {},
+    getOutstandingPrincipalByOrg: () => {},
     calculatePayment: (amount, rate, payments) => [Number, Number],
-    takeLoan: (orgId, amount, payments) => [String, Number, Number],
+    takeLoan: (orgId, amount, payments, rate, uncapped, businessAccountId) => [String, Number, Number, Number, Boolean, String],
     prepayLoan: (loanId, amount) => [String, Number],
-    getNotificationsEnabled: () => Boolean,
+    getNotificationsEnabled: () => {},
     setNotificationsEnabled: enabled => Boolean,
     clearAllLoans: () => Number,
+  },
+
+  career_modules_credit: {
+    getScore: () => {},
+    getTier: () => {},
+    getRateMultiplier: () => {},
+    getMaxMultiplier: () => {},
+    getAvailableTerms: () => {},
+    getFactorBreakdown: () => {},
+    getScoreHistory: () => {},
   },
 
   career_modules_assignRole: {
@@ -1256,15 +1283,77 @@ export default {
     updateAttendance: attendanceLevel => {}
   },
 
+  career_modules_propertyMortgage: {
+    getAllMortgages: () => {},
+    getMortgagePaymentInfo: garageId => String,
+    payoffMortgage: garageId => String,
+    prepayMortgage: (garageId, amount) => [String, Number],
+    isMortgageAvailable: () => {},
+    createMortgage: (garageId, purchasePrice, selectedTerm) => [String, Number, Number],
+    getMortgage: garageId => String,
+    hasMortgage: garageId => String,
+    canSellMortgagedProperty: (garageId, salePrice) => [String, Number],
+    getMortgageOfferDetails: () => {},
+  },
+
+  career_modules_propertyRentals: {
+    signLease: (garageId, rentalType, leaseTerm) => [String, String, Number],
+    endLeaseEarly: garageId => String,
+    isRentedGarage: garageId => String,
+    getActiveRentals: () => {},
+    getRentalInfo: garageId => String,
+    getRentalEligibility: garageId => String,
+    getRentalBreakdown: garageId => String,
+    getAllRentals: () => {},
+    calculateRent: (garageId, rentalType) => [String, String],
+    calculateDeposit: (garageId, rentalType) => [String, String],
+  },
+
   career_modules_garageManager: {
     requestGarageData: () => {},
-    canPay: () => {},
-    buyGarage: () => {},
+    canPay: estimatedTotal => Number,
+    buyGarage: totalToCharge => Number,
     cancelGaragePurchase: () => {},
-    getGaragePrice: () => {},
+    getGaragePrice: (garage, computerId) => [String, String],
     canSellGarage: () => {},
+    listGarageForSale: (computerId, askingPrice) => [String, Number],
+    listGarageForSaleByGarageId: (garageId, askingPrice) => [String, Number],
     sellGarage: () => {},
-    getGarageCapacityData: () => {}
+    completePropertySaleFromListing: (garageId, finalPrice) => [String, Number],
+    getGarageListingPriceGuidance: (computerId, askingPrice) => [String, Number],
+    getGarageListingPriceGuidanceByGarageId: (garageId, askingPrice) => [String, Number],
+    getGarageActiveListing: computerId => String,
+    removeGarageListing: computerId => String,
+    startGarageSellingNegotiation: (computerId, offerIndex) => [String, Number],
+    getGarageCapacityData: () => {},
+    getOwnedGaragesListingData: () => {},
+    getGarageOffersData: garageId => String,
+    acceptOffer: (garageId, offerIndex) => [String, Number],
+    declineOffer: (garageId, offerIndex) => [String, Number],
+    requestGarageListing: garageId => String,
+    getPendingGarageListing: () => {},
+    showPurchaseGaragePrompt: garageId => String,
+    startGarageNegotiation: garageId => String,
+    purchaseGarageAtListedPrice: garageId => String,
+    purchaseGarageAtNegotiatedPrice: garageId => String,
+    freezeNegotiatedPrice: (garageId, price) => [String, Number],
+    completePurchaseWithNegotiatedPrice: (garageId, finalPrice, freezePrice) => [String, Number, Boolean],
+    canNegotiateGarage: garageId => String,
+  },
+
+  career_modules_realEstateNegotiation: {
+    startNegotiateBuying: garageId => String,
+    startNegotiateSelling: (garageId, offerIndex) => [String, Number],
+    makeOffer: price => Number,
+    takeTheirOffer: () => {},
+    freezeCurrentOffer: () => {},
+    cancelNegotiation: () => {},
+    getNegotiationState: () => {},
+    listPropertyForSale: (garageId, askingPrice) => [String, Number],
+    removePropertyListing: garageId => String,
+    getPropertyListing: garageId => String,
+    getPriceGuidanceForListing: (garageId, askingPrice) => [String, Number],
+    generateNewPropertyOffers: () => {},
   },
 
   career_modules_business_businessManager: {
@@ -1443,6 +1532,26 @@ export default {
     dismissSummary: () => {}
   },
 
+  gameplay_facilityWork: {
+    selectFacility: (id) => {},
+    setBatchSize: (size) => {},
+    requestFacilityWorkState: () => {},
+    startFacilityWork: () => {},
+    endFacilityWork: () => {},
+    repairForklift: () => {}
+  },
+
+  gameplay_phoneCamera: {
+    takePhoto: (orientation, useFlash) => {},
+    getPhotoList: () => {},
+    getPhotoAsDataUrl: filename => String,
+    deletePhotos: (filenames) => [Array], // param is array of filenames; bridge must pass array through (not Number)
+    startPreview: () => {},
+    stopPreview: () => {},
+    setPreviewOrientation: orientation => String,
+    setTorchMode: enabled => Boolean
+  },
+
   ui_phone_layout: {
     requestLayout: () => {},
     updateLayout: layoutData => Any,
@@ -1458,6 +1567,16 @@ export default {
     requestGarageListings: () => {},
     setRouteToGarage: garageId => String,
     towToGarage: garageId => String,
+    getMortgageInfo: garageId => String,
+    getRentalInfo: garageId => String,
+    signLease: (garageId, rentalType, leaseTerm) => [String, String, Number],
+    getRentalStatus: garageId => String,
+    endLeaseEarly: garageId => String,
+  },
+
+  ui_phone_freeroamEvents: {
+    getEventsData: () => {},
+    navigateToEvent: raceName => String,
   },
 
   ui_phone_time: {

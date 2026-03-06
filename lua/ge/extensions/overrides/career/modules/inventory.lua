@@ -73,7 +73,8 @@ local function getClosestOwnedGarageWithSpace(pos, levelName)
     local currentCompId = career_modules_computer.getComputerId()
     if currentCompId then
       local currentGarageId = garageManager.computerIdToGarageId(currentCompId)
-      if currentGarageId and garageManager.isPurchasedGarage(currentGarageId) then
+      if currentGarageId and garageManager.isPurchasedGarage(currentGarageId)
+        and not (garageManager.isGarageForSale and garageManager.isGarageForSale(currentGarageId)) then
         local spaceInfo = garageManager.isGarageSpace(currentGarageId)
         if spaceInfo and spaceInfo[1] then
           return freeroam_facilities.getFacility("garage", currentGarageId)
@@ -99,7 +100,8 @@ local function getClosestOwnedGarageWithSpace(pos, levelName)
   local closestGarage
   local minDist = math.huge
   for _, garage in pairs(facilities.garages) do
-    if garageManager.isPurchasedGarage(garage.id) then
+    if garageManager.isPurchasedGarage(garage.id)
+      and not (garageManager.isGarageForSale and garageManager.isGarageForSale(garage.id)) then
       local spaceInfo = garageManager.isGarageSpace(garage.id)
       if spaceInfo and spaceInfo[1] then
         local garagePos = freeroam_facilities.getAverageDoorPositionForFacility(garage)
@@ -1077,6 +1079,7 @@ local function getVehicleUiData(inventoryId, inventoryIdsInGarage)
   end
 
   vehicleData.value = career_modules_valueCalculator.getInventoryVehicleValue(inventoryId)
+  vehicleData.marketSellValue = career_modules_valueCalculator.getInventoryVehicleSellValue(inventoryId)
   vehicleData.valueRepaired = career_modules_valueCalculator.getInventoryVehicleValue(inventoryId, true)
   vehicleData.quickRepairExtraPrice = career_modules_insurance_insurance.getQuickRepairExtraPrice()
   vehicleData.initialRepairTime = career_modules_insurance_insurance.getInvVehRepairTime(inventoryId)
@@ -1145,7 +1148,8 @@ local function getVehicleUiData(inventoryId, inventoryIdsInGarage)
   vehicleData.licensePlateChangePermission = career_modules_permissions.getStatusForTag({"vehicleLicensePlate", "vehicleModification"}, {inventoryId = inventoryId})
   vehicleData.returnLoanerPermission = career_modules_permissions.getStatusForTag("returnLoanedVehicle", {inventoryId = inventoryId})
 
-  vehicleData.listedForSale = career_modules_marketplace.findVehicleListing(inventoryId) ~= nil
+  local marketplaceListed = career_modules_marketplace.findVehicleListing(inventoryId) ~= nil
+  vehicleData.listedForSale = marketplaceListed
 
   for _, performanceData in ipairs(vehicleData.performanceHistory or {}) do
     processPerformanceData(performanceData)
@@ -1463,7 +1467,7 @@ local function sellVehicle(inventoryId, price)
     return false
   end
 
-  local value = price or career_modules_valueCalculator.getInventoryVehicleValue(inventoryId)
+  local value = price or career_modules_valueCalculator.getInventoryVehicleSellValue(inventoryId)
   extensions.hook("onBeforeVehicleSell", {inventoryId = inventoryId, price = value})
   career_modules_playerAttributes.addAttributes({money=value}, {tags={"vehicleSold","selling"},label="Sold a vehicle: "..(vehicle.niceName or "(Unnamed Vehicle)")}, true)
   removeVehicle(inventoryId)
@@ -1929,6 +1933,11 @@ end
 M.moveVehicleToGarage = function(id, garage)
   local garageManager = career_modules_garageManager
   if not garageManager then return false end
+
+  if garage and garageManager.isGarageForSale and garageManager.isGarageForSale(garage) then
+    log("W", "Inventory", string.format("Cannot move vehicle ID %d to garage %s - garage is listed for sale", id, tostring(garage)))
+    garage = nil
+  end
 
   if not garage or not (garageManager.isGarageSpace(garage) and garageManager.isGarageSpace(garage)[1]) then
     local bestGarage = getClosestOwnedGarageWithSpace()

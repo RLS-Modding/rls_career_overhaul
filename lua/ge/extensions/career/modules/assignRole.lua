@@ -9,9 +9,10 @@ local roleAssignments = {
 }
 
 local function canPay()
+    local canPayJobIndex = career_modules_globalEconomy and career_modules_globalEconomy.getJobMarketIndex() or 1.0
     local certificationPrice = {
         money = {
-            amount = assignmentData.cost,
+            amount = math.floor(assignmentData.cost * canPayJobIndex),
             canBeNegative = false
         }
     }
@@ -29,8 +30,9 @@ local function startCertification()
             ui_message("You do not have enough funds to certify your vehicle", 10, "error", "info")
             return
         end
+        local jobMarketIndex = career_modules_globalEconomy and career_modules_globalEconomy.getJobMarketIndex() or 1.0
         local certificationPrice = {
-            money = {amount = assignmentData.cost, canBeNegative = false}
+            money = {amount = math.floor(assignmentData.cost * jobMarketIndex), canBeNegative = false}
         }
         career_modules_payment.pay(certificationPrice, {
             label = "Certification fee",
@@ -79,8 +81,10 @@ end
 
 local function onUpdate()
     if vehiclePresent then
+        local playerVeh = be:getPlayerVehicle(0)
+        if not playerVeh then return end
         local vehiclePosition = vehiclePresent:getPosition()
-        local playerPosition = be:getPlayerVehicle(0):getPosition()
+        local playerPosition = playerVeh:getPosition()
         if (playerPosition - vehiclePosition):length() >= 25 then
             career_modules_inventory.removeVehicleObject(career_modules_inventory.getInventoryIdFromVehicleId(
                 vehiclePresent:getID()))

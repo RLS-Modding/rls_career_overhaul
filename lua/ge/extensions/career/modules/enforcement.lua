@@ -57,7 +57,8 @@ local function hasLicensePlate(inventoryId)
 end
 
 local function calculateRewardAmount(baseAmount, multiplier)
-  return math.floor(baseAmount * multiplier) / 100
+  local jobMarketIndex = career_modules_globalEconomy and career_modules_globalEconomy.getJobMarketIndex() or 1.0
+  return math.floor(baseAmount * multiplier * jobMarketIndex) / 100
 end
 
 local function createRewardPayment(rewardData, label, tags)
@@ -174,9 +175,10 @@ local function onPursuitAction(vehId, action, data)
 
   if vehId ~= be:getPlayerVehicleID(0) and playerData.isCop then
     local vehicle = scenetree.findObjectById(vehId)
-    if not vehicle then return end
+    local playerVeh = getPlayerVehicle(0)
+    if not vehicle or not playerVeh then return end
 
-    local distance = vehicle:getPosition():distance(getPlayerVehicle(0):getPosition())
+    local distance = vehicle:getPosition():distance(playerVeh:getPosition())
     if distance > CONSTANTS.COP_PROXIMITY_DISTANCE then
       return
     end

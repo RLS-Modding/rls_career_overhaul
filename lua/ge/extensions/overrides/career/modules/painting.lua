@@ -176,6 +176,9 @@ local function getTotalPrice(package)
       end
     end
   end
+  -- Scale paint costs by global economy index
+  local globalIndex = career_modules_globalEconomy and career_modules_globalEconomy.getGlobalIndex() or 1.0
+  total.money.amount = math.floor(total.money.amount * globalIndex)
   return total
 end
 
