@@ -306,11 +306,6 @@ onUnmounted(() => {
   background-repeat: no-repeat;
   background-size: 100% 100%;
   filter: blur(5px) saturate(1.15);
-  transition:
-    left 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-    top 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-    width 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-    height 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .dock-slot {
