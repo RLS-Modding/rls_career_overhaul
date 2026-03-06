@@ -23,7 +23,7 @@
                   <span class="preview-label">Accent</span>
                   <div class="preview-accent-row">
                     <span class="preview-color-dot" :style="{ backgroundColor: phoneSettings.backgroundColor }"></span>
-                    <strong>{{ selectedColorHex }}</strong>
+                    <strong>{{ selectedColorName }}</strong>
                   </div>
                 </div>
               </div>
@@ -112,7 +112,7 @@
             </div>
             <div class="summary-meta-wrap">
               <span class="summary-color" :style="{ backgroundColor: phoneSettings.backgroundColor }"></span>
-              <span class="dropdown-meta">{{ selectedColorHex }}</span>
+              <span class="dropdown-meta">{{ selectedColorName }}</span>
             </div>
           </summary>
           <div class="dropdown-content">
@@ -120,18 +120,18 @@
               <span class="surface-label">Selected Color</span>
               <div class="color-preview-chip">
                 <span class="summary-color large" :style="{ backgroundColor: phoneSettings.backgroundColor }"></span>
-                <strong>{{ selectedColorHex }}</strong>
+                <strong>{{ selectedColorName }}</strong>
               </div>
             </div>
             <div class="color-row">
               <button
                 v-for="color in PHONE_BACKGROUND_OPTIONS"
-                :key="color"
+                :key="color.value"
                 class="color-swatch"
-                :class="{ active: phoneSettings.backgroundColor === color }"
-                :style="{ backgroundColor: color }"
-                @click="setBackgroundColor(color)"
-                :title="color"
+                :class="{ active: phoneSettings.backgroundColor === color.value }"
+                :style="{ backgroundColor: color.value }"
+                @click="setBackgroundColor(color.value)"
+                :title="color.name"
               ></button>
             </div>
           </div>
@@ -218,8 +218,9 @@ const wallpaperModeLabel = computed(() => {
   return phoneSettings.backgroundImage ? 'Image' : 'Color'
 })
 
-const selectedColorHex = computed(() => {
-  return String(phoneSettings.backgroundColor || '').toUpperCase()
+const selectedColorName = computed(() => {
+  const found = PHONE_BACKGROUND_OPTIONS.find(c => c.value === phoneSettings.backgroundColor)
+  return found?.name ?? String(phoneSettings.backgroundColor || '').toUpperCase()
 })
 
 const previewWallpaperLabel = computed(() => {
