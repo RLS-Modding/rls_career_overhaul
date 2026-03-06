@@ -6,6 +6,7 @@ const SCALE_STEP = 0.1
 
 export const DEFAULT_PHONE_SETTINGS = Object.freeze({
   phoneSize: 1,
+  horizontalPosition: 1,
   backgroundColor: '#1509fb',
   backgroundImage: '',
 })
@@ -48,6 +49,12 @@ function clampScale(value) {
   return Math.max(SCALE_MIN, Math.min(SCALE_MAX, stepped))
 }
 
+function clampPosition(value) {
+  const n = Number(value)
+  if (Number.isNaN(n)) return DEFAULT_PHONE_SETTINGS.horizontalPosition
+  return Math.max(0, Math.min(1, n))
+}
+
 const PHONE_SETTINGS_SESSION_KEY = 'phone_settings'
 const HEX_COLOR_PATTERN = /^#[0-9a-fA-F]{6}$/
 
@@ -64,9 +71,10 @@ function normalizeHexColor(value) {
 export function normalizePhoneSettings(value) {
   const src = value && typeof value === 'object' ? value : {}
   const phoneSize = clampScale(src.phoneSize)
+  const horizontalPosition = clampPosition(src.horizontalPosition)
   const backgroundColor = normalizeHexColor(src.backgroundColor)
   const backgroundImage = typeof src.backgroundImage === 'string' ? src.backgroundImage.trim() : ''
-  return { phoneSize, backgroundColor, backgroundImage }
+  return { phoneSize, horizontalPosition, backgroundColor, backgroundImage }
 }
 
 function persistToSession() {
@@ -93,6 +101,7 @@ function hydrateFromSession() {
 export function getPhoneSettingsSnapshot() {
   return {
     phoneSize: phoneSettings.phoneSize,
+    horizontalPosition: phoneSettings.horizontalPosition,
     backgroundColor: phoneSettings.backgroundColor,
     backgroundImage: phoneSettings.backgroundImage,
   }
@@ -117,6 +126,11 @@ export function resetPhoneSettings() {
 export function getPhoneScale(settings = phoneSettings) {
   const normalized = normalizePhoneSettings(settings)
   return normalized.phoneSize
+}
+
+export function getPhonePosition(settings = phoneSettings) {
+  const normalized = normalizePhoneSettings(settings)
+  return normalized.horizontalPosition
 }
 
 export function usePhoneSettings() {

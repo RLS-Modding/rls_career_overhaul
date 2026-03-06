@@ -70,6 +70,39 @@
         <details class="settings-dropdown">
           <summary class="dropdown-summary">
             <div class="summary-copy">
+              <span class="dropdown-title">Phone Position</span>
+            </div>
+            <div class="summary-meta-wrap">
+              <span class="dropdown-meta">{{ positionDisplayLabel }}</span>
+            </div>
+          </summary>
+          <div class="dropdown-content">
+            <div class="scale-slider-wrap">
+              <div class="scale-slider-track">
+                <input
+                  type="range"
+                  v-model.number="positionSliderValue"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  class="scale-slider"
+                />
+              </div>
+              <div class="scale-value-row">
+                <span class="scale-min">Left</span>
+                <span class="scale-current">{{ positionDisplayLabel }}</span>
+                <span class="scale-max">Right</span>
+              </div>
+            </div>
+            <div class="picture-actions">
+              <button class="option-button ghost-button" @click="applyPosition">Update Position</button>
+            </div>
+          </div>
+        </details>
+
+        <details class="settings-dropdown">
+          <summary class="dropdown-summary">
+            <div class="summary-copy">
               <span class="dropdown-title">Wallpaper Image</span>
             </div>
             <div class="summary-meta-wrap">
@@ -191,6 +224,14 @@ function snapScale(v) {
 const scaleSliderValue = ref(snapScale(phoneSettings.phoneSize))
 watch(() => phoneSettings.phoneSize, (v) => { scaleSliderValue.value = snapScale(v) })
 
+function snapPosition(v) {
+  const n = Number(v)
+  if (Number.isNaN(n)) return 1
+  return Math.max(0, Math.min(1, n))
+}
+const positionSliderValue = ref(snapPosition(phoneSettings.horizontalPosition))
+watch(() => phoneSettings.horizontalPosition, (v) => { positionSliderValue.value = snapPosition(v) })
+
 let saveTimer = null
 let clearStateTimer = null
 
@@ -236,6 +277,13 @@ const scaleDisplayValue = computed(() => {
   const stepped = Math.round(v / PHONE_SCALE_STEP) * PHONE_SCALE_STEP
   const clamped = Math.max(PHONE_SCALE_MIN, Math.min(PHONE_SCALE_MAX, stepped))
   return clamped % 1 === 0 ? String(Math.round(clamped)) : clamped.toFixed(1)
+})
+
+const positionDisplayLabel = computed(() => {
+  const v = snapPosition(positionSliderValue.value)
+  if (v <= 0.2) return 'Left'
+  if (v >= 0.8) return 'Right'
+  return 'Center'
 })
 
 const wallpaperSelectionLabel = computed(() => {
@@ -296,6 +344,13 @@ async function applyScale() {
   await persistSettings()
 }
 
+async function applyPosition() {
+  const value = snapPosition(positionSliderValue.value)
+  if (phoneSettings.horizontalPosition === value) return
+  setPhoneSettings({ horizontalPosition: value })
+  await persistSettings()
+}
+
 function setBackgroundColor(value) {
   if (phoneSettings.backgroundColor === value) return
   setPhoneSettings({ backgroundColor: value })
@@ -353,8 +408,13 @@ onMounted(async () => {
     await lua.extensions.load('ui_phone_layout')
     const fromLua = await lua.ui_phone_layout?.getSettings?.()
     if (fromLua) {
-      const needsRepair = fromLua.phoneSize !== phoneSettings.phoneSize
-      replacePhoneSettings({ ...fromLua, phoneSize: phoneSettings.phoneSize })
+      const needsRepair = fromLua.phoneSize !== phoneSettings.phoneSize ||
+        fromLua.horizontalPosition !== phoneSettings.horizontalPosition
+      replacePhoneSettings({
+        ...fromLua,
+        phoneSize: phoneSettings.phoneSize,
+        horizontalPosition: phoneSettings.horizontalPosition,
+      })
       if (needsRepair) await persistSettings()
     }
   } catch (e) {

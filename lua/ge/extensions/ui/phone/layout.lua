@@ -21,11 +21,19 @@ local function clampScale(value)
   local stepped = math.floor((n + SCALE_STEP * 0.5) / SCALE_STEP) * SCALE_STEP
   return math.max(SCALE_MIN, math.min(SCALE_MAX, stepped))
 end
+
+local function clampPosition(value)
+  local n = tonumber(value)
+  if not n then return 1 end
+  return math.max(0, math.min(1, n))
+end
+
 local imagePatterns = { "*.png", "*.jpg", "*.jpeg", "*.webp" }
 
 local function getDefaultSettings()
   return {
     phoneSize = 1,
+    horizontalPosition = 1,
     backgroundColor = "#1509fb",
     backgroundImage = "",
   }
@@ -36,6 +44,7 @@ local function normalizeSettings(rawSettings)
   local settings = type(rawSettings) == "table" and rawSettings or {}
 
   local phoneSize = clampScale(settings.phoneSize)
+  local horizontalPosition = clampPosition(settings.horizontalPosition)
   local backgroundColor = settings.backgroundColor
   if type(backgroundColor) ~= "string" or not string.match(backgroundColor, "^#%x%x%x%x%x%x$") then
     backgroundColor = defaults.backgroundColor
@@ -50,6 +59,7 @@ local function normalizeSettings(rawSettings)
 
   return {
     phoneSize = phoneSize,
+    horizontalPosition = horizontalPosition,
     backgroundColor = backgroundColor,
     backgroundImage = backgroundImage,
   }

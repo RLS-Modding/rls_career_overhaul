@@ -47,7 +47,7 @@ import { ref, onMounted, onUnmounted, nextTick, computed } from 'vue'
 import { vBngOnUiNav } from "@/common/directives"
 import { useRouter, useRoute, onBeforeRouteUpdate, onBeforeRouteLeave } from 'vue-router'
 import { lua } from "@/bridge"
-import { usePhoneSettings, getPhoneScale } from '../composables/usePhoneSettings'
+import { usePhoneSettings, getPhoneScale, getPhonePosition } from '../composables/usePhoneSettings'
 
 function formatCash(m) {
   if (m == null || typeof m !== 'number') return '$0'
@@ -86,6 +86,7 @@ const contentFadeIn = ref(false)
 const cachedMoney = sessionStorage.getItem(PHONE_MONEY_KEY)
 const careerMoney = ref(cachedMoney !== null && cachedMoney !== '' ? Number(cachedMoney) : null)
 const isCareer = ref(sessionStorage.getItem(PHONE_IS_CAREER_KEY) === 'true')
+const viewportWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1920)
 let careerStatusInterval = null
 
 function refreshCareerStatus() {
@@ -110,9 +111,22 @@ const cashDisplay = computed(() => {
   return formatCash(careerMoney.value)
 })
 
-const wrapperStyle = computed(() => ({
-  '--scale': String(props.scale ?? getPhoneScale(phoneSettings)),
-}))
+const PADDING = 32
+const PHONE_BASE_WIDTH = 360
+const PHONE_BEVEL = 24
+
+const wrapperStyle = computed(() => {
+  const scale = props.scale ?? getPhoneScale(phoneSettings)
+  const position = getPhonePosition(phoneSettings)
+  const phoneWidth = PHONE_BASE_WIDTH * scale + PHONE_BEVEL
+  const vw = viewportWidth.value
+  const range = Math.max(0, vw - phoneWidth - 2 * PADDING)
+  const rightPx = PADDING + range * (1 - position)
+  return {
+    '--scale': String(scale),
+    '--phone-right': `${rightPx}px`,
+  }
+})
 
 const timeParts = computed(() => {
   const s = timeString.value || ''
@@ -134,7 +148,13 @@ const updateTime = (data) => {
   }
 }
 
+function updateViewportWidth() {
+  viewportWidth.value = window.innerWidth
+}
+
 onMounted(async () => {
+  updateViewportWidth()
+  window.addEventListener('resize', updateViewportWidth)
   lua.extensions.load("ui_phone_time")
   events.on("phone_time_update", data => updateTime(data))
   events.on("closePhone", close)
@@ -204,6 +224,7 @@ onBeforeRouteLeave((to, from) => {
 })
 
 onUnmounted(async () => {
+  window.removeEventListener('resize', updateViewportWidth)
   if (careerStatusInterval) {
     clearInterval(careerStatusInterval)
     careerStatusInterval = null
@@ -238,7 +259,7 @@ const back = () => {
 .phone-wrapper {
   position: fixed;
   bottom: -1.25em;
-  right: 2em;
+  right: var(--phone-right, 2em);
   z-index: 1000;
   transform: scale(var(--scale)) translateY(100%);
   transform-origin: bottom right;
