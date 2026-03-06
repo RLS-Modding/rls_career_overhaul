@@ -35,6 +35,7 @@ local validPickupSpots = nil
 
 local distanceMultiplier = 4.5
 local suggestedSpeed = 18
+local globalTaxiRewardMultiplier = 0.7 -- Global taxi reward tuning (30% reduction)
 
 M.rideData = {}
 
@@ -634,6 +635,7 @@ end
 local function calculateBaseFare(passengerCount, totalDistance, valueMultiplier, selectedPassengerType)
     local baseFare = 100 * (passengerCount ^ 0.5) * valueMultiplier * distanceMultiplier * selectedPassengerType.baseMultiplier
     baseFare = baseFare * (totalDistance / 1000)
+    baseFare = baseFare * globalTaxiRewardMultiplier
 
     if career_career and career_career.isActive() and career_modules_hardcore.isHardcoreMode() then
         baseFare = baseFare * 0.66
