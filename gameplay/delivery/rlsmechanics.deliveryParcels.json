@@ -2,7 +2,7 @@
   "usedSmallMechanicalParts": {
     "names":["Small Parts","Spark Plugs", "Bolts and Screws"],
     "logisticTypes":["mechanicalParts"],
-    "slots":1,
+    "slots":[3,8],
     "cargoType":"parcel",
     "rarity":1,
     "worth":0.5,
@@ -15,7 +15,7 @@
   "smallMechanicalParts": {
     "names":["Mechanical Components","Oil Filters", "Wiper Fluid"],
     "logisticTypes":["mechanicalParts"],
-    "slots":[1,1,2],
+    "slots":[4,8,16],
     "cargoType":"parcel",
     "rarity":1,
     "worth":0.4,
@@ -28,55 +28,55 @@
   "mechanicalToolbox": {
     "names":["Toolbox","Tool Crate", "Brake parts","Windshield Wipers"],
     "logisticTypes":["mechanicalParts"],
-    "slots":[3,4,4],
+    "slots":[4,8,16],
     "cargoType":"parcel",
     "rarity":1,
     "worth":0.3,
     "generationChance":0.3,
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":300,
-    "weight":[1.4,1.8,2.2]
+    "weight":[1.4,1.8,2.8]
   },
   "mechanicalToolboxBig": {
     "names":["Tool Shelf","Engine Parts", "Suspension Kit"],
     "logisticTypes":["mechanicalParts"],
-    "slots":8,
+    "slots":[32,64],
     "cargoType":"parcel",
     "rarity":1,
     "worth":0.3,
     "generationChance":0.15,
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":300,
-    "weight":[3.0,3.8,4.5]
+    "weight":[3.0,3.8,7.5]
   },
   "bigMechanicalParts": {
     "names":["Multi-Set of Brakes","Special Vehicle Parts"],
     "logisticTypes":["mechanicalParts"],
-    "slots":[12,14,16],
+    "slots":[32,64],
     "cargoType":"parcel",
     "rarity":2,
     "worth":1,
     "generationChance":0.6,
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":300,
-    "weight":[3.2,3.8,4.5],
+    "weight":[6.2,8,10.5],
     "modChance":{"timed":0.1}
   },
   "biggerMechanicalParts": {
     "names":["Replacement Wheel","Big Vehicle Parts"],
     "logisticTypes":["mechanicalParts"],
-    "slots":32,
+    "slots":[64,124],
     "cargoType":"parcel",
     "rarity":2,
     "worth":1,
     "generationChance":0.4,
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":300,
-    "weight":[6.0,7.5,9.0],
+    "weight":[7,10,20],
     "modChance":{"timed":0.1}
   },
   "mediumMechanicalPallet": {
-    "names":["Bulk Mechanical Parts Pallet","Fleet Service Parts Crate","Workshop Refit Shipment"],
+    "names":["Brakes","Medium Interior Parts"],
     "logisticTypes":["mechanicalParts"],
     "slots":64,
     "cargoType":"parcel",
@@ -98,20 +98,20 @@
     "generationChance":0.2,
     "duplicationChance":[0,0,0,0,0,0,0,1,0,0,0,0.75,0,0,0,0.5],
     "offerDuration":300,
-    "weight":[24,30],
+    "weight":[14,25],
     "modChance":{"timed":0.1}
   },
   "rareMechanicalSmallParts": {
     "names":["Vehicle Electronics Kit", "Engine Management Kit", "Vehicle Authenticator Chip"],
     "logisticTypes":["mechanicalParts"],
-    "slots":2,
+    "slots":[16,32],
     "cargoType":"parcel",
     "rarity":4,
     "worth":1.5,
     "generationChance":0.3,
     "duplicationChance":[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],
     "offerDuration":300,
-    "weight":[1.2,1.8,2.2]
+    "weight":[1.2,1.8,3.2]
   }
 
 }
