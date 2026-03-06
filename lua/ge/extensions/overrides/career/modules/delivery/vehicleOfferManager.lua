@@ -55,10 +55,16 @@ local vehicleTags = {
     labelPlural = "Budget Cars",
     labelSingular = "Budget Car",
   },
+  highEndVeh = {
+    unlockFlag = "highEndVeh",
+    labelPlural = "High-End Cars",
+    labelSingular = "High-End Car",
+  },
+  -- Legacy tag alias kept for compatibility with old offers/saves.
   largeVeh = {
-    unlockFlag = "largeVeh",
-    labelPlural = "Heavy Vehicles",
-    labelSingular = "Heavy Vehicle",
+    unlockFlag = "highEndVeh",
+    labelPlural = "High-End Cars",
+    labelSingular = "High-End Car",
   },
   fleetVeh = {
     unlockFlag = "fleetVeh",
@@ -67,8 +73,13 @@ local vehicleTags = {
   },
   exoticVeh = {
     unlockFlag = "exoticVeh",
-    labelPlural = "High-End / Exotic Cars",
-    labelSingular = "High-End / Exotic Car",
+    labelPlural = "Exotic Cars",
+    labelSingular = "Exotic Car",
+  },
+  heavyVeh = {
+    unlockFlag = "heavyVeh",
+    labelPlural = "Heavy Vehicles",
+    labelSingular = "Heavy Vehicle",
   },
 
 

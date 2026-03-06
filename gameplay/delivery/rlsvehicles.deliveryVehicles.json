@@ -79,7 +79,7 @@
   //heavy tier
   "heavyVehFilter": {
     "type": "vehicle",
-    "unlockTag": "largeVeh",
+    "unlockTag": "heavyVeh",
     "filterName": "Heavy Vehicle",
     "baseReward": 0,
     "rewardPerKm": 2100,
@@ -147,7 +147,7 @@
   //high-end tier
   "highEndVehFilter": {
     "type": "vehicle",
-    "unlockTag": "exoticVeh",
+    "unlockTag": "highEndVeh",
     "filterName": "High End Car",
     "baseReward": 0,
     "rewardPerKm": 1000,
@@ -2728,3 +2728,4 @@
   }
   // END RLS VANILLA TRAILER TEMPLATE FILTERS
 }
+

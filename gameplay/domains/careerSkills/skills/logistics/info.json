@@ -324,7 +324,7 @@
                 "description": "Reach level 22 to unlock new Logistics rewards."
             },
             "unlockFlags": [
-                "largeVeh"
+                "highEndVeh"
             ],
             "unlocks": [
                 {
@@ -637,10 +637,13 @@
             "unlocks": [
                 {
                     "type": "unlockCard",
-                    "icon": "roadblockL",
-                    "heading": "Heavy Car Jockey (Coming Soon)",
-                    "description": "Heavy Car Jockey tier is planned but not implemented yet."
+                    "icon": "keys1",
+                    "heading": "Heavy Car Jockey",
+                    "description": "Unlock the heavy vehicle Car Jockey tier (truck and bus jobs)."
                 }
+            ],
+            "unlockFlags": [
+                "heavyVeh"
             ]
         },
         {
