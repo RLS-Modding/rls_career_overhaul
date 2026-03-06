@@ -6,7 +6,7 @@
       dragging: isDragGhost,
     }"
     :style="iconStyle"
-    @pointerdown.stop="onPointerDown"
+    @pointerdown="onPointerDown"
     @click.stop="onTap"
   >
     <div class="app-badge-new" v-if="isNew && !jiggleMode">NEW</div>
