@@ -186,7 +186,7 @@ function onDockPointerUp() {
     inset: -30px;
     background-image: var(--dock-bg-image, none);
     background-size: cover;
-    background-position: center bottom;
+    background-position: center calc(100% + 30px);
     filter: blur(5px) saturate(1.15);
     transform: translateX(var(--dock-blur-offset, 0px));
     transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
