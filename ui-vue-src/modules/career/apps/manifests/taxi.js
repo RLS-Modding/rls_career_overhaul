@@ -9,7 +9,7 @@ export default {
   route: '/career/phone-taxi',
   color: '#ffd700',
   iconColor: '#000000',
-  category: 'Transport',
+  category: 'Jobs',
   defaultPage: 0,
   defaultPosition: 5,
   defaultDock: 2,

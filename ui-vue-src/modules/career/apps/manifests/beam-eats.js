@@ -7,7 +7,7 @@ export default {
   route: '/career/phone-beam-eats',
   color: '#ff4757',
   iconColor: '#ffffff',
-  category: 'Food',
+  category: 'Jobs',
   defaultPage: 0,
   defaultPosition: 7,
   defaultDock: 1,
