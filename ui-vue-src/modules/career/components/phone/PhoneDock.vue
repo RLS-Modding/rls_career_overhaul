@@ -1,5 +1,9 @@
 <template>
-  <div class="phone-dock-area">
+  <div
+    class="phone-dock-area"
+    :class="{ 'no-transition': noTransition }"
+    :style="dockStyle"
+  >
     <!-- Page dots above dock -->
     <div class="dock-page-dots" v-if="totalPages > 0">
       <span
@@ -20,7 +24,10 @@
         </svg>
       </span>
     </div>
-    <div class="phone-dock" @pointerup="onDockPointerUp">
+    <div
+      class="phone-dock"
+      @pointerup="onDockPointerUp"
+    >
       <div
         v-for="(app, idx) in dockApps"
         :key="app ? app.id : 'empty-' + idx"
@@ -64,6 +71,18 @@ const props = defineProps({
   totalPages: { type: Number, default: 0 },
   currentPage: { type: Number, default: 0 },
   isSearchActive: { type: Boolean, default: false },
+  slideOffset: { type: Number, default: 0 },
+  noTransition: { type: Boolean, default: false },
+  backgroundImage: { type: String, default: '' },
+})
+
+const dockStyle = computed(() => {
+  const style = { transform: `translateX(${props.slideOffset}px)` }
+  if (props.backgroundImage) {
+    style['--dock-bg-image'] = `url(${props.backgroundImage})`
+    style['--dock-blur-offset'] = `${-props.slideOffset}px`
+  }
+  return style
 })
 
 const emit = defineEmits(['launch', 'longpress', 'dragstart', 'goPage', 'remove'])
@@ -95,9 +114,13 @@ function onDockPointerUp() {
   align-items: center;
   gap: 6px;
   transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  &.no-transition {
+    transition: none;
+  }
 }
 
-.phone-dock-area.no-transition {
+.no-transition .phone-dock::before {
   transition: none;
 }
 
@@ -117,7 +140,8 @@ function onDockPointerUp() {
   transition: background 0.2s ease, transform 0.2s ease;
 
   &.active {
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(var(--bng-add-blue-400-rgb), 0.95);
+    box-shadow: 0 0 10px rgba(var(--bng-add-blue-400-rgb), 0.55);
     transform: scale(1.2);
   }
 }
@@ -147,12 +171,38 @@ function onDockPointerUp() {
   justify-content: center;
   gap: 16px;
   padding: 15px;
-  background: rgba(20, 20, 20, 0.55);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(var(--bng-add-blue-400-rgb), 0.22);
   border-radius: 30px;
   box-sizing: border-box;
+  box-shadow:
+    0 0 0 1px rgba(var(--bng-add-blue-500-rgb), 0.08),
+    0 10px 28px rgba(0, 0, 0, 0.28);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -30px;
+    background-image: var(--dock-bg-image, none);
+    background-size: cover;
+    background-position: center bottom;
+    filter: blur(5px) saturate(1.15);
+    transform: translateX(var(--dock-blur-offset, 0px));
+    transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background:
+      linear-gradient(180deg, rgba(var(--bng-ter-blue-gray-700-rgb), 0.26), rgba(var(--bng-ter-blue-gray-900-rgb), 0.34)),
+      rgba(20, 20, 20, 0.34);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    pointer-events: none;
+  }
 }
 
 .dock-slot {
@@ -165,9 +215,12 @@ function onDockPointerUp() {
   border-radius: 18px;
   transition: background 0.15s ease;
   flex: 0 0 auto;
+  position: relative;
+  z-index: 1;
 
   &.dock-slot-highlight {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(var(--bng-add-blue-500-rgb), 0.2);
+    box-shadow: inset 0 0 0 1px rgba(var(--bng-add-blue-400-rgb), 0.24);
   }
 }
 

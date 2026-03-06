@@ -1555,6 +1555,11 @@ export default {
   ui_phone_layout: {
     requestLayout: () => {},
     updateLayout: layoutData => Any,
+    getSettings: () => {},
+    updateSettings: settingsData => Any,
+    listBackgroundImages: () => {},
+    getBackgroundFolder: () => {},
+    openBackgroundFolder: () => {},
     getCareerActive: () => {},
   },
 

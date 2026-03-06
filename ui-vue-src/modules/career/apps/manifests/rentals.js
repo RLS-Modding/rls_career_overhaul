@@ -7,7 +7,7 @@ export default {
   route: '/career/phone-rentals',
   color: '#3b82f6',
   iconColor: '#ffffff',
-  category: 'Finance',
+  category: 'Property',
   defaultPage: 0,
   defaultPosition: 10,
   unlockCondition: async (luaBridge) => {
