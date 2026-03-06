@@ -8,7 +8,7 @@ export default {
   route: '/career/phone-marketplace',
   color: '#228B22',
   iconColor: '#ffffff',
-  category: 'Shopping',
+  category: 'Vehicles',
   defaultPage: 0,
   defaultPosition: 2,
 }

@@ -8,7 +8,7 @@ export default {
   route: '/career/phone-real-estate',
   color: '#f97316',
   iconColor: '#ffffff',
-  category: 'Finance',
+  category: 'Property',
   defaultPage: 0,
   defaultPosition: 9,
   unlockCondition: async (luaBridge) => {

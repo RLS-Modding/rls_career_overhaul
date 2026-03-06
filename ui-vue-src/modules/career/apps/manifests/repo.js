@@ -8,7 +8,7 @@ export default {
   route: '/career/phone-repo',
   color: '#1E90FF',
   iconColor: '#ffffff',
-  category: 'Services',
+  category: 'Jobs',
   defaultPage: 0,
   defaultPosition: 4,
 }

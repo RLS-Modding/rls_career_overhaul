@@ -8,7 +8,7 @@ export default {
   route: '/career/phone-quarry',
   color: '#8B4513',
   iconColor: '#ffffff',
-  category: 'Business',
+  category: 'Jobs',
   defaultPage: 0,
   defaultPosition: 6,
 }
