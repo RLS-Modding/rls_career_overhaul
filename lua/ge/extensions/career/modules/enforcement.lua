@@ -6,6 +6,7 @@ local CONSTANTS = {
   ARREST_BONUS_MULTIPLIER = 180,
   ARREST_BONUS_MAX = 5000,
   ARREST_BONUS_MIN = 1000,
+  POLICE_PAYOUT_MULTIPLIER = 0.70,
   REWARD_DIVISOR = 20,
   COP_PROXIMITY_DISTANCE = 15,
   LICENSE_PLATE_EVADE_BONUS = 55,
@@ -70,6 +71,7 @@ end
 
 local function handleCopEvadeReward(data)
   local pityAmount = calculateRewardAmount(data.score, CONSTANTS.COP_PITY_MULTIPLIER)
+  pityAmount = math.floor(pityAmount * CONSTANTS.POLICE_PAYOUT_MULTIPLIER)
 
   local rewardData = {
     money = { amount = pityAmount },
@@ -129,6 +131,7 @@ local function handleArrestReward(data, playerData)
     loanerCut = level.loanerCut.value
   end
   bonus = math.floor(bonus * (1 - loanerCut))
+  bonus = math.floor(bonus * CONSTANTS.POLICE_PAYOUT_MULTIPLIER)
 
   local rewardData = {
     money = { amount = bonus },
