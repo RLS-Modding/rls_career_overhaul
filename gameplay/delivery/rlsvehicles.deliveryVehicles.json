@@ -1,384 +1,228 @@
 {
-  //tier 1 vehicles
-  //junker: bad "old" cars with lots of milage (300k-650k), but often used
-  "junkerVehFilter": {
+  //car jockey tiers
+  //reward targets are tuned for ~3 mile trips (4.8 km):
+  //cheap=500, budget=1200, medium=3000, highEnd=5800, exotic=10100, heavy=8700
+  "cheapVehFilter": {
     "type": "vehicle",
     "unlockTag": "junkerVeh",
-    "filterName": "Junker Car",
-    "baseReward": 250,
-    "rewardPerKm": 40,
+    "filterName": "Cheap Car",
+    "baseReward": 0,
+    "rewardPerKm": 104,
     "filter": {
       "whiteList": {
-        "Years": {
-          "min": 1900,
-          "max": 2005
-        },
-        "Mileage": {
-          "min": 300000000,
-          "max": 650000000
-        },
         "Value": {
-          "min": 2000,
-          "max": 50000
+          "min": 1000,
+          "max": 15000
         },
         "Type": [
           "Car"
         ],
+        "Brand": [
+          "Autobello",
+          "Bruckell",
+          "Gavril",
+          "Ibishu",
+          "Soliad"
+        ],
         "Config Type": [
           "Factory"
-        ],
-        "Population": {
-          "min": 500
-        }
+        ]
       },
       "blackList": {
-        "Type": [
-          "Trailer"
+        "model_key": [
+          "atv",
+          "wl40",
+          "frameless_dump"
         ]
       }
     },
     "subFilters": []
   },
-  //tier 2 vehicles
-  // TODO: Change this filter to reflect "Transport small vehicles to clients, emphasizing efficiency and the maintenance of vehicle condition."
-  //fleet: "default" vehicles from dealership, "relatively" new with lower (35k-150k) mileage, very common.
-  "smallVehFilter": {
+  //budget tier
+  "budgetVehFilter": {
     "type": "vehicle",
     "unlockTag": "smallVeh",
-    "filterName": "Small Car",
-    "baseReward": 250,
-    "rewardPerKm": 52,
+    "filterName": "Budget Car",
+    "baseReward": 0,
+    "rewardPerKm": 250,
     "filter": {
       "whiteList": {
-        "Years": {
-          "min": 1995,
-          "max": 2025
-        },
-        "Mileage": {
-          "min": 35000000,
-          "max": 150000000
-        },
         "Value": {
-          "min": 10000,
-          "max": 80000
+          "min": 15000,
+          "max": 40000
         },
         "Type": [
           "Car"
         ],
+        "Brand": [
+          "Autobello",
+          "Bruckell",
+          "Cherrier",
+          "Gavril",
+          "Ibishu",
+          "Soliad"
+        ],
         "Config Type": [
           "Factory"
-        ],
-        "Population": {
-          "min": 3000
-        }
+        ]
       },
       "blackList": {
-        "Type": [
-          "Trailer"
+        "model_key": [
+          "atv",
+          "wl40",
+          "frameless_dump"
         ]
       }
     },
     "subFilters": []
   },
-  //police filter only for police vehicles with used (20k-200k) or unused" (0.5k-25k)
-  "policeFleetVehFilter": {
-    "type": "vehicle",
-    "unlockTag": "smallVeh",
-    "filterName": "Small Police Car",
-    "baseReward": 600,
-    "rewardPerKm": 40,
-    "filter": {
-      "whiteList": {
-        "Years": {
-          "min": 1995,
-          "max": 2025
-        },
-        "Type": [
-          "Car"
-        ],
-        "Config Type": [
-          "Police"
-        ]
-      },
-      "blackList": {
-        "Type": [
-          "Trailer"
-        ]
-      }
-    },
-    "subFilters": [
-      {
-        "probability": 3,
-        "whiteList": {
-          "Mileage": {
-            "min": 20000000,
-            "max": 150000000
-          }
-        }
-      },
-      {
-        "probability": 1,
-        "whiteList": {
-          "Mileage": {
-            "min": 500000,
-            "max": 25000000
-          }
-        }
-      }
-    ]
-  },
-  //Ambulance Filter used (20k-200k) or unused" (0.5k-25k)
-  "ambulanceFleetVehFilter": {
-    "type": "vehicle",
-    "unlockTag": "smallVeh",
-    "filterName": "Ambulance",
-    "baseReward": 600,
-    "rewardPerKm": 40,
-    "filter": {
-      "whiteList": {
-        "Years": {
-          "min": 1995,
-          "max": 2025
-        },
-        "Name": [
-          "D-Series D45 Ambulance (A)",
-          "H-Series H45 Ambulance (A)"
-        ]
-      },
-      "blackList": {
-        "Type": [
-          "Trailer"
-        ]
-      }
-    },
-    "subFilters": [
-      {
-        "probability": 3,
-        "whiteList": {
-          "Mileage": {
-            "min": 20000000,
-            "max": 150000000
-          }
-        }
-      },
-      {
-        "probability": 1,
-        "whiteList": {
-          "Mileage": {
-            "min": 500000,
-            "max": 25000000
-          }
-        }
-      }
-    ]
-  },
-  //tier 3 vehicles
-  // This is a hardcoded filter that reads a particular property from the info.json: "careerCarJockey"
-  // mileage from 80k-500k
-  "largeVehFilter": {
+  //heavy tier
+  "heavyVehFilter": {
     "type": "vehicle",
     "unlockTag": "largeVeh",
-    "filterName": "Large Truck",
-    "baseReward": 250,
-    "rewardPerKm": 92,
+    "filterName": "Heavy Vehicle",
+    "baseReward": 0,
+    "rewardPerKm": 2100,
     "filter": {
       "whiteList": {
         "model_key": [
-          "us_semi"
+          "us_semi",
+          "citybus",
+          "md_series",
+          "midtruck"
         ],
-        "Mileage": {
-          "min": 80000000,
-          "max": 500000000
-        }
+        "Brand": [
+          "Gavril",
+          "Wentward"
+        ],
+        "Value": {
+          "min": 50000
+        },
+        "hasLoad": [
+          false
+        ],
+        "Config Type": [
+          "Factory"
+        ]
       },
       "blackList": {
-        "hasLoad": [
-          true
+        "model_key": [
+          "atv",
+          "wl40",
+          "frameless_dump"
         ]
       }
     },
     "subFilters": []
   },
-  //tier 4 vehicles
-  //fleet: "default" vehicles from dealership, "relatively" new with lower (5km-80km) mileage, very common. low chance for police or service cars
-  "fleetVehFilter": {
+  //medium tier
+  "mediumVehFilter": {
     "type": "vehicle",
     "unlockTag": "fleetVeh",
-    "filterName": "New Car",
-    "baseReward": 250,
-    "rewardPerKm": 62,
+    "filterName": "Medium Car",
+    "baseReward": 0,
+    "rewardPerKm": 520,
     "filter": {
       "whiteList": {
-        "Years": {
-          "min": 2000,
-          "max": 2025
-        },
-        "Mileage": {
-          "min": 5000,
-          "max": 80000
-        },
         "Value": {
-          "min": 10000,
+          "min": 40000,
           "max": 100000
         },
         "Type": [
           "Car"
         ],
+        "Brand": [
+          "Bruckell",
+          "Cherrier",
+          "ETK",
+          "Gavril",
+          "Hirochi",
+          "Ibishu",
+          "Soliad"
+        ],
         "Config Type": [
           "Factory"
-        ],
-        "Population": {
-          "min": 300
-        }
+        ]
       },
       "blackList": {
-        "Type": [
-          "Trailer"
+        "model_key": [
+          "atv",
+          "wl40",
+          "frameless_dump"
         ]
       }
     }
   },
-  //large vehicles like in tier 3, but "new" (5km-80km)
-  "fleetLargeVehFilter": {
+  //high-end tier
+  "highEndVehFilter": {
     "type": "vehicle",
-    "unlockTag": "fleetVeh",
-    "filterName": "New Truck",
-    "baseReward": 250,
-    "rewardPerKm": 112,
+    "unlockTag": "exoticVeh",
+    "filterName": "High End Car",
+    "baseReward": 0,
+    "rewardPerKm": 1000,
     "filter": {
       "whiteList": {
+        "Value": {
+          "min": 100000,
+          "max": 200000
+        },
+        "Type": [
+          "Car"
+        ],
+        "Brand": [
+          "Bruckell",
+          "Civetta",
+          "ETK",
+          "Gavril",
+          "Hirochi"
+        ],
+        "Config Type": [
+          "Factory"
+        ]
+      },
+      "blackList": {
         "model_key": [
-          "us_semi"
-        ],
-        "Mileage": {
-          "min": 5000,
-          "max": 80000
-        }
-      },
-      "blackList": {
-        "hasLoad": [
-          true
-        ]
-      },
-    },
-    "subFilters": []
-  },
-  //tier 5 vehicles
-  //customized: non-trivial "Custom"-config-type vehicles with lots of mileage (2k-200k)
-  "customizedVehFilter": {
-    "type": "vehicle",
-    "unlockTag": "exoticVeh",
-    "filterName": "Customized Car",
-    "baseReward": 300,
-    "rewardPerKm": 120,
-    "filter": {
-      "whiteList": {
-        "Years": {
-          "min": 1950
-        },
-        "Mileage": {
-          "min": 2000000,
-          "max": 200000000
-        },
-        "Value": {
-          "min": 30000
-        },
-        "Type": [
-          "Car"
-        ],
-        "Config Type": [
-          "Custom"
-        ]
-      },
-      "blackList": {
-        "Type": [
-          "Trailer"
+          "atv",
+          "wl40",
+          "frameless_dump"
         ]
       }
     },
     "subFilters": []
   },
-  //exotic: basically "expensive" cars (>90k) with relatively low mileage (10k-50k)
-  "exoticVehFilter": {
+  //exotic tier
+  "exoticTierVehFilter": {
     "type": "vehicle",
     "unlockTag": "exoticVeh",
-    "filterName": "Expensive Car",
-    "baseReward": 300,
-    "rewardPerKm": 150,
+    "filterName": "Exotic Car",
+    "baseReward": 0,
+    "rewardPerKm": 1800,
     "filter": {
       "whiteList": {
-        "Years": {
-          "min": 1900
-        },
-        "Mileage": {
-          "min": 1000000,
-          "max": 50000000
-        },
         "Value": {
-          "min": 90000
+          "min": 200000
         },
         "Type": [
           "Car"
+        ],
+        "Brand": [
+          "Civetta",
+          "ETK",
+          "Hirochi"
         ],
         "Config Type": [
           "Factory"
-        ],
-        "Population": {
-          "min": 3
-        }
+        ]
       },
       "blackList": {
-        "Type": [
-          "Trailer"
+        "model_key": [
+          "atv",
+          "wl40",
+          "frameless_dump"
         ]
       }
     },
     "subFilters": []
-  },
-  //cars up to 1980 with 20k value.
-  //oldTimer: two subfilters for "driven" old cars (50k-250k) and "ununsed" (0.5k-25k)
-  "oldTimerVeh": {
-    "type": "vehicle",
-    "unlockTag": "exoticVeh",
-    "filterName": "Oldtimer",
-    "baseReward": 500,
-    "rewardPerKm": 130,
-    "filter": {
-      "whiteList": {
-        "Years": {
-          "min": 1900,
-          "max": 1980
-        },
-        "Value": {
-          "min": 20000
-        },
-        "Type": [
-          "Car"
-        ],
-        "Config Type": [
-          "Factory"
-        ],
-        "Population": {
-          "min": 2
-        }
-      },
-      "blackList": {
-        "Type": [
-          "Trailer"
-        ]
-      }
-    },
-    "subFilters": [
-      {
-        "probability": 1,
-        "whiteList": {
-          "Mileage": {
-            "min": 500000,
-            "max": 25000000
-          }
-        }
-      }
-    ]
   },
   //trailers
   //empty small trailers

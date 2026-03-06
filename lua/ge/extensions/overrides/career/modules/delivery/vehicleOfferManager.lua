@@ -47,28 +47,28 @@ end
 local vehicleTags = {
   junkerVeh = {
     unlockFlag = "junkerVeh",
-    labelPlural = "Junker Cars",
-    labelSingular = "Junker Car",
+    labelPlural = "Cheap Cars",
+    labelSingular = "Cheap Car",
   },
   smallVeh = {
     unlockFlag = "smallVeh",
-    labelPlural = "Small Vehicles",
-    labelSingular = "Small Vehicle",
+    labelPlural = "Budget Cars",
+    labelSingular = "Budget Car",
   },
   largeVeh = {
     unlockFlag = "largeVeh",
-    labelPlural = "Large Vehicles",
-    labelSingular = "Large Vehicle",
+    labelPlural = "Heavy Vehicles",
+    labelSingular = "Heavy Vehicle",
   },
   fleetVeh = {
     unlockFlag = "fleetVeh",
-    labelPlural = "Fleet Cars",
-    labelSingular = "Fleet Car",
+    labelPlural = "Medium Cars",
+    labelSingular = "Medium Car",
   },
   exoticVeh = {
     unlockFlag = "exoticVeh",
-    labelPlural = "Exotic Cars",
-    labelSingular = "Exotic Car",
+    labelPlural = "High-End / Exotic Cars",
+    labelSingular = "High-End / Exotic Car",
   },
 
 

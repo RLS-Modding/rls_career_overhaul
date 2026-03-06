@@ -164,7 +164,7 @@
             "min": 300,
             "max": 300
           },
-          "filter": "largeVehFilter",
+          "filter": "heavyVehFilter",
           "logisticTypes": [
             "vehLargeTruck",
             "vehLargeTruckNeedsRepair"
@@ -179,7 +179,7 @@
             "min": 300,
             "max": 300
           },
-          "filter": "fleetLargeVehFilter",
+          "filter": "heavyVehFilter",
           "logisticTypes": [
             "vehLargeTruck"
           ],
@@ -744,7 +744,7 @@
             "min": 300,
             "max": 300
           },
-          "filter": "largeVehFilter",
+          "filter": "heavyVehFilter",
           "logisticTypes": [
             "vehLargeTruck",
             "vehLargeTruckNeedsRepair"
@@ -759,7 +759,7 @@
             "min": 300,
             "max": 300
           },
-          "filter": "fleetLargeVehFilter",
+          "filter": "heavyVehFilter",
           "logisticTypes": [
             "vehLargeTruck"
           ],
