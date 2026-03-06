@@ -46,7 +46,11 @@
           </div>
 
           <!-- Search page -->
-          <div class="page search-page" :style="listScreenStyle">
+          <div
+            class="page search-page"
+            :class="{ 'no-transition': isDraggingPage || (isDraggingIcon && !isEdgePaging) }"
+            :style="listScreenStyle"
+          >
             <PhoneSearch
               :apps="availableApps"
               :seen-apps="seenApps"
@@ -62,8 +66,6 @@
       <!-- Dock (with integrated page dots) -->
       <PhoneDock
         ref="dockRef"
-        :class="{ 'no-transition': isDraggingPage || (isDraggingIcon && !isEdgePaging) }"
-        :style="dockStyle"
         :dock-ids="dockIds"
         :app-map="appMap"
         :jiggle-mode="jiggleMode"
@@ -71,6 +73,9 @@
         :total-pages="pages.length"
         :current-page="currentPageIndex"
         :is-search-active="isSearchPageActive"
+        :slide-offset="dockSlideOffset"
+        :no-transition="isDraggingPage || (isDraggingIcon && !isEdgePaging)"
+        :background-image="phoneSettings.backgroundImage || ''"
         @launch="launchApp"
         @longpress="enterJiggleMode"
         @dragstart="onDockDragStart"
@@ -179,14 +184,9 @@ const appIdsOnHome = computed(() => {
   return ids
 })
 
-const dockStyle = computed(() => {
+const dockSlideOffset = computed(() => {
   const progress = searchPageProgress.value
-  const slideX = Math.round(-progress * PAGE_WIDTH)
-  return {
-    transform: `translateX(${slideX}px)`,
-    opacity: '1',
-    pointerEvents: 'auto',
-  }
+  return Math.round(-progress * PAGE_WIDTH)
 })
 
 // Page offset
@@ -195,26 +195,41 @@ const pageOffset = computed(() => {
   return base + pageDragDelta.value
 })
 
-const baseBackgroundStyle = computed(() => ({
-  background: `linear-gradient(to bottom, #000000, ${phoneSettings.backgroundColor})`,
-}))
-
-const appsPageStyle = computed(() => {
+const baseBackgroundStyle = computed(() => {
   const bgImage = phoneSettings.backgroundImage
   if (bgImage) {
     return {
-      backgroundImage: `url(${bgImage})`,
+      backgroundImage: `linear-gradient(180deg, rgba(0, 0, 0, 0.28), rgba(0, 0, 0, 0.1)), url(${bgImage})`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat',
     }
   }
+
+  return {
+    background: `linear-gradient(to bottom, #000000, ${phoneSettings.backgroundColor})`,
+  }
+})
+
+const appsPageStyle = computed(() => {
+  if (phoneSettings.backgroundImage) return { background: 'transparent' }
   return {}
 })
 
-const listScreenStyle = computed(() => ({
-  background: `linear-gradient(to bottom, #000000, ${phoneSettings.backgroundColor})`,
-}))
+const listScreenStyle = computed(() => {
+  if (phoneSettings.backgroundImage) {
+    const screenX = pageOffset.value + pages.value.length * PAGE_WIDTH
+    return {
+      background: 'transparent',
+      '--search-bg-image': `url(${phoneSettings.backgroundImage})`,
+      '--search-blur-offset': `${-screenX}px`,
+    }
+  }
+
+  return {
+    background: `linear-gradient(to bottom, #000000, ${phoneSettings.backgroundColor})`,
+  }
+})
 
 // ─── Layout building ───
 function buildDefaultLayout() {
@@ -820,6 +835,42 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   height: 100%;
+  border-radius: 24px;
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    inset 0 0 0 1px rgba(var(--bng-add-blue-400-rgb), 0.08);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -20px;
+    background-image: var(--search-bg-image, none);
+    background-size: cover;
+    background-position: center;
+    filter: blur(5px) saturate(1.08);
+    transform: translateX(var(--search-blur-offset, 0px));
+    transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  &.no-transition::before {
+    transition: none;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(180deg, rgba(var(--bng-ter-blue-gray-900-rgb), 0.28), rgba(var(--bng-ter-blue-gray-900-rgb), 0.18));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    pointer-events: none;
+  }
+
+  :deep(> *) {
+    position: relative;
+    z-index: 1;
+  }
 }
 
 .drag-ghost {
