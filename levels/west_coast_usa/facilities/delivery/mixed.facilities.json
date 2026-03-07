@@ -1675,10 +1675,9 @@
       "manualAccessPoints": [
         {
           "psName": "refinery_parking",
-          "isInspectSpot": true,
+          "isInspectSpot": false,
           "logisticTypesProvided": [
-            "gasoline",
-            "trailerDeliveryContainerFluid"
+            "gasoline"
           ],
           "logisticTypesReceived": [
             "food",
@@ -1722,8 +1721,7 @@
       "logisticTypesProvided": [
         "gasoline",
         "diesel",
-        "water",
-        "trailerDeliveryContainerFluid"
+        "water"
       ],
       "logisticTypesReceived": [
         "parcel",
@@ -1788,15 +1786,6 @@
           "pickUpSpotName": "refinery_terminal_3"
         },
         {
-          "type": "parcelProvider",
-          "logisticTypes": [
-            "gasoline"
-          ],
-          "min": 1,
-          "max": 3,
-          "interval": 90
-        },
-        {
           "type": "trailerOfferProvider",
           "interval": 300,
           "min": 0,
@@ -1823,34 +1812,6 @@
           "logisticTypes": [
             "gasoline"
           ]
-        },
-        {
-          "type": "trailerOfferProvider",
-          "interval": 300,
-          "min": 0,
-          "max": 1,
-          "offerDuration": {
-            "min": 300,
-            "max": 600
-          },
-          "filter": "vanillaTrailer_containerTrailer_20ft_2axle_tank",
-          "logisticTypes": [
-            "trailerDeliveryContainerFluid"
-          ]
-        },
-        {
-          "type": "trailerOfferProvider",
-          "interval": 300,
-          "min": 0,
-          "max": 1,
-          "offerDuration": {
-            "min": 300,
-            "max": 600
-          },
-          "filter": "vanillaTrailer_containerTrailer_40ft_3axle_tank",
-          "logisticTypes": [
-            "trailerDeliveryContainerFluid"
-          ]
         }
       ],
       "logisticMaxItems": 10
@@ -1866,7 +1827,8 @@
           "psName": "pier_parking",
           "isInspectSpot": true,
           "logisticTypesProvided": [
-            "trailerDeliveryContainerFluid"
+            "gasoline",
+            "diesel"
           ],
           "logisticTypesReceived": [
             "trailerDeliveryContainerFrame"
@@ -1877,7 +1839,8 @@
           "logisticTypesProvided": [
             "vehLargeTruck",
             "vehLargeTruckNeedsRepair",
-            "trailerDeliveryContainerFluid"
+            "gasoline",
+            "diesel"
           ],
           "logisticTypesReceived": [
             "vehLargeTruck",
@@ -1897,7 +1860,8 @@
       "logisticTypesProvided": [
         "vehLargeTruck",
         "vehLargeTruckNeedsRepair",
-        "trailerDeliveryContainerFluid"
+        "gasoline",
+        "diesel"
       ],
       "logisticTypesReceived": [
         "vehLargeTruck",
@@ -1950,29 +1914,29 @@
         {
           "type": "trailerOfferProvider",
           "interval": 300,
-          "min": 1,
-          "max": 2,
+          "min": 0,
+          "max": 1,
           "offerDuration": {
             "min": 300,
             "max": 600
           },
-          "filter": "vanillaTrailer_containerTrailer_20ft_2axle_tank",
+          "filter": "vanillaTrailer_tanker_diesel_3",
           "logisticTypes": [
-            "trailerDeliveryContainerFluid"
+            "diesel"
           ]
         },
         {
           "type": "trailerOfferProvider",
           "interval": 300,
-          "min": 1,
-          "max": 2,
+          "min": 0,
+          "max": 1,
           "offerDuration": {
             "min": 300,
             "max": 600
           },
-          "filter": "vanillaTrailer_containerTrailer_40ft_3axle_tank",
+          "filter": "vanillaTrailer_tanker_petroleum_3",
           "logisticTypes": [
-            "trailerDeliveryContainerFluid"
+            "gasoline"
           ]
         }
       ],
