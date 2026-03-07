@@ -5,7 +5,7 @@
       "name": "Belasco City Police Department",
       "description": "Use Police Vehicles to earn money. Try to return with no damage for bonus xp.",
       "associatedOrganization": "policeLoaner",
-      "preview": "",
+      "preview": ",",
       "manualAccessPoints": [
         {
           "psName": "policeLoanerParking",
@@ -25,7 +25,8 @@
       "sitesFile": "rls.sites.json",
       "logisticTypesProvided": [],
       "logisticTypesReceived": [],
-      "logisticGenerators": []
+      "logisticGenerators": [],
+      "logisticMaxItems": 0
     },
     {
       "id": "moneyGrabBank",
@@ -105,7 +106,8 @@
           "interval": 300,
           "rate": 5
         }
-      ]
+      ],
+      "logisticMaxItems": 0
     },
     {
       "id": "beachShops",
@@ -154,14 +156,15 @@
           "interval": 300,
           "rate": 100
         }
-      ]
+      ],
+      "logisticMaxItems": 0
     },
     {
       "id": "joeShop",
       "name": "Joe's Junk",
       "description": "Some say he actually makes a lot of money of his junk",
       "associatedOrganization": "moneyGrabLogistics",
-      "preview": "",
+      "preview": ",",
       "manualAccessPoints": [
         {
           "psName": "joeCashParking",
@@ -203,14 +206,15 @@
           "interval": 300,
           "rate": 50
         }
-      ]
+      ],
+      "logisticMaxItems": 0
     },
     {
       "id": "mallBank",
       "name": "Mall Pickup",
       "description": "Mall must still be thriving",
       "associatedOrganization": "moneyGrabLogistics",
-      "preview": "",
+      "preview": ",",
       "manualAccessPoints": [
         {
           "psName": "mallBank",
@@ -252,14 +256,15 @@
           "interval": 300,
           "rate": 50
         }
-      ]
+      ],
+      "logisticMaxItems": 0
     },
     {
       "id": "tennisPickup",
       "name": "Tennis Courts Pickup",
       "description": "Apparently there is a cash fee for hitting the balls over the fence...",
       "associatedOrganization": "moneyGrabLogistics",
-      "preview": "",
+      "preview": ",",
       "manualAccessPoints": [
         {
           "psName": "tennisPickup",
@@ -301,14 +306,15 @@
           "interval": 300,
           "rate": 30
         }
-      ]
+      ],
+      "logisticMaxItems": 0
     },
     {
       "id": "stadiumPickup",
       "name": "Stadium Pickup",
       "description": "When was there even an event here last?",
       "associatedOrganization": "moneyGrabLogistics",
-      "preview": "",
+      "preview": ",",
       "manualAccessPoints": [
         {
           "psName": "stadiumPickup",
@@ -350,14 +356,15 @@
           "interval": 300,
           "rate": 50
         }
-      ]
+      ],
+      "logisticMaxItems": 0
     },
     {
       "id": "skyscraper1",
       "name": "Skyscraper Vending Machines",
       "description": "Must be a lot snack breaks",
       "associatedOrganization": "moneyGrabLogistics",
-      "preview": "",
+      "preview": ",",
       "manualAccessPoints": [
         {
           "psName": "skyscraper1",
@@ -399,14 +406,15 @@
           "interval": 300,
           "rate": 15
         }
-      ]
+      ],
+      "logisticMaxItems": 0
     },
     {
       "id": "cityBuildingPickup1",
       "name": "City Bank Pickup 1",
       "description": "Nobody really questions why there is money to pick up here",
       "associatedOrganization": "moneyGrabLogistics",
-      "preview": "",
+      "preview": ",",
       "manualAccessPoints": [
         {
           "psName": "cityBuildingPickup1",
@@ -448,14 +456,15 @@
           "interval": 300,
           "rate": 15
         }
-      ]
+      ],
+      "logisticMaxItems": 0
     },
     {
       "id": "cityBuildingPickup2",
       "name": "City Bank Pickup 2",
       "description": "Nobody really questions why there is money to pick up here",
       "associatedOrganization": "moneyGrabLogistics",
-      "preview": "",
+      "preview": ",",
       "manualAccessPoints": [
         {
           "psName": "cityBuildingPickup2",
@@ -497,14 +506,15 @@
           "interval": 300,
           "rate": 15
         }
-      ]
+      ],
+      "logisticMaxItems": 0
     },
     {
       "id": "cityBuildingPickup3",
       "name": "City Bank Pickup 3",
       "description": "Nobody really questions why there is money to pick up here",
       "associatedOrganization": "moneyGrabLogistics",
-      "preview": "",
+      "preview": ",",
       "manualAccessPoints": [
         {
           "psName": "cityBuildingPickup3",
@@ -546,14 +556,15 @@
           "interval": 300,
           "rate": 15
         }
-      ]
+      ],
+      "logisticMaxItems": 0
     },
     {
       "id": "raceTrackPickup",
       "name": "Race Track Pickup",
       "description": "Track must sell a lot of hot dogs",
       "associatedOrganization": "moneyGrabLogistics",
-      "preview": "",
+      "preview": ",",
       "manualAccessPoints": [
         {
           "psName": "raceTrackPickup",
@@ -595,14 +606,15 @@
           "interval": 300,
           "rate": 75
         }
-      ]
+      ],
+      "logisticMaxItems": 0
     },
     {
       "id": "sketchyPickup",
       "name": "Sketchy Pickup",
       "description": "You were told not to ask any questions",
       "associatedOrganization": "moneyGrabLogistics",
-      "preview": "",
+      "preview": ",",
       "manualAccessPoints": [
         {
           "psName": "sketchyPickup",
@@ -645,14 +657,15 @@
           "interval": 300,
           "rate": 4000
         }
-      ]
+      ],
+      "logisticMaxItems": 0
     },
     {
       "id": "illegalDumping",
       "name": "Illegal Dumping",
       "description": "Don't Get Caught",
       "associatedOrganization": "moneyGrabLogistics",
-      "preview": "",
+      "preview": ",",
       "manualAccessPoints": [
         {
           "psName": "illegalDumping",
@@ -680,7 +693,8 @@
           "interval": 300,
           "rate": 40000
         }
-      ]
+      ],
+      "logisticMaxItems": 0
     }
   ]
 }

@@ -12,7 +12,9 @@
           "logisticTypesProvided": [
             "food"
           ],
-          "logisticTypesReceived": []
+          "logisticTypesReceived": [
+            "parcel"
+          ]
         },
         {
           "psName": "turboBurger_parking",
@@ -33,14 +35,14 @@
         "shopSupplies",
         "foodSupplies"
       ],
-      "logisticMaxItems": 8,
+      "logisticMaxItems": 4,
       "logisticGenerators": [
         {
           "type": "parcelReceiver",
           "logisticTypes": [
             "parcel"
           ],
-          "min": 0,
+          "min": -3,
           "max": 1,
           "interval": 120
         },
@@ -50,8 +52,17 @@
             "shopSupplies",
             "foodSupplies"
           ],
-          "min": -1,
-          "max": 2,
+          "min": -4,
+          "max": 1,
+          "interval": 120
+        },
+        {
+          "type": "parcelProvider",
+          "logisticTypes": [
+            "food"
+          ],
+          "min": 1,
+          "max": 4,
           "interval": 120
         }
       ]
@@ -84,14 +95,14 @@
         "shopSupplies",
         "foodSupplies"
       ],
-      "logisticMaxItems": 8,
+      "logisticMaxItems": 4,
       "logisticGenerators": [
         {
           "type": "parcelReceiver",
           "logisticTypes": [
             "parcel"
           ],
-          "min": 0,
+          "min": -3,
           "max": 1,
           "interval": 120
         },
@@ -101,8 +112,17 @@
             "shopSupplies",
             "foodSupplies"
           ],
-          "min": -1,
-          "max": 2,
+          "min": -4,
+          "max": 1,
+          "interval": 120
+        },
+        {
+          "type": "parcelProvider",
+          "logisticTypes": [
+            "food"
+          ],
+          "min": 1,
+          "max": 4,
           "interval": 120
         }
       ]
@@ -135,14 +155,14 @@
         "shopSupplies",
         "foodSupplies"
       ],
-      "logisticMaxItems": 8,
+      "logisticMaxItems": 4,
       "logisticGenerators": [
         {
           "type": "parcelReceiver",
           "logisticTypes": [
             "parcel"
           ],
-          "min": 0,
+          "min": -3,
           "max": 1,
           "interval": 120
         },
@@ -152,8 +172,17 @@
             "shopSupplies",
             "foodSupplies"
           ],
-          "min": -1,
-          "max": 2,
+          "min": -4,
+          "max": 1,
+          "interval": 120
+        },
+        {
+          "type": "parcelProvider",
+          "logisticTypes": [
+            "food"
+          ],
+          "min": 1,
+          "max": 4,
           "interval": 120
         }
       ]
@@ -186,14 +215,14 @@
         "shopSupplies",
         "foodSupplies"
       ],
-      "logisticMaxItems": 8,
+      "logisticMaxItems": 4,
       "logisticGenerators": [
         {
           "type": "parcelReceiver",
           "logisticTypes": [
             "parcel"
           ],
-          "min": 0,
+          "min": -3,
           "max": 1,
           "interval": 120
         },
@@ -203,8 +232,17 @@
             "shopSupplies",
             "foodSupplies"
           ],
-          "min": -1,
-          "max": 2,
+          "min": -4,
+          "max": 1,
+          "interval": 120
+        },
+        {
+          "type": "parcelProvider",
+          "logisticTypes": [
+            "food"
+          ],
+          "min": 1,
+          "max": 4,
           "interval": 120
         }
       ]

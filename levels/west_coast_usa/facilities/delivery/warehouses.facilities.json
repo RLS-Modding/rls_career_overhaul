@@ -10,16 +10,19 @@
         {
           "psName": "industrialWarehouse_parkingA",
           "isInspectSpot": true,
-          "logisticTypesProvided": [],
+          "logisticTypesProvided": [
+            "parcel"
+          ],
           "logisticTypesReceived": [
             "parcel",
             "shopSupplies",
             "officeSupplies",
-            "mechanicalParts",
             "foodSupplies",
             "industrial",
             "trailerDeliveryConstructionMaterials",
-            "vehLargeTruck"],
+            "vehLargeTruck",
+            "rareMechanicalParts"
+          ]
         },
         {
           "psName": "industrialWarehouse_parkingB",
@@ -27,7 +30,6 @@
           "logisticTypesProvided": [],
           "logisticTypesReceived": []
         },
-        // trailer yard
         {
           "psName": "industrialWarehouse_trailer",
           "logisticTypesProvided": [
@@ -36,9 +38,8 @@
             "vehLargeTruck",
             "vehLargeTruckNeedsRepair"
           ],
-          "logisticTypesReceived": [],
+          "logisticTypesReceived": []
         },
-        // warehouse
         {
           "psName": "industrialWarehouse_hallA1",
           "logisticTypesProvided": [
@@ -48,7 +49,7 @@
             "mechanicalParts",
             "industrial"
           ],
-          "logisticTypesReceived": [],
+          "logisticTypesReceived": []
         },
         {
           "psName": "industrialWarehouse_hallA4",
@@ -59,7 +60,7 @@
             "mechanicalParts",
             "industrial"
           ],
-          "logisticTypesReceived": [],
+          "logisticTypesReceived": []
         },
         {
           "psName": "industrialWarehouse_hallA5",
@@ -70,7 +71,7 @@
             "mechanicalParts",
             "industrial"
           ],
-          "logisticTypesReceived": [],
+          "logisticTypesReceived": []
         },
         {
           "psName": "industrialWarehouse_hallA6",
@@ -81,19 +82,16 @@
             "mechanicalParts",
             "industrial"
           ],
-          "logisticTypesReceived": [],
+          "logisticTypesReceived": []
         },
         {
           "psName": "industrialWarehouse_hallB1",
           "logisticTypesProvided": [
             "foodSupplies"
           ],
-          "logisticTypesReceived": [],
-        },
+          "logisticTypesReceived": []
+        }
       ],
-      //"pickUpSpotNames":["industrialWarehouse_parkingB"],
-      //"dropOffSpotNames":["industrialWarehouse_parkingB"],
-      //"trailerSpotNames":["industrialWarehouse_trailer"],
       "sitesFile": "warehouses.sites.json",
       "logisticTypesProvided": [
         "parcel",
@@ -111,21 +109,21 @@
         "parcel",
         "shopSupplies",
         "officeSupplies",
-        "mechanicalParts",
         "foodSupplies",
         "industrial",
         "trailerDeliveryConstructionMaterials",
-        "vehLargeTruck"
+        "vehLargeTruck",
+        "rareMechanicalParts"
       ],
-      "logisticMaxItems": 12,
+      "logisticMaxItems": 30,
       "logisticGenerators": [
         {
           "type": "parcelReceiver",
           "logisticTypes": [
             "industrial"
           ],
-          "min": -0.5,
-          "max": 2,
+          "min": -2,
+          "max": 1,
           "interval": 90
         },
         {
@@ -133,8 +131,8 @@
           "logisticTypes": [
             "industrial"
           ],
-          "min": -0.5,
-          "max": 1,
+          "min": 1,
+          "max": 5,
           "interval": 90
         },
         {
@@ -142,8 +140,8 @@
           "logisticTypes": [
             "shopSupplies"
           ],
-          "min": -0.5,
-          "max": 2,
+          "min": -2,
+          "max": 1,
           "interval": 90
         },
         {
@@ -151,8 +149,8 @@
           "logisticTypes": [
             "shopSupplies"
           ],
-          "min": -0.5,
-          "max": 1,
+          "min": 0,
+          "max": 3,
           "interval": 90
         },
         {
@@ -168,7 +166,7 @@
           "logisticTypes": [
             "vehLargeTruck",
             "vehLargeTruckNeedsRepair"
-          ],
+          ]
         },
         {
           "type": "vehOfferProvider",
@@ -182,9 +180,8 @@
           "filter": "heavyVehFilter",
           "logisticTypes": [
             "vehLargeTruck"
-          ],
+          ]
         },
-        //small trailers
         {
           "type": "trailerOfferProvider",
           "interval": 210,
@@ -197,7 +194,7 @@
           "filter": "smallEmptyTrailers",
           "logisticTypes": [
             "trailerDeliveryResidential"
-          ],
+          ]
         },
         {
           "type": "trailerOfferProvider",
@@ -211,7 +208,7 @@
           "filter": "smallFurnitureTrailers",
           "logisticTypes": [
             "trailerDeliveryResidential"
-          ],
+          ]
         },
         {
           "type": "trailerOfferProvider",
@@ -226,9 +223,8 @@
           "logisticTypes": [
             "trailerDeliveryConstructionMaterials",
             "trailerDeliveryResidential"
-          ],
+          ]
         },
-        //medium trailers
         {
           "type": "trailerOfferProvider",
           "interval": 210,
@@ -241,7 +237,7 @@
           "filter": "mediumEmptyTrailer",
           "logisticTypes": [
             "trailerDeliveryResidential"
-          ],
+          ]
         },
         {
           "type": "trailerOfferProvider",
@@ -255,7 +251,7 @@
           "filter": "mediumFurnitureTrailers",
           "logisticTypes": [
             "trailerDeliveryResidential"
-          ],
+          ]
         },
         {
           "type": "trailerOfferProvider",
@@ -270,9 +266,8 @@
           "logisticTypes": [
             "trailerDeliveryConstructionMaterials",
             "trailerDeliveryResidential"
-          ],
+          ]
         },
-        //large trailers
         {
           "type": "trailerOfferProvider",
           "interval": 210,
@@ -285,7 +280,7 @@
           "filter": "bigConstructionMaterials",
           "logisticTypes": [
             "trailerDeliveryConstructionMaterials"
-          ],
+          ]
         },
         {
           "type": "trailerOfferProvider",
@@ -299,8 +294,8 @@
           "filter": "bigEmptyTrailers",
           "logisticTypes": [
             "trailerDeliveryConstructionMaterials"
-          ],
-        },
+          ]
+        }
       ]
     },
     {
@@ -324,8 +319,8 @@
             "parcel",
             "shopSupplies",
             "officeSupplies",
-            "mechanicalParts",
-            "foodSupplies"
+            "foodSupplies",
+            "rareMechanicalParts"
           ]
         },
         {
@@ -345,11 +340,8 @@
           "logisticTypesReceived": [],
           "loanerTrailerPriority": 1,
           "loanerNonTrailerPriority": 1
-        }        
+        }
       ],
-      //"pickUpSpotNames":["rentabox_parking"],
-      //"dropOffSpotNames":["rentabox_parking"],
-      //"trailerSpotNames":["rentabox_trailer"],
       "sitesFile": "warehouses.sites.json",
       "logisticTypesProvided": [
         "parcel",
@@ -364,18 +356,18 @@
         "parcel",
         "shopSupplies",
         "officeSupplies",
-        "mechanicalParts",
         "foodSupplies",
-        "trailerDeliveryConstructionMaterials"
+        "trailerDeliveryConstructionMaterials",
+        "rareMechanicalParts"
       ],
-      "logisticMaxItems": 8,
+      "logisticMaxItems": 6,
       "logisticGenerators": [
         {
           "type": "parcelReceiver",
           "logisticTypes": [
             "shopSupplies"
           ],
-          "min": -0.5,
+          "min": -2,
           "max": 1,
           "interval": 90
         },
@@ -384,11 +376,10 @@
           "logisticTypes": [
             "shopSupplies"
           ],
-          "min": -0.5,
-          "max": 1,
+          "min": 0,
+          "max": 3,
           "interval": 90
         },
-        //small trailers
         {
           "type": "trailerOfferProvider",
           "interval": 210,
@@ -401,7 +392,7 @@
           "filter": "smallEmptyTrailers",
           "logisticTypes": [
             "trailerDeliveryResidential"
-          ],
+          ]
         },
         {
           "type": "trailerOfferProvider",
@@ -415,7 +406,7 @@
           "filter": "smallFurnitureTrailers",
           "logisticTypes": [
             "trailerDeliveryResidential"
-          ],
+          ]
         },
         {
           "type": "trailerOfferProvider",
@@ -430,9 +421,8 @@
           "logisticTypes": [
             "trailerDeliveryConstructionMaterials",
             "trailerDeliveryResidential"
-          ],
+          ]
         },
-        //medium trailers
         {
           "type": "trailerOfferProvider",
           "interval": 210,
@@ -445,7 +435,7 @@
           "filter": "mediumEmptyTrailer",
           "logisticTypes": [
             "trailerDeliveryResidential"
-          ],
+          ]
         },
         {
           "type": "trailerOfferProvider",
@@ -459,7 +449,7 @@
           "filter": "mediumFurnitureTrailers",
           "logisticTypes": [
             "trailerDeliveryResidential"
-          ],
+          ]
         },
         {
           "type": "trailerOfferProvider",
@@ -474,9 +464,8 @@
           "logisticTypes": [
             "trailerDeliveryConstructionMaterials",
             "trailerDeliveryResidential"
-          ],
+          ]
         },
-        //large trailers
         {
           "type": "trailerOfferProvider",
           "interval": 210,
@@ -489,7 +478,7 @@
           "filter": "bigConstructionMaterials",
           "logisticTypes": [
             "trailerDeliveryConstructionMaterials"
-          ],
+          ]
         },
         {
           "type": "trailerOfferProvider",
@@ -503,8 +492,8 @@
           "filter": "bigEmptyTrailers",
           "logisticTypes": [
             "trailerDeliveryConstructionMaterials"
-          ],
-        },
+          ]
+        }
       ]
     },
     {
@@ -517,7 +506,9 @@
         {
           "psName": "spearleafLogistics_parkingA",
           "isInspectSpot": true,
-          "logisticTypesProvided": [],
+          "logisticTypesProvided": [
+            "parcel"
+          ],
           "logisticTypesReceived": [
             "parcel",
             "shopSupplies",
@@ -532,14 +523,13 @@
           "logisticTypesProvided": [],
           "logisticTypesReceived": []
         },
-        // container yard
         {
           "psName": "spearleafLogistics_container03",
           "logisticTypesProvided": [
             "trailerDeliveryResidential",
             "trailerDeliveryConstructionMaterials"
           ],
-          "logisticTypesReceived": [],
+          "logisticTypesReceived": []
         },
         {
           "psName": "spearleafLogistics_container14",
@@ -547,7 +537,7 @@
             "trailerDeliveryResidential",
             "trailerDeliveryConstructionMaterials"
           ],
-          "logisticTypesReceived": [],
+          "logisticTypesReceived": []
         },
         {
           "psName": "spearleafLogistics_container22",
@@ -555,7 +545,7 @@
             "trailerDeliveryResidential",
             "trailerDeliveryConstructionMaterials"
           ],
-          "logisticTypesReceived": [],
+          "logisticTypesReceived": []
         },
         {
           "psName": "spearleafLogistics_container34",
@@ -563,9 +553,8 @@
             "trailerDeliveryResidential",
             "trailerDeliveryConstructionMaterials"
           ],
-          "logisticTypesReceived": [],
-        }
-        // warehouse gates
+          "logisticTypesReceived": []
+        },
         {
           "psName": "spearleafLogistics_gate1",
           "logisticTypesProvided": [
@@ -575,7 +564,7 @@
             "mechanicalParts",
             "foodSupplies"
           ],
-          "logisticTypesReceived": [],
+          "logisticTypesReceived": []
         },
         {
           "psName": "spearleafLogistics_gate2",
@@ -586,9 +575,8 @@
             "mechanicalParts",
             "foodSupplies"
           ],
-          "logisticTypesReceived": [],
+          "logisticTypesReceived": []
         },
-        // warehouse halls
         {
           "psName": "spearleafLogistics_hall5",
           "logisticTypesProvided": [
@@ -598,7 +586,7 @@
             "mechanicalParts",
             "foodSupplies"
           ],
-          "logisticTypesReceived": [],
+          "logisticTypesReceived": []
         },
         {
           "psName": "spearleafLogistics_hall7",
@@ -609,7 +597,7 @@
             "mechanicalParts",
             "foodSupplies"
           ],
-          "logisticTypesReceived": [],
+          "logisticTypesReceived": []
         },
         {
           "psName": "spearleafLogistics_hall8",
@@ -620,9 +608,8 @@
             "mechanicalParts",
             "foodSupplies"
           ],
-          "logisticTypesReceived": [],
+          "logisticTypesReceived": []
         },
-        //cranes
         {
           "psName": "spearleafLogistics_crane1",
           "logisticTypesProvided": [],
@@ -630,7 +617,7 @@
             "trailerDeliveryConstructionMaterials",
             "lime",
             "ash"
-          ],
+          ]
         },
         {
           "psName": "spearleafLogistics_crane2",
@@ -639,9 +626,8 @@
             "trailerDeliveryConstructionMaterials",
             "fertilizer",
             "soil"
-          ],
+          ]
         },
-        // Yard
         {
           "psName": "spearleafLogistics_yardA",
           "logisticTypesProvided": [
@@ -652,7 +638,7 @@
           "logisticTypesReceived": [
             "industrial",
             "vehLargeTruck"
-          ],
+          ]
         },
         {
           "psName": "spearleafLogistics_yardB",
@@ -664,12 +650,9 @@
           "logisticTypesReceived": [
             "industrial",
             "vehLargeTruck"
-          ],
-        },
+          ]
+        }
       ],
-      //"pickUpSpotNames":["spearleafLogistics_parkingB", "spearleafLogistics_container03", "spearleafLogistics_container14","spearleafLogistics_container22","spearleafLogistics_container34"],
-      //"dropOffSpotNames":["spearleafLogistics_parkingB"],
-      //"trailerSpotNames":["spearleafLogistics_trailer"],
       "sitesFile": "warehouses.sites.json",
       "logisticTypesProvided": [
         "parcel",
@@ -697,15 +680,15 @@
         "lime",
         "ash"
       ],
-      "logisticMaxItems": 220,
+      "logisticMaxItems": 30,
       "logisticGenerators": [
         {
           "type": "parcelReceiver",
           "logisticTypes": [
             "industrial"
           ],
-          "min": -0.5,
-          "max": 3,
+          "min": -2,
+          "max": 1,
           "interval": 90
         },
         {
@@ -713,8 +696,8 @@
           "logisticTypes": [
             "industrial"
           ],
-          "min": -0.5,
-          "max": 4,
+          "min": 1,
+          "max": 5,
           "interval": 90
         },
         {
@@ -722,7 +705,7 @@
           "logisticTypes": [
             "shopSupplies"
           ],
-          "min": -0.5,
+          "min": -2,
           "max": 1,
           "interval": 90
         },
@@ -731,8 +714,8 @@
           "logisticTypes": [
             "shopSupplies"
           ],
-          "min": -0.5,
-          "max": 1,
+          "min": 0,
+          "max": 3,
           "interval": 90
         },
         {
@@ -748,7 +731,7 @@
           "logisticTypes": [
             "vehLargeTruck",
             "vehLargeTruckNeedsRepair"
-          ],
+          ]
         },
         {
           "type": "vehOfferProvider",
@@ -762,9 +745,8 @@
           "filter": "heavyVehFilter",
           "logisticTypes": [
             "vehLargeTruck"
-          ],
+          ]
         },
-        //small trailers
         {
           "type": "trailerOfferProvider",
           "interval": 210,
@@ -777,7 +759,7 @@
           "filter": "smallEmptyTrailers",
           "logisticTypes": [
             "trailerDeliveryResidential"
-          ],
+          ]
         },
         {
           "type": "trailerOfferProvider",
@@ -791,7 +773,7 @@
           "filter": "smallFurnitureTrailers",
           "logisticTypes": [
             "trailerDeliveryResidential"
-          ],
+          ]
         },
         {
           "type": "trailerOfferProvider",
@@ -806,9 +788,8 @@
           "logisticTypes": [
             "trailerDeliveryConstructionMaterials",
             "trailerDeliveryResidential"
-          ],
+          ]
         },
-        //medium trailers
         {
           "type": "trailerOfferProvider",
           "interval": 210,
@@ -821,7 +802,7 @@
           "filter": "mediumEmptyTrailer",
           "logisticTypes": [
             "trailerDeliveryResidential"
-          ],
+          ]
         },
         {
           "type": "trailerOfferProvider",
@@ -835,7 +816,7 @@
           "filter": "mediumFurnitureTrailers",
           "logisticTypes": [
             "trailerDeliveryResidential"
-          ],
+          ]
         },
         {
           "type": "trailerOfferProvider",
@@ -850,9 +831,8 @@
           "logisticTypes": [
             "trailerDeliveryConstructionMaterials",
             "trailerDeliveryResidential"
-          ],
+          ]
         },
-        //large trailers
         {
           "type": "trailerOfferProvider",
           "interval": 210,
@@ -865,7 +845,7 @@
           "filter": "bigConstructionMaterials",
           "logisticTypes": [
             "trailerDeliveryConstructionMaterials"
-          ],
+          ]
         },
         {
           "type": "trailerOfferProvider",
@@ -879,9 +859,8 @@
           "filter": "bigEmptyTrailers",
           "logisticTypes": [
             "trailerDeliveryConstructionMaterials"
-          ],
+          ]
         },
-        //material
         {
           "type": "materialReceiver",
           "logisticTypes": [
@@ -893,7 +872,6 @@
           "variance": 15000,
           "interval": 300,
           "rate": 19167
-
         },
         {
           "type": "materialReceiver",
@@ -906,7 +884,6 @@
           "variance": 9000,
           "interval": 300,
           "rate": 11500
-
         },
         {
           "type": "materialProvider",
@@ -919,7 +896,6 @@
           "variance": 2880,
           "interval": 300,
           "rate": 3680
-
         },
         {
           "type": "materialProvider",
@@ -932,7 +908,7 @@
           "variance": 1800,
           "interval": 300,
           "rate": 2300
-        },
+        }
       ]
     }
   ]

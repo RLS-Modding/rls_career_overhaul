@@ -13,12 +13,14 @@
           "psName": "belascoGarage_parking",
           "isInspectSpot": true,
           "logisticTypesProvided": [
-            "mechanicalParts"
+            "mechanicalParts",
+            "rareMechanicalParts"
           ],
           "logisticTypesReceived": [
             "mechanicalParts",
             "parcel",
-            "food"
+            "food",
+            "rareMechanicalParts"
           ]
         },
         {
@@ -46,15 +48,17 @@
         "mechanicalParts",
         "vehNeedsRepair",
         "vehForPrivate",
-        "vehRepairFinished"
+        "vehRepairFinished",
+        "rareMechanicalParts"
       ],
       "logisticTypesReceived": [
         "mechanicalParts",
         "parcel",
         "food",
-        "vehNeedsRepair"
+        "vehNeedsRepair",
+        "rareMechanicalParts"
       ],
-      "logisticMaxItems": 3,
+      "logisticMaxItems": 6,
       "logisticGenerators": [
         {
           "type": "parcelProvider",
@@ -69,11 +73,11 @@
         {
           "type": "parcelProvider",
           "logisticTypes": [
-            "mechanicalParts"
+            "rareMechanicalParts"
           ],
-          "min": 1,
+          "min": 0,
           "max": 1,
-          "slotsMin": 8,
+          "slotsMin": 32,
           "interval": 180
         },
         {
@@ -81,8 +85,8 @@
           "logisticTypes": [
             "parcel"
           ],
-          "min": 0,
-          "max": 1,
+          "min": 1,
+          "max": 2,
           "interval": 120
         },
         {
@@ -90,8 +94,8 @@
           "logisticTypes": [
             "food"
           ],
-          "min": -1,
-          "max": 1,
+          "min": 0,
+          "max": 2,
           "interval": 120
         },
         {
@@ -138,12 +142,14 @@
           "psName": "fastAutomotive_parking",
           "isInspectSpot": true,
           "logisticTypesProvided": [
-            "mechanicalParts"
+            "mechanicalParts",
+            "rareMechanicalParts"
           ],
           "logisticTypesReceived": [
             "mechanicalParts",
             "parcel",
-            "food"
+            "food",
+            "rareMechanicalParts"
           ]
         },
         {
@@ -164,14 +170,16 @@
         "mechanicalParts",
         "vehNeedsRepair",
         "vehForPrivate",
-        "vehRepairFinished"
+        "vehRepairFinished",
+        "rareMechanicalParts"
       ],
       "logisticTypesReceived": [
         "mechanicalParts",
         "parcel",
         "food",
         "vehNeedsRepair",
-        "vehLargeTruck"
+        "vehLargeTruck",
+        "rareMechanicalParts"
       ],
       "logisticMaxItems": 3,
       "logisticGenerators": [
@@ -188,11 +196,11 @@
         {
           "type": "parcelProvider",
           "logisticTypes": [
-            "mechanicalParts"
+            "rareMechanicalParts"
           ],
-          "min": 1,
+          "min": 0,
           "max": 1,
-          "slotsMin": 8,
+          "slotsMin": 32,
           "interval": 180
         },
         {
@@ -209,7 +217,7 @@
           "logisticTypes": [
             "food"
           ],
-          "min": -1,
+          "min": 0,
           "max": 1,
           "interval": 120
         },
@@ -258,12 +266,14 @@
           "psName": "exhaustShop_parking",
           "isInspectSpot": true,
           "logisticTypesProvided": [
-            "mechanicalParts"
+            "mechanicalParts",
+            "rareMechanicalParts"
           ],
           "logisticTypesReceived": [
             "mechanicalParts",
             "parcel",
-            "food"
+            "food",
+            "rareMechanicalParts"
           ]
         },
         {
@@ -285,7 +295,8 @@
         "mechanicalParts",
         "vehNeedsRepair",
         "vehForPrivate",
-        "vehRepairFinished"
+        "vehRepairFinished",
+        "rareMechanicalParts"
       ],
       "logisticTypesReceived": [
         "mechanicalParts",
@@ -293,7 +304,8 @@
         "food",
         "vehNeedsRepair",
         "vehLargeTruck",
-        "vehLargeTruckNeedsRepair"
+        "vehLargeTruckNeedsRepair",
+        "rareMechanicalParts"
       ],
       "logisticMaxItems": 3,
       "logisticGenerators": [
@@ -310,11 +322,11 @@
         {
           "type": "parcelProvider",
           "logisticTypes": [
-            "mechanicalParts"
+            "rareMechanicalParts"
           ],
-          "min": 1,
+          "min": 0,
           "max": 1,
-          "slotsMin": 8,
+          "slotsMin": 32,
           "interval": 180
         },
         {
@@ -331,7 +343,7 @@
           "logisticTypes": [
             "food"
           ],
-          "min": -1,
+          "min": 0,
           "max": 1,
           "interval": 120
         },
@@ -395,12 +407,14 @@
           "psName": "torresTires_parking",
           "isInspectSpot": true,
           "logisticTypesProvided": [
-            "mechanicalParts"
+            "mechanicalParts",
+            "rareMechanicalParts"
           ],
           "logisticTypesReceived": [
             "mechanicalParts",
             "parcel",
-            "food"
+            "food",
+            "rareMechanicalParts"
           ]
         },
         {
@@ -422,7 +436,8 @@
         "mechanicalParts",
         "vehNeedsRepair",
         "vehForPrivate",
-        "vehRepairFinished"
+        "vehRepairFinished",
+        "rareMechanicalParts"
       ],
       "logisticTypesReceived": [
         "mechanicalParts",
@@ -430,7 +445,8 @@
         "food",
         "vehNeedsRepair",
         "vehLargeTruck",
-        "vehLargeTruckNeedsRepair"
+        "vehLargeTruckNeedsRepair",
+        "rareMechanicalParts"
       ],
       "logisticMaxItems": 3,
       "logisticGenerators": [
@@ -447,11 +463,11 @@
         {
           "type": "parcelProvider",
           "logisticTypes": [
-            "mechanicalParts"
+            "rareMechanicalParts"
           ],
-          "min": 1,
+          "min": 0,
           "max": 1,
-          "slotsMin": 8,
+          "slotsMin": 32,
           "interval": 180
         },
         {
@@ -468,7 +484,7 @@
           "logisticTypes": [
             "food"
           ],
-          "min": -1,
+          "min": 0,
           "max": 1,
           "interval": 120
         },
@@ -532,12 +548,14 @@
           "psName": "smashAutoRepairs_parking",
           "isInspectSpot": true,
           "logisticTypesProvided": [
-            "mechanicalParts"
+            "mechanicalParts",
+            "rareMechanicalParts"
           ],
           "logisticTypesReceived": [
             "mechanicalParts",
             "parcel",
-            "food"
+            "food",
+            "rareMechanicalParts"
           ]
         },
         {
@@ -557,13 +575,15 @@
         "mechanicalParts",
         "vehNeedsRepair",
         "vehForPrivate",
-        "vehRepairFinished"
+        "vehRepairFinished",
+        "rareMechanicalParts"
       ],
       "logisticTypesReceived": [
         "mechanicalParts",
         "parcel",
         "food",
-        "vehNeedsRepair"
+        "vehNeedsRepair",
+        "rareMechanicalParts"
       ],
       "logisticMaxItems": 3,
       "logisticGenerators": [
@@ -580,11 +600,11 @@
         {
           "type": "parcelProvider",
           "logisticTypes": [
-            "mechanicalParts"
+            "rareMechanicalParts"
           ],
-          "min": 1,
+          "min": 0,
           "max": 1,
-          "slotsMin": 8,
+          "slotsMin": 32,
           "interval": 180
         },
         {
@@ -601,7 +621,7 @@
           "logisticTypes": [
             "food"
           ],
-          "min": -1,
+          "min": 0,
           "max": 1,
           "interval": 120
         },
@@ -665,12 +685,14 @@
           "psName": "jerryRigs_parking",
           "isInspectSpot": true,
           "logisticTypesProvided": [
-            "mechanicalParts"
+            "mechanicalParts",
+            "rareMechanicalParts"
           ],
           "logisticTypesReceived": [
             "mechanicalParts",
             "parcel",
-            "food"
+            "food",
+            "rareMechanicalParts"
           ]
         },
         {
@@ -690,15 +712,17 @@
         "mechanicalParts",
         "vehNeedsRepair",
         "vehForPrivate",
-        "vehRepairFinished"
+        "vehRepairFinished",
+        "rareMechanicalParts"
       ],
       "logisticTypesReceived": [
         "mechanicalParts",
         "parcel",
         "food",
-        "vehNeedsRepair"
+        "vehNeedsRepair",
+        "rareMechanicalParts"
       ],
-      "logisticMaxItems": 5,
+      "logisticMaxItems": 6,
       "logisticGenerators": [
         {
           "type": "parcelProvider",
@@ -713,11 +737,11 @@
         {
           "type": "parcelProvider",
           "logisticTypes": [
-            "mechanicalParts"
+            "rareMechanicalParts"
           ],
-          "min": 1,
+          "min": 0,
           "max": 1,
-          "slotsMin": 8,
+          "slotsMin": 32,
           "interval": 180
         },
         {
@@ -725,8 +749,8 @@
           "logisticTypes": [
             "parcel"
           ],
-          "min": 0,
-          "max": 1,
+          "min": 1,
+          "max": 2,
           "interval": 120
         },
         {
@@ -734,8 +758,8 @@
           "logisticTypes": [
             "food"
           ],
-          "min": -1,
-          "max": 1,
+          "min": 0,
+          "max": 2,
           "interval": 120
         },
         {
@@ -797,7 +821,9 @@
         {
           "psName": "shuffleboardLogistics_parkingA",
           "isInspectSpot": true,
-          "logisticTypesProvided": [],
+          "logisticTypesProvided": [
+            "industrial"
+          ],
           "logisticTypesReceived": [
             "parcel",
             "food"
@@ -897,15 +923,15 @@
         "food",
         "trailerDeliveryConstructionMaterials"
       ],
-      "logisticMaxItems": 3,
+      "logisticMaxItems": 10,
       "logisticGenerators": [
         {
           "type": "parcelReceiver",
           "logisticTypes": [
             "parcel"
           ],
-          "min": 0,
-          "max": 1,
+          "min": 1,
+          "max": 3,
           "interval": 120
         },
         {
@@ -913,8 +939,8 @@
           "logisticTypes": [
             "food"
           ],
-          "min": -1,
-          "max": 1,
+          "min": 1,
+          "max": 3,
           "interval": 120
         },
         {
@@ -1043,6 +1069,15 @@
           "interval": 600,
           "rate": 1000,
           "pickUpSpotName": "refinery_terminal_3"
+        },
+        {
+          "type": "parcelProvider",
+          "logisticTypes": [
+            "industrial"
+          ],
+          "min": 6,
+          "max": 10,
+          "interval": 90
         }
       ]
     },
@@ -1057,12 +1092,14 @@
           "psName": "shuffleboardGarage_parking",
           "isInspectSpot": true,
           "logisticTypesProvided": [
-            "mechanicalParts"
+            "mechanicalParts",
+            "rareMechanicalParts"
           ],
           "logisticTypesReceived": [
             "mechanicalParts",
             "parcel",
-            "food"
+            "food",
+            "rareMechanicalParts"
           ]
         },
         {
@@ -1093,7 +1130,8 @@
         "vehRepairFinished",
         "vehDeliveryAmbulance",
         "vehLargeTruck",
-        "vehLargeTruckNeedsRepair"
+        "vehLargeTruckNeedsRepair",
+        "rareMechanicalParts"
       ],
       "logisticTypesReceived": [
         "mechanicalParts",
@@ -1101,9 +1139,10 @@
         "food",
         "vehNeedsRepair",
         "vehLargeTruck",
-        "vehLargeTruckNeedsRepair"
+        "vehLargeTruckNeedsRepair",
+        "rareMechanicalParts"
       ],
-      "logisticMaxItems": 3,
+      "logisticMaxItems": 6,
       "logisticGenerators": [
         {
           "type": "parcelProvider",
@@ -1118,11 +1157,11 @@
         {
           "type": "parcelProvider",
           "logisticTypes": [
-            "mechanicalParts"
+            "rareMechanicalParts"
           ],
-          "min": 1,
+          "min": 0,
           "max": 1,
-          "slotsMin": 8,
+          "slotsMin": 32,
           "interval": 180
         },
         {
@@ -1130,8 +1169,8 @@
           "logisticTypes": [
             "parcel"
           ],
-          "min": 0,
-          "max": 1,
+          "min": 1,
+          "max": 2,
           "interval": 120
         },
         {
@@ -1139,8 +1178,8 @@
           "logisticTypes": [
             "food"
           ],
-          "min": -1,
-          "max": 1,
+          "min": 0,
+          "max": 2,
           "interval": 120
         },
         {
@@ -1224,7 +1263,7 @@
         "vehRepairFinished",
         "cash"
       ],
-      "logisticMaxItems": 2,
+      "logisticMaxItems": 3,
       "logisticGenerators": [
         {
           "type": "parcelProvider",
@@ -1239,11 +1278,11 @@
         {
           "type": "parcelProvider",
           "logisticTypes": [
-            "mechanicalParts"
+            "rareMechanicalParts"
           ],
-          "min": 1,
+          "min": 0,
           "max": 1,
-          "slotsMin": 8,
+          "slotsMin": 32,
           "interval": 180
         },
         {
@@ -1260,7 +1299,7 @@
           "logisticTypes": [
             "food"
           ],
-          "min": -1,
+          "min": 0,
           "max": 1,
           "interval": 120
         },
@@ -1357,7 +1396,7 @@
         "vehRepairFinished",
         "cash"
       ],
-      "logisticMaxItems": 2,
+      "logisticMaxItems": 3,
       "logisticGenerators": [
         {
           "type": "parcelProvider",
@@ -1372,11 +1411,11 @@
         {
           "type": "parcelProvider",
           "logisticTypes": [
-            "mechanicalParts"
+            "rareMechanicalParts"
           ],
-          "min": 1,
+          "min": 0,
           "max": 1,
-          "slotsMin": 8,
+          "slotsMin": 32,
           "interval": 180
         },
         {
@@ -1393,7 +1432,7 @@
           "logisticTypes": [
             "food"
           ],
-          "min": -1,
+          "min": 0,
           "max": 1,
           "interval": 120
         },
@@ -1491,7 +1530,7 @@
         "vehRepairFinished",
         "cash"
       ],
-      "logisticMaxItems": 2,
+      "logisticMaxItems": 3,
       "logisticGenerators": [
         {
           "type": "parcelProvider",
@@ -1506,11 +1545,11 @@
         {
           "type": "parcelProvider",
           "logisticTypes": [
-            "mechanicalParts"
+            "rareMechanicalParts"
           ],
-          "min": 1,
+          "min": 0,
           "max": 1,
-          "slotsMin": 8,
+          "slotsMin": 32,
           "interval": 180
         },
         {
@@ -1527,7 +1566,7 @@
           "logisticTypes": [
             "food"
           ],
-          "min": -1,
+          "min": 0,
           "max": 1,
           "interval": 120
         },
@@ -1623,7 +1662,7 @@
         "vehRepairFinished",
         "cash"
       ],
-      "logisticMaxItems": 2,
+      "logisticMaxItems": 3,
       "logisticGenerators": [
         {
           "type": "parcelProvider",
@@ -1638,11 +1677,11 @@
         {
           "type": "parcelProvider",
           "logisticTypes": [
-            "mechanicalParts"
+            "rareMechanicalParts"
           ],
-          "min": 1,
+          "min": 0,
           "max": 1,
-          "slotsMin": 8,
+          "slotsMin": 32,
           "interval": 180
         },
         {
@@ -1659,7 +1698,7 @@
           "logisticTypes": [
             "food"
           ],
-          "min": -1,
+          "min": 0,
           "max": 1,
           "interval": 120
         },
