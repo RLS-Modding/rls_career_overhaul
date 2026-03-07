@@ -18,6 +18,7 @@ local loadedExtensions = {}
 local timerActive = false
 local mActiveRace
 local staged = nil
+local mFreeroamHubSpawnedForStaging = false
 local in_race_time = 0
 
 local speedUnit = 2.2369362921
@@ -25,6 +26,7 @@ local lapCount = 0
 local currCheckpoint = nil
 local mHotlap = nil
 local mAltRoute = nil
+local mCurrentRouteName = nil
 local mSplitTimes = {}
 local isLoop = false
 local checkpointsHit = 0
@@ -215,7 +217,8 @@ local function payoutRace()
         inventoryId = inventoryIdToUse,
         damagePercentage = damagePercentage,
         damageFactor = damageFactor,
-        topSpeed = maxSpeed
+        topSpeed = maxSpeed,
+        reward = reward
     }
 
     local newBest = leaderboardManager.addLeaderboardEntry(newEntry)
@@ -562,12 +565,63 @@ local function formatSplitDifference(diff)
     return string.format("%s%s", sign, utils.formatTime(math.abs(diff)))
 end
 
+-- Returns the display name for the route from race_data.json (label for main, altRoute.label for alt).
+local function getRouteDisplayName(race, isAlt)
+    if not race then return nil end
+    if isAlt and race.altRoute and race.altRoute.label then
+        return race.altRoute.label
+    end
+    return race.label
+end
+
 local function exitRace(isCompletion, customMessage, raceData, subjectID)
     if mActiveRace then
         local raceName = mActiveRace
+        local raceLabel = (raceData and raceData.label) or raceName
+        
+        -- Build final UI state before we clear mActiveRace
+        local isLapRace = raceData and raceData.lapCount and raceData.lapCount > 0
+        local sectorDeltas = {}
+        for i = 1, checkpointsHit do
+            local d = getDifference(raceName, i)
+            if d then sectorDeltas[i] = d end
+        end
+        local finalState = {
+            inRace = false,
+            staged = false,
+            raceId = raceName,
+            raceLabel = raceLabel,
+            currentLap = isLapRace and lapCount or 0,
+            totalLaps = isLapRace and raceData.lapCount or 1,
+            currentLapTime = in_race_time,
+            topSpeedThisLap = maxSpeed,
+            invalidLap = invalidLap,
+            routeName = mCurrentRouteName,
+            splits = mSplitTimes,
+            sectorDeltas = sectorDeltas
+        }
+        
+        local finalResult = nil
+
         if isCompletion then
             -- Race completion logic
-            payoutRace()
+            local rewardData = payoutRace()
+            
+            -- If payoutRace() returned something useful we can put it in the result ticket
+            local rewardAmt = 0
+            if type(rewardData) == "number" then rewardAmt = rewardData end
+
+            finalResult = {
+                lapsCompleted = isLapRace and lapCount or 1,
+                lapsTotal = isLapRace and raceData.lapCount or 1,
+                totalTime = in_race_time,
+                bestLap = in_race_time, -- Placeholder, freeroam doesn't rigidly track best lap per session currently
+                newBest = newBestSession,
+                invalidLap = invalidLap,
+                reward = rewardAmt,
+                xp = 0,
+                leaderboard = {}
+            }
 
             -- Race-specific completion handling
             if raceName == "drag" and raceData and subjectID then
@@ -591,6 +645,13 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
             utils.displayMessage(message, 3)
         end
 
+        -- Push the final state and result to the UI app
+        guihooks.trigger("FreeroamHubRaceState", finalState)
+        if isCompletion and finalResult then
+            guihooks.trigger("FreeroamHubRaceResult", finalResult)
+        end
+        -- When not completion, finalState (inRace=false, staged=false) makes the app show "Session ended" + Close
+
         utils.setActiveLight(raceName, "red")
         lapCount = 0
         mActiveRace = nil
@@ -599,6 +660,7 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
         currCheckpoint = nil
         mSplitTimes = {}
         mAltRoute = false
+        mCurrentRouteName = nil
         invalidLap = false
         mInventoryId = nil
         maxSpeed = 0
@@ -778,11 +840,32 @@ local function onBeamNGTrigger(data)
                     vehId = career_modules_inventory.getInventoryIdFromVehicleId(vehId) or vehId
                 end
             end
+            
+            local race = races[raceName] or {}
+            local raceLabel = race.label or raceName
+            local state = { inRace = false, staged = true, raceId = raceName, raceLabel = raceLabel }
+
+            -- Set available first so UI knows hub is active; defer spawn + state (only once per staging session).
+            guihooks.trigger("FreeroamHubSetAvailable", { available = true })
+            if not mFreeroamHubSpawnedForStaging then
+                mFreeroamHubSpawnedForStaging = true
+                core_jobsystem.create(function(job)
+                    job.yield()
+                    job.yield()
+                    guihooks.trigger("appContainer:spawn", { appName = "freeroamEventHub" })
+                    guihooks.trigger("FreeroamHubRaceState", state)
+                end)
+            end
+
             utils.displayStagedMessage(vehId, raceName)
             utils.setActiveLight(raceName, "yellow")
         elseif event == "exit" then
             staged = nil
+            mFreeroamHubSpawnedForStaging = false
             if not mActiveRace then
+                guihooks.trigger("FreeroamHubSetAvailable", { available = false })
+                guihooks.trigger("FreeroamHubRaceState", { inRace = false })
+                
                 utils.displayMessage("You exited the staging zone", 4)
                 utils.setActiveLight(raceName, "red")
             end
@@ -834,7 +917,8 @@ local function onBeamNGTrigger(data)
             maxSpeed = 0
             mActiveRace = raceName
             lapCount = 0
-            
+            mCurrentRouteName = nil
+
             -- Set mInventoryId - check for business vehicle first, then inventory vehicle
             if career_modules_business_businessInventory then
                 local businessId, vehicleId = career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId(data.subjectID)
@@ -894,9 +978,15 @@ local function onBeamNGTrigger(data)
             -- Ensure that the checkpoint is the expected one
             if (checkpointIndex == currentExpectedCheckpoint) or (checkpointIndex == 1 and isAlt) or
                 (isAlt and (currentExpectedCheckpoint == races[raceName].altRoute.mergeCheckpoints[1])) then
+                -- Route-switch detection (end run + start other route) disabled: alt route merges with main
+                -- and shares checkpoints, so (checkpointIndex, isAlt) alone is unreliable. Would need to use
+                -- race_data.json checkpoint/altRoute definitions to know which checkpoints belong to which route.
                 checkpointsHit = checkpointsHit + 1
                 currCheckpoint = checkpointIndex
                 mSplitTimes[checkpointsHit] = in_race_time
+                if checkpointsHit == 1 then
+                    mCurrentRouteName = getRouteDisplayName(races[raceName], isAlt)
+                end
                 utils.playCheckpointSound()
 
                 -- Prepare the next checkpoint
@@ -1039,6 +1129,36 @@ local function onUpdate(dtReal, dtSim, dtRaw)
                 maxSpeed = currentSpeed
             end
         end
+        
+        -- Push live UI state
+        local race = races[mActiveRace] or {}
+        local isLapRace = race.lapCount and race.lapCount > 0
+        local raceLabel = race.label or mActiveRace
+        
+        -- Only push state periodically (e.g. every ~100ms) to avoid lagging the UI
+        if (in_race_time % 0.1) < dtSim then
+            local sectorDeltas = {}
+            for i = 1, checkpointsHit do
+                local d = getDifference(mActiveRace, i)
+                if d then sectorDeltas[i] = d end
+            end
+            local state = {
+                inRace = true,
+                isPractice = false, -- freeroam events are always races
+                staged = false,
+                raceId = mActiveRace,
+                raceLabel = raceLabel,
+                currentLap = isLapRace and lapCount or 0,
+                totalLaps = isLapRace and race.lapCount or 1,
+                currentLapTime = in_race_time,
+                topSpeedThisLap = maxSpeed,
+                invalidLap = invalidLap,
+                routeName = mCurrentRouteName,
+                splits = mSplitTimes,
+                sectorDeltas = sectorDeltas
+            }
+            guihooks.trigger("FreeroamHubRaceState", state)
+        end
     else
         in_race_time = 0
     end
@@ -1117,5 +1237,56 @@ M.getRace = function(raceName) return races[raceName] end
 
 M.onExtensionLoaded = onExtensionLoaded
 M.onExtensionUnloaded = onExtensionUnloaded
+
+M.onFreeroamHubRequestRaceHistory = function()
+    local inventoryId = mInventoryId
+    if not inventoryId and career_modules_inventory then
+        local vehId = be:getPlayerVehicleID(0)
+        if vehId then
+            inventoryId = career_modules_inventory.getInventoryIdFromVehicleId(vehId) or vehId
+        end
+    end
+    local entries = {}
+    if inventoryId then
+        entries = leaderboardManager.getLeaderboardEntriesForVehicle(inventoryId)
+    end
+    guihooks.trigger("FreeroamHubRaceHistory", { entries = entries })
+end
+
+M.onFreeroamHubReady = function()
+    if mActiveRace then
+        local race = races[mActiveRace] or {}
+        local isLapRace = race.lapCount and race.lapCount > 0
+        local raceLabel = race.label or mActiveRace
+        local sectorDeltas = {}
+        for i = 1, checkpointsHit do
+            local d = getDifference(mActiveRace, i)
+            if d then sectorDeltas[i] = d end
+        end
+        local state = {
+            inRace = true,
+            isPractice = false,
+            staged = false,
+            raceId = mActiveRace,
+            raceLabel = raceLabel,
+            currentLap = isLapRace and lapCount or 0,
+            totalLaps = isLapRace and race.lapCount or 1,
+            currentLapTime = in_race_time,
+            topSpeedThisLap = maxSpeed,
+            invalidLap = invalidLap,
+            routeName = mCurrentRouteName,
+            splits = mSplitTimes,
+            sectorDeltas = sectorDeltas
+        }
+        guihooks.trigger("FreeroamHubSetAvailable", { available = true })
+        guihooks.trigger("FreeroamHubRaceState", state)
+    elseif staged then
+        local race = races[staged] or {}
+        local raceLabel = race.label or staged
+        local state = { inRace = false, staged = true, raceId = staged, raceLabel = raceLabel }
+        guihooks.trigger("FreeroamHubSetAvailable", { available = true })
+        guihooks.trigger("FreeroamHubRaceState", state)
+    end
+end
 
 return M
