@@ -1,7 +1,4 @@
 {
-  //car jockey tiers
-  //reward targets are tuned for ~3 mile trips (4.8 km):
-  //cheap=500, budget=1200, medium=3000, highEnd=5800, exotic=10100, heavy=8700
   "cheapVehFilter": {
     "type": "vehicle",
     "unlockTag": "junkerVeh",
@@ -38,7 +35,6 @@
     },
     "subFilters": []
   },
-  //budget tier
   "budgetVehFilter": {
     "type": "vehicle",
     "unlockTag": "smallVeh",
@@ -76,7 +72,6 @@
     },
     "subFilters": []
   },
-  //heavy tier
   "heavyVehFilter": {
     "type": "vehicle",
     "unlockTag": "heavyVeh",
@@ -106,7 +101,6 @@
     },
     "subFilters": []
   },
-  //medium tier
   "mediumVehFilter": {
     "type": "vehicle",
     "unlockTag": "fleetVeh",
@@ -144,7 +138,6 @@
       }
     }
   },
-  //high-end tier
   "highEndVehFilter": {
     "type": "vehicle",
     "unlockTag": "highEndVeh",
@@ -181,7 +174,6 @@
     },
     "subFilters": []
   },
-  //exotic tier
   "exoticTierVehFilter": {
     "type": "vehicle",
     "unlockTag": "exoticVeh",
@@ -215,9 +207,7 @@
     },
     "subFilters": []
   },
-  //trailers
-  //empty small trailers
-  "smallEmptyTrailers": { //1
+  "smallEmptyTrailers": {
     "type": "trailer",
     "unlockTag": "emptySmallTrailers",
     "filterName": "Small Trailer",
@@ -239,7 +229,7 @@
       }
     }
   },
-  "smallCratePlanksTrailers": { //2
+  "smallCratePlanksTrailers": {
     "type": "trailer",
     "unlockTag": "loadedSmallTrailers",
     "filterName": "Small Trailer",
@@ -266,7 +256,7 @@
       }
     }
   },
-  "smallFurnitureTrailers": { //2
+  "smallFurnitureTrailers": {
     "type": "trailer",
     "unlockTag": "loadedSmallTrailers",
     "filterName": "Small Trailer",
@@ -290,12 +280,10 @@
       }
     }
   },
-  // medium trailer
-  "mediumEmptyTrailer": { //2
+  "mediumEmptyTrailer": {
     "type": "trailer",
     "unlockTag": "emptyMediumTrailers",
     "filterName": "Medium Trailer",
-    //"connector":"towhitch",
     "baseReward": 250,
     "rewardPerKm": 200,
     "filter": {
@@ -311,7 +299,7 @@
       }
     }
   },
-  "mediumCratePlanksTrailers": { //3
+  "mediumCratePlanksTrailers": {
     "type": "trailer",
     "unlockTag": "loadedMediumTrailers",
     "filterName": "Medium Trailer",
@@ -335,7 +323,7 @@
       }
     }
   },
-  "mediumFurnitureTrailers": { //3
+  "mediumFurnitureTrailers": {
     "type": "trailer",
     "unlockTag": "loadedMediumTrailers",
     "filterName": "Medium Trailer",
@@ -357,7 +345,7 @@
       }
     }
   },
-  "bigEmptyTrailers": { //3
+  "bigEmptyTrailers": {
     "type": "trailer",
     "unlockTag": "emptyLargeTrailer",
     "filterName": "Large Trailer",
@@ -383,7 +371,7 @@
       }
     }
   },
-  "bigConstructionMaterials": { //4
+  "bigConstructionMaterials": {
     "type": "trailer",
     "unlockTag": "loadedLargeTrailers",
     "filterName": "Large Trailer",
@@ -402,8 +390,6 @@
       }
     }
   },
-
-  // BEGIN RLS VANILLA TRAILER TEMPLATE FILTERS
   "vanillaTrailer_boxutility_loaded_200": {
     "type": "trailer",
     "unlockTag": "trailerBoxutility",
@@ -420,7 +406,7 @@
           "loaded_200"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_boxutility_loaded_400": {
     "type": "trailer",
@@ -438,7 +424,7 @@
           "loaded_400"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_boxutility_loaded_600": {
     "type": "trailer",
@@ -456,7 +442,7 @@
           "loaded_600"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_boxutility_loaded_armchairs": {
     "type": "trailer",
@@ -474,7 +460,7 @@
           "loaded_armchairs"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_boxutility_loaded_couch": {
     "type": "trailer",
@@ -492,7 +478,7 @@
           "loaded_couch"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_boxutility_loaded_planks": {
     "type": "trailer",
@@ -510,7 +496,7 @@
           "loaded_planks"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_boxutility_unloaded": {
     "type": "trailer",
@@ -528,7 +514,7 @@
           "unloaded"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_boxutility_large_loaded_400": {
     "type": "trailer",
@@ -546,7 +532,7 @@
           "loaded_400"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_boxutility_large_loaded_800": {
     "type": "trailer",
@@ -564,7 +550,7 @@
           "loaded_800"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_boxutility_large_loaded_armchairs": {
     "type": "trailer",
@@ -582,7 +568,7 @@
           "loaded_armchairs"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_boxutility_large_loaded_couch": {
     "type": "trailer",
@@ -600,7 +586,7 @@
           "loaded_couch"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_boxutility_large_loaded_planks": {
     "type": "trailer",
@@ -618,7 +604,7 @@
           "loaded_planks"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_boxutility_large_loaded_planks_long": {
     "type": "trailer",
@@ -636,7 +622,7 @@
           "loaded_planks_long"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_boxutility_large_unloaded": {
     "type": "trailer",
@@ -654,7 +640,7 @@
           "unloaded"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_boxutility_large_unsafe": {
     "type": "trailer",
@@ -672,7 +658,7 @@
           "unsafe"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_caravan_default": {
     "type": "trailer",
@@ -690,7 +676,7 @@
           "default"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_caravan_empty": {
     "type": "trailer",
@@ -708,7 +694,7 @@
           "empty"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_cargotrailer_default": {
     "type": "trailer",
@@ -726,7 +712,7 @@
           "default"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_cargotrailer_loaded_400": {
     "type": "trailer",
@@ -744,7 +730,7 @@
           "loaded_400"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_cargotrailer_loaded_800": {
     "type": "trailer",
@@ -762,7 +748,7 @@
           "loaded_800"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_cargotrailer_loaded_armchairs": {
     "type": "trailer",
@@ -780,7 +766,7 @@
           "loaded_armchairs"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_cargotrailer_loaded_couch": {
     "type": "trailer",
@@ -798,7 +784,7 @@
           "loaded_couch"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_cargotrailer_loaded_planks": {
     "type": "trailer",
@@ -816,7 +802,7 @@
           "loaded_planks"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_cargotrailer_loaded_planks_long": {
     "type": "trailer",
@@ -834,7 +820,7 @@
           "loaded_planks_long"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_containerTrailer_20ft_2axle_20ft": {
     "type": "trailer",
@@ -852,7 +838,7 @@
           "20ft_2axle_20ft"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_containerTrailer_20ft_2axle_tank": {
     "type": "trailer",
@@ -870,7 +856,7 @@
           "20ft_2axle_tank"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_containerTrailer_20ft_2axle_tank_empty": {
     "type": "trailer",
@@ -888,7 +874,7 @@
           "20ft_2axle_tank_empty"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_containerTrailer_20ft_2axle_transport": {
     "type": "trailer",
@@ -906,7 +892,7 @@
           "20ft_2axle_transport"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_containerTrailer_40ft_3axle_20ft": {
     "type": "trailer",
@@ -924,7 +910,7 @@
           "40ft_3axle_20ft"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_containerTrailer_40ft_3axle_20ft_double": {
     "type": "trailer",
@@ -942,7 +928,7 @@
           "40ft_3axle_20ft_double"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_containerTrailer_40ft_3axle_20ft_short": {
     "type": "trailer",
@@ -960,7 +946,7 @@
           "40ft_3axle_20ft_short"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_containerTrailer_40ft_3axle_40ft": {
     "type": "trailer",
@@ -978,7 +964,7 @@
           "40ft_3axle_40ft"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_containerTrailer_40ft_3axle_tank": {
     "type": "trailer",
@@ -996,7 +982,7 @@
           "40ft_3axle_tank"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_containerTrailer_40ft_3axle_tank_double": {
     "type": "trailer",
@@ -1014,7 +1000,7 @@
           "40ft_3axle_tank_double"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_containerTrailer_40ft_3axle_transport": {
     "type": "trailer",
@@ -1032,7 +1018,7 @@
           "40ft_3axle_transport"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_dolly_double": {
     "type": "trailer",
@@ -1050,7 +1036,7 @@
           "double"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_dolly_single": {
     "type": "trailer",
@@ -1068,7 +1054,7 @@
           "single"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_dryvan_28ft": {
     "type": "trailer",
@@ -1086,7 +1072,7 @@
           "28ft"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_dryvan_28ft_4500kg": {
     "type": "trailer",
@@ -1104,7 +1090,7 @@
           "28ft_4500kg"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_dryvan_28ft_9600kg": {
     "type": "trailer",
@@ -1122,7 +1108,7 @@
           "28ft_9600kg"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_dryvan_48ft": {
     "type": "trailer",
@@ -1140,7 +1126,7 @@
           "48ft"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_dryvan_48ft_19200kg": {
     "type": "trailer",
@@ -1158,7 +1144,7 @@
           "48ft_19200kg"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_dryvan_48ft_loadingramp": {
     "type": "trailer",
@@ -1176,7 +1162,7 @@
           "48ft_loadingramp"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_dryvan_48ft_loadingramp_offset": {
     "type": "trailer",
@@ -1194,7 +1180,7 @@
           "48ft_loadingramp_offset"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_dryvan_48ft_spreadaxle": {
     "type": "trailer",
@@ -1212,7 +1198,7 @@
           "48ft_spreadaxle"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_dryvan_48ft_spreadaxle_6750kg": {
     "type": "trailer",
@@ -1230,7 +1216,7 @@
           "48ft_spreadaxle_6750kg"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_dryvan_53ft": {
     "type": "trailer",
@@ -1248,7 +1234,7 @@
           "53ft"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_dryvan_53ft_13500kg": {
     "type": "trailer",
@@ -1266,7 +1252,7 @@
           "53ft_13500kg"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_dryvan_53ft_22400kg": {
     "type": "trailer",
@@ -1284,7 +1270,7 @@
           "53ft_22400kg"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_dryvan_53ft_spreadaxle": {
     "type": "trailer",
@@ -1302,7 +1288,7 @@
           "53ft_spreadaxle"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_flatbed_28ft_double": {
     "type": "trailer",
@@ -1320,7 +1306,7 @@
           "28ft_double"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_flatbed_28ft_double_coil": {
     "type": "trailer",
@@ -1338,7 +1324,7 @@
           "28ft_double_coil"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_flatbed_28ft_double_marble": {
     "type": "trailer",
@@ -1356,7 +1342,7 @@
           "28ft_double_marble"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_flatbed_28ft_double_pipes": {
     "type": "trailer",
@@ -1374,7 +1360,7 @@
           "28ft_double_pipes"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_flatbed_28ft_single": {
     "type": "trailer",
@@ -1392,7 +1378,7 @@
           "28ft_single"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_flatbed_28ft_single_wood": {
     "type": "trailer",
@@ -1410,7 +1396,7 @@
           "28ft_single_wood"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_flatbed_32ft": {
     "type": "trailer",
@@ -1428,7 +1414,7 @@
           "32ft"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_flatbed_32ft_coil": {
     "type": "trailer",
@@ -1446,7 +1432,7 @@
           "32ft_coil"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_flatbed_32ft_marble": {
     "type": "trailer",
@@ -1464,7 +1450,7 @@
           "32ft_marble"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_flatbed_32ft_pipes": {
     "type": "trailer",
@@ -1482,7 +1468,7 @@
           "32ft_pipes"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_flatbed_32ft_wood": {
     "type": "trailer",
@@ -1500,7 +1486,7 @@
           "32ft_wood"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_flatbed_48ft_coil": {
     "type": "trailer",
@@ -1518,7 +1504,7 @@
           "48ft_coil"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_flatbed_48ft_coils_double": {
     "type": "trailer",
@@ -1536,7 +1522,7 @@
           "48ft_coils_double"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_flatbed_48ft_double": {
     "type": "trailer",
@@ -1554,7 +1540,7 @@
           "48ft_double"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_flatbed_48ft_pipes": {
     "type": "trailer",
@@ -1572,7 +1558,7 @@
           "48ft_pipes"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_flatbed_48ft_tires": {
     "type": "trailer",
@@ -1590,7 +1576,7 @@
           "48ft_tires"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_flatbed_48ft_tires_double": {
     "type": "trailer",
@@ -1608,7 +1594,7 @@
           "48ft_tires_double"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_flatbed_48ft_wood": {
     "type": "trailer",
@@ -1626,7 +1612,7 @@
           "48ft_wood"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_flatbed_53ft_coils_double": {
     "type": "trailer",
@@ -1644,7 +1630,7 @@
           "53ft_coils_double"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_flatbed_53ft_pipes": {
     "type": "trailer",
@@ -1662,7 +1648,7 @@
           "53ft_pipes"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_flatbed_53ft_triple": {
     "type": "trailer",
@@ -1680,7 +1666,7 @@
           "53ft_triple"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_flatbed_53ft_wood": {
     "type": "trailer",
@@ -1698,7 +1684,7 @@
           "53ft_wood"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_frameless_dump_double": {
     "type": "trailer",
@@ -1716,7 +1702,7 @@
           "double"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_frameless_dump_triple": {
     "type": "trailer",
@@ -1734,7 +1720,7 @@
           "triple"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_frameless_dump_wide_double": {
     "type": "trailer",
@@ -1752,7 +1738,7 @@
           "wide_double"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_log_trailer_27ft": {
     "type": "trailer",
@@ -1770,7 +1756,7 @@
           "27ft"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_log_trailer_27ft_12logs": {
     "type": "trailer",
@@ -1788,7 +1774,7 @@
           "27ft_12logs"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_log_trailer_27ft_12logs_rack": {
     "type": "trailer",
@@ -1806,7 +1792,7 @@
           "27ft_12logs_rack"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_log_trailer_27ft_8logs": {
     "type": "trailer",
@@ -1824,7 +1810,7 @@
           "27ft_8logs"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_log_trailer_27ft_rack": {
     "type": "trailer",
@@ -1842,7 +1828,7 @@
           "27ft_rack"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_log_trailer_40ft": {
     "type": "trailer",
@@ -1860,7 +1846,7 @@
           "40ft"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_log_trailer_40ft_12logs": {
     "type": "trailer",
@@ -1878,7 +1864,7 @@
           "40ft_12logs"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_log_trailer_40ft_12logs_rack": {
     "type": "trailer",
@@ -1896,7 +1882,7 @@
           "40ft_12logs_rack"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_log_trailer_40ft_8logs": {
     "type": "trailer",
@@ -1914,7 +1900,7 @@
           "40ft_8logs"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_log_trailer_40ft_rack": {
     "type": "trailer",
@@ -1932,7 +1918,7 @@
           "40ft_rack"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_log_trailer_40ft_single": {
     "type": "trailer",
@@ -1950,7 +1936,7 @@
           "40ft_single"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_log_trailer_40ft_single_6logs_rack": {
     "type": "trailer",
@@ -1968,7 +1954,7 @@
           "40ft_single_6logs_rack"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_log_trailer_40ft_single_8logs": {
     "type": "trailer",
@@ -1986,7 +1972,7 @@
           "40ft_single_8logs"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_log_trailer_40ft_single_rack": {
     "type": "trailer",
@@ -2004,7 +1990,7 @@
           "40ft_single_rack"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tanker_career_shuffleboard_empty_long": {
     "type": "trailer",
@@ -2022,7 +2008,7 @@
           "career_shuffleboard_empty_long"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tanker_career_shuffleboard_empty_short": {
     "type": "trailer",
@@ -2040,7 +2026,7 @@
           "career_shuffleboard_empty_short"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tanker_diesel_2": {
     "type": "trailer",
@@ -2058,7 +2044,7 @@
           "diesel_2"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tanker_diesel_3": {
     "type": "trailer",
@@ -2076,7 +2062,7 @@
           "diesel_3"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tanker_diesel_short_2": {
     "type": "trailer",
@@ -2094,7 +2080,7 @@
           "diesel_short_2"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tanker_diesel_short_3": {
     "type": "trailer",
@@ -2112,7 +2098,7 @@
           "diesel_short_3"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tanker_empty": {
     "type": "trailer",
@@ -2130,7 +2116,7 @@
           "empty"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tanker_empty_short": {
     "type": "trailer",
@@ -2148,7 +2134,7 @@
           "empty_short"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tanker_milk_2": {
     "type": "trailer",
@@ -2166,7 +2152,7 @@
           "milk_2"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tanker_milk_3": {
     "type": "trailer",
@@ -2184,7 +2170,7 @@
           "milk_3"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tanker_milk_short_2": {
     "type": "trailer",
@@ -2202,7 +2188,7 @@
           "milk_short_2"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tanker_milk_short_3": {
     "type": "trailer",
@@ -2220,7 +2206,7 @@
           "milk_short_3"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tanker_petroleum_2": {
     "type": "trailer",
@@ -2238,7 +2224,7 @@
           "petroleum_2"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tanker_petroleum_3": {
     "type": "trailer",
@@ -2256,7 +2242,7 @@
           "petroleum_3"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tanker_petroleum_short_2": {
     "type": "trailer",
@@ -2274,7 +2260,7 @@
           "petroleum_short_2"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tanker_petroleum_short_3": {
     "type": "trailer",
@@ -2292,7 +2278,7 @@
           "petroleum_short_3"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tanker_water_2": {
     "type": "trailer",
@@ -2310,7 +2296,7 @@
           "water_2"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tanker_water_3": {
     "type": "trailer",
@@ -2328,7 +2314,7 @@
           "water_3"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tanker_water_short_2": {
     "type": "trailer",
@@ -2346,7 +2332,7 @@
           "water_short_2"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tanker_water_short_3": {
     "type": "trailer",
@@ -2364,7 +2350,7 @@
           "water_short_3"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tiltdeck_22ft_gooseneck": {
     "type": "trailer",
@@ -2382,7 +2368,7 @@
           "22ft_gooseneck"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tiltdeck_22ft_gooseneck_wood": {
     "type": "trailer",
@@ -2400,7 +2386,7 @@
           "22ft_gooseneck_wood"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tiltdeck_22ft_standard": {
     "type": "trailer",
@@ -2418,7 +2404,7 @@
           "22ft_standard"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tiltdeck_22ft_standard_hay": {
     "type": "trailer",
@@ -2436,7 +2422,7 @@
           "22ft_standard_hay"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tiltdeck_30ft_gooseneck": {
     "type": "trailer",
@@ -2454,7 +2440,7 @@
           "30ft_gooseneck"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tiltdeck_30ft_gooseneck_wood": {
     "type": "trailer",
@@ -2472,7 +2458,7 @@
           "30ft_gooseneck_wood"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tiltdeck_30ft_pintle": {
     "type": "trailer",
@@ -2490,7 +2476,7 @@
           "30ft_pintle"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tiltdeck_30ft_standard": {
     "type": "trailer",
@@ -2508,7 +2494,7 @@
           "30ft_standard"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tiltdeck_30ft_standard_hay": {
     "type": "trailer",
@@ -2526,7 +2512,7 @@
           "30ft_standard_hay"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tiltdeck_40ft_gooseneck": {
     "type": "trailer",
@@ -2544,7 +2530,7 @@
           "40ft_gooseneck"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tiltdeck_40ft_gooseneck_hay": {
     "type": "trailer",
@@ -2562,7 +2548,7 @@
           "40ft_gooseneck_hay"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tiltdeck_40ft_standard": {
     "type": "trailer",
@@ -2580,7 +2566,7 @@
           "40ft_standard"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tiltdeck_40ft_standard_wood": {
     "type": "trailer",
@@ -2598,7 +2584,7 @@
           "40ft_standard_wood"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tsfb_loaded_400": {
     "type": "trailer",
@@ -2616,7 +2602,7 @@
           "loaded_400"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tsfb_loaded_800": {
     "type": "trailer",
@@ -2634,7 +2620,7 @@
           "loaded_800"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tsfb_loaded_armchairs": {
     "type": "trailer",
@@ -2652,7 +2638,7 @@
           "loaded_armchairs"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tsfb_loaded_couch": {
     "type": "trailer",
@@ -2670,7 +2656,7 @@
           "loaded_couch"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tsfb_loaded_planks": {
     "type": "trailer",
@@ -2688,7 +2674,7 @@
           "loaded_planks"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tsfb_loaded_planks_long": {
     "type": "trailer",
@@ -2706,7 +2692,7 @@
           "loaded_planks_long"
         ]
       }
-    },
+    }
   },
   "vanillaTrailer_tsfb_unloaded": {
     "type": "trailer",
@@ -2724,8 +2710,220 @@
           "unloaded"
         ]
       }
-    },
+    }
+  },
+  "dryvan_any": {
+    "type": "trailer",
+    "unlockTag": "trailerDryvan",
+    "filterName": "Any Dry Van Trailer",
+    "connector": "towhitch",
+    "baseReward": 620,
+    "rewardPerKm": 950,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "dryvan"
+        ]
+      }
+    }
+  },
+  "dryvan_loaded_48_53": {
+    "type": "trailer",
+    "unlockTag": "trailerDryvan",
+    "filterName": "Loaded 48/53ft Dry Van",
+    "connector": "towhitch",
+    "baseReward": 820,
+    "rewardPerKm": 1250,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "dryvan"
+        ],
+        "key": [
+          "48ft_19200kg",
+          "48ft_spreadaxle_6750kg",
+          "53ft_13500kg",
+          "53ft_22400kg"
+        ]
+      }
+    }
+  },
+  "container_frame_only": {
+    "type": "trailer",
+    "unlockTag": "trailerContainer",
+    "filterName": "Container Frame Only",
+    "connector": "towhitch",
+    "baseReward": 700,
+    "rewardPerKm": 1200,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "containerTrailer"
+        ],
+        "key": [
+          "20ft_2axle_20ft",
+          "40ft_3axle_20ft",
+          "40ft_3axle_20ft_double",
+          "40ft_3axle_20ft_short",
+          "40ft_3axle_40ft"
+        ]
+      }
+    }
+  },
+  "container_loaded_nonfluid": {
+    "type": "trailer",
+    "unlockTag": "trailerContainer",
+    "filterName": "Loaded Container (Non-Fluid)",
+    "connector": "towhitch",
+    "baseReward": 850,
+    "rewardPerKm": 1450,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "containerTrailer"
+        ],
+        "hasLoad": [
+          true
+        ]
+      },
+      "blackList": {
+        "key": [
+          "20ft_2axle_tank",
+          "20ft_2axle_tank_empty",
+          "40ft_3axle_tank",
+          "40ft_3axle_tank_double"
+        ]
+      }
+    }
+  },
+  "container_fluid_only": {
+    "type": "trailer",
+    "unlockTag": "trailerContainer",
+    "filterName": "Container Fluid Tank",
+    "connector": "towhitch",
+    "baseReward": 920,
+    "rewardPerKm": 1600,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "containerTrailer"
+        ],
+        "key": [
+          "20ft_2axle_tank",
+          "20ft_2axle_tank_empty",
+          "40ft_3axle_tank",
+          "40ft_3axle_tank_double"
+        ]
+      }
+    }
+  },
+  "flatbed_empty": {
+    "type": "trailer",
+    "unlockTag": "trailerFlatbed",
+    "filterName": "Empty Flatbed",
+    "connector": "towhitch",
+    "baseReward": 560,
+    "rewardPerKm": 1025,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "flatbed"
+        ]
+      },
+      "blackList": {
+        "hasLoad": [
+          true
+        ]
+      }
+    }
+  },
+  "flatbed_pipes": {
+    "type": "trailer",
+    "unlockTag": "trailerFlatbed",
+    "filterName": "Flatbed Pipes",
+    "connector": "towhitch",
+    "baseReward": 780,
+    "rewardPerKm": 1350,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "flatbed"
+        ],
+        "key": [
+          "28ft_double_pipes",
+          "32ft_pipes",
+          "48ft_pipes",
+          "53ft_pipes"
+        ]
+      }
+    }
+  },
+  "flatbed_coil": {
+    "type": "trailer",
+    "unlockTag": "trailerFlatbed",
+    "filterName": "Flatbed Coil",
+    "connector": "towhitch",
+    "baseReward": 820,
+    "rewardPerKm": 1400,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "flatbed"
+        ],
+        "key": [
+          "28ft_double_coil",
+          "32ft_coil",
+          "48ft_coil",
+          "48ft_coils_double",
+          "53ft_coils_double"
+        ]
+      }
+    }
+  },
+  "flatbed_wood": {
+    "type": "trailer",
+    "unlockTag": "trailerFlatbed",
+    "filterName": "Flatbed Wood",
+    "connector": "towhitch",
+    "baseReward": 760,
+    "rewardPerKm": 1300,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "flatbed"
+        ],
+        "key": [
+          "28ft_single_wood",
+          "32ft_wood",
+          "48ft_wood",
+          "53ft_wood"
+        ]
+      }
+    }
+  },
+  "tanker_petroleum_diesel_2_3axle": {
+    "type": "trailer",
+    "unlockTag": "trailerTanker",
+    "filterName": "Petroleum/Diesel Tanker",
+    "connector": "towhitch",
+    "baseReward": 980,
+    "rewardPerKm": 1700,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "tanker"
+        ],
+        "key": [
+          "diesel_2",
+          "diesel_3",
+          "diesel_short_2",
+          "diesel_short_3",
+          "petroleum_2",
+          "petroleum_3",
+          "petroleum_short_2",
+          "petroleum_short_3"
+        ]
+      }
+    }
   }
-  // END RLS VANILLA TRAILER TEMPLATE FILTERS
 }
-

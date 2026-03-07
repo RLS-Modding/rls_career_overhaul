@@ -145,12 +145,10 @@
         {
           "psName": "construction_city_trailer",
           "logisticTypesProvided": [
-            "trailerDeliveryConstructionMaterials",
             "vehLargeTruck",
             "vehLargeTruckNeedsRepair"
           ],
           "logisticTypesReceived": [
-            "trailerDeliveryConstructionMaterials",
             "vehLargeTruck",
             "cement",
             "water"
@@ -159,12 +157,10 @@
       ],
       "sitesFile": "mixed.sites.json",
       "logisticTypesProvided": [
-        "trailerDeliveryConstructionMaterials",
         "vehLargeTruck",
         "vehLargeTruckNeedsRepair"
       ],
       "logisticTypesReceived": [
-        "trailerDeliveryConstructionMaterials",
         "vehLargeTruck",
         "cement",
         "water"
@@ -197,48 +193,6 @@
           "filter": "heavyVehFilter",
           "logisticTypes": [
             "vehLargeTruck"
-          ]
-        },
-        {
-          "type": "trailerOfferProvider",
-          "interval": 300,
-          "min": -1,
-          "max": 2,
-          "offerDuration": {
-            "min": 300,
-            "max": 600
-          },
-          "filter": "smallCratePlanksTrailers",
-          "logisticTypes": [
-            "trailerDeliveryConstructionMaterials"
-          ]
-        },
-        {
-          "type": "trailerOfferProvider",
-          "interval": 300,
-          "min": -1,
-          "max": 2,
-          "offerDuration": {
-            "min": 300,
-            "max": 600
-          },
-          "filter": "mediumCratePlanksTrailers",
-          "logisticTypes": [
-            "trailerDeliveryConstructionMaterials"
-          ]
-        },
-        {
-          "type": "trailerOfferProvider",
-          "interval": 300,
-          "min": -1,
-          "max": 2,
-          "offerDuration": {
-            "min": 300,
-            "max": 600
-          },
-          "filter": "bigConstructionMaterials",
-          "logisticTypes": [
-            "trailerDeliveryConstructionMaterials"
           ]
         },
         {
@@ -429,23 +383,34 @@
           "psName": "hotrolled_parking",
           "isInspectSpot": true,
           "logisticTypesProvided": [
-            "industrial"
+            "industrial",
+            "trailerDeliveryContainerFrame",
+            "trailerDeliveryFlatbedPipes"
           ],
           "logisticTypesReceived": [
             "parcel",
-            "industrial"
+            "industrial",
+            "trailerDeliveryContainerNonFluid",
+            "trailerDeliveryFlatbedCoil",
+            "trailerDeliveryFlatbedEmpty",
+            "trailerDeliveryContainerFrame"
           ]
         },
         {
           "psName": "hotrolled_trailer",
           "logisticTypesProvided": [
-            "trailerDeliveryConstructionMaterials",
             "vehLargeTruck",
             "vehLargeTruckNeedsRepair",
-            "industrial"
+            "industrial",
+            "trailerDeliveryContainerFrame",
+            "trailerDeliveryFlatbedPipes"
           ],
           "logisticTypesReceived": [
-            "vehLargeTruck"
+            "vehLargeTruck",
+            "trailerDeliveryContainerNonFluid",
+            "trailerDeliveryFlatbedCoil",
+            "trailerDeliveryFlatbedEmpty",
+            "trailerDeliveryContainerFrame"
           ],
           "loanerTrailerPriority": 1,
           "loanerNonTrailerPriority": 1
@@ -462,44 +427,66 @@
         },
         {
           "psName": "hotrolled_yard1",
-          "logisticTypesProvided": [],
+          "logisticTypesProvided": [
+            "trailerDeliveryContainerFrame",
+            "trailerDeliveryFlatbedPipes"
+          ],
           "logisticTypesReceived": [
             "industrial",
-            "trailerDeliveryConstructionMaterials"
+            "trailerDeliveryContainerNonFluid",
+            "trailerDeliveryFlatbedCoil",
+            "trailerDeliveryFlatbedEmpty",
+            "trailerDeliveryContainerFrame"
           ]
         },
         {
           "psName": "hotrolled_yard2",
-          "logisticTypesProvided": [],
+          "logisticTypesProvided": [
+            "trailerDeliveryContainerFrame",
+            "trailerDeliveryFlatbedPipes"
+          ],
           "logisticTypesReceived": [
             "industrial",
-            "trailerDeliveryConstructionMaterials"
+            "trailerDeliveryContainerNonFluid",
+            "trailerDeliveryFlatbedCoil",
+            "trailerDeliveryFlatbedEmpty",
+            "trailerDeliveryContainerFrame"
           ]
         },
         {
           "psName": "hotrolled_yard3",
-          "logisticTypesProvided": [],
+          "logisticTypesProvided": [
+            "trailerDeliveryContainerFrame",
+            "trailerDeliveryFlatbedPipes"
+          ],
           "logisticTypesReceived": [
             "industrial",
-            "trailerDeliveryConstructionMaterials"
+            "trailerDeliveryContainerNonFluid",
+            "trailerDeliveryFlatbedCoil",
+            "trailerDeliveryFlatbedEmpty",
+            "trailerDeliveryContainerFrame"
           ]
         }
       ],
       "sitesFile": "mixed.sites.json",
       "logisticTypesProvided": [
         "industrial",
-        "trailerDeliveryConstructionMaterials",
         "vehLargeTruck",
         "vehLargeTruckNeedsRepair",
         "hazardousFluid",
-        "ash"
+        "ash",
+        "trailerDeliveryContainerFrame",
+        "trailerDeliveryFlatbedPipes"
       ],
       "logisticTypesReceived": [
         "industrial",
         "parcel",
-        "trailerDeliveryConstructionMaterials",
         "vehLargeTruck",
-        "sand"
+        "sand",
+        "trailerDeliveryContainerNonFluid",
+        "trailerDeliveryFlatbedCoil",
+        "trailerDeliveryFlatbedEmpty",
+        "trailerDeliveryContainerFrame"
       ],
       "logisticGenerators": [
         {
@@ -556,48 +543,6 @@
           "filter": "heavyVehFilter",
           "logisticTypes": [
             "vehLargeTruck"
-          ]
-        },
-        {
-          "type": "trailerOfferProvider",
-          "interval": 300,
-          "min": -1,
-          "max": 2,
-          "offerDuration": {
-            "min": 300,
-            "max": 600
-          },
-          "filter": "smallCratePlanksTrailers",
-          "logisticTypes": [
-            "trailerDeliveryConstructionMaterials"
-          ]
-        },
-        {
-          "type": "trailerOfferProvider",
-          "interval": 300,
-          "min": -1,
-          "max": 2,
-          "offerDuration": {
-            "min": 300,
-            "max": 600
-          },
-          "filter": "mediumCratePlanksTrailers",
-          "logisticTypes": [
-            "trailerDeliveryConstructionMaterials"
-          ]
-        },
-        {
-          "type": "trailerOfferProvider",
-          "interval": 300,
-          "min": -1,
-          "max": 5,
-          "offerDuration": {
-            "min": 300,
-            "max": 600
-          },
-          "filter": "bigConstructionMaterials",
-          "logisticTypes": [
-            "trailerDeliveryConstructionMaterials"
           ]
         },
         {
@@ -635,6 +580,34 @@
           "variance": 2500,
           "interval": 360,
           "rate": 1700
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": -1,
+          "max": 3,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_containerTrailer_40ft_3axle_40ft",
+          "logisticTypes": [
+            "trailerDeliveryContainerFrame"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": -1,
+          "max": 4,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_flatbed_48ft_pipes",
+          "logisticTypes": [
+            "trailerDeliveryFlatbedPipes"
+          ]
         }
       ],
       "logisticMaxItems": 10
@@ -650,23 +623,27 @@
           "psName": "quarry_parking",
           "isInspectSpot": true,
           "logisticTypesProvided": [
-            "industrial"
+            "industrial",
+            "trailerDeliveryContainerFrame"
           ],
           "logisticTypesReceived": [
             "industrial",
-            "parcel"
+            "parcel",
+            "trailerDeliveryContainerNonFluid",
+            "trailerDeliveryContainerFluid"
           ]
         },
         {
           "psName": "quarry_trailer",
           "logisticTypesProvided": [
-            "trailerDeliveryConstructionMaterials",
             "vehLargeTruck",
-            "vehLargeTruckNeedsRepair"
+            "vehLargeTruckNeedsRepair",
+            "trailerDeliveryContainerFrame"
           ],
           "logisticTypesReceived": [
-            "trailerDeliveryConstructionMaterials",
-            "vehLargeTruck"
+            "vehLargeTruck",
+            "trailerDeliveryContainerNonFluid",
+            "trailerDeliveryContainerFluid"
           ],
           "loanerTrailerPriority": 1,
           "loanerNonTrailerPriority": 1
@@ -695,7 +672,6 @@
       "sitesFile": "mixed.sites.json",
       "logisticTypesProvided": [
         "industrial",
-        "trailerDeliveryConstructionMaterials",
         "vehLargeTruck",
         "vehLargeTruckNeedsRepair",
         "hazardousFluid",
@@ -703,15 +679,17 @@
         "sand",
         "gravel",
         "lime",
-        "soil"
+        "soil",
+        "trailerDeliveryContainerFrame"
       ],
       "logisticTypesReceived": [
         "industrial",
         "parcel",
         "cement",
-        "trailerDeliveryConstructionMaterials",
         "vehLargeTruck",
-        "water"
+        "water",
+        "trailerDeliveryContainerNonFluid",
+        "trailerDeliveryContainerFluid"
       ],
       "logisticGenerators": [
         {
@@ -768,48 +746,6 @@
           "filter": "heavyVehFilter",
           "logisticTypes": [
             "vehLargeTruck"
-          ]
-        },
-        {
-          "type": "trailerOfferProvider",
-          "interval": 300,
-          "min": -1,
-          "max": 2,
-          "offerDuration": {
-            "min": 300,
-            "max": 600
-          },
-          "filter": "smallCratePlanksTrailers",
-          "logisticTypes": [
-            "trailerDeliveryConstructionMaterials"
-          ]
-        },
-        {
-          "type": "trailerOfferProvider",
-          "interval": 300,
-          "min": -1,
-          "max": 2,
-          "offerDuration": {
-            "min": 300,
-            "max": 600
-          },
-          "filter": "mediumCratePlanksTrailers",
-          "logisticTypes": [
-            "trailerDeliveryConstructionMaterials"
-          ]
-        },
-        {
-          "type": "trailerOfferProvider",
-          "interval": 300,
-          "min": -1,
-          "max": 2,
-          "offerDuration": {
-            "min": 300,
-            "max": 600
-          },
-          "filter": "bigConstructionMaterials",
-          "logisticTypes": [
-            "trailerDeliveryConstructionMaterials"
           ]
         },
         {
@@ -895,6 +831,20 @@
           "variance": 2500,
           "interval": 360,
           "rate": 1700
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": -1,
+          "max": 3,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_containerTrailer_40ft_3axle_40ft",
+          "logisticTypes": [
+            "trailerDeliveryContainerFrame"
+          ]
         }
       ],
       "logisticMaxItems": 6
@@ -915,12 +865,10 @@
         {
           "psName": "sealbrik_trailer",
           "logisticTypesProvided": [
-            "trailerDeliveryConstructionMaterials",
             "vehLargeTruck",
             "vehLargeTruckNeedsRepair"
           ],
           "logisticTypesReceived": [
-            "trailerDeliveryConstructionMaterials",
             "vehLargeTruck"
           ]
         },
@@ -958,14 +906,12 @@
       ],
       "sitesFile": "mixed.sites.json",
       "logisticTypesProvided": [
-        "trailerDeliveryConstructionMaterials",
         "vehLargeTruck",
         "vehLargeTruckNeedsRepair",
         "hazardousFluid",
         "cement"
       ],
       "logisticTypesReceived": [
-        "trailerDeliveryConstructionMaterials",
         "vehLargeTruck",
         "water",
         "lime",
@@ -999,48 +945,6 @@
           "filter": "heavyVehFilter",
           "logisticTypes": [
             "vehLargeTruck"
-          ]
-        },
-        {
-          "type": "trailerOfferProvider",
-          "interval": 300,
-          "min": -1,
-          "max": 2,
-          "offerDuration": {
-            "min": 300,
-            "max": 600
-          },
-          "filter": "smallCratePlanksTrailers",
-          "logisticTypes": [
-            "trailerDeliveryConstructionMaterials"
-          ]
-        },
-        {
-          "type": "trailerOfferProvider",
-          "interval": 300,
-          "min": -1,
-          "max": 2,
-          "offerDuration": {
-            "min": 300,
-            "max": 600
-          },
-          "filter": "mediumCratePlanksTrailers",
-          "logisticTypes": [
-            "trailerDeliveryConstructionMaterials"
-          ]
-        },
-        {
-          "type": "trailerOfferProvider",
-          "interval": 300,
-          "min": -1,
-          "max": 2,
-          "offerDuration": {
-            "min": 300,
-            "max": 600
-          },
-          "filter": "bigConstructionMaterials",
-          "logisticTypes": [
-            "trailerDeliveryConstructionMaterials"
           ]
         },
         {
@@ -1154,7 +1058,6 @@
             "industrial"
           ],
           "logisticTypesReceived": [
-            "trailerDeliveryConstructionMaterials",
             "vehLargeTruck",
             "industrial"
           ]
@@ -1165,7 +1068,6 @@
             "industrial"
           ],
           "logisticTypesReceived": [
-            "trailerDeliveryConstructionMaterials",
             "vehLargeTruck",
             "industrial"
           ]
@@ -1176,7 +1078,6 @@
             "industrial"
           ],
           "logisticTypesReceived": [
-            "trailerDeliveryConstructionMaterials",
             "vehLargeTruck",
             "industrial"
           ]
@@ -1187,7 +1088,6 @@
             "industrial"
           ],
           "logisticTypesReceived": [
-            "trailerDeliveryConstructionMaterials",
             "vehLargeTruck",
             "industrial"
           ]
@@ -1201,7 +1101,6 @@
         "parcel",
         "food",
         "industrial",
-        "trailerDeliveryConstructionMaterials",
         "vehLargeTruck"
       ],
       "logisticGenerators": [
@@ -1264,61 +1163,51 @@
         {
           "psName": "lensflareLogistics_terminalA",
           "logisticTypesProvided": [
-            "industrial",
-            "trailerDeliveryConstructionMaterials"
+            "industrial"
           ],
           "logisticTypesReceived": [
             "industrial",
-            "trailerDeliveryConstructionMaterials",
             "vehLargeTruck"
           ]
         },
         {
           "psName": "lensflareLogistics_terminalB",
           "logisticTypesProvided": [
-            "industrial",
-            "trailerDeliveryConstructionMaterials"
+            "industrial"
           ],
           "logisticTypesReceived": [
             "industrial",
-            "trailerDeliveryConstructionMaterials",
             "vehLargeTruck"
           ]
         },
         {
           "psName": "lensflareLogistics_terminalC",
           "logisticTypesProvided": [
-            "industrial",
-            "trailerDeliveryConstructionMaterials"
+            "industrial"
           ],
           "logisticTypesReceived": [
             "industrial",
-            "trailerDeliveryConstructionMaterials",
             "vehLargeTruck"
           ]
         },
         {
           "psName": "lensflareLogistics_terminalD",
           "logisticTypesProvided": [
-            "industrial",
-            "trailerDeliveryConstructionMaterials"
+            "industrial"
           ],
           "logisticTypesReceived": [
             "industrial",
-            "trailerDeliveryConstructionMaterials",
             "vehLargeTruck"
           ]
         }
       ],
       "sitesFile": "mixed.sites.json",
       "logisticTypesProvided": [
-        "industrial",
-        "trailerDeliveryConstructionMaterials"
+        "industrial"
       ],
       "logisticTypesReceived": [
         "industrial",
         "parcel",
-        "trailerDeliveryConstructionMaterials",
         "vehLargeTruck"
       ],
       "logisticGenerators": [
@@ -1363,25 +1252,33 @@
           "psName": "refinery_logistics_parking",
           "isInspectSpot": true,
           "logisticTypesProvided": [
-            "industrial"
+            "industrial",
+            "trailerDeliveryContainerFrame",
+            "trailerDeliveryDryvan"
           ],
           "logisticTypesReceived": [
             "food",
             "parcel",
-            "industrial"
+            "industrial",
+            "trailerDeliveryContainerNonFluid",
+            "trailerDeliveryContainerFluid",
+            "trailerDeliveryDryvan"
           ]
         },
         {
           "psName": "refinery_logistics_trailer",
           "isInspectSpot": false,
           "logisticTypesProvided": [
-            "trailerDeliveryConstructionMaterials",
             "vehLargeTruck",
-            "vehLargeTruckNeedsRepair"
+            "vehLargeTruckNeedsRepair",
+            "trailerDeliveryContainerFrame",
+            "trailerDeliveryDryvan"
           ],
           "logisticTypesReceived": [
-            "trailerDeliveryConstructionMaterials",
-            "vehLargeTruck"
+            "vehLargeTruck",
+            "trailerDeliveryContainerNonFluid",
+            "trailerDeliveryContainerFluid",
+            "trailerDeliveryDryvan"
           ]
         },
         {
@@ -1412,16 +1309,19 @@
       "sitesFile": "mixed.sites.json",
       "logisticTypesProvided": [
         "industrial",
-        "trailerDeliveryConstructionMaterials",
         "vehLargeTruck",
-        "vehLargeTruckNeedsRepair"
+        "vehLargeTruckNeedsRepair",
+        "trailerDeliveryContainerFrame",
+        "trailerDeliveryDryvan"
       ],
       "logisticTypesReceived": [
         "industrial",
         "food",
         "parcel",
-        "trailerDeliveryConstructionMaterials",
-        "vehLargeTruck"
+        "vehLargeTruck",
+        "trailerDeliveryContainerNonFluid",
+        "trailerDeliveryContainerFluid",
+        "trailerDeliveryDryvan"
       ],
       "logisticGenerators": [
         {
@@ -1493,42 +1393,28 @@
           "type": "trailerOfferProvider",
           "interval": 300,
           "min": -1,
-          "max": 2,
+          "max": 3,
           "offerDuration": {
             "min": 300,
             "max": 600
           },
-          "filter": "smallCratePlanksTrailers",
+          "filter": "vanillaTrailer_containerTrailer_40ft_3axle_40ft",
           "logisticTypes": [
-            "trailerDeliveryConstructionMaterials"
+            "trailerDeliveryContainerFrame"
           ]
         },
         {
           "type": "trailerOfferProvider",
           "interval": 300,
           "min": -1,
-          "max": 2,
+          "max": 3,
           "offerDuration": {
             "min": 300,
             "max": 600
           },
-          "filter": "mediumCratePlanksTrailers",
+          "filter": "vanillaTrailer_dryvan_53ft",
           "logisticTypes": [
-            "trailerDeliveryConstructionMaterials"
-          ]
-        },
-        {
-          "type": "trailerOfferProvider",
-          "interval": 300,
-          "min": -1,
-          "max": 2,
-          "offerDuration": {
-            "min": 300,
-            "max": 600
-          },
-          "filter": "bigConstructionMaterials",
-          "logisticTypes": [
-            "trailerDeliveryConstructionMaterials"
+            "trailerDeliveryDryvan"
           ]
         }
       ],
@@ -1545,7 +1431,8 @@
           "psName": "refinery_parking",
           "isInspectSpot": true,
           "logisticTypesProvided": [
-            "gasoline"
+            "gasoline",
+            "trailerDeliveryContainerFluid"
           ],
           "logisticTypesReceived": [
             "food",
@@ -1589,7 +1476,8 @@
       "logisticTypesProvided": [
         "gasoline",
         "diesel",
-        "water"
+        "water",
+        "trailerDeliveryContainerFluid"
       ],
       "logisticTypesReceived": [
         "parcel",
@@ -1661,6 +1549,48 @@
           "min": 1,
           "max": 3,
           "interval": 90
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": 0,
+          "max": 2,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_containerTrailer_40ft_3axle_tank",
+          "logisticTypes": [
+            "trailerDeliveryContainerFluid"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": 0,
+          "max": 1,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_tanker_diesel_3",
+          "logisticTypes": [
+            "diesel"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": 0,
+          "max": 1,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_tanker_petroleum_3",
+          "logisticTypes": [
+            "gasoline"
+          ]
         }
       ],
       "logisticMaxItems": 10
@@ -1675,20 +1605,24 @@
         {
           "psName": "pier_parking",
           "isInspectSpot": true,
-          "logisticTypesProvided": [],
-          "logisticTypesReceived": []
+          "logisticTypesProvided": [
+            "trailerDeliveryContainerFluid"
+          ],
+          "logisticTypesReceived": [
+            "trailerDeliveryContainerFrame"
+          ]
         },
         {
           "psName": "pier_trailer",
           "logisticTypesProvided": [
-            "trailerDeliveryConstructionMaterials",
             "vehLargeTruck",
-            "vehLargeTruckNeedsRepair"
+            "vehLargeTruckNeedsRepair",
+            "trailerDeliveryContainerFluid"
           ],
           "logisticTypesReceived": [
-            "trailerDeliveryConstructionMaterials",
             "vehLargeTruck",
-            "vehLargeTruckNeedsRepair"
+            "vehLargeTruckNeedsRepair",
+            "trailerDeliveryContainerFrame"
           ]
         },
         {
@@ -1701,15 +1635,15 @@
       ],
       "sitesFile": "mixed.sites.json",
       "logisticTypesProvided": [
-        "trailerDeliveryConstructionMaterials",
-        "vehLargeTruck",
-        "vehLargeTruckNeedsRepair"
-      ],
-      "logisticTypesReceived": [
-        "trailerDeliveryConstructionMaterials",
         "vehLargeTruck",
         "vehLargeTruckNeedsRepair",
-        "hazardousFluid"
+        "trailerDeliveryContainerFluid"
+      ],
+      "logisticTypesReceived": [
+        "vehLargeTruck",
+        "vehLargeTruckNeedsRepair",
+        "hazardousFluid",
+        "trailerDeliveryContainerFrame"
       ],
       "logisticGenerators": [
         {
@@ -1742,48 +1676,6 @@
           ]
         },
         {
-          "type": "trailerOfferProvider",
-          "interval": 300,
-          "min": -1,
-          "max": 2,
-          "offerDuration": {
-            "min": 300,
-            "max": 600
-          },
-          "filter": "smallCratePlanksTrailers",
-          "logisticTypes": [
-            "trailerDeliveryConstructionMaterials"
-          ]
-        },
-        {
-          "type": "trailerOfferProvider",
-          "interval": 300,
-          "min": -1,
-          "max": 2,
-          "offerDuration": {
-            "min": 300,
-            "max": 600
-          },
-          "filter": "mediumCratePlanksTrailers",
-          "logisticTypes": [
-            "trailerDeliveryConstructionMaterials"
-          ]
-        },
-        {
-          "type": "trailerOfferProvider",
-          "interval": 300,
-          "min": -1,
-          "max": 2,
-          "offerDuration": {
-            "min": 300,
-            "max": 600
-          },
-          "filter": "bigConstructionMaterials",
-          "logisticTypes": [
-            "trailerDeliveryConstructionMaterials"
-          ]
-        },
-        {
           "type": "materialReceiver",
           "logisticTypes": [
             "hazardousFluid"
@@ -1794,6 +1686,20 @@
           "variance": 2000,
           "interval": 100,
           "rate": 1900
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": -1,
+          "max": 5,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_containerTrailer_40ft_3axle_tank",
+          "logisticTypes": [
+            "trailerDeliveryContainerFluid"
+          ]
         }
       ],
       "logisticMaxItems": 0
@@ -1805,7 +1711,9 @@
       "preview": "previews/dirt_track_a.jpg",
       "manualAccessPoints": [
         {
-          "psName": "dirt_tracks_offroad_parking"
+          "psName": "dirt_tracks_offroad_parking",
+          "logisticTypesProvided": [],
+          "logisticTypesReceived": []
         }
       ],
       "sitesFile": "mixed.sites.json",
@@ -1834,7 +1742,9 @@
       "preview": "previews/dirt_track_b.jpg",
       "manualAccessPoints": [
         {
-          "psName": "dirt_tracks_round_parking"
+          "psName": "dirt_tracks_round_parking",
+          "logisticTypesProvided": [],
+          "logisticTypesReceived": []
         }
       ],
       "sitesFile": "mixed.sites.json",
