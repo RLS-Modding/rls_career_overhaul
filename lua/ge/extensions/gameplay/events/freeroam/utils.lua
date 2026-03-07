@@ -105,7 +105,8 @@ local function initDisplays()
   resetDisplays()
 end
 
-local function displayMessage(message, duration)
+local function displayMessage(message, duration, forceShow)
+  if _G.freeroamHubSuppressUIMessages and forceShow ~= true then return end
   ui_message(message, duration, "FRE", "info")
 end
 

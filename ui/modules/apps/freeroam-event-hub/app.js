@@ -6,12 +6,20 @@ angular.module('beamng.apps')
     scope: true,
     template:
       '<div class="freeroam-event-hub" style="width:100%;background:#000;color:#fff;font-size:22px;line-height:1.4;box-sizing:border-box;overflow:visible;" ng-class="{ \'hub-available\': available }">' +
-        '<div ng-if="available" class="hub-panel" style="width:100%;max-width:100%;background:#000;border:1px solid rgba(255,255,255,0.25);border-radius:8px;box-sizing:border-box;">' +
+        '<div class="hub-panel" style="width:100%;max-width:100%;background:#000;border:1px solid rgba(255,255,255,0.25);border-radius:8px;box-sizing:border-box;">' +
           '<div class="hub-header" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);border-radius:8px 8px 0 0;min-height:44px;flex-shrink:0;">' +
             '<span class="hub-title" style="flex:1;min-width:0;font-weight:700;font-size:20px;color:#fff;">{{ getHeaderTitle() }}</span>' +
             '<button class="hub-header-btn" ng-click="closeApp()" title="Close" style="flex-shrink:0;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);border-radius:6px;color:#fff;font-weight:600;padding:6px 12px;cursor:pointer;white-space:nowrap;">Close</button>' +
           '</div>' +
+          '<div class="hub-prefs" style="padding:8px 14px;border-bottom:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.03);font-size:16px;color:#aaa;">' +
+            '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;">' +
+              '<input type="checkbox" ng-model="hubAutoShow" ng-change="setHubAutoShow(hubAutoShow)" />' +
+              '<span>Auto-show when entering event zones</span>' +
+            '</label>' +
+          '</div>' +
           '<div class="hub-content" style="padding:14px 16px;color:#fff;font-size:22px;">' +
+            '<div ng-if="!available" style="font-size:18px;color:#888;">Enter an event zone to see live race info.</div>' +
+            '<div ng-if="available">' +
             '<div ng-if="showSessionEnded" style="display:flex;flex-direction:column;gap:12px;">' +
               '<div style="font-size:24px;font-weight:700;color:#9cf;">Session ended</div>' +
               '<div style="font-size:20px;color:#aaa;">You left the race area.</div>' +
@@ -42,27 +50,27 @@ angular.module('beamng.apps')
               '</div>' +
               '<button type="button" class="hub-menu-btn" ng-click="closeApp()" style="margin-top:8px;padding:12px 14px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);border-radius:6px;color:#fff;font-size:22px;font-weight:600;cursor:pointer;">Close</button>' +
             '</div>' +
-            '<div ng-if="!showResult && !showSessionEnded && !showRaceHistory && selectedRace && !isLiveRace()" style="color:#fff;display:flex;flex-direction:column;gap:2px;">' +
-              '<div style="margin-top:8px;color:#aaa;font-size:22px;font-style:italic;">Drive to start line to begin.</div>' +
+            '<div ng-if="!showResult && !showSessionEnded && !showRaceHistory && selectedRace && !isLiveRace()" style="color:#fff;display:flex;flex-direction:column;gap:8px;">' +
+              '<div ng-if="raceState.stagedMessage" style="margin-top:8px;color:#ccc;font-size:18px;line-height:1.4;white-space:pre-line;">{{ raceState.stagedMessage }}</div>' +
+              '<div style="color:#aaa;font-size:22px;font-style:italic;">Drive to start line to begin.</div>' +
             '</div>' +
             '<div ng-if="!showResult && !showSessionEnded && !showRaceHistory && isLiveRace()" style="display:flex;flex-direction:column;gap:3px;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.2);">' +
               '<div ng-if="raceState.routeName" class="hub-detail-route" style="font-size:20px;color:#9cf;margin-bottom:2px;">{{ raceState.routeName }}</div>' +
-              '<div class="hub-detail-row" style="font-size:26px;">Lap {{ (raceState.currentLap || 0) + 1 }}</div>' +
+              '<div class="hub-detail-row" style="font-size:26px;">Lap {{ raceState.displayLap != null ? raceState.displayLap : (raceState.currentLap || 0) + 1 }}</div>' +
               '<div ng-if="raceState.invalidLap" class="hub-detail-invalid" style="color:#f96;font-size:24px;font-style:italic;">Lap invalidated</div>' +
               '<div class="hub-detail-timer" style="font-size:30px;font-weight:700;display:flex;justify-content:space-between;align-items:center;gap:8px;">' +
                 '<span>Lap: {{ formatTime(raceState.currentLapTime) }}</span>' +
                 '<span ng-if="getDelta() !== null" ng-style="getDelta() < 0 ? { color: \'#3c3\', fontWeight: 600 } : { color: \'#f44\', fontWeight: 600 }">{{ formatDelta(getDelta()) }}</span>' +
               '</div>' +
-              '<div style="font-size:24px;">Best lap: {{ raceState.bestLapThisRun != null ? formatTime(raceState.bestLapThisRun) : "—" }}</div>' +
+              '<div style="font-size:24px;">Best lap: {{ (raceState.bestLapThisRun != null ? formatTime(raceState.bestLapThisRun) : (raceState.bestLapFromHistory != null ? formatTime(raceState.bestLapFromHistory) : "—")) }}</div>' +
               '<div ng-if="raceState.lastLapTime != null" style="font-size:24px;">Last lap: {{ formatTime(raceState.lastLapTime) }}</div>' +
               '<div ng-if="raceState.topSpeedThisLap != null" style="font-size:24px;">Top speed: {{ formatSpeed(raceState.topSpeedThisLap) }}</div>' +
-              '<div ng-if="splitsList().length" style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.15);">' +
-                '<div style="font-size:20px;color:#9cf;margin-bottom:4px;">Checkpoints</div>' +
-                '<div ng-repeat="split in splitsList() track by $index" style="font-size:20px;display:flex;justify-content:space-between;gap:8px;padding:2px 0;">' +
-                  '<span>CP {{ $index + 1 }}: {{ formatTime(split) }}</span>' +
-                  '<span ng-if="getSectorDelta($index) !== null" ng-style="getSectorDelta($index) < 0 ? { color: \'#3c3\', fontWeight: 600 } : { color: \'#f44\', fontWeight: 600 }">{{ formatDelta(getSectorDelta($index)) }}</span>' +
-                '</div>' +
+              '<div ng-if="lastCheckpoint()" style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.15);font-size:20px;">' +
+                '<span>Checkpoint {{ lastCheckpoint().num }}/{{ lastCheckpoint().total }} – Time: {{ formatTime(lastCheckpoint().time) }}</span>' +
+                '<span ng-if="lastCheckpoint().delta !== null" ng-style="lastCheckpoint().delta < 0 ? { color: \'#3c3\', fontWeight: 600 } : { color: \'#f44\', fontWeight: 600 }" style="margin-left:8px;">Split: {{ formatDelta(lastCheckpoint().delta) }}</span>' +
               '</div>' +
+              '<button type="button" class="hub-menu-btn" ng-click="endEvent()" style="margin-top:10px;padding:10px 14px;background:rgba(200,80,80,0.35);border:1px solid rgba(255,255,255,0.3);border-radius:6px;color:#faa;font-size:18px;font-weight:600;cursor:pointer;">End event</button>' +
+            '</div>' +
             '</div>' +
           '</div>' +
         '</div>' +
@@ -77,6 +85,7 @@ angular.module('beamng.apps')
       scope.showSessionEnded = false;
       scope.showRaceHistory = false;
       scope.raceHistoryEntries = [];
+      scope.hubAutoShow = true;
 
       function safeApply(fn) {
         var phase = scope.$$phase;
@@ -130,11 +139,33 @@ angular.module('beamng.apps')
         });
       });
 
+      scope.$on('FreeroamHubPrefs', function (event, data) {
+        safeApply(function () {
+          if (data && typeof data.autoShow === 'boolean') scope.hubAutoShow = data.autoShow;
+        });
+      });
+
+      scope.$on('FreeroamHubCloseApp', function () {
+        safeApply(function () {
+          $rootScope.$broadcast('appContainer:removeApp', 'freeroamEventHub');
+        });
+      });
+
+      scope.setHubAutoShow = function (enable) {
+        if (!api || !api.engineLua) return;
+        api.engineLua('extensions.hook("onFreeroamHubSetAutoShow", ' + (enable ? 'true' : 'false') + ')');
+      };
+
       scope.goToRaceHistory = function () {
         scope.showRaceHistory = true;
         if (api && api.engineLua) {
           api.engineLua('extensions.hook("onFreeroamHubRequestRaceHistory")');
         }
+      };
+
+      scope.endEvent = function () {
+        if (!api || !api.engineLua) return;
+        api.engineLua('extensions.hook("onFreeroamHubEndEvent")');
       };
 
       $timeout(function () {
@@ -180,6 +211,15 @@ angular.module('beamng.apps')
           else break;
         }
         return arr;
+      };
+
+      scope.lastCheckpoint = function () {
+        var list = scope.splitsList();
+        if (!list || list.length === 0) return null;
+        var idx = list.length - 1;
+        var total = (scope.raceState && scope.raceState.totalCheckpoints != null) ? scope.raceState.totalCheckpoints : list.length;
+        var delta = scope.getSectorDelta ? scope.getSectorDelta(idx) : null;
+        return { num: list.length, total: total, time: list[idx], delta: delta };
       };
       scope.lastSplitTime = function () {
         var list = scope.splitsList();
