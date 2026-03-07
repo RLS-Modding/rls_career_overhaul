@@ -392,7 +392,6 @@
             "industrial",
             "trailerDeliveryContainerNonFluid",
             "trailerDeliveryFlatbedCoil",
-            "trailerDeliveryFlatbedEmpty",
             "trailerDeliveryContainerFrame"
           ]
         },
@@ -409,7 +408,6 @@
             "vehLargeTruck",
             "trailerDeliveryContainerNonFluid",
             "trailerDeliveryFlatbedCoil",
-            "trailerDeliveryFlatbedEmpty",
             "trailerDeliveryContainerFrame"
           ],
           "loanerTrailerPriority": 1,
@@ -435,7 +433,6 @@
             "industrial",
             "trailerDeliveryContainerNonFluid",
             "trailerDeliveryFlatbedCoil",
-            "trailerDeliveryFlatbedEmpty",
             "trailerDeliveryContainerFrame"
           ]
         },
@@ -449,7 +446,6 @@
             "industrial",
             "trailerDeliveryContainerNonFluid",
             "trailerDeliveryFlatbedCoil",
-            "trailerDeliveryFlatbedEmpty",
             "trailerDeliveryContainerFrame"
           ]
         },
@@ -463,7 +459,6 @@
             "industrial",
             "trailerDeliveryContainerNonFluid",
             "trailerDeliveryFlatbedCoil",
-            "trailerDeliveryFlatbedEmpty",
             "trailerDeliveryContainerFrame"
           ]
         }
@@ -485,7 +480,6 @@
         "sand",
         "trailerDeliveryContainerNonFluid",
         "trailerDeliveryFlatbedCoil",
-        "trailerDeliveryFlatbedEmpty",
         "trailerDeliveryContainerFrame"
       ],
       "logisticGenerators": [
@@ -585,12 +579,12 @@
           "type": "trailerOfferProvider",
           "interval": 300,
           "min": -1,
-          "max": 3,
+          "max": 1,
           "offerDuration": {
             "min": 300,
             "max": 600
           },
-          "filter": "vanillaTrailer_containerTrailer_40ft_3axle_40ft",
+          "filter": "vanillaTrailer_containerTrailer_20ft_2axle_transport",
           "logisticTypes": [
             "trailerDeliveryContainerFrame"
           ]
@@ -599,12 +593,68 @@
           "type": "trailerOfferProvider",
           "interval": 300,
           "min": -1,
-          "max": 4,
+          "max": 1,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_containerTrailer_40ft_3axle_transport",
+          "logisticTypes": [
+            "trailerDeliveryContainerFrame"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": -1,
+          "max": 1,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_flatbed_28ft_double_pipes",
+          "logisticTypes": [
+            "trailerDeliveryFlatbedPipes"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": -1,
+          "max": 1,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_flatbed_32ft_pipes",
+          "logisticTypes": [
+            "trailerDeliveryFlatbedPipes"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": -1,
+          "max": 1,
           "offerDuration": {
             "min": 300,
             "max": 600
           },
           "filter": "vanillaTrailer_flatbed_48ft_pipes",
+          "logisticTypes": [
+            "trailerDeliveryFlatbedPipes"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": -1,
+          "max": 1,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_flatbed_53ft_pipes",
           "logisticTypes": [
             "trailerDeliveryFlatbedPipes"
           ]
@@ -835,13 +885,27 @@
         {
           "type": "trailerOfferProvider",
           "interval": 300,
-          "min": -1,
-          "max": 3,
+          "min": 0,
+          "max": 1,
           "offerDuration": {
             "min": 300,
             "max": 600
           },
-          "filter": "vanillaTrailer_containerTrailer_40ft_3axle_40ft",
+          "filter": "vanillaTrailer_containerTrailer_20ft_2axle_transport",
+          "logisticTypes": [
+            "trailerDeliveryContainerFrame"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": 0,
+          "max": 1,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_containerTrailer_40ft_3axle_transport",
           "logisticTypes": [
             "trailerDeliveryContainerFrame"
           ]
@@ -1393,12 +1457,12 @@
           "type": "trailerOfferProvider",
           "interval": 300,
           "min": -1,
-          "max": 3,
+          "max": 1,
           "offerDuration": {
             "min": 300,
             "max": 600
           },
-          "filter": "vanillaTrailer_containerTrailer_40ft_3axle_40ft",
+          "filter": "vanillaTrailer_containerTrailer_20ft_2axle_transport",
           "logisticTypes": [
             "trailerDeliveryContainerFrame"
           ]
@@ -1407,7 +1471,147 @@
           "type": "trailerOfferProvider",
           "interval": 300,
           "min": -1,
-          "max": 3,
+          "max": 1,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_containerTrailer_40ft_3axle_transport",
+          "logisticTypes": [
+            "trailerDeliveryContainerFrame"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": -1,
+          "max": 1,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_dryvan_28ft",
+          "logisticTypes": [
+            "trailerDeliveryDryvan"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": 0,
+          "max": 1,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_dryvan_28ft_4500kg",
+          "logisticTypes": [
+            "trailerDeliveryDryvan"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": 0,
+          "max": 1,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_dryvan_28ft_9600kg",
+          "logisticTypes": [
+            "trailerDeliveryDryvan"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": -1,
+          "max": 1,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_dryvan_48ft",
+          "logisticTypes": [
+            "trailerDeliveryDryvan"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": 0,
+          "max": 1,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_dryvan_48ft_19200kg",
+          "logisticTypes": [
+            "trailerDeliveryDryvan"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": -1,
+          "max": 1,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_dryvan_48ft_loadingramp",
+          "logisticTypes": [
+            "trailerDeliveryDryvan"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": -1,
+          "max": 1,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_dryvan_48ft_loadingramp_offset",
+          "logisticTypes": [
+            "trailerDeliveryDryvan"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": -1,
+          "max": 1,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_dryvan_48ft_spreadaxle",
+          "logisticTypes": [
+            "trailerDeliveryDryvan"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": 0,
+          "max": 1,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_dryvan_48ft_spreadaxle_6750kg",
+          "logisticTypes": [
+            "trailerDeliveryDryvan"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": -1,
+          "max": 1,
           "offerDuration": {
             "min": 300,
             "max": 600
@@ -1416,9 +1620,51 @@
           "logisticTypes": [
             "trailerDeliveryDryvan"
           ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": 0,
+          "max": 1,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_dryvan_53ft_13500kg",
+          "logisticTypes": [
+            "trailerDeliveryDryvan"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": 0,
+          "max": 1,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_dryvan_53ft_22400kg",
+          "logisticTypes": [
+            "trailerDeliveryDryvan"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": -1,
+          "max": 1,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_dryvan_53ft_spreadaxle",
+          "logisticTypes": [
+            "trailerDeliveryDryvan"
+          ]
         }
       ],
-      "logisticMaxItems": 30
+      "logisticMaxItems": 12
     },
     {
       "id": "spearleaf_refinery",
@@ -1554,20 +1800,6 @@
           "type": "trailerOfferProvider",
           "interval": 300,
           "min": 0,
-          "max": 2,
-          "offerDuration": {
-            "min": 300,
-            "max": 600
-          },
-          "filter": "vanillaTrailer_containerTrailer_40ft_3axle_tank",
-          "logisticTypes": [
-            "trailerDeliveryContainerFluid"
-          ]
-        },
-        {
-          "type": "trailerOfferProvider",
-          "interval": 300,
-          "min": 0,
           "max": 1,
           "offerDuration": {
             "min": 300,
@@ -1590,6 +1822,34 @@
           "filter": "vanillaTrailer_tanker_petroleum_3",
           "logisticTypes": [
             "gasoline"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": 0,
+          "max": 1,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_containerTrailer_20ft_2axle_tank",
+          "logisticTypes": [
+            "trailerDeliveryContainerFluid"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": 0,
+          "max": 1,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_containerTrailer_40ft_3axle_tank",
+          "logisticTypes": [
+            "trailerDeliveryContainerFluid"
           ]
         }
       ],
@@ -1690,8 +1950,22 @@
         {
           "type": "trailerOfferProvider",
           "interval": 300,
-          "min": -1,
-          "max": 5,
+          "min": 1,
+          "max": 2,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_containerTrailer_20ft_2axle_tank",
+          "logisticTypes": [
+            "trailerDeliveryContainerFluid"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": 1,
+          "max": 2,
           "offerDuration": {
             "min": 300,
             "max": 600

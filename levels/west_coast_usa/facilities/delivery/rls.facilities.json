@@ -218,6 +218,7 @@
       "manualAccessPoints": [
         {
           "psName": "mallBank",
+          "isInspectSpot": true,
           "logisticTypesProvided": [
             "trailerDeliveryResidential",
             "trailerDeliveryFlatbedWood"
@@ -269,22 +270,134 @@
         {
           "type": "trailerOfferProvider",
           "interval": 210,
-          "min": 1,
-          "max": 3,
+          "min": 0,
+          "max": 1,
           "offerDuration": {
             "min": 300,
             "max": 600
           },
-          "filter": "vanillaTrailer_boxutility_unloaded",
+          "filter": "vanillaTrailer_boxutility_loaded_200",
           "logisticTypes": [
             "trailerDeliveryResidential"
           ]
         },
         {
           "type": "trailerOfferProvider",
-          "interval": 180,
-          "min": 1,
-          "max": 3,
+          "interval": 210,
+          "min": 0,
+          "max": 1,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_boxutility_loaded_400",
+          "logisticTypes": [
+            "trailerDeliveryResidential"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 210,
+          "min": 0,
+          "max": 1,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_boxutility_loaded_600",
+          "logisticTypes": [
+            "trailerDeliveryResidential"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 210,
+          "min": 0,
+          "max": 1,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_boxutility_large_loaded_400",
+          "logisticTypes": [
+            "trailerDeliveryResidential"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 210,
+          "min": 0,
+          "max": 1,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_boxutility_large_loaded_800",
+          "logisticTypes": [
+            "trailerDeliveryResidential"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 210,
+          "min": 0,
+          "max": 1,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_cargotrailer_loaded_400",
+          "logisticTypes": [
+            "trailerDeliveryResidential"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 210,
+          "min": 0,
+          "max": 1,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_cargotrailer_loaded_800",
+          "logisticTypes": [
+            "trailerDeliveryResidential"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 210,
+          "min": 0,
+          "max": 1,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_tsfb_loaded_400",
+          "logisticTypes": [
+            "trailerDeliveryResidential"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 210,
+          "min": 0,
+          "max": 1,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_tsfb_loaded_800",
+          "logisticTypes": [
+            "trailerDeliveryResidential"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 210,
+          "min": 0,
+          "max": 1,
           "offerDuration": {
             "min": 300,
             "max": 600
@@ -297,13 +410,41 @@
         {
           "type": "trailerOfferProvider",
           "interval": 210,
-          "min": 1,
-          "max": 3,
+          "min": 0,
+          "max": 1,
           "offerDuration": {
             "min": 300,
             "max": 600
           },
-          "filter": "vanillaTrailer_boxutility_loaded_planks",
+          "filter": "vanillaTrailer_boxutility_large_loaded_couch",
+          "logisticTypes": [
+            "trailerDeliveryResidential"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 210,
+          "min": 0,
+          "max": 1,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_cargotrailer_loaded_couch",
+          "logisticTypes": [
+            "trailerDeliveryResidential"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 210,
+          "min": 0,
+          "max": 1,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_tsfb_loaded_couch",
           "logisticTypes": [
             "trailerDeliveryResidential"
           ]
@@ -312,7 +453,37 @@
           "type": "trailerOfferProvider",
           "interval": 300,
           "min": 0,
-          "max": 2,
+          "max": 1,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_flatbed_28ft_single_wood",
+          "logisticTypes": [
+            "trailerDeliveryFlatbedWood",
+            "trailerDeliveryResidential"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": 0,
+          "max": 1,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_flatbed_32ft_wood",
+          "logisticTypes": [
+            "trailerDeliveryFlatbedWood",
+            "trailerDeliveryResidential"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": 0,
+          "max": 1,
           "offerDuration": {
             "min": 300,
             "max": 600
@@ -322,9 +493,24 @@
             "trailerDeliveryFlatbedWood",
             "trailerDeliveryResidential"
           ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": 0,
+          "max": 1,
+          "offerDuration": {
+            "min": 300,
+            "max": 600
+          },
+          "filter": "vanillaTrailer_flatbed_53ft_wood",
+          "logisticTypes": [
+            "trailerDeliveryFlatbedWood",
+            "trailerDeliveryResidential"
+          ]
         }
       ],
-      "logisticMaxItems": 0
+      "logisticMaxItems": 8
     },
     {
       "id": "tennisPickup",
