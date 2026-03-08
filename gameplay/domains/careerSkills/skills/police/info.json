@@ -93,6 +93,12 @@
                     "icon": "badgeRoundStar",
                     "heading": "Milestone Tier 1",
                     "description": "Reached level 5 in Police Skill."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "keys1",
+                    "heading": "Police Loaner Milestone I",
+                    "description": "Loaner progression marker for police vehicles. Actual loaner unlocks remain based on police organization reputation."
                 }
             ]
         },
@@ -184,6 +190,12 @@
                     "icon": "badgeRoundStar",
                     "heading": "Milestone Tier 2",
                     "description": "Reached level 10 in Police Skill."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "keys1",
+                    "heading": "Police Loaner Milestone II",
+                    "description": "Loaner progression marker for police vehicles. Actual loaner unlocks remain based on police organization reputation."
                 }
             ]
         },
@@ -275,6 +287,12 @@
                     "icon": "badgeRoundStar",
                     "heading": "Milestone Tier 3",
                     "description": "Reached level 15 in Police Skill."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "keys1",
+                    "heading": "Police Loaner Milestone III",
+                    "description": "Loaner progression marker for police vehicles. Actual loaner unlocks remain based on police organization reputation."
                 }
             ]
         },
@@ -457,6 +475,12 @@
                     "icon": "badgeRoundStar",
                     "heading": "Milestone Tier 5",
                     "description": "Reached level 25 in Police Skill."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "keys1",
+                    "heading": "Police Loaner Milestone IV",
+                    "description": "Loaner progression marker for police vehicles. Actual loaner unlocks remain based on police organization reputation."
                 }
             ]
         },
