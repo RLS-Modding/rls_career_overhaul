@@ -291,16 +291,6 @@ local function getRewardsWithBreakdown(taskData)
     table.insert(breakdown, organizationElement)
   end
 
-  local branchMultiplier = career_branches.getLevelRewardMultiplier("logistics")
-  if branchMultiplier > 1 then
-    local level = career_branches.getBranchLevel("logistics")
-    table.insert(breakdown, {
-      label = "Level " .. level .. " Multiplier",
-      rewards = {money = originalRewards.money * branchMultiplier - originalRewards.money},
-      simpleBreakdownType = "branch",
-    })
-  end
-
   -- Calculate precision parking and add to breakdown
   if taskData.dropOffPsPath then
     local targetParkingSpot = dGenerator.getParkingSpotByPath(taskData.dropOffPsPath)

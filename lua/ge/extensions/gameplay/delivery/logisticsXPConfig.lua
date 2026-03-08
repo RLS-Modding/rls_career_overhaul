@@ -261,6 +261,9 @@ local DEFAULT_CONFIG = {
   rounding = {
     moneyFinal = "round"
   },
+  levelBonus = {
+    moneyPercentPerLevel = 0
+  },
   parcel = {
     baseXP = 2,
     slotMilestones = {16, 32, 64},
@@ -408,6 +411,15 @@ local function sanitizeConfig(rawConfig)
     cfg.rounding.moneyFinal = readRoundMode(rawRounding.moneyFinal, DEFAULT_CONFIG.rounding.moneyFinal, "rounding.moneyFinal", issues)
   end
 
+  local rawLevelBonus = rawConfig.levelBonus
+  if rawLevelBonus == nil then
+    appendIssue(issues, "levelBonus section missing; using defaults")
+  elseif type(rawLevelBonus) ~= "table" then
+    appendIssue(issues, "levelBonus section invalid; using defaults")
+  else
+    cfg.levelBonus.moneyPercentPerLevel = readNumber(rawLevelBonus.moneyPercentPerLevel, DEFAULT_CONFIG.levelBonus.moneyPercentPerLevel, 0, nil, "levelBonus.moneyPercentPerLevel", issues)
+  end
+
   local rawParcel = rawConfig.parcel
   if type(rawParcel) ~= "table" then
     appendIssue(issues, "parcel section missing; using defaults")
@@ -532,6 +544,10 @@ end
 
 M.getPrecisionParkingRules = function()
   return loadConfig(false).precisionParking
+end
+
+M.getLevelBonusRules = function()
+  return loadConfig(false).levelBonus
 end
 
 M.applyRounding = applyRounding

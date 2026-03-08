@@ -3,6 +3,9 @@
   "rounding": {
     "moneyFinal": "round"
   },
+  "levelBonus": {
+    "moneyPercentPerLevel": 0.02
+  },
   "parcel": {
     "baseXP": 2,
     "slotMilestones": [16, 32, 64, 128],

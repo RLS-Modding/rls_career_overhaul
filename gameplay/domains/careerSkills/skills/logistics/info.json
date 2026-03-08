@@ -1,6 +1,6 @@
 {
     "name": "Logistics Skill",
-    "description": "Progress a dedicated 1-50 logistics mastery track with milestone unlock rewards.",
+    "description": "Progress a dedicated 1-50 logistics mastery track with milestone unlock rewards. Each Logistics level also increases delivery payout (default +2% per level).",
     "order": 1000,
     "isSkill": true,
     "attributeKey": "logistics-delivery",
@@ -19,6 +19,12 @@
                 "junkerVeh"
             ],
             "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "beamCurrency",
+                    "heading": "Passive Payout Bonus",
+                    "description": "Every Logistics level increases delivery money payout (default +2% per level)."
+                },
                 {
                     "type": "unlockCard",
                     "icon": "boxPickUp03",

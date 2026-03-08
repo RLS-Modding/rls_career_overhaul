@@ -2,6 +2,7 @@
 -- If a copy of the bCDDL was not distributed with this
 -- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
 local M = {}
+local xpConfig = require('gameplay/delivery/logisticsXPConfig')
 local dParcelManager, dCargoScreen, dGeneral, dGenerator, dProgress, dParcelMods, dVehOfferManager, dVehicleTasks, dTutorial, dTasklist
 local step
 M.onCareerActivated = function()
@@ -70,6 +71,54 @@ local function normalizeRewardTable(rewardTable)
     normalized[normalizedKey] = (normalized[normalizedKey] or 0) + amount
   end
   return normalized
+end
+
+local function getLogisticsMoneyBonusState()
+  local levelBonusRules = xpConfig.getLevelBonusRules() or {}
+  local perLevelPercent = tonumber(levelBonusRules.moneyPercentPerLevel) or 0
+  if perLevelPercent <= 0 then
+    return 0, 0
+  end
+
+  local level = career_branches.getBranchLevel("logistics-delivery")
+  if type(level) ~= "number" then
+    level = career_branches.getBranchLevel("logistics") or 0
+  end
+
+  local effectiveLevelUps = math.max(0, level - 1)
+  if effectiveLevelUps <= 0 then
+    return 0, level
+  end
+
+  return perLevelPercent * effectiveLevelUps, level
+end
+
+local function applyLogisticsMoneyBonusToEntry(entry, multiplier)
+  if type(entry) ~= "table" or multiplier <= 0 then
+    return 0
+  end
+
+  entry.adjustedRewards = normalizeRewardTable(entry.adjustedRewards)
+  local baseMoney = entry.adjustedRewards.money or 0
+  if baseMoney <= 0 then
+    return 0
+  end
+
+  local roundingMode = xpConfig.getConfig().rounding.moneyFinal
+  local bonusAmount = xpConfig.applyRounding(baseMoney * multiplier, roundingMode)
+  if bonusAmount <= 0 then
+    return 0
+  end
+
+  entry.adjustedRewards.money = baseMoney + bonusAmount
+  entry.breakdown = entry.breakdown or {}
+  table.insert(entry.breakdown, {
+    label = string.format("Logistics Level Bonus (+%g%%)", multiplier * 100),
+    rewards = {money = bonusAmount},
+    simpleBreakdownType = "branch"
+  })
+
+  return bonusAmount
 end
 
 local function getBranchForAttributeKey(attributeKey)
@@ -528,6 +577,7 @@ M.confirmDropOffCheckComplete = function()
   local itemNames = {}
   local branchInfo = {}
   local rewardParcels = {}
+  local levelMoneyBonusMultiplier = getLogisticsMoneyBonusState()
 
 
 
@@ -542,6 +592,7 @@ M.confirmDropOffCheckComplete = function()
     -- finalize the fields that require "costly" computation at this point
     table.insert(cargoByGroupId[gId], c)
     c.adjustedRewards = normalizeRewardTable(c.adjustedRewards)
+    applyLogisticsMoneyBonusToEntry(c, levelMoneyBonusMultiplier)
     table.insert(rewards, c.adjustedRewards)
     c.summaryId = gId
     table.insert(rewardParcels, c)
@@ -554,6 +605,7 @@ M.confirmDropOffCheckComplete = function()
   for _, formattedOffer in ipairs(confirmedDropOffData.offers) do
     table.insert(itemNames, string.format("%s %s",formattedOffer.offer.name, formattedOffer.offer.vehicle.name))
     formattedOffer.adjustedRewards = normalizeRewardTable(formattedOffer.adjustedRewards)
+    applyLogisticsMoneyBonusToEntry(formattedOffer, levelMoneyBonusMultiplier)
     table.insert(rewards, formattedOffer.adjustedRewards)
   end
 
