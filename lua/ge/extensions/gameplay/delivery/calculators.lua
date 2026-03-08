@@ -169,7 +169,7 @@ function M.getVehicleOfferReward(filter, distance, offerType, orgId, economyMult
   }
   if offerType == "vehicle" then
     rewards.money = rewards.money * hardcoreMultiplier
-    rewards["logistics-vehicleDelivery"] = baseXP * hardcoreMultiplier
+    rewards["logistics-delivery"] = baseXP * hardcoreMultiplier
   elseif offerType == "trailer" then
     rewards.money = rewards.money * hardcoreMultiplier
     rewards["logistics-delivery"] = baseXP * hardcoreMultiplier

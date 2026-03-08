@@ -2,7 +2,7 @@
 -- If a copy of the bCDDL was not distributed with this
 -- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
 local M = {}
-local dParcelManager, dCargoScreen, dGeneral, dGenerator, dProgress, dParcelMods, dVehOfferManager, dVehicleTasks, dTutorial
+local dParcelManager, dCargoScreen, dGeneral, dGenerator, dProgress, dParcelMods, dVehOfferManager, dVehicleTasks, dTutorial, dTasklist
 local step
 M.onCareerActivated = function()
   dParcelManager = career_modules_delivery_parcelManager
@@ -14,6 +14,7 @@ M.onCareerActivated = function()
   dVehOfferManager = career_modules_delivery_vehicleOfferManager
   dVehicleTasks = career_modules_delivery_vehicleTasks
   dTutorial = career_modules_delivery_tutorial
+  dTasklist = career_modules_delivery_tasklist
   step = util_stepHandler
 end
 
@@ -47,6 +48,127 @@ local function mergeDefaults(defaults, saved)
     end
   end
   return result
+end
+
+-- Keep delivery reward keys aligned with the unified logistics skill track.
+local rewardKeyAliases = {
+  ["delivery"] = "logistics-delivery",
+  ["vehicleDelivery"] = "logistics-delivery",
+  ["materials"] = "logistics-delivery",
+  ["logistics-vehicleDelivery"] = "logistics-delivery",
+  ["logistics-materials"] = "logistics-delivery"
+}
+
+local function normalizeRewardKey(key)
+  return rewardKeyAliases[key] or key
+end
+
+local function normalizeRewardTable(rewardTable)
+  local normalized = {}
+  for key, amount in pairs(rewardTable or {}) do
+    local normalizedKey = normalizeRewardKey(key)
+    normalized[normalizedKey] = (normalized[normalizedKey] or 0) + amount
+  end
+  return normalized
+end
+
+local function getBranchForAttributeKey(attributeKey)
+  local function isValidBranch(candidate)
+    return candidate and not candidate.missing and type(candidate.levels) == "table" and next(candidate.levels)
+  end
+
+  local candidates = {}
+  local byId = career_branches.getBranchById(attributeKey)
+  if isValidBranch(byId) then
+    table.insert(candidates, byId)
+  end
+
+  if career_branches.getBranchByPath then
+    local byPath = career_branches.getBranchByPath(attributeKey)
+    if isValidBranch(byPath) then
+      table.insert(candidates, byPath)
+    end
+  end
+
+  for _, candidate in ipairs(career_branches.getSortedBranches() or {}) do
+    if candidate.attributeKey == attributeKey and isValidBranch(candidate) then
+      table.insert(candidates, candidate)
+    end
+  end
+
+  local bestBranch, bestScore = nil, -math.huge
+  for _, candidate in ipairs(candidates) do
+    local levelCount = #(candidate.levels or {})
+    local score = levelCount
+    if candidate.parentId == "careerSkills" then score = score + 1000 end
+    if attributeKey == "logistics-delivery" and candidate.id == "logistics" then score = score + 100 end
+    if score > bestScore then
+      bestBranch, bestScore = candidate, score
+    end
+  end
+
+  return bestBranch
+end
+
+local function sanitizeBranchLevels(levels)
+  if type(levels) ~= "table" then return {} end
+  local result = {}
+  local lastRequiredValue = 0
+  for i, levelInfo in ipairs(levels) do
+    local entry = type(levelInfo) == "table" and deepcopy(levelInfo) or {}
+    if type(entry.requiredValue) ~= "number" then
+      entry.requiredValue = lastRequiredValue
+    end
+    lastRequiredValue = entry.requiredValue
+    entry.levelLabel = entry.levelLabel or ("Level " .. i)
+    result[#result + 1] = entry
+  end
+  return result
+end
+
+-- Hide legacy/branch logistics rows in the delivery reward popup.
+local hiddenDeliveryPopupAttributes = {
+  logistics = true,
+  delivery = true,
+  vehicleDelivery = true,
+  materials = true,
+  ["logistics-vehicleDelivery"] = true,
+  ["logistics-materials"] = true,
+}
+
+-- Prevent level-up popup animations for deprecated delivery keys.
+local suppressedDeliveryLevelPopupAttributes = {
+  logistics = true,
+  delivery = true,
+  vehicleDelivery = true,
+  materials = true,
+  ["logistics-vehicleDelivery"] = true,
+  ["logistics-materials"] = true,
+}
+
+local function stripHiddenPopupRewardKeys(rewardTable)
+  if type(rewardTable) ~= "table" then return rewardTable end
+  for key, _ in pairs(hiddenDeliveryPopupAttributes) do
+    rewardTable[key] = nil
+  end
+  return rewardTable
+end
+
+local function sanitizePopupBreakdown(breakdown)
+  if type(breakdown) ~= "table" then return end
+  for _, bd in ipairs(breakdown) do
+    if type(bd) == "table" and type(bd.rewards) == "table" then
+      stripHiddenPopupRewardKeys(bd.rewards)
+    end
+  end
+end
+
+local function sanitizePopupRewardContainer(entry)
+  if type(entry) ~= "table" then return end
+  if type(entry.rewards) == "table" then stripHiddenPopupRewardKeys(entry.rewards) end
+  if type(entry.originalRewards) == "table" then stripHiddenPopupRewardKeys(entry.originalRewards) end
+  if type(entry.adjustedRewards) == "table" then stripHiddenPopupRewardKeys(entry.adjustedRewards) end
+  sanitizePopupBreakdown(entry.breakdown)
 end
 
 M.setProgress = function(data)
@@ -236,6 +358,7 @@ M.openDropOffScreenGatheringComplete = function()
         else
           table.insert(manualDropOffItems, cargo)
         end
+        cargo.adjustedRewards = normalizeRewardTable(cargo.adjustedRewards)
         -- add in rewards keys..?
         for key, amount in pairs(cargo.adjustedRewards) do
           branchInfo[key] = true
@@ -248,6 +371,7 @@ M.openDropOffScreenGatheringComplete = function()
     if vehData.finished then
       table.insert(automaticDropOffItems, vehData)
       table.insert(confirmedOfferIds, vehData.id)
+      vehData.adjustedRewards = normalizeRewardTable(vehData.adjustedRewards)
       for key, amount in pairs(vehData.adjustedRewards) do
         branchInfo[key] = true
       end
@@ -303,8 +427,8 @@ M.openDropOffScreenGatheringComplete = function()
       end
     end
     --dump(dropOffDataStatus)
-    guihooks.trigger("SetDeliveryDropOffCargoSelection", dropOffDataStatus)
     dropOffDataStatus.branchInfo = branchInfo
+    guihooks.trigger("SetDeliveryDropOffCargoSelection", dropOffDataStatus)
     gameplay_markerInteraction.closeViewDetailPrompt(true)
     Engine.Audio.playOnce('AudioGui', 'event:>UI>Missions>Info_Open')
     gameplay_rawPois.clear()
@@ -344,6 +468,7 @@ M.confirmDropOffData = function(confirmedDropOffs, facId, psPath)
     end
 
     cargo.originalRewards, cargo.breakdown, cargo.adjustedRewards = dParcelManager.getRewardsWithBreakdown(cargo)
+    cargo.adjustedRewards = normalizeRewardTable(cargo.adjustedRewards)
     table.insert(confirmedDropOffData.cargo, cargo)
   end
 
@@ -416,6 +541,7 @@ M.confirmDropOffCheckComplete = function()
     cargoByGroupId[gId] = cargoByGroupId[gId] or {}
     -- finalize the fields that require "costly" computation at this point
     table.insert(cargoByGroupId[gId], c)
+    c.adjustedRewards = normalizeRewardTable(c.adjustedRewards)
     table.insert(rewards, c.adjustedRewards)
     c.summaryId = gId
     table.insert(rewardParcels, c)
@@ -427,6 +553,7 @@ M.confirmDropOffCheckComplete = function()
 
   for _, formattedOffer in ipairs(confirmedDropOffData.offers) do
     table.insert(itemNames, string.format("%s %s",formattedOffer.offer.name, formattedOffer.offer.vehicle.name))
+    formattedOffer.adjustedRewards = normalizeRewardTable(formattedOffer.adjustedRewards)
     table.insert(rewards, formattedOffer.adjustedRewards)
   end
 
@@ -438,8 +565,11 @@ M.confirmDropOffCheckComplete = function()
   for _, reward in ipairs(rewards) do
     for key, amount in pairs(reward) do
       rewardSum[key] = (rewardSum[key] or 0) + amount
-      branchInfo[key] = true
     end
+  end
+  rewardSum = normalizeRewardTable(rewardSum)
+  for key, _ in pairs(rewardSum) do
+    branchInfo[key] = true
   end
   --[[
   local aggregateChange = {}
@@ -480,22 +610,38 @@ M.confirmDropOffCheckComplete = function()
         branchLevels = organization.reputationLevels
       }
     else
-      local branch = career_branches.getBranchById(key)
-      branchInfo[key] = {
-        icon = career_branches.getBranchIcon(key),
-        order = career_branches.getOrder(key),
-        animationData = career_modules_branches_landing.getBranchSkillCardData(key),
-        branchLevels = deepcopy(branch.levels),
-        showLevelUpPopup = true,
-        unlockPopupHeader = string.format("%s %s: Level %d", translateLanguage(branch.name, branch.name), branch.isSkill and "Skill" or "Branch", career_branches.getBranchLevel(branch.id) or 0)
-      }
+      local branch = getBranchForAttributeKey(key)
+      if branch and not branch.missing then
+        local animationData = career_modules_branches_landing.getBranchSkillCardData(branch.id) or {}
+        local branchLevels = sanitizeBranchLevels(branch.levels)
+        local hasValidLevels = #branchLevels > 0 and type(branchLevels[1].requiredValue) == "number"
+        branchInfo[key] = {
+          icon = career_branches.getBranchIcon(key) or branch.icon,
+          order = career_branches.getOrder(key) or branch.order or 9999,
+          animationData = animationData,
+          branchLevels = branchLevels,
+          showLevelUpPopup = hasValidLevels and not suppressedDeliveryLevelPopupAttributes[key],
+          unlockPopupHeader = string.format("%s %s: Level %d", translateLanguage(branch.name, branch.name), branch.isSkill and "Skill" or "Branch", career_branches.getBranchLevel(branch.id) or 0)
+        }
+        if type(branchInfo[key].animationData.levelLabel) == "table" then
+          branchInfo[key].animationData.levelLabel = "Level " .. tostring(branchInfo[key].animationData.level or career_branches.getBranchLevel(branch.id) or 0)
+        end
 
-      for i, levelInfo in ipairs(branchInfo[key].branchLevels) do
-        levelInfo.levelLabel = "Level " .. i
+        if branch.isBranch then branchInfo[key].animationData.name = "Branch: " .. translateLanguage(branchInfo[key].animationData.name, branchInfo[key].animationData.name) end
+        if branch.isSkill then branchInfo[key].animationData.name = "Skill: " .. translateLanguage(branchInfo[key].animationData.name, branchInfo[key].animationData.name) end
+      else
+        branchInfo[key] = {
+          icon = career_branches.getBranchIcon(key) or "beamXPLo",
+          order = career_branches.getOrder(key) or 9999,
+          animationData = {
+            type = "number",
+            name = key,
+            value = career_modules_playerAttributes.getAttributeValue(key)
+          },
+          branchLevels = {},
+          showLevelUpPopup = false,
+        }
       end
-
-      if branch.isBranch then branchInfo[key].animationData.name = "Branch: " .. translateLanguage(branchInfo[key].animationData.name, branchInfo[key].animationData.name) end
-      if branch.isSkill then branchInfo[key].animationData.name = "Skill: " .. translateLanguage(branchInfo[key].animationData.name, branchInfo[key].animationData.name) end
     end
 
     if key == "money" then
@@ -516,10 +662,25 @@ M.confirmDropOffCheckComplete = function()
       }
     end
   end
+  local popupBranchInfo = deepcopy(branchInfo)
+  for key, _ in pairs(hiddenDeliveryPopupAttributes) do
+    popupBranchInfo[key] = nil
+  end
+
+  local popupRewardParcels = deepcopy(rewardParcels)
+  for _, parcel in ipairs(popupRewardParcels) do
+    sanitizePopupRewardContainer(parcel)
+  end
+
+  local popupRewardOffers = deepcopy(confirmedDropOffData.offers or {})
+  for _, offerData in ipairs(popupRewardOffers) do
+    sanitizePopupRewardContainer(offerData)
+  end
+
   local rewardResult = {
-    rewardParcels = rewardParcels,
-    rewardOffers = confirmedDropOffData.offers,
-    branchInfo = branchInfo,
+    rewardParcels = popupRewardParcels,
+    rewardOffers = popupRewardOffers,
+    branchInfo = popupBranchInfo,
     unloadingDelay = confirmedDropOffData.maxDelayForWeightUpdate
   }
 
@@ -531,6 +692,12 @@ M.confirmDropOffCheckComplete = function()
 
   M.onVehicleTasksFinished(confirmedDropOffData.offers)
   M.onCargoDelivered(confirmedDropOffData.cargo)
+  for _, offer in ipairs(confirmedDropOffData.offers or {}) do
+    if offer.offer and offer.offer.id then
+      dTasklist.clearTasklistForOfferId(offer.offer.id)
+    end
+  end
+  dTasklist.sendCargoToTasklist()
   confirmedDropOffData.onComplete()
   dGeneral.checkExitDeliveryMode()
   confirmedDropOffData = nil
@@ -626,9 +793,7 @@ end
 
 
 local function onBranchTierReached(skill, tier)
-  if skill == "delivery" and tier > 1 then
-    career_branches.getBranchById("vehicleDelivery").unlocked = true
-  end
+  if skill == "logistics-delivery" then return end
 end
 
 local soundObjectIds = {}

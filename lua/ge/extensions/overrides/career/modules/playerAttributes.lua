@@ -10,6 +10,22 @@ M.dependencies = {'career_career'}
 local attributes
 local attributeLog
 local baseAttribute = {value = 0, gains = {}, losses = {}}
+local attributeKeyAliases = {
+  ["delivery"] = "logistics-delivery",
+  ["vehicleDelivery"] = "logistics-delivery",
+  ["materials"] = "logistics-delivery",
+  ["logistics-vehicleDelivery"] = "logistics-delivery",
+  ["logistics-materials"] = "logistics-delivery"
+}
+
+local function normalizeAttributeChange(change)
+  local normalized = {}
+  for key, value in pairs(change or {}) do
+    local normalizedKey = attributeKeyAliases[key] or key
+    normalized[normalizedKey] = (normalized[normalizedKey] or 0) + value
+  end
+  return normalized
+end
 
 local function init()
   attributeLog = {}
@@ -34,6 +50,7 @@ end
 
 -- reason should be table with label, list of tags
 local function addAttributes(change, reason, fullprice)
+  change = normalizeAttributeChange(change)
 
   -- make sure a reason exists!
   if not reason then
@@ -125,6 +142,54 @@ local function getAllAttributes()
   return attributes
 end
 
+local logisticsSkillMigration = {
+  version = 1,
+  markerFile = "career/logisticsSkillMigration.json",
+  unifiedKey = "logistics-delivery",
+  legacyKeys = {
+    "logistics-vehicleDelivery",
+    "logistics-materials"
+  }
+}
+
+local function runLogisticsSkillMigration(savePath, jsonData)
+  if not savePath or tableIsEmpty(jsonData or {}) then return end
+
+  local markerPath = savePath .. "/" .. logisticsSkillMigration.markerFile
+  local markerData = jsonReadFile(markerPath) or {}
+  if (markerData.version or 0) >= logisticsSkillMigration.version then
+    return
+  end
+
+  local mergedValue = 0
+  for _, legacyKey in ipairs(logisticsSkillMigration.legacyKeys) do
+    local legacyAttribute = jsonData[legacyKey]
+    if type(legacyAttribute) == "table" then
+      mergedValue = mergedValue + (tonumber(legacyAttribute.value) or 0)
+    elseif type(legacyAttribute) == "number" then
+      mergedValue = mergedValue + legacyAttribute
+    end
+  end
+
+  if mergedValue ~= 0 then
+    local unifiedAttribute = jsonData[logisticsSkillMigration.unifiedKey]
+    if type(unifiedAttribute) ~= "table" then
+      unifiedAttribute = deepcopy(baseAttribute)
+      if type(jsonData[logisticsSkillMigration.unifiedKey]) == "number" then
+        unifiedAttribute.value = jsonData[logisticsSkillMigration.unifiedKey]
+      end
+      jsonData[logisticsSkillMigration.unifiedKey] = unifiedAttribute
+    end
+    unifiedAttribute.value = (tonumber(unifiedAttribute.value) or 0) + mergedValue
+  end
+
+  career_saveSystem.jsonWriteFileSafe(markerPath, {
+    version = logisticsSkillMigration.version,
+    mergedValue = mergedValue,
+    migratedAt = os.time()
+  }, true)
+end
+
 local function onExtensionLoaded()
   if not career_career.isActive() then return false end
   if not attributes then
@@ -152,6 +217,8 @@ local function onExtensionLoaded()
     jsonData.vouchers = jsonData.bonusStars
     jsonData.bonusStars = nil
   end
+
+  runLogisticsSkillMigration(savePath, jsonData)
 
   local attributeLogData = (savePath and jsonReadFile(savePath .. "/career/attributeLog.json")) or {}
   if not tableIsEmpty(attributeLogData) then

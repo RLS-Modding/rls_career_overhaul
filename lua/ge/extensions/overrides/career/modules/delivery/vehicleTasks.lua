@@ -330,9 +330,10 @@ local function getRewardsWithBreakdown(taskData)
         end
 
         -- Calculate skill XP reward (same as logistics for vehicle delivery)
-        local skillReward = precisionBonus.skillFlat + (originalRewards["logistics-vehicleDelivery"] or 0) * precisionBonus.skillPercent
+        local skillBaseReward = (originalRewards["logistics-delivery"] or 0) + (originalRewards["logistics-vehicleDelivery"] or 0)
+        local skillReward = precisionBonus.skillFlat + skillBaseReward * precisionBonus.skillPercent
         if skillReward ~= 0 then
-          precisionBreakdown.rewards["logistics-vehicleDelivery"] = (precisionBreakdown.rewards["logistics-vehicleDelivery"] or 0) + math.ceil(skillReward)
+          precisionBreakdown.rewards["logistics-delivery"] = (precisionBreakdown.rewards["logistics-delivery"] or 0) + math.ceil(skillReward)
         end
 
         -- Calculate reputation reward

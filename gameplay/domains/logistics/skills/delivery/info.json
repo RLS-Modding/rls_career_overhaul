@@ -4,6 +4,7 @@
   "order": 2100,
   "isSkill": true,
   "icon": "boxPickUp03",
+  "attributeKey": "delivery",
   "parentBranch": "labourer",
   "levels": [
     {

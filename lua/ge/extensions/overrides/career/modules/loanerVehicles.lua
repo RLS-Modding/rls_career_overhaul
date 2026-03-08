@@ -12,6 +12,13 @@ local comeBackRadius = 95
 local walkAwayTimeLimit = 300
 local walkAwayWarningTime = 60
 local loanedVehiclesInfo = {}
+local deliveryLvlToLogisticsLevel = {
+  [0] = 1,
+  [1] = 5,
+  [2] = 12,
+  [3] = 17,
+  [4] = 30
+}
 
 local markedForSpawningLoaners = {}
 
@@ -339,14 +346,15 @@ local function formatLoanerOfferForUi(facility)
       }
     end
 
-    if rentalVehicleInfo.deliveryLvl > career_branches.getBranchLevel('delivery') then
+    local requiredLogisticsLevel = deliveryLvlToLogisticsLevel[rentalVehicleInfo.deliveryLvl] or deliveryLvlToLogisticsLevel[4]
+    if requiredLogisticsLevel > career_branches.getBranchLevel('logistics-delivery') then
       enabled = false
       disableReason = {
-        type = "locked", icon = "cardboardBox", level = rentalVehicleInfo.deliveryLvl,
-        label = string.format("Requires Skill 'Cargo Delivery' lvl %d", rentalVehicleInfo.deliveryLvl )
+        type = "locked", icon = "cardboardBox", level = requiredLogisticsLevel,
+        label = string.format("Requires Skill 'Logistics' lvl %d", requiredLogisticsLevel)
       }
       unlockInfo = {
-        type = "minLevel", icon = "cardboardBox", longLabel = string.format("Requires Skill 'Cargo Delivery' lvl %d", rentalVehicleInfo.deliveryLvl ), shortLabel = string.format("lvl %d", rentalVehicleInfo.deliveryLvl )
+        type = "minLevel", icon = "cardboardBox", longLabel = string.format("Requires Skill 'Logistics' lvl %d", requiredLogisticsLevel), shortLabel = string.format("lvl %d", requiredLogisticsLevel)
       }
     end
 

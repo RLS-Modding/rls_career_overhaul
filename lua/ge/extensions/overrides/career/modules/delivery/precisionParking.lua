@@ -180,9 +180,10 @@ local function applyVehiclePrecisionBonus(taskData, precisionBonus)
   local rewardRounding = getPrecisionConfig().rewardRounding
 
   -- Calculate precision parking rewards
+  local skillBaseReward = (taskData.originalRewards["logistics-delivery"] or 0) + (taskData.originalRewards["logistics-vehicleDelivery"] or 0)
   local moneyReward = precisionBonus.moneyFlat + (taskData.originalRewards.money * precisionBonus.moneyPercent)
-  local logisticsReward = precisionBonus.logisticsFlat + (taskData.originalRewards["logistics-vehicleDelivery"] or 0) * precisionBonus.logisticsPercent
-  local skillReward = precisionBonus.skillFlat + (taskData.originalRewards["logistics-vehicleDelivery"] or 0) * precisionBonus.skillPercent
+  local logisticsReward = precisionBonus.logisticsFlat + skillBaseReward * precisionBonus.logisticsPercent
+  local skillReward = precisionBonus.skillFlat + skillBaseReward * precisionBonus.skillPercent
   local reputationReward = precisionBonus.reputationFlat + (taskData.originalRewards[taskData.offer.organization.."Reputation"] or 0) * precisionBonus.reputationPercent
 
   -- Apply money reward
@@ -190,12 +191,12 @@ local function applyVehiclePrecisionBonus(taskData, precisionBonus)
 
   -- Apply logistics XP reward
   if logisticsReward ~= 0 then
-    taskData.adjustedRewards["logistics-vehicleDelivery"] = (taskData.adjustedRewards["logistics-vehicleDelivery"] or 0) + xpConfig.applyRounding(logisticsReward, rewardRounding)
+    taskData.adjustedRewards["logistics-delivery"] = (taskData.adjustedRewards["logistics-delivery"] or 0) + xpConfig.applyRounding(logisticsReward, rewardRounding)
   end
 
   -- Apply skill XP reward (same as logistics for vehicle delivery)
   if skillReward ~= 0 then
-    taskData.adjustedRewards["logistics-vehicleDelivery"] = (taskData.adjustedRewards["logistics-vehicleDelivery"] or 0) + xpConfig.applyRounding(skillReward, rewardRounding)
+    taskData.adjustedRewards["logistics-delivery"] = (taskData.adjustedRewards["logistics-delivery"] or 0) + xpConfig.applyRounding(skillReward, rewardRounding)
   end
 
   -- Apply reputation reward
