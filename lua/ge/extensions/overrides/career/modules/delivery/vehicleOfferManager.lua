@@ -135,7 +135,7 @@ local vehicleTags = {
     labelSingular = "Caravan",
   },
   trailerDolly = {
-    unlockFlag = "smallTrailersDelivery",
+    unlockFlag = "logisticsTrailerDolly",
     labelPlural = "Dollies",
     labelSingular = "Dolly",
   },
@@ -155,22 +155,22 @@ local vehicleTags = {
     labelSingular = "Flatbed Trailer",
   },
   trailerContainer = {
-    unlockFlag = "largeTrailersDelivery",
+    unlockFlag = "logisticsTrailerContainer",
     labelPlural = "Container Trailers",
     labelSingular = "Container Trailer",
   },
   trailerDryvan = {
-    unlockFlag = "largeTrailersDelivery",
+    unlockFlag = "logisticsTrailerDryvan",
     labelPlural = "Dry Van Trailers",
     labelSingular = "Dry Van Trailer",
   },
   trailerTanker = {
-    unlockFlag = "largeTrailersDelivery",
+    unlockFlag = "logisticsTrailerTanker",
     labelPlural = "Tanker Trailers",
     labelSingular = "Tanker Trailer",
   },
   trailerLogTrailer = {
-    unlockFlag = "largeTrailersDelivery",
+    unlockFlag = "logisticsTrailerLog",
     labelPlural = "Log Trailers",
     labelSingular = "Log Trailer",
   },

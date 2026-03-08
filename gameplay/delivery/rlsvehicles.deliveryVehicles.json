@@ -355,9 +355,7 @@
     "filter": {
       "whiteList": {
         "model_key": [
-          "flatbed",
-          "containerTrailer",
-          "dryvan"
+          "flatbed"
         ]
       },
       "blackList": {
@@ -381,8 +379,7 @@
     "filter": {
       "whiteList": {
         "model_key": [
-          "flatbed",
-          "containerTrailer"
+          "flatbed"
         ],
         "hasLoad": [
           true

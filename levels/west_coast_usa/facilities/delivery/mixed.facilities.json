@@ -1675,7 +1675,7 @@
       "manualAccessPoints": [
         {
           "psName": "refinery_parking",
-          "isInspectSpot": false,
+          "isInspectSpot": true,
           "logisticTypesProvided": [
             "gasoline"
           ],
@@ -1920,7 +1920,7 @@
             "min": 300,
             "max": 600
           },
-          "filter": "vanillaTrailer_tanker_diesel_3",
+          "filter": "vanillaTrailer_tanker_diesel_2",
           "logisticTypes": [
             "diesel"
           ]
@@ -1934,7 +1934,7 @@
             "min": 300,
             "max": 600
           },
-          "filter": "vanillaTrailer_tanker_petroleum_3",
+          "filter": "vanillaTrailer_tanker_petroleum_2",
           "logisticTypes": [
             "gasoline"
           ]

@@ -363,12 +363,22 @@
                 "heading": "Level 25",
                 "description": "Reach level 25 to unlock new Logistics rewards."
             },
+            "unlockFlags": [
+                "logisticsTrailerDolly",
+                "logisticsTrailerDryvan"
+            ],
             "unlocks": [
                 {
                     "type": "unlockCard",
                     "icon": "roadblockL",
                     "heading": "Contracts Small (Coming Soon)",
                     "description": "Small contracts are planned but not implemented yet."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "smallTrailer",
+                    "heading": "Dolly + Dry Van Trailer",
+                    "description": "Unlock dolly and dry van trailer deliveries."
                 }
             ]
         },
@@ -501,7 +511,8 @@
                 "description": "Reach level 35 to unlock new Logistics rewards."
             },
             "unlockFlags": [
-                "logisticsParcel128Slots"
+                "logisticsParcel128Slots",
+                "logisticsTrailerTanker"
             ],
             "unlocks": [
                 {
@@ -509,6 +520,12 @@
                     "icon": "boxPickUp03",
                     "heading": "128 Slot Parcels",
                     "description": "Unlock parcel jobs up to 128-slot capacity."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "fuelTruck",
+                    "heading": "Tanker Trailer",
+                    "description": "Unlock tanker trailer deliveries."
                 }
             ]
         },
@@ -530,12 +547,21 @@
                 "heading": "Level 37",
                 "description": "Reach level 37 to unlock new Logistics rewards."
             },
+            "unlockFlags": [
+                "logisticsTrailerContainer"
+            ],
             "unlocks": [
                 {
                     "type": "unlockCard",
                     "icon": "roadblockL",
                     "heading": "Contracts Med (Coming Soon)",
                     "description": "Medium contracts are planned but not implemented yet."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "semiTrailer",
+                    "heading": "Container Trailer",
+                    "description": "Unlock container trailer deliveries."
                 }
             ]
         },
@@ -568,14 +594,14 @@
                 "description": "Reach level 40 to unlock new Logistics rewards."
             },
             "unlockFlags": [
-                "logisticsCashDelivery"
+                "logisticsTrailerLog"
             ],
             "unlocks": [
                 {
                     "type": "unlockCard",
-                    "icon": "beamCurrency",
-                    "heading": "Cash Delivery",
-                    "description": "Unlock cash delivery jobs."
+                    "icon": "semiTrailer",
+                    "heading": "Log Trailer",
+                    "description": "Unlock log trailer deliveries."
                 }
             ]
         },
@@ -612,9 +638,19 @@
                 "type": "unlockCard",
                 "icon": "info",
                 "heading": "Level 43",
-                "description": "Reach level 43 to continue progressing your Logistics mastery."
+                "description": "Reach level 43 to unlock new Logistics rewards."
             },
-            "unlocks": []
+            "unlockFlags": [
+                "logisticsCashDelivery"
+            ],
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "beamCurrency",
+                    "heading": "Cash Delivery",
+                    "description": "Unlock cash delivery jobs."
+                }
+            ]
         },
         {
             "requiredValue": 211044,
