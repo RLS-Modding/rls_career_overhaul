@@ -8,7 +8,7 @@ local max = math.max
 
 M.dependencies = {'career_career', 'gameplay_walk'}
 
-local METERS_PER_XP = 2
+local METERS_PER_XP = 1
 local MIN_XP_GRANT = 5
 local MAX_DISTANCE_STEP = 20
 local SPEED_BONUS_PER_LEVEL = 0.02
