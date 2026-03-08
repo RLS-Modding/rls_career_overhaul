@@ -12,6 +12,23 @@ local VALID_ROUND_MODES = {
   floor = true
 }
 
+local VALID_MATERIAL_TYPES = {
+  fluid = true,
+  dryBulk = true,
+  cement = true,
+  cash = true
+}
+
+local VALID_TRAILER_XP_GROUPS = {
+  small = true,
+  medium = true,
+  dryvan = true,
+  flatbed = true,
+  tanker = true,
+  container = true,
+  log = true
+}
+
 local function deepCopyTable(value)
   if type(value) ~= "table" then
     return value
@@ -86,6 +103,126 @@ local function sanitizeMilestones(rawValue, defaults, label, issues)
   return deduped
 end
 
+local function sanitizeSlotXPBySize(rawValue, defaults, label, issues)
+  if rawValue == nil then
+    return deepCopyTable(defaults)
+  end
+
+  if type(rawValue) ~= "table" then
+    appendIssue(issues, string.format("%s is invalid; using default slot XP tiers", label))
+    return deepCopyTable(defaults)
+  end
+
+  local collected = {}
+  for rawSlots, rawXP in pairs(rawValue) do
+    local slotThreshold = tonumber(rawSlots)
+    if not isFiniteNumber(slotThreshold) or slotThreshold < 1 or slotThreshold ~= math.floor(slotThreshold) then
+      appendIssue(issues, string.format("%s[%s] has an invalid slot threshold; skipping", label, tostring(rawSlots)))
+    else
+      local tierXP = readNumber(rawXP, nil, 0, nil, string.format("%s[%s]", label, tostring(rawSlots)), issues)
+      if tierXP ~= nil then
+        collected[#collected + 1] = {slots = slotThreshold, xp = tierXP}
+      end
+    end
+  end
+
+  if #collected == 0 then
+    appendIssue(issues, string.format("%s has no valid entries; using default slot XP tiers", label))
+    return deepCopyTable(defaults)
+  end
+
+  table.sort(collected, function(a, b) return a.slots < b.slots end)
+
+  local deduped = {}
+  local lastSlot = nil
+  for _, tier in ipairs(collected) do
+    if tier.slots == lastSlot then
+      deduped[#deduped].xp = tier.xp
+    else
+      deduped[#deduped + 1] = tier
+      lastSlot = tier.slots
+    end
+  end
+
+  return deduped
+end
+
+local function sanitizeNumericXPByLevel(rawValue, defaults, label, issues)
+  if rawValue == nil then
+    return deepCopyTable(defaults)
+  end
+
+  if type(rawValue) ~= "table" then
+    appendIssue(issues, string.format("%s is invalid; using default values", label))
+    return deepCopyTable(defaults)
+  end
+
+  local result = {}
+  for rawLevel, rawXP in pairs(rawValue) do
+    local level = tonumber(rawLevel)
+    if not isFiniteNumber(level) or level < 0 or level ~= math.floor(level) then
+      appendIssue(issues, string.format("%s[%s] has an invalid level key; skipping", label, tostring(rawLevel)))
+    else
+      local xpValue = readNumber(rawXP, nil, 0, nil, string.format("%s[%s]", label, tostring(rawLevel)), issues)
+      if xpValue ~= nil then
+        result[tostring(level)] = xpValue
+      end
+    end
+  end
+
+  if not next(result) then
+    return deepCopyTable(defaults)
+  end
+
+  return result
+end
+
+local function sanitizeMaterialTypeXP(rawValue, defaults, label, issues)
+  local result = deepCopyTable(defaults)
+  if rawValue == nil then
+    return result
+  end
+
+  if type(rawValue) ~= "table" then
+    appendIssue(issues, string.format("%s is invalid; using default values", label))
+    return result
+  end
+
+  for rawType, rawXP in pairs(rawValue) do
+    if not VALID_MATERIAL_TYPES[rawType] then
+      appendIssue(issues, string.format("%s.%s is unknown; skipping", label, tostring(rawType)))
+    else
+      local defaultXP = result[rawType] or 0
+      result[rawType] = readNumber(rawXP, defaultXP, 0, nil, string.format("%s.%s", label, rawType), issues)
+    end
+  end
+
+  return result
+end
+
+local function sanitizeTrailerXPByUnlockGroup(rawValue, defaults, label, issues)
+  local result = deepCopyTable(defaults)
+  if rawValue == nil then
+    return result
+  end
+
+  if type(rawValue) ~= "table" then
+    appendIssue(issues, string.format("%s is invalid; using default values", label))
+    return result
+  end
+
+  for rawGroup, rawXP in pairs(rawValue) do
+    if not VALID_TRAILER_XP_GROUPS[rawGroup] then
+      appendIssue(issues, string.format("%s.%s is unknown; skipping", label, tostring(rawGroup)))
+    else
+      local defaultXP = result[rawGroup] or 0
+      result[rawGroup] = readNumber(rawXP, defaultXP, 0, nil, string.format("%s.%s", label, rawGroup), issues)
+    end
+  end
+
+  return result
+end
+
 local DEFAULT_CONFIG = {
   version = 1,
   rounding = {
@@ -94,6 +231,7 @@ local DEFAULT_CONFIG = {
   parcel = {
     baseXP = 2,
     slotMilestones = {16, 32, 64},
+    slotXPBySize = {},
     distanceDivisor = 800,
     reputationDistanceDivisor = 1000,
     distanceRounding = "round",
@@ -101,6 +239,8 @@ local DEFAULT_CONFIG = {
   },
   vehicleTrailer = {
     baseXP = 5,
+    trailerXPByUnlockGroup = {},
+    trailerXPByUnlockLevel = {},
     moneyDistanceDivisor = 1000,
     xpDistanceDivisor = 400,
     reputationDistanceDivisor = 4000,
@@ -110,6 +250,7 @@ local DEFAULT_CONFIG = {
   },
   materials = {
     baseXP = 3,
+    baseXPByType = {},
     distanceDivisor = 2000,
     distanceOffset = -1,
     slotsDivisor = 400,
@@ -239,6 +380,7 @@ local function sanitizeConfig(rawConfig)
   else
     cfg.parcel.baseXP = readNumber(rawParcel.baseXP, DEFAULT_CONFIG.parcel.baseXP, 0, nil, "parcel.baseXP", issues)
     cfg.parcel.slotMilestones = sanitizeMilestones(rawParcel.slotMilestones, DEFAULT_CONFIG.parcel.slotMilestones, "parcel.slotMilestones", issues)
+    cfg.parcel.slotXPBySize = sanitizeSlotXPBySize(rawParcel.slotXPBySize, DEFAULT_CONFIG.parcel.slotXPBySize, "parcel.slotXPBySize", issues)
     cfg.parcel.distanceDivisor = readNumber(rawParcel.distanceDivisor, DEFAULT_CONFIG.parcel.distanceDivisor, 1, nil, "parcel.distanceDivisor", issues)
     cfg.parcel.reputationDistanceDivisor = readNumber(rawParcel.reputationDistanceDivisor, DEFAULT_CONFIG.parcel.reputationDistanceDivisor, 1, nil, "parcel.reputationDistanceDivisor", issues)
     cfg.parcel.distanceRounding = readRoundMode(rawParcel.distanceRounding, DEFAULT_CONFIG.parcel.distanceRounding, "parcel.distanceRounding", issues)
@@ -250,6 +392,8 @@ local function sanitizeConfig(rawConfig)
     appendIssue(issues, "vehicleTrailer section missing; using defaults")
   else
     cfg.vehicleTrailer.baseXP = readNumber(rawVehicle.baseXP, DEFAULT_CONFIG.vehicleTrailer.baseXP, 0, nil, "vehicleTrailer.baseXP", issues)
+    cfg.vehicleTrailer.trailerXPByUnlockGroup = sanitizeTrailerXPByUnlockGroup(rawVehicle.trailerXPByUnlockGroup, DEFAULT_CONFIG.vehicleTrailer.trailerXPByUnlockGroup, "vehicleTrailer.trailerXPByUnlockGroup", issues)
+    cfg.vehicleTrailer.trailerXPByUnlockLevel = sanitizeNumericXPByLevel(rawVehicle.trailerXPByUnlockLevel, DEFAULT_CONFIG.vehicleTrailer.trailerXPByUnlockLevel, "vehicleTrailer.trailerXPByUnlockLevel", issues)
     cfg.vehicleTrailer.moneyDistanceDivisor = readNumber(rawVehicle.moneyDistanceDivisor, DEFAULT_CONFIG.vehicleTrailer.moneyDistanceDivisor, 1, nil, "vehicleTrailer.moneyDistanceDivisor", issues)
     cfg.vehicleTrailer.xpDistanceDivisor = readNumber(rawVehicle.xpDistanceDivisor, DEFAULT_CONFIG.vehicleTrailer.xpDistanceDivisor, 1, nil, "vehicleTrailer.xpDistanceDivisor", issues)
     cfg.vehicleTrailer.reputationDistanceDivisor = readNumber(rawVehicle.reputationDistanceDivisor, DEFAULT_CONFIG.vehicleTrailer.reputationDistanceDivisor, 1, nil, "vehicleTrailer.reputationDistanceDivisor", issues)
@@ -263,6 +407,7 @@ local function sanitizeConfig(rawConfig)
     appendIssue(issues, "materials section missing; using defaults")
   else
     cfg.materials.baseXP = readNumber(rawMaterials.baseXP, DEFAULT_CONFIG.materials.baseXP, 0, nil, "materials.baseXP", issues)
+    cfg.materials.baseXPByType = sanitizeMaterialTypeXP(rawMaterials.baseXPByType, DEFAULT_CONFIG.materials.baseXPByType, "materials.baseXPByType", issues)
     cfg.materials.distanceDivisor = readNumber(rawMaterials.distanceDivisor, DEFAULT_CONFIG.materials.distanceDivisor, 1, nil, "materials.distanceDivisor", issues)
     cfg.materials.distanceOffset = readNumber(rawMaterials.distanceOffset, DEFAULT_CONFIG.materials.distanceOffset, nil, nil, "materials.distanceOffset", issues)
     cfg.materials.slotsDivisor = readNumber(rawMaterials.slotsDivisor, DEFAULT_CONFIG.materials.slotsDivisor, 1, nil, "materials.slotsDivisor", issues)

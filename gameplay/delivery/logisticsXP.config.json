@@ -5,7 +5,15 @@
   },
   "parcel": {
     "baseXP": 2,
-    "slotMilestones": [16, 32, 64],
+    "slotMilestones": [16, 32, 64, 128],
+    "slotXPBySize": {
+      "4": 15,
+      "8": 20,
+      "16": 25,
+      "32": 85,
+      "64": 150,
+      "128": 650
+    },
     "distanceDivisor": 800,
     "reputationDistanceDivisor": 1000,
     "distanceRounding": "round",
@@ -13,6 +21,15 @@
   },
   "vehicleTrailer": {
     "baseXP": 5,
+    "trailerXPByUnlockGroup": {
+      "small": 800,
+      "medium": 2500,
+      "dryvan": 5000,
+      "flatbed": 6000,
+      "tanker": 7000,
+      "container": 8500,
+      "log": 10000
+    },
     "moneyDistanceDivisor": 1000,
     "xpDistanceDivisor": 400,
     "reputationDistanceDivisor": 4000,
@@ -22,6 +39,12 @@
   },
   "materials": {
     "baseXP": 3,
+    "baseXPByType": {
+      "fluid": 0.2,
+      "dryBulk": 0.25,
+      "cement": 0.5,
+      "cash": 20
+    },
     "distanceDivisor": 2000,
     "distanceOffset": -1,
     "slotsDivisor": 400,

@@ -11,12 +11,98 @@ local hardcoreMultiplier = 1
 
 local parcelItemMoneyMultiplier = 1
 
+local TRAILER_XP_GROUP_BY_TAG = {
+  emptySmallTrailers = "small",
+  loadedSmallTrailers = "small",
+  trailerBoxutility = "small",
+  trailerBoxutilityLarge = "small",
+  trailerTsfb = "small",
+  trailerCaravan = "small",
+  emptyMediumTrailers = "medium",
+  loadedMediumTrailers = "medium",
+  trailerCargotrailer = "medium",
+  trailerTiltdeck = "medium",
+  trailerDolly = "dryvan",
+  trailerDryvan = "dryvan",
+  emptyLargeTrailer = "flatbed",
+  loadedLargeTrailers = "flatbed",
+  trailerFlatbed = "flatbed",
+  trailerFramelessDump = "flatbed",
+  trailerTanker = "tanker",
+  trailerContainer = "container",
+  trailerLogTrailer = "log"
+}
+
+local TRAILER_XP_LEVEL_BY_GROUP = {
+  small = 5,
+  medium = 17,
+  dryvan = 25,
+  flatbed = 30,
+  tanker = 35,
+  container = 37,
+  log = 40
+}
+
 local function applyMoneyRounding(value)
   return xpConfig.applyRounding(value, xpConfig.getConfig().rounding.moneyFinal)
 end
 
+local function getTrailerBaseXP(rules, filter)
+  if not filter or not filter.unlockTag then
+    return rules.baseXP
+  end
+
+  local unlockGroup = TRAILER_XP_GROUP_BY_TAG[filter.unlockTag]
+  if not unlockGroup then
+    return rules.baseXP
+  end
+
+  if type(rules.trailerXPByUnlockGroup) == "table" then
+    local groupXP = rules.trailerXPByUnlockGroup[unlockGroup]
+    if type(groupXP) == "number" then
+      return groupXP
+    end
+  end
+
+  if type(rules.trailerXPByUnlockLevel) == "table" then
+    local unlockLevel = TRAILER_XP_LEVEL_BY_GROUP[unlockGroup]
+    local levelXP = rules.trailerXPByUnlockLevel[tostring(unlockLevel)]
+    if type(levelXP) == "number" then
+      return levelXP
+    end
+  end
+
+  return rules.baseXP
+end
+
+local function getMaterialBaseXP(rules, materialType)
+  if type(rules.baseXPByType) ~= "table" or type(materialType) ~= "string" then
+    return rules.baseXP
+  end
+
+  local overrideXP = rules.baseXPByType[materialType]
+  if type(overrideXP) == "number" then
+    return overrideXP
+  end
+
+  return rules.baseXP
+end
+
 local function getParcelBaseXP(slots)
   local rules = xpConfig.getParcelRules()
+
+  if type(rules.slotXPBySize) == "table" and #rules.slotXPBySize > 0 then
+    local tierXP = rules.baseXP
+    for _, tier in ipairs(rules.slotXPBySize) do
+      if slots >= tier.slots then
+        tierXP = tier.xp
+      else
+        break
+      end
+    end
+    return tierXP, rules
+  end
+
   local baseXP = rules.baseXP
   for _, threshold in ipairs(rules.slotMilestones) do
     if slots >= threshold then
@@ -162,7 +248,8 @@ function M.getVehicleOfferReward(filter, distance, offerType, orgId, economyMult
   local rules = xpConfig.getVehicleRules()
   local moneyDistanceTerm = xpConfig.applyRounding((filter.rewardPerKm or 0) * distance / rules.moneyDistanceDivisor, rules.moneyDistanceRounding)
   local xpDistanceTerm = xpConfig.applyRounding(distance / rules.xpDistanceDivisor, rules.xpDistanceRounding)
-  local baseXP = rules.baseXP + xpDistanceTerm
+  local tierBaseXP = (offerType == "trailer") and getTrailerBaseXP(rules, filter) or rules.baseXP
+  local baseXP = tierBaseXP + xpDistanceTerm
   local rewards = {
     money = ((filter.baseReward or 0) + moneyDistanceTerm) * hardcoreMultiplier,
     logistics = baseXP * hardcoreMultiplier
@@ -178,7 +265,7 @@ function M.getVehicleOfferReward(filter, distance, offerType, orgId, economyMult
   -- Organization reputation (from generator.lua ~line 556)
   if orgId then
     local repDistance = xpConfig.applyRounding(distance / rules.reputationDistanceDivisor, rules.reputationDistanceRounding)
-    rewards[orgId .. "Reputation"] = (rules.baseXP + repDistance) * hardcoreMultiplier
+    rewards[orgId .. "Reputation"] = (tierBaseXP + repDistance) * hardcoreMultiplier
   end
 
   -- Economy adjuster (from generator.lua ~line 559)
@@ -218,7 +305,8 @@ end
 --   materialType: material type string for economy adjuster section key (e.g. "fluid", "dryBulk")
 function M.getMaterialXPReward(distance, slots, orgId, orgMultiplier, economyMultiplier, moneyReward, materialType)
   local rules = xpConfig.getMaterialRules()
-  local xpFormula = (rules.baseXP + math.max(0, (distance / rules.distanceDivisor) + rules.distanceOffset)) * (slots / rules.slotsDivisor)
+  local materialBaseXP = getMaterialBaseXP(rules, materialType)
+  local xpFormula = (materialBaseXP + math.max(0, (distance / rules.distanceDivisor) + rules.distanceOffset)) * (slots / rules.slotsDivisor)
   local xpAmount = xpConfig.applyRounding(xpFormula, rules.xpRounding) * hardcoreMultiplier
   local rewards = {
     logistics = xpAmount,
