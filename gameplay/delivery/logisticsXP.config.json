@@ -1,0 +1,105 @@
+{
+  "version": 1,
+  "rounding": {
+    "moneyFinal": "round"
+  },
+  "parcel": {
+    "baseXP": 2,
+    "slotMilestones": [16, 32, 64],
+    "distanceDivisor": 800,
+    "reputationDistanceDivisor": 1000,
+    "distanceRounding": "round",
+    "reputationDistanceRounding": "round"
+  },
+  "vehicleTrailer": {
+    "baseXP": 5,
+    "moneyDistanceDivisor": 1000,
+    "xpDistanceDivisor": 400,
+    "reputationDistanceDivisor": 4000,
+    "moneyDistanceRounding": "round",
+    "xpDistanceRounding": "round",
+    "reputationDistanceRounding": "round"
+  },
+  "materials": {
+    "baseXP": 3,
+    "distanceDivisor": 2000,
+    "distanceOffset": -1,
+    "slotsDivisor": 400,
+    "xpRounding": "round"
+  },
+  "precisionParking": {
+    "thresholds": {
+      "perfect": 20,
+      "great": 15,
+      "good": 10,
+      "bad": 5
+    },
+    "score": {
+      "angleWorst": 7.5,
+      "angleBest": 1.6,
+      "toleranceSpaceFactor": 0.3,
+      "sideToleranceMin": 0.3,
+      "forwardToleranceMin": 0.4,
+      "toleranceFloorFactor": 0.3,
+      "sideToleranceFloorMin": 0.1,
+      "forwardToleranceFloorMin": 0.15,
+      "scoreScale": 6,
+      "scoreOffset": 2,
+      "scoreCap": 20,
+      "scoreRounding": "round"
+    },
+    "rewardRounding": "floor",
+    "rewards": {
+      "perfect": {
+        "moneyFlat": 30,
+        "moneyPercent": 0.25,
+        "logisticsFlat": 10,
+        "logisticsPercent": 0.2,
+        "skillFlat": 5,
+        "skillPercent": 0.15,
+        "reputationFlat": 5,
+        "reputationPercent": 0.2
+      },
+      "great": {
+        "moneyFlat": 20,
+        "moneyPercent": 0.15,
+        "logisticsFlat": 5,
+        "logisticsPercent": 0.15,
+        "skillFlat": 5,
+        "skillPercent": 0.1,
+        "reputationFlat": 2,
+        "reputationPercent": 0.15
+      },
+      "good": {
+        "moneyFlat": 10,
+        "moneyPercent": 0.1,
+        "logisticsFlat": 5,
+        "logisticsPercent": 0.1,
+        "skillFlat": 3,
+        "skillPercent": 0.05,
+        "reputationFlat": 0,
+        "reputationPercent": 0
+      },
+      "bad": {
+        "moneyFlat": 0,
+        "moneyPercent": -0.05,
+        "logisticsFlat": 0,
+        "logisticsPercent": 0,
+        "skillFlat": 0,
+        "skillPercent": 0,
+        "reputationFlat": 0,
+        "reputationPercent": 0
+      },
+      "horrible": {
+        "moneyFlat": 0,
+        "moneyPercent": -0.1,
+        "logisticsFlat": 0,
+        "logisticsPercent": 0,
+        "skillFlat": 0,
+        "skillPercent": 0,
+        "reputationFlat": -5,
+        "reputationPercent": -0.1
+      }
+    }
+  }
+}
