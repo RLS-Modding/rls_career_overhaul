@@ -43,8 +43,36 @@ local TRAILER_XP_LEVEL_BY_GROUP = {
   log = 40
 }
 
+local VEHICLE_XP_TAGS = {
+  junkerVeh = true,
+  smallVeh = true,
+  fleetVeh = true,
+  highEndVeh = true,
+  exoticVeh = true,
+  heavyVeh = true,
+  largeVeh = true
+}
+
 local function applyMoneyRounding(value)
   return xpConfig.applyRounding(value, xpConfig.getConfig().rounding.moneyFinal)
+end
+
+local function getVehicleBaseXP(rules, filter)
+  if type(rules.vehicleXPByTag) ~= "table" or not filter or not filter.unlockTag then
+    return rules.baseXP
+  end
+
+  local tag = filter.unlockTag
+  if not VEHICLE_XP_TAGS[tag] then
+    return rules.baseXP
+  end
+
+  local tagXP = rules.vehicleXPByTag[tag]
+  if type(tagXP) == "number" then
+    return tagXP
+  end
+
+  return rules.baseXP
 end
 
 local function getTrailerBaseXP(rules, filter)
@@ -248,8 +276,13 @@ function M.getVehicleOfferReward(filter, distance, offerType, orgId, economyMult
   local rules = xpConfig.getVehicleRules()
   local moneyDistanceTerm = xpConfig.applyRounding((filter.rewardPerKm or 0) * distance / rules.moneyDistanceDivisor, rules.moneyDistanceRounding)
   local xpDistanceTerm = xpConfig.applyRounding(distance / rules.xpDistanceDivisor, rules.xpDistanceRounding)
-  local tierBaseXP = (offerType == "trailer") and getTrailerBaseXP(rules, filter) or rules.baseXP
-  local baseXP = tierBaseXP + xpDistanceTerm
+  local deliveryBaseXP = rules.baseXP
+  if offerType == "trailer" then
+    deliveryBaseXP = getTrailerBaseXP(rules, filter)
+  elseif offerType == "vehicle" then
+    deliveryBaseXP = getVehicleBaseXP(rules, filter)
+  end
+  local baseXP = deliveryBaseXP + xpDistanceTerm
   local rewards = {
     money = ((filter.baseReward or 0) + moneyDistanceTerm) * hardcoreMultiplier,
     logistics = baseXP * hardcoreMultiplier
@@ -265,7 +298,7 @@ function M.getVehicleOfferReward(filter, distance, offerType, orgId, economyMult
   -- Organization reputation (from generator.lua ~line 556)
   if orgId then
     local repDistance = xpConfig.applyRounding(distance / rules.reputationDistanceDivisor, rules.reputationDistanceRounding)
-    rewards[orgId .. "Reputation"] = (tierBaseXP + repDistance) * hardcoreMultiplier
+    rewards[orgId .. "Reputation"] = (deliveryBaseXP + repDistance) * hardcoreMultiplier
   end
 
   -- Economy adjuster (from generator.lua ~line 559)

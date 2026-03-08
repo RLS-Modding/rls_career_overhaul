@@ -29,6 +29,16 @@ local VALID_TRAILER_XP_GROUPS = {
   log = true
 }
 
+local VALID_VEHICLE_XP_TAGS = {
+  junkerVeh = true,
+  smallVeh = true,
+  fleetVeh = true,
+  highEndVeh = true,
+  exoticVeh = true,
+  heavyVeh = true,
+  largeVeh = true
+}
+
 local function deepCopyTable(value)
   if type(value) ~= "table" then
     return value
@@ -223,6 +233,29 @@ local function sanitizeTrailerXPByUnlockGroup(rawValue, defaults, label, issues)
   return result
 end
 
+local function sanitizeVehicleXPByTag(rawValue, defaults, label, issues)
+  local result = deepCopyTable(defaults)
+  if rawValue == nil then
+    return result
+  end
+
+  if type(rawValue) ~= "table" then
+    appendIssue(issues, string.format("%s is invalid; using default values", label))
+    return result
+  end
+
+  for rawTag, rawXP in pairs(rawValue) do
+    if not VALID_VEHICLE_XP_TAGS[rawTag] then
+      appendIssue(issues, string.format("%s.%s is unknown; skipping", label, tostring(rawTag)))
+    else
+      local defaultXP = result[rawTag] or 0
+      result[rawTag] = readNumber(rawXP, defaultXP, 0, nil, string.format("%s.%s", label, rawTag), issues)
+    end
+  end
+
+  return result
+end
+
 local DEFAULT_CONFIG = {
   version = 1,
   rounding = {
@@ -239,6 +272,7 @@ local DEFAULT_CONFIG = {
   },
   vehicleTrailer = {
     baseXP = 5,
+    vehicleXPByTag = {},
     trailerXPByUnlockGroup = {},
     trailerXPByUnlockLevel = {},
     moneyDistanceDivisor = 1000,
@@ -392,6 +426,7 @@ local function sanitizeConfig(rawConfig)
     appendIssue(issues, "vehicleTrailer section missing; using defaults")
   else
     cfg.vehicleTrailer.baseXP = readNumber(rawVehicle.baseXP, DEFAULT_CONFIG.vehicleTrailer.baseXP, 0, nil, "vehicleTrailer.baseXP", issues)
+    cfg.vehicleTrailer.vehicleXPByTag = sanitizeVehicleXPByTag(rawVehicle.vehicleXPByTag, DEFAULT_CONFIG.vehicleTrailer.vehicleXPByTag, "vehicleTrailer.vehicleXPByTag", issues)
     cfg.vehicleTrailer.trailerXPByUnlockGroup = sanitizeTrailerXPByUnlockGroup(rawVehicle.trailerXPByUnlockGroup, DEFAULT_CONFIG.vehicleTrailer.trailerXPByUnlockGroup, "vehicleTrailer.trailerXPByUnlockGroup", issues)
     cfg.vehicleTrailer.trailerXPByUnlockLevel = sanitizeNumericXPByLevel(rawVehicle.trailerXPByUnlockLevel, DEFAULT_CONFIG.vehicleTrailer.trailerXPByUnlockLevel, "vehicleTrailer.trailerXPByUnlockLevel", issues)
     cfg.vehicleTrailer.moneyDistanceDivisor = readNumber(rawVehicle.moneyDistanceDivisor, DEFAULT_CONFIG.vehicleTrailer.moneyDistanceDivisor, 1, nil, "vehicleTrailer.moneyDistanceDivisor", issues)
