@@ -7,14 +7,14 @@
     "baseXP": 2,
     "slotMilestones": [16, 32, 64, 128],
     "slotXPBySize": {
-      "4": 15,
-      "8": 20,
-      "16": 25,
-      "32": 85,
-      "64": 150,
-      "128": 650
+      "4": 11,
+      "8": 16,
+      "16": 21,
+      "32": 81,
+      "64": 146,
+      "128": 646
     },
-    "distanceDivisor": 800,
+    "distanceDivisor": 500,
     "reputationDistanceDivisor": 1000,
     "distanceRounding": "round",
     "reputationDistanceRounding": "round"
@@ -22,24 +22,24 @@
   "vehicleTrailer": {
     "baseXP": 5,
     "vehicleXPByTag": {
-      "junkerVeh": 75,
-      "smallVeh": 350,
-      "fleetVeh": 700,
-      "highEndVeh": 1500,
-      "exoticVeh": 3500,
-      "heavyVeh": 6000
+      "junkerVeh": 68,
+      "smallVeh": 343,
+      "fleetVeh": 693,
+      "highEndVeh": 1493,
+      "exoticVeh": 3493,
+      "heavyVeh": 5993
     },
     "trailerXPByUnlockGroup": {
-      "small": 800,
-      "medium": 2500,
-      "dryvan": 5000,
-      "flatbed": 6000,
-      "tanker": 7000,
-      "container": 8500,
-      "log": 10000
+      "small": 793,
+      "medium": 2493,
+      "dryvan": 4993,
+      "flatbed": 5993,
+      "tanker": 6993,
+      "container": 8493,
+      "log": 9993
     },
     "moneyDistanceDivisor": 1000,
-    "xpDistanceDivisor": 400,
+    "xpDistanceDivisor": 250,
     "reputationDistanceDivisor": 4000,
     "moneyDistanceRounding": "round",
     "xpDistanceRounding": "round",
@@ -48,12 +48,12 @@
   "materials": {
     "baseXP": 3,
     "baseXPByType": {
-      "fluid": 0.2,
-      "dryBulk": 0.25,
-      "cement": 0.5,
-      "cash": 20
+      "fluid": 0,
+      "dryBulk": 0,
+      "cement": 0.25,
+      "cash": 19.75
     },
-    "distanceDivisor": 2000,
+    "distanceDivisor": 1800,
     "distanceOffset": -1,
     "slotsDivisor": 400,
     "xpRounding": "round"
