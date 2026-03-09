@@ -13,6 +13,7 @@ M.dependencies = {
 -- Require necessary modules
 local configListGenerator = require('util.configListGenerator')
 local parking = require('gameplay.parking')
+local parkingReservation = require('gameplay.parkingReservation')
 local freeroam_facilities = require('freeroam.facilities')
 local gameplay_sites_sitesManager = require('gameplay.sites.sitesManager')
 local marker
@@ -74,14 +75,57 @@ function VehicleRepoJob:new()
     instance.spawnedVehicle = false
     instance.isCompleted = false
     instance.isCompleting = false
+    instance.reservationToken = nil
+    instance.reservedPickupSpot = nil
+    instance.reservedDeliverySpot = nil
     if core_groundMarkers then
         core_groundMarkers.resetAll()
     end
     return instance
 end
 
+local function makeReservationToken()
+    return string.format("repo:%d:%d", os.time(), math.random(100000, 999999))
+end
+
+local function shuffleSpots(spots)
+    local shuffled = {}
+    for i, spot in ipairs(spots or {}) do
+        shuffled[i] = spot
+    end
+
+    for i = #shuffled, 2, -1 do
+        local j = math.random(i)
+        shuffled[i], shuffled[j] = shuffled[j], shuffled[i]
+    end
+
+    return shuffled
+end
+
+function VehicleRepoJob:releasePickupReservation()
+    if self.reservedPickupSpot and self.reservationToken then
+        parkingReservation.releaseSpot(self.reservedPickupSpot, self.reservationToken)
+    end
+    self.reservedPickupSpot = nil
+end
+
+function VehicleRepoJob:releaseDeliveryReservation()
+    if self.reservedDeliverySpot and self.reservationToken then
+        parkingReservation.releaseSpot(self.reservedDeliverySpot, self.reservationToken)
+    end
+    self.reservedDeliverySpot = nil
+end
+
+function VehicleRepoJob:releaseReservations()
+    self:releasePickupReservation()
+    self:releaseDeliveryReservation()
+    self.reservationToken = nil
+end
+
 -- Reset to initial state (ready to generate new mission)
 function VehicleRepoJob:resetToInitialState()
+    self:releaseReservations()
+
     if self.vehicleId then
         if gameplay_traffic then
             pcall(function() gameplay_traffic.removeTraffic(self.vehicleId) end)
@@ -111,6 +155,9 @@ function VehicleRepoJob:resetToInitialState()
     self.spawnedVehicle = false
     self.isCompleted = false
     self.isCompleting = false
+    self.reservationToken = nil
+    self.reservedPickupSpot = nil
+    self.reservedDeliverySpot = nil
     self.reward = nil
     self.jobCoroutine = nil
     self.randomVehicleInfo = nil
@@ -187,6 +234,9 @@ end
 
 -- Generate a new repo job
 function VehicleRepoJob:generateJob()
+    self:releaseReservations()
+    self.reservationToken = makeReservationToken()
+
     -- Set loading state immediately
     local data = {
         state = "loading",
@@ -211,10 +261,20 @@ function VehicleRepoJob:generateJob()
 
         -- Select a dealership and yield
         self:selectDealership()
+        if not self.selectedDealership then
+            log("W", "repo", "No dealership found for repo job generation")
+            self:resetToInitialState()
+            return
+        end
         for i = 1, 5 do coroutine.yield() end
 
         -- Determine delivery location and yield
-        self:determineDeliveryLocation() 
+        self:determineDeliveryLocation()
+        if not self.deliveryLocation then
+            log("W", "repo", "No reservable dealership dropoff spot found for repo job generation")
+            self:resetToInitialState()
+            return
+        end
         for i = 1, 5 do coroutine.yield() end
 
         -- Filter valid parking spots and yield
@@ -223,10 +283,19 @@ function VehicleRepoJob:generateJob()
 
         -- Select a random valid parking spot and yield
         self:selectRandomSpot()
+        if not self.selectedSpot then
+            log("W", "repo", "No reservable pickup spot found for repo job generation")
+            self:resetToInitialState()
+            return
+        end
         for i = 1, 5 do coroutine.yield() end
 
         -- Generate vehicle configuration and yield
         self:generateVehicleConfig()
+        if not self.vehicleConfig then
+            self:resetToInitialState()
+            return
+        end
         for i = 1, 5 do coroutine.yield() end
 
         -- Wait for player vehicle to be stationary before spawning
@@ -239,6 +308,10 @@ function VehicleRepoJob:generateJob()
         -- Spawn the vehicle
         if not self.spawnedVehicle then
             self:spawnVehicle()
+            if not self.vehicleId then
+                self:resetToInitialState()
+                return
+            end
             self.spawnedVehicle = true
         end
         
@@ -308,20 +381,35 @@ function VehicleRepoJob:selectDealership()
     if not dealerships or #dealerships == 0 then
         return
     end
-    self.selectedDealership = dealerships[math.random(#dealerships)]
+    self.availableDealerships = shuffleSpots(dealerships)
+    self.selectedDealership = self.availableDealerships[1]
 end
 
 -- Determine the delivery location
 function VehicleRepoJob:determineDeliveryLocation()
-    self.deliveryLocation = gameplay_sites_sitesManager.getBestParkingSpotForVehicleFromList(nil,
-        freeroam_facilities.getParkingSpotsForFacility(self.selectedDealership))
+    self.deliveryLocation = nil
+    self:releaseDeliveryReservation()
+
+    local dealerships = self.availableDealerships or (self.selectedDealership and {self.selectedDealership} or {})
+    for _, dealership in ipairs(dealerships) do
+        local facilitySpots = freeroam_facilities.getParkingSpotsForFacility(dealership) or {}
+        local liveDeliverySpot = parkingReservation.findReservableSpot(shuffleSpots(facilitySpots), self.reservationToken)
+        if liveDeliverySpot then
+            self.selectedDealership = dealership
+            self.deliveryLocation = liveDeliverySpot
+            self.reservedDeliverySpot = liveDeliverySpot
+            return
+        end
+
+        log("I", "repo", string.format("Rerolling dealership '%s'; no reservable dropoff spot found", tostring(dealership.name)))
+    end
 end
 
 -- Filter valid parking spots based on distance criteria
 function VehicleRepoJob:filterValidSpots()
     self.validSpots = {}
     for _, spot in pairs(self.parkingSpots.objects) do
-        if spot.pos and not spot.vehicle then
+        if spot.pos then
             local distanceFromPlayer = (spot.pos - self.playerPosition):length()
             local distanceFromDestination = (spot.pos - self.deliveryLocation.pos):length()
             if distanceFromPlayer >= 300 and distanceFromDestination >= 600 then
@@ -333,10 +421,18 @@ end
 
 -- Select a random valid parking spot
 function VehicleRepoJob:selectRandomSpot()
+    self.selectedSpot = nil
+    self:releasePickupReservation()
+
     if #self.validSpots == 0 then
         return
     end
-    self.selectedSpot = self.validSpots[math.random(#self.validSpots)]
+
+    local livePickupSpot = parkingReservation.findReservableSpot(shuffleSpots(self.validSpots), self.reservationToken)
+    if livePickupSpot then
+        self.selectedSpot = livePickupSpot
+        self.reservedPickupSpot = livePickupSpot
+    end
 end
 
 -- Generate vehicle configuration
@@ -771,6 +867,7 @@ function VehicleRepoJob:onUpdate(dtReal, dtSim, dtRaw)
             local velSuccess, vel = pcall(function() return vehicle:getVelocity():length() end)
             if velSuccess and vel and vel > 2 then
                 self.jobStartTime = os.time()
+                self:releasePickupReservation()
                 core_groundMarkers.setPath(self.deliveryLocation.pos, {clearPathOnReachingTarget = true})
                 self.totalDistanceTraveled = self.totalDistanceTraveled + core_groundMarkers.getPathLength()
             end
