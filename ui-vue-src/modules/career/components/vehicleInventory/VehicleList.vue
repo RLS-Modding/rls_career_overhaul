@@ -25,12 +25,16 @@
 
     <BngPopoverMenu :name="popId" focus @hide="selectedVehId = null">
       <template v-for="(buttonData, index) in vehicleInventoryStore.vehicleInventoryData.chooseButtonsData" :key="index">
-    <BngButton v-if="vehSelected && isFunctionAvailable(vehSelected, buttonData)"
+        <BngButton v-if="vehSelected && isFunctionAvailable(vehSelected, buttonData)"
           :accent="ACCENTS.menu"
           :disabled="(buttonData.buttonText === 'Deliver' || buttonData.buttonText === 'Deliver and replace') && vehicleInventoryStore.vehicleInventoryData.playerMoney < 5000"
           v-bng-on-ui-nav:ok.focusRequired.asMouse
           @click="handleButtonClick(buttonData, index)">
-      {{ buttonData.buttonText }}<span v-if="buttonData.repairRequired && vehSelected?.needsRepair"> (Damaged)</span>
+          {{ buttonData.buttonText }}<span v-if="buttonData.repairRequired && vehSelected?.needsRepair"> (Damaged)</span>
+        </BngButton>
+        <BngButton v-else-if="vehSelected && isTradeInAction(buttonData)"
+          :accent="ACCENTS.menu" disabled>
+          {{ getUnavailableReason(vehSelected, buttonData) }}
         </BngButton>
       </template>
       <BngButton
@@ -315,6 +319,22 @@ const isFunctionAvailable = (vehicle, buttonData) => {
     (buttonData.requireAtDifferentGarage && vehicle.atCurrentGarage) ||
     (!vehicle.atCurrentGarage && !currentGarageHasSpace.value)
   )
+}
+
+const isTradeInAction = buttonData => buttonData?.buttonText === "Trade-In"
+
+const getUnavailableReason = (vehicle, buttonData) => {
+  if (!isTradeInAction(buttonData)) return buttonData?.buttonText || "Unavailable"
+  if (vehicle.timeToAccess) return "Trade-In (Vehicle unavailable right now)"
+  if (vehicle.missingFile) return "Trade-In (Vehicle data missing)"
+  if (buttonData.requiredVehicleNotInGarage && vehicle.inGarage) return "Trade-In (Vehicle must not be in garage)"
+  if (buttonData.requiredOtherVehicleInGarage && !vehicle.otherVehicleInGarage) return "Trade-In (Required support vehicle is missing)"
+  if (buttonData.ownedRequired && !vehicle.owned) return "Trade-In (You do not own this vehicle)"
+  if (buttonData.notForSaleRequired && vehicle.listedForSale) return "Trade-In (Vehicle is listed for sale)"
+  if (buttonData.requireAtCurrentGarage && !vehicle.atCurrentGarage) return "Trade-In (Vehicle must be at this garage)"
+  if (buttonData.requireAtDifferentGarage && vehicle.atCurrentGarage) return "Trade-In (Vehicle must be at a different garage)"
+  if (!vehicle.atCurrentGarage && !currentGarageHasSpace.value) return "Trade-In (No space at current garage)"
+  return "Trade-In (Unavailable)"
 }
 
 const lookAtVehicleListing = () => {
