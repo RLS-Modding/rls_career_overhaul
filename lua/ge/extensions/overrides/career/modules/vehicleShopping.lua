@@ -368,6 +368,13 @@ local function isValidVehicleInfoShape(vehicleInfo)
     return false, "malformed aggregates"
   end
 
+  if type(vehicleInfo.Brand) ~= "string" then
+    vehicleInfo.Brand = ""
+  end
+  if type(vehicleInfo.Name) ~= "string" then
+    vehicleInfo.Name = ""
+  end
+
   return true
 end
 
@@ -481,7 +488,40 @@ local function logVehicleSanitizationSummary(context, summary)
 end
 
 local function sanitizeSavedVehicleEntries(savedVehicles, context)
-  local sanitizedVehicles, summary = sanitizeVehicleInfoList(savedVehicles, context, "loadDropped")
+  local sanitizedVehicles = {}
+  local summary = {
+    raw = 0,
+    kept = 0,
+    malformed = 0,
+    quarantined = 0
+  }
+
+  if type(savedVehicles) ~= "table" then
+    return sanitizedVehicles, summary
+  end
+
+  for _, vehicleInfo in ipairs(savedVehicles) do
+    summary.raw = summary.raw + 1
+    if isQuarantined(vehicleInfo) then
+      summary.quarantined = summary.quarantined + 1
+      incrementValidationStat("loadDropped")
+    else
+      local ok, reason = isValidVehicleInfoShape(vehicleInfo)
+      if not ok then
+        local logKey = "loaddrop:" .. getVehicleConfigTrackingKey(vehicleInfo)
+        summary.malformed = summary.malformed + 1
+        incrementValidationStat("loadDropped")
+        if not badConfigLogOnce[logKey] then
+          badConfigLogOnce[logKey] = true
+          log("W", "Career", string.format("Dropped malformed saved vehicle entry %s during %s: %s",
+            tostring(getVehicleConfigTrackingKey(vehicleInfo)), tostring(context), tostring(reason)))
+        end
+      else
+        table.insert(sanitizedVehicles, vehicleInfo)
+        summary.kept = summary.kept + 1
+      end
+    end
+  end
 
   for _, vehicleInfo in ipairs(sanitizedVehicles) do
     if vehicleInfo.pos ~= nil then
@@ -799,7 +839,6 @@ local function getVehiclePartsValue(modelName, configKey, vehicleInfo, context)
       log("W", "Career", string.format("Vehicle parts value fallback for %s during %s: unreadable or malformed %s",
         cacheKey, tostring(context or "partsValue"), pcPath))
     end
-    partsValueCache[cacheKey] = 0
     return 0
   end
 
@@ -843,7 +882,7 @@ local function doesVehiclePassFiltersList(vehicleInfo, filters)
       if (parameters.min ~= nil and not minYear) or (parameters.max ~= nil and not maxYear) then
         return false
       end
-      if (minYear and vehicleYears.min < minYear) or (maxYear and vehicleYears.min > maxYear) then
+      if (minYear and vehicleYears.max < minYear) or (maxYear and vehicleYears.min > maxYear) then
         return false
       end
     elseif filterName ~= "Mileage" then
@@ -1060,7 +1099,7 @@ local function getRandomVehicleFromCache(sellerId, count)
   local selectedVehicles = {}
   local availableVehicles = deepcopy(sanitizedSourceVehicles)
 
-  for i = 1, math.min(count, #availableVehicles) do
+  for _ = 1, math.min(count, #availableVehicles) do
     for j = #availableVehicles, 1, -1 do
       local vehicle = availableVehicles[j]
       if isQuarantined(vehicle) then
@@ -1115,6 +1154,7 @@ local function invalidateVehicleCache()
   vehicleCache.cacheValid = false
   vehicleCache.regularVehicles = {}
   vehicleCache.dealershipCache = {}
+  partsValueCache = {}
   resetVehicleValidationState()
 end
 
