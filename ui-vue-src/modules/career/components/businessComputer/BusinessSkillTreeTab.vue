@@ -11,7 +11,6 @@
           @mousedown="startPan"
           @mousemove="onPan"
           @mouseup="stopPan"
-          @mouseleave="stopPan"
           @wheel.prevent="onWheel"
           @contextmenu.prevent
         >
