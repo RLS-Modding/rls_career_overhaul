@@ -16,6 +16,7 @@
             :data="vehicle" :layout="itemLayout" :selected="vehSelected && vehSelected.id === vehicle.id"
             :is-tutorial="vehicleInventoryStore && vehicleInventoryStore.vehicleInventoryData.tutorialActive"
             :money="vehicleInventoryStore ? vehicleInventoryStore.vehicleInventoryData.playerMoney : 0"
+            :disabled-reason="getTradeInTileReason(vehicle)"
             v-bng-disabled="vehicle.disabled"
             tabindex="0" bng-nav-item v-bng-on-ui-nav:ok.asMouse.focusRequired
             v-bng-popover:right-start.click="popId" @click="!vehicle.disabled && select(vehicle, $event)" />
@@ -335,6 +336,12 @@ const getUnavailableReason = (vehicle, buttonData) => {
   if (buttonData.requireAtDifferentGarage && vehicle.atCurrentGarage) return "Trade-In (Vehicle must be at a different garage)"
   if (!vehicle.atCurrentGarage && !currentGarageHasSpace.value) return "Trade-In (No space at current garage)"
   return "Trade-In (Unavailable)"
+}
+
+const getTradeInTileReason = vehicle => {
+  const tradeInButtonData = vehicleInventoryStore.vehicleInventoryData?.chooseButtonsData?.find(isTradeInAction)
+  if (!tradeInButtonData || isFunctionAvailable(vehicle, tradeInButtonData)) return null
+  return getUnavailableReason(vehicle, tradeInButtonData).replace(/^Trade-In\s*\((.*)\)$/, "$1")
 }
 
 const lookAtVehicleListing = () => {
