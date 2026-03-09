@@ -13,7 +13,7 @@ local walkAwayTimeLimit = 300
 local walkAwayWarningTime = 60
 local loanedVehiclesInfo = {}
 local POLICE_LOANER_ORGANIZATION_ID = "policeLoaner"
-local POLICE_SKILL_BRANCH_ID = "police"
+local POLICE_SKILL_PATH_IDS = {"careerSkills-police", "police", "freestyle-police"}
 local deliveryLvlToLogisticsLevel = {
   [0] = 1,
   [1] = 5,
@@ -27,13 +27,15 @@ local function getPoliceSkillLevel()
     return 0
   end
 
-  local branchLevel = career_branches.getBranchLevel(POLICE_SKILL_BRANCH_ID)
-  local level = tonumber(branchLevel)
-  if not level then
-    return 0
+  for _, skillPathId in ipairs(POLICE_SKILL_PATH_IDS) do
+    local branchLevel = career_branches.getBranchLevel(skillPathId)
+    local level = tonumber(branchLevel)
+    if level then
+      return math.max(0, math.floor(level))
+    end
   end
 
-  return math.max(0, math.floor(level))
+  return 0
 end
 
 local markedForSpawningLoaners = {}
