@@ -487,6 +487,76 @@ local function logVehicleSanitizationSummary(context, summary)
     tostring(context), summary.raw, summary.kept, summary.malformed, summary.quarantined))
 end
 
+local function validateSavedVehicleRuntimeFields(vehicleInfo)
+  local sellerIdType = type(vehicleInfo.sellerId)
+  if (sellerIdType ~= "string" and sellerIdType ~= "number") or tostring(vehicleInfo.sellerId) == "" then
+    return false, "missing saved sellerId"
+  end
+
+  local generationTime = tonumber(vehicleInfo.generationTime)
+  if not generationTime then
+    return false, "missing saved generationTime"
+  end
+
+  local offerTTL = tonumber(vehicleInfo.offerTTL)
+  if not offerTTL then
+    return false, "missing saved offerTTL"
+  end
+
+  local shopId = tonumber(vehicleInfo.shopId)
+  if not shopId then
+    return false, "missing saved shopId"
+  end
+
+  local fees = vehicleInfo.fees
+  if fees == nil then
+    fees = 0
+  else
+    fees = tonumber(fees)
+    if not fees or fees < 0 then
+      return false, "invalid saved fees"
+    end
+  end
+
+  local tax = vehicleInfo.tax
+  if tax == nil then
+    tax = salesTax
+  else
+    tax = tonumber(tax)
+    if not tax or tax < 0 then
+      return false, "invalid saved tax"
+    end
+  end
+
+  vehicleInfo.generationTime = generationTime
+  vehicleInfo.offerTTL = offerTTL
+  vehicleInfo.shopId = shopId
+  vehicleInfo.fees = fees
+  vehicleInfo.tax = tax
+
+  return true
+end
+
+local function coerceVehiclePricingFields(vehicleInfo)
+  if type(vehicleInfo) ~= "table" then
+    return 0, salesTax
+  end
+
+  local fees = tonumber(vehicleInfo.fees)
+  if not fees or fees < 0 then
+    fees = 0
+  end
+
+  local tax = tonumber(vehicleInfo.tax)
+  if not tax or tax < 0 then
+    tax = salesTax
+  end
+
+  vehicleInfo.fees = fees
+  vehicleInfo.tax = tax
+  return fees, tax
+end
+
 local function sanitizeSavedVehicleEntries(savedVehicles, context)
   local sanitizedVehicles = {}
   local summary = {
@@ -507,6 +577,9 @@ local function sanitizeSavedVehicleEntries(savedVehicles, context)
       incrementValidationStat("loadDropped")
     else
       local ok, reason = isValidVehicleInfoShape(vehicleInfo)
+      if ok then
+        ok, reason = validateSavedVehicleRuntimeFields(vehicleInfo)
+      end
       if not ok then
         local logKey = "loaddrop:" .. getVehicleConfigTrackingKey(vehicleInfo)
         summary.malformed = summary.malformed + 1
@@ -1479,20 +1552,23 @@ local function updateVehicleList(fromScratch)
     local storedLevel = sellersInfos[seller.id].lastOrgLevel
     local levelChanged = (currentOrgLevel ~= nil) and (storedLevel ~= nil) and (storedLevel ~= currentOrgLevel)
 
-    local maxStock = seller.stock or 10
+    local maxStock = tonumber(seller.stock) or 10
     if seller.associatedOrganization then
       local org = freeroam_organizations.getOrganization(seller.associatedOrganization)
       local level = getOrgLevelData(org)
-      if level and level.stock then
-        maxStock = level.stock
+      local levelStock = level and tonumber(level.stock) or nil
+      if levelStock then
+        maxStock = levelStock
       end
     end
+    maxStock = math.max(math.floor(maxStock), 1)
     local availableSlots = math.max(0, maxStock - currentVehicleCount)
 
     local numberOfVehiclesToGenerate = 0
     local adjustedTimeBetweenOffers = vehicleOfferTimeToLive / maxStock
-    if seller.vehicleGenerationMultiplier then
-      adjustedTimeBetweenOffers = adjustedTimeBetweenOffers / seller.vehicleGenerationMultiplier
+    local generationMultiplier = tonumber(seller.vehicleGenerationMultiplier)
+    if generationMultiplier and generationMultiplier > 0 then
+      adjustedTimeBetweenOffers = adjustedTimeBetweenOffers / generationMultiplier
     end
 
     if onlyStarterVehicles then
@@ -1541,226 +1617,283 @@ local function updateVehicleList(fromScratch)
 
     local starterVehicleMileages = {bx = 165746239, etki = 285817342, covet = 80174611}
     local starterVehicleYears = {bx = 1990, etki = 1989, covet = 1989}
+    local targetVehicleCount = onlyStarterVehicles and tableSize(randomVehicleInfos) or numberOfVehiclesToGenerate
+    local successfulGenerationsForSeller = 0
+    local replacementCycles = 0
+    local maxReplacementCycles = onlyStarterVehicles and 0 or 2
+    local nextBatchStartIndex = 1
+    local attemptedGenerationForSeller = false
 
-    for i, randomVehicleInfo in ipairs(randomVehicleInfos) do
-      updateSummary.attempted = updateSummary.attempted + 1
-      if isQuarantined(randomVehicleInfo) then
-        updateSummary.dropped = updateSummary.dropped + 1
-        incrementValidationStat("generationDropped")
-      else
-        local shapeOk, shapeReason = isValidVehicleInfoShape(randomVehicleInfo)
-        if not shapeOk then
-          quarantineVehicleConfig(randomVehicleInfo, shapeReason, "updateVehicleList")
+    if onlyStarterVehicles then
+      attemptedGenerationForSeller = not tableIsEmpty(randomVehicleInfos)
+    elseif numberOfVehiclesToGenerate > 0 then
+      attemptedGenerationForSeller = true
+    end
+
+    while nextBatchStartIndex <= #randomVehicleInfos and successfulGenerationsForSeller < targetVehicleCount do
+      local batchEndIndex = #randomVehicleInfos
+      for i = nextBatchStartIndex, batchEndIndex do
+        if successfulGenerationsForSeller >= targetVehicleCount then
+          break
+        end
+
+        local randomVehicleInfo = randomVehicleInfos[i]
+        updateSummary.attempted = updateSummary.attempted + 1
+        if isQuarantined(randomVehicleInfo) then
           updateSummary.dropped = updateSummary.dropped + 1
           incrementValidationStat("generationDropped")
         else
-          local generatedVehicle, err = safeVehicleOp("updateVehicleList", randomVehicleInfo, function()
-            randomVehicleInfo.generationTime = currentTime - ((i - 1) * adjustedTimeBetweenOffers)
-            randomVehicleInfo.offerTTL = onlyStarterVehicles and math.huge or vehicleOfferTimeToLive
-
-            randomVehicleInfo.sellerId = seller.id
-            randomVehicleInfo.sellerName = seller.name
-
-            local filter = type(randomVehicleInfo.precomputedFilter) == "table" and randomVehicleInfo.precomputedFilter or
-                             (seller.filter or {})
-            if seller.associatedOrganization then
-              local org = freeroam_organizations.getOrganization(seller.associatedOrganization)
-              local level = getOrgLevelData(org)
-              if level and level.filter then
-                filter = level.filter
-              end
-            end
-            randomVehicleInfo.filter = filter
-
-            local years = safeYearsRange(randomVehicleInfo)
-            if not onlyStarterVehicles and not years then
-              error("missing or malformed Years data")
-            end
-
-            if not onlyStarterVehicles then
-              local minYear = years.min
-              local filterMinYear = filter.whiteList and filter.whiteList.Years and tonumber(filter.whiteList.Years.min)
-              if filterMinYear then
-                minYear = math.max(minYear, filterMinYear)
-              end
-              local maxYear = years.max
-              local filterMaxYear = filter.whiteList and filter.whiteList.Years and tonumber(filter.whiteList.Years.max)
-              if filterMaxYear then
-                maxYear = math.min(maxYear, filterMaxYear)
-              end
-              if minYear > maxYear then
-                error("invalid year bounds after filtering")
-              end
-              randomVehicleInfo.year = math.random(minYear, maxYear)
-
-              local mileageMin = filter.whiteList and filter.whiteList.Mileage and tonumber(filter.whiteList.Mileage.min)
-              local mileageMax = filter.whiteList and filter.whiteList.Mileage and tonumber(filter.whiteList.Mileage.max)
-              if mileageMin and mileageMax then
-                randomVehicleInfo.Mileage = randomGauss3() / 3 *
-                                              (mileageMax - mileageMin) +
-                                              mileageMin
-              else
-                randomVehicleInfo.Mileage = 0
-              end
-            else
-              randomVehicleInfo.year = starterVehicleYears[randomVehicleInfo.model_key]
-              if not randomVehicleInfo.year then
-                if not years then
-                  error("starter vehicle missing usable Years data")
-                end
-                randomVehicleInfo.year = math.random(years.min, years.max)
-              end
-              randomVehicleInfo.Mileage = starterVehicleMileages[randomVehicleInfo.model_key] or 100000000
-            end
-
-            local totalPartsValue = randomVehicleInfo.cachedPartsValue or
-                                      (getVehiclePartsValue(randomVehicleInfo.model_key, randomVehicleInfo.key,
-                                        randomVehicleInfo, "updateVehicleList") or 0)
-            totalPartsValue = math.floor(career_modules_valueCalculator.getDepreciatedPartValue(totalPartsValue,
-              randomVehicleInfo.Mileage) * 1.081)
-            local adjustedBaseValue = career_modules_valueCalculator.getAdjustedVehicleBaseValue(randomVehicleInfo.Value, {
-              mileage = randomVehicleInfo.Mileage,
-              age = 2025 - randomVehicleInfo.year
-            })
-            local baseValue = math.floor(math.max(adjustedBaseValue, totalPartsValue) / 1000) * 1000
-
-            local range = seller.range
-            if seller.associatedOrganization then
-              local org = freeroam_organizations.getOrganization(seller.associatedOrganization)
-              local level = getOrgLevelData(org)
-              if level and level.range then
-                range = level.range
-              end
-            end
-
-            if seller.id == "private" then
-              if career_modules_marketplace and career_modules_marketplace.generatePersonality then
-                randomVehicleInfo.negotiationPersonality = career_modules_marketplace.generatePersonality(false)
-                randomVehicleInfo.sellerName = randomVehicleInfo.negotiationPersonality.name
-              end
-            else
-              if career_modules_marketplace and career_modules_marketplace.generatePersonality then
-                local personalityKey = seller.id
-                randomVehicleInfo.negotiationPersonality = career_modules_marketplace.generatePersonality(false,
-                  {personalityKey})
-              end
-            end
-
-            randomVehicleInfo.marketValue = getRandomizedPrice(baseValue, range)
-            randomVehicleInfo.marketValueBase = randomVehicleInfo.marketValue
-            randomVehicleInfo.priceRoundingType = seller.priceRoundingType
-
-            local priceMultiplier = (randomVehicleInfo.negotiationPersonality and
-                                      randomVehicleInfo.negotiationPersonality.priceMultiplier) or 1
-            randomVehicleInfo.valueBase = randomVehicleInfo.marketValue * priceMultiplier
-            randomVehicleInfo.priceMultiplier = priceMultiplier
-
-            local vehicleBuyMult = 1.0
-            if career_modules_globalEconomy and career_modules_globalEconomy.getVehicleBuyMultiplier then
-              vehicleBuyMult = career_modules_globalEconomy.getVehicleBuyMultiplier()
-            end
-
-            randomVehicleInfo.Value = getRoundedPrice(randomVehicleInfo.valueBase * vehicleBuyMult,
-              seller.priceRoundingType)
-
-            randomVehicleInfo.negotiationPossible = not onlyStarterVehicles
-            randomVehicleInfo.shopId = generateShopId()
-
-            local fees = seller.fees or 0
-            if seller.associatedOrganization then
-              local org = freeroam_organizations.getOrganization(seller.associatedOrganization)
-              local level = getOrgLevelData(org)
-              if level and level.fees then
-                fees = level.fees
-              end
-            end
-            randomVehicleInfo.fees = fees
-
-            local tax = seller.salesTax or salesTax
-            if seller.associatedOrganization then
-              local org = freeroam_organizations.getOrganization(seller.associatedOrganization)
-              local level = getOrgLevelData(org)
-              if level and level.tax then
-                tax = level.tax
-              end
-            end
-            randomVehicleInfo.tax = tax
-
-            if seller.id == "private" then
-              local parkingData = gameplay_parking.getParkingSpots()
-              local parkingSpots = parkingData and parkingData.byName or {}
-              local sizeMatches, allowedSpots = {}, {}
-              local boxX, boxY, boxZ = safeBoundingBoxDimensions(randomVehicleInfo)
-              for name, spot in pairs(parkingSpots) do
-                local tags = (spot.customFields and spot.customFields.tags) or {}
-                if not tags.notprivatesale then
-                  table.insert(allowedSpots, {
-                    name = name,
-                    spot = spot
-                  })
-                  if boxX and spot.boxFits and spot:boxFits(boxX, boxY, boxZ) then
-                    table.insert(sizeMatches, {
-                      name = name,
-                      spot = spot
-                    })
-                  end
-                end
-              end
-
-              local pool = (#sizeMatches > 0) and sizeMatches or allowedSpots
-              local chosen = nil
-              if #pool > 0 then
-                chosen = pool[math.random(#pool)]
-              end
-              if chosen then
-                randomVehicleInfo.parkingSpotName = chosen.name
-                randomVehicleInfo.pos = chosen.spot.pos
-              else
-                log("W", "Career",
-                  string.format("No parking spot available for private sale vehicle %s",
-                    tostring(randomVehicleInfo.shopId)))
-              end
-            else
-              local dealership = freeroam_facilities.getDealership(seller.id)
-              randomVehicleInfo.pos = freeroam_facilities.getAverageDoorPositionForFacility(dealership)
-            end
-
-            if career_modules_insurance_insurance and
-              career_modules_insurance_insurance.getInsuranceClassFromVehicleShoppingData then
-              local vehicleInsuranceClass =
-                career_modules_insurance_insurance.getInsuranceClassFromVehicleShoppingData(randomVehicleInfo)
-              if vehicleInsuranceClass then
-                randomVehicleInfo.insuranceClass = vehicleInsuranceClass
-              end
-            end
-
-            if career_modules_insurance and career_modules_insurance.getMinApplicablePolicyFromVehicleShoppingData then
-              local requiredInsurance =
-                career_modules_insurance.getMinApplicablePolicyFromVehicleShoppingData(randomVehicleInfo)
-              if requiredInsurance then
-                randomVehicleInfo.requiredInsurance = requiredInsurance
-              end
-            end
-
-            randomVehicleInfo.mapId = currentMap
-            return randomVehicleInfo
-          end)
-
-          if err or not generatedVehicle then
+          local shapeOk, shapeReason = isValidVehicleInfoShape(randomVehicleInfo)
+          if not shapeOk then
+            quarantineVehicleConfig(randomVehicleInfo, shapeReason, "updateVehicleList")
             updateSummary.dropped = updateSummary.dropped + 1
             incrementValidationStat("generationDropped")
           else
-            table.insert(vehiclesInShop, generatedVehicle)
-            if generatedVehicle.sellerId and not generatedVehicle.soldViewCounter then
-              unsoldCountBySellerId[generatedVehicle.sellerId] = (unsoldCountBySellerId[generatedVehicle.sellerId] or 0) + 1
+            local generatedVehicle, err = safeVehicleOp("updateVehicleList", randomVehicleInfo, function()
+              randomVehicleInfo.generationTime = currentTime - (successfulGenerationsForSeller * adjustedTimeBetweenOffers)
+              randomVehicleInfo.offerTTL = onlyStarterVehicles and math.huge or vehicleOfferTimeToLive
+
+              randomVehicleInfo.sellerId = seller.id
+              randomVehicleInfo.sellerName = seller.name
+
+              local filter = type(randomVehicleInfo.precomputedFilter) == "table" and randomVehicleInfo.precomputedFilter or nil
+              if not filter and seller.associatedOrganization then
+                local org = freeroam_organizations.getOrganization(seller.associatedOrganization)
+                local level = getOrgLevelData(org)
+                if level and level.filter then
+                  filter = level.filter
+                end
+              end
+              filter = filter or (seller.filter or {})
+              randomVehicleInfo.filter = filter
+
+              local years = safeYearsRange(randomVehicleInfo)
+              if not onlyStarterVehicles and not years then
+                error("missing or malformed Years data")
+              end
+
+              if not onlyStarterVehicles then
+                local minYear = years.min
+                local filterMinYear = filter.whiteList and filter.whiteList.Years and tonumber(filter.whiteList.Years.min)
+                if filterMinYear then
+                  minYear = math.max(minYear, filterMinYear)
+                end
+                local maxYear = years.max
+                local filterMaxYear = filter.whiteList and filter.whiteList.Years and tonumber(filter.whiteList.Years.max)
+                if filterMaxYear then
+                  maxYear = math.min(maxYear, filterMaxYear)
+                end
+                if minYear > maxYear then
+                  error("invalid year bounds after filtering")
+                end
+                randomVehicleInfo.year = math.random(minYear, maxYear)
+
+                local mileageMin = filter.whiteList and filter.whiteList.Mileage and tonumber(filter.whiteList.Mileage.min)
+                local mileageMax = filter.whiteList and filter.whiteList.Mileage and tonumber(filter.whiteList.Mileage.max)
+                if mileageMin and mileageMax then
+                  if mileageMin > mileageMax then
+                    error("invalid mileage bounds after filtering")
+                  end
+                  randomVehicleInfo.Mileage = randomGauss3() / 3 *
+                                                (mileageMax - mileageMin) +
+                                                mileageMin
+                elseif mileageMin then
+                  local mileageSpread = math.max(mileageMin * 0.5, 5000000)
+                  randomVehicleInfo.Mileage = mileageMin +
+                                                math.abs(randomGauss3() / 3) * mileageSpread
+                elseif mileageMax then
+                  local mileageSpread = math.max(mileageMax * 0.5, 5000000)
+                  randomVehicleInfo.Mileage = mileageMax -
+                                                math.abs(randomGauss3() / 3) * mileageSpread
+                  randomVehicleInfo.Mileage = math.max(randomVehicleInfo.Mileage, 0)
+                else
+                  randomVehicleInfo.Mileage = 0
+                end
+                if randomVehicleInfo.Mileage < 0 then
+                  randomVehicleInfo.Mileage = math.max(randomVehicleInfo.Mileage, 0)
+                end
+              else
+                randomVehicleInfo.year = starterVehicleYears[randomVehicleInfo.model_key]
+                if not randomVehicleInfo.year then
+                  if not years then
+                    error("starter vehicle missing usable Years data")
+                  end
+                  randomVehicleInfo.year = math.random(years.min, years.max)
+                end
+                randomVehicleInfo.Mileage = starterVehicleMileages[randomVehicleInfo.model_key] or 100000000
+              end
+
+              local totalPartsValue = randomVehicleInfo.cachedPartsValue or
+                                        (getVehiclePartsValue(randomVehicleInfo.model_key, randomVehicleInfo.key,
+                                          randomVehicleInfo, "updateVehicleList") or 0)
+              totalPartsValue = math.floor(career_modules_valueCalculator.getDepreciatedPartValue(totalPartsValue,
+                randomVehicleInfo.Mileage) * 1.081)
+              local adjustedBaseValue = career_modules_valueCalculator.getAdjustedVehicleBaseValue(randomVehicleInfo.Value, {
+                mileage = randomVehicleInfo.Mileage,
+                age = 2025 - randomVehicleInfo.year
+              })
+              local baseValue = math.floor(math.max(adjustedBaseValue, totalPartsValue) / 1000) * 1000
+
+              local range = seller.range
+              if seller.associatedOrganization then
+                local org = freeroam_organizations.getOrganization(seller.associatedOrganization)
+                local level = getOrgLevelData(org)
+                if level and level.range then
+                  range = level.range
+                end
+              end
+
+              if seller.id == "private" then
+                if career_modules_marketplace and career_modules_marketplace.generatePersonality then
+                  randomVehicleInfo.negotiationPersonality = career_modules_marketplace.generatePersonality(false)
+                  randomVehicleInfo.sellerName = randomVehicleInfo.negotiationPersonality.name
+                end
+              else
+                if career_modules_marketplace and career_modules_marketplace.generatePersonality then
+                  local personalityKey = seller.id
+                  randomVehicleInfo.negotiationPersonality = career_modules_marketplace.generatePersonality(false,
+                    {personalityKey})
+                end
+              end
+
+              randomVehicleInfo.marketValue = getRandomizedPrice(baseValue, range)
+              randomVehicleInfo.marketValueBase = randomVehicleInfo.marketValue
+              randomVehicleInfo.priceRoundingType = seller.priceRoundingType
+
+              local priceMultiplier = (randomVehicleInfo.negotiationPersonality and
+                                        randomVehicleInfo.negotiationPersonality.priceMultiplier) or 1
+              randomVehicleInfo.valueBase = randomVehicleInfo.marketValue * priceMultiplier
+              randomVehicleInfo.priceMultiplier = priceMultiplier
+
+              local vehicleBuyMult = 1.0
+              if career_modules_globalEconomy and career_modules_globalEconomy.getVehicleBuyMultiplier then
+                vehicleBuyMult = career_modules_globalEconomy.getVehicleBuyMultiplier()
+              end
+
+              randomVehicleInfo.Value = getRoundedPrice(randomVehicleInfo.valueBase * vehicleBuyMult,
+                seller.priceRoundingType)
+
+              randomVehicleInfo.negotiationPossible = not onlyStarterVehicles
+              randomVehicleInfo.shopId = generateShopId()
+
+              local fees = seller.fees or 0
+              if seller.associatedOrganization then
+                local org = freeroam_organizations.getOrganization(seller.associatedOrganization)
+                local level = getOrgLevelData(org)
+                if level and level.fees ~= nil then
+                  fees = level.fees
+                end
+              end
+              fees = tonumber(fees)
+              randomVehicleInfo.fees = fees or 0
+
+              local tax = seller.salesTax or salesTax
+              if seller.associatedOrganization then
+                local org = freeroam_organizations.getOrganization(seller.associatedOrganization)
+                local level = getOrgLevelData(org)
+                if level and level.tax ~= nil then
+                  tax = level.tax
+                end
+              end
+              tax = tonumber(tax)
+              randomVehicleInfo.tax = tax or salesTax
+
+              if seller.id == "private" then
+                local parkingData = gameplay_parking.getParkingSpots()
+                local parkingSpots = parkingData and parkingData.byName or {}
+                local sizeMatches, allowedSpots = {}, {}
+                local boxX, boxY, boxZ = safeBoundingBoxDimensions(randomVehicleInfo)
+                for name, spot in pairs(parkingSpots) do
+                  local tags = (spot.customFields and spot.customFields.tags) or {}
+                  if not tags.notprivatesale then
+                    table.insert(allowedSpots, {
+                      name = name,
+                      spot = spot
+                    })
+                    if boxX and spot.boxFits and spot:boxFits(boxX, boxY, boxZ) then
+                      table.insert(sizeMatches, {
+                        name = name,
+                        spot = spot
+                      })
+                    end
+                  end
+                end
+
+                local pool = (#sizeMatches > 0) and sizeMatches or allowedSpots
+                local chosen = nil
+                if #pool > 0 then
+                  chosen = pool[math.random(#pool)]
+                end
+                if chosen then
+                  randomVehicleInfo.parkingSpotName = chosen.name
+                  randomVehicleInfo.pos = chosen.spot.pos
+                else
+                  log("W", "Career",
+                    string.format("No parking spot available for private sale vehicle %s",
+                      tostring(randomVehicleInfo.shopId)))
+                end
+              else
+                local dealership = freeroam_facilities.getDealership(seller.id)
+                randomVehicleInfo.pos = freeroam_facilities.getAverageDoorPositionForFacility(dealership)
+              end
+
+              if career_modules_insurance_insurance and
+                career_modules_insurance_insurance.getInsuranceClassFromVehicleShoppingData then
+                local vehicleInsuranceClass =
+                  career_modules_insurance_insurance.getInsuranceClassFromVehicleShoppingData(randomVehicleInfo)
+                if vehicleInsuranceClass then
+                  randomVehicleInfo.insuranceClass = vehicleInsuranceClass
+                end
+              end
+
+              if career_modules_insurance and career_modules_insurance.getMinApplicablePolicyFromVehicleShoppingData then
+                local requiredInsurance =
+                  career_modules_insurance.getMinApplicablePolicyFromVehicleShoppingData(randomVehicleInfo)
+                if requiredInsurance then
+                  randomVehicleInfo.requiredInsurance = requiredInsurance
+                end
+              end
+
+              randomVehicleInfo.mapId = currentMap
+              return randomVehicleInfo
+            end)
+
+            if err or not generatedVehicle then
+              updateSummary.dropped = updateSummary.dropped + 1
+              incrementValidationStat("generationDropped")
+            else
+              table.insert(vehiclesInShop, generatedVehicle)
+              if generatedVehicle.sellerId and not generatedVehicle.soldViewCounter then
+                unsoldCountBySellerId[generatedVehicle.sellerId] = (unsoldCountBySellerId[generatedVehicle.sellerId] or 0) + 1
+              end
+              changed = true
+              updateSummary.inserted = updateSummary.inserted + 1
+              successfulGenerationsForSeller = successfulGenerationsForSeller + 1
             end
-            changed = true
-            updateSummary.inserted = updateSummary.inserted + 1
           end
         end
       end
+
+      nextBatchStartIndex = batchEndIndex + 1
+      if successfulGenerationsForSeller >= targetVehicleCount or replacementCycles >= maxReplacementCycles then
+        break
+      end
+
+      local replacementCount = targetVehicleCount - successfulGenerationsForSeller
+      if replacementCount <= 0 then
+        break
+      end
+
+      replacementCycles = replacementCycles + 1
+      local replacementVehicles = getRandomVehicleFromCache(seller.id, replacementCount)
+      if tableIsEmpty(replacementVehicles) then
+        break
+      end
+
+      attemptedGenerationForSeller = true
+      arrayConcat(randomVehicleInfos, replacementVehicles)
     end
-    if not tableIsEmpty(randomVehicleInfos) then
+    if attemptedGenerationForSeller then
       sellersInfos[seller.id].lastGenerationTime = currentTime
       changed = true
     end
@@ -1795,7 +1928,8 @@ local function updateVehicleList(fromScratch)
   end
   for _, seller in ipairs(sellers) do
     local meta = sellerMeta[seller.id]
-    local maxStock = meta and meta.maxStock or (seller.stock or 10)
+    local fallbackMaxStock = math.max(math.floor(tonumber(seller.stock) or 10), 1)
+    local maxStock = meta and meta.maxStock or fallbackMaxStock
     local currentCount = unsoldCountBySellerId[seller.id] or 0
     local availableSlotsAfter = math.max(0, maxStock - currentCount)
     if availableSlotsAfter > 0 then
@@ -2138,6 +2272,7 @@ local function sendPurchaseDataToUi()
   vehicleShopInfo.deliveryDelay = getDeliveryDelay(vehicleShopInfo.distance)
   applyPurchaseAdjustedMarketValue(vehicleShopInfo)
   vehicleShopInfo.Value = vehicleShopInfo.valueAdjusted or vehicleShopInfo.Value
+  coerceVehiclePricingFields(vehicleShopInfo)
   purchaseData.vehicleInfo = vehicleShopInfo
 
   local tradeInValue = purchaseData.tradeInVehicleInfo and purchaseData.tradeInVehicleInfo.Value or 0
@@ -2389,6 +2524,7 @@ local function openPurchaseMenu(purchaseType, shopId, insuranceId)
 
   local vehicleShopInfo = deepcopy(vehicle)
   vehicleShopInfo.niceName = vehicleShopInfo.Brand .. " " .. vehicleShopInfo.Name
+  coerceVehiclePricingFields(vehicleShopInfo)
 
   local distance = vehicleShopInfo.distance
   if not distance or type(distance) ~= "number" then
@@ -2444,6 +2580,7 @@ local function buyFromPurchaseMenu(purchaseType, options)
   if not purchaseData.prices then
     log("W", "Career", "buyFromPurchaseMenu: purchaseData.prices is nil, calculating prices as fallback")
     local vehicleShopInfo = purchaseData.vehicleInfo
+    coerceVehiclePricingFields(vehicleShopInfo)
     local tradeInValue = purchaseData.tradeInVehicleInfo and purchaseData.tradeInVehicleInfo.Value or 0
     local taxes = math.max((vehicleShopInfo.Value + vehicleShopInfo.fees - tradeInValue) *
                              (vehicleShopInfo.tax or salesTax), 0)
