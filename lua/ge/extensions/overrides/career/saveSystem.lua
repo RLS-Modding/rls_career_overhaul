@@ -9,6 +9,7 @@ local backwardsCompVersion = 36
 local numberOfAutosaves = 3
 local creationDateOfCurrentSaveSlot
 local queueSave = false
+local pendingVehiclesThumbnailUpdate
 
 local currentSaveSlot
 local currentSavePath
@@ -248,10 +249,22 @@ local function saveCurrentActual(vehiclesThumbnailUpdate)
   end
 end
 
+local function mergeVehiclesThumbnailUpdate(incoming)
+  if type(incoming) ~= "table" then return end
+  pendingVehiclesThumbnailUpdate = pendingVehiclesThumbnailUpdate or {}
+  for _, inventoryId in ipairs(incoming) do
+    if inventoryId and not tableContains(pendingVehiclesThumbnailUpdate, inventoryId) then
+      table.insert(pendingVehiclesThumbnailUpdate, inventoryId)
+    end
+  end
+end
+
 local function saveCurrent(vehiclesThumbnailUpdate, force)
+  mergeVehiclesThumbnailUpdate(vehiclesThumbnailUpdate)
   queueSave = true
   if force then
-    saveCurrentActual()
+    saveCurrentActual(pendingVehiclesThumbnailUpdate)
+    pendingVehiclesThumbnailUpdate = nil
     queueSave = false
   end
 end
@@ -260,7 +273,8 @@ local function onUpdate()
   if queueSave then
     local playerVeh = be:getPlayerVehicle(0)
     if not playerVeh or playerVeh:getVelocity():length() < 2 then
-      saveCurrentActual()
+      saveCurrentActual(pendingVehiclesThumbnailUpdate)
+      pendingVehiclesThumbnailUpdate = nil
       queueSave = false
     end
   end

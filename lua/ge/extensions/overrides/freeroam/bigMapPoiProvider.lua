@@ -30,7 +30,7 @@ local function initializeGroupVisibility()
   local defaultGroups = {
     'rating_new', 'rating_locked', 'rating_attempts', 'rating_done',
     'type_mission', 'type_driftSpots', 'type_dragstrip', 'type_crawl', 'type_spawnPoint',
-    'type_garage', 'type_gasStation', 'type_dealership', 'type_playerVehicle', 'type_other',
+    'type_garage', 'type_gasStation', 'type_dealership', 'type_busWork', 'type_paramedicWork', 'type_playerVehicle', 'type_other',
     'delivery_facility', 'delivery_dropoff',
     'distance_veryClose', 'distance_close', 'distance_medium', 'distance_far', 'distance_veryFar'
   }
@@ -172,6 +172,8 @@ local poiTypeIcons = {
   dragstrip = 'drag02',
   crawl = 'mission_rockcrawling01_triangle',
   playerVehicle = 'carStarred',
+  busWork = 'poi_pickup_round',
+  paramedicWork = 'poi_fast_delivery_round',
   other = 'info',
 }
 M.formatPoiForBigmap = function(poi)
@@ -276,6 +278,8 @@ local function buildGroupData()
     type_garage = {label = "Garages", icon = "garage01"},
     type_gasStation = {label = "Gas Stations", icon = "fuelPump"},
     type_dealership = {label = "Dealerships", icon = "carDealer"},
+    type_busWork = {label = "Bus Work", icon = "poi_pickup_round"},
+    type_paramedicWork = {label = "Paramedic Work", icon = "poi_fast_delivery_round"},
     type_playerVehicle = {label = "Player Vehicles", icon = "carStarred"},
     type_events = {label = "Free-Roam Events"}, -- Create a type for sections
     type_travel = {label = "Travel Points"},
@@ -429,6 +433,10 @@ local function processNonMissionPoi(poi, groupData, playerPos, distanceFilter)
     filterData.groupTags['type_crawl'] = true
   elseif poi.data.type == "playerVehicle" then
     filterData.groupTags['type_playerVehicle'] = true
+  elseif poi.data.type == "busWork" then
+    filterData.groupTags['type_busWork'] = true
+  elseif poi.data.type == "paramedicWork" then
+    filterData.groupTags['type_paramedicWork'] = true
   else -- other
     filterData.groupTags['type_other'] = true
   end

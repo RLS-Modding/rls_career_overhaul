@@ -4,6 +4,7 @@ export default {
   id: 'loans',
   name: 'Loans',
   icon: icons.beamCurrency,
+  iconTile: 'loans.png',
   route: '/career/phone-loans',
   color: '#5a8dee',
   iconColor: '#ffffff',
