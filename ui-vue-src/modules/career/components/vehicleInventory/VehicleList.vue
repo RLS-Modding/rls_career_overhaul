@@ -26,7 +26,7 @@
 
     <BngPopoverMenu :name="popId" focus @hide="selectedVehId = null">
       <template v-for="(buttonData, index) in vehicleInventoryStore.vehicleInventoryData.chooseButtonsData" :key="index">
-        <BngButton v-if="vehSelected && isFunctionAvailable(vehSelected, buttonData)"
+        <BngButton v-if="vehSelected && isChooserActionAvailable(vehSelected, buttonData)"
           :accent="ACCENTS.menu"
           :disabled="(buttonData.buttonText === 'Deliver' || buttonData.buttonText === 'Deliver and replace') && vehicleInventoryStore.vehicleInventoryData.playerMoney < 5000"
           v-bng-on-ui-nav:ok.focusRequired.asMouse
@@ -174,7 +174,9 @@ const listView = computed(() => {
   const res = vehicleInventoryStore.filteredVehicles
   if (singleFunction.value) {
     for (const veh of res) {
-      veh.disabled = !isFunctionAvailable(veh, singleFunction.value)
+      veh.disabled = isTradeInAction(singleFunction.value)
+        ? !isTradeInAvailable(veh, singleFunction.value)
+        : !isFunctionAvailable(veh, singleFunction.value)
     }
   }
   res.sort((a, b) => a.favorite ? -1 : b.favorite ? 1 : a.niceName.localeCompare(b.niceName))
@@ -324,24 +326,34 @@ const isFunctionAvailable = (vehicle, buttonData) => {
 
 const isTradeInAction = buttonData => buttonData?.buttonText === "Trade-In"
 
+const getTradeInBlockerReason = (vehicle, buttonData) => {
+  if (vehicle.timeToAccess) return "Vehicle unavailable right now"
+  if (vehicle.missingFile) return "Vehicle data missing"
+  if (buttonData.requiredVehicleNotInGarage && vehicle.inGarage) return "Vehicle must not be in garage"
+  if (buttonData.requiredOtherVehicleInGarage && !vehicle.otherVehicleInGarage) return "Required support vehicle is missing"
+  if (buttonData.ownedRequired && !vehicle.owned) return "You do not own this vehicle"
+  if (buttonData.repairRequired && vehicle.needsRepair) return "Needs repair"
+  if (buttonData.notForSaleRequired && vehicle.listedForSale) return "Vehicle is listed for sale"
+  return null
+}
+
+const isTradeInAvailable = (vehicle, buttonData) => !getTradeInBlockerReason(vehicle, buttonData)
+
+const isChooserActionAvailable = (vehicle, buttonData) => (
+  isTradeInAction(buttonData)
+    ? isTradeInAvailable(vehicle, buttonData)
+    : isFunctionAvailable(vehicle, buttonData)
+)
+
 const getUnavailableReason = (vehicle, buttonData) => {
   if (!isTradeInAction(buttonData)) return buttonData?.buttonText || "Unavailable"
-  if (vehicle.timeToAccess) return "Trade-In (Vehicle unavailable right now)"
-  if (vehicle.missingFile) return "Trade-In (Vehicle data missing)"
-  if (buttonData.requiredVehicleNotInGarage && vehicle.inGarage) return "Trade-In (Vehicle must not be in garage)"
-  if (buttonData.requiredOtherVehicleInGarage && !vehicle.otherVehicleInGarage) return "Trade-In (Required support vehicle is missing)"
-  if (buttonData.ownedRequired && !vehicle.owned) return "Trade-In (You do not own this vehicle)"
-  if (buttonData.notForSaleRequired && vehicle.listedForSale) return "Trade-In (Vehicle is listed for sale)"
-  if (buttonData.requireAtCurrentGarage && !vehicle.atCurrentGarage) return "Trade-In (Vehicle must be at this garage)"
-  if (buttonData.requireAtDifferentGarage && vehicle.atCurrentGarage) return "Trade-In (Vehicle must be at a different garage)"
-  if (!vehicle.atCurrentGarage && !currentGarageHasSpace.value) return "Trade-In (No space at current garage)"
-  return "Trade-In (Unavailable)"
+  return `Trade-In (${getTradeInBlockerReason(vehicle, buttonData) || "Unavailable"})`
 }
 
 const getTradeInTileReason = vehicle => {
   const tradeInButtonData = vehicleInventoryStore.vehicleInventoryData?.chooseButtonsData?.find(isTradeInAction)
-  if (!tradeInButtonData || isFunctionAvailable(vehicle, tradeInButtonData)) return null
-  return getUnavailableReason(vehicle, tradeInButtonData).replace(/^Trade-In\s*\((.*)\)$/, "$1")
+  if (!tradeInButtonData || isTradeInAvailable(vehicle, tradeInButtonData)) return null
+  return getTradeInBlockerReason(vehicle, tradeInButtonData)
 }
 
 const lookAtVehicleListing = () => {
