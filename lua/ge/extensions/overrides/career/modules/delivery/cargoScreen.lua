@@ -610,7 +610,8 @@ end
 local function formatFluidDestinations(materialType, facPsLocation)
   local destinations = { }
   for _, fac in ipairs(dGenerator.getFacilities()) do
-    if fac.logisticTypesReceivedLookup[materialType] and fac.materialStorages[materialType] then
+    local storage = fac.materialStorages and fac.materialStorages[materialType]
+    if fac.logisticTypesReceivedLookup[materialType] and storage and storage.id then
       local destinationAp = dGenerator.selectAccessPointByLookupKeyByType(fac.accessPointsByName, materialType, "logisticTypesReceivedLookup")
       if destinationAp then
         table.insert(destinations, {
@@ -619,7 +620,7 @@ local function formatFluidDestinations(materialType, facPsLocation)
           destinationName = dParcelManager.getLocationLabelShort({type="facilityParkingspot", facId = fac.id, psPath = destinationAp.psPath}),
           distance = dGenerator.getDistanceBetweenFacilities(facPsLocation, {type="facilityParkingspot", facId = fac.id, psPath = destinationAp.psPath}),
           bigMapId = string.format("delivery-parking-%s-%s", destinationAp.facId, destinationAp.psPath),
-          storage = fac.materialStorages[materialType],
+          storage = storage,
         })
       end
     end
@@ -649,17 +650,25 @@ end
 local function formatLoadTargets(storage, playerCargoContainers)
   local targetLocations = {}
   local totalStorableVolume = 0
+  if not storage or not storage.materialType then
+    return targetLocations
+  end
   for _, con in ipairs(playerCargoContainers) do
     local materialData = dGenerator.getMaterialsTemplatesById(storage.materialType)
+    if not materialData then
+      goto continue
+    end
     local materialDataType = materialData.type
 
     if con.cargoTypesLookup[materialDataType] then
       totalStorableVolume = totalStorableVolume + con.freeCargoSlots
 
       local transientCargoSlots = 0
-      for _, cargo in ipairs(dParcelManager.getAllCargoCustomFilter(function(c) return c.sourceStorage == storage.id and c._transientMove end)) do
-        if dParcelManager.sameLocation(cargo._transientMove.targetLocation, con.location) then
-          transientCargoSlots = cargo.slots
+      if storage.id then
+        for _, cargo in ipairs(dParcelManager.getAllCargoCustomFilter(function(c) return c.sourceStorage == storage.id and c._transientMove end)) do
+          if dParcelManager.sameLocation(cargo._transientMove.targetLocation, con.location) then
+            transientCargoSlots = cargo.slots
+          end
         end
       end
 
@@ -699,6 +708,7 @@ local function formatLoadTargets(storage, playerCargoContainers)
         end
       end
     end
+    ::continue::
   end
   --[[
   if totalStorableVolume == 0 then
@@ -728,7 +738,10 @@ end
 
 local function clearTransientMovesForStorage(materialType)
   local fac = dGenerator.getFacilityById(cargoScreenFacId)
-  local facStorage = fac.materialStorages[materialType]
+  local facStorage = fac.materialStorages and fac.materialStorages[materialType]
+  if not facStorage or not facStorage.id then
+    return
+  end
   for _, cargo in ipairs(dParcelManager.getAllCargoCustomFilter(function(c) return c.sourceStorage == facStorage.id and c._transientMove end)) do
     cargo.location = {type="delete"}
     dParcelManager.clearTransientMoveForCargo(cargo.id)
@@ -743,8 +756,12 @@ local function moveMaterialFromUi(materialType, cargoType, amount, targetLocatio
     --dump(materialType, cargoType, amount, targetLocation)
 
     local fac = dGenerator.getFacilityById(cargoScreenFacId)
-    local facStorage = fac.materialStorages[materialType]
+    local facStorage = fac.materialStorages and fac.materialStorages[materialType]
     local materialData = dGenerator.getMaterialsTemplatesById(materialType)
+    if not facStorage or not facStorage.id or not materialData then
+      guihooks.trigger("requestCargoDataSimple")
+      return
+    end
 
     local allValidStorages = {}
     if targetLocation.type == "auto" then
@@ -817,9 +834,12 @@ local function formatMaterialStorage(fac, facPsLocation, playerCargoContainers)
   dGenerator.finalizeMaterialDistances(fac)
   table.sort(playerCargoContainers, function(a,b) return a.freeCargoSlots < b.freeCargoSlots end)
   local data = { }
-  for _, materialType in ipairs(tableKeysSorted(fac.materialStorages)) do
+  for _, materialType in ipairs(tableKeysSorted(fac.materialStorages or {})) do
     local storage = fac.materialStorages[materialType]
-    local material = dGenerator.getMaterialsTemplatesById(materialType)
+    local material = materialType and dGenerator.getMaterialsTemplatesById(materialType)
+    if not storage or not storage.id or not material then
+      goto continue
+    end
     local locked, flagDefinition = dParcelMods.lockedBecauseOfMods({[material.type]=true})
     if storage.isProvider then
       local fluidData = {
@@ -886,8 +906,7 @@ local function formatMaterialStorage(fac, facPsLocation, playerCargoContainers)
       table.insert(data, fluidData)
     end]]
 
-
-
+    ::continue::
   end
   return data
 end
@@ -896,7 +915,8 @@ end
 local function formatMaterialDestinationsPlayer(con, materialType)
   local destinations = { }
   for _, fac in ipairs(dGenerator.getFacilities()) do
-    if fac.logisticTypesReceivedLookup[materialType] and fac.dropOffSpots and fac.dropOffSpots[1] then
+    local storage = fac.materialStorages and fac.materialStorages[materialType]
+    if fac.logisticTypesReceivedLookup[materialType] and storage and storage.id and fac.dropOffSpots and fac.dropOffSpots[1] then
 
       local distanceKey = string.format("%d-%s-%s", con.vehId, fac.facId, fac.dropOffSpots[1]:getPath())
       if vehToLocationDistanceCache[distanceKey] == nil then
@@ -910,7 +930,7 @@ local function formatMaterialDestinationsPlayer(con, materialType)
       table.insert(destinations, {
         name = fac.name,
         distance = vehToLocationDistanceCache[distanceKey],
-        storage = fac.materialStorages[materialType],
+        storage = storage,
       })
     end
   end
