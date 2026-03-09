@@ -6,6 +6,25 @@ local function getLiveParkingSpots(parkingSpots)
   return parkingSpots or (gameplay_parking and gameplay_parking.getParkingSpots and gameplay_parking.getParkingSpots())
 end
 
+local function makeReservationToken(prefix)
+  prefix = prefix or "reservation"
+  return string.format("%s:%d:%d", prefix, os.time(), math.random(100000, 999999))
+end
+
+local function shuffleSpots(spots)
+  local shuffled = {}
+  for i, spot in ipairs(spots or {}) do
+    shuffled[i] = spot
+  end
+
+  for i = #shuffled, 2, -1 do
+    local j = math.random(i)
+    shuffled[i], shuffled[j] = shuffled[j], shuffled[i]
+  end
+
+  return shuffled
+end
+
 local function getSpotPath(spot)
   if spot and spot.getPath then
     local ok, path = pcall(function() return spot:getPath() end)
@@ -23,7 +42,17 @@ local function resolveLiveSpot(spotOrPathOrName, parkingSpots)
   end
 
   local spotType = type(spotOrPathOrName)
-  if spotType == "table" then
+  if spotType == "string" then
+    for _, liveSpot in pairs(liveParkingSpots.objects or {}) do
+      if getSpotPath(liveSpot) == spotOrPathOrName then
+        return liveSpot
+      end
+    end
+
+    if liveParkingSpots.byName and liveParkingSpots.byName[spotOrPathOrName] then
+      return liveParkingSpots.byName[spotOrPathOrName]
+    end
+  elseif spotOrPathOrName then
     local directPath = getSpotPath(spotOrPathOrName)
     if directPath then
       for _, liveSpot in pairs(liveParkingSpots.objects or {}) do
@@ -35,16 +64,6 @@ local function resolveLiveSpot(spotOrPathOrName, parkingSpots)
 
     if spotOrPathOrName.name and liveParkingSpots.byName then
       return liveParkingSpots.byName[spotOrPathOrName.name]
-    end
-  elseif spotType == "string" then
-    for _, liveSpot in pairs(liveParkingSpots.objects or {}) do
-      if getSpotPath(liveSpot) == spotOrPathOrName then
-        return liveSpot
-      end
-    end
-
-    if liveParkingSpots.byName and liveParkingSpots.byName[spotOrPathOrName] then
-      return liveParkingSpots.byName[spotOrPathOrName]
     end
   end
 
@@ -66,7 +85,7 @@ local function isSpotHardBlocked(spot, ownerToken)
 end
 
 local function getSpotOccupants(spot)
-  if not spot or not spot.hasAnyVehicles then return "unknown", {} end
+  if not spot or type(spot.hasAnyVehicles) ~= "function" then return "unknown", {} end
 
   local ok, hasVehicles, occupants = pcall(function()
     return spot:hasAnyVehicles()
@@ -193,8 +212,10 @@ M.isSpotHardBlocked = isSpotHardBlocked
 M.getSpotOccupants = getSpotOccupants
 M.canRelocateOccupants = canRelocateOccupants
 M.clearParkedOccupants = clearParkedOccupants
+M.makeReservationToken = makeReservationToken
 M.reserveSpot = reserveSpot
 M.releaseSpot = releaseSpot
+M.shuffleSpots = shuffleSpots
 M.findReservableSpot = findReservableSpot
 
 return M

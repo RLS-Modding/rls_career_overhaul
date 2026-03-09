@@ -39,7 +39,6 @@ local reservedDropoffSpot = nil
 
 local distanceMultiplier = 4.5
 local suggestedSpeed = 18
-local logTag = "taxi"
 
 M.rideData = {}
 
@@ -347,10 +346,6 @@ local function findValidPickupSpots()
     return validPickupSpots
 end
 
-local function makeReservationToken()
-    return string.format("taxi:%d:%d", os.time(), math.random(100000, 999999))
-end
-
 local function safeSpotPath(spot)
     if spot and spot.getPath then
         local ok, path = pcall(function() return spot:getPath() end)
@@ -358,20 +353,6 @@ local function safeSpotPath(spot)
             return path
         end
     end
-end
-
-local function shuffleSpots(spots)
-    local shuffled = {}
-    for i, spot in ipairs(spots or {}) do
-        shuffled[i] = spot
-    end
-
-    for i = #shuffled, 2, -1 do
-        local j = math.random(i)
-        shuffled[i], shuffled[j] = shuffled[j], shuffled[i]
-    end
-
-    return shuffled
 end
 
 local function releasePickupReservation()
@@ -397,8 +378,8 @@ end
 local function reserveTaxiSpots(pickupCandidates, dropoffCandidates)
     releaseReservations()
 
-    currentReservationToken = makeReservationToken()
-    local livePickup = parkingReservation.findReservableSpot(shuffleSpots(pickupCandidates), currentReservationToken)
+    currentReservationToken = parkingReservation.makeReservationToken("taxi")
+    local livePickup = parkingReservation.findReservableSpot(parkingReservation.shuffleSpots(pickupCandidates), currentReservationToken)
     if not livePickup then
         releaseReservations()
         return nil, nil
@@ -412,7 +393,7 @@ local function reserveTaxiSpots(pickupCandidates, dropoffCandidates)
         return nil, nil
     end
 
-    for _, spot in ipairs(shuffleSpots(dropoffCandidates)) do
+    for _, spot in ipairs(parkingReservation.shuffleSpots(dropoffCandidates)) do
         local liveSpot = parkingReservation.resolveLiveSpot(spot)
         local dropoffPath = liveSpot and safeSpotPath(liveSpot)
         if liveSpot and dropoffPath and dropoffPath ~= pickupPath then
@@ -779,18 +760,20 @@ local function generateJob()
     local minDistance = 600
     local pickupSpot, dropoffSpot
 
-    local shuffledPickups = shuffleSpots(validPickupSpots)
+    local shuffledPickups = parkingReservation.shuffleSpots(validPickupSpots)
     for _, candidatePickup in ipairs(shuffledPickups) do
-        table.clear(dropoffSpots)
-        for _, spot in pairs(parkingSpots.objects) do
-            if spot ~= candidatePickup and candidatePickup.pos:distance(spot.pos) >= minDistance then
-                table.insert(dropoffSpots, spot)
+        if candidatePickup.pos then
+            table.clear(dropoffSpots)
+            for _, spot in pairs(parkingSpots.objects or {}) do
+                if spot.pos and spot ~= candidatePickup and candidatePickup.pos:distance(spot.pos) >= minDistance then
+                    table.insert(dropoffSpots, spot)
+                end
             end
-        end
 
-        pickupSpot, dropoffSpot = reserveTaxiSpots({candidatePickup}, dropoffSpots)
-        if pickupSpot and dropoffSpot then
-            break
+            pickupSpot, dropoffSpot = reserveTaxiSpots({candidatePickup}, dropoffSpots)
+            if pickupSpot and dropoffSpot then
+                break
+            end
         end
     end
 

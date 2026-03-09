@@ -86,24 +86,6 @@ function VehicleRepoJob:new()
     return instance
 end
 
-local function makeReservationToken()
-    return string.format("repo:%d:%d", os.time(), math.random(100000, 999999))
-end
-
-local function shuffleSpots(spots)
-    local shuffled = {}
-    for i, spot in ipairs(spots or {}) do
-        shuffled[i] = spot
-    end
-
-    for i = #shuffled, 2, -1 do
-        local j = math.random(i)
-        shuffled[i], shuffled[j] = shuffled[j], shuffled[i]
-    end
-
-    return shuffled
-end
-
 function VehicleRepoJob:releasePickupReservation()
     if self.reservedPickupSpot and self.reservationToken then
         parkingReservation.releaseSpot(self.reservedPickupSpot, self.reservationToken)
@@ -241,7 +223,7 @@ end
 -- Generate a new repo job
 function VehicleRepoJob:generateJob()
     self:resetToInitialState()
-    self.reservationToken = makeReservationToken()
+    self.reservationToken = parkingReservation.makeReservationToken("repo")
 
     -- Set loading state immediately
     local data = {
@@ -387,7 +369,7 @@ function VehicleRepoJob:selectDealership()
     if not dealerships or #dealerships == 0 then
         return
     end
-    self.availableDealerships = shuffleSpots(dealerships)
+    self.availableDealerships = parkingReservation.shuffleSpots(dealerships)
     self.selectedDealership = self.availableDealerships[1]
 end
 
@@ -399,7 +381,7 @@ function VehicleRepoJob:determineDeliveryLocation()
     local dealerships = self.availableDealerships or (self.selectedDealership and {self.selectedDealership} or {})
     for _, dealership in ipairs(dealerships) do
         local facilitySpots = freeroam_facilities.getParkingSpotsForFacility(dealership) or {}
-        local liveDeliverySpot = parkingReservation.findReservableSpot(shuffleSpots(facilitySpots), self.reservationToken)
+        local liveDeliverySpot = parkingReservation.findReservableSpot(parkingReservation.shuffleSpots(facilitySpots), self.reservationToken)
         if liveDeliverySpot then
             self.selectedDealership = dealership
             self.deliveryLocation = liveDeliverySpot
@@ -434,7 +416,7 @@ function VehicleRepoJob:selectRandomSpot()
         return
     end
 
-    local livePickupSpot = parkingReservation.findReservableSpot(shuffleSpots(self.validSpots), self.reservationToken)
+    local livePickupSpot = parkingReservation.findReservableSpot(parkingReservation.shuffleSpots(self.validSpots), self.reservationToken)
     if livePickupSpot then
         self.selectedSpot = livePickupSpot
         self.reservedPickupSpot = livePickupSpot
