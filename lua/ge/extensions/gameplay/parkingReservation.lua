@@ -7,7 +7,7 @@ local function getLiveParkingSpots(parkingSpots)
 end
 
 local function getSpotPath(spot)
-  if type(spot) == "table" and spot.getPath then
+  if spot and spot.getPath then
     local ok, path = pcall(function() return spot:getPath() end)
     if ok then
       return path
@@ -37,14 +37,14 @@ local function resolveLiveSpot(spotOrPathOrName, parkingSpots)
       return liveParkingSpots.byName[spotOrPathOrName.name]
     end
   elseif spotType == "string" then
-    if liveParkingSpots.byName and liveParkingSpots.byName[spotOrPathOrName] then
-      return liveParkingSpots.byName[spotOrPathOrName]
-    end
-
     for _, liveSpot in pairs(liveParkingSpots.objects or {}) do
       if getSpotPath(liveSpot) == spotOrPathOrName then
         return liveSpot
       end
+    end
+
+    if liveParkingSpots.byName and liveParkingSpots.byName[spotOrPathOrName] then
+      return liveParkingSpots.byName[spotOrPathOrName]
     end
   end
 
@@ -66,7 +66,7 @@ local function isSpotHardBlocked(spot, ownerToken)
 end
 
 local function getSpotOccupants(spot)
-  if not spot or not spot.hasAnyVehicles then return false, {} end
+  if not spot or not spot.hasAnyVehicles then return "unknown", {} end
 
   local ok, hasVehicles, occupants = pcall(function()
     return spot:hasAnyVehicles()
@@ -74,15 +74,19 @@ local function getSpotOccupants(spot)
 
   if not ok then
     log("W", logTag, string.format("Failed to query parking spot occupants for '%s'", tostring(spot and spot.name)))
-    return false, {}
+    return "unknown", {}
   end
 
-  return hasVehicles and true or false, occupants or {}
+  return hasVehicles and "occupied" or "empty", occupants or {}
 end
 
 local function canRelocateOccupants(spot)
-  local hasVehicles, occupants = getSpotOccupants(spot)
-  if not hasVehicles then
+  local status, occupants = getSpotOccupants(spot)
+  if status == "unknown" then
+    return false
+  end
+
+  if status == "empty" then
     return true
   end
 
@@ -97,8 +101,12 @@ local function canRelocateOccupants(spot)
 end
 
 local function clearParkedOccupants(spot)
-  local hasVehicles, occupants = getSpotOccupants(spot)
-  if not hasVehicles then
+  local status, occupants = getSpotOccupants(spot)
+  if status == "unknown" then
+    return false
+  end
+
+  if status == "empty" then
     return true
   end
 
@@ -106,13 +114,24 @@ local function clearParkedOccupants(spot)
     return false
   end
 
-  for _, vehId in ipairs(occupants) do
-    log("I", logTag, string.format("Relocating parked vehicle %d from reserved spot '%s'", vehId, tostring(spot.name)))
-    gameplay_parking.forceTeleport(vehId)
+  if not gameplay_parking or not gameplay_parking.forceTeleport then
+    log("W", logTag, string.format("Unable to relocate occupants for '%s'; gameplay_parking.forceTeleport is unavailable", tostring(spot.name)))
+    return false
   end
 
-  local stillOccupied = getSpotOccupants(spot)
-  return not stillOccupied
+  for _, vehId in ipairs(occupants) do
+    log("I", logTag, string.format("Relocating parked vehicle %d from reserved spot '%s'", vehId, tostring(spot.name)))
+    local ok = pcall(function()
+      gameplay_parking.forceTeleport(vehId)
+    end)
+    if not ok then
+      log("W", logTag, string.format("Failed to relocate parked vehicle %d from '%s'", vehId, tostring(spot.name)))
+      return false
+    end
+  end
+
+  local recheckStatus = getSpotOccupants(spot)
+  return recheckStatus == "empty"
 end
 
 local function reserveSpot(spot, ownerToken)
@@ -149,17 +168,19 @@ local function findReservableSpot(candidates, ownerToken, options)
   for _, candidate in ipairs(candidates) do
     local spot = resolveLiveSpot(candidate, liveParkingSpots)
     if spot and not isSpotHardBlocked(spot, ownerToken) then
-      local hasVehicles, occupants = getSpotOccupants(spot)
-      if not hasVehicles then
+      local status = getSpotOccupants(spot)
+      if status == "empty" then
         if reserveSpot(spot, ownerToken) then
           return spot
         end
-      elseif canRelocateOccupants(spot) then
+      elseif status == "occupied" and canRelocateOccupants(spot) then
         if clearParkedOccupants(spot) and reserveSpot(spot, ownerToken) then
           return spot
         end
-      else
+      elseif status == "occupied" then
         log("I", logTag, string.format("Rejected parking spot '%s' due to non-parked occupant(s)", tostring(spot.name)))
+      else
+        log("I", logTag, string.format("Skipped parking spot '%s' because occupancy could not be verified", tostring(spot.name)))
       end
     end
   end

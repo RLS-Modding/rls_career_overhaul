@@ -351,6 +351,15 @@ local function makeReservationToken()
     return string.format("taxi:%d:%d", os.time(), math.random(100000, 999999))
 end
 
+local function safeSpotPath(spot)
+    if spot and spot.getPath then
+        local ok, path = pcall(function() return spot:getPath() end)
+        if ok then
+            return path
+        end
+    end
+end
+
 local function shuffleSpots(spots)
     local shuffled = {}
     for i, spot in ipairs(spots or {}) do
@@ -396,10 +405,17 @@ local function reserveTaxiSpots(pickupCandidates, dropoffCandidates)
     end
 
     local filteredDropoffs = {}
-    local pickupPath = livePickup:getPath()
+    local pickupPath = safeSpotPath(livePickup)
+    if not pickupPath then
+        parkingReservation.releaseSpot(livePickup, currentReservationToken)
+        releaseReservations()
+        return nil, nil
+    end
+
     for _, spot in ipairs(shuffleSpots(dropoffCandidates)) do
         local liveSpot = parkingReservation.resolveLiveSpot(spot)
-        if liveSpot and liveSpot:getPath() ~= pickupPath then
+        local dropoffPath = liveSpot and safeSpotPath(liveSpot)
+        if liveSpot and dropoffPath and dropoffPath ~= pickupPath then
             table.insert(filteredDropoffs, liveSpot)
         end
     end
@@ -813,11 +829,11 @@ local function generateJob()
     local fare = {
         pickup = {
             pos = pickupSpot.pos,
-            spotPath = pickupSpot.getPath and pickupSpot:getPath() or nil
+            spotPath = safeSpotPath(pickupSpot)
         },
         destination = {
             pos = dropoffSpot.pos,
-            spotPath = dropoffSpot.getPath and dropoffSpot:getPath() or nil
+            spotPath = safeSpotPath(dropoffSpot)
         },
         baseFare = baseFare,
         initialBaseFare = baseFare, -- Save the initial base fare for final payment
@@ -962,7 +978,10 @@ local function completeRide()
     
     local label = string.format("Taxi fare: %s: $%s\nDistance: %.2fkm | %s: x %.2f", 
         fareDescription, currentFare.totalFare, currentFare.totalDistance, paymentLabel, currentFare.timeMultiplier)
-    
+
+    core_groundMarkers.resetAll()
+    releaseReservations()
+
     if not career_career or not career_career.isActive() then
         return
     end
@@ -982,10 +1001,8 @@ local function completeRide()
         label = label,
         tags = {"transport", "taxi"}
     }, true)
-    core_groundMarkers.resetAll()
     career_modules_inventory.addTaxiDropoff(career_modules_inventory.getInventoryIdFromVehicleId(be:getPlayerVehicleID(0)), currentFare.passengers)
     core_groundMarkers.resetAll()
-    releaseReservations()
 end
 
 local function rejectJob()

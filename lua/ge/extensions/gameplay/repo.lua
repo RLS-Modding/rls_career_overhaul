@@ -78,6 +78,8 @@ function VehicleRepoJob:new()
     instance.reservationToken = nil
     instance.reservedPickupSpot = nil
     instance.reservedDeliverySpot = nil
+    instance.availableDealerships = nil
+    instance.pendingDeliveredDeleteId = nil
     if core_groundMarkers then
         core_groundMarkers.resetAll()
     end
@@ -164,6 +166,10 @@ function VehicleRepoJob:resetToInitialState()
     self.vehicleConfig = nil
     self.validSpots = nil
     self.selectedSpot = nil
+    self.availableDealerships = nil
+    self.pendingDeliveredDeleteId = nil
+    self.parkingSpots = nil
+    self.playerPosition = nil
     self.vehInfo = nil
     self.updateTimer = nil
     if core_groundMarkers then
@@ -234,7 +240,7 @@ end
 
 -- Generate a new repo job
 function VehicleRepoJob:generateJob()
-    self:releaseReservations()
+    self:resetToInitialState()
     self.reservationToken = makeReservationToken()
 
     -- Set loading state immediately
@@ -572,7 +578,10 @@ function VehicleRepoJob:onUpdate(dtReal, dtSim, dtRaw)
     if self.jobCoroutine and coroutine.status(self.jobCoroutine) ~= "dead" then
         local success, message = coroutine.resume(self.jobCoroutine)
         if not success then
+            log("E", "repo", string.format("Repo generation coroutine failed: %s", tostring(message)))
             self.jobCoroutine = nil
+            self:resetToInitialState()
+            return
         end
     end
 
@@ -816,6 +825,7 @@ function VehicleRepoJob:onUpdate(dtReal, dtSim, dtRaw)
                   self.pendingDeliveredDeleteId = deliveredId
                 end
 
+                self:releaseDeliveryReservation()
                 self.isCompleted = true
                 self.reward = reward
                 ui_message(rewardText, 15, "Job Completed", "info")
