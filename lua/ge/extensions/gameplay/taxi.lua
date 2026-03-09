@@ -39,7 +39,6 @@ local reservedDropoffSpot = nil
 
 local distanceMultiplier = 4.5
 local suggestedSpeed = 18
-local logTag = "taxi"
 
 M.rideData = {}
 
