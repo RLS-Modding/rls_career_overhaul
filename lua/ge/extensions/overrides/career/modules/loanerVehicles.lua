@@ -12,6 +12,8 @@ local comeBackRadius = 95
 local walkAwayTimeLimit = 300
 local walkAwayWarningTime = 60
 local loanedVehiclesInfo = {}
+local POLICE_LOANER_ORGANIZATION_ID = "policeLoaner"
+local POLICE_SKILL_BRANCH_ID = "police"
 local deliveryLvlToLogisticsLevel = {
   [0] = 1,
   [1] = 5,
@@ -19,6 +21,20 @@ local deliveryLvlToLogisticsLevel = {
   [3] = 17,
   [4] = 30
 }
+
+local function getPoliceSkillLevel()
+  if not career_branches or not career_branches.getBranchLevel then
+    return 0
+  end
+
+  local branchLevel = career_branches.getBranchLevel(POLICE_SKILL_BRANCH_ID)
+  local level = tonumber(branchLevel)
+  if not level then
+    return 0
+  end
+
+  return math.max(0, math.floor(level))
+end
 
 local markedForSpawningLoaners = {}
 
@@ -294,6 +310,7 @@ local function formatLoanerOfferForUi(facility)
   local organization = freeroam_organizations.getOrganization(organizationId)
   if not organization then return nil end
   local ret = {}
+  local policeSkillLevel = getPoliceSkillLevel()
 
   local saveSlot, savePath = career_saveSystem.getCurrentSaveSlot()
   local saveData = (savePath and jsonReadFile(savePath .. "/info.json")) or {}
@@ -335,7 +352,24 @@ local function formatLoanerOfferForUi(facility)
       }
     end
 
-    if rentalVehicleInfo.reputationLvl > organization.reputation.level then
+    local requiredPoliceSkillLevel = tonumber(rentalVehicleInfo.requiredPoliceLevel) or 0
+    if organizationId == POLICE_LOANER_ORGANIZATION_ID and requiredPoliceSkillLevel > 0 then
+      if policeSkillLevel < requiredPoliceSkillLevel then
+        enabled = false
+        disableReason = {
+          type = "locked",
+          icon = "wigwags",
+          level = requiredPoliceSkillLevel,
+          label = string.format("Requires Police Skill level %d", requiredPoliceSkillLevel)
+        }
+        unlockInfo = {
+          type = "minLevel",
+          icon = "wigwags",
+          longLabel = string.format("Requires Police Skill level %d", requiredPoliceSkillLevel),
+          shortLabel = string.format("lvl %d", requiredPoliceSkillLevel)
+        }
+      end
+    elseif rentalVehicleInfo.reputationLvl > organization.reputation.level then
       enabled = false
       disableReason = {
         type = "locked", icon = "peopleOutline", level = rentalVehicleInfo.reputationLvl,
@@ -384,6 +418,7 @@ local function formatLoanerOfferForUi(facility)
       sourceFacility = {type = "deliveryProvider", id = facility.id},
       loanType="work",
       spawnWhenCommitingCargo = markedForSpawningLoaners[id] and true or false,
+      requiredPoliceLevel = requiredPoliceSkillLevel > 0 and requiredPoliceSkillLevel or nil,
     }
     if configInfo.capacity then
       item.capacity = {}
@@ -398,7 +433,14 @@ local function formatLoanerOfferForUi(facility)
       end
     end
 
-    if enabled then
+    if enabled and organizationId == POLICE_LOANER_ORGANIZATION_ID and requiredPoliceSkillLevel > 0 then
+      item.unlockInfo = {
+        type = "minLevel",
+        icon = "wigwags",
+        longLabel = string.format("Requires Police Skill level %d", requiredPoliceSkillLevel),
+        shortLabel = string.format("lvl %d", requiredPoliceSkillLevel)
+      }
+    elseif enabled then
       local repLabel = string.format("%s (lvl %d)", organization.reputationLevels[rentalVehicleInfo.reputationLvl+2].label, rentalVehicleInfo.reputationLvl)
       item.unlockInfo = {
         type = "minLevel", icon = "peopleOutline", longLabel = string.format("Requires reputation: %s",repLabel), shortLabel = repLabel
