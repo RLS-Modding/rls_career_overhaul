@@ -203,6 +203,7 @@ const restorePersistedViewState = () => {
     translateX.value = typeof state.translateX === 'number' ? state.translateX : 0
     translateY.value = typeof state.translateY === 'number' ? state.translateY : 0
     scale.value = nextScale
+    clampViewToBounds()
     return true
   } catch (error) {
     return false
@@ -218,12 +219,14 @@ const applyTreeViewState = () => {
 const treeOffsets = ref({})
 const nodeSizes = ref(new Map())
 const nodeRefs = ref(new Map())
+const contentBounds = ref(null)
 
 const NODE_WIDTH = ref(200)
 const NODE_HEIGHT = ref(200)
 const NODE_SPACING_X = 280
 const NODE_SPACING_Y = 300
 const TREE_SPACING = 300
+const VIEWPORT_EDGE_MARGIN = 120
 
 const setNodeRef = (el, treeId, nodeId) => {
   if (el) {
@@ -498,8 +501,12 @@ const onPan = (event) => {
   if (!isPanning.value) return
   const deltaX = event.clientX - panStartX.value
   const deltaY = event.clientY - panStartY.value
-  translateX.value = panStartTranslateX.value + deltaX
-  translateY.value = panStartTranslateY.value + deltaY
+  const clamped = clampTranslationToBounds(
+    panStartTranslateX.value + deltaX,
+    panStartTranslateY.value + deltaY
+  )
+  translateX.value = clamped.x
+  translateY.value = clamped.y
   event.preventDefault()
 }
 
@@ -540,8 +547,13 @@ const panToElement = (element) => {
     const eased = 1 - Math.pow(1 - progress, 3) // ease-out cubic
     
     scale.value = startScale + (targetScale - startScale) * eased
-    translateX.value = startX + (targetX - startX) * eased
-    translateY.value = startY + (targetY - startY) * eased
+    const clamped = clampTranslationToBounds(
+      startX + (targetX - startX) * eased,
+      startY + (targetY - startY) * eased,
+      scale.value
+    )
+    translateX.value = clamped.x
+    translateY.value = clamped.y
     
     if (progress < 1) {
       requestAnimationFrame(animate)
@@ -572,8 +584,13 @@ const onWheel = (event) => {
     const worldX = (mouseX - translateX.value) / scale.value
     const worldY = (mouseY - translateY.value) / scale.value
     
-    translateX.value = mouseX - (worldX * newScale)
-    translateY.value = mouseY - (worldY * newScale)
+    const clamped = clampTranslationToBounds(
+      mouseX - (worldX * newScale),
+      mouseY - (worldY * newScale),
+      newScale
+    )
+    translateX.value = clamped.x
+    translateY.value = clamped.y
   }
   
   scale.value = newScale
@@ -734,6 +751,102 @@ const getTreeNameStyle = (tree) => {
   }
 }
 
+const computeContentBounds = () => {
+  let minX = Infinity
+  let maxX = -Infinity
+  let minY = Infinity
+  let maxY = -Infinity
+
+  trees.value.forEach(tree => {
+    const treeOffsetX = getTreeOffsetX(tree.treeId)
+    const treeOffsetY = getTreeOffsetY(tree.treeId)
+    const bounds = tree?.bounds
+
+    if (bounds) {
+      const localMinX = bounds.minX || 0
+      const localMaxX = bounds.maxX || (localMinX + (bounds.width || NODE_WIDTH.value))
+      const localMinY = bounds.minY || 0
+      const localMaxY = bounds.maxY || (localMinY + (bounds.height || NODE_HEIGHT.value))
+
+      minX = Math.min(minX, treeOffsetX + localMinX)
+      maxX = Math.max(maxX, treeOffsetX + localMaxX)
+      minY = Math.min(minY, treeOffsetY + Math.max(0, localMinY - TREE_NAME_VERTICAL_OFFSET))
+      maxY = Math.max(maxY, treeOffsetY + localMaxY)
+      return
+    }
+
+    tree.nodes?.forEach(node => {
+      if (!node.position) return
+      const x = treeOffsetX + (node.position.x || 0)
+      const y = treeOffsetY + (node.position.y || 0)
+      minX = Math.min(minX, x)
+      maxX = Math.max(maxX, x + NODE_WIDTH.value)
+      minY = Math.min(minY, y)
+      maxY = Math.max(maxY, y + NODE_HEIGHT.value)
+    })
+  })
+
+  if (minX === Infinity || maxX === -Infinity || minY === Infinity || maxY === -Infinity) {
+    contentBounds.value = null
+    return null
+  }
+
+  contentBounds.value = {
+    minX,
+    maxX,
+    minY,
+    maxY,
+    width: maxX - minX,
+    height: maxY - minY
+  }
+
+  return contentBounds.value
+}
+
+const clampTranslationToBounds = (nextX, nextY, nextScale = scale.value) => {
+  if (!canvasRef.value) {
+    return { x: nextX, y: nextY }
+  }
+
+  const bounds = contentBounds.value || computeContentBounds()
+  if (!bounds) {
+    return { x: nextX, y: nextY }
+  }
+
+  const rect = canvasRef.value.getBoundingClientRect()
+  const marginX = Math.min(VIEWPORT_EDGE_MARGIN, rect.width * 0.25)
+  const marginY = Math.min(VIEWPORT_EDGE_MARGIN, rect.height * 0.25)
+  const scaledWidth = bounds.width * nextScale
+  const scaledHeight = bounds.height * nextScale
+
+  let x = nextX
+  let y = nextY
+
+  if (scaledWidth + (marginX * 2) <= rect.width) {
+    x = (rect.width / 2) - ((bounds.minX + (bounds.width / 2)) * nextScale)
+  } else {
+    const minTranslateX = rect.width - marginX - (bounds.maxX * nextScale)
+    const maxTranslateX = marginX - (bounds.minX * nextScale)
+    x = Math.min(maxTranslateX, Math.max(minTranslateX, nextX))
+  }
+
+  if (scaledHeight + (marginY * 2) <= rect.height) {
+    y = (rect.height / 2) - ((bounds.minY + (bounds.height / 2)) * nextScale)
+  } else {
+    const minTranslateY = rect.height - marginY - (bounds.maxY * nextScale)
+    const maxTranslateY = marginY - (bounds.minY * nextScale)
+    y = Math.min(maxTranslateY, Math.max(minTranslateY, nextY))
+  }
+
+  return { x, y }
+}
+
+const clampViewToBounds = () => {
+  const clamped = clampTranslationToBounds(translateX.value, translateY.value, scale.value)
+  translateX.value = clamped.x
+  translateY.value = clamped.y
+}
+
 const calculateTreeOffsets = () => {
   const SPACING = TREE_SPACING
   let currentX = 100
@@ -766,6 +879,8 @@ const calculateTreeOffsets = () => {
       y: currentY
     }
   })
+
+  computeContentBounds()
 }
 
 const resetView = () => {
@@ -813,8 +928,14 @@ const resetView = () => {
       )
       
       scale.value = initialScale
-      translateX.value = (rect.width / 2) - (centerX * initialScale)
-      translateY.value = (rect.height / 2) - (centerY * initialScale)
+      computeContentBounds()
+      const clamped = clampTranslationToBounds(
+        (rect.width / 2) - (centerX * initialScale),
+        (rect.height / 2) - (centerY * initialScale),
+        initialScale
+      )
+      translateX.value = clamped.x
+      translateY.value = clamped.y
     }
   })
 }
