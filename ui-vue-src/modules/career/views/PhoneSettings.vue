@@ -192,6 +192,7 @@
 <script setup>
 import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import { lua } from '@/bridge'
+import { useEvents } from '@/services/events'
 import PhoneWrapper from './PhoneWrapper.vue'
 import {
   PHONE_SCALE_MIN,
@@ -209,6 +210,7 @@ const {
   resetPhoneSettings,
   getPhoneSettingsSnapshot,
 } = usePhoneSettings()
+const events = useEvents()
 
 const saveStateText = ref('')
 const saveError = ref(false)
@@ -234,6 +236,11 @@ watch(() => phoneSettings.horizontalPosition, (v) => { positionSliderValue.value
 
 let saveTimer = null
 let clearStateTimer = null
+
+function handlePhoneLayoutData(data) {
+  if (!data || typeof data !== 'object' || !data.settings) return
+  replacePhoneSettings(data.settings)
+}
 
 function hexToRgba(hex, alpha) {
   const normalized = String(hex || '').replace('#', '')
@@ -406,17 +413,8 @@ async function openFolderInExplorer() {
 onMounted(async () => {
   try {
     await lua.extensions.load('ui_phone_layout')
-    const fromLua = await lua.ui_phone_layout?.getSettings?.()
-    if (fromLua) {
-      const needsRepair = fromLua.phoneSize !== phoneSettings.phoneSize ||
-        fromLua.horizontalPosition !== phoneSettings.horizontalPosition
-      replacePhoneSettings({
-        ...fromLua,
-        phoneSize: phoneSettings.phoneSize,
-        horizontalPosition: phoneSettings.horizontalPosition,
-      })
-      if (needsRepair) await persistSettings()
-    }
+    events.on('phoneLayoutData', handlePhoneLayoutData)
+    await lua.ui_phone_layout?.requestLayout?.()
   } catch (e) {
     console.warn('Failed to load phone settings', e)
   }
@@ -425,6 +423,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+  events.off('phoneLayoutData', handlePhoneLayoutData)
   if (saveTimer) {
     clearTimeout(saveTimer)
     saveTimer = null
