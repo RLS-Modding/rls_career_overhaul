@@ -4,6 +4,7 @@ export default {
   id: 'guide',
   name: 'Guide',
   icon: icons.info,
+  iconTile: 'guide.png',
   route: '/career/phone-guide',
   color: '#6366f1',
   iconColor: '#ffffff',

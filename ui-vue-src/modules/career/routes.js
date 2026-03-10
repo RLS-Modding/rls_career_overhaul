@@ -55,10 +55,12 @@ import PhoneFacilityWork from "./views/PhoneFacilityWork.vue"
 import PhoneRealEstate from "./views/PhoneRealEstate.vue"
 import PhoneRentals from "./views/PhoneRentals.vue"
 import PhoneGuide from "./views/PhoneGuide.vue"
+import PhoneSettings from "./views/PhoneSettings.vue"
 import PhoneMarketWatch from "./views/PhoneMarketWatch.vue"
 import PhoneFreeroamEvents from "./views/PhoneFreeroamEvents.vue"
 import PhoneCamera from "./views/PhoneCamera.vue"
 import PhoneGallery from "./views/PhoneGallery.vue"
+
 import LevelSwitch from "./views/LevelSwitch.vue"
 import ChallengeComplete from "./views/ChallengeComplete.vue"
 import BusinessComputerMain from "./views/BusinessComputerMain.vue"
@@ -534,6 +536,11 @@ export default [
         path: "phone-guide",
         name: "phone-guide",
         component: PhoneGuide
+      },
+      {
+        path: "phone-settings",
+        name: "phone-settings",
+        component: PhoneSettings
       },
 
       {
