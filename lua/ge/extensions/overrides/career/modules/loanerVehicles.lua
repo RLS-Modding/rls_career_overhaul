@@ -318,7 +318,24 @@ local function formatLoanerOfferForUi(facility)
   local saveData = (savePath and jsonReadFile(savePath .. "/info.json")) or {}
   local secondsSinceSaveFileCreation = dateUtils.timeSince(saveData.creationDate)
 
+  local loanableVehicleEntries = {}
   for idx, rentalVehicleInfo in ipairs(organization.loanableVehicles or {}) do
+    table.insert(loanableVehicleEntries, {idx = idx, vehicle = rentalVehicleInfo})
+  end
+
+  if organizationId == POLICE_LOANER_ORGANIZATION_ID then
+    table.sort(loanableVehicleEntries, function(a, b)
+      local levelA = tonumber(a.vehicle.requiredPoliceLevel) or 0
+      local levelB = tonumber(b.vehicle.requiredPoliceLevel) or 0
+      if levelA ~= levelB then
+        return levelA > levelB
+      end
+      return a.idx < b.idx
+    end)
+  end
+
+  for displayIdx, entry in ipairs(loanableVehicleEntries) do
+    local rentalVehicleInfo = entry.vehicle
     local configInfo = core_vehicles.getConfig(rentalVehicleInfo.model, rentalVehicleInfo.config)
     local hasFreeParkingSpot = false
     local isTrailer = configInfo.aggregates.Type and configInfo.aggregates.Type.Trailer
@@ -394,7 +411,7 @@ local function formatLoanerOfferForUi(facility)
       }
     end
 
-    local id = string.format("%s-%d", organizationId, idx)
+    local id = string.format("%s-%04d", organizationId, displayIdx)
 
     --ignore enable state when already bringin out this loaner
     if markedForSpawningLoaners[id] then
@@ -465,3 +482,4 @@ M.onUpdate = onUpdate
 M.onVehicleAdded = onVehicleAdded
 
 return M
+

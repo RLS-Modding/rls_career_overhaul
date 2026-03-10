@@ -2741,26 +2741,10 @@
     "loanableVehicles": [
       {
         "model": "fullsize",
-        "config": "police",
-        "reputationLvl": -1,
-        "deliveryLvl": 0,
-        "requiredPoliceLevel": 10,
-        "mileages": {
-          "-1": 804672000,
-          "0": 321868800,
-          "1": 160934400,
-          "2": 160934400,
-          "3": 80467200,
-          "4": 80467200,
-          "5": 40233600
-        }
-      },
-      {
-        "model": "fullsize",
-        "config": "unmarked",
+        "config": "bcpd",
         "reputationLvl": 0,
         "deliveryLvl": 0,
-        "requiredPoliceLevel": 10,
+        "requiredPoliceLevel": 1,
         "mileages": {
           "-1": 764438400,
           "0": 305775360,
@@ -2773,10 +2757,58 @@
       },
       {
         "model": "fullsize",
-        "config": "bcpd",
+        "config": "police",
+        "reputationLvl": -1,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 1,
+        "mileages": {
+          "-1": 804672000,
+          "0": 321868800,
+          "1": 160934400,
+          "2": 160934400,
+          "3": 80467200,
+          "4": 80467200,
+          "5": 40233600
+        }
+      },
+      {
+        "model": "autobello",
+        "config": "carabinieri",
         "reputationLvl": 0,
         "deliveryLvl": 0,
-        "requiredPoliceLevel": 10,
+        "requiredPoliceLevel": 2,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "covet",
+        "config": "police",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 3,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "fullsize",
+        "config": "unmarked",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 4,
         "mileages": {
           "-1": 764438400,
           "0": 305775360,
@@ -2792,7 +2824,39 @@
         "config": "interceptor",
         "reputationLvl": 1,
         "deliveryLvl": 0,
-        "requiredPoliceLevel": 17,
+        "requiredPoliceLevel": 5,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "lansdale",
+        "config": "33_police_late_A",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 6,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "nine",
+        "config": "nine_police",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 7,
         "mileages": {
           "-1": 764438400,
           "0": 305775360,
@@ -2808,7 +2872,7 @@
         "config": "police",
         "reputationLvl": 1,
         "deliveryLvl": 0,
-        "requiredPoliceLevel": 15,
+        "requiredPoliceLevel": 8,
         "mileages": {
           "-1": 860999040,
           "0": 258299712,
@@ -2817,6 +2881,198 @@
           "3": 86099904,
           "4": 86099904,
           "5": 17219980.8
+        }
+      },
+      {
+        "model": "roamer",
+        "config": "sheriff",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 8,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "roamer",
+        "config": "unmarked",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 8,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "midtruck",
+        "config": "4x4_police_petrol",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 9,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "burnside",
+        "config": "4door_late_v8_3A_police",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 12,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "hopper",
+        "config": "carabinieri",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 13,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "hopper",
+        "config": "parkranger",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 13,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "hopper",
+        "config": "sheriff",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 13,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "bluebuck",
+        "config": "interceptor",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 14,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "bluebuck",
+        "config": "police",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 14,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "van",
+        "config": "police",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 15,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "van",
+        "config": "police_passenger",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 15,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "moonhawk",
+        "config": "detective",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 16,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
         }
       },
       {
@@ -2836,11 +3092,187 @@
         }
       },
       {
+        "model": "legran",
+        "config": "detective",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 18,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "legran",
+        "config": "police",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 18,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "pickup",
+        "config": "d10_4wd_parkranger",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 19,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "wendover",
+        "config": "interceptor",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 21,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "midsize",
+        "config": "police",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 22,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "midsize",
+        "config": "unmarked",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 22,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "vivace",
+        "config": "tograc_polizia",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 23,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "vivace",
+        "config": "vivace_polizia",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 23,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "vivace",
+        "config": "vivace_S_gendarmerie",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 23,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "bx",
+        "config": "police_A",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 24,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "bx",
+        "config": "police_alt_A",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 24,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
         "model": "bastion",
         "config": "police_v8_awd_A",
         "reputationLvl": 2,
         "deliveryLvl": 0,
-        "requiredPoliceLevel": 23,
+        "requiredPoliceLevel": 25,
         "mileages": {
           "-1": 764438400,
           "0": 265541760,
@@ -2852,11 +3284,123 @@
         }
       },
       {
+        "model": "sunburst2",
+        "config": "gendarmerie",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 26,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "sunburst2",
+        "config": "interceptor",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 26,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "sunburst2",
+        "config": "police",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 26,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "sunburst2",
+        "config": "polizia",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 26,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "etk800",
+        "config": "844_police_A",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 26,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "etk800",
+        "config": "854_police_A",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 26,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "etk800",
+        "config": "854_police_A_alt",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 26,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
         "model": "bastion",
         "config": "police_unmarked_v8_awd_A",
         "reputationLvl": 3,
         "deliveryLvl": 0,
-        "requiredPoliceLevel": 27,
+        "requiredPoliceLevel": 30,
         "mileages": {
           "-1": 764438400,
           "0": 305775360,
@@ -2868,27 +3412,11 @@
         }
       },
       {
-        "model": "md_series",
-        "config": "md_60_armored_police",
-        "reputationLvl": 3,
-        "deliveryLvl": 0,
-        "requiredPoliceLevel": 33,
-        "mileages": {
-          "-1": 764438400,
-          "0": 305775360,
-          "1": 152887680,
-          "2": 44256960,
-          "3": 17702784,
-          "4": 8851392,
-          "5": 17220
-        }
-      },
-      {
         "model": "bastion",
         "config": "police_unmarked_v8_awd_A_Blue",
         "reputationLvl": 3,
         "deliveryLvl": 0,
-        "requiredPoliceLevel": 27,
+        "requiredPoliceLevel": 35,
         "mileages": {
           "-1": 764438400,
           "0": 305775360,
@@ -2904,7 +3432,7 @@
         "config": "police_unmarked_v8_awd_A_Red",
         "reputationLvl": 3,
         "deliveryLvl": 0,
-        "requiredPoliceLevel": 27,
+        "requiredPoliceLevel": 35,
         "mileages": {
           "-1": 764438400,
           "0": 305775360,
@@ -2920,7 +3448,7 @@
         "config": "police_unmarked_v8_awd_A_Silver",
         "reputationLvl": 3,
         "deliveryLvl": 0,
-        "requiredPoliceLevel": 27,
+        "requiredPoliceLevel": 35,
         "mileages": {
           "-1": 764438400,
           "0": 305775360,
@@ -2932,11 +3460,27 @@
         }
       },
       {
+        "model": "bolide",
+        "config": "polizia",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 37,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
         "model": "bastion",
         "config": "police_redtail",
         "reputationLvl": 4,
         "deliveryLvl": 0,
-        "requiredPoliceLevel": 43,
+        "requiredPoliceLevel": 45,
         "mileages": {
           "-1": 764438400,
           "0": 305775360,
@@ -2952,7 +3496,7 @@
         "config": "undercover_redtail",
         "reputationLvl": 4,
         "deliveryLvl": 0,
-        "requiredPoliceLevel": 48,
+        "requiredPoliceLevel": 45,
         "mileages": {
           "-1": 764438400,
           "0": 305775360,
@@ -2961,6 +3505,38 @@
           "3": 36210240,
           "4": 14484096,
           "5": 17220
+        }
+      },
+      {
+        "model": "etkc",
+        "config": "kc6x_340_police_highway_A",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 40,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "scintilla",
+        "config": "gts_polizia",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 50,
+        "mileages": {
+          "-1": 764438400,
+          "0": 305775360,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
         }
       }
     ],
@@ -4013,3 +4589,7 @@
     ]
   },*/
 }
+
+
+
+
