@@ -915,10 +915,7 @@ local function getVehiclePartsValue(modelName, configKey, vehicleInfo, context)
     return 0
   end
 
-  local totalValue, err = safeVehicleOp(context or "getVehiclePartsValue", vehicleInfo or {
-    model_key = modelName,
-    key = configKey
-  }, function()
+  local valueOk, totalValue = pcall(function()
     local accumulatedValue = 0
     for _, partName in pairs(pcData.parts) do
       if partName and partName ~= "" then
@@ -931,7 +928,14 @@ local function getVehiclePartsValue(modelName, configKey, vehicleInfo, context)
     return accumulatedValue
   end)
 
-  if err then
+  if not valueOk then
+    local logKey = cacheKey .. "|partsValueError"
+    if not badConfigLogOnce[logKey] then
+      badConfigLogOnce[logKey] = true
+      log("W", "Career", string.format(
+        "Vehicle parts value fallback for %s during %s: jbeam lookup failed, using base value only (%s)",
+        cacheKey, tostring(context or "partsValue"), tostring(totalValue)))
+    end
     return 0
   end
 
@@ -1893,7 +1897,10 @@ local function updateVehicleList(fromScratch)
       attemptedGenerationForSeller = true
       arrayConcat(randomVehicleInfos, replacementVehicles)
     end
-    if attemptedGenerationForSeller then
+    if successfulGenerationsForSeller >= targetVehicleCount then
+      sellersInfos[seller.id].lastGenerationTime = currentTime
+      changed = true
+    elseif attemptedGenerationForSeller and targetVehicleCount == 0 then
       sellersInfos[seller.id].lastGenerationTime = currentTime
       changed = true
     end
