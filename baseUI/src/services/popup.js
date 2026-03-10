@@ -34,6 +34,7 @@ let count = -1
  * @prop {object}          props           Component props
  * @prop {Array<string>}   position        Popup position
  * @prop {boolean}         animated        Animate popup in/out
+ * @prop {boolean}         reportState     Report popup open/close state to Lua state reporter
  * @prop {object}          wrapper         Wrapper properties
  * @prop {boolean}         wrapper.fade    If all other elements on the screen should fade away to a semi-transparency
  * @prop {boolean}         wrapper.blur    If screen should be blurred
@@ -148,6 +149,7 @@ export function addPopup(componentOrName, props = {}, type = PopupTypes.normal) 
     props: { __id: count, ...props },
     position: [popupPosition.default],
     animated: true,
+    reportState: true,
     wrapper: type >= PopupTypes.normal ? getPopupWrapperDefaults() : getActivityWrapperDefaults(),
   }
 
@@ -156,6 +158,9 @@ export function addPopup(componentOrName, props = {}, type = PopupTypes.normal) 
   }
   if (typeof component.animated === "boolean") {
     popup.animated = component.animated
+  }
+  if (typeof component.reportState === "boolean") {
+    popup.reportState = component.reportState
   }
   if ("wrapper" in component) {
     if (typeof component.wrapper.fade === "boolean") popup.wrapper.fade = component.wrapper.fade
@@ -179,7 +184,7 @@ export function addPopup(componentOrName, props = {}, type = PopupTypes.normal) 
       if (popupsAll[i].id === popup.id) {
         popupsAll.splice(i, 1)
         if (popupsAll.length > 0) popupsAll[popupsAll.length - 1].active = true
-        reportPopupState(popup, false)
+        if (popup.reportState !== false) reportPopupState(popup, false)
         break
       }
     }
@@ -197,7 +202,7 @@ export function addPopup(componentOrName, props = {}, type = PopupTypes.normal) 
       // put a new less prioritised popup before the first one with a higher priority
       // note: there's no need to change active flag in this case
       popupsAll.splice(i, 0, popup)
-      reportPopupState(popup, true)
+      if (popup.reportState !== false) reportPopupState(popup, true)
       return popup
     }
   }
@@ -207,7 +212,7 @@ export function addPopup(componentOrName, props = {}, type = PopupTypes.normal) 
   popup.active = true
   // append
   popupsAll.push(popup)
-  reportPopupState(popup, true)
+  if (popup.reportState !== false) reportPopupState(popup, true)
 
   return popup
 }

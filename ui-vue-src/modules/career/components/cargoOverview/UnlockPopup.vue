@@ -78,6 +78,7 @@ onUnmounted(() => {
 <script>
 import { popupPosition, popupContainer } from "@/services/popup"
 export default {
+  reportState: false,
   wrapper: {
     fade: false,
     blur: false,
