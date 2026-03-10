@@ -21,12 +21,28 @@ local atan2 = math.atan2
 local pi = math.pi
 local twoPi = pi * 2
 
+-- RLS
+local SpeedMultiplier = 1
+local JumpForceMultiplier = 1
+
+local baseStabilizationMaxForce = 8000
+local baseYawMaxForce = 200
+
+local baseWalkingSpeed = 1.8
+local baseSprintSpeed = 5
+
+local baseBallAVNormal = 4.5
+local baseBallAVSprint = 13
+local baseMaxBallTorque = 500
+
+local baseJumpForce = 50000
+--
+
 local stabilizationMaxForce = 8000
 local yawMaxForce = 200
 
 local movementSpeedNormal = 1.8
 local movementSpeedSprint = 5
-local movementSpeedMultiplier = 1
 
 local maxAllowedBallAVNormal = 4.5 --14
 local maxAllowedBallAVSprint = 13 --14
@@ -283,7 +299,7 @@ local function updateFixedStep(dt)
   ---Propulsion---
   ----------------
   local frozenCoef = isFrozen and 0 or 1
-  local desiredMovementSpeed = linearScale(movementSpeedCoef, 0, 1, movementSpeedNormal, movementSpeedSprint) * movementSpeedMultiplier * frozenCoef --0 movement speed when locked
+  local desiredMovementSpeed = linearScale(movementSpeedCoef, 0, 1, movementSpeedNormal, movementSpeedSprint) * frozenCoef --0 movement speed when locked
   local guardedWalkVector = walkVector:z0() * frozenCoef --set this to zero if frozen to keep the ball locked
   if guardedWalkVector:length() > 1 then
     guardedWalkVector:normalize()
@@ -315,7 +331,7 @@ local function updateFixedStep(dt)
     ballAV = ballAVSmoother:get(ballAV)
   end
 
-  local maxBallAVAdjusted = linearScale(movementSpeedCoef, 0, 1, maxAllowedBallAVNormal, maxAllowedBallAVSprint) * movementSpeedMultiplier
+  local maxBallAVAdjusted = linearScale(movementSpeedCoef, 0, 1, maxAllowedBallAVNormal, maxAllowedBallAVSprint)
   local ballAVTorqueCoef = linearScale(abs(ballAV), maxBallAVAdjusted, maxBallAVAdjusted + 1, 1, 0)
   ballDesiredTorque = ballDesiredTorque * ballAVTorqueCoef
 
@@ -399,10 +415,6 @@ local function setSpeed(value)
   movementSpeedCoef = value
 end
 
-local function setMovementSpeedMultiplier(value)
-  movementSpeedMultiplier = max(value or 1, 0)
-end
-
 local function toggleSpeed()
   movementSpeedCoef = 1 - movementSpeedCoef
 end
@@ -449,7 +461,6 @@ local function settingsChanged()
 end
 
 local function init(jbeamData)
-  movementSpeedMultiplier = 1
   isCrouching = false
   isUnCrouching = false
 
@@ -517,7 +528,6 @@ local function initLastStage()
 end
 
 local function reset()
-  movementSpeedMultiplier = 1
   isFrozen = false
   isBallLocked = false
   ballLockState = ballLockStates.unlocked
@@ -597,9 +607,38 @@ M.walkLeftRight = walkLeftRight
 M.walkUpDownRaw = walkUpDownRaw
 M.walkUpDown = walkUpDown
 M.setSpeedCoef = setSpeed
-M.setMovementSpeedMultiplier = setMovementSpeedMultiplier
 M.toggleSpeedCoef = toggleSpeed
 M.crouch = crouch
 M.toggleCrouch = toggleCrouch
+
+-- RLS
+local function updateSpeed(speedMult)
+  speedMult = tonumber(speedMult) or 1
+
+  SpeedMultiplier = speedMult
+
+  movementSpeedNormal = baseWalkingSpeed * speedMult
+  movementSpeedSprint = baseSprintSpeed * speedMult
+
+  maxAllowedBallAVNormal = baseBallAVNormal * speedMult
+  maxAllowedBallAVSprint = baseBallAVSprint * speedMult
+  maxBallTorque = baseMaxBallTorque * speedMult
+
+  stabilizationMaxForce = baseStabilizationMaxForce * (speedMult * 0.25)
+  yawMaxForce = baseYawMaxForce * (speedMult * 0.25)
+end
+
+local function updateJumpForce(jumpForceMult)
+  jumpForceMult = tonumber(jumpForceMult) or 1
+
+  JumpForceMultiplier = jumpForceMult
+
+  jumpForce = baseJumpForce * jumpForceMult
+end
+
+M.updateSpeed = updateSpeed
+M.setMovementSpeedMultiplier = updateSpeed
+M.updateJumpForce = updateJumpForce
+M.setJumpForceMultiplier = updateJumpForce
 
 return M

@@ -14,24 +14,50 @@ local MAX_DISTANCE_STEP = 20
 local SPEED_BONUS_PER_LEVEL = 0.02
 local MIN_SPEED_MULTIPLIER = 1
 local MAX_SPEED_MULTIPLIER = 2
+local JUMP_BONUS_PER_LEVEL = 0.02
+local MIN_JUMP_MULTIPLIER = 1
+local MAX_JUMP_MULTIPLIER = 2
 
 local state = {
   pendingMeters = 0,
   lastPos = nil,
   lastAppliedVehId = nil,
-  lastAppliedMultiplier = nil
+  lastAppliedMultiplier = nil,
+  lastAppliedJumpMultiplier = nil
 }
+
+-- Some branch APIs can return multiple values. Only the first one should be converted.
+local function tonumberFirst(...)
+  local value = select(1, ...)
+  return tonumber(value)
+end
 
 local function resetWalkTracking()
   state.lastPos = nil
 end
 
 local function getStaminaLevel()
-  if not career_branches or not career_branches.getBranchLevel then
-    return 1
+  local level = 0
+
+  if career_branches and career_branches.getBranchLevel then
+    level = max(level, tonumberFirst(career_branches.getBranchLevel('stamina')) or 0)
+    level = max(level, tonumberFirst(career_branches.getBranchLevel('careerSkills-stamina')) or 0)
   end
 
-  local level = tonumber(career_branches.getBranchLevel('stamina')) or 1
+  if career_modules_playerAttributes and career_modules_playerAttributes.getAttributeValue and career_branches and career_branches.calcBranchLevelFromValue then
+    local staminaValue = tonumberFirst(career_modules_playerAttributes.getAttributeValue('stamina'))
+    local altValue = tonumberFirst(career_modules_playerAttributes.getAttributeValue('careerSkills-stamina'))
+
+    if altValue and (not staminaValue or altValue > staminaValue) then
+      staminaValue = altValue
+    end
+
+    if staminaValue then
+      level = max(level, tonumberFirst(career_branches.calcBranchLevelFromValue(staminaValue, 'stamina')) or 0)
+      level = max(level, tonumberFirst(career_branches.calcBranchLevelFromValue(staminaValue, 'careerSkills-stamina')) or 0)
+    end
+  end
+
   return max(level, 1)
 end
 
@@ -41,21 +67,28 @@ local function getSpeedMultiplierForLevel(level)
   return clamp(multiplier, MIN_SPEED_MULTIPLIER, MAX_SPEED_MULTIPLIER)
 end
 
-local function applySpeedMultiplier(multiplier)
+local function getJumpMultiplierForLevel(level)
+  local bonusLevels = max(0, level - 1)
+  local multiplier = 1 + bonusLevels * JUMP_BONUS_PER_LEVEL
+  return clamp(multiplier, MIN_JUMP_MULTIPLIER, MAX_JUMP_MULTIPLIER)
+end
+
+local function applyMovementMultipliers(speedMultiplier, jumpMultiplier)
   local playerVeh = getPlayerVehicle(0)
-  if not playerVeh or playerVeh:getJBeamFilename() ~= 'unicycle' then
+  if not playerVeh then
     state.lastAppliedVehId = nil
     return
   end
 
   local vehId = playerVeh:getID()
-  if state.lastAppliedVehId == vehId and state.lastAppliedMultiplier == multiplier then
+  if state.lastAppliedVehId == vehId and state.lastAppliedMultiplier == speedMultiplier and state.lastAppliedJumpMultiplier == jumpMultiplier then
     return
   end
 
-  playerVeh:queueLuaCommand(string.format("controller.getControllerSafe('playerController').setMovementSpeedMultiplier(%0.4f)", multiplier))
+  playerVeh:queueLuaCommand(string.format("local c=controller.getControllerSafe('playerController');if c then if c.updateSpeed then c.updateSpeed(%0.4f) elseif c.setMovementSpeedMultiplier then c.setMovementSpeedMultiplier(%0.4f) end if c.updateJumpForce then c.updateJumpForce(%0.4f) elseif c.setJumpForceMultiplier then c.setJumpForceMultiplier(%0.4f) end end", speedMultiplier, speedMultiplier, jumpMultiplier, jumpMultiplier))
   state.lastAppliedVehId = vehId
-  state.lastAppliedMultiplier = multiplier
+  state.lastAppliedMultiplier = speedMultiplier
+  state.lastAppliedJumpMultiplier = jumpMultiplier
 end
 
 local function grantPendingXP(force)
@@ -97,7 +130,8 @@ local function onUpdate(dtReal, dtSim, dtRaw)
 
   local level = getStaminaLevel()
   local speedMultiplier = getSpeedMultiplierForLevel(level)
-  applySpeedMultiplier(speedMultiplier)
+  local jumpMultiplier = getJumpMultiplierForLevel(level)
+  applyMovementMultipliers(speedMultiplier, jumpMultiplier)
 
   local playerVeh = getPlayerVehicle(0)
   if not playerVeh then
@@ -121,6 +155,7 @@ local function onClientStartMission()
   state.lastPos = nil
   state.lastAppliedVehId = nil
   state.lastAppliedMultiplier = nil
+  state.lastAppliedJumpMultiplier = nil
 end
 
 M.onUpdate = onUpdate
