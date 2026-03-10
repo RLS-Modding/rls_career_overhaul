@@ -628,6 +628,15 @@ local function driveToTarget(targetPos, throttle, brake, targetSpeed)
   if parameters.throttleTcs ~= 'off' then
     throttleCoef = min(throttleCoef, throttleTcsCoef)
   end
+  -- Race: relax TCS/understeer so AI keeps more power; above high-speed threshold allow more let-off so TCS can cut in when breaking traction
+  if opt.racing then
+    local floor = parameters.raceThrottleFloor or 0.85
+    local hiSpd = parameters.raceHighSpeedThreshold
+    if type(hiSpd) == "number" and ego.speed > hiSpd then
+      floor = parameters.raceHighSpeedThrottleFloor or 0.7
+    end
+    throttleCoef = max(throttleCoef, floor)
+  end
 
   local dirTarget = ego.dirVec:dot(targetVec)
   local dirTargetAxis = ego.rightVec:dot(targetVec)
@@ -802,7 +811,10 @@ local function driveToTarget(targetPos, throttle, brake, targetSpeed)
       end
 
       local targetSpeed = sqrt(2 * g * min(aggression, ego.staticFrictionCoef) * max(0, minDist - threshold) * dirCoef)
-      twt.targetSpeed = max(min(twt.speedSmoother:get(targetSpeed, dt), min(6, aggression * 6)), 0.3)
+      local capMax = opt.racing and (parameters.raceObstacleSpeedCap or 12) or 6
+      local capAgg = opt.racing and (parameters.raceObstacleSpeedCapAgg or 10) or 6
+      local speedCap = opt.racing and min(capMax, aggression * capAgg) or min(6, aggression * 6)
+      twt.targetSpeed = max(min(twt.speedSmoother:get(targetSpeed, dt), speedCap), 0.3)
       local speedDif = twt.targetSpeed - twt.dirState[1] * sign2(dirVel) * ego.speed
       local steering = twt.steerSmoother:get(twt.dirState[2], dt)
       local pbrake = 0 -- * clamp(sign2(0.83 + ego.upVec:dot(gravityDir)), 0, 1) -- >= 10 deg
@@ -846,7 +858,12 @@ local function driveToTarget(targetPos, throttle, brake, targetSpeed)
     end
 
     local aggSq = square(aggression + max(0, -(ego.dirVec:dot(gravityDir))))
-    local rate = max(throttleSmoother[throttleSmoother:value() < throttle], 10 * aggSq * aggSq)
+    local rateMult = opt.racing and (parameters.raceThrottleRateMult or 2) or 1
+    -- Race: give it full requested throttle when slow so accel matches player; TCS/slip controls will cut in if they spin
+    if opt.racing and ego.speed < 1.5 and throttle > 0.8 then
+      throttleSmoother:set(throttle)
+    end
+    local rate = max(throttleSmoother[throttleSmoother:value() < throttle], 10 * aggSq * aggSq * rateMult)
     throttle = throttleSmoother:getWithRateUncapped(throttle, dt, rate)
 
     driveCar(dirAngle, throttle, brake, pbrake)
@@ -3043,7 +3060,8 @@ local function raceplanAhead(route, baseRoute, pmode)
     if plan.dispLat ~= 0 then
       plan.sideDisp = true
       local sideDisp = plan.dispLat -- (sideDisp > 0) means v-vehicle is on our left side and ego should move right
-      sideDisp = min(dt * parameters.awarenessForceCoef * 10, abs(sideDisp)) * sign2(sideDisp) -- limited displacement per frame
+      local awarenessCoef = parameters.awarenessForceCoef * (opt.racing and (parameters.raceAwarenessCoefScale or 1.1) or 1)
+      sideDisp = min(dt * awarenessCoef * 10, abs(sideDisp)) * sign2(sideDisp) -- limited displacement per frame
       local curDist = 0
       local lastPlanIdx = 2
       local targetDist = square(ego.speed) / (2 * g * aggression) + max(30, ego.speed * 3) -- longer adjustment at higher speeds
@@ -3094,7 +3112,8 @@ local function raceplanAhead(route, baseRoute, pmode)
     local v2 = plan[i+1].dirVec
 
     n1.turnDir:setSub2(v1, v2); n1.turnDir:normalize()
-    nforce:setScaled2(n1.turnDir, (1-twt.state) * max(1 - v1:dot(v2), 0) * parameters.turnForceCoef)
+    local turnCoef = parameters.turnForceCoef * (opt.racing and (parameters.raceTurnCoefScale or 1.1) or 1)
+    nforce:setScaled2(n1.turnDir, (1-twt.state) * max(1 - v1:dot(v2), 0) * turnCoef)
 
     forces[i+1]:setSub(nforce)
     forces[i-1]:setSub(nforce)
@@ -3185,6 +3204,7 @@ local function raceplanAhead(route, baseRoute, pmode)
 
   ------######## Speed Planning ########-----
   local totalAccel = min(aggression, ego.staticFrictionCoef) * g
+  if opt.racing then totalAccel = totalAccel * (parameters.raceAccelScale or 1.15) end -- per-race: corner/accel scale
 
   local lastNode = plan[plan.planCount]
   if route.path[lastNode.pathidx+1] or (loopPath and noOfLaps and noOfLaps > 1) then
@@ -4261,6 +4281,7 @@ local function planAhead(route, baseRoute)
 
   -- Speed Planning --
   local totalAccel = min(aggression, ego.staticFrictionCoef) * g
+  if opt.racing then totalAccel = totalAccel * (parameters.raceAccelScale or 1.15) end -- per-race: corner/accel scale
 
   local lastNode = plan[plan.planCount]
   if route.path[lastNode.pathidx+1] or (loopPath and noOfLaps and noOfLaps > 1) then
@@ -6084,10 +6105,13 @@ local function updateGFX(dtGFX)
     speedDif = targetSpeedDifSmoother:getWithRate(speedDif, dt, rate)
 
     local legalSpeedDif = plan.targetSpeedLegal - ego.speed
-    local lowSpeedDif = min(speedDif - clamp((ego.speed - 2) * 0.5, 0, 1), legalSpeedDif) * parameters.throttleKp
+    local throttleKpEffective = (opt.racing and (parameters.raceThrottleKp or 1)) or parameters.throttleKp
+    local lowSpeedDif = min(speedDif - clamp((ego.speed - 2) * 0.5, 0, 1), legalSpeedDif) * throttleKpEffective
     local lowTargSpeedConstBrake = lowTargetSpeedVal - targetSpeed -- apply constant brake below some targetSpeed
 
     local throttle = clamp(lowSpeedDif, 0, 1) * sign(max(0, -lowTargSpeedConstBrake)) -- throttle not enganged for targetSpeed < 0.26
+    -- Race: request 100% when below target so accel matches player; TCS/slip in driveToTarget will cut in if they spin
+    if opt.racing and speedDif > 0.5 and throttle > 0 then throttle = 1 end
 
     local brakeLimLow = sign(max(0, lowTargSpeedConstBrake)) * 0.5
 

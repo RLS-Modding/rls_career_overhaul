@@ -18,7 +18,6 @@ local loadedExtensions = {}
 local timerActive = false
 local mActiveRace
 local staged = nil
-local mFreeroamHubSpawnedForStaging = false
 local in_race_time = 0
 
 local speedUnit = 2.2369362921
@@ -54,6 +53,20 @@ local saveGameState = false
 -- Freeroam Event Hub: per-save prefs (only run hub logic when hub is "active", i.e. not opted out)
 local FREEROAM_HUB_PREFS_FILE = "career/rls_career/freeroam_hub_prefs.json"
 local mFreeroamHubPrefs = { autoShow = true, addedOnce = false }
+-- Hub route selection: practice = unlimited laps (current behavior); track = main route; shortTrack = alt route
+local mFreeroamHubPracticeMode = false
+local mFreeroamHubUseAltRoute = false
+-- True only after player clicks Track or Short track (so we don't countdown before they choose)
+local mFreeroamHubRaceSelected = false
+-- True when the UI is displaying the final race result (prevents the hub from closing when exiting the trigger after finishing)
+local mFreeroamHubShowingResult = false
+-- Staged flash + countdown (American Road style): only when hub active and race selected (not Practice)
+local mFreeroamCountdownDelay = nil       -- seconds until countdown runs (set when entering staging)
+local mFreeroamCountdownEndTime = nil     -- 3s after GO before race start allowed
+local mFreeroamCountdownStartClock = nil
+local mFreeroamStagedAtStart = false      -- true when player entered start trigger before countdown finished
+local mFreeroamPendingStart = nil         -- { raceName, subjectID } when waiting for countdown to finish
+local mFreeroamStagingSubjectID = nil     -- vehicle id when countdown set (start on GO)
 
 local function getFreeroamHubPrefsPath()
     if not career_saveSystem or not career_saveSystem.getCurrentSaveSlot then return nil end
@@ -84,6 +97,61 @@ local function isFreeroamHubActive()
     if not getFreeroamHubPrefsPath() then return false end
     loadFreeroamHubPrefs()
     return mFreeroamHubPrefs.autoShow ~= false
+end
+
+-- True when hub race mode: hub active and player selected Track or Short track (not Practice). When false, use original freeroam logic.
+local function isFreeroamHubRaceMode()
+    return isFreeroamHubActive() and not mFreeroamHubPracticeMode
+end
+
+-- Staged flash + countdown (American Road style); only used when isFreeroamHubRaceMode()
+local function getGameplayAppContainers()
+    if not extensions then return nil end
+    local names = { "ui_gameplayAppContainers", "ge_extensions_ui_gameplayAppContainers" }
+    for _, n in ipairs(names) do
+        local gc = extensions[n]
+        if gc and gc.showApp then return gc end
+    end
+    return nil
+end
+local function showStagedFlashMessage()
+    local gc = getGameplayAppContainers()
+    if gc and gc.showApp then gc.showApp("gameplayApps", "countdown")
+    elseif guihooks and guihooks.trigger then guihooks.trigger("setGameplayAppVisibility", { appId = "countdown", visible = true }) end
+    if guihooks and guihooks.trigger then guihooks.trigger("ScenarioFlashMessage", {{ "Staged", 30 }}) end
+    utils.displayMessage("Staged", 5)
+end
+local function hideStagedFlashMessage()
+    if guihooks and guihooks.trigger then guihooks.trigger("ScenarioFlashMessageClear") end
+    local gc = getGameplayAppContainers()
+    if gc and gc.hideApp then gc.hideApp("gameplayApps", "flashMessage") gc.hideApp("gameplayApps", "countdown") end
+end
+local function triggerRaceCountdown()
+    hideStagedFlashMessage()
+    local gc = getGameplayAppContainers()
+    if gc and gc.showApp then gc.showApp("gameplayApps", "countdown")
+    elseif guihooks and guihooks.trigger then guihooks.trigger("setGameplayAppVisibility", { appId = "countdown", visible = true }) end
+    if guihooks and guihooks.trigger then
+        guihooks.trigger("ScenarioFlashMessage", {
+            { 3, 0.8, false, true },
+            { 2, 0.8, false, true },
+            { 1, 0.8, false, true },
+            { "GO", 0.6, false, true },
+        })
+    end
+    if core_jobsystem and core_jobsystem.create then
+        core_jobsystem.create(function(job)
+            utils.displayMessage("3", 0.8)
+            job.sleep(0.8)
+            utils.displayMessage("2", 0.8)
+            job.sleep(0.8)
+            utils.displayMessage("1", 0.8)
+            job.sleep(0.8)
+            utils.displayMessage("GO!", 0.6)
+        end)
+    end
+    mFreeroamCountdownEndTime = 3.0
+    mFreeroamCountdownStartClock = (os and os.clock) and os.clock() or nil
 end
 
 local function rewardLabel(raceName, newBestTime)
@@ -619,7 +687,84 @@ local function getRouteDisplayName(race, isAlt)
     return race.label
 end
 
+-- Start the race (staging -> start line). Used by both trigger and onUpdate (countdown-finished). Keeps original logic; hub-only behavior is guarded by isFreeroamHubRaceMode/isFreeroamHubActive.
+local function beginFreeroamRace(raceNameArg, subjectID)
+    if not races[raceNameArg] then return end
+    local raceName = raceNameArg
+    if career_career.isActive() then
+        career_modules_pauseTime.enablePauseCounter(true)
+    end
+    initialVehicleDamage = utils.getVehicleDamage()
+    utils.saveAndSetTrafficAmount(0)
+    checkpointManager.setRace(races[raceName], raceName)
+    Assets:displayAssets({ subjectID = subjectID, triggerName = "fre_start_" .. raceName })
+    timerActive = true
+    in_race_time = 0
+    maxSpeed = 0
+    mActiveRace = raceName
+    lapCount = 0
+    mCurrentRouteName = nil
+    mTotalRaceTime = 0
+    mBestLapThisRun = nil
+    mSuppressOffRoadExitUntil = 0
+    if career_modules_business_businessInventory then
+        local businessId, vehicleId = career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId(subjectID)
+        if businessId and vehicleId then
+            local jobId = career_modules_business_businessInventory.getJobIdFromVehicle(businessId, vehicleId)
+            if jobId then
+                mInventoryId = career_modules_business_businessInventory.getBusinessJobIdentifier(businessId, jobId)
+            else
+                mInventoryId = career_modules_business_businessInventory.getBusinessVehicleIdentifier(businessId, vehicleId)
+            end
+        else
+            mInventoryId = career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId(subjectID) or subjectID
+        end
+    else
+        mInventoryId = career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId(subjectID) or subjectID
+    end
+    invalidLap = false
+    utils.displayStartMessage(raceName)
+    utils.setActiveLight(raceName, "green")
+    if utils.tableContains(races[raceName].type, "drift") then
+        gameplay_drift_general.setContext("inChallenge")
+        gameplay_drift_general.reset()
+        if gameplay_drift_drift then gameplay_drift_drift.setVehId(subjectID) end
+    end
+    if races[raceName].checkpointRoad then
+        processRoad.reset()
+        processRoad.setStationaryTimeout(races[raceName].timeout)
+        local checkpoints, altCheckpoints = processRoad.getCheckpoints(races[raceName])
+        local routeOnly = nil
+        if isFreeroamHubActive() and not mFreeroamHubPracticeMode then
+            routeOnly = mFreeroamHubUseAltRoute and "alt" or "main"
+        end
+        local isLocked = isFreeroamHubActive() and not mFreeroamHubPracticeMode
+        if checkpointManager.setRouteLocked then checkpointManager.setRouteLocked(isLocked) end
+        checkpointManager.createCheckpoints(checkpoints, altCheckpoints, routeOnly)
+        isLoop = processRoad.isLoop()
+        currCheckpoint = 0
+        checkpointsHit = 0
+        totalCheckpoints = checkpointManager.calculateTotalCheckpoints()
+        currentExpectedCheckpoint = 1
+        mAltRoute = false
+        checkpointManager.setAltRoute(mAltRoute)
+        if isFreeroamHubActive() and mFreeroamHubUseAltRoute and races[raceName].altRoute then
+            mAltRoute = true
+            checkpointManager.setAltRoute(true)
+            totalCheckpoints = checkpointManager.calculateTotalCheckpoints()
+        end
+        currentExpectedCheckpoint = checkpointManager.enableCheckpoint(0, mAltRoute)
+    end
+end
+
 local function exitRace(isCompletion, customMessage, raceData, subjectID)
+    -- Clear hub countdown state whenever we exit (race or staging)
+    mFreeroamCountdownDelay = nil
+    mFreeroamCountdownEndTime = nil
+    mFreeroamCountdownStartClock = nil
+    mFreeroamStagedAtStart = false
+    mFreeroamPendingStart = nil
+    mFreeroamStagingSubjectID = nil
     if mActiveRace then
         local raceName = mActiveRace
         local raceLabel = getRaceLabel()
@@ -724,11 +869,14 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
         if isFreeroamHubActive() then
             guihooks.trigger("FreeroamHubRaceState", finalState)
             if finalResult then
+                mFreeroamHubShowingResult = true
                 guihooks.trigger("FreeroamHubRaceResult", finalResult)
             end
             -- If opted in and no result to show, close the app when event ends
             if not finalResult then
                 guihooks.trigger("FreeroamHubCloseApp")
+                local gc = getGameplayAppContainers()
+                if gc and gc.hideApp then gc.hideApp("gameplayApps", "freeroamEventHub") end
             end
         end
 
@@ -764,9 +912,11 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
         if career_career.isActive() then
             career_modules_pauseTime.enablePauseCounter()
         end
-        core_gamestate.setGameState(previousGameState.state, previousGameState.appLayout, previousGameState.menuItems, previousGameState.options)
-        previousGameState = nil
-        saveGameState = false
+        if previousGameState and not mFreeroamHubShowingResult then
+            core_gamestate.setGameState(previousGameState.state, previousGameState.appLayout, previousGameState.menuItems, previousGameState.options)
+            previousGameState = nil
+            saveGameState = false
+        end
     end
 end
 
@@ -908,6 +1058,14 @@ local function onBeamNGTrigger(data)
 
             -- Set staged race
             staged = raceName
+            -- Hub race mode: show Staged flash and start countdown only after player selected Track or Short track
+            if isFreeroamHubRaceMode() and mFreeroamHubRaceSelected then
+                showStagedFlashMessage()
+                mFreeroamCountdownDelay = 1.0
+                mFreeroamStagedAtStart = false
+                mFreeroamPendingStart = nil
+                mFreeroamStagingSubjectID = data.subjectID
+            end
             -- print("Staged race: " .. raceName)
             local vehId = data.subjectID
             if career_career.isActive() then
@@ -929,42 +1087,53 @@ local function onBeamNGTrigger(data)
             local state = { inRace = false, staged = true, raceId = raceName, raceLabel = raceLabel }
             state.stagedMessage = utils.displayStagedMessage(vehId, raceName, true)
 
-            -- Hub: when active, spawn app every time they enter staging (so it reopens if they closed it).
+            -- Hub: when active, show app gracefully every time they enter staging.
             if isFreeroamHubActive() then
                 guihooks.trigger("FreeroamHubSetAvailable", { available = true })
-                if not mFreeroamHubSpawnedForStaging then
-                    mFreeroamHubSpawnedForStaging = true
-                    if not mFreeroamHubPrefs.addedOnce then
-                        mFreeroamHubPrefs.addedOnce = true
-                        saveFreeroamHubPrefs()
-                    end
-                    core_jobsystem.create(function(job)
-                        job.yield()
-                        job.yield()
-                        guihooks.trigger("appContainer:spawn", { appName = "freeroamEventHub" })
-                        guihooks.trigger("FreeroamHubRaceState", state)
-                    end)
+                if not mFreeroamHubPrefs.addedOnce then
+                    mFreeroamHubPrefs.addedOnce = true
+                    saveFreeroamHubPrefs()
                 end
+                local gc = getGameplayAppContainers()
+                if gc and gc.showApp then
+                    gc.showApp("gameplayApps", "freeroamEventHub")
+                else
+                    guihooks.trigger("setGameplayAppVisibility", { appId = "freeroamEventHub", visible = true })
+                end
+                guihooks.trigger("FreeroamHubRaceState", state)
             end
 
             utils.displayStagedMessage(vehId, raceName)
             utils.setActiveLight(raceName, "yellow")
         elseif event == "exit" then
-            staged = nil
-            mFreeroamHubSpawnedForStaging = false
-            if not mActiveRace then
-                if isFreeroamHubActive() then
-                    guihooks.trigger("FreeroamHubSetAvailable", { available = false })
-                    guihooks.trigger("FreeroamHubRaceState", { inRace = false })
-                    guihooks.trigger("FreeroamHubCloseApp")
+            -- If they chose a race and are driving to the start line, keep hub open and don't clear staged/countdown (so start-line cross can start the race)
+            local drivingToStart = mFreeroamHubRaceSelected and (mFreeroamCountdownDelay or mFreeroamCountdownEndTime or mFreeroamPendingStart)
+            if not drivingToStart then
+                staged = nil
+                if isFreeroamHubRaceMode() then
+                    hideStagedFlashMessage()
+                    mFreeroamCountdownDelay = nil
+                    mFreeroamCountdownEndTime = nil
+                    mFreeroamCountdownStartClock = nil
+                    mFreeroamStagedAtStart = false
+                    mFreeroamPendingStart = nil
                 end
-                utils.displayMessage("You exited the staging zone", 4)
-                utils.setActiveLight(raceName, "red")
+                if not mActiveRace and not mFreeroamHubShowingResult then
+                    if isFreeroamHubActive() then
+                        guihooks.trigger("FreeroamHubSetAvailable", { available = false })
+                        guihooks.trigger("FreeroamHubRaceState", { inRace = false })
+                        guihooks.trigger("FreeroamHubCloseApp")
+                        local gc = getGameplayAppContainers()
+                        if gc and gc.hideApp then gc.hideApp("gameplayApps", "freeroamEventHub") end
+                    end
+                    utils.displayMessage("You exited the staging zone", 4)
+                    utils.setActiveLight(raceName, "red")
+                end
             end
         end
     elseif triggerType == "start" then
         if event == "enter" and mActiveRace == raceName and not utils.hasFinishTrigger(raceName) then
-            if not currCheckpoint or checkpointsHit ~= totalCheckpoints then
+            if not currCheckpoint or checkpointsHit < totalCheckpoints then
                 -- Player hasn't completed all checkpoints yet
                 if not invalidLap then
                     utils.displayMessage("You have not completed all checkpoints!", 5)
@@ -985,15 +1154,28 @@ local function onBeamNGTrigger(data)
             initialVehicleDamage = utils.getVehicleDamage()
             processRoad.setStationaryTimeout(races[raceName].timeout)
             checkpointManager.setRace(races[raceName], raceName)
+            if not data.triggerName then data.triggerName = "fre_start_" .. raceName end
             Assets:displayAssets(data)
             utils.playCheckpointSound()
             lapCount = lapCount + 1
+            -- Hub race mode: if we have a required lap count and just reached it, complete the race and show result screen
+            if isFreeroamHubActive() and not mFreeroamHubPracticeMode then
+                local race = races[raceName]
+                local requiredLaps = (race.lapCount and race.lapCount > 0) and race.lapCount or 3
+                if lapCount >= requiredLaps then
+                    exitRace(true, nil, race, data.subjectID)
+                    return
+                end
+            end
             local reward = payoutRace(completedLapTime)
             currCheckpoint = nil
             mSplitTimes = {}
             mActiveRace = raceName
-            checkpointManager.setAltRoute(false)
-            mAltRoute = false
+            -- Next lap: keep alt route if hub selected Short track, else reset to main
+            if not (isFreeroamHubActive() and mFreeroamHubUseAltRoute) then
+                checkpointManager.setAltRoute(false)
+                mAltRoute = false
+            end
             in_race_time = 0
             maxSpeed = 0
             timerActive = true
@@ -1002,84 +1184,48 @@ local function onBeamNGTrigger(data)
             currentExpectedCheckpoint = 0
             if races[raceName].hotlap then
                 mHotlap = raceName
-                currentExpectedCheckpoint = checkpointManager.enableCheckpoint(0)
+                currentExpectedCheckpoint = checkpointManager.enableCheckpoint(0, mAltRoute)
             end
             invalidLap = false
         elseif event == "enter" and staged == raceName and mActiveRace ~= raceName then
-            -- Start the race (skip if already in this race, e.g. looped track with separate finish)
-            if career_career.isActive() then
-                career_modules_pauseTime.enablePauseCounter(true)
-            end
-            initialVehicleDamage = utils.getVehicleDamage()
-            utils.saveAndSetTrafficAmount(0)
-            checkpointManager.setRace(races[raceName], raceName)
-            Assets:displayAssets(data)
-            timerActive = true
-            in_race_time = 0
-            maxSpeed = 0
-            mActiveRace = raceName
-            lapCount = 0
-            mCurrentRouteName = nil
-            mTotalRaceTime = 0
-            mBestLapThisRun = nil
-            mSuppressOffRoadExitUntil = 0
-
-            -- Set mInventoryId - check for business vehicle first, then inventory vehicle
-            if career_modules_business_businessInventory then
-                local businessId, vehicleId = career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId(data.subjectID)
-                if businessId and vehicleId then
-                    local jobId = career_modules_business_businessInventory.getJobIdFromVehicle(businessId, vehicleId)
-                    if jobId then
-                        mInventoryId = career_modules_business_businessInventory.getBusinessJobIdentifier(businessId, jobId)
-                    else
-                        mInventoryId = career_modules_business_businessInventory.getBusinessVehicleIdentifier(businessId, vehicleId)
+            -- Hub race mode: Staged flash + countdown (American Road style). Practice or no hub: original logic, start immediately.
+            if isFreeroamHubRaceMode() then
+                if mFreeroamCountdownEndTime and mFreeroamCountdownEndTime > 0 and mFreeroamCountdownStartClock and os and os.clock then
+                    local elapsed = os.clock() - mFreeroamCountdownStartClock
+                    if elapsed < 3.0 then
+                        utils.displayMessage("False start! Wait for the countdown.", 4)
+                        hideStagedFlashMessage()
+                        mFreeroamCountdownDelay = nil
+                        mFreeroamCountdownEndTime = nil
+                        mFreeroamCountdownStartClock = nil
+                        mFreeroamStagedAtStart = false
+                        mFreeroamPendingStart = nil
+                        staged = nil
+                        return
                     end
-                else
-                    mInventoryId = career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId(data.subjectID) or data.subjectID
                 end
-            else
-                mInventoryId = career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId(data.subjectID) or data.subjectID
-            end
-            
-            invalidLap = false
-
-            utils.displayStartMessage(raceName)
-            utils.setActiveLight(raceName, "green")
-
-            -- Handle drift races
-            if utils.tableContains(races[raceName].type, "drift") then
-                gameplay_drift_general.setContext("inChallenge")
-                gameplay_drift_general.reset()
-                if gameplay_drift_drift then
-                    gameplay_drift_drift.setVehId(data.subjectID)
+                if mFreeroamCountdownEndTime == nil or not mFreeroamCountdownStartClock then
+                    -- Countdown not run yet: wait at start line; countdown will run from onUpdate, then we start from onUpdate when 3s elapsed
+                    mFreeroamStagedAtStart = true
+                    mFreeroamPendingStart = { raceName = raceName, subjectID = data.subjectID }
+                    return
                 end
+                -- Countdown finished and 3s elapsed: clear and proceed with start below
+                mFreeroamCountdownEndTime = nil
+                mFreeroamCountdownStartClock = nil
+                mFreeroamStagedAtStart = false
+                mFreeroamPendingStart = nil
             end
-
-            -- Initialize checkpoints if applicable
-            if races[raceName].checkpointRoad then
-                -- Clear existing nodes and checkpoints
-                processRoad.reset()
-                processRoad.setStationaryTimeout(races[raceName].timeout)
-                local checkpoints, altCheckpoints = processRoad.getCheckpoints(races[raceName])
-
-                checkpointManager.createCheckpoints(checkpoints, altCheckpoints)
-
-                isLoop = processRoad.isLoop()
-                currCheckpoint = 0
-                checkpointsHit = 0
-                totalCheckpoints = checkpointManager.calculateTotalCheckpoints(races[raceName])
-                currentExpectedCheckpoint = 1
-                mAltRoute = false -- Initialize alt route flag
-                checkpointManager.setAltRoute(mAltRoute)
-
-                currentExpectedCheckpoint = checkpointManager.enableCheckpoint(0)
-            end
+            -- Start the race (original logic in beginFreeroamRace; hub-only route/lap behavior is guarded there)
+            beginFreeroamRace(raceName, data.subjectID)
         else
             -- Player is not staged or race is not active
             utils.setActiveLight(raceName, "red")
         end
     elseif triggerType == "checkpoint" and checkpointIndex then
         if event == "enter" and mActiveRace == raceName then
+            -- Already have full lap; don't count another (lets start-trigger handle lap complete / finish)
+            if checkpointsHit >= totalCheckpoints then return end
             -- Ensure that the checkpoint is the expected one
             if (checkpointIndex == currentExpectedCheckpoint) or (checkpointIndex == 1 and isAlt) or
                 (isAlt and (currentExpectedCheckpoint == races[raceName].altRoute.mergeCheckpoints[1])) then
@@ -1103,7 +1249,7 @@ local function onBeamNGTrigger(data)
                 if isAlt and not mAltRoute then
                     mAltRoute = true
                     checkpointManager.setAltRoute(true)
-                    totalCheckpoints = checkpointManager.calculateTotalCheckpoints(races[raceName])
+                    totalCheckpoints = checkpointManager.calculateTotalCheckpoints()
                 end
 
                 -- Display checkpoint message
@@ -1123,6 +1269,9 @@ local function onBeamNGTrigger(data)
                         utils.formatTime(in_race_time))
                 end
                 utils.displayMessage(checkpointMessage, 7)
+                if not data.triggerName then
+                    data.triggerName = "fre_checkpoint_" .. raceName .. (isAlt and "_alt_" or "_") .. checkpointIndex
+                end
                 Assets:displayAssets(data)
             else
                 local missedCheckpoints = checkpointIndex - currentExpectedCheckpoint
@@ -1221,6 +1370,48 @@ end
 
 local function onUpdate(dtReal, dtSim, dtRaw)
     _G.freeroamHubSuppressUIMessages = isFreeroamHubActive()
+    -- Hub race mode: staged flash + countdown (American Road style); use dtReal so it advances when paused
+    if mFreeroamCountdownDelay then
+        mFreeroamCountdownDelay = mFreeroamCountdownDelay - (dtReal or 0)
+        if mFreeroamCountdownDelay <= 0 then
+            mFreeroamCountdownDelay = nil
+            triggerRaceCountdown()
+        end
+    end
+    if mFreeroamCountdownEndTime then
+        mFreeroamCountdownEndTime = mFreeroamCountdownEndTime - (dtReal or 0)
+        if mFreeroamCountdownEndTime <= 0 then
+            mFreeroamCountdownEndTime = nil
+            mFreeroamCountdownStartClock = nil
+            local rn, sid
+            if mFreeroamPendingStart and races[mFreeroamPendingStart.raceName] then
+                rn = mFreeroamPendingStart.raceName
+                sid = mFreeroamPendingStart.subjectID
+            elseif staged and mFreeroamHubRaceSelected then
+                rn = staged
+                if not races[rn] and mFreeroamHubUseAltRoute then
+                    for raceId, raceData in pairs(races) do
+                        if raceData.altRoute then
+                            rn = raceId
+                            break
+                        end
+                    end
+                end
+                if races[rn] then
+                    sid = mFreeroamStagingSubjectID or (be and be:getPlayerVehicleID(0))
+                else
+                    rn = nil
+                end
+            end
+            mFreeroamPendingStart = nil
+            mFreeroamStagedAtStart = false
+            mFreeroamStagingSubjectID = nil
+            if rn and sid then
+                staged = nil
+                beginFreeroamRace(rn, sid)
+            end
+        end
+    end
     if mActiveRace and races[mActiveRace].checkpointRoad then
         if os.time() >= mSuppressOffRoadExitUntil and processRoad.checkPlayerOnRoad() == false then
             exitRace(false)
@@ -1353,6 +1544,7 @@ M.onExtensionLoaded = onExtensionLoaded
 M.onExtensionUnloaded = onExtensionUnloaded
 
 M.onFreeroamHubRequestRaceHistory = function()
+    mFreeroamHubShowingResult = false
     if not isFreeroamHubActive() then return end
     local inventoryId = mInventoryId
     if not inventoryId and career_modules_inventory then
@@ -1434,6 +1626,65 @@ M.onFreeroamHubEndEvent = function()
     if not mActiveRace then return end
     if isFreeroamHubActive() then
         exitRace(false)
+    end
+end
+
+-- Freeroam hub: set route to practice (unlimited laps, current behavior)
+M.onFreeroamHubSelectPractice = function()
+    mFreeroamHubPracticeMode = true
+    mFreeroamHubUseAltRoute = false
+    mFreeroamHubRaceSelected = false
+end
+
+-- Freeroam hub: set route to main track (e.g. set laps event, main route)
+M.onFreeroamHubSelectTrack = function()
+    mFreeroamHubPracticeMode = false
+    mFreeroamHubUseAltRoute = false
+    mFreeroamHubRaceSelected = true
+    -- If already in staging zone, show Staged and start countdown now
+    if staged then
+        showStagedFlashMessage()
+        mFreeroamCountdownDelay = 1.0
+        mFreeroamStagedAtStart = false
+        mFreeroamPendingStart = nil
+        mFreeroamStagingSubjectID = be and be:getPlayerVehicleID(0) or nil
+    end
+end
+
+-- Freeroam hub: set route to short track / alt route
+M.onFreeroamHubSelectShortTrack = function()
+    mFreeroamHubPracticeMode = false
+    mFreeroamHubUseAltRoute = true
+    mFreeroamHubRaceSelected = true
+    -- If already in staging zone, show Staged and start countdown now
+    if staged then
+        showStagedFlashMessage()
+        mFreeroamCountdownDelay = 1.0
+        mFreeroamStagedAtStart = false
+        mFreeroamPendingStart = nil
+        mFreeroamStagingSubjectID = be and be:getPlayerVehicleID(0) or nil
+    end
+end
+
+-- Freeroam hub: Back button / clear selection
+M.onFreeroamHubClearSelection = function()
+    mFreeroamHubRaceSelected = false
+    mFreeroamHubShowingResult = false
+    hideStagedFlashMessage()
+    mFreeroamCountdownDelay = nil
+    mFreeroamCountdownEndTime = nil
+    mFreeroamCountdownStartClock = nil
+    mFreeroamStagedAtStart = false
+    mFreeroamPendingStart = nil
+    mFreeroamStagingSubjectID = nil
+end
+
+M.onFreeroamHubClosed = function()
+    mFreeroamHubShowingResult = false
+    if previousGameState then
+        core_gamestate.setGameState(previousGameState.state, previousGameState.appLayout, previousGameState.menuItems, previousGameState.options)
+        previousGameState = nil
+        saveGameState = false
     end
 end
 

@@ -56,4 +56,5 @@
 {"name":"JoesJunk","class":"SimGroup","__parent":"MissionGroup"}
 {"name":"RaceTab","class":"SimGroup","__parent":"MissionGroup"}
 {"name":"BeamNGTrigger_1","class":"BeamNGTrigger","__parent":"MissionGroup","position":[-306.998108,-160.236328,121.602058],"rotationMatrix":[-0.861292124,-0.508109868,-5.47970558e-11,0.508109868,-0.861292124,-1.01608484e-05,5.16278033e-06,-8.75148817e-06,1]}
-
+{"name":"Slop Gear","class":"SimGroup","__parent":"MissionGroup"}
+{"name":"BeamNGTrigger_3","class":"BeamNGTrigger","__parent":"MissionGroup","position":[-192.268631,-301.376892,125.137756],"rotationMatrix":[1.19209275e-07,0.999999762,0,0.894427001,-1.04216062e-14,-0.447213411,-0.447213322,1.19209268e-07,-0.894427001]}

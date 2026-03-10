@@ -5,6 +5,7 @@ local altCheckpoints = {}
 local raceName = nil
 local isLoop = false
 local mAltRoute = nil
+local mRouteLocked = false
 local activeCheckpoints = {}
 
 local race
@@ -117,21 +118,24 @@ local function removeCheckpoint(index, alt)
     return checkpoint
 end
 
-local function createCheckpoints(check, altCheck)
+-- routeOnly: nil = both routes, "main" = only main route triggers/markers, "alt" = only alt route
+local function createCheckpoints(check, altCheck, routeOnly)
     checkpoints = check
-    altCheckpoints = altCheck
+    altCheckpoints = altCheck or {}
     for i = 1, #checkpoints do
         removeCheckpoint(i)
     end
-    for i = 1, #checkpoints do
-        --print("Creating checkpoint " .. i)
-        createCheckpoint(i)
-    end
-
-    if altCheckpoints then
+    if altCheckpoints and #altCheckpoints > 0 then
         for i = 1, #altCheckpoints do
             removeCheckpoint(i, true)
         end
+    end
+
+    for i = 1, #checkpoints do
+        createCheckpoint(i)
+    end
+
+    if altCheckpoints and #altCheckpoints > 0 then
         for i = 1, #altCheckpoints do
             createCheckpoint(i, true)
         end
@@ -194,7 +198,7 @@ local function enableCheckpoint(checkpointIndex, alt)
             checkpoint.marker.instanceColor = ColorF(0, 0, 1, 0.7):asLinear4F() -- Blue
         end
 
-        if race.altRoute and altCheckpoints and race.altRoute.mergeCheckpoints[1] == index[1] then
+        if not mRouteLocked and race.altRoute and altCheckpoints and race.altRoute.mergeCheckpoints[1] == index[1] then
             if not altCheckpoints[1].marker then
                 local altCheckpoint = createCheckpointMarker(1, true)
                 altCheckpoint.marker.instanceColor = ColorF(0, 0, 1, 0.7):asLinear4F() -- Blue
@@ -271,6 +275,10 @@ local function calculateTotalCheckpoints()
     return total
 end
 
+local function setRouteLocked(locked)
+    mRouteLocked = locked
+end
+
 local function setAltRoute(altRoute)
     mAltRoute = altRoute
 end
@@ -288,6 +296,7 @@ M.onExtensionLoaded = onExtensionLoaded
 M.createCheckpoints = createCheckpoints
 M.enableCheckpoint = enableCheckpoint
 M.removeCheckpoints = removeCheckpoints
+M.setRouteLocked = setRouteLocked
 M.setAltRoute = setAltRoute
 M.setRace = setRace
 M.calculateTotalCheckpoints = calculateTotalCheckpoints

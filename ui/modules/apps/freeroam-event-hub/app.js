@@ -20,6 +20,17 @@ angular.module('beamng.apps')
           '<div class="hub-content" style="padding:14px 16px;color:#fff;font-size:22px;">' +
             '<div ng-if="!available" style="font-size:18px;color:#888;">Enter an event zone to see live race info.</div>' +
             '<div ng-if="available">' +
+            '<div ng-if="!showResult && !showSessionEnded && !showRaceHistory && !isLiveRace() && !selectedRoute" class="hub-route-buttons" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;">' +
+              '<button type="button" class="hub-menu-btn" ng-click="selectPractice()" style="display:block;width:100%;padding:12px 14px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.3);border-radius:6px;color:#fff;font-size:22px;font-weight:600;cursor:pointer;text-align:center;">Practice</button>' +
+              '<button type="button" class="hub-menu-btn" ng-click="selectTrack()" style="display:block;width:100%;padding:12px 14px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.3);border-radius:6px;color:#fff;font-size:22px;font-weight:600;cursor:pointer;text-align:center;">Track</button>' +
+              '<button type="button" class="hub-menu-btn" ng-click="selectShortTrack()" style="display:block;width:100%;padding:12px 14px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.3);border-radius:6px;color:#fff;font-size:22px;font-weight:600;cursor:pointer;text-align:center;">Short track</button>' +
+            '</div>' +
+            '<div ng-if="!showResult && !showSessionEnded && !showRaceHistory && (selectedRace || selectedRoute) && !isLiveRace()" style="color:#fff;display:flex;flex-direction:column;gap:8px;">' +
+              '<div ng-if="selectedRoute" style="font-size:20px;font-weight:600;color:#9cf;margin-bottom:4px;">{{ getSelectedRouteLabel() }}</div>' +
+              '<div ng-if="raceState.stagedMessage" style="margin-top:4px;color:#ccc;font-size:18px;line-height:1.4;white-space:pre-line;">{{ raceState.stagedMessage }}</div>' +
+              '<div style="color:#aaa;font-size:22px;font-style:italic;">Drive to start line to begin.</div>' +
+              '<button type="button" class="hub-menu-btn" ng-click="goBackToMenu()" style="margin-top:8px;padding:10px 14px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:6px;color:#fff;font-size:20px;font-weight:600;cursor:pointer;">Back</button>' +
+            '</div>' +
             '<div ng-if="showSessionEnded" style="display:flex;flex-direction:column;gap:12px;">' +
               '<div style="font-size:24px;font-weight:700;color:#9cf;">Session ended</div>' +
               '<div style="font-size:20px;color:#aaa;">You left the race area.</div>' +
@@ -50,10 +61,6 @@ angular.module('beamng.apps')
               '</div>' +
               '<button type="button" class="hub-menu-btn" ng-click="closeApp()" style="margin-top:8px;padding:12px 14px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);border-radius:6px;color:#fff;font-size:22px;font-weight:600;cursor:pointer;">Close</button>' +
             '</div>' +
-            '<div ng-if="!showResult && !showSessionEnded && !showRaceHistory && selectedRace && !isLiveRace()" style="color:#fff;display:flex;flex-direction:column;gap:8px;">' +
-              '<div ng-if="raceState.stagedMessage" style="margin-top:8px;color:#ccc;font-size:18px;line-height:1.4;white-space:pre-line;">{{ raceState.stagedMessage }}</div>' +
-              '<div style="color:#aaa;font-size:22px;font-style:italic;">Drive to start line to begin.</div>' +
-            '</div>' +
             '<div ng-if="!showResult && !showSessionEnded && !showRaceHistory && isLiveRace()" style="display:flex;flex-direction:column;gap:3px;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.2);">' +
               '<div ng-if="raceState.routeName" class="hub-detail-route" style="font-size:20px;color:#9cf;margin-bottom:2px;">{{ raceState.routeName }}</div>' +
               '<div class="hub-detail-row" style="font-size:26px;">Lap {{ raceState.displayLap != null ? raceState.displayLap : (raceState.currentLap || 0) + 1 }}</div>' +
@@ -80,6 +87,7 @@ angular.module('beamng.apps')
       scope.available = false;
       scope.raceState = { inRace: false };
       scope.selectedRace = null;
+      scope.selectedRoute = null;
       scope.showResult = false;
       scope.raceResult = null;
       scope.showSessionEnded = false;
@@ -102,6 +110,7 @@ angular.module('beamng.apps')
             scope.showRaceHistory = false;
             scope.raceHistoryEntries = [];
             scope.selectedRace = null;
+            scope.selectedRoute = null;
             scope.raceState = { inRace: false };
           }
         });
@@ -166,6 +175,35 @@ angular.module('beamng.apps')
       scope.endEvent = function () {
         if (!api || !api.engineLua) return;
         api.engineLua('extensions.hook("onFreeroamHubEndEvent")');
+      };
+
+      scope.selectPractice = function () {
+        if (!api || !api.engineLua) return;
+        scope.selectedRoute = 'practice';
+        api.engineLua('extensions.hook("onFreeroamHubSelectPractice")');
+      };
+      scope.selectTrack = function () {
+        if (!api || !api.engineLua) return;
+        scope.selectedRoute = 'track';
+        api.engineLua('extensions.hook("onFreeroamHubSelectTrack")');
+      };
+      scope.selectShortTrack = function () {
+        if (!api || !api.engineLua) return;
+        scope.selectedRoute = 'shortTrack';
+        api.engineLua('extensions.hook("onFreeroamHubSelectShortTrack")');
+      };
+      scope.goBackToMenu = function () {
+        scope.selectedRoute = null;
+        if (api && api.engineLua) {
+          api.engineLua('extensions.hook("onFreeroamHubClearSelection")');
+        }
+      };
+      scope.getSelectedRouteLabel = function () {
+        if (!scope.selectedRoute) return '';
+        if (scope.selectedRoute === 'practice') return 'Practice';
+        if (scope.selectedRoute === 'track') return 'Track';
+        if (scope.selectedRoute === 'shortTrack') return 'Short track';
+        return scope.selectedRoute;
       };
 
       $timeout(function () {
@@ -253,6 +291,9 @@ angular.module('beamng.apps')
         scope.selectedRace = null;
         scope.raceState = { inRace: false };
         $rootScope.$broadcast('appContainer:removeApp', 'freeroamEventHub');
+        if (api && api.engineLua) {
+          api.engineLua('extensions.hook("onFreeroamHubClosed")');
+        }
       };
     }
   };

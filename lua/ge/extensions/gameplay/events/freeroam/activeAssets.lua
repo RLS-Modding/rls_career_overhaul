@@ -62,6 +62,9 @@ function ActiveAssets:getOldestAssetList()
 end
 
 function ActiveAssets:displayAssets(data)
+    if not data or not data.triggerName then
+        return
+    end
     local triggerName = data.triggerName
     local newAssets = {}
 
