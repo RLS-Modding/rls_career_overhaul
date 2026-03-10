@@ -870,6 +870,7 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
             guihooks.trigger("FreeroamHubRaceState", finalState)
             if finalResult then
                 mFreeroamHubShowingResult = true
+                mFreeroamHubRaceSelected = false
                 guihooks.trigger("FreeroamHubRaceResult", finalResult)
             end
             -- If opted in and no result to show, close the app when event ends
@@ -995,6 +996,7 @@ local function onBeamNGTrigger(data)
 
     if triggerType == "staging" then
         if event == "enter" and mActiveRace == nil then
+            if isFreeroamHubActive() and mFreeroamHubShowingResult then return end
             if utils.isPlayerInPursuit() then
                 utils.displayMessage("You cannot stage for an event while in a pursuit.", 2)
                 return
@@ -1188,6 +1190,10 @@ local function onBeamNGTrigger(data)
             end
             invalidLap = false
         elseif event == "enter" and staged == raceName and mActiveRace ~= raceName then
+            if isFreeroamHubRaceMode() and not mFreeroamHubRaceSelected then
+                utils.setActiveLight(raceName, "red")
+                return
+            end
             -- Hub race mode: Staged flash + countdown (American Road style). Practice or no hub: original logic, start immediately.
             if isFreeroamHubRaceMode() then
                 if mFreeroamCountdownEndTime and mFreeroamCountdownEndTime > 0 and mFreeroamCountdownStartClock and os and os.clock then
