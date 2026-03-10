@@ -51,7 +51,7 @@
   "materials": {
     "baseXP": 3,
     "baseXPByType": {
-      "fluid": 0,
+      "fluid": 173.3,
       "dryBulk": 0,
       "cement": 0.25,
       "cash": 19.75
