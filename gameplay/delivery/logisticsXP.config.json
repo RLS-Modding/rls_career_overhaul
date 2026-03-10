@@ -52,9 +52,9 @@
     "baseXP": 3,
     "baseXPByType": {
       "fluid": 173.3,
-      "dryBulk": 0,
-      "cement": 0.25,
-      "cash": 19.75
+      "dryBulk": 300,
+      "cement": 600,
+      "cash": 5750
     },
     "distanceDivisor": 1800,
     "distanceOffset": -1,
