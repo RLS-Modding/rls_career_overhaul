@@ -9,7 +9,7 @@
       "whiteList": {
         "Value": {
           "min": 1000,
-          "max": 15000
+          "max": 25000
         },
         "Type": [
           "Car"
@@ -44,8 +44,8 @@
     "filter": {
       "whiteList": {
         "Value": {
-          "min": 15000,
-          "max": 40000
+          "min": 25000,
+          "max": 50000
         },
         "Type": [
           "Car"
