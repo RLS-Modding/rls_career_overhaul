@@ -2121,7 +2121,7 @@
         "model": "tiltdeck",
         "config": "22ft_standard",
         "reputationLvl": 0,
-        "deliveryLvl": 1,
+        "deliveryLvl": 0,
         "mileage": 800000000
       },
       {
@@ -2170,14 +2170,14 @@
         "model": "cargotrailer",
         "config": "upull_career",
         "reputationLvl": 1,
-        "deliveryLvl": 1,
+        "deliveryLvl": 0,
         "mileage": 800000000
       },
       {
         "model": "van",
         "config": "h25_career_with_cargo",
         "reputationLvl": 0,
-        "deliveryLvl": 1,
+        "deliveryLvl": 0,
         "mileage": 800000000
       }
     ],

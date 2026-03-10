@@ -4,10 +4,6 @@
       <BngCardHeading type="ribbon">Level Up!</BngCardHeading>
 
       <div class="hero">
-        <div class="fireworks" aria-hidden="true">
-          <span v-for="particleIndex in 16" :key="particleIndex" class="particle" />
-        </div>
-
         <div class="level-text-wrap">
           <div class="skill-name">{{ $ctx_t((reward.animationData && reward.animationData.name) || "Skill") }}</div>
           <div class="level-text">Level {{ levelValue }}</div>
@@ -92,7 +88,6 @@ export default {
 </script>
 
 <style scoped lang="scss">
-@use "sass:math";
 @use "@/styles/modules/mixins" as *;
 @use "@/styles/modules/density" as *;
 
@@ -120,50 +115,6 @@ export default {
   position: relative;
   padding: 1rem 1rem 0.75rem;
   overflow: hidden;
-}
-
-.fireworks {
-  pointer-events: none;
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-}
-
-.particle {
-  position: absolute;
-  width: 0.35rem;
-  height: 0.35rem;
-  border-radius: 50%;
-  background: rgba(255, 194, 67, 0.9);
-  box-shadow: 0 0 0.75rem rgba(255, 133, 0, 0.85);
-  animation: burst 1.6s ease-out infinite;
-}
-
-@for $i from 1 through 16 {
-  .particle:nth-child(#{$i}) {
-    left: #{math.random(100)}%;
-    top: #{math.random(80)}%;
-    animation-delay: #{($i - 1) * 0.08}s;
-    transform: translate(-50%, -50%) scale(0.6 + math.random(4) * 0.2);
-  }
-}
-
-@keyframes burst {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.4);
-  }
-  20% {
-    opacity: 1;
-  }
-  70% {
-    opacity: 0.85;
-    transform: translate(-50%, -50%) scale(1.2);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(1.7);
-  }
 }
 
 .level-text-wrap {
