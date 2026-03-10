@@ -40,7 +40,7 @@
           "isInspectSpot": true,
           "logisticTypesProvided": [],
           "logisticTypesReceived": [
-            "gold"
+            "parcel"
           ]
         },
         {
@@ -67,7 +67,7 @@
         "coin"
       ],
       "logisticTypesReceived": [
-        "gold"
+        "parcel"
       ],
       "logisticGenerators": [
         {
@@ -95,16 +95,13 @@
           "rate": 10000
         },
         {
-          "type": "materialReceiver",
+          "type": "parcelReceiver",
           "logisticTypes": [
-            "gold"
+            "parcel"
           ],
-          "materialType": "gold",
-          "capacity": 7500,
-          "target": 0,
-          "variance": 5,
-          "interval": 300,
-          "rate": 5
+          "min": -1,
+          "max": 1,
+          "interval": 120
         }
       ],
       "logisticMaxItems": 0
@@ -113,7 +110,7 @@
       "id": "beachShops",
       "name": "Beach Shops",
       "description": "Wish I could shop here",
-      "associatedOrganization": "moneyGrabLogistics",
+      "associatedOrganization": "localDeliveryAssociation",
       "preview": "previews/hospital.jpg",
       "manualAccessPoints": [
         {
@@ -163,7 +160,7 @@
       "id": "joeShop",
       "name": "Joe's Junk",
       "description": "Some say he actually makes a lot of money of his junk",
-      "associatedOrganization": "moneyGrabLogistics",
+      "associatedOrganization": "localDeliveryAssociation",
       "preview": ",",
       "manualAccessPoints": [
         {
@@ -213,7 +210,7 @@
       "id": "mallBank",
       "name": "Mall Pickup",
       "description": "Mall must still be thriving",
-      "associatedOrganization": "moneyGrabLogistics",
+      "associatedOrganization": "localDeliveryAssociation",
       "preview": ",",
       "manualAccessPoints": [
         {
@@ -454,7 +451,7 @@
       "id": "tennisPickup",
       "name": "Tennis Courts Pickup",
       "description": "Apparently there is a cash fee for hitting the balls over the fence...",
-      "associatedOrganization": "moneyGrabLogistics",
+      "associatedOrganization": "localDeliveryAssociation",
       "preview": ",",
       "manualAccessPoints": [
         {
@@ -504,7 +501,7 @@
       "id": "stadiumPickup",
       "name": "Stadium Pickup",
       "description": "When was there even an event here last?",
-      "associatedOrganization": "moneyGrabLogistics",
+      "associatedOrganization": "localDeliveryAssociation",
       "preview": ",",
       "manualAccessPoints": [
         {
@@ -554,7 +551,7 @@
       "id": "skyscraper1",
       "name": "Skyscraper Vending Machines",
       "description": "Must be a lot snack breaks",
-      "associatedOrganization": "moneyGrabLogistics",
+      "associatedOrganization": "localDeliveryAssociation",
       "preview": ",",
       "manualAccessPoints": [
         {
@@ -604,7 +601,7 @@
       "id": "cityBuildingPickup1",
       "name": "City Bank Pickup 1",
       "description": "Nobody really questions why there is money to pick up here",
-      "associatedOrganization": "moneyGrabLogistics",
+      "associatedOrganization": "localDeliveryAssociation",
       "preview": ",",
       "manualAccessPoints": [
         {
@@ -654,7 +651,7 @@
       "id": "cityBuildingPickup2",
       "name": "City Bank Pickup 2",
       "description": "Nobody really questions why there is money to pick up here",
-      "associatedOrganization": "moneyGrabLogistics",
+      "associatedOrganization": "localDeliveryAssociation",
       "preview": ",",
       "manualAccessPoints": [
         {
@@ -704,7 +701,7 @@
       "id": "cityBuildingPickup3",
       "name": "City Bank Pickup 3",
       "description": "Nobody really questions why there is money to pick up here",
-      "associatedOrganization": "moneyGrabLogistics",
+      "associatedOrganization": "localDeliveryAssociation",
       "preview": ",",
       "manualAccessPoints": [
         {
@@ -754,7 +751,7 @@
       "id": "raceTrackPickup",
       "name": "Race Track Pickup",
       "description": "Track must sell a lot of hot dogs",
-      "associatedOrganization": "moneyGrabLogistics",
+      "associatedOrganization": "localDeliveryAssociation",
       "preview": ",",
       "manualAccessPoints": [
         {
@@ -804,7 +801,7 @@
       "id": "sketchyPickup",
       "name": "Sketchy Pickup",
       "description": "You were told not to ask any questions",
-      "associatedOrganization": "moneyGrabLogistics",
+      "associatedOrganization": "localDeliveryAssociation",
       "preview": ",",
       "manualAccessPoints": [
         {
@@ -855,7 +852,7 @@
       "id": "illegalDumping",
       "name": "Illegal Dumping",
       "description": "Don't Get Caught",
-      "associatedOrganization": "moneyGrabLogistics",
+      "associatedOrganization": "localDeliveryAssociation",
       "preview": ",",
       "manualAccessPoints": [
         {

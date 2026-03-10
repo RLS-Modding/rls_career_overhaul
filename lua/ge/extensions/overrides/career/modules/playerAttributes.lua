@@ -15,7 +15,8 @@ local attributeKeyAliases = {
   ["vehicleDelivery"] = "logistics-delivery",
   ["materials"] = "logistics-delivery",
   ["logistics-vehicleDelivery"] = "logistics-delivery",
-  ["logistics-materials"] = "logistics-delivery"
+  ["logistics-materials"] = "logistics-delivery",
+  ["police"] = "careerSkills-police"
 }
 
 local function normalizeAttributeChange(change)
@@ -361,6 +362,13 @@ local logisticsSkillMigration = {
   }
 }
 
+local policeSkillMigration = {
+  version = 1,
+  markerFile = "career/policeSkillMigration.json",
+  unifiedKey = "careerSkills-police",
+  legacyKey = "police"
+}
+
 local function runLogisticsSkillMigration(savePath, jsonData)
   if not savePath or tableIsEmpty(jsonData or {}) then return end
 
@@ -399,6 +407,65 @@ local function runLogisticsSkillMigration(savePath, jsonData)
   }, true)
 end
 
+local function runPoliceSkillMigration(savePath, jsonData)
+  if not savePath or tableIsEmpty(jsonData or {}) then return end
+
+  local markerPath = savePath .. "/" .. policeSkillMigration.markerFile
+  local markerData = jsonReadFile(markerPath) or {}
+  if (markerData.version or 0) >= policeSkillMigration.version then
+    return
+  end
+
+  local legacyData = jsonData[policeSkillMigration.legacyKey]
+  if not legacyData then
+    career_saveSystem.jsonWriteFileSafe(markerPath, {
+      version = policeSkillMigration.version,
+      mergedValue = 0,
+      migratedAt = os.time()
+    }, true)
+    return
+  end
+
+  local mergedValue = 0
+  if type(legacyData) == "table" then
+    mergedValue = tonumber(legacyData.value) or 0
+  elseif type(legacyData) == "number" then
+    mergedValue = legacyData
+  end
+
+  if mergedValue ~= 0 then
+    local unifiedAttribute = jsonData[policeSkillMigration.unifiedKey]
+    if type(unifiedAttribute) ~= "table" then
+      unifiedAttribute = deepcopy(baseAttribute)
+      if type(jsonData[policeSkillMigration.unifiedKey]) == "number" then
+        unifiedAttribute.value = jsonData[policeSkillMigration.unifiedKey]
+      end
+      jsonData[policeSkillMigration.unifiedKey] = unifiedAttribute
+    end
+
+    unifiedAttribute.value = (tonumber(unifiedAttribute.value) or 0) + mergedValue
+    unifiedAttribute.gains = type(unifiedAttribute.gains) == "table" and unifiedAttribute.gains or {}
+    unifiedAttribute.losses = type(unifiedAttribute.losses) == "table" and unifiedAttribute.losses or {}
+
+    if type(legacyData) == "table" then
+      for gainKey, gainValue in pairs(legacyData.gains or {}) do
+        unifiedAttribute.gains[gainKey] = (unifiedAttribute.gains[gainKey] or 0) + (tonumber(gainValue) or 0)
+      end
+      for lossKey, lossValue in pairs(legacyData.losses or {}) do
+        unifiedAttribute.losses[lossKey] = (unifiedAttribute.losses[lossKey] or 0) + (tonumber(lossValue) or 0)
+      end
+    end
+  end
+
+  jsonData[policeSkillMigration.legacyKey] = nil
+
+  career_saveSystem.jsonWriteFileSafe(markerPath, {
+    version = policeSkillMigration.version,
+    mergedValue = mergedValue,
+    migratedAt = os.time()
+  }, true)
+end
+
 local function onExtensionLoaded()
   if not career_career.isActive() then return false end
   if not attributes then
@@ -428,6 +495,7 @@ local function onExtensionLoaded()
   end
 
   runLogisticsSkillMigration(savePath, jsonData)
+  runPoliceSkillMigration(savePath, jsonData)
 
   local attributeLogData = (savePath and jsonReadFile(savePath .. "/career/attributeLog.json")) or {}
   if not tableIsEmpty(attributeLogData) then
