@@ -2738,6 +2738,7 @@
     "name": "Belasco City Police Department",
     "description": "",
     "icon": "beamCurrency",
+    "loanerUnlockMode": "skillLevel",
     "loanableVehicles": [
       {
         "model": "fullsize",
@@ -4589,7 +4590,6 @@
     ]
   },*/
 }
-
 
 
 

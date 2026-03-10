@@ -12,8 +12,11 @@ local comeBackRadius = 95
 local walkAwayTimeLimit = 300
 local walkAwayWarningTime = 60
 local loanedVehiclesInfo = {}
-local POLICE_LOANER_ORGANIZATION_ID = "policeLoaner"
-local POLICE_SKILL_PATH_IDS = {"careerSkills-police", "police", "freestyle-police"}
+local LOANER_UNLOCK_MODE_ORG_REPUTATION = "orgReputation"
+local LOANER_UNLOCK_MODE_SKILL_LEVEL = "skillLevel"
+local DEFAULT_LOANER_UNLOCK_SKILL_LABEL = "Police Skill"
+local DEFAULT_LOANER_UNLOCK_SKILL_ICON = "wigwags"
+local DEFAULT_LOANER_UNLOCK_SKILL_PATH_IDS = {"careerSkills-police", "police", "freestyle-police"}
 local deliveryLvlToLogisticsLevel = {
   [0] = 1,
   [1] = 5,
@@ -22,12 +25,12 @@ local deliveryLvlToLogisticsLevel = {
   [4] = 30
 }
 
-local function getPoliceSkillLevel()
+local function getBranchLevelByPathIds(pathIds)
   if not career_branches or not career_branches.getBranchLevel then
     return 0
   end
 
-  for _, skillPathId in ipairs(POLICE_SKILL_PATH_IDS) do
+  for _, skillPathId in ipairs(pathIds or {}) do
     local branchLevel = career_branches.getBranchLevel(skillPathId)
     local level = tonumber(branchLevel)
     if level then
@@ -36,6 +39,38 @@ local function getPoliceSkillLevel()
   end
 
   return 0
+end
+
+local function getLoanerUnlockMode(organization)
+  local mode = organization and organization.loanerUnlockMode
+  if mode == LOANER_UNLOCK_MODE_SKILL_LEVEL then
+    return LOANER_UNLOCK_MODE_SKILL_LEVEL
+  end
+  return LOANER_UNLOCK_MODE_ORG_REPUTATION
+end
+
+local function getLoanerUnlockSkillPathIds(organization)
+  local pathIds = organization and organization.loanerUnlockSkillPathIds
+  if type(pathIds) == "table" and #pathIds > 0 then
+    return pathIds
+  end
+
+  local pathId = organization and organization.loanerUnlockSkillPathId
+  if type(pathId) == "string" and pathId ~= "" then
+    return {pathId}
+  end
+
+  return DEFAULT_LOANER_UNLOCK_SKILL_PATH_IDS
+end
+
+local function getLoanerUnlockSkillLevel(organization)
+  return getBranchLevelByPathIds(getLoanerUnlockSkillPathIds(organization))
+end
+
+local function getLoanerUnlockSkillDisplayData(organization)
+  local label = organization and organization.loanerUnlockSkillLabel or DEFAULT_LOANER_UNLOCK_SKILL_LABEL
+  local icon = organization and organization.loanerUnlockSkillIcon or DEFAULT_LOANER_UNLOCK_SKILL_ICON
+  return label, icon
 end
 
 local markedForSpawningLoaners = {}
@@ -312,7 +347,10 @@ local function formatLoanerOfferForUi(facility)
   local organization = freeroam_organizations.getOrganization(organizationId)
   if not organization then return nil end
   local ret = {}
-  local policeSkillLevel = getPoliceSkillLevel()
+  local loanerUnlockMode = getLoanerUnlockMode(organization)
+  local usesSkillUnlocks = loanerUnlockMode == LOANER_UNLOCK_MODE_SKILL_LEVEL
+  local orgSkillLevel = usesSkillUnlocks and getLoanerUnlockSkillLevel(organization) or 0
+  local skillLabel, skillIcon = getLoanerUnlockSkillDisplayData(organization)
 
   local saveSlot, savePath = career_saveSystem.getCurrentSaveSlot()
   local saveData = (savePath and jsonReadFile(savePath .. "/info.json")) or {}
@@ -323,10 +361,10 @@ local function formatLoanerOfferForUi(facility)
     table.insert(loanableVehicleEntries, {idx = idx, vehicle = rentalVehicleInfo})
   end
 
-  if organizationId == POLICE_LOANER_ORGANIZATION_ID then
+  if usesSkillUnlocks then
     table.sort(loanableVehicleEntries, function(a, b)
-      local levelA = tonumber(a.vehicle.requiredPoliceLevel) or 0
-      local levelB = tonumber(b.vehicle.requiredPoliceLevel) or 0
+      local levelA = tonumber(a.vehicle.requiredSkillLevel or a.vehicle.requiredPoliceLevel) or 0
+      local levelB = tonumber(b.vehicle.requiredSkillLevel or b.vehicle.requiredPoliceLevel) or 0
       if levelA ~= levelB then
         return levelA > levelB
       end
@@ -371,21 +409,21 @@ local function formatLoanerOfferForUi(facility)
       }
     end
 
-    local requiredPoliceSkillLevel = tonumber(rentalVehicleInfo.requiredPoliceLevel) or 0
-    if organizationId == POLICE_LOANER_ORGANIZATION_ID and requiredPoliceSkillLevel > 0 then
-      if policeSkillLevel < requiredPoliceSkillLevel then
+    local requiredSkillLevel = tonumber(rentalVehicleInfo.requiredSkillLevel or rentalVehicleInfo.requiredPoliceLevel) or 0
+    if usesSkillUnlocks and requiredSkillLevel > 0 then
+      if orgSkillLevel < requiredSkillLevel then
         enabled = false
         disableReason = {
           type = "locked",
-          icon = "wigwags",
-          level = requiredPoliceSkillLevel,
-          label = string.format("Requires Police Skill level %d", requiredPoliceSkillLevel)
+          icon = skillIcon,
+          level = requiredSkillLevel,
+          label = string.format("Requires %s level %d", skillLabel, requiredSkillLevel)
         }
         unlockInfo = {
           type = "minLevel",
-          icon = "wigwags",
-          longLabel = string.format("Requires Police Skill level %d", requiredPoliceSkillLevel),
-          shortLabel = string.format("lvl %d", requiredPoliceSkillLevel)
+          icon = skillIcon,
+          longLabel = string.format("Requires %s level %d", skillLabel, requiredSkillLevel),
+          shortLabel = string.format("lvl %d", requiredSkillLevel)
         }
       end
     elseif rentalVehicleInfo.reputationLvl > organization.reputation.level then
@@ -437,7 +475,8 @@ local function formatLoanerOfferForUi(facility)
       sourceFacility = {type = "deliveryProvider", id = facility.id},
       loanType="work",
       spawnWhenCommitingCargo = markedForSpawningLoaners[id] and true or false,
-      requiredPoliceLevel = requiredPoliceSkillLevel > 0 and requiredPoliceSkillLevel or nil,
+      requiredSkillLevel = requiredSkillLevel > 0 and requiredSkillLevel or nil,
+      requiredPoliceLevel = rentalVehicleInfo.requiredPoliceLevel and (requiredSkillLevel > 0 and requiredSkillLevel or nil) or nil,
     }
     if configInfo.capacity then
       item.capacity = {}
@@ -452,12 +491,12 @@ local function formatLoanerOfferForUi(facility)
       end
     end
 
-    if enabled and organizationId == POLICE_LOANER_ORGANIZATION_ID and requiredPoliceSkillLevel > 0 then
+    if enabled and usesSkillUnlocks and requiredSkillLevel > 0 then
       item.unlockInfo = {
         type = "minLevel",
-        icon = "wigwags",
-        longLabel = string.format("Requires Police Skill level %d", requiredPoliceSkillLevel),
-        shortLabel = string.format("lvl %d", requiredPoliceSkillLevel)
+        icon = skillIcon,
+        longLabel = string.format("Requires %s level %d", skillLabel, requiredSkillLevel),
+        shortLabel = string.format("lvl %d", requiredSkillLevel)
       }
     elseif enabled then
       local repLabel = string.format("%s (lvl %d)", organization.reputationLevels[rentalVehicleInfo.reputationLvl+2].label, rentalVehicleInfo.reputationLvl)
@@ -482,4 +521,3 @@ M.onUpdate = onUpdate
 M.onVehicleAdded = onVehicleAdded
 
 return M
-
