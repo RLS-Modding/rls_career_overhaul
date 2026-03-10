@@ -2658,7 +2658,7 @@
         },
         {
             "id": "richsMotorCompany",
-            "name": "Rich\u0027s Motor Company",
+            "name": "Rich's Motor Company",
             "description": "Ships and receives car parts and accessories.",
             "preview": "facilities/richsmotorcompany_dealership.jpg",
             "associatedOrganization": "richsMotorCompany",
