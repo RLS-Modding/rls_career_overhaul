@@ -27,6 +27,202 @@ local function normalizeAttributeChange(change)
   return normalized
 end
 
+local nonProgressAttributes = {
+  money = true,
+  beamXP = true,
+  vouchers = true
+}
+local levelUpSoundEventEntry = "event:>UI>Career>EndScreen_Whoosh_Main"
+local levelUpSoundEventImpact = "event:>UI>Career>EndScreen_Star_Bonus"
+
+local function isLevelUpEligibleAttribute(attributeKey, delta)
+  if type(attributeKey) ~= "string" then return false end
+  if type(delta) ~= "number" or delta <= 0 then return false end
+  if nonProgressAttributes[attributeKey] then return false end
+  if attributeKey:endswith("Reputation") then return false end
+  return true
+end
+
+local function getBranchForAttributeKey(attributeKey)
+  local function isValidBranch(candidate)
+    return candidate and not candidate.missing and type(candidate.levels) == "table" and next(candidate.levels)
+  end
+  local function isCareerSkillsBranch(candidate)
+    if type(candidate) ~= "table" then return false end
+    if candidate.parentId == "careerSkills" then return true end
+    if candidate.domainId == "careerSkills" then return true end
+    if candidate.rootId == "careerSkills" then return true end
+    if type(candidate.path) == "string" and candidate.path:find("careerSkills", 1, true) then return true end
+    return false
+  end
+
+  local candidates = {}
+  local byId = career_branches.getBranchById(attributeKey)
+  if isValidBranch(byId) then
+    table.insert(candidates, byId)
+  end
+
+  if career_branches.getBranchByPath then
+    local byPath = career_branches.getBranchByPath(attributeKey)
+    if isValidBranch(byPath) then
+      table.insert(candidates, byPath)
+    end
+  end
+
+  for _, candidate in ipairs(career_branches.getSortedBranches() or {}) do
+    if candidate.attributeKey == attributeKey and isValidBranch(candidate) then
+      table.insert(candidates, candidate)
+    end
+  end
+
+  local bestBranch, bestScore = nil, -math.huge
+  for _, candidate in ipairs(candidates) do
+    local levelCount = #(candidate.levels or {})
+    local score = levelCount
+    if isCareerSkillsBranch(candidate) then
+      score = score + 10000
+    end
+    if candidate.parentId == "careerSkills" then score = score + 1000 end
+    if attributeKey == "logistics-delivery" and candidate.id == "logistics" then score = score + 100 end
+    if score > bestScore then
+      bestBranch, bestScore = candidate, score
+    end
+  end
+
+  return bestBranch
+end
+
+local function calcBranchLevelSafe(value, branchRef)
+  if type(branchRef) ~= "string" or branchRef == "" then return nil end
+  local level = career_branches.calcBranchLevelFromValue(value, branchRef)
+  if type(level) == "number" then
+    return level
+  end
+  return nil
+end
+
+local function resolveBranchLevelFromValue(value, branch, attributeKey)
+  -- Prefer attribute key to avoid ID collisions with legacy domain IDs (e.g. "logistics").
+  local byAttributeKey = calcBranchLevelSafe(value, attributeKey)
+  local byBranchId = calcBranchLevelSafe(value, branch and branch.id or nil)
+  if byAttributeKey and byBranchId then
+    return math.max(byAttributeKey, byBranchId)
+  end
+  return byAttributeKey or byBranchId or 0
+end
+
+local function sanitizeBranchLevels(levels)
+  if type(levels) ~= "table" then return {} end
+  local result = {}
+  local lastRequiredValue = 0
+  for i, levelInfo in ipairs(levels) do
+    local entry = type(levelInfo) == "table" and deepcopy(levelInfo) or {}
+    if type(entry.requiredValue) ~= "number" then
+      entry.requiredValue = lastRequiredValue
+    end
+    lastRequiredValue = entry.requiredValue
+    entry.levelLabel = entry.levelLabel or ("Level " .. i)
+    result[#result + 1] = entry
+  end
+  return result
+end
+
+local function normalizeLevelLabel(label, fallbackLevel)
+  if type(label) == "string" and label ~= "" then
+    return label
+  end
+  return "Level " .. tostring(fallbackLevel or 0)
+end
+
+local function getTranslatedName(name)
+  if type(name) ~= "string" then
+    return ""
+  end
+  if translateLanguage then
+    return translateLanguage(name, name)
+  end
+  return name
+end
+
+local function buildLevelUpEntry(attributeKey, branch, branchLevels, targetLevel, value)
+  local levelLabel = career_branches.getLevelLabel(attributeKey, targetLevel)
+  if type(levelLabel) ~= "string" or levelLabel == "" then
+    levelLabel = career_branches.getLevelLabel(branch.id, targetLevel)
+  end
+
+  local animationData = {
+    id = attributeKey,
+    name = getTranslatedName(branch.name or attributeKey),
+    level = targetLevel,
+    levelLabel = normalizeLevelLabel(levelLabel, targetLevel),
+    value = value,
+    cover = branch.progressCover,
+    glyphIcon = branch.icon,
+    color = branch.color,
+    accentColor = branch.accentColor,
+  }
+
+  local icon = career_branches.getBranchIcon(attributeKey) or branch.icon or "beamXPLo"
+  local branchName = getTranslatedName(branch.name or attributeKey)
+  local kindLabel = branch.isSkill and "Skill" or "Branch"
+
+  return {
+    attributeKey = attributeKey,
+    branchId = branch.id,
+    icon = icon,
+    unlockPopupHeader = string.format("%s %s: Level %d", branchName, kindLabel, targetLevel),
+    branchLevels = branchLevels,
+    animationData = animationData,
+    _order = career_branches.getOrder(attributeKey) or branch.order or 9999,
+    _targetLevel = targetLevel,
+  }
+end
+
+local function collectLevelUpCelebrations(change, reason, valueBeforeByAttribute)
+  if type(change) ~= "table" then return {} end
+  if type(reason) == "table" and type(reason.tags) == "table" and reason.tags.deliveryReward then
+    return {}
+  end
+
+  local entries = {}
+  for attributeKey, delta in pairs(change) do
+    if isLevelUpEligibleAttribute(attributeKey, delta) then
+      local branch = getBranchForAttributeKey(attributeKey)
+      local branchLevels = branch and sanitizeBranchLevels(branch.levels) or {}
+      if branch and #branchLevels > 0 then
+        local valueBefore = valueBeforeByAttribute[attributeKey]
+        local valueAfter = (attributes[attributeKey] or baseAttribute).value
+        if type(valueBefore) ~= "number" then
+          valueBefore = valueAfter - delta
+        end
+
+        local levelBefore = resolveBranchLevelFromValue(valueBefore, branch, attributeKey)
+        local levelAfter = resolveBranchLevelFromValue(valueAfter, branch, attributeKey)
+
+        if levelAfter > levelBefore then
+          for targetLevel = levelBefore + 1, levelAfter do
+            entries[#entries + 1] = buildLevelUpEntry(attributeKey, branch, branchLevels, targetLevel, valueAfter)
+          end
+        end
+      end
+    end
+  end
+
+  table.sort(entries, function(a, b)
+    if a._order == b._order then
+      return (a._targetLevel or 0) < (b._targetLevel or 0)
+    end
+    return (a._order or 9999) < (b._order or 9999)
+  end)
+
+  for _, entry in ipairs(entries) do
+    entry._order = nil
+    entry._targetLevel = nil
+  end
+
+  return entries
+end
+
 local function init()
   attributeLog = {}
   attributes = {}
@@ -77,10 +273,12 @@ local function addAttributes(change, reason, fullprice)
     end
   end
 
+  local valueBeforeByAttribute = {}
   -- make statistic
   for attributeName, value in pairs(change) do
     attributes[attributeName] = attributes[attributeName] or deepcopy(baseAttribute)
     local attribute = attributes[attributeName]
+    valueBeforeByAttribute[attributeName] = attribute.value
     attribute.value = clamp(attribute.value + value, attribute.min or -math.huge, attribute.max or math.huge)
     for tag, en in pairs(reason.tags) do
 
@@ -103,6 +301,17 @@ local function addAttributes(change, reason, fullprice)
       career_career.interactWithOrganization(orgId)
     end
     attributes[attributeName] = attribute
+  end
+
+  local levelUpEntries = collectLevelUpCelebrations(change, reason, valueBeforeByAttribute)
+  if #levelUpEntries > 0 then
+    if Engine and Engine.Audio and Engine.Audio.playOnce then
+      Engine.Audio.playOnce("AudioGui", levelUpSoundEventEntry)
+      Engine.Audio.playOnce("AudioGui", levelUpSoundEventImpact)
+    end
+    if guihooks and guihooks.trigger then
+      guihooks.trigger("OpenCareerLevelUpCelebration", {entries = levelUpEntries})
+    end
   end
 
   -- log change for logbook etc

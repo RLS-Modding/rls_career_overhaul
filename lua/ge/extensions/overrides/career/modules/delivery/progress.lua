@@ -125,6 +125,14 @@ local function getBranchForAttributeKey(attributeKey)
   local function isValidBranch(candidate)
     return candidate and not candidate.missing and type(candidate.levels) == "table" and next(candidate.levels)
   end
+  local function isCareerSkillsBranch(candidate)
+    if type(candidate) ~= "table" then return false end
+    if candidate.parentId == "careerSkills" then return true end
+    if candidate.domainId == "careerSkills" then return true end
+    if candidate.rootId == "careerSkills" then return true end
+    if type(candidate.path) == "string" and candidate.path:find("careerSkills", 1, true) then return true end
+    return false
+  end
 
   local candidates = {}
   local byId = career_branches.getBranchById(attributeKey)
@@ -149,6 +157,7 @@ local function getBranchForAttributeKey(attributeKey)
   for _, candidate in ipairs(candidates) do
     local levelCount = #(candidate.levels or {})
     local score = levelCount
+    if isCareerSkillsBranch(candidate) then score = score + 10000 end
     if candidate.parentId == "careerSkills" then score = score + 1000 end
     if attributeKey == "logistics-delivery" and candidate.id == "logistics" then score = score + 100 end
     if score > bestScore then
@@ -173,6 +182,54 @@ local function sanitizeBranchLevels(levels)
     result[#result + 1] = entry
   end
   return result
+end
+
+local function calcBranchLevelSafe(value, branchRef)
+  if type(branchRef) ~= "string" or branchRef == "" then return nil end
+  local level, _, _, min, max = career_branches.calcBranchLevelFromValue(value, branchRef)
+  if type(level) ~= "number" then return nil end
+  return level, min, max
+end
+
+local function getAnimationDataForBranch(attributeKey, branch, branchLevels)
+  local currentValue = career_modules_playerAttributes.getAttributeValue(attributeKey)
+  local levelByKey, minByKey, maxByKey = calcBranchLevelSafe(currentValue, attributeKey)
+  local levelById, minById, maxById = calcBranchLevelSafe(currentValue, branch.id)
+
+  local level = levelByKey or levelById or 0
+  local min = minByKey or minById or 0
+  local max = maxByKey or maxById or 0
+  if levelByKey and levelById then
+    level = math.max(levelByKey, levelById)
+    if level == levelByKey then
+      min = minByKey or min
+      max = maxByKey or max
+    end
+  end
+
+  local levelLabel = career_branches.getLevelLabel(attributeKey, level)
+  if type(levelLabel) ~= "string" or levelLabel == "" then
+    levelLabel = career_branches.getLevelLabel(branch.id, level)
+  end
+  if type(levelLabel) ~= "string" or levelLabel == "" then
+    levelLabel = "Level " .. tostring(level)
+  end
+
+  return {
+    id = attributeKey,
+    name = translateLanguage(branch.name, branch.name),
+    level = level,
+    levelLabel = levelLabel,
+    value = currentValue,
+    min = min,
+    max = max,
+    cover = branch.progressCover,
+    glyphIcon = branch.icon,
+    color = branch.color,
+    accentColor = branch.accentColor,
+    isMaxLevel = level >= #branchLevels,
+    unlocked = branch.unlocked,
+  }
 end
 
 -- Hide legacy/branch logistics rows in the delivery reward popup.
@@ -642,7 +699,7 @@ M.confirmDropOffCheckComplete = function()
       }
   end
   ]]
-  career_modules_playerAttributes.addAttributes(rewardSum,{label=string.format("Rewards for %s", table.concat(itemNames, ", ")), tags={"gameplay"}})
+  career_modules_playerAttributes.addAttributes(rewardSum,{label=string.format("Rewards for %s", table.concat(itemNames, ", ")), tags={"gameplay", "deliveryReward"}})
 
   for key, _ in pairs(branchInfo) do
 
@@ -664,8 +721,8 @@ M.confirmDropOffCheckComplete = function()
     else
       local branch = getBranchForAttributeKey(key)
       if branch and not branch.missing then
-        local animationData = career_modules_branches_landing.getBranchSkillCardData(branch.id) or {}
         local branchLevels = sanitizeBranchLevels(branch.levels)
+        local animationData = getAnimationDataForBranch(key, branch, branchLevels)
         local hasValidLevels = #branchLevels > 0 and type(branchLevels[1].requiredValue) == "number"
         branchInfo[key] = {
           icon = career_branches.getBranchIcon(key) or branch.icon,
@@ -673,10 +730,10 @@ M.confirmDropOffCheckComplete = function()
           animationData = animationData,
           branchLevels = branchLevels,
           showLevelUpPopup = hasValidLevels and not suppressedDeliveryLevelPopupAttributes[key],
-          unlockPopupHeader = string.format("%s %s: Level %d", translateLanguage(branch.name, branch.name), branch.isSkill and "Skill" or "Branch", career_branches.getBranchLevel(branch.id) or 0)
+          unlockPopupHeader = string.format("%s %s: Level %d", translateLanguage(branch.name, branch.name), branch.isSkill and "Skill" or "Branch", animationData.level or 0)
         }
         if type(branchInfo[key].animationData.levelLabel) == "table" then
-          branchInfo[key].animationData.levelLabel = "Level " .. tostring(branchInfo[key].animationData.level or career_branches.getBranchLevel(branch.id) or 0)
+          branchInfo[key].animationData.levelLabel = "Level " .. tostring(branchInfo[key].animationData.level or 0)
         end
 
         if branch.isBranch then branchInfo[key].animationData.name = "Branch: " .. translateLanguage(branchInfo[key].animationData.name, branchInfo[key].animationData.name) end

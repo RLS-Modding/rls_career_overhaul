@@ -224,6 +224,9 @@ const ANIMATION_UPDATE_RATE = 30
 const BAR_COLOR_DEFAULT = '#ff6600'
 const BAR_COLOR_ADDITION = '#ff6600'
 const BAR_COLOR_SUBTRACTION = '#c00000'
+const LEVEL_UP_SOUND_EVENT_ENTRY = "event:>UI>Career>EndScreen_Whoosh_Main"
+const LEVEL_UP_SOUND_EVENT_IMPACT = "event:>UI>Career>EndScreen_Star_Bonus"
+const LEVEL_UP_SOUND_IMPACT_DELAY_MS = 120
 
 const MODES = {
 
@@ -352,7 +355,18 @@ reward.animationData.numTimer = setInterval(() => {
 }
 
 async function openNewLevelPopup(reward) {
-lua.Engine.Audio.playOnce("AudioGui", "event:>UI>Career>Progress_LevelUp")
+try {
+  lua.Engine.Audio.playOnce("AudioGui", LEVEL_UP_SOUND_EVENT_ENTRY)
+  setTimeout(() => {
+    try {
+      lua.Engine.Audio.playOnce("AudioGui", LEVEL_UP_SOUND_EVENT_IMPACT)
+    } catch (_err) {
+      // Ignore delayed impact audio failures.
+    }
+  }, LEVEL_UP_SOUND_IMPACT_DELAY_MS)
+} catch (_err) {
+  // Ignore audio failures to keep popup flow alive.
+}
 await addPopup(UnlockPopup, { reward: reward }).promise
 startProgressBarAnimation()
 }
