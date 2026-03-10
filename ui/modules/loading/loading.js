@@ -1,5 +1,16 @@
 angular.module('beamng.stuff')
 
+.run(['$rootScope', function ($rootScope) {
+  $rootScope.$on('FreeroamHubAddApp', function () {
+    var storage = window.UIAppStorage
+    var apps = storage && storage.current && storage.current.apps
+    var inLayout = apps && Array.isArray(apps) && apps.some(function (a) { return a && a.appName === 'freeroamEventHub' })
+    if (!inLayout) {
+      $rootScope.$broadcast('appContainer:addApp', 'freeroamEventHub')
+    }
+  })
+}])
+
 .directive('animatedIcon', [function () {
   return {
     template: '<div class="icon" layout-align="center center"><div class="icon-img"></div></div>',

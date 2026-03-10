@@ -6,7 +6,7 @@ angular.module('beamng.apps')
     scope: true,
     template:
       '<div class="freeroam-event-hub" style="width:100%;background:#000;color:#fff;font-size:22px;line-height:1.4;box-sizing:border-box;overflow:visible;" ng-class="{ \'hub-available\': available }">' +
-        '<div class="hub-panel" style="width:100%;max-width:100%;background:#000;border:1px solid rgba(255,255,255,0.25);border-radius:8px;box-sizing:border-box;">' +
+        '<div class="hub-panel" ng-show="!hubHidden" style="width:100%;max-width:100%;background:#000;border:1px solid rgba(255,255,255,0.25);border-radius:8px;box-sizing:border-box;">' +
           '<div class="hub-header" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);border-radius:8px 8px 0 0;min-height:44px;flex-shrink:0;">' +
             '<span class="hub-title" style="flex:1;min-width:0;font-weight:700;font-size:20px;color:#fff;">{{ getHeaderTitle() }}</span>' +
             '<button class="hub-header-btn" ng-click="closeApp()" title="Close" style="flex-shrink:0;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);border-radius:6px;color:#fff;font-weight:600;padding:6px 12px;cursor:pointer;white-space:nowrap;">Close</button>' +
@@ -94,6 +94,7 @@ angular.module('beamng.apps')
       scope.showRaceHistory = false;
       scope.raceHistoryEntries = [];
       scope.hubAutoShow = true;
+      scope.hubHidden = false;
 
       function safeApply(fn) {
         var phase = scope.$$phase;
@@ -103,6 +104,7 @@ angular.module('beamng.apps')
       scope.$on('FreeroamHubSetAvailable', function (event, data) {
         safeApply(function () {
           scope.available = data && data.available === true;
+          if (scope.available) scope.hubHidden = false;
           if (!scope.available) {
             scope.showResult = false;
             scope.raceResult = null;
@@ -118,13 +120,27 @@ angular.module('beamng.apps')
 
       scope.$on('FreeroamHubRaceState', function (event, data) {
         safeApply(function () {
+          if (scope.showResult) {
+            scope.raceState = data || { inRace: false };
+            return;
+          }
+          if (data && data.showRaceSelection) {
+            scope.raceState = data || { inRace: false };
+            scope.selectedRace = null;
+            scope.selectedRoute = null;
+            scope.showSessionEnded = false;
+            scope.hubHidden = false;
+            return;
+          }
           scope.raceState = data || { inRace: false };
           if (scope.raceState.inRace && scope.raceState.raceId) {
             scope.selectedRace = { raceId: scope.raceState.raceId, label: scope.raceState.raceLabel || scope.raceState.raceId };
             scope.showSessionEnded = false;
+            scope.hubHidden = false;
           } else if (scope.raceState.staged && scope.raceState.raceId) {
             scope.selectedRace = { raceId: scope.raceState.raceId, label: scope.raceState.raceLabel || scope.raceState.raceId };
             scope.showSessionEnded = false;
+            scope.hubHidden = false;
           } else {
             scope.selectedRace = null;
             if (scope.available) scope.showSessionEnded = true;
@@ -282,6 +298,7 @@ angular.module('beamng.apps')
         return 'Freeroam Event Hub';
       };
       scope.closeApp = function () {
+        scope.hubHidden = true;
         scope.available = false;
         scope.showSessionEnded = false;
         scope.showResult = false;
@@ -290,7 +307,6 @@ angular.module('beamng.apps')
         scope.raceHistoryEntries = [];
         scope.selectedRace = null;
         scope.raceState = { inRace: false };
-        $rootScope.$broadcast('appContainer:removeApp', 'freeroamEventHub');
         if (api && api.engineLua) {
           api.engineLua('extensions.hook("onFreeroamHubClosed")');
         }

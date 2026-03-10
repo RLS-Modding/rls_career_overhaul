@@ -60,6 +60,8 @@ local mFreeroamHubUseAltRoute = false
 local mFreeroamHubRaceSelected = false
 -- True when the UI is displaying the final race result (prevents the hub from closing when exiting the trigger after finishing)
 local mFreeroamHubShowingResult = false
+-- True when the UI is showing race history (prevents the hub from closing when exiting the trigger)
+local mFreeroamHubShowingHistory = false
 -- Staged flash + countdown (American Road style): only when hub active and race selected (not Practice)
 local mFreeroamCountdownDelay = nil       -- seconds until countdown runs (set when entering staging)
 local mFreeroamCountdownEndTime = nil     -- 3s after GO before race start allowed
@@ -1088,9 +1090,11 @@ local function onBeamNGTrigger(data)
             local raceLabel = race.label or raceName
             local state = { inRace = false, staged = true, raceId = raceName, raceLabel = raceLabel }
             state.stagedMessage = utils.displayStagedMessage(vehId, raceName, true)
+            state.showRaceSelection = isFreeroamHubActive() and not mFreeroamHubRaceSelected
 
-            -- Hub: when active, show app gracefully every time they enter staging.
             if isFreeroamHubActive() then
+                guihooks.trigger("FreeroamHubAddApp")
+                guihooks.trigger("appContainer:addApp", "freeroamEventHub")
                 guihooks.trigger("FreeroamHubSetAvailable", { available = true })
                 if not mFreeroamHubPrefs.addedOnce then
                     mFreeroamHubPrefs.addedOnce = true
@@ -1120,11 +1124,10 @@ local function onBeamNGTrigger(data)
                     mFreeroamStagedAtStart = false
                     mFreeroamPendingStart = nil
                 end
-                if not mActiveRace and not mFreeroamHubShowingResult then
+                if not mActiveRace and not mFreeroamHubShowingResult and not mFreeroamHubShowingHistory then
                     if isFreeroamHubActive() then
                         guihooks.trigger("FreeroamHubSetAvailable", { available = false })
                         guihooks.trigger("FreeroamHubRaceState", { inRace = false })
-                        guihooks.trigger("FreeroamHubCloseApp")
                         local gc = getGameplayAppContainers()
                         if gc and gc.hideApp then gc.hideApp("gameplayApps", "freeroamEventHub") end
                     end
@@ -1551,6 +1554,7 @@ M.onExtensionUnloaded = onExtensionUnloaded
 
 M.onFreeroamHubRequestRaceHistory = function()
     mFreeroamHubShowingResult = false
+    mFreeroamHubShowingHistory = true
     if not isFreeroamHubActive() then return end
     local inventoryId = mInventoryId
     if not inventoryId and career_modules_inventory then
@@ -1613,6 +1617,7 @@ M.onFreeroamHubReady = function()
         if vehId then
             state.stagedMessage = utils.displayStagedMessage(vehId, staged, true)
         end
+        state.showRaceSelection = not mFreeroamHubRaceSelected
         guihooks.trigger("FreeroamHubSetAvailable", { available = true })
         guihooks.trigger("FreeroamHubRaceState", state)
     end
@@ -1687,6 +1692,7 @@ end
 
 M.onFreeroamHubClosed = function()
     mFreeroamHubShowingResult = false
+    mFreeroamHubShowingHistory = false
     if previousGameState then
         core_gamestate.setGameState(previousGameState.state, previousGameState.appLayout, previousGameState.menuItems, previousGameState.options)
         previousGameState = nil
