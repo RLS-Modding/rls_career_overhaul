@@ -218,6 +218,12 @@ export const usePhoneLogisticsStore = defineStore("phoneLogistics", () => {
     const isFresh = cached && (Date.now() - cached.fetchedAt < DETAIL_TTL_MS)
     if (!force && isFresh) return
 
+    if (force && cached) {
+      const nextDetails = { ...detailByFacility.value }
+      delete nextDetails[facilityId]
+      detailByFacility.value = nextDetails
+    }
+
     loadingDetail.value = true
     loadingDetailFor.value = facilityId
     detailErrors.value = {
@@ -233,24 +239,9 @@ export const usePhoneLogisticsStore = defineStore("phoneLogistics", () => {
     loadingDetailFor.value = ""
   }
 
-  async function navigateToFacility(facilityId) {
+  async function navigateToFacility(facilityId, parkingSpotPath = "") {
     if (!facilityId) return
-    await lua.ui_phone_logistics.navigateToFacility(facilityId)
-  }
-
-  async function previewCargoRoute(cargoId) {
-    if (cargoId == null) return
-    await lua.ui_phone_logistics.previewCargoRoute(cargoId)
-  }
-
-  async function previewVehicleOfferRoute(offerId) {
-    if (offerId == null) return
-    await lua.ui_phone_logistics.previewVehicleOfferRoute(offerId)
-  }
-
-  async function openCargoOverview(facilityId, parkingSpotPath) {
-    if (!facilityId) return
-    await lua.ui_phone_logistics.openCargoOverview(facilityId, parkingSpotPath || "")
+    await lua.ui_phone_logistics.navigateToFacility(facilityId, parkingSpotPath)
   }
 
   return {
@@ -275,8 +266,5 @@ export const usePhoneLogisticsStore = defineStore("phoneLogistics", () => {
     selectFacility,
     backToList,
     navigateToFacility,
-    previewCargoRoute,
-    previewVehicleOfferRoute,
-    openCargoOverview,
   }
 })

@@ -1581,11 +1581,8 @@ export default {
 
   ui_phone_logistics: {
     requestFacilityList: () => {},
-    requestFacilityDetail: facilityId => String,
-    navigateToFacility: facilityId => String,
-    previewCargoRoute: cargoId => Number,
-    previewVehicleOfferRoute: offerId => Number,
-    openCargoOverview: (facilityId, parkingSpotPath) => [String, String],
+    requestFacilityDetail: facilityId => {},
+    navigateToFacility: (facilityId, parkingSpotPath) => {},
   },
 
   ui_phone_time: {

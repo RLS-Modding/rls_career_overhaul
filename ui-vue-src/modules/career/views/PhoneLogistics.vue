@@ -255,7 +255,9 @@
                   </div>
                   <div class="material-header-right">
                     <strong>{{ formatRewardPerUnitValue(source.rewardPerUnit, source.units) }}</strong>
-                    <span class="chevron" :class="{ open: isMaterialSourceExpanded(source.storageId) }">⌄</span>
+                    <svg class="chevron" :class="{ open: isMaterialSourceExpanded(source.storageId) }" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
                   </div>
                 </button>
 
@@ -281,7 +283,7 @@
                     <button
                       class="inline-btn"
                       :disabled="!destination.destinationFacilityId"
-                      @click="routeToFacility(destination.destinationFacilityId)"
+                      @click="routeToFacility(destination.destinationFacilityId, destination.destinationParkingSpotPath)"
                     >
                       Route
                     </button>
@@ -488,6 +490,11 @@ function clearMaterialExpansion() {
   })
 }
 
+function closeToolbarMenus() {
+  filterOpen.value = false
+  sortOpen.value = false
+}
+
 function toggleFilter(filterId) {
   if (activeFilters.value.includes(filterId)) {
     activeFilters.value = activeFilters.value.filter(id => id !== filterId)
@@ -590,14 +597,15 @@ function formatSlotSize(slotSize) {
 }
 
 async function viewFacility(facilityId) {
+  closeToolbarMenus()
   clearMaterialExpansion()
   detailTab.value = "parcels"
   await store.selectFacility(facilityId, true)
 }
 
-async function routeToFacility(facilityId) {
+async function routeToFacility(facilityId, parkingSpotPath = "") {
   if (!facilityId) return
-  await store.navigateToFacility(facilityId)
+  await store.navigateToFacility(facilityId, parkingSpotPath)
 }
 
 async function refreshList(force = false) {
@@ -611,6 +619,7 @@ async function refreshDetail() {
 
 function handleBack() {
   if (!selectedFacilityId.value) return false
+  closeToolbarMenus()
   clearMaterialExpansion()
   store.backToList()
   return true

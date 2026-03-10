@@ -5,28 +5,23 @@ M.dependencies = {
   'career_modules_delivery_parcelManager',
   'career_modules_delivery_vehicleOfferManager',
   'career_modules_delivery_progress',
-  'career_modules_delivery_general',
   'career_modules_delivery_tutorial',
-  'career_modules_delivery_cargoScreen',
-  'career_modules_delivery_vehicleTasks',
   'freeroam_organizations'
 }
 
-local dGenerator, dParcelManager, dVehOfferManager, dProgress, dGeneral, dTutorial, dVehicleTasks
+local dGenerator, dParcelManager, dVehOfferManager, dProgress, dTutorial
 
 local function onCareerActivated()
   dGenerator = career_modules_delivery_generator
   dParcelManager = career_modules_delivery_parcelManager
   dVehOfferManager = career_modules_delivery_vehicleOfferManager
   dProgress = career_modules_delivery_progress
-  dGeneral = career_modules_delivery_general
   dTutorial = career_modules_delivery_tutorial
-  dVehicleTasks = career_modules_delivery_vehicleTasks
 end
 M.onCareerActivated = onCareerActivated
 
 local function ensureModules()
-  if dGenerator and dParcelManager and dVehOfferManager and dProgress and dTutorial and dVehicleTasks then
+  if dGenerator and dParcelManager and dVehOfferManager and dProgress and dTutorial then
     return
   end
   onCareerActivated()
@@ -304,11 +299,56 @@ local function buildOfferPayload(offer)
   }
 end
 
-local function countSectionRows(sections)
-  local count = 0
-  for _, section in ipairs(sections or {}) do
-    count = count + #(section.rows or {})
+local function countParcelRowsForFacility(facilityId)
+  local outgoingCargo = dParcelManager.getAllCargoForFacilityUnexpiredUndelivered(facilityId) or {}
+  local rowsByKey = {}
+
+  for _, cargo in ipairs(outgoingCargo) do
+    if cargo.type == 'parcel' then
+      local timed = hasTimedModifier(cargo)
+      local modifierSignature = buildModifierSignature(cargo)
+      local rowKey = table.concat({
+        buildLocationKey(cargo.destination),
+        tostring(cargo.name or 'Parcel'),
+        tostring(cargo.slots or 0),
+        timed and 'timed' or 'plain',
+        modifierSignature,
+      }, '|')
+      rowsByKey[rowKey] = true
+    end
   end
+
+  local count = 0
+  for _ in pairs(rowsByKey) do
+    count = count + 1
+  end
+  return count
+end
+
+local function countMaterialSourcesForFacility(fac)
+  local count = 0
+
+  for _, materialType in ipairs(getSortedKeys(fac.materialStorages or {})) do
+    local storage = fac.materialStorages[materialType]
+    local material = getMaterialTemplate(materialType)
+    if storage and storage.isProvider and material and (storage.storedVolume or 0) > 0 then
+      count = count + 1
+    end
+  end
+
+  return count
+end
+
+local function countOffersForFacility(facilityId, offerType)
+  local count = 0
+
+  for _, offer in ipairs(dVehOfferManager.getAllOfferAtFacilityUnexpired(facilityId) or {}) do
+    local currentType = offer.data and offer.data.type or 'trailer'
+    if currentType == offerType and offer.task and offer.task.destination then
+      count = count + 1
+    end
+  end
+
   return count
 end
 
@@ -418,6 +458,7 @@ local function buildMaterialDestinationSummaries(originFacility, materialType)
       summary.destinationKey = destinationLocation and summary.destinationKey or tostring(fac.id)
       summary.destinationName = destinationLocation and buildLocationLabelShort(destinationLocation) or fac.name
       summary.destinationFacilityId = fac.id
+      summary.destinationParkingSpotPath = destinationLocation and destinationLocation.psPath or nil
       table.insert(destinations, summary)
     end
   end
@@ -519,45 +560,13 @@ local function buildOfferDestinationSections(facilityId, offerType)
   return orderedSections
 end
 
-local function buildFacilityBadges(parcelSections, materialSources, vehicleSections, trailerSections)
+local function buildFacilityBadges(parcelCount, materialCount, vehicleCount, trailerCount)
   local badges = {}
-  if countSectionRows(parcelSections) > 0 then table.insert(badges, 'parcel') end
-  if #materialSources > 0 then table.insert(badges, 'material') end
-  if countSectionRows(vehicleSections) > 0 then table.insert(badges, 'vehicle') end
-  if countSectionRows(trailerSections) > 0 then table.insert(badges, 'trailer') end
+  if parcelCount > 0 then table.insert(badges, 'parcel') end
+  if materialCount > 0 then table.insert(badges, 'material') end
+  if vehicleCount > 0 then table.insert(badges, 'vehicle') end
+  if trailerCount > 0 then table.insert(badges, 'trailer') end
   return badges
-end
-
-local function getRelevantTargetFacilityIds()
-  local targetFacilityIds = {}
-
-  for _, cargo in ipairs(dParcelManager.getAllCargoInVehicles() or {}) do
-    if cargo.destination.type == 'facilityParkingspot' then
-      if cargo.destination.facId then
-        targetFacilityIds[cargo.destination.facId] = true
-      end
-    elseif cargo.destination.type == 'multi' then
-      for _, dest in ipairs(cargo.destination.destinations or {}) do
-        if dest.facId then
-          targetFacilityIds[dest.facId] = true
-        end
-      end
-    end
-  end
-
-  for _, cargo in ipairs(dParcelManager.getTransientMoveCargo() or {}) do
-    if cargo.location and cargo.location.facId then
-      targetFacilityIds[cargo.location.facId] = true
-    end
-  end
-
-  for _, destination in ipairs(dVehicleTasks.getTargetDestinationsForActiveTasks() or {}) do
-    if destination.facId then
-      targetFacilityIds[destination.facId] = true
-    end
-  end
-
-  return targetFacilityIds
 end
 
 local function buildFacilitySummary(fac, playerPos)
@@ -571,15 +580,10 @@ local function buildFacilitySummary(fac, playerPos)
     })
   end
 
-  local parcelSections = buildParcelDestinationSections(fac.id)
-  local materialSources = buildMaterialSourceSections(fac)
-  local vehicleSections = buildOfferDestinationSections(fac.id, 'vehicle')
-  local trailerSections = buildOfferDestinationSections(fac.id, 'trailer')
-
-  local parcelCount = countSectionRows(parcelSections)
-  local materialCount = #materialSources
-  local vehicleCount = countSectionRows(vehicleSections)
-  local trailerCount = countSectionRows(trailerSections)
+  local parcelCount = countParcelRowsForFacility(fac.id)
+  local materialCount = countMaterialSourcesForFacility(fac)
+  local vehicleCount = countOffersForFacility(fac.id, 'vehicle')
+  local trailerCount = countOffersForFacility(fac.id, 'trailer')
 
   return {
     id = fac.id,
@@ -598,7 +602,7 @@ local function buildFacilitySummary(fac, playerPos)
       trailerOffers = trailerCount
     },
     totalVisibleJobs = parcelCount + materialCount + vehicleCount + trailerCount,
-    badges = buildFacilityBadges(parcelSections, materialSources, vehicleSections, trailerSections)
+    badges = buildFacilityBadges(parcelCount, materialCount, vehicleCount, trailerCount)
   }
 end
 
@@ -617,12 +621,11 @@ local function requestFacilityList()
   dGenerator.triggerAllGenerators()
 
   local tutorialActive = dTutorial.isCargoDeliveryTutorialActive and dTutorial.isCargoDeliveryTutorialActive() or false
-  local targetFacilityIds = getRelevantTargetFacilityIds()
   local playerPos = getPlayerPos()
   local facilities = {}
 
   for _, fac in ipairs(dGenerator.getFacilities() or {}) do
-    if dProgress.isFacilityVisible(fac.id, tutorialActive) or targetFacilityIds[fac.id] then
+    if dProgress.isFacilityVisible(fac.id, tutorialActive) then
       local summary = buildFacilitySummary(fac, playerPos)
       if (summary.totalVisibleJobs or 0) > 0 then
         table.insert(facilities, summary)
@@ -694,7 +697,7 @@ local function requestFacilityDetail(facilityId)
 end
 M.requestFacilityDetail = requestFacilityDetail
 
-local function navigateToFacility(facilityId)
+local function navigateToFacility(facilityId, parkingSpotPath)
   ensureModules()
   local fac = dGenerator.getFacilityById(facilityId)
   if not fac then
@@ -702,8 +705,12 @@ local function navigateToFacility(facilityId)
     return
   end
 
-  local primaryParkingSpotPath = select(1, getPrimaryParkingSpotForFacility(fac))
-  if not primaryParkingSpotPath then
+  local targetParkingSpotPath = parkingSpotPath
+  if not targetParkingSpotPath or targetParkingSpotPath == '' then
+    targetParkingSpotPath = select(1, getPrimaryParkingSpotForFacility(fac))
+  end
+
+  if not targetParkingSpotPath then
     sendError('facility_missing_route_target', { facilityId = facilityId })
     return
   end
@@ -711,41 +718,12 @@ local function navigateToFacility(facilityId)
   local toPos = dGenerator.getLocationCoordinates({
     type = 'facilityParkingspot',
     facId = fac.id,
-    psPath = primaryParkingSpotPath
+    psPath = targetParkingSpotPath
   })
   if toPos then
-    freeroam_bigMapMode.setNavFocus(toPos)
+    core_groundMarkers.setPath(toPos, { clearPathOnReachingTarget = true })
   end
 end
 M.navigateToFacility = navigateToFacility
-
-local function previewCargoRoute(cargoId)
-  ensureModules()
-  return career_modules_delivery_cargoScreen.showCargoRoutePreview(cargoId)
-end
-M.previewCargoRoute = previewCargoRoute
-
-local function previewVehicleOfferRoute(offerId)
-  ensureModules()
-  return career_modules_delivery_cargoScreen.showVehicleOfferRoutePreview(offerId)
-end
-M.previewVehicleOfferRoute = previewVehicleOfferRoute
-
-local function openCargoOverview(facilityId, parkingSpotPath)
-  ensureModules()
-  local fac = dGenerator.getFacilityById(facilityId)
-  if not fac then
-    sendError('facility_not_found', { facilityId = facilityId })
-    return
-  end
-
-  local targetPsPath = parkingSpotPath
-  if not targetPsPath or targetPsPath == '' then
-    targetPsPath = select(1, getPrimaryParkingSpotForFacility(fac))
-  end
-
-  return career_modules_delivery_cargoScreen.enterCargoOverviewScreen(facilityId, targetPsPath)
-end
-M.openCargoOverview = openCargoOverview
 
 return M
