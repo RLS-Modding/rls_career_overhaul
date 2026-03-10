@@ -112,9 +112,14 @@ local function calcLevelFromReputationValue(val, organization)
     end
   end
   if level == -1 then
-    level = 1
+    -- Index 1 maps to reputation level -1 (i - 2). Start new orgs at level 0 (index 2).
+    level = levels[2] and 2 or 1
   end
-  local currentLevelRequiredValue = levels[level].requiredValue or minimumValue
+  -- Keep organizations at minimum level 0 when a level-0 entry exists.
+  if level < 2 and levels[2] then
+    level = 2
+  end
+  local currentLevelRequiredValue = (levels[level] and levels[level].requiredValue) or minimumValue
   local nextLevelRequiredValue = levels[level+1] and levels[level+1].requiredValue or maximumValue
 
   local prevThreshold = currentLevelRequiredValue
