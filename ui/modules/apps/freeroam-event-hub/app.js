@@ -272,17 +272,7 @@ angular.module('beamng.apps')
         if (!list || list.length === 0) return null;
         var idx = list.length - 1;
         var total = (scope.raceState && scope.raceState.totalCheckpoints != null) ? scope.raceState.totalCheckpoints : list.length;
-        var delta = scope.getSectorDelta ? scope.getSectorDelta(idx) : null;
-        return { num: list.length, total: total, time: list[idx], delta: delta };
-      };
-      scope.lastSplitTime = function () {
-        var list = scope.splitsList();
-        return list && list.length ? list[list.length - 1] : null;
-      };
-      scope.lastSplitDelta = function () {
-        var list = scope.splitsList();
-        if (!list || list.length === 0) return null;
-        return scope.getSectorDelta(list.length - 1);
+        return { num: list.length, total: total, time: list[idx], delta: scope.getSectorDelta(idx) };
       };
       scope.isLiveRace = function () {
         if (!scope.raceState || scope.raceState.inRace !== true || !scope.selectedRace) return false;

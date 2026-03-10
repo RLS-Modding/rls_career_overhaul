@@ -39,7 +39,6 @@ local mInventoryId = nil
 local newBestSession = false
 
 local maxSpeed = 0
--- Total elapsed time this run (sum of completed laps); best single-lap this run; suppress off-road exit when crossing start
 local mTotalRaceTime = 0
 local mBestLapThisRun = nil
 local mSuppressOffRoadExitUntil = 0
@@ -50,25 +49,19 @@ local isReplay = false
 local previousGameState = nil
 local saveGameState = false
 
--- Freeroam Event Hub: per-save prefs (only run hub logic when hub is "active", i.e. not opted out)
 local FREEROAM_HUB_PREFS_FILE = "career/rls_career/freeroam_hub_prefs.json"
 local mFreeroamHubPrefs = { autoShow = true, addedOnce = false }
--- Hub route selection: practice = unlimited laps (current behavior); track = main route; shortTrack = alt route
 local mFreeroamHubPracticeMode = false
 local mFreeroamHubUseAltRoute = false
--- True only after player clicks Track or Short track (so we don't countdown before they choose)
 local mFreeroamHubRaceSelected = false
--- True when the UI is displaying the final race result (prevents the hub from closing when exiting the trigger after finishing)
 local mFreeroamHubShowingResult = false
--- True when the UI is showing race history (prevents the hub from closing when exiting the trigger)
 local mFreeroamHubShowingHistory = false
--- Staged flash + countdown (American Road style): only when hub active and race selected (not Practice)
-local mFreeroamCountdownDelay = nil       -- seconds until countdown runs (set when entering staging)
-local mFreeroamCountdownEndTime = nil     -- 3s after GO before race start allowed
+local mFreeroamCountdownDelay = nil
+local mFreeroamCountdownEndTime = nil
 local mFreeroamCountdownStartClock = nil
-local mFreeroamStagedAtStart = false      -- true when player entered start trigger before countdown finished
-local mFreeroamPendingStart = nil         -- { raceName, subjectID } when waiting for countdown to finish
-local mFreeroamStagingSubjectID = nil     -- vehicle id when countdown set (start on GO)
+local mFreeroamStagedAtStart = false
+local mFreeroamPendingStart = nil
+local mFreeroamStagingSubjectID = nil
 
 local function getFreeroamHubPrefsPath()
     if not career_saveSystem or not career_saveSystem.getCurrentSaveSlot then return nil end
@@ -93,7 +86,6 @@ local function saveFreeroamHubPrefs()
     career_saveSystem.jsonWriteFileSafe(path, mFreeroamHubPrefs, true)
 end
 
--- True when we should run hub logic (set available, spawn, push state). False when opted out or no career save.
 local function isFreeroamHubActive()
     if not career_career or not career_career.isActive() then return false end
     if not getFreeroamHubPrefsPath() then return false end
@@ -101,12 +93,10 @@ local function isFreeroamHubActive()
     return mFreeroamHubPrefs.autoShow ~= false
 end
 
--- True when hub race mode: hub active and player selected Track or Short track (not Practice). When false, use original freeroam logic.
 local function isFreeroamHubRaceMode()
     return isFreeroamHubActive() and not mFreeroamHubPracticeMode
 end
 
--- Staged flash + countdown (American Road style); only used when isFreeroamHubRaceMode()
 local function getGameplayAppContainers()
     if not extensions then return nil end
     local names = { "ui_gameplayAppContainers", "ge_extensions_ui_gameplayAppContainers" }
@@ -227,7 +217,6 @@ local function getBusinessAccountFromVehicle(spawnedVehicleId)
     return nil
 end
 
--- completedLapTime: when provided (lap-complete path), use this instead of in_race_time so we don't count time after stop
 local function payoutRace(completedLapTime)
     if not mActiveRace then
         return 0
