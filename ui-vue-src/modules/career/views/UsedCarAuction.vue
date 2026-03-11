@@ -1,99 +1,131 @@
 <template>
-  <LayoutSingle class="auction-layout">
-    <BngCard class="auction-card">
-      <BngCardHeading>Used Car Auction</BngCardHeading>
-
-      <div class="status">{{ state.statusMessage }}</div>
-
-      <div v-if="state.phase === 'travelPrompt'" class="actions">
-        <BngButton :accent="ACCENTS.primary" @click="travel">Travel To Auction</BngButton>
-        <BngButton :accent="ACCENTS.secondary" @click="cancel">Cancel</BngButton>
+  <LayoutSingle class="auction-overlay-layout">
+    <div class="auction-overlay">
+      <div class="overlay-header">
+        <div class="title">Used Car Auction</div>
+        <div class="phase">{{ state.phase || 'idle' }}</div>
       </div>
 
-      <div v-else-if="state.phase === 'bidding'" class="bidding">
-        <div class="lot-meta">Lot {{ activeLot?.lotIndex || '-' }} / {{ state.lots.length }}</div>
-        <div class="lot-title">{{ activeLot?.title || 'Loading...' }}</div>
-        <div class="lot-row">Current Bid: ${{ activeLot?.currentBid || 0 }}</div>
-        <div class="lot-row">Highest Bidder: {{ formatBidder(activeLot) }}</div>
-        <div class="lot-row">Time Left: {{ activeLot?.timeLeft || 0 }}s</div>
-        <div class="lot-row">Your Wins: {{ state.purchasedCount }}</div>
+      <div class="status">{{ state.statusMessage || 'Auction service unavailable.' }}</div>
 
-        <div class="lot-row auto-wrap">
-          <label class="auto-label">
-            <input type="checkbox" v-model="autoBidEnabled" @change="updateAutoBidEnabled" />
-            Auto Bid
-          </label>
-          <label class="auto-label">
-            Max:
-            <input class="max-input" type="number" min="0" step="100" v-model.number="autoBidMax" @change="updateAutoBidMax" />
-          </label>
+      <div class="summary">
+        <div class="summary-row">
+          <span class="k">Wins</span>
+          <span class="v">{{ state.purchasedCount || 0 }}</span>
         </div>
-
-        <div class="actions">
-          <BngButton :accent="ACCENTS.primary" @click="bid(250)">Bid +$250</BngButton>
-          <BngButton :accent="ACCENTS.primary" @click="bid(500)">Bid +$500</BngButton>
-          <BngButton :accent="ACCENTS.primary" @click="bid(1000)">Bid +$1000</BngButton>
-          <BngButton :accent="ACCENTS.primary" @click="bid(5000)">Bid +$5000</BngButton>
-          <BngButton :accent="ACCENTS.secondary" @click="pass">Pass This Car</BngButton>
-          <BngButton :accent="ACCENTS.tertiary" @click="closeMenu">Close Menu</BngButton>
+        <div class="summary-row">
+          <span class="k">Live Lot</span>
+          <span class="v">Lot {{ activeLot?.lotIndex || '-' }}</span>
         </div>
       </div>
 
-      <div v-else-if="state.phase === 'complete'" class="complete">
-        <div>Won Cars: {{ state.purchasedCount }}</div>
-        <div>Walk to the exit trigger to return to your original location.</div>
-        <div class="actions">
-          <BngButton :accent="ACCENTS.tertiary" @click="closeMenu">Close Menu</BngButton>
+      <div class="lots-table">
+        <div class="table-row table-head">
+          <div class="col-lot">Lot</div>
+          <div class="col-vehicle">Vehicle</div>
+          <div class="col-mileage">Mileage</div>
+        </div>
+
+        <div
+          v-for="lot in (state.lots || [])"
+          :key="lot.lotIndex"
+          class="table-row lot-row"
+          :class="{ active: isActiveLot(lot) }"
+        >
+          <div class="col-lot">Lot {{ lot.lotIndex }}</div>
+          <div class="col-vehicle" :title="lot.title || '-'">{{ lot.title || '-' }}</div>
+          <div class="col-mileage">{{ formatMileage(lot.mileage) }}</div>
+        </div>
+
+        <div v-if="!(state.lots || []).length" class="empty-lots">
+          No active lots.
         </div>
       </div>
 
-      <div v-else class="idle">
-        <div>Enter the auction trigger while walking to start.</div>
-        <div class="actions">
-          <BngButton :accent="ACCENTS.tertiary" @click="closeMenu">Close</BngButton>
+      <div class="active-details" v-if="activeLot">
+        <div class="detail-row">
+          <span class="k">Bid</span>
+          <span class="v">${{ activeLot.currentBid || 0 }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="k">Leader</span>
+          <span class="v">{{ formatBidder(activeLot) }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="k">Time Left</span>
+          <span class="v">{{ activeLot.timeLeft || 0 }}s</span>
         </div>
       </div>
-    </BngCard>
+
+      <div class="actions" v-if="canBid">
+        <BngButton :accent="ACCENTS.primary" @click="bid(250)">+$250</BngButton>
+        <BngButton :accent="ACCENTS.primary" @click="bid(500)">+$500</BngButton>
+        <BngButton :accent="ACCENTS.primary" @click="bid(1000)">+$1000</BngButton>
+        <BngButton :accent="ACCENTS.primary" @click="bid(5000)">+$5000</BngButton>
+      </div>
+    </div>
   </LayoutSingle>
 </template>
 
 <script setup>
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { lua } from '@/bridge'
-import { BngButton, ACCENTS, BngCard, BngCardHeading } from '@/common/components/base'
+import { BngButton, ACCENTS } from '@/common/components/base'
 import { LayoutSingle } from '@/common/layouts'
 
-const state = ref({ phase: 'idle', activeLotIndex: 1, statusMessage: '', purchasedCount: 0, lots: [] })
-const autoBidEnabled = ref(false)
-const autoBidMax = ref(0)
+const state = ref({
+  phase: 'idle',
+  activeLotIndex: 1,
+  currentLotIndex: null,
+  statusMessage: '',
+  purchasedCount: 0,
+  lots: [],
+})
+
 let intervalId = null
 
 const getAuctionApi = () => lua?.career_modules_usedCarAuction
 
+const isAuctionLotState = lotState => {
+  return lotState === 'queued' || lotState === 'approaching' || lotState === 'active' || lotState === 'exiting'
+}
+
 const activeLot = computed(() => {
-  if (!state.value?.lots?.length) return null
-  return state.value.lots[(state.value.activeLotIndex || 1) - 1] || null
+  const lots = state.value?.lots || []
+  if (!lots.length) return null
+
+  const currentLotIndex = Number(state.value.currentLotIndex || state.value.activeLotIndex || 0)
+  if (currentLotIndex > 0) {
+    const direct = lots.find(lot => Number(lot?.lotIndex || 0) === currentLotIndex)
+    if (direct) return direct
+  }
+
+  const activeByState = lots.find(lot => isAuctionLotState(lot?.state))
+  if (activeByState) return activeByState
+  return lots[0]
+})
+
+const canBid = computed(() => {
+  return state.value?.phase === 'bidding' && activeLot.value && activeLot.value.state === 'active'
 })
 
 const refresh = async () => {
   const api = getAuctionApi()
-  if (!api?.requestAuctionState) return
-  state.value = await api.requestAuctionState()
-  autoBidEnabled.value = !!state.value?.autoBidEnabled
-  autoBidMax.value = Number(state.value?.autoBidMax || 0)
-}
+  if (!api?.requestAuctionState) {
+    state.value = {
+      phase: 'idle',
+      activeLotIndex: 1,
+      currentLotIndex: null,
+      statusMessage: 'Auction service unavailable right now.',
+      purchasedCount: 0,
+      lots: [],
+    }
+    return
+  }
 
-const travel = async () => {
-  const api = getAuctionApi()
-  if (!api?.startAuction) return
-  await api.startAuction()
-  await refresh()
-}
-
-const cancel = async () => {
-  const api = getAuctionApi()
-  if (!api?.cancelTravelPrompt) return
-  await api.cancelTravelPrompt()
+  const nextState = await api.requestAuctionState()
+  if (!nextState || typeof nextState !== 'object') return
+  state.value = nextState
 }
 
 const bid = async amount => {
@@ -103,35 +135,9 @@ const bid = async amount => {
   await refresh()
 }
 
-const pass = async () => {
-  const api = getAuctionApi()
-  if (!api?.passCurrentLot) return
-  await api.passCurrentLot()
-  await refresh()
-}
-
-const closeMenu = async () => {
-  const api = getAuctionApi()
-  if (api?.closeMenu) {
-    await api.closeMenu()
-    return
-  }
-  // Fallback when module API is unavailable: just navigate back.
-  await lua?.guihooks?.trigger?.('UINavigation', 'back', 1)
-}
-
-const updateAutoBidEnabled = async () => {
-  const api = getAuctionApi()
-  if (!api?.setAutoBidEnabled) return
-  await api.setAutoBidEnabled(!!autoBidEnabled.value)
-  await refresh()
-}
-
-const updateAutoBidMax = async () => {
-  const api = getAuctionApi()
-  if (!api?.setAutoBidMax) return
-  await api.setAutoBidMax(Number(autoBidMax.value || 0))
-  await refresh()
+const isActiveLot = lot => {
+  if (!lot || !activeLot.value) return false
+  return Number(lot.lotIndex) === Number(activeLot.value.lotIndex)
 }
 
 const formatBidder = lot => {
@@ -139,8 +145,14 @@ const formatBidder = lot => {
   const bidderName = `${lot?.highestBidderName || ''}`.trim()
   if (bidderName) return bidderName
   if (lot?.highestBidder === 'player') return 'You'
-  if (lot?.highestBidder === 'npc') return 'Other Bidder'
+  if (lot?.highestBidder === 'npc') return 'NPC'
   return '-'
+}
+
+const formatMileage = mileage => {
+  const n = Number(mileage)
+  if (!Number.isFinite(n) || n <= 0) return 'Unknown'
+  return `${n.toLocaleString()} mi`
 }
 
 onMounted(async () => {
@@ -157,63 +169,174 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
-.auction-layout {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
+.auction-overlay-layout {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
 }
 
-.auction-card {
-  width: min(640px, 90vw);
-  :deep(.card-cnt) {
-    background: rgba(0, 0, 0, 0.82);
-    color: #fff;
-    border-radius: 8px;
-  }
+.auction-overlay {
+  position: fixed;
+  top: 1.2rem;
+  left: 1.2rem;
+  width: min(23rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 2.4rem);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.8rem;
+  border-radius: 0.55rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(8, 10, 14, 0.88);
+  color: #f5f7fa;
+  box-shadow: 0 0.8rem 1.8rem rgba(0, 0, 0, 0.45);
+  pointer-events: auto;
+}
+
+.overlay-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+}
+
+.title {
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: 0.03rem;
+  text-transform: uppercase;
+}
+
+.phase {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
 }
 
 .status {
-  margin-bottom: 12px;
-  opacity: 0.95;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.88);
 }
 
-.lot-meta {
-  font-size: 0.9rem;
-  opacity: 0.85;
+.summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.35rem;
 }
 
-.lot-title {
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin: 6px 0 8px;
+.summary-row,
+.detail-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  border-radius: 0.38rem;
+  padding: 0.32rem 0.46rem;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.k {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02rem;
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.v {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: right;
+}
+
+.lots-table {
+  display: flex;
+  flex-direction: column;
+  gap: 0.16rem;
+  max-height: 11.5rem;
+  overflow-y: auto;
+  padding-right: 0.1rem;
+}
+
+.table-row {
+  display: grid;
+  grid-template-columns: 4.2rem 1fr 4.8rem;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.table-head {
+  padding: 0.1rem 0.4rem 0.2rem;
+}
+
+.table-head .col-lot,
+.table-head .col-vehicle,
+.table-head .col-mileage {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02rem;
+  color: rgba(255, 255, 255, 0.76);
 }
 
 .lot-row {
-  margin: 3px 0;
+  border-radius: 0.42rem;
+  padding: 0.36rem 0.4rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.auto-wrap {
+.lot-row.active {
+  border-color: rgba(249, 115, 22, 0.82);
+  background: rgba(249, 115, 22, 0.14);
+}
+
+.col-lot,
+.col-vehicle,
+.col-mileage {
+  font-size: 0.82rem;
+}
+
+.col-lot {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.col-vehicle {
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.col-mileage {
+  font-size: 0.76rem;
+  text-align: right;
+  color: rgba(255, 255, 255, 0.88);
+  white-space: nowrap;
+}
+
+.empty-lots {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.66);
+  padding: 0.22rem 0.08rem;
+}
+
+.active-details {
   display: flex;
-  gap: 12px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.auto-label {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-
-.max-input {
-  width: 120px;
+  flex-direction: column;
+  gap: 0.34rem;
 }
 
 .actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.36rem;
+}
+
+.actions :deep(.bng-button) {
+  min-height: 1.85rem;
+  font-size: 0.76rem;
+  font-weight: 800;
 }
 </style>

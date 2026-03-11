@@ -40,7 +40,7 @@ local DEFAULT_LOT_COUNT = 3
 local NPC_PERSONA_COUNT = 3
 local NPC_MAX_BID_MULT_MIN = 0.55
 local NPC_MAX_BID_MULT_MAX = 1.50
-local LOT_WIN_EMITTER_DURATION = 1.0
+local LOT_WIN_EMITTER_DURATION = 2.0
 local AUCTION_WIN_EMITTERS_GROUP = 'auctionEmitters'
 local AUCTION_ACTIVE_ASSETS_GROUP = 'auctionAssetsOn'
 local BID_ACCEPTED_SFX_EVENT = 'event:>UI>Career>Buy_02'
@@ -205,7 +205,15 @@ end
 
 local function openMenu()
   auctionState.uiOpen = true
-  guihooks.trigger('ChangeState', {state = 'used-car-auction'})
+  pcall(function() guihooks.trigger('ChangeState', {state = 'used-car-auction'}) end)
+end
+
+local function closeAuctionOverlayUi()
+  if not auctionState.uiOpen then
+    return
+  end
+  auctionState.uiOpen = false
+  pcall(function() guihooks.trigger('ChangeState', {state = 'play'}) end)
 end
 
 local function startFadeSafe()
@@ -1245,6 +1253,8 @@ end
 
 local function beginLotBidding(lot, forceTeleportToBlock)
   if not lot then return end
+  openMenu()
+
   local veh = lot.vehId and getObjectByID(lot.vehId)
   if veh then
     if forceTeleportToBlock then
@@ -1529,21 +1539,16 @@ local function placeBid(amount)
 end
 
 local function passCurrentLot()
-  if auctionState.phase ~= 'bidding' then return false end
-  local lot = auctionState.lots[auctionState.activeLotIndex]
-  if not lot or lot.state ~= 'active' then return false end
-  setNpcAsLeader(lot, getStrongestNpcPersonaForLot(lot))
-  lot.endTime = os.clock()
-  return true
+  -- Passing lots is intentionally disabled.
+  return false
 end
 
 local function closeMenu()
-  auctionState.uiOpen = false
+  closeAuctionOverlayUi()
   if career_career and career_career.closeAllMenus then
     pcall(function() career_career.closeAllMenus() end)
   end
   pcall(function() guihooks.trigger('UINavigation', 'back', 1) end)
-  pcall(function() guihooks.trigger('ChangeState', {state = 'play'}) end)
 end
 
 local function startAuction()
@@ -1601,6 +1606,8 @@ local function finishCurrentLot()
 end
 
 local function resetAuction(keepPurchases)
+  closeAuctionOverlayUi()
+
   for _, lot in ipairs(auctionState.lots) do
     if lot.vehId then
       local keepVeh = false
@@ -1714,6 +1721,7 @@ local function startAuctionImmediate()
     end
 
     auctionState.phase = 'bidding'
+    openMenu()
 
     ui_message('Auction started. Vehicles now spawn sequentially: next lot drives in while previous exits.', 8, 'Used Auction', 'info')
   end)
@@ -1759,6 +1767,8 @@ local function exitAuctionArea()
   if auctionState.transitionActive then
     return false
   end
+
+  closeAuctionOverlayUi()
 
   local playerVeh = getPlayerVehicle()
   local exitSpot = getPlayerExitSpot(auctionState.siteLayout, true)
