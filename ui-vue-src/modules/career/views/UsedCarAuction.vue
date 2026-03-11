@@ -1,6 +1,22 @@
 <template>
   <div class="auction-overlay-layout">
-    <div class="auction-overlay">
+    <template v-if="isEntryPrompt">
+      <div class="entry-modal-backdrop">
+        <div class="entry-modal">
+          <div class="entry-modal-text">{{ entryPromptMessage }}</div>
+          <div v-if="!state.canPayEntryFee" class="entry-note">Insufficient funds.</div>
+          <div class="entry-modal-actions">
+            <BngButton :accent="ACCENTS.primary" :disabled="!state.canPayEntryFee" @click="startAuctionFromPrompt">
+              Pay
+            </BngButton>
+            <BngButton :accent="ACCENTS.secondary" @click="cancelEntryPrompt">
+              Cancel
+            </BngButton>
+          </div>
+        </div>
+      </div>
+    </template>
+    <div v-else class="auction-overlay">
       <div class="overlay-header">
         <div class="title">Used Car Auction</div>
         <div class="phase">{{ state.phase || 'idle' }}</div>
@@ -72,14 +88,19 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { lua } from '@/bridge'
 import { BngButton, ACCENTS } from '@/common/components/base'
 
-const state = ref({
+const defaultState = () => ({
   phase: 'idle',
+  entryPromptActive: false,
+  entryFee: 1000,
+  canPayEntryFee: false,
   activeLotIndex: 1,
   currentLotIndex: null,
   statusMessage: '',
   purchasedCount: 0,
   lots: [],
 })
+
+const state = ref(defaultState())
 
 let intervalId = null
 
@@ -88,6 +109,19 @@ const getAuctionApi = () => lua?.career_modules_usedCarAuction
 const isAuctionLotState = lotState => {
   return lotState === 'queued' || lotState === 'approaching' || lotState === 'active' || lotState === 'exiting'
 }
+
+const isEntryPrompt = computed(() => {
+  return state.value?.phase === 'entryPrompt' || state.value?.entryPromptActive === true
+})
+
+const entryFee = computed(() => {
+  const fee = Number(state.value?.entryFee)
+  return Number.isFinite(fee) && fee >= 0 ? fee : 1000
+})
+
+const entryPromptMessage = computed(() => {
+  return `Do you want to pay $${Math.round(entryFee.value)} to enter The Vault?`
+})
 
 const activeLot = computed(() => {
   const lots = state.value?.lots || []
@@ -111,14 +145,7 @@ const canBid = computed(() => {
 const refresh = async () => {
   const api = getAuctionApi()
   if (!api?.requestAuctionState) {
-    state.value = {
-      phase: 'idle',
-      activeLotIndex: 1,
-      currentLotIndex: null,
-      statusMessage: 'Auction service unavailable right now.',
-      purchasedCount: 0,
-      lots: [],
-    }
+    state.value = { ...defaultState(), statusMessage: 'Auction service unavailable right now.' }
     return
   }
 
@@ -132,6 +159,19 @@ const bid = async amount => {
   if (!api?.placeBid) return
   await api.placeBid(amount)
   await refresh()
+}
+
+const startAuctionFromPrompt = async () => {
+  const api = getAuctionApi()
+  if (!api?.startAuction) return
+  await api.startAuction()
+  await refresh()
+}
+
+const cancelEntryPrompt = async () => {
+  const api = getAuctionApi()
+  if (!api?.cancelTravelPrompt) return
+  await api.cancelTravelPrompt()
 }
 
 const isActiveLot = lot => {
@@ -154,6 +194,12 @@ const formatMileage = mileage => {
   return `${n.toLocaleString()} mi`
 }
 
+const formatCurrency = amount => {
+  const n = Number(amount)
+  if (!Number.isFinite(n) || n < 0) return '$0'
+  return `$${n.toLocaleString()}`
+}
+
 onMounted(async () => {
   await refresh()
   intervalId = setInterval(refresh, 500)
@@ -172,6 +218,40 @@ onUnmounted(() => {
   position: fixed;
   inset: 0;
   pointer-events: none;
+}
+
+.entry-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.35);
+  pointer-events: auto;
+}
+
+.entry-modal {
+  width: min(34rem, calc(100vw - 2rem));
+  border-radius: 0.6rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(8, 10, 14, 0.95);
+  color: #f5f7fa;
+  box-shadow: 0 0.8rem 1.8rem rgba(0, 0, 0, 0.45);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.entry-modal-text {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.entry-modal-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.4rem;
 }
 
 .auction-overlay {
@@ -217,6 +297,11 @@ onUnmounted(() => {
 .status {
   font-size: 0.82rem;
   color: rgba(255, 255, 255, 0.88);
+}
+
+.entry-note {
+  font-size: 0.76rem;
+  color: rgba(255, 182, 182, 0.95);
 }
 
 .summary {

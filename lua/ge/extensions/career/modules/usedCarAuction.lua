@@ -47,6 +47,8 @@ local AUCTION_WIN_EMITTERS_GROUP = 'auctionEmitters'
 local AUCTION_ACTIVE_ASSETS_GROUP = 'auctionAssetsOn'
 local AUCTION_MUSIC_EMITTER_NAME = 'SFXEmitter_2'
 local AUCTION_MUSIC_EVENT = 'event:>Music>synthwave'
+local AUCTION_ENTRY_PAYMENT_SFX_EVENT = 'event:>UI>Career>Buy_01'
+local AUCTION_ENTRY_FEE = 1000
 local BID_ACCEPTED_SFX_EVENT = 'event:>UI>Career>Buy_02'
 local LOT_WIN_CELEBRATION_SFX_EVENT = 'event:>UI>Missions>End_Gold'
 
@@ -94,6 +96,7 @@ local auctionState = {
   entryCooldownUntil = 0,
   switchWarnCooldownUntil = 0,
   lastValidPlayerVehId = nil,
+  entryPromptActive = false,
   uiOpen = false,
   awaitingFinalExit = false,
   npcPersonas = {},
@@ -103,6 +106,7 @@ local auctionState = {
 local usedConfigKeys = {}
 local stopVehicleAI
 local setLotVehicleDriveLock
+local startAuctionImmediate
 
 local function deepCopy(src)
   if type(src) ~= 'table' then return src end
@@ -532,6 +536,27 @@ local function payForVehicle(amount, label)
     tags = {'usedAuction'}
   })
   return true
+end
+
+local function getAuctionEntryFee()
+  return tonumber(AUCTION_ENTRY_FEE) or 0
+end
+
+local function canAffordAuctionEntry()
+  local fee = getAuctionEntryFee()
+  if fee <= 0 then
+    return true
+  end
+  return canAfford(fee)
+end
+
+local function payAuctionEntryFee()
+  local fee = getAuctionEntryFee()
+  if fee <= 0 then
+    return true
+  end
+
+  return payForVehicle(fee, string.format('Used Auction Entry ($%d)', fee))
 end
 
 local function getPlayerVehicle()
@@ -1629,9 +1654,19 @@ local function requestAuctionState()
   if hasLiveLot and (derivedPhase == 'idle' or derivedPhase == 'starting') then
     derivedPhase = 'bidding'
   end
+  if auctionState.entryPromptActive and derivedPhase == 'idle' then
+    derivedPhase = 'entryPrompt'
+  end
 
   local status = 'Enter the auction trigger to begin.'
-  if derivedPhase == 'bidding' then
+  if derivedPhase == 'entryPrompt' then
+    local fee = getAuctionEntryFee()
+    if canAffordAuctionEntry() then
+      status = string.format('Pay $%d to enter the auction.', fee)
+    else
+      status = string.format('Not enough money. $%d required to enter.', fee)
+    end
+  elseif derivedPhase == 'bidding' then
     status = 'Auction in progress.'
   elseif derivedPhase == 'complete' then
     status = 'Auction complete. Use exit trigger to return.'
@@ -1639,6 +1674,9 @@ local function requestAuctionState()
 
   return {
     phase = derivedPhase,
+    entryPromptActive = auctionState.entryPromptActive and true or false,
+    entryFee = getAuctionEntryFee(),
+    canPayEntryFee = canAffordAuctionEntry(),
     activeLotIndex = auctionState.activeLotIndex,
     currentLotIndex = derivedCurrentLotIndex,
     hasLiveLot = hasLiveLot,
@@ -1673,7 +1711,7 @@ local function passCurrentLot()
   return false
 end
 
-local function closeMenu()
+local function closeMenuUiOnly()
   closeAuctionOverlayUi()
   if career_career and career_career.closeAllMenus then
     pcall(function() career_career.closeAllMenus() end)
@@ -1681,16 +1719,124 @@ local function closeMenu()
   pcall(function() guihooks.trigger('UINavigation', 'back', 1) end)
 end
 
-local function startAuction()
-  if auctionState.phase == 'idle' then
-    return startAuctionImmediate()
+local function canStartAuctionFromPrompt()
+  if auctionState.transitionActive then
+    return false, 'Auction is busy right now.'
   end
-  return false
+
+  local playerVeh = getPlayerVehicle()
+  if not playerVeh then
+    return false, 'No player vehicle available.'
+  end
+
+  local spots = getSiteParkingSpots()
+  if not spots or #spots < 1 then
+    return false, 'Auction spots missing in auction.sites.json'
+  end
+
+  local layout = buildSiteLayout(spots)
+  if not layout.playerSpot then
+    return false, 'Missing spot tag: auctionPlayerStart.'
+  end
+  if #layout.spawnSpots < 1 then
+    return false, 'Missing spot tag: auctionSpawn.'
+  end
+  if not layout.despawnSpot then
+    return false, 'Missing spot tag: auctionDespawn.'
+  end
+  if not getPlayerExitSpot(layout, false) then
+    return false, 'Missing spot tag: auctionPlayerExit (and no trigger fallback).'
+  end
+
+  return true
+end
+
+local function openEntryPrompt()
+  if auctionState.phase ~= 'idle' or auctionState.transitionActive then
+    return false
+  end
+  auctionState.entryPromptActive = true
+  openMenu()
+  return true
+end
+
+local function cancelEntryPrompt(closeUi)
+  if auctionState.phase ~= 'idle' then
+    if closeUi then
+      closeMenuUiOnly()
+    end
+    return false
+  end
+
+  if not auctionState.entryPromptActive then
+    if closeUi then
+      closeMenuUiOnly()
+    end
+    return false
+  end
+
+  auctionState.entryPromptActive = false
+
+  if closeUi then
+    closeMenuUiOnly()
+  end
+  return true
+end
+
+local function confirmEntryPaymentAndStartAuction()
+  if auctionState.phase ~= 'idle' or not auctionState.entryPromptActive then
+    return false
+  end
+
+  local canStart, reason = canStartAuctionFromPrompt()
+  if not canStart then
+    ui_message(reason or 'Auction cannot be started right now.', 6, 'Used Auction', 'warning')
+    return false
+  end
+
+  local fee = getAuctionEntryFee()
+  if not canAffordAuctionEntry() then
+    ui_message(string.format('Not enough money. Need $%d to enter the auction.', fee), 6, 'Used Auction', 'warning')
+    return false
+  end
+
+  if not payAuctionEntryFee() then
+    ui_message('Could not process auction entry payment.', 6, 'Used Auction', 'warning')
+    return false
+  end
+
+  playUiSound(AUCTION_ENTRY_PAYMENT_SFX_EVENT)
+  if career_saveSystem and career_saveSystem.saveCurrent then
+    pcall(function() career_saveSystem.saveCurrent() end)
+  end
+
+  auctionState.entryPromptActive = false
+  return startAuctionImmediate()
+end
+
+local function closeMenu()
+  if auctionState.phase == 'idle' and auctionState.entryPromptActive then
+    return cancelEntryPrompt(true)
+  end
+  closeMenuUiOnly()
+  return true
+end
+
+local function startAuction()
+  if auctionState.phase ~= 'idle' then
+    return false
+  end
+  if auctionState.entryPromptActive then
+    return confirmEntryPaymentAndStartAuction()
+  end
+  return openEntryPrompt()
 end
 
 local function cancelTravelPrompt()
-  closeMenu()
-  return true
+  if auctionState.phase == 'idle' and auctionState.entryPromptActive then
+    return cancelEntryPrompt(true)
+  end
+  return closeMenu()
 end
 
 local function finishCurrentLot()
@@ -1770,6 +1916,7 @@ local function resetAuction(keepPurchases)
   auctionState.noSpaceWarnCooldownUntil = 0
   auctionState.switchWarnCooldownUntil = 0
   auctionState.lastValidPlayerVehId = nil
+  auctionState.entryPromptActive = false
   auctionState.awaitingFinalExit = false
   auctionState.npcPersonas = {}
   auctionState.winEmitterPulseToken = (auctionState.winEmitterPulseToken or 0) + 1
@@ -1783,7 +1930,7 @@ local function resetAuction(keepPurchases)
   setIdleTriggerState()
 end
 
-local function startAuctionImmediate()
+startAuctionImmediate = function()
   if auctionState.phase ~= 'idle' or auctionState.transitionActive then
     return false
   end
@@ -2057,7 +2204,7 @@ local function onBeamNGTrigger(data)
     end
 
     if auctionState.phase == 'idle' then
-      startAuctionImmediate()
+      openEntryPrompt()
     end
     return
   end
