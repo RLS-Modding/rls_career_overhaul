@@ -170,7 +170,8 @@ local function getMergedConfigForRace(race)
         "filterPoolByPowerMeetOrExceed", "aiPowerExceedCapPct",
         "raceAccelScale", "raceThrottleRateMult", "raceTurnCoefScale", "raceAwarenessCoefScale",
         "raceThrottleFloor", "raceObstacleSpeedCap", "raceObstacleSpeedCapAgg",
-        "raceHighSpeedThreshold", "raceHighSpeedThrottleFloor"
+        "raceHighSpeedThreshold", "raceHighSpeedThrottleFloor",
+        "pathRoad"
     }
     for _, k in ipairs(raceKeys) do
         if race[k] ~= nil then merged[k] = race[k] end
@@ -178,12 +179,36 @@ local function getMergedConfigForRace(race)
     return merged
 end
 
--- Build path from race checkpointRoad (uses processRoad). Call on level load. When race has checkpointRoadLanes, also preloads one path per lane (lane road merged with main from first checkpoint).
+-- Get nodes from a DecalRoad by name (for AI path when pathRoad is set in aiRacingConfig). Does not touch processRoad; checkpoints stay on race.checkpointRoad.
+local function getRoadNodesByName(roadName)
+    if type(roadName) ~= "string" or roadName == "" then return nil end
+    if not scenetree or not scenetree.findObject then return nil end
+    local road = scenetree.findObject(roadName)
+    if not road or road:getClassName() ~= "DecalRoad" then return nil end
+    local nodeCount = 0
+    if road.getNodeCount then nodeCount = road:getNodeCount() end
+    if nodeCount <= 0 then return nil end
+    local nodeTable = {}
+    if road.getNodesTable then nodeTable = road:getNodesTable() or {} end
+    local roadNodes = {}
+    for i = 0, nodeCount - 1 do
+        local pos = road:getNodePosition(i)
+        if pos then
+            local width = (nodeTable[i + 1] and nodeTable[i + 1][2]) or nil
+            table.insert(roadNodes, { x = pos.x, y = pos.y, z = pos.z, width = width })
+        end
+    end
+    return #roadNodes > 0 and roadNodes or nil
+end
+
+-- Build path from race checkpointRoad (uses processRoad). Call on level load. When pathRoad is set in aiRacingConfig.byRace, use that road for AI path only; checkpoints unchanged. When race has checkpointRoadLanes, also preloads one path per lane (lane road merged with main from first checkpoint).
 function M.preloadPathForRace(race)
     local pathKey = getRacePathKey(race)
     if not pathKey then return end
     if not mPathCache[pathKey] then
-        local nodes = processRoad.getRoadNodesFromRace(race)
+        local cfg = getMergedConfigForRace(race)
+        local pathRoad = (cfg and type(cfg.pathRoad) == "string" and cfg.pathRoad ~= "") and cfg.pathRoad or nil
+        local nodes = pathRoad and getRoadNodesByName(pathRoad) or processRoad.getRoadNodesFromRace(race)
         if nodes and #nodes > 0 then
             local path = {}
             for _, node in ipairs(nodes) do
