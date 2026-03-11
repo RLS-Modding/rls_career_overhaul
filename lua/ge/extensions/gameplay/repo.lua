@@ -83,6 +83,7 @@ function VehicleRepoJob:new()
     if core_groundMarkers then
         core_groundMarkers.resetAll()
     end
+    instance.eligibleVehicles = nil
     return instance
 end
 
@@ -154,6 +155,7 @@ function VehicleRepoJob:resetToInitialState()
     self.playerPosition = nil
     self.vehInfo = nil
     self.updateTimer = nil
+    self.eligibleVehicles = nil
     if core_groundMarkers then
         core_groundMarkers.resetAll()
     end
@@ -369,8 +371,27 @@ function VehicleRepoJob:selectDealership()
     if not dealerships or #dealerships == 0 then
         return
     end
-    self.availableDealerships = parkingReservation.shuffleSpots(dealerships)
+    self.eligibleVehicles = configListGenerator.getEligibleVehicles(false, false)
+    self.availableDealerships = {}
+
+    for _, dealership in ipairs(parkingReservation.shuffleSpots(dealerships)) do
+        local vehicleInfos = configListGenerator.getRandomVehicleInfos(dealership, 1, self.eligibleVehicles, "adjustedPopulation")
+        if vehicleInfos and #vehicleInfos > 0 then
+            table.insert(self.availableDealerships, dealership)
+        else
+            log("I", "repo", string.format("Skipping dealership '%s'; no valid repo configs linked", tostring(dealership.name)))
+        end
+    end
+
     self.selectedDealership = self.availableDealerships[1]
+end
+
+local function pickStaticFacilitySpot(spots)
+    for _, spot in ipairs(parkingReservation.shuffleSpots(spots or {})) do
+        if spot and spot.pos then
+            return spot
+        end
+    end
 end
 
 -- Determine the delivery location
@@ -386,6 +407,17 @@ function VehicleRepoJob:determineDeliveryLocation()
             self.selectedDealership = dealership
             self.deliveryLocation = liveDeliverySpot
             self.reservedDeliverySpot = liveDeliverySpot
+            return
+        end
+
+        -- Some facility site spots are not present in the live parking pool, so reservation can fail
+        -- even though the facility has a valid dropoff location. Use a static site spot as a fallback.
+        local staticDeliverySpot = pickStaticFacilitySpot(facilitySpots)
+        if staticDeliverySpot then
+            self.selectedDealership = dealership
+            self.deliveryLocation = staticDeliverySpot
+            self.reservedDeliverySpot = nil
+            log("W", "repo", string.format("Using unreserved static dropoff spot for dealership '%s'", tostring(dealership.name)))
             return
         end
 
@@ -425,9 +457,10 @@ end
 
 -- Generate vehicle configuration
 function VehicleRepoJob:generateVehicleConfig()
-    local eligibleVehicles = configListGenerator.getEligibleVehicles(false, false)
+    local eligibleVehicles = self.eligibleVehicles or configListGenerator.getEligibleVehicles(false, false)
     local randomVehicleInfos = configListGenerator.getRandomVehicleInfos(self.selectedDealership, 1, eligibleVehicles, "adjustedPopulation")
     if not randomVehicleInfos or #randomVehicleInfos == 0 then
+        log("W", "repo", string.format("Selected dealership '%s' had no valid repo configs during vehicle generation", tostring(self.selectedDealership and self.selectedDealership.name)))
         return
     end
 
