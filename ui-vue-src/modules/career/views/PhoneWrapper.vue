@@ -75,7 +75,7 @@ const props = defineProps({
 const PHONE_TIME_KEY = 'phone_last_time'
 const PHONE_MONEY_KEY = 'phone_last_money'
 const PHONE_IS_CAREER_KEY = 'phone_is_career'
-const { phoneSettings } = usePhoneSettings()
+const { phoneSettings, replacePhoneSettings } = usePhoneSettings()
 const events = useEvents()
 const timeString = ref(sessionStorage.getItem(PHONE_TIME_KEY) || '9:10')
 const router = useRouter()
@@ -148,6 +148,11 @@ const updateTime = (data) => {
   }
 }
 
+function handlePhoneLayoutData(data) {
+  if (!data || typeof data !== 'object' || !data.settings) return
+  replacePhoneSettings(data.settings)
+}
+
 function updateViewportWidth() {
   viewportWidth.value = window.innerWidth
 }
@@ -155,12 +160,15 @@ function updateViewportWidth() {
 onMounted(async () => {
   updateViewportWidth()
   window.addEventListener('resize', updateViewportWidth)
-  lua.extensions.load("ui_phone_time")
-  events.on("phone_time_update", data => updateTime(data))
+  await lua.extensions.load("ui_phone_time")
+  await lua.extensions.load('ui_phone_layout')
+  events.on("phone_time_update", updateTime)
   events.on("closePhone", close)
+  events.on('phoneLayoutData', handlePhoneLayoutData)
   refreshCareerStatus()
   careerStatusInterval = setInterval(refreshCareerStatus, 5000)
   lua.ui_phone_time?.requestTime?.()
+  lua.ui_phone_layout?.requestLayout?.()
 
   const wasPhoneVisible = sessionStorage.getItem('phoneVisible') === 'true'
   if (wasPhoneVisible) contentFadeIn.value = true
@@ -225,6 +233,9 @@ onBeforeRouteLeave((to, from) => {
 
 onUnmounted(async () => {
   window.removeEventListener('resize', updateViewportWidth)
+  events.off("phone_time_update", updateTime)
+  events.off("closePhone", close)
+  events.off('phoneLayoutData', handlePhoneLayoutData)
   if (careerStatusInterval) {
     clearInterval(careerStatusInterval)
     careerStatusInterval = null

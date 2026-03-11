@@ -304,7 +304,7 @@ const assignedTech = computed(() => {
 const techName = computed(() => {
   return assignedTech.value?.name || null
 })
-const hasTechAssigned = computed(() => !!techAssigned.value)
+const hasTechAssigned = computed(() => !!assignedTech.value)
 const techProgress = computed(() => {
   if (!assignedTech.value || !assignedTech.value.jobId) return 0
   const progress = assignedTech.value.progress
