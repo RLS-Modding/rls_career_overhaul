@@ -52,6 +52,44 @@
       "customFields":{
         "names":{},
         "tags":[
+          "auctionPlayerExit"
+        ],
+        "types":{},
+        "values":{}
+      },
+      "isMultiSpot":false,
+      "name":"auctionPlayerExit",
+      "oldId":13038,
+      "pos":[
+        -451.54742431641,
+        634.11584472656,
+        74.921340942383
+      ],
+      "rot":[
+        0,
+        0,
+        0.92620000255944,
+        0.37703194595366
+      ],
+      "scl":[
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount":1,
+      "spotDirection":"Left",
+      "spotOffset":0,
+      "spotRotation":0
+    },
+    {
+      "color":[
+        1,
+        1,
+        1
+      ],
+      "customFields":{
+        "names":{},
+        "tags":[
           "auctionLot",
           "auctionSpawn"
         ],

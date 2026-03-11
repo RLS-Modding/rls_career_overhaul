@@ -31,6 +31,7 @@ local LOT_APPROACH_SLOW_SPEED_MPS = 1.8
 local LOT_APPROACH_CONTROL_INTERVAL = 0.2
 local LOT_EXIT_DESPAWN_DISTANCE = 5.0
 local AI_MAX_SPEED_MPS = 4.4352 -- 5 mph
+local LOAD_EJECT_DISTANCE = 180
 local LOT_STUCK_TIMEOUT = 5.0
 local LOT_PROGRESS_DISTANCE = 0.35
 local ANTI_SNIPE_WINDOW = 10.0
@@ -556,6 +557,7 @@ local function buildSiteLayout(spots)
   local layout = {
     allSpots = spots or {},
     playerSpot = nil,
+    playerExitSpot = nil,
     spawnSpots = {},
     blockSpots = {},
     pathInSpots = {},
@@ -565,6 +567,7 @@ local function buildSiteLayout(spots)
   }
 
   layout.playerSpot = firstSpotWithTag(spots, {'auctionPlayerStart'})
+  layout.playerExitSpot = firstSpotWithTag(spots, {'auctionPlayerExit'})
   layout.spawnSpots = collectTaggedSpots(spots, 'auctionSpawn')
   layout.blockSpots = collectTaggedSpots(spots, 'auctionBlock')
 
@@ -577,12 +580,78 @@ local function buildSiteLayout(spots)
   return layout
 end
 
+local function buildSpotFromTrigger(triggerName)
+  local trigger = scenetree.findObject(triggerName)
+  if not trigger then
+    return nil
+  end
+
+  local posOk, pos = pcall(function() return trigger:getPosition() end)
+  local rotOk, rot = pcall(function() return trigger:getRotation() end)
+  if not posOk or not pos or not rotOk or not rot then
+    return nil
+  end
+
+  return {
+    pos = vec3(pos),
+    -- teleportVehicleToSpot prepends a 180 deg Z correction; pre-apply it so the
+    -- final facing matches the trigger rotation exactly.
+    rot = quat(0, 0, 1, 0) * quat(rot)
+  }
+end
+
+local function getPlayerExitSpot(layout, warnOnFallback)
+  if layout and layout.playerExitSpot then
+    return layout.playerExitSpot
+  end
+
+  local fallbackSpot = buildSpotFromTrigger(ENTRY_TRIGGER)
+  if not fallbackSpot then
+    return nil
+  end
+
+  if warnOnFallback then
+    log('W', 'usedCarAuction', 'Missing spot tag: auctionPlayerExit. Falling back to entry trigger transform.')
+  end
+
+  if layout then
+    layout.playerExitSpot = fallbackSpot
+  end
+  return fallbackSpot
+end
+
 local function teleportVehicleToSpot(veh, spot)
   if not veh or not spot then return false end
+
+  local isPlayerVeh = veh:getID() == be:getPlayerVehicleID(0)
+  local function applyWalkingFacingFromQuat(rotQ)
+    if not isPlayerVeh then return end
+    if not (gameplay_walk and gameplay_walk.isWalking and gameplay_walk.isWalking() and gameplay_walk.setRot) then
+      return
+    end
+    local front = rotQ * vec3(0, 1, 0)
+    gameplay_walk.setRot(front, vec3(0, 0, 1))
+  end
+
+  if isPlayerVeh and spot.moveResetVehicleTo then
+    local ok = pcall(function()
+      local options = {skipVehicleIntersectionCheck = true}
+      spot:moveResetVehicleTo(veh:getID(), nil, false, nil, nil, true, false, nil, options)
+    end)
+    if ok then
+      if core_camera and core_camera.resetCamera then
+        pcall(function() core_camera.resetCamera(0) end)
+      end
+      applyWalkingFacingFromQuat(quat(spot.rot))
+      veh:queueLuaCommand('electrics.setIgnitionLevel(0)')
+      return true
+    end
+  end
 
   local pos = vec3(spot.pos)
   local rot = quat(0, 0, 1, 0) * quat(spot.rot)
   veh:setPosRot(pos.x, pos.y, pos.z + 0.5, rot.x, rot.y, rot.z, rot.w)
+  applyWalkingFacingFromQuat(rot)
   veh:queueLuaCommand('electrics.setIgnitionLevel(0)')
   return true
 end
@@ -1623,6 +1692,11 @@ local function startAuctionImmediate()
       resetAuction(false)
       return
     end
+    if not getPlayerExitSpot(layout, true) then
+      ui_message('Missing spot tag: auctionPlayerExit (and no trigger fallback).', 8, 'Used Auction', 'warning')
+      resetAuction(false)
+      return
+    end
 
     teleportVehicleToSpot(playerVeh, auctionState.auctionSpot)
     setAuctionActiveAssetsEnabled(true)
@@ -1687,18 +1761,17 @@ local function exitAuctionArea()
   end
 
   local playerVeh = getPlayerVehicle()
-  if not playerVeh or not auctionState.returnTransform then
+  local exitSpot = getPlayerExitSpot(auctionState.siteLayout, true)
+  if not playerVeh or not exitSpot then
     return false
   end
 
-  runFadedTransition(function()
-    local spot = {
-      pos = auctionState.returnTransform.pos,
-      rot = auctionState.returnTransform.rot
-    }
+  local anchorPos = vec3(exitSpot.pos)
+  local anchorRot = quat(exitSpot.rot)
 
-    teleportVehicleToSpot(playerVeh, spot)
-    distributePurchasedVehiclesAround(auctionState.returnTransform.pos, auctionState.returnTransform.rot)
+  runFadedTransition(function()
+    teleportVehicleToSpot(playerVeh, exitSpot)
+    distributePurchasedVehiclesAround(anchorPos, anchorRot)
 
     if career_saveSystem then
       career_saveSystem.saveCurrent()
@@ -1707,6 +1780,42 @@ local function exitAuctionArea()
     resetAuction(true)
     auctionState.entryCooldownUntil = os.clock() + ENTRY_RETRIGGER_COOLDOWN
     ui_message('Returned from auction.', 5, 'Used Auction', 'info')
+  end)
+
+  return true
+end
+
+local function ejectPlayerFromAuctionInteriorOnCareerLoad()
+  local playerVeh = getPlayerVehicle()
+  if not playerVeh then
+    return false
+  end
+
+  local spots = getSiteParkingSpots()
+  if not spots or #spots < 1 then
+    return false
+  end
+
+  local layout = buildSiteLayout(spots)
+  if not layout.playerSpot then
+    return false
+  end
+
+  local exitSpot = getPlayerExitSpot(layout, true)
+  if not exitSpot then
+    return false
+  end
+
+  local distToAuctionCenter = (playerVeh:getPosition() - vec3(layout.playerSpot.pos)):length()
+  if distToAuctionCenter > LOAD_EJECT_DISTANCE then
+    return false
+  end
+
+  runFadedTransition(function()
+    teleportVehicleToSpot(playerVeh, exitSpot)
+    auctionState.entryCooldownUntil = os.clock() + ENTRY_RETRIGGER_COOLDOWN
+    setIdleTriggerState()
+    ui_message('Moved vehicle outside auction after load.', 5, 'Used Auction', 'info')
   end)
 
   return true
@@ -1860,6 +1969,7 @@ local function onCareerActivated()
   setIdleTriggerState()
   setAuctionWinEmittersEnabled(false)
   setAuctionActiveAssetsEnabled(false)
+  ejectPlayerFromAuctionInteriorOnCareerLoad()
 end
 
 local function onCareerDeactivatedWhileLevelLoaded()
