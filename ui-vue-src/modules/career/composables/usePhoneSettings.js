@@ -55,11 +55,9 @@ function clampPosition(value) {
   return Math.max(0, Math.min(1, n))
 }
 
-const PHONE_SETTINGS_SESSION_KEY = 'phone_settings'
 const HEX_COLOR_PATTERN = /^#[0-9a-fA-F]{6}$/
 
 const phoneSettings = reactive({ ...DEFAULT_PHONE_SETTINGS })
-let hydrated = false
 
 function normalizeHexColor(value) {
   if (typeof value !== 'string') return DEFAULT_PHONE_SETTINGS.backgroundColor
@@ -77,27 +75,6 @@ export function normalizePhoneSettings(value) {
   return { phoneSize, horizontalPosition, backgroundColor, backgroundImage }
 }
 
-function persistToSession() {
-  try {
-    sessionStorage.setItem(PHONE_SETTINGS_SESSION_KEY, JSON.stringify(getPhoneSettingsSnapshot()))
-  } catch (_) {
-    // Ignore storage failures.
-  }
-}
-
-function hydrateFromSession() {
-  if (hydrated) return
-  hydrated = true
-  try {
-    const raw = sessionStorage.getItem(PHONE_SETTINGS_SESSION_KEY)
-    if (!raw) return
-    const parsed = JSON.parse(raw)
-    Object.assign(phoneSettings, normalizePhoneSettings(parsed))
-  } catch (_) {
-    // Ignore malformed persisted data.
-  }
-}
-
 export function getPhoneSettingsSnapshot() {
   return {
     phoneSize: phoneSettings.phoneSize,
@@ -109,18 +86,15 @@ export function getPhoneSettingsSnapshot() {
 
 export function replacePhoneSettings(nextSettings) {
   Object.assign(phoneSettings, normalizePhoneSettings(nextSettings))
-  persistToSession()
 }
 
 export function setPhoneSettings(patch) {
   const merged = normalizePhoneSettings({ ...getPhoneSettingsSnapshot(), ...(patch || {}) })
   Object.assign(phoneSettings, merged)
-  persistToSession()
 }
 
 export function resetPhoneSettings() {
   Object.assign(phoneSettings, DEFAULT_PHONE_SETTINGS)
-  persistToSession()
 }
 
 export function getPhoneScale(settings = phoneSettings) {
@@ -134,7 +108,6 @@ export function getPhonePosition(settings = phoneSettings) {
 }
 
 export function usePhoneSettings() {
-  hydrateFromSession()
   return {
     phoneSettings,
     setPhoneSettings,

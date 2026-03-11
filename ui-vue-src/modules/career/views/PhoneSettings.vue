@@ -205,7 +205,6 @@ import {
 const {
   phoneSettings,
   setPhoneSettings,
-  replacePhoneSettings,
   resetPhoneSettings,
   getPhoneSettingsSnapshot,
 } = usePhoneSettings()
@@ -404,23 +403,6 @@ async function openFolderInExplorer() {
 }
 
 onMounted(async () => {
-  try {
-    await lua.extensions.load('ui_phone_layout')
-    const fromLua = await lua.ui_phone_layout?.getSettings?.()
-    if (fromLua) {
-      const needsRepair = fromLua.phoneSize !== phoneSettings.phoneSize ||
-        fromLua.horizontalPosition !== phoneSettings.horizontalPosition
-      replacePhoneSettings({
-        ...fromLua,
-        phoneSize: phoneSettings.phoneSize,
-        horizontalPosition: phoneSettings.horizontalPosition,
-      })
-      if (needsRepair) await persistSettings()
-    }
-  } catch (e) {
-    console.warn('Failed to load phone settings', e)
-  }
-
   await loadFolderImages()
 })
 
