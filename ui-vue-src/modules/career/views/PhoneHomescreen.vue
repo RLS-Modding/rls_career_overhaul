@@ -260,6 +260,10 @@ function toSlotArray(value) {
   return []
 }
 
+function toIdList(value) {
+  return toSlotArray(value).filter(v => typeof v === 'string' && v.length > 0)
+}
+
 function applyLayout(data) {
   const pagesSource = toSlotArray(data && data.pages)
   if (data && pagesSource.length > 0) {
@@ -301,8 +305,8 @@ function applyLayout(data) {
     if (pageLayouts.value.length === 0) {
       pageLayouts.value = [new Array(APPS_PER_PAGE).fill(null)]
     }
-    seenApps.value = new Set(data.seenApps || [])
-    removedAppIds.value = new Set(data.removedAppIds || [])
+    seenApps.value = new Set(toIdList(data.seenApps))
+    removedAppIds.value = new Set(toIdList(data.removedAppIds))
     wallpaper.value = data.wallpaper || 'default'
     if (data.settings) {
       replacePhoneSettings(data.settings)

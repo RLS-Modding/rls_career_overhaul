@@ -16,6 +16,7 @@
             :data="vehicle" :layout="itemLayout" :selected="vehSelected && vehSelected.id === vehicle.id"
             :is-tutorial="vehicleInventoryStore && vehicleInventoryStore.vehicleInventoryData.tutorialActive"
             :money="vehicleInventoryStore ? vehicleInventoryStore.vehicleInventoryData.playerMoney : 0"
+            :disabled-reason="getTradeInTileReason(vehicle)"
             v-bng-disabled="vehicle.disabled"
             tabindex="0" bng-nav-item v-bng-on-ui-nav:ok.asMouse.focusRequired
             v-bng-popover:right-start.click="popId" @click="!vehicle.disabled && select(vehicle, $event)" />
@@ -25,12 +26,16 @@
 
     <BngPopoverMenu :name="popId" focus @hide="selectedVehId = null">
       <template v-for="(buttonData, index) in vehicleInventoryStore.vehicleInventoryData.chooseButtonsData" :key="index">
-    <BngButton v-if="vehSelected && isFunctionAvailable(vehSelected, buttonData)"
+        <BngButton v-if="vehSelected && isChooserActionAvailable(vehSelected, buttonData)"
           :accent="ACCENTS.menu"
           :disabled="(buttonData.buttonText === 'Deliver' || buttonData.buttonText === 'Deliver and replace') && vehicleInventoryStore.vehicleInventoryData.playerMoney < 5000"
           v-bng-on-ui-nav:ok.focusRequired.asMouse
           @click="handleButtonClick(buttonData, index)">
-      {{ buttonData.buttonText }}<span v-if="buttonData.repairRequired && vehSelected?.needsRepair"> (Damaged)</span>
+          {{ buttonData.buttonText }}<span v-if="buttonData.repairRequired && vehSelected?.needsRepair"> (Damaged)</span>
+        </BngButton>
+        <BngButton v-else-if="vehSelected && isTradeInAction(buttonData)"
+          :accent="ACCENTS.menu" disabled>
+          {{ getUnavailableReason(vehSelected, buttonData) }}
         </BngButton>
       </template>
       <BngButton
@@ -169,7 +174,9 @@ const listView = computed(() => {
   const res = vehicleInventoryStore.filteredVehicles
   if (singleFunction.value) {
     for (const veh of res) {
-      veh.disabled = !isFunctionAvailable(veh, singleFunction.value)
+      veh.disabled = isTradeInAction(singleFunction.value)
+        ? !isTradeInAvailable(veh, singleFunction.value)
+        : !isFunctionAvailable(veh, singleFunction.value)
     }
   }
   res.sort((a, b) => a.favorite ? -1 : b.favorite ? 1 : a.niceName.localeCompare(b.niceName))
@@ -315,6 +322,38 @@ const isFunctionAvailable = (vehicle, buttonData) => {
     (buttonData.requireAtDifferentGarage && vehicle.atCurrentGarage) ||
     (!vehicle.atCurrentGarage && !currentGarageHasSpace.value)
   )
+}
+
+const isTradeInAction = buttonData => buttonData?.buttonText === "Trade-In"
+
+const getTradeInBlockerReason = (vehicle, buttonData) => {
+  if (vehicle.timeToAccess) return "Vehicle unavailable right now"
+  if (vehicle.missingFile) return "Vehicle data missing"
+  if (buttonData.requiredVehicleNotInGarage && vehicle.inGarage) return "Vehicle must not be in garage"
+  if (buttonData.requiredOtherVehicleInGarage && !vehicle.otherVehicleInGarage) return "Required support vehicle is missing"
+  if (buttonData.ownedRequired && !vehicle.owned) return "You do not own this vehicle"
+  if (buttonData.repairRequired && vehicle.needsRepair) return "Needs repair"
+  if (buttonData.notForSaleRequired && vehicle.listedForSale) return "Vehicle is listed for sale"
+  return null
+}
+
+const isTradeInAvailable = (vehicle, buttonData) => !getTradeInBlockerReason(vehicle, buttonData)
+
+const isChooserActionAvailable = (vehicle, buttonData) => (
+  isTradeInAction(buttonData)
+    ? isTradeInAvailable(vehicle, buttonData)
+    : isFunctionAvailable(vehicle, buttonData)
+)
+
+const getUnavailableReason = (vehicle, buttonData) => {
+  if (!isTradeInAction(buttonData)) return buttonData?.buttonText || "Unavailable"
+  return `Trade-In (${getTradeInBlockerReason(vehicle, buttonData) || "Unavailable"})`
+}
+
+const getTradeInTileReason = vehicle => {
+  const tradeInButtonData = vehicleInventoryStore.vehicleInventoryData?.chooseButtonsData?.find(isTradeInAction)
+  if (!tradeInButtonData || isTradeInAvailable(vehicle, tradeInButtonData)) return null
+  return getTradeInBlockerReason(vehicle, tradeInButtonData)
 }
 
 const lookAtVehicleListing = () => {
