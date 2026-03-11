@@ -1,919 +1,859 @@
 {
-    "name": "Taxi Skill",
-    "description": "Progress a dedicated 1-50 taxi track with milestone rewards every 5 levels.",
-    "order": 1300,
-    "isSkill": true,
-    "icon": "car",
-    "levels": [
-        {
-            "requiredValue": 0,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 1",
-                "description": "Reach level 1 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +0.6%",
-                    "description": "Total skill bonus is now +0.6% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 246,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 2",
-                "description": "Reach level 2 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +1.2%",
-                    "description": "Total skill bonus is now +1.2% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 550,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 3",
-                "description": "Reach level 3 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +1.8%",
-                    "description": "Total skill bonus is now +1.8% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 924,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 4",
-                "description": "Reach level 4 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +2.4%",
-                    "description": "Total skill bonus is now +2.4% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 1380,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 5",
-                "description": "Reach level 5 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +3%",
-                    "description": "Total skill bonus is now +3% for taxi fares."
-                },
-                {
-                    "type": "unlockCard",
-                    "icon": "badgeRoundStar",
-                    "heading": "Milestone Tier 1",
-                    "description": "Reached level 5 in Taxi Skill."
-                }
-            ]
-        },
-        {
-            "requiredValue": 1930,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 6",
-                "description": "Reach level 6 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +3.6%",
-                    "description": "Total skill bonus is now +3.6% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 2586,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 7",
-                "description": "Reach level 7 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +4.2%",
-                    "description": "Total skill bonus is now +4.2% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 3360,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 8",
-                "description": "Reach level 8 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +4.8%",
-                    "description": "Total skill bonus is now +4.8% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 4264,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 9",
-                "description": "Reach level 9 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +5.4%",
-                    "description": "Total skill bonus is now +5.4% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 5310,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 10",
-                "description": "Reach level 10 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +6%",
-                    "description": "Total skill bonus is now +6% for taxi fares."
-                },
-                {
-                    "type": "unlockCard",
-                    "icon": "badgeRoundStar",
-                    "heading": "Milestone Tier 2",
-                    "description": "Reached level 10 in Taxi Skill."
-                }
-            ]
-        },
-        {
-            "requiredValue": 6510,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 11",
-                "description": "Reach level 11 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +6.6%",
-                    "description": "Total skill bonus is now +6.6% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 7876,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 12",
-                "description": "Reach level 12 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +7.2%",
-                    "description": "Total skill bonus is now +7.2% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 9420,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 13",
-                "description": "Reach level 13 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +7.8%",
-                    "description": "Total skill bonus is now +7.8% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 11154,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 14",
-                "description": "Reach level 14 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +8.4%",
-                    "description": "Total skill bonus is now +8.4% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 13090,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 15",
-                "description": "Reach level 15 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +9%",
-                    "description": "Total skill bonus is now +9% for taxi fares."
-                },
-                {
-                    "type": "unlockCard",
-                    "icon": "badgeRoundStar",
-                    "heading": "Milestone Tier 3",
-                    "description": "Reached level 15 in Taxi Skill."
-                }
-            ]
-        },
-        {
-            "requiredValue": 15240,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 16",
-                "description": "Reach level 16 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +9.6%",
-                    "description": "Total skill bonus is now +9.6% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 17616,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 17",
-                "description": "Reach level 17 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +10.2%",
-                    "description": "Total skill bonus is now +10.2% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 20230,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 18",
-                "description": "Reach level 18 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +10.8%",
-                    "description": "Total skill bonus is now +10.8% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 23094,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 19",
-                "description": "Reach level 19 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +11.4%",
-                    "description": "Total skill bonus is now +11.4% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 26220,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 20",
-                "description": "Reach level 20 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +12%",
-                    "description": "Total skill bonus is now +12% for taxi fares."
-                },
-                {
-                    "type": "unlockCard",
-                    "icon": "badgeRoundStar",
-                    "heading": "Milestone Tier 4",
-                    "description": "Reached level 20 in Taxi Skill."
-                }
-            ]
-        },
-        {
-            "requiredValue": 29620,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 21",
-                "description": "Reach level 21 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +12.6%",
-                    "description": "Total skill bonus is now +12.6% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 33306,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 22",
-                "description": "Reach level 22 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +13.2%",
-                    "description": "Total skill bonus is now +13.2% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 37290,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 23",
-                "description": "Reach level 23 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +13.8%",
-                    "description": "Total skill bonus is now +13.8% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 41584,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 24",
-                "description": "Reach level 24 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +14.4%",
-                    "description": "Total skill bonus is now +14.4% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 46200,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 25",
-                "description": "Reach level 25 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +15%",
-                    "description": "Total skill bonus is now +15% for taxi fares."
-                },
-                {
-                    "type": "unlockCard",
-                    "icon": "badgeRoundStar",
-                    "heading": "Milestone Tier 5",
-                    "description": "Reached level 25 in Taxi Skill."
-                }
-            ]
-        },
-        {
-            "requiredValue": 51150,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 26",
-                "description": "Reach level 26 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +15.6%",
-                    "description": "Total skill bonus is now +15.6% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 56446,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 27",
-                "description": "Reach level 27 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +16.2%",
-                    "description": "Total skill bonus is now +16.2% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 62100,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 28",
-                "description": "Reach level 28 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +16.8%",
-                    "description": "Total skill bonus is now +16.8% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 68124,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 29",
-                "description": "Reach level 29 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +17.4%",
-                    "description": "Total skill bonus is now +17.4% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 74530,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 30",
-                "description": "Reach level 30 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +18%",
-                    "description": "Total skill bonus is now +18% for taxi fares."
-                },
-                {
-                    "type": "unlockCard",
-                    "icon": "badgeRoundStar",
-                    "heading": "Milestone Tier 6",
-                    "description": "Reached level 30 in Taxi Skill."
-                }
-            ]
-        },
-        {
-            "requiredValue": 81330,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 31",
-                "description": "Reach level 31 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +18.6%",
-                    "description": "Total skill bonus is now +18.6% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 88536,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 32",
-                "description": "Reach level 32 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +19.2%",
-                    "description": "Total skill bonus is now +19.2% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 96160,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 33",
-                "description": "Reach level 33 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +19.8%",
-                    "description": "Total skill bonus is now +19.8% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 104214,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 34",
-                "description": "Reach level 34 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +20.4%",
-                    "description": "Total skill bonus is now +20.4% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 112710,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 35",
-                "description": "Reach level 35 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +21%",
-                    "description": "Total skill bonus is now +21% for taxi fares."
-                },
-                {
-                    "type": "unlockCard",
-                    "icon": "badgeRoundStar",
-                    "heading": "Milestone Tier 7",
-                    "description": "Reached level 35 in Taxi Skill."
-                }
-            ]
-        },
-        {
-            "requiredValue": 121660,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 36",
-                "description": "Reach level 36 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +21.6%",
-                    "description": "Total skill bonus is now +21.6% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 131076,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 37",
-                "description": "Reach level 37 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +22.2%",
-                    "description": "Total skill bonus is now +22.2% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 140970,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 38",
-                "description": "Reach level 38 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +22.8%",
-                    "description": "Total skill bonus is now +22.8% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 151354,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 39",
-                "description": "Reach level 39 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +23.4%",
-                    "description": "Total skill bonus is now +23.4% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 162240,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 40",
-                "description": "Reach level 40 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +24%",
-                    "description": "Total skill bonus is now +24% for taxi fares."
-                },
-                {
-                    "type": "unlockCard",
-                    "icon": "badgeRoundStar",
-                    "heading": "Milestone Tier 8",
-                    "description": "Reached level 40 in Taxi Skill."
-                }
-            ]
-        },
-        {
-            "requiredValue": 173640,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 41",
-                "description": "Reach level 41 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +24.6%",
-                    "description": "Total skill bonus is now +24.6% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 185566,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 42",
-                "description": "Reach level 42 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +25.2%",
-                    "description": "Total skill bonus is now +25.2% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 198030,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 43",
-                "description": "Reach level 43 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +25.8%",
-                    "description": "Total skill bonus is now +25.8% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 211044,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 44",
-                "description": "Reach level 44 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +26.4%",
-                    "description": "Total skill bonus is now +26.4% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 224620,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 45",
-                "description": "Reach level 45 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +27%",
-                    "description": "Total skill bonus is now +27% for taxi fares."
-                },
-                {
-                    "type": "unlockCard",
-                    "icon": "badgeRoundStar",
-                    "heading": "Milestone Tier 9",
-                    "description": "Reached level 45 in Taxi Skill."
-                }
-            ]
-        },
-        {
-            "requiredValue": 238770,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 46",
-                "description": "Reach level 46 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +27.6%",
-                    "description": "Total skill bonus is now +27.6% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 253506,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 47",
-                "description": "Reach level 47 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +28.2%",
-                    "description": "Total skill bonus is now +28.2% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 268840,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 48",
-                "description": "Reach level 48 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +28.8%",
-                    "description": "Total skill bonus is now +28.8% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 284784,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 49",
-                "description": "Reach level 49 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +29.4%",
-                    "description": "Total skill bonus is now +29.4% for taxi fares."
-                }
-            ]
-        },
-        {
-            "requiredValue": 301350,
-            "description": {
-                "type": "unlockCard",
-                "icon": "info",
-                "heading": "Level 50",
-                "description": "Reach level 50 in Taxi Skill to claim this reward tier."
-            },
-            "unlocks": [
-                {
-                    "type": "unlockCard",
-                    "icon": "car",
-                    "heading": "Fare Bonus +30%",
-                    "description": "Total skill bonus is now +30% for taxi fares."
-                },
-                {
-                    "type": "unlockCard",
-                    "icon": "badgeRoundStar",
-                    "heading": "Milestone Tier 10",
-                    "description": "Reached level 50 in Taxi Skill."
-                }
-            ]
-        }
-    ]
+    "name":  "Taxi Skill",
+    "description":  "Coming soon",
+    "order":  1300,
+    "isSkill":  true,
+    "icon":  "car",
+    "levels":  [
+                   {
+                       "requiredValue":  0,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 1",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  246,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 2",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  550,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 3",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  924,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 4",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  1380,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 5",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  1930,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 6",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  2586,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 7",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  3360,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 8",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  4264,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 9",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  5310,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 10",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  6510,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 11",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  7876,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 12",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  9420,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 13",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  11154,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 14",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  13090,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 15",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  15240,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 16",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  17616,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 17",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  20230,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 18",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  23094,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 19",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  26220,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 20",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  29620,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 21",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  33306,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 22",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  37290,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 23",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  41584,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 24",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  46200,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 25",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  51150,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 26",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  56446,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 27",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  62100,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 28",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  68124,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 29",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  74530,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 30",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  81330,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 31",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  88536,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 32",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  96160,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 33",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  104214,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 34",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  112710,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 35",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  121660,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 36",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  131076,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 37",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  140970,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 38",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  151354,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 39",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  162240,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 40",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  173640,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 41",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  185566,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 42",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  198030,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 43",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  211044,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 44",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  224620,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 45",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  238770,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 46",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  253506,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 47",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  268840,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 48",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  284784,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 49",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  301350,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 50",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "car",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   }
+               ]
 }
