@@ -36,6 +36,8 @@ local LOT_STUCK_TIMEOUT = 5.0
 local LOT_PROGRESS_DISTANCE = 0.35
 local ANTI_SNIPE_WINDOW = 10.0
 local ANTI_SNIPE_EXTEND = 8.0
+local VEHICLE_SWITCH_REJECT_WARN_COOLDOWN = 2.5
+local VEHICLE_SWITCH_REVERT_DELAY = 0.05
 local DEFAULT_LOT_COUNT = 8
 local NPC_PERSONA_COUNT = 3
 local NPC_MAX_BID_MULT_MIN = 0.55
@@ -90,6 +92,8 @@ local auctionState = {
   nextLiveStatusAt = 0,
   transitionActive = false,
   entryCooldownUntil = 0,
+  switchWarnCooldownUntil = 0,
+  lastValidPlayerVehId = nil,
   uiOpen = false,
   awaitingFinalExit = false,
   npcPersonas = {},
@@ -98,6 +102,7 @@ local auctionState = {
 
 local usedConfigKeys = {}
 local stopVehicleAI
+local setLotVehicleDriveLock
 
 local function deepCopy(src)
   if type(src) ~= 'table' then return src end
@@ -496,7 +501,7 @@ local function despawnLotVehicle(lot)
       if gameplay_traffic then
         pcall(function() gameplay_traffic.removeTraffic(veh:getID()) end)
       end
-      stopVehicleAI(veh)
+      setLotVehicleDriveLock(veh, 'staged')
       lot.vehId = veh:getID()
       return
     end
@@ -531,6 +536,52 @@ end
 
 local function getPlayerVehicle()
   return be:getPlayerVehicle(0)
+end
+
+local function isAuctionLotVehicleId(vehId)
+  if not vehId then return false end
+  for _, lot in ipairs(auctionState.lots or {}) do
+    if lot and lot.vehId == vehId then
+      return true
+    end
+  end
+  return false
+end
+
+local function setVehicleFreezeSafe(veh, shouldFreeze)
+  if not veh then return end
+  local freezeValue = shouldFreeze and true or false
+  if core_vehicleBridge and core_vehicleBridge.executeAction then
+    pcall(function() core_vehicleBridge.executeAction(veh, 'setFreeze', freezeValue) end)
+  else
+    veh:queueLuaCommand(string.format('controller.setFreeze(%d)', shouldFreeze and 1 or 0))
+  end
+end
+
+setLotVehicleDriveLock = function(veh, mode)
+  if not veh then return end
+
+  -- Never allow driving auction lot vehicles while auction is active.
+  veh.playerUsable = (mode == 'released')
+
+  if mode == 'transit' then
+    setVehicleFreezeSafe(veh, false)
+    veh:queueLuaCommand('electrics.setIgnitionLevel(1)')
+    veh:queueLuaCommand('input.event("brake", 0, 1)')
+    veh:queueLuaCommand('input.event("parkingbrake", 0, 1)')
+    return
+  end
+
+  if mode == 'released' then
+    setVehicleFreezeSafe(veh, false)
+    veh:queueLuaCommand('ai.setMode("stop")')
+    veh:queueLuaCommand('electrics.setIgnitionLevel(0)')
+    return
+  end
+
+  -- 'bidding' and 'staged': dealership-like freeze lock.
+  stopVehicleAI(veh)
+  setVehicleFreezeSafe(veh, true)
 end
 
 local function getSiteParkingSpots()
@@ -1306,13 +1357,11 @@ local function spawnLotVehicle(lot, spot, startApproach)
   lot.lastMotionPos = vec3(veh:getPosition())
   lot.lastMotionAt = lot.driveStartedAt
   gameplay_traffic.insertTraffic(lot.vehId, true)
-  veh.playerUsable = true
   veh:queueLuaCommand('electrics.setLightsState(1)')
+  setLotVehicleDriveLock(veh, startApproach and 'transit' or 'staged')
   if startApproach then
     veh:queueLuaCommand('ai.setSpeedMode("set")')
     veh:queueLuaCommand(string.format('ai.setSpeed(%.4f)', AI_MAX_SPEED_MPS))
-  else
-    stopVehicleAI(veh)
   end
 
   return true
@@ -1327,7 +1376,7 @@ local function beginLotBidding(lot, forceTeleportToBlock)
     if forceTeleportToBlock then
       teleportVehicleToSpot(veh, lot.blockSpot or lot.spawnSpot)
     end
-    stopVehicleAI(veh)
+    setLotVehicleDriveLock(veh, 'bidding')
   end
 
   lot.state = 'active'
@@ -1344,6 +1393,7 @@ local function beginLotApproach(lot)
   if not lot then return false end
   local veh = lot.vehId and getObjectByID(lot.vehId)
   if not veh then return false end
+  setLotVehicleDriveLock(veh, 'transit')
   lot.state = 'approaching'
   lot.driveState = 'approach'
   lot.driveStartedAt = os.clock()
@@ -1380,6 +1430,7 @@ local function beginLotExit(lot)
     return false
   end
 
+  setLotVehicleDriveLock(veh, 'transit')
   lot.state = 'exiting'
   lot.driveState = 'exit'
   lot.driveStartedAt = os.clock()
@@ -1717,6 +1768,8 @@ local function resetAuction(keepPurchases)
   auctionState.nextPlayerBidCheckAt = 0
   auctionState.nextLiveStatusAt = 0
   auctionState.noSpaceWarnCooldownUntil = 0
+  auctionState.switchWarnCooldownUntil = 0
+  auctionState.lastValidPlayerVehId = nil
   auctionState.awaitingFinalExit = false
   auctionState.npcPersonas = {}
   auctionState.winEmitterPulseToken = (auctionState.winEmitterPulseToken or 0) + 1
@@ -1742,6 +1795,7 @@ local function startAuctionImmediate()
   if not playerVeh then
     return false
   end
+  auctionState.lastValidPlayerVehId = playerVeh:getID()
 
   local spots = getSiteParkingSpots()
   if not spots or #spots < 1 then
@@ -1851,6 +1905,7 @@ local function distributePurchasedVehiclesAround(pos, baseRot)
         veh:setPosRot(target.x, target.y, target.z + 0.5, rot.x, rot.y, rot.z, rot.w)
       end
       stopVehicleAI(veh)
+      setLotVehicleDriveLock(veh, 'released')
     end
   end
 end
@@ -1923,6 +1978,67 @@ local function ejectPlayerFromAuctionInteriorOnCareerLoad()
   return true
 end
 
+local function getFallbackPlayerVehicleId(oldId)
+  if oldId and not isAuctionLotVehicleId(oldId) and getObjectByID(oldId) then
+    return oldId
+  end
+
+  local lastValid = auctionState.lastValidPlayerVehId
+  if lastValid and not isAuctionLotVehicleId(lastValid) and getObjectByID(lastValid) then
+    return lastValid
+  end
+
+  return nil
+end
+
+local function warnBlockedAuctionVehicleSwitch()
+  local now = os.clock()
+  if now < (auctionState.switchWarnCooldownUntil or 0) then
+    return
+  end
+  auctionState.switchWarnCooldownUntil = now + VEHICLE_SWITCH_REJECT_WARN_COOLDOWN
+  ui_message('Auction lot vehicles cannot be driven.', 2.5, 'Used Auction', 'warning')
+end
+
+local function onVehicleSwitched(oldId, newId)
+  if not career_career.isActive() then return end
+  if be:getPlayerVehicleID(0) ~= newId then
+    return
+  end
+
+  if auctionState.phase == 'idle' then
+    auctionState.lastValidPlayerVehId = newId
+    return
+  end
+
+  if not isAuctionLotVehicleId(newId) then
+    auctionState.lastValidPlayerVehId = newId
+    return
+  end
+
+  warnBlockedAuctionVehicleSwitch()
+
+  local fallbackVehId = getFallbackPlayerVehicleId(oldId)
+  if not fallbackVehId or fallbackVehId == newId then
+    return
+  end
+
+  if core_jobsystem and core_jobsystem.create then
+    core_jobsystem.create(function(job)
+      job.sleep(VEHICLE_SWITCH_REVERT_DELAY)
+      local fallbackVeh = getObjectByID(fallbackVehId)
+      if fallbackVeh then
+        pcall(function() be:enterVehicle(0, fallbackVeh) end)
+      end
+    end)
+  else
+    local fallbackVeh = getObjectByID(fallbackVehId)
+    if fallbackVeh then
+      pcall(function() be:enterVehicle(0, fallbackVeh) end)
+    end
+  end
+end
+
 local function onBeamNGTrigger(data)
   if not career_career.isActive() then return end
 
@@ -1956,6 +2072,11 @@ end
 local function onUpdate()
   if auctionState.phase ~= 'bidding' then
     return
+  end
+
+  local playerVehId = be:getPlayerVehicleID(0)
+  if playerVehId and not isAuctionLotVehicleId(playerVehId) then
+    auctionState.lastValidPlayerVehId = playerVehId
   end
 
   local now = os.clock()
@@ -2090,6 +2211,7 @@ local function onWorldReadyState()
 end
 
 M.onBeamNGTrigger = onBeamNGTrigger
+M.onVehicleSwitched = onVehicleSwitched
 M.onUpdate = onUpdate
 M.onCareerActivated = onCareerActivated
 M.onCareerDeactivatedWhileLevelLoaded = onCareerDeactivatedWhileLevelLoaded

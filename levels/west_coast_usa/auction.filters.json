@@ -8,10 +8,6 @@
       ]
     },
     "blackList": {
-      "Type": [
-        "Trailer",
-        "Heavy Machinery"
-      ],
       "Config Type": [
         "Police",
         "Frame"
