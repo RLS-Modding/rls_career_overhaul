@@ -43,6 +43,8 @@ local NPC_MAX_BID_MULT_MAX = 1.50
 local LOT_WIN_EMITTER_DURATION = 2.0
 local AUCTION_WIN_EMITTERS_GROUP = 'auctionEmitters'
 local AUCTION_ACTIVE_ASSETS_GROUP = 'auctionAssetsOn'
+local AUCTION_MUSIC_EMITTER_NAME = 'SFXEmitter_2'
+local AUCTION_MUSIC_EVENT = 'event:>Music>synthwave'
 local BID_ACCEPTED_SFX_EVENT = 'event:>UI>Career>Buy_02'
 local LOT_WIN_CELEBRATION_SFX_EVENT = 'event:>UI>Missions>End_Gold'
 
@@ -322,14 +324,34 @@ local function setEmitterObjectEnabled(obj, enabled)
   if obj.setField then
     pcall(function() obj:setField('enabled', 0, textEnabled) end)
     pcall(function() obj:setField('active', 0, textEnabled) end)
+    pcall(function() obj:setField('isEnabled', 0, textEnabled) end)
   end
   if obj.setHidden then
     pcall(function() obj:setHidden(not boolEnabled) end)
   end
 end
 
+local function getSceneObjectName(obj)
+  if not obj or not obj.getName then
+    return nil
+  end
+  local ok, name = pcall(function() return obj:getName() end)
+  if ok then
+    return name
+  end
+  return nil
+end
+
 local function setAuctionActiveAssetObjectEnabled(obj, enabled)
   if not obj then return end
+
+  local objName = getSceneObjectName(obj)
+  local isAuctionMusicEmitter = objName == AUCTION_MUSIC_EMITTER_NAME
+
+  if isAuctionMusicEmitter and enabled and obj.setField then
+    pcall(function() obj:setField('track', 0, AUCTION_MUSIC_EVENT) end)
+  end
+
   setEmitterObjectEnabled(obj, enabled)
 
   if enabled and obj.play then
@@ -342,6 +364,10 @@ local function setAuctionActiveAssetObjectEnabled(obj, enabled)
     if not stopped then
       pcall(function() obj:stop(-1) end)
     end
+  end
+
+  if isAuctionMusicEmitter and (not enabled) and obj.setField then
+    pcall(function() obj:setField('track', 0, '') end)
   end
 end
 
@@ -389,6 +415,11 @@ local function setAuctionActiveAssetsEnabled(enabled)
 
   applyRecursive(root)
   return true
+end
+
+local function hardDisableAuctionAudioVisuals()
+  setAuctionWinEmittersEnabled(false)
+  setAuctionActiveAssetsEnabled(false)
 end
 
 local function triggerAuctionWinEmitters(duration)
@@ -1989,8 +2020,7 @@ end
 
 local function onCareerActivated()
   setIdleTriggerState()
-  setAuctionWinEmittersEnabled(false)
-  setAuctionActiveAssetsEnabled(false)
+  hardDisableAuctionAudioVisuals()
   ejectPlayerFromAuctionInteriorOnCareerLoad()
 end
 
@@ -1998,10 +2028,25 @@ local function onCareerDeactivatedWhileLevelLoaded()
   resetAuction(false)
 end
 
+local function onExtensionLoaded()
+  hardDisableAuctionAudioVisuals()
+end
+
+local function onClientStartMission()
+  hardDisableAuctionAudioVisuals()
+end
+
+local function onWorldReadyState()
+  hardDisableAuctionAudioVisuals()
+end
+
 M.onBeamNGTrigger = onBeamNGTrigger
 M.onUpdate = onUpdate
 M.onCareerActivated = onCareerActivated
 M.onCareerDeactivatedWhileLevelLoaded = onCareerDeactivatedWhileLevelLoaded
+M.onExtensionLoaded = onExtensionLoaded
+M.onClientStartMission = onClientStartMission
+M.onWorldReadyState = onWorldReadyState
 M.exitAuctionArea = exitAuctionArea
 M.requestAuctionState = requestAuctionState
 M.startAuction = startAuction
