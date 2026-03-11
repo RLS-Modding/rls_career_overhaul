@@ -365,10 +365,6 @@ local function setAuctionActiveAssetObjectEnabled(obj, enabled)
       pcall(function() obj:stop(-1) end)
     end
   end
-
-  if isAuctionMusicEmitter and (not enabled) and obj.setField then
-    pcall(function() obj:setField('track', 0, '') end)
-  end
 end
 
 local function setAuctionWinEmittersEnabled(enabled)

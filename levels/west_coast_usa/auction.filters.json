@@ -41,7 +41,7 @@
       "whiteList": {
         "Mileage": {
           "min": 4800,
-          "max": 64373760
+          "max": 1437376
         },
         "Population": {
           "min": 1,
