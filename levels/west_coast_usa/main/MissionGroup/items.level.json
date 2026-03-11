@@ -60,7 +60,3 @@
 {"name":"JoesJunk","class":"SimGroup","__parent":"MissionGroup"}
 {"name":"RaceTab","class":"SimGroup","__parent":"MissionGroup"}
 {"name":"Slop Gear","class":"SimGroup","__parent":"MissionGroup"}
-{"name":"ASOTV","class":"SimGroup","__parent":"MissionGroup"}
-{"name":"JoesJunk","class":"SimGroup","__parent":"MissionGroup"}
-{"name":"RaceTab","class":"SimGroup","__parent":"MissionGroup"}
-{"name":"Slop Gear","class":"SimGroup","__parent":"MissionGroup"}
