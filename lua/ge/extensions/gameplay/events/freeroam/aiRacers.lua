@@ -5,6 +5,7 @@ local M = {}
 
 local CONFIG_DIR = "competitiveRace"
 local CONFIG_FILENAME = "aiRacers.json"
+local CONFIG_RACE_FILENAME = "aiRacingConfig.json"
 local LEGACY_SITES_FILENAME = "competitiveRaceAI.sites.json"
 local DEFAULT_CONFIG = {
     enabled = true,
@@ -68,6 +69,8 @@ local mDelayedDespawnWaiting = false
 local mDelayedDespawnTimer = 0
 local mDelayedDespawnStaggerSeconds = 4.0
 local mDnfCallback = nil  -- called with vehId when an AI is despawned (DNF)
+-- Cache for per-race AI config (aiRacingConfig.json byRace): [levelId] = { byRace = { pathKey -> overrides } }
+local mRaceConfigCache = {}
 -- Forward declarations for helpers used before their definitions.
 local cancelDelayedDespawn
 local queueEngineStart
@@ -118,6 +121,21 @@ local function getCurrentLevelConfig()
     return cfg
 end
 
+-- Load aiRacingConfig.json (per-race overrides in byRace). Keys in byRace = getRacePathKey(race), e.g. "trackloop", "trackalt".
+local function loadRaceConfig()
+    local levelId = getCurrentLevelIdentifier()
+    if not levelId or levelId == "" then return { byRace = {} } end
+    if mRaceConfigCache[levelId] then return mRaceConfigCache[levelId] end
+    local path = "levels/" .. levelId .. "/" .. CONFIG_DIR .. "/" .. CONFIG_RACE_FILENAME
+    local data = jsonReadFile(path)
+    local result = { byRace = {} }
+    if type(data) == "table" and type(data.byRace) == "table" then
+        result.byRace = data.byRace
+    end
+    mRaceConfigCache[levelId] = result
+    return result
+end
+
 local function getRacePathKey(race)
     if not race or not race.checkpointRoad then return nil end
     if type(race.checkpointRoad) == "string" then
@@ -127,6 +145,37 @@ local function getRacePathKey(race)
         return serialize(race.checkpointRoad)
     end
     return nil
+end
+
+-- Merged config for a race: level aiRacers.json + aiRacingConfig.byRace[pathKey] + race table (race_data) for backward compat.
+-- Use this wherever we have a race and want AI settings (spawn, drive, recovery). pathKey = getRacePathKey(race), e.g. "trackloop" or "trackalt".
+local function getMergedConfigForRace(race)
+    local levelCfg = getCurrentLevelConfig()
+    if not race then return levelCfg end
+    local pathKey = getRacePathKey(race)
+    if not pathKey or pathKey == "" then return levelCfg end
+    local raceConfig = loadRaceConfig()
+    local overrides = (raceConfig.byRace and raceConfig.byRace[pathKey]) or {}
+    local merged = shallowCopyDefaults(levelCfg, overrides)
+    -- Backward compat: race_data.json AI fields still override. Full set so byRace + race_data have granular control.
+    local raceKeys = {
+        "spawnSameVehicleAsPlayer", "aiCount", "aiVehicles", "aggressionMin", "aggressionMax",
+        "racerSkill", "turnForceCoef", "awarenessForceCoef", "routeSpeed", "useRouteSpeedLimit", "routeSpeedMode",
+        "enabled", "maxSpawnCount", "avoidCars", "driveInLane", "useNavgraphPathfinding", "useRacingParameters",
+        "rubberBand", "scriptPathWidth", "scriptBootstrapDistance", "navTargetReachDistance",
+        "launchRecoveryGraceSeconds", "startEngineOnSpawn", "recoveryEnabled", "recoverySpeedThresholdMps",
+        "recoveryStuckSeconds", "recoveryCooldownSeconds", "despawnWreckedEnabled", "despawnWreckedDuringRace",
+        "despawnUpsideDownSeconds", "despawnAfterRecoveries", "despawnTerminalStuckSeconds", "despawnAlwaysStuckSeconds",
+        "delayedDespawnDefaultSeconds", "delayedDespawnStaggerSeconds",
+        "filterPoolByPowerMeetOrExceed", "aiPowerExceedCapPct",
+        "raceAccelScale", "raceThrottleRateMult", "raceTurnCoefScale", "raceAwarenessCoefScale",
+        "raceThrottleFloor", "raceObstacleSpeedCap", "raceObstacleSpeedCapAgg",
+        "raceHighSpeedThreshold", "raceHighSpeedThrottleFloor"
+    }
+    for _, k in ipairs(raceKeys) do
+        if race[k] ~= nil then merged[k] = race[k] end
+    end
+    return merged
 end
 
 -- Build path from race checkpointRoad (uses processRoad). Call on level load. When race has checkpointRoadLanes, also preloads one path per lane (lane road merged with main from first checkpoint).
@@ -208,8 +257,8 @@ local function loadStagingSpots()
     return spots
 end
 
-local function getVehiclePoolForRace(raceName, race, facilityName)
-    local cfg = getCurrentLevelConfig()
+local function getVehiclePoolForRace(raceName, race, facilityName, levelOrMergedCfg)
+    local cfg = (type(levelOrMergedCfg) == "table" and levelOrMergedCfg) or getCurrentLevelConfig()
     local byRace = cfg.vehiclePoolByRace and cfg.vehiclePoolByRace[raceName]
     if type(byRace) == "table" and #byRace > 0 then return byRace end
     local byFacility = cfg.vehiclePoolByFacility and cfg.vehiclePoolByFacility[facilityName]
@@ -340,6 +389,7 @@ local function pickRandomVehicleModel(pool)
 end
 
 -- Internal: spawn AI at staging spots using the given raw pool (array of model keys). Returns spawned count.
+-- Spawn path uses level config only (same as American Road) so spawning is reliable; drive/params use getMergedConfigForRace.
 local function spawnWithPool(raceName, race, facilityName, rawPool)
     local cfg = getCurrentLevelConfig()
     if cfg.enabled == false then return 0 end
@@ -448,12 +498,13 @@ end
 
 -- Spawn AI vehicles at AI staging spots for this facility/race. They remain stopped until releaseAndDrive().
 function M.spawnForStaging(raceName, race, facilityName)
-    local rawPool = getVehiclePoolForRace(raceName, race, facilityName)
+    local cfg = getCurrentLevelConfig()
+    local rawPool = getVehiclePoolForRace(raceName, race, facilityName, cfg)
     return spawnWithPool(raceName, race, facilityName, rawPool)
 end
 
 -- Spawn AI with similar power to the player vehicle: reads player HP via getPlayerVehiclePowerReliable, picks HP class (D/C/B/A), then spawns from vehiclePoolByHpClass[class] or defaultVehiclePool. Calls callback(spawnedCount).
--- When race.spawnSameVehicleAsPlayer is true (e.g. oval testing): spawns the player's exact model+config, colors only differ.
+-- When spawnSameVehicleAsPlayer is true (race_data or level aiRacers.json): spawns the player's exact model+config. Spawn path uses level config only for reliability.
 function M.spawnForStagingWithPlayerHp(raceName, race, facilityName, callback)
     if type(callback) ~= "function" then return end
     local cfg = getCurrentLevelConfig()
@@ -461,7 +512,7 @@ function M.spawnForStagingWithPlayerHp(raceName, race, facilityName, callback)
         callback(0)
         return
     end
-    if race and race.spawnSameVehicleAsPlayer then
+    if (race and race.spawnSameVehicleAsPlayer) or cfg.spawnSameVehicleAsPlayer then
         local modelKey, configKey = M.getPlayerVehicleModelAndConfig()
         if modelKey and modelKey ~= "" then
             local spawned = spawnWithFixedVehicle(raceName, race, facilityName, modelKey, configKey)
@@ -551,29 +602,33 @@ end
 -- raceAwarenessCoefScale, raceThrottleFloor, raceObstacleSpeedCap, raceObstacleSpeedCapAgg, raceHighSpeedThreshold (m/s),
 -- raceHighSpeedThrottleFloor (lets TCS cut in more above threshold so AI can let off when breaking traction).
 local function getRacingParameters(cfg, race)
-    local skill = clamp(tonumber(race and race.racerSkill) or tonumber(cfg.racerSkill) or DEFAULT_CONFIG.racerSkill or 0.8, 0, 1)
+    local skill = clamp(tonumber(race and race.racerSkill) or tonumber(cfg and cfg.racerSkill) or DEFAULT_CONFIG.racerSkill or 0.8, 0, 1)
     local baseEdgeDist = 1.5 - skill * 1.5
     local baseTurnForce = 6 * math.pow(skill, 1.5)
     local baseAwarenessForce = 0.25 * math.pow(skill, 1.5)
-    local turnForce = (race and race.turnForceCoef ~= nil) and clamp(tonumber(race.turnForceCoef) or baseTurnForce, 0.01, 10) or clamp(baseTurnForce, 0.01, 10)
-    local awarenessForce = (race and race.awarenessForceCoef ~= nil) and clamp(tonumber(race.awarenessForceCoef) or baseAwarenessForce, 0.01, 0.5) or clamp(baseAwarenessForce, 0.01, 0.5)
+    local turnForceRaw = (cfg and cfg.turnForceCoef ~= nil) and cfg.turnForceCoef or (race and race.turnForceCoef ~= nil) and race.turnForceCoef
+    local turnForce = turnForceRaw ~= nil and clamp(tonumber(turnForceRaw) or baseTurnForce, 0.01, 10) or clamp(baseTurnForce, 0.01, 10)
+    local awarenessRaw = (cfg and cfg.awarenessForceCoef ~= nil) and cfg.awarenessForceCoef or (race and race.awarenessForceCoef ~= nil) and race.awarenessForceCoef
+    local awarenessForce = awarenessRaw ~= nil and clamp(tonumber(awarenessRaw) or baseAwarenessForce, 0.01, 0.5) or clamp(baseAwarenessForce, 0.01, 0.5)
     local params = {
         edgeDist = clamp(baseEdgeDist, 0, 1.5),
         turnForceCoef = turnForce,
         awarenessForceCoef = awarenessForce
     }
-    -- Per-race overrideAI tuning (career overrideAI reads these when opt.racing)
-    if race then
-        if race.raceAccelScale ~= nil then params.raceAccelScale = tonumber(race.raceAccelScale) end
-        if race.raceThrottleRateMult ~= nil then params.raceThrottleRateMult = tonumber(race.raceThrottleRateMult) end
-        if race.raceTurnCoefScale ~= nil then params.raceTurnCoefScale = tonumber(race.raceTurnCoefScale) end
-        if race.raceAwarenessCoefScale ~= nil then params.raceAwarenessCoefScale = tonumber(race.raceAwarenessCoefScale) end
-        if race.raceThrottleFloor ~= nil then params.raceThrottleFloor = tonumber(race.raceThrottleFloor) end
-        if race.raceObstacleSpeedCap ~= nil then params.raceObstacleSpeedCap = tonumber(race.raceObstacleSpeedCap) end
-        if race.raceObstacleSpeedCapAgg ~= nil then params.raceObstacleSpeedCapAgg = tonumber(race.raceObstacleSpeedCapAgg) end
-        if race.raceHighSpeedThreshold ~= nil then params.raceHighSpeedThreshold = tonumber(race.raceHighSpeedThreshold) end
-        if race.raceHighSpeedThrottleFloor ~= nil then params.raceHighSpeedThrottleFloor = tonumber(race.raceHighSpeedThrottleFloor) end
+    -- Per-race overrideAI tuning (career overrideAI reads these when opt.racing). Prefer cfg (merged from aiRacingConfig.byRace + race_data).
+    local function fromCfgOrRace(k)
+        local v = (cfg and cfg[k] ~= nil) and cfg[k] or (race and race[k] ~= nil) and race[k]
+        return v ~= nil and tonumber(v) or nil
     end
+    if fromCfgOrRace("raceAccelScale") then params.raceAccelScale = fromCfgOrRace("raceAccelScale") end
+    if fromCfgOrRace("raceThrottleRateMult") then params.raceThrottleRateMult = fromCfgOrRace("raceThrottleRateMult") end
+    if fromCfgOrRace("raceTurnCoefScale") then params.raceTurnCoefScale = fromCfgOrRace("raceTurnCoefScale") end
+    if fromCfgOrRace("raceAwarenessCoefScale") then params.raceAwarenessCoefScale = fromCfgOrRace("raceAwarenessCoefScale") end
+    if fromCfgOrRace("raceThrottleFloor") then params.raceThrottleFloor = fromCfgOrRace("raceThrottleFloor") end
+    if fromCfgOrRace("raceObstacleSpeedCap") then params.raceObstacleSpeedCap = fromCfgOrRace("raceObstacleSpeedCap") end
+    if fromCfgOrRace("raceObstacleSpeedCapAgg") then params.raceObstacleSpeedCapAgg = fromCfgOrRace("raceObstacleSpeedCapAgg") end
+    if fromCfgOrRace("raceHighSpeedThreshold") then params.raceHighSpeedThreshold = fromCfgOrRace("raceHighSpeedThreshold") end
+    if fromCfgOrRace("raceHighSpeedThrottleFloor") then params.raceHighSpeedThrottleFloor = fromCfgOrRace("raceHighSpeedThrottleFloor") end
     return params
 end
 
@@ -907,7 +962,7 @@ end
 -- Call at countdown GO: release spawned AI for this race using script path. When race has checkpointRoadLanes, each AI gets a lane path by spawn index (laneIndex = (i-1) % numLanes).
 function M.releaseAndDrive(race, lapCount)
     if not race then return end
-    local cfg = getCurrentLevelConfig()
+    local cfg = getMergedConfigForRace(race)
     if cfg.enabled == false then return end
     cancelDelayedDespawn()
     M.preloadPathForRace(race)

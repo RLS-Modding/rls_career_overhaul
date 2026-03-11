@@ -873,8 +873,7 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
             -- If opted in and no result to show, close the app when event ends
             if not finalResult then
                 guihooks.trigger("FreeroamHubCloseApp")
-                local gc = getGameplayAppContainers()
-                if gc and gc.hideApp then gc.hideApp("gameplayApps", "freeroamEventHub") end
+                guihooks.trigger("setGameplayAppVisibility", { appId = "freeroamEventHub", visible = false })
             end
         end
 
@@ -1099,12 +1098,8 @@ local function onBeamNGTrigger(data)
                     mFreeroamHubPrefs.addedOnce = true
                     saveFreeroamHubPrefs()
                 end
-                local gc = getGameplayAppContainers()
-                if gc and gc.showApp then
-                    gc.showApp("gameplayApps", "freeroamEventHub")
-                else
-                    guihooks.trigger("setGameplayAppVisibility", { appId = "freeroamEventHub", visible = true })
-                end
+                -- Use guihooks only; engine container has no freeroamEventHub registered
+                guihooks.trigger("setGameplayAppVisibility", { appId = "freeroamEventHub", visible = true })
                 guihooks.trigger("FreeroamHubRaceState", state)
             end
 
@@ -1129,8 +1124,7 @@ local function onBeamNGTrigger(data)
                     if isFreeroamHubActive() then
                         guihooks.trigger("FreeroamHubSetAvailable", { available = false })
                         guihooks.trigger("FreeroamHubRaceState", { inRace = false })
-                        local gc = getGameplayAppContainers()
-                        if gc and gc.hideApp then gc.hideApp("gameplayApps", "freeroamEventHub") end
+                        guihooks.trigger("setGameplayAppVisibility", { appId = "freeroamEventHub", visible = false })
                     end
                     utils.displayMessage("You exited the staging zone", 4)
                     utils.setActiveLight(raceName, "red")
@@ -1677,6 +1671,7 @@ end
 -- Freeroam hub: set route to main track (e.g. set laps event, main route)
 -- Spawn AI racers for track when player selects Track or Short Track and is staged at track (west_coast_usa style).
 local function prepareFreeroamAiForTrack()
+    if not races then races = utils.loadRaceData() end
     if not aiRacers or not races or not races.track then return end
     if aiRacers.spawnForStagingWithPlayerHp then
         aiRacers.spawnForStagingWithPlayerHp("track", races.track, "track", function() end)

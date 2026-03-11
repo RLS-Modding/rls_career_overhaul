@@ -1,5 +1,6 @@
 {
   "enabled": true,
+  "spawnSameVehicleAsPlayer": true,
   "sitesFile": "competitiveRaceAI.sites.json",
   "stagingPrefix": "AI_stage_",
   "maxSpawnCount": 5,
