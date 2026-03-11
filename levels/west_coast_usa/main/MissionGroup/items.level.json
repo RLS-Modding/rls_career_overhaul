@@ -56,14 +56,11 @@
 {"name":"JoesJunk","class":"SimGroup","__parent":"MissionGroup"}
 {"name":"RaceTab","class":"SimGroup","__parent":"MissionGroup"}
 {"name":"Slop Gear","class":"SimGroup","__parent":"MissionGroup"}
-{"name":"PointLight_48","class":"PointLight","__parent":"MissionGroup","position":[-1517.97803,43.7006836,132.663651],"brightness":1.5,"color":[0.960355997,0,0,1],"radius":7,"rotationMatrix":[-0.0842764229,0.996442258,3.72528985e-09,0.101802804,0.00861022435,-0.994767189,-0.991228104,-0.0838354677,-0.102166265]}
-{"name":"PointLight_481","class":"PointLight","__parent":"MissionGroup","position":[-1517.97803,40.7751045,132.663651],"color":[0.960355997,0,0,1],"radius":7,"rotationMatrix":[-0.0842764229,0.996442258,3.72528985e-09,0.101802804,0.00861022435,-0.994767189,-0.991228104,-0.0838354677,-0.102166265]}
-{"name":"PointLight_4811","class":"PointLight","__parent":"MissionGroup","position":[-1517.97803,37.5826416,132.663651],"color":[0.960355997,0,0,1],"radius":7,"rotationMatrix":[-0.0842764229,0.996442258,3.72528985e-09,0.101802804,0.00861022435,-0.994767189,-0.991228104,-0.0838354677,-0.102166265]}
-{"name":"PointLight_48111","class":"PointLight","__parent":"MissionGroup","position":[-1517.97803,34.2004776,131.602646],"color":[0.960355997,0,0,1],"radius":7,"rotationMatrix":[-0.0842764229,0.996442258,3.72528985e-09,0.101802804,0.00861022435,-0.994767189,-0.991228104,-0.0838354677,-0.102166265]}
-{"name":"PointLight_4812","class":"PointLight","__parent":"MissionGroup","position":[-1517.97803,42.050209,132.663651],"color":[0.960355997,0,0,1],"radius":7,"rotationMatrix":[-0.0842764229,0.996442258,3.72528985e-09,0.101802804,0.00861022435,-0.994767189,-0.991228104,-0.0838354677,-0.102166265]}
-{"name":"PointLight_48121","class":"PointLight","__parent":"MissionGroup","position":[-1517.97803,38.9335098,132.663651],"color":[0.960355997,0,0,1],"radius":7,"rotationMatrix":[-0.0842764229,0.996442258,3.72528985e-09,0.101802804,0.00861022435,-0.994767189,-0.991228104,-0.0838354677,-0.102166265]}
-{"name":"PointLight_481211","class":"PointLight","__parent":"MissionGroup","position":[-1517.97803,36.0912628,132.663651],"color":[0.960355997,0,0,1],"radius":7,"rotationMatrix":[-0.0842764229,0.996442258,3.72528985e-09,0.101802804,0.00861022435,-0.994767189,-0.991228104,-0.0838354677,-0.102166265]}
-{"name":"PointLight_482","class":"PointLight","__parent":"MissionGroup","position":[-1517.97803,45.4993515,131.588928],"brightness":1.5,"color":[0.960355997,0,0,1],"radius":7,"rotationMatrix":[-0.0842764229,0.996442258,3.72528985e-09,0.101802804,0.00861022435,-0.994767189,-0.991228104,-0.0838354677,-0.102166265]}
-{"name":"SFXSpace_2","class":"SFXSpace","__parent":"MissionGroup","position":[-1529.27856,38.6801834,131.015198],"rotationMatrix":[-1,0,0,0,-0.999999821,-1.00413963e-05,0,-1.02202102e-05,0.999999821],"scale":[103.967255,103.967255,23.8588905],"soundAmbience":"Level_Tunnel_Closed"}
-{"name":"SpotLight_114","class":"SpotLight","__parent":"MissionGroup","position":[-1523.11279,46.4769859,129.501617],"rotationMatrix":[-1,-0,0,0,-0.488996267,-0.872285783,0,-0.872285783,0.488996327]}
-{"name":"SpotLight_1141","class":"SpotLight","__parent":"MissionGroup","position":[-1523.11279,31.5999775,129.501617],"rotationMatrix":[0.995925844,-0.0901757181,3.7252903e-09,0.0440956093,0.48700428,-0.872285724,0.0786589831,0.868731976,0.488996506]}
+{"name":"ASOTV","class":"SimGroup","__parent":"MissionGroup"}
+{"name":"JoesJunk","class":"SimGroup","__parent":"MissionGroup"}
+{"name":"RaceTab","class":"SimGroup","__parent":"MissionGroup"}
+{"name":"Slop Gear","class":"SimGroup","__parent":"MissionGroup"}
+{"name":"ASOTV","class":"SimGroup","__parent":"MissionGroup"}
+{"name":"JoesJunk","class":"SimGroup","__parent":"MissionGroup"}
+{"name":"RaceTab","class":"SimGroup","__parent":"MissionGroup"}
+{"name":"Slop Gear","class":"SimGroup","__parent":"MissionGroup"}
