@@ -928,6 +928,7 @@ local function loadBusinessJobs(businessId)
   end
 
   if businessJobs[businessId] then
+    tuningShopTechs.reconcileAssignments(businessId, businessJobs[businessId])
     return businessJobs[businessId]
   end
 
@@ -941,6 +942,7 @@ local function loadBusinessJobs(businessId)
     active = data.active or {},
     new = data.new or {}
   }
+  tuningShopTechs.reconcileAssignments(businessId, businessJobs[businessId])
 
   local function regenerateJobFields(job, businessId)
     if not job or not job.vehicleConfig then

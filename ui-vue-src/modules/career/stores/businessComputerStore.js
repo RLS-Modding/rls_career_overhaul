@@ -1254,6 +1254,25 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
           newJobs: jobsData.newJobs || [],
           maxActiveJobs: jobsData.maxActiveJobs ?? businessData.value.maxActiveJobs
         }
+
+        if (currentBusinessType === 'tuningShop') {
+          const techs = Array.isArray(businessData.value.techs) ? businessData.value.techs : []
+          const hasSuspiciousAssignment = (businessData.value.activeJobs || []).some(job => {
+            if (!job?.techAssigned) return false
+            const jobId = normalizeId(job.jobId ?? job.id)
+            return !techs.find(tech =>
+              String(tech.id) === String(job.techAssigned) &&
+              normalizeId(tech.jobId) === jobId
+            )
+          })
+
+          if (hasSuspiciousAssignment) {
+            const techsData = await lua.career_modules_business_tuningShop.getTechData(currentBusinessId)
+            if (techsData?.techs && Array.isArray(techsData.techs)) {
+              updateTechs(techsData.techs)
+            }
+          }
+        }
       }
     } catch (error) {
     }
@@ -2498,4 +2517,3 @@ export const useBusinessComputerStore = defineStore("businessComputer", () => {
     updateManagerBlacklist
   }
 })
-
