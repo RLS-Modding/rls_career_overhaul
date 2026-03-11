@@ -21,7 +21,7 @@
       },
       "isMultiSpot":false,
       "name":"auctionPlayerStart",
-      "oldId":2253,
+      "oldId":13025,
       "pos":[
         -1550.8383789063,
         75.74878692627,
@@ -30,8 +30,8 @@
       "rot":[
         0,
         0,
-        -0.71325959982272,
-        -0.70090018361324
+        -0.70542834486387,
+        0.70878140668904
       ],
       "scl":[
         2.5,
@@ -60,7 +60,7 @@
       },
       "isMultiSpot":false,
       "name":"Auction Lot 1",
-      "oldId":2254,
+      "oldId":13026,
       "pos":[
         -1497.1021728516,
         41.099609375,
@@ -98,7 +98,7 @@
       },
       "isMultiSpot":false,
       "name":"auctionBlock",
-      "oldId":2255,
+      "oldId":13027,
       "pos":[
         -1523.2150878906,
         38.787761688232,
@@ -136,7 +136,7 @@
       },
       "isMultiSpot":false,
       "name":"auctionPathIn",
-      "oldId":2256,
+      "oldId":13028,
       "pos":[
         -1497.0223388672,
         57.742076873779,
@@ -174,7 +174,7 @@
       },
       "isMultiSpot":false,
       "name":"auctionPathOut",
-      "oldId":2257,
+      "oldId":13029,
       "pos":[
         -1522.9978027344,
         15.339017868042,
@@ -212,7 +212,7 @@
       },
       "isMultiSpot":false,
       "name":"auctionDespawn",
-      "oldId":2258,
+      "oldId":13030,
       "pos":[
         -1506.0939941406,
         34.166618347168,
@@ -250,7 +250,7 @@
       },
       "isMultiSpot":false,
       "name":"auctionReturn1",
-      "oldId":2259,
+      "oldId":13031,
       "pos":[
         -444.14743041992,
         648.27233886719,
@@ -288,7 +288,7 @@
       },
       "isMultiSpot":false,
       "name":"auctionReturn2",
-      "oldId":2260,
+      "oldId":13032,
       "pos":[
         -440.37478637695,
         652.00952148438,
@@ -326,7 +326,7 @@
       },
       "isMultiSpot":false,
       "name":"auctionReturn3",
-      "oldId":2261,
+      "oldId":13033,
       "pos":[
         -436.66558837891,
         656.03936767578,
@@ -364,7 +364,7 @@
       },
       "isMultiSpot":false,
       "name":"auctionReturn4",
-      "oldId":2262,
+      "oldId":13034,
       "pos":[
         -437.67755126953,
         637.88977050781,
@@ -402,7 +402,7 @@
       },
       "isMultiSpot":false,
       "name":"auctionReturn5",
-      "oldId":2263,
+      "oldId":13035,
       "pos":[
         -433.79446411133,
         641.67584228516,
@@ -440,7 +440,7 @@
       },
       "isMultiSpot":false,
       "name":"auctionReturn6",
-      "oldId":2264,
+      "oldId":13036,
       "pos":[
         -429.97161865234,
         645.53088378906,
@@ -478,7 +478,7 @@
       },
       "isMultiSpot":false,
       "name":"auctionReturn7",
-      "oldId":2265,
+      "oldId":13037,
       "pos":[
         -438.82376098633,
         645.75573730469,
