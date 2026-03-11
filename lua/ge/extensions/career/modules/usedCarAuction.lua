@@ -36,7 +36,7 @@ local LOT_STUCK_TIMEOUT = 5.0
 local LOT_PROGRESS_DISTANCE = 0.35
 local ANTI_SNIPE_WINDOW = 10.0
 local ANTI_SNIPE_EXTEND = 8.0
-local DEFAULT_LOT_COUNT = 3
+local DEFAULT_LOT_COUNT = 8
 local NPC_PERSONA_COUNT = 3
 local NPC_MAX_BID_MULT_MIN = 0.55
 local NPC_MAX_BID_MULT_MAX = 1.50
@@ -440,17 +440,44 @@ local function triggerAuctionWinEmitters(duration)
   end)
 end
 
-local function getReturnSpotForInventoryId(inventoryId)
-  if not inventoryId then return nil end
-  local returnSpots = ((auctionState.siteLayout or {}).returnSpots) or {}
-  if #returnSpots == 0 then return nil end
-
-  for idx, invId in ipairs(auctionState.purchasedInventoryIds or {}) do
-    if invId == inventoryId then
-      return returnSpots[idx]
+local function isSpotFree(spot)
+  if not spot then return false end
+  if spot.vehicle then return false end
+  if spot.hasAnyVehicles then
+    local ok, hasAny = pcall(function() return spot:hasAnyVehicles() end)
+    if ok and hasAny then
+      return false
     end
   end
-  return nil
+  return true
+end
+
+local function removeSpotFromList(spots, spotToRemove)
+  if not spots or not spotToRemove then return false end
+  for i, spot in ipairs(spots) do
+    if spot == spotToRemove then
+      table.remove(spots, i)
+      return true
+    end
+  end
+  return false
+end
+
+local function getBestReturnSpotForVehicle(vehId, candidateSpots)
+  if not vehId or type(candidateSpots) ~= 'table' or #candidateSpots == 0 then
+    return nil
+  end
+
+  if gameplay_sites_sitesManager and gameplay_sites_sitesManager.getBestParkingSpotForVehicleFromList then
+    local ok, bestSpot = pcall(function()
+      return gameplay_sites_sitesManager.getBestParkingSpotForVehicleFromList(vehId, candidateSpots)
+    end)
+    if ok and bestSpot then
+      return bestSpot
+    end
+  end
+
+  return candidateSpots[1]
 end
 
 local function despawnLotVehicle(lot)
@@ -459,7 +486,14 @@ local function despawnLotVehicle(lot)
     local veh = lot.vehId and getObjectByID(lot.vehId)
     if veh then
       -- Won vehicles stay loaded; park them at return spots for instant availability.
-      local returnSpot = getReturnSpotForInventoryId(lot.wonInventoryId)
+      local returnSpots = ((auctionState.siteLayout or {}).returnSpots) or {}
+      local freeSpots = {}
+      for _, spot in ipairs(returnSpots) do
+        if isSpotFree(spot) then
+          table.insert(freeSpots, spot)
+        end
+      end
+      local returnSpot = getBestReturnSpotForVehicle(veh:getID(), freeSpots)
       if returnSpot and returnSpot.moveResetVehicleTo then
         pcall(function() returnSpot:moveResetVehicleTo(veh:getID(), nil, nil, nil, nil, true) end)
       end
@@ -919,6 +953,12 @@ local function roundDownToStep(value, step)
   return math.floor(math.max(0, tonumber(value) or 0) / s) * s
 end
 
+local function roundToNearestStep(value, step)
+  local s = math.max(1, tonumber(step) or 1)
+  local normalized = math.max(0, tonumber(value) or 0) / s
+  return math.floor(normalized + 0.5) * s
+end
+
 local function makeFallbackAuctionPersona(index)
   local fallbackProfiles = {
     {name = 'Bidder A', priceMultiplier = 0.92, counterOfferReadiness = 0.75, unpredictability = 0.06},
@@ -1044,7 +1084,7 @@ local function prepareLots(spawnSpots, blockSpots, lotCount, npcPersonas)
     end
 
     local minStep = 250
-    local startBid = math.floor(vehicleDef.basePrice * (0.55 + math.random() * 0.2))
+    local startBid = roundToNearestStep(vehicleDef.basePrice * (0.55 + math.random() * 0.2), 500)
     local lotNpcMaxBidsByPersonaId = {}
     local lotNpcNamesById = {}
 
@@ -1774,6 +1814,10 @@ end
 
 local function distributePurchasedVehiclesAround(pos, baseRot)
   local returnSpots = ((auctionState.siteLayout or {}).returnSpots) or {}
+  local availableReturnSpots = {}
+  for _, spot in ipairs(returnSpots) do
+    table.insert(availableReturnSpots, spot)
+  end
 
   local placed = 0
   for _, inventoryId in ipairs(auctionState.purchasedInventoryIds) do
@@ -1789,10 +1833,19 @@ local function distributePurchasedVehiclesAround(pos, baseRot)
 
     if veh then
       placed = placed + 1
-      local returnSpot = returnSpots[placed]
+      local movedToReturnSpot = false
+      local returnSpot = getBestReturnSpotForVehicle(veh:getID(), availableReturnSpots)
       if returnSpot and returnSpot.moveResetVehicleTo then
-        returnSpot:moveResetVehicleTo(veh:getID(), nil, nil, nil, nil, true)
-      else
+        local ok = pcall(function()
+          returnSpot:moveResetVehicleTo(veh:getID(), nil, nil, nil, nil, true)
+        end)
+        if ok then
+          movedToReturnSpot = true
+          removeSpotFromList(availableReturnSpots, returnSpot)
+        end
+      end
+
+      if not movedToReturnSpot then
         local row = math.floor((placed - 1) / 2)
         local side = ((placed - 1) % 2 == 0) and 1 or -1
         local offset = vec3((6 + row * 4) * side, -8 - (row * 4), 0)

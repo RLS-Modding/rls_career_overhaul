@@ -367,7 +367,12 @@ export default [
       {
         path: "used-car-auction",
         name: "used-car-auction",
-        component: UsedCarAuction
+        component: UsedCarAuction,
+        meta: {
+          uiApps: {
+            shown: false,
+          },
+        },
       },
       {
         path: "purchase-garage",
@@ -592,4 +597,3 @@ export default [
     ],
   },
 ]
-

@@ -1,5 +1,5 @@
 <template>
-  <LayoutSingle class="auction-overlay-layout">
+  <div class="auction-overlay-layout">
     <div class="auction-overlay">
       <div class="overlay-header">
         <div class="title">Used Car Auction</div>
@@ -64,14 +64,13 @@
         <BngButton :accent="ACCENTS.primary" @click="bid(5000)">+$5000</BngButton>
       </div>
     </div>
-  </LayoutSingle>
+  </div>
 </template>
 
 <script setup>
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { lua } from '@/bridge'
 import { BngButton, ACCENTS } from '@/common/components/base'
-import { LayoutSingle } from '@/common/layouts'
 
 const state = ref({
   phase: 'idle',

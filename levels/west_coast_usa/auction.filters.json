@@ -2,87 +2,37 @@
   "description": "Filters used by usedCarAuction.lua for random lot generation",
   "filter": {
     "whiteList": {
-      "Mileage": {
-        "min": 25000000,
-        "max": 380000000
-      }
+      "Type": [
+        "Car",
+        "Truck"
+      ]
     },
     "blackList": {
       "Type": [
         "Trailer",
-        "Semi Truck"
+        "Heavy Machinery"
       ],
       "Config Type": [
-        "Roller",
-        "Race",
         "Police",
-        "Service"
+        "Frame"
+      ],
+      "Body Type": [
+        "ATV",
+        "JATO truck"
       ]
     }
   },
   "subFilters": [
     {
-      "probability": 7,
-      "whiteList": {
-        "Mileage": {
-          "min": 4800,
-          "max": 16093
-        },
-        "Years": {
-          "min": 2010,
-          "max": 2025
-        }
-      }
-    },
-    {
-      "probability": 6,
-      "whiteList": {
-        "Mileage": {
-          "min": 4800,
-          "max": 16093
-        },
-        "Years": {
-          "min": 2000,
-          "max": 2009
-        }
-      }
-    },
-    {
-      "probability": 5,
-      "whiteList": {
-        "Mileage": {
-          "min": 4800,
-          "max": 16093
-        },
-        "Years": {
-          "min": 1990,
-          "max": 1999
-        }
-      }
-    },
-    {
-      "probability": 4,
-      "whiteList": {
-        "Mileage": {
-          "min": 4800,
-          "max": 16093
-        },
-        "Years": {
-          "min": 1980,
-          "max": 1989
-        }
-      }
-    },
-    {
       "probability": 3,
       "whiteList": {
         "Mileage": {
           "min": 4800,
-          "max": 16093
+          "max": 64373760
         },
-        "Years": {
-          "min": 1970,
-          "max": 1979
+        "Population": {
+          "min": 4000,
+          "max": 999999
         }
       }
     },
@@ -91,24 +41,11 @@
       "whiteList": {
         "Mileage": {
           "min": 4800,
-          "max": 16093
+          "max": 64373760
         },
-        "Years": {
-          "min": 1950,
-          "max": 1969
-        }
-      }
-    },
-    {
-      "probability": 1,
-      "whiteList": {
-        "Mileage": {
-          "min": 4800,
-          "max": 16093
-        },
-        "Years": {
-          "min": 1900,
-          "max": 1949
+        "Population": {
+          "min": 1,
+          "max": 2999
         }
       }
     }
