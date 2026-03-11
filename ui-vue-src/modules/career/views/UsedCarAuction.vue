@@ -179,7 +179,7 @@ onUnmounted(() => {
   position: fixed;
   top: 1.2rem;
   left: 1.2rem;
-  width: min(23rem, calc(100vw - 2rem));
+  width: min(30rem, calc(100vw - 2rem));
   max-height: calc(100vh - 2.4rem);
   overflow: hidden;
   display: flex;
@@ -261,7 +261,7 @@ onUnmounted(() => {
 
 .table-row {
   display: grid;
-  grid-template-columns: 4.2rem 1fr 4.8rem;
+  grid-template-columns: 4.6rem 1fr 5.6rem;
   align-items: center;
   gap: 0.55rem;
 }

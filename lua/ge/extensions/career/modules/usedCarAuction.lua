@@ -1527,6 +1527,8 @@ local function requestAuctionState()
     currentLot = derivedCurrentLot,
     statusMessage = status,
     purchasedCount = #(auctionState.purchasedInventoryIds or {}),
+    autoBidEnabled = false,
+    autoBidMax = 0,
     lots = lotsOut
   }
 end
@@ -1536,6 +1538,16 @@ local function placeBid(amount)
     return placePlayerBidByAmount(tonumber(amount))
   end
   return placePlayerBidIfPossible()
+end
+
+local function setAutoBidEnabled(enabled)
+  -- Legacy API kept as no-op for compatibility with stale UI callers.
+  return false
+end
+
+local function setAutoBidMax(maxBid)
+  -- Legacy API kept as no-op for compatibility with stale UI callers.
+  return false
 end
 
 local function passCurrentLot()
@@ -1996,6 +2008,8 @@ M.startAuction = startAuction
 M.cancelTravelPrompt = cancelTravelPrompt
 M.placeBid = placeBid
 M.passCurrentLot = passCurrentLot
+M.setAutoBidEnabled = setAutoBidEnabled
+M.setAutoBidMax = setAutoBidMax
 M.closeMenu = closeMenu
 
 return M
