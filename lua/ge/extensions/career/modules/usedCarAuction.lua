@@ -37,6 +37,8 @@ local ANTI_SNIPE_WINDOW = 10.0
 local ANTI_SNIPE_EXTEND = 8.0
 local DEFAULT_LOT_COUNT = 3
 local NPC_PERSONA_COUNT = 3
+local NPC_MAX_BID_MULT_MIN = 0.55
+local NPC_MAX_BID_MULT_MAX = 1.50
 
 local fallbackPool = {
   { model = 'covet', config = 'vehicles/covet/roller_covet.pc', title = 'Ibishu Covet', basePrice = 2600 },
@@ -713,11 +715,17 @@ local function computeNpcMaxBidForLot(basePrice, startBid, minStep, persona)
   local priceMultiplier = tonumber((persona or {}).priceMultiplier) or 1.0
   local readiness = tonumber((persona or {}).counterOfferReadiness) or 0.5
   local unpredictability = tonumber((persona or {}).unpredictability) or 0.03
-  local baseMult = clampNumber(0.75 + priceMultiplier * 0.35 + readiness * 0.20 + unpredictability * 0.50, 0.70, 1.35)
-  local lotJitter = 0.90 + math.random() * 0.30
-
-  local maxBid = roundDownToStep((tonumber(basePrice) or 0) * baseMult * lotJitter, minStep)
+  local personaBias = clampNumber(
+    (priceMultiplier - 1.0) * 0.55 +
+    (readiness - 0.5) * 0.35 +
+    (unpredictability - 0.03) * 2.5,
+    -0.35, 0.35
+  )
+  local roll = clampNumber(math.random() + personaBias, 0, 1)
+  local targetMult = NPC_MAX_BID_MULT_MIN + roll * (NPC_MAX_BID_MULT_MAX - NPC_MAX_BID_MULT_MIN)
+  local maxBid = roundDownToStep((tonumber(basePrice) or 0) * targetMult, minStep)
   maxBid = math.max(maxBid, (tonumber(startBid) or 0) + (tonumber(minStep) or 250) * 2)
+  maxBid = math.min(maxBid, roundDownToStep((tonumber(basePrice) or 0) * NPC_MAX_BID_MULT_MAX, minStep))
   return maxBid
 end
 
@@ -945,20 +953,15 @@ local function applyRandomPaintToSpawnOptions(options, modelKey, configPath)
   local modelPaints = modelData and modelData.model and modelData.model.paints
   if type(modelPaints) ~= 'table' then return end
 
-  local paintNames = {paintResult.paintName1, paintResult.paintName2, paintResult.paintName3}
-  local paint1 = paintNames[1] and modelPaints[paintNames[1]]
-  local paint2 = paintNames[2] and modelPaints[paintNames[2]]
-  local paint3 = paintNames[3] and modelPaints[paintNames[3]]
+  local paintName = paintResult.paintName1
+  local paint1 = paintName and modelPaints[paintName]
   if not paint1 then
     return
   end
 
-  options.paintName = paintNames[1]
-  options.paintName2 = paintNames[2]
-  options.paintName3 = paintNames[3]
+  -- Only randomize paint slot 1 for auction vehicles.
+  options.paintName = paintName
   options.paint = deepCopy(paint1)
-  options.paint2 = deepCopy(paint2 or paint1)
-  options.paint3 = deepCopy(paint3 or paint1)
 
   -- Also embed paints into config data before spawn so loaded config keeps auction paint.
   if type(configPath) == 'string' then
@@ -967,11 +970,9 @@ local function applyRandomPaintToSpawnOptions(options, modelKey, configPath)
       cfg = deepCopy(cfg)
       cfg.partConfigFilename = configPath
       cfg.colors = nil
-      cfg.paints = {
-        deepCopy(options.paint),
-        deepCopy(options.paint2),
-        deepCopy(options.paint3)
-      }
+      local paints = type(cfg.paints) == 'table' and deepCopy(cfg.paints) or {}
+      paints[1] = deepCopy(options.paint)
+      cfg.paints = paints
       options.config = cfg
     end
   end
