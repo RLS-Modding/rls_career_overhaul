@@ -39,6 +39,11 @@ local DEFAULT_LOT_COUNT = 3
 local NPC_PERSONA_COUNT = 3
 local NPC_MAX_BID_MULT_MIN = 0.55
 local NPC_MAX_BID_MULT_MAX = 1.50
+local LOT_WIN_EMITTER_DURATION = 1.0
+local AUCTION_WIN_EMITTERS_GROUP = 'auctionEmitters'
+local AUCTION_ACTIVE_ASSETS_GROUP = 'auctionAssetsOn'
+local BID_ACCEPTED_SFX_EVENT = 'event:>UI>Career>Buy_02'
+local LOT_WIN_CELEBRATION_SFX_EVENT = 'event:>UI>Missions>End_Gold'
 
 local fallbackPool = {
   { model = 'covet', config = 'vehicles/covet/roller_covet.pc', title = 'Ibishu Covet', basePrice = 2600 },
@@ -84,7 +89,8 @@ local auctionState = {
   entryCooldownUntil = 0,
   uiOpen = false,
   awaitingFinalExit = false,
-  npcPersonas = {}
+  npcPersonas = {},
+  winEmitterPulseToken = 0
 }
 
 local usedConfigKeys = {}
@@ -243,6 +249,155 @@ local function deleteVehicleSafe(vehId)
   if veh then
     pcall(function() veh:delete() end)
   end
+end
+
+local function playUiSound(eventName)
+  if not eventName or eventName == '' then return end
+  if Engine and Engine.Audio and Engine.Audio.playOnce then
+    pcall(function()
+      Engine.Audio.playOnce('AudioGui', eventName)
+    end)
+  end
+end
+
+local function playBidAcceptedSound()
+  playUiSound(BID_ACCEPTED_SFX_EVENT)
+end
+
+local function playLotWinCelebrationSound()
+  playUiSound(LOT_WIN_CELEBRATION_SFX_EVENT)
+end
+
+local function resolveSceneRefToObject(ref)
+  local refType = type(ref)
+  if refType == 'userdata' then return ref end
+  if refType == 'number' then return scenetree.findObjectById(ref) end
+  if refType == 'string' then return scenetree.findObject(ref) end
+  return nil
+end
+
+local function listChildrenSafe(obj)
+  if not obj or not obj.getObjects then
+    return {}
+  end
+
+  local ok, refs = pcall(function()
+    return obj:getObjects()
+  end)
+  if not ok or type(refs) ~= 'table' then
+    return {}
+  end
+
+  local out = {}
+  for _, ref in ipairs(refs) do
+    local child = resolveSceneRefToObject(ref)
+    if child then
+      table.insert(out, child)
+    end
+  end
+  return out
+end
+
+local function setEmitterObjectEnabled(obj, enabled)
+  if not obj then return end
+  local boolEnabled = enabled and true or false
+  local numericEnabled = boolEnabled and 1 or 0
+  local textEnabled = boolEnabled and '1' or '0'
+
+  if obj.setEnabled then
+    pcall(function() obj:setEnabled(boolEnabled) end)
+  end
+  if obj.setActive then
+    pcall(function() obj:setActive(numericEnabled) end)
+  end
+  if obj.setField then
+    pcall(function() obj:setField('enabled', 0, textEnabled) end)
+    pcall(function() obj:setField('active', 0, textEnabled) end)
+  end
+  if obj.setHidden then
+    pcall(function() obj:setHidden(not boolEnabled) end)
+  end
+end
+
+local function setAuctionActiveAssetObjectEnabled(obj, enabled)
+  if not obj then return end
+  setEmitterObjectEnabled(obj, enabled)
+
+  if enabled and obj.play then
+    local played = pcall(function() obj:play() end)
+    if not played then
+      pcall(function() obj:play(-1) end)
+    end
+  elseif (not enabled) and obj.stop then
+    local stopped = pcall(function() obj:stop() end)
+    if not stopped then
+      pcall(function() obj:stop(-1) end)
+    end
+  end
+end
+
+local function setAuctionWinEmittersEnabled(enabled)
+  local root = scenetree.findObject(AUCTION_WIN_EMITTERS_GROUP)
+  if not root then
+    return false
+  end
+
+  local visited = {}
+  local function applyRecursive(obj)
+    if not obj then return end
+    local id = obj.getID and obj:getID() or tostring(obj)
+    if visited[id] then return end
+    visited[id] = true
+
+    setEmitterObjectEnabled(obj, enabled)
+    for _, child in ipairs(listChildrenSafe(obj)) do
+      applyRecursive(child)
+    end
+  end
+
+  applyRecursive(root)
+  return true
+end
+
+local function setAuctionActiveAssetsEnabled(enabled)
+  local root = scenetree.findObject(AUCTION_ACTIVE_ASSETS_GROUP)
+  if not root then
+    return false
+  end
+
+  local visited = {}
+  local function applyRecursive(obj)
+    if not obj then return end
+    local id = obj.getID and obj:getID() or tostring(obj)
+    if visited[id] then return end
+    visited[id] = true
+
+    setAuctionActiveAssetObjectEnabled(obj, enabled)
+    for _, child in ipairs(listChildrenSafe(obj)) do
+      applyRecursive(child)
+    end
+  end
+
+  applyRecursive(root)
+  return true
+end
+
+local function triggerAuctionWinEmitters(duration)
+  local pulseDuration = tonumber(duration) or LOT_WIN_EMITTER_DURATION
+  if pulseDuration <= 0 then return end
+  if not (core_jobsystem and core_jobsystem.create) then return end
+
+  auctionState.winEmitterPulseToken = (auctionState.winEmitterPulseToken or 0) + 1
+  local token = auctionState.winEmitterPulseToken
+
+  setAuctionWinEmittersEnabled(true)
+  core_jobsystem.create(function(job)
+    job.sleep(pulseDuration)
+    if token ~= (auctionState.winEmitterPulseToken or 0) then
+      return
+    end
+    setAuctionWinEmittersEnabled(false)
+  end)
 end
 
 local function getReturnSpotForInventoryId(inventoryId)
@@ -1209,6 +1364,7 @@ local function placePlayerBidIfPossible()
 
   lot.currentBid = bidAmount
   setPlayerAsLeader(lot)
+  playBidAcceptedSound()
   maybeExtendLotTimer(lot, 'Player')
   auctionState.nextNpcBidAt = os.clock() + (NPC_BID_COOLDOWN_MIN + math.random() * (NPC_BID_COOLDOWN_MAX - NPC_BID_COOLDOWN_MIN))
   ui_message(string.format('Bid placed on %s: $%d', lot.title, bidAmount), 2, 'Used Auction', 'info')
@@ -1231,6 +1387,7 @@ local function placePlayerBidByAmount(amount)
 
   lot.currentBid = bidAmount
   setPlayerAsLeader(lot)
+  playBidAcceptedSound()
   maybeExtendLotTimer(lot, 'Player')
   auctionState.nextNpcBidAt = os.clock() + (NPC_BID_COOLDOWN_MIN + math.random() * (NPC_BID_COOLDOWN_MAX - NPC_BID_COOLDOWN_MIN))
   ui_message(string.format('Bid placed on %s: $%d', lot.title, bidAmount), 2, 'Used Auction', 'info')
@@ -1357,6 +1514,8 @@ local function finishCurrentLot()
         lot.wonByPlayer = true
         lot.wonInventoryId = inventoryId
         table.insert(auctionState.purchasedInventoryIds, inventoryId)
+        playLotWinCelebrationSound()
+        triggerAuctionWinEmitters(LOT_WIN_EMITTER_DURATION)
         ui_message(string.format('Won %s for $%d', lot.title, lot.currentBid), 6, 'Used Auction', 'info')
       else
         ui_message(string.format('Purchase failed for %s', lot.title), 6, 'Used Auction', 'warning')
@@ -1405,6 +1564,9 @@ local function resetAuction(keepPurchases)
   auctionState.noSpaceWarnCooldownUntil = 0
   auctionState.awaitingFinalExit = false
   auctionState.npcPersonas = {}
+  auctionState.winEmitterPulseToken = (auctionState.winEmitterPulseToken or 0) + 1
+  setAuctionWinEmittersEnabled(false)
+  setAuctionActiveAssetsEnabled(false)
 
   if not keepPurchases then
     auctionState.purchasedInventoryIds = {}
@@ -1417,6 +1579,9 @@ local function startAuctionImmediate()
   if auctionState.phase ~= 'idle' or auctionState.transitionActive then
     return false
   end
+
+  setAuctionWinEmittersEnabled(false)
+  setAuctionActiveAssetsEnabled(false)
 
   local playerVeh = getPlayerVehicle()
   if not playerVeh then
@@ -1460,6 +1625,7 @@ local function startAuctionImmediate()
     end
 
     teleportVehicleToSpot(playerVeh, auctionState.auctionSpot)
+    setAuctionActiveAssetsEnabled(true)
 
     auctionState.npcPersonas = generateAuctionNpcPersonas(NPC_PERSONA_COUNT)
     auctionState.lots = prepareLots(layout.spawnSpots, layout.blockSpots, DEFAULT_LOT_COUNT, auctionState.npcPersonas)
@@ -1681,6 +1847,7 @@ local function onUpdate()
       if math.random() < clampNumber(personaChance, 0.05, 0.95) then
         lot.currentBid = nextBid
         setNpcAsLeader(lot, bidderPersona)
+        playBidAcceptedSound()
         maybeExtendLotTimer(lot, lot.highestBidderName or 'NPC')
       end
     end
@@ -1691,6 +1858,8 @@ end
 
 local function onCareerActivated()
   setIdleTriggerState()
+  setAuctionWinEmittersEnabled(false)
+  setAuctionActiveAssetsEnabled(false)
 end
 
 local function onCareerDeactivatedWhileLevelLoaded()
