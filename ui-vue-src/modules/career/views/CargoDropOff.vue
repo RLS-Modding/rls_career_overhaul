@@ -255,6 +255,7 @@ const showConfirmDelay = ref(false)
 const confirmButtonEnabled = ref(false)
 const confirmButtonTimer = ref(0)
 let confirmButtonTimerId = 0
+let levelUpImpactTimerId = 0
 
 const rewardAnimationIndex = ref(-1)
 let animationSkipped = false
@@ -357,7 +358,8 @@ reward.animationData.numTimer = setInterval(() => {
 async function openNewLevelPopup(reward) {
 try {
   lua.Engine.Audio.playOnce("AudioGui", LEVEL_UP_SOUND_EVENT_ENTRY)
-  setTimeout(() => {
+  clearTimeout(levelUpImpactTimerId)
+  levelUpImpactTimerId = setTimeout(() => {
     try {
       lua.Engine.Audio.playOnce("AudioGui", LEVEL_UP_SOUND_EVENT_IMPACT)
     } catch (_err) {
@@ -462,6 +464,7 @@ lua.career_modules_delivery_general.setDeliveryTimePaused(false)
 events.off("SetDeliveryDropOffCargoSelection")
 events.off("SetDeliveryDropOffRewardResult")
 clearInterval(confirmButtonTimerId)
+clearTimeout(levelUpImpactTimerId)
 lua.career_modules_delivery_cargoScreen.dropOffPopupClosed(mode.value)
 }
 

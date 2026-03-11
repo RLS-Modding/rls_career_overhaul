@@ -5,7 +5,7 @@
       "name": "Belasco City Police Department",
       "description": "Use Police Vehicles to earn money. Try to return with no damage for bonus xp.",
       "associatedOrganization": "policeLoaner",
-      "preview": ",",
+      "preview": "",
       "manualAccessPoints": [
         {
           "psName": "policeLoanerParking",
@@ -161,7 +161,7 @@
       "name": "Joe's Junk",
       "description": "Some say he actually makes a lot of money of his junk",
       "associatedOrganization": "localDeliveryAssociation",
-      "preview": ",",
+      "preview": "",
       "manualAccessPoints": [
         {
           "psName": "joeCashParking",
@@ -211,7 +211,7 @@
       "name": "Mall Pickup",
       "description": "Mall must still be thriving",
       "associatedOrganization": "localDeliveryAssociation",
-      "preview": ",",
+      "preview": "",
       "manualAccessPoints": [
         {
           "psName": "mallBank",
@@ -452,7 +452,7 @@
       "name": "Tennis Courts Pickup",
       "description": "Apparently there is a cash fee for hitting the balls over the fence...",
       "associatedOrganization": "localDeliveryAssociation",
-      "preview": ",",
+      "preview": "",
       "manualAccessPoints": [
         {
           "psName": "tennisPickup",
@@ -502,7 +502,7 @@
       "name": "Stadium Pickup",
       "description": "When was there even an event here last?",
       "associatedOrganization": "localDeliveryAssociation",
-      "preview": ",",
+      "preview": "",
       "manualAccessPoints": [
         {
           "psName": "stadiumPickup",
@@ -552,7 +552,7 @@
       "name": "Skyscraper Vending Machines",
       "description": "Must be a lot snack breaks",
       "associatedOrganization": "localDeliveryAssociation",
-      "preview": ",",
+      "preview": "",
       "manualAccessPoints": [
         {
           "psName": "skyscraper1",
@@ -602,7 +602,7 @@
       "name": "City Bank Pickup 1",
       "description": "Nobody really questions why there is money to pick up here",
       "associatedOrganization": "localDeliveryAssociation",
-      "preview": ",",
+      "preview": "",
       "manualAccessPoints": [
         {
           "psName": "cityBuildingPickup1",
@@ -652,7 +652,7 @@
       "name": "City Bank Pickup 2",
       "description": "Nobody really questions why there is money to pick up here",
       "associatedOrganization": "localDeliveryAssociation",
-      "preview": ",",
+      "preview": "",
       "manualAccessPoints": [
         {
           "psName": "cityBuildingPickup2",
@@ -702,7 +702,7 @@
       "name": "City Bank Pickup 3",
       "description": "Nobody really questions why there is money to pick up here",
       "associatedOrganization": "localDeliveryAssociation",
-      "preview": ",",
+      "preview": "",
       "manualAccessPoints": [
         {
           "psName": "cityBuildingPickup3",
@@ -752,7 +752,7 @@
       "name": "Race Track Pickup",
       "description": "Track must sell a lot of hot dogs",
       "associatedOrganization": "localDeliveryAssociation",
-      "preview": ",",
+      "preview": "",
       "manualAccessPoints": [
         {
           "psName": "raceTrackPickup",
@@ -802,7 +802,7 @@
       "name": "Sketchy Pickup",
       "description": "You were told not to ask any questions",
       "associatedOrganization": "localDeliveryAssociation",
-      "preview": ",",
+      "preview": "",
       "manualAccessPoints": [
         {
           "psName": "sketchyPickup",
@@ -853,7 +853,7 @@
       "name": "Illegal Dumping",
       "description": "Don't Get Caught",
       "associatedOrganization": "localDeliveryAssociation",
-      "preview": ",",
+      "preview": "",
       "manualAccessPoints": [
         {
           "psName": "illegalDumping",

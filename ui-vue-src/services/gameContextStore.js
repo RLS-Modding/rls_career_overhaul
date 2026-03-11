@@ -29,7 +29,10 @@ export const useGameContextStore = defineStore("gameContext", () => {
     if (!mission) console.error(`Mission not found ${missionId}. cannot start`)
 
     const settings = mission.settings,
-      userSettings = mission && settings ? settings.reduce((a, b) => (a[b.key] = b.value), a) : {}
+      userSettings = mission && settings ? settings.reduce((acc, item) => {
+        acc[item.key] = item.value
+        return acc
+      }, {}) : {}
     lua.gameplay_markerInteraction.startMissionById(mission.id, userSettings)
   }
 

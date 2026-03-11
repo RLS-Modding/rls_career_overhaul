@@ -213,10 +213,12 @@ local function update(dt)
     obj:applyForceVector(stabilizationNodes.topCenter, (vectorUp * jumpForce))
 
     --push down the ground-touching ball nodes with the overall same force, spread across all touching nodes
-    local ballNodeForce = jumpForce / #ballGroundContactNodesPast
-    local ballNodeForceVector = (-vectorUp * ballNodeForce)
-    for _, cid in ipairs(ballGroundContactNodesPast) do
-      obj:applyForceVector(cid, ballNodeForceVector)
+    if #ballGroundContactNodesPast > 0 then
+      local ballNodeForce = jumpForce / #ballGroundContactNodesPast
+      local ballNodeForceVector = (-vectorUp * ballNodeForce)
+      for _, cid in ipairs(ballGroundContactNodesPast) do
+        obj:applyForceVector(cid, ballNodeForceVector)
+      end
     end
   end
 end

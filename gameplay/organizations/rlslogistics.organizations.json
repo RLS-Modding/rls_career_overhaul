@@ -2103,7 +2103,7 @@
     "name": "Belasco City Warehouse",
     "description": "A large warehouse near the harbour area of belasco city.",
     "icon": "semiTruckUS",
-    "loanableVehicles": []
+    "loanableVehicles": [],
     "reputationLevels": [
       {},
       {},
@@ -4590,6 +4590,5 @@
     ]
   },*/
 }
-
 
 

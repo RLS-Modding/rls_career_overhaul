@@ -353,21 +353,70 @@ local function getAllAttributes()
 end
 
 local logisticsSkillMigration = {
-  version = 1,
+  version = 2,
   markerFile = "career/logisticsSkillMigration.json",
   unifiedKey = "logistics-delivery",
   legacyKeys = {
+    "delivery",
+    "vehicleDelivery",
+    "materials",
     "logistics-vehicleDelivery",
     "logistics-materials"
   }
 }
 
 local policeSkillMigration = {
-  version = 1,
+  version = 2,
   markerFile = "career/policeSkillMigration.json",
   unifiedKey = "careerSkills-police",
   legacyKey = "police"
 }
+
+local function ensureSerializableAttribute(jsonData, attributeKey)
+  local attribute = jsonData[attributeKey]
+  if type(attribute) ~= "table" then
+    local replacement = deepcopy(baseAttribute)
+    if type(attribute) == "number" then
+      replacement.value = attribute
+    end
+    jsonData[attributeKey] = replacement
+    attribute = replacement
+  end
+  attribute.gains = type(attribute.gains) == "table" and attribute.gains or {}
+  attribute.losses = type(attribute.losses) == "table" and attribute.losses or {}
+  return attribute
+end
+
+local function mergeLegacyAttribute(jsonData, unifiedKey, legacyKey)
+  if legacyKey == unifiedKey then return 0, false end
+
+  local legacyData = jsonData[legacyKey]
+  if legacyData == nil then
+    return 0, false
+  end
+
+  local mergedValue = 0
+  if type(legacyData) == "table" then
+    mergedValue = tonumber(legacyData.value) or 0
+  elseif type(legacyData) == "number" then
+    mergedValue = legacyData
+  end
+
+  local unifiedAttribute = ensureSerializableAttribute(jsonData, unifiedKey)
+  unifiedAttribute.value = (tonumber(unifiedAttribute.value) or 0) + mergedValue
+
+  if type(legacyData) == "table" then
+    for gainKey, gainValue in pairs(legacyData.gains or {}) do
+      unifiedAttribute.gains[gainKey] = (unifiedAttribute.gains[gainKey] or 0) + (tonumber(gainValue) or 0)
+    end
+    for lossKey, lossValue in pairs(legacyData.losses or {}) do
+      unifiedAttribute.losses[lossKey] = (unifiedAttribute.losses[lossKey] or 0) + (tonumber(lossValue) or 0)
+    end
+  end
+
+  jsonData[legacyKey] = nil
+  return mergedValue, true
+end
 
 local function runLogisticsSkillMigration(savePath, jsonData)
   if not savePath or tableIsEmpty(jsonData or {}) then return end
@@ -379,32 +428,22 @@ local function runLogisticsSkillMigration(savePath, jsonData)
   end
 
   local mergedValue = 0
+  local changed = false
   for _, legacyKey in ipairs(logisticsSkillMigration.legacyKeys) do
-    local legacyAttribute = jsonData[legacyKey]
-    if type(legacyAttribute) == "table" then
-      mergedValue = mergedValue + (tonumber(legacyAttribute.value) or 0)
-    elseif type(legacyAttribute) == "number" then
-      mergedValue = mergedValue + legacyAttribute
-    end
+    local legacyMergedValue, legacyChanged = mergeLegacyAttribute(jsonData, logisticsSkillMigration.unifiedKey, legacyKey)
+    mergedValue = mergedValue + legacyMergedValue
+    changed = changed or legacyChanged
   end
 
-  if mergedValue ~= 0 then
-    local unifiedAttribute = jsonData[logisticsSkillMigration.unifiedKey]
-    if type(unifiedAttribute) ~= "table" then
-      unifiedAttribute = deepcopy(baseAttribute)
-      if type(jsonData[logisticsSkillMigration.unifiedKey]) == "number" then
-        unifiedAttribute.value = jsonData[logisticsSkillMigration.unifiedKey]
-      end
-      jsonData[logisticsSkillMigration.unifiedKey] = unifiedAttribute
-    end
-    unifiedAttribute.value = (tonumber(unifiedAttribute.value) or 0) + mergedValue
-  end
-
-  career_saveSystem.jsonWriteFileSafe(markerPath, {
+  return {
+    path = markerPath,
+    saveData = changed,
+    data = {
     version = logisticsSkillMigration.version,
     mergedValue = mergedValue,
     migratedAt = os.time()
-  }, true)
+    }
+  }
 end
 
 local function runPoliceSkillMigration(savePath, jsonData)
@@ -418,52 +457,27 @@ local function runPoliceSkillMigration(savePath, jsonData)
 
   local legacyData = jsonData[policeSkillMigration.legacyKey]
   if not legacyData then
-    career_saveSystem.jsonWriteFileSafe(markerPath, {
-      version = policeSkillMigration.version,
-      mergedValue = 0,
-      migratedAt = os.time()
-    }, true)
-    return
+    return {
+      path = markerPath,
+      saveData = false,
+      data = {
+        version = policeSkillMigration.version,
+        mergedValue = 0,
+        migratedAt = os.time()
+      }
+    }
   end
 
-  local mergedValue = 0
-  if type(legacyData) == "table" then
-    mergedValue = tonumber(legacyData.value) or 0
-  elseif type(legacyData) == "number" then
-    mergedValue = legacyData
-  end
-
-  if mergedValue ~= 0 then
-    local unifiedAttribute = jsonData[policeSkillMigration.unifiedKey]
-    if type(unifiedAttribute) ~= "table" then
-      unifiedAttribute = deepcopy(baseAttribute)
-      if type(jsonData[policeSkillMigration.unifiedKey]) == "number" then
-        unifiedAttribute.value = jsonData[policeSkillMigration.unifiedKey]
-      end
-      jsonData[policeSkillMigration.unifiedKey] = unifiedAttribute
-    end
-
-    unifiedAttribute.value = (tonumber(unifiedAttribute.value) or 0) + mergedValue
-    unifiedAttribute.gains = type(unifiedAttribute.gains) == "table" and unifiedAttribute.gains or {}
-    unifiedAttribute.losses = type(unifiedAttribute.losses) == "table" and unifiedAttribute.losses or {}
-
-    if type(legacyData) == "table" then
-      for gainKey, gainValue in pairs(legacyData.gains or {}) do
-        unifiedAttribute.gains[gainKey] = (unifiedAttribute.gains[gainKey] or 0) + (tonumber(gainValue) or 0)
-      end
-      for lossKey, lossValue in pairs(legacyData.losses or {}) do
-        unifiedAttribute.losses[lossKey] = (unifiedAttribute.losses[lossKey] or 0) + (tonumber(lossValue) or 0)
-      end
-    end
-  end
-
-  jsonData[policeSkillMigration.legacyKey] = nil
-
-  career_saveSystem.jsonWriteFileSafe(markerPath, {
+  local mergedValue, changed = mergeLegacyAttribute(jsonData, policeSkillMigration.unifiedKey, policeSkillMigration.legacyKey)
+  return {
+    path = markerPath,
+    saveData = changed,
+    data = {
     version = policeSkillMigration.version,
     mergedValue = mergedValue,
     migratedAt = os.time()
-  }, true)
+    }
+  }
 end
 
 local function onExtensionLoaded()
@@ -494,8 +508,29 @@ local function onExtensionLoaded()
     jsonData.bonusStars = nil
   end
 
-  runLogisticsSkillMigration(savePath, jsonData)
-  runPoliceSkillMigration(savePath, jsonData)
+  local pendingMigrationMarkers = {}
+  local migrationDataChanged = false
+
+  local logisticsMigrationMarker = runLogisticsSkillMigration(savePath, jsonData)
+  if logisticsMigrationMarker then
+    pendingMigrationMarkers[#pendingMigrationMarkers + 1] = logisticsMigrationMarker
+    migrationDataChanged = migrationDataChanged or logisticsMigrationMarker.saveData
+  end
+
+  local policeMigrationMarker = runPoliceSkillMigration(savePath, jsonData)
+  if policeMigrationMarker then
+    pendingMigrationMarkers[#pendingMigrationMarkers + 1] = policeMigrationMarker
+    migrationDataChanged = migrationDataChanged or policeMigrationMarker.saveData
+  end
+
+  if savePath and #pendingMigrationMarkers > 0 then
+    if migrationDataChanged then
+      career_saveSystem.jsonWriteFileSafe(savePath .. "/career/playerAttributes.json", jsonData, true)
+    end
+    for _, marker in ipairs(pendingMigrationMarkers) do
+      career_saveSystem.jsonWriteFileSafe(marker.path, marker.data, true)
+    end
+  end
 
   local attributeLogData = (savePath and jsonReadFile(savePath .. "/career/attributeLog.json")) or {}
   if not tableIsEmpty(attributeLogData) then

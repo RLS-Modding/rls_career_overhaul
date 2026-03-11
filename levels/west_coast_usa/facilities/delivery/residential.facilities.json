@@ -3,7 +3,7 @@
     {
       "id": "suburbsEast",
       "name": "Eastern Suburbs",
-      "description": "Receives vehicles.",
+      "description": "Receives food, parcels, trailers, and bulk materials.",
       "preview": "previews/suburbsEast.jpg",
       "multiDropOffSpotFilter": [
         {
@@ -57,7 +57,7 @@
     {
       "id": "suburbsCentral",
       "name": "Central Suburbs",
-      "description": "Receives vehicles.",
+      "description": "Receives food, parcels, trailers, and bulk materials.",
       "preview": "previews/suburbsCentral.jpg",
       "multiDropOffSpotFilter": [
         {
@@ -111,7 +111,7 @@
     {
       "id": "suburbsWest",
       "name": "Western Suburbs",
-      "description": "Receives vehicles.",
+      "description": "Receives food, parcels, trailers, and bulk materials.",
       "preview": "previews/suburbsWest.jpg",
       "multiDropOffSpotFilter": [
         {
@@ -165,7 +165,7 @@
     {
       "id": "cityWest",
       "name": "Western Belasco",
-      "description": "Receives vehicles.",
+      "description": "Receives food, parcels, and trailers.",
       "preview": "previews/cityWest.jpg",
       "multiDropOffSpotFilter": [
         {
@@ -207,7 +207,7 @@
     {
       "id": "cityCentral",
       "name": "Central Belasco",
-      "description": "Receives vehicles.",
+      "description": "Receives food, parcels, and trailers.",
       "preview": "previews/cityCentral.jpg",
       "multiDropOffSpotFilter": [
         {
@@ -249,7 +249,7 @@
     {
       "id": "cityNorth",
       "name": "Northern Belasco",
-      "description": "Receives vehicles.",
+      "description": "Receives food, parcels, and trailers.",
       "preview": "previews/cityNorth.jpg",
       "multiDropOffSpotFilter": [
         {
@@ -291,7 +291,7 @@
     {
       "id": "citySouth",
       "name": "Southern Belasco",
-      "description": "Receives vehicles.",
+      "description": "Receives food, parcels, and trailers.",
       "preview": "previews/citySouth.jpg",
       "multiDropOffSpotFilter": [
         {

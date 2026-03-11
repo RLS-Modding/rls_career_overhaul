@@ -226,7 +226,7 @@ end
 function M.getParcelReward(item, distance, orgId, orgMultiplier, economyMultiplier)
   local baseXP, rules = getParcelBaseXP(item.slots)
   local xp = getParcelDistanceXP(distance, baseXP, rules)
-  local money = M.getMoneyRewardForParcelItem(item, distance) * hardcoreMultiplier
+  local money = M.getMoneyRewardForParcelItem(item, distance)
 
   local rewards = {
     money = money,
@@ -284,7 +284,7 @@ function M.getVehicleOfferReward(filter, distance, offerType, orgId, economyMult
   end
   local baseXP = deliveryBaseXP + xpDistanceTerm
   local rewards = {
-    money = ((filter.baseReward or 0) + moneyDistanceTerm) * hardcoreMultiplier,
+    money = (filter.baseReward or 0) + moneyDistanceTerm,
     logistics = baseXP * hardcoreMultiplier
   }
   if offerType == "vehicle" then

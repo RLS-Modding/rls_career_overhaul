@@ -184,7 +184,9 @@ local function applyVehiclePrecisionBonus(taskData, precisionBonus)
   local moneyReward = precisionBonus.moneyFlat + (taskData.originalRewards.money * precisionBonus.moneyPercent)
   local logisticsReward = precisionBonus.logisticsFlat + skillBaseReward * precisionBonus.logisticsPercent
   local skillReward = precisionBonus.skillFlat + skillBaseReward * precisionBonus.skillPercent
-  local reputationReward = precisionBonus.reputationFlat + (taskData.originalRewards[taskData.offer.organization.."Reputation"] or 0) * precisionBonus.reputationPercent
+  local organization = taskData.offer and taskData.offer.organization
+  local organizationReputationKey = organization and (organization .. "Reputation") or nil
+  local reputationReward = precisionBonus.reputationFlat + (organizationReputationKey and (taskData.originalRewards[organizationReputationKey] or 0) or 0) * precisionBonus.reputationPercent
 
   -- Apply money reward
   taskData.adjustedRewards.money = taskData.adjustedRewards.money + xpConfig.applyRounding(moneyReward, rewardRounding)
@@ -200,8 +202,8 @@ local function applyVehiclePrecisionBonus(taskData, precisionBonus)
   end
 
   -- Apply reputation reward
-  if reputationReward ~= 0 and taskData.offer.organization then
-    taskData.adjustedRewards[taskData.offer.organization.."Reputation"] = (taskData.adjustedRewards[taskData.offer.organization.."Reputation"] or 0) + xpConfig.applyRounding(reputationReward, rewardRounding)
+  if reputationReward ~= 0 and organizationReputationKey then
+    taskData.adjustedRewards[organizationReputationKey] = (taskData.adjustedRewards[organizationReputationKey] or 0) + xpConfig.applyRounding(reputationReward, rewardRounding)
   end
 
   -- Add precision bonus breakdown

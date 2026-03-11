@@ -30,7 +30,8 @@ import { BngCard, BngCardHeading } from "@/common/components/base"
 import UnlockCard from "../progress/UnlockCard.vue"
 
 const emit = defineEmits(["return"])
-const AUTO_CLOSE_MS = 2800
+const BASE_AUTO_CLOSE_MS = 4000
+const AUTO_CLOSE_MS_PER_UNLOCK = 1200
 const FADE_OUT_MS = 300
 const isClosing = ref(false)
 let closeTimer = null
@@ -50,7 +51,7 @@ const levelValue = computed(() => {
 
 const defaultHeader = computed(() => {
   const skillName = (props.reward && props.reward.animationData && props.reward.animationData.name) || "Skill"
-  return `${skillName} Skill: Level ${levelValue.value}`
+  return `${skillName}: Level ${levelValue.value}`
 })
 
 const currentUnlocks = computed(() => {
@@ -59,6 +60,10 @@ const currentUnlocks = computed(() => {
   return Array.isArray(currentLevelData && currentLevelData.unlocks) ? currentLevelData.unlocks : []
 })
 
+const autoCloseMs = computed(() =>
+  BASE_AUTO_CLOSE_MS + Math.max(0, currentUnlocks.value.length - 1) * AUTO_CLOSE_MS_PER_UNLOCK
+)
+
 const closePopup = () => {
   if (isClosing.value) return
   isClosing.value = true
@@ -66,7 +71,7 @@ const closePopup = () => {
 }
 
 onMounted(() => {
-  closeTimer = setTimeout(closePopup, AUTO_CLOSE_MS)
+  closeTimer = setTimeout(closePopup, autoCloseMs.value)
 })
 
 onUnmounted(() => {

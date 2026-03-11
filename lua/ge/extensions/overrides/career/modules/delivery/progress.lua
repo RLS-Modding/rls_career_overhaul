@@ -204,6 +204,9 @@ local function getAnimationDataForBranch(attributeKey, branch, branchLevels)
     if level == levelByKey then
       min = minByKey or min
       max = maxByKey or max
+    else
+      min = minById or min
+      max = maxById or max
     end
   end
 

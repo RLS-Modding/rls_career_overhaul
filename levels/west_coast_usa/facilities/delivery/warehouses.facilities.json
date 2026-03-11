@@ -809,11 +809,11 @@
                 },
                 {
                     "psName": "spearleafLogistics_crane2",
-                    "logisticTypesProvided": [],
-                    "logisticTypesReceived": [
+                    "logisticTypesProvided": [
                         "fertilizer",
                         "soil"
-                    ]
+                    ],
+                    "logisticTypesReceived": []
                 },
                 {
                     "psName": "spearleafLogistics_yardA",
