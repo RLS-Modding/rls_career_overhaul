@@ -11,6 +11,11 @@ local activeAssets = require('gameplay/events/freeroam/activeAssets')
 local checkpointManager = require('gameplay/events/freeroam/checkpointManager')
 local utils = require('gameplay/events/freeroam/utils')
 local pits = require('gameplay/events/freeroam/pits')
+local aiRacers = nil
+do
+    local ok, ar = pcall(function() return require('gameplay/events/freeroam/aiRacers') end)
+    if ok and ar then aiRacers = ar end
+end
 local Assets = activeAssets.ActiveAssets.new()
 
 local loadedExtensions = {}
@@ -697,7 +702,8 @@ local function beginFreeroamRace(raceNameArg, subjectID)
     mCurrentRouteName = nil
     mTotalRaceTime = 0
     mBestLapThisRun = nil
-    mSuppressOffRoadExitUntil = 0
+    -- Suppress off-road exit briefly at race start so we don't exit (and clear AI) on first frame
+    mSuppressOffRoadExitUntil = os.time() + 5
     if career_modules_business_businessInventory then
         local businessId, vehicleId = career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId(subjectID)
         if businessId and vehicleId then
@@ -887,6 +893,10 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
         mTotalRaceTime = 0
         mBestLapThisRun = nil
         mSuppressOffRoadExitUntil = 0
+        if aiRacers then
+            if aiRacers.setDnfCallback then aiRacers.setDnfCallback(nil) end
+            if aiRacers.clearSpawned then aiRacers.clearSpawned() end
+        end
         Assets:hideAllAssets()
         checkpointManager.removeCheckpoints()
 
@@ -1101,10 +1111,11 @@ local function onBeamNGTrigger(data)
             utils.displayStagedMessage(vehId, raceName)
             utils.setActiveLight(raceName, "yellow")
         elseif event == "exit" then
-            -- If they chose a race and are driving to the start line, keep hub open and don't clear staged/countdown (so start-line cross can start the race)
-            local drivingToStart = mFreeroamHubRaceSelected and (mFreeroamCountdownDelay or mFreeroamCountdownEndTime or mFreeroamPendingStart)
+            -- If they chose a race and are driving to the start line (or are already in the race), don't clear staged/countdown/AI when exiting staging
+            local drivingToStart = (mFreeroamHubRaceSelected and (mFreeroamCountdownDelay or mFreeroamCountdownEndTime or mFreeroamPendingStart)) or (mActiveRace == raceName)
             if not drivingToStart then
                 staged = nil
+                mFreeroamHubRaceSelected = false
                 if isFreeroamHubRaceMode() then
                     hideStagedFlashMessage()
                     mFreeroamCountdownDelay = nil
@@ -1112,6 +1123,7 @@ local function onBeamNGTrigger(data)
                     mFreeroamCountdownStartClock = nil
                     mFreeroamStagedAtStart = false
                     mFreeroamPendingStart = nil
+                    if aiRacers and aiRacers.clearSpawned then aiRacers.clearSpawned() end
                 end
                 if not mActiveRace and not mFreeroamHubShowingResult and not mFreeroamHubShowingHistory then
                     if isFreeroamHubActive() then
@@ -1324,9 +1336,21 @@ local function onBeamNGTrigger(data)
     end
 end
 
+-- Preload AI paths for track (and alt) when level has track race with AI config (e.g. west_coast_usa).
+local function preloadFreeroamAiPathsForTrack()
+    if not aiRacers or not aiRacers.preloadPathForRace then return end
+    local levelId = getCurrentLevelIdentifier()
+    if not levelId or not races or not races.track then return end
+    aiRacers.preloadPathForRace(races.track)
+    if races.track.altRoute and races.track.altRoute.checkpointRoad then
+        aiRacers.preloadPathForRace(races.track.altRoute)
+    end
+end
+
 local function onWorldReadyState(state)
     if state == 2 then
         races = utils.loadRaceData()
+        preloadFreeroamAiPathsForTrack()
     end
 end
 
@@ -1359,6 +1383,7 @@ local function onExtensionLoaded()
     loadExtensions()
     if getCurrentLevelIdentifier() then
         races = utils.loadRaceData()
+        preloadFreeroamAiPathsForTrack()
     end
 end
 
@@ -1368,11 +1393,15 @@ end
 
 local function onUpdate(dtReal, dtSim, dtRaw)
     _G.freeroamHubSuppressUIMessages = isFreeroamHubActive()
+    if aiRacers and aiRacers.onUpdate then aiRacers.onUpdate(dtReal or 0) end
     -- Hub race mode: staged flash + countdown (American Road style); use dtReal so it advances when paused
     if mFreeroamCountdownDelay then
         mFreeroamCountdownDelay = mFreeroamCountdownDelay - (dtReal or 0)
         if mFreeroamCountdownDelay <= 0 then
             mFreeroamCountdownDelay = nil
+            if staged == "track" and aiRacers and aiRacers.startEnginesForSpawned then
+                aiRacers.startEnginesForSpawned()
+            end
             triggerRaceCountdown()
         end
     end
@@ -1407,6 +1436,15 @@ local function onUpdate(dtReal, dtSim, dtRaw)
             if rn and sid then
                 staged = nil
                 beginFreeroamRace(rn, sid)
+                -- Release AI racers on GO (track = main route or alt Short Track)
+                if rn == "track" and aiRacers and aiRacers.releaseAndDrive and races and races.track then
+                    local raceForAi = races.track
+                    if mFreeroamHubUseAltRoute and races.track.altRoute and races.track.altRoute.checkpointRoad then
+                        raceForAi = races.track.altRoute
+                    end
+                    local aiLaps = (raceForAi.lapCount and raceForAi.lapCount > 0) and raceForAi.lapCount or 3
+                    aiRacers.releaseAndDrive(raceForAi, aiLaps)
+                end
             end
         end
     end
@@ -1637,10 +1675,23 @@ M.onFreeroamHubSelectPractice = function()
 end
 
 -- Freeroam hub: set route to main track (e.g. set laps event, main route)
+-- Spawn AI racers for track when player selects Track or Short Track and is staged at track (west_coast_usa style).
+local function prepareFreeroamAiForTrack()
+    if not aiRacers or not races or not races.track then return end
+    if aiRacers.spawnForStagingWithPlayerHp then
+        aiRacers.spawnForStagingWithPlayerHp("track", races.track, "track", function() end)
+    elseif aiRacers.spawnForStaging then
+        aiRacers.spawnForStaging("track", races.track, "track")
+    end
+end
+
 M.onFreeroamHubSelectTrack = function()
     mFreeroamHubPracticeMode = false
     mFreeroamHubUseAltRoute = false
     mFreeroamHubRaceSelected = true
+    if staged == "track" then
+        prepareFreeroamAiForTrack()
+    end
     -- If already in staging zone, show Staged and start countdown now
     if staged then
         showStagedFlashMessage()
@@ -1656,6 +1707,9 @@ M.onFreeroamHubSelectShortTrack = function()
     mFreeroamHubPracticeMode = false
     mFreeroamHubUseAltRoute = true
     mFreeroamHubRaceSelected = true
+    if staged == "track" then
+        prepareFreeroamAiForTrack()
+    end
     -- If already in staging zone, show Staged and start countdown now
     if staged then
         showStagedFlashMessage()
@@ -1677,6 +1731,7 @@ M.onFreeroamHubClearSelection = function()
     mFreeroamStagedAtStart = false
     mFreeroamPendingStart = nil
     mFreeroamStagingSubjectID = nil
+    if aiRacers and aiRacers.clearSpawned then aiRacers.clearSpawned() end
 end
 
 M.onFreeroamHubClosed = function()

@@ -637,6 +637,7 @@
       ],
       "hotlap":125,
       "label":"Track",
+      "spawnSameVehicleAsPlayer": true,
       "predictCoef":{
         "a":97.766325905867,
         "b":2.2121350753093,
