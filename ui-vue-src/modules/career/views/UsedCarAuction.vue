@@ -14,7 +14,7 @@
         <div class="lot-meta">Lot {{ activeLot?.lotIndex || '-' }} / {{ state.lots.length }}</div>
         <div class="lot-title">{{ activeLot?.title || 'Loading...' }}</div>
         <div class="lot-row">Current Bid: ${{ activeLot?.currentBid || 0 }}</div>
-        <div class="lot-row">Highest Bidder: {{ formatBidder(activeLot?.highestBidder) }}</div>
+        <div class="lot-row">Highest Bidder: {{ formatBidder(activeLot) }}</div>
         <div class="lot-row">Time Left: {{ activeLot?.timeLeft || 0 }}s</div>
         <div class="lot-row">Your Wins: {{ state.purchasedCount }}</div>
 
@@ -134,9 +134,12 @@ const updateAutoBidMax = async () => {
   await refresh()
 }
 
-const formatBidder = bidder => {
-  if (bidder === 'player') return 'You'
-  if (bidder === 'npc') return 'Other Bidder'
+const formatBidder = lot => {
+  if (!lot) return '-'
+  const bidderName = `${lot?.highestBidderName || ''}`.trim()
+  if (bidderName) return bidderName
+  if (lot?.highestBidder === 'player') return 'You'
+  if (lot?.highestBidder === 'npc') return 'Other Bidder'
   return '-'
 }
 
@@ -214,4 +217,3 @@ onUnmounted(() => {
   margin-top: 14px;
 }
 </style>
-

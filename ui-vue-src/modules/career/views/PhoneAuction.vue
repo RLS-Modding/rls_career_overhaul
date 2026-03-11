@@ -29,7 +29,7 @@
           <div class="row"><strong>Mileage:</strong> {{ formatMileage(selectedLot?.mileage) }}</div>
           <div class="row"><strong>State:</strong> {{ selectedLot?.state || '-' }}</div>
           <div class="row"><strong>Bid:</strong> ${{ selectedLot?.currentBid || 0 }}</div>
-          <div class="row"><strong>Leader:</strong> {{ formatBidder(selectedLot?.highestBidder) }}</div>
+          <div class="row"><strong>Leader:</strong> {{ formatBidder(selectedLot) }}</div>
           <div class="row"><strong>Time Left:</strong> {{ selectedLot?.timeLeft || 0 }}s</div>
 
           <div class="actions">
@@ -149,9 +149,12 @@ const selectLot = lotIndex => {
   selectedLotIndex.value = Number(lotIndex || 1)
 }
 
-const formatBidder = bidder => {
-  if (bidder === 'player') return 'You'
-  if (bidder === 'npc') return 'NPC'
+const formatBidder = lot => {
+  if (!lot) return '-'
+  const bidderName = `${lot?.highestBidderName || ''}`.trim()
+  if (bidderName) return bidderName
+  if (lot?.highestBidder === 'player') return 'You'
+  if (lot?.highestBidder === 'npc') return 'NPC'
   return '-'
 }
 

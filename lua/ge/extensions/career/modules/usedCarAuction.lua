@@ -4,6 +4,7 @@ M.dependencies = {
   'career_career',
   'career_modules_inventory',
   'career_modules_garageManager',
+  'career_modules_marketplace',
   'career_modules_payment',
   'career_saveSystem',
   'gameplay_sites_sitesManager',
@@ -34,8 +35,8 @@ local LOT_STUCK_TIMEOUT = 5.0
 local LOT_PROGRESS_DISTANCE = 0.35
 local ANTI_SNIPE_WINDOW = 10.0
 local ANTI_SNIPE_EXTEND = 8.0
-local ANTI_SNIPE_MAX_EXTENSIONS = 6
 local DEFAULT_LOT_COUNT = 3
+local NPC_PERSONA_COUNT = 3
 
 local fallbackPool = {
   { model = 'covet', config = 'vehicles/covet/roller_covet.pc', title = 'Ibishu Covet', basePrice = 2600 },
@@ -80,7 +81,8 @@ local auctionState = {
   transitionActive = false,
   entryCooldownUntil = 0,
   uiOpen = false,
-  awaitingFinalExit = false
+  awaitingFinalExit = false,
+  npcPersonas = {}
 }
 
 local usedConfigKeys = {}
@@ -641,7 +643,107 @@ local function getRandomVehicleDefNoFilter()
   return nil
 end
 
-local function prepareLots(spawnSpots, blockSpots, lotCount)
+local function clampNumber(v, minV, maxV)
+  if v < minV then return minV end
+  if v > maxV then return maxV end
+  return v
+end
+
+local function roundDownToStep(value, step)
+  local s = math.max(1, tonumber(step) or 1)
+  return math.floor(math.max(0, tonumber(value) or 0) / s) * s
+end
+
+local function makeFallbackAuctionPersona(index)
+  local fallbackProfiles = {
+    {name = 'Bidder A', priceMultiplier = 0.92, counterOfferReadiness = 0.75, unpredictability = 0.06},
+    {name = 'Bidder B', priceMultiplier = 1.00, counterOfferReadiness = 0.55, unpredictability = 0.04},
+    {name = 'Bidder C', priceMultiplier = 1.08, counterOfferReadiness = 0.82, unpredictability = 0.08}
+  }
+  local profile = fallbackProfiles[index] or fallbackProfiles[((index - 1) % #fallbackProfiles) + 1]
+  return {
+    name = profile.name,
+    priceMultiplier = profile.priceMultiplier,
+    counterOfferReadiness = profile.counterOfferReadiness,
+    unpredictability = profile.unpredictability
+  }
+end
+
+local function generateAuctionNpcPersonas(count)
+  local personas = {}
+  local usedNames = {}
+  count = math.max(1, tonumber(count) or NPC_PERSONA_COUNT)
+
+  for i = 1, count do
+    local personality = nil
+    if career_modules_marketplace and career_modules_marketplace.generatePersonality then
+      personality = career_modules_marketplace.generatePersonality(true)
+    end
+    if type(personality) ~= 'table' then
+      personality = makeFallbackAuctionPersona(i)
+    end
+
+    local baseName = tostring(personality.name or ('Bidder ' .. tostring(i)))
+    if baseName == '' then
+      baseName = 'Bidder ' .. tostring(i)
+    end
+
+    local name = baseName
+    local suffix = 2
+    while usedNames[name] do
+      name = string.format('%s %d', baseName, suffix)
+      suffix = suffix + 1
+    end
+    usedNames[name] = true
+
+    table.insert(personas, {
+      id = string.format('npc_%d', i),
+      name = name,
+      archetype = personality.archetype,
+      priceMultiplier = tonumber(personality.priceMultiplier) or 1.0,
+      counterOfferReadiness = tonumber(personality.counterOfferReadiness) or 0.5,
+      unpredictability = tonumber(personality.unpredictability) or 0.03
+    })
+  end
+
+  return personas
+end
+
+local function computeNpcMaxBidForLot(basePrice, startBid, minStep, persona)
+  local priceMultiplier = tonumber((persona or {}).priceMultiplier) or 1.0
+  local readiness = tonumber((persona or {}).counterOfferReadiness) or 0.5
+  local unpredictability = tonumber((persona or {}).unpredictability) or 0.03
+  local baseMult = clampNumber(0.75 + priceMultiplier * 0.35 + readiness * 0.20 + unpredictability * 0.50, 0.70, 1.35)
+  local lotJitter = 0.90 + math.random() * 0.30
+
+  local maxBid = roundDownToStep((tonumber(basePrice) or 0) * baseMult * lotJitter, minStep)
+  maxBid = math.max(maxBid, (tonumber(startBid) or 0) + (tonumber(minStep) or 250) * 2)
+  return maxBid
+end
+
+local function chooseInitialNpcLeader(personas, maxBidsByPersonaId, startBid, minStep)
+  local nextBid = (tonumber(startBid) or 0) + (tonumber(minStep) or 250)
+  local eligible = {}
+  local strongest, strongestMax = nil, -math.huge
+
+  for _, persona in ipairs(personas or {}) do
+    local maxBid = tonumber(maxBidsByPersonaId and maxBidsByPersonaId[persona.id]) or 0
+    if maxBid >= nextBid then
+      table.insert(eligible, persona)
+    end
+    if maxBid > strongestMax then
+      strongest = persona
+      strongestMax = maxBid
+    end
+  end
+
+  if #eligible > 0 then
+    return eligible[math.random(1, #eligible)]
+  end
+  return strongest
+end
+
+local function prepareLots(spawnSpots, blockSpots, lotCount, npcPersonas)
   local lots = {}
   local spawnCount = #(spawnSpots or {})
   if spawnCount <= 0 then
@@ -670,17 +772,17 @@ local function prepareLots(spawnSpots, blockSpots, lotCount)
       vehicleDef = fallbackPool[math.random(1, #fallbackPool)]
     end
 
+    local minStep = 250
     local startBid = math.floor(vehicleDef.basePrice * (0.55 + math.random() * 0.2))
-    local aiStyleRoll = math.random()
-    local npcMaxMult = 1.0
-    if aiStyleRoll < 0.20 then
-      npcMaxMult = 1.15 + math.random() * 0.30 -- aggressive / occasional overpay
-    elseif aiStyleRoll < 0.70 then
-      npcMaxMult = 0.90 + math.random() * 0.25 -- typical market behavior
-    else
-      npcMaxMult = 0.65 + math.random() * 0.30 -- conservative / bargain hunter
+    local lotNpcMaxBidsByPersonaId = {}
+    local lotNpcNamesById = {}
+
+    for _, persona in ipairs(npcPersonas or {}) do
+      lotNpcMaxBidsByPersonaId[persona.id] = computeNpcMaxBidForLot(vehicleDef.basePrice, startBid, minStep, persona)
+      lotNpcNamesById[persona.id] = persona.name
     end
-    local npcMaxBid = math.floor(vehicleDef.basePrice * npcMaxMult)
+
+    local startingLeader = chooseInitialNpcLeader(npcPersonas, lotNpcMaxBidsByPersonaId, startBid, minStep)
 
     table.insert(lots, {
       lotIndex = i,
@@ -690,12 +792,14 @@ local function prepareLots(spawnSpots, blockSpots, lotCount)
       config = vehicleDef.config,
       title = vehicleDef.title,
       mileage = vehicleDef.mileage or getFallbackMileage(),
-      minStep = 250,
+      minStep = minStep,
       currentBid = startBid,
       highestBidder = 'npc',
-      npcMaxBid = npcMaxBid,
+      highestBidderName = (startingLeader and startingLeader.name) or 'NPC',
+      leadingNpcPersonaId = startingLeader and startingLeader.id or nil,
+      npcMaxBidsByPersonaId = lotNpcMaxBidsByPersonaId,
+      npcPersonaNamesById = lotNpcNamesById,
       extensionCount = 0,
-      maxExtensions = ANTI_SNIPE_MAX_EXTENSIONS,
       endTime = 0,
       state = 'pending',
       vehId = nil,
@@ -721,18 +825,103 @@ local function maybeExtendLotTimer(lot, bidderLabel)
   if remaining > ANTI_SNIPE_WINDOW then
     return false
   end
-  if (lot.extensionCount or 0) >= (lot.maxExtensions or ANTI_SNIPE_MAX_EXTENSIONS) then
-    return false
-  end
 
   lot.endTime = (lot.endTime or now) + ANTI_SNIPE_EXTEND
   lot.extensionCount = (lot.extensionCount or 0) + 1
-  ui_message(string.format('%s bid extended auction by %.0fs (%d/%d).',
+  ui_message(string.format('%s bid extended auction by %.0fs (total extensions: %d).',
     bidderLabel or 'Bid',
     ANTI_SNIPE_EXTEND,
-    lot.extensionCount,
-    lot.maxExtensions or ANTI_SNIPE_MAX_EXTENSIONS), 2.5, 'Used Auction', 'info')
+    lot.extensionCount), 2.5, 'Used Auction', 'info')
   return true
+end
+
+local function getLotLeaderName(lot)
+  if not lot then return '-' end
+  if lot.highestBidder == 'player' then
+    return 'You'
+  end
+  if lot.highestBidder == 'npc' then
+    if lot.highestBidderName and lot.highestBidderName ~= '' then
+      return lot.highestBidderName
+    end
+    local npcName = lot.npcPersonaNamesById and lot.leadingNpcPersonaId and lot.npcPersonaNamesById[lot.leadingNpcPersonaId]
+    if npcName and npcName ~= '' then
+      return npcName
+    end
+    return 'NPC'
+  end
+  return '-'
+end
+
+local function setPlayerAsLeader(lot)
+  if not lot then return end
+  lot.highestBidder = 'player'
+  lot.leadingNpcPersonaId = nil
+  lot.highestBidderName = 'You'
+end
+
+local function setNpcAsLeader(lot, persona)
+  if not lot then return end
+  lot.highestBidder = 'npc'
+  lot.leadingNpcPersonaId = persona and persona.id or nil
+  local npcName = persona and persona.name or nil
+  if (not npcName or npcName == '') and lot.npcPersonaNamesById and lot.leadingNpcPersonaId then
+    npcName = lot.npcPersonaNamesById[lot.leadingNpcPersonaId]
+  end
+  lot.highestBidderName = npcName or 'NPC'
+end
+
+local function getStrongestNpcPersonaForLot(lot)
+  if not lot then return nil end
+  local strongest = nil
+  local strongestCap = -math.huge
+  for _, persona in ipairs(auctionState.npcPersonas or {}) do
+    local cap = tonumber(lot.npcMaxBidsByPersonaId and lot.npcMaxBidsByPersonaId[persona.id]) or 0
+    if cap > strongestCap then
+      strongestCap = cap
+      strongest = persona
+    end
+  end
+  return strongest
+end
+
+local function chooseNpcBidderForLot(lot, nextBid, preferOutbid)
+  if not lot then return nil end
+  local candidates = {}
+  local totalWeight = 0
+
+  for _, persona in ipairs(auctionState.npcPersonas or {}) do
+    local cap = tonumber(lot.npcMaxBidsByPersonaId and lot.npcMaxBidsByPersonaId[persona.id]) or 0
+    local canBid = cap >= nextBid
+    local sameLeader = (lot.highestBidder == 'npc' and lot.leadingNpcPersonaId == persona.id)
+    if canBid and not sameLeader then
+      local readiness = tonumber(persona.counterOfferReadiness) or 0.5
+      local unpredictability = tonumber(persona.unpredictability) or 0.03
+      local headroom = clampNumber((cap - nextBid) / math.max(nextBid, 1), 0, 1)
+      local weight = 0.75 + readiness * 0.9 + unpredictability * 1.5 + headroom * 0.8
+      if preferOutbid then
+        weight = weight * 1.15
+      end
+
+      totalWeight = totalWeight + math.max(0.01, weight)
+      table.insert(candidates, {persona = persona, weight = math.max(0.01, weight)})
+    end
+  end
+
+  if #candidates == 0 then
+    return nil
+  end
+
+  local roll = math.random() * totalWeight
+  local acc = 0
+  for _, item in ipairs(candidates) do
+    acc = acc + item.weight
+    if roll <= acc then
+      return item.persona
+    end
+  end
+
+  return candidates[#candidates].persona
 end
 
 local function getConfigKeyFromPath(configPath)
@@ -978,7 +1167,7 @@ showLiveAuctionStatus = function(force)
   end
 
   local remaining = math.max(0, math.ceil((lot.endTime or 0) - now))
-  local bidder = (lot.highestBidder == 'player') and 'YOU' or 'NPC'
+  local bidder = getLotLeaderName(lot)
   local totalLots = #auctionState.lots
   local msg = string.format('Auction Active | Lot %d/%d | %s | Bid $%d | %ds left | Leader %s',
     lot.lotIndex, totalLots, lot.title, lot.currentBid, remaining, bidder)
@@ -1018,7 +1207,7 @@ local function placePlayerBidIfPossible()
   end
 
   lot.currentBid = bidAmount
-  lot.highestBidder = 'player'
+  setPlayerAsLeader(lot)
   maybeExtendLotTimer(lot, 'Player')
   auctionState.nextNpcBidAt = os.clock() + (NPC_BID_COOLDOWN_MIN + math.random() * (NPC_BID_COOLDOWN_MAX - NPC_BID_COOLDOWN_MIN))
   ui_message(string.format('Bid placed on %s: $%d', lot.title, bidAmount), 2, 'Used Auction', 'info')
@@ -1040,7 +1229,7 @@ local function placePlayerBidByAmount(amount)
   if not canAfford(bidAmount) then return false end
 
   lot.currentBid = bidAmount
-  lot.highestBidder = 'player'
+  setPlayerAsLeader(lot)
   maybeExtendLotTimer(lot, 'Player')
   auctionState.nextNpcBidAt = os.clock() + (NPC_BID_COOLDOWN_MIN + math.random() * (NPC_BID_COOLDOWN_MAX - NPC_BID_COOLDOWN_MIN))
   ui_message(string.format('Bid placed on %s: $%d', lot.title, bidAmount), 2, 'Used Auction', 'info')
@@ -1062,6 +1251,8 @@ local function requestAuctionState()
       currentBid = lot.currentBid or 0,
       minStep = lot.minStep or 250,
       highestBidder = lot.highestBidder,
+      highestBidderName = getLotLeaderName(lot),
+      highestBidderNpcId = lot.leadingNpcPersonaId,
       timeLeft = math.max(0, math.ceil((lot.endTime or 0) - now))
     }
     table.insert(lotsOut, lotOut)
@@ -1114,7 +1305,7 @@ local function passCurrentLot()
   if auctionState.phase ~= 'bidding' then return false end
   local lot = auctionState.lots[auctionState.activeLotIndex]
   if not lot or lot.state ~= 'active' then return false end
-  lot.highestBidder = 'npc'
+  setNpcAsLeader(lot, getStrongestNpcPersonaForLot(lot))
   lot.endTime = os.clock()
   return true
 end
@@ -1212,6 +1403,7 @@ local function resetAuction(keepPurchases)
   auctionState.nextLiveStatusAt = 0
   auctionState.noSpaceWarnCooldownUntil = 0
   auctionState.awaitingFinalExit = false
+  auctionState.npcPersonas = {}
 
   if not keepPurchases then
     auctionState.purchasedInventoryIds = {}
@@ -1268,7 +1460,8 @@ local function startAuctionImmediate()
 
     teleportVehicleToSpot(playerVeh, auctionState.auctionSpot)
 
-    auctionState.lots = prepareLots(layout.spawnSpots, layout.blockSpots, DEFAULT_LOT_COUNT)
+    auctionState.npcPersonas = generateAuctionNpcPersonas(NPC_PERSONA_COUNT)
+    auctionState.lots = prepareLots(layout.spawnSpots, layout.blockSpots, DEFAULT_LOT_COUNT, auctionState.npcPersonas)
     auctionState.activeLotIndex = 0
     auctionState.awaitingFinalExit = false
 
@@ -1477,19 +1670,17 @@ local function onUpdate()
 
   if now >= auctionState.nextNpcBidAt then
     local nextBid = lot.currentBid + lot.minStep
-    if nextBid <= lot.npcMaxBid then
-      if lot.highestBidder == 'player' then
-        if math.random() < 0.65 then
-          lot.currentBid = nextBid
-          lot.highestBidder = 'npc'
-          maybeExtendLotTimer(lot, 'NPC')
-        end
-      else
-        if math.random() < 0.35 then
-          lot.currentBid = nextBid
-          lot.highestBidder = 'npc'
-          maybeExtendLotTimer(lot, 'NPC')
-        end
+    local playerLeads = lot.highestBidder == 'player'
+    local bidderPersona = chooseNpcBidderForLot(lot, nextBid, playerLeads)
+    if bidderPersona then
+      local baseChance = playerLeads and 0.65 or 0.35
+      local readiness = tonumber(bidderPersona.counterOfferReadiness) or 0.5
+      local unpredictability = tonumber(bidderPersona.unpredictability) or 0.03
+      local personaChance = baseChance * clampNumber(0.75 + readiness * 0.5 + unpredictability * 2.0, 0.6, 1.35)
+      if math.random() < clampNumber(personaChance, 0.05, 0.95) then
+        lot.currentBid = nextBid
+        setNpcAsLeader(lot, bidderPersona)
+        maybeExtendLotTimer(lot, lot.highestBidderName or 'NPC')
       end
     end
 
