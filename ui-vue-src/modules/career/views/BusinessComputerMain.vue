@@ -173,7 +173,7 @@
         </aside>
 
         <main v-if="!store.vehicleView" class="main-content">
-          <div class="content-body">
+          <div :class="['content-body', { 'skill-tree-content-body': activeTab?.component === 'BusinessSkillTreeTab' }]">
             <component 
               :is="activeTabComponent" 
               v-if="activeTabComponent"
@@ -951,6 +951,10 @@ onUnmounted(kill)
       background: rgba(255, 255, 255, 0.15);
     }
   }
+}
+
+.content-body.skill-tree-content-body {
+  padding: 0;
 }
 
 .loading {
