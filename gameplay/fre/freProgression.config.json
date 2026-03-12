@@ -139,16 +139,32 @@
     },
     "targetMultiplierByTier": {
       "easy": {
-        "min": 1.06,
-        "max": 1.25
+        "min": 1.03,
+        "max": 1.18
       },
       "medium": {
-        "min": 1.02,
-        "max": 1.12
+        "min": 0.98,
+        "max": 1.1
       },
       "hard": {
-        "min": 0.96,
-        "max": 1.05
+        "min": 0.92,
+        "max": 1.02
+      }
+    },
+    "disciplineTargetSecondsByTier": {
+      "drag": {
+        "easy": {
+          "min": 10.0,
+          "max": 12.0
+        },
+        "medium": {
+          "min": 8.0,
+          "max": 9.99
+        },
+        "hard": {
+          "min": 6.0,
+          "max": 7.99
+        }
       }
     },
     "rewardRangeByTier": {
@@ -204,16 +220,32 @@
     "graceMinutes": 20,
     "targetMultiplierByTier": {
       "easy": {
-        "min": 1.2,
-        "max": 1.5
+        "min": 1.08,
+        "max": 1.25
       },
       "medium": {
-        "min": 1.08,
-        "max": 1.28
+        "min": 1.0,
+        "max": 1.12
       },
       "hard": {
-        "min": 0.98,
-        "max": 1.12
+        "min": 0.94,
+        "max": 1.04
+      }
+    },
+    "disciplineTargetSecondsByTier": {
+      "drag": {
+        "easy": {
+          "min": 10.0,
+          "max": 12.0
+        },
+        "medium": {
+          "min": 8.0,
+          "max": 9.0
+        },
+        "hard": {
+          "min": 6.0,
+          "max": 7.0
+        }
       }
     },
     "bonusRangeByTier": {

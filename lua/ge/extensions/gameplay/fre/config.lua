@@ -58,9 +58,16 @@ local defaultConfig = {
       hard = {lapsMin = 3, lapsMax = 5, eventsMin = 3, eventsMax = 4}
     },
     targetMultiplierByTier = {
-      easy = {min = 1.06, max = 1.25},
-      medium = {min = 1.02, max = 1.12},
-      hard = {min = 0.96, max = 1.05}
+      easy = {min = 1.03, max = 1.18},
+      medium = {min = 0.98, max = 1.10},
+      hard = {min = 0.92, max = 1.02}
+    },
+    disciplineTargetSecondsByTier = {
+      drag = {
+        easy = {min = 10.0, max = 12.0},
+        medium = {min = 8.0, max = 9.0},
+        hard = {min = 6.0, max = 7.0}
+      }
     },
     rewardRangeByTier = {
       easy = {moneyMin = 15000, moneyMax = 30000, xpMin = 500, xpMax = 1000},
@@ -79,9 +86,16 @@ local defaultConfig = {
     upkeepMinutesByTier = {easy = 360, medium = 240, hard = 120},
     graceMinutes = 20,
     targetMultiplierByTier = {
-      easy = {min = 1.2, max = 1.5},
-      medium = {min = 1.08, max = 1.28},
-      hard = {min = 0.98, max = 1.12}
+      easy = {min = 1.08, max = 1.25},
+      medium = {min = 1.00, max = 1.12},
+      hard = {min = 0.94, max = 1.04}
+    },
+    disciplineTargetSecondsByTier = {
+      drag = {
+        easy = {min = 10.0, max = 12.0},
+        medium = {min = 8.0, max = 9.0},
+        hard = {min = 6.0, max = 7.0}
+      }
     },
     bonusRangeByTier = {
       easy = {min = 0.01, max = 0.10},

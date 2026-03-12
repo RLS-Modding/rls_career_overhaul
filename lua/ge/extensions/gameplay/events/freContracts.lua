@@ -393,6 +393,58 @@ local function formatTimeForRequirement(seconds)
   return string.format("%d:%05.2f", minutes, secs)
 end
 
+local function resolveTargetTimeForTier(disciplineId, tier, bestTime, cfg, fallbackCfg, defaultRange)
+  local function fromAbsoluteRange(configTable)
+    local byDiscipline = type(configTable) == "table" and configTable.disciplineTargetSecondsByTier or nil
+    local disciplineTable = type(byDiscipline) == "table" and byDiscipline[disciplineId] or nil
+    local tierRange = type(disciplineTable) == "table" and disciplineTable[tier] or nil
+    if type(tierRange) ~= "table" then
+      return nil
+    end
+    local minSeconds = tonumber(tierRange.min)
+    local maxSeconds = tonumber(tierRange.max)
+    if not minSeconds and maxSeconds then
+      minSeconds = maxSeconds
+    end
+    if not maxSeconds and minSeconds then
+      maxSeconds = minSeconds
+    end
+    if not minSeconds or not maxSeconds then
+      return nil
+    end
+    if maxSeconds < minSeconds then
+      minSeconds, maxSeconds = maxSeconds, minSeconds
+    end
+    if minSeconds <= 0 or maxSeconds <= 0 then
+      return nil
+    end
+    return roundTo(randomFloat(minSeconds, maxSeconds), 3)
+  end
+
+  local absoluteTarget = fromAbsoluteRange(cfg) or fromAbsoluteRange(fallbackCfg)
+  if absoluteTarget then
+    return absoluteTarget
+  end
+
+  local multiplierRange = ((cfg and cfg.targetMultiplierByTier or {})[tier]) or {}
+  if type(multiplierRange) ~= "table" or (multiplierRange.min == nil and multiplierRange.max == nil) then
+    multiplierRange = ((fallbackCfg and fallbackCfg.targetMultiplierByTier or {})[tier]) or {}
+  end
+  if type(multiplierRange) ~= "table" then
+    multiplierRange = {}
+  end
+
+  local defaultMin = tonumber((defaultRange or {}).min) or 1.0
+  local defaultMax = tonumber((defaultRange or {}).max) or 1.1
+  local multMin = tonumber(multiplierRange.min) or defaultMin
+  local multMax = tonumber(multiplierRange.max) or defaultMax
+  if multMax < multMin then
+    multMin, multMax = multMax, multMin
+  end
+  local baseBest = tonumber(bestTime) or 60
+  return roundTo(baseBest * randomFloat(multMin, multMax), 3)
+end
+
 local function buildSponsorRequirement(disciplineId, tier)
   local raceData = refreshRaceCache().byDiscipline[disciplineId] or {}
   if #raceData == 0 then
@@ -406,8 +458,7 @@ local function buildSponsorRequirement(disciplineId, tier)
 
   local sponsorCfg = freConfig.getSponsorConfig() or {}
   local contractCfg = freConfig.getContractConfig() or {}
-  local multiplierRange = ((sponsorCfg.targetMultiplierByTier or {})[tier]) or ((contractCfg.targetMultiplierByTier or {})[tier]) or {min = 1.25, max = 1.5}
-  local targetTime = roundTo((tonumber(raceEntry.bestTime) or 60) * randomFloat(multiplierRange.min, multiplierRange.max), 3)
+  local targetTime = resolveTargetTimeForTier(disciplineId, tier, raceEntry.bestTime, sponsorCfg, contractCfg, {min = 1.25, max = 1.5})
   local raceLabel = raceEntry.raceLabel or raceEntry.raceName or disciplineId
   local targetLabel = formatTimeForRequirement(targetTime)
   local requirement = string.format("Beat %s on %s once per upkeep window (no XP minimum).", targetLabel, raceLabel)
@@ -766,8 +817,7 @@ local function generateContractOffer(disciplineId, level, now)
     return nil
   end
 
-  local multiplierRange = ((contractCfg.targetMultiplierByTier or {})[tier]) or {min = 1.0, max = 1.1}
-  local targetTime = roundTo((tonumber(raceEntry.bestTime) or 60) * randomFloat(multiplierRange.min, multiplierRange.max), 3)
+  local targetTime = resolveTargetTimeForTier(disciplineId, tier, raceEntry.bestTime, contractCfg, nil, {min = 1.0, max = 1.1})
 
   local rewardRange = ((contractCfg.rewardRangeByTier or {})[tier]) or {}
   local rewardMoney = randomInt(tonumber(rewardRange.moneyMin) or 1000, tonumber(rewardRange.moneyMax) or 2000)
