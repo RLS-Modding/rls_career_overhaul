@@ -49,6 +49,19 @@
                 </svg>
               </button>
               <div v-if="filterOpen" ref="filterPanelRef" class="dropdown-panel filter-panel" tabindex="-1" @mousedown.stop>
+                <label class="filter-opt">
+                  <span class="custom-checkbox" :class="{ checked: showOnlyFacilitiesWithAvailableByLevel }">
+                    <span class="custom-checkbox-dot"></span>
+                  </span>
+                  <input
+                    :checked="showOnlyFacilitiesWithAvailableByLevel"
+                    class="sr-only"
+                    type="checkbox"
+                    @change="showOnlyFacilitiesWithAvailableByLevel = !showOnlyFacilitiesWithAvailableByLevel"
+                  />
+                  Available by Level
+                </label>
+
                 <label v-for="filter in filters" :key="filter.id" class="filter-opt">
                   <span class="custom-checkbox" :class="{ checked: activeFilters.includes(filter.id) }">
                     <span class="custom-checkbox-dot"></span>
@@ -100,7 +113,7 @@
         </div>
 
         <div v-if="visibleFacilities.length === 0" class="empty-state small">
-          <p>No logistics facilities available right now.</p>
+          <p>{{ showOnlyFacilitiesWithAvailableByLevel ? "No logistics facilities have deliveries available at your current level." : "No logistics facilities available right now." }}</p>
         </div>
 
         <div v-else class="facility-list">
@@ -126,7 +139,7 @@
             <div class="facility-body">
               <div class="facility-topline">
                 <h2>{{ facility.name }}</h2>
-                <span class="job-total">{{ facility.totalVisibleJobs }} jobs</span>
+                <span class="job-total">{{ displayFacilityJobTotal(facility) }} jobs</span>
               </div>
 
               <div class="count-grid">
@@ -185,6 +198,17 @@
             </button>
           </div>
 
+          <div v-if="hasAvailabilityFilter" class="detail-level-controls">
+            <span v-if="logisticsLevelLabel" class="detail-level-label">{{ logisticsLevelLabel }}</span>
+            <button
+              class="chip availability-chip"
+              :class="{ active: showOnlyAvailableByLevel }"
+              @click="showOnlyAvailableByLevel = !showOnlyAvailableByLevel"
+            >
+              Available by Level
+            </button>
+          </div>
+
           <div v-if="loadingDetail && !selectedDetail" class="empty-state small">
             <p>Loading facility details...</p>
           </div>
@@ -195,13 +219,13 @@
           </div>
 
           <template v-else-if="detailTab === 'parcels'">
-            <div v-if="parcelSections.length === 0" class="empty-state small">
-              <p>No parcel offers available right now.</p>
+            <div v-if="visibleParcelSections.length === 0" class="empty-state small">
+              <p>{{ showOnlyAvailableByLevel ? "No parcel offers available at your current level." : "No parcel offers available right now." }}</p>
             </div>
 
             <div v-else class="section-list">
               <section
-                v-for="section in parcelSections"
+                v-for="section in visibleParcelSections"
                 :key="section.destinationKey"
                 class="destination-section"
               >
@@ -226,6 +250,13 @@
                       <p>
                         x{{ row.quantity }} - {{ formatSlotSize(row.slotSize) }} - {{ formatMoney(row.rewardPerItem) }} each
                         <span v-if="row.timed"> - Timed</span>
+                      </p>
+                      <p
+                        v-if="unlockLevelText(row)"
+                        class="unlock-level"
+                        :class="{ locked: row.isUnlockedByLevel === false }"
+                      >
+                        {{ unlockLevelText(row) }}
                       </p>
                     </div>
                     <div class="row-actions">
@@ -294,13 +325,13 @@
           </template>
 
           <template v-else-if="detailTab === 'vehicles'">
-            <div v-if="vehicleSections.length === 0" class="empty-state small">
-              <p>No vehicle offers available right now.</p>
+            <div v-if="visibleVehicleSections.length === 0" class="empty-state small">
+              <p>{{ showOnlyAvailableByLevel ? "No vehicle offers available at your current level." : "No vehicle offers available right now." }}</p>
             </div>
 
             <div v-else class="section-list">
               <section
-                v-for="section in vehicleSections"
+                v-for="section in visibleVehicleSections"
                 :key="section.destinationKey"
                 class="destination-section"
               >
@@ -326,6 +357,13 @@
                         {{ offer.vehicleBrand || "Vehicle" }}
                         <span v-if="offer.distance > 0"> - {{ formatDistance(offer.distance) }}</span>
                       </p>
+                      <p
+                        v-if="unlockLevelText(offer)"
+                        class="unlock-level"
+                        :class="{ locked: offer.isUnlockedByLevel === false }"
+                      >
+                        {{ unlockLevelText(offer) }}
+                      </p>
                     </div>
                     <div class="row-actions">
                       <strong>{{ formatMoney(offer.reward) }}</strong>
@@ -337,13 +375,13 @@
           </template>
 
           <template v-else>
-            <div v-if="trailerSections.length === 0" class="empty-state small">
-              <p>No trailer offers available right now.</p>
+            <div v-if="visibleTrailerSections.length === 0" class="empty-state small">
+              <p>{{ showOnlyAvailableByLevel ? "No trailer offers available at your current level." : "No trailer offers available right now." }}</p>
             </div>
 
             <div v-else class="section-list">
               <section
-                v-for="section in trailerSections"
+                v-for="section in visibleTrailerSections"
                 :key="section.destinationKey"
                 class="destination-section"
               >
@@ -368,6 +406,13 @@
                       <p>
                         Trailer haul
                         <span v-if="offer.distance > 0"> - {{ formatDistance(offer.distance) }}</span>
+                      </p>
+                      <p
+                        v-if="unlockLevelText(offer)"
+                        class="unlock-level"
+                        :class="{ locked: offer.isUnlockedByLevel === false }"
+                      >
+                        {{ unlockLevelText(offer) }}
                       </p>
                     </div>
                     <div class="row-actions">
@@ -410,9 +455,11 @@ const {
 const search = ref("")
 const sortBy = ref("distance")
 const activeFilters = ref([])
+const showOnlyFacilitiesWithAvailableByLevel = ref(false)
 const filterOpen = ref(false)
 const sortOpen = ref(false)
 const detailTab = ref("parcels")
+const showOnlyAvailableByLevel = ref(false)
 const failedImages = reactive({})
 const expandedMaterialSources = reactive({})
 const filterPanelRef = ref(null)
@@ -445,12 +492,24 @@ const parcelSections = computed(() => selectedDetail.value?.parcelDestinations |
 const materialSources = computed(() => selectedDetail.value?.materialSources || [])
 const vehicleSections = computed(() => selectedDetail.value?.vehicleOfferDestinations || [])
 const trailerSections = computed(() => selectedDetail.value?.trailerOfferDestinations || [])
+const logisticsProgression = computed(() => selectedDetail.value?.progression?.logistics || null)
+const logisticsLevelLabel = computed(() => {
+  const level = logisticsProgression.value?.level
+  return typeof level === "number" ? `Logistics Lv. ${level}` : ""
+})
+const hasAvailabilityFilter = computed(() => (
+  parcelSections.value.length > 0 || vehicleSections.value.length > 0 || trailerSections.value.length > 0
+))
 const detailTabs = computed(() => {
   const tabs = []
-  if (parcelSections.value.length > 0) tabs.push({ id: "parcels", label: "Parcels" })
+  const parcelTabCount = showOnlyAvailableByLevel.value ? visibleParcelSections.value.length : parcelSections.value.length
+  const vehicleTabCount = showOnlyAvailableByLevel.value ? visibleVehicleSections.value.length : vehicleSections.value.length
+  const trailerTabCount = showOnlyAvailableByLevel.value ? visibleTrailerSections.value.length : trailerSections.value.length
+
+  if (parcelTabCount > 0) tabs.push({ id: "parcels", label: "Parcels" })
   if (materialSources.value.length > 0) tabs.push({ id: "materials", label: "Materials" })
-  if (vehicleSections.value.length > 0) tabs.push({ id: "vehicles", label: "Vehicles" })
-  if (trailerSections.value.length > 0) tabs.push({ id: "trailers", label: "Trailers" })
+  if (vehicleTabCount > 0) tabs.push({ id: "vehicles", label: "Vehicles" })
+  if (trailerTabCount > 0) tabs.push({ id: "trailers", label: "Trailers" })
   return tabs
 })
 
@@ -464,7 +523,10 @@ const visibleFacilities = computed(() => {
     const matchesTypes = activeFilters.value.length === 0
       || activeFilters.value.some(filterId => (facility.badges || []).includes(filterId))
 
-    return matchesSearch && matchesTypes
+    const matchesAvailability = !showOnlyFacilitiesWithAvailableByLevel.value
+      || (facility.totalAvailableByLevelJobs || 0) > 0
+
+    return matchesSearch && matchesTypes && matchesAvailability
   })
 
   return [...filtered].sort((left, right) => {
@@ -483,6 +545,28 @@ const visibleFacilities = computed(() => {
     return String(left.name || "").localeCompare(String(right.name || ""))
   })
 })
+
+function filterSectionsByAvailability(sections) {
+  if (!showOnlyAvailableByLevel.value) {
+    return sections
+  }
+
+  return sections
+    .map(section => {
+      const rows = (section.rows || []).filter(row => row.isUnlockedByLevel !== false)
+      if (rows.length === 0) return null
+      return {
+        ...section,
+        rows,
+        rowCount: rows.length,
+      }
+    })
+    .filter(Boolean)
+}
+
+const visibleParcelSections = computed(() => filterSectionsByAvailability(parcelSections.value))
+const visibleVehicleSections = computed(() => filterSectionsByAvailability(vehicleSections.value))
+const visibleTrailerSections = computed(() => filterSectionsByAvailability(trailerSections.value))
 
 function clearMaterialExpansion() {
   Object.keys(expandedMaterialSources).forEach(key => {
@@ -505,6 +589,7 @@ function toggleFilter(filterId) {
 
 function clearFilters() {
   activeFilters.value = []
+  showOnlyFacilitiesWithAvailableByLevel.value = false
 }
 
 function selectSort(sortId) {
@@ -539,11 +624,41 @@ function onSearchBlur() {
 function facilityCountChips(facility) {
   const counts = facility?.counts || {}
   return [
-    { id: "parcels", label: "Parcels", count: counts.parcelGroups || 0 },
+    {
+      id: "parcels",
+      label: "Parcels",
+      count: showOnlyFacilitiesWithAvailableByLevel.value
+        ? (counts.availableParcelGroups || 0)
+        : (counts.parcelGroups || 0),
+    },
     { id: "materials", label: "Materials", count: counts.materialGroups || 0 },
-    { id: "vehicles", label: "Vehicles", count: counts.vehicleOffers || 0 },
-    { id: "trailers", label: "Trailers", count: counts.trailerOffers || 0 },
+    {
+      id: "vehicles",
+      label: "Vehicles",
+      count: showOnlyFacilitiesWithAvailableByLevel.value
+        ? (counts.availableVehicleOffers || 0)
+        : (counts.vehicleOffers || 0),
+    },
+    {
+      id: "trailers",
+      label: "Trailers",
+      count: showOnlyFacilitiesWithAvailableByLevel.value
+        ? (counts.availableTrailerOffers || 0)
+        : (counts.trailerOffers || 0),
+    },
   ].filter(chip => chip.count > 0)
+}
+
+function displayFacilityJobTotal(facility) {
+  if (!showOnlyFacilitiesWithAvailableByLevel.value) {
+    return facility?.totalVisibleJobs || 0
+  }
+
+  const counts = facility?.counts || {}
+  return (counts.availableParcelGroups || 0)
+    + (counts.materialGroups || 0)
+    + (counts.availableVehicleOffers || 0)
+    + (counts.availableTrailerOffers || 0)
 }
 
 watch(detailTabs, tabs => {
@@ -600,6 +715,7 @@ async function viewFacility(facilityId) {
   closeToolbarMenus()
   clearMaterialExpansion()
   detailTab.value = "parcels"
+  showOnlyAvailableByLevel.value = false
   await store.selectFacility(facilityId, true)
 }
 
@@ -621,8 +737,16 @@ function handleBack() {
   if (!selectedFacilityId.value) return false
   closeToolbarMenus()
   clearMaterialExpansion()
+  showOnlyAvailableByLevel.value = false
   store.backToList()
   return true
+}
+
+function unlockLevelText(row) {
+  if (typeof row?.unlockLevel !== "number") return ""
+  return row.isUnlockedByLevel === false
+    ? `Unlocks at Lv. ${row.unlockLevel}`
+    : `Unlocked at Lv. ${row.unlockLevel}`
 }
 
 onMounted(async () => {
@@ -708,6 +832,20 @@ h4 {
   display: flex;
   flex-direction: column;
   gap: 0.7rem;
+}
+
+.detail-level-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
+.detail-level-label {
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: #385a7d;
 }
 
 .search-shell {
@@ -952,8 +1090,13 @@ h4 {
 .row-copy p,
 .detail-description,
 .detail-meta,
-.nested-empty {
+.nested-empty,
+.unlock-level {
   color: #5b7490;
+}
+
+.unlock-level.locked {
+  color: #c0565b;
 }
 
 .toolbar-label {

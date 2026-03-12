@@ -3,17 +3,20 @@ local M = {}
 M.dependencies = {
   'career_modules_delivery_generator',
   'career_modules_delivery_parcelManager',
+  'career_modules_delivery_parcelMods',
   'career_modules_delivery_vehicleOfferManager',
   'career_modules_delivery_progress',
   'career_modules_delivery_tutorial',
+  'career_modules_playerAttributes',
   'freeroam_organizations'
 }
 
-local dGenerator, dParcelManager, dVehOfferManager, dProgress, dTutorial
+local dGenerator, dParcelManager, dParcelMods, dVehOfferManager, dProgress, dTutorial
 
 local function onCareerActivated()
   dGenerator = career_modules_delivery_generator
   dParcelManager = career_modules_delivery_parcelManager
+  dParcelMods = career_modules_delivery_parcelMods
   dVehOfferManager = career_modules_delivery_vehicleOfferManager
   dProgress = career_modules_delivery_progress
   dTutorial = career_modules_delivery_tutorial
@@ -21,7 +24,7 @@ end
 M.onCareerActivated = onCareerActivated
 
 local function ensureModules()
-  if dGenerator and dParcelManager and dVehOfferManager and dProgress and dTutorial then
+  if dGenerator and dParcelManager and dParcelMods and dVehOfferManager and dProgress and dTutorial then
     return
   end
   onCareerActivated()
@@ -215,6 +218,80 @@ local function buildModifierSignature(cargo)
   return table.concat(modifierTypes, '+')
 end
 
+local function buildModifierKeys(cargo)
+  local modifierKeys = {}
+  for _, mod in ipairs(cargo and cargo.modifiers or {}) do
+    modifierKeys[mod.type] = true
+  end
+  return modifierKeys
+end
+
+local function getLogisticsProgressionSnapshot()
+  local attributeKey = 'logistics-delivery'
+  if not career_modules_playerAttributes or not career_branches or not career_branches.calcBranchLevelFromValue then
+    return nil
+  end
+
+  local value = career_modules_playerAttributes.getAttributeValue(attributeKey)
+  if type(value) ~= 'number' then
+    return nil
+  end
+
+  local level, _, _, prevThreshold, nextThreshold = career_branches.calcBranchLevelFromValue(value, attributeKey)
+  if type(level) ~= 'number' then
+    return nil
+  end
+
+  return {
+    attributeKey = attributeKey,
+    level = level,
+    value = value,
+    prevThreshold = type(prevThreshold) == 'number' and prevThreshold or nil,
+    nextThreshold = type(nextThreshold) == 'number' and nextThreshold or nil,
+  }
+end
+
+local function buildUnlockMetadata(unlocked, flagDefinition, unlockFlag)
+  return {
+    unlockFlag = unlockFlag,
+    unlockLevel = flagDefinition and flagDefinition.level or nil,
+    unlockInfo = flagDefinition and flagDefinition.unlockInfo or nil,
+    isUnlockedByLevel = unlocked ~= false,
+    lockedReason = flagDefinition and flagDefinition.lockedReason or nil,
+  }
+end
+
+local function getParcelUnlockMetadata(modifierKeys)
+  local lockedBecauseOfMods, flagDefinition = dParcelMods.lockedBecauseOfMods(modifierKeys)
+  local selectedFlag, selectedLevel = nil, -math.huge
+
+  for modKey in pairs(modifierKeys or {}) do
+    local modData = dParcelMods.getModData(modKey)
+    local unlockFlag = modData and modData.unlockFlag or nil
+    if unlockFlag and career_modules_unlockFlags and career_modules_unlockFlags.getFlagDefinition then
+      local definition = career_modules_unlockFlags.getFlagDefinition(unlockFlag)
+      local level = definition and definition.level or -math.huge
+      if level > selectedLevel then
+        selectedFlag = unlockFlag
+        selectedLevel = level
+      end
+    elseif unlockFlag and not selectedFlag then
+      selectedFlag = unlockFlag
+    end
+  end
+
+  return buildUnlockMetadata(not lockedBecauseOfMods, flagDefinition, selectedFlag)
+end
+
+local function getOfferUnlockMetadata(offer)
+  local unlockTag = offer and offer.vehicle and offer.vehicle.unlockTag or nil
+  local enabled, flagDefinition = true, nil
+  if unlockTag then
+    enabled, flagDefinition = dVehOfferManager.isVehicleTagUnlocked(unlockTag)
+  end
+  return buildUnlockMetadata(enabled, flagDefinition, unlockTag)
+end
+
 local function buildFacilityLocation(facId, psPath)
   if not facId or not psPath then return nil end
   return {
@@ -282,6 +359,8 @@ end
 
 local function buildOfferPayload(offer)
   finalizeOfferPreview(offer)
+  local unlockMetadata = getOfferUnlockMetadata(offer)
+
   return {
     offerId = offer.id,
     name = offer.vehicle and offer.vehicle.name or (offer.data and offer.data.type) or 'Offer',
@@ -291,20 +370,26 @@ local function buildOfferPayload(offer)
     distance = offer.data and offer.data.originalDistance or 0,
     requiredSkill = offer.data and offer.data.type == 'vehicle' and 'vehicleDelivery' or 'delivery',
     offerType = offer.data and offer.data.type or 'trailer',
-    unlockTag = offer.vehicle and offer.vehicle.unlockTag or nil,
+    unlockTag = unlockMetadata.unlockFlag,
     vehicleName = offer.vehicle and offer.vehicle.name or nil,
     vehicleBrand = offer.vehicle and offer.vehicle.brand or nil,
     vehicleMileage = offer.vehicle and offer.vehicle.mileage or nil,
-    thumbnail = getVehicleThumb(offer)
+    thumbnail = getVehicleThumb(offer),
+    unlockLevel = unlockMetadata.unlockLevel,
+    unlockInfo = unlockMetadata.unlockInfo,
+    isUnlockedByLevel = unlockMetadata.isUnlockedByLevel,
+    lockedReason = unlockMetadata.lockedReason,
   }
 end
 
-local function countParcelRowsForFacility(facilityId)
+local function countParcelRowsForFacility(facilityId, availableOnly)
   local outgoingCargo = dParcelManager.getAllCargoForFacilityUnexpiredUndelivered(facilityId) or {}
   local rowsByKey = {}
 
   for _, cargo in ipairs(outgoingCargo) do
     if cargo.type == 'parcel' then
+      local unlockMetadata = getParcelUnlockMetadata(buildModifierKeys(cargo))
+      if not availableOnly or unlockMetadata.isUnlockedByLevel then
       local timed = hasTimedModifier(cargo)
       local modifierSignature = buildModifierSignature(cargo)
       local rowKey = table.concat({
@@ -315,6 +400,7 @@ local function countParcelRowsForFacility(facilityId)
         modifierSignature,
       }, '|')
       rowsByKey[rowKey] = true
+      end
     end
   end
 
@@ -339,12 +425,13 @@ local function countMaterialSourcesForFacility(fac)
   return count
 end
 
-local function countOffersForFacility(facilityId, offerType)
+local function countOffersForFacility(facilityId, offerType, availableOnly)
   local count = 0
 
   for _, offer in ipairs(dVehOfferManager.getAllOfferAtFacilityUnexpired(facilityId) or {}) do
     local currentType = offer.data and offer.data.type or 'trailer'
-    if currentType == offerType and offer.task and offer.task.destination then
+    local unlockMetadata = getOfferUnlockMetadata(offer)
+    if currentType == offerType and offer.task and offer.task.destination and (not availableOnly or unlockMetadata.isUnlockedByLevel) then
       count = count + 1
     end
   end
@@ -389,6 +476,8 @@ local function buildParcelDestinationSections(facilityId)
 
       local row = section._rowsByKey[rowKey]
       if not row then
+        local modifierKeys = buildModifierKeys(cargo)
+        local unlockMetadata = getParcelUnlockMetadata(modifierKeys)
         row = {
           rowId = table.concat({
             destination.destinationKey,
@@ -406,6 +495,11 @@ local function buildParcelDestinationSections(facilityId)
           weightPerItem = cargo.weight or 0,
           weightTotal = 0,
           timed = timed,
+          unlockFlag = unlockMetadata.unlockFlag,
+          unlockLevel = unlockMetadata.unlockLevel,
+          unlockInfo = unlockMetadata.unlockInfo,
+          isUnlockedByLevel = unlockMetadata.isUnlockedByLevel,
+          lockedReason = unlockMetadata.lockedReason,
         }
         section._rowsByKey[rowKey] = row
         table.insert(section.rows, row)
@@ -584,6 +678,9 @@ local function buildFacilitySummary(fac, playerPos)
   local materialCount = countMaterialSourcesForFacility(fac)
   local vehicleCount = countOffersForFacility(fac.id, 'vehicle')
   local trailerCount = countOffersForFacility(fac.id, 'trailer')
+  local availableParcelCount = countParcelRowsForFacility(fac.id, true)
+  local availableVehicleCount = countOffersForFacility(fac.id, 'vehicle', true)
+  local availableTrailerCount = countOffersForFacility(fac.id, 'trailer', true)
 
   return {
     id = fac.id,
@@ -599,9 +696,13 @@ local function buildFacilitySummary(fac, playerPos)
       parcelGroups = parcelCount,
       materialGroups = materialCount,
       vehicleOffers = vehicleCount,
-      trailerOffers = trailerCount
+      trailerOffers = trailerCount,
+      availableParcelGroups = availableParcelCount,
+      availableVehicleOffers = availableVehicleCount,
+      availableTrailerOffers = availableTrailerCount,
     },
     totalVisibleJobs = parcelCount + materialCount + vehicleCount + trailerCount,
+    totalAvailableByLevelJobs = availableParcelCount + availableVehicleCount + availableTrailerCount,
     badges = buildFacilityBadges(parcelCount, materialCount, vehicleCount, trailerCount)
   }
 end
@@ -678,6 +779,9 @@ local function requestFacilityDetail(facilityId)
   guihooks.trigger('phoneLogisticsFacilityDetail', {
     facilityId = facilityId,
     generatedAt = os.time(),
+    progression = {
+      logistics = getLogisticsProgressionSnapshot()
+    },
     facility = {
       id = fac.id,
       name = fac.name,
