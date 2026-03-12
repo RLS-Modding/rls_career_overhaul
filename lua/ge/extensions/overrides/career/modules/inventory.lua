@@ -767,34 +767,76 @@ local function setupInventory(levelPath)
                 starter = true
             })
         elseif career_modules_linearTutorial.getLinearStep() == -1 then
+            -- Check if we have a challenge with starter vehicles
+            local activeChallenge = career_challengeModes and career_challengeModes.getActiveChallenge()
+            
+            if activeChallenge and activeChallenge.starterVehicles and #activeChallenge.starterVehicles > 0 then
+                -- Spawn a random vehicle from the challenge's starter vehicle list
+                local randomVehicleConfig = activeChallenge.starterVehicles[math.random(#activeChallenge.starterVehicles)]
+                
+                -- Parse the config to get model and config path
+                local model = randomVehicleConfig:match("^([^/]+)")
+                local config = '/vehicles/' .. randomVehicleConfig .. '.pc'
+                
+                -- Determine spawn position - use garage location if available, otherwise fallback
+                local pos, rot = vec3(-24.026, 609.157, 75.112), quatFromDir(vec3(1, 0, 0))
+                if activeChallenge.startingGarages and #activeChallenge.startingGarages > 0 then
+                    local garage = freeroam_facilities.getFacility("garage", activeChallenge.startingGarages[1])
+                    if garage and garage.spawnPoint then
+                        pos = vec3(garage.spawnPoint.pos)
+                        rot = quat(garage.spawnPoint.rot)
+                    end
+                end
+                
+                local options = {
+                    config = config,
+                    licenseText = "Challenge",
+                    vehicleName = "Starter Car",
+                    pos = pos,
+                    rot = rot
+                }
+                local spawningOptions = sanitizeVehicleSpawnOptions(model, options)
+                spawningOptions.autoEnterVehicle = false
+                local veh = core_vehicles.spawnNewVehicle(model, spawningOptions)
+                core_vehicleBridge.executeAction(veh, 'setIgnitionLevel', 0)
+                
+                gameplay_walk.setWalkingMode(true)
+                -- Move walking character into position
+                spawn.safeTeleport(getPlayerVehicle(0), pos - vec3(4, 4, 0))
+                gameplay_walk.setRot(vec3(1, 0, 0), vec3(0, 0, 1))
+                
+                M.addVehicle(veh:getID(), nil, {
+                  starter = true
+                })
+            end
+            
             -- default placement is in front of the dealership, facing it
             -- spawn.safeTeleport(getPlayerVehicle(0), vec3(838.51,-522.42,165.75))
             -- gameplay_walk.setRot(vec3(-1,-1,0), vec3(0,0,1))
-            -- Spawn at starter garage or selected starting garage
+            -- Spawn at starter garage or selected starting garage (unless challenge prohibits it)
             local spawnGarageId = nil
             
             -- Check if we have a challenge with starting garages
-            local activeChallenge = career_challengeModes and career_challengeModes.getActiveChallenge()
             if activeChallenge and activeChallenge.startingGarages and #activeChallenge.startingGarages > 0 then
-                -- Use the first selected starting garage
-                spawnGarageId = activeChallenge.startingGarages[1]
-            else
-                -- Use the map's starter garage
-                local facilities = freeroam_facilities.getFacilities(levelName)
-                if facilities and facilities.garages then
-                    for _, garage in ipairs(facilities.garages) do
-                        if garage.starterGarage then
-                            spawnGarageId = garage.id
-                            break
-                        end
-                    end
+              -- Use the first selected starting garage
+              spawnGarageId = activeChallenge.startingGarages[1]
+            elseif not activeChallenge then
+              -- Use the map's starter garage only for non-challenge careers
+              local facilities = freeroam_facilities.getFacilities(levelName)
+              if facilities and facilities.garages then
+                for _, garage in ipairs(facilities.garages) do
+                  if garage.starterGarage then
+                    spawnGarageId = garage.id
+                    break
+                  end
                 end
+              end
             end
             
             if spawnGarageId then
-                freeroam_facilities.teleportToGarage(spawnGarageId, getPlayerVehicle(0))
+              freeroam_facilities.teleportToGarage(spawnGarageId, getPlayerVehicle(0))
+              career_modules_garageManager.purchaseDefaultGarage()
             end
-            career_modules_garageManager.purchaseDefaultGarage()
         else
             -- spawn the tutorial vehicle
             local model, config = "covet", "vehicles/covet/covet_tutorial.pc"

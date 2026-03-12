@@ -18,5 +18,7 @@
         "motorsport": 1.0
     },
     "winCondition": "reachTargetMoney",
-    "targetMoney":1000000
-}
+    "targetMoney":1000000,
+    "startingGarages":[
+        "chinatownGarage"
+    ]

@@ -12,6 +12,9 @@
   },
   "name":"Easy Debt",
   "startingCapital":25000,
+  "startingGarages":[
+    "chinatownGarage"
+  ],
   "version":"1.0",
   "winCondition":"payOffLoan"
 }

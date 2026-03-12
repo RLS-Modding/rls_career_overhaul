@@ -40,6 +40,7 @@ local challengeTemplate = {
   economyAdjuster = {},
   winCondition = "",
   startingGarages = {}, -- Default starting garages for challenges
+  starterVehicles = {}, -- List of vehicle config keys to randomly spawn as starter vehicle
   category = "custom",
   createdBy = "",
   createdDate = "",

@@ -239,7 +239,7 @@ local function addDiscoveredGarage(garageId)
   if not discoveredGarages[garageId] then
     local garages = freeroam_facilities.getFacilitiesByType("garage")
     local garage = garages[garageId]
-    if garage and garage.defaultPrice == 0 then
+    if garage and getGaragePrice(garage) == 0 then
       purchasedGarages[garageId] = true
     end
     discoveredGarages[garageId] = true
@@ -250,19 +250,16 @@ end
 local function purchaseDefaultGarage()
   if career_career.hardcoreMode or career_modules_hardcore.isHardcoreMode() then return end
   
-  -- Check if challenge has starting garages
+  -- Don't auto-purchase default garage in ANY challenge mode
+  -- Challenges should explicitly define startingGarages if they want to provide garages
   if career_challengeModes and career_challengeModes.isChallengeActive() then
-    local activeChallenge = career_challengeModes.getActiveChallenge()
-    if activeChallenge and activeChallenge.startingGarages and #activeChallenge.startingGarages > 0 then
-      -- Challenge has starting garages, don't purchase default starter garage
-      log("D", "garageManager", "purchaseDefaultGarage: Skipping default garage purchase - challenge has starting garages: " .. dumps(activeChallenge.startingGarages))
-      return
-    end
+    log("D", "garageManager", "purchaseDefaultGarage: Challenge mode active, skipping default garage auto-purchase")
+    return
   end
   
-  -- Only purchase default starter garage if no challenge starting garages are selected
+  -- Only purchase default starter garage for non-challenge careers
   local garages = freeroam_facilities.getFacilitiesByType("garage")
-  if not garages or #garages == 0 then return end  -- Return if no garages
+  if not garages or #garages == 0 then return end
   for _, garage in ipairs(garages) do
     if garage.starterGarage then
       log("D", "garageManager", "purchaseDefaultGarage: Purchasing default starter garage: " .. garage.id)
@@ -1258,7 +1255,6 @@ local function onWorldReadyState(state)
   if state == 2 and career_career.isActive() then
     buildGarageSizes()
     fillGarages()
-    purchaseDefaultGarage()
   end
 end
 

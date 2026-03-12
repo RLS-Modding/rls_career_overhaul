@@ -24,6 +24,9 @@
   },
   "name":"Delivery Specialist Challenge",
   "startingCapital":8000,
+  "startingGarages":[
+    "chinatownGarage"
+  ],
   "version":"1.0",
   "winCondition":"payOffLoan"
 }
