@@ -88,7 +88,7 @@ local defaultConfig = {
     targetMultiplierByTier = {
       easy = {min = 1, max = 1.05,
       medium = {min = 0.93, max = 0.99},
-      hard = {min = 0.85, max = 0.92
+      hard = {min = 0.85, max = 0.92}
     },
     disciplineTargetSecondsByTier = {
       drag = {
