@@ -74,6 +74,8 @@ local defaultConfig = {
     offerIncreaseLevels = {16, 31, 46},
     tierUnlockLevels = {easy = 10, medium = 25, hard = 40},
     slotUnlockLevels = {baseLevel = 10, baseSlots = 2, extraLevels = {18, 33, 48}},
+    offerExpiryMinutes = 5,
+    offerRefreshMinutes = 2,
     upkeepMinutesByTier = {easy = 360, medium = 240, hard = 120},
     graceMinutes = 20,
     bonusRangeByTier = {

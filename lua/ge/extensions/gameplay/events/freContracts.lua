@@ -101,7 +101,9 @@ local function initDisciplineState(disciplineId)
     sponsors = {
       available = {},
       active = {},
-      dropped = 0
+      dropped = 0,
+      seeded = false,
+      nextOfferAt = 0
     }
   }
 end
@@ -148,6 +150,8 @@ local function ensureState()
     dState.sponsors.available = type(dState.sponsors.available) == "table" and dState.sponsors.available or {}
     dState.sponsors.active = type(dState.sponsors.active) == "table" and dState.sponsors.active or {}
     dState.sponsors.dropped = tonumber(dState.sponsors.dropped) or 0
+    dState.sponsors.seeded = dState.sponsors.seeded == true
+    dState.sponsors.nextOfferAt = tonumber(dState.sponsors.nextOfferAt) or 0
   end
 
   return state
@@ -747,7 +751,10 @@ local function generateSponsorOffer(disciplineId, level, now)
   local bonusType = pickWeightedBonusType(sponsorCfg.bonusTypeWeights or {})
   local upkeepMinutes = tonumber((sponsorCfg.upkeepMinutesByTier or {})[tier]) or 120
 
-  local offerExpiry = math.max(60, math.floor(upkeepMinutes * 0.75))
+  local offerExpiry = tonumber(sponsorCfg.offerExpiryMinutes) or 5
+  if offerExpiry <= 0 then
+    offerExpiry = 5
+  end
 
   return {
     id = nextId("fre-sponsor"),
@@ -784,6 +791,10 @@ local function syncOffersForDiscipline(disciplineId, now)
   local offerExpiryMinutes = tonumber(contractCfg.offerExpiryMinutes) or 5
   if offerExpiryMinutes <= 0 then
     offerExpiryMinutes = 5
+  end
+  local sponsorOfferExpiryMinutes = tonumber(sponsorCfg.offerExpiryMinutes) or 5
+  if sponsorOfferExpiryMinutes <= 0 then
+    sponsorOfferExpiryMinutes = 5
   end
 
   local contractTierUnlock = (contractCfg.tierUnlockLevels or {}).easy or math.huge
@@ -842,14 +853,52 @@ local function syncOffersForDiscipline(disciplineId, now)
 
   if level < sponsorTierUnlock then
     dState.sponsors.available = {}
+    dState.sponsors.seeded = false
+    dState.sponsors.nextOfferAt = now
   else
     local sponsorCap = countOfferCap(level, sponsorCfg)
-    while #dState.sponsors.available < sponsorCap do
-      local offer = generateSponsorOffer(disciplineId, level, now)
-      if not offer then
-        break
+
+    -- Normalize legacy sponsor offers to short-lived "offer" timers.
+    for _, offer in ipairs(dState.sponsors.available or {}) do
+      local createdAt = tonumber(offer.createdAt) or now
+      local maxExpiry = createdAt + sponsorOfferExpiryMinutes
+      local currentExpiry = tonumber(offer.expiresAt) or maxExpiry
+      if currentExpiry > maxExpiry then
+        offer.expiresAt = maxExpiry
       end
-      table.insert(dState.sponsors.available, offer)
+    end
+
+    while #dState.sponsors.available > sponsorCap do
+      table.remove(dState.sponsors.available, #dState.sponsors.available)
+    end
+
+    local sponsorOfferRefreshMinutes = tonumber(sponsorCfg.offerRefreshMinutes) or 2
+    sponsorOfferRefreshMinutes = math.max(0.25, sponsorOfferRefreshMinutes)
+
+    if not dState.sponsors.seeded then
+      while #dState.sponsors.available < sponsorCap do
+        local offer = generateSponsorOffer(disciplineId, level, now)
+        if not offer then
+          break
+        end
+        table.insert(dState.sponsors.available, offer)
+      end
+      dState.sponsors.seeded = true
+      dState.sponsors.nextOfferAt = now + sponsorOfferRefreshMinutes
+    else
+      local nextOfferAt = tonumber(dState.sponsors.nextOfferAt) or now
+      if nextOfferAt < now - (sponsorOfferRefreshMinutes * 20) then
+        nextOfferAt = now
+      end
+      if #dState.sponsors.available < sponsorCap and now >= nextOfferAt then
+        local offer = generateSponsorOffer(disciplineId, level, now)
+        dState.sponsors.nextOfferAt = now + sponsorOfferRefreshMinutes
+        if offer then
+          table.insert(dState.sponsors.available, offer)
+        end
+      elseif #dState.sponsors.available >= sponsorCap then
+        dState.sponsors.nextOfferAt = now + sponsorOfferRefreshMinutes
+      end
     end
   end
 end

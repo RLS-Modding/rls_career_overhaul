@@ -194,6 +194,8 @@
         48
       ]
     },
+    "offerExpiryMinutes": 5,
+    "offerRefreshMinutes": 2,
     "upkeepMinutesByTier": {
       "easy": 360,
       "medium": 240,

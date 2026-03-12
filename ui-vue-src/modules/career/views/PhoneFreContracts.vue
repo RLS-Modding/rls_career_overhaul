@@ -19,10 +19,29 @@
         </div>
 
         <div class="discipline-summary" v-if="selectedDisciplineInfo">
-          <div class="summary-title">{{ selectedDisciplineInfo.label }} (L{{ selectedDisciplineInfo.level }})</div>
-          <div class="summary-line">Contracts {{ selectedDisciplineInfo.contractSlotsUsed }}/{{ selectedDisciplineInfo.contractSlots }} | Offers {{ selectedDisciplineInfo.contractOfferCap }}</div>
-          <div class="summary-line">Sponsors {{ selectedDisciplineInfo.sponsorSlotsUsed }}/{{ selectedDisciplineInfo.sponsorSlots }} | Offers {{ selectedDisciplineInfo.sponsorOfferCap }}</div>
-          <div class="summary-line">Active bonus Money {{ formatPercent(selectedDisciplineInfo.sponsorBonusMoney) }} | XP {{ formatPercent(selectedDisciplineInfo.sponsorBonusXp) }}</div>
+          <div class="summary-top">
+            <div class="summary-title">{{ selectedDisciplineInfo.label }}</div>
+            <div class="summary-level">L{{ selectedDisciplineInfo.level }}</div>
+          </div>
+          <div class="summary-grid">
+            <div class="summary-cell">
+              <div class="summary-key">Contracts</div>
+              <div class="summary-value">{{ selectedDisciplineInfo.contractSlotsUsed }}/{{ selectedDisciplineInfo.contractSlots }}</div>
+            </div>
+            <div class="summary-cell">
+              <div class="summary-key">Contract Offers</div>
+              <div class="summary-value">{{ selectedDisciplineInfo.contractOfferCap }}</div>
+            </div>
+            <div class="summary-cell">
+              <div class="summary-key">Sponsors</div>
+              <div class="summary-value">{{ selectedDisciplineInfo.sponsorSlotsUsed }}/{{ selectedDisciplineInfo.sponsorSlots }}</div>
+            </div>
+            <div class="summary-cell">
+              <div class="summary-key">Sponsor Offers</div>
+              <div class="summary-value">{{ selectedDisciplineInfo.sponsorOfferCap }}</div>
+            </div>
+          </div>
+          <div class="summary-bonus">Bonus: Money {{ formatPercent(selectedDisciplineInfo.sponsorBonusMoney) }} | XP {{ formatPercent(selectedDisciplineInfo.sponsorBonusXp) }}</div>
           <div v-if="!selectedDisciplineInfo.contractsUnlocked" class="summary-line muted">Contracts unlock at level {{ selectedDisciplineInfo.contractUnlockLevel }}</div>
           <div v-if="!selectedDisciplineInfo.sponsorsUnlocked" class="summary-line muted">Sponsors unlock at level {{ selectedDisciplineInfo.sponsorUnlockLevel }}</div>
         </div>
@@ -39,12 +58,25 @@
           <div v-if="filteredActiveContracts.length === 0" class="empty small">No active contracts.</div>
           <div v-for="contract in filteredActiveContracts" :key="contract.id" class="card">
             <div class="title">{{ disciplineLabel(contract.disciplineId) }} - {{ tierLabel(contract.tier) }}</div>
-            <div class="line">{{ contract.raceLabel }} | {{ contract.requiredModelLabel || contract.requiredModelFamily || contract.requiredModel || 'Any model' }}</div>
-            <div class="line">Target {{ formatTime(contract.targetTime) }}</div>
-            <div class="line">{{ objectiveRequirementLabel(contract) }}</div>
-            <div v-if="contract.objectiveType === 'events'" class="line">Progress {{ contract.progress || 0 }}/{{ contract.requiredCount || 1 }}</div>
-            <div class="line">Reward ${{ formatMoney(contract.rewardMoney) }} + {{ contract.rewardXp }} XP</div>
-            <div class="line">Expires in {{ formatMinutes(displayRemaining(contract.minutesRemaining)) }}</div>
+            <div class="line contract-focus">{{ contract.raceLabel }} | {{ contract.requiredModelLabel || contract.requiredModelFamily || contract.requiredModel || 'Any model' }}</div>
+            <div class="contract-metrics">
+              <div class="metric">
+                <span class="metric-key">Target</span>
+                <span class="metric-value">{{ formatTime(contract.targetTime) }}</span>
+              </div>
+              <div class="metric">
+                <span class="metric-key">Objective</span>
+                <span class="metric-value">{{ objectiveStatusLabel(contract) }}</span>
+              </div>
+              <div class="metric">
+                <span class="metric-key">Reward</span>
+                <span class="metric-value">${{ formatMoney(contract.rewardMoney) }} + {{ contract.rewardXp }} XP</span>
+              </div>
+              <div class="metric">
+                <span class="metric-key">Expires</span>
+                <span class="metric-value">{{ formatMinutes(displayRemaining(contract.minutesRemaining)) }}</span>
+              </div>
+            </div>
             <button class="danger" :disabled="actionBusy" @click="abandonContract(contract.id)">Abandon</button>
           </div>
 
@@ -55,11 +87,25 @@
           <div v-else-if="filteredAvailableContracts.length === 0" class="empty small">No offers available.</div>
           <div v-for="contract in filteredAvailableContracts" :key="contract.id" class="card">
             <div class="title">{{ disciplineLabel(contract.disciplineId) }} - {{ tierLabel(contract.tier) }}</div>
-            <div class="line">{{ contract.raceLabel }} | {{ contract.requiredModelLabel || contract.requiredModelFamily || contract.requiredModel || 'Any model' }}</div>
-            <div class="line">Target {{ formatTime(contract.targetTime) }}</div>
-            <div class="line">{{ objectiveRequirementLabel(contract) }}</div>
-            <div class="line">Reward ${{ formatMoney(contract.rewardMoney) }} + {{ contract.rewardXp }} XP</div>
-            <div class="line">Expires in {{ formatMinutes(displayRemaining(contract.minutesRemaining)) }}</div>
+            <div class="line contract-focus">{{ contract.raceLabel }} | {{ contract.requiredModelLabel || contract.requiredModelFamily || contract.requiredModel || 'Any model' }}</div>
+            <div class="contract-metrics">
+              <div class="metric">
+                <span class="metric-key">Target</span>
+                <span class="metric-value">{{ formatTime(contract.targetTime) }}</span>
+              </div>
+              <div class="metric">
+                <span class="metric-key">Objective</span>
+                <span class="metric-value">{{ objectiveStatusLabel(contract) }}</span>
+              </div>
+              <div class="metric">
+                <span class="metric-key">Reward</span>
+                <span class="metric-value">${{ formatMoney(contract.rewardMoney) }} + {{ contract.rewardXp }} XP</span>
+              </div>
+              <div class="metric">
+                <span class="metric-key">Expires</span>
+                <span class="metric-value">{{ formatMinutes(displayRemaining(contract.minutesRemaining)) }}</span>
+              </div>
+            </div>
             <button :disabled="actionBusy || !canAcceptContract(contract)" @click="acceptContract(contract.id)">
               {{ canAcceptContract(contract) ? 'Accept' : 'Slots Full' }}
             </button>
@@ -236,13 +282,14 @@ function bonusLabel(sponsor) {
   return `${amount} ${type}`
 }
 
-function objectiveRequirementLabel(contract) {
+function objectiveStatusLabel(contract) {
   const objectiveType = contract?.objectiveType === 'laps' ? 'laps' : 'events'
   const requiredCount = Math.max(1, Math.floor(Number(contract?.requiredCount || 1)))
-  if (objectiveType === 'laps') {
-    return `Objective ${requiredCount} lap${requiredCount === 1 ? '' : 's'} under target`
+  if (objectiveType === 'events') {
+    const progress = Math.max(0, Math.floor(Number(contract?.progress || 0)))
+    return `${progress}/${requiredCount} events`
   }
-  return `Objective ${requiredCount} event${requiredCount === 1 ? '' : 's'} under target`
+  return `${requiredCount} lap${requiredCount === 1 ? '' : 's'}`
 }
 
 function canAcceptContract(contract) {
@@ -342,7 +389,7 @@ onUnmounted(() => {
     radial-gradient(120% 90% at 0% 0%, rgba(234, 98, 35, 0.24), transparent 45%),
     radial-gradient(120% 90% at 100% 20%, rgba(52, 103, 209, 0.18), transparent 40%),
     #14181f;
-  padding: 52px 10px 14px;
+  padding: 52px 12px 14px;
 }
 
 .toolbar {
@@ -398,7 +445,7 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   gap: 8px;
-  font-size: 10px;
+  font-size: 11px;
   color: rgba(228, 236, 246, 0.75);
 }
 
@@ -407,17 +454,65 @@ onUnmounted(() => {
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(19, 24, 33, 0.9);
-  padding: 8px;
+  padding: 10px;
+}
+
+.summary-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
 }
 
 .summary-title {
-  font-size: 12px;
+  font-size: 16px;
   font-weight: 700;
-  margin-bottom: 4px;
+}
+
+.summary-level {
+  font-size: 13px;
+  font-weight: 800;
+  color: #ffd08a;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 180, 110, 0.45);
+  background: rgba(165, 72, 29, 0.36);
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.summary-cell {
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.025);
+  padding: 6px 8px;
+}
+
+.summary-key {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(227, 235, 246, 0.72);
+}
+
+.summary-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(227, 235, 246, 0.96);
+}
+
+.summary-bonus {
+  margin-top: 8px;
+  font-size: 12px;
+  color: rgba(227, 235, 246, 0.92);
 }
 
 .summary-line {
-  font-size: 10px;
+  font-size: 11px;
   color: rgba(227, 235, 246, 0.9);
 }
 
@@ -465,18 +560,54 @@ onUnmounted(() => {
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(19, 24, 33, 0.95);
-  padding: 8px;
+  padding: 9px;
 }
 
 .title {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
 }
 
 .line {
-  font-size: 11px;
+  font-size: 12px;
   color: rgba(227, 235, 246, 0.9);
+}
+
+.contract-focus {
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.contract-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  padding: 5px 7px;
+  min-width: 0;
+}
+
+.metric-key {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(227, 235, 246, 0.72);
+}
+
+.metric-value {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(227, 235, 246, 0.95);
+  line-height: 1.15;
+  word-break: break-word;
 }
 
 .card button {
