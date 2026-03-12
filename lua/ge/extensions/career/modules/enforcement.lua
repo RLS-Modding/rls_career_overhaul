@@ -6,12 +6,14 @@ local CONSTANTS = {
   ARREST_BONUS_MULTIPLIER = 180,
   ARREST_BONUS_MAX = 5000,
   ARREST_BONUS_MIN = 1000,
-  REWARD_DIVISOR = 20,
+  POLICE_PAYOUT_MULTIPLIER = 0.70,
+  REWARD_DIVISOR = 6,
   COP_PROXIMITY_DISTANCE = 15,
   LICENSE_PLATE_EVADE_BONUS = 55,
   NO_LICENSE_PLATE_EVADE_PENALTY = 35,
   POLICE_LOANER_ORG_NAME = "policeLoaner",
   REPUTATION_BONUS_AMOUNT = 10,
+  POLICE_SKILL_ATTRIBUTE_KEY = "careerSkills-police",
 }
 
 local function isPoliceDisabled()
@@ -70,11 +72,12 @@ end
 
 local function handleCopEvadeReward(data)
   local pityAmount = calculateRewardAmount(data.score, CONSTANTS.COP_PITY_MULTIPLIER)
+  pityAmount = math.floor(pityAmount * CONSTANTS.POLICE_PAYOUT_MULTIPLIER)
 
   local rewardData = {
     money = { amount = pityAmount },
     beamXP = { amount = math.floor(pityAmount / CONSTANTS.REWARD_DIVISOR) },
-    police = { amount = math.floor(pityAmount / CONSTANTS.REWARD_DIVISOR) },
+    [CONSTANTS.POLICE_SKILL_ATTRIBUTE_KEY] = { amount = math.floor(pityAmount / CONSTANTS.REWARD_DIVISOR) },
     specialized = { amount = math.floor(pityAmount / CONSTANTS.REWARD_DIVISOR) }
   }
 
@@ -129,11 +132,12 @@ local function handleArrestReward(data, playerData)
     loanerCut = level.loanerCut.value
   end
   bonus = math.floor(bonus * (1 - loanerCut))
+  bonus = math.floor(bonus * CONSTANTS.POLICE_PAYOUT_MULTIPLIER)
 
   local rewardData = {
     money = { amount = bonus },
     beamXP = { amount = math.floor(bonus / CONSTANTS.REWARD_DIVISOR) },
-    police = { amount = math.floor(bonus / CONSTANTS.REWARD_DIVISOR) },
+    [CONSTANTS.POLICE_SKILL_ATTRIBUTE_KEY] = { amount = math.floor(bonus / CONSTANTS.REWARD_DIVISOR) },
     specialized = { amount = math.floor(bonus / CONSTANTS.REWARD_DIVISOR) },
     policeLoanerReputation = { amount = CONSTANTS.REPUTATION_BONUS_AMOUNT }
   }

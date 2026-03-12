@@ -4,6 +4,7 @@
 
 local M = {}
 M.dependencies = {"util_stepHandler"}
+local xpConfig = require('gameplay/delivery/logisticsXPConfig')
 
 local dParcelManager, dGeneral, dGenerator, dVehicleTasks
 M.onCareerActivated = function()
@@ -13,55 +14,16 @@ M.onCareerActivated = function()
   dVehicleTasks = career_modules_delivery_vehicleTasks
 end
 
--- Precision parking scoring configuration (based on parkingPointsNode.lua)
-local PRECISION_PARKING_CONFIG = {
-  -- Scoring thresholds (3 good ratings, 2 bad ratings)
-  PERFECT_SCORE = 20,           -- Perfect parking score
-  GREAT_SCORE = 15,             -- Great parking score
-  GOOD_SCORE = 10,             -- Good parking score
-  BAD_SCORE = 5,                -- Bad parking score
-  -- Below 5 = Horrible
-
-  -- Money rewards (always applied, positive or negative)
-  PERFECT_MONEY_FLAT = 30,      -- Flat money bonus for perfect parking
-  PERFECT_MONEY_PERCENT = 0.25, -- 15% money bonus for perfect parking
-  GREAT_MONEY_FLAT = 20,        -- Flat money bonus for great parking
-  GREAT_MONEY_PERCENT = 0.15,   -- 10% money bonus for great parking
-  GOOD_MONEY_FLAT = 10,         -- Flat money bonus for good parking
-  GOOD_MONEY_PERCENT = 0.10,    -- 5% money bonus for good parking
-  BAD_MONEY_FLAT = 0,         -- Flat money penalty for bad parking
-  BAD_MONEY_PERCENT = -0.05,    -- 5% money penalty for bad parking
-  HORRIBLE_MONEY_FLAT = 0,    -- Flat money penalty for horrible parking
-  HORRIBLE_MONEY_PERCENT = -0.10, -- 10% money penalty for horrible parking
-
-  -- Logistics XP rewards (good, great, perfect only)
-  PERFECT_LOGISTICS_FLAT = 10,  -- Flat logistics XP bonus for perfect parking
-  PERFECT_LOGISTICS_PERCENT = 0.20, -- 20% logistics XP bonus for perfect parking
-  GREAT_LOGISTICS_FLAT = 5,    -- Flat logistics XP bonus for great parking
-  GREAT_LOGISTICS_PERCENT = 0.15, -- 15% logistics XP bonus for great parking
-  GOOD_LOGISTICS_FLAT = 5,      -- Flat logistics XP bonus for good parking
-  GOOD_LOGISTICS_PERCENT = 0.10, -- 10% logistics XP bonus for good parking
-
-  -- Skill XP rewards (good, great, perfect only) (applies to delivery, vehicleDelivery or materialsDelivery, depending on the task)
-  PERFECT_SKILL_FLAT = 5,      -- Flat skill XP bonus for perfect parking
-  PERFECT_SKILL_PERCENT = 0.15, -- 15% skill XP bonus for perfect parking
-  GREAT_SKILL_FLAT = 5,         -- Flat skill XP bonus for great parking
-  GREAT_SKILL_PERCENT = 0.10,  -- 10% skill XP bonus for great parking
-  GOOD_SKILL_FLAT = 3,         -- Flat skill XP bonus for good parking
-  GOOD_SKILL_PERCENT = 0.05,   -- 5% skill XP bonus for good parking
-
-  -- Reputation rewards (great, perfect only) and penalties (horrible only)
-  PERFECT_REPUTATION_FLAT = 5,  -- Flat reputation bonus for perfect parking
-  PERFECT_REPUTATION_PERCENT = 0.20, -- 20% reputation bonus for perfect parking
-  GREAT_REPUTATION_FLAT = 2,    -- Flat reputation bonus for great parking
-  GREAT_REPUTATION_PERCENT = 0.15, -- 15% reputation bonus for great parking
-  HORRIBLE_REPUTATION_FLAT = -5, -- Flat reputation penalty for horrible parking
-  HORRIBLE_REPUTATION_PERCENT = -0.10, -- 10% reputation penalty for horrible parking
-}
+local function getPrecisionConfig()
+  return xpConfig.getPrecisionParkingRules()
+end
 
 
 -- Calculate precision parking score for a vehicle (based on parkingPointsNode.lua)
 local function calculateVehiclePrecisionScore(vehId, targetParkingSpot)
+  local precisionConfig = getPrecisionConfig()
+  local scoreConfig = precisionConfig.score
+
   local vehicle = scenetree.findObjectById(vehId)
   if not vehicle then return nil end
 
@@ -106,27 +68,31 @@ local function calculateVehiclePrecisionScore(vehId, targetParkingSpot)
   local parkingSpotLength = targetParkingSpot.length or 5.0  -- Default 5.0m length
 
   -- Calculate adaptive thresholds based on vehicle and parking spot sizes
-  local maxSideTolerance = math.max(0.3, (parkingSpotWidth - vehicleWidth) * 0.3)  -- 30% of available space
-  local maxForwardTolerance = math.max(0.4, (parkingSpotLength - vehicleLength) * 0.3)  -- 30% of available space
-  local minSideTolerance = math.max(0.1, maxSideTolerance * 0.3)  -- 30% of max tolerance
-  local minForwardTolerance = math.max(0.15, maxForwardTolerance * 0.3)  -- 30% of max tolerance
+  local maxSideTolerance = math.max(scoreConfig.sideToleranceMin, (parkingSpotWidth - vehicleWidth) * scoreConfig.toleranceSpaceFactor)
+  local maxForwardTolerance = math.max(scoreConfig.forwardToleranceMin, (parkingSpotLength - vehicleLength) * scoreConfig.toleranceSpaceFactor)
+  local minSideTolerance = math.max(scoreConfig.sideToleranceFloorMin, maxSideTolerance * scoreConfig.toleranceFloorFactor)
+  local minForwardTolerance = math.max(scoreConfig.forwardToleranceFloorMin, maxForwardTolerance * scoreConfig.toleranceFloorFactor)
 
   -- Calculate scores using adaptive thresholds
-  local angleScore = clamp(inverseLerp(7.5, 1.6, adjustedAngle), 0, 1)
+  local angleScore = clamp(inverseLerp(scoreConfig.angleWorst, scoreConfig.angleBest, adjustedAngle), 0, 1)
   local sideScore = clamp(inverseLerp(maxSideTolerance, minSideTolerance, sideDist), 0, 1)
   local forwardScore = clamp(inverseLerp(maxForwardTolerance, minForwardTolerance, forwardDist), 0, 1)
 
-  local totalScore = round(math.min(20, (angleScore + sideScore + forwardScore) * 6 + 2))
+  local totalScore = xpConfig.applyRounding(
+    math.min(scoreConfig.scoreCap, (angleScore + sideScore + forwardScore) * scoreConfig.scoreScale + scoreConfig.scoreOffset),
+    scoreConfig.scoreRounding
+  )
 
   -- Determine precision level based on score (3 good, 2 bad ratings)
+  local thresholds = precisionConfig.thresholds
   local precisionLevel = "horrible"
-  if totalScore >= PRECISION_PARKING_CONFIG.PERFECT_SCORE then
+  if totalScore >= thresholds.perfect then
     precisionLevel = "perfect"
-  elseif totalScore >= PRECISION_PARKING_CONFIG.GREAT_SCORE then
+  elseif totalScore >= thresholds.great then
     precisionLevel = "great"
-  elseif totalScore >= PRECISION_PARKING_CONFIG.GOOD_SCORE then
+  elseif totalScore >= thresholds.good then
     precisionLevel = "good"
-  elseif totalScore >= PRECISION_PARKING_CONFIG.BAD_SCORE then
+  elseif totalScore >= thresholds.bad then
     precisionLevel = "bad"
   end
 
@@ -137,9 +103,9 @@ local function calculateVehiclePrecisionScore(vehId, targetParkingSpot)
     adjustedAngle = adjustedAngle,
     sideDist = sideDist,
     forwardDist = forwardDist,
-    angleScore = angleScore * 6,
-    sideScore = sideScore * 6,
-    forwardScore = forwardScore * 6,
+    angleScore = angleScore * scoreConfig.scoreScale,
+    sideScore = sideScore * scoreConfig.scoreScale,
+    forwardScore = forwardScore * scoreConfig.scoreScale,
     -- Adaptive tolerance data for debugging
     vehicleWidth = vehicleWidth,
     vehicleLength = vehicleLength,
@@ -184,71 +150,7 @@ local function getPrecisionParkingBonus(precisionData)
   end
 
   local level = precisionData.precisionLevel
-  local config = PRECISION_PARKING_CONFIG
-
-  -- Initialize all rewards to 0
-  local moneyFlat = 0
-  local moneyPercent = 0
-  local logisticsFlat = 0
-  local logisticsPercent = 0
-  local skillFlat = 0
-  local skillPercent = 0
-  local reputationFlat = 0
-  local reputationPercent = 0
-
-  -- Money rewards (always applied)
-  if level == "perfect" then
-    moneyFlat = config.PERFECT_MONEY_FLAT
-    moneyPercent = config.PERFECT_MONEY_PERCENT
-  elseif level == "great" then
-    moneyFlat = config.GREAT_MONEY_FLAT
-    moneyPercent = config.GREAT_MONEY_PERCENT
-  elseif level == "good" then
-    moneyFlat = config.GOOD_MONEY_FLAT
-    moneyPercent = config.GOOD_MONEY_PERCENT
-  elseif level == "bad" then
-    moneyFlat = config.BAD_MONEY_FLAT
-    moneyPercent = config.BAD_MONEY_PERCENT
-  elseif level == "horrible" then
-    moneyFlat = config.HORRIBLE_MONEY_FLAT
-    moneyPercent = config.HORRIBLE_MONEY_PERCENT
-  end
-
-  -- Logistics XP rewards (good, great, perfect only)
-  if level == "perfect" then
-    logisticsFlat = config.PERFECT_LOGISTICS_FLAT
-    logisticsPercent = config.PERFECT_LOGISTICS_PERCENT
-  elseif level == "great" then
-    logisticsFlat = config.GREAT_LOGISTICS_FLAT
-    logisticsPercent = config.GREAT_LOGISTICS_PERCENT
-  elseif level == "good" then
-    logisticsFlat = config.GOOD_LOGISTICS_FLAT
-    logisticsPercent = config.GOOD_LOGISTICS_PERCENT
-  end
-
-  -- Skill XP rewards (good, great, perfect only)
-  if level == "perfect" then
-    skillFlat = config.PERFECT_SKILL_FLAT
-    skillPercent = config.PERFECT_SKILL_PERCENT
-  elseif level == "great" then
-    skillFlat = config.GREAT_SKILL_FLAT
-    skillPercent = config.GREAT_SKILL_PERCENT
-  elseif level == "good" then
-    skillFlat = config.GOOD_SKILL_FLAT
-    skillPercent = config.GOOD_SKILL_PERCENT
-  end
-
-  -- Reputation rewards (great, perfect only) and penalties (horrible only)
-  if level == "perfect" then
-    reputationFlat = config.PERFECT_REPUTATION_FLAT
-    reputationPercent = config.PERFECT_REPUTATION_PERCENT
-  elseif level == "great" then
-    reputationFlat = config.GREAT_REPUTATION_FLAT
-    reputationPercent = config.GREAT_REPUTATION_PERCENT
-  elseif level == "horrible" then
-    reputationFlat = config.HORRIBLE_REPUTATION_FLAT
-    reputationPercent = config.HORRIBLE_REPUTATION_PERCENT
-  end
+  local levelRewards = getPrecisionConfig().rewards[level] or {}
 
   return {
     precisionLevel = level,
@@ -258,14 +160,14 @@ local function getPrecisionParkingBonus(precisionData)
     sideDist = precisionData.sideDist,
     forwardDist = precisionData.forwardDist,
     -- Reward components
-    moneyFlat = moneyFlat,
-    moneyPercent = moneyPercent,
-    logisticsFlat = logisticsFlat,
-    logisticsPercent = logisticsPercent,
-    skillFlat = skillFlat,
-    skillPercent = skillPercent,
-    reputationFlat = reputationFlat,
-    reputationPercent = reputationPercent
+    moneyFlat = levelRewards.moneyFlat or 0,
+    moneyPercent = levelRewards.moneyPercent or 0,
+    logisticsFlat = levelRewards.logisticsFlat or 0,
+    logisticsPercent = levelRewards.logisticsPercent or 0,
+    skillFlat = levelRewards.skillFlat or 0,
+    skillPercent = levelRewards.skillPercent or 0,
+    reputationFlat = levelRewards.reputationFlat or 0,
+    reputationPercent = levelRewards.reputationPercent or 0
   }
 end
 
@@ -275,28 +177,33 @@ local function applyVehiclePrecisionBonus(taskData, precisionBonus)
     return taskData
   end
 
+  local rewardRounding = getPrecisionConfig().rewardRounding
+
   -- Calculate precision parking rewards
+  local skillBaseReward = (taskData.originalRewards["logistics-delivery"] or 0) + (taskData.originalRewards["logistics-vehicleDelivery"] or 0)
   local moneyReward = precisionBonus.moneyFlat + (taskData.originalRewards.money * precisionBonus.moneyPercent)
-  local logisticsReward = precisionBonus.logisticsFlat + (taskData.originalRewards["logistics-vehicleDelivery"] or 0) * precisionBonus.logisticsPercent
-  local skillReward = precisionBonus.skillFlat + (taskData.originalRewards["logistics-vehicleDelivery"] or 0) * precisionBonus.skillPercent
-  local reputationReward = precisionBonus.reputationFlat + (taskData.originalRewards[taskData.offer.organization.."Reputation"] or 0) * precisionBonus.reputationPercent
+  local logisticsReward = precisionBonus.logisticsFlat + skillBaseReward * precisionBonus.logisticsPercent
+  local skillReward = precisionBonus.skillFlat + skillBaseReward * precisionBonus.skillPercent
+  local organization = taskData.offer and taskData.offer.organization
+  local organizationReputationKey = organization and (organization .. "Reputation") or nil
+  local reputationReward = precisionBonus.reputationFlat + (organizationReputationKey and (taskData.originalRewards[organizationReputationKey] or 0) or 0) * precisionBonus.reputationPercent
 
   -- Apply money reward
-  taskData.adjustedRewards.money = taskData.adjustedRewards.money + math.floor(moneyReward)
+  taskData.adjustedRewards.money = taskData.adjustedRewards.money + xpConfig.applyRounding(moneyReward, rewardRounding)
 
   -- Apply logistics XP reward
   if logisticsReward ~= 0 then
-    taskData.adjustedRewards["logistics-vehicleDelivery"] = (taskData.adjustedRewards["logistics-vehicleDelivery"] or 0) + math.floor(logisticsReward)
+    taskData.adjustedRewards["logistics-delivery"] = (taskData.adjustedRewards["logistics-delivery"] or 0) + xpConfig.applyRounding(logisticsReward, rewardRounding)
   end
 
   -- Apply skill XP reward (same as logistics for vehicle delivery)
   if skillReward ~= 0 then
-    taskData.adjustedRewards["logistics-vehicleDelivery"] = (taskData.adjustedRewards["logistics-vehicleDelivery"] or 0) + math.floor(skillReward)
+    taskData.adjustedRewards["logistics-delivery"] = (taskData.adjustedRewards["logistics-delivery"] or 0) + xpConfig.applyRounding(skillReward, rewardRounding)
   end
 
   -- Apply reputation reward
-  if reputationReward ~= 0 and taskData.offer.organization then
-    taskData.adjustedRewards[taskData.offer.organization.."Reputation"] = (taskData.adjustedRewards[taskData.offer.organization.."Reputation"] or 0) + math.floor(reputationReward)
+  if reputationReward ~= 0 and organizationReputationKey then
+    taskData.adjustedRewards[organizationReputationKey] = (taskData.adjustedRewards[organizationReputationKey] or 0) + xpConfig.applyRounding(reputationReward, rewardRounding)
   end
 
   -- Add precision bonus breakdown
@@ -328,28 +235,31 @@ local function applyCargoPrecisionBonus(cargo, precisionBonus)
     return cargo
   end
 
+  local rewardRounding = getPrecisionConfig().rewardRounding
+
   -- Calculate precision parking rewards
   local moneyReward = precisionBonus.moneyFlat + (cargo.rewards.money * precisionBonus.moneyPercent)
   local logisticsReward = precisionBonus.logisticsFlat + (cargo.rewards["logistics-delivery"] or 0) * precisionBonus.logisticsPercent
   local skillReward = precisionBonus.skillFlat + (cargo.rewards["logistics-delivery"] or 0) * precisionBonus.skillPercent
-  local reputationReward = precisionBonus.reputationFlat + (cargo.rewards[cargo.organization.."Reputation"] or 0) * precisionBonus.reputationPercent
+  local organizationReputationKey = cargo.organization and (cargo.organization .. "Reputation") or nil
+  local reputationReward = precisionBonus.reputationFlat + (organizationReputationKey and (cargo.rewards[organizationReputationKey] or 0) or 0) * precisionBonus.reputationPercent
 
   -- Apply money reward
-  cargo.rewards.money = cargo.rewards.money + math.floor(moneyReward)
+  cargo.rewards.money = cargo.rewards.money + xpConfig.applyRounding(moneyReward, rewardRounding)
 
   -- Apply logistics XP reward
   if logisticsReward ~= 0 then
-    cargo.rewards["logistics-delivery"] = (cargo.rewards["logistics-delivery"] or 0) + math.floor(logisticsReward)
+    cargo.rewards["logistics-delivery"] = (cargo.rewards["logistics-delivery"] or 0) + xpConfig.applyRounding(logisticsReward, rewardRounding)
   end
 
   -- Apply skill XP reward (same as logistics for cargo delivery)
   if skillReward ~= 0 then
-    cargo.rewards["logistics-delivery"] = (cargo.rewards["logistics-delivery"] or 0) + math.floor(skillReward)
+    cargo.rewards["logistics-delivery"] = (cargo.rewards["logistics-delivery"] or 0) + xpConfig.applyRounding(skillReward, rewardRounding)
   end
 
   -- Apply reputation reward
-  if reputationReward ~= 0 and cargo.organization then
-    cargo.rewards[cargo.organization.."Reputation"] = (cargo.rewards[cargo.organization.."Reputation"] or 0) + math.floor(reputationReward)
+  if reputationReward ~= 0 and organizationReputationKey then
+    cargo.rewards[organizationReputationKey] = (cargo.rewards[organizationReputationKey] or 0) + xpConfig.applyRounding(reputationReward, rewardRounding)
   end
 
   -- Store precision data for breakdown
@@ -411,7 +321,7 @@ end
 
 -- Get precision parking configuration (for UI/debugging)
 M.getPrecisionParkingConfig = function()
-  return PRECISION_PARKING_CONFIG
+  return getPrecisionConfig()
 end
 
 -- Expose getPrecisionParkingBonus for debug module

@@ -122,7 +122,7 @@
         "deliveryBonus": {
           "value": 3
         },
-        "requiredValue": 1000,
+        "requiredValue": 112710,
         "levelLabel": "Reputation: Level 4",
         "label": "Paramedic"
       },
@@ -131,8 +131,8 @@
         "deliveryBonus": {
           "value": 10
         },
-        "requiredValue": 5000,
-        "max": 7500,
+        "requiredValue": 301350,
+        "max": 350000,
         "levelLabel": "Reputation: Level 5",
         "label": "Paramedic FTO"
       }
@@ -278,7 +278,7 @@
         "deliveryBonus": {
           "value": 3
         },
-        "requiredValue": 1000,
+        "requiredValue": 112710,
         "levelLabel": "Reputation: Level 4",
         "label": "Senior Driver",
         "loanerCut": {
@@ -291,8 +291,8 @@
         "deliveryBonus": {
           "value": 10
         },
-        "requiredValue": 5000,
-        "max": 7500,
+        "requiredValue": 301350,
+        "max": 350000,
         "levelLabel": "Reputation: Level 5",
         "label": "Working Supervisor",
         "loanerCut": {

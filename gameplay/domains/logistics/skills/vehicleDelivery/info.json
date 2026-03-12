@@ -13,8 +13,8 @@
       "description": {
         "type": "unlockCard",
         "icon": "info",
-        "heading": "Junker Vehicles",
-        "description": "Deliver low-value vehicles while focusing on careful handling to avoid further depreciation.",
+        "heading": "Cheap Vehicles",
+        "description": "Deliver low-value factory-trim vehicles in the 1,000-15,000 range.",
       },
       "unlockFlags": [
         "junkerVeh"
@@ -23,8 +23,8 @@
         {
           "type": "unlockCard",
           "icon": "carCrash",
-          "heading": "Junkers and beaters",
-          "description": "Older high-mileage beaters that perform very poorly."
+          "heading": "Cheap Tier",
+          "description": "Vehicle value range 1,000-15,000 with a target payout of 500 for a 3-mile run."
         },
       ],
     },
@@ -34,8 +34,8 @@
       "description": {
         "type": "unlockCard",
         "icon": "info",
-        "heading": "Used Vehicles",
-        "description": "Deliver small and midsized vehicles, emphasizing efficiency and the maintenance of vehicle condition.",
+        "heading": "Budget Vehicles",
+        "description": "Deliver factory-trim vehicles in the 15,000-40,000 range.",
       },
       "unlockFlags": [
         "smallVeh"
@@ -44,8 +44,8 @@
         {
           "type": "unlockCard",
           "icon": "car",
-          "heading": "Gently used vehicles",
-          "description": "Small/Midsize vehicles of reasonable value and in good working condition."
+          "heading": "Budget Tier",
+          "description": "Vehicle value range 15,000-40,000 with a target payout of 1,000 for a 3-mile run."
         },
       ],
     },
@@ -55,8 +55,8 @@
       "description": {
         "type": "unlockCard",
         "icon": "info",
-        "heading": "Large Vehicles",
-        "description": "Deliver large vehicles and learn to adapt to their unique size and handling requirements.",
+        "heading": "Medium + Heavy Vehicles",
+        "description": "Unlock medium-value factory cars and heavy-duty factory vehicles.",
       },
       "unlockFlags": [
         "largeVeh",
@@ -66,14 +66,14 @@
         {
           "type": "unlockCard",
           "icon": "deliveryTruck",
-          "heading": "Semi-trucks",
-          "description": "Larger vehicles and semi-trucks and other commercial vehicles."
+          "heading": "Heavy Tier",
+          "description": "Heavy vehicles like T-Series/us_semi, citybus, and md_series with a target 5,000 for 3 miles."
         },
         {
           "type": "unlockCard",
           "icon": "boxPickUp03",
-          "heading": "Brand new vehicles",
-          "description": "Factory fresh vehicles in all sizes, complete with that new-car smell."
+          "heading": "Medium Tier",
+          "description": "Factory-trim cars in the 40,000-100,000 range with a target payout of 2,000 for 3 miles."
         },
       ],
     },
@@ -83,8 +83,8 @@
       "description": {
         "type": "unlockCard",
         "icon": "info",
-        "heading": "New Vehicles",
-        "description": "Deliver new vehicles while ensuring they arrive in pristine condition.",
+        "heading": "High End + Exotic",
+        "description": "Unlock high-end and exotic tiers with no config-type restriction.",
       },
       "unlockFlags": [
         "exoticVeh"
@@ -93,8 +93,8 @@
         {
           "type": "unlockCard",
           "icon": "turbineL",
-          "heading": "High-value Vehicles",
-          "description": "High-priced, high-speed, customized, rare classics, and other top-of-the-line vehicles"
+          "heading": "High End / Exotic Tiers",
+          "description": "High End: 100,000-200,000 (target 3,500). Exotic: 200,000+ (target 4,000)."
         }
       ],
     },
@@ -104,8 +104,8 @@
       "description": {
         "type": "unlockCard",
         "icon": "info",
-        "heading": "Exotic Vehicles",
-        "description": "Deliver top-tier vehicles, requiring exceptional care, discretion, and skill.",
+        "heading": "Master Driver",
+        "description": "No additional vehicle tiers unlocked at this level.",
       },
       "unlockFlags": [],
       "unlocks": [],

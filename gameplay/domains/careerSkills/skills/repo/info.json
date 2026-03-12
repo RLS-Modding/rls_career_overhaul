@@ -1,0 +1,859 @@
+{
+    "name":  "Repo Skill",
+    "description":  "Coming soon",
+    "order":  1400,
+    "isSkill":  true,
+    "icon":  "keys1",
+    "levels":  [
+                   {
+                       "requiredValue":  0,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 1",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  246,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 2",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  550,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 3",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  924,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 4",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  1380,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 5",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  1930,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 6",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  2586,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 7",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  3360,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 8",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  4264,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 9",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  5310,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 10",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  6510,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 11",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  7876,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 12",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  9420,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 13",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  11154,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 14",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  13090,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 15",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  15240,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 16",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  17616,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 17",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  20230,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 18",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  23094,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 19",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  26220,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 20",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  29620,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 21",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  33306,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 22",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  37290,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 23",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  41584,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 24",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  46200,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 25",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  51150,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 26",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  56446,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 27",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  62100,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 28",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  68124,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 29",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  74530,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 30",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  81330,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 31",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  88536,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 32",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  96160,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 33",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  104214,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 34",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  112710,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 35",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  121660,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 36",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  131076,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 37",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  140970,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 38",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  151354,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 39",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  162240,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 40",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  173640,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 41",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  185566,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 42",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  198030,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 43",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  211044,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 44",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  224620,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 45",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  238770,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 46",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  253506,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 47",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  268840,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 48",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  284784,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 49",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  301350,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 50",
+                                           "description":  "Coming soon"
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "keys1",
+                                           "heading":  "Coming soon",
+                                           "description":  "Coming soon"
+                                       }
+                                   ]
+                   }
+               ]
+}

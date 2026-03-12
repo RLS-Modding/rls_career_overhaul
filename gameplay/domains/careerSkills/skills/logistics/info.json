@@ -1,0 +1,749 @@
+{
+    "name": "Logistics Skill",
+    "description": "Progress a dedicated 1-50 logistics mastery track with milestone unlock rewards. Each Logistics level also increases delivery payout (default +2% per level).",
+    "order": 1000,
+    "isSkill": true,
+    "attributeKey": "logistics-delivery",
+    "icon": "deliveryTruck",
+    "levels": [
+        {
+            "requiredValue": 0,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 1",
+                "description": "Reach level 1 to unlock new Logistics rewards."
+            },
+            "unlockFlags": [
+                "smallPackagesDelivery",
+                "junkerVeh"
+            ],
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "beamCurrency",
+                    "heading": "Passive Payout Bonus",
+                    "description": "Every Logistics level increases delivery money payout (default +2% per level)."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "boxPickUp03",
+                    "heading": "1-16 Slot Parcels",
+                    "description": "Unlock parcel jobs up to 16-slot capacity."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "keys1",
+                    "heading": "Lowest Car Jockey",
+                    "description": "Unlock the entry Car Jockey tier."
+                }
+            ]
+        },
+        {
+            "requiredValue": 246,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 2",
+                "description": "Reach level 2 to continue progressing your Logistics mastery."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 550,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 3",
+                "description": "Reach level 3 to unlock new Logistics rewards."
+            },
+            "unlockFlags": [
+                "logisticsParcel32Slots"
+            ],
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "boxPickUp03",
+                    "heading": "32 Slot Parcels",
+                    "description": "Unlock parcel jobs up to 32-slot capacity."
+                }
+            ]
+        },
+        {
+            "requiredValue": 924,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 4",
+                "description": "Reach level 4 to continue progressing your Logistics mastery."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 1380,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 5",
+                "description": "Reach level 5 to unlock new Logistics rewards."
+            },
+            "unlockFlags": [
+                "smallTrailersDelivery"
+            ],
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "smallTrailer",
+                    "heading": "Small Trailer",
+                    "description": "Unlock small trailer deliveries."
+                }
+            ]
+        },
+        {
+            "requiredValue": 1930,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 6",
+                "description": "Reach level 6 to continue progressing your Logistics mastery."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 2586,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 7",
+                "description": "Reach level 7 to unlock new Logistics rewards."
+            },
+            "unlockFlags": [
+                "smallVeh"
+            ],
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "keys1",
+                    "heading": "Low Car Jockey",
+                    "description": "Unlock the low Car Jockey tier."
+                }
+            ]
+        },
+        {
+            "requiredValue": 3360,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 8",
+                "description": "Reach level 8 to continue progressing your Logistics mastery."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 4264,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 9",
+                "description": "Reach level 9 to continue progressing your Logistics mastery."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 5310,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 10",
+                "description": "Reach level 10 to unlock new Logistics rewards."
+            },
+            "unlockFlags": [
+                "logisticsFluidDelivery",
+                "hazardousMaterialsDelivery"
+            ],
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "droplet",
+                    "heading": "Fluid Delivery",
+                    "description": "Unlock fluid delivery jobs."
+                }
+            ]
+        },
+        {
+            "requiredValue": 6510,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 11",
+                "description": "Reach level 11 to continue progressing your Logistics mastery."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 7876,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 12",
+                "description": "Reach level 12 to unlock new Logistics rewards."
+            },
+            "unlockFlags": [
+                "logisticsParcel64Slots",
+                "largePackagesDelivery"
+            ],
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "boxPickUp03",
+                    "heading": "64 Slot Parcels",
+                    "description": "Unlock parcel jobs up to 64-slot capacity."
+                }
+            ]
+        },
+        {
+            "requiredValue": 9420,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 13",
+                "description": "Reach level 13 to continue progressing your Logistics mastery."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 11154,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 14",
+                "description": "Reach level 14 to continue progressing your Logistics mastery."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 13090,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 15",
+                "description": "Reach level 15 to unlock new Logistics rewards."
+            },
+            "unlockFlags": [
+                "fleetVeh"
+            ],
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "keys1",
+                    "heading": "Mid Car Jockey",
+                    "description": "Unlock the mid Car Jockey tier."
+                }
+            ]
+        },
+        {
+            "requiredValue": 15240,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 16",
+                "description": "Reach level 16 to continue progressing your Logistics mastery."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 17616,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 17",
+                "description": "Reach level 17 to unlock new Logistics rewards."
+            },
+            "unlockFlags": [
+                "logisticsTrailerMedium"
+            ],
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "smallTrailer",
+                    "heading": "Medium Trailer",
+                    "description": "Unlock medium trailer deliveries."
+                }
+            ]
+        },
+        {
+            "requiredValue": 20230,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 18",
+                "description": "Reach level 18 to continue progressing your Logistics mastery."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 23094,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 19",
+                "description": "Reach level 19 to continue progressing your Logistics mastery."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 26220,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 20",
+                "description": "Reach level 20 to unlock new Logistics rewards."
+            },
+            "unlockFlags": [
+                "logisticsAggregateDelivery"
+            ],
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "rocks",
+                    "heading": "Aggregate Delivery",
+                    "description": "Unlock aggregate material delivery jobs."
+                }
+            ]
+        },
+        {
+            "requiredValue": 29620,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 21",
+                "description": "Reach level 21 to continue progressing your Logistics mastery."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 33306,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 22",
+                "description": "Reach level 22 to unlock new Logistics rewards."
+            },
+            "unlockFlags": [
+                "highEndVeh"
+            ],
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "keys1",
+                    "heading": "Higher Car Jockey",
+                    "description": "Unlock the higher Car Jockey tier."
+                }
+            ]
+        },
+        {
+            "requiredValue": 37290,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 23",
+                "description": "Reach level 23 to continue progressing your Logistics mastery."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 41584,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 24",
+                "description": "Reach level 24 to continue progressing your Logistics mastery."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 46200,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 25",
+                "description": "Reach level 25 to unlock new Logistics rewards."
+            },
+            "unlockFlags": [
+                "logisticsTrailerDolly",
+                "logisticsTrailerDryvan"
+            ],
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "roadblockL",
+                    "heading": "Contracts Small (Coming Soon)",
+                    "description": "Small contracts are planned but not implemented yet."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "smallTrailer",
+                    "heading": "Dolly + Dry Van Trailer",
+                    "description": "Unlock dolly and dry van trailer deliveries."
+                }
+            ]
+        },
+        {
+            "requiredValue": 51150,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 26",
+                "description": "Reach level 26 to continue progressing your Logistics mastery."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 56446,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 27",
+                "description": "Reach level 27 to unlock new Logistics rewards."
+            },
+            "unlockFlags": [
+                "logisticsCementDelivery"
+            ],
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "rocks",
+                    "heading": "Cement Delivery",
+                    "description": "Unlock cement delivery jobs."
+                }
+            ]
+        },
+        {
+            "requiredValue": 62100,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 28",
+                "description": "Reach level 28 to continue progressing your Logistics mastery."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 68124,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 29",
+                "description": "Reach level 29 to continue progressing your Logistics mastery."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 74530,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 30",
+                "description": "Reach level 30 to unlock new Logistics rewards."
+            },
+            "unlockFlags": [
+                "largeTrailersDelivery"
+            ],
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "semiTrailer",
+                    "heading": "Large Trailer",
+                    "description": "Unlock large trailer deliveries."
+                }
+            ]
+        },
+        {
+            "requiredValue": 81330,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 31",
+                "description": "Reach level 31 to continue progressing your Logistics mastery."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 88536,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 32",
+                "description": "Reach level 32 to unlock new Logistics rewards."
+            },
+            "unlockFlags": [
+                "exoticVeh"
+            ],
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "keys1",
+                    "heading": "Highest Car Jockey",
+                    "description": "Unlock the highest current Car Jockey tier."
+                }
+            ]
+        },
+        {
+            "requiredValue": 96160,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 33",
+                "description": "Reach level 33 to continue progressing your Logistics mastery."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 104214,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 34",
+                "description": "Reach level 34 to continue progressing your Logistics mastery."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 112710,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 35",
+                "description": "Reach level 35 to unlock new Logistics rewards."
+            },
+            "unlockFlags": [
+                "logisticsParcel128Slots",
+                "logisticsTrailerTanker"
+            ],
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "boxPickUp03",
+                    "heading": "128 Slot Parcels",
+                    "description": "Unlock parcel jobs up to 128-slot capacity."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "fuelTruck",
+                    "heading": "Tanker Trailer",
+                    "description": "Unlock tanker trailer deliveries."
+                }
+            ]
+        },
+        {
+            "requiredValue": 121660,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 36",
+                "description": "Reach level 36 to continue progressing your Logistics mastery."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 131076,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 37",
+                "description": "Reach level 37 to unlock new Logistics rewards."
+            },
+            "unlockFlags": [
+                "logisticsTrailerContainer"
+            ],
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "roadblockL",
+                    "heading": "Contracts Med (Coming Soon)",
+                    "description": "Medium contracts are planned but not implemented yet."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "semiTrailer",
+                    "heading": "Container Trailer",
+                    "description": "Unlock container trailer deliveries."
+                }
+            ]
+        },
+        {
+            "requiredValue": 140970,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 38",
+                "description": "Reach level 38 to continue progressing your Logistics mastery."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 151354,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 39",
+                "description": "Reach level 39 to continue progressing your Logistics mastery."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 162240,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 40",
+                "description": "Reach level 40 to unlock new Logistics rewards."
+            },
+            "unlockFlags": [
+                "logisticsTrailerLog"
+            ],
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "semiTrailer",
+                    "heading": "Log Trailer",
+                    "description": "Unlock log trailer deliveries."
+                }
+            ]
+        },
+        {
+            "requiredValue": 173640,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 41",
+                "description": "Reach level 41 to continue progressing your Logistics mastery."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 185566,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 42",
+                "description": "Reach level 42 to unlock new Logistics rewards."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "roadblockL",
+                    "heading": "Specialized Trailer (Coming Soon)",
+                    "description": "Specialized trailer tier is planned but not implemented yet."
+                }
+            ]
+        },
+        {
+            "requiredValue": 198030,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 43",
+                "description": "Reach level 43 to unlock new Logistics rewards."
+            },
+            "unlockFlags": [
+                "logisticsCashDelivery"
+            ],
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "beamCurrency",
+                    "heading": "Cash Delivery",
+                    "description": "Unlock cash delivery jobs."
+                }
+            ]
+        },
+        {
+            "requiredValue": 211044,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 44",
+                "description": "Reach level 44 to continue progressing your Logistics mastery."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 224620,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 45",
+                "description": "Reach level 45 to unlock new Logistics rewards."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "keys1",
+                    "heading": "Heavy Car Jockey",
+                    "description": "Unlock the heavy vehicle Car Jockey tier (truck and bus jobs)."
+                }
+            ],
+            "unlockFlags": [
+                "heavyVeh"
+            ]
+        },
+        {
+            "requiredValue": 238770,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 46",
+                "description": "Reach level 46 to continue progressing your Logistics mastery."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 253506,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 47",
+                "description": "Reach level 47 to continue progressing your Logistics mastery."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 268840,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 48",
+                "description": "Reach level 48 to continue progressing your Logistics mastery."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 284784,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 49",
+                "description": "Reach level 49 to continue progressing your Logistics mastery."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 301350,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 50",
+                "description": "Reach level 50 to unlock new Logistics rewards."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "roadblockL",
+                    "heading": "Contracts Large (Coming Soon)",
+                    "description": "Large contracts are planned but not implemented yet."
+                }
+            ]
+        }
+    ]
+}

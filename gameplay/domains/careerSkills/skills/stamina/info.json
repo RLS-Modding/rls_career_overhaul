@@ -1,0 +1,920 @@
+{
+    "name":  "Stamina Skill",
+    "description":  "Train on foot to build endurance and unlock faster walking speed as you level.",
+    "order":  1050,
+    "isSkill":  true,
+    "attributeKey":  "stamina",
+    "icon":  "bicycle1",
+    "levels":  [
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +0% movement speed while walking.",
+                                           "heading":  "Walk Speed +0%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 1 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 1",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  0
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +0.6% movement speed while walking.",
+                                           "heading":  "Walk Speed +0.6%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 2 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 2",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  246
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +1.2% movement speed while walking.",
+                                           "heading":  "Walk Speed +1.2%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 3 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 3",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  550
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +1.8% movement speed while walking.",
+                                           "heading":  "Walk Speed +1.8%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 4 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 4",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  924
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +2.4% movement speed while walking.",
+                                           "heading":  "Walk Speed +2.4%",
+                                           "type":  "unlockCard"
+                                       },
+                                       {
+                                           "icon":  "badgeRoundStar",
+                                           "description":  "Reached level 5 in Stamina Skill.",
+                                           "heading":  "Milestone Tier 1",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 5 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 5",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  1380
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +3% movement speed while walking.",
+                                           "heading":  "Walk Speed +3%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 6 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 6",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  1930
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +3.6% movement speed while walking.",
+                                           "heading":  "Walk Speed +3.6%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 7 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 7",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  2586
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +4.2% movement speed while walking.",
+                                           "heading":  "Walk Speed +4.2%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 8 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 8",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  3360
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +4.8% movement speed while walking.",
+                                           "heading":  "Walk Speed +4.8%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 9 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 9",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  4264
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +5.4% movement speed while walking.",
+                                           "heading":  "Walk Speed +5.4%",
+                                           "type":  "unlockCard"
+                                       },
+                                       {
+                                           "icon":  "badgeRoundStar",
+                                           "description":  "Reached level 10 in Stamina Skill.",
+                                           "heading":  "Milestone Tier 2",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 10 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 10",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  5310
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +6% movement speed while walking.",
+                                           "heading":  "Walk Speed +6%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 11 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 11",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  6510
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +6.6% movement speed while walking.",
+                                           "heading":  "Walk Speed +6.6%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 12 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 12",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  7876
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +7.2% movement speed while walking.",
+                                           "heading":  "Walk Speed +7.2%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 13 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 13",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  9420
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +7.8% movement speed while walking.",
+                                           "heading":  "Walk Speed +7.8%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 14 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 14",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  11154
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +8.4% movement speed while walking.",
+                                           "heading":  "Walk Speed +8.4%",
+                                           "type":  "unlockCard"
+                                       },
+                                       {
+                                           "icon":  "badgeRoundStar",
+                                           "description":  "Reached level 15 in Stamina Skill.",
+                                           "heading":  "Milestone Tier 3",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 15 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 15",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  13090
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +9% movement speed while walking.",
+                                           "heading":  "Walk Speed +9%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 16 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 16",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  15240
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +9.6% movement speed while walking.",
+                                           "heading":  "Walk Speed +9.6%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 17 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 17",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  17616
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +10.2% movement speed while walking.",
+                                           "heading":  "Walk Speed +10.2%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 18 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 18",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  20230
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +10.8% movement speed while walking.",
+                                           "heading":  "Walk Speed +10.8%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 19 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 19",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  23094
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +11.4% movement speed while walking.",
+                                           "heading":  "Walk Speed +11.4%",
+                                           "type":  "unlockCard"
+                                       },
+                                       {
+                                           "icon":  "badgeRoundStar",
+                                           "description":  "Reached level 20 in Stamina Skill.",
+                                           "heading":  "Milestone Tier 4",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 20 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 20",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  26220
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +12% movement speed while walking.",
+                                           "heading":  "Walk Speed +12%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 21 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 21",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  29620
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +12.6% movement speed while walking.",
+                                           "heading":  "Walk Speed +12.6%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 22 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 22",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  33306
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +13.2% movement speed while walking.",
+                                           "heading":  "Walk Speed +13.2%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 23 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 23",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  37290
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +13.8% movement speed while walking.",
+                                           "heading":  "Walk Speed +13.8%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 24 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 24",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  41584
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +14.4% movement speed while walking.",
+                                           "heading":  "Walk Speed +14.4%",
+                                           "type":  "unlockCard"
+                                       },
+                                       {
+                                           "icon":  "badgeRoundStar",
+                                           "description":  "Reached level 25 in Stamina Skill.",
+                                           "heading":  "Milestone Tier 5",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 25 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 25",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  46200
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +15% movement speed while walking.",
+                                           "heading":  "Walk Speed +15%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 26 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 26",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  51150
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +15.6% movement speed while walking.",
+                                           "heading":  "Walk Speed +15.6%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 27 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 27",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  56446
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +16.2% movement speed while walking.",
+                                           "heading":  "Walk Speed +16.2%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 28 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 28",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  62100
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +16.8% movement speed while walking.",
+                                           "heading":  "Walk Speed +16.8%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 29 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 29",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  68124
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +17.4% movement speed while walking.",
+                                           "heading":  "Walk Speed +17.4%",
+                                           "type":  "unlockCard"
+                                       },
+                                       {
+                                           "icon":  "badgeRoundStar",
+                                           "description":  "Reached level 30 in Stamina Skill.",
+                                           "heading":  "Milestone Tier 6",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 30 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 30",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  74530
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +18% movement speed while walking.",
+                                           "heading":  "Walk Speed +18%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 31 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 31",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  81330
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +18.6% movement speed while walking.",
+                                           "heading":  "Walk Speed +18.6%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 32 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 32",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  88536
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +19.2% movement speed while walking.",
+                                           "heading":  "Walk Speed +19.2%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 33 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 33",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  96160
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +19.8% movement speed while walking.",
+                                           "heading":  "Walk Speed +19.8%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 34 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 34",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  104214
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +20.4% movement speed while walking.",
+                                           "heading":  "Walk Speed +20.4%",
+                                           "type":  "unlockCard"
+                                       },
+                                       {
+                                           "icon":  "badgeRoundStar",
+                                           "description":  "Reached level 35 in Stamina Skill.",
+                                           "heading":  "Milestone Tier 7",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 35 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 35",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  112710
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +21% movement speed while walking.",
+                                           "heading":  "Walk Speed +21%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 36 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 36",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  121660
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +21.6% movement speed while walking.",
+                                           "heading":  "Walk Speed +21.6%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 37 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 37",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  131076
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +22.2% movement speed while walking.",
+                                           "heading":  "Walk Speed +22.2%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 38 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 38",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  140970
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +22.8% movement speed while walking.",
+                                           "heading":  "Walk Speed +22.8%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 39 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 39",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  151354
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +23.4% movement speed while walking.",
+                                           "heading":  "Walk Speed +23.4%",
+                                           "type":  "unlockCard"
+                                       },
+                                       {
+                                           "icon":  "badgeRoundStar",
+                                           "description":  "Reached level 40 in Stamina Skill.",
+                                           "heading":  "Milestone Tier 8",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 40 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 40",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  162240
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +24% movement speed while walking.",
+                                           "heading":  "Walk Speed +24%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 41 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 41",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  173640
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +24.6% movement speed while walking.",
+                                           "heading":  "Walk Speed +24.6%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 42 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 42",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  185566
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +25.2% movement speed while walking.",
+                                           "heading":  "Walk Speed +25.2%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 43 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 43",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  198030
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +25.8% movement speed while walking.",
+                                           "heading":  "Walk Speed +25.8%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 44 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 44",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  211044
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +26.4% movement speed while walking.",
+                                           "heading":  "Walk Speed +26.4%",
+                                           "type":  "unlockCard"
+                                       },
+                                       {
+                                           "icon":  "badgeRoundStar",
+                                           "description":  "Reached level 45 in Stamina Skill.",
+                                           "heading":  "Milestone Tier 9",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 45 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 45",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  224620
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +27% movement speed while walking.",
+                                           "heading":  "Walk Speed +27%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 46 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 46",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  238770
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +27.6% movement speed while walking.",
+                                           "heading":  "Walk Speed +27.6%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 47 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 47",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  253506
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +28.2% movement speed while walking.",
+                                           "heading":  "Walk Speed +28.2%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 48 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 48",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  268840
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +28.8% movement speed while walking.",
+                                           "heading":  "Walk Speed +28.8%",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 49 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 49",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  284784
+                   },
+                   {
+                       "unlocks":  [
+                                       {
+                                           "icon":  "bicycle1",
+                                           "description":  "Total stamina bonus is now +29.4% movement speed while walking.",
+                                           "heading":  "Walk Speed +29.4%",
+                                           "type":  "unlockCard"
+                                       },
+                                       {
+                                           "icon":  "badgeRoundStar",
+                                           "description":  "Reached level 50 in Stamina Skill.",
+                                           "heading":  "Milestone Tier 10",
+                                           "type":  "unlockCard"
+                                       }
+                                   ],
+                       "description":  {
+                                           "icon":  "info",
+                                           "description":  "Reach level 50 in Stamina Skill to claim this reward tier.",
+                                           "heading":  "Level 50",
+                                           "type":  "unlockCard"
+                                       },
+                       "requiredValue":  301350
+                   }
+               ]
+}

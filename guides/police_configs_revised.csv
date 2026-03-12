@@ -1,0 +1,51 @@
+Level Unlock,model,config,name,configType,vehicleType,source,layer
+1,fullsize,bcpd,Belasco City Police Department (A),Police,,fullsize.zip:vehicles/fullsize/info_bcpd.json,base-game
+1,fullsize,police,Police Package (A),Police,,fullsize.zip:vehicles/fullsize/info_police.json,base-game
+2,autobello,carabinieri,Carabinieri (M),Police,,autobello.zip:vehicles/autobello/info_carabinieri.json,base-game
+3,covet,police,Police (A),Police,,covet.zip:vehicles/covet/info_police.json,base-game
+4,fullsize,unmarked,Police Package (Unmarked) (A),Police,,fullsize.zip:vehicles/fullsize/info_unmarked.json,base-game
+5,fullsize,interceptor,Police Interceptor (A),Police,,fullsize.zip:vehicles/fullsize/info_interceptor.json,base-game
+6,lansdale,33_police_late_A,3.3 S Police (A),Police,,lansdale.zip:vehicles/lansdale/info_33_police_late_A.json,base-game
+7,nine,nine_police,Police (M),Police,,nine.zip:vehicles/nine/info_nine_police.json,base-game
+8,roamer,police,Belasco City Police Department (A),Police,,roamer.zip:vehicles/roamer/info_police.json,base-game
+8,roamer,sheriff,Sheriff (A),Police,,roamer.zip:vehicles/roamer/info_sheriff.json,base-game
+8,roamer,unmarked,LXT35 Police Package (Unmarked) (A),Police,,roamer.zip:vehicles/roamer/info_unmarked.json,base-game
+9,midtruck,4x4_police_petrol,505-F Carabinieri (M),Police,,midtruck.zip:vehicles/midtruck/info_4x4_police_petrol.json,base-game
+12,burnside,4door_late_v8_3A_police,313 V8 4-Door Sedan Police Package (A),Police,,burnside.zip:vehicles/burnside/info_4door_late_v8_3A_police.json,base-game
+13,hopper,carabinieri,Carabinieri (M),Police,,hopper.zip:vehicles/hopper/info_carabinieri.json,base-game
+13,hopper,parkranger,Park Ranger (M),Police,,hopper.zip:vehicles/hopper/info_parkranger.json,base-game
+13,hopper,sheriff,Sheriff (M),Police,,hopper.zip:vehicles/hopper/info_sheriff.json,base-game
+14,bluebuck,interceptor,Police Interceptor (A),Police,,bluebuck.zip:vehicles/bluebuck/info_interceptor.json,base-game
+14,bluebuck,police,Police Package (A),Police,,bluebuck.zip:vehicles/bluebuck/info_police.json,base-game
+15,van,police,H25 Vanster Police Package (A),Police,,van.zip:vehicles/van/info_police.json,base-game
+15,van,police_passenger,H15 Police Transport Van (A),Police,,van.zip:vehicles/van/info_police_passenger.json,base-game
+16,moonhawk,detective,448 Detective Special (A),Police,,moonhawk.zip:vehicles/moonhawk/info_detective.json,base-game
+17,bastion,police_v6_awd_A,Police 3.5 AWD (A),Police,Car,current/mods/unpacked/rls-career-overhaul-dev/vehicles/bastion/info_police_v6_awd_A.json,mod-unpacked
+18,legran,detective,Detective Special (Facelift) (M),Police,,legran.zip:vehicles/legran/info_detective.json,base-game
+18,legran,police,Police Package (A),Police,,legran.zip:vehicles/legran/info_police.json,base-game
+19,pickup,d10_4wd_parkranger,D10 Park Ranger (A),Police,,pickup.zip:vehicles/pickup/info_d10_4wd_parkranger.json,base-game
+21,wendover,interceptor,Police Interceptor (A),Police,,wendover.zip:vehicles/wendover/info_interceptor.json,base-game
+22,midsize,police,Police (A),Police,,midsize.zip:vehicles/midsize/info_police.json,base-game
+22,midsize,unmarked,Detective Special (A),Police,,midsize.zip:vehicles/midsize/info_unmarked.json,base-game
+23,vivace,tograc_polizia,Tograc Polizia (M),Police,,vivace.zip:vehicles/vivace/info_tograc_polizia.json,base-game
+23,vivace,vivace_polizia,Vivace Polizia (M),Police,,vivace.zip:vehicles/vivace/info_vivace_polizia.json,base-game
+23,vivace,vivace_S_gendarmerie,Vivace S Gendarmerie (DCT),Police,,vivace.zip:vehicles/vivace/info_vivace_S_gendarmerie.json,base-game
+24,bx,police_A,Diana Police (A),Police,,bx.zip:vehicles/bx/info_police_A.json,base-game
+24,bx,police_alt_A,240BX Police (A),Police,,bx.zip:vehicles/bx/info_police_alt_A.json,base-game
+25,bastion,police_v8_awd_A,Police 5.7 AWD (A),Police,,bastion.zip:vehicles/bastion/info_police_v8_awd_A.json,base-game
+26,sunburst2,gendarmerie,Gendarmerie (DCT),Police,,sunburst2.zip:vehicles/sunburst2/info_gendarmerie.json,base-game
+26,sunburst2,interceptor,Police Interceptor (DCT),Police,,sunburst2.zip:vehicles/sunburst2/info_interceptor.json,base-game
+26,sunburst2,police,Police Package (CVT),Police,,sunburst2.zip:vehicles/sunburst2/info_police.json,base-game
+26,sunburst2,polizia,Polizia (DCT),Police,,sunburst2.zip:vehicles/sunburst2/info_polizia.json,base-game
+26,etk800,844_police_A,844 Police (A),Police,,etk800.zip:vehicles/etk800/info_844_police_A.json,base-game
+26,etk800,854_police_A,854 Polizei (A),Police,,etk800.zip:vehicles/etk800/info_854_police_A.json,base-game
+26,etk800,854_police_A_alt,854 Polizia (A),Police,,etk800.zip:vehicles/etk800/info_854_police_A_alt.json,base-game
+30,bastion,police_unmarked_v8_awd_A,Police (Unmarked) 5.7 AWD (A),Police,,bastion.zip:vehicles/bastion/info_police_unmarked_v8_awd_A.json,base-game
+35,bastion,police_unmarked_v8_awd_A_Blue,Police (Unmarked Blue) 5.7 AWD (A),Police,Car,current/mods/unpacked/rls-career-overhaul-dev/vehicles/bastion/info_police_unmarked_v8_awd_A_Blue.json,mod-unpacked
+35,bastion,police_unmarked_v8_awd_A_Red,Police (Unmarked Red) 5.7 AWD (A),Police,Car,current/mods/unpacked/rls-career-overhaul-dev/vehicles/bastion/info_police_unmarked_v8_awd_A_Red.json,mod-unpacked
+35,bastion,police_unmarked_v8_awd_A_Silver,Police (Unmarked Silver) 5.7 AWD (A),Police,Car,current/mods/unpacked/rls-career-overhaul-dev/vehicles/bastion/info_police_unmarked_v8_awd_A_Silver.json,mod-unpacked
+37,bolide,polizia,350 Polizia (M),Police,,bolide.zip:vehicles/bolide/info_polizia.json,base-game
+45,bastion,police_redtail,Police Redtail RWD (A),Police,Car,current/mods/unpacked/rls-career-overhaul-dev/vehicles/bastion/info_police_redtail.json,mod-unpacked
+45,bastion,undercover_redtail,Police Redtail (Undercover) RWD (A),Police,Car,current/mods/unpacked/rls-career-overhaul-dev/vehicles/bastion/info_undercover_redtail.json,mod-unpacked
+50,etkc,kc6x_340_police_highway_A,Kc6x 340 Autobahn Polizei (A),Police,,etkc.zip:vehicles/etkc/info_kc6x_340_police_highway_A.json,base-game
+50,scintilla,gts_polizia,GTs Polizia (DCT),Police,,scintilla.zip:vehicles/scintilla/info_gts_polizia.json,base-game

@@ -1,0 +1,44 @@
+<link rel="stylesheet" href="/ui/modModules/levelUpCelebration/levelUpCelebration.css" />
+
+<div class="level-up-celebration-host" ng-if="popup.visible">
+  <div class="unlock-wrapper" ng-class="{ closing: popup.closing }">
+    <div class="bng-card bng-card-wrapper celebration-card">
+      <div class="card-cnt">
+        <h2 class="card-heading heading-style-ribbon">Level Up!</h2>
+
+        <div class="hero">
+          <div class="level-text-wrap">
+            <div class="skill-name">{{ ((popup.reward.animationData && popup.reward.animationData.name) || 'Skill') | contextTranslate }}</div>
+            <div class="level-text">Level {{ popup.levelValue }}</div>
+          </div>
+        </div>
+
+        <div class="card-content">
+          <div ng-if="popup.currentUnlocks.length">
+            <div class="unlocks-label">Unlocks</div>
+
+            <div class="tier-unlocks-item" ng-repeat="item in popup.currentUnlocks track by $index">
+              <div class="wrapper" ng-if="item.type !== 'tasklist'">
+                <bng-icon class="icon" ng-if="item.icon" type="img" src="getIconSrc(item.icon)"></bng-icon>
+                <div class="heading">{{ item.heading }}</div>
+                <div class="description">{{ item.description }}</div>
+              </div>
+
+              <div class="tasklist wrapper" ng-if="item.type === 'tasklist'">
+                <div class="task" ng-repeat="task in item.tasklistData.tasks track by $index">
+                  <bng-icon class="icon" type="img" src="getIconSrc(task.done ? 'checkboxOn' : 'checkboxOff')"></bng-icon>
+                  <div class="task-content">
+                    <div class="heading">{{ task.label }}</div>
+                    <div class="description">{{ task.description }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div ng-if="!popup.currentUnlocks.length" class="no-unlocks">No new unlock items at this level.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

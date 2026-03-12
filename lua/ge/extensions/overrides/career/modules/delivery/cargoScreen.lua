@@ -959,11 +959,13 @@ end
 ---------------------------------------------
 
 M.deliveryScreenExternalButtonPressed = function(id)
-  if id == "openDeliveryProgress" then
-    guihooks.trigger('ChangeState', {state = 'branchPage', params = {branchKey = 'labourer', skillKey = 'logistics-delivery'}})
+  local branchKey = "careerSkills"
+  local branch = career_branches.getBranchById(branchKey)
+  if not branch or branch.missing then
+    branchKey = "labourer"
   end
-  if id == "openVehicleDeliveryProgress" then
-    guihooks.trigger('ChangeState', {state = 'branchPage', params = {branchKey = 'labourer', skillKey = 'logistics-vehicleDelivery'}})
+  if id == "openDeliveryProgress" then
+    guihooks.trigger('ChangeState', {state = 'branchPage', params = {branchKey = branchKey, skillKey = 'logistics-delivery'}})
   end
 end
 
@@ -975,6 +977,11 @@ local function requestCargoDataForUi(facId, psPath, updateMaxTimeTimestamp)
   end
   sentNewCargoNotificationAlready = false
   dGeneral.getNearbyVehicleCargoContainers(function(playerCargoContainers)
+    local logisticsProgressBranchKey = "careerSkills"
+    local progressBranch = career_branches.getBranchById(logisticsProgressBranchKey)
+    if not progressBranch or progressBranch.missing then
+      logisticsProgressBranchKey = "labourer"
+    end
 
     local uiData = {
       player = {
@@ -987,26 +994,14 @@ local function requestCargoDataForUi(facId, psPath, updateMaxTimeTimestamp)
         {
           type = "skill",
           skillInfo = career_modules_branches_landing.getBranchSkillCardData("logistics-delivery"),
-          branchId = "labourer", skillId="logistics-delivery",
-          filterValueButtons = {'parcel','trailer','material'},
-          heading = "Cargo Delivery",
-          description = 'Deliver parcels, fluids, dry bulk in containers, or haul small and large trailers.',
+          branchId = logisticsProgressBranchKey, skillId="logistics-delivery",
+          filterValueButtons = {'parcel','trailer','material','vehicle'},
+          heading = "Logistics",
+          description = 'Deliver parcels, trailers, materials, and car jockey jobs to level one unified logistics skill.',
           externalButtons = { {
             type = "progress",
             label = "Progress",
             externalButtonId = 'openDeliveryProgress',
-          } }
-        }, {
-          type = "skill",
-          skillInfo = career_modules_branches_landing.getBranchSkillCardData("logistics-vehicleDelivery"),
-          branchId = "labourer", skillId="logistics-vehicleDelivery",
-          filterValueButtons = {'vehicle'},
-          heading = "Car Jockey",
-          description = 'Drive a wide variety of vehicles safely to their destination.',
-          externalButtons = { {
-            type = "progress",
-            label = "Progress",
-            externalButtonId = 'openVehicleDeliveryProgress',
           } }
         }, {
           type = "services",
@@ -1928,7 +1923,7 @@ local function setBestRoute(onlyClosestTarget)
 
   local result = {}
   getClosestNeighbor("player", deepcopy(targetsById), result, onlyClosestTarget)
-  core_groundMarkers.setPath(result, {clearPathOnReachingTarget = true})
+  core_groundMarkers.setPath(result, {clearPathOnReachingTarget = false})
   freeroam_bigMapMode.resetRoute()
 end
 
