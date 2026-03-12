@@ -564,7 +564,7 @@ function VehicleRepoJob:calculateReward()
     local reward = math.floor((((5 * math.sqrt(self.vehicleValue or 1000)) + distanceMultiplier) * timeMultiplier)/ 4)
     reward = reward * 1.25 + 1000
     if career_modules_hardcore.isHardcoreMode() then
-        reward = reward * 0.4
+        reward = reward * 0.5
     end
 
     print("Base repo reward: " .. reward)

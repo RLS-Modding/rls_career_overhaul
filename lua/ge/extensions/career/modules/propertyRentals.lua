@@ -55,11 +55,11 @@ local function applyMoneyDelta(amount)
     end
   elseif amount > 0 then
     if career_modules_payment and career_modules_payment.reward then
-      return career_modules_payment.reward({money = {amount = amount, canBeNegative = false}}, {label = "Rent", description = "Rental deposit return"})
+      return career_modules_payment.reward({money = {amount = amount, canBeNegative = false}}, {label = "Rent", description = "Rental deposit return"}, true)
     end
   end
   if career_modules_playerAttributes and career_modules_playerAttributes.addAttributes then
-    career_modules_playerAttributes.addAttributes({money = amount}, {label = "Rent"})
+    career_modules_playerAttributes.addAttributes({money = amount}, {label = "Rent"}, true)
     return true
   end
   return false
