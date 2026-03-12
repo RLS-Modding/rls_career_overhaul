@@ -1,0 +1,538 @@
+{
+  "m_pun_ravix_interior": {
+    "name": "m_pun_ravix_interior",
+    "mapTo": "m_pun_ravix_interior",
+    "class": "Material",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_interior_ao.data.png",
+        "baseColorMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_interior_b.color.png",
+        "metallicFactor": 1,
+        "metallicMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_interior_m.data.png",
+        "normalMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_interior_nm.normal.png",
+        "roughnessMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_interior_r.data.png"
+      },
+      {},
+      {},
+      {}
+    ],
+    "dynamicCubemap": true,
+    "version": 1.5
+  },
+  "m_pun_ravix_chassis": {
+    "name": "m_pun_ravix_chassis",
+    "mapTo": "m_pun_ravix_chassis",
+    "class": "Material",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_chassis_ao.data.png",
+        "baseColorMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_chassis_b.color.png",
+        "metallicFactor": 1,
+        "metallicMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_chassis_m.data.png",
+        "normalMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_chassis_nm.normal.png",
+        "roughnessMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_chassis_r.data.png"
+      },
+      {
+        "metallicFactor": null
+      },
+      {
+        "metallicFactor": null
+      },
+      {
+        "metallicFactor": null
+      }
+    ],
+    "dynamicCubemap": true,
+    "translucentBlendOp": "None",
+    "version": 1.5
+  },
+  "m_pun_ravix_goshwak_grille": {
+    "name": "m_pun_ravix_goshwak_grille",
+    "mapTo": "m_pun_ravix_goshwak_grille",
+    "class": "Material",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_goshwak_grille_ao.data.png",
+        "baseColorMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_goshwak_grille_b.color.png",
+        "metallicFactor": 0.55,
+        "normalMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_goshwak_grille_nm.normal.png",
+        "opacityMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_goshwak_grille_o.data.png",
+        "roughnessMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_goshwak_grille_r.data.png"
+      },
+      {
+        "metallicFactor": null
+      },
+      {
+        "metallicFactor": null
+      },
+      {
+        "metallicFactor": null
+      }
+    ],
+    "alphaRef": 78,
+    "alphaTest": true,
+    "doubleSided": true,
+    "dynamicCubemap": true,
+    "translucentBlendOp": "None",
+    "version": 1.5
+  },
+  "m_pun_ravix_grille": {
+    "name": "m_pun_ravix_grille",
+    "mapTo": "m_pun_ravix_grille",
+    "class": "Material",
+    "Stages": [
+      {
+        "baseColorMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_grille_b.color.png",
+        "metallicFactor": 0.818000019,
+        "normalMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_grille_nm.normal.png",
+        "opacityMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_grille_o.data.png",
+        "roughnessFactor": 0.80400002
+      },
+      {
+        "metallicFactor": null,
+        "roughnessFactor": null
+      },
+      {
+        "metallicFactor": null,
+        "roughnessFactor": null
+      },
+      {
+        "metallicFactor": null,
+        "roughnessFactor": null
+      }
+    ],
+    "alphaRef": 80,
+    "alphaTest": true,
+    "doubleSided": true,
+    "dynamicCubemap": true,
+    "translucentBlendOp": "None",
+    "translucentRecvShadows": true,
+    "version": 1.5
+  },
+  "m_pun_ravix_grille_hex": {
+    "name": "m_pun_ravix_grille_hex",
+    "mapTo": "m_pun_ravix_grille_hex",
+    "class": "Material",
+    "Stages": [
+      {
+        "baseColorMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_grille_hex_b.color.png",
+        "metallicFactor": 0.805999994,
+        "normalMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_grille_hex_nm.normal.png",
+        "opacityMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_grille_hex_o.data.png",
+        "roughnessFactor": 0.800999999
+      },
+      {
+        "metallicFactor": null,
+        "roughnessFactor": null
+      },
+      {
+        "metallicFactor": null,
+        "roughnessFactor": null
+      },
+      {
+        "metallicFactor": null,
+        "roughnessFactor": null
+      }
+    ],
+    "alphaRef": 80,
+    "alphaTest": true,
+    "doubleSided": true,
+    "dynamicCubemap": true,
+    "translucentBlendOp": "None",
+    "translucentRecvShadows": true,
+    "version": 1.5
+  },
+  "m_pun_ravix_carbonfibre_clearcoat": {
+    "name": "m_pun_ravix_carbonfibre_clearcoat",
+    "mapTo": "m_pun_ravix_carbonfibre_clearcoat",
+    "class": "Material",
+    "persistentId": "60814055-a9fe-47c3-bdbb-ed14ecfb72f0",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_common_ao.data.png",
+        "baseColorMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_carbonfibre_b.color.png",
+        "clearCoatFactor": 1,
+        "metallicFactor": 1,
+        "normalMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_carbonfibre_nm.normal.png",
+        "normalMapStrength": 0.100000001,
+        "roughnessMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_carbonfibre_clearcoat_r.data.png"
+      },
+      {
+        "clearCoatFactor": null,
+        "metallicFactor": null,
+        "normalMapStrength": null
+      },
+      {
+        "clearCoatFactor": null,
+        "metallicFactor": null,
+        "normalMapStrength": null
+      },
+      {
+        "clearCoatFactor": null,
+        "metallicFactor": null,
+        "normalMapStrength": null
+      }
+    ],
+    "alphaRef": 0,
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "translucentBlendOp": "None",
+    "version": 1.5
+  },
+  "m_pun_ravix_badges": {
+    "name": "m_pun_ravix_badges",
+    "mapTo": "m_pun_ravix_badges",
+    "class": "Material",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_common_ao.data.png",
+        "baseColorMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_badges_b.color.png",
+        "metallicFactor": 1,
+        "metallicMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_badges_m.data.png",
+        "normalMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_badges_nm.normal.png",
+        "opacityMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_badges_o.data.png",
+        "roughnessMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_badges_r.data.png"
+      },
+      {
+        "metallicFactor": null
+      },
+      {
+        "metallicFactor": null
+      },
+      {
+        "metallicFactor": null
+      }
+    ],
+    "alphaRef": 80,
+    "alphaTest": true,
+    "dynamicCubemap": true,
+    "translucentBlendOp": "None",
+    "version": 1.5
+  },
+  "m_pun_ravix_badges_trim": {
+    "name": "m_pun_ravix_badges_trim",
+    "mapTo": "m_pun_ravix_badges_trim",
+    "class": "Material",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_common_ao.data.png",
+        "baseColorMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_badges_trim_b.color.png",
+        "metallicFactor": 1,
+        "metallicMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_badges_trim_m.data.png",
+        "normalMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_badges_trim_nm.normal.png",
+        "opacityMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_badges_trim_o.data.png",
+        "roughnessMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_badges_trim_r.data.png"
+      },
+      {
+        "metallicFactor": null
+      },
+      {
+        "metallicFactor": null
+      },
+      {
+        "metallicFactor": null
+      }
+    ],
+    "alphaRef": 80,
+    "alphaTest": true,
+    "dynamicCubemap": true,
+    "translucentBlendOp": "None",
+    "version": 1.5
+  },
+  "m_pun_ravix_brakedisc_carbon_front": {
+    "name": "m_pun_ravix_brakedisc_carbon_front",
+    "mapTo": "m_pun_ravix_brakedisc_carbon_front",
+    "class": "Material",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_brakedisc_carbon_front_ao.data.png",
+        "baseColorMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_brakedisc_carbon_front_b.color.png",
+        "metallicFactor": 1,
+        "metallicMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_brakedisc_carbon_front_m.data.png",
+        "normalMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_brakedisc_carbon_front_nm.normal.png",
+        "roughnessMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_brakedisc_carbon_front_r.data.png"
+      },
+      {},
+      {},
+      {}
+    ],
+    "dynamicCubemap": true,
+    "version": 1.5
+  },
+  "m_pun_ravix_brakedisc_carbon_rear": {
+    "name": "m_pun_ravix_brakedisc_carbon_rear",
+    "mapTo": "m_pun_ravix_brakedisc_carbon_rear",
+    "class": "Material",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_brakedisc_carbon_rear_ao.data.png",
+        "baseColorMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_brakedisc_carbon_rear_b.color.png",
+        "metallicFactor": 1,
+        "metallicMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_brakedisc_carbon_rear_m.data.png",
+        "normalMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_brakedisc_carbon_rear_nm.normal.png",
+        "roughnessMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_brakedisc_carbon_rear_r.data.png"
+      },
+      {},
+      {},
+      {}
+    ],
+    "dynamicCubemap": true,
+    "version": 1.5
+  },
+  "m_pun_ravix_brakedisc_front": {
+    "name": "m_pun_ravix_brakedisc_front",
+    "mapTo": "m_pun_ravix_brakedisc_front",
+    "class": "Material",
+    "Stages": [
+      {
+        "baseColorMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_brakedisc_front_b.color.png",
+        "metallicFactor": 1,
+        "metallicMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_brakedisc_front_m.data.png",
+        "normalMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_brakedisc_front_nm.normal.png",
+        "roughnessMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_brakedisc_front_r.data.png"
+      },
+      {},
+      {},
+      {}
+    ],
+    "dynamicCubemap": true,
+    "version": 1.5
+  },
+  "m_pun_ravix_brakedisc_rear": {
+    "name": "m_pun_ravix_brakedisc_rear",
+    "mapTo": "m_pun_ravix_brakedisc_rear",
+    "class": "Material",
+    "Stages": [
+      {
+        "baseColorMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_brakedisc_rear_b.color.png",
+        "metallicFactor": 1,
+        "metallicMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_brakedisc_rear_m.data.png",
+        "normalMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_brakedisc_rear_nm.normal.png",
+        "roughnessMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_brakedisc_rear_r.data.png"
+      },
+      {},
+      {},
+      {}
+    ],
+    "dynamicCubemap": true,
+    "version": 1.5
+  },
+  "m_pun_ravix_calipers_red": {
+    "name": "m_pun_ravix_calipers_red",
+    "mapTo": "m_pun_ravix_calipers_red",
+    "class": "Material",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_calipers_ao.data.png",
+        "baseColorMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_calipers_b.color.png",
+        "metallicFactor": 1,
+        "metallicMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_calipers_m.data.png",
+        "normalMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_calipers_nm.normal.png",
+        "roughnessMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_calipers_r.data.png"
+      },
+      {},
+      {},
+      {}
+    ],
+    "dynamicCubemap": true,
+    "version": 1.5
+  },
+  "m_pun_ravix_glass": {
+    "name": "m_pun_ravix_glass",
+    "mapTo": "m_pun_ravix_glass",
+    "class": "Material",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_glass_b.color.png",
+        "baseColorMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_glass_b.color.png",
+        "metallicFactor": 1,
+        "normalMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_glass_nm.normal.png",
+        "opacityMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_glass_op.data.png",
+        "roughnessMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_glass_r.data.png"
+      },
+      {},
+      {},
+      {}
+    ],
+    "dynamicCubemap": true,
+    "translucent": true,
+    "translucentBlendOp": "PreMulAlpha",
+    "version": 1.5
+  },
+  "m_pun_ravix_lights": {
+    "name": "m_pun_ravix_lights",
+    "mapTo": "m_pun_ravix_lights",
+    "class": "Material",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_lights_ao.data.png",
+        "baseColorMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_lights_b.color.png",
+        "metallicFactor": 1,
+        "metallicMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_lights_m.data.png",
+        "normalMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_lights_nm.normal.png",
+        "opacityMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_lights_op.data.png",
+        "roughnessMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_lights_r.data.png"
+      },
+      {},
+      {},
+      {}
+    ],
+    "alphaRef": 0,
+    "dynamicCubemap": true,
+    "translucentBlendOp": "None",
+    "version": 1.5
+  },
+  "m_pun_ravix_main": {
+    "name": "m_pun_ravix_main",
+    "mapTo": "m_pun_ravix_main",
+    "class": "Material",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_main_ao.data.png",
+        "baseColorMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_main_b.color.png",
+        "metallicFactor": 1,
+        "metallicMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_main_m.data.png",
+        "normalMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_main_nm.normal.png",
+        "roughnessMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_main_r.data.png"
+      },
+      {
+        "ambientOcclusionMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_main_ao.data.png",
+        "clearCoatFactor": 1,
+        "clearCoatMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_main_cc.data.png",
+        "colorPaletteMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_main_mask.color.png",
+        "instanceDiffuse": true,
+        "metallicFactor": 1,
+        "normalMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_main_nm.normal.png",
+        "opacityMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_main_c.data.png"
+      },
+      {},
+      {}
+    ],
+    "activeLayers": 2,
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "version": 1.5
+  },
+  "m_pun_bastion_interior": {
+    "name": "m_pun_bastion_interior",
+    "mapTo": "m_pun_bastion_interior",
+    "class": "Material",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/vehicles/bastion/bastion_interior_ao.data.png",
+        "baseColorFactor": [
+          1,
+          0.999989986,
+          0.999989986,
+          1
+        ],
+        "baseColorMap": "/vehicles/bastion/bastion_interior_b.color.png",
+        "metallicFactor": 1,
+        "metallicMap": "/vehicles/bastion/bastion_interior_m.data.png",
+        "normalMap": "vehicles/bastion/bastion_interior_nm.normal.png",
+        "roughnessMap": "/vehicles/bastion/bastion_interior_r.data.png"
+      },
+      {},
+      {},
+      {}
+    ],
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "translucentBlendOp": "None",
+    "version": 1.5
+  },
+  "m_pun_bastion_main": {
+    "name": "m_pun_bastion_main",
+    "mapTo": "m_pun_bastion_main",
+    "class": "Material",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/vehicles/bastion/bastion_main_ao.data.png",
+        "baseColorMap": "/vehicles/bastion/bastion_main_b.color.png",
+        "metallicFactor": 1,
+        "metallicMap": "/vehicles/bastion/bastion_main_m.data.png",
+        "normalMap": "vehicles/bastion/bastion_main_nm.normal.png",
+        "roughnessMap": "/vehicles/bastion/bastion_main_r.data.png"
+      },
+      {
+        "ambientOcclusionMap": "/vehicles/bastion/bastion_main_ao.data.png",
+        "clearCoatFactor": 1,
+        "clearCoatMap": "/vehicles/bastion/bastion_main_cc.data.png",
+        "colorPaletteMap": "/vehicles/common/nullcolormaskR.dds",
+        "colorPaletteMapUseUV": 1,
+        "instanceDiffuse": true,
+        "metallicFactor": 1,
+        "normalMap": "/vehicles/bastion/bastion_main_nm.normal.png",
+        "opacityMap": "/vehicles/bastion/bastion_main_c.data.png"
+      },
+      {},
+      {}
+    ],
+    "activeLayers": 2,
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "version": 1.5
+  },
+  "m_pun_ravix_wheel_perf_copper": {
+    "name": "m_pun_ravix_wheel_perf_copper",
+    "mapTo": "m_pun_ravix_wheel_perf_copper",
+    "class": "Material",
+    "persistentId": "60814055-a9fe-47c3-bdbb-ed14ecfb72f0",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_wheel_perf_ao.data.png",
+        "baseColorMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_wheel_perf_copper_b.color.png",
+        "clearCoatFactor": 1,
+        "metallicFactor": 1,
+        "metallicMap": "//levels/west_coast_usa/art/hilltopvilla/ravix_wheel_perf_copper_m.data.png",
+        "normalMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_wheel_perf_nm.normal.png",
+        "roughnessMap": "/levels/west_coast_usa/art/hilltopvilla/ravix_wheel_perf_copper_r.data.png"
+      },
+      {
+        "clearCoatFactor": null,
+        "metallicFactor": null
+      },
+      {
+        "clearCoatFactor": null,
+        "metallicFactor": null
+      },
+      {
+        "clearCoatFactor": null,
+        "metallicFactor": null
+      }
+    ],
+    "alphaRef": 0,
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "translucentBlendOp": "None",
+    "version": 1.5
+  },
+  "tire_super_modern_sport": {
+    "name": "tire_super_modern_sport",
+    "mapTo": "tire_super_modern_sport",
+    "class": "Material",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/vehicles/common/tires/tire_super_modern_sport_ao.data.png",
+        "baseColorMap": "/vehicles/common/tires/tire_super_modern_sport_b.color.png",
+        "normalMap": "/vehicles/common/tires/tire_super_modern_sport_nm.normal.png",
+        "roughnessMap": "/vehicles/common/tires/tire_super_modern_sport_r.data.png"
+      },
+      {},
+      {},
+      {}
+    ],
+    "doubleSided": true,
+    "dynamicCubemap": true,
+    "invertBackFaceNormals": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "version": 1.5
+  }
+
+}
