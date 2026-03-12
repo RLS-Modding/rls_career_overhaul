@@ -52,6 +52,9 @@ local AUCTION_ENTRY_FEE = 1000
 local AUCTION_SETTINGS_SAVE_FILE = 'usedCarAuctionSettings.json'
 local BID_ACCEPTED_SFX_EVENT = 'event:>UI>Career>Buy_02'
 local LOT_WIN_CELEBRATION_SFX_EVENT = 'event:>UI>Missions>End_Gold'
+local AUCTION_POI_ID = 'usedCarAuctionEntrance'
+local AUCTION_POI_LEVEL = 'west_coast_usa'
+local AUCTION_POI_ICON = 'poi_fasttravel_round_orange_green'
 
 local fallbackPool = {
   { model = 'covet', config = 'vehicles/covet/roller_covet.pc', title = 'Ibishu Covet', basePrice = 2600 },
@@ -853,6 +856,56 @@ local function getPlayerExitSpot(layout, warnOnFallback)
     layout.playerExitSpot = fallbackSpot
   end
   return fallbackSpot
+end
+
+local function getAuctionEntrancePos()
+  local trigger = scenetree.findObject(ENTRY_TRIGGER)
+  if trigger then
+    local ok, pos = pcall(function() return trigger:getPosition() end)
+    if ok and pos then
+      return vec3(pos)
+    end
+  end
+
+  local spots = getSiteParkingSpots()
+  if not spots or #spots < 1 then
+    return nil
+  end
+
+  local layout = buildSiteLayout(spots)
+  local fallbackSpot = getPlayerExitSpot(layout, false)
+  if fallbackSpot and fallbackSpot.pos then
+    return vec3(fallbackSpot.pos)
+  end
+  return nil
+end
+
+local function formatAuctionEntrancePoi(levelIdentifier)
+  if levelIdentifier ~= AUCTION_POI_LEVEL then
+    return nil
+  end
+
+  local pos = getAuctionEntrancePos()
+  if not pos then
+    return nil
+  end
+
+  return {
+    id = AUCTION_POI_ID,
+    data = {
+      type = 'travel',
+      facility = {}
+    },
+    markerInfo = {
+      bigmapMarker = {
+        pos = pos,
+        icon = AUCTION_POI_ICON,
+        cardIcon = 'carDealer',
+        name = 'Used Car Auction',
+        description = 'Entrance to the auction vault.'
+      }
+    }
+  }
 end
 
 local function teleportVehicleToSpot(veh, spot)
@@ -2603,6 +2656,17 @@ local function onWorldReadyState()
   hardDisableAuctionAudioVisuals()
 end
 
+local function onGetRawPoiListForLevel(levelIdentifier, elements)
+  if type(elements) ~= 'table' then
+    return
+  end
+
+  local poi = formatAuctionEntrancePoi(levelIdentifier or getCurrentLevelIdentifier())
+  if poi then
+    table.insert(elements, poi)
+  end
+end
+
 M.onBeamNGTrigger = onBeamNGTrigger
 M.onVehicleSwitched = onVehicleSwitched
 M.onUpdate = onUpdate
@@ -2611,6 +2675,7 @@ M.onCareerDeactivatedWhileLevelLoaded = onCareerDeactivatedWhileLevelLoaded
 M.onExtensionLoaded = onExtensionLoaded
 M.onClientStartMission = onClientStartMission
 M.onWorldReadyState = onWorldReadyState
+M.onGetRawPoiListForLevel = onGetRawPoiListForLevel
 M.onSaveCurrentSaveSlot = onSaveCurrentSaveSlot
 M.exitAuctionArea = exitAuctionArea
 M.requestAuctionState = requestAuctionState

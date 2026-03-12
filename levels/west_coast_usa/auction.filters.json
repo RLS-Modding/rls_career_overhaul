@@ -20,7 +20,7 @@
   },
   "subFilters": [
     {
-      "probability": 3,
+      "probability": 1,
       "whiteList": {
         "Mileage": {
           "min": 4800,
@@ -33,7 +33,7 @@
       }
     },
     {
-      "probability": 2,
+      "probability": 1,
       "whiteList": {
         "Mileage": {
           "min": 4800,
@@ -44,6 +44,82 @@
           "max": 2999
         }
       }
-    }
+    },
+    {
+      "probability": 8,
+      "whiteList": {
+        "Type": [
+          "Car"
+        ],
+        "Config Type": [
+          "Factory"
+        ],
+        "Mileage": {
+          "min": 4800,
+          "max": 1437376
+        },
+        "Population": {
+          "min": 1,
+          "max": 2999
+        }
+      }
+    },
+    {
+      "probability": 4,
+      "whiteList": {
+        "Type": [
+          "Truck"
+        ],
+        "Config Type": [
+          "Factory"
+        ],
+        "Mileage": {
+          "min": 4800,
+          "max": 1437376
+        },
+        "Population": {
+          "min": 1,
+          "max": 2999
+        }
+      }
+    },
+    {
+      "probability": 3,
+      "whiteList": {
+        "Type": [
+          "Car"
+        ],
+        "Config Type": [
+          "Custom"
+        ],
+        "Mileage": {
+          "min": 4800,
+          "max": 1437376
+        },
+        "Population": {
+          "min": 1,
+          "max": 2999
+        }
+      }
+    },
+    {
+      "probability": 2,
+      "whiteList": {
+        "Type": [
+          "Truck"
+        ],
+        "Config Type": [
+          "Custom"
+        ],
+        "Mileage": {
+          "min": 4800,
+          "max": 1437376
+        },
+        "Population": {
+          "min": 1,
+          "max": 2999
+        }
+      }
+    },
   ]
 }
