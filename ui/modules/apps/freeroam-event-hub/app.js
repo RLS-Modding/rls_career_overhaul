@@ -7,14 +7,12 @@ angular.module('beamng.apps')
     template:
       '<div class="freeroam-event-hub" style="width:100%;background:#000;color:#fff;font-size:22px;line-height:1.4;box-sizing:border-box;overflow:visible;" ng-class="{ \'hub-available\': available }">' +
         '<div class="hub-panel" ng-show="!hubHidden" style="width:100%;max-width:100%;background:#000;border:1px solid rgba(255,255,255,0.25);border-radius:8px;box-sizing:border-box;">' +
-          '<div class="hub-header" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);border-radius:8px 8px 0 0;min-height:44px;flex-shrink:0;">' +
+          '<div class="hub-header" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);border-radius:8px 8px 0 0;min-height:44px;flex-shrink:0;flex-wrap:wrap;">' +
             '<span class="hub-title" style="flex:1;min-width:0;font-weight:700;font-size:20px;color:#fff;">{{ getHeaderTitle() }}</span>' +
             '<button class="hub-header-btn" ng-click="closeAppDeferred()" title="Close" style="flex-shrink:0;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);border-radius:6px;color:#fff;font-weight:600;padding:6px 12px;cursor:pointer;white-space:nowrap;">Close</button>' +
-          '</div>' +
-          '<div class="hub-prefs" style="padding:8px 14px;border-bottom:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.03);font-size:16px;color:#aaa;">' +
-            '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;">' +
+            '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;flex-shrink:0;font-size:14px;color:#aaa;white-space:nowrap;">' +
               '<input type="checkbox" ng-model="hubAutoShow" ng-change="setHubAutoShow(hubAutoShow)" />' +
-              '<span>Auto-show when entering event zones</span>' +
+              '<span>Auto-show</span>' +
             '</label>' +
           '</div>' +
           '<div class="hub-content" style="padding:14px 16px;color:#fff;font-size:22px;">' +
@@ -34,7 +32,6 @@ angular.module('beamng.apps')
             '<div ng-if="showSessionEnded" style="display:flex;flex-direction:column;gap:12px;">' +
               '<div style="font-size:24px;font-weight:700;color:#9cf;">Session ended</div>' +
               '<div style="font-size:20px;color:#aaa;">You left the race area.</div>' +
-              '<button type="button" class="hub-menu-btn" ng-click="closeAppDeferred()" style="margin-top:8px;padding:12px 14px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);border-radius:6px;color:#fff;font-size:22px;font-weight:600;cursor:pointer;">Close</button>' +
             '</div>' +
             '<div ng-if="showResult && raceResult && !showSessionEnded && !showRaceHistory" style="display:flex;flex-direction:column;gap:10px;">' +
               '<div style="font-size:24px;font-weight:700;color:#9cf;margin-bottom:4px;">Race complete</div>' +
@@ -57,7 +54,6 @@ angular.module('beamng.apps')
               '<!-- [AI-RESULTS-UI-1] end -->' +
               '<div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">' +
               '<button type="button" class="hub-menu-btn" ng-click="goToRaceHistory()" style="padding:12px 14px;background:rgba(0,150,255,0.35);border:1px solid rgba(255,255,255,0.4);border-radius:6px;color:#fff;font-size:22px;font-weight:600;cursor:pointer;">Next</button>' +
-              '<button type="button" class="hub-menu-btn" ng-click="closeAppDeferred()" style="padding:12px 14px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);border-radius:6px;color:#fff;font-size:22px;font-weight:600;cursor:pointer;">Close</button>' +
               '</div>' +
             '</div>' +
             '<div ng-if="showRaceHistory" style="display:flex;flex-direction:column;gap:8px;">' +
@@ -73,7 +69,6 @@ angular.module('beamng.apps')
                 '</div>' +
                 '<div ng-if="!raceHistoryEntries || raceHistoryEntries.length === 0" style="padding:12px;color:#888;font-size:20px;">No events completed yet.</div>' +
               '</div>' +
-              '<button type="button" class="hub-menu-btn" ng-click="closeAppDeferred()" style="margin-top:8px;padding:12px 14px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);border-radius:6px;color:#fff;font-size:22px;font-weight:600;cursor:pointer;">Close</button>' +
             '</div>' +
             '<div ng-if="!showResult && !showSessionEnded && !showRaceHistory && isLiveRace()" style="display:flex;flex-direction:column;gap:3px;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.2);">' +
               '<div ng-if="raceState.routeName" class="hub-detail-route" style="font-size:20px;color:#9cf;margin-bottom:2px;">{{ raceState.routeName }}</div>' +
@@ -325,7 +320,9 @@ angular.module('beamng.apps')
         if (api && api.engineLua) {
           api.engineLua('extensions.hook("onFreeroamHubClosed")');
         }
-        $rootScope.$broadcast('appContainer:removeApp', 'freeroamEventHub');
+        $timeout(function () {
+          $rootScope.$broadcast('appContainer:removeApp', 'freeroamEventHub');
+        }, 0);
       };
       scope.closeAppDeferred = function () {
         $timeout(scope.closeApp, 0);

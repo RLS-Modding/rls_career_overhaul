@@ -68,6 +68,7 @@ local mDelayedDespawnActive = false
 local mDelayedDespawnWaiting = false
 local mDelayedDespawnTimer = 0
 local mDelayedDespawnStaggerSeconds = 4.0
+local mPlayerUnfreezeAt = nil  -- os.clock() time when to unfreeze player after AI GO (avoids dt spikes)
 local mDnfCallback = nil  -- called with vehId when an AI is despawned (DNF)
 -- Cache for per-race AI config (aiRacingConfig.json byRace): [levelId] = { byRace = { pathKey -> overrides } }
 local mRaceConfigCache = {}
@@ -134,6 +135,12 @@ local function loadRaceConfig()
     end
     mRaceConfigCache[levelId] = result
     return result
+end
+
+-- True if the current level has aiRacingConfig.json with at least one byRace entry (hub only available on such tracks).
+function M.levelHasAiRacingConfig()
+    local rc = loadRaceConfig()
+    return type(rc) == "table" and type(rc.byRace) == "table" and next(rc.byRace) ~= nil
 end
 
 local function getRacePathKey(race)
@@ -1030,15 +1037,21 @@ local function queueDriveForVehicle(vehObj, race, noOfLaps, cfg, laneIndex)
 end
 
 -- Call at countdown GO: release spawned AI for this race using script path. When race has checkpointRoadLanes, each AI gets a lane path by spawn index (laneIndex = (i-1) % numLanes).
+-- Player stays frozen and is unfrozen 0.5s after AI go to account for AI reaction time (slightly behind).
 function M.releaseAndDrive(race, lapCount)
     if not race then return end
-    M.setPlayerFreeze(false)
     local cfg = getMergedConfigForRace(race)
-    if cfg.enabled == false then return end
+    if cfg.enabled == false then
+        M.setPlayerFreeze(false)
+        return
+    end
     cancelDelayedDespawn()
     M.preloadPathForRace(race)
     local pathKey = getRacePathKey(race)
-    if not pathKey then return end
+    if not pathKey then
+        M.setPlayerFreeze(false)
+        return
+    end
     local numLanes = (race.checkpointRoadLanes and type(race.checkpointRoadLanes) == "table") and #race.checkpointRoadLanes or 0
     -- Use a high lap count so AI keep lapping after race distance; leaderboard still uses required laps from triggers.
     local requiredLaps = (type(lapCount) == "number" and lapCount > 0) and lapCount or 1
@@ -1059,11 +1072,18 @@ function M.releaseAndDrive(race, lapCount)
             queueDriveForVehicle(vehObj, race, noOfLaps, cfg, laneIndex)
         end
     end
+    mPlayerUnfreezeAt = os.clock() + 0.5
+    M.setPlayerFreeze(true)
 end
 
 function M.onUpdate(dtReal)
     local dt = tonumber(dtReal) or 0
     if dt <= 0 then return end
+
+    if mPlayerUnfreezeAt and os.clock() >= mPlayerUnfreezeAt then
+        mPlayerUnfreezeAt = nil
+        M.setPlayerFreeze(false)
+    end
 
     if updateDelayedDespawn(dt) then
         return
