@@ -53,6 +53,8 @@ local TECH_ACTION_LABELS = {
   end
 }
 
+local resetTechToIdle
+
 local function initialize(helperFunctions)
   helpers = helperFunctions or {}
 end
@@ -189,6 +191,115 @@ local function loadBusinessTechs(businessId)
   return businessTechs[businessId]
 end
 
+local function reconcileAssignments(businessId, jobs)
+  businessId = normalizeBusinessId(businessId)
+  if not businessId or not jobs or not jobs.active then
+    return {
+      jobsChanged = false,
+      techsChanged = false
+    }
+  end
+
+  local techs = loadBusinessTechs(businessId)
+  local jobsChanged = false
+  local techsChanged = false
+  local activeJobsById = {}
+
+  for _, job in ipairs(jobs.active or {}) do
+    local jobId = tonumber(job.jobId) or job.jobId
+    if jobId ~= nil then
+      activeJobsById[jobId] = job
+    end
+  end
+
+  for _, tech in ipairs(techs) do
+    if tech.jobId then
+      local jobId = tonumber(tech.jobId) or tech.jobId
+      local job = activeJobsById[jobId]
+      if tech.fired or not job then
+        resetTechToIdle(tech)
+        techsChanged = true
+      end
+    end
+  end
+
+  local claimantsByJobId = {}
+  for _, tech in ipairs(techs) do
+    if not tech.fired and tech.jobId then
+      local jobId = tonumber(tech.jobId) or tech.jobId
+      if activeJobsById[jobId] then
+        claimantsByJobId[jobId] = claimantsByJobId[jobId] or {}
+        table.insert(claimantsByJobId[jobId], tech)
+      end
+    end
+  end
+
+  for jobId, claimants in pairs(claimantsByJobId) do
+    if #claimants > 1 then
+      for _, tech in ipairs(claimants) do
+        resetTechToIdle(tech)
+      end
+
+      local job = activeJobsById[jobId]
+      if job then
+        if job.techAssigned ~= nil then
+          job.techAssigned = nil
+          jobsChanged = true
+        end
+        if job.locked then
+          job.locked = false
+          jobsChanged = true
+        end
+      end
+
+      claimantsByJobId[jobId] = nil
+      techsChanged = true
+    end
+  end
+
+  for _, job in ipairs(jobs.active or {}) do
+    local jobId = tonumber(job.jobId) or job.jobId
+    local claimants = claimantsByJobId[jobId]
+
+    if claimants and #claimants == 1 then
+      local claimant = claimants[1]
+      if job.techAssigned ~= claimant.id then
+        job.techAssigned = claimant.id
+        jobsChanged = true
+      end
+      if not job.locked then
+        job.locked = true
+        jobsChanged = true
+      end
+    else
+      if job.techAssigned ~= nil then
+        job.techAssigned = nil
+        jobsChanged = true
+      end
+      if job.locked then
+        job.locked = false
+        jobsChanged = true
+      end
+    end
+  end
+
+  for _, tech in ipairs(techs) do
+    if not tech.fired and tech.jobId then
+      local jobId = tonumber(tech.jobId) or tech.jobId
+      local job = activeJobsById[jobId]
+      if not job or job.techAssigned ~= tech.id then
+        resetTechToIdle(tech)
+        techsChanged = true
+      end
+    end
+  end
+
+  return {
+    jobsChanged = jobsChanged,
+    techsChanged = techsChanged
+  }
+end
+
 local function getTechDisplayLabel(action, job)
   local fn = TECH_ACTION_LABELS[action]
   if fn then
@@ -294,7 +405,7 @@ local function setTechState(tech, stateCode, action, duration, meta)
   tech.stateMeta = meta or {}
 end
 
-local function resetTechToIdle(tech)
+resetTechToIdle = function(tech)
   tech.jobId = nil
   tech.phase = "idle"
   tech.validationAttempts = 0
@@ -1202,6 +1313,7 @@ M.isJobLockedByTech = isJobLockedByTech
 M.assignJobToTech = assignJobToTech
 M.formatTechForUIEntry = formatTechForUIEntry
 M.notifyTechsUpdated = notifyTechsUpdated
+M.reconcileAssignments = reconcileAssignments
 M.resetTechs = resetTechs
 M.getIdleTechs = getIdleTechs
 M.getTechMaxTier = getTechMaxTier
@@ -1211,4 +1323,3 @@ M.hireTech = hireTech
 M.stopTechFromJob = stopTechFromJob
 
 return M
-

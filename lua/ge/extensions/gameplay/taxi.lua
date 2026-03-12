@@ -1,10 +1,11 @@
 local M = {}
-M.dependencies = {'gameplay_sites_sitesManager', 'freeroam_facilities', 'gameplay_walk'}
+M.dependencies = {'gameplay_sites_sitesManager', 'freeroam_facilities', 'gameplay_walk', 'gameplay_parking'}
 
 -- ================================
 -- MODULE DEPENDENCIES
 -- ================================
 local core_groundMarkers = require('core/groundMarkers')
+local parkingReservation = require('gameplay/parkingReservation')
 
 -- ================================
 -- STATE VARIABLES
@@ -32,6 +33,9 @@ local lastPassengerRating = nil
 
 local parkingSpots = nil
 local validPickupSpots = nil
+local currentReservationToken = nil
+local reservedPickupSpot = nil
+local reservedDropoffSpot = nil
 
 local distanceMultiplier = 4.5
 local suggestedSpeed = 18
@@ -341,6 +345,73 @@ local function findValidPickupSpots()
         end
     end
     return validPickupSpots
+end
+
+local function safeSpotPath(spot)
+    if spot and spot.getPath then
+        local ok, path = pcall(function() return spot:getPath() end)
+        if ok then
+            return path
+        end
+    end
+end
+
+local function releasePickupReservation()
+    if reservedPickupSpot and currentReservationToken then
+        parkingReservation.releaseSpot(reservedPickupSpot, currentReservationToken)
+    end
+    reservedPickupSpot = nil
+end
+
+local function releaseDropoffReservation()
+    if reservedDropoffSpot and currentReservationToken then
+        parkingReservation.releaseSpot(reservedDropoffSpot, currentReservationToken)
+    end
+    reservedDropoffSpot = nil
+end
+
+local function releaseReservations()
+    releasePickupReservation()
+    releaseDropoffReservation()
+    currentReservationToken = nil
+end
+
+local function reserveTaxiSpots(pickupCandidates, dropoffCandidates)
+    releaseReservations()
+
+    currentReservationToken = parkingReservation.makeReservationToken("taxi")
+    local livePickup = parkingReservation.findReservableSpot(parkingReservation.shuffleSpots(pickupCandidates), currentReservationToken)
+    if not livePickup then
+        releaseReservations()
+        return nil, nil
+    end
+
+    local filteredDropoffs = {}
+    local pickupPath = safeSpotPath(livePickup)
+    if not pickupPath then
+        parkingReservation.releaseSpot(livePickup, currentReservationToken)
+        releaseReservations()
+        return nil, nil
+    end
+
+    for _, spot in ipairs(parkingReservation.shuffleSpots(dropoffCandidates)) do
+        local liveSpot = parkingReservation.resolveLiveSpot(spot)
+        local dropoffPath = liveSpot and safeSpotPath(liveSpot)
+        if liveSpot and dropoffPath and dropoffPath ~= pickupPath then
+            table.insert(filteredDropoffs, liveSpot)
+        end
+    end
+
+    local liveDropoff = parkingReservation.findReservableSpot(filteredDropoffs, currentReservationToken)
+    if not liveDropoff then
+        parkingReservation.releaseSpot(livePickup, currentReservationToken)
+        releaseReservations()
+        return nil, nil
+    end
+
+    reservedPickupSpot = livePickup
+    reservedDropoffSpot = liveDropoff
+    return livePickup, liveDropoff
 end
 
 -- ================================
@@ -687,26 +758,31 @@ local function generateJob()
         return false
     end
 
-    local pickupSpot = validPickupSpots[math.random(#validPickupSpots)]
-
     local dropoffSpots = {}
     local minDistance = 600
-    for _, spot in pairs(parkingSpots.objects) do
-        if spot ~= pickupSpot and pickupSpot.pos:distance(spot.pos) >= minDistance then
-            table.insert(dropoffSpots, spot)
+    local pickupSpot, dropoffSpot
+
+    local shuffledPickups = parkingReservation.shuffleSpots(validPickupSpots)
+    for _, candidatePickup in ipairs(shuffledPickups) do
+        if candidatePickup.pos then
+            table.clear(dropoffSpots)
+            for _, spot in pairs(parkingSpots.objects or {}) do
+                if spot.pos and spot ~= candidatePickup and candidatePickup.pos:distance(spot.pos) >= minDistance then
+                    table.insert(dropoffSpots, spot)
+                end
+            end
+
+            pickupSpot, dropoffSpot = reserveTaxiSpots({candidatePickup}, dropoffSpots)
+            if pickupSpot and dropoffSpot then
+                break
+            end
         end
     end
 
-    if #dropoffSpots == 0 then
-        local randomDir = vec3(math.random() - 0.5, math.random() - 0.5, 0):normalized()
-        local destPos = pickupSpot.pos + randomDir * math.random(600, 2000)
-        dropoffSpots = {{
-            pos = destPos,
-            name = "Random Location"
-        }}
+    if not pickupSpot or not dropoffSpot then
+        print("No reservable taxi pickup/dropoff pair found!")
+        return false
     end
-
-    local dropoffSpot = dropoffSpots[math.random(#dropoffSpots)]
 
     if not availableSeats or availableSeats == 0 then
         calculateCapacity(be:getPlayerVehicle(0):getID())
@@ -737,10 +813,12 @@ local function generateJob()
 
     local fare = {
         pickup = {
-            pos = pickupSpot.pos
+            pos = pickupSpot.pos,
+            spotPath = safeSpotPath(pickupSpot)
         },
         destination = {
-            pos = dropoffSpot.pos
+            pos = dropoffSpot.pos,
+            spotPath = safeSpotPath(dropoffSpot)
         },
         baseFare = baseFare,
         initialBaseFare = baseFare, -- Save the initial base fare for final payment
@@ -885,7 +963,10 @@ local function completeRide()
     
     local label = string.format("Taxi fare: %s: $%s\nDistance: %.2fkm | %s: x %.2f", 
         fareDescription, currentFare.totalFare, currentFare.totalDistance, paymentLabel, currentFare.timeMultiplier)
-    
+
+    core_groundMarkers.resetAll()
+    releaseReservations()
+
     if not career_career or not career_career.isActive() then
         return
     end
@@ -905,12 +986,12 @@ local function completeRide()
         label = label,
         tags = {"transport", "taxi"}
     }, true)
-    core_groundMarkers.resetAll()
     career_modules_inventory.addTaxiDropoff(career_modules_inventory.getInventoryIdFromVehicleId(be:getPlayerVehicleID(0)), currentFare.passengers)
     core_groundMarkers.resetAll()
 end
 
 local function rejectJob()
+    releaseReservations()
     state = "ready"
     currentFare = nil
     core_groundMarkers.resetAll()
@@ -921,6 +1002,7 @@ local function rejectJob()
 end
 
 local function stopTaxiJob()
+    releaseReservations()
     state = "start"
     currentFare = nil
     core_groundMarkers.resetAll()
@@ -1009,6 +1091,7 @@ local function update(_, dt)
         local distToPickup = (vehicle:getPosition() - currentFare.pickup.pos):length()
 
         if distToPickup < 5 then
+            releasePickupReservation()
             state = "dropoff"
             core_groundMarkers.setPath(currentFare.destination.pos, {clearPathOnReachingTarget = true})
             local dropoffDistance = core_groundMarkers.getPathLength()
@@ -1115,6 +1198,7 @@ local function onVehicleSwitched()
     if currentFare then
         core_groundMarkers.resetAll()
     end
+    releaseReservations()
     currentFare = nil
     jobOfferTimer = 0
     jobOfferInterval = math.random(5, 45)

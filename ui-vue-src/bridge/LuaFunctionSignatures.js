@@ -1579,6 +1579,12 @@ export default {
     navigateToEvent: raceName => String,
   },
 
+  ui_phone_logistics: {
+    requestFacilityList: () => {},
+    requestFacilityDetail: facilityId => {},
+    navigateToFacility: (facilityId, parkingSpotPath) => {},
+  },
+
   ui_phone_time: {
     requestTime: () => {},
   },
