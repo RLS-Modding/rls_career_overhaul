@@ -113,9 +113,9 @@
     "modelSourceOwnedChance": 0.5,
     "lapObjectiveChance": 0.5,
     "expiryMinutesByTier": {
-      "easy": 120,
-      "medium": 60,
-      "hard": 30
+      "easy": 240,
+      "medium": 120,
+      "hard": 60
     },
     "objectiveCountByTier": {
       "easy": {
@@ -169,20 +169,20 @@
     },
     "rewardRangeByTier": {
       "easy": {
-        "moneyMin": 15000,
-        "moneyMax": 30000,
+        "moneyMin": 5000,
+        "moneyMax": 15000,
         "xpMin": 500,
         "xpMax": 1000
       },
       "medium": {
-        "moneyMin": 35000,
-        "moneyMax": 70000,
+        "moneyMin": 20000,
+        "moneyMax": 35000,
         "xpMin": 1200,
         "xpMax": 2500
       },
       "hard": {
-        "moneyMin": 90000,
-        "moneyMax": 220000,
+        "moneyMin": 40000,
+        "moneyMax": 60000,
         "xpMin": 3000,
         "xpMax": 8000
       }
