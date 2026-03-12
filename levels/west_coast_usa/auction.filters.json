@@ -12,8 +12,10 @@
         "Police",
         "Frame"
       ],
+      "Brand": [
+        "FPU"
+      ],
       "Body Type": [
-        "ATV",
         "JATO truck"
       ]
     }

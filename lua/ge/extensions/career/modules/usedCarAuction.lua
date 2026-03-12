@@ -1092,15 +1092,88 @@ local function isRangeParams(parameters)
   return type(parameters) == 'table' and (parameters.min ~= nil or parameters.max ~= nil)
 end
 
-local function getVehicleFieldValue(vehicleInfo, fieldName)
-  if type(vehicleInfo) ~= 'table' then return nil end
-  local value = vehicleInfo[fieldName]
+local function normalizeToken(value)
+  if value == nil then
+    return ''
+  end
+  return tostring(value):lower():gsub('[^%w]', '')
+end
+
+local filterFieldAliases = {
+  bodytype = { 'Body Type', 'BodyType', 'Body Style', 'BodyStyle' },
+  configtype = { 'Config Type', 'ConfigType' },
+  type = { 'Type', 'Vehicle Type', 'VehicleType' },
+  brand = { 'Brand', 'Make' },
+  years = { 'Years', 'Year' }
+}
+
+local function getFilterFieldCandidates(fieldName)
+  local candidates = {}
+  local seen = {}
+
+  local function addCandidate(value)
+    if value == nil then
+      return
+    end
+    local key = tostring(value)
+    if key == '' or seen[key] then
+      return
+    end
+    seen[key] = true
+    table.insert(candidates, key)
+  end
+
+  addCandidate(fieldName)
+  local aliases = filterFieldAliases[normalizeToken(fieldName)]
+  if type(aliases) == 'table' then
+    for _, alias in ipairs(aliases) do
+      addCandidate(alias)
+    end
+  end
+
+  return candidates
+end
+
+local function getLooseTableField(source, fieldName)
+  if type(source) ~= 'table' then
+    return nil
+  end
+
+  local value = source[fieldName]
   if value ~= nil then
     return value
   end
-  if type(vehicleInfo.aggregates) == 'table' then
-    return vehicleInfo.aggregates[fieldName]
+
+  local wantedKey = normalizeToken(fieldName)
+  for key, item in pairs(source) do
+    if normalizeToken(key) == wantedKey then
+      return item
+    end
   end
+
+  return nil
+end
+
+local function getVehicleFieldValue(vehicleInfo, fieldName)
+  if type(vehicleInfo) ~= 'table' then return nil end
+
+  local candidates = getFilterFieldCandidates(fieldName)
+  for _, candidate in ipairs(candidates) do
+    local value = getLooseTableField(vehicleInfo, candidate)
+    if value ~= nil then
+      return value
+    end
+  end
+
+  if type(vehicleInfo.aggregates) == 'table' then
+    for _, candidate in ipairs(candidates) do
+      local value = getLooseTableField(vehicleInfo.aggregates, candidate)
+      if value ~= nil then
+        return value
+      end
+    end
+  end
+
   return nil
 end
 
@@ -1131,14 +1204,23 @@ local function isDiscreteMatch(value, wanted)
   if value == wanted then
     return true
   end
+  if normalizeToken(value) ~= '' and normalizeToken(value) == normalizeToken(wanted) then
+    return true
+  end
   if type(value) ~= 'table' then
     return false
   end
-  if value[wanted] then
-    return true
+  if value[wanted] then return true end
+  if value[tostring(wanted)] then return true end
+  if value[normalizeToken(wanted)] then return true end
+  local wantedToken = normalizeToken(wanted)
+  for key, keyed in pairs(value) do
+    if keyed and normalizeToken(key) == wantedToken then
+      return true
+    end
   end
   for _, item in ipairs(value) do
-    if item == wanted then
+    if item == wanted or (normalizeToken(item) ~= '' and normalizeToken(item) == wantedToken) then
       return true
     end
   end
@@ -1226,10 +1308,27 @@ local function doesVehiclePassAuctionFilter(vehicleInfo, filter)
   return true
 end
 
+local function buildRelaxedFallbackFilter(filter)
+  local normalized = normalizeFilterDefinition(filter)
+  local relaxed = {
+    whiteList = {},
+    blackList = deepCopy(normalized.blackList or {})
+  }
+
+  for filterName, parameters in pairs(normalized.whiteList or {}) do
+    local key = normalizeToken(filterName)
+    if not isRangeParams(parameters) and key ~= 'years' and key ~= 'mileage' and key ~= 'population' and key ~= 'value' then
+      relaxed.whiteList[filterName] = deepCopy(parameters)
+    end
+  end
+
+  return relaxed
+end
+
 local function getRandomVehicleDefWithFilter(filter)
   local eligibleVehicles = util_configListGenerator.getEligibleVehicles(false, false)
   local normalizedFilter = normalizeFilterDefinition(filter or {})
-  local infos = util_configListGenerator.getRandomVehicleInfos({filter = normalizedFilter}, 40, eligibleVehicles, 'Population')
+  local infos = util_configListGenerator.getRandomVehicleInfos({filter = {}}, 140, eligibleVehicles, 'Population')
 
   for _, info in ipairs(infos or {}) do
     if doesVehiclePassAuctionFilter(info, normalizedFilter) then
@@ -1273,26 +1372,29 @@ local function hasGarageSpaceForPurchase()
   return getGarageFreeSlots() > 0
 end
 
-local function getRandomVehicleDefNoFilter()
+local function getRandomVehicleDefNoFilter(enforceFilter)
   local eligibleVehicles = util_configListGenerator.getEligibleVehicles(false, false)
   local infos = util_configListGenerator.getRandomVehicleInfos({filter = {}}, 80, eligibleVehicles, 'Population')
+  local normalizedFilter = normalizeFilterDefinition(enforceFilter or {})
 
   for _, info in ipairs(infos or {}) do
-    local configPath = getVehicleConfigPath(info)
-    if configPath and (not usedConfigKeys[configPath]) and (not isRollerLikeInfo(info)) then
-      usedConfigKeys[configPath] = true
+    if doesVehiclePassAuctionFilter(info, normalizedFilter) then
+      local configPath = getVehicleConfigPath(info)
+      if configPath and (not usedConfigKeys[configPath]) and (not isRollerLikeInfo(info)) then
+        usedConfigKeys[configPath] = true
 
-      local brand = tostring(info.Brand or '')
-      local name = tostring(info.Name or info.key or info.model_key)
-      local title = ((brand ~= '' and (brand .. ' ') or '') .. name)
+        local brand = tostring(info.Brand or '')
+        local name = tostring(info.Name or info.key or info.model_key)
+        local title = ((brand ~= '' and (brand .. ' ') or '') .. name)
 
-      return {
-        model = info.model_key,
-        config = configPath,
-        title = title,
-        basePrice = math.max(1500, math.floor(tonumber(info.Value or 4500))),
-        mileage = getMileageFromInfo(info) or getFallbackMileage()
-      }
+        return {
+          model = info.model_key,
+          config = configPath,
+          title = title,
+          basePrice = math.max(1500, math.floor(tonumber(info.Value or 4500))),
+          mileage = getMileageFromInfo(info) or getFallbackMileage()
+        }
+      end
     end
   end
 
@@ -1434,7 +1536,11 @@ local function prepareLots(spawnSpots, blockSpots, lotCount, npcPersonas)
     local lotFilter = pickWeightedFilter(weightedFilters)
     local vehicleDef = getRandomVehicleDefWithFilter(lotFilter)
     if not vehicleDef then
-      vehicleDef = getRandomVehicleDefNoFilter()
+      local relaxedFallbackFilter = buildRelaxedFallbackFilter(lotFilter)
+      vehicleDef = getRandomVehicleDefWithFilter(relaxedFallbackFilter)
+      if not vehicleDef then
+        vehicleDef = getRandomVehicleDefNoFilter(relaxedFallbackFilter)
+      end
     end
     if not vehicleDef then
       vehicleDef = fallbackPool[math.random(1, #fallbackPool)]
