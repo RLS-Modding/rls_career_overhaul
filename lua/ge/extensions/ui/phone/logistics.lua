@@ -388,18 +388,19 @@ local function countParcelRowsForFacility(facilityId, availableOnly)
 
   for _, cargo in ipairs(outgoingCargo) do
     if cargo.type == 'parcel' then
+      finalizeParcelForPhone(cargo)
       local unlockMetadata = getParcelUnlockMetadata(buildModifierKeys(cargo))
       if not availableOnly or unlockMetadata.isUnlockedByLevel then
-      local timed = hasTimedModifier(cargo)
-      local modifierSignature = buildModifierSignature(cargo)
-      local rowKey = table.concat({
-        buildLocationKey(cargo.destination),
-        tostring(cargo.name or 'Parcel'),
-        tostring(cargo.slots or 0),
-        timed and 'timed' or 'plain',
-        modifierSignature,
-      }, '|')
-      rowsByKey[rowKey] = true
+        local timed = hasTimedModifier(cargo)
+        local modifierSignature = buildModifierSignature(cargo)
+        local rowKey = table.concat({
+          buildLocationKey(cargo.destination),
+          tostring(cargo.name or 'Parcel'),
+          tostring(cargo.slots or 0),
+          timed and 'timed' or 'plain',
+          modifierSignature,
+        }, '|')
+        rowsByKey[rowKey] = true
       end
     end
   end

@@ -193,7 +193,10 @@ export const usePhoneLogisticsStore = defineStore("phoneLogistics", () => {
   }
 
   async function init() {
-    if (initialized.value) return
+    if (initialized.value) {
+      await refreshList(true)
+      return
+    }
     resetState()
     registerEvents()
     initialized.value = true

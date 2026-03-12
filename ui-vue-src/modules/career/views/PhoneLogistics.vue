@@ -519,14 +519,14 @@ const visibleFacilities = computed(() => {
       || activeFilters.value.some(filterId => (facility.badges || []).includes(filterId))
 
     const matchesAvailability = !showOnlyFacilitiesWithAvailableByLevel.value
-      || (facility.totalAvailableByLevelJobs || 0) > 0
+      || getFacilityAvailableByLevelJobTotal(facility) > 0
 
     return matchesSearch && matchesTypes && matchesAvailability
   })
 
   return [...filtered].sort((left, right) => {
     if (sortBy.value === "jobs") {
-      const diff = (right.totalVisibleJobs || 0) - (left.totalVisibleJobs || 0)
+      const diff = getFacilityDisplayedJobTotal(right) - getFacilityDisplayedJobTotal(left)
       if (diff !== 0) return diff
     }
 
@@ -617,41 +617,58 @@ function onSearchBlur() {
 }
 
 function facilityCountChips(facility) {
-  const counts = facility?.counts || {}
+  const counts = getFacilityDisplayedCounts(facility)
   return [
     {
       id: "parcels",
       label: "Parcels",
-      count: showOnlyFacilitiesWithAvailableByLevel.value
-        ? (counts.availableParcelGroups || 0)
-        : (counts.parcelGroups || 0),
+      count: counts.parcels,
     },
-    { id: "materials", label: "Materials", count: counts.materialGroups || 0 },
+    { id: "materials", label: "Materials", count: counts.materials },
     {
       id: "vehicles",
       label: "Vehicles",
-      count: showOnlyFacilitiesWithAvailableByLevel.value
-        ? (counts.availableVehicleOffers || 0)
-        : (counts.vehicleOffers || 0),
+      count: counts.vehicles,
     },
     {
       id: "trailers",
       label: "Trailers",
-      count: showOnlyFacilitiesWithAvailableByLevel.value
-        ? (counts.availableTrailerOffers || 0)
-        : (counts.trailerOffers || 0),
+      count: counts.trailers,
     },
   ].filter(chip => chip.count > 0)
 }
 
 function displayFacilityJobTotal(facility) {
+  return getFacilityDisplayedJobTotal(facility)
+}
+
+function getFacilityDisplayedCounts(facility) {
+  const counts = facility?.counts || {}
   if (!showOnlyFacilitiesWithAvailableByLevel.value) {
-    return facility?.totalVisibleJobs || 0
+    return {
+      parcels: counts.parcelGroups || 0,
+      materials: counts.materialGroups || 0,
+      vehicles: counts.vehicleOffers || 0,
+      trailers: counts.trailerOffers || 0,
+    }
   }
 
+  return {
+    parcels: counts.availableParcelGroups || 0,
+    materials: 0,
+    vehicles: counts.availableVehicleOffers || 0,
+    trailers: counts.availableTrailerOffers || 0,
+  }
+}
+
+function getFacilityDisplayedJobTotal(facility) {
+  const counts = getFacilityDisplayedCounts(facility)
+  return counts.parcels + counts.materials + counts.vehicles + counts.trailers
+}
+
+function getFacilityAvailableByLevelJobTotal(facility) {
   const counts = facility?.counts || {}
   return (counts.availableParcelGroups || 0)
-    + (counts.materialGroups || 0)
     + (counts.availableVehicleOffers || 0)
     + (counts.availableTrailerOffers || 0)
 }
@@ -672,6 +689,11 @@ watch(filterOpen, open => {
   setTimeout(() => {
     filterPanelRef.value?.focus()
   }, 0)
+})
+
+watch(showOnlyFacilitiesWithAvailableByLevel, async () => {
+  if (selectedFacilityId.value) return
+  await refreshList(true)
 })
 
 function formatDistance(distance) {
@@ -710,7 +732,7 @@ async function viewFacility(facilityId) {
   closeToolbarMenus()
   clearMaterialExpansion()
   detailTab.value = "parcels"
-  showOnlyAvailableByLevel.value = false
+  showOnlyAvailableByLevel.value = showOnlyFacilitiesWithAvailableByLevel.value
   await store.selectFacility(facilityId, true)
 }
 
