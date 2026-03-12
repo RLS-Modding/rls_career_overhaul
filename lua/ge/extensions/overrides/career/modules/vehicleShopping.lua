@@ -1558,7 +1558,11 @@ local function updateVehicleList(fromScratch)
     if seller.associatedOrganization then
       local org = freeroam_organizations.getOrganization(seller.associatedOrganization)
       if org and org.reputation then
-        currentOrgLevel = math.max(0, org.reputation.level or 0)
+        local repLevel = org.reputation.level or 0
+        if type(repLevel) ~= "number" then
+          repLevel = 0
+        end
+        currentOrgLevel = math.max(0, repLevel)
       end
     end
 
