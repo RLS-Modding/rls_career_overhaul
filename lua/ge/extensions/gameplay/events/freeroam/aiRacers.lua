@@ -476,7 +476,8 @@ local function spawnWithPool(raceName, race, facilityName, rawPool)
 end
 
 -- Internal: spawn AI at staging spots using a single model+config (e.g. player's vehicle). Colors vary per AI. Returns spawned count.
-local function spawnWithFixedVehicle(raceName, race, facilityName, modelKey, configKey)
+-- configKeyOrObj: string config key (e.g. "default") -> build path; or table (full config object from inventory) -> use as-is so wheels/tires match player.
+local function spawnWithFixedVehicle(raceName, race, facilityName, modelKey, configKeyOrObj)
     local cfg = getCurrentLevelConfig()
     if cfg.enabled == false then return 0 end
     if not modelKey or modelKey == "" then return 0 end
@@ -486,15 +487,27 @@ local function spawnWithFixedVehicle(raceName, race, facilityName, modelKey, con
     local requestedCount = (race and race.aiCount) or cfg.maxSpawnCount or 1
     local spawnCount = math.max(0, math.min(#spots, requestedCount))
     if spawnCount <= 0 then return 0 end
-    local configOpt = (configKey and configKey ~= "") and configKey or "default"
-    local configPath = "vehicles/" .. modelKey .. "/" .. configOpt .. ".pc"
+    local configForSpawn
+    if type(configKeyOrObj) == "table" then
+        if configKeyOrObj.partConfigFilename and type(configKeyOrObj.partConfigFilename) == "string" then
+            configForSpawn = configKeyOrObj.partConfigFilename
+        elseif configKeyOrObj.format == 4 then
+            configForSpawn = configKeyOrObj
+        else
+            local configOpt = "default"
+            configForSpawn = "vehicles/" .. modelKey .. "/" .. configOpt .. ".pc"
+        end
+    else
+        local configOpt = (type(configKeyOrObj) == "string" and configKeyOrObj ~= "") and configKeyOrObj or "default"
+        configForSpawn = "vehicles/" .. modelKey .. "/" .. configOpt .. ".pc"
+    end
     local spawned = 0
     for i = 1, spawnCount do
         local spot = spots[i]
         if spot and spot.pos and spot.rot then
             local pos = vec3(spot.pos[1], spot.pos[2], spot.pos[3])
             local rot = quat(spot.rot[1], spot.rot[2], spot.rot[3], spot.rot[4])
-            local spawnOptions = { pos = pos, rot = rot, config = configPath, autoEnterVehicle = false }
+            local spawnOptions = { pos = pos, rot = rot, config = configForSpawn, autoEnterVehicle = false }
             local ok, veh = pcall(function() return core_vehicles.spawnNewVehicle(modelKey, spawnOptions) end)
             if ok and veh and veh.getID then
                 local vehId = veh:getID()
@@ -538,9 +551,23 @@ function M.spawnForStagingWithPlayerHp(raceName, race, facilityName, callback)
         return
     end
     if (race and race.spawnSameVehicleAsPlayer) or cfg.spawnSameVehicleAsPlayer then
-        local modelKey, configKey = M.getPlayerVehicleModelAndConfig()
+        local vehId = be and be:getPlayerVehicleID(0)
+        local modelKey, configKeyOrObj
+        if vehId and career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId and career_modules_inventory.getVehicle then
+            local inventoryId = career_modules_inventory.getInventoryIdFromVehicleId(vehId)
+            if inventoryId then
+                local vehInfo = career_modules_inventory.getVehicle(inventoryId)
+                if vehInfo and vehInfo.model and vehInfo.config then
+                    modelKey = vehInfo.model
+                    configKeyOrObj = vehInfo.config
+                end
+            end
+        end
+        if not modelKey or modelKey == "" then
+            modelKey, configKeyOrObj = M.getPlayerVehicleModelAndConfig()
+        end
         if modelKey and modelKey ~= "" then
-            local spawned = spawnWithFixedVehicle(raceName, race, facilityName, modelKey, configKey)
+            local spawned = spawnWithFixedVehicle(raceName, race, facilityName, modelKey, configKeyOrObj or "default")
             callback(spawned)
             return
         end
@@ -655,6 +682,15 @@ local function getRacingParameters(cfg, race)
     if fromCfgOrRace("raceHighSpeedThreshold") then params.raceHighSpeedThreshold = fromCfgOrRace("raceHighSpeedThreshold") end
     if fromCfgOrRace("raceHighSpeedThrottleFloor") then params.raceHighSpeedThrottleFloor = fromCfgOrRace("raceHighSpeedThrottleFloor") end
     return params
+end
+
+-- Freeze or unfreeze the player vehicle (e.g. during countdown until GO, same moment as AI release). Uses same pattern as bus.lua.
+function M.setPlayerFreeze(freeze)
+    if not core_vehicleBridge or not core_vehicleBridge.executeAction then return end
+    local veh = be and be:getPlayerVehicle(0)
+    if veh then
+        core_vehicleBridge.executeAction(veh, 'setFreeze', freeze and true or false)
+    end
 end
 
 local function getObjectSpeedMps(vehId)
@@ -987,6 +1023,7 @@ end
 -- Call at countdown GO: release spawned AI for this race using script path. When race has checkpointRoadLanes, each AI gets a lane path by spawn index (laneIndex = (i-1) % numLanes).
 function M.releaseAndDrive(race, lapCount)
     if not race then return end
+    M.setPlayerFreeze(false)
     local cfg = getMergedConfigForRace(race)
     if cfg.enabled == false then return end
     cancelDelayedDespawn()

@@ -674,6 +674,32 @@ local function formatSplitDifference(diff)
     return string.format("%s%s", sign, utils.formatTime(math.abs(diff)))
 end
 
+-- True if the vehicle is eligible for freeroam hub (show for owned or business; hide for loan or other). Tries subjectID first, then current player vehicle so hub still shows after modify/respawn.
+local function isVehicleEligibleForFreeroamHub(spawnedId)
+    if not career_career or not career_career.isActive() then return true end
+    local function checkId(id)
+        if not id then return false end
+        if career_modules_business_businessInventory then
+            local b, v = career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId(id)
+            if b and v then return true end
+        end
+        if career_modules_inventory then
+            local invId = career_modules_inventory.getInventoryIdFromVehicleId(id)
+            if invId then
+                local vehicle = career_modules_inventory.getVehicles()[invId]
+                if vehicle and not vehicle.loanType then return true end
+            end
+        end
+        return false
+    end
+    if checkId(spawnedId) then return true end
+    local currentId = be and be:getPlayerVehicleID(0)
+    if currentId and currentId ~= spawnedId then
+        if checkId(currentId) then return true end
+    end
+    return false
+end
+
 -- Returns the display name for the route from race_data.json (label for main, altRoute.label for alt).
 local function getRouteDisplayName(race, isAlt)
     if not race then return nil end
@@ -926,26 +952,8 @@ local function onBeamNGTrigger(data)
         return
     end
     if gameplay_walk.isWalking() then return end
-    if career_career.isActive() then
-        -- Check if it's a business vehicle first
-        local isBusinessVehicle = false
-        if career_modules_business_businessInventory then
-            local businessId, vehicleId = career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId(data.subjectID)
-            if businessId and vehicleId then
-                isBusinessVehicle = true
-            end
-        end
-        
-        -- If not a business vehicle, check if it's an inventory vehicle
-        if not isBusinessVehicle then
-            if not career_modules_inventory.getInventoryIdFromVehicleId(data.subjectID) then
-                return
-            end
-            local vehicle = career_modules_inventory.getVehicles()[career_modules_inventory.getInventoryIdFromVehicleId(data.subjectID)]
-            if vehicle.loanType then
-                return
-            end
-        end
+    if not isVehicleEligibleForFreeroamHub(data.subjectID) then
+        return
     end
 
     local triggerName = data.triggerName
@@ -1118,7 +1126,10 @@ local function onBeamNGTrigger(data)
                     mFreeroamCountdownStartClock = nil
                     mFreeroamStagedAtStart = false
                     mFreeroamPendingStart = nil
-                    if aiRacers and aiRacers.clearSpawned then aiRacers.clearSpawned() end
+                    if aiRacers then
+                        if aiRacers.setPlayerFreeze then aiRacers.setPlayerFreeze(false) end
+                        if aiRacers.clearSpawned then aiRacers.clearSpawned() end
+                    end
                 end
                 if not mActiveRace and not mFreeroamHubShowingResult and not mFreeroamHubShowingHistory then
                     if isFreeroamHubActive() then
@@ -1205,6 +1216,7 @@ local function onBeamNGTrigger(data)
                         mFreeroamStagedAtStart = false
                         mFreeroamPendingStart = nil
                         staged = nil
+                        if aiRacers and aiRacers.setPlayerFreeze then aiRacers.setPlayerFreeze(false) end
                         return
                     end
                 end
@@ -1396,6 +1408,7 @@ local function onUpdate(dtReal, dtSim, dtRaw)
             if staged == "track" and aiRacers and aiRacers.startEnginesForSpawned then
                 aiRacers.startEnginesForSpawned()
             end
+            if aiRacers and aiRacers.setPlayerFreeze then aiRacers.setPlayerFreeze(true) end
             triggerRaceCountdown()
         end
     end
