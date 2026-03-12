@@ -362,9 +362,23 @@ local function getDeliveryVehicleTemplates()
   return templates
 end
 
-local function getRandomVehicleFromFilterByFilterId(filterId)
+local function getVehicleFilterByIdSafe(filterId, context)
   getDeliveryVehicleTemplates()
   local filter = sharedTemplates.getVehicleFilterById(filterId)
+  if filter then
+    return filter
+  end
+
+  log("E", "", string.format("%s: unknown vehicle filterId '%s'", context or "delivery.generator", tostring(filterId)))
+  return nil
+end
+
+local function getRandomVehicleFromFilterByFilterId(filterId)
+  local filter = getVehicleFilterByIdSafe(filterId, "getRandomVehicleFromFilterByFilterId")
+  if not filter then
+    return nil
+  end
+
   local infos = util_configListGenerator.getRandomVehicleInfos(filter, 1, eligibleVehicles)
   if next(infos) then
     return infos[1], (filter.filterName or "Vehicle")
@@ -407,7 +421,10 @@ local function finalizeVehicleOffer(offer)
 
     offer.data.originalDistance = distance
 
-    local filter = sharedTemplates.getVehicleFilterById(offer.vehicle.filterId)
+    local filter = getVehicleFilterByIdSafe(offer.vehicle.filterId, "finalizeVehicleOffer")
+    if not filter then
+      return
+    end
 
     offer.rewards = sharedCalc.getVehicleOfferReward(filter, distance, offer.data.type, offer.organization)
   end
@@ -493,7 +510,12 @@ local function triggerVehicleOfferGenerator(fac, generator, timeOffset)
       goto continue
     end
 
-    local vehType = sharedTemplates.getVehicleFilterById(generator.filter).type
+    local vehicleFilter = getVehicleFilterByIdSafe(generator.filter, "triggerVehicleOfferGenerator")
+    if not vehicleFilter then
+      goto continue
+    end
+
+    local vehType = vehicleFilter.type
 
     local task, type, name
     if vehType == "vehicle" then
@@ -533,7 +555,7 @@ local function triggerVehicleOfferGenerator(fac, generator, timeOffset)
 
       vehicle = {
         filterId = generator.filter,
-        unlockTag = sharedTemplates.getVehicleFilterById(generator.filter).unlockTag,
+        unlockTag = vehicleFilter.unlockTag,
       },
       locations = {origin, dropOff},
       dropOffFacId = dropOff.facId,
@@ -1375,9 +1397,15 @@ local function setup(loadData)
   if loadData.vehicleOffers and next(loadData.vehicleOffers) then
     log("I","","Loading Vehicle Offers from file... " .. #loadData.vehicleOffers)
     for _, offer in ipairs(loadData.vehicleOffers) do
+      local filterId = offer and offer.vehicle and offer.vehicle.filterId
+      if not getVehicleFilterByIdSafe(filterId, "loadVehicleOffers") then
+        goto continue
+      end
+
       cargoId = cargoId + 1
       offer.id = cargoId
       dVehOfferManager.addOffer(offer)
+      ::continue::
     end
   else
     log("I","","Generating initial Vehicle Offers...")

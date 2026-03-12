@@ -230,16 +230,25 @@ local function saveLayout(data)
     return false
   end
 
-  layoutData = data
   return true
 end
 
+local function emitLoadedLayout()
+  local loaded = loadLayout()
+  guihooks.trigger('phoneLayoutData', loaded)
+  return loaded
+end
+
 local function requestLayout()
-  guihooks.trigger('phoneLayoutData', loadLayout())
+  emitLoadedLayout()
 end
 
 local function updateLayout(data)
-  return saveLayout(data)
+  if not saveLayout(data) then
+    return false
+  end
+  emitLoadedLayout()
+  return true
 end
 
 local function getSettings()
@@ -259,7 +268,11 @@ local function updateSettings(settings)
     end
   end
   data.settings = normalizeSettings(merged)
-  return saveLayout(data)
+  if not saveLayout(data) then
+    return false
+  end
+  emitLoadedLayout()
+  return true
 end
 
 local function listBackgroundImages()

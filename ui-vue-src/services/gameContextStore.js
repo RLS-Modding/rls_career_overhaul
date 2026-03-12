@@ -6,14 +6,10 @@ import { openScreenOverlay, addPopup, fixedDelayPopup, PopupTypes } from "@/serv
 import ActivityStart from "@/modules/activitystart/views/ActivityStart.vue"
 import Recovery from "@/modules/recovery/views/Recovery.vue"
 import RadialFavoriteSelection from "@/modules/radial/views/FavoriteSelection.vue"
-import UnlockPopup from "@/modules/career/components/cargoOverview/UnlockPopup.vue"
 import FreContractCompletePopup from "@/modules/career/components/cargoOverview/FreContractCompletePopup.vue"
 
 export const useGameContextStore = defineStore("gameContext", () => {
   const { events } = useBridge()
-  const LEVEL_UP_SOUND_EVENT_ENTRY = "event:>UI>Career>EndScreen_Whoosh_Main"
-  const LEVEL_UP_SOUND_EVENT_IMPACT = "event:>UI>Career>EndScreen_Star_Bonus"
-  const LEVEL_UP_SOUND_IMPACT_DELAY_MS = 120
   const CONTRACT_COMPLETE_SOUND_EVENT_ENTRY = "event:>UI>Career>Computer"
   const CONTRACT_COMPLETE_SOUND_EVENT_IMPACT = "event:>UI>Career>Buy_01"
   const CONTRACT_COMPLETE_SOUND_IMPACT_DELAY_MS = 90
@@ -24,8 +20,6 @@ export const useGameContextStore = defineStore("gameContext", () => {
   let radialFavoriteSelectionPrompt = null
   let deliveryEndScreen = null
   let simpleDelayPopup = null
-  const levelUpQueue = []
-  let processingLevelUpQueue = false
   const contractCompleteQueue = []
   let processingContractCompleteQueue = false
 
@@ -79,70 +73,6 @@ export const useGameContextStore = defineStore("gameContext", () => {
     window.bngVue.gotoGameState("cargoDeliveryReward")
   }
   events.on("OpenDeliveryEndScreen", showDeliveryEndScreen)
-
-  const normalizeLevelUpEntry = entry => {
-    if (!entry || typeof entry !== "object") return null
-    const animationData = entry.animationData && typeof entry.animationData === "object" ? entry.animationData : {}
-    const level = Number.isFinite(Number(animationData.level)) ? Number(animationData.level) : undefined
-    return {
-      ...entry,
-      animationData: {
-        ...animationData,
-        level,
-        levelLabel: animationData.levelLabel || (level ? `Level ${level}` : "Level Up"),
-      },
-    }
-  }
-
-  const playLevelUpSoundCombo = () => {
-    try {
-      lua.Engine.Audio.playOnce("AudioGui", LEVEL_UP_SOUND_EVENT_ENTRY)
-      setTimeout(() => {
-        try {
-          lua.Engine.Audio.playOnce("AudioGui", LEVEL_UP_SOUND_EVENT_IMPACT)
-        } catch (_err) {
-          // Ignore delayed impact audio failures.
-        }
-      }, LEVEL_UP_SOUND_IMPACT_DELAY_MS)
-    } catch (_err) {
-      // Ignore audio failures to keep popup flow alive.
-    }
-  }
-
-  const processLevelUpQueue = async () => {
-    if (processingLevelUpQueue || levelUpQueue.length <= 0) return
-    processingLevelUpQueue = true
-    try {
-      while (levelUpQueue.length > 0) {
-        const reward = levelUpQueue.shift()
-        if (!reward) continue
-        try {
-          playLevelUpSoundCombo()
-          await addPopup(UnlockPopup, { reward }, PopupTypes.activity).promise
-        } catch (_err) {
-          // Popup cancellation should not stop queued celebrations.
-        }
-      }
-    } finally {
-      processingLevelUpQueue = false
-      if (levelUpQueue.length > 0) {
-        void processLevelUpQueue()
-      }
-    }
-  }
-
-  const queueLevelUpCelebrations = data => {
-    const entries = Array.isArray(data && data.entries) ? data.entries : []
-    if (!entries.length) return
-    for (const entry of entries) {
-      const normalized = normalizeLevelUpEntry(entry)
-      if (normalized) {
-        levelUpQueue.push(normalized)
-      }
-    }
-    void processLevelUpQueue()
-  }
-  events.on("OpenCareerLevelUpCelebration", queueLevelUpCelebrations)
 
   const normalizeContractCompleteEntry = entry => {
     if (!entry || typeof entry !== "object") return null
@@ -264,9 +194,7 @@ export const useGameContextStore = defineStore("gameContext", () => {
   function dispose() {
     events.off("ActivityAcceptUpdate", onActivityAcceptUpdate)
     events.off("ActivityAcceptClose", closeActivitiesPopup)
-    events.off("OpenCareerLevelUpCelebration", queueLevelUpCelebrations)
     events.off("OpenFreContractCelebration", queueContractCompletionCelebrations)
-    levelUpQueue.length = 0
     contractCompleteQueue.length = 0
   }
 

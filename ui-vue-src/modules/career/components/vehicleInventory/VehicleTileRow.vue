@@ -2,6 +2,7 @@
   <div v-if="data" :class="{ 'vehicle-tile-row': true, selected, 'hover-enabled': enableHover }" role="button" v-bng-disabled="data.disabled">
     <div :class="{ preview: true, locked, small }">
       <AspectRatio v-if="thumbUrl" :ratio="'16:9'" :external-image="thumbUrl" class="preview-image">
+        <span class="disabled-reason" v-if="disabledReason">{{ disabledReason }}</span>
         <div class="indicators-overlay">
           <BngIcon v-if="data.favorite" :type="icons.star" color="#fd0" v-bng-tooltip="'Favourite'" />
           <BngIcon v-if="data.delayReason === 'repair'" :type="icons.wrench" color="#fff" />
@@ -76,6 +77,7 @@ const props = defineProps({
     default: true
   },
   small: Boolean,
+  disabledReason: String,
 })
 
 const partConditionAvg = computed(() => {
@@ -173,6 +175,11 @@ const locked = computed(() => {
     > * {
       color: #aaa;
     }
+
+    .disabled-reason {
+      opacity: 1;
+      color: #fff;
+    }
   }
 }
 
@@ -239,6 +246,24 @@ const locked = computed(() => {
       font-size: 0.8em;
       font-weight: 600;
     }
+  }
+
+  .disabled-reason {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 11;
+    max-width: calc(100% - 1.5em);
+    padding: 0.35em 0.6em;
+    border-radius: 0.35em;
+    background: rgba(0, 0, 0, 0.72);
+    color: #fff;
+    text-align: center;
+    font-size: 1.1em;
+    font-weight: 700;
+    line-height: 1.2;
+    text-shadow: 0 0 0.35em rgba(0, 0, 0, 0.9);
   }
 }
 

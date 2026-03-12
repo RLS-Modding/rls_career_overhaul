@@ -54,6 +54,7 @@ import PhoneBeamEats from "./views/PhoneBeamEats.vue"
 import PhoneFacilityWork from "./views/PhoneFacilityWork.vue"
 import PhoneRealEstate from "./views/PhoneRealEstate.vue"
 import PhoneRentals from "./views/PhoneRentals.vue"
+import PhoneLogistics from "./views/PhoneLogistics.vue"
 import PhoneGuide from "./views/PhoneGuide.vue"
 import PhoneSkills from "./views/PhoneSkills.vue"
 import PhoneSkillDetails from "./views/PhoneSkillDetails.vue"
@@ -521,6 +522,12 @@ export default [
         path: "phone-facility-work",
         name: "phone-facility-work",
         component: PhoneFacilityWork
+      },
+
+      {
+        path: "phone-logistics",
+        name: "phone-logistics",
+        component: PhoneLogistics
       },
 
       {

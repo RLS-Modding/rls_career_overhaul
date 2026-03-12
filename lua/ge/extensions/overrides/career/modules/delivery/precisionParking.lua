@@ -241,7 +241,8 @@ local function applyCargoPrecisionBonus(cargo, precisionBonus)
   local moneyReward = precisionBonus.moneyFlat + (cargo.rewards.money * precisionBonus.moneyPercent)
   local logisticsReward = precisionBonus.logisticsFlat + (cargo.rewards["logistics-delivery"] or 0) * precisionBonus.logisticsPercent
   local skillReward = precisionBonus.skillFlat + (cargo.rewards["logistics-delivery"] or 0) * precisionBonus.skillPercent
-  local reputationReward = precisionBonus.reputationFlat + (cargo.rewards[cargo.organization.."Reputation"] or 0) * precisionBonus.reputationPercent
+  local organizationReputationKey = cargo.organization and (cargo.organization .. "Reputation") or nil
+  local reputationReward = precisionBonus.reputationFlat + (organizationReputationKey and (cargo.rewards[organizationReputationKey] or 0) or 0) * precisionBonus.reputationPercent
 
   -- Apply money reward
   cargo.rewards.money = cargo.rewards.money + xpConfig.applyRounding(moneyReward, rewardRounding)
@@ -257,8 +258,8 @@ local function applyCargoPrecisionBonus(cargo, precisionBonus)
   end
 
   -- Apply reputation reward
-  if reputationReward ~= 0 and cargo.organization then
-    cargo.rewards[cargo.organization.."Reputation"] = (cargo.rewards[cargo.organization.."Reputation"] or 0) + xpConfig.applyRounding(reputationReward, rewardRounding)
+  if reputationReward ~= 0 and organizationReputationKey then
+    cargo.rewards[organizationReputationKey] = (cargo.rewards[organizationReputationKey] or 0) + xpConfig.applyRounding(reputationReward, rewardRounding)
   end
 
   -- Store precision data for breakdown
