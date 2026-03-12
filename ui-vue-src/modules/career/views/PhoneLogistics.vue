@@ -5,10 +5,6 @@
         <p>Loading logistics...</p>
       </div>
 
-      <div v-else-if="!careerActive" class="empty-state">
-        <p>Start a career to view logistics.</p>
-      </div>
-
       <div v-else-if="error && !selectedFacilityId" class="empty-state">
         <p>Unable to load logistics right now.</p>
         <button class="primary-btn" @click="refreshList(true)">Try Again</button>
@@ -443,7 +439,6 @@ const {
   loaded,
   loadingList,
   loadingDetail,
-  careerActive,
   facilities,
   selectedFacilityId,
   selectedFacility,
