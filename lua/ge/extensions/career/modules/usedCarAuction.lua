@@ -49,6 +49,7 @@ local AUCTION_MUSIC_EMITTER_NAME = 'SFXEmitter_2'
 local AUCTION_MUSIC_EVENT = 'event:>Music>synthwave'
 local AUCTION_ENTRY_PAYMENT_SFX_EVENT = 'event:>UI>Career>Buy_01'
 local AUCTION_ENTRY_FEE = 1000
+local AUCTION_SETTINGS_SAVE_FILE = 'usedCarAuctionSettings.json'
 local BID_ACCEPTED_SFX_EVENT = 'event:>UI>Career>Buy_02'
 local LOT_WIN_CELEBRATION_SFX_EVENT = 'event:>UI>Missions>End_Gold'
 
@@ -100,13 +101,69 @@ local auctionState = {
   uiOpen = false,
   awaitingFinalExit = false,
   npcPersonas = {},
-  winEmitterPulseToken = 0
+  winEmitterPulseToken = 0,
+  musicEnabled = true
 }
 
 local usedConfigKeys = {}
 local stopVehicleAI
 local setLotVehicleDriveLock
 local startAuctionImmediate
+
+local function getAuctionSettingsPaths(currentSavePath)
+  if not currentSavePath and career_saveSystem and career_saveSystem.getCurrentSaveSlot then
+    local _, savePath = career_saveSystem.getCurrentSaveSlot()
+    currentSavePath = savePath
+  end
+  if not currentSavePath then
+    return nil, nil
+  end
+
+  local dirPath = currentSavePath .. '/career/rls_career'
+  return dirPath, dirPath .. '/' .. AUCTION_SETTINGS_SAVE_FILE
+end
+
+local function saveAuctionSettings(currentSavePath)
+  if not (FS and career_saveSystem and career_saveSystem.jsonWriteFileSafe) then
+    return false
+  end
+
+  local dirPath, filePath = getAuctionSettingsPaths(currentSavePath)
+  if not filePath then
+    return false
+  end
+
+  if not FS:directoryExists(dirPath) then
+    FS:directoryCreate(dirPath)
+  end
+
+  career_saveSystem.jsonWriteFileSafe(filePath, {
+    musicEnabled = auctionState.musicEnabled ~= false
+  }, true)
+  return true
+end
+
+local function loadAuctionSettings()
+  auctionState.musicEnabled = true
+  if not (career_career and career_career.isActive and career_career.isActive()) then
+    return false
+  end
+
+  local _, filePath = getAuctionSettingsPaths()
+  if not filePath then
+    return false
+  end
+
+  local data = jsonReadFile(filePath)
+  if type(data) ~= 'table' then
+    return false
+  end
+
+  if data.musicEnabled ~= nil then
+    auctionState.musicEnabled = data.musicEnabled and true or false
+  end
+  return true
+end
 
 local function deepCopy(src)
   if type(src) ~= 'table' then return src end
@@ -117,20 +174,47 @@ local function deepCopy(src)
   return out
 end
 
-local function mergeFilter(baseFilter, subFilter)
-  local merged = deepCopy(baseFilter or {})
-  merged.whiteList = merged.whiteList or {}
-  merged.blackList = merged.blackList or {}
-
-  if subFilter and subFilter.whiteList then
-    for k, v in pairs(subFilter.whiteList) do
-      merged.whiteList[k] = deepCopy(v)
-    end
+local function getFilterLists(filter)
+  if type(filter) ~= 'table' then
+    return {}, {}
   end
-  if subFilter and subFilter.blackList then
-    for k, v in pairs(subFilter.blackList) do
-      merged.blackList[k] = deepCopy(v)
-    end
+
+  local whiteList = filter.whiteList or filter.whitelist or filter.white_list or {}
+  local blackList = filter.blackList or filter.blacklist or filter.black_list or {}
+  return whiteList, blackList
+end
+
+local function normalizeFilterDefinition(filter)
+  local normalized = deepCopy(type(filter) == 'table' and filter or {})
+  local whiteList, blackList = getFilterLists(normalized)
+  normalized.whiteList = deepCopy(whiteList or {})
+  normalized.blackList = deepCopy(blackList or {})
+  normalized.whitelist = nil
+  normalized.white_list = nil
+  normalized.blacklist = nil
+  normalized.black_list = nil
+  return normalized
+end
+
+local function getSubFilterBody(subFilter)
+  if type(subFilter) ~= 'table' then
+    return {}
+  end
+  if type(subFilter.filter) == 'table' then
+    return subFilter.filter
+  end
+  return subFilter
+end
+
+local function mergeFilter(baseFilter, subFilter)
+  local merged = normalizeFilterDefinition(baseFilter)
+  local normalizedSubFilter = normalizeFilterDefinition(getSubFilterBody(subFilter))
+
+  for k, v in pairs(normalizedSubFilter.whiteList or {}) do
+    merged.whiteList[k] = deepCopy(v)
+  end
+  for k, v in pairs(normalizedSubFilter.blackList or {}) do
+    merged.blackList[k] = deepCopy(v)
   end
 
   return merged
@@ -150,7 +234,7 @@ end
 
 local function buildWeightedFilters()
   local cfg = getAuctionFilterConfig()
-  local baseFilter = cfg.filter or {}
+  local baseFilter = normalizeFilterDefinition(cfg.filter or {})
   local subFilters = cfg.subFilters or {}
 
   local weighted = {}
@@ -160,7 +244,8 @@ local function buildWeightedFilters()
   end
 
   for _, sf in ipairs(subFilters) do
-    local p = tonumber(sf.probability) or tonumber(sf._probability) or 1
+    local sfBody = getSubFilterBody(sf)
+    local p = tonumber(sf.probability) or tonumber(sf._probability) or tonumber(sfBody.probability) or tonumber(sfBody._probability) or 1
     table.insert(weighted, {
       prob = math.max(0.01, p),
       filter = mergeFilter(baseFilter, sf)
@@ -351,24 +436,28 @@ local function getSceneObjectName(obj)
   return nil
 end
 
-local function setAuctionActiveAssetObjectEnabled(obj, enabled)
+local function setAuctionActiveAssetObjectEnabled(obj, enabled, musicEnabled)
   if not obj then return end
 
   local objName = getSceneObjectName(obj)
   local isAuctionMusicEmitter = objName == AUCTION_MUSIC_EMITTER_NAME
+  local effectiveEnabled = enabled and true or false
+  if isAuctionMusicEmitter and (not musicEnabled) then
+    effectiveEnabled = false
+  end
 
-  if isAuctionMusicEmitter and enabled and obj.setField then
+  if isAuctionMusicEmitter and effectiveEnabled and obj.setField then
     pcall(function() obj:setField('track', 0, AUCTION_MUSIC_EVENT) end)
   end
 
-  setEmitterObjectEnabled(obj, enabled)
+  setEmitterObjectEnabled(obj, effectiveEnabled)
 
-  if enabled and obj.play then
+  if effectiveEnabled and obj.play then
     local played = pcall(function() obj:play() end)
     if not played then
       pcall(function() obj:play(-1) end)
     end
-  elseif (not enabled) and obj.stop then
+  elseif (not effectiveEnabled) and obj.stop then
     local stopped = pcall(function() obj:stop() end)
     if not stopped then
       pcall(function() obj:stop(-1) end)
@@ -404,6 +493,7 @@ local function setAuctionActiveAssetsEnabled(enabled)
   if not root then
     return false
   end
+  local musicEnabled = auctionState.musicEnabled ~= false
 
   local visited = {}
   local function applyRecursive(obj)
@@ -412,7 +502,7 @@ local function setAuctionActiveAssetsEnabled(enabled)
     if visited[id] then return end
     visited[id] = true
 
-    setAuctionActiveAssetObjectEnabled(obj, enabled)
+    setAuctionActiveAssetObjectEnabled(obj, enabled, musicEnabled)
     for _, child in ipairs(listChildrenSafe(obj)) do
       applyRecursive(child)
     end
@@ -944,26 +1034,167 @@ local function getFallbackMileage()
   return math.random(5000, 180000)
 end
 
+local function isRangeParams(parameters)
+  return type(parameters) == 'table' and (parameters.min ~= nil or parameters.max ~= nil)
+end
+
+local function getVehicleFieldValue(vehicleInfo, fieldName)
+  if type(vehicleInfo) ~= 'table' then return nil end
+  local value = vehicleInfo[fieldName]
+  if value ~= nil then
+    return value
+  end
+  if type(vehicleInfo.aggregates) == 'table' then
+    return vehicleInfo.aggregates[fieldName]
+  end
+  return nil
+end
+
+local function getVehicleYearRange(vehicleInfo)
+  local years = getVehicleFieldValue(vehicleInfo, 'Years')
+  if type(years) == 'number' then
+    return years, years
+  end
+  if type(years) ~= 'table' then
+    return nil, nil
+  end
+
+  local minYear = tonumber(years.min) or tonumber(years[1])
+  local maxYear = tonumber(years.max) or minYear
+  if not minYear then
+    return nil, nil
+  end
+  if not maxYear then
+    maxYear = minYear
+  end
+  if minYear > maxYear then
+    minYear, maxYear = maxYear, minYear
+  end
+  return minYear, maxYear
+end
+
+local function isDiscreteMatch(value, wanted)
+  if value == wanted then
+    return true
+  end
+  if type(value) ~= 'table' then
+    return false
+  end
+  if value[wanted] then
+    return true
+  end
+  for _, item in ipairs(value) do
+    if item == wanted then
+      return true
+    end
+  end
+  return false
+end
+
+local function doesVehicleMatchFilterRule(vehicleInfo, filterName, parameters)
+  if filterName == 'Years' then
+    local minYear, maxYear = getVehicleYearRange(vehicleInfo)
+    if not minYear then
+      return false
+    end
+    local minAllowed = tonumber(parameters and parameters.min)
+    local maxAllowed = tonumber(parameters and parameters.max)
+    if minAllowed and maxYear < minAllowed then
+      return false
+    end
+    if maxAllowed and minYear > maxAllowed then
+      return false
+    end
+    return true
+  end
+
+  if isRangeParams(parameters) then
+    local value = getVehicleFieldValue(vehicleInfo, filterName)
+    local numberValue = tonumber(value)
+    if numberValue == nil and type(value) == 'table' then
+      numberValue = tonumber(value.min) or tonumber(value.max)
+    end
+    if numberValue == nil then
+      return false
+    end
+
+    local minAllowed = tonumber(parameters.min)
+    local maxAllowed = tonumber(parameters.max)
+    if minAllowed and numberValue < minAllowed then
+      return false
+    end
+    if maxAllowed and numberValue > maxAllowed then
+      return false
+    end
+    return true
+  end
+
+  local value = getVehicleFieldValue(vehicleInfo, filterName)
+  if type(parameters) ~= 'table' then
+    return isDiscreteMatch(value, parameters)
+  end
+
+  for _, wanted in ipairs(parameters) do
+    if isDiscreteMatch(value, wanted) then
+      return true
+    end
+  end
+  return false
+end
+
+local function doesVehicleMatchFilterList(vehicleInfo, filters, requireAll)
+  if type(filters) ~= 'table' or next(filters) == nil then
+    return requireAll and true or false
+  end
+
+  for filterName, parameters in pairs(filters) do
+    local matched = doesVehicleMatchFilterRule(vehicleInfo, filterName, parameters)
+    if requireAll then
+      if not matched then
+        return false
+      end
+    elseif matched then
+      return true
+    end
+  end
+
+  return requireAll and true or false
+end
+
+local function doesVehiclePassAuctionFilter(vehicleInfo, filter)
+  local normalized = normalizeFilterDefinition(filter)
+  if not doesVehicleMatchFilterList(vehicleInfo, normalized.whiteList, true) then
+    return false
+  end
+  if doesVehicleMatchFilterList(vehicleInfo, normalized.blackList, false) then
+    return false
+  end
+  return true
+end
+
 local function getRandomVehicleDefWithFilter(filter)
   local eligibleVehicles = util_configListGenerator.getEligibleVehicles(false, false)
-  local infos = util_configListGenerator.getRandomVehicleInfos({filter = filter or {}}, 40, eligibleVehicles, 'Population')
+  local normalizedFilter = normalizeFilterDefinition(filter or {})
+  local infos = util_configListGenerator.getRandomVehicleInfos({filter = normalizedFilter}, 40, eligibleVehicles, 'Population')
 
   for _, info in ipairs(infos or {}) do
-    local configPath = getVehicleConfigPath(info)
-    if configPath and (not usedConfigKeys[configPath]) and (not isRollerLikeInfo(info)) then
-      usedConfigKeys[configPath] = true
+    if doesVehiclePassAuctionFilter(info, normalizedFilter) then
+      local configPath = getVehicleConfigPath(info)
+      if configPath and (not usedConfigKeys[configPath]) and (not isRollerLikeInfo(info)) then
+        usedConfigKeys[configPath] = true
 
-      local brand = tostring(info.Brand or '')
-      local name = tostring(info.Name or info.key or info.model_key)
-      local title = ((brand ~= '' and (brand .. ' ') or '') .. name)
+        local brand = tostring(info.Brand or '')
+        local name = tostring(info.Name or info.key or info.model_key)
+        local title = ((brand ~= '' and (brand .. ' ') or '') .. name)
 
-      return {
-        model = info.model_key,
-        config = configPath,
-        title = title,
-        basePrice = math.max(1500, math.floor(tonumber(info.Value or 4500))),
-        mileage = getMileageFromInfo(info) or getFallbackMileage()
-      }
+        return {
+          model = info.model_key,
+          config = configPath,
+          title = title,
+          basePrice = math.max(1500, math.floor(tonumber(info.Value or 4500))),
+          mileage = getMileageFromInfo(info) or getFallbackMileage()
+        }
+      end
     end
   end
 
@@ -1675,6 +1906,7 @@ local function requestAuctionState()
   return {
     phase = derivedPhase,
     entryPromptActive = auctionState.entryPromptActive and true or false,
+    musicEnabled = auctionState.musicEnabled ~= false,
     entryFee = getAuctionEntryFee(),
     canPayEntryFee = canAffordAuctionEntry(),
     activeLotIndex = auctionState.activeLotIndex,
@@ -1704,6 +1936,15 @@ end
 local function setAutoBidMax(maxBid)
   -- Legacy API kept as no-op for compatibility with stale UI callers.
   return false
+end
+
+local function setAuctionMusicEnabled(enabled)
+  auctionState.musicEnabled = enabled and true or false
+  if auctionState.phase ~= 'idle' then
+    setAuctionActiveAssetsEnabled(true)
+  end
+  saveAuctionSettings()
+  return auctionState.musicEnabled
 end
 
 local function passCurrentLot()
@@ -2336,9 +2577,14 @@ local function onUpdate()
 end
 
 local function onCareerActivated()
+  loadAuctionSettings()
   setIdleTriggerState()
   hardDisableAuctionAudioVisuals()
   ejectPlayerFromAuctionInteriorOnCareerLoad()
+end
+
+local function onSaveCurrentSaveSlot(currentSavePath)
+  saveAuctionSettings(currentSavePath)
 end
 
 local function onCareerDeactivatedWhileLevelLoaded()
@@ -2365,6 +2611,7 @@ M.onCareerDeactivatedWhileLevelLoaded = onCareerDeactivatedWhileLevelLoaded
 M.onExtensionLoaded = onExtensionLoaded
 M.onClientStartMission = onClientStartMission
 M.onWorldReadyState = onWorldReadyState
+M.onSaveCurrentSaveSlot = onSaveCurrentSaveSlot
 M.exitAuctionArea = exitAuctionArea
 M.requestAuctionState = requestAuctionState
 M.startAuction = startAuction
@@ -2373,6 +2620,7 @@ M.placeBid = placeBid
 M.passCurrentLot = passCurrentLot
 M.setAutoBidEnabled = setAutoBidEnabled
 M.setAutoBidMax = setAutoBidMax
+M.setAuctionMusicEnabled = setAuctionMusicEnabled
 M.closeMenu = closeMenu
 
 return M

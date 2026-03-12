@@ -1288,6 +1288,7 @@ export default {
     startAuction: () => {},
     cancelTravelPrompt: () => {},
     placeBid: amount => {},
+    setAuctionMusicEnabled: enabled => {},
     passCurrentLot: () => {},
     closeMenu: () => {},
     setAutoBidEnabled: enabled => {},

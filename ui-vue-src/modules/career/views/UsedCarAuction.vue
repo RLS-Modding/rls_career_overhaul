@@ -24,6 +24,10 @@
 
       <div class="status">{{ state.statusMessage || 'Auction service unavailable.' }}</div>
 
+      <div class="music-toggle">
+        <BngSwitch v-model="musicEnabled">Synthwave Music</BngSwitch>
+      </div>
+
       <div class="summary">
         <div class="summary-row">
           <span class="k">Wins</span>
@@ -86,10 +90,11 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { lua } from '@/bridge'
-import { BngButton, ACCENTS } from '@/common/components/base'
+import { BngButton, ACCENTS, BngSwitch } from '@/common/components/base'
 
 const defaultState = () => ({
   phase: 'idle',
+  musicEnabled: true,
   entryPromptActive: false,
   entryFee: 1000,
   canPayEntryFee: false,
@@ -142,6 +147,13 @@ const canBid = computed(() => {
   return state.value?.phase === 'bidding' && activeLot.value && activeLot.value.state === 'active'
 })
 
+const musicEnabled = computed({
+  get: () => state.value?.musicEnabled !== false,
+  set: enabled => {
+    void setAuctionMusicEnabled(enabled)
+  }
+})
+
 const refresh = async () => {
   const api = getAuctionApi()
   if (!api?.requestAuctionState) {
@@ -152,6 +164,15 @@ const refresh = async () => {
   const nextState = await api.requestAuctionState()
   if (!nextState || typeof nextState !== 'object') return
   state.value = nextState
+}
+
+const setAuctionMusicEnabled = async enabled => {
+  const boolEnabled = enabled === true
+  state.value = { ...state.value, musicEnabled: boolEnabled }
+
+  const api = getAuctionApi()
+  if (!api?.setAuctionMusicEnabled) return
+  await api.setAuctionMusicEnabled(boolEnabled)
 }
 
 const bid = async amount => {
@@ -297,6 +318,12 @@ onUnmounted(() => {
 .status {
   font-size: 0.82rem;
   color: rgba(255, 255, 255, 0.88);
+}
+
+.music-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
 }
 
 .entry-note {
