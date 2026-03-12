@@ -202,10 +202,13 @@ local function notifyFreRaceCompleted(raceName, raceData, raceLabel, finishTime,
     end
 
     local disciplineIds = completionMeta and completionMeta.disciplineIds or getRaceDisciplineIds(raceData)
+    local isAltRoute = mAltRoute == true
     gameplay_events_freContracts.onFreeroamRaceCompleted({
         raceId = raceName,
         raceName = raceName,
         raceLabel = raceLabel,
+        isAltRoute = isAltRoute,
+        raceRouteType = isAltRoute and "alt" or "main",
         disciplineIds = disciplineIds,
         rawTypes = raceData and raceData.type or {},
         finishTime = finishTime,
@@ -218,6 +221,7 @@ local function notifyFreRaceCompleted(raceName, raceData, raceLabel, finishTime,
             time = finishTime,
             maxSpeed = maxSpeed,
             lapCount = lapCount,
+            isAltRoute = isAltRoute,
             isHotlap = mHotlap == raceName,
             invalidLap = completionMeta and completionMeta.invalidLap == true or false
         },

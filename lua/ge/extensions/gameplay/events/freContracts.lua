@@ -337,12 +337,30 @@ local function refreshRaceCache()
       if disciplineId and not seen[disciplineId] then
         seen[disciplineId] = true
         byDiscipline[disciplineId] = byDiscipline[disciplineId] or {}
+        local raceLabel = race.label or raceName
+        local bestTime = tonumber(race.bestTime) or tonumber(race.hotlap) or 60
+        local isLapEvent = race.hotlap ~= nil
         table.insert(byDiscipline[disciplineId], {
           raceName = raceName,
-          raceLabel = race.label or raceName,
-          bestTime = tonumber(race.bestTime) or tonumber(race.hotlap) or 60,
-          isLapEvent = race.hotlap ~= nil
+          raceLabel = raceLabel,
+          bestTime = bestTime,
+          isLapEvent = isLapEvent,
+          routeType = "main"
         })
+
+        if type(race.altRoute) == "table" then
+          local altRoute = race.altRoute
+          local altLabel = altRoute.label or (raceLabel .. " (Alt Route)")
+          local altBestTime = tonumber(altRoute.bestTime) or tonumber(altRoute.hotlap) or bestTime
+          local altLapEvent = altRoute.hotlap ~= nil or isLapEvent
+          table.insert(byDiscipline[disciplineId], {
+            raceName = raceName,
+            raceLabel = altLabel,
+            bestTime = altBestTime,
+            isLapEvent = altLapEvent,
+            routeType = "alt"
+          })
+        end
       end
     end
   end
@@ -352,6 +370,54 @@ local function refreshRaceCache()
     byDiscipline = byDiscipline
   }
   return raceCache
+end
+
+local function normalizeRaceRouteType(routeType)
+  if type(routeType) ~= "string" then
+    return nil
+  end
+  local normalized = string.lower(routeType)
+  if normalized == "main" or normalized == "alt" then
+    return normalized
+  end
+  return nil
+end
+
+local function routeTypeMatches(requiredRouteType, isAltRoute)
+  local required = normalizeRaceRouteType(requiredRouteType)
+  if not required then
+    return true
+  end
+  local actual = isAltRoute and "alt" or "main"
+  return required == actual
+end
+
+local function inferRouteTypeFromRaceLabel(disciplineId, raceName, raceLabel)
+  if type(disciplineId) ~= "string" or disciplineId == "" then
+    return nil
+  end
+  if type(raceName) ~= "string" or raceName == "" then
+    return nil
+  end
+  if type(raceLabel) ~= "string" or raceLabel == "" then
+    return nil
+  end
+
+  local raceData = refreshRaceCache().byDiscipline[disciplineId] or {}
+  local matchedRouteType = nil
+  for _, raceEntry in ipairs(raceData) do
+    if raceEntry.raceName == raceName and raceEntry.raceLabel == raceLabel then
+      local routeType = normalizeRaceRouteType(raceEntry.routeType)
+      if routeType then
+        if matchedRouteType and matchedRouteType ~= routeType then
+          return nil
+        end
+        matchedRouteType = routeType
+      end
+    end
+  end
+
+  return matchedRouteType
 end
 
 local function pickRandomFromList(list)
@@ -466,6 +532,7 @@ local function buildSponsorRequirement(disciplineId, tier)
   return {
     requiredRaceName = raceEntry.raceName,
     requiredRaceLabel = raceLabel,
+    requiredRaceRouteType = raceEntry.routeType,
     targetTime = targetTime,
     requirement = requirement
   }
@@ -716,6 +783,8 @@ local function normalizeContractEntry(entry)
   entry.objectiveType = objectiveType
   entry.requiredCount = math.max(1, math.floor(tonumber(entry.requiredCount) or 1))
   entry.progress = math.max(0, math.floor(tonumber(entry.progress) or 0))
+  entry.raceRouteType = normalizeRaceRouteType(entry.raceRouteType)
+    or inferRouteTypeFromRaceLabel(entry.disciplineId, entry.raceName, entry.raceLabel)
 
   local modelKey = entry.requiredModelFamily or entry.requiredModel
   if (not entry.requiredModelLabel or entry.requiredModelLabel == "") and type(modelKey) == "string" and modelKey ~= "" then
@@ -730,6 +799,8 @@ local function normalizeSponsorEntry(disciplineId, entry)
 
   entry.upkeepMinutes = math.max(1, tonumber(entry.upkeepMinutes) or 120)
   entry.targetTime = tonumber(entry.targetTime)
+  entry.requiredRaceRouteType = normalizeRaceRouteType(entry.requiredRaceRouteType)
+    or inferRouteTypeFromRaceLabel(disciplineId, entry.requiredRaceName, entry.requiredRaceLabel)
 
   local hasRaceName = type(entry.requiredRaceName) == "string" and entry.requiredRaceName ~= ""
   local hasTargetTime = type(entry.targetTime) == "number" and entry.targetTime > 0
@@ -738,6 +809,7 @@ local function normalizeSponsorEntry(disciplineId, entry)
     if requirementData then
       entry.requiredRaceName = requirementData.requiredRaceName
       entry.requiredRaceLabel = requirementData.requiredRaceLabel
+      entry.requiredRaceRouteType = requirementData.requiredRaceRouteType
       entry.targetTime = requirementData.targetTime
       entry.requirement = requirementData.requirement
     end
@@ -837,6 +909,7 @@ local function generateContractOffer(disciplineId, level, now)
     tier = tier,
     raceName = raceEntry.raceName,
     raceLabel = raceEntry.raceLabel,
+    raceRouteType = raceEntry.routeType,
     targetTime = targetTime,
     requiredModel = model,
     requiredModelFamily = model,
@@ -884,6 +957,7 @@ local function generateSponsorOffer(disciplineId, level, now)
     upkeepMinutes = upkeepMinutes,
     requiredRaceName = requirementData.requiredRaceName,
     requiredRaceLabel = requirementData.requiredRaceLabel,
+    requiredRaceRouteType = requirementData.requiredRaceRouteType,
     targetTime = requirementData.targetTime,
     requirement = requirementData.requirement,
     expiresAt = now + offerExpiry,
@@ -1229,6 +1303,7 @@ local function onFreeroamRaceCompleted(payload)
   local finishTime = tonumber(payload.finishTime) or math.huge
   local lapCount = math.max(0, math.floor(tonumber(payload.lapCount) or 0))
   local invalidLap = payload.invalidLap == true
+  local isAltRoute = payload.isAltRoute == true
   local vehicleModel = string.lower(payload.vehicleModel or getCurrentVehicleModel(payload.vehicleId) or "")
   local disciplineIds = payload.disciplineIds or {}
 
@@ -1248,13 +1323,15 @@ local function onFreeroamRaceCompleted(payload)
             normalizeSponsorEntry(disciplineId, sponsor)
             local requiredRaceName = sponsor.requiredRaceName
             local targetTime = tonumber(sponsor.targetTime)
-            local raceOk = type(requiredRaceName) == "string" and requiredRaceName ~= "" and raceName == requiredRaceName
+            local routeOk = routeTypeMatches(sponsor.requiredRaceRouteType, isAltRoute)
+            local raceOk = type(requiredRaceName) == "string" and requiredRaceName ~= "" and raceName == requiredRaceName and routeOk
             local timeOk = type(targetTime) == "number" and finishTime <= targetTime
             if raceOk and timeOk then
               sponsor.warningIssued = false
               sponsor.warningIssuedAt = nil
               sponsor.lastQualifiedAt = now
               sponsor.lastQualifiedRaceName = raceName
+              sponsor.lastQualifiedRaceRouteType = isAltRoute and "alt" or "main"
               sponsor.lastQualifiedTime = finishTime
               sponsor.nextCheckAt = now + (tonumber(sponsor.upkeepMinutes) or 120)
               stateChanged = true
@@ -1265,7 +1342,8 @@ local function onFreeroamRaceCompleted(payload)
         for i = #dState.contracts.active, 1, -1 do
           local contract = dState.contracts.active[i]
           normalizeContractEntry(contract)
-          local raceOk = (contract.raceName == raceName)
+          local routeOk = routeTypeMatches(contract.raceRouteType, isAltRoute)
+          local raceOk = (contract.raceName == raceName) and routeOk
           local requiredModelFamily = contract.requiredModelFamily or contract.requiredModel
           local modelOk = modelFamilyMatches(requiredModelFamily, vehicleModel)
           local timeOk = finishTime <= (tonumber(contract.targetTime) or math.huge)
@@ -1386,6 +1464,7 @@ local function formatContractForUi(contract, now, level)
     tier = contract.tier,
     raceName = contract.raceName,
     raceLabel = contract.raceLabel,
+    raceRouteType = contract.raceRouteType,
     targetTime = contract.targetTime,
     requiredModel = contract.requiredModel,
     requiredModelFamily = contract.requiredModelFamily,
@@ -1429,6 +1508,7 @@ local function formatSponsorForUi(sponsor, now, level)
     requirement = sponsor.requirement,
     requiredRaceName = sponsor.requiredRaceName,
     requiredRaceLabel = sponsor.requiredRaceLabel,
+    requiredRaceRouteType = sponsor.requiredRaceRouteType,
     targetTime = sponsor.targetTime,
     expiresAt = sponsor.expiresAt,
     minutesRemaining = math.max(0, (tonumber(sponsor.expiresAt) or now) - now),
@@ -1437,6 +1517,7 @@ local function formatSponsorForUi(sponsor, now, level)
     warningIssuedAt = sponsor.warningIssuedAt,
     lastQualifiedAt = lastQualifiedAt,
     lastQualifiedRaceName = sponsor.lastQualifiedRaceName,
+    lastQualifiedRaceRouteType = sponsor.lastQualifiedRaceRouteType,
     lastQualifiedTime = sponsor.lastQualifiedTime,
     requirementSatisfied = requirementSatisfied,
     requirementStatus = requirementStatus,

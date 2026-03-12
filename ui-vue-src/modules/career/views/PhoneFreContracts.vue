@@ -58,7 +58,7 @@
           <div v-if="filteredActiveContracts.length === 0" class="empty small">No active contracts.</div>
           <div v-for="contract in filteredActiveContracts" :key="contract.id" class="card">
             <div class="title">{{ disciplineLabel(contract.disciplineId) }} - {{ tierLabel(contract.tier) }}</div>
-            <div class="line contract-focus">{{ contract.raceLabel }} | {{ contract.requiredModelLabel || contract.requiredModelFamily || contract.requiredModel || 'Any model' }}</div>
+            <div class="line contract-focus">{{ contractFocusLabel(contract) }}</div>
             <div class="contract-metrics">
               <div class="metric">
                 <span class="metric-key">Target</span>
@@ -87,7 +87,7 @@
           <div v-else-if="filteredAvailableContracts.length === 0" class="empty small">No offers available.</div>
           <div v-for="contract in filteredAvailableContracts" :key="contract.id" class="card">
             <div class="title">{{ disciplineLabel(contract.disciplineId) }} - {{ tierLabel(contract.tier) }}</div>
-            <div class="line contract-focus">{{ contract.raceLabel }} | {{ contract.requiredModelLabel || contract.requiredModelFamily || contract.requiredModel || 'Any model' }}</div>
+            <div class="line contract-focus">{{ contractFocusLabel(contract) }}</div>
             <div class="contract-metrics">
               <div class="metric">
                 <span class="metric-key">Target</span>
@@ -285,7 +285,34 @@ function bonusLabel(sponsor) {
   return `${amount} ${type}`
 }
 
+function inferRouteTypeFromLabel(label) {
+  const text = String(label || '').toLowerCase()
+  if (text.includes('alt route') || text.includes('alternative route') || text.includes('(alt)')) {
+    return 'alt'
+  }
+  return 'main'
+}
+
+function routeLabel(routeType, fallbackLabel) {
+  const normalized = String(routeType || '').toLowerCase() || inferRouteTypeFromLabel(fallbackLabel)
+  return normalized === 'alt' ? 'Alt Route' : 'Main Route'
+}
+
+function contractFocusLabel(contract) {
+  const raceLabel = contract?.raceLabel || contract?.raceName || 'Race'
+  const route = routeLabel(contract?.raceRouteType, raceLabel)
+  const modelLabel = contract?.requiredModelLabel || contract?.requiredModelFamily || contract?.requiredModel || 'Any model'
+  return `${raceLabel} (${route}) | ${modelLabel}`
+}
+
 function sponsorRequirementLabel(sponsor) {
+  const raceLabel = sponsor?.requiredRaceLabel || sponsor?.requiredRaceName
+  const route = routeLabel(sponsor?.requiredRaceRouteType, raceLabel)
+  const target = Number(sponsor?.targetTime)
+  if (raceLabel && Number.isFinite(target) && target > 0) {
+    return `Beat ${formatTime(target)} on ${raceLabel} (${route}) once per upkeep window (no XP minimum).`
+  }
+
   const requirement = String(sponsor?.requirement || '').trim()
   if (requirement) {
     if (/xp/i.test(requirement)) return requirement
