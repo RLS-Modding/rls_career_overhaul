@@ -1,7 +1,7 @@
 {
     "name": "Logistics Skill",
     "description": "Progress a dedicated 1-50 logistics mastery track with milestone unlock rewards. Each Logistics level also increases delivery payout (default +2% per level).",
-    "order": 1000,
+    "order": 50,
     "isSkill": true,
     "attributeKey": "logistics-delivery",
     "icon": "deliveryTruck",

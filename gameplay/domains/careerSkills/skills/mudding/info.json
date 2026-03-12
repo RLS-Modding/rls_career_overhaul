@@ -1,7 +1,7 @@
 {
     "name":  "Mudding Skill",
     "description":  "Progress the 1-50 Mudding FRE mastery track.",
-    "order":  1109,
+    "order":  400,
     "isSkill":  true,
     "attributeKey":  "fre-mudding",
     "icon":  "beamsNodesOutline",

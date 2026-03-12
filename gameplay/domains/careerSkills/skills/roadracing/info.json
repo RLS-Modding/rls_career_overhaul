@@ -1,7 +1,7 @@
 {
     "name":  "Road Racing Skill",
     "description":  "Progress the 1-50 Road Racing FRE mastery track.",
-    "order":  1101,
+    "order":  200,
     "isSkill":  true,
     "attributeKey":  "fre-roadracing",
     "icon":  "beamsNodesOutline",

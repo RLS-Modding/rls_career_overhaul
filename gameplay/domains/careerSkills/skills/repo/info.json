@@ -1,7 +1,7 @@
 {
-    "name":  "Repo Skill",
+    "name":  "Repo Skill (Coming Soon)",
     "description":  "Coming soon",
-    "order":  1400,
+    "order":  125,
     "isSkill":  true,
     "icon":  "keys1",
     "levels":  [

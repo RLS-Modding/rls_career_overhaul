@@ -1,7 +1,7 @@
 {
     "name": "Police Skill",
     "description": "Progress a dedicated 1-50 police track with milestone rewards every 5 levels.",
-    "order": 1200,
+    "order": 75,
     "isSkill": true,
     "icon": "wigwags",
     "levels": [

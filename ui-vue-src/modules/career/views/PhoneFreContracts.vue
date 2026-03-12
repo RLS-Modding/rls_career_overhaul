@@ -118,6 +118,8 @@
           <div v-for="sponsor in filteredActiveSponsors" :key="sponsor.id" class="card">
             <div class="title">{{ disciplineLabel(sponsor.disciplineId) }} - {{ sponsor.name }}</div>
             <div class="line">{{ tierLabel(sponsor.tier) }} | {{ bonusLabel(sponsor) }}</div>
+            <div class="line">Requirement: {{ sponsorRequirementLabel(sponsor) }}</div>
+            <div class="line" :class="sponsorStatusClass(sponsor)">Status: {{ sponsorStatusLabel(sponsor) }}</div>
             <div class="line">Upkeep in {{ formatMinutes(displayRemaining(sponsor.checkMinutesRemaining)) }}</div>
             <div class="warning" v-if="sponsor.warningIssued">
               Warning active. Complete an event in {{ formatMinutes(displayRemaining(sponsor.checkMinutesRemaining)) }}.
@@ -134,6 +136,7 @@
           <div v-for="sponsor in filteredAvailableSponsors" :key="sponsor.id" class="card">
             <div class="title">{{ disciplineLabel(sponsor.disciplineId) }} - {{ sponsor.name }}</div>
             <div class="line">{{ tierLabel(sponsor.tier) }} | {{ bonusLabel(sponsor) }}</div>
+            <div class="line">Requirement: {{ sponsorRequirementLabel(sponsor) }}</div>
             <div class="line">Offer expires in {{ formatMinutes(displayRemaining(sponsor.minutesRemaining)) }}</div>
             <button :disabled="actionBusy || !canSignSponsor(sponsor)" @click="signSponsor(sponsor.id)">
               {{ canSignSponsor(sponsor) ? 'Sign Sponsor' : 'Slots Full' }}
@@ -280,6 +283,30 @@ function bonusLabel(sponsor) {
   const amount = `${Math.round((Number(sponsor.bonusPercent || 0) * 100) * 10) / 10}%`
   const type = sponsor.bonusType === 'disciplineXP' ? 'XP' : sponsor.bonusType === 'both' ? 'Money + XP' : 'Money'
   return `${amount} ${type}`
+}
+
+function sponsorRequirementLabel(sponsor) {
+  const requirement = String(sponsor?.requirement || '').trim()
+  if (requirement) {
+    if (/xp/i.test(requirement)) return requirement
+    return `${requirement} (no XP minimum)`
+  }
+  const discipline = disciplineLabel(sponsor?.disciplineId || '')
+  return `Complete 1 valid ${discipline} FRE event in each upkeep window.`
+}
+
+function sponsorStatusLabel(sponsor) {
+  const status = String(sponsor?.requirementStatus || 'pending')
+  if (status === 'warning') return 'Not satisfied (grace active)'
+  if (status === 'satisfied') return 'Satisfied'
+  return 'Not yet satisfied'
+}
+
+function sponsorStatusClass(sponsor) {
+  const status = String(sponsor?.requirementStatus || 'pending')
+  if (status === 'warning') return 'status-warning'
+  if (status === 'satisfied') return 'status-good'
+  return 'status-pending'
 }
 
 function objectiveStatusLabel(contract) {
@@ -572,6 +599,18 @@ onUnmounted(() => {
 .line {
   font-size: 12px;
   color: rgba(227, 235, 246, 0.9);
+}
+
+.line.status-good {
+  color: #9fe3b3;
+}
+
+.line.status-warning {
+  color: #fdd873;
+}
+
+.line.status-pending {
+  color: rgba(227, 235, 246, 0.8);
 }
 
 .contract-focus {

@@ -1,7 +1,7 @@
 {
     "name":  "Drag Skill",
     "description":  "Progress the 1-50 Drag FRE mastery track.",
-    "order":  1103,
+    "order":  300,
     "isSkill":  true,
     "attributeKey":  "fre-drag",
     "icon":  "beamsNodesOutline",

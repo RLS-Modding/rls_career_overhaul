@@ -1,7 +1,7 @@
 {
     "name":  "Rally Skill",
     "description":  "Progress the 1-50 Rally FRE mastery track.",
-    "order":  1107,
+    "order":  800,
     "isSkill":  true,
     "attributeKey":  "fre-rally",
     "icon":  "beamsNodesOutline",

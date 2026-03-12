@@ -78,6 +78,11 @@ local defaultConfig = {
     offerRefreshMinutes = 2,
     upkeepMinutesByTier = {easy = 360, medium = 240, hard = 120},
     graceMinutes = 20,
+    targetMultiplierByTier = {
+      easy = {min = 1.2, max = 1.5},
+      medium = {min = 1.08, max = 1.28},
+      hard = {min = 0.98, max = 1.12}
+    },
     bonusRangeByTier = {
       easy = {min = 0.01, max = 0.10},
       medium = {min = 0.15, max = 0.25},

@@ -386,6 +386,40 @@ local function randomSponsorName()
   return prefix .. " " .. suffix
 end
 
+local function formatTimeForRequirement(seconds)
+  local total = math.max(0, tonumber(seconds) or 0)
+  local minutes = math.floor(total / 60)
+  local secs = total - (minutes * 60)
+  return string.format("%d:%05.2f", minutes, secs)
+end
+
+local function buildSponsorRequirement(disciplineId, tier)
+  local raceData = refreshRaceCache().byDiscipline[disciplineId] or {}
+  if #raceData == 0 then
+    return nil
+  end
+
+  local raceEntry = pickRandomFromList(raceData)
+  if not raceEntry then
+    return nil
+  end
+
+  local sponsorCfg = freConfig.getSponsorConfig() or {}
+  local contractCfg = freConfig.getContractConfig() or {}
+  local multiplierRange = ((sponsorCfg.targetMultiplierByTier or {})[tier]) or ((contractCfg.targetMultiplierByTier or {})[tier]) or {min = 1.25, max = 1.5}
+  local targetTime = roundTo((tonumber(raceEntry.bestTime) or 60) * randomFloat(multiplierRange.min, multiplierRange.max), 3)
+  local raceLabel = raceEntry.raceLabel or raceEntry.raceName or disciplineId
+  local targetLabel = formatTimeForRequirement(targetTime)
+  local requirement = string.format("Beat %s on %s once per upkeep window (no XP minimum).", targetLabel, raceLabel)
+
+  return {
+    requiredRaceName = raceEntry.raceName,
+    requiredRaceLabel = raceLabel,
+    targetTime = targetTime,
+    requirement = requirement
+  }
+end
+
 local function tableHasAnyEntries(value)
   if type(value) ~= "table" then
     return false
@@ -638,6 +672,36 @@ local function normalizeContractEntry(entry)
   end
 end
 
+local function normalizeSponsorEntry(disciplineId, entry)
+  if type(entry) ~= "table" then
+    return
+  end
+
+  entry.upkeepMinutes = math.max(1, tonumber(entry.upkeepMinutes) or 120)
+  entry.targetTime = tonumber(entry.targetTime)
+
+  local hasRaceName = type(entry.requiredRaceName) == "string" and entry.requiredRaceName ~= ""
+  local hasTargetTime = type(entry.targetTime) == "number" and entry.targetTime > 0
+  if not hasRaceName or not hasTargetTime then
+    local requirementData = buildSponsorRequirement(disciplineId, entry.tier or "easy")
+    if requirementData then
+      entry.requiredRaceName = requirementData.requiredRaceName
+      entry.requiredRaceLabel = requirementData.requiredRaceLabel
+      entry.targetTime = requirementData.targetTime
+      entry.requirement = requirementData.requirement
+    end
+  else
+    entry.requiredRaceLabel = entry.requiredRaceLabel or entry.requiredRaceName
+    if type(entry.requirement) ~= "string" or entry.requirement == "" then
+      entry.requirement = string.format(
+        "Beat %s on %s once per upkeep window (no XP minimum).",
+        formatTimeForRequirement(entry.targetTime),
+        entry.requiredRaceLabel
+      )
+    end
+  end
+end
+
 local function purgeExpiredEntries(now)
   ensureState()
   local sponsorCfg = freConfig.getSponsorConfig()
@@ -746,6 +810,10 @@ local function generateSponsorOffer(disciplineId, level, now)
   end
 
   local tier = unlockedTiers[randomInt(1, #unlockedTiers)]
+  local requirementData = buildSponsorRequirement(disciplineId, tier)
+  if not requirementData then
+    return nil
+  end
   local bonusRange = ((sponsorCfg.bonusRangeByTier or {})[tier]) or {min = 0.01, max = 0.05}
   local bonusPercent = roundTo(randomFloat(bonusRange.min or 0.01, bonusRange.max or 0.05), 3)
   local bonusType = pickWeightedBonusType(sponsorCfg.bonusTypeWeights or {})
@@ -764,7 +832,10 @@ local function generateSponsorOffer(disciplineId, level, now)
     bonusType = bonusType,
     bonusPercent = bonusPercent,
     upkeepMinutes = upkeepMinutes,
-    requirement = "Complete one " .. (freConfig.getDisciplineById(disciplineId).label or disciplineId) .. " event in the window.",
+    requiredRaceName = requirementData.requiredRaceName,
+    requiredRaceLabel = requirementData.requiredRaceLabel,
+    targetTime = requirementData.targetTime,
+    requirement = requirementData.requirement,
     expiresAt = now + offerExpiry,
     createdAt = now
   }
@@ -860,12 +931,17 @@ local function syncOffersForDiscipline(disciplineId, now)
 
     -- Normalize legacy sponsor offers to short-lived "offer" timers.
     for _, offer in ipairs(dState.sponsors.available or {}) do
+      normalizeSponsorEntry(disciplineId, offer)
       local createdAt = tonumber(offer.createdAt) or now
       local maxExpiry = createdAt + sponsorOfferExpiryMinutes
       local currentExpiry = tonumber(offer.expiresAt) or maxExpiry
       if currentExpiry > maxExpiry then
         offer.expiresAt = maxExpiry
       end
+    end
+
+    for _, activeSponsor in ipairs(dState.sponsors.active or {}) do
+      normalizeSponsorEntry(disciplineId, activeSponsor)
     end
 
     while #dState.sponsors.available > sponsorCap do
@@ -1119,11 +1195,20 @@ local function onFreeroamRaceCompleted(payload)
       if dState then
         if not invalidLap then
           for _, sponsor in ipairs(dState.sponsors.active or {}) do
-            sponsor.warningIssued = false
-            sponsor.warningIssuedAt = nil
-            sponsor.lastQualifiedAt = now
-            sponsor.nextCheckAt = now + (tonumber(sponsor.upkeepMinutes) or 120)
-            stateChanged = true
+            normalizeSponsorEntry(disciplineId, sponsor)
+            local requiredRaceName = sponsor.requiredRaceName
+            local targetTime = tonumber(sponsor.targetTime)
+            local raceOk = type(requiredRaceName) == "string" and requiredRaceName ~= "" and raceName == requiredRaceName
+            local timeOk = type(targetTime) == "number" and finishTime <= targetTime
+            if raceOk and timeOk then
+              sponsor.warningIssued = false
+              sponsor.warningIssuedAt = nil
+              sponsor.lastQualifiedAt = now
+              sponsor.lastQualifiedRaceName = raceName
+              sponsor.lastQualifiedTime = finishTime
+              sponsor.nextCheckAt = now + (tonumber(sponsor.upkeepMinutes) or 120)
+              stateChanged = true
+            end
           end
         end
 
@@ -1268,7 +1353,21 @@ local function formatContractForUi(contract, now, level)
 end
 
 local function formatSponsorForUi(sponsor, now, level)
+  normalizeSponsorEntry(sponsor.disciplineId, sponsor)
+  local upkeepMinutes = math.max(1, tonumber(sponsor.upkeepMinutes) or 120)
   local nextCheckAt = tonumber(sponsor.nextCheckAt) or now
+  local lastQualifiedAt = tonumber(sponsor.lastQualifiedAt)
+  local requirementSatisfied = false
+  local requirementStatus = "pending"
+  local windowStartAt = math.max(0, nextCheckAt - upkeepMinutes)
+
+  if sponsor.warningIssued == true then
+    requirementStatus = "warning"
+  elseif lastQualifiedAt and lastQualifiedAt >= windowStartAt then
+    requirementSatisfied = true
+    requirementStatus = "satisfied"
+  end
+
   return {
     id = sponsor.id,
     disciplineId = sponsor.disciplineId,
@@ -1276,13 +1375,23 @@ local function formatSponsorForUi(sponsor, now, level)
     name = sponsor.name,
     bonusType = sponsor.bonusType,
     bonusPercent = sponsor.bonusPercent,
-    upkeepMinutes = sponsor.upkeepMinutes,
+    upkeepMinutes = upkeepMinutes,
     requirement = sponsor.requirement,
+    requiredRaceName = sponsor.requiredRaceName,
+    requiredRaceLabel = sponsor.requiredRaceLabel,
+    targetTime = sponsor.targetTime,
     expiresAt = sponsor.expiresAt,
     minutesRemaining = math.max(0, (tonumber(sponsor.expiresAt) or now) - now),
     level = level,
     warningIssued = sponsor.warningIssued == true,
     warningIssuedAt = sponsor.warningIssuedAt,
+    lastQualifiedAt = lastQualifiedAt,
+    lastQualifiedRaceName = sponsor.lastQualifiedRaceName,
+    lastQualifiedTime = sponsor.lastQualifiedTime,
+    requirementSatisfied = requirementSatisfied,
+    requirementStatus = requirementStatus,
+    requiredEvents = 1,
+    windowStartAt = windowStartAt,
     nextCheckAt = nextCheckAt,
     checkMinutesRemaining = math.max(0, nextCheckAt - now)
   }
@@ -1401,6 +1510,7 @@ local function signSponsor(sponsorId)
     local dState = state.disciplines[discipline.id]
     for idx, entry in ipairs(dState.sponsors.available) do
       if entry.id == sponsorId then
+        normalizeSponsorEntry(discipline.id, entry)
         local level = getSkillLevel(discipline.id)
         local slotCap = countSlotCap(level, (freConfig.getSponsorConfig() or {}).slotUnlockLevels)
         if #dState.sponsors.active >= slotCap then

@@ -1,7 +1,7 @@
 {
     "name":  "Off-Road Skill",
     "description":  "Progress the 1-50 Off-Road FRE mastery track.",
-    "order":  1106,
+    "order":  600,
     "isSkill":  true,
     "attributeKey":  "fre-offroad",
     "icon":  "beamsNodesOutline",
