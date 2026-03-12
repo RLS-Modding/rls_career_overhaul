@@ -1652,6 +1652,11 @@ local function acceptContract(contractId)
     for idx, entry in ipairs(dState.contracts.available) do
       if entry.id == contractId then
         normalizeContractEntry(entry)
+        if (tonumber(entry.expiresAt) or 0) <= now then
+          table.remove(dState.contracts.available, idx)
+          saveState()
+          return false, "Offer expired."
+        end
         local requiredModel = entry.requiredModelFamily or entry.requiredModel
         if requiredModel and requiredModel ~= "" and (not isModelAllowedForDiscipline(discipline.id, requiredModel) or not isValidVehicleModelKey(requiredModel)) then
           table.remove(dState.contracts.available, idx)
@@ -1701,6 +1706,11 @@ local function signSponsor(sponsorId)
     for idx, entry in ipairs(dState.sponsors.available) do
       if entry.id == sponsorId then
         normalizeSponsorEntry(discipline.id, entry)
+        if (tonumber(entry.expiresAt) or 0) <= now then
+          table.remove(dState.sponsors.available, idx)
+          saveState()
+          return false, "Offer expired."
+        end
         local level = getSkillLevel(discipline.id)
         local slotCap = countSlotCap(level, (freConfig.getSponsorConfig(discipline.id) or {}).slotUnlockLevels)
         if #dState.sponsors.active >= slotCap then

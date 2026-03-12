@@ -1,5 +1,5 @@
 {
-    "name":  "Oval Skill",
+    "name":  "Oval",
     "description":  "Progress the 1-50 Oval FRE mastery track.",
     "order":  1105,
     "isSkill":  true,

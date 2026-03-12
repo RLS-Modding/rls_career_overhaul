@@ -1,5 +1,5 @@
 {
-    "name":  "Crawling Skill",
+    "name":  "Crawling",
     "description":  "Progress the 1-50 Crawling FRE mastery track.",
     "order":  700,
     "isSkill":  true,

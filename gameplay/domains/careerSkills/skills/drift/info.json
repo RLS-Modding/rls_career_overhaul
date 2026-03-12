@@ -1,5 +1,5 @@
 {
-    "name":  "Drift Skill",
+    "name":  "Drift",
     "description":  "Progress the 1-50 Drift FRE mastery track.",
     "order":  500,
     "isSkill":  true,

@@ -1,5 +1,5 @@
 {
-    "name":  "Drag Skill",
+    "name":  "Drag",
     "description":  "Progress the 1-50 Drag FRE mastery track.",
     "order":  300,
     "isSkill":  true,

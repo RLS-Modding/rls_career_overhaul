@@ -14,6 +14,26 @@ local function deepCopy(value)
   return out
 end
 
+local function isArrayLike(value)
+  if type(value) ~= "table" then
+    return false
+  end
+
+  local count = 0
+  local maxIndex = 0
+  for key in pairs(value) do
+    if type(key) ~= "number" or key < 1 or key ~= math.floor(key) then
+      return false
+    end
+    count = count + 1
+    if key > maxIndex then
+      maxIndex = key
+    end
+  end
+
+  return count > 0 and maxIndex == count
+end
+
 local function mergeDeep(baseValue, overrideValue)
   if type(baseValue) ~= "table" then
     if overrideValue == nil then
@@ -25,6 +45,12 @@ local function mergeDeep(baseValue, overrideValue)
   local result = deepCopy(baseValue)
   if type(overrideValue) ~= "table" then
     return result
+  end
+
+  local baseIsArray = isArrayLike(baseValue)
+  local overrideIsArray = isArrayLike(overrideValue)
+  if baseIsArray or overrideIsArray or (baseIsArray and next(overrideValue) == nil) then
+    return deepCopy(overrideValue)
   end
 
   for key, value in pairs(overrideValue) do

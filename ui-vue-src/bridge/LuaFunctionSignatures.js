@@ -1587,6 +1587,7 @@ export default {
     signSponsor: sponsorId => {},
     dropSponsor: sponsorId => {},
     acknowledgeSponsorWarning: sponsorId => {},
+  },
 
   ui_phone_logistics: {
     requestFacilityList: () => {},
@@ -1660,5 +1661,4 @@ export default {
     applyKit: (businessId, vehicleId, kitId) => Object,
     getKitCostBreakdown: (businessId, vehicleId, kitId) => Object,
   },
-}
 }

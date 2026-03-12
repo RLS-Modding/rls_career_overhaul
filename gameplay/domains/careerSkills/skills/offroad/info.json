@@ -1,5 +1,5 @@
 {
-    "name":  "Off-Road Skill",
+    "name":  "Off-Road",
     "description":  "Progress the 1-50 Off-Road FRE mastery track.",
     "order":  600,
     "isSkill":  true,

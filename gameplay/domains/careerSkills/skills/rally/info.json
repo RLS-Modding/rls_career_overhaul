@@ -1,5 +1,5 @@
 {
-    "name":  "Rally Skill",
+    "name":  "Rally",
     "description":  "Progress the 1-50 Rally FRE mastery track.",
     "order":  800,
     "isSkill":  true,

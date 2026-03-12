@@ -1,5 +1,5 @@
 {
-    "name":  "Mudding Skill",
+    "name":  "Mudding",
     "description":  "Progress the 1-50 Mudding FRE mastery track.",
     "order":  400,
     "isSkill":  true,
