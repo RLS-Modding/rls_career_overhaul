@@ -730,7 +730,7 @@ local function calculateBaseFare(passengerCount, totalDistance, valueMultiplier,
     baseFare = baseFare * getGlobalTaxiRewardMultiplier()
 
     if career_career and career_career.isActive() and career_modules_hardcore.isHardcoreMode() then
-        baseFare = baseFare * 0.66
+        baseFare = baseFare * 0.5
     end
 
     -- Apply economy adjuster multiplier for specific passenger type
@@ -993,7 +993,7 @@ local function completeRide()
     end
 
     if career_modules_hardcore.isHardcoreMode() then
-        label = label .. "\nHardcore mode is enabled, all rewards lowered."
+        label = label .. "\nHardcore mode is enabled, all rewards are halved."
     end
 
     career_modules_payment.reward({

@@ -54,7 +54,7 @@ local function startRental()
         }
     }, {
         label = "You rented your vehicle!"
-    })
+    }, true)
     ui_message("You rented your vehicle for: " .. getHrMin(rentalTime) .. " for total of " .. reward .. "!", 10, "info", "info")
     print("You rented your vehicle for: " .. getHrMin(rentalTime) .. " for total of " .. reward .. "!")
 end

@@ -29,6 +29,17 @@ local config = {
     maxStopSpeed = 0.5
 }
 
+local function isHardcoreModeActive()
+    return career_modules_hardcore and career_modules_hardcore.isHardcoreMode and career_modules_hardcore.isHardcoreMode()
+end
+
+local function applyHardcorePayout(value)
+    if not isHardcoreModeActive() then
+        return value
+    end
+    return math.floor(value / 2 + 0.5)
+end
+
 -- Recursively searches through a parts tree to find a child named "paint_design".
 -- @param node The current node in the parts tree to search.
 -- @return The paint_design node if found, nil otherwise.
@@ -449,6 +460,16 @@ local function handleDropoff(dtSim, vehiclePos, speed)
         finalPayout = finalPayout - loanerCutAmount
     end
 
+    local displayBasePayout = basePayout
+
+    if isHardcoreModeActive() then
+        displayBasePayout = applyHardcorePayout(displayBasePayout)
+        timeBonus = applyHardcorePayout(timeBonus)
+        penalty = applyHardcorePayout(penalty)
+        loanerCutAmount = applyHardcorePayout(loanerCutAmount)
+        finalPayout = applyHardcorePayout(finalPayout)
+    end
+
     if career_career and career_career.isActive() and career_modules_payment and career_modules_payment.reward then
         career_modules_payment.reward({
             money = {
@@ -470,7 +491,7 @@ local function handleDropoff(dtSim, vehiclePos, speed)
 
     local msg = string.format(
         "Patient delivered!\nDistance: %.2f km\nBase: $%d\nTime Bonus: $%d\nPenalty: -$%d",
-        distanceKM, basePayout, timeBonus, penalty)
+        distanceKM, displayBasePayout, timeBonus, penalty)
     
     if loanerCutAmount > 0 then
         msg = msg .. string.format("\nLoaner cut: -$%d", loanerCutAmount)
@@ -482,7 +503,7 @@ local function handleDropoff(dtSim, vehiclePos, speed)
 
     print(string.format(
         "[ambulance] Patient delivered. Distance: %.2f km Base: $%d Time Bonus: $%d Penalty: $%d LoanerCut: $%d Earned: $%d Reputation +%d",
-        distanceKM, basePayout, timeBonus, penalty, loanerCutAmount, finalPayout, repGain))
+        distanceKM, displayBasePayout, timeBonus, penalty, loanerCutAmount, finalPayout, repGain))
     currentFare.dropoffTimer = nil
     state = "completed"
     core_groundMarkers.resetAll()

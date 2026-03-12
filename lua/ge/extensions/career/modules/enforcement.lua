@@ -16,6 +16,35 @@ local CONSTANTS = {
   POLICE_SKILL_ATTRIBUTE_KEY = "careerSkills-police",
 }
 
+local function isHardcoreModeActive()
+  return career_modules_hardcore and career_modules_hardcore.isHardcoreMode and career_modules_hardcore.isHardcoreMode()
+end
+
+local function applyHardcorePayout(value)
+  if not isHardcoreModeActive() then
+    return value
+  end
+  return math.floor(value / 2 + 0.5)
+end
+
+local function applyHardcoreRewardData(rewardData)
+  if not isHardcoreModeActive() then
+    return rewardData
+  end
+
+  local adjusted = {}
+  for key, info in pairs(rewardData or {}) do
+    if type(info) == "table" and type(info.amount) == "number" and info.amount > 0 then
+      adjusted[key] = deepcopy(info)
+      adjusted[key].amount = applyHardcorePayout(info.amount)
+    else
+      adjusted[key] = info
+    end
+  end
+
+  return adjusted
+end
+
 local function isPoliceDisabled()
   local disabled = false
   local reason = ""
@@ -80,6 +109,8 @@ local function handleCopEvadeReward(data)
     [CONSTANTS.POLICE_SKILL_ATTRIBUTE_KEY] = { amount = math.floor(pityAmount / CONSTANTS.REWARD_DIVISOR) },
     specialized = { amount = math.floor(pityAmount / CONSTANTS.REWARD_DIVISOR) }
   }
+  rewardData = applyHardcoreRewardData(rewardData)
+  pityAmount = rewardData.money.amount
 
   createRewardPayment(rewardData,
     "The suspect got away, Here is " .. pityAmount .. " for repairs",
@@ -107,6 +138,8 @@ local function handleCriminalEvadeReward(vehId, data, inventoryId)
     criminal = { amount = math.floor(rewardAmount / CONSTANTS.REWARD_DIVISOR) },
     adventurer = { amount = math.floor(rewardAmount / CONSTANTS.REWARD_DIVISOR) }
   }
+  rewardData = applyHardcoreRewardData(rewardData)
+  rewardAmount = rewardData.money.amount
 
   createRewardPayment(rewardData,
     "You sold your dashcam footage for $" .. rewardAmount,
@@ -141,6 +174,8 @@ local function handleArrestReward(data, playerData)
     specialized = { amount = math.floor(bonus / CONSTANTS.REWARD_DIVISOR) },
     policeLoanerReputation = { amount = CONSTANTS.REPUTATION_BONUS_AMOUNT }
   }
+  rewardData = applyHardcoreRewardData(rewardData)
+  bonus = rewardData.money.amount
 
   createRewardPayment(rewardData, "Arrest Bonus", {"gameplay", "reward", "police"})
 
