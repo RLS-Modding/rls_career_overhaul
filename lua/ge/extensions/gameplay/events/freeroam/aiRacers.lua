@@ -142,6 +142,10 @@ local function getRacePathKey(race)
         return race.checkpointRoad
     end
     if type(race.checkpointRoad) == "table" then
+        -- Single-element array (e.g. ["trackloop"]) must match aiRacingConfig.byRace keys like "trackloop"
+        if #race.checkpointRoad == 1 and type(race.checkpointRoad[1]) == "string" then
+            return race.checkpointRoad[1]
+        end
         return serialize(race.checkpointRoad)
     end
     return nil
@@ -161,7 +165,7 @@ local function getMergedConfigForRace(race)
     local raceKeys = {
         "spawnSameVehicleAsPlayer", "aiCount", "aiVehicles", "aggressionMin", "aggressionMax",
         "racerSkill", "turnForceCoef", "awarenessForceCoef", "routeSpeed", "useRouteSpeedLimit", "routeSpeedMode",
-        "enabled", "maxSpawnCount", "avoidCars", "driveInLane", "useNavgraphPathfinding", "useRacingParameters",
+        "enabled", "maxSpawnCount", "driveInLane", "useNavgraphPathfinding", "useRacingParameters",
         "rubberBand", "scriptPathWidth", "scriptBootstrapDistance", "navTargetReachDistance",
         "launchRecoveryGraceSeconds", "startEngineOnSpawn", "recoveryEnabled", "recoverySpeedThresholdMps",
         "recoveryStuckSeconds", "recoveryCooldownSeconds", "despawnWreckedEnabled", "despawnWreckedDuringRace",
@@ -171,6 +175,7 @@ local function getMergedConfigForRace(race)
         "raceAccelScale", "raceThrottleRateMult", "raceTurnCoefScale", "raceAwarenessCoefScale",
         "raceThrottleFloor", "raceObstacleSpeedCap", "raceObstacleSpeedCapAgg",
         "raceHighSpeedThreshold", "raceHighSpeedThrottleFloor",
+        "raceSlipThreshold", "raceSlipGain", "raceSlipMaxReduction", "raceThrottleRecoveryMult",
         "pathRoad"
     }
     for _, k in ipairs(raceKeys) do
@@ -652,7 +657,7 @@ end
 -- Per-race: race.racerSkill (0-1), race.turnForceCoef (0.01-10), race.awarenessForceCoef (0.01-0.5) override level cfg when set.
 -- Optional overrideAI race tuning (only when race.race* is set): raceAccelScale, raceThrottleRateMult, raceTurnCoefScale,
 -- raceAwarenessCoefScale, raceThrottleFloor, raceObstacleSpeedCap, raceObstacleSpeedCapAgg, raceHighSpeedThreshold (m/s),
--- raceHighSpeedThrottleFloor (lets TCS cut in more above threshold so AI can let off when breaking traction).
+-- raceHighSpeedThrottleFloor. Feather (slip): raceSlipThreshold (m/s), raceSlipGain, raceSlipMaxReduction, raceThrottleRecoveryMult.
 local function getRacingParameters(cfg, race)
     local skill = clamp(tonumber(race and race.racerSkill) or tonumber(cfg and cfg.racerSkill) or DEFAULT_CONFIG.racerSkill or 0.8, 0, 1)
     local baseEdgeDist = 1.5 - skill * 1.5
@@ -681,6 +686,10 @@ local function getRacingParameters(cfg, race)
     if fromCfgOrRace("raceObstacleSpeedCapAgg") then params.raceObstacleSpeedCapAgg = fromCfgOrRace("raceObstacleSpeedCapAgg") end
     if fromCfgOrRace("raceHighSpeedThreshold") then params.raceHighSpeedThreshold = fromCfgOrRace("raceHighSpeedThreshold") end
     if fromCfgOrRace("raceHighSpeedThrottleFloor") then params.raceHighSpeedThrottleFloor = fromCfgOrRace("raceHighSpeedThrottleFloor") end
+    if fromCfgOrRace("raceSlipThreshold") then params.raceSlipThreshold = fromCfgOrRace("raceSlipThreshold") end
+    if fromCfgOrRace("raceSlipGain") then params.raceSlipGain = fromCfgOrRace("raceSlipGain") end
+    if fromCfgOrRace("raceSlipMaxReduction") then params.raceSlipMaxReduction = fromCfgOrRace("raceSlipMaxReduction") end
+    if fromCfgOrRace("raceThrottleRecoveryMult") then params.raceThrottleRecoveryMult = fromCfgOrRace("raceThrottleRecoveryMult") end
     return params
 end
 

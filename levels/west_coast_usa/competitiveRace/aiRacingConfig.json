@@ -10,7 +10,6 @@
       "routeSpeedMode": "limit", // limit or set mode
       "aggressionMin": 0.9, // min aggression 0-1
       "aggressionMax": 1.0, // max aggression 0-1
-      "avoidCars": "on", // avoid other cars
       "driveInLane": "off", // drive in lane
       "useRacingParameters": true, // use race tuning
       "racerSkill": 1.0, // line and turn skill 0-1
@@ -20,16 +19,16 @@
       "filterPoolByPowerMeetOrExceed": true, // filter AI by power
       "aiPowerExceedCapPct": 0.25, // max AI power over player
       "turnForceCoef": 1.6, // steering strength in corners
-      "awarenessForceCoef": 0.65, // lateral correction strength
-      "raceAccelScale": 2.0, // target speed scale
-      "raceThrottleRateMult": 3, // throttle response speed
+      "awarenessForceCoef": 0.95, // lateral correction strength
+      "raceAccelScale": 1.08, // target speed scale (higher = brake later into corners)
+      "raceThrottleRateMult": 3.3, // throttle response speed (harder acceleration out)
       "raceTurnCoefScale": 2.0, // turn-in strength scale
       "raceAwarenessCoefScale": 1.7, // awareness scale racing
-      "raceThrottleFloor": 0.5, // min throttle in corners
-      "raceObstacleSpeedCap": 35, // max speed near obstacles
+      "raceThrottleFloor": 0.78, // min throttle in corners (smarter through apex)
+      "raceObstacleSpeedCap": 55, // max speed near obstacles
       "raceObstacleSpeedCapAgg": 28, // obstacle cap by aggression
       "raceHighSpeedThreshold": 22, // speed for high-speed floor (m/s)
-      "raceHighSpeedThrottleFloor": 0.65 // min throttle at high speed
+      "raceHighSpeedThrottleFloor": 0.68 // min throttle at high speed
     },
     "trackalt": {
       "pathRoad": "shortTrack", // DecalRoad for AI path
@@ -39,9 +38,8 @@
       "routeSpeed": 70, // speed when limit on (m/s)
       "useRouteSpeedLimit": false, // use route speed cap
       "routeSpeedMode": "limit", // limit or set mode
-      "aggressionMin": 0.65, // min aggression 0-1
-      "aggressionMax": 0.85, // max aggression 0-1
-      "avoidCars": "on", // avoid other cars
+      "aggressionMin": 0.9, // min aggression 0-1
+      "aggressionMax": 1.0, // max aggression 0-1
       "driveInLane": "off", // drive in lane
       "useRacingParameters": true, // use race tuning
       "racerSkill": 1.0, // line and turn skill 0-1
@@ -51,16 +49,16 @@
       "filterPoolByPowerMeetOrExceed": true, // filter AI by power
       "aiPowerExceedCapPct": 0.25, // max AI power over player
       "turnForceCoef": 1.6, // steering strength in corners
-      "awarenessForceCoef": 0.65, // lateral correction strength
-      "raceAccelScale": 1.8, // target speed scale
-      "raceThrottleRateMult": 2, // throttle response speed
+      "awarenessForceCoef": 0.95, // lateral correction strength
+      "raceAccelScale": 1.08, // target speed scale (higher = brake later into corners)
+      "raceThrottleRateMult": 3.3, // throttle response speed (harder acceleration out)
       "raceTurnCoefScale": 2.0, // turn-in strength scale
       "raceAwarenessCoefScale": 1.7, // awareness scale racing
-      "raceThrottleFloor": 0.5, // min throttle in corners
-      "raceObstacleSpeedCap": 35, // max speed near obstacles
+      "raceThrottleFloor": 0.78, // min throttle in corners (smarter through apex)
+      "raceObstacleSpeedCap": 55, // max speed near obstacles
       "raceObstacleSpeedCapAgg": 28, // obstacle cap by aggression
       "raceHighSpeedThreshold": 22, // speed for high-speed floor (m/s)
-      "raceHighSpeedThrottleFloor": 0.65 // min throttle at high speed
+      "raceHighSpeedThrottleFloor": 0.68 // min throttle at high speed
     }
   }
 }

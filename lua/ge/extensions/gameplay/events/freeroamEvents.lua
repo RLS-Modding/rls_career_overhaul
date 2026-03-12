@@ -68,6 +68,9 @@ local mFreeroamStagedAtStart = false
 local mFreeroamPendingStart = nil
 local mFreeroamStagingSubjectID = nil
 
+-- AI lap counting and timers: per-vehicle state when a race with AI is active (cleared on exitRace).
+local mAiLapState = {}
+
 local function getFreeroamHubPrefsPath()
     if not career_saveSystem or not career_saveSystem.getCurrentSaveSlot then return nil end
     local saveSlot, savePath = career_saveSystem.getCurrentSaveSlot()
@@ -709,6 +712,88 @@ local function getRouteDisplayName(race, isAlt)
     return race.label
 end
 
+-- True if subjectID is one of the spawned AI race vehicles (for lap counting).
+local function isAiSpawnedVehicle(subjectID)
+    if not aiRacers or not aiRacers.getSpawnedVehicleIds then return false end
+    for _, id in ipairs(aiRacers.getSpawnedVehicleIds()) do
+        if id == subjectID then return true end
+    end
+    return false
+end
+
+-- Build AI lap state for display (hub or getAiLapState). Returns { inRaceTime, vehicles = { { index, place, lapCount, ... }, ... } }.
+-- [AI-PLACE-LUA-1] begin: compute place by position (player + AI sorted by laps, then finished/finishTime, then checkpoints, then currentLapTime)
+local function getAiLapStateForDisplay()
+    if not mActiveRace or not next(mAiLapState) then return nil end
+    local race = races[mActiveRace]
+    local totalLaps = (race and race.lapCount and race.lapCount > 0) and race.lapCount or 3
+    local combined = {}
+    -- Player entry for ordering
+    table.insert(combined, {
+        isPlayer = true,
+        index = 0,
+        lapCount = lapCount,
+        checkpointsHit = checkpointsHit or 0,
+        currentLapTime = in_race_time,
+        finished = false,
+        finishTime = nil,
+    })
+    local aiIds = aiRacers and aiRacers.getSpawnedVehicleIds() or {}
+    for i, vehId in ipairs(aiIds) do
+        local s = mAiLapState[vehId]
+        if s then
+            local currentLapTime = (not s.finished) and (in_race_time - s.lapStartTime) or nil
+            table.insert(combined, {
+                isPlayer = false,
+                index = i,
+                lapCount = s.lapCount,
+                checkpointsHit = s.checkpointsHit or 0,
+                currentLapTime = currentLapTime or 0,
+                finished = s.finished,
+                finishTime = s.finishTime,
+            })
+        end
+    end
+    -- Sort by position: more laps first; then finished first; then lower finishTime; then more checkpoints; then higher currentLapTime (further on lap)
+    table.sort(combined, function(a, b)
+        if a.lapCount ~= b.lapCount then return a.lapCount > b.lapCount end
+        if a.finished ~= b.finished then return a.finished end
+        if a.finished and b.finished then
+            local at, bt = a.finishTime or 0, b.finishTime or 0
+            if at ~= bt then return at < bt end
+        end
+        if a.checkpointsHit ~= b.checkpointsHit then return a.checkpointsHit > b.checkpointsHit end
+        return (a.currentLapTime or 0) > (b.currentLapTime or 0)
+    end)
+    for place = 1, #combined do combined[place].place = place end
+    local placeByIndex = {}
+    for _, e in ipairs(combined) do
+        if not e.isPlayer then placeByIndex[e.index] = e.place end
+    end
+    local vehicles = {}
+    for i, vehId in ipairs(aiIds) do
+        local s = mAiLapState[vehId]
+        if s then
+            local lastLap = (#s.lapTimes > 0) and s.lapTimes[#s.lapTimes] or nil
+            local currentLapTime = (not s.finished) and (in_race_time - s.lapStartTime) or nil
+            table.insert(vehicles, {
+                index = i,
+                place = placeByIndex[i] or i,
+                lapCount = s.lapCount,
+                totalLaps = s.totalLaps,
+                lapTimes = s.lapTimes,
+                lastLapTime = lastLap,
+                finished = s.finished,
+                finishTime = s.finishTime,
+                currentLapTime = currentLapTime,
+            })
+        end
+    end
+    if #vehicles == 0 then return nil end
+    return { inRaceTime = in_race_time, vehicles = vehicles }
+end
+-- [AI-PLACE-LUA-1] end
+
 -- Start the race (staging -> start line). Used by both trigger and onUpdate (countdown-finished). Keeps original logic; hub-only behavior is guarded by isFreeroamHubRaceMode/isFreeroamHubActive.
 local function beginFreeroamRace(raceNameArg, subjectID)
     if not races[raceNameArg] then return end
@@ -847,6 +932,41 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
                 xp = 0,
                 leaderboard = {}
             }
+            -- [AI-RESULTS-LUA-1] begin: add aiResults (player + AI sorted by place) for results screen
+            if next(mAiLapState) and aiRacers and aiRacers.getSpawnedVehicleIds then
+                local list = {}
+                table.insert(list, { isPlayer = true, lapsCompleted = isLapRace and lapCount or 1, lapsTotal = lapsTotalVal, totalTime = totalTime, bestLap = mBestLapThisRun })
+                for i, vehId in ipairs(aiRacers.getSpawnedVehicleIds()) do
+                    local s = mAiLapState[vehId]
+                    if s then
+                        local bestLap = nil
+                        if s.lapTimes and #s.lapTimes > 0 then
+                            for _, t in ipairs(s.lapTimes) do bestLap = (bestLap == nil or t < bestLap) and t or bestLap end
+                        end
+                        local aiTotal = s.finishTime
+                        if not aiTotal and s.lapTimes and #s.lapTimes > 0 then
+                            aiTotal = 0
+                            for _, t in ipairs(s.lapTimes) do aiTotal = aiTotal + t end
+                            aiTotal = aiTotal + (in_race_time - s.lapStartTime)
+                        end
+                        table.insert(list, { isPlayer = false, index = i, lapsCompleted = s.lapCount, lapsTotal = s.totalLaps, totalTime = aiTotal, bestLap = bestLap })
+                    end
+                end
+                table.sort(list, function(a, b)
+                    if a.lapsCompleted ~= b.lapsCompleted then return a.lapsCompleted > b.lapsCompleted end
+                    local at = a.totalTime or 999999
+                    local bt = b.totalTime or 999999
+                    return at < bt
+                end)
+                local aiResults = {}
+                for place, row in ipairs(list) do
+                    local r = { place = place, isPlayer = row.isPlayer, lapsCompleted = row.lapsCompleted, lapsTotal = row.lapsTotal, totalTime = row.totalTime, bestLap = row.bestLap }
+                    if not row.isPlayer then r.index = row.index end
+                    table.insert(aiResults, r)
+                end
+                finalResult.aiResults = aiResults
+            end
+            -- [AI-RESULTS-LUA-1] end
 
             -- Race-specific completion handling
             if raceName == "drag" and raceData and subjectID then
@@ -885,6 +1005,41 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
                     xp = 0,
                     leaderboard = {}
                 }
+                -- [AI-RESULTS-LUA-1] begin: add aiResults for partial/cancelled result
+                if next(mAiLapState) and aiRacers and aiRacers.getSpawnedVehicleIds then
+                    local list = {}
+                    table.insert(list, { isPlayer = true, lapsCompleted = isLap and lapCount or 1, lapsTotal = lapsTotalVal, totalTime = totalTimePartial, bestLap = mBestLapThisRun })
+                    for i, vehId in ipairs(aiRacers.getSpawnedVehicleIds()) do
+                        local s = mAiLapState[vehId]
+                        if s then
+                            local bestLap = nil
+                            if s.lapTimes and #s.lapTimes > 0 then
+                                for _, t in ipairs(s.lapTimes) do bestLap = (bestLap == nil or t < bestLap) and t or bestLap end
+                            end
+                            local aiTotal = s.finishTime
+                            if not aiTotal and s.lapTimes and #s.lapTimes > 0 then
+                                aiTotal = 0
+                                for _, t in ipairs(s.lapTimes) do aiTotal = aiTotal + t end
+                                aiTotal = aiTotal + (in_race_time - s.lapStartTime)
+                            end
+                            table.insert(list, { isPlayer = false, index = i, lapsCompleted = s.lapCount, lapsTotal = s.totalLaps, totalTime = aiTotal, bestLap = bestLap })
+                        end
+                    end
+                    table.sort(list, function(a, b)
+                        if a.lapsCompleted ~= b.lapsCompleted then return a.lapsCompleted > b.lapsCompleted end
+                        local at = a.totalTime or 999999
+                        local bt = b.totalTime or 999999
+                        return at < bt
+                    end)
+                    local aiResults = {}
+                    for place, row in ipairs(list) do
+                        local r = { place = place, isPlayer = row.isPlayer, lapsCompleted = row.lapsCompleted, lapsTotal = row.lapsTotal, totalTime = row.totalTime, bestLap = row.bestLap }
+                        if not row.isPlayer then r.index = row.index end
+                        table.insert(aiResults, r)
+                    end
+                    finalResult.aiResults = aiResults
+                end
+                -- [AI-RESULTS-LUA-1] end
             end
         end
 
@@ -918,6 +1073,7 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
         mTotalRaceTime = 0
         mBestLapThisRun = nil
         mSuppressOffRoadExitUntil = 0
+        mAiLapState = {}
         if aiRacers then
             if aiRacers.setDnfCallback then aiRacers.setDnfCallback(nil) end
             if aiRacers.clearSpawned then aiRacers.clearSpawned() end
@@ -948,13 +1104,12 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
 end
 
 local function onBeamNGTrigger(data)
-    if be:getPlayerVehicleID(0) ~= data.subjectID or isReplay then
+    if isReplay then return end
+    local isPlayer = (be:getPlayerVehicleID(0) == data.subjectID)
+    if not isPlayer and not isAiSpawnedVehicle(data.subjectID) then
         return
     end
     if gameplay_walk.isWalking() then return end
-    if not isVehicleEligibleForFreeroamHub(data.subjectID) then
-        return
-    end
 
     local triggerName = data.triggerName
     local event = data.event
@@ -1001,6 +1156,47 @@ local function onBeamNGTrigger(data)
     local checkpointIndex = index and tonumber(index) or nil
 
     local isAlt = altFlag == "alt" -- TEMP must change to acount for alt routes that intersect with the main route multiple times
+
+    -- AI lap counting and timers: handle start/checkpoint/finish for spawned AI vehicles
+    if not isPlayer and mActiveRace == raceName and mAiLapState[data.subjectID] then
+        local state = mAiLapState[data.subjectID]
+        if triggerType == "start" and event == "enter" then
+            if not state.finished and (state.totalCheckpoints == 0 or state.checkpointsHit >= state.totalCheckpoints) then
+                local lapTime = in_race_time - state.lapStartTime
+                table.insert(state.lapTimes, lapTime)
+                state.lapCount = state.lapCount + 1
+                if state.lapCount >= state.totalLaps then
+                    state.finished = true
+                    state.finishTime = in_race_time
+                else
+                    state.lapStartTime = in_race_time
+                    state.checkpointsHit = 0
+                    state.currentExpectedCheckpoint = 1
+                end
+            end
+            return
+        end
+        if triggerType == "checkpoint" and event == "enter" and checkpointIndex then
+            if not state.finished and checkpointIndex == state.currentExpectedCheckpoint then
+                state.checkpointsHit = state.checkpointsHit + 1
+                state.currentExpectedCheckpoint = state.currentExpectedCheckpoint + 1
+            end
+            return
+        end
+        if triggerType == "finish" and event == "enter" then
+            if not state.finished then
+                state.finished = true
+                state.finishTime = in_race_time
+            end
+            return
+        end
+    end
+
+    -- Player-only from here: hub eligibility and staging/start/checkpoint/finish
+    if not isPlayer then return end
+    if not isVehicleEligibleForFreeroamHub(data.subjectID) then
+        return
+    end
 
     if triggerType == "staging" then
         if event == "enter" and mActiveRace == nil then
@@ -1451,6 +1647,22 @@ local function onUpdate(dtReal, dtSim, dtRaw)
                     end
                     local aiLaps = (raceForAi.lapCount and raceForAi.lapCount > 0) and raceForAi.lapCount or 3
                     aiRacers.releaseAndDrive(raceForAi, aiLaps)
+                    -- Init AI lap state for lap counting and timers
+                    mAiLapState = {}
+                    local aiIds = aiRacers.getSpawnedVehicleIds()
+                    for _, vehId in ipairs(aiIds or {}) do
+                        mAiLapState[vehId] = {
+                            lapCount = 0,
+                            lapStartTime = in_race_time,
+                            totalLaps = aiLaps,
+                            totalCheckpoints = totalCheckpoints,
+                            checkpointsHit = 0,
+                            currentExpectedCheckpoint = 1,
+                            lapTimes = {},
+                            finished = false,
+                            finishTime = nil,
+                        }
+                    end
                 end
             end
         end
@@ -1503,7 +1715,8 @@ local function onUpdate(dtReal, dtSim, dtRaw)
                 invalidLap = invalidLap,
                 routeName = mCurrentRouteName,
                 splits = mSplitTimes,
-                sectorDeltas = sectorDeltas
+                sectorDeltas = sectorDeltas,
+                aiLapState = getAiLapStateForDisplay()
             }
             guihooks.trigger("FreeroamHubRaceState", state)
         end
@@ -1582,6 +1795,8 @@ M.payoutRace = payoutRace
 M.payoutDragRace = payoutDragRace
 M.onWorldReadyState = onWorldReadyState
 M.getRace = function(raceName) return races[raceName] end
+-- AI lap counting: returns { inRaceTime, vehicles = { { index, lapCount, totalLaps, lapTimes, lastLapTime, finished, finishTime, currentLapTime }, ... } } or nil. Use from console to gauge AI times.
+M.getAiLapState = getAiLapStateForDisplay
 
 M.onExtensionLoaded = onExtensionLoaded
 M.onExtensionUnloaded = onExtensionUnloaded

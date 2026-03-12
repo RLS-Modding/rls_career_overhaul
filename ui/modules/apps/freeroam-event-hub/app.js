@@ -44,6 +44,17 @@ angular.module('beamng.apps')
               '<div ng-if="raceResult.newBest" style="color:#3c3;font-weight:700;font-size:24px;">New best time!</div>' +
               '<div ng-if="raceResult.invalidLap" style="color:#f96;font-style:italic;font-size:24px;">Lap invalidated</div>' +
               '<div ng-if="raceResult.reward != null && raceResult.reward > 0" style="display:flex;justify-content:space-between;font-size:24px;"><span>Reward</span><span>${{ raceResult.reward.toFixed(2) }}</span></div>' +
+              '<!-- [AI-RESULTS-UI-1] begin: results screen AI standings -->' +
+              '<div ng-if="raceResult.aiResults && raceResult.aiResults.length" style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.2);font-size:20px;">' +
+                '<div style="font-size:22px;color:#9cf;margin-bottom:6px;">Standings</div>' +
+                '<div ng-repeat="r in raceResult.aiResults track by r.place" style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.08);">' +
+                  '<span>P{{ r.place }} {{ r.isPlayer ? "You" : ("AI " + r.index) }}</span>' +
+                  '<span>{{ r.lapsCompleted }}/{{ r.lapsTotal }}</span>' +
+                  '<span ng-if="r.totalTime != null">{{ formatTime(r.totalTime) }}</span>' +
+                  '<span ng-if="r.bestLap != null" style="color:#aaa;">Best: {{ formatTime(r.bestLap) }}</span>' +
+                '</div>' +
+              '</div>' +
+              '<!-- [AI-RESULTS-UI-1] end -->' +
               '<div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">' +
               '<button type="button" class="hub-menu-btn" ng-click="goToRaceHistory()" style="padding:12px 14px;background:rgba(0,150,255,0.35);border:1px solid rgba(255,255,255,0.4);border-radius:6px;color:#fff;font-size:22px;font-weight:600;cursor:pointer;">Next</button>' +
               '<button type="button" class="hub-menu-btn" ng-click="closeAppDeferred()" style="padding:12px 14px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);border-radius:6px;color:#fff;font-size:22px;font-weight:600;cursor:pointer;">Close</button>' +
@@ -78,6 +89,17 @@ angular.module('beamng.apps')
               '<div ng-if="lastCheckpoint()" style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.15);font-size:20px;">' +
                 '<span>Checkpoint {{ lastCheckpoint().num }}/{{ lastCheckpoint().total }} – Time: {{ formatTime(lastCheckpoint().time) }}</span>' +
                 '<span ng-if="lastCheckpoint().delta !== null" ng-style="lastCheckpoint().delta < 0 ? { color: \'#3c3\', fontWeight: 600 } : { color: \'#f44\', fontWeight: 600 }" style="margin-left:8px;">Split: {{ formatDelta(lastCheckpoint().delta) }}</span>' +
+              '</div>' +
+              '<!-- [AI-PLACE-UI-1] order by place (dynamic position) -->' +
+              '<div ng-if="raceState.aiLapState && raceState.aiLapState.vehicles && raceState.aiLapState.vehicles.length" style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.15);font-size:18px;color:#aaa;">' +
+                '<div style="font-size:20px;color:#9cf;margin-bottom:4px;">AI</div>' +
+                '<div ng-repeat="v in raceState.aiLapState.vehicles | orderBy:\'place\' track by v.index" style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:2px 0;">' +
+                  '<span>P{{ v.place }} AI {{ v.index }}</span>' +
+                  '<span>Lap {{ v.lapCount }}/{{ v.totalLaps }}</span>' +
+                  '<span ng-if="v.finished">Done {{ formatTime(v.finishTime) }}</span>' +
+                  '<span ng-if="!v.finished && v.currentLapTime != null">Lap: {{ formatTime(v.currentLapTime) }}</span>' +
+                  '<span ng-if="!v.finished && v.lastLapTime != null" style="margin-left:6px;">Last: {{ formatTime(v.lastLapTime) }}</span>' +
+                '</div>' +
               '</div>' +
               '<button type="button" class="hub-menu-btn" ng-click="endEvent()" style="margin-top:10px;padding:10px 14px;background:rgba(200,80,80,0.35);border:1px solid rgba(255,255,255,0.3);border-radius:6px;color:#faa;font-size:18px;font-weight:600;cursor:pointer;">End event</button>' +
             '</div>' +
