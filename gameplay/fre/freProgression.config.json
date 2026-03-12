@@ -1,0 +1,226 @@
+{
+  "version": 1,
+  "disciplines": [
+    {
+      "id": "crawling",
+      "label": "Crawling",
+      "skillKey": "fre-crawling",
+      "placeholderOnly": false
+    },
+    {
+      "id": "roadracing",
+      "label": "Road Racing",
+      "skillKey": "fre-roadracing",
+      "placeholderOnly": false
+    },
+    {
+      "id": "drift",
+      "label": "Drift",
+      "skillKey": "fre-drift",
+      "placeholderOnly": false
+    },
+    {
+      "id": "drag",
+      "label": "Drag",
+      "skillKey": "fre-drag",
+      "placeholderOnly": false
+    },
+    {
+      "id": "trail",
+      "label": "Trail",
+      "skillKey": "fre-trail",
+      "placeholderOnly": true
+    },
+    {
+      "id": "oval",
+      "label": "Oval",
+      "skillKey": "fre-oval",
+      "placeholderOnly": false
+    },
+    {
+      "id": "offroad",
+      "label": "Off-Road",
+      "skillKey": "fre-offroad",
+      "placeholderOnly": false
+    },
+    {
+      "id": "rally",
+      "label": "Rally",
+      "skillKey": "fre-rally",
+      "placeholderOnly": false
+    },
+    {
+      "id": "landspeed",
+      "label": "Land Speed",
+      "skillKey": "fre-landspeed",
+      "placeholderOnly": true
+    },
+    {
+      "id": "mudding",
+      "label": "Mudding",
+      "skillKey": "fre-mudding",
+      "placeholderOnly": false
+    }
+  ],
+  "typeAliasMap": {
+    "crawl": "crawling",
+    "crawling": "crawling",
+    "apexracing": "roadracing",
+    "roadracing": "roadracing",
+    "road_racing": "roadracing",
+    "drift": "drift",
+    "drag": "drag",
+    "trail": "trail",
+    "oval": "oval",
+    "offroad": "offroad",
+    "off-road": "offroad",
+    "rally": "rally",
+    "landspeed": "landspeed",
+    "land_speed": "landspeed",
+    "mud": "mudding",
+    "extrememud": "mudding",
+    "mudding": "mudding"
+  },
+  "rewardScaling": {
+    "levelPercentPerLevelUp": 0.1,
+    "sponsorBonusCap": 2.0
+  },
+  "contracts": {
+    "offerBaseCount": 3,
+    "offerBumpCount": 2,
+    "offerIncreaseLevels": [
+      12,
+      27,
+      42
+    ],
+    "tierUnlockLevels": {
+      "easy": 5,
+      "medium": 20,
+      "hard": 35
+    },
+    "slotUnlockLevels": {
+      "baseLevel": 5,
+      "baseSlots": 2,
+      "extraLevels": [
+        14,
+        29,
+        44
+      ]
+    },
+    "expiryMinutesByTier": {
+      "easy": 120,
+      "medium": 60,
+      "hard": 30
+    },
+    "targetMultiplierByTier": {
+      "easy": {
+        "min": 1.06,
+        "max": 1.25
+      },
+      "medium": {
+        "min": 1.02,
+        "max": 1.12
+      },
+      "hard": {
+        "min": 0.96,
+        "max": 1.05
+      }
+    },
+    "rewardRangeByTier": {
+      "easy": {
+        "moneyMin": 15000,
+        "moneyMax": 30000,
+        "xpMin": 500,
+        "xpMax": 1000
+      },
+      "medium": {
+        "moneyMin": 35000,
+        "moneyMax": 70000,
+        "xpMin": 1200,
+        "xpMax": 2500
+      },
+      "hard": {
+        "moneyMin": 90000,
+        "moneyMax": 220000,
+        "xpMin": 3000,
+        "xpMax": 8000
+      }
+    }
+  },
+  "sponsors": {
+    "offerBaseCount": 3,
+    "offerBumpCount": 2,
+    "offerIncreaseLevels": [
+      16,
+      31,
+      46
+    ],
+    "tierUnlockLevels": {
+      "easy": 10,
+      "medium": 25,
+      "hard": 40
+    },
+    "slotUnlockLevels": {
+      "baseLevel": 10,
+      "baseSlots": 2,
+      "extraLevels": [
+        18,
+        33,
+        48
+      ]
+    },
+    "upkeepMinutesByTier": {
+      "easy": 360,
+      "medium": 240,
+      "hard": 120
+    },
+    "graceMinutes": 20,
+    "bonusRangeByTier": {
+      "easy": {
+        "min": 0.01,
+        "max": 0.1
+      },
+      "medium": {
+        "min": 0.15,
+        "max": 0.25
+      },
+      "hard": {
+        "min": 0.5,
+        "max": 1.0
+      }
+    },
+    "bonusTypeWeights": {
+      "money": 0.47,
+      "disciplineXP": 0.47,
+      "both": 0.06
+    }
+  },
+  "contractVehicleModels": [
+    "moonhawk",
+    "barstow",
+    "pessima",
+    "etk800",
+    "vivace",
+    "sunburst",
+    "dseries",
+    "roamer",
+    "hopper",
+    "crawler",
+    "racetruck",
+    "sbr",
+    "scintilla"
+  ],
+  "contractVehicleBlacklist": [],
+  "contractVehicleBlacklistByDiscipline": {
+    "crawling": [],
+    "roadracing": [],
+    "drift": [],
+    "drag": [],
+    "trail": [],
+    "oval": [],
+    "offroad": [],
+    "rally": [],
+    "landspeed": [],
+    "mudding": []
+  }
+}

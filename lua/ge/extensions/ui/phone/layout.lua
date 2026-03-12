@@ -78,6 +78,7 @@ local function getDefaultLayout()
         "quarry",
         "tuning-shop",
         "freeroam-events",
+        "fre-contracts",
         "facility-work",
         "market-watch",
         "real-estate",

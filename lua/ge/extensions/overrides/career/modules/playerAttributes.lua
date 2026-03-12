@@ -372,6 +372,44 @@ local policeSkillMigration = {
   legacyKey = "police"
 }
 
+local freSkillMigration = {
+  version = 1,
+  markerFile = "career/freSkillMigration.json",
+  disciplineKeys = {
+    "fre-crawling",
+    "fre-roadracing",
+    "fre-drift",
+    "fre-drag",
+    "fre-trail",
+    "fre-oval",
+    "fre-offroad",
+    "fre-rally",
+    "fre-landspeed",
+    "fre-mudding"
+  },
+  keyMap = {
+    crawl = "fre-crawling",
+    crawling = "fre-crawling",
+    apexRacing = "fre-roadracing",
+    roadracing = "fre-roadracing",
+    road_racing = "fre-roadracing",
+    drift = "fre-drift",
+    drag = "fre-drag",
+    trail = "fre-trail",
+    oval = "fre-oval",
+    offroad = "fre-offroad",
+    ["off-road"] = "fre-offroad",
+    rally = "fre-rally",
+    landspeed = "fre-landspeed",
+    land_speed = "fre-landspeed",
+    mud = "fre-mudding",
+    extremeMud = "fre-mudding",
+    extrememud = "fre-mudding",
+    mudding = "fre-mudding"
+  },
+  legacyUnifiedKey = "fres"
+}
+
 local function ensureSerializableAttribute(jsonData, attributeKey)
   local attribute = jsonData[attributeKey]
   if type(attribute) ~= "table" then
@@ -416,6 +454,29 @@ local function mergeLegacyAttribute(jsonData, unifiedKey, legacyKey)
 
   jsonData[legacyKey] = nil
   return mergedValue, true
+end
+
+local function addSharedLegacyAttribute(jsonData, targetKey, legacyData, ratio)
+  local targetAttribute = ensureSerializableAttribute(jsonData, targetKey)
+  local sharedRatio = tonumber(ratio) or 0
+  if sharedRatio <= 0 then
+    return
+  end
+
+  if type(legacyData) == "table" then
+    targetAttribute.value = (tonumber(targetAttribute.value) or 0) + ((tonumber(legacyData.value) or 0) * sharedRatio)
+    for gainKey, gainValue in pairs(legacyData.gains or {}) do
+      targetAttribute.gains[gainKey] = (targetAttribute.gains[gainKey] or 0) + ((tonumber(gainValue) or 0) * sharedRatio)
+    end
+    for lossKey, lossValue in pairs(legacyData.losses or {}) do
+      targetAttribute.losses[lossKey] = (targetAttribute.losses[lossKey] or 0) + ((tonumber(lossValue) or 0) * sharedRatio)
+    end
+    return
+  end
+
+  if type(legacyData) == "number" then
+    targetAttribute.value = (tonumber(targetAttribute.value) or 0) + (legacyData * sharedRatio)
+  end
 end
 
 local function runLogisticsSkillMigration(savePath, jsonData)
@@ -480,6 +541,59 @@ local function runPoliceSkillMigration(savePath, jsonData)
   }
 end
 
+local function runFreSkillMigration(savePath, jsonData)
+  if not savePath or tableIsEmpty(jsonData or {}) then return end
+
+  local markerPath = savePath .. "/" .. freSkillMigration.markerFile
+  local markerData = jsonReadFile(markerPath) or {}
+  if (markerData.version or 0) >= freSkillMigration.version then
+    return
+  end
+
+  local changed = false
+  local migratedValue = 0
+
+  for legacyKey, disciplineKey in pairs(freSkillMigration.keyMap or {}) do
+    local mergedValue, didMerge = mergeLegacyAttribute(jsonData, disciplineKey, legacyKey)
+    if didMerge then
+      changed = true
+      migratedValue = migratedValue + (tonumber(mergedValue) or 0)
+    end
+  end
+
+  local legacyUnifiedKey = freSkillMigration.legacyUnifiedKey
+  local legacyUnifiedData = jsonData[legacyUnifiedKey]
+  if legacyUnifiedData ~= nil then
+    local sourceValue = 0
+    if type(legacyUnifiedData) == "table" then
+      sourceValue = tonumber(legacyUnifiedData.value) or 0
+    elseif type(legacyUnifiedData) == "number" then
+      sourceValue = legacyUnifiedData
+    end
+
+    local keyCount = #freSkillMigration.disciplineKeys
+    if keyCount > 0 then
+      local shareRatio = 1 / keyCount
+      for _, disciplineKey in ipairs(freSkillMigration.disciplineKeys) do
+        addSharedLegacyAttribute(jsonData, disciplineKey, legacyUnifiedData, shareRatio)
+      end
+      changed = true
+      migratedValue = migratedValue + sourceValue
+    end
+    jsonData[legacyUnifiedKey] = nil
+  end
+
+  return {
+    path = markerPath,
+    saveData = changed,
+    data = {
+      version = freSkillMigration.version,
+      mergedValue = migratedValue,
+      migratedAt = os.time()
+    }
+  }
+end
+
 local function onExtensionLoaded()
   if not career_career.isActive() then return false end
   if not attributes then
@@ -521,6 +635,12 @@ local function onExtensionLoaded()
   if policeMigrationMarker then
     pendingMigrationMarkers[#pendingMigrationMarkers + 1] = policeMigrationMarker
     migrationDataChanged = migrationDataChanged or policeMigrationMarker.saveData
+  end
+
+  local freMigrationMarker = runFreSkillMigration(savePath, jsonData)
+  if freMigrationMarker then
+    pendingMigrationMarkers[#pendingMigrationMarkers + 1] = freMigrationMarker
+    migrationDataChanged = migrationDataChanged or freMigrationMarker.saveData
   end
 
   if savePath and #pendingMigrationMarkers > 0 then

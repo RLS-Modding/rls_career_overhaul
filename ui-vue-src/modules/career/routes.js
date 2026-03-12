@@ -58,6 +58,7 @@ import PhoneGuide from "./views/PhoneGuide.vue"
 import PhoneSettings from "./views/PhoneSettings.vue"
 import PhoneMarketWatch from "./views/PhoneMarketWatch.vue"
 import PhoneFreeroamEvents from "./views/PhoneFreeroamEvents.vue"
+import PhoneFreContracts from "./views/PhoneFreContracts.vue"
 import PhoneCamera from "./views/PhoneCamera.vue"
 import PhoneGallery from "./views/PhoneGallery.vue"
 
@@ -553,6 +554,11 @@ export default [
         name: "phone-events",
         component: PhoneFreeroamEvents
 
+      },
+      {
+        path: "phone-fre-contracts",
+        name: "phone-fre-contracts",
+        component: PhoneFreContracts
       },
 
       {

@@ -1,0 +1,968 @@
+{
+    "name":  "Off-Road Skill",
+    "description":  "Progress the 1-50 Off-Road FRE mastery track.",
+    "order":  1106,
+    "isSkill":  true,
+    "attributeKey":  "fre-offroad",
+    "icon":  "beamsNodesOutline",
+    "levels":  [
+                   {
+                       "requiredValue":  0,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 1",
+                                           "description":  "Reach level 1 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +0%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +0%."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  246,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 2",
+                                           "description":  "Reach level 2 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +10%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +10%."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  550,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 3",
+                                           "description":  "Reach level 3 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +20%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +20%."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  924,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 4",
+                                           "description":  "Reach level 4 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +30%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +30%."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  1380,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 5",
+                                           "description":  "Reach level 5 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +40%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +40%."
+                                       },
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "roadblockL",
+                                           "heading":  "Contracts Milestone",
+                                           "description":  "Unlock Easy contracts and 2 active contract slots."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  1930,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 6",
+                                           "description":  "Reach level 6 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +50%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +50%."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  2586,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 7",
+                                           "description":  "Reach level 7 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +60%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +60%."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  3360,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 8",
+                                           "description":  "Reach level 8 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +70%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +70%."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  4264,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 9",
+                                           "description":  "Reach level 9 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +80%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +80%."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  5310,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 10",
+                                           "description":  "Reach level 10 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +90%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +90%."
+                                       },
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "badgeRoundStar",
+                                           "heading":  "Sponsors Milestone",
+                                           "description":  "Unlock Easy sponsors and 2 active sponsor slots."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  6510,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 11",
+                                           "description":  "Reach level 11 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +100%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +100%."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  7876,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 12",
+                                           "description":  "Reach level 12 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +110%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +110%."
+                                       },
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "roadblockL",
+                                           "heading":  "Contracts Milestone",
+                                           "description":  "Contract offers increase by +2."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  9420,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 13",
+                                           "description":  "Reach level 13 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +120%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +120%."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  11154,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 14",
+                                           "description":  "Reach level 14 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +130%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +130%."
+                                       },
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "roadblockL",
+                                           "heading":  "Contracts Milestone",
+                                           "description":  "Unlock +1 contract slot."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  13090,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 15",
+                                           "description":  "Reach level 15 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +140%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +140%."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  15240,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 16",
+                                           "description":  "Reach level 16 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +150%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +150%."
+                                       },
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "badgeRoundStar",
+                                           "heading":  "Sponsors Milestone",
+                                           "description":  "Sponsor offers increase by +2."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  17616,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 17",
+                                           "description":  "Reach level 17 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +160%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +160%."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  20230,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 18",
+                                           "description":  "Reach level 18 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +170%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +170%."
+                                       },
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "badgeRoundStar",
+                                           "heading":  "Sponsors Milestone",
+                                           "description":  "Unlock +1 sponsor slot."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  23094,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 19",
+                                           "description":  "Reach level 19 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +180%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +180%."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  26220,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 20",
+                                           "description":  "Reach level 20 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +190%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +190%."
+                                       },
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "roadblockL",
+                                           "heading":  "Contracts Milestone",
+                                           "description":  "Unlock Medium contracts."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  29620,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 21",
+                                           "description":  "Reach level 21 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +200%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +200%."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  33306,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 22",
+                                           "description":  "Reach level 22 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +210%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +210%."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  37290,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 23",
+                                           "description":  "Reach level 23 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +220%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +220%."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  41584,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 24",
+                                           "description":  "Reach level 24 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +230%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +230%."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  46200,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 25",
+                                           "description":  "Reach level 25 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +240%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +240%."
+                                       },
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "badgeRoundStar",
+                                           "heading":  "Sponsors Milestone",
+                                           "description":  "Unlock Medium sponsors."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  51150,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 26",
+                                           "description":  "Reach level 26 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +250%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +250%."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  56446,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 27",
+                                           "description":  "Reach level 27 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +260%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +260%."
+                                       },
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "roadblockL",
+                                           "heading":  "Contracts Milestone",
+                                           "description":  "Contract offers increase by +2."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  62100,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 28",
+                                           "description":  "Reach level 28 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +270%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +270%."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  68124,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 29",
+                                           "description":  "Reach level 29 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +280%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +280%."
+                                       },
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "roadblockL",
+                                           "heading":  "Contracts Milestone",
+                                           "description":  "Unlock +1 contract slot."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  74530,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 30",
+                                           "description":  "Reach level 30 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +290%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +290%."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  81330,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 31",
+                                           "description":  "Reach level 31 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +300%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +300%."
+                                       },
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "badgeRoundStar",
+                                           "heading":  "Sponsors Milestone",
+                                           "description":  "Sponsor offers increase by +2."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  88536,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 32",
+                                           "description":  "Reach level 32 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +310%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +310%."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  96160,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 33",
+                                           "description":  "Reach level 33 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +320%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +320%."
+                                       },
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "badgeRoundStar",
+                                           "heading":  "Sponsors Milestone",
+                                           "description":  "Unlock +1 sponsor slot."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  104214,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 34",
+                                           "description":  "Reach level 34 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +330%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +330%."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  112710,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 35",
+                                           "description":  "Reach level 35 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +340%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +340%."
+                                       },
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "roadblockL",
+                                           "heading":  "Contracts Milestone",
+                                           "description":  "Unlock Hard contracts."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  121660,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 36",
+                                           "description":  "Reach level 36 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +350%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +350%."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  131076,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 37",
+                                           "description":  "Reach level 37 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +360%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +360%."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  140970,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 38",
+                                           "description":  "Reach level 38 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +370%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +370%."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  151354,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 39",
+                                           "description":  "Reach level 39 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +380%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +380%."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  162240,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 40",
+                                           "description":  "Reach level 40 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +390%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +390%."
+                                       },
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "badgeRoundStar",
+                                           "heading":  "Sponsors Milestone",
+                                           "description":  "Unlock Hard sponsors."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  173640,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 41",
+                                           "description":  "Reach level 41 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +400%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +400%."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  185566,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 42",
+                                           "description":  "Reach level 42 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +410%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +410%."
+                                       },
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "roadblockL",
+                                           "heading":  "Contracts Milestone",
+                                           "description":  "Contract offers increase by +2."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  198030,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 43",
+                                           "description":  "Reach level 43 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +420%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +420%."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  211044,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 44",
+                                           "description":  "Reach level 44 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +430%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +430%."
+                                       },
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "roadblockL",
+                                           "heading":  "Contracts Milestone",
+                                           "description":  "Unlock +1 contract slot."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  224620,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 45",
+                                           "description":  "Reach level 45 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +440%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +440%."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  238770,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 46",
+                                           "description":  "Reach level 46 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +450%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +450%."
+                                       },
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "badgeRoundStar",
+                                           "heading":  "Sponsors Milestone",
+                                           "description":  "Sponsor offers increase by +2."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  253506,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 47",
+                                           "description":  "Reach level 47 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +460%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +460%."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  268840,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 48",
+                                           "description":  "Reach level 48 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +470%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +470%."
+                                       },
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "badgeRoundStar",
+                                           "heading":  "Sponsors Milestone",
+                                           "description":  "Unlock +1 sponsor slot."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  284784,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 49",
+                                           "description":  "Reach level 49 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +480%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +480%."
+                                       }
+                                   ]
+                   },
+                   {
+                       "requiredValue":  301350,
+                       "description":  {
+                                           "type":  "unlockCard",
+                                           "icon":  "info",
+                                           "heading":  "Level 50",
+                                           "description":  "Reach level 50 in Off-Road Skill to claim this reward tier."
+                                       },
+                       "unlocks":  [
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Off-Road Bonus +490%",
+                                           "description":  "Total Off-Road FRE event money and discipline XP bonus is now +490%."
+                                       }
+                                   ]
+                   }
+               ]
+}

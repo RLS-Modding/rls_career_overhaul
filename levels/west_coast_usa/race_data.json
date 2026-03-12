@@ -276,7 +276,7 @@
       "label":"Mud Drag Easy",
       "reward":1500,
       "type":[
-        "mud"
+        "mudding"
       ]
     },
     "mudDrag2":{
@@ -288,7 +288,7 @@
       "label":"Mud Drag Hard",
       "reward":2700,
       "type":[
-        "extremeMud"
+        "mudding"
       ]
     },
     "quarryCircuit":{
@@ -522,7 +522,7 @@
       "reward":12000,
       "timeout":60,
       "type":[
-        "crawl"
+        "crawling"
       ]
     },
     "rockClimbS":{
@@ -536,7 +536,7 @@
       "reward":5000,
       "timeout":60,
       "type":[
-        "crawl"
+        "crawling"
       ]
     },
     "rubberBand":{
@@ -684,7 +684,7 @@
         ]
       },
       "type":[
-        "apexRacing"
+        "roadracing"
       ]
     }
   }

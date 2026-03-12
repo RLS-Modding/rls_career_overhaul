@@ -1579,6 +1579,15 @@ export default {
     navigateToEvent: raceName => String,
   },
 
+  ui_phone_freContracts: {
+    getState: filterDisciplineId => {},
+    acceptContract: contractId => {},
+    abandonContract: contractId => {},
+    signSponsor: sponsorId => {},
+    dropSponsor: sponsorId => {},
+    acknowledgeSponsorWarning: sponsorId => {},
+  },
+
   ui_phone_time: {
     requestTime: () => {},
   },

@@ -1,8 +1,9 @@
 {
-    "name":  "FREs Skill",
-    "description":  "Coming soon",
+    "name":  "Crawling Skill",
+    "description":  "Progress the 1-50 Crawling FRE mastery track.",
     "order":  1100,
     "isSkill":  true,
+    "attributeKey":  "fre-crawling",
     "icon":  "beamsNodesOutline",
     "levels":  [
                    {
@@ -11,14 +12,14 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 1",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 1 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +0%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +0%."
                                        }
                                    ]
                    },
@@ -28,14 +29,14 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 2",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 2 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +10%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +10%."
                                        }
                                    ]
                    },
@@ -45,14 +46,14 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 3",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 3 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +20%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +20%."
                                        }
                                    ]
                    },
@@ -62,14 +63,14 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 4",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 4 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +30%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +30%."
                                        }
                                    ]
                    },
@@ -79,14 +80,20 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 5",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 5 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +40%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +40%."
+                                       },
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "roadblockL",
+                                           "heading":  "Contracts Milestone",
+                                           "description":  "Unlock Easy contracts and 2 active contract slots."
                                        }
                                    ]
                    },
@@ -96,14 +103,14 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 6",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 6 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +50%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +50%."
                                        }
                                    ]
                    },
@@ -113,14 +120,14 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 7",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 7 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +60%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +60%."
                                        }
                                    ]
                    },
@@ -130,14 +137,14 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 8",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 8 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +70%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +70%."
                                        }
                                    ]
                    },
@@ -147,14 +154,14 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 9",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 9 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +80%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +80%."
                                        }
                                    ]
                    },
@@ -164,14 +171,20 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 10",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 10 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +90%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +90%."
+                                       },
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "badgeRoundStar",
+                                           "heading":  "Sponsors Milestone",
+                                           "description":  "Unlock Easy sponsors and 2 active sponsor slots."
                                        }
                                    ]
                    },
@@ -181,14 +194,14 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 11",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 11 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +100%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +100%."
                                        }
                                    ]
                    },
@@ -198,14 +211,20 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 12",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 12 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +110%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +110%."
+                                       },
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "roadblockL",
+                                           "heading":  "Contracts Milestone",
+                                           "description":  "Contract offers increase by +2."
                                        }
                                    ]
                    },
@@ -215,14 +234,14 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 13",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 13 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +120%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +120%."
                                        }
                                    ]
                    },
@@ -232,14 +251,20 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 14",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 14 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +130%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +130%."
+                                       },
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "roadblockL",
+                                           "heading":  "Contracts Milestone",
+                                           "description":  "Unlock +1 contract slot."
                                        }
                                    ]
                    },
@@ -249,14 +274,14 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 15",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 15 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +140%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +140%."
                                        }
                                    ]
                    },
@@ -266,14 +291,20 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 16",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 16 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +150%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +150%."
+                                       },
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "badgeRoundStar",
+                                           "heading":  "Sponsors Milestone",
+                                           "description":  "Sponsor offers increase by +2."
                                        }
                                    ]
                    },
@@ -283,14 +314,14 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 17",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 17 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +160%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +160%."
                                        }
                                    ]
                    },
@@ -300,14 +331,20 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 18",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 18 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +170%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +170%."
+                                       },
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "badgeRoundStar",
+                                           "heading":  "Sponsors Milestone",
+                                           "description":  "Unlock +1 sponsor slot."
                                        }
                                    ]
                    },
@@ -317,14 +354,14 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 19",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 19 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +180%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +180%."
                                        }
                                    ]
                    },
@@ -334,14 +371,20 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 20",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 20 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +190%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +190%."
+                                       },
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "roadblockL",
+                                           "heading":  "Contracts Milestone",
+                                           "description":  "Unlock Medium contracts."
                                        }
                                    ]
                    },
@@ -351,14 +394,14 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 21",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 21 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +200%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +200%."
                                        }
                                    ]
                    },
@@ -368,14 +411,14 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 22",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 22 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +210%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +210%."
                                        }
                                    ]
                    },
@@ -385,14 +428,14 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 23",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 23 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +220%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +220%."
                                        }
                                    ]
                    },
@@ -402,14 +445,14 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 24",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 24 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +230%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +230%."
                                        }
                                    ]
                    },
@@ -419,14 +462,20 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 25",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 25 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +240%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +240%."
+                                       },
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "badgeRoundStar",
+                                           "heading":  "Sponsors Milestone",
+                                           "description":  "Unlock Medium sponsors."
                                        }
                                    ]
                    },
@@ -436,14 +485,14 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 26",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 26 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +250%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +250%."
                                        }
                                    ]
                    },
@@ -453,14 +502,20 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 27",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 27 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +260%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +260%."
+                                       },
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "roadblockL",
+                                           "heading":  "Contracts Milestone",
+                                           "description":  "Contract offers increase by +2."
                                        }
                                    ]
                    },
@@ -470,14 +525,14 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 28",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 28 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +270%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +270%."
                                        }
                                    ]
                    },
@@ -487,14 +542,20 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 29",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 29 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +280%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +280%."
+                                       },
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "roadblockL",
+                                           "heading":  "Contracts Milestone",
+                                           "description":  "Unlock +1 contract slot."
                                        }
                                    ]
                    },
@@ -504,14 +565,14 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 30",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 30 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +290%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +290%."
                                        }
                                    ]
                    },
@@ -521,14 +582,20 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 31",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 31 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +300%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +300%."
+                                       },
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "badgeRoundStar",
+                                           "heading":  "Sponsors Milestone",
+                                           "description":  "Sponsor offers increase by +2."
                                        }
                                    ]
                    },
@@ -538,14 +605,14 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 32",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 32 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +310%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +310%."
                                        }
                                    ]
                    },
@@ -555,14 +622,20 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 33",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 33 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +320%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +320%."
+                                       },
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "badgeRoundStar",
+                                           "heading":  "Sponsors Milestone",
+                                           "description":  "Unlock +1 sponsor slot."
                                        }
                                    ]
                    },
@@ -572,14 +645,14 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 34",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 34 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +330%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +330%."
                                        }
                                    ]
                    },
@@ -589,14 +662,20 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 35",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 35 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +340%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +340%."
+                                       },
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "roadblockL",
+                                           "heading":  "Contracts Milestone",
+                                           "description":  "Unlock Hard contracts."
                                        }
                                    ]
                    },
@@ -606,14 +685,14 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 36",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 36 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +350%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +350%."
                                        }
                                    ]
                    },
@@ -623,14 +702,14 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 37",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 37 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +360%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +360%."
                                        }
                                    ]
                    },
@@ -640,14 +719,14 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 38",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 38 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +370%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +370%."
                                        }
                                    ]
                    },
@@ -657,14 +736,14 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 39",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 39 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +380%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +380%."
                                        }
                                    ]
                    },
@@ -674,14 +753,20 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 40",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 40 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +390%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +390%."
+                                       },
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "badgeRoundStar",
+                                           "heading":  "Sponsors Milestone",
+                                           "description":  "Unlock Hard sponsors."
                                        }
                                    ]
                    },
@@ -691,14 +776,14 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 41",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 41 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +400%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +400%."
                                        }
                                    ]
                    },
@@ -708,14 +793,20 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 42",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 42 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +410%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +410%."
+                                       },
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "roadblockL",
+                                           "heading":  "Contracts Milestone",
+                                           "description":  "Contract offers increase by +2."
                                        }
                                    ]
                    },
@@ -725,14 +816,14 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 43",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 43 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +420%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +420%."
                                        }
                                    ]
                    },
@@ -742,14 +833,20 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 44",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 44 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +430%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +430%."
+                                       },
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "roadblockL",
+                                           "heading":  "Contracts Milestone",
+                                           "description":  "Unlock +1 contract slot."
                                        }
                                    ]
                    },
@@ -759,14 +856,14 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 45",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 45 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +440%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +440%."
                                        }
                                    ]
                    },
@@ -776,14 +873,20 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 46",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 46 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +450%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +450%."
+                                       },
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "badgeRoundStar",
+                                           "heading":  "Sponsors Milestone",
+                                           "description":  "Sponsor offers increase by +2."
                                        }
                                    ]
                    },
@@ -793,14 +896,14 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 47",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 47 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +460%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +460%."
                                        }
                                    ]
                    },
@@ -810,14 +913,20 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 48",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 48 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +470%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +470%."
+                                       },
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "badgeRoundStar",
+                                           "heading":  "Sponsors Milestone",
+                                           "description":  "Unlock +1 sponsor slot."
                                        }
                                    ]
                    },
@@ -827,14 +936,14 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 49",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 49 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +480%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +480%."
                                        }
                                    ]
                    },
@@ -844,14 +953,14 @@
                                            "type":  "unlockCard",
                                            "icon":  "info",
                                            "heading":  "Level 50",
-                                           "description":  "Coming soon"
+                                           "description":  "Reach level 50 in Crawling Skill to claim this reward tier."
                                        },
                        "unlocks":  [
                                        {
                                            "type":  "unlockCard",
-                                           "icon":  "beamsNodesOutline",
-                                           "heading":  "Coming soon",
-                                           "description":  "Coming soon"
+                                           "icon":  "beamCurrency",
+                                           "heading":  "Crawling Bonus +490%",
+                                           "description":  "Total Crawling FRE event money and discipline XP bonus is now +490%."
                                        }
                                    ]
                    }
