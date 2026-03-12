@@ -366,6 +366,25 @@ local function getContractModelPool(disciplineId)
   return ownedModels
 end
 
+local function isOwnedAndAllowedModel(disciplineId, model)
+  local normalized = type(model) == "string" and string.lower(model) or nil
+  if not normalized or normalized == "" then
+    return false
+  end
+
+  local blacklist = buildVehicleBlacklistLookup(disciplineId)
+  if blacklist[normalized] then
+    return false
+  end
+
+  for _, ownedModel in ipairs(getOwnedVehicleModels()) do
+    if ownedModel == normalized then
+      return true
+    end
+  end
+  return false
+end
+
 local function purgeExpiredEntries(now)
   ensureState()
   local sponsorCfg = freConfig.getSponsorConfig()
@@ -493,6 +512,15 @@ local function syncOffersForDiscipline(disciplineId, now)
   local dState = state.disciplines[disciplineId]
   if not dState then return end
 
+  -- Remove stale offers that require models the player no longer owns (or are now blacklisted).
+  for i = #dState.contracts.available, 1, -1 do
+    local offer = dState.contracts.available[i]
+    local requiredModel = offer and (offer.requiredModelFamily or offer.requiredModel)
+    if requiredModel and requiredModel ~= "" and not isOwnedAndAllowedModel(disciplineId, requiredModel) then
+      table.remove(dState.contracts.available, i)
+    end
+  end
+
   local level = getSkillLevel(disciplineId)
   local contractCfg = freConfig.getContractConfig()
   local sponsorCfg = freConfig.getSponsorConfig()
@@ -564,6 +592,10 @@ end
 local function calculateRewardModifiers(disciplineIds)
   local scaling = freConfig.getRewardScaling() or {}
   local levelPct = tonumber(scaling.levelPercentPerLevelUp) or 0.1
+  local maxLevel = math.floor(tonumber(scaling.maxLevel) or 50)
+  if maxLevel < 1 then
+    maxLevel = 50
+  end
   local result = {
     moneyMultiplier = 1.0,
     disciplineMultipliers = {}
@@ -581,13 +613,17 @@ local function calculateRewardModifiers(disciplineIds)
     if disciplineId and not seen[disciplineId] then
       seen[disciplineId] = true
       local level = getSkillLevel(disciplineId)
-      local skillMultiplier = 1.0 + math.max(0, level - 1) * levelPct
+      local effectiveLevel = math.max(1, math.min(level, maxLevel))
+      local levelUps = math.max(0, effectiveLevel - 1)
+      local skillMultiplier = 1.0 + levelUps * levelPct
       local sponsorBonus = getSponsorBonusesForDiscipline(disciplineId)
       local xpMultiplier = skillMultiplier * (1 + sponsorBonus.xp)
       local moneyMultiplier = skillMultiplier * (1 + sponsorBonus.money)
 
       result.disciplineMultipliers[disciplineId] = {
         level = level,
+        effectiveLevel = effectiveLevel,
+        levelBonus = levelUps * levelPct,
         skillMultiplier = skillMultiplier,
         sponsorMoneyBonus = sponsorBonus.money,
         sponsorXpBonus = sponsorBonus.xp,
@@ -894,6 +930,12 @@ local function acceptContract(contractId)
     local dState = state.disciplines[discipline.id]
     for idx, entry in ipairs(dState.contracts.available) do
       if entry.id == contractId then
+        local requiredModel = entry.requiredModelFamily or entry.requiredModel
+        if requiredModel and requiredModel ~= "" and not isOwnedAndAllowedModel(discipline.id, requiredModel) then
+          table.remove(dState.contracts.available, idx)
+          saveState()
+          return false, "Required vehicle model is no longer available."
+        end
         local level = getSkillLevel(discipline.id)
         local slotCap = countSlotCap(level, (freConfig.getContractConfig() or {}).slotUnlockLevels)
         if #dState.contracts.active >= slotCap then

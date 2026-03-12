@@ -38,6 +38,7 @@ local defaultConfig = {
   },
   rewardScaling = {
     levelPercentPerLevelUp = 0.1,
+    maxLevel = 50,
     sponsorBonusCap = 2.0
   },
   contracts = {
