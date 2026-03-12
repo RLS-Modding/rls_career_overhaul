@@ -55,6 +55,8 @@ import PhoneFacilityWork from "./views/PhoneFacilityWork.vue"
 import PhoneRealEstate from "./views/PhoneRealEstate.vue"
 import PhoneRentals from "./views/PhoneRentals.vue"
 import PhoneGuide from "./views/PhoneGuide.vue"
+import PhoneSkills from "./views/PhoneSkills.vue"
+import PhoneSkillDetails from "./views/PhoneSkillDetails.vue"
 import PhoneSettings from "./views/PhoneSettings.vue"
 import PhoneMarketWatch from "./views/PhoneMarketWatch.vue"
 import PhoneFreeroamEvents from "./views/PhoneFreeroamEvents.vue"
@@ -537,6 +539,17 @@ export default [
         path: "phone-guide",
         name: "phone-guide",
         component: PhoneGuide
+      },
+      {
+        path: "phone-skills",
+        name: "phone-skills",
+        component: PhoneSkills
+      },
+      {
+        path: "phone-skills/:skillId",
+        name: "phone-skills-details",
+        component: PhoneSkillDetails,
+        props: true
       },
       {
         path: "phone-settings",
