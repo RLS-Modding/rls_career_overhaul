@@ -47,6 +47,8 @@ local defaultConfig = {
     offerIncreaseLevels = {12, 27, 42},
     tierUnlockLevels = {easy = 5, medium = 20, hard = 35},
     slotUnlockLevels = {baseLevel = 5, baseSlots = 2, extraLevels = {14, 29, 44}},
+    offerExpiryMinutes = 5,
+    offerRefreshMinutes = 2,
     modelSourceOwnedChance = 0.5,
     lapObjectiveChance = 0.5,
     expiryMinutesByTier = {easy = 120, medium = 60, hard = 30},

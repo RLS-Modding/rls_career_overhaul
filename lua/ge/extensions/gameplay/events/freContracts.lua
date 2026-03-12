@@ -94,7 +94,9 @@ local function initDisciplineState(disciplineId)
       available = {},
       active = {},
       completed = 0,
-      failed = 0
+      failed = 0,
+      seeded = false,
+      nextOfferAt = 0
     },
     sponsors = {
       available = {},
@@ -139,6 +141,8 @@ local function ensureState()
     dState.contracts.active = type(dState.contracts.active) == "table" and dState.contracts.active or {}
     dState.contracts.completed = tonumber(dState.contracts.completed) or 0
     dState.contracts.failed = tonumber(dState.contracts.failed) or 0
+    dState.contracts.seeded = dState.contracts.seeded == true
+    dState.contracts.nextOfferAt = tonumber(dState.contracts.nextOfferAt) or 0
 
     dState.sponsors = type(dState.sponsors) == "table" and dState.sponsors or {}
     dState.sponsors.available = type(dState.sponsors.available) == "table" and dState.sponsors.available or {}
@@ -431,18 +435,6 @@ local function getOwnedVehicleModels()
   return models
 end
 
-local function appendUniqueModels(target, seen, source)
-  for _, model in ipairs(source or {}) do
-    if type(model) == "string" and model ~= "" then
-      local key = string.lower(model)
-      if not seen[key] then
-        seen[key] = true
-        table.insert(target, key)
-      end
-    end
-  end
-end
-
 local function getKnownVehicleModels()
   local models = {}
   local seen = {}
@@ -713,7 +705,7 @@ local function generateContractOffer(disciplineId, level, now)
   local rewardMoney = randomInt(tonumber(rewardRange.moneyMin) or 1000, tonumber(rewardRange.moneyMax) or 2000)
   local rewardXp = randomInt(tonumber(rewardRange.xpMin) or 100, tonumber(rewardRange.xpMax) or 300)
 
-  local expiryMinutes = tonumber((contractCfg.expiryMinutesByTier or {})[tier]) or 60
+  local expiryMinutes = tonumber(contractCfg.offerExpiryMinutes) or 5
   local model, modelSource = pickContractModel(disciplineId)
   if not model or model == "" then
     return nil
@@ -789,20 +781,62 @@ local function syncOffersForDiscipline(disciplineId, now)
   local level = getSkillLevel(disciplineId)
   local contractCfg = freConfig.getContractConfig()
   local sponsorCfg = freConfig.getSponsorConfig()
+  local offerExpiryMinutes = tonumber(contractCfg.offerExpiryMinutes) or 5
+  if offerExpiryMinutes <= 0 then
+    offerExpiryMinutes = 5
+  end
 
   local contractTierUnlock = (contractCfg.tierUnlockLevels or {}).easy or math.huge
   local sponsorTierUnlock = (sponsorCfg.tierUnlockLevels or {}).easy or math.huge
 
   if level < contractTierUnlock then
     dState.contracts.available = {}
+    dState.contracts.seeded = false
+    dState.contracts.nextOfferAt = now
   else
     local contractCap = countOfferCap(level, contractCfg)
-    while #dState.contracts.available < contractCap do
-      local offer = generateContractOffer(disciplineId, level, now)
-      if not offer then
-        break
+
+    -- Normalize legacy offers to short-lived "offer" timers.
+    for _, offer in ipairs(dState.contracts.available or {}) do
+      local createdAt = tonumber(offer.createdAt) or now
+      local maxExpiry = createdAt + offerExpiryMinutes
+      local currentExpiry = tonumber(offer.expiresAt) or maxExpiry
+      if currentExpiry > maxExpiry then
+        offer.expiresAt = maxExpiry
       end
-      table.insert(dState.contracts.available, offer)
+    end
+
+    while #dState.contracts.available > contractCap do
+      table.remove(dState.contracts.available, #dState.contracts.available)
+    end
+
+    local offerRefreshMinutes = tonumber(contractCfg.offerRefreshMinutes) or 2
+    offerRefreshMinutes = math.max(0.25, offerRefreshMinutes)
+
+    if not dState.contracts.seeded then
+      while #dState.contracts.available < contractCap do
+        local offer = generateContractOffer(disciplineId, level, now)
+        if not offer then
+          break
+        end
+        table.insert(dState.contracts.available, offer)
+      end
+      dState.contracts.seeded = true
+      dState.contracts.nextOfferAt = now + offerRefreshMinutes
+    else
+      local nextOfferAt = tonumber(dState.contracts.nextOfferAt) or now
+      if nextOfferAt < now - (offerRefreshMinutes * 20) then
+        nextOfferAt = now
+      end
+      if #dState.contracts.available < contractCap and now >= nextOfferAt then
+        local offer = generateContractOffer(disciplineId, level, now)
+        dState.contracts.nextOfferAt = now + offerRefreshMinutes
+        if offer then
+          table.insert(dState.contracts.available, offer)
+        end
+      elseif #dState.contracts.available >= contractCap then
+        dState.contracts.nextOfferAt = now + offerRefreshMinutes
+      end
     end
   end
 

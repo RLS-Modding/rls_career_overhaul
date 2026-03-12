@@ -108,6 +108,8 @@
         44
       ]
     },
+    "offerExpiryMinutes": 5,
+    "offerRefreshMinutes": 2,
     "modelSourceOwnedChance": 0.5,
     "lapObjectiveChance": 0.5,
     "expiryMinutesByTier": {
