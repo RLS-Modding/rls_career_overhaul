@@ -304,15 +304,16 @@ end
 
 local function openMenu()
   auctionState.uiOpen = true
-  pcall(function() guihooks.trigger('ChangeState', {state = 'used-car-auction'}) end)
+  pcall(function() guihooks.trigger('UsedAuctionShow') end)
 end
 
 local function closeAuctionOverlayUi()
   if not auctionState.uiOpen then
+    pcall(function() guihooks.trigger('UsedAuctionHide') end)
     return
   end
   auctionState.uiOpen = false
-  pcall(function() guihooks.trigger('ChangeState', {state = 'play'}) end)
+  pcall(function() guihooks.trigger('UsedAuctionHide') end)
 end
 
 local function startFadeSafe()
@@ -2007,10 +2008,6 @@ end
 
 local function closeMenuUiOnly()
   closeAuctionOverlayUi()
-  if career_career and career_career.closeAllMenus then
-    pcall(function() career_career.closeAllMenus() end)
-  end
-  pcall(function() guihooks.trigger('UINavigation', 'back', 1) end)
 end
 
 local function canStartAuctionFromPrompt()
@@ -2633,6 +2630,8 @@ local function onCareerActivated()
   loadAuctionSettings()
   setIdleTriggerState()
   hardDisableAuctionAudioVisuals()
+  auctionState.uiOpen = false
+  pcall(function() guihooks.trigger('UsedAuctionHide') end)
   ejectPlayerFromAuctionInteriorOnCareerLoad()
 end
 
@@ -2641,19 +2640,26 @@ local function onSaveCurrentSaveSlot(currentSavePath)
 end
 
 local function onCareerDeactivatedWhileLevelLoaded()
+  pcall(function() guihooks.trigger('UsedAuctionHide') end)
   resetAuction(false)
 end
 
 local function onExtensionLoaded()
   hardDisableAuctionAudioVisuals()
+  auctionState.uiOpen = false
+  pcall(function() guihooks.trigger('UsedAuctionHide') end)
 end
 
 local function onClientStartMission()
   hardDisableAuctionAudioVisuals()
+  auctionState.uiOpen = false
+  pcall(function() guihooks.trigger('UsedAuctionHide') end)
 end
 
 local function onWorldReadyState()
   hardDisableAuctionAudioVisuals()
+  auctionState.uiOpen = false
+  pcall(function() guihooks.trigger('UsedAuctionHide') end)
 end
 
 local function onGetRawPoiListForLevel(levelIdentifier, elements)
