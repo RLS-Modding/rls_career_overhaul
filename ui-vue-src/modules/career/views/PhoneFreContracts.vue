@@ -1,6 +1,6 @@
 <template>
   <PhoneWrapper app-name="FRE Contracts">
-    <div class="fre-contracts">
+    <div class="fre-app">
       <div v-if="loading" class="empty">Loading FRE contracts...</div>
       <div v-else-if="!careerActive" class="empty">Start Career mode to use FRE Contracts.</div>
       <template v-else>
@@ -11,24 +11,21 @@
               {{ discipline.label }}
             </option>
           </select>
-          <button class="refresh-btn" @click="refreshState">Refresh</button>
+          <button class="sync-btn" :disabled="actionBusy" @click="refreshState">Sync Now</button>
         </div>
 
-        <div class="discipline-cards">
-          <button
-            v-for="discipline in disciplines"
-            :key="discipline.id"
-            class="discipline-card"
-            :class="{ active: selectedDiscipline === discipline.id }"
-            @click="selectedDiscipline = discipline.id"
-          >
-            <div class="discipline-name">{{ discipline.label }}</div>
-            <div class="discipline-meta">L{{ discipline.level }}</div>
-            <div class="discipline-meta">Contracts {{ discipline.contractSlotsUsed }}/{{ discipline.contractSlots }}</div>
-            <div class="discipline-meta">Sponsors {{ discipline.sponsorSlotsUsed }}/{{ discipline.sponsorSlots }}</div>
-            <div class="discipline-meta">Offers C{{ discipline.contractOfferCap }} / S{{ discipline.sponsorOfferCap }}</div>
-            <div class="discipline-meta">Active Bonus ${{ formatPercent(discipline.sponsorBonusMoney) }} | XP {{ formatPercent(discipline.sponsorBonusXp) }}</div>
-          </button>
+        <div class="sync-meta">
+          <span>Auto-sync every 5m</span>
+          <span>Last sync {{ lastSyncLabel }}</span>
+        </div>
+
+        <div class="discipline-summary" v-if="selectedDisciplineInfo">
+          <div class="summary-title">{{ selectedDisciplineInfo.label }} (L{{ selectedDisciplineInfo.level }})</div>
+          <div class="summary-line">Contracts {{ selectedDisciplineInfo.contractSlotsUsed }}/{{ selectedDisciplineInfo.contractSlots }} | Offers {{ selectedDisciplineInfo.contractOfferCap }}</div>
+          <div class="summary-line">Sponsors {{ selectedDisciplineInfo.sponsorSlotsUsed }}/{{ selectedDisciplineInfo.sponsorSlots }} | Offers {{ selectedDisciplineInfo.sponsorOfferCap }}</div>
+          <div class="summary-line">Active bonus Money {{ formatPercent(selectedDisciplineInfo.sponsorBonusMoney) }} | XP {{ formatPercent(selectedDisciplineInfo.sponsorBonusXp) }}</div>
+          <div v-if="!selectedDisciplineInfo.contractsUnlocked" class="summary-line muted">Contracts unlock at level {{ selectedDisciplineInfo.contractUnlockLevel }}</div>
+          <div v-if="!selectedDisciplineInfo.sponsorsUnlocked" class="summary-line muted">Sponsors unlock at level {{ selectedDisciplineInfo.sponsorUnlockLevel }}</div>
         </div>
 
         <div class="tabs">
@@ -42,20 +39,25 @@
           <div class="section">Active</div>
           <div v-if="filteredActiveContracts.length === 0" class="empty small">No active contracts.</div>
           <div v-for="contract in filteredActiveContracts" :key="contract.id" class="card">
-            <div class="title">{{ disciplineLabel(contract.disciplineId) }} · {{ tierLabel(contract.tier) }}</div>
+            <div class="title">{{ disciplineLabel(contract.disciplineId) }} - {{ tierLabel(contract.tier) }}</div>
             <div class="line">{{ contract.raceLabel }} | {{ contract.requiredModelFamily || contract.requiredModel || 'Any model' }}</div>
-            <div class="line">Target: {{ formatTime(contract.targetTime) }} | Reward: ${{ formatMoney(contract.rewardMoney) }} + {{ contract.rewardXp }} XP</div>
-            <div class="line">Expires in {{ formatMinutes(contract.minutesRemaining) }}</div>
+            <div class="line">Target {{ formatTime(contract.targetTime) }}</div>
+            <div class="line">Reward ${{ formatMoney(contract.rewardMoney) }} + {{ contract.rewardXp }} XP</div>
+            <div class="line">Expires in {{ formatMinutes(displayRemaining(contract.minutesRemaining)) }}</div>
             <button class="danger" :disabled="actionBusy" @click="abandonContract(contract.id)">Abandon</button>
           </div>
 
           <div class="section">Available</div>
-          <div v-if="filteredAvailableContracts.length === 0" class="empty small">No offers available.</div>
+          <div v-if="selectedDisciplineInfo && !selectedDisciplineInfo.contractsUnlocked" class="empty small">
+            Contracts unlock at level {{ selectedDisciplineInfo.contractUnlockLevel }}.
+          </div>
+          <div v-else-if="filteredAvailableContracts.length === 0" class="empty small">No offers available.</div>
           <div v-for="contract in filteredAvailableContracts" :key="contract.id" class="card">
-            <div class="title">{{ disciplineLabel(contract.disciplineId) }} · {{ tierLabel(contract.tier) }}</div>
+            <div class="title">{{ disciplineLabel(contract.disciplineId) }} - {{ tierLabel(contract.tier) }}</div>
             <div class="line">{{ contract.raceLabel }} | {{ contract.requiredModelFamily || contract.requiredModel || 'Any model' }}</div>
-            <div class="line">Target: {{ formatTime(contract.targetTime) }} | Reward: ${{ formatMoney(contract.rewardMoney) }} + {{ contract.rewardXp }} XP</div>
-            <div class="line">Expires in {{ formatMinutes(contract.minutesRemaining) }}</div>
+            <div class="line">Target {{ formatTime(contract.targetTime) }}</div>
+            <div class="line">Reward ${{ formatMoney(contract.rewardMoney) }} + {{ contract.rewardXp }} XP</div>
+            <div class="line">Expires in {{ formatMinutes(displayRemaining(contract.minutesRemaining)) }}</div>
             <button :disabled="actionBusy || !canAcceptContract(contract)" @click="acceptContract(contract.id)">
               {{ canAcceptContract(contract) ? 'Accept' : 'Slots Full' }}
             </button>
@@ -66,22 +68,25 @@
           <div class="section">Active</div>
           <div v-if="filteredActiveSponsors.length === 0" class="empty small">No active sponsors.</div>
           <div v-for="sponsor in filteredActiveSponsors" :key="sponsor.id" class="card">
-            <div class="title">{{ disciplineLabel(sponsor.disciplineId) }} · {{ sponsor.name }}</div>
+            <div class="title">{{ disciplineLabel(sponsor.disciplineId) }} - {{ sponsor.name }}</div>
             <div class="line">{{ tierLabel(sponsor.tier) }} | {{ bonusLabel(sponsor) }}</div>
-            <div class="line">Upkeep in {{ formatMinutes(sponsor.checkMinutesRemaining) }}</div>
+            <div class="line">Upkeep in {{ formatMinutes(displayRemaining(sponsor.checkMinutesRemaining)) }}</div>
             <div class="warning" v-if="sponsor.warningIssued">
-              Warning active. Complete an event in {{ formatMinutes(sponsor.checkMinutesRemaining) }}.
+              Warning active. Complete an event in {{ formatMinutes(displayRemaining(sponsor.checkMinutesRemaining)) }}.
               <button :disabled="actionBusy" @click="acknowledgeSponsorWarning(sponsor.id)">Acknowledge</button>
             </div>
             <button class="danger" :disabled="actionBusy" @click="dropSponsor(sponsor.id)">Drop Sponsor</button>
           </div>
 
           <div class="section">Available</div>
-          <div v-if="filteredAvailableSponsors.length === 0" class="empty small">No offers available.</div>
+          <div v-if="selectedDisciplineInfo && !selectedDisciplineInfo.sponsorsUnlocked" class="empty small">
+            Sponsors unlock at level {{ selectedDisciplineInfo.sponsorUnlockLevel }}.
+          </div>
+          <div v-else-if="filteredAvailableSponsors.length === 0" class="empty small">No offers available.</div>
           <div v-for="sponsor in filteredAvailableSponsors" :key="sponsor.id" class="card">
-            <div class="title">{{ disciplineLabel(sponsor.disciplineId) }} · {{ sponsor.name }}</div>
+            <div class="title">{{ disciplineLabel(sponsor.disciplineId) }} - {{ sponsor.name }}</div>
             <div class="line">{{ tierLabel(sponsor.tier) }} | {{ bonusLabel(sponsor) }}</div>
-            <div class="line">Offer expires in {{ formatMinutes(sponsor.minutesRemaining) }}</div>
+            <div class="line">Offer expires in {{ formatMinutes(displayRemaining(sponsor.minutesRemaining)) }}</div>
             <button :disabled="actionBusy || !canSignSponsor(sponsor)" @click="signSponsor(sponsor.id)">
               {{ canSignSponsor(sponsor) ? 'Sign Sponsor' : 'Slots Full' }}
             </button>
@@ -97,12 +102,17 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { lua } from '@/bridge'
 import PhoneWrapper from './PhoneWrapper.vue'
 
+const REFRESH_INTERVAL_MS = 5 * 60 * 1000
+const TIMER_TICK_MS = 1000
+
 const loading = ref(true)
 const actionBusy = ref(false)
 const careerActive = ref(true)
 const errorMessage = ref('')
 const tab = ref('contracts')
 const selectedDiscipline = ref('all')
+const lastSyncMs = ref(Date.now())
+const nowMs = ref(Date.now())
 const state = ref({
   disciplines: [],
   activeContracts: [],
@@ -112,6 +122,7 @@ const state = ref({
 })
 
 let refreshTimer = null
+let tickTimer = null
 
 const disciplines = computed(() => state.value.disciplines || [])
 const disciplineLookup = computed(() => {
@@ -120,6 +131,19 @@ const disciplineLookup = computed(() => {
     lookup[discipline.id] = discipline
   }
   return lookup
+})
+
+const selectedDisciplineInfo = computed(() => {
+  if (selectedDiscipline.value === 'all') return null
+  return disciplineLookup.value[selectedDiscipline.value] || null
+})
+
+const lastSyncLabel = computed(() => {
+  const elapsedSeconds = Math.max(0, Math.floor((nowMs.value - lastSyncMs.value) / 1000))
+  if (elapsedSeconds < 10) return 'just now'
+  if (elapsedSeconds < 60) return `${elapsedSeconds}s ago`
+  const minutes = Math.floor(elapsedSeconds / 60)
+  return `${minutes}m ago`
 })
 
 function filterByDiscipline(list) {
@@ -131,6 +155,32 @@ const filteredActiveContracts = computed(() => filterByDiscipline(state.value.ac
 const filteredAvailableContracts = computed(() => filterByDiscipline(state.value.availableContracts))
 const filteredActiveSponsors = computed(() => filterByDiscipline(state.value.activeSponsors))
 const filteredAvailableSponsors = computed(() => filterByDiscipline(state.value.availableSponsors))
+
+function normalizeList(value) {
+  if (Array.isArray(value)) return value
+  if (!value || typeof value !== 'object') return []
+  const keys = Object.keys(value)
+  keys.sort((a, b) => Number(a) - Number(b))
+  return keys.map(key => value[key]).filter(item => item !== undefined && item !== null)
+}
+
+function applyState(data) {
+  const normalized = data && typeof data === 'object' ? data : {}
+  careerActive.value = normalized.careerActive !== false
+  state.value = {
+    disciplines: normalizeList(normalized.disciplines),
+    activeContracts: normalizeList(normalized.activeContracts),
+    availableContracts: normalizeList(normalized.availableContracts),
+    activeSponsors: normalizeList(normalized.activeSponsors),
+    availableSponsors: normalizeList(normalized.availableSponsors),
+  }
+  lastSyncMs.value = Date.now()
+}
+
+function displayRemaining(baseMinutes) {
+  const elapsedMinutes = Math.max(0, (nowMs.value - lastSyncMs.value) / 60000)
+  return Math.max(0, Number(baseMinutes || 0) - elapsedMinutes)
+}
 
 function disciplineLabel(disciplineId) {
   return disciplineLookup.value[disciplineId]?.label || disciplineId
@@ -174,29 +224,17 @@ function bonusLabel(sponsor) {
 
 function canAcceptContract(contract) {
   const discipline = disciplineLookup.value[contract.disciplineId]
-  return discipline && discipline.contractSlotsUsed < discipline.contractSlots
+  return Boolean(discipline && discipline.contractsUnlocked && discipline.contractSlotsUsed < discipline.contractSlots)
 }
 
 function canSignSponsor(sponsor) {
   const discipline = disciplineLookup.value[sponsor.disciplineId]
-  return discipline && discipline.sponsorSlotsUsed < discipline.sponsorSlots
-}
-
-function applyState(data) {
-  const normalized = data && typeof data === 'object' ? data : {}
-  careerActive.value = normalized.careerActive !== false
-  state.value = {
-    disciplines: normalized.disciplines || [],
-    activeContracts: normalized.activeContracts || [],
-    availableContracts: normalized.availableContracts || [],
-    activeSponsors: normalized.activeSponsors || [],
-    availableSponsors: normalized.availableSponsors || [],
-  }
+  return Boolean(discipline && discipline.sponsorsUnlocked && discipline.sponsorSlotsUsed < discipline.sponsorSlots)
 }
 
 async function refreshState() {
   try {
-    const data = await lua.ui_phone_freContracts.getState()
+    const data = await lua.ui_phone_freContracts.getState('')
     applyState(data)
     errorMessage.value = ''
   } catch (error) {
@@ -254,7 +292,10 @@ onMounted(async () => {
   }
 
   await refreshState()
-  refreshTimer = setInterval(refreshState, 5000)
+  refreshTimer = setInterval(refreshState, REFRESH_INTERVAL_MS)
+  tickTimer = setInterval(() => {
+    nowMs.value = Date.now()
+  }, TIMER_TICK_MS)
 })
 
 onUnmounted(() => {
@@ -262,80 +303,80 @@ onUnmounted(() => {
     clearInterval(refreshTimer)
     refreshTimer = null
   }
+  if (tickTimer) {
+    clearInterval(tickTimer)
+    tickTimer = null
+  }
 })
 </script>
 
 <style scoped lang="scss">
-.fre-contracts {
+.fre-app {
   height: 100%;
   overflow-y: auto;
-  background: linear-gradient(180deg, #171718, #0f1012);
-  color: #f8fafc;
+  color: #f2f4f7;
+  background:
+    radial-gradient(120% 90% at 0% 0%, rgba(234, 98, 35, 0.24), transparent 45%),
+    radial-gradient(120% 90% at 100% 20%, rgba(52, 103, 209, 0.18), transparent 40%),
+    #14181f;
   padding: 52px 10px 14px;
-}
-
-.empty {
-  text-align: center;
-  color: rgba(248, 250, 252, 0.75);
-  padding: 24px 12px;
-}
-
-.small {
-  padding: 10px 4px;
 }
 
 .toolbar {
   display: flex;
   gap: 8px;
-  margin-bottom: 10px;
 }
 
 .discipline-select {
   flex: 1;
-  background: rgba(255, 255, 255, 0.1);
-  color: #f8fafc;
+  min-width: 0;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  padding: 6px 8px;
-}
-
-.refresh-btn {
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.08);
-  color: #f8fafc;
-  border-radius: 8px;
-  padding: 6px 10px;
-}
-
-.discipline-cards {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  margin-bottom: 10px;
-}
-
-.discipline-card {
-  text-align: left;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.05);
-  color: #f8fafc;
   border-radius: 10px;
-  padding: 7px;
+  background: rgba(17, 22, 31, 0.9);
+  color: #f2f4f7;
+  padding: 8px 10px;
 }
 
-.discipline-card.active {
-  border-color: rgba(255, 128, 0, 0.9);
+.sync-btn {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  background: rgba(17, 22, 31, 0.9);
+  color: #f2f4f7;
+  padding: 8px 10px;
+  font-weight: 700;
 }
 
-.discipline-name {
+.sync-meta {
+  margin-top: 8px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 10px;
+  color: rgba(228, 236, 246, 0.75);
+}
+
+.discipline-summary {
+  margin-bottom: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(19, 24, 33, 0.9);
+  padding: 8px;
+}
+
+.summary-title {
   font-size: 12px;
   font-weight: 700;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
-.discipline-meta {
+.summary-line {
   font-size: 10px;
-  opacity: 0.82;
+  color: rgba(227, 235, 246, 0.9);
+}
+
+.summary-line.muted {
+  color: rgba(227, 235, 246, 0.65);
 }
 
 .tabs {
@@ -346,16 +387,18 @@ onUnmounted(() => {
 
 .tabs button {
   flex: 1;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(255, 255, 255, 0.08);
-  color: #f8fafc;
-  padding: 6px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(17, 22, 31, 0.9);
+  color: #c3cfdf;
+  padding: 7px;
+  font-weight: 700;
 }
 
 .tabs button.active {
-  background: linear-gradient(135deg, #ff8a00, #ff5a00);
-  border-color: rgba(255, 255, 255, 0.25);
+  color: #fff;
+  border-color: rgba(255, 149, 92, 0.9);
+  background: rgba(165, 72, 29, 0.48);
 }
 
 .panel {
@@ -373,9 +416,9 @@ onUnmounted(() => {
 }
 
 .card {
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(19, 24, 33, 0.95);
   padding: 8px;
 }
 
@@ -387,25 +430,26 @@ onUnmounted(() => {
 
 .line {
   font-size: 11px;
-  opacity: 0.9;
+  color: rgba(227, 235, 246, 0.9);
 }
 
 .card button {
   width: 100%;
   margin-top: 6px;
-  border-radius: 8px;
+  border-radius: 9px;
   border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(255, 138, 0, 0.2);
+  background: rgba(228, 106, 45, 0.9);
   color: #fff;
-  padding: 6px 8px;
+  padding: 7px 8px;
+  font-weight: 700;
 }
 
 .card button.danger {
-  background: rgba(239, 68, 68, 0.25);
+  background: rgba(127, 48, 48, 0.9);
 }
 
 .card button:disabled {
-  opacity: 0.5;
+  opacity: 0.55;
 }
 
 .warning {
@@ -421,6 +465,16 @@ onUnmounted(() => {
 .warning button {
   margin-top: 6px;
   background: rgba(250, 204, 21, 0.2);
+}
+
+.empty {
+  text-align: center;
+  color: rgba(227, 235, 246, 0.75);
+  padding: 24px 12px;
+}
+
+.small {
+  padding: 10px 4px;
 }
 
 .error {

@@ -189,15 +189,68 @@ local function getSkillLevel(disciplineId)
   if not skillKey then
     return 0
   end
+
+  local refs = {}
+  local seen = {}
+  local function addRef(ref)
+    if type(ref) ~= "string" or ref == "" then
+      return
+    end
+    if seen[ref] then
+      return
+    end
+    seen[ref] = true
+    table.insert(refs, ref)
+  end
+
+  addRef(skillKey)
+  local discipline = freConfig.getDisciplineById(disciplineId)
+  if discipline then
+    addRef(discipline.id)
+  end
+
+  if career_branches and career_branches.getBranchById then
+    local branchBySkillKey = career_branches.getBranchById(skillKey)
+    if type(branchBySkillKey) == "table" then
+      addRef(branchBySkillKey.id)
+      addRef(branchBySkillKey.path)
+      addRef(branchBySkillKey.attributeKey)
+    end
+  end
+
+  if career_branches and career_branches.getSortedBranches then
+    for _, branch in ipairs(career_branches.getSortedBranches() or {}) do
+      if type(branch) == "table" and branch.attributeKey == skillKey then
+        addRef(branch.id)
+        addRef(branch.path)
+      end
+    end
+  end
+
+  local value = 0
+  if career_modules_playerAttributes and career_modules_playerAttributes.getAttributeValue then
+    local rawValue = career_modules_playerAttributes.getAttributeValue(skillKey)
+    value = tonumber(rawValue) or 0
+  end
+
   local level = 0
-  if career_branches and career_branches.getBranchLevel then
-    level = tonumber(career_branches.getBranchLevel(skillKey)) or 0
+  for _, branchRef in ipairs(refs) do
+    if career_branches and career_branches.getBranchLevel then
+      local directLevelRaw = career_branches.getBranchLevel(branchRef)
+      local directLevel = tonumber(directLevelRaw)
+      if directLevel and directLevel > level then
+        level = directLevel
+      end
+    end
+    if career_branches and career_branches.calcBranchLevelFromValue then
+      local calcLevel = career_branches.calcBranchLevelFromValue(value, branchRef)
+      calcLevel = tonumber(calcLevel)
+      if calcLevel and calcLevel > level then
+        level = calcLevel
+      end
+    end
   end
-  if level <= 0 and career_modules_playerAttributes and career_modules_playerAttributes.getAttributeValue and career_branches and career_branches.calcBranchLevelFromValue then
-    local value = tonumber(career_modules_playerAttributes.getAttributeValue(skillKey)) or 0
-    local branchLevel = career_branches.calcBranchLevelFromValue(value, skillKey)
-    level = tonumber(branchLevel) or 0
-  end
+
   return math.max(0, math.floor(level))
 end
 
@@ -709,6 +762,13 @@ local function awardContract(contract, disciplineId)
     label = string.format("FRE Contract Complete: %s", contract.raceLabel or contract.raceName or disciplineId),
     tags = {"gameplay", "reward", "fre", "contract"}
   }, true)
+
+  if ui_message then
+    local disciplineLabel = ((freConfig.getDisciplineById(disciplineId) or {}).label) or disciplineId
+    local raceLabel = contract.raceLabel or contract.raceName or disciplineId
+    local moneyRounded = math.floor(money + 0.5)
+    ui_message(string.format("Contract Complete\n%s - %s\nReward: $%d | XP: %d", disciplineLabel, raceLabel, moneyRounded, xp), 8, "FRE Contract")
+  end
 end
 
 local function onFreeroamRaceCompleted(payload)
@@ -791,16 +851,20 @@ local function buildDisciplineUiState(disciplineId, now)
   local level = getSkillLevel(disciplineId)
   local contractCfg = freConfig.getContractConfig()
   local sponsorCfg = freConfig.getSponsorConfig()
+  local contractUnlockLevel = tonumber((contractCfg.tierUnlockLevels or {}).easy) or 0
+  local sponsorUnlockLevel = tonumber((sponsorCfg.tierUnlockLevels or {}).easy) or 0
+  local contractsUnlocked = level >= contractUnlockLevel
+  local sponsorsUnlocked = level >= sponsorUnlockLevel
 
   local contractSlots = countSlotCap(level, contractCfg.slotUnlockLevels)
   local sponsorSlots = countSlotCap(level, sponsorCfg.slotUnlockLevels)
   local contractOfferCap = 0
   local sponsorOfferCap = 0
 
-  if level >= ((contractCfg.tierUnlockLevels or {}).easy or math.huge) then
+  if contractsUnlocked then
     contractOfferCap = countOfferCap(level, contractCfg)
   end
-  if level >= ((sponsorCfg.tierUnlockLevels or {}).easy or math.huge) then
+  if sponsorsUnlocked then
     sponsorOfferCap = countOfferCap(level, sponsorCfg)
   end
 
@@ -813,6 +877,12 @@ local function buildDisciplineUiState(disciplineId, now)
     skillKey = discipline.skillKey,
     placeholderOnly = discipline.placeholderOnly == true,
     level = level,
+    contractUnlockLevel = contractUnlockLevel,
+    sponsorUnlockLevel = sponsorUnlockLevel,
+    contractsUnlocked = contractsUnlocked,
+    sponsorsUnlocked = sponsorsUnlocked,
+    contractUnlockedTiers = getUnlockedContractTiers(level),
+    sponsorUnlockedTiers = getUnlockedSponsorTiers(level),
     contractSlots = contractSlots,
     contractSlotsUsed = #(dState.contracts.active or {}),
     contractOfferCap = contractOfferCap,
