@@ -1923,7 +1923,7 @@ local function setBestRoute(onlyClosestTarget)
 
   local result = {}
   getClosestNeighbor("player", deepcopy(targetsById), result, onlyClosestTarget)
-  core_groundMarkers.setPath(result, {clearPathOnReachingTarget = true})
+  core_groundMarkers.setPath(result, {clearPathOnReachingTarget = false})
   freeroam_bigMapMode.resetRoute()
 end
 
