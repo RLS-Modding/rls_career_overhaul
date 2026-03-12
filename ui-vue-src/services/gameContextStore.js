@@ -7,12 +7,16 @@ import ActivityStart from "@/modules/activitystart/views/ActivityStart.vue"
 import Recovery from "@/modules/recovery/views/Recovery.vue"
 import RadialFavoriteSelection from "@/modules/radial/views/FavoriteSelection.vue"
 import UnlockPopup from "@/modules/career/components/cargoOverview/UnlockPopup.vue"
+import FreContractCompletePopup from "@/modules/career/components/cargoOverview/FreContractCompletePopup.vue"
 
 export const useGameContextStore = defineStore("gameContext", () => {
   const { events } = useBridge()
   const LEVEL_UP_SOUND_EVENT_ENTRY = "event:>UI>Career>EndScreen_Whoosh_Main"
   const LEVEL_UP_SOUND_EVENT_IMPACT = "event:>UI>Career>EndScreen_Star_Bonus"
   const LEVEL_UP_SOUND_IMPACT_DELAY_MS = 120
+  const CONTRACT_COMPLETE_SOUND_EVENT_ENTRY = "event:>UI>Career>Computer"
+  const CONTRACT_COMPLETE_SOUND_EVENT_IMPACT = "event:>UI>Career>Buy_01"
+  const CONTRACT_COMPLETE_SOUND_IMPACT_DELAY_MS = 90
 
   const activities = ref([])
   let activityScreen = null
@@ -22,6 +26,8 @@ export const useGameContextStore = defineStore("gameContext", () => {
   let simpleDelayPopup = null
   const levelUpQueue = []
   let processingLevelUpQueue = false
+  const contractCompleteQueue = []
+  let processingContractCompleteQueue = false
 
   const startMission = missionId => {
     const mission = activities.value.find(x => x.id === missionId)
@@ -138,6 +144,77 @@ export const useGameContextStore = defineStore("gameContext", () => {
   }
   events.on("OpenCareerLevelUpCelebration", queueLevelUpCelebrations)
 
+  const normalizeContractCompleteEntry = entry => {
+    if (!entry || typeof entry !== "object") return null
+    const requiredCount = Math.max(1, Math.floor(Number(entry.requiredCount || 1)))
+    return {
+      ...entry,
+      tier: entry.tier || "easy",
+      objectiveType: entry.objectiveType === "laps" ? "laps" : "events",
+      requiredCount,
+      rewardMoney: Math.floor(Number(entry.rewardMoney || 0)),
+      rewardXp: Math.floor(Number(entry.rewardXp || 0)),
+      disciplineLabel: entry.disciplineLabel || "FRE",
+      raceLabel: entry.raceLabel || "Race",
+      requiredModelLabel: entry.requiredModelLabel || entry.requiredModel || "Any model",
+    }
+  }
+
+  const playContractCompleteSoundCombo = () => {
+    try {
+      lua.Engine.Audio.playOnce("AudioGui", CONTRACT_COMPLETE_SOUND_EVENT_ENTRY)
+      setTimeout(() => {
+        try {
+          lua.Engine.Audio.playOnce("AudioGui", CONTRACT_COMPLETE_SOUND_EVENT_IMPACT)
+        } catch (_err) {
+          // Ignore delayed impact audio failures.
+        }
+      }, CONTRACT_COMPLETE_SOUND_IMPACT_DELAY_MS)
+    } catch (_err) {
+      // Ignore audio failures to keep popup flow alive.
+    }
+  }
+
+  const processContractCompleteQueue = async () => {
+    if (processingContractCompleteQueue || contractCompleteQueue.length <= 0) return
+    processingContractCompleteQueue = true
+    try {
+      while (contractCompleteQueue.length > 0) {
+        const entry = contractCompleteQueue.shift()
+        if (!entry) continue
+        try {
+          playContractCompleteSoundCombo()
+          await addPopup(FreContractCompletePopup, { entry }, PopupTypes.activity).promise
+        } catch (_err) {
+          // Popup cancellation should not stop queued celebrations.
+        }
+      }
+    } finally {
+      processingContractCompleteQueue = false
+      if (contractCompleteQueue.length > 0) {
+        void processContractCompleteQueue()
+      }
+    }
+  }
+
+  const queueContractCompletionCelebrations = data => {
+    const entries = []
+    if (Array.isArray(data && data.entries)) {
+      entries.push(...data.entries)
+    } else if (data && data.entry) {
+      entries.push(data.entry)
+    }
+    if (!entries.length) return
+    for (const entry of entries) {
+      const normalized = normalizeContractCompleteEntry(entry)
+      if (normalized) {
+        contractCompleteQueue.push(normalized)
+      }
+    }
+    void processContractCompleteQueue()
+  }
+  events.on("OpenFreContractCelebration", queueContractCompletionCelebrations)
+
   function onActivityAcceptUpdate(data) {
     if (activityScreen && (activities.value || !data)) closeActivitiesPopup()
 
@@ -188,7 +265,9 @@ export const useGameContextStore = defineStore("gameContext", () => {
     events.off("ActivityAcceptUpdate", onActivityAcceptUpdate)
     events.off("ActivityAcceptClose", closeActivitiesPopup)
     events.off("OpenCareerLevelUpCelebration", queueLevelUpCelebrations)
+    events.off("OpenFreContractCelebration", queueContractCompletionCelebrations)
     levelUpQueue.length = 0
+    contractCompleteQueue.length = 0
   }
 
   return {

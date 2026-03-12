@@ -204,12 +204,16 @@ local function notifyFreRaceCompleted(raceName, raceData, raceLabel, finishTime,
         disciplineIds = disciplineIds,
         rawTypes = raceData and raceData.type or {},
         finishTime = finishTime,
+        lapCount = lapCount,
+        isHotlap = mHotlap == raceName,
         invalidLap = completionMeta and completionMeta.invalidLap == true or false,
         vehicleId = vehicleId,
         vehicleModel = getFreVehicleModel(vehicleId),
         resultMetrics = {
             time = finishTime,
             maxSpeed = maxSpeed,
+            lapCount = lapCount,
+            isHotlap = mHotlap == raceName,
             invalidLap = completionMeta and completionMeta.invalidLap == true or false
         },
         rewardBreakdown = completionMeta and completionMeta.rewardBreakdown or {}

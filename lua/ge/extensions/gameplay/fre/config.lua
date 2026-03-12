@@ -47,7 +47,14 @@ local defaultConfig = {
     offerIncreaseLevels = {12, 27, 42},
     tierUnlockLevels = {easy = 5, medium = 20, hard = 35},
     slotUnlockLevels = {baseLevel = 5, baseSlots = 2, extraLevels = {14, 29, 44}},
+    modelSourceOwnedChance = 0.5,
+    lapObjectiveChance = 0.5,
     expiryMinutesByTier = {easy = 120, medium = 60, hard = 30},
+    objectiveCountByTier = {
+      easy = {lapsMin = 1, lapsMax = 2, eventsMin = 1, eventsMax = 2},
+      medium = {lapsMin = 2, lapsMax = 3, eventsMin = 2, eventsMax = 3},
+      hard = {lapsMin = 3, lapsMax = 5, eventsMin = 3, eventsMax = 4}
+    },
     targetMultiplierByTier = {
       easy = {min = 1.06, max = 1.25},
       medium = {min = 1.02, max = 1.12},

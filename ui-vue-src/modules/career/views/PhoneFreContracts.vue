@@ -5,12 +5,11 @@
       <div v-else-if="!careerActive" class="empty">Start Career mode to use FRE Contracts.</div>
       <template v-else>
         <div class="toolbar">
-          <select v-model="selectedDiscipline" class="discipline-select">
-            <option value="all">All Disciplines</option>
-            <option v-for="discipline in disciplines" :key="discipline.id" :value="discipline.id">
-              {{ discipline.label }}
-            </option>
-          </select>
+          <BngDropdown
+            v-model="selectedDiscipline"
+            :items="disciplineOptions"
+            class="discipline-select"
+          />
           <button class="sync-btn" :disabled="actionBusy" @click="refreshState">Sync Now</button>
         </div>
 
@@ -40,8 +39,10 @@
           <div v-if="filteredActiveContracts.length === 0" class="empty small">No active contracts.</div>
           <div v-for="contract in filteredActiveContracts" :key="contract.id" class="card">
             <div class="title">{{ disciplineLabel(contract.disciplineId) }} - {{ tierLabel(contract.tier) }}</div>
-            <div class="line">{{ contract.raceLabel }} | {{ contract.requiredModelFamily || contract.requiredModel || 'Any model' }}</div>
+            <div class="line">{{ contract.raceLabel }} | {{ contract.requiredModelLabel || contract.requiredModelFamily || contract.requiredModel || 'Any model' }}</div>
             <div class="line">Target {{ formatTime(contract.targetTime) }}</div>
+            <div class="line">{{ objectiveRequirementLabel(contract) }}</div>
+            <div v-if="contract.objectiveType === 'events'" class="line">Progress {{ contract.progress || 0 }}/{{ contract.requiredCount || 1 }}</div>
             <div class="line">Reward ${{ formatMoney(contract.rewardMoney) }} + {{ contract.rewardXp }} XP</div>
             <div class="line">Expires in {{ formatMinutes(displayRemaining(contract.minutesRemaining)) }}</div>
             <button class="danger" :disabled="actionBusy" @click="abandonContract(contract.id)">Abandon</button>
@@ -54,8 +55,9 @@
           <div v-else-if="filteredAvailableContracts.length === 0" class="empty small">No offers available.</div>
           <div v-for="contract in filteredAvailableContracts" :key="contract.id" class="card">
             <div class="title">{{ disciplineLabel(contract.disciplineId) }} - {{ tierLabel(contract.tier) }}</div>
-            <div class="line">{{ contract.raceLabel }} | {{ contract.requiredModelFamily || contract.requiredModel || 'Any model' }}</div>
+            <div class="line">{{ contract.raceLabel }} | {{ contract.requiredModelLabel || contract.requiredModelFamily || contract.requiredModel || 'Any model' }}</div>
             <div class="line">Target {{ formatTime(contract.targetTime) }}</div>
+            <div class="line">{{ objectiveRequirementLabel(contract) }}</div>
             <div class="line">Reward ${{ formatMoney(contract.rewardMoney) }} + {{ contract.rewardXp }} XP</div>
             <div class="line">Expires in {{ formatMinutes(displayRemaining(contract.minutesRemaining)) }}</div>
             <button :disabled="actionBusy || !canAcceptContract(contract)" @click="acceptContract(contract.id)">
@@ -101,6 +103,7 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { lua } from '@/bridge'
 import PhoneWrapper from './PhoneWrapper.vue'
+import { BngDropdown } from '@/common/components/base'
 
 const REFRESH_INTERVAL_MS = 5 * 60 * 1000
 const TIMER_TICK_MS = 1000
@@ -125,6 +128,17 @@ let refreshTimer = null
 let tickTimer = null
 
 const disciplines = computed(() => state.value.disciplines || [])
+const disciplineOptions = computed(() => {
+  const options = [{ value: 'all', label: 'All Disciplines' }]
+  for (const discipline of disciplines.value) {
+    options.push({
+      value: discipline.id,
+      label: discipline.label || discipline.id,
+    })
+  }
+  return options
+})
+
 const disciplineLookup = computed(() => {
   const lookup = {}
   for (const discipline of disciplines.value) {
@@ -220,6 +234,15 @@ function bonusLabel(sponsor) {
   const amount = `${Math.round((Number(sponsor.bonusPercent || 0) * 100) * 10) / 10}%`
   const type = sponsor.bonusType === 'disciplineXP' ? 'XP' : sponsor.bonusType === 'both' ? 'Money + XP' : 'Money'
   return `${amount} ${type}`
+}
+
+function objectiveRequirementLabel(contract) {
+  const objectiveType = contract?.objectiveType === 'laps' ? 'laps' : 'events'
+  const requiredCount = Math.max(1, Math.floor(Number(contract?.requiredCount || 1)))
+  if (objectiveType === 'laps') {
+    return `Objective ${requiredCount} lap${requiredCount === 1 ? '' : 's'} under target`
+  }
+  return `Objective ${requiredCount} event${requiredCount === 1 ? '' : 's'} under target`
 }
 
 function canAcceptContract(contract) {
@@ -330,11 +353,34 @@ onUnmounted(() => {
 .discipline-select {
   flex: 1;
   min-width: 0;
+}
+
+.discipline-select :deep(.bng-dropdown) {
+  margin: 0;
+  width: 100%;
+  min-height: 34px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 10px;
   background: rgba(17, 22, 31, 0.9);
   color: #f2f4f7;
-  padding: 8px 10px;
+  padding: 7px 10px;
+}
+
+.discipline-select :deep(.dropdown-display) {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.discipline-select :deep(.bng-dropdown-content) {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(17, 22, 31, 0.98);
+}
+
+.discipline-select :deep(.dropdown-option) {
+  min-width: 180px;
 }
 
 .sync-btn {

@@ -3,6 +3,7 @@ local M = {}
 M.dependencies = {'career_career'}
 
 local freConfig = require('gameplay/fre/config')
+local core_vehicles = require('core/vehicles')
 
 local SAVE_FILE = "/career/fre/freContractsSponsors.json"
 local STATE_VERSION = 1
@@ -331,7 +332,8 @@ local function refreshRaceCache()
         table.insert(byDiscipline[disciplineId], {
           raceName = raceName,
           raceLabel = race.label or raceName,
-          bestTime = tonumber(race.bestTime) or tonumber(race.hotlap) or 60
+          bestTime = tonumber(race.bestTime) or tonumber(race.hotlap) or 60,
+          isLapEvent = race.hotlap ~= nil
         })
       end
     end
@@ -376,18 +378,140 @@ local function randomSponsorName()
   return prefix .. " " .. suffix
 end
 
+local function tableHasAnyEntries(value)
+  if type(value) ~= "table" then
+    return false
+  end
+  for _, _ in pairs(value) do
+    return true
+  end
+  return false
+end
+
+local function isValidVehicleModelKey(modelKey)
+  local normalized = type(modelKey) == "string" and string.lower(modelKey) or nil
+  if not normalized or normalized == "" then
+    return false
+  end
+
+  if core_vehicles and core_vehicles.getModel then
+    local modelData = core_vehicles.getModel(normalized)
+    if type(modelData) ~= "table" then
+      return false
+    end
+    local modelInfo = type(modelData.model) == "table" and modelData.model or {}
+    local typeHint = string.lower(tostring(modelInfo.Type or modelInfo.type or modelInfo.Category or modelInfo.category or ""))
+    local classHint = string.lower(tostring(modelInfo.Class or modelInfo.class or ""))
+    if string.find(typeHint, "prop", 1, true) or string.find(typeHint, "device", 1, true) then
+      return false
+    end
+    if string.find(classHint, "prop", 1, true) or string.find(classHint, "device", 1, true) then
+      return false
+    end
+
+    if modelData.configs ~= nil and not tableHasAnyEntries(modelData.configs) then
+      return false
+    end
+  end
+
+  return true
+end
+
 local function getOwnedVehicleModels()
   local models = {}
   local seen = {}
   local vehicles = career_modules_inventory and career_modules_inventory.getVehicles and career_modules_inventory.getVehicles() or {}
   for _, vehicle in pairs(vehicles or {}) do
     local model = type(vehicle.model) == "string" and string.lower(vehicle.model) or nil
-    if model and model ~= "" and not seen[model] then
+    if model and model ~= "" and isValidVehicleModelKey(model) and not seen[model] then
       seen[model] = true
       table.insert(models, model)
     end
   end
   return models
+end
+
+local function appendUniqueModels(target, seen, source)
+  for _, model in ipairs(source or {}) do
+    if type(model) == "string" and model ~= "" then
+      local key = string.lower(model)
+      if not seen[key] then
+        seen[key] = true
+        table.insert(target, key)
+      end
+    end
+  end
+end
+
+local function getKnownVehicleModels()
+  local models = {}
+  local seen = {}
+
+  if core_vehicles and core_vehicles.getModelList then
+    local modelList = core_vehicles.getModelList() or {}
+    local source = modelList.models or {}
+    for modelKey, _ in pairs(source) do
+      if type(modelKey) == "string" and modelKey ~= "" then
+        local key = string.lower(modelKey)
+        if isValidVehicleModelKey(key) and not seen[key] then
+          seen[key] = true
+          table.insert(models, key)
+        end
+      end
+    end
+  end
+
+  return models
+end
+
+local function getConfiguredContractModels()
+  local models = {}
+  local seen = {}
+  for _, model in ipairs(freConfig.getContractVehicleModels() or {}) do
+    local key = type(model) == "string" and string.lower(model) or nil
+    if key and key ~= "" and isValidVehicleModelKey(key) and not seen[key] then
+      seen[key] = true
+      table.insert(models, key)
+    end
+  end
+  return models
+end
+
+local function prettifyModelKey(modelKey)
+  if type(modelKey) ~= "string" or modelKey == "" then
+    return "Unknown Model"
+  end
+  local words = {}
+  for token in modelKey:gsub("_", " "):gmatch("%S+") do
+    local trimmedToken = token:gsub("%d+$", "")
+    if trimmedToken == "" then
+      trimmedToken = token
+    end
+    local first = trimmedToken:sub(1, 1)
+    local rest = trimmedToken:sub(2)
+    table.insert(words, string.upper(first) .. string.lower(rest))
+  end
+  return #words > 0 and table.concat(words, " ") or modelKey
+end
+
+local function getModelDisplayName(modelKey)
+  local normalized = type(modelKey) == "string" and string.lower(modelKey) or nil
+  if not normalized or normalized == "" then
+    return "Unknown Model"
+  end
+
+  if core_vehicles and core_vehicles.getModel then
+    local modelData = core_vehicles.getModel(normalized)
+    local modelInfo = modelData and modelData.model
+    if type(modelInfo) == "table" then
+      local modelName = modelInfo.Name or modelInfo.name
+      if type(modelName) == "string" and modelName ~= "" then
+        return modelName
+      end
+    end
+  end
+
+  return prettifyModelKey(normalized)
 end
 
 local function buildVehicleBlacklistLookup(disciplineId)
@@ -413,29 +537,109 @@ local function filterModelPool(models, blacklistLookup)
   return filtered
 end
 
-local function getContractModelPool(disciplineId)
+local function getOwnedContractModelPool(disciplineId)
   local blacklist = buildVehicleBlacklistLookup(disciplineId)
   local ownedModels = filterModelPool(getOwnedVehicleModels(), blacklist)
   return ownedModels
 end
 
-local function isOwnedAndAllowedModel(disciplineId, model)
+local function getRandomContractModelPool(disciplineId)
+  local blacklist = buildVehicleBlacklistLookup(disciplineId)
+  local configured = getConfiguredContractModels()
+  if #configured > 0 then
+    return filterModelPool(configured, blacklist)
+  end
+  return filterModelPool(getKnownVehicleModels(), blacklist)
+end
+
+local function isModelAllowedForDiscipline(disciplineId, model)
   local normalized = type(model) == "string" and string.lower(model) or nil
   if not normalized or normalized == "" then
     return false
   end
 
   local blacklist = buildVehicleBlacklistLookup(disciplineId)
-  if blacklist[normalized] then
-    return false
-  end
+  return blacklist[normalized] ~= true
+end
 
-  for _, ownedModel in ipairs(getOwnedVehicleModels()) do
-    if ownedModel == normalized then
-      return true
+local function pickContractModel(disciplineId)
+  local contractCfg = freConfig.getContractConfig() or {}
+  local ownedChance = tonumber(contractCfg.modelSourceOwnedChance)
+  if ownedChance == nil then
+    ownedChance = 0.5
+  end
+  ownedChance = math.max(0, math.min(1, ownedChance))
+
+  local ownedPool = getOwnedContractModelPool(disciplineId)
+  local randomPool = getRandomContractModelPool(disciplineId)
+  local useOwned = #ownedPool > 0 and (#randomPool == 0 or math.random() < ownedChance)
+  local source = useOwned and "owned" or "random"
+  local pool = useOwned and ownedPool or randomPool
+
+  if #pool == 0 then
+    if #ownedPool > 0 then
+      pool = ownedPool
+      source = "owned"
+    elseif #randomPool > 0 then
+      pool = randomPool
+      source = "random"
     end
   end
-  return false
+
+  if #pool == 0 then
+    return nil, nil
+  end
+
+  return pickRandomFromList(pool), source
+end
+
+local function pickContractObjective(tier, raceEntry)
+  local contractCfg = freConfig.getContractConfig() or {}
+  local objectiveCfgByTier = contractCfg.objectiveCountByTier or {}
+  local objectiveCfg = objectiveCfgByTier[tier] or {}
+  local lapObjectiveChance = tonumber(contractCfg.lapObjectiveChance)
+  if lapObjectiveChance == nil then
+    lapObjectiveChance = 0.5
+  end
+  lapObjectiveChance = math.max(0, math.min(1, lapObjectiveChance))
+
+  local supportsLaps = raceEntry and raceEntry.isLapEvent == true
+  local objectiveType = "events"
+  if supportsLaps and math.random() < lapObjectiveChance then
+    objectiveType = "laps"
+  end
+
+  local minCount, maxCount
+  if objectiveType == "laps" then
+    minCount = tonumber(objectiveCfg.lapsMin) or 1
+    maxCount = tonumber(objectiveCfg.lapsMax) or minCount
+  else
+    minCount = tonumber(objectiveCfg.eventsMin) or 1
+    maxCount = tonumber(objectiveCfg.eventsMax) or minCount
+  end
+
+  minCount = math.max(1, math.floor(minCount))
+  maxCount = math.max(minCount, math.floor(maxCount))
+
+  return objectiveType, randomInt(minCount, maxCount)
+end
+
+local function normalizeContractEntry(entry)
+  if type(entry) ~= "table" then
+    return
+  end
+  local objectiveType = entry.objectiveType
+  if objectiveType ~= "laps" and objectiveType ~= "events" then
+    objectiveType = "events"
+  end
+  entry.objectiveType = objectiveType
+  entry.requiredCount = math.max(1, math.floor(tonumber(entry.requiredCount) or 1))
+  entry.progress = math.max(0, math.floor(tonumber(entry.progress) or 0))
+
+  local modelKey = entry.requiredModelFamily or entry.requiredModel
+  if (not entry.requiredModelLabel or entry.requiredModelLabel == "") and type(modelKey) == "string" and modelKey ~= "" then
+    entry.requiredModelLabel = getModelDisplayName(modelKey)
+  end
 end
 
 local function purgeExpiredEntries(now)
@@ -510,10 +714,12 @@ local function generateContractOffer(disciplineId, level, now)
   local rewardXp = randomInt(tonumber(rewardRange.xpMin) or 100, tonumber(rewardRange.xpMax) or 300)
 
   local expiryMinutes = tonumber((contractCfg.expiryMinutesByTier or {})[tier]) or 60
-  local model = pickRandomFromList(getContractModelPool(disciplineId))
+  local model, modelSource = pickContractModel(disciplineId)
   if not model or model == "" then
     return nil
   end
+
+  local objectiveType, requiredCount = pickContractObjective(tier, raceEntry)
 
   return {
     id = nextId("fre-contract"),
@@ -524,6 +730,11 @@ local function generateContractOffer(disciplineId, level, now)
     targetTime = targetTime,
     requiredModel = model,
     requiredModelFamily = model,
+    requiredModelLabel = getModelDisplayName(model),
+    modelSource = modelSource,
+    objectiveType = objectiveType,
+    requiredCount = requiredCount,
+    progress = 0,
     rewardMoney = rewardMoney,
     rewardXp = rewardXp,
     expiresAt = now + expiryMinutes,
@@ -565,11 +776,12 @@ local function syncOffersForDiscipline(disciplineId, now)
   local dState = state.disciplines[disciplineId]
   if not dState then return end
 
-  -- Remove stale offers that require models the player no longer owns (or are now blacklisted).
+  -- Remove offers that require a now-blacklisted model.
   for i = #dState.contracts.available, 1, -1 do
     local offer = dState.contracts.available[i]
+    normalizeContractEntry(offer)
     local requiredModel = offer and (offer.requiredModelFamily or offer.requiredModel)
-    if requiredModel and requiredModel ~= "" and not isOwnedAndAllowedModel(disciplineId, requiredModel) then
+    if requiredModel and requiredModel ~= "" and (not isModelAllowedForDiscipline(disciplineId, requiredModel) or not isValidVehicleModelKey(requiredModel)) then
       table.remove(dState.contracts.available, i)
     end
   end
@@ -753,6 +965,10 @@ local function awardContract(contract, disciplineId)
 
   local money = tonumber(contract.rewardMoney) or 0
   local xp = tonumber(contract.rewardXp) or 0
+  local objectiveType = contract.objectiveType == "laps" and "laps" or "events"
+  local requiredCount = math.max(1, math.floor(tonumber(contract.requiredCount) or 1))
+  local requiredModel = contract.requiredModelFamily or contract.requiredModel
+  local requiredModelLabel = contract.requiredModelLabel or getModelDisplayName(requiredModel)
   local rewardData = {
     money = {amount = money, canBeNegative = false},
     beamXP = {amount = math.floor(xp / 10)}
@@ -769,6 +985,27 @@ local function awardContract(contract, disciplineId)
     local moneyRounded = math.floor(money + 0.5)
     ui_message(string.format("Contract Complete\n%s - %s\nReward: $%d | XP: %d", disciplineLabel, raceLabel, moneyRounded, xp), 8, "FRE Contract")
   end
+
+  if guihooks and guihooks.trigger then
+    local disciplineLabel = ((freConfig.getDisciplineById(disciplineId) or {}).label) or disciplineId
+    local raceLabel = contract.raceLabel or contract.raceName or disciplineId
+    local moneyRounded = math.floor(money + 0.5)
+    guihooks.trigger("OpenFreContractCelebration", {
+      entry = {
+        disciplineId = disciplineId,
+        disciplineLabel = disciplineLabel,
+        tier = contract.tier or "easy",
+        raceName = contract.raceName,
+        raceLabel = raceLabel,
+        requiredModel = requiredModel,
+        requiredModelLabel = requiredModelLabel,
+        objectiveType = objectiveType,
+        requiredCount = requiredCount,
+        rewardMoney = moneyRounded,
+        rewardXp = xp
+      }
+    })
+  end
 end
 
 local function onFreeroamRaceCompleted(payload)
@@ -777,9 +1014,11 @@ local function onFreeroamRaceCompleted(payload)
     return
   end
 
+  local stateChanged = false
   local now = tonumber(state.simTime) or 0
   local raceName = payload.raceName
   local finishTime = tonumber(payload.finishTime) or math.huge
+  local lapCount = math.max(0, math.floor(tonumber(payload.lapCount) or 0))
   local invalidLap = payload.invalidLap == true
   local vehicleModel = string.lower(payload.vehicleModel or getCurrentVehicleModel(payload.vehicleId) or "")
   local disciplineIds = payload.disciplineIds or {}
@@ -801,11 +1040,13 @@ local function onFreeroamRaceCompleted(payload)
             sponsor.warningIssuedAt = nil
             sponsor.lastQualifiedAt = now
             sponsor.nextCheckAt = now + (tonumber(sponsor.upkeepMinutes) or 120)
+            stateChanged = true
           end
         end
 
         for i = #dState.contracts.active, 1, -1 do
           local contract = dState.contracts.active[i]
+          normalizeContractEntry(contract)
           local raceOk = (contract.raceName == raceName)
           local requiredModelFamily = contract.requiredModelFamily or contract.requiredModel
           local modelOk = modelFamilyMatches(requiredModelFamily, vehicleModel)
@@ -813,13 +1054,35 @@ local function onFreeroamRaceCompleted(payload)
           local notExpired = now <= (tonumber(contract.expiresAt) or 0)
 
           if not invalidLap and raceOk and modelOk and timeOk and notExpired then
-            awardContract(contract, disciplineId)
-            dState.contracts.completed = dState.contracts.completed + 1
-            table.remove(dState.contracts.active, i)
+            local objectiveType = contract.objectiveType == "laps" and "laps" or "events"
+            local requiredCount = math.max(1, math.floor(tonumber(contract.requiredCount) or 1))
+            local objectiveComplete = false
+
+            if objectiveType == "laps" then
+              objectiveComplete = lapCount >= requiredCount
+            else
+              local before = tonumber(contract.progress) or 0
+              contract.progress = math.min(requiredCount, (tonumber(contract.progress) or 0) + 1)
+              if contract.progress ~= before then
+                stateChanged = true
+              end
+              objectiveComplete = contract.progress >= requiredCount
+            end
+
+            if objectiveComplete then
+              awardContract(contract, disciplineId)
+              dState.contracts.completed = dState.contracts.completed + 1
+              table.remove(dState.contracts.active, i)
+              stateChanged = true
+            end
           end
         end
       end
     end
+  end
+
+  if stateChanged then
+    saveState()
   end
 end
 
@@ -898,6 +1161,7 @@ local function buildDisciplineUiState(disciplineId, now)
 end
 
 local function formatContractForUi(contract, now, level)
+  normalizeContractEntry(contract)
   return {
     id = contract.id,
     disciplineId = contract.disciplineId,
@@ -907,6 +1171,11 @@ local function formatContractForUi(contract, now, level)
     targetTime = contract.targetTime,
     requiredModel = contract.requiredModel,
     requiredModelFamily = contract.requiredModelFamily,
+    requiredModelLabel = contract.requiredModelLabel,
+    modelSource = contract.modelSource,
+    objectiveType = contract.objectiveType,
+    requiredCount = contract.requiredCount,
+    progress = contract.progress,
     rewardMoney = contract.rewardMoney,
     rewardXp = contract.rewardXp,
     expiresAt = contract.expiresAt,
@@ -1000,11 +1269,12 @@ local function acceptContract(contractId)
     local dState = state.disciplines[discipline.id]
     for idx, entry in ipairs(dState.contracts.available) do
       if entry.id == contractId then
+        normalizeContractEntry(entry)
         local requiredModel = entry.requiredModelFamily or entry.requiredModel
-        if requiredModel and requiredModel ~= "" and not isOwnedAndAllowedModel(discipline.id, requiredModel) then
+        if requiredModel and requiredModel ~= "" and (not isModelAllowedForDiscipline(discipline.id, requiredModel) or not isValidVehicleModelKey(requiredModel)) then
           table.remove(dState.contracts.available, idx)
           saveState()
-          return false, "Required vehicle model is no longer available."
+          return false, "Required model is invalid or blacklisted."
         end
         local level = getSkillLevel(discipline.id)
         local slotCap = countSlotCap(level, (freConfig.getContractConfig() or {}).slotUnlockLevels)
