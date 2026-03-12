@@ -172,6 +172,11 @@ local function buildDisciplineXpRewards(disciplineIds, baseXp, rewardModifiers)
     return rewards, breakdown, totalXp
 end
 
+local function calculateBaseFreEventXp(baseReward)
+    local rewardValue = math.max(0, tonumber(baseReward) or 0)
+    return math.floor(rewardValue * 2.5)
+end
+
 local function mergeRewardTables(target, source)
     if type(target) ~= "table" or type(source) ~= "table" then
         return
@@ -421,7 +426,7 @@ local function payoutRace()
         local baseRewardBeforeFre = reward
         local freModifiers = getFreRewardModifiers(completionMeta.disciplineIds)
         reward = reward * (tonumber(freModifiers.moneyMultiplier) or 1)
-        local baseDisciplineXp = math.floor(baseRewardBeforeFre / 20)
+        local baseDisciplineXp = calculateBaseFreEventXp(baseRewardBeforeFre)
         local disciplineXpRewards, disciplineXpBreakdown, totalDisciplineXp = buildDisciplineXpRewards(completionMeta.disciplineIds, baseDisciplineXp, freModifiers)
         completionMeta.rewardBreakdown = {
             money = {
@@ -563,7 +568,7 @@ local function payoutDragRace(raceName, finishTime, finishSpeed, vehId)
     local baseRewardBeforeFre = reward
     local freModifiers = getFreRewardModifiers(disciplineIds)
     reward = reward * (tonumber(freModifiers.moneyMultiplier) or 1)
-    local baseDisciplineXp = math.floor(baseRewardBeforeFre / 20)
+    local baseDisciplineXp = calculateBaseFreEventXp(baseRewardBeforeFre)
     local disciplineXpRewards, disciplineXpBreakdown, totalDisciplineXp = buildDisciplineXpRewards(disciplineIds, baseDisciplineXp, freModifiers)
     local completionMeta = {
         disciplineIds = disciplineIds,
