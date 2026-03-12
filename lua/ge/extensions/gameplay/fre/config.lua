@@ -86,7 +86,7 @@ local defaultConfig = {
     upkeepMinutesByTier = {easy = 360, medium = 240, hard = 120},
     graceMinutes = 20,
     targetMultiplierByTier = {
-      easy = {min = 1, max = 1.05,
+      easy = {min = 1.00, max = 1.05},
       medium = {min = 0.93, max = 0.99},
       hard = {min = 0.85, max = 0.92}
     },
