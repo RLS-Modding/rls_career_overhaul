@@ -39,7 +39,8 @@ local modifiers = {
     hidden = true
   },
   precious = {
-    unlockFlag = "largePackagesDelivery",
+    -- Keep medium parcel variants aligned with the 32-slot gate.
+    unlockFlag = "logisticsParcel32Slots",
     penalty = 3,
     makeTemplate = function(g, p, distance)
       return {
@@ -56,7 +57,8 @@ local modifiers = {
     important = true
   },
   supplies = {
-    unlockFlag = "largePackagesDelivery",
+    -- Keep medium parcel variants aligned with the 32-slot gate.
+    unlockFlag = "logisticsParcel32Slots",
     makeTemplate = function(g, p, distance)
       return {
         type = "supplies",
@@ -71,7 +73,8 @@ local modifiers = {
     hidden = true
   },
   large = {
-    unlockFlag = "largePackagesDelivery",
+    -- Large/heavy modifier can appear on different slot sizes; slot gates will handle exact tier.
+    unlockFlag = "logisticsParcel32Slots",
     makeTemplate = function(g, p, distance)
       return {
         type = "large",
@@ -85,7 +88,7 @@ local modifiers = {
     shortDescription = "Drive carefully and beware of momentum!"
   },
   fluid = {
-    unlockFlag = "hazardousMaterialsDelivery",
+    unlockFlag = "logisticsFluidDelivery",
     makeTemplate = function(g, p, distance)
       return {
         type = "fluid"
@@ -98,7 +101,7 @@ local modifiers = {
     shortDescription = "Requires a fluid-capable container or tank to transport."
   },
   dryBulk = {
-    unlockFlag = "hazardousMaterialsDelivery",
+    unlockFlag = "logisticsAggregateDelivery",
     makeTemplate = function(g, p, distance)
       return {
         type = "dryBulk"
@@ -111,7 +114,7 @@ local modifiers = {
     shortDescription = "Requires a drybulk-capable container to transport."
   },
   cement = {
-    unlockFlag = "hazardousMaterialsDelivery",
+    unlockFlag = "logisticsCementDelivery",
     makeTemplate = function(g, p, distance)
       return {
         type = "cement"
@@ -124,7 +127,7 @@ local modifiers = {
     shortDescription = "Requires a cement-capable container to transport."
   },
   cash = {
-    unlockFlag = "smallPackagesDelivery",
+    unlockFlag = "logisticsCashDelivery",
     makeTemplate = function(g, p, distance)
       return {
         type = "cash"
@@ -148,6 +151,48 @@ local modifiers = {
     icon = "cardboardBox",
     label = "Parcel",
     shortDescription = "Requires a parcel-capable container transport.",
+    hidden = true
+  },
+  slot32 = {
+    unlockFlag = "logisticsParcel32Slots",
+    makeTemplate = function(g, p, distance)
+      return {
+        type = "slot32"
+      }
+    end,
+    unlockLabel = "32 Slot Parcels",
+    priority = 6,
+    icon = "cardboardBox",
+    label = "32 Slot Parcels",
+    shortDescription = "Allows handling parcels above 16 slots.",
+    hidden = true
+  },
+  slot64 = {
+    unlockFlag = "logisticsParcel64Slots",
+    makeTemplate = function(g, p, distance)
+      return {
+        type = "slot64"
+      }
+    end,
+    unlockLabel = "64 Slot Parcels",
+    priority = 6,
+    icon = "cardboardBox",
+    label = "64 Slot Parcels",
+    shortDescription = "Allows handling parcels above 32 slots.",
+    hidden = true
+  },
+  slot128 = {
+    unlockFlag = "logisticsParcel128Slots",
+    makeTemplate = function(g, p, distance)
+      return {
+        type = "slot128"
+      }
+    end,
+    unlockLabel = "128 Slot Parcels",
+    priority = 6,
+    icon = "cardboardBox",
+    label = "128 Slot Parcels",
+    shortDescription = "Allows handling parcels above 64 slots.",
     hidden = true
   },
   hazardous = {
@@ -236,6 +281,17 @@ local function generateModifiers(item, parcelTemplate, distance)
 
   if item.slots >= largeSlotThreshold or item.weight >= heavyWeightThreshold and not parcelTemplate.modChance.large then
     table.insert(mods, modifiers.large.makeTemplate())
+  end
+
+  -- Gate parcel size tiers by skill unlocks.
+  -- Round slot values to avoid floating-point edge cases (e.g., 32.000001).
+  local slotCount = math.floor((item.slots or 0) + 0.5)
+  if slotCount > 64 then
+    table.insert(mods, modifiers.slot128.makeTemplate())
+  elseif slotCount > 32 then
+    table.insert(mods, modifiers.slot64.makeTemplate())
+  elseif slotCount > 16 then
+    table.insert(mods, modifiers.slot32.makeTemplate())
   end
 
   table.sort(mods, sortByPrio)

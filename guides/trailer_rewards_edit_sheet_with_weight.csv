@@ -1,0 +1,142 @@
+levels,trailerId,baseReward,rewardPerKm,rewardAt3Miles_Formula,trailerWeight
+5,vanillaTrailer_tsfb_unloaded,250,50,491,0 kg
+5,vanillaTrailer_boxutility_unloaded,275,50,516,0 kg
+5,vanillaTrailer_tsfb_loaded_armchairs,250,100,733,400-2100 kg
+5,vanillaTrailer_boxutility_loaded_armchairs,275,100,758,200-1400 kg
+5,vanillaTrailer_boxutility_large_unloaded,315,100,798,0 kg
+5,vanillaTrailer_tsfb_loaded_couch,250,150,974,400-2100 kg
+5,vanillaTrailer_boxutility_loaded_couch,275,150,999,200-1400 kg
+5,vanillaTrailer_boxutility_large_loaded_armchairs,315,150,1039,400-2100 kg
+5,vanillaTrailer_tsfb_loaded_400,250,200,1216,400 kg
+5,vanillaTrailer_boxutility_loaded_200,275,200,1241,200 kg
+5,vanillaTrailer_boxutility_large_loaded_couch,315,200,1281,400-2100 kg
+5,vanillaTrailer_caravan_default,250,250,1457,N/A
+5,vanillaTrailer_caravan_empty,250,250,1457,0 kg
+5,vanillaTrailer_tsfb_loaded_800,250,250,1457,800 kg
+5,vanillaTrailer_boxutility_loaded_400,275,250,1482,400 kg
+5,vanillaTrailer_boxutility_large_loaded_400,315,250,1522,400 kg
+5,vanillaTrailer_tsfb_loaded_planks,250,300,1698,1400 kg
+5,vanillaTrailer_boxutility_loaded_600,275,300,1723,600 kg
+5,vanillaTrailer_boxutility_large_loaded_800,315,325,1884,800 kg
+5,vanillaTrailer_tsfb_loaded_planks_long,250,350,1940,2100 kg
+5,vanillaTrailer_boxutility_loaded_planks,275,350,1965,1400 kg
+5,vanillaTrailer_boxutility_large_loaded_planks,315,350,2005,1400 kg
+25,vanillaTrailer_dolly_double,800,250,2007,N/A
+25,vanillaTrailer_dolly_single,800,250,2007,N/A
+5,vanillaTrailer_boxutility_large_loaded_planks_long,315,375,2126,2100 kg
+17,vanillaTrailer_cargotrailer_default,1000,250,2207,0 kg
+5,vanillaTrailer_boxutility_large_unsafe,315,400,2246,400-2100 kg
+17,vanillaTrailer_cargotrailer_loaded_armchairs,1100,275,2428,400-2100 kg
+17,vanillaTrailer_cargotrailer_loaded_couch,1100,300,2548,400-2100 kg
+17,vanillaTrailer_tiltdeck_22ft_standard,1200,285,2576,2880-9600 kg
+17,vanillaTrailer_cargotrailer_loaded_400,1100,315,2621,400 kg
+17,vanillaTrailer_cargotrailer_loaded_800,1100,325,2669,800 kg
+17,vanillaTrailer_tiltdeck_30ft_standard,1200,325,2769,2880-9600 kg
+17,vanillaTrailer_cargotrailer_loaded_planks,1200,335,2817,1400 kg
+17,vanillaTrailer_cargotrailer_loaded_planks_long,1200,350,2890,2100 kg
+17,vanillaTrailer_tiltdeck_22ft_gooseneck,1500,300,2948,2880-9600 kg
+17,vanillaTrailer_tiltdeck_22ft_standard_hay,1200,400,3131,2880 kg
+17,vanillaTrailer_tiltdeck_30ft_gooseneck,1500,350,3190,2880-9600 kg
+17,vanillaTrailer_tiltdeck_40ft_gooseneck,1500,400,3431,2880-9600 kg
+17,vanillaTrailer_tiltdeck_22ft_gooseneck_wood,1500,415,3504,4200 kg
+17,vanillaTrailer_tiltdeck_30ft_standard_hay,1200,500,3614,3840 kg
+17,vanillaTrailer_tiltdeck_40ft_standard,1200,500,3614,2880-9600 kg
+17,vanillaTrailer_tiltdeck_30ft_pintle,1700,450,3873,2880-9600 kg
+17,vanillaTrailer_tiltdeck_40ft_standard_wood,1200,575,3976,7000 kg
+17,vanillaTrailer_tiltdeck_30ft_gooseneck_wood,1500,525,4035,5600 kg
+25,vanillaTrailer_dryvan_28ft,2000,500,4414,0 kg
+17,vanillaTrailer_tiltdeck_40ft_gooseneck_hay,1500,615,4469,9600 kg
+25,vanillaTrailer_dryvan_48ft,2000,525,4535,0 kg
+25,vanillaTrailer_dryvan_48ft_spreadaxle,2000,550,4655,0 kg
+25,vanillaTrailer_dryvan_53ft,2000,575,4776,0 kg
+25,vanillaTrailer_dryvan_53ft_spreadaxle,2000,585,4824,0 kg
+30,vanillaTrailer_frameless_dump_double,2300,600,5197,N/A
+30,vanillaTrailer_frameless_dump_triple,2300,615,5269,N/A
+30,vanillaTrailer_frameless_dump_wide_double,2300,625,5318,N/A
+25,vanillaTrailer_dryvan_48ft_loadingramp_offset,2200,700,5580,4500-22400 kg
+30,vanillaTrailer_flatbed_28ft_double,2500,650,5638,4500-20000 kg
+25,vanillaTrailer_dryvan_48ft_loadingramp,2200,725,5700,4500-22400 kg
+30,vanillaTrailer_flatbed_28ft_single,2500,675,5759,4500-20000 kg
+30,vanillaTrailer_flatbed_48ft_double,2500,685,5807,4500-20000 kg
+25,vanillaTrailer_dryvan_28ft_4500kg,2200,750,5821,4500 kg
+30,vanillaTrailer_flatbed_32ft,2500,700,5880,4500-20000 kg
+25,vanillaTrailer_dryvan_48ft_spreadaxle_6750kg,2300,775,6042,6750 kg
+25,vanillaTrailer_dryvan_28ft_9600kg,2300,800,6162,9600 kg
+25,vanillaTrailer_dryvan_53ft_13500kg,2300,825,6283,13500 kg
+25,vanillaTrailer_dryvan_48ft_19200kg,2300,850,6404,19200 kg
+25,vanillaTrailer_dryvan_53ft_22400kg,2300,875,6525,22400 kg
+30,vanillaTrailer_flatbed_53ft_triple,2700,800,6562,4500-20000 kg
+30,vanillaTrailer_flatbed_48ft_tires,2700,825,6683,4500 kg
+30,vanillaTrailer_flatbed_28ft_single_wood,2700,850,6804,8400 kg
+30,vanillaTrailer_flatbed_32ft_wood,2700,875,6925,8400 kg
+30,vanillaTrailer_flatbed_28ft_double_pipes,2700,900,7045,10000 kg
+30,vanillaTrailer_flatbed_48ft_tires_double,2700,925,7166,9000 kg
+30,vanillaTrailer_flatbed_32ft_pipes,2700,950,7287,10000 kg
+30,vanillaTrailer_flatbed_48ft_wood,2700,975,7407,12600 kg
+30,vanillaTrailer_flatbed_48ft_coils_double,2700,1000,7528,20000 kg
+30,vanillaTrailer_flatbed_53ft_wood,2700,1025,7649,16800 kg
+30,vanillaTrailer_flatbed_28ft_double_marble,2700,1050,7769,19000 kg
+35,vanillaTrailer_tanker_career_shuffleboard_empty_long,3000,1000,7828,N/A
+30,vanillaTrailer_flatbed_28ft_double_coil,2700,1075,7890,20000 kg
+35,vanillaTrailer_tanker_career_shuffleboard_empty_short,3000,1015,7900,N/A
+35,vanillaTrailer_tanker_empty,3000,1030,7973,0 kg
+30,vanillaTrailer_flatbed_32ft_marble,2700,1100,8011,19000 kg
+35,vanillaTrailer_tanker_empty_short,3000,1045,8045,0 kg
+30,vanillaTrailer_flatbed_48ft_pipes,2700,1125,8132,20000 kg
+30,vanillaTrailer_flatbed_53ft_coils_double,2700,1150,8252,20000 kg
+30,vanillaTrailer_flatbed_53ft_pipes,2700,1175,8373,20000 kg
+35,vanillaTrailer_tanker_petroleum_short_2,3300,1060,8418,N/A
+51,tanker_petroleum_diesel_2_3axle,1,1,6,N/A
+35,vanillaTrailer_tanker_diesel_short_2,3300,1075,8490,N/A
+30,vanillaTrailer_flatbed_32ft_coil,2700,1200,8494,20000 kg
+35,vanillaTrailer_tanker_water_short_2,3300,1090,8563,N/A
+30,vanillaTrailer_flatbed_48ft_coil,2700,1225,8614,15000 kg
+35,vanillaTrailer_tanker_milk_short_2,3300,1105,8635,N/A
+35,vanillaTrailer_tanker_petroleum_short_3,3300,1120,8707,N/A
+35,vanillaTrailer_tanker_diesel_short_3,3300,1135,8780,N/A
+35,vanillaTrailer_tanker_water_short_3,3300,1150,8852,N/A
+35,vanillaTrailer_tanker_milk_short_3,3300,1165,8925,N/A
+35,vanillaTrailer_tanker_petroleum_2,3300,1180,8997,N/A
+35,vanillaTrailer_tanker_petroleum_3,3300,1195,9069,N/A
+35,vanillaTrailer_tanker_diesel_2,3300,1210,9142,N/A
+35,vanillaTrailer_tanker_diesel_3,3300,1225,9214,N/A
+35,vanillaTrailer_tanker_water_2,3300,1240,9287,N/A
+37,vanillaTrailer_containerTrailer_20ft_2axle_transport,3500,1200,9294,2100-22300 kg
+37,vanillaTrailer_containerTrailer_40ft_3axle_transport,3500,1210,9342,2100-22300 kg
+35,vanillaTrailer_tanker_water_3,3300,1255,9359,N/A
+37,vanillaTrailer_containerTrailer_20ft_2axle_20ft,3500,1220,9390,2100 kg
+35,vanillaTrailer_tanker_milk_2,3300,1270,9432,N/A
+37,vanillaTrailer_containerTrailer_40ft_3axle_20ft_short,3500,1230,9438,2100 kg
+37,vanillaTrailer_containerTrailer_40ft_3axle_20ft,3500,1240,9487,2100 kg
+35,vanillaTrailer_tanker_milk_3,3300,1285,9504,N/A
+37,vanillaTrailer_containerTrailer_20ft_2axle_tank_empty,3500,1250,9535,3650 kg
+37,vanillaTrailer_containerTrailer_40ft_3axle_40ft,3700,1260,9783,3740 kg
+37,vanillaTrailer_containerTrailer_40ft_3axle_20ft_double,3700,1270,9832,4200 kg
+37,vanillaTrailer_containerTrailer_40ft_3axle_tank_double,3700,1280,9880,7300 kg
+37,vanillaTrailer_containerTrailer_20ft_2axle_tank,3700,1290,9928,21600 kg
+37,vanillaTrailer_containerTrailer_40ft_3axle_tank,3700,1300,9976,22300 kg
+40,vanillaTrailer_log_trailer_27ft,4000,1300,10276,N/A
+40,vanillaTrailer_log_trailer_27ft_rack,4000,1315,10349,N/A
+40,vanillaTrailer_log_trailer_40ft_single,4000,1330,10421,N/A
+40,vanillaTrailer_log_trailer_40ft_single_rack,4000,1345,10494,N/A
+40,vanillaTrailer_log_trailer_40ft,4000,1360,10566,N/A
+40,vanillaTrailer_log_trailer_40ft_rack,4000,1375,10639,N/A
+40,vanillaTrailer_log_trailer_27ft_8logs,4300,1390,11011,N/A
+40,vanillaTrailer_log_trailer_40ft_8logs,4300,1405,11083,N/A
+40,vanillaTrailer_log_trailer_27ft_12logs,4300,1420,11156,N/A
+40,vanillaTrailer_log_trailer_27ft_12logs_rack,4300,1435,11228,N/A
+40,vanillaTrailer_log_trailer_40ft_12logs,4300,1450,11301,N/A
+40,vanillaTrailer_log_trailer_40ft_12logs_rack,4300,1465,11373,N/A
+40,vanillaTrailer_log_trailer_40ft_single_6logs_rack,4500,1480,11645,N/A
+51,bigConstructionMaterials,1,1,6,2100-22300 kg
+51,bigEmptyTrailers,1,1,6,0 kg
+51,container_fluid_only,1,1,6,2100-22300 kg
+51,container_frame_only,1,1,6,2100-22300 kg
+51,container_loaded_nonfluid,1,1,6,2100-22300 kg
+51,mediumCratePlanksTrailers,1,1,6,400-2100 kg
+51,mediumEmptyTrailer,1,1,6,0 kg
+51,mediumFurnitureTrailers,1,1,6,400-2100 kg
+51,smallCratePlanksTrailers,1,1,6,200-2100 kg
+51,smallEmptyTrailers,1,1,6,0 kg
+51,smallFurnitureTrailers,1,1,6,200-2100 kg
+40,vanillaTrailer_log_trailer_40ft_single_8logs,4500,1495,11718,N/A

@@ -206,7 +206,7 @@ local function getFacilityProgress(fac)
 end
 
 local deliverySystemToSkill = {
-  vehicleDelivery = "logistics-vehicleDelivery",
+  vehicleDelivery = "logistics-delivery",
   parcelDelivery = "logistics-delivery",
   trailerDelivery = "logistics-delivery",
   smallDryBulkDelivery = "logistics-delivery",
@@ -273,7 +273,7 @@ local function getFacilityAvailableOrders(fac)
   -- trailers + vehicles
   for _, t in ipairs({
     {key="trailer", icon="smallTrailer", label="Available Trailers", skill="logistics-delivery"},
-    {key="vehicle", icon="keys1",        label="Available Vehicles", skill="logistics-vehicleDelivery"}
+    {key="vehicle", icon="keys1",        label="Available Vehicles", skill="logistics-delivery"}
   }) do
     local amounts = {available = 0, locked = 0}
     for _, item in ipairs(career_modules_delivery_vehicleOfferManager.getAllOfferAtFacilityUnexpired(fac.id)) do
@@ -501,6 +501,9 @@ local formatDriftSpot = function(ds)
 end
 M.formatDriftSpot = formatDriftSpot
 local function getLandingPageData(pathId)
+  local hiddenLegacyDomains = {
+    logistics = true
+  }
   local data = {
     heading = "ui.career.landingPage.name",
     description = "ui.career.landingPage.description",
@@ -515,7 +518,7 @@ local function getLandingPageData(pathId)
     data.showMilestones = true
     -- Find all domains and determine their target type
     for _, branch in ipairs(branches) do
-      if branch.isDomain then
+      if branch.isDomain and not hiddenLegacyDomains[branch.id] then
         local hasBranches = false
         -- Check children of this domain
         for _, childBranch in ipairs(branches) do

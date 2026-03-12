@@ -25,7 +25,8 @@
       "sitesFile": "rls.sites.json",
       "logisticTypesProvided": [],
       "logisticTypesReceived": [],
-      "logisticGenerators": []
+      "logisticGenerators": [],
+      "logisticMaxItems": 0
     },
     {
       "id": "moneyGrabBank",
@@ -39,7 +40,7 @@
           "isInspectSpot": true,
           "logisticTypesProvided": [],
           "logisticTypesReceived": [
-            "gold"
+            "parcel"
           ]
         },
         {
@@ -66,7 +67,7 @@
         "coin"
       ],
       "logisticTypesReceived": [
-        "gold"
+        "parcel"
       ],
       "logisticGenerators": [
         {
@@ -94,24 +95,22 @@
           "rate": 10000
         },
         {
-          "type": "materialReceiver",
+          "type": "parcelReceiver",
           "logisticTypes": [
-            "gold"
+            "parcel"
           ],
-          "materialType": "gold",
-          "capacity": 7500,
-          "target": 0,
-          "variance": 5,
-          "interval": 300,
-          "rate": 5
+          "min": -1,
+          "max": 1,
+          "interval": 120
         }
-      ]
+      ],
+      "logisticMaxItems": 0
     },
     {
       "id": "beachShops",
       "name": "Beach Shops",
       "description": "Wish I could shop here",
-      "associatedOrganization": "moneyGrabLogistics",
+      "associatedOrganization": "localDeliveryAssociation",
       "preview": "previews/hospital.jpg",
       "manualAccessPoints": [
         {
@@ -154,13 +153,14 @@
           "interval": 300,
           "rate": 100
         }
-      ]
+      ],
+      "logisticMaxItems": 0
     },
     {
       "id": "joeShop",
       "name": "Joe's Junk",
       "description": "Some say he actually makes a lot of money of his junk",
-      "associatedOrganization": "moneyGrabLogistics",
+      "associatedOrganization": "localDeliveryAssociation",
       "preview": "",
       "manualAccessPoints": [
         {
@@ -203,29 +203,39 @@
           "interval": 300,
           "rate": 50
         }
-      ]
+      ],
+      "logisticMaxItems": 0
     },
     {
       "id": "mallBank",
       "name": "Mall Pickup",
       "description": "Mall must still be thriving",
-      "associatedOrganization": "moneyGrabLogistics",
+      "associatedOrganization": "localDeliveryAssociation",
       "preview": "",
       "manualAccessPoints": [
         {
           "psName": "mallBank",
-          "logisticTypesProvided": [],
+          "isInspectSpot": true,
+          "logisticTypesProvided": [
+            "trailerDeliveryResidential"
+          ],
           "logisticTypesReceived": [
             "cash",
-            "coin"
+            "coin",
+            "trailerDeliveryResidential",
+            "trailerDeliveryFlatbedWood"
           ]
         }
       ],
       "sitesFile": "rls.sites.json",
-      "logisticTypesProvided": [],
+      "logisticTypesProvided": [
+        "trailerDeliveryResidential"
+      ],
       "logisticTypesReceived": [
         "cash",
-        "coin"
+        "coin",
+        "trailerDeliveryResidential",
+        "trailerDeliveryFlatbedWood"
       ],
       "logisticGenerators": [
         {
@@ -251,14 +261,197 @@
           "variance": 10,
           "interval": 300,
           "rate": 50
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": -1,
+          "max": 0,
+          "offerDuration": {
+            "min": 240,
+            "max": 420
+          },
+          "filter": "vanillaTrailer_boxutility_loaded_200",
+          "logisticTypes": [
+            "trailerDeliveryResidential"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": 0,
+          "max": 1,
+          "offerDuration": {
+            "min": 240,
+            "max": 420
+          },
+          "filter": "vanillaTrailer_boxutility_loaded_400",
+          "logisticTypes": [
+            "trailerDeliveryResidential"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": -1,
+          "max": 0,
+          "offerDuration": {
+            "min": 240,
+            "max": 420
+          },
+          "filter": "vanillaTrailer_boxutility_loaded_600",
+          "logisticTypes": [
+            "trailerDeliveryResidential"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": -1,
+          "max": 0,
+          "offerDuration": {
+            "min": 240,
+            "max": 420
+          },
+          "filter": "vanillaTrailer_boxutility_large_loaded_400",
+          "logisticTypes": [
+            "trailerDeliveryResidential"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": -1,
+          "max": 0,
+          "offerDuration": {
+            "min": 240,
+            "max": 420
+          },
+          "filter": "vanillaTrailer_boxutility_large_loaded_800",
+          "logisticTypes": [
+            "trailerDeliveryResidential"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": -1,
+          "max": 0,
+          "offerDuration": {
+            "min": 240,
+            "max": 420
+          },
+          "filter": "vanillaTrailer_cargotrailer_loaded_400",
+          "logisticTypes": [
+            "trailerDeliveryResidential"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": 0,
+          "max": 1,
+          "offerDuration": {
+            "min": 240,
+            "max": 420
+          },
+          "filter": "vanillaTrailer_cargotrailer_loaded_800",
+          "logisticTypes": [
+            "trailerDeliveryResidential"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": -1,
+          "max": 0,
+          "offerDuration": {
+            "min": 240,
+            "max": 420
+          },
+          "filter": "vanillaTrailer_tsfb_loaded_400",
+          "logisticTypes": [
+            "trailerDeliveryResidential"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": -1,
+          "max": 0,
+          "offerDuration": {
+            "min": 240,
+            "max": 420
+          },
+          "filter": "vanillaTrailer_tsfb_loaded_800",
+          "logisticTypes": [
+            "trailerDeliveryResidential"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": 0,
+          "max": 1,
+          "offerDuration": {
+            "min": 240,
+            "max": 420
+          },
+          "filter": "vanillaTrailer_boxutility_loaded_couch",
+          "logisticTypes": [
+            "trailerDeliveryResidential"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": 0,
+          "max": 1,
+          "offerDuration": {
+            "min": 240,
+            "max": 420
+          },
+          "filter": "vanillaTrailer_boxutility_large_loaded_couch",
+          "logisticTypes": [
+            "trailerDeliveryResidential"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": 0,
+          "max": 1,
+          "offerDuration": {
+            "min": 240,
+            "max": 420
+          },
+          "filter": "vanillaTrailer_cargotrailer_loaded_couch",
+          "logisticTypes": [
+            "trailerDeliveryResidential"
+          ]
+        },
+        {
+          "type": "trailerOfferProvider",
+          "interval": 300,
+          "min": 0,
+          "max": 1,
+          "offerDuration": {
+            "min": 240,
+            "max": 420
+          },
+          "filter": "vanillaTrailer_tsfb_loaded_couch",
+          "logisticTypes": [
+            "trailerDeliveryResidential"
+          ]
         }
-      ]
+      ],
+      "logisticMaxItems": 8
     },
     {
       "id": "tennisPickup",
       "name": "Tennis Courts Pickup",
       "description": "Apparently there is a cash fee for hitting the balls over the fence...",
-      "associatedOrganization": "moneyGrabLogistics",
+      "associatedOrganization": "localDeliveryAssociation",
       "preview": "",
       "manualAccessPoints": [
         {
@@ -301,13 +494,14 @@
           "interval": 300,
           "rate": 30
         }
-      ]
+      ],
+      "logisticMaxItems": 0
     },
     {
       "id": "stadiumPickup",
       "name": "Stadium Pickup",
       "description": "When was there even an event here last?",
-      "associatedOrganization": "moneyGrabLogistics",
+      "associatedOrganization": "localDeliveryAssociation",
       "preview": "",
       "manualAccessPoints": [
         {
@@ -350,13 +544,14 @@
           "interval": 300,
           "rate": 50
         }
-      ]
+      ],
+      "logisticMaxItems": 0
     },
     {
       "id": "skyscraper1",
       "name": "Skyscraper Vending Machines",
       "description": "Must be a lot snack breaks",
-      "associatedOrganization": "moneyGrabLogistics",
+      "associatedOrganization": "localDeliveryAssociation",
       "preview": "",
       "manualAccessPoints": [
         {
@@ -399,13 +594,14 @@
           "interval": 300,
           "rate": 15
         }
-      ]
+      ],
+      "logisticMaxItems": 0
     },
     {
       "id": "cityBuildingPickup1",
       "name": "City Bank Pickup 1",
       "description": "Nobody really questions why there is money to pick up here",
-      "associatedOrganization": "moneyGrabLogistics",
+      "associatedOrganization": "localDeliveryAssociation",
       "preview": "",
       "manualAccessPoints": [
         {
@@ -448,13 +644,14 @@
           "interval": 300,
           "rate": 15
         }
-      ]
+      ],
+      "logisticMaxItems": 0
     },
     {
       "id": "cityBuildingPickup2",
       "name": "City Bank Pickup 2",
       "description": "Nobody really questions why there is money to pick up here",
-      "associatedOrganization": "moneyGrabLogistics",
+      "associatedOrganization": "localDeliveryAssociation",
       "preview": "",
       "manualAccessPoints": [
         {
@@ -497,13 +694,14 @@
           "interval": 300,
           "rate": 15
         }
-      ]
+      ],
+      "logisticMaxItems": 0
     },
     {
       "id": "cityBuildingPickup3",
       "name": "City Bank Pickup 3",
       "description": "Nobody really questions why there is money to pick up here",
-      "associatedOrganization": "moneyGrabLogistics",
+      "associatedOrganization": "localDeliveryAssociation",
       "preview": "",
       "manualAccessPoints": [
         {
@@ -546,13 +744,14 @@
           "interval": 300,
           "rate": 15
         }
-      ]
+      ],
+      "logisticMaxItems": 0
     },
     {
       "id": "raceTrackPickup",
       "name": "Race Track Pickup",
       "description": "Track must sell a lot of hot dogs",
-      "associatedOrganization": "moneyGrabLogistics",
+      "associatedOrganization": "localDeliveryAssociation",
       "preview": "",
       "manualAccessPoints": [
         {
@@ -595,13 +794,14 @@
           "interval": 300,
           "rate": 75
         }
-      ]
+      ],
+      "logisticMaxItems": 0
     },
     {
       "id": "sketchyPickup",
       "name": "Sketchy Pickup",
       "description": "You were told not to ask any questions",
-      "associatedOrganization": "moneyGrabLogistics",
+      "associatedOrganization": "localDeliveryAssociation",
       "preview": "",
       "manualAccessPoints": [
         {
@@ -645,13 +845,14 @@
           "interval": 300,
           "rate": 4000
         }
-      ]
+      ],
+      "logisticMaxItems": 0
     },
     {
       "id": "illegalDumping",
       "name": "Illegal Dumping",
       "description": "Don't Get Caught",
-      "associatedOrganization": "moneyGrabLogistics",
+      "associatedOrganization": "localDeliveryAssociation",
       "preview": "",
       "manualAccessPoints": [
         {
@@ -680,7 +881,8 @@
           "interval": 300,
           "rate": 40000
         }
-      ]
+      ],
+      "logisticMaxItems": 0
     }
   ]
 }

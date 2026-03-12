@@ -291,16 +291,6 @@ local function getRewardsWithBreakdown(taskData)
     table.insert(breakdown, organizationElement)
   end
 
-  local branchMultiplier = career_branches.getLevelRewardMultiplier("logistics")
-  if branchMultiplier > 1 then
-    local level = career_branches.getBranchLevel("logistics")
-    table.insert(breakdown, {
-      label = "Level " .. level .. " Multiplier",
-      rewards = {money = originalRewards.money * branchMultiplier - originalRewards.money},
-      simpleBreakdownType = "branch",
-    })
-  end
-
   -- Calculate precision parking and add to breakdown
   if taskData.dropOffPsPath then
     local targetParkingSpot = dGenerator.getParkingSpotByPath(taskData.dropOffPsPath)
@@ -330,9 +320,10 @@ local function getRewardsWithBreakdown(taskData)
         end
 
         -- Calculate skill XP reward (same as logistics for vehicle delivery)
-        local skillReward = precisionBonus.skillFlat + (originalRewards["logistics-vehicleDelivery"] or 0) * precisionBonus.skillPercent
+        local skillBaseReward = (originalRewards["logistics-delivery"] or 0) + (originalRewards["logistics-vehicleDelivery"] or 0)
+        local skillReward = precisionBonus.skillFlat + skillBaseReward * precisionBonus.skillPercent
         if skillReward ~= 0 then
-          precisionBreakdown.rewards["logistics-vehicleDelivery"] = (precisionBreakdown.rewards["logistics-vehicleDelivery"] or 0) + math.ceil(skillReward)
+          precisionBreakdown.rewards["logistics-delivery"] = (precisionBreakdown.rewards["logistics-delivery"] or 0) + math.ceil(skillReward)
         end
 
         -- Calculate reputation reward

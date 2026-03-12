@@ -273,6 +273,10 @@ local function getOrgLevelData(org, offset)
     return nil
   end
   local repLevel = (org.reputation and org.reputation.level) or 0
+  if type(repLevel) ~= "number" then
+    repLevel = 0
+  end
+  repLevel = math.max(0, repLevel)
   local levels = org.reputationLevels
   if not levels then
     return nil
@@ -793,8 +797,13 @@ local function getShoppingData()
             reputation = {}
           }
           if org.reputation then
-            sanitizedOrg.reputation.level = org.reputation.level or 0
-            sanitizedOrg.reputation.levelIndex = (org.reputation.level or 0) + 2
+            local repLevel = org.reputation.level or 0
+            if type(repLevel) ~= "number" then
+              repLevel = 0
+            end
+            repLevel = math.max(0, repLevel)
+            sanitizedOrg.reputation.level = repLevel
+            sanitizedOrg.reputation.levelIndex = repLevel + 2
             sanitizedOrg.reputation.value = org.reputation.value
             sanitizedOrg.reputation.curLvlProgress = org.reputation.curLvlProgress
             sanitizedOrg.reputation.neededForNext = org.reputation.neededForNext
@@ -1549,7 +1558,11 @@ local function updateVehicleList(fromScratch)
     if seller.associatedOrganization then
       local org = freeroam_organizations.getOrganization(seller.associatedOrganization)
       if org and org.reputation then
-        currentOrgLevel = org.reputation.level
+        local repLevel = org.reputation.level or 0
+        if type(repLevel) ~= "number" then
+          repLevel = 0
+        end
+        currentOrgLevel = math.max(0, repLevel)
       end
     end
 
