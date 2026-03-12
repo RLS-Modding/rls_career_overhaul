@@ -438,7 +438,8 @@ local function formatLoanerOfferForUi(facility)
     end
 
     local requiredLogisticsLevel = deliveryLvlToLogisticsLevel[rentalVehicleInfo.deliveryLvl] or deliveryLvlToLogisticsLevel[4]
-    if requiredLogisticsLevel > career_branches.getBranchLevel('logistics-delivery') then
+    local currentLogisticsLevel = getBranchLevelByPathIds({"logistics-delivery", "delivery"})
+    if requiredLogisticsLevel > currentLogisticsLevel then
       enabled = false
       disableReason = {
         type = "locked", icon = "cardboardBox", level = requiredLogisticsLevel,

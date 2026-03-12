@@ -39,7 +39,9 @@ local reservedDropoffSpot = nil
 
 local distanceMultiplier = 4.5
 local suggestedSpeed = 18
-local globalTaxiRewardMultiplier = 0.7 -- Global taxi reward tuning (30% reduction)
+local TAXI_REWARD_CONFIG_PATH = "gameplay/taxi/rewardConfig.json"
+local DEFAULT_GLOBAL_TAXI_REWARD_MULTIPLIER = 0.7
+local taxiRewardConfig = nil
 
 M.rideData = {}
 
@@ -90,6 +92,25 @@ local passengerTypes = {
 
 local function getPassengerType(typeKey)
     return passengerTypes[typeKey]
+end
+
+local function getTaxiRewardConfig()
+    if taxiRewardConfig ~= nil then
+        return taxiRewardConfig
+    end
+
+    taxiRewardConfig = jsonReadFile(TAXI_REWARD_CONFIG_PATH) or {}
+    return taxiRewardConfig
+end
+
+local function getGlobalTaxiRewardMultiplier()
+    local configMultiplier = getTaxiRewardConfig().globalRewardMultiplier
+    local multiplier = tonumber(configMultiplier)
+    if multiplier == nil then
+        return DEFAULT_GLOBAL_TAXI_REWARD_MULTIPLIER
+    end
+
+    return math.max(0, multiplier)
 end
 
 -- ================================
@@ -706,7 +727,7 @@ end
 local function calculateBaseFare(passengerCount, totalDistance, valueMultiplier, selectedPassengerType)
     local baseFare = 100 * (passengerCount ^ 0.5) * valueMultiplier * distanceMultiplier * selectedPassengerType.baseMultiplier
     baseFare = baseFare * (totalDistance / 1000)
-    baseFare = baseFare * globalTaxiRewardMultiplier
+    baseFare = baseFare * getGlobalTaxiRewardMultiplier()
 
     if career_career and career_career.isActive() and career_modules_hardcore.isHardcoreMode() then
         baseFare = baseFare * 0.66
@@ -1339,7 +1360,7 @@ M.testIndividualPassengerMultipliers = function()
 
             -- Calculate fare
             local baseFare = calculateBaseFare(testPassengersCount, testDistance, testValueMultiplier, passengerType)
-            local totalMultiplier = passengerType.baseMultiplier * economyMult
+            local totalMultiplier = passengerType.baseMultiplier * economyMult * getGlobalTaxiRewardMultiplier()
 
             print(string.format("  Economy %.1fx on %s: $%d (%.1fx total multiplier)",
                 economyMult, passengerTypeKey, baseFare, totalMultiplier))
