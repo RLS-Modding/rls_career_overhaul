@@ -193,6 +193,9 @@ local function isStarterGaragePurchasable(garageId)
   local garage = freeroam_facilities.getFacility("garage", garageId)
   if not garage or not garage.starterGarage then return false end
   if purchasedGarages[garageId] then return false end
+  if career_modules_hardcore and career_modules_hardcore.isHardcoreMode and career_modules_hardcore.isHardcoreMode() then
+    return true
+  end
   if not career_challengeModes or not career_challengeModes.isChallengeActive() then return false end
   local activeChallenge = career_challengeModes.getActiveChallenge()
   if not activeChallenge or not activeChallenge.startingGarages or #activeChallenge.startingGarages == 0 then return false end
