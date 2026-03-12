@@ -3,19 +3,103 @@ local M = {}
 local CONFIG_PATH = "/gameplay/fre/freProgression.config.json"
 local LOG_TAG = "fre.config"
 
+local function deepCopy(value)
+  if type(value) ~= "table" then
+    return value
+  end
+  local out = {}
+  for k, v in pairs(value) do
+    out[k] = deepCopy(v)
+  end
+  return out
+end
+
+local function mergeDeep(baseValue, overrideValue)
+  if type(baseValue) ~= "table" then
+    if overrideValue == nil then
+      return deepCopy(baseValue)
+    end
+    return deepCopy(overrideValue)
+  end
+
+  local result = deepCopy(baseValue)
+  if type(overrideValue) ~= "table" then
+    return result
+  end
+
+  for key, value in pairs(overrideValue) do
+    if type(value) == "table" and type(result[key]) == "table" then
+      result[key] = mergeDeep(result[key], value)
+    else
+      result[key] = deepCopy(value)
+    end
+  end
+  return result
+end
+
+local defaultDisciplineContractConfig = {
+  tierUnlockLevels = {easy = 5, medium = 20, hard = 35},
+  targetMultiplierByTier = {
+    easy = {min = 0.9, max = 1.0},
+    medium = {min = 0.8, max = 0.9},
+    hard = {min = 0.7, max = 0.8}
+  },
+  objectiveCountByTier = {
+    easy = {lapsMin = 1, lapsMax = 2, eventsMin = 1, eventsMax = 2},
+    medium = {lapsMin = 2, lapsMax = 3, eventsMin = 2, eventsMax = 3},
+    hard = {lapsMin = 3, lapsMax = 5, eventsMin = 3, eventsMax = 4}
+  },
+  xpByTier = {
+    easy = {xpAtTarget = 750, tenPercentBetterMultiplier = 1.25, belowTargetFloorMultiplier = 0.25, maxMultiplier = 3.0},
+    medium = {xpAtTarget = 1850, tenPercentBetterMultiplier = 1.25, belowTargetFloorMultiplier = 0.25, maxMultiplier = 3.0},
+    hard = {xpAtTarget = 5500, tenPercentBetterMultiplier = 1.25, belowTargetFloorMultiplier = 0.25, maxMultiplier = 3.0}
+  },
+  vehicleBlacklist = {}
+}
+
+local defaultDisciplineSponsorConfig = {
+  tierUnlockLevels = {easy = 10, medium = 25, hard = 40},
+  targetMultiplierByTier = {
+    easy = {min = 1.08, max = 1.25},
+    medium = {min = 1.00, max = 1.12},
+    hard = {min = 0.94, max = 1.04}
+  }
+}
+
+local defaultDisciplineEventXpConfig = {
+  tierUnlockLevels = {easy = 1, medium = 20, hard = 35},
+  xpByTier = {
+    easy = {xpAtTarget = 200, tenPercentBetterMultiplier = 1.25, belowTargetFloorMultiplier = 0.25, maxMultiplier = 3.0},
+    medium = {xpAtTarget = 400, tenPercentBetterMultiplier = 1.25, belowTargetFloorMultiplier = 0.25, maxMultiplier = 3.0},
+    hard = {xpAtTarget = 800, tenPercentBetterMultiplier = 1.25, belowTargetFloorMultiplier = 0.25, maxMultiplier = 3.0}
+  }
+}
+
+local function makeDiscipline(id, label, skillKey, placeholderOnly)
+  return {
+    id = id,
+    label = label,
+    skillKey = skillKey,
+    placeholderOnly = placeholderOnly == true,
+    contracts = deepCopy(defaultDisciplineContractConfig),
+    sponsors = deepCopy(defaultDisciplineSponsorConfig),
+    eventXp = deepCopy(defaultDisciplineEventXpConfig)
+  }
+end
+
 local defaultConfig = {
-  version = 1,
+  version = 2,
   disciplines = {
-    {id = "crawling", label = "Crawling", skillKey = "fre-crawling", placeholderOnly = false},
-    {id = "roadracing", label = "Road Racing", skillKey = "fre-roadracing", placeholderOnly = false},
-    {id = "drift", label = "Drift", skillKey = "fre-drift", placeholderOnly = false},
-    {id = "drag", label = "Drag", skillKey = "fre-drag", placeholderOnly = false},
-    {id = "trail", label = "Trail", skillKey = "fre-trail", placeholderOnly = true},
-    {id = "oval", label = "Oval", skillKey = "fre-oval", placeholderOnly = false},
-    {id = "offroad", label = "Off-Road", skillKey = "fre-offroad", placeholderOnly = false},
-    {id = "rally", label = "Rally", skillKey = "fre-rally", placeholderOnly = false},
-    {id = "landspeed", label = "Land Speed", skillKey = "fre-landspeed", placeholderOnly = true},
-    {id = "mudding", label = "Mudding", skillKey = "fre-mudding", placeholderOnly = false}
+    makeDiscipline("crawling", "Crawling", "fre-crawling", false),
+    makeDiscipline("roadracing", "Road Racing", "fre-roadracing", false),
+    makeDiscipline("drift", "Drift", "fre-drift", false),
+    makeDiscipline("drag", "Drag", "fre-drag", false),
+    makeDiscipline("trail", "Trail", "fre-trail", true),
+    makeDiscipline("oval", "Oval", "fre-oval", false),
+    makeDiscipline("offroad", "Off-Road", "fre-offroad", false),
+    makeDiscipline("rally", "Rally", "fre-rally", false),
+    makeDiscipline("landspeed", "Land Speed", "fre-landspeed", true),
+    makeDiscipline("mudding", "Mudding", "fre-mudding", false)
   },
   typeAliasMap = {
     crawl = "crawling",
@@ -45,58 +129,27 @@ local defaultConfig = {
     offerBaseCount = 3,
     offerBumpCount = 2,
     offerIncreaseLevels = {12, 27, 42},
-    tierUnlockLevels = {easy = 5, medium = 20, hard = 35},
     slotUnlockLevels = {baseLevel = 5, baseSlots = 2, extraLevels = {14, 29, 44}},
     offerExpiryMinutes = 5,
     offerRefreshMinutes = 2,
     modelSourceOwnedChance = 0.5,
     lapObjectiveChance = 0.5,
-    expiryMinutesByTier = {easy = 120, medium = 60, hard = 30},
-    objectiveCountByTier = {
-      easy = {lapsMin = 1, lapsMax = 2, eventsMin = 1, eventsMax = 2},
-      medium = {lapsMin = 2, lapsMax = 3, eventsMin = 2, eventsMax = 3},
-      hard = {lapsMin = 3, lapsMax = 5, eventsMin = 3, eventsMax = 4}
-    },
-    targetMultiplierByTier = {
-      easy = {min = 1.03, max = 1.18},
-      medium = {min = 0.98, max = 1.10},
-      hard = {min = 0.92, max = 1.02}
-    },
-    disciplineTargetSecondsByTier = {
-      drag = {
-        easy = {min = 10.0, max = 12.0},
-        medium = {min = 8.0, max = 9.0},
-        hard = {min = 6.0, max = 7.0}
-      }
-    },
+    expiryMinutesByTier = {easy = 240, medium = 120, hard = 60},
     rewardRangeByTier = {
-      easy = {moneyMin = 15000, moneyMax = 30000, xpMin = 500, xpMax = 1000},
-      medium = {moneyMin = 35000, moneyMax = 70000, xpMin = 1200, xpMax = 2500},
-      hard = {moneyMin = 90000, moneyMax = 220000, xpMin = 3000, xpMax = 8000}
+      easy = {moneyMin = 5000, moneyMax = 15000, xpMin = 500, xpMax = 1000},
+      medium = {moneyMin = 20000, moneyMax = 35000, xpMin = 1200, xpMax = 2500},
+      hard = {moneyMin = 40000, moneyMax = 60000, xpMin = 3000, xpMax = 8000}
     }
   },
   sponsors = {
     offerBaseCount = 3,
     offerBumpCount = 2,
     offerIncreaseLevels = {16, 31, 46},
-    tierUnlockLevels = {easy = 10, medium = 25, hard = 40},
     slotUnlockLevels = {baseLevel = 10, baseSlots = 2, extraLevels = {18, 33, 48}},
     offerExpiryMinutes = 5,
     offerRefreshMinutes = 2,
     upkeepMinutesByTier = {easy = 360, medium = 240, hard = 120},
     graceMinutes = 20,
-    targetMultiplierByTier = {
-      easy = {min = 1.00, max = 1.05},
-      medium = {min = 0.93, max = 0.99},
-      hard = {min = 0.85, max = 0.92}
-    },
-    disciplineTargetSecondsByTier = {
-      drag = {
-        easy = {min = 10.0, max = 12.0},
-        medium = {min = 8.0, max = 9.0},
-        hard = {min = 6.0, max = 7.0}
-      }
-    },
     bonusRangeByTier = {
       easy = {min = 0.01, max = 0.10},
       medium = {min = 0.15, max = 0.25},
@@ -110,47 +163,13 @@ local defaultConfig = {
   },
   contractVehicleModels = {
     "moonhawk", "barstow", "pessima", "etk800", "vivace", "sunburst", "dseries", "roamer", "hopper", "crawler", "racetruck", "sbr", "scintilla"
-  },
-  contractVehicleBlacklist = {},
-  contractVehicleBlacklistByDiscipline = {}
+  }
 }
 
 local cached
 local disciplineById
 local skillKeyByDiscipline
 local aliasMap
-
-local function deepCopy(value)
-  if type(value) ~= "table" then
-    return value
-  end
-  local out = {}
-  for k, v in pairs(value) do
-    out[k] = deepCopy(v)
-  end
-  return out
-end
-
-local function mergeDeep(baseValue, overrideValue)
-  if type(baseValue) ~= "table" then
-    if overrideValue == nil then
-      return deepCopy(baseValue)
-    end
-    return deepCopy(overrideValue)
-  end
-  local result = deepCopy(baseValue)
-  if type(overrideValue) ~= "table" then
-    return result
-  end
-  for key, value in pairs(overrideValue) do
-    if type(value) == "table" and type(result[key]) == "table" then
-      result[key] = mergeDeep(result[key], value)
-    else
-      result[key] = deepCopy(value)
-    end
-  end
-  return result
-end
 
 local function rebuildIndexes(cfg)
   disciplineById = {}
@@ -186,6 +205,7 @@ local function loadConfig(forceReload)
   else
     cached = mergeDeep(defaultConfig, raw)
   end
+
   rebuildIndexes(cached)
   return cached
 end
@@ -205,6 +225,21 @@ local function normalizeDisciplineIdFromType(rawType)
   return nil
 end
 
+local function getDisciplineConfig(disciplineId)
+  loadConfig(false)
+  if type(disciplineId) ~= "string" or disciplineId == "" then
+    return nil
+  end
+  return disciplineById[string.lower(disciplineId)]
+end
+
+local function mergeDisciplineScoped(baseConfig, disciplineSection)
+  if type(disciplineSection) ~= "table" then
+    return baseConfig or {}
+  end
+  return mergeDeep(baseConfig or {}, disciplineSection)
+end
+
 M.getConfig = function()
   return loadConfig(false)
 end
@@ -218,11 +253,7 @@ M.getDisciplines = function()
 end
 
 M.getDisciplineById = function(disciplineId)
-  loadConfig(false)
-  if type(disciplineId) ~= "string" then
-    return nil
-  end
-  return disciplineById[string.lower(disciplineId)]
+  return getDisciplineConfig(disciplineId)
 end
 
 M.getDisciplineIdFromType = function(rawType)
@@ -242,12 +273,29 @@ M.getRewardScaling = function()
   return (loadConfig(false) or {}).rewardScaling or {}
 end
 
-M.getContractConfig = function()
-  return (loadConfig(false) or {}).contracts or {}
+M.getContractConfig = function(disciplineId)
+  local cfg = loadConfig(false) or {}
+  local globalContracts = cfg.contracts or {}
+  if type(disciplineId) ~= "string" or disciplineId == "" then
+    return globalContracts
+  end
+  local discipline = getDisciplineConfig(disciplineId)
+  return mergeDisciplineScoped(globalContracts, discipline and discipline.contracts)
 end
 
-M.getSponsorConfig = function()
-  return (loadConfig(false) or {}).sponsors or {}
+M.getSponsorConfig = function(disciplineId)
+  local cfg = loadConfig(false) or {}
+  local globalSponsors = cfg.sponsors or {}
+  if type(disciplineId) ~= "string" or disciplineId == "" then
+    return globalSponsors
+  end
+  local discipline = getDisciplineConfig(disciplineId)
+  return mergeDisciplineScoped(globalSponsors, discipline and discipline.sponsors)
+end
+
+M.getEventXpConfig = function(disciplineId)
+  local discipline = getDisciplineConfig(disciplineId)
+  return discipline and discipline.eventXp or {}
 end
 
 M.getContractVehicleModels = function()
@@ -255,29 +303,19 @@ M.getContractVehicleModels = function()
 end
 
 M.getContractVehicleBlacklist = function(disciplineId)
-  local cfg = loadConfig(false) or {}
-  local byDiscipline = cfg.contractVehicleBlacklistByDiscipline or {}
   local merged = {}
   local seen = {}
-
-  local function appendList(list)
-    for _, model in ipairs(list or {}) do
-      if type(model) == "string" and model ~= "" then
-        local key = string.lower(model)
-        if not seen[key] then
-          seen[key] = true
-          table.insert(merged, key)
-        end
+  local discipline = getDisciplineConfig(disciplineId)
+  local list = discipline and discipline.contracts and discipline.contracts.vehicleBlacklist or {}
+  for _, model in ipairs(list or {}) do
+    if type(model) == "string" and model ~= "" then
+      local key = string.lower(model)
+      if not seen[key] then
+        seen[key] = true
+        table.insert(merged, key)
       end
     end
   end
-
-  appendList(cfg.contractVehicleBlacklist)
-  if type(disciplineId) == "string" and disciplineId ~= "" then
-    local normalized = string.lower(disciplineId)
-    appendList(byDiscipline[normalized] or byDiscipline[disciplineId])
-  end
-
   return merged
 end
 

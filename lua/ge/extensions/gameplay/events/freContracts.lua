@@ -294,8 +294,8 @@ local function countSlotCap(level, slotCfg)
   return math.max(0, math.floor(slotCount))
 end
 
-local function getUnlockedContractTiers(level)
-  local tierUnlock = (freConfig.getContractConfig() or {}).tierUnlockLevels or {}
+local function getUnlockedTiersFromUnlockConfig(level, tierUnlock)
+  tierUnlock = tierUnlock or {}
   local tiers = {}
   if hasLevel(level, tierUnlock.easy or math.huge) then table.insert(tiers, "easy") end
   if hasLevel(level, tierUnlock.medium or math.huge) then table.insert(tiers, "medium") end
@@ -303,13 +303,51 @@ local function getUnlockedContractTiers(level)
   return tiers
 end
 
-local function getUnlockedSponsorTiers(level)
-  local tierUnlock = (freConfig.getSponsorConfig() or {}).tierUnlockLevels or {}
-  local tiers = {}
-  if hasLevel(level, tierUnlock.easy or math.huge) then table.insert(tiers, "easy") end
-  if hasLevel(level, tierUnlock.medium or math.huge) then table.insert(tiers, "medium") end
-  if hasLevel(level, tierUnlock.hard or math.huge) then table.insert(tiers, "hard") end
-  return tiers
+local function getUnlockedContractTiers(disciplineId, level)
+  local tierUnlock = (freConfig.getContractConfig(disciplineId) or {}).tierUnlockLevels or {}
+  return getUnlockedTiersFromUnlockConfig(level, tierUnlock)
+end
+
+local function getUnlockedSponsorTiers(disciplineId, level)
+  local tierUnlock = (freConfig.getSponsorConfig(disciplineId) or {}).tierUnlockLevels or {}
+  return getUnlockedTiersFromUnlockConfig(level, tierUnlock)
+end
+
+local function clamp(value, minValue, maxValue)
+  if value < minValue then return minValue end
+  if value > maxValue then return maxValue end
+  return value
+end
+
+local function normalizePerformanceRatioFromTargetTime(targetTime, actualTime)
+  local target = tonumber(targetTime)
+  local actual = tonumber(actualTime)
+  if not target or target <= 0 or not actual or actual <= 0 then
+    return 0
+  end
+  return target / actual
+end
+
+local function calculateXpFromTierCurve(curveCfg, normalizedPerformance)
+  local tierCfg = type(curveCfg) == "table" and curveCfg or {}
+  local xpAtTarget = math.max(0, tonumber(tierCfg.xpAtTarget) or 0)
+  if xpAtTarget <= 0 then
+    return 0
+  end
+  local tenPercentBetterMultiplier = tonumber(tierCfg.tenPercentBetterMultiplier) or 1.25
+  if tenPercentBetterMultiplier <= 0 then
+    tenPercentBetterMultiplier = 1.25
+  end
+  local belowTargetFloorMultiplier = tonumber(tierCfg.belowTargetFloorMultiplier) or 0.25
+  local maxMultiplier = tonumber(tierCfg.maxMultiplier) or 3.0
+  if maxMultiplier < belowTargetFloorMultiplier then
+    maxMultiplier = belowTargetFloorMultiplier
+  end
+  local normalized = math.max(0, tonumber(normalizedPerformance) or 0)
+  local exponent = (normalized - 1.0) / 0.1
+  local rawMultiplier = tenPercentBetterMultiplier ^ exponent
+  local scaledMultiplier = clamp(rawMultiplier, belowTargetFloorMultiplier, maxMultiplier)
+  return math.max(0, math.floor(xpAtTarget * scaledMultiplier))
 end
 
 local function refreshRaceCache()
@@ -461,9 +499,8 @@ end
 
 local function resolveTargetTimeForTier(disciplineId, tier, bestTime, cfg, fallbackCfg, defaultRange)
   local function fromAbsoluteRange(configTable)
-    local byDiscipline = type(configTable) == "table" and configTable.disciplineTargetSecondsByTier or nil
-    local disciplineTable = type(byDiscipline) == "table" and byDiscipline[disciplineId] or nil
-    local tierRange = type(disciplineTable) == "table" and disciplineTable[tier] or nil
+    local byTier = type(configTable) == "table" and configTable.targetSecondsByTier or nil
+    local tierRange = type(byTier) == "table" and byTier[tier] or nil
     if type(tierRange) ~= "table" then
       return nil
     end
@@ -522,8 +559,8 @@ local function buildSponsorRequirement(disciplineId, tier)
     return nil
   end
 
-  local sponsorCfg = freConfig.getSponsorConfig() or {}
-  local contractCfg = freConfig.getContractConfig() or {}
+  local sponsorCfg = freConfig.getSponsorConfig(disciplineId) or {}
+  local contractCfg = freConfig.getContractConfig(disciplineId) or {}
   local targetTime = resolveTargetTimeForTier(disciplineId, tier, raceEntry.bestTime, sponsorCfg, contractCfg, {min = 1.25, max = 1.5})
   local raceLabel = raceEntry.raceLabel or raceEntry.raceName or disciplineId
   local targetLabel = formatTimeForRequirement(targetTime)
@@ -741,8 +778,8 @@ local function pickContractModel(disciplineId)
   return pickRandomFromList(pool), source
 end
 
-local function pickContractObjective(tier, raceEntry)
-  local contractCfg = freConfig.getContractConfig() or {}
+local function pickContractObjective(disciplineId, tier, raceEntry)
+  local contractCfg = freConfig.getContractConfig(disciplineId) or {}
   local objectiveCfgByTier = contractCfg.objectiveCountByTier or {}
   local objectiveCfg = objectiveCfgByTier[tier] or {}
   local lapObjectiveChance = tonumber(contractCfg.lapObjectiveChance)
@@ -783,6 +820,11 @@ local function normalizeContractEntry(entry)
   entry.objectiveType = objectiveType
   entry.requiredCount = math.max(1, math.floor(tonumber(entry.requiredCount) or 1))
   entry.progress = math.max(0, math.floor(tonumber(entry.progress) or 0))
+  entry.bestPerformanceRatio = math.max(0, tonumber(entry.bestPerformanceRatio) or 0)
+  local tier = entry.tier or "easy"
+  local contractCfg = freConfig.getContractConfig(entry.disciplineId) or {}
+  local tierXpCfg = ((contractCfg.xpByTier or {})[tier]) or {}
+  entry.rewardXp = math.max(0, math.floor(tonumber(tierXpCfg.xpAtTarget) or tonumber(entry.rewardXp) or 0))
   entry.raceRouteType = normalizeRaceRouteType(entry.raceRouteType)
     or inferRouteTypeFromRaceLabel(entry.disciplineId, entry.raceName, entry.raceLabel)
 
@@ -872,8 +914,8 @@ local function purgeExpiredEntries(now)
 end
 
 local function generateContractOffer(disciplineId, level, now)
-  local contractCfg = freConfig.getContractConfig()
-  local unlockedTiers = getUnlockedContractTiers(level)
+  local contractCfg = freConfig.getContractConfig(disciplineId)
+  local unlockedTiers = getUnlockedContractTiers(disciplineId, level)
   if #unlockedTiers == 0 then
     return nil
   end
@@ -893,7 +935,8 @@ local function generateContractOffer(disciplineId, level, now)
 
   local rewardRange = ((contractCfg.rewardRangeByTier or {})[tier]) or {}
   local rewardMoney = randomInt(tonumber(rewardRange.moneyMin) or 1000, tonumber(rewardRange.moneyMax) or 2000)
-  local rewardXp = randomInt(tonumber(rewardRange.xpMin) or 100, tonumber(rewardRange.xpMax) or 300)
+  local tierXpCfg = ((contractCfg.xpByTier or {})[tier]) or {}
+  local rewardXp = math.max(0, math.floor(tonumber(tierXpCfg.xpAtTarget) or 0))
 
   local expiryMinutes = tonumber(contractCfg.offerExpiryMinutes) or 5
   local model, modelSource = pickContractModel(disciplineId)
@@ -901,7 +944,7 @@ local function generateContractOffer(disciplineId, level, now)
     return nil
   end
 
-  local objectiveType, requiredCount = pickContractObjective(tier, raceEntry)
+  local objectiveType, requiredCount = pickContractObjective(disciplineId, tier, raceEntry)
 
   return {
     id = nextId("fre-contract"),
@@ -918,6 +961,7 @@ local function generateContractOffer(disciplineId, level, now)
     objectiveType = objectiveType,
     requiredCount = requiredCount,
     progress = 0,
+    bestPerformanceRatio = 0,
     rewardMoney = rewardMoney,
     rewardXp = rewardXp,
     expiresAt = now + expiryMinutes,
@@ -926,8 +970,8 @@ local function generateContractOffer(disciplineId, level, now)
 end
 
 local function generateSponsorOffer(disciplineId, level, now)
-  local sponsorCfg = freConfig.getSponsorConfig()
-  local unlockedTiers = getUnlockedSponsorTiers(level)
+  local sponsorCfg = freConfig.getSponsorConfig(disciplineId)
+  local unlockedTiers = getUnlockedSponsorTiers(disciplineId, level)
   if #unlockedTiers == 0 then
     return nil
   end
@@ -981,8 +1025,8 @@ local function syncOffersForDiscipline(disciplineId, now)
   end
 
   local level = getSkillLevel(disciplineId)
-  local contractCfg = freConfig.getContractConfig()
-  local sponsorCfg = freConfig.getSponsorConfig()
+  local contractCfg = freConfig.getContractConfig(disciplineId)
+  local sponsorCfg = freConfig.getSponsorConfig(disciplineId)
   local offerExpiryMinutes = tonumber(contractCfg.offerExpiryMinutes) or 5
   if offerExpiryMinutes <= 0 then
     offerExpiryMinutes = 5
@@ -1234,6 +1278,17 @@ local function modelFamilyMatches(requiredModel, actualModel)
   return false
 end
 
+local function calculateContractAwardXp(contract, disciplineId)
+  local tier = (type(contract) == "table" and contract.tier) or "easy"
+  local contractCfg = freConfig.getContractConfig(disciplineId) or {}
+  local curveCfg = ((contractCfg.xpByTier or {})[tier]) or {}
+  local normalized = tonumber(contract and contract.bestPerformanceRatio) or 0
+  if normalized <= 0 then
+    normalized = 1.0
+  end
+  return calculateXpFromTierCurve(curveCfg, normalized)
+end
+
 local function awardContract(contract, disciplineId)
   if not isCareerActive() then
     return
@@ -1247,14 +1302,13 @@ local function awardContract(contract, disciplineId)
   end
 
   local money = tonumber(contract.rewardMoney) or 0
-  local xp = tonumber(contract.rewardXp) or 0
+  local xp = calculateContractAwardXp(contract, disciplineId)
   local objectiveType = contract.objectiveType == "laps" and "laps" or "events"
   local requiredCount = math.max(1, math.floor(tonumber(contract.requiredCount) or 1))
   local requiredModel = contract.requiredModelFamily or contract.requiredModel
   local requiredModelLabel = contract.requiredModelLabel or getModelDisplayName(requiredModel)
   local rewardData = {
-    money = {amount = money, canBeNegative = false},
-    beamXP = {amount = math.floor(xp / 10)}
+    money = {amount = money, canBeNegative = false}
   }
   rewardData[skillKey] = {amount = xp}
   career_modules_payment.reward(rewardData, {
@@ -1350,6 +1404,11 @@ local function onFreeroamRaceCompleted(payload)
           local notExpired = now <= (tonumber(contract.expiresAt) or 0)
 
           if not invalidLap and raceOk and modelOk and timeOk and notExpired then
+            local performanceRatio = normalizePerformanceRatioFromTargetTime(contract.targetTime, finishTime)
+            if performanceRatio > (tonumber(contract.bestPerformanceRatio) or 0) then
+              contract.bestPerformanceRatio = performanceRatio
+              stateChanged = true
+            end
             local objectiveType = contract.objectiveType == "laps" and "laps" or "events"
             local requiredCount = math.max(1, math.floor(tonumber(contract.requiredCount) or 1))
             local objectiveComplete = false
@@ -1408,8 +1467,8 @@ local function buildDisciplineUiState(disciplineId, now)
   end
 
   local level = getSkillLevel(disciplineId)
-  local contractCfg = freConfig.getContractConfig()
-  local sponsorCfg = freConfig.getSponsorConfig()
+  local contractCfg = freConfig.getContractConfig(disciplineId)
+  local sponsorCfg = freConfig.getSponsorConfig(disciplineId)
   local contractUnlockLevel = tonumber((contractCfg.tierUnlockLevels or {}).easy) or 0
   local sponsorUnlockLevel = tonumber((sponsorCfg.tierUnlockLevels or {}).easy) or 0
   local contractsUnlocked = level >= contractUnlockLevel
@@ -1440,8 +1499,8 @@ local function buildDisciplineUiState(disciplineId, now)
     sponsorUnlockLevel = sponsorUnlockLevel,
     contractsUnlocked = contractsUnlocked,
     sponsorsUnlocked = sponsorsUnlocked,
-    contractUnlockedTiers = getUnlockedContractTiers(level),
-    sponsorUnlockedTiers = getUnlockedSponsorTiers(level),
+    contractUnlockedTiers = getUnlockedContractTiers(disciplineId, level),
+    sponsorUnlockedTiers = getUnlockedSponsorTiers(disciplineId, level),
     contractSlots = contractSlots,
     contractSlotsUsed = #(dState.contracts.active or {}),
     contractOfferCap = contractOfferCap,
@@ -1600,12 +1659,12 @@ local function acceptContract(contractId)
           return false, "Required model is invalid or blacklisted."
         end
         local level = getSkillLevel(discipline.id)
-        local slotCap = countSlotCap(level, (freConfig.getContractConfig() or {}).slotUnlockLevels)
+        local slotCap = countSlotCap(level, (freConfig.getContractConfig(discipline.id) or {}).slotUnlockLevels)
         if #dState.contracts.active >= slotCap then
           return false, "No contract slots available."
         end
         local tier = entry.tier or "easy"
-        local ttl = tonumber(((freConfig.getContractConfig() or {}).expiryMinutesByTier or {})[tier]) or 60
+        local ttl = tonumber(((freConfig.getContractConfig(discipline.id) or {}).expiryMinutesByTier or {})[tier]) or 60
         entry.expiresAt = now + ttl
         entry.acceptedAt = now
         table.insert(dState.contracts.active, entry)
@@ -1643,7 +1702,7 @@ local function signSponsor(sponsorId)
       if entry.id == sponsorId then
         normalizeSponsorEntry(discipline.id, entry)
         local level = getSkillLevel(discipline.id)
-        local slotCap = countSlotCap(level, (freConfig.getSponsorConfig() or {}).slotUnlockLevels)
+        local slotCap = countSlotCap(level, (freConfig.getSponsorConfig(discipline.id) or {}).slotUnlockLevels)
         if #dState.sponsors.active >= slotCap then
           return false, "No sponsor slots available."
         end
