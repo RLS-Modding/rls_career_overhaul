@@ -55,6 +55,11 @@ local LOT_WIN_CELEBRATION_SFX_EVENT = 'event:>UI>Missions>End_Gold'
 local AUCTION_POI_ID = 'usedCarAuctionEntrance'
 local AUCTION_POI_LEVEL = 'west_coast_usa'
 local AUCTION_POI_ICON = 'poi_fasttravel_round_orange_green'
+local AUCTION_EXIT_MARKER_NAME = 'usedCarAuctionExitMarker'
+local AUCTION_EXIT_MARKER_SHAPE = 'art/shapes/interface/checkpoint_marker.dae'
+local AUCTION_EXIT_MARKER_SCALE = 2.2
+local AUCTION_EXIT_MARKER_COLOR = '1.00 0.10 0.10 0.95'
+local AUCTION_EXIT_MARKER_Z_OFFSET = -0.8
 
 local fallbackPool = {
   { model = 'covet', config = 'vehicles/covet/roller_covet.pc', title = 'Ibishu Covet', basePrice = 2600 },
@@ -285,6 +290,18 @@ local function setTriggerHidden(triggerName, hidden)
   if trigger then
     trigger:setHidden(hidden and true or false)
   end
+end
+
+local function clearAuctionExitMarker()
+  local marker = scenetree.findObject(AUCTION_EXIT_MARKER_NAME)
+  if not marker then
+    return
+  end
+
+  if editor and editor.onRemoveSceneTreeObjects and marker.getID then
+    pcall(function() editor.onRemoveSceneTreeObjects({marker:getID()}) end)
+  end
+  pcall(function() marker:delete() end)
 end
 
 local function setIdleTriggerState()
@@ -519,6 +536,7 @@ end
 local function hardDisableAuctionAudioVisuals()
   setAuctionWinEmittersEnabled(false)
   setAuctionActiveAssetsEnabled(false)
+  clearAuctionExitMarker()
 end
 
 local function triggerAuctionWinEmitters(duration)
@@ -857,6 +875,50 @@ local function getPlayerExitSpot(layout, warnOnFallback)
     layout.playerExitSpot = fallbackSpot
   end
   return fallbackSpot
+end
+
+local function ensureAuctionExitMarker(layout)
+  clearAuctionExitMarker()
+
+  local markerPos = nil
+  local exitTrigger = scenetree.findObject(EXIT_TRIGGER)
+  if exitTrigger then
+    local ok, pos = pcall(function() return exitTrigger:getPosition() end)
+    if ok and pos then
+      markerPos = vec3(pos)
+    end
+  end
+
+  if not markerPos then
+    local exitSpot = getPlayerExitSpot(layout, false)
+    if exitSpot and exitSpot.pos then
+      markerPos = vec3(exitSpot.pos)
+    end
+  end
+
+  if not markerPos then
+    return false
+  end
+
+  local marker = createObject('TSStatic')
+  marker:setField('shapeName', 0, AUCTION_EXIT_MARKER_SHAPE)
+  marker:setPosition(markerPos + vec3(0, 0, AUCTION_EXIT_MARKER_Z_OFFSET))
+  marker.scale = vec3(AUCTION_EXIT_MARKER_SCALE, AUCTION_EXIT_MARKER_SCALE, AUCTION_EXIT_MARKER_SCALE)
+  marker:setField('rotation', 0, '1 0 0 0')
+  marker.useInstanceRenderData = true
+  marker:setField('instanceColor', 0, AUCTION_EXIT_MARKER_COLOR)
+  marker:setField('collisionType', 0, 'Collision Mesh')
+  marker:setField('decalType', 0, 'Collision Mesh')
+  marker:setField('allowPlayerStep', 0, '1')
+  marker:setField('canSave', 0, '0')
+  marker:setField('canSaveDynamicFields', 0, '1')
+  marker.canSave = false
+  marker:registerObject(AUCTION_EXIT_MARKER_NAME)
+  if scenetree and scenetree.MissionGroup then
+    scenetree.MissionGroup:addObject(marker)
+  end
+
+  return true
 end
 
 local function getAuctionEntrancePos()
@@ -2280,6 +2342,7 @@ end
 
 local function resetAuction(keepPurchases)
   closeAuctionOverlayUi()
+  clearAuctionExitMarker()
 
   for _, lot in ipairs(auctionState.lots) do
     if lot.vehId then
@@ -2384,6 +2447,7 @@ startAuctionImmediate = function()
 
     teleportVehicleToSpot(playerVeh, auctionState.auctionSpot)
     setAuctionActiveAssetsEnabled(true)
+    ensureAuctionExitMarker(layout)
 
     auctionState.npcPersonas = generateAuctionNpcPersonas(NPC_PERSONA_COUNT)
     auctionState.lots = prepareLots(layout.spawnSpots, layout.blockSpots, DEFAULT_LOT_COUNT, auctionState.npcPersonas)
