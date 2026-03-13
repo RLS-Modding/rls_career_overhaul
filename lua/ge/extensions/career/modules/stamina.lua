@@ -107,6 +107,16 @@ local function grantPendingXP(force)
 
   state.pendingMeters = max(0, state.pendingMeters - xp * METERS_PER_XP)
 
+  if career_modules_difficultyMode and career_modules_difficultyMode.scaleFlatRewards then
+    local scaled = { stamina = xp }
+    career_modules_difficultyMode.scaleFlatRewards(scaled, {includeMoney = false})
+    xp = floor(tonumber(scaled.stamina) or xp)
+  end
+
+  if xp <= 0 then
+    return
+  end
+
   career_modules_playerAttributes.addAttributes({
     stamina = xp
   }, {
