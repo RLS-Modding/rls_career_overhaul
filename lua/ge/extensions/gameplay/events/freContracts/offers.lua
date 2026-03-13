@@ -37,7 +37,33 @@ local function pickContractObjective(disciplineId, tier, raceEntry)
   return objectiveType, gameplay_events_freContracts_helpers.randomInt(minCount, maxCount)
 end
 
-local function normalizeContractEntry(entry)
+local function isValidTargetType(targetType)
+  return targetType == "time" or targetType == "driftScore" or targetType == "maxDamagePct"
+end
+
+local function applyTargetData(entry, targetData)
+  if type(entry) ~= "table" then
+    return
+  end
+  local data = type(targetData) == "table" and targetData or {}
+  entry.targetType = isValidTargetType(data.targetType) and data.targetType or "time"
+  entry.targetTime = tonumber(data.targetTime)
+  entry.targetDriftScore = tonumber(data.targetDriftScore)
+  entry.targetDamagePctMax = tonumber(data.targetDamagePctMax)
+end
+
+local function hasValidTargetForEntry(entry)
+  local targetType = entry and entry.targetType or "time"
+  if targetType == "driftScore" then
+    return type(entry.targetDriftScore) == "number" and entry.targetDriftScore > 0
+  end
+  if targetType == "maxDamagePct" then
+    return type(entry.targetDamagePctMax) == "number" and entry.targetDamagePctMax >= 0 and entry.targetDamagePctMax <= 1
+  end
+  return type(entry.targetTime) == "number" and entry.targetTime > 0
+end
+
+local function normalizeContractEntry(disciplineId, entry)
   if type(entry) ~= "table" then
     return
   end
@@ -58,8 +84,44 @@ local function normalizeContractEntry(entry)
   entry.bestPerformanceRatio = math.max(0, tonumber(entry.bestPerformanceRatio) or 0)
   entry.rewardXp = math.max(0, math.floor(tonumber(entry.rewardXp) or 0))
   entry.targetTime = tonumber(entry.targetTime)
+  entry.targetDriftScore = tonumber(entry.targetDriftScore)
+  entry.targetDamagePctMax = tonumber(entry.targetDamagePctMax)
   entry.raceRouteType = rCache.normalizeRaceRouteType(entry.raceRouteType) or
-                          rCache.inferRouteTypeFromRaceLabel(entry.disciplineId, entry.raceName, entry.raceLabel)
+                          rCache.inferRouteTypeFromRaceLabel(disciplineId, entry.raceName, entry.raceLabel)
+  local targetType = isValidTargetType(entry.targetType) and entry.targetType or nil
+  entry.targetType = targetType
+  local raceEntry = rCache.findRaceEntry(disciplineId, entry.raceName, entry.raceRouteType, entry.raceLabel)
+
+  if not targetType then
+    local contractCfg = freConfig.getContractConfig(disciplineId) or {}
+    local inferredTarget = raceEntry and rCache.buildTargetForTier(disciplineId, entry.tier or "easy", raceEntry, contractCfg, nil, {
+      min = 1.0,
+      max = 1.1
+    }, "contract") or nil
+    if inferredTarget and inferredTarget.targetType ~= "time" then
+      applyTargetData(entry, inferredTarget)
+    else
+      entry.targetType = "time"
+    end
+  end
+
+  if not hasValidTargetForEntry(entry) then
+    local fallbackTarget = nil
+    local contractCfg = freConfig.getContractConfig(disciplineId) or {}
+    if raceEntry then
+      fallbackTarget = rCache.buildTargetForTier(disciplineId, entry.tier or "easy", raceEntry, contractCfg, nil, {
+        min = 1.0,
+        max = 1.1
+      }, "contract")
+    end
+    if not fallbackTarget then
+      fallbackTarget = {
+        targetType = "time",
+        targetTime = tonumber(entry.targetTime) or 60
+      }
+    end
+    applyTargetData(entry, fallbackTarget)
+  end
 
   if (not entry.requiredModelLabel or entry.requiredModelLabel == "") and type(entry.requiredModel) == "string" and entry.requiredModel ~= "" then
     entry.requiredModelLabel = vPool.getModelDisplayName(entry.requiredModel)
@@ -74,25 +136,52 @@ local function normalizeSponsorEntry(disciplineId, entry)
 
   entry.upkeepMinutes = math.max(1, tonumber(entry.upkeepMinutes) or 120)
   entry.targetTime = tonumber(entry.targetTime)
-  entry.requiredRaceRouteType = rCache.normalizeRaceRouteType(entry.requiredRaceRouteType)
+  entry.targetDriftScore = tonumber(entry.targetDriftScore)
+  entry.targetDamagePctMax = tonumber(entry.targetDamagePctMax)
+  entry.targetType = isValidTargetType(entry.targetType) and entry.targetType or nil
+  entry.requiredRaceRouteType = rCache.normalizeRaceRouteType(entry.requiredRaceRouteType) or
+                                  rCache.inferRouteTypeFromRaceLabel(disciplineId, entry.requiredRaceName, entry.requiredRaceLabel)
 
   local hasRaceName = type(entry.requiredRaceName) == "string" and entry.requiredRaceName ~= ""
-  local hasTargetTime = type(entry.targetTime) == "number" and entry.targetTime > 0
-  if not hasRaceName or not hasTargetTime then
+  local raceEntry = hasRaceName and rCache.findRaceEntry(disciplineId, entry.requiredRaceName, entry.requiredRaceRouteType,
+      entry.requiredRaceLabel) or nil
+  if not entry.targetType then
+    local sponsorCfg = freConfig.getSponsorConfig(disciplineId) or {}
+    local contractCfg = freConfig.getContractConfig(disciplineId) or {}
+    local inferredTarget = raceEntry and rCache.buildTargetForTier(disciplineId, entry.tier or "easy", raceEntry, sponsorCfg,
+      contractCfg, {
+        min = 1.25,
+        max = 1.5
+      }, "sponsor") or nil
+    if inferredTarget and inferredTarget.targetType ~= "time" then
+      applyTargetData(entry, inferredTarget)
+    else
+      entry.targetType = "time"
+    end
+  end
+
+  local hasValidTarget = hasValidTargetForEntry(entry)
+  if not hasRaceName or not hasValidTarget then
     local requirementData = rCache.buildSponsorRequirement(disciplineId, entry.tier or "easy")
     if requirementData then
       entry.requiredRaceName = requirementData.requiredRaceName
       entry.requiredRaceLabel = requirementData.requiredRaceLabel
       entry.requiredRaceRouteType = requirementData.requiredRaceRouteType
+      entry.targetType = requirementData.targetType
       entry.targetTime = requirementData.targetTime
+      entry.targetDriftScore = requirementData.targetDriftScore
+      entry.targetDamagePctMax = requirementData.targetDamagePctMax
       entry.requirement = requirementData.requirement
     end
   else
     entry.requiredRaceLabel = entry.requiredRaceLabel or entry.requiredRaceName
     if type(entry.requirement) ~= "string" or entry.requirement == "" then
-      local formatTime = gameplay_events_freContracts_helpers.formatTimeForRequirement
-      entry.requirement = string.format("Beat %s on %s once per upkeep window (no XP minimum).",
-        formatTime(entry.targetTime), entry.requiredRaceLabel)
+      entry.requirement = rCache.formatRequirementForTarget({
+        targetType = entry.targetType,
+        targetTime = entry.targetTime,
+        targetDriftScore = entry.targetDriftScore,
+        targetDamagePctMax = entry.targetDamagePctMax
+      }, entry.requiredRaceLabel)
     end
   end
 end
@@ -170,10 +259,10 @@ local function generateContractOffer(disciplineId, level, now)
     return nil
   end
 
-  local targetTime = rCache.resolveTargetTimeForTier(disciplineId, tier, raceEntry.bestTime, contractCfg, nil, {
+  local targetData = rCache.buildTargetForTier(disciplineId, tier, raceEntry, contractCfg, nil, {
     min = 1.0,
     max = 1.1
-  })
+  }, "contract")
 
   local rewardRange = ((contractCfg.rewardRangeByTier or {})[tier]) or {}
   local rewardMoney = helpers.randomInt(tonumber(rewardRange.moneyMin) or 1000, tonumber(rewardRange.moneyMax) or 2000)
@@ -195,7 +284,10 @@ local function generateContractOffer(disciplineId, level, now)
     raceName = raceEntry.raceName,
     raceLabel = raceEntry.raceLabel,
     raceRouteType = raceEntry.routeType,
-    targetTime = targetTime,
+    targetType = targetData and targetData.targetType or "time",
+    targetTime = targetData and targetData.targetTime or nil,
+    targetDriftScore = targetData and targetData.targetDriftScore or nil,
+    targetDamagePctMax = targetData and targetData.targetDamagePctMax or nil,
     requiredModel = model,
     requiredModelLabel = vPool.getModelDisplayName(model),
     modelSource = modelSource,
@@ -249,7 +341,10 @@ local function generateSponsorOffer(disciplineId, level, now)
     requiredRaceName = requirementData.requiredRaceName,
     requiredRaceLabel = requirementData.requiredRaceLabel,
     requiredRaceRouteType = requirementData.requiredRaceRouteType,
+    targetType = requirementData.targetType,
     targetTime = requirementData.targetTime,
+    targetDriftScore = requirementData.targetDriftScore,
+    targetDamagePctMax = requirementData.targetDamagePctMax,
     requirement = requirementData.requirement,
     expiresAt = now + offerExpiry,
     createdAt = now
@@ -268,13 +363,17 @@ local function syncOffersForDiscipline(disciplineId, now)
 
   for i = #dState.contracts.available, 1, -1 do
     local offer = dState.contracts.available[i]
-    normalizeContractEntry(offer)
+    normalizeContractEntry(disciplineId, offer)
     local requiredModel = offer.requiredModel
     if requiredModel and requiredModel ~= "" and
       (not vPool.isModelAllowedForDiscipline(disciplineId, requiredModel) or not vPool.isValidVehicleModelKey(requiredModel)) then
       table.remove(dState.contracts.available, i)
       changed = true
     end
+  end
+
+  for _, activeContract in ipairs(dState.contracts.active or {}) do
+    normalizeContractEntry(disciplineId, activeContract)
   end
 
   local level = skills.getSkillLevel(disciplineId)

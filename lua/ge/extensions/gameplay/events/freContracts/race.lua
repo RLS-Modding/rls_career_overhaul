@@ -97,6 +97,61 @@ local function calculateContractAwardXp(contract, disciplineId)
   return gameplay_events_freContracts_skills.calculateXpFromTierCurve(curveCfg, normalized)
 end
 
+local function normalizeTargetType(targetType)
+  if targetType == "driftScore" or targetType == "maxDamagePct" then
+    return targetType
+  end
+  return "time"
+end
+
+local function isTargetSatisfied(targetType, targetTime, targetDriftScore, targetDamagePctMax, finishTime, driftScore, damagePercentage)
+  if targetType == "driftScore" then
+    local targetScore = tonumber(targetDriftScore)
+    if not targetScore or targetScore <= 0 then
+      return false
+    end
+    return (tonumber(driftScore) or 0) >= targetScore
+  end
+  if targetType == "maxDamagePct" then
+    local targetDamage = tonumber(targetDamagePctMax)
+    if type(targetDamage) ~= "number" then
+      return false
+    end
+    targetDamage = math.max(0, math.min(1, targetDamage))
+    local actualDamage = math.max(0, math.min(1, tonumber(damagePercentage) or 0))
+    return actualDamage <= targetDamage
+  end
+
+  local requiredTime = tonumber(targetTime)
+  return type(requiredTime) == "number" and finishTime <= requiredTime
+end
+
+local function getPerformanceRatioForResult(skills, targetType, targetTime, targetDriftScore, targetDamagePctMax, finishTime,
+                                            driftScore, damagePercentage)
+  if targetType == "driftScore" then
+    local targetScore = tonumber(targetDriftScore)
+    if not targetScore or targetScore <= 0 then
+      return 0
+    end
+    return math.max(0, (tonumber(driftScore) or 0) / targetScore)
+  end
+  if targetType == "maxDamagePct" then
+    local targetDamage = tonumber(targetDamagePctMax)
+    if type(targetDamage) ~= "number" then
+      return 0
+    end
+    targetDamage = math.max(0, math.min(1, targetDamage))
+    local actualDamage = math.max(0, math.min(1, tonumber(damagePercentage) or 0))
+    local denominator = 1 - targetDamage
+    if denominator <= 0 then
+      return actualDamage <= targetDamage and 1 or 0
+    end
+    return math.max(0, (1 - actualDamage) / denominator)
+  end
+
+  return skills.normalizePerformanceRatioFromTargetTime(targetTime, finishTime)
+end
+
 local function awardContract(contract, disciplineId)
   if not gameplay_events_freContracts_state.isCareerActive() then
     return
@@ -148,22 +203,25 @@ local function awardContract(contract, disciplineId)
   end
 end
 
-local function processSponsorQualification(dState, raceName, finishTime, isAltRoute, now)
+local function processSponsorQualification(dState, raceName, finishTime, driftScore, damagePercentage, isAltRoute, now)
   local rCache = gameplay_events_freContracts_raceCache
   local changed = false
   for _, sponsor in ipairs(dState.sponsors.active or {}) do
     local requiredRaceName = sponsor.requiredRaceName
-    local targetTime = tonumber(sponsor.targetTime)
+    local targetType = normalizeTargetType(sponsor.targetType)
     local routeOk = rCache.routeTypeMatches(sponsor.requiredRaceRouteType, isAltRoute)
     local raceOk = type(requiredRaceName) == "string" and requiredRaceName ~= "" and raceName == requiredRaceName and routeOk
-    local timeOk = type(targetTime) == "number" and finishTime <= targetTime
-    if raceOk and timeOk then
+    local targetOk = isTargetSatisfied(targetType, sponsor.targetTime, sponsor.targetDriftScore, sponsor.targetDamagePctMax,
+      finishTime, driftScore, damagePercentage)
+    if raceOk and targetOk then
       sponsor.warningIssued = false
       sponsor.warningIssuedAt = nil
       sponsor.lastQualifiedAt = now
       sponsor.lastQualifiedRaceName = raceName
       sponsor.lastQualifiedRaceRouteType = isAltRoute and "alt" or "main"
       sponsor.lastQualifiedTime = finishTime
+      sponsor.lastQualifiedDriftScore = tonumber(driftScore) or 0
+      sponsor.lastQualifiedDamagePct = math.max(0, math.min(1, tonumber(damagePercentage) or 0))
       sponsor.nextCheckAt = now + (tonumber(sponsor.upkeepMinutes) or 120)
       changed = true
     end
@@ -171,7 +229,8 @@ local function processSponsorQualification(dState, raceName, finishTime, isAltRo
   return changed
 end
 
-local function processContractProgress(dState, disciplineId, raceName, finishTime, lapCount, isAltRoute, vehicleModel, now)
+local function processContractProgress(dState, disciplineId, raceName, finishTime, driftScore, damagePercentage, lapCount,
+                                       isAltRoute, vehicleModel, now)
   local rCache = gameplay_events_freContracts_raceCache
   local vPool = gameplay_events_freContracts_vehiclePool
   local skills = gameplay_events_freContracts_skills
@@ -182,11 +241,14 @@ local function processContractProgress(dState, disciplineId, raceName, finishTim
     local routeOk = rCache.routeTypeMatches(contract.raceRouteType, isAltRoute)
     local raceOk = (contract.raceName == raceName) and routeOk
     local modelOk = vPool.modelFamilyMatches(contract.requiredModel, vehicleModel)
-    local timeOk = finishTime <= (tonumber(contract.targetTime) or math.huge)
+    local targetType = normalizeTargetType(contract.targetType)
+    local targetOk = isTargetSatisfied(targetType, contract.targetTime, contract.targetDriftScore, contract.targetDamagePctMax,
+      finishTime, driftScore, damagePercentage)
     local notExpired = now <= (tonumber(contract.expiresAt) or 0)
 
-    if raceOk and modelOk and timeOk and notExpired then
-      local performanceRatio = skills.normalizePerformanceRatioFromTargetTime(contract.targetTime, finishTime)
+    if raceOk and modelOk and targetOk and notExpired then
+      local performanceRatio = getPerformanceRatioForResult(skills, targetType, contract.targetTime, contract.targetDriftScore,
+        contract.targetDamagePctMax, finishTime, driftScore, damagePercentage)
       if performanceRatio > (tonumber(contract.bestPerformanceRatio) or 0) then
         contract.bestPerformanceRatio = performanceRatio
         changed = true
@@ -227,6 +289,10 @@ local function onFreeroamRaceCompleted(payload)
   local raceName = payload.raceName
   local finishTime = tonumber(payload.finishTime) or math.huge
   local lapCount = math.max(0, math.floor(tonumber(payload.lapCount) or 0))
+  local resultMetrics = type(payload.resultMetrics) == "table" and payload.resultMetrics or {}
+  local driftScore = tonumber(resultMetrics.driftScore or payload.driftScore) or 0
+  local damagePercentage = tonumber(resultMetrics.damagePercentage or payload.damagePercentage) or 0
+  damagePercentage = math.max(0, math.min(1, damagePercentage))
   local invalidLap = payload.invalidLap == true
   local isAltRoute = payload.isAltRoute == true
   local vehicleModel = string.lower(payload.vehicleModel or getCurrentVehicleModel(payload.vehicleId) or "")
@@ -244,10 +310,11 @@ local function onFreeroamRaceCompleted(payload)
       seen[disciplineId] = true
       local dState = state.disciplines[disciplineId]
       if dState then
-        if not invalidLap and processSponsorQualification(dState, raceName, finishTime, isAltRoute, now) then
+        if not invalidLap and processSponsorQualification(dState, raceName, finishTime, driftScore, damagePercentage, isAltRoute, now) then
           stateChanged = true
         end
-        if not invalidLap and processContractProgress(dState, disciplineId, raceName, finishTime, lapCount, isAltRoute, vehicleModel, now) then
+        if not invalidLap and processContractProgress(dState, disciplineId, raceName, finishTime, driftScore, damagePercentage,
+            lapCount, isAltRoute, vehicleModel, now) then
           stateChanged = true
         end
       end

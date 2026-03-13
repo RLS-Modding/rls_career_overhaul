@@ -391,6 +391,14 @@ export const useVehicleShoppingStore = defineStore("vehicleShopping", () => {
         })
     }
 
+    // Keep organization reputation/progress in sync with backend updates.
+    if (delta.organizations && typeof delta.organizations === 'object') {
+      d.organizations = delta.organizations
+    }
+    if (typeof delta.dealershipPurchaseReputationGain === 'number' && !isNaN(delta.dealershipPurchaseReputationGain)) {
+      d.dealershipPurchaseReputationGain = delta.dealershipPurchaseReputationGain
+    }
+
     // Update state refs
     d.vehiclesInShop = vehiclesArray
     d.soldVehicles = soldVehiclesArray
