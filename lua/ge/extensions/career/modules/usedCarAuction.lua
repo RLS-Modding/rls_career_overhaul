@@ -333,21 +333,12 @@ local function setAuctionRunningTriggerState()
   setTriggerHidden(constants.EXIT_TRIGGER, false)
 end
 
-local function setAuctionFinishedTriggerState()
-  setTriggerHidden(constants.ENTRY_TRIGGER, true)
-  setTriggerHidden(constants.EXIT_TRIGGER, false)
-end
-
 local function openMenu()
   auctionState.uiOpen = true
   pcall(function() guihooks.trigger('UsedAuctionShow') end)
 end
 
 local function closeAuctionOverlayUi()
-  if not auctionState.uiOpen then
-    pcall(function() guihooks.trigger('UsedAuctionHide') end)
-    return
-  end
   auctionState.uiOpen = false
   pcall(function() guihooks.trigger('UsedAuctionHide') end)
 end
@@ -411,6 +402,14 @@ end
 
 local function playLotWinCelebrationSound()
   playUiSound(constants.LOT_WIN_CELEBRATION_SFX_EVENT)
+end
+
+local function getRandomNpcBidCooldown()
+  return constants.NPC_BID_COOLDOWN_MIN + math.random() * (constants.NPC_BID_COOLDOWN_MAX - constants.NPC_BID_COOLDOWN_MIN)
+end
+
+local function scheduleNextNpcBid(baseTime)
+  auctionState.nextNpcBidAt = (tonumber(baseTime) or getAuctionTime()) + getRandomNpcBidCooldown()
 end
 
 local function resolveSceneRefToObject(ref)
@@ -1697,7 +1696,7 @@ end
 
 local showLiveAuctionStatus
 
-local function maybeExtendLotTimer(lot, bidderLabel)
+local function maybeExtendLotTimer(lot)
   if not lot or lot.state ~= 'active' then return false end
   local now = getAuctionTime()
   local remaining = (lot.endTime or 0) - now
@@ -1744,20 +1743,6 @@ local function setNpcAsLeader(lot, persona)
     npcName = lot.npcPersonaNamesById[lot.leadingNpcPersonaId]
   end
   lot.highestBidderName = npcName or 'NPC'
-end
-
-local function getStrongestNpcPersonaForLot(lot)
-  if not lot then return nil end
-  local strongest = nil
-  local strongestCap = -math.huge
-  for _, persona in ipairs(auctionState.npcPersonas or {}) do
-    local cap = tonumber(lot.npcMaxBidsByPersonaId and lot.npcMaxBidsByPersonaId[persona.id]) or 0
-    if cap > strongestCap then
-      strongestCap = cap
-      strongest = persona
-    end
-  end
-  return strongest
 end
 
 local function chooseNpcBidderForLot(lot, nextBid, preferOutbid)
@@ -2038,6 +2023,15 @@ local function beginLotBidding(lot, forceTeleportToBlock)
   showLiveAuctionStatus(true)
 end
 
+local function setLotMotionTrackingNow(lot, veh)
+  if not lot or not veh then
+    return
+  end
+  lot.driveStartedAt = getAuctionTime()
+  lot.lastMotionPos = vec3(veh:getPosition())
+  lot.lastMotionAt = lot.driveStartedAt
+end
+
 local function beginLotApproach(lot)
   if not lot then return false end
   local veh = lot.vehId and getObjectByID(lot.vehId)
@@ -2045,9 +2039,7 @@ local function beginLotApproach(lot)
   setLotVehicleDriveLock(veh, 'transit')
   lot.state = 'approaching'
   lot.driveState = 'approach'
-  lot.driveStartedAt = getAuctionTime()
-  lot.lastMotionPos = vec3(veh:getPosition())
-  lot.lastMotionAt = lot.driveStartedAt
+  setLotMotionTrackingNow(lot, veh)
   lot.nextApproachControlAt = 0
 
   local routeSpots = {}
@@ -2083,9 +2075,7 @@ local function beginLotExit(lot)
   setLotVehicleDriveLock(veh, 'transit')
   lot.state = 'exiting'
   lot.driveState = 'exit'
-  lot.driveStartedAt = getAuctionTime()
-  lot.lastMotionPos = vec3(veh:getPosition())
-  lot.lastMotionAt = lot.driveStartedAt
+  setLotMotionTrackingNow(lot, veh)
 
   local routeSpots = {}
   table.insert(routeSpots, lot.blockSpot or lot.spawnSpot)
@@ -2114,7 +2104,7 @@ local function setAuctionComplete()
   if auctionState.phase == 'complete' then return end
   auctionState.phase = 'complete'
   auctionState.awaitingFinalExit = false
-  setAuctionFinishedTriggerState()
+  setAuctionRunningTriggerState()
 end
 
 local function startLotByIndex(idx)
@@ -2184,6 +2174,45 @@ showLiveAuctionStatus = function(force)
   auctionState.nextLiveStatusAt = now + constants.LIVE_STATUS_INTERVAL
 end
 
+local function applyPlayerBidToLot(lot, bidAmount)
+  if not lot then
+    return false
+  end
+
+  lot.currentBid = bidAmount
+  setPlayerAsLeader(lot)
+  playBidAcceptedSound()
+  maybeExtendLotTimer(lot)
+  scheduleNextNpcBid()
+  showLiveAuctionStatus(true)
+  return true
+end
+
+local function refreshLotMotionProgress(lot, veh, tNow)
+  if not lot or not veh then return end
+  local currentPos = vec3(veh:getPosition())
+  local prevPos = lot.lastMotionPos
+  if not prevPos then
+    lot.lastMotionPos = currentPos
+    lot.lastMotionAt = tNow
+    return
+  end
+
+  if (currentPos - prevPos):length() >= constants.LOT_PROGRESS_DISTANCE then
+    lot.lastMotionPos = currentPos
+    lot.lastMotionAt = tNow
+  end
+end
+
+local function hasLiveTransitionLots()
+  for _, checkLot in ipairs(auctionState.lots or {}) do
+    if checkLot.state == 'approaching' or checkLot.state == 'active' or checkLot.state == 'exiting' then
+      return true
+    end
+  end
+  return false
+end
+
 local function placePlayerBidIfPossible()
   if auctionState.phase ~= 'bidding' then
     return false
@@ -2207,13 +2236,7 @@ local function placePlayerBidIfPossible()
     return false
   end
 
-  lot.currentBid = bidAmount
-  setPlayerAsLeader(lot)
-  playBidAcceptedSound()
-  maybeExtendLotTimer(lot, 'Player')
-  auctionState.nextNpcBidAt = getAuctionTime() + (constants.NPC_BID_COOLDOWN_MIN + math.random() * (constants.NPC_BID_COOLDOWN_MAX - constants.NPC_BID_COOLDOWN_MIN))
-  showLiveAuctionStatus(true)
-  return true
+  return applyPlayerBidToLot(lot, bidAmount)
 end
 
 local function placePlayerBidByAmount(amount)
@@ -2229,13 +2252,7 @@ local function placePlayerBidByAmount(amount)
   if not hasGarageSpaceForPurchase() then return false end
   if not canAfford(bidAmount) then return false end
 
-  lot.currentBid = bidAmount
-  setPlayerAsLeader(lot)
-  playBidAcceptedSound()
-  maybeExtendLotTimer(lot, 'Player')
-  auctionState.nextNpcBidAt = getAuctionTime() + (constants.NPC_BID_COOLDOWN_MIN + math.random() * (constants.NPC_BID_COOLDOWN_MAX - constants.NPC_BID_COOLDOWN_MIN))
-  showLiveAuctionStatus(true)
-  return true
+  return applyPlayerBidToLot(lot, bidAmount)
 end
 
 local function requestAuctionState()
@@ -2415,12 +2432,11 @@ local function confirmEntryPaymentAndStartAuction()
     return false
   end
 
-  local canStart, reason = canStartAuctionFromPrompt()
+  local canStart = canStartAuctionFromPrompt()
   if not canStart then
     return false
   end
 
-  local fee = getAuctionEntryFee()
   if not canAffordAuctionEntry() then
     return false
   end
@@ -2833,35 +2849,10 @@ local function onUpdate(_, dtSim)
     auctionState.lastValidPlayerVehId = playerVehId
   end
 
-  local function refreshMotionProgress(lot, veh, tNow)
-    if not veh then return end
-    local currentPos = vec3(veh:getPosition())
-    local prevPos = lot.lastMotionPos
-    if not prevPos then
-      lot.lastMotionPos = currentPos
-      lot.lastMotionAt = tNow
-      return
-    end
-
-    if (currentPos - prevPos):length() >= constants.LOT_PROGRESS_DISTANCE then
-      lot.lastMotionPos = currentPos
-      lot.lastMotionAt = tNow
-    end
-  end
-
-  local function hasLiveTransitionLots()
-    for _, checkLot in ipairs(auctionState.lots or {}) do
-      if checkLot.state == 'approaching' or checkLot.state == 'active' or checkLot.state == 'exiting' then
-        return true
-      end
-    end
-    return false
-  end
-
   for _, lot in ipairs(auctionState.lots or {}) do
     if lot.state == 'approaching' then
       local lotVeh = lot.vehId and getObjectByID(lot.vehId)
-      refreshMotionProgress(lot, lotVeh, now)
+      refreshLotMotionProgress(lot, lotVeh, now)
       local arrived = false
       if lotVeh then
         local blockSpot = lot.blockSpot or lot.spawnSpot
@@ -2879,7 +2870,7 @@ local function onUpdate(_, dtSim)
       end
     elseif lot.state == 'exiting' then
       local lotVeh = lot.vehId and getObjectByID(lot.vehId)
-      refreshMotionProgress(lot, lotVeh, now)
+      refreshLotMotionProgress(lot, lotVeh, now)
       local done = false
       if not lotVeh then
         done = true
@@ -2932,20 +2923,24 @@ local function onUpdate(_, dtSim)
         lot.currentBid = nextBid
         setNpcAsLeader(lot, bidderPersona)
         playBidAcceptedSound()
-        maybeExtendLotTimer(lot, lot.highestBidderName or 'NPC')
+        maybeExtendLotTimer(lot)
       end
     end
 
-    auctionState.nextNpcBidAt = now + (constants.NPC_BID_COOLDOWN_MIN + math.random() * (constants.NPC_BID_COOLDOWN_MAX - constants.NPC_BID_COOLDOWN_MIN))
+    scheduleNextNpcBid(now)
   end
+end
+
+local function hideAuctionUiAndDisableAssets()
+  hardDisableAuctionAudioVisuals()
+  auctionState.uiOpen = false
+  pcall(function() guihooks.trigger('UsedAuctionHide') end)
 end
 
 local function onCareerActivated()
   loadAuctionSettings()
   setIdleTriggerState()
-  hardDisableAuctionAudioVisuals()
-  auctionState.uiOpen = false
-  pcall(function() guihooks.trigger('UsedAuctionHide') end)
+  hideAuctionUiAndDisableAssets()
   ejectPlayerFromAuctionInteriorOnCareerLoad()
 end
 
@@ -2959,21 +2954,15 @@ local function onCareerDeactivatedWhileLevelLoaded()
 end
 
 local function onExtensionLoaded()
-  hardDisableAuctionAudioVisuals()
-  auctionState.uiOpen = false
-  pcall(function() guihooks.trigger('UsedAuctionHide') end)
+  hideAuctionUiAndDisableAssets()
 end
 
 local function onClientStartMission()
-  hardDisableAuctionAudioVisuals()
-  auctionState.uiOpen = false
-  pcall(function() guihooks.trigger('UsedAuctionHide') end)
+  hideAuctionUiAndDisableAssets()
 end
 
 local function onWorldReadyState()
-  hardDisableAuctionAudioVisuals()
-  auctionState.uiOpen = false
-  pcall(function() guihooks.trigger('UsedAuctionHide') end)
+  hideAuctionUiAndDisableAssets()
 end
 
 local function onGetRawPoiListForLevel(levelIdentifier, elements)
