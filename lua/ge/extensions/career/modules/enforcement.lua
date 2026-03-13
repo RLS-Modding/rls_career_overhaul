@@ -133,7 +133,7 @@ local function handleCriminalEvadeReward(vehId, data, inventoryId)
 end
 
 local function handleArrestReward(data, playerData)
-  local baseBonus = calculateRewardAmount(data.score, CONSTANTS.ARREST_BONUS_MULTIPLIER, "police")
+  local baseBonus = calculateRewardAmount(data.score, CONSTANTS.ARREST_BONUS_MULTIPLIER)
   local bonus = math.max(CONSTANTS.ARREST_BONUS_MAX - baseBonus, CONSTANTS.ARREST_BONUS_MIN)
 
   local org = freeroam_organizations.getOrganization(CONSTANTS.POLICE_LOANER_ORG_NAME)
@@ -148,6 +148,7 @@ local function handleArrestReward(data, playerData)
   end
   bonus = math.floor(bonus * (1 - loanerCut))
   bonus = math.floor(bonus * CONSTANTS.POLICE_PAYOUT_MULTIPLIER)
+  bonus = calculateRewardAmount(bonus, 100, "police")
 
   local rewardData = {
     money = { amount = bonus },
