@@ -97,28 +97,19 @@
                           v-if="difficultyDropdownOpen"
                           class="difficulty-dropdown-content"
                           :style="difficultyDropdownStyle"
-                          role="menu"
                           @click.stop
                           @mousedown.stop
                         >
-                          <button
+                          <div
                             v-for="opt in difficultyOptions"
                             :key="opt.value"
-                            :ref="el => setDifficultyOptionRef(el, opt.value)"
-                            type="button"
                             class="difficulty-dropdown-option"
                             :class="{ 'difficulty-dropdown-selected': opt.value === difficultyMode }"
                             @click.stop="selectDifficulty(opt.value)"
-                            @keydown.enter.prevent.stop="selectDifficulty(opt.value)"
-                            @keydown.space.prevent.stop="selectDifficulty(opt.value)"
-                            @keydown.down.prevent.stop="focusNextDifficultyOption(opt.value)"
-                            @keydown.up.prevent.stop="focusPrevDifficultyOption(opt.value)"
                             @mousedown.stop
-                            role="menuitem"
-                            tabindex="0"
                           >
                             {{ opt.label }}
-                          </button>
+                          </div>
                         </div>
                       </teleport>
                     </div>
@@ -203,7 +194,6 @@ const mapDropdownStyle = ref('')
 const difficultyDropdownRef = ref(null)
 const difficultyDropdownOpen = ref(false)
 const difficultyDropdownStyle = ref('')
-const difficultyOptionRefs = ref({})
 
 const selectedChallenge = ref(null)
 
@@ -266,10 +256,7 @@ function toggleDifficultyDropdown() {
   if (challengeId.value !== null || cheatsMode.value) return
   difficultyDropdownOpen.value = !difficultyDropdownOpen.value
   if (difficultyDropdownOpen.value) {
-    nextTick(() => {
-      positionDifficultyDropdown()
-      focusDifficultyOption(difficultyMode.value)
-    })
+    nextTick(positionDifficultyDropdown)
   }
 }
 
@@ -288,34 +275,6 @@ function positionDifficultyDropdown() {
 function selectDifficulty(value) {
   difficultyMode.value = value
   difficultyDropdownOpen.value = false
-}
-
-function setDifficultyOptionRef(el, value) {
-  if (!value) return
-  if (el) {
-    difficultyOptionRefs.value[value] = el
-  } else {
-    delete difficultyOptionRefs.value[value]
-  }
-}
-
-function focusDifficultyOption(value) {
-  const el = difficultyOptionRefs.value[value]
-  if (el && typeof el.focus === 'function') {
-    el.focus()
-  }
-}
-
-function focusNextDifficultyOption(currentValue) {
-  const idx = difficultyOptions.findIndex(opt => opt.value === currentValue)
-  const nextIdx = idx < 0 ? 0 : (idx + 1) % difficultyOptions.length
-  focusDifficultyOption(difficultyOptions[nextIdx].value)
-}
-
-function focusPrevDifficultyOption(currentValue) {
-  const idx = difficultyOptions.findIndex(opt => opt.value === currentValue)
-  const prevIdx = idx <= 0 ? difficultyOptions.length - 1 : idx - 1
-  focusDifficultyOption(difficultyOptions[prevIdx].value)
 }
 
 function onDifficultyDocClick(e) {
@@ -605,17 +564,12 @@ function closeCard() {
 .difficulty-dropdown-option {
   padding: 0.5em;
   border-radius: 8px;
-  border: none;
-  background: transparent;
-  text-align: left;
-  width: 100%;
   cursor: pointer;
   color: #fff;
   font-size: 0.9em;
   transition: background 0.2s ease;
 }
 .difficulty-dropdown-option:hover { background: rgba(30, 41, 59, 0.6); }
-.difficulty-dropdown-option:focus-visible { outline: 1px solid rgba(96, 165, 250, 0.9); }
 .difficulty-dropdown-option.difficulty-dropdown-selected {
   background: rgba(59, 130, 246, 0.2);
   color: #60a5fa;
