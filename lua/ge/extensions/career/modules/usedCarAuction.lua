@@ -13,54 +13,56 @@ M.dependencies = {
   'util_configListGenerator'
 }
 
-local ENTRY_TRIGGER = 'usedCarAuctionEntry'
-local EXIT_TRIGGER = 'usedCarAuctionExit'
-local AUCTION_SITES_NAME = 'auction'
+local constants = {
+  ENTRY_TRIGGER = 'usedCarAuctionEntry',
+  EXIT_TRIGGER = 'usedCarAuctionExit',
+  AUCTION_SITES_NAME = 'auction',
 
-local LOT_DURATION = 30
-local NPC_BID_COOLDOWN_MIN = 2.0
-local NPC_BID_COOLDOWN_MAX = 4.0
-local PLAYER_BID_CHECK_INTERVAL = 0.6
-local PLAYER_BID_DISTANCE = 18
-local FADE_DURATION = 0.35
-local ENTRY_RETRIGGER_COOLDOWN = 4.0
-local LIVE_STATUS_INTERVAL = 1.0
-local LOT_ARRIVE_DISTANCE = 2.5
-local LOT_ARRIVE_SPEED_MPS = 1.4
-local LOT_APPROACH_BRAKE_DISTANCE = 10.0
-local LOT_APPROACH_SLOW_SPEED_MPS = 1.8
-local LOT_APPROACH_CONTROL_INTERVAL = 0.2
-local LOT_EXIT_DESPAWN_DISTANCE = 5.0
-local AI_MAX_SPEED_MPS = 4.4352 -- 5 mph
-local LOAD_EJECT_DISTANCE = 180
-local LOT_STUCK_TIMEOUT = 5.0
-local LOT_PROGRESS_DISTANCE = 0.35
-local ANTI_SNIPE_WINDOW = 10.0
-local ANTI_SNIPE_EXTEND = 8.0
-local VEHICLE_SWITCH_REJECT_WARN_COOLDOWN = 2.5
-local VEHICLE_SWITCH_REVERT_DELAY = 0.05
-local DEFAULT_LOT_COUNT = 8
-local NPC_PERSONA_COUNT = 3
-local NPC_MAX_BID_MULT_MIN = 0.55
-local NPC_MAX_BID_MULT_MAX = 1.50
-local LOT_WIN_EMITTER_DURATION = 2.0
-local AUCTION_WIN_EMITTERS_GROUP = 'auctionEmitters'
-local AUCTION_ACTIVE_ASSETS_GROUP = 'auctionAssetsOn'
-local AUCTION_MUSIC_EMITTER_NAME = 'SFXEmitter_2'
-local AUCTION_MUSIC_EVENT = 'event:>Music>synthwave'
-local AUCTION_ENTRY_PAYMENT_SFX_EVENT = 'event:>UI>Career>Buy_01'
-local AUCTION_ENTRY_FEE = 1000
-local AUCTION_SETTINGS_SAVE_FILE = 'usedCarAuctionSettings.json'
-local BID_ACCEPTED_SFX_EVENT = 'event:>UI>Career>Buy_02'
-local LOT_WIN_CELEBRATION_SFX_EVENT = 'event:>UI>Missions>End_Gold'
-local AUCTION_POI_ID = 'usedCarAuctionEntrance'
-local AUCTION_POI_LEVEL = 'west_coast_usa'
-local AUCTION_POI_ICON = 'poi_fasttravel_round_orange_green'
-local AUCTION_EXIT_MARKER_NAME = 'usedCarAuctionExitMarker'
-local AUCTION_EXIT_MARKER_SHAPE = 'art/shapes/interface/checkpoint_marker.dae'
-local AUCTION_EXIT_MARKER_SCALE = 2.2
-local AUCTION_EXIT_MARKER_COLOR = '1.00 0.10 0.10 0.95'
-local AUCTION_EXIT_MARKER_Z_OFFSET = -0.8
+  LOT_DURATION = 30,
+  NPC_BID_COOLDOWN_MIN = 2.0,
+  NPC_BID_COOLDOWN_MAX = 4.0,
+  PLAYER_BID_CHECK_INTERVAL = 0.6,
+  PLAYER_BID_DISTANCE = 18,
+  FADE_DURATION = 0.35,
+  ENTRY_RETRIGGER_COOLDOWN = 4.0,
+  LIVE_STATUS_INTERVAL = 1.0,
+  LOT_ARRIVE_DISTANCE = 2.5,
+  LOT_ARRIVE_SPEED_MPS = 1.4,
+  LOT_APPROACH_BRAKE_DISTANCE = 10.0,
+  LOT_APPROACH_SLOW_SPEED_MPS = 1.8,
+  LOT_APPROACH_CONTROL_INTERVAL = 0.2,
+  LOT_EXIT_DESPAWN_DISTANCE = 5.0,
+  AI_MAX_SPEED_MPS = 4.4352, -- 5 mph
+  LOAD_EJECT_DISTANCE = 180,
+  LOT_STUCK_TIMEOUT = 5.0,
+  LOT_PROGRESS_DISTANCE = 0.35,
+  ANTI_SNIPE_WINDOW = 10.0,
+  ANTI_SNIPE_EXTEND = 8.0,
+  VEHICLE_SWITCH_REJECT_WARN_COOLDOWN = 2.5,
+  VEHICLE_SWITCH_REVERT_DELAY = 0.05,
+  DEFAULT_LOT_COUNT = 8,
+  NPC_PERSONA_COUNT = 3,
+  NPC_MAX_BID_MULT_MIN = 0.55,
+  NPC_MAX_BID_MULT_MAX = 1.50,
+  LOT_WIN_EMITTER_DURATION = 2.0,
+  AUCTION_WIN_EMITTERS_GROUP = 'auctionEmitters',
+  AUCTION_ACTIVE_ASSETS_GROUP = 'auctionAssetsOn',
+  AUCTION_MUSIC_EMITTER_NAME = 'SFXEmitter_2',
+  AUCTION_MUSIC_EVENT = 'event:>Music>synthwave',
+  AUCTION_ENTRY_PAYMENT_SFX_EVENT = 'event:>UI>Career>Buy_01',
+  AUCTION_ENTRY_FEE = 1000,
+  AUCTION_SETTINGS_SAVE_FILE = 'usedCarAuctionSettings.json',
+  BID_ACCEPTED_SFX_EVENT = 'event:>UI>Career>Buy_02',
+  LOT_WIN_CELEBRATION_SFX_EVENT = 'event:>UI>Missions>End_Gold',
+  AUCTION_POI_ID = 'usedCarAuctionEntrance',
+  AUCTION_POI_LEVEL = 'west_coast_usa',
+  AUCTION_POI_ICON = 'poi_fasttravel_round_orange_green',
+  AUCTION_EXIT_MARKER_NAME = 'usedCarAuctionExitMarker',
+  AUCTION_EXIT_MARKER_SHAPE = 'art/shapes/interface/checkpoint_marker.dae',
+  AUCTION_EXIT_MARKER_SCALE = 2.2,
+  AUCTION_EXIT_MARKER_COLOR = '1.00 0.10 0.10 0.95',
+  AUCTION_EXIT_MARKER_Z_OFFSET = -0.8
+}
 
 local fallbackPool = {
   { model = 'covet', config = 'vehicles/covet/roller_covet.pc', title = 'Ibishu Covet', basePrice = 2600 },
@@ -131,7 +133,7 @@ local function getAuctionSettingsPaths(currentSavePath)
   end
 
   local dirPath = currentSavePath .. '/career/rls_career'
-  return dirPath, dirPath .. '/' .. AUCTION_SETTINGS_SAVE_FILE
+  return dirPath, dirPath .. '/' .. constants.AUCTION_SETTINGS_SAVE_FILE
 end
 
 local function saveAuctionSettings(currentSavePath)
@@ -296,7 +298,7 @@ local function setTriggerHidden(triggerName, hidden)
 end
 
 local function clearAuctionExitMarker()
-  local marker = scenetree.findObject(AUCTION_EXIT_MARKER_NAME)
+  local marker = scenetree.findObject(constants.AUCTION_EXIT_MARKER_NAME)
   if not marker then
     return
   end
@@ -308,18 +310,18 @@ local function clearAuctionExitMarker()
 end
 
 local function setIdleTriggerState()
-  setTriggerHidden(ENTRY_TRIGGER, false)
-  setTriggerHidden(EXIT_TRIGGER, true)
+  setTriggerHidden(constants.ENTRY_TRIGGER, false)
+  setTriggerHidden(constants.EXIT_TRIGGER, true)
 end
 
 local function setAuctionRunningTriggerState()
-  setTriggerHidden(ENTRY_TRIGGER, true)
-  setTriggerHidden(EXIT_TRIGGER, false)
+  setTriggerHidden(constants.ENTRY_TRIGGER, true)
+  setTriggerHidden(constants.EXIT_TRIGGER, false)
 end
 
 local function setAuctionFinishedTriggerState()
-  setTriggerHidden(ENTRY_TRIGGER, true)
-  setTriggerHidden(EXIT_TRIGGER, false)
+  setTriggerHidden(constants.ENTRY_TRIGGER, true)
+  setTriggerHidden(constants.EXIT_TRIGGER, false)
 end
 
 local function openMenu()
@@ -338,13 +340,13 @@ end
 
 local function startFadeSafe()
   if ui_fadeScreen and ui_fadeScreen.start then
-    pcall(function() ui_fadeScreen.start(FADE_DURATION) end)
+    pcall(function() ui_fadeScreen.start(constants.FADE_DURATION) end)
   end
 end
 
 local function stopFadeSafe()
   if ui_fadeScreen and ui_fadeScreen.stop then
-    pcall(function() ui_fadeScreen.stop(FADE_DURATION) end)
+    pcall(function() ui_fadeScreen.stop(constants.FADE_DURATION) end)
   end
 end
 
@@ -356,7 +358,7 @@ local function runFadedTransition(workFn)
   auctionState.transitionActive = true
   core_jobsystem.create(function(job)
     startFadeSafe()
-    job.sleep(FADE_DURATION)
+    job.sleep(constants.FADE_DURATION)
 
     local ok, err = pcall(workFn)
 
@@ -390,11 +392,11 @@ local function playUiSound(eventName)
 end
 
 local function playBidAcceptedSound()
-  playUiSound(BID_ACCEPTED_SFX_EVENT)
+  playUiSound(constants.BID_ACCEPTED_SFX_EVENT)
 end
 
 local function playLotWinCelebrationSound()
-  playUiSound(LOT_WIN_CELEBRATION_SFX_EVENT)
+  playUiSound(constants.LOT_WIN_CELEBRATION_SFX_EVENT)
 end
 
 local function resolveSceneRefToObject(ref)
@@ -464,14 +466,14 @@ local function setAuctionActiveAssetObjectEnabled(obj, enabled, musicEnabled)
   if not obj then return end
 
   local objName = getSceneObjectName(obj)
-  local isAuctionMusicEmitter = objName == AUCTION_MUSIC_EMITTER_NAME
+  local isAuctionMusicEmitter = objName == constants.AUCTION_MUSIC_EMITTER_NAME
   local effectiveEnabled = enabled and true or false
   if isAuctionMusicEmitter and (not musicEnabled) then
     effectiveEnabled = false
   end
 
   if isAuctionMusicEmitter and effectiveEnabled and obj.setField then
-    pcall(function() obj:setField('track', 0, AUCTION_MUSIC_EVENT) end)
+    pcall(function() obj:setField('track', 0, constants.AUCTION_MUSIC_EVENT) end)
   end
 
   setEmitterObjectEnabled(obj, effectiveEnabled)
@@ -490,7 +492,7 @@ local function setAuctionActiveAssetObjectEnabled(obj, enabled, musicEnabled)
 end
 
 local function setAuctionWinEmittersEnabled(enabled)
-  local root = scenetree.findObject(AUCTION_WIN_EMITTERS_GROUP)
+  local root = scenetree.findObject(constants.AUCTION_WIN_EMITTERS_GROUP)
   if not root then
     return false
   end
@@ -513,7 +515,7 @@ local function setAuctionWinEmittersEnabled(enabled)
 end
 
 local function setAuctionActiveAssetsEnabled(enabled)
-  local root = scenetree.findObject(AUCTION_ACTIVE_ASSETS_GROUP)
+  local root = scenetree.findObject(constants.AUCTION_ACTIVE_ASSETS_GROUP)
   if not root then
     return false
   end
@@ -543,7 +545,7 @@ local function hardDisableAuctionAudioVisuals()
 end
 
 local function triggerAuctionWinEmitters(duration)
-  local pulseDuration = tonumber(duration) or LOT_WIN_EMITTER_DURATION
+  local pulseDuration = tonumber(duration) or constants.LOT_WIN_EMITTER_DURATION
   if pulseDuration <= 0 then return end
   if not (core_jobsystem and core_jobsystem.create) then return end
 
@@ -654,7 +656,7 @@ local function payForVehicle(amount, label)
 end
 
 local function getAuctionEntryFee()
-  return tonumber(AUCTION_ENTRY_FEE) or 0
+  return tonumber(constants.AUCTION_ENTRY_FEE) or 0
 end
 
 local function canAffordAuctionEntry()
@@ -725,7 +727,7 @@ setLotVehicleDriveLock = function(veh, mode)
 end
 
 local function getSiteParkingSpots()
-  local sitePath = gameplay_sites_sitesManager.getCurrentLevelSitesFileByName(AUCTION_SITES_NAME)
+  local sitePath = gameplay_sites_sitesManager.getCurrentLevelSitesFileByName(constants.AUCTION_SITES_NAME)
   if not sitePath then
     return nil
   end
@@ -865,7 +867,7 @@ local function getPlayerExitSpot(layout, warnOnFallback)
     return layout.playerExitSpot
   end
 
-  local fallbackSpot = buildSpotFromTrigger(ENTRY_TRIGGER)
+  local fallbackSpot = buildSpotFromTrigger(constants.ENTRY_TRIGGER)
   if not fallbackSpot then
     return nil
   end
@@ -884,7 +886,7 @@ local function ensureAuctionExitMarker(layout)
   clearAuctionExitMarker()
 
   local markerPos = nil
-  local exitTrigger = scenetree.findObject(EXIT_TRIGGER)
+  local exitTrigger = scenetree.findObject(constants.EXIT_TRIGGER)
   if exitTrigger then
     local ok, pos = pcall(function() return exitTrigger:getPosition() end)
     if ok and pos then
@@ -904,19 +906,19 @@ local function ensureAuctionExitMarker(layout)
   end
 
   local marker = createObject('TSStatic')
-  marker:setField('shapeName', 0, AUCTION_EXIT_MARKER_SHAPE)
-  marker:setPosition(markerPos + vec3(0, 0, AUCTION_EXIT_MARKER_Z_OFFSET))
-  marker.scale = vec3(AUCTION_EXIT_MARKER_SCALE, AUCTION_EXIT_MARKER_SCALE, AUCTION_EXIT_MARKER_SCALE)
+  marker:setField('shapeName', 0, constants.AUCTION_EXIT_MARKER_SHAPE)
+  marker:setPosition(markerPos + vec3(0, 0, constants.AUCTION_EXIT_MARKER_Z_OFFSET))
+  marker.scale = vec3(constants.AUCTION_EXIT_MARKER_SCALE, constants.AUCTION_EXIT_MARKER_SCALE, constants.AUCTION_EXIT_MARKER_SCALE)
   marker:setField('rotation', 0, '1 0 0 0')
   marker.useInstanceRenderData = true
-  marker:setField('instanceColor', 0, AUCTION_EXIT_MARKER_COLOR)
+  marker:setField('instanceColor', 0, constants.AUCTION_EXIT_MARKER_COLOR)
   marker:setField('collisionType', 0, 'Collision Mesh')
   marker:setField('decalType', 0, 'Collision Mesh')
   marker:setField('allowPlayerStep', 0, '1')
   marker:setField('canSave', 0, '0')
   marker:setField('canSaveDynamicFields', 0, '1')
   marker.canSave = false
-  marker:registerObject(AUCTION_EXIT_MARKER_NAME)
+  marker:registerObject(constants.AUCTION_EXIT_MARKER_NAME)
   if scenetree and scenetree.MissionGroup then
     scenetree.MissionGroup:addObject(marker)
   end
@@ -925,7 +927,7 @@ local function ensureAuctionExitMarker(layout)
 end
 
 local function getAuctionEntrancePos()
-  local trigger = scenetree.findObject(ENTRY_TRIGGER)
+  local trigger = scenetree.findObject(constants.ENTRY_TRIGGER)
   if trigger then
     local ok, pos = pcall(function() return trigger:getPosition() end)
     if ok and pos then
@@ -947,7 +949,7 @@ local function getAuctionEntrancePos()
 end
 
 local function formatAuctionEntrancePoi(levelIdentifier)
-  if levelIdentifier ~= AUCTION_POI_LEVEL then
+  if levelIdentifier ~= constants.AUCTION_POI_LEVEL then
     return nil
   end
 
@@ -957,7 +959,7 @@ local function formatAuctionEntrancePoi(levelIdentifier)
   end
 
   return {
-    id = AUCTION_POI_ID,
+    id = constants.AUCTION_POI_ID,
     data = {
       type = 'travel',
       facility = {}
@@ -965,7 +967,7 @@ local function formatAuctionEntrancePoi(levelIdentifier)
     markerInfo = {
       bigmapMarker = {
         pos = pos,
-        icon = AUCTION_POI_ICON,
+        icon = constants.AUCTION_POI_ICON,
         cardIcon = 'carDealer',
         name = 'Used Car Auction',
         description = 'Entrance to the auction vault.'
@@ -1049,7 +1051,7 @@ local function driveVehicleToSpot(veh, fromSpot, toSpot, aggression)
   veh:queueLuaCommand('ai.setRacing(false)')
   veh:queueLuaCommand('ai.driveInLane("on")')
   veh:queueLuaCommand('ai.setSpeedMode("set")')
-  veh:queueLuaCommand(string.format('ai.setSpeed(%.4f)', AI_MAX_SPEED_MPS))
+  veh:queueLuaCommand(string.format('ai.setSpeed(%.4f)', constants.AI_MAX_SPEED_MPS))
   return true
 end
 
@@ -1082,18 +1084,18 @@ local function driveVehicleAlongRouteSpots(veh, routeSpots, aggression)
   veh:queueLuaCommand('ai.setRacing(false)')
   veh:queueLuaCommand('ai.driveInLane("on")')
   veh:queueLuaCommand('ai.setSpeedMode("set")')
-  veh:queueLuaCommand(string.format('ai.setSpeed(%.4f)', AI_MAX_SPEED_MPS))
+  veh:queueLuaCommand(string.format('ai.setSpeed(%.4f)', constants.AI_MAX_SPEED_MPS))
   return true
 end
 
 local function applyApproachStopControl(lot, veh, distToBlock, speed, now)
   if not lot or not veh or not distToBlock then return end
-  if distToBlock > LOT_APPROACH_BRAKE_DISTANCE then return end
+  if distToBlock > constants.LOT_APPROACH_BRAKE_DISTANCE then return end
   if now < (lot.nextApproachControlAt or 0) then return end
-  lot.nextApproachControlAt = now + LOT_APPROACH_CONTROL_INTERVAL
+  lot.nextApproachControlAt = now + constants.LOT_APPROACH_CONTROL_INTERVAL
 
   -- Quarry-style settle: require low speed at the target and actively brake when close.
-  if distToBlock <= LOT_ARRIVE_DISTANCE and speed > LOT_ARRIVE_SPEED_MPS then
+  if distToBlock <= constants.LOT_ARRIVE_DISTANCE and speed > constants.LOT_ARRIVE_SPEED_MPS then
     veh:queueLuaCommand('input.event("throttle", 0, 1)')
     veh:queueLuaCommand('input.event("brake", 1, 1)')
     veh:queueLuaCommand('input.event("parkingbrake", 1, 1)')
@@ -1104,7 +1106,7 @@ local function applyApproachStopControl(lot, veh, distToBlock, speed, now)
   veh:queueLuaCommand('input.event("brake", 0, 1)')
   veh:queueLuaCommand('input.event("parkingbrake", 0, 1)')
   veh:queueLuaCommand('ai.setSpeedMode("set")')
-  veh:queueLuaCommand(string.format('ai.setSpeed(%.4f)', LOT_APPROACH_SLOW_SPEED_MPS))
+  veh:queueLuaCommand(string.format('ai.setSpeed(%.4f)', constants.LOT_APPROACH_SLOW_SPEED_MPS))
 end
 
 local function getVehicleConfigPath(info)
@@ -1514,7 +1516,7 @@ end
 local function generateAuctionNpcPersonas(count)
   local personas = {}
   local usedNames = {}
-  count = math.max(1, tonumber(count) or NPC_PERSONA_COUNT)
+  count = math.max(1, tonumber(count) or constants.NPC_PERSONA_COUNT)
 
   for i = 1, count do
     local personality = nil
@@ -1562,10 +1564,10 @@ local function computeNpcMaxBidForLot(basePrice, startBid, minStep, persona)
     -0.35, 0.35
   )
   local roll = clampNumber(math.random() + personaBias, 0, 1)
-  local targetMult = NPC_MAX_BID_MULT_MIN + roll * (NPC_MAX_BID_MULT_MAX - NPC_MAX_BID_MULT_MIN)
+  local targetMult = constants.NPC_MAX_BID_MULT_MIN + roll * (constants.NPC_MAX_BID_MULT_MAX - constants.NPC_MAX_BID_MULT_MIN)
   local maxBid = roundDownToStep((tonumber(basePrice) or 0) * targetMult, minStep)
   maxBid = math.max(maxBid, (tonumber(startBid) or 0) + (tonumber(minStep) or 250) * 2)
-  maxBid = math.min(maxBid, roundDownToStep((tonumber(basePrice) or 0) * NPC_MAX_BID_MULT_MAX, minStep))
+  maxBid = math.min(maxBid, roundDownToStep((tonumber(basePrice) or 0) * constants.NPC_MAX_BID_MULT_MAX, minStep))
   return maxBid
 end
 
@@ -1598,7 +1600,7 @@ local function prepareLots(spawnSpots, blockSpots, lotCount, npcPersonas)
     return lots
   end
 
-  lotCount = math.max(1, tonumber(lotCount) or DEFAULT_LOT_COUNT)
+  lotCount = math.max(1, tonumber(lotCount) or constants.DEFAULT_LOT_COUNT)
   local blockCount = #(blockSpots or {})
   local weightedFilters = buildWeightedFilters()
 
@@ -1676,15 +1678,15 @@ local function maybeExtendLotTimer(lot, bidderLabel)
   if not lot or lot.state ~= 'active' then return false end
   local now = os.clock()
   local remaining = (lot.endTime or 0) - now
-  if remaining > ANTI_SNIPE_WINDOW then
+  if remaining > constants.ANTI_SNIPE_WINDOW then
     return false
   end
 
-  lot.endTime = (lot.endTime or now) + ANTI_SNIPE_EXTEND
+  lot.endTime = (lot.endTime or now) + constants.ANTI_SNIPE_EXTEND
   lot.extensionCount = (lot.extensionCount or 0) + 1
   ui_message(string.format('%s bid extended auction by %.0fs (total extensions: %d).',
     bidderLabel or 'Bid',
-    ANTI_SNIPE_EXTEND,
+    constants.ANTI_SNIPE_EXTEND,
     lot.extensionCount), 2.5, 'Used Auction', 'info')
   return true
 end
@@ -1989,7 +1991,7 @@ local function spawnLotVehicle(lot, spot, startApproach)
   setLotVehicleDriveLock(veh, startApproach and 'transit' or 'staged')
   if startApproach then
     veh:queueLuaCommand('ai.setSpeedMode("set")')
-    veh:queueLuaCommand(string.format('ai.setSpeed(%.4f)', AI_MAX_SPEED_MPS))
+    veh:queueLuaCommand(string.format('ai.setSpeed(%.4f)', constants.AI_MAX_SPEED_MPS))
   end
 
   return true
@@ -2009,7 +2011,7 @@ local function beginLotBidding(lot, forceTeleportToBlock)
 
   lot.state = 'active'
   lot.driveState = nil
-  lot.endTime = os.clock() + LOT_DURATION
+  lot.endTime = os.clock() + constants.LOT_DURATION
   auctionState.nextNpcBidAt = os.clock() + 1.0
   auctionState.nextPlayerBidCheckAt = os.clock() + 0.5
   auctionState.nextLiveStatusAt = 0
@@ -2160,7 +2162,7 @@ showLiveAuctionStatus = function(force)
     msg = msg
   })
 
-  auctionState.nextLiveStatusAt = now + LIVE_STATUS_INTERVAL
+  auctionState.nextLiveStatusAt = now + constants.LIVE_STATUS_INTERVAL
 end
 
 local function placePlayerBidIfPossible()
@@ -2191,7 +2193,7 @@ local function placePlayerBidIfPossible()
   setPlayerAsLeader(lot)
   playBidAcceptedSound()
   maybeExtendLotTimer(lot, 'Player')
-  auctionState.nextNpcBidAt = os.clock() + (NPC_BID_COOLDOWN_MIN + math.random() * (NPC_BID_COOLDOWN_MAX - NPC_BID_COOLDOWN_MIN))
+  auctionState.nextNpcBidAt = os.clock() + (constants.NPC_BID_COOLDOWN_MIN + math.random() * (constants.NPC_BID_COOLDOWN_MAX - constants.NPC_BID_COOLDOWN_MIN))
   ui_message(string.format('Bid placed on %s: $%d', lot.title, bidAmount), 2, 'Used Auction', 'info')
   showLiveAuctionStatus(true)
   return true
@@ -2214,7 +2216,7 @@ local function placePlayerBidByAmount(amount)
   setPlayerAsLeader(lot)
   playBidAcceptedSound()
   maybeExtendLotTimer(lot, 'Player')
-  auctionState.nextNpcBidAt = os.clock() + (NPC_BID_COOLDOWN_MIN + math.random() * (NPC_BID_COOLDOWN_MAX - NPC_BID_COOLDOWN_MIN))
+  auctionState.nextNpcBidAt = os.clock() + (constants.NPC_BID_COOLDOWN_MIN + math.random() * (constants.NPC_BID_COOLDOWN_MAX - constants.NPC_BID_COOLDOWN_MIN))
   ui_message(string.format('Bid placed on %s: $%d', lot.title, bidAmount), 2, 'Used Auction', 'info')
   showLiveAuctionStatus(true)
   return true
@@ -2414,7 +2416,7 @@ local function confirmEntryPaymentAndStartAuction()
     return false
   end
 
-  playUiSound(AUCTION_ENTRY_PAYMENT_SFX_EVENT)
+  playUiSound(constants.AUCTION_ENTRY_PAYMENT_SFX_EVENT)
   if career_saveSystem and career_saveSystem.saveCurrent then
     pcall(function() career_saveSystem.saveCurrent() end)
   end
@@ -2474,7 +2476,7 @@ local function finishCurrentLot()
         lot.wonInventoryId = inventoryId
         table.insert(auctionState.purchasedInventoryIds, inventoryId)
         playLotWinCelebrationSound()
-        triggerAuctionWinEmitters(LOT_WIN_EMITTER_DURATION)
+        triggerAuctionWinEmitters(constants.LOT_WIN_EMITTER_DURATION)
         ui_message(string.format('Won %s for $%d', lot.title, lot.currentBid), 6, 'Used Auction', 'info')
       else
         ui_message(string.format('Purchase failed for %s', lot.title), 6, 'Used Auction', 'warning')
@@ -2599,8 +2601,8 @@ startAuctionImmediate = function()
     setAuctionActiveAssetsEnabled(true)
     ensureAuctionExitMarker(layout)
 
-    auctionState.npcPersonas = generateAuctionNpcPersonas(NPC_PERSONA_COUNT)
-    auctionState.lots = prepareLots(layout.spawnSpots, layout.blockSpots, DEFAULT_LOT_COUNT, auctionState.npcPersonas)
+    auctionState.npcPersonas = generateAuctionNpcPersonas(constants.NPC_PERSONA_COUNT)
+    auctionState.lots = prepareLots(layout.spawnSpots, layout.blockSpots, constants.DEFAULT_LOT_COUNT, auctionState.npcPersonas)
     auctionState.activeLotIndex = 0
     auctionState.awaitingFinalExit = false
 
@@ -2693,7 +2695,7 @@ local function exitAuctionArea()
     end
 
     resetAuction(true)
-    auctionState.entryCooldownUntil = os.clock() + ENTRY_RETRIGGER_COOLDOWN
+    auctionState.entryCooldownUntil = os.clock() + constants.ENTRY_RETRIGGER_COOLDOWN
     ui_message('Returned from auction.', 5, 'Used Auction', 'info')
   end)
 
@@ -2722,13 +2724,13 @@ local function ejectPlayerFromAuctionInteriorOnCareerLoad()
   end
 
   local distToAuctionCenter = (playerVeh:getPosition() - vec3(layout.playerSpot.pos)):length()
-  if distToAuctionCenter > LOAD_EJECT_DISTANCE then
+  if distToAuctionCenter > constants.LOAD_EJECT_DISTANCE then
     return false
   end
 
   runFadedTransition(function()
     teleportVehicleToSpot(playerVeh, exitSpot)
-    auctionState.entryCooldownUntil = os.clock() + ENTRY_RETRIGGER_COOLDOWN
+    auctionState.entryCooldownUntil = os.clock() + constants.ENTRY_RETRIGGER_COOLDOWN
     setIdleTriggerState()
     ui_message('Moved vehicle outside auction after load.', 5, 'Used Auction', 'info')
   end)
@@ -2754,7 +2756,7 @@ local function warnBlockedAuctionVehicleSwitch()
   if now < (auctionState.switchWarnCooldownUntil or 0) then
     return
   end
-  auctionState.switchWarnCooldownUntil = now + VEHICLE_SWITCH_REJECT_WARN_COOLDOWN
+  auctionState.switchWarnCooldownUntil = now + constants.VEHICLE_SWITCH_REJECT_WARN_COOLDOWN
   ui_message('Auction lot vehicles cannot be driven.', 2.5, 'Used Auction', 'warning')
 end
 
@@ -2783,7 +2785,7 @@ local function onVehicleSwitched(oldId, newId)
 
   if core_jobsystem and core_jobsystem.create then
     core_jobsystem.create(function(job)
-      job.sleep(VEHICLE_SWITCH_REVERT_DELAY)
+      job.sleep(constants.VEHICLE_SWITCH_REVERT_DELAY)
       local fallbackVeh = getObjectByID(fallbackVehId)
       if fallbackVeh then
         pcall(function() be:enterVehicle(0, fallbackVeh) end)
@@ -2809,7 +2811,7 @@ local function onBeamNGTrigger(data)
     return
   end
 
-  if data.triggerName and data.triggerName:find(ENTRY_TRIGGER) then
+  if data.triggerName and data.triggerName:find(constants.ENTRY_TRIGGER) then
     if os.clock() < (auctionState.entryCooldownUntil or 0) then
       return
     end
@@ -2820,7 +2822,7 @@ local function onBeamNGTrigger(data)
     return
   end
 
-  if data.triggerName and data.triggerName:find(EXIT_TRIGGER) then
+  if data.triggerName and data.triggerName:find(constants.EXIT_TRIGGER) then
     if auctionState.phase ~= 'idle' then
       exitAuctionArea()
     end
@@ -2849,7 +2851,7 @@ local function onUpdate()
       return
     end
 
-    if (currentPos - prevPos):length() >= LOT_PROGRESS_DISTANCE then
+    if (currentPos - prevPos):length() >= constants.LOT_PROGRESS_DISTANCE then
       lot.lastMotionPos = currentPos
       lot.lastMotionAt = tNow
     end
@@ -2875,12 +2877,12 @@ local function onUpdate()
           local distToBlock = (lotVeh:getPosition() - vec3(blockSpot.pos)):length()
           local speed = lotVeh:getVelocity():length()
           applyApproachStopControl(lot, lotVeh, distToBlock, speed, now)
-          arrived = distToBlock <= LOT_ARRIVE_DISTANCE and speed <= LOT_ARRIVE_SPEED_MPS
+          arrived = distToBlock <= constants.LOT_ARRIVE_DISTANCE and speed <= constants.LOT_ARRIVE_SPEED_MPS
         end
       end
       if arrived then
         beginLotBidding(lot, false)
-      elseif (now - (lot.lastMotionAt or now) >= LOT_STUCK_TIMEOUT) then
+      elseif (now - (lot.lastMotionAt or now) >= constants.LOT_STUCK_TIMEOUT) then
         beginLotBidding(lot, true)
       end
     elseif lot.state == 'exiting' then
@@ -2891,10 +2893,10 @@ local function onUpdate()
         done = true
       elseif auctionState.siteLayout and auctionState.siteLayout.despawnSpot then
         local dist = (lotVeh:getPosition() - vec3(auctionState.siteLayout.despawnSpot.pos)):length()
-        done = dist <= LOT_EXIT_DESPAWN_DISTANCE
+        done = dist <= constants.LOT_EXIT_DESPAWN_DISTANCE
       end
 
-      if done or (now - (lot.lastMotionAt or now) >= LOT_STUCK_TIMEOUT) then
+      if done or (now - (lot.lastMotionAt or now) >= constants.LOT_STUCK_TIMEOUT) then
         if lotVeh then
           despawnLotVehicle(lot)
         end
@@ -2922,7 +2924,7 @@ local function onUpdate()
   showLiveAuctionStatus(false)
 
   if now >= auctionState.nextPlayerBidCheckAt then
-    auctionState.nextPlayerBidCheckAt = now + PLAYER_BID_CHECK_INTERVAL
+    auctionState.nextPlayerBidCheckAt = now + constants.PLAYER_BID_CHECK_INTERVAL
   end
 
   if now >= auctionState.nextNpcBidAt then
@@ -2942,7 +2944,7 @@ local function onUpdate()
       end
     end
 
-    auctionState.nextNpcBidAt = now + (NPC_BID_COOLDOWN_MIN + math.random() * (NPC_BID_COOLDOWN_MAX - NPC_BID_COOLDOWN_MIN))
+    auctionState.nextNpcBidAt = now + (constants.NPC_BID_COOLDOWN_MIN + math.random() * (constants.NPC_BID_COOLDOWN_MAX - constants.NPC_BID_COOLDOWN_MIN))
   end
 end
 
