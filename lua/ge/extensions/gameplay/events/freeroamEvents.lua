@@ -249,7 +249,6 @@ local function getBusinessAccountFromVehicle(spawnedVehicleId)
     return nil
 end
 
-local function payoutRace(completedLapTime)
 local function getRaceDisciplineIds(raceData)
     local disciplineIds = {}
     local seen = {}
@@ -453,7 +452,7 @@ local function notifyFreRaceCompleted(raceName, raceData, raceLabel, finishTime,
     })
 end
 
-local function payoutRace()
+local function payoutRace(completedLapTime)
     if not mActiveRace then
         return 0
     end
