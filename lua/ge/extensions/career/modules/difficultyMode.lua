@@ -6,8 +6,8 @@ local SAVE_FILE = "difficultyMode.json"
 local LEGACY_HARDCORE_FILE = "hardcore.json"
 
 local DIFFICULTY_MODES = {
-  easy = {rewardMultiplier = 3.0, xpMultiplier = 2.0, startingCapital = 10000},
-  normal = {rewardMultiplier = 1.0, xpMultiplier = 1.0, startingCapital = 10000},
+  easy = {rewardMultiplier = 3.0, xpMultiplier = 2.0, startingCapital = 25000},
+  normal = {rewardMultiplier = 1.0, xpMultiplier = 1.0, startingCapital = 15000},
   hard = {rewardMultiplier = 0.5, xpMultiplier = 0.5, startingCapital = 10000},
   hardcore = {rewardMultiplier = 0.5, xpMultiplier = 0.25, startingCapital = 0},
 }
