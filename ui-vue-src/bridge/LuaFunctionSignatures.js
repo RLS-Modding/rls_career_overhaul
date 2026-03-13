@@ -71,7 +71,7 @@ export default {
     isActive: () => {},
     sendAllCareerSaveSlotsData: () => {},
     sendCurrentSaveSlotData: () => {},
-    createOrLoadCareerAndStart: (id, specificAutosave, tutorial) => [String, Any, Boolean],
+    createOrLoadCareerAndStart: (id, specificAutosave, tutorial, hardcore, challengeId, cheats, startingMap, difficultyMode) => [String, Any, Boolean, Boolean, Any, Boolean, Any, String],
   },
 
   career_saveSystem: {
@@ -1593,10 +1593,23 @@ export default {
     navigateToEvent: raceName => String,
   },
 
+
+  ui_phone_freContracts: {
+    getState: filterDisciplineId => {},
+    startLiveUpdates: () => {},
+    stopLiveUpdates: () => {},
+    acceptContract: contractId => {},
+    abandonContract: contractId => {},
+    signSponsor: sponsorId => {},
+    dropSponsor: sponsorId => {},
+    acknowledgeSponsorWarning: sponsorId => {},
+  },
+
   ui_phone_logistics: {
     requestFacilityList: () => {},
     requestFacilityDetail: facilityId => {},
     navigateToFacility: (facilityId, parkingSpotPath) => {},
+
   },
 
   ui_phone_time: {

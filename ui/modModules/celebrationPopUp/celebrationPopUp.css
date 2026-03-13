@@ -1,4 +1,4 @@
-#level-up-celebration-container {
+#celebration-popup-container {
   pointer-events: none;
   position: fixed;
   top: 0;
@@ -7,14 +7,14 @@
   z-index: 2000;
 }
 
-#level-up-celebration-container .level-up-celebration-host {
+#celebration-popup-container .celebration-popup-host {
   display: flex;
   justify-content: center;
   align-items: flex-start;
   pointer-events: none;
 }
 
-#level-up-celebration-container .unlock-wrapper {
+#celebration-popup-container .celebration-popup-wrapper {
   color: white;
   width: 520px !important;
   max-width: 520px !important;
@@ -25,16 +25,15 @@
   pointer-events: none;
 }
 
-#level-up-celebration-container .unlock-wrapper.closing {
+#celebration-popup-container .celebration-popup-wrapper.closing {
   opacity: 0;
   transform: translateY(-0.75rem);
 }
 
-#level-up-celebration-container .bng-card {
-  --bg-opacity: 1;
+#celebration-popup-container .bng-card {
   font-size: 1rem;
   font-family: Overpass, var(--fnt-defs);
-  background-color: transparent;
+  background: transparent !important;
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -43,25 +42,26 @@
   border-radius: var(--bng-corners-2);
   width: 100%;
   height: fit-content;
+  overflow: hidden;
 }
 
-#level-up-celebration-container .bng-card > .card-cnt {
+#celebration-popup-container .bng-card > .card-cnt {
   overflow: hidden;
   width: 100%;
   height: inherit;
   border-top-left-radius: var(--bng-corners-2);
   border-top-right-radius: var(--bng-corners-2);
-  background-color: rgba(0, 0, 0, var(--bg-opacity));
+  background-color: rgba(0, 0, 0, 0.8) !important;
   display: flex;
   flex-flow: column nowrap;
   flex: 0 1 auto;
 }
 
-#level-up-celebration-container .card-heading.heading-style-none {
+#celebration-popup-container .card-heading.heading-style-none {
   padding-left: 0.5em;
 }
 
-#level-up-celebration-container .card-heading {
+#celebration-popup-container .card-heading {
   font-size: 1.5rem;
   line-height: 1.5em;
   font-weight: 800;
@@ -75,8 +75,8 @@
   flex: 0 0 auto;
 }
 
-#level-up-celebration-container .card-heading.heading-style-line::before,
-#level-up-celebration-container .card-heading.heading-style-ribbon::before {
+#celebration-popup-container .card-heading.heading-style-line::before,
+#celebration-popup-container .card-heading.heading-style-ribbon::before {
   content: " ";
   transform: matrix(0.94, 0, -0.38, 1, 0, 0);
   width: 0.5em;
@@ -86,24 +86,24 @@
   top: 0.25em;
 }
 
-#level-up-celebration-container .card-heading.heading-style-ribbon::before {
+#celebration-popup-container .card-heading.heading-style-ribbon::before {
   background: var(--bng-orange-b400);
   width: 1.5em;
   left: -0.35em;
 }
 
-#level-up-celebration-container .celebration-card {
+#celebration-popup-container .celebration-card {
   overflow: hidden;
   width: 100%;
 }
 
-#level-up-celebration-container .hero {
+#celebration-popup-container .hero {
   position: relative;
   padding: 1rem 1.1rem 1rem;
   overflow: hidden;
 }
 
-#level-up-celebration-container .level-text-wrap {
+#celebration-popup-container .hero-level-up .level-text-wrap {
   position: relative;
   z-index: 1;
   text-align: center;
@@ -111,24 +111,24 @@
   margin-bottom: 0.35rem;
 }
 
-#level-up-celebration-container .skill-name {
+#celebration-popup-container .skill-name {
   font-size: 1.15rem;
   font-weight: 600;
   opacity: 0.9;
   margin-bottom: 0.35rem;
 }
 
-#level-up-celebration-container .level-text {
+#celebration-popup-container .level-text {
   font-size: 2.85rem;
   font-weight: 800;
   line-height: 1;
   text-transform: uppercase;
   color: #ffd080;
   letter-spacing: 0.04em;
-  animation: level-up-celebration-pop 350ms ease-out;
+  animation: celebration-popup-pop 350ms ease-out;
 }
 
-@keyframes level-up-celebration-pop {
+@keyframes celebration-popup-pop {
   0% {
     transform: scale(0.7);
     opacity: 0.15;
@@ -140,21 +140,41 @@
   }
 }
 
-#level-up-celebration-container .card-content {
+#celebration-popup-container .hero-contract {
+  text-align: center;
+  padding-top: 1rem;
+  padding-bottom: 0.5rem;
+}
+
+#celebration-popup-container .discipline {
+  font-size: 1rem;
+  font-weight: 700;
+  opacity: 0.92;
+}
+
+#celebration-popup-container .race {
+  margin-top: 0.25rem;
+  font-size: 1.85rem;
+  line-height: 1.05;
+  font-weight: 800;
+  color: #ffd080;
+}
+
+#celebration-popup-container .card-content {
   padding: 0.45rem 1.1rem 1.15rem;
 }
 
-#level-up-celebration-container .unlocks-label {
+#celebration-popup-container .unlocks-label {
   font-weight: 700;
   font-size: 0.95rem;
   margin-bottom: 0.5rem;
 }
 
-#level-up-celebration-container .tier-unlocks-item {
+#celebration-popup-container .tier-unlocks-item {
   margin-bottom: 0.4rem;
 }
 
-#level-up-celebration-container .no-unlocks {
+#celebration-popup-container .no-unlocks {
   color: rgba(255, 255, 255, 0.75);
   font-size: 0.88rem;
   font-style: italic;
@@ -162,7 +182,7 @@
   margin-bottom: 0.65rem;
 }
 
-#level-up-celebration-container .wrapper {
+#celebration-popup-container .wrapper {
   width: auto;
   padding: 0.5rem;
   background-color: rgba(0, 0, 0, 0.3);
@@ -171,7 +191,7 @@
   grid-template: min-content auto / 2.5rem 2fr;
 }
 
-#level-up-celebration-container .wrapper .icon {
+#celebration-popup-container .wrapper .icon {
   font-size: 2em;
   grid-row: 1 / -1;
   align-self: baseline;
@@ -179,34 +199,62 @@
   height: 2rem;
 }
 
-#level-up-celebration-container .wrapper .heading {
+#celebration-popup-container .wrapper .heading {
   font-weight: 600;
   font-size: 1.25em;
 }
 
-#level-up-celebration-container .wrapper .description {
+#celebration-popup-container .wrapper .description {
   font-weight: 400;
   font-size: 0.8em;
 }
 
-#level-up-celebration-container .tasklist {
+#celebration-popup-container .tasklist {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-#level-up-celebration-container .tasklist .task {
+#celebration-popup-container .tasklist .task {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-#level-up-celebration-container .tasklist .task .heading {
+#celebration-popup-container .tasklist .task .heading {
   font-weight: 500;
   font-size: 1.1em;
 }
 
-#level-up-celebration-container .tasklist .task .description {
+#celebration-popup-container .tasklist .task .description {
   font-weight: 300;
   font-size: 0.7em;
+}
+
+#celebration-popup-container .line {
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+  opacity: 0.9;
+}
+
+#celebration-popup-container .rewards-row {
+  margin-top: 0.65rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+#celebration-popup-container .money,
+#celebration-popup-container .xp {
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+#celebration-popup-container .money {
+  color: #86efac;
+}
+
+#celebration-popup-container .xp {
+  color: #93c5fd;
 }

@@ -53,6 +53,7 @@ end
 
 -- Keep delivery reward keys aligned with the unified logistics skill track.
 local rewardKeyAliases = {
+  ["logistics"] = "logistics-delivery",
   ["delivery"] = "logistics-delivery",
   ["vehicleDelivery"] = "logistics-delivery",
   ["materials"] = "logistics-delivery",
@@ -702,7 +703,7 @@ M.confirmDropOffCheckComplete = function()
       }
   end
   ]]
-  career_modules_playerAttributes.addAttributes(rewardSum,{label=string.format("Rewards for %s", table.concat(itemNames, ", ")), tags={"gameplay", "deliveryReward"}})
+  career_modules_playerAttributes.addAttributes(rewardSum,{label=string.format("Rewards for %s", table.concat(itemNames, ", ")), tags={"gameplay", "deliveryReward"}}, true)
 
   for key, _ in pairs(branchInfo) do
 

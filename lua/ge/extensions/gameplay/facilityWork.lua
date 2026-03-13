@@ -798,13 +798,51 @@ local function getAvailableFacilities()
     return list
 end
 
+local function scaleFacilityWorkMoneyAndRep(money, rep, orgId)
+    local scaledMoney = math.max(0, math.floor(tonumber(money) or 0))
+    local scaledRep = math.floor(tonumber(rep) or 0)
+    if not (career_modules_difficultyMode and career_modules_difficultyMode.scalePaymentRewardData) then
+        return scaledMoney, scaledRep
+    end
+
+    local rewardData = {
+        money = { amount = scaledMoney }
+    }
+    if orgId and scaledRep ~= 0 then
+        rewardData[orgId .. "Reputation"] = { amount = scaledRep }
+    end
+    career_modules_difficultyMode.scalePaymentRewardData(rewardData, {includeMoney = false})
+    if orgId and scaledRep ~= 0 then
+        scaledRep = math.floor((rewardData[orgId .. "Reputation"] and rewardData[orgId .. "Reputation"].amount or scaledRep) + 0.5)
+    end
+    return scaledMoney, scaledRep
+end
+
+local function scaleFacilityWorkBeamXP(xp)
+    local scaledXp = math.max(0, math.floor(tonumber(xp) or 0))
+    if scaledXp <= 0 then
+        return 0
+    end
+    if career_modules_difficultyMode and career_modules_difficultyMode.scaleFlatRewards then
+        local rewardData = { beamXP = scaledXp }
+        career_modules_difficultyMode.scaleFlatRewards(rewardData, {includeMoney = false})
+        scaledXp = math.max(0, math.floor((tonumber(rewardData.beamXP) or scaledXp) + 0.5))
+    end
+    return scaledXp
+end
+
+local function getSessionDisplayTotals()
+    return sessionTotalPay, sessionTotalRep
+end
+
 local function getFacilityWorkState()
+    local displayPay, displayRep = getSessionDisplayTotals()
     local targetCount = truckLoadTargetCount or TRUCK_LOAD_COUNT
     local truckFullyLoaded = (truckState == "waiting_for_load") and (#truckLoadPropIds >= targetCount)
     return {
         onDuty = (currentBatch ~= nil or currentForkliftId ~= nil),
-        sessionTotalPay = sessionTotalPay,
-        sessionTotalRep = sessionTotalRep,
+        sessionTotalPay = displayPay,
+        sessionTotalRep = displayRep,
         sessionMaterialsMoved = sessionMaterialsMoved,
         available = isFacilityWorkAvailable(),
         facilities = getAvailableFacilities(),
@@ -820,9 +858,10 @@ local function notifyPhoneState()
 end
 
 local function updateTasklistValues()
+    local displayPay, displayRep = getSessionDisplayTotals()
     guihooks.trigger('SetTasklistHeader', { label = getSessionMultiplierHeaderLabel() })
-    guihooks.trigger('SetTasklistTask', { id = "facilityWork_total_pay", label = "Total pay: $" .. sessionTotalPay, type = "message", clear = false })
-    guihooks.trigger('SetTasklistTask', { id = "facilityWork_total_rep", label = "Total rep: " .. sessionTotalRep, type = "message", clear = false })
+    guihooks.trigger('SetTasklistTask', { id = "facilityWork_total_pay", label = "Total pay: $" .. displayPay, type = "message", clear = false })
+    guihooks.trigger('SetTasklistTask', { id = "facilityWork_total_rep", label = "Total rep: " .. displayRep, type = "message", clear = false })
 
     -- Next-stop line removed; multiplier is shown in task list header instead.
     guihooks.trigger('SetTasklistTask', { id = "facilityWork_next_stop", label = "", type = "message", clear = true })
@@ -1264,6 +1303,7 @@ local function payoutBatchAndSpawnNext()
         mult = career_economyAdjuster.getSectionMultiplier("facilityWork") or 1
     end
     totalMoney = math.floor(totalMoney * mult)
+    totalMoney, totalRep = scaleFacilityWorkMoneyAndRep(totalMoney, totalRep, currentBatch.organizationId)
     sessionTotalPay = sessionTotalPay + totalMoney
     sessionTotalRep = sessionTotalRep + totalRep
     sessionMaterialsMoved = sessionMaterialsMoved + #propIds
@@ -1397,30 +1437,36 @@ local function endShiftCleanup()
 
     if career_career and career_career.isActive() and (sessionTotalPay ~= 0 or sessionTotalRep ~= 0) then
         local orgId = nil
+        local displayPay = sessionTotalPay
+        local displayRep = sessionTotalRep
         if selectedFacilityId and facilityConfigs[selectedFacilityId] then
             orgId = facilityConfigs[selectedFacilityId].organizationId
         end
         if career_modules_payment and career_modules_payment.reward then
             local rewardData = {
-                money = { amount = sessionTotalPay },
-                beamXP = { amount = math.floor(sessionTotalPay / 10) }
+                money = { amount = displayPay },
+                beamXP = { amount = scaleFacilityWorkBeamXP(math.floor(displayPay / 10)) }
             }
-            if orgId and sessionTotalRep ~= 0 then
-                rewardData[orgId .. "Reputation"] = { amount = sessionTotalRep }
+            if orgId and displayRep ~= 0 then
+                rewardData[orgId .. "Reputation"] = { amount = displayRep }
             end
             career_modules_payment.reward(rewardData, {
-                label = string.format("Facility work (shift): $%d | Rep +%d | %d materials", sessionTotalPay, sessionTotalRep, sessionMaterialsMoved),
+                label = string.format("Facility work (shift): $%d | Rep +%d | %d materials", displayPay, displayRep, sessionMaterialsMoved),
                 tags = {"facilityWork", "gameplay"}
             }, true)
         end
         if career_saveSystem and career_saveSystem.saveCurrent then
             career_saveSystem.saveCurrent()
         end
+        sessionTotalPay = displayPay
+        sessionTotalRep = displayRep
     end
 
     if utils and utils.displayMessage then
         local msg = string.format("Shift ended. Total earned: $%d | Rep: %d | Materials moved: %d",
-            sessionTotalPay, sessionTotalRep, sessionMaterialsMoved)
+            sessionTotalPay,
+            sessionTotalRep,
+            sessionMaterialsMoved)
         utils.displayMessage(msg, 6)
     end
 
@@ -1828,6 +1874,7 @@ local function onUpdate(_dtReal, _dtSim, _dtRaw)
             if career_economyAdjuster and career_economyAdjuster.getSectionMultiplier then
                 bonus = math.floor(bonus * (career_economyAdjuster.getSectionMultiplier("facilityWork") or 1))
             end
+            bonus = select(1, scaleFacilityWorkMoneyAndRep(bonus, 0, nil))
             sessionTotalPay = sessionTotalPay + bonus
             updateTasklistValues()
             clearTruckState()

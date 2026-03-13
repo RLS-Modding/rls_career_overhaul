@@ -17,6 +17,7 @@ local dealershipTimeBetweenOffers = 1 * 60
 local vehiclesPerDealership = vehicleOfferTimeToLive / dealershipTimeBetweenOffers
 local salesTax = 0.07
 local customLicensePlatePrice = 300
+local dealershipPurchaseReputationGain = 2000
 local refreshInterval = 5
 local tetherRange = 4
 
@@ -213,6 +214,66 @@ local function convertKeysToStrings(t)
     end
   end
   return unsoldVehicles, soldVehiclesResult
+end
+
+local function sanitizeOrganizationForUi(org)
+  if not org then
+    return nil
+  end
+
+  local sanitizedOrg = {
+    reputationLevels = {},
+    reputation = {}
+  }
+
+  if org.reputation then
+    local repLevel = org.reputation.level or 0
+    if type(repLevel) ~= "number" then
+      repLevel = 0
+    end
+    repLevel = math.max(0, repLevel)
+    sanitizedOrg.reputation.level = repLevel
+    sanitizedOrg.reputation.levelIndex = repLevel + 2
+    sanitizedOrg.reputation.value = org.reputation.value
+    sanitizedOrg.reputation.curLvlProgress = org.reputation.curLvlProgress
+    sanitizedOrg.reputation.neededForNext = org.reputation.neededForNext
+    sanitizedOrg.reputation.prevThreshold = org.reputation.prevThreshold
+    sanitizedOrg.reputation.nextThreshold = org.reputation.nextThreshold
+  else
+    sanitizedOrg.reputation.level = 0
+    sanitizedOrg.reputation.levelIndex = 2
+  end
+
+  if org.reputationLevels then
+    for idx, lvl in pairs(org.reputationLevels) do
+      sanitizedOrg.reputationLevels[idx] = {
+        hiddenFromDealerList = lvl and lvl.hiddenFromDealerList or nil
+      }
+    end
+  end
+
+  return sanitizedOrg
+end
+
+local function collectOrganizationsForUi(facilities)
+  local organizations = {}
+  if not facilities or not facilities.dealerships then
+    return organizations
+  end
+
+  local organizationsById = freeroam_organizations.getOrganizations()
+  for _, dealer in ipairs(facilities.dealerships) do
+    local orgId = dealer.associatedOrganization
+    if orgId and not organizations[orgId] then
+      local org = organizationsById and organizationsById[orgId]
+      local sanitizedOrg = sanitizeOrganizationForUi(org)
+      if sanitizedOrg then
+        organizations[orgId] = sanitizedOrg
+      end
+    end
+  end
+
+  return organizations
 end
 
 local function getVisualValueFromMileage(mileage)
@@ -680,7 +741,9 @@ local function commitDelta(newSnap, justExpiredShopIds)
     added = added,
     removed = removed,
     sold = sold,
-    updated = updated
+    updated = updated,
+    organizations = collectOrganizationsForUi(freeroam_facilities.getFacilities(getCurrentLevelIdentifier())),
+    dealershipPurchaseReputationGain = dealershipPurchaseReputationGain
   }
 end
 
@@ -762,6 +825,7 @@ local function getShoppingData()
   data.inventoryHasFreeSlot = career_modules_inventory.hasFreeSlot()
   data.numberOfFreeSlots = career_modules_inventory.getNumberOfFreeSlots()
   data.cheatsMode = career_modules_cheats and career_modules_cheats.isCheatsMode() or false
+  data.dealershipPurchaseReputationGain = dealershipPurchaseReputationGain
 
   data.tutorialPurchase = (not career_modules_linearTutorial.getTutorialFlag("purchasedFirstCar")) or nil
 
@@ -776,10 +840,9 @@ local function getShoppingData()
 
   local facilities = freeroam_facilities.getFacilities(getCurrentLevelIdentifier())
   data.dealerships = {}
-  data.organizations = {}
+  data.organizations = collectOrganizationsForUi(facilities)
   if facilities and facilities.dealerships then
     for _, d in ipairs(facilities.dealerships) do
-      local orgId = d.associatedOrganization or d.associatedOrganization
       table.insert(data.dealerships, {
         id = d.id,
         name = d.name,
@@ -788,41 +851,6 @@ local function getShoppingData()
         hiddenFromDealerList = d.hiddenFromDealerList,
         associatedOrganization = d.associatedOrganization
       })
-
-      if orgId and not data.organizations[orgId] then
-        local org = freeroam_organizations.getOrganization(orgId)
-        if org then
-          local sanitizedOrg = {
-            reputationLevels = {},
-            reputation = {}
-          }
-          if org.reputation then
-            local repLevel = org.reputation.level or 0
-            if type(repLevel) ~= "number" then
-              repLevel = 0
-            end
-            repLevel = math.max(0, repLevel)
-            sanitizedOrg.reputation.level = repLevel
-            sanitizedOrg.reputation.levelIndex = repLevel + 2
-            sanitizedOrg.reputation.value = org.reputation.value
-            sanitizedOrg.reputation.curLvlProgress = org.reputation.curLvlProgress
-            sanitizedOrg.reputation.neededForNext = org.reputation.neededForNext
-            sanitizedOrg.reputation.prevThreshold = org.reputation.prevThreshold
-            sanitizedOrg.reputation.nextThreshold = org.reputation.nextThreshold
-          else
-            sanitizedOrg.reputation.level = 0
-            sanitizedOrg.reputation.levelIndex = 2
-          end
-          if org.reputationLevels then
-            for idx, lvl in pairs(org.reputationLevels) do
-              sanitizedOrg.reputationLevels[idx] = {
-                hiddenFromDealerList = lvl and lvl.hiddenFromDealerList or nil
-              }
-            end
-          end
-          data.organizations[orgId] = sanitizedOrg
-        end
-      end
     end
   end
 
@@ -1792,6 +1820,7 @@ local function updateVehicleList(fromScratch)
 
               randomVehicleInfo.negotiationPossible = not onlyStarterVehicles
               randomVehicleInfo.shopId = generateShopId()
+              randomVehicleInfo.associatedOrganization = seller.associatedOrganization
 
               local fees = seller.fees or 0
               if seller.associatedOrganization then
@@ -2589,6 +2618,8 @@ local function openPurchaseMenu(purchaseType, shopId, insuranceId)
 end
 
 local function buyFromPurchaseMenu(purchaseType, options)
+  options = options or {}
+
   if not purchaseData then
     log("E", "Career", "buyFromPurchaseMenu: purchaseData is nil")
     return
@@ -2619,19 +2650,27 @@ local function buyFromPurchaseMenu(purchaseType, options)
   if purchaseData.tradeInVehicleInfo then
     career_modules_inventory.removeVehicle(purchaseData.tradeInVehicleInfo.id)
   end
-  if options.dealershipId ~= "private" then
-    local dealership = freeroam_facilities.getFacility("dealership", options.dealershipId)
-    if dealership and dealership.associatedOrganization then
-      local orgId = dealership.associatedOrganization
-      local org = freeroam_organizations.getOrganization(orgId)
-      if org then
-        career_modules_playerAttributes.addAttributes({
-          [orgId .. "Reputation"] = 20
-        }, {
-          tags = {"buying"},
-          label = string.format("Bought vehicle from %s", orgId)
-        })
+
+  local orgId = purchaseData.vehicleInfo and purchaseData.vehicleInfo.associatedOrganization
+  if not orgId then
+    local dealershipId = options.dealershipId or (purchaseData.vehicleInfo and purchaseData.vehicleInfo.sellerId)
+    if dealershipId and dealershipId ~= "private" then
+      local dealership = freeroam_facilities.getDealership(dealershipId)
+      if dealership and dealership.associatedOrganization then
+        orgId = dealership.associatedOrganization
       end
+    end
+  end
+
+  if orgId then
+    local org = freeroam_organizations.getOrganization(orgId)
+    if org then
+      career_modules_playerAttributes.addAttributes({
+        [orgId .. "Reputation"] = dealershipPurchaseReputationGain
+      }, {
+        tags = {"buying"},
+        label = string.format("Bought vehicle from %s", orgId)
+      })
     end
   end
 
@@ -2645,7 +2684,7 @@ local function buyFromPurchaseMenu(purchaseType, options)
   purchaseData.selectedPolicyId = selectedPolicyId
   local buyVehicleOptions = {
     licensePlateText = options.licensePlateText,
-    dealershipId = options.dealershipId,
+    dealershipId = options.dealershipId or (purchaseData.vehicleInfo and purchaseData.vehicleInfo.sellerId),
     policyId = selectedPolicyId
   }
   if purchaseType == "inspect" then
@@ -2686,6 +2725,11 @@ local function buyFromPurchaseMenu(purchaseType, options)
 
   purchaseMenuOpen = false
   inspectingVehicleShopId = nil
+
+  if uiOpen then
+    commitDelta(buildSnapshot())
+    guihooks.trigger("vehicleShopDelta", lastDelta)
+  end
 end
 
 local function cancelPurchase(purchaseType)
@@ -2711,7 +2755,7 @@ local function openInventoryMenuForTradeIn()
           id = inventoryId,
           niceName = vehicle.niceName,
           Value = career_modules_valueCalculator.getInventoryVehicleValue(inventoryId) *
-            (career_modules_hardcore and career_modules_hardcore.isHardcoreMode and career_modules_hardcore.isHardcoreMode() and 0.33 or 0.66)
+            (career_modules_difficultyMode and career_modules_difficultyMode.isHardcoreMode and career_modules_difficultyMode.isHardcoreMode() and 0.33 or 0.66)
         }
         guihooks.trigger('UINavigation', 'back', 1)
       end

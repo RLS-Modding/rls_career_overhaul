@@ -33,8 +33,6 @@ local nonProgressAttributes = {
   beamXP = true,
   vouchers = true
 }
-local levelUpSoundEventEntry = "event:>UI>Career>EndScreen_Whoosh_Main"
-local levelUpSoundEventImpact = "event:>UI>Career>EndScreen_Star_Bonus"
 
 local function isLevelUpEligibleAttribute(attributeKey, delta)
   if type(attributeKey) ~= "string" then return false end
@@ -181,9 +179,6 @@ end
 
 local function collectLevelUpCelebrations(change, reason, valueBeforeByAttribute)
   if type(change) ~= "table" then return {} end
-  if type(reason) == "table" and type(reason.tags) == "table" and reason.tags.deliveryReward then
-    return {}
-  end
 
   local entries = {}
   for attributeKey, delta in pairs(change) do
@@ -234,15 +229,6 @@ local function init()
     attributes[branch.attributeKey] = deepcopy(baseAttribute)
     attributes[branch.attributeKey].value = branch.defaultValue or baseAttribute.value
   end
-  local startingCapital = 10000
-  if career_career.hardcoreMode then
-    startingCapital = 0
-  end
-  if career_modules_cheats and career_modules_cheats.isCheatsMode() then
-  startingCapital = 1e12
-  end
-
-  M.setAttributes({money=startingCapital}, {label="Starting Capital"})
 end
 
 -- reason should be table with label, list of tags
@@ -263,14 +249,8 @@ local function addAttributes(change, reason, fullprice)
   reason.tags = tableValuesAsLookupDict(reason.tags)
 
   for attributeName, value in pairs(change) do
-    if (attributeName == "vouchers" and value > 0) and career_modules_hardcore.isHardcoreMode() then
-      change[attributeName] = 0
-    end
     if attributeName == "money" and career_modules_cheats and career_modules_cheats.isCheatsMode() then
       change[attributeName] = 0
-    end
-    if value > 0  and not fullprice then
-      change[attributeName] = value / (career_modules_hardcore.isHardcoreMode() and 2 or 1)
     end
   end
 
@@ -306,10 +286,6 @@ local function addAttributes(change, reason, fullprice)
 
   local levelUpEntries = collectLevelUpCelebrations(change, reason, valueBeforeByAttribute)
   if #levelUpEntries > 0 then
-    if Engine and Engine.Audio and Engine.Audio.playOnce then
-      Engine.Audio.playOnce("AudioGui", levelUpSoundEventEntry)
-      Engine.Audio.playOnce("AudioGui", levelUpSoundEventImpact)
-    end
     if guihooks and guihooks.trigger then
       guihooks.trigger("OpenCareerLevelUpCelebration", {entries = levelUpEntries})
     end
@@ -372,6 +348,44 @@ local policeSkillMigration = {
   legacyKey = "police"
 }
 
+local freSkillMigration = {
+  version = 1,
+  markerFile = "career/freSkillMigration.json",
+  disciplineKeys = {
+    "fre-crawling",
+    "fre-roadracing",
+    "fre-drift",
+    "fre-drag",
+    "fre-trail",
+    "fre-oval",
+    "fre-offroad",
+    "fre-rally",
+    "fre-landspeed",
+    "fre-mudding"
+  },
+  keyMap = {
+    crawl = "fre-crawling",
+    crawling = "fre-crawling",
+    apexRacing = "fre-roadracing",
+    roadracing = "fre-roadracing",
+    road_racing = "fre-roadracing",
+    drift = "fre-drift",
+    drag = "fre-drag",
+    trail = "fre-trail",
+    oval = "fre-oval",
+    offroad = "fre-offroad",
+    ["off-road"] = "fre-offroad",
+    rally = "fre-rally",
+    landspeed = "fre-landspeed",
+    land_speed = "fre-landspeed",
+    mud = "fre-mudding",
+    extremeMud = "fre-mudding",
+    extrememud = "fre-mudding",
+    mudding = "fre-mudding"
+  },
+  legacyUnifiedKey = "fres"
+}
+
 local function ensureSerializableAttribute(jsonData, attributeKey)
   local attribute = jsonData[attributeKey]
   if type(attribute) ~= "table" then
@@ -416,6 +430,29 @@ local function mergeLegacyAttribute(jsonData, unifiedKey, legacyKey)
 
   jsonData[legacyKey] = nil
   return mergedValue, true
+end
+
+local function addSharedLegacyAttribute(jsonData, targetKey, legacyData, ratio)
+  local targetAttribute = ensureSerializableAttribute(jsonData, targetKey)
+  local sharedRatio = tonumber(ratio) or 0
+  if sharedRatio <= 0 then
+    return
+  end
+
+  if type(legacyData) == "table" then
+    targetAttribute.value = (tonumber(targetAttribute.value) or 0) + ((tonumber(legacyData.value) or 0) * sharedRatio)
+    for gainKey, gainValue in pairs(legacyData.gains or {}) do
+      targetAttribute.gains[gainKey] = (targetAttribute.gains[gainKey] or 0) + ((tonumber(gainValue) or 0) * sharedRatio)
+    end
+    for lossKey, lossValue in pairs(legacyData.losses or {}) do
+      targetAttribute.losses[lossKey] = (targetAttribute.losses[lossKey] or 0) + ((tonumber(lossValue) or 0) * sharedRatio)
+    end
+    return
+  end
+
+  if type(legacyData) == "number" then
+    targetAttribute.value = (tonumber(targetAttribute.value) or 0) + (legacyData * sharedRatio)
+  end
 end
 
 local function runLogisticsSkillMigration(savePath, jsonData)
@@ -480,6 +517,59 @@ local function runPoliceSkillMigration(savePath, jsonData)
   }
 end
 
+local function runFreSkillMigration(savePath, jsonData)
+  if not savePath or tableIsEmpty(jsonData or {}) then return end
+
+  local markerPath = savePath .. "/" .. freSkillMigration.markerFile
+  local markerData = jsonReadFile(markerPath) or {}
+  if (markerData.version or 0) >= freSkillMigration.version then
+    return
+  end
+
+  local changed = false
+  local migratedValue = 0
+
+  for legacyKey, disciplineKey in pairs(freSkillMigration.keyMap or {}) do
+    local mergedValue, didMerge = mergeLegacyAttribute(jsonData, disciplineKey, legacyKey)
+    if didMerge then
+      changed = true
+      migratedValue = migratedValue + (tonumber(mergedValue) or 0)
+    end
+  end
+
+  local legacyUnifiedKey = freSkillMigration.legacyUnifiedKey
+  local legacyUnifiedData = jsonData[legacyUnifiedKey]
+  if legacyUnifiedData ~= nil then
+    local sourceValue = 0
+    if type(legacyUnifiedData) == "table" then
+      sourceValue = tonumber(legacyUnifiedData.value) or 0
+    elseif type(legacyUnifiedData) == "number" then
+      sourceValue = legacyUnifiedData
+    end
+
+    local keyCount = #freSkillMigration.disciplineKeys
+    if keyCount > 0 then
+      local shareRatio = 1 / keyCount
+      for _, disciplineKey in ipairs(freSkillMigration.disciplineKeys) do
+        addSharedLegacyAttribute(jsonData, disciplineKey, legacyUnifiedData, shareRatio)
+      end
+      changed = true
+      migratedValue = migratedValue + sourceValue
+    end
+    jsonData[legacyUnifiedKey] = nil
+  end
+
+  return {
+    path = markerPath,
+    saveData = changed,
+    data = {
+      version = freSkillMigration.version,
+      mergedValue = migratedValue,
+      migratedAt = os.time()
+    }
+  }
+end
+
 local function onExtensionLoaded()
   if not career_career.isActive() then return false end
   if not attributes then
@@ -521,6 +611,12 @@ local function onExtensionLoaded()
   if policeMigrationMarker then
     pendingMigrationMarkers[#pendingMigrationMarkers + 1] = policeMigrationMarker
     migrationDataChanged = migrationDataChanged or policeMigrationMarker.saveData
+  end
+
+  local freMigrationMarker = runFreSkillMigration(savePath, jsonData)
+  if freMigrationMarker then
+    pendingMigrationMarkers[#pendingMigrationMarkers + 1] = freMigrationMarker
+    migrationDataChanged = migrationDataChanged or freMigrationMarker.saveData
   end
 
   if savePath and #pendingMigrationMarkers > 0 then

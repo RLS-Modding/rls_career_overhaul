@@ -6,6 +6,10 @@ local M = {}
 
 M.dependencies = {'career_career'}
 
+local function isHardcoreMode()
+  return career_modules_difficultyMode and career_modules_difficultyMode.isHardcoreMode and career_modules_difficultyMode.isHardcoreMode()
+end
+
 local lossPerKmRelative = 0.0000050
 local scrapValueRelative = 0.5
 
@@ -146,7 +150,7 @@ local function getDepreciatedPartValue(value, mileage)
   local minValue    = value * minFraction
 
   local result = math.max(rawValue, minValue)
-  if career_modules_hardcore.isHardcoreMode() then
+  if isHardcoreMode() then
     result = result * 0.66
   end
   return result
@@ -222,7 +226,7 @@ local function getRepairDetails(invVehInfo)
   local damagedParts = getDamagedParts(invVehInfo)
   for _, part in pairs(damagedParts.partsToBeReplaced) do
     local price = (part.value or 700) * getPartMarketMultiplier()
-    if career_modules_hardcore.isHardcoreMode() then
+    if isHardcoreMode() then
       details.price = math.floor((details.price + price * 1.25) * 100) / 100
     else
       details.price = math.floor((details.price + price * 0.9) * 100) / 100
@@ -307,7 +311,7 @@ local function getInventoryVehicleValue(inventoryId, ignoreDamage)
   local value = math.max(getVehicleValue(vehicle.configBaseValue, vehicle, ignoreDamage), 0)
   local meetReputation = career_modules_inventory.getMeetReputation(inventoryId)
   local accidents = career_modules_inventory.getAccidents(inventoryId) or 0
-  local accidentMultiplier = career_modules_hardcore.isHardcoreMode() and 0.9 or 0.95
+  local accidentMultiplier = isHardcoreMode() and 0.9 or 0.95
   return value * (1 + meetReputation * 0.01) * (accidentMultiplier ^ accidents)
 end
 

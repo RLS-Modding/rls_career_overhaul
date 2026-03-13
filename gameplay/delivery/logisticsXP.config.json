@@ -25,12 +25,12 @@
   "vehicleTrailer": {
     "baseXP": 5,
     "vehicleXPByTag": {
-      "junkerVeh": 68,
-      "smallVeh": 343,
-      "fleetVeh": 693,
-      "highEndVeh": 1493,
-      "exoticVeh": 3493,
-      "heavyVeh": 5993
+      "junkerVeh": 793,
+      "smallVeh": 2493,
+      "fleetVeh": 4993,
+      "highEndVeh": 5993,
+      "exoticVeh": 6993,
+      "heavyVeh": 9993
     },
     "trailerXPByUnlockGroup": {
       "small": 793,

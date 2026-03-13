@@ -45,16 +45,13 @@ local function startRental()
     career_modules_inventory.addMovieRental(inventoryId)
 
     local reward = rentalReward()
-    if career_modules_hardcore.isHardcoreMode() then
-        reward = reward / 2
-    end
     career_modules_payment.reward({
         money = {
             amount = reward
         }
     }, {
         label = "You rented your vehicle!"
-    })
+    }, true)
     ui_message("You rented your vehicle for: " .. getHrMin(rentalTime) .. " for total of " .. reward .. "!", 10, "info", "info")
     print("You rented your vehicle for: " .. getHrMin(rentalTime) .. " for total of " .. reward .. "!")
 end

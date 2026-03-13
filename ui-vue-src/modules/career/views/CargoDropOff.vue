@@ -525,7 +525,7 @@ for (let key in rewards) {
     order: branchInfo[key].order,
     animationData: branchInfo[key].animationData,
     branchLevels: branchInfo[key].branchLevels,
-    showLevelUpPopup: branchInfo[key].showLevelUpPopup,
+    showLevelUpPopup: false,
     unlockPopupHeader: branchInfo[key].unlockPopupHeader,
     type: branchInfo[key].type
   }

@@ -1671,7 +1671,7 @@ local function changeInvVehInsurance(invVehId, newInsuranceId, forFree)
   local niceName = career_modules_inventory.getVehicle(invVehId).niceName
   local label = string.format("Insurance of '%s' changed to '%s'", niceName, insuranceName)
   if insuranceChangeFees > 0 then
-    career_modules_playerAttributes.addAttributes({money = insuranceChangeFees}, {label=label})
+    career_modules_playerAttributes.addAttributes({money = insuranceChangeFees}, {label=label}, true)
     career_modules_insurance_history.addToPlHistory({
       type = "insuranceChanged",
       title = label,

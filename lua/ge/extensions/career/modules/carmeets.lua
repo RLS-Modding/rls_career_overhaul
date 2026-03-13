@@ -23,6 +23,13 @@ local updateInterval = 5
 local careerActive = false
 local previousTrafficAmount = nil
 
+local function isHardcoreMode()
+    if career_modules_difficultyMode and career_modules_difficultyMode.isHardcoreMode then
+        return career_modules_difficultyMode.isHardcoreMode() == true
+    end
+    return career_career and career_career.hardcoreMode == true
+end
+
 local meetState = {
     active = false,
     type = nil,
@@ -312,7 +319,7 @@ local meetTypes = {
                             state.flags.playerReachedDestination = true
                             
                             local cruiseReputation = math.floor(math.random() * 50) / 10
-                            if career_modules_hardcore.isHardcoreMode() then
+                            if isHardcoreMode() then
                                 cruiseReputation = cruiseReputation / 2
                             end
                             cruiseReputation = cruiseReputation * 1.2
@@ -789,7 +796,7 @@ local function onUpdate(dtReal, dtSim, dtRaw)
                 if not meetType then return end
                 
                 local reputation = math.floor(math.random() * 100) / 10
-                if career_modules_hardcore.isHardcoreMode() then
+                if isHardcoreMode() then
                     reputation = reputation / 2
                 end
                 

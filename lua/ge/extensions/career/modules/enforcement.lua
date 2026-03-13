@@ -16,6 +16,13 @@ local CONSTANTS = {
   POLICE_SKILL_ATTRIBUTE_KEY = "careerSkills-police",
 }
 
+local function applyDifficultyProgressionRewardData(rewardData)
+  if not (career_modules_difficultyMode and career_modules_difficultyMode.scalePaymentRewardData) then
+    return rewardData
+  end
+  return career_modules_difficultyMode.scalePaymentRewardData(rewardData, {includeMoney = false})
+end
+
 local function isPoliceDisabled()
   local disabled = false
   local reason = ""
@@ -58,9 +65,13 @@ local function hasLicensePlate(inventoryId)
   return false
 end
 
-local function calculateRewardAmount(baseAmount, multiplier)
+local function calculateRewardAmount(baseAmount, multiplier, sectionName)
   local jobMarketIndex = career_modules_globalEconomy and career_modules_globalEconomy.getJobMarketIndex() or 1.0
-  return math.floor(baseAmount * multiplier * jobMarketIndex) / 100
+  local sectionMultiplier = 1.0
+  if career_economyAdjuster and career_economyAdjuster.getSectionMultiplier and sectionName then
+    sectionMultiplier = career_economyAdjuster.getSectionMultiplier(sectionName) or 1.0
+  end
+  return math.floor(baseAmount * multiplier * jobMarketIndex * sectionMultiplier) / 100
 end
 
 local function createRewardPayment(rewardData, label, tags)
@@ -71,7 +82,7 @@ local function createRewardPayment(rewardData, label, tags)
 end
 
 local function handleCopEvadeReward(data)
-  local pityAmount = calculateRewardAmount(data.score, CONSTANTS.COP_PITY_MULTIPLIER)
+  local pityAmount = calculateRewardAmount(data.score, CONSTANTS.COP_PITY_MULTIPLIER, "police")
   pityAmount = math.floor(pityAmount * CONSTANTS.POLICE_PAYOUT_MULTIPLIER)
 
   local rewardData = {
@@ -80,6 +91,8 @@ local function handleCopEvadeReward(data)
     [CONSTANTS.POLICE_SKILL_ATTRIBUTE_KEY] = { amount = math.floor(pityAmount / CONSTANTS.REWARD_DIVISOR) },
     specialized = { amount = math.floor(pityAmount / CONSTANTS.REWARD_DIVISOR) }
   }
+  rewardData = applyDifficultyProgressionRewardData(rewardData)
+  pityAmount = rewardData.money.amount
 
   createRewardPayment(rewardData,
     "The suspect got away, Here is " .. pityAmount .. " for repairs",
@@ -99,7 +112,7 @@ local function handleCriminalEvadeReward(vehId, data, inventoryId)
     return
   end
 
-  local rewardAmount = calculateRewardAmount(data.score or 10, CONSTANTS.CRIMINAL_REWARD_MULTIPLIER)
+  local rewardAmount = calculateRewardAmount(data.score or 10, CONSTANTS.CRIMINAL_REWARD_MULTIPLIER, "criminal")
 
   local rewardData = {
     money = { amount = rewardAmount },
@@ -107,6 +120,8 @@ local function handleCriminalEvadeReward(vehId, data, inventoryId)
     criminal = { amount = math.floor(rewardAmount / CONSTANTS.REWARD_DIVISOR) },
     adventurer = { amount = math.floor(rewardAmount / CONSTANTS.REWARD_DIVISOR) }
   }
+  rewardData = applyDifficultyProgressionRewardData(rewardData)
+  rewardAmount = rewardData.money.amount
 
   createRewardPayment(rewardData,
     "You sold your dashcam footage for $" .. rewardAmount,
@@ -133,6 +148,7 @@ local function handleArrestReward(data, playerData)
   end
   bonus = math.floor(bonus * (1 - loanerCut))
   bonus = math.floor(bonus * CONSTANTS.POLICE_PAYOUT_MULTIPLIER)
+  bonus = calculateRewardAmount(bonus, 100, "police")
 
   local rewardData = {
     money = { amount = bonus },
@@ -141,6 +157,8 @@ local function handleArrestReward(data, playerData)
     specialized = { amount = math.floor(bonus / CONSTANTS.REWARD_DIVISOR) },
     policeLoanerReputation = { amount = CONSTANTS.REPUTATION_BONUS_AMOUNT }
   }
+  rewardData = applyDifficultyProgressionRewardData(rewardData)
+  bonus = rewardData.money.amount
 
   createRewardPayment(rewardData, "Arrest Bonus", {"gameplay", "reward", "police"})
 

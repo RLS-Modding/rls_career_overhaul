@@ -136,6 +136,26 @@ local function getFacilityPayMultiplier(zoneTag)
   return facility.payMultiplier
 end
 
+local function scaleMoneyForDifficulty(amount)
+  local value = math.max(0, math.floor(tonumber(amount) or 0))
+  if not (career_modules_difficultyMode and career_modules_difficultyMode.scalePaymentRewardData) then
+    return value
+  end
+  local rewardData = { money = { amount = value, canBeNegative = false } }
+  career_modules_difficultyMode.scalePaymentRewardData(rewardData, {includeMoney = true})
+  return math.max(0, math.floor((rewardData.money and rewardData.money.amount or value) + 0.5))
+end
+
+local function scaleProgressionForDifficulty(amount)
+  local value = math.max(0, math.floor(tonumber(amount) or 0))
+  if not (career_modules_difficultyMode and career_modules_difficultyMode.scalePaymentRewardData) then
+    return value
+  end
+  local rewardData = { labor = { amount = value, canBeNegative = false } }
+  career_modules_difficultyMode.scalePaymentRewardData(rewardData, {includeMoney = false})
+  return math.max(0, math.floor((rewardData.labor and rewardData.labor.amount or value) + 0.5))
+end
+
 local function getContractsConfig(zoneTag)
   local facility = getFacilityForZone(zoneTag)
   if facility and facility.contracts then
@@ -428,6 +448,17 @@ local function generateContract(availableGroups, expirationOffset)
     return nil
   end
   local totalPayout = math.floor((basePay + (unitPay * payMultiplier)) * facilityPayMultiplier)
+  local contractJobIndex = career_modules_globalEconomy and career_modules_globalEconomy.getJobMarketIndex() or 1.0
+  totalPayout = math.floor((totalPayout * contractJobIndex) + 0.5)
+  totalPayout = scaleMoneyForDifficulty(totalPayout)
+
+  local xpReward = 0
+  if matConfig.unitType == "item" then
+    xpReward = math.floor((requiredItems or 0) * 10)
+  else
+    xpReward = math.floor((requiredTons or 0) * 10)
+  end
+  xpReward = scaleProgressionForDifficulty(xpReward)
 
   if not selectedTypeName then
     return nil
@@ -462,6 +493,7 @@ local function generateContract(availableGroups, expirationOffset)
     payMultiplier = payMultiplier,
     facilityPayMultiplier = facilityPayMultiplier,
     totalPayout = totalPayout,
+    xpReward = xpReward,
     facilityId = facilityId,
     destination = {
       pos = group.destination and group.destination.pos and vec3(group.destination.pos) or nil,
@@ -747,8 +779,17 @@ local function completeContract(onCleanup, onClearProps)
   local contract = ContractSystem.activeContract
 
   local zoneTag = contract.loadingZoneTag or contract.groupTag
-  local facilityPayMultiplier = getFacilityPayMultiplier(zoneTag)
-  local totalPay = math.floor((contract.totalPayout or 0) * facilityPayMultiplier)
+  local totalPay = math.floor(tonumber(contract.totalPayout) or 0)
+  local xpReward = tonumber(contract.xpReward)
+  if xpReward == nil then
+    if contract.unitType == "item" then
+      xpReward = math.floor((contract.requiredItems or 0) * 10)
+    else
+      xpReward = math.floor((contract.requiredTons or 0) * 10)
+    end
+    xpReward = scaleProgressionForDifficulty(xpReward)
+  end
+  xpReward = math.max(0, math.floor(xpReward or 0))
 
   local loanerCut = ContractSystem.contractProgress.loanerCut or 0
   if loanerCut > 0 then
@@ -761,18 +802,6 @@ local function completeContract(onCleanup, onClearProps)
     if career and type(career.isActive) == "function" and career.isActive() then
       local paymentModule = career_modules_payment
       if paymentModule and type(paymentModule.reward) == "function" then
-        local xpMultiplier = 10
-        local xpReward = 0
-        if contract.unitType == "item" then
-          xpReward = math.floor((contract.requiredItems or 0) * xpMultiplier)
-        else
-          xpReward = math.floor((contract.requiredTons or 0) * xpMultiplier)
-        end
-        
-        -- Scale contract payout by job market index
-        local contractJobIndex = career_modules_globalEconomy and career_modules_globalEconomy.getJobMarketIndex() or 1.0
-        totalPay = math.floor(totalPay * contractJobIndex)
-
         local rewardData = {
           money = { amount = totalPay, canBeNegative = false },
           labor = { amount = xpReward, canBeNegative = false }
@@ -809,6 +838,7 @@ local function completeContract(onCleanup, onClearProps)
             end
             
             if totalRepGain > 0 then
+              totalRepGain = scaleProgressionForDifficulty(totalRepGain)
               local repKey = orgId .. "Reputation"
               rewardData[repKey] = { amount = totalRepGain }
             end

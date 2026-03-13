@@ -449,28 +449,40 @@ local function handleDropoff(dtSim, vehiclePos, speed)
         finalPayout = finalPayout - loanerCutAmount
     end
 
+    local displayBasePayout = basePayout
+
+    local repGain = math.floor(finalPayout / 100)
+    local beamXP = math.floor(finalPayout / 10)
+    if career_modules_difficultyMode and career_modules_difficultyMode.scaleFlatRewards then
+        local scaled = {
+            beamXP = beamXP,
+            wcuParamedicWorkReputation = repGain
+        }
+        career_modules_difficultyMode.scaleFlatRewards(scaled, {includeMoney = false})
+        beamXP = math.max(0, math.floor((tonumber(scaled.beamXP) or beamXP) + 0.5))
+        repGain = math.max(0, math.floor((tonumber(scaled.wcuParamedicWorkReputation) or repGain) + 0.5))
+    end
     if career_career and career_career.isActive() and career_modules_payment and career_modules_payment.reward then
-        career_modules_payment.reward({
+        local rewardData = {
             money = {
                 amount = finalPayout
             },
             beamXP = {
-                amount = math.floor(finalPayout / 10)
+                amount = beamXP
             },
             wcuParamedicWorkReputation = {
-                amount = math.floor(finalPayout / 100)
+                amount = repGain
             }
-        }, {
+        }
+        career_modules_payment.reward(rewardData, {
             label = string.format("Gross Earnings: $%d | Time bonus: $%d | Rough ride penalty: -$%d | Loaner Cut: -$%d | Net: $%d", finalPayout + loanerCutAmount, timeBonus, penalty, loanerCutAmount, finalPayout),
             tags = {"transport", "ambulance", "gameplay"}
         }, true)
     end
 
-    local repGain = math.floor(finalPayout / 100)
-
     local msg = string.format(
         "Patient delivered!\nDistance: %.2f km\nBase: $%d\nTime Bonus: $%d\nPenalty: -$%d",
-        distanceKM, basePayout, timeBonus, penalty)
+        distanceKM, displayBasePayout, timeBonus, penalty)
     
     if loanerCutAmount > 0 then
         msg = msg .. string.format("\nLoaner cut: -$%d", loanerCutAmount)
@@ -482,7 +494,7 @@ local function handleDropoff(dtSim, vehiclePos, speed)
 
     print(string.format(
         "[ambulance] Patient delivered. Distance: %.2f km Base: $%d Time Bonus: $%d Penalty: $%d LoanerCut: $%d Earned: $%d Reputation +%d",
-        distanceKM, basePayout, timeBonus, penalty, loanerCutAmount, finalPayout, repGain))
+        distanceKM, displayBasePayout, timeBonus, penalty, loanerCutAmount, finalPayout, repGain))
     currentFare.dropoffTimer = nil
     state = "completed"
     core_groundMarkers.resetAll()
