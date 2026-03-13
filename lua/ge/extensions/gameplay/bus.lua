@@ -1265,10 +1265,11 @@ local function processStop(vehicle, dtSim)
             local base = config.baseFare
             local bonusMultiplier = config.bonusMultiplierBase + (consecutiveStops / #stopTriggers) * config.bonusMultiplierFactor
             local payout = math.floor(base * bonusMultiplier)
+            local sectionMultiplier = 1.0
 
             if career_economyAdjuster then
-                local multiplier = career_economyAdjuster.getSectionMultiplier("bus") or 1.0
-                payout = math.floor(payout * multiplier + 0.5)
+                sectionMultiplier = career_economyAdjuster.getSectionMultiplier("bus") or 1.0
+                payout = math.floor(payout * sectionMultiplier + 0.5)
             end
             local rewardMultiplier = config.rewardMultiplier or 1
             payout = math.floor(payout * rewardMultiplier + 0.5)
@@ -1280,6 +1281,7 @@ local function processStop(vehicle, dtSim)
                 local avgRough = math.max(0, roughRide / math.max(1, dwellDuration))
                 local tipPerPassenger = math.max(0, config.tipBaseScore - avgRough) * config.tipPerPassengerMultiplier
                 tipsEarned = math.floor(tipPerPassenger * trueDeboarding * config.tipMultiplier)
+                tipsEarned = math.floor(tipsEarned * sectionMultiplier + 0.5)
                 tipsEarned = math.floor(tipsEarned * rewardMultiplier + 0.5)
                 tipTotal = tipTotal + tipsEarned
             end
