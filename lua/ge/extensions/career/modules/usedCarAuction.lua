@@ -1684,10 +1684,6 @@ local function maybeExtendLotTimer(lot, bidderLabel)
 
   lot.endTime = (lot.endTime or now) + constants.ANTI_SNIPE_EXTEND
   lot.extensionCount = (lot.extensionCount or 0) + 1
-  ui_message(string.format('%s bid extended auction by %.0fs (total extensions: %d).',
-    bidderLabel or 'Bid',
-    constants.ANTI_SNIPE_EXTEND,
-    lot.extensionCount), 2.5, 'Used Auction', 'info')
   return true
 end
 
@@ -2015,7 +2011,6 @@ local function beginLotBidding(lot, forceTeleportToBlock)
   auctionState.nextNpcBidAt = os.clock() + 1.0
   auctionState.nextPlayerBidCheckAt = os.clock() + 0.5
   auctionState.nextLiveStatusAt = 0
-  ui_message(string.format('Now auctioning: %s', lot.title), 5, 'Used Auction', 'info')
   showLiveAuctionStatus(true)
 end
 
@@ -2095,7 +2090,6 @@ local function setAuctionComplete()
   auctionState.phase = 'complete'
   auctionState.awaitingFinalExit = false
   setAuctionFinishedTriggerState()
-  ui_message('Auction complete. Enter exit trigger to return.', 7, 'Used Auction', 'info')
 end
 
 local function startLotByIndex(idx)
@@ -2179,7 +2173,6 @@ local function placePlayerBidIfPossible()
   if not hasGarageSpaceForPurchase() then
     local now = os.clock()
     if now >= (auctionState.noSpaceWarnCooldownUntil or 0) then
-      ui_message('No garage space available. Buy/sell or free a slot before bidding.', 4, 'Used Auction', 'warning')
       auctionState.noSpaceWarnCooldownUntil = now + 3.5
     end
     return false
@@ -2194,7 +2187,6 @@ local function placePlayerBidIfPossible()
   playBidAcceptedSound()
   maybeExtendLotTimer(lot, 'Player')
   auctionState.nextNpcBidAt = os.clock() + (constants.NPC_BID_COOLDOWN_MIN + math.random() * (constants.NPC_BID_COOLDOWN_MAX - constants.NPC_BID_COOLDOWN_MIN))
-  ui_message(string.format('Bid placed on %s: $%d', lot.title, bidAmount), 2, 'Used Auction', 'info')
   showLiveAuctionStatus(true)
   return true
 end
@@ -2217,7 +2209,6 @@ local function placePlayerBidByAmount(amount)
   playBidAcceptedSound()
   maybeExtendLotTimer(lot, 'Player')
   auctionState.nextNpcBidAt = os.clock() + (constants.NPC_BID_COOLDOWN_MIN + math.random() * (constants.NPC_BID_COOLDOWN_MAX - constants.NPC_BID_COOLDOWN_MIN))
-  ui_message(string.format('Bid placed on %s: $%d', lot.title, bidAmount), 2, 'Used Auction', 'info')
   showLiveAuctionStatus(true)
   return true
 end
@@ -2401,18 +2392,15 @@ local function confirmEntryPaymentAndStartAuction()
 
   local canStart, reason = canStartAuctionFromPrompt()
   if not canStart then
-    ui_message(reason or 'Auction cannot be started right now.', 6, 'Used Auction', 'warning')
     return false
   end
 
   local fee = getAuctionEntryFee()
   if not canAffordAuctionEntry() then
-    ui_message(string.format('Not enough money. Need $%d to enter the auction.', fee), 6, 'Used Auction', 'warning')
     return false
   end
 
   if not payAuctionEntryFee() then
-    ui_message('Could not process auction entry payment.', 6, 'Used Auction', 'warning')
     return false
   end
 
@@ -2460,14 +2448,12 @@ local function finishCurrentLot()
 
   if lot.highestBidder == 'player' then
     if not hasGarageSpaceForPurchase() then
-      ui_message(string.format('No garage space for %s. Bid canceled.', lot.title), 6, 'Used Auction', 'warning')
     elseif canAfford(lot.currentBid) then
       payForVehicle(lot.currentBid, string.format('Used Auction: %s', lot.title))
       local inventoryId = career_modules_inventory.addVehicle(lot.vehId, nil, {owned = true})
       if inventoryId then
         if not career_modules_inventory.moveVehicleToGarage(inventoryId) then
           career_modules_inventory.removeVehicle(inventoryId)
-          ui_message(string.format('No garage space for %s at close.', lot.title), 6, 'Used Auction', 'warning')
           beginLotExit(lot)
           startNextLotAfter(lot.lotIndex)
           return
@@ -2477,15 +2463,8 @@ local function finishCurrentLot()
         table.insert(auctionState.purchasedInventoryIds, inventoryId)
         playLotWinCelebrationSound()
         triggerAuctionWinEmitters(constants.LOT_WIN_EMITTER_DURATION)
-        ui_message(string.format('Won %s for $%d', lot.title, lot.currentBid), 6, 'Used Auction', 'info')
-      else
-        ui_message(string.format('Purchase failed for %s', lot.title), 6, 'Used Auction', 'warning')
       end
-    else
-      ui_message(string.format('Could not afford %s at close', lot.title), 6, 'Used Auction', 'warning')
     end
-  else
-    ui_message(string.format('Lost %s (sold for $%d)', lot.title, lot.currentBid), 5, 'Used Auction', 'info')
   end
 
   beginLotExit(lot)
@@ -2558,7 +2537,6 @@ startAuctionImmediate = function()
 
   local spots = getSiteParkingSpots()
   if not spots or #spots < 1 then
-    ui_message('Auction spots missing in auction.sites.json', 8, 'Used Auction', 'warning')
     return false
   end
 
@@ -2577,22 +2555,18 @@ startAuctionImmediate = function()
     auctionState.travelSpot = layout.playerSpot
 
     if not layout.playerSpot then
-      ui_message('Missing spot tag: auctionPlayerStart.', 8, 'Used Auction', 'warning')
       resetAuction(false)
       return
     end
     if #layout.spawnSpots < 1 then
-      ui_message('Missing spot tag: auctionSpawn.', 8, 'Used Auction', 'warning')
       resetAuction(false)
       return
     end
     if not layout.despawnSpot then
-      ui_message('Missing spot tag: auctionDespawn.', 8, 'Used Auction', 'warning')
       resetAuction(false)
       return
     end
     if not getPlayerExitSpot(layout, true) then
-      ui_message('Missing spot tag: auctionPlayerExit (and no trigger fallback).', 8, 'Used Auction', 'warning')
       resetAuction(false)
       return
     end
@@ -2609,14 +2583,11 @@ startAuctionImmediate = function()
     local started = startNextLotAfter(0)
     if not started then
       setAuctionComplete()
-      ui_message('Auction failed to start (no spawnable lots).', 7, 'Used Auction', 'warning')
       return
     end
 
     auctionState.phase = 'bidding'
     openMenu()
-
-    ui_message('Auction started. Vehicles now spawn sequentially: next lot drives in while previous exits.', 8, 'Used Auction', 'info')
   end)
 
   return true
@@ -2696,7 +2667,6 @@ local function exitAuctionArea()
 
     resetAuction(true)
     auctionState.entryCooldownUntil = os.clock() + constants.ENTRY_RETRIGGER_COOLDOWN
-    ui_message('Returned from auction.', 5, 'Used Auction', 'info')
   end)
 
   return true
@@ -2732,7 +2702,6 @@ local function ejectPlayerFromAuctionInteriorOnCareerLoad()
     teleportVehicleToSpot(playerVeh, exitSpot)
     auctionState.entryCooldownUntil = os.clock() + constants.ENTRY_RETRIGGER_COOLDOWN
     setIdleTriggerState()
-    ui_message('Moved vehicle outside auction after load.', 5, 'Used Auction', 'info')
   end)
 
   return true
@@ -2757,7 +2726,6 @@ local function warnBlockedAuctionVehicleSwitch()
     return
   end
   auctionState.switchWarnCooldownUntil = now + constants.VEHICLE_SWITCH_REJECT_WARN_COOLDOWN
-  ui_message('Auction lot vehicles cannot be driven.', 2.5, 'Used Auction', 'warning')
 end
 
 local function onVehicleSwitched(oldId, newId)
