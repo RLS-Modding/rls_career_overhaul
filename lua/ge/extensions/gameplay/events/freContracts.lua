@@ -458,6 +458,74 @@ local function inferRouteTypeFromRaceLabel(disciplineId, raceName, raceLabel)
   return matchedRouteType
 end
 
+local function resolveTargetMultiplierRangeForTier(tier, cfg, fallbackCfg, defaultRange)
+  local multiplierRange = ((cfg and cfg.targetMultiplierByTier or {})[tier]) or {}
+  if type(multiplierRange) ~= "table" or (multiplierRange.min == nil and multiplierRange.max == nil) then
+    multiplierRange = ((fallbackCfg and fallbackCfg.targetMultiplierByTier or {})[tier]) or {}
+  end
+  if type(multiplierRange) ~= "table" then
+    multiplierRange = {}
+  end
+
+  local defaultMin = tonumber((defaultRange or {}).min) or 1.0
+  local defaultMax = tonumber((defaultRange or {}).max) or 1.1
+  local multMin = tonumber(multiplierRange.min) or defaultMin
+  local multMax = tonumber(multiplierRange.max) or defaultMax
+  if multMax < multMin then
+    multMin, multMax = multMax, multMin
+  end
+  return multMin, multMax
+end
+
+local function findRaceEntryByNameAndRoute(disciplineId, raceName, raceRouteType, raceLabel)
+  if type(disciplineId) ~= "string" or disciplineId == "" then
+    return nil
+  end
+  if type(raceName) ~= "string" or raceName == "" then
+    return nil
+  end
+
+  local expectedRouteType = normalizeRaceRouteType(raceRouteType)
+    or inferRouteTypeFromRaceLabel(disciplineId, raceName, raceLabel)
+  local raceData = refreshRaceCache().byDiscipline[disciplineId] or {}
+  local fallback = nil
+
+  for _, raceEntry in ipairs(raceData) do
+    if raceEntry.raceName == raceName then
+      if expectedRouteType and normalizeRaceRouteType(raceEntry.routeType) == expectedRouteType then
+        return raceEntry
+      end
+      fallback = fallback or raceEntry
+    end
+  end
+
+  return fallback
+end
+
+local function normalizeTargetTimeForRace(disciplineId, tier, raceName, raceRouteType, raceLabel, currentTargetTime, cfg, fallbackCfg, defaultRange)
+  local currentTarget = tonumber(currentTargetTime)
+  local raceEntry = findRaceEntryByNameAndRoute(disciplineId, raceName, raceRouteType, raceLabel)
+  if not raceEntry then
+    return currentTarget
+  end
+
+  local baseBest = tonumber(raceEntry.bestTime) or 60
+  if baseBest <= 0 then
+    return currentTarget
+  end
+
+  local multMin, multMax = resolveTargetMultiplierRangeForTier(tier, cfg, fallbackCfg, defaultRange)
+  local minAllowed = baseBest * multMin
+  local maxAllowed = baseBest * multMax
+  local epsilon = 0.01
+
+  if currentTarget and currentTarget > 0 and currentTarget >= (minAllowed - epsilon) and currentTarget <= (maxAllowed + epsilon) then
+    return currentTarget
+  end
+
+  return roundTo(baseBest * randomFloat(multMin, multMax), 3)
+end
+
 local function pickRandomFromList(list)
   if type(list) ~= "table" or #list == 0 then
     return nil
@@ -498,52 +566,7 @@ local function formatTimeForRequirement(seconds)
 end
 
 local function resolveTargetTimeForTier(disciplineId, tier, bestTime, cfg, fallbackCfg, defaultRange)
-  local function fromAbsoluteRange(configTable)
-    local byTier = type(configTable) == "table" and configTable.targetSecondsByTier or nil
-    local tierRange = type(byTier) == "table" and byTier[tier] or nil
-    if type(tierRange) ~= "table" then
-      return nil
-    end
-    local minSeconds = tonumber(tierRange.min)
-    local maxSeconds = tonumber(tierRange.max)
-    if not minSeconds and maxSeconds then
-      minSeconds = maxSeconds
-    end
-    if not maxSeconds and minSeconds then
-      maxSeconds = minSeconds
-    end
-    if not minSeconds or not maxSeconds then
-      return nil
-    end
-    if maxSeconds < minSeconds then
-      minSeconds, maxSeconds = maxSeconds, minSeconds
-    end
-    if minSeconds <= 0 or maxSeconds <= 0 then
-      return nil
-    end
-    return roundTo(randomFloat(minSeconds, maxSeconds), 3)
-  end
-
-  local absoluteTarget = fromAbsoluteRange(cfg) or fromAbsoluteRange(fallbackCfg)
-  if absoluteTarget then
-    return absoluteTarget
-  end
-
-  local multiplierRange = ((cfg and cfg.targetMultiplierByTier or {})[tier]) or {}
-  if type(multiplierRange) ~= "table" or (multiplierRange.min == nil and multiplierRange.max == nil) then
-    multiplierRange = ((fallbackCfg and fallbackCfg.targetMultiplierByTier or {})[tier]) or {}
-  end
-  if type(multiplierRange) ~= "table" then
-    multiplierRange = {}
-  end
-
-  local defaultMin = tonumber((defaultRange or {}).min) or 1.0
-  local defaultMax = tonumber((defaultRange or {}).max) or 1.1
-  local multMin = tonumber(multiplierRange.min) or defaultMin
-  local multMax = tonumber(multiplierRange.max) or defaultMax
-  if multMax < multMin then
-    multMin, multMax = multMax, multMin
-  end
+  local multMin, multMax = resolveTargetMultiplierRangeForTier(tier, cfg, fallbackCfg, defaultRange)
   local baseBest = tonumber(bestTime) or 60
   return roundTo(baseBest * randomFloat(multMin, multMax), 3)
 end
@@ -827,6 +850,17 @@ local function normalizeContractEntry(entry)
   entry.rewardXp = math.max(0, math.floor(tonumber(tierXpCfg.xpAtTarget) or tonumber(entry.rewardXp) or 0))
   entry.raceRouteType = normalizeRaceRouteType(entry.raceRouteType)
     or inferRouteTypeFromRaceLabel(entry.disciplineId, entry.raceName, entry.raceLabel)
+  entry.targetTime = normalizeTargetTimeForRace(
+    entry.disciplineId,
+    tier,
+    entry.raceName,
+    entry.raceRouteType,
+    entry.raceLabel,
+    entry.targetTime,
+    contractCfg,
+    nil,
+    {min = 1.0, max = 1.1}
+  )
 
   local modelKey = entry.requiredModelFamily or entry.requiredModel
   if (not entry.requiredModelLabel or entry.requiredModelLabel == "") and type(modelKey) == "string" and modelKey ~= "" then
@@ -840,9 +874,25 @@ local function normalizeSponsorEntry(disciplineId, entry)
   end
 
   entry.upkeepMinutes = math.max(1, tonumber(entry.upkeepMinutes) or 120)
-  entry.targetTime = tonumber(entry.targetTime)
   entry.requiredRaceRouteType = normalizeRaceRouteType(entry.requiredRaceRouteType)
     or inferRouteTypeFromRaceLabel(disciplineId, entry.requiredRaceName, entry.requiredRaceLabel)
+  if type(entry.requiredRaceName) == "string" and entry.requiredRaceName ~= "" then
+    local sponsorCfg = freConfig.getSponsorConfig(disciplineId) or {}
+    local contractCfg = freConfig.getContractConfig(disciplineId) or {}
+    entry.targetTime = normalizeTargetTimeForRace(
+      disciplineId,
+      entry.tier or "easy",
+      entry.requiredRaceName,
+      entry.requiredRaceRouteType,
+      entry.requiredRaceLabel,
+      entry.targetTime,
+      sponsorCfg,
+      contractCfg,
+      {min = 1.25, max = 1.5}
+    )
+  else
+    entry.targetTime = tonumber(entry.targetTime)
+  end
 
   local hasRaceName = type(entry.requiredRaceName) == "string" and entry.requiredRaceName ~= ""
   local hasTargetTime = type(entry.targetTime) == "number" and entry.targetTime > 0
