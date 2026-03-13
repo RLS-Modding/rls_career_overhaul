@@ -33,8 +33,6 @@ local nonProgressAttributes = {
   beamXP = true,
   vouchers = true
 }
-local levelUpSoundEventEntry = "event:>UI>Career>EndScreen_Whoosh_Main"
-local levelUpSoundEventImpact = "event:>UI>Career>EndScreen_Star_Bonus"
 
 local function isLevelUpEligibleAttribute(attributeKey, delta)
   if type(attributeKey) ~= "string" then return false end
@@ -306,10 +304,6 @@ local function addAttributes(change, reason, fullprice)
 
   local levelUpEntries = collectLevelUpCelebrations(change, reason, valueBeforeByAttribute)
   if #levelUpEntries > 0 then
-    if Engine and Engine.Audio and Engine.Audio.playOnce then
-      Engine.Audio.playOnce("AudioGui", levelUpSoundEventEntry)
-      Engine.Audio.playOnce("AudioGui", levelUpSoundEventImpact)
-    end
     if guihooks and guihooks.trigger then
       guihooks.trigger("OpenCareerLevelUpCelebration", {entries = levelUpEntries})
     end
