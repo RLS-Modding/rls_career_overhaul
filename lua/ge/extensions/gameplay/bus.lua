@@ -39,16 +39,6 @@ local routeCooldown = 0
 local currentVehiclePartsTree = nil
 local stopMonitorActive = false
 
-local function isHardcoreModeActive()
-    return career_modules_hardcore and career_modules_hardcore.isHardcoreMode and career_modules_hardcore.isHardcoreMode()
-end
-
-local function applyHardcorePayout(value)
-    if not isHardcoreModeActive() then
-        return value
-    end
-    return math.floor(value / 2 + 0.5)
-end
 local stopSettleTimer = 0
 local stopSettleDelay = config.stopSettleDelay
 local currentTriggerName = nil
@@ -707,6 +697,7 @@ local function endRoute(reason, payout)
 
     local reputationGain = 0
 
+    local rewardData = nil
     if payout and payout > 0 then
         local loanerCutAmount = 0
         if currentLoanerCut > 0 then
@@ -716,15 +707,29 @@ local function endRoute(reason, payout)
 
         local basePay = accumulatedReward
         local tipsEarned = tipTotal
-
-        if isHardcoreModeActive() then
-            basePay = applyHardcorePayout(basePay)
-            tipsEarned = applyHardcorePayout(tipsEarned)
-            loanerCutAmount = applyHardcorePayout(loanerCutAmount)
-            payout = applyHardcorePayout(payout)
+        local beamXP = math.floor(payout / 10)
+        local busReputation = math.floor(payout / config.reputationDivisor)
+        if career_modules_difficultyMode and career_modules_difficultyMode.scaleFlatRewards then
+            local scaled = {
+                beamXP = beamXP,
+                busWorkReputation = busReputation
+            }
+            career_modules_difficultyMode.scaleFlatRewards(scaled, {includeMoney = false})
+            beamXP = math.max(0, math.floor((tonumber(scaled.beamXP) or beamXP) + 0.5))
+            busReputation = math.max(0, math.floor((tonumber(scaled.busWorkReputation) or busReputation) + 0.5))
         end
-
-        reputationGain = math.floor(payout / config.reputationDivisor)
+        reputationGain = busReputation
+        rewardData = {
+            money = {
+                amount = payout
+            },
+            beamXP = {
+                amount = beamXP
+            },
+            busWorkReputation = {
+                amount = busReputation
+            }
+        }
 
         msg = msg .. string.format("\nStops completed: %d\nBase pay:   $%d\nTips:       $%d",
             totalStopsCompleted, basePay, tipsEarned)
@@ -751,19 +756,9 @@ local function endRoute(reason, payout)
     ]])
     end
 
-    if payout and payout > 0 and career_career and career_career.isActive() and career_modules_payment and
+    if rewardData and payout and payout > 0 and career_career and career_career.isActive() and career_modules_payment and
         career_modules_payment.reward then
-        career_modules_payment.reward({
-            money = {
-                amount = payout
-            },
-            beamXP = {
-                amount = math.floor(payout / 10)
-            },
-            busWorkReputation = {
-                amount = reputationGain
-            }
-        }, {
+        career_modules_payment.reward(rewardData, {
             label = string.format("Bus Route Earnings: $%d", payout),
             tags = {"transport", "bus", "gameplay"}
         }, true)
@@ -1270,10 +1265,11 @@ local function processStop(vehicle, dtSim)
             local base = config.baseFare
             local bonusMultiplier = config.bonusMultiplierBase + (consecutiveStops / #stopTriggers) * config.bonusMultiplierFactor
             local payout = math.floor(base * bonusMultiplier)
+            local sectionMultiplier = 1.0
 
             if career_economyAdjuster then
-                local multiplier = career_economyAdjuster.getSectionMultiplier("bus") or 1.0
-                payout = math.floor(payout * multiplier + 0.5)
+                sectionMultiplier = career_economyAdjuster.getSectionMultiplier("bus") or 1.0
+                payout = math.floor(payout * sectionMultiplier + 0.5)
             end
             local rewardMultiplier = config.rewardMultiplier or 1
             payout = math.floor(payout * rewardMultiplier + 0.5)
@@ -1285,6 +1281,7 @@ local function processStop(vehicle, dtSim)
                 local avgRough = math.max(0, roughRide / math.max(1, dwellDuration))
                 local tipPerPassenger = math.max(0, config.tipBaseScore - avgRough) * config.tipPerPassengerMultiplier
                 tipsEarned = math.floor(tipPerPassenger * trueDeboarding * config.tipMultiplier)
+                tipsEarned = math.floor(tipsEarned * sectionMultiplier + 0.5)
                 tipsEarned = math.floor(tipsEarned * rewardMultiplier + 0.5)
                 tipTotal = tipTotal + tipsEarned
             end
@@ -1334,6 +1331,11 @@ local function processStop(vehicle, dtSim)
                 print(string.format("[bus] Moving to next stop: index %d, name %s", nextStopIndex, nextStopName))
                 
                 local reputationGain = math.floor(payout / config.reputationDivisor)
+                if career_modules_difficultyMode and career_modules_difficultyMode.scaleFlatRewards then
+                    local previewScaled = { busWorkReputation = reputationGain }
+                    career_modules_difficultyMode.scaleFlatRewards(previewScaled, {includeMoney = false})
+                    reputationGain = math.max(0, math.floor((tonumber(previewScaled.busWorkReputation) or reputationGain) + 0.5))
+                end
                 
                 ui_message(string.format("Proceed to Stop %02d\nBase pay: $%d\nTips: $%d\nTotal tips: $%d\nReputation: +%d",
                     nextStopIndex, payout, tipsEarned, tipTotal, reputationGain), 8, "info", "bus_next")

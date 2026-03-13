@@ -150,34 +150,6 @@ local function getFreRewardModifiers(disciplineIds)
     return computed
 end
 
-local function clamp(value, minValue, maxValue)
-    if value < minValue then return minValue end
-    if value > maxValue then return maxValue end
-    return value
-end
-
-local function calculateXpFromTierCurve(curveCfg, normalizedPerformance)
-    local tierCfg = type(curveCfg) == "table" and curveCfg or {}
-    local xpAtTarget = math.max(0, tonumber(tierCfg.xpAtTarget) or 0)
-    if xpAtTarget <= 0 then
-        return 0
-    end
-    local tenPercentBetterMultiplier = tonumber(tierCfg.tenPercentBetterMultiplier) or 1.25
-    if tenPercentBetterMultiplier <= 0 then
-        tenPercentBetterMultiplier = 1.25
-    end
-    local belowTargetFloorMultiplier = tonumber(tierCfg.belowTargetFloorMultiplier) or 0.25
-    local maxMultiplier = tonumber(tierCfg.maxMultiplier) or 3.0
-    if maxMultiplier < belowTargetFloorMultiplier then
-        maxMultiplier = belowTargetFloorMultiplier
-    end
-    local normalized = math.max(0, tonumber(normalizedPerformance) or 0)
-    local exponent = (normalized - 1.0) / 0.1
-    local rawMultiplier = tenPercentBetterMultiplier ^ exponent
-    local scaledMultiplier = clamp(rawMultiplier, belowTargetFloorMultiplier, maxMultiplier)
-    return math.max(0, math.floor(xpAtTarget * scaledMultiplier))
-end
-
 local function resolveTierByUnlockLevel(level, unlockCfg)
     local numericLevel = math.max(0, math.floor(tonumber(level) or 0))
     local tiers = unlockCfg or {}
@@ -247,7 +219,10 @@ local function buildDisciplineXpRewards(disciplineIds, normalizedPerformance, re
             local level = tonumber((perDiscipline[disciplineId] or {}).level) or 0
             local tier = resolveTierByUnlockLevel(level, eventXpCfg.tierUnlockLevels or {})
             local tierCurveCfg = ((eventXpCfg.xpByTier or {})[tier]) or {}
-            local baseAmount = calculateXpFromTierCurve(tierCurveCfg, normalizedPerformance)
+            local baseAmount = 0
+            if gameplay_events_freContracts_skills and gameplay_events_freContracts_skills.calculateXpFromTierCurve then
+                baseAmount = gameplay_events_freContracts_skills.calculateXpFromTierCurve(tierCurveCfg, normalizedPerformance)
+            end
             local xpMultiplier = tonumber((perDiscipline[disciplineId] or {}).xpMultiplier) or 1
             local amount = math.max(0, math.floor(baseAmount * xpMultiplier))
             rewards[skillKey] = {amount = amount}
@@ -265,12 +240,18 @@ local function buildDisciplineXpRewards(disciplineIds, normalizedPerformance, re
     return rewards, breakdown, totalXp
 end
 
-local function mergeRewardTables(target, source)
+local function mergeRewardTables(target, source, overwrite, warnOnOverwrite)
     if type(target) ~= "table" or type(source) ~= "table" then
         return
     end
     for key, value in pairs(source) do
-        target[key] = value
+        if target[key] ~= nil and not overwrite then
+            if warnOnOverwrite then
+                log("W", "freeroamEvents", string.format("mergeRewardTables skipped key '%s' (already exists)", tostring(key)))
+            end
+        else
+            target[key] = value
+        end
     end
 end
 
@@ -555,12 +536,17 @@ local function payoutRace()
             hotlapMessage = hotlapMessage .. "\nIn Range Bonus: 5%"
         end
 
-        reward = reward / (career_modules_hardcore.isHardcoreMode() and 2 or 1)
-
         local baseRewardBeforeFre = reward
         local freModifiers = getFreRewardModifiers(completionMeta.disciplineIds)
         reward = reward * (tonumber(freModifiers.moneyMultiplier) or 1)
         local disciplineXpRewards, disciplineXpBreakdown, totalDisciplineXp = buildDisciplineXpRewards(completionMeta.disciplineIds, normalizedPerformance, freModifiers)
+        if career_modules_difficultyMode and career_modules_difficultyMode.scalePaymentRewardData then
+            career_modules_difficultyMode.scalePaymentRewardData(disciplineXpRewards, {includeMoney = false})
+            totalDisciplineXp = 0
+            for _, rewardInfo in pairs(disciplineXpRewards) do
+                totalDisciplineXp = totalDisciplineXp + (tonumber(rewardInfo.amount) or 0)
+            end
+        end
         completionMeta.rewardBreakdown = {
             money = {
                 base = baseRewardBeforeFre,
@@ -573,7 +559,7 @@ local function payoutRace()
 
         if reward > 0 then
             local playerVehicleId = be:getPlayerVehicleID(0)
-            local businessAccount, businessType, businessId = getBusinessAccountFromVehicle(playerVehicleId)
+            local businessAccount = getBusinessAccountFromVehicle(playerVehicleId)
             
             if businessAccount then
                 local businessReward = math.floor(reward * 0.5)
@@ -596,9 +582,6 @@ local function payoutRace()
                 end
                 
                 message = message .. string.format("\nDiscipline XP: %d | Business Reward: $%.2f (50%% to business account)", totalDisciplineXp, businessReward)
-                if career_modules_hardcore.isHardcoreMode() then
-                    message = message .. "\nHardcore mode is enabled, all rewards are halved."
-                end
             else
                 local totalReward = {
                     money = {
@@ -613,9 +596,6 @@ local function payoutRace()
                 }, true)
 
                 message = message .. string.format("\nDiscipline XP: %d | Reward: $%.2f", totalDisciplineXp, reward)
-                if career_modules_hardcore.isHardcoreMode() then
-                    message = message .. "\nHardcore mode is enabled, all rewards are halved."
-                end
             end
             career_saveSystem.saveCurrent()
         end
@@ -692,14 +672,19 @@ local function payoutDragRace(raceName, finishTime, finishSpeed, vehId)
         reward = baseReward / 2 -- Minimum reward for completion
     end
 
-    reward = reward / (career_modules_hardcore.isHardcoreMode() and 2 or 1)
-
     reward = newBestTime and reward or reward / 2
 
     local baseRewardBeforeFre = reward
     local freModifiers = getFreRewardModifiers(disciplineIds)
     reward = reward * (tonumber(freModifiers.moneyMultiplier) or 1)
     local disciplineXpRewards, disciplineXpBreakdown, totalDisciplineXp = buildDisciplineXpRewards(disciplineIds, normalizedPerformance, freModifiers)
+    if career_modules_difficultyMode and career_modules_difficultyMode.scalePaymentRewardData then
+        career_modules_difficultyMode.scalePaymentRewardData(disciplineXpRewards, {includeMoney = false})
+        totalDisciplineXp = 0
+        for _, rewardInfo in pairs(disciplineXpRewards) do
+            totalDisciplineXp = totalDisciplineXp + (tonumber(rewardInfo.amount) or 0)
+        end
+    end
     local completionMeta = {
         disciplineIds = disciplineIds,
         invalidLap = false,
@@ -718,7 +703,7 @@ local function payoutDragRace(raceName, finishTime, finishSpeed, vehId)
     }
 
     -- Check if this is a business vehicle
-    local businessAccount, businessType, businessId = getBusinessAccountFromVehicle(vehId)
+    local businessAccount = getBusinessAccountFromVehicle(vehId)
     
     if businessAccount then
         local businessReward = math.floor(reward * 0.5)
@@ -747,10 +732,6 @@ local function payoutDragRace(raceName, finishTime, finishSpeed, vehId)
             newBestTime and "Congratulations! New Best Time!" or "", raceData.label, utils.formatTime(finishTime), finishSpeed,
             totalDisciplineXp, businessReward)
         
-        if career_modules_hardcore.isHardcoreMode() then
-            message = message .. "\nHardcore mode is enabled, all rewards are halved."
-        end
-        
         ui_message(message, 20, "Reward")
     else
         -- Prepare total reward
@@ -774,10 +755,6 @@ local function payoutDragRace(raceName, finishTime, finishSpeed, vehId)
         local message = string.format("%s\n%s\nTime: %s\nSpeed: %.2f mph\nDiscipline XP: %d | Reward: $%.2f",
             newBestTime and "Congratulations! New Best Time!" or "", raceData.label, utils.formatTime(finishTime), finishSpeed,
             totalDisciplineXp, reward)
-
-        if career_modules_hardcore.isHardcoreMode() then
-            message = message .. "\nHardcore mode is enabled, all rewards are halved."
-        end
 
         -- Display the message
         ui_message(message, 20, "Reward")

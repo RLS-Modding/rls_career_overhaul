@@ -7,6 +7,7 @@ const loaded = ref(false)
 const error = ref('')
 
 let pendingLoad = null
+let requestEpoch = 0
 
 function asArray(value) {
   return Array.isArray(value) ? value : []
@@ -106,9 +107,10 @@ function normalizeSkill(skillId, skillInfo, discoveryOrder) {
     ? src.hasUnlocks
     : unlockInfo.some(tier => tier.list.length > 0 || tier.description.heading || tier.description.description)
 
+  const normalizedOrder = Number(src.order)
   return {
     id: String(skillId),
-    order: discoveryOrder,
+    order: Number.isFinite(normalizedOrder) ? normalizedOrder : discoveryOrder,
     name: typeof src.name === 'string' && src.name.trim() ? src.name : String(skillId),
     description: typeof src.description === 'string' ? src.description : '',
     level,
@@ -128,6 +130,30 @@ function normalizeSkill(skillId, skillInfo, discoveryOrder) {
     unlockInfo,
     hasUnlocks,
   }
+}
+
+function mergeSkillsById(baseSkills, incomingSkills) {
+  const byId = new Map()
+  for (const skill of asArray(baseSkills)) {
+    if (skill && skill.id) {
+      byId.set(String(skill.id), skill)
+    }
+  }
+  for (const skill of asArray(incomingSkills)) {
+    if (!skill || !skill.id) continue
+    const id = String(skill.id)
+    byId.set(id, {
+      ...(byId.get(id) || {}),
+      ...skill,
+    })
+  }
+  const merged = Array.from(byId.values())
+  merged.sort((a, b) => {
+    const byOrder = toNumber(a.order, 9999) - toNumber(b.order, 9999)
+    if (byOrder !== 0) return byOrder
+    return String(a.name).localeCompare(String(b.name))
+  })
+  return merged
 }
 
 async function getLandingPageData(pathId) {
@@ -328,10 +354,12 @@ export async function loadPhoneSkills(force = false) {
 
   loading.value = true
   error.value = ''
+  const epoch = ++requestEpoch
 
   pendingLoad = collectAllSkills()
     .then(data => {
-      skills.value = data
+      if (epoch !== requestEpoch) return skills.value
+      skills.value = mergeSkillsById(skills.value, data)
       loaded.value = true
       return data
     })
@@ -340,8 +368,10 @@ export async function loadPhoneSkills(force = false) {
       throw err
     })
     .finally(() => {
-      loading.value = false
-      pendingLoad = null
+      if (epoch === requestEpoch) {
+        loading.value = false
+        pendingLoad = null
+      }
     })
 
   return pendingLoad
@@ -353,6 +383,7 @@ export function getPhoneSkillById(skillId) {
 }
 
 export function resetPhoneSkillsCache() {
+  requestEpoch += 1
   skills.value = []
   loading.value = false
   loaded.value = false

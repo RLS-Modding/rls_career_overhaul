@@ -24,6 +24,7 @@ local boughtStarterVehicle
 local organizationInteraction = {}
 local switchLevel = nil
 local isNewSaveFlag = false
+local pendingDifficultyMode = nil
 
 local nodegrabberActions = {"nodegrabberGrab", "nodegrabberRender", "nodegrabberStrength", "nodegrabberAction"}
 
@@ -31,6 +32,19 @@ local actionWhitelist = deepcopy(nodegrabberActions)
 local blockedActions = core_input_actionFilter.createActionTemplate({"vehicleTeleporting", "vehicleMenues", "physicsControls", "aiControls", "vehicleSwitching", "funStuff", "dropPlayerAtCameraNoReset"}, actionWhitelist)
 
 local cheatblockedActions = core_input_actionFilter.createActionTemplate({"aiControls", "funStuff"})
+
+local function resolveDifficultyMode(candidate, hardcoreFallback)
+  if type(candidate) == "string" then
+    local normalized = string.lower(candidate)
+    if normalized == "easy" or normalized == "normal" or normalized == "hard" or normalized == "hardcore" then
+      return normalized
+    end
+  end
+  if hardcoreFallback then
+    return "hardcore"
+  end
+  return "normal"
+end
 
 -- TODO maybe save whenever we go into the esc menu
 
@@ -150,12 +164,26 @@ end
 local function onCareerModulesActivated(alreadyInLevel)
   setupCareerActionsAndUnpause()
 
+  if career_modules_difficultyMode then
+    if pendingDifficultyMode and career_modules_difficultyMode.setMode then
+      career_modules_difficultyMode.setMode(pendingDifficultyMode)
+      pendingDifficultyMode = nil
+    end
+    if career_modules_difficultyMode.isHardcoreMode then
+      M.hardcoreMode = career_modules_difficultyMode.isHardcoreMode() == true
+    elseif career_modules_difficultyMode.getMode then
+      M.hardcoreMode = career_modules_difficultyMode.getMode() == "hardcore"
+    end
+  end
+
   if M.pendingChallengeId then
     career_challengeModes.startChallenge(M.pendingChallengeId, true)
     M.pendingChallengeId = nil
   elseif isNewSaveFlag and career_modules_playerAttributes then
     local startingCapital = 10000
-    if M.hardcoreMode then
+    if career_modules_difficultyMode and career_modules_difficultyMode.getStartingCapital then
+      startingCapital = career_modules_difficultyMode.getStartingCapital()
+    elseif M.hardcoreMode then
       startingCapital = 0
     end
     if career_modules_cheats and career_modules_cheats.isCheatsMode() then
@@ -339,13 +367,14 @@ local function applyChallengeConfig(cfg)
   return true
 end
 
-local function createOrLoadCareerAndStart(name, specificAutosave, tutorial, hardcore, challengeId, cheats, startingMap)
+local function createOrLoadCareerAndStart(name, specificAutosave, tutorial, hardcore, challengeId, cheats, startingMap, difficultyMode)
   core_gamestate.requestEnterLoadingScreen("careerLoading")
   if careerActive then
     deactivateCareer()
   end
   
   M.pendingChallengeId = nil
+  pendingDifficultyMode = nil
   
   log("I","",string.format("Create or Load Career: %s - %s", name, specificAutosave))
   
@@ -409,10 +438,14 @@ local function createOrLoadCareerAndStart(name, specificAutosave, tutorial, hard
         log("I","","Tutorial enabled.")
       end
       M.tutorialEnabled = tutorial
-      if hardcore then
-        log("I","","Hardcore mode enabled.")
+      if isNewSave then
+        local selectedDifficultyMode = resolveDifficultyMode(difficultyMode, hardcore == true)
+        if selectedDifficultyMode == "hardcore" then
+          log("I","","Hardcore mode enabled.")
+        end
+        M.hardcoreMode = selectedDifficultyMode == "hardcore"
+        pendingDifficultyMode = selectedDifficultyMode
       end
-      M.hardcoreMode = hardcore
       if cheats then
         log("I","","Cheats mode enabled.")
       end
@@ -521,21 +554,21 @@ local function formatSaveSlotForUi(saveSlot)
   end
   local infoData = jsonReadFile(autosavePath .. "/info.json")
   local careerData = jsonReadFile(autosavePath .. "/career/" .. saveFile)
+  local difficultyData = jsonReadFile(autosavePath .. "/career/rls_career/difficultyMode.json")
   local hardcoreData = jsonReadFile(autosavePath .. "/career/rls_career/hardcore.json")
   local cheatsData = jsonReadFile(autosavePath .. "/career/rls_career/cheats.json")
   local challengeData = jsonReadFile(autosavePath .. "/career/rls_career/challengeModes.json")
-  local challengeData = jsonReadFile(autosavePath .. "/career/rls_career/challengeModes.json")
 
-  if hardcoreData then
+  if difficultyData and difficultyData.mode then
+    data.difficultyMode = difficultyData.mode
+    data.hardcoreMode = difficultyData.mode == "hardcore"
+  elseif hardcoreData then
     data.hardcoreMode = hardcoreData.hardcoreMode
+    data.difficultyMode = hardcoreData.hardcoreMode and "hardcore" or "normal"
   end
 
   if cheatsData then
     data.cheatsMode = cheatsData.cheatsMode
-  end
-
-  if challengeData and challengeData.activeChallenge then
-    data.activeChallenge = challengeData.activeChallenge.name
   end
 
   if challengeData and challengeData.activeChallenge then

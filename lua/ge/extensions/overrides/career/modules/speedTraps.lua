@@ -9,6 +9,13 @@ local core_vehicles = require('core/vehicles')
 
 M.dependencies = {'career_career', 'gameplay_speedTraps', 'gameplay_traffic'}
 
+local function isHardcoreMode()
+  if career_modules_difficultyMode and career_modules_difficultyMode.isHardcoreMode then
+    return career_modules_difficultyMode.isHardcoreMode() == true
+  end
+  return career_career and career_career.hardcoreMode == true
+end
+
 -- Determine whether the player's vehicle is using the ambulance paint design.
 -- @return `true` if the player's vehicle has the ambulance paint design, `false` otherwise.
 local function isInAmbulance()
@@ -91,7 +98,7 @@ local function onSpeedTrapTriggered(speedTrapData, playerSpeed, overSpeed)
 
   if penaltyType == "default" then
     local fine = getFineFromSpeed(overSpeed)
-    fine.money.amount = fine.money.amount * (career_modules_hardcore.isHardcoreMode() and 10 or 1)
+    fine.money.amount = fine.money.amount * (isHardcoreMode() and 10 or 1)
     -- Scale fine by global economy index
     local globalIndex = career_modules_globalEconomy and career_modules_globalEconomy.getGlobalIndex() or 1.0
     fine.money.amount = math.floor(fine.money.amount * globalIndex)
@@ -168,7 +175,7 @@ local function onRedLightCamTriggered(speedTrapData, playerSpeed)
   local veh = getPlayerVehicle(0)
   if not inventoryId or hasLicensePlate(inventoryId) then
     local redLightGlobalIndex = career_modules_globalEconomy and career_modules_globalEconomy.getGlobalIndex() or 1.0
-    local fine = {money = {amount = math.floor(500 * (career_modules_hardcore.isHardcoreMode() and 2 or 1) * redLightGlobalIndex), canBeNegative = true}}
+    local fine = {money = {amount = math.floor(500 * (isHardcoreMode() and 2 or 1) * redLightGlobalIndex), canBeNegative = true}}
     local message = ""
     
     if playerRole == "police" then

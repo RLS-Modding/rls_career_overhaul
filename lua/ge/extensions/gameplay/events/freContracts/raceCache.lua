@@ -206,7 +206,7 @@ local function resolveTargetMultiplierRangeForTier(tier, cfg, fallbackCfg, defau
   return multMin, multMax
 end
 
-local function resolveTargetTimeForTier(disciplineId, tier, bestTime, cfg, fallbackCfg, defaultRange)
+local function resolveTargetTimeForTier(tier, bestTime, cfg, fallbackCfg, defaultRange)
   local helpers = gameplay_events_freContracts_helpers
   local multMin, multMax = resolveTargetMultiplierRangeForTier(tier, cfg, fallbackCfg, defaultRange)
   local baseBest = tonumber(bestTime) or 60
@@ -258,7 +258,7 @@ local function buildTargetForTier(disciplineId, tier, raceEntry, cfg, fallbackCf
     }
   end
 
-  local targetTime = resolveTargetTimeForTier(disciplineId, tier, entry.bestTime, cfg, fallbackCfg, defaultRange)
+  local targetTime = resolveTargetTimeForTier(tier, entry.bestTime, cfg, fallbackCfg, defaultRange)
   return {
     targetType = TARGET_TYPE_TIME,
     targetTime = targetTime,

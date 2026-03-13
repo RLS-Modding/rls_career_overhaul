@@ -168,9 +168,9 @@ end
 local function getUiState(filterDisciplineId)
   local state = gameplay_events_freContracts_state.getState()
   local now = state.simTime
+  gameplay_events_freContracts_state.refreshMaintenanceSchedule(now)
   gameplay_events_freContracts_offers.purgeExpiredEntries(now)
   gameplay_events_freContracts_offers.syncAllOffers(now)
-  gameplay_events_freContracts_state.refreshMaintenanceSchedule(now)
 
   local activeContracts = {}
   local availableContracts = {}

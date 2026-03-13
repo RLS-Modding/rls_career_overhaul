@@ -155,6 +155,7 @@ function resolveUnlockIcon(iconName) {
 async function refreshSkills() {
   try {
     await loadPhoneSkills(true)
+    await hydratePhoneSkillDetails(skillId.value)
   } catch (_) {
     // Handled by shared error state.
   }

@@ -152,9 +152,7 @@ local function migrateLayoutData(data)
   local version = math.floor(tonumber(normalized.version) or 1)
 
   if version < 2 then
-    if insertMissingApp(normalized, "fre-contracts", "freeroam-events") then
-      changed = true
-    end
+    insertMissingApp(normalized, "fre-contracts", "freeroam-events")
     normalized.version = LAYOUT_VERSION
     changed = true
   end

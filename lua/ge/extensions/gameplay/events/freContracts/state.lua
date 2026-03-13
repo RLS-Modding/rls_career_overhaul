@@ -158,7 +158,9 @@ local function updateSimTime(dtSim)
   if dt < 0 then
     dt = 0
   end
-  state.simTime = state.simTime + dt / 60
+  local s = getState()
+  s.simTime = tonumber(s.simTime) or 0
+  s.simTime = s.simTime + dt / 60
 end
 
 local function getSimTime()

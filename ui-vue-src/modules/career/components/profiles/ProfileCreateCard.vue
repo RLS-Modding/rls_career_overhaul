@@ -19,7 +19,7 @@
             @keydown.enter="onEnter" />
 
           <div class="section">
-            <ChallengeDropdown ref="challengeDropdownRef" v-model="challengeId" :disabled="cheatsMode" />
+            <ChallengeDropdown ref="challengeDropdownRef" v-model="challengeId" :disabled="cheatsMode || difficultyMode !== 'normal'" />
           </div>
 
           <div v-if="hasOtherMaps" class="section">
@@ -78,10 +78,41 @@
                 <div class="mode-item">
                   <div class="mode-left">
                     <div class="title-icon title-icon-red" />
-                    <div class="mode-title">Hardcore</div>
+                    <div class="mode-title">Difficulty</div>
                   </div>
                   <div class="mode-right">
-                    <BngSwitch v-model="hardcoreMode" label-before :inline="false" :disabled="cheatsMode"> </BngSwitch>
+                    <div class="difficulty-dropdown" ref="difficultyDropdownRef">
+                      <button
+                        type="button"
+                        class="difficulty-dropdown-trigger"
+                        :disabled="challengeId !== null || cheatsMode"
+                        @click.stop="toggleDifficultyDropdown"
+                        @mousedown.stop
+                      >
+                        <span>{{ selectedDifficultyLabel }}</span>
+                        <span class="difficulty-dropdown-chevron">▾</span>
+                      </button>
+                      <teleport to="body">
+                        <div
+                          v-if="difficultyDropdownOpen"
+                          class="difficulty-dropdown-content"
+                          :style="difficultyDropdownStyle"
+                          @click.stop
+                          @mousedown.stop
+                        >
+                          <div
+                            v-for="opt in difficultyOptions"
+                            :key="opt.value"
+                            class="difficulty-dropdown-option"
+                            :class="{ 'difficulty-dropdown-selected': opt.value === difficultyMode }"
+                            @click.stop="selectDifficulty(opt.value)"
+                            @mousedown.stop
+                          >
+                            {{ opt.label }}
+                          </div>
+                        </div>
+                      </teleport>
+                    </div>
                   </div>
                 </div>
 
@@ -91,7 +122,7 @@
                     <div class="mode-title">Freeroam+</div>
                   </div>
                   <div class="mode-right">
-                    <BngSwitch v-model="cheatsMode" label-before :inline="false" :disabled="challengeId !== null || hardcoreMode"> </BngSwitch>
+                    <BngSwitch v-model="cheatsMode" label-before :inline="false" :disabled="challengeId !== null || difficultyMode !== 'normal'"> </BngSwitch>
                   </div>
                 </div>
               </div>
@@ -126,8 +157,14 @@ const emit = defineEmits(["card:activate", "load"])
 
 const profileName = defineModel("profileName", { required: true })
 const isActive = defineModel("active", { type: Boolean, default: false })
-const hardcoreMode = ref(false)
+const difficultyMode = ref("normal")
 const cheatsMode = ref(false)
+const difficultyOptions = [
+  { value: "easy", label: "Easy" },
+  { value: "normal", label: "Normal" },
+  { value: "hard", label: "Hard" },
+  { value: "hardcore", label: "Hardcore" },
+]
 
 const validateName = inject("validateName")
 const nameError = ref(null)
@@ -154,6 +191,9 @@ const hasOtherMaps = ref(false)
 const mapDropdownRef = ref(null)
 const mapDropdownOpen = ref(false)
 const mapDropdownStyle = ref('')
+const difficultyDropdownRef = ref(null)
+const difficultyDropdownOpen = ref(false)
+const difficultyDropdownStyle = ref('')
 
 const selectedChallenge = ref(null)
 
@@ -166,6 +206,11 @@ const selectedMapLabel = computed(() => {
   if (!selectedMap.value) return 'Default (West Coast USA)'
   const map = mapOptions.value.find(m => m.id === selectedMap.value)
   return map ? map.name : 'Default (West Coast USA)'
+})
+
+const selectedDifficultyLabel = computed(() => {
+  const option = difficultyOptions.find(opt => opt.value === difficultyMode.value)
+  return option ? option.label : 'Normal'
 })
 
 function toggleMapDropdown() {
@@ -207,6 +252,40 @@ function clearMap() {
   mapDropdownOpen.value = false
 }
 
+function toggleDifficultyDropdown() {
+  if (challengeId.value !== null || cheatsMode.value) return
+  difficultyDropdownOpen.value = !difficultyDropdownOpen.value
+  if (difficultyDropdownOpen.value) {
+    nextTick(positionDifficultyDropdown)
+  }
+}
+
+function positionDifficultyDropdown() {
+  if (!difficultyDropdownRef.value) return
+  const trigger = difficultyDropdownRef.value.querySelector('.difficulty-dropdown-trigger')
+  if (!trigger) return
+  const rect = trigger.getBoundingClientRect()
+  const width = rect.width
+  const margin = 8
+  const left = rect.left
+  const top = rect.bottom + margin
+  difficultyDropdownStyle.value = `position:fixed;z-index:2000;top:${top}px;left:${left}px;width:${width}px;`
+}
+
+function selectDifficulty(value) {
+  difficultyMode.value = value
+  difficultyDropdownOpen.value = false
+}
+
+function onDifficultyDocClick(e) {
+  if (!difficultyDropdownOpen.value) return
+  const dropdown = document.querySelector('.difficulty-dropdown-content')
+  const trigger = difficultyDropdownRef.value?.querySelector('.difficulty-dropdown-trigger')
+  if (dropdown && dropdown.contains(e.target)) return
+  if (trigger && trigger.contains(e.target)) return
+  difficultyDropdownOpen.value = false
+}
+
 onMounted(async () => {
   try {
     const maps = await lua.overhaul_maps.getMapsExcludingWestCoast()
@@ -222,34 +301,37 @@ onMounted(async () => {
     hasOtherMaps.value = false
   }
   document.addEventListener('mousedown', onMapDocClick)
+  document.addEventListener('mousedown', onDifficultyDocClick)
   window.addEventListener('resize', positionMapDropdown)
+  window.addEventListener('resize', positionDifficultyDropdown)
   window.addEventListener('scroll', positionMapDropdown, true)
+  window.addEventListener('scroll', positionDifficultyDropdown, true)
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('mousedown', onMapDocClick)
+  document.removeEventListener('mousedown', onDifficultyDocClick)
   window.removeEventListener('resize', positionMapDropdown)
+  window.removeEventListener('resize', positionDifficultyDropdown)
   window.removeEventListener('scroll', positionMapDropdown, true)
+  window.removeEventListener('scroll', positionDifficultyDropdown, true)
 })
 
 watch(cheatsMode, (newVal) => {
   if (newVal && challengeId.value !== null) {
     challengeId.value = null
   }
-  if (newVal && hardcoreMode.value) {
-    hardcoreMode.value = false
-  }
-})
-
-watch(hardcoreMode, (newVal) => {
-  if (newVal && cheatsMode.value) {
-    cheatsMode.value = false
+  if (newVal && difficultyMode.value !== "normal") {
+    difficultyMode.value = "normal"
   }
 })
 
 watch(challengeId, async (newVal) => {
   if (newVal !== null && cheatsMode.value) {
     cheatsMode.value = false
+  }
+  if (newVal !== null && difficultyMode.value !== "normal") {
+    difficultyMode.value = "normal"
   }
   
   if (newVal) {
@@ -274,7 +356,16 @@ watch(challengeId, async (newVal) => {
   }
 })
 
-const load = () => emit("load", profileName.value, false, hardcoreMode.value, challengeId.value, cheatsMode.value, selectedMap.value)
+watch(difficultyMode, (newVal) => {
+  if (newVal !== "normal" && challengeId.value !== null) {
+    challengeId.value = null
+  }
+  if (newVal !== "normal" && cheatsMode.value) {
+    cheatsMode.value = false
+  }
+})
+
+const load = () => emit("load", profileName.value, false, difficultyMode.value, challengeId.value, cheatsMode.value, selectedMap.value)
 
 function isModalOpen() {
   if (challengeDropdownRef.value && (challengeDropdownRef.value.createOpen || challengeDropdownRef.value.detailOpen)) {
@@ -445,6 +536,43 @@ function closeCard() {
 .mode-right {
   display: flex;
   align-items: center;
+}
+
+.difficulty-dropdown { position: relative; min-width: 8em; }
+.difficulty-dropdown-trigger {
+  width: 100%;
+  min-width: 8em;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(71, 85, 105, 0.7);
+  border-radius: 8px;
+  color: #fff;
+  padding: 0.35em 0.55em;
+  cursor: pointer;
+}
+.difficulty-dropdown-chevron { opacity: 0.8; }
+.difficulty-dropdown-content {
+  position: fixed;
+  background: rgba(15, 23, 42, 0.98);
+  border: 1px solid rgba(71, 85, 105, 0.6);
+  border-radius: 10px;
+  padding: 0.25em;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+.difficulty-dropdown-option {
+  padding: 0.5em;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #fff;
+  font-size: 0.9em;
+  transition: background 0.2s ease;
+}
+.difficulty-dropdown-option:hover { background: rgba(30, 41, 59, 0.6); }
+.difficulty-dropdown-option.difficulty-dropdown-selected {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
 }
 
 .mode-item .title-icon {

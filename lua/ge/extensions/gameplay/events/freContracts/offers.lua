@@ -37,6 +37,28 @@ local function pickContractObjective(disciplineId, tier, raceEntry)
   return objectiveType, gameplay_events_freContracts_helpers.randomInt(minCount, maxCount)
 end
 
+local function scaleContractRewardPreview(disciplineId, baseMoney, baseXp)
+  local money = math.max(0, math.floor(tonumber(baseMoney) or 0))
+  local xp = math.max(0, math.floor(tonumber(baseXp) or 0))
+  local skillKey = freConfig.getSkillKey(disciplineId)
+  if not skillKey then
+    return money, xp
+  end
+  if not (career_modules_difficultyMode and career_modules_difficultyMode.scalePaymentRewardData) then
+    return money, xp
+  end
+
+  local rewardData = {
+    money = { amount = money, canBeNegative = false },
+    [skillKey] = { amount = xp }
+  }
+  career_modules_difficultyMode.scalePaymentRewardData(rewardData, {includeMoney = true})
+
+  local scaledMoney = math.max(0, math.floor((rewardData.money and rewardData.money.amount or money) + 0.5))
+  local scaledXp = math.max(0, math.floor((rewardData[skillKey] and rewardData[skillKey].amount or xp) + 0.5))
+  return scaledMoney, scaledXp
+end
+
 local function isValidTargetType(targetType)
   return targetType == "time" or targetType == "driftScore" or targetType == "maxDamagePct"
 end
@@ -82,7 +104,10 @@ local function normalizeContractEntry(disciplineId, entry)
   entry.requiredCount = math.max(1, math.floor(tonumber(entry.requiredCount) or 1))
   entry.progress = math.max(0, math.floor(tonumber(entry.progress) or 0))
   entry.bestPerformanceRatio = math.max(0, tonumber(entry.bestPerformanceRatio) or 0)
-  entry.rewardXp = math.max(0, math.floor(tonumber(entry.rewardXp) or 0))
+  local normalizedMoney = tonumber(entry.rewardMoney)
+  local normalizedXp = tonumber(entry.rewardXp)
+  entry.rewardMoney = math.max(0, math.floor(normalizedMoney or 0))
+  entry.rewardXp = math.max(0, math.floor(normalizedXp or 0))
   entry.targetTime = tonumber(entry.targetTime)
   entry.targetDriftScore = tonumber(entry.targetDriftScore)
   entry.targetDamagePctMax = tonumber(entry.targetDamagePctMax)
@@ -126,6 +151,16 @@ local function normalizeContractEntry(disciplineId, entry)
   if (not entry.requiredModelLabel or entry.requiredModelLabel == "") and type(entry.requiredModel) == "string" and entry.requiredModel ~= "" then
     entry.requiredModelLabel = vPool.getModelDisplayName(entry.requiredModel)
   end
+end
+
+local function normalizeContractEntryAndDetectChanges(disciplineId, entry)
+  if type(entry) ~= "table" then
+    return false
+  end
+  local prevMoney = entry.rewardMoney
+  local prevXp = entry.rewardXp
+  normalizeContractEntry(disciplineId, entry)
+  return prevMoney ~= entry.rewardMoney or prevXp ~= entry.rewardXp
 end
 
 local function normalizeSponsorEntry(disciplineId, entry)
@@ -265,9 +300,10 @@ local function generateContractOffer(disciplineId, level, now)
   }, "contract")
 
   local rewardRange = ((contractCfg.rewardRangeByTier or {})[tier]) or {}
-  local rewardMoney = helpers.randomInt(tonumber(rewardRange.moneyMin) or 1000, tonumber(rewardRange.moneyMax) or 2000)
+  local rewardMoneyBase = helpers.randomInt(tonumber(rewardRange.moneyMin) or 1000, tonumber(rewardRange.moneyMax) or 2000)
   local tierXpCfg = ((contractCfg.xpByTier or {})[tier]) or {}
-  local rewardXp = math.max(0, math.floor(tonumber(tierXpCfg.xpAtTarget) or 0))
+  local rewardXpBase = math.max(0, math.floor(tonumber(tierXpCfg.xpAtTarget) or 0))
+  local rewardMoney, rewardXp = scaleContractRewardPreview(disciplineId, rewardMoneyBase, rewardXpBase)
 
   local expiryMinutes = tonumber(contractCfg.offerExpiryMinutes) or 5
   local model, modelSource = vPool.pickContractModel(disciplineId)
@@ -363,7 +399,9 @@ local function syncOffersForDiscipline(disciplineId, now)
 
   for i = #dState.contracts.available, 1, -1 do
     local offer = dState.contracts.available[i]
-    normalizeContractEntry(disciplineId, offer)
+    if normalizeContractEntryAndDetectChanges(disciplineId, offer) then
+      changed = true
+    end
     local requiredModel = offer.requiredModel
     if requiredModel and requiredModel ~= "" and
       (not vPool.isModelAllowedForDiscipline(disciplineId, requiredModel) or not vPool.isValidVehicleModelKey(requiredModel)) then
@@ -371,9 +409,10 @@ local function syncOffersForDiscipline(disciplineId, now)
       changed = true
     end
   end
-
-  for _, activeContract in ipairs(dState.contracts.active or {}) do
-    normalizeContractEntry(disciplineId, activeContract)
+  for _, offer in ipairs(dState.contracts.active or {}) do
+    if normalizeContractEntryAndDetectChanges(disciplineId, offer) then
+      changed = true
+    end
   end
 
   local level = skills.getSkillLevel(disciplineId)

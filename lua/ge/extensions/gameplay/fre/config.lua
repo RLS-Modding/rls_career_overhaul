@@ -49,7 +49,7 @@ local function mergeDeep(baseValue, overrideValue)
 
   local baseIsArray = isArrayLike(baseValue)
   local overrideIsArray = isArrayLike(overrideValue)
-  if baseIsArray or overrideIsArray or (baseIsArray and next(overrideValue) == nil) then
+  if baseIsArray or overrideIsArray then
     return deepCopy(overrideValue)
   end
 
