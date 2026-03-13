@@ -188,11 +188,45 @@ local function isGarageForSale(garageId)
   return career_modules_realEstateNegotiation.getPropertyListing(garageId) ~= nil
 end
 
+local function isChallengeStartingGarage(garageId)
+  if not garageId then return false end
+  if not career_challengeModes or not career_challengeModes.isChallengeActive() then return false end
+
+  local activeChallenge = career_challengeModes.getActiveChallenge()
+  if not activeChallenge or not activeChallenge.startingGarages then return false end
+
+  for _, startingGarageId in ipairs(activeChallenge.startingGarages) do
+    if startingGarageId == garageId then
+      return true
+    end
+  end
+
+  return false
+end
+
+local function isFreeStarterGarage(garageId, garage)
+  garage = garage or freeroam_facilities.getFacility("garage", garageId)
+  if not garage or not garage.starterGarage then return false end
+
+  if isChallengeStartingGarage(garageId) then
+    return true
+  end
+
+  if career_modules_hardcore and career_modules_hardcore.isHardcoreMode and career_modules_hardcore.isHardcoreMode() then
+    return false
+  end
+
+  return true
+end
+
 local function isStarterGaragePurchasable(garageId)
   if not garageId then return false end
   local garage = freeroam_facilities.getFacility("garage", garageId)
   if not garage or not garage.starterGarage then return false end
   if purchasedGarages[garageId] then return false end
+  if career_modules_hardcore and career_modules_hardcore.isHardcoreMode and career_modules_hardcore.isHardcoreMode() then
+    return true
+  end
   if not career_challengeModes or not career_challengeModes.isChallengeActive() then return false end
   local activeChallenge = career_challengeModes.getActiveChallenge()
   if not activeChallenge or not activeChallenge.startingGarages or #activeChallenge.startingGarages == 0 then return false end
@@ -1002,42 +1036,18 @@ local function getGarageSellPrice(garageId, computerId)
   end
   local garage = freeroam_facilities.getFacility("garage", garageId)
   if garage then
-    if career_modules_hardcore.isHardcoreMode() then
-      return garage.defaultPrice * 0.75
-    else
-      -- Check if this garage is a starting garage in an active challenge
-      if career_challengeModes and career_challengeModes.isChallengeActive() then
-        local activeChallenge = career_challengeModes.getActiveChallenge()
-        if activeChallenge and activeChallenge.startingGarages then
-          for _, startingGarageId in ipairs(activeChallenge.startingGarages) do
-            if startingGarageId == garageId then
-              -- This garage is selected as a starting garage, charge full price
-              log("D", "garageManager", "getGarageSellPrice: Garage " .. garageId .. " is challenge starting garage, sell price: " .. garage.defaultPrice)
-              return tonumber(garage.defaultPrice)
-            end
-          end
-        end
-      end
-      
-      local starterWasPurchased = false
-      if garage.starterGarage and career_challengeModes and career_challengeModes.isChallengeActive() then
-        local ac = career_challengeModes.getActiveChallenge()
-        if ac and ac.startingGarages and #ac.startingGarages > 0 then
-          local isStart = false
-          for _, sgId in ipairs(ac.startingGarages) do
-            if sgId == garageId then isStart = true break end
-          end
-          if not isStart then starterWasPurchased = true end
-        end
-      end
-      local price = (garage.starterGarage and not starterWasPurchased) and 0 or garage.defaultPrice
-      -- Apply housing market index if available
-      if career_modules_globalEconomy and career_modules_globalEconomy.getHousingMarketIndex then
-        price = math.floor(price * career_modules_globalEconomy.getHousingMarketIndex() + 0.5)
-      end
-      log("D", "garageManager", "getGarageSellPrice: Garage " .. garageId .. " sell price: " .. price .. " (starterGarage: " .. tostring(garage.starterGarage) .. ")")
-      return math.floor(tonumber(price) * 0.75 + 0.5)
+    if isChallengeStartingGarage(garageId) then
+      log("D", "garageManager", "getGarageSellPrice: Garage " .. garageId .. " is challenge starting garage, sell price: " .. garage.defaultPrice)
+      return tonumber(garage.defaultPrice)
     end
+
+    local price = isFreeStarterGarage(garageId, garage) and 0 or garage.defaultPrice
+    -- Apply housing market index if available
+    if career_modules_globalEconomy and career_modules_globalEconomy.getHousingMarketIndex then
+      price = math.floor(price * career_modules_globalEconomy.getHousingMarketIndex() + 0.5)
+    end
+    log("D", "garageManager", "getGarageSellPrice: Garage " .. garageId .. " sell price: " .. price .. " (starterGarage: " .. tostring(garage.starterGarage) .. ")")
+    return math.floor(tonumber(price) * 0.75 + 0.5)
   end
   return nil
 end
@@ -1051,19 +1061,7 @@ local function canSellGarageByGarageId(garageId)
     return false
   end
   
-  if career_challengeModes and career_challengeModes.isChallengeActive() then
-    local activeChallenge = career_challengeModes.getActiveChallenge()
-    if activeChallenge and activeChallenge.startingGarages then
-      -- In challenges, only block selling garages that were given for free as starting garages
-      for _, startingGarageId in ipairs(activeChallenge.startingGarages) do
-        if startingGarageId == garageId then
-          return {false, 0}
-        end
-      end
-      -- Starter garages purchased in a challenge (not given for free) can be sold
-    end
-  elseif garage.starterGarage then
-    -- Outside of challenges, starter garages given at career start can't be sold
+  if isFreeStarterGarage(garageId, garage) then
     return {false, 0}
   end
   
@@ -1329,20 +1327,7 @@ local function getOwnedGaragesListingData()
       if career_modules_globalEconomy and career_modules_globalEconomy.getHousingMarketIndex then
         marketValue = math.floor(marketValue * career_modules_globalEconomy.getHousingMarketIndex() + 0.5)
       end
-      local isStarter = false
-      if career_challengeModes and career_challengeModes.isChallengeActive() then
-        local activeChallenge = career_challengeModes.getActiveChallenge()
-        if activeChallenge and activeChallenge.startingGarages then
-          for _, sgId in ipairs(activeChallenge.startingGarages) do
-            if sgId == garageId then
-              isStarter = true
-              break
-            end
-          end
-        end
-      elseif garage.starterGarage then
-        isStarter = true
-      end
+      local isStarter = isFreeStarterGarage(garageId, garage)
       local canSellInfo = canSellGarageByGarageId(garageId)
       local canSell = canSellInfo and canSellInfo[1] or false
 

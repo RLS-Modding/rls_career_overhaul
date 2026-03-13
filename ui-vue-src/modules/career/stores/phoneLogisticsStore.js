@@ -36,6 +36,16 @@ function normalizeSectionArray(sections) {
   }))
 }
 
+function normalizeProgression(progression) {
+  if (!progression || typeof progression !== "object") return {}
+  return {
+    ...progression,
+    logistics: progression.logistics && typeof progression.logistics === "object"
+      ? { ...progression.logistics }
+      : null,
+  }
+}
+
 function normalizeFacilityList(facilities) {
   return normalizeCollection(facilities).map(facility => ({
     ...facility,
@@ -46,6 +56,7 @@ function normalizeFacilityList(facilities) {
 function normalizeFacilityDetail(data) {
   return {
     ...data,
+    progression: normalizeProgression(data?.progression),
     parcelDestinations: normalizeSectionArray(data?.parcelDestinations),
     materialSources: normalizeSectionArray(data?.materialSources),
     vehicleOfferDestinations: normalizeSectionArray(data?.vehicleOfferDestinations),
@@ -182,7 +193,10 @@ export const usePhoneLogisticsStore = defineStore("phoneLogistics", () => {
   }
 
   async function init() {
-    if (initialized.value) return
+    if (initialized.value) {
+      await refreshList(true)
+      return
+    }
     resetState()
     registerEvents()
     initialized.value = true
