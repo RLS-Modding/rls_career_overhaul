@@ -179,9 +179,6 @@ end
 
 local function collectLevelUpCelebrations(change, reason, valueBeforeByAttribute)
   if type(change) ~= "table" then return {} end
-  if type(reason) == "table" and type(reason.tags) == "table" and reason.tags.deliveryReward then
-    return {}
-  end
 
   local entries = {}
   for attributeKey, delta in pairs(change) do
