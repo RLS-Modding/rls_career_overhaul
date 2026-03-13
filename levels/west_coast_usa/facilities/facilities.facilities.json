@@ -735,8 +735,8 @@
       ]
     },
     {
-      "capacity":5,
-      "defaultPrice":425000,
+      "capacity":8,
+      "defaultPrice":845000,
       "description":"A Large Mansion with a Huge Garage to store any vehicle.",
       "icon":"poi_garage_2_round",
       "id":"cul-de-sacGarage",
@@ -744,9 +744,13 @@
       "parkingSpotNames":[
         "cul-de-sacGarageParking1",
         "cul-de-sacGarageParking2",
-        "cul-de-sacGarageParking3",
-        "cul-de-sacGarageParking4",
-        "cul-de-sacGarageParking5"
+        "spot_cul-de-sacGarage_3",
+        "spot_cul-de-sacGarage_4",
+        "spot_cul-de-sacGarage_5",
+        "spot_cul-de-sacGarage_6",
+        "spot_cul-de-sacGarage_7",
+        "spot_cul-de-sacGarage_8",
+        "spot_cul-de-sacGarage_9"
       ],
       "preview":"garage_servicestatiot.jpg",
       "tags":[
@@ -806,7 +810,7 @@
       ]
     },
     {
-      "capacity":9,
+      "capacity":6,
       "defaultPrice":756000,
       "description":"A new garage",
       "icon":"poi_garage_2_round",

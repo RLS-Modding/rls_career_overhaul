@@ -28,6 +28,7 @@ import Sleep from "./views/SleepMenu.vue"
 import Loans from "./views/LoanMenu.vue"
 import RoleAssignment from "./views/RoleAssignment.vue"
 import CarMeets from "./views/CarMeetsMenu.vue"
+import UsedCarAuction from "./views/UsedCarAuction.vue"
 import PurchaseGarage from "./views/PurchaseGarage.vue"
 import GarageListing from "./views/GarageListing.vue"
 import RealEstateNegotiation from "./views/RealEstateNegotiation.vue"
@@ -369,6 +370,16 @@ export default [
         component: CarMeets
       },
 
+      {
+        path: "used-car-auction",
+        name: "used-car-auction",
+        component: UsedCarAuction,
+        meta: {
+          uiApps: {
+            shown: false,
+          },
+        },
+      },
       {
         path: "purchase-garage",
         name: "purchase-garage",

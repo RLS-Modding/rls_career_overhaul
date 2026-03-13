@@ -1,0 +1,79 @@
+<link rel="stylesheet" type="text/css" href="/ui/modModules/usedAuction/usedAuction.css" />
+
+<div class="ua-overlay-root" ng-if="visible">
+  <div class="ua-entry-backdrop" ng-if="isEntryPrompt()">
+    <div class="ua-entry-modal">
+      <div class="ua-entry-text">{{ entryPromptMessage() }}</div>
+      <div class="ua-entry-note" ng-if="!state.canPayEntryFee">Insufficient funds.</div>
+      <div class="ua-entry-actions">
+        <button class="ua-btn ua-btn-primary" ng-disabled="!state.canPayEntryFee" ng-click="startAuctionFromPrompt()">Pay</button>
+        <button class="ua-btn ua-btn-secondary" ng-click="cancelEntryPrompt()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="ua-panel bng-blur" ua-draggable ng-if="!isEntryPrompt()">
+    <div class="ua-header">
+      <div class="ua-title">Used Car Auction</div>
+      <div class="ua-phase">{{ state.phase || 'idle' }}</div>
+    </div>
+
+    <div class="ua-status">{{ state.statusMessage || 'Auction service unavailable.' }}</div>
+
+    <div class="ua-music">
+      <label>
+        <input type="checkbox" ng-model="state.musicEnabled" ng-change="setMusicEnabled(state.musicEnabled)" />
+        <span>Synthwave Music</span>
+      </label>
+    </div>
+
+    <div class="ua-summary">
+      <div class="ua-row">
+        <span class="ua-k">Wins</span>
+        <span class="ua-v">{{ state.purchasedCount || 0 }}</span>
+      </div>
+      <div class="ua-row">
+        <span class="ua-k">Live Lot</span>
+        <span class="ua-v">Lot {{ (activeLot() && activeLot().lotIndex) || '-' }}</span>
+      </div>
+    </div>
+
+    <div class="ua-table">
+      <div class="ua-table-head">
+        <div>Lot</div>
+        <div>Vehicle</div>
+        <div>Mileage</div>
+      </div>
+
+      <div class="ua-table-row" ng-repeat="lot in (state.lots || []) track by lot.lotIndex" ng-class="{ active: isActiveLot(lot) }">
+        <div>Lot {{ lot.lotIndex }}</div>
+        <div title="{{ lot.title || '-' }}">{{ lot.title || '-' }}</div>
+        <div>{{ formatMileage(lot.mileage) }}</div>
+      </div>
+
+      <div class="ua-empty" ng-if="!(state.lots && state.lots.length)">No active lots.</div>
+    </div>
+
+    <div class="ua-details" ng-if="activeLot()">
+      <div class="ua-row">
+        <span class="ua-k">Bid</span>
+        <span class="ua-v">{{ formatCurrency((activeLot() && activeLot().currentBid) || 0) }}</span>
+      </div>
+      <div class="ua-row">
+        <span class="ua-k">Leader</span>
+        <span class="ua-v">{{ formatBidder(activeLot()) }}</span>
+      </div>
+      <div class="ua-row">
+        <span class="ua-k">Time Left</span>
+        <span class="ua-v">{{ (activeLot() && activeLot().timeLeft) || 0 }}s</span>
+      </div>
+    </div>
+
+    <div class="ua-actions" ng-if="canBid()">
+      <button class="ua-btn ua-btn-primary" ng-click="bid(250)">+$250</button>
+      <button class="ua-btn ua-btn-primary" ng-click="bid(500)">+$500</button>
+      <button class="ua-btn ua-btn-primary" ng-click="bid(1000)">+$1000</button>
+      <button class="ua-btn ua-btn-primary" ng-click="bid(5000)">+$5000</button>
+    </div>
+  </div>
+</div>
