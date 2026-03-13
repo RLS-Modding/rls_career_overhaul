@@ -6,6 +6,7 @@ M.dependencies = {
   'career_modules_garageManager',
   'career_modules_marketplace',
   'career_modules_payment',
+  'career_modules_valueCalculator',
   'career_saveSystem',
   'gameplay_sites_sitesManager',
   'gameplay_traffic',
@@ -114,6 +115,8 @@ local auctionState = {
 }
 
 local usedConfigKeys = {}
+local partsValueCache = {}
+local badConfigLogOnce = {}
 local stopVehicleAI
 local setLotVehicleDriveLock
 local startAuctionImmediate
@@ -1150,6 +1153,15 @@ local function getFallbackMileage()
   return math.random(5000, 180000)
 end
 
+local function getLotMileageMeters(lot)
+  local mileageMiles = tonumber(lot and lot.mileage) or 0
+  return math.max(0, math.floor(mileageMiles * 1609.344))
+end
+
+local function getCurrentYear()
+  return tonumber(os.date('%Y')) or 2025
+end
+
 local function isRangeParams(parameters)
   return type(parameters) == 'table' and (parameters.min ~= nil or parameters.max ~= nil)
 end
@@ -1407,7 +1419,9 @@ local function getRandomVehicleDefWithFilter(filter)
           config = configPath,
           title = title,
           basePrice = math.max(1500, math.floor(tonumber(info.Value or 4500))),
-          mileage = getMileageFromInfo(info) or getFallbackMileage()
+          mileage = getMileageFromInfo(info) or getFallbackMileage(),
+          year = tonumber(info.Year) or tonumber(info.year) or
+            (type(info.Years) == 'table' and tonumber(info.Years.max)) or getCurrentYear()
         }
       end
     end
@@ -1454,7 +1468,9 @@ local function getRandomVehicleDefNoFilter(enforceFilter)
           config = configPath,
           title = title,
           basePrice = math.max(1500, math.floor(tonumber(info.Value or 4500))),
-          mileage = getMileageFromInfo(info) or getFallbackMileage()
+          mileage = getMileageFromInfo(info) or getFallbackMileage(),
+          year = tonumber(info.Year) or tonumber(info.year) or
+            (type(info.Years) == 'table' and tonumber(info.Years.max)) or getCurrentYear()
         }
       end
     end
@@ -1627,7 +1643,9 @@ local function prepareLots(spawnSpots, blockSpots, lotCount, npcPersonas)
       model = vehicleDef.model,
       config = vehicleDef.config,
       title = vehicleDef.title,
+      basePrice = vehicleDef.basePrice,
       mileage = vehicleDef.mileage or getFallbackMileage(),
+      year = vehicleDef.year or getCurrentYear(),
       minStep = minStep,
       currentBid = startBid,
       highestBidder = 'npc',
@@ -1770,6 +1788,135 @@ local function getConfigKeyFromPath(configPath)
   return normalized:match('/([^/]+)%.pc$')
 end
 
+local function getAuctionVehiclePartsValue(modelName, configKey)
+  if not modelName or not configKey then
+    return 0
+  end
+
+  local cacheKey = tostring(modelName) .. '|' .. tostring(configKey)
+  if partsValueCache[cacheKey] ~= nil then
+    return partsValueCache[cacheKey]
+  end
+
+  local ioCtx = {
+    preloadedDirs = {'/vehicles/' .. modelName .. '/'}
+  }
+
+  local pcPath = 'vehicles/' .. modelName .. '/' .. configKey .. '.pc'
+  local readOk, pcData = pcall(jsonReadFile, pcPath)
+  if not readOk or not pcData or type(pcData.parts) ~= 'table' then
+    local logKey = cacheKey .. '|partsMissing'
+    if not badConfigLogOnce[logKey] then
+      badConfigLogOnce[logKey] = true
+      log('W', 'UsedAuction', string.format('Unable to read parts from %s, keeping base price fallback.', pcPath))
+    end
+    return 0
+  end
+
+  local valueOk, totalValue = pcall(function()
+    local accumulatedValue = 0
+    for _, partName in pairs(pcData.parts) do
+      if partName and partName ~= '' then
+        local partData = jbeamIO.getPart(ioCtx, partName)
+        if partData and partData.information and partData.information.value then
+          accumulatedValue = accumulatedValue + partData.information.value
+        end
+      end
+    end
+    return accumulatedValue
+  end)
+
+  if not valueOk then
+    local logKey = cacheKey .. '|partsValueError'
+    if not badConfigLogOnce[logKey] then
+      badConfigLogOnce[logKey] = true
+      log('W', 'UsedAuction', string.format(
+        'Part value lookup failed for %s, keeping base price fallback (%s).',
+        cacheKey, tostring(totalValue)))
+    end
+    return 0
+  end
+
+  partsValueCache[cacheKey] = totalValue
+  return totalValue
+end
+
+local function computeConditionedLotBasePrice(lot)
+  if not lot or not career_modules_valueCalculator then
+    return nil
+  end
+
+  local baseValue = tonumber(lot.basePrice) or tonumber(lot.currentBid) or 0
+  if baseValue <= 0 then
+    return nil
+  end
+
+  local mileageMeters = getLotMileageMeters(lot)
+  local vehicleYear = tonumber(lot.year) or getCurrentYear()
+  local currentYear = getCurrentYear()
+  local vehicleAge = math.max(0, currentYear - vehicleYear)
+
+  local adjustedBaseValue = career_modules_valueCalculator.getAdjustedVehicleBaseValue(baseValue, {
+    mileage = mileageMeters,
+    age = vehicleAge
+  })
+
+  local configKey = getConfigKeyFromPath(lot.config)
+  local partsBaseValue = getAuctionVehiclePartsValue(lot.model, configKey)
+  local conditionedPartsValue = 0
+  if partsBaseValue > 0 then
+    conditionedPartsValue = math.floor(
+      career_modules_valueCalculator.getDepreciatedPartValue(partsBaseValue, mileageMeters) * 1.081
+    )
+  end
+
+  local conditioned = math.max(adjustedBaseValue or 0, conditionedPartsValue or 0)
+  if conditioned <= 0 then
+    return nil
+  end
+
+  conditioned = math.floor(conditioned / 1000) * 1000
+  return math.max(1500, conditioned)
+end
+
+local function applyConditionedLotPricing(lot)
+  if not lot or lot.pricingInitialized then
+    return
+  end
+
+  local conditionedBase = computeConditionedLotBasePrice(lot)
+  if not conditionedBase then
+    lot.pricingInitialized = true
+    return
+  end
+
+  lot.basePrice = conditionedBase
+  lot.conditionedBasePrice = conditionedBase
+
+  local minStep = lot.minStep or 250
+  local startBid = roundToNearestStep(conditionedBase * (0.55 + math.random() * 0.2), 500)
+  startBid = math.max(minStep, startBid)
+  lot.currentBid = startBid
+
+  lot.npcMaxBidsByPersonaId = {}
+  lot.npcPersonaNamesById = lot.npcPersonaNamesById or {}
+  for _, persona in ipairs(auctionState.npcPersonas or {}) do
+    lot.npcMaxBidsByPersonaId[persona.id] = computeNpcMaxBidForLot(conditionedBase, startBid, minStep, persona)
+    lot.npcPersonaNamesById[persona.id] = persona.name
+  end
+
+  local leader = chooseInitialNpcLeader(auctionState.npcPersonas, lot.npcMaxBidsByPersonaId, startBid, minStep)
+  if leader then
+    setNpcAsLeader(lot, leader)
+  else
+    lot.highestBidder = 'npc'
+    lot.leadingNpcPersonaId = nil
+    lot.highestBidderName = 'NPC'
+  end
+
+  lot.pricingInitialized = true
+end
+
 local function applyRandomPaintToSpawnOptions(options, modelKey, configPath)
   if not options or not modelKey then return end
   if not core_vehiclePaints or not core_vehiclePaints.getRandomPaints then return end
@@ -1827,6 +1974,9 @@ local function spawnLotVehicle(lot, spot, startApproach)
     lot.state = 'failed'
     return false
   end
+
+  core_vehicleBridge.executeAction(veh, 'initPartConditions', {}, getLotMileageMeters(lot), 1, 1)
+  applyConditionedLotPricing(lot)
 
   lot.vehId = veh:getID()
   lot.state = startApproach and 'approaching' or 'queued'
