@@ -24,6 +24,7 @@ local boughtStarterVehicle
 local organizationInteraction = {}
 local switchLevel = nil
 local isNewSaveFlag = false
+local pendingDifficultyMode = nil
 
 local nodegrabberActions = {"nodegrabberGrab", "nodegrabberRender", "nodegrabberStrength", "nodegrabberAction"}
 
@@ -31,6 +32,19 @@ local actionWhitelist = deepcopy(nodegrabberActions)
 local blockedActions = core_input_actionFilter.createActionTemplate({"vehicleTeleporting", "vehicleMenues", "physicsControls", "aiControls", "vehicleSwitching", "funStuff", "dropPlayerAtCameraNoReset"}, actionWhitelist)
 
 local cheatblockedActions = core_input_actionFilter.createActionTemplate({"aiControls", "funStuff"})
+
+local function resolveDifficultyMode(candidate, hardcoreFallback)
+  if type(candidate) == "string" then
+    local normalized = string.lower(candidate)
+    if normalized == "easy" or normalized == "normal" or normalized == "hard" or normalized == "hardcore" then
+      return normalized
+    end
+  end
+  if hardcoreFallback then
+    return "hardcore"
+  end
+  return "normal"
+end
 
 -- TODO maybe save whenever we go into the esc menu
 
@@ -149,6 +163,12 @@ end
 
 local function onCareerModulesActivated(alreadyInLevel)
   setupCareerActionsAndUnpause()
+
+  if pendingDifficultyMode and career_modules_difficultyMode and career_modules_difficultyMode.setMode then
+    career_modules_difficultyMode.setMode(pendingDifficultyMode)
+    M.hardcoreMode = pendingDifficultyMode == "hardcore"
+    pendingDifficultyMode = nil
+  end
 
   if M.pendingChallengeId then
     career_challengeModes.startChallenge(M.pendingChallengeId, true)
@@ -341,13 +361,14 @@ local function applyChallengeConfig(cfg)
   return true
 end
 
-local function createOrLoadCareerAndStart(name, specificAutosave, tutorial, hardcore, challengeId, cheats, startingMap)
+local function createOrLoadCareerAndStart(name, specificAutosave, tutorial, hardcore, challengeId, cheats, startingMap, difficultyMode)
   core_gamestate.requestEnterLoadingScreen("careerLoading")
   if careerActive then
     deactivateCareer()
   end
   
   M.pendingChallengeId = nil
+  pendingDifficultyMode = nil
   
   log("I","",string.format("Create or Load Career: %s - %s", name, specificAutosave))
   
@@ -411,10 +432,14 @@ local function createOrLoadCareerAndStart(name, specificAutosave, tutorial, hard
         log("I","","Tutorial enabled.")
       end
       M.tutorialEnabled = tutorial
-      if hardcore then
-        log("I","","Hardcore mode enabled.")
+      if isNewSave then
+        local selectedDifficultyMode = resolveDifficultyMode(difficultyMode, hardcore == true)
+        if selectedDifficultyMode == "hardcore" then
+          log("I","","Hardcore mode enabled.")
+        end
+        M.hardcoreMode = selectedDifficultyMode == "hardcore"
+        pendingDifficultyMode = selectedDifficultyMode
       end
-      M.hardcoreMode = hardcore
       if cheats then
         log("I","","Cheats mode enabled.")
       end

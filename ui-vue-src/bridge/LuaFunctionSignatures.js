@@ -71,7 +71,7 @@ export default {
     isActive: () => {},
     sendAllCareerSaveSlotsData: () => {},
     sendCurrentSaveSlotData: () => {},
-    createOrLoadCareerAndStart: (id, specificAutosave, tutorial) => [String, Any, Boolean],
+    createOrLoadCareerAndStart: (id, specificAutosave, tutorial, hardcore, challengeId, cheats, startingMap, difficultyMode) => [String, Any, Boolean, Boolean, Any, Boolean, Any, String],
   },
 
   career_saveSystem: {

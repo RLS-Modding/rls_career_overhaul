@@ -7,7 +7,7 @@ export const PROFILE_NAME_MAX_LENGTH = 100
 export const PROFILE_NAME_PATTERN = /^[a-zA-Z0-9_]+$/
 
 export const useProfilesStore = defineStore("profiles", () => {
-  async function loadProfile(profileName, tutorialEnabled, isAdd = false, hardcoreMode = false, challengeSelection = null, cheatsMode = false, startingMap = null) {
+  async function loadProfile(profileName, tutorialEnabled, isAdd = false, difficultyMode = null, challengeSelection = null, cheatsMode = false, startingMap = null) {
     if (!profileName) {
       return false
     }
@@ -22,7 +22,8 @@ export const useProfilesStore = defineStore("profiles", () => {
     }
 
     if (/^ +| +$/.test(profileName)) profileName = profileName.replace(/^ +| +$/g, "")
-    await lua.career_career.createOrLoadCareerAndStart(profileName, null, tutorialEnabled, hardcoreMode, challengeSelection, cheatsMode, startingMap)
+    const hardcoreMode = difficultyMode === "hardcore" ? true : null
+    await lua.career_career.createOrLoadCareerAndStart(profileName, null, tutorialEnabled, hardcoreMode, challengeSelection, cheatsMode, startingMap, difficultyMode)
 
     const toastrMessage = isAdd ? "added" : "loaded"
 
