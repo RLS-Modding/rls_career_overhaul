@@ -8,18 +8,6 @@
   "levels": [
     {
       "requiredValue": 0
-    },
-    {
-      "requiredValue": 500
-    },
-    {
-      "requiredValue": 2500
-    },
-    {
-      "requiredValue": 10000
-    },
-    {
-      "requiredValue": 30000
     }
   ]
 }

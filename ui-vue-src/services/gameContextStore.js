@@ -9,6 +9,7 @@ import RadialFavoriteSelection from "@/modules/radial/views/FavoriteSelection.vu
 
 export const useGameContextStore = defineStore("gameContext", () => {
   const { events } = useBridge()
+
   const activities = ref([])
   let activityScreen = null
   let recoveryPrompt = null
