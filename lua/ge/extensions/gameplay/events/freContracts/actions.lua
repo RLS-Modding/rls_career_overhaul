@@ -45,13 +45,14 @@ end
 
 local function abandonContract(contractId)
   local state = gameplay_events_freContracts_state.getState()
+  local now = tonumber(state.simTime) or 0
   for _, discipline in ipairs(freConfig.getDisciplines()) do
     local dState = state.disciplines[discipline.id]
     for idx, entry in ipairs(dState.contracts.active) do
       if entry.id == contractId then
         dState.contracts.failed = dState.contracts.failed + 1
         table.remove(dState.contracts.active, idx)
-        gameplay_events_freContracts_state.refreshMaintenanceSchedule()
+        gameplay_events_freContracts_state.refreshMaintenanceSchedule(now)
         gameplay_events_freContracts_ui.emitUiStateUpdate("contract_abandoned")
         return true
       end
@@ -94,13 +95,14 @@ end
 
 local function dropSponsor(sponsorId)
   local state = gameplay_events_freContracts_state.getState()
+  local now = tonumber(state.simTime) or 0
   for _, discipline in ipairs(freConfig.getDisciplines()) do
     local dState = state.disciplines[discipline.id]
     for idx, entry in ipairs(dState.sponsors.active) do
       if entry.id == sponsorId then
         dState.sponsors.dropped = dState.sponsors.dropped + 1
         table.remove(dState.sponsors.active, idx)
-        gameplay_events_freContracts_state.refreshMaintenanceSchedule()
+        gameplay_events_freContracts_state.refreshMaintenanceSchedule(now)
         gameplay_events_freContracts_ui.emitUiStateUpdate("sponsor_dropped")
         return true
       end
@@ -123,7 +125,7 @@ local function acknowledgeSponsorWarning(sponsorId)
       end
     end
   end
-  return false
+  return false, "Sponsor not found."
 end
 
 M.acceptContract = acceptContract

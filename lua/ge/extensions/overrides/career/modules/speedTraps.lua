@@ -10,7 +10,10 @@ local core_vehicles = require('core/vehicles')
 M.dependencies = {'career_career', 'gameplay_speedTraps', 'gameplay_traffic'}
 
 local function isHardcoreMode()
-  return career_modules_difficultyMode and career_modules_difficultyMode.isHardcoreMode and career_modules_difficultyMode.isHardcoreMode()
+  if career_modules_difficultyMode and career_modules_difficultyMode.isHardcoreMode then
+    return career_modules_difficultyMode.isHardcoreMode() == true
+  end
+  return career_career and career_career.hardcoreMode == true
 end
 
 -- Determine whether the player's vehicle is using the ambulance paint design.

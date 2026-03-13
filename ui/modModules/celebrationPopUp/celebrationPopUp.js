@@ -373,7 +373,7 @@ const celebrationPopUpModule = angular.module('celebrationPopUp', ['ui.router'])
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initializeCelebrationPopUpOverlay)
   } else {
-    setTimeout(initializeCelebrationPopUpOverlay, 500)
+    initializeCelebrationPopUpOverlay()
   }
 }])
 

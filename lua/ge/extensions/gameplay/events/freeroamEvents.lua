@@ -150,34 +150,6 @@ local function getFreRewardModifiers(disciplineIds)
     return computed
 end
 
-local function clamp(value, minValue, maxValue)
-    if value < minValue then return minValue end
-    if value > maxValue then return maxValue end
-    return value
-end
-
-local function calculateXpFromTierCurve(curveCfg, normalizedPerformance)
-    local tierCfg = type(curveCfg) == "table" and curveCfg or {}
-    local xpAtTarget = math.max(0, tonumber(tierCfg.xpAtTarget) or 0)
-    if xpAtTarget <= 0 then
-        return 0
-    end
-    local tenPercentBetterMultiplier = tonumber(tierCfg.tenPercentBetterMultiplier) or 1.25
-    if tenPercentBetterMultiplier <= 0 then
-        tenPercentBetterMultiplier = 1.25
-    end
-    local belowTargetFloorMultiplier = tonumber(tierCfg.belowTargetFloorMultiplier) or 0.25
-    local maxMultiplier = tonumber(tierCfg.maxMultiplier) or 3.0
-    if maxMultiplier < belowTargetFloorMultiplier then
-        maxMultiplier = belowTargetFloorMultiplier
-    end
-    local normalized = math.max(0, tonumber(normalizedPerformance) or 0)
-    local exponent = (normalized - 1.0) / 0.1
-    local rawMultiplier = tenPercentBetterMultiplier ^ exponent
-    local scaledMultiplier = clamp(rawMultiplier, belowTargetFloorMultiplier, maxMultiplier)
-    return math.max(0, math.floor(xpAtTarget * scaledMultiplier))
-end
-
 local function resolveTierByUnlockLevel(level, unlockCfg)
     local numericLevel = math.max(0, math.floor(tonumber(level) or 0))
     local tiers = unlockCfg or {}
@@ -247,7 +219,10 @@ local function buildDisciplineXpRewards(disciplineIds, normalizedPerformance, re
             local level = tonumber((perDiscipline[disciplineId] or {}).level) or 0
             local tier = resolveTierByUnlockLevel(level, eventXpCfg.tierUnlockLevels or {})
             local tierCurveCfg = ((eventXpCfg.xpByTier or {})[tier]) or {}
-            local baseAmount = calculateXpFromTierCurve(tierCurveCfg, normalizedPerformance)
+            local baseAmount = 0
+            if gameplay_events_freContracts_skills and gameplay_events_freContracts_skills.calculateXpFromTierCurve then
+                baseAmount = gameplay_events_freContracts_skills.calculateXpFromTierCurve(tierCurveCfg, normalizedPerformance)
+            end
             local xpMultiplier = tonumber((perDiscipline[disciplineId] or {}).xpMultiplier) or 1
             local amount = math.max(0, math.floor(baseAmount * xpMultiplier))
             rewards[skillKey] = {amount = amount}
@@ -265,12 +240,18 @@ local function buildDisciplineXpRewards(disciplineIds, normalizedPerformance, re
     return rewards, breakdown, totalXp
 end
 
-local function mergeRewardTables(target, source)
+local function mergeRewardTables(target, source, overwrite, warnOnOverwrite)
     if type(target) ~= "table" or type(source) ~= "table" then
         return
     end
     for key, value in pairs(source) do
-        target[key] = value
+        if target[key] ~= nil and not overwrite then
+            if warnOnOverwrite then
+                log("W", "freeroamEvents", string.format("mergeRewardTables skipped key '%s' (already exists)", tostring(key)))
+            end
+        else
+            target[key] = value
+        end
     end
 end
 
@@ -578,7 +559,7 @@ local function payoutRace()
 
         if reward > 0 then
             local playerVehicleId = be:getPlayerVehicleID(0)
-            local businessAccount, businessType, businessId = getBusinessAccountFromVehicle(playerVehicleId)
+            local businessAccount = getBusinessAccountFromVehicle(playerVehicleId)
             
             if businessAccount then
                 local businessReward = math.floor(reward * 0.5)
@@ -722,7 +703,7 @@ local function payoutDragRace(raceName, finishTime, finishSpeed, vehId)
     }
 
     -- Check if this is a business vehicle
-    local businessAccount, businessType, businessId = getBusinessAccountFromVehicle(vehId)
+    local businessAccount = getBusinessAccountFromVehicle(vehId)
     
     if businessAccount then
         local businessReward = math.floor(reward * 0.5)

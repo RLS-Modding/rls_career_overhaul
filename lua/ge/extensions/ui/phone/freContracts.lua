@@ -65,8 +65,8 @@ local function dropSponsor(sponsorId)
 end
 
 local function acknowledgeSponsorWarning(sponsorId)
-  local ok = gameplay_events_freContracts_actions.acknowledgeSponsorWarning(sponsorId)
-  return actionResult(ok, ok and nil or "Sponsor not found.")
+  local ok, err = gameplay_events_freContracts_actions.acknowledgeSponsorWarning(sponsorId)
+  return actionResult(ok, err)
 end
 
 M.getState = getState

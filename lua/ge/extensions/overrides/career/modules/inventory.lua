@@ -681,7 +681,10 @@ local function setupInventory(levelPath)
     local levelName = generalData and generalData.level or getCurrentLevelIdentifier()
     local justSwitched = generalData and generalData.justSwitched or false
 
-  if justSwitched and not (career_modules_difficultyMode and career_modules_difficultyMode.isHardcoreMode and career_modules_difficultyMode.isHardcoreMode()) then
+  if justSwitched
+    and career_modules_difficultyMode
+    and career_modules_difficultyMode.isHardcoreMode
+    and not career_modules_difficultyMode.isHardcoreMode() then
     career_modules_garageManager.purchaseDefaultGarage()
   end
 

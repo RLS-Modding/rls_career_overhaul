@@ -2,16 +2,16 @@
   <PhoneWrapper app-name="Skills">
     <div class="phone-skills">
       <div v-if="loading" class="state-card">
-        <div class="state-title">Loading skills...</div>
+        <div class="state-title">{{ $ctx_t('Loading skills...') }}</div>
       </div>
 
       <div v-else-if="error" class="state-card error">
-        <div class="state-title">Could not load skills</div>
-        <button class="retry-btn" @click="refreshSkills">Retry</button>
+        <div class="state-title">{{ $ctx_t('Could not load skills') }}</div>
+        <button class="retry-btn" @click="refreshSkills">{{ $ctx_t('Retry') }}</button>
       </div>
 
       <div v-else-if="skills.length === 0" class="state-card">
-        <div class="state-title">No skills found</div>
+        <div class="state-title">{{ $ctx_t('No skills found') }}</div>
       </div>
 
       <div v-else class="skills-grid">
@@ -24,10 +24,10 @@
           <div class="skill-name">{{ $ctx_t(skill.name) }}</div>
           <div class="skill-meta">
             <span class="skill-level">
-              Lv {{ skill.level }}
+              {{ $ctx_t('Lv') }} {{ skill.level }}
               <span v-if="skill.levelCap" class="level-cap">/{{ skill.levelCap }}</span>
             </span>
-            <span class="tile-progress">XP {{ skill.progressLabel }}</span>
+            <span class="tile-progress">{{ $ctx_t('XP') }} {{ skill.progressLabel }}</span>
           </div>
         </button>
       </div>

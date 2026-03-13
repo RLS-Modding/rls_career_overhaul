@@ -164,10 +164,16 @@ end
 local function onCareerModulesActivated(alreadyInLevel)
   setupCareerActionsAndUnpause()
 
-  if pendingDifficultyMode and career_modules_difficultyMode and career_modules_difficultyMode.setMode then
-    career_modules_difficultyMode.setMode(pendingDifficultyMode)
-    M.hardcoreMode = pendingDifficultyMode == "hardcore"
-    pendingDifficultyMode = nil
+  if career_modules_difficultyMode then
+    if pendingDifficultyMode and career_modules_difficultyMode.setMode then
+      career_modules_difficultyMode.setMode(pendingDifficultyMode)
+      pendingDifficultyMode = nil
+    end
+    if career_modules_difficultyMode.isHardcoreMode then
+      M.hardcoreMode = career_modules_difficultyMode.isHardcoreMode() == true
+    elseif career_modules_difficultyMode.getMode then
+      M.hardcoreMode = career_modules_difficultyMode.getMode() == "hardcore"
+    end
   end
 
   if M.pendingChallengeId then
@@ -552,7 +558,6 @@ local function formatSaveSlotForUi(saveSlot)
   local hardcoreData = jsonReadFile(autosavePath .. "/career/rls_career/hardcore.json")
   local cheatsData = jsonReadFile(autosavePath .. "/career/rls_career/cheats.json")
   local challengeData = jsonReadFile(autosavePath .. "/career/rls_career/challengeModes.json")
-  local challengeData = jsonReadFile(autosavePath .. "/career/rls_career/challengeModes.json")
 
   if difficultyData and difficultyData.mode then
     data.difficultyMode = difficultyData.mode
@@ -564,10 +569,6 @@ local function formatSaveSlotForUi(saveSlot)
 
   if cheatsData then
     data.cheatsMode = cheatsData.cheatsMode
-  end
-
-  if challengeData and challengeData.activeChallenge then
-    data.activeChallenge = challengeData.activeChallenge.name
   end
 
   if challengeData and challengeData.activeChallenge then

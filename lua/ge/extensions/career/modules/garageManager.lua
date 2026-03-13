@@ -1,5 +1,5 @@
 local M = {}
-M.dependencies = { 'career_career', 'career_saveSystem', 'freeroam_facilities', 'career_modules_realEstateNegotiation', 'career_modules_propertyOwners', 'career_modules_propertyMortgage' }
+M.dependencies = { 'career_career', 'career_saveSystem', 'freeroam_facilities', 'career_modules_realEstateNegotiation', 'career_modules_propertyOwners', 'career_modules_propertyMortgage', 'career_modules_difficultyMode' }
 
 local purchasedGarages = {}
 local discoveredGarages = {}

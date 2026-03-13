@@ -859,7 +859,7 @@ local function moveMaterialToDestination(cargo, destination)
     copy.rewards.money = sharedCalc.applyEconomyAdjuster(copy.rewards.money, ecoSection)
 
     -- move copy to the destination
-    dParcelManager.changeCargoLocation(cargo.id, destination)
+    dParcelManager.changeCargoLocation(copy.id, destination)
 
     return copy, cargo
   end

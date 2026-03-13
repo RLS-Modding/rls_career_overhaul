@@ -229,17 +229,6 @@ local function init()
     attributes[branch.attributeKey] = deepcopy(baseAttribute)
     attributes[branch.attributeKey].value = branch.defaultValue or baseAttribute.value
   end
-  local startingCapital = 10000
-  if career_modules_difficultyMode and career_modules_difficultyMode.getStartingCapital then
-    startingCapital = career_modules_difficultyMode.getStartingCapital()
-  elseif career_career.hardcoreMode then
-    startingCapital = 0
-  end
-  if career_modules_cheats and career_modules_cheats.isCheatsMode() then
-  startingCapital = 1e12
-  end
-
-  M.setAttributes({money=startingCapital}, {label="Starting Capital"})
 end
 
 -- reason should be table with label, list of tags

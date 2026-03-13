@@ -415,10 +415,6 @@ local function syncOffersForDiscipline(disciplineId, now)
     end
   end
 
-  for _, activeContract in ipairs(dState.contracts.active or {}) do
-    normalizeContractEntry(disciplineId, activeContract)
-  end
-
   local level = skills.getSkillLevel(disciplineId)
   local contractCfg = freConfig.getContractConfig(disciplineId)
   local sponsorCfg = freConfig.getSponsorConfig(disciplineId)

@@ -33,7 +33,6 @@
 #celebration-popup-container .bng-card {
   font-size: 1rem;
   font-family: Overpass, var(--fnt-defs);
-  background-color: transparent !important;
   background: transparent !important;
   padding: 0;
   display: flex;

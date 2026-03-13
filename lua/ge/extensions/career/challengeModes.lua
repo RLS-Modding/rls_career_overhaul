@@ -978,10 +978,11 @@ local function endChallenge()
     return false
   end
 
+  if career_economyAdjuster and career_economyAdjuster.resetToDefaults then
+    career_economyAdjuster.resetToDefaults()
+  end
   if career_modules_difficultyMode and career_modules_difficultyMode.onChallengeModeStateChanged then
     career_modules_difficultyMode.onChallengeModeStateChanged(false)
-  elseif career_economyAdjuster then
-    career_economyAdjuster.resetToDefaults()
   end
 
   local endedChallenge = deepcopy(activeChallenge)
@@ -1023,10 +1024,11 @@ local function onCareerActivated()
 end
 
 local function onCareerDeactivated()
+  if activeChallenge and career_economyAdjuster and career_economyAdjuster.resetToDefaults then
+    career_economyAdjuster.resetToDefaults()
+  end
   if activeChallenge and career_modules_difficultyMode and career_modules_difficultyMode.onChallengeModeStateChanged then
     career_modules_difficultyMode.onChallengeModeStateChanged(false)
-  elseif activeChallenge and career_economyAdjuster then
-    career_economyAdjuster.resetToDefaults()
   end
   activeChallenge = nil
   completedChallengeData = nil

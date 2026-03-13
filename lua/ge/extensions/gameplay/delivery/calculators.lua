@@ -242,7 +242,7 @@ function M.getParcelReward(item, distance, orgId, orgMultiplier, economyMultipli
   -- Organization reputation and delivery bonus (from generator.lua ~line 175)
   if orgId then
     local repDistance = xpConfig.applyRounding(distance / rules.reputationDistanceDivisor, rules.reputationDistanceRounding)
-    rewards[orgId .. "Reputation"] = baseXP + repDistance
+    rewards[orgId .. "Reputation"] = (baseXP + repDistance) * getProgressionMultiplier()
 
     local appliedOrgMultiplier = orgMultiplier
     if not appliedOrgMultiplier and freeroam_organizations and freeroam_organizations.getOrganization then

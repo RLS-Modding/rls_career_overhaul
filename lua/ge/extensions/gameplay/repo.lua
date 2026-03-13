@@ -561,17 +561,17 @@ function VehicleRepoJob:calculateReward()
     end
     local distanceMultiplier = self.totalDistanceTraveled * 2
     local timeMultiplier = (self.totalDistanceTraveled / ((os.time() - self.jobStartTime) * 10))
-    local reward = math.floor((((5 * math.sqrt(self.vehicleValue or 1000)) + distanceMultiplier) * timeMultiplier)/ 4) / 15
-    reward = reward * 1.25 + 1000
-    print("Base repo reward: " .. reward)
+    local baseReward = math.floor((((5 * math.sqrt(self.vehicleValue or 1000)) + distanceMultiplier) * timeMultiplier)/ 4) / 15
+    baseReward = baseReward * 1.25 + 1000
+    print("Base repo reward: " .. baseReward)
 
     -- Apply economy adjuster if available
-    local adjustedReward = reward
+    local adjustedReward = baseReward
     local repoMultiplier = 1.0
     if career_economyAdjuster then
         -- Use repo type multiplier for repo jobs
         repoMultiplier = career_economyAdjuster.getSectionMultiplier("repo") or 1.0
-        adjustedReward = reward * repoMultiplier
+        adjustedReward = baseReward * repoMultiplier
         adjustedReward = math.floor(adjustedReward + 0.5) -- Round to nearest integer
         print("Adjusted repo reward: " .. adjustedReward .. " (multiplier: " .. string.format("%.2f", repoMultiplier) .. ")")
     end
@@ -587,7 +587,7 @@ function VehicleRepoJob:calculateReward()
         end
     end
 
-    return adjustedReward
+    return adjustedReward, baseReward
 end
 
 
@@ -798,17 +798,18 @@ function VehicleRepoJob:onUpdate(dtReal, dtSim, dtRaw)
                 local deliveredId = self.vehicleId
                 local repoId = self.repoVehicleID
 
-                local reward = self:calculateReward()
+                local reward, baseReward = self:calculateReward()
                 local rewardText = "You've Dropped Off a " ..  self.vehInfo.Brand .. " " .. self.vehInfo.Name .. "."
                 if reward then
                   rewardText = rewardText .. "\nYou have been paid $" .. tostring(reward)
                 end
 
                 if career_career and career_career.isActive and career_career.isActive() and reward then
+                  local progressionBase = tonumber(baseReward) or reward
                   local rewardData = {
                     money = { amount = reward },
-                    beamXP = { amount = math.floor(reward / 20) },
-                    labourer = { amount = math.floor(reward / 20) }
+                    beamXP = { amount = math.floor(progressionBase / 20) },
+                    labourer = { amount = math.floor(progressionBase / 20) }
                   }
                   if career_modules_difficultyMode and career_modules_difficultyMode.scalePaymentRewardData then
                     career_modules_difficultyMode.scalePaymentRewardData(rewardData, {includeMoney = false})

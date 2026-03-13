@@ -53,6 +53,7 @@ end
 
 -- Keep delivery reward keys aligned with the unified logistics skill track.
 local rewardKeyAliases = {
+  ["logistics"] = "logistics-delivery",
   ["delivery"] = "logistics-delivery",
   ["vehicleDelivery"] = "logistics-delivery",
   ["materials"] = "logistics-delivery",
@@ -71,27 +72,6 @@ local function normalizeRewardTable(rewardTable)
     normalized[normalizedKey] = (normalized[normalizedKey] or 0) + amount
   end
   return normalized
-end
-
-local function applyDifficultyProgressionScaling(rewardTable)
-  local adjustedRewards = normalizeRewardTable(rewardTable)
-  if not (career_modules_difficultyMode and career_modules_difficultyMode.scaleFlatRewards) then
-    return adjustedRewards
-  end
-  career_modules_difficultyMode.scaleFlatRewards(adjustedRewards, {includeMoney = false})
-  return adjustedRewards
-end
-
-local function applyDifficultyBreakdownScaling(breakdown)
-  if not (career_modules_difficultyMode and career_modules_difficultyMode.scaleFlatRewards) then
-    return
-  end
-
-  for _, entry in ipairs(breakdown or {}) do
-    if type(entry) == "table" and type(entry.rewards) == "table" then
-      entry.rewards = applyDifficultyProgressionScaling(entry.rewards)
-    end
-  end
 end
 
 local function getLogisticsMoneyBonusState()
@@ -674,8 +654,6 @@ M.confirmDropOffCheckComplete = function()
     table.insert(cargoByGroupId[gId], c)
     c.adjustedRewards = normalizeRewardTable(c.adjustedRewards)
     applyLogisticsMoneyBonusToEntry(c, levelMoneyBonusMultiplier)
-    c.adjustedRewards = applyDifficultyProgressionScaling(c.adjustedRewards)
-    applyDifficultyBreakdownScaling(c.breakdown)
     table.insert(rewards, c.adjustedRewards)
     c.summaryId = gId
     table.insert(rewardParcels, c)
@@ -689,8 +667,6 @@ M.confirmDropOffCheckComplete = function()
     table.insert(itemNames, string.format("%s %s",formattedOffer.offer.name, formattedOffer.offer.vehicle.name))
     formattedOffer.adjustedRewards = normalizeRewardTable(formattedOffer.adjustedRewards)
     applyLogisticsMoneyBonusToEntry(formattedOffer, levelMoneyBonusMultiplier)
-    formattedOffer.adjustedRewards = applyDifficultyProgressionScaling(formattedOffer.adjustedRewards)
-    applyDifficultyBreakdownScaling(formattedOffer.breakdown)
     table.insert(rewards, formattedOffer.adjustedRewards)
   end
 

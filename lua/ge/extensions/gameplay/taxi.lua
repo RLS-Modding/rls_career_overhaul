@@ -935,8 +935,6 @@ local function completeRide()
     
     local finalPayment = baseFare + totalTips
 
-    cumulativeReward = cumulativeReward + finalPayment
-
     currentFare.totalTips = string.format("%.2f", totalTips)
     currentFare.tipBreakdown = tipBreakdown
     currentFare.totalFare = string.format("%.2f", finalPayment)
@@ -1014,6 +1012,7 @@ local function completeRide()
         career_modules_difficultyMode.scalePaymentRewardData(rewardData, {includeMoney = false})
     end
     local awardedMoney = (rewardData.money and rewardData.money.amount) or math.floor(finalPayment)
+    cumulativeReward = cumulativeReward + awardedMoney
     currentFare.totalFare = string.format("%.2f", awardedMoney)
     label = string.format("Taxi fare: %s: $%s\nDistance: %.2fkm | %s: x %.2f",
         fareDescription, currentFare.totalFare, currentFare.totalDistance, paymentLabel, currentFare.timeMultiplier)

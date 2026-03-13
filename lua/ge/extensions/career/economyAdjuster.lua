@@ -7,6 +7,20 @@ local typeSources = {}
 local isEnabled = true
 local initialized = false
 
+local typeAliases = {
+    mud = "mudding",
+    crawl = "crawling",
+    apexracing = "roadracing"
+}
+
+local function normalizeTypeName(typeName)
+    if type(typeName) ~= "string" or typeName == "" then
+        return typeName
+    end
+    local alias = typeAliases[typeName:lower()]
+    return alias or typeName
+end
+
 local function tableSize(tbl)
     if not tbl or type(tbl) ~= "table" then return 0 end
     local count = 0
@@ -203,7 +217,7 @@ local function saveMultipliers(currentSavePath)
     if not initialized then return end
 
     if not currentSavePath then
-        local _, currentSavePath = career_saveSystem.getCurrentSaveSlot()
+        _, currentSavePath = career_saveSystem.getCurrentSaveSlot()
         if not currentSavePath then return end
     end
 
@@ -241,6 +255,7 @@ end
 
 local function setTypeMultiplier(typeName, multiplier, suppressSave)
     if not typeName then return false end
+    typeName = normalizeTypeName(typeName)
 
     multiplier = math.max(0, math.min(10, tonumber(multiplier) or 1.0))
 
@@ -254,6 +269,7 @@ end
 
 local function getTypeMultiplier(typeName)
     if not typeName then return 1.0 end
+    typeName = normalizeTypeName(typeName)
     return typeMultipliers[typeName] or 1.0
 end
 

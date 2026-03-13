@@ -171,7 +171,6 @@ local function awardContract(contract, disciplineId)
   local requiredModelLabel = contract.requiredModelLabel or vPool.getModelDisplayName(requiredModel)
   local disciplineLabel = ((freConfig.getDisciplineById(disciplineId) or {}).label) or disciplineId
   local raceLabel = contract.raceLabel or contract.raceName or disciplineId
-  local moneyRounded = math.floor(money + 0.5)
   local objectiveType = contract.objectiveType == "laps" and "laps" or "events"
   local requiredCount = math.max(1, math.floor(tonumber(contract.requiredCount) or 1))
 
@@ -179,7 +178,7 @@ local function awardContract(contract, disciplineId)
     money = { amount = money, canBeNegative = false }
   }
   rewardData[skillKey] = { amount = xp }
-  moneyRounded = math.floor((rewardData.money and rewardData.money.amount or money) + 0.5)
+  local moneyRounded = math.floor((rewardData.money and rewardData.money.amount or money) + 0.5)
   xp = math.floor((rewardData[skillKey] and rewardData[skillKey].amount or xp) + 0.5)
   career_modules_payment.reward(rewardData, {
     label = string.format("FRE Contract Complete: %s", raceLabel),

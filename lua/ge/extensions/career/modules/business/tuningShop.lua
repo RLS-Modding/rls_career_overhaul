@@ -2070,8 +2070,8 @@ local function calculateActualEventPayment(businessId, job, predictedTime)
     reward = reward * 1.2
   end
 
-  if career_modules_difficultyMode and career_modules_difficultyMode.isHardcoreMode and career_modules_difficultyMode.isHardcoreMode() then
-    reward = reward / 2
+  if career_modules_difficultyMode and career_modules_difficultyMode.getRewardMultiplier then
+    reward = reward * (tonumber(career_modules_difficultyMode.getRewardMultiplier()) or 1)
   end
 
   return math.max(0, math.floor(reward + 0.5))
