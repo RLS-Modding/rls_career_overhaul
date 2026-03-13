@@ -2153,24 +2153,6 @@ showLiveAuctionStatus = function(force)
     return
   end
 
-  local lot = auctionState.lots[auctionState.activeLotIndex]
-  if not lot or lot.state ~= 'active' then
-    return
-  end
-
-  local remaining = math.max(0, math.ceil((lot.endTime or 0) - now))
-  local bidder = getLotLeaderName(lot)
-  local totalLots = #auctionState.lots
-  local msg = string.format('Auction Active | Lot %d/%d | %s | Bid $%d | %ds left | Leader %s',
-    lot.lotIndex, totalLots, lot.title, lot.currentBid, remaining, bidder)
-
-  guihooks.trigger('Message', {
-    ttl = 1.1,
-    category = 'usedAuctionLive',
-    icon = 'timer',
-    msg = msg
-  })
-
   auctionState.nextLiveStatusAt = now + constants.LIVE_STATUS_INTERVAL
 end
 
@@ -2821,6 +2803,10 @@ local function onBeamNGTrigger(data)
   end
 
   if data.triggerName and data.triggerName:find(constants.ENTRY_TRIGGER) then
+    if not (gameplay_walk and gameplay_walk.isWalking and gameplay_walk.isWalking()) then
+      return
+    end
+
     if getAuctionTime() < (auctionState.entryCooldownUntil or 0) then
       return
     end
