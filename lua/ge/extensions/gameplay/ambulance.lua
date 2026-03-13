@@ -452,23 +452,28 @@ local function handleDropoff(dtSim, vehiclePos, speed)
     local displayBasePayout = basePayout
 
     local repGain = math.floor(finalPayout / 100)
+    local beamXP = math.floor(finalPayout / 10)
+    if career_modules_difficultyMode and career_modules_difficultyMode.scaleFlatRewards then
+        local scaled = {
+            beamXP = beamXP,
+            wcuParamedicWorkReputation = repGain
+        }
+        career_modules_difficultyMode.scaleFlatRewards(scaled, {includeMoney = false})
+        beamXP = math.max(0, math.floor((tonumber(scaled.beamXP) or beamXP) + 0.5))
+        repGain = math.max(0, math.floor((tonumber(scaled.wcuParamedicWorkReputation) or repGain) + 0.5))
+    end
     if career_career and career_career.isActive() and career_modules_payment and career_modules_payment.reward then
         local rewardData = {
             money = {
                 amount = finalPayout
             },
             beamXP = {
-                amount = math.floor(finalPayout / 10)
+                amount = beamXP
             },
             wcuParamedicWorkReputation = {
-                amount = math.floor(finalPayout / 100)
+                amount = repGain
             }
         }
-        if career_modules_difficultyMode and career_modules_difficultyMode.scalePaymentRewardData then
-            career_modules_difficultyMode.scalePaymentRewardData(rewardData, {includeMoney = false})
-        end
-        finalPayout = (rewardData.money and rewardData.money.amount) or finalPayout
-        repGain = (rewardData.wcuParamedicWorkReputation and rewardData.wcuParamedicWorkReputation.amount) or repGain
         career_modules_payment.reward(rewardData, {
             label = string.format("Gross Earnings: $%d | Time bonus: $%d | Rough ride penalty: -$%d | Loaner Cut: -$%d | Net: $%d", finalPayout + loanerCutAmount, timeBonus, penalty, loanerCutAmount, finalPayout),
             tags = {"transport", "ambulance", "gameplay"}

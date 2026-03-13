@@ -707,24 +707,29 @@ local function endRoute(reason, payout)
 
         local basePay = accumulatedReward
         local tipsEarned = tipTotal
-
-        reputationGain = math.floor(payout / config.reputationDivisor)
+        local beamXP = math.floor(payout / 10)
+        local busReputation = math.floor(payout / config.reputationDivisor)
+        if career_modules_difficultyMode and career_modules_difficultyMode.scaleFlatRewards then
+            local scaled = {
+                beamXP = beamXP,
+                busWorkReputation = busReputation
+            }
+            career_modules_difficultyMode.scaleFlatRewards(scaled, {includeMoney = false})
+            beamXP = math.max(0, math.floor((tonumber(scaled.beamXP) or beamXP) + 0.5))
+            busReputation = math.max(0, math.floor((tonumber(scaled.busWorkReputation) or busReputation) + 0.5))
+        end
+        reputationGain = busReputation
         rewardData = {
             money = {
                 amount = payout
             },
             beamXP = {
-                amount = math.floor(payout / 10)
+                amount = beamXP
             },
             busWorkReputation = {
-                amount = reputationGain
+                amount = busReputation
             }
         }
-        if career_modules_difficultyMode and career_modules_difficultyMode.scalePaymentRewardData then
-            career_modules_difficultyMode.scalePaymentRewardData(rewardData, {includeMoney = false})
-        end
-        payout = (rewardData.money and rewardData.money.amount) or payout
-        reputationGain = (rewardData.busWorkReputation and rewardData.busWorkReputation.amount) or reputationGain
 
         msg = msg .. string.format("\nStops completed: %d\nBase pay:   $%d\nTips:       $%d",
             totalStopsCompleted, basePay, tipsEarned)
@@ -1324,14 +1329,10 @@ local function processStop(vehicle, dtSim)
                 print(string.format("[bus] Moving to next stop: index %d, name %s", nextStopIndex, nextStopName))
                 
                 local reputationGain = math.floor(payout / config.reputationDivisor)
-                if career_modules_difficultyMode and career_modules_difficultyMode.scalePaymentRewardData then
-                    local previewRewardData = {
-                        money = { amount = payout },
-                        beamXP = { amount = math.floor(payout / 10) },
-                        busWorkReputation = { amount = reputationGain }
-                    }
-                    career_modules_difficultyMode.scalePaymentRewardData(previewRewardData, {includeMoney = false})
-                    reputationGain = (previewRewardData.busWorkReputation and previewRewardData.busWorkReputation.amount) or reputationGain
+                if career_modules_difficultyMode and career_modules_difficultyMode.scaleFlatRewards then
+                    local previewScaled = { busWorkReputation = reputationGain }
+                    career_modules_difficultyMode.scaleFlatRewards(previewScaled, {includeMoney = false})
+                    reputationGain = math.max(0, math.floor((tonumber(previewScaled.busWorkReputation) or reputationGain) + 0.5))
                 end
                 
                 ui_message(string.format("Proceed to Stop %02d\nBase pay: $%d\nTips: $%d\nTotal tips: $%d\nReputation: +%d",

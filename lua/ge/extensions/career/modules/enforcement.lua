@@ -65,9 +65,13 @@ local function hasLicensePlate(inventoryId)
   return false
 end
 
-local function calculateRewardAmount(baseAmount, multiplier)
+local function calculateRewardAmount(baseAmount, multiplier, sectionName)
   local jobMarketIndex = career_modules_globalEconomy and career_modules_globalEconomy.getJobMarketIndex() or 1.0
-  return math.floor(baseAmount * multiplier * jobMarketIndex) / 100
+  local sectionMultiplier = 1.0
+  if career_economyAdjuster and career_economyAdjuster.getSectionMultiplier and sectionName then
+    sectionMultiplier = career_economyAdjuster.getSectionMultiplier(sectionName) or 1.0
+  end
+  return math.floor(baseAmount * multiplier * jobMarketIndex * sectionMultiplier) / 100
 end
 
 local function createRewardPayment(rewardData, label, tags)
@@ -78,7 +82,7 @@ local function createRewardPayment(rewardData, label, tags)
 end
 
 local function handleCopEvadeReward(data)
-  local pityAmount = calculateRewardAmount(data.score, CONSTANTS.COP_PITY_MULTIPLIER)
+  local pityAmount = calculateRewardAmount(data.score, CONSTANTS.COP_PITY_MULTIPLIER, "police")
   pityAmount = math.floor(pityAmount * CONSTANTS.POLICE_PAYOUT_MULTIPLIER)
 
   local rewardData = {
@@ -108,7 +112,7 @@ local function handleCriminalEvadeReward(vehId, data, inventoryId)
     return
   end
 
-  local rewardAmount = calculateRewardAmount(data.score or 10, CONSTANTS.CRIMINAL_REWARD_MULTIPLIER)
+  local rewardAmount = calculateRewardAmount(data.score or 10, CONSTANTS.CRIMINAL_REWARD_MULTIPLIER, "criminal")
 
   local rewardData = {
     money = { amount = rewardAmount },
@@ -129,7 +133,7 @@ local function handleCriminalEvadeReward(vehId, data, inventoryId)
 end
 
 local function handleArrestReward(data, playerData)
-  local baseBonus = calculateRewardAmount(data.score, CONSTANTS.ARREST_BONUS_MULTIPLIER)
+  local baseBonus = calculateRewardAmount(data.score, CONSTANTS.ARREST_BONUS_MULTIPLIER, "police")
   local bonus = math.max(CONSTANTS.ARREST_BONUS_MAX - baseBonus, CONSTANTS.ARREST_BONUS_MIN)
 
   local org = freeroam_organizations.getOrganization(CONSTANTS.POLICE_LOANER_ORG_NAME)
