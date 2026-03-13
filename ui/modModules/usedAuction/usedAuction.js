@@ -159,6 +159,68 @@ angular.module('beamng.stuff')
   })
 }])
 
+.directive('uaDraggable', ['$document', function($document) {
+  return {
+    restrict: 'A',
+    link: function(scope, element) {
+      const panelEl = element[0]
+      const dragHandle = panelEl.querySelector('.ua-header') || panelEl
+      let dragging = false
+      let dragOffsetX = 0
+      let dragOffsetY = 0
+      let panelWidth = 0
+      let panelHeight = 0
+
+      function clamp(value, min, max) {
+        return Math.min(max, Math.max(min, value))
+      }
+
+      function onPointerMove(event) {
+        if (!dragging) return
+        const maxX = Math.max(0, window.innerWidth - panelWidth)
+        const maxY = Math.max(0, window.innerHeight - panelHeight)
+        const nextLeft = clamp(event.clientX - dragOffsetX, 0, maxX)
+        const nextTop = clamp(event.clientY - dragOffsetY, 0, maxY)
+        panelEl.style.left = nextLeft + 'px'
+        panelEl.style.top = nextTop + 'px'
+        panelEl.style.right = 'auto'
+        panelEl.style.bottom = 'auto'
+      }
+
+      function stopDragging() {
+        if (!dragging) return
+        dragging = false
+        $document.off('mousemove', onPointerMove)
+        $document.off('mouseup', stopDragging)
+      }
+
+      function startDragging(event) {
+        if (event.button !== 0) return
+        const rect = panelEl.getBoundingClientRect()
+        panelWidth = rect.width
+        panelHeight = rect.height
+        dragOffsetX = event.clientX - rect.left
+        dragOffsetY = event.clientY - rect.top
+        dragging = true
+        panelEl.style.left = rect.left + 'px'
+        panelEl.style.top = rect.top + 'px'
+        panelEl.style.right = 'auto'
+        panelEl.style.bottom = 'auto'
+        event.preventDefault()
+        $document.on('mousemove', onPointerMove)
+        $document.on('mouseup', stopDragging)
+      }
+
+      dragHandle.addEventListener('mousedown', startDragging)
+
+      scope.$on('$destroy', function() {
+        stopDragging()
+        dragHandle.removeEventListener('mousedown', startDragging)
+      })
+    }
+  }
+}])
+
 const usedAuctionModule = angular.module('usedAuction', ['ui.router'])
 
 .run(['$rootScope', function() {

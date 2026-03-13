@@ -66,6 +66,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  cursor: move;
+  user-select: none;
 }
 
 .ua-title {
