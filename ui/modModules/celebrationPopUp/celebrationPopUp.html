@@ -2,7 +2,7 @@
 
 <div class="celebration-popup-host" ng-if="popup.visible">
   <div class="celebration-popup-wrapper" ng-class="{ closing: popup.closing }">
-    <div class="bng-card bng-card-wrapper celebration-card">
+    <div class="bng-card bng-card-wrapper celebration-card" bng-blur="true">
       <div class="card-cnt" ng-if="popup.kind === 'levelUp'">
         <h2 class="card-heading heading-style-ribbon">Level Up!</h2>
 
@@ -19,14 +19,14 @@
 
             <div class="tier-unlocks-item" ng-repeat="item in popup.levelUp.currentUnlocks track by $index">
               <div class="wrapper" ng-if="item.type !== 'tasklist'">
-                <bng-icon class="icon" ng-if="item.icon" type="img" src="getIconSrc(item.icon)"></bng-icon>
+                <div class="icon"></div>
                 <div class="heading">{{ item.heading }}</div>
                 <div class="description">{{ item.description }}</div>
               </div>
 
               <div class="tasklist wrapper" ng-if="item.type === 'tasklist'">
                 <div class="task" ng-repeat="task in item.tasklistData.tasks track by $index">
-                  <bng-icon class="icon" type="img" src="getIconSrc(task.done ? 'checkboxOn' : 'checkboxOff')"></bng-icon>
+                  <div class="icon"></div>
                   <div class="task-content">
                     <div class="heading">{{ task.label }}</div>
                     <div class="description">{{ task.description }}</div>

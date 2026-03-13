@@ -31,10 +31,10 @@
 }
 
 #celebration-popup-container .bng-card {
-  --bg-opacity: 1;
   font-size: 1rem;
   font-family: Overpass, var(--fnt-defs);
-  background-color: transparent;
+  background-color: transparent !important;
+  background: transparent !important;
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -43,6 +43,7 @@
   border-radius: var(--bng-corners-2);
   width: 100%;
   height: fit-content;
+  overflow: hidden;
 }
 
 #celebration-popup-container .bng-card > .card-cnt {
@@ -51,7 +52,7 @@
   height: inherit;
   border-top-left-radius: var(--bng-corners-2);
   border-top-right-radius: var(--bng-corners-2);
-  background-color: rgba(0, 0, 0, var(--bg-opacity));
+  background-color: rgba(0, 0, 0, 0.8) !important;
   display: flex;
   flex-flow: column nowrap;
   flex: 0 1 auto;

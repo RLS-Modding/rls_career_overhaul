@@ -42,10 +42,10 @@ local function onUpdate(_, dtSim, _)
 
   local changed = false
   if gameplay_events_freContracts_offers.purgeExpiredEntries(now) then
-    changed = true
+          changed = true
   end
   if gameplay_events_freContracts_offers.syncAllOffers(now) then
-    changed = true
+          changed = true
   end
   gameplay_events_freContracts_state.refreshMaintenanceSchedule(now)
   if changed then

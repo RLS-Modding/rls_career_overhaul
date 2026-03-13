@@ -18,17 +18,9 @@ local function pickContractObjective(disciplineId, tier, raceEntry)
   local contractCfg = freConfig.getContractConfig(disciplineId) or {}
   local objectiveCfgByTier = contractCfg.objectiveCountByTier or {}
   local objectiveCfg = objectiveCfgByTier[tier] or {}
-  local lapObjectiveChance = tonumber(contractCfg.lapObjectiveChance)
-  if lapObjectiveChance == nil then
-    lapObjectiveChance = 0.5
-  end
-  lapObjectiveChance = math.max(0, math.min(1, lapObjectiveChance))
 
-  local supportsLaps = raceEntry and raceEntry.isLapEvent == true
-  local objectiveType = "events"
-  if supportsLaps and math.random() < lapObjectiveChance then
-    objectiveType = "laps"
-  end
+  local isLoopable = raceEntry and raceEntry.isLapEvent == true
+  local objectiveType = isLoopable and "laps" or "events"
 
   local minCount, maxCount
   if objectiveType == "laps" then

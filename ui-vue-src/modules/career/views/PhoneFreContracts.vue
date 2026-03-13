@@ -399,7 +399,11 @@ function formatMoney(value) {
 
 function formatTime(seconds) {
   const total = Number(seconds || 0)
-  return `${Math.floor(total / 60)}:${String(Math.floor(total % 60)).padStart(2, '0')}`
+  const minutes = Math.floor(total / 60)
+  const secs = total - minutes * 60
+  if (minutes >= 1) return `${minutes}:${String(Math.floor(secs)).padStart(2, '0')}`
+  if (secs >= 10) return secs.toFixed(1)
+  return secs.toFixed(2)
 }
 
 function formatMinutes(minutes) {
@@ -461,7 +465,11 @@ function routeLabel(routeType, fallbackLabel) {
 
 function contractRaceLabel(contract) {
   const raceLabel = contract?.raceLabel || contract?.raceName || 'Race'
-  return `${raceLabel} (${routeLabel(contract?.raceRouteType, raceLabel)})`
+  const routeType = String(contract?.raceRouteType || '').toLowerCase()
+  if (routeType === 'alt') {
+    return `${raceLabel} (Alt Route)`
+  }
+  return raceLabel
 }
 
 function contractVehicleLabel(contract) {

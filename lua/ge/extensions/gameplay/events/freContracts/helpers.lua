@@ -69,7 +69,13 @@ local function formatTimeForRequirement(seconds)
   local total = math.max(0, tonumber(seconds) or 0)
   local minutes = math.floor(total / 60)
   local secs = total - (minutes * 60)
-  return string.format("%d:%05.2f", minutes, secs)
+  if minutes >= 1 then
+    return string.format("%d:%02d", minutes, math.floor(secs))
+  elseif secs >= 10 then
+    return string.format("%.1f", secs)
+  else
+    return string.format("%.2f", secs)
+  end
 end
 
 local function pickWeightedBonusType(weightTable)
