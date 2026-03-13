@@ -137,7 +137,7 @@
                   <div class="objective-block">
                     <div class="objective-label">Objective</div>
                     <div class="objective-value">{{ objectiveStatusLabel(contract) }}</div>
-                    <div class="objective-sub">Target {{ formatTime(contract.targetTime) }}</div>
+                    <div class="objective-sub">{{ contractTargetLabel(contract) }}</div>
                   </div>
                 </div>
                 <div class="deal-card-footer">
@@ -187,7 +187,7 @@
                   <div class="objective-block">
                     <div class="objective-label">Objective</div>
                     <div class="objective-value">{{ objectiveStatusLabel(contract) }}</div>
-                    <div class="objective-sub">Target {{ formatTime(contract.targetTime) }}</div>
+                    <div class="objective-sub">{{ contractTargetLabel(contract) }}</div>
                   </div>
                 </div>
                 <div class="deal-card-footer">
@@ -486,8 +486,8 @@ function sponsorTitle(sponsor) {
 
 function sponsorRequirementHeadline(sponsor) {
   const raceLabel = sponsor?.requiredRaceLabel || sponsor?.requiredRaceName
-  const target = Number(sponsor?.targetTime)
-  return raceLabel && Number.isFinite(target) && target > 0 ? `${formatTime(target)} on ${raceLabel}` : '1 valid event per upkeep'
+  const targetLabel = formatTargetLabel(sponsor)
+  return raceLabel && targetLabel ? `${targetLabel} on ${raceLabel}` : '1 valid event per upkeep'
 }
 
 function sponsorStatusLabel(sponsor) {
@@ -513,6 +513,33 @@ function sponsorOfferTone(sponsor) {
 
 function sponsorOfferLabel(sponsor) {
   return `${formatMinutes(displayRemaining(sponsor?.minutesRemaining))} left`
+}
+
+function normalizeTargetType(targetType) {
+  const normalized = String(targetType || '').toLowerCase()
+  if (normalized === 'driftscore') return 'driftScore'
+  if (normalized === 'maxdamagepct') return 'maxDamagePct'
+  return 'time'
+}
+
+function formatTargetLabel(entry) {
+  const targetType = normalizeTargetType(entry?.targetType)
+  if (targetType === 'driftScore') {
+    const targetScore = Math.max(0, Math.floor(Number(entry?.targetDriftScore || 0)))
+    return targetScore > 0 ? `Score ${targetScore}` : ''
+  }
+  if (targetType === 'maxDamagePct') {
+    const targetDamage = Number(entry?.targetDamagePctMax)
+    if (!Number.isFinite(targetDamage)) return ''
+    const pct = Math.max(0, Math.min(100, Math.round(targetDamage * 100)))
+    return `Max ${pct}% damage`
+  }
+  const target = Number(entry?.targetTime)
+  return Number.isFinite(target) && target > 0 ? `Target ${formatTime(target)}` : ''
+}
+
+function contractTargetLabel(contract) {
+  return formatTargetLabel(contract)
 }
 
 function objectiveStatusLabel(contract) {

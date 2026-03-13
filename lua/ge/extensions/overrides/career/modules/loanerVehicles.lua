@@ -17,13 +17,6 @@ local LOANER_UNLOCK_MODE_SKILL_LEVEL = "skillLevel"
 local DEFAULT_LOANER_UNLOCK_SKILL_LABEL = "Police Skill"
 local DEFAULT_LOANER_UNLOCK_SKILL_ICON = "wigwags"
 local DEFAULT_LOANER_UNLOCK_SKILL_PATH_IDS = {"careerSkills-police", "police", "freestyle-police"}
-local deliveryLvlToLogisticsLevel = {
-  [0] = 1,
-  [1] = 5,
-  [2] = 12,
-  [3] = 17,
-  [4] = 30
-}
 
 local function getBranchLevelByPathIds(pathIds)
   if not career_branches or not career_branches.getBranchLevel then
@@ -426,7 +419,7 @@ local function formatLoanerOfferForUi(facility)
           shortLabel = string.format("lvl %d", requiredSkillLevel)
         }
       end
-    elseif rentalVehicleInfo.reputationLvl > organization.reputation.level then
+    elseif not usesSkillUnlocks and rentalVehicleInfo.reputationLvl > organization.reputation.level then
       enabled = false
       disableReason = {
         type = "locked", icon = "peopleOutline", level = rentalVehicleInfo.reputationLvl,
@@ -434,19 +427,6 @@ local function formatLoanerOfferForUi(facility)
       }
       unlockInfo = {
         type = "minLevel", icon = "peopleOutline", longLabel = string.format("Requires Reputation '%s' with %s", organization.reputationLevels[rentalVehicleInfo.reputationLvl+2].label, organization.name), shortLabel = string.format("%s (lvl %d)", organization.reputationLevels[rentalVehicleInfo.reputationLvl+2].label, rentalVehicleInfo.reputationLvl)
-      }
-    end
-
-    local requiredLogisticsLevel = deliveryLvlToLogisticsLevel[rentalVehicleInfo.deliveryLvl] or deliveryLvlToLogisticsLevel[4]
-    local currentLogisticsLevel = getBranchLevelByPathIds({"logistics-delivery", "delivery"})
-    if requiredLogisticsLevel > currentLogisticsLevel then
-      enabled = false
-      disableReason = {
-        type = "locked", icon = "cardboardBox", level = requiredLogisticsLevel,
-        label = string.format("Requires Skill 'Logistics' lvl %d", requiredLogisticsLevel)
-      }
-      unlockInfo = {
-        type = "minLevel", icon = "cardboardBox", longLabel = string.format("Requires Skill 'Logistics' lvl %d", requiredLogisticsLevel), shortLabel = string.format("lvl %d", requiredLogisticsLevel)
       }
     end
 
@@ -499,7 +479,7 @@ local function formatLoanerOfferForUi(facility)
         longLabel = string.format("Requires %s level %d", skillLabel, requiredSkillLevel),
         shortLabel = string.format("lvl %d", requiredSkillLevel)
       }
-    elseif enabled then
+    elseif enabled and not usesSkillUnlocks then
       local repLabel = string.format("%s (lvl %d)", organization.reputationLevels[rentalVehicleInfo.reputationLvl+2].label, rentalVehicleInfo.reputationLvl)
       item.unlockInfo = {
         type = "minLevel", icon = "peopleOutline", longLabel = string.format("Requires reputation: %s",repLabel), shortLabel = repLabel

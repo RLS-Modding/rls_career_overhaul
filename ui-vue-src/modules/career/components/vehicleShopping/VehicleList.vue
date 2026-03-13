@@ -416,21 +416,21 @@ function getRepData(dealerId) {
   const level = typeof org.reputation.level === 'number' ? org.reputation.level : 0
   let pct = 0
   let percentage = 0
-  let vehiclesToNext = 0
+  let reputationToNext = 0
   let purchasesToNext = 0
 
   const cur = org.reputation.curLvlProgress
   const need = org.reputation.neededForNext
+  const purchaseRepGain = Number(vehicleShoppingStore?.vehicleShoppingData?.dealershipPurchaseReputationGain) || 786
 
   if (typeof cur === 'number' && typeof need === 'number' && need > 0) {
     pct = Math.max(0, Math.min(1, cur / need))
     percentage = Math.round(pct * 100)
-    vehiclesToNext = Math.max(0, need - cur)
-    // Each purchase gives 10 reputation, so divide by 10 and round up
-    purchasesToNext = Math.ceil(vehiclesToNext / 20)
+    reputationToNext = Math.max(0, need - cur)
+    purchasesToNext = Math.ceil(reputationToNext / Math.max(1, purchaseRepGain))
   }
 
-  return { level, pct, percentage, vehiclesToNext, purchasesToNext }
+  return { level, pct, percentage, reputationToNext, purchasesToNext }
 }
 
 const selectedDealershipId = computed(() => {

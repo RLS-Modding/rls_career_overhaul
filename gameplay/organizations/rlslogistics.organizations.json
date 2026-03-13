@@ -14,35 +14,35 @@
       {
         "model": "md_series",
         "config": "md_career_shuffleboard_flatbed",
-        "reputationLvl": 0,
+        "reputationLvl": -1,
         "deliveryLvl": 2,
         "mileage": 800000000
       },
       {
         "model": "md_series",
         "config": "md_career_shuffleboard_dump",
-        "reputationLvl": 0,
+        "reputationLvl": -1,
         "deliveryLvl": 1,
         "mileage": 800000000
       },
       {
         "model": "md_series",
         "config": "md_career_shuffleboard_cargobox",
-        "reputationLvl": 1,
+        "reputationLvl": 0,
         "deliveryLvl": 2,
         "mileage": 800000000
       },
       {
         "model": "md_series",
         "config": "md_career_shuffleboard_fifthwheel",
-        "reputationLvl": 0,
+        "reputationLvl": -1,
         "deliveryLvl": 2,
         "mileage": 800000000
       },
       {
         "model": "md_series",
         "config": "md_career_shuffleboard_tanker",
-        "reputationLvl": 0,
+        "reputationLvl": -1,
         "deliveryLvl": 2,
         "mileage": 800000000
       },
@@ -1932,7 +1932,7 @@
       {
         "model": "us_semi",
         "config": "us_semi_career_steel_day",
-        "reputationLvl": 1,
+        "reputationLvl": 0,
         "deliveryLvl": 3,
         "mileage": 800000000
       },
@@ -1946,7 +1946,7 @@
       {
         "model": "md_series",
         "config": "md_career_5th_wheel",
-        "reputationLvl": 0,
+        "reputationLvl": -1,
         "deliveryLvl": 1,
         "mileage": 800000000
       }
@@ -2016,28 +2016,28 @@
       {
         "model": "md_series",
         "config": "md_career_spearleaf_fifthwheel",
-        "reputationLvl": 0,
+        "reputationLvl": -1,
         "deliveryLvl": 1,
         "mileage": 500000000
       },
       {
         "model": "tanker",
         "config": "career_spearleaf_empty_short",
-        "reputationLvl": 0,
+        "reputationLvl": -1,
         "deliveryLvl": 1,
         "mileage": 500000000
       },
       {
         "model": "tanker",
         "config": "career_spearleaf_empty_long",
-        "reputationLvl": 1,
+        "reputationLvl": 0,
         "deliveryLvl": 2,
         "mileage": 500000000
       },
       {
         "model": "us_semi",
         "config": "tc83s_career_spearleaf_tanker",
-        "reputationLvl": 1,
+        "reputationLvl": 0,
         "deliveryLvl": 2,
         "mileage": 500000000
       },
@@ -2120,21 +2120,21 @@
       {
         "model": "tiltdeck",
         "config": "22ft_standard",
-        "reputationLvl": 0,
+        "reputationLvl": -1,
         "deliveryLvl": 0,
         "mileage": 800000000
       },
       {
         "model": "tiltdeck",
         "config": "30ft_pintle",
-        "reputationLvl": 0,
+        "reputationLvl": -1,
         "deliveryLvl": 2,
         "mileage": 800000000
       },
       {
         "model": "tiltdeck",
         "config": "30ft_gooseneck",
-        "reputationLvl": 0,
+        "reputationLvl": -1,
         "deliveryLvl": 2,
         "mileage": 800000000
       },
@@ -2148,7 +2148,7 @@
       {
         "model": "tiltdeck",
         "config": "22ft_gooseneck_cargo",
-        "reputationLvl": 1,
+        "reputationLvl": 0,
         "deliveryLvl": 1,
         "mileage": 800000000
       },
@@ -2162,21 +2162,21 @@
       {
         "model": "boxutility_large",
         "config": "trailer_career_cargo_large",
-        "reputationLvl": 0,
+        "reputationLvl": -1,
         "deliveryLvl": 1,
         "mileage": 800000000
       },
       {
         "model": "cargotrailer",
         "config": "upull_career",
-        "reputationLvl": 1,
+        "reputationLvl": 0,
         "deliveryLvl": 0,
         "mileage": 800000000
       },
       {
         "model": "van",
         "config": "h25_career_with_cargo",
-        "reputationLvl": 0,
+        "reputationLvl": -1,
         "deliveryLvl": 0,
         "mileage": 800000000
       }
@@ -2240,7 +2240,7 @@
       {
         "model": "us_semi",
         "config": "tc82_career_rls_repo",
-        "reputationLvl": 1,
+        "reputationLvl": 0,
         "deliveryLvl": 1,
         "mileages": {
           "-1": 800000000,
@@ -2266,7 +2266,7 @@
       {
         "model": "pickup",
         "config": "d45_diesel_rollback_M",
-        "reputationLvl": 0,
+        "reputationLvl": -1,
         "deliveryLvl": 0,
         "mileages": {
           "-1": 800000000,
@@ -2292,7 +2292,7 @@
       {
         "model": "pickup",
         "config": "pickup_career_rls_repo",
-        "reputationLvl": 1,
+        "reputationLvl": 0,
         "deliveryLvl": 0,
         "mileages": {
           "-1": 800000000,
@@ -2305,7 +2305,7 @@
       {
         "model": "van",
         "config": "h45_career_rls_repo",
-        "reputationLvl": 0,
+        "reputationLvl": -1,
         "deliveryLvl": 0,
         "mileages": {
           "-1": 800000000,
@@ -2564,7 +2564,7 @@
       {
         "model": "md_series",
         "config": "small_money_transport_career",
-        "reputationLvl": 0,
+        "reputationLvl": -1,
         "deliveryLvl": 0,
         "mileages": {
           "-1": 764438400,
@@ -4007,7 +4007,7 @@
       {
         "model": "fullsize",
         "config": "taxi",
-        "reputationLvl": 0,
+        "reputationLvl": -1,
         "deliveryLvl": 0,
         "mileages": {
           "-1": 764438400,
@@ -4022,7 +4022,7 @@
       {
         "model": "midsize",
         "config": "taxi",
-        "reputationLvl": 0,
+        "reputationLvl": -1,
         "deliveryLvl": 0,
         "mileages": {
           "-1": 764438400,
@@ -4037,7 +4037,7 @@
       {
         "model": "bastion",
         "config": "taxi",
-        "reputationLvl": 0,
+        "reputationLvl": -1,
         "deliveryLvl": 0,
         "mileages": {
           "-1": 764438400,

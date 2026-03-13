@@ -276,6 +276,12 @@ local function getRewardsWithBreakdown(taskData)
     end
   end
 
+  local logisticsSkillXpEarned = tonumber(originalRewards["logistics-delivery"])
+  if not logisticsSkillXpEarned then
+    logisticsSkillXpEarned = tonumber(originalRewards["logistics-vehicleDelivery"]) or tonumber(originalRewards["logistics"]) or 0
+  end
+  local loanerOrgReputationReward = round(math.max(0, logisticsSkillXpEarned))
+
   for organizationId, _ in pairs(taskData.loanerOrganisations or {}) do
     local organization = freeroam_organizations.getOrganization(organizationId)
     local level = organization.reputation.level
@@ -286,7 +292,7 @@ local function getRewardsWithBreakdown(taskData)
       rewards = {money = -organizationCut * originalRewards.money},
       simpleBreakdownType = "loaner",
     }
-    organizationElement.rewards[organizationId.."Reputation"] = 5 + round(taskData.offer.data.originalDistance/1000)
+    organizationElement.rewards[organizationId.."Reputation"] = loanerOrgReputationReward
 
     table.insert(breakdown, organizationElement)
   end
