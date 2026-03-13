@@ -261,23 +261,49 @@ const rewardAnimationIndex = ref(-1)
 let animationSkipped = false
 let showUnloadingDelay = true
 
+const normalizeBranchLevels = (branchLevels) => {
+const sourceLevels = Array.isArray(branchLevels) ? branchLevels : Object.values(branchLevels || {})
+return sourceLevels
+  .filter(level => level && Number.isFinite(Number(level.requiredValue)))
+  .map(level => ({ ...level, requiredValue: Number(level.requiredValue) }))
+  .sort((a, b) => a.requiredValue - b.requiredValue)
+}
+
 const getLevelFromValue = (value, reward) => {
-let branchLevels = reward.branchLevels
-let levelIndex = -1
-for (let i = 0; i < Object.keys(branchLevels).length; i++) {
-  let levelData = branchLevels[i]
-  if (levelData.requiredValue != undefined && value >= levelData.requiredValue) {
-    levelIndex = i
+const branchLevels = normalizeBranchLevels(reward.branchLevels)
+if (!branchLevels.length) {
+  return {
+    min: 0,
+    max: 0,
+    displayValue: 0,
+    levelLabel: reward?.animationData?.levelLabel || "Level 1",
+    level: 1,
+    maxLevel: true
   }
 }
-let maxLevel = !(branchLevels[levelIndex + 1] && branchLevels[levelIndex + 1].requiredValue != undefined)
-let displayValue = value - branchLevels[levelIndex].requiredValue
+
+const numericValue = Number(value) || 0
+let levelIndex = 0
+for (let i = 0; i < branchLevels.length; i++) {
+  if (numericValue >= branchLevels[i].requiredValue) {
+    levelIndex = i
+  } else {
+    break
+  }
+}
+
+const currentLevelData = branchLevels[levelIndex]
+const nextLevelData = branchLevels[levelIndex + 1]
+const maxLevel = !(nextLevelData && nextLevelData.requiredValue != undefined)
+const displayValue = numericValue - currentLevelData.requiredValue
 
 return {
   min: 0,
-  max: maxLevel ? displayValue : branchLevels[levelIndex + 1].requiredValue - branchLevels[levelIndex].requiredValue,
+  max: maxLevel ? displayValue : nextLevelData.requiredValue - currentLevelData.requiredValue,
   displayValue: displayValue,
-  levelLabel: reward.type == "reputation" ? branchLevels[levelIndex].label + " (Level " + (levelIndex-1) + ")" : branchLevels[levelIndex].levelLabel,
+  levelLabel: reward.type == "reputation"
+    ? (currentLevelData.label || "Reputation") + " (Level " + (levelIndex - 1) + ")"
+    : (currentLevelData.levelLabel || ("Level " + (levelIndex + 1))),
   level: levelIndex + 1,
   maxLevel: maxLevel
 }
