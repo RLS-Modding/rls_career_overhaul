@@ -1,0 +1,212 @@
+#level-up-celebration-container {
+  pointer-events: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2000;
+}
+
+#level-up-celebration-container .level-up-celebration-host {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  pointer-events: none;
+}
+
+#level-up-celebration-container .unlock-wrapper {
+  color: white;
+  width: 520px !important;
+  max-width: 520px !important;
+  flex: 0 0 520px;
+  box-sizing: border-box;
+  margin-top: 1rem;
+  transition: opacity 300ms ease, transform 300ms ease;
+  pointer-events: none;
+}
+
+#level-up-celebration-container .unlock-wrapper.closing {
+  opacity: 0;
+  transform: translateY(-0.75rem);
+}
+
+#level-up-celebration-container .bng-card {
+  --bg-opacity: 1;
+  font-size: 1rem;
+  font-family: Overpass, var(--fnt-defs);
+  background-color: transparent;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  position: relative;
+  border-radius: var(--bng-corners-2);
+  width: 100%;
+  height: fit-content;
+}
+
+#level-up-celebration-container .bng-card > .card-cnt {
+  overflow: hidden;
+  width: 100%;
+  height: inherit;
+  border-top-left-radius: var(--bng-corners-2);
+  border-top-right-radius: var(--bng-corners-2);
+  background-color: rgba(0, 0, 0, var(--bg-opacity));
+  display: flex;
+  flex-flow: column nowrap;
+  flex: 0 1 auto;
+}
+
+#level-up-celebration-container .card-heading.heading-style-none {
+  padding-left: 0.5em;
+}
+
+#level-up-celebration-container .card-heading {
+  font-size: 1.5rem;
+  line-height: 1.5em;
+  font-weight: 800;
+  font-style: italic;
+  text-align: left;
+  position: relative;
+  margin: 0.65em 0 0.5em 0;
+  padding-left: 1.6em;
+  padding-right: 0.75em;
+  overflow: hidden;
+  flex: 0 0 auto;
+}
+
+#level-up-celebration-container .card-heading.heading-style-line::before,
+#level-up-celebration-container .card-heading.heading-style-ribbon::before {
+  content: " ";
+  transform: matrix(0.94, 0, -0.38, 1, 0, 0);
+  width: 0.5em;
+  position: absolute;
+  height: 1em;
+  left: 0.65em;
+  top: 0.25em;
+}
+
+#level-up-celebration-container .card-heading.heading-style-ribbon::before {
+  background: var(--bng-orange-b400);
+  width: 1.5em;
+  left: -0.35em;
+}
+
+#level-up-celebration-container .celebration-card {
+  overflow: hidden;
+  width: 100%;
+}
+
+#level-up-celebration-container .hero {
+  position: relative;
+  padding: 1rem 1.1rem 1rem;
+  overflow: hidden;
+}
+
+#level-up-celebration-container .level-text-wrap {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  margin-top: 0.75rem;
+  margin-bottom: 0.35rem;
+}
+
+#level-up-celebration-container .skill-name {
+  font-size: 1.15rem;
+  font-weight: 600;
+  opacity: 0.9;
+  margin-bottom: 0.35rem;
+}
+
+#level-up-celebration-container .level-text {
+  font-size: 2.85rem;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+  color: #ffd080;
+  letter-spacing: 0.04em;
+  animation: level-up-celebration-pop 350ms ease-out;
+}
+
+@keyframes level-up-celebration-pop {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.15;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+#level-up-celebration-container .card-content {
+  padding: 0.45rem 1.1rem 1.15rem;
+}
+
+#level-up-celebration-container .unlocks-label {
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+}
+
+#level-up-celebration-container .tier-unlocks-item {
+  margin-bottom: 0.4rem;
+}
+
+#level-up-celebration-container .no-unlocks {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.88rem;
+  font-style: italic;
+  margin-top: 0.15rem;
+  margin-bottom: 0.65rem;
+}
+
+#level-up-celebration-container .wrapper {
+  width: auto;
+  padding: 0.5rem;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: var(--bng-corners-2);
+  display: grid;
+  grid-template: min-content auto / 2.5rem 2fr;
+}
+
+#level-up-celebration-container .wrapper .icon {
+  font-size: 2em;
+  grid-row: 1 / -1;
+  align-self: baseline;
+  width: 2rem;
+  height: 2rem;
+}
+
+#level-up-celebration-container .wrapper .heading {
+  font-weight: 600;
+  font-size: 1.25em;
+}
+
+#level-up-celebration-container .wrapper .description {
+  font-weight: 400;
+  font-size: 0.8em;
+}
+
+#level-up-celebration-container .tasklist {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+#level-up-celebration-container .tasklist .task {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+#level-up-celebration-container .tasklist .task .heading {
+  font-weight: 500;
+  font-size: 1.1em;
+}
+
+#level-up-celebration-container .tasklist .task .description {
+  font-weight: 300;
+  font-size: 0.7em;
+}

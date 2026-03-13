@@ -204,7 +204,7 @@
     "$ffbstrength":1,
     "$fuel_L":370,
     "$fuel_R":300,
-    "$loadVolume":4000,
+    "$loadVolume":0,
     "$startAir":116,
     "$steer_center":0.0036,
     "$tirepressure_F":99.6,

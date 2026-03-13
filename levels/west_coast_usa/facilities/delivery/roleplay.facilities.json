@@ -10,8 +10,12 @@
         {
           "psName": "paramedicWorkParking",
           "isInspectSpot": true,
-          "logisticTypesProvided": [],
-          "logisticTypesReceived": []
+          "logisticTypesProvided": [
+            "parcel"
+          ],
+          "logisticTypesReceived": [
+            "parcel"
+          ]
         },
         {
           "psName": "ambulanceLoaner",
@@ -23,9 +27,33 @@
         }
       ],
       "sitesFile": "roleplay.sites.json",
-      "logisticTypesProvided": [],
-      "logisticTypesReceived": [],
-      "logisticGenerators": []
+      "logisticTypesProvided": [
+        "parcel"
+      ],
+      "logisticTypesReceived": [
+        "parcel"
+      ],
+      "logisticGenerators": [
+        {
+          "type": "parcelProvider",
+          "logisticTypes": [
+            "parcel"
+          ],
+          "min": 0,
+          "max": 2,
+          "interval": 120
+        },
+        {
+          "type": "parcelReceiver",
+          "logisticTypes": [
+            "parcel"
+          ],
+          "min": -3,
+          "max": 1,
+          "interval": 120
+        }
+      ],
+      "logisticMaxItems": 6
     },
     {
       "id": "busWork",
@@ -52,7 +80,8 @@
       "sitesFile": "roleplay.sites.json",
       "logisticTypesProvided": [],
       "logisticTypesReceived": [],
-      "logisticGenerators": []
+      "logisticGenerators": [],
+      "logisticMaxItems": 0
     }
   ]
 }

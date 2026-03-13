@@ -4,63 +4,63 @@
       "name": "Large Lumber",
       "model_key": "TPUForkableLoads",
       "config": "LargeLumber",
-      "money": 1050,
+      "money": 525,
       "spawnGridSpacing": 2.0
     },
     "smallLumber": {
       "name": "Small Lumber",
       "model_key": "TPUForkableLoads",
       "config": "SmallLumber",
-      "money": 600,
+      "money": 300,
       "spawnGridSpacing": 2.0
     },
     "crate": {
       "name": "Crate",
       "model_key": "TPUForkableLoads",
       "config": "Crate",
-      "money": 600,
+      "money": 300,
       "spawnGridSpacing": 2.0
     },
     "boxes": {
       "name": "Boxes",
       "model_key": "TPUForkableLoads",
       "config": "Boxes",
-      "money": 540,
+      "money": 270,
       "spawnGridSpacing": 2.0
     },
     "concrete": {
       "name": "Concrete",
       "model_key": "TPUForkableLoads",
       "config": "Concrete",
-      "money": 840,
+      "money": 420,
       "spawnGridSpacing": 2.0
     },
     "emptyPallet": {
       "name": "Empty Pallet",
       "model_key": "TPUForkableLoads",
       "config": "EmptyPallet",
-      "money": 360,
+      "money": 180,
       "spawnGridSpacing": 2.0
     },
     "adjustableBarrels": {
       "name": "Barrels",
       "model_key": "TPUForkableLoads",
       "config": "AdjustableBarrels",
-      "money": 750,
+      "money": 375,
       "spawnGridSpacing": 2.0
     },
     "adjustableBox": {
       "name": "Metal Box",
       "model_key": "TPUForkableLoads",
       "config": "AdjustableBox",
-      "money": 900,
+      "money": 450,
       "spawnGridSpacing": 2.0
     },
     "tastiCola": {
       "name": "Tasti Cola",
       "model_key": "TPUForkableLoads",
       "config": "TastiCola",
-      "money": 660,
+      "money": 330,
       "spawnGridSpacing": 2.0
     }
   },
@@ -82,7 +82,7 @@
     "aiPickupNodeIndex": 14,
     "truckSpawnSpot": "facilityWork_truckSpawn_industrialWarehouse",
     "sessionMultiplierBase": 1,
-    "sessionMultiplierPerBatch": 0.5,
+    "sessionMultiplierPerBatch": 0.15,
     "spawns": [
       { "materialId": "largeLumber"},
       { "materialId": "smallLumber"},

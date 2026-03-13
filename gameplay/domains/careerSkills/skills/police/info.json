@@ -1,0 +1,943 @@
+{
+    "name": "Police Skill",
+    "description": "Progress a dedicated 1-50 police track with milestone rewards every 5 levels.",
+    "order": 1200,
+    "isSkill": true,
+    "icon": "wigwags",
+    "levels": [
+        {
+            "requiredValue": 0,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 1",
+                "description": "Reach level 1 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +0.6%",
+                    "description": "Total skill bonus is now +0.6% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 246,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 2",
+                "description": "Reach level 2 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +1.2%",
+                    "description": "Total skill bonus is now +1.2% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 550,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 3",
+                "description": "Reach level 3 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +1.8%",
+                    "description": "Total skill bonus is now +1.8% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 924,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 4",
+                "description": "Reach level 4 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +2.4%",
+                    "description": "Total skill bonus is now +2.4% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 1380,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 5",
+                "description": "Reach level 5 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +3%",
+                    "description": "Total skill bonus is now +3% for police pursuits."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "badgeRoundStar",
+                    "heading": "Milestone Tier 1",
+                    "description": "Reached level 5 in Police Skill."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "keys1",
+                    "heading": "Police Loaner Milestone I",
+                    "description": "Loaner progression marker for police vehicles. Actual loaner unlocks remain based on police organization reputation."
+                }
+            ]
+        },
+        {
+            "requiredValue": 1930,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 6",
+                "description": "Reach level 6 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +3.6%",
+                    "description": "Total skill bonus is now +3.6% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 2586,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 7",
+                "description": "Reach level 7 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +4.2%",
+                    "description": "Total skill bonus is now +4.2% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 3360,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 8",
+                "description": "Reach level 8 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +4.8%",
+                    "description": "Total skill bonus is now +4.8% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 4264,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 9",
+                "description": "Reach level 9 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +5.4%",
+                    "description": "Total skill bonus is now +5.4% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 5310,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 10",
+                "description": "Reach level 10 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +6%",
+                    "description": "Total skill bonus is now +6% for police pursuits."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "badgeRoundStar",
+                    "heading": "Milestone Tier 2",
+                    "description": "Reached level 10 in Police Skill."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "keys1",
+                    "heading": "Police Loaner Milestone II",
+                    "description": "Loaner progression marker for police vehicles. Actual loaner unlocks remain based on police organization reputation."
+                }
+            ]
+        },
+        {
+            "requiredValue": 6510,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 11",
+                "description": "Reach level 11 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +6.6%",
+                    "description": "Total skill bonus is now +6.6% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 7876,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 12",
+                "description": "Reach level 12 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +7.2%",
+                    "description": "Total skill bonus is now +7.2% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 9420,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 13",
+                "description": "Reach level 13 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +7.8%",
+                    "description": "Total skill bonus is now +7.8% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 11154,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 14",
+                "description": "Reach level 14 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +8.4%",
+                    "description": "Total skill bonus is now +8.4% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 13090,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 15",
+                "description": "Reach level 15 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +9%",
+                    "description": "Total skill bonus is now +9% for police pursuits."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "badgeRoundStar",
+                    "heading": "Milestone Tier 3",
+                    "description": "Reached level 15 in Police Skill."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "keys1",
+                    "heading": "Police Loaner Milestone III",
+                    "description": "Loaner progression marker for police vehicles. Actual loaner unlocks remain based on police organization reputation."
+                }
+            ]
+        },
+        {
+            "requiredValue": 15240,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 16",
+                "description": "Reach level 16 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +9.6%",
+                    "description": "Total skill bonus is now +9.6% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 17616,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 17",
+                "description": "Reach level 17 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +10.2%",
+                    "description": "Total skill bonus is now +10.2% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 20230,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 18",
+                "description": "Reach level 18 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +10.8%",
+                    "description": "Total skill bonus is now +10.8% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 23094,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 19",
+                "description": "Reach level 19 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +11.4%",
+                    "description": "Total skill bonus is now +11.4% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 26220,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 20",
+                "description": "Reach level 20 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +12%",
+                    "description": "Total skill bonus is now +12% for police pursuits."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "badgeRoundStar",
+                    "heading": "Milestone Tier 4",
+                    "description": "Reached level 20 in Police Skill."
+                }
+            ]
+        },
+        {
+            "requiredValue": 29620,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 21",
+                "description": "Reach level 21 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +12.6%",
+                    "description": "Total skill bonus is now +12.6% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 33306,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 22",
+                "description": "Reach level 22 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +13.2%",
+                    "description": "Total skill bonus is now +13.2% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 37290,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 23",
+                "description": "Reach level 23 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +13.8%",
+                    "description": "Total skill bonus is now +13.8% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 41584,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 24",
+                "description": "Reach level 24 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +14.4%",
+                    "description": "Total skill bonus is now +14.4% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 46200,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 25",
+                "description": "Reach level 25 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +15%",
+                    "description": "Total skill bonus is now +15% for police pursuits."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "badgeRoundStar",
+                    "heading": "Milestone Tier 5",
+                    "description": "Reached level 25 in Police Skill."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "keys1",
+                    "heading": "Police Loaner Milestone IV",
+                    "description": "Loaner progression marker for police vehicles. Actual loaner unlocks remain based on police organization reputation."
+                }
+            ]
+        },
+        {
+            "requiredValue": 51150,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 26",
+                "description": "Reach level 26 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +15.6%",
+                    "description": "Total skill bonus is now +15.6% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 56446,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 27",
+                "description": "Reach level 27 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +16.2%",
+                    "description": "Total skill bonus is now +16.2% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 62100,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 28",
+                "description": "Reach level 28 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +16.8%",
+                    "description": "Total skill bonus is now +16.8% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 68124,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 29",
+                "description": "Reach level 29 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +17.4%",
+                    "description": "Total skill bonus is now +17.4% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 74530,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 30",
+                "description": "Reach level 30 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +18%",
+                    "description": "Total skill bonus is now +18% for police pursuits."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "badgeRoundStar",
+                    "heading": "Milestone Tier 6",
+                    "description": "Reached level 30 in Police Skill."
+                }
+            ]
+        },
+        {
+            "requiredValue": 81330,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 31",
+                "description": "Reach level 31 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +18.6%",
+                    "description": "Total skill bonus is now +18.6% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 88536,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 32",
+                "description": "Reach level 32 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +19.2%",
+                    "description": "Total skill bonus is now +19.2% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 96160,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 33",
+                "description": "Reach level 33 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +19.8%",
+                    "description": "Total skill bonus is now +19.8% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 104214,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 34",
+                "description": "Reach level 34 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +20.4%",
+                    "description": "Total skill bonus is now +20.4% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 112710,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 35",
+                "description": "Reach level 35 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +21%",
+                    "description": "Total skill bonus is now +21% for police pursuits."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "badgeRoundStar",
+                    "heading": "Milestone Tier 7",
+                    "description": "Reached level 35 in Police Skill."
+                }
+            ]
+        },
+        {
+            "requiredValue": 121660,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 36",
+                "description": "Reach level 36 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +21.6%",
+                    "description": "Total skill bonus is now +21.6% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 131076,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 37",
+                "description": "Reach level 37 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +22.2%",
+                    "description": "Total skill bonus is now +22.2% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 140970,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 38",
+                "description": "Reach level 38 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +22.8%",
+                    "description": "Total skill bonus is now +22.8% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 151354,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 39",
+                "description": "Reach level 39 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +23.4%",
+                    "description": "Total skill bonus is now +23.4% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 162240,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 40",
+                "description": "Reach level 40 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +24%",
+                    "description": "Total skill bonus is now +24% for police pursuits."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "badgeRoundStar",
+                    "heading": "Milestone Tier 8",
+                    "description": "Reached level 40 in Police Skill."
+                }
+            ]
+        },
+        {
+            "requiredValue": 173640,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 41",
+                "description": "Reach level 41 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +24.6%",
+                    "description": "Total skill bonus is now +24.6% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 185566,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 42",
+                "description": "Reach level 42 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +25.2%",
+                    "description": "Total skill bonus is now +25.2% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 198030,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 43",
+                "description": "Reach level 43 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +25.8%",
+                    "description": "Total skill bonus is now +25.8% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 211044,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 44",
+                "description": "Reach level 44 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +26.4%",
+                    "description": "Total skill bonus is now +26.4% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 224620,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 45",
+                "description": "Reach level 45 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +27%",
+                    "description": "Total skill bonus is now +27% for police pursuits."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "badgeRoundStar",
+                    "heading": "Milestone Tier 9",
+                    "description": "Reached level 45 in Police Skill."
+                }
+            ]
+        },
+        {
+            "requiredValue": 238770,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 46",
+                "description": "Reach level 46 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +27.6%",
+                    "description": "Total skill bonus is now +27.6% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 253506,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 47",
+                "description": "Reach level 47 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +28.2%",
+                    "description": "Total skill bonus is now +28.2% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 268840,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 48",
+                "description": "Reach level 48 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +28.8%",
+                    "description": "Total skill bonus is now +28.8% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 284784,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 49",
+                "description": "Reach level 49 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +29.4%",
+                    "description": "Total skill bonus is now +29.4% for police pursuits."
+                }
+            ]
+        },
+        {
+            "requiredValue": 301350,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 50",
+                "description": "Reach level 50 in Police Skill to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Pursuit Bonus +30%",
+                    "description": "Total skill bonus is now +30% for police pursuits."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "badgeRoundStar",
+                    "heading": "Milestone Tier 10",
+                    "description": "Reached level 50 in Police Skill."
+                }
+            ]
+        }
+    ]
+}

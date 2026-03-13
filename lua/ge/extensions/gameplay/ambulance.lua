@@ -20,7 +20,7 @@ local config = {
     stopRadius = 5,
     
     -- Payouts
-    baseFare = 2200,
+    baseFare = 1500,
     timeBonusPerSec = 10,
     roughRidePenaltyFactor = 0.1,
     maxPenaltyFactor = 0.75,

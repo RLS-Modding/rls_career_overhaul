@@ -106,7 +106,10 @@ const events = useEvents()
 const { lua } = useBridge()
 const navBlocker = useUINavBlocker()
 
-const imagesAmount = 18 // number of loading images
+const imagesAmount = 18 // fallback number of built-in loading images
+const customImagesAmount = 12 // number of custom loading images
+const customImagePathPattern = "/ui/modules/loading/drive/rls_drive_loading_{n}.jpg"
+const preferCustomLoadingImages = true
 const activeRepeatTime = 10_000 // safety to ensure lua is notified (as it was in angular)
 
 // css transition durations (in ms)
@@ -336,28 +339,42 @@ const deactivateLoading = debounce(() => {
   }
 }, 100)
 
-const getRandomImageNum = () => {
-  const rnd = ~~(Math.random() * imagesAmount) + 1
-  if (rnd === lastImageNum) return getRandomImageNum()
+const getRandomImageNum = (amount = imagesAmount) => {
+  const rnd = ~~(Math.random() * amount) + 1
+  if (rnd === lastImageNum) return getRandomImageNum(amount)
   lastImageNum = rnd
   return rnd
 }
+
+const getCustomImageUrl = () => customImagePathPattern.replace("{n}", getRandomImageNum(customImagesAmount))
 
 const getNextImageUrl = () => {
   let url
   if (state.highSeas) {
     url = "images/mainmenu/unofficial_version.jpg"
+  } else if (preferCustomLoadingImages) {
+    // Kept absolute so the path points directly to this mod's custom images.
+    url = getCustomImageUrl()
   } else {
     url = `images/loading/drive/${getRandomImageNum()}.jpg`
+    url = getAssetURL(url)
   }
+  if (url.startsWith("/")) return url
   return getAssetURL(url)
 }
 
 const loadNextImage = async () => {
   const url = getNextImageUrl()
   if (state.image === url) return
-  await loadImage(url)
-  state.image = url
+  try {
+    await loadImage(url)
+    state.image = url
+  } catch {
+    // If custom image loading fails, gracefully fall back to stock images.
+    const fallbackUrl = getAssetURL(`images/loading/drive/${getRandomImageNum(imagesAmount)}.jpg`)
+    await loadImage(fallbackUrl)
+    state.image = fallbackUrl
+  }
 }
 
 // use this to load images

@@ -5,7 +5,7 @@
 local M = {}
 
 local minimumValue = -50
-local maximumValue = 700
+local maximumValue = 350000
 
 local isHardcore = false
 
@@ -30,7 +30,7 @@ local levelDefaults = {
   [0] = {
     label = "Neutral",
     levelLabel = "Reputation: Level 0",
-    requiredValue = -25, -- needs to lose 50 (from 0) to go to -1
+    requiredValue = 1380, -- Logistics level 5 required XP
     loanerCut = {
       value = isHardcore and 0.8 or 0.35,
       icon = "boxPickUp03"
@@ -42,7 +42,7 @@ local levelDefaults = {
   [1] = {
     label = "Reliable",
     levelLabel = "Reputation: Level 1",
-    requiredValue = 40, -- needs 50 (from 0) to lvlup to 1
+    requiredValue = 5310, -- Logistics level 10 required XP
     loanerCut = {
       value = isHardcore and 0.7 or 0.25,
       icon = "boxPickUp03"
@@ -54,7 +54,7 @@ local levelDefaults = {
   [2] = {
     label = "Preferred",
     levelLabel = "Reputation: Level 2",
-    requiredValue = 175, --  needs 150 to lvlup to 2
+    requiredValue = 13090, -- Logistics level 15 required XP
     loanerCut = {
       value = isHardcore and 0.6 or 0.15,
       icon = "boxPickUp03"
@@ -66,7 +66,7 @@ local levelDefaults = {
   [3] = {
     label = "Partner",
     levelLabel = "Reputation: Level 3",
-    requiredValue = 400, -- need 250 to lvlup to 3
+    requiredValue = 46200, -- Logistics level 25 required XP
     loanerCut = {
       value = isHardcore and 0.5 or 0,
       icon = "boxPickUp03"
@@ -112,9 +112,14 @@ local function calcLevelFromReputationValue(val, organization)
     end
   end
   if level == -1 then
-    level = 1
+    -- Index 1 maps to reputation level -1 (i - 2). Start new orgs at level 0 (index 2).
+    level = levels[2] and 2 or 1
   end
-  local currentLevelRequiredValue = levels[level].requiredValue or minimumValue
+  -- Keep organizations at minimum level 0 when a level-0 entry exists.
+  if level < 2 and levels[2] then
+    level = 2
+  end
+  local currentLevelRequiredValue = (levels[level] and levels[level].requiredValue) or minimumValue
   local nextLevelRequiredValue = levels[level+1] and levels[level+1].requiredValue or maximumValue
 
   local prevThreshold = currentLevelRequiredValue

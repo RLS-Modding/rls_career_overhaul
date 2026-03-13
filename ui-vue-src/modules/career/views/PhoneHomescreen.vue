@@ -1,6 +1,6 @@
 <template>
   <PhoneWrapper app-name="Home" :custom-back="handleBack">
-    <div ref="homescreenRef" class="homescreen" :style="wallpaperStyle">
+    <div ref="homescreenRef" class="homescreen" :style="baseBackgroundStyle">
       <!-- Pages container -->
       <div
         ref="viewportRef"
@@ -20,6 +20,7 @@
             v-for="(page, pageIdx) in pages"
             :key="'page-' + pageIdx"
             class="page apps-page"
+            :style="appsPageStyle"
           >
             <div class="app-grid">
               <div
@@ -45,7 +46,11 @@
           </div>
 
           <!-- Search page -->
-          <div class="page search-page">
+          <div
+            class="page search-page"
+            :class="{ 'no-transition': isDraggingPage || (isDraggingIcon && !isEdgePaging) }"
+            :style="listScreenStyle"
+          >
             <PhoneSearch
               :apps="availableApps"
               :seen-apps="seenApps"
@@ -61,8 +66,6 @@
       <!-- Dock (with integrated page dots) -->
       <PhoneDock
         ref="dockRef"
-        :class="{ 'no-transition': isDraggingPage || (isDraggingIcon && !isEdgePaging) }"
-        :style="dockStyle"
         :dock-ids="dockIds"
         :app-map="appMap"
         :jiggle-mode="jiggleMode"
@@ -70,6 +73,9 @@
         :total-pages="pages.length"
         :current-page="currentPageIndex"
         :is-search-active="isSearchPageActive"
+        :slide-offset="dockSlideOffset"
+        :no-transition="isDraggingPage || (isDraggingIcon && !isEdgePaging)"
+        :background-image="phoneSettings.backgroundImage || ''"
         @launch="launchApp"
         @longpress="enterJiggleMode"
         @dragstart="onDockDragStart"
@@ -102,12 +108,14 @@ import PhoneAppIcon from '../components/phone/PhoneAppIcon.vue'
 import PhoneDock from '../components/phone/PhoneDock.vue'
 import PhoneSearch from '../components/phone/PhoneSearch.vue'
 import { usePhoneApps } from '../utils/phoneAppRegistry'
+import { usePhoneSettings } from '../composables/usePhoneSettings'
 
 const PAGE_WIDTH = 360
 
 const router = useRouter()
 const events = useEvents()
 const { availableApps, refreshApps, DEFAULT_DOCK_IDS, APPS_PER_PAGE } = usePhoneApps()
+const { phoneSettings, replacePhoneSettings, getPhoneSettingsSnapshot } = usePhoneSettings()
 
 // Layout state
 const dockIds = ref([...DEFAULT_DOCK_IDS])
@@ -176,14 +184,9 @@ const appIdsOnHome = computed(() => {
   return ids
 })
 
-const dockStyle = computed(() => {
+const dockSlideOffset = computed(() => {
   const progress = searchPageProgress.value
-  const slideX = Math.round(-progress * PAGE_WIDTH)
-  return {
-    transform: `translateX(${slideX}px)`,
-    opacity: '1',
-    pointerEvents: 'auto',
-  }
+  return Math.round(-progress * PAGE_WIDTH)
 })
 
 // Page offset
@@ -192,11 +195,40 @@ const pageOffset = computed(() => {
   return base + pageDragDelta.value
 })
 
-const wallpaperStyle = computed(() => {
-  if (wallpaper.value === 'default') {
-    return { background: 'linear-gradient(to bottom, #000000, #1509fb)' }
+const baseBackgroundStyle = computed(() => {
+  const bgImage = phoneSettings.backgroundImage
+  if (bgImage) {
+    return {
+      backgroundImage: `linear-gradient(180deg, rgba(0, 0, 0, 0.28), rgba(0, 0, 0, 0.1)), url(${bgImage})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+    }
   }
-  return { backgroundImage: `url(${wallpaper.value})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+
+  return {
+    background: `linear-gradient(to bottom, #000000, ${phoneSettings.backgroundColor})`,
+  }
+})
+
+const appsPageStyle = computed(() => {
+  if (phoneSettings.backgroundImage) return { background: 'transparent' }
+  return {}
+})
+
+const listScreenStyle = computed(() => {
+  if (phoneSettings.backgroundImage) {
+    const screenX = pageOffset.value + pages.value.length * PAGE_WIDTH
+    return {
+      background: 'transparent',
+      '--search-bg-image': `url(${phoneSettings.backgroundImage})`,
+      '--search-blur-offset': `${-screenX}px`,
+    }
+  }
+
+  return {
+    background: `linear-gradient(to bottom, #000000, ${phoneSettings.backgroundColor})`,
+  }
 })
 
 // ─── Layout building ───
@@ -226,6 +258,10 @@ function toSlotArray(value) {
     return Object.values(value)
   }
   return []
+}
+
+function toIdList(value) {
+  return toSlotArray(value).filter(v => typeof v === 'string' && v.length > 0)
 }
 
 function applyLayout(data) {
@@ -269,9 +305,17 @@ function applyLayout(data) {
     if (pageLayouts.value.length === 0) {
       pageLayouts.value = [new Array(APPS_PER_PAGE).fill(null)]
     }
-    seenApps.value = new Set(data.seenApps || [])
-    removedAppIds.value = new Set(data.removedAppIds || [])
+    seenApps.value = new Set(toIdList(data.seenApps))
+    removedAppIds.value = new Set(toIdList(data.removedAppIds))
     wallpaper.value = data.wallpaper || 'default'
+    if (data.settings) {
+      replacePhoneSettings(data.settings)
+    } else if (wallpaper.value !== 'default') {
+      replacePhoneSettings({
+        ...getPhoneSettingsSnapshot(),
+        backgroundImage: wallpaper.value,
+      })
+    }
 
     const allLayoutIds = new Set([
       ...dockIds.value.filter(Boolean),
@@ -311,6 +355,7 @@ function buildSaveData() {
     dock: dockIds.value.map(id => id || ''),
     seenApps: [...seenApps.value],
     removedAppIds: [...removedAppIds.value],
+    settings: getPhoneSettingsSnapshot(),
   }
 }
 
@@ -764,7 +809,7 @@ onUnmounted(() => {
 .page {
   flex: 0 0 360px;
   width: 360px;
-  height: auto;
+  height: 100%;
   padding: 8px 14px;
   box-sizing: border-box;
 }
@@ -794,6 +839,42 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   height: 100%;
+  border-radius: 24px;
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    inset 0 0 0 1px rgba(var(--bng-add-blue-400-rgb), 0.08);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -20px;
+    background-image: var(--search-bg-image, none);
+    background-size: cover;
+    background-position: center;
+    filter: blur(5px) saturate(1.08);
+    transform: translateX(var(--search-blur-offset, 0px));
+    transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  &.no-transition::before {
+    transition: none;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(180deg, rgba(var(--bng-ter-blue-gray-900-rgb), 0.28), rgba(var(--bng-ter-blue-gray-900-rgb), 0.18));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    pointer-events: none;
+  }
+
+  :deep(> *) {
+    position: relative;
+    z-index: 1;
+  }
 }
 
 .drag-ghost {

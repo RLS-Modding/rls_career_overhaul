@@ -1569,6 +1569,11 @@ export default {
   ui_phone_layout: {
     requestLayout: () => {},
     updateLayout: layoutData => Any,
+    getSettings: () => {},
+    updateSettings: settingsData => Any,
+    listBackgroundImages: () => {},
+    getBackgroundFolder: () => {},
+    openBackgroundFolder: () => {},
     getCareerActive: () => {},
   },
 
@@ -1586,6 +1591,12 @@ export default {
   ui_phone_freeroamEvents: {
     getEventsData: () => {},
     navigateToEvent: raceName => String,
+  },
+
+  ui_phone_logistics: {
+    requestFacilityList: () => {},
+    requestFacilityDetail: facilityId => {},
+    navigateToFacility: (facilityId, parkingSpotPath) => {},
   },
 
   ui_phone_time: {

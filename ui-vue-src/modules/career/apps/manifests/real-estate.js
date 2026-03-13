@@ -4,10 +4,11 @@ export default {
   id: 'real-estate',
   name: 'Real Estate',
   icon: icons.doorFrontCoins,
+  iconTile: 'real-estate.png',
   route: '/career/phone-real-estate',
   color: '#f97316',
   iconColor: '#ffffff',
-  category: 'Finance',
+  category: 'Property',
   defaultPage: 0,
   defaultPosition: 9,
   unlockCondition: async (luaBridge) => {
@@ -15,7 +16,7 @@ export default {
       await luaBridge.extensions.load('ui_phone_layout')
       const fromLayout = await luaBridge.ui_phone_layout.getCareerActive()
       if (fromLayout) return true
-    } catch {}
+    } catch { }
     try {
       return await luaBridge.career_career.isActive()
     } catch {

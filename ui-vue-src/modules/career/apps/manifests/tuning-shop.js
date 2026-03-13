@@ -4,6 +4,7 @@ export default {
   id: 'tuning-shop',
   name: 'Tuning Shop',
   icon: icons.cars,
+  iconTile: 'tuning-shop.png',
   route: '/career/phone-tuning-shop',
   color: '#F54900',
   iconColor: '#ffffff',
