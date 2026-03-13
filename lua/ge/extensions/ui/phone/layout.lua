@@ -14,6 +14,7 @@ local globalFile = settingsRoot .. "phoneLayout.json"
 local backgroundsDir = "/Phone/Backgrounds/"
 local layoutData = nil
 local SCALE_MIN, SCALE_MAX, SCALE_STEP = 0.5, 2, 0.1
+local LAYOUT_VERSION = 2
 
 local function clampScale(value)
   local n = tonumber(value)
@@ -67,7 +68,7 @@ end
 
 local function getDefaultLayout()
   return {
-    version = 1,
+    version = LAYOUT_VERSION,
     wallpaper = "default",
     pages = {
       { apps = {
@@ -78,6 +79,7 @@ local function getDefaultLayout()
         "quarry",
         "tuning-shop",
         "freeroam-events",
+        "fre-contracts",
         "facility-work",
         "market-watch",
         "real-estate",
@@ -89,9 +91,80 @@ local function getDefaultLayout()
   }
 end
 
-local function normalizeLayoutData(data)
+local function hasApp(layout, appId)
+  if type(layout) ~= "table" or type(appId) ~= "string" or appId == "" then
+    return false
+  end
+
+  for _, page in ipairs(layout.pages or {}) do
+    for _, entry in ipairs((type(page) == "table" and page.apps) or {}) do
+      if entry == appId then
+        return true
+      end
+    end
+  end
+
+  for _, entry in ipairs(layout.dock or {}) do
+    if entry == appId then
+      return true
+    end
+  end
+
+  return false
+end
+
+local function ensureFirstPageApps(layout)
+  if type(layout.pages) ~= "table" then
+    layout.pages = {}
+  end
+  if type(layout.pages[1]) ~= "table" then
+    layout.pages[1] = {apps = {}}
+  end
+  if type(layout.pages[1].apps) ~= "table" then
+    layout.pages[1].apps = {}
+  end
+  return layout.pages[1].apps
+end
+
+local function insertMissingApp(layout, appId, anchorAppId)
+  if hasApp(layout, appId) then
+    return false
+  end
+
+  local apps = ensureFirstPageApps(layout)
+  local insertIndex = #apps + 1
+  if type(anchorAppId) == "string" and anchorAppId ~= "" then
+    for idx, entry in ipairs(apps) do
+      if entry == anchorAppId then
+        insertIndex = idx + 1
+        break
+      end
+    end
+  end
+
+  table.insert(apps, insertIndex, appId)
+  return true
+end
+
+local function migrateLayoutData(data)
   local normalized = type(data) == "table" and data or getDefaultLayout()
+  local changed = false
+  local version = math.floor(tonumber(normalized.version) or 1)
+
+  if version < 2 then
+    if insertMissingApp(normalized, "fre-contracts", "freeroam-events") then
+      changed = true
+    end
+    normalized.version = LAYOUT_VERSION
+    changed = true
+  end
+
   normalized.settings = normalizeSettings(normalized.settings)
+  return normalized, changed
+end
+
+local function normalizeLayoutData(data)
+  local normalized = migrateLayoutData(data)
   return normalized
 end
 
@@ -154,7 +227,12 @@ local function loadLayout()
   if currentSavePath then
     local careerData = jsonReadFile(currentSavePath .. saveFile)
     if careerData then
-      layoutData = normalizeLayoutData(careerData)
+      local migrated
+      layoutData, migrated = migrateLayoutData(careerData)
+      if migrated then
+        ensureSaveDir(currentSavePath)
+        writeLayoutFile(currentSavePath .. saveFile, layoutData)
+      end
       return layoutData
     end
   end
@@ -162,7 +240,12 @@ local function loadLayout()
   -- 2) Global freeroam/default layout in settings
   local globalData = jsonReadFile(globalFile)
   if globalData then
-    layoutData = normalizeLayoutData(globalData)
+    local migrated
+    layoutData, migrated = migrateLayoutData(globalData)
+    if migrated then
+      ensureSettingsDir()
+      writeLayoutFile(globalFile, layoutData)
+    end
     return layoutData
   end
 

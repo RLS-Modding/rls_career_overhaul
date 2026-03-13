@@ -343,10 +343,15 @@ const sortFields = [
 
 const typeColors = {
   street: '#3b82f6',
+  roadracing: '#3b82f6',
+  crawling: '#f97316',
+  mudding: '#8b5a2b',
   offroad: '#84cc16',
   drift: '#a855f7',
   oval: '#f59e0b',
   drag: '#ef4444',
+  trail: '#16a34a',
+  landspeed: '#06b6d4',
   topSpeed: '#06b6d4',
   rally: '#22c55e',
   koh: '#d97706',
@@ -354,10 +359,15 @@ const typeColors = {
 
 const typeLabels = {
   street: 'Street',
+  roadracing: 'Road Racing',
+  crawling: 'Crawling',
+  mudding: 'Mudding',
   offroad: 'Offroad',
   drift: 'Drift',
   oval: 'Oval',
   drag: 'Drag',
+  trail: 'Trail',
+  landspeed: 'Land Speed',
   topSpeed: 'Top Speed',
   rally: 'Rally',
   koh: 'KOH',

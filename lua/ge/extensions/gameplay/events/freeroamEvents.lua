@@ -3,7 +3,7 @@
 -- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
 local M = {}
 
-M.dependencies = {}
+M.dependencies = {'gameplay_events_freContracts'}
 
 local processRoad = require('gameplay/events/freeroam/processRoad')
 local leaderboardManager = require('gameplay/events/freeroam/leaderboardManager')
@@ -16,6 +16,7 @@ do
     local ok, ar = pcall(function() return require('gameplay/events/freeroam/aiRacers') end)
     if ok and ar then aiRacers = ar end
 end
+local freConfig = require('gameplay/fre/config')
 local Assets = activeAssets.ActiveAssets.new()
 
 local loadedExtensions = {}
@@ -249,6 +250,210 @@ local function getBusinessAccountFromVehicle(spawnedVehicleId)
 end
 
 local function payoutRace(completedLapTime)
+local function getRaceDisciplineIds(raceData)
+    local disciplineIds = {}
+    local seen = {}
+    if type(raceData) ~= "table" then
+        return disciplineIds
+    end
+    for _, rawType in ipairs(raceData.type or {}) do
+        local disciplineId = freConfig.getDisciplineIdFromType(rawType)
+        if disciplineId and not seen[disciplineId] then
+            seen[disciplineId] = true
+            table.insert(disciplineIds, disciplineId)
+        end
+    end
+    return disciplineIds
+end
+
+local function getFreRewardModifiers(disciplineIds)
+    local defaultModifiers = {
+        moneyMultiplier = 1,
+        disciplineMultipliers = {}
+    }
+    if not gameplay_events_freContracts_race or not gameplay_events_freContracts_race.calculateRewardModifiers then
+        return defaultModifiers
+    end
+    local computed = gameplay_events_freContracts_race.calculateRewardModifiers(disciplineIds or {})
+    if type(computed) ~= "table" then
+        return defaultModifiers
+    end
+    computed.moneyMultiplier = tonumber(computed.moneyMultiplier) or 1
+    computed.disciplineMultipliers = type(computed.disciplineMultipliers) == "table" and computed.disciplineMultipliers or {}
+    return computed
+end
+
+local function clamp(value, minValue, maxValue)
+    if value < minValue then return minValue end
+    if value > maxValue then return maxValue end
+    return value
+end
+
+local function calculateXpFromTierCurve(curveCfg, normalizedPerformance)
+    local tierCfg = type(curveCfg) == "table" and curveCfg or {}
+    local xpAtTarget = math.max(0, tonumber(tierCfg.xpAtTarget) or 0)
+    if xpAtTarget <= 0 then
+        return 0
+    end
+    local tenPercentBetterMultiplier = tonumber(tierCfg.tenPercentBetterMultiplier) or 1.25
+    if tenPercentBetterMultiplier <= 0 then
+        tenPercentBetterMultiplier = 1.25
+    end
+    local belowTargetFloorMultiplier = tonumber(tierCfg.belowTargetFloorMultiplier) or 0.25
+    local maxMultiplier = tonumber(tierCfg.maxMultiplier) or 3.0
+    if maxMultiplier < belowTargetFloorMultiplier then
+        maxMultiplier = belowTargetFloorMultiplier
+    end
+    local normalized = math.max(0, tonumber(normalizedPerformance) or 0)
+    local exponent = (normalized - 1.0) / 0.1
+    local rawMultiplier = tenPercentBetterMultiplier ^ exponent
+    local scaledMultiplier = clamp(rawMultiplier, belowTargetFloorMultiplier, maxMultiplier)
+    return math.max(0, math.floor(xpAtTarget * scaledMultiplier))
+end
+
+local function resolveTierByUnlockLevel(level, unlockCfg)
+    local numericLevel = math.max(0, math.floor(tonumber(level) or 0))
+    local tiers = unlockCfg or {}
+    local selected = "easy"
+    if numericLevel >= (tonumber(tiers.medium) or math.huge) then
+        selected = "medium"
+    end
+    if numericLevel >= (tonumber(tiers.hard) or math.huge) then
+        selected = "hard"
+    end
+    return selected
+end
+
+local function safeRatio(numerator, denominator)
+    local denom = tonumber(denominator) or 0
+    if denom <= 0 then
+        return 0
+    end
+    return math.max(0, (tonumber(numerator) or 0) / denom)
+end
+
+local function calculateEventPerformanceRatio(eventKind, eventData)
+    eventData = eventData or {}
+    if eventKind == "topSpeed" then
+        local goalSpeed = tonumber(eventData.goalSpeed) or 0
+        local baseReward = tonumber(eventData.baseReward) or 0
+        local raceTypes = eventData.raceTypes or {}
+        local targetReward = utils.topSpeedReward(goalSpeed, baseReward, goalSpeed, raceTypes)
+        local actualReward = utils.topSpeedReward(goalSpeed, baseReward, tonumber(eventData.actualSpeed) or 0, raceTypes)
+        return safeRatio(actualReward, targetReward)
+    elseif eventKind == "drift" then
+        local raceStub = {
+            bestTime = tonumber(eventData.goalTime) or 0,
+            driftGoal = tonumber(eventData.goalDriftScore) or 0,
+            reward = tonumber(eventData.baseReward) or 0,
+            type = eventData.raceTypes or {}
+        }
+        local targetReward = utils.driftReward(raceStub, raceStub.bestTime, raceStub.driftGoal)
+        local actualReward = utils.driftReward(raceStub, tonumber(eventData.actualTime) or 0, tonumber(eventData.actualDriftScore) or 0)
+        return safeRatio(actualReward, targetReward)
+    elseif eventKind == "hybrid" then
+        local goalTime = tonumber(eventData.goalTime) or 0
+        local baseReward = tonumber(eventData.baseReward) or 0
+        local damageFactor = tonumber(eventData.damageFactor) or 0
+        local raceTypes = eventData.raceTypes or {}
+        local targetReward = utils.hybridRaceReward(goalTime, baseReward, goalTime, damageFactor, 0, raceTypes)
+        local actualReward = utils.hybridRaceReward(goalTime, baseReward, tonumber(eventData.actualTime) or 0, damageFactor, tonumber(eventData.actualDamagePct) or 0, raceTypes)
+        return safeRatio(actualReward, targetReward)
+    end
+    local goalTime = tonumber(eventData.goalTime) or 0
+    local baseReward = tonumber(eventData.baseReward) or 0
+    local raceTypes = eventData.raceTypes or {}
+    local targetReward = utils.raceReward(goalTime, baseReward, goalTime, raceTypes)
+    local actualReward = utils.raceReward(goalTime, baseReward, tonumber(eventData.actualTime) or 0, raceTypes)
+    return safeRatio(actualReward, targetReward)
+end
+
+local function buildDisciplineXpRewards(disciplineIds, normalizedPerformance, rewardModifiers)
+    local rewards = {}
+    local breakdown = {}
+    local totalXp = 0
+    local perDiscipline = (rewardModifiers or {}).disciplineMultipliers or {}
+    for _, disciplineId in ipairs(disciplineIds or {}) do
+        local skillKey = freConfig.getSkillKey(disciplineId)
+        if skillKey then
+            local eventXpCfg = freConfig.getEventXpConfig(disciplineId) or {}
+            local level = tonumber((perDiscipline[disciplineId] or {}).level) or 0
+            local tier = resolveTierByUnlockLevel(level, eventXpCfg.tierUnlockLevels or {})
+            local tierCurveCfg = ((eventXpCfg.xpByTier or {})[tier]) or {}
+            local baseAmount = calculateXpFromTierCurve(tierCurveCfg, normalizedPerformance)
+            local xpMultiplier = tonumber((perDiscipline[disciplineId] or {}).xpMultiplier) or 1
+            local amount = math.max(0, math.floor(baseAmount * xpMultiplier))
+            rewards[skillKey] = {amount = amount}
+            breakdown[disciplineId] = {
+                skillKey = skillKey,
+                tier = tier,
+                baseAmount = baseAmount,
+                amount = amount,
+                xpMultiplier = xpMultiplier,
+                normalizedPerformance = tonumber(normalizedPerformance) or 0
+            }
+            totalXp = totalXp + amount
+        end
+    end
+    return rewards, breakdown, totalXp
+end
+
+local function mergeRewardTables(target, source)
+    if type(target) ~= "table" or type(source) ~= "table" then
+        return
+    end
+    for key, value in pairs(source) do
+        target[key] = value
+    end
+end
+
+local function getFreVehicleModel(vehId)
+    if gameplay_events_freContracts_race and gameplay_events_freContracts_race.getCurrentVehicleModel then
+        return gameplay_events_freContracts_race.getCurrentVehicleModel(vehId)
+    end
+    return nil
+end
+
+local function notifyFreRaceCompleted(raceName, raceData, raceLabel, finishTime, vehicleId, completionMeta)
+    if not career_career.isActive() then
+        return
+    end
+    if not gameplay_events_freContracts_race or not gameplay_events_freContracts_race.onFreeroamRaceCompleted then
+        return
+    end
+
+    local disciplineIds = completionMeta and completionMeta.disciplineIds or getRaceDisciplineIds(raceData)
+    local isAltRoute = mAltRoute == true
+    gameplay_events_freContracts_race.onFreeroamRaceCompleted({
+        raceId = raceName,
+        raceName = raceName,
+        raceLabel = raceLabel,
+        isAltRoute = isAltRoute,
+        raceRouteType = isAltRoute and "alt" or "main",
+        disciplineIds = disciplineIds,
+        rawTypes = raceData and raceData.type or {},
+        finishTime = finishTime,
+        lapCount = lapCount,
+        isHotlap = mHotlap == raceName,
+        invalidLap = completionMeta and completionMeta.invalidLap == true or false,
+        vehicleId = vehicleId,
+        vehicleModel = getFreVehicleModel(vehicleId),
+        resultMetrics = {
+            time = finishTime,
+            maxSpeed = maxSpeed,
+            lapCount = lapCount,
+            driftScore = completionMeta and completionMeta.driftScore or 0,
+            damagePercentage = completionMeta and completionMeta.damagePercentage or 0,
+            normalizedPerformance = completionMeta and completionMeta.normalizedPerformance or 0,
+            isAltRoute = isAltRoute,
+            isHotlap = mHotlap == raceName,
+            invalidLap = completionMeta and completionMeta.invalidLap == true or false
+        },
+        rewardBreakdown = completionMeta and completionMeta.rewardBreakdown or {}
+    })
+end
+
+local function payoutRace()
     if not mActiveRace then
         return 0
     end
@@ -275,6 +480,7 @@ local function payoutRace(completedLapTime)
     if mHotlap == mActiveRace then
         raceLabel = raceLabel .. " (Hotlap)"
     end
+    local rewardBaseForPerformance = reward
 
     -- Calculate damage percentage if damage factor is used
     local damagePercentage = 0
@@ -303,6 +509,41 @@ local function payoutRace(completedLapTime)
         reward = utils.hybridRaceReward(time, reward, lapTime, damageFactor, damagePercentage, race.type)
     else
         reward = utils.raceReward(time, reward, lapTime, race.type)
+    end
+
+    local normalizedPerformance = 0
+    if race.topSpeed then
+        normalizedPerformance = calculateEventPerformanceRatio("topSpeed", {
+            goalSpeed = race.topSpeedGoal,
+            baseReward = rewardBaseForPerformance,
+            actualSpeed = maxSpeed,
+            raceTypes = race.type
+        })
+    elseif race.driftGoal then
+        normalizedPerformance = calculateEventPerformanceRatio("drift", {
+            goalTime = race.driftTargetTime or time,
+            goalDriftScore = race.driftGoal,
+            baseReward = rewardBaseForPerformance,
+            actualTime = in_race_time,
+            actualDriftScore = driftScore,
+            raceTypes = race.type
+        })
+    elseif damageFactor > 0 then
+        normalizedPerformance = calculateEventPerformanceRatio("hybrid", {
+            goalTime = time,
+            baseReward = rewardBaseForPerformance,
+            actualTime = in_race_time,
+            damageFactor = damageFactor,
+            actualDamagePct = damagePercentage,
+            raceTypes = race.type
+        })
+    else
+        normalizedPerformance = calculateEventPerformanceRatio("time", {
+            goalTime = time,
+            baseReward = rewardBaseForPerformance,
+            actualTime = in_race_time,
+            raceTypes = race.type
+        })
     end
 
     -- Handle leaderboard
@@ -415,6 +656,14 @@ local function payoutRace(completedLapTime)
     end
 
     local hotlapMessage = ""
+    local completionMeta = {
+        disciplineIds = getRaceDisciplineIds(race),
+        invalidLap = invalidLap == true,
+        normalizedPerformance = normalizedPerformance,
+        driftScore = driftScore,
+        damagePercentage = damagePercentage,
+        rewardBreakdown = {}
+    }
     -- Handle career mode specific rewards
     if career_career.isActive() then
         if not newBest or mHotlap then
@@ -447,29 +696,35 @@ local function payoutRace(completedLapTime)
 
         reward = reward / (career_modules_hardcore.isHardcoreMode() and 2 or 1)
 
+        local baseRewardBeforeFre = reward
+        local freModifiers = getFreRewardModifiers(completionMeta.disciplineIds)
+        reward = reward * (tonumber(freModifiers.moneyMultiplier) or 1)
+        local disciplineXpRewards, disciplineXpBreakdown, totalDisciplineXp = buildDisciplineXpRewards(completionMeta.disciplineIds, normalizedPerformance, freModifiers)
+        completionMeta.rewardBreakdown = {
+            money = {
+                base = baseRewardBeforeFre,
+                multiplier = tonumber(freModifiers.moneyMultiplier) or 1,
+                final = reward
+            },
+            normalizedPerformance = normalizedPerformance,
+            disciplineXp = disciplineXpBreakdown
+        }
+
         if reward > 0 then
             local playerVehicleId = be:getPlayerVehicleID(0)
             local businessAccount, businessType, businessId = getBusinessAccountFromVehicle(playerVehicleId)
             
             if businessAccount then
                 local businessReward = math.floor(reward * 0.5)
-                local xp = math.floor(reward / 20)
+                local xpReward = {}
+                mergeRewardTables(xpReward, disciplineXpRewards)
                 
-                local xpReward = {
-                    beamXP = {
-                        amount = math.floor(xp / 10)
-                    }
-                }
-                for _, type in ipairs(race.type) do
-                    xpReward[type] = {
-                        amount = xp
-                    }
+                if next(xpReward) ~= nil then
+                    career_modules_payment.reward(xpReward, {
+                        label = rewardLabel(mActiveRace, newBest),
+                        tags = {"gameplay", "reward", "mission"}
+                    }, true)
                 end
-                
-                career_modules_payment.reward(xpReward, {
-                    label = rewardLabel(mActiveRace, newBest),
-                    tags = {"gameplay", "reward", "mission"}
-                }, true)
                 
                 if career_modules_bank then
                     career_modules_bank.rewardToAccount({
@@ -479,32 +734,24 @@ local function payoutRace(completedLapTime)
                     }, businessAccount.id, "Event Reward", rewardLabel(mActiveRace, newBest))
                 end
                 
-                message = message .. string.format("\nXP: %d | Business Reward: $%.2f (50%% to business account)", xp, businessReward)
+                message = message .. string.format("\nDiscipline XP: %d | Business Reward: $%.2f (50%% to business account)", totalDisciplineXp, businessReward)
                 if career_modules_hardcore.isHardcoreMode() then
                     message = message .. "\nHardcore mode is enabled, all rewards are halved."
                 end
             else
-                local xp = math.floor(reward / 20)
                 local totalReward = {
                     money = {
                         amount = reward
-                    },
-                    beamXP = {
-                        amount = math.floor(xp / 10)
                     }
                 }
-                for _, type in ipairs(race.type) do
-                    totalReward[type] = {
-                        amount = xp
-                    }
-                end
+                mergeRewardTables(totalReward, disciplineXpRewards)
 
                 career_modules_payment.reward(totalReward, {
                     label = rewardLabel(mActiveRace, newBest),
                     tags = {"gameplay", "reward", "mission"}
                 }, true)
 
-                message = message .. string.format("\nXP: %d | Reward: $%.2f", xp, reward)
+                message = message .. string.format("\nDiscipline XP: %d | Reward: $%.2f", totalDisciplineXp, reward)
                 if career_modules_hardcore.isHardcoreMode() then
                     message = message .. "\nHardcore mode is enabled, all rewards are halved."
                 end
@@ -513,6 +760,7 @@ local function payoutRace(completedLapTime)
         end
     end
 
+    notifyFreRaceCompleted(mActiveRace, race, raceLabel, in_race_time, be:getPlayerVehicleID(0), completionMeta)
     mActiveRace = nil
     utils.displayMessage(message, 20, "Reward")
     if hotlapMessage ~= "" then
@@ -569,6 +817,13 @@ local function payoutDragRace(raceName, finishTime, finishSpeed, vehId)
     local raceData = races[raceName]
     local targetTime = raceData.bestTime
     local baseReward = raceData.reward
+    local disciplineIds = getRaceDisciplineIds(raceData)
+    local normalizedPerformance = calculateEventPerformanceRatio("time", {
+        goalTime = targetTime,
+        baseReward = baseReward,
+        actualTime = finishTime,
+        raceTypes = raceData.type
+    })
 
     -- Calculate reward based on performance
     local reward = utils.raceReward(targetTime, baseReward, finishTime, raceData.type)
@@ -580,8 +835,26 @@ local function payoutDragRace(raceName, finishTime, finishSpeed, vehId)
 
     reward = newBestTime and reward or reward / 2
 
-    -- Calculate experience points
-    local xp = math.floor(reward / 20)
+    local baseRewardBeforeFre = reward
+    local freModifiers = getFreRewardModifiers(disciplineIds)
+    reward = reward * (tonumber(freModifiers.moneyMultiplier) or 1)
+    local disciplineXpRewards, disciplineXpBreakdown, totalDisciplineXp = buildDisciplineXpRewards(disciplineIds, normalizedPerformance, freModifiers)
+    local completionMeta = {
+        disciplineIds = disciplineIds,
+        invalidLap = false,
+        normalizedPerformance = normalizedPerformance,
+        driftScore = 0,
+        damagePercentage = 0,
+        rewardBreakdown = {
+            money = {
+                base = baseRewardBeforeFre,
+                multiplier = tonumber(freModifiers.moneyMultiplier) or 1,
+                final = reward
+            },
+            normalizedPerformance = normalizedPerformance,
+            disciplineXp = disciplineXpBreakdown
+        }
+    }
 
     -- Check if this is a business vehicle
     local businessAccount, businessType, businessId = getBusinessAccountFromVehicle(vehId)
@@ -589,18 +862,17 @@ local function payoutDragRace(raceName, finishTime, finishSpeed, vehId)
     if businessAccount then
         local businessReward = math.floor(reward * 0.5)
         
-        local xpReward = {
-            beamXP = {
-                amount = math.floor(xp / 10)
-            }
-        }
+        local xpReward = {}
+        mergeRewardTables(xpReward, disciplineXpRewards)
         
         local reason = {
             label = raceData.label .. (newBestTime and " - New Best Time!" or " - Completion"),
             tags = {"gameplay", "reward", "drag"}
         }
         
-        career_modules_payment.reward(xpReward, reason, true)
+        if next(xpReward) ~= nil then
+            career_modules_payment.reward(xpReward, reason, true)
+        end
         
         if career_modules_bank then
             career_modules_bank.rewardToAccount({
@@ -610,9 +882,9 @@ local function payoutDragRace(raceName, finishTime, finishSpeed, vehId)
             }, businessAccount.id, "Event Reward", raceData.label .. (newBestTime and " - New Best Time!" or " - Completion"))
         end
         
-        local message = string.format("%s\n%s\nTime: %s\nSpeed: %.2f mph\nXP: %d | Business Reward: $%.2f (50%% to business account)",
+        local message = string.format("%s\n%s\nTime: %s\nSpeed: %.2f mph\nDiscipline XP: %d | Business Reward: $%.2f (50%% to business account)",
             newBestTime and "Congratulations! New Best Time!" or "", raceData.label, utils.formatTime(finishTime), finishSpeed,
-            xp, businessReward)
+            totalDisciplineXp, businessReward)
         
         if career_modules_hardcore.isHardcoreMode() then
             message = message .. "\nHardcore mode is enabled, all rewards are halved."
@@ -624,11 +896,9 @@ local function payoutDragRace(raceName, finishTime, finishSpeed, vehId)
         local totalReward = {
             money = {
                 amount = reward
-            },
-            beamXP = {
-                amount = math.floor(xp / 10)
             }
         }
+        mergeRewardTables(totalReward, disciplineXpRewards)
 
         -- Create reason for reward
         local reason = {
@@ -640,9 +910,9 @@ local function payoutDragRace(raceName, finishTime, finishSpeed, vehId)
         career_modules_payment.reward(totalReward, reason, true)
 
         -- Prepare the completion message
-        local message = string.format("%s\n%s\nTime: %s\nSpeed: %.2f mph\nXP: %d | Reward: $%.2f",
+        local message = string.format("%s\n%s\nTime: %s\nSpeed: %.2f mph\nDiscipline XP: %d | Reward: $%.2f",
             newBestTime and "Congratulations! New Best Time!" or "", raceData.label, utils.formatTime(finishTime), finishSpeed,
-            xp, reward)
+            totalDisciplineXp, reward)
 
         if career_modules_hardcore.isHardcoreMode() then
             message = message .. "\nHardcore mode is enabled, all rewards are halved."
@@ -654,6 +924,7 @@ local function payoutDragRace(raceName, finishTime, finishSpeed, vehId)
 
     -- Save the leaderboard and game state
     career_saveSystem.saveCurrent()
+    notifyFreRaceCompleted(raceName, raceData, raceData.label, finishTime, vehId, completionMeta)
 
     return reward
 end

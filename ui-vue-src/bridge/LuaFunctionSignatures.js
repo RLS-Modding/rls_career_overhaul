@@ -1579,10 +1579,23 @@ export default {
     navigateToEvent: raceName => String,
   },
 
+
+  ui_phone_freContracts: {
+    getState: filterDisciplineId => {},
+    startLiveUpdates: () => {},
+    stopLiveUpdates: () => {},
+    acceptContract: contractId => {},
+    abandonContract: contractId => {},
+    signSponsor: sponsorId => {},
+    dropSponsor: sponsorId => {},
+    acknowledgeSponsorWarning: sponsorId => {},
+  },
+
   ui_phone_logistics: {
     requestFacilityList: () => {},
     requestFacilityDetail: facilityId => {},
     navigateToFacility: (facilityId, parkingSpotPath) => {},
+
   },
 
   ui_phone_time: {

@@ -1,7 +1,7 @@
 {
-    "name":  "Taxi Skill",
+    "name":  "Taxi (Coming Soon)",
     "description":  "Coming soon",
-    "order":  1300,
+    "order":  100,
     "isSkill":  true,
     "icon":  "car",
     "levels":  [
