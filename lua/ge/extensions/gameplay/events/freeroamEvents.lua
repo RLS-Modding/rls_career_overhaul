@@ -94,6 +94,17 @@ local function saveFreeroamHubPrefs()
     career_saveSystem.jsonWriteFileSafe(path, mFreeroamHubPrefs, true)
 end
 
+-- Add player HP and class to hub state for header display (Class X • N HP). Also trigger dedicated event so UI receives it.
+local function injectPlayerPowerAndClassIntoState(state)
+    if not state or not aiRacers or not aiRacers.getPlayerVehiclePowerAndClass then return end
+    local hp, cl = aiRacers.getPlayerVehiclePowerAndClass()
+    state.playerHp = hp
+    state.playerClass = cl
+    if guihooks and guihooks.trigger then
+        guihooks.trigger("FreeroamHubPlayerPowerClass", { playerHp = hp, playerClass = cl })
+    end
+end
+
 local function isFreeroamHubActive()
     if not career_career or not career_career.isActive() then return false end
     if not getFreeroamHubPrefsPath() then return false end
@@ -733,14 +744,16 @@ local function isAiSpawnedVehicle(subjectID)
     return false
 end
 
--- Build AI lap state for display (hub or getAiLapState). Returns { inRaceTime, vehicles = { { index, place, lapCount, ... }, ... } }.
+-- Build AI lap state for display (hub or getAiLapState). Returns { inRaceTime, leaderTime, vehicles = { player + AI with place, totalTime, diffFromLeader }, ... }.
 -- [AI-PLACE-LUA-1] begin: compute place by position (player + AI sorted by laps, then finished/finishTime, then checkpoints, then currentLapTime)
 local function getAiLapStateForDisplay()
     if not mActiveRace or not next(mAiLapState) then return nil end
     local race = races[mActiveRace]
-    local totalLaps = (race and race.lapCount and race.lapCount > 0) and race.lapCount or 3
+    local effectiveRace = (mAltRoute and race and race.altRoute) and race.altRoute or race
+    local totalLaps = (effectiveRace and effectiveRace.lapCount and effectiveRace.lapCount > 0) and effectiveRace.lapCount or 3
     local combined = {}
-    -- Player entry for ordering
+    -- Player total time so far
+    local playerTotalTime = (mTotalRaceTime or 0) + in_race_time
     table.insert(combined, {
         isPlayer = true,
         index = 0,
@@ -749,12 +762,23 @@ local function getAiLapStateForDisplay()
         currentLapTime = in_race_time,
         finished = false,
         finishTime = nil,
+        totalTime = playerTotalTime,
     })
     local aiIds = aiRacers and aiRacers.getSpawnedVehicleIds() or {}
     for i, vehId in ipairs(aiIds) do
         local s = mAiLapState[vehId]
         if s then
             local currentLapTime = (not s.finished) and (in_race_time - s.lapStartTime) or nil
+            local aiTotal = s.finishTime
+            if not aiTotal then
+                if s.lapTimes and #s.lapTimes > 0 then
+                    aiTotal = 0
+                    for _, t in ipairs(s.lapTimes) do aiTotal = aiTotal + t end
+                    aiTotal = aiTotal + (in_race_time - s.lapStartTime)
+                else
+                    aiTotal = in_race_time - s.lapStartTime
+                end
+            end
             table.insert(combined, {
                 isPlayer = false,
                 index = i,
@@ -763,6 +787,9 @@ local function getAiLapStateForDisplay()
                 currentLapTime = currentLapTime or 0,
                 finished = s.finished,
                 finishTime = s.finishTime,
+                totalTime = aiTotal or 0,
+                totalLaps = s.totalLaps,
+                lapTimes = s.lapTimes,
             })
         end
     end
@@ -778,31 +805,29 @@ local function getAiLapStateForDisplay()
         return (a.currentLapTime or 0) > (b.currentLapTime or 0)
     end)
     for place = 1, #combined do combined[place].place = place end
-    local placeByIndex = {}
-    for _, e in ipairs(combined) do
-        if not e.isPlayer then placeByIndex[e.index] = e.place end
-    end
+    local leaderTime = (#combined > 0 and combined[1].totalTime) and combined[1].totalTime or 0
     local vehicles = {}
-    for i, vehId in ipairs(aiIds) do
-        local s = mAiLapState[vehId]
-        if s then
-            local lastLap = (#s.lapTimes > 0) and s.lapTimes[#s.lapTimes] or nil
-            local currentLapTime = (not s.finished) and (in_race_time - s.lapStartTime) or nil
-            table.insert(vehicles, {
-                index = i,
-                place = placeByIndex[i] or i,
-                lapCount = s.lapCount,
-                totalLaps = s.totalLaps,
-                lapTimes = s.lapTimes,
-                lastLapTime = lastLap,
-                finished = s.finished,
-                finishTime = s.finishTime,
-                currentLapTime = currentLapTime,
-            })
+    for _, e in ipairs(combined) do
+        local diffFromLeader = (e.totalTime or 0) - leaderTime
+        local row = {
+            place = e.place,
+            isPlayer = e.isPlayer,
+            index = e.index,
+            lapCount = e.lapCount,
+            totalLaps = e.totalLaps or totalLaps,
+            totalTime = e.totalTime,
+            diffFromLeader = diffFromLeader,
+            finished = e.finished,
+            finishTime = e.finishTime,
+            currentLapTime = e.currentLapTime,
+        }
+        if not e.isPlayer and e.lapTimes and #e.lapTimes > 0 then
+            row.lastLapTime = e.lapTimes[#e.lapTimes]
         end
+        table.insert(vehicles, row)
     end
     if #vehicles == 0 then return nil end
-    return { inRaceTime = in_race_time, vehicles = vehicles }
+    return { inRaceTime = in_race_time, leaderTime = leaderTime, vehicles = vehicles }
 end
 -- [AI-PLACE-LUA-1] end
 
@@ -845,7 +870,7 @@ local function beginFreeroamRace(raceNameArg, subjectID)
     invalidLap = false
     utils.displayStartMessage(raceName)
     utils.setActiveLight(raceName, "green")
-    if utils.tableContains(races[raceName].type, "drift") then
+    if races[raceName].type and utils.tableContains(races[raceName].type, "drift") then
         gameplay_drift_general.setContext("inChallenge")
         gameplay_drift_general.reset()
         if gameplay_drift_drift then gameplay_drift_drift.setVehId(subjectID) end
@@ -854,13 +879,22 @@ local function beginFreeroamRace(raceNameArg, subjectID)
         processRoad.reset()
         processRoad.setStationaryTimeout(races[raceName].timeout)
         local checkpoints, altCheckpoints = processRoad.getCheckpoints(races[raceName])
+        local aiAltCheckpoints = nil
+        local useAltRoute = isFreeroamHubActive() and mFreeroamHubUseAltRoute and races[raceName].altRoute
+        if useAltRoute and aiRacers and aiRacers.getMergedConfigForRace and processRoad.getCheckpointsFromRoad then
+            local cfg = aiRacers.getMergedConfigForRace(races[raceName].altRoute)
+            if cfg and type(cfg.pathRoad) == "string" and cfg.pathRoad ~= "" then
+                local minDist = (races[raceName].altRoute and races[raceName].altRoute.minCheckpointDistance) or races[raceName].minCheckpointDistance or 90
+                aiAltCheckpoints = processRoad.getCheckpointsFromRoad(cfg.pathRoad, minDist)
+            end
+        end
         local routeOnly = nil
         if isFreeroamHubActive() and not mFreeroamHubPracticeMode then
-            routeOnly = mFreeroamHubUseAltRoute and "alt" or "main"
+            routeOnly = useAltRoute and "alt" or "main"
         end
         local isLocked = isFreeroamHubActive() and not mFreeroamHubPracticeMode
         if checkpointManager.setRouteLocked then checkpointManager.setRouteLocked(isLocked) end
-        checkpointManager.createCheckpoints(checkpoints, altCheckpoints, routeOnly)
+        checkpointManager.createCheckpoints(checkpoints, altCheckpoints, routeOnly, aiAltCheckpoints)
         isLoop = processRoad.isLoop()
         currCheckpoint = 0
         checkpointsHit = 0
@@ -887,11 +921,14 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
     mFreeroamStagingSubjectID = nil
     if mActiveRace then
         local raceName = mActiveRace
+        local mainRace = races[raceName]
+        -- Use effective race (alt route when on Short Track) so lap/timer and results use correct route data
+        local effectiveRace = (mainRace and mAltRoute and mainRace.altRoute) and mainRace.altRoute or (raceData or mainRace or {})
         local raceLabel = getRaceLabel()
         local displayLabel = getDisplayRaceLabel()
         
         -- Build final UI state before we clear mActiveRace (display label has no "(Hotlap)" for hub title)
-        local isLapRace = raceData and ((raceData.lapCount and raceData.lapCount > 0) or raceData.hotlap)
+        local isLapRace = effectiveRace and ((effectiveRace.lapCount and effectiveRace.lapCount > 0) or effectiveRace.hotlap)
         local sectorDeltas = {}
         for i = 1, checkpointsHit do
             local d = getDifference(raceName, i)
@@ -906,7 +943,7 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
             raceLabel = displayLabel,
             currentLap = isLapRace and lapCount or 0,
             displayLap = lapNum,
-            totalLaps = isLapRace and raceData.lapCount or 1,
+            totalLaps = isLapRace and effectiveRace.lapCount or 1,
             totalCheckpoints = totalCheckpoints,
             currentLapTime = in_race_time,
             topSpeedThisLap = maxSpeed,
@@ -932,7 +969,7 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
             if type(rewardData) == "number" then rewardAmt = rewardData end
 
             local totalTime = (mTotalRaceTime or 0) + in_race_time
-            local lapsTotalVal = isLapRace and (raceData.lapCount and raceData.lapCount > 0 and raceData.lapCount or lapCount) or 1
+            local lapsTotalVal = isLapRace and (effectiveRace.lapCount and effectiveRace.lapCount > 0 and effectiveRace.lapCount or lapCount) or 1
 
             finalResult = {
                 raceLabel = displayLabel,
@@ -972,10 +1009,12 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
                     local bt = b.totalTime or 999999
                     return at < bt
                 end)
+                local leaderTime = (#list > 0 and list[1].totalTime) and list[1].totalTime or 0
                 local aiResults = {}
                 for place, row in ipairs(list) do
                     local r = { place = place, isPlayer = row.isPlayer, lapsCompleted = row.lapsCompleted, lapsTotal = row.lapsTotal, totalTime = row.totalTime, bestLap = row.bestLap }
                     if not row.isPlayer then r.index = row.index end
+                    r.diffFromLeader = (row.totalTime or 0) - leaderTime
                     table.insert(aiResults, r)
                 end
                 finalResult.aiResults = aiResults
@@ -983,12 +1022,12 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
             -- [AI-RESULTS-LUA-1] end
 
             -- Race-specific completion handling
-            if raceName == "drag" and raceData and subjectID then
+            if raceName == "drag" and effectiveRace and subjectID then
                 local side = "l"
                 utils.updateDisplay(side, in_race_time, math.abs(be:getObjectVelocityXYZ(subjectID)) * speedUnit)
             end
 
-            if raceData and utils.tableContains(raceData.type, "drift") then
+            if effectiveRace and effectiveRace.type and utils.tableContains(effectiveRace.type, "drift") then
                 local finalScore = getDriftScore()
                 if gameplay_drift_general.getContext() == "inChallenge" then
                     gameplay_drift_general.setContext("inFreeRoam")
@@ -1002,8 +1041,8 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
             -- Race cancellation logic; if at least one lap completed, still show result screen + Next
             local message = customMessage or "You exited the race zone, Race cancelled"
             utils.displayMessage(message, 3)
-            if lapCount >= 1 and (raceData or races[raceName]) then
-                local rd = raceData or races[raceName]
+            if lapCount >= 1 and effectiveRace then
+                local rd = effectiveRace
                 local isLap = rd and ((rd.lapCount and rd.lapCount > 0) or rd.hotlap)
                 local totalTimePartial = (mTotalRaceTime or 0) + in_race_time
                 local lapsTotalVal = isLap and (rd.lapCount and rd.lapCount > 0 and rd.lapCount or lapCount) or 1
@@ -1045,10 +1084,12 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
                         local bt = b.totalTime or 999999
                         return at < bt
                     end)
+                    local leaderTime = (#list > 0 and list[1].totalTime) and list[1].totalTime or 0
                     local aiResults = {}
                     for place, row in ipairs(list) do
                         local r = { place = place, isPlayer = row.isPlayer, lapsCompleted = row.lapsCompleted, lapsTotal = row.lapsTotal, totalTime = row.totalTime, bestLap = row.bestLap }
                         if not row.isPlayer then r.index = row.index end
+                        r.diffFromLeader = (row.totalTime or 0) - leaderTime
                         table.insert(aiResults, r)
                     end
                     finalResult.aiResults = aiResults
@@ -1059,6 +1100,7 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
 
         -- Push the final state and result to the UI app (only when hub is active)
         if isFreeroamHubActive() then
+            injectPlayerPowerAndClassIntoState(finalState)
             guihooks.trigger("FreeroamHubRaceState", finalState)
             if finalResult then
                 mFreeroamHubShowingResult = true
@@ -1140,17 +1182,21 @@ local function onBeamNGTrigger(data)
         return
     end
 
-    -- Initialize altFlag and index
+    -- Initialize altFlag, index, and aiAlt (trigger is for AI alt route from config pathRoad; no world display)
     local altFlag = nil
     local index = nil
+    local isAiAlt = false
 
     -- Process the rest of the trigger name
     if rest ~= "" then
         -- Remove leading underscores
         rest = rest:gsub("^_+", "")
 
-        -- Check if rest starts with 'alt'
-        if rest:sub(1, 3) == "alt" then
+        -- Check for AI alt checkpoint (fre_checkpoint_<race>_ai_alt_<index>)
+        if rest:sub(1, 6) == "ai_alt" then
+            isAiAlt = true
+            rest = rest:sub(7):gsub("^_+", "")
+        elseif rest:sub(1, 3) == "alt" then
             altFlag = "alt"
             rest = rest:sub(4) -- Remove 'alt' and move forward
             rest = rest:gsub("^_+", "") -- Remove any additional underscores
@@ -1187,7 +1233,8 @@ local function onBeamNGTrigger(data)
             return
         end
         if triggerType == "checkpoint" and event == "enter" and checkpointIndex then
-            if not state.finished and checkpointIndex == state.currentExpectedCheckpoint then
+            local useForAi = isAiAlt or not isAlt or not (checkpointManager.getAiAltCheckpointCount and checkpointManager.getAiAltCheckpointCount() > 0)
+            if useForAi and not state.finished and checkpointIndex == state.currentExpectedCheckpoint then
                 state.checkpointsHit = state.checkpointsHit + 1
                 state.currentExpectedCheckpoint = state.currentExpectedCheckpoint + 1
             end
@@ -1311,6 +1358,7 @@ local function onBeamNGTrigger(data)
                 end
                 -- Use guihooks only; engine container has no freeroamEventHub registered
                 guihooks.trigger("setGameplayAppVisibility", { appId = "freeroamEventHub", visible = true })
+                injectPlayerPowerAndClassIntoState(state)
                 guihooks.trigger("FreeroamHubRaceState", state)
             end
 
@@ -1376,9 +1424,10 @@ local function onBeamNGTrigger(data)
             -- Hub race mode: if we have a required lap count and just reached it, complete the race and show result screen
             if isFreeroamHubActive() and not mFreeroamHubPracticeMode then
                 local race = races[raceName]
-                local requiredLaps = (race.lapCount and race.lapCount > 0) and race.lapCount or 3
+                local effectiveRace = (mAltRoute and race.altRoute) and race.altRoute or race
+                local requiredLaps = (effectiveRace.lapCount and effectiveRace.lapCount > 0) and effectiveRace.lapCount or 3
                 if lapCount >= requiredLaps then
-                    exitRace(true, nil, race, data.subjectID)
+                    exitRace(true, nil, effectiveRace, data.subjectID)
                     return
                 end
             end
@@ -1520,7 +1569,9 @@ local function onBeamNGTrigger(data)
 
     elseif triggerType == "finish" then
         if event == "enter" and mActiveRace == raceName then
-            exitRace(true, nil, races[raceName], data.subjectID)
+            local race = races[raceName]
+            local effectiveRace = (race and mAltRoute and race.altRoute) and race.altRoute or race
+            exitRace(true, nil, effectiveRace, data.subjectID)
         end
     elseif triggerType == "pits" then
         if event == "enter" and mActiveRace == raceName then
@@ -1649,16 +1700,26 @@ local function onUpdate(dtReal, dtSim, dtRaw)
             if rn and sid then
                 staged = nil
                 beginFreeroamRace(rn, sid)
-                -- Release AI racers on GO (track = main route or alt Short Track)
-                if rn == "track" and aiRacers and aiRacers.releaseAndDrive and races and races.track then
-                    local raceForAi = races.track
-                    if mFreeroamHubUseAltRoute and races.track.altRoute and races.track.altRoute.checkpointRoad then
-                        raceForAi = races.track.altRoute
+                -- Release AI racers on GO (any race with checkpointRoad; alt route when hub selected alt)
+                if rn and races[rn] and races[rn].checkpointRoad and aiRacers and aiRacers.releaseAndDrive then
+                    local mainRace = races[rn]
+                    local raceForAi = mainRace
+                    if mFreeroamHubUseAltRoute and mainRace.altRoute and mainRace.altRoute.checkpointRoad then
+                        raceForAi = mainRace.altRoute
                     end
                     local aiLaps = (raceForAi.lapCount and raceForAi.lapCount > 0) and raceForAi.lapCount or 3
                     aiRacers.releaseAndDrive(raceForAi, aiLaps)
                     if aiRacers.setPlayerFreeze then aiRacers.setPlayerFreeze(true) end
-                    -- Init AI lap state for lap counting and timers
+                    -- Init AI lap state. When alt route has pathRoad in config, AI use ai_alt triggers (count from getAiAltCheckpointCount).
+                    local aiTotalCheckpoints = totalCheckpoints
+                    if raceForAi == mainRace.altRoute then
+                        if checkpointManager.getAiAltCheckpointCount and checkpointManager.getAiAltCheckpointCount() > 0 then
+                            aiTotalCheckpoints = checkpointManager.getAiAltCheckpointCount()
+                        elseif checkpointManager.getAltCheckpointCount then
+                            local altCount = checkpointManager.getAltCheckpointCount()
+                            if altCount and altCount > 0 then aiTotalCheckpoints = altCount end
+                        end
+                    end
                     mAiLapState = {}
                     local aiIds = aiRacers.getSpawnedVehicleIds()
                     for _, vehId in ipairs(aiIds or {}) do
@@ -1666,7 +1727,7 @@ local function onUpdate(dtReal, dtSim, dtRaw)
                             lapCount = 0,
                             lapStartTime = in_race_time,
                             totalLaps = aiLaps,
-                            totalCheckpoints = totalCheckpoints,
+                            totalCheckpoints = aiTotalCheckpoints,
                             checkpointsHit = 0,
                             currentExpectedCheckpoint = 1,
                             lapTimes = {},
@@ -1694,8 +1755,10 @@ local function onUpdate(dtReal, dtSim, dtRaw)
         end
         
         -- Push live UI state: hub title uses display label (no "(Hotlap)"); leaderboard lookup uses full label
+        -- Use effective race (alt route when on Short Track) so lap counter and totalLaps match current route
         local race = races[mActiveRace] or {}
-        local isLapRace = (race.lapCount and race.lapCount > 0) or race.hotlap
+        local effectiveRace = (mAltRoute and race.altRoute) and race.altRoute or race
+        local isLapRace = (effectiveRace.lapCount and effectiveRace.lapCount > 0) or effectiveRace.hotlap
         local raceLabel = getRaceLabel()
         local displayLabel = getDisplayRaceLabel()
         local leaderboardEntry = mInventoryId and leaderboardManager.getLeaderboardEntry(mInventoryId, raceLabel) or {}
@@ -1718,7 +1781,7 @@ local function onUpdate(dtReal, dtSim, dtRaw)
                 raceLabel = displayLabel,
                 currentLap = isLapRace and lapCount or 0,
                 displayLap = lapNum,
-                totalLaps = isLapRace and race.lapCount or 1,
+                totalLaps = isLapRace and effectiveRace.lapCount or 1,
                 totalCheckpoints = totalCheckpoints,
                 currentLapTime = in_race_time,
                 topSpeedThisLap = maxSpeed,
@@ -1730,6 +1793,7 @@ local function onUpdate(dtReal, dtSim, dtRaw)
                 sectorDeltas = sectorDeltas,
                 aiLapState = getAiLapStateForDisplay()
             }
+            injectPlayerPowerAndClassIntoState(state)
             guihooks.trigger("FreeroamHubRaceState", state)
             guihooks.trigger("setGameplayAppVisibility", { appId = "freeroamEventHub", visible = true })
         end
@@ -1870,6 +1934,7 @@ M.onFreeroamHubReady = function()
             splits = mSplitTimes,
             sectorDeltas = sectorDeltas
         }
+        injectPlayerPowerAndClassIntoState(state)
         guihooks.trigger("FreeroamHubSetAvailable", { available = true })
         guihooks.trigger("FreeroamHubRaceState", state)
     elseif staged == "track" then
@@ -1881,6 +1946,7 @@ M.onFreeroamHubReady = function()
             state.stagedMessage = utils.displayStagedMessage(vehId, staged, true)
         end
         state.showRaceSelection = not mFreeroamHubRaceSelected
+        injectPlayerPowerAndClassIntoState(state)
         guihooks.trigger("FreeroamHubSetAvailable", { available = true })
         guihooks.trigger("FreeroamHubRaceState", state)
     end

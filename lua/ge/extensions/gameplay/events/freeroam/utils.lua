@@ -146,6 +146,7 @@ local function formatTime(seconds)
 end
 
 local function tableContains(tbl, val)
+  if type(tbl) ~= "table" then return false end
   for _, v in ipairs(tbl) do
     if v == val then
       return true

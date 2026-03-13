@@ -320,6 +320,8 @@ end
 -- vehiclePool class bands: stock <320, modified 320-550, super >=550 HP. Used when cfg.vehiclePool is set.
 local STOCK_MAX_HP = 319
 local MODIFIED_MAX_HP = 549
+-- Configs within this many HP of the player are preferred when picking from the pool (then by closest).
+local CLOSE_HP_TOLERANCE = 25
 local function getClassFromHpForVehiclePool(power)
     if type(power) ~= "number" or power < 0 then return "stock" end
     if power <= STOCK_MAX_HP then return "stock" end
@@ -469,7 +471,24 @@ local function pickVehiclePoolByClosestWithVariety(classPool, playerPowerHp, req
         local j = math.random(1, i)
         withPower[i], withPower[j] = withPower[j], withPower[i]
     end
-    table.sort(withPower, function(a, b) return math.abs((a.powerHp or ph) - ph) < math.abs((b.powerHp or ph) - ph) end)
+    table.sort(withPower, function(a, b)
+        local ahp = a.powerHp or ph
+        local bhp = b.powerHp or ph
+        local da = math.abs(ahp - ph)
+        local db = math.abs(bhp - ph)
+        local aClose = da <= CLOSE_HP_TOLERANCE
+        local bClose = db <= CLOSE_HP_TOLERANCE
+        if aClose and not bClose then return true end
+        if not aClose and bClose then return false end
+        if aClose and bClose then return da < db end
+        -- After "within 25 HP": prefer next closest but always higher (power >= player), then below player by closest
+        local aAbove = ahp >= ph
+        local bAbove = bhp >= ph
+        if aAbove and not bAbove then return true end
+        if not aAbove and bAbove then return false end
+        if aAbove and bAbove then return (ahp - ph) < (bhp - ph) end
+        return da < db
+    end)
     local picked = {}
     local usedModel = {}
     for _, e in ipairs(withPower) do
@@ -714,7 +733,8 @@ function M.spawnForStagingWithPlayerHp(raceName, race, facilityName, callback)
         if type(cfg.vehiclePool) == "table" and type(cfg.vehiclePool.stock) == "table" then
             local class = getClassFromHpForVehiclePool(powerHp or 0)
             local classPool = cfg.vehiclePool[class] or cfg.vehiclePool.stock
-            local available = filterVehiclePoolToAvailable(classPool)
+            -- Use class pool as-is; do not filter by getAvailableModelLookup() so aiRacingConfig entries (etkc, bastion, scintilla, etc.) are used.
+            local available = type(classPool) == "table" and classPool or {}
             if #available > 0 then
                 local requestedCount = (race and race.aiCount) or cfg.maxSpawnCount or 4
                 local list = pickVehiclePoolByClosestWithVariety(available, powerHp, requestedCount)
@@ -1163,6 +1183,17 @@ function M.onUpdate(dtReal)
     local dt = tonumber(dtReal) or 0
     if dt <= 0 then return end
 
+    -- If we asked UI for player power (Option C) and it didn't respond in time, fall back to Option B.
+    if type(pendingPowerCallback) == "function" and pendingPowerVehId and M._powerRequestUiFallbackTimer and (os.clock() - M._powerRequestUiFallbackTimer) > 1.5 then
+        M._powerRequestUiFallbackTimer = nil
+        local vehObj = be and be:getObjectByID(pendingPowerVehId)
+        if vehObj and vehObj.queueLuaCommand then
+            vehObj:queueLuaCommand(string.format(M._powerRequestScriptTemplate, 0, POWER_REQUEST_MAX_RETRIES))
+        else
+            M.onPlayerVehiclePowerWeight(0, nil)
+        end
+    end
+
     if mPlayerUnfreezeAt and os.clock() >= mPlayerUnfreezeAt then
         mPlayerUnfreezeAt = nil
         M.setPlayerFreeze(false)
@@ -1351,6 +1382,22 @@ local ELIGIBILITY_PCT = 0.75
 local XP_FOR_CLASS = { D = 0, C = 1500, B = 5000, A = 15000 }
 
 local pendingPowerCallback = nil
+local pendingPowerVehId = nil  -- used by Option B retry so we can re-queue on same vehicle
+local POWER_REQUEST_MAX_RETRIES = 20
+-- Vehicle script: read engine.maxPower (watts); if 0 and retry < max, vehicle calls onPlayerVehiclePowerWeightRetry(retry) so GE re-queues (Option B).
+M._powerRequestScriptTemplate = [[
+local retry = %d
+local power, weight = 0, 0
+local engine = powertrain.getDevicesByCategory("engine")[1]
+local stats = obj:calcBeamStats()
+if engine then power = engine.maxPower or 0 end
+if stats and stats.total_weight then weight = stats.total_weight end
+if power > 0 or retry >= %d then
+  obj:queueGameEngineLua("(function() local g = _G.career_modules_competitiveRace_aiRacers if g and type(g.onPlayerVehiclePowerWeight) == \"function\" then g.onPlayerVehiclePowerWeight(" .. tostring(power) .. "," .. tostring(weight) .. ") end end)()")
+else
+  obj:queueGameEngineLua("(function() local g = _G.career_modules_competitiveRace_aiRacers if g and type(g.onPlayerVehiclePowerWeightRetry) == \"function\" then g.onPlayerVehiclePowerWeightRetry(" .. tostring(retry) .. ") end end)()")
+end
+]]
 
 local function getEffectiveClassFromXp(cfg, businessXp)
     local xp = tonumber(businessXp) or 0
@@ -1399,10 +1446,19 @@ function M.getPlayerVehiclePower()
     return getPowerHpFromConfig(configs)
 end
 
--- Called from vehicle Lua (queueGameEngineLua) with live power/weight.
+-- Returns player power (HP) and class string ("stock" / "modified" / "super") for hub display. Returns nil, nil if not available.
+function M.getPlayerVehiclePowerAndClass()
+    local powerHp = M.getPlayerVehiclePower()
+    if type(powerHp) ~= "number" or powerHp < 0 then return nil, nil end
+    return powerHp, getClassFromHpForVehiclePool(powerHp)
+end
+
+-- Called from vehicle Lua (queueGameEngineLua) or from UI (careerRequestPlayerPower response) with live power/weight.
 function M.onPlayerVehiclePowerWeight(power, weight)
+    M._powerRequestUiFallbackTimer = nil
     local cb = pendingPowerCallback
     pendingPowerCallback = nil
+    pendingPowerVehId = nil
     if type(cb) == "function" then
         local p = (type(power) == "number") and power or nil
         local w = (type(weight) == "number") and weight or nil
@@ -1410,7 +1466,22 @@ function M.onPlayerVehiclePowerWeight(power, weight)
     end
 end
 
--- Request live power/weight from current player vehicle (vehicle-side engine + calcBeamStats). Always calls callback.
+-- Vehicle calls this when engine not ready yet; we re-queue the script with retry+1 (Option B).
+function M.onPlayerVehiclePowerWeightRetry(retryCount)
+    if type(pendingPowerCallback) ~= "function" or not pendingPowerVehId then return end
+    if type(retryCount) ~= "number" or retryCount >= POWER_REQUEST_MAX_RETRIES then
+        M.onPlayerVehiclePowerWeight(0, nil)
+        return
+    end
+    local vehObj = be and be:getObjectByID(pendingPowerVehId)
+    if vehObj and vehObj.queueLuaCommand then
+        vehObj:queueLuaCommand(string.format(M._powerRequestScriptTemplate, retryCount + 1, POWER_REQUEST_MAX_RETRIES))
+    else
+        M.onPlayerVehiclePowerWeight(0, nil)
+    end
+end
+
+-- Request live power/weight: try sync (Option A) first; else async with vehicle retry until engine ready (Option B). Always calls callback.
 function M.getPlayerVehiclePowerReliable(callback)
     if type(callback) ~= "function" then return end
     if not be or not be.getPlayerVehicleID or not be.getObjectByID then
@@ -1422,21 +1493,35 @@ function M.getPlayerVehiclePowerReliable(callback)
         callback(nil, nil)
         return
     end
+
+    -- Option A: try sync power from vehicle details first (no vehicle Lua / powertrain dependency).
+    local powerHp = M.getPlayerVehiclePower()
+    if type(powerHp) == "number" and powerHp > 0 then
+        local details = core_vehicles and core_vehicles.getVehicleDetails and core_vehicles.getVehicleDetails(vehId)
+        local weight = (details and details.configs and details.configs.total_weight) or (details and details.aggregates and details.aggregates.total_weight) or nil
+        callback(powerHp * WATTS_PER_HP, weight)
+        return
+    end
+
+    -- Option C: ask UI to read via bngApi.activeObjectLua (same as Doinks); UI calls onPlayerVehiclePowerWeight with result.
+    if guihooks and guihooks.trigger then
+        pendingPowerCallback = callback
+        pendingPowerVehId = vehId
+        guihooks.trigger("careerRequestPlayerPower")
+        -- Fallback to Option B after delay in case UI is not loaded or does not respond.
+        M._powerRequestUiFallbackTimer = os.clock()
+        return
+    end
+
     local vehObj = be:getObjectByID(vehId)
     if not vehObj or not vehObj.queueLuaCommand then
         callback(nil, nil)
         return
     end
     pendingPowerCallback = callback
-    local script = [[
-        local power, weight = 0, 0
-        local engine = powertrain.getDevicesByCategory("engine")[1]
-        local stats = obj:calcBeamStats()
-        if engine then power = engine.maxPower or 0 end
-        if stats and stats.total_weight then weight = stats.total_weight end
-        obj:queueGameEngineLua("(function() local g = _G.career_modules_competitiveRace_aiRacers if g and type(g.onPlayerVehiclePowerWeight) == \"function\" then g.onPlayerVehiclePowerWeight(" .. tostring(power) .. "," .. tostring(weight) .. ") end end)()")
-    ]]
-    vehObj:queueLuaCommand(script)
+    pendingPowerVehId = vehId
+    -- Option B: vehicle script retries until engine has maxPower or max retries (same vehicle via pendingPowerVehId).
+    vehObj:queueLuaCommand(string.format(M._powerRequestScriptTemplate, 0, POWER_REQUEST_MAX_RETRIES))
 end
 
 -- Sync eligibility: returns ok, msg. Fails open if power cannot be read.

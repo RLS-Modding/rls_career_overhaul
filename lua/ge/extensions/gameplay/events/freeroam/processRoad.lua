@@ -800,6 +800,21 @@ local function getRoadNodesFromRace(race)
     end
 end
 
+-- Build checkpoint list for a single road (e.g. AI pathRoad). Used when alt route has a separate AI road in config; no race/alt state changed.
+local function getCheckpointsFromRoad(roadName, minDistance)
+    if not roadName or type(roadName) ~= "string" or roadName == "" then return nil end
+    local saved = MIN_CHECKPOINT_DISTANCE
+    MIN_CHECKPOINT_DISTANCE = (type(minDistance) == "number" and minDistance > 0) and minDistance or 90
+    local nodes = getRoadNodes(roadName)
+    if not nodes or #nodes == 0 then
+        MIN_CHECKPOINT_DISTANCE = saved
+        return nil
+    end
+    local mainCp = processRoadNodes(nodes, {})
+    MIN_CHECKPOINT_DISTANCE = saved
+    return mainCp
+end
+
 local function getCheckpoints(race)
     MIN_CHECKPOINT_DISTANCE = race.minCheckpointDistance or 90
     if race.checkpointRoad then
@@ -857,6 +872,7 @@ local function onExtensionLoaded()
 end
 
 M.getCheckpoints = getCheckpoints
+M.getCheckpointsFromRoad = getCheckpointsFromRoad
 M.getRoadNodesFromRace = getRoadNodesFromRace
 M.isLoop = isLoop
 M.reset = reset

@@ -2,6 +2,7 @@ local M = {}
 
 local checkpoints = {}
 local altCheckpoints = {}
+local aiAltCheckpoints = {}
 local raceName = nil
 local isLoop = false
 local mAltRoute = nil
@@ -118,10 +119,46 @@ local function removeCheckpoint(index, alt)
     return checkpoint
 end
 
--- routeOnly: nil = both routes, "main" = only main route triggers/markers, "alt" = only alt route
-local function createCheckpoints(check, altCheck, routeOnly)
+-- Create trigger only (no marker) for AI alt checkpoint. Used when alt route has pathRoad in config; AI drive that road and hit these.
+local function createAiAltTrigger(index, checkpointData)
+    if not checkpointData or not checkpointData.node or not raceName then return end
+    local w = (checkpointData.node.width and checkpointData.node.width > 0) and checkpointData.node.width or 30
+    local pos = vec3(checkpointData.node.x, checkpointData.node.y, checkpointData.node.z)
+    local triggerName = string.format("fre_checkpoint_%s_ai_alt_%d", raceName, index)
+    if scenetree.findObject(triggerName) then
+        scenetree.findObject(triggerName):delete()
+    end
+    local obj = createObject('BeamNGTrigger')
+    obj:setPosition(pos)
+    obj:setScale(vec3(w, w, w))
+    obj.triggerType = 0
+    obj:registerObject(triggerName)
+    return { object = obj, triggerName = triggerName }
+end
+
+local function removeAiAltCheckpoints()
+    for i = 1, #aiAltCheckpoints do
+        local entry = aiAltCheckpoints[i]
+        if entry and entry.object then
+            entry.object:delete()
+            entry.object = nil
+        end
+    end
+    aiAltCheckpoints = {}
+end
+
+-- routeOnly: nil = both routes, "main" = only main route triggers/markers, "alt" = only alt route. aiAltCheck: optional list of checkpoint data for AI alt route (triggers only, no display).
+local function createCheckpoints(check, altCheck, routeOnly, aiAltCheck)
     checkpoints = check
     altCheckpoints = altCheck or {}
+    removeAiAltCheckpoints()
+    if aiAltCheck and type(aiAltCheck) == "table" and #aiAltCheck > 0 then
+        for i = 1, #aiAltCheck do
+            local entry = createAiAltTrigger(i, aiAltCheck[i])
+            if entry then table.insert(aiAltCheckpoints, entry) end
+        end
+    end
+
     for i = 1, #checkpoints do
         removeCheckpoint(i)
     end
@@ -245,6 +282,7 @@ local function removeCheckpoints()
     end
 
     resetActiveCheckpoints()
+    removeAiAltCheckpoints()
 
     -- Remove main checkpoints
     removeCheckpointList(checkpoints)
@@ -288,6 +326,16 @@ local function setRace(inputRace, inputRaceName)
     raceName = inputRaceName
 end
 
+-- Number of checkpoints on the alt route only (for AI lap counting when they drive the short loop).
+local function getAltCheckpointCount()
+    return altCheckpoints and #altCheckpoints or 0
+end
+
+-- Number of AI alt checkpoints (from pathRoad in config). Used for AI lap counting when alt route has a separate AI road.
+local function getAiAltCheckpointCount()
+    return aiAltCheckpoints and #aiAltCheckpoints or 0
+end
+
 local function onExtensionLoaded()
     print("Initializing Checkpoint Manager")
 end
@@ -300,5 +348,7 @@ M.setRouteLocked = setRouteLocked
 M.setAltRoute = setAltRoute
 M.setRace = setRace
 M.calculateTotalCheckpoints = calculateTotalCheckpoints
+M.getAltCheckpointCount = getAltCheckpointCount
+M.getAiAltCheckpointCount = getAiAltCheckpointCount
 
 return M
