@@ -17,6 +17,10 @@ local negotiationCooldowns = {}
 local frozenPrices = {}
 local pendingNegotiatedPrices = {}
 
+local function isHardcoreMode()
+  return career_modules_difficultyMode and career_modules_difficultyMode.isHardcoreMode and career_modules_difficultyMode.isHardcoreMode()
+end
+
 local function savePurchasedGarages(currentSavePath)
   if not currentSavePath then
     local slot, path = career_saveSystem.getCurrentSaveSlot()
@@ -212,7 +216,7 @@ local function isFreeStarterGarage(garageId, garage)
     return true
   end
 
-  if career_modules_hardcore and career_modules_hardcore.isHardcoreMode and career_modules_hardcore.isHardcoreMode() then
+  if isHardcoreMode() then
     return false
   end
 
@@ -224,7 +228,7 @@ local function isStarterGaragePurchasable(garageId)
   local garage = freeroam_facilities.getFacility("garage", garageId)
   if not garage or not garage.starterGarage then return false end
   if purchasedGarages[garageId] then return false end
-  if career_modules_hardcore and career_modules_hardcore.isHardcoreMode and career_modules_hardcore.isHardcoreMode() then
+  if isHardcoreMode() then
     return true
   end
   if not career_challengeModes or not career_challengeModes.isChallengeActive() then return false end
@@ -254,7 +258,7 @@ local function buildGarageSizes()
       end
       local isRented = career_modules_propertyRentals and career_modules_propertyRentals.isRentedGarage(garage.id)
       if purchasedGarages[garage.id] or isRented then
-        garageSize[tostring(garage.id)] = (math.ceil(garage.capacity / (career_modules_hardcore.isHardcoreMode() and 2 or 1)) or 0)
+        garageSize[tostring(garage.id)] = (math.ceil(garage.capacity / (isHardcoreMode() and 2 or 1)) or 0)
       end
       ::continue::
     end
@@ -282,7 +286,7 @@ local function addDiscoveredGarage(garageId)
 end
 
 local function purchaseDefaultGarage()
-  if career_career.hardcoreMode or career_modules_hardcore.isHardcoreMode() then return end
+  if career_career.hardcoreMode or isHardcoreMode() then return end
   
   -- Check if challenge has starting garages
   if career_challengeModes and career_challengeModes.isChallengeActive() then
@@ -373,7 +377,7 @@ local function calculateGaragePurchasePrice(garageId)
     return nil
   end
 
-  if not career_modules_hardcore.isHardcoreMode() and garage.starterGarage then
+  if not isHardcoreMode() and garage.starterGarage then
     if not isStarterGaragePurchasable(garageId) then
       return 0
     end
@@ -608,7 +612,7 @@ requestGarageListing = function(garageId)
     closingFee = closingFee,
     propertyTax = propertyTax,
     estimatedTotal = estimatedTotal,
-    capacity = math.ceil(garage.capacity / (career_modules_hardcore.isHardcoreMode() and 2 or 1)),
+    capacity = math.ceil(garage.capacity / (isHardcoreMode() and 2 or 1)),
     parkingSpots = (garage.parkingSpotNames and #garage.parkingSpotNames) or 0,
     neighborhood = "West Coast",
     canNegotiate = canNegotiate,
@@ -796,7 +800,7 @@ local function requestGarageData()
     local garageData = {
       name = garage.name,
       price = price,
-      capacity = math.ceil(garage.capacity / (career_modules_hardcore.isHardcoreMode() and 2 or 1)),
+      capacity = math.ceil(garage.capacity / (isHardcoreMode() and 2 or 1)),
       closingFeeRate = CLOSING_FEE_RATE,
       propertyTaxRate = PROPERTY_TAX_RATE,
       closingFee = closingFee,
@@ -937,7 +941,7 @@ local function getGarageCapacityData()
       local garage = freeroam_facilities.getFacility("garage", garageId)
       local capacity = garageSize[tostring(garageId)]
       if not capacity and garage and garage.capacity then
-        capacity = math.ceil(garage.capacity / (career_modules_hardcore.isHardcoreMode() and 2 or 1))
+        capacity = math.ceil(garage.capacity / (isHardcoreMode() and 2 or 1))
       end
       local vehiclesInGarage = storedLocation[garageId]
       local count = vehiclesInGarage and #vehiclesInGarage or 0
@@ -1066,7 +1070,7 @@ local function canSellGarageByGarageId(garageId)
   end
   
   local space = isGarageSpace(garageId)
-  local capacity = math.ceil(garage.capacity / (career_modules_hardcore.isHardcoreMode() and 2 or 1))
+  local capacity = math.ceil(garage.capacity / (isHardcoreMode() and 2 or 1))
   return {space[2] == capacity, capacity - space[2]}
 end
 
@@ -1302,7 +1306,7 @@ local function getOwnedGaragesListingData()
       local garage = freeroam_facilities.getFacility("garage", garageId)
       if not garage then goto continue end
 
-      local capacity = math.ceil((garage.capacity or 0) / (career_modules_hardcore.isHardcoreMode() and 2 or 1))
+      local capacity = math.ceil((garage.capacity or 0) / (isHardcoreMode() and 2 or 1))
       local vehiclesInGarage = storedLocation[garageId]
       local vehicleCount = vehiclesInGarage and #vehiclesInGarage or 0
 

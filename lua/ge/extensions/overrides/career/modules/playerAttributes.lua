@@ -233,7 +233,9 @@ local function init()
     attributes[branch.attributeKey].value = branch.defaultValue or baseAttribute.value
   end
   local startingCapital = 10000
-  if career_career.hardcoreMode then
+  if career_modules_difficultyMode and career_modules_difficultyMode.getStartingCapital then
+    startingCapital = career_modules_difficultyMode.getStartingCapital()
+  elseif career_career.hardcoreMode then
     startingCapital = 0
   end
   if career_modules_cheats and career_modules_cheats.isCheatsMode() then
@@ -261,14 +263,8 @@ local function addAttributes(change, reason, fullprice)
   reason.tags = tableValuesAsLookupDict(reason.tags)
 
   for attributeName, value in pairs(change) do
-    if (attributeName == "vouchers" and value > 0) and career_modules_hardcore.isHardcoreMode() then
-      change[attributeName] = 0
-    end
     if attributeName == "money" and career_modules_cheats and career_modules_cheats.isCheatsMode() then
       change[attributeName] = 0
-    end
-    if value > 0  and not fullprice then
-      change[attributeName] = value / (career_modules_hardcore.isHardcoreMode() and 2 or 1)
     end
   end
 

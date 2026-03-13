@@ -232,13 +232,15 @@ local function calculateAdjustedReward(raceData, baseReward)
     return math.floor(adjustedReward + 0.5)
 end
 
-local function setTypeMultiplier(typeName, multiplier)
+local function setTypeMultiplier(typeName, multiplier, suppressSave)
     if not typeName then return false end
 
     multiplier = math.max(0, math.min(10, tonumber(multiplier) or 1.0))
 
     typeMultipliers[typeName] = multiplier
-    saveMultipliers()
+    if not suppressSave then
+        saveMultipliers()
+    end
     print(string.format("Economy Adjuster: Set %s multiplier to %.2f", typeName, multiplier))
     return true
 end
@@ -253,9 +255,11 @@ local function setAllTypeMultipliers(multipliers)
 
     for typeName, multiplier in pairs(multipliers) do
         if type(multiplier) == "number" then
-            setTypeMultiplier(typeName, multiplier)
+            setTypeMultiplier(typeName, multiplier, true)
         end
     end
+
+    saveMultipliers()
 
     return true
 end

@@ -563,20 +563,28 @@ function VehicleRepoJob:calculateReward()
     local timeMultiplier = (self.totalDistanceTraveled / ((os.time() - self.jobStartTime) * 10))
     local reward = math.floor((((5 * math.sqrt(self.vehicleValue or 1000)) + distanceMultiplier) * timeMultiplier)/ 4)
     reward = reward * 1.25 + 1000
-    if career_modules_hardcore.isHardcoreMode() then
-        reward = reward * 0.5
-    end
-
     print("Base repo reward: " .. reward)
 
     -- Apply economy adjuster if available
     local adjustedReward = reward
+    local repoMultiplier = 1.0
     if career_economyAdjuster then
         -- Use repo type multiplier for repo jobs
-        local multiplier = career_economyAdjuster.getSectionMultiplier("repo")
-        adjustedReward = reward * multiplier
+        repoMultiplier = career_economyAdjuster.getSectionMultiplier("repo") or 1.0
+        adjustedReward = reward * repoMultiplier
         adjustedReward = math.floor(adjustedReward + 0.5) -- Round to nearest integer
-        print("Adjusted repo reward: " .. adjustedReward .. " (multiplier: " .. string.format("%.2f", multiplier) .. ")")
+        print("Adjusted repo reward: " .. adjustedReward .. " (multiplier: " .. string.format("%.2f", repoMultiplier) .. ")")
+    end
+
+    -- Fallback for reward calculation paths where repo economy multiplier was not applied yet.
+    if career_modules_difficultyMode
+        and career_modules_difficultyMode.isDifficultyActive
+        and career_modules_difficultyMode.isDifficultyActive()
+        and career_modules_difficultyMode.getRewardMultiplier then
+        local difficultyMultiplier = tonumber(career_modules_difficultyMode.getRewardMultiplier()) or 1.0
+        if difficultyMultiplier ~= 1.0 and repoMultiplier == 1.0 then
+            adjustedReward = math.floor((adjustedReward * difficultyMultiplier) + 0.5)
+        end
     end
 
     return adjustedReward
@@ -797,12 +805,18 @@ function VehicleRepoJob:onUpdate(dtReal, dtSim, dtRaw)
                 end
 
                 if career_career and career_career.isActive and career_career.isActive() and reward then
-                  career_modules_payment.reward({
+                  local rewardData = {
                     money = { amount = reward },
                     beamXP = { amount = math.floor(reward / 20) },
                     labourer = { amount = math.floor(reward / 20) }
-                  }, {
-                    label = "You've Dropped Off a " .. self.vehInfo.Brand .. " " .. self.vehInfo.Name .. ".\nYou have been paid $" .. reward,
+                  }
+                  if career_modules_difficultyMode and career_modules_difficultyMode.scalePaymentRewardData then
+                    career_modules_difficultyMode.scalePaymentRewardData(rewardData, {includeMoney = false})
+                  end
+                  local paidMoney = (rewardData.money and rewardData.money.amount) or reward
+                  rewardText = "You've Dropped Off a " .. self.vehInfo.Brand .. " " .. self.vehInfo.Name .. ".\nYou have been paid $" .. paidMoney
+                  career_modules_payment.reward(rewardData, {
+                    label = rewardText,
                     tags = {"gameplay", "reward", "laborer"}
                   }, true)
                   career_saveSystem.saveCurrent()

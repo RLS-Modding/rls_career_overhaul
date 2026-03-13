@@ -807,12 +807,12 @@ local function splitOffPartsFromMaterialCargo(cargo, otherPartSizes)
     -- copy slots/weight get set to what goes into storage
     copy.slots = size
     copy.weight = materialData.density * copy.slots
-    copy.rewards.money = sharedCalc.applyHardcoreMultiplier(copy.slots * materialData.money)
+    copy.rewards.money = copy.slots * materialData.money
     table.insert(ret, copy)
 
     cargo.slots = cargo.slots - size
     cargo.weight = materialData.density * cargo.slots
-    cargo.rewards.money = sharedCalc.applyHardcoreMultiplier(cargo.slots * materialData.money)
+    cargo.rewards.money = cargo.slots * materialData.money
 
     -- Apply economy adjuster to both
     local ecoSection = "delivery_" .. (materialData.type or "fluid")
@@ -846,12 +846,12 @@ local function moveMaterialToDestination(cargo, destination)
     -- cargo slots/weight get reduced
     cargo.slots = cargo.slots - amountForTank
     cargo.weight = materialData.density * cargo.slots
-    cargo.rewards.money = sharedCalc.applyHardcoreMultiplier(cargo.slots * materialData.money)
+    cargo.rewards.money = cargo.slots * materialData.money
 
     -- copy slots/weight get set to what goes into storage
     copy.slots = amountForTank
     copy.weight = materialData.density * copy.slots
-    copy.rewards.money = sharedCalc.applyHardcoreMultiplier(copy.slots * materialData.money)
+    copy.rewards.money = copy.slots * materialData.money
 
     -- Apply economy adjuster to both
     local ecoSection = "delivery_" .. (materialData.type or "fluid")

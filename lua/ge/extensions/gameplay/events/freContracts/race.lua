@@ -110,8 +110,8 @@ local function awardContract(contract, disciplineId)
   end
 
   local vPool = gameplay_events_freContracts_vehiclePool
-  local money = tonumber(contract.rewardMoney) or 0
-  local xp = calculateContractAwardXp(contract, disciplineId)
+  local money = tonumber(contract.rewardMoney) or tonumber(contract.rewardMoneyBase) or 0
+  local xp = tonumber(contract.rewardXp) or calculateContractAwardXp(contract, disciplineId)
   local requiredModel = contract.requiredModel
   local requiredModelLabel = contract.requiredModelLabel or vPool.getModelDisplayName(requiredModel)
   local disciplineLabel = ((freConfig.getDisciplineById(disciplineId) or {}).label) or disciplineId
@@ -124,6 +124,8 @@ local function awardContract(contract, disciplineId)
     money = { amount = money, canBeNegative = false }
   }
   rewardData[skillKey] = { amount = xp }
+  moneyRounded = math.floor((rewardData.money and rewardData.money.amount or money) + 0.5)
+  xp = math.floor((rewardData[skillKey] and rewardData[skillKey].amount or xp) + 0.5)
   career_modules_payment.reward(rewardData, {
     label = string.format("FRE Contract Complete: %s", raceLabel),
     tags = {"gameplay", "reward", "fre", "contract"}

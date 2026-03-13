@@ -20,17 +20,6 @@ local SPAWN_ZONE_NAME = "facilityWork_spawnZone"
 -- Add more names here if you place additional drop zones.
 local DROP_TRIGGER_NAMES = { "facilityWork_drop" }
 
-local function isHardcoreModeActive()
-    return career_modules_hardcore and career_modules_hardcore.isHardcoreMode and career_modules_hardcore.isHardcoreMode()
-end
-
-local function applyHardcorePayout(value)
-    if not isHardcoreModeActive() then
-        return value
-    end
-    return math.floor(value / 2 + 0.5)
-end
-
 local function toVec3(v)
     if not v then return vec3(0, 0, 0) end
     if type(v) == "table" then
@@ -809,13 +798,38 @@ local function getAvailableFacilities()
     return list
 end
 
+local function getSessionDisplayTotals()
+    local displayPay = sessionTotalPay
+    local displayRep = sessionTotalRep
+    local orgId = nil
+    if selectedFacilityId and facilityConfigs[selectedFacilityId] then
+        orgId = facilityConfigs[selectedFacilityId].organizationId
+    end
+    if career_modules_difficultyMode and career_modules_difficultyMode.scalePaymentRewardData then
+        local rewardData = {
+            money = { amount = displayPay },
+            beamXP = { amount = math.floor(displayPay / 10) }
+        }
+        if orgId and displayRep ~= 0 then
+            rewardData[orgId .. "Reputation"] = { amount = displayRep }
+        end
+        career_modules_difficultyMode.scalePaymentRewardData(rewardData, {includeMoney = false})
+        displayPay = (rewardData.money and rewardData.money.amount) or displayPay
+        if orgId and displayRep ~= 0 then
+            displayRep = (rewardData[orgId .. "Reputation"] and rewardData[orgId .. "Reputation"].amount) or displayRep
+        end
+    end
+    return displayPay, displayRep
+end
+
 local function getFacilityWorkState()
+    local displayPay, displayRep = getSessionDisplayTotals()
     local targetCount = truckLoadTargetCount or TRUCK_LOAD_COUNT
     local truckFullyLoaded = (truckState == "waiting_for_load") and (#truckLoadPropIds >= targetCount)
     return {
         onDuty = (currentBatch ~= nil or currentForkliftId ~= nil),
-        sessionTotalPay = sessionTotalPay,
-        sessionTotalRep = sessionTotalRep,
+        sessionTotalPay = displayPay,
+        sessionTotalRep = displayRep,
         sessionMaterialsMoved = sessionMaterialsMoved,
         available = isFacilityWorkAvailable(),
         facilities = getAvailableFacilities(),
@@ -831,9 +845,10 @@ local function notifyPhoneState()
 end
 
 local function updateTasklistValues()
+    local displayPay, displayRep = getSessionDisplayTotals()
     guihooks.trigger('SetTasklistHeader', { label = getSessionMultiplierHeaderLabel() })
-    guihooks.trigger('SetTasklistTask', { id = "facilityWork_total_pay", label = "Total pay: $" .. sessionTotalPay, type = "message", clear = false })
-    guihooks.trigger('SetTasklistTask', { id = "facilityWork_total_rep", label = "Total rep: " .. sessionTotalRep, type = "message", clear = false })
+    guihooks.trigger('SetTasklistTask', { id = "facilityWork_total_pay", label = "Total pay: $" .. displayPay, type = "message", clear = false })
+    guihooks.trigger('SetTasklistTask', { id = "facilityWork_total_rep", label = "Total rep: " .. displayRep, type = "message", clear = false })
 
     -- Next-stop line removed; multiplier is shown in task list header instead.
     guihooks.trigger('SetTasklistTask', { id = "facilityWork_next_stop", label = "", type = "message", clear = true })
@@ -1413,10 +1428,6 @@ local function endShiftCleanup()
         if selectedFacilityId and facilityConfigs[selectedFacilityId] then
             orgId = facilityConfigs[selectedFacilityId].organizationId
         end
-        if isHardcoreModeActive() then
-            displayPay = applyHardcorePayout(displayPay)
-            displayRep = applyHardcorePayout(displayRep)
-        end
         if career_modules_payment and career_modules_payment.reward then
             local rewardData = {
                 money = { amount = displayPay },
@@ -1424,6 +1435,13 @@ local function endShiftCleanup()
             }
             if orgId and displayRep ~= 0 then
                 rewardData[orgId .. "Reputation"] = { amount = displayRep }
+            end
+            if career_modules_difficultyMode and career_modules_difficultyMode.scalePaymentRewardData then
+                career_modules_difficultyMode.scalePaymentRewardData(rewardData, {includeMoney = false})
+            end
+            displayPay = (rewardData.money and rewardData.money.amount) or displayPay
+            if orgId and displayRep ~= 0 then
+                displayRep = (rewardData[orgId .. "Reputation"] and rewardData[orgId .. "Reputation"].amount) or displayRep
             end
             career_modules_payment.reward(rewardData, {
                 label = string.format("Facility work (shift): $%d | Rep +%d | %d materials", displayPay, displayRep, sessionMaterialsMoved),
@@ -1433,12 +1451,14 @@ local function endShiftCleanup()
         if career_saveSystem and career_saveSystem.saveCurrent then
             career_saveSystem.saveCurrent()
         end
+        sessionTotalPay = displayPay
+        sessionTotalRep = displayRep
     end
 
     if utils and utils.displayMessage then
         local msg = string.format("Shift ended. Total earned: $%d | Rep: %d | Materials moved: %d",
-            isHardcoreModeActive() and applyHardcorePayout(sessionTotalPay) or sessionTotalPay,
-            isHardcoreModeActive() and applyHardcorePayout(sessionTotalRep) or sessionTotalRep,
+            sessionTotalPay,
+            sessionTotalRep,
             sessionMaterialsMoved)
         utils.displayMessage(msg, 6)
     end

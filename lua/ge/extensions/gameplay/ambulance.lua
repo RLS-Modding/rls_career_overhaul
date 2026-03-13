@@ -29,17 +29,6 @@ local config = {
     maxStopSpeed = 0.5
 }
 
-local function isHardcoreModeActive()
-    return career_modules_hardcore and career_modules_hardcore.isHardcoreMode and career_modules_hardcore.isHardcoreMode()
-end
-
-local function applyHardcorePayout(value)
-    if not isHardcoreModeActive() then
-        return value
-    end
-    return math.floor(value / 2 + 0.5)
-end
-
 -- Recursively searches through a parts tree to find a child named "paint_design".
 -- @param node The current node in the parts tree to search.
 -- @return The paint_design node if found, nil otherwise.
@@ -462,16 +451,9 @@ local function handleDropoff(dtSim, vehiclePos, speed)
 
     local displayBasePayout = basePayout
 
-    if isHardcoreModeActive() then
-        displayBasePayout = applyHardcorePayout(displayBasePayout)
-        timeBonus = applyHardcorePayout(timeBonus)
-        penalty = applyHardcorePayout(penalty)
-        loanerCutAmount = applyHardcorePayout(loanerCutAmount)
-        finalPayout = applyHardcorePayout(finalPayout)
-    end
-
+    local repGain = math.floor(finalPayout / 100)
     if career_career and career_career.isActive() and career_modules_payment and career_modules_payment.reward then
-        career_modules_payment.reward({
+        local rewardData = {
             money = {
                 amount = finalPayout
             },
@@ -481,13 +463,17 @@ local function handleDropoff(dtSim, vehiclePos, speed)
             wcuParamedicWorkReputation = {
                 amount = math.floor(finalPayout / 100)
             }
-        }, {
+        }
+        if career_modules_difficultyMode and career_modules_difficultyMode.scalePaymentRewardData then
+            career_modules_difficultyMode.scalePaymentRewardData(rewardData, {includeMoney = false})
+        end
+        finalPayout = (rewardData.money and rewardData.money.amount) or finalPayout
+        repGain = (rewardData.wcuParamedicWorkReputation and rewardData.wcuParamedicWorkReputation.amount) or repGain
+        career_modules_payment.reward(rewardData, {
             label = string.format("Gross Earnings: $%d | Time bonus: $%d | Rough ride penalty: -$%d | Loaner Cut: -$%d | Net: $%d", finalPayout + loanerCutAmount, timeBonus, penalty, loanerCutAmount, finalPayout),
             tags = {"transport", "ambulance", "gameplay"}
         }, true)
     end
-
-    local repGain = math.floor(finalPayout / 100)
 
     local msg = string.format(
         "Patient delivered!\nDistance: %.2f km\nBase: $%d\nTime Bonus: $%d\nPenalty: -$%d",

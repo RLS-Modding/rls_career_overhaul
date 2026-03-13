@@ -728,27 +728,37 @@ local function calculateBaseFare(passengerCount, totalDistance, valueMultiplier,
     local baseFare = 100 * (passengerCount ^ 0.5) * valueMultiplier * distanceMultiplier * selectedPassengerType.baseMultiplier
     baseFare = baseFare * (totalDistance / 1000)
     baseFare = baseFare * getGlobalTaxiRewardMultiplier()
-
-    if career_career and career_career.isActive() and career_modules_hardcore.isHardcoreMode() then
-        baseFare = baseFare * 0.5
-    end
+    local taxiMultiplier = 1.0
 
     -- Apply economy adjuster multiplier for specific passenger type
     if career_economyAdjuster then
         -- Try specific passenger type multiplier first (e.g., "taxi_business")
         local passengerTypeKey = string.format("taxi_%s", selectedPassengerType.name:lower())
-        local multiplier = career_economyAdjuster.getSectionMultiplier(passengerTypeKey) or 1.0
+        local passengerMultiplier = career_economyAdjuster.getSectionMultiplier(passengerTypeKey) or 1.0
 
-        multiplier = multiplier * (career_economyAdjuster.getSectionMultiplier("taxi") or 1.0)
+        taxiMultiplier = career_economyAdjuster.getSectionMultiplier("taxi") or 1.0
+        local multiplier = passengerMultiplier * taxiMultiplier
 
         baseFare = baseFare * multiplier
-        baseFare = math.floor(baseFare + 0.5)
 
         if multiplier ~= 1.0 then
             print(string.format("Taxi: Applied %s multiplier %.2fx to %s passenger",
                 passengerTypeKey, multiplier, selectedPassengerType.name))
         end
     end
+
+    -- Fallback for fare preview generation in case taxi economy multiplier was not applied yet.
+    if career_modules_difficultyMode
+        and career_modules_difficultyMode.isDifficultyActive
+        and career_modules_difficultyMode.isDifficultyActive()
+        and career_modules_difficultyMode.getRewardMultiplier then
+        local difficultyMultiplier = tonumber(career_modules_difficultyMode.getRewardMultiplier()) or 1.0
+        if difficultyMultiplier ~= 1.0 and taxiMultiplier == 1.0 then
+            baseFare = baseFare * difficultyMultiplier
+        end
+    end
+
+    baseFare = math.floor(baseFare + 0.5)
 
     return baseFare
 end
@@ -992,18 +1002,25 @@ local function completeRide()
         return
     end
 
-    if career_modules_hardcore.isHardcoreMode() then
-        label = label .. "\nHardcore mode is enabled, all rewards are halved."
-    end
-
-    career_modules_payment.reward({
+    local rewardData = {
         money = {
             amount = math.floor(finalPayment)
         },
         beamXP = {
             amount = math.floor(finalPayment / 10)
         }
-    }, {
+    }
+    if career_modules_difficultyMode and career_modules_difficultyMode.scalePaymentRewardData then
+        career_modules_difficultyMode.scalePaymentRewardData(rewardData, {includeMoney = false})
+    end
+    local awardedMoney = (rewardData.money and rewardData.money.amount) or math.floor(finalPayment)
+    currentFare.totalFare = string.format("%.2f", awardedMoney)
+    label = string.format("Taxi fare: %s: $%s\nDistance: %.2fkm | %s: x %.2f",
+        fareDescription, currentFare.totalFare, currentFare.totalDistance, paymentLabel, currentFare.timeMultiplier)
+    dataToSend.currentFare = currentFare
+    guihooks.trigger('updateTaxiState', dataToSend)
+
+    career_modules_payment.reward(rewardData, {
         label = label,
         tags = {"transport", "taxi"}
     }, true)

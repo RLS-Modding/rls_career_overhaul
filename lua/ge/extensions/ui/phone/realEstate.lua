@@ -1,5 +1,5 @@
 local M = {}
-M.dependencies = { 'freeroam_facilities', 'career_modules_garageManager', 'career_modules_hardcore', 'career_modules_playerAttributes', 'career_modules_propertyOwners' }
+M.dependencies = { 'freeroam_facilities', 'career_modules_garageManager', 'career_modules_difficultyMode', 'career_modules_playerAttributes', 'career_modules_propertyOwners' }
 
 local routePlanner = require('gameplay/route/route')()
 
@@ -70,7 +70,8 @@ local function requestGarageListings()
   for _, garage in pairs(garages) do
     local owned = career_modules_garageManager.isPurchasedGarage(garage.id)
     local discovered = career_modules_garageManager.isDiscoveredGarage(garage.id)
-    local capacity = math.ceil(garage.capacity / (career_modules_hardcore.isHardcoreMode() and 2 or 1))
+    local isHardcore = career_modules_difficultyMode and career_modules_difficultyMode.isHardcoreMode and career_modules_difficultyMode.isHardcoreMode()
+    local capacity = math.ceil(garage.capacity / (isHardcore and 2 or 1))
     local vehicleCount = 0
     if storedLocations[garage.id] then
       vehicleCount = #storedLocations[garage.id]

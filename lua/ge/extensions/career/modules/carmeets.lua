@@ -312,7 +312,7 @@ local meetTypes = {
                             state.flags.playerReachedDestination = true
                             
                             local cruiseReputation = math.floor(math.random() * 50) / 10
-                            if career_modules_hardcore.isHardcoreMode() then
+                            if career_modules_difficultyMode and career_modules_difficultyMode.isHardcoreMode and career_modules_difficultyMode.isHardcoreMode() then
                                 cruiseReputation = cruiseReputation / 2
                             end
                             cruiseReputation = cruiseReputation * 1.2
@@ -789,7 +789,7 @@ local function onUpdate(dtReal, dtSim, dtRaw)
                 if not meetType then return end
                 
                 local reputation = math.floor(math.random() * 100) / 10
-                if career_modules_hardcore.isHardcoreMode() then
+                if career_modules_difficultyMode and career_modules_difficultyMode.isHardcoreMode and career_modules_difficultyMode.isHardcoreMode() then
                     reputation = reputation / 2
                 end
                 

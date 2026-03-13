@@ -45,9 +45,6 @@ local function startRental()
     career_modules_inventory.addMovieRental(inventoryId)
 
     local reward = rentalReward()
-    if career_modules_hardcore.isHardcoreMode() then
-        reward = reward / 2
-    end
     career_modules_payment.reward({
         money = {
             amount = reward

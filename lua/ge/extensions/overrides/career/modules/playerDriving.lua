@@ -90,7 +90,7 @@ local function setTrafficVars()
 end
 
 local function isNoPoliceModActive()
-  if career_career.hardcoreMode or career_modules_hardcore.isHardcoreMode() then
+  if career_career.hardcoreMode or (career_modules_difficultyMode and career_modules_difficultyMode.isHardcoreMode and career_modules_difficultyMode.isHardcoreMode()) then
     return false
   end
   return overhaul_settings.getSetting('noPoliceMode')

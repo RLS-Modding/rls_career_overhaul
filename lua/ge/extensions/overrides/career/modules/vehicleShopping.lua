@@ -2711,7 +2711,7 @@ local function openInventoryMenuForTradeIn()
           id = inventoryId,
           niceName = vehicle.niceName,
           Value = career_modules_valueCalculator.getInventoryVehicleValue(inventoryId) *
-            (career_modules_hardcore and career_modules_hardcore.isHardcoreMode and career_modules_hardcore.isHardcoreMode() and 0.33 or 0.66)
+            (career_modules_difficultyMode and career_modules_difficultyMode.isHardcoreMode and career_modules_difficultyMode.isHardcoreMode() and 0.33 or 0.66)
         }
         guihooks.trigger('UINavigation', 'back', 1)
       end

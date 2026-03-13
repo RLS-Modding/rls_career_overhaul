@@ -39,16 +39,6 @@ local routeCooldown = 0
 local currentVehiclePartsTree = nil
 local stopMonitorActive = false
 
-local function isHardcoreModeActive()
-    return career_modules_hardcore and career_modules_hardcore.isHardcoreMode and career_modules_hardcore.isHardcoreMode()
-end
-
-local function applyHardcorePayout(value)
-    if not isHardcoreModeActive() then
-        return value
-    end
-    return math.floor(value / 2 + 0.5)
-end
 local stopSettleTimer = 0
 local stopSettleDelay = config.stopSettleDelay
 local currentTriggerName = nil
@@ -707,6 +697,7 @@ local function endRoute(reason, payout)
 
     local reputationGain = 0
 
+    local rewardData = nil
     if payout and payout > 0 then
         local loanerCutAmount = 0
         if currentLoanerCut > 0 then
@@ -717,14 +708,23 @@ local function endRoute(reason, payout)
         local basePay = accumulatedReward
         local tipsEarned = tipTotal
 
-        if isHardcoreModeActive() then
-            basePay = applyHardcorePayout(basePay)
-            tipsEarned = applyHardcorePayout(tipsEarned)
-            loanerCutAmount = applyHardcorePayout(loanerCutAmount)
-            payout = applyHardcorePayout(payout)
-        end
-
         reputationGain = math.floor(payout / config.reputationDivisor)
+        rewardData = {
+            money = {
+                amount = payout
+            },
+            beamXP = {
+                amount = math.floor(payout / 10)
+            },
+            busWorkReputation = {
+                amount = reputationGain
+            }
+        }
+        if career_modules_difficultyMode and career_modules_difficultyMode.scalePaymentRewardData then
+            career_modules_difficultyMode.scalePaymentRewardData(rewardData, {includeMoney = false})
+        end
+        payout = (rewardData.money and rewardData.money.amount) or payout
+        reputationGain = (rewardData.busWorkReputation and rewardData.busWorkReputation.amount) or reputationGain
 
         msg = msg .. string.format("\nStops completed: %d\nBase pay:   $%d\nTips:       $%d",
             totalStopsCompleted, basePay, tipsEarned)
@@ -751,19 +751,9 @@ local function endRoute(reason, payout)
     ]])
     end
 
-    if payout and payout > 0 and career_career and career_career.isActive() and career_modules_payment and
+    if rewardData and payout and payout > 0 and career_career and career_career.isActive() and career_modules_payment and
         career_modules_payment.reward then
-        career_modules_payment.reward({
-            money = {
-                amount = payout
-            },
-            beamXP = {
-                amount = math.floor(payout / 10)
-            },
-            busWorkReputation = {
-                amount = reputationGain
-            }
-        }, {
+        career_modules_payment.reward(rewardData, {
             label = string.format("Bus Route Earnings: $%d", payout),
             tags = {"transport", "bus", "gameplay"}
         }, true)
@@ -1334,6 +1324,15 @@ local function processStop(vehicle, dtSim)
                 print(string.format("[bus] Moving to next stop: index %d, name %s", nextStopIndex, nextStopName))
                 
                 local reputationGain = math.floor(payout / config.reputationDivisor)
+                if career_modules_difficultyMode and career_modules_difficultyMode.scalePaymentRewardData then
+                    local previewRewardData = {
+                        money = { amount = payout },
+                        beamXP = { amount = math.floor(payout / 10) },
+                        busWorkReputation = { amount = reputationGain }
+                    }
+                    career_modules_difficultyMode.scalePaymentRewardData(previewRewardData, {includeMoney = false})
+                    reputationGain = (previewRewardData.busWorkReputation and previewRewardData.busWorkReputation.amount) or reputationGain
+                end
                 
                 ui_message(string.format("Proceed to Stop %02d\nBase pay: $%d\nTips: $%d\nTotal tips: $%d\nReputation: +%d",
                     nextStopIndex, payout, tipsEarned, tipTotal, reputationGain), 8, "info", "bus_next")

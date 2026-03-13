@@ -950,7 +950,13 @@ local function loadChallengeData(currentSavePath)
   end
 
   activeChallenge = deepcopy(challengeData.activeChallenge)
+  if career_modules_difficultyMode and career_modules_difficultyMode.onChallengeModeStateChanged then
+    career_modules_difficultyMode.onChallengeModeStateChanged(true)
+  end
 
+  if career_economyAdjuster and career_economyAdjuster.resetToDefaults then
+    career_economyAdjuster.resetToDefaults()
+  end
   if activeChallenge.economyAdjuster and career_economyAdjuster then
     career_economyAdjuster.setAllTypeMultipliers(activeChallenge.economyAdjuster)
   end
@@ -972,7 +978,9 @@ local function endChallenge()
     return false
   end
 
-  if career_economyAdjuster then
+  if career_modules_difficultyMode and career_modules_difficultyMode.onChallengeModeStateChanged then
+    career_modules_difficultyMode.onChallengeModeStateChanged(false)
+  elseif career_economyAdjuster then
     career_economyAdjuster.resetToDefaults()
   end
 
@@ -1015,7 +1023,9 @@ local function onCareerActivated()
 end
 
 local function onCareerDeactivated()
-  if activeChallenge and career_economyAdjuster then
+  if activeChallenge and career_modules_difficultyMode and career_modules_difficultyMode.onChallengeModeStateChanged then
+    career_modules_difficultyMode.onChallengeModeStateChanged(false)
+  elseif activeChallenge and career_economyAdjuster then
     career_economyAdjuster.resetToDefaults()
   end
   activeChallenge = nil
@@ -1084,13 +1094,19 @@ local function startChallenge(challengeId)
     end
   end
 
-  if challenge.economyAdjuster and career_economyAdjuster then
-    career_economyAdjuster.setAllTypeMultipliers(challenge.economyAdjuster)
-  end
-
   activeChallenge = deepcopy(challenge)
   activeChallenge.startedAt = os.time()
   activeChallenge.simulationTimeSpent = 0
+  if career_modules_difficultyMode and career_modules_difficultyMode.onChallengeModeStateChanged then
+    career_modules_difficultyMode.onChallengeModeStateChanged(true)
+  end
+
+  if career_economyAdjuster and career_economyAdjuster.resetToDefaults then
+    career_economyAdjuster.resetToDefaults()
+  end
+  if challenge.economyAdjuster and career_economyAdjuster then
+    career_economyAdjuster.setAllTypeMultipliers(challenge.economyAdjuster)
+  end
 
   local _, currentSavePath = career_saveSystem.getCurrentSaveSlot()
   if currentSavePath then

@@ -555,12 +555,17 @@ local function payoutRace()
             hotlapMessage = hotlapMessage .. "\nIn Range Bonus: 5%"
         end
 
-        reward = reward / (career_modules_hardcore.isHardcoreMode() and 2 or 1)
-
         local baseRewardBeforeFre = reward
         local freModifiers = getFreRewardModifiers(completionMeta.disciplineIds)
         reward = reward * (tonumber(freModifiers.moneyMultiplier) or 1)
         local disciplineXpRewards, disciplineXpBreakdown, totalDisciplineXp = buildDisciplineXpRewards(completionMeta.disciplineIds, normalizedPerformance, freModifiers)
+        if career_modules_difficultyMode and career_modules_difficultyMode.scalePaymentRewardData then
+            career_modules_difficultyMode.scalePaymentRewardData(disciplineXpRewards, {includeMoney = false})
+            totalDisciplineXp = 0
+            for _, rewardInfo in pairs(disciplineXpRewards) do
+                totalDisciplineXp = totalDisciplineXp + (tonumber(rewardInfo.amount) or 0)
+            end
+        end
         completionMeta.rewardBreakdown = {
             money = {
                 base = baseRewardBeforeFre,
@@ -596,9 +601,6 @@ local function payoutRace()
                 end
                 
                 message = message .. string.format("\nDiscipline XP: %d | Business Reward: $%.2f (50%% to business account)", totalDisciplineXp, businessReward)
-                if career_modules_hardcore.isHardcoreMode() then
-                    message = message .. "\nHardcore mode is enabled, all rewards are halved."
-                end
             else
                 local totalReward = {
                     money = {
@@ -613,9 +615,6 @@ local function payoutRace()
                 }, true)
 
                 message = message .. string.format("\nDiscipline XP: %d | Reward: $%.2f", totalDisciplineXp, reward)
-                if career_modules_hardcore.isHardcoreMode() then
-                    message = message .. "\nHardcore mode is enabled, all rewards are halved."
-                end
             end
             career_saveSystem.saveCurrent()
         end
@@ -692,14 +691,19 @@ local function payoutDragRace(raceName, finishTime, finishSpeed, vehId)
         reward = baseReward / 2 -- Minimum reward for completion
     end
 
-    reward = reward / (career_modules_hardcore.isHardcoreMode() and 2 or 1)
-
     reward = newBestTime and reward or reward / 2
 
     local baseRewardBeforeFre = reward
     local freModifiers = getFreRewardModifiers(disciplineIds)
     reward = reward * (tonumber(freModifiers.moneyMultiplier) or 1)
     local disciplineXpRewards, disciplineXpBreakdown, totalDisciplineXp = buildDisciplineXpRewards(disciplineIds, normalizedPerformance, freModifiers)
+    if career_modules_difficultyMode and career_modules_difficultyMode.scalePaymentRewardData then
+        career_modules_difficultyMode.scalePaymentRewardData(disciplineXpRewards, {includeMoney = false})
+        totalDisciplineXp = 0
+        for _, rewardInfo in pairs(disciplineXpRewards) do
+            totalDisciplineXp = totalDisciplineXp + (tonumber(rewardInfo.amount) or 0)
+        end
+    end
     local completionMeta = {
         disciplineIds = disciplineIds,
         invalidLap = false,
@@ -747,10 +751,6 @@ local function payoutDragRace(raceName, finishTime, finishSpeed, vehId)
             newBestTime and "Congratulations! New Best Time!" or "", raceData.label, utils.formatTime(finishTime), finishSpeed,
             totalDisciplineXp, businessReward)
         
-        if career_modules_hardcore.isHardcoreMode() then
-            message = message .. "\nHardcore mode is enabled, all rewards are halved."
-        end
-        
         ui_message(message, 20, "Reward")
     else
         -- Prepare total reward
@@ -774,10 +774,6 @@ local function payoutDragRace(raceName, finishTime, finishSpeed, vehId)
         local message = string.format("%s\n%s\nTime: %s\nSpeed: %.2f mph\nDiscipline XP: %d | Reward: $%.2f",
             newBestTime and "Congratulations! New Best Time!" or "", raceData.label, utils.formatTime(finishTime), finishSpeed,
             totalDisciplineXp, reward)
-
-        if career_modules_hardcore.isHardcoreMode() then
-            message = message .. "\nHardcore mode is enabled, all rewards are halved."
-        end
 
         -- Display the message
         ui_message(message, 20, "Reward")
