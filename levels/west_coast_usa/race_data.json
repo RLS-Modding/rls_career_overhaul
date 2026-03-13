@@ -115,7 +115,7 @@
       ]
     },
     "dragHighway":{
-      "bestTime":16,
+      "bestTime":20,
       "checkpointIndexs":{},
       "checkpointRoad":[
         "dragHighway"
