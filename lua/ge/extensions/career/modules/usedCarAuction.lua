@@ -93,6 +93,7 @@ local defaultAuctionFilters = {
 
 local auctionState = {
   phase = 'idle',
+  simTime = 0,
   lots = {},
   activeLotIndex = 1,
   siteLayout = nil,
@@ -122,6 +123,19 @@ local badConfigLogOnce = {}
 local stopVehicleAI
 local setLotVehicleDriveLock
 local startAuctionImmediate
+
+local function getAuctionTime()
+  return auctionState.simTime or 0
+end
+
+local function advanceAuctionTime(dtSim)
+  local delta = tonumber(dtSim) or 0
+  if delta < 0 then
+    delta = 0
+  end
+  auctionState.simTime = (auctionState.simTime or 0) + delta
+  return auctionState.simTime
+end
 
 local function getAuctionSettingsPaths(currentSavePath)
   if not currentSavePath and career_saveSystem and career_saveSystem.getCurrentSaveSlot then
@@ -1019,6 +1033,15 @@ stopVehicleAI = function(veh)
   veh:queueLuaCommand('electrics.setLightsState(1)')
 end
 
+local function closeVehicleOpenables(veh)
+  if not veh then return end
+  veh:queueLuaCommand([[
+    for _, ctrl in pairs(controller.getControllersByType("advancedCouplerControl")) do
+      ctrl.tryAttachGroupImpulse()
+    end
+  ]])
+end
+
 local function getRoadPathNodes(startPos, endPos)
   if not map or not map.findClosestRoad or not map.getPath then
     return nil
@@ -1676,7 +1699,7 @@ local showLiveAuctionStatus
 
 local function maybeExtendLotTimer(lot, bidderLabel)
   if not lot or lot.state ~= 'active' then return false end
-  local now = os.clock()
+  local now = getAuctionTime()
   local remaining = (lot.endTime or 0) - now
   if remaining > constants.ANTI_SNIPE_WINDOW then
     return false
@@ -1979,7 +2002,7 @@ local function spawnLotVehicle(lot, spot, startApproach)
   lot.vehId = veh:getID()
   lot.state = startApproach and 'approaching' or 'queued'
   lot.driveState = startApproach and 'approach' or nil
-  lot.driveStartedAt = os.clock()
+  lot.driveStartedAt = getAuctionTime()
   lot.lastMotionPos = vec3(veh:getPosition())
   lot.lastMotionAt = lot.driveStartedAt
   gameplay_traffic.insertTraffic(lot.vehId, true)
@@ -2007,9 +2030,10 @@ local function beginLotBidding(lot, forceTeleportToBlock)
 
   lot.state = 'active'
   lot.driveState = nil
-  lot.endTime = os.clock() + constants.LOT_DURATION
-  auctionState.nextNpcBidAt = os.clock() + 1.0
-  auctionState.nextPlayerBidCheckAt = os.clock() + 0.5
+  local now = getAuctionTime()
+  lot.endTime = now + constants.LOT_DURATION
+  auctionState.nextNpcBidAt = now + 1.0
+  auctionState.nextPlayerBidCheckAt = now + 0.5
   auctionState.nextLiveStatusAt = 0
   showLiveAuctionStatus(true)
 end
@@ -2021,7 +2045,7 @@ local function beginLotApproach(lot)
   setLotVehicleDriveLock(veh, 'transit')
   lot.state = 'approaching'
   lot.driveState = 'approach'
-  lot.driveStartedAt = os.clock()
+  lot.driveStartedAt = getAuctionTime()
   lot.lastMotionPos = vec3(veh:getPosition())
   lot.lastMotionAt = lot.driveStartedAt
   lot.nextApproachControlAt = 0
@@ -2055,10 +2079,11 @@ local function beginLotExit(lot)
     return false
   end
 
+  closeVehicleOpenables(veh)
   setLotVehicleDriveLock(veh, 'transit')
   lot.state = 'exiting'
   lot.driveState = 'exit'
-  lot.driveStartedAt = os.clock()
+  lot.driveStartedAt = getAuctionTime()
   lot.lastMotionPos = vec3(veh:getPosition())
   lot.lastMotionAt = lot.driveStartedAt
 
@@ -2133,7 +2158,7 @@ end
 showLiveAuctionStatus = function(force)
   if auctionState.phase ~= 'bidding' then return end
 
-  local now = os.clock()
+  local now = getAuctionTime()
   if not force and now < (auctionState.nextLiveStatusAt or 0) then
     return
   end
@@ -2171,7 +2196,7 @@ local function placePlayerBidIfPossible()
 
   local bidAmount = lot.currentBid + lot.minStep
   if not hasGarageSpaceForPurchase() then
-    local now = os.clock()
+    local now = getAuctionTime()
     if now >= (auctionState.noSpaceWarnCooldownUntil or 0) then
       auctionState.noSpaceWarnCooldownUntil = now + 3.5
     end
@@ -2186,7 +2211,7 @@ local function placePlayerBidIfPossible()
   setPlayerAsLeader(lot)
   playBidAcceptedSound()
   maybeExtendLotTimer(lot, 'Player')
-  auctionState.nextNpcBidAt = os.clock() + (constants.NPC_BID_COOLDOWN_MIN + math.random() * (constants.NPC_BID_COOLDOWN_MAX - constants.NPC_BID_COOLDOWN_MIN))
+  auctionState.nextNpcBidAt = getAuctionTime() + (constants.NPC_BID_COOLDOWN_MIN + math.random() * (constants.NPC_BID_COOLDOWN_MAX - constants.NPC_BID_COOLDOWN_MIN))
   showLiveAuctionStatus(true)
   return true
 end
@@ -2208,13 +2233,13 @@ local function placePlayerBidByAmount(amount)
   setPlayerAsLeader(lot)
   playBidAcceptedSound()
   maybeExtendLotTimer(lot, 'Player')
-  auctionState.nextNpcBidAt = os.clock() + (constants.NPC_BID_COOLDOWN_MIN + math.random() * (constants.NPC_BID_COOLDOWN_MAX - constants.NPC_BID_COOLDOWN_MIN))
+  auctionState.nextNpcBidAt = getAuctionTime() + (constants.NPC_BID_COOLDOWN_MIN + math.random() * (constants.NPC_BID_COOLDOWN_MAX - constants.NPC_BID_COOLDOWN_MIN))
   showLiveAuctionStatus(true)
   return true
 end
 
 local function requestAuctionState()
-  local now = os.clock()
+  local now = getAuctionTime()
   local lotsOut = {}
   local derivedCurrentLot = nil
   local derivedCurrentLotIndex = nil
@@ -2666,7 +2691,7 @@ local function exitAuctionArea()
     end
 
     resetAuction(true)
-    auctionState.entryCooldownUntil = os.clock() + constants.ENTRY_RETRIGGER_COOLDOWN
+    auctionState.entryCooldownUntil = getAuctionTime() + constants.ENTRY_RETRIGGER_COOLDOWN
   end)
 
   return true
@@ -2700,7 +2725,7 @@ local function ejectPlayerFromAuctionInteriorOnCareerLoad()
 
   runFadedTransition(function()
     teleportVehicleToSpot(playerVeh, exitSpot)
-    auctionState.entryCooldownUntil = os.clock() + constants.ENTRY_RETRIGGER_COOLDOWN
+    auctionState.entryCooldownUntil = getAuctionTime() + constants.ENTRY_RETRIGGER_COOLDOWN
     setIdleTriggerState()
   end)
 
@@ -2721,7 +2746,7 @@ local function getFallbackPlayerVehicleId(oldId)
 end
 
 local function warnBlockedAuctionVehicleSwitch()
-  local now = os.clock()
+  local now = getAuctionTime()
   if now < (auctionState.switchWarnCooldownUntil or 0) then
     return
   end
@@ -2780,7 +2805,7 @@ local function onBeamNGTrigger(data)
   end
 
   if data.triggerName and data.triggerName:find(constants.ENTRY_TRIGGER) then
-    if os.clock() < (auctionState.entryCooldownUntil or 0) then
+    if getAuctionTime() < (auctionState.entryCooldownUntil or 0) then
       return
     end
 
@@ -2797,7 +2822,8 @@ local function onBeamNGTrigger(data)
   end
 end
 
-local function onUpdate()
+local function onUpdate(_, dtSim)
+  local now = advanceAuctionTime(dtSim)
   if auctionState.phase ~= 'bidding' then
     return
   end
@@ -2806,8 +2832,6 @@ local function onUpdate()
   if playerVehId and not isAuctionLotVehicleId(playerVehId) then
     auctionState.lastValidPlayerVehId = playerVehId
   end
-
-  local now = os.clock()
 
   local function refreshMotionProgress(lot, veh, tNow)
     if not veh then return end
