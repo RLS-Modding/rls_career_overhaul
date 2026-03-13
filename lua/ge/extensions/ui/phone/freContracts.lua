@@ -21,7 +21,7 @@ local function getState(filterDisciplineId)
     }
   end
 
-  local state = gameplay_events_freContracts.getUiState(filterDisciplineId)
+  local state = gameplay_events_freContracts_ui.getUiState(filterDisciplineId)
   state = type(state) == "table" and state or {}
   state.careerActive = true
   return state
@@ -35,37 +35,37 @@ local function actionResult(ok, err)
 end
 
 local function startLiveUpdates()
-  gameplay_events_freContracts.setUiStreamingActive(true)
+  gameplay_events_freContracts_ui.setUiStreamingActive(true)
   return true
 end
 
 local function stopLiveUpdates()
-  gameplay_events_freContracts.setUiStreamingActive(false)
+  gameplay_events_freContracts_ui.setUiStreamingActive(false)
   return true
 end
 
 local function acceptContract(contractId)
-  local ok, err = gameplay_events_freContracts.acceptContract(contractId)
+  local ok, err = gameplay_events_freContracts_actions.acceptContract(contractId)
   return actionResult(ok, err)
 end
 
 local function abandonContract(contractId)
-  local ok, err = gameplay_events_freContracts.abandonContract(contractId)
+  local ok, err = gameplay_events_freContracts_actions.abandonContract(contractId)
   return actionResult(ok, err)
 end
 
 local function signSponsor(sponsorId)
-  local ok, err = gameplay_events_freContracts.signSponsor(sponsorId)
+  local ok, err = gameplay_events_freContracts_actions.signSponsor(sponsorId)
   return actionResult(ok, err)
 end
 
 local function dropSponsor(sponsorId)
-  local ok, err = gameplay_events_freContracts.dropSponsor(sponsorId)
+  local ok, err = gameplay_events_freContracts_actions.dropSponsor(sponsorId)
   return actionResult(ok, err)
 end
 
 local function acknowledgeSponsorWarning(sponsorId)
-  local ok = gameplay_events_freContracts.acknowledgeSponsorWarning(sponsorId)
+  local ok = gameplay_events_freContracts_actions.acknowledgeSponsorWarning(sponsorId)
   return actionResult(ok, ok and nil or "Sponsor not found.")
 end
 

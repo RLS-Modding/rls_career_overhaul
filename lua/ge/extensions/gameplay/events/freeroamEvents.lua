@@ -138,10 +138,10 @@ local function getFreRewardModifiers(disciplineIds)
         moneyMultiplier = 1,
         disciplineMultipliers = {}
     }
-    if not gameplay_events_freContracts or not gameplay_events_freContracts.calculateRewardModifiers then
+    if not gameplay_events_freContracts_race or not gameplay_events_freContracts_race.calculateRewardModifiers then
         return defaultModifiers
     end
-    local computed = gameplay_events_freContracts.calculateRewardModifiers(disciplineIds or {})
+    local computed = gameplay_events_freContracts_race.calculateRewardModifiers(disciplineIds or {})
     if type(computed) ~= "table" then
         return defaultModifiers
     end
@@ -275,8 +275,8 @@ local function mergeRewardTables(target, source)
 end
 
 local function getFreVehicleModel(vehId)
-    if gameplay_events_freContracts and gameplay_events_freContracts.getCurrentVehicleModel then
-        return gameplay_events_freContracts.getCurrentVehicleModel(vehId)
+    if gameplay_events_freContracts_race and gameplay_events_freContracts_race.getCurrentVehicleModel then
+        return gameplay_events_freContracts_race.getCurrentVehicleModel(vehId)
     end
     return nil
 end
@@ -285,13 +285,13 @@ local function notifyFreRaceCompleted(raceName, raceData, raceLabel, finishTime,
     if not career_career.isActive() then
         return
     end
-    if not gameplay_events_freContracts or not gameplay_events_freContracts.onFreeroamRaceCompleted then
+    if not gameplay_events_freContracts_race or not gameplay_events_freContracts_race.onFreeroamRaceCompleted then
         return
     end
 
     local disciplineIds = completionMeta and completionMeta.disciplineIds or getRaceDisciplineIds(raceData)
     local isAltRoute = mAltRoute == true
-    gameplay_events_freContracts.onFreeroamRaceCompleted({
+    gameplay_events_freContracts_race.onFreeroamRaceCompleted({
         raceId = raceName,
         raceName = raceName,
         raceLabel = raceLabel,
