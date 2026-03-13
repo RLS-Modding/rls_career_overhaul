@@ -1,64 +1,26 @@
 {
-  "_comment": "Per-race AI tuning. byRace keys: trackloop = main Track, trackalt = Short Track. Omit a key to use level aiRacers.json default.",
+  "_comment": "Per-race structure only. Tuning removed: AI is state-based (winning objective). No route speed limit (as fast as they can go). Rubberband later by player XP.",
   "byRace": {
     "trackloop": {
-      "enabled": true, // enable AI for this race
-      "spawnSameVehicleAsPlayer": true, // same car as player
-      "maxSpawnCount": 4, // number of AI cars
-      "routeSpeed": 70, // speed when limit on (m/s)
-      "useRouteSpeedLimit": false, // use route speed cap
-      "routeSpeedMode": "limit", // limit or set mode
-      "aggressionMin": 0.9, // min aggression 0-1
-      "aggressionMax": 1.0, // max aggression 0-1
-      "driveInLane": "off", // drive in lane
-      "useRacingParameters": true, // use race tuning
-      "racerSkill": 1.0, // line and turn skill 0-1
-      "rubberBand": true, // chase player when behind
-      "navTargetReachDistance": 20, // waypoint reach distance
-      "startEngineOnSpawn": true, // start engine on spawn
-      "filterPoolByPowerMeetOrExceed": true, // filter AI by power
-      "aiPowerExceedCapPct": 0.25, // max AI power over player
-      "turnForceCoef": 1.6, // steering strength in corners
-      "awarenessForceCoef": 0.95, // lateral correction strength
-      "raceAccelScale": 1.08, // target speed scale (higher = brake later into corners)
-      "raceThrottleRateMult": 3.3, // throttle response speed (harder acceleration out)
-      "raceTurnCoefScale": 2.0, // turn-in strength scale
-      "raceAwarenessCoefScale": 1.7, // awareness scale racing
-      "raceThrottleFloor": 0.78, // min throttle in corners (smarter through apex)
-      "raceObstacleSpeedCap": 55, // max speed near obstacles
-      "raceObstacleSpeedCapAgg": 28, // obstacle cap by aggression
-      "raceHighSpeedThreshold": 22, // speed for high-speed floor (m/s)
-      "raceHighSpeedThrottleFloor": 0.68 // min throttle at high speed
+      "enabled": true,
+      "spawnSameVehicleAsPlayer": true,
+      "maxSpawnCount": 4,
+      "driveInLane": "off",
+      "navTargetReachDistance": 20,
+      "startEngineOnSpawn": true,
+      "filterPoolByPowerMeetOrExceed": true,
+      "aiPowerExceedCapPct": 0.25
     },
     "trackalt": {
-      "pathRoad": "shortTrack", // DecalRoad for AI path
-      "enabled": true, // enable AI for this race
-      "spawnSameVehicleAsPlayer": true, // same car as player
-      "maxSpawnCount": 4, // number of AI cars
-      "routeSpeed": 70, // speed when limit on (m/s)
-      "useRouteSpeedLimit": false, // use route speed cap
-      "routeSpeedMode": "limit", // limit or set mode
-      "aggressionMin": 0.9, // min aggression 0-1
-      "aggressionMax": 1.0, // max aggression 0-1
-      "driveInLane": "off", // drive in lane
-      "useRacingParameters": true, // use race tuning
-      "racerSkill": 1.0, // line and turn skill 0-1
-      "rubberBand": true, // chase player when behind
-      "navTargetReachDistance": 20, // waypoint reach distance
-      "startEngineOnSpawn": true, // start engine on spawn
-      "filterPoolByPowerMeetOrExceed": true, // filter AI by power
-      "aiPowerExceedCapPct": 0.25, // max AI power over player
-      "turnForceCoef": 1.6, // steering strength in corners
-      "awarenessForceCoef": 0.95, // lateral correction strength
-      "raceAccelScale": 1.08, // target speed scale (higher = brake later into corners)
-      "raceThrottleRateMult": 3.3, // throttle response speed (harder acceleration out)
-      "raceTurnCoefScale": 2.0, // turn-in strength scale
-      "raceAwarenessCoefScale": 1.7, // awareness scale racing
-      "raceThrottleFloor": 0.78, // min throttle in corners (smarter through apex)
-      "raceObstacleSpeedCap": 55, // max speed near obstacles
-      "raceObstacleSpeedCapAgg": 28, // obstacle cap by aggression
-      "raceHighSpeedThreshold": 22, // speed for high-speed floor (m/s)
-      "raceHighSpeedThrottleFloor": 0.68 // min throttle at high speed
+      "pathRoad": "shortTrack",
+      "enabled": true,
+      "spawnSameVehicleAsPlayer": true,
+      "maxSpawnCount": 4,
+      "driveInLane": "off",
+      "navTargetReachDistance": 20,
+      "startEngineOnSpawn": true,
+      "filterPoolByPowerMeetOrExceed": true,
+      "aiPowerExceedCapPct": 0.25
     }
   }
 }

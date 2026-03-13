@@ -168,21 +168,16 @@ local function getMergedConfigForRace(race)
     local raceConfig = loadRaceConfig()
     local overrides = (raceConfig.byRace and raceConfig.byRace[pathKey]) or {}
     local merged = shallowCopyDefaults(levelCfg, overrides)
-    -- Backward compat: race_data.json AI fields still override. Full set so byRace + race_data have granular control.
+    -- Backward compat: race_data.json structure only. No tuning (state-based in overrideAI). No route speed, no rubberband here (rubberband later by XP).
     local raceKeys = {
-        "spawnSameVehicleAsPlayer", "aiCount", "aiVehicles", "aggressionMin", "aggressionMax",
-        "racerSkill", "turnForceCoef", "awarenessForceCoef", "routeSpeed", "useRouteSpeedLimit", "routeSpeedMode",
-        "enabled", "maxSpawnCount", "driveInLane", "useNavgraphPathfinding", "useRacingParameters",
-        "rubberBand", "scriptPathWidth", "scriptBootstrapDistance", "navTargetReachDistance",
+        "spawnSameVehicleAsPlayer", "aiCount", "aiVehicles",
+        "enabled", "maxSpawnCount", "driveInLane", "useNavgraphPathfinding",
+        "scriptPathWidth", "scriptBootstrapDistance", "navTargetReachDistance",
         "launchRecoveryGraceSeconds", "startEngineOnSpawn", "recoveryEnabled", "recoverySpeedThresholdMps",
         "recoveryStuckSeconds", "recoveryCooldownSeconds", "despawnWreckedEnabled", "despawnWreckedDuringRace",
         "despawnUpsideDownSeconds", "despawnAfterRecoveries", "despawnTerminalStuckSeconds", "despawnAlwaysStuckSeconds",
         "delayedDespawnDefaultSeconds", "delayedDespawnStaggerSeconds",
         "filterPoolByPowerMeetOrExceed", "aiPowerExceedCapPct",
-        "raceAccelScale", "raceThrottleRateMult", "raceTurnCoefScale", "raceAwarenessCoefScale",
-        "raceThrottleFloor", "raceObstacleSpeedCap", "raceObstacleSpeedCapAgg",
-        "raceHighSpeedThreshold", "raceHighSpeedThrottleFloor",
-        "raceSlipThreshold", "raceSlipGain", "raceSlipMaxReduction", "raceThrottleRecoveryMult",
         "pathRoad"
     }
     for _, k in ipairs(raceKeys) do
@@ -660,44 +655,9 @@ local function randomAggression(cfg, race)
     return clamp(raw, 0.2, 1.5)
 end
 
--- Racing AI parameters (matches base game raceAiParameters flowgraph node). Returns table for ai.setParameters().
--- Per-race: race.racerSkill (0-1), race.turnForceCoef (0.01-10), race.awarenessForceCoef (0.01-0.5) override level cfg when set.
--- Optional overrideAI race tuning (only when race.race* is set): raceAccelScale, raceThrottleRateMult, raceTurnCoefScale,
--- raceAwarenessCoefScale, raceThrottleFloor, raceObstacleSpeedCap, raceObstacleSpeedCapAgg, raceHighSpeedThreshold (m/s),
--- raceHighSpeedThrottleFloor. Feather (slip): raceSlipThreshold (m/s), raceSlipGain, raceSlipMaxReduction, raceThrottleRecoveryMult.
+-- No tuning params: overrideAI uses state-based logic (winning objective). Send empty so vehicle uses uncapped state-driven steering/throttle.
 local function getRacingParameters(cfg, race)
-    local skill = clamp(tonumber(race and race.racerSkill) or tonumber(cfg and cfg.racerSkill) or DEFAULT_CONFIG.racerSkill or 0.8, 0, 1)
-    local baseEdgeDist = 1.5 - skill * 1.5
-    local baseTurnForce = 6 * math.pow(skill, 1.5)
-    local baseAwarenessForce = 0.25 * math.pow(skill, 1.5)
-    local turnForceRaw = (cfg and cfg.turnForceCoef ~= nil) and cfg.turnForceCoef or (race and race.turnForceCoef ~= nil) and race.turnForceCoef
-    local turnForce = turnForceRaw ~= nil and clamp(tonumber(turnForceRaw) or baseTurnForce, 0.01, 10) or clamp(baseTurnForce, 0.01, 10)
-    local awarenessRaw = (cfg and cfg.awarenessForceCoef ~= nil) and cfg.awarenessForceCoef or (race and race.awarenessForceCoef ~= nil) and race.awarenessForceCoef
-    local awarenessForce = awarenessRaw ~= nil and clamp(tonumber(awarenessRaw) or baseAwarenessForce, 0.01, 0.5) or clamp(baseAwarenessForce, 0.01, 0.5)
-    local params = {
-        edgeDist = clamp(baseEdgeDist, 0, 1.5),
-        turnForceCoef = turnForce,
-        awarenessForceCoef = awarenessForce
-    }
-    -- Per-race overrideAI tuning (career overrideAI reads these when opt.racing). Prefer cfg (merged from aiRacingConfig.byRace + race_data).
-    local function fromCfgOrRace(k)
-        local v = (cfg and cfg[k] ~= nil) and cfg[k] or (race and race[k] ~= nil) and race[k]
-        return v ~= nil and tonumber(v) or nil
-    end
-    if fromCfgOrRace("raceAccelScale") then params.raceAccelScale = fromCfgOrRace("raceAccelScale") end
-    if fromCfgOrRace("raceThrottleRateMult") then params.raceThrottleRateMult = fromCfgOrRace("raceThrottleRateMult") end
-    if fromCfgOrRace("raceTurnCoefScale") then params.raceTurnCoefScale = fromCfgOrRace("raceTurnCoefScale") end
-    if fromCfgOrRace("raceAwarenessCoefScale") then params.raceAwarenessCoefScale = fromCfgOrRace("raceAwarenessCoefScale") end
-    if fromCfgOrRace("raceThrottleFloor") then params.raceThrottleFloor = fromCfgOrRace("raceThrottleFloor") end
-    if fromCfgOrRace("raceObstacleSpeedCap") then params.raceObstacleSpeedCap = fromCfgOrRace("raceObstacleSpeedCap") end
-    if fromCfgOrRace("raceObstacleSpeedCapAgg") then params.raceObstacleSpeedCapAgg = fromCfgOrRace("raceObstacleSpeedCapAgg") end
-    if fromCfgOrRace("raceHighSpeedThreshold") then params.raceHighSpeedThreshold = fromCfgOrRace("raceHighSpeedThreshold") end
-    if fromCfgOrRace("raceHighSpeedThrottleFloor") then params.raceHighSpeedThrottleFloor = fromCfgOrRace("raceHighSpeedThrottleFloor") end
-    if fromCfgOrRace("raceSlipThreshold") then params.raceSlipThreshold = fromCfgOrRace("raceSlipThreshold") end
-    if fromCfgOrRace("raceSlipGain") then params.raceSlipGain = fromCfgOrRace("raceSlipGain") end
-    if fromCfgOrRace("raceSlipMaxReduction") then params.raceSlipMaxReduction = fromCfgOrRace("raceSlipMaxReduction") end
-    if fromCfgOrRace("raceThrottleRecoveryMult") then params.raceThrottleRecoveryMult = fromCfgOrRace("raceThrottleRecoveryMult") end
-    return params
+    return {}
 end
 
 -- Freeze or unfreeze the player vehicle (e.g. during countdown until GO, same moment as AI release). Uses same pattern as bus.lua.
@@ -927,15 +887,13 @@ local function queueNavDriveForVehicle(vehObj, path, noOfLaps, cfg, race)
         wpTargetList[#wpTargetList + 1] = wpTargetList[1]
     end
     local wpTargetListStr = serialize(wpTargetList)
-    local aggression = randomAggression(cfg, race)
+    -- Full aggression: state-based speed (no route speed limit). Rubberband later by player XP.
+    local aggression = 1.0
     local driveInLane = tostring(cfg.driveInLane or DEFAULT_CONFIG.driveInLane)
     local avoidCars = tostring(cfg.avoidCars or DEFAULT_CONFIG.avoidCars)
-    local useRouteSpeedLimit = cfg.useRouteSpeedLimit == true or (cfg.useRouteSpeedLimit == nil and DEFAULT_CONFIG.useRouteSpeedLimit == true)
-    local routeSpeed = (race and tonumber(race.routeSpeed)) or tonumber(cfg.routeSpeed) or DEFAULT_CONFIG.routeSpeed
-    local routeSpeedMode = tostring(cfg.routeSpeedMode or DEFAULT_CONFIG.routeSpeedMode)
     vehObj:queueLuaCommand("input.event('parkingbrake', 0, 1)")
 
-    -- Base-game order: setAggression, setParameters (racing line), setRacing, setAvoidCars, setAggressionMode, then driveUsingPath.
+    -- setParameters (empty = state-based in overrideAI), setAggression, setRacing, setAvoidCars, then driveUsingPath. No setAggressionMode; no routeSpeed.
     if cfg.useRacingParameters ~= false and DEFAULT_CONFIG.useRacingParameters ~= false then
         local params = getRacingParameters(cfg, race)
         vehObj:queueLuaCommand('ai.setParameters(' .. serialize(params) .. ')')
@@ -943,14 +901,7 @@ local function queueNavDriveForVehicle(vehObj, path, noOfLaps, cfg, race)
     vehObj:queueLuaCommand('ai.setAggression(' .. tostring(aggression) .. ')')
     vehObj:queueLuaCommand('ai.setRacing(true)')
     vehObj:queueLuaCommand('ai.setAvoidCars("' .. avoidCars .. '")')
-    if cfg.rubberBand == true or (cfg.rubberBand == nil and DEFAULT_CONFIG.rubberBand == true) then
-        vehObj:queueLuaCommand('ai.setAggressionMode("rubberBand")')
-    end
 
-    local routeSpeedSuffix = ""
-    if useRouteSpeedLimit then
-        routeSpeedSuffix = ", routeSpeedMode = '" .. routeSpeedMode .. "', routeSpeed = " .. tostring(routeSpeed)
-    end
     vehObj:queueLuaCommand([[
         local wpTargetList = ]] .. wpTargetListStr .. [[
         local noOfLaps = ]] .. tostring(noOfLaps) .. [[
@@ -960,7 +911,7 @@ local function queueNavDriveForVehicle(vehObj, path, noOfLaps, cfg, race)
                 avoidCars = ']] .. avoidCars .. [[',
                 driveInLane = ']] .. driveInLane .. [[',
                 aggression = ]] .. tostring(aggression) .. [[,
-                noOfLaps = noOfLaps]] .. routeSpeedSuffix .. [[
+                noOfLaps = noOfLaps
             })
         end
     ]])
@@ -997,15 +948,13 @@ local function queueDriveForVehicle(vehObj, race, noOfLaps, cfg, laneIndex)
     if not scriptPath or #scriptPath < 2 then return end
 
     local pathStr = serialize(scriptPath)
-    local aggression = randomAggression(cfg, race)
+    -- Full aggression: state-based speed (no route speed limit). Rubberband later by player XP.
+    local aggression = 1.0
     local driveInLane = tostring(cfg.driveInLane or DEFAULT_CONFIG.driveInLane)
     local avoidCars = tostring(cfg.avoidCars or DEFAULT_CONFIG.avoidCars)
-    local useRouteSpeedLimit = cfg.useRouteSpeedLimit == true or (cfg.useRouteSpeedLimit == nil and DEFAULT_CONFIG.useRouteSpeedLimit == true)
-    local routeSpeed = (race and tonumber(race.routeSpeed)) or tonumber(cfg.routeSpeed) or DEFAULT_CONFIG.routeSpeed
-    local routeSpeedMode = tostring(cfg.routeSpeedMode or DEFAULT_CONFIG.routeSpeedMode)
     vehObj:queueLuaCommand("input.event('parkingbrake', 0, 1)")
 
-    -- Same base-game order as nav path: setParameters, setAggression, setRacing, setAvoidCars, setAggressionMode, then driveUsingPath.
+    -- setParameters (empty = state-based in overrideAI), setAggression, setRacing, setAvoidCars, then driveUsingPath. No setAggressionMode; no routeSpeed.
     if cfg.useRacingParameters ~= false and DEFAULT_CONFIG.useRacingParameters ~= false then
         local params = getRacingParameters(cfg, race)
         vehObj:queueLuaCommand('ai.setParameters(' .. serialize(params) .. ')')
@@ -1013,14 +962,7 @@ local function queueDriveForVehicle(vehObj, race, noOfLaps, cfg, laneIndex)
     vehObj:queueLuaCommand('ai.setAggression(' .. tostring(aggression) .. ')')
     vehObj:queueLuaCommand('ai.setRacing(true)')
     vehObj:queueLuaCommand('ai.setAvoidCars("' .. avoidCars .. '")')
-    if cfg.rubberBand == true or (cfg.rubberBand == nil and DEFAULT_CONFIG.rubberBand == true) then
-        vehObj:queueLuaCommand('ai.setAggressionMode("rubberBand")')
-    end
 
-    local routeSpeedSuffix = ""
-    if useRouteSpeedLimit then
-        routeSpeedSuffix = ", routeSpeedMode = '" .. routeSpeedMode .. "', routeSpeed = " .. tostring(routeSpeed)
-    end
     vehObj:queueLuaCommand([[
         local path = ]] .. pathStr .. [[
         local noOfLaps = ]] .. tostring(noOfLaps) .. [[
@@ -1030,7 +972,7 @@ local function queueDriveForVehicle(vehObj, race, noOfLaps, cfg, laneIndex)
                 avoidCars = ']] .. avoidCars .. [[',
                 driveInLane = ']] .. driveInLane .. [[',
                 aggression = ]] .. tostring(aggression) .. [[,
-                noOfLaps = noOfLaps]] .. routeSpeedSuffix .. [[
+                noOfLaps = noOfLaps
             })
         end
     ]])
