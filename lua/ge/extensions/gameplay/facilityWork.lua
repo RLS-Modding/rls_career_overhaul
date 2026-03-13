@@ -798,28 +798,41 @@ local function getAvailableFacilities()
     return list
 end
 
+local function scaleFacilityWorkMoneyAndRep(money, rep, orgId)
+    local scaledMoney = math.max(0, math.floor(tonumber(money) or 0))
+    local scaledRep = math.floor(tonumber(rep) or 0)
+    if not (career_modules_difficultyMode and career_modules_difficultyMode.scalePaymentRewardData) then
+        return scaledMoney, scaledRep
+    end
+
+    local rewardData = {
+        money = { amount = scaledMoney }
+    }
+    if orgId and scaledRep ~= 0 then
+        rewardData[orgId .. "Reputation"] = { amount = scaledRep }
+    end
+    career_modules_difficultyMode.scalePaymentRewardData(rewardData, {includeMoney = false})
+    if orgId and scaledRep ~= 0 then
+        scaledRep = math.floor((rewardData[orgId .. "Reputation"] and rewardData[orgId .. "Reputation"].amount or scaledRep) + 0.5)
+    end
+    return scaledMoney, scaledRep
+end
+
+local function scaleFacilityWorkBeamXP(xp)
+    local scaledXp = math.max(0, math.floor(tonumber(xp) or 0))
+    if scaledXp <= 0 then
+        return 0
+    end
+    if career_modules_difficultyMode and career_modules_difficultyMode.scaleFlatRewards then
+        local rewardData = { beamXP = scaledXp }
+        career_modules_difficultyMode.scaleFlatRewards(rewardData, {includeMoney = false})
+        scaledXp = math.max(0, math.floor((tonumber(rewardData.beamXP) or scaledXp) + 0.5))
+    end
+    return scaledXp
+end
+
 local function getSessionDisplayTotals()
-    local displayPay = sessionTotalPay
-    local displayRep = sessionTotalRep
-    local orgId = nil
-    if selectedFacilityId and facilityConfigs[selectedFacilityId] then
-        orgId = facilityConfigs[selectedFacilityId].organizationId
-    end
-    if career_modules_difficultyMode and career_modules_difficultyMode.scalePaymentRewardData then
-        local rewardData = {
-            money = { amount = displayPay },
-            beamXP = { amount = math.floor(displayPay / 10) }
-        }
-        if orgId and displayRep ~= 0 then
-            rewardData[orgId .. "Reputation"] = { amount = displayRep }
-        end
-        career_modules_difficultyMode.scalePaymentRewardData(rewardData, {includeMoney = false})
-        displayPay = (rewardData.money and rewardData.money.amount) or displayPay
-        if orgId and displayRep ~= 0 then
-            displayRep = (rewardData[orgId .. "Reputation"] and rewardData[orgId .. "Reputation"].amount) or displayRep
-        end
-    end
-    return displayPay, displayRep
+    return sessionTotalPay, sessionTotalRep
 end
 
 local function getFacilityWorkState()
@@ -1290,6 +1303,7 @@ local function payoutBatchAndSpawnNext()
         mult = career_economyAdjuster.getSectionMultiplier("facilityWork") or 1
     end
     totalMoney = math.floor(totalMoney * mult)
+    totalMoney, totalRep = scaleFacilityWorkMoneyAndRep(totalMoney, totalRep, currentBatch.organizationId)
     sessionTotalPay = sessionTotalPay + totalMoney
     sessionTotalRep = sessionTotalRep + totalRep
     sessionMaterialsMoved = sessionMaterialsMoved + #propIds
@@ -1431,17 +1445,10 @@ local function endShiftCleanup()
         if career_modules_payment and career_modules_payment.reward then
             local rewardData = {
                 money = { amount = displayPay },
-                beamXP = { amount = math.floor(displayPay / 10) }
+                beamXP = { amount = scaleFacilityWorkBeamXP(math.floor(displayPay / 10)) }
             }
             if orgId and displayRep ~= 0 then
                 rewardData[orgId .. "Reputation"] = { amount = displayRep }
-            end
-            if career_modules_difficultyMode and career_modules_difficultyMode.scalePaymentRewardData then
-                career_modules_difficultyMode.scalePaymentRewardData(rewardData, {includeMoney = false})
-            end
-            displayPay = (rewardData.money and rewardData.money.amount) or displayPay
-            if orgId and displayRep ~= 0 then
-                displayRep = (rewardData[orgId .. "Reputation"] and rewardData[orgId .. "Reputation"].amount) or displayRep
             end
             career_modules_payment.reward(rewardData, {
                 label = string.format("Facility work (shift): $%d | Rep +%d | %d materials", displayPay, displayRep, sessionMaterialsMoved),
@@ -1867,6 +1874,7 @@ local function onUpdate(_dtReal, _dtSim, _dtRaw)
             if career_economyAdjuster and career_economyAdjuster.getSectionMultiplier then
                 bonus = math.floor(bonus * (career_economyAdjuster.getSectionMultiplier("facilityWork") or 1))
             end
+            bonus = select(1, scaleFacilityWorkMoneyAndRep(bonus, 0, nil))
             sessionTotalPay = sessionTotalPay + bonus
             updateTasklistValues()
             clearTruckState()

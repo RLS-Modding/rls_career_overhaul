@@ -105,6 +105,13 @@ local function discoverActivityTypes()
         typeSources["ambulance"]["ambulance_module"] = true
     end
 
+    -- Facility Work
+    if gameplay_facilityWork then
+        activityTypesFound["facilityWork"] = true
+        typeSources["facilityWork"] = typeSources["facilityWork"] or {}
+        typeSources["facilityWork"]["facilityWork_module"] = true
+    end
+
     local deliveryTypes = {"parcel", "vehicle", "trailer", "fluid", "dryBulk", "cement", "cash"}
     for _, deliveryType in ipairs(deliveryTypes) do
         activityTypesFound[string.format("delivery_%s", deliveryType)] = true
