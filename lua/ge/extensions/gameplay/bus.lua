@@ -38,6 +38,17 @@ local totalStopsCompleted = 0
 local routeCooldown = 0
 local currentVehiclePartsTree = nil
 local stopMonitorActive = false
+
+local function isHardcoreModeActive()
+    return career_modules_hardcore and career_modules_hardcore.isHardcoreMode and career_modules_hardcore.isHardcoreMode()
+end
+
+local function applyHardcorePayout(value)
+    if not isHardcoreModeActive() then
+        return value
+    end
+    return math.floor(value / 2 + 0.5)
+end
 local stopSettleTimer = 0
 local stopSettleDelay = config.stopSettleDelay
 local currentTriggerName = nil
@@ -705,6 +716,13 @@ local function endRoute(reason, payout)
 
         local basePay = accumulatedReward
         local tipsEarned = tipTotal
+
+        if isHardcoreModeActive() then
+            basePay = applyHardcorePayout(basePay)
+            tipsEarned = applyHardcorePayout(tipsEarned)
+            loanerCutAmount = applyHardcorePayout(loanerCutAmount)
+            payout = applyHardcorePayout(payout)
+        end
 
         reputationGain = math.floor(payout / config.reputationDivisor)
 

@@ -20,6 +20,17 @@ local SPAWN_ZONE_NAME = "facilityWork_spawnZone"
 -- Add more names here if you place additional drop zones.
 local DROP_TRIGGER_NAMES = { "facilityWork_drop" }
 
+local function isHardcoreModeActive()
+    return career_modules_hardcore and career_modules_hardcore.isHardcoreMode and career_modules_hardcore.isHardcoreMode()
+end
+
+local function applyHardcorePayout(value)
+    if not isHardcoreModeActive() then
+        return value
+    end
+    return math.floor(value / 2 + 0.5)
+end
+
 local function toVec3(v)
     if not v then return vec3(0, 0, 0) end
     if type(v) == "table" then
@@ -1397,19 +1408,25 @@ local function endShiftCleanup()
 
     if career_career and career_career.isActive() and (sessionTotalPay ~= 0 or sessionTotalRep ~= 0) then
         local orgId = nil
+        local displayPay = sessionTotalPay
+        local displayRep = sessionTotalRep
         if selectedFacilityId and facilityConfigs[selectedFacilityId] then
             orgId = facilityConfigs[selectedFacilityId].organizationId
         end
+        if isHardcoreModeActive() then
+            displayPay = applyHardcorePayout(displayPay)
+            displayRep = applyHardcorePayout(displayRep)
+        end
         if career_modules_payment and career_modules_payment.reward then
             local rewardData = {
-                money = { amount = sessionTotalPay },
-                beamXP = { amount = math.floor(sessionTotalPay / 10) }
+                money = { amount = displayPay },
+                beamXP = { amount = math.floor(displayPay / 10) }
             }
-            if orgId and sessionTotalRep ~= 0 then
-                rewardData[orgId .. "Reputation"] = { amount = sessionTotalRep }
+            if orgId and displayRep ~= 0 then
+                rewardData[orgId .. "Reputation"] = { amount = displayRep }
             end
             career_modules_payment.reward(rewardData, {
-                label = string.format("Facility work (shift): $%d | Rep +%d | %d materials", sessionTotalPay, sessionTotalRep, sessionMaterialsMoved),
+                label = string.format("Facility work (shift): $%d | Rep +%d | %d materials", displayPay, displayRep, sessionMaterialsMoved),
                 tags = {"facilityWork", "gameplay"}
             }, true)
         end
@@ -1420,7 +1437,9 @@ local function endShiftCleanup()
 
     if utils and utils.displayMessage then
         local msg = string.format("Shift ended. Total earned: $%d | Rep: %d | Materials moved: %d",
-            sessionTotalPay, sessionTotalRep, sessionMaterialsMoved)
+            isHardcoreModeActive() and applyHardcorePayout(sessionTotalPay) or sessionTotalPay,
+            isHardcoreModeActive() and applyHardcorePayout(sessionTotalRep) or sessionTotalRep,
+            sessionMaterialsMoved)
         utils.displayMessage(msg, 6)
     end
 

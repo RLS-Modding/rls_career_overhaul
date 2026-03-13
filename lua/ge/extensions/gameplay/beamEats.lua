@@ -486,7 +486,7 @@ local function calculateBaseFare(totalDistance)
 
     if career_career and career_career.isActive() and career_modules_hardcore and career_modules_hardcore.isHardcoreMode and
         career_modules_hardcore.isHardcoreMode() then
-        baseFare = baseFare * 0.66
+        baseFare = baseFare * 0.5
     end
 
     if career_economyAdjuster then
@@ -825,7 +825,7 @@ local function completeDelivery()
     end
 
     if career_modules_hardcore and career_modules_hardcore.isHardcoreMode and career_modules_hardcore.isHardcoreMode() then
-        label = label .. "\nHardcore mode is enabled, all rewards lowered."
+        label = label .. "\nHardcore mode is enabled, all rewards are halved."
     end
     
     if career_modules_payment and type(career_modules_payment.reward) == "function" then
