@@ -725,7 +725,7 @@ local function calculateDrivingDistance(startPos, endPos)
 end
 
 local function calculateBaseFare(passengerCount, totalDistance, valueMultiplier, selectedPassengerType)
-    local baseFare = 100 * (passengerCount ^ 0.5) * valueMultiplier * distanceMultiplier * selectedPassengerType.baseMultiplier
+    local baseFare = 50 * (passengerCount ^ 0.5) * valueMultiplier * distanceMultiplier * selectedPassengerType.baseMultiplier
     baseFare = baseFare * (totalDistance / 1000)
     baseFare = baseFare * getGlobalTaxiRewardMultiplier()
     local taxiMultiplier = 1.0
