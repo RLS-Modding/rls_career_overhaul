@@ -4,5 +4,5 @@
 {"name":"auctionAssetsOn","class":"SimGroup","__parent":"AuctionHouseVault","active0":"1","active00":"1","enabled0":"1","enabled00":"1","isEnabled0":"1"}
 {"class":"TSStatic","__parent":"AuctionHouseVault","position":[-1549.73914,70.4730072,124.35215],"isRenderEnabled":false,"rotationMatrix":[0.998853385,0.047873348,0,-0.047873348,0.998853385,0,0,0,1],"shapeName":"/levels/west_coast_usa/art/shapes/auction/ravix_main.dae","useInstanceRenderData":true}
 {"class":"TSStatic","__parent":"AuctionHouseVault","position":[-1523.19263,38.9294472,122.118164],"isRenderEnabled":false,"shapeName":"/levels/west_coast_usa/art/shapes/auction/the_vault_main.dae","useInstanceRenderData":true}
-{"name":"auctionEmitters","class":"SimGroup","__parent":"AuctionHouseVault","active0":"0","active00":"0","enabled0":"0","enabled00":"0","hidden":true,"isEnabled0":"0"}
+{"name":"auctionEmitters","class":"SimGroup","__parent":"AuctionHouseVault","active0":"0","active00":"0","enabled0":"0","enabled00":"0","isEnabled0":"0"}
 {"name":"AuctionLights","class":"SimGroup","__parent":"AuctionHouseVault"}
