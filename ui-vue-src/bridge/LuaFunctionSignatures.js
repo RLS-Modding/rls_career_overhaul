@@ -1582,6 +1582,8 @@ export default {
 
   ui_phone_freContracts: {
     getState: filterDisciplineId => {},
+    startLiveUpdates: () => {},
+    stopLiveUpdates: () => {},
     acceptContract: contractId => {},
     abandonContract: contractId => {},
     signSponsor: sponsorId => {},

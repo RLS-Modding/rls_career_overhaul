@@ -11,7 +11,10 @@ local LOG_TAG = "fre.contracts"
 
 local state = nil
 local raceCache = {levelId = nil, byDiscipline = {}}
-local maintenanceAccumulator = 0
+local nextMaintenanceAt = nil
+local uiStreamingActive = false
+local uiRevision = 0
+local emitUiStateUpdate
 
 local sponsorNamePrefixes = {"Torque", "Summit", "Grid", "Rustline", "Blacktop", "Apex", "Ridge", "Mudline", "Trackside", "Overdrive"}
 local sponsorNameSuffixes = {"Motors", "Performance", "Motorsport", "Industries", "Dynamics", "Works", "Racing", "Garage", "Labs", "Partners"}
@@ -186,6 +189,48 @@ local function saveState(forcePath)
   return career_saveSystem.jsonWriteFileSafe(writePath, state, true)
 end
 
+local function markReason(reasonSet, reason)
+  if type(reasonSet) ~= "table" or type(reason) ~= "string" or reason == "" then
+    return
+  end
+  reasonSet[reason] = true
+end
+
+local function mergeReasons(target, source)
+  if type(target) ~= "table" or type(source) ~= "table" then
+    return
+  end
+  for reason in pairs(source) do
+    target[reason] = true
+  end
+end
+
+local function summarizeReasons(reasonSet, fallback)
+  if type(reasonSet) ~= "table" then
+    return fallback or "state_changed"
+  end
+  local reasons = {}
+  for reason in pairs(reasonSet) do
+    reasons[#reasons + 1] = reason
+  end
+  if #reasons == 0 then
+    return fallback or "state_changed"
+  end
+  table.sort(reasons)
+  return table.concat(reasons, ",")
+end
+
+local function pickEarlierTime(currentNext, candidate)
+  local value = tonumber(candidate)
+  if not value then
+    return currentNext
+  end
+  if not currentNext or value < currentNext then
+    return value
+  end
+  return currentNext
+end
+
 local function nextId(prefix)
   ensureState()
   local id = string.format("%s-%d", prefix or "fre", state.nextId)
@@ -193,10 +238,10 @@ local function nextId(prefix)
   return id
 end
 
-local function getSkillLevel(disciplineId)
+local function getSkillRefs(disciplineId)
   local skillKey = freConfig.getSkillKey(disciplineId)
   if not skillKey then
-    return 0
+    return nil, {}
   end
 
   local refs = {}
@@ -236,6 +281,15 @@ local function getSkillLevel(disciplineId)
     end
   end
 
+  return skillKey, refs
+end
+
+local function getSkillLevel(disciplineId)
+  local skillKey, refs = getSkillRefs(disciplineId)
+  if not skillKey then
+    return 0
+  end
+
   local value = 0
   if career_modules_playerAttributes and career_modules_playerAttributes.getAttributeValue then
     local rawValue = career_modules_playerAttributes.getAttributeValue(skillKey)
@@ -261,6 +315,73 @@ local function getSkillLevel(disciplineId)
   end
 
   return math.max(0, math.floor(level))
+end
+
+local function getSkillProgress(disciplineId)
+  local skillKey, refs = getSkillRefs(disciplineId)
+  if not skillKey then
+    return {
+      value = 0,
+      level = 0,
+      progress = 0,
+      xpIntoLevel = 0,
+      xpNeededForLevel = 0,
+      xpToNextLevel = 0,
+      prevThreshold = nil,
+      nextThreshold = nil
+    }
+  end
+
+  local value = 0
+  if career_modules_playerAttributes and career_modules_playerAttributes.getAttributeValue then
+    value = tonumber(career_modules_playerAttributes.getAttributeValue(skillKey)) or 0
+  end
+
+  local best = {
+    level = 0,
+    prevThreshold = nil,
+    nextThreshold = nil
+  }
+
+  if career_branches and career_branches.calcBranchLevelFromValue then
+    for _, branchRef in ipairs(refs) do
+      local level, _, _, prevThreshold, nextThreshold = career_branches.calcBranchLevelFromValue(value, branchRef)
+      level = tonumber(level)
+      prevThreshold = tonumber(prevThreshold)
+      nextThreshold = tonumber(nextThreshold)
+      if level and (level > best.level or (level == best.level and (nextThreshold or -math.huge) > (best.nextThreshold or -math.huge))) then
+        best.level = level
+        best.prevThreshold = prevThreshold
+        best.nextThreshold = nextThreshold
+      end
+    end
+  end
+
+  local level = math.max(0, math.floor(best.level or 0))
+  local prevThreshold = best.prevThreshold
+  local nextThreshold = best.nextThreshold
+  local xpIntoLevel = 0
+  local xpNeededForLevel = 0
+  local xpToNextLevel = 0
+  local progress = 1
+
+  if type(prevThreshold) == "number" and type(nextThreshold) == "number" and nextThreshold > prevThreshold then
+    xpIntoLevel = math.max(0, value - prevThreshold)
+    xpNeededForLevel = math.max(0, nextThreshold - prevThreshold)
+    xpToNextLevel = math.max(0, nextThreshold - value)
+    progress = math.min(1, math.max(0, xpIntoLevel / xpNeededForLevel))
+  end
+
+  return {
+    value = value,
+    level = level,
+    progress = progress,
+    xpIntoLevel = xpIntoLevel,
+    xpNeededForLevel = xpNeededForLevel,
+    xpToNextLevel = xpToNextLevel,
+    prevThreshold = prevThreshold,
+    nextThreshold = nextThreshold
+  }
 end
 
 local function hasLevel(level, requiredLevel)
@@ -921,6 +1042,8 @@ local function purgeExpiredEntries(now)
   ensureState()
   local sponsorCfg = freConfig.getSponsorConfig()
   local graceMinutes = tonumber(sponsorCfg.graceMinutes) or 20
+  local changed = false
+  local reasons = {}
 
   for _, discipline in ipairs(freConfig.getDisciplines()) do
     local dState = state.disciplines[discipline.id]
@@ -929,6 +1052,8 @@ local function purgeExpiredEntries(now)
         local entry = dState.contracts.available[i]
         if (tonumber(entry.expiresAt) or 0) <= now then
           table.remove(dState.contracts.available, i)
+          changed = true
+          markReason(reasons, "contract_offer_expired")
         end
       end
       for i = #dState.contracts.active, 1, -1 do
@@ -936,6 +1061,8 @@ local function purgeExpiredEntries(now)
         if (tonumber(entry.expiresAt) or 0) <= now then
           dState.contracts.failed = dState.contracts.failed + 1
           table.remove(dState.contracts.active, i)
+          changed = true
+          markReason(reasons, "contract_expired")
         end
       end
 
@@ -943,6 +1070,8 @@ local function purgeExpiredEntries(now)
         local entry = dState.sponsors.available[i]
         if (tonumber(entry.expiresAt) or 0) <= now then
           table.remove(dState.sponsors.available, i)
+          changed = true
+          markReason(reasons, "sponsor_offer_expired")
         end
       end
       for i = #dState.sponsors.active, 1, -1 do
@@ -953,14 +1082,20 @@ local function purgeExpiredEntries(now)
             sponsor.warningIssued = true
             sponsor.warningIssuedAt = now
             sponsor.nextCheckAt = now + graceMinutes
+            changed = true
+            markReason(reasons, "sponsor_warning_issued")
           else
             dState.sponsors.dropped = dState.sponsors.dropped + 1
             table.remove(dState.sponsors.active, i)
+            changed = true
+            markReason(reasons, "sponsor_removed_after_warning")
           end
         end
       end
     end
   end
+
+  return changed, reasons
 end
 
 local function generateContractOffer(disciplineId, level, now)
@@ -1062,7 +1197,9 @@ end
 local function syncOffersForDiscipline(disciplineId, now)
   ensureState()
   local dState = state.disciplines[disciplineId]
-  if not dState then return end
+  if not dState then return false, {} end
+  local changed = false
+  local reasons = {}
 
   -- Remove offers that require a now-blacklisted model.
   for i = #dState.contracts.available, 1, -1 do
@@ -1071,10 +1208,13 @@ local function syncOffersForDiscipline(disciplineId, now)
     local requiredModel = offer and (offer.requiredModelFamily or offer.requiredModel)
     if requiredModel and requiredModel ~= "" and (not isModelAllowedForDiscipline(disciplineId, requiredModel) or not isValidVehicleModelKey(requiredModel)) then
       table.remove(dState.contracts.available, i)
+      changed = true
+      markReason(reasons, "contract_offer_expired")
     end
   end
 
-  local level = getSkillLevel(disciplineId)
+  local skillProgress = getSkillProgress(disciplineId)
+  local level = skillProgress.level
   local contractCfg = freConfig.getContractConfig(disciplineId)
   local sponsorCfg = freConfig.getSponsorConfig(disciplineId)
   local offerExpiryMinutes = tonumber(contractCfg.offerExpiryMinutes) or 5
@@ -1090,6 +1230,10 @@ local function syncOffersForDiscipline(disciplineId, now)
   local sponsorTierUnlock = (sponsorCfg.tierUnlockLevels or {}).easy or math.huge
 
   if level < contractTierUnlock then
+    if #dState.contracts.available > 0 then
+      changed = true
+      markReason(reasons, "contract_offer_expired")
+    end
     dState.contracts.available = {}
     dState.contracts.seeded = false
     dState.contracts.nextOfferAt = now
@@ -1108,6 +1252,8 @@ local function syncOffersForDiscipline(disciplineId, now)
 
     while #dState.contracts.available > contractCap do
       table.remove(dState.contracts.available, #dState.contracts.available)
+      changed = true
+      markReason(reasons, "contract_offer_expired")
     end
 
     local offerRefreshMinutes = tonumber(contractCfg.offerRefreshMinutes) or 2
@@ -1120,6 +1266,8 @@ local function syncOffersForDiscipline(disciplineId, now)
           break
         end
         table.insert(dState.contracts.available, offer)
+        changed = true
+        markReason(reasons, "contract_offer_generated")
       end
       dState.contracts.seeded = true
       dState.contracts.nextOfferAt = now + offerRefreshMinutes
@@ -1133,6 +1281,8 @@ local function syncOffersForDiscipline(disciplineId, now)
         dState.contracts.nextOfferAt = now + offerRefreshMinutes
         if offer then
           table.insert(dState.contracts.available, offer)
+          changed = true
+          markReason(reasons, "contract_offer_generated")
         end
       elseif #dState.contracts.available >= contractCap then
         dState.contracts.nextOfferAt = now + offerRefreshMinutes
@@ -1141,6 +1291,10 @@ local function syncOffersForDiscipline(disciplineId, now)
   end
 
   if level < sponsorTierUnlock then
+    if #dState.sponsors.available > 0 then
+      changed = true
+      markReason(reasons, "sponsor_offer_expired")
+    end
     dState.sponsors.available = {}
     dState.sponsors.seeded = false
     dState.sponsors.nextOfferAt = now
@@ -1164,6 +1318,8 @@ local function syncOffersForDiscipline(disciplineId, now)
 
     while #dState.sponsors.available > sponsorCap do
       table.remove(dState.sponsors.available, #dState.sponsors.available)
+      changed = true
+      markReason(reasons, "sponsor_offer_expired")
     end
 
     local sponsorOfferRefreshMinutes = tonumber(sponsorCfg.offerRefreshMinutes) or 2
@@ -1176,6 +1332,8 @@ local function syncOffersForDiscipline(disciplineId, now)
           break
         end
         table.insert(dState.sponsors.available, offer)
+        changed = true
+        markReason(reasons, "sponsor_offer_generated")
       end
       dState.sponsors.seeded = true
       dState.sponsors.nextOfferAt = now + sponsorOfferRefreshMinutes
@@ -1189,19 +1347,30 @@ local function syncOffersForDiscipline(disciplineId, now)
         dState.sponsors.nextOfferAt = now + sponsorOfferRefreshMinutes
         if offer then
           table.insert(dState.sponsors.available, offer)
+          changed = true
+          markReason(reasons, "sponsor_offer_generated")
         end
       elseif #dState.sponsors.available >= sponsorCap then
         dState.sponsors.nextOfferAt = now + sponsorOfferRefreshMinutes
       end
     end
   end
+
+  return changed, reasons
 end
 
 local function syncAllOffers(now)
   refreshRaceCache()
+  local changed = false
+  local reasons = {}
   for _, discipline in ipairs(freConfig.getDisciplines()) do
-    syncOffersForDiscipline(discipline.id, now)
+    local disciplineChanged, disciplineReasons = syncOffersForDiscipline(discipline.id, now)
+    if disciplineChanged then
+      changed = true
+      mergeReasons(reasons, disciplineReasons)
+    end
   end
+  return changed, reasons
 end
 
 local function getSponsorBonusesForDiscipline(disciplineId)
@@ -1488,6 +1657,8 @@ local function onFreeroamRaceCompleted(payload)
 
   if stateChanged then
     saveState()
+    refreshMaintenanceSchedule(now)
+    emitUiStateUpdate("race_result_applied")
   end
 end
 
@@ -1510,13 +1681,65 @@ local function sortForUi(list, typeKey)
   end)
 end
 
+local function computeNextMaintenanceAt(now)
+  ensureState()
+  local nextAt = nil
+  local currentTime = tonumber(now) or tonumber(state.simTime) or 0
+
+  for _, discipline in ipairs(freConfig.getDisciplines()) do
+    local dState = state.disciplines[discipline.id]
+    if dState then
+      local level = getSkillLevel(discipline.id)
+      local contractCfg = freConfig.getContractConfig(discipline.id)
+      local sponsorCfg = freConfig.getSponsorConfig(discipline.id)
+      local contractUnlockLevel = tonumber((contractCfg.tierUnlockLevels or {}).easy) or math.huge
+      local sponsorUnlockLevel = tonumber((sponsorCfg.tierUnlockLevels or {}).easy) or math.huge
+      local contractsUnlocked = level >= contractUnlockLevel
+      local sponsorsUnlocked = level >= sponsorUnlockLevel
+      local contractOfferCap = contractsUnlocked and countOfferCap(level, contractCfg) or 0
+      local sponsorOfferCap = sponsorsUnlocked and countOfferCap(level, sponsorCfg) or 0
+
+      if contractsUnlocked and #(dState.contracts.available or {}) < contractOfferCap then
+        nextAt = pickEarlierTime(nextAt, dState.contracts and dState.contracts.nextOfferAt)
+      end
+      if sponsorsUnlocked and #(dState.sponsors.available or {}) < sponsorOfferCap then
+        nextAt = pickEarlierTime(nextAt, dState.sponsors and dState.sponsors.nextOfferAt)
+      end
+
+      for _, entry in ipairs(dState.contracts.available or {}) do
+        nextAt = pickEarlierTime(nextAt, entry.expiresAt)
+      end
+      for _, entry in ipairs(dState.contracts.active or {}) do
+        nextAt = pickEarlierTime(nextAt, entry.expiresAt)
+      end
+      for _, entry in ipairs(dState.sponsors.available or {}) do
+        nextAt = pickEarlierTime(nextAt, entry.expiresAt)
+      end
+      for _, sponsor in ipairs(dState.sponsors.active or {}) do
+        nextAt = pickEarlierTime(nextAt, sponsor.nextCheckAt)
+      end
+    end
+  end
+
+  if nextAt and nextAt < currentTime then
+    return currentTime
+  end
+  return nextAt
+end
+
+local function refreshMaintenanceSchedule(now)
+  nextMaintenanceAt = computeNextMaintenanceAt(now)
+  return nextMaintenanceAt
+end
+
 local function buildDisciplineUiState(disciplineId, now)
   local discipline = freConfig.getDisciplineById(disciplineId)
   if not discipline then
     return nil
   end
 
-  local level = getSkillLevel(disciplineId)
+  local skillProgress = getSkillProgress(disciplineId)
+  local level = skillProgress.level
   local contractCfg = freConfig.getContractConfig(disciplineId)
   local sponsorCfg = freConfig.getSponsorConfig(disciplineId)
   local contractUnlockLevel = tonumber((contractCfg.tierUnlockLevels or {}).easy) or 0
@@ -1545,6 +1768,13 @@ local function buildDisciplineUiState(disciplineId, now)
     skillKey = discipline.skillKey,
     placeholderOnly = discipline.placeholderOnly == true,
     level = level,
+    xpValue = skillProgress.value,
+    xpProgress = skillProgress.progress,
+    xpIntoLevel = skillProgress.xpIntoLevel,
+    xpNeededForLevel = skillProgress.xpNeededForLevel,
+    xpToNextLevel = skillProgress.xpToNextLevel,
+    prevThreshold = skillProgress.prevThreshold,
+    nextThreshold = skillProgress.nextThreshold,
     contractUnlockLevel = contractUnlockLevel,
     sponsorUnlockLevel = sponsorUnlockLevel,
     contractsUnlocked = contractsUnlocked,
@@ -1642,6 +1872,7 @@ local function getUiState(filterDisciplineId)
   local now = tonumber(state.simTime) or 0
   purgeExpiredEntries(now)
   syncAllOffers(now)
+  refreshMaintenanceSchedule(now)
 
   local activeContracts = {}
   local availableContracts = {}
@@ -1694,6 +1925,24 @@ local function getUiState(filterDisciplineId)
   }
 end
 
+local function setUiStreamingActive(active)
+  uiStreamingActive = active == true
+end
+
+emitUiStateUpdate = function(reason)
+  if not uiStreamingActive or not guihooks or not guihooks.trigger then
+    return false
+  end
+  uiRevision = uiRevision + 1
+  local payload = getUiState()
+  payload.updateReason = reason or "state_changed"
+  payload.revision = uiRevision
+  payload.nextMaintenanceAt = nextMaintenanceAt
+  payload.nextMaintenanceInMinutes = nextMaintenanceAt and math.max(0, nextMaintenanceAt - (tonumber(state and state.simTime) or 0)) or nil
+  guihooks.trigger("phoneFreContractsData", payload)
+  return true
+end
+
 local function acceptContract(contractId)
   ensureState()
   local now = tonumber(state.simTime) or 0
@@ -1705,12 +1954,16 @@ local function acceptContract(contractId)
         if (tonumber(entry.expiresAt) or 0) <= now then
           table.remove(dState.contracts.available, idx)
           saveState()
+          refreshMaintenanceSchedule(now)
+          emitUiStateUpdate("contract_offer_expired")
           return false, "Offer expired."
         end
         local requiredModel = entry.requiredModelFamily or entry.requiredModel
         if requiredModel and requiredModel ~= "" and (not isModelAllowedForDiscipline(discipline.id, requiredModel) or not isValidVehicleModelKey(requiredModel)) then
           table.remove(dState.contracts.available, idx)
           saveState()
+          refreshMaintenanceSchedule(now)
+          emitUiStateUpdate("contract_offer_expired")
           return false, "Required model is invalid or blacklisted."
         end
         local level = getSkillLevel(discipline.id)
@@ -1725,6 +1978,8 @@ local function acceptContract(contractId)
         table.insert(dState.contracts.active, entry)
         table.remove(dState.contracts.available, idx)
         saveState()
+        refreshMaintenanceSchedule(now)
+        emitUiStateUpdate("contract_accepted")
         return true
       end
     end
@@ -1741,6 +1996,8 @@ local function abandonContract(contractId)
         dState.contracts.failed = dState.contracts.failed + 1
         table.remove(dState.contracts.active, idx)
         saveState()
+        refreshMaintenanceSchedule()
+        emitUiStateUpdate("contract_abandoned")
         return true
       end
     end
@@ -1759,6 +2016,8 @@ local function signSponsor(sponsorId)
         if (tonumber(entry.expiresAt) or 0) <= now then
           table.remove(dState.sponsors.available, idx)
           saveState()
+          refreshMaintenanceSchedule(now)
+          emitUiStateUpdate("sponsor_offer_expired")
           return false, "Offer expired."
         end
         local level = getSkillLevel(discipline.id)
@@ -1772,6 +2031,8 @@ local function signSponsor(sponsorId)
         table.insert(dState.sponsors.active, entry)
         table.remove(dState.sponsors.available, idx)
         saveState()
+        refreshMaintenanceSchedule(now)
+        emitUiStateUpdate("sponsor_signed")
         return true
       end
     end
@@ -1788,6 +2049,8 @@ local function dropSponsor(sponsorId)
         dState.sponsors.dropped = dState.sponsors.dropped + 1
         table.remove(dState.sponsors.active, idx)
         saveState()
+        refreshMaintenanceSchedule()
+        emitUiStateUpdate("sponsor_dropped")
         return true
       end
     end
@@ -1804,6 +2067,8 @@ local function acknowledgeSponsorWarning(sponsorId)
       if entry.id == sponsorId then
         entry.warningAcknowledgedAt = now
         saveState()
+        refreshMaintenanceSchedule(now)
+        emitUiStateUpdate("sponsor_warning_acknowledged")
         return true
       end
     end
@@ -1823,14 +2088,29 @@ local function onUpdate(_, dtSim, _)
     return
   end
   updateSimTime(dtSim)
-  maintenanceAccumulator = maintenanceAccumulator + (tonumber(dtSim) or 0)
-  if maintenanceAccumulator < 1 then
+  local now = tonumber(state.simTime) or 0
+  if not nextMaintenanceAt then
     return
   end
-  maintenanceAccumulator = 0
-  local now = tonumber(state.simTime) or 0
-  purgeExpiredEntries(now)
-  syncAllOffers(now)
+  if nextMaintenanceAt and now < nextMaintenanceAt then
+    return
+  end
+  local changed = false
+  local reasons = {}
+  local purged, purgeReasons = purgeExpiredEntries(now)
+  if purged then
+    changed = true
+    mergeReasons(reasons, purgeReasons)
+  end
+  local synced, syncReasons = syncAllOffers(now)
+  if synced then
+    changed = true
+    mergeReasons(reasons, syncReasons)
+  end
+  refreshMaintenanceSchedule(now)
+  if changed then
+    emitUiStateUpdate(summarizeReasons(reasons))
+  end
 end
 
 local function onSaveCurrentSaveSlot(currentSavePath)
@@ -1844,16 +2124,19 @@ local function onExtensionLoaded()
   local now = tonumber(state.simTime) or 0
   purgeExpiredEntries(now)
   syncAllOffers(now)
+  refreshMaintenanceSchedule(now)
 end
 
 local function onCareerModulesActivated()
   loadState()
   refreshRaceCache()
+  refreshMaintenanceSchedule(tonumber(state and state.simTime) or 0)
 end
 
 M.calculateRewardModifiers = calculateRewardModifiers
 M.getSponsorBonusesForDiscipline = getSponsorBonusesForDiscipline
 M.getUiState = getUiState
+M.setUiStreamingActive = setUiStreamingActive
 M.acceptContract = acceptContract
 M.abandonContract = abandonContract
 M.signSponsor = signSponsor

@@ -1,146 +1,294 @@
 <template>
   <PhoneWrapper app-name="FRE Contracts">
     <div class="fre-app">
-      <div v-if="loading" class="empty">Loading FRE contracts...</div>
-      <div v-else-if="!careerActive" class="empty">Start Career mode to use FRE Contracts.</div>
+      <div v-if="loading" class="state-screen">
+        <div class="state-card">
+          <div class="state-eyebrow">Loading</div>
+          <div class="state-title">Pulling fresh contract data</div>
+          <div class="state-copy">Checking the latest FRE offers and sponsor updates.</div>
+        </div>
+      </div>
+      <div v-else-if="!careerActive" class="state-screen">
+        <div class="state-card">
+          <div class="state-eyebrow">Career Required</div>
+          <div class="state-title">FRE Contracts is locked</div>
+          <div class="state-copy">Start Career mode to browse contracts, sponsors, and progression.</div>
+        </div>
+      </div>
       <template v-else>
-        <div class="toolbar">
-          <BngDropdown
-            v-model="selectedDiscipline"
-            :items="disciplineOptions"
-            class="discipline-select"
-          />
-          <button class="sync-btn" :disabled="actionBusy" @click="refreshState">Sync Now</button>
-        </div>
-
-        <div class="sync-meta">
-          <span>Auto-sync every 5m</span>
-          <span>Last sync {{ lastSyncLabel }}</span>
-        </div>
-
-        <div class="discipline-summary" v-if="selectedDisciplineInfo">
-          <div class="summary-top">
-            <div class="summary-title">{{ selectedDisciplineInfo.label }}</div>
-            <div class="summary-level">L{{ selectedDisciplineInfo.level }}</div>
+        <div class="toolbar-shell">
+          <div v-if="selectedDisciplineInfo" class="discipline-summary">
+            <div class="summary-head">
+              <div ref="disciplineMenuRef" class="summary-main discipline-dropdown-wrap">
+                <div class="summary-title-row">
+                  <button class="summary-title-btn" :class="{ active: disciplineMenuOpen }" @click.stop="toggleDisciplineMenu" @mousedown.stop>
+                    <span class="summary-title">{{ selectedDisciplineLabel }}</span>
+                    <svg class="discipline-dropdown-chevron" :class="{ open: disciplineMenuOpen }" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                  </button>
+                  <div class="summary-title-level">Level {{ selectedDisciplineInfo.level }}</div>
+                </div>
+                <div v-if="disciplineMenuOpen" class="discipline-dropdown-panel summary-discipline-panel" @click.stop @mousedown.stop>
+                  <button
+                    v-for="option in disciplineOptions"
+                    :key="option.value"
+                    class="discipline-dropdown-item"
+                    :class="{ selected: option.value === selectedDiscipline }"
+                    @click="selectDiscipline(option.value)"
+                  >
+                    {{ option.label }}
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="summary-strip">
+              <div class="summary-meter-card">
+                <div class="summary-meter-top">
+                  <span class="summary-meter-label">Contracts</span>
+                  <span class="summary-meter-value">{{ selectedDisciplineInfo.contractSlotsUsed }}/{{ selectedDisciplineInfo.contractSlots }}</span>
+                </div>
+              </div>
+              <div class="summary-meter-card">
+                <div class="summary-meter-top">
+                  <span class="summary-meter-label">Sponsors</span>
+                  <span class="summary-meter-value">{{ selectedDisciplineInfo.sponsorSlotsUsed }}/{{ selectedDisciplineInfo.sponsorSlots }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="summary-bonus">
+              <span class="summary-bonus-label">Sponsor Bonus</span>
+              <span class="summary-bonus-value">{{ formatPercent(selectedDisciplineInfo.sponsorBonusMoney) }} Money • {{ formatPercent(selectedDisciplineInfo.sponsorBonusXp) }} XP</span>
+            </div>
+            <div v-if="summaryUnlockMessages.length" class="summary-notes">
+              <div v-for="message in summaryUnlockMessages" :key="message" class="summary-note">{{ message }}</div>
+            </div>
           </div>
-          <div class="summary-grid">
-            <div class="summary-cell">
-              <div class="summary-key">Contracts</div>
-              <div class="summary-value">{{ selectedDisciplineInfo.contractSlotsUsed }}/{{ selectedDisciplineInfo.contractSlots }}</div>
-            </div>
-            <div class="summary-cell">
-              <div class="summary-key">Contract Offers</div>
-              <div class="summary-value">{{ selectedDisciplineInfo.contractOfferCap }}</div>
-            </div>
-            <div class="summary-cell">
-              <div class="summary-key">Sponsors</div>
-              <div class="summary-value">{{ selectedDisciplineInfo.sponsorSlotsUsed }}/{{ selectedDisciplineInfo.sponsorSlots }}</div>
-            </div>
-            <div class="summary-cell">
-              <div class="summary-key">Sponsor Offers</div>
-              <div class="summary-value">{{ selectedDisciplineInfo.sponsorOfferCap }}</div>
-            </div>
-          </div>
-          <div class="summary-bonus">Bonus: Money {{ formatPercent(selectedDisciplineInfo.sponsorBonusMoney) }} | XP {{ formatPercent(selectedDisciplineInfo.sponsorBonusXp) }}</div>
-          <div v-if="!selectedDisciplineInfo.contractsUnlocked" class="summary-line muted">Contracts unlock at level {{ selectedDisciplineInfo.contractUnlockLevel }}</div>
-          <div v-if="!selectedDisciplineInfo.sponsorsUnlocked" class="summary-line muted">Sponsors unlock at level {{ selectedDisciplineInfo.sponsorUnlockLevel }}</div>
-        </div>
-
-        <div class="tabs">
-          <button :class="{ active: tab === 'contracts' }" @click="tab = 'contracts'">Contracts</button>
-          <button :class="{ active: tab === 'sponsors' }" @click="tab = 'sponsors'">Sponsors</button>
-        </div>
-
-        <div v-if="errorMessage" class="error">{{ errorMessage }}</div>
-
-        <div v-if="tab === 'contracts'" class="panel">
-          <div class="section">Active</div>
-          <div v-if="filteredActiveContracts.length === 0" class="empty small">No active contracts.</div>
-          <div v-for="contract in filteredActiveContracts" :key="contract.id" class="card">
-            <div class="title">{{ disciplineLabel(contract.disciplineId) }} - {{ tierLabel(contract.tier) }}</div>
-            <div class="line contract-focus">{{ contractFocusLabel(contract) }}</div>
-            <div class="contract-metrics">
-              <div class="metric">
-                <span class="metric-key">Target</span>
-                <span class="metric-value">{{ formatTime(contract.targetTime) }}</span>
+          <div v-else class="discipline-summary compact">
+            <div ref="disciplineMenuRef" class="discipline-dropdown-wrap">
+              <div class="summary-title-row compact">
+                <button class="summary-title-btn" :class="{ active: disciplineMenuOpen }" @click.stop="toggleDisciplineMenu" @mousedown.stop>
+                  <span class="summary-title">{{ selectedDisciplineLabel }}</span>
+                  <svg class="discipline-dropdown-chevron" :class="{ open: disciplineMenuOpen }" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                </button>
               </div>
-              <div class="metric">
-                <span class="metric-key">Objective</span>
-                <span class="metric-value">{{ objectiveStatusLabel(contract) }}</span>
-              </div>
-              <div class="metric">
-                <span class="metric-key">Reward</span>
-                <span class="metric-value">${{ formatMoney(contract.rewardMoney) }} + {{ contract.rewardXp }} XP</span>
-              </div>
-              <div class="metric">
-                <span class="metric-key">Expires</span>
-                <span class="metric-value">{{ formatMinutes(displayRemaining(contract.minutesRemaining)) }}</span>
+              <div v-if="disciplineMenuOpen" class="discipline-dropdown-panel summary-discipline-panel" @click.stop @mousedown.stop>
+                <button
+                  v-for="option in disciplineOptions"
+                  :key="option.value"
+                  class="discipline-dropdown-item"
+                  :class="{ selected: option.value === selectedDiscipline }"
+                  @click="selectDiscipline(option.value)"
+                >
+                  {{ option.label }}
+                </button>
               </div>
             </div>
-            <button class="danger" :disabled="actionBusy" @click="abandonContract(contract.id)">Abandon</button>
+            <div class="summary-compact-copy">Showing combined contracts and sponsors across every discipline.</div>
           </div>
 
-          <div class="section">Available</div>
-          <div v-if="selectedDisciplineInfo && !selectedDisciplineInfo.contractsUnlocked" class="empty small">
-            Contracts unlock at level {{ selectedDisciplineInfo.contractUnlockLevel }}.
-          </div>
-          <div v-else-if="filteredAvailableContracts.length === 0" class="empty small">No offers available.</div>
-          <div v-for="contract in filteredAvailableContracts" :key="contract.id" class="card">
-            <div class="title">{{ disciplineLabel(contract.disciplineId) }} - {{ tierLabel(contract.tier) }}</div>
-            <div class="line contract-focus">{{ contractFocusLabel(contract) }}</div>
-            <div class="contract-metrics">
-              <div class="metric">
-                <span class="metric-key">Target</span>
-                <span class="metric-value">{{ formatTime(contract.targetTime) }}</span>
-              </div>
-              <div class="metric">
-                <span class="metric-key">Objective</span>
-                <span class="metric-value">{{ objectiveStatusLabel(contract) }}</span>
-              </div>
-              <div class="metric">
-                <span class="metric-key">Reward</span>
-                <span class="metric-value">${{ formatMoney(contract.rewardMoney) }} + {{ contract.rewardXp }} XP</span>
-              </div>
-              <div class="metric">
-                <span class="metric-key">Expires</span>
-                <span class="metric-value">{{ formatMinutes(displayRemaining(contract.minutesRemaining)) }}</span>
-              </div>
-            </div>
-            <button :disabled="actionBusy || !canAcceptContract(contract)" @click="acceptContract(contract.id)">
-              {{ canAcceptContract(contract) ? 'Accept' : 'Slots Full' }}
+          <div class="tabs">
+            <button :class="{ active: tab === 'contracts' }" @click="tab = 'contracts'">
+              <span class="tab-label">Contracts</span>
+              <span class="tab-count">{{ contractsTabCount }}</span>
+            </button>
+            <button :class="{ active: tab === 'sponsors' }" @click="tab = 'sponsors'">
+              <span class="tab-label">Sponsors</span>
+              <span class="tab-count">{{ sponsorsTabCount }}</span>
             </button>
           </div>
         </div>
 
-        <div v-else class="panel">
-          <div class="section">Active</div>
-          <div v-if="filteredActiveSponsors.length === 0" class="empty small">No active sponsors.</div>
-          <div v-for="sponsor in filteredActiveSponsors" :key="sponsor.id" class="card">
-            <div class="title">{{ disciplineLabel(sponsor.disciplineId) }} - {{ sponsor.name }}</div>
-            <div class="line">{{ tierLabel(sponsor.tier) }} | {{ bonusLabel(sponsor) }}</div>
-            <div class="line">Requirement: {{ sponsorRequirementLabel(sponsor) }}</div>
-            <div class="line" :class="sponsorStatusClass(sponsor)">Status: {{ sponsorStatusLabel(sponsor) }}</div>
-            <div class="line">Upkeep in {{ formatMinutes(displayRemaining(sponsor.checkMinutesRemaining)) }}</div>
-            <div class="warning" v-if="sponsor.warningIssued">
-              Warning active. Complete an event in {{ formatMinutes(displayRemaining(sponsor.checkMinutesRemaining)) }}.
-              <button :disabled="actionBusy" @click="acknowledgeSponsorWarning(sponsor.id)">Acknowledge</button>
-            </div>
-            <button class="danger" :disabled="actionBusy" @click="dropSponsor(sponsor.id)">Drop Sponsor</button>
+        <div class="content">
+          <div v-if="errorMessage" class="error">{{ errorMessage }}</div>
+          <div v-if="tab === 'contracts'" class="panel">
+            <section v-if="sortedActiveContracts.length > 0" class="section-block">
+              <div class="section-header">
+                <div>
+                  <div class="section-kicker">In Progress</div>
+                  <div class="section-title">Active Contracts</div>
+                </div>
+                <div class="section-count">{{ sortedActiveContracts.length }}</div>
+              </div>
+              <article
+                v-for="contract in sortedActiveContracts"
+                :key="contract.id"
+                class="deal-card"
+                :class="{ urgent: contractUrgencyTone(contract) === 'urgent' }"
+              >
+                <div class="deal-card-top">
+                  <div class="deal-card-title">{{ contractTitle(contract) }}</div>
+                  <div class="deal-card-side">
+                    <div class="deal-chip urgency" :class="contractUrgencyTone(contract)">{{ contractUrgencyLabel(contract) }}</div>
+                  </div>
+                </div>
+                <div class="deal-card-meta">
+                  <div class="deal-card-focus" :title="contractRaceLabel(contract)">{{ contractRaceLabel(contract) }}</div>
+                  <div class="deal-card-vehicle" :title="contractVehicleLabel(contract)">{{ contractVehicleLabel(contract) }}</div>
+                </div>
+                <div class="deal-card-main">
+                  <div class="reward-block">
+                    <div class="reward-label">Reward</div>
+                    <div class="reward-value">${{ formatMoney(contract.rewardMoney) }}</div>
+                    <div class="reward-sub">{{ contract.rewardXp }} XP</div>
+                  </div>
+                  <div class="objective-block">
+                    <div class="objective-label">Objective</div>
+                    <div class="objective-value">{{ objectiveStatusLabel(contract) }}</div>
+                    <div class="objective-sub">Target {{ formatTime(contract.targetTime) }}</div>
+                  </div>
+                </div>
+                <div class="deal-card-footer">
+                  <button class="action-btn danger" :disabled="actionBusy" @click="abandonContract(contract.id)">Abandon</button>
+                </div>
+              </article>
+            </section>
+
+            <section class="section-block">
+              <div class="section-header">
+                <div>
+                  <div class="section-kicker">New Work</div>
+                  <div class="section-title">Available Contracts</div>
+                </div>
+                <div class="section-count">{{ sortedAvailableContracts.length }}</div>
+              </div>
+              <div v-if="contractsLockedMessage" class="empty-card">
+                <div class="empty-card-title">Contracts Locked</div>
+                <div class="empty-card-copy">{{ contractsLockedMessage }}</div>
+              </div>
+              <div v-else-if="sortedAvailableContracts.length === 0" class="empty-card">
+                <div class="empty-card-title">No offers available</div>
+                <div class="empty-card-copy">No offers available right now. New offers will appear here automatically.</div>
+              </div>
+              <article
+                v-for="contract in sortedAvailableContracts"
+                :key="contract.id"
+                class="deal-card offer"
+                :class="{ urgent: contractUrgencyTone(contract) === 'urgent' }"
+              >
+                <div class="deal-card-top">
+                  <div class="deal-card-title">{{ contractTitle(contract) }}</div>
+                  <div class="deal-card-side">
+                    <div class="deal-chip urgency" :class="contractUrgencyTone(contract)">{{ contractUrgencyLabel(contract) }}</div>
+                  </div>
+                </div>
+                <div class="deal-card-meta">
+                  <div class="deal-card-focus" :title="contractRaceLabel(contract)">{{ contractRaceLabel(contract) }}</div>
+                  <div class="deal-card-vehicle" :title="contractVehicleLabel(contract)">{{ contractVehicleLabel(contract) }}</div>
+                </div>
+                <div class="deal-card-main">
+                  <div class="reward-block">
+                    <div class="reward-label">Reward</div>
+                    <div class="reward-value">${{ formatMoney(contract.rewardMoney) }}</div>
+                    <div class="reward-sub">{{ contract.rewardXp }} XP</div>
+                  </div>
+                  <div class="objective-block">
+                    <div class="objective-label">Objective</div>
+                    <div class="objective-value">{{ objectiveStatusLabel(contract) }}</div>
+                    <div class="objective-sub">Target {{ formatTime(contract.targetTime) }}</div>
+                  </div>
+                </div>
+                <div class="deal-card-footer">
+                  <button class="action-btn primary full-width" :disabled="actionBusy || !canAcceptContract(contract)" @click="acceptContract(contract.id)">
+                    {{ canAcceptContract(contract) ? 'Accept' : 'Slots Full' }}
+                  </button>
+                </div>
+              </article>
+            </section>
           </div>
 
-          <div class="section">Available</div>
-          <div v-if="selectedDisciplineInfo && !selectedDisciplineInfo.sponsorsUnlocked" class="empty small">
-            Sponsors unlock at level {{ selectedDisciplineInfo.sponsorUnlockLevel }}.
-          </div>
-          <div v-else-if="filteredAvailableSponsors.length === 0" class="empty small">No offers available.</div>
-          <div v-for="sponsor in filteredAvailableSponsors" :key="sponsor.id" class="card">
-            <div class="title">{{ disciplineLabel(sponsor.disciplineId) }} - {{ sponsor.name }}</div>
-            <div class="line">{{ tierLabel(sponsor.tier) }} | {{ bonusLabel(sponsor) }}</div>
-            <div class="line">Requirement: {{ sponsorRequirementLabel(sponsor) }}</div>
-            <div class="line">Offer expires in {{ formatMinutes(displayRemaining(sponsor.minutesRemaining)) }}</div>
-            <button :disabled="actionBusy || !canSignSponsor(sponsor)" @click="signSponsor(sponsor.id)">
-              {{ canSignSponsor(sponsor) ? 'Sign Sponsor' : 'Slots Full' }}
-            </button>
+          <div v-else class="panel">
+            <section class="section-block">
+              <div class="section-header">
+                <div>
+                  <div class="section-kicker">Current Deals</div>
+                  <div class="section-title">Active Sponsors</div>
+                </div>
+                <div class="section-count">{{ sortedActiveSponsors.length }}</div>
+              </div>
+              <div v-if="sortedActiveSponsors.length === 0" class="empty-card">
+                <div class="empty-card-title">No active sponsors</div>
+                <div class="empty-card-copy">Sign one to add passive money and XP bonuses.</div>
+              </div>
+              <article
+                v-for="sponsor in sortedActiveSponsors"
+                :key="sponsor.id"
+                class="deal-card sponsor"
+                :class="{ warning: sponsor.warningIssued }"
+              >
+                <div class="deal-card-top">
+                  <div class="deal-card-title-wrap">
+                    <div class="deal-card-title">{{ sponsorTitle(sponsor) }}</div>
+                    <div class="deal-card-focus">{{ bonusLabel(sponsor) }}</div>
+                  </div>
+                  <div class="deal-chip status" :class="sponsorStatusTone(sponsor)">{{ sponsorStatusLabel(sponsor) }}</div>
+                </div>
+                <div class="deal-card-main sponsor-main">
+                  <div class="reward-block sponsor-bonus">
+                    <div class="reward-label">Sponsor Bonus</div>
+                    <div class="reward-value compact">{{ bonusLabel(sponsor) }}</div>
+                    <div class="reward-sub">Upkeep {{ formatMinutes(displayRemaining(sponsor.checkMinutesRemaining)) }}</div>
+                  </div>
+                  <div class="objective-block">
+                    <div class="objective-label">Requirement</div>
+                    <div class="objective-value compact">{{ sponsorRequirementHeadline(sponsor) }}</div>
+                    <div class="objective-sub">{{ sponsor.warningIssued ? 'Warning active' : 'Keep requirement satisfied' }}</div>
+                  </div>
+                </div>
+                <div v-if="sponsor.warningIssued" class="warning-panel">
+                  Warning active. Complete an event in {{ formatMinutes(displayRemaining(sponsor.checkMinutesRemaining)) }} to keep the sponsor.
+                  <button class="inline-action" :disabled="actionBusy" @click="acknowledgeSponsorWarning(sponsor.id)">Acknowledge Warning</button>
+                </div>
+                <div class="deal-card-footer">
+                  <button class="action-btn danger full-width" :disabled="actionBusy" @click="dropSponsor(sponsor.id)">Drop Sponsor</button>
+                </div>
+              </article>
+            </section>
+            <section class="section-block">
+              <div class="section-header">
+                <div>
+                  <div class="section-kicker">Open Offers</div>
+                  <div class="section-title">Available Sponsors</div>
+                </div>
+                <div class="section-count">{{ sortedAvailableSponsors.length }}</div>
+              </div>
+              <div v-if="sponsorsLockedMessage" class="empty-card">
+                <div class="empty-card-title">Sponsors Locked</div>
+                <div class="empty-card-copy">{{ sponsorsLockedMessage }}</div>
+              </div>
+              <div v-else-if="sortedAvailableSponsors.length === 0" class="empty-card">
+                <div class="empty-card-title">No sponsor offers</div>
+                <div class="empty-card-copy">No sponsor offers available right now.</div>
+              </div>
+              <article v-for="sponsor in sortedAvailableSponsors" :key="sponsor.id" class="deal-card sponsor offer">
+                <div class="deal-card-top">
+                  <div class="deal-card-title-wrap">
+                    <div class="deal-card-title">{{ sponsorTitle(sponsor) }}</div>
+                    <div class="deal-card-focus">{{ bonusLabel(sponsor) }}</div>
+                  </div>
+                  <div class="deal-chip urgency" :class="sponsorOfferTone(sponsor)">{{ sponsorOfferLabel(sponsor) }}</div>
+                </div>
+                <div class="deal-card-main sponsor-main">
+                  <div class="reward-block sponsor-bonus">
+                    <div class="reward-label">Sponsor Bonus</div>
+                    <div class="reward-value compact">{{ bonusLabel(sponsor) }}</div>
+                    <div class="reward-sub">Offer expires {{ formatMinutes(displayRemaining(sponsor.minutesRemaining)) }}</div>
+                  </div>
+                  <div class="objective-block">
+                    <div class="objective-label">Requirement</div>
+                    <div class="objective-value compact">{{ sponsorRequirementHeadline(sponsor) }}</div>
+                    <div class="objective-sub">Stay active every upkeep window</div>
+                  </div>
+                </div>
+                <div class="deal-card-footer">
+                  <button class="action-btn primary full-width" :disabled="actionBusy || !canSignSponsor(sponsor)" @click="signSponsor(sponsor.id)">
+                    {{ canSignSponsor(sponsor) ? 'Sign Sponsor' : 'Slots Full' }}
+                  </button>
+                </div>
+              </article>
+            </section>
           </div>
         </div>
       </template>
@@ -149,82 +297,72 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { lua } from '@/bridge'
 import PhoneWrapper from './PhoneWrapper.vue'
-import { BngDropdown } from '@/common/components/base'
+import { useEvents } from '@/services/events'
 
-const REFRESH_INTERVAL_MS = 5 * 60 * 1000
 const TIMER_TICK_MS = 1000
+const SELECTED_DISCIPLINE_KEY = 'phoneFreContracts:selectedDiscipline'
 
+const events = useEvents()
 const loading = ref(true)
 const actionBusy = ref(false)
 const careerActive = ref(true)
 const errorMessage = ref('')
 const tab = ref('contracts')
-const selectedDiscipline = ref('all')
+const disciplineMenuOpen = ref(false)
+const disciplineMenuRef = ref(null)
 const lastSyncMs = ref(Date.now())
 const nowMs = ref(Date.now())
-const state = ref({
-  disciplines: [],
-  activeContracts: [],
-  availableContracts: [],
-  activeSponsors: [],
-  availableSponsors: [],
-})
+const state = ref({ disciplines: [], activeContracts: [], availableContracts: [], activeSponsors: [], availableSponsors: [] })
 
-let refreshTimer = null
+function loadSavedDiscipline() {
+  try {
+    return localStorage.getItem(SELECTED_DISCIPLINE_KEY) || 'all'
+  } catch (error) {
+    return 'all'
+  }
+}
+
+const selectedDiscipline = ref(loadSavedDiscipline())
+
 let tickTimer = null
 
 const disciplines = computed(() => state.value.disciplines || [])
-const disciplineOptions = computed(() => {
-  const options = [{ value: 'all', label: 'All Disciplines' }]
-  for (const discipline of disciplines.value) {
-    options.push({
-      value: discipline.id,
-      label: discipline.label || discipline.id,
-    })
-  }
-  return options
-})
-
-const disciplineLookup = computed(() => {
-  const lookup = {}
-  for (const discipline of disciplines.value) {
-    lookup[discipline.id] = discipline
-  }
-  return lookup
-})
-
-const selectedDisciplineInfo = computed(() => {
-  if (selectedDiscipline.value === 'all') return null
-  return disciplineLookup.value[selectedDiscipline.value] || null
-})
-
-const lastSyncLabel = computed(() => {
-  const elapsedSeconds = Math.max(0, Math.floor((nowMs.value - lastSyncMs.value) / 1000))
-  if (elapsedSeconds < 10) return 'just now'
-  if (elapsedSeconds < 60) return `${elapsedSeconds}s ago`
-  const minutes = Math.floor(elapsedSeconds / 60)
-  return `${minutes}m ago`
-})
+const disciplineOptions = computed(() => [{ value: 'all', label: 'All Disciplines' }, ...disciplines.value.map(discipline => ({ value: discipline.id, label: discipline.label || discipline.id }))])
+const disciplineLookup = computed(() => Object.fromEntries(disciplines.value.map(discipline => [discipline.id, discipline])))
+const selectedDisciplineInfo = computed(() => selectedDiscipline.value === 'all' ? null : disciplineLookup.value[selectedDiscipline.value] || null)
+const selectedDisciplineLabel = computed(() => selectedDisciplineInfo.value?.label || 'All Disciplines')
 
 function filterByDiscipline(list) {
-  if (selectedDiscipline.value === 'all') return list || []
-  return (list || []).filter(entry => entry.disciplineId === selectedDiscipline.value)
+  return selectedDiscipline.value === 'all' ? (list || []) : (list || []).filter(entry => entry.disciplineId === selectedDiscipline.value)
 }
 
 const filteredActiveContracts = computed(() => filterByDiscipline(state.value.activeContracts))
 const filteredAvailableContracts = computed(() => filterByDiscipline(state.value.availableContracts))
 const filteredActiveSponsors = computed(() => filterByDiscipline(state.value.activeSponsors))
 const filteredAvailableSponsors = computed(() => filterByDiscipline(state.value.availableSponsors))
+const sortedActiveContracts = computed(() => [...filteredActiveContracts.value].sort((a, b) => (displayRemaining(a.minutesRemaining) - displayRemaining(b.minutesRemaining)) || (Number(b.rewardMoney || 0) - Number(a.rewardMoney || 0))))
+const sortedAvailableContracts = computed(() => [...filteredAvailableContracts.value].sort((a, b) => (displayRemaining(a.minutesRemaining) - displayRemaining(b.minutesRemaining)) || (Number(b.rewardMoney || 0) - Number(a.rewardMoney || 0))))
+const sortedActiveSponsors = computed(() => [...filteredActiveSponsors.value].sort((a, b) => (Boolean(a.warningIssued) === Boolean(b.warningIssued) ? 0 : a.warningIssued ? -1 : 1) || (displayRemaining(a.checkMinutesRemaining) - displayRemaining(b.checkMinutesRemaining))))
+const sortedAvailableSponsors = computed(() => [...filteredAvailableSponsors.value].sort((a, b) => displayRemaining(a.minutesRemaining) - displayRemaining(b.minutesRemaining)))
+const contractsTabCount = computed(() => sortedActiveContracts.value.length + sortedAvailableContracts.value.length)
+const sponsorsTabCount = computed(() => sortedActiveSponsors.value.length + sortedAvailableSponsors.value.length)
+const summaryUnlockMessages = computed(() => {
+  if (!selectedDisciplineInfo.value) return []
+  const messages = []
+  if (!selectedDisciplineInfo.value.contractsUnlocked) messages.push(`Contracts unlock at level ${selectedDisciplineInfo.value.contractUnlockLevel}.`)
+  if (!selectedDisciplineInfo.value.sponsorsUnlocked) messages.push(`Sponsors unlock at level ${selectedDisciplineInfo.value.sponsorUnlockLevel}.`)
+  return messages
+})
+const contractsLockedMessage = computed(() => !selectedDisciplineInfo.value || selectedDisciplineInfo.value.contractsUnlocked ? '' : `Contracts unlock at level ${selectedDisciplineInfo.value.contractUnlockLevel}.`)
+const sponsorsLockedMessage = computed(() => !selectedDisciplineInfo.value || selectedDisciplineInfo.value.sponsorsUnlocked ? '' : `Sponsors unlock at level ${selectedDisciplineInfo.value.sponsorUnlockLevel}.`)
 
 function normalizeList(value) {
   if (Array.isArray(value)) return value
   if (!value || typeof value !== 'object') return []
-  const keys = Object.keys(value)
-  keys.sort((a, b) => Number(a) - Number(b))
-  return keys.map(key => value[key]).filter(item => item !== undefined && item !== null)
+  return Object.keys(value).sort((a, b) => Number(a) - Number(b)).map(key => value[key]).filter(Boolean)
 }
 
 function applyState(data) {
@@ -237,12 +375,14 @@ function applyState(data) {
     activeSponsors: normalizeList(normalized.activeSponsors),
     availableSponsors: normalizeList(normalized.availableSponsors),
   }
+  if (selectedDiscipline.value !== 'all' && !state.value.disciplines.some(discipline => discipline?.id === selectedDiscipline.value)) {
+    selectedDiscipline.value = 'all'
+  }
   lastSyncMs.value = Date.now()
 }
 
 function displayRemaining(baseMinutes) {
-  const elapsedMinutes = Math.max(0, (nowMs.value - lastSyncMs.value) / 60000)
-  return Math.max(0, Number(baseMinutes || 0) - elapsedMinutes)
+  return Math.max(0, Number(baseMinutes || 0) - Math.max(0, (nowMs.value - lastSyncMs.value) / 60000))
 }
 
 function disciplineLabel(disciplineId) {
@@ -250,8 +390,7 @@ function disciplineLabel(disciplineId) {
 }
 
 function tierLabel(tier) {
-  if (!tier) return 'Unknown'
-  return tier.charAt(0).toUpperCase() + tier.slice(1)
+  return tier ? `${tier.charAt(0).toUpperCase()}${tier.slice(1)}` : 'Unknown'
 }
 
 function formatMoney(value) {
@@ -260,37 +399,59 @@ function formatMoney(value) {
 
 function formatTime(seconds) {
   const total = Number(seconds || 0)
-  const minutes = Math.floor(total / 60)
-  const secs = Math.floor(total % 60)
-  return `${minutes}:${String(secs).padStart(2, '0')}`
+  return `${Math.floor(total / 60)}:${String(Math.floor(total % 60)).padStart(2, '0')}`
 }
 
 function formatMinutes(minutes) {
-  const value = Number(minutes || 0)
-  if (value <= 0) return '0m'
-  if (value < 1) return '<1m'
-  if (value < 60) return `${Math.floor(value)}m`
-  const hours = Math.floor(value / 60)
-  const mins = Math.floor(value % 60)
-  return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`
+  const totalSeconds = Math.max(0, Math.floor(Number(minutes || 0) * 60))
+  if (totalSeconds <= 0) return '0s'
+  const totalMinutes = Math.floor(totalSeconds / 60)
+  if (totalMinutes >= 60) {
+    const hours = Math.floor(totalMinutes / 60)
+    const minutesRemainder = totalMinutes % 60
+    return minutesRemainder > 0 ? `${hours}h ${minutesRemainder}m` : `${hours}h`
+  }
+  const wholeMinutes = Math.floor(totalSeconds / 60)
+  const seconds = totalSeconds % 60
+  if (wholeMinutes <= 0) return `${seconds}s`
+  return `${wholeMinutes}m ${seconds}s`
 }
 
 function formatPercent(value) {
-  return `${Math.round((Number(value || 0) * 100) * 10) / 10}%`
+  return `${Math.round(Number(value || 0) * 1000) / 10}%`
+}
+
+function toggleDisciplineMenu() {
+  disciplineMenuOpen.value = !disciplineMenuOpen.value
+}
+
+function selectDiscipline(disciplineId) {
+  selectedDiscipline.value = disciplineId
+  disciplineMenuOpen.value = false
+}
+
+watch(selectedDiscipline, (disciplineId) => {
+  try {
+    localStorage.setItem(SELECTED_DISCIPLINE_KEY, disciplineId || 'all')
+  } catch (error) {
+    // Ignore storage failures and keep the in-memory selection.
+  }
+})
+
+function onDocumentPointerDown(event) {
+  if (!disciplineMenuRef.value || disciplineMenuRef.value.contains(event.target)) return
+  disciplineMenuOpen.value = false
 }
 
 function bonusLabel(sponsor) {
-  const amount = `${Math.round((Number(sponsor.bonusPercent || 0) * 100) * 10) / 10}%`
-  const type = sponsor.bonusType === 'disciplineXP' ? 'XP' : sponsor.bonusType === 'both' ? 'Money + XP' : 'Money'
+  const amount = `${Math.round(Number(sponsor?.bonusPercent || 0) * 1000) / 10}%`
+  const type = sponsor?.bonusType === 'disciplineXP' ? 'XP' : sponsor?.bonusType === 'both' ? 'Money + XP' : 'Money'
   return `${amount} ${type}`
 }
 
 function inferRouteTypeFromLabel(label) {
   const text = String(label || '').toLowerCase()
-  if (text.includes('alt route') || text.includes('alternative route') || text.includes('(alt)')) {
-    return 'alt'
-  }
-  return 'main'
+  return text.includes('alt route') || text.includes('alternative route') || text.includes('(alt)') ? 'alt' : 'main'
 }
 
 function routeLabel(routeType, fallbackLabel) {
@@ -298,52 +459,69 @@ function routeLabel(routeType, fallbackLabel) {
   return normalized === 'alt' ? 'Alt Route' : 'Main Route'
 }
 
-function contractFocusLabel(contract) {
+function contractRaceLabel(contract) {
   const raceLabel = contract?.raceLabel || contract?.raceName || 'Race'
-  const route = routeLabel(contract?.raceRouteType, raceLabel)
-  const modelLabel = contract?.requiredModelLabel || contract?.requiredModelFamily || contract?.requiredModel || 'Any model'
-  return `${raceLabel} (${route}) | ${modelLabel}`
+  return `${raceLabel} (${routeLabel(contract?.raceRouteType, raceLabel)})`
 }
 
-function sponsorRequirementLabel(sponsor) {
-  const raceLabel = sponsor?.requiredRaceLabel || sponsor?.requiredRaceName
-  const route = routeLabel(sponsor?.requiredRaceRouteType, raceLabel)
-  const target = Number(sponsor?.targetTime)
-  if (raceLabel && Number.isFinite(target) && target > 0) {
-    return `Beat ${formatTime(target)} on ${raceLabel} (${route}) once per upkeep window (no XP minimum).`
-  }
+function contractVehicleLabel(contract) {
+  return contract?.requiredModelLabel || contract?.requiredModelFamily || contract?.requiredModel || 'Any model'
+}
 
-  const requirement = String(sponsor?.requirement || '').trim()
-  if (requirement) {
-    if (/xp/i.test(requirement)) return requirement
-    return `${requirement} (no XP minimum)`
-  }
-  const discipline = disciplineLabel(sponsor?.disciplineId || '')
-  return `Complete 1 valid ${discipline} FRE event in each upkeep window.`
+function contractTitle(contract) {
+  return `${disciplineLabel(contract?.disciplineId)} - ${tierLabel(contract?.tier)}`
+}
+
+function sponsorTitle(sponsor) {
+  return `${disciplineLabel(sponsor?.disciplineId)} - ${sponsor?.name || 'Sponsor'}`
+}
+
+function sponsorRequirementHeadline(sponsor) {
+  const raceLabel = sponsor?.requiredRaceLabel || sponsor?.requiredRaceName
+  const target = Number(sponsor?.targetTime)
+  return raceLabel && Number.isFinite(target) && target > 0 ? `${formatTime(target)} on ${raceLabel}` : '1 valid event per upkeep'
 }
 
 function sponsorStatusLabel(sponsor) {
   const status = String(sponsor?.requirementStatus || 'pending')
-  if (status === 'warning') return 'Not satisfied (grace active)'
+  if (status === 'warning') return 'Warning'
   if (status === 'satisfied') return 'Satisfied'
-  return 'Not yet satisfied'
+  return 'Pending'
 }
 
-function sponsorStatusClass(sponsor) {
+function sponsorStatusTone(sponsor) {
   const status = String(sponsor?.requirementStatus || 'pending')
-  if (status === 'warning') return 'status-warning'
-  if (status === 'satisfied') return 'status-good'
-  return 'status-pending'
+  if (status === 'warning') return 'warning'
+  if (status === 'satisfied') return 'good'
+  return 'neutral'
+}
+
+function sponsorOfferTone(sponsor) {
+  const minutes = displayRemaining(sponsor?.minutesRemaining)
+  if (minutes < 1) return 'urgent'
+  if (minutes <= 3) return 'soon'
+  return 'normal'
+}
+
+function sponsorOfferLabel(sponsor) {
+  return `${formatMinutes(displayRemaining(sponsor?.minutesRemaining))} left`
 }
 
 function objectiveStatusLabel(contract) {
-  const objectiveType = contract?.objectiveType === 'laps' ? 'laps' : 'events'
   const requiredCount = Math.max(1, Math.floor(Number(contract?.requiredCount || 1)))
-  if (objectiveType === 'events') {
-    const progress = Math.max(0, Math.floor(Number(contract?.progress || 0)))
-    return `${progress}/${requiredCount} events`
-  }
-  return `${requiredCount} lap${requiredCount === 1 ? '' : 's'}`
+  if (contract?.objectiveType === 'laps') return `${requiredCount} lap${requiredCount === 1 ? '' : 's'}`
+  return `${Math.max(0, Math.floor(Number(contract?.progress || 0)))}/${requiredCount} events`
+}
+
+function contractUrgencyTone(contract) {
+  const minutes = displayRemaining(contract?.minutesRemaining)
+  if (minutes < 1) return 'urgent'
+  if (minutes <= 3) return 'soon'
+  return 'normal'
+}
+
+function contractUrgencyLabel(contract) {
+  return `${formatMinutes(displayRemaining(contract?.minutesRemaining))} left`
 }
 
 function canAcceptContract(contract) {
@@ -368,19 +546,21 @@ async function refreshState() {
   }
 }
 
+function handleFreContractsData(data) {
+  applyState(data)
+  errorMessage.value = ''
+  loading.value = false
+}
+
 async function performAction(action, id) {
   if (actionBusy.value) return
   actionBusy.value = true
   try {
     const result = await action(id)
-    if (result?.state) {
-      applyState(result.state)
-    } else {
-      await refreshState()
-    }
     errorMessage.value = result?.ok === false ? (result.error || 'Action failed.') : ''
   } catch (error) {
     errorMessage.value = 'Action failed.'
+    await refreshState()
   } finally {
     actionBusy.value = false
   }
@@ -407,326 +587,52 @@ function acknowledgeSponsorWarning(sponsorId) {
 }
 
 onMounted(async () => {
+  document.addEventListener('pointerdown', onDocumentPointerDown)
+  events.on('phoneFreContractsData', handleFreContractsData)
   try {
     await lua.extensions.load('ui_phone_freContracts')
+    await lua.ui_phone_freContracts.startLiveUpdates()
   } catch (error) {
     errorMessage.value = 'Unable to load FRE contract services.'
     loading.value = false
     return
   }
-
   await refreshState()
-  refreshTimer = setInterval(refreshState, REFRESH_INTERVAL_MS)
   tickTimer = setInterval(() => {
     nowMs.value = Date.now()
   }, TIMER_TICK_MS)
 })
 
-onUnmounted(() => {
-  if (refreshTimer) {
-    clearInterval(refreshTimer)
-    refreshTimer = null
+onUnmounted(async () => {
+  document.removeEventListener('pointerdown', onDocumentPointerDown)
+  events.off('phoneFreContractsData', handleFreContractsData)
+  try {
+    await lua.ui_phone_freContracts?.stopLiveUpdates?.()
+  } catch (error) {
+    // Ignore unload-time errors and let the app close cleanly.
   }
-  if (tickTimer) {
-    clearInterval(tickTimer)
-    tickTimer = null
-  }
+  if (tickTimer) clearInterval(tickTimer)
+  tickTimer = null
 })
 </script>
 
 <style scoped lang="scss">
-.fre-app {
-  height: 100%;
-  overflow-y: auto;
-  color: #f2f4f7;
-  background:
-    radial-gradient(120% 90% at 0% 0%, rgba(234, 98, 35, 0.24), transparent 45%),
-    radial-gradient(120% 90% at 100% 20%, rgba(52, 103, 209, 0.18), transparent 40%),
-    #14181f;
-  padding: 52px 12px 14px;
-}
-
-.toolbar {
-  display: flex;
-  gap: 8px;
-}
-
-.discipline-select {
-  flex: 1;
-  min-width: 0;
-}
-
-.discipline-select :deep(.bng-dropdown) {
-  margin: 0;
-  width: 100%;
-  min-height: 34px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
-  background: rgba(17, 22, 31, 0.9);
-  color: #f2f4f7;
-  padding: 7px 10px;
-}
-
-.discipline-select :deep(.dropdown-display) {
-  flex: 1;
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.discipline-select :deep(.bng-dropdown-content) {
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(17, 22, 31, 0.98);
-}
-
-.discipline-select :deep(.dropdown-option) {
-  min-width: 180px;
-}
-
-.sync-btn {
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
-  background: rgba(17, 22, 31, 0.9);
-  color: #f2f4f7;
-  padding: 8px 10px;
-  font-weight: 700;
-}
-
-.sync-meta {
-  margin-top: 8px;
-  margin-bottom: 8px;
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  font-size: 11px;
-  color: rgba(228, 236, 246, 0.75);
-}
-
-.discipline-summary {
-  margin-bottom: 10px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(19, 24, 33, 0.9);
-  padding: 10px;
-}
-
-.summary-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 6px;
-}
-
-.summary-title {
-  font-size: 16px;
-  font-weight: 700;
-}
-
-.summary-level {
-  font-size: 13px;
-  font-weight: 800;
-  color: #ffd08a;
-  padding: 2px 8px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 180, 110, 0.45);
-  background: rgba(165, 72, 29, 0.36);
-}
-
-.summary-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
-}
-
-.summary-cell {
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.025);
-  padding: 6px 8px;
-}
-
-.summary-key {
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: rgba(227, 235, 246, 0.72);
-}
-
-.summary-value {
-  font-size: 14px;
-  font-weight: 700;
-  color: rgba(227, 235, 246, 0.96);
-}
-
-.summary-bonus {
-  margin-top: 8px;
-  font-size: 12px;
-  color: rgba(227, 235, 246, 0.92);
-}
-
-.summary-line {
-  font-size: 11px;
-  color: rgba(227, 235, 246, 0.9);
-}
-
-.summary-line.muted {
-  color: rgba(227, 235, 246, 0.65);
-}
-
-.tabs {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 10px;
-}
-
-.tabs button {
-  flex: 1;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(17, 22, 31, 0.9);
-  color: #c3cfdf;
-  padding: 7px;
-  font-weight: 700;
-}
-
-.tabs button.active {
-  color: #fff;
-  border-color: rgba(255, 149, 92, 0.9);
-  background: rgba(165, 72, 29, 0.48);
-}
-
-.panel {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.section {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  opacity: 0.72;
-  margin-top: 4px;
-}
-
-.card {
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(19, 24, 33, 0.95);
-  padding: 9px;
-}
-
-.title {
-  font-size: 13px;
-  font-weight: 700;
-  margin-bottom: 3px;
-}
-
-.line {
-  font-size: 12px;
-  color: rgba(227, 235, 246, 0.9);
-}
-
-.line.status-good {
-  color: #9fe3b3;
-}
-
-.line.status-warning {
-  color: #fdd873;
-}
-
-.line.status-pending {
-  color: rgba(227, 235, 246, 0.8);
-}
-
-.contract-focus {
-  margin-bottom: 6px;
-  font-weight: 600;
-}
-
-.contract-metrics {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
-}
-
-.metric {
-  display: flex;
-  flex-direction: column;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.02);
-  padding: 5px 7px;
-  min-width: 0;
-}
-
-.metric-key {
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: rgba(227, 235, 246, 0.72);
-}
-
-.metric-value {
-  font-size: 12px;
-  font-weight: 700;
-  color: rgba(227, 235, 246, 0.95);
-  line-height: 1.15;
-  word-break: break-word;
-}
-
-.card button {
-  width: 100%;
-  margin-top: 6px;
-  border-radius: 9px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(228, 106, 45, 0.9);
-  color: #fff;
-  padding: 7px 8px;
-  font-weight: 700;
-}
-
-.card button.danger {
-  background: rgba(127, 48, 48, 0.9);
-}
-
-.card button:disabled {
-  opacity: 0.55;
-}
-
-.warning {
-  margin-top: 6px;
-  border-radius: 8px;
-  background: rgba(250, 204, 21, 0.18);
-  border: 1px solid rgba(250, 204, 21, 0.4);
-  color: #fde68a;
-  font-size: 10px;
-  padding: 6px;
-}
-
-.warning button {
-  margin-top: 6px;
-  background: rgba(250, 204, 21, 0.2);
-}
-
-.empty {
-  text-align: center;
-  color: rgba(227, 235, 246, 0.75);
-  padding: 24px 12px;
-}
-
-.small {
-  padding: 10px 4px;
-}
-
-.error {
-  margin-bottom: 8px;
-  border-radius: 8px;
-  border: 1px solid rgba(239, 68, 68, 0.5);
-  background: rgba(239, 68, 68, 0.2);
-  color: #fecaca;
-  padding: 6px 8px;
-  font-size: 11px;
-}
+.fre-app{height:100%;overflow-y:auto;color:#f4f0ea;background:#12161d;padding:46px 10px 18px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.18) transparent}
+.fre-app::-webkit-scrollbar{width:4px}.fre-app::-webkit-scrollbar-track{background:transparent}.fre-app::-webkit-scrollbar-thumb{background:rgba(255,255,255,.16);border-radius:999px}
+.state-screen{min-height:100%;display:flex;align-items:center;justify-content:center;padding:8px 0 24px}
+.state-card,.empty-card,.deal-card{border-radius:18px;border:1px solid rgba(255,255,255,.08);background:#171c25;box-shadow:0 14px 34px rgba(0,0,0,.22)}
+.state-card{width:100%;padding:18px 16px}.state-eyebrow,.section-kicker,.summary-kicker,.reward-label,.objective-label,.detail-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}.state-eyebrow,.section-kicker,.summary-kicker{color:rgba(244,193,156,.82)}.state-title{margin-top:6px;font-size:18px;font-weight:700;line-height:1.15}.state-copy,.empty-card-copy,.detail-copy{margin-top:8px;color:rgba(228,233,242,.72);font-size:13px;line-height:1.35}
+.toolbar-shell,.panel,.section-block{display:flex;flex-direction:column}.toolbar-shell{gap:8px}.panel{gap:16px}.section-block{gap:9px}.deal-card-footer,.summary-title-row,.summary-bonus,.section-header,.tabs,.deal-card-top,.deal-card-meta,.summary-meter-top{display:flex}
+.summary-bonus,.section-header,.deal-card-top,.summary-meter-top{justify-content:space-between}.summary-bonus,.section-header,.deal-card-top{gap:10px}.section-header{align-items:end;padding:0 2px}
+.discipline-dropdown-wrap{position:relative;min-width:0}.discipline-dropdown-chevron{flex:0 0 auto;transition:transform .15s ease}.discipline-dropdown-chevron.open{transform:rotate(180deg)}.discipline-dropdown-panel{position:absolute;top:100%;left:0;right:0;margin-top:6px;z-index:110;padding:8px;border-radius:14px;border:1px solid rgba(255,255,255,.1);background:#171c25;box-shadow:0 12px 28px rgba(0,0,0,.3)}.summary-discipline-panel{left:0;right:auto;min-width:220px;max-width:min(280px,100%)}.discipline-dropdown-item{display:block;width:100%;padding:10px 12px;border:none;border-radius:10px;background:transparent;color:rgba(228,233,242,.82);font:inherit;font-size:12px;font-weight:600;text-align:left;cursor:pointer}.discipline-dropdown-item.selected{background:rgba(224,107,50,.18);color:#fff7f1}.discipline-dropdown-item:not(.selected):hover{background:rgba(255,255,255,.05)}
+.action-btn,.inline-action,.tabs button{transition:transform .16s ease,background-color .16s ease,border-color .16s ease,color .16s ease,opacity .16s ease}.action-btn:active,.inline-action:active,.tabs button:active{transform:scale(.985)}
+.action-btn:disabled,.inline-action:disabled{opacity:.48}
+.discipline-summary{padding:14px;border-radius:18px;border:1px solid rgba(255,255,255,.08);background:#1a2029;box-shadow:0 16px 40px rgba(0,0,0,.24)}.discipline-summary.compact{display:flex;flex-direction:column;gap:8px;padding:12px 14px}.summary-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:12px}.summary-main{flex:1;min-width:0}.summary-title-row{display:flex;align-items:baseline;justify-content:space-between;gap:10px;width:100%}.summary-title-row.compact{justify-content:flex-start}.summary-title-btn{display:inline-flex;align-items:center;gap:8px;min-width:0;padding:0;border:none;background:transparent;color:#f6f3ee;font:inherit;font-weight:700;cursor:pointer;text-align:left}.summary-title-btn.active .summary-title,.summary-title-btn:hover .summary-title{color:#fff7f1}.summary-title{font-size:17px;font-weight:700;line-height:1.1;min-width:0}.summary-title-level{color:rgba(220,227,236,.78);font-size:13px;font-weight:700;flex:0 0 auto;text-align:right}.summary-compact-copy{color:rgba(228,233,242,.7);font-size:12px;line-height:1.35}.summary-note,.summary-meter-label,.summary-bonus-label{color:rgba(220,227,236,.62);font-size:11px}.summary-meter-value{color:#f6f3ee;font-size:12px;font-weight:700}
+.summary-strip,.detail-grid,.deal-card-main{display:grid}.summary-strip,.detail-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.summary-meter-card,.reward-block,.objective-block,.detail-card{padding:12px;border-radius:14px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);min-width:0}.summary-meter-top{align-items:baseline}.summary-strip{margin-top:2px}.summary-bonus{margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,.06);font-size:12px}.summary-notes{display:flex;flex-direction:column;gap:5px;margin-top:10px}
+.tabs{gap:6px;padding:3px;border-radius:16px;border:1px solid rgba(255,255,255,.06);background:rgba(13,16,22,.62)}.tabs button{flex:1;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;border:none;border-radius:12px;background:transparent;color:rgba(214,222,235,.72);font-weight:700}.tabs button.active{background:linear-gradient(180deg,rgba(224,107,50,.92),rgba(180,76,28,.92));color:#fff7f1;box-shadow:0 8px 18px rgba(180,76,28,.26)}.tab-label{font-size:13px}.tab-count,.section-count{padding:3px 8px;border-radius:999px;background:rgba(255,255,255,.08);font-size:11px;line-height:1}.tabs button.active .tab-count{background:rgba(255,255,255,.16)}.content{margin-top:12px}
+.section-title{margin-top:4px;font-size:18px;font-weight:700;line-height:1.1}.section-count{min-width:32px;padding:6px 9px;color:rgba(245,240,234,.9);font-weight:700;text-align:center}.empty-card{padding:16px 15px}.empty-card-title,.deal-card-title{font-size:15px;font-weight:700}.deal-card{padding:14px}.deal-card.offer{border-color:rgba(228,114,56,.12)}.deal-card.urgent{border-color:rgba(249,186,88,.28)}.deal-card.warning{border-color:rgba(240,186,69,.26)}
+.deal-card-top{align-items:flex-start}.deal-card-side{display:flex;justify-content:flex-end;flex:0 0 auto;min-width:0}.deal-card-meta{align-items:baseline;justify-content:space-between;gap:12px;margin-top:6px}.deal-card-focus{flex:1;min-width:0;color:rgba(219,226,237,.66);font-size:12px;font-weight:500;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.deal-card-vehicle{flex:0 0 auto;max-width:38%;color:rgba(219,226,237,.72);font-size:12px;font-weight:600;line-height:1.2;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.deal-chip{flex-shrink:0;max-width:112px;padding:6px 9px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;text-align:center;line-height:1.15}.deal-chip.urgency.normal,.deal-chip.status.neutral{border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:rgba(234,239,245,.72)}.deal-chip.urgency.soon{border:1px solid rgba(255,178,104,.28);background:rgba(217,112,53,.16);color:#ffd7b6}.deal-chip.urgency.urgent,.deal-chip.status.warning{border:1px solid rgba(250,206,107,.32);background:rgba(249,187,70,.18);color:#ffe39f}.deal-chip.status.good{border:1px solid rgba(90,194,129,.26);background:rgba(64,155,95,.16);color:#b5ebc5}
+.deal-card-main{grid-template-columns:1.15fr .9fr;gap:8px;margin-top:12px}.deal-card-main.sponsor-main{grid-template-columns:1fr 1fr}.reward-label,.objective-label,.detail-label{color:rgba(219,226,237,.6)}.reward-value,.objective-value,.detail-value{margin-top:6px;font-weight:700;line-height:1.15;word-break:break-word}.reward-value{font-size:23px}.reward-value.compact,.objective-value.compact{font-size:16px}.objective-value{font-size:17px}.detail-value{font-size:13px}.reward-sub,.objective-sub{margin-top:6px;color:rgba(219,226,237,.62);font-size:11px}.deal-card-footer{gap:8px;margin-top:12px}
+.action-btn{min-height:42px;border-radius:13px;font-size:12px;font-weight:700;flex:1;border:1px solid rgba(255,255,255,.08);color:#fff9f5}.action-btn.primary{background:linear-gradient(180deg,#e06d32,#ba4e1d);box-shadow:0 10px 24px rgba(186,78,29,.22)}.action-btn.danger{background:linear-gradient(180deg,rgba(131,63,53,.92),rgba(96,40,35,.92))}.action-btn.full-width{width:100%;flex:1 1 100%}
+.warning-panel{margin-top:10px;padding:11px 12px;border-radius:14px;border:1px solid rgba(250,206,107,.22);background:rgba(249,187,70,.11);color:#ffe5ad;font-size:11px;line-height:1.45}.inline-action{margin-top:9px;padding:9px 12px;border-radius:12px;border:1px solid rgba(250,206,107,.24);background:rgba(255,238,195,.06);color:#ffeabf;font-size:11px;font-weight:700}.error{margin-bottom:12px;padding:10px 12px;border-radius:14px;border:1px solid rgba(208,84,84,.34);background:rgba(140,42,42,.22);color:#ffbfbf;font-size:12px}
 </style>

@@ -28,12 +28,20 @@ local function getState(filterDisciplineId)
 end
 
 local function actionResult(ok, err)
-  local result = {
+  return {
     ok = ok == true,
     error = ok and nil or (err or "Action failed.")
   }
-  result.state = getState()
-  return result
+end
+
+local function startLiveUpdates()
+  gameplay_events_freContracts.setUiStreamingActive(true)
+  return true
+end
+
+local function stopLiveUpdates()
+  gameplay_events_freContracts.setUiStreamingActive(false)
+  return true
 end
 
 local function acceptContract(contractId)
@@ -62,6 +70,8 @@ local function acknowledgeSponsorWarning(sponsorId)
 end
 
 M.getState = getState
+M.startLiveUpdates = startLiveUpdates
+M.stopLiveUpdates = stopLiveUpdates
 M.acceptContract = acceptContract
 M.abandonContract = abandonContract
 M.signSponsor = signSponsor
