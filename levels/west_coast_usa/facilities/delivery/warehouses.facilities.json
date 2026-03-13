@@ -11,9 +11,7 @@
                     "psName": "industrialWarehouse_parkingA",
                     "isInspectSpot": true,
                     "logisticTypesProvided": [
-                        "parcel",
-                        "trailerDeliveryResidential",
-                        "trailerDeliveryDryvan"
+                        "parcel"
                     ],
                     "logisticTypesReceived": [
                         "parcel",
@@ -22,9 +20,7 @@
                         "foodSupplies",
                         "industrial",
                         "vehLargeTruck",
-                        "rareMechanicalParts",
-                        "trailerDeliveryDryvan",
-                        "trailerDeliveryContainerNonFluid"
+                        "rareMechanicalParts"
                     ]
                 },
                 {
@@ -394,16 +390,14 @@
                         "shopSupplies",
                         "officeSupplies",
                         "mechanicalParts",
-                        "foodSupplies",
-                        "trailerDeliveryResidential"
+                        "foodSupplies"
                     ],
                     "logisticTypesReceived": [
                         "parcel",
                         "shopSupplies",
                         "officeSupplies",
                         "foodSupplies",
-                        "rareMechanicalParts",
-                        "trailerDeliveryResidential"
+                        "rareMechanicalParts"
                     ]
                 },
                 {
@@ -656,21 +650,14 @@
                     "psName": "spearleafLogistics_parkingA",
                     "isInspectSpot": true,
                     "logisticTypesProvided": [
-                        "parcel",
-                        "trailerDeliveryResidential",
-                        "trailerDeliveryDryvan",
-                        "trailerDeliveryContainerNonFluid",
-                        "trailerDeliveryFlatbedCoil"
+                        "parcel"
                     ],
                     "logisticTypesReceived": [
                         "parcel",
                         "shopSupplies",
                         "officeSupplies",
                         "mechanicalParts",
-                        "foodSupplies",
-                        "trailerDeliveryContainerFrame",
-                        "trailerDeliveryContainerFluid",
-                        "trailerDeliveryFlatbedPipes"
+                        "foodSupplies"
                     ]
                 },
                 {

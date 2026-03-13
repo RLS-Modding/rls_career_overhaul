@@ -14,15 +14,13 @@
                     "isInspectSpot": true,
                     "logisticTypesProvided": [
                         "mechanicalParts",
-                        "rareMechanicalParts",
-                        "trailerDeliveryResidential"
+                        "rareMechanicalParts"
                     ],
                     "logisticTypesReceived": [
                         "mechanicalParts",
                         "parcel",
                         "food",
-                        "rareMechanicalParts",
-                        "trailerDeliveryResidential"
+                        "rareMechanicalParts"
                     ]
                 },
                 {
@@ -247,15 +245,13 @@
                     "isInspectSpot": true,
                     "logisticTypesProvided": [
                         "mechanicalParts",
-                        "rareMechanicalParts",
-                        "trailerDeliveryResidential"
+                        "rareMechanicalParts"
                     ],
                     "logisticTypesReceived": [
                         "mechanicalParts",
                         "parcel",
                         "food",
-                        "rareMechanicalParts",
-                        "trailerDeliveryResidential"
+                        "rareMechanicalParts"
                     ]
                 },
                 {
@@ -475,15 +471,13 @@
                     "isInspectSpot": true,
                     "logisticTypesProvided": [
                         "mechanicalParts",
-                        "rareMechanicalParts",
-                        "trailerDeliveryResidential"
+                        "rareMechanicalParts"
                     ],
                     "logisticTypesReceived": [
                         "mechanicalParts",
                         "parcel",
                         "food",
-                        "rareMechanicalParts",
-                        "trailerDeliveryResidential"
+                        "rareMechanicalParts"
                     ]
                 },
                 {
@@ -720,15 +714,13 @@
                     "isInspectSpot": true,
                     "logisticTypesProvided": [
                         "mechanicalParts",
-                        "rareMechanicalParts",
-                        "trailerDeliveryResidential"
+                        "rareMechanicalParts"
                     ],
                     "logisticTypesReceived": [
                         "mechanicalParts",
                         "parcel",
                         "food",
-                        "rareMechanicalParts",
-                        "trailerDeliveryResidential"
+                        "rareMechanicalParts"
                     ]
                 },
                 {
@@ -965,15 +957,13 @@
                     "isInspectSpot": true,
                     "logisticTypesProvided": [
                         "mechanicalParts",
-                        "rareMechanicalParts",
-                        "trailerDeliveryResidential"
+                        "rareMechanicalParts"
                     ],
                     "logisticTypesReceived": [
                         "mechanicalParts",
                         "parcel",
                         "food",
-                        "rareMechanicalParts",
-                        "trailerDeliveryResidential"
+                        "rareMechanicalParts"
                     ]
                 },
                 {
@@ -1206,15 +1196,13 @@
                     "isInspectSpot": true,
                     "logisticTypesProvided": [
                         "mechanicalParts",
-                        "rareMechanicalParts",
-                        "trailerDeliveryResidential"
+                        "rareMechanicalParts"
                     ],
                     "logisticTypesReceived": [
                         "mechanicalParts",
                         "parcel",
                         "food",
-                        "rareMechanicalParts",
-                        "trailerDeliveryResidential"
+                        "rareMechanicalParts"
                     ]
                 },
                 {
@@ -1446,15 +1434,11 @@
                     "psName": "shuffleboardLogistics_parkingA",
                     "isInspectSpot": true,
                     "logisticTypesProvided": [
-                        "industrial",
-                        "trailerDeliveryResidential",
-                        "trailerDeliveryDryvan"
+                        "industrial"
                     ],
                     "logisticTypesReceived": [
                         "parcel",
-                        "food",
-                        "trailerDeliveryDryvan",
-                        "trailerDeliveryContainerNonFluid"
+                        "food"
                     ]
                 },
                 {
@@ -1955,16 +1939,14 @@
                     "isInspectSpot": true,
                     "logisticTypesProvided": [
                         "mechanicalParts",
-                        "rareMechanicalParts",
-                        "trailerDeliveryResidential"
+                        "rareMechanicalParts"
                     ],
                     "logisticTypesReceived": [
                         "mechanicalParts",
                         "rareMechanicalParts",
                         "parcel",
                         "food",
-                        "cash",
-                        "trailerDeliveryResidential"
+                        "cash"
                     ]
                 },
                 {
@@ -2194,16 +2176,14 @@
                     "isInspectSpot": true,
                     "logisticTypesProvided": [
                         "mechanicalParts",
-                        "rareMechanicalParts",
-                        "trailerDeliveryResidential"
+                        "rareMechanicalParts"
                     ],
                     "logisticTypesReceived": [
                         "mechanicalParts",
                         "rareMechanicalParts",
                         "parcel",
                         "food",
-                        "cash",
-                        "trailerDeliveryResidential"
+                        "cash"
                     ]
                 },
                 {
@@ -2430,16 +2410,14 @@
                     "isInspectSpot": true,
                     "logisticTypesProvided": [
                         "mechanicalParts",
-                        "rareMechanicalParts",
-                        "trailerDeliveryResidential"
+                        "rareMechanicalParts"
                     ],
                     "logisticTypesReceived": [
                         "mechanicalParts",
                         "rareMechanicalParts",
                         "parcel",
                         "food",
-                        "cash",
-                        "trailerDeliveryResidential"
+                        "cash"
                     ]
                 },
                 {
@@ -2668,16 +2646,14 @@
                     "isInspectSpot": true,
                     "logisticTypesProvided": [
                         "mechanicalParts",
-                        "rareMechanicalParts",
-                        "trailerDeliveryResidential"
+                        "rareMechanicalParts"
                     ],
                     "logisticTypesReceived": [
                         "mechanicalParts",
                         "rareMechanicalParts",
                         "parcel",
                         "food",
-                        "cash",
-                        "trailerDeliveryResidential"
+                        "cash"
                     ]
                 },
                 {
