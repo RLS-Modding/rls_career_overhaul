@@ -1,9 +1,35 @@
 {
-  "_comment": "Per-race structure only. Tuning removed: AI is state-based (winning objective). No route speed limit (as fast as they can go). Rubberband later by player XP.",
+  "_comment": "Per-race structure. vehiclePool: AI by player HP class (stock <320, modified 320-550, super >550 HP). Pick closest match, one per model then fill.",
+  "vehiclePool": {
+    "stock": [
+      { "model": "covet", "config": "AI_Covet_stock" },
+      { "model": "midsize", "config": "AI_Pessima_stock" },
+      { "model": "covet", "config": "AI_Covet_modified" },
+      { "model": "midsize", "config": "AI_Pessima_modified" },
+      { "model": "sbr", "config": "AI_SB4_stock" },
+      { "model": "etkc", "config": "AI_ETK-k_stock" }
+    ],
+    "modified": [
+      { "model": "covet", "config": "AI_Covet_super" },
+      { "model": "midsize", "config": "AI_Pessima_super" },
+      { "model": "sbr", "config": "AI_SB4_modified" },
+      { "model": "bastion", "config": "AI_Bastion_stock" },
+      { "model": "sbr", "config": "AI_SB4_super" },
+      { "model": "scintilla", "config": "AI_Scintilla_stock" }
+    ],
+    "super": [
+      { "model": "etkc", "config": "AI_ETK-k_modified" },
+      { "model": "etkc", "config": "AI_ETK-k_super" },
+      { "model": "bastion", "config": "AI_Bastion_modified" },
+      { "model": "scintilla", "config": "AI_Scintilla_modified" },
+      { "model": "bastion", "config": "AI_Bastion_super" },
+      { "model": "scintilla", "config": "AI_Scintilla_super" }
+    ]
+  },
   "byRace": {
     "trackloop": {
       "enabled": true,
-      "spawnSameVehicleAsPlayer": true,
+      "spawnSameVehicleAsPlayer": false,
       "maxSpawnCount": 4,
       "driveInLane": "off",
       "navTargetReachDistance": 20,
@@ -14,7 +40,7 @@
     "trackalt": {
       "pathRoad": "shortTrack",
       "enabled": true,
-      "spawnSameVehicleAsPlayer": true,
+      "spawnSameVehicleAsPlayer": false,
       "maxSpawnCount": 4,
       "driveInLane": "off",
       "navTargetReachDistance": 20,

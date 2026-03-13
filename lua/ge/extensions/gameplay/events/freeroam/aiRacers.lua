@@ -130,8 +130,9 @@ local function loadRaceConfig()
     local path = "levels/" .. levelId .. "/" .. CONFIG_DIR .. "/" .. CONFIG_RACE_FILENAME
     local data = jsonReadFile(path)
     local result = { byRace = {} }
-    if type(data) == "table" and type(data.byRace) == "table" then
-        result.byRace = data.byRace
+    if type(data) == "table" then
+        if type(data.byRace) == "table" then result.byRace = data.byRace end
+        if type(data.vehiclePool) == "table" then result.vehiclePool = data.vehiclePool end
     end
     mRaceConfigCache[levelId] = result
     return result
@@ -182,6 +183,12 @@ local function getMergedConfigForRace(race)
     }
     for _, k in ipairs(raceKeys) do
         if race[k] ~= nil then merged[k] = race[k] end
+    end
+    if type(raceConfig.vehiclePool) == "table" then
+        merged.vehiclePool = raceConfig.vehiclePool
+    end
+    if type(overrides.vehiclePool) == "table" then
+        merged.vehiclePool = overrides.vehiclePool
     end
     return merged
 end
@@ -310,6 +317,16 @@ local function getClassFromHp(power)
     return "A"
 end
 
+-- vehiclePool class bands: stock <320, modified 320-550, super >=550 HP. Used when cfg.vehiclePool is set.
+local STOCK_MAX_HP = 319
+local MODIFIED_MAX_HP = 549
+local function getClassFromHpForVehiclePool(power)
+    if type(power) ~= "number" or power < 0 then return "stock" end
+    if power <= STOCK_MAX_HP then return "stock" end
+    if power <= MODIFIED_MAX_HP then return "modified" end
+    return "super"
+end
+
 -- Pool for a given HP class. Uses cfg.vehiclePoolByHpClass[class] if set, else defaultVehiclePool.
 local function getVehiclePoolForHpClass(cfg, class)
     if not cfg then return DEFAULT_CONFIG.defaultVehiclePool end
@@ -346,14 +363,17 @@ local function getPowerHpFromConfig(config)
 end
 
 -- Power for a vehicle model from config (no spawn). Returns power in HP, or nil.
-local function getPowerForModelConfig(modelKey)
+-- When configKey is provided (e.g. "AI_Pessima_stock"), uses that config; otherwise default_pc.
+local function getPowerForModelConfig(modelKey, configKey)
     if not modelKey or type(modelKey) ~= "string" then return nil end
     if not core_vehicles or not core_vehicles.getModel or not core_vehicles.getConfig then return nil end
     local data = core_vehicles.getModel(modelKey)
     if not data or not data.model or not data.configs then return nil end
-    local configKey = data.model.default_pc
-    if not configKey then
-        for k, _ in pairs(data.configs) do configKey = k break end
+    if not configKey or type(configKey) ~= "string" or configKey == "" then
+        configKey = data.model.default_pc
+        if not configKey then
+            for k, _ in pairs(data.configs) do configKey = k break end
+        end
     end
     if not configKey then return nil end
     local config = core_vehicles.getConfig(modelKey, configKey)
@@ -371,7 +391,8 @@ local function filterPoolByPower(rawPool, playerPowerHp, cfg)
     for _, entry in ipairs(rawPool) do
         local model = type(entry) == "table" and (entry.model or entry.vehicleModel) or entry
         if type(model) ~= "string" then goto continue end
-        local modelPowerHp = getPowerForModelConfig(model)
+        local configKey = type(entry) == "table" and entry.config or nil
+        local modelPowerHp = getPowerForModelConfig(model, configKey)
         if modelPowerHp and modelPowerHp >= playerPowerHp and modelPowerHp <= maxPower then
             table.insert(out, entry)
         end
@@ -409,6 +430,67 @@ local function filterPoolToAvailableModels(rawPool)
         end
     end
     return filtered
+end
+
+-- Filter vehiclePool (array of { model, config }) to entries whose model exists. Returns new array.
+local function filterVehiclePoolToAvailable(rawPool)
+    local available = getAvailableModelLookup()
+    local out = {}
+    if type(rawPool) ~= "table" then return out end
+    for _, entry in ipairs(rawPool) do
+        local model = type(entry) == "table" and (entry.model or entry.vehicleModel) or nil
+        local config = type(entry) == "table" and entry.config or nil
+        if type(model) == "string" and available[model] and type(config) == "string" and config ~= "" then
+            table.insert(out, { model = model, config = config })
+        end
+    end
+    return out
+end
+
+-- Pick N entries from class pool: sort by closest power to playerHp, then one per model first, then fill. Random among ties. Returns list of { model, config }.
+local function pickVehiclePoolByClosestWithVariety(classPool, playerPowerHp, requestedCount)
+    if type(classPool) ~= "table" or #classPool == 0 or type(requestedCount) ~= "number" or requestedCount < 1 then return {} end
+    local withPower = {}
+    for _, entry in ipairs(classPool) do
+        local model = type(entry) == "table" and (entry.model or entry.vehicleModel) or nil
+        local config = type(entry) == "table" and entry.config or nil
+        if type(model) == "string" and type(config) == "string" then
+            local hp = getPowerForModelConfig(model, config)
+            if type(hp) == "number" and hp > 0 then
+                table.insert(withPower, { model = model, config = config, powerHp = hp })
+            else
+                table.insert(withPower, { model = model, config = config, powerHp = playerPowerHp or 200 })
+            end
+        end
+    end
+    if #withPower == 0 then return {} end
+    local ph = type(playerPowerHp) == "number" and playerPowerHp or 200
+    for i = #withPower, 2, -1 do
+        local j = math.random(1, i)
+        withPower[i], withPower[j] = withPower[j], withPower[i]
+    end
+    table.sort(withPower, function(a, b) return math.abs((a.powerHp or ph) - ph) < math.abs((b.powerHp or ph) - ph) end)
+    local picked = {}
+    local usedModel = {}
+    for _, e in ipairs(withPower) do
+        if not usedModel[e.model] then
+            usedModel[e.model] = true
+            table.insert(picked, { model = e.model, config = e.config })
+            if #picked >= requestedCount then return picked end
+        end
+    end
+    for _, e in ipairs(withPower) do
+        if #picked >= requestedCount then break end
+        local already = 0
+        for _, p in ipairs(picked) do if p.model == e.model then already = already + 1 end end
+        if already < 2 then
+            table.insert(picked, { model = e.model, config = e.config })
+        end
+    end
+    while #picked < requestedCount and #withPower > 0 do
+        table.insert(picked, { model = withPower[1].model, config = withPower[1].config })
+    end
+    return picked
 end
 
 local function pickRandomVehicleModel(pool)
@@ -541,6 +623,52 @@ local function spawnWithFixedVehicle(raceName, race, facilityName, modelKey, con
     return spawned
 end
 
+-- Internal: spawn AI at staging spots using a pre-ordered list of { model, config }. One entry per spot. Returns spawned count.
+local function spawnWithModelConfigList(raceName, race, facilityName, list)
+    local cfg = getCurrentLevelConfig()
+    if cfg.enabled == false then return 0 end
+    if type(list) ~= "table" or #list == 0 then return 0 end
+    cancelDelayedDespawn()
+    local spots = loadStagingSpots()
+    if not spots or #spots == 0 then return 0 end
+    local requestedCount = (race and race.aiCount) or cfg.maxSpawnCount or 1
+    local spawnCount = math.max(0, math.min(#spots, requestedCount, #list))
+    if spawnCount <= 0 then return 0 end
+    local spawned = 0
+    for i = 1, spawnCount do
+        local spot = spots[i]
+        local entry = list[i]
+        if spot and spot.pos and spot.rot and entry and entry.model and entry.config then
+            local pos = vec3(spot.pos[1], spot.pos[2], spot.pos[3])
+            local rot = quat(spot.rot[1], spot.rot[2], spot.rot[3], spot.rot[4])
+            local configPath = "vehicles/" .. entry.model .. "/" .. entry.config .. ".pc"
+            local spawnOptions = { pos = pos, rot = rot, config = configPath, autoEnterVehicle = false }
+            local ok, veh = pcall(function() return core_vehicles.spawnNewVehicle(entry.model, spawnOptions) end)
+            if ok and veh and veh.getID then
+                local vehId = veh:getID()
+                table.insert(mSpawnedAiVehicleIds, vehId)
+                spawned = spawned + 1
+                if extensions.core_vehicle_colors and extensions.core_vehicle_colors.setVehicleColor then
+                    pcall(function()
+                        extensions.core_vehicle_colors.setVehicleColor(0, pickRandomAiColor(), vehId)
+                    end)
+                end
+                local vehObj = be:getObjectByID(vehId)
+                if vehObj then
+                    vehObj:queueLuaCommand("if not driver then extensions.load('driver') end")
+                    vehObj:queueLuaCommand("if not ai then extensions.load('ai') end")
+                    vehObj:queueLuaCommand("if ai and ai.setMode then ai.setMode('stop') end")
+                    vehObj:queueLuaCommand("input.event('parkingbrake', 1, 1)")
+                    if cfg.startEngineOnSpawn ~= false then
+                        queueEngineStart(vehObj)
+                    end
+                end
+            end
+        end
+    end
+    return spawned
+end
+
 -- Spawn AI vehicles at AI staging spots for this facility/race. They remain stopped until releaseAndDrive().
 function M.spawnForStaging(raceName, race, facilityName)
     local cfg = getCurrentLevelConfig()
@@ -549,10 +677,11 @@ function M.spawnForStaging(raceName, race, facilityName)
 end
 
 -- Spawn AI with similar power to the player vehicle: reads player HP via getPlayerVehiclePowerReliable, picks HP class (D/C/B/A), then spawns from vehiclePoolByHpClass[class] or defaultVehiclePool. Calls callback(spawnedCount).
--- When spawnSameVehicleAsPlayer is true (race_data or level aiRacers.json): spawns the player's exact model+config. Spawn path uses level config only for reliability.
+-- When cfg.vehiclePool is set: uses stock/modified/super by HP (<320, 320-550, >550), picks closest match with one per model then fill, spawns model+config.
+-- When spawnSameVehicleAsPlayer is true: spawns the player's exact model+config.
 function M.spawnForStagingWithPlayerHp(raceName, race, facilityName, callback)
     if type(callback) ~= "function" then return end
-    local cfg = getCurrentLevelConfig()
+    local cfg = race and getMergedConfigForRace(race) or getCurrentLevelConfig()
     if cfg.enabled == false then
         callback(0)
         return
@@ -582,6 +711,18 @@ function M.spawnForStagingWithPlayerHp(raceName, race, facilityName, callback)
     end
     M.getPlayerVehiclePowerReliable(function(powerWatts, weight)
         local powerHp = (type(powerWatts) == "number" and powerWatts > 0) and powerWattsToHp(powerWatts) or nil
+        if type(cfg.vehiclePool) == "table" and type(cfg.vehiclePool.stock) == "table" then
+            local class = getClassFromHpForVehiclePool(powerHp or 0)
+            local classPool = cfg.vehiclePool[class] or cfg.vehiclePool.stock
+            local available = filterVehiclePoolToAvailable(classPool)
+            if #available > 0 then
+                local requestedCount = (race and race.aiCount) or cfg.maxSpawnCount or 4
+                local list = pickVehiclePoolByClosestWithVariety(available, powerHp, requestedCount)
+                local spawned = spawnWithModelConfigList(raceName, race, facilityName, list)
+                callback(spawned)
+                return
+            end
+        end
         local class = getClassFromHp(powerHp or 0)
         local rawPool = getVehiclePoolForHpClass(cfg, class)
         local pool = filterPoolByPower(rawPool, powerHp, cfg)
@@ -1293,7 +1434,7 @@ function M.getPlayerVehiclePowerReliable(callback)
         local stats = obj:calcBeamStats()
         if engine then power = engine.maxPower or 0 end
         if stats and stats.total_weight then weight = stats.total_weight end
-        obj:queueGameEngineLua("career_modules_competitiveRace_aiRacers.onPlayerVehiclePowerWeight(" .. tostring(power) .. "," .. tostring(weight) .. ")")
+        obj:queueGameEngineLua("(function() local g = _G.career_modules_competitiveRace_aiRacers if g and type(g.onPlayerVehiclePowerWeight) == \"function\" then g.onPlayerVehiclePowerWeight(" .. tostring(power) .. "," .. tostring(weight) .. ") end end)()")
     ]]
     vehObj:queueLuaCommand(script)
 end
@@ -1341,6 +1482,7 @@ function M.isPlayerEligibleForRaceAsync(race, businessXp, callback)
     end)
 end
 
+-- Ensure global has this module (and onPlayerVehiclePowerWeight) so vehicle callback never hits a nil.
 _G.career_modules_competitiveRace_aiRacers = M
 
 return M
