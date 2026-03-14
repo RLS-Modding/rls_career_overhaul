@@ -92,9 +92,8 @@ angular.module('beamng.apps')
               '<div ng-if="raceState.routeName" class="hub-detail-route" style="font-size:20px;color:#9cf;margin-bottom:2px;">{{ raceState.routeName }}</div>' +
               '<div class="hub-detail-row" style="font-size:26px;">Lap {{ raceState.displayLap != null ? raceState.displayLap : (raceState.currentLap || 0) + 1 }}</div>' +
               '<div ng-if="raceState.invalidLap" class="hub-detail-invalid" style="color:#f96;font-size:24px;font-style:italic;">Lap invalidated</div>' +
-              '<div class="hub-detail-timer" style="font-size:30px;font-weight:700;display:flex;justify-content:space-between;align-items:center;gap:8px;">' +
+              '<div class="hub-detail-timer" style="font-size:30px;font-weight:700;">' +
                 '<span>Lap: {{ formatTime(raceState.currentLapTime) }}</span>' +
-                '<span ng-if="getDelta() !== null" ng-style="getDelta() < 0 ? { color: \'#3c3\', fontWeight: 600 } : { color: \'#f44\', fontWeight: 600 }">{{ formatDelta(getDelta()) }}</span>' +
               '</div>' +
               '<div style="font-size:24px;">Best lap: {{ (raceState.bestLapThisRun != null ? formatTime(raceState.bestLapThisRun) : (raceState.bestLapFromHistory != null ? formatTime(raceState.bestLapFromHistory) : "—")) }}</div>' +
               '<div ng-if="raceState.lastLapTime != null" style="font-size:24px;">Last lap: {{ formatTime(raceState.lastLapTime) }}</div>' +

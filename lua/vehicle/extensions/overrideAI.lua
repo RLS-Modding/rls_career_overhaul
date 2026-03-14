@@ -532,6 +532,7 @@ local function driveToTarget(targetPos, throttle, brake, targetSpeed)
 
   local targetVec = targetPos - ego.pos; targetVec:normalize()
   local dirAngle = asin(ego.rightVec:dot(targetVec))
+  local racePropSlip, raceSlipTarget = 0, 1.0
 
   -- oversteer
   local throttleOverCoef = 1
@@ -602,18 +603,22 @@ local function driveToTarget(targetPos, throttle, brake, targetSpeed)
 
       -- tcs
       propSlip = propSlip * (parameters.driveStyle == 'offRoad' and 0.8 or 1)
+      racePropSlip = propSlip
       local tcsCoef
       if opt.racing then
         -- State-based (no config): target slip at limit, lift only as much as needed, no cap; recover full throttle when under target.
         local stateBased = (parameters.raceSlipThreshold == nil and parameters.raceAccelScale == nil)
         if stateBased then
-          local slipTarget = 1.0
-          local slipGain = 0.35
+          -- State-dependent: allow more slip in corners (commit); lift only as much as needed (progressive gain).
+          local slipTarget = 1.0 + 0.12 * min(1, abs(dirAngle) * 2.5)
+          raceSlipTarget = slipTarget
+          racePropSlip = propSlip
           if propSlip <= slipTarget then
             tcsCoef = 1
             smoothTcs:set(1)
             throttleTcsCoef = 1
           else
+            local slipGain = 0.28 + 0.12 * min(1, (propSlip - slipTarget) / 0.5)
             local reduction = slipGain * (propSlip - slipTarget)
             tcsCoef = max(0, 1 - reduction)
             throttleTcsCoef = min(tcsCoef, smoothTcs:get(tcsCoef, dt))
@@ -657,7 +662,8 @@ local function driveToTarget(targetPos, throttle, brake, targetSpeed)
   if parameters.understeerThrottleControl ~= 'off' then
     throttleCoef = min(throttleCoef, throttleUnderCoef)
   end
-  if parameters.throttleTcs ~= 'off' then
+  -- Apply slip-based throttle limit when vehicle has TCS, or when racing (so no-TCS cars also lift when slipping and stay controllable).
+  if parameters.throttleTcs ~= 'off' or opt.racing then
     throttleCoef = min(throttleCoef, throttleTcsCoef)
   end
   -- Race: optional throttle floor from config only; state-based mode has no floor (throttle purely from slip/path).
@@ -850,6 +856,10 @@ local function driveToTarget(targetPos, throttle, brake, targetSpeed)
       local capAgg = stateBasedRacing and 80 or (opt.racing and (parameters.raceObstacleSpeedCapAgg or 10) or 6)
       local speedCap = opt.racing and min(capMax, aggression * capAgg) or min(6, aggression * 6)
       twt.targetSpeed = max(min(twt.speedSmoother:get(targetSpeed, dt), speedCap), 0.3)
+      -- State-dependent: when obstacle is likely a car we're chasing, don't over-slow below traffic target.
+      if opt.racing and plan and plan.trafficTargetSpeed and plan.trafficTargetSpeed > twt.targetSpeed and plan.trafficTargetSpeed < ego.speed + 8 then
+        twt.targetSpeed = max(twt.targetSpeed, min(plan.trafficTargetSpeed, ego.speed + 4))
+      end
       local speedDif = twt.targetSpeed - twt.dirState[1] * sign2(dirVel) * ego.speed
       local steering = twt.steerSmoother:get(twt.dirState[2], dt)
       local pbrake = 0 -- * clamp(sign2(0.83 + ego.upVec:dot(gravityDir)), 0, 1) -- >= 10 deg
@@ -900,7 +910,8 @@ local function driveToTarget(targetPos, throttle, brake, targetSpeed)
     end
     local recoveryMult = 1
     if opt.racing and throttle > throttleSmoother:value() then
-      recoveryMult = (stateBasedRacing and 2) or (type(parameters.raceThrottleRecoveryMult) == 'number' and parameters.raceThrottleRecoveryMult) or 1.45
+      -- State-dependent: recover throttle faster when grip is restored (under slip target).
+      recoveryMult = (stateBasedRacing and (racePropSlip <= raceSlipTarget and 2.8 or 2)) or (type(parameters.raceThrottleRecoveryMult) == 'number' and parameters.raceThrottleRecoveryMult) or 1.45
     end
     local rate = max(throttleSmoother[throttleSmoother:value() < throttle], 10 * aggSq * aggSq * rateMult * recoveryMult)
     throttle = throttleSmoother:getWithRateUncapped(throttle, dt, rate)
@@ -2469,7 +2480,13 @@ local function calculateTrafficTargetSpeed(plan, trafficTable)
             ego.race.d = 0.5*ego.length
             local ego2PlDist = ego2PlDist_0 - ego.speed * ego.race.time_gap --max(2.5, ego.speed * 1)
             local velProjOnSeg = v.vel:dot(segDirVec) -- max(0, v.vel:dot(segDirVec))
-            local gain = (ego2PlDist > 0 and ego.race.catchAgg or ego.race.brakeAgg) * abs(ego2PlDist) + 1 -- gain factor to try to catch the vehicle ahead by boosting acceleration (ego2PlDist > 0) or brake at maximum acceleration (ego2PlDist < 0)
+            -- State-dependent: try harder to pass when faster and safe distance; when very close prefer lift over brake (try to pass).
+            local closing = ego.speed > velProjOnSeg * 1.03
+            local safeDist = plan.distances and plan.distances > ego.length * 2.5
+            local catchAgg = (closing and safeDist) and 1.7 or (ego.race.catchAgg or 1)
+            -- When close: state-based use low brakeAgg so they lift to match speed and look for pass; param override still possible.
+            local brakeAgg = (plan.distances and plan.distances < ego.length * 1.2) and (opt.racing and (ego.race.brakeAgg or 0.08) or 0.4) or (ego.race.brakeAgg or 0)
+            local gain = (ego2PlDist > 0 and catchAgg or brakeAgg) * abs(ego2PlDist) + 1 -- gain factor to try to catch the vehicle ahead by boosting acceleration (ego2PlDist > 0) or brake at maximum acceleration (ego2PlDist < 0)
             local targetSpeed = max(0, abs(velProjOnSeg) * velProjOnSeg + 2 * g * min(aggression, ego.staticFrictionCoef) * ego2PlDist * gain)
 
             -- might help improve the throttle/brake input stability caused by the feedback loop of the ego.speed term in ego2PlDist
@@ -3119,9 +3136,10 @@ local function raceplanAhead(route, baseRoute, pmode)
       local lastPlanIdx = 2
       local targetDist = square(ego.speed) / (2 * g * aggression) + max(30, ego.speed * 3) -- longer adjustment at higher speeds
       local tmpVec = vec3()
+      local laneMargin = opt.racing and 0.3 or 0.6 -- racing: use more width; speed/braking handles corners
       for i = 2, plan.planCount - 1 do
         openLaneToLaneRange(plan[i])
-        plan[i].lateralXnorm = clamp(plan[i].lateralXnorm + sideDisp * (targetDist - curDist) / targetDist, plan[i].laneLimLeft + ego.width * 0.6, plan[i].laneLimRight - ego.width * 0.6)
+        plan[i].lateralXnorm = clamp(plan[i].lateralXnorm + sideDisp * (targetDist - curDist) / targetDist, plan[i].laneLimLeft + ego.width * laneMargin, plan[i].laneLimRight - ego.width * laneMargin)
         tmpVec:setScaled2(plan[i].normal, plan[i].lateralXnorm)
         plan[i].pos:setAdd2(plan[i].posOrig, tmpVec)
         curDist = curDist + plan[i - 1].length
@@ -3165,7 +3183,8 @@ local function raceplanAhead(route, baseRoute, pmode)
     local v2 = plan[i+1].dirVec
 
     n1.turnDir:setSub2(v1, v2); n1.turnDir:normalize()
-    local turnCoef = parameters.turnForceCoef * (opt.racing and (type(parameters.raceTurnCoefScale) == 'number' and parameters.raceTurnCoefScale or 1.0) or 1)
+    -- State-dependent: commit more to racing line at higher speed (aggressive through corners).
+    local turnCoef = parameters.turnForceCoef * (opt.racing and (type(parameters.raceTurnCoefScale) == 'number' and parameters.raceTurnCoefScale or 1.0) or 1) * (opt.racing and (1 + 0.45 * min(1, ego.speed / 45)) or 1)
     nforce:setScaled2(n1.turnDir, (1-twt.state) * max(1 - v1:dot(v2), 0) * turnCoef)
 
     forces[i+1]:setSub(nforce)
@@ -3256,8 +3275,15 @@ local function raceplanAhead(route, baseRoute, pmode)
   --profilerPopEvent("ai_calculate_curvature")
 
   ------######## Speed Planning ########-----
-  local totalAccel = min(aggression, ego.staticFrictionCoef) * g
-  if opt.racing and parameters.raceAccelScale then totalAccel = totalAccel * parameters.raceAccelScale end -- state-based: no scale
+  -- Racing: scale back aggression in sharp curves (state-based) so speed/braking stay in control; straights keep full aggression.
+  local curveFactor = 0
+  if opt.racing and plan[1] and plan[2] then
+    curveFactor = min(1, max(abs(plan[1].curvature or 0), abs(plan[2].curvature or 0)) * 6)
+  end
+  local effectiveAggression = (opt.racing and (aggression * (1 - 0.5 * curveFactor))) or aggression
+  local totalAccel = min(effectiveAggression, ego.staticFrictionCoef) * g
+  if opt.racing and parameters.raceAccelScale then totalAccel = totalAccel * parameters.raceAccelScale
+  elseif opt.racing then totalAccel = totalAccel * (1 + 0.14 * (1 - curveFactor)) end -- state-based: full boost on straights, none in hairpins
 
   local lastNode = plan[plan.planCount]
   if route.path[lastNode.pathidx+1] or (loopPath and noOfLaps and noOfLaps > 1) then
@@ -3295,6 +3321,7 @@ local function raceplanAhead(route, baseRoute, pmode)
 
   plan.targetSpeed = plan[1].speed + max(0, plan.egoXnormOnSeg) * (plan[2].speed - plan[1].speed)
   plan.targetSpeed = targetSpeedSmoother:get(plan.targetSpeed, dt)
+  if opt.racing then plan.targetSpeed = plan.targetSpeed * (1 + 0.08 * (1 - curveFactor)) end -- state-based: full boost on straights, none in hairpins
   if M.speedMode == 'legal' then
     plan.targetSpeedLegal = plan[1].legalSpeed + max(0, plan.egoXnormOnSeg) * (plan[2].legalSpeed - plan[1].legalSpeed)
   else
@@ -3302,9 +3329,16 @@ local function raceplanAhead(route, baseRoute, pmode)
   end
 
   calculateTrafficTargetSpeed(plan, traffic.trafficTable)
-
+  -- When close and faster: floor traffic target so AI lifts to match speed instead of braking hard (try to pass).
+  if opt.racing and plan.distances and plan.distances < ego.length * 2.5 and plan.trafficMinProjSpeed and ego.speed > plan.trafficMinProjSpeed * 1.02 then
+    plan.trafficTargetSpeed = max(plan.trafficTargetSpeed, plan.trafficMinProjSpeed * 0.93)
+  end
   plan.originaltargetSpeed = plan.targetSpeed -- save target speed computed by geometry only
   plan.targetSpeed = min(plan.targetSpeed, plan.trafficTargetSpeed)
+  -- State-dependent: when chasing (capped by traffic, we're faster), take the line / bump if needed (reduce clearance).
+  if opt.racing and plan.originaltargetSpeed and plan.trafficTargetSpeed < plan.originaltargetSpeed * 0.98 and plan.distances and plan.distances < 25 and ego.speed > (plan.trafficMinProjSpeed or 0) * 1.02 then
+    plan.clearanceScale = min(plan.clearanceScale or 0.5, 0.35 + 0.4 * aggression)
+  end
 
   ------######## Return #########--------
   return route
@@ -3571,7 +3605,8 @@ local function planAhead(route, baseRoute)
       local v2 = plan[i+1].dirVec
 
       n1.turnDir:setSub2(v1, v2); n1.turnDir:normalize()
-      nforce:setScaled2(n1.turnDir, (1-twt.state) * max(1 - v1:dot(v2), 0) * parameters.turnForceCoef)
+      local turnCoefScript = parameters.turnForceCoef * (opt.racing and (1 + 0.45 * min(1, ego.speed / 45)) or 1)
+      nforce:setScaled2(n1.turnDir, (1-twt.state) * max(1 - v1:dot(v2), 0) * turnCoefScript)
 
       forces[i+1]:setSub(nforce)
       forces[i-1]:setSub(nforce)
@@ -3601,10 +3636,11 @@ local function planAhead(route, baseRoute)
       local v2 = plan[i+1].dirVec
 
       n1.turnDir:setSub2(v1, v2); n1.turnDir:normalize()
-      nforce:setScaled2(n1.turnDir, (1-twt.state) * max(1 - v1:dot(v2), 0) * parameters.turnForceCoef)
+      local turnCoefDamp = parameters.turnForceCoef * (opt.racing and (1 + 0.45 * min(1, ego.speed / 45)) or 1)
+      nforce:setScaled2(n1.turnDir, (1-twt.state) * max(1 - v1:dot(v2), 0) * turnCoefDamp)
 
-      nforce:setScaled2(n1.turnDir, (1-twt.state) * max(1 - v1:dot(v2), 0) * parameters.turnForceCoef * stiff)
-      dforce:setScaled2((velocities[i+1] - velocities[i]) - (velocities[i] - velocities[i-1]), parameters.turnForceCoef * damper * 0.25)
+      nforce:setScaled2(n1.turnDir, (1-twt.state) * max(1 - v1:dot(v2), 0) * turnCoefDamp * stiff)
+      dforce:setScaled2((velocities[i+1] - velocities[i]) - (velocities[i] - velocities[i-1]), turnCoefDamp * damper * 0.25)
       dforce:setScaled2(n1.turnDir, n1.turnDir:dot(dforce))
       nforce:setAdd(dforce)
 
@@ -3615,7 +3651,7 @@ local function planAhead(route, baseRoute)
     end
 
     for i = 1, plan.planCount-1 do
-      forces[i] = forces[i] - velocities[i] * parameters.turnForceCoef * damper
+      forces[i] = forces[i] - velocities[i] * turnCoefDamp * damper
       velocities[i] = velocities[i] + forces[i] * dt
       forces[i] = velocities[i] * dt
     end
@@ -4337,8 +4373,14 @@ local function planAhead(route, baseRoute)
   end
 
   -- Speed Planning --
-  local totalAccel = min(aggression, ego.staticFrictionCoef) * g
-  if opt.racing and parameters.raceAccelScale then totalAccel = totalAccel * parameters.raceAccelScale end -- state-based: no scale
+  local curveFactorScript = 0
+  if opt.racing and plan[1] and plan[2] then
+    curveFactorScript = min(1, max(abs(plan[1].curvature or 0), abs(plan[2].curvature or 0)) * 6)
+  end
+  local effectiveAggressionScript = (opt.racing and (aggression * (1 - 0.5 * curveFactorScript))) or aggression
+  local totalAccel = min(effectiveAggressionScript, ego.staticFrictionCoef) * g
+  if opt.racing and parameters.raceAccelScale then totalAccel = totalAccel * parameters.raceAccelScale
+  elseif opt.racing then totalAccel = totalAccel * (1 + 0.14 * (1 - curveFactorScript)) end -- state-based: full boost on straights, none in hairpins
 
   local lastNode = plan[plan.planCount]
   if route.path[lastNode.pathidx+1] or (loopPath and noOfLaps and noOfLaps > 1) then
@@ -4420,6 +4462,7 @@ local function planAhead(route, baseRoute)
 
   plan.targetSpeed = plan[1].speed + max(0, plan.egoXnormOnSeg) * (plan[2].speed - plan[1].speed)
   plan.targetSpeed = targetSpeedSmoother:get(plan.targetSpeed, dt)
+  if opt.racing then plan.targetSpeed = plan.targetSpeed * (1 + 0.08 * (1 - curveFactorScript)) end -- state-based: full boost on straights, none in hairpins
   if M.speedMode == 'legal' then
     plan.targetSpeedLegal = plan[1].legalSpeed + max(0, plan.egoXnormOnSeg) * (plan[2].legalSpeed - plan[1].legalSpeed)
   else
