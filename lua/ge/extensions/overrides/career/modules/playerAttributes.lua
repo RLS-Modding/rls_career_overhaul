@@ -179,9 +179,6 @@ end
 
 local function collectLevelUpCelebrations(change, reason, valueBeforeByAttribute)
   if type(change) ~= "table" then return {} end
-  if type(reason) == "table" and type(reason.tags) == "table" and reason.tags.deliveryReward then
-    return {}
-  end
 
   local entries = {}
   for attributeKey, delta in pairs(change) do
@@ -232,15 +229,6 @@ local function init()
     attributes[branch.attributeKey] = deepcopy(baseAttribute)
     attributes[branch.attributeKey].value = branch.defaultValue or baseAttribute.value
   end
-  local startingCapital = 10000
-  if career_career.hardcoreMode then
-    startingCapital = 0
-  end
-  if career_modules_cheats and career_modules_cheats.isCheatsMode() then
-  startingCapital = 1e12
-  end
-
-  M.setAttributes({money=startingCapital}, {label="Starting Capital"})
 end
 
 -- reason should be table with label, list of tags
@@ -261,14 +249,8 @@ local function addAttributes(change, reason, fullprice)
   reason.tags = tableValuesAsLookupDict(reason.tags)
 
   for attributeName, value in pairs(change) do
-    if (attributeName == "vouchers" and value > 0) and career_modules_hardcore.isHardcoreMode() then
-      change[attributeName] = 0
-    end
     if attributeName == "money" and career_modules_cheats and career_modules_cheats.isCheatsMode() then
       change[attributeName] = 0
-    end
-    if value > 0  and not fullprice then
-      change[attributeName] = value / (career_modules_hardcore.isHardcoreMode() and 2 or 1)
     end
   end
 

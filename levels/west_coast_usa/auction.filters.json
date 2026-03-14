@@ -1,0 +1,101 @@
+{
+  "description": "Filters used by usedCarAuction.lua for random lot generation",
+  "filter": {
+    "whiteList": {
+      "Type": [
+        "Car",
+        "Truck"
+      ]
+    },
+    "blackList": {
+      "Config Type": [
+        "Police",
+        "Frame"
+      ],
+      "Brand": [
+        "FPU"
+      ],
+      "Body Type": [
+        "JATO truck"
+      ]
+    }
+  },
+  "subFilters": [
+    {
+      "probability": 8,
+      "whiteList": {
+        "Type": [
+          "Car"
+        ],
+        "Config Type": [
+          "Factory"
+        ],
+        "Mileage": {
+          "min": 4800,
+          "max": 1437376
+        },
+        "Population": {
+          "min": 1,
+          "max": 2999
+        }
+      }
+    },
+    {
+      "probability": 4,
+      "whiteList": {
+        "Type": [
+          "Truck"
+        ],
+        "Config Type": [
+          "Factory"
+        ],
+        "Mileage": {
+          "min": 4800,
+          "max": 1437376
+        },
+        "Population": {
+          "min": 1,
+          "max": 2999
+        }
+      }
+    },
+    {
+      "probability": 3,
+      "whiteList": {
+        "Type": [
+          "Car"
+        ],
+        "Config Type": [
+          "Custom"
+        ],
+        "Mileage": {
+          "min": 4800,
+          "max": 1437376
+        },
+        "Population": {
+          "min": 1,
+          "max": 2999
+        }
+      }
+    },
+    {
+      "probability": 2,
+      "whiteList": {
+        "Type": [
+          "Truck"
+        ],
+        "Config Type": [
+          "Custom"
+        ],
+        "Mileage": {
+          "min": 4800,
+          "max": 1437376
+        },
+        "Population": {
+          "min": 1,
+          "max": 2999
+        }
+      }
+    }
+  ]
+}

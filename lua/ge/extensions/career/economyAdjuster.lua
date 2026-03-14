@@ -7,6 +7,20 @@ local typeSources = {}
 local isEnabled = true
 local initialized = false
 
+local typeAliases = {
+    mud = "mudding",
+    crawl = "crawling",
+    apexracing = "roadracing"
+}
+
+local function normalizeTypeName(typeName)
+    if type(typeName) ~= "string" or typeName == "" then
+        return typeName
+    end
+    local alias = typeAliases[typeName:lower()]
+    return alias or typeName
+end
+
 local function tableSize(tbl)
     if not tbl or type(tbl) ~= "table" then return 0 end
     local count = 0
@@ -105,6 +119,13 @@ local function discoverActivityTypes()
         typeSources["ambulance"]["ambulance_module"] = true
     end
 
+    -- Facility Work
+    if gameplay_facilityWork then
+        activityTypesFound["facilityWork"] = true
+        typeSources["facilityWork"] = typeSources["facilityWork"] or {}
+        typeSources["facilityWork"]["facilityWork_module"] = true
+    end
+
     local deliveryTypes = {"parcel", "vehicle", "trailer", "fluid", "dryBulk", "cement", "cash"}
     for _, deliveryType in ipairs(deliveryTypes) do
         activityTypesFound[string.format("delivery_%s", deliveryType)] = true
@@ -196,7 +217,7 @@ local function saveMultipliers(currentSavePath)
     if not initialized then return end
 
     if not currentSavePath then
-        local _, currentSavePath = career_saveSystem.getCurrentSaveSlot()
+        _, currentSavePath = career_saveSystem.getCurrentSaveSlot()
         if not currentSavePath then return end
     end
 
@@ -232,19 +253,23 @@ local function calculateAdjustedReward(raceData, baseReward)
     return math.floor(adjustedReward + 0.5)
 end
 
-local function setTypeMultiplier(typeName, multiplier)
+local function setTypeMultiplier(typeName, multiplier, suppressSave)
     if not typeName then return false end
+    typeName = normalizeTypeName(typeName)
 
     multiplier = math.max(0, math.min(10, tonumber(multiplier) or 1.0))
 
     typeMultipliers[typeName] = multiplier
-    saveMultipliers()
+    if not suppressSave then
+        saveMultipliers()
+    end
     print(string.format("Economy Adjuster: Set %s multiplier to %.2f", typeName, multiplier))
     return true
 end
 
 local function getTypeMultiplier(typeName)
     if not typeName then return 1.0 end
+    typeName = normalizeTypeName(typeName)
     return typeMultipliers[typeName] or 1.0
 end
 
@@ -253,9 +278,11 @@ local function setAllTypeMultipliers(multipliers)
 
     for typeName, multiplier in pairs(multipliers) do
         if type(multiplier) == "number" then
-            setTypeMultiplier(typeName, multiplier)
+            setTypeMultiplier(typeName, multiplier, true)
         end
     end
+
+    saveMultipliers()
 
     return true
 end

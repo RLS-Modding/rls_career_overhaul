@@ -339,14 +339,26 @@ function filterByDiscipline(list) {
   return selectedDiscipline.value === 'all' ? (list || []) : (list || []).filter(entry => entry.disciplineId === selectedDiscipline.value)
 }
 
+function sortByUrgencyThenReward(a, b) {
+  return (displayRemaining(a.minutesRemaining) - displayRemaining(b.minutesRemaining)) || (Number(b.rewardMoney || 0) - Number(a.rewardMoney || 0))
+}
+
+function sortByWarningThenUpkeep(a, b) {
+  return (Boolean(a.warningIssued) === Boolean(b.warningIssued) ? 0 : a.warningIssued ? -1 : 1) || (displayRemaining(a.checkMinutesRemaining) - displayRemaining(b.checkMinutesRemaining))
+}
+
+function sortByMinutesRemaining(a, b) {
+  return displayRemaining(a.minutesRemaining) - displayRemaining(b.minutesRemaining)
+}
+
 const filteredActiveContracts = computed(() => filterByDiscipline(state.value.activeContracts))
 const filteredAvailableContracts = computed(() => filterByDiscipline(state.value.availableContracts))
 const filteredActiveSponsors = computed(() => filterByDiscipline(state.value.activeSponsors))
 const filteredAvailableSponsors = computed(() => filterByDiscipline(state.value.availableSponsors))
-const sortedActiveContracts = computed(() => [...filteredActiveContracts.value].sort((a, b) => (displayRemaining(a.minutesRemaining) - displayRemaining(b.minutesRemaining)) || (Number(b.rewardMoney || 0) - Number(a.rewardMoney || 0))))
-const sortedAvailableContracts = computed(() => [...filteredAvailableContracts.value].sort((a, b) => (displayRemaining(a.minutesRemaining) - displayRemaining(b.minutesRemaining)) || (Number(b.rewardMoney || 0) - Number(a.rewardMoney || 0))))
-const sortedActiveSponsors = computed(() => [...filteredActiveSponsors.value].sort((a, b) => (Boolean(a.warningIssued) === Boolean(b.warningIssued) ? 0 : a.warningIssued ? -1 : 1) || (displayRemaining(a.checkMinutesRemaining) - displayRemaining(b.checkMinutesRemaining))))
-const sortedAvailableSponsors = computed(() => [...filteredAvailableSponsors.value].sort((a, b) => displayRemaining(a.minutesRemaining) - displayRemaining(b.minutesRemaining)))
+const sortedActiveContracts = computed(() => [...filteredActiveContracts.value].sort(sortByUrgencyThenReward))
+const sortedAvailableContracts = computed(() => [...filteredAvailableContracts.value].sort(sortByUrgencyThenReward))
+const sortedActiveSponsors = computed(() => [...filteredActiveSponsors.value].sort(sortByWarningThenUpkeep))
+const sortedAvailableSponsors = computed(() => [...filteredAvailableSponsors.value].sort(sortByMinutesRemaining))
 const contractsTabCount = computed(() => sortedActiveContracts.value.length + sortedAvailableContracts.value.length)
 const sponsorsTabCount = computed(() => sortedActiveSponsors.value.length + sortedAvailableSponsors.value.length)
 const summaryUnlockMessages = computed(() => {

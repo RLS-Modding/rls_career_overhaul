@@ -5,9 +5,14 @@
 local M = {}
 local xpConfig = require('gameplay/delivery/logisticsXPConfig')
 
--- Mirror of the hardcoreMultiplier from generator.lua (default 1)
--- Caller can override via setHardcoreMultiplier()
-local hardcoreMultiplier = 1
+local legacyHardcoreMultiplier = 1
+
+local function getProgressionMultiplier()
+  if career_modules_difficultyMode and career_modules_difficultyMode.getXPMultiplier then
+    return career_modules_difficultyMode.getXPMultiplier()
+  end
+  return legacyHardcoreMultiplier
+end
 
 local parcelItemMoneyMultiplier = 1
 
@@ -142,15 +147,15 @@ end
 
 local function getParcelDistanceXP(distance, baseXP, rules)
   local distanceTerm = xpConfig.applyRounding(distance / rules.distanceDivisor, rules.distanceRounding)
-  return baseXP + distanceTerm * hardcoreMultiplier
+  return (baseXP + distanceTerm) * getProgressionMultiplier()
 end
 
 function M.setHardcoreMultiplier(val)
-  hardcoreMultiplier = val or 1
+  legacyHardcoreMultiplier = val or 1
 end
 
 function M.getHardcoreMultiplier()
-  return hardcoreMultiplier
+  return legacyHardcoreMultiplier
 end
 
 function M.setParcelItemMoneyMultiplier(val)
@@ -171,7 +176,7 @@ function M.getMoneyRewardForParcelItem(item, distance)
   end
 
   -- cleanup
-  return ((basePrice) + math.pow(distance/1000, distanceExp) * pricePerM) * hardcoreMultiplier * parcelItemMoneyMultiplier * modMultiplier, basePrice, pricePerM
+  return ((basePrice) + math.pow(distance/1000, distanceExp) * pricePerM) * parcelItemMoneyMultiplier * modMultiplier, basePrice, pricePerM
 end
 
 -------------------------------
@@ -193,7 +198,7 @@ function M.getXPReward(distance, slots, orgId, orgMultiplier, economyMultiplier)
   -- Organization reputation and delivery bonus (from generator.lua ~line 175)
   if orgId then
     local repDistance = xpConfig.applyRounding(distance / rules.reputationDistanceDivisor, rules.reputationDistanceRounding)
-    rewards[orgId .. "Reputation"] = baseXP + repDistance
+    rewards[orgId .. "Reputation"] = (baseXP + repDistance) * getProgressionMultiplier()
 
     -- Try to get org delivery bonus multiplier
     local appliedOrgMultiplier = orgMultiplier
@@ -237,7 +242,7 @@ function M.getParcelReward(item, distance, orgId, orgMultiplier, economyMultipli
   -- Organization reputation and delivery bonus (from generator.lua ~line 175)
   if orgId then
     local repDistance = xpConfig.applyRounding(distance / rules.reputationDistanceDivisor, rules.reputationDistanceRounding)
-    rewards[orgId .. "Reputation"] = baseXP + repDistance
+    rewards[orgId .. "Reputation"] = (baseXP + repDistance) * getProgressionMultiplier()
 
     local appliedOrgMultiplier = orgMultiplier
     if not appliedOrgMultiplier and freeroam_organizations and freeroam_organizations.getOrganization then
@@ -285,20 +290,18 @@ function M.getVehicleOfferReward(filter, distance, offerType, orgId, economyMult
   local baseXP = deliveryBaseXP + xpDistanceTerm
   local rewards = {
     money = (filter.baseReward or 0) + moneyDistanceTerm,
-    logistics = baseXP * hardcoreMultiplier
+    logistics = baseXP * getProgressionMultiplier()
   }
   if offerType == "vehicle" then
-    rewards.money = rewards.money * hardcoreMultiplier
-    rewards["logistics-delivery"] = baseXP * hardcoreMultiplier
+    rewards["logistics-delivery"] = baseXP * getProgressionMultiplier()
   elseif offerType == "trailer" then
-    rewards.money = rewards.money * hardcoreMultiplier
-    rewards["logistics-delivery"] = baseXP * hardcoreMultiplier
+    rewards["logistics-delivery"] = baseXP * getProgressionMultiplier()
   end
 
   -- Organization reputation (from generator.lua ~line 556)
   if orgId then
     local repDistance = xpConfig.applyRounding(distance / rules.reputationDistanceDivisor, rules.reputationDistanceRounding)
-    rewards[orgId .. "Reputation"] = (deliveryBaseXP + repDistance) * hardcoreMultiplier
+    rewards[orgId .. "Reputation"] = (deliveryBaseXP + repDistance) * getProgressionMultiplier()
   end
 
   -- Economy adjuster (from generator.lua ~line 559)
@@ -340,7 +343,7 @@ function M.getMaterialXPReward(distance, slots, orgId, orgMultiplier, economyMul
   local rules = xpConfig.getMaterialRules()
   local materialBaseXP = getMaterialBaseXP(rules, materialType)
   local xpFormula = (materialBaseXP + math.max(0, (distance / rules.distanceDivisor) + rules.distanceOffset)) * (slots / rules.slotsDivisor)
-  local xpAmount = xpConfig.applyRounding(xpFormula, rules.xpRounding) * hardcoreMultiplier
+  local xpAmount = xpConfig.applyRounding(xpFormula, rules.xpRounding) * getProgressionMultiplier()
   local rewards = {
     logistics = xpAmount,
     ["logistics-delivery"] = xpAmount
@@ -360,7 +363,7 @@ function M.getMaterialXPReward(distance, slots, orgId, orgMultiplier, economyMul
       end
     end
     if appliedOrgMultiplier and money then
-      money = money * appliedOrgMultiplier * hardcoreMultiplier
+      money = money * appliedOrgMultiplier
     end
   end
 
@@ -385,7 +388,7 @@ end
 -- Hardcore Multiplier
 -------------------------------
 function M.applyHardcoreMultiplier(reward, multiplier)
-  return reward * (multiplier or hardcoreMultiplier)
+  return reward * (multiplier or getProgressionMultiplier())
 end
 
 -------------------------------

@@ -89,6 +89,20 @@ angular.module('beamng.stuff')
     return Math.floor(Number(value) || 0).toLocaleString()
   }
 
+function normalizeBranchLevels(branchLevels) {
+  const sourceLevels = Array.isArray(branchLevels) ? branchLevels : Object.values(branchLevels || {})
+  return sourceLevels
+    .filter(function(level) {
+      return level && Number.isFinite(Number(level.requiredValue))
+    })
+    .map(function(level) {
+      return Object.assign({}, level, { requiredValue: Number(level.requiredValue) })
+    })
+    .sort(function(a, b) {
+      return a.requiredValue - b.requiredValue
+    })
+}
+
   function normalizeLevelUpEntry(entry) {
     if (!entry || typeof entry !== 'object') return null
 
@@ -128,13 +142,31 @@ angular.module('beamng.stuff')
   }
 
   function getLevelValue(reward) {
-    const level = Number(reward && reward.animationData && reward.animationData.level)
-    return Number.isFinite(level) && level > 0 ? level : 1
+  const levels = normalizeBranchLevels(reward && reward.branchLevels)
+  const value = Number(reward && reward.animationData && reward.animationData.value)
+  const entryLevel = Number(reward && reward.animationData && reward.animationData.level)
+  if (levels.length && Number.isFinite(value)) {
+    let actualLevel = 1
+    for (let i = 0; i < levels.length; i++) {
+      if (value >= levels[i].requiredValue) {
+        actualLevel = i + 1
+      } else {
+        break
+      }
+    }
+    if (Number.isFinite(entryLevel) && entryLevel > 0) {
+      return Math.max(1, Math.min(entryLevel, actualLevel))
+    }
+    return actualLevel
+  }
+
+  return Number.isFinite(entryLevel) && entryLevel > 0 ? entryLevel : 1
   }
 
   function getCurrentUnlocks(reward, levelValue) {
-    const levels = Array.isArray(reward && reward.branchLevels) ? reward.branchLevels : []
-    const currentLevelData = levels[levelValue - 1]
+  const levels = normalizeBranchLevels(reward && reward.branchLevels)
+  const safeLevelIndex = Math.max(0, Math.min(levels.length - 1, levelValue - 1))
+  const currentLevelData = levels[safeLevelIndex]
     return Array.isArray(currentLevelData && currentLevelData.unlocks) ? currentLevelData.unlocks : []
   }
 
@@ -373,7 +405,7 @@ const celebrationPopUpModule = angular.module('celebrationPopUp', ['ui.router'])
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initializeCelebrationPopUpOverlay)
   } else {
-    setTimeout(initializeCelebrationPopUpOverlay, 500)
+    initializeCelebrationPopUpOverlay()
   }
 }])
 

@@ -1,0 +1,16 @@
+{
+  "m_the_vault_rules": {
+    "name": "m_the_vault_rules",
+    "mapTo": "m_the_vault_rules",
+    "class": "Material",
+    "Stages": [
+      {
+        "colorMap": "/levels/west_coast_usa/art/shapes/auction/Vault_Rules.png"
+      },
+      {},
+      {},
+      {}
+    ],
+    "translucentBlendOp": "None"
+  }
+}

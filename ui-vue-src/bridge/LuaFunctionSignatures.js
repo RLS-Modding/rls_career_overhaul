@@ -71,7 +71,7 @@ export default {
     isActive: () => {},
     sendAllCareerSaveSlotsData: () => {},
     sendCurrentSaveSlotData: () => {},
-    createOrLoadCareerAndStart: (id, specificAutosave, tutorial) => [String, Any, Boolean],
+    createOrLoadCareerAndStart: (id, specificAutosave, tutorial, hardcore, challengeId, cheats, startingMap, difficultyMode) => [String, Any, Boolean, Boolean, Any, Boolean, Any, String],
   },
 
   career_saveSystem: {
@@ -1283,6 +1283,19 @@ export default {
     updateAttendance: attendanceLevel => {}
   },
 
+  career_modules_usedCarAuction: {
+    requestAuctionState: () => {},
+    startAuction: () => {},
+    cancelTravelPrompt: () => {},
+    placeBid: amount => {},
+    setAuctionMusicEnabled: enabled => {},
+    passCurrentLot: () => {},
+    closeMenu: () => {},
+    setAutoBidEnabled: enabled => {},
+    setAutoBidMax: maxBid => {},
+    exitAuctionArea: () => {}
+  },
+
   career_modules_propertyMortgage: {
     getAllMortgages: () => {},
     getMortgagePaymentInfo: garageId => String,
@@ -1307,6 +1320,7 @@ export default {
     getAllRentals: () => {},
     calculateRent: (garageId, rentalType) => [String, String],
     calculateDeposit: (garageId, rentalType) => [String, String],
+
   },
 
   career_modules_garageManager: {

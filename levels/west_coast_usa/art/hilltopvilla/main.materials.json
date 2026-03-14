@@ -101,7 +101,6 @@
     "translucentBlendOp": "None",
     "version": 1.5
   },
-
   "corrugated_modern1": {
     "name": "corrugated_modern1",
     "mapTo": "corrugated_modern1",
@@ -511,7 +510,7 @@
     "groundType": "CONCRETE",
     "version": 1.5
   },
-  "m_wood_oak_raw_011": {
+  "m_wood_oak_raw69": {
     "name": "m_wood_oak_raw69",
     "mapTo": "m_wood_oak_raw69",
     "class": "Material",
@@ -523,7 +522,8 @@
         "normalMap": "/levels/west_coast_usa/art/hilltopvilla/t_wood_oak_raw_01_nm.normal.dds",
         "opacityMapUseUV": null,
         "roughnessMap": "/levels/west_coast_usa/art/hilltopvilla/t_wood_oak_raw_01_r.data.dds",
-        "roughnessMapUseUV": null
+        "roughnessMapUseUV": null,
+        "vertColor": true
       },
       {
         "baseColorMap": "/levels/west_coast_usa/art/hilltopvilla/t_breakup_general_b.color.dds",
@@ -531,17 +531,20 @@
         "opacityMap": "/levels/west_coast_usa/art/hilltopvilla/t_breakup_general_o.data.dds",
         "opacityMapUseUV": 1,
         "roughnessMap": "/levels/west_coast_usa/art/hilltopvilla/t_breakup_general_r.data.dds",
-        "roughnessMapUseUV": 1
+        "roughnessMapUseUV": 1,
+        "vertColor": null
       },
       {
         "diffuseMapUseUV": null,
         "opacityMapUseUV": null,
-        "roughnessMapUseUV": null
+        "roughnessMapUseUV": null,
+        "vertColor": null
       },
       {
         "diffuseMapUseUV": null,
         "opacityMapUseUV": null,
-        "roughnessMapUseUV": null
+        "roughnessMapUseUV": null,
+        "vertColor": null
       }
     ],
     "activeLayers": 2,

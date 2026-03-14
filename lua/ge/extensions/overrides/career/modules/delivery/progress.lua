@@ -53,6 +53,7 @@ end
 
 -- Keep delivery reward keys aligned with the unified logistics skill track.
 local rewardKeyAliases = {
+  ["logistics"] = "logistics-delivery",
   ["delivery"] = "logistics-delivery",
   ["vehicleDelivery"] = "logistics-delivery",
   ["materials"] = "logistics-delivery",
@@ -71,39 +72,6 @@ local function normalizeRewardTable(rewardTable)
     normalized[normalizedKey] = (normalized[normalizedKey] or 0) + amount
   end
   return normalized
-end
-
-local function shouldApplyExplicitHardcoreRewards()
-  return career_modules_hardcore
-    and career_modules_hardcore.isHardcoreMode
-    and career_modules_hardcore.isHardcoreMode()
-end
-
-local function applyExplicitHardcoreRewards(rewardTable)
-  local adjustedRewards = normalizeRewardTable(rewardTable)
-  if not shouldApplyExplicitHardcoreRewards() then
-    return adjustedRewards
-  end
-
-  for key, amount in pairs(adjustedRewards) do
-    if type(amount) == "number" and amount > 0 then
-      adjustedRewards[key] = amount / 2
-    end
-  end
-
-  return adjustedRewards
-end
-
-local function applyExplicitHardcoreBreakdown(breakdown)
-  if not shouldApplyExplicitHardcoreRewards() then
-    return
-  end
-
-  for _, entry in ipairs(breakdown or {}) do
-    if type(entry) == "table" and type(entry.rewards) == "table" then
-      entry.rewards = applyExplicitHardcoreRewards(entry.rewards)
-    end
-  end
 end
 
 local function getLogisticsMoneyBonusState()
@@ -686,8 +654,6 @@ M.confirmDropOffCheckComplete = function()
     table.insert(cargoByGroupId[gId], c)
     c.adjustedRewards = normalizeRewardTable(c.adjustedRewards)
     applyLogisticsMoneyBonusToEntry(c, levelMoneyBonusMultiplier)
-    c.adjustedRewards = applyExplicitHardcoreRewards(c.adjustedRewards)
-    applyExplicitHardcoreBreakdown(c.breakdown)
     table.insert(rewards, c.adjustedRewards)
     c.summaryId = gId
     table.insert(rewardParcels, c)
@@ -701,8 +667,6 @@ M.confirmDropOffCheckComplete = function()
     table.insert(itemNames, string.format("%s %s",formattedOffer.offer.name, formattedOffer.offer.vehicle.name))
     formattedOffer.adjustedRewards = normalizeRewardTable(formattedOffer.adjustedRewards)
     applyLogisticsMoneyBonusToEntry(formattedOffer, levelMoneyBonusMultiplier)
-    formattedOffer.adjustedRewards = applyExplicitHardcoreRewards(formattedOffer.adjustedRewards)
-    applyExplicitHardcoreBreakdown(formattedOffer.breakdown)
     table.insert(rewards, formattedOffer.adjustedRewards)
   end
 

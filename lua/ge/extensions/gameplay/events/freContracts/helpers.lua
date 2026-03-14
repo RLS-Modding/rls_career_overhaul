@@ -68,33 +68,40 @@ end
 local function formatTimeForRequirement(seconds)
   local total = math.max(0, tonumber(seconds) or 0)
   local minutes = math.floor(total / 60)
-  local secs = total - (minutes * 60)
+  local secs = math.min(math.max(total - (minutes * 60), 0), 59.999)
   if minutes >= 1 then
     return string.format("%d:%02d", minutes, math.floor(secs))
   elseif secs >= 10 then
-    return string.format("%.1f", secs)
+    local display = math.floor(secs * 10) / 10
+    return string.format("%.1f", display)
   else
-    return string.format("%.2f", secs)
+    local display = math.floor(secs * 100) / 100
+    return string.format("%.2f", display)
   end
 end
 
 local function pickWeightedBonusType(weightTable)
+  local entries = {}
   local total = 0
-  for _, value in pairs(weightTable or {}) do
-    total = total + (tonumber(value) or 0)
+  for key, value in pairs(weightTable or {}) do
+    local weight = tonumber(value) or 0
+    if weight > 0 then
+      total = total + weight
+      entries[#entries + 1] = {key = key, weight = weight}
+    end
   end
   if total <= 0 then
     return "money"
   end
   local roll = randomFloat(0, total)
   local running = 0
-  for key, value in pairs(weightTable or {}) do
-    running = running + (tonumber(value) or 0)
-    if roll <= running then
-      return key
+  for _, entry in ipairs(entries) do
+    running = running + entry.weight
+    if roll < running then
+      return entry.key
     end
   end
-  return "money"
+  return entries[#entries].key
 end
 
 M.roundTo = roundTo

@@ -54,9 +54,9 @@ const onLoad = async id => {
   await store.loadProfile(id)
 }
 
-const onCreateSave = async (profileName, tutorialChecked, hardcoreMode, challengeId, cheatsMode, startingMap) => {
+const onCreateSave = async (profileName, tutorialChecked, difficultyMode, challengeId, cheatsMode, startingMap) => {
   isLoading = true
-  await store.loadProfile(profileName, tutorialChecked, true, hardcoreMode, challengeId, cheatsMode, startingMap)
+  await store.loadProfile(profileName, tutorialChecked, true, difficultyMode, challengeId, cheatsMode, startingMap)
 }
 
 function onCardActivated(active, index) {
@@ -91,12 +91,22 @@ provide("validateName", validateName)
 function isAnyModalOpen() {
   const creator = document.querySelector('.ccm-overlay')
   const detailer = document.querySelector('.cdm-overlay')
+  const difficultyDropdown = document.querySelector('.difficulty-dropdown-content')
+  const mapDropdown = document.querySelector('.map-dropdown-content')
   if (creator) {
     const style = window.getComputedStyle(creator)
     if (style.display !== 'none' && style.visibility !== 'hidden') return true
   }
   if (detailer) {
     const style = window.getComputedStyle(detailer)
+    if (style.display !== 'none' && style.visibility !== 'hidden') return true
+  }
+  if (difficultyDropdown) {
+    const style = window.getComputedStyle(difficultyDropdown)
+    if (style.display !== 'none' && style.visibility !== 'hidden') return true
+  }
+  if (mapDropdown) {
+    const style = window.getComputedStyle(mapDropdown)
     if (style.display !== 'none' && style.visibility !== 'hidden') return true
   }
   return false
@@ -113,6 +123,7 @@ const navigateToMainMenu = () => {
 
 const onDeactivate = (event) => {
   if (event?.detail?.force) return
+  if (createCardActive.value) return
   if (isAnyModalOpen()) return
 
   if (isLoading) {

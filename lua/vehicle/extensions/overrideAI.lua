@@ -4513,19 +4513,23 @@ local function newManualPath()
     else
       local path = mapData:getPointNodePath(ego.pos, wpList[1], nil, nil, nil, nil, 1)
 
-      ego.currentSegment[1] = path[1]
-      ego.currentSegment[2] = path[2]
+      ego.currentSegment[1] = path and path[1] or nil
+      ego.currentSegment[2] = path and path[2] or nil
 
-      if not path[1] then
+      if not (path and path[1]) then
         guihooks.message("Could not find a road network, or closest road is too far", 5, "AI debug")
         log('D', "AI", "Could not find a road network, or closest road is too far")
         return
       end
 
-      local xnorm = ego.pos:xnormOnLine(mapData.positions[path[1]], mapData.positions[path[2]])
+      local pos1 = mapData.positions[path[1]]
+      local pos2 = path[2] and mapData.positions[path[2]] or nil
 
-      if xnorm > 0 and xnorm < 1 then
-        table.remove(path, 1)
+      if pos1 and pos2 then
+        local xnorm = ego.pos:xnormOnLine(pos1, pos2)
+        if xnorm > 0 and xnorm < 1 then
+          table.remove(path, 1)
+        end
       end
 
       newRoute = createNewRoute(path)

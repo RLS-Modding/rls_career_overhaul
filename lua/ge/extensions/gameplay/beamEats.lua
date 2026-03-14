@@ -484,11 +484,6 @@ end
 local function calculateBaseFare(totalDistance)
     local baseFare = config.baseFarePerKm * (totalDistance / 1000)
 
-    if career_career and career_career.isActive() and career_modules_hardcore and career_modules_hardcore.isHardcoreMode and
-        career_modules_hardcore.isHardcoreMode() then
-        baseFare = baseFare * 0.5
-    end
-
     if career_economyAdjuster then
         local multiplier = career_economyAdjuster.getSectionMultiplier("beamEats") or 1.0
         baseFare = baseFare * multiplier
@@ -824,10 +819,6 @@ local function completeDelivery()
         return
     end
 
-    if career_modules_hardcore and career_modules_hardcore.isHardcoreMode and career_modules_hardcore.isHardcoreMode() then
-        label = label .. "\nHardcore mode is enabled, all rewards are halved."
-    end
-    
     if career_modules_payment and type(career_modules_payment.reward) == "function" then
         
         -- Use pre-calculated streakXP
@@ -853,8 +844,30 @@ local function completeDelivery()
             }
         end
 
-        label = label .. xpLabel
-
+        if career_modules_difficultyMode and career_modules_difficultyMode.scalePaymentRewardData then
+            career_modules_difficultyMode.scalePaymentRewardData(rewardData, {includeMoney = false})
+        end
+        local awardedMoney = (rewardData.money and rewardData.money.amount) or math.floor(finalPayment)
+        logisticsXp = (rewardData.logistics and rewardData.logistics.amount) or logisticsXp
+        currentOrder.totalPaymentDisplay = string.format("%.2f", awardedMoney)
+        if logisticsXp > 0 then
+            xpLabel = string.format("\nStreak Bonus (%d): +%d Logistics XP", orderStreak, logisticsXp)
+            currentOrder.streakXP = logisticsXp
+        else
+            xpLabel = ""
+            currentOrder.streakXP = nil
+        end
+        label = string.format("BeamEats delivery: $%s\nDistance: %skm | Tips: $%s",
+            currentOrder.totalPaymentDisplay, currentOrder.totalDistanceDisplay, currentOrder.totalTipsDisplay) .. xpLabel
+        guihooks.trigger('SetTasklistTask', {
+            id = "beamEats_complete_msg",
+            label = string.format("Earned: $%s%s", currentOrder.totalPaymentDisplay, xpLabel),
+            done = true,
+            active = true,
+            type = "message",
+            clear = false
+        })
+        requestBeamEatsState()
         career_modules_payment.reward(rewardData, {
             label = label,
             tags = {"transport", "beamEats"}

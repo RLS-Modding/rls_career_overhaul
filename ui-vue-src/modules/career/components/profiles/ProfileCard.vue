@@ -24,10 +24,10 @@
             <span v-else>{{ $ctx_t("ui.career.lastplayed") }} {{ lastPlayedDescription }}</span>
           </div>
         </div>
-        <div v-if="!isManage && (challengeInfo || cheatsMode)" class="profile-card-badges">
-          <div v-if="challengeInfo" class="challenge-chip" title="Challenge Mode">
+        <div v-if="!isManage && (modeChipLabel || cheatsMode)" class="profile-card-badges">
+          <div v-if="modeChipLabel" class="challenge-chip" :title="modeChipTitle">
             <span class="chip-sq"></span>
-            <span class="chip-text">{{ challengeInfo.name }}</span>
+            <span class="chip-text">{{ modeChipLabel }}</span>
           </div>
           <div v-if="cheatsMode" class="cheats-chip" title="Freeroam+ Enabled">
             <span class="chip-sq"></span>
@@ -162,7 +162,8 @@ const props = defineProps({
   money: Object,
   active: Boolean,
   branches: Array,
-  activeChallenge: Object,
+  activeChallenge: [Object, String],
+  difficultyMode: String,
   cheatsMode: Boolean,
   forceCloseManage: Boolean,
 })
@@ -210,6 +211,29 @@ const challengeInfo = computed(() => {
   if (!v) return null
   if (typeof v === "string") return { name: v }
   return v
+})
+
+const DIFFICULTY_MODE_LABELS = {
+  easy: "Easy",
+  hard: "Hard",
+  hardcore: "Hardcore",
+}
+
+const difficultyChipLabel = computed(() => {
+  const mode = typeof props.difficultyMode === "string" ? props.difficultyMode.toLowerCase() : "normal"
+  if (mode === "normal") return null
+  return DIFFICULTY_MODE_LABELS[mode] || mode
+})
+
+const modeChipLabel = computed(() => {
+  if (challengeInfo.value?.name) return challengeInfo.value.name
+  return difficultyChipLabel.value
+})
+
+const modeChipTitle = computed(() => {
+  if (challengeInfo.value?.name) return "Challenge Mode"
+  if (difficultyChipLabel.value) return "Difficulty Mode"
+  return ""
 })
 
 // TODO: seems hacky but will be updated when input validation has been improved

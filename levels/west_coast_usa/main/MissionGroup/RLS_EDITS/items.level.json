@@ -57,5 +57,8 @@
 {"class":"TSStatic","__parent":"RLS_EDITS","position":[-343.90506,-389.294189,104.792419],"isRenderEnabled":false,"rotationMatrix":[-0.285550952,-0.958363533,0,0.958363533,-0.285550952,0,0,0,1],"shapeName":"/levels/west_coast_usa/art/shapes/objects/standing_signs/rlsstandingsign1.dae","useInstanceRenderData":true}
 {"class":"PointLight","__parent":"RLS_EDITS","position":[930.445923,620.316528,139.673172],"brightness":0.800000012,"color":[0.707625508,0.402496785,0.00629794179,0.00800000038],"radius":10,"rotationMatrix":[1,0,0,0,0.999999762,-0.000690533896,0,0.000690533896,0.999999762]}
 {"name":"p_fuel_pump_2015_nodeoline11","internalName":"p_fuel_pump_2015_nodeoline11","class":"Prefab","__parent":"RLS_EDITS","position":[-263.007263,-311.110992,118.817566],"filename":"/levels/west_coast_usa/art/prefabs/p_fuel_pump_2015_trilobite.prefab.json","rotationMatrix":[0.530212939,-0.847864449,0,0.847864449,0.530212939,0,0,0,1]}
+{"class":"TSStatic","__parent":"RLS_EDITS","position":[523.755981,-720.659973,201.136002],"isRenderEnabled":false,"rotationMatrix":[-0.478354603,0.878166616,0,-0.878166616,-0.478354603,0,0,0,0.999999881],"shapeName":"/levels/west_coast_usa/art/hilltopvilla/mk4villa.dae","useInstanceRenderData":true}
 {"name":"facility_work","class":"SimGroup","__parent":"RLS_EDITS"}
 {"name":"Slop Gear Dealership","class":"SimGroup","__parent":"RLS_EDITS"}
+{"name":"culdasacHouseNew","class":"SimGroup","__parent":"RLS_EDITS"}
+{"name":"AuctionHouseVault","class":"SimGroup","__parent":"RLS_EDITS"}
