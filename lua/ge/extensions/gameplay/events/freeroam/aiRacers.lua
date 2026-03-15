@@ -317,16 +317,18 @@ local function getClassFromHp(power)
     return "A"
 end
 
--- vehiclePool class bands: stock <320, modified 320-550, super >=550 HP. Used when cfg.vehiclePool is set.
+-- vehiclePool class bands: stock <320, modified 320-550, super 550-699, open 700+ HP. Used when cfg.vehiclePool is set.
 local STOCK_MAX_HP = 319
 local MODIFIED_MAX_HP = 549
+local SUPER_MAX_HP = 699
 -- Configs within this many HP of the player are preferred when picking from the pool (then by closest).
 local CLOSE_HP_TOLERANCE = 25
 local function getClassFromHpForVehiclePool(power)
     if type(power) ~= "number" or power < 0 then return "stock" end
     if power <= STOCK_MAX_HP then return "stock" end
     if power <= MODIFIED_MAX_HP then return "modified" end
-    return "super"
+    if power <= SUPER_MAX_HP then return "super" end
+    return "open"
 end
 
 -- Pool for a given HP class. Uses cfg.vehiclePoolByHpClass[class] if set, else defaultVehiclePool.

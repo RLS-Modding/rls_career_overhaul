@@ -40,7 +40,11 @@ angular.module('beamng.apps')
               '<button type="button" class="hub-menu-btn" ng-click="selectTrack()" style="display:block;width:100%;padding:12px 14px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.3);border-radius:6px;color:#fff;font-size:22px;font-weight:600;cursor:pointer;text-align:center;">Track</button>' +
               '<button type="button" class="hub-menu-btn" ng-click="selectShortTrack()" style="display:block;width:100%;padding:12px 14px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.3);border-radius:6px;color:#fff;font-size:22px;font-weight:600;cursor:pointer;text-align:center;">Short track</button>' +
             '</div>' +
-            '<div ng-if="!showResult && !showSessionEnded && !showRaceHistory && (selectedRace || selectedRoute) && !isLiveRace()" style="color:#fff;display:flex;flex-direction:column;gap:8px;">' +
+            '<div ng-if="!showResult && !showSessionEnded && !showRaceHistory && raceState.waitingForResults" style="color:#fff;display:flex;flex-direction:column;gap:10px;">' +
+              '<div style="font-size:24px;font-weight:700;color:#9cf;">Race complete</div>' +
+              '<div style="font-size:20px;color:#aaa;">Waiting for others to finish… Results in ~50s.</div>' +
+            '</div>' +
+            '<div ng-if="!showResult && !showSessionEnded && !showRaceHistory && (selectedRace || selectedRoute) && !isLiveRace() && !raceState.waitingForResults" style="color:#fff;display:flex;flex-direction:column;gap:8px;">' +
               '<div ng-if="selectedRoute" style="font-size:20px;font-weight:600;color:#9cf;margin-bottom:4px;">{{ getSelectedRouteLabel() }}</div>' +
               '<div ng-if="raceState.stagedMessage" style="margin-top:4px;color:#ccc;font-size:18px;line-height:1.4;white-space:pre-line;">{{ raceState.stagedMessage }}</div>' +
               '<div style="color:#aaa;font-size:22px;font-style:italic;">Drive to start line to begin.</div>' +
@@ -64,7 +68,7 @@ angular.module('beamng.apps')
                 '<div ng-repeat="r in raceResult.aiResults track by r.place" style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.08);">' +
                   '<span>P{{ r.place }} {{ r.isPlayer ? "You" : ("AI " + r.index) }}</span>' +
                   '<span>{{ r.lapsCompleted }}/{{ r.lapsTotal }}</span>' +
-                  '<span ng-if="r.place === 1 && r.totalTime != null">{{ formatTime(r.totalTime) }}</span>' +
+                  '<span ng-if="r.totalTime != null">{{ formatTime(r.totalTime) }}</span>' +
                   '<span ng-if="r.place !== 1 && r.diffFromLeader != null" ng-style="{ color: r.diffFromLeader <= 0 ? \'#3c3\' : \'#f44\' }">{{ formatDelta(r.diffFromLeader) }}</span>' +
                   '<span ng-if="r.bestLap != null" style="color:#aaa;">Best: {{ formatTime(r.bestLap) }}</span>' +
                 '</div>' +
@@ -108,6 +112,7 @@ angular.module('beamng.apps')
                 '<div ng-repeat="v in raceState.aiLapState.vehicles | orderBy:\'place\' track by (v.isPlayer ? \'p\' : \'a\') + v.place + v.index" style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:2px 0;">' +
                   '<span>P{{ v.place }} {{ v.isPlayer ? "You" : ("AI " + v.index) }}</span>' +
                   '<span>Lap {{ (v.finished ? v.lapCount : v.lapCount + 1) }}/{{ v.totalLaps }}</span>' +
+                  '<span ng-if="raceState.aiLapState.totalCheckpoints != null && raceState.aiLapState.totalCheckpoints > 0" style="color:#888;">CP {{ v.checkpointsHit || 0 }}/{{ raceState.aiLapState.totalCheckpoints }}</span>' +
                   '<span ng-if="v.place === 1">{{ formatTime(raceState.aiLapState.leaderTime) }}</span>' +
                   '<span ng-if="v.place !== 1 && v.diffFromLeader != null" ng-style="{ color: v.diffFromLeader <= 0 ? \'#3c3\' : \'#f44\' }">{{ formatDelta(v.diffFromLeader) }}</span>' +
                   '<span ng-if="v.place !== 1 && v.diffFromLeader == null && !v.finished && v.currentLapTime != null">Lap: {{ formatTime(v.currentLapTime) }}</span>' +
@@ -163,6 +168,13 @@ angular.module('beamng.apps')
         safeApply(function () {
           if (scope.showResult) {
             scope.raceState = data || { inRace: false };
+            return;
+          }
+          if (data && data.waitingForResults) {
+            scope.raceState = data || { inRace: false };
+            scope.selectedRace = scope.raceState.raceId ? { raceId: scope.raceState.raceId, label: scope.raceState.raceLabel || scope.raceState.raceId } : scope.selectedRace;
+            scope.showSessionEnded = false;
+            scope.hubHidden = false;
             return;
           }
           if (data && data.showRaceSelection) {

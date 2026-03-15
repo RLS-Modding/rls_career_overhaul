@@ -1,5 +1,5 @@
 {
-  "_comment": "Per-race structure. vehiclePool: AI by player HP class (stock <320, modified 320-550, super >550 HP). Pick closest match, one per model then fill.",
+  "_comment": "Per-race structure. vehiclePool: AI by player HP class (stock <320, modified 320-550, super 550-699, open 700+ HP). Pick closest match, one per model then fill.",
   "vehiclePool": {
     "stock": [
       { "model": "covet", "config": "AI_Covet_stock" },

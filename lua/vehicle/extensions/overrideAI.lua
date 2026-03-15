@@ -609,8 +609,10 @@ local function driveToTarget(targetPos, throttle, brake, targetSpeed)
         -- State-based (no config): target slip at limit, lift only as much as needed, no cap; recover full throttle when under target.
         local stateBased = (parameters.raceSlipThreshold == nil and parameters.raceAccelScale == nil)
         if stateBased then
-          -- State-dependent: allow more slip in corners (commit); lift only as much as needed (progressive gain).
-          local slipTarget = 1.0 + 0.12 * min(1, abs(dirAngle) * 2.5)
+          -- Hairpin (very sharp): ease up - tighter slip target, faster TCS reaction; other corners allow more slip (commit).
+          local maxCurv = plan and plan[1] and plan[2] and max(abs(plan[1].curvature or 0), abs(plan[2].curvature or 0)) or 0
+          local hairpin = (maxCurv * 6) > 0.85
+          local slipTarget = hairpin and 0.98 or (1.0 + 0.12 * min(1, abs(dirAngle) * 2.5))
           raceSlipTarget = slipTarget
           racePropSlip = propSlip
           if propSlip <= slipTarget then
@@ -621,7 +623,12 @@ local function driveToTarget(targetPos, throttle, brake, targetSpeed)
             local slipGain = 0.28 + 0.12 * min(1, (propSlip - slipTarget) / 0.5)
             local reduction = slipGain * (propSlip - slipTarget)
             tcsCoef = max(0, 1 - reduction)
-            throttleTcsCoef = min(tcsCoef, smoothTcs:get(tcsCoef, dt))
+            if hairpin then
+              smoothTcs:set(tcsCoef)
+              throttleTcsCoef = tcsCoef
+            else
+              throttleTcsCoef = min(tcsCoef, smoothTcs:get(tcsCoef, dt))
+            end
           end
         else
           local slipThreshold = (type(parameters.raceSlipThreshold) == 'number' and parameters.raceSlipThreshold) or 1.0
@@ -3280,10 +3287,11 @@ local function raceplanAhead(route, baseRoute, pmode)
   if opt.racing and plan[1] and plan[2] then
     curveFactor = min(1, max(abs(plan[1].curvature or 0), abs(plan[2].curvature or 0)) * 6)
   end
-  local effectiveAggression = (opt.racing and (aggression * (1 - 0.5 * curveFactor))) or aggression
+  -- Hairpin (curveFactor > 0.85): ease up further; other corners keep incremental scaling.
+  local effectiveAggression = (opt.racing and (curveFactor > 0.85 and aggression * 0.35 or aggression * (1 - 0.5 * curveFactor))) or aggression
   local totalAccel = min(effectiveAggression, ego.staticFrictionCoef) * g
   if opt.racing and parameters.raceAccelScale then totalAccel = totalAccel * parameters.raceAccelScale
-  elseif opt.racing then totalAccel = totalAccel * (1 + 0.14 * (1 - curveFactor)) end -- state-based: full boost on straights, none in hairpins
+  elseif opt.racing then totalAccel = totalAccel * (curveFactor > 0.85 and 1 or (1 + 0.14 * (1 - curveFactor))) end -- state-based: no boost in hairpins
 
   local lastNode = plan[plan.planCount]
   if route.path[lastNode.pathidx+1] or (loopPath and noOfLaps and noOfLaps > 1) then
@@ -3321,7 +3329,7 @@ local function raceplanAhead(route, baseRoute, pmode)
 
   plan.targetSpeed = plan[1].speed + max(0, plan.egoXnormOnSeg) * (plan[2].speed - plan[1].speed)
   plan.targetSpeed = targetSpeedSmoother:get(plan.targetSpeed, dt)
-  if opt.racing then plan.targetSpeed = plan.targetSpeed * (1 + 0.08 * (1 - curveFactor)) end -- state-based: full boost on straights, none in hairpins
+  if opt.racing then plan.targetSpeed = plan.targetSpeed * (curveFactor > 0.85 and 1 or (1 + 0.08 * (1 - curveFactor))) end -- state-based: no boost in hairpins
   if M.speedMode == 'legal' then
     plan.targetSpeedLegal = plan[1].legalSpeed + max(0, plan.egoXnormOnSeg) * (plan[2].legalSpeed - plan[1].legalSpeed)
   else
@@ -4377,10 +4385,10 @@ local function planAhead(route, baseRoute)
   if opt.racing and plan[1] and plan[2] then
     curveFactorScript = min(1, max(abs(plan[1].curvature or 0), abs(plan[2].curvature or 0)) * 6)
   end
-  local effectiveAggressionScript = (opt.racing and (aggression * (1 - 0.5 * curveFactorScript))) or aggression
+  local effectiveAggressionScript = (opt.racing and (curveFactorScript > 0.85 and aggression * 0.35 or aggression * (1 - 0.5 * curveFactorScript))) or aggression
   local totalAccel = min(effectiveAggressionScript, ego.staticFrictionCoef) * g
   if opt.racing and parameters.raceAccelScale then totalAccel = totalAccel * parameters.raceAccelScale
-  elseif opt.racing then totalAccel = totalAccel * (1 + 0.14 * (1 - curveFactorScript)) end -- state-based: full boost on straights, none in hairpins
+  elseif opt.racing then totalAccel = totalAccel * (curveFactorScript > 0.85 and 1 or (1 + 0.14 * (1 - curveFactorScript))) end -- state-based: no boost in hairpins
 
   local lastNode = plan[plan.planCount]
   if route.path[lastNode.pathidx+1] or (loopPath and noOfLaps and noOfLaps > 1) then
@@ -4462,7 +4470,7 @@ local function planAhead(route, baseRoute)
 
   plan.targetSpeed = plan[1].speed + max(0, plan.egoXnormOnSeg) * (plan[2].speed - plan[1].speed)
   plan.targetSpeed = targetSpeedSmoother:get(plan.targetSpeed, dt)
-  if opt.racing then plan.targetSpeed = plan.targetSpeed * (1 + 0.08 * (1 - curveFactorScript)) end -- state-based: full boost on straights, none in hairpins
+  if opt.racing then plan.targetSpeed = plan.targetSpeed * (curveFactorScript > 0.85 and 1 or (1 + 0.08 * (1 - curveFactorScript))) end -- state-based: no boost in hairpins
   if M.speedMode == 'legal' then
     plan.targetSpeedLegal = plan[1].legalSpeed + max(0, plan.egoXnormOnSeg) * (plan[2].legalSpeed - plan[1].legalSpeed)
   else
