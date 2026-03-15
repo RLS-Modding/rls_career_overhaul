@@ -1014,13 +1014,11 @@ local function onSaveCurrentSaveSlot(currentSavePath)
   end
   
   -- Save listings (Phase 2)
-  if next(listedProperties) then
-    local dirPath = currentSavePath .. "/career/rls_career"
-    if not FS:directoryExists(dirPath) then
-      FS:directoryCreate(dirPath)
-    end
-    career_saveSystem.jsonWriteFileSafe(dirPath .. "/realEstateListings.json", listedProperties, true)
+  local dirPath = currentSavePath .. "/career/rls_career"
+  if not FS:directoryExists(dirPath) then
+    FS:directoryCreate(dirPath)
   end
+  career_saveSystem.jsonWriteFileSafe(dirPath .. "/realEstateListings.json", listedProperties or {}, true)
 end
 
 local function loadNegotiationState()
@@ -1056,7 +1054,12 @@ local function loadNegotiationState()
   local listingsPath = currentSavePath .. "/career/rls_career/realEstateListings.json"
   local listingsData = jsonReadFile(listingsPath)
   if listingsData then
-    listedProperties = listingsData
+    listedProperties = {}
+    for garageId, listing in pairs(listingsData) do
+      if listing and career_modules_garageManager and career_modules_garageManager.isPurchasedGarage and career_modules_garageManager.isPurchasedGarage(garageId) then
+        listedProperties[garageId] = listing
+      end
+    end
   end
   negotiationOrigin = (data and data.negotiationOrigin) and data.negotiationOrigin or "computer"
 end
