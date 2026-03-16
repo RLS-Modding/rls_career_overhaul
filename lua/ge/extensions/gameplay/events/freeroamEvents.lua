@@ -55,19 +55,23 @@ local isReplay = false
 local previousGameState = nil
 local saveGameState = false
 
-local FREEROAM_HUB_PREFS_FILE = "career/rls_career/freeroam_hub_prefs.json"
-local mFreeroamHubPrefs = { autoShow = true, addedOnce = false }
-local mFreeroamHubPracticeMode = false
-local mFreeroamHubUseAltRoute = false
-local mFreeroamHubRaceSelected = false
-local mFreeroamHubShowingResult = false
-local mFreeroamHubShowingHistory = false
-local mFreeroamCountdownDelay = nil
-local mFreeroamCountdownEndTime = nil
-local mFreeroamCountdownStartClock = nil
-local mFreeroamStagedAtStart = false
-local mFreeroamPendingStart = nil
-local mFreeroamStagingSubjectID = nil
+-- Hub state consolidated into table to reduce upvalue count (Lua 5.1 limit is 60 per function)
+local hubState = {
+    PREFS_FILE = "career/rls_career/freeroam_hub_prefs.json",
+    prefs = { autoShow = true, addedOnce = false },
+    practiceMode = false,
+    useAltRoute = false,
+    raceSelected = false,
+    showingResult = false,
+    showingHistory = false,
+    countdownDelay = nil,
+    countdownEndTime = nil,
+    countdownStartClock = nil,
+    stagedAtStart = false,
+    pendingStart = nil,
+    stagingSubjectID = nil,
+    inHubContext = false,  -- True when player entered via fre_hub_track; prevents hub cleanup from affecting other events
+}
 
 -- AI lap counting and timers: per-vehicle state when a race with AI is active (cleared on exitRace).
 local mAiLapState = {}
@@ -83,12 +87,166 @@ local mPendingTrackResult = nil
 
 -- Forward declaration so applyWaypointHit_AI (and others) can call it; defined later in file.
 local snapshotStandingsDeltas
+-- Forward declaration for prepareFreeroamAiForTrack (called from onUpdate, defined after hub functions)
+local prepareFreeroamAiForTrack
+
+-- Player staging spot for hub track: when they select Track/Short Track we set nav here; when they reach it we set staged and start countdown.
+local PLAYER_STAGING_SPOT_NAME = "player_stage_track"
+local mPlayerStagingSpot = nil  -- { pos = {x,y,z}, scl = {sx,sy,sz} } when driving to stage; cleared when staged or selection cleared
+
+-- Ground markers for navigation (pcall protected)
+local core_groundMarkers = nil
+do
+    local ok, gm = pcall(function() return require('core/groundMarkers') end)
+    if ok and gm then core_groundMarkers = gm end
+end
+
+-- Load player staging spot from competitiveRaceAI.sites.json (pos, rot, scl = full dimensions, like Rect Marker)
+local function loadPlayerStagingSpot()
+    local levelPath = core_levels.getLevelByName(getCurrentLevelIdentifier())
+    if not levelPath then return nil end
+    local sitesPath = levelPath.misFilePath .. "/competitiveRaceAI.sites.json"
+    local sitesData = jsonReadFile(sitesPath)
+    if not sitesData or not sitesData.parkingSpots then return nil end
+    for _, spot in ipairs(sitesData.parkingSpots) do
+        if spot.name == PLAYER_STAGING_SPOT_NAME then
+            return { pos = spot.pos, rot = spot.rot, scl = spot.scl }
+        end
+    end
+    return nil
+end
+
+-- Half-extents from JSON scl (scl = full dimensions; white box uses same convention)
+local function getStagingSpotHalfExtents(spot)
+    if not spot or not spot.scl then return nil end
+    local s = spot.scl
+    return { (s[1] or 3) * 0.5, (s[2] or 6) * 0.5, (s[3] or 2) * 0.5 }
+end
+
+-- True if world point is inside the spot's oriented box (pos, rot, half-extents from scl/2). Spot may have no rot (use AABB).
+local function isPointInStagingSpot(spot, wx, wy, wz)
+    if not spot or not spot.pos or not spot.scl then return false end
+    local he = getStagingSpotHalfExtents(spot)
+    if not he then return false end
+    local px, py, pz = spot.pos[1], spot.pos[2], spot.pos[3]
+    local sx, sy, sz = he[1], he[2], he[3]
+    local dx, dy, dz = wx - px, wy - py, wz - pz
+    if spot.rot and spot.rot[4] then
+        local ok, localPt = pcall(function()
+            local r = spot.rot
+            local invQ = quat(-(r[1] or 0), -(r[2] or 0), -(r[3] or 0), r[4] or 1)
+            return invQ * vec3(dx, dy, dz)
+        end)
+        if ok and localPt then
+            return math.abs(localPt.x) <= sx and math.abs(localPt.y) <= sy and math.abs(localPt.z) <= sz
+        end
+    end
+    return math.abs(dx) <= sx and math.abs(dy) <= sy and math.abs(dz) <= sz
+end
+
+-- Check if player vehicle is fully inside the staging spot (oriented box; all 8 OOBB corners must be inside).
+local function isPlayerInStagingSpot(spot)
+    if not spot or not spot.pos or not spot.scl then return false end
+    local playerVeh = be:getPlayerVehicle(0)
+    if not playerVeh then return false end
+    local oobb = playerVeh:getSpawnWorldOOBB()
+    if not oobb or not oobb.getPoint then
+        local pos = playerVeh:getPosition()
+        return isPointInStagingSpot(spot, pos.x, pos.y, pos.z)
+    end
+    for i = 0, 7 do
+        local pt = oobb:getPoint(i)
+        if not pt or not isPointInStagingSpot(spot, pt.x, pt.y, pt.z) then
+            return false
+        end
+    end
+    return true
+end
+
+-- Corner markers for player_stage_track (visible when driving to stage). Cleared when staged or selection cleared.
+local mPlayerStagingCornerMarkers = {}
+
+local function clearPlayerStagingCornerMarkers()
+    for _, obj in ipairs(mPlayerStagingCornerMarkers) do
+        pcall(function()
+            if obj and obj.delete then obj:delete() end
+        end)
+    end
+    table.clear(mPlayerStagingCornerMarkers)
+end
+
+local function showPlayerStagingCornerMarkers(spot)
+    clearPlayerStagingCornerMarkers()
+    if not spot or not spot.pos or not spot.scl then return end
+    if not createObject or not scenetree then return end
+    local he = getStagingSpotHalfExtents(spot)
+    if not he then return end
+    local sx, sy, sz = he[1], he[2], he[3]
+    local px, py, pz = spot.pos[1], spot.pos[2], spot.pos[3]
+    local spotQuat
+    local xVec, yVec, zVec = vec3(1, 0, 0), vec3(0, 1, 0), vec3(0, 0, 1)
+    if spot.rot and spot.rot[4] then
+        local ok, q = pcall(function()
+            local r = spot.rot
+            return quat(r[1] or 0, r[2] or 0, r[3] or 0, r[4] or 1)
+        end)
+        if ok and q then
+            spotQuat = q
+            xVec = q * vec3(1, 0, 0)
+            yVec = q * vec3(0, 1, 0)
+            zVec = q * vec3(0, 0, 1)
+        end
+    end
+    -- Corner positions (same order as Rect Marker: top-left, top-right, bottom-right, bottom-left)
+    local corners = {
+        { px - xVec.x*sx + yVec.x*sy, py - xVec.y*sx + yVec.y*sy, pz - xVec.z*sx + yVec.z*sy },
+        { px + xVec.x*sx + yVec.x*sy, py + xVec.y*sx + yVec.y*sy, pz + xVec.z*sx + yVec.z*sy },
+        { px + xVec.x*sx - yVec.x*sy, py + xVec.y*sx - yVec.y*sy, pz + xVec.z*sx - yVec.z*sy },
+        { px - xVec.x*sx - yVec.x*sy, py - xVec.y*sx - yVec.y*sy, pz - xVec.z*sx - yVec.z*sy },
+    }
+    -- Per-corner Z rotation (degrees) so cones face outward like Rect Marker: 90, 180, 270, 0
+    local cornerZDeg = { 90, 180, 270, 0 }
+    local markerScale = math.min(spot.scl[1] or 3, spot.scl[2] or 6) * 0.2
+    if markerScale < 0.15 then markerScale = 0.15 end
+    if markerScale > 1.5 then markerScale = 1.5 end
+    local baseName = "freeroamHub_stageCorner_" .. tostring(os and os.time and os.time() or 0) .. "_"
+    for i, c in ipairs(corners) do
+        local ok, marker = pcall(function()
+            local m = createObject("TSStatic")
+            if not m then return nil end
+            m.shapeName = "art/shapes/interface/position_marker.dae"
+            m.scale = vec3(markerScale, markerScale, markerScale)
+            m.useInstanceRenderData = true
+            m.canSave = false
+            if ColorF and ColorF(1, 0.5, 0, 1) and (ColorF(1, 0.5, 0, 1):asLinear4F()) then
+                m.instanceColor = ColorF(1, 0.5, 0, 1):asLinear4F()
+            else
+                m:setField("instanceColor", 0, "1 0.5 0 1")
+            end
+            local rot = spotQuat
+            if quatFromEuler and rot then
+                local cornerZ = quatFromEuler(0, 0, math.rad(cornerZDeg[i] or 0))
+                rot = rot * cornerZ
+            end
+            if rot then
+                m:setPosRot(c[1], c[2], c[3] + 0.1, rot.x, rot.y, rot.z, rot.w)
+            else
+                m:setPosRot(c[1], c[2], c[3] + 0.1, 0, 0, 0, 0)
+            end
+            m:registerObject(baseName .. i)
+            return m
+        end)
+        if ok and marker then
+            table.insert(mPlayerStagingCornerMarkers, marker)
+        end
+    end
+end
 
 local function getFreeroamHubPrefsPath()
     if not career_saveSystem or not career_saveSystem.getCurrentSaveSlot then return nil end
     local saveSlot, savePath = career_saveSystem.getCurrentSaveSlot()
     if not savePath then return nil end
-    return savePath .. "/" .. FREEROAM_HUB_PREFS_FILE
+    return savePath .. "/" .. hubState.PREFS_FILE
 end
 
 local function loadFreeroamHubPrefs()
@@ -96,15 +254,31 @@ local function loadFreeroamHubPrefs()
     if not path then return end
     local d = jsonReadFile(path)
     if d then
-        if d.autoShow ~= nil then mFreeroamHubPrefs.autoShow = d.autoShow end
-        if d.addedOnce ~= nil then mFreeroamHubPrefs.addedOnce = d.addedOnce end
+        if d.autoShow ~= nil then hubState.prefs.autoShow = d.autoShow end
+        if d.addedOnce ~= nil then hubState.prefs.addedOnce = d.addedOnce end
     end
 end
 
 local function saveFreeroamHubPrefs()
     local path = getFreeroamHubPrefsPath()
     if not path or not career_saveSystem or not career_saveSystem.jsonWriteFileSafe then return end
-    career_saveSystem.jsonWriteFileSafe(path, mFreeroamHubPrefs, true)
+    career_saveSystem.jsonWriteFileSafe(path, hubState.prefs, true)
+end
+
+-- Ensure hub app is in the container. Always run add logic so hub shows correctly for old saves; addedOnce is still used for "don't remove on close" when autoShow is on.
+local function ensureHubAppAdded()
+    loadFreeroamHubPrefs()
+    guihooks.trigger("FreeroamHubAddApp")
+    guihooks.trigger("appContainer:addApp", "freeroamEventHub")
+    guihooks.trigger("FreeroamHubSetAvailable", { available = true })
+    hubState.prefs.addedOnce = true
+    saveFreeroamHubPrefs()
+end
+
+-- Show the hub (add if needed, then set visible). Use this instead of AddApp+addApp+setVisible everywhere.
+local function showHub()
+    ensureHubAppAdded()
+    guihooks.trigger("setGameplayAppVisibility", { appId = "freeroamEventHub", visible = true })
 end
 
 -- Add player HP and class to hub state for header display (Class X • N HP). Also trigger dedicated event so UI receives it.
@@ -119,14 +293,15 @@ local function injectPlayerPowerAndClassIntoState(state)
 end
 
 local function isFreeroamHubActive()
-    if not career_career or not career_career.isActive() then return false end
+    -- Allow hub in both career and freeroam modes (covers Freeroam Plus which is a hybrid)
+    -- Only require that the level has AI racing config
     if not aiRacers or not aiRacers.levelHasAiRacingConfig or not aiRacers.levelHasAiRacingConfig() then return false end
     loadFreeroamHubPrefs()
-    return mFreeroamHubPrefs.autoShow ~= false
+    return hubState.prefs.autoShow ~= false
 end
 
 local function isFreeroamHubRaceMode()
-    return isFreeroamHubActive() and not mFreeroamHubPracticeMode
+    return isFreeroamHubActive() and not hubState.practiceMode
 end
 
 local function getGameplayAppContainers()
@@ -174,8 +349,8 @@ local function triggerRaceCountdown()
             utils.displayMessage("GO!", 0.6)
         end)
     end
-    mFreeroamCountdownEndTime = 3.0
-    mFreeroamCountdownStartClock = (os and os.clock) and os.clock() or nil
+    hubState.countdownEndTime = 3.0
+    hubState.countdownStartClock = (os and os.clock) and os.clock() or nil
 end
 
 local function rewardLabel(raceName, newBestTime)
@@ -959,7 +1134,9 @@ local function formatSplitDifference(diff)
 end
 
 -- True if the vehicle is eligible for freeroam hub (show for owned or business; hide for loan or other). Tries subjectID first, then current player vehicle so hub still shows after modify/respawn.
+-- Freeroam Plus (cheats mode): always eligible so hub and events work.
 local function isVehicleEligibleForFreeroamHub(spawnedId)
+    if career_modules_cheats and career_modules_cheats.isCheatsMode and career_modules_cheats.isCheatsMode() then return true end
     if not career_career or not career_career.isActive() then return true end
     local function checkId(id)
         if not id then return false end
@@ -1242,7 +1419,7 @@ local function beginFreeroamRace(raceNameArg, subjectID)
     utils.saveAndSetTrafficAmount(0)
     checkpointManager.setRace(races[raceName], raceName)
     -- Staged/start assets only in practice when hub active; for Track/Short Track the hub shows the race
-    if not (isFreeroamHubActive() and raceName == "track" and not mFreeroamHubPracticeMode) then
+    if not (isFreeroamHubActive() and raceName == "track" and not hubState.practiceMode) then
         Assets:displayAssets({ subjectID = subjectID, triggerName = "fre_start_" .. raceName })
     end
     timerActive = true
@@ -1271,7 +1448,7 @@ local function beginFreeroamRace(raceNameArg, subjectID)
         mInventoryId = career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId(subjectID) or subjectID
     end
     invalidLap = false
-    if not (isFreeroamHubActive() and raceName == "track" and not mFreeroamHubPracticeMode) then
+    if not (isFreeroamHubActive() and raceName == "track" and not hubState.practiceMode) then
         utils.displayStartMessage(raceName)
     end
     utils.setActiveLight(raceName, "green")
@@ -1285,7 +1462,7 @@ local function beginFreeroamRace(raceNameArg, subjectID)
         processRoad.setStationaryTimeout(races[raceName].timeout)
         local checkpoints, altCheckpoints = processRoad.getCheckpoints(races[raceName])
         local aiAltCheckpoints = nil
-        local useAltRoute = isFreeroamHubActive() and mFreeroamHubUseAltRoute and races[raceName].altRoute
+        local useAltRoute = isFreeroamHubActive() and hubState.useAltRoute and races[raceName].altRoute
         if useAltRoute and aiRacers and aiRacers.getMergedConfigForRace and processRoad.getCheckpointsFromRoad then
             local cfg = aiRacers.getMergedConfigForRace(races[raceName].altRoute)
             if cfg and type(cfg.pathRoad) == "string" and cfg.pathRoad ~= "" then
@@ -1294,10 +1471,10 @@ local function beginFreeroamRace(raceNameArg, subjectID)
             end
         end
         local routeOnly = nil
-        if isFreeroamHubActive() and not mFreeroamHubPracticeMode then
+        if isFreeroamHubActive() and not hubState.practiceMode then
             routeOnly = useAltRoute and "alt" or "main"
         end
-        local isLocked = isFreeroamHubActive() and not mFreeroamHubPracticeMode
+        local isLocked = isFreeroamHubActive() and not hubState.practiceMode
         if checkpointManager.setRouteLocked then checkpointManager.setRouteLocked(isLocked) end
         checkpointManager.createCheckpoints(checkpoints, altCheckpoints, routeOnly, aiAltCheckpoints)
         -- Cache main-route waypoint positions for waypoint-based AI lap/checkpoint detection (same as player checkpoint positions).
@@ -1319,7 +1496,7 @@ local function beginFreeroamRace(raceNameArg, subjectID)
         currentExpectedCheckpoint = 1
         mAltRoute = false
         checkpointManager.setAltRoute(mAltRoute)
-        if isFreeroamHubActive() and mFreeroamHubUseAltRoute and races[raceName].altRoute then
+        if isFreeroamHubActive() and hubState.useAltRoute and races[raceName].altRoute then
             mAltRoute = true
             checkpointManager.setAltRoute(true)
             totalCheckpoints = checkpointManager.calculateTotalCheckpoints()
@@ -1334,12 +1511,12 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
         return
     end
     -- Clear hub countdown state whenever we exit (race or staging)
-    mFreeroamCountdownDelay = nil
-    mFreeroamCountdownEndTime = nil
-    mFreeroamCountdownStartClock = nil
-    mFreeroamStagedAtStart = false
-    mFreeroamPendingStart = nil
-    mFreeroamStagingSubjectID = nil
+    hubState.countdownDelay = nil
+    hubState.countdownEndTime = nil
+    hubState.countdownStartClock = nil
+    hubState.stagedAtStart = false
+    hubState.pendingStart = nil
+    hubState.stagingSubjectID = nil
     if mActiveRace then
         local raceName = mActiveRace
         local mainRace = races[raceName]
@@ -1547,8 +1724,8 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
         local hasSpawnedAi = (aiRacers and aiRacers.getSpawnedVehicleIds and (#(aiRacers.getSpawnedVehicleIds() or {}) > 0)) or (next(mAiLapState) ~= nil)
         local deferResultScreen = isTrackCompletionWithAi and hasSpawnedAi and finalResult
 
-        -- Push the final state and result to the UI app (only when hub is active)
-        if isFreeroamHubActive() then
+        -- Push the final state and result to the UI app (only for track races when hub is active)
+        if isFreeroamHubActive() and raceName == "track" then
             injectPlayerPowerAndClassIntoState(finalState)
             if deferResultScreen then
                 finalState.waitingForResults = true
@@ -1566,8 +1743,8 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
                 }
             else
                 if finalResult then
-                    mFreeroamHubShowingResult = true
-                    mFreeroamHubRaceSelected = false
+                    hubState.showingResult = true
+                    hubState.raceSelected = false
                     guihooks.trigger("FreeroamHubRaceResult", finalResult)
                 end
             end
@@ -1655,8 +1832,8 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
                         leaderboard = {},
                         aiResults = aiResults,
                     }
-                    mFreeroamHubShowingResult = true
-                    mFreeroamHubRaceSelected = false
+                    hubState.showingResult = true
+                    hubState.raceSelected = false
                     guihooks.trigger("FreeroamHubRaceResult", finalResult)
                 end
                 mPendingTrackResult = nil
@@ -1710,7 +1887,7 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
                 career_modules_pauseTime.enablePauseCounter()
             end
         end
-        if previousGameState and not mFreeroamHubShowingResult then
+        if previousGameState and not hubState.showingResult then
             core_gamestate.setGameState(previousGameState.state, previousGameState.appLayout, previousGameState.menuItems, previousGameState.options)
             previousGameState = nil
             saveGameState = false
@@ -1795,19 +1972,42 @@ local function onBeamNGTrigger(data)
         end
     end
 
-    -- Player-only from here: hub eligibility and staging/start/checkpoint/finish
+    -- Player-only from here: staging/start/checkpoint/finish always run; hub trigger checks eligibility only for hub
     if not isPlayer then return end
-    if not isVehicleEligibleForFreeroamHub(data.subjectID) then
+
+    -- Hub trigger (fre_hub_track): opens/closes the hub when player enters/exits the zone (eligibility only for hub)
+    if triggerType == "hub" and raceName == "track" then
+        if not isVehicleEligibleForFreeroamHub(data.subjectID) then return end
+        if event == "enter" then
+            if isFreeroamHubActive() then
+                hubState.inHubContext = true  -- Mark that we're in a hub context (prevents cleanup from affecting other events)
+                -- Clear any lingering result/history flags
+                hubState.showingResult = false
+                hubState.showingHistory = false
+                saveGameState = true
+                core_gamestate.requestGameState()
+                showHub()
+                local race = races["track"] or {}
+                local raceLabel = race.label or "Track"
+                local state = { inRace = false, staged = false, raceId = "track", raceLabel = raceLabel, showRaceSelection = true }
+                injectPlayerPowerAndClassIntoState(state)
+                guihooks.trigger("FreeroamHubRaceState", state)
+            end
+        elseif event == "exit" then
+            -- Only hide hub if no race/practice selected and not in race
+            if not hubState.raceSelected and not mActiveRace then
+                hubState.inHubContext = false  -- Clear hub context when leaving without a race
+                guihooks.trigger("setGameplayAppVisibility", { appId = "freeroamEventHub", visible = false })
+                mPlayerStagingSpot = nil
+                if core_groundMarkers and core_groundMarkers.resetAll then core_groundMarkers.resetAll() end
+            end
+        end
         return
     end
 
     if triggerType == "staging" then
         if event == "enter" and mActiveRace == nil then
-            -- Clear result/history flags when re-entering staging so hub shows again after tow/repair or leaving
-            if isFreeroamHubActive() and (mFreeroamHubShowingResult or mFreeroamHubShowingHistory) then
-                mFreeroamHubShowingResult = false
-                mFreeroamHubShowingHistory = false
-            end
+            if not races or not races[raceName] then return end
             if utils.isPlayerInPursuit() then
                 utils.displayMessage("You cannot stage for an event while in a pursuit.", 2)
                 return
@@ -1871,80 +2071,32 @@ local function onBeamNGTrigger(data)
 
             -- Set staged race
             staged = raceName
-            -- Hub: only buttons (Track/Short track) trigger flash/countdown; entering the zone never does
-            if isFreeroamHubActive() then
-                mFreeroamHubRaceSelected = false
-            end
-            -- print("Staged race: " .. raceName)
             local vehId = data.subjectID
-            if career_career.isActive() then
+            if career_career and career_career.isActive and career_career.isActive() then
                 -- Check if it's a business vehicle first
-                if career_modules_business_businessInventory then
+                if career_modules_business_businessInventory and career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId then
                     local businessId, vehicleId = career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId(data.subjectID)
                     if businessId and vehicleId then
                         vehId = career_modules_business_businessInventory.getBusinessVehicleIdentifier(businessId, vehicleId)
-                    else
+                    elseif career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId then
                         vehId = career_modules_inventory.getInventoryIdFromVehicleId(vehId) or vehId
                     end
-                else
+                elseif career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId then
                     vehId = career_modules_inventory.getInventoryIdFromVehicleId(vehId) or vehId
                 end
             end
             
             local race = races[raceName] or {}
             local raceLabel = race.label or raceName
-            local state = { inRace = false, staged = true, raceId = raceName, raceLabel = raceLabel }
-            state.stagedMessage = utils.displayStagedMessage(vehId, raceName, true)
-            state.showRaceSelection = isFreeroamHubActive() and not mFreeroamHubRaceSelected
-
-            -- Hub only for track (competitive circuit with AI); never show for drag or other events
-            if isFreeroamHubActive() and raceName == "track" then
-                guihooks.trigger("FreeroamHubAddApp")
-                guihooks.trigger("appContainer:addApp", "freeroamEventHub")
-                guihooks.trigger("FreeroamHubSetAvailable", { available = true })
-                if not mFreeroamHubPrefs.addedOnce then
-                    mFreeroamHubPrefs.addedOnce = true
-                    saveFreeroamHubPrefs()
-                end
-                -- Use guihooks only; engine container has no freeroamEventHub registered
-                guihooks.trigger("setGameplayAppVisibility", { appId = "freeroamEventHub", visible = true })
-                injectPlayerPowerAndClassIntoState(state)
-                guihooks.trigger("FreeroamHubRaceState", state)
-            end
-
-            -- Staged freeroam event info only in practice; for Track/Short Track the hub is the only UI
-            if not (isFreeroamHubActive() and raceName == "track" and not mFreeroamHubPracticeMode) then
-                utils.displayStagedMessage(vehId, raceName)
-            end
+            utils.displayStagedMessage(vehId, raceName)
             utils.setActiveLight(raceName, "yellow")
         elseif event == "exit" then
-            -- If they chose a race and are driving to the start line (or are already in the race), don't clear staged/countdown/AI when exiting staging
-            local drivingToStart = (mFreeroamHubRaceSelected and (mFreeroamCountdownDelay or mFreeroamCountdownEndTime or mFreeroamPendingStart)) or (mActiveRace == raceName)
-                or (staged == raceName and not (isFreeroamHubRaceMode() and raceName == "track"))
-            if not drivingToStart then
+            -- Normal freeroam: clear staged when leaving zone. Hub is separate and never touched here.
+            if mActiveRace ~= raceName then
                 staged = nil
-                mFreeroamHubRaceSelected = false
-                if isFreeroamHubRaceMode() then
-                    hideStagedFlashMessage()
-                    mFreeroamCountdownDelay = nil
-                    mFreeroamCountdownEndTime = nil
-                    mFreeroamCountdownStartClock = nil
-                    mFreeroamStagedAtStart = false
-                    mFreeroamPendingStart = nil
-                    if aiRacers then
-                        if aiRacers.setPlayerFreeze then aiRacers.setPlayerFreeze(false) end
-                        if aiRacers.clearSpawned then aiRacers.clearSpawned() end
-                    end
-                end
-                if not mActiveRace and not mFreeroamHubShowingResult and not mFreeroamHubShowingHistory then
-                    if isFreeroamHubActive() and raceName == "track" then
-                        guihooks.trigger("FreeroamHubSetAvailable", { available = false })
-                        guihooks.trigger("FreeroamHubRaceState", { inRace = false })
-                        -- Hub is only closed by the user via the Close button
-                    end
-                    utils.displayMessage("You exited the staging zone", 4)
-                    utils.setActiveLight(raceName, "red")
-                end
+                hideStagedFlashMessage()
+                utils.displayMessage("You exited the staging zone", 4)
+                utils.setActiveLight(raceName, "red")
             end
         end
     elseif triggerType == "start" then
@@ -1971,14 +2123,14 @@ local function onBeamNGTrigger(data)
             processRoad.setStationaryTimeout(races[raceName].timeout)
             checkpointManager.setRace(races[raceName], raceName)
             if not data.triggerName then data.triggerName = "fre_start_" .. raceName end
-            if not (isFreeroamHubActive() and not mFreeroamHubPracticeMode and raceName == "track") then
+            if not (isFreeroamHubActive() and not hubState.practiceMode and raceName == "track") then
                 Assets:displayAssets(data)
             end
             utils.playCheckpointSound()
             lapCount = lapCount + 1
             snapshotStandingsDeltas()
             -- Hub race mode: if we have a required lap count and just reached it, complete the race and show result screen
-            if isFreeroamHubActive() and not mFreeroamHubPracticeMode then
+            if isFreeroamHubActive() and not hubState.practiceMode then
                 local race = races[raceName]
                 local effectiveRace = (mAltRoute and race.altRoute) and race.altRoute or race
                 local requiredLaps = (effectiveRace.lapCount and effectiveRace.lapCount > 0) and effectiveRace.lapCount or 3
@@ -1992,7 +2144,7 @@ local function onBeamNGTrigger(data)
             mSplitTimes = {}
             mActiveRace = raceName
             -- Next lap: keep alt route if hub selected Short track, else reset to main
-            if not (isFreeroamHubActive() and mFreeroamHubUseAltRoute) then
+            if not (isFreeroamHubActive() and hubState.useAltRoute) then
                 checkpointManager.setAltRoute(false)
                 mAltRoute = false
             end
@@ -2008,39 +2160,39 @@ local function onBeamNGTrigger(data)
             end
             invalidLap = false
         elseif event == "enter" and staged == raceName and mActiveRace ~= raceName then
-            -- Only require hub button selection for track (competitive circuit); drag/other events start without hub
-            if isFreeroamHubRaceMode() and raceName == "track" and not mFreeroamHubRaceSelected then
+            -- Only require hub button selection for track when in hub flow; normal freeroam track starts from staging
+            if isFreeroamHubRaceMode() and raceName == "track" and hubState.inHubContext and not hubState.raceSelected then
                 utils.setActiveLight(raceName, "red")
                 return
             end
             -- Hub race mode (track only): Staged flash + countdown. Drag/other events start immediately.
             if isFreeroamHubRaceMode() and raceName == "track" then
-                if mFreeroamCountdownEndTime and mFreeroamCountdownEndTime > 0 and mFreeroamCountdownStartClock and os and os.clock then
-                    local elapsed = os.clock() - mFreeroamCountdownStartClock
+                if hubState.countdownEndTime and hubState.countdownEndTime > 0 and hubState.countdownStartClock and os and os.clock then
+                    local elapsed = os.clock() - hubState.countdownStartClock
                     if elapsed < 3.0 then
                         utils.displayMessage("False start! Wait for the countdown.", 4)
                         hideStagedFlashMessage()
-                        mFreeroamCountdownDelay = nil
-                        mFreeroamCountdownEndTime = nil
-                        mFreeroamCountdownStartClock = nil
-                        mFreeroamStagedAtStart = false
-                        mFreeroamPendingStart = nil
+                        hubState.countdownDelay = nil
+                        hubState.countdownEndTime = nil
+                        hubState.countdownStartClock = nil
+                        hubState.stagedAtStart = false
+                        hubState.pendingStart = nil
                         staged = nil
                         if aiRacers and aiRacers.setPlayerFreeze then aiRacers.setPlayerFreeze(false) end
                         return
                     end
                 end
-                if mFreeroamCountdownEndTime == nil or not mFreeroamCountdownStartClock then
+                if hubState.countdownEndTime == nil or not hubState.countdownStartClock then
                     -- Countdown not run yet: wait at start line; countdown will run from onUpdate, then we start from onUpdate when 3s elapsed
-                    mFreeroamStagedAtStart = true
-                    mFreeroamPendingStart = { raceName = raceName, subjectID = data.subjectID }
+                    hubState.stagedAtStart = true
+                    hubState.pendingStart = { raceName = raceName, subjectID = data.subjectID }
                     return
                 end
                 -- Countdown finished and 3s elapsed: clear and proceed with start below
-                mFreeroamCountdownEndTime = nil
-                mFreeroamCountdownStartClock = nil
-                mFreeroamStagedAtStart = false
-                mFreeroamPendingStart = nil
+                hubState.countdownEndTime = nil
+                hubState.countdownStartClock = nil
+                hubState.stagedAtStart = false
+                hubState.pendingStart = nil
             end
             -- Start the race (original logic in beginFreeroamRace; hub-only route/lap behavior is guarded there)
             beginFreeroamRace(raceName, data.subjectID)
@@ -2099,7 +2251,7 @@ local function onBeamNGTrigger(data)
                 if not data.triggerName then
                     data.triggerName = "fre_checkpoint_" .. raceName .. (isAlt and "_alt_" or "_") .. checkpointIndex
                 end
-                if not (isFreeroamHubActive() and not mFreeroamHubPracticeMode and raceName == "track") then
+                if not (isFreeroamHubActive() and not hubState.practiceMode and raceName == "track") then
                     Assets:displayAssets(data)
                 end
             else
@@ -2215,13 +2367,40 @@ end
 local function onUpdate(dtReal, dtSim, dtRaw)
     -- Only suppress normal UI messages when hub is showing (track event); drag and other events keep their messages
     -- When hub is active and not in practice (Track/Short Track selected), suppress freeroam messages so only hub UI shows; in practice allow staged/checkpoint messages
-    _G.freeroamHubSuppressUIMessages = isFreeroamHubActive() and not mFreeroamHubPracticeMode
+    _G.freeroamHubSuppressUIMessages = hubState.inHubContext and not hubState.practiceMode
     if aiRacers and aiRacers.onUpdate then aiRacers.onUpdate(dtReal or 0) end
+    
+    -- Hub: player selected option and is driving to player_stage_track; when they reach it (fully inside markers), set staged and start countdown
+    if not mActiveRace and hubState.raceSelected and mPlayerStagingSpot and isPlayerInStagingSpot(mPlayerStagingSpot) then
+        staged = "track"
+        mPlayerStagingSpot = nil
+        clearPlayerStagingCornerMarkers()
+        if core_groundMarkers and core_groundMarkers.resetAll then core_groundMarkers.resetAll() end
+        saveGameState = true
+        core_gamestate.requestGameState()
+        if hubState.practiceMode then
+            -- Practice mode: no AI, no countdown, just update hub state and let them drive through start line
+            local race = races["track"] or {}
+            local raceLabel = race.label or "Track"
+            local state = { inRace = false, staged = true, raceId = "track", raceLabel = raceLabel .. " (Practice)", isPractice = true }
+            injectPlayerPowerAndClassIntoState(state)
+            guihooks.trigger("FreeroamHubRaceState", state)
+        else
+            -- Track/Short Track: AI already spawned on select; freeze player, countdown, then race
+            showStagedFlashMessage()
+            if aiRacers and aiRacers.setPlayerFreeze then aiRacers.setPlayerFreeze(true) end
+            hubState.countdownDelay = 1.0
+            hubState.stagedAtStart = false
+            hubState.pendingStart = nil
+            hubState.stagingSubjectID = be and be:getPlayerVehicleID(0) or nil
+        end
+    end
+    
     -- Hub race mode: staged flash + countdown (American Road style); use dtReal so it advances when paused
-    if mFreeroamCountdownDelay then
-        mFreeroamCountdownDelay = mFreeroamCountdownDelay - (dtReal or 0)
-        if mFreeroamCountdownDelay <= 0 then
-            mFreeroamCountdownDelay = nil
+    if hubState.countdownDelay then
+        hubState.countdownDelay = hubState.countdownDelay - (dtReal or 0)
+        if hubState.countdownDelay <= 0 then
+            hubState.countdownDelay = nil
             if staged == "track" and aiRacers and aiRacers.startEnginesForSpawned then
                 aiRacers.startEnginesForSpawned()
             end
@@ -2229,18 +2408,18 @@ local function onUpdate(dtReal, dtSim, dtRaw)
             triggerRaceCountdown()
         end
     end
-    if mFreeroamCountdownEndTime then
-        mFreeroamCountdownEndTime = mFreeroamCountdownEndTime - (dtReal or 0)
-        if mFreeroamCountdownEndTime <= 0 then
-            mFreeroamCountdownEndTime = nil
-            mFreeroamCountdownStartClock = nil
+    if hubState.countdownEndTime then
+        hubState.countdownEndTime = hubState.countdownEndTime - (dtReal or 0)
+        if hubState.countdownEndTime <= 0 then
+            hubState.countdownEndTime = nil
+            hubState.countdownStartClock = nil
             local rn, sid
-            if mFreeroamPendingStart and races[mFreeroamPendingStart.raceName] then
-                rn = mFreeroamPendingStart.raceName
-                sid = mFreeroamPendingStart.subjectID
-            elseif staged and mFreeroamHubRaceSelected then
+            if hubState.pendingStart and races[hubState.pendingStart.raceName] then
+                rn = hubState.pendingStart.raceName
+                sid = hubState.pendingStart.subjectID
+            elseif staged and hubState.raceSelected then
                 rn = staged
-                if not races[rn] and mFreeroamHubUseAltRoute then
+                if not races[rn] and hubState.useAltRoute then
                     for raceId, raceData in pairs(races) do
                         if raceData.altRoute then
                             rn = raceId
@@ -2249,14 +2428,14 @@ local function onUpdate(dtReal, dtSim, dtRaw)
                     end
                 end
                 if races[rn] then
-                    sid = mFreeroamStagingSubjectID or (be and be:getPlayerVehicleID(0))
+                    sid = hubState.stagingSubjectID or (be and be:getPlayerVehicleID(0))
                 else
                     rn = nil
                 end
             end
-            mFreeroamPendingStart = nil
-            mFreeroamStagedAtStart = false
-            mFreeroamStagingSubjectID = nil
+            hubState.pendingStart = nil
+            hubState.stagedAtStart = false
+            hubState.stagingSubjectID = nil
             if rn and sid then
                 staged = nil
                 beginFreeroamRace(rn, sid)
@@ -2264,7 +2443,7 @@ local function onUpdate(dtReal, dtSim, dtRaw)
                 if rn and races[rn] and races[rn].checkpointRoad and aiRacers and aiRacers.releaseAndDrive then
                     local mainRace = races[rn]
                     local raceForAi = mainRace
-                    if mFreeroamHubUseAltRoute and mainRace.altRoute and mainRace.altRoute.checkpointRoad then
+                    if hubState.useAltRoute and mainRace.altRoute and mainRace.altRoute.checkpointRoad then
                         raceForAi = mainRace.altRoute
                     end
                     local aiLaps = (raceForAi.lapCount and raceForAi.lapCount > 0) and raceForAi.lapCount or 3
@@ -2307,11 +2486,8 @@ local function onUpdate(dtReal, dtSim, dtRaw)
             exitRace(false)
         end
     end
-    -- While waiting for 50s result (deferred track+AI finish), re-push waiting state so hub stays on "Waiting for others" and isn't overwritten by another push
-    if not timerActive and mActiveRace and mPendingTrackResult and isFreeroamHubActive() and (os.clock() % 0.5) < (dtSim or 0) then
-        guihooks.trigger("FreeroamHubAddApp")
-        guihooks.trigger("appContainer:addApp", "freeroamEventHub")
-        guihooks.trigger("FreeroamHubSetAvailable", { available = true })
+    -- Hub flow only: while waiting for 50s result (deferred track+AI finish), push waiting state
+    if hubState.inHubContext and not timerActive and mActiveRace == "track" and mPendingTrackResult and isFreeroamHubActive() and (os.clock() % 0.5) < (dtSim or 0) then
         local pr = mPendingTrackResult
         local state = {
             inRace = false,
@@ -2322,34 +2498,7 @@ local function onUpdate(dtReal, dtSim, dtRaw)
         }
         injectPlayerPowerAndClassIntoState(state)
         guihooks.trigger("FreeroamHubRaceState", state)
-        guihooks.trigger("setGameplayAppVisibility", { appId = "freeroamEventHub", visible = true })
-    end
-    -- When staged at track and not in race, re-add hub if it was closed (e.g. from practice screen) so it reopens when entering staging
-    if not mActiveRace and staged == "track" and isFreeroamHubActive() and (os.clock() % 0.5) < dtSim then
-        guihooks.trigger("FreeroamHubAddApp")
-        guihooks.trigger("appContainer:addApp", "freeroamEventHub")
-        guihooks.trigger("FreeroamHubSetAvailable", { available = true })
-        local race = races["track"] or {}
-        local raceLabel = race.label or "track"
-        local vehId = be and be:getPlayerVehicleID(0) or nil
-        if vehId and career_career.isActive() then
-            if career_modules_business_businessInventory then
-                local businessId, vehicleId = career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId(vehId)
-                if businessId and vehicleId then
-                    vehId = career_modules_business_businessInventory.getBusinessVehicleIdentifier(businessId, vehicleId)
-                else
-                    vehId = career_modules_inventory.getInventoryIdFromVehicleId(vehId) or vehId
-                end
-            else
-                vehId = career_modules_inventory.getInventoryIdFromVehicleId(vehId) or vehId
-            end
-        end
-        local state = { inRace = false, staged = true, raceId = "track", raceLabel = raceLabel }
-        state.stagedMessage = utils.displayStagedMessage(vehId, "track", true)
-        state.showRaceSelection = not mFreeroamHubRaceSelected
-        injectPlayerPowerAndClassIntoState(state)
-        guihooks.trigger("FreeroamHubRaceState", state)
-        guihooks.trigger("setGameplayAppVisibility", { appId = "freeroamEventHub", visible = true })
+        showHub()
     end
     if timerActive == true then
         in_race_time = in_race_time + dtSim
@@ -2376,12 +2525,8 @@ local function onUpdate(dtReal, dtSim, dtRaw)
         local leaderboardEntry = mInventoryId and leaderboardManager.getLeaderboardEntry(mInventoryId, raceLabel) or {}
         local bestLapFromHistory = leaderboardEntry.time
 
-        -- Only push state periodically (e.g. every ~100ms) to avoid lagging the UI (only when hub active)
-        if isFreeroamHubActive() and (in_race_time % 0.1) < dtSim then
-            -- Re-add hub app if it was closed (e.g. from practice screen) so it reopens when back in zone/staging
-            guihooks.trigger("FreeroamHubAddApp")
-            guihooks.trigger("appContainer:addApp", "freeroamEventHub")
-            guihooks.trigger("FreeroamHubSetAvailable", { available = true })
+        -- Hub flow only: push live race state when this race was started from the hub (avoid re-adding for normal freeroam events)
+        if hubState.inHubContext and mActiveRace == "track" and isFreeroamHubActive() and (in_race_time % 0.1) < dtSim then
             local sectorDeltas = {}
             for i = 1, checkpointsHit do
                 local d = getDifference(mActiveRace, i)
@@ -2411,7 +2556,7 @@ local function onUpdate(dtReal, dtSim, dtRaw)
             }
             injectPlayerPowerAndClassIntoState(state)
             guihooks.trigger("FreeroamHubRaceState", state)
-            guihooks.trigger("setGameplayAppVisibility", { appId = "freeroamEventHub", visible = true })
+            showHub()
         end
     else
         in_race_time = 0
@@ -2495,8 +2640,8 @@ M.onExtensionLoaded = onExtensionLoaded
 M.onExtensionUnloaded = onExtensionUnloaded
 
 M.onFreeroamHubRequestRaceHistory = function()
-    mFreeroamHubShowingResult = false
-    mFreeroamHubShowingHistory = true
+    hubState.showingResult = false
+    hubState.showingHistory = true
     if not isFreeroamHubActive() then return end
     local inventoryId = mInventoryId
     if not inventoryId and career_modules_inventory then
@@ -2515,7 +2660,7 @@ end
 M.onFreeroamHubReady = function()
     loadFreeroamHubPrefs()
     -- Always send prefs so UI can show checkbox (e.g. opt back in when app opened from menu)
-    guihooks.trigger("FreeroamHubPrefs", { autoShow = mFreeroamHubPrefs.autoShow })
+    guihooks.trigger("FreeroamHubPrefs", { autoShow = hubState.prefs.autoShow })
     -- Only push hub state when hub is active and we're in track context (not drag/other events)
     if not isFreeroamHubActive() then return end
     if mActiveRace == "track" then
@@ -2561,7 +2706,7 @@ M.onFreeroamHubReady = function()
         if vehId then
             state.stagedMessage = utils.displayStagedMessage(vehId, staged, true)
         end
-        state.showRaceSelection = not mFreeroamHubRaceSelected
+        state.showRaceSelection = not hubState.raceSelected
         injectPlayerPowerAndClassIntoState(state)
         guihooks.trigger("FreeroamHubSetAvailable", { available = true })
         guihooks.trigger("FreeroamHubRaceState", state)
@@ -2571,11 +2716,12 @@ end
 M.onFreeroamHubSetAutoShow = function(enable)
     if not getFreeroamHubPrefsPath() then return end
     loadFreeroamHubPrefs()
-    mFreeroamHubPrefs.autoShow = (enable == true)
-    saveFreeroamHubPrefs()
-    if not mFreeroamHubPrefs.autoShow then
+    hubState.prefs.autoShow = (enable == true)
+    if not hubState.prefs.autoShow then
+        hubState.prefs.addedOnce = false
         utils.displayMessage("You can add the app later from the UI menu", 5, true)
     end
+    saveFreeroamHubPrefs()
 end
 
 M.onFreeroamHubEndEvent = function()
@@ -2587,14 +2733,14 @@ end
 
 -- Freeroam hub: set route to practice (unlimited laps, current behavior)
 M.onFreeroamHubSelectPractice = function()
-    mFreeroamHubPracticeMode = true
-    mFreeroamHubUseAltRoute = false
-    mFreeroamHubRaceSelected = false
+    hubState.practiceMode = true
+    hubState.useAltRoute = false
+    hubState.raceSelected = false
 end
 
 -- Freeroam hub: set route to main track (e.g. set laps event, main route)
 -- Spawn AI racers for track when player selects Track or Short Track and is staged at track (west_coast_usa style).
-local function prepareFreeroamAiForTrack()
+prepareFreeroamAiForTrack = function()
     if not races then races = utils.loadRaceData() end
     if not aiRacers or not races or not races.track then return end
     if aiRacers.spawnForStagingWithPlayerHp then
@@ -2605,64 +2751,128 @@ local function prepareFreeroamAiForTrack()
 end
 
 M.onFreeroamHubSelectTrack = function()
-    mFreeroamHubPracticeMode = false
-    mFreeroamHubUseAltRoute = false
-    mFreeroamHubRaceSelected = true
-    if staged == "track" then
+    hubState.practiceMode = false
+    hubState.useAltRoute = false
+    hubState.raceSelected = true
+    -- Load staging spot and set nav to it
+    local spot = loadPlayerStagingSpot()
+    if spot and spot.pos then
+        mPlayerStagingSpot = spot
+        if core_groundMarkers and core_groundMarkers.setPath then
+            core_groundMarkers.setPath(vec3(spot.pos[1], spot.pos[2], spot.pos[3]), { clearPathOnReachingTarget = false })
+        end
+        showPlayerStagingCornerMarkers(spot)
+        -- Race screen with "Drive to staging spot"; spawn AI (Track = with opponents)
+        local race = races["track"] or {}
+        local raceLabel = race.label or "Track"
+        local state = { inRace = false, staged = false, raceId = "track", raceLabel = raceLabel, showDriveToStage = true }
+        injectPlayerPowerAndClassIntoState(state)
+        guihooks.trigger("FreeroamHubRaceState", state)
         prepareFreeroamAiForTrack()
-    end
-    -- If already in staging zone, show Staged and start countdown now (only path that triggers flash/countdown)
-    if staged then
+    elseif staged == "track" then
+        -- Fallback if no spot found but player already staged via trigger
+        prepareFreeroamAiForTrack()
         showStagedFlashMessage()
         if aiRacers and aiRacers.setPlayerFreeze then aiRacers.setPlayerFreeze(true) end
-        mFreeroamCountdownDelay = 1.0
-        mFreeroamStagedAtStart = false
-        mFreeroamPendingStart = nil
-        mFreeroamStagingSubjectID = be and be:getPlayerVehicleID(0) or nil
+        hubState.countdownDelay = 1.0
+        hubState.stagedAtStart = false
+        hubState.pendingStart = nil
+        hubState.stagingSubjectID = be and be:getPlayerVehicleID(0) or nil
     end
 end
 
 -- Freeroam hub: set route to short track / alt route
 M.onFreeroamHubSelectShortTrack = function()
-    mFreeroamHubPracticeMode = false
-    mFreeroamHubUseAltRoute = true
-    mFreeroamHubRaceSelected = true
-    if staged == "track" then
+    hubState.practiceMode = false
+    hubState.useAltRoute = true
+    hubState.raceSelected = true
+    -- Load staging spot and set nav to it
+    local spot = loadPlayerStagingSpot()
+    if spot and spot.pos then
+        mPlayerStagingSpot = spot
+        if core_groundMarkers and core_groundMarkers.setPath then
+            core_groundMarkers.setPath(vec3(spot.pos[1], spot.pos[2], spot.pos[3]), { clearPathOnReachingTarget = false })
+        end
+        showPlayerStagingCornerMarkers(spot)
+        -- Race screen with "Drive to staging spot"; spawn AI (Short Track = with opponents)
+        local race = races["track"] or {}
+        local raceLabel = (race.altRoute and race.altRoute.label) or "Short Track"
+        local state = { inRace = false, staged = false, raceId = "track", raceLabel = raceLabel, showDriveToStage = true }
+        injectPlayerPowerAndClassIntoState(state)
+        guihooks.trigger("FreeroamHubRaceState", state)
         prepareFreeroamAiForTrack()
-    end
-    -- If already in staging zone, show Staged and start countdown now (only path that triggers flash/countdown)
-    if staged then
+    elseif staged == "track" then
+        -- Fallback if no spot found but player already staged via trigger
+        prepareFreeroamAiForTrack()
         showStagedFlashMessage()
         if aiRacers and aiRacers.setPlayerFreeze then aiRacers.setPlayerFreeze(true) end
-        mFreeroamCountdownDelay = 1.0
-        mFreeroamStagedAtStart = false
-        mFreeroamPendingStart = nil
-        mFreeroamStagingSubjectID = be and be:getPlayerVehicleID(0) or nil
+        hubState.countdownDelay = 1.0
+        hubState.stagedAtStart = false
+        hubState.pendingStart = nil
+        hubState.stagingSubjectID = be and be:getPlayerVehicleID(0) or nil
     end
 end
 
 -- Freeroam hub: Back button / clear selection
 M.onFreeroamHubClearSelection = function()
-    mFreeroamHubRaceSelected = false
-    mFreeroamHubShowingResult = false
+    -- Reset hub UI state
+    hubState.raceSelected = false
+    hubState.practiceMode = false
+    hubState.showingResult = false
     hideStagedFlashMessage()
-    mFreeroamCountdownDelay = nil
-    mFreeroamCountdownEndTime = nil
-    mFreeroamCountdownStartClock = nil
-    mFreeroamStagedAtStart = false
-    mFreeroamPendingStart = nil
-    mFreeroamStagingSubjectID = nil
-    if aiRacers and aiRacers.clearSpawned then aiRacers.clearSpawned() end
+    hubState.countdownDelay = nil
+    hubState.countdownEndTime = nil
+    hubState.countdownStartClock = nil
+    hubState.stagedAtStart = false
+    hubState.pendingStart = nil
+    hubState.stagingSubjectID = nil
+    
+    -- Only clear staged/AI if we're in hub context (prevents affecting other freeroam events)
+    if hubState.inHubContext then
+        staged = nil
+        mPlayerStagingSpot = nil
+        clearPlayerStagingCornerMarkers()
+        if core_groundMarkers and core_groundMarkers.resetAll then core_groundMarkers.resetAll() end
+        if aiRacers and aiRacers.setPlayerFreeze then aiRacers.setPlayerFreeze(false) end
+        if aiRacers and aiRacers.clearSpawned then aiRacers.clearSpawned() end
+    end
+    -- Return to race selection screen
+    guihooks.trigger("FreeroamHubRaceState", { inRace = false, staged = false, showRaceSelection = true })
 end
 
 M.onFreeroamHubClosed = function()
-    mFreeroamHubShowingResult = false
-    mFreeroamHubShowingHistory = false
-    if previousGameState then
-        core_gamestate.setGameState(previousGameState.state, previousGameState.appLayout, previousGameState.menuItems, previousGameState.options)
-        previousGameState = nil
-        saveGameState = false
+    -- Always hide (never remove the app unless they de-select auto show)
+    guihooks.trigger("setGameplayAppVisibility", { appId = "freeroamEventHub", visible = false })
+    -- If they turned off auto show, mark hub as not added so we don't re-add until they add from menu
+    if not hubState.prefs.autoShow then
+        hubState.prefs.addedOnce = false
+        saveFreeroamHubPrefs()
     end
+    -- Reset hub UI state
+    hubState.showingResult = false
+    hubState.showingHistory = false
+    hubState.raceSelected = false
+    hubState.practiceMode = false
+    hubState.countdownDelay = nil
+    hubState.countdownEndTime = nil
+    hubState.countdownStartClock = nil
+    hubState.stagedAtStart = false
+    hubState.pendingStart = nil
+    hubState.stagingSubjectID = nil
+    -- Only do full cleanup (staged, AI, game state) if we're in a hub context
+    if hubState.inHubContext then
+        staged = nil
+        mPlayerStagingSpot = nil
+        if core_groundMarkers and core_groundMarkers.resetAll then core_groundMarkers.resetAll() end
+        if aiRacers and aiRacers.setPlayerFreeze then aiRacers.setPlayerFreeze(false) end
+        if aiRacers and aiRacers.clearSpawned then aiRacers.clearSpawned() end
+        if previousGameState then
+            core_gamestate.setGameState(previousGameState.state, previousGameState.appLayout, previousGameState.menuItems, previousGameState.options)
+            previousGameState = nil
+            saveGameState = false
+        end
+    end
+    hubState.inHubContext = false
 end
 
 return M
