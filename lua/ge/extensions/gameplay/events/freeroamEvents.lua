@@ -265,33 +265,6 @@ local function saveFreeroamHubPrefs()
     career_saveSystem.jsonWriteFileSafe(path, hubState.prefs, true)
 end
 
--- Ensure hub app is in the container. Always run add logic so hub shows correctly for old saves; addedOnce is still used for "don't remove on close" when autoShow is on.
-local function ensureHubAppAdded()
-    loadFreeroamHubPrefs()
-    guihooks.trigger("FreeroamHubAddApp")
-    guihooks.trigger("appContainer:addApp", "freeroamEventHub")
-    guihooks.trigger("FreeroamHubSetAvailable", { available = true })
-    hubState.prefs.addedOnce = true
-    saveFreeroamHubPrefs()
-end
-
--- Show the hub (add if needed, then set visible). Use this instead of AddApp+addApp+setVisible everywhere.
-local function showHub()
-    ensureHubAppAdded()
-    guihooks.trigger("setGameplayAppVisibility", { appId = "freeroamEventHub", visible = true })
-end
-
--- Add player HP and class to hub state for header display (Class X • N HP). Also trigger dedicated event so UI receives it.
-local function injectPlayerPowerAndClassIntoState(state)
-    if not state or not aiRacers or not aiRacers.getPlayerVehiclePowerAndClass then return end
-    local hp, cl = aiRacers.getPlayerVehiclePowerAndClass()
-    state.playerHp = hp
-    state.playerClass = cl
-    if guihooks and guihooks.trigger then
-        guihooks.trigger("FreeroamHubPlayerPowerClass", { playerHp = hp, playerClass = cl })
-    end
-end
-
 local function isFreeroamHubActive()
     -- Allow hub in both career and freeroam modes (covers Freeroam Plus which is a hybrid)
     -- Only require that the level has AI racing config
@@ -1418,7 +1391,7 @@ local function beginFreeroamRace(raceNameArg, subjectID)
     initialVehicleDamage = utils.getVehicleDamage()
     utils.saveAndSetTrafficAmount(0)
     checkpointManager.setRace(races[raceName], raceName)
-    -- Staged/start assets only in practice when hub active; for Track/Short Track the hub shows the race
+    -- Staged/start assets only in practice when hub active; competitive track hides them (hub flow)
     if not (isFreeroamHubActive() and raceName == "track" and not hubState.practiceMode) then
         Assets:displayAssets({ subjectID = subjectID, triggerName = "fre_start_" .. raceName })
     end
@@ -1524,34 +1497,8 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
         local effectiveRace = (mainRace and mAltRoute and mainRace.altRoute) and mainRace.altRoute or (raceData or mainRace or {})
         local raceLabel = getRaceLabel()
         local displayLabel = getDisplayRaceLabel()
-        
-        -- Build final UI state before we clear mActiveRace (display label has no "(Hotlap)" for hub title)
         local isLapRace = effectiveRace and ((effectiveRace.lapCount and effectiveRace.lapCount > 0) or effectiveRace.hotlap)
-        local sectorDeltas = {}
-        for i = 1, checkpointsHit do
-            local d = getDifference(raceName, i)
-            if d then sectorDeltas[i] = d end
-        end
-        local lbEntry = mInventoryId and leaderboardManager.getLeaderboardEntry(mInventoryId, raceLabel) or {}
-        local lapNum = isLapRace and (lapCount + 1) or 1
-        local finalState = {
-            inRace = false,
-            staged = false,
-            raceId = raceName,
-            raceLabel = displayLabel,
-            currentLap = isLapRace and lapCount or 0,
-            displayLap = lapNum,
-            totalLaps = isLapRace and effectiveRace.lapCount or 1,
-            totalCheckpoints = totalCheckpoints,
-            currentLapTime = in_race_time,
-            topSpeedThisLap = maxSpeed,
-            bestLapFromHistory = lbEntry.time,
-            invalidLap = invalidLap,
-            routeName = mCurrentRouteName,
-            splits = mSplitTimes,
-            sectorDeltas = sectorDeltas
-        }
-        
+
         local finalResult = nil
 
         if isCompletion then
@@ -1724,11 +1671,8 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
         local hasSpawnedAi = (aiRacers and aiRacers.getSpawnedVehicleIds and (#(aiRacers.getSpawnedVehicleIds() or {}) > 0)) or (next(mAiLapState) ~= nil)
         local deferResultScreen = isTrackCompletionWithAi and hasSpawnedAi and finalResult
 
-        -- Push the final state and result to the UI app (only for track races when hub is active)
         if isFreeroamHubActive() and raceName == "track" then
-            injectPlayerPowerAndClassIntoState(finalState)
             if deferResultScreen then
-                finalState.waitingForResults = true
                 mPendingTrackResult = {
                     displayLabel = finalResult.raceLabel,
                     lapsTotalVal = finalResult.lapsTotal,
@@ -1745,11 +1689,8 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
                 if finalResult then
                     hubState.showingResult = true
                     hubState.raceSelected = false
-                    guihooks.trigger("FreeroamHubRaceResult", finalResult)
                 end
             end
-            guihooks.trigger("FreeroamHubRaceState", finalState)
-            -- Hub is only closed by the user via the Close button; we do not hide it from Lua
         end
 
         utils.setActiveLight(raceName, "red")
@@ -1775,66 +1716,8 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
                 job.sleep(50)
                 -- Build and show result from final mAiLapState (AI may have finished during the 50s; use mAiLapState so we include all AI even if already despawned)
                 if mPendingTrackResult and isFreeroamHubActive() then
-                    local MIN_LAP_SECONDS = 15
-                    local pr = mPendingTrackResult
-                    local list = {}
-                    table.insert(list, { isPlayer = true, lapsCompleted = pr.lapsCompleted, lapsTotal = pr.lapsTotalVal, totalTime = pr.totalTime, bestLap = pr.bestLap })
-                    local aiIndex = 0
-                    for vehId, s in pairs(mAiLapState) do
-                        if s and type(s) == "table" then
-                            aiIndex = aiIndex + 1
-                            local bestLap = nil
-                            if s.lapTimes and #s.lapTimes > 0 then
-                                for _, t in ipairs(s.lapTimes) do
-                                    if type(t) == "number" and t >= MIN_LAP_SECONDS then
-                                        bestLap = (bestLap == nil or t < bestLap) and t or bestLap
-                                    end
-                                end
-                            end
-                            local aiTotal = nil
-                            if s.finished and s.lapTimes and #s.lapTimes >= (s.totalLaps or 1) then
-                                aiTotal = 0
-                                for _, t in ipairs(s.lapTimes) do aiTotal = aiTotal + (type(t) == "number" and t or 0) end
-                            end
-                            if not aiTotal then aiTotal = s.finishTime end
-                            if not aiTotal and s.lapTimes and #s.lapTimes > 0 then
-                                aiTotal = 0
-                                for _, t in ipairs(s.lapTimes) do aiTotal = aiTotal + (type(t) == "number" and t or 0) end
-                                aiTotal = aiTotal + ((pr.raceEndTime or 0) - s.lapStartTime)
-                            end
-                            table.insert(list, { isPlayer = false, index = aiIndex, lapsCompleted = s.lapCount, lapsTotal = s.totalLaps, totalTime = aiTotal, bestLap = bestLap })
-                        end
-                    end
-                    table.sort(list, function(a, b)
-                        if a.lapsCompleted ~= b.lapsCompleted then return a.lapsCompleted > b.lapsCompleted end
-                        local at = a.totalTime or 999999
-                        local bt = b.totalTime or 999999
-                        return at < bt
-                    end)
-                    local leaderTime = (#list > 0 and list[1].totalTime) and list[1].totalTime or 0
-                    local aiResults = {}
-                    for place, row in ipairs(list) do
-                        local r = { place = place, isPlayer = row.isPlayer, lapsCompleted = row.lapsCompleted, lapsTotal = row.lapsTotal, totalTime = row.totalTime, bestLap = row.bestLap }
-                        if not row.isPlayer then r.index = row.index end
-                        r.diffFromLeader = (row.totalTime or 0) - leaderTime
-                        table.insert(aiResults, r)
-                    end
-                    local finalResult = {
-                        raceLabel = pr.displayLabel,
-                        lapsCompleted = pr.lapsCompleted,
-                        lapsTotal = pr.lapsTotalVal,
-                        totalTime = pr.totalTime,
-                        bestLap = pr.bestLap,
-                        newBest = pr.newBest,
-                        invalidLap = pr.invalidLap,
-                        reward = pr.rewardAmt,
-                        xp = 0,
-                        leaderboard = {},
-                        aiResults = aiResults,
-                    }
                     hubState.showingResult = true
                     hubState.raceSelected = false
-                    guihooks.trigger("FreeroamHubRaceResult", finalResult)
                 end
                 mPendingTrackResult = nil
                 mActiveRace = nil
@@ -1986,18 +1869,11 @@ local function onBeamNGTrigger(data)
                 hubState.showingHistory = false
                 saveGameState = true
                 core_gamestate.requestGameState()
-                showHub()
-                local race = races["track"] or {}
-                local raceLabel = race.label or "Track"
-                local state = { inRace = false, staged = false, raceId = "track", raceLabel = raceLabel, showRaceSelection = true }
-                injectPlayerPowerAndClassIntoState(state)
-                guihooks.trigger("FreeroamHubRaceState", state)
             end
         elseif event == "exit" then
             -- Only hide hub if no race/practice selected and not in race
             if not hubState.raceSelected and not mActiveRace then
                 hubState.inHubContext = false  -- Clear hub context when leaving without a race
-                guihooks.trigger("setGameplayAppVisibility", { appId = "freeroamEventHub", visible = false })
                 mPlayerStagingSpot = nil
                 if core_groundMarkers and core_groundMarkers.resetAll then core_groundMarkers.resetAll() end
             end
@@ -2379,12 +2255,7 @@ local function onUpdate(dtReal, dtSim, dtRaw)
         saveGameState = true
         core_gamestate.requestGameState()
         if hubState.practiceMode then
-            -- Practice mode: no AI, no countdown, just update hub state and let them drive through start line
-            local race = races["track"] or {}
-            local raceLabel = race.label or "Track"
-            local state = { inRace = false, staged = true, raceId = "track", raceLabel = raceLabel .. " (Practice)", isPractice = true }
-            injectPlayerPowerAndClassIntoState(state)
-            guihooks.trigger("FreeroamHubRaceState", state)
+            -- Practice: no AI, no countdown; drive to start line
         else
             -- Track/Short Track: AI already spawned on select; freeze player, countdown, then race
             showStagedFlashMessage()
@@ -2486,20 +2357,6 @@ local function onUpdate(dtReal, dtSim, dtRaw)
             exitRace(false)
         end
     end
-    -- Hub flow only: while waiting for 50s result (deferred track+AI finish), push waiting state
-    if hubState.inHubContext and not timerActive and mActiveRace == "track" and mPendingTrackResult and isFreeroamHubActive() and (os.clock() % 0.5) < (dtSim or 0) then
-        local pr = mPendingTrackResult
-        local state = {
-            inRace = false,
-            staged = false,
-            raceId = "track",
-            raceLabel = pr.displayLabel or "Track",
-            waitingForResults = true,
-        }
-        injectPlayerPowerAndClassIntoState(state)
-        guihooks.trigger("FreeroamHubRaceState", state)
-        showHub()
-    end
     if timerActive == true then
         in_race_time = in_race_time + dtSim
         mAiWaypointUpdateAccum = mAiWaypointUpdateAccum + (dtSim or 0)
@@ -2513,50 +2370,6 @@ local function onUpdate(dtReal, dtSim, dtRaw)
             if currentSpeed > maxSpeed then
                 maxSpeed = currentSpeed
             end
-        end
-        
-        -- Push live UI state: hub title uses display label (no "(Hotlap)"); leaderboard lookup uses full label
-        -- Use effective race (alt route when on Short Track) so lap counter and totalLaps match current route
-        local race = races[mActiveRace] or {}
-        local effectiveRace = (mAltRoute and race.altRoute) and race.altRoute or race
-        local isLapRace = (effectiveRace.lapCount and effectiveRace.lapCount > 0) or effectiveRace.hotlap
-        local raceLabel = getRaceLabel()
-        local displayLabel = getDisplayRaceLabel()
-        local leaderboardEntry = mInventoryId and leaderboardManager.getLeaderboardEntry(mInventoryId, raceLabel) or {}
-        local bestLapFromHistory = leaderboardEntry.time
-
-        -- Hub flow only: push live race state when this race was started from the hub (avoid re-adding for normal freeroam events)
-        if hubState.inHubContext and mActiveRace == "track" and isFreeroamHubActive() and (in_race_time % 0.1) < dtSim then
-            local sectorDeltas = {}
-            for i = 1, checkpointsHit do
-                local d = getDifference(mActiveRace, i)
-                if d then sectorDeltas[i] = d end
-            end
-            -- displayLap = current lap number as shown in game (lapCount + 1); currentLap = lapCount for compatibility
-            local lapNum = isLapRace and (lapCount + 1) or 1
-            local state = {
-                inRace = true,
-                isPractice = false, -- freeroam events are always races
-                staged = false,
-                raceId = mActiveRace,
-                raceLabel = displayLabel,
-                currentLap = isLapRace and lapCount or 0,
-                displayLap = lapNum,
-                totalLaps = isLapRace and effectiveRace.lapCount or 1,
-                totalCheckpoints = totalCheckpoints,
-                currentLapTime = in_race_time,
-                topSpeedThisLap = maxSpeed,
-                bestLapThisRun = mBestLapThisRun,
-                bestLapFromHistory = bestLapFromHistory,
-                invalidLap = invalidLap,
-                routeName = mCurrentRouteName,
-                splits = mSplitTimes,
-                sectorDeltas = sectorDeltas,
-                aiLapState = getAiLapStateForDisplay()
-            }
-            injectPlayerPowerAndClassIntoState(state)
-            guihooks.trigger("FreeroamHubRaceState", state)
-            showHub()
         end
     else
         in_race_time = 0
@@ -2642,75 +2455,10 @@ M.onExtensionUnloaded = onExtensionUnloaded
 M.onFreeroamHubRequestRaceHistory = function()
     hubState.showingResult = false
     hubState.showingHistory = true
-    if not isFreeroamHubActive() then return end
-    local inventoryId = mInventoryId
-    if not inventoryId and career_modules_inventory then
-        local vehId = be:getPlayerVehicleID(0)
-        if vehId then
-            inventoryId = career_modules_inventory.getInventoryIdFromVehicleId(vehId) or vehId
-        end
-    end
-    local entries = {}
-    if inventoryId then
-        entries = leaderboardManager.getLeaderboardEntriesForVehicle(inventoryId)
-    end
-    guihooks.trigger("FreeroamHubRaceHistory", { entries = entries })
 end
 
 M.onFreeroamHubReady = function()
     loadFreeroamHubPrefs()
-    -- Always send prefs so UI can show checkbox (e.g. opt back in when app opened from menu)
-    guihooks.trigger("FreeroamHubPrefs", { autoShow = hubState.prefs.autoShow })
-    -- Only push hub state when hub is active and we're in track context (not drag/other events)
-    if not isFreeroamHubActive() then return end
-    if mActiveRace == "track" then
-        local race = races[mActiveRace] or {}
-        local isLapRace = (race.lapCount and race.lapCount > 0) or race.hotlap
-        local raceLabel = getRaceLabel()
-        local displayLabel = getDisplayRaceLabel()
-        local sectorDeltas = {}
-        for i = 1, checkpointsHit do
-            local d = getDifference(mActiveRace, i)
-            if d then sectorDeltas[i] = d end
-        end
-        local leaderboardEntry = mInventoryId and leaderboardManager.getLeaderboardEntry(mInventoryId, raceLabel) or {}
-        local bestLapFromHistory = leaderboardEntry.time
-        local lapNum = isLapRace and (lapCount + 1) or 1
-        local state = {
-            inRace = true,
-            isPractice = false,
-            staged = false,
-            raceId = mActiveRace,
-            raceLabel = displayLabel,
-            currentLap = isLapRace and lapCount or 0,
-            displayLap = lapNum,
-            totalLaps = isLapRace and race.lapCount or 1,
-            totalCheckpoints = totalCheckpoints,
-            currentLapTime = in_race_time,
-            topSpeedThisLap = maxSpeed,
-            bestLapThisRun = mBestLapThisRun,
-            bestLapFromHistory = bestLapFromHistory,
-            invalidLap = invalidLap,
-            routeName = mCurrentRouteName,
-            splits = mSplitTimes,
-            sectorDeltas = sectorDeltas
-        }
-        injectPlayerPowerAndClassIntoState(state)
-        guihooks.trigger("FreeroamHubSetAvailable", { available = true })
-        guihooks.trigger("FreeroamHubRaceState", state)
-    elseif staged == "track" then
-        local race = races[staged] or {}
-        local raceLabel = race.label or staged
-        local state = { inRace = false, staged = true, raceId = staged, raceLabel = raceLabel }
-        local vehId = be:getPlayerVehicleID(0)
-        if vehId then
-            state.stagedMessage = utils.displayStagedMessage(vehId, staged, true)
-        end
-        state.showRaceSelection = not hubState.raceSelected
-        injectPlayerPowerAndClassIntoState(state)
-        guihooks.trigger("FreeroamHubSetAvailable", { available = true })
-        guihooks.trigger("FreeroamHubRaceState", state)
-    end
 end
 
 M.onFreeroamHubSetAutoShow = function(enable)
@@ -2719,7 +2467,6 @@ M.onFreeroamHubSetAutoShow = function(enable)
     hubState.prefs.autoShow = (enable == true)
     if not hubState.prefs.autoShow then
         hubState.prefs.addedOnce = false
-        utils.displayMessage("You can add the app later from the UI menu", 5, true)
     end
     saveFreeroamHubPrefs()
 end
@@ -2762,12 +2509,6 @@ M.onFreeroamHubSelectTrack = function()
             core_groundMarkers.setPath(vec3(spot.pos[1], spot.pos[2], spot.pos[3]), { clearPathOnReachingTarget = false })
         end
         showPlayerStagingCornerMarkers(spot)
-        -- Race screen with "Drive to staging spot"; spawn AI (Track = with opponents)
-        local race = races["track"] or {}
-        local raceLabel = race.label or "Track"
-        local state = { inRace = false, staged = false, raceId = "track", raceLabel = raceLabel, showDriveToStage = true }
-        injectPlayerPowerAndClassIntoState(state)
-        guihooks.trigger("FreeroamHubRaceState", state)
         prepareFreeroamAiForTrack()
     elseif staged == "track" then
         -- Fallback if no spot found but player already staged via trigger
@@ -2794,12 +2535,6 @@ M.onFreeroamHubSelectShortTrack = function()
             core_groundMarkers.setPath(vec3(spot.pos[1], spot.pos[2], spot.pos[3]), { clearPathOnReachingTarget = false })
         end
         showPlayerStagingCornerMarkers(spot)
-        -- Race screen with "Drive to staging spot"; spawn AI (Short Track = with opponents)
-        local race = races["track"] or {}
-        local raceLabel = (race.altRoute and race.altRoute.label) or "Short Track"
-        local state = { inRace = false, staged = false, raceId = "track", raceLabel = raceLabel, showDriveToStage = true }
-        injectPlayerPowerAndClassIntoState(state)
-        guihooks.trigger("FreeroamHubRaceState", state)
         prepareFreeroamAiForTrack()
     elseif staged == "track" then
         -- Fallback if no spot found but player already staged via trigger
@@ -2836,14 +2571,10 @@ M.onFreeroamHubClearSelection = function()
         if aiRacers and aiRacers.setPlayerFreeze then aiRacers.setPlayerFreeze(false) end
         if aiRacers and aiRacers.clearSpawned then aiRacers.clearSpawned() end
     end
-    -- Return to race selection screen
-    guihooks.trigger("FreeroamHubRaceState", { inRace = false, staged = false, showRaceSelection = true })
 end
 
 M.onFreeroamHubClosed = function()
-    -- Always hide (never remove the app unless they de-select auto show)
-    guihooks.trigger("setGameplayAppVisibility", { appId = "freeroamEventHub", visible = false })
-    -- If they turned off auto show, mark hub as not added so we don't re-add until they add from menu
+    -- If they turned off auto show, mark hub as not added for prefs-only flows
     if not hubState.prefs.autoShow then
         hubState.prefs.addedOnce = false
         saveFreeroamHubPrefs()

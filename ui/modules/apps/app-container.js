@@ -1,6 +1,17 @@
 "use strict"
 
 angular.module('beamng.apps')
+.run(['$rootScope', function ($rootScope) {
+  var api = (typeof bngApi !== 'undefined' && bngApi && bngApi.activeObjectLua && bngApi.engineLua) ? bngApi : (window.bngApi && window.bngApi.activeObjectLua && window.bngApi.engineLua ? window.bngApi : null)
+  var LuaPower = '(function() local engines = powertrain.getDevicesByCategory("engine") if engines and engines[1] then return engines[1].maxPower or 0 end return 0 end)()'
+  $rootScope.$on('careerRequestPlayerPower', function () {
+    if (!api || !api.activeObjectLua || !api.engineLua) return
+    api.activeObjectLua(LuaPower, function (power) {
+      var watts = (power != null && !isNaN(power) && power >= 0) ? Number(power) : 0
+      api.engineLua('(function() local g = _G.career_modules_competitiveRace_aiRacers if g and type(g.onPlayerVehiclePowerWeight) == "function" then g.onPlayerVehiclePowerWeight(' + watts + ', nil) end end)()')
+    })
+  })
+}])
 
 .directive('appContainer', ['$document', 'RateLimiter', 'UiAppsService', 'Utils', '$state',
 function ($document, RateLimiter, UiAppsService, Utils, $state) {
@@ -57,14 +68,6 @@ function ($document, RateLimiter, UiAppsService, Utils, $state) {
         StreamsManager.resubmit()
       })
 
-      $scope.$on('FreeroamHubAddApp', function () {
-        const apps = UIAppStorage.current && UIAppStorage.current.apps
-        const inLayout = apps && Array.isArray(apps) && apps.some(function (a) { return a && a.appName === 'freeroamEventHub' })
-        if (!inLayout && UIAppStorage.availableApps && UIAppStorage.availableApps.freeroamEventHub) {
-          $scope.$broadcast('appContainer:addApp', 'freeroamEventHub')
-        }
-      })
-
       $scope.$on('appContainer:clear', function () { UiAppsService.clearCurrentLayout(container) })
       $scope.$on('appContainer:loadLayoutByType', function (_, data) { UiAppsService.loadLayout({type: data}, container, $scope) })
       $scope.$on('appContainer:loadLayoutByObject', function (_, data) { UiAppsService.loadLayout({object: data}, container, $scope) })
@@ -84,11 +87,6 @@ function ($document, RateLimiter, UiAppsService, Utils, $state) {
         })
       })
       $scope.$on('appContainer:addApp', function(_, appName) {
-        if (appName === 'freeroamEventHub') {
-          const apps = UIAppStorage.current && UIAppStorage.current.apps
-          if (apps && Array.isArray(apps) && apps.some(function (a) { return a && a.appName === 'freeroamEventHub' }))
-            return
-        }
         const appData = UIAppStorage.availableApps[appName]
         if(appData) UiAppsService.spawnApp(appData, container, $scope)
       })
