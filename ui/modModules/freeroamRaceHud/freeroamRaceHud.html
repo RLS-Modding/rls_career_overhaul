@@ -1,0 +1,328 @@
+<link rel="stylesheet" type="text/css" href="/ui/modModules/freeroamRaceHud/freeroamRaceHud.css" />
+
+
+
+<div class="frh-module-root">
+
+  <div class="frh-overlay-root" ng-if="visible">
+
+  <div class="frh-stack">
+
+  <div class="frh-panel transparency" bng-blur="true">
+
+    <div class="frh-resize-handle"></div>
+
+    <div class="frh-panel-critical" ng-if="criticalWarningText">
+
+      <div class="frh-panel-critical-dim"></div>
+
+      <div class="frh-panel-critical-msg">{{ criticalWarningText }}</div>
+
+    </div>
+
+    <div class="frh-banner" ng-if="state.banner && state.banner.text"
+
+         ng-class="state.banner.kind || 'info'">{{ state.banner.text }}</div>
+
+    <div class="frh-header">
+
+      <div class="frh-header-main">
+
+        <div class="frh-title">{{ state.raceLabel || 'Race' }}</div>
+
+        <div class="frh-route"
+
+             ng-if="state.routeName && state.routeName !== state.raceLabel">{{ state.routeName }}</div>
+
+      </div>
+
+      <div class="frh-header-live frh-mono" ng-if="state.phase === 'racing'">
+
+        <span>{{ formatTime(state.currentLapTime) }}</span>
+
+        <span ng-if="state.isLapRace"> / Lap {{ state.displayLap }}<span ng-if="state.totalLaps > 0"> / {{ state.totalLaps }}</span></span>
+
+      </div>
+
+    </div>
+
+
+
+    <div class="frh-staging" ng-if="state.phase === 'staging' && state.staging">
+
+      <div class="frh-staging-alert" ng-if="state.staging.disabled && state.staging.disabledReason">{{ state.staging.disabledReason }}</div>
+
+      <div class="frh-stg-section" ng-repeat="section in state.staging.sections track by $index">
+
+        <div class="frh-stg-divider" ng-if="section.title"><span>{{ section.title }}</span></div>
+
+        <div class="frh-stg-entry" ng-repeat="entry in section.entries track by $index">
+
+          <div class="frh-stg-head">
+
+            <span class="frh-stg-label">{{ entry.label }}</span>
+
+            <span class="frh-stg-reward" ng-if="entry.rewardValue != null">${{ formatMoney(entry.rewardValue) }}</span>
+
+          </div>
+
+          <div class="frh-stg-body">
+
+            <span class="frh-stg-target">{{ entry.targetValue }}</span>
+
+            <span class="frh-stg-pb" ng-if="entry.personalBestValue">pb {{ entry.personalBestValue }}</span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+    <div class="frh-summary" ng-if="state.phase !== 'staging'">
+
+      <div class="frh-row frh-row-goal-pb"
+
+           ng-if="state.goalTime != null || state.personalBestTime != null">
+
+        <div class="frh-goal-pb-side frh-goal-pb-left" ng-if="state.goalTime != null">
+
+          <span class="frh-k">Goal</span>
+
+          <span class="frh-v frh-mono">{{ formatTime(state.goalTime) }}</span>
+
+        </div>
+
+        <div class="frh-goal-pb-side frh-goal-pb-right" ng-if="state.personalBestTime != null">
+
+          <span class="frh-k">PB</span>
+
+          <span class="frh-v frh-mono">{{ formatTime(state.personalBestTime) }}</span>
+
+        </div>
+
+      </div>
+
+      <div class="frh-row" ng-if="state.phase === 'racing' && state.lastLapReward != null">
+
+        <span class="frh-k">Last lap</span>
+
+        <span class="frh-v">+{{ formatMoney(state.lastLapReward) }}</span>
+
+      </div>
+
+      <div class="frh-row" ng-if="state.phase === 'racing' && state.bestLapThisRun != null">
+
+        <span class="frh-k">Best (run)</span>
+
+        <span class="frh-v">{{ formatTime(state.bestLapThisRun) }}</span>
+
+      </div>
+
+      <div class="frh-invalid" ng-if="state.phase === 'racing' && state.invalidLap">Lap invalidated</div>
+
+    </div>
+
+
+
+    <div class="frh-completion" ng-if="state.phase === 'racing' && state.completion">
+
+      <div class="frh-completion-headline"
+
+           ng-class="{ warn: state.completion.invalidLap }">{{ state.completion.headline }}</div>
+
+      <div class="frh-completion-title">{{ state.completion.raceTitle }}</div>
+
+      <div class="frh-completion-body">
+
+        <div class="frh-completion-row" ng-if="state.completion.kind === 'drift' && state.completion.result.driftScore != null">
+
+          <span class="frh-k">Drift score</span>
+
+          <span class="frh-v frh-mono">{{ state.completion.result.driftScore }}</span>
+
+        </div>
+
+        <div class="frh-completion-row" ng-if="state.completion.kind === 'drift' && state.completion.result.time != null">
+
+          <span class="frh-k">Time</span>
+
+          <span class="frh-v frh-mono">{{ formatTime(state.completion.result.time) }}</span>
+
+        </div>
+
+        <div class="frh-completion-row" ng-if="state.completion.kind === 'topSpeed' && state.completion.result.topSpeed != null">
+
+          <span class="frh-k">Top speed</span>
+
+          <span class="frh-v frh-mono">{{ formatSpeedMph(state.completion.result.topSpeed) }}</span>
+
+        </div>
+
+        <div class="frh-completion-row" ng-if="state.completion.kind === 'topSpeed' && state.completion.result.time != null">
+
+          <span class="frh-k">Time</span>
+
+          <span class="frh-v frh-mono">{{ formatTime(state.completion.result.time) }}</span>
+
+        </div>
+
+        <div class="frh-completion-row" ng-if="state.completion.kind !== 'topSpeed' && state.completion.kind !== 'drift' && state.completion.result.time != null">
+
+          <span class="frh-k">Time</span>
+
+          <span class="frh-v frh-mono">{{ formatTime(state.completion.result.time) }}</span>
+
+        </div>
+
+        <div class="frh-completion-row" ng-if="state.completion.result.lapIndex != null">
+
+          <span class="frh-k">Lap</span>
+
+          <span class="frh-v frh-mono">{{ state.completion.result.lapIndex }}</span>
+
+        </div>
+
+        <div class="frh-completion-row" ng-if="state.completion.result.damagePct != null">
+
+          <span class="frh-k">Damage taken</span>
+
+          <span class="frh-v frh-mono">{{ state.completion.result.damagePct.toFixed(1) }}%</span>
+
+        </div>
+
+        <div class="frh-completion-row" ng-if="state.completion.result.damageFactorPct != null">
+
+          <span class="frh-k">Damage factor</span>
+
+          <span class="frh-v frh-mono">{{ state.completion.result.damageFactorPct.toFixed(0) }}%</span>
+
+        </div>
+
+      </div>
+
+      <div class="frh-completion-divider" ng-if="state.completion.previous.time != null || state.completion.previous.topSpeed != null || state.completion.previous.driftScore != null || state.completion.previous.damagePct != null"></div>
+
+      <div class="frh-completion-prev">
+
+        <div class="frh-completion-row subtle" ng-if="state.completion.previous.time != null">
+
+          <span class="frh-k">Previous best</span>
+
+          <span class="frh-v frh-mono">{{ formatTime(state.completion.previous.time) }}</span>
+
+        </div>
+
+        <div class="frh-completion-row subtle" ng-if="state.completion.previous.topSpeed != null">
+
+          <span class="frh-k">Previous best speed</span>
+
+          <span class="frh-v frh-mono">{{ formatSpeedMph(state.completion.previous.topSpeed) }}</span>
+
+        </div>
+
+        <div class="frh-completion-row subtle" ng-if="state.completion.previous.driftScore != null">
+
+          <span class="frh-k">Previous best score</span>
+
+          <span class="frh-v frh-mono">{{ state.completion.previous.driftScore }}</span>
+
+        </div>
+
+        <div class="frh-completion-row subtle" ng-if="state.completion.previous.damagePct != null">
+
+          <span class="frh-k">Previous best damage</span>
+
+          <span class="frh-v frh-mono">{{ state.completion.previous.damagePct.toFixed(1) }}%</span>
+
+        </div>
+
+      </div>
+
+      <div class="frh-completion-divider" ng-if="state.completion.rewards.disciplineXp != null || state.completion.rewards.money != null || state.completion.rewards.businessMoney != null"></div>
+
+      <div class="frh-completion-rewards">
+
+        <div class="frh-completion-row reward" ng-if="state.completion.rewards.disciplineXp != null">
+
+          <span class="frh-k">Discipline XP</span>
+
+          <span class="frh-v frh-mono">{{ state.completion.rewards.disciplineXp }}</span>
+
+        </div>
+
+        <div class="frh-completion-row reward" ng-if="state.completion.rewards.businessMoney != null">
+
+          <span class="frh-k">Business reward</span>
+
+          <span class="frh-v frh-mono">${{ formatMoney(state.completion.rewards.businessMoney) }}</span>
+
+        </div>
+
+        <div class="frh-completion-row reward" ng-if="state.completion.rewards.money != null">
+
+          <span class="frh-k">Reward</span>
+
+          <span class="frh-v frh-mono">${{ formatMoney(state.completion.rewards.money) }}</span>
+
+        </div>
+
+      </div>
+
+      <div class="frh-completion-bonuses" ng-if="state.completion.bonuses && state.completion.bonuses.length">
+
+        <div class="frh-completion-bonus" ng-repeat="b in state.completion.bonuses track by $index">
+
+          <span class="frh-bonus-label">{{ b.label }}</span>
+
+          <span class="frh-bonus-val">{{ b.value }}</span>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="frh-sectors-head" ng-if="state.phase === 'racing' && !state.completion">
+
+      <span>Sector</span>
+
+      <span>Split</span>
+
+      <span>At CP</span>
+
+      <span>vs PB</span>
+
+    </div>
+
+    <div class="frh-sectors-scroll" ng-if="state.phase === 'racing' && !state.completion">
+
+      <div class="frh-sector-row" ng-repeat="s in state.sectors track by s.index"
+
+           ng-class="{ latest: s.index === state.checkpointsHit }">
+
+        <span class="frh-idx">CP {{ s.index }}</span>
+
+        <span class="frh-mono">{{ formatTime(s.sectorTime) }}</span>
+
+        <span class="frh-mono">{{ formatTime(s.cumulativeTime) }}</span>
+
+        <span class="frh-delta frh-mono" ng-class="deltaClass(s.deltaVsPb)">{{ formatDelta(s.deltaVsPb) }}</span>
+
+      </div>
+
+      <div class="frh-sector-empty" ng-if="!state.sectors || !state.sectors.length">No sectors yet</div>
+
+    </div>
+
+  </div>
+
+  </div>
+
+  </div>
+
+</div>
+

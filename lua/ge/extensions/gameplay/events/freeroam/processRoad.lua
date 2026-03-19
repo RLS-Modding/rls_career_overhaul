@@ -35,6 +35,17 @@ local remainingTime = stationaryTimeout
 
 local activeRace = nil
 
+local function freeroamRaceHudCriticalWarning(text)
+    if not guihooks or not guihooks.trigger then
+        return
+    end
+    if text and text ~= "" then
+        guihooks.trigger("FreeroamRaceHudCriticalWarning", { text = text })
+    else
+        guihooks.trigger("FreeroamRaceHudCriticalWarning", {})
+    end
+end
+
 local function calculateDistance(node1, node2)
     if not node1 or not node2 then
         --print("Warning: Nil node encountered in calculateDistance")
@@ -618,7 +629,7 @@ local function checkPlayerOnRoad()
                 lastCountdownUpdate = currentTime
                 
                 if remainingTime > 0 then
-                    ui_message("Warning: Move your vehicle! Race ends in " .. remainingTime .. " seconds!", 2, "info")
+                    freeroamRaceHudCriticalWarning("Warning: Move your vehicle! Race ends in " .. remainingTime .. " seconds!")
                 end
             end
             
@@ -628,7 +639,9 @@ local function checkPlayerOnRoad()
             end
         end
     else
-        -- Reset timers when vehicle is moving
+        if lastMovementTime ~= nil then
+            freeroamRaceHudCriticalWarning()
+        end
         lastMovementTime = nil
         lastCountdownUpdate = nil
         remainingTime = stationaryTimeout
@@ -689,15 +702,15 @@ local function checkPlayerOnRoad()
     if distanceFromPath > (MAX_DISTANCE_FROM_PATH + 25) then
         if exitCountdown == 0 then
             exitCountdown = exitCountdownStart
-            ui_message("Warning: You are exiting the event! " .. exitCountdown .. " seconds to return!", 3, "info")
+            freeroamRaceHudCriticalWarning("Warning: You are exiting the event! " .. exitCountdown .. " seconds to return!")
             lastCountdownTime = currentTime
         elseif currentTime - lastCountdownTime >= 1 then
             exitCountdown = exitCountdown - 1
             lastCountdownTime = currentTime
             if exitCountdown > 0 then
-                ui_message("Exiting event in " .. exitCountdown .. " seconds!", 2, "info")
+                freeroamRaceHudCriticalWarning("Exiting event in " .. exitCountdown .. " seconds!")
             else
-                ui_message("Event exited!", 3, "info")
+                freeroamRaceHudCriticalWarning("Event exited!")
                 return false
             end
         end
@@ -710,6 +723,7 @@ local function checkPlayerOnRoad()
     else
         if exitCountdown > 0 then
             exitCountdown = 0
+            freeroamRaceHudCriticalWarning()
             ui_message("Back on track!", 2, "info")
         end
     end
@@ -857,6 +871,7 @@ local function reset()
     checkpoints = nil
     altCheckpoints = nil
     activeRace = nil
+    freeroamRaceHudCriticalWarning()
 end
 
 local function onExtensionLoaded()
