@@ -1,0 +1,276 @@
+.frs-root {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.frs-root *,
+.frs-root *::before,
+.frs-root *::after {
+  box-sizing: border-box;
+}
+
+.frs-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.frs-panel {
+  position: relative;
+  z-index: 1;
+  width: min(480px, calc(100vw - 48px));
+  max-height: min(85vh, 680px);
+  display: flex;
+  flex-direction: column;
+  background: rgba(0, 0, 0, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  color: #fff;
+  overflow: hidden;
+}
+
+/* ── header ─────────────────────────────────── */
+
+.frs-header {
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.frs-title {
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.frs-route {
+  font-size: 13px;
+  color: #9cf;
+  margin-top: 4px;
+}
+
+/* ── section divider (like frh-stg-divider) ── */
+
+.frs-stg-divider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(140, 200, 255, 0.75);
+}
+
+.frs-stg-divider::before,
+.frs-stg-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(140, 200, 255, 0.18);
+}
+
+/* ── scrollable body ────────────────────────── */
+
+.frs-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 2px 0 6px;
+}
+
+.frs-body::-webkit-scrollbar {
+  width: 10px;
+}
+
+.frs-body::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+}
+
+.frs-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.28);
+  border-radius: 6px;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+}
+
+.frs-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+/* ── key/value rows ─────────────────────────── */
+
+.frs-section {
+  padding: 0 16px;
+}
+
+.frs-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 5px 0;
+  font-size: 14px;
+}
+
+.frs-k {
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.frs-v {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  text-align: right;
+}
+
+.frs-mono {
+  font-variant-numeric: tabular-nums;
+}
+
+.frs-reward {
+  color: #7deb9a;
+  font-weight: 700;
+}
+
+.frs-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 8px 16px;
+}
+
+/* ── per-lap toggle ─────────────────────────── */
+
+.frs-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.12s;
+}
+
+.frs-toggle:hover {
+  background: rgba(255, 255, 255, 0.06);
+  margin: 0 -8px;
+  padding: 8px 8px;
+}
+
+.frs-toggle-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(140, 200, 255, 0.85);
+}
+
+.frs-toggle-chevron {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid rgba(140, 200, 255, 0.7);
+  border-bottom: 2px solid rgba(140, 200, 255, 0.7);
+  transform: rotate(45deg);
+  transition: transform 0.15s;
+  flex-shrink: 0;
+}
+
+.frs-toggle-chevron.frs-toggle-open {
+  transform: rotate(-135deg);
+}
+
+/* ── per-lap grid ───────────────────────────── */
+
+.frs-laps-scroll {
+  max-height: 240px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: 4px;
+  margin-top: 4px;
+}
+
+.frs-laps-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+
+.frs-laps-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+}
+
+.frs-laps-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.28);
+  border-radius: 6px;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+}
+
+.frs-laps-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.frs-laps-head,
+.frs-lap-row {
+  display: grid;
+  grid-template-columns: 42px 1fr 1fr 1fr 60px;
+  gap: 6px;
+  align-items: center;
+}
+
+.frs-laps-head {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.45);
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.frs-lap-row {
+  font-size: 14px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.frs-lap-idx {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 12px;
+}
+
+.frs-lap-invalid {
+  opacity: 0.45;
+}
+
+/* ── footer ─────────────────────────────────── */
+
+.frs-footer {
+  padding: 12px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.frs-btn {
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #0a0a0a;
+  background: #e8f0ff;
+  min-width: 140px;
+  text-align: center;
+}
+
+.frs-btn:hover {
+  background: #fff;
+}

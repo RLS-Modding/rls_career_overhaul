@@ -100,6 +100,62 @@ local frh = {
     completionSnapshot = nil,
 }
 
+local frs = {
+    laps = {},
+    raceName = nil,
+    displayLabel = nil,
+    mainLabel = nil,
+    altLabel = nil,
+    openLoop = false,
+}
+
+local function buildFreSummaryPayload()
+    local mainLaps, altLaps = 0, 0
+    local totalMoney, totalXp = 0, 0
+    local bestMain, bestAlt = nil, nil
+    for _, row in ipairs(frs.laps) do
+        if row.isAlt then
+            altLaps = altLaps + 1
+        else
+            mainLaps = mainLaps + 1
+        end
+        totalMoney = totalMoney + (tonumber(row.money) or 0)
+        totalXp = totalXp + (tonumber(row.xp) or 0)
+        if not row.invalid then
+            local t = tonumber(row.time)
+            if t then
+                if row.isAlt then
+                    bestAlt = (bestAlt == nil or t < bestAlt) and t or bestAlt
+                else
+                    bestMain = (bestMain == nil or t < bestMain) and t or bestMain
+                end
+            end
+        end
+    end
+    local payload = {
+        raceLabel = frs.displayLabel or "",
+        mainLabel = frs.mainLabel or frs.displayLabel or "",
+        altLabel = frs.altLabel,
+        isLoop = frs.openLoop == true,
+        totals = {
+            laps = #frs.laps,
+            mainLaps = mainLaps,
+            altLaps = altLaps,
+            money = totalMoney,
+            xp = totalXp,
+        },
+        bests = {},
+        laps = frs.laps,
+    }
+    if mainLaps > 0 and bestMain ~= nil then
+        payload.bests.mainTime = bestMain
+    end
+    if altLaps > 0 and bestAlt ~= nil then
+        payload.bests.altTime = bestAlt
+    end
+    return payload
+end
+
 -- Forward declaration so applyWaypointHit_AI (and others) can call it; defined later in file.
 local snapshotStandingsDeltas
 -- Forward declaration for prepareFreeroamAiForTrack (staging / player_stage_track when AI allowed)
@@ -971,6 +1027,21 @@ local function payoutRace(completedLapTime)
         }
     end
 
+    if race.checkpointRoad and frs.raceName == mActiveRace then
+        local lapMoney = (tonumber(hudMoney) or 0) + (tonumber(hudBusinessMoney) or 0)
+        local lapXp = tonumber(hudDisciplineXp) or 0
+        local cleanLabel = (mAltRoute and race.altRoute and race.altRoute.label) or race.label
+        table.insert(frs.laps, {
+            index = #frs.laps + 1,
+            isAlt = mAltRoute == true,
+            time = lapTime,
+            money = lapMoney,
+            xp = lapXp,
+            invalid = invalidLap == true,
+            raceLabelShort = cleanLabel,
+        })
+    end
+
     local cpHud = race.checkpointRoad and frh.shown
     notifyFreRaceCompleted(mActiveRace, race, raceLabel, in_race_time, be:getPlayerVehicleID(0), completionMeta)
     mActiveRace = nil
@@ -1683,6 +1754,12 @@ local function beginFreeroamRace(raceNameArg, subjectID)
     mActiveRace = raceName
     frh.completionPayload = nil
     frh.completionSnapshot = nil
+    frs.laps = {}
+    frs.raceName = raceName
+    frs.displayLabel = races[raceName].label or raceName
+    frs.mainLabel = races[raceName].label or raceName
+    frs.altLabel = (races[raceName].altRoute and races[raceName].altRoute.label) or nil
+    frs.openLoop = races[raceName].checkpointRoad == true and not utils.hasFinishTrigger(raceName)
     lapCount = 0
     mCurrentRouteName = nil
     mTotalRaceTime = 0
@@ -1997,6 +2074,13 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
         elseif finalResult then
             hubState.showingResult = true
             hubState.raceSelected = false
+        end
+
+        if cpRoad and frs.openLoop and not isCompletion and #frs.laps > 0
+            and not deferResultScreen and guihooks and guihooks.trigger then
+            guihooks.trigger("FreerunSummaryShow", buildFreSummaryPayload())
+            frs.laps = {}
+            frs.raceName = nil
         end
 
         utils.setActiveLight(raceName, "red")
@@ -2812,6 +2896,11 @@ M.onFreeroamHubClosed = function()
         end
     end
     hubState.inHubContext = false
+end
+
+M.clearFreSummarySession = function()
+    frs.laps = {}
+    frs.raceName = nil
 end
 
 return M
