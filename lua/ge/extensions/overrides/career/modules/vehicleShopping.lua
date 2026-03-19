@@ -6,7 +6,7 @@ local M = {}
 M.dependencies =
   {'career_career', 'career_modules_inspectVehicle', 'util_configListGenerator', 'freeroam_organizations'}
 
-local moduleVersion = 62
+local moduleVersion = 63
 local jbeamIO = require('jbeam/io')
 
 -- Configuration constants
@@ -18,6 +18,7 @@ local vehiclesPerDealership = vehicleOfferTimeToLive / dealershipTimeBetweenOffe
 local salesTax = 0.07
 local customLicensePlatePrice = 300
 local dealershipPurchaseReputationGain = 2000
+local missingYearsFallbackModelYear = 2023
 local refreshInterval = 5
 local tetherRange = 4
 
@@ -1713,25 +1714,26 @@ local function updateVehicleList(fromScratch)
               randomVehicleInfo.filter = filter
 
               local years = safeYearsRange(randomVehicleInfo)
-              if not onlyStarterVehicles and not years then
-                error("missing or malformed Years data")
-              end
 
               if not onlyStarterVehicles then
-                local minYear = years.min
-                local filterMinYear = filter.whiteList and filter.whiteList.Years and tonumber(filter.whiteList.Years.min)
-                if filterMinYear then
-                  minYear = math.max(minYear, filterMinYear)
+                if years then
+                  local minYear = years.min
+                  local filterMinYear = filter.whiteList and filter.whiteList.Years and tonumber(filter.whiteList.Years.min)
+                  if filterMinYear then
+                    minYear = math.max(minYear, filterMinYear)
+                  end
+                  local maxYear = years.max
+                  local filterMaxYear = filter.whiteList and filter.whiteList.Years and tonumber(filter.whiteList.Years.max)
+                  if filterMaxYear then
+                    maxYear = math.min(maxYear, filterMaxYear)
+                  end
+                  if minYear > maxYear then
+                    error("invalid year bounds after filtering")
+                  end
+                  randomVehicleInfo.year = math.random(minYear, maxYear)
+                else
+                  randomVehicleInfo.year = tonumber(randomVehicleInfo.year) or missingYearsFallbackModelYear
                 end
-                local maxYear = years.max
-                local filterMaxYear = filter.whiteList and filter.whiteList.Years and tonumber(filter.whiteList.Years.max)
-                if filterMaxYear then
-                  maxYear = math.min(maxYear, filterMaxYear)
-                end
-                if minYear > maxYear then
-                  error("invalid year bounds after filtering")
-                end
-                randomVehicleInfo.year = math.random(minYear, maxYear)
 
                 local mileageMin = filter.whiteList and filter.whiteList.Mileage and tonumber(filter.whiteList.Mileage.min)
                 local mileageMax = filter.whiteList and filter.whiteList.Mileage and tonumber(filter.whiteList.Mileage.max)
@@ -1760,10 +1762,11 @@ local function updateVehicleList(fromScratch)
               else
                 randomVehicleInfo.year = starterVehicleYears[randomVehicleInfo.model_key]
                 if not randomVehicleInfo.year then
-                  if not years then
-                    error("starter vehicle missing usable Years data")
+                  if years then
+                    randomVehicleInfo.year = math.random(years.min, years.max)
+                  else
+                    randomVehicleInfo.year = tonumber(randomVehicleInfo.year) or missingYearsFallbackModelYear
                   end
-                  randomVehicleInfo.year = math.random(years.min, years.max)
                 end
                 randomVehicleInfo.Mileage = starterVehicleMileages[randomVehicleInfo.model_key] or 100000000
               end
