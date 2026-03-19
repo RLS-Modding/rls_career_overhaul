@@ -7193,44 +7193,6 @@
       ],
       "customFields":{
         "names":{},
-        "tags":[
-          "notprivatesale"
-        ],
-        "types":{},
-        "values":{}
-      },
-      "isMultiSpot":true,
-      "name":"Parking 2744",
-      "oldId":196,
-      "pos":[
-        -482.0217896,
-        1965.506714,
-        81.49351501
-      ],
-      "rot":[
-        0.03221585865,
-        0.005348217756,
-        -0.639369261,
-        0.7682061464
-      ],
-      "scl":[
-        2.5,
-        6,
-        3
-      ],
-      "spotAmount":3,
-      "spotDirection":"Left",
-      "spotOffset":0.5329999924,
-      "spotRotation":0
-    },
-    {
-      "color":[
-        1,
-        1,
-        1
-      ],
-      "customFields":{
-        "names":{},
         "tags":{},
         "types":{},
         "values":{}
@@ -9667,42 +9629,6 @@
       "spotAmount":1,
       "spotDirection":"Left",
       "spotOffset":0,
-      "spotRotation":0
-    },
-    {
-      "color":[
-        1,
-        1,
-        1
-      ],
-      "customFields":{
-        "names":{},
-        "tags":{},
-        "types":{},
-        "values":{}
-      },
-      "isMultiSpot":true,
-      "name":"Parking 3387",
-      "oldId":264,
-      "pos":[
-        -419.815033,
-        353.2324829,
-        101.8002472
-      ],
-      "rot":[
-        0,
-        -0,
-        -0.3819286493,
-        0.9241918128
-      ],
-      "scl":[
-        2.5,
-        6,
-        3
-      ],
-      "spotAmount":5,
-      "spotDirection":"Left",
-      "spotOffset":0.1909999996,
       "spotRotation":0
     },
     {
@@ -14598,7 +14524,7 @@
       },
       "isMultiSpot":true,
       "name":"Parking 1872",
-      "oldId":399,
+      "oldId":398,
       "pos":[
         -180.7258911,
         -208.4525146,
@@ -14634,7 +14560,7 @@
       },
       "isMultiSpot":false,
       "name":"Parking 1873",
-      "oldId":400,
+      "oldId":399,
       "pos":[
         -189.8196259,
         -192.5999603,
@@ -14670,7 +14596,7 @@
       },
       "isMultiSpot":false,
       "name":"Parking 1874",
-      "oldId":401,
+      "oldId":400,
       "pos":[
         -188.3474121,
         -195.1809998,
@@ -14706,7 +14632,7 @@
       },
       "isMultiSpot":true,
       "name":"Parking 1881",
-      "oldId":402,
+      "oldId":401,
       "pos":[
         42.28007126,
         82.15814972,
@@ -14742,7 +14668,7 @@
       },
       "isMultiSpot":true,
       "name":"Parking 1882",
-      "oldId":403,
+      "oldId":402,
       "pos":[
         47.4522934,
         93.41294861,
@@ -14778,7 +14704,7 @@
       },
       "isMultiSpot":true,
       "name":"Parking 1883",
-      "oldId":404,
+      "oldId":403,
       "pos":[
         168.8675537,
         12.43377781,
@@ -14814,7 +14740,7 @@
       },
       "isMultiSpot":true,
       "name":"Parking 1884",
-      "oldId":405,
+      "oldId":404,
       "pos":[
         192.6089783,
         -10.42447948,
@@ -14850,7 +14776,7 @@
       },
       "isMultiSpot":false,
       "name":"Parking 1885",
-      "oldId":406,
+      "oldId":405,
       "pos":[
         171.0357208,
         -24.97112274,
@@ -14886,7 +14812,7 @@
       },
       "isMultiSpot":false,
       "name":"Parking 1886",
-      "oldId":407,
+      "oldId":406,
       "pos":[
         175.627121,
         -31.54551125,
@@ -14922,7 +14848,7 @@
       },
       "isMultiSpot":false,
       "name":"Parking 1887",
-      "oldId":408,
+      "oldId":407,
       "pos":[
         159.0522003,
         22.34922218,
@@ -14958,7 +14884,7 @@
       },
       "isMultiSpot":false,
       "name":"Parking 1888",
-      "oldId":409,
+      "oldId":408,
       "pos":[
         -252.4811554,
         -269.1077881,
@@ -14994,7 +14920,7 @@
       },
       "isMultiSpot":false,
       "name":"Parking 1889",
-      "oldId":410,
+      "oldId":409,
       "pos":[
         -262.0718079,
         -253.1889038,
@@ -15030,7 +14956,7 @@
       },
       "isMultiSpot":false,
       "name":"Parking 1890",
-      "oldId":411,
+      "oldId":410,
       "pos":[
         -255.3559723,
         -253.8482819,
@@ -15066,7 +14992,7 @@
       },
       "isMultiSpot":false,
       "name":"Parking 1891",
-      "oldId":412,
+      "oldId":411,
       "pos":[
         -244.6956787,
         -272.5675964,
@@ -15102,7 +15028,7 @@
       },
       "isMultiSpot":true,
       "name":"Parking 1892",
-      "oldId":413,
+      "oldId":412,
       "pos":[
         591.1455078,
         -190.2651672,
@@ -15138,7 +15064,7 @@
       },
       "isMultiSpot":true,
       "name":"Parking 1893",
-      "oldId":414,
+      "oldId":413,
       "pos":[
         495.2615356,
         -190.3229523,
@@ -15174,7 +15100,7 @@
       },
       "isMultiSpot":true,
       "name":"Parking 1894",
-      "oldId":415,
+      "oldId":414,
       "pos":[
         543.1384888,
         -190.3677368,
@@ -15210,7 +15136,7 @@
       },
       "isMultiSpot":true,
       "name":"Parking 1895",
-      "oldId":416,
+      "oldId":415,
       "pos":[
         447.4224854,
         -190.1168518,
@@ -15246,7 +15172,7 @@
       },
       "isMultiSpot":true,
       "name":"Parking 1944",
-      "oldId":417,
+      "oldId":416,
       "pos":[
         344.2467651,
         -223.0643463,
@@ -15282,7 +15208,7 @@
       },
       "isMultiSpot":true,
       "name":"Parking 1945",
-      "oldId":418,
+      "oldId":417,
       "pos":[
         297.7727356,
         -158.3973846,
@@ -15318,7 +15244,7 @@
       },
       "isMultiSpot":true,
       "name":"Parking 1946",
-      "oldId":419,
+      "oldId":418,
       "pos":[
         303.9689941,
         -158.2961884,
@@ -15354,7 +15280,7 @@
       },
       "isMultiSpot":true,
       "name":"Parking 1966",
-      "oldId":420,
+      "oldId":419,
       "pos":[
         297.9710083,
         -174.6225433,
@@ -15390,7 +15316,7 @@
       },
       "isMultiSpot":true,
       "name":"Parking 3929",
-      "oldId":421,
+      "oldId":420,
       "pos":[
         15.87185287,
         -89.7253418,
@@ -15426,7 +15352,7 @@
       },
       "isMultiSpot":true,
       "name":"Parking 3930",
-      "oldId":422,
+      "oldId":421,
       "pos":[
         40.02985382,
         -81.70207214,
@@ -15462,7 +15388,7 @@
       },
       "isMultiSpot":true,
       "name":"Parking 3931",
-      "oldId":423,
+      "oldId":422,
       "pos":[
         34.65036011,
         -102.7453079,
@@ -15498,7 +15424,7 @@
       },
       "isMultiSpot":false,
       "name":"Parking 3932",
-      "oldId":424,
+      "oldId":423,
       "pos":[
         18.77104187,
         -104.1078262,
@@ -15534,7 +15460,7 @@
       },
       "isMultiSpot":true,
       "name":"Parking 3933",
-      "oldId":425,
+      "oldId":424,
       "pos":[
         38.361763,
         -54.49165726,
@@ -15570,7 +15496,7 @@
       },
       "isMultiSpot":true,
       "name":"Parking 3934",
-      "oldId":426,
+      "oldId":425,
       "pos":[
         -16.29526138,
         -94.13735199,
@@ -15606,7 +15532,7 @@
       },
       "isMultiSpot":true,
       "name":"Parking 3935",
-      "oldId":427,
+      "oldId":426,
       "pos":[
         -73.48634338,
         -135.6651917,
@@ -15642,7 +15568,7 @@
       },
       "isMultiSpot":true,
       "name":"Parking 3936",
-      "oldId":428,
+      "oldId":427,
       "pos":[
         -128.1490479,
         -175.1641388,
@@ -15678,7 +15604,7 @@
       },
       "isMultiSpot":true,
       "name":"Parking 3937",
-      "oldId":429,
+      "oldId":428,
       "pos":[
         -142.0146484,
         -193.1545563,
@@ -15714,7 +15640,7 @@
       },
       "isMultiSpot":true,
       "name":"Parking 3938",
-      "oldId":430,
+      "oldId":429,
       "pos":[
         -121.0798569,
         -222.7239685,
@@ -15750,7 +15676,7 @@
       },
       "isMultiSpot":true,
       "name":"Parking 3939",
-      "oldId":431,
+      "oldId":430,
       "pos":[
         -112.8625336,
         -232.2590332,
@@ -15786,7 +15712,7 @@
       },
       "isMultiSpot":true,
       "name":"Parking 3940",
-      "oldId":432,
+      "oldId":431,
       "pos":[
         -98.18921661,
         -230.5970001,
@@ -15822,7 +15748,7 @@
       },
       "isMultiSpot":true,
       "name":"Parking 3941",
-      "oldId":433,
+      "oldId":432,
       "pos":[
         -86.63219452,
         -205.7036285,
@@ -15858,7 +15784,7 @@
       },
       "isMultiSpot":true,
       "name":"Parking 3942",
-      "oldId":434,
+      "oldId":433,
       "pos":[
         -110.478302,
         -213.8405457,
@@ -15894,7 +15820,7 @@
       },
       "isMultiSpot":true,
       "name":"Parking 3943",
-      "oldId":435,
+      "oldId":434,
       "pos":[
         -82.61175537,
         -169.872406,
@@ -15930,7 +15856,7 @@
       },
       "isMultiSpot":true,
       "name":"Parking 3944",
-      "oldId":436,
+      "oldId":435,
       "pos":[
         -126.3113861,
         -191.9801025,
@@ -15966,7 +15892,7 @@
       },
       "isMultiSpot":false,
       "name":"Parking 3957",
-      "oldId":437,
+      "oldId":436,
       "pos":[
         -13.16034508,
         -109.5051651,
@@ -16002,7 +15928,7 @@
       },
       "isMultiSpot":false,
       "name":"Parking 3958",
-      "oldId":438,
+      "oldId":437,
       "pos":[
         -10.59973812,
         -108.5974808,
@@ -16038,7 +15964,7 @@
       },
       "isMultiSpot":false,
       "name":"Parking 3959",
-      "oldId":439,
+      "oldId":438,
       "pos":[
         -5.38685751,
         -107.0378799,
@@ -16074,7 +16000,7 @@
       },
       "isMultiSpot":false,
       "name":"Parking 3960",
-      "oldId":440,
+      "oldId":439,
       "pos":[
         -2.714151621,
         -106.4195328,
@@ -16110,7 +16036,7 @@
       },
       "isMultiSpot":false,
       "name":"Parking 3961",
-      "oldId":441,
+      "oldId":440,
       "pos":[
         2.578833103,
         -105.3802719,
@@ -16146,7 +16072,7 @@
       },
       "isMultiSpot":false,
       "name":"Parking 3962",
-      "oldId":442,
+      "oldId":441,
       "pos":[
         5.265915871,
         -104.9139709,
@@ -16182,7 +16108,7 @@
       },
       "isMultiSpot":false,
       "name":"Parking 3963",
-      "oldId":443,
+      "oldId":442,
       "pos":[
         10.60768318,
         -104.2859879,
@@ -16218,7 +16144,7 @@
       },
       "isMultiSpot":false,
       "name":"Parking 3964",
-      "oldId":444,
+      "oldId":443,
       "pos":[
         13.32006454,
         -104.1895676,
@@ -16254,7 +16180,7 @@
       },
       "isMultiSpot":true,
       "name":"Parking 4803",
-      "oldId":445,
+      "oldId":444,
       "pos":[
         52.01638412,
         -561.7421875,
@@ -16290,7 +16216,7 @@
       },
       "isMultiSpot":true,
       "name":"Parking 4804",
-      "oldId":446,
+      "oldId":445,
       "pos":[
         57.85437775,
         -518.5773926,
@@ -16326,7 +16252,7 @@
       },
       "isMultiSpot":true,
       "name":"Parking 4805",
-      "oldId":447,
+      "oldId":446,
       "pos":[
         77.40003967,
         -529.3006592,
@@ -16362,7 +16288,7 @@
       },
       "isMultiSpot":true,
       "name":"Parking 4806",
-      "oldId":448,
+      "oldId":447,
       "pos":[
         71.15586853,
         -561.6027832,
@@ -16398,7 +16324,7 @@
       },
       "isMultiSpot":true,
       "name":"Parking 4807",
-      "oldId":449,
+      "oldId":448,
       "pos":[
         38.49732971,
         -507.4078369,
@@ -16434,7 +16360,7 @@
       },
       "isMultiSpot":true,
       "name":"Parking 4808",
-      "oldId":450,
+      "oldId":449,
       "pos":[
         32.2178688,
         -561.4393311,
@@ -16470,7 +16396,7 @@
       },
       "isMultiSpot":false,
       "name":"Parking 2274",
-      "oldId":451,
+      "oldId":450,
       "pos":[
         -71.2721405,
         -198.0243683,
@@ -16506,7 +16432,7 @@
       },
       "isMultiSpot":false,
       "name":"Parking 2275",
-      "oldId":452,
+      "oldId":451,
       "pos":[
         -71.39333344,
         -192.6465454,
@@ -16542,7 +16468,7 @@
       },
       "isMultiSpot":false,
       "name":"Parking 2276",
-      "oldId":453,
+      "oldId":452,
       "pos":[
         -71.21609497,
         -187.2685242,
@@ -16578,7 +16504,7 @@
       },
       "isMultiSpot":false,
       "name":"Parking 2277",
-      "oldId":454,
+      "oldId":453,
       "pos":[
         -70.59950256,
         -181.8101044,
@@ -16614,7 +16540,7 @@
       },
       "isMultiSpot":false,
       "name":"Parking 2278",
-      "oldId":455,
+      "oldId":454,
       "pos":[
         -70.17990112,
         -179.1260834,

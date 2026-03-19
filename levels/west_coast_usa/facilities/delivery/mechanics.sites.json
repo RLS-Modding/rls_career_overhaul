@@ -25,7 +25,7 @@
       },
       "isMultiSpot":false,
       "name":"belascoAuto_parking",
-      "oldId":6825,
+      "oldId":2368,
       "pos":[
         -696.7315674,
         799.3275146,
@@ -61,7 +61,7 @@
       },
       "isMultiSpot":false,
       "name":"belascoAuto_trailer",
-      "oldId":6826,
+      "oldId":2369,
       "pos":[
         -705.0923462,
         810.229126,
@@ -103,7 +103,7 @@
       },
       "isMultiSpot":false,
       "name":"belascoGarage_parking",
-      "oldId":6827,
+      "oldId":2370,
       "pos":[
         893.4066162,
         -534.0682373,
@@ -139,7 +139,7 @@
       },
       "isMultiSpot":false,
       "name":"belascoGarage_trailer",
-      "oldId":6828,
+      "oldId":2371,
       "pos":[
         909.3951416,
         -522.2437744,
@@ -181,7 +181,7 @@
       },
       "isMultiSpot":false,
       "name":"exhaustShop_parking",
-      "oldId":6829,
+      "oldId":2372,
       "pos":[
         -572.7053833,
         158.8735657,
@@ -217,7 +217,7 @@
       },
       "isMultiSpot":false,
       "name":"exhaustShop_trailer",
-      "oldId":6830,
+      "oldId":2373,
       "pos":[
         -565.7113037,
         162.4063721,
@@ -259,11 +259,11 @@
       },
       "isMultiSpot":false,
       "name":"fastAutomotive_parking",
-      "oldId":6831,
+      "oldId":2374,
       "pos":[
-        291.3830566,
-        -142.4268951,
-        143.8121948
+        291.38305664063,
+        -139.63313293457,
+        143.81219482422
       ],
       "rot":[
         8.137951954e-05,
@@ -295,11 +295,11 @@
       },
       "isMultiSpot":false,
       "name":"fastAutomotive_trailer",
-      "oldId":6832,
+      "oldId":2375,
       "pos":[
-        301.0692139,
-        -163.8002014,
-        143.8878632
+        316.79559326172,
+        -163.80020141602,
+        143.88786315918
       ],
       "rot":[
         0,
@@ -337,7 +337,7 @@
       },
       "isMultiSpot":false,
       "name":"jeffersonMotors_parking",
-      "oldId":6833,
+      "oldId":2376,
       "pos":[
         -391.7629395,
         169.3512115,
@@ -373,7 +373,7 @@
       },
       "isMultiSpot":false,
       "name":"jeffersonMotors_trailer",
-      "oldId":6834,
+      "oldId":2377,
       "pos":[
         -392.8887024,
         178.7845001,
@@ -415,7 +415,7 @@
       },
       "isMultiSpot":false,
       "name":"jerryRigs_parking",
-      "oldId":6835,
+      "oldId":2378,
       "pos":[
         -82.48989105,
         -14.75941181,
@@ -451,7 +451,7 @@
       },
       "isMultiSpot":false,
       "name":"jerryRigs_trailer",
-      "oldId":6836,
+      "oldId":2379,
       "pos":[
         -68.186409,
         3.618993759,
@@ -493,7 +493,7 @@
       },
       "isMultiSpot":false,
       "name":"quarrysideAutoSales_parking",
-      "oldId":6837,
+      "oldId":2380,
       "pos":[
         835.7269287,
         -523.1880493,
@@ -529,7 +529,7 @@
       },
       "isMultiSpot":false,
       "name":"quarrysideAutoSales_trailer",
-      "oldId":6838,
+      "oldId":2381,
       "pos":[
         835.4661255,
         -514.0580444,
@@ -571,7 +571,7 @@
       },
       "isMultiSpot":false,
       "name":"richsMotorCompany_parking",
-      "oldId":6839,
+      "oldId":2382,
       "pos":[
         -811.883667,
         913.9396362,
@@ -607,7 +607,7 @@
       },
       "isMultiSpot":false,
       "name":"richsMotorCompany_trailer",
-      "oldId":6840,
+      "oldId":2383,
       "pos":[
         -820.1202393,
         904.9969482,
@@ -643,7 +643,7 @@
       },
       "isMultiSpot":false,
       "name":"shuffleboardGarage_parking",
-      "oldId":6841,
+      "oldId":2384,
       "pos":[
         -254.5437775,
         -53.41925812,
@@ -679,7 +679,7 @@
       },
       "isMultiSpot":false,
       "name":"shuffleboardGarage_vehicles",
-      "oldId":6842,
+      "oldId":2385,
       "pos":[
         -230.1215515,
         -47.1211853,
@@ -715,7 +715,7 @@
       },
       "isMultiSpot":false,
       "name":"shuffleboardLogistics_fluids",
-      "oldId":6843,
+      "oldId":2386,
       "pos":[
         -360.8562012,
         -204.8230743,
@@ -757,7 +757,7 @@
       },
       "isMultiSpot":false,
       "name":"shuffleboardLogistics_parkingA",
-      "oldId":6844,
+      "oldId":2387,
       "pos":[
         -290.9421997,
         -58.31545258,
@@ -793,7 +793,7 @@
       },
       "isMultiSpot":false,
       "name":"shuffleboardLogistics_parkingB",
-      "oldId":6845,
+      "oldId":2388,
       "pos":[
         -332.3070374,
         -98.20812988,
@@ -829,7 +829,7 @@
       },
       "isMultiSpot":false,
       "name":"shuffleboardLogistics_parkingC",
-      "oldId":6846,
+      "oldId":2389,
       "pos":[
         -296.8413086,
         -58.85889053,
@@ -865,7 +865,7 @@
       },
       "isMultiSpot":false,
       "name":"shuffleboardLogistics_trailer1",
-      "oldId":6847,
+      "oldId":2390,
       "pos":[
         -297.296814,
         -124.4909363,
@@ -901,7 +901,7 @@
       },
       "isMultiSpot":false,
       "name":"shuffleboardLogistics_trailer3",
-      "oldId":6848,
+      "oldId":2391,
       "pos":[
         -306.9981079,
         -131.7245026,
@@ -937,7 +937,7 @@
       },
       "isMultiSpot":false,
       "name":"shuffleboardLogistics_trailer5",
-      "oldId":6849,
+      "oldId":2392,
       "pos":[
         -317.3122559,
         -138.9490204,
@@ -979,7 +979,7 @@
       },
       "isMultiSpot":false,
       "name":"smashAutoRepairs_parking",
-      "oldId":6850,
+      "oldId":2393,
       "pos":[
         -607.6303711,
         120.881279,
@@ -1015,7 +1015,7 @@
       },
       "isMultiSpot":false,
       "name":"smashAutoRepairs_trailer",
-      "oldId":6851,
+      "oldId":2394,
       "pos":[
         -616.1907959,
         107.2758789,
@@ -1057,7 +1057,7 @@
       },
       "isMultiSpot":false,
       "name":"torresTires_parking",
-      "oldId":6852,
+      "oldId":2395,
       "pos":[
         -582.0951538,
         136.4302368,
@@ -1093,7 +1093,7 @@
       },
       "isMultiSpot":false,
       "name":"torresTires_trailer",
-      "oldId":6853,
+      "oldId":2396,
       "pos":[
         -589.5941772,
         134.8439941,
@@ -1129,7 +1129,7 @@
       },
       "isMultiSpot":false,
       "name":"belascoGarageLoaners",
-      "oldId":6854,
+      "oldId":2397,
       "pos":[
         893.071106,
         -531.3563232,
