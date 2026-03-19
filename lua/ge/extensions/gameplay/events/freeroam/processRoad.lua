@@ -617,7 +617,7 @@ local function checkPlayerOnRoad()
                 remainingTime = stationaryTimeout - timeStopped
                 lastCountdownUpdate = currentTime
                 
-                if remainingTime > 0 and not _G.freeroamHubSuppressUIMessages then
+                if remainingTime > 0 then
                     ui_message("Warning: Move your vehicle! Race ends in " .. remainingTime .. " seconds!", 2, "info")
                 end
             end
@@ -689,21 +689,15 @@ local function checkPlayerOnRoad()
     if distanceFromPath > (MAX_DISTANCE_FROM_PATH + 25) then
         if exitCountdown == 0 then
             exitCountdown = exitCountdownStart
-            if not _G.freeroamHubSuppressUIMessages then
-                ui_message("Warning: You are exiting the event! " .. exitCountdown .. " seconds to return!", 3, "info")
-            end
+            ui_message("Warning: You are exiting the event! " .. exitCountdown .. " seconds to return!", 3, "info")
             lastCountdownTime = currentTime
         elseif currentTime - lastCountdownTime >= 1 then
             exitCountdown = exitCountdown - 1
             lastCountdownTime = currentTime
             if exitCountdown > 0 then
-                if not _G.freeroamHubSuppressUIMessages then
-                    ui_message("Exiting event in " .. exitCountdown .. " seconds!", 2, "info")
-                end
+                ui_message("Exiting event in " .. exitCountdown .. " seconds!", 2, "info")
             else
-                if not _G.freeroamHubSuppressUIMessages then
-                    ui_message("Event exited!", 3, "info")
-                end
+                ui_message("Event exited!", 3, "info")
                 return false
             end
         end
@@ -716,9 +710,7 @@ local function checkPlayerOnRoad()
     else
         if exitCountdown > 0 then
             exitCountdown = 0
-            if not _G.freeroamHubSuppressUIMessages then
-                ui_message("Back on track!", 2, "info")
-            end
+            ui_message("Back on track!", 2, "info")
         end
     end
 

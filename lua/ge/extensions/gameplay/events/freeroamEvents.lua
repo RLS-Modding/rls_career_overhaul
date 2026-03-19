@@ -900,7 +900,7 @@ local function payoutRace(completedLapTime)
 
     notifyFreRaceCompleted(mActiveRace, race, raceLabel, in_race_time, be:getPlayerVehicleID(0), completionMeta)
     mActiveRace = nil
-    utils.displayMessage(message, 20, "Reward")
+    utils.displayMessage(message, 20)
     if hotlapMessage ~= "" then
         ui_message(hotlapMessage, 5, "Hotlap Multiplier")
     end
@@ -1592,7 +1592,7 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
             end
 
             if customMessage then
-                utils.displayMessage(customMessage, 10, "Reward")
+                utils.displayMessage(customMessage, 10)
             end
         else
             -- Race cancellation logic; if at least one lap completed, still show result screen + Next
@@ -2241,9 +2241,6 @@ local function onExtensionUnloaded()
 end
 
 local function onUpdate(dtReal, dtSim, dtRaw)
-    -- Only suppress normal UI messages when hub is showing (track event); drag and other events keep their messages
-    -- When hub is active and not in practice (Track/Short Track selected), suppress freeroam messages so only hub UI shows; in practice allow staged/checkpoint messages
-    _G.freeroamHubSuppressUIMessages = hubState.inHubContext and not hubState.practiceMode
     if aiRacers and aiRacers.onUpdate then aiRacers.onUpdate(dtReal or 0) end
     
     -- Hub: player selected option and is driving to player_stage_track; when they reach it (fully inside markers), set staged and start countdown
