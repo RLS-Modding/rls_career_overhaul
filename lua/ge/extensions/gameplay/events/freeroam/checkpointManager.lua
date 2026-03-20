@@ -1,5 +1,7 @@
 local M = {}
 
+M.dependencies = { 'gameplay_events_freeroam_session' }
+
 local checkpoints = {}
 local altCheckpoints = {}
 local aiAltCheckpoints = {}
@@ -119,7 +121,6 @@ local function removeCheckpoint(index, alt)
     return checkpoint
 end
 
--- Create trigger only (no marker) for AI alt checkpoint. Used when alt route has pathRoad in config; AI drive that road and hit these.
 local function createAiAltTrigger(index, checkpointData)
     if not checkpointData or not checkpointData.node or not raceName then return end
     local w = (checkpointData.node.width and checkpointData.node.width > 0) and checkpointData.node.width or 30
@@ -147,8 +148,7 @@ local function removeAiAltCheckpoints()
     aiAltCheckpoints = {}
 end
 
--- routeOnly: nil = both routes, "main" = only main route triggers/markers, "alt" = only alt route. aiAltCheck: optional list of checkpoint data for AI alt route (triggers only, no display).
-local function createCheckpoints(check, altCheck, routeOnly, aiAltCheck)
+local function createCheckpoints(check, altCheck, aiAltCheck)
     checkpoints = check
     altCheckpoints = altCheck or {}
     removeAiAltCheckpoints()
@@ -177,6 +177,11 @@ local function createCheckpoints(check, altCheck, routeOnly, aiAltCheck)
             createCheckpoint(i, true)
         end
     end
+    extensions.hook('onFreeroamCheckpointsBuilt', {
+        raceName = raceName,
+        mainCount = #checkpoints,
+        altCount = altCheckpoints and #altCheckpoints or 0,
+    })
 end
 
 local function resetActiveCheckpoints()
@@ -326,20 +331,73 @@ local function setRace(inputRace, inputRaceName)
     raceName = inputRaceName
 end
 
--- Number of checkpoints on the alt route only (for AI lap counting when they drive the short loop).
 local function getAltCheckpointCount()
     return altCheckpoints and #altCheckpoints or 0
 end
 
--- Number of AI alt checkpoints (from pathRoad in config). Used for AI lap counting when alt route has a separate AI road.
 local function getAiAltCheckpointCount()
     return aiAltCheckpoints and #aiAltCheckpoints or 0
+end
+
+local function notifyCheckpointEntered(payload)
+    extensions.hook('onFreeroamCheckpointEntered', payload)
+end
+
+function M.onFreeroamSessionStarted(payload)
+    if not payload or not payload.checkpointRoad then return end
+    local rn = payload.raceName
+    local subjectID = payload.subjectID
+    local racePayload = payload.race
+    if not racePayload then return end
+
+    local session = gameplay_events_freeroam_session
+    local processRoad = gameplay_events_freeroam_processRoad
+    local circuitRaceAi = gameplay_events_freeroam_circuitRaceAi
+    local competitiveTrackFlow = gameplay_events_freeroam_competitiveTrackFlow
+    local trackFlowState = competitiveTrackFlow and competitiveTrackFlow.trackFlowState
+    local TRACK_RACE_ID = competitiveTrackFlow and competitiveTrackFlow.TRACK_RACE_ID
+
+    circuitRaceAi.resetForRaceBegin()
+    processRoad.reset()
+    processRoad.setStationaryTimeout(racePayload.timeout)
+    local cps, altCps = processRoad.getCheckpoints(racePayload)
+    setRouteLocked(false)
+    createCheckpoints(cps, altCps, nil)
+    circuitRaceAi.setWaypointsFromCheckpoints(cps, altCps)
+
+    session.isLoop = processRoad.isLoop()
+    session.currCheckpoint = 0
+    session.checkpointsHit = 0
+    local totalCp = calculateTotalCheckpoints()
+    session.totalCheckpoints = totalCp
+    session.currentExpectedCheckpoint = 1
+
+    local useAlt = (rn == TRACK_RACE_ID and trackFlowState and trackFlowState.useAltRoute == true
+        and trackFlowState.inTrackFlowContext) or false
+    session.mAltRoute = useAlt
+    setAltRoute(useAlt)
+    session.currentExpectedCheckpoint = enableCheckpoint(0, useAlt)
+
+    local aiRacers = gameplay_events_freeroam_aiRacers
+    if aiRacers and aiRacers.getSpawnedVehicleIds and aiRacers.releaseAndDrive then
+        local raceForAi = (useAlt and racePayload.altRoute and racePayload.altRoute.checkpointRoad) and racePayload.altRoute or racePayload
+        circuitRaceAi.setupAfterAiSpawn(rn, subjectID, totalCp, racePayload, raceForAi)
+    end
+
+    gameplay_events_freeroam_raceSession.showFreeroamRaceHud()
+end
+
+function M.onFreeroamSessionExiting(payload)
+    if not payload or not payload.checkpointRoad then return end
+    gameplay_events_freeroam_circuitRaceAi.clearAll()
+    removeCheckpoints()
 end
 
 local function onExtensionLoaded()
     print("Initializing Checkpoint Manager")
 end
 
+M.notifyCheckpointEntered = notifyCheckpointEntered
 M.onExtensionLoaded = onExtensionLoaded
 M.createCheckpoints = createCheckpoints
 M.enableCheckpoint = enableCheckpoint

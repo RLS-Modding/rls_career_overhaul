@@ -188,7 +188,6 @@ local function getLeaderboardEntry(inventoryId, raceLabel)
     return leaderboard[level][tostring(inventoryId)][raceLabel] or {}
 end
 
--- Returns all leaderboard entries for a vehicle on the current level (for race history UI).
 local function getLeaderboardEntriesForVehicle(inventoryId)
     level = getCurrentLevelIdentifier()
     if not leaderboard or not level or not leaderboard[level] or not leaderboard[level][tostring(inventoryId)] then

@@ -3,6 +3,8 @@
 
 local M = {}
 
+M.dependencies = { 'gameplay_events_freeroam_processRoad' }
+
 local CONFIG_DIR = "competitiveRace"
 local CONFIG_FILENAME = "aiRacers.json"
 local CONFIG_RACE_FILENAME = "aiRacingConfig.json"
@@ -96,8 +98,6 @@ local function pickRandomAiColor()
     return AI_COLOR_PALETTE[idx]
 end
 
-local processRoad = require('gameplay/events/freeroam/processRoad')
-
 local function shallowCopyDefaults(defaults, fromFile)
     local out = {}
     for k, v in pairs(defaults) do out[k] = v end
@@ -137,7 +137,7 @@ local function loadRaceConfig()
     return result
 end
 
--- True if the current level has aiRacingConfig.json with at least one byRace entry (hub only available on such tracks).
+-- True if the current level has aiRacingConfig.json with at least one byRace entry.
 function M.levelHasAiRacingConfig()
     local rc = loadRaceConfig()
     return type(rc) == "table" and type(rc.byRace) == "table" and next(rc.byRace) ~= nil
@@ -217,12 +217,14 @@ end
 
 -- Build path from race checkpointRoad (uses processRoad). Call on level load. When pathRoad is set in aiRacingConfig.byRace, use that road for AI path only; checkpoints unchanged. When race has checkpointRoadLanes, also preloads one path per lane (lane road merged with main from first checkpoint).
 function M.preloadPathForRace(race)
+    local pr = gameplay_events_freeroam_processRoad
+    if not pr then return end
     local pathKey = getRacePathKey(race)
     if not pathKey then return end
     if not mPathCache[pathKey] then
         local cfg = getMergedConfigForRace(race)
         local pathRoad = (cfg and type(cfg.pathRoad) == "string" and cfg.pathRoad ~= "") and cfg.pathRoad or nil
-        local nodes = pathRoad and getRoadNodesByName(pathRoad) or processRoad.getRoadNodesFromRace(race)
+        local nodes = pathRoad and getRoadNodesByName(pathRoad) or pr.getRoadNodesFromRace(race)
         if nodes and #nodes > 0 then
             local path = {}
             for _, node in ipairs(nodes) do
@@ -239,7 +241,7 @@ function M.preloadPathForRace(race)
         for laneIndex = 0, #race.checkpointRoadLanes - 1 do
             local lanePathKey = pathKey .. "_lane_" .. tostring(laneIndex)
             if not mPathCache[lanePathKey] then
-                local laneNodes = processRoad.getRoadNodesFromRace(race, laneIndex)
+                local laneNodes = pr.getRoadNodesFromRace(race, laneIndex)
                 if laneNodes and #laneNodes > 0 then
                     local lanePath = {}
                     for _, node in ipairs(laneNodes) do
@@ -1455,7 +1457,7 @@ function M.getPlayerVehiclePower()
     return getPowerHpFromConfig(configs)
 end
 
--- Returns player power (HP) and class string ("stock" / "modified" / "super") for hub display. Returns nil, nil if not available.
+-- Returns player power (HP) and class string ("stock" / "modified" / "super") when available.
 function M.getPlayerVehiclePowerAndClass()
     local powerHp = M.getPlayerVehiclePower()
     if type(powerHp) ~= "number" or powerHp < 0 then return nil, nil end
@@ -1578,7 +1580,6 @@ end
 
 M.getMergedConfigForRace = getMergedConfigForRace
 
--- Ensure global has this module (and onPlayerVehiclePowerWeight) so vehicle callback never hits a nil.
 _G.career_modules_competitiveRace_aiRacers = M
 
 return M

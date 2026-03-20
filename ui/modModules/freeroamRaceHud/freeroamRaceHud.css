@@ -302,6 +302,115 @@
   font-style: italic;
 }
 
+.frh-standings {
+  padding: 8px 12px 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: visible;
+}
+
+.frh-standings-head,
+.frh-standings-row {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) 52px 64px;
+  gap: 6px;
+  align-items: center;
+  font-size: 13px;
+}
+
+.frh-standings-head {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.45);
+  padding-bottom: 4px;
+  margin-bottom: 2px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.frh-standings-row {
+  padding: 3px 0;
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.92);
+  transition: color 0.2s ease;
+}
+
+.frh-standings-row.frh-st-podium-1 {
+  color: #f4d03f;
+  text-shadow: 0 0 14px rgba(244, 208, 63, 0.45);
+}
+
+.frh-standings-row.frh-st-podium-2 {
+  color: #d7d9e3;
+  text-shadow: 0 0 12px rgba(210, 215, 230, 0.35);
+}
+
+.frh-standings-row.frh-st-podium-3 {
+  color: #d4a574;
+  text-shadow: 0 0 12px rgba(212, 165, 116, 0.4);
+}
+
+.frh-standings-row.player {
+  font-weight: 600;
+  box-shadow: inset 3px 0 0 rgba(140, 200, 255, 0.75);
+  padding-left: 4px;
+  margin-left: -4px;
+}
+
+.frh-standings-row.frh-st-nudge-up {
+  animation: frhStNudgeUp 0.48s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.frh-standings-row.frh-st-nudge-down {
+  animation: frhStNudgeDown 0.48s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes frhStNudgeUp {
+  0% {
+    transform: translateY(11px);
+    opacity: 0.72;
+  }
+  55% {
+    transform: translateY(-2px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes frhStNudgeDown {
+  0% {
+    transform: translateY(-11px);
+    opacity: 0.72;
+  }
+  55% {
+    transform: translateY(2px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.frh-st-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.frh-st-gap,
+.frh-st-lap,
+.frh-st-p {
+  text-align: right;
+}
+
+.frh-st-p {
+  text-align: center;
+}
+
 .frh-sectors-head,
 .frh-sector-row {
   display: grid;

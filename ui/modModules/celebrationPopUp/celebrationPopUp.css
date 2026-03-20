@@ -237,6 +237,144 @@
   opacity: 0.9;
 }
 
+/* ── Race completion hero ── */
+#celebration-popup-container .hero-race {
+  text-align: center;
+  padding: 0.85rem 1.1rem 0.75rem;
+}
+
+#celebration-popup-container .race-name {
+  font-size: 1.85rem;
+  font-weight: 800;
+  line-height: 1.05;
+  color: #ffd080;
+}
+
+#celebration-popup-container .race-position {
+  margin-top: 0.35rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  opacity: 0.88;
+}
+
+#celebration-popup-container .race-position-num {
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: #fbbf24;
+}
+
+#celebration-popup-container .race-position-field {
+  font-weight: 500;
+  opacity: 0.7;
+}
+
+/* ── Stats table ── */
+#celebration-popup-container .race-content {
+  padding: 0.55rem 1.1rem 1.15rem;
+}
+
+#celebration-popup-container .race-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#celebration-popup-container .race-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+#celebration-popup-container .race-stat-label {
+  font-weight: 500;
+  opacity: 0.65;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  letter-spacing: 0.045em;
+}
+
+#celebration-popup-container .race-stat-value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+#celebration-popup-container .race-stat-highlight {
+  color: #a78bfa;
+}
+
+/* ── Lap rows ── */
+#celebration-popup-container .race-laps {
+  padding-top: 0.5rem;
+  padding-bottom: 0.15rem;
+}
+
+#celebration-popup-container .race-laps-header {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.5;
+  margin-bottom: 0.3rem;
+}
+
+#celebration-popup-container .race-lap-row {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.92rem;
+  line-height: 1.7;
+  padding: 0 0.15rem;
+  border-radius: 3px;
+}
+
+#celebration-popup-container .race-lap-row:nth-child(even) {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+#celebration-popup-container .race-lap-idx {
+  width: 1.5rem;
+  text-align: right;
+  font-weight: 600;
+  opacity: 0.45;
+  font-variant-numeric: tabular-nums;
+}
+
+#celebration-popup-container .race-lap-time {
+  flex: 1;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+#celebration-popup-container .race-lap-badge {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  padding: 0.08em 0.4em;
+  border-radius: 3px;
+  background: #a78bfa;
+  color: #1a1a2e;
+  line-height: 1.35;
+}
+
+#celebration-popup-container .race-lap-badge-inv {
+  background: rgba(239, 68, 68, 0.65);
+  color: #fff;
+}
+
+#celebration-popup-container .race-lap-best .race-lap-time {
+  color: #a78bfa;
+}
+
+#celebration-popup-container .race-lap-invalid .race-lap-time {
+  opacity: 0.5;
+  text-decoration: line-through;
+  text-decoration-color: rgba(239, 68, 68, 0.5);
+}
+
 #celebration-popup-container .rewards-row {
   margin-top: 0.65rem;
   display: flex;

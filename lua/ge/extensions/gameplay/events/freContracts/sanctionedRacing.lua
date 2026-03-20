@@ -1,7 +1,6 @@
 local M = {}
 
 local freConfig = require("gameplay/fre/config")
-local freeroamUtils = require("gameplay/events/freeroam/utils")
 
 local CONFIG_DIR = "competitiveRace"
 local CONFIG_RACE_FILENAME = "aiRacingConfig.json"
@@ -44,6 +43,8 @@ local runtime = {
   podiumEligible = false,
 }
 
+local mCelebrationRewards = nil
+
 local function defaultCfgSlice()
   return {
     variants = {},
@@ -85,7 +86,11 @@ local function getRaceRewardAtTargetTime(levelId, raceName, routeType)
   if not goalTime or goalTime <= 0 or not baseReward or baseReward <= 0 then
     return nil
   end
-  return freeroamUtils.raceReward(goalTime, baseReward, goalTime, race.type)
+  local u = gameplay_events_freeroam_utils
+  if not u or not u.raceReward then
+    return nil
+  end
+  return u.raceReward(goalTime, baseReward, goalTime, race.type)
 end
 
 local function getRaceLapCount(levelId, raceName, routeType)
@@ -454,7 +459,8 @@ function M.syncGeneration(now)
   local offer = sr.offer
   if offer and offer.phase == "committed" and (tonumber(offer.startDeadlineAt) or 0) > 0 and n >= offer.startDeadlineAt then
     sr.offer = nil
-    sr.nextGenAt = n
+    local cfgDl = loadCfg()
+    sr.nextGenAt = n + math.max(0.5, tonumber(cfgDl.defaultOfferRefreshMinutes) or 12)
     changed = true
     offer = nil
   end
@@ -538,8 +544,8 @@ end
 
 local function pushDispatchForOffer(offer)
   if not offer then return end
-  local fe = require("gameplay/events/freeroamEvents")
-  if fe.startSanctionedRaceDispatch then
+  local fe = gameplay_events_freeroamEvents
+  if fe and fe.startSanctionedRaceDispatch then
     fe.startSanctionedRaceDispatch(string.lower(tostring(offer.raceRouteType or "main")) == "alt", poolRefHpFromOffer(offer))
   end
 end
@@ -616,6 +622,10 @@ function M.onRaceBegin(raceName)
   if raceName ~= RACE_ID_TRACK then
     return
   end
+  local ctf = gameplay_events_freeroam_competitiveTrackFlow
+  if not ctf or not ctf.isSanctionedCareerGoToRaceActive or not ctf.isSanctionedCareerGoToRaceActive() then
+    return
+  end
   local state = gameplay_events_freContracts_state.getState()
   local sr = ensureSrState(state)
   local offer = sr.offer
@@ -669,6 +679,7 @@ local function payPodium(place)
     M.finishOfferClear()
     return
   end
+  mCelebrationRewards = { money = math.floor(amount) }
   career_modules_payment.reward({
     money = { amount = amount, canBeNegative = false }
   }, {
@@ -682,18 +693,30 @@ function M.finishOfferClear()
   local state = gameplay_events_freContracts_state.getState()
   local sr = ensureSrState(state)
   sr.offer = nil
-  sr.nextGenAt = state.simTime or 0
-  M.clearRuntime()
   local now = state.simTime or 0
+  local cfg = loadCfg()
+  sr.nextGenAt = now + math.max(0.5, tonumber(cfg.defaultOfferRefreshMinutes) or 12)
+  M.clearRuntime()
   gameplay_events_freContracts_state.refreshMaintenanceSchedule(now)
   career_saveSystem.saveCurrent()
   gameplay_events_freContracts_ui.emitUiStateUpdate("sanctioned_race_end")
 end
 
-function M.settleFromAiResults(aiResults)
+function M.settleFromAiResults(aiResults, raceName)
+  raceName = raceName or RACE_ID_TRACK
   if not runtime.suppressFrePayouts then
+    if raceName == RACE_ID_TRACK then
+      local state = gameplay_events_freContracts_state.getState()
+      local sr = ensureSrState(state)
+      local o = sr.offer
+      if o and type(o.raceName) == "string" and o.raceName == RACE_ID_TRACK
+          and (o.phase == "committed" or o.phase == "racing") then
+        M.finishOfferClear()
+      end
+    end
     return
   end
+  mCelebrationRewards = nil
   if not aiResults then
     M.finishOfferClear()
     return
@@ -721,6 +744,7 @@ function M.settleFromAiResults(aiResults)
 end
 
 function M.onRaceAborted()
+  mCelebrationRewards = nil
   if not gameplay_events_freContracts_state.isCareerActive() then
     return
   end
@@ -730,7 +754,19 @@ function M.onRaceAborted()
   if not o and not runtime.suppressFrePayouts then
     return
   end
-  if o and (o.phase == "racing" or o.phase == "committed") or runtime.suppressFrePayouts then
+  if runtime.suppressFrePayouts or (o and o.phase == "racing") then
+    M.finishOfferClear()
+  end
+end
+
+function M.onCareerTrackStagingExitAbandoned()
+  if not gameplay_events_freContracts_state.isCareerActive() then
+    return
+  end
+  local state = gameplay_events_freContracts_state.getState()
+  local sr = ensureSrState(state)
+  local o = sr.offer
+  if o and type(o.raceName) == "string" and o.raceName == RACE_ID_TRACK then
     M.finishOfferClear()
   end
 end
@@ -783,5 +819,11 @@ function M.getSanctionedOfferLapCount()
 end
 
 M.loadCfg = loadCfg
+
+function M.consumeSanctionedCelebrationRewards()
+  local r = mCelebrationRewards
+  mCelebrationRewards = nil
+  return r
+end
 
 return M

@@ -1,11 +1,48 @@
 'use strict'
 
 angular.module('beamng.stuff')
-.controller('FreeroamRaceHudController', ['$scope', '$rootScope', function($scope, $rootScope) {
+.controller('FreeroamRaceHudController', ['$scope', '$rootScope', '$timeout', function($scope, $rootScope, $timeout) {
   const angularRootScope = window.globalAngularRootScope || $rootScope
   $scope.visible = false
   $scope.state = {}
   $scope.criticalWarningText = null
+
+  var standingsPrevPlace = {}
+  var standingsAnimTimeout = null
+
+  function applyStandingsOvertakeAnimations(standings) {
+    if (standingsAnimTimeout) {
+      $timeout.cancel(standingsAnimTimeout)
+      standingsAnimTimeout = null
+    }
+    if (!standings || !standings.length) {
+      standingsPrevPlace = {}
+      return
+    }
+    for (var i = 0; i < standings.length; i++) {
+      var row = standings[i]
+      var key = row.label
+      var prev = standingsPrevPlace[key]
+      if (prev != null && prev !== row.place) {
+        row._stAnim = row.place < prev ? 'up' : 'down'
+      } else {
+        delete row._stAnim
+      }
+    }
+    var nextPrev = {}
+    for (var j = 0; j < standings.length; j++) {
+      nextPrev[standings[j].label] = standings[j].place
+    }
+    standingsPrevPlace = nextPrev
+    standingsAnimTimeout = $timeout(function() {
+      standingsAnimTimeout = null
+      var st = $scope.state && $scope.state.standings
+      if (!st) return
+      for (var k = 0; k < st.length; k++) {
+        delete st[k]._stAnim
+      }
+    }, 520)
+  }
 
   var DEFAULT_LAYOUT = { x: 12, y: 12, width: 340 }
   var hudLayout = { x: 12, y: 12, width: 340 }
@@ -153,9 +190,34 @@ angular.module('beamng.stuff')
     return n.toFixed(2) + ' mph'
   }
 
+  $scope.formatStandingsGap = function(row) {
+    if (!row || row.isPlayer) return '—'
+    var m = row.gapM
+    var g = row.gapSec
+    if (m != null && typeof m === 'number' && isFinite(m)) {
+      var signM = m > 0 ? '+' : ''
+      var parts = [signM + Math.round(m) + ' m']
+        if (g != null && typeof g === 'number' && isFinite(g)) {
+          var signS = g > 0 ? '+' : ''
+          parts.push(signS + g.toFixed(2) + 's')
+        }
+      return parts.join(' / ')
+    }
+    if (g != null && typeof g === 'number' && isFinite(g)) {
+      var sign = g > 0 ? '+' : ''
+      return sign + g.toFixed(2) + 's'
+    }
+    return '—'
+  }
+
   const showListener = angularRootScope.$on('FreeroamRaceHudShow', function() {
     loadLayout(function() {
       safeApply(function() {
+        standingsPrevPlace = {}
+        if (standingsAnimTimeout) {
+          $timeout.cancel(standingsAnimTimeout)
+          standingsAnimTimeout = null
+        }
         $scope.visible = true
         $scope.state = {}
         $scope.criticalWarningText = null
@@ -166,6 +228,11 @@ angular.module('beamng.stuff')
 
   const hideListener = angularRootScope.$on('FreeroamRaceHudHide', function() {
     safeApply(function() {
+      standingsPrevPlace = {}
+      if (standingsAnimTimeout) {
+        $timeout.cancel(standingsAnimTimeout)
+        standingsAnimTimeout = null
+      }
       $scope.visible = false
       $scope.state = {}
       $scope.criticalWarningText = null
@@ -184,10 +251,24 @@ angular.module('beamng.stuff')
   const stateListener = angularRootScope.$on('FreeroamRaceHudState', function(_evt, data) {
     safeApply(function() {
       $scope.state = data && typeof data === 'object' ? data : {}
+      var st = $scope.state.standings
+      if (st && st.length) {
+        applyStandingsOvertakeAnimations(st)
+      } else {
+        standingsPrevPlace = {}
+        if (standingsAnimTimeout) {
+          $timeout.cancel(standingsAnimTimeout)
+          standingsAnimTimeout = null
+        }
+      }
     })
   })
 
   $scope.$on('$destroy', function() {
+    if (standingsAnimTimeout) {
+      $timeout.cancel(standingsAnimTimeout)
+      standingsAnimTimeout = null
+    }
     showListener()
     hideListener()
     criticalListener()

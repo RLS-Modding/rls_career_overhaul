@@ -36,7 +36,13 @@ function buildEmptyContractState() {
 function buildEmptyRaceState() {
   return {
     raceLabel: 'Race',
-    summaryLines: [],
+    position: null,
+    fieldSize: null,
+    raceTime: null,
+    bestLap: null,
+    lapsCompleted: null,
+    lapsTotal: null,
+    lapRows: [],
     rewardMoney: '0',
     rewardXp: '0'
   }
@@ -271,10 +277,23 @@ function normalizeBranchLevels(branchLevels) {
 
   function normalizeRaceEntry(entry) {
     if (!entry || typeof entry !== 'object') return null
-    const lines = Array.isArray(entry.summaryLines) ? entry.summaryLines.map(String) : []
+    const lapRows = Array.isArray(entry.lapRows) ? entry.lapRows.map(function(r) {
+      return {
+        index: Number(r.index) || 0,
+        time: String(r.time || ''),
+        invalid: !!r.invalid,
+        isBest: !!r.isBest
+      }
+    }) : []
     return {
       raceLabel: entry.raceLabel || 'Race',
-      summaryLines: lines,
+      position: entry.position != null ? Number(entry.position) : null,
+      fieldSize: entry.fieldSize != null ? Number(entry.fieldSize) : null,
+      raceTime: entry.raceTime || null,
+      bestLap: entry.bestLap || null,
+      lapsCompleted: entry.lapsCompleted != null ? Number(entry.lapsCompleted) : null,
+      lapsTotal: entry.lapsTotal != null ? Number(entry.lapsTotal) : null,
+      lapRows: lapRows,
       rewardMoney: formatInteger(entry.rewardMoney),
       rewardXp: formatInteger(entry.rewardXp)
     }
@@ -283,11 +302,11 @@ function normalizeBranchLevels(branchLevels) {
   function buildRaceQueueItem(entry) {
     const race = normalizeRaceEntry(entry)
     if (!race) return null
-    const lineBonus = Math.min(7000, Math.max(0, race.summaryLines.length - 3) * 400)
+    const lapBonus = Math.min(7000, Math.max(0, race.lapRows.length - 3) * 400)
     return {
       kind: POPUP_KIND_RACE,
       payload: race,
-      autoCloseMs: RACE_COMPLETION_AUTO_CLOSE_MS + lineBonus,
+      autoCloseMs: RACE_COMPLETION_AUTO_CLOSE_MS + lapBonus,
       soundProfile: POPUP_KIND_CONTRACT
     }
   }

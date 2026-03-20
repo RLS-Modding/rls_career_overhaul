@@ -292,6 +292,45 @@
 
     </div>
 
+    <div class="frh-standings" ng-if="state.phase === 'racing' && !state.completion && state.standings && state.standings.length">
+
+      <div class="frh-standings-head">
+
+        <span class="frh-st-p">Pos</span>
+
+        <span class="frh-st-name">Driver</span>
+
+        <span class="frh-st-lap">Lap</span>
+
+        <span class="frh-st-gap">Gap</span>
+
+      </div>
+
+      <div class="frh-standings-row"
+
+           ng-repeat="row in state.standings track by row.label"
+
+           ng-class="{
+             player: row.isPlayer,
+             'frh-st-podium-1': row.place === 1,
+             'frh-st-podium-2': row.place === 2,
+             'frh-st-podium-3': row.place === 3,
+             'frh-st-nudge-up': row._stAnim === 'up',
+             'frh-st-nudge-down': row._stAnim === 'down'
+           }">
+
+        <span class="frh-st-p frh-mono">{{ row.place }}</span>
+
+        <span class="frh-st-name">{{ row.label }}</span>
+
+        <span class="frh-st-lap frh-mono">{{ row.lapsText }}</span>
+
+        <span class="frh-st-gap frh-mono">{{ formatStandingsGap(row) }}</span>
+
+      </div>
+
+    </div>
+
     <div class="frh-sectors-head" ng-if="state.phase === 'racing' && !state.completion">
 
       <span>Sector</span>
