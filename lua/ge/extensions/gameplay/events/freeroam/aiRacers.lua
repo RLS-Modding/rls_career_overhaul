@@ -190,6 +190,7 @@ local function getMergedConfigForRace(race)
     if type(overrides.vehiclePool) == "table" then
         merged.vehiclePool = overrides.vehiclePool
     end
+    merged.sanctioned = nil
     return merged
 end
 
@@ -700,7 +701,8 @@ end
 -- Spawn AI with similar power to the player vehicle: reads player HP via getPlayerVehiclePowerReliable, picks HP class (D/C/B/A), then spawns from vehiclePoolByHpClass[class] or defaultVehiclePool. Calls callback(spawnedCount).
 -- When cfg.vehiclePool is set: uses stock/modified/super by HP (<320, 320-550, >550), picks closest match with one per model then fill, spawns model+config.
 -- When spawnSameVehicleAsPlayer is true: spawns the player's exact model+config.
-function M.spawnForStagingWithPlayerHp(raceName, race, facilityName, callback)
+-- poolReferenceHp: optional HP (not watts); when set, skip live player read and use this for class / pool matching (e.g. sanctioned bracket midpoint).
+function M.spawnForStagingWithPlayerHp(raceName, race, facilityName, callback, poolReferenceHp)
     if type(callback) ~= "function" then return end
     local cfg = race and getMergedConfigForRace(race) or getCurrentLevelConfig()
     if cfg.enabled == false then
@@ -728,28 +730,34 @@ function M.spawnForStagingWithPlayerHp(raceName, race, facilityName, callback)
             callback(spawned)
             return
         end
-        -- No player vehicle read (e.g. not in vehicle at staging); fall through to power-based pool
     end
-    M.getPlayerVehiclePowerReliable(function(powerWatts, weight)
-        local powerHp = (type(powerWatts) == "number" and powerWatts > 0) and powerWattsToHp(powerWatts) or nil
+    local function spawnFromPowerHp(powerHp)
+        local hp = type(powerHp) == "number" and powerHp or 0
         if type(cfg.vehiclePool) == "table" and type(cfg.vehiclePool.stock) == "table" then
-            local class = getClassFromHpForVehiclePool(powerHp or 0)
+            local class = getClassFromHpForVehiclePool(hp)
             local classPool = cfg.vehiclePool[class] or cfg.vehiclePool.stock
-            -- Use class pool as-is; do not filter by getAvailableModelLookup() so aiRacingConfig entries (etkc, bastion, scintilla, etc.) are used.
             local available = type(classPool) == "table" and classPool or {}
             if #available > 0 then
                 local requestedCount = (race and race.aiCount) or cfg.maxSpawnCount or 4
-                local list = pickVehiclePoolByClosestWithVariety(available, powerHp, requestedCount)
+                local list = pickVehiclePoolByClosestWithVariety(available, hp, requestedCount)
                 local spawned = spawnWithModelConfigList(raceName, race, facilityName, list)
                 callback(spawned)
                 return
             end
         end
-        local class = getClassFromHp(powerHp or 0)
+        local class = getClassFromHp(hp)
         local rawPool = getVehiclePoolForHpClass(cfg, class)
-        local pool = filterPoolByPower(rawPool, powerHp, cfg)
+        local pool = filterPoolByPower(rawPool, hp, cfg)
         local spawned = spawnWithPool(raceName, race, facilityName, pool)
         callback(spawned)
+    end
+    if type(poolReferenceHp) == "number" and poolReferenceHp > 0 then
+        spawnFromPowerHp(poolReferenceHp)
+        return
+    end
+    M.getPlayerVehiclePowerReliable(function(powerWatts, weight)
+        local powerHp = (type(powerWatts) == "number" and powerWatts > 0) and powerWattsToHp(powerWatts) or nil
+        spawnFromPowerHp(powerHp or 0)
     end)
 end
 
@@ -1568,6 +1576,8 @@ function M.isPlayerEligibleForRaceAsync(race, businessXp, callback)
         callback(true, nil)
     end)
 end
+
+M.getMergedConfigForRace = getMergedConfigForRace
 
 -- Ensure global has this module (and onPlayerVehiclePowerWeight) so vehicle callback never hits a nil.
 _G.career_modules_competitiveRace_aiRacers = M

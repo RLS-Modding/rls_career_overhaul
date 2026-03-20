@@ -78,7 +78,8 @@ local function buildDefaultState()
   return {
     simTime = 0,
     nextId = 1,
-    disciplines = disciplines
+    disciplines = disciplines,
+    sanctionedRacing = { offer = nil, nextGenAt = 0, lastSkillGateOk = false }
   }
 end
 
@@ -87,6 +88,17 @@ local function validateLoadedState()
   state.nextId = tonumber(state.nextId) or 1
   state.simTime = tonumber(state.simTime) or 0
   state.disciplines = type(state.disciplines) == "table" and state.disciplines or {}
+  if not state.sanctionedRacing or type(state.sanctionedRacing) ~= "table" then
+    state.sanctionedRacing = { offer = nil, nextGenAt = 0, lastSkillGateOk = false }
+  else
+    state.sanctionedRacing.nextGenAt = tonumber(state.sanctionedRacing.nextGenAt) or 0
+    if state.sanctionedRacing.lastSkillGateOk ~= true and state.sanctionedRacing.lastSkillGateOk ~= false then
+      state.sanctionedRacing.lastSkillGateOk = nil
+    end
+    if state.sanctionedRacing.offer ~= nil and type(state.sanctionedRacing.offer) ~= "table" then
+      state.sanctionedRacing.offer = nil
+    end
+  end
 
   for _, discipline in ipairs(cfg.disciplines or {}) do
     if not state.disciplines[discipline.id] then
@@ -207,6 +219,18 @@ local function refreshMaintenanceSchedule(now)
       end
       for _, sponsor in ipairs(dState.sponsors.active or {}) do
         nextAt = pickEarlierTime(nextAt, sponsor.nextCheckAt)
+      end
+    end
+  end
+
+  local sr = state.sanctionedRacing
+  if sr and gameplay_events_freContracts_sanctionedRacing and gameplay_events_freContracts_sanctionedRacing.isRacingUnlocked("roadracing") then
+    nextAt = pickEarlierTime(nextAt, sr.nextGenAt)
+    local offer = sr.offer
+    if offer then
+      nextAt = pickEarlierTime(nextAt, offer.visibleExpiresAt)
+      if offer.phase == "committed" and offer.startDeadlineAt then
+        nextAt = pickEarlierTime(nextAt, offer.startDeadlineAt)
       end
     end
   end

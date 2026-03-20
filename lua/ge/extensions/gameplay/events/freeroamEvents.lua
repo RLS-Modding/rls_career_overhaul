@@ -75,6 +75,7 @@ local hubState = {
     pendingStart = nil,
     stagingSubjectID = nil,
     inHubContext = false,  -- True when player entered via fre_hub_track; prevents hub cleanup from affecting other events
+    sanctionedPoolRefHp = nil,  -- Passed from phone dispatch; consumed when AI spawn runs at staging enter
 }
 
 -- AI lap counting and timers: per-vehicle state when a race with AI is active (cleared on exitRace).
@@ -88,6 +89,10 @@ local mAiWaypointUpdateAccum = 0
 local mDiffFromLeaderAtBoundary = {}
 -- When result screen is deferred (track + AI): player result saved here; 50s job builds full result and then shows screen.
 local mPendingTrackResult = nil
+-- Competitive grid: wait for AI spawn callback, then countdown, then beginFreeroamRace (no start-line crossing required).
+local mCompetitiveAwaitingAiSpawn = false
+local mCompetitiveCountdownJobActive = false
+local mCompetitiveCountdownCancel = false
 
 local RACE_HUD_PUSH_INTERVAL = 0.1
 local frh = {
@@ -215,23 +220,13 @@ local function isPointInStagingSpot(spot, wx, wy, wz)
     return math.abs(dx) <= sx and math.abs(dy) <= sy and math.abs(dz) <= sz
 end
 
--- Check if player vehicle is fully inside the staging spot (oriented box; all 8 OOBB corners must be inside).
+-- Player center-of-mass inside staging box (matches markers; full OOBB was too strict to register).
 local function isPlayerInStagingSpot(spot)
     if not spot or not spot.pos or not spot.scl then return false end
     local playerVeh = be:getPlayerVehicle(0)
     if not playerVeh then return false end
-    local oobb = playerVeh:getSpawnWorldOOBB()
-    if not oobb or not oobb.getPoint then
-        local pos = playerVeh:getPosition()
-        return isPointInStagingSpot(spot, pos.x, pos.y, pos.z)
-    end
-    for i = 0, 7 do
-        local pt = oobb:getPoint(i)
-        if not pt or not isPointInStagingSpot(spot, pt.x, pt.y, pt.z) then
-            return false
-        end
-    end
-    return true
+    local pos = playerVeh:getPosition()
+    return isPointInStagingSpot(spot, pos.x, pos.y, pos.z)
 end
 
 -- Corner markers for player_stage_track (visible when driving to stage). Cleared when staged or selection cleared.
@@ -351,6 +346,14 @@ local function raceAllowsAiSpawn(race)
     if type(n) == "number" and n > 0 then return true end
     if type(cfg.vehiclePool) == "table" then return true end
     return false
+end
+
+local function hubTrackRaceForAi()
+    if not races or not races.track then return nil end
+    if hubState.useAltRoute and races.track.altRoute then
+        return races.track.altRoute
+    end
+    return races.track
 end
 
 local function getGameplayAppContainers()
@@ -854,10 +857,28 @@ local function payoutRace(completedLapTime)
         normalizedPerformance = normalizedPerformance,
         driftScore = driftScore,
         damagePercentage = damagePercentage,
-        rewardBreakdown = {}
+        rewardBreakdown = {},
+        skipFreContractProgress = false
     }
+    if gameplay_events_freContracts_sanctionedRacing and gameplay_events_freContracts_sanctionedRacing.shouldSuppressFrePayouts() then
+        completionMeta.skipFreContractProgress = true
+    end
     -- Handle career mode specific rewards
     if career_career.isActive() then
+        if completionMeta.skipFreContractProgress then
+            reward = 0
+            lapCount = invalidLap and 1 or lapCount
+            completionMeta.rewardBreakdown = {
+                money = { base = 0, multiplier = 1, final = 0 },
+                normalizedPerformance = normalizedPerformance,
+                disciplineXp = {}
+            }
+            hudDisciplineXp = 0
+            hudMoney = nil
+            hudBusinessMoney = nil
+        end
+    end
+    if career_career.isActive() and not completionMeta.skipFreContractProgress then
         if not newBest or mHotlap then
             reward = reward / 2
         end
@@ -1027,7 +1048,7 @@ local function payoutRace(completedLapTime)
         }
     end
 
-    if race.checkpointRoad and frs.raceName == mActiveRace then
+    if race.checkpointRoad and frs.raceName == mActiveRace and not completionMeta.skipFreContractProgress then
         local lapMoney = (tonumber(hudMoney) or 0) + (tonumber(hudBusinessMoney) or 0)
         local lapXp = tonumber(hudDisciplineXp) or 0
         local cleanLabel = (mAltRoute and race.altRoute and race.altRoute.label) or race.label
@@ -1752,6 +1773,9 @@ local function beginFreeroamRace(raceNameArg, subjectID)
     in_race_time = 0
     maxSpeed = 0
     mActiveRace = raceName
+    if gameplay_events_freContracts_sanctionedRacing and gameplay_events_freContracts_sanctionedRacing.onRaceBegin then
+        gameplay_events_freContracts_sanctionedRacing.onRaceBegin(raceName)
+    end
     frh.completionPayload = nil
     frh.completionSnapshot = nil
     frs.laps = {}
@@ -1816,7 +1840,7 @@ local function beginFreeroamRace(raceNameArg, subjectID)
         checkpointsHit = 0
         totalCheckpoints = checkpointManager.calculateTotalCheckpoints()
         currentExpectedCheckpoint = 1
-        mAltRoute = false
+        mAltRoute = (raceName == COMPETITIVE_HUB_RACE_ID and hubState.useAltRoute == true and (hubState.inHubContext or hubState.raceSelected)) or false
         checkpointManager.setAltRoute(mAltRoute)
         currentExpectedCheckpoint = checkpointManager.enableCheckpoint(0, mAltRoute)
         if aiRacers and aiRacers.getSpawnedVehicleIds and aiRacers.releaseAndDrive then
@@ -1860,11 +1884,77 @@ local function beginFreeroamRace(raceNameArg, subjectID)
     end
 end
 
+local function cancelCompetitiveGridFlow()
+    mCompetitiveCountdownCancel = true
+    mCompetitiveAwaitingAiSpawn = false
+    mCompetitiveCountdownJobActive = false
+    if guihooks and guihooks.trigger then
+        guihooks.trigger('ScenarioFlashMessageReset')
+    end
+    if aiRacers and aiRacers.setPlayerFreeze then aiRacers.setPlayerFreeze(false) end
+end
+
+local function startCompetitiveTrackCountdownAndRace()
+    if mActiveRace or mCompetitiveCountdownJobActive then return end
+    if staged ~= COMPETITIVE_HUB_RACE_ID then return end
+    if not hubState.inHubContext and not hubState.raceSelected then return end
+    mCompetitiveCountdownJobActive = true
+    mCompetitiveCountdownCancel = false
+    if aiRacers and aiRacers.setPlayerFreeze then aiRacers.setPlayerFreeze(true) end
+    if not core_jobsystem or not core_jobsystem.create then
+        mCompetitiveCountdownJobActive = false
+        local vid = be and be:getPlayerVehicleID(0)
+        if vid and races and races[COMPETITIVE_HUB_RACE_ID] then
+            beginFreeroamRace(COMPETITIVE_HUB_RACE_ID, vid)
+        elseif aiRacers and aiRacers.setPlayerFreeze then
+            aiRacers.setPlayerFreeze(false)
+        end
+        return
+    end
+    core_jobsystem.create(function(job)
+        if mCompetitiveCountdownCancel then
+            mCompetitiveCountdownJobActive = false
+            if aiRacers and aiRacers.setPlayerFreeze then aiRacers.setPlayerFreeze(false) end
+            return
+        end
+        if guihooks and guihooks.trigger then
+            guihooks.trigger('ScenarioFlashMessageReset')
+            guihooks.trigger('ScenarioFlashMessage', {{3, 1, "Engine.Audio.playOnce('AudioGui', 'event:UI_Countdown1')", true},
+                {2, 1, "Engine.Audio.playOnce('AudioGui', 'event:UI_Countdown2')", true},
+                {1, 1, "Engine.Audio.playOnce('AudioGui', 'event:UI_Countdown3')", true}})
+        end
+        job.sleep(3)
+        if mCompetitiveCountdownCancel then
+            mCompetitiveCountdownJobActive = false
+            if aiRacers and aiRacers.setPlayerFreeze then aiRacers.setPlayerFreeze(false) end
+            if guihooks and guihooks.trigger then guihooks.trigger('ScenarioFlashMessageReset') end
+            return
+        end
+        if guihooks and guihooks.trigger then
+            guihooks.trigger('ScenarioFlashMessageReset')
+            guihooks.trigger('ScenarioFlashMessage', {{"ui.scenarios.go", 1, "Engine.Audio.playOnce('AudioGui', 'event:UI_CountdownGo')", true}})
+        end
+        job.sleep(0.35)
+        mCompetitiveCountdownJobActive = false
+        if mCompetitiveCountdownCancel then
+            if aiRacers and aiRacers.setPlayerFreeze then aiRacers.setPlayerFreeze(false) end
+            return
+        end
+        local vid = be and be:getPlayerVehicleID(0)
+        if vid and races and races[COMPETITIVE_HUB_RACE_ID] then
+            beginFreeroamRace(COMPETITIVE_HUB_RACE_ID, vid)
+        elseif aiRacers and aiRacers.setPlayerFreeze then
+            aiRacers.setPlayerFreeze(false)
+        end
+    end)
+end
+
 local function exitRace(isCompletion, customMessage, raceData, subjectID)
     -- While we're waiting for the 50s deferred result (track+AI), ignore a later exitRace(false) so we don't clear state and show "drive to stage"
     if isCompletion == false and mPendingTrackResult then
         return
     end
+    cancelCompetitiveGridFlow()
     -- Clear hub countdown state whenever we exit (race or staging)
     hubState.countdownDelay = nil
     hubState.countdownEndTime = nil
@@ -2054,6 +2144,16 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
             end
         end
 
+        if gameplay_events_freContracts_sanctionedRacing then
+            if isCompletion and finalResult and finalResult.aiResults then
+                gameplay_events_freContracts_sanctionedRacing.settleFromAiResults(finalResult.aiResults)
+            elseif not isCompletion then
+                gameplay_events_freContracts_sanctionedRacing.onRaceAborted()
+            elseif isCompletion then
+                gameplay_events_freContracts_sanctionedRacing.settleFromAiResults(nil)
+            end
+        end
+
         local hasSpawnedAi = (aiRacers and aiRacers.getSpawnedVehicleIds and (#(aiRacers.getSpawnedVehicleIds() or {}) > 0)) or (next(mAiLapState) ~= nil)
         local deferResultScreen = isCompletion and hasSpawnedAi and finalResult
         local deferCpHudHide = isCompletion and cpRoad and not deferResultScreen
@@ -2174,6 +2274,102 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
     end
 end
 
+-- Staging zone enter (BeamNG staging trigger or phone-nav box). Spawns AI only here from this path, not on dispatch alone.
+local function tryCommitStagingEnter(raceName, spawnVehId)
+    if not races or not races[raceName] then return false end
+    if utils.isPlayerInPursuit() then
+        utils.displayMessage("You cannot stage for an event while in a pursuit.", 2)
+        return false
+    end
+
+    saveGameState = true
+    core_gamestate.requestGameState()
+
+    local vehicleSpeed = math.abs(be:getObjectVelocityXYZ(spawnVehId)) * speedUnit
+    if vehicleSpeed > 5 and mActiveRace then
+        return false
+    end
+    mHotlap = nil
+    if vehicleSpeed > 5 then
+        if races[raceName].runningStart then
+            if raceHudApplies(races[raceName]) then
+                setRaceHudBanner("Hotlap staged — roll to start", "info", 3)
+            else
+                utils.displayMessage("Hotlap Staged", 2)
+            end
+            if races[raceName].hotlap then
+                mHotlap = raceName
+            end
+        else
+            utils.displayMessage("You are too fast to stage.\nPlease back up and slow down to stage.", 2)
+            staged = nil
+            return false
+        end
+    end
+    Assets:hideAllAssets()
+    lapCount = 0
+
+    local allTypesDisabled = false
+    local disabledTypes = {}
+    if career_economyAdjuster and races[raceName].type then
+        local totalTypes = 0
+        local disabledCount = 0
+        for _, raceType in ipairs(races[raceName].type) do
+            totalTypes = totalTypes + 1
+            local multiplier = career_economyAdjuster.getEffectiveSectionMultiplier({raceType})
+            if multiplier == 0 then
+                disabledCount = disabledCount + 1
+                table.insert(disabledTypes, raceType)
+            end
+        end
+        allTypesDisabled = totalTypes > 0 and disabledCount == totalTypes
+    end
+
+    if allTypesDisabled then
+        local typesString = table.concat(disabledTypes, ", ")
+        utils.displayMessage(string.format("%s is disabled due to %s multiplier(s) being set to 0.", races[raceName].label, typesString), 5)
+        return false
+    end
+
+    if raceName == "drag" then
+        utils.initDisplays()
+        utils.resetDisplays()
+    end
+
+    staged = raceName
+    local vehId = spawnVehId
+    if career_career and career_career.isActive and career_career.isActive() then
+        if career_modules_business_businessInventory and career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId then
+            local businessId, vehicleId = career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId(spawnVehId)
+            if businessId and vehicleId then
+                vehId = career_modules_business_businessInventory.getBusinessVehicleIdentifier(businessId, vehicleId)
+            elseif career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId then
+                vehId = career_modules_inventory.getInventoryIdFromVehicleId(vehId) or vehId
+            end
+        elseif career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId then
+            vehId = career_modules_inventory.getInventoryIdFromVehicleId(vehId) or vehId
+        end
+    end
+
+    local race = races[raceName] or {}
+    frh.stagingSubjectId = vehId
+    if raceHudApplies(race) then
+        showFreeroamRaceHud()
+    else
+        utils.displayStagedMessage(vehId, raceName)
+    end
+    utils.setActiveLight(raceName, "yellow")
+    if raceName == COMPETITIVE_HUB_RACE_ID then
+        local raceForAi = hubTrackRaceForAi()
+        if raceForAi and raceAllowsAiSpawn(raceForAi) then
+            prepareFreeroamAiForTrack()
+        elseif hubState.inHubContext or hubState.raceSelected then
+            startCompetitiveTrackCountdownAndRace()
+        end
+    end
+    return true
+end
+
 local function onBeamNGTrigger(data)
     if isReplay then return end
     local isPlayer = (be:getPlayerVehicleID(0) == data.subjectID)
@@ -2279,102 +2475,12 @@ local function onBeamNGTrigger(data)
 
     if triggerType == "staging" then
         if event == "enter" and mActiveRace == nil then
-            if not races or not races[raceName] then return end
-            if utils.isPlayerInPursuit() then
-                utils.displayMessage("You cannot stage for an event while in a pursuit.", 2)
-                return
-            end
-
-            saveGameState = true
-            core_gamestate.requestGameState()
-
-            local vehicleSpeed = math.abs(be:getObjectVelocityXYZ(data.subjectID)) * speedUnit
-            if vehicleSpeed > 5 and mActiveRace then
-                return
-            end
-            mHotlap = nil
-            if vehicleSpeed > 5 then
-                if races[raceName].runningStart then
-                    if raceHudApplies(races[raceName]) then
-                        setRaceHudBanner("Hotlap staged — roll to start", "info", 3)
-                    else
-                        utils.displayMessage("Hotlap Staged", 2)
-                    end
-                    if races[raceName].hotlap then
-                        mHotlap = raceName
-                    end
-                else
-                    utils.displayMessage("You are too fast to stage.\nPlease back up and slow down to stage.", 2)
-                    staged = nil
-                    return
-                end
-            end
-            Assets:hideAllAssets()
-            lapCount = 0
-
-            -- Check if ALL race types are disabled (only disable if every type is 0)
-            local allTypesDisabled = false
-            local disabledTypes = {}
-            if career_economyAdjuster and races[raceName].type then
-                local totalTypes = 0
-                local disabledCount = 0
-
-                for _, raceType in ipairs(races[raceName].type) do
-                    totalTypes = totalTypes + 1
-                    local multiplier = career_economyAdjuster.getEffectiveSectionMultiplier({raceType})
-                    if multiplier == 0 then
-                        disabledCount = disabledCount + 1
-                        table.insert(disabledTypes, raceType)
-                    end
-                end
-
-                -- Only disable if ALL types are disabled
-                allTypesDisabled = totalTypes > 0 and disabledCount == totalTypes
-            end
-
-            if allTypesDisabled then
-                -- Don't allow staging for disabled races
-                local typesString = table.concat(disabledTypes, ", ")
-                utils.displayMessage(string.format("%s is disabled due to %s multiplier(s) being set to 0.", races[raceName].label, typesString), 5)
-                return
-            end
-
-            -- Initialize displays if drag race
-            if raceName == "drag" then
-                utils.initDisplays()
-                utils.resetDisplays()
-            end
-
-            -- Set staged race
-            staged = raceName
-            local vehId = data.subjectID
-            if career_career and career_career.isActive and career_career.isActive() then
-                -- Check if it's a business vehicle first
-                if career_modules_business_businessInventory and career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId then
-                    local businessId, vehicleId = career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId(data.subjectID)
-                    if businessId and vehicleId then
-                        vehId = career_modules_business_businessInventory.getBusinessVehicleIdentifier(businessId, vehicleId)
-                    elseif career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId then
-                        vehId = career_modules_inventory.getInventoryIdFromVehicleId(vehId) or vehId
-                    end
-                elseif career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId then
-                    vehId = career_modules_inventory.getInventoryIdFromVehicleId(vehId) or vehId
-                end
-            end
-            
-            local race = races[raceName] or {}
-            frh.stagingSubjectId = vehId
-            if raceHudApplies(race) then
-                showFreeroamRaceHud()
-            else
-                utils.displayStagedMessage(vehId, raceName)
-            end
-            utils.setActiveLight(raceName, "yellow")
-            if raceName == COMPETITIVE_HUB_RACE_ID and races.track and raceAllowsAiSpawn(races.track) then
-                prepareFreeroamAiForTrack()
-            end
+            tryCommitStagingEnter(raceName, data.subjectID)
         elseif event == "exit" then
             if mActiveRace ~= raceName then
+                if raceName == COMPETITIVE_HUB_RACE_ID then
+                    cancelCompetitiveGridFlow()
+                end
                 local r = races[raceName]
                 local useHud = r and raceHudApplies(r)
                 if useHud then
@@ -2393,6 +2499,9 @@ local function onBeamNGTrigger(data)
                         job.sleep(2.5)
                         hideFreeroamRaceHud()
                     end)
+                end
+                if raceName == COMPETITIVE_HUB_RACE_ID and gameplay_events_freContracts_sanctionedRacing then
+                    gameplay_events_freContracts_sanctionedRacing.onRaceAborted()
                 end
             end
         end
@@ -2463,6 +2572,9 @@ local function onBeamNGTrigger(data)
                 pushFreeroamRaceHudState(true)
             end
         elseif event == "enter" and staged == raceName and mActiveRace ~= raceName then
+            if raceName == COMPETITIVE_HUB_RACE_ID and (mCompetitiveCountdownJobActive or mCompetitiveAwaitingAiSpawn) then
+                return
+            end
             beginFreeroamRace(raceName, data.subjectID)
         else
             -- Player is not staged or race is not active
@@ -2619,7 +2731,6 @@ local function loadExtensions()
 
             if filename then
                 local extensionName = "gameplay_events_freeroam_" .. filename
-                setExtensionUnloadMode(extensionName, "manual")
                 extensions.unload(extensionName)
                 table.insert(loadedExtensions, extensionName)
             end
@@ -2650,13 +2761,14 @@ end
 local function onUpdate(dtReal, dtSim, dtRaw)
     if aiRacers and aiRacers.onUpdate then aiRacers.onUpdate(dtReal or 0) end
 
-    if not mActiveRace and hubState.raceSelected and mPlayerStagingSpot and isPlayerInStagingSpot(mPlayerStagingSpot) then
-        staged = COMPETITIVE_HUB_RACE_ID
-        mPlayerStagingSpot = nil
-        clearPlayerStagingCornerMarkers()
-        if core_groundMarkers and core_groundMarkers.resetAll then core_groundMarkers.resetAll() end
-        if races and races.track and raceAllowsAiSpawn(races.track) then
-            prepareFreeroamAiForTrack()
+    if not mActiveRace and hubState.raceSelected and hubState.inHubContext and mPlayerStagingSpot and not staged then
+        local pv = be:getPlayerVehicle(0)
+        if pv and isPlayerInStagingSpot(mPlayerStagingSpot) then
+            if tryCommitStagingEnter(COMPETITIVE_HUB_RACE_ID, pv:getID()) then
+                mPlayerStagingSpot = nil
+                clearPlayerStagingCornerMarkers()
+                if core_groundMarkers and core_groundMarkers.resetAll then core_groundMarkers.resetAll() end
+            end
         end
     end
 
@@ -2797,13 +2909,50 @@ end
 
 -- Freeroam hub: set route to main track (e.g. set laps event, main route)
 -- Spawn AI racers for track when player selects Track or Short Track and is staged at track (west_coast_usa style).
-prepareFreeroamAiForTrack = function()
+prepareFreeroamAiForTrack = function(poolReferenceHpOverride)
     if not races then races = utils.loadRaceData() end
-    if not aiRacers or not races or not races.track or not raceAllowsAiSpawn(races.track) then return end
+    local raceForAi = hubTrackRaceForAi()
+    if not aiRacers or not raceForAi or not raceAllowsAiSpawn(raceForAi) then return end
+    if mActiveRace and timerActive then return end
+    if aiRacers.clearSpawned then aiRacers.clearSpawned() end
+    mCompetitiveAwaitingAiSpawn = true
+    local refHp = type(poolReferenceHpOverride) == "number" and poolReferenceHpOverride > 0 and poolReferenceHpOverride or nil
+    if not refHp and type(hubState.sanctionedPoolRefHp) == "number" and hubState.sanctionedPoolRefHp > 0 then
+        refHp = hubState.sanctionedPoolRefHp
+    end
+    hubState.sanctionedPoolRefHp = nil
+    if not refHp and gameplay_events_freContracts_sanctionedRacing and gameplay_events_freContracts_sanctionedRacing.getAiPoolReferenceHp then
+        refHp = gameplay_events_freContracts_sanctionedRacing.getAiPoolReferenceHp()
+    end
+    local function afterAiSpawnCommit()
+        mCompetitiveAwaitingAiSpawn = false
+        if staged ~= COMPETITIVE_HUB_RACE_ID or mActiveRace then return end
+        if hubState.inHubContext or hubState.raceSelected then
+            startCompetitiveTrackCountdownAndRace()
+        end
+    end
     if aiRacers.spawnForStagingWithPlayerHp then
-        aiRacers.spawnForStagingWithPlayerHp(COMPETITIVE_HUB_RACE_ID, races.track, COMPETITIVE_HUB_RACE_ID, function() end)
+        aiRacers.spawnForStagingWithPlayerHp(COMPETITIVE_HUB_RACE_ID, raceForAi, COMPETITIVE_HUB_RACE_ID, function(spawned)
+            local count = tonumber(spawned) or 0
+            if count <= 0 then
+                log("W", "freeroamEvents", string.format("Sanctioned AI spawn returned %d, retrying with base pool.", count))
+                if aiRacers.spawnForStaging then
+                    local fallbackCount = tonumber(aiRacers.spawnForStaging(COMPETITIVE_HUB_RACE_ID, raceForAi, COMPETITIVE_HUB_RACE_ID)) or 0
+                    if fallbackCount <= 0 then
+                        log("W", "freeroamEvents", "Fallback sanctioned AI spawn also returned 0.")
+                    end
+                end
+            end
+            afterAiSpawnCommit()
+        end, refHp)
     elseif aiRacers.spawnForStaging then
-        aiRacers.spawnForStaging(COMPETITIVE_HUB_RACE_ID, races.track, COMPETITIVE_HUB_RACE_ID)
+        local spawned = tonumber(aiRacers.spawnForStaging(COMPETITIVE_HUB_RACE_ID, raceForAi, COMPETITIVE_HUB_RACE_ID)) or 0
+        if spawned <= 0 then
+            log("W", "freeroamEvents", "Sanctioned AI spawn returned 0.")
+        end
+        afterAiSpawnCommit()
+    else
+        afterAiSpawnCommit()
     end
 end
 
@@ -2840,8 +2989,10 @@ end
 
 -- Freeroam hub: Back button / clear selection
 M.onFreeroamHubClearSelection = function()
+    cancelCompetitiveGridFlow()
     -- Reset hub UI state
     hubState.raceSelected = false
+    hubState.useAltRoute = false
     hubState.practiceMode = false
     hubState.showingResult = false
     hideStagedFlashMessage()
@@ -2851,7 +3002,11 @@ M.onFreeroamHubClearSelection = function()
     hubState.stagedAtStart = false
     hubState.pendingStart = nil
     hubState.stagingSubjectID = nil
-    
+    hubState.sanctionedPoolRefHp = nil
+    if hubState.inHubContext and gameplay_events_freContracts_sanctionedRacing then
+        gameplay_events_freContracts_sanctionedRacing.onRaceAborted()
+    end
+
     -- Only clear staged/AI if we're in hub context (prevents affecting other freeroam events)
     if hubState.inHubContext then
         staged = nil
@@ -2865,6 +3020,7 @@ M.onFreeroamHubClearSelection = function()
 end
 
 M.onFreeroamHubClosed = function()
+    cancelCompetitiveGridFlow()
     -- If they turned off auto show, mark hub as not added for prefs-only flows
     if not hubState.prefs.autoShow then
         hubState.prefs.addedOnce = false
@@ -2874,6 +3030,7 @@ M.onFreeroamHubClosed = function()
     hubState.showingResult = false
     hubState.showingHistory = false
     hubState.raceSelected = false
+    hubState.useAltRoute = false
     hubState.practiceMode = false
     hubState.countdownDelay = nil
     hubState.countdownEndTime = nil
@@ -2901,6 +3058,48 @@ end
 M.clearFreSummarySession = function()
     frs.laps = {}
     frs.raceName = nil
+end
+
+M.startSanctionedRaceDispatch = function(useAltRoute, poolReferenceHpOverride)
+    if not races then
+        races = utils.loadRaceData()
+    end
+    preloadFreeroamAiPathsForTrack()
+    staged = nil
+    hubState.sanctionedPoolRefHp = (type(poolReferenceHpOverride) == "number" and poolReferenceHpOverride > 0) and poolReferenceHpOverride or nil
+    hubState.inHubContext = true
+    hubState.practiceMode = false
+    hubState.useAltRoute = useAltRoute == true
+    hubState.raceSelected = true
+    hubState.showingResult = false
+    hubState.showingHistory = false
+    hubState.pendingStart = nil
+    hubState.stagedAtStart = false
+    hubState.stagingSubjectID = nil
+    hideStagedFlashMessage()
+    if core_groundMarkers and core_groundMarkers.resetAll then
+        core_groundMarkers.resetAll()
+    end
+    saveGameState = true
+    core_gamestate.requestGameState()
+    local spot = loadPlayerStagingSpot()
+    if spot and spot.pos then
+        mPlayerStagingSpot = spot
+        if core_groundMarkers and core_groundMarkers.setPath then
+            core_groundMarkers.setPath(vec3(spot.pos[1], spot.pos[2], spot.pos[3]), { clearPathOnReachingTarget = false })
+        end
+        showPlayerStagingCornerMarkers(spot)
+    end
+    if mPlayerStagingSpot and isPlayerInStagingSpot(mPlayerStagingSpot) then
+        local pv = be:getPlayerVehicle(0)
+        if pv and tryCommitStagingEnter(COMPETITIVE_HUB_RACE_ID, pv:getID()) then
+            mPlayerStagingSpot = nil
+            clearPlayerStagingCornerMarkers()
+            if core_groundMarkers and core_groundMarkers.resetAll then
+                core_groundMarkers.resetAll()
+            end
+        end
+    end
 end
 
 return M

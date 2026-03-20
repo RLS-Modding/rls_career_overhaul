@@ -102,7 +102,7 @@ local defaultDisciplineEventXpConfig = {
 }
 
 local function makeDiscipline(id, label, skillKey, placeholderOnly)
-  return {
+  local d = {
     id = id,
     label = label,
     skillKey = skillKey,
@@ -111,6 +111,10 @@ local function makeDiscipline(id, label, skillKey, placeholderOnly)
     sponsors = deepCopy(defaultDisciplineSponsorConfig),
     eventXp = deepCopy(defaultDisciplineEventXpConfig)
   }
+  if id == "roadracing" then
+    d.sanctionedRacingUnlockLevel = 15
+  end
+  return d
 end
 
 local defaultConfig = {
@@ -343,6 +347,15 @@ M.getContractVehicleBlacklist = function(disciplineId)
     end
   end
   return merged
+end
+
+M.getSanctionedRacingUnlockLevel = function()
+  local d = getDisciplineConfig("roadracing")
+  local v = d and d.sanctionedRacingUnlockLevel
+  if v == nil then
+    return 15
+  end
+  return math.max(1, math.floor(tonumber(v) or 15))
 end
 
 return M

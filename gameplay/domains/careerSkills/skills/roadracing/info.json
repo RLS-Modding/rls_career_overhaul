@@ -282,6 +282,12 @@
                                            "icon":  "beamCurrency",
                                            "heading":  "Road Racing Bonus +140%",
                                            "description":  "Total Road Racing FRE event money and discipline XP bonus is now +140%."
+                                       },
+                                       {
+                                           "type":  "unlockCard",
+                                           "icon":  "badgeRoundStar",
+                                           "heading":  "Sanctioned Racing",
+                                           "description":  "FRE Contracts: sanctioned AI circuit races on phone (West Coast Track). Podium purse only—no lap or practice FRE payouts during the event."
                                        }
                                    ]
                    },

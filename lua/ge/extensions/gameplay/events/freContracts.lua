@@ -47,6 +47,9 @@ local function onUpdate(_, dtSim, _)
   if gameplay_events_freContracts_offers.syncAllOffers(now) then
           changed = true
   end
+  if gameplay_events_freContracts_sanctionedRacing.syncGeneration(now) then
+    changed = true
+  end
   gameplay_events_freContracts_state.refreshMaintenanceSchedule(now)
   if changed then
     gameplay_events_freContracts_ui.emitUiStateUpdate("maintenance")
@@ -68,6 +71,7 @@ local function onExtensionLoaded()
   local now = gameplay_events_freContracts_state.getSimTime()
   gameplay_events_freContracts_offers.purgeExpiredEntries(now)
   gameplay_events_freContracts_offers.syncAllOffers(now)
+  gameplay_events_freContracts_sanctionedRacing.syncGeneration(now)
   gameplay_events_freContracts_state.refreshMaintenanceSchedule(now)
 end
 
@@ -78,7 +82,9 @@ end
 local function onCareerModulesActivated()
   gameplay_events_freContracts_state.loadState()
   gameplay_events_freContracts_raceCache.refreshRaceCache()
-  gameplay_events_freContracts_state.refreshMaintenanceSchedule(gameplay_events_freContracts_state.getSimTime())
+  local now = gameplay_events_freContracts_state.getSimTime()
+  gameplay_events_freContracts_sanctionedRacing.syncGeneration(now)
+  gameplay_events_freContracts_state.refreshMaintenanceSchedule(now)
 end
 
 M.onUpdate = onUpdate

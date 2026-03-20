@@ -85,7 +85,10 @@ local function buildDisciplineUiState(disciplineId, now)
     sponsorBonusXp = sponsorBonuses.xp,
     contractCompleted = dState.contracts.completed or 0,
     contractFailed = dState.contracts.failed or 0,
-    sponsorsDropped = dState.sponsors.dropped or 0
+    sponsorsDropped = dState.sponsors.dropped or 0,
+    sanctionedRacingUnlockLevel = discipline.id == "roadracing" and freConfig.getSanctionedRacingUnlockLevel() or nil,
+    racingUnlocked = discipline.id == "roadracing" and gameplay_events_freContracts_sanctionedRacing.isRacingUnlocked(discipline.id) or
+      false
   }
 end
 
@@ -171,6 +174,7 @@ local function getUiState(filterDisciplineId)
   gameplay_events_freContracts_state.refreshMaintenanceSchedule(now)
   gameplay_events_freContracts_offers.purgeExpiredEntries(now)
   gameplay_events_freContracts_offers.syncAllOffers(now)
+  gameplay_events_freContracts_sanctionedRacing.syncGeneration(now)
 
   local activeContracts = {}
   local availableContracts = {}
@@ -219,7 +223,8 @@ local function getUiState(filterDisciplineId)
     activeContracts = activeContracts,
     availableContracts = availableContracts,
     activeSponsors = activeSponsors,
-    availableSponsors = availableSponsors
+    availableSponsors = availableSponsors,
+    sanctionedRacing = gameplay_events_freContracts_sanctionedRacing.getOfferUiSnapshot(now)
   }
 end
 

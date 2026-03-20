@@ -1603,6 +1603,8 @@ export default {
     signSponsor: sponsorId => {},
     dropSponsor: sponsorId => {},
     acknowledgeSponsorWarning: sponsorId => {},
+    commitSanctionedRace: () => {},
+    navigateSanctionedRace: () => {},
   },
 
   ui_phone_logistics: {

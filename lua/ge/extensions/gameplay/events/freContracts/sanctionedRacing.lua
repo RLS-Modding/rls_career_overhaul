@@ -1,0 +1,699 @@
+local M = {}
+
+local freConfig = require("gameplay/fre/config")
+local freeroamUtils = require("gameplay/events/freeroam/utils")
+
+local CONFIG_DIR = "competitiveRace"
+local CONFIG_RACE_FILENAME = "aiRacingConfig.json"
+local DISCIPLINE_ROAD = "roadracing"
+local RACE_ID_TRACK = "track"
+
+local DEFAULT_PODIUM_MULT = { first = 8, second = 4.5, third = 2.5 }
+local DEFAULT_PODIUM_VARIANCE = { min = 0.84, max = 1.16 }
+local PLACE_JITTER = { min = 0.92, max = 1.08 }
+
+-- Baseline money (race reward at target time) is multiplied by branch before podium place multipliers.
+local DEFAULT_CLASS_PAYOUT_MULT = {
+  stock = 1,
+  modified = 1.35,
+  super = 1.85,
+  open = 2.35,
+}
+
+-- Sub-brackets per stock/modified/super (vehiclePool bands). One is chosen at random (weighted) per offer.
+local DEFAULT_SANCTIONED_HP_BRACKETS = {
+  { branch = "stock", id = "stock_low", label = "Stock (low)", classHpMin = 80, classHpMax = 200, pickWeight = 1 },
+  { branch = "stock", id = "stock_mid", label = "Stock (mid)", classHpMin = 150, classHpMax = 280, pickWeight = 1 },
+  { branch = "stock", id = "stock_high", label = "Stock (high)", classHpMin = 220, classHpMax = 319, pickWeight = 1 },
+  { branch = "modified", id = "modified_low", label = "Modified (low)", classHpMin = 320, classHpMax = 400, pickWeight = 1 },
+  { branch = "modified", id = "modified_mid", label = "Modified (mid)", classHpMin = 380, classHpMax = 480, pickWeight = 1 },
+  { branch = "modified", id = "modified_high", label = "Modified (high)", classHpMin = 420, classHpMax = 549, pickWeight = 1 },
+  { branch = "super", id = "super_low", label = "Super (low)", classHpMin = 550, classHpMax = 600, pickWeight = 1 },
+  { branch = "super", id = "super_mid", label = "Super (mid)", classHpMin = 580, classHpMax = 650, pickWeight = 1 },
+  { branch = "super", id = "super_high", label = "Super (high)", classHpMin = 610, classHpMax = 699, pickWeight = 1 },
+}
+
+local cachedLevelId = nil
+local cachedCfg = nil
+local runtime = {
+  suppressFrePayouts = false,
+  podiumEligible = false,
+}
+
+local function defaultCfgSlice()
+  return {
+    variants = {},
+    defaultOfferRefreshMinutes = 12,
+    defaultStartDeadlineMinutes = 60,
+  }
+end
+
+local function normalizeRouteType(rt)
+  if type(rt) ~= "string" then
+    return "main"
+  end
+  if string.lower(rt) == "alt" then
+    return "alt"
+  end
+  return "main"
+end
+
+local function getRaceRewardAtTargetTime(levelId, raceName, routeType)
+  if type(levelId) ~= "string" or levelId == "" or type(raceName) ~= "string" or raceName == "" then
+    return nil
+  end
+  local data = jsonReadFile("levels/" .. levelId .. "/race_data.json")
+  if type(data) ~= "table" then
+    return nil
+  end
+  local race = (data.races or {})[raceName]
+  if type(race) ~= "table" then
+    return nil
+  end
+  local goalTime, baseReward
+  if normalizeRouteType(routeType) == "alt" and type(race.altRoute) == "table" then
+    goalTime = tonumber(race.altRoute.bestTime)
+    baseReward = tonumber(race.altRoute.reward)
+  else
+    goalTime = tonumber(race.bestTime)
+    baseReward = tonumber(race.reward)
+  end
+  if not goalTime or goalTime <= 0 or not baseReward or baseReward <= 0 then
+    return nil
+  end
+  return freeroamUtils.raceReward(goalTime, baseReward, goalTime, race.type)
+end
+
+local function getClassPayoutMultiplier(branch, overrides)
+  local key = type(branch) == "string" and string.lower(branch) or ""
+  local tab = type(overrides) == "table" and overrides or nil
+  if tab and tab[key] ~= nil then
+    local v = tonumber(tab[key])
+    if v and v > 0 then
+      return v
+    end
+  end
+  local d = DEFAULT_CLASS_PAYOUT_MULT[key]
+  if type(d) == "number" and d > 0 then
+    return d
+  end
+  return 1
+end
+
+local function podiumMultFromTable(t, key, defaultVal)
+  local tab = type(t) == "table" and t or {}
+  local v = tonumber(tab[key])
+  if v == nil then
+    return defaultVal
+  end
+  return math.max(0, v)
+end
+
+local function computePodiumPayouts(baseMoney, variant)
+  local helpers = gameplay_events_freContracts_helpers
+  local pm = variant.podiumMultipliers
+  local m1 = podiumMultFromTable(pm, "first", DEFAULT_PODIUM_MULT.first)
+  local m2 = podiumMultFromTable(pm, "second", DEFAULT_PODIUM_MULT.second)
+  local m3 = podiumMultFromTable(pm, "third", DEFAULT_PODIUM_MULT.third)
+  local pv = variant.podiumVariance
+  local vmin = math.max(0.1, tonumber(pv and pv.min) or DEFAULT_PODIUM_VARIANCE.min)
+  local vmax = math.max(vmin, tonumber(pv and pv.max) or DEFAULT_PODIUM_VARIANCE.max)
+  local bundle = helpers.randomFloat(vmin, vmax)
+  local function placePayout(mult)
+    local j = helpers.randomFloat(PLACE_JITTER.min, PLACE_JITTER.max)
+    return math.max(0, math.floor(baseMoney * mult * bundle * j + 0.5))
+  end
+  return placePayout(m1), placePayout(m2), placePayout(m3)
+end
+
+local function normalizeHpBrackets(list)
+  local out = {}
+  if type(list) ~= "table" then
+    return out
+  end
+  for _, b in ipairs(list) do
+    if type(b) == "table" then
+      local lo = math.floor(tonumber(b.classHpMin) or 0)
+      local hi = math.floor(tonumber(b.classHpMax) or lo)
+      if hi < lo then
+        lo, hi = hi, lo
+      end
+      local w = tonumber(b.pickWeight)
+      if w == nil then
+        w = 1
+      end
+      w = math.max(0, w)
+      if w > 0 and hi >= lo then
+        table.insert(out, {
+          branch = type(b.branch) == "string" and b.branch or nil,
+          id = type(b.id) == "string" and b.id or nil,
+          label = type(b.label) == "string" and b.label or nil,
+          classHpMin = lo,
+          classHpMax = hi,
+          pickWeight = w,
+        })
+      end
+    end
+  end
+  return out
+end
+
+local function pickWeightedFromList(entries)
+  local helpers = gameplay_events_freContracts_helpers
+  local total = 0
+  for _, v in ipairs(entries) do
+    total = total + (tonumber(v.pickWeight) or 0)
+  end
+  if total <= 0 then
+    return nil
+  end
+  local roll = helpers.randomFloat(0, total)
+  local running = 0
+  for _, v in ipairs(entries) do
+    running = running + (tonumber(v.pickWeight) or 0)
+    if roll < running then
+      return v
+    end
+  end
+  return entries[#entries]
+end
+
+local function collectSanctionedVariants(raw, disciplineId)
+  local list = {}
+  if type(raw) ~= "table" or type(raw.byRace) ~= "table" then
+    return list
+  end
+  local wantDisc = string.lower(tostring(disciplineId or ""))
+  for pathKey, entry in pairs(raw.byRace) do
+    if type(pathKey) == "string" and type(entry) == "table" then
+      local s = entry.sanctioned
+      if type(s) == "table" and s.enabled ~= false then
+        local sd = string.lower(tostring(s.disciplineId or DISCIPLINE_ROAD))
+        if sd == wantDisc then
+          local w = tonumber(s.pickWeight)
+          if w == nil then
+            w = 1
+          end
+          w = math.max(0, w)
+          if w > 0 then
+            table.insert(list, {
+              pathKey = pathKey,
+              raceName = type(s.raceName) == "string" and s.raceName ~= "" and s.raceName or RACE_ID_TRACK,
+              routeType = normalizeRouteType(s.routeType),
+              pickWeight = w,
+              hpBrackets = type(s.hpBrackets) == "table" and s.hpBrackets or nil,
+              podiumMultipliers = type(s.podiumMultipliers) == "table" and s.podiumMultipliers or nil,
+              podiumVariance = type(s.podiumVariance) == "table" and s.podiumVariance or nil,
+              classPayoutMultipliers = type(s.classPayoutMultipliers) == "table" and s.classPayoutMultipliers or nil,
+              offerRefreshMinutes = s.offerRefreshMinutes,
+              startDeadlineMinutes = s.startDeadlineMinutes,
+            })
+          end
+        end
+      end
+    end
+  end
+  return list
+end
+
+local function pickWeightedVariant(variants)
+  return pickWeightedFromList(variants)
+end
+
+local function loadCfg()
+  local levelId = gameplay_events_freContracts_state.getCurrentLevelId() or ""
+  if cachedLevelId == levelId and cachedCfg then
+    return cachedCfg
+  end
+  cachedLevelId = levelId
+  cachedCfg = defaultCfgSlice()
+  if levelId == "" then
+    return cachedCfg
+  end
+  local path = "levels/" .. levelId .. "/" .. CONFIG_DIR .. "/" .. CONFIG_RACE_FILENAME
+  local raw = jsonReadFile(path)
+  if type(raw) ~= "table" then
+    return cachedCfg
+  end
+  cachedCfg.variants = collectSanctionedVariants(raw, DISCIPLINE_ROAD)
+  if #cachedCfg.variants > 0 then
+    local v0 = cachedCfg.variants[1]
+    cachedCfg.defaultOfferRefreshMinutes =
+      math.max(0.25, tonumber(v0.offerRefreshMinutes) or cachedCfg.defaultOfferRefreshMinutes)
+    cachedCfg.defaultStartDeadlineMinutes =
+      math.max(1, tonumber(v0.startDeadlineMinutes) or cachedCfg.defaultStartDeadlineMinutes)
+  end
+  return cachedCfg
+end
+
+local function hasSanctionedForRoadRacing()
+  return #loadCfg().variants > 0
+end
+
+local function rollOfferForDiscipline(disciplineId, now)
+  local cfg = loadCfg()
+  local variants = cfg.variants
+  if #variants == 0 then
+    return nil
+  end
+  local variant = pickWeightedVariant(variants)
+  if not variant then
+    return nil
+  end
+  local rCache = gameplay_events_freContracts_raceCache
+  local raceEntry = rCache.findRaceEntry(disciplineId, variant.raceName, variant.routeType, nil)
+  if not raceEntry then
+    raceEntry = rCache.findRaceEntry(disciplineId, variant.raceName, "main", nil)
+  end
+  if not raceEntry then
+    return nil
+  end
+  local levelId = gameplay_events_freContracts_state.getCurrentLevelId() or ""
+  local baseMoney = getRaceRewardAtTargetTime(levelId, variant.raceName, variant.routeType)
+  if not baseMoney or baseMoney <= 0 then
+    return nil
+  end
+  local bracketSrc = variant.hpBrackets
+  if type(bracketSrc) ~= "table" or #bracketSrc == 0 then
+    bracketSrc = DEFAULT_SANCTIONED_HP_BRACKETS
+  end
+  local brackets = normalizeHpBrackets(bracketSrc)
+  if #brackets == 0 then
+    return nil
+  end
+  local br = pickWeightedFromList(brackets)
+  if not br then
+    return nil
+  end
+  local refMin = br.classHpMin
+  local refMax = br.classHpMax
+  local classPayMult = getClassPayoutMultiplier(br.branch, variant.classPayoutMultipliers)
+  local scaledBase = baseMoney * classPayMult
+  local p1, p2, p3 = computePodiumPayouts(scaledBase, variant)
+  local refresh = math.max(0.25, tonumber(variant.offerRefreshMinutes) or cfg.defaultOfferRefreshMinutes)
+  local deadline = math.max(1, tonumber(variant.startDeadlineMinutes) or cfg.defaultStartDeadlineMinutes)
+  return {
+    id = gameplay_events_freContracts_state.nextId("fre-sanctioned"),
+    disciplineId = disciplineId,
+    raceName = raceEntry.raceName,
+    raceLabel = raceEntry.raceLabel,
+    raceRouteType = raceEntry.routeType or variant.routeType,
+    sanctionedPathKey = variant.pathKey,
+    hpBracketId = br.id,
+    hpBracketBranch = br.branch,
+    hpBracketLabel = br.label,
+    hpBracketPayoutMult = classPayMult,
+    classHpMin = refMin,
+    classHpMax = refMax,
+    payoutFirst = p1,
+    payoutSecond = p2,
+    payoutThird = p3,
+    phase = "available",
+    createdAt = now,
+    visibleExpiresAt = now + refresh,
+    startDeadlineMinutes = deadline,
+    committedAt = nil,
+    startDeadlineAt = nil,
+  }
+end
+
+local function ensureSrState(state)
+  if not state.sanctionedRacing or type(state.sanctionedRacing) ~= "table" then
+    state.sanctionedRacing = { offer = nil, nextGenAt = 0 }
+  end
+  local sr = state.sanctionedRacing
+  if sr.offer ~= nil and type(sr.offer) ~= "table" then
+    sr.offer = nil
+  end
+  sr.nextGenAt = tonumber(sr.nextGenAt) or 0
+  return sr
+end
+
+local function skillOk(disciplineId)
+  local need = freConfig.getSanctionedRacingUnlockLevel()
+  return gameplay_events_freContracts_skills.getSkillLevel(disciplineId) >= need
+end
+
+function M.syncGeneration(now)
+  if not gameplay_events_freContracts_state.isCareerActive() then
+    return false
+  end
+  local state = gameplay_events_freContracts_state.getState()
+  local sr = ensureSrState(state)
+  local changed = false
+  local n = tonumber(now) or state.simTime or 0
+
+  if not skillOk(DISCIPLINE_ROAD) then
+    sr.lastSkillGateOk = false
+    if sr.offer then
+      sr.offer = nil
+      sr.nextGenAt = 0
+      changed = true
+    end
+    return changed
+  end
+
+  if not hasSanctionedForRoadRacing() then
+    if sr.offer then
+      sr.offer = nil
+      sr.nextGenAt = 0
+      changed = true
+    end
+    return changed
+  end
+
+  do
+    local prev = sr.lastSkillGateOk
+    if prev == nil then
+      prev = true
+    end
+    local justUnlocked = (prev == false)
+    sr.lastSkillGateOk = true
+    if justUnlocked and not sr.offer then
+      local newOffer = rollOfferForDiscipline(DISCIPLINE_ROAD, n)
+      if newOffer then
+        sr.offer = newOffer
+        sr.nextGenAt = newOffer.visibleExpiresAt
+      else
+        sr.nextGenAt = n + 0.5
+      end
+      changed = true
+    end
+  end
+
+  local offer = sr.offer
+  if offer and offer.phase == "committed" and (tonumber(offer.startDeadlineAt) or 0) > 0 and n >= offer.startDeadlineAt then
+    sr.offer = nil
+    sr.nextGenAt = n
+    changed = true
+    offer = nil
+  end
+
+  if offer and offer.phase == "available" and n >= (tonumber(offer.visibleExpiresAt) or 0) then
+    local newOffer = rollOfferForDiscipline(DISCIPLINE_ROAD, n)
+    if newOffer then
+      sr.offer = newOffer
+      sr.nextGenAt = newOffer.visibleExpiresAt
+    else
+      sr.offer = nil
+      sr.nextGenAt = n + 0.5
+    end
+    changed = true
+    offer = sr.offer
+  end
+
+  if not sr.offer and n >= (tonumber(sr.nextGenAt) or 0) then
+    local cfg = loadCfg()
+    local newOffer = rollOfferForDiscipline(DISCIPLINE_ROAD, n)
+    if newOffer then
+      sr.offer = newOffer
+      sr.nextGenAt = newOffer.visibleExpiresAt
+    else
+      sr.nextGenAt = n + math.max(1, tonumber(cfg.defaultOfferRefreshMinutes) or 12)
+    end
+    changed = true
+  end
+
+  return changed
+end
+
+function M.getOfferUiSnapshot(now)
+  local state = gameplay_events_freContracts_state.getState()
+  local sr = ensureSrState(state)
+  local n = tonumber(now) or state.simTime or 0
+  local offer = sr.offer
+  if not offer then
+    return nil
+  end
+  local useAlt = string.lower(tostring(offer.raceRouteType or "main")) == "alt"
+  return {
+    id = offer.id,
+    disciplineId = offer.disciplineId,
+    raceName = offer.raceName,
+    raceLabel = offer.raceLabel,
+    raceRouteType = offer.raceRouteType,
+    useAltRoute = useAlt,
+    hpBracketId = offer.hpBracketId,
+    hpBracketBranch = offer.hpBracketBranch,
+    hpBracketLabel = offer.hpBracketLabel,
+    hpBracketPayoutMult = offer.hpBracketPayoutMult,
+    classHpMin = offer.classHpMin,
+    classHpMax = offer.classHpMax,
+    payoutFirst = offer.payoutFirst,
+    payoutSecond = offer.payoutSecond,
+    payoutThird = offer.payoutThird,
+    phase = offer.phase,
+    minutesUntilRefresh = math.max(0, (tonumber(offer.visibleExpiresAt) or n) - n),
+    minutesUntilStartDeadline = (offer.phase == "committed" and offer.startDeadlineAt) and
+      math.max(0, offer.startDeadlineAt - n) or nil,
+  }
+end
+
+function M.isSanctionedRaceDispatchActive()
+  local state = gameplay_events_freContracts_state.getState()
+  local sr = ensureSrState(state)
+  local o = sr.offer
+  return o and (o.phase == "committed" or o.phase == "racing") or false
+end
+
+local function poolMidFromOffer(offer)
+  if not offer then return nil end
+  local lo = tonumber(offer.classHpMin)
+  local hi = tonumber(offer.classHpMax)
+  local mid = (lo and hi) and (lo + hi) / 2 or nil
+  if type(mid) ~= "number" or mid <= 0 then
+    return nil
+  end
+  return mid
+end
+
+local function pushDispatchForOffer(offer)
+  if not offer then return end
+  local fe = require("gameplay/events/freeroamEvents")
+  if fe.startSanctionedRaceDispatch then
+    fe.startSanctionedRaceDispatch(string.lower(tostring(offer.raceRouteType or "main")) == "alt", poolMidFromOffer(offer))
+  end
+end
+
+local function validateSanctionedOfferAvailable(offer)
+  if not offer or offer.phase ~= "available" then
+    return false, "No open offer to commit to."
+  end
+  if type(offer.raceName) ~= "string" or offer.raceName ~= RACE_ID_TRACK then
+    return false, "Unsupported sanctioned race."
+  end
+  return true, nil
+end
+
+function M.commitSanctionedRace()
+  if not gameplay_events_freContracts_state.isCareerActive() then
+    return false, "Career not active."
+  end
+  if not skillOk(DISCIPLINE_ROAD) then
+    return false, "Road Racing level too low."
+  end
+  if not hasSanctionedForRoadRacing() then
+    return false, "No sanctioned racing on this map."
+  end
+  local state = gameplay_events_freContracts_state.getState()
+  local sr = ensureSrState(state)
+  local offer = sr.offer
+  local ok, err = validateSanctionedOfferAvailable(offer)
+  if not ok then
+    return false, err
+  end
+  local n = state.simTime or 0
+  local cfg = loadCfg()
+  local deadlineMin = math.max(1, tonumber(offer.startDeadlineMinutes) or tonumber(cfg.defaultStartDeadlineMinutes) or 60)
+  offer.phase = "committed"
+  offer.committedAt = n
+  offer.startDeadlineAt = n + deadlineMin
+  gameplay_events_freContracts_state.refreshMaintenanceSchedule(n)
+  gameplay_events_freContracts_ui.emitUiStateUpdate("sanctioned_commit")
+  career_saveSystem.saveCurrent()
+  return true, nil
+end
+
+function M.navigateSanctionedRace()
+  if not gameplay_events_freContracts_state.isCareerActive() then
+    return false, "Career not active."
+  end
+  if not skillOk(DISCIPLINE_ROAD) then
+    return false, "Road Racing level too low."
+  end
+  local state = gameplay_events_freContracts_state.getState()
+  local sr = ensureSrState(state)
+  local offer = sr.offer
+  if not offer or (offer.phase ~= "committed" and offer.phase ~= "racing") then
+    return false, "Commit to a race first."
+  end
+  if type(offer.raceName) ~= "string" or offer.raceName ~= RACE_ID_TRACK then
+    return false, "Unsupported sanctioned race."
+  end
+  pushDispatchForOffer(offer)
+  gameplay_events_freContracts_ui.emitUiStateUpdate("sanctioned_navigate")
+  return true, nil
+end
+
+function M.requestGoToRace()
+  local ok, err = M.commitSanctionedRace()
+  if not ok then
+    return false, err
+  end
+  return M.navigateSanctionedRace()
+end
+
+function M.onRaceBegin(raceName)
+  if raceName ~= RACE_ID_TRACK then
+    return
+  end
+  local state = gameplay_events_freContracts_state.getState()
+  local sr = ensureSrState(state)
+  local offer = sr.offer
+  if not offer or (offer.phase ~= "committed" and offer.phase ~= "racing") then
+    return
+  end
+  if offer.raceName ~= raceName then
+    return
+  end
+  offer.phase = "racing"
+  runtime.suppressFrePayouts = true
+  runtime.podiumEligible = false
+  local hp = nil
+  if career_modules_competitiveRace_aiRacers and career_modules_competitiveRace_aiRacers.getPlayerVehiclePower then
+    hp = career_modules_competitiveRace_aiRacers.getPlayerVehiclePower()
+  end
+  if type(hp) == "number" and hp >= (tonumber(offer.classHpMin) or 0) and hp <= (tonumber(offer.classHpMax) or 1e9) then
+    runtime.podiumEligible = true
+  end
+end
+
+function M.shouldSuppressFrePayouts()
+  return runtime.suppressFrePayouts == true
+end
+
+function M.isPodiumEligible()
+  return runtime.podiumEligible == true
+end
+
+function M.clearRuntime()
+  runtime.suppressFrePayouts = false
+  runtime.podiumEligible = false
+end
+
+local function payPodium(place)
+  local state = gameplay_events_freContracts_state.getState()
+  local sr = ensureSrState(state)
+  local offer = sr.offer
+  if not offer then
+    return
+  end
+  local amount = 0
+  if place == 1 then
+    amount = tonumber(offer.payoutFirst) or 0
+  elseif place == 2 then
+    amount = tonumber(offer.payoutSecond) or 0
+  elseif place == 3 then
+    amount = tonumber(offer.payoutThird) or 0
+  end
+  if amount <= 0 or not career_modules_payment or not career_modules_payment.reward then
+    M.finishOfferClear()
+    return
+  end
+  career_modules_payment.reward({
+    money = { amount = amount, canBeNegative = false }
+  }, {
+    label = string.format("Sanctioned race — P%d", place),
+    tags = { "gameplay", "reward", "fre", "sanctioned_race" }
+  }, true)
+  M.finishOfferClear()
+end
+
+function M.finishOfferClear()
+  local state = gameplay_events_freContracts_state.getState()
+  local sr = ensureSrState(state)
+  sr.offer = nil
+  sr.nextGenAt = state.simTime or 0
+  M.clearRuntime()
+  local now = state.simTime or 0
+  gameplay_events_freContracts_state.refreshMaintenanceSchedule(now)
+  career_saveSystem.saveCurrent()
+  gameplay_events_freContracts_ui.emitUiStateUpdate("sanctioned_race_end")
+end
+
+function M.settleFromAiResults(aiResults)
+  if not runtime.suppressFrePayouts then
+    return
+  end
+  if not aiResults then
+    M.finishOfferClear()
+    return
+  end
+  local place = nil
+  for _, row in ipairs(aiResults) do
+    if row.isPlayer then
+      place = tonumber(row.place)
+      break
+    end
+  end
+  if not place then
+    M.finishOfferClear()
+    return
+  end
+  if not runtime.podiumEligible then
+    M.finishOfferClear()
+    return
+  end
+  if place >= 1 and place <= 3 then
+    payPodium(place)
+  else
+    M.finishOfferClear()
+  end
+end
+
+function M.onRaceAborted()
+  if not gameplay_events_freContracts_state.isCareerActive() then
+    return
+  end
+  local state = gameplay_events_freContracts_state.getState()
+  local sr = ensureSrState(state)
+  local o = sr.offer
+  if not o and not runtime.suppressFrePayouts then
+    return
+  end
+  if o and (o.phase == "racing" or o.phase == "committed") or runtime.suppressFrePayouts then
+    M.finishOfferClear()
+  end
+end
+
+function M.isRacingUnlocked(disciplineId)
+  if string.lower(tostring(disciplineId or "")) ~= DISCIPLINE_ROAD then
+    return false
+  end
+  return skillOk(DISCIPLINE_ROAD)
+end
+
+function M.getAiPoolReferenceHp()
+  if not gameplay_events_freContracts_state.isCareerActive() then
+    return nil
+  end
+  local state = gameplay_events_freContracts_state.getState()
+  local sr = ensureSrState(state)
+  local o = sr.offer
+  if not o or type(o.raceName) ~= "string" or o.raceName ~= RACE_ID_TRACK then
+    return nil
+  end
+  if o.phase ~= "committed" and o.phase ~= "racing" then
+    return nil
+  end
+  local lo = tonumber(o.classHpMin)
+  local hi = tonumber(o.classHpMax)
+  if not lo or not hi then
+    return nil
+  end
+  return (lo + hi) / 2
+end
+
+M.loadCfg = loadCfg
+
+return M

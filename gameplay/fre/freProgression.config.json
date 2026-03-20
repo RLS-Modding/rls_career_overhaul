@@ -121,6 +121,7 @@
             "id": "roadracing",
             "label": "Road Racing",
             "skillKey": "fre-roadracing",
+            "sanctionedRacingUnlockLevel": 15,
             "placeholderOnly": false,
             "contracts": {
                 "tierUnlockLevels": {

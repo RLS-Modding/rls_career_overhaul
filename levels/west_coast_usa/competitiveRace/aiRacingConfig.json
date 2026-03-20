@@ -1,5 +1,5 @@
 {
-  "_comment": "Per-race structure. vehiclePool: AI by player HP class (stock <320, modified 320-550, super 550-699, open 700+ HP). Pick closest match, one per model then fill.",
+  "_comment": "sanctioned: optional hpBrackets, classPayoutMultipliers { stock, modified, super, open } (defaults in Lua: 1 / 1.35 / 1.85 / 2.35). AI uses bracket midpoint after commit.",
   "vehiclePool": {
     "stock": [
       { "model": "covet", "config": "AI_Covet_stock" },
@@ -35,7 +35,14 @@
       "navTargetReachDistance": 20,
       "startEngineOnSpawn": true,
       "filterPoolByPowerMeetOrExceed": true,
-      "aiPowerExceedCapPct": 0.25
+      "aiPowerExceedCapPct": 0.25,
+      "sanctioned": {
+        "raceName": "track",
+        "routeType": "main",
+        "pickWeight": 1,
+        "offerRefreshMinutes": 12,
+        "startDeadlineMinutes": 60
+      }
     },
     "trackalt": {
       "pathRoad": "shortTrack",
@@ -46,7 +53,15 @@
       "navTargetReachDistance": 20,
       "startEngineOnSpawn": true,
       "filterPoolByPowerMeetOrExceed": true,
-      "aiPowerExceedCapPct": 0.25
+      "aiPowerExceedCapPct": 0.25,
+      "sanctioned": {
+        "enabled": false,
+        "raceName": "track",
+        "routeType": "alt",
+        "pickWeight": 1,
+        "offerRefreshMinutes": 12,
+        "startDeadlineMinutes": 60
+      }
     }
   }
 }

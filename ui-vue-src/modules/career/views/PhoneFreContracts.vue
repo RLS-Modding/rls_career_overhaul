@@ -98,6 +98,9 @@
               <span class="tab-label">Sponsors</span>
               <span class="tab-count">{{ sponsorsTabCount }}</span>
             </button>
+            <button v-if="showRacingTab" :class="{ active: tab === 'racing' }" @click="tab = 'racing'">
+              <span class="tab-label">Racing</span>
+            </button>
           </div>
         </div>
 
@@ -194,6 +197,79 @@
                   <button class="action-btn primary full-width" :disabled="actionBusy || !canAcceptContract(contract)" @click="acceptContract(contract.id)">
                     {{ canAcceptContract(contract) ? 'Accept' : 'Slots Full' }}
                   </button>
+                </div>
+              </article>
+            </section>
+          </div>
+
+          <div v-else-if="tab === 'racing' && showRacingTab" class="panel racing-panel">
+            <section class="section-block">
+              <div class="section-header">
+                <div>
+                  <div class="section-kicker">Sanctioned</div>
+                  <div class="section-title">Available races</div>
+                </div>
+              </div>
+              <div v-if="!sanctionedOfferAvailable" class="empty-card">
+                <div class="empty-card-title">{{ sanctionedAvailableEmptyTitle }}</div>
+                <div class="empty-card-copy">{{ sanctionedAvailableEmptyCopy }}</div>
+              </div>
+              <article v-else class="sanctioned-card" :class="sanctionedAvailableUrgency">
+                <div class="sanctioned-header">
+                  <div class="sanctioned-title">{{ sanctionedOfferAvailable.raceLabel || 'Circuit' }}</div>
+                  <div class="sanctioned-route">{{ sanctionedRouteHintFor(sanctionedOfferAvailable) }}</div>
+                </div>
+                <div class="sanctioned-class-strip">
+                  <span class="sanctioned-class-badge">{{ sanctionedOfferAvailable.hpBracketBranch || 'stock' }}</span>
+                  <span class="sanctioned-class-range">{{ sanctionedOfferAvailable.classHpMin }}–{{ sanctionedOfferAvailable.classHpMax }} HP</span>
+                  <span class="sanctioned-status-chip" :class="sanctionedAvailableUrgency">Open offer</span>
+                </div>
+                <div class="sanctioned-podium">
+                  <div class="sanctioned-place" v-for="(p, i) in sanctionedPlacesForOffer(sanctionedOfferAvailable)" :key="'av-' + i">
+                    <span class="sanctioned-place-label">{{ p.label }}</span>
+                    <span class="sanctioned-place-value">${{ formatMoney(p.value) }}</span>
+                  </div>
+                </div>
+                <div class="sanctioned-footer">
+                  <div class="sanctioned-timer">{{ sanctionedRefreshLabelFor(sanctionedOfferAvailable) }}</div>
+                  <button class="action-btn primary" :disabled="actionBusy" @click="commitSanctionedRace">Commit to race</button>
+                </div>
+              </article>
+            </section>
+
+            <section class="section-block">
+              <div class="section-header">
+                <div>
+                  <div class="section-kicker">Sanctioned</div>
+                  <div class="section-title">Next race</div>
+                </div>
+              </div>
+              <div v-if="!sanctionedOfferCommitted" class="empty-card">
+                <div class="empty-card-title">{{ sanctionedCommittedEmptyTitle }}</div>
+                <div class="empty-card-copy">{{ sanctionedCommittedEmptyCopy }}</div>
+              </div>
+              <article v-else class="sanctioned-card" :class="sanctionedCommittedUrgency">
+                <div class="sanctioned-header">
+                  <div class="sanctioned-title">{{ sanctionedOfferCommitted.raceLabel || 'Circuit' }}</div>
+                  <div class="sanctioned-route">{{ sanctionedRouteHintFor(sanctionedOfferCommitted) }}</div>
+                </div>
+                <div class="sanctioned-class-strip">
+                  <span class="sanctioned-class-badge">{{ sanctionedOfferCommitted.hpBracketBranch || 'stock' }}</span>
+                  <span class="sanctioned-class-range">{{ sanctionedOfferCommitted.classHpMin }}–{{ sanctionedOfferCommitted.classHpMax }} HP</span>
+                  <span class="sanctioned-status-chip" :class="sanctionedCommittedUrgency">{{ sanctionedCommittedPhaseLabel }}</span>
+                </div>
+                <div class="sanctioned-podium">
+                  <div class="sanctioned-place" v-for="(p, i) in sanctionedPlacesForOffer(sanctionedOfferCommitted)" :key="'nx-' + i">
+                    <span class="sanctioned-place-label">{{ p.label }}</span>
+                    <span class="sanctioned-place-value">${{ formatMoney(p.value) }}</span>
+                  </div>
+                </div>
+                <div class="sanctioned-footer">
+                  <div class="sanctioned-timer">
+                    <template v-if="sanctionedOfferCommitted.phase === 'racing'">Race in progress</template>
+                    <template v-else> Start within <strong>{{ sanctionedStartLabelFor(sanctionedOfferCommitted) }}</strong> </template>
+                  </div>
+                  <button class="action-btn primary" :disabled="actionBusy" @click="navigateSanctionedRace">Go to race</button>
                 </div>
               </article>
             </section>
@@ -315,7 +391,14 @@ const disciplineMenuOpen = ref(false)
 const disciplineMenuRef = ref(null)
 const lastSyncMs = ref(Date.now())
 const nowMs = ref(Date.now())
-const state = ref({ disciplines: [], activeContracts: [], availableContracts: [], activeSponsors: [], availableSponsors: [] })
+const state = ref({
+  disciplines: [],
+  activeContracts: [],
+  availableContracts: [],
+  activeSponsors: [],
+  availableSponsors: [],
+  sanctionedRacing: null,
+})
 
 function loadSavedDiscipline() {
   try {
@@ -361,11 +444,58 @@ const sortedActiveSponsors = computed(() => [...filteredActiveSponsors.value].so
 const sortedAvailableSponsors = computed(() => [...filteredAvailableSponsors.value].sort(sortByMinutesRemaining))
 const contractsTabCount = computed(() => sortedActiveContracts.value.length + sortedAvailableContracts.value.length)
 const sponsorsTabCount = computed(() => sortedActiveSponsors.value.length + sortedAvailableSponsors.value.length)
+const showRacingTab = computed(
+  () => selectedDiscipline.value === 'roadracing' && Boolean(selectedDisciplineInfo.value?.racingUnlocked),
+)
+const sanctionedRacingOffer = computed(() => (showRacingTab.value ? state.value.sanctionedRacing : null))
+const sanctionedOfferAvailable = computed(() => {
+  const o = sanctionedRacingOffer.value
+  return o && o.phase === 'available' ? o : null
+})
+const sanctionedOfferCommitted = computed(() => {
+  const o = sanctionedRacingOffer.value
+  return o && (o.phase === 'committed' || o.phase === 'racing') ? o : null
+})
+const sanctionedAvailableEmptyTitle = computed(() => (sanctionedRacingOffer.value ? 'Offer already locked in' : 'No open offers'))
+const sanctionedAvailableEmptyCopy = computed(() => {
+  if (!sanctionedRacingOffer.value) {
+    return 'A new circuit offer will show after the window resets. Stay on West Coast with Road Racing selected.'
+  }
+  return 'Your spot is reserved under Next race. Finish that run or wait for it to time out to see a new offer here.'
+})
+const sanctionedCommittedEmptyTitle = computed(() => 'No active race')
+const sanctionedCommittedEmptyCopy = computed(() => {
+  if (!sanctionedRacingOffer.value) {
+    return 'When an offer appears above, commit to start the one-hour window and see it here.'
+  }
+  return 'Commit to the open offer above to lock the grid, podium payouts, and start deadline.'
+})
+const sanctionedCommittedPhaseLabel = computed(() => (sanctionedOfferCommitted.value?.phase === 'racing' ? 'In progress' : 'Committed'))
+const sanctionedAvailableUrgency = computed(() => {
+  const o = sanctionedOfferAvailable.value
+  if (!o) return 'normal'
+  const m = displaySanctionedMinutes(o.minutesUntilRefresh)
+  if (m < 1) return 'urgent'
+  if (m <= 3) return 'soon'
+  return 'normal'
+})
+const sanctionedCommittedUrgency = computed(() => {
+  const o = sanctionedOfferCommitted.value
+  if (!o || o.phase === 'racing') return 'normal'
+  const m = displaySanctionedMinutes(o.minutesUntilStartDeadline)
+  if (m < 1) return 'urgent'
+  if (m <= 15) return 'soon'
+  return 'normal'
+})
 const summaryUnlockMessages = computed(() => {
   if (!selectedDisciplineInfo.value) return []
   const messages = []
-  if (!selectedDisciplineInfo.value.contractsUnlocked) messages.push(`Contracts unlock at level ${selectedDisciplineInfo.value.contractUnlockLevel}.`)
-  if (!selectedDisciplineInfo.value.sponsorsUnlocked) messages.push(`Sponsors unlock at level ${selectedDisciplineInfo.value.sponsorUnlockLevel}.`)
+  const d = selectedDisciplineInfo.value
+  if (!d.contractsUnlocked) messages.push(`Contracts unlock at level ${d.contractUnlockLevel}.`)
+  if (!d.sponsorsUnlocked) messages.push(`Sponsors unlock at level ${d.sponsorUnlockLevel}.`)
+  if (d.id === 'roadracing' && !d.racingUnlocked && typeof d.sanctionedRacingUnlockLevel === 'number') {
+    messages.push(`Sanctioned racing unlocks at Road Racing level ${d.sanctionedRacingUnlockLevel}.`)
+  }
   return messages
 })
 const contractsLockedMessage = computed(() => !selectedDisciplineInfo.value || selectedDisciplineInfo.value.contractsUnlocked ? '' : `Contracts unlock at level ${selectedDisciplineInfo.value.contractUnlockLevel}.`)
@@ -386,6 +516,7 @@ function applyState(data) {
     availableContracts: normalizeList(normalized.availableContracts),
     activeSponsors: normalizeList(normalized.activeSponsors),
     availableSponsors: normalizeList(normalized.availableSponsors),
+    sanctionedRacing: normalized.sanctionedRacing && typeof normalized.sanctionedRacing === 'object' ? normalized.sanctionedRacing : null,
   }
   if (selectedDiscipline.value !== 'all' && !state.value.disciplines.some(discipline => discipline?.id === selectedDiscipline.value)) {
     selectedDiscipline.value = 'all'
@@ -394,6 +525,10 @@ function applyState(data) {
 }
 
 function displayRemaining(baseMinutes) {
+  return Math.max(0, Number(baseMinutes || 0) - Math.max(0, (nowMs.value - lastSyncMs.value) / 60000))
+}
+
+function displaySanctionedMinutes(baseMinutes) {
   return Math.max(0, Number(baseMinutes || 0) - Math.max(0, (nowMs.value - lastSyncMs.value) / 60000))
 }
 
@@ -407,6 +542,29 @@ function tierLabel(tier) {
 
 function formatMoney(value) {
   return Math.floor(Number(value || 0)).toLocaleString()
+}
+
+function sanctionedRouteHintFor(o) {
+  if (!o?.useAltRoute) return 'Main circuit'
+  return 'Short track (alt)'
+}
+function sanctionedRefreshLabelFor(o) {
+  const m = o?.minutesUntilRefresh
+  if (m == null) return '—'
+  return `Offer refresh in ${formatMinutes(displaySanctionedMinutes(m))}`
+}
+function sanctionedStartLabelFor(o) {
+  const m = o?.minutesUntilStartDeadline
+  if (m == null) return ''
+  return formatMinutes(displaySanctionedMinutes(m))
+}
+function sanctionedPlacesForOffer(o) {
+  if (!o) return []
+  return [
+    { label: '1st', value: o.payoutFirst },
+    { label: '2nd', value: o.payoutSecond },
+    { label: '3rd', value: o.payoutThird },
+  ]
 }
 
 function formatTime(seconds) {
@@ -444,6 +602,9 @@ function toggleDisciplineMenu() {
 function selectDiscipline(disciplineId) {
   selectedDiscipline.value = disciplineId
   disciplineMenuOpen.value = false
+  if (disciplineId !== 'roadracing' && tab.value === 'racing') {
+    tab.value = 'contracts'
+  }
 }
 
 watch(selectedDiscipline, (disciplineId) => {
@@ -451,6 +612,12 @@ watch(selectedDiscipline, (disciplineId) => {
     localStorage.setItem(SELECTED_DISCIPLINE_KEY, disciplineId || 'all')
   } catch (error) {
     // Ignore storage failures and keep the in-memory selection.
+  }
+})
+
+watch(showRacingTab, (ok) => {
+  if (!ok && tab.value === 'racing') {
+    tab.value = 'contracts'
   }
 })
 
@@ -633,6 +800,34 @@ function acknowledgeSponsorWarning(sponsorId) {
   return performAction(lua.ui_phone_freContracts.acknowledgeSponsorWarning, sponsorId)
 }
 
+async function commitSanctionedRace() {
+  if (actionBusy.value) return
+  actionBusy.value = true
+  try {
+    const result = await lua.ui_phone_freContracts.commitSanctionedRace()
+    errorMessage.value = result?.ok === false ? (result.error || 'Action failed.') : ''
+  } catch (error) {
+    errorMessage.value = 'Action failed.'
+    await refreshState()
+  } finally {
+    actionBusy.value = false
+  }
+}
+
+async function navigateSanctionedRace() {
+  if (actionBusy.value) return
+  actionBusy.value = true
+  try {
+    const result = await lua.ui_phone_freContracts.navigateSanctionedRace()
+    errorMessage.value = result?.ok === false ? (result.error || 'Action failed.') : ''
+  } catch (error) {
+    errorMessage.value = 'Action failed.'
+    await refreshState()
+  } finally {
+    actionBusy.value = false
+  }
+}
+
 onMounted(async () => {
   document.addEventListener('pointerdown', onDocumentPointerDown)
   events.on('phoneFreContractsData', handleFreContractsData)
@@ -682,4 +877,28 @@ onUnmounted(async () => {
 .deal-card-main{grid-template-columns:1.15fr .9fr;gap:8px;margin-top:12px}.deal-card-main.sponsor-main{grid-template-columns:1fr 1fr}.reward-label,.objective-label,.detail-label{color:rgba(219,226,237,.6)}.reward-value,.objective-value,.detail-value{margin-top:6px;font-weight:700;line-height:1.15;word-break:break-word}.reward-value{font-size:23px}.reward-value.compact,.objective-value.compact{font-size:16px}.objective-value{font-size:17px}.detail-value{font-size:13px}.reward-sub,.objective-sub{margin-top:6px;color:rgba(219,226,237,.62);font-size:11px}.deal-card-footer{gap:8px;margin-top:12px}
 .action-btn{min-height:42px;border-radius:13px;font-size:12px;font-weight:700;flex:1;border:1px solid rgba(255,255,255,.08);color:#fff9f5}.action-btn.primary{background:linear-gradient(180deg,#e06d32,#ba4e1d);box-shadow:0 10px 24px rgba(186,78,29,.22)}.action-btn.danger{background:linear-gradient(180deg,rgba(131,63,53,.92),rgba(96,40,35,.92))}.action-btn.full-width{width:100%;flex:1 1 100%}
 .warning-panel{margin-top:10px;padding:11px 12px;border-radius:14px;border:1px solid rgba(250,206,107,.22);background:rgba(249,187,70,.11);color:#ffe5ad;font-size:11px;line-height:1.45}.inline-action{margin-top:9px;padding:9px 12px;border-radius:12px;border:1px solid rgba(250,206,107,.24);background:rgba(255,238,195,.06);color:#ffeabf;font-size:11px;font-weight:700}.error{margin-bottom:12px;padding:10px 12px;border-radius:14px;border:1px solid rgba(208,84,84,.34);background:rgba(140,42,42,.22);color:#ffbfbf;font-size:12px}
+
+.sanctioned-card{border-radius:18px;border:1px solid rgba(228,114,56,.14);background:#171c25;box-shadow:0 14px 34px rgba(0,0,0,.22);padding:16px;display:flex;flex-direction:column;gap:14px}
+.sanctioned-card.urgent{border-color:rgba(249,186,88,.28)}
+.sanctioned-header{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.sanctioned-title{font-size:17px;font-weight:700;line-height:1.15}
+.sanctioned-route{color:rgba(219,226,237,.58);font-size:12px;font-weight:500;flex-shrink:0}
+.sanctioned-class-strip{display:flex;align-items:center;gap:8px}
+.sanctioned-class-badge{padding:5px 10px;border-radius:8px;background:rgba(224,107,50,.14);border:1px solid rgba(224,107,50,.22);color:#f4c49c;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.sanctioned-class-range{color:rgba(219,226,237,.72);font-size:12px;font-weight:600}
+.sanctioned-status-chip{margin-left:auto;padding:4px 9px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;line-height:1.15}
+.sanctioned-status-chip.normal{border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:rgba(234,239,245,.72)}
+.sanctioned-status-chip.soon{border:1px solid rgba(255,178,104,.28);background:rgba(217,112,53,.16);color:#ffd7b6}
+.sanctioned-status-chip.urgent{border:1px solid rgba(250,206,107,.32);background:rgba(249,187,70,.18);color:#ffe39f}
+.sanctioned-podium{display:flex;gap:6px}
+.sanctioned-place{flex:1;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);text-align:center;display:flex;flex-direction:column;gap:4px}
+.sanctioned-place-label{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(219,226,237,.55)}
+.sanctioned-place-value{font-size:16px;font-weight:700;line-height:1.15}
+.sanctioned-place:first-child .sanctioned-place-value{color:#f4c49c}
+.sanctioned-place:nth-child(2) .sanctioned-place-value{color:rgba(228,233,242,.82)}
+.sanctioned-place:nth-child(3) .sanctioned-place-value{color:rgba(219,226,237,.62)}
+.sanctioned-footer{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.sanctioned-timer{flex:1;min-width:0;color:rgba(219,226,237,.6);font-size:12px;line-height:1.3}
+.sanctioned-timer strong{color:rgba(244,193,156,.9)}
+.sanctioned-footer .action-btn{flex:0 0 auto;padding:0 20px}
 </style>
