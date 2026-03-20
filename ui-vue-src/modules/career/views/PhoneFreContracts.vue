@@ -221,7 +221,8 @@
                 </div>
                 <div class="sanctioned-class-strip">
                   <span class="sanctioned-class-badge">{{ sanctionedOfferAvailable.hpBracketBranch || 'stock' }}</span>
-                  <span class="sanctioned-class-range">{{ sanctionedOfferAvailable.classHpMin }}–{{ sanctionedOfferAvailable.classHpMax }} HP</span>
+                  <span class="sanctioned-class-range">Up to {{ sanctionedOfferAvailable.classHpMax }} HP</span>
+                  <span class="sanctioned-class-range">{{ sanctionedLapsLabelFor(sanctionedOfferAvailable) }}</span>
                   <span class="sanctioned-status-chip" :class="sanctionedAvailableUrgency">Open offer</span>
                 </div>
                 <div class="sanctioned-podium">
@@ -255,7 +256,8 @@
                 </div>
                 <div class="sanctioned-class-strip">
                   <span class="sanctioned-class-badge">{{ sanctionedOfferCommitted.hpBracketBranch || 'stock' }}</span>
-                  <span class="sanctioned-class-range">{{ sanctionedOfferCommitted.classHpMin }}–{{ sanctionedOfferCommitted.classHpMax }} HP</span>
+                  <span class="sanctioned-class-range">Up to {{ sanctionedOfferCommitted.classHpMax }} HP</span>
+                  <span class="sanctioned-class-range">{{ sanctionedLapsLabelFor(sanctionedOfferCommitted) }}</span>
                   <span class="sanctioned-status-chip" :class="sanctionedCommittedUrgency">{{ sanctionedCommittedPhaseLabel }}</span>
                 </div>
                 <div class="sanctioned-podium">
@@ -547,6 +549,10 @@ function formatMoney(value) {
 function sanctionedRouteHintFor(o) {
   if (!o?.useAltRoute) return 'Main circuit'
   return 'Short track (alt)'
+}
+function sanctionedLapsLabelFor(o) {
+  const n = Math.max(1, Math.floor(Number(o?.lapCount) || 3))
+  return n === 1 ? '1 lap' : `${n} laps`
 }
 function sanctionedRefreshLabelFor(o) {
   const m = o?.minutesUntilRefresh

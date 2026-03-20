@@ -44,6 +44,12 @@
 
       </div>
 
+      <div class="frh-header-live frh-mono" ng-if="state.phase === 'staging' && state.isLapRace && state.totalLaps > 0">
+
+        <span>{{ state.totalLaps }} laps</span>
+
+      </div>
+
     </div>
 
 

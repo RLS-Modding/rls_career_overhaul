@@ -47,9 +47,8 @@ local DEFAULT_CONFIG = {
     delayedDespawnStaggerSeconds = 4.0,
     startEngineOnSpawn = true,
     scriptBootstrapDistance = 6.0,
-    -- AI pool power filter: only spawn models with power >= player and <= player * (1 + aiPowerExceedCapPct). Set to false to use class pool only.
+    -- AI pool power filter: only spawn models with power <= refHp * (1 + aiPowerExceedCapPct). No lower bound. Set false to skip filtering.
     filterPoolByPowerMeetOrExceed = true,
-    -- Cap how much more power AI can have than player (0.25 = 25% max over player). Easily tunable.
     aiPowerExceedCapPct = 0.25,
 }
 
@@ -385,7 +384,7 @@ local function getPowerForModelConfig(modelKey, configKey)
     return getPowerHpFromConfig(config)
 end
 
--- Filter raw pool to models with power in [playerPowerHp, playerPowerHp * (1 + capPct)]. No fallback: if none in band, return empty so we don't spawn wrong cars.
+-- Filter raw pool to models with power <= playerPowerHp * (1 + capPct). Any amount below that is allowed; none over the cap.
 local function filterPoolByPower(rawPool, playerPowerHp, cfg)
     if type(rawPool) ~= "table" or #rawPool == 0 then return rawPool end
     if cfg.filterPoolByPowerMeetOrExceed ~= true or type(playerPowerHp) ~= "number" or playerPowerHp < 0 then return rawPool end
@@ -398,7 +397,7 @@ local function filterPoolByPower(rawPool, playerPowerHp, cfg)
         if type(model) ~= "string" then goto continue end
         local configKey = type(entry) == "table" and entry.config or nil
         local modelPowerHp = getPowerForModelConfig(model, configKey)
-        if modelPowerHp and modelPowerHp >= playerPowerHp and modelPowerHp <= maxPower then
+        if modelPowerHp and modelPowerHp <= maxPower then
             table.insert(out, entry)
         end
         ::continue::
@@ -701,7 +700,7 @@ end
 -- Spawn AI with similar power to the player vehicle: reads player HP via getPlayerVehiclePowerReliable, picks HP class (D/C/B/A), then spawns from vehiclePoolByHpClass[class] or defaultVehiclePool. Calls callback(spawnedCount).
 -- When cfg.vehiclePool is set: uses stock/modified/super by HP (<320, 320-550, >550), picks closest match with one per model then fill, spawns model+config.
 -- When spawnSameVehicleAsPlayer is true: spawns the player's exact model+config.
--- poolReferenceHp: optional HP (not watts); when set, skip live player read and use this for class / pool matching (e.g. sanctioned bracket midpoint).
+-- poolReferenceHp: optional HP (not watts); when set, skip live player read and use this for class / pool matching (e.g. sanctioned class HP max).
 function M.spawnForStagingWithPlayerHp(raceName, race, facilityName, callback, poolReferenceHp)
     if type(callback) ~= "function" then return end
     local cfg = race and getMergedConfigForRace(race) or getCurrentLevelConfig()

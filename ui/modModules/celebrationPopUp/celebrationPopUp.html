@@ -60,6 +60,23 @@
           </div>
         </div>
       </div>
+
+      <div class="card-cnt" ng-if="popup.kind === 'raceComplete'">
+        <h2 class="card-heading heading-style-ribbon">Race completed</h2>
+
+        <div class="hero hero-contract">
+          <div class="race">{{ popup.race.raceLabel }}</div>
+        </div>
+
+        <div class="card-content">
+          <div class="line" ng-repeat="line in popup.race.summaryLines track by $index">{{ line }}</div>
+
+          <div class="rewards-row">
+            <div class="money">+${{ popup.race.rewardMoney }}</div>
+            <div class="xp">+{{ popup.race.rewardXp }} XP</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

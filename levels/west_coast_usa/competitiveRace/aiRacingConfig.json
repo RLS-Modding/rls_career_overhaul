@@ -1,5 +1,5 @@
 {
-  "_comment": "sanctioned: optional hpBrackets, classPayoutMultipliers { stock, modified, super, open } (defaults in Lua: 1 / 1.35 / 1.85 / 2.35). AI uses bracket midpoint after commit.",
+  "_comment": "sanctioned: optional hpBrackets, classPayoutMultipliers { stock, modified, super, open } (defaults in Lua: 1 / 1.35 / 1.85 / 2.35). AI uses bracket classHpMax after commit; player may use any HP up to that max.",
   "vehiclePool": {
     "stock": [
       { "model": "covet", "config": "AI_Covet_stock" },

@@ -576,6 +576,7 @@
       "altRoute":{
         "altInfo":"**Continue Left for Standard Track\nHair Pin Right for Short Track**",
         "bestTime":91,
+        "lapCount":3,
         "checkpointRoad":"trackalt",
         "hotlap":85,
         "label":"Short Track",
@@ -631,6 +632,7 @@
       },
       "apexOffset":1,
       "bestTime":129,
+      "lapCount":3,
       "checkpointIndexs":{},
       "checkpointRoad":[
         "trackloop"

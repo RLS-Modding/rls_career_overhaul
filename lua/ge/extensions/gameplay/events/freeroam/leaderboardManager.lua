@@ -115,6 +115,9 @@ local function addLeaderboardEntry(entry)
         career_modules_inventory.saveFRETimeToVehicle(entry.raceLabel, entry.inventoryId, entry.time, entry.driftScore)
     end
     
+    if not gameplay_events_freeroam_dataCollection then
+        extensions.load('gameplay_events_freeroam_dataCollection')
+    end
     gameplay_events_freeroam_dataCollection.collectDataFromEntry(entry)
     
     if not leaderboard then

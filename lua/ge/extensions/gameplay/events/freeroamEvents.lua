@@ -76,6 +76,7 @@ local hubState = {
     stagingSubjectID = nil,
     inHubContext = false,  -- True when player entered via fre_hub_track; prevents hub cleanup from affecting other events
     sanctionedPoolRefHp = nil,  -- Passed from phone dispatch; consumed when AI spawn runs at staging enter
+    sanctionedRaceLapCount = nil,  -- From phone offer (rolled laps); cleared when race or hub session ends
 }
 
 -- AI lap counting and timers: per-vehicle state when a race with AI is active (cleared on exitRace).
@@ -91,6 +92,18 @@ local mDiffFromLeaderAtBoundary = {}
 local mPendingTrackResult = nil
 -- Competitive grid: wait for AI spawn callback, then countdown, then beginFreeroamRace (no start-line crossing required).
 local mCompetitiveAwaitingAiSpawn = false
+local mHubTrackParkingAiSpawnStarted = false
+local mWasPlayerInHubTrackParkingSpot = false
+local HUB_TRACK_STAGE_STOP_MPH = 2.5
+local HUB_TRACK_PARKING_COMMIT_PADDING_M = 0.25
+local mHubTrackAiSpawnWaitDeadline = nil
+local HUB_TRACK_AI_SPAWN_WAIT_SEC = 12
+
+local function resetHubTrackGridFlowFlags()
+    mHubTrackParkingAiSpawnStarted = false
+    mWasPlayerInHubTrackParkingSpot = false
+end
+
 local mCompetitiveCountdownJobActive = false
 local mCompetitiveCountdownCancel = false
 
@@ -166,7 +179,7 @@ local snapshotStandingsDeltas
 -- Forward declaration for prepareFreeroamAiForTrack (staging / player_stage_track when AI allowed)
 local prepareFreeroamAiForTrack
 
--- Marks where to drive after hub UI selects Track/Short Track; reaching it sets staged (COMPETITIVE_HUB_RACE_ID only).
+-- Personal grid parking (player_stage_track): reach here to spawn AI; full staging + countdown happens in fre_staging_track once stopped.
 local PLAYER_STAGING_SPOT_NAME = "player_stage_track"
 local mPlayerStagingSpot = nil  -- { pos = {x,y,z}, scl = {sx,sy,sz} } when driving to stage; cleared when staged or selection cleared
 
@@ -220,6 +233,27 @@ local function isPointInStagingSpot(spot, wx, wy, wz)
     return math.abs(dx) <= sx and math.abs(dy) <= sy and math.abs(dz) <= sz
 end
 
+local function isPointInStagingSpotWithPadding(spot, wx, wy, wz, pad)
+    if not spot or not spot.pos or not spot.scl then return false end
+    local he = getStagingSpotHalfExtents(spot)
+    if not he then return false end
+    local p = pad or 0
+    local px, py, pz = spot.pos[1], spot.pos[2], spot.pos[3]
+    local sx, sy, sz = he[1] + p, he[2] + p, he[3] + p
+    local dx, dy, dz = wx - px, wy - py, wz - pz
+    if spot.rot and spot.rot[4] then
+        local ok, localPt = pcall(function()
+            local r = spot.rot
+            local invQ = quat(-(r[1] or 0), -(r[2] or 0), -(r[3] or 0), r[4] or 1)
+            return invQ * vec3(dx, dy, dz)
+        end)
+        if ok and localPt then
+            return math.abs(localPt.x) <= sx and math.abs(localPt.y) <= sy and math.abs(localPt.z) <= sz
+        end
+    end
+    return math.abs(dx) <= sx and math.abs(dy) <= sy and math.abs(dz) <= sz
+end
+
 -- Player center-of-mass inside staging box (matches markers; full OOBB was too strict to register).
 local function isPlayerInStagingSpot(spot)
     if not spot or not spot.pos or not spot.scl then return false end
@@ -227,6 +261,14 @@ local function isPlayerInStagingSpot(spot)
     if not playerVeh then return false end
     local pos = playerVeh:getPosition()
     return isPointInStagingSpot(spot, pos.x, pos.y, pos.z)
+end
+
+local function isPlayerInHubParkingCommitSpot(spot)
+    if not spot or not spot.pos or not spot.scl then return false end
+    local playerVeh = be:getPlayerVehicle(0)
+    if not playerVeh then return false end
+    local pos = playerVeh:getPosition()
+    return isPointInStagingSpotWithPadding(spot, pos.x, pos.y, pos.z, HUB_TRACK_PARKING_COMMIT_PADDING_M)
 end
 
 -- Corner markers for player_stage_track (visible when driving to stage). Cleared when staged or selection cleared.
@@ -354,6 +396,41 @@ local function hubTrackRaceForAi()
         return races.track.altRoute
     end
     return races.track
+end
+
+local function hubTrackSpawnedAiCount()
+    if not aiRacers or not aiRacers.getSpawnedVehicleIds then return 0 end
+    local ids = aiRacers.getSpawnedVehicleIds()
+    if not ids then return 0 end
+    return #ids
+end
+
+local function getVehicleSpeedMph(vehId)
+    if not vehId or not be or not be.getObjectVelocityXYZ then return 0 end
+    local a, b, c = be:getObjectVelocityXYZ(vehId)
+    if type(a) == "number" and type(b) == "number" and type(c) == "number" then
+        return math.sqrt(a * a + b * b + c * c) * speedUnit
+    end
+    if type(a) == "number" then
+        return math.abs(a) * speedUnit
+    end
+    if a ~= nil and type(a.length) == "function" then
+        return a:length() * speedUnit
+    end
+    return 0
+end
+
+local function getDisplayTotalLapsForRace(r)
+    local forced = tonumber(hubState.sanctionedRaceLapCount)
+    if forced and forced > 0 and r == hubTrackRaceForAi() then
+        return math.floor(forced)
+    end
+    if not r then return 0 end
+    local c = r.lapCount
+    if type(c) == "number" and c > 0 then return c end
+    if r.hotlap then return 3 end
+    if r.checkpointRoad then return 1 end
+    return 0
 end
 
 local function getGameplayAppContainers()
@@ -1048,9 +1125,9 @@ local function payoutRace(completedLapTime)
         }
     end
 
-    if race.checkpointRoad and frs.raceName == mActiveRace and not completionMeta.skipFreContractProgress then
-        local lapMoney = (tonumber(hudMoney) or 0) + (tonumber(hudBusinessMoney) or 0)
-        local lapXp = tonumber(hudDisciplineXp) or 0
+    if race.checkpointRoad and frs.raceName == mActiveRace then
+        local lapMoney = completionMeta.skipFreContractProgress and 0 or ((tonumber(hudMoney) or 0) + (tonumber(hudBusinessMoney) or 0))
+        local lapXp = completionMeta.skipFreContractProgress and 0 or (tonumber(hudDisciplineXp) or 0)
         local cleanLabel = (mAltRoute and race.altRoute and race.altRoute.label) or race.label
         table.insert(frs.laps, {
             index = #frs.laps + 1,
@@ -1346,7 +1423,7 @@ local function buildFreeroamRaceHudPayload()
         local displayLabel = getDisplayRaceLabel()
         local lbEntry = mInventoryId and leaderboardManager.getLeaderboardEntry(mInventoryId, raceLabelFull) or {}
         local isLapRace = (effectiveRace.lapCount and effectiveRace.lapCount > 0) or effectiveRace.hotlap
-        local totalLapsVal = isLapRace and (effectiveRace.lapCount or 0) or 0
+        local totalLapsVal = isLapRace and getDisplayTotalLapsForRace(effectiveRace) or 0
         local displayLapNum = isLapRace and (lapCount + 1) or 1
         local sectors = {}
         if not frh.completionPayload then
@@ -1390,11 +1467,12 @@ local function buildFreeroamRaceHudPayload()
     if staged and races[staged] and raceHudApplies(races[staged]) then
         local raceName = staged
         local race = races[raceName]
+        local effectiveStagingRace = (raceName == COMPETITIVE_HUB_RACE_ID and hubTrackRaceForAi()) or race
         local displayLabel = race.label or raceName
         local invId = frh.stagingSubjectId
         local lbEntry = invId and leaderboardManager.getLeaderboardEntry(invId, displayLabel) or {}
-        local isLapRace = (race.lapCount and race.lapCount > 0) or race.hotlap
-        local totalLapsVal = isLapRace and (race.lapCount or 0) or 0
+        local isLapRace = (effectiveStagingRace.lapCount and effectiveStagingRace.lapCount > 0) or effectiveStagingRace.hotlap
+        local totalLapsVal = isLapRace and getDisplayTotalLapsForRace(effectiveStagingRace) or 0
         local stagingUi = { blocks = {} }
         if invId then
             stagingUi = utils.getStagingHudBreakdown(invId, raceName) or stagingUi
@@ -1406,7 +1484,7 @@ local function buildFreeroamRaceHudPayload()
             displayLap = 1,
             totalLaps = totalLapsVal,
             isLapRace = isLapRace and true or false,
-            goalTime = race.bestTime,
+            goalTime = effectiveStagingRace.bestTime,
             personalBestTime = lbEntry.time,
             currentLapTime = 0,
             bestLapThisRun = nil,
@@ -1465,7 +1543,7 @@ local function pushRaceHudCompletion(completionPayload, raceName, displayLabel, 
             raceLabel = displayLabel,
             routeName = mCurrentRouteName,
             displayLap = isLapRace and (lapCount + 1) or 1,
-            totalLaps = isLapRace and (effectiveRace.lapCount or 0) or 0,
+            totalLaps = isLapRace and getDisplayTotalLapsForRace(effectiveRace) or 0,
             isLapRace = isLapRace and true or false,
             goalTime = effectiveRace.bestTime,
             personalBestTime = lbEntry.time,
@@ -1672,7 +1750,8 @@ local function getAiLapStateForDisplay()
     if not mActiveRace or not next(mAiLapState) then return nil end
     local race = races[mActiveRace]
     local effectiveRace = (mAltRoute and race and race.altRoute) and race.altRoute or race
-    local totalLaps = (effectiveRace and effectiveRace.lapCount and effectiveRace.lapCount > 0) and effectiveRace.lapCount or 3
+    local totalLaps = getDisplayTotalLapsForRace(effectiveRace)
+    if totalLaps < 1 then totalLaps = 3 end
     local combined = {}
     -- Player total time so far
     local playerTotalTime = (mTotalRaceTime or 0) + in_race_time
@@ -1843,12 +1922,13 @@ local function beginFreeroamRace(raceNameArg, subjectID)
         mAltRoute = (raceName == COMPETITIVE_HUB_RACE_ID and hubState.useAltRoute == true and (hubState.inHubContext or hubState.raceSelected)) or false
         checkpointManager.setAltRoute(mAltRoute)
         currentExpectedCheckpoint = checkpointManager.enableCheckpoint(0, mAltRoute)
-        if aiRacers and aiRacers.getSpawnedVehicleIds and aiRacers.releaseAndDrive then
+            if aiRacers and aiRacers.getSpawnedVehicleIds and aiRacers.releaseAndDrive then
             local ids = aiRacers.getSpawnedVehicleIds() or {}
             if #ids > 0 then
                 local mainRace = races[raceName]
                 local raceForAi = (mAltRoute and mainRace.altRoute and mainRace.altRoute.checkpointRoad) and mainRace.altRoute or mainRace
-                local aiLaps = (raceForAi.lapCount and raceForAi.lapCount > 0) and raceForAi.lapCount or 3
+                local aiLaps = getDisplayTotalLapsForRace(raceForAi)
+                if aiLaps < 1 then aiLaps = (raceForAi.lapCount and raceForAi.lapCount > 0) and raceForAi.lapCount or 3 end
                 aiRacers.releaseAndDrive(raceForAi, aiLaps)
                 local aiTotalCheckpoints = totalCheckpoints
                 if raceForAi == mainRace.altRoute then
@@ -1888,6 +1968,8 @@ local function cancelCompetitiveGridFlow()
     mCompetitiveCountdownCancel = true
     mCompetitiveAwaitingAiSpawn = false
     mCompetitiveCountdownJobActive = false
+    mHubTrackAiSpawnWaitDeadline = nil
+    resetHubTrackGridFlowFlags()
     if guihooks and guihooks.trigger then
         guihooks.trigger('ScenarioFlashMessageReset')
     end
@@ -1895,9 +1977,13 @@ local function cancelCompetitiveGridFlow()
 end
 
 local function startCompetitiveTrackCountdownAndRace()
-    if mActiveRace or mCompetitiveCountdownJobActive then return end
-    if staged ~= COMPETITIVE_HUB_RACE_ID then return end
-    if not hubState.inHubContext and not hubState.raceSelected then return end
+    if mActiveRace then return false end
+    if mCompetitiveCountdownJobActive then return false end
+    if staged ~= COMPETITIVE_HUB_RACE_ID then return false end
+    if not hubState.inHubContext and not hubState.raceSelected then return false end
+    mPlayerStagingSpot = nil
+    clearPlayerStagingCornerMarkers()
+    if core_groundMarkers and core_groundMarkers.resetAll then core_groundMarkers.resetAll() end
     mCompetitiveCountdownJobActive = true
     mCompetitiveCountdownCancel = false
     if aiRacers and aiRacers.setPlayerFreeze then aiRacers.setPlayerFreeze(true) end
@@ -1906,10 +1992,10 @@ local function startCompetitiveTrackCountdownAndRace()
         local vid = be and be:getPlayerVehicleID(0)
         if vid and races and races[COMPETITIVE_HUB_RACE_ID] then
             beginFreeroamRace(COMPETITIVE_HUB_RACE_ID, vid)
-        elseif aiRacers and aiRacers.setPlayerFreeze then
-            aiRacers.setPlayerFreeze(false)
+            return true
         end
-        return
+        if aiRacers and aiRacers.setPlayerFreeze then aiRacers.setPlayerFreeze(false) end
+        return false
     end
     core_jobsystem.create(function(job)
         if mCompetitiveCountdownCancel then
@@ -1947,6 +2033,48 @@ local function startCompetitiveTrackCountdownAndRace()
             aiRacers.setPlayerFreeze(false)
         end
     end)
+    return true
+end
+
+local function buildFreRaceCompletionCelebrationEntry(finalResult, hudCompletionPl)
+    local place, fieldSize = 1, 1
+    if finalResult.aiResults then
+        fieldSize = #finalResult.aiResults
+        for i, r in ipairs(finalResult.aiResults) do
+            if r.isPlayer then
+                place = i
+                break
+            end
+        end
+    end
+    local money = tonumber(finalResult.reward) or 0
+    local xp = tonumber(finalResult.xp) or 0
+    if hudCompletionPl and type(hudCompletionPl) == "table" and hudCompletionPl.rewards then
+        local rev = hudCompletionPl.rewards
+        if rev.money ~= nil then money = math.floor(tonumber(rev.money) or money) end
+        if rev.businessMoney ~= nil then money = money + math.floor(tonumber(rev.businessMoney) or 0) end
+        if rev.disciplineXp ~= nil then xp = math.floor(tonumber(rev.disciplineXp) or xp) end
+    end
+    fieldSize = math.max(fieldSize, place, 1)
+    local lines = {
+        string.format("Finish position: %d / %d", place, fieldSize),
+        string.format("Race time: %s", utils.formatTime(finalResult.totalTime or 0)),
+    }
+    if finalResult.bestLap then
+        table.insert(lines, string.format("Best lap: %s", utils.formatTime(finalResult.bestLap)))
+    end
+    if finalResult.lapsCompleted and finalResult.lapsTotal then
+        table.insert(lines, string.format("Laps completed: %d / %d", finalResult.lapsCompleted, finalResult.lapsTotal))
+    end
+    for _, lap in ipairs(frs.laps or {}) do
+        table.insert(lines, string.format("Lap %d: %s%s", lap.index, utils.formatTime(lap.time), lap.invalid and " (invalid)" or ""))
+    end
+    return {
+        raceLabel = finalResult.raceLabel or "Race",
+        rewardMoney = money,
+        rewardXp = xp,
+        summaryLines = lines,
+    }
 end
 
 local function exitRace(isCompletion, customMessage, raceData, subjectID)
@@ -1976,24 +2104,27 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
         local isLapRace = effectiveRace and ((effectiveRace.lapCount and effectiveRace.lapCount > 0) or effectiveRace.hotlap)
 
         local finalResult = nil
+        local hudCompletionPl = nil
 
         if isCompletion then
             -- Include last lap in best when finishing via finish line (no lap-complete block ran for it)
             if in_race_time and (mBestLapThisRun == nil or in_race_time < mBestLapThisRun) then
                 mBestLapThisRun = in_race_time
             end
-            -- Race completion logic
-            local rewardData, hudCompletionPl = payoutRace()
-            
-            -- If payoutRace() returned something useful we can put it in the result ticket
+            local rewardData
+            rewardData, hudCompletionPl = payoutRace()
             local rewardAmt = 0
             if type(rewardData) == "number" then rewardAmt = rewardData end
-            if hudCompletionPl then
-                pushRaceHudCompletion(hudCompletionPl, raceName, displayLabel, raceLabel, in_race_time, true)
-            end
 
             local totalTime = (mTotalRaceTime or 0) + in_race_time
-            local lapsTotalVal = isLapRace and (effectiveRace.lapCount and effectiveRace.lapCount > 0 and effectiveRace.lapCount or lapCount) or 1
+            local lapsTotalVal = 1
+            if isLapRace then
+                lapsTotalVal = getDisplayTotalLapsForRace(effectiveRace)
+                if lapsTotalVal < 1 then
+                    lapsTotalVal = (effectiveRace.lapCount and effectiveRace.lapCount > 0) and effectiveRace.lapCount or lapCount
+                end
+                if lapsTotalVal < 1 then lapsTotalVal = lapCount end
+            end
 
             finalResult = {
                 raceLabel = displayLabel,
@@ -2056,6 +2187,9 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
                 finalResult.aiResults = aiResults
             end
             -- [AI-RESULTS-LUA-1] end
+            if hudCompletionPl and hudCompletionPl.rewards and hudCompletionPl.rewards.disciplineXp then
+                finalResult.xp = math.floor(tonumber(hudCompletionPl.rewards.disciplineXp) or 0)
+            end
 
             -- Race-specific completion handling
             if raceName == "drag" and effectiveRace and subjectID then
@@ -2081,7 +2215,12 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
                 local rd = effectiveRace
                 local isLap = rd and ((rd.lapCount and rd.lapCount > 0) or rd.hotlap)
                 local totalTimePartial = (mTotalRaceTime or 0) + in_race_time
-                local lapsTotalVal = isLap and (rd.lapCount and rd.lapCount > 0 and rd.lapCount or lapCount) or 1
+                local lapsTotalVal = 1
+                if isLap then
+                    lapsTotalVal = getDisplayTotalLapsForRace(rd)
+                    if lapsTotalVal < 1 then lapsTotalVal = (rd.lapCount and rd.lapCount > 0) and rd.lapCount or lapCount end
+                    if lapsTotalVal < 1 then lapsTotalVal = lapCount end
+                end
                 finalResult = {
                     raceLabel = displayLabel,
                     lapsCompleted = isLap and lapCount or 1,
@@ -2158,23 +2297,23 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
         local deferResultScreen = isCompletion and hasSpawnedAi and finalResult
         local deferCpHudHide = isCompletion and cpRoad and not deferResultScreen
 
-        if deferResultScreen then
-            mPendingTrackResult = {
-                displayLabel = finalResult.raceLabel,
-                lapsTotalVal = finalResult.lapsTotal,
-                lapsCompleted = finalResult.lapsCompleted,
-                totalTime = finalResult.totalTime,
-                bestLap = finalResult.bestLap,
-                newBest = finalResult.newBest,
-                invalidLap = finalResult.invalidLap,
-                rewardAmt = finalResult.reward or 0,
-                isLapRace = isLapRace,
-                raceEndTime = in_race_time,
-            }
-        elseif finalResult then
+        if isCompletion and hudCompletionPl and not deferResultScreen then
+            pushRaceHudCompletion(hudCompletionPl, raceName, displayLabel, raceLabel, in_race_time, true)
+        end
+
+        if finalResult then
             hubState.showingResult = true
             hubState.raceSelected = false
         end
+
+        if deferResultScreen and guihooks and guihooks.trigger then
+            guihooks.trigger("OpenFreRaceCompletionCelebration", {
+                entry = buildFreRaceCompletionCelebrationEntry(finalResult, hudCompletionPl)
+            })
+            guihooks.trigger("ScenarioFlashMessageReset")
+            hideStagedFlashMessage()
+        end
+        mPendingTrackResult = nil
 
         if cpRoad and frs.openLoop and not isCompletion and #frs.laps > 0
             and not deferResultScreen and guihooks and guihooks.trigger then
@@ -2198,67 +2337,46 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
         mBestLapThisRun = nil
         mSuppressOffRoadExitUntil = 0
 
+        mActiveRace = nil
+        local hideHudNow = deferResultScreen or not (isCompletion and cpRoad)
+        if hideHudNow then
+            hideFreeroamRaceHud()
+        end
+        mAiLapState = {}
+        mRaceWaypoints = nil
+        mAiWaypointState = {}
+        mDiffFromLeaderAtBoundary = {}
+        Assets:hideAllAssets()
+        checkpointManager.removeCheckpoints()
+
+        if aiRacers and aiRacers.setDnfCallback then aiRacers.setDnfCallback(nil) end
         if deferResultScreen and aiRacers and aiRacers.scheduleDelayedDespawn then
-            if aiRacers.setDnfCallback then aiRacers.setDnfCallback(nil) end
             aiRacers.scheduleDelayedDespawn(50)
             core_jobsystem.create(function(job)
                 job.sleep(50)
-                -- Build and show result from final mAiLapState (AI may have finished during the 50s; use mAiLapState so we include all AI even if already despawned)
-                if mPendingTrackResult then
-                    hubState.showingResult = true
-                    hubState.raceSelected = false
-                end
-                mPendingTrackResult = nil
-                mActiveRace = nil
-                hideFreeroamRaceHud()
-                mAiLapState = {}
-                mRaceWaypoints = nil
-                mAiWaypointState = {}
-                mDiffFromLeaderAtBoundary = {}
                 if aiRacers and aiRacers.clearSpawned then aiRacers.clearSpawned() end
-                Assets:hideAllAssets()
-                checkpointManager.removeCheckpoints()
                 core_jobsystem.create(function(innerJob)
                     innerJob.sleep(10)
                     utils.restoreTrafficAmount()
                 end)
-                pits.clearSpeedLimit()
-                newBestSession = false
-                if gameplay_drift_general.getContext() == "inChallenge" then
-                    gameplay_drift_general.setContext("inFreeRoam")
-                    gameplay_drift_general.reset()
-                end
-                if career_career.isActive() then
-                    career_modules_pauseTime.enablePauseCounter()
-                end
             end)
         else
-            mActiveRace = nil
-            mAiLapState = {}
-            mRaceWaypoints = nil
-            mAiWaypointState = {}
-            mDiffFromLeaderAtBoundary = {}
-            if aiRacers then
-                if aiRacers.setDnfCallback then aiRacers.setDnfCallback(nil) end
-                if aiRacers.clearSpawned then aiRacers.clearSpawned() end
-            end
-            Assets:hideAllAssets()
-            checkpointManager.removeCheckpoints()
-
-            -- Common cleanup tasks
+            if aiRacers and aiRacers.clearSpawned then aiRacers.clearSpawned() end
             core_jobsystem.create(function(job)
                 job.sleep(10)
                 utils.restoreTrafficAmount()
             end)
-            pits.clearSpeedLimit()
-            newBestSession = false
-            if gameplay_drift_general.getContext() == "inChallenge" then
-                gameplay_drift_general.setContext("inFreeRoam")
-                gameplay_drift_general.reset()
-            end
-            if career_career.isActive() then
-                career_modules_pauseTime.enablePauseCounter()
-            end
+        end
+
+        pits.clearSpeedLimit()
+        newBestSession = false
+        hubState.sanctionedRaceLapCount = nil
+        if gameplay_drift_general.getContext() == "inChallenge" then
+            gameplay_drift_general.setContext("inFreeRoam")
+            gameplay_drift_general.reset()
+        end
+        if career_career.isActive() then
+            career_modules_pauseTime.enablePauseCounter()
         end
         if deferCpHudHide then
             core_jobsystem.create(function(job)
@@ -2274,7 +2392,98 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
     end
 end
 
--- Staging zone enter (BeamNG staging trigger or phone-nav box). Spawns AI only here from this path, not on dispatch alone.
+local function tryCommitHubTrackGridStaging(spawnVehId)
+    local raceName = COMPETITIVE_HUB_RACE_ID
+    if not races or not races[raceName] then return false end
+    if not staged and not mActiveRace and mCompetitiveCountdownJobActive then
+        mCompetitiveCountdownJobActive = false
+        mCompetitiveCountdownCancel = false
+    end
+    if not mPlayerStagingSpot or not isPlayerInHubParkingCommitSpot(mPlayerStagingSpot) then return false end
+    if utils.isPlayerInPursuit() then
+        utils.displayMessage("You cannot stage for an event while in a pursuit.", 2)
+        return false
+    end
+    local vehicleSpeed = getVehicleSpeedMph(spawnVehId)
+    if vehicleSpeed > HUB_TRACK_STAGE_STOP_MPH then
+        return false
+    end
+
+    local raceForAi = hubTrackRaceForAi()
+    if raceForAi and raceAllowsAiSpawn(raceForAi) then
+        if mCompetitiveAwaitingAiSpawn then
+            return false
+        end
+        if not mHubTrackParkingAiSpawnStarted and hubTrackSpawnedAiCount() == 0 then
+            return false
+        end
+    end
+
+    saveGameState = true
+    core_gamestate.requestGameState()
+
+    mHotlap = nil
+    Assets:hideAllAssets()
+    lapCount = 0
+
+    local allTypesDisabled = false
+    local disabledTypes = {}
+    if career_economyAdjuster and races[raceName].type then
+        local totalTypes = 0
+        local disabledCount = 0
+        for _, raceType in ipairs(races[raceName].type) do
+            totalTypes = totalTypes + 1
+            local multiplier = career_economyAdjuster.getEffectiveSectionMultiplier({raceType})
+            if multiplier == 0 then
+                disabledCount = disabledCount + 1
+                table.insert(disabledTypes, raceType)
+            end
+        end
+        allTypesDisabled = totalTypes > 0 and disabledCount == totalTypes
+    end
+
+    if allTypesDisabled then
+        local typesString = table.concat(disabledTypes, ", ")
+        utils.displayMessage(string.format("%s is disabled due to %s multiplier(s) being set to 0.", races[raceName].label, typesString), 5)
+        return false
+    end
+
+    staged = raceName
+    local vehId = spawnVehId
+    if career_career and career_career.isActive and career_career.isActive() then
+        if career_modules_business_businessInventory and career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId then
+            local businessId, vehicleId = career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId(spawnVehId)
+            if businessId and vehicleId then
+                vehId = career_modules_business_businessInventory.getBusinessVehicleIdentifier(businessId, vehicleId)
+            elseif career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId then
+                vehId = career_modules_inventory.getInventoryIdFromVehicleId(vehId) or vehId
+            end
+        elseif career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId then
+            vehId = career_modules_inventory.getInventoryIdFromVehicleId(vehId) or vehId
+        end
+    end
+
+    local race = races[raceName] or {}
+    frh.stagingSubjectId = vehId
+    if raceHudApplies(race) then
+        showFreeroamRaceHud()
+    else
+        utils.displayStagedMessage(vehId, raceName)
+    end
+    utils.setActiveLight(raceName, "yellow")
+
+    if not startCompetitiveTrackCountdownAndRace() then
+        staged = nil
+        frh.stagingSubjectId = nil
+        utils.setActiveLight(raceName, "red")
+        hideFreeroamRaceHud()
+        hideStagedFlashMessage()
+        return false
+    end
+    return true
+end
+
+-- Commit staged state: non-track races use fre_staging_*; hub circuit uses competitiveRaceAI.sites parking only (AI there, then stopped in same spot for countdown). fre_staging_track is ignored for hub track.
 local function tryCommitStagingEnter(raceName, spawnVehId)
     if not races or not races[raceName] then return false end
     if utils.isPlayerInPursuit() then
@@ -2359,14 +2568,6 @@ local function tryCommitStagingEnter(raceName, spawnVehId)
         utils.displayStagedMessage(vehId, raceName)
     end
     utils.setActiveLight(raceName, "yellow")
-    if raceName == COMPETITIVE_HUB_RACE_ID then
-        local raceForAi = hubTrackRaceForAi()
-        if raceForAi and raceAllowsAiSpawn(raceForAi) then
-            prepareFreeroamAiForTrack()
-        elseif hubState.inHubContext or hubState.raceSelected then
-            startCompetitiveTrackCountdownAndRace()
-        end
-    end
     return true
 end
 
@@ -2474,8 +2675,13 @@ local function onBeamNGTrigger(data)
     end
 
     if triggerType == "staging" then
+        if raceName == COMPETITIVE_HUB_RACE_ID and (hubState.raceSelected or hubState.inHubContext) then
+            return
+        end
         if event == "enter" and mActiveRace == nil then
-            tryCommitStagingEnter(raceName, data.subjectID)
+            if raceName ~= COMPETITIVE_HUB_RACE_ID then
+                tryCommitStagingEnter(raceName, data.subjectID)
+            end
         elseif event == "exit" then
             if mActiveRace ~= raceName then
                 if raceName == COMPETITIVE_HUB_RACE_ID then
@@ -2540,7 +2746,9 @@ local function onBeamNGTrigger(data)
             snapshotStandingsDeltas()
             local race = races[raceName]
             local effectiveRace = (mAltRoute and race.altRoute) and race.altRoute or race
-            if effectiveRace.lapCount and effectiveRace.lapCount > 0 and lapCount >= effectiveRace.lapCount then
+            local lapTotalGoal = getDisplayTotalLapsForRace(effectiveRace)
+            if lapTotalGoal < 1 then lapTotalGoal = (effectiveRace.lapCount and effectiveRace.lapCount > 0) and effectiveRace.lapCount or 0 end
+            if lapTotalGoal > 0 and lapCount >= lapTotalGoal then
                 exitRace(true, nil, effectiveRace, data.subjectID)
                 return
             end
@@ -2731,6 +2939,7 @@ local function loadExtensions()
 
             if filename then
                 local extensionName = "gameplay_events_freeroam_" .. filename
+                setExtensionUnloadMode(extensionName, "manual")
                 extensions.unload(extensionName)
                 table.insert(loadedExtensions, extensionName)
             end
@@ -2761,14 +2970,34 @@ end
 local function onUpdate(dtReal, dtSim, dtRaw)
     if aiRacers and aiRacers.onUpdate then aiRacers.onUpdate(dtReal or 0) end
 
+    if mCompetitiveAwaitingAiSpawn and mHubTrackAiSpawnWaitDeadline and os.time() >= mHubTrackAiSpawnWaitDeadline then
+        log("W", "freeroamEvents", "AI spawn wait timed out; clearing await flag.")
+        mCompetitiveAwaitingAiSpawn = false
+        mHubTrackAiSpawnWaitDeadline = nil
+    end
+
     if not mActiveRace and hubState.raceSelected and hubState.inHubContext and mPlayerStagingSpot and not staged then
         local pv = be:getPlayerVehicle(0)
-        if pv and isPlayerInStagingSpot(mPlayerStagingSpot) then
-            if tryCommitStagingEnter(COMPETITIVE_HUB_RACE_ID, pv:getID()) then
-                mPlayerStagingSpot = nil
-                clearPlayerStagingCornerMarkers()
-                if core_groundMarkers and core_groundMarkers.resetAll then core_groundMarkers.resetAll() end
+        local nowInParking = (pv and isPlayerInStagingSpot(mPlayerStagingSpot)) or false
+        local enteredParkingNow = nowInParking and not mWasPlayerInHubTrackParkingSpot
+        mWasPlayerInHubTrackParkingSpot = nowInParking
+        local raceForAi = hubTrackRaceForAi()
+        if nowInParking and raceForAi and raceAllowsAiSpawn(raceForAi) and hubTrackSpawnedAiCount() > 0
+            and not mHubTrackParkingAiSpawnStarted then
+            mHubTrackParkingAiSpawnStarted = true
+            mCompetitiveAwaitingAiSpawn = false
+            mHubTrackAiSpawnWaitDeadline = nil
+        end
+        if enteredParkingNow then
+            if raceForAi and raceAllowsAiSpawn(raceForAi) and not mHubTrackParkingAiSpawnStarted and not mCompetitiveAwaitingAiSpawn then
+                prepareFreeroamAiForTrack(nil, true)
+                if mCompetitiveAwaitingAiSpawn then
+                    mHubTrackParkingAiSpawnStarted = true
+                end
             end
+        end
+        if pv and nowInParking then
+            tryCommitHubTrackGridStaging(pv:getID())
         end
     end
 
@@ -2909,13 +3138,20 @@ end
 
 -- Freeroam hub: set route to main track (e.g. set laps event, main route)
 -- Spawn AI racers for track when player selects Track or Short Track and is staged at track (west_coast_usa style).
-prepareFreeroamAiForTrack = function(poolReferenceHpOverride)
+prepareFreeroamAiForTrack = function(poolReferenceHpOverride, deferCountdown)
     if not races then races = utils.loadRaceData() end
     local raceForAi = hubTrackRaceForAi()
     if not aiRacers or not raceForAi or not raceAllowsAiSpawn(raceForAi) then return end
     if mActiveRace and timerActive then return end
+    if hubTrackSpawnedAiCount() > 0 then
+        mCompetitiveAwaitingAiSpawn = false
+        mHubTrackAiSpawnWaitDeadline = nil
+        mHubTrackParkingAiSpawnStarted = true
+        return
+    end
     if aiRacers.clearSpawned then aiRacers.clearSpawned() end
     mCompetitiveAwaitingAiSpawn = true
+    mHubTrackAiSpawnWaitDeadline = os.time() + HUB_TRACK_AI_SPAWN_WAIT_SEC
     local refHp = type(poolReferenceHpOverride) == "number" and poolReferenceHpOverride > 0 and poolReferenceHpOverride or nil
     if not refHp and type(hubState.sanctionedPoolRefHp) == "number" and hubState.sanctionedPoolRefHp > 0 then
         refHp = hubState.sanctionedPoolRefHp
@@ -2926,6 +3162,8 @@ prepareFreeroamAiForTrack = function(poolReferenceHpOverride)
     end
     local function afterAiSpawnCommit()
         mCompetitiveAwaitingAiSpawn = false
+        mHubTrackAiSpawnWaitDeadline = nil
+        if deferCountdown then return end
         if staged ~= COMPETITIVE_HUB_RACE_ID or mActiveRace then return end
         if hubState.inHubContext or hubState.raceSelected then
             startCompetitiveTrackCountdownAndRace()
@@ -2960,6 +3198,7 @@ M.onFreeroamHubSelectTrack = function()
     hubState.practiceMode = false
     hubState.useAltRoute = false
     hubState.raceSelected = true
+    mWasPlayerInHubTrackParkingSpot = false
     -- Load staging spot and set nav to it
     local spot = loadPlayerStagingSpot()
     if spot and spot.pos then
@@ -2976,6 +3215,7 @@ M.onFreeroamHubSelectShortTrack = function()
     hubState.practiceMode = false
     hubState.useAltRoute = true
     hubState.raceSelected = true
+    mWasPlayerInHubTrackParkingSpot = false
     -- Load staging spot and set nav to it
     local spot = loadPlayerStagingSpot()
     if spot and spot.pos then
@@ -3003,6 +3243,7 @@ M.onFreeroamHubClearSelection = function()
     hubState.pendingStart = nil
     hubState.stagingSubjectID = nil
     hubState.sanctionedPoolRefHp = nil
+    hubState.sanctionedRaceLapCount = nil
     if hubState.inHubContext and gameplay_events_freContracts_sanctionedRacing then
         gameplay_events_freContracts_sanctionedRacing.onRaceAborted()
     end
@@ -3038,6 +3279,8 @@ M.onFreeroamHubClosed = function()
     hubState.stagedAtStart = false
     hubState.pendingStart = nil
     hubState.stagingSubjectID = nil
+    hubState.sanctionedPoolRefHp = nil
+    hubState.sanctionedRaceLapCount = nil
     -- Only do full cleanup (staged, AI, game state) if we're in a hub context
     if hubState.inHubContext then
         staged = nil
@@ -3066,7 +3309,13 @@ M.startSanctionedRaceDispatch = function(useAltRoute, poolReferenceHpOverride)
     end
     preloadFreeroamAiPathsForTrack()
     staged = nil
+    resetHubTrackGridFlowFlags()
     hubState.sanctionedPoolRefHp = (type(poolReferenceHpOverride) == "number" and poolReferenceHpOverride > 0) and poolReferenceHpOverride or nil
+    hubState.sanctionedRaceLapCount = nil
+    if gameplay_events_freContracts_sanctionedRacing and gameplay_events_freContracts_sanctionedRacing.getSanctionedOfferLapCount then
+        local lc = gameplay_events_freContracts_sanctionedRacing.getSanctionedOfferLapCount()
+        if lc then hubState.sanctionedRaceLapCount = lc end
+    end
     hubState.inHubContext = true
     hubState.practiceMode = false
     hubState.useAltRoute = useAltRoute == true
@@ -3092,12 +3341,15 @@ M.startSanctionedRaceDispatch = function(useAltRoute, poolReferenceHpOverride)
     end
     if mPlayerStagingSpot and isPlayerInStagingSpot(mPlayerStagingSpot) then
         local pv = be:getPlayerVehicle(0)
-        if pv and tryCommitStagingEnter(COMPETITIVE_HUB_RACE_ID, pv:getID()) then
-            mPlayerStagingSpot = nil
-            clearPlayerStagingCornerMarkers()
-            if core_groundMarkers and core_groundMarkers.resetAll then
-                core_groundMarkers.resetAll()
+        if pv then
+            local raceForAi = hubTrackRaceForAi()
+            if raceForAi and raceAllowsAiSpawn(raceForAi) and not mHubTrackParkingAiSpawnStarted and not mCompetitiveAwaitingAiSpawn then
+                prepareFreeroamAiForTrack(nil, true)
+                if mCompetitiveAwaitingAiSpawn then
+                    mHubTrackParkingAiSpawnStarted = true
+                end
             end
+            mWasPlayerInHubTrackParkingSpot = true
         end
     end
 end

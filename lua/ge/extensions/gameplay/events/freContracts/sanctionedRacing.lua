@@ -12,6 +12,10 @@ local DEFAULT_PODIUM_MULT = { first = 8, second = 4.5, third = 2.5 }
 local DEFAULT_PODIUM_VARIANCE = { min = 0.84, max = 1.16 }
 local PLACE_JITTER = { min = 0.92, max = 1.08 }
 
+-- Loopable sanctioned offers: max laps ≈ how many target-time laps fit in 10 minutes; roll 1..max; scale payouts vs design lapCount in race_data.
+local SANCTIONED_MAX_WINDOW_SEC = 600
+local SANCTIONED_LAP_ROLL_CAP = 60
+
 -- Baseline money (race reward at target time) is multiplied by branch before podium place multipliers.
 local DEFAULT_CLASS_PAYOUT_MULT = {
   stock = 1,
@@ -84,6 +88,49 @@ local function getRaceRewardAtTargetTime(levelId, raceName, routeType)
   return freeroamUtils.raceReward(goalTime, baseReward, goalTime, race.type)
 end
 
+local function getRaceLapCount(levelId, raceName, routeType)
+  if type(levelId) ~= "string" or levelId == "" or type(raceName) ~= "string" or raceName == "" then
+    return nil
+  end
+  local data = jsonReadFile("levels/" .. levelId .. "/race_data.json")
+  if type(data) ~= "table" then
+    return nil
+  end
+  local race = (data.races or {})[raceName]
+  if type(race) ~= "table" then
+    return nil
+  end
+  local r = race
+  if normalizeRouteType(routeType) == "alt" and type(race.altRoute) == "table" then
+    r = race.altRoute
+  end
+  local lc = tonumber(r.lapCount)
+  if lc and lc > 0 then
+    return math.floor(lc)
+  end
+  return nil
+end
+
+local function getRaceBestTimeSeconds(levelId, raceName, routeType)
+  if type(levelId) ~= "string" or levelId == "" or type(raceName) ~= "string" or raceName == "" then
+    return nil
+  end
+  local data = jsonReadFile("levels/" .. levelId .. "/race_data.json")
+  if type(data) ~= "table" then
+    return nil
+  end
+  local race = (data.races or {})[raceName]
+  if type(race) ~= "table" then
+    return nil
+  end
+  if normalizeRouteType(routeType) == "alt" and type(race.altRoute) == "table" then
+    local t = tonumber(race.altRoute.bestTime)
+    return (t and t > 0) and t or nil
+  end
+  local t = tonumber(race.bestTime)
+  return (t and t > 0) and t or nil
+end
+
 local function getClassPayoutMultiplier(branch, overrides)
   local key = type(branch) == "string" and string.lower(branch) or ""
   local tab = type(overrides) == "table" and overrides or nil
@@ -124,6 +171,17 @@ local function computePodiumPayouts(baseMoney, variant)
     return math.max(0, math.floor(baseMoney * mult * bundle * j + 0.5))
   end
   return placePayout(m1), placePayout(m2), placePayout(m3)
+end
+
+local function applyDifficultyToSanctionedBaseMoney(baseMoney)
+  local m = tonumber(baseMoney) or 0
+  if m <= 0 then return m end
+  if not (career_modules_difficultyMode and career_modules_difficultyMode.scalePaymentRewardData) then
+    return m
+  end
+  local rewardData = { money = { amount = m, canBeNegative = false } }
+  career_modules_difficultyMode.scalePaymentRewardData(rewardData, { includeMoney = true })
+  return tonumber(rewardData.money and rewardData.money.amount) or m
 end
 
 local function normalizeHpBrackets(list)
@@ -288,7 +346,18 @@ local function rollOfferForDiscipline(disciplineId, now)
   local refMin = br.classHpMin
   local refMax = br.classHpMax
   local classPayMult = getClassPayoutMultiplier(br.branch, variant.classPayoutMultipliers)
-  local scaledBase = baseMoney * classPayMult
+  local helpers = gameplay_events_freContracts_helpers
+  local refLaps = getRaceLapCount(levelId, variant.raceName, variant.routeType) or 3
+  local bestTime = getRaceBestTimeSeconds(levelId, variant.raceName, variant.routeType)
+  local lapCount = refLaps
+  local lapScale = 1
+  if type(bestTime) == "number" and bestTime > 0 and helpers and helpers.randomInt then
+    local maxLaps = math.floor(SANCTIONED_MAX_WINDOW_SEC / bestTime)
+    maxLaps = math.max(1, math.min(maxLaps, SANCTIONED_LAP_ROLL_CAP))
+    lapCount = helpers.randomInt(1, maxLaps)
+    lapScale = lapCount / refLaps
+  end
+  local scaledBase = applyDifficultyToSanctionedBaseMoney(baseMoney * classPayMult * lapScale)
   local p1, p2, p3 = computePodiumPayouts(scaledBase, variant)
   local refresh = math.max(0.25, tonumber(variant.offerRefreshMinutes) or cfg.defaultOfferRefreshMinutes)
   local deadline = math.max(1, tonumber(variant.startDeadlineMinutes) or cfg.defaultStartDeadlineMinutes)
@@ -305,6 +374,7 @@ local function rollOfferForDiscipline(disciplineId, now)
     hpBracketPayoutMult = classPayMult,
     classHpMin = refMin,
     classHpMax = refMax,
+    lapCount = lapCount,
     payoutFirst = p1,
     payoutSecond = p2,
     payoutThird = p3,
@@ -439,6 +509,7 @@ function M.getOfferUiSnapshot(now)
     hpBracketPayoutMult = offer.hpBracketPayoutMult,
     classHpMin = offer.classHpMin,
     classHpMax = offer.classHpMax,
+    lapCount = tonumber(offer.lapCount) or 3,
     payoutFirst = offer.payoutFirst,
     payoutSecond = offer.payoutSecond,
     payoutThird = offer.payoutThird,
@@ -456,22 +527,20 @@ function M.isSanctionedRaceDispatchActive()
   return o and (o.phase == "committed" or o.phase == "racing") or false
 end
 
-local function poolMidFromOffer(offer)
+local function poolRefHpFromOffer(offer)
   if not offer then return nil end
-  local lo = tonumber(offer.classHpMin)
   local hi = tonumber(offer.classHpMax)
-  local mid = (lo and hi) and (lo + hi) / 2 or nil
-  if type(mid) ~= "number" or mid <= 0 then
+  if type(hi) ~= "number" or hi <= 0 then
     return nil
   end
-  return mid
+  return hi
 end
 
 local function pushDispatchForOffer(offer)
   if not offer then return end
   local fe = require("gameplay/events/freeroamEvents")
   if fe.startSanctionedRaceDispatch then
-    fe.startSanctionedRaceDispatch(string.lower(tostring(offer.raceRouteType or "main")) == "alt", poolMidFromOffer(offer))
+    fe.startSanctionedRaceDispatch(string.lower(tostring(offer.raceRouteType or "main")) == "alt", poolRefHpFromOffer(offer))
   end
 end
 
@@ -563,7 +632,7 @@ function M.onRaceBegin(raceName)
   if career_modules_competitiveRace_aiRacers and career_modules_competitiveRace_aiRacers.getPlayerVehiclePower then
     hp = career_modules_competitiveRace_aiRacers.getPlayerVehiclePower()
   end
-  if type(hp) == "number" and hp >= (tonumber(offer.classHpMin) or 0) and hp <= (tonumber(offer.classHpMax) or 1e9) then
+  if type(hp) == "number" and hp <= (tonumber(offer.classHpMax) or 1e9) then
     runtime.podiumEligible = true
   end
 end
@@ -686,12 +755,31 @@ function M.getAiPoolReferenceHp()
   if o.phase ~= "committed" and o.phase ~= "racing" then
     return nil
   end
-  local lo = tonumber(o.classHpMin)
   local hi = tonumber(o.classHpMax)
-  if not lo or not hi then
+  if not hi or hi <= 0 then
     return nil
   end
-  return (lo + hi) / 2
+  return hi
+end
+
+function M.getSanctionedOfferLapCount()
+  if not gameplay_events_freContracts_state.isCareerActive() then
+    return nil
+  end
+  local state = gameplay_events_freContracts_state.getState()
+  local sr = ensureSrState(state)
+  local o = sr.offer
+  if not o or type(o.raceName) ~= "string" or o.raceName ~= RACE_ID_TRACK then
+    return nil
+  end
+  if o.phase ~= "committed" and o.phase ~= "racing" and o.phase ~= "available" then
+    return nil
+  end
+  local n = tonumber(o.lapCount)
+  if n and n > 0 then
+    return math.floor(n)
+  end
+  return nil
 end
 
 M.loadCfg = loadCfg
