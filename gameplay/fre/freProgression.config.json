@@ -54,13 +54,13 @@
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 1850,
+                        "xpAtTarget": 1500,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 5500,
+                        "xpAtTarget": 3500,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -103,13 +103,13 @@
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 400,
+                        "xpAtTarget": 200,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 800,
+                        "xpAtTarget": 200,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -171,13 +171,13 @@
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 1850,
+                        "xpAtTarget": 1500,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 5500,
+                        "xpAtTarget": 3500,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -220,13 +220,13 @@
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 400,
+                        "xpAtTarget": 200,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 800,
+                        "xpAtTarget": 200,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -287,13 +287,13 @@
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 1850,
+                        "xpAtTarget": 1500,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 5500,
+                        "xpAtTarget": 3500,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -336,13 +336,13 @@
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 400,
+                        "xpAtTarget": 200,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 800,
+                        "xpAtTarget": 200,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -403,13 +403,13 @@
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 1850,
+                        "xpAtTarget": 1500,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 5500,
+                        "xpAtTarget": 3500,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -452,13 +452,13 @@
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 400,
+                        "xpAtTarget": 200,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 800,
+                        "xpAtTarget": 200,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -519,13 +519,13 @@
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 1850,
+                        "xpAtTarget": 1500,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 5500,
+                        "xpAtTarget": 3500,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -568,13 +568,13 @@
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 400,
+                        "xpAtTarget": 200,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 800,
+                        "xpAtTarget": 200,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -635,13 +635,13 @@
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 1850,
+                        "xpAtTarget": 1500,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 5500,
+                        "xpAtTarget": 3500,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -684,13 +684,13 @@
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 400,
+                        "xpAtTarget": 200,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 800,
+                        "xpAtTarget": 200,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -751,13 +751,13 @@
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 1850,
+                        "xpAtTarget": 1500,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 5500,
+                        "xpAtTarget": 3500,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -800,13 +800,13 @@
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 400,
+                        "xpAtTarget": 200,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 800,
+                        "xpAtTarget": 200,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -867,13 +867,13 @@
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 1850,
+                        "xpAtTarget": 1500,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 5500,
+                        "xpAtTarget": 3500,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -916,13 +916,13 @@
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 400,
+                        "xpAtTarget": 200,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 800,
+                        "xpAtTarget": 200,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -983,13 +983,13 @@
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 1850,
+                        "xpAtTarget": 1500,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 5500,
+                        "xpAtTarget": 3500,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -1032,13 +1032,13 @@
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 400,
+                        "xpAtTarget": 200,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 800,
+                        "xpAtTarget": 200,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -1099,13 +1099,13 @@
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 1850,
+                        "xpAtTarget": 1500,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 5500,
+                        "xpAtTarget": 3500,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -1148,13 +1148,13 @@
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 400,
+                        "xpAtTarget": 200,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 800,
+                        "xpAtTarget": 200,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -1254,9 +1254,9 @@
         "offerExpiryMinutes": 5,
         "offerRefreshMinutes": 2,
         "upkeepMinutesByTier": {
-            "easy": 360,
-            "medium": 240,
-            "hard": 120
+            "easy": 180,
+            "medium": 120,
+            "hard": 60
         },
         "graceMinutes": 20,
         "bonusRangeByTier": {
@@ -1265,12 +1265,12 @@
                 "max": 0.1
             },
             "medium": {
-                "min": 0.15,
-                "max": 0.25
+                "min": 0.1,
+                "max": 0.18
             },
             "hard": {
-                "min": 0.5,
-                "max": 1
+                "min": 0.15,
+                "max": 0.3
             }
         },
         "bonusTypeWeights": {

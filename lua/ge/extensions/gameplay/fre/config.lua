@@ -77,8 +77,8 @@ local defaultDisciplineContractConfig = {
   },
   xpByTier = {
     easy = {xpAtTarget = 750, tenPercentBetterMultiplier = 1.25, belowTargetFloorMultiplier = 0.25, maxMultiplier = 3.0},
-    medium = {xpAtTarget = 1850, tenPercentBetterMultiplier = 1.25, belowTargetFloorMultiplier = 0.25, maxMultiplier = 3.0},
-    hard = {xpAtTarget = 5500, tenPercentBetterMultiplier = 1.25, belowTargetFloorMultiplier = 0.25, maxMultiplier = 3.0}
+    medium = {xpAtTarget = 1500, tenPercentBetterMultiplier = 1.25, belowTargetFloorMultiplier = 0.25, maxMultiplier = 3.0},
+    hard = {xpAtTarget = 3500, tenPercentBetterMultiplier = 1.25, belowTargetFloorMultiplier = 0.25, maxMultiplier = 3.0}
   },
   vehicleBlacklist = {}
 }
@@ -96,8 +96,8 @@ local defaultDisciplineEventXpConfig = {
   tierUnlockLevels = {easy = 1, medium = 20, hard = 35},
   xpByTier = {
     easy = {xpAtTarget = 200, tenPercentBetterMultiplier = 1.25, belowTargetFloorMultiplier = 0.25, maxMultiplier = 3.0},
-    medium = {xpAtTarget = 400, tenPercentBetterMultiplier = 1.25, belowTargetFloorMultiplier = 0.25, maxMultiplier = 3.0},
-    hard = {xpAtTarget = 800, tenPercentBetterMultiplier = 1.25, belowTargetFloorMultiplier = 0.25, maxMultiplier = 3.0}
+    medium = {xpAtTarget = 200, tenPercentBetterMultiplier = 1.25, belowTargetFloorMultiplier = 0.25, maxMultiplier = 3.0},
+    hard = {xpAtTarget = 200, tenPercentBetterMultiplier = 1.25, belowTargetFloorMultiplier = 0.25, maxMultiplier = 3.0}
   }
 }
 
@@ -178,12 +178,12 @@ local defaultConfig = {
     slotUnlockLevels = {baseLevel = 10, baseSlots = 2, extraLevels = {18, 33, 48}},
     offerExpiryMinutes = 5,
     offerRefreshMinutes = 2,
-    upkeepMinutesByTier = {easy = 360, medium = 240, hard = 120},
+    upkeepMinutesByTier = {easy = 180, medium = 120, hard = 60},
     graceMinutes = 20,
     bonusRangeByTier = {
       easy = {min = 0.01, max = 0.10},
-      medium = {min = 0.15, max = 0.25},
-      hard = {min = 0.50, max = 1.00}
+      medium = {min = 0.10, max = 0.18},
+      hard = {min = 0.15, max = 0.30}
     },
     bonusTypeWeights = {
       money = 0.47,
