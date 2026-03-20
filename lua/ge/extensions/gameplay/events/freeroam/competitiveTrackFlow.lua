@@ -205,6 +205,14 @@ function M.setPlayerStagingSpotNil()
     mPlayerStagingSpot = nil
 end
 
+function M.ensurePlayerStagingSpotLoaded()
+    if mPlayerStagingSpot then return end
+    local spot = M.loadPlayerStagingSpot()
+    if spot then
+        M.setPlayerStagingSpot(spot)
+    end
+end
+
 function M.raceAllowsAiSpawn(race)
     local aiRacers = gameplay_events_freeroam_aiRacers
     if not race or not aiRacers or not aiRacers.getMergedConfigForRace then return false end
@@ -566,6 +574,7 @@ function M.beamngTrigger_trackBuilding(data, event)
     if event == "enter" then
         if not aiRacers or not aiRacers.levelHasAiRacingConfig or not aiRacers.levelHasAiRacingConfig() then return end
         M.trackFlowState.inTrackFlowContext = true
+        M.ensurePlayerStagingSpotLoaded()
         sess().saveGameState = true
         core_gamestate.requestGameState()
     elseif event == "exit" then
@@ -588,10 +597,16 @@ end
 
 function M.onUpdateParkingLoop()
     if not sess().mActiveRace and M.trackFlowState.inTrackFlowContext and M.trackFlowState.sanctionedCareerGoToRaceActive and
-        mPlayerStagingSpot and not sess().staged then
+        not sess().staged then
+        M.ensurePlayerStagingSpotLoaded()
+        if not mPlayerStagingSpot then return end
         local pv = be:getPlayerVehicle(0)
         local nowInParking = (pv and mPlayerStagingSpot and isPlayerInTrackParkingCommitSpot(mPlayerStagingSpot)) or false
         local raceForAi = M.trackRaceForAi()
+        if raceForAi and M.raceAllowsAiSpawn(raceForAi) and M.spawnedTrackAiCount() == 0 and not mCompetitiveAwaitingAiSpawn and
+            mTrackGridParkingAiSpawnStarted then
+            mTrackGridParkingAiSpawnStarted = false
+        end
         if nowInParking and raceForAi and M.raceAllowsAiSpawn(raceForAi) and M.spawnedTrackAiCount() > 0
             and not mTrackGridParkingAiSpawnStarted then
             mTrackGridParkingAiSpawnStarted = true

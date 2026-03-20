@@ -446,9 +446,15 @@ const sortedActiveSponsors = computed(() => [...filteredActiveSponsors.value].so
 const sortedAvailableSponsors = computed(() => [...filteredAvailableSponsors.value].sort(sortByMinutesRemaining))
 const contractsTabCount = computed(() => sortedActiveContracts.value.length + sortedAvailableContracts.value.length)
 const sponsorsTabCount = computed(() => sortedActiveSponsors.value.length + sortedAvailableSponsors.value.length)
-const showRacingTab = computed(
-  () => selectedDiscipline.value === 'roadracing' && Boolean(selectedDisciplineInfo.value?.racingUnlocked),
+const anyDisciplineRacingUnlocked = computed(() =>
+  disciplines.value.some(discipline => discipline && discipline.racingUnlocked === true),
 )
+const showRacingTab = computed(() => {
+  if (selectedDiscipline.value === 'all') {
+    return anyDisciplineRacingUnlocked.value
+  }
+  return selectedDiscipline.value === 'roadracing' && Boolean(selectedDisciplineInfo.value?.racingUnlocked)
+})
 const sanctionedRacingOffer = computed(() => (showRacingTab.value ? state.value.sanctionedRacing : null))
 const sanctionedOfferAvailable = computed(() => {
   const o = sanctionedRacingOffer.value
@@ -461,7 +467,7 @@ const sanctionedOfferCommitted = computed(() => {
 const sanctionedAvailableEmptyTitle = computed(() => (sanctionedRacingOffer.value ? 'Offer already locked in' : 'No open offers'))
 const sanctionedAvailableEmptyCopy = computed(() => {
   if (!sanctionedRacingOffer.value) {
-    return 'A new circuit offer will show after the window resets. Stay on West Coast with Road Racing selected.'
+    return 'A new circuit offer will show after the window resets. Stay on West Coast USA with sanctioned racing unlocked.'
   }
   return 'Your spot is reserved under Next race. Finish that run or wait for it to time out to see a new offer here.'
 })
@@ -608,7 +614,10 @@ function toggleDisciplineMenu() {
 function selectDiscipline(disciplineId) {
   selectedDiscipline.value = disciplineId
   disciplineMenuOpen.value = false
-  if (disciplineId !== 'roadracing' && tab.value === 'racing') {
+  const racingOk =
+    disciplineId === 'roadracing' ||
+    (disciplineId === 'all' && disciplines.value.some(d => d && d.racingUnlocked === true))
+  if (!racingOk && tab.value === 'racing') {
     tab.value = 'contracts'
   }
 }

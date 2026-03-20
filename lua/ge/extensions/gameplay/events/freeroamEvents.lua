@@ -700,7 +700,7 @@ local function beamngTrigger_staging(data, event, raceName)
       if not (spot and competitiveTrackFlow.isPlayerInTrackParkingCommitArea()) then
         utils.displayMessage("Drive to the marked grid to start your sanctioned race.", 4)
       elseif raceForAi and competitiveTrackFlow.raceAllowsAiSpawn(raceForAi) and competitiveTrackFlow.spawnedTrackAiCount() == 0 and
-          not competitiveTrackFlow.getCompetitiveAwaitingAiSpawn() and not competitiveTrackFlow.getTrackGridParkingAiSpawnStarted() then
+          not competitiveTrackFlow.getCompetitiveAwaitingAiSpawn() then
         competitiveTrackFlow.prepareFreeroamAiForTrack(nil, true)
       end
       return
