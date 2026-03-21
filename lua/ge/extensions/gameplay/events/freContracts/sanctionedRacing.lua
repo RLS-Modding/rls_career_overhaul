@@ -65,7 +65,7 @@ local function normalizeRouteType(rt)
   return "main"
 end
 
-local function getRaceRewardAtTargetTime(levelId, raceName, routeType)
+local function readRaceRewardInputs(levelId, raceName, routeType)
   if type(levelId) ~= "string" or levelId == "" or type(raceName) ~= "string" or raceName == "" then
     return nil
   end
@@ -86,6 +86,14 @@ local function getRaceRewardAtTargetTime(levelId, raceName, routeType)
     baseReward = tonumber(race.reward)
   end
   if not goalTime or goalTime <= 0 or not baseReward or baseReward <= 0 then
+    return nil
+  end
+  return goalTime, baseReward, race
+end
+
+local function getRaceRewardAtTargetTime(levelId, raceName, routeType)
+  local goalTime, baseReward, race = readRaceRewardInputs(levelId, raceName, routeType)
+  if not goalTime then
     return nil
   end
   local u = gameplay_events_freeroam_utils
@@ -138,6 +146,22 @@ local function getRaceBestTimeSeconds(levelId, raceName, routeType)
   return (t and t > 0) and t or nil
 end
 
+local function getDisciplineIdsFromRace(race)
+  local disciplineIds = {}
+  local seen = {}
+  if type(race) ~= "table" then
+    return disciplineIds
+  end
+  for _, rawType in ipairs(race.type or {}) do
+    local disciplineId = freConfig.getDisciplineIdFromType(rawType)
+    if disciplineId and not seen[disciplineId] then
+      seen[disciplineId] = true
+      table.insert(disciplineIds, disciplineId)
+    end
+  end
+  return disciplineIds
+end
+
 local function getClassPayoutMultiplier(branch, overrides)
   local key = type(branch) == "string" and string.lower(branch) or ""
   local tab = type(overrides) == "table" and overrides or nil
@@ -177,18 +201,10 @@ local function computePodiumPayouts(baseMoney, variant)
     local j = helpers.randomFloat(PLACE_JITTER.min, PLACE_JITTER.max)
     return math.max(0, math.floor(baseMoney * mult * bundle * j + 0.5))
   end
-  return placePayout(m1), placePayout(m2), placePayout(m3)
-end
-
-local function applyDifficultyToSanctionedBaseMoney(baseMoney)
-  local m = tonumber(baseMoney) or 0
-  if m <= 0 then return m end
-  if not (career_modules_difficultyMode and career_modules_difficultyMode.scalePaymentRewardData) then
-    return m
-  end
-  local rewardData = { money = { amount = m, canBeNegative = false } }
-  career_modules_difficultyMode.scalePaymentRewardData(rewardData, { includeMoney = true })
-  return tonumber(rewardData.money and rewardData.money.amount) or m
+  local p1 = placePayout(m1)
+  local p2 = placePayout(m2)
+  local p3 = placePayout(m3)
+  return p1, p2, p3
 end
 
 local function normalizeHpBrackets(list)
@@ -334,7 +350,15 @@ local function rollOfferForDiscipline(disciplineId, now)
     return nil
   end
   local levelId = gameplay_events_freContracts_state.getCurrentLevelId() or ""
-  local baseMoney = getRaceRewardAtTargetTime(levelId, variant.raceName, variant.routeType)
+  local goalTime, rawTabularReward, raceRow = readRaceRewardInputs(levelId, variant.raceName, variant.routeType)
+  if not goalTime then
+    return nil
+  end
+  local uFre = gameplay_events_freeroam_utils
+  if not uFre or not uFre.raceReward then
+    return nil
+  end
+  local baseMoney = uFre.raceReward(goalTime, rawTabularReward, goalTime, raceRow.type)
   if not baseMoney or baseMoney <= 0 then
     return nil
   end
@@ -368,7 +392,18 @@ local function rollOfferForDiscipline(disciplineId, now)
     lapCount = SANCTIONED_MIN_LAP_COUNT
     lapScale = lapCount / refLaps
   end
-  local scaledBase = applyDifficultyToSanctionedBaseMoney(baseMoney * classPayMult * lapScale)
+  -- Economy + difficulty cash scaling: only via gameplay_events_freeroam_utils.race_reward (economy adjuster + job market;
+  -- difficulty preset syncs adjuster in career_modules_difficultyMode.applyEconomyPreset). No second reward mult here.
+  local preClassLapMoney = baseMoney * classPayMult * lapScale
+  local freSkillSponsorMoneyMult = 1
+  if gameplay_events_freContracts_race and gameplay_events_freContracts_race.calculateRewardModifiers then
+    local mods = gameplay_events_freContracts_race.calculateRewardModifiers(getDisciplineIdsFromRace(raceRow))
+    if type(mods) == "table" then
+      freSkillSponsorMoneyMult = tonumber(mods.moneyMultiplier) or 1
+    end
+  end
+  local prePodiumMoney = preClassLapMoney * freSkillSponsorMoneyMult
+  local scaledBase = prePodiumMoney
   local p1, p2, p3 = computePodiumPayouts(scaledBase, variant)
   local refresh = math.max(0.25, tonumber(variant.offerRefreshMinutes) or cfg.defaultOfferRefreshMinutes)
   local deadline = math.max(1, tonumber(variant.startDeadlineMinutes) or cfg.defaultStartDeadlineMinutes)
