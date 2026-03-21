@@ -572,12 +572,15 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
     if deferResultScreen and aiRacers and aiRacers.scheduleDelayedDespawn then
       aiRacers.scheduleDelayedDespawn(50)
       core_jobsystem.create(function(job)
-        job.sleep(50)
+        job.sleep(15)
         if aiRacers and aiRacers.clearSpawned then
           aiRacers.clearSpawned()
         end
         core_jobsystem.create(function(innerJob)
           innerJob.sleep(10)
+          if session.mActiveRace then
+            return
+          end
           utils.restoreTrafficAmount()
         end)
       end)
@@ -587,6 +590,9 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
       end
       core_jobsystem.create(function(job)
         job.sleep(10)
+        if session.mActiveRace then
+          return
+        end
         utils.restoreTrafficAmount()
       end)
     end
