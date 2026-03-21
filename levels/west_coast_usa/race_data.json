@@ -20,7 +20,7 @@
       "hotlap":27,
       "label":"Beach Circuit",
       "minCheckpointDistance":45,
-      "reward":200,
+      "reward":125,
       "type":[
         "offroad"
       ]
@@ -52,10 +52,9 @@
       "checkpointRoad":[
         "dirtOval"
       ],
-      "damageFactor":1,
       "hotlap":29,
       "label":"Dirt Oval",
-      "reward":350,
+      "reward":50,
       "type":[
         "oval"
       ]
@@ -576,6 +575,7 @@
       "altRoute":{
         "altInfo":"**Continue Left for Standard Track\nHair Pin Right for Short Track**",
         "bestTime":91,
+        "lapCount":3,
         "checkpointRoad":"trackalt",
         "hotlap":85,
         "label":"Short Track",
@@ -631,6 +631,7 @@
       },
       "apexOffset":1,
       "bestTime":129,
+      "lapCount":3,
       "checkpointIndexs":{},
       "checkpointRoad":[
         "trackloop"

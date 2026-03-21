@@ -145,6 +145,7 @@ local function formatTime(seconds)
 end
 
 local function tableContains(tbl, val)
+  if type(tbl) ~= "table" then return false end
   for _, v in ipairs(tbl) do
     if v == val then
       return true
@@ -331,6 +332,20 @@ local function displayStartMessage(raceName)
   displayMessage(message, 5)
 end
 
+local function getRaceStartBannerText(raceName)
+  local race = races[raceName]
+  if not race then
+    return "GO!"
+  end
+  local msg
+  if math.random() < 0.5 then
+    msg = "GO!"
+  else
+    msg = motivationalMessages[math.random(#motivationalMessages)]
+  end
+  return race.label .. " — " .. msg
+end
+
 local function getRaceLabel(raceName, altRoute, hotlap)
   local race = races[raceName]
   local raceLabel = race.label
@@ -342,6 +357,158 @@ local function getRaceLabel(raceName, altRoute, hotlap)
     raceLabel = raceLabel .. " (Hotlap)"
   end
   return raceLabel
+end
+
+local function buildStagingEntry(label, targetValue, pbValue, rewardValue)
+  return {
+    label = label,
+    targetValue = targetValue,
+    personalBestValue = pbValue,
+    rewardValue = rewardValue
+  }
+end
+
+local function buildStagingSection(title, entries)
+  if not entries or #entries == 0 then return nil end
+  return {
+    title = title,
+    entries = entries
+  }
+end
+
+local function buildTimeGoalEntry(label, bestTime, targetTime, reward, raceData, careerMode)
+  local rewardValue = nil
+  if careerMode then
+    local rewardTime = bestTime and math.min(bestTime, targetTime) or targetTime
+    rewardValue = raceReward(targetTime, reward, rewardTime, raceData and raceData.type or nil)
+  end
+  return buildStagingEntry(label, formatTime(targetTime), bestTime and formatTime(bestTime) or nil, rewardValue)
+end
+
+local function buildHybridEntry(label, leaderboardEntry, targetTime, reward, damageFactor, raceData, careerMode)
+  local bestTime = leaderboardEntry and leaderboardEntry.time or nil
+  local rewardValue = nil
+  if careerMode then
+    local rewardTime = bestTime and math.min(bestTime, targetTime) or targetTime
+    rewardValue = hybridRaceReward(targetTime, reward, rewardTime, damageFactor, 0, raceData and raceData.type or nil)
+  end
+  return buildStagingEntry(label, formatTime(targetTime), bestTime and formatTime(bestTime) or nil, rewardValue)
+end
+
+local function buildTopSpeedEntry(label, leaderboardEntry, race, careerMode)
+  local bestSpeed = leaderboardEntry and leaderboardEntry.topSpeed
+  local rewardValue = nil
+  if careerMode then
+    rewardValue = topSpeedReward(race.topSpeedGoal, race.reward, bestSpeed or race.topSpeedGoal, race.type)
+  end
+  local targetValue = string.format("%.1f mph", race.topSpeedGoal)
+  local pbValue = bestSpeed and string.format("%.1f mph", bestSpeed) or nil
+  return buildStagingEntry(label, targetValue, pbValue, rewardValue)
+end
+
+local function buildDriftEntry(label, leaderboardEntry, race, careerMode, targetTimeOverride)
+  local bestScore = leaderboardEntry and leaderboardEntry.driftScore
+  local rewardValue = nil
+  local targetTime = targetTimeOverride or race.driftTargetTime or race.bestTime
+  if careerMode then
+    rewardValue = driftReward(race, targetTime, bestScore or race.driftGoal)
+  end
+  local targetValue = tostring(race.driftGoal)
+  local pbValue = bestScore and tostring(bestScore) or nil
+  return buildStagingEntry(label, targetValue, pbValue, rewardValue)
+end
+
+local function getStagingHudBreakdown(vehId, raceName)
+  local empty = { sections = {} }
+  if not raceName or not races[raceName] then return empty end
+  local race = races[raceName]
+
+  local id = vehId
+  if career_career.isActive() then
+    id = career_modules_inventory.getInventoryIdFromVehicleId(vehId) or vehId
+  end
+  local careerMode = career_career.isActive()
+
+  local allTypesDisabled = false
+  local disabledTypes = {}
+  if career_economyAdjuster and race.type then
+    local totalTypes = 0
+    local disabledCount = 0
+    for _, raceType in ipairs(race.type) do
+      totalTypes = totalTypes + 1
+      local multiplier = career_economyAdjuster.getEffectiveSectionMultiplier({ raceType })
+      if multiplier == 0 then
+        disabledCount = disabledCount + 1
+        table.insert(disabledTypes, raceType)
+      end
+    end
+    allTypesDisabled = totalTypes > 0 and disabledCount == totalTypes
+  end
+
+  if allTypesDisabled then
+    local typesString = table.concat(disabledTypes, ", ")
+    return {
+      disabled = true,
+      disabledReason = string.format("%s is disabled — %s multiplier(s) set to 0.", race.label, typesString),
+      sections = {},
+    }
+  end
+
+  local out = { sections = {} }
+  local function addSection(s)
+    if s then table.insert(out.sections, s) end
+  end
+
+  local leaderboardEntry = leaderboardManager.getLeaderboardEntry(id, getRaceLabel(raceName)) or {}
+  local mainEntries = {}
+
+  if race.topSpeed then
+    table.insert(mainEntries, buildTopSpeedEntry("Speed", leaderboardEntry, race, careerMode))
+  elseif race.driftGoal then
+    table.insert(mainEntries, buildDriftEntry("Run", leaderboardEntry, race, careerMode))
+  elseif race.damageFactor and race.damageFactor > 0 then
+    table.insert(mainEntries, buildHybridEntry("Lap", leaderboardEntry, race.bestTime, race.reward, race.damageFactor, race,
+      careerMode))
+  else
+    table.insert(mainEntries, buildTimeGoalEntry("Lap", leaderboardEntry.time, race.bestTime, race.reward, race, careerMode))
+  end
+
+  if race.hotlap then
+    local leH = leaderboardManager.getLeaderboardEntry(id, getRaceLabel(raceName, nil, true)) or {}
+    if race.damageFactor and race.damageFactor > 0 then
+      table.insert(mainEntries, buildHybridEntry("Hotlap", leH, race.hotlap, race.reward, race.damageFactor, race, careerMode))
+    else
+      table.insert(mainEntries, buildTimeGoalEntry("Hotlap", leH.time, race.hotlap, race.reward, race, careerMode))
+    end
+  end
+  addSection(buildStagingSection("", mainEntries))
+
+  if race.altRoute then
+    local ar = race.altRoute
+    local altSectionTitle = (type(ar.label) == "string" and ar.label ~= "") and ar.label or "Alternative route"
+    local leA = leaderboardManager.getLeaderboardEntry(id, getRaceLabel(raceName, true)) or {}
+    local altEntries = {}
+    if ar.damageFactor and ar.damageFactor > 0 then
+      table.insert(altEntries, buildHybridEntry("Lap", leA, ar.bestTime, ar.reward, ar.damageFactor, ar, careerMode))
+    elseif ar.driftGoal then
+      table.insert(altEntries, buildDriftEntry("Run", leA, ar, careerMode, ar.driftTargetTime or ar.bestTime))
+    elseif ar.topSpeedGoal then
+      table.insert(altEntries, buildTopSpeedEntry("Speed", leA, ar, careerMode))
+    else
+      table.insert(altEntries, buildTimeGoalEntry("Lap", leA.time, ar.bestTime, ar.reward, ar, careerMode))
+    end
+    if ar.hotlap then
+      local leAH = leaderboardManager.getLeaderboardEntry(id, getRaceLabel(raceName, true, true)) or {}
+      if ar.damageFactor and ar.damageFactor > 0 then
+        table.insert(altEntries, buildHybridEntry("Hotlap", leAH, ar.hotlap, ar.reward, ar.damageFactor, ar, careerMode))
+      else
+        table.insert(altEntries, buildTimeGoalEntry("Hotlap", leAH.time, ar.hotlap, ar.reward, ar, careerMode))
+      end
+    end
+    addSection(buildStagingSection(altSectionTitle, altEntries))
+  end
+
+  return out
 end
 
 local function displayStagedMessage(vehId, raceName, getMessage)
@@ -646,6 +813,8 @@ end
 M.onPursuitAction = onPursuitAction
 M.playCheckpointSound = playCheckpointSound
 M.displayStartMessage = displayStartMessage
+M.getRaceStartBannerText = getRaceStartBannerText
+M.getStagingHudBreakdown = getStagingHudBreakdown
 M.displayStagedMessage = displayStagedMessage
 M.displayMessage = displayMessage
 M.formatTime = formatTime

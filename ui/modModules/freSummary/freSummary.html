@@ -1,0 +1,84 @@
+<link rel="stylesheet" type="text/css" href="/ui/modModules/freSummary/freSummary.css" />
+
+<div class="frs-root" ng-if="visible">
+  <div class="frs-backdrop" ng-click="dismiss()"></div>
+  <div class="frs-panel" ng-click="$event.stopPropagation()">
+
+    <div class="frs-header">
+      <div class="frs-title">{{ data.raceLabel }}</div>
+      <div class="frs-route">Session complete</div>
+    </div>
+
+    <div class="frs-body">
+
+      <div class="frs-stg-divider"><span>Laps</span></div>
+
+      <div class="frs-section">
+        <div class="frs-row" ng-if="data.totals.mainLaps > 0">
+          <span class="frs-k">{{ data.mainLabel || 'Main' }}</span>
+          <span class="frs-v frs-mono">{{ data.totals.mainLaps }}</span>
+        </div>
+        <div class="frs-row" ng-if="data.totals.altLaps > 0">
+          <span class="frs-k">{{ data.altLabel || 'Alt' }}</span>
+          <span class="frs-v frs-mono">{{ data.totals.altLaps }}</span>
+        </div>
+      </div>
+
+      <div class="frs-section" ng-if="data.bests && (data.bests.mainTime != null || data.bests.altTime != null)">
+        <div class="frs-divider"></div>
+        <div class="frs-row" ng-if="data.bests.mainTime != null">
+          <span class="frs-k">Best {{ data.mainLabel || 'main' }}</span>
+          <span class="frs-v frs-mono">{{ formatTime(data.bests.mainTime) }}</span>
+        </div>
+        <div class="frs-row" ng-if="data.totals.altLaps > 0 && data.bests.altTime != null">
+          <span class="frs-k">Best {{ data.altLabel || 'alt' }}</span>
+          <span class="frs-v frs-mono">{{ formatTime(data.bests.altTime) }}</span>
+        </div>
+      </div>
+
+      <div class="frs-divider"></div>
+
+      <div class="frs-section">
+        <div class="frs-row frs-row-reward">
+          <span class="frs-k">Total earned</span>
+          <span class="frs-v frs-mono frs-reward">${{ formatMoney(data.totals.money) }}</span>
+        </div>
+        <div class="frs-row">
+          <span class="frs-k">Total XP</span>
+          <span class="frs-v frs-mono">{{ data.totals.xp | number:0 }}</span>
+        </div>
+      </div>
+
+      <div class="frs-divider"></div>
+
+      <div class="frs-section">
+        <div class="frs-toggle" ng-click="detailsOpen = !detailsOpen">
+          <span class="frs-toggle-label">Per-lap breakdown</span>
+          <span class="frs-toggle-chevron" ng-class="{ 'frs-toggle-open': detailsOpen }"></span>
+        </div>
+        <div ng-if="detailsOpen && data.laps && data.laps.length" class="frs-laps-scroll">
+          <div class="frs-laps-head">
+            <span>#</span>
+            <span>Route</span>
+            <span>Time</span>
+            <span>$</span>
+            <span>XP</span>
+          </div>
+          <div class="frs-lap-row" ng-repeat="row in data.laps track by row.index" ng-class="{ 'frs-lap-invalid': row.invalid }">
+            <span class="frs-lap-idx">{{ row.index }}</span>
+            <span>{{ row.raceLabelShort || (row.isAlt ? 'Alt' : 'Main') }}</span>
+            <span class="frs-mono">{{ formatTime(row.time) }}</span>
+            <span class="frs-mono">{{ formatMoney(row.money) }}</span>
+            <span class="frs-mono">{{ row.xp | number:0 }}</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="frs-footer">
+      <button type="button" class="frs-btn" ng-click="dismiss()">Continue</button>
+    </div>
+
+  </div>
+</div>

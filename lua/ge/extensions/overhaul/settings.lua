@@ -7,7 +7,8 @@ local settingsFilePath = settingsRoot .. settingsFile
 local settings = {
     mapDevMode = false,
     noPoliceMode = true,
-    noParkedMode = false
+    noParkedMode = false,
+    freeroamRaceHudLayout = { x = 12, y = 12, width = 340 }
 }
 
 local function saveSettings()

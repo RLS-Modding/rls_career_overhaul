@@ -300,6 +300,7 @@ end
 function C:checkCollisions() -- checks for contact with other tracked vehicles
   for id, veh in pairs(map.objects) do
     if self.id ~= id then
+      if not veh or not veh.pos then goto continue end -- skip stale entries (e.g. despawned race AI)
       local isCurrentCollision = map.objects[id] and map.objects[id].objectCollisions[self.id] == 1
 
       if not self.collisions[id] and isCurrentCollision then

@@ -1,0 +1,63 @@
+<link rel="stylesheet" type="text/css" href="/ui/modModules/freeroamRaceHud/sanctionedParkingStaging.css" />
+
+<div class="sps-overlay" ng-if="spVisible">
+  <div class="sps-card" bng-blur="true">
+    <div class="sps-headline">
+      <div class="sps-title">{{ stagingHeadline(payload) }}</div>
+    </div>
+
+    <div class="sps-podium" ng-if="payload.payoutFirst != null || payload.payoutSecond != null || payload.payoutThird != null">
+      <div class="sps-place" ng-if="payload.payoutFirst != null">
+        <span class="sps-place-lbl">1st</span>
+        <span class="sps-place-val">${{ formatRewardDollars(payload.payoutFirst) }}</span>
+      </div>
+      <div class="sps-place" ng-if="payload.payoutSecond != null">
+        <span class="sps-place-lbl">2nd</span>
+        <span class="sps-place-val">${{ formatRewardDollars(payload.payoutSecond) }}</span>
+      </div>
+      <div class="sps-place" ng-if="payload.payoutThird != null">
+        <span class="sps-place-lbl">3rd</span>
+        <span class="sps-place-val">${{ formatRewardDollars(payload.payoutThird) }}</span>
+      </div>
+    </div>
+
+    <div class="sps-rows">
+      <div class="sps-row" ng-if="payload.hpBracketBranch">
+        <span class="sps-k">Class</span>
+        <span class="sps-v sps-class-val">{{ payload.hpBracketBranch }}</span>
+      </div>
+      <div class="sps-row" ng-if="payload.classHpMax != null">
+        <span class="sps-k">Maximum power</span>
+        <span class="sps-v">{{ payload.classHpMax }} HP</span>
+      </div>
+      <div class="sps-row sps-row-current-power">
+        <span class="sps-k">Current vehicle power</span>
+        <span class="sps-v" ng-if="payload.playerHp != null">{{ payload.playerHp | number:0 }} HP</span>
+        <span class="sps-v sps-power-unknown" ng-if="payload.playerHp == null">—</span>
+      </div>
+    </div>
+
+    <div class="sps-warn" ng-if="payload.playerHp != null && payload.classHpMax != null && payload.playerHp > payload.classHpMax">
+      Vehicle is over the power limit. You can race, but podium rewards are withheld.
+    </div>
+
+    <div class="sps-wait" ng-if="payload.awaitingSpawn">
+      Loading AI…
+    </div>
+
+    <div class="sps-actions">
+      <button type="button" class="sps-btn sps-btn-primary"
+              ng-if="payload.phase === 'prompt'"
+              ng-disabled="payload.awaitingSpawn"
+              ng-click="stageAndSpawn()">
+        Stage and spawn AI
+      </button>
+      <button type="button" class="sps-btn sps-btn-primary"
+              ng-if="payload.phase === 'spawned_ready'"
+              ng-disabled="payload.awaitingSpawn || (payload.requiresAiSpawn && (payload.spawnedAiCount == null || payload.spawnedAiCount < 1))"
+              ng-click="startEvent()">
+        Start event
+      </button>
+    </div>
+  </div>
+</div>

@@ -14,27 +14,123 @@ local function randomSponsorName()
   return prefix .. " " .. suffix
 end
 
-local function pickContractObjective(disciplineId, tier, raceEntry)
-  local contractCfg = freConfig.getContractConfig(disciplineId) or {}
-  local objectiveCfgByTier = contractCfg.objectiveCountByTier or {}
-  local objectiveCfg = objectiveCfgByTier[tier] or {}
+local function readRaceRow(levelId, raceName, routeType)
+  if type(levelId) ~= "string" or levelId == "" or type(raceName) ~= "string" or raceName == "" then
+    return nil
+  end
+  local data = jsonReadFile("levels/" .. levelId .. "/race_data.json")
+  if type(data) ~= "table" then return nil end
+  local race = (data.races or {})[raceName]
+  if type(race) ~= "table" then return nil end
+  local rt = type(routeType) == "string" and string.lower(routeType) or "main"
+  if rt == "alt" and type(race.altRoute) == "table" then
+    local ar = race.altRoute
+    return {
+      bestTime = tonumber(ar.bestTime) or tonumber(race.bestTime),
+      reward = tonumber(ar.reward) or tonumber(race.reward),
+      driftGoal = tonumber(ar.driftGoal) or tonumber(race.driftGoal),
+      damageFactor = tonumber(ar.damageFactor) or tonumber(race.damageFactor) or 0,
+      type = race.type
+    }
+  end
+  return {
+    bestTime = tonumber(race.bestTime),
+    reward = tonumber(race.reward),
+    driftGoal = tonumber(race.driftGoal),
+    damageFactor = tonumber(race.damageFactor) or 0,
+    type = race.type
+  }
+end
+
+local function computeBaseMoneyAtTarget(targetData, raceRow)
+  if not raceRow or not raceRow.bestTime or not raceRow.reward then return nil end
+  local u = gameplay_events_freeroam_utils
+  if not u then return nil end
+  local tt = targetData and targetData.targetType or "time"
+  if tt == "driftScore" then
+    local driftGoal = raceRow.driftGoal
+    local targetScore = targetData.targetDriftScore
+    if not driftGoal or driftGoal <= 0 or not targetScore or targetScore <= 0 then return nil end
+    if u.driftReward then
+      return u.driftReward(raceRow, raceRow.bestTime, targetScore)
+    end
+    return nil
+  end
+  if tt == "maxDamagePct" then
+    local df = raceRow.damageFactor or 0
+    local dmgPct = targetData.targetDamagePctMax or 0
+    if df > 0 and u.hybridRaceReward then
+      return u.hybridRaceReward(raceRow.bestTime, raceRow.reward, raceRow.bestTime, df, dmgPct, raceRow.type)
+    end
+    if u.raceReward then
+      return u.raceReward(raceRow.bestTime, raceRow.reward, raceRow.bestTime, raceRow.type)
+    end
+    return nil
+  end
+  local targetTime = targetData and targetData.targetTime or raceRow.bestTime
+  if not targetTime or targetTime <= 0 then return nil end
+  if u.raceReward then
+    return u.raceReward(raceRow.bestTime, raceRow.reward, targetTime, raceRow.type)
+  end
+  return nil
+end
+
+local function isDisciplineCountOverride(disciplineId, targetType, contractCfg)
+  local overrideList = contractCfg.disciplinesUsingEventCountOverride
+  if type(overrideList) == "table" then
+    local id = string.lower(tostring(disciplineId or ""))
+    for _, v in ipairs(overrideList) do
+      if string.lower(tostring(v)) == id then return true end
+    end
+  end
+  return targetType == "maxDamagePct"
+end
+
+local function pickContractObjective(disciplineId, tier, raceEntry, targetData, contractCfg)
+  local helpers = gameplay_events_freContracts_helpers
+  local cfg = contractCfg or freConfig.getContractConfig(disciplineId) or {}
+  local tt = targetData and targetData.targetType or "time"
+
+  if isDisciplineCountOverride(disciplineId, tt, cfg) then
+    local overrideTbl = (cfg.eventCountOverrideByTier or {})[tier] or {}
+    local eMin = math.max(1, math.floor(tonumber(overrideTbl.eventsMin) or 2))
+    local eMax = math.max(eMin, math.floor(tonumber(overrideTbl.eventsMax) or eMin))
+    return "events", helpers.randomInt(eMin, eMax), nil
+  end
 
   local isLoopable = raceEntry and raceEntry.isLapEvent == true
   local objectiveType = isLoopable and "laps" or "events"
 
-  local minCount, maxCount
-  if objectiveType == "laps" then
-    minCount = tonumber(objectiveCfg.lapsMin) or 1
-    maxCount = tonumber(objectiveCfg.lapsMax) or minCount
+  local perUnitSec
+  if tt == "driftScore" then
+    perUnitSec = raceEntry and tonumber(raceEntry.bestTime)
   else
-    minCount = tonumber(objectiveCfg.eventsMin) or 1
-    maxCount = tonumber(objectiveCfg.eventsMax) or minCount
+    perUnitSec = targetData and tonumber(targetData.targetTime)
+    if not perUnitSec or perUnitSec <= 0 then
+      perUnitSec = raceEntry and tonumber(raceEntry.bestTime)
+    end
+  end
+  if not perUnitSec or perUnitSec <= 0 then
+    return objectiveType, 1, nil
   end
 
-  minCount = math.max(1, math.floor(minCount))
-  maxCount = math.max(minCount, math.floor(maxCount))
+  local effectiveSecPerUnit = perUnitSec
+  if not isLoopable then
+    effectiveSecPerUnit = perUnitSec * (tonumber(cfg.nonLoopEventTimeMultiplier) or 1.66)
+  end
 
-  return objectiveType, gameplay_events_freContracts_helpers.randomInt(minCount, maxCount)
+  local windowTbl = (cfg.timeWindowMinutesByTier or {})[tier] or {}
+  local winMin = (tonumber(windowTbl.min) or 3) * 60
+  local winMax = (tonumber(windowTbl.max) or 9) * 60
+
+  local minCount = math.max(1, math.ceil(winMin / effectiveSecPerUnit))
+  local maxCount = math.max(1, math.floor(winMax / effectiveSecPerUnit))
+  if minCount > maxCount then
+    return nil, nil, nil
+  end
+  local count = helpers.randomInt(minCount, maxCount)
+  local impliedTotalSec = count * effectiveSecPerUnit
+  return objectiveType, count, impliedTotalSec
 end
 
 local function scaleContractRewardPreview(disciplineId, baseMoney, baseXp)
@@ -52,7 +148,6 @@ local function scaleContractRewardPreview(disciplineId, baseMoney, baseXp)
     money = { amount = money, canBeNegative = false },
     [skillKey] = { amount = xp }
   }
-  career_modules_difficultyMode.scalePaymentRewardData(rewardData, {includeMoney = true})
 
   local scaledMoney = math.max(0, math.floor((rewardData.money and rewardData.money.amount or money) + 0.5))
   local scaledXp = math.max(0, math.floor((rewardData[skillKey] and rewardData[skillKey].amount or xp) + 0.5))
@@ -299,19 +394,36 @@ local function generateContractOffer(disciplineId, level, now)
     max = 1.1
   }, "contract")
 
-  local rewardRange = ((contractCfg.rewardRangeByTier or {})[tier]) or {}
-  local rewardMoneyBase = helpers.randomInt(tonumber(rewardRange.moneyMin) or 1000, tonumber(rewardRange.moneyMax) or 2000)
-  local tierXpCfg = ((contractCfg.xpByTier or {})[tier]) or {}
-  local rewardXpBase = math.max(0, math.floor(tonumber(tierXpCfg.xpAtTarget) or 0))
-  local rewardMoney, rewardXp = scaleContractRewardPreview(disciplineId, rewardMoneyBase, rewardXpBase)
+  local objectiveType, requiredCount, impliedTotalSec = pickContractObjective(disciplineId, tier, raceEntry, targetData, contractCfg)
+  if not objectiveType or not requiredCount then
+    return nil
+  end
+
+  local levelId = gameplay_events_freContracts_state.getCurrentLevelId() or ""
+  local raceRow = readRaceRow(levelId, raceEntry.raceName, raceEntry.routeType)
+  local baseMoney = raceRow and computeBaseMoneyAtTarget(targetData, raceRow) or nil
+  if not baseMoney or baseMoney <= 0 then
+    return nil
+  end
+
+  local payoutMult = tonumber(contractCfg.basePayoutMultiplier) or 5
+  local bonusPerUnit = tonumber(contractCfg.extraLapEventBonusPerUnit) or 0.33
+  local lapEventMult = math.max(1, requiredCount) * bonusPerUnit
+  local varCfg = contractCfg.payoutVariance or {}
+  local varMin = tonumber(varCfg.min) or 0.95
+  local varMax = tonumber(varCfg.max) or 1.05
+  local variance = helpers.randomFloat(varMin, varMax)
+  local xpPct = tonumber(contractCfg.xpPercentOfMoney) or 0.02
+
+  local rawMoney = baseMoney * payoutMult * lapEventMult * variance
+  local rawXp = rawMoney * xpPct
+  local rewardMoney, rewardXp = scaleContractRewardPreview(disciplineId, rawMoney, rawXp)
 
   local expiryMinutes = tonumber(contractCfg.offerExpiryMinutes) or 5
   local model, modelSource = vPool.pickContractModel(disciplineId)
   if not model or model == "" then
     return nil
   end
-
-  local objectiveType, requiredCount = pickContractObjective(disciplineId, tier, raceEntry)
 
   return {
     id = gameplay_events_freContracts_state.nextId("fre-contract"),
@@ -329,6 +441,7 @@ local function generateContractOffer(disciplineId, level, now)
     modelSource = modelSource,
     objectiveType = objectiveType,
     requiredCount = requiredCount,
+    impliedTotalSec = impliedTotalSec,
     progress = 0,
     bestPerformanceRatio = 0,
     rewardMoney = rewardMoney,

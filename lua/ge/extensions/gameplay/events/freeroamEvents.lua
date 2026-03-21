@@ -5,1350 +5,1173 @@ local M = {}
 
 M.dependencies = {'gameplay_events_freContracts'}
 
-local processRoad = require('gameplay/events/freeroam/processRoad')
-local leaderboardManager = require('gameplay/events/freeroam/leaderboardManager')
-local activeAssets = require('gameplay/events/freeroam/activeAssets')
-local checkpointManager = require('gameplay/events/freeroam/checkpointManager')
-local utils = require('gameplay/events/freeroam/utils')
-local pits = require('gameplay/events/freeroam/pits')
-local freConfig = require('gameplay/fre/config')
-local Assets = activeAssets.ActiveAssets.new()
+local processRoad, leaderboardManager, checkpointManager
+local raceSession
+local utils, pits, aiRacers, circuitRaceAi, competitiveTrackFlow
+local Assets
+local trackFlowState, TRACK_RACE_ID
 
 local loadedExtensions = {}
 
-local timerActive = false
-local mActiveRace
-local staged = nil
-local in_race_time = 0
+local session
 
-local speedUnit = 2.2369362921
-local lapCount = 0
-local currCheckpoint = nil
-local mHotlap = nil
-local mAltRoute = nil
-local mSplitTimes = {}
-local isLoop = false
-local checkpointsHit = 0
-local totalCheckpoints = 0
-local currentExpectedCheckpoint = 1
-local invalidLap = false
-
-local initialVehicleDamage = 0
-
-local mInventoryId = nil
-local newBestSession = false
-
-local maxSpeed = 0
-
-local races = nil
-local isReplay = false
-
-local previousGameState = nil
-local saveGameState = false
-
-local function rewardLabel(raceName, newBestTime)
-    local raceLabel = races[raceName].label
-    local timeLabel = utils.formatTime(in_race_time)
-    local performanceLabel = newBestTime and "New Best Time!" or "Completion"
-
-    local label = string.format("%s - %s: %s", raceLabel, performanceLabel, timeLabel)
-
-    if mAltRoute then
-        label = label .. " (Alternative Route)"
-    end
-
-    if mHotlap == raceName then
-        label = label .. " (Hotlap)"
-    end
-
-    return label
+local function getDisplayTotalLapsForRace(r)
+  return competitiveTrackFlow.getDisplayTotalLapsForRace(r)
 end
 
-local function getDriftScore()
-    local finalScore = 0
-    if gameplay_drift_scoring then
-        local scoreData = gameplay_drift_scoring.getScore()
-        if scoreData then
-            finalScore = scoreData.score or 0
-            if scoreData.cachedScore then
-                finalScore = finalScore + math.floor(scoreData.cachedScore * scoreData.combo)
-            end
-            gameplay_drift_general.reset()
-        end
+local function getGameplayAppContainers()
+  if not extensions then
+    return nil
+  end
+  local names = {"ui_gameplayAppContainers", "ge_extensions_ui_gameplayAppContainers"}
+  for _, n in ipairs(names) do
+    local gc = extensions[n]
+    if gc and gc.showApp then
+      return gc
     end
-    return finalScore
+  end
+  return nil
+end
+
+local function hideStagedFlashMessage()
+  if guihooks and guihooks.trigger then
+    guihooks.trigger("ScenarioFlashMessageClear")
+  end
+  local gc = getGameplayAppContainers()
+  if gc and gc.hideApp then
+    gc.hideApp("gameplayApps", "flashMessage")
+    gc.hideApp("gameplayApps", "countdown")
+  end
+end
+
+local function triggerRaceCountdown()
+  hideStagedFlashMessage()
 end
 
 local function getRaceLabel()
-    local race = races[mActiveRace]
-    local raceLabel = race.label
-
-    if mAltRoute then
-        raceLabel = race.altRoute.label
-    end
-    if mHotlap == mActiveRace then
-        raceLabel = raceLabel .. " (Hotlap)"
-    end
-    return raceLabel
+  local race = session.races[session.mActiveRace]
+  local raceLabel = race.label
+  if session.mAltRoute then
+    raceLabel = race.altRoute.label
+  end
+  if session.mHotlap == session.mActiveRace then
+    raceLabel = raceLabel .. " (Hotlap)"
+  end
+  return raceLabel
 end
 
-local function getBusinessAccountFromVehicle(spawnedVehicleId)
-    if not career_career.isActive() or not career_modules_business_businessInventory then
-        return nil
+local function getDisplayRaceLabel()
+  local race = session.races[session.mActiveRace]
+  if not race then
+    return ""
+  end
+  local raceLabel = race.label
+  if session.mAltRoute and race.altRoute then
+    raceLabel = race.altRoute.label
+  end
+  return raceLabel or ""
+end
+
+local function getDriftScore()
+  local finalScore = 0
+  if gameplay_drift_scoring then
+    local scoreData = gameplay_drift_scoring.getScore()
+    if scoreData then
+      finalScore = scoreData.score or 0
+      if scoreData.cachedScore then
+        finalScore = finalScore + math.floor(scoreData.cachedScore * scoreData.combo)
+      end
+      gameplay_drift_general.reset()
     end
-    
-    local businessId, vehicleId = career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId(spawnedVehicleId)
-    if not businessId or not vehicleId then
-        return nil
-    end
-    
-    if not career_modules_bank then
-        return nil
-    end
-    
-    local businessTypes = {"tuningShop"}
-    for _, businessType in ipairs(businessTypes) do
-        local businessAccount = career_modules_bank.getBusinessAccount(businessType, businessId)
-        if businessAccount then
-            return businessAccount, businessType, businessId
-        end
-    end
-    
+  end
+  return finalScore
+end
+
+local function getRouteDisplayName(race, isAlt)
+  if not race then
     return nil
+  end
+  if isAlt and race.altRoute and race.altRoute.label then
+    return race.altRoute.label
+  end
+  return race.label
 end
 
-local function getRaceDisciplineIds(raceData)
-    local disciplineIds = {}
-    local seen = {}
-    if type(raceData) ~= "table" then
-        return disciplineIds
-    end
-    for _, rawType in ipairs(raceData.type or {}) do
-        local disciplineId = freConfig.getDisciplineIdFromType(rawType)
-        if disciplineId and not seen[disciplineId] then
-            seen[disciplineId] = true
-            table.insert(disciplineIds, disciplineId)
-        end
-    end
-    return disciplineIds
+local function shouldUseAltRouteForNextLap(raceName)
+  if not TRACK_RACE_ID or raceName ~= TRACK_RACE_ID then
+    return false
+  end
+  local sr = gameplay_events_freContracts_sanctionedRacing
+  local sanctionedCircuit = sr and sr.isSanctionedCircuitRaceActive and sr.isSanctionedCircuitRaceActive() and
+    raceName == TRACK_RACE_ID
+  local useAlt = (trackFlowState and trackFlowState.useAltRoute == true and trackFlowState.inTrackFlowContext) or false
+  if sanctionedCircuit and sr and sr.isSanctionedCircuitRaceUseAltRoute then
+    useAlt = sr.isSanctionedCircuitRaceUseAltRoute()
+  end
+  return useAlt
 end
 
-local function getFreRewardModifiers(disciplineIds)
-    local defaultModifiers = {
-        moneyMultiplier = 1,
-        disciplineMultipliers = {}
-    }
-    if not gameplay_events_freContracts_race or not gameplay_events_freContracts_race.calculateRewardModifiers then
-        return defaultModifiers
+local function isAiSpawnedVehicle(subjectID)
+  if not aiRacers or not aiRacers.getSpawnedVehicleIds then
+    return false
+  end
+  for _, id in ipairs(aiRacers.getSpawnedVehicleIds()) do
+    if id == subjectID then
+      return true
     end
-    local computed = gameplay_events_freContracts_race.calculateRewardModifiers(disciplineIds or {})
-    if type(computed) ~= "table" then
-        return defaultModifiers
-    end
-    computed.moneyMultiplier = tonumber(computed.moneyMultiplier) or 1
-    computed.disciplineMultipliers = type(computed.disciplineMultipliers) == "table" and computed.disciplineMultipliers or {}
-    return computed
+  end
+  return false
 end
 
-local function resolveTierByUnlockLevel(level, unlockCfg)
-    local numericLevel = math.max(0, math.floor(tonumber(level) or 0))
-    local tiers = unlockCfg or {}
-    local selected = "easy"
-    if numericLevel >= (tonumber(tiers.medium) or math.huge) then
-        selected = "medium"
-    end
-    if numericLevel >= (tonumber(tiers.hard) or math.huge) then
-        selected = "hard"
-    end
-    return selected
-end
-
-local function safeRatio(numerator, denominator)
-    local denom = tonumber(denominator) or 0
-    if denom <= 0 then
-        return 0
-    end
-    return math.max(0, (tonumber(numerator) or 0) / denom)
-end
-
-local function calculateEventPerformanceRatio(eventKind, eventData)
-    eventData = eventData or {}
-    if eventKind == "topSpeed" then
-        local goalSpeed = tonumber(eventData.goalSpeed) or 0
-        local baseReward = tonumber(eventData.baseReward) or 0
-        local raceTypes = eventData.raceTypes or {}
-        local targetReward = utils.topSpeedReward(goalSpeed, baseReward, goalSpeed, raceTypes)
-        local actualReward = utils.topSpeedReward(goalSpeed, baseReward, tonumber(eventData.actualSpeed) or 0, raceTypes)
-        return safeRatio(actualReward, targetReward)
-    elseif eventKind == "drift" then
-        local raceStub = {
-            bestTime = tonumber(eventData.goalTime) or 0,
-            driftGoal = tonumber(eventData.goalDriftScore) or 0,
-            reward = tonumber(eventData.baseReward) or 0,
-            type = eventData.raceTypes or {}
-        }
-        local targetReward = utils.driftReward(raceStub, raceStub.bestTime, raceStub.driftGoal)
-        local actualReward = utils.driftReward(raceStub, tonumber(eventData.actualTime) or 0, tonumber(eventData.actualDriftScore) or 0)
-        return safeRatio(actualReward, targetReward)
-    elseif eventKind == "hybrid" then
-        local goalTime = tonumber(eventData.goalTime) or 0
-        local baseReward = tonumber(eventData.baseReward) or 0
-        local damageFactor = tonumber(eventData.damageFactor) or 0
-        local raceTypes = eventData.raceTypes or {}
-        local targetReward = utils.hybridRaceReward(goalTime, baseReward, goalTime, damageFactor, 0, raceTypes)
-        local actualReward = utils.hybridRaceReward(goalTime, baseReward, tonumber(eventData.actualTime) or 0, damageFactor, tonumber(eventData.actualDamagePct) or 0, raceTypes)
-        return safeRatio(actualReward, targetReward)
-    end
-    local goalTime = tonumber(eventData.goalTime) or 0
-    local baseReward = tonumber(eventData.baseReward) or 0
-    local raceTypes = eventData.raceTypes or {}
-    local targetReward = utils.raceReward(goalTime, baseReward, goalTime, raceTypes)
-    local actualReward = utils.raceReward(goalTime, baseReward, tonumber(eventData.actualTime) or 0, raceTypes)
-    return safeRatio(actualReward, targetReward)
-end
-
-local function buildDisciplineXpRewards(disciplineIds, normalizedPerformance, rewardModifiers)
-    local rewards = {}
-    local breakdown = {}
-    local totalXp = 0
-    local perDiscipline = (rewardModifiers or {}).disciplineMultipliers or {}
-    for _, disciplineId in ipairs(disciplineIds or {}) do
-        local skillKey = freConfig.getSkillKey(disciplineId)
-        if skillKey then
-            local eventXpCfg = freConfig.getEventXpConfig(disciplineId) or {}
-            local level = tonumber((perDiscipline[disciplineId] or {}).level) or 0
-            local tier = resolveTierByUnlockLevel(level, eventXpCfg.tierUnlockLevels or {})
-            local tierCurveCfg = ((eventXpCfg.xpByTier or {})[tier]) or {}
-            local baseAmount = 0
-            if gameplay_events_freContracts_skills and gameplay_events_freContracts_skills.calculateXpFromTierCurve then
-                baseAmount = gameplay_events_freContracts_skills.calculateXpFromTierCurve(tierCurveCfg, normalizedPerformance)
-            end
-            local xpMultiplier = tonumber((perDiscipline[disciplineId] or {}).xpMultiplier) or 1
-            local amount = math.max(0, math.floor(baseAmount * xpMultiplier))
-            rewards[skillKey] = {amount = amount}
-            breakdown[disciplineId] = {
-                skillKey = skillKey,
-                tier = tier,
-                baseAmount = baseAmount,
-                amount = amount,
-                xpMultiplier = xpMultiplier,
-                normalizedPerformance = tonumber(normalizedPerformance) or 0
-            }
-            totalXp = totalXp + amount
-        end
-    end
-    return rewards, breakdown, totalXp
-end
-
-local function mergeRewardTables(target, source, overwrite, warnOnOverwrite)
-    if type(target) ~= "table" or type(source) ~= "table" then
-        return
-    end
-    for key, value in pairs(source) do
-        if target[key] ~= nil and not overwrite then
-            if warnOnOverwrite then
-                log("W", "freeroamEvents", string.format("mergeRewardTables skipped key '%s' (already exists)", tostring(key)))
-            end
-        else
-            target[key] = value
-        end
-    end
-end
-
-local function getFreVehicleModel(vehId)
-    if gameplay_events_freContracts_race and gameplay_events_freContracts_race.getCurrentVehicleModel then
-        return gameplay_events_freContracts_race.getCurrentVehicleModel(vehId)
-    end
+local function buildAiResultsFromRaceState(isLapRace, playerLapsCompleted, playerTotalTime, playerBestLap, lapsTotalVal)
+  if not (circuitRaceAi.hasAiLapState() and aiRacers and aiRacers.getSpawnedVehicleIds) then
     return nil
-end
-
-local function notifyFreRaceCompleted(raceName, raceData, raceLabel, finishTime, vehicleId, completionMeta)
-    if not career_career.isActive() then
-        return
+  end
+  local MIN_LAP_SECONDS = 15
+  local list = {}
+  table.insert(list, {
+    isPlayer = true,
+    lapsCompleted = isLapRace and playerLapsCompleted or 1,
+    lapsTotal = lapsTotalVal,
+    totalTime = playerTotalTime,
+    bestLap = playerBestLap
+  })
+  for i, vehId in ipairs(aiRacers.getSpawnedVehicleIds()) do
+    local s = circuitRaceAi.getAiLapStateTable()[vehId]
+    if s then
+      local bestLap = nil
+      if s.lapTimes and #s.lapTimes > 0 then
+        for _, t in ipairs(s.lapTimes) do
+          if type(t) == "number" and t >= MIN_LAP_SECONDS then
+            bestLap = (bestLap == nil or t < bestLap) and t or bestLap
+          end
+        end
+      end
+      local aiTotal = nil
+      if s.finished and s.lapTimes and #s.lapTimes >= (s.totalLaps or 1) then
+        aiTotal = 0
+        for _, t in ipairs(s.lapTimes) do
+          aiTotal = aiTotal + (type(t) == "number" and t or 0)
+        end
+      end
+      if not aiTotal then
+        aiTotal = s.finishTime
+      end
+      if not aiTotal and s.lapTimes and #s.lapTimes > 0 then
+        aiTotal = 0
+        for _, t in ipairs(s.lapTimes) do
+          aiTotal = aiTotal + (type(t) == "number" and t or 0)
+        end
+        aiTotal = aiTotal + (circuitRaceAi.getRaceSessionElapsed() - s.lapStartTime)
+      end
+      if aiTotal == nil then
+        aiTotal = circuitRaceAi.getRaceSessionElapsed() - s.lapStartTime
+      end
+      table.insert(list, {
+        isPlayer = false,
+        index = i,
+        lapsCompleted = s.lapCount,
+        lapsTotal = s.totalLaps,
+        totalTime = aiTotal,
+        bestLap = bestLap
+      })
     end
-    if not gameplay_events_freContracts_race or not gameplay_events_freContracts_race.onFreeroamRaceCompleted then
-        return
-    end
-
-    local disciplineIds = completionMeta and completionMeta.disciplineIds or getRaceDisciplineIds(raceData)
-    local isAltRoute = mAltRoute == true
-    gameplay_events_freContracts_race.onFreeroamRaceCompleted({
-        raceId = raceName,
-        raceName = raceName,
-        raceLabel = raceLabel,
-        isAltRoute = isAltRoute,
-        raceRouteType = isAltRoute and "alt" or "main",
-        disciplineIds = disciplineIds,
-        rawTypes = raceData and raceData.type or {},
-        finishTime = finishTime,
-        lapCount = lapCount,
-        isHotlap = mHotlap == raceName,
-        invalidLap = completionMeta and completionMeta.invalidLap == true or false,
-        vehicleId = vehicleId,
-        vehicleModel = getFreVehicleModel(vehicleId),
-        resultMetrics = {
-            time = finishTime,
-            maxSpeed = maxSpeed,
-            lapCount = lapCount,
-            driftScore = completionMeta and completionMeta.driftScore or 0,
-            damagePercentage = completionMeta and completionMeta.damagePercentage or 0,
-            normalizedPerformance = completionMeta and completionMeta.normalizedPerformance or 0,
-            isAltRoute = isAltRoute,
-            isHotlap = mHotlap == raceName,
-            invalidLap = completionMeta and completionMeta.invalidLap == true or false
-        },
-        rewardBreakdown = completionMeta and completionMeta.rewardBreakdown or {}
+  end
+  table.sort(list, function(a, b)
+    return circuitRaceAi.compareRaceStanding({
+      lapCount = a.lapsCompleted or 0,
+      totalTime = a.totalTime
+    }, {
+      lapCount = b.lapsCompleted or 0,
+      totalTime = b.totalTime
     })
+  end)
+  local leaderTime = (#list > 0 and list[1].totalTime) and list[1].totalTime or 0
+  local aiResults = {}
+  for place, row in ipairs(list) do
+    local r = {
+      place = place,
+      isPlayer = row.isPlayer,
+      lapsCompleted = row.lapsCompleted,
+      lapsTotal = row.lapsTotal,
+      totalTime = row.totalTime,
+      bestLap = row.bestLap
+    }
+    if not row.isPlayer then
+      r.index = row.index
+    end
+    r.diffFromLeader = (row.totalTime or 0) - leaderTime
+    table.insert(aiResults, r)
+  end
+  return aiResults
 end
 
-local function payoutRace()
-    if not mActiveRace then
-        return 0
-    end
-
-    local race = races[mActiveRace]
-    local time = race.bestTime
-    local reward = race.reward
-    local raceLabel = race.label
-    local damageFactor = race.damageFactor or 0
-
-    -- Get appropriate time and reward values based on route type
-    if mHotlap == mActiveRace then
-        time = race.hotlap
-    end
-    if mAltRoute then
-        time = race.altRoute.bestTime
-        reward = race.altRoute.reward
-        raceLabel = race.altRoute.label
-        if mHotlap == mActiveRace then
-            time = race.altRoute.hotlap
-        end
-    end
-    if mHotlap == mActiveRace then
-        raceLabel = raceLabel .. " (Hotlap)"
-    end
-    local rewardBaseForPerformance = reward
-
-    -- Calculate damage percentage if damage factor is used
-    local damagePercentage = 0
-    if damageFactor > 0 then
-        local currentDamage = utils.getVehicleDamage()
-        local damageTaken = math.max(0, currentDamage - initialVehicleDamage)
-        local maxDamage = 100000 -- Default max damage
-        
-        -- Try to get vehicle value as max damage if in career mode
-        if career_career and career_career.isActive() and career_modules_valueCalculator then
-            maxDamage = career_modules_valueCalculator.getInventoryVehicleValue(mInventoryId, true)
-        end
-        
-        -- Calculate percentage of damage taken (0 = no damage, 1 = maximum damage)
-        damagePercentage = math.min(1, damageTaken / maxDamage)
-    end
-
-    -- Calculate scores and rewards
-    local driftScore = 0
-    if race.topSpeed then
-        reward = utils.topSpeedReward(race.topSpeedGoal, reward, maxSpeed, race.type)
-    elseif race.driftGoal then
-        driftScore = getDriftScore()
-        reward = utils.driftReward(races[mActiveRace], time, driftScore)
-    elseif damageFactor > 0 then
-        reward = utils.hybridRaceReward(time, reward, in_race_time, damageFactor, damagePercentage, race.type)
+local function beginFreeroamRace(raceNameArg, subjectID)
+  if not session.races[raceNameArg] then
+    return
+  end
+  local raceName = raceNameArg
+  session.staged = nil
+  raceSession.setStagingSubjectId(nil)
+  if aiRacers and aiRacers.setPlayerFreeze then
+    aiRacers.setPlayerFreeze(false)
+  end
+  if career_career.isActive() then
+    career_modules_pauseTime.enablePauseCounter(true)
+  end
+  session.initialVehicleDamage = utils.getVehicleDamage()
+  utils.saveAndSetTrafficAmount(0)
+  checkpointManager.setRace(session.races[raceName], raceName)
+  Assets:displayAssets({
+    subjectID = subjectID,
+    triggerName = "fre_start_" .. raceName
+  })
+  session.timerActive = true
+  session.in_race_time = 0
+  session.maxSpeed = 0
+  session.mActiveRace = raceName
+  if gameplay_events_freContracts_sanctionedRacing and gameplay_events_freContracts_sanctionedRacing.onRaceBegin then
+    gameplay_events_freContracts_sanctionedRacing.onRaceBegin(raceName)
+  end
+  if raceName == TRACK_RACE_ID and competitiveTrackFlow then
+    competitiveTrackFlow.clearSanctionedCareerGoToRaceActive()
+  end
+  raceSession.prepareNewRaceHudState(raceName)
+  local useRaceHud = raceSession.raceHudApplies(session.races[raceName])
+  if useRaceHud and not raceSession.isRaceHudShown() then
+    raceSession.showFreeroamRaceHud()
+  end
+  session.lapCount = 0
+  session.mCurrentRouteName = nil
+  session.mTotalRaceTime = 0
+  session.mBestLapThisRun = nil
+  session.mSuppressOffRoadExitUntil = os.time() + 5
+  if career_modules_business_businessInventory then
+    local businessId, vehicleId = career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId(subjectID)
+    if businessId and vehicleId then
+      local jobId = career_modules_business_businessInventory.getJobIdFromVehicle(businessId, vehicleId)
+      if jobId then
+        session.mInventoryId = career_modules_business_businessInventory.getBusinessJobIdentifier(businessId, jobId)
+      else
+        session.mInventoryId = career_modules_business_businessInventory.getBusinessVehicleIdentifier(businessId,
+          vehicleId)
+      end
     else
-        reward = utils.raceReward(time, reward, in_race_time, race.type)
+      session.mInventoryId = career_modules_inventory and
+                               career_modules_inventory.getInventoryIdFromVehicleId(subjectID) or subjectID
     end
-
-    local normalizedPerformance = 0
-    if race.topSpeed then
-        normalizedPerformance = calculateEventPerformanceRatio("topSpeed", {
-            goalSpeed = race.topSpeedGoal,
-            baseReward = rewardBaseForPerformance,
-            actualSpeed = maxSpeed,
-            raceTypes = race.type
-        })
-    elseif race.driftGoal then
-        normalizedPerformance = calculateEventPerformanceRatio("drift", {
-            goalTime = race.driftTargetTime or time,
-            goalDriftScore = race.driftGoal,
-            baseReward = rewardBaseForPerformance,
-            actualTime = in_race_time,
-            actualDriftScore = driftScore,
-            raceTypes = race.type
-        })
-    elseif damageFactor > 0 then
-        normalizedPerformance = calculateEventPerformanceRatio("hybrid", {
-            goalTime = time,
-            baseReward = rewardBaseForPerformance,
-            actualTime = in_race_time,
-            damageFactor = damageFactor,
-            actualDamagePct = damagePercentage,
-            raceTypes = race.type
-        })
-    else
-        normalizedPerformance = calculateEventPerformanceRatio("time", {
-            goalTime = time,
-            baseReward = rewardBaseForPerformance,
-            actualTime = in_race_time,
-            raceTypes = race.type
-        })
+  else
+    session.mInventoryId =
+      career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId(subjectID) or subjectID
+  end
+  session.invalidLap = false
+  if useRaceHud then
+    raceSession.setRaceHudBanner(utils.getRaceStartBannerText(raceName), "good", 5)
+    raceSession.pushFreeroamRaceHudState(true)
+  else
+    utils.displayStartMessage(raceName)
+  end
+  utils.setActiveLight(raceName, "green")
+  if session.races[raceName].type and utils.tableContains(session.races[raceName].type, "drift") then
+    gameplay_drift_general.setContext("inChallenge")
+    gameplay_drift_general.reset()
+    if gameplay_drift_drift then
+      gameplay_drift_drift.setVehId(subjectID)
     end
-
-    -- Handle leaderboard
-    local inventoryIdToUse = mInventoryId
-    
-        -- If mInventoryId is already a business job identifier, use it directly
-        -- Otherwise, check if this is a business vehicle (check current player vehicle)
-        if mInventoryId and tostring(mInventoryId):match("^business_.+_job_") then
-            -- Already a business job identifier, use it as-is
-            inventoryIdToUse = mInventoryId
-        elseif career_modules_business_businessInventory then
-            local playerVehicleId = be:getPlayerVehicleID(0)
-            if playerVehicleId then
-                local businessId, vehicleId = career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId(playerVehicleId)
-                if businessId and vehicleId then
-                    local jobId = career_modules_business_businessInventory.getJobIdFromVehicle(businessId, vehicleId)
-                    if jobId then
-                        inventoryIdToUse = career_modules_business_businessInventory.getBusinessJobIdentifier(businessId, jobId)
-                    else
-                        inventoryIdToUse = career_modules_business_businessInventory.getBusinessVehicleIdentifier(businessId, vehicleId)
-                    end
-                elseif mInventoryId and not tostring(mInventoryId):match("^business_") then
-                    -- If mInventoryId is not already a business identifier, try to convert it
-                    -- This handles the case where the race started with a regular vehicle but we want to check business vehicles
-                    inventoryIdToUse = mInventoryId
-                end
-            end
-        end
-    
-    local leaderboardEntry = leaderboardManager.getLeaderboardEntry(inventoryIdToUse, raceLabel)
-
-    local oldTime = leaderboardEntry and leaderboardEntry.time or 0
-    local oldScore = leaderboardEntry and leaderboardEntry.driftScore or 0
-
-    local newEntry = {
-        raceName = mActiveRace,
-        raceLabel = raceLabel,
-        isAltRoute = mAltRoute,
-        isHotlap = mHotlap == mActiveRace,
-        time = in_race_time,
-        splitTimes = mSplitTimes,
-        driftScore = driftScore,
-        inventoryId = inventoryIdToUse,
-        damagePercentage = damagePercentage,
-        damageFactor = damageFactor,
-        topSpeed = maxSpeed
-    }
-
-    local newBest = leaderboardManager.addLeaderboardEntry(newEntry)
-
-    -- Build the base message that's shown regardless of career mode
-    local message = invalidLap and "Lap Invalidated\n" or ""
-
-    if race.topSpeed then
-        message = message ..
-                      string.format("%s\nTop Speed: %.2f mph\nTime: %s", raceLabel, maxSpeed, utils.formatTime(in_race_time))
-        if oldTime then
-            local oldSpeed = leaderboardEntry and leaderboardEntry.topSpeed or 0
-            message = message ..
-                          string.format("\nPrevious Best Speed: %.2f mph\nPrevious Best Time: %s", oldSpeed,
-                    utils.formatTime(oldTime))
-        end
-    elseif race.driftGoal then
-        message = message ..
-                      string.format("%s\nDrift Score: %d\nTime: %s", raceLabel, driftScore,
-                utils.formatTime(in_race_time))
-        if oldScore and oldTime then
-            message = message ..
-                          string.format("\nPrevious Best Score: %d\nPrevious Best Time: %s", oldScore,
-                    utils.formatTime(oldTime))
-        end
-    else
-        if newBest and not invalidLap then
-            if damageFactor > 0 then
-                message = message .. "New Best Score!\n"
-            else
-                message = message .. "New Best Time!\n"
-            end
-        end
-        
-        -- Build basic time information
-        if race.hotlap then
-            message = message ..
-                          string.format("%s\nTime: %s\nLap: %d", raceLabel, utils.formatTime(in_race_time), lapCount)
-        else
-            message = message .. string.format("%s\nTime: %s", raceLabel, utils.formatTime(in_race_time))
-        end
-        
-        -- Add damage information for damage-based races
-        if damageFactor > 0 then
-            message = message .. string.format("\nDamage Taken: %.1f%% | Damage Factor: %.0f%%", 
-                damagePercentage * 100, damageFactor * 100)
-        end
-        
-        -- Show previous best information
-        if newBest and not invalidLap and oldTime ~= math.huge then
-            if damageFactor > 0 then
-                local oldDamagePercentage = leaderboardEntry and leaderboardEntry.damagePercentage or 0
-                message = message .. string.format("\nPrevious Best Time: %s | Previous Best Damage: %.1f%%", 
-                    utils.formatTime(oldTime), oldDamagePercentage * 100)
-            else
-                message = message .. string.format("\nPrevious Best: %s", utils.formatTime(oldTime))
-            end
-        end
-    end
-
-    local hotlapMessage = ""
-    local completionMeta = {
-        disciplineIds = getRaceDisciplineIds(race),
-        invalidLap = invalidLap == true,
-        normalizedPerformance = normalizedPerformance,
-        driftScore = driftScore,
-        damagePercentage = damagePercentage,
-        rewardBreakdown = {}
-    }
-    -- Handle career mode specific rewards
-    if career_career.isActive() then
-        if not newBest or mHotlap then
-            reward = reward / 2
-        end
-        reward = invalidLap and 0 or reward
-        lapCount = invalidLap and 1 or lapCount
-        if race.hotlap then
-            -- Hotlap Multiplier
-            reward = reward * utils.hotlapMultiplier(lapCount)
-            hotlapMessage = string.format("\nHotlap Multiplier: %.2f", utils.hotlapMultiplier(lapCount))
-        end
-
-        if newBest and not newBestSession then
-            -- New Best Bonus
-            newBestSession = true
-        end
-
-        if newBestSession then
-            -- New Best Bonus
-            reward = reward * 1.2
-            hotlapMessage = hotlapMessage .. "\nNew Best Session Bonus: 20%"
-        end
-
-        if oldTime and (newEntry.time - (oldTime * 0.025) < oldTime) then
-            -- In Range Bonus
-            reward = reward * 1.05
-            hotlapMessage = hotlapMessage .. "\nIn Range Bonus: 5%"
-        end
-
-        local baseRewardBeforeFre = reward
-        local freModifiers = getFreRewardModifiers(completionMeta.disciplineIds)
-        reward = reward * (tonumber(freModifiers.moneyMultiplier) or 1)
-        local disciplineXpRewards, disciplineXpBreakdown, totalDisciplineXp = buildDisciplineXpRewards(completionMeta.disciplineIds, normalizedPerformance, freModifiers)
-        if career_modules_difficultyMode and career_modules_difficultyMode.scalePaymentRewardData then
-            career_modules_difficultyMode.scalePaymentRewardData(disciplineXpRewards, {includeMoney = false})
-            totalDisciplineXp = 0
-            for _, rewardInfo in pairs(disciplineXpRewards) do
-                totalDisciplineXp = totalDisciplineXp + (tonumber(rewardInfo.amount) or 0)
-            end
-        end
-        completionMeta.rewardBreakdown = {
-            money = {
-                base = baseRewardBeforeFre,
-                multiplier = tonumber(freModifiers.moneyMultiplier) or 1,
-                final = reward
-            },
-            normalizedPerformance = normalizedPerformance,
-            disciplineXp = disciplineXpBreakdown
-        }
-
-        if reward > 0 then
-            local playerVehicleId = be:getPlayerVehicleID(0)
-            local businessAccount = getBusinessAccountFromVehicle(playerVehicleId)
-            
-            if businessAccount then
-                local businessReward = math.floor(reward * 0.5)
-                local xpReward = {}
-                mergeRewardTables(xpReward, disciplineXpRewards)
-                
-                if next(xpReward) ~= nil then
-                    career_modules_payment.reward(xpReward, {
-                        label = rewardLabel(mActiveRace, newBest),
-                        tags = {"gameplay", "reward", "mission"}
-                    }, true)
-                end
-                
-                if career_modules_bank then
-                    career_modules_bank.rewardToAccount({
-                        money = {
-                            amount = businessReward
-                        }
-                    }, businessAccount.id, "Event Reward", rewardLabel(mActiveRace, newBest))
-                end
-                
-                message = message .. string.format("\nDiscipline XP: %d | Business Reward: $%.2f (50%% to business account)", totalDisciplineXp, businessReward)
-            else
-                local totalReward = {
-                    money = {
-                        amount = reward
-                    }
-                }
-                mergeRewardTables(totalReward, disciplineXpRewards)
-
-                career_modules_payment.reward(totalReward, {
-                    label = rewardLabel(mActiveRace, newBest),
-                    tags = {"gameplay", "reward", "mission"}
-                }, true)
-
-                message = message .. string.format("\nDiscipline XP: %d | Reward: $%.2f", totalDisciplineXp, reward)
-            end
-            career_saveSystem.saveCurrent()
-        end
-    end
-
-    notifyFreRaceCompleted(mActiveRace, race, raceLabel, in_race_time, be:getPlayerVehicleID(0), completionMeta)
-    mActiveRace = nil
-    utils.displayMessage(message, 20, "Reward")
-    if hotlapMessage ~= "" then
-        ui_message(hotlapMessage, 5, "Hotlap Multiplier")
-    end
-    return reward
+  end
+  extensions.hook('onFreeroamSessionStarted', {
+    raceName = raceName,
+    subjectID = subjectID,
+    race = session.races[raceName],
+    checkpointRoad = session.races[raceName].checkpointRoad
+  })
 end
 
--- Simplified payoutRace function for drag races
-local function payoutDragRace(raceName, finishTime, finishSpeed, vehId)
-    -- Load the leaderboard
-    local inventoryIdToUse = vehId
-    
-    if career_career.isActive() then
-        -- Check if this is a business vehicle first
-        if career_modules_business_businessInventory then
-            local businessId, vehicleId = career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId(vehId)
-            if businessId and vehicleId then
-                local jobId = career_modules_business_businessInventory.getJobIdFromVehicle(businessId, vehicleId)
-                if jobId then
-                    inventoryIdToUse = career_modules_business_businessInventory.getBusinessJobIdentifier(businessId, jobId)
-                else
-                    inventoryIdToUse = career_modules_business_businessInventory.getBusinessVehicleIdentifier(businessId, vehicleId)
-                end
-            else
-                inventoryIdToUse = career_modules_inventory.getInventoryIdFromVehicleId(vehId) or vehId
-            end
-        else
-            inventoryIdToUse = career_modules_inventory.getInventoryIdFromVehicleId(vehId) or vehId
-        end
-    end
-
-    local leaderboardEntry = leaderboardManager.getLeaderboardEntry(inventoryIdToUse, races["drag"].label)
-    local oldTime = leaderboardEntry and leaderboardEntry.time or 0
-
-    local newEntry = {
-        raceLabel = races["drag"].label,
-        raceName = raceName,
-        time = finishTime,
-        splitTimes = mSplitTimes,
-        inventoryId = inventoryIdToUse
-    }
-
-    local newBestTime = leaderboardManager.addLeaderboardEntry(newEntry)
-
-    if not career_career.isActive() then
-        local message = string.format("%s\nTime: %s\nSpeed: %.2f mph", races[raceName].label, utils.formatTime(finishTime),
-            finishSpeed)
-        utils.displayMessage(message, 10)
-        return 0
-    end
-
-    -- Get race data
-    local raceData = races[raceName]
-    local targetTime = raceData.bestTime
-    local baseReward = raceData.reward
-    local disciplineIds = getRaceDisciplineIds(raceData)
-    local normalizedPerformance = calculateEventPerformanceRatio("time", {
-        goalTime = targetTime,
-        baseReward = baseReward,
-        actualTime = finishTime,
-        raceTypes = raceData.type
+local function applySavedStagingSpotNavigation()
+  local spot = competitiveTrackFlow.loadPlayerStagingSpot()
+  if not spot or not spot.pos then
+    return
+  end
+  competitiveTrackFlow.setPlayerStagingSpot(spot)
+  if core_groundMarkers and core_groundMarkers.setPath then
+    core_groundMarkers.setPath(vec3(spot.pos[1], spot.pos[2], spot.pos[3]), {
+      clearPathOnReachingTarget = false
     })
-
-    -- Calculate reward based on performance
-    local reward = utils.raceReward(targetTime, baseReward, finishTime, raceData.type)
-    if reward <= 0 then
-        reward = baseReward / 2 -- Minimum reward for completion
-    end
-
-    reward = newBestTime and reward or reward / 2
-
-    local baseRewardBeforeFre = reward
-    local freModifiers = getFreRewardModifiers(disciplineIds)
-    reward = reward * (tonumber(freModifiers.moneyMultiplier) or 1)
-    local disciplineXpRewards, disciplineXpBreakdown, totalDisciplineXp = buildDisciplineXpRewards(disciplineIds, normalizedPerformance, freModifiers)
-    if career_modules_difficultyMode and career_modules_difficultyMode.scalePaymentRewardData then
-        career_modules_difficultyMode.scalePaymentRewardData(disciplineXpRewards, {includeMoney = false})
-        totalDisciplineXp = 0
-        for _, rewardInfo in pairs(disciplineXpRewards) do
-            totalDisciplineXp = totalDisciplineXp + (tonumber(rewardInfo.amount) or 0)
-        end
-    end
-    local completionMeta = {
-        disciplineIds = disciplineIds,
-        invalidLap = false,
-        normalizedPerformance = normalizedPerformance,
-        driftScore = 0,
-        damagePercentage = 0,
-        rewardBreakdown = {
-            money = {
-                base = baseRewardBeforeFre,
-                multiplier = tonumber(freModifiers.moneyMultiplier) or 1,
-                final = reward
-            },
-            normalizedPerformance = normalizedPerformance,
-            disciplineXp = disciplineXpBreakdown
-        }
-    }
-
-    -- Check if this is a business vehicle
-    local businessAccount = getBusinessAccountFromVehicle(vehId)
-    
-    if businessAccount then
-        local businessReward = math.floor(reward * 0.5)
-        
-        local xpReward = {}
-        mergeRewardTables(xpReward, disciplineXpRewards)
-        
-        local reason = {
-            label = raceData.label .. (newBestTime and " - New Best Time!" or " - Completion"),
-            tags = {"gameplay", "reward", "drag"}
-        }
-        
-        if next(xpReward) ~= nil then
-            career_modules_payment.reward(xpReward, reason, true)
-        end
-        
-        if career_modules_bank then
-            career_modules_bank.rewardToAccount({
-                money = {
-                    amount = businessReward
-                }
-            }, businessAccount.id, "Event Reward", raceData.label .. (newBestTime and " - New Best Time!" or " - Completion"))
-        end
-        
-        local message = string.format("%s\n%s\nTime: %s\nSpeed: %.2f mph\nDiscipline XP: %d | Business Reward: $%.2f (50%% to business account)",
-            newBestTime and "Congratulations! New Best Time!" or "", raceData.label, utils.formatTime(finishTime), finishSpeed,
-            totalDisciplineXp, businessReward)
-        
-        ui_message(message, 20, "Reward")
-    else
-        -- Prepare total reward
-        local totalReward = {
-            money = {
-                amount = reward
-            }
-        }
-        mergeRewardTables(totalReward, disciplineXpRewards)
-
-        -- Create reason for reward
-        local reason = {
-            label = raceData.label .. (newBestTime and " - New Best Time!" or " - Completion"),
-            tags = {"gameplay", "reward", "drag"}
-        }
-
-        -- Process the reward
-        career_modules_payment.reward(totalReward, reason, true)
-
-        -- Prepare the completion message
-        local message = string.format("%s\n%s\nTime: %s\nSpeed: %.2f mph\nDiscipline XP: %d | Reward: $%.2f",
-            newBestTime and "Congratulations! New Best Time!" or "", raceData.label, utils.formatTime(finishTime), finishSpeed,
-            totalDisciplineXp, reward)
-
-        -- Display the message
-        ui_message(message, 20, "Reward")
-    end
-
-    -- Save the leaderboard and game state
-    career_saveSystem.saveCurrent()
-    notifyFreRaceCompleted(raceName, raceData, raceData.label, finishTime, vehId, completionMeta)
-
-    return reward
-end
-
-local function getDifference(raceName, currentCheckpointIndex)
-    local raceLabel = getRaceLabel()
-    local leaderboardEntry = leaderboardManager.getLeaderboardEntry(mInventoryId, raceLabel)
-    if not leaderboardEntry then
-        return nil
-    end
-
-    local splitTimes = leaderboardEntry.splitTimes
-
-    if not splitTimes or not splitTimes[currentCheckpointIndex] then
-        return nil
-    end
-
-    -- Calculate the time difference for this split
-    local currentSplitDiff
-    if not mSplitTimes[currentCheckpointIndex] or not splitTimes[currentCheckpointIndex] then
-        return nil
-    end
-
-    if currentCheckpointIndex == 1 then
-        -- For first checkpoint, compare directly
-        currentSplitDiff = mSplitTimes[currentCheckpointIndex] - splitTimes[currentCheckpointIndex]
-    else
-        -- Check if we have the previous checkpoint times before calculating
-        if not mSplitTimes[currentCheckpointIndex - 1] or not splitTimes[currentCheckpointIndex - 1] then
-            return nil
-        end
-
-        -- For subsequent checkpoints, compare the differences between splits
-        local previousBestSplit = splitTimes[currentCheckpointIndex] - splitTimes[currentCheckpointIndex - 1]
-        local currentSplit = mSplitTimes[currentCheckpointIndex] - mSplitTimes[currentCheckpointIndex - 1]
-        currentSplitDiff = currentSplit - previousBestSplit
-    end
-
-    return currentSplitDiff
-end
-
-local function formatSplitDifference(diff)
-    local sign = diff >= 0 and "+" or "-"
-    return string.format("%s%s", sign, utils.formatTime(math.abs(diff)))
+  end
+  competitiveTrackFlow.showPlayerStagingCornerMarkers(spot)
 end
 
 local function exitRace(isCompletion, customMessage, raceData, subjectID)
-    if mActiveRace then
-        local raceName = mActiveRace
-        if isCompletion then
-            -- Race completion logic
-            payoutRace()
+  if isCompletion == false and session.mPendingTrackResult then
+    return
+  end
+  competitiveTrackFlow.cancelCompetitiveGridFlow()
+  if session.mActiveRace then
+    local raceName = session.mActiveRace
+    local cpRoad = session.races[raceName] and session.races[raceName].checkpointRoad
+    local mainRace = session.races[raceName]
+    local useRaceHud = mainRace and raceSession.raceHudApplies(mainRace)
+    local effectiveRace = (mainRace and session.mAltRoute and mainRace.altRoute) and mainRace.altRoute or
+                            (raceData or mainRace or {})
+    local erSession = effectiveRace and effectiveRace.session
+    local raceLabel = getRaceLabel()
+    local displayLabel = getDisplayRaceLabel()
+    local isLapRace = effectiveRace and
+                        ((erSession and erSession.lapCount and erSession.lapCount > 0) or effectiveRace.hotlap)
 
-            -- Race-specific completion handling
-            if raceName == "drag" and raceData and subjectID then
-                local side = "l"
-                utils.updateDisplay(side, in_race_time, math.abs(be:getObjectVelocityXYZ(subjectID)) * speedUnit)
-            end
+    local finalResult = nil
+    local hudCompletionPl = nil
 
-            if raceData and utils.tableContains(raceData.type, "drift") then
-                local finalScore = getDriftScore()
-                if gameplay_drift_general.getContext() == "inChallenge" then
-                    gameplay_drift_general.setContext("inFreeRoam")
-                end
-            end
+    if isCompletion then
+      if session.in_race_time and (session.mBestLapThisRun == nil or session.in_race_time < session.mBestLapThisRun) then
+        session.mBestLapThisRun = session.in_race_time
+      end
+      local rewardData
+      rewardData, hudCompletionPl = raceSession.payoutRace()
+      local rewardAmt = 0
+      if type(rewardData) == "number" then
+        rewardAmt = rewardData
+      end
 
-            if customMessage then
-                utils.displayMessage(customMessage, 10, "Reward")
-            end
-        else
-            -- Race cancellation logic
-            local message = customMessage or "You exited the race zone, Race cancelled"
-            utils.displayMessage(message, 3)
+      local totalTime = (session.mTotalRaceTime or 0) + session.in_race_time
+      local lapsTotalVal = 1
+      if isLapRace then
+        lapsTotalVal = getDisplayTotalLapsForRace(effectiveRace)
+        if lapsTotalVal < 1 then
+          local lc = erSession and erSession.lapCount
+          lapsTotalVal = (type(lc) == "number" and lc > 0) and lc or session.lapCount
         end
+        if lapsTotalVal < 1 then
+          lapsTotalVal = session.lapCount
+        end
+      end
 
-        utils.setActiveLight(raceName, "red")
-        lapCount = 0
-        mActiveRace = nil
-        timerActive = false
-        mHotlap = nil
-        currCheckpoint = nil
-        mSplitTimes = {}
-        mAltRoute = false
-        invalidLap = false
-        mInventoryId = nil
-        maxSpeed = 0
-        Assets:hideAllAssets()
-        checkpointManager.removeCheckpoints()
+      finalResult = {
+        raceLabel = displayLabel,
+        lapsCompleted = isLapRace and session.lapCount or 1,
+        lapsTotal = lapsTotalVal,
+        totalTime = totalTime,
+        bestLap = session.mBestLapThisRun,
+        newBest = session.newBestSession,
+        invalidLap = session.invalidLap,
+        reward = rewardAmt,
+        xp = 0,
+        leaderboard = {}
+      }
+      local aiResults = buildAiResultsFromRaceState(isLapRace, session.lapCount, totalTime, session.mBestLapThisRun, lapsTotalVal)
+      if aiResults then
+        finalResult.aiResults = aiResults
+      end
+      if hudCompletionPl and hudCompletionPl.rewards and hudCompletionPl.rewards.disciplineXp then
+        finalResult.xp = math.floor(tonumber(hudCompletionPl.rewards.disciplineXp) or 0)
+      end
 
-        -- Common cleanup tasks
-        core_jobsystem.create(function(job)
-            job.sleep(10)
-            utils.restoreTrafficAmount()
-        end)
-        pits.clearSpeedLimit()
-        newBestSession = false
+      if raceName == "drag" and effectiveRace and subjectID and not useRaceHud then
+        local side = "l"
+        utils.updateDisplay(side, session.in_race_time, math.abs(be:getObjectVelocityXYZ(subjectID)) * session.speedUnit)
+      end
+
+      if effectiveRace and effectiveRace.type and utils.tableContains(effectiveRace.type, "drift") then
+        local finalScore = getDriftScore()
         if gameplay_drift_general.getContext() == "inChallenge" then
-            gameplay_drift_general.setContext("inFreeRoam")
-            gameplay_drift_general.reset()
+          gameplay_drift_general.setContext("inFreeRoam")
         end
-        if career_career.isActive() then
-            career_modules_pauseTime.enablePauseCounter()
+      end
+
+      if customMessage then
+        utils.displayMessage(customMessage, 10)
+      end
+    else
+      local message = customMessage or "You exited the race zone, Race cancelled"
+      utils.displayMessage(message, 3)
+      if session.lapCount >= 1 and effectiveRace then
+        local rd = effectiveRace
+        local rdSession = rd and rd.session
+        local isLap = rd and ((rdSession and rdSession.lapCount and rdSession.lapCount > 0) or rd.hotlap)
+        local totalTimePartial = (session.mTotalRaceTime or 0) + session.in_race_time
+        local lapsTotalVal = 1
+        if isLap then
+          lapsTotalVal = getDisplayTotalLapsForRace(rd)
+          if lapsTotalVal < 1 then
+            local lc = rdSession and rdSession.lapCount
+            lapsTotalVal = (type(lc) == "number" and lc > 0) and lc or session.lapCount
+          end
+          if lapsTotalVal < 1 then
+            lapsTotalVal = session.lapCount
+          end
         end
-        core_gamestate.setGameState(previousGameState.state, previousGameState.appLayout, previousGameState.menuItems, previousGameState.options)
-        previousGameState = nil
-        saveGameState = false
+        finalResult = {
+          raceLabel = displayLabel,
+          lapsCompleted = isLap and session.lapCount or 1,
+          lapsTotal = lapsTotalVal,
+          totalTime = totalTimePartial,
+          bestLap = session.mBestLapThisRun,
+          newBest = false,
+          invalidLap = session.invalidLap,
+          reward = 0,
+          xp = 0,
+          leaderboard = {}
+        }
+        local aiResultsAbort = buildAiResultsFromRaceState(isLap, session.lapCount, totalTimePartial, session.mBestLapThisRun, lapsTotalVal)
+        if aiResultsAbort then
+          finalResult.aiResults = aiResultsAbort
+        end
+      end
     end
+
+    if gameplay_events_freContracts_sanctionedRacing then
+      if isCompletion and finalResult and finalResult.aiResults then
+        gameplay_events_freContracts_sanctionedRacing.settleFromAiResults(finalResult.aiResults, raceName)
+      elseif not isCompletion then
+        gameplay_events_freContracts_sanctionedRacing.onRaceAborted()
+      elseif isCompletion then
+        gameplay_events_freContracts_sanctionedRacing.settleFromAiResults(nil, raceName)
+      end
+    end
+
+    local srCelebration = isCompletion and gameplay_events_freContracts_sanctionedRacing and
+      gameplay_events_freContracts_sanctionedRacing.consumeSanctionedCelebrationRewards and
+      gameplay_events_freContracts_sanctionedRacing.consumeSanctionedCelebrationRewards()
+    if srCelebration and type(srCelebration.money) == "number" and finalResult then
+      finalResult.reward = srCelebration.money
+      if type(srCelebration.noRewardDetail) == "string" and srCelebration.noRewardDetail ~= "" then
+        finalResult.sanctionedNoRewardDetail = srCelebration.noRewardDetail
+      end
+      if hudCompletionPl and type(hudCompletionPl) == "table" then
+        if not hudCompletionPl.rewards then
+          hudCompletionPl.rewards = {}
+        end
+        hudCompletionPl.rewards.money = srCelebration.money
+        local sx = tonumber(srCelebration.disciplineXp)
+        if sx ~= nil then
+          hudCompletionPl.rewards.disciplineXp = math.max(0, math.floor(sx))
+        elseif hudCompletionPl.rewards.disciplineXp == nil then
+          hudCompletionPl.rewards.disciplineXp = 0
+        end
+        if type(srCelebration.noRewardDetail) == "string" and srCelebration.noRewardDetail ~= "" then
+          hudCompletionPl.sanctionedNoRewardDetail = srCelebration.noRewardDetail
+        end
+      end
+    end
+
+    local hasSpawnedAi =
+      (aiRacers and aiRacers.getSpawnedVehicleIds and (#(aiRacers.getSpawnedVehicleIds() or {}) > 0)) or
+        circuitRaceAi.hasAiLapState()
+    local deferResultScreen = isCompletion and hasSpawnedAi and finalResult
+    local deferHudHide = isCompletion and useRaceHud and hudCompletionPl and not deferResultScreen
+
+    if isCompletion and hudCompletionPl and not deferResultScreen then
+      raceSession.pushRaceHudCompletion(hudCompletionPl, raceName, displayLabel, raceLabel, session.in_race_time, true)
+    end
+
+    if deferResultScreen and guihooks and guihooks.trigger then
+      guihooks.trigger("OpenFreRaceCompletionCelebration", {
+        entry = raceSession.buildFreRaceCompletionCelebrationEntry(finalResult, hudCompletionPl)
+      })
+      guihooks.trigger("ScenarioFlashMessageReset")
+      hideStagedFlashMessage()
+    end
+    session.mPendingTrackResult = nil
+
+    raceSession.maybeShowFreerunSummary(cpRoad, isCompletion, deferResultScreen)
+
+    utils.setActiveLight(raceName, "red")
+    session.lapCount = 0
+    session.timerActive = false
+    session.mHotlap = nil
+    session.currCheckpoint = nil
+    session.mSplitTimes = {}
+    session.mAltRoute = false
+    session.mCurrentRouteName = nil
+    session.invalidLap = false
+    session.mInventoryId = nil
+    session.maxSpeed = 0
+    session.mTotalRaceTime = 0
+    session.mBestLapThisRun = nil
+    session.mSuppressOffRoadExitUntil = 0
+
+    session.mActiveRace = nil
+    local hideHudNow = deferResultScreen or not deferHudHide
+    extensions.hook('onFreeroamSessionExiting', {
+      raceName = raceName,
+      checkpointRoad = cpRoad,
+      isCompletion = isCompletion
+    })
+    if hideHudNow then
+      raceSession.hideFreeroamRaceHud()
+    end
+    Assets:hideAllAssets()
+
+    if aiRacers and aiRacers.setDnfCallback then
+      aiRacers.setDnfCallback(nil)
+    end
+    if deferResultScreen and aiRacers and aiRacers.scheduleDelayedDespawn then
+      aiRacers.scheduleDelayedDespawn(50)
+      core_jobsystem.create(function(job)
+        job.sleep(15)
+        if aiRacers and aiRacers.clearSpawned then
+          aiRacers.clearSpawned()
+        end
+        core_jobsystem.create(function(innerJob)
+          innerJob.sleep(10)
+          if session.mActiveRace then
+            return
+          end
+          utils.restoreTrafficAmount()
+        end)
+      end)
+    else
+      if aiRacers and aiRacers.clearSpawned then
+        aiRacers.clearSpawned()
+      end
+      core_jobsystem.create(function(job)
+        job.sleep(10)
+        if session.mActiveRace then
+          return
+        end
+        utils.restoreTrafficAmount()
+      end)
+    end
+
+    pits.clearSpeedLimit()
+    session.newBestSession = false
+    trackFlowState.sanctionedRaceLapCount = nil
+    if raceName == TRACK_RACE_ID and competitiveTrackFlow and competitiveTrackFlow.leaveTrackFlowAfterRace then
+      competitiveTrackFlow.leaveTrackFlowAfterRace()
+    end
+    if gameplay_drift_general.getContext() == "inChallenge" then
+      gameplay_drift_general.setContext("inFreeRoam")
+      gameplay_drift_general.reset()
+    end
+    if career_career.isActive() then
+      career_modules_pauseTime.enablePauseCounter()
+    end
+    if deferHudHide then
+      core_jobsystem.create(function(job)
+        job.sleep(18)
+        raceSession.hideFreeroamRaceHud()
+      end)
+    end
+    if session.previousGameState then
+      core_gamestate.setGameState(session.previousGameState.state, session.previousGameState.appLayout,
+        session.previousGameState.menuItems, session.previousGameState.options)
+      session.previousGameState = nil
+      session.saveGameState = false
+    end
+  end
+end
+
+local function tryCommitStagingEnter(raceName, spawnVehId)
+  if not session.races or not session.races[raceName] then
+    return false
+  end
+  if utils.isPlayerInPursuit() then
+    utils.displayMessage("You cannot stage for an event while in a pursuit.", 2)
+    return false
+  end
+
+  local srr = gameplay_events_freContracts_sanctionedRacing
+  if srr and srr.isSanctionedRescheduleActionActive and srr.isSanctionedRescheduleActionActive() then
+    utils.displayMessage("Reschedule or finish your sanctioned race from the phone before staging for practice.", 4)
+    return false
+  end
+
+  if competitiveTrackFlow.shouldBlockFreeroamStagingPractice and
+      competitiveTrackFlow.shouldBlockFreeroamStagingPractice(raceName) then
+    utils.displayMessage("Finish or leave sanctioned grid staging before using practice staging.", 4)
+    return false
+  end
+
+  session.saveGameState = true
+  core_gamestate.requestGameState()
+
+  local vehicleSpeed = math.abs(be:getObjectVelocityXYZ(spawnVehId)) * session.speedUnit
+  if vehicleSpeed > 5 and session.mActiveRace then
+    return false
+  end
+  session.mHotlap = nil
+  if vehicleSpeed > 5 then
+    if session.races[raceName].runningStart then
+      if raceSession.raceHudApplies(session.races[raceName]) then
+        raceSession.setRaceHudBanner("Hotlap session.staged — roll to start", "info", 3)
+      else
+        utils.displayMessage("Hotlap Staged", 2)
+      end
+      if session.races[raceName].hotlap then
+        session.mHotlap = raceName
+      end
+    else
+      utils.displayMessage("You are too fast to stage.\nPlease back up and slow down to stage.", 2)
+      session.staged = nil
+      return false
+    end
+  end
+  Assets:hideAllAssets()
+  session.lapCount = 0
+
+  local allTypesDisabled = false
+  local disabledTypes = {}
+  if career_economyAdjuster and session.races[raceName].type then
+    local totalTypes = 0
+    local disabledCount = 0
+    for _, raceType in ipairs(session.races[raceName].type) do
+      totalTypes = totalTypes + 1
+      local multiplier = career_economyAdjuster.getEffectiveSectionMultiplier({raceType})
+      if multiplier == 0 then
+        disabledCount = disabledCount + 1
+        table.insert(disabledTypes, raceType)
+      end
+    end
+    allTypesDisabled = totalTypes > 0 and disabledCount == totalTypes
+  end
+
+  if allTypesDisabled then
+    local typesString = table.concat(disabledTypes, ", ")
+    utils.displayMessage(string.format("%s is disabled due to %s multiplier(s) being set to 0.",
+      session.races[raceName].label, typesString), 5)
+    return false
+  end
+
+  if raceName == "drag" then
+    utils.initDisplays()
+    utils.resetDisplays()
+  end
+
+  session.staged = raceName
+  session.freeroamPracticeStaging = true
+  local vehId = spawnVehId
+  if career_career and career_career.isActive and career_career.isActive() then
+    if career_modules_business_businessInventory and
+      career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId then
+      local businessId, vehicleId =
+        career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId(spawnVehId)
+      if businessId and vehicleId then
+        vehId = career_modules_business_businessInventory.getBusinessVehicleIdentifier(businessId, vehicleId)
+      elseif career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId then
+        vehId = career_modules_inventory.getInventoryIdFromVehicleId(vehId) or vehId
+      end
+    elseif career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId then
+      vehId = career_modules_inventory.getInventoryIdFromVehicleId(vehId) or vehId
+    end
+  end
+
+  local race = session.races[raceName] or {}
+  raceSession.setStagingSubjectId(vehId)
+  if raceSession.raceHudApplies(race) then
+    raceSession.showFreeroamRaceHud()
+  else
+    utils.displayStagedMessage(vehId, raceName)
+  end
+  utils.setActiveLight(raceName, "yellow")
+  extensions.hook('onFreeroamStagingCommitted', {
+    raceName = raceName,
+    vehicleId = vehId
+  })
+  return true
+end
+
+local function beamngTrigger_staging(data, event, raceName)
+  if event == "enter" and session.mActiveRace == nil then
+    if raceName == TRACK_RACE_ID and competitiveTrackFlow.isSanctionedCareerGoToRaceActive() then
+      local spot = competitiveTrackFlow.getPlayerStagingSpot()
+      if spot and competitiveTrackFlow.isPlayerInTrackParkingCommitArea() then
+        return
+      end
+    end
+    tryCommitStagingEnter(raceName, data.subjectID)
+  elseif event == "exit" then
+    if session.mActiveRace ~= raceName then
+      if raceName == TRACK_RACE_ID and competitiveTrackFlow.isSanctionedCareerGoToRaceActive() then
+        return
+      end
+      if raceName == TRACK_RACE_ID then
+        competitiveTrackFlow.cancelCompetitiveGridFlow()
+      end
+      local r = session.races[raceName]
+      local useHud = r and raceSession.raceHudApplies(r)
+      local showStagingExitMsg = session.mActiveRace == nil
+      if useHud and showStagingExitMsg then
+        raceSession.setRaceHudBanner("You exited the staging zone", "warn", 4)
+        raceSession.pushFreeroamRaceHudState(true)
+      end
+      session.staged = nil
+      raceSession.setStagingSubjectId(nil)
+      hideStagedFlashMessage()
+      if not useHud and showStagingExitMsg then
+        utils.displayMessage("You exited the staging zone", 4)
+      end
+      utils.setActiveLight(raceName, "red")
+      if useHud and showStagingExitMsg then
+        core_jobsystem.create(function(job)
+          job.sleep(2.5)
+          if not session.mActiveRace then
+            raceSession.hideFreeroamRaceHud()
+          end
+        end)
+      end
+    end
+  end
+end
+
+local function beamngTrigger_startPlayer(data, event, raceName)
+  if event == "enter" and session.mActiveRace == raceName and not utils.hasFinishTrigger(raceName) then
+    if not session.currCheckpoint or session.checkpointsHit < session.totalCheckpoints then
+      if not session.invalidLap then
+        if raceSession.isRaceHudShown() then
+          raceSession.setRaceHudBanner("Complete all checkpoints before crossing the line", "warn", 5)
+          raceSession.pushFreeroamRaceHudState(true)
+        else
+          utils.displayMessage("You have not completed all checkpoints!", 5)
+        end
+        return
+      end
+    end
+    local completedLapTime = session.in_race_time
+    session.timerActive = false
+    session.mSuppressOffRoadExitUntil = os.time() + 2
+    if not session.invalidLap then
+      session.mTotalRaceTime = (session.mTotalRaceTime or 0) + completedLapTime
+      if session.mBestLapThisRun == nil or completedLapTime < session.mBestLapThisRun then
+        session.mBestLapThisRun = completedLapTime
+      end
+    end
+    session.initialVehicleDamage = utils.getVehicleDamage()
+    processRoad.setStationaryTimeout(session.races[raceName].timeout)
+    checkpointManager.setRace(session.races[raceName], raceName)
+    if not data.triggerName then
+      data.triggerName = "fre_start_" .. raceName
+    end
+    Assets:displayAssets(data)
+    utils.playCheckpointSound()
+    session.lapCount = session.lapCount + 1
+    extensions.hook('onFreeroamLapCompleted', {
+      raceName = raceName,
+      lapCount = session.lapCount,
+      lapTime = completedLapTime,
+      invalid = session.invalidLap
+    })
+    local race = session.races[raceName]
+    local effectiveRace = (session.mAltRoute and race.altRoute) and race.altRoute or race
+    local lapTotalGoal = getDisplayTotalLapsForRace(effectiveRace)
+    if lapTotalGoal < 1 then
+      local erSessionLaps = effectiveRace and effectiveRace.session
+      local lc = erSessionLaps and erSessionLaps.lapCount
+      lapTotalGoal = (type(lc) == "number" and lc > 0) and lc or 0
+    end
+    local enforceSanctionedLapCap = raceName == TRACK_RACE_ID and gameplay_events_freContracts_sanctionedRacing and
+      gameplay_events_freContracts_sanctionedRacing.shouldSuppressFrePayouts()
+    if enforceSanctionedLapCap and lapTotalGoal > 0 and session.lapCount >= lapTotalGoal then
+      exitRace(true, nil, effectiveRace, data.subjectID)
+      return
+    end
+    local snapshotLabel = getDisplayRaceLabel()
+    local snapshotRaceLabel = getRaceLabel()
+    local reward, hudMsg = raceSession.payoutRace(completedLapTime)
+    if not circuitRaceAi.isSanctionedTriggerOnlyLapRace() and type(reward) == "number" and reward > 0 and
+      session.races[raceName].checkpointRoad then
+      raceSession.setLastLapReward(reward)
+    end
+    session.currCheckpoint = nil
+    session.mSplitTimes = {}
+    session.mActiveRace = raceName
+    checkpointManager.setAltRoute(false)
+    session.mAltRoute = false
+    session.in_race_time = 0
+    session.maxSpeed = 0
+    session.timerActive = true
+    session.checkpointsHit = 0
+    if shouldUseAltRouteForNextLap(raceName) then
+      session.mAltRoute = true
+      checkpointManager.setAltRoute(true)
+    end
+    session.totalCheckpoints = checkpointManager.calculateTotalCheckpoints()
+    session.currentExpectedCheckpoint = 0
+    if session.races[raceName].hotlap then
+      session.mHotlap = raceName
+      session.currentExpectedCheckpoint = checkpointManager.enableCheckpoint(0, session.mAltRoute)
+    end
+    session.invalidLap = false
+    if hudMsg then
+      raceSession.pushRaceHudCompletion(hudMsg, raceName, snapshotLabel, snapshotRaceLabel, 0, false)
+    else
+      raceSession.pushFreeroamRaceHudState(true)
+    end
+  elseif event == "enter" and session.staged == raceName and session.mActiveRace ~= raceName then
+    if raceName == TRACK_RACE_ID and
+      (competitiveTrackFlow.getCompetitiveCountdownJobActive() or competitiveTrackFlow.getCompetitiveAwaitingAiSpawn()) then
+      return
+    end
+    beginFreeroamRace(raceName, data.subjectID)
+  else
+    utils.setActiveLight(raceName, "red")
+  end
+end
+
+local function beamngTrigger_checkpointPlayer(data, event, raceName, checkpointIndex, isAlt)
+  if event == "enter" and session.mActiveRace == raceName then
+    if session.checkpointsHit >= session.totalCheckpoints then
+      return
+    end
+    if (checkpointIndex == session.currentExpectedCheckpoint) or (checkpointIndex == 1 and isAlt) or
+      (isAlt and (session.currentExpectedCheckpoint == session.races[raceName].altRoute.mergeCheckpoints[1])) then
+      session.checkpointsHit = session.checkpointsHit + 1
+      raceSession.clearHudCompletionPayload()
+      session.currCheckpoint = checkpointIndex
+      session.mSplitTimes[session.checkpointsHit] = session.in_race_time
+      if session.checkpointsHit == 1 then
+        session.mCurrentRouteName = getRouteDisplayName(session.races[raceName], isAlt)
+      end
+      utils.playCheckpointSound()
+
+      if isAlt then
+        session.currentExpectedCheckpoint = checkpointIndex
+      end
+
+      session.currentExpectedCheckpoint = checkpointManager.enableCheckpoint(checkpointIndex, isAlt)
+      if isAlt and not session.mAltRoute then
+        session.mAltRoute = true
+        checkpointManager.setAltRoute(true)
+        session.totalCheckpoints = checkpointManager.calculateTotalCheckpoints()
+      end
+      checkpointManager.notifyCheckpointEntered({
+        raceName = raceName,
+        checkpointIndex = checkpointIndex,
+        isAlt = isAlt,
+        checkpointsHit = session.checkpointsHit,
+        totalCheckpoints = session.totalCheckpoints,
+        inRaceTime = session.in_race_time
+      })
+
+      local checkpointMessage = ""
+      local splitDiff = raceSession.getDifference(raceName, session.checkpointsHit)
+      if splitDiff then
+        local raceLabel = getRaceLabel()
+        local leaderboardEntry = leaderboardManager.getLeaderboardEntry(session.mInventoryId, raceLabel)
+        local totalDiff = session.in_race_time - (leaderboardEntry.splitTimes[session.checkpointsHit] or 0)
+
+        checkpointMessage = string.format("Checkpoint %d/%d - Time: %s\nSplit: %s | Total: %s", session.checkpointsHit,
+          session.totalCheckpoints, utils.formatTime(session.in_race_time),
+          raceSession.formatSplitDifference(splitDiff), raceSession.formatSplitDifference(totalDiff))
+      else
+        checkpointMessage = string.format("Checkpoint %d/%d - Time: %s", session.checkpointsHit,
+          session.totalCheckpoints, utils.formatTime(session.in_race_time))
+      end
+      if not session.races[raceName].checkpointRoad then
+        utils.displayMessage(checkpointMessage, 7)
+      end
+      raceSession.pushFreeroamRaceHudState(true)
+      if not data.triggerName then
+        data.triggerName = "fre_checkpoint_" .. raceName .. (isAlt and "_alt_" or "_") .. checkpointIndex
+      end
+      Assets:displayAssets(data)
+    else
+      local missedCheckpoints = checkpointIndex - session.currentExpectedCheckpoint
+      if missedCheckpoints > 0 then
+        session.invalidLap = true
+
+        session.currCheckpoint = checkpointIndex
+        session.currentExpectedCheckpoint = session.currentExpectedCheckpoint + missedCheckpoints
+        session.checkpointsHit = math.min(session.checkpointsHit + missedCheckpoints + 1, session.totalCheckpoints)
+        raceSession.clearHudCompletionPayload()
+
+        session.currentExpectedCheckpoint = checkpointManager.enableCheckpoint(checkpointIndex, isAlt)
+
+        local message = string.format("Missed a checkpoint\nLap Invalidated.", checkpointIndex)
+        local checkpointMessageMiss = string.format("Checkpoint %d/%d - Time: %s", session.checkpointsHit,
+          session.totalCheckpoints, utils.formatTime(session.in_race_time))
+        message = message .. "\n" .. checkpointMessageMiss
+        if session.races[raceName].checkpointRoad and raceSession.isRaceHudShown() then
+          raceSession.setRaceHudBanner("Missed checkpoint — lap invalidated", "warn", 8)
+        elseif not raceSession.isRaceHudShown() then
+          utils.displayMessage(message, 10)
+        end
+        raceSession.pushFreeroamRaceHudState(true)
+      else
+        log("W", "freeroamEvents",
+          string.format("Unexpected checkpoint trigger for race '%s': got %d, expected %s, alt=%s, hit=%d/%d.",
+            tostring(raceName), tonumber(checkpointIndex) or -1, tostring(session.currentExpectedCheckpoint),
+            tostring(isAlt), tonumber(session.checkpointsHit) or 0, tonumber(session.totalCheckpoints) or 0))
+      end
+    end
+  end
+end
+
+local function beamngTrigger_finishPlayer(data, event, raceName)
+  if event == "enter" and session.mActiveRace == raceName then
+    local race = session.races[raceName]
+    local effectiveRace = (race and session.mAltRoute and race.altRoute) and race.altRoute or race
+    exitRace(true, nil, effectiveRace, data.subjectID)
+  end
+end
+
+local function beamngTrigger_pits(data, event, raceName)
+  if event == "enter" and session.mActiveRace == raceName then
+    local obj = be:getPlayerVehicle(0)
+    if obj then
+      obj:queueLuaCommand("obj:setGhostEnabled(true)")
+    end
+    if session.races[raceName].pitSpeedLimit then
+      pits.stopThenLimit(session.races[raceName].pitSpeedLimit, session.races[raceName].pitSpeedLimitUnit)
+    else
+      pits.stopThenLimit(37, "MPH")
+    end
+  elseif event == "exit" and session.mActiveRace == raceName then
+    pits.toggleSpeedLimit()
+    local obj = be:getPlayerVehicle(0)
+    if obj then
+      obj:queueLuaCommand("obj:setGhostEnabled(false)")
+    end
+  end
 end
 
 local function onBeamNGTrigger(data)
-    if be:getPlayerVehicleID(0) ~= data.subjectID or isReplay then
-        return
-    end
-    if gameplay_walk.isWalking() then return end
-    if career_career.isActive() then
-        -- Check if it's a business vehicle first
-        local isBusinessVehicle = false
-        if career_modules_business_businessInventory then
-            local businessId, vehicleId = career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId(data.subjectID)
-            if businessId and vehicleId then
-                isBusinessVehicle = true
-            end
-        end
-        
-        -- If not a business vehicle, check if it's an inventory vehicle
-        if not isBusinessVehicle then
-            if not career_modules_inventory.getInventoryIdFromVehicleId(data.subjectID) then
-                return
-            end
-            local vehicle = career_modules_inventory.getVehicles()[career_modules_inventory.getInventoryIdFromVehicleId(data.subjectID)]
-            if vehicle.loanType then
-                return
-            end
-        end
-    end
+  if session.isReplay then
+    return
+  end
+  local isPlayer = (be:getPlayerVehicleID(0) == data.subjectID)
+  if not isPlayer and not isAiSpawnedVehicle(data.subjectID) then
+    return
+  end
+  if gameplay_walk.isWalking() then
+    return
+  end
 
-    local triggerName = data.triggerName
-    local event = data.event
+  local triggerName = data.triggerName
+  local event = data.event
 
-    if not triggerName:match("^fre_") then
-        -- Not a free roam event trigger, ignore
-        return
-    end
+  if not triggerName:match("^fre_") then
+    return
+  end
 
-    -- Remove the 'fre_' prefix for processing
-    triggerName = triggerName:sub(5)
+  triggerName = triggerName:sub(5)
 
-    -- Extract trigger information
-    local triggerType, raceName, rest = triggerName:match("^([^_]+)_([^_]+)(.*)$")
+  local triggerType, raceName, rest = triggerName:match("^([^_]+)_([^_]+)(.*)$")
 
-    if not triggerType or not raceName then
-        -- print("Trigger name doesn't match expected pattern.")
-        return
+  if not triggerType or not raceName then
+    return
+  end
+
+  local altFlag = nil
+  local index = nil
+  local isAiAlt = false
+
+  if rest ~= "" then
+    rest = rest:gsub("^_+", "")
+
+    if rest:sub(1, 6) == "ai_alt" then
+      isAiAlt = true
+      rest = rest:sub(7):gsub("^_+", "")
+    elseif rest:sub(1, 3) == "alt" then
+      altFlag = "alt"
+      rest = rest:sub(4)
+      rest = rest:gsub("^_+", "")
     end
 
-    -- Initialize altFlag and index
-    local altFlag = nil
-    local index = nil
-
-    -- Process the rest of the trigger name
     if rest ~= "" then
-        -- Remove leading underscores
-        rest = rest:gsub("^_+", "")
-
-        -- Check if rest starts with 'alt'
-        if rest:sub(1, 3) == "alt" then
-            altFlag = "alt"
-            rest = rest:sub(4) -- Remove 'alt' and move forward
-            rest = rest:gsub("^_+", "") -- Remove any additional underscores
-        end
-
-        -- If there's still something left, it's the index
-        if rest ~= "" then
-            index = rest
-        end
+      index = rest
     end
+  end
 
-    -- Convert index to number if it exists
-    local checkpointIndex = index and tonumber(index) or nil
+  local checkpointIndex = index and tonumber(index) or nil
 
-    local isAlt = altFlag == "alt" -- TEMP must change to acount for alt routes that intersect with the main route multiple times
+  local isAlt = altFlag == "alt"
 
-    if triggerType == "staging" then
-        if event == "enter" and mActiveRace == nil then
-            if utils.isPlayerInPursuit() then
-                utils.displayMessage("You cannot stage for an event while in a pursuit.", 2)
-                return
-            end
+  if circuitRaceAi.tryHandleAiTrigger(data, event, triggerType, raceName, checkpointIndex, isAiAlt, isAlt, isPlayer) then
+    return
+  end
 
-            saveGameState = true
-            core_gamestate.requestGameState()
+  if not isPlayer then
+    return
+  end
 
-            local vehicleSpeed = math.abs(be:getObjectVelocityXYZ(data.subjectID)) * speedUnit
-            if vehicleSpeed > 5 and mActiveRace then
-                return
-            end
-            mHotlap = nil
-            if vehicleSpeed > 5 then
-                if races[raceName].runningStart then
-                    utils.displayMessage("Hotlap Staged", 2)
-                    if races[raceName].hotlap then
-                        mHotlap = raceName
-                    end
-                else
-                    utils.displayMessage("You are too fast to stage.\nPlease back up and slow down to stage.", 2)
-                    staged = nil
-                    return
-                end
-            end
-            Assets:hideAllAssets()
-            lapCount = 0
+  if triggerType == "hub" and raceName == TRACK_RACE_ID then
+    competitiveTrackFlow.beamngTrigger_trackBuilding(data, event)
+    return
+  end
 
-            -- Check if ALL race types are disabled (only disable if every type is 0)
-            local allTypesDisabled = false
-            local disabledTypes = {}
-            if career_economyAdjuster and races[raceName].type then
-                local totalTypes = 0
-                local disabledCount = 0
+  if triggerType == "staging" then
+    beamngTrigger_staging(data, event, raceName)
+  elseif triggerType == "start" then
+    beamngTrigger_startPlayer(data, event, raceName)
+  elseif triggerType == "checkpoint" and checkpointIndex then
+    beamngTrigger_checkpointPlayer(data, event, raceName, checkpointIndex, isAlt)
+  elseif triggerType == "finish" then
+    beamngTrigger_finishPlayer(data, event, raceName)
+  elseif triggerType == "pits" then
+    beamngTrigger_pits(data, event, raceName)
+  end
+end
 
-                for _, raceType in ipairs(races[raceName].type) do
-                    totalTypes = totalTypes + 1
-                    local multiplier = career_economyAdjuster.getEffectiveSectionMultiplier({raceType})
-                    if multiplier == 0 then
-                        disabledCount = disabledCount + 1
-                        table.insert(disabledTypes, raceType)
-                    end
-                end
-
-                -- Only disable if ALL types are disabled
-                allTypesDisabled = totalTypes > 0 and disabledCount == totalTypes
-            end
-
-            if allTypesDisabled then
-                -- Don't allow staging for disabled races
-                local typesString = table.concat(disabledTypes, ", ")
-                utils.displayMessage(string.format("%s is disabled due to %s multiplier(s) being set to 0.", races[raceName].label, typesString), 5)
-                return
-            end
-
-            -- Initialize displays if drag race
-            if raceName == "drag" then
-                utils.initDisplays()
-                utils.resetDisplays()
-            end
-
-            -- Set staged race
-            staged = raceName
-            -- print("Staged race: " .. raceName)
-            local vehId = data.subjectID
-            if career_career.isActive() then
-                -- Check if it's a business vehicle first
-                if career_modules_business_businessInventory then
-                    local businessId, vehicleId = career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId(data.subjectID)
-                    if businessId and vehicleId then
-                        vehId = career_modules_business_businessInventory.getBusinessVehicleIdentifier(businessId, vehicleId)
-                    else
-                        vehId = career_modules_inventory.getInventoryIdFromVehicleId(vehId) or vehId
-                    end
-                else
-                    vehId = career_modules_inventory.getInventoryIdFromVehicleId(vehId) or vehId
-                end
-            end
-            utils.displayStagedMessage(vehId, raceName)
-            utils.setActiveLight(raceName, "yellow")
-        elseif event == "exit" then
-            staged = nil
-            if not mActiveRace then
-                utils.displayMessage("You exited the staging zone", 4)
-                utils.setActiveLight(raceName, "red")
-            end
-        end
-    elseif triggerType == "start" then
-        if event == "enter" and mActiveRace == raceName and not utils.hasFinishTrigger(raceName) then
-            if not currCheckpoint or checkpointsHit ~= totalCheckpoints then
-                -- Player hasn't completed all checkpoints yet
-                if not invalidLap then
-                    utils.displayMessage("You have not completed all checkpoints!", 5)
-                    return
-                end
-            end
-            initialVehicleDamage = utils.getVehicleDamage()
-            processRoad.setStationaryTimeout(races[raceName].timeout)
-            checkpointManager.setRace(races[raceName], raceName)
-            Assets:displayAssets(data)
-            utils.playCheckpointSound()
-            timerActive = false
-            lapCount = lapCount + 1
-            local reward = payoutRace()
-            currCheckpoint = nil
-            mSplitTimes = {}
-            mActiveRace = raceName
-            checkpointManager.setAltRoute(false)
-            mAltRoute = false
-            in_race_time = 0
-            maxSpeed = 0
-            timerActive = true
-            checkpointsHit = 0
-            totalCheckpoints = checkpointManager.calculateTotalCheckpoints()
-            currentExpectedCheckpoint = 0
-            if races[raceName].hotlap then
-                mHotlap = raceName
-                currentExpectedCheckpoint = checkpointManager.enableCheckpoint(0)
-            end
-            invalidLap = false
-        elseif event == "enter" and staged == raceName then
-            -- Start the race
-            if career_career.isActive() then
-                career_modules_pauseTime.enablePauseCounter(true)
-            end
-            initialVehicleDamage = utils.getVehicleDamage()
-            utils.saveAndSetTrafficAmount(0)
-            checkpointManager.setRace(races[raceName], raceName)
-            Assets:displayAssets(data)
-            timerActive = true
-            in_race_time = 0
-            maxSpeed = 0
-            mActiveRace = raceName
-            lapCount = 0
-            
-            -- Set mInventoryId - check for business vehicle first, then inventory vehicle
-            if career_modules_business_businessInventory then
-                local businessId, vehicleId = career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId(data.subjectID)
-                if businessId and vehicleId then
-                    local jobId = career_modules_business_businessInventory.getJobIdFromVehicle(businessId, vehicleId)
-                    if jobId then
-                        mInventoryId = career_modules_business_businessInventory.getBusinessJobIdentifier(businessId, jobId)
-                    else
-                        mInventoryId = career_modules_business_businessInventory.getBusinessVehicleIdentifier(businessId, vehicleId)
-                    end
-                else
-                    mInventoryId = career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId(data.subjectID) or data.subjectID
-                end
-            else
-                mInventoryId = career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId(data.subjectID) or data.subjectID
-            end
-            
-            invalidLap = false
-
-            utils.displayStartMessage(raceName)
-            utils.setActiveLight(raceName, "green")
-
-            -- Handle drift races
-            if utils.tableContains(races[raceName].type, "drift") then
-                gameplay_drift_general.setContext("inChallenge")
-                gameplay_drift_general.reset()
-                if gameplay_drift_drift then
-                    gameplay_drift_drift.setVehId(data.subjectID)
-                end
-            end
-
-            -- Initialize checkpoints if applicable
-            if races[raceName].checkpointRoad then
-                -- Clear existing nodes and checkpoints
-                processRoad.reset()
-                processRoad.setStationaryTimeout(races[raceName].timeout)
-                local checkpoints, altCheckpoints = processRoad.getCheckpoints(races[raceName])
-
-                checkpointManager.createCheckpoints(checkpoints, altCheckpoints)
-
-                isLoop = processRoad.isLoop()
-                currCheckpoint = 0
-                checkpointsHit = 0
-                totalCheckpoints = checkpointManager.calculateTotalCheckpoints(races[raceName])
-                currentExpectedCheckpoint = 1
-                mAltRoute = false -- Initialize alt route flag
-                checkpointManager.setAltRoute(mAltRoute)
-
-                currentExpectedCheckpoint = checkpointManager.enableCheckpoint(0)
-            end
-        else
-            -- Player is not staged or race is not active
-            utils.setActiveLight(raceName, "red")
-        end
-    elseif triggerType == "checkpoint" and checkpointIndex then
-        if event == "enter" and mActiveRace == raceName then
-            -- Ensure that the checkpoint is the expected one
-            if (checkpointIndex == currentExpectedCheckpoint) or (checkpointIndex == 1 and isAlt) or
-                (isAlt and (currentExpectedCheckpoint == races[raceName].altRoute.mergeCheckpoints[1])) then
-                checkpointsHit = checkpointsHit + 1
-                currCheckpoint = checkpointIndex
-                mSplitTimes[checkpointsHit] = in_race_time
-                utils.playCheckpointSound()
-
-                -- Prepare the next checkpoint
-                if isAlt then
-                    currentExpectedCheckpoint = checkpointIndex
-                end
-
-                currentExpectedCheckpoint = checkpointManager.enableCheckpoint(checkpointIndex, isAlt)
-                if isAlt and not mAltRoute then
-                    mAltRoute = true
-                    checkpointManager.setAltRoute(true)
-                    totalCheckpoints = checkpointManager.calculateTotalCheckpoints(races[raceName])
-                end
-
-                -- Display checkpoint message
-                local checkpointMessage = ""
-                local splitDiff = getDifference(raceName, checkpointsHit)
-                if splitDiff then
-                    local totalDiff = nil
-                    local raceLabel = getRaceLabel()
-                    local leaderboardEntry = leaderboardManager.getLeaderboardEntry(mInventoryId, raceLabel)
-                    totalDiff = in_race_time - (leaderboardEntry.splitTimes[checkpointsHit] or 0)
-
-                    checkpointMessage = string.format("Checkpoint %d/%d - Time: %s\nSplit: %s | Total: %s",
-                        checkpointsHit, totalCheckpoints, utils.formatTime(in_race_time), formatSplitDifference(splitDiff),
-                        formatSplitDifference(totalDiff))
-                else
-                    checkpointMessage = string.format("Checkpoint %d/%d - Time: %s", checkpointsHit, totalCheckpoints,
-                        utils.formatTime(in_race_time))
-                end
-                utils.displayMessage(checkpointMessage, 7)
-                Assets:displayAssets(data)
-            else
-                local missedCheckpoints = checkpointIndex - currentExpectedCheckpoint
-                if missedCheckpoints > 0 then
-                    -- Mark lap as invalid but continue with correct checkpoints
-                    invalidLap = true
-
-                    -- Update current checkpoint and hit count
-                    currCheckpoint = checkpointIndex
-                    currentExpectedCheckpoint = currentExpectedCheckpoint + missedCheckpoints
-                    checkpointsHit = math.min(checkpointsHit + missedCheckpoints + 1, totalCheckpoints)
-
-                    -- Enable next checkpoint
-                    currentExpectedCheckpoint = checkpointManager.enableCheckpoint(checkpointIndex, isAlt)
-
-                    -- Display message about invalid lap but continuing
-                    local message = string.format("Missed a checkpoint\nLap Invalidated.", checkpointIndex)
-                    local checkpointMessage = string.format("Checkpoint %d/%d - Time: %s", checkpointsHit,
-                        totalCheckpoints, utils.formatTime(in_race_time))
-                    message = message .. "\n" .. checkpointMessage
-                    utils.displayMessage(message, 10)
-                end
-            end
-        end
-
-    elseif triggerType == "finish" then
-        if event == "enter" and mActiveRace == raceName then
-            exitRace(true, nil, races[raceName], data.subjectID)
-        end
-    elseif triggerType == "pits" then
-        if event == "enter" and mActiveRace == raceName then
-            -- Handle pit entry
-            local obj = be:getPlayerVehicle(0)
-            if obj then
-                obj:queueLuaCommand("obj:setGhostEnabled(true)")
-            end
-            if races[raceName].pitSpeedLimit then
-                pits.stopThenLimit(races[raceName].pitSpeedLimit, races[raceName].pitSpeedLimitUnit)
-            else
-                pits.stopThenLimit(37, "MPH")
-            end
-        elseif event == "exit" and mActiveRace == raceName then
-            -- Handle pit exit
-            pits.toggleSpeedLimit()
-            local obj = be:getPlayerVehicle(0)
-            if obj then
-                obj:queueLuaCommand("obj:setGhostEnabled(false)")
-            end
-        end    
-    else
-        -- print("Unknown trigger type: " .. triggerType)
-    end
+local function preloadFreeroamAiPathsForTrack()
+  competitiveTrackFlow.preloadAiPathsForTrack()
 end
 
 local function onWorldReadyState(state)
-    if state == 2 then
-        races = utils.loadRaceData()
-    end
+  if state ~= 2 or not session or not utils or not competitiveTrackFlow then
+    return
+  end
+  session.races = utils.loadRaceData()
+  preloadFreeroamAiPathsForTrack()
 end
 
 local function loadExtensions()
-    local freeroamPath = "/lua/ge/extensions/gameplay/events/freeroam/"
-    local files = FS:findFiles(freeroamPath, "*.lua", -1, true, false)
-    
-    if files then
-        for _, filePath in ipairs(files) do
-            local filename = string.match(filePath, "([^/]+)%.lua$")
+  local freeroamPath = "/lua/ge/extensions/gameplay/events/freeroam/"
+  local files = FS:findFiles(freeroamPath, "*.lua", -1, true, false)
 
-            if filename then
-                local extensionName = "gameplay_events_freeroam_" .. filename
-                setExtensionUnloadMode(extensionName, "manual")
-                extensions.unload(extensionName)
-                table.insert(loadedExtensions, extensionName)
-            end
-        end
+  if files then
+    local names = {}
+    for _, filePath in ipairs(files) do
+      local filename = string.match(filePath, "([^/]+)%.lua$")
+      if filename then
+        table.insert(names, "gameplay_events_freeroam_" .. filename)
+      end
     end
-    loadManualUnloadExtensions()
+    table.sort(names, function(a, b)
+      return a < b
+    end)
+    local sessionExt = "gameplay_events_freeroam_session"
+    for _, extensionName in ipairs(names) do
+      if extensionName ~= sessionExt then
+        setExtensionUnloadMode(extensionName, "manual")
+        extensions.unload(extensionName)
+        table.insert(loadedExtensions, extensionName)
+      end
+    end
+  end
+  loadManualUnloadExtensions()
 end
 
 local function unloadExtensions()
-    for _, extensionName in ipairs(loadedExtensions) do
-        extensions.unload(extensionName)
-    end
+  for _, extensionName in ipairs(loadedExtensions) do
+    extensions.unload(extensionName)
+  end
 end
 
 local function onExtensionLoaded()
-    loadExtensions()
-    if getCurrentLevelIdentifier() then
-        races = utils.loadRaceData()
-    end
+  loadExtensions()
+  session = gameplay_events_freeroam_session
+  processRoad = gameplay_events_freeroam_processRoad
+  leaderboardManager = gameplay_events_freeroam_leaderboardManager
+  checkpointManager = gameplay_events_freeroam_checkpointManager
+  utils = gameplay_events_freeroam_utils
+  pits = gameplay_events_freeroam_pits
+  aiRacers = gameplay_events_freeroam_aiRacers
+  circuitRaceAi = gameplay_events_freeroam_circuitRaceAi
+  competitiveTrackFlow = gameplay_events_freeroam_competitiveTrackFlow
+  Assets = gameplay_events_freeroam_activeAssets.ActiveAssets.new()
+  trackFlowState = competitiveTrackFlow.trackFlowState
+  TRACK_RACE_ID = competitiveTrackFlow.TRACK_RACE_ID
+  raceSession = gameplay_events_freeroam_raceSession
+  if getCurrentLevelIdentifier() then
+    session.races = utils.loadRaceData()
+    preloadFreeroamAiPathsForTrack()
+  end
 end
 
 local function onExtensionUnloaded()
-    unloadExtensions()
+  if raceSession then
+    raceSession.hideFreeroamRaceHud(true)
+  end
+  unloadExtensions()
 end
 
 local function onUpdate(dtReal, dtSim, dtRaw)
-    if mActiveRace and races[mActiveRace].checkpointRoad then
-        if processRoad.checkPlayerOnRoad() == false then
-            exitRace(false)
-        end
+  if not session or not competitiveTrackFlow or not raceSession or not processRoad or not circuitRaceAi then
+    return
+  end
+  if aiRacers and aiRacers.onUpdate then
+    aiRacers.onUpdate(dtReal or 0)
+  end
+
+  competitiveTrackFlow.onUpdateParkingResolve()
+  competitiveTrackFlow.onUpdateParkingLoop()
+
+  if session.mActiveRace and raceSession.raceUsesProcessRoadExit(session.races[session.mActiveRace]) then
+    if os.time() >= session.mSuppressOffRoadExitUntil and processRoad.checkPlayerOnRoad() == false then
+      exitRace(false)
     end
-    if timerActive == true then
-        in_race_time = in_race_time + dtSim
-        local playerVehicleId = be:getPlayerVehicleID(0)
-        if playerVehicleId then
-            local currentSpeed = math.abs(be:getObjectVelocityXYZ(playerVehicleId)) * speedUnit
-            if currentSpeed > maxSpeed then
-                maxSpeed = currentSpeed
-            end
-        end
-    else
-        in_race_time = 0
+  end
+  if session.timerActive == true then
+    if not (session.dragPracticeActive and session.mActiveRace == "drag") then
+      session.in_race_time = session.in_race_time + dtSim
     end
+    circuitRaceAi.onWaypointPollAccum(dtSim)
+    local playerVehicleId = be:getPlayerVehicleID(0)
+    if playerVehicleId then
+      local currentSpeed = math.abs(be:getObjectVelocityXYZ(playerVehicleId)) * session.speedUnit
+      if currentSpeed > session.maxSpeed then
+        session.maxSpeed = currentSpeed
+      end
+    end
+    raceSession.pushFreeroamRaceHudState(false)
+  else
+    session.in_race_time = 0
+    if raceSession.isRaceHudShown() and not session.timerActive then
+      raceSession.pushFreeroamRaceHudState(false)
+    end
+  end
 end
 
 local function formatEventPoi(raceName, race)
-    local startObj = scenetree.findObject("fre_start_" .. raceName)
-    local pos = startObj and startObj:getPosition() or nil
-    
-    if not pos then return nil end
+  local startObj = scenetree.findObject("fre_start_" .. raceName)
+  local pos = startObj and startObj:getPosition() or nil
 
-    local levelIdentifier = getCurrentLevelIdentifier()
-    local preview = "/levels/" .. levelIdentifier .. "/facilities/freeroamEvents/" .. raceName .. ".jpg"
+  if not pos then
+    return nil
+  end
 
-    local vehId = be:getPlayerVehicleID(0) or 0
-    if career_career.isActive() then
-        vehId = career_modules_inventory.getInventoryIdFromVehicleId(vehId) or vehId
-    end
+  local levelIdentifier = getCurrentLevelIdentifier()
+  local preview = "/levels/" .. levelIdentifier .. "/facilities/freeroamEvents/" .. raceName .. ".jpg"
 
-    return {
-        id = raceName,
-        data = {
-            type = "events",
-            facility = {}
-        },
-        markerInfo = {
-            bigmapMarker = {
-                pos = pos,
-                icon = "mission_cup_triangle",
-                name = race.label,
-                description = utils.displayStagedMessage(vehId, raceName, true),
-                previews = {preview},
-                thumbnail = preview
-            }
-        }
+  local vehId = be:getPlayerVehicleID(0) or 0
+  if career_career.isActive() then
+    vehId = career_modules_inventory.getInventoryIdFromVehicleId(vehId) or vehId
+  end
+
+  return {
+    id = raceName,
+    data = {
+      type = "events",
+      facility = {}
+    },
+    markerInfo = {
+      bigmapMarker = {
+        pos = pos,
+        icon = "mission_cup_triangle",
+        name = race.label,
+        description = utils.displayStagedMessage(vehId, raceName, true),
+        previews = {preview},
+        thumbnail = preview
+      }
     }
+  }
 end
 
 function M.onGetRawPoiListForLevel(levelIdentifier, elements)
-    if not races then
-        return
+  if not session.races then
+    return
+  end
+  for raceName, race in pairs(session.races) do
+    local poi = formatEventPoi(raceName, race)
+    if poi then
+      table.insert(elements, poi)
     end
-    for raceName, race in pairs(races) do
-        local poi = formatEventPoi(raceName, race)
-        if poi then
-            table.insert(elements, poi)
-        end
-    end
+  end
 end
 
 local function onReplayStateChanged(state)
-    if not isReplay and state.state == "playback" then
-        isReplay = true
-    elseif isReplay and state.state == "inactive" then
-        isReplay = false
-    end
+  if not session.isReplay and state.state == "playback" then
+    session.isReplay = true
+  elseif session.isReplay and state.state == "inactive" then
+    session.isReplay = false
+  end
 end
 
 local function onGameStateUpdate(state)
-    if saveGameState then
-        saveGameState = false
-        previousGameState = state
-    end
+  if session.saveGameState then
+    session.saveGameState = false
+    session.previousGameState = state
+  end
 end
 
 M.onGameStateUpdate = onGameStateUpdate
@@ -1357,12 +1180,104 @@ M.onReplayStateChanged = onReplayStateChanged
 M.onBeamNGTrigger = onBeamNGTrigger
 M.onUpdate = onUpdate
 
-M.payoutRace = payoutRace
-M.payoutDragRace = payoutDragRace
+M.payoutRace = function(completedLapTime)
+  if raceSession then
+    return raceSession.payoutRace(completedLapTime)
+  end
+  return 0
+end
+M.payoutDragRace = function(raceName, finishTime, finishSpeed, vehId)
+  if raceSession then
+    return raceSession.payoutDragRace(raceName, finishTime, finishSpeed, vehId)
+  end
+  return 0
+end
 M.onWorldReadyState = onWorldReadyState
-M.getRace = function(raceName) return races[raceName] end
+M.getRace = function(raceName)
+  if not session or not session.races then
+    return nil
+  end
+  return session.races[raceName]
+end
+-- AI lap counting: returns { inRaceTime, vehicles = { { index, session.lapCount, totalLaps, lapTimes, lastLapTime, finished, finishTime, currentLapTime }, ... } } or nil. Use from console to gauge AI times.
+M.getAiLapState = function()
+  if circuitRaceAi then
+    return circuitRaceAi.getAiLapStateForDisplay()
+  end
+  return nil
+end
 
 M.onExtensionLoaded = onExtensionLoaded
 M.onExtensionUnloaded = onExtensionUnloaded
+
+M.clearFreSummarySession = function()
+  if raceSession then
+    raceSession.clearFreSummarySession()
+  end
+end
+
+M.startSanctionedRaceDispatch = function(useAltRoute, poolReferenceHpOverride)
+  if not session or not utils or not competitiveTrackFlow then
+    return
+  end
+  if not session.races then
+    session.races = utils.loadRaceData()
+  end
+  preloadFreeroamAiPathsForTrack()
+  session.staged = nil
+  competitiveTrackFlow.resetTrackGridFlowFlags()
+  trackFlowState.sanctionedPoolRefHp = (type(poolReferenceHpOverride) == "number" and poolReferenceHpOverride > 0) and
+                                         poolReferenceHpOverride or nil
+  trackFlowState.sanctionedRaceLapCount = nil
+  if gameplay_events_freContracts_sanctionedRacing and
+    gameplay_events_freContracts_sanctionedRacing.getSanctionedOfferLapCount then
+    local lc = gameplay_events_freContracts_sanctionedRacing.getSanctionedOfferLapCount()
+    if lc then
+      trackFlowState.sanctionedRaceLapCount = lc
+    end
+  end
+  trackFlowState.inTrackFlowContext = true
+  trackFlowState.useAltRoute = useAltRoute == true
+  competitiveTrackFlow.setSanctionedCareerGoToRaceActive(true)
+  hideStagedFlashMessage()
+  if core_groundMarkers and core_groundMarkers.resetAll then
+    core_groundMarkers.resetAll()
+  end
+  session.saveGameState = true
+  core_gamestate.requestGameState()
+  applySavedStagingSpotNavigation()
+end
+
+M.beginFreeroamRace = beginFreeroamRace
+M.hideStagedFlashMessage = hideStagedFlashMessage
+M.hideAllFreeroamAssets = function()
+  if Assets then
+    Assets:hideAllAssets()
+  end
+end
+
+M.clearSanctionedDispatchStaging = function()
+  if not session or session.mActiveRace then
+    return
+  end
+  session.staged = nil
+  if raceSession and raceSession.setStagingSubjectId then
+    raceSession.setStagingSubjectId(nil)
+  end
+  if utils and utils.setActiveLight then
+    utils.setActiveLight(TRACK_RACE_ID, "red")
+  end
+  if raceSession and raceSession.hideFreeroamRaceHud then
+    raceSession.hideFreeroamRaceHud()
+  end
+  hideStagedFlashMessage()
+  M.hideAllFreeroamAssets()
+  if competitiveTrackFlow and competitiveTrackFlow.clearSanctionedNavigateVisuals then
+    competitiveTrackFlow.clearSanctionedNavigateVisuals()
+  end
+end
+
+M.getFreeroamRaceLabel = getRaceLabel
+M.getFreeroamDisplayRaceLabel = getDisplayRaceLabel
 
 return M

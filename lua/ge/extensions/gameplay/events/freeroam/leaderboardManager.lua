@@ -115,6 +115,9 @@ local function addLeaderboardEntry(entry)
         career_modules_inventory.saveFRETimeToVehicle(entry.raceLabel, entry.inventoryId, entry.time, entry.driftScore)
     end
     
+    if not gameplay_events_freeroam_dataCollection then
+        extensions.load('gameplay_events_freeroam_dataCollection')
+    end
     gameplay_events_freeroam_dataCollection.collectDataFromEntry(entry)
     
     if not leaderboard then
@@ -139,6 +142,7 @@ local function addLeaderboardEntry(entry)
         leaderboardEntry[raceLabel].damagePercentage = entry.damagePercentage
         leaderboardEntry[raceLabel].damageFactor = entry.damageFactor
         leaderboardEntry[raceLabel].topSpeed = entry.topSpeed
+        leaderboardEntry[raceLabel].reward = entry.reward
         return true
     end
     return false
@@ -184,6 +188,28 @@ local function getLeaderboardEntry(inventoryId, raceLabel)
     return leaderboard[level][tostring(inventoryId)][raceLabel] or {}
 end
 
+local function getLeaderboardEntriesForVehicle(inventoryId)
+    level = getCurrentLevelIdentifier()
+    if not leaderboard or not level or not leaderboard[level] or not leaderboard[level][tostring(inventoryId)] then
+        return {}
+    end
+    local vehicleEntries = leaderboard[level][tostring(inventoryId)]
+    local list = {}
+    for raceLabel, entry in pairs(vehicleEntries) do
+        if type(entry) == "table" and (entry.time or entry.driftScore or entry.topSpeed) then
+            list[#list + 1] = {
+                raceLabel = raceLabel,
+                time = entry.time,
+                driftScore = entry.driftScore,
+                damagePercentage = entry.damagePercentage,
+                topSpeed = entry.topSpeed,
+                reward = entry.reward
+            }
+        end
+    end
+    return list
+end
+
 local function onCareerActive(active)
     if active then
         loadLeaderboard()
@@ -204,5 +230,6 @@ M.addLeaderboardEntry = addLeaderboardEntry
 
 M.isBestTime = isBestTime
 M.getLeaderboardEntry = getLeaderboardEntry
+M.getLeaderboardEntriesForVehicle = getLeaderboardEntriesForVehicle
 
 return M

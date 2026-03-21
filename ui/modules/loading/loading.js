@@ -7,7 +7,6 @@ angular.module('beamng.stuff')
     restrict: 'EA',
     link: function (scope, element, attrs) {
       scope.$watch('data', function() {
-        // element[0].querySelector('.icon-img').style = "background-image: url(/ui/modules/loading/icon_" + attrs.icon + ".svg);"
         element[0].getElementsByClassName("icon-img")[0].style.backgroundImage = `url("/ui/modules/loading/icon_${attrs.icon}.svg")`;
         if(scope.data !== undefined) {
           let percent = (scope.data.iconState && scope.data.iconState[attrs.icon.toUpperCase()]) || 0

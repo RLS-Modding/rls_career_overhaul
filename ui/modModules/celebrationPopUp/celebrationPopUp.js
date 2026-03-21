@@ -2,6 +2,9 @@
 
 const POPUP_KIND_LEVEL_UP = 'levelUp'
 const POPUP_KIND_CONTRACT = 'contract'
+const POPUP_KIND_RACE = 'raceComplete'
+
+const RACE_COMPLETION_AUTO_CLOSE_MS = 5500
 
 const BASE_AUTO_CLOSE_MS = 4000
 const AUTO_CLOSE_MS_PER_UNLOCK = 1200
@@ -30,6 +33,22 @@ function buildEmptyContractState() {
   }
 }
 
+function buildEmptyRaceState() {
+  return {
+    raceLabel: 'Race',
+    position: null,
+    fieldSize: null,
+    raceTime: null,
+    bestLap: null,
+    lapsCompleted: null,
+    lapsTotal: null,
+    lapRows: [],
+    rewardMoney: '0',
+    rewardXp: '0',
+    sanctionedNoRewardDetail: null
+  }
+}
+
 angular.module('beamng.stuff')
 
 .controller('CelebrationPopUpController', ['$scope', '$rootScope', function($scope, $rootScope) {
@@ -52,7 +71,8 @@ angular.module('beamng.stuff')
       headerText: DEFAULT_LEVEL_UP_HEADER,
       currentUnlocks: []
     },
-    contract: buildEmptyContractState()
+    contract: buildEmptyContractState(),
+    race: buildEmptyRaceState()
   }
 
   function resetPopupState() {
@@ -68,6 +88,7 @@ angular.module('beamng.stuff')
       currentUnlocks: []
     }
     $scope.popup.contract = buildEmptyContractState()
+    $scope.popup.race = buildEmptyRaceState()
   }
 
   function clearPopupTimers() {
@@ -255,12 +276,63 @@ function normalizeBranchLevels(branchLevels) {
     }
   }
 
+  function normalizeRaceEntry(entry) {
+    if (!entry || typeof entry !== 'object') return null
+    const lapRows = Array.isArray(entry.lapRows) ? entry.lapRows.map(function(r) {
+      return {
+        index: Number(r.index) || 0,
+        time: String(r.time || ''),
+        invalid: !!r.invalid,
+        isBest: !!r.isBest
+      }
+    }) : []
+    const detail = entry.sanctionedNoRewardDetail != null && String(entry.sanctionedNoRewardDetail).length > 0
+      ? String(entry.sanctionedNoRewardDetail)
+      : null
+    return {
+      raceLabel: entry.raceLabel || 'Race',
+      position: entry.position != null ? Number(entry.position) : null,
+      fieldSize: entry.fieldSize != null ? Number(entry.fieldSize) : null,
+      raceTime: entry.raceTime || null,
+      bestLap: entry.bestLap || null,
+      lapsCompleted: entry.lapsCompleted != null ? Number(entry.lapsCompleted) : null,
+      lapsTotal: entry.lapsTotal != null ? Number(entry.lapsTotal) : null,
+      lapRows: lapRows,
+      rewardMoney: formatInteger(entry.rewardMoney),
+      rewardXp: formatInteger(entry.rewardXp),
+      sanctionedNoRewardDetail: detail
+    }
+  }
+
+  function buildRaceQueueItem(entry) {
+    const race = normalizeRaceEntry(entry)
+    if (!race) return null
+    const lapBonus = Math.min(7000, Math.max(0, race.lapRows.length - 3) * 400)
+    return {
+      kind: POPUP_KIND_RACE,
+      payload: race,
+      autoCloseMs: RACE_COMPLETION_AUTO_CLOSE_MS + lapBonus,
+      soundProfile: POPUP_KIND_CONTRACT
+    }
+  }
+
   function applyQueueItem(queueItem) {
     $scope.popup.kind = queueItem.kind
     $scope.popup.autoCloseMs = queueItem.autoCloseMs
 
     if (queueItem.kind === POPUP_KIND_CONTRACT) {
       $scope.popup.contract = queueItem.payload
+      $scope.popup.race = buildEmptyRaceState()
+      $scope.popup.levelUp = {
+        reward: {},
+        levelValue: 1,
+        defaultHeader: DEFAULT_LEVEL_UP_HEADER,
+        headerText: DEFAULT_LEVEL_UP_HEADER,
+        currentUnlocks: []
+      }
+    } else if (queueItem.kind === POPUP_KIND_RACE) {
+      $scope.popup.race = queueItem.payload
+      $scope.popup.contract = buildEmptyContractState()
       $scope.popup.levelUp = {
         reward: {},
         levelValue: 1,
@@ -271,6 +343,7 @@ function normalizeBranchLevels(branchLevels) {
     } else {
       $scope.popup.levelUp = queueItem.payload
       $scope.popup.contract = buildEmptyContractState()
+      $scope.popup.race = buildEmptyRaceState()
     }
 
     $scope.popup.visible = true
@@ -363,9 +436,19 @@ function normalizeBranchLevels(branchLevels) {
     processQueue()
   })
 
+  const raceCompletionListener = $rootScope.$on('OpenFreRaceCompletionCelebration', function(_event, data) {
+    const entry = data && data.entry
+    const queueItem = buildRaceQueueItem(entry)
+    if (queueItem) {
+      celebrationQueue.push(queueItem)
+      processQueue()
+    }
+  })
+
   $scope.$on('$destroy', function() {
     levelUpListener()
     contractListener()
+    raceCompletionListener()
     clearPopupTimers()
     if (destroyQueueAdvance) {
       clearTimeout(destroyQueueAdvance)

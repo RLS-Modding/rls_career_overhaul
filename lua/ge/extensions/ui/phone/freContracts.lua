@@ -17,7 +17,9 @@ local function getState(filterDisciplineId)
       activeContracts = {},
       availableContracts = {},
       activeSponsors = {},
-      availableSponsors = {}
+      availableSponsors = {},
+      sanctionedRacing = nil,
+      sanctionedRacingOfferPeriodMinutes = nil,
     }
   end
 
@@ -69,6 +71,21 @@ local function acknowledgeSponsorWarning(sponsorId)
   return actionResult(ok, err)
 end
 
+local function commitSanctionedRace()
+  local ok, err = gameplay_events_freContracts_sanctionedRacing.commitSanctionedRace()
+  return actionResult(ok, err)
+end
+
+local function navigateSanctionedRace()
+  local ok, err = gameplay_events_freContracts_sanctionedRacing.navigateSanctionedRace()
+  return actionResult(ok, err)
+end
+
+function rescheduleSanctionedRace()
+  local ok, err = gameplay_events_freContracts_sanctionedRacing.rescheduleSanctionedRace()
+  return actionResult(ok, err)
+end
+
 M.getState = getState
 M.startLiveUpdates = startLiveUpdates
 M.stopLiveUpdates = stopLiveUpdates
@@ -77,5 +94,8 @@ M.abandonContract = abandonContract
 M.signSponsor = signSponsor
 M.dropSponsor = dropSponsor
 M.acknowledgeSponsorWarning = acknowledgeSponsorWarning
+M.commitSanctionedRace = commitSanctionedRace
+M.navigateSanctionedRace = navigateSanctionedRace
+M.rescheduleSanctionedRace = rescheduleSanctionedRace
 
 return M

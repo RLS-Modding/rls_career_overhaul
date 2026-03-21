@@ -60,6 +60,55 @@
           </div>
         </div>
       </div>
+
+      <div class="card-cnt" ng-if="popup.kind === 'raceComplete'">
+        <h2 class="card-heading heading-style-ribbon">Race completed</h2>
+
+        <div class="hero hero-race">
+          <div class="race-name">{{ popup.race.raceLabel }}</div>
+          <div class="race-position" ng-if="popup.race.position != null">
+            <span class="race-position-num">P{{ popup.race.position }}</span>
+            <span class="race-position-field"> / {{ popup.race.fieldSize }}</span>
+          </div>
+        </div>
+
+        <div class="card-content race-content">
+          <div class="race-stats">
+            <div class="race-stat-row" ng-if="popup.race.raceTime">
+              <span class="race-stat-label">Race time</span>
+              <span class="race-stat-value">{{ popup.race.raceTime }}</span>
+            </div>
+            <div class="race-stat-row" ng-if="popup.race.bestLap">
+              <span class="race-stat-label">Best lap</span>
+              <span class="race-stat-value race-stat-highlight">{{ popup.race.bestLap }}</span>
+            </div>
+            <div class="race-stat-row" ng-if="popup.race.lapsCompleted != null && popup.race.lapsTotal != null">
+              <span class="race-stat-label">Laps</span>
+              <span class="race-stat-value">{{ popup.race.lapsCompleted }} / {{ popup.race.lapsTotal }}</span>
+            </div>
+          </div>
+
+          <div class="race-laps" ng-if="popup.race.lapRows.length">
+            <div class="race-laps-header">Lap times</div>
+            <div class="race-lap-row" ng-repeat="lap in popup.race.lapRows track by lap.index"
+                 ng-class="{ 'race-lap-best': lap.isBest, 'race-lap-invalid': lap.invalid }">
+              <span class="race-lap-idx">{{ lap.index }}</span>
+              <span class="race-lap-time">{{ lap.time }}</span>
+              <span class="race-lap-badge" ng-if="lap.isBest">BEST</span>
+              <span class="race-lap-badge race-lap-badge-inv" ng-if="lap.invalid">INV</span>
+            </div>
+          </div>
+
+          <div class="race-no-reward-note" ng-if="popup.race.sanctionedNoRewardDetail">
+            {{ popup.race.sanctionedNoRewardDetail }}
+          </div>
+
+          <div class="rewards-row" ng-class="{ 'rewards-row-muted': popup.race.sanctionedNoRewardDetail }">
+            <div class="money">+${{ popup.race.rewardMoney }}</div>
+            <div class="xp">+{{ popup.race.rewardXp }} XP</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

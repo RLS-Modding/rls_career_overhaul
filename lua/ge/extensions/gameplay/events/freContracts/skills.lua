@@ -2,6 +2,53 @@ local M = {}
 
 local freConfig = require('gameplay/fre/config')
 
+local function getBranchForSkillKey(skillKey)
+  local function isValidBranch(candidate)
+    return candidate and not candidate.missing and type(candidate.levels) == "table" and next(candidate.levels)
+  end
+  local function isCareerSkillsBranch(candidate)
+    if type(candidate) ~= "table" then return false end
+    if candidate.parentId == "careerSkills" then return true end
+    if candidate.domainId == "careerSkills" then return true end
+    if candidate.rootId == "careerSkills" then return true end
+    if type(candidate.path) == "string" and candidate.path:find("careerSkills", 1, true) then return true end
+    return false
+  end
+
+  local candidates = {}
+  if career_branches and career_branches.getBranchById then
+    local byId = career_branches.getBranchById(skillKey)
+    if isValidBranch(byId) then
+      table.insert(candidates, byId)
+    end
+  end
+  if career_branches and career_branches.getBranchByPath then
+    local byPath = career_branches.getBranchByPath(skillKey)
+    if isValidBranch(byPath) then
+      table.insert(candidates, byPath)
+    end
+  end
+  if career_branches and career_branches.getSortedBranches then
+    for _, candidate in ipairs(career_branches.getSortedBranches() or {}) do
+      if type(candidate) == "table" and candidate.attributeKey == skillKey and isValidBranch(candidate) then
+        table.insert(candidates, candidate)
+      end
+    end
+  end
+
+  local bestBranch, bestScore = nil, -math.huge
+  for _, candidate in ipairs(candidates) do
+    local score = #(candidate.levels or {})
+    if isCareerSkillsBranch(candidate) then score = score + 10000 end
+    if candidate.parentId == "careerSkills" then score = score + 1000 end
+    if score > bestScore then
+      bestBranch, bestScore = candidate, score
+    end
+  end
+
+  return bestBranch
+end
+
 local function getSkillRefs(disciplineId)
   local skillKey = freConfig.getSkillKey(disciplineId)
   if not skillKey then
@@ -19,27 +66,10 @@ local function getSkillRefs(disciplineId)
   end
 
   addRef(skillKey)
-  local discipline = freConfig.getDisciplineById(disciplineId)
-  if discipline then
-    addRef(discipline.id)
-  end
-
-  if career_branches and career_branches.getBranchById then
-    local branchBySkillKey = career_branches.getBranchById(skillKey)
-    if type(branchBySkillKey) == "table" then
-      addRef(branchBySkillKey.id)
-      addRef(branchBySkillKey.path)
-      addRef(branchBySkillKey.attributeKey)
-    end
-  end
-
-  if career_branches and career_branches.getSortedBranches then
-    for _, branch in ipairs(career_branches.getSortedBranches() or {}) do
-      if type(branch) == "table" and branch.attributeKey == skillKey then
-        addRef(branch.id)
-        addRef(branch.path)
-      end
-    end
+  local branch = getBranchForSkillKey(skillKey)
+  if branch then
+    addRef(branch.id)
+    addRef(branch.attributeKey)
   end
 
   return skillKey, refs

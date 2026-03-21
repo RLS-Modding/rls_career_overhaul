@@ -1,0 +1,68 @@
+{
+  "_comment": "sanctioned: optional hpBrackets, classPayoutMultipliers { stock, modified, super, open } (defaults in Lua: 1 / 1.35 / 1.85 / 2.35). AI uses bracket classHpMax after commit; player may use any HP up to that max.",
+  "vehiclePool": {
+    "stock": [
+      { "model": "covet", "config": "AI_Covet_stock" },
+      { "model": "midsize", "config": "AI_Pessima_stock" },
+      { "model": "covet", "config": "AI_Covet_modified" },
+      { "model": "midsize", "config": "AI_Pessima_modified" },
+      { "model": "sbr", "config": "AI_SB4_stock" },
+      { "model": "etkc", "config": "AI_ETK-k_stock" }
+    ],
+    "modified": [
+      { "model": "covet", "config": "AI_Covet_super" },
+      { "model": "midsize", "config": "AI_Pessima_super" },
+      { "model": "sbr", "config": "AI_SB4_modified" },
+      { "model": "bastion", "config": "AI_Bastion_stock" },
+      { "model": "sbr", "config": "AI_SB4_super" },
+      { "model": "scintilla", "config": "AI_Scintilla_stock" }
+    ],
+    "super": [
+      { "model": "etkc", "config": "AI_ETK-k_modified" },
+      { "model": "etkc", "config": "AI_ETK-k_super" },
+      { "model": "bastion", "config": "AI_Bastion_modified" },
+      { "model": "scintilla", "config": "AI_Scintilla_modified" },
+      { "model": "bastion", "config": "AI_Bastion_super" },
+      { "model": "scintilla", "config": "AI_Scintilla_super" }
+    ]
+  },
+  "byRace": {
+    "trackloop": {
+      "enabled": true,
+      "spawnSameVehicleAsPlayer": false,
+      "maxSpawnCount": 4,
+      "driveInLane": "off",
+      "navTargetReachDistance": 20,
+      "startEngineOnSpawn": true,
+      "filterPoolByPowerMeetOrExceed": true,
+      "aiPowerExceedCapPct": 0.25,
+      "sanctioned": {
+        "raceName": "track",
+        "routeType": "main",
+        "stageNumber": 4,
+        "pickWeight": 1,
+        "offerRefreshMinutes": 20,
+        "startDeadlineMinutes": 60
+      }
+    },
+    "trackalt": {
+      "pathRoad": "shortTrack",
+      "enabled": true,
+      "spawnSameVehicleAsPlayer": false,
+      "maxSpawnCount": 4,
+      "driveInLane": "off",
+      "navTargetReachDistance": 20,
+      "startEngineOnSpawn": true,
+      "filterPoolByPowerMeetOrExceed": true,
+      "aiPowerExceedCapPct": 0.25,
+      "sanctioned": {
+        "raceName": "track",
+        "routeType": "alt",
+        "stageNumber": 4,
+        "pickWeight": 1,
+        "offerRefreshMinutes": 20,
+        "startDeadlineMinutes": 60
+      }
+    }
+  }
+}

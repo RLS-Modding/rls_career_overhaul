@@ -302,6 +302,9 @@ local function onFreeroamRaceCompleted(payload)
   if type(disciplineIds) ~= "table" then
     return
   end
+  if payload.skipFreContractProgress == true then
+    return
+  end
 
   local stateChanged = false
   local seen = {}
