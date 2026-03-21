@@ -708,16 +708,11 @@ local function beamngTrigger_staging(data, event, raceName)
     tryCommitStagingEnter(raceName, data.subjectID)
   elseif event == "exit" then
     if session.mActiveRace ~= raceName then
+      if raceName == TRACK_RACE_ID and competitiveTrackFlow.isSanctionedCareerGoToRaceActive() then
+        return
+      end
       if raceName == TRACK_RACE_ID then
         competitiveTrackFlow.cancelCompetitiveGridFlow()
-        if competitiveTrackFlow.isSanctionedCareerGoToRaceActive() then
-          competitiveTrackFlow.clearSanctionedCareerGoToRaceActive()
-          trackFlowState.sanctionedRaceLapCount = nil
-          if gameplay_events_freContracts_sanctionedRacing and
-            gameplay_events_freContracts_sanctionedRacing.onCareerTrackStagingExitAbandoned then
-            gameplay_events_freContracts_sanctionedRacing.onCareerTrackStagingExitAbandoned()
-          end
-        end
       end
       local r = session.races[raceName]
       local useHud = r and raceSession.raceHudApplies(r)

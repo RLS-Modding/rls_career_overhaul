@@ -48,7 +48,7 @@ local mCelebrationRewards = nil
 local function defaultCfgSlice()
   return {
     variants = {},
-    defaultOfferRefreshMinutes = 12,
+    defaultOfferRefreshMinutes = 1,
     defaultStartDeadlineMinutes = 60,
   }
 end

@@ -203,7 +203,7 @@
           </div>
 
           <div v-else-if="tab === 'racing' && showRacingTab" class="panel racing-panel">
-            <section class="section-block">
+            <section v-if="showSanctionedAvailableRacesSection" class="section-block">
               <div class="section-header">
                 <div>
                   <div class="section-kicker">Sanctioned</div>
@@ -238,18 +238,14 @@
               </article>
             </section>
 
-            <section class="section-block">
+            <section v-if="showSanctionedNextRaceSection" class="section-block">
               <div class="section-header">
                 <div>
                   <div class="section-kicker">Sanctioned</div>
                   <div class="section-title">Next race</div>
                 </div>
               </div>
-              <div v-if="!sanctionedOfferCommitted" class="empty-card">
-                <div class="empty-card-title">{{ sanctionedCommittedEmptyTitle }}</div>
-                <div class="empty-card-copy">{{ sanctionedCommittedEmptyCopy }}</div>
-              </div>
-              <article v-else class="sanctioned-card" :class="sanctionedCommittedUrgency">
+              <article class="sanctioned-card" :class="sanctionedCommittedUrgency">
                 <div class="sanctioned-header">
                   <div class="sanctioned-title">{{ sanctionedOfferCommitted.raceLabel || 'Circuit' }}</div>
                   <div class="sanctioned-route">{{ sanctionedRouteHintFor(sanctionedOfferCommitted) }}</div>
@@ -464,19 +460,16 @@ const sanctionedOfferCommitted = computed(() => {
   const o = sanctionedRacingOffer.value
   return o && (o.phase === 'committed' || o.phase === 'racing') ? o : null
 })
+const showSanctionedNextRaceSection = computed(() => Boolean(sanctionedOfferCommitted.value))
+const showSanctionedAvailableRacesSection = computed(
+  () => !sanctionedOfferCommitted.value || Boolean(sanctionedOfferAvailable.value),
+)
 const sanctionedAvailableEmptyTitle = computed(() => (sanctionedRacingOffer.value ? 'Offer already locked in' : 'No open offers'))
 const sanctionedAvailableEmptyCopy = computed(() => {
   if (!sanctionedRacingOffer.value) {
     return 'A new circuit offer will show after the window resets. Stay on West Coast USA with sanctioned racing unlocked.'
   }
   return 'Your spot is reserved under Next race. Finish that run or wait for it to time out to see a new offer here.'
-})
-const sanctionedCommittedEmptyTitle = computed(() => 'No active race')
-const sanctionedCommittedEmptyCopy = computed(() => {
-  if (!sanctionedRacingOffer.value) {
-    return 'When an offer appears above, commit to start the one-hour window and see it here.'
-  }
-  return 'Commit to the open offer above to lock the grid, podium payouts, and start deadline.'
 })
 const sanctionedCommittedPhaseLabel = computed(() => (sanctionedOfferCommitted.value?.phase === 'racing' ? 'In progress' : 'Committed'))
 const sanctionedAvailableUrgency = computed(() => {
