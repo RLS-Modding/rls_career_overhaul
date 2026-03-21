@@ -97,6 +97,20 @@ local function getRouteDisplayName(race, isAlt)
   return race.label
 end
 
+local function shouldUseAltRouteForNextLap(raceName)
+  if not TRACK_RACE_ID or raceName ~= TRACK_RACE_ID then
+    return false
+  end
+  local sr = gameplay_events_freContracts_sanctionedRacing
+  local sanctionedCircuit = sr and sr.isSanctionedCircuitRaceActive and sr.isSanctionedCircuitRaceActive() and
+    raceName == TRACK_RACE_ID
+  local useAlt = (trackFlowState and trackFlowState.useAltRoute == true and trackFlowState.inTrackFlowContext) or false
+  if sanctionedCircuit and sr and sr.isSanctionedCircuitRaceUseAltRoute then
+    useAlt = sr.isSanctionedCircuitRaceUseAltRoute()
+  end
+  return useAlt
+end
+
 local function isAiSpawnedVehicle(subjectID)
   if not aiRacers or not aiRacers.getSpawnedVehicleIds then
     return false
@@ -824,6 +838,10 @@ local function beamngTrigger_startPlayer(data, event, raceName)
     session.maxSpeed = 0
     session.timerActive = true
     session.checkpointsHit = 0
+    if shouldUseAltRouteForNextLap(raceName) then
+      session.mAltRoute = true
+      checkpointManager.setAltRoute(true)
+    end
     session.totalCheckpoints = checkpointManager.calculateTotalCheckpoints()
     session.currentExpectedCheckpoint = 0
     if session.races[raceName].hotlap then

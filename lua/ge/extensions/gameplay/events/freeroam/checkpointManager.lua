@@ -421,9 +421,6 @@ function M.onFreeroamSessionStarted(payload)
     session.isLoop = processRoad.isLoop()
     session.currCheckpoint = 0
     session.checkpointsHit = 0
-    local totalCp = calculateTotalCheckpoints()
-    session.totalCheckpoints = totalCp
-    session.currentExpectedCheckpoint = 1
 
     local useAlt = (rn == TRACK_RACE_ID and trackFlowState and trackFlowState.useAltRoute == true
         and trackFlowState.inTrackFlowContext) or false
@@ -432,6 +429,8 @@ function M.onFreeroamSessionStarted(payload)
     end
     session.mAltRoute = useAlt
     setAltRoute(useAlt)
+    local totalCp = calculateTotalCheckpoints()
+    session.totalCheckpoints = totalCp
     session.currentExpectedCheckpoint = enableCheckpoint(0, useAlt)
 
     local aiRacers = gameplay_events_freeroam_aiRacers
