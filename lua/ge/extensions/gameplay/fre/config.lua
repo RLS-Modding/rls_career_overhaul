@@ -70,11 +70,6 @@ local defaultDisciplineContractConfig = {
     medium = {min = 0.8, max = 0.9},
     hard = {min = 0.7, max = 0.8}
   },
-  objectiveCountByTier = {
-    easy = {lapsMin = 1, lapsMax = 2, eventsMin = 1, eventsMax = 2},
-    medium = {lapsMin = 2, lapsMax = 3, eventsMin = 2, eventsMax = 3},
-    hard = {lapsMin = 3, lapsMax = 5, eventsMin = 3, eventsMax = 4}
-  },
   xpByTier = {
     easy = {xpAtTarget = 750, tenPercentBetterMultiplier = 1.25, belowTargetFloorMultiplier = 0.25, maxMultiplier = 3.0},
     medium = {xpAtTarget = 1500, tenPercentBetterMultiplier = 1.25, belowTargetFloorMultiplier = 0.25, maxMultiplier = 3.0},
@@ -163,12 +158,22 @@ local defaultConfig = {
     offerExpiryMinutes = 5,
     offerRefreshMinutes = 2,
     modelSourceOwnedChance = 0.5,
-    lapObjectiveChance = 0.5,
     expiryMinutesByTier = {easy = 240, medium = 120, hard = 60},
-    rewardRangeByTier = {
-      easy = {moneyMin = 5000, moneyMax = 15000, xpMin = 500, xpMax = 1000},
-      medium = {moneyMin = 20000, moneyMax = 35000, xpMin = 1200, xpMax = 2500},
-      hard = {moneyMin = 40000, moneyMax = 60000, xpMin = 3000, xpMax = 8000}
+    basePayoutMultiplier = 5,
+    payoutVariance = {min = 0.95, max = 1.05},
+    extraLapEventBonusPerUnit = 0.33,
+    xpPercentOfMoney = 0.02,
+    timeWindowMinutesByTier = {
+      easy = {min = 3, max = 9},
+      medium = {min = 4, max = 10},
+      hard = {min = 5, max = 12}
+    },
+    nonLoopEventTimeMultiplier = 1.66,
+    disciplinesUsingEventCountOverride = {"crawling"},
+    eventCountOverrideByTier = {
+      easy = {eventsMin = 2, eventsMax = 3},
+      medium = {eventsMin = 3, eventsMax = 5},
+      hard = {eventsMin = 4, eventsMax = 6}
     }
   },
   sponsors = {
