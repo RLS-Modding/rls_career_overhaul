@@ -63,7 +63,25 @@ local function hudDisplayLap(completed, totalLapsVal)
 end
 
 local function sess()
-    return gameplay_events_freeroam_session
+  return gameplay_events_freeroam_session
+end
+
+local function resolveSessionInventoryFromSpawnId(subjectID)
+  if not subjectID then
+    return subjectID
+  end
+  if career_modules_business_businessInventory then
+    local businessId, vehicleId = career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId(subjectID)
+    if businessId and vehicleId then
+      local jobId = career_modules_business_businessInventory.getJobIdFromVehicle(businessId, vehicleId)
+      if jobId then
+        return career_modules_business_businessInventory.getBusinessJobIdentifier(businessId, jobId)
+      end
+      return career_modules_business_businessInventory.getBusinessVehicleIdentifier(businessId, vehicleId)
+    end
+    return career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId(subjectID) or subjectID
+  end
+  return career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId(subjectID) or subjectID
 end
 
 local function onExtensionLoaded()
@@ -869,6 +887,8 @@ function M.payoutDragRace(raceName, finishTime, finishSpeed, vehId)
             disciplineXp = disciplineXpBreakdown
         }
     }
+    local hudDisciplineXp = totalDisciplineXp
+    local hudMoney, hudBusinessMoney = nil, nil
     local businessAccount = getBusinessAccountFromVehicle(vehId)
     if businessAccount then
         local businessReward = math.floor(reward * 0.5)
@@ -889,6 +909,7 @@ function M.payoutDragRace(raceName, finishTime, finishSpeed, vehId)
         local message = string.format("%s\n%s\nTime: %s\nSpeed: %.2f mph\nDiscipline XP: %d | Business Reward: $%.2f (50%% to business account)",
             newBestTime and "Congratulations! New Best Time!" or "", raceData.label, u.formatTime(finishTime), finishSpeed, totalDisciplineXp, businessReward)
         ui_message(message, 20, "Reward")
+        hudBusinessMoney = businessReward
     else
         local totalReward = { money = { amount = reward } }
         mergeRewardTables(totalReward, disciplineXpRewards)
@@ -900,9 +921,41 @@ function M.payoutDragRace(raceName, finishTime, finishSpeed, vehId)
         local message = string.format("%s\n%s\nTime: %s\nSpeed: %.2f mph\nDiscipline XP: %d | Reward: $%.2f",
             newBestTime and "Congratulations! New Best Time!" or "", raceData.label, u.formatTime(finishTime), finishSpeed, totalDisciplineXp, reward)
         ui_message(message, 20, "Reward")
+        hudMoney = reward
     end
     career_saveSystem.saveCurrent()
     notifyFreRaceCompleted(raceName, raceData, raceData.label, finishTime, vehId, completionMeta)
+    if M.raceHudApplies(raceData) and frh.shown then
+        sess().maxSpeed = math.max(sess().maxSpeed or 0, finishSpeed)
+        local prevTimeShow = nil
+        if type(oldTime) == "number" and oldTime > 0 and oldTime ~= math.huge then
+            prevTimeShow = oldTime
+        end
+        local headline = newBestTime and "New Best Time!" or "Lap complete"
+        local hudCompletionPayload = {
+            invalidLap = false,
+            headline = headline,
+            raceTitle = raceData.label,
+            kind = "drag",
+            result = {
+                time = finishTime,
+                topSpeed = sess().maxSpeed,
+            },
+            previous = {
+                time = prevTimeShow,
+            },
+            rewards = {
+                disciplineXp = hudDisciplineXp,
+                money = hudMoney,
+                businessMoney = hudBusinessMoney,
+            },
+            bonuses = {},
+        }
+        sess().mActiveRace = nil
+        sess().timerActive = false
+        sess().dragPracticeActive = false
+        M.pushRaceHudCompletion(hudCompletionPayload, raceName, raceData.label, races["drag"].label, finishTime, true)
+    end
     return reward
 end
 
@@ -1160,6 +1213,54 @@ function M.hideFreeroamRaceHud()
     frh.completionPayload = nil
     frh.completionSnapshot = nil
     if guihooks and guihooks.trigger then guihooks.trigger("FreeroamRaceHudHide") end
+end
+
+function M.beginDragPracticeFreeroamHud(vehId)
+    local races = sess().races
+    if not races or not races["drag"] or not vehId then
+        return
+    end
+    sess().dragPracticeFlow = true
+    sess().staged = "drag"
+    M.prepareNewRaceHudState("drag")
+    M.setStagingSubjectId(resolveSessionInventoryFromSpawnId(vehId))
+    M.showFreeroamRaceHud()
+end
+
+function M.beginDragPracticeFreeroamRace(vehId)
+    local races = sess().races
+    if not races or not races["drag"] or not vehId then
+        return
+    end
+    sess().staged = nil
+    M.setStagingSubjectId(nil)
+    if career_career and career_career.isActive and career_career.isActive() and career_modules_pauseTime then
+        career_modules_pauseTime.enablePauseCounter(true)
+    end
+    sess().timerActive = true
+    sess().in_race_time = 0
+    sess().maxSpeed = 0
+    sess().mActiveRace = "drag"
+    sess().dragPracticeActive = true
+    sess().mInventoryId = resolveSessionInventoryFromSpawnId(vehId)
+    sess().invalidLap = false
+    local u = utils()
+    M.setRaceHudBanner(u.getRaceStartBannerText("drag"), "good", 5)
+    M.pushFreeroamRaceHudState(true)
+end
+
+function M.endDragPracticeFreeroamHud()
+    if not sess().dragPracticeFlow then
+        return
+    end
+    sess().dragPracticeFlow = false
+    sess().dragPracticeActive = false
+    sess().staged = nil
+    sess().mActiveRace = nil
+    sess().timerActive = false
+    sess().in_race_time = 0
+    M.setStagingSubjectId(nil)
+    M.hideFreeroamRaceHud()
 end
 
 function M.pushRaceHudCompletion(completionPayload, raceName, displayLabel, leaderboardLabel, currentLapTime, freezeCard)

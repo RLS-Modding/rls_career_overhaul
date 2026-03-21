@@ -28,6 +28,8 @@ M.isReplay = false
 M.previousGameState = nil
 M.saveGameState = false
 M.mPendingTrackResult = nil
+M.dragPracticeActive = false
+M.dragPracticeFlow = false
 
 function M.resetState()
   M.timerActive = false
@@ -58,6 +60,8 @@ function M.resetState()
   M.previousGameState = nil
   M.saveGameState = false
   M.mPendingTrackResult = nil
+  M.dragPracticeActive = false
+  M.dragPracticeFlow = false
 end
 
 local function onExtensionLoaded()

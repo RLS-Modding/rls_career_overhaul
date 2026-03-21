@@ -1127,7 +1127,9 @@ local function onUpdate(dtReal, dtSim, dtRaw)
     end
   end
   if session.timerActive == true then
-    session.in_race_time = session.in_race_time + dtSim
+    if not (session.dragPracticeActive and session.mActiveRace == "drag") then
+      session.in_race_time = session.in_race_time + dtSim
+    end
     circuitRaceAi.onWaypointPollAccum(dtSim)
     local playerVehicleId = be:getPlayerVehicleID(0)
     if playerVehicleId then
@@ -1139,8 +1141,7 @@ local function onUpdate(dtReal, dtSim, dtRaw)
     raceSession.pushFreeroamRaceHudState(false)
   else
     session.in_race_time = 0
-    if raceSession.isRaceHudShown() and session.staged and session.races[session.staged] and
-      raceSession.raceHudApplies(session.races[session.staged]) and not session.mActiveRace then
+    if raceSession.isRaceHudShown() and not session.timerActive then
       raceSession.pushFreeroamRaceHudState(false)
     end
   end
