@@ -5,7 +5,6 @@ local freConfig = require("gameplay/fre/config")
 local CONFIG_DIR = "competitiveRace"
 local CONFIG_RACE_FILENAME = "aiRacingConfig.json"
 local DISCIPLINE_ROAD = "roadracing"
-local RACE_ID_TRACK = "track"
 
 local DEFAULT_PODIUM_MULT = { first = 8, second = 4.5, third = 2.5 }
 local DEFAULT_PODIUM_VARIANCE = { min = 0.84, max = 1.16 }
@@ -50,6 +49,7 @@ local mCelebrationRewards = nil
 local function defaultCfgSlice()
   return {
     variants = {},
+    sanctionedRaceNames = {},
     defaultOfferRefreshMinutes = 1,
     defaultStartDeadlineMinutes = 60,
   }
@@ -276,10 +276,11 @@ local function collectSanctionedVariants(raw, disciplineId)
             w = 1
           end
           w = math.max(0, w)
-          if w > 0 then
+          local rn = type(s.raceName) == "string" and s.raceName ~= "" and s.raceName or nil
+          if w > 0 and rn then
             table.insert(list, {
               pathKey = pathKey,
-              raceName = type(s.raceName) == "string" and s.raceName ~= "" and s.raceName or RACE_ID_TRACK,
+              raceName = rn,
               routeType = normalizeRouteType(s.routeType),
               pickWeight = w,
               stageNumber = tonumber(s.stageNumber) or nil,
@@ -318,6 +319,12 @@ local function loadCfg()
     return cachedCfg
   end
   cachedCfg.variants = collectSanctionedVariants(raw, DISCIPLINE_ROAD)
+  cachedCfg.sanctionedRaceNames = {}
+  for _, v in ipairs(cachedCfg.variants) do
+    if type(v.raceName) == "string" and v.raceName ~= "" then
+      cachedCfg.sanctionedRaceNames[v.raceName] = true
+    end
+  end
   if #cachedCfg.variants > 0 then
     local v0 = cachedCfg.variants[1]
     cachedCfg.defaultOfferRefreshMinutes =
@@ -326,6 +333,15 @@ local function loadCfg()
       math.max(1, tonumber(v0.startDeadlineMinutes) or cachedCfg.defaultStartDeadlineMinutes)
   end
   return cachedCfg
+end
+
+local function isSanctionedRaceNameConfigured(raceName)
+  if type(raceName) ~= "string" or raceName == "" then
+    return false
+  end
+  local cfg = loadCfg()
+  local s = cfg.sanctionedRaceNames
+  return type(s) == "table" and s[raceName] == true
 end
 
 local function hasSanctionedForRoadRacing()
@@ -597,21 +613,21 @@ function M.getOfferUiSnapshot(now)
   }
 end
 
-function M.blocksTrackStagingUntilNavigate()
+function M.isSanctionedRescheduleActionActive()
   if not gameplay_events_freContracts_state.isCareerActive() then
     return false
   end
   local state = gameplay_events_freContracts_state.getState()
   local sr = ensureSrState(state)
   local o = sr.offer
-  if not o or type(o.raceName) ~= "string" or o.raceName ~= RACE_ID_TRACK or o.phase ~= "committed" then
+  if not o or o.phase ~= "committed" then
     return false
   end
-  if runtime.dispatchUiActive then
-    return false
+  if runtime.dispatchUiActive == true then
+    return true
   end
   local ctf = getCompetitiveTrackFlow()
-  if not ctf or not ctf.isSanctionedCareerGoToRaceActive or not ctf.isSanctionedCareerGoToRaceActive() then
+  if ctf and ctf.isSanctionedCareerGoToRaceActive and ctf.isSanctionedCareerGoToRaceActive() then
     return true
   end
   return false
@@ -645,7 +661,7 @@ local function validateSanctionedOfferAvailable(offer)
   if not offer or offer.phase ~= "available" then
     return false, "No open offer to commit to."
   end
-  if type(offer.raceName) ~= "string" or offer.raceName ~= RACE_ID_TRACK then
+  if type(offer.raceName) ~= "string" or not isSanctionedRaceNameConfigured(offer.raceName) then
     return false, "Unsupported sanctioned race."
   end
   return true, nil
@@ -694,7 +710,7 @@ function M.navigateSanctionedRace()
   if not offer or (offer.phase ~= "committed" and offer.phase ~= "racing") then
     return false, "Commit to a race first."
   end
-  if type(offer.raceName) ~= "string" or offer.raceName ~= RACE_ID_TRACK then
+  if type(offer.raceName) ~= "string" or not isSanctionedRaceNameConfigured(offer.raceName) then
     return false, "Unsupported sanctioned race."
   end
   pushDispatchForOffer(offer)
@@ -713,7 +729,7 @@ function M.rescheduleSanctionedRace()
   local state = gameplay_events_freContracts_state.getState()
   local sr = ensureSrState(state)
   local offer = sr.offer
-  if not offer or type(offer.raceName) ~= "string" or offer.raceName ~= RACE_ID_TRACK then
+  if not offer or type(offer.raceName) ~= "string" or not isSanctionedRaceNameConfigured(offer.raceName) then
     return false, "No sanctioned race."
   end
   if offer.phase == "racing" then
@@ -748,7 +764,7 @@ function M.rescheduleSanctionedRace()
 end
 
 function M.onRaceBegin(raceName)
-  if raceName ~= RACE_ID_TRACK then
+  if not isSanctionedRaceNameConfigured(raceName) then
     return
   end
   local ctf = gameplay_events_freeroam_competitiveTrackFlow
@@ -836,16 +852,14 @@ function M.finishOfferClear()
 end
 
 function M.settleFromAiResults(aiResults, raceName)
-  raceName = raceName or RACE_ID_TRACK
   if not runtime.suppressFrePayouts then
-    if raceName == RACE_ID_TRACK then
-      local state = gameplay_events_freContracts_state.getState()
-      local sr = ensureSrState(state)
-      local o = sr.offer
-      if o and type(o.raceName) == "string" and o.raceName == RACE_ID_TRACK
-          and (o.phase == "committed" or o.phase == "racing") then
-        M.finishOfferClear()
-      end
+    local state = gameplay_events_freContracts_state.getState()
+    local sr = ensureSrState(state)
+    local o = sr.offer
+    local rn = raceName or (o and o.raceName)
+    if rn and isSanctionedRaceNameConfigured(rn) and o and type(o.raceName) == "string" and o.raceName == rn
+        and (o.phase == "committed" or o.phase == "racing") then
+      M.finishOfferClear()
     end
     return
   end
@@ -903,7 +917,7 @@ function M.onCareerTrackStagingExitAbandoned()
   local state = gameplay_events_freContracts_state.getState()
   local sr = ensureSrState(state)
   local o = sr.offer
-  if o and type(o.raceName) == "string" and o.raceName == RACE_ID_TRACK then
+  if o and type(o.raceName) == "string" and isSanctionedRaceNameConfigured(o.raceName) then
     M.finishOfferClear()
   end
 end
@@ -922,7 +936,7 @@ function M.isSanctionedCircuitRaceActive()
   local state = gameplay_events_freContracts_state.getState()
   local sr = ensureSrState(state)
   local o = sr.offer
-  return o and o.phase == "racing" and type(o.raceName) == "string" and o.raceName == RACE_ID_TRACK
+  return o and o.phase == "racing" and type(o.raceName) == "string" and isSanctionedRaceNameConfigured(o.raceName)
 end
 
 function M.isSanctionedCircuitRaceUseAltRoute()
@@ -945,7 +959,7 @@ function M.getAiPoolReferenceHp()
   local state = gameplay_events_freContracts_state.getState()
   local sr = ensureSrState(state)
   local o = sr.offer
-  if not o or type(o.raceName) ~= "string" or o.raceName ~= RACE_ID_TRACK then
+  if not o or type(o.raceName) ~= "string" or not isSanctionedRaceNameConfigured(o.raceName) then
     return nil
   end
   if o.phase ~= "committed" and o.phase ~= "racing" then
@@ -965,7 +979,7 @@ function M.getSanctionedOfferLapCount()
   local state = gameplay_events_freContracts_state.getState()
   local sr = ensureSrState(state)
   local o = sr.offer
-  if not o or type(o.raceName) ~= "string" or o.raceName ~= RACE_ID_TRACK then
+  if not o or type(o.raceName) ~= "string" or not isSanctionedRaceNameConfigured(o.raceName) then
     return nil
   end
   if o.phase ~= "committed" and o.phase ~= "racing" and o.phase ~= "available" then
@@ -979,6 +993,7 @@ function M.getSanctionedOfferLapCount()
 end
 
 M.loadCfg = loadCfg
+M.isSanctionedRaceNameConfigured = isSanctionedRaceNameConfigured
 
 function M.consumeSanctionedCelebrationRewards()
   local r = mCelebrationRewards

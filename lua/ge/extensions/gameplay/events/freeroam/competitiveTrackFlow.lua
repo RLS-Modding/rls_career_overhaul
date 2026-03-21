@@ -242,6 +242,64 @@ function M.isSanctionedCareerGoToRaceActive()
     return M.trackFlowState.sanctionedCareerGoToRaceActive == true
 end
 
+function M.isSanctionedRaceStagingUiActive()
+    return mSanctionedParkingUiPhase ~= "hidden"
+end
+
+function M.raceUsesSanctionedParkingStaging(raceName)
+    return raceName == M.TRACK_RACE_ID
+end
+
+function M.shouldBlockFreeroamStagingPractice(raceName)
+    if not M.isSanctionedRaceStagingUiActive() then
+        return false
+    end
+    return M.raceUsesSanctionedParkingStaging(raceName)
+end
+
+function M.resolveEffectiveStagingRace(raceName, race)
+    if M.raceUsesSanctionedParkingStaging(raceName) then
+        return M.trackRaceForAi() or race
+    end
+    return race
+end
+
+function M.resolveStagingHudTotalLaps(raceName, sess, hotlapRaceName, effectiveStagingRace, isLapRace)
+    if sess.freeroamPracticeStaging then
+        return 0
+    end
+    if hotlapRaceName == raceName then
+        return 0
+    end
+    local base = isLapRace and M.getDisplayTotalLapsForRace(effectiveStagingRace) or 0
+    if not M.isSanctionedCareerGoToRaceActive() then
+        if M.raceUsesSanctionedParkingStaging(raceName) then
+            return 0
+        end
+        return base
+    end
+    if M.raceUsesSanctionedParkingStaging(raceName) then
+        local sr = gameplay_events_freContracts_sanctionedRacing
+        local lc = sr and sr.getSanctionedOfferLapCount and sr.getSanctionedOfferLapCount()
+        if lc and lc > 0 then
+            return lc
+        end
+    end
+    return base
+end
+
+function M.resolveRacingHudTotalLaps(mActiveRaceName, sess, effectiveRace, isLapRace)
+    local totalLapsVal = isLapRace and M.getDisplayTotalLapsForRace(effectiveRace) or 0
+    if sess.freeroamPracticeStaging then
+        return 0
+    end
+    local sr = gameplay_events_freContracts_sanctionedRacing
+    if M.raceUsesSanctionedParkingStaging(mActiveRaceName) and sr and not sr.shouldSuppressFrePayouts() then
+        return 0
+    end
+    return totalLapsVal
+end
+
 function M.setSanctionedCareerGoToRaceActive(v)
     M.trackFlowState.sanctionedCareerGoToRaceActive = v == true
 end
@@ -251,11 +309,14 @@ function M.clearSanctionedCareerGoToRaceActive()
 end
 
 function M.getDisplayTotalLapsForRace(r)
-    local forced = tonumber(M.trackFlowState.sanctionedRaceLapCount)
-    if forced and forced > 0 and r == M.trackRaceForAi() then
-        local sr = gameplay_events_freContracts_sanctionedRacing
-        if sr and sr.shouldSuppressFrePayouts and sr.shouldSuppressFrePayouts() then
-            return math.floor(forced)
+    local fs = gameplay_events_freeroam_session
+    if not (fs and fs.freeroamPracticeStaging) then
+        local forced = tonumber(M.trackFlowState.sanctionedRaceLapCount)
+        if forced and forced > 0 and r == M.trackRaceForAi() then
+            local sr = gameplay_events_freContracts_sanctionedRacing
+            if sr and sr.shouldSuppressFrePayouts and sr.shouldSuppressFrePayouts() then
+                return math.floor(forced)
+            end
         end
     end
     if not r then return 0 end
@@ -560,6 +621,7 @@ function M.tryCommitTrackGridStaging(spawnVehId, opts)
     end
 
     sess().staged = raceName
+    sess().freeroamPracticeStaging = false
     local vehId = spawnVehId
     if career_career and career_career.isActive and career_career.isActive() then
         if career_modules_business_businessInventory and career_modules_business_businessInventory.getBusinessVehicleFromSpawnedId then

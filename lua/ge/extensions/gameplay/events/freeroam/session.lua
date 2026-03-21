@@ -30,6 +30,7 @@ M.saveGameState = false
 M.mPendingTrackResult = nil
 M.dragPracticeActive = false
 M.dragPracticeFlow = false
+M.freeroamPracticeStaging = false
 
 function M.resetState()
   M.timerActive = false
@@ -62,6 +63,7 @@ function M.resetState()
   M.mPendingTrackResult = nil
   M.dragPracticeActive = false
   M.dragPracticeFlow = false
+  M.freeroamPracticeStaging = false
 end
 
 local function onExtensionLoaded()

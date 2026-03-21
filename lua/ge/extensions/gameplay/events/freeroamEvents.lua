@@ -617,10 +617,15 @@ local function tryCommitStagingEnter(raceName, spawnVehId)
     return false
   end
 
-  if raceName == TRACK_RACE_ID and gameplay_events_freContracts_sanctionedRacing and
-      gameplay_events_freContracts_sanctionedRacing.blocksTrackStagingUntilNavigate and
-      gameplay_events_freContracts_sanctionedRacing.blocksTrackStagingUntilNavigate() then
-    utils.displayMessage("Open FRE Contracts and tap Go to race to get directions to the grid.", 4)
+  local srr = gameplay_events_freContracts_sanctionedRacing
+  if srr and srr.isSanctionedRescheduleActionActive and srr.isSanctionedRescheduleActionActive() then
+    utils.displayMessage("Reschedule or finish your sanctioned race from the phone before staging for practice.", 4)
+    return false
+  end
+
+  if competitiveTrackFlow.shouldBlockFreeroamStagingPractice and
+      competitiveTrackFlow.shouldBlockFreeroamStagingPractice(raceName) then
+    utils.displayMessage("Finish or leave sanctioned grid staging before using practice staging.", 4)
     return false
   end
 
@@ -680,6 +685,7 @@ local function tryCommitStagingEnter(raceName, spawnVehId)
   end
 
   session.staged = raceName
+  session.freeroamPracticeStaging = true
   local vehId = spawnVehId
   if career_career and career_career.isActive and career_career.isActive() then
     if career_modules_business_businessInventory and
@@ -715,10 +721,9 @@ local function beamngTrigger_staging(data, event, raceName)
   if event == "enter" and session.mActiveRace == nil then
     if raceName == TRACK_RACE_ID and competitiveTrackFlow.isSanctionedCareerGoToRaceActive() then
       local spot = competitiveTrackFlow.getPlayerStagingSpot()
-      if not (spot and competitiveTrackFlow.isPlayerInTrackParkingCommitArea()) then
-        utils.displayMessage("Drive to the marked grid to start your sanctioned race.", 4)
+      if spot and competitiveTrackFlow.isPlayerInTrackParkingCommitArea() then
+        return
       end
-      return
     end
     tryCommitStagingEnter(raceName, data.subjectID)
   elseif event == "exit" then

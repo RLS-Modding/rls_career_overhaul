@@ -1087,11 +1087,7 @@ function M.buildFreeroamRaceHudPayload()
         local lbEntry = sess().mInventoryId and leaderboardManager().getLeaderboardEntry(sess().mInventoryId, raceLabelFull) or {}
         local isLapRace = isLapRaceConfig(effectiveRace)
         local isDragRace = raceHasType(effectiveRace, "drag")
-        local totalLapsVal = isLapRace and getDisplayTotalLapsForRace(effectiveRace) or 0
-        local sr = gameplay_events_freContracts_sanctionedRacing
-        if sess().mActiveRace == ctf.TRACK_RACE_ID and sr and not sr.shouldSuppressFrePayouts() then
-            totalLapsVal = 0
-        end
+        local totalLapsVal = ctf.resolveRacingHudTotalLaps(sess().mActiveRace, sess(), effectiveRace, isLapRace)
         local displayLapNum = isLapRace and hudDisplayLap(sess().lapCount, totalLapsVal) or 1
         local sectors = {}
         if not frh.completionPayload then
@@ -1146,25 +1142,12 @@ function M.buildFreeroamRaceHudPayload()
     if staged and races[staged] and M.raceHudApplies(races[staged]) then
         local raceName = staged
         local race = races[raceName]
-        local effectiveStagingRace = (raceName == ctf.TRACK_RACE_ID and ctf.trackRaceForAi()) or race
+        local effectiveStagingRace = ctf.resolveEffectiveStagingRace(raceName, race)
         local displayLabel = race.label or raceName
         local invId = frh.stagingSubjectId
         local lbEntry = invId and leaderboardManager().getLeaderboardEntry(invId, displayLabel) or {}
         local isLapRace = isLapRaceConfig(effectiveStagingRace)
-        local totalLapsVal = isLapRace and getDisplayTotalLapsForRace(effectiveStagingRace) or 0
-        if raceName == ctf.TRACK_RACE_ID and (not ctf.isSanctionedCareerGoToRaceActive or not ctf.isSanctionedCareerGoToRaceActive()) then
-            totalLapsVal = 0
-        elseif raceName == ctf.TRACK_RACE_ID and ctf.isSanctionedCareerGoToRaceActive and ctf.isSanctionedCareerGoToRaceActive() and
-            sess().mHotlap ~= raceName then
-            local sr = gameplay_events_freContracts_sanctionedRacing
-            local lc = sr and sr.getSanctionedOfferLapCount and sr.getSanctionedOfferLapCount()
-            if lc and lc > 0 then
-                totalLapsVal = lc
-            end
-        end
-        if sess().mHotlap == raceName then
-            totalLapsVal = 0
-        end
+        local totalLapsVal = ctf.resolveStagingHudTotalLaps(raceName, sess(), sess().mHotlap, effectiveStagingRace, isLapRace)
         local stagingUi = { blocks = {} }
         if invId then
             stagingUi = u.getStagingHudBreakdown(invId, raceName) or stagingUi
@@ -1380,7 +1363,9 @@ function M.buildFreRaceCompletionCelebrationEntry(finalResult, hudCompletionPl)
 end
 
 function M.maybeShowFreerunSummary(cpRoad, isCompletion, deferResultScreen)
-    if not (cpRoad and frs.openLoop and not isCompletion and #frs.laps > 0 and not deferResultScreen) then return end
+    if not (cpRoad and not isCompletion and not deferResultScreen) then return end
+    if not sess().freeroamPracticeStaging then return end
+    if #frs.laps <= 1 then return end
     if guihooks and guihooks.trigger then
         guihooks.trigger("FreerunSummaryShow", M.buildFreSummaryPayload())
     end
