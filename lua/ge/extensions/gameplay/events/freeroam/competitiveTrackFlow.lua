@@ -250,9 +250,7 @@ function M.getDisplayTotalLapsForRace(r)
     local forced = tonumber(M.trackFlowState.sanctionedRaceLapCount)
     if forced and forced > 0 and r == M.trackRaceForAi() then
         local sr = gameplay_events_freContracts_sanctionedRacing
-        local useForced = M.trackFlowState.sanctionedCareerGoToRaceActive or
-            (sr and sr.shouldSuppressFrePayouts and sr.shouldSuppressFrePayouts())
-        if useForced then
+        if sr and sr.shouldSuppressFrePayouts and sr.shouldSuppressFrePayouts() then
             return math.floor(forced)
         end
     end

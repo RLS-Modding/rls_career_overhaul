@@ -11,9 +11,10 @@ local DEFAULT_PODIUM_MULT = { first = 8, second = 4.5, third = 2.5 }
 local DEFAULT_PODIUM_VARIANCE = { min = 0.84, max = 1.16 }
 local PLACE_JITTER = { min = 0.92, max = 1.08 }
 
--- Loopable sanctioned offers: max laps ≈ how many target-time laps fit in 10 minutes; roll 1..max; scale payouts vs design lapCount in race_data.
+-- Loopable sanctioned offers: max laps ≈ how many target-time laps fit in 10 minutes; roll min..max; scale payouts vs design lapCount in race_data.
 local SANCTIONED_MAX_WINDOW_SEC = 600
 local SANCTIONED_LAP_ROLL_CAP = 60
+local SANCTIONED_MIN_LAP_COUNT = 2
 
 -- Baseline money (race reward at target time) is multiplied by branch before podium place multipliers.
 local DEFAULT_CLASS_PAYOUT_MULT = {
@@ -359,8 +360,12 @@ local function rollOfferForDiscipline(disciplineId, now)
   local lapScale = 1
   if type(bestTime) == "number" and bestTime > 0 and helpers and helpers.randomInt then
     local maxLaps = math.floor(SANCTIONED_MAX_WINDOW_SEC / bestTime)
-    maxLaps = math.max(1, math.min(maxLaps, SANCTIONED_LAP_ROLL_CAP))
-    lapCount = helpers.randomInt(1, maxLaps)
+    maxLaps = math.max(SANCTIONED_MIN_LAP_COUNT, math.min(maxLaps, SANCTIONED_LAP_ROLL_CAP))
+    lapCount = helpers.randomInt(SANCTIONED_MIN_LAP_COUNT, maxLaps)
+    lapScale = lapCount / refLaps
+  end
+  if lapCount < SANCTIONED_MIN_LAP_COUNT then
+    lapCount = SANCTIONED_MIN_LAP_COUNT
     lapScale = lapCount / refLaps
   end
   local scaledBase = applyDifficultyToSanctionedBaseMoney(baseMoney * classPayMult * lapScale)

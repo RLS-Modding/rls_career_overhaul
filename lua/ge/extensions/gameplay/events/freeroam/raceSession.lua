@@ -1056,6 +1056,16 @@ function M.buildFreeroamRaceHudPayload()
         local totalLapsVal = isLapRace and getDisplayTotalLapsForRace(effectiveStagingRace) or 0
         if raceName == ctf.TRACK_RACE_ID and (not ctf.isSanctionedCareerGoToRaceActive or not ctf.isSanctionedCareerGoToRaceActive()) then
             totalLapsVal = 0
+        elseif raceName == ctf.TRACK_RACE_ID and ctf.isSanctionedCareerGoToRaceActive and ctf.isSanctionedCareerGoToRaceActive() and
+            sess().mHotlap ~= raceName then
+            local sr = gameplay_events_freContracts_sanctionedRacing
+            local lc = sr and sr.getSanctionedOfferLapCount and sr.getSanctionedOfferLapCount()
+            if lc and lc > 0 then
+                totalLapsVal = lc
+            end
+        end
+        if sess().mHotlap == raceName then
+            totalLapsVal = 0
         end
         local stagingUi = { blocks = {} }
         if invId then
