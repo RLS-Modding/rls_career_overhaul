@@ -325,6 +325,13 @@ local function getBusinessAccountFromVehicle(spawnedVehicleId)
     return nil
 end
 
+local function shouldSkipFreContractProgressForNotify(completionMeta)
+    if completionMeta and completionMeta.skipFreContractProgress == true then
+        return true
+    end
+    return sess().freeroamPracticeStaging ~= true
+end
+
 local function notifyFreRaceCompleted(raceName, raceData, raceLabel, finishTime, vehicleId, completionMeta)
     if not career_career.isActive() then
         return
@@ -359,7 +366,8 @@ local function notifyFreRaceCompleted(raceName, raceData, raceLabel, finishTime,
             isHotlap = sess().mHotlap == raceName,
             invalidLap = completionMeta and completionMeta.invalidLap == true or false
         },
-        rewardBreakdown = completionMeta and completionMeta.rewardBreakdown or {}
+        rewardBreakdown = completionMeta and completionMeta.rewardBreakdown or {},
+        skipFreContractProgress = shouldSkipFreContractProgressForNotify(completionMeta)
     })
 end
 
