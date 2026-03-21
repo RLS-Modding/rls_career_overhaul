@@ -14,6 +14,7 @@ local mSanctionedEntrantIds = nil
 local mGapSpmByEndCp = {}
 local mGapSecSmooth = {}
 local mLastLeaderPacing = { key = nil, lap = -1, cp = -1 }
+local mLastSegIdx = {}
 
 local SPM_EMA = 0.18
 local GAP_SEC_DISPLAY_EMA = 0.22
@@ -28,6 +29,8 @@ end
 
 local LOOP_CLOSE_THRESHOLD = 50
 local GAP_SPEED_FLOOR_MPS = 5
+local PROJECT_S_WINDOW = 5
+local PROJECT_S_WINDOW_MAX_DIST = 45
 
 local function xyzFromVecLike(v)
     if not v then return 0, 0, 0 end
@@ -160,20 +163,46 @@ local function prefixLengths(R, isLoopRoad)
     return pre, segLen, total
 end
 
-local function projectToS(R, isLoopRoad, pre, px, py)
+local function projectToS(R, isLoopRoad, pre, px, py, hintIdx)
     local n = #R
     local numSeg = isLoopRoad and n or (n - 1)
-    local bestS, bestD = 0, math.huge
-    for i = 1, numSeg do
+    if numSeg < 1 then
+        return 0, math.huge, 1
+    end
+    local bestS, bestD, bestSeg = 0, math.huge, 1
+    local function consider(i)
         local a, b = R[i], R[i < n and i + 1 or 1]
         local d, t = segDistAndT(px, py, a.x, a.y, b.x, b.y)
         if d < bestD then
             bestD = d
             local segL = dist3(a, b)
             bestS = pre[i] + t * segL
+            bestSeg = i
         end
     end
-    return bestS, bestD
+    if hintIdx and type(hintIdx) == "number" and hintIdx >= 1 and hintIdx <= numSeg then
+        for w = -PROJECT_S_WINDOW, PROJECT_S_WINDOW do
+            local i
+            if isLoopRoad then
+                i = ((hintIdx - 1 + w) % numSeg + numSeg) % numSeg + 1
+            else
+                i = hintIdx + w
+            end
+            if not isLoopRoad and (i < 1 or i > numSeg) then
+                -- skip
+            else
+                consider(i)
+            end
+        end
+        if bestD <= PROJECT_S_WINDOW_MAX_DIST then
+            return bestS, bestD, bestSeg
+        end
+        bestS, bestD, bestSeg = 0, math.huge, 1
+    end
+    for i = 1, numSeg do
+        consider(i)
+    end
+    return bestS, bestD, bestSeg
 end
 
 local function forwardArcAlongLoop(L, isLoop, sFrom, sTo)
@@ -192,7 +221,7 @@ local function buildSectorLenByEndCp(ctx, cps)
     for i = 1, n do
         local node = cps[i] and cps[i].node
         if not node or not node.x or not node.y then return nil end
-        cpS[i] = select(1, projectToS(ctx.R, ctx.isLoop, ctx.pre, node.x, node.y))
+        cpS[i] = select(1, projectToS(ctx.R, ctx.isLoop, ctx.pre, node.x, node.y, nil))
         cpS[i] = math.min(math.max(cpS[i], 0), ctx.loopLen)
     end
     local L = ctx.loopLen
@@ -334,14 +363,17 @@ local function getRaceProgressContext()
     return mRaceProgressCtx
 end
 
-local function rankScoreForEntrant(ctx, px, py, pz, lap, cpHit, totalCp, finished)
+local function rankScoreForEntrant(ctx, px, py, pz, lap, cpHit, totalCp, finished, segHint, segKey)
     if not ctx or not ctx.loopLen or ctx.loopLen < 1e-6 then return nil end
     lap = lap or 0
     local L = ctx.loopLen
     if finished then
         return lap * L
     end
-    local s = select(1, projectToS(ctx.R, ctx.isLoop, ctx.pre, px, py))
+    local s, _, segUsed = projectToS(ctx.R, ctx.isLoop, ctx.pre, px, py, segHint)
+    if segKey then
+        mLastSegIdx[segKey] = segUsed
+    end
     s = math.min(math.max(s, 0), L)
     local cpN = cpHit or 0
     if lap > 0 and cpN == 0 and ctx.isLoop and s >= L * 0.82 then
@@ -453,6 +485,7 @@ end
 
 function M.resetForRaceBegin()
     mSanctionedEntrantIds = nil
+    mLastSegIdx = {}
     resetGapPacingState()
 end
 
@@ -489,7 +522,7 @@ function M.setupAfterAiSpawn(raceName, subjectID, totalCheckpoints, mainRace, ra
             finished = false,
             finishTime = nil,
         }
-        mAiWaypointState[vehId] = { inRadius = {} }
+        mAiWaypointState[vehId] = { in1 = false, inExp = false, expIdx = 0 }
     end
     if raceName == gameplay_events_freeroam_competitiveTrackFlow.TRACK_RACE_ID then
         local sr = gameplay_events_freContracts_sanctionedRacing
@@ -513,6 +546,7 @@ function M.clearAll()
     mAiWaypointState = {}
     mSanctionedEntrantIds = nil
     mAiWaypointUpdateAccum = 0
+    mLastSegIdx = {}
     resetGapPacingState()
 end
 
@@ -563,6 +597,14 @@ local function applyWaypointHit_AI(vehId, eventType, checkpointIndex, raceTime)
     end
 end
 
+local function pointInCheckpointRadius(px, py, pz, wp)
+    local dx = (wp.x or 0) - px
+    local dy = (wp.y or 0) - py
+    local dz = (wp.z or 0) - pz
+    local r = (wp.r and wp.r > 0) and wp.r or 30
+    return (dx * dx + dy * dy + dz * dz) <= (r * r)
+end
+
 local function updateAiWaypointsFromNavgraph()
     if M.isSanctionedTriggerOnlyLapRace() then return end
     if not sess().mActiveRace or not mRaceWaypoints or not mRaceWaypoints.checkpoints or #mRaceWaypoints.checkpoints == 0 then return end
@@ -574,6 +616,7 @@ local function updateAiWaypointsFromNavgraph()
     local be = be
     if not be or not be.getObjectByID then return end
     local cps = mRaceWaypoints.checkpoints
+    local nc = #cps
     for _, vehId in ipairs(ids) do
         local state = mAiLapState[vehId]
         if not state or state.finished then goto continue end
@@ -582,27 +625,27 @@ local function updateAiWaypointsFromNavgraph()
         local pos = obj:getPosition()
         local px, py, pz = xyzFromVecLike(pos)
         local last = mAiWaypointState[vehId]
-        if not last then last = { inRadius = {} } end
-        local nowInRadius = {}
-        for k, wp in ipairs(cps) do
-            local dx = (wp.x or 0) - px
-            local dy = (wp.y or 0) - py
-            local dz = (wp.z or 0) - pz
-            local r = (wp.r and wp.r > 0) and wp.r or 30
-            nowInRadius[k] = (dx * dx + dy * dy + dz * dz) <= (r * r)
+        if not last then last = { in1 = false, inExp = false, expIdx = 0 } end
+        local wp1 = cps[1]
+        local nowIn1 = wp1 and pointInCheckpointRadius(px, py, pz, wp1) or false
+        local exp = state.currentExpectedCheckpoint or 1
+        local lastInExp = last.inExp
+        if exp ~= (last.expIdx or 0) then
+            lastInExp = false
         end
-        for k, inNow in ipairs(nowInRadius) do
-            local wasIn = last.inRadius and last.inRadius[k]
-            if inNow and not wasIn then
-                local tSes = getSessionElapsed()
-                if k == 1 then
-                    applyWaypointHit_AI(vehId, "start", 1, tSes)
-                else
-                    applyWaypointHit_AI(vehId, "checkpoint", k, tSes)
-                end
-            end
+        local nowInExp = false
+        if exp > 1 and exp <= nc then
+            local wpe = cps[exp]
+            nowInExp = wpe and pointInCheckpointRadius(px, py, pz, wpe) or false
         end
-        mAiWaypointState[vehId] = { inRadius = nowInRadius }
+        local tSes = getSessionElapsed()
+        if nowIn1 and not last.in1 then
+            applyWaypointHit_AI(vehId, "start", 1, tSes)
+        end
+        if exp > 1 and exp <= nc and nowInExp and not lastInExp then
+            applyWaypointHit_AI(vehId, "checkpoint", exp, tSes)
+        end
+        mAiWaypointState[vehId] = { in1 = nowIn1, inExp = nowInExp, expIdx = exp }
         ::continue::
     end
 end
@@ -634,7 +677,8 @@ function M.getAiLapStateForDisplay()
             prs, ppy, ppz = xyzFromVecLike(pv:getPosition())
         end
     end
-    local playerRank = rankScoreForEntrant(progCtx, prs, ppy, ppz, sess().lapCount, sess().checkpointsHit or 0, totalCpAll, false)
+    local playerRank = rankScoreForEntrant(progCtx, prs, ppy, ppz, sess().lapCount, sess().checkpointsHit or 0, totalCpAll, false,
+        mLastSegIdx["player"], "player")
     local playerVehId = (beInst and beInst.getPlayerVehicleID) and beInst:getPlayerVehicleID(0) or nil
     table.insert(combined, {
         isPlayer = true,
@@ -672,7 +716,8 @@ function M.getAiLapStateForDisplay()
                     ax, ay, az = xyzFromVecLike(obj:getPosition())
                 end
             end
-            local aiRank = rankScoreForEntrant(progCtx, ax, ay, az, s.lapCount, s.checkpointsHit, s.totalCheckpoints or totalCpAll, s.finished)
+            local aiRank = rankScoreForEntrant(progCtx, ax, ay, az, s.lapCount, s.checkpointsHit, s.totalCheckpoints or totalCpAll, s.finished,
+                mLastSegIdx[vehId], vehId)
             table.insert(combined, {
                 isPlayer = false,
                 index = i,

@@ -123,6 +123,89 @@ local function isAiSpawnedVehicle(subjectID)
   return false
 end
 
+local function buildAiResultsFromRaceState(isLapRace, playerLapsCompleted, playerTotalTime, playerBestLap, lapsTotalVal)
+  if not (circuitRaceAi.hasAiLapState() and aiRacers and aiRacers.getSpawnedVehicleIds) then
+    return nil
+  end
+  local MIN_LAP_SECONDS = 15
+  local list = {}
+  table.insert(list, {
+    isPlayer = true,
+    lapsCompleted = isLapRace and playerLapsCompleted or 1,
+    lapsTotal = lapsTotalVal,
+    totalTime = playerTotalTime,
+    bestLap = playerBestLap
+  })
+  for i, vehId in ipairs(aiRacers.getSpawnedVehicleIds()) do
+    local s = circuitRaceAi.getAiLapStateTable()[vehId]
+    if s then
+      local bestLap = nil
+      if s.lapTimes and #s.lapTimes > 0 then
+        for _, t in ipairs(s.lapTimes) do
+          if type(t) == "number" and t >= MIN_LAP_SECONDS then
+            bestLap = (bestLap == nil or t < bestLap) and t or bestLap
+          end
+        end
+      end
+      local aiTotal = nil
+      if s.finished and s.lapTimes and #s.lapTimes >= (s.totalLaps or 1) then
+        aiTotal = 0
+        for _, t in ipairs(s.lapTimes) do
+          aiTotal = aiTotal + (type(t) == "number" and t or 0)
+        end
+      end
+      if not aiTotal then
+        aiTotal = s.finishTime
+      end
+      if not aiTotal and s.lapTimes and #s.lapTimes > 0 then
+        aiTotal = 0
+        for _, t in ipairs(s.lapTimes) do
+          aiTotal = aiTotal + (type(t) == "number" and t or 0)
+        end
+        aiTotal = aiTotal + (circuitRaceAi.getRaceSessionElapsed() - s.lapStartTime)
+      end
+      if aiTotal == nil then
+        aiTotal = circuitRaceAi.getRaceSessionElapsed() - s.lapStartTime
+      end
+      table.insert(list, {
+        isPlayer = false,
+        index = i,
+        lapsCompleted = s.lapCount,
+        lapsTotal = s.totalLaps,
+        totalTime = aiTotal,
+        bestLap = bestLap
+      })
+    end
+  end
+  table.sort(list, function(a, b)
+    return circuitRaceAi.compareRaceStanding({
+      lapCount = a.lapsCompleted or 0,
+      totalTime = a.totalTime
+    }, {
+      lapCount = b.lapsCompleted or 0,
+      totalTime = b.totalTime
+    })
+  end)
+  local leaderTime = (#list > 0 and list[1].totalTime) and list[1].totalTime or 0
+  local aiResults = {}
+  for place, row in ipairs(list) do
+    local r = {
+      place = place,
+      isPlayer = row.isPlayer,
+      lapsCompleted = row.lapsCompleted,
+      lapsTotal = row.lapsTotal,
+      totalTime = row.totalTime,
+      bestLap = row.bestLap
+    }
+    if not row.isPlayer then
+      r.index = row.index
+    end
+    r.diffFromLeader = (row.totalTime or 0) - leaderTime
+    table.insert(aiResults, r)
+  end
+  return aiResults
+end
+
 local function beginFreeroamRace(raceNameArg, subjectID)
   if not session.races[raceNameArg] then
     return
@@ -275,83 +358,8 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
         xp = 0,
         leaderboard = {}
       }
-      if circuitRaceAi.hasAiLapState() and aiRacers and aiRacers.getSpawnedVehicleIds then
-        local MIN_LAP_SECONDS = 15
-        local list = {}
-        table.insert(list, {
-          isPlayer = true,
-          lapsCompleted = isLapRace and session.lapCount or 1,
-          lapsTotal = lapsTotalVal,
-          totalTime = totalTime,
-          bestLap = session.mBestLapThisRun
-        })
-        for i, vehId in ipairs(aiRacers.getSpawnedVehicleIds()) do
-          local s = circuitRaceAi.getAiLapStateTable()[vehId]
-          if s then
-            local bestLap = nil
-            if s.lapTimes and #s.lapTimes > 0 then
-              for _, t in ipairs(s.lapTimes) do
-                if type(t) == "number" and t >= MIN_LAP_SECONDS then
-                  bestLap = (bestLap == nil or t < bestLap) and t or bestLap
-                end
-              end
-            end
-            local aiTotal = nil
-            if s.finished and s.lapTimes and #s.lapTimes >= (s.totalLaps or 1) then
-              aiTotal = 0
-              for _, t in ipairs(s.lapTimes) do
-                aiTotal = aiTotal + (type(t) == "number" and t or 0)
-              end
-            end
-            if not aiTotal then
-              aiTotal = s.finishTime
-            end
-            if not aiTotal and s.lapTimes and #s.lapTimes > 0 then
-              aiTotal = 0
-              for _, t in ipairs(s.lapTimes) do
-                aiTotal = aiTotal + (type(t) == "number" and t or 0)
-              end
-              aiTotal = aiTotal + (circuitRaceAi.getRaceSessionElapsed() - s.lapStartTime)
-            end
-            if aiTotal == nil then
-              aiTotal = circuitRaceAi.getRaceSessionElapsed() - s.lapStartTime
-            end
-            table.insert(list, {
-              isPlayer = false,
-              index = i,
-              lapsCompleted = s.lapCount,
-              lapsTotal = s.totalLaps,
-              totalTime = aiTotal,
-              bestLap = bestLap
-            })
-          end
-        end
-        table.sort(list, function(a, b)
-          return circuitRaceAi.compareRaceStanding({
-            lapCount = a.lapsCompleted or 0,
-            totalTime = a.totalTime
-          }, {
-            lapCount = b.lapsCompleted or 0,
-            totalTime = b.totalTime
-          })
-        end)
-        local leaderTime = (#list > 0 and list[1].totalTime) and list[1].totalTime or 0
-        local aiResults = {}
-        for place, row in ipairs(list) do
-          local r = {
-            place = place,
-            isPlayer = row.isPlayer,
-            lapsCompleted = row.lapsCompleted,
-            lapsTotal = row.lapsTotal,
-            totalTime = row.totalTime,
-            bestLap = row.bestLap
-          }
-          if not row.isPlayer then
-            r.index = row.index
-          end
-          r.diffFromLeader = (row.totalTime or 0) - leaderTime
-          table.insert(aiResults, r)
-        end
+      local aiResults = buildAiResultsFromRaceState(isLapRace, session.lapCount, totalTime, session.mBestLapThisRun, lapsTotalVal)
+      if aiResults then
         finalResult.aiResults = aiResults
       end
       if hudCompletionPl and hudCompletionPl.rewards and hudCompletionPl.rewards.disciplineXp then
@@ -404,84 +412,9 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
           xp = 0,
           leaderboard = {}
         }
-        if circuitRaceAi.hasAiLapState() and aiRacers and aiRacers.getSpawnedVehicleIds then
-          local MIN_LAP_SECONDS = 15
-          local list = {}
-          table.insert(list, {
-            isPlayer = true,
-            lapsCompleted = isLap and session.lapCount or 1,
-            lapsTotal = lapsTotalVal,
-            totalTime = totalTimePartial,
-            bestLap = session.mBestLapThisRun
-          })
-          for i, vehId in ipairs(aiRacers.getSpawnedVehicleIds()) do
-            local s = circuitRaceAi.getAiLapStateTable()[vehId]
-            if s then
-              local bestLap = nil
-              if s.lapTimes and #s.lapTimes > 0 then
-                for _, t in ipairs(s.lapTimes) do
-                  if type(t) == "number" and t >= MIN_LAP_SECONDS then
-                    bestLap = (bestLap == nil or t < bestLap) and t or bestLap
-                  end
-                end
-              end
-              local aiTotal = nil
-              if s.finished and s.lapTimes and #s.lapTimes >= (s.totalLaps or 1) then
-                aiTotal = 0
-                for _, t in ipairs(s.lapTimes) do
-                  aiTotal = aiTotal + (type(t) == "number" and t or 0)
-                end
-              end
-              if not aiTotal then
-                aiTotal = s.finishTime
-              end
-              if not aiTotal and s.lapTimes and #s.lapTimes > 0 then
-                aiTotal = 0
-                for _, t in ipairs(s.lapTimes) do
-                  aiTotal = aiTotal + (type(t) == "number" and t or 0)
-                end
-                aiTotal = aiTotal + (circuitRaceAi.getRaceSessionElapsed() - s.lapStartTime)
-              end
-              if aiTotal == nil then
-                aiTotal = circuitRaceAi.getRaceSessionElapsed() - s.lapStartTime
-              end
-              table.insert(list, {
-                isPlayer = false,
-                index = i,
-                lapsCompleted = s.lapCount,
-                lapsTotal = s.totalLaps,
-                totalTime = aiTotal,
-                bestLap = bestLap
-              })
-            end
-          end
-          table.sort(list, function(a, b)
-            return circuitRaceAi.compareRaceStanding({
-              lapCount = a.lapsCompleted or 0,
-              totalTime = a.totalTime
-            }, {
-              lapCount = b.lapsCompleted or 0,
-              totalTime = b.totalTime
-            })
-          end)
-          local leaderTime = (#list > 0 and list[1].totalTime) and list[1].totalTime or 0
-          local aiResults = {}
-          for place, row in ipairs(list) do
-            local r = {
-              place = place,
-              isPlayer = row.isPlayer,
-              lapsCompleted = row.lapsCompleted,
-              lapsTotal = row.lapsTotal,
-              totalTime = row.totalTime,
-              bestLap = row.bestLap
-            }
-            if not row.isPlayer then
-              r.index = row.index
-            end
-            r.diffFromLeader = (row.totalTime or 0) - leaderTime
-            table.insert(aiResults, r)
-          end
-          finalResult.aiResults = aiResults
+        local aiResultsAbort = buildAiResultsFromRaceState(isLap, session.lapCount, totalTimePartial, session.mBestLapThisRun, lapsTotalVal)
+        if aiResultsAbort then
+          finalResult.aiResults = aiResultsAbort
         end
       end
     end

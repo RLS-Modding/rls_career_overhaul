@@ -146,6 +146,10 @@ local traffic = {
   distAhead = 40     -- minimum Ahead distance for searching traffic vehicle
 }
 
+local trafficTrafficSnapshot = {}
+local surfaceNormalSegCache = {}
+local altPlanRunAltPlans = false
+
 -- [[ OPPONENT DATA ]] --
 local player
 
@@ -2422,6 +2426,17 @@ local function calculateTrafficTargetSpeed(plan, trafficTable)
   plan.trafficTargetSpeed = math.huge
   local trafficTableLen = #trafficTable
   if trafficTableLen > 0 and plan.targetSpeed > 0 then
+    for j = 1, trafficTableLen do
+      local v = trafficTable[j]
+      v.posMiddle, v.vx, v.vy, v.vz = getObjectBoundingBox(v.id)
+      v.vx:setScaled(1.1)
+      v.posFront = v.posMiddle + v.vx
+      v.posRear = v.posMiddle - v.vx
+      v.dirVec = v.vx:normalized()
+      v.length = v.vx:length() * 2
+      v.width = v.vy:length() * 2
+    end
+
     local distOnPlan = - plan[1].length * plan.egoXnormOnSeg -- 0
     local segDirVec, segVx, segC, segVz, segVy = vec3(), vec3(), vec3(), vec3(), vec3()
     local stopFlag = false
@@ -2433,20 +2448,22 @@ local function calculateTrafficTargetSpeed(plan, trafficTable)
       -- Bounding box of segment [n1, n2]
       segVx:setScaled2(segDirVec, 0.5 * n1.length)
       segC:setAdd2(n1.pos, segVx)
-      segVz = mapmgr.surfaceNormalBelow(segC, (n1.radiusOrig + n2.radiusOrig) * 0.25); segVz:setScaled(-1)
+      local surfRad = (n1.radiusOrig + n2.radiusOrig) * 0.25
+      local sk = floor(segC.x) .. "|" .. floor(segC.y) .. "|" .. floor(surfRad * 100 + 0.5)
+      local cachedSurf = surfaceNormalSegCache[sk]
+      if cachedSurf then
+        segVz:set(cachedSurf)
+      else
+        segVz:set(mapmgr.surfaceNormalBelow(segC, surfRad))
+        segVz:setScaled(-1)
+        surfaceNormalSegCache[sk] = vec3(segVz)
+      end
       segVy:setCross(segVz, segVx); segVy:setScaled(0.5 * ego.width / (segVy:length() +  1e-30)) -- 0.5 * (ego.width + 1)
       segVy:setScaled2(segVz:cross(segVx):normalized(), 0.5 * ego.width)
 
       for j = trafficTableLen, 1, -1 do
         --if stopFlag then break end
         local v = trafficTable[j]
-        v.posMiddle, v.vx, v.vy, v.vz = getObjectBoundingBox(v.id)
-        v.vx:setScaled(1.1)
-        v.posFront = v.posMiddle + v.vx
-        v.posRear = v.posMiddle - v.vx
-        v.dirVec = v.vx:normalized()
-        v.length = v.vx:length() * 2
-        v.width = v.vy:length() * 2
         local check_ahead = (ego.length * push3(ego.dirVec) - ego.pos + v.posFront):dot(ego.dirVec) > 0 --(v.posFront - (ego.pos - ego.length * ego.dirVec)):dot(ego.dirVec) > 0
         plan.distancesV = check_ahead and min(ego.pos:squaredDistance(v.posMiddle), plan.distancesV) or plan.distancesV
 
@@ -2861,6 +2878,10 @@ local function raceplanAhead(route, baseRoute, pmode)
   ----########## Intro Code #########-----
   if not route then return end
 
+  if not pmode then
+    table.clear(surfaceNormalSegCache)
+  end
+
   if not route.path then
     route = createNewRoute(route)
   end
@@ -3080,24 +3101,39 @@ local function raceplanAhead(route, baseRoute, pmode)
   if opt.racing then
     plan.clearanceScale = min(max(1 - 0.5 * aggression, 0.50), 1)
   end
-  table.clear(traffic.trafficTable)
-  for plID, v in pairs(mapmgr.getObjects()) do
-    if plID ~= objectId and (M.mode ~= 'chase' or plID ~= player.id or internalState.chaseData.playerState == 'stopped') then
-      v.targetType = (player and plID == player.id) and M.mode
-      if opt.racing or opt.avoidCars == 'on' or v.targetType == 'follow' then
-        v.length = obj:getObjectInitialLength(plID) + 0.3
-        v.width = obj:getObjectInitialWidth(plID)
-        local posFront = obj:getObjectFrontPosition(plID)
-        local dirVec = v.dirVec
-        v.posFront = dirVec * 0.3 + posFront
-        v.posRear = dirVec * (-v.length) + posFront
-        v.posMiddle = (v.posFront + v.posRear) * 0.5
-        if opt.racing and plan.clearanceScale then
-          v.effectiveLength = v.length * plan.clearanceScale
-          v.effectiveWidth = v.width * plan.clearanceScale
+  local tt = traffic.trafficTable
+  table.clear(tt)
+  if pmode then
+    local snap = trafficTrafficSnapshot
+    for i = 1, #snap do
+      tt[i] = snap[i]
+    end
+  else
+    for plID, v in pairs(mapmgr.getObjects()) do
+      if plID ~= objectId and (M.mode ~= 'chase' or plID ~= player.id or internalState.chaseData.playerState == 'stopped') then
+        v.targetType = (player and plID == player.id) and M.mode
+        if opt.racing or opt.avoidCars == 'on' or v.targetType == 'follow' then
+          v.length = obj:getObjectInitialLength(plID) + 0.3
+          v.width = obj:getObjectInitialWidth(plID)
+          local posFront = obj:getObjectFrontPosition(plID)
+          local dirVec = v.dirVec
+          v.posFront = dirVec * 0.3 + posFront
+          v.posRear = dirVec * (-v.length) + posFront
+          v.posMiddle = (v.posFront + v.posRear) * 0.5
+          if opt.racing and plan.clearanceScale then
+            v.effectiveLength = v.length * plan.clearanceScale
+            v.effectiveWidth = v.width * plan.clearanceScale
+          end
+          table.insert(tt, v)
         end
-        table.insert(traffic.trafficTable, v)
       end
+    end
+    local snap = trafficTrafficSnapshot
+    for i = 1, #tt do
+      snap[i] = tt[i]
+    end
+    for i = #tt + 1, #snap do
+      snap[i] = nil
     end
   end
   plan.trafficMinProjSpeed = math.huge
@@ -5637,6 +5673,7 @@ local function modeAdjustments()
 
         -- create Left plan
         if mainPlan.distancesV < 10000 then
+          if altPlanRunAltPlans then
           -- Initialize Left plan
           mainPlan.buildN = true
           if not currentRoute.planL then
@@ -5747,6 +5784,7 @@ local function modeAdjustments()
           else
             currentRoute.plan_index = nil
             currentRoute.offset = nil
+          end
           end
         else
           currentRoute.offset = nil
@@ -5972,6 +6010,7 @@ end
 M.updateGFX = nop
 local function updateGFX(dtGFX)
   dt = dtGFX
+  altPlanRunAltPlans = not altPlanRunAltPlans
   if traffic.rateQue > 0 then
     traffic.frameQue = traffic.frameQue + 1
   end
