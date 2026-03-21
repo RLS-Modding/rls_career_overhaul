@@ -1,6 +1,6 @@
 local M = {}
 
-M.dependencies = { 'gameplay_events_freeroam_session' }
+M.dependencies = { 'gameplay_events_freeroam_session', 'gameplay_events_freContracts_sanctionedRacing' }
 
 local checkpoints = {}
 local altCheckpoints = {}
@@ -9,6 +9,7 @@ local raceName = nil
 local isLoop = false
 local mAltRoute = nil
 local mRouteLocked = false
+local mFixedAltUseMainColors = false
 local activeCheckpoints = {}
 
 local race
@@ -148,7 +149,8 @@ local function removeAiAltCheckpoints()
     aiAltCheckpoints = {}
 end
 
-local function createCheckpoints(check, altCheck, aiAltCheck)
+local function createCheckpoints(check, altCheck, aiAltCheck, routeOpts)
+    routeOpts = routeOpts or {}
     checkpoints = check
     altCheckpoints = altCheck or {}
     removeAiAltCheckpoints()
@@ -168,11 +170,19 @@ local function createCheckpoints(check, altCheck, aiAltCheck)
         end
     end
 
-    for i = 1, #checkpoints do
-        createCheckpoint(i)
+    local omitAltTriggers = routeOpts.omitAltTriggers == true
+    local mergeMainStart = tonumber(routeOpts.omitMainBeforeMerge)
+    if mergeMainStart and mergeMainStart < 1 then
+        mergeMainStart = nil
     end
 
-    if altCheckpoints and #altCheckpoints > 0 then
+    for i = 1, #checkpoints do
+        if not mergeMainStart or i >= mergeMainStart then
+            createCheckpoint(i)
+        end
+    end
+
+    if not omitAltTriggers and altCheckpoints and #altCheckpoints > 0 then
         for i = 1, #altCheckpoints do
             createCheckpoint(i, true)
         end
@@ -234,7 +244,8 @@ local function enableCheckpoint(checkpointIndex, alt)
         if not checkpoint.marker then
             checkpoint = createCheckpointMarker(index[1], ALT[1])
         end
-        if not ALT[1] then
+        local currentMainStyle = not ALT[1] or mFixedAltUseMainColors
+        if currentMainStyle then
             checkpoint.marker.instanceColor = ColorF(0, 1, 0, 0.7):asLinear4F() -- Green
         else
             checkpoint.marker.instanceColor = ColorF(0, 0, 1, 0.7):asLinear4F() -- Blue
@@ -243,7 +254,11 @@ local function enableCheckpoint(checkpointIndex, alt)
         if not mRouteLocked and race.altRoute and altCheckpoints and race.altRoute.mergeCheckpoints[1] == index[1] then
             if not altCheckpoints[1].marker then
                 local altCheckpoint = createCheckpointMarker(1, true)
-                altCheckpoint.marker.instanceColor = ColorF(0, 0, 1, 0.7):asLinear4F() -- Blue
+                if mFixedAltUseMainColors then
+                    altCheckpoint.marker.instanceColor = ColorF(0, 1, 0, 0.7):asLinear4F()
+                else
+                    altCheckpoint.marker.instanceColor = ColorF(0, 0, 1, 0.7):asLinear4F() -- Blue
+                end
             end
         end
 
@@ -300,6 +315,8 @@ local function removeCheckpoints()
     altCheckpoints = {}
     race = nil
     mAltRoute = nil
+    mRouteLocked = false
+    mFixedAltUseMainColors = false
 end
 
 local function calculateTotalCheckpoints()
@@ -361,8 +378,29 @@ function M.onFreeroamSessionStarted(payload)
     processRoad.reset()
     processRoad.setStationaryTimeout(racePayload.timeout)
     local cps, altCps = processRoad.getCheckpoints(racePayload)
-    setRouteLocked(false)
-    createCheckpoints(cps, altCps, nil)
+    local sr = gameplay_events_freContracts_sanctionedRacing
+    local sanctionedCircuit = sr and sr.isSanctionedCircuitRaceActive and sr.isSanctionedCircuitRaceActive() and
+        rn == TRACK_RACE_ID
+    mFixedAltUseMainColors = false
+    local routeOpts = nil
+    if sanctionedCircuit then
+        routeOpts = {}
+        setRouteLocked(true)
+        local useAltOffer = sr.isSanctionedCircuitRaceUseAltRoute and sr.isSanctionedCircuitRaceUseAltRoute()
+        if useAltOffer then
+            mFixedAltUseMainColors = true
+            local mc = racePayload.altRoute and racePayload.altRoute.mergeCheckpoints
+            local m2 = mc and tonumber(mc[2])
+            if m2 and m2 > 0 then
+                routeOpts.omitMainBeforeMerge = math.floor(m2)
+            end
+        else
+            routeOpts.omitAltTriggers = true
+        end
+    else
+        setRouteLocked(false)
+    end
+    createCheckpoints(cps, altCps, nil, routeOpts)
     circuitRaceAi.setWaypointsFromCheckpoints(cps, altCps)
 
     session.isLoop = processRoad.isLoop()
@@ -374,6 +412,9 @@ function M.onFreeroamSessionStarted(payload)
 
     local useAlt = (rn == TRACK_RACE_ID and trackFlowState and trackFlowState.useAltRoute == true
         and trackFlowState.inTrackFlowContext) or false
+    if sanctionedCircuit and sr and sr.isSanctionedCircuitRaceUseAltRoute then
+        useAlt = sr.isSanctionedCircuitRaceUseAltRoute()
+    end
     session.mAltRoute = useAlt
     setAltRoute(useAlt)
     session.currentExpectedCheckpoint = enableCheckpoint(0, useAlt)

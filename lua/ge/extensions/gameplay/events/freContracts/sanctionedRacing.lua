@@ -858,6 +858,29 @@ function M.isRacingUnlocked(disciplineId)
   return skillOk(DISCIPLINE_ROAD)
 end
 
+function M.isSanctionedCircuitRaceActive()
+  if not gameplay_events_freContracts_state.isCareerActive() then
+    return false
+  end
+  local state = gameplay_events_freContracts_state.getState()
+  local sr = ensureSrState(state)
+  local o = sr.offer
+  return o and o.phase == "racing" and type(o.raceName) == "string" and o.raceName == RACE_ID_TRACK
+end
+
+function M.isSanctionedCircuitRaceUseAltRoute()
+  if not M.isSanctionedCircuitRaceActive() then
+    return false
+  end
+  local state = gameplay_events_freContracts_state.getState()
+  local sr = ensureSrState(state)
+  local o = sr.offer
+  if not o then
+    return false
+  end
+  return string.lower(tostring(o.raceRouteType or "main")) == "alt"
+end
+
 function M.getAiPoolReferenceHp()
   if not gameplay_events_freContracts_state.isCareerActive() then
     return nil

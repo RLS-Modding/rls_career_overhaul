@@ -55,7 +55,6 @@
       "filterPoolByPowerMeetOrExceed": true,
       "aiPowerExceedCapPct": 0.25,
       "sanctioned": {
-        "enabled": false,
         "raceName": "track",
         "routeType": "alt",
         "pickWeight": 1,
