@@ -224,7 +224,8 @@ local function getUiState(filterDisciplineId)
     availableContracts = availableContracts,
     activeSponsors = activeSponsors,
     availableSponsors = availableSponsors,
-    sanctionedRacing = gameplay_events_freContracts_sanctionedRacing.getOfferUiSnapshot(now)
+    sanctionedRacing = gameplay_events_freContracts_sanctionedRacing.getOfferUiSnapshot(now),
+    sanctionedRacingOfferPeriodMinutes = gameplay_events_freContracts_sanctionedRacing.getOfferGenerationPeriodMinutes(),
   }
 end
 

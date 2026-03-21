@@ -415,6 +415,7 @@ const state = ref({
   activeSponsors: [],
   availableSponsors: [],
   sanctionedRacing: null,
+  sanctionedRacingOfferPeriodMinutes: null,
 })
 
 function loadSavedDiscipline() {
@@ -496,9 +497,28 @@ const showSanctionedAvailableRacesSection = computed(
   () => !sanctionedOfferCommitted.value || Boolean(sanctionedOfferAvailable.value),
 )
 const sanctionedAvailableEmptyTitle = computed(() => (sanctionedRacingOffer.value ? 'Offer already locked in' : 'No open offers'))
+function formatOfferPeriodMinutes(m) {
+  const n = Number(m)
+  if (!Number.isFinite(n) || n <= 0) return null
+  if (Math.abs(n - Math.round(n)) < 1e-6) return String(Math.round(n))
+  const t = Math.round(n * 10) / 10
+  return String(t).replace(/\.0$/, '')
+}
+const sanctionedRacingOfferPeriodMinutes = computed(() => {
+  const v = state.value.sanctionedRacingOfferPeriodMinutes
+  if (v == null || v === '') return null
+  const n = Number(v)
+  return Number.isFinite(n) ? n : null
+})
 const sanctionedAvailableEmptyCopy = computed(() => {
   if (!sanctionedRacingOffer.value) {
-    return 'A new circuit offer will show after the window resets. Stay on West Coast USA with sanctioned racing unlocked.'
+    const p = sanctionedRacingOfferPeriodMinutes.value
+    const s = formatOfferPeriodMinutes(p)
+    if (s != null) {
+      const unit = Number(p) === 1 ? 'minute' : 'minutes'
+      return `New offers are generated every ${s} ${unit}.`
+    }
+    return 'New offers are generated on a fixed schedule.'
   }
   return 'Your spot is reserved under Next race. Finish that run or wait for it to time out to see a new offer here.'
 })
@@ -549,6 +569,10 @@ function applyState(data) {
     activeSponsors: normalizeList(normalized.activeSponsors),
     availableSponsors: normalizeList(normalized.availableSponsors),
     sanctionedRacing: normalized.sanctionedRacing && typeof normalized.sanctionedRacing === 'object' ? normalized.sanctionedRacing : null,
+    sanctionedRacingOfferPeriodMinutes:
+      normalized.sanctionedRacingOfferPeriodMinutes != null && normalized.sanctionedRacingOfferPeriodMinutes !== ''
+        ? Number(normalized.sanctionedRacingOfferPeriodMinutes)
+        : null,
   }
   if (selectedDiscipline.value !== 'all' && !state.value.disciplines.some(discipline => discipline?.id === selectedDiscipline.value)) {
     selectedDiscipline.value = 'all'

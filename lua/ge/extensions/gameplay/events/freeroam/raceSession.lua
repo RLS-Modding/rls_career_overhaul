@@ -1210,6 +1210,13 @@ function M.buildFreRaceCompletionCelebrationEntry(finalResult, hudCompletionPl)
     for _, lr in ipairs(lapRows) do
         lr.isBest = (bestIdx ~= nil and lr.index == bestIdx)
     end
+    local sanctionedNoRewardDetail = nil
+    if type(finalResult.sanctionedNoRewardDetail) == "string" and finalResult.sanctionedNoRewardDetail ~= "" then
+        sanctionedNoRewardDetail = finalResult.sanctionedNoRewardDetail
+    elseif hudCompletionPl and type(hudCompletionPl.sanctionedNoRewardDetail) == "string" and
+        hudCompletionPl.sanctionedNoRewardDetail ~= "" then
+        sanctionedNoRewardDetail = hudCompletionPl.sanctionedNoRewardDetail
+    end
     return {
         raceLabel = finalResult.raceLabel or "Race",
         rewardMoney = money,
@@ -1222,6 +1229,7 @@ function M.buildFreRaceCompletionCelebrationEntry(finalResult, hudCompletionPl)
         lapsTotal = finalResult.lapsTotal,
         lapRows = lapRows,
         summaryLines = {},
+        sanctionedNoRewardDetail = sanctionedNoRewardDetail,
     }
 end
 

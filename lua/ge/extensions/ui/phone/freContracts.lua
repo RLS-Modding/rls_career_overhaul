@@ -18,7 +18,8 @@ local function getState(filterDisciplineId)
       availableContracts = {},
       activeSponsors = {},
       availableSponsors = {},
-      sanctionedRacing = nil
+      sanctionedRacing = nil,
+      sanctionedRacingOfferPeriodMinutes = nil,
     }
   end
 

@@ -44,7 +44,8 @@ function buildEmptyRaceState() {
     lapsTotal: null,
     lapRows: [],
     rewardMoney: '0',
-    rewardXp: '0'
+    rewardXp: '0',
+    sanctionedNoRewardDetail: null
   }
 }
 
@@ -285,6 +286,9 @@ function normalizeBranchLevels(branchLevels) {
         isBest: !!r.isBest
       }
     }) : []
+    const detail = entry.sanctionedNoRewardDetail != null && String(entry.sanctionedNoRewardDetail).length > 0
+      ? String(entry.sanctionedNoRewardDetail)
+      : null
     return {
       raceLabel: entry.raceLabel || 'Race',
       position: entry.position != null ? Number(entry.position) : null,
@@ -295,7 +299,8 @@ function normalizeBranchLevels(branchLevels) {
       lapsTotal: entry.lapsTotal != null ? Number(entry.lapsTotal) : null,
       lapRows: lapRows,
       rewardMoney: formatInteger(entry.rewardMoney),
-      rewardXp: formatInteger(entry.rewardXp)
+      rewardXp: formatInteger(entry.rewardXp),
+      sanctionedNoRewardDetail: detail
     }
   }
 

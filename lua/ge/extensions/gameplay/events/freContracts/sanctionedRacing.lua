@@ -282,6 +282,7 @@ local function collectSanctionedVariants(raw, disciplineId)
               raceName = type(s.raceName) == "string" and s.raceName ~= "" and s.raceName or RACE_ID_TRACK,
               routeType = normalizeRouteType(s.routeType),
               pickWeight = w,
+              stageNumber = tonumber(s.stageNumber) or nil,
               hpBrackets = type(s.hpBrackets) == "table" and s.hpBrackets or nil,
               podiumMultipliers = type(s.podiumMultipliers) == "table" and s.podiumMultipliers or nil,
               podiumVariance = type(s.podiumVariance) == "table" and s.podiumVariance or nil,
@@ -407,11 +408,17 @@ local function rollOfferForDiscipline(disciplineId, now)
   local p1, p2, p3 = computePodiumPayouts(scaledBase, variant)
   local refresh = math.max(0.25, tonumber(variant.offerRefreshMinutes) or cfg.defaultOfferRefreshMinutes)
   local deadline = math.max(1, tonumber(variant.startDeadlineMinutes) or cfg.defaultStartDeadlineMinutes)
+  local stageNum = tonumber(variant.stageNumber)
+  if stageNum == nil or stageNum < 1 then
+    stageNum = 1
+  end
+  stageNum = math.floor(stageNum)
   return {
     id = gameplay_events_freContracts_state.nextId("fre-sanctioned"),
     disciplineId = disciplineId,
     raceName = raceEntry.raceName,
     raceLabel = raceEntry.raceLabel,
+    stageNumber = stageNum,
     raceRouteType = raceEntry.routeType or variant.routeType,
     sanctionedPathKey = variant.pathKey,
     hpBracketId = br.id,
@@ -569,6 +576,7 @@ function M.getOfferUiSnapshot(now)
     disciplineId = offer.disciplineId,
     raceName = offer.raceName,
     raceLabel = offer.raceLabel,
+    stageNumber = tonumber(offer.stageNumber) or 1,
     raceRouteType = offer.raceRouteType,
     useAltRoute = useAlt,
     hpBracketId = offer.hpBracketId,
@@ -716,6 +724,9 @@ function M.rescheduleSanctionedRace()
   end
   local ctf = gameplay_events_freeroam_competitiveTrackFlow
   if ctf then
+    if ctf.clearSanctionedParkingStagingUi then
+      ctf.clearSanctionedParkingStagingUi()
+    end
     if ctf.cancelCompetitiveGridFlow then
       ctf.cancelCompetitiveGridFlow()
     end
@@ -756,13 +767,14 @@ function M.onRaceBegin(raceName)
   offer.phase = "racing"
   runtime.dispatchUiActive = false
   runtime.suppressFrePayouts = true
-  runtime.podiumEligible = false
+  runtime.podiumEligible = true
   local hp = nil
   if career_modules_competitiveRace_aiRacers and career_modules_competitiveRace_aiRacers.getPlayerVehiclePower then
     hp = career_modules_competitiveRace_aiRacers.getPlayerVehiclePower()
   end
-  if type(hp) == "number" and hp <= (tonumber(offer.classHpMax) or 1e9) then
-    runtime.podiumEligible = true
+  local hMax = tonumber(offer.classHpMax)
+  if type(hp) == "number" and hMax and hMax > 0 and hp > hMax then
+    runtime.podiumEligible = false
   end
 end
 
@@ -796,6 +808,7 @@ local function payPodium(place)
     amount = tonumber(offer.payoutThird) or 0
   end
   if amount <= 0 or not career_modules_payment or not career_modules_payment.reward then
+    mCelebrationRewards = { money = 0, noRewardDetail = "No payout configured for this podium position." }
     M.finishOfferClear()
     return
   end
@@ -838,6 +851,7 @@ function M.settleFromAiResults(aiResults, raceName)
   end
   mCelebrationRewards = nil
   if not aiResults then
+    mCelebrationRewards = { money = 0, noRewardDetail = "No race results — no podium reward." }
     M.finishOfferClear()
     return
   end
@@ -849,16 +863,19 @@ function M.settleFromAiResults(aiResults, raceName)
     end
   end
   if not place then
-    M.finishOfferClear()
-    return
-  end
-  if not runtime.podiumEligible then
+    mCelebrationRewards = { money = 0, noRewardDetail = "Couldn't determine placement — no podium reward." }
     M.finishOfferClear()
     return
   end
   if place >= 1 and place <= 3 then
+    if not runtime.podiumEligible then
+      mCelebrationRewards = { money = 0, noRewardDetail = "Over power limit — no podium rewards." }
+      M.finishOfferClear()
+      return
+    end
     payPodium(place)
   else
+    mCelebrationRewards = { money = 0, noRewardDetail = "Didn't place on the podium — no podium rewards." }
     M.finishOfferClear()
   end
 end
@@ -967,6 +984,14 @@ function M.consumeSanctionedCelebrationRewards()
   local r = mCelebrationRewards
   mCelebrationRewards = nil
   return r
+end
+
+function M.getOfferGenerationPeriodMinutes()
+  local cfg = loadCfg()
+  if not cfg or type(cfg.variants) ~= "table" or #cfg.variants == 0 then
+    return nil
+  end
+  return math.max(0.25, tonumber(cfg.defaultOfferRefreshMinutes) or 12)
 end
 
 return M

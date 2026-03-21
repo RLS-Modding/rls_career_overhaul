@@ -39,6 +39,7 @@
       "sanctioned": {
         "raceName": "track",
         "routeType": "main",
+        "stageNumber": 4,
         "pickWeight": 1,
         "offerRefreshMinutes": 1,
         "startDeadlineMinutes": 60
@@ -57,6 +58,7 @@
       "sanctioned": {
         "raceName": "track",
         "routeType": "alt",
+        "stageNumber": 4,
         "pickWeight": 1,
         "offerRefreshMinutes": 1,
         "startDeadlineMinutes": 60

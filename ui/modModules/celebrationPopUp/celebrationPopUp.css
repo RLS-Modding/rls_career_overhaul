@@ -396,3 +396,21 @@
 #celebration-popup-container .xp {
   color: #93c5fd;
 }
+
+#celebration-popup-container .race-no-reward-note {
+  margin-top: 0.5rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  background: rgba(120, 53, 15, 0.35);
+  color: #fde68a;
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.35;
+  text-align: center;
+}
+
+#celebration-popup-container .rewards-row-muted .money,
+#celebration-popup-container .rewards-row-muted .xp {
+  opacity: 0.55;
+}

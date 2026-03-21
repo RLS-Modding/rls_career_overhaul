@@ -484,6 +484,9 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
       gameplay_events_freContracts_sanctionedRacing.consumeSanctionedCelebrationRewards()
     if srCelebration and type(srCelebration.money) == "number" and finalResult then
       finalResult.reward = srCelebration.money
+      if type(srCelebration.noRewardDetail) == "string" and srCelebration.noRewardDetail ~= "" then
+        finalResult.sanctionedNoRewardDetail = srCelebration.noRewardDetail
+      end
       if hudCompletionPl and type(hudCompletionPl) == "table" then
         if not hudCompletionPl.rewards then
           hudCompletionPl.rewards = {}
@@ -491,6 +494,9 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
         hudCompletionPl.rewards.money = srCelebration.money
         if hudCompletionPl.rewards.disciplineXp == nil then
           hudCompletionPl.rewards.disciplineXp = 0
+        end
+        if type(srCelebration.noRewardDetail) == "string" and srCelebration.noRewardDetail ~= "" then
+          hudCompletionPl.sanctionedNoRewardDetail = srCelebration.noRewardDetail
         end
       end
     end
@@ -703,12 +709,8 @@ local function beamngTrigger_staging(data, event, raceName)
   if event == "enter" and session.mActiveRace == nil then
     if raceName == TRACK_RACE_ID and competitiveTrackFlow.isSanctionedCareerGoToRaceActive() then
       local spot = competitiveTrackFlow.getPlayerStagingSpot()
-      local raceForAi = competitiveTrackFlow.trackRaceForAi()
       if not (spot and competitiveTrackFlow.isPlayerInTrackParkingCommitArea()) then
         utils.displayMessage("Drive to the marked grid to start your sanctioned race.", 4)
-      elseif raceForAi and competitiveTrackFlow.raceAllowsAiSpawn(raceForAi) and competitiveTrackFlow.spawnedTrackAiCount() == 0 and
-          not competitiveTrackFlow.getCompetitiveAwaitingAiSpawn() then
-        competitiveTrackFlow.prepareFreeroamAiForTrack(nil, true)
       end
       return
     end
@@ -1267,18 +1269,6 @@ M.startSanctionedRaceDispatch = function(useAltRoute, poolReferenceHpOverride)
   session.saveGameState = true
   core_gamestate.requestGameState()
   applySavedStagingSpotNavigation()
-  local stagingSpot = competitiveTrackFlow.getPlayerStagingSpot()
-  if stagingSpot and competitiveTrackFlow.isPlayerInTrackParkingCommitArea() then
-    local pv = be:getPlayerVehicle(0)
-    if pv then
-      local raceForAi = competitiveTrackFlow.trackRaceForAi()
-      if raceForAi and competitiveTrackFlow.raceAllowsAiSpawn(raceForAi) and
-        not competitiveTrackFlow.getTrackGridParkingAiSpawnStarted() and
-        not competitiveTrackFlow.getCompetitiveAwaitingAiSpawn() then
-        competitiveTrackFlow.prepareFreeroamAiForTrack(nil, true)
-      end
-    end
-  end
 end
 
 M.beginFreeroamRace = beginFreeroamRace

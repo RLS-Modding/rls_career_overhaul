@@ -279,12 +279,60 @@ angular.module('beamng.stuff')
   })
 }])
 
+angular.module('beamng.stuff')
+.controller('SanctionedParkingStagingController', ['$scope', '$rootScope', function($scope, $rootScope) {
+  const angularRootScope = window.globalAngularRootScope || $rootScope
+  $scope.spVisible = false
+  $scope.payload = {}
+
+  function safeApply(fn) {
+    const phase = $scope.$$phase
+    if (phase === '$apply' || phase === '$digest') fn()
+    else $scope.$apply(fn)
+  }
+
+  $scope.formatRewardDollars = function(n) {
+    if (n == null || (typeof n !== 'number' && typeof n !== 'string')) return '0'
+    const v = Number(n)
+    if (!isFinite(v)) return '0'
+    return String(Math.floor(v))
+  }
+
+  $scope.stagingHeadline = function(p) {
+    if (!p || typeof p !== 'object') return 'Stage event'
+    const stage = Math.max(1, Math.floor(Number(p.stageNumber) || 1))
+    const laps = Math.max(1, Math.floor(Number(p.lapCount) || 1))
+    const label = (p.raceLabel != null && String(p.raceLabel).trim() !== '') ? String(p.raceLabel).trim() : 'Track'
+    return 'Stage ' + stage + ' ' + laps + '-Lap ' + label + ' Event'
+  }
+
+  $scope.stageAndSpawn = function() {
+    if (typeof bngApi !== 'undefined') {
+      bngApi.engineLua('gameplay_events_freeroam_competitiveTrackFlow.sanctionedParkingStageAndSpawn()')
+    }
+  }
+
+  $scope.startEvent = function() {
+    if (typeof bngApi !== 'undefined') {
+      bngApi.engineLua('gameplay_events_freeroam_competitiveTrackFlow.sanctionedParkingStartEvent()')
+    }
+  }
+
+  const spListener = angularRootScope.$on('SanctionedParkingStagingUi', function(_evt, data) {
+    safeApply(function() {
+      $scope.spVisible = !!(data && data.visible)
+      $scope.payload = data && data.payload && typeof data.payload === 'object' ? data.payload : {}
+    })
+  })
+
+  $scope.$on('$destroy', function() {
+    spListener()
+  })
+}])
+
 const freeroamRaceHudModule = angular.module('freeroamRaceHud', ['ui.router'])
 .run(function() {
   function initializeFreeroamRaceHudOverlay() {
-    const existing = document.getElementById('freeroam-race-hud-overlay-container')
-    if (existing) return
-
     const bodyElement = angular.element(document.body)
     const injector = bodyElement.injector()
     if (!injector) {
@@ -294,11 +342,20 @@ const freeroamRaceHudModule = angular.module('freeroamRaceHud', ['ui.router'])
 
     const $compile = injector.get('$compile')
     const $rootScope = injector.get('$rootScope')
-    const container = angular.element(
-      '<div id="freeroam-race-hud-overlay-container" ng-controller="FreeroamRaceHudController" ng-include="\'/ui/modModules/freeroamRaceHud/freeroamRaceHud.html\'"></div>'
-    )
-    bodyElement.append(container)
-    $compile(container)($rootScope)
+    if (!document.getElementById('freeroam-race-hud-overlay-container')) {
+      const container = angular.element(
+        '<div id="freeroam-race-hud-overlay-container" ng-controller="FreeroamRaceHudController" ng-include="\'/ui/modModules/freeroamRaceHud/freeroamRaceHud.html\'"></div>'
+      )
+      bodyElement.append(container)
+      $compile(container)($rootScope)
+    }
+    if (!document.getElementById('sanctioned-parking-staging-overlay-container')) {
+      const spContainer = angular.element(
+        '<div id="sanctioned-parking-staging-overlay-container" ng-controller="SanctionedParkingStagingController" ng-include="\'/ui/modModules/freeroamRaceHud/sanctionedParkingStaging.html\'"></div>'
+      )
+      bodyElement.append(spContainer)
+      $compile(spContainer)($rootScope)
+    }
   }
 
   if (document.readyState === 'loading') {

@@ -99,7 +99,11 @@
             </div>
           </div>
 
-          <div class="rewards-row">
+          <div class="race-no-reward-note" ng-if="popup.race.sanctionedNoRewardDetail">
+            {{ popup.race.sanctionedNoRewardDetail }}
+          </div>
+
+          <div class="rewards-row" ng-class="{ 'rewards-row-muted': popup.race.sanctionedNoRewardDetail }">
             <div class="money">+${{ popup.race.rewardMoney }}</div>
             <div class="xp">+{{ popup.race.rewardXp }} XP</div>
           </div>

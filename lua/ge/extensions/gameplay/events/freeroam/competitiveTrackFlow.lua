@@ -24,6 +24,10 @@ local mCompetitiveCountdownJobActive = false
 local mCompetitiveCountdownCancel = false
 local mPlayerStagingSpot = nil
 
+local SANCTIONED_PARKING_UI_PUSH_INTERVAL = 0.2
+local mSanctionedParkingUiPhase = "hidden"
+local mSanctionedParkingUiPushClock = nil
+
 local PLAYER_STAGING_SPOT_NAME = "player_stage_track"
 local mPlayerStagingCornerMarkers = {}
 
@@ -311,6 +315,11 @@ function M.clearSanctionedNavigateVisuals()
 end
 
 function M.leaveTrackFlowAfterRace()
+    mSanctionedParkingUiPhase = "hidden"
+    mSanctionedParkingUiPushClock = nil
+    if guihooks and guihooks.trigger then
+        guihooks.trigger("SanctionedParkingStagingUi", { visible = false })
+    end
     M.trackFlowState.inTrackFlowContext = false
     M.clearSanctionedCareerGoToRaceActive()
     M.trackFlowState.sanctionedPoolRefHp = nil
@@ -490,7 +499,9 @@ function M.prepareFreeroamAiForTrack(poolReferenceHpOverride, deferCountdown)
     end
 end
 
-function M.tryCommitTrackGridStaging(spawnVehId)
+function M.tryCommitTrackGridStaging(spawnVehId, opts)
+    opts = type(opts) == "table" and opts or {}
+    local skipAiPrereq = opts.skipAiPrereq == true
     if not M.trackFlowState.sanctionedCareerGoToRaceActive then return false end
     local raceName = M.TRACK_RACE_ID
     local races = sess().races
@@ -510,7 +521,7 @@ function M.tryCommitTrackGridStaging(spawnVehId)
     end
 
     local raceForAi = M.trackRaceForAi()
-    if raceForAi and M.raceAllowsAiSpawn(raceForAi) then
+    if raceForAi and M.raceAllowsAiSpawn(raceForAi) and not skipAiPrereq then
         if mCompetitiveAwaitingAiSpawn then
             return false
         end
@@ -583,6 +594,131 @@ function M.tryCommitTrackGridStaging(spawnVehId)
     return true
 end
 
+local function pushSanctionedParkingGui()
+    if not guihooks or not guihooks.trigger then return end
+    if mSanctionedParkingUiPhase == "hidden" then
+        guihooks.trigger("SanctionedParkingStagingUi", { visible = false })
+        return
+    end
+    guihooks.trigger("SanctionedParkingStagingUi", {
+        visible = true,
+        payload = M.buildSanctionedParkingUiPayload(),
+    })
+end
+
+function M.buildSanctionedParkingUiPayload()
+    local sr = gameplay_events_freContracts_sanctionedRacing
+    local hp = nil
+    if career_modules_competitiveRace_aiRacers and career_modules_competitiveRace_aiRacers.getPlayerVehiclePower then
+        hp = career_modules_competitiveRace_aiRacers.getPlayerVehiclePower()
+    end
+    local out = {
+        phase = mSanctionedParkingUiPhase,
+        awaitingSpawn = mCompetitiveAwaitingAiSpawn,
+        spawnedAiCount = M.spawnedTrackAiCount(),
+        playerHp = hp,
+    }
+    if not sr or not sr.getOfferUiSnapshot then
+        return out
+    end
+    local state = gameplay_events_freContracts_state.getState()
+    local now = state and tonumber(state.simTime) or 0
+    local snap = sr.getOfferUiSnapshot(now)
+    if not snap then
+        local raceForAiEarly = M.trackRaceForAi()
+        out.requiresAiSpawn = raceForAiEarly and M.raceAllowsAiSpawn(raceForAiEarly) or false
+        return out
+    end
+    out.raceLabel = snap.raceLabel
+    out.stageNumber = tonumber(snap.stageNumber) or 1
+    out.hpBracketBranch = snap.hpBracketBranch
+    out.hpBracketLabel = snap.hpBracketLabel
+    out.classHpMin = tonumber(snap.classHpMin)
+    out.classHpMax = tonumber(snap.classHpMax)
+    out.lapCount = tonumber(snap.lapCount) or 0
+    out.payoutFirst = snap.payoutFirst
+    out.payoutSecond = snap.payoutSecond
+    out.payoutThird = snap.payoutThird
+    local raceForAi = M.trackRaceForAi()
+    out.requiresAiSpawn = raceForAi and M.raceAllowsAiSpawn(raceForAi) or false
+    return out
+end
+
+function M.sanctionedParkingAbortStaging()
+    if mSanctionedParkingUiPhase == "hidden" then return end
+    mSanctionedParkingUiPhase = "hidden"
+    mSanctionedParkingUiPushClock = nil
+    if guihooks and guihooks.trigger then
+        guihooks.trigger("SanctionedParkingStagingUi", { visible = false })
+    end
+    local aiRacers = gameplay_events_freeroam_aiRacers
+    if aiRacers and aiRacers.clearSpawned then
+        aiRacers.clearSpawned()
+    end
+    M.cancelCompetitiveGridFlow()
+end
+
+function M.clearSanctionedParkingStagingUi()
+    mSanctionedParkingUiPhase = "hidden"
+    mSanctionedParkingUiPushClock = nil
+    if guihooks and guihooks.trigger then
+        guihooks.trigger("SanctionedParkingStagingUi", { visible = false })
+    end
+end
+
+function M.sanctionedParkingStageAndSpawn()
+    if not M.trackFlowState.sanctionedCareerGoToRaceActive then return false end
+    if mSanctionedParkingUiPhase ~= "prompt" then return false end
+    if not mPlayerStagingSpot or not isPlayerInTrackParkingCommitSpot(mPlayerStagingSpot) then return false end
+    if gameplay_events_freeroam_utils.isPlayerInPursuit() then
+        gameplay_events_freeroam_utils.displayMessage("You cannot stage for an event while in a pursuit.", 2)
+        return false
+    end
+    local aiRacers = gameplay_events_freeroam_aiRacers
+    if aiRacers and aiRacers.setPlayerFreeze then
+        aiRacers.setPlayerFreeze(true)
+    end
+    mSanctionedParkingUiPhase = "spawned_ready"
+    M.prepareFreeroamAiForTrack(nil, true)
+    pushSanctionedParkingGui()
+    return true
+end
+
+function M.sanctionedParkingStartEvent()
+    if not M.trackFlowState.sanctionedCareerGoToRaceActive then return false end
+    if mSanctionedParkingUiPhase ~= "spawned_ready" then return false end
+    local pv = be:getPlayerVehicle(0)
+    if not pv then return false end
+    local vid = pv:getID()
+    if not mPlayerStagingSpot or not isPlayerInTrackParkingCommitSpot(mPlayerStagingSpot) then return false end
+    if gameplay_events_freeroam_utils.isPlayerInPursuit() then
+        gameplay_events_freeroam_utils.displayMessage("You cannot stage for an event while in a pursuit.", 2)
+        return false
+    end
+    local raceForAi = M.trackRaceForAi()
+    if raceForAi and M.raceAllowsAiSpawn(raceForAi) then
+        if mCompetitiveAwaitingAiSpawn then
+            gameplay_events_freeroam_utils.displayMessage("Wait for AI to finish loading.", 3)
+            return false
+        end
+        if M.spawnedTrackAiCount() == 0 then
+            gameplay_events_freeroam_utils.displayMessage("No AI on grid. Try staging again.", 4)
+            return false
+        end
+    end
+    mSanctionedParkingUiPhase = "hidden"
+    mSanctionedParkingUiPushClock = nil
+    if guihooks and guihooks.trigger then
+        guihooks.trigger("SanctionedParkingStagingUi", { visible = false })
+    end
+    local ok = M.tryCommitTrackGridStaging(vid, { skipAiPrereq = true })
+    if not ok then
+        mSanctionedParkingUiPhase = "spawned_ready"
+        pushSanctionedParkingGui()
+    end
+    return ok
+end
+
 function M.beamngTrigger_trackBuilding(data, event)
     if not M.isVehicleEligibleForCompetitiveTrack(data.subjectID) then return end
     local aiRacers = gameplay_events_freeroam_aiRacers
@@ -617,22 +753,19 @@ function M.onUpdateParkingLoop()
         if not mPlayerStagingSpot then return end
         local pv = be:getPlayerVehicle(0)
         local nowInParking = (pv and mPlayerStagingSpot and isPlayerInTrackParkingCommitSpot(mPlayerStagingSpot)) or false
-        local raceForAi = M.trackRaceForAi()
-        if raceForAi and M.raceAllowsAiSpawn(raceForAi) and M.spawnedTrackAiCount() == 0 and not mCompetitiveAwaitingAiSpawn and
-            mTrackGridParkingAiSpawnStarted then
-            mTrackGridParkingAiSpawnStarted = false
+        if not nowInParking then
+            if mSanctionedParkingUiPhase ~= "hidden" then
+                M.sanctionedParkingAbortStaging()
+            end
+            return
         end
-        if nowInParking and raceForAi and M.raceAllowsAiSpawn(raceForAi) and M.spawnedTrackAiCount() > 0
-            and not mTrackGridParkingAiSpawnStarted then
-            mTrackGridParkingAiSpawnStarted = true
-            mCompetitiveAwaitingAiSpawn = false
-            mTrackGridAiSpawnWaitDeadline = nil
+        if mSanctionedParkingUiPhase == "hidden" then
+            mSanctionedParkingUiPhase = "prompt"
         end
-        if nowInParking and raceForAi and M.raceAllowsAiSpawn(raceForAi) and not mTrackGridParkingAiSpawnStarted and not mCompetitiveAwaitingAiSpawn then
-            M.prepareFreeroamAiForTrack(nil, true)
-        end
-        if pv and nowInParking then
-            M.tryCommitTrackGridStaging(pv:getID())
+        local clk = (os and os.clock) and os.clock() or 0
+        if not mSanctionedParkingUiPushClock or (clk - mSanctionedParkingUiPushClock) >= SANCTIONED_PARKING_UI_PUSH_INTERVAL then
+            mSanctionedParkingUiPushClock = clk
+            pushSanctionedParkingGui()
         end
     end
 end
