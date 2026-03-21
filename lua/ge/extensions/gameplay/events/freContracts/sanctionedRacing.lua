@@ -55,7 +55,7 @@ local function defaultCfgSlice()
   return {
     variants = {},
     sanctionedRaceNames = {},
-    defaultOfferRefreshMinutes = 1,
+    defaultOfferRefreshMinutes = 20,
     defaultStartDeadlineMinutes = 60,
   }
 end
