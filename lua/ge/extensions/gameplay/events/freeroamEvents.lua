@@ -747,18 +747,19 @@ local function beamngTrigger_staging(data, event, raceName)
       end
       local r = session.races[raceName]
       local useHud = r and raceSession.raceHudApplies(r)
-      if useHud then
+      local showStagingExitMsg = session.mActiveRace == nil
+      if useHud and showStagingExitMsg then
         raceSession.setRaceHudBanner("You exited the staging zone", "warn", 4)
         raceSession.pushFreeroamRaceHudState(true)
       end
       session.staged = nil
       raceSession.setStagingSubjectId(nil)
       hideStagedFlashMessage()
-      if not useHud then
+      if not useHud and showStagingExitMsg then
         utils.displayMessage("You exited the staging zone", 4)
       end
       utils.setActiveLight(raceName, "red")
-      if useHud then
+      if useHud and showStagingExitMsg then
         core_jobsystem.create(function(job)
           job.sleep(2.5)
           if not session.mActiveRace then
