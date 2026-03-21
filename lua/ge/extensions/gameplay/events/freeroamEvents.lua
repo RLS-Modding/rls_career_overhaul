@@ -140,6 +140,10 @@ local function beginFreeroamRace(raceNameArg, subjectID)
     competitiveTrackFlow.clearSanctionedCareerGoToRaceActive()
   end
   raceSession.prepareNewRaceHudState(raceName)
+  local useRaceHud = raceSession.raceHudApplies(session.races[raceName])
+  if useRaceHud and not raceSession.isRaceHudShown() then
+    raceSession.showFreeroamRaceHud()
+  end
   session.lapCount = 0
   session.mCurrentRouteName = nil
   session.mTotalRaceTime = 0
@@ -164,8 +168,9 @@ local function beginFreeroamRace(raceNameArg, subjectID)
       career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId(subjectID) or subjectID
   end
   session.invalidLap = false
-  if raceSession.raceHudApplies(session.races[raceName]) then
+  if useRaceHud then
     raceSession.setRaceHudBanner(utils.getRaceStartBannerText(raceName), "good", 5)
+    raceSession.pushFreeroamRaceHudState(true)
   else
     utils.displayStartMessage(raceName)
   end
@@ -211,6 +216,7 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
       raceSession.hideFreeroamRaceHud()
     end
     local mainRace = session.races[raceName]
+    local useRaceHud = mainRace and raceSession.raceHudApplies(mainRace)
     local effectiveRace = (mainRace and session.mAltRoute and mainRace.altRoute) and mainRace.altRoute or
                             (raceData or mainRace or {})
     local erSession = effectiveRace and effectiveRace.session
@@ -341,7 +347,7 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
         finalResult.xp = math.floor(tonumber(hudCompletionPl.rewards.disciplineXp) or 0)
       end
 
-      if raceName == "drag" and effectiveRace and subjectID then
+      if raceName == "drag" and effectiveRace and subjectID and not useRaceHud then
         local side = "l"
         utils.updateDisplay(side, session.in_race_time, math.abs(be:getObjectVelocityXYZ(subjectID)) * session.speedUnit)
       end
@@ -505,7 +511,7 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
       (aiRacers and aiRacers.getSpawnedVehicleIds and (#(aiRacers.getSpawnedVehicleIds() or {}) > 0)) or
         circuitRaceAi.hasAiLapState()
     local deferResultScreen = isCompletion and hasSpawnedAi and finalResult
-    local deferCpHudHide = isCompletion and cpRoad and not deferResultScreen
+    local deferHudHide = isCompletion and useRaceHud and hudCompletionPl and not deferResultScreen
 
     if isCompletion and hudCompletionPl and not deferResultScreen then
       raceSession.pushRaceHudCompletion(hudCompletionPl, raceName, displayLabel, raceLabel, session.in_race_time, true)
@@ -538,7 +544,7 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
     session.mSuppressOffRoadExitUntil = 0
 
     session.mActiveRace = nil
-    local hideHudNow = deferResultScreen or not (isCompletion and cpRoad)
+    local hideHudNow = deferResultScreen or not deferHudHide
     if hideHudNow then
       raceSession.hideFreeroamRaceHud()
     end
@@ -587,7 +593,7 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
     if career_career.isActive() then
       career_modules_pauseTime.enablePauseCounter()
     end
-    if deferCpHudHide then
+    if deferHudHide then
       core_jobsystem.create(function(job)
         job.sleep(18)
         raceSession.hideFreeroamRaceHud()
@@ -915,6 +921,11 @@ local function beamngTrigger_checkpointPlayer(data, event, raceName, checkpointI
           utils.displayMessage(message, 10)
         end
         raceSession.pushFreeroamRaceHudState(true)
+      else
+        log("W", "freeroamEvents",
+          string.format("Unexpected checkpoint trigger for race '%s': got %d, expected %s, alt=%s, hit=%d/%d.",
+            tostring(raceName), tonumber(checkpointIndex) or -1, tostring(session.currentExpectedCheckpoint),
+            tostring(isAlt), tonumber(session.checkpointsHit) or 0, tonumber(session.totalCheckpoints) or 0))
       end
     end
   end
@@ -1110,7 +1121,7 @@ local function onUpdate(dtReal, dtSim, dtRaw)
   competitiveTrackFlow.onUpdateParkingResolve()
   competitiveTrackFlow.onUpdateParkingLoop()
 
-  if session.mActiveRace and session.races[session.mActiveRace].checkpointRoad then
+  if session.mActiveRace and raceSession.raceUsesProcessRoadExit(session.races[session.mActiveRace]) then
     if os.time() >= session.mSuppressOffRoadExitUntil and processRoad.checkPlayerOnRoad() == false then
       exitRace(false)
     end

@@ -49,6 +49,11 @@ local function isLapRaceConfig(r)
     return (r.lapCount and r.lapCount > 0) or r.hotlap or (rs and rs.lapCount and rs.lapCount > 0)
 end
 
+local function raceHasType(race, raceType)
+    if not race or type(race.type) ~= "table" then return false end
+    return utils().tableContains(race.type, raceType)
+end
+
 local function hudDisplayLap(completed, totalLapsVal)
     local c = completed or 0
     if type(totalLapsVal) == "number" and totalLapsVal > 0 then
@@ -370,6 +375,19 @@ local function getDriftScore()
     return finalScore
 end
 
+local function peekDriftScore()
+    if not gameplay_drift_scoring then return nil, nil end
+    local scoreData = gameplay_drift_scoring.getScore()
+    if not scoreData then return nil, nil end
+    local finalScore = tonumber(scoreData.score) or 0
+    local cachedScore = tonumber(scoreData.cachedScore) or 0
+    local combo = tonumber(scoreData.combo)
+    if cachedScore > 0 and combo and combo > 0 then
+        finalScore = finalScore + math.floor(cachedScore * combo)
+    end
+    return finalScore, combo
+end
+
 function M.payoutRace(completedLapTime)
     local u = utils()
     local lb = leaderboardManager()
@@ -671,9 +689,12 @@ function M.payoutRace(completedLapTime)
 
     local hudCompletionPayload = nil
     local skipMidLapHud = cra.isSanctionedTriggerOnlyLapRace() and completedLapTime ~= nil
-    if race.checkpointRoad and frh.shown and not skipMidLapHud then
+    if M.raceHudApplies(race) and frh.shown and not skipMidLapHud then
+        local isDragRace = raceHasType(race, "drag")
         local kind = "time"
-        if race.topSpeed then
+        if isDragRace then
+            kind = "drag"
+        elseif race.topSpeed then
             kind = "topSpeed"
         elseif race.driftGoal then
             kind = "drift"
@@ -718,7 +739,7 @@ function M.payoutRace(completedLapTime)
             result = {
                 time = lapTime,
                 lapIndex = race.hotlap and sess().lapCount or nil,
-                topSpeed = race.topSpeed and sess().maxSpeed or nil,
+                topSpeed = (race.topSpeed or isDragRace) and sess().maxSpeed or nil,
                 driftScore = race.driftGoal and driftScore or nil,
                 damagePct = (damageFactor > 0) and (damagePercentage * 100) or nil,
                 damageFactorPct = (damageFactor > 0) and (damageFactor * 100) or nil,
@@ -945,8 +966,16 @@ local function bannerPayloadForHud()
     return { text = frh.banner.text, kind = frh.banner.kind }
 end
 
-function M.raceHudApplies(race)
+function M.raceUsesProcessRoadExit(race)
     return race and race.checkpointRoad
+end
+
+function M.raceHudApplies(race)
+    if not race then return false end
+    if race.checkpointRoad then return true end
+    if race.driftGoal then return true end
+    if raceHasType(race, "drift") or raceHasType(race, "drag") then return true end
+    return false
 end
 
 local function canBuildRaceHudPayload()
@@ -997,6 +1026,7 @@ function M.buildFreeroamRaceHudPayload()
         local displayLabel = gameplay_events_freeroamEvents.getFreeroamDisplayRaceLabel()
         local lbEntry = sess().mInventoryId and leaderboardManager().getLeaderboardEntry(sess().mInventoryId, raceLabelFull) or {}
         local isLapRace = isLapRaceConfig(effectiveRace)
+        local isDragRace = raceHasType(effectiveRace, "drag")
         local totalLapsVal = isLapRace and getDisplayTotalLapsForRace(effectiveRace) or 0
         local sr = gameplay_events_freContracts_sanctionedRacing
         if sess().mActiveRace == ctf.TRACK_RACE_ID and sr and not sr.shouldSuppressFrePayouts() then
@@ -1023,6 +1053,10 @@ function M.buildFreeroamRaceHudPayload()
         local lastRew = frh.lastLapReward
         frh.lastLapReward = nil
         local standingsLive = (not frh.completionPayload) and cra.buildSanctionedHudStandingsPayload() or nil
+        local driftScoreLive, driftComboLive = nil, nil
+        if effectiveRace and effectiveRace.driftGoal then
+            driftScoreLive, driftComboLive = peekDriftScore()
+        end
         return {
             phase = "racing",
             raceLabel = displayLabel,
@@ -1042,6 +1076,10 @@ function M.buildFreeroamRaceHudPayload()
             completion = frh.completionPayload,
             banner = banner,
             lastLapReward = lastRew,
+            driftGoal = effectiveRace and effectiveRace.driftGoal or nil,
+            driftScoreLive = driftScoreLive,
+            driftComboLive = driftComboLive,
+            dragSpeedLive = isDragRace and sess().maxSpeed or nil,
         }
     end
     local staged = sess().staged

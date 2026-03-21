@@ -22,12 +22,21 @@ local function createCheckpoint(index, isAlt)
         checkpoint = checkpoints[index]
     end
     if not checkpoint then
-        --print("Error: No checkpoint data found for index " .. index)
+        log("W", "checkpointManager",
+            string.format("Missing %s checkpoint data for race '%s' at index %d.", isAlt and "alt" or "main",
+                tostring(raceName), tonumber(index) or -1))
+        return
+    end
+    if not checkpoint.node then
+        log("W", "checkpointManager",
+            string.format("Checkpoint node missing for race '%s' at index %d.", tostring(raceName), tonumber(index) or -1))
         return
     end
 
     if not checkpoint.node.width then
-        print("No width for checkpoint " .. index)
+        log("W", "checkpointManager",
+            string.format("Checkpoint width missing for race '%s' at index %d. Using fallback radius 30.", tostring(raceName),
+                tonumber(index) or -1))
         checkpoint.node.width = 30
     end
 
@@ -62,7 +71,13 @@ end
 local function createCheckpointMarker(index, alt)
     local checkpoint = alt and altCheckpoints[index] or checkpoints[index]
     if not checkpoint then
-        --print("No checkpoint data for index " .. index)
+        log("W", "checkpointManager",
+            string.format("Missing marker checkpoint data for race '%s' at index %d.", tostring(raceName), tonumber(index) or -1))
+        return
+    end
+    if not checkpoint.node then
+        log("W", "checkpointManager",
+            string.format("Checkpoint marker node missing for race '%s' at index %d.", tostring(raceName), tonumber(index) or -1))
         return
     end
 

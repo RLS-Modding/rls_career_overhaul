@@ -128,6 +128,30 @@
 
       </div>
 
+      <div class="frh-row" ng-if="state.phase === 'racing' && state.dragSpeedLive != null">
+
+        <span class="frh-k">Best speed</span>
+
+        <span class="frh-v frh-mono">{{ formatSpeedMph(state.dragSpeedLive) }}</span>
+
+      </div>
+
+      <div class="frh-row" ng-if="state.phase === 'racing' && state.driftGoal != null">
+
+        <span class="frh-k">Drift score</span>
+
+        <span class="frh-v frh-mono">{{ state.driftScoreLive || 0 }} / {{ state.driftGoal }}</span>
+
+      </div>
+
+      <div class="frh-row" ng-if="state.phase === 'racing' && state.driftComboLive != null && state.driftComboLive > 1">
+
+        <span class="frh-k">Combo</span>
+
+        <span class="frh-v frh-mono">{{ state.driftComboLive.toFixed(2) }}x</span>
+
+      </div>
+
       <div class="frh-invalid" ng-if="state.phase === 'racing' && state.invalidLap">Lap invalidated</div>
 
     </div>
@@ -163,6 +187,14 @@
         <div class="frh-completion-row" ng-if="state.completion.kind === 'topSpeed' && state.completion.result.topSpeed != null">
 
           <span class="frh-k">Top speed</span>
+
+          <span class="frh-v frh-mono">{{ formatSpeedMph(state.completion.result.topSpeed) }}</span>
+
+        </div>
+
+        <div class="frh-completion-row" ng-if="state.completion.kind === 'drag' && state.completion.result.topSpeed != null">
+
+          <span class="frh-k">Best speed</span>
 
           <span class="frh-v frh-mono">{{ formatSpeedMph(state.completion.result.topSpeed) }}</span>
 
