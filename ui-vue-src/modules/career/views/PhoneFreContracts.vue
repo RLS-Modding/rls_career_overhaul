@@ -189,7 +189,7 @@
                   </div>
                   <div class="objective-block">
                     <div class="objective-label">Objective</div>
-                    <div class="objective-value">{{ objectiveStatusLabel(contract) }}</div>
+                    <div class="objective-value">{{ availableContractObjectiveLabel(contract) }}</div>
                     <div class="objective-sub">{{ contractTargetLabel(contract) }}</div>
                   </div>
                 </div>
@@ -795,6 +795,16 @@ function objectiveStatusLabel(contract) {
   }
   const unit = requiredCount === 1 ? 'Event' : 'Events'
   return `${progress}/${requiredCount} ${unit}`
+}
+
+function availableContractObjectiveLabel(contract) {
+  const requiredCount = Math.max(1, Math.floor(Number(contract?.requiredCount || 1)))
+  if (contract?.objectiveType === 'laps') {
+    const unit = requiredCount === 1 ? 'Lap' : 'Laps'
+    return `${requiredCount} ${unit}`
+  }
+  const unit = requiredCount === 1 ? 'Event' : 'Events'
+  return `${requiredCount} ${unit}`
 }
 
 function contractUrgencyTone(contract) {
