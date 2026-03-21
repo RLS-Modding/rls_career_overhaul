@@ -80,6 +80,11 @@ local function navigateSanctionedRace()
   return actionResult(ok, err)
 end
 
+function rescheduleSanctionedRace()
+  local ok, err = gameplay_events_freContracts_sanctionedRacing.rescheduleSanctionedRace()
+  return actionResult(ok, err)
+end
+
 M.getState = getState
 M.startLiveUpdates = startLiveUpdates
 M.stopLiveUpdates = stopLiveUpdates
@@ -90,5 +95,6 @@ M.dropSponsor = dropSponsor
 M.acknowledgeSponsorWarning = acknowledgeSponsorWarning
 M.commitSanctionedRace = commitSanctionedRace
 M.navigateSanctionedRace = navigateSanctionedRace
+M.rescheduleSanctionedRace = rescheduleSanctionedRace
 
 return M

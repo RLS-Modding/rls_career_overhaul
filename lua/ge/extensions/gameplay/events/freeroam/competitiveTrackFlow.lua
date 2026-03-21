@@ -296,14 +296,31 @@ function M.cancelCompetitiveGridFlow()
     if aiRacers and aiRacers.setPlayerFreeze then aiRacers.setPlayerFreeze(false) end
 end
 
+function M.clearSanctionedNavigateVisuals()
+    M.clearPlayerStagingCornerMarkers()
+    local gm = core_groundMarkers
+    if not gm then
+        local ok, mod = pcall(function() return require('core/groundMarkers') end)
+        if ok then gm = mod end
+    end
+    if gm then
+        if gm.resetAll then
+            gm.resetAll()
+        elseif gm.setPath then
+            gm.setPath(nil)
+        end
+    end
+end
+
 function M.leaveTrackFlowAfterRace()
     M.trackFlowState.inTrackFlowContext = false
     M.clearSanctionedCareerGoToRaceActive()
     M.trackFlowState.sanctionedPoolRefHp = nil
+    M.trackFlowState.sanctionedRaceLapCount = nil
+    M.trackFlowState.useAltRoute = false
     M.resetTrackGridFlowFlags()
     M.setPlayerStagingSpotNil()
-    M.clearPlayerStagingCornerMarkers()
-    if core_groundMarkers and core_groundMarkers.resetAll then core_groundMarkers.resetAll() end
+    M.clearSanctionedNavigateVisuals()
 end
 
 function M.isVehicleEligibleForCompetitiveTrack(spawnedId)

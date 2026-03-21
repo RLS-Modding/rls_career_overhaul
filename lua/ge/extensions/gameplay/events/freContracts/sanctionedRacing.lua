@@ -41,6 +41,7 @@ local cachedCfg = nil
 local runtime = {
   suppressFrePayouts = false,
   podiumEligible = false,
+  dispatchUiActive = false,
 }
 
 local mCelebrationRewards = nil
@@ -493,6 +494,17 @@ function M.syncGeneration(now)
   return changed
 end
 
+local function getCompetitiveTrackFlow()
+  local c = gameplay_events_freeroam_competitiveTrackFlow
+  if c then
+    return c
+  end
+  if extensions and extensions["gameplay_events_freeroam_competitiveTrackFlow"] then
+    return extensions["gameplay_events_freeroam_competitiveTrackFlow"]
+  end
+  return nil
+end
+
 function M.getOfferUiSnapshot(now)
   local state = gameplay_events_freContracts_state.getState()
   local sr = ensureSrState(state)
@@ -502,6 +514,16 @@ function M.getOfferUiSnapshot(now)
     return nil
   end
   local useAlt = string.lower(tostring(offer.raceRouteType or "main")) == "alt"
+  local dispatchActive = false
+  if offer.phase == "committed" then
+    if runtime.dispatchUiActive == true then
+      dispatchActive = true
+    end
+    local ctf = getCompetitiveTrackFlow()
+    if ctf and ctf.isSanctionedCareerGoToRaceActive and ctf.isSanctionedCareerGoToRaceActive() then
+      dispatchActive = true
+    end
+  end
   return {
     id = offer.id,
     disciplineId = offer.disciplineId,
@@ -523,7 +545,28 @@ function M.getOfferUiSnapshot(now)
     minutesUntilRefresh = math.max(0, (tonumber(offer.visibleExpiresAt) or n) - n),
     minutesUntilStartDeadline = (offer.phase == "committed" and offer.startDeadlineAt) and
       math.max(0, offer.startDeadlineAt - n) or nil,
+    dispatchActive = dispatchActive,
   }
+end
+
+function M.blocksTrackStagingUntilNavigate()
+  if not gameplay_events_freContracts_state.isCareerActive() then
+    return false
+  end
+  local state = gameplay_events_freContracts_state.getState()
+  local sr = ensureSrState(state)
+  local o = sr.offer
+  if not o or type(o.raceName) ~= "string" or o.raceName ~= RACE_ID_TRACK or o.phase ~= "committed" then
+    return false
+  end
+  if runtime.dispatchUiActive then
+    return false
+  end
+  local ctf = getCompetitiveTrackFlow()
+  if not ctf or not ctf.isSanctionedCareerGoToRaceActive or not ctf.isSanctionedCareerGoToRaceActive() then
+    return true
+  end
+  return false
 end
 
 function M.isSanctionedRaceDispatchActive()
@@ -583,6 +626,7 @@ function M.commitSanctionedRace()
   offer.phase = "committed"
   offer.committedAt = n
   offer.startDeadlineAt = n + deadlineMin
+  runtime.dispatchUiActive = false
   gameplay_events_freContracts_state.refreshMaintenanceSchedule(n)
   gameplay_events_freContracts_ui.emitUiStateUpdate("sanctioned_commit")
   career_saveSystem.saveCurrent()
@@ -606,16 +650,50 @@ function M.navigateSanctionedRace()
     return false, "Unsupported sanctioned race."
   end
   pushDispatchForOffer(offer)
+  runtime.dispatchUiActive = true
   gameplay_events_freContracts_ui.emitUiStateUpdate("sanctioned_navigate")
   return true, nil
 end
 
-function M.requestGoToRace()
-  local ok, err = M.commitSanctionedRace()
-  if not ok then
-    return false, err
+function M.rescheduleSanctionedRace()
+  if not gameplay_events_freContracts_state.isCareerActive() then
+    return false, "Career not active."
   end
-  return M.navigateSanctionedRace()
+  if not skillOk(DISCIPLINE_ROAD) then
+    return false, "Road Racing level too low."
+  end
+  local state = gameplay_events_freContracts_state.getState()
+  local sr = ensureSrState(state)
+  local offer = sr.offer
+  if not offer or type(offer.raceName) ~= "string" or offer.raceName ~= RACE_ID_TRACK then
+    return false, "No sanctioned race."
+  end
+  if offer.phase == "racing" then
+    return false, "Finish or abort the race first."
+  end
+  if offer.phase ~= "committed" then
+    return false, "Commit to a race first."
+  end
+  local ctf = gameplay_events_freeroam_competitiveTrackFlow
+  if ctf then
+    if ctf.cancelCompetitiveGridFlow then
+      ctf.cancelCompetitiveGridFlow()
+    end
+    if ctf.leaveTrackFlowAfterRace then
+      ctf.leaveTrackFlowAfterRace()
+    end
+  end
+  local aiRacers = gameplay_events_freeroam_aiRacers
+  if aiRacers and aiRacers.clearSpawned then
+    aiRacers.clearSpawned()
+  end
+  local fe = gameplay_events_freeroamEvents
+  if fe and fe.clearSanctionedDispatchStaging then
+    fe.clearSanctionedDispatchStaging()
+  end
+  runtime.dispatchUiActive = false
+  gameplay_events_freContracts_ui.emitUiStateUpdate("sanctioned_reschedule")
+  return true, nil
 end
 
 function M.onRaceBegin(raceName)
@@ -636,6 +714,7 @@ function M.onRaceBegin(raceName)
     return
   end
   offer.phase = "racing"
+  runtime.dispatchUiActive = false
   runtime.suppressFrePayouts = true
   runtime.podiumEligible = false
   local hp = nil
@@ -658,6 +737,7 @@ end
 function M.clearRuntime()
   runtime.suppressFrePayouts = false
   runtime.podiumEligible = false
+  runtime.dispatchUiActive = false
 end
 
 local function payPodium(place)

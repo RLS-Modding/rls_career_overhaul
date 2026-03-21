@@ -605,6 +605,13 @@ local function tryCommitStagingEnter(raceName, spawnVehId)
     return false
   end
 
+  if raceName == TRACK_RACE_ID and gameplay_events_freContracts_sanctionedRacing and
+      gameplay_events_freContracts_sanctionedRacing.blocksTrackStagingUntilNavigate and
+      gameplay_events_freContracts_sanctionedRacing.blocksTrackStagingUntilNavigate() then
+    utils.displayMessage("Open FRE Contracts and tap Go to race to get directions to the grid.", 4)
+    return false
+  end
+
   session.saveGameState = true
   core_gamestate.requestGameState()
 
@@ -1281,6 +1288,28 @@ M.hideAllFreeroamAssets = function()
     Assets:hideAllAssets()
   end
 end
+
+M.clearSanctionedDispatchStaging = function()
+  if not session or session.mActiveRace then
+    return
+  end
+  session.staged = nil
+  if raceSession and raceSession.setStagingSubjectId then
+    raceSession.setStagingSubjectId(nil)
+  end
+  if utils and utils.setActiveLight then
+    utils.setActiveLight(TRACK_RACE_ID, "red")
+  end
+  if raceSession and raceSession.hideFreeroamRaceHud then
+    raceSession.hideFreeroamRaceHud()
+  end
+  hideStagedFlashMessage()
+  M.hideAllFreeroamAssets()
+  if competitiveTrackFlow and competitiveTrackFlow.clearSanctionedNavigateVisuals then
+    competitiveTrackFlow.clearSanctionedNavigateVisuals()
+  end
+end
+
 M.getFreeroamRaceLabel = getRaceLabel
 M.getFreeroamDisplayRaceLabel = getDisplayRaceLabel
 

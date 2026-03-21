@@ -92,6 +92,7 @@ local function validateLoadedState()
     state.sanctionedRacing = { offer = nil, nextGenAt = 0, lastSkillGateOk = false }
   else
     state.sanctionedRacing.nextGenAt = tonumber(state.sanctionedRacing.nextGenAt) or 0
+    state.sanctionedRacing.dispatchUiActive = nil
     if state.sanctionedRacing.lastSkillGateOk ~= true and state.sanctionedRacing.lastSkillGateOk ~= false then
       state.sanctionedRacing.lastSkillGateOk = nil
     end

@@ -267,7 +267,25 @@
                     <template v-if="sanctionedOfferCommitted.phase === 'racing'">Race in progress</template>
                     <template v-else> Start within <strong>{{ sanctionedStartLabelFor(sanctionedOfferCommitted) }}</strong> </template>
                   </div>
-                  <button class="action-btn primary" :disabled="actionBusy" @click="navigateSanctionedRace">Go to race</button>
+                  <div v-if="sanctionedOfferCommitted.phase === 'committed'" class="sanctioned-footer-buttons">
+                    <button
+                      v-if="!showSanctionedReschedule"
+                      class="action-btn primary"
+                      :disabled="actionBusy"
+                      @click="navigateSanctionedRace"
+                    >
+                      Go to race
+                    </button>
+                    <button
+                      v-if="showSanctionedReschedule"
+                      class="action-btn secondary"
+                      :disabled="actionBusy"
+                      @click="rescheduleSanctionedRace"
+                    >
+                      Reschedule race
+                    </button>
+                  </div>
+                  <button v-else class="action-btn primary" :disabled="actionBusy" @click="navigateSanctionedRace">Go to race</button>
                 </div>
               </article>
             </section>
@@ -389,6 +407,7 @@ const disciplineMenuOpen = ref(false)
 const disciplineMenuRef = ref(null)
 const lastSyncMs = ref(Date.now())
 const nowMs = ref(Date.now())
+const sanctionedDispatchAfterNavigate = ref(false)
 const state = ref({
   disciplines: [],
   activeContracts: [],
@@ -459,6 +478,18 @@ const sanctionedOfferAvailable = computed(() => {
 const sanctionedOfferCommitted = computed(() => {
   const o = sanctionedRacingOffer.value
   return o && (o.phase === 'committed' || o.phase === 'racing') ? o : null
+})
+const showSanctionedReschedule = computed(() => {
+  const o = sanctionedOfferCommitted.value
+  if (!o || o.phase !== 'committed') {
+    return false
+  }
+  return Boolean(o.dispatchActive) || sanctionedDispatchAfterNavigate.value
+})
+watch(sanctionedOfferCommitted, (o) => {
+  if (!o || o.phase === 'racing') {
+    sanctionedDispatchAfterNavigate.value = false
+  }
 })
 const showSanctionedNextRaceSection = computed(() => Boolean(sanctionedOfferCommitted.value))
 const showSanctionedAvailableRacesSection = computed(
@@ -814,6 +845,9 @@ async function commitSanctionedRace() {
   try {
     const result = await lua.ui_phone_freContracts.commitSanctionedRace()
     errorMessage.value = result?.ok === false ? (result.error || 'Action failed.') : ''
+    if (result?.ok !== false) {
+      sanctionedDispatchAfterNavigate.value = false
+    }
   } catch (error) {
     errorMessage.value = 'Action failed.'
     await refreshState()
@@ -828,6 +862,26 @@ async function navigateSanctionedRace() {
   try {
     const result = await lua.ui_phone_freContracts.navigateSanctionedRace()
     errorMessage.value = result?.ok === false ? (result.error || 'Action failed.') : ''
+    if (result?.ok !== false) {
+      sanctionedDispatchAfterNavigate.value = true
+    }
+  } catch (error) {
+    errorMessage.value = 'Action failed.'
+    await refreshState()
+  } finally {
+    actionBusy.value = false
+  }
+}
+
+async function rescheduleSanctionedRace() {
+  if (actionBusy.value) return
+  actionBusy.value = true
+  try {
+    const result = await lua.ui_phone_freContracts.rescheduleSanctionedRace()
+    errorMessage.value = result?.ok === false ? (result.error || 'Action failed.') : ''
+    if (result?.ok !== false) {
+      sanctionedDispatchAfterNavigate.value = false
+    }
   } catch (error) {
     errorMessage.value = 'Action failed.'
     await refreshState()
@@ -905,8 +959,12 @@ onUnmounted(async () => {
 .sanctioned-place:first-child .sanctioned-place-value{color:#f4c49c}
 .sanctioned-place:nth-child(2) .sanctioned-place-value{color:rgba(228,233,242,.82)}
 .sanctioned-place:nth-child(3) .sanctioned-place-value{color:rgba(219,226,237,.62)}
-.sanctioned-footer{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.sanctioned-footer{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.sanctioned-footer-buttons{display:flex;flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:8px;flex:0 1 auto;max-width:52%}
+.sanctioned-footer-buttons .action-btn{flex:0 0 auto;width:auto;min-width:0;white-space:nowrap;padding:0 20px}
 .sanctioned-timer{flex:1;min-width:0;color:rgba(219,226,237,.6);font-size:12px;line-height:1.3}
 .sanctioned-timer strong{color:rgba(244,193,156,.9)}
-.sanctioned-footer .action-btn{flex:0 0 auto;padding:0 20px}
+.sanctioned-footer>.action-btn.primary{flex:0 0 auto;padding:0 20px}
+.sanctioned-footer .action-btn.secondary{border-color:rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:rgba(240,236,230,.92)}
+.sanctioned-footer .action-btn.secondary:hover{background:rgba(255,255,255,.1)}
 </style>
