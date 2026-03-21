@@ -11,7 +11,7 @@ local function onExtensionLoaded()
         device.updateGFX = function(self, dt)
             originalUpdateGFX(self, dt)
             if self.invBurnEfficiencyCoef then
-                self.invBurnEfficiencyCoef = (self.invBurnEfficiencyCoef or 1) * 2
+                self.invBurnEfficiencyCoef = (self.invBurnEfficiencyCoef or 1) * 1.5
             end
         end
     end
