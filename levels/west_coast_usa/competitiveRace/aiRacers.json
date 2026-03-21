@@ -26,6 +26,11 @@
   "scriptBootstrapDistance": 6,
   "filterPoolByPowerMeetOrExceed": true,
   "aiPowerExceedCapPct": 0.25,
+  "raceAccelScale": 1.1,
+  "raceThrottleKp": 1.12,
+  "raceThrottleRateMult": 4,
+  "raceThrottleRecoveryMult": 1.9,
+  "targetSpeedSmootherRate": 18,
   "despawnWreckedDuringRace": false,
   "defaultVehiclePool": [
     "barstow",

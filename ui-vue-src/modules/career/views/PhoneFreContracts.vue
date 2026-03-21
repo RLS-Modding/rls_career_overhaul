@@ -788,8 +788,13 @@ function contractTargetLabel(contract) {
 
 function objectiveStatusLabel(contract) {
   const requiredCount = Math.max(1, Math.floor(Number(contract?.requiredCount || 1)))
-  if (contract?.objectiveType === 'laps') return `${requiredCount} lap${requiredCount === 1 ? '' : 's'}`
-  return `${Math.max(0, Math.floor(Number(contract?.progress || 0)))}/${requiredCount} events`
+  const progress = Math.max(0, Math.floor(Number(contract?.progress || 0)))
+  if (contract?.objectiveType === 'laps') {
+    const unit = requiredCount === 1 ? 'Lap' : 'Laps'
+    return `${progress}/${requiredCount} ${unit}`
+  }
+  const unit = requiredCount === 1 ? 'Event' : 'Events'
+  return `${progress}/${requiredCount} ${unit}`
 }
 
 function contractUrgencyTone(contract) {

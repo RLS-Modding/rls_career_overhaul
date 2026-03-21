@@ -41,7 +41,7 @@
         "routeType": "main",
         "stageNumber": 4,
         "pickWeight": 1,
-        "offerRefreshMinutes": 1,
+        "offerRefreshMinutes": 20,
         "startDeadlineMinutes": 60
       }
     },
@@ -60,7 +60,7 @@
         "routeType": "alt",
         "stageNumber": 4,
         "pickWeight": 1,
-        "offerRefreshMinutes": 1,
+        "offerRefreshMinutes": 20,
         "startDeadlineMinutes": 60
       }
     }

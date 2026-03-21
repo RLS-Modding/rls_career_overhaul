@@ -52,6 +52,14 @@ local DEFAULT_CONFIG = {
     -- AI pool power filter: only spawn models with power <= refHp * (1 + aiPowerExceedCapPct). No lower bound. Set false to skip filtering.
     filterPoolByPowerMeetOrExceed = true,
     aiPowerExceedCapPct = 0.25,
+    -- overrideAI: multiplies lateral/longitudinal grip budget in raceplanAhead (1.0 = default, >1 = faster in corners).
+    raceAccelScale = 1.1,
+    raceThrottleKp = 1.12,
+    -- driveToTarget: throttle pedal ramp (4 matches old state-based when raceAccelScale is set). Higher = on power sooner after braking.
+    raceThrottleRateMult = 4,
+    raceThrottleRecoveryMult = 1.9,
+    -- driveUsingPath setParameters: higher = plan.targetSpeed follows planner faster (exit / straights).
+    targetSpeedSmootherRate = 18,
 }
 
 local mSpawnedAiVehicleIds = {}
@@ -178,7 +186,9 @@ local function getMergedConfigForRace(race)
         "despawnUpsideDownSeconds", "despawnAfterRecoveries", "despawnTerminalStuckSeconds", "despawnAlwaysStuckSeconds",
         "delayedDespawnDefaultSeconds", "delayedDespawnStaggerSeconds",
         "filterPoolByPowerMeetOrExceed", "aiPowerExceedCapPct",
-        "pathRoad"
+        "pathRoad",
+        "raceAccelScale", "raceThrottleKp",
+        "raceThrottleRateMult", "raceThrottleRecoveryMult", "targetSpeedSmootherRate"
     }
     for _, k in ipairs(raceKeys) do
         if race[k] ~= nil then merged[k] = race[k] end
@@ -827,9 +837,32 @@ local function randomAggression(cfg, race)
     return clamp(raw, 0.2, 1.5)
 end
 
--- No tuning params: overrideAI uses state-based logic (winning objective). Send empty so vehicle uses uncapped state-driven steering/throttle.
 local function getRacingParameters(cfg, race)
-    return {}
+    if not cfg or cfg.useRacingParameters == false then
+        return {}
+    end
+    local scale = tonumber(cfg.raceAccelScale)
+    if scale == nil or scale <= 0 then
+        scale = 1.1
+    end
+    local kp = tonumber(cfg.raceThrottleKp)
+    if kp == nil or kp <= 0 then
+        kp = 1.12
+    end
+    local trm = tonumber(cfg.raceThrottleRateMult)
+    if trm == nil or trm <= 0 then
+        trm = 4
+    end
+    local trc = tonumber(cfg.raceThrottleRecoveryMult)
+    if trc == nil or trc <= 0 then
+        trc = 1.9
+    end
+    return {
+        raceAccelScale = scale,
+        raceThrottleKp = kp,
+        raceThrottleRateMult = trm,
+        raceThrottleRecoveryMult = trc
+    }
 end
 
 -- Freeze or unfreeze the player vehicle (e.g. during countdown until GO, same moment as AI release). Uses same pattern as bus.lua.
@@ -1063,9 +1096,10 @@ local function queueNavDriveForVehicle(vehObj, path, noOfLaps, cfg, race)
     local aggression = 1.0
     local driveInLane = tostring(cfg.driveInLane or DEFAULT_CONFIG.driveInLane)
     local avoidCars = tostring(cfg.avoidCars or DEFAULT_CONFIG.avoidCars)
+    local targetSpeedSmootherRate = tonumber(cfg.targetSpeedSmootherRate) or DEFAULT_CONFIG.targetSpeedSmootherRate or 18
     vehObj:queueLuaCommand("input.event('parkingbrake', 0, 1)")
 
-    -- setParameters (empty = state-based in overrideAI), setAggression, setRacing, setAvoidCars, then driveUsingPath. No setAggressionMode; no routeSpeed.
+    -- setParameters (raceAccelScale / raceThrottleKp from cfg), setAggression, setRacing, setAvoidCars, then driveUsingPath.
     if cfg.useRacingParameters ~= false and DEFAULT_CONFIG.useRacingParameters ~= false then
         local params = getRacingParameters(cfg, race)
         vehObj:queueLuaCommand('ai.setParameters(' .. serialize(params) .. ')')
@@ -1083,7 +1117,8 @@ local function queueNavDriveForVehicle(vehObj, path, noOfLaps, cfg, race)
                 avoidCars = ']] .. avoidCars .. [[',
                 driveInLane = ']] .. driveInLane .. [[',
                 aggression = ]] .. tostring(aggression) .. [[,
-                noOfLaps = noOfLaps
+                noOfLaps = noOfLaps,
+                targetSpeedSmootherRate = ]] .. tostring(targetSpeedSmootherRate) .. [[
             })
         end
     ]])
@@ -1124,9 +1159,10 @@ local function queueDriveForVehicle(vehObj, race, noOfLaps, cfg, laneIndex)
     local aggression = 1.0
     local driveInLane = tostring(cfg.driveInLane or DEFAULT_CONFIG.driveInLane)
     local avoidCars = tostring(cfg.avoidCars or DEFAULT_CONFIG.avoidCars)
+    local targetSpeedSmootherRate = tonumber(cfg.targetSpeedSmootherRate) or DEFAULT_CONFIG.targetSpeedSmootherRate or 18
     vehObj:queueLuaCommand("input.event('parkingbrake', 0, 1)")
 
-    -- setParameters (empty = state-based in overrideAI), setAggression, setRacing, setAvoidCars, then driveUsingPath. No setAggressionMode; no routeSpeed.
+    -- setParameters (raceAccelScale / raceThrottleKp from cfg), setAggression, setRacing, setAvoidCars, then driveUsingPath.
     if cfg.useRacingParameters ~= false and DEFAULT_CONFIG.useRacingParameters ~= false then
         local params = getRacingParameters(cfg, race)
         vehObj:queueLuaCommand('ai.setParameters(' .. serialize(params) .. ')')
@@ -1144,7 +1180,8 @@ local function queueDriveForVehicle(vehObj, race, noOfLaps, cfg, laneIndex)
                 avoidCars = ']] .. avoidCars .. [[',
                 driveInLane = ']] .. driveInLane .. [[',
                 aggression = ]] .. tostring(aggression) .. [[,
-                noOfLaps = noOfLaps
+                noOfLaps = noOfLaps,
+                targetSpeedSmootherRate = ]] .. tostring(targetSpeedSmootherRate) .. [[
             })
         end
     ]])
