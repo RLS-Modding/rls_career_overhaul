@@ -20,7 +20,7 @@
       "hotlap":27,
       "label":"Beach Circuit",
       "minCheckpointDistance":45,
-      "reward":200,
+      "reward":125,
       "type":[
         "offroad"
       ]
