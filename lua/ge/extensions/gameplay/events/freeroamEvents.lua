@@ -226,9 +226,6 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
   if session.mActiveRace then
     local raceName = session.mActiveRace
     local cpRoad = session.races[raceName] and session.races[raceName].checkpointRoad
-    if cpRoad and not isCompletion then
-      raceSession.hideFreeroamRaceHud()
-    end
     local mainRace = session.races[raceName]
     local useRaceHud = mainRace and raceSession.raceHudApplies(mainRace)
     local effectiveRace = (mainRace and session.mAltRoute and mainRace.altRoute) and mainRace.altRoute or
@@ -559,14 +556,14 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
 
     session.mActiveRace = nil
     local hideHudNow = deferResultScreen or not deferHudHide
-    if hideHudNow then
-      raceSession.hideFreeroamRaceHud()
-    end
     extensions.hook('onFreeroamSessionExiting', {
       raceName = raceName,
       checkpointRoad = cpRoad,
       isCompletion = isCompletion
     })
+    if hideHudNow then
+      raceSession.hideFreeroamRaceHud()
+    end
     Assets:hideAllAssets()
 
     if aiRacers and aiRacers.setDnfCallback then
@@ -764,7 +761,9 @@ local function beamngTrigger_staging(data, event, raceName)
       if useHud then
         core_jobsystem.create(function(job)
           job.sleep(2.5)
-          raceSession.hideFreeroamRaceHud()
+          if not session.mActiveRace then
+            raceSession.hideFreeroamRaceHud()
+          end
         end)
       end
     end
@@ -1128,7 +1127,7 @@ end
 
 local function onExtensionUnloaded()
   if raceSession then
-    raceSession.hideFreeroamRaceHud()
+    raceSession.hideFreeroamRaceHud(true)
   end
   unloadExtensions()
 end

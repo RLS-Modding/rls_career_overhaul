@@ -1194,7 +1194,10 @@ function M.showFreeroamRaceHud()
     M.pushFreeroamRaceHudState(true)
 end
 
-function M.hideFreeroamRaceHud()
+function M.hideFreeroamRaceHud(force)
+    if not force and sess().mActiveRace then
+        return
+    end
     frh.shown = false
     frh.pushClock = nil
     frh.banner = nil
