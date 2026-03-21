@@ -192,17 +192,7 @@ angular.module('beamng.stuff')
 
   $scope.formatStandingsGap = function(row) {
     if (!row || row.isPlayer) return '—'
-    var m = row.gapM
     var g = row.gapSec
-    if (m != null && typeof m === 'number' && isFinite(m)) {
-      var signM = m > 0 ? '+' : ''
-      var parts = [signM + Math.round(m) + ' m']
-        if (g != null && typeof g === 'number' && isFinite(g)) {
-          var signS = g > 0 ? '+' : ''
-          parts.push(signS + g.toFixed(2) + 's')
-        }
-      return parts.join(' / ')
-    }
     if (g != null && typeof g === 'number' && isFinite(g)) {
       var sign = g > 0 ? '+' : ''
       return sign + g.toFixed(2) + 's'
