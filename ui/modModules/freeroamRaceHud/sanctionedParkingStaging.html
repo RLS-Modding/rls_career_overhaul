@@ -26,16 +26,8 @@
         <span class="sps-k">Class</span>
         <span class="sps-v sps-class-val">{{ payload.hpBracketBranch }}</span>
       </div>
-      <div class="sps-row" ng-if="payload.hpBracketLabel">
-        <span class="sps-k">Bracket</span>
-        <span class="sps-v">{{ payload.hpBracketLabel }}</span>
-      </div>
-      <div class="sps-row" ng-if="payload.classHpMin != null && payload.classHpMax != null">
-        <span class="sps-k">Power range</span>
-        <span class="sps-v">{{ payload.classHpMin }}–{{ payload.classHpMax }} HP</span>
-      </div>
       <div class="sps-row" ng-if="payload.classHpMax != null">
-        <span class="sps-k">Do not exceed</span>
+        <span class="sps-k">Maximum power</span>
         <span class="sps-v">{{ payload.classHpMax }} HP</span>
       </div>
       <div class="sps-row sps-row-current-power">

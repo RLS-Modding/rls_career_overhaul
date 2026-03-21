@@ -299,11 +299,10 @@ angular.module('beamng.stuff')
   }
 
   $scope.stagingHeadline = function(p) {
-    if (!p || typeof p !== 'object') return 'Stage event'
-    const stage = Math.max(1, Math.floor(Number(p.stageNumber) || 1))
+    if (!p || typeof p !== 'object') return 'Sanctioned event'
     const laps = Math.max(1, Math.floor(Number(p.lapCount) || 1))
     const label = (p.raceLabel != null && String(p.raceLabel).trim() !== '') ? String(p.raceLabel).trim() : 'Track'
-    return 'Stage ' + stage + ' ' + laps + '-Lap ' + label + ' Event'
+    return laps + '-Lap ' + label + ' Event'
   }
 
   $scope.stageAndSpawn = function() {
