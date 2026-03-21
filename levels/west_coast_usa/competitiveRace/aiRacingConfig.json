@@ -40,7 +40,7 @@
         "raceName": "track",
         "routeType": "main",
         "pickWeight": 1,
-        "offerRefreshMinutes": 12,
+        "offerRefreshMinutes": 1,
         "startDeadlineMinutes": 60
       }
     },
@@ -59,7 +59,7 @@
         "raceName": "track",
         "routeType": "alt",
         "pickWeight": 1,
-        "offerRefreshMinutes": 12,
+        "offerRefreshMinutes": 1,
         "startDeadlineMinutes": 60
       }
     }
