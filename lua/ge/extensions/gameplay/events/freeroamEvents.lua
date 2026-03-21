@@ -509,7 +509,10 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
           hudCompletionPl.rewards = {}
         end
         hudCompletionPl.rewards.money = srCelebration.money
-        if hudCompletionPl.rewards.disciplineXp == nil then
+        local sx = tonumber(srCelebration.disciplineXp)
+        if sx ~= nil then
+          hudCompletionPl.rewards.disciplineXp = math.max(0, math.floor(sx))
+        elseif hudCompletionPl.rewards.disciplineXp == nil then
           hudCompletionPl.rewards.disciplineXp = 0
         end
         if type(srCelebration.noRewardDetail) == "string" and srCelebration.noRewardDetail ~= "" then

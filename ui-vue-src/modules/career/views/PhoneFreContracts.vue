@@ -229,6 +229,7 @@
                   <div class="sanctioned-place" v-for="(p, i) in sanctionedPlacesForOffer(sanctionedOfferAvailable)" :key="'av-' + i">
                     <span class="sanctioned-place-label">{{ p.label }}</span>
                     <span class="sanctioned-place-value">${{ formatMoney(p.value) }}</span>
+                    <span v-if="Number(p.xp) > 0" class="sanctioned-place-xp">{{ formatMoney(p.xp) }} XP</span>
                   </div>
                 </div>
                 <div class="sanctioned-footer">
@@ -260,6 +261,7 @@
                   <div class="sanctioned-place" v-for="(p, i) in sanctionedPlacesForOffer(sanctionedOfferCommitted)" :key="'nx-' + i">
                     <span class="sanctioned-place-label">{{ p.label }}</span>
                     <span class="sanctioned-place-value">${{ formatMoney(p.value) }}</span>
+                    <span v-if="Number(p.xp) > 0" class="sanctioned-place-xp">{{ formatMoney(p.xp) }} XP</span>
                   </div>
                 </div>
                 <div class="sanctioned-footer">
@@ -621,9 +623,9 @@ function sanctionedStartLabelFor(o) {
 function sanctionedPlacesForOffer(o) {
   if (!o) return []
   return [
-    { label: '1st', value: o.payoutFirst },
-    { label: '2nd', value: o.payoutSecond },
-    { label: '3rd', value: o.payoutThird },
+    { label: '1st', value: o.payoutFirst, xp: o.xpFirst },
+    { label: '2nd', value: o.payoutSecond, xp: o.xpSecond },
+    { label: '3rd', value: o.payoutThird, xp: o.xpThird },
   ]
 }
 
@@ -983,6 +985,8 @@ onUnmounted(async () => {
 .sanctioned-place:first-child .sanctioned-place-value{color:#f4c49c}
 .sanctioned-place:nth-child(2) .sanctioned-place-value{color:rgba(228,233,242,.82)}
 .sanctioned-place:nth-child(3) .sanctioned-place-value{color:rgba(219,226,237,.62)}
+.sanctioned-place-xp{margin-top:2px;font-size:11px;font-weight:600;color:rgba(219,226,237,.55)}
+.sanctioned-place:first-child .sanctioned-place-xp{color:rgba(244,196,156,.75)}
 .sanctioned-footer{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
 .sanctioned-footer-buttons{display:flex;flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:8px;flex:0 1 auto;max-width:52%}
 .sanctioned-footer-buttons .action-btn{flex:0 0 auto;width:auto;min-width:0;white-space:nowrap;padding:0 20px}

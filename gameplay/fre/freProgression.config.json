@@ -1012,7 +1012,7 @@
             "medium": 120,
             "hard": 60
         },
-        "basePayoutMultiplier": 4,
+        "basePayoutMultiplier": 20,
         "payoutVariance": { "min": 0.9, "max": 1.1 },
         "extraLapEventBonusPerUnit": 0.33,
         "xpPercentOfMoney": 0.1,

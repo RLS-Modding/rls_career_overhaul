@@ -148,7 +148,6 @@ local function scaleContractRewardPreview(disciplineId, baseMoney, baseXp)
     money = { amount = money, canBeNegative = false },
     [skillKey] = { amount = xp }
   }
-  career_modules_difficultyMode.scalePaymentRewardData(rewardData, {includeMoney = true})
 
   local scaledMoney = math.max(0, math.floor((rewardData.money and rewardData.money.amount or money) + 0.5))
   local scaledXp = math.max(0, math.floor((rewardData[skillKey] and rewardData[skillKey].amount or xp) + 0.5))

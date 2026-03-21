@@ -14,6 +14,11 @@ local PLACE_JITTER = { min = 0.92, max = 1.08 }
 local SANCTIONED_MAX_WINDOW_SEC = 600
 local SANCTIONED_LAP_ROLL_CAP = 60
 local SANCTIONED_MIN_LAP_COUNT = 2
+local SANCTIONED_PODIUM_XP_OF_MONEY = 0.1
+
+local function moneyToSanctionedXp(m)
+  return math.max(0, math.floor((tonumber(m) or 0) * SANCTIONED_PODIUM_XP_OF_MONEY + 1e-9))
+end
 
 -- Baseline money (race reward at target time) is multiplied by branch before podium place multipliers.
 local DEFAULT_CLASS_PAYOUT_MULT = {
@@ -422,6 +427,7 @@ local function rollOfferForDiscipline(disciplineId, now)
   local prePodiumMoney = preClassLapMoney * freSkillSponsorMoneyMult
   local scaledBase = prePodiumMoney
   local p1, p2, p3 = computePodiumPayouts(scaledBase, variant)
+  local xp1, xp2, xp3 = moneyToSanctionedXp(p1), moneyToSanctionedXp(p2), moneyToSanctionedXp(p3)
   local refresh = math.max(0.25, tonumber(variant.offerRefreshMinutes) or cfg.defaultOfferRefreshMinutes)
   local deadline = math.max(1, tonumber(variant.startDeadlineMinutes) or cfg.defaultStartDeadlineMinutes)
   local stageNum = tonumber(variant.stageNumber)
@@ -447,6 +453,9 @@ local function rollOfferForDiscipline(disciplineId, now)
     payoutFirst = p1,
     payoutSecond = p2,
     payoutThird = p3,
+    xpFirst = xp1,
+    xpSecond = xp2,
+    xpThird = xp3,
     phase = "available",
     createdAt = now,
     visibleExpiresAt = now + refresh,
@@ -605,6 +614,9 @@ function M.getOfferUiSnapshot(now)
     payoutFirst = offer.payoutFirst,
     payoutSecond = offer.payoutSecond,
     payoutThird = offer.payoutThird,
+    xpFirst = offer.xpFirst,
+    xpSecond = offer.xpSecond,
+    xpThird = offer.xpThird,
     phase = offer.phase,
     minutesUntilRefresh = math.max(0, (tonumber(offer.visibleExpiresAt) or n) - n),
     minutesUntilStartDeadline = (offer.phase == "committed" and offer.startDeadlineAt) and
@@ -816,22 +828,35 @@ local function payPodium(place)
     return
   end
   local amount = 0
+  local xpStored = nil
   if place == 1 then
     amount = tonumber(offer.payoutFirst) or 0
+    xpStored = offer.xpFirst
   elseif place == 2 then
     amount = tonumber(offer.payoutSecond) or 0
+    xpStored = offer.xpSecond
   elseif place == 3 then
     amount = tonumber(offer.payoutThird) or 0
+    xpStored = offer.xpThird
   end
+  local xpNum = tonumber(xpStored)
+  local xpAmount = (xpNum ~= nil) and math.max(0, math.floor(xpNum)) or moneyToSanctionedXp(amount)
   if amount <= 0 or not career_modules_payment or not career_modules_payment.reward then
     mCelebrationRewards = { money = 0, noRewardDetail = "No payout configured for this podium position." }
     M.finishOfferClear()
     return
   end
-  mCelebrationRewards = { money = math.floor(amount) }
-  career_modules_payment.reward({
+  local rewardData = {
     money = { amount = amount, canBeNegative = false }
-  }, {
+  }
+  local skillKey = freConfig.getSkillKey(DISCIPLINE_ROAD)
+  local grantedXp = 0
+  if skillKey and xpAmount > 0 then
+    rewardData[skillKey] = { amount = xpAmount }
+    grantedXp = xpAmount
+  end
+  mCelebrationRewards = { money = math.floor(amount), disciplineXp = grantedXp }
+  career_modules_payment.reward(rewardData, {
     label = string.format("Sanctioned race — P%d", place),
     tags = { "gameplay", "reward", "fre", "sanctioned_race" }
   }, true)
