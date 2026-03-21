@@ -31,7 +31,9 @@ local function resetDragRace()
 
   gameplay_drag_general.resetDragRace()
 
-  dGeneral.unloadRace()
+  hasActivityStarted = false
+  -- Refresh dragData reference after reset
+  dragData = dGeneral.getData()
 end
 
 local function startActivity()

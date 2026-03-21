@@ -839,13 +839,15 @@ function M.payoutDragRace(raceName, finishTime, finishSpeed, vehId)
     }
     local newBestTime = lb.addLeaderboardEntry(newEntry)
 
+    local raceData = races[raceName]
     if not career_career.isActive() then
-        local message = string.format("%s\nTime: %s\nSpeed: %.2f mph", races[raceName].label, u.formatTime(finishTime), finishSpeed)
-        u.displayMessage(message, 10)
+        local message = string.format("%s\nTime: %s\nSpeed: %.2f mph", raceData.label, u.formatTime(finishTime), finishSpeed)
+        if not (frh.shown and M.raceHudApplies(raceData)) then
+            u.displayMessage(message, 10)
+        end
         return 0
     end
 
-    local raceData = races[raceName]
     local targetTime = raceData.bestTime
     local baseReward = raceData.reward
     local disciplineIds = getRaceDisciplineIds(raceData)
@@ -889,6 +891,7 @@ function M.payoutDragRace(raceName, finishTime, finishSpeed, vehId)
     }
     local hudDisciplineXp = totalDisciplineXp
     local hudMoney, hudBusinessMoney = nil, nil
+    local suppressRewardToast = frh.shown and M.raceHudApplies(raceData)
     local businessAccount = getBusinessAccountFromVehicle(vehId)
     if businessAccount then
         local businessReward = math.floor(reward * 0.5)
@@ -908,7 +911,9 @@ function M.payoutDragRace(raceName, finishTime, finishSpeed, vehId)
         end
         local message = string.format("%s\n%s\nTime: %s\nSpeed: %.2f mph\nDiscipline XP: %d | Business Reward: $%.2f (50%% to business account)",
             newBestTime and "Congratulations! New Best Time!" or "", raceData.label, u.formatTime(finishTime), finishSpeed, totalDisciplineXp, businessReward)
-        ui_message(message, 20, "Reward")
+        if not suppressRewardToast then
+            ui_message(message, 20, "Reward")
+        end
         hudBusinessMoney = businessReward
     else
         local totalReward = { money = { amount = reward } }
@@ -920,7 +925,9 @@ function M.payoutDragRace(raceName, finishTime, finishSpeed, vehId)
         career_modules_payment.reward(totalReward, reason, true)
         local message = string.format("%s\n%s\nTime: %s\nSpeed: %.2f mph\nDiscipline XP: %d | Reward: $%.2f",
             newBestTime and "Congratulations! New Best Time!" or "", raceData.label, u.formatTime(finishTime), finishSpeed, totalDisciplineXp, reward)
-        ui_message(message, 20, "Reward")
+        if not suppressRewardToast then
+            ui_message(message, 20, "Reward")
+        end
         hudMoney = reward
     end
     career_saveSystem.saveCurrent()
