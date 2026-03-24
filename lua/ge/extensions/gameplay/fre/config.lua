@@ -146,7 +146,7 @@ local defaultConfig = {
     mudding = "mudding"
   },
   rewardScaling = {
-    levelPercentPerLevelUp = 0.1,
+    levelPercentPerLevelUp = 0.02,
     maxLevel = 50,
     sponsorBonusCap = 2.0
   },
