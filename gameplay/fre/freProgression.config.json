@@ -28,19 +28,19 @@
                 },
                 "xpByTier": {
                     "easy": {
-                        "xpAtTarget": 750,
+                        "xpAtTarget": 200,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 1500,
+                        "xpAtTarget": 400,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 3500,
+                        "xpAtTarget": 800,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -77,19 +77,19 @@
                 },
                 "xpByTier": {
                     "easy": {
-                        "xpAtTarget": 200,
+                        "xpAtTarget": 140,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 200,
+                        "xpAtTarget": 160,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 200,
+                        "xpAtTarget": 180,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -125,19 +125,19 @@
                 },
                 "xpByTier": {
                     "easy": {
-                        "xpAtTarget": 750,
+                        "xpAtTarget": 200,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 1500,
+                        "xpAtTarget": 400,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 3500,
+                        "xpAtTarget": 800,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -174,19 +174,19 @@
                 },
                 "xpByTier": {
                     "easy": {
-                        "xpAtTarget": 200,
+                        "xpAtTarget": 140,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 200,
+                        "xpAtTarget": 160,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 200,
+                        "xpAtTarget": 180,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -221,19 +221,19 @@
                 },
                 "xpByTier": {
                     "easy": {
-                        "xpAtTarget": 750,
+                        "xpAtTarget": 200,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 1500,
+                        "xpAtTarget": 400,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 3500,
+                        "xpAtTarget": 800,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -270,19 +270,19 @@
                 },
                 "xpByTier": {
                     "easy": {
-                        "xpAtTarget": 200,
+                        "xpAtTarget": 140,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 200,
+                        "xpAtTarget": 160,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 200,
+                        "xpAtTarget": 180,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -317,19 +317,19 @@
                 },
                 "xpByTier": {
                     "easy": {
-                        "xpAtTarget": 750,
+                        "xpAtTarget": 200,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 1500,
+                        "xpAtTarget": 400,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 3500,
+                        "xpAtTarget": 800,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -366,19 +366,19 @@
                 },
                 "xpByTier": {
                     "easy": {
-                        "xpAtTarget": 200,
+                        "xpAtTarget": 140,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 200,
+                        "xpAtTarget": 160,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 200,
+                        "xpAtTarget": 180,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -413,19 +413,19 @@
                 },
                 "xpByTier": {
                     "easy": {
-                        "xpAtTarget": 750,
+                        "xpAtTarget": 200,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 1500,
+                        "xpAtTarget": 400,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 3500,
+                        "xpAtTarget": 800,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -462,19 +462,19 @@
                 },
                 "xpByTier": {
                     "easy": {
-                        "xpAtTarget": 200,
+                        "xpAtTarget": 140,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 200,
+                        "xpAtTarget": 160,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 200,
+                        "xpAtTarget": 180,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -509,19 +509,19 @@
                 },
                 "xpByTier": {
                     "easy": {
-                        "xpAtTarget": 750,
+                        "xpAtTarget": 200,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 1500,
+                        "xpAtTarget": 400,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 3500,
+                        "xpAtTarget": 800,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -558,19 +558,19 @@
                 },
                 "xpByTier": {
                     "easy": {
-                        "xpAtTarget": 200,
+                        "xpAtTarget": 140,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 200,
+                        "xpAtTarget": 160,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 200,
+                        "xpAtTarget": 180,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -605,19 +605,19 @@
                 },
                 "xpByTier": {
                     "easy": {
-                        "xpAtTarget": 750,
+                        "xpAtTarget": 200,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 1500,
+                        "xpAtTarget": 400,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 3500,
+                        "xpAtTarget": 800,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -654,19 +654,19 @@
                 },
                 "xpByTier": {
                     "easy": {
-                        "xpAtTarget": 200,
+                        "xpAtTarget": 140,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 200,
+                        "xpAtTarget": 160,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 200,
+                        "xpAtTarget": 180,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -701,19 +701,19 @@
                 },
                 "xpByTier": {
                     "easy": {
-                        "xpAtTarget": 750,
+                        "xpAtTarget": 200,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 1500,
+                        "xpAtTarget": 400,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 3500,
+                        "xpAtTarget": 800,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -750,19 +750,19 @@
                 },
                 "xpByTier": {
                     "easy": {
-                        "xpAtTarget": 200,
+                        "xpAtTarget": 140,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 200,
+                        "xpAtTarget": 160,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 200,
+                        "xpAtTarget": 180,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -797,19 +797,19 @@
                 },
                 "xpByTier": {
                     "easy": {
-                        "xpAtTarget": 750,
+                        "xpAtTarget": 200,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 1500,
+                        "xpAtTarget": 400,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 3500,
+                        "xpAtTarget": 800,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -846,19 +846,19 @@
                 },
                 "xpByTier": {
                     "easy": {
-                        "xpAtTarget": 200,
+                        "xpAtTarget": 140,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 200,
+                        "xpAtTarget": 160,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 200,
+                        "xpAtTarget": 180,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -893,19 +893,19 @@
                 },
                 "xpByTier": {
                     "easy": {
-                        "xpAtTarget": 750,
+                        "xpAtTarget": 200,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 1500,
+                        "xpAtTarget": 400,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 3500,
+                        "xpAtTarget": 800,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -942,19 +942,19 @@
                 },
                 "xpByTier": {
                     "easy": {
-                        "xpAtTarget": 200,
+                        "xpAtTarget": 140,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "medium": {
-                        "xpAtTarget": 200,
+                        "xpAtTarget": 160,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
                     },
                     "hard": {
-                        "xpAtTarget": 200,
+                        "xpAtTarget": 180,
                         "tenPercentBetterMultiplier": 1.25,
                         "belowTargetFloorMultiplier": 0.25,
                         "maxMultiplier": 3
@@ -1015,7 +1015,7 @@
         "basePayoutMultiplier": 10,
         "payoutVariance": { "min": 0.9, "max": 1.1 },
         "extraLapEventBonusPerUnit": 0.33,
-        "xpPercentOfMoney": 0.1,
+        "xpPercentOfMoney": 0.035,
         "timeWindowMinutesByTier": {
             "easy": { "min": 3, "max": 9 },
             "medium": { "min": 4, "max": 10 },
@@ -1057,21 +1057,21 @@
         "bonusRangeByTier": {
             "easy": {
                 "min": 0.01,
-                "max": 0.1
+                "max": 0.05
             },
             "medium": {
-                "min": 0.1,
-                "max": 0.18
+                "min": 0.05,
+                "max": 0.1
             },
             "hard": {
-                "min": 0.15,
-                "max": 0.3
+                "min": 0.08,
+                "max": 0.14
             }
         },
         "bonusTypeWeights": {
-            "money": 0.47,
-            "disciplineXP": 0.47,
-            "both": 0.06
+            "money": 0.75,
+            "disciplineXP": 0.2,
+            "both": 0.05
         }
     },
     "contractVehicleModels": [
