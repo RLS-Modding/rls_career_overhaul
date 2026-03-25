@@ -1006,7 +1006,16 @@
         },
         "offerExpiryMinutes": 5,
         "offerRefreshMinutes": 2,
-        "modelSourceOwnedChance": 0.5,
+        "contractVehiclePickWeights": {
+            "experiencedOwned": 0.5,
+            "otherOwned": 0.3,
+            "notOwned": 0.2
+        },
+        "contractVehicleRewardMultipliers": {
+            "experiencedOwned": 0.75,
+            "otherOwned": 1,
+            "notOwned": 2
+        },
         "expiryMinutesByTier": {
             "easy": 240,
             "medium": 120,

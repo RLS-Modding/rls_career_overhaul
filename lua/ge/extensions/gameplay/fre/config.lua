@@ -157,7 +157,16 @@ local defaultConfig = {
     slotUnlockLevels = {baseLevel = 5, baseSlots = 2, extraLevels = {14, 29, 44}},
     offerExpiryMinutes = 5,
     offerRefreshMinutes = 2,
-    modelSourceOwnedChance = 0.5,
+    contractVehiclePickWeights = {
+      experiencedOwned = 0.5,
+      otherOwned = 0.3,
+      notOwned = 0.2
+    },
+    contractVehicleRewardMultipliers = {
+      experiencedOwned = 0.75,
+      otherOwned = 1,
+      notOwned = 2
+    },
     expiryMinutesByTier = {easy = 240, medium = 120, hard = 60},
     basePayoutMultiplier = 5,
     payoutVariance = {min = 0.95, max = 1.05},

@@ -166,36 +166,114 @@ local function isModelAllowedForDiscipline(disciplineId, model)
   return blacklist[normalized] ~= true
 end
 
-local function pickContractModel(disciplineId)
-  local contractCfg = freConfig.getContractConfig() or {}
-  local ownedChance = tonumber(contractCfg.modelSourceOwnedChance)
-  if ownedChance == nil then
-    ownedChance = 0.5
+local function leaderboardEntryHasStats(entry)
+  return type(entry) == "table" and (entry.time or entry.driftScore or entry.topSpeed)
+end
+
+local function getDisciplineRaceLabels(disciplineId)
+  local rCache = gameplay_events_freContracts_raceCache
+  if not rCache or not rCache.refreshRaceCache then
+    return {}
   end
-  ownedChance = math.max(0, math.min(1, ownedChance))
+  local cache = rCache.refreshRaceCache()
+  local list = (cache and cache.byDiscipline or {})[disciplineId] or {}
+  local labels = {}
+  local seen = {}
+  for _, raceEntry in ipairs(list) do
+    local lbl = raceEntry.raceLabel
+    if type(lbl) == "string" and lbl ~= "" and not seen[lbl] then
+      seen[lbl] = true
+      labels[#labels + 1] = lbl
+    end
+  end
+  return labels
+end
+
+local function ownedModelHasDisciplineLeaderboard(disciplineId, modelKey)
+  local normalized = type(modelKey) == "string" and string.lower(modelKey) or nil
+  if not normalized then
+    return false
+  end
+  local labels = getDisciplineRaceLabels(disciplineId)
+  if #labels == 0 then
+    return false
+  end
+  local lb = gameplay_events_freeroam_leaderboardManager
+  if not lb or type(lb.getLeaderboardEntry) ~= "function" then
+    return false
+  end
+  local vehicles = career_modules_inventory and career_modules_inventory.getVehicles and career_modules_inventory.getVehicles() or
+    {}
+  for invId, vehicle in pairs(vehicles) do
+    local vm = type(vehicle.model) == "string" and string.lower(vehicle.model) or nil
+    if vm == normalized then
+      for _, raceLabel in ipairs(labels) do
+        if leaderboardEntryHasStats(lb.getLeaderboardEntry(invId, raceLabel)) then
+          return true
+        end
+      end
+    end
+  end
+  return false
+end
+
+local function pickContractModel(disciplineId, contractCfg)
+  local cfg = type(contractCfg) == "table" and contractCfg or freConfig.getContractConfig(disciplineId) or {}
+  local pw = cfg.contractVehiclePickWeights or {}
+  local wExp = math.max(0, tonumber(pw.experiencedOwned) or 0.5)
+  local wNov = math.max(0, tonumber(pw.otherOwned) or 0.3)
+  local wRand = math.max(0, tonumber(pw.notOwned) or 0.2)
+  local pm = cfg.contractVehicleRewardMultipliers or {}
+  local mExp = tonumber(pm.experiencedOwned) or 0.75
+  local mNov = tonumber(pm.otherOwned) or 1
+  local mRand = tonumber(pm.notOwned) or 2
 
   local ownedPool = getOwnedContractModelPool(disciplineId)
   local randomPool = getRandomContractModelPool(disciplineId)
-  local useOwned = #ownedPool > 0 and (#randomPool == 0 or math.random() < ownedChance)
-  local source = useOwned and "owned" or "random"
-  local pool = useOwned and ownedPool or randomPool
-
-  if #pool == 0 then
-    if #ownedPool > 0 then
-      pool = ownedPool
-      source = "owned"
-    elseif #randomPool > 0 then
-      pool = randomPool
-      source = "random"
+  local experienced = {}
+  local novice = {}
+  for _, model in ipairs(ownedPool) do
+    if ownedModelHasDisciplineLeaderboard(disciplineId, model) then
+      experienced[#experienced + 1] = model
+    else
+      novice[#novice + 1] = model
     end
   end
 
-  if #pool == 0 then
-    return nil, nil
+  local pickRandomFromList = gameplay_events_freContracts_helpers.pickRandomFromList
+  local candidates = {}
+  if #experienced > 0 and wExp > 0 then
+    candidates[#candidates + 1] = { pool = experienced, w = wExp, source = "owned_tracked", mult = mExp }
+  end
+  if #novice > 0 and wNov > 0 then
+    candidates[#candidates + 1] = { pool = novice, w = wNov, source = "owned", mult = mNov }
+  end
+  if #randomPool > 0 and wRand > 0 then
+    candidates[#candidates + 1] = { pool = randomPool, w = wRand, source = "random", mult = mRand }
   end
 
-  local pickRandomFromList = gameplay_events_freContracts_helpers.pickRandomFromList
-  return pickRandomFromList(pool), source
+  if #candidates == 0 then
+    return nil, nil, 1
+  end
+
+  local totalW = 0
+  for _, c in ipairs(candidates) do
+    totalW = totalW + c.w
+  end
+  if totalW <= 0 then
+    return nil, nil, 1
+  end
+
+  local roll = math.random() * totalW
+  for _, c in ipairs(candidates) do
+    roll = roll - c.w
+    if roll <= 0 then
+      return pickRandomFromList(c.pool), c.source, c.mult
+    end
+  end
+
+  local last = candidates[#candidates]
+  return pickRandomFromList(last.pool), last.source, last.mult
 end
 
 local function normalizeModelFamilyToken(value)

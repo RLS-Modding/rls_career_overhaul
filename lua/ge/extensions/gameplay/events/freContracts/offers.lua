@@ -408,6 +408,11 @@ local function generateContractOffer(disciplineId, level, now)
     return nil
   end
 
+  local model, modelSource, vehicleRewardMult = vPool.pickContractModel(disciplineId, contractCfg)
+  if not model or model == "" then
+    return nil
+  end
+
   local payoutMult = tonumber(contractCfg.basePayoutMultiplier) or 5
   local bonusPerUnit = tonumber(contractCfg.extraLapEventBonusPerUnit) or 0.33
   local lapEventMult = math.max(1, requiredCount) * bonusPerUnit
@@ -417,15 +422,11 @@ local function generateContractOffer(disciplineId, level, now)
   local variance = helpers.randomFloat(varMin, varMax)
   local xpPct = tonumber(contractCfg.xpPercentOfMoney) or 0.02
 
-  local rawMoney = baseMoney * payoutMult * lapEventMult * variance
+  local rawMoney = baseMoney * payoutMult * lapEventMult * variance * (tonumber(vehicleRewardMult) or 1)
   local rawXp = rawMoney * xpPct
   local rewardMoney, rewardXp = scaleContractRewardPreview(disciplineId, rawMoney, rawXp)
 
   local expiryMinutes = tonumber(contractCfg.offerExpiryMinutes) or 5
-  local model, modelSource = vPool.pickContractModel(disciplineId)
-  if not model or model == "" then
-    return nil
-  end
 
   return {
     id = gameplay_events_freContracts_state.nextId("fre-contract"),
