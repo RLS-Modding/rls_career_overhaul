@@ -178,6 +178,11 @@ local defaultConfig = {
       hard = {min = 3, max = 9}
     },
     nonLoopEventTimeMultiplier = 1.66,
+    contractPbTimeMultipliersByTier = {
+      easy = {min = 1.025, max = 1.1},
+      medium = {min = 0.975, max = 1.025},
+      hard = {min = 0.925, max = 0.975}
+    },
     disciplinesUsingEventCountOverride = {"crawling"},
     eventCountOverrideByTier = {
       easy = {eventsMin = 2, eventsMax = 3},

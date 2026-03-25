@@ -189,6 +189,47 @@ local function getDisciplineRaceLabels(disciplineId)
   return labels
 end
 
+local function getBestEventPbTimeSeconds(modelKey, raceEntry)
+  local normalized = type(modelKey) == "string" and string.lower(modelKey) or nil
+  if not normalized or type(raceEntry) ~= "table" then
+    return nil
+  end
+  local mainLabel = raceEntry.raceLabel
+  if type(mainLabel) ~= "string" or mainLabel == "" then
+    return nil
+  end
+  local lb = gameplay_events_freeroam_leaderboardManager
+  if not lb or type(lb.getLeaderboardEntry) ~= "function" then
+    return nil
+  end
+  local vehicles = career_modules_inventory and career_modules_inventory.getVehicles and career_modules_inventory.getVehicles() or
+    {}
+  local hotlapLabel = raceEntry.isLapEvent and (mainLabel .. " (Hotlap)") or nil
+  local best = nil
+  for invId, vehicle in pairs(vehicles) do
+    local vm = type(vehicle.model) == "string" and string.lower(vehicle.model) or nil
+    if vm == normalized then
+      local tBest = nil
+      if hotlapLabel then
+        local eH = lb.getLeaderboardEntry(invId, hotlapLabel)
+        if type(eH) == "table" and tonumber(eH.time) and tonumber(eH.time) > 0 then
+          tBest = tonumber(eH.time)
+        end
+      end
+      if not tBest then
+        local e = lb.getLeaderboardEntry(invId, mainLabel)
+        if type(e) == "table" and tonumber(e.time) and tonumber(e.time) > 0 then
+          tBest = tonumber(e.time)
+        end
+      end
+      if tBest then
+        best = best and math.min(best, tBest) or tBest
+      end
+    end
+  end
+  return best
+end
+
 local function ownedModelHasDisciplineLeaderboard(disciplineId, modelKey)
   local normalized = type(modelKey) == "string" and string.lower(modelKey) or nil
   if not normalized then
@@ -327,6 +368,7 @@ end
 M.isValidVehicleModelKey = isValidVehicleModelKey
 M.getModelDisplayName = getModelDisplayName
 M.isModelAllowedForDiscipline = isModelAllowedForDiscipline
+M.getBestEventPbTimeSeconds = getBestEventPbTimeSeconds
 M.pickContractModel = pickContractModel
 M.modelFamilyMatches = modelFamilyMatches
 M.getCurrentVehicleModel = getCurrentVehicleModel

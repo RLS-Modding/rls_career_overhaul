@@ -75,6 +75,46 @@ local function computeBaseMoneyAtTarget(targetData, raceRow)
   return nil
 end
 
+local function contractRaceUsesTimeTarget(disciplineId, raceEntry)
+  local id = type(disciplineId) == "string" and string.lower(disciplineId) or ""
+  if id == "drift" and (tonumber(raceEntry and raceEntry.driftGoal) or 0) > 0 then
+    return false
+  end
+  if id == "crawling" or id == "trail" then
+    return false
+  end
+  return true
+end
+
+local function buildContractTargetFromPlayerPb(tier, pbSeconds, contractCfg, helpers)
+  local defaults = {
+    easy = {min = 1.025, max = 1.1},
+    medium = {min = 0.975, max = 1.025},
+    hard = {min = 0.925, max = 0.975}
+  }
+  local cfgTbl = type(contractCfg) == "table" and contractCfg.contractPbTimeMultipliersByTier or nil
+  local tbl = type(cfgTbl) == "table" and cfgTbl[tier] or nil
+  if type(tbl) ~= "table" then
+    tbl = defaults[tier] or defaults.easy
+  end
+  local multMin = tonumber(tbl.min)
+  local multMax = tonumber(tbl.max)
+  local d = defaults[tier] or defaults.easy
+  if multMin == nil or multMax == nil then
+    multMin, multMax = d.min, d.max
+  end
+  if multMax < multMin then
+    multMin, multMax = multMax, multMin
+  end
+  local mult = helpers.randomFloat(multMin, multMax)
+  local targetTime = helpers.roundTo(pbSeconds * mult, 3)
+  return {
+    targetType = "time",
+    targetTime = targetTime,
+    targetLabel = helpers.formatTimeForRequirement(targetTime)
+  }
+end
+
 local function isDisciplineCountOverride(disciplineId, targetType, contractCfg)
   local overrideList = contractCfg.disciplinesUsingEventCountOverride
   if type(overrideList) == "table" then
@@ -391,10 +431,21 @@ local function generateContractOffer(disciplineId, level, now)
     return nil
   end
 
-  local targetData = rCache.buildTargetForTier(disciplineId, tier, raceEntry, contractCfg, nil, {
-    min = 1.0,
-    max = 1.1
-  }, "contract")
+  local model, modelSource, vehicleRewardMult = vPool.pickContractModel(disciplineId, contractCfg)
+  if not model or model == "" then
+    return nil
+  end
+
+  local targetData
+  local pbSeconds = vPool.getBestEventPbTimeSeconds(model, raceEntry)
+  if pbSeconds and pbSeconds > 0 and contractRaceUsesTimeTarget(disciplineId, raceEntry) then
+    targetData = buildContractTargetFromPlayerPb(tier, pbSeconds, contractCfg, helpers)
+  else
+    targetData = rCache.buildTargetForTier(disciplineId, tier, raceEntry, contractCfg, nil, {
+      min = 1.0,
+      max = 1.1
+    }, "contract")
+  end
 
   local objectiveType, requiredCount, impliedTotalSec = pickContractObjective(disciplineId, tier, raceEntry, targetData, contractCfg)
   if not objectiveType or not requiredCount then
@@ -405,11 +456,6 @@ local function generateContractOffer(disciplineId, level, now)
   local raceRow = readRaceRow(levelId, raceEntry.raceName, raceEntry.routeType)
   local baseMoney = raceRow and computeBaseMoneyAtTarget(targetData, raceRow) or nil
   if not baseMoney or baseMoney <= 0 then
-    return nil
-  end
-
-  local model, modelSource, vehicleRewardMult = vPool.pickContractModel(disciplineId, contractCfg)
-  if not model or model == "" then
     return nil
   end
 
