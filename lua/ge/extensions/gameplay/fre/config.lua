@@ -174,8 +174,8 @@ local defaultConfig = {
     xpPercentOfMoney = 0.02,
     timeWindowMinutesByTier = {
       easy = {min = 3, max = 9},
-      medium = {min = 4, max = 10},
-      hard = {min = 5, max = 12}
+      medium = {min = 3, max = 9},
+      hard = {min = 3, max = 9}
     },
     nonLoopEventTimeMultiplier = 1.66,
     disciplinesUsingEventCountOverride = {"crawling"},
